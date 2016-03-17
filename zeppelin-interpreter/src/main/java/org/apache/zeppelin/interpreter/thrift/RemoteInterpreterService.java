@@ -82,7 +82,7 @@ public class RemoteInterpreterService {
 
     public void resourceResponseGet(String resourceId, ByteBuffer object) throws org.apache.thrift.TException;
 
-    public List<String> resoucePoolGetAll() throws org.apache.thrift.TException;
+    public List<String> resourcePoolGetAll() throws org.apache.thrift.TException;
 
     public ByteBuffer resourceGet(String noteId, String paragraphId, String resourceName) throws org.apache.thrift.TException;
 
@@ -124,7 +124,7 @@ public class RemoteInterpreterService {
 
     public void resourceResponseGet(String resourceId, ByteBuffer object, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException;
 
-    public void resoucePoolGetAll(org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException;
+    public void resourcePoolGetAll(org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException;
 
     public void resourceGet(String noteId, String paragraphId, String resourceName, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException;
 
@@ -452,26 +452,26 @@ public class RemoteInterpreterService {
       return;
     }
 
-    public List<String> resoucePoolGetAll() throws org.apache.thrift.TException
+    public List<String> resourcePoolGetAll() throws org.apache.thrift.TException
     {
-      send_resoucePoolGetAll();
-      return recv_resoucePoolGetAll();
+      send_resourcePoolGetAll();
+      return recv_resourcePoolGetAll();
     }
 
-    public void send_resoucePoolGetAll() throws org.apache.thrift.TException
+    public void send_resourcePoolGetAll() throws org.apache.thrift.TException
     {
-      resoucePoolGetAll_args args = new resoucePoolGetAll_args();
-      sendBase("resoucePoolGetAll", args);
+      resourcePoolGetAll_args args = new resourcePoolGetAll_args();
+      sendBase("resourcePoolGetAll", args);
     }
 
-    public List<String> recv_resoucePoolGetAll() throws org.apache.thrift.TException
+    public List<String> recv_resourcePoolGetAll() throws org.apache.thrift.TException
     {
-      resoucePoolGetAll_result result = new resoucePoolGetAll_result();
-      receiveBase(result, "resoucePoolGetAll");
+      resourcePoolGetAll_result result = new resourcePoolGetAll_result();
+      receiveBase(result, "resourcePoolGetAll");
       if (result.isSetSuccess()) {
         return result.success;
       }
-      throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "resoucePoolGetAll failed: unknown result");
+      throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "resourcePoolGetAll failed: unknown result");
     }
 
     public ByteBuffer resourceGet(String noteId, String paragraphId, String resourceName) throws org.apache.thrift.TException
@@ -1074,21 +1074,21 @@ public class RemoteInterpreterService {
       }
     }
 
-    public void resoucePoolGetAll(org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException {
+    public void resourcePoolGetAll(org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException {
       checkReady();
-      resoucePoolGetAll_call method_call = new resoucePoolGetAll_call(resultHandler, this, ___protocolFactory, ___transport);
+      resourcePoolGetAll_call method_call = new resourcePoolGetAll_call(resultHandler, this, ___protocolFactory, ___transport);
       this.___currentMethod = method_call;
       ___manager.call(method_call);
     }
 
-    public static class resoucePoolGetAll_call extends org.apache.thrift.async.TAsyncMethodCall {
-      public resoucePoolGetAll_call(org.apache.thrift.async.AsyncMethodCallback resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+    public static class resourcePoolGetAll_call extends org.apache.thrift.async.TAsyncMethodCall {
+      public resourcePoolGetAll_call(org.apache.thrift.async.AsyncMethodCallback resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, false);
       }
 
       public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
-        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("resoucePoolGetAll", org.apache.thrift.protocol.TMessageType.CALL, 0));
-        resoucePoolGetAll_args args = new resoucePoolGetAll_args();
+        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("resourcePoolGetAll", org.apache.thrift.protocol.TMessageType.CALL, 0));
+        resourcePoolGetAll_args args = new resourcePoolGetAll_args();
         args.write(prot);
         prot.writeMessageEnd();
       }
@@ -1099,7 +1099,7 @@ public class RemoteInterpreterService {
         }
         org.apache.thrift.transport.TMemoryInputTransport memoryTransport = new org.apache.thrift.transport.TMemoryInputTransport(getFrameBuffer().array());
         org.apache.thrift.protocol.TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
-        return (new Client(prot)).recv_resoucePoolGetAll();
+        return (new Client(prot)).recv_resourcePoolGetAll();
       }
     }
 
@@ -1325,7 +1325,7 @@ public class RemoteInterpreterService {
       processMap.put("getEvent", new getEvent());
       processMap.put("resourcePoolResponseGetAll", new resourcePoolResponseGetAll());
       processMap.put("resourceResponseGet", new resourceResponseGet());
-      processMap.put("resoucePoolGetAll", new resoucePoolGetAll());
+      processMap.put("resourcePoolGetAll", new resourcePoolGetAll());
       processMap.put("resourceGet", new resourceGet());
       processMap.put("resourceRemove", new resourceRemove());
       processMap.put("angularObjectUpdate", new angularObjectUpdate());
@@ -1595,22 +1595,22 @@ public class RemoteInterpreterService {
       }
     }
 
-    public static class resoucePoolGetAll<I extends Iface> extends org.apache.thrift.ProcessFunction<I, resoucePoolGetAll_args> {
-      public resoucePoolGetAll() {
-        super("resoucePoolGetAll");
+    public static class resourcePoolGetAll<I extends Iface> extends org.apache.thrift.ProcessFunction<I, resourcePoolGetAll_args> {
+      public resourcePoolGetAll() {
+        super("resourcePoolGetAll");
       }
 
-      public resoucePoolGetAll_args getEmptyArgsInstance() {
-        return new resoucePoolGetAll_args();
+      public resourcePoolGetAll_args getEmptyArgsInstance() {
+        return new resourcePoolGetAll_args();
       }
 
       protected boolean isOneway() {
         return false;
       }
 
-      public resoucePoolGetAll_result getResult(I iface, resoucePoolGetAll_args args) throws org.apache.thrift.TException {
-        resoucePoolGetAll_result result = new resoucePoolGetAll_result();
-        result.success = iface.resoucePoolGetAll();
+      public resourcePoolGetAll_result getResult(I iface, resourcePoolGetAll_args args) throws org.apache.thrift.TException {
+        resourcePoolGetAll_result result = new resourcePoolGetAll_result();
+        result.success = iface.resourcePoolGetAll();
         return result;
       }
     }
@@ -1742,7 +1742,7 @@ public class RemoteInterpreterService {
       processMap.put("getEvent", new getEvent());
       processMap.put("resourcePoolResponseGetAll", new resourcePoolResponseGetAll());
       processMap.put("resourceResponseGet", new resourceResponseGet());
-      processMap.put("resoucePoolGetAll", new resoucePoolGetAll());
+      processMap.put("resourcePoolGetAll", new resourcePoolGetAll());
       processMap.put("resourceGet", new resourceGet());
       processMap.put("resourceRemove", new resourceRemove());
       processMap.put("angularObjectUpdate", new angularObjectUpdate());
@@ -2408,20 +2408,20 @@ public class RemoteInterpreterService {
       }
     }
 
-    public static class resoucePoolGetAll<I extends AsyncIface> extends org.apache.thrift.AsyncProcessFunction<I, resoucePoolGetAll_args, List<String>> {
-      public resoucePoolGetAll() {
-        super("resoucePoolGetAll");
+    public static class resourcePoolGetAll<I extends AsyncIface> extends org.apache.thrift.AsyncProcessFunction<I, resourcePoolGetAll_args, List<String>> {
+      public resourcePoolGetAll() {
+        super("resourcePoolGetAll");
       }
 
-      public resoucePoolGetAll_args getEmptyArgsInstance() {
-        return new resoucePoolGetAll_args();
+      public resourcePoolGetAll_args getEmptyArgsInstance() {
+        return new resourcePoolGetAll_args();
       }
 
       public AsyncMethodCallback<List<String>> getResultHandler(final AsyncFrameBuffer fb, final int seqid) {
         final org.apache.thrift.AsyncProcessFunction fcall = this;
         return new AsyncMethodCallback<List<String>>() { 
           public void onComplete(List<String> o) {
-            resoucePoolGetAll_result result = new resoucePoolGetAll_result();
+            resourcePoolGetAll_result result = new resourcePoolGetAll_result();
             result.success = o;
             try {
               fcall.sendResponse(fb,result, org.apache.thrift.protocol.TMessageType.REPLY,seqid);
@@ -2434,7 +2434,7 @@ public class RemoteInterpreterService {
           public void onError(Exception e) {
             byte msgType = org.apache.thrift.protocol.TMessageType.REPLY;
             org.apache.thrift.TBase msg;
-            resoucePoolGetAll_result result = new resoucePoolGetAll_result();
+            resourcePoolGetAll_result result = new resourcePoolGetAll_result();
             {
               msgType = org.apache.thrift.protocol.TMessageType.EXCEPTION;
               msg = (org.apache.thrift.TBase)new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.INTERNAL_ERROR, e.getMessage());
@@ -2454,8 +2454,8 @@ public class RemoteInterpreterService {
         return false;
       }
 
-      public void start(I iface, resoucePoolGetAll_args args, org.apache.thrift.async.AsyncMethodCallback<List<String>> resultHandler) throws TException {
-        iface.resoucePoolGetAll(resultHandler);
+      public void start(I iface, resourcePoolGetAll_args args, org.apache.thrift.async.AsyncMethodCallback<List<String>> resultHandler) throws TException {
+        iface.resourcePoolGetAll(resultHandler);
       }
     }
 
@@ -13156,14 +13156,14 @@ public class RemoteInterpreterService {
 
   }
 
-  public static class resoucePoolGetAll_args implements org.apache.thrift.TBase<resoucePoolGetAll_args, resoucePoolGetAll_args._Fields>, java.io.Serializable, Cloneable, Comparable<resoucePoolGetAll_args>   {
-    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("resoucePoolGetAll_args");
+  public static class resourcePoolGetAll_args implements org.apache.thrift.TBase<resourcePoolGetAll_args, resourcePoolGetAll_args._Fields>, java.io.Serializable, Cloneable, Comparable<resourcePoolGetAll_args>   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("resourcePoolGetAll_args");
 
 
     private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
     static {
-      schemes.put(StandardScheme.class, new resoucePoolGetAll_argsStandardSchemeFactory());
-      schemes.put(TupleScheme.class, new resoucePoolGetAll_argsTupleSchemeFactory());
+      schemes.put(StandardScheme.class, new resourcePoolGetAll_argsStandardSchemeFactory());
+      schemes.put(TupleScheme.class, new resourcePoolGetAll_argsTupleSchemeFactory());
     }
 
 
@@ -13226,20 +13226,20 @@ public class RemoteInterpreterService {
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
       metaDataMap = Collections.unmodifiableMap(tmpMap);
-      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(resoucePoolGetAll_args.class, metaDataMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(resourcePoolGetAll_args.class, metaDataMap);
     }
 
-    public resoucePoolGetAll_args() {
+    public resourcePoolGetAll_args() {
     }
 
     /**
      * Performs a deep copy on <i>other</i>.
      */
-    public resoucePoolGetAll_args(resoucePoolGetAll_args other) {
+    public resourcePoolGetAll_args(resourcePoolGetAll_args other) {
     }
 
-    public resoucePoolGetAll_args deepCopy() {
-      return new resoucePoolGetAll_args(this);
+    public resourcePoolGetAll_args deepCopy() {
+      return new resourcePoolGetAll_args(this);
     }
 
     @Override
@@ -13272,12 +13272,12 @@ public class RemoteInterpreterService {
     public boolean equals(Object that) {
       if (that == null)
         return false;
-      if (that instanceof resoucePoolGetAll_args)
-        return this.equals((resoucePoolGetAll_args)that);
+      if (that instanceof resourcePoolGetAll_args)
+        return this.equals((resourcePoolGetAll_args)that);
       return false;
     }
 
-    public boolean equals(resoucePoolGetAll_args that) {
+    public boolean equals(resourcePoolGetAll_args that) {
       if (that == null)
         return false;
 
@@ -13292,7 +13292,7 @@ public class RemoteInterpreterService {
     }
 
     @Override
-    public int compareTo(resoucePoolGetAll_args other) {
+    public int compareTo(resourcePoolGetAll_args other) {
       if (!getClass().equals(other.getClass())) {
         return getClass().getName().compareTo(other.getClass().getName());
       }
@@ -13316,7 +13316,7 @@ public class RemoteInterpreterService {
 
     @Override
     public String toString() {
-      StringBuilder sb = new StringBuilder("resoucePoolGetAll_args(");
+      StringBuilder sb = new StringBuilder("resourcePoolGetAll_args(");
       boolean first = true;
 
       sb.append(")");
@@ -13344,15 +13344,15 @@ public class RemoteInterpreterService {
       }
     }
 
-    private static class resoucePoolGetAll_argsStandardSchemeFactory implements SchemeFactory {
-      public resoucePoolGetAll_argsStandardScheme getScheme() {
-        return new resoucePoolGetAll_argsStandardScheme();
+    private static class resourcePoolGetAll_argsStandardSchemeFactory implements SchemeFactory {
+      public resourcePoolGetAll_argsStandardScheme getScheme() {
+        return new resourcePoolGetAll_argsStandardScheme();
       }
     }
 
-    private static class resoucePoolGetAll_argsStandardScheme extends StandardScheme<resoucePoolGetAll_args> {
+    private static class resourcePoolGetAll_argsStandardScheme extends StandardScheme<resourcePoolGetAll_args> {
 
-      public void read(org.apache.thrift.protocol.TProtocol iprot, resoucePoolGetAll_args struct) throws org.apache.thrift.TException {
+      public void read(org.apache.thrift.protocol.TProtocol iprot, resourcePoolGetAll_args struct) throws org.apache.thrift.TException {
         org.apache.thrift.protocol.TField schemeField;
         iprot.readStructBegin();
         while (true)
@@ -13373,7 +13373,7 @@ public class RemoteInterpreterService {
         struct.validate();
       }
 
-      public void write(org.apache.thrift.protocol.TProtocol oprot, resoucePoolGetAll_args struct) throws org.apache.thrift.TException {
+      public void write(org.apache.thrift.protocol.TProtocol oprot, resourcePoolGetAll_args struct) throws org.apache.thrift.TException {
         struct.validate();
 
         oprot.writeStructBegin(STRUCT_DESC);
@@ -13383,36 +13383,36 @@ public class RemoteInterpreterService {
 
     }
 
-    private static class resoucePoolGetAll_argsTupleSchemeFactory implements SchemeFactory {
-      public resoucePoolGetAll_argsTupleScheme getScheme() {
-        return new resoucePoolGetAll_argsTupleScheme();
+    private static class resourcePoolGetAll_argsTupleSchemeFactory implements SchemeFactory {
+      public resourcePoolGetAll_argsTupleScheme getScheme() {
+        return new resourcePoolGetAll_argsTupleScheme();
       }
     }
 
-    private static class resoucePoolGetAll_argsTupleScheme extends TupleScheme<resoucePoolGetAll_args> {
+    private static class resourcePoolGetAll_argsTupleScheme extends TupleScheme<resourcePoolGetAll_args> {
 
       @Override
-      public void write(org.apache.thrift.protocol.TProtocol prot, resoucePoolGetAll_args struct) throws org.apache.thrift.TException {
+      public void write(org.apache.thrift.protocol.TProtocol prot, resourcePoolGetAll_args struct) throws org.apache.thrift.TException {
         TTupleProtocol oprot = (TTupleProtocol) prot;
       }
 
       @Override
-      public void read(org.apache.thrift.protocol.TProtocol prot, resoucePoolGetAll_args struct) throws org.apache.thrift.TException {
+      public void read(org.apache.thrift.protocol.TProtocol prot, resourcePoolGetAll_args struct) throws org.apache.thrift.TException {
         TTupleProtocol iprot = (TTupleProtocol) prot;
       }
     }
 
   }
 
-  public static class resoucePoolGetAll_result implements org.apache.thrift.TBase<resoucePoolGetAll_result, resoucePoolGetAll_result._Fields>, java.io.Serializable, Cloneable, Comparable<resoucePoolGetAll_result>   {
-    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("resoucePoolGetAll_result");
+  public static class resourcePoolGetAll_result implements org.apache.thrift.TBase<resourcePoolGetAll_result, resourcePoolGetAll_result._Fields>, java.io.Serializable, Cloneable, Comparable<resourcePoolGetAll_result>   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("resourcePoolGetAll_result");
 
     private static final org.apache.thrift.protocol.TField SUCCESS_FIELD_DESC = new org.apache.thrift.protocol.TField("success", org.apache.thrift.protocol.TType.LIST, (short)0);
 
     private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
     static {
-      schemes.put(StandardScheme.class, new resoucePoolGetAll_resultStandardSchemeFactory());
-      schemes.put(TupleScheme.class, new resoucePoolGetAll_resultTupleSchemeFactory());
+      schemes.put(StandardScheme.class, new resourcePoolGetAll_resultStandardSchemeFactory());
+      schemes.put(TupleScheme.class, new resourcePoolGetAll_resultTupleSchemeFactory());
     }
 
     public List<String> success; // required
@@ -13483,13 +13483,13 @@ public class RemoteInterpreterService {
           new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
               new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
-      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(resoucePoolGetAll_result.class, metaDataMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(resourcePoolGetAll_result.class, metaDataMap);
     }
 
-    public resoucePoolGetAll_result() {
+    public resourcePoolGetAll_result() {
     }
 
-    public resoucePoolGetAll_result(
+    public resourcePoolGetAll_result(
       List<String> success)
     {
       this();
@@ -13499,15 +13499,15 @@ public class RemoteInterpreterService {
     /**
      * Performs a deep copy on <i>other</i>.
      */
-    public resoucePoolGetAll_result(resoucePoolGetAll_result other) {
+    public resourcePoolGetAll_result(resourcePoolGetAll_result other) {
       if (other.isSetSuccess()) {
         List<String> __this__success = new ArrayList<String>(other.success);
         this.success = __this__success;
       }
     }
 
-    public resoucePoolGetAll_result deepCopy() {
-      return new resoucePoolGetAll_result(this);
+    public resourcePoolGetAll_result deepCopy() {
+      return new resourcePoolGetAll_result(this);
     }
 
     @Override
@@ -13534,7 +13534,7 @@ public class RemoteInterpreterService {
       return this.success;
     }
 
-    public resoucePoolGetAll_result setSuccess(List<String> success) {
+    public resourcePoolGetAll_result setSuccess(List<String> success) {
       this.success = success;
       return this;
     }
@@ -13593,12 +13593,12 @@ public class RemoteInterpreterService {
     public boolean equals(Object that) {
       if (that == null)
         return false;
-      if (that instanceof resoucePoolGetAll_result)
-        return this.equals((resoucePoolGetAll_result)that);
+      if (that instanceof resourcePoolGetAll_result)
+        return this.equals((resourcePoolGetAll_result)that);
       return false;
     }
 
-    public boolean equals(resoucePoolGetAll_result that) {
+    public boolean equals(resourcePoolGetAll_result that) {
       if (that == null)
         return false;
 
@@ -13627,7 +13627,7 @@ public class RemoteInterpreterService {
     }
 
     @Override
-    public int compareTo(resoucePoolGetAll_result other) {
+    public int compareTo(resourcePoolGetAll_result other) {
       if (!getClass().equals(other.getClass())) {
         return getClass().getName().compareTo(other.getClass().getName());
       }
@@ -13661,7 +13661,7 @@ public class RemoteInterpreterService {
 
     @Override
     public String toString() {
-      StringBuilder sb = new StringBuilder("resoucePoolGetAll_result(");
+      StringBuilder sb = new StringBuilder("resourcePoolGetAll_result(");
       boolean first = true;
 
       sb.append("success:");
@@ -13696,15 +13696,15 @@ public class RemoteInterpreterService {
       }
     }
 
-    private static class resoucePoolGetAll_resultStandardSchemeFactory implements SchemeFactory {
-      public resoucePoolGetAll_resultStandardScheme getScheme() {
-        return new resoucePoolGetAll_resultStandardScheme();
+    private static class resourcePoolGetAll_resultStandardSchemeFactory implements SchemeFactory {
+      public resourcePoolGetAll_resultStandardScheme getScheme() {
+        return new resourcePoolGetAll_resultStandardScheme();
       }
     }
 
-    private static class resoucePoolGetAll_resultStandardScheme extends StandardScheme<resoucePoolGetAll_result> {
+    private static class resourcePoolGetAll_resultStandardScheme extends StandardScheme<resourcePoolGetAll_result> {
 
-      public void read(org.apache.thrift.protocol.TProtocol iprot, resoucePoolGetAll_result struct) throws org.apache.thrift.TException {
+      public void read(org.apache.thrift.protocol.TProtocol iprot, resourcePoolGetAll_result struct) throws org.apache.thrift.TException {
         org.apache.thrift.protocol.TField schemeField;
         iprot.readStructBegin();
         while (true)
@@ -13743,7 +13743,7 @@ public class RemoteInterpreterService {
         struct.validate();
       }
 
-      public void write(org.apache.thrift.protocol.TProtocol oprot, resoucePoolGetAll_result struct) throws org.apache.thrift.TException {
+      public void write(org.apache.thrift.protocol.TProtocol oprot, resourcePoolGetAll_result struct) throws org.apache.thrift.TException {
         struct.validate();
 
         oprot.writeStructBegin(STRUCT_DESC);
@@ -13765,16 +13765,16 @@ public class RemoteInterpreterService {
 
     }
 
-    private static class resoucePoolGetAll_resultTupleSchemeFactory implements SchemeFactory {
-      public resoucePoolGetAll_resultTupleScheme getScheme() {
-        return new resoucePoolGetAll_resultTupleScheme();
+    private static class resourcePoolGetAll_resultTupleSchemeFactory implements SchemeFactory {
+      public resourcePoolGetAll_resultTupleScheme getScheme() {
+        return new resourcePoolGetAll_resultTupleScheme();
       }
     }
 
-    private static class resoucePoolGetAll_resultTupleScheme extends TupleScheme<resoucePoolGetAll_result> {
+    private static class resourcePoolGetAll_resultTupleScheme extends TupleScheme<resourcePoolGetAll_result> {
 
       @Override
-      public void write(org.apache.thrift.protocol.TProtocol prot, resoucePoolGetAll_result struct) throws org.apache.thrift.TException {
+      public void write(org.apache.thrift.protocol.TProtocol prot, resourcePoolGetAll_result struct) throws org.apache.thrift.TException {
         TTupleProtocol oprot = (TTupleProtocol) prot;
         BitSet optionals = new BitSet();
         if (struct.isSetSuccess()) {
@@ -13793,7 +13793,7 @@ public class RemoteInterpreterService {
       }
 
       @Override
-      public void read(org.apache.thrift.protocol.TProtocol prot, resoucePoolGetAll_result struct) throws org.apache.thrift.TException {
+      public void read(org.apache.thrift.protocol.TProtocol prot, resourcePoolGetAll_result struct) throws org.apache.thrift.TException {
         TTupleProtocol iprot = (TTupleProtocol) prot;
         BitSet incoming = iprot.readBitSet(1);
         if (incoming.get(0)) {
