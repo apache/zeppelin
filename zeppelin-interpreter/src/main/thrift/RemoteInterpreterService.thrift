@@ -76,7 +76,7 @@ service RemoteInterpreterService {
   // as a response, ZeppelinServer send serialized value of resource
   void resourceResponseGet(1: string resourceId, 2: binary object);
   // get all resources in the interpreter process
-  list<string> resoucePoolGetAll();
+  list<string> resourcePoolGetAll();
   // get value of resource
   binary resourceGet(1: string noteId, 2: string paragraphId, 3: string resourceName);
   // remove resource
