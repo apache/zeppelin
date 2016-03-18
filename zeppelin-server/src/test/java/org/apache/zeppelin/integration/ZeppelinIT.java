@@ -80,13 +80,8 @@ public class ZeppelinIT extends AbstractZeppelinIT {
        * print angular template
        * %angular <div id='angularTestButton' ng-click='myVar=myVar+1'>BindingTest_{{myVar}}_</div>
        */
-      WebElement paragraph1Editor = driver.findElement(By.xpath(getParagraphXPath(1) + "//textarea"));
-      paragraph1Editor.sendKeys("println" + Keys.chord(Keys.SHIFT, "9") + "\""
-                  + Keys.chord(Keys.SHIFT, "5")
-                  + "angular <div id='angularTestButton' "
-                  + "ng" + Keys.chord(Keys.SUBTRACT) + "click='myVar=myVar+1'>"
-                  + "BindingTest_{{myVar}}_</div>\")");
-      paragraph1Editor.sendKeys(Keys.chord(Keys.SHIFT, Keys.ENTER));
+      setTextOfParagraph(1, "println(\"%angular <div id=\\'angularTestButton\\' ng-click=\\'myVar=myVar+1\\'>BindingTest_{{myVar}}_</div>\")");
+      runParagraph(1);
       waitForParagraph(1, "FINISHED");
 
       // check expected text
@@ -98,9 +93,8 @@ public class ZeppelinIT extends AbstractZeppelinIT {
        * z.angularBind("myVar", 1)
        */
       assertEquals(1, driver.findElements(By.xpath(getParagraphXPath(2) + "//textarea")).size());
-      WebElement paragraph2Editor = driver.findElement(By.xpath(getParagraphXPath(2) + "//textarea"));
-      paragraph2Editor.sendKeys("z.angularBind" + Keys.chord(Keys.SHIFT, "9") + "\"myVar\", 1)");
-      paragraph2Editor.sendKeys(Keys.chord(Keys.SHIFT, Keys.ENTER));
+      setTextOfParagraph(2, "z.angularBind(\"myVar\", 1)");
+      runParagraph(2);
       waitForParagraph(2, "FINISHED");
 
       // check expected text
@@ -112,11 +106,8 @@ public class ZeppelinIT extends AbstractZeppelinIT {
        * print variable
        * print("myVar="+z.angular("myVar"))
        */
-      WebElement paragraph3Editor = driver.findElement(By.xpath(getParagraphXPath(3) + "//textarea"));
-      paragraph3Editor.sendKeys(
-          "print" + Keys.chord(Keys.SHIFT, "9") + "\"myVar=\"" + Keys.chord(Keys.ADD)
-          + "z.angular" + Keys.chord(Keys.SHIFT, "9") + "\"myVar\"))");
-      paragraph3Editor.sendKeys(Keys.chord(Keys.SHIFT, Keys.ENTER));
+      setTextOfParagraph(3, "print(\"myVar=\"+z.angular(\"myVar\"))");
+      runParagraph(3);
       waitForParagraph(3, "FINISHED");
 
       // check expected text
@@ -139,13 +130,8 @@ public class ZeppelinIT extends AbstractZeppelinIT {
        *   z.run(2, context)
        * }
        */
-      WebElement paragraph4Editor = driver.findElement(By.xpath(getParagraphXPath(4) + "//textarea"));
-      paragraph4Editor.sendKeys(
-          "z.angularWatch" + Keys.chord(Keys.SHIFT, "9") + "\"myVar\", "
-          + Keys.chord(Keys.SHIFT, "9")
-          + "before:Object, after:Object, context:org.apache.zeppelin.interpreter.InterpreterContext)"
-          + Keys.EQUALS + ">{ z.run" +Keys.chord(Keys.SHIFT, "9") + "2, context)}");
-      paragraph4Editor.sendKeys(Keys.chord(Keys.SHIFT, Keys.ENTER));
+      setTextOfParagraph(4, "z.angularWatch(\"myVar\", (before:Object, after:Object, context:org.apache.zeppelin.interpreter.InterpreterContext)=>{ z.run(2, context)})");
+      runParagraph(4);
       waitForParagraph(4, "FINISHED");
 
 
@@ -168,10 +154,8 @@ public class ZeppelinIT extends AbstractZeppelinIT {
        * Unbind
        * z.angularUnbind("myVar")
        */
-      WebElement paragraph5Editor = driver.findElement(By.xpath(getParagraphXPath(5) + "//textarea"));
-      paragraph5Editor.sendKeys(
-          "z.angularUnbind" + Keys.chord(Keys.SHIFT, "9") + "\"myVar\")");
-      paragraph5Editor.sendKeys(Keys.chord(Keys.SHIFT, Keys.ENTER));
+      setTextOfParagraph(5, "z.angularUnbind(\"myVar\")");
+      runParagraph(5);
       waitForParagraph(5, "FINISHED");
 
       // check expected text
@@ -181,8 +165,7 @@ public class ZeppelinIT extends AbstractZeppelinIT {
       /*
        * Bind again and see rebind works.
        */
-      paragraph2Editor = driver.findElement(By.xpath(getParagraphXPath(2) + "//textarea"));
-      paragraph2Editor.sendKeys(Keys.chord(Keys.SHIFT, Keys.ENTER));
+      runParagraph(2);
       waitForParagraph(2, "FINISHED");
 
       // check expected text
@@ -228,11 +211,8 @@ public class ZeppelinIT extends AbstractZeppelinIT {
       // wait for first paragraph's " READY " status text
       waitForParagraph(1, "READY");
 
-      WebElement paragraph1Editor = driver.findElement(By.xpath(getParagraphXPath(1) + "//textarea"));
-
-      paragraph1Editor.sendKeys("import org.apache.commons.csv.CSVFormat");
-      paragraph1Editor.sendKeys(Keys.chord(Keys.SHIFT, Keys.ENTER));
-      waitForParagraph(1, "FINISHED");
+      setTextOfParagraph(1, "import org.apache.commons.csv.CSVFormat");
+      runParagraph(1);
 
       // check expected text
       assertTrue(waitForText("import org.apache.commons.csv.CSVFormat",
