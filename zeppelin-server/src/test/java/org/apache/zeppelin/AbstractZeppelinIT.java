@@ -41,6 +41,7 @@ abstract public class AbstractZeppelinIT {
   protected WebDriver driver;
 
   protected final static Logger LOG = LoggerFactory.getLogger(AbstractZeppelinIT.class);
+  protected static final long MAX_IMPLICIT_WAIT = 30;
   protected static final long MAX_BROWSER_TIMEOUT_SEC = 30;
   protected static final long MAX_PARAGRAPH_TIMEOUT_SEC = 60;
 
