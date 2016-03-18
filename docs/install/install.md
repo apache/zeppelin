@@ -225,6 +225,12 @@ You can configure Zeppelin with both **environment variables** in `conf/zeppelin
     <td>interpreter</td>
     <td>Zeppelin interpreter directory</td>
   </tr>
+  <tr>
+    <td>ZEPPELIN_WEBSOCKET_MAX_TEXT_MESSAGE_SIZE</td>
+    <td>zeppelin.websocket.maxTextMessageSize</td>
+    <td>1024000</td>
+    <td>Size in characters of the maximum text message to be received by websocket.</td>
+  </tr>
 </table>
 
 Maybe you need to configure individual interpreter. If so, please check **Interpreter** section in Zeppelin documentation.
