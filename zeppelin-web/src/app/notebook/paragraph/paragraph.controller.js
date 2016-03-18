@@ -1767,16 +1767,18 @@ angular.module('zeppelinWebApp')
           };
         }
 
-        var xVar = isNaN(rowValue) ? ((allowTextXAxis) ? rowValue : rowNameIndex[rowValue]) : parseFloat(rowValue);
-        var yVar = 0;
-        if (xVar === undefined) { xVar = colName; }
-        if (value !== undefined) {
-          yVar = isNaN(value.value) ? 0 : parseFloat(value.value) / parseFloat(value.count);
+        if(value.value !== undefined){
+          var xVar = isNaN(rowValue) ? ((allowTextXAxis) ? rowValue : rowNameIndex[rowValue]) : parseFloat(rowValue);
+          var yVar = 0;
+          if (xVar === undefined) { xVar = colName; }
+          if (value !== undefined) {
+            yVar = isNaN(value.value) ? 0 : parseFloat(value.value) / parseFloat(value.count);
+          }
+          d3g[i].values.push({
+            x : xVar,
+            y : yVar
+          });
         }
-        d3g[i].values.push({
-          x : xVar,
-          y : yVar
-        });
       });
     }
 
