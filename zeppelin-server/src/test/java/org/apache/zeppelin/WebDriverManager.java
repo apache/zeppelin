@@ -34,6 +34,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.fail;
 
@@ -114,6 +115,8 @@ public class WebDriverManager {
 
     long start = System.currentTimeMillis();
     boolean loaded = false;
+    driver.manage().timeouts().implicitlyWait(AbstractZeppelinIT.MAX_IMPLICIT_WAIT,
+        TimeUnit.SECONDS);
     driver.get(url);
 
     while (System.currentTimeMillis() - start < 60 * 1000) {

@@ -41,6 +41,7 @@ abstract public class AbstractZeppelinIT {
   protected WebDriver driver;
 
   protected final static Logger LOG = LoggerFactory.getLogger(AbstractZeppelinIT.class);
+  protected static final long MAX_IMPLICIT_WAIT = 30;
   protected static final long MAX_BROWSER_TIMEOUT_SEC = 30;
   protected static final long MAX_PARAGRAPH_TIMEOUT_SEC = 60;
 
@@ -57,6 +58,19 @@ abstract public class AbstractZeppelinIT {
     if (logOutput) {
       LOG.info("Finished.");
     }
+  }
+
+  protected void setTextOfParagraph(int paragraphNo, String text) {
+    String editorId = driver.findElement(By.xpath(getParagraphXPath(paragraphNo) + "//div[contains(@class, 'editor')]")).getAttribute("id");
+    if (driver instanceof JavascriptExecutor) {
+      ((JavascriptExecutor) driver).executeScript("ace.edit('" + editorId + "'). setValue('" + text + "')");
+    } else {
+      throw new IllegalStateException("This driver does not support JavaScript!");
+    }
+  }
+
+  protected void runParagraph(int paragraphNo) {
+    driver.findElement(By.xpath(getParagraphXPath(paragraphNo) + "//span[@class='icon-control-play']")).click();
   }
 
 
@@ -133,40 +147,6 @@ abstract public class AbstractZeppelinIT {
     driver.findElement(By.xpath("//div[@class='modal-dialog'][contains(.,'delete this notebook')]" +
         "//div[@class='modal-footer']//button[contains(.,'OK')]")).click();
     sleep(100, true);
-  }
-
-  public enum HelperKeys implements CharSequence {
-    OPEN_PARENTHESIS(Keys.chord(Keys.SHIFT, "9")),
-    EXCLAMATION(Keys.chord(Keys.SHIFT, "1")),
-    PERCENTAGE(Keys.chord(Keys.SHIFT, "5")),
-    SHIFT_ENTER(Keys.chord(SHIFT, ENTER));
-
-    private final CharSequence keyCode;
-
-    HelperKeys(CharSequence keyCode) {
-      this.keyCode = keyCode;
-    }
-
-    public char charAt(int index) {
-      return index == 0 ? keyCode.charAt(index) : '\ue000';
-    }
-
-    public int length() {
-      return 1;
-    }
-
-    public CharSequence subSequence(int start, int end) {
-      if (start == 0 && end == 1) {
-        return String.valueOf(this.keyCode);
-      } else {
-        throw new IndexOutOfBoundsException();
-      }
-    }
-
-    public String toString() {
-      return String.valueOf(this.keyCode);
-    }
-
   }
 
   protected void handleException(String message, Exception e) throws Exception {
