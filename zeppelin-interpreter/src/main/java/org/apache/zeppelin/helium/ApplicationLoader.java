@@ -101,7 +101,7 @@ public class ApplicationLoader {
    * @throws Exception
    */
   public Application load(HeliumPackage packageInfo, ApplicationContext context)
-    throws Exception {
+      throws Exception {
     if (packageInfo.getType() != HeliumPackage.Type.APPLICATION) {
       throw new ApplicationException(
           "Can't instantiate " + packageInfo.getType() + " package using ApplicationLoader");

@@ -342,6 +342,10 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     return getRelativeDir(String.format("%s/interpreter.json", getConfDir()));
   }
 
+  public String getHeliumConfPath() {
+    return getRelativeDir(String.format("%s/helium.json", getConfDir()));
+  }
+
   public String getNotebookAuthorizationPath() {
     return getRelativeDir(String.format("%s/notebook-authorization.json", getConfDir()));
   }

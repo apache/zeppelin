@@ -28,6 +28,9 @@ public class HeliumPackage {
   private String [][] resources; // resource classnames that requires
                                  // [[ .. and .. and .. ] or [ .. and .. and ..] ..]
 
+  /**
+   * Type of package
+   */
   public static enum Type {
     INTERPRETER,
     NOTEBOOK_REPO,
