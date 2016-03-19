@@ -417,5 +417,4 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
     }
   }
 
-
 }
