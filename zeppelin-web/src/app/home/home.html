@@ -72,7 +72,7 @@ limitations under the License.
   <div ng-show="home.notebookHome" id="{{currentParagraph.id}}_paragraphColumn_main"
        ng-repeat="currentParagraph in home.note.paragraphs"
        ng-controller="ParagraphCtrl"
-       ng-Init="init(currentParagraph)"
+       ng-Init="init(currentParagraph, home.note)"
        ng-class="columnWidthClass(currentParagraph.config.colWidth)"
        class="paragraph-col">
     <div id="{{currentParagraph.id}}_paragraphColumn"
