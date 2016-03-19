@@ -243,7 +243,14 @@ public class InterpreterFactory {
           setting.getProperties(),
           setting.getDependencies(),
           setting.getOption());
-
+      try {
+        logger.info("Loading dependencies for " + "interpreter setting "
+            + setting.getName());
+        loadInterpreterDependencies(intpSetting);
+      } catch (RepositoryException e) {
+        logger.error("Failed to load dependencies for interpretersetting "
+            + intpSetting.getName(), e);
+      }
       InterpreterGroup interpreterGroup = createInterpreterGroup(setting.id(), setting.getOption());
       intpSetting.setInterpreterGroup(interpreterGroup);
 
