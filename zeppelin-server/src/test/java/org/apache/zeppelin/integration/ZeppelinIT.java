@@ -17,21 +17,21 @@
 
 package org.apache.zeppelin.integration;
 
-import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.io.FileUtils;
 import org.apache.zeppelin.AbstractZeppelinIT;
 import org.apache.zeppelin.WebDriverManager;
+import org.hamcrest.CoreMatchers;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
-import org.openqa.selenium.*;
+import org.junit.rules.ErrorCollector;
+import org.openqa.selenium.By;
+import org.openqa.selenium.Keys;
+import org.openqa.selenium.WebElement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 /**
  * Test Zeppelin with web browser.
@@ -47,6 +47,8 @@ import static org.junit.Assert.assertTrue;
 public class ZeppelinIT extends AbstractZeppelinIT {
   private static final Logger LOG = LoggerFactory.getLogger(ZeppelinIT.class);
 
+  @Rule
+  public ErrorCollector collector = new ErrorCollector();
 
   @Before
   public void startUp() {
@@ -213,10 +215,17 @@ public class ZeppelinIT extends AbstractZeppelinIT {
 
       setTextOfParagraph(1, "import org.apache.commons.csv.CSVFormat");
       runParagraph(1);
+      waitForParagraph(1, "FINISHED");
 
       // check expected text
-      assertTrue(waitForText("import org.apache.commons.csv.CSVFormat",
-          By.xpath(getParagraphXPath(1) + "//div[starts-with(@id, 'p') and contains(@id, 'text')]/div")));
+      WebElement paragraph1Result = driver.findElement(By.xpath(
+          getParagraphXPath(1) + "//div[@class=\"tableDisplay\"]"));
+
+      collector.checkThat("Paragraph from ZeppelinIT of testSparkInterpreterDependencyLoading result: ",
+          paragraph1Result.getText().toString(), CoreMatchers.containsString(
+              "import org.apache.commons.csv.CSVFormat"
+          )
+      );
 
       //delete created notebook for cleanup.
       deleteTestNotebook(driver);
