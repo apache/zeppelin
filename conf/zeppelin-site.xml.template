@@ -220,7 +220,7 @@
 </property>
 
 <property>
-  <name>zeppelin.websocket.maxTextMessageSize</name>
+  <name>zeppelin.websocket.max.text.message.size</name>
   <value>1024000</value>
   <description>Size in characters of the maximum text message to be received by websocket. Defaults to 1024000</description>
 </property>

@@ -227,7 +227,7 @@ You can configure Zeppelin with both **environment variables** in `conf/zeppelin
   </tr>
   <tr>
     <td>ZEPPELIN_WEBSOCKET_MAX_TEXT_MESSAGE_SIZE</td>
-    <td>zeppelin.websocket.maxTextMessageSize</td>
+    <td>zeppelin.websocket.max.text.message.size</td>
     <td>1024000</td>
     <td>Size in characters of the maximum text message to be received by websocket.</td>
   </tr>
