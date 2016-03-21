@@ -23,11 +23,22 @@ angular.module('zeppelinWebApp')
   $scope.editor = null;
 
   var paragraphScope = $rootScope.$new(true, $rootScope);
+
   // to keep backward compatibility
   $scope.compiledScope = paragraphScope;
 
-  var angularObjectRegistry = {};
+  paragraphScope.z = {
 
+    // Example: z.angularBind('my_var', 'Test Value', '20150213-231621_168813393')
+    angularBind: function(varName, value, paragraphId) {
+      // Only push to server if there paragraphId is defined
+      if (paragraphId) {
+        websocketMsgSrv.clientBindAngularObject($routeParams.noteId, varName, value, paragraphId);
+      }
+    }
+  };
+
+  var angularObjectRegistry = {};
 
   var editorModes = {
     'ace/mode/scala': /^%spark/,

@@ -22,9 +22,20 @@ package org.apache.zeppelin.resource;
 public class ResourceId {
   private final String resourcePoolId;
   private final String name;
+  private final String noteId;
+  private final String paragraphId;
 
   ResourceId(String resourcePoolId, String name) {
     this.resourcePoolId = resourcePoolId;
+    this.noteId = null;
+    this.paragraphId = null;
+    this.name = name;
+  }
+
+  ResourceId(String resourcePoolId, String noteId, String paragraphId, String name) {
+    this.resourcePoolId = resourcePoolId;
+    this.noteId = noteId;
+    this.paragraphId = paragraphId;
     this.name = name;
   }
 
@@ -36,16 +47,35 @@ public class ResourceId {
     return name;
   }
 
+  public String getNoteId() {
+    return noteId;
+  }
+
+  public String getParagraphId() {
+    return paragraphId;
+  }
+
   @Override
   public int hashCode() {
-    return (resourcePoolId + name).hashCode();
+    return (resourcePoolId + noteId + paragraphId + name).hashCode();
   }
 
   @Override
   public boolean equals(Object o) {
     if (o instanceof ResourceId) {
       ResourceId r = (ResourceId) o;
-      return (r.name.equals(name) && r.resourcePoolId.equals(resourcePoolId));
+      return equals(r.name, name) && equals(r.resourcePoolId, resourcePoolId) &&
+          equals(r.noteId, noteId) && equals(r.paragraphId, paragraphId);
+    } else {
+      return false;
+    }
+  }
+
+  private boolean equals(String a, String b) {
+    if (a == null && b == null) {
+      return true;
+    } else if (a != null && b != null) {
+      return a.equals(b);
     } else {
       return false;
     }
