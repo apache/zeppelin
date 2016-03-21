@@ -104,13 +104,13 @@ public class S3NotebookRepo implements NotebookRepo {
               }
             } catch (AmazonServiceException ase) {
               LOG.info("Caught an AmazonServiceException for some reason.\n" +
-                      "Error Message: {}", ase.getMessage());
+                  "Error Message: {}", ase.getMessage());
             } catch (AmazonClientException ace) {
               LOG.info("Caught an AmazonClientException, " +
-                      "which means the client encountered " +
-                      "an internal error while trying to communicate" +
-                      " with S3, " +
-                      "such as not being able to access the network.");
+                  "which means the client encountered " +
+                  "an internal error while trying to communicate" +
+                  " with S3, " +
+                  "such as not being able to access the network.");
               LOG.info("Error Message: " + ace.getMessage());
             } catch (IOException e) {
               LOG.error("Can't read note ", e);
@@ -121,7 +121,7 @@ public class S3NotebookRepo implements NotebookRepo {
       } while (objectListing.isTruncated());
     } catch (AmazonServiceException ase) {
       LOG.info("Caught an AmazonServiceException for some reason.\n" +
-              "Error Message: {}", ase.getMessage());
+          "Error Message: {}", ase.getMessage());
     } catch (AmazonClientException ace) {
       LOG.info("Caught an AmazonClientException, " +
           "which means the client encountered " +
