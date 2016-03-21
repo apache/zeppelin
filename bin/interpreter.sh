@@ -128,6 +128,14 @@ if [[ "${INTERPRETER_ID}" == "spark" ]]; then
 
     export SPARK_CLASSPATH+=":${ZEPPELIN_CLASSPATH}"
   fi
+elif [[ "${INTERPRETER_ID}" == "hbase" ]]; then
+  if [[ -n "${HBASE_CONF_DIR}" ]]; then
+    ZEPPELIN_CLASSPATH+=":${HBASE_CONF_DIR}"
+  elif [[ -n "${HBASE_HOME}" ]]; then
+    ZEPPELIN_CLASSPATH+=":${HBASE_CONF_DIR}/conf"
+  else
+    echo "HBASE_HOME and HBASE_CONF_DIR are not set, configuration might not be loaded"
+  fi
 fi
 
 addJarInDir "${LOCAL_INTERPRETER_REPO}"

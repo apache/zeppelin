@@ -31,7 +31,7 @@ To get start with HBase, please see [HBase Quickstart](https://hbase.apache.org/
     <td>Path to Ruby scripts relative to 'hbase.home'</td>
   </tr>
   <tr>
-    <td>hbase.test.mode</td>
+    <td>zeppelin.hbase.test.mode</td>
     <td>false</td>
     <td>Disable checks for unit and manual tests</td>
   </tr>
