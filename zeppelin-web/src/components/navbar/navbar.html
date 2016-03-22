@@ -74,11 +74,11 @@ limitations under the License.
               </span>
             </div>
           </form>
-        </li>
-        <li class="server-status">
+        <li class="server-status"  >
           <i class="fa fa-circle" ng-class="{'server-connected':navbar.connected, 'server-disconnected':!navbar.connected}"></i>
-          <span ng-show="navbar.connected">Connected</span>
-          <span ng-show="!navbar.connected">Disconnected</span>
+        <span ng-show="navbar.connected" ng-if="ticket.principal == 'anonymous' ">Connected</span>
+        <span ng-show="navbar.connected" ng-if="ticket.principal != 'anonymous' " tooltip-placement="bottom" tooltip="{{fullUsername}}">{{truncatedUsername}}</span>
+        <span ng-show="!navbar.connected">Disconnected</span>
         </li>
       </ul>
     </div>
