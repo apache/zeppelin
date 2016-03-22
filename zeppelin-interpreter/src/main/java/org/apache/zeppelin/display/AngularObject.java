@@ -19,6 +19,7 @@ package org.apache.zeppelin.display;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 
 import org.apache.zeppelin.scheduler.ExecutorFactory;
@@ -42,6 +43,15 @@ public class AngularObject<T> {
   
   private String noteId;   // noteId belonging to. null for global scope 
   private String paragraphId; // paragraphId belongs to. null for notebook scope
+
+  /**
+   * Public constructor, neccessary for the deserialization when using Thrift angularRegistryPush()
+   * Without public constructor, GSON library will instantiate the AngularObject using
+   * serialization so the <strong>watchers</strong> list won't be initialized and will throw
+   * NullPointerException the first time it is accessed
+   */
+  public AngularObject() {
+  }
 
   /**
    * To create new AngularObject, use AngularObjectRegistry.add()
@@ -111,17 +121,17 @@ public class AngularObject<T> {
 
   @Override
   public boolean equals(Object o) {
-    if (o instanceof AngularObject) {
-      AngularObject ao = (AngularObject) o;
-      if (noteId == null && ao.noteId == null ||
-          (noteId != null && ao.noteId != null && noteId.equals(ao.noteId))) {
-        if (paragraphId == null && ao.paragraphId == null ||
-          (paragraphId != null && ao.paragraphId != null && paragraphId.equals(ao.paragraphId))) {
-          return name.equals(ao.name);
-        }
-      }
-    }
-    return false;
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    AngularObject<?> that = (AngularObject<?>) o;
+    return Objects.equals(name, that.name) &&
+            Objects.equals(noteId, that.noteId) &&
+            Objects.equals(paragraphId, that.paragraphId);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(name, noteId, paragraphId);
   }
 
   /**
@@ -232,4 +242,14 @@ public class AngularObject<T> {
     }
   }
 
+  @Override
+  public String toString() {
+    final StringBuilder sb = new StringBuilder("AngularObject{");
+    sb.append("noteId='").append(noteId).append('\'');
+    sb.append(", paragraphId='").append(paragraphId).append('\'');
+    sb.append(", object=").append(object);
+    sb.append(", name='").append(name).append('\'');
+    sb.append('}');
+    return sb.toString();
+  }
 }
