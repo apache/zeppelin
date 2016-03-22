@@ -102,7 +102,7 @@ public class S3NotebookRepo implements NotebookRepo {
               if (info != null) {
                 infos.add(info);
               }
-            } catch (IOException e) {
+            } catch (Exception e) {
               LOG.error("Can't read note ", e);
             }
           }

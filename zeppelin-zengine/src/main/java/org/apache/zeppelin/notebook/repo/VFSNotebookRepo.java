@@ -134,7 +134,7 @@ public class VFSNotebookRepo implements NotebookRepo {
         if (info != null) {
           infos.add(info);
         }
-      } catch (IOException e) {
+      } catch (Exception e) {
         logger.error("Can't read note " + f.getName().toString(), e);
       }
     }

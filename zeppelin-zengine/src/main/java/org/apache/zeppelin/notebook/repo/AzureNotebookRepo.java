@@ -88,10 +88,9 @@ public class AzureNotebookRepo implements NotebookRepo {
           }
         } catch (StorageException | URISyntaxException e) {
           String msg = "Error enumerating notebooks from Azure storage";
-
           LOG.error(msg, e);
-
-          throw new IOException(msg, e);
+        } catch (Exception e) {
+          LOG.error(e.getMessage(), e);
         }
       }
     }
