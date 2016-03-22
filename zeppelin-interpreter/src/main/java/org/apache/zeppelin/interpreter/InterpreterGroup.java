@@ -48,6 +48,7 @@ public class InterpreterGroup extends ConcurrentHashMap<String, List<Interpreter
   AngularObjectRegistry angularObjectRegistry;
   RemoteInterpreterProcess remoteInterpreterProcess;    // attached remote interpreter process
   ResourcePool resourcePool;
+  boolean angularRegistryPushed = false;
 
   // map [notebook session, Interpreters in the group], to support per note session interpreters
   //Map<String, List<Interpreter>> interpreters = new ConcurrentHashMap<String,
@@ -253,5 +254,13 @@ public class InterpreterGroup extends ConcurrentHashMap<String, List<Interpreter
 
   public ResourcePool getResourcePool() {
     return resourcePool;
+  }
+
+  public boolean isAngularRegistryPushed() {
+    return angularRegistryPushed;
+  }
+
+  public void setAngularRegistryPushed(boolean angularRegistryPushed) {
+    this.angularRegistryPushed = angularRegistryPushed;
   }
 }

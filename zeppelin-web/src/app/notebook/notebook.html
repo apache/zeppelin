@@ -14,30 +14,6 @@ limitations under the License.
 <!-- Here the controller <NotebookCtrl> is not needed because explicitly set in the app.js (route) -->
 <div ng-include src="'app/notebook/notebook-actionBar.html'"></div>
 <div style="padding-top: 36px;">
-  <!-- permissions -->
-  <div ng-if="showPermissions" class="permissions">
-    <div>
-      <h4>Note Permissions (Only note owners can change)</h4>
-    </div>
-    <hr />
-    <div>
-      <p>
-        Enter comma separated users and groups in the fields. <br />
-        Empty field (*) implies anyone can do the operation.
-      </p>
-      <div class="permissionsForm"
-           data-ng-model="permissions">
-        <p>Owners : <input ng-list ng-model="permissions.owners" placeholder="*"> Owners can change permissions, read and write the note. </p>
-        <p>Readers : <input ng-list ng-model="permissions.readers" placeholder="*"> Readers can only read the note.</p>
-        <p>Writers : <input ng-list ng-model="permissions.writers" placeholder="*"> Writers can read and write the note.</p>
-      </div>
-    </div>
-    <br />
-    <div>
-      <button class="btn btn-primary" ng-click="savePermissions()">Save</button>
-      <button class="btn btn-default" ng-click="closePermissions()">Cancel</button>
-    </div>
-  </div>
   <!-- settings -->
   <div ng-if="showSetting" class="setting">
     <div>
@@ -78,6 +54,31 @@ limitations under the License.
     <div>
       <button class="btn btn-primary" ng-click="saveSetting()">Save</button>
       <button class="btn btn-default" ng-click="closeSetting()">Cancel</button>
+    </div>
+  </div>
+
+  <!-- permissions -->
+  <div ng-if="showPermissions" class="permissions">
+    <div>
+      <h4>Note Permissions (Only note owners can change)</h4>
+    </div>
+    <hr />
+    <div>
+      <p>
+        Enter comma separated users and groups in the fields. <br />
+        Empty field (*) implies anyone can do the operation.
+      </p>
+      <div class="permissionsForm"
+           data-ng-model="permissions">
+        <p>Owners : <input ng-list ng-model="permissions.owners" placeholder="*"> Owners can change permissions, read and write the note. </p>
+        <p>Readers : <input ng-list ng-model="permissions.readers" placeholder="*"> Readers can only read the note.</p>
+        <p>Writers : <input ng-list ng-model="permissions.writers" placeholder="*"> Writers can read and write the note.</p>
+      </div>
+    </div>
+    <br />
+    <div>
+      <button class="btn btn-primary" ng-click="savePermissions()">Save</button>
+      <button class="btn btn-default" ng-click="closePermissions()">Cancel</button>
     </div>
   </div>
 

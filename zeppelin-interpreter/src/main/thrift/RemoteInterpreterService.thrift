@@ -47,7 +47,8 @@ enum RemoteInterpreterEventType {
   RESOURCE_POOL_GET_ALL = 6,
   RESOURCE_GET = 7
   OUTPUT_APPEND = 8,
-  OUTPUT_UPDATE = 9
+  OUTPUT_UPDATE = 9,
+  ANGULAR_REGISTRY_PUSH=10
 }
 
 struct RemoteInterpreterEvent {
@@ -86,4 +87,5 @@ service RemoteInterpreterService {
   object);
   void angularObjectAdd(1: string name, 2: string noteId, 3: string paragraphId, 4: string object);
   void angularObjectRemove(1: string name, 2: string noteId, 3: string paragraphId);
+  void angularRegistryPush(1: string registry);
 }

@@ -35,6 +35,8 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.*;
 
+import com.google.common.annotations.VisibleForTesting;
+
 /**
  * Paragraph is a representation of an execution unit.
  *
@@ -51,6 +53,13 @@ public class Paragraph extends Job implements Serializable, Cloneable {
   Date dateUpdated;
   private Map<String, Object> config; // paragraph configs like isOpen, colWidth, etc
   public final GUI settings;          // form and parameter settings
+
+  @VisibleForTesting
+  Paragraph() {
+    super(generateId(), null);
+    config = new HashMap<>();
+    settings = new GUI();
+  }
 
   public Paragraph(Note note, JobListener listener, NoteInterpreterLoader replLoader) {
     super(generateId(), listener);
@@ -161,6 +170,10 @@ public class Paragraph extends Job implements Serializable, Cloneable {
 
   public Interpreter getRepl(String name) {
     return replLoader.get(name);
+  }
+
+  public Interpreter getCurrentRepl() {
+    return getRepl(getRequiredReplName());
   }
 
   public List<String> completion(String buffer, int cursor) {
