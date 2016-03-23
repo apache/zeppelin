@@ -13,13 +13,15 @@ limitations under the License.
 -->
 
 <script type="text/ng-template" id="notebook_folder_renderer.html">
-  <div ng-if="node.children === undefined">
-    <i style="font-size: 10px;" class="icon-doc"></i>
-    <a style="text-decoration: none;" href="#/notebook/{{node.id}}">{{node.name || 'Note ' + node.id}}</a>
+  <div ng-if="node.children == null">
+    <a style="text-decoration: none;" href="#/notebook/{{node.id}}">
+      <i style="font-size: 10px;" class="icon-doc"/> {{node.name || 'Note ' + node.id}}
+    </a>
   </div>
-  <div ng-if="node.children !== undefined">
-    <i style="font-size: 10px;" ng-class="node.hidden ? 'icon-folder' : 'icon-folder-alt'"></i>
-    <a style="text-decoration: none; cursor: pointer;" ng-click="toggleFolderNode(node)">{{node.name}}</a>
+  <div ng-if="node.children != null">
+    <a style="text-decoration: none; cursor: pointer;" ng-click="toggleFolderNode(node)">
+      <i style="font-size: 10px;" ng-class="node.hidden ? 'icon-folder' : 'icon-folder-alt'" /> {{node.name}}
+    </a>
     <div ng-if="!node.hidden">
       <ul style="list-style-type: none; padding-left:15px;">
         <li ng-repeat="node in node.children" ng-include="'notebook_folder_renderer.html'" />

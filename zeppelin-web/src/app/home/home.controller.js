@@ -73,7 +73,7 @@ angular.module('zeppelinWebApp').controller('HomeCtrl', function($scope, noteboo
   };
 
   $scope.toggleFolderNode = function(node) {
-    node.hidden = node.hidden ? false : true;
+    node.hidden = !node.hidden;
   };
 
 });

@@ -15,7 +15,7 @@ limitations under the License.
   <a ng-if="note.id" href="#/notebook/{{note.id}}">{{note.name || 'Note ' + note.id}} </a>
   <li ng-if="!note.id"
       class="dropdown-submenu">
-    <a tabindex="-1" href="#">{{note.name}}</a>
+    <a tabindex="-1" href="javascript: void(0)">{{note.name}}</a>
     <ul class="dropdown-menu">
       <li ng-repeat="note in note.children track by $index" ng-class="{'active' : navbar.isActive(note.id)}" ng-include="'notebook_list_renderer.html'">
       </li>

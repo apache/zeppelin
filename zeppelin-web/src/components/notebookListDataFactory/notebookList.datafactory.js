@@ -50,7 +50,7 @@ angular.module('zeppelinWebApp').factory('notebookListDataFactory', function() {
               name : dir,
               hidden : true,
               children : []
-            }
+            };
             curDir.push(child);
           }
           curDir = child.children;
