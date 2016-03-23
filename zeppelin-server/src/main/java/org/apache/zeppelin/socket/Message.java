@@ -105,6 +105,8 @@ public class Message {
 
     ANGULAR_OBJECT_CLIENT_BIND,  // [c-s] angular object updated from AngularJS z object
 
+    ANGULAR_OBJECT_CLIENT_UNBIND,  // [c-s] angular object unbind from AngularJS z object
+
     LIST_CONFIGURATIONS, // [c-s] ask all key/value pairs of configurations
     CONFIGURATIONS_INFO, // [s-c] all key/value pairs of configurations
                   // @param settings serialized Map<String, String> object
