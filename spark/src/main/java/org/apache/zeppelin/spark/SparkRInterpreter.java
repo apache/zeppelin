@@ -80,7 +80,9 @@ public class SparkRInterpreter extends Interpreter {
     if (System.getenv("SPARK_HOME") != null) {
       sparkRLibPath = System.getenv("SPARK_HOME") + "/R/lib";
     } else {
-      sparkRLibPath = System.getenv("ZEPPELIN_HOME") + "/interpreter/spark/R";
+      sparkRLibPath = System.getenv("ZEPPELIN_HOME") + "/interpreter/spark/R/lib";
+      // workaround to make sparkr work without SPARK_HOME
+      System.setProperty("spark.test.home", System.getenv("ZEPPELIN_HOME") + "/interpreter/spark");
     }
 
     synchronized (SparkRBackend.backend()) {
@@ -131,8 +133,6 @@ public class SparkRInterpreter extends Interpreter {
         lines = lines.replace(jsonConfig, "");
       }
     }
-
-
 
     try {
       // render output with knitr
