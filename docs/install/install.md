@@ -187,6 +187,12 @@ You can configure Zeppelin with both **environment variables** in `conf/zeppelin
     <td>A user name of S3 bucket<br />i.e. <code>bucket/user/notebook/2A94M5J1Z/note.json</code></td>
   </tr>
   <tr>
+    <td>ZEPPELIN_NOTEBOOK_S3_ENDPOINT</td>
+    <td>zeppelin.notebook.s3.endpoint</td>
+    <td>s3.amazonaws.com</td>
+    <td>Endpoint for the bucket</td>
+  </tr>
+  <tr>
     <td>ZEPPELIN_NOTEBOOK_AZURE_CONNECTION_STRING</td>
     <td>zeppelin.notebook.azure.connectionString</td>
     <td></td>
@@ -228,7 +234,7 @@ You can configure Zeppelin with both **environment variables** in `conf/zeppelin
 </table>
 
 Maybe you need to configure individual interpreter. If so, please check **Interpreter** section in Zeppelin documentation.
-[Spark Interpreter for Apache Zeppelin](../interpreter/spark.html) will be a good example. 
+[Spark Interpreter for Apache Zeppelin](../interpreter/spark.html) will be a good example.
 
 ## Zeppelin Start / Stop
 #### Start Zeppelin
@@ -248,9 +254,9 @@ bin/zeppelin-daemon.sh stop
 
 Zeppelin can auto start as a service with an init script, such as services managed by upstart.
 
-The following is an example upstart script to be saved as `/etc/init/zeppelin.conf` 
+The following is an example upstart script to be saved as `/etc/init/zeppelin.conf`
 This example has been tested with Ubuntu Linux.
-This also allows the service to be managed with commands such as 
+This also allows the service to be managed with commands such as
 
 `sudo service zeppelin start`  
 `sudo service zeppelin stop`  
