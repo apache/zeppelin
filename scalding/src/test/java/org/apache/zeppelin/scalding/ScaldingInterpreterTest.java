@@ -89,6 +89,22 @@ public class ScaldingInterpreterTest {
   }
 
   @Test
+  public void testNextLineInvocation() {
+    assertEquals(InterpreterResult.Code.SUCCESS, repl.interpret("\"123\"\n.toInt", context).code());
+  }
+
+  @Test
+  public void testNextLineComments() {
+    assertEquals(InterpreterResult.Code.SUCCESS, repl.interpret("\"123\"\n/*comment here\n*/.toInt", context).code());
+  }
+
+  @Test
+  public void testNextLineCompanionObject() {
+    String code = "class Counter {\nvar value: Long = 0\n}\n // comment\n\n object Counter {\n def apply(x: Long) = new Counter()\n}";
+    assertEquals(InterpreterResult.Code.SUCCESS, repl.interpret(code, context).code());
+  }
+
+  @Test
   public void testBasicIntp() {
     assertEquals(InterpreterResult.Code.SUCCESS,
         repl.interpret("val a = 1\nval b = 2", context).code());

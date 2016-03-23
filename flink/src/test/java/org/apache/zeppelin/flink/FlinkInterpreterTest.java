@@ -50,6 +50,22 @@ public class FlinkInterpreterTest {
   }
 
   @Test
+  public void testNextLineInvocation() {
+    assertEquals(InterpreterResult.Code.SUCCESS, flink.interpret("\"123\"\n.toInt", context).code());
+  }
+
+  @Test
+  public void testNextLineComments() {
+    assertEquals(InterpreterResult.Code.SUCCESS, flink.interpret("\"123\"\n/*comment here\n*/.toInt", context).code());
+  }
+
+  @Test
+  public void testNextLineCompanionObject() {
+    String code = "class Counter {\nvar value: Long = 0\n}\n // comment\n\n object Counter {\n def apply(x: Long) = new Counter()\n}";
+    assertEquals(InterpreterResult.Code.SUCCESS, flink.interpret(code, context).code());
+  }
+
+  @Test
   public void testSimpleStatement() {
     InterpreterResult result = flink.interpret("val a=1", context);
     result = flink.interpret("print(a)", context);
