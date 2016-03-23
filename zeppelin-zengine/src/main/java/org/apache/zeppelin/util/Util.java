@@ -207,6 +207,7 @@ public class Util {
    * @return Current Zeppelin version
    */
   public static String getVersion() {
-    return StringUtils.defaultIfEmpty(projectProperties.getProperty(PROJECT_PROPERTIES_VERSION_KEY), StringUtils.EMPTY);
+    return StringUtils.defaultIfEmpty(projectProperties.getProperty(PROJECT_PROPERTIES_VERSION_KEY),
+            StringUtils.EMPTY);
   }
 }
