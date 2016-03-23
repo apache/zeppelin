@@ -19,7 +19,7 @@
 # description: Start and stop daemon script for.
 #
 
-USAGE="Usage: zeppelin-daemon.sh [--config <conf-dir>] {start|stop|upstart|restart|reload|status}"
+USAGE="Usage: zeppelin-daemon.sh [--config <conf-dir>] {start|stop|upstart|restart|reload|status|version(v)}"
 
 if [[ "$1" == "--config" ]]; then
   shift
@@ -43,6 +43,12 @@ BIN=$(cd "${BIN}">/dev/null; pwd)
 
 . "${BIN}/common.sh"
 . "${BIN}/functions.sh"
+
+ZEPPELIN_COMMANDLINE_MAIN=org.apache.zeppelin.utils.CommandLineUtils
+if [ "$1" == "-version" ] || [ "$1" == "-v" ]; then
+  $ZEPPELIN_RUNNER $ZEPPELIN_COMMANDLINE_MAIN $1
+  exit 0
+fi
 
 HOSTNAME=$(hostname)
 ZEPPELIN_NAME="Zeppelin"

@@ -17,14 +17,33 @@
 
 package org.apache.zeppelin.util;
 
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Properties;
 
 /**
  * TODO(moon) : add description.
  */
 public class Util {
+  private static final String PROJECT_PROPERTIES_VERSION_KEY = "version";
+
+  static Logger logger = LoggerFactory.getLogger(Util.class);
+  private static Properties projectProperties;
+
+  static {
+    projectProperties = new Properties();
+    try {
+      projectProperties.load(Util.class.getResourceAsStream("/project.properties"));
+    } catch (IOException e) {
+      logger.error("Fail to read project.properties");
+    }
+  }
 
   public static String[] split(String str, char split) {
     return split(str, new String[] {String.valueOf(split)}, false);
@@ -180,5 +199,14 @@ public class Util {
     } else {
       return false;
     }
+  }
+
+  /**
+   * Get Zeppelin version
+   *
+   * @return Current Zeppelin version
+   */
+  public static String getVersion() {
+    return StringUtils.defaultIfEmpty(projectProperties.getProperty(PROJECT_PROPERTIES_VERSION_KEY), StringUtils.EMPTY);
   }
 }

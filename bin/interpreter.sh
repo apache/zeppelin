@@ -49,6 +49,12 @@ fi
 
 . "${bin}/common.sh"
 
+ZEPPELIN_COMMANDLINE_MAIN=org.apache.zeppelin.utils.CommandLineUtils
+if [ "$1" == "-version" ] || [ "$1" == "-v" ]; then
+  $ZEPPELIN_RUNNER $ZEPPELIN_COMMANDLINE_MAIN $1
+  exit 0
+fi
+
 ZEPPELIN_CLASSPATH+=":${ZEPPELIN_CONF_DIR}"
 
 # construct classpath

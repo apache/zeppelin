@@ -39,6 +39,12 @@ bin=$(cd "${bin}">/dev/null; pwd)
 
 . "${bin}/common.sh"
 
+ZEPPELIN_COMMANDLINE_MAIN=org.apache.zeppelin.utils.CommandLineUtils
+if [ "$1" == "-version" ] || [ "$1" == "-v" ]; then
+  $ZEPPELIN_RUNNER $ZEPPELIN_COMMANDLINE_MAIN $1
+  exit 0
+fi
+
 HOSTNAME=$(hostname)
 ZEPPELIN_LOGFILE="${ZEPPELIN_LOG_DIR}/zeppelin-${ZEPPELIN_IDENT_STRING}-${HOSTNAME}.log"
 LOG="${ZEPPELIN_LOG_DIR}/zeppelin-cli-${ZEPPELIN_IDENT_STRING}-${HOSTNAME}.out"
