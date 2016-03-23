@@ -16,6 +16,15 @@
  */
 package org.apache.zeppelin.socket;
 
+
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.UnknownHostException;
+import java.util.*;
+import java.util.concurrent.ConcurrentLinkedQueue;
+
+import javax.servlet.http.HttpServletRequest;
+
 import com.google.common.base.Strings;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -25,6 +34,8 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.AngularObjectRegistryListener;
+import org.apache.zeppelin.interpreter.InterpreterGroup;
+import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.interpreter.InterpreterOutput;
 import org.apache.zeppelin.interpreter.InterpreterResult;
@@ -42,13 +53,6 @@ import org.eclipse.jetty.websocket.WebSocketServlet;
 import org.quartz.SchedulerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.servlet.http.HttpServletRequest;
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.net.UnknownHostException;
-import java.util.*;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * Zeppelin websocket service.
@@ -99,6 +103,11 @@ public class NotebookServer extends WebSocketServlet implements
       LOG.debug("RECEIVE PRINCIPAL << " + messagereceived.principal);
       LOG.debug("RECEIVE TICKET << " + messagereceived.ticket);
       LOG.debug("RECEIVE ROLES << " + messagereceived.roles);
+
+      if (LOG.isTraceEnabled()) {
+        LOG.trace("RECEIVE MSG = " + messagereceived);
+      }
+      
       String ticket = TicketContainer.instance.getTicket(messagereceived.principal);
       if (ticket != null && !ticket.equals(messagereceived.ticket))
         throw new Exception("Invalid ticket " + messagereceived.ticket + " != " + ticket);
@@ -178,6 +187,12 @@ public class NotebookServer extends WebSocketServlet implements
           case ANGULAR_OBJECT_UPDATED:
             angularObjectUpdated(conn, userAndRoles, notebook, messagereceived);
             break;
+          case ANGULAR_OBJECT_CLIENT_BIND:
+            angularObjectClientBind(conn, userAndRoles, notebook, messagereceived);
+            break;
+          case ANGULAR_OBJECT_CLIENT_UNBIND:
+            angularObjectClientUnbind(conn, userAndRoles, notebook, messagereceived);
+            break;
           case LIST_CONFIGURATIONS:
             sendAllConfigurations(conn, userAndRoles, notebook);
             break;
@@ -205,7 +220,7 @@ public class NotebookServer extends WebSocketServlet implements
     return gson.fromJson(msg, Message.class);
   }
 
-  private String serializeMessage(Message m) {
+  protected String serializeMessage(Message m) {
     return gson.toJson(m);
   }
 
@@ -713,6 +728,158 @@ public class NotebookServer extends WebSocketServlet implements
               .put("noteId", note.id())
               .put("paragraphId", ao.getParagraphId()),
           conn);
+    }
+  }
+
+  /**
+   * Push the given Angular variable to the target
+   * interpreter angular registry given a noteId
+   * and a paragraph id
+   * @param conn
+   * @param notebook
+   * @param fromMessage
+   * @throws Exception
+   */
+  protected void angularObjectClientBind(NotebookSocket conn, HashSet<String> userAndRoles,
+                                         Notebook notebook, Message fromMessage)
+      throws Exception {
+    String noteId = fromMessage.getType("noteId");
+    String varName = fromMessage.getType("name");
+    Object varValue = fromMessage.get("value");
+    String paragraphId = fromMessage.getType("paragraphId");
+    Note note = notebook.getNote(noteId);
+
+    if (paragraphId == null) {
+      throw new IllegalArgumentException("target paragraph not specified for " +
+        "angular value bind");
+    }
+
+    if (note != null) {
+      final InterpreterGroup interpreterGroup = findInterpreterGroupForParagraph(note,
+              paragraphId);
+
+      final AngularObjectRegistry registry = interpreterGroup.getAngularObjectRegistry();
+      if (registry instanceof RemoteAngularObjectRegistry) {
+
+        RemoteAngularObjectRegistry remoteRegistry = (RemoteAngularObjectRegistry) registry;
+        pushAngularObjectToRemoteRegistry(noteId, paragraphId, varName, varValue, remoteRegistry,
+                interpreterGroup.getId(), conn);
+
+      } else {
+        pushAngularObjectToLocalRepo(noteId, paragraphId, varName, varValue, registry,
+                interpreterGroup.getId(), conn);
+      }
+    }
+  }
+
+  /**
+   * Remove the given Angular variable to the target
+   * interpreter(s) angular registry given a noteId
+   * and an optional list of paragraph id(s)
+   * @param conn
+   * @param notebook
+   * @param fromMessage
+   * @throws Exception
+   */
+  protected void angularObjectClientUnbind(NotebookSocket conn, HashSet<String> userAndRoles,
+                                           Notebook notebook, Message fromMessage)
+      throws Exception{
+    String noteId = fromMessage.getType("noteId");
+    String varName = fromMessage.getType("name");
+    String paragraphId = fromMessage.getType("paragraphId");
+    Note note = notebook.getNote(noteId);
+
+    if (paragraphId == null) {
+      throw new IllegalArgumentException("target paragraph not specified for " +
+              "angular value unBind");
+    }
+
+    if (note != null) {
+      final InterpreterGroup interpreterGroup = findInterpreterGroupForParagraph(note,
+              paragraphId);
+
+      final AngularObjectRegistry registry = interpreterGroup.getAngularObjectRegistry();
+
+      if (registry instanceof RemoteAngularObjectRegistry) {
+        RemoteAngularObjectRegistry remoteRegistry = (RemoteAngularObjectRegistry) registry;
+        removeAngularFromRemoteRegistry(noteId, paragraphId, varName, remoteRegistry,
+                interpreterGroup.getId(), conn);
+      } else {
+        removeAngularObjectFromLocalRepo(noteId, paragraphId, varName, registry,
+                interpreterGroup.getId(), conn);
+      }
+    }
+  }
+
+  private InterpreterGroup findInterpreterGroupForParagraph(Note note, String paragraphId)
+      throws Exception {
+    final Paragraph paragraph = note.getParagraph(paragraphId);
+    if (paragraph == null) {
+      throw new IllegalArgumentException("Unknown paragraph with id : " + paragraphId);
+    }
+    return paragraph.getCurrentRepl().getInterpreterGroup();
+  }
+
+  private void pushAngularObjectToRemoteRegistry(String noteId, String paragraphId,
+     String varName, Object varValue, RemoteAngularObjectRegistry remoteRegistry,
+     String interpreterGroupId, NotebookSocket conn) {
+
+    final AngularObject ao = remoteRegistry.addAndNotifyRemoteProcess(varName, varValue,
+            noteId, paragraphId);
+
+    this.broadcastExcept(
+            noteId,
+            new Message(OP.ANGULAR_OBJECT_UPDATE).put("angularObject", ao)
+                    .put("interpreterGroupId", interpreterGroupId)
+                    .put("noteId", noteId)
+                    .put("paragraphId", paragraphId),
+            conn);
+  }
+
+  private void removeAngularFromRemoteRegistry(String noteId, String paragraphId,
+    String varName, RemoteAngularObjectRegistry remoteRegistry,
+    String interpreterGroupId, NotebookSocket conn) {
+    final AngularObject ao = remoteRegistry.removeAndNotifyRemoteProcess(varName, noteId,
+            paragraphId);
+    this.broadcastExcept(
+            noteId,
+            new Message(OP.ANGULAR_OBJECT_REMOVE).put("angularObject", ao)
+                    .put("interpreterGroupId", interpreterGroupId)
+                    .put("noteId", noteId)
+                    .put("paragraphId", paragraphId),
+            conn);
+  }
+
+  private void pushAngularObjectToLocalRepo(String noteId, String paragraphId, String varName,
+    Object varValue, AngularObjectRegistry registry,
+    String interpreterGroupId, NotebookSocket conn) {
+    AngularObject angularObject = registry.get(varName, noteId, paragraphId);
+    if (angularObject == null) {
+      angularObject = registry.add(varName, varValue, noteId, paragraphId);
+    } else {
+      angularObject.set(varValue, true);
+    }
+
+    this.broadcastExcept(
+            noteId,
+            new Message(OP.ANGULAR_OBJECT_UPDATE).put("angularObject", angularObject)
+                    .put("interpreterGroupId", interpreterGroupId)
+                    .put("noteId", noteId)
+                    .put("paragraphId", paragraphId),
+            conn);
+  }
+
+  private void removeAngularObjectFromLocalRepo(String noteId, String paragraphId, String varName,
+    AngularObjectRegistry registry, String interpreterGroupId, NotebookSocket conn) {
+    final AngularObject removed = registry.remove(varName, noteId, paragraphId);
+    if (removed != null) {
+      this.broadcastExcept(
+              noteId,
+              new Message(OP.ANGULAR_OBJECT_REMOVE).put("angularObject", removed)
+                      .put("interpreterGroupId", interpreterGroupId)
+                      .put("noteId", noteId)
+                      .put("paragraphId", paragraphId),
+              conn);
     }
   }
 

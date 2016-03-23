@@ -371,7 +371,11 @@ public class ZeppelinContext {
     AngularObjectRegistry registry = interpreterContext.getAngularObjectRegistry();
     String noteId = interpreterContext.getNoteId();
     // try get local object
-    AngularObject ao = registry.get(name, interpreterContext.getNoteId(), null);
+    AngularObject paragraphAo = registry.get(name, noteId, interpreterContext.getParagraphId());
+    AngularObject noteAo = registry.get(name, noteId, null);
+
+    AngularObject ao = paragraphAo != null ? paragraphAo : noteAo;
+
     if (ao == null) {
       // then global object
       ao = registry.get(name, null, null);
