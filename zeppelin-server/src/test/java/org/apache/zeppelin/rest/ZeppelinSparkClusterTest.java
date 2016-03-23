@@ -84,6 +84,30 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
   }
 
   @Test
+  public void sparkRTest() throws IOException {
+    // create new note
+    Note note = ZeppelinServer.notebook.createNote();
+    int sparkVersion = getSparkVersionNumber(note);
+
+    if (isPyspark() && sparkVersion >= 14) {   // sparkr supported from 1.4.0
+      // run markdown paragraph, again
+      Paragraph p = note.addParagraph();
+      Map config = p.getConfig();
+      config.put("enabled", true);
+      p.setConfig(config);
+      p.setText("%r localDF <- data.frame(name=c(\"a\", \"b\", \"c\"), age=c(19, 23, 18))\n" +
+          "df <- createDataFrame(sqlContext, localDF)\n" +
+          "count(df)"
+      );
+      note.run(p.getId());
+      waitForFinish(p);
+      assertEquals(Status.FINISHED, p.getStatus());
+      assertEquals("[1] 3\n", p.getResult().message());
+    }
+    ZeppelinServer.notebook.removeNote(note.id());
+  }
+
+  @Test
   public void pySparkTest() throws IOException {
     // create new note
     Note note = ZeppelinServer.notebook.createNote();
