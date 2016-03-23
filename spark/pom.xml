@@ -432,16 +432,17 @@
   </build>
 
   <profiles>
+
+    <!-- to deactivate 'exclude-sparkr' automatically when 'spark' is activated -->
+    <profile>
+      <id>sparkr</id>
+    </profile>
+
     <profile>
       <id>exclude-sparkr</id>
-
-      <!-- see sparkr profile in spark-dependencies -->
       <activation>
-        <property>
-          <name>!sparkr.activate</name>
-        </property>
+        <activeByDefault>true</activeByDefault>
       </activation>
-
       <build>
         <plugins>
           <plugin>

@@ -798,12 +798,6 @@
 
     <profile>
       <id>sparkr</id>
-
-      <!-- see exclude-sparkr profile in spark -->
-      <properties>
-        <sparkr.activate>y</sparkr.activate>
-      </properties>
-
       <build>
         <plugins>
           <plugin>
