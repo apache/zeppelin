@@ -103,7 +103,7 @@ public class S3NotebookRepo implements NotebookRepo {
                 infos.add(info);
               }
             } catch (AmazonServiceException ase) {
-              LOG.info("Caught an AmazonServiceException for some reason.\n" +
+              LOG.warn("Caught an AmazonServiceException for some reason.\n" +
                   "Error Message: {}", ase.getMessage());
             } catch (AmazonClientException ace) {
               LOG.info("Caught an AmazonClientException, " +
@@ -120,7 +120,7 @@ public class S3NotebookRepo implements NotebookRepo {
         listObjectsRequest.setMarker(objectListing.getNextMarker());
       } while (objectListing.isTruncated());
     } catch (AmazonServiceException ase) {
-      LOG.info("Caught an AmazonServiceException for some reason.\n" +
+      LOG.warn("Caught an AmazonServiceException for some reason.\n" +
           "Error Message: {}", ase.getMessage());
     } catch (AmazonClientException ace) {
       LOG.info("Caught an AmazonClientException, " +
