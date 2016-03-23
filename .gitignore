@@ -54,10 +54,6 @@ zeppelin-web/bower_components
 **/testing/
 !/testing/
 
-**/lib/rscala
-
-**/lib/rscala
-
 # OS generated files #
 ######################
 .DS_Store
