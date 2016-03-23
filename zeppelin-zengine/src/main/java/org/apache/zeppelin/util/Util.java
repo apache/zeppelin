@@ -33,7 +33,6 @@ import java.util.Properties;
 public class Util {
   private static final String PROJECT_PROPERTIES_VERSION_KEY = "version";
 
-  static Logger logger = LoggerFactory.getLogger(Util.class);
   private static Properties projectProperties;
 
   static {
@@ -41,7 +40,7 @@ public class Util {
     try {
       projectProperties.load(Util.class.getResourceAsStream("/project.properties"));
     } catch (IOException e) {
-      logger.error("Fail to read project.properties");
+      //Fail to read project.properties
     }
   }
 

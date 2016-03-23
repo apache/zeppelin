@@ -23,7 +23,7 @@ function usage() {
     echo "usage) $0 -p <port> -d <interpreter dir to load> -l <local interpreter repo dir to load>"
 }
 
-while getopts "hp:d:l:" o; do
+while getopts "hp:d:l:v" o; do
     case ${o} in
         h)
             usage
@@ -38,6 +38,10 @@ while getopts "hp:d:l:" o; do
         l)
             LOCAL_INTERPRETER_REPO=${OPTARG}
             ;;
+        v)
+            . "${bin}/common.sh"
+            getZeppelinVersion
+            ;;
         esac
 done
 
@@ -48,12 +52,6 @@ if [ -z "${PORT}" ] || [ -z "${INTERPRETER_DIR}" ]; then
 fi
 
 . "${bin}/common.sh"
-
-ZEPPELIN_COMMANDLINE_MAIN=org.apache.zeppelin.utils.CommandLineUtils
-if [ "$1" == "-version" ] || [ "$1" == "-v" ]; then
-  $ZEPPELIN_RUNNER $ZEPPELIN_COMMANDLINE_MAIN $1
-  exit 0
-fi
 
 ZEPPELIN_CLASSPATH+=":${ZEPPELIN_CONF_DIR}"
 

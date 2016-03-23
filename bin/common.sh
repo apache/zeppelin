@@ -81,6 +81,18 @@ function addJarInDir(){
   fi
 }
 
+ZEPPELIN_COMMANDLINE_MAIN=org.apache.zeppelin.utils.CommandLineUtils
+
+function getZeppelinVersion(){
+    if [[ -d "${ZEPPELIN_HOME}/zeppelin-server/target/classes" ]]; then
+      ZEPPELIN_CLASSPATH+=":${ZEPPELIN_HOME}/zeppelin-server/target/classes"
+    fi
+    addJarInDir "${ZEPPELIN_HOME}/zeppelin-server/target/lib"
+    CLASSPATH+=":${ZEPPELIN_CLASSPATH}"
+    $ZEPPELIN_RUNNER -cp $CLASSPATH $ZEPPELIN_COMMANDLINE_MAIN -version
+    exit 0
+}
+
 # Text encoding for 
 # read/write job into files,
 # receiving/displaying query/result.
