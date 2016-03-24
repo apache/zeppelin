@@ -60,6 +60,47 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
     interpreterSettingsTmp[index] = angular.copy($scope.interpreterSettings[index]);
   };
 
+  $scope.setSessionOption = function(settingId, sessionOption) {
+    var option;
+    if (settingId === undefined) {
+      option = $scope.newInterpreterSetting.option;
+    } else {
+      var index = _.findIndex($scope.interpreterSettings, {'id': settingId});
+      var setting = $scope.interpreterSettings[index];
+      option = setting.option;
+    }
+
+    if (sessionOption == "process") {
+      option.perNoteSession = false;
+      option.perNoteProcess = true;
+    } else if (sessionOption == "instance") {
+      option.perNoteSession = true;
+      option.perNoteProcess = false;
+    } else {
+      option.perNoteSession = false;
+      option.perNoteProcess = false;
+    }
+  };
+
+  $scope.getSessionOption = function(settingId) {
+    var option;
+    if (settingId === undefined) {
+      option = $scope.newInterpreterSetting.option;
+    } else {
+      var index = _.findIndex($scope.interpreterSettings, {'id': settingId});
+      var setting = $scope.interpreterSettings[index];
+      option = setting.option;
+    }
+
+    if (option.perNoteSession) {
+      return "instance";
+    } else if (option.perNoteProcess) {
+      return "process";
+    } else {
+      return "shared";
+    }
+  };
+
   $scope.updateInterpreterSetting = function(form, settingId) {
     var result = confirm('Do you want to update this interpreter and restart with new settings?');
     if (result) {
@@ -227,7 +268,8 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
       dependencies: [],
       option: {
         remote: true,
-        perNoteSession: false
+        perNoteSession: false,
+        perNoteProcess: false
       }
     };
     emptyNewProperty($scope.newInterpreterSetting);
