@@ -39,7 +39,7 @@ bin=$(cd "${bin}">/dev/null; pwd)
 
 . "${bin}/common.sh"
 
-if [ "$1" == "-version" ] || [ "$1" == "-v" ]; then
+if [ "$1" == "--version" ] || [ "$1" == "-v" ]; then
     getZeppelinVersion
 fi
 

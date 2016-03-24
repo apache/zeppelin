@@ -89,7 +89,7 @@ function getZeppelinVersion(){
     fi
     addJarInDir "${ZEPPELIN_HOME}/zeppelin-server/target/lib"
     CLASSPATH+=":${ZEPPELIN_CLASSPATH}"
-    $ZEPPELIN_RUNNER -cp $CLASSPATH $ZEPPELIN_COMMANDLINE_MAIN -version
+    $ZEPPELIN_RUNNER -cp $CLASSPATH $ZEPPELIN_COMMANDLINE_MAIN -v
     exit 0
 }
 
