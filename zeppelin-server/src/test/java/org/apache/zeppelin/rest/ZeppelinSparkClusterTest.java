@@ -89,7 +89,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
     Note note = ZeppelinServer.notebook.createNote();
     int sparkVersion = getSparkVersionNumber(note);
 
-    if (isPyspark() && sparkVersion >= 14) {   // sparkr supported from 1.4.0
+    if (isSparkR() && sparkVersion >= 14) {   // sparkr supported from 1.4.0
       // run markdown paragraph, again
       Paragraph p = note.addParagraph();
       Map config = p.getConfig();
