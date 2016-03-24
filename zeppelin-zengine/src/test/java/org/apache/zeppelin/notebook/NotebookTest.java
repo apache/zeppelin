@@ -362,7 +362,7 @@ public class NotebookTest implements JobListenerFactory{
     note.getNoteReplLoader().setInterpreters(factory.getDefaultInterpreterSettingList());
 
     AngularObjectRegistry registry = note.getNoteReplLoader()
-        .getInterpreterSettings().get(0).getInterpreterGroup()
+        .getInterpreterSettings().get(0).getInterpreterGroup("sharedProcess")
         .getAngularObjectRegistry();
 
     Paragraph p1 = note.addParagraph();
@@ -395,7 +395,7 @@ public class NotebookTest implements JobListenerFactory{
     note.getNoteReplLoader().setInterpreters(factory.getDefaultInterpreterSettingList());
 
     AngularObjectRegistry registry = note.getNoteReplLoader()
-        .getInterpreterSettings().get(0).getInterpreterGroup()
+        .getInterpreterSettings().get(0).getInterpreterGroup("sharedProcess")
         .getAngularObjectRegistry();
 
     Paragraph p1 = note.addParagraph();
@@ -428,7 +428,7 @@ public class NotebookTest implements JobListenerFactory{
     note.getNoteReplLoader().setInterpreters(factory.getDefaultInterpreterSettingList());
 
     AngularObjectRegistry registry = note.getNoteReplLoader()
-        .getInterpreterSettings().get(0).getInterpreterGroup()
+        .getInterpreterSettings().get(0).getInterpreterGroup("sharedProcess")
         .getAngularObjectRegistry();
 
     // add local scope object
@@ -439,7 +439,7 @@ public class NotebookTest implements JobListenerFactory{
     // restart interpreter
     factory.restart(note.getNoteReplLoader().getInterpreterSettings().get(0).id());
     registry = note.getNoteReplLoader()
-    .getInterpreterSettings().get(0).getInterpreterGroup()
+    .getInterpreterSettings().get(0).getInterpreterGroup("sharedProcess")
     .getAngularObjectRegistry();
 
     // local and global scope object should be removed
