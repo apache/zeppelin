@@ -336,7 +336,7 @@ To learn more about dynamic form, checkout [Dynamic Form](../manual/dynamicform.
 
 ### Interpreter setting option.
 
-Interpreter setting can choose one of 'shared', 'instance', 'process' option. Spark interpreter creates separate scala compiler per each notebook but share a single SparkContext in 'instance' mode. It creates separate SparkContext per each notebook in 'process' mode.
+Interpreter setting can choose one of 'shared', 'instance', 'process' option. Spark interpreter creates separate scala compiler per each notebook but share a single SparkContext in 'instance' mode (experimental). It creates separate SparkContext per each notebook in 'process' mode.
 
 
 ## Setting up Zeppelin with Kerberos
