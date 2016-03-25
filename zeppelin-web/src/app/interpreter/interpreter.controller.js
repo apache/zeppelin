@@ -70,10 +70,10 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
       option = setting.option;
     }
 
-    if (sessionOption == "process") {
+    if (sessionOption === 'process') {
       option.perNoteSession = false;
       option.perNoteProcess = true;
-    } else if (sessionOption == "instance") {
+    } else if (sessionOption === 'instance') {
       option.perNoteSession = true;
       option.perNoteProcess = false;
     } else {
@@ -93,11 +93,11 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
     }
 
     if (option.perNoteSession) {
-      return "instance";
+      return 'instance';
     } else if (option.perNoteProcess) {
-      return "process";
+      return 'process';
     } else {
-      return "shared";
+      return 'shared';
     }
   };
 
