@@ -54,8 +54,8 @@ Each interpreters is belonged to a single group and registered together. All of 
 
 ## Interpreter binding mode
 
-Each Interpreter Setting can choose one of two different interpreter binding mode.
-Shared mode (default) and 'Separate Interpreter for each note' mode. In shared mode, every notebook binded to the Interpreter Setting will share the single Interpreter instance. In 'Separate Interpreter for each note' mode, each notebook will create new Interpreter instance. Therefore each notebook will have fresh new Interpreter environment.
+Each Interpreter Setting can choose one of 'shared', 'instance', 'process' interpreter binding mode.
+In 'shared' mode, every notebook binded to the Interpreter Setting will share the single Interpreter instance. In 'instance' mode, each notebook will create new Interpreter instance in the same interpreter process. In 'process' mode, each notebook will create new Interpreter process.
 
 <img src="/assets/themes/zeppelin/img/screenshots/interpreter_persession.png" width="400px">
 
