@@ -23,7 +23,7 @@ angular.module('zeppelinWebApp').controller('HomeCtrl', function($scope, noteboo
   vm.staticHome = false;
 
   $scope.isReloading = false;
-  
+
   var initHome = function() {
     websocketMsgSrv.getHomeNotebook();
   };
@@ -56,4 +56,9 @@ angular.module('zeppelinWebApp').controller('HomeCtrl', function($scope, noteboo
     websocketMsgSrv.reloadAllNotesFromRepo();
     $scope.isReloadingNotes = true;
   };
+
+  $scope.toggleFolderNode = function(node) {
+    node.hidden = node.hidden ? false : true;
+  };
+
 });
