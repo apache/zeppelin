@@ -124,10 +124,10 @@ public class InterpreterSetting {
 
 
   private String getInterpreterProcessKey(String noteId) {
-    if (!getOption().isPerNoteProcess()) {
-      return SHARED_PROCESS;
-    } else {
+    if (getOption().isPerNoteProcess()) {
       return noteId;
+    } else {
+      return SHARED_PROCESS;
     }
   }
 
@@ -150,14 +150,17 @@ public class InterpreterSetting {
     }
   }
 
-  public void closeAndRemoveInterpreterGroup(String key) {
+  public void closeAndRemoveInterpreterGroup(String noteId) {
+    String key = getInterpreterProcessKey(noteId);
     InterpreterGroup groupToRemove;
     synchronized (interpreterGroupRef) {
       groupToRemove = interpreterGroupRef.remove(key);
     }
 
-    groupToRemove.close();
-    groupToRemove.destroy();
+    if (groupToRemove != null) {
+      groupToRemove.close();
+      groupToRemove.destroy();
+    }
   }
 
   public void closeAndRmoveAllInterpreterGroups() {

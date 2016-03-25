@@ -75,10 +75,10 @@ public class NoteInterpreterLoader {
   }
 
   private String getInterpreterInstanceKey(InterpreterSetting setting) {
-    if (!setting.getOption().isPerNoteSession()) {
-      return SHARED_SESSION;
-    } else {
+    if (setting.getOption().isPerNoteSession() || setting.getOption().isPerNoteProcess()) {
       return noteId;
+    } else {
+      return SHARED_SESSION;
     }
   }
 
@@ -101,6 +101,7 @@ public class NoteInterpreterLoader {
       return;
     }
 
+    System.err.println("close");
     for (InterpreterSetting setting : settings) {
       factory.removeInterpretersForNote(setting, noteId);
     }
