@@ -89,11 +89,6 @@ public class ScaldingInterpreterTest {
   }
 
   @Test
-  public void testNextLineInvocation() {
-    assertEquals(InterpreterResult.Code.SUCCESS, repl.interpret("\"123\"\n.toInt", context).code());
-  }
-
-  @Test
   public void testNextLineComments() {
     assertEquals(InterpreterResult.Code.SUCCESS, repl.interpret("\"123\"\n/*comment here\n*/.toInt", context).code());
   }
