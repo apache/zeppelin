@@ -199,7 +199,7 @@ public class RemoteInterpreterEventPoller extends Thread {
         boolean broken = false;
         try {
           client = remoteInterpreterProcess.getClient();
-          List<String> resourceList = client.resoucePoolGetAll();
+          List<String> resourceList = client.resourcePoolGetAll();
           Gson gson = new Gson();
           for (String res : resourceList) {
             resourceSet.add(gson.fromJson(res, Resource.class));
@@ -260,7 +260,10 @@ public class RemoteInterpreterEventPoller extends Thread {
       boolean broken = false;
       try {
         client = remoteInterpreterProcess.getClient();
-        ByteBuffer res = client.resourceGet(resourceId.getName());
+        ByteBuffer res = client.resourceGet(
+            resourceId.getNoteId(),
+            resourceId.getParagraphId(),
+            resourceId.getName());
         Object o = Resource.deserializeObject(res);
         return o;
       } catch (Exception e) {

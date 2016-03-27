@@ -19,7 +19,9 @@
 # description: Start and stop daemon script for.
 #
 
-USAGE="Usage: zeppelin-daemon.sh [--config <conf-dir>] {start|stop|upstart|restart|reload|status}"
+USAGE="-e Usage: zeppelin-daemon.sh\n\t
+        [--config <conf-dir>] {start|stop|upstart|restart|reload|status}\n\t
+        [--version | -v]"
 
 if [[ "$1" == "--config" ]]; then
   shift
@@ -257,6 +259,9 @@ case "${1}" in
     ;;
   status)
     find_zeppelin_process
+    ;;
+  -v | --version)
+    getZeppelinVersion
     ;;
   *)
     echo ${USAGE}

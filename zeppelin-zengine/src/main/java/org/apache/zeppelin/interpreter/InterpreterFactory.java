@@ -434,6 +434,8 @@ public class InterpreterFactory {
       angularObjectRegistry = new AngularObjectRegistry(
           id,
           angularObjectRegistryListener);
+
+      // TODO(moon) : create distributed resource pool for local interpreters and set
     }
 
     interpreterGroup.setAngularObjectRegistry(angularObjectRegistry);
@@ -664,6 +666,7 @@ public class InterpreterFactory {
         intpsetting.getInterpreterGroup().destroy();
 
         intpsetting.setOption(option);
+        intpsetting.setProperties(properties);
         intpsetting.setDependencies(dependencies);
 
         InterpreterGroup interpreterGroup = createInterpreterGroup(intpsetting.id(), option);

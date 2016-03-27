@@ -333,6 +333,10 @@ public class ZeppelinConfiguration extends XMLConfiguration {
   public String getBucketName() {
     return getString(ConfVars.ZEPPELIN_NOTEBOOK_S3_BUCKET);
   }
+  
+  public String getEndpoint() {
+    return getString(ConfVars.ZEPPELIN_NOTEBOOK_S3_ENDPOINT);
+  }
 
   public String getInterpreterDir() {
     return getRelativeDir(ConfVars.ZEPPELIN_INTERPRETER_DIR);
@@ -340,6 +344,10 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 
   public String getInterpreterSettingPath() {
     return getRelativeDir(String.format("%s/interpreter.json", getConfDir()));
+  }
+
+  public String getNotebookAuthorizationPath() {
+    return getRelativeDir(String.format("%s/notebook-authorization.json", getConfDir()));
   }
 
   public String getInterpreterRemoteRunnerPath() {
@@ -447,6 +455,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
         + "org.apache.zeppelin.shell.ShellInterpreter,"
         + "org.apache.zeppelin.hive.HiveInterpreter,"
         + "org.apache.zeppelin.alluxio.AlluxioInterpreter,"
+        + "org.apache.zeppelin.file.HDFSFileInterpreter,"
         + "org.apache.zeppelin.phoenix.PhoenixInterpreter,"
         + "org.apache.zeppelin.postgresql.PostgreSqlInterpreter,"
         + "org.apache.zeppelin.tajo.TajoInterpreter,"
@@ -472,12 +481,15 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     // whether homescreen notebook will be hidden from notebook list or not
     ZEPPELIN_NOTEBOOK_HOMESCREEN_HIDE("zeppelin.notebook.homescreen.hide", false),
     ZEPPELIN_NOTEBOOK_S3_BUCKET("zeppelin.notebook.s3.bucket", "zeppelin"),
+    ZEPPELIN_NOTEBOOK_S3_ENDPOINT("zeppelin.notebook.s3.endpoint", "s3.amazonaws.com"),
     ZEPPELIN_NOTEBOOK_S3_USER("zeppelin.notebook.s3.user", "user"),
     ZEPPELIN_NOTEBOOK_AZURE_CONNECTION_STRING("zeppelin.notebook.azure.connectionString", null),
     ZEPPELIN_NOTEBOOK_AZURE_SHARE("zeppelin.notebook.azure.share", "zeppelin"),
     ZEPPELIN_NOTEBOOK_AZURE_USER("zeppelin.notebook.azure.user", "user"),
     ZEPPELIN_NOTEBOOK_STORAGE("zeppelin.notebook.storage", VFSNotebookRepo.class.getName()),
-    ZEPPELIN_INTERPRETER_REMOTE_RUNNER("zeppelin.interpreter.remoterunner", "bin/interpreter.sh"),
+    ZEPPELIN_INTERPRETER_REMOTE_RUNNER("zeppelin.interpreter.remoterunner",
+        System.getProperty("os.name")
+                .startsWith("Windows") ? "bin/interpreter.cmd" : "bin/interpreter.sh"),
     // Decide when new note is created, interpreter settings will be binded automatically or not.
     ZEPPELIN_NOTEBOOK_AUTO_INTERPRETER_BINDING("zeppelin.notebook.autoInterpreterBinding", true),
     ZEPPELIN_CONF_DIR("zeppelin.conf.dir", "conf"),

@@ -488,7 +488,9 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl',
           paragraphToBeFocused = note.paragraphs[index].id;
           break;
         }
-        $scope.$broadcast('updateParagraph', {paragraph: note.paragraphs[index]});
+        $scope.$broadcast('updateParagraph', {
+          note: $scope.note, // pass the note object to paragraph scope
+          paragraph: note.paragraphs[index]});
       }
     }
 
@@ -497,7 +499,9 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl',
       for (var idx in newParagraphIds) {
         var newEntry = note.paragraphs[idx];
         if (oldParagraphIds[idx] === newParagraphIds[idx]) {
-          $scope.$broadcast('updateParagraph', {paragraph: newEntry});
+          $scope.$broadcast('updateParagraph', {
+            note: $scope.note, // pass the note object to paragraph scope
+            paragraph: newEntry});
         } else {
           // move paragraph
           var oldIdx = oldParagraphIds.indexOf(newParagraphIds[idx]);

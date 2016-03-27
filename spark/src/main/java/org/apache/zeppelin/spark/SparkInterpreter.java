@@ -82,31 +82,34 @@ public class SparkInterpreter extends Interpreter {
 
   static {
     Interpreter.register(
-        "spark",
-        "spark",
-        SparkInterpreter.class.getName(),
-        new InterpreterPropertyBuilder()
-            .add("spark.app.name",
-                getSystemDefault("SPARK_APP_NAME", "spark.app.name", "Zeppelin"),
-                "The name of spark application.")
-            .add("master",
-                getSystemDefault("MASTER", "spark.master", "local[*]"),
-                "Spark master uri. ex) spark://masterhost:7077")
-            .add("spark.executor.memory",
-                getSystemDefault(null, "spark.executor.memory", "512m"),
-                "Executor memory per worker instance. ex) 512m, 32g")
-            .add("spark.cores.max",
-                getSystemDefault(null, "spark.cores.max", ""),
-                "Total number of cores to use. Empty value uses all available core.")
-            .add("zeppelin.spark.useHiveContext",
-                getSystemDefault("ZEPPELIN_SPARK_USEHIVECONTEXT",
-                    "zeppelin.spark.useHiveContext", "true"),
-                "Use HiveContext instead of SQLContext if it is true.")
-            .add("zeppelin.spark.maxResult",
-                getSystemDefault("ZEPPELIN_SPARK_MAXRESULT", "zeppelin.spark.maxResult", "1000"),
-                "Max number of SparkSQL result to display.")
-            .add("args", "", "spark commandline args").build());
-
+      "spark",
+      "spark",
+      SparkInterpreter.class.getName(),
+      new InterpreterPropertyBuilder()
+        .add("spark.app.name",
+          getSystemDefault("SPARK_APP_NAME", "spark.app.name", "Zeppelin"),
+          "The name of spark application.")
+        .add("master",
+          getSystemDefault("MASTER", "spark.master", "local[*]"),
+          "Spark master uri. ex) spark://masterhost:7077")
+        .add("spark.executor.memory",
+          getSystemDefault(null, "spark.executor.memory", ""),
+          "Executor memory per worker instance. ex) 512m, 32g")
+        .add("spark.cores.max",
+          getSystemDefault(null, "spark.cores.max", ""),
+          "Total number of cores to use. Empty value uses all available core.")
+        .add("zeppelin.spark.useHiveContext",
+          getSystemDefault("ZEPPELIN_SPARK_USEHIVECONTEXT",
+            "zeppelin.spark.useHiveContext", "true"),
+          "Use HiveContext instead of SQLContext if it is true.")
+        .add("zeppelin.spark.maxResult",
+          getSystemDefault("ZEPPELIN_SPARK_MAXRESULT", "zeppelin.spark.maxResult", "1000"),
+          "Max number of SparkSQL result to display.")
+        .add("args", "", "spark commandline args")
+        .add("zeppelin.spark.printREPLOutput", "true",
+          "Print REPL output")
+        .build()
+    );
   }
 
   private ZeppelinContext z;
@@ -383,6 +386,10 @@ public class SparkInterpreter extends Interpreter {
     return defaultValue;
   }
 
+  public boolean printREPLOutput() {
+    return java.lang.Boolean.parseBoolean(getProperty("zeppelin.spark.printREPLOutput"));
+  }
+
   @Override
   public void open() {
     URL[] urls = getClassloaderUrls();
@@ -481,18 +488,22 @@ public class SparkInterpreter extends Interpreter {
 
     System.setProperty("scala.repl.name.line", "line" + this.hashCode() + "$");
 
-    /* create scala repl */
-    this.interpreter = new SparkILoop(null, new PrintWriter(out));
-
-    interpreter.settings_$eq(settings);
-
-    interpreter.createInterpreter();
-
-    intp = interpreter.intp();
-    intp.setContextClassLoader();
-    intp.initializeSynchronous();
-
     synchronized (sharedInterpreterLock) {
+      /* create scala repl */
+      if (printREPLOutput()) {
+        this.interpreter = new SparkILoop(null, new PrintWriter(out));
+      } else {
+        this.interpreter = new SparkILoop(null, new PrintWriter(Console.out(), false));
+      }
+
+      interpreter.settings_$eq(settings);
+
+      interpreter.createInterpreter();
+
+      intp = interpreter.intp();
+      intp.setContextClassLoader();
+      intp.initializeSynchronous();
+
       if (classOutputDir == null) {
         classOutputDir = settings.outputDirs().getSingleOutput().get();
       } else {
@@ -523,35 +534,35 @@ public class SparkInterpreter extends Interpreter {
       sparkVersion = SparkVersion.fromVersionString(sc.version());
 
       sqlc = getSQLContext();
-    }
 
-    dep = getDependencyResolver();
+      dep = getDependencyResolver();
 
-    z = new ZeppelinContext(sc, sqlc, null, dep,
-        Integer.parseInt(getProperty("zeppelin.spark.maxResult")));
+      z = new ZeppelinContext(sc, sqlc, null, dep,
+              Integer.parseInt(getProperty("zeppelin.spark.maxResult")));
 
-    intp.interpret("@transient var _binder = new java.util.HashMap[String, Object]()");
-    binder = (Map<String, Object>) getValue("_binder");
-    binder.put("sc", sc);
-    binder.put("sqlc", sqlc);
-    binder.put("z", z);
+      intp.interpret("@transient var _binder = new java.util.HashMap[String, Object]()");
+      binder = (Map<String, Object>) getValue("_binder");
+      binder.put("sc", sc);
+      binder.put("sqlc", sqlc);
+      binder.put("z", z);
 
-    intp.interpret("@transient val z = "
-                 + "_binder.get(\"z\").asInstanceOf[org.apache.zeppelin.spark.ZeppelinContext]");
-    intp.interpret("@transient val sc = "
-                 + "_binder.get(\"sc\").asInstanceOf[org.apache.spark.SparkContext]");
-    intp.interpret("@transient val sqlc = "
-                 + "_binder.get(\"sqlc\").asInstanceOf[org.apache.spark.sql.SQLContext]");
-    intp.interpret("@transient val sqlContext = "
-                 + "_binder.get(\"sqlc\").asInstanceOf[org.apache.spark.sql.SQLContext]");
-    intp.interpret("import org.apache.spark.SparkContext._");
+      intp.interpret("@transient val z = "
+              + "_binder.get(\"z\").asInstanceOf[org.apache.zeppelin.spark.ZeppelinContext]");
+      intp.interpret("@transient val sc = "
+              + "_binder.get(\"sc\").asInstanceOf[org.apache.spark.SparkContext]");
+      intp.interpret("@transient val sqlc = "
+              + "_binder.get(\"sqlc\").asInstanceOf[org.apache.spark.sql.SQLContext]");
+      intp.interpret("@transient val sqlContext = "
+              + "_binder.get(\"sqlc\").asInstanceOf[org.apache.spark.sql.SQLContext]");
+      intp.interpret("import org.apache.spark.SparkContext._");
 
-    if (sparkVersion.oldSqlContextImplicits()) {
-      intp.interpret("import sqlContext._");
-    } else {
-      intp.interpret("import sqlContext.implicits._");
-      intp.interpret("import sqlContext.sql");
-      intp.interpret("import org.apache.spark.sql.functions._");
+      if (sparkVersion.oldSqlContextImplicits()) {
+        intp.interpret("import sqlContext._");
+      } else {
+        intp.interpret("import sqlContext.implicits._");
+        intp.interpret("import sqlContext.sql");
+        intp.interpret("import org.apache.spark.sql.functions._");
+      }
     }
 
     /* Temporary disabling DisplayUtils. see https://issues.apache.org/jira/browse/ZEPPELIN-127
@@ -763,13 +774,34 @@ public class SparkInterpreter extends Interpreter {
     context.out.clear();
     Code r = null;
     String incomplete = "";
+    boolean inComment = false;
 
     for (int l = 0; l < linesToRun.length; l++) {
       String s = linesToRun[l];
       // check if next line starts with "." (but not ".." or "./") it is treated as an invocation
       if (l + 1 < linesToRun.length) {
         String nextLine = linesToRun[l + 1].trim();
-        if (nextLine.startsWith(".") && !nextLine.startsWith("..") && !nextLine.startsWith("./")) {
+        boolean continuation = false;
+        if (nextLine.isEmpty()
+           || nextLine.startsWith("//")         // skip empty line or comment
+           || nextLine.startsWith("}")
+           || nextLine.startsWith("object")) {  // include "} object" for Scala companion object
+          continuation = true;
+        } else if (!inComment && nextLine.startsWith("/*")) {
+          inComment = true;
+          continuation = true;
+        } else if (inComment && nextLine.lastIndexOf("*/") >= 0) {
+          inComment = false;
+          continuation = true;
+        } else if (nextLine.length() > 1
+                && nextLine.charAt(0) == '.'
+                && nextLine.charAt(1) != '.'     // ".."
+                && nextLine.charAt(1) != '/') {  // "./"
+          continuation = true;
+        } else if (inComment) {
+          continuation = true;
+        }
+        if (continuation) {
           incomplete += s + "\n";
           continue;
         }
