@@ -25,8 +25,6 @@ Then install the required R libraries;
 
 + devtools with `R -e "install.packages('devtools', repos = 'http://cran.us.r-project.org')"`
 + knitr with `R -e "install.packages('knitr', repos = 'http://cran.us.r-project.org')"`
-+ ggplot2 with `R -e "install.packages('ggplot2', repos = 'http://cran.us.r-project.org')"`
-+ Other vizualisation librairies with `R -e "install.packages(c('devtools','mplot', 'googleVis'), repos = 'http://cran.us.r-project.org'); require(devtools); install_github('ramnathv/rCharts')"`
 + rscala: You need version 1.0.6 of RScala, so the commands will be [1]
 
 ```
@@ -35,7 +33,14 @@ curl https://cran.r-project.org/src/contrib/Archive/rscala/rscala_1.0.6.tar.gz -
 R CMD INSTALL /tmp/rscala_1.0.6.tar.gz
 ```
 
-We recommend you to also install the following optional R libraries to enjoy data analytics:
+To enjoy plots, you need:
+
+```
++ ggplot2 with `R -e "install.packages('ggplot2', repos = 'http://cran.us.r-project.org')"`
++ Other vizualisation librairies: `R -e "install.packages(c('devtools','mplot', 'googleVis'), repos = 'http://cran.us.r-project.org'); require(devtools); install_github('ramnathv/rCharts')"`
+```
+
+We recommend you to also install the following optional R libraries for happy data analytics:
 
 + glmnet
 + pROC
