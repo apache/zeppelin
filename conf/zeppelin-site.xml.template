@@ -225,5 +225,11 @@
   <description>Anonymous user allowed by default</description>
 </property>
 
+<property>
+  <name>zeppelin.interpreter.conf</name>
+  <value>conf/interpreter.json</value>
+  <description>Interpreter file location</description>
+</property>
+
 </configuration>
 

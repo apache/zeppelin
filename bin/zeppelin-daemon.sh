@@ -93,6 +93,30 @@ function initialize_default_directories() {
     echo "Pid dir doesn't exist, create ${ZEPPELIN_PID_DIR}"
     $(mkdir -p "${ZEPPELIN_PID_DIR}")
   fi
+
+  if [ ! -e "${ZEPPELIN_INTERPRETER_CONF}" ] ; then # if file doesn't exist
+    # get dir
+    if [ -h $ZEPPELIN_INTERPRETER_CONF ] ; then
+     ZEPPELIN_INTERPRETER_CONF_DIR=$(dirname $(readlink $ZEPPELIN_INTERPRETER_CONF))
+    else
+     ZEPPELIN_INTERPRETER_CONF_DIR=$(dirname $ZEPPELIN_INTERPRETER_CONF)
+    fi
+
+    if [[ ! -d "${ZEPPELIN_INTERPRETER_CONF_DIR}" ]]; then # if dir not there
+      echo "interpreter conf dir doesn't exist, create ${ZEPPELIN_INTERPRETER_CONF_DIR}"
+      $(mkdir -p "${ZEPPELIN_INTERPRETER_CONF_DIR}")
+    fi
+
+    if [ ! -w "${ZEPPELIN_INTERPRETER_CONF_DIR}" ] ; then # if dir not writeable 
+        echo "ERROR : cannot write file in ${ZEPPELIN_INTERPRETER_CONF_DIR}"
+        exit 1
+    fi
+  else
+    if [ ! -w "${ZEPPELIN_INTERPRETER_CONF}" ] ; then # if file not writeable 
+        echo "ERROR : cannot write to ${ZEPPELIN_INTERPRETER_CONF}"
+        exit 1
+    fi
+  fi
 }
 
 function wait_for_zeppelin_to_die() {

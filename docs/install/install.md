@@ -231,6 +231,12 @@ You can configure Zeppelin with both **environment variables** in `conf/zeppelin
     <td>interpreter</td>
     <td>Zeppelin interpreter directory</td>
   </tr>
+  <tr>
+    <td>ZEPPELIN_INTERPRETER_CONF</td>
+    <td>zeppelin.interpreter.conf</td>
+    <td>conf/interpreter.json</td>
+    <td>Zeppelin interpreter.json file path</td>
+  </tr>
 </table>
 
 Maybe you need to configure individual interpreter. If so, please check **Interpreter** section in Zeppelin documentation.
