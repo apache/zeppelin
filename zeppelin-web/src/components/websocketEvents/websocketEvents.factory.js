@@ -28,9 +28,15 @@ angular.module('zeppelinWebApp').factory('websocketEvents', function($rootScope,
   });
 
   websocketCalls.sendNewEvent = function(data) {
-    data.principal = $rootScope.ticket.principal;
-    data.ticket = $rootScope.ticket.ticket;
-    data.roles = $rootScope.ticket.roles;
+    if ($rootScope.ticket !== undefined) {
+      data.principal = $rootScope.ticket.principal;
+      data.ticket = $rootScope.ticket.ticket;
+      data.roles = $rootScope.ticket.roles;
+    } else {
+      data.principal = 'anonymous';
+      data.ticket = 'anonymous';
+      data.roles = '[]';
+    }
     console.log('Send >> %o, %o, %o, %o, %o', data.op, data.principal, data.ticket, data.roles, data);
     websocketCalls.ws.send(JSON.stringify(data));
   };
