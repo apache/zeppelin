@@ -627,9 +627,8 @@ public class InterpreterFactory {
 
   public void removeNoteInterpreterSettingBinding(String noteId) {
     synchronized (interpreterSettings) {
-      @SuppressWarnings("unchecked")
-      List<String> settingIds = interpreterBindings.containsKey(noteId) ?
-          interpreterBindings.remove(noteId) : Collections.EMPTY_LIST;
+      List<String> settingIds = (interpreterBindings.containsKey(noteId) ?
+          interpreterBindings.remove(noteId) : Collections.<String>emptyList());
       for (String settingId : settingIds) {
         this.removeInterpretersForNote(get(settingId), noteId);
       }
