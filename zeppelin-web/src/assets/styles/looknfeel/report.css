@@ -73,3 +73,7 @@ body {
 .noteAction button.btn {
   border-radius: 4px !important;
 }
+
+.ng-toast.ng-toast--top {
+  top: 100px;
+}
