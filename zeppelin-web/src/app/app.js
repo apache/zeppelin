@@ -81,8 +81,7 @@
             ngToastProvider.configure({
                 dismissButton: true,
                 dismissOnClick: false,
-                timeout: 6000,
-                verticalPosition: 'bottom'
+                timeout: 6000
             });
         });
 
