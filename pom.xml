@@ -117,7 +117,6 @@
     <libthrift.version>0.9.2</libthrift.version>
     <gson.version>2.2</gson.version>
     <guava.version>15.0</guava.version>
-    <rscala.version>1.0.6</rscala.version>
 
     <PermGen>64m</PermGen>
     <MaxPermGen>512m</MaxPermGen>
@@ -238,25 +237,6 @@
 
   <build>
     <plugins>
-      <plugin>
-        <groupId>com.googlecode.maven-download-plugin</groupId>
-        <artifactId>download-maven-plugin</artifactId>
-        <version>1.2.1</version>
-        <executions>
-          <execution>
-            <id>download-rscala-lib</id>
-            <phase>validate</phase>
-            <goals>
-              <goal>wget</goal>
-            </goals>
-            <configuration>
-              <url>https://cran.r-project.org/src/contrib/Archive/rscala/rscala_${rscala.version}.tar.gz</url>
-              <unpack>true</unpack>
-              <outputDirectory>${user.dir}/spark/lib</outputDirectory>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
       <plugin>
         <groupId>org.apache.rat</groupId>
         <artifactId>apache-rat-plugin</artifactId>

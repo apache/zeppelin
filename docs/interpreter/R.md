@@ -21,21 +21,11 @@ Validate your installation with a simple R command:
 R -e "print(1+1)"
 ```
 
-Then install the required R libraries;
+To enjoy plots, install additional libraries with:
 
+```
 + devtools with `R -e "install.packages('devtools', repos = 'http://cran.us.r-project.org')"`
 + knitr with `R -e "install.packages('knitr', repos = 'http://cran.us.r-project.org')"`
-+ rscala: You need version 1.0.6 of RScala, so the commands will be [1]
-
-```
-[1]
-curl https://cran.r-project.org/src/contrib/Archive/rscala/rscala_1.0.6.tar.gz -o /tmp/rscala_1.0.6.tar.gz
-R CMD INSTALL /tmp/rscala_1.0.6.tar.gz
-```
-
-To enjoy plots, you need:
-
-```
 + ggplot2 with `R -e "install.packages('ggplot2', repos = 'http://cran.us.r-project.org')"`
 + Other vizualisation librairies: `R -e "install.packages(c('devtools','mplot', 'googleVis'), repos = 'http://cran.us.r-project.org'); require(devtools); install_github('ramnathv/rCharts')"`
 ```
