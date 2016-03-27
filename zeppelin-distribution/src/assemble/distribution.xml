@@ -69,6 +69,12 @@
     </fileSet>
     <fileSet>
       <directory>../conf</directory>
+      <excludes>
+        <exclude>interpreter.json</exclude>
+        <exclude>zeppelin-env.cmd</exclude>
+        <exclude>zeppelin-env.sh</exclude>
+        <exclude>zeppelin-site.xml</exclude>
+      </excludes>
     </fileSet>
     <fileSet>
       <directory>../interpreter</directory>

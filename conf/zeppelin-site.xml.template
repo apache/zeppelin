@@ -77,6 +77,12 @@
 </property>
 
 <property>
+  <name>zeppelin.notebook.s3.endpoint</name>
+  <value>s3.amazonaws.com</value>
+  <description>endpoint for s3 bucket</description>
+</property>
+
+<property>
   <name>zeppelin.notebook.storage</name>
   <value>org.apache.zeppelin.notebook.repo.S3NotebookRepo</value>
   <description>notebook persistence layer implementation</description>

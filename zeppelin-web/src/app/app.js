@@ -17,14 +17,14 @@
 'use strict';
 (function() {
     var zeppelinWebApp = angular.module('zeppelinWebApp', [
-            'ngAnimate',
             'ngCookies',
+            'ngAnimate',
             'ngRoute',
             'ngSanitize',
             'angular-websocket',
             'ui.ace',
             'ui.bootstrap',
-            'ui.sortable',
+            'as.sortable',
             'ngTouch',
             'ngDragDrop',
             'angular.filter',

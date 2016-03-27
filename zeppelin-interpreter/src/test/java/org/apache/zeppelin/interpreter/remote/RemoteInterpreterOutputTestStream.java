@@ -38,6 +38,10 @@ import static org.junit.Assert.assertEquals;
  * Test for remote interpreter output stream
  */
 public class RemoteInterpreterOutputTestStream implements RemoteInterpreterProcessListener {
+  private static final String INTERPRETER_SCRIPT =
+          System.getProperty("os.name").startsWith("Windows") ?
+                  "../bin/interpreter.cmd" :
+                  "../bin/interpreter.sh";
   private InterpreterGroup intpGroup;
   private HashMap<String, String> env;
 
@@ -61,7 +65,7 @@ public class RemoteInterpreterOutputTestStream implements RemoteInterpreterProce
         new Properties(),
         "note",
         MockInterpreterOutputStream.class.getName(),
-        new File("../bin/interpreter.sh").getAbsolutePath(),
+        new File(INTERPRETER_SCRIPT).getAbsolutePath(),
         "fake",
         "fakeRepo",
         env,

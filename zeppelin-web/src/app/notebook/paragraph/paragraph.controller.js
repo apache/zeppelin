@@ -18,6 +18,7 @@ angular.module('zeppelinWebApp')
   .controller('ParagraphCtrl', function($scope,$rootScope, $route, $window, $element, $routeParams, $location,
                                          $timeout, $compile, websocketMsgSrv) {
   var ANGULAR_FUNCTION_OBJECT_NAME_PREFIX = '_Z_ANGULAR_FUNC_';
+  $scope.parentNote = null;
   $scope.paragraph = null;
   $scope.originalText = '';
   $scope.editor = null;
@@ -28,6 +29,20 @@ angular.module('zeppelinWebApp')
   $scope.compiledScope = paragraphScope;
 
   paragraphScope.z = {
+    // z.runParagraph('20150213-231621_168813393')
+    runParagraph: function(paragraphId) {
+      if (paragraphId) {
+        var filtered = $scope.parentNote.paragraphs.filter(function(x) {
+          return x.id === paragraphId;});
+        if (filtered.length === 1) {
+          var paragraph = filtered[0];
+          websocketMsgSrv.runParagraph(paragraph.id, paragraph.title, paragraph.text,
+              paragraph.config, paragraph.settings.params);
+        } else {
+          // Error message here
+        }
+      }
+    },
 
     // Example: z.angularBind('my_var', 'Test Value', '20150213-231621_168813393')
     angularBind: function(varName, value, paragraphId) {
@@ -36,6 +51,7 @@ angular.module('zeppelinWebApp')
         websocketMsgSrv.clientBindAngularObject($routeParams.noteId, varName, value, paragraphId);
       }
     },
+
     // Example: z.angularUnBind('my_var', '20150213-231621_168813393')
     angularUnbind: function(varName, paragraphId) {
       // Only push to server if paragraphId is defined
@@ -55,8 +71,9 @@ angular.module('zeppelinWebApp')
   };
 
   // Controller init
-  $scope.init = function(newParagraph) {
+  $scope.init = function(newParagraph, note) {
     $scope.paragraph = newParagraph;
+    $scope.parentNote = note;
     $scope.originalText = angular.copy(newParagraph.text);
     $scope.chart = {};
     $scope.colWidthOption = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 ];

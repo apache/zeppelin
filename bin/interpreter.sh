@@ -23,7 +23,7 @@ function usage() {
     echo "usage) $0 -p <port> -d <interpreter dir to load> -l <local interpreter repo dir to load>"
 }
 
-while getopts "hp:d:l:" o; do
+while getopts "hp:d:l:v" o; do
     case ${o} in
         h)
             usage
@@ -37,6 +37,10 @@ while getopts "hp:d:l:" o; do
             ;;
         l)
             LOCAL_INTERPRETER_REPO=${OPTARG}
+            ;;
+        v)
+            . "${bin}/common.sh"
+            getZeppelinVersion
             ;;
         esac
 done
