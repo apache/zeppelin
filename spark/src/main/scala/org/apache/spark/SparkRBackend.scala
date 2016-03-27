@@ -20,6 +20,8 @@ import org.apache.spark.api.r.RBackend
 
 object SparkRBackend {
   val backend : RBackend = new RBackend()
+  private var started = false;
+  private var portNumber = 0;
 
   val backendThread : Thread = new Thread("SparkRBackend") {
     override def run() {
@@ -27,10 +29,26 @@ object SparkRBackend {
     }
   }
 
-  def init() : Int = backend.init()
+  def init() : Int = {
+    portNumber = backend.init()
+    portNumber
+  }
 
-  def start() : Unit = backendThread.start()
+  def start() : Unit = {
+    backendThread.start()
+    started = true
+  }
 
-  def close() : Unit = backend.close()
+  def close() : Unit = {
+    backend.close()
+    backendThread.join()
+  }
 
+  def isStarted() : Boolean = {
+    started
+  }
+
+  def port(): Int = {
+    return portNumber
+  }
 }
