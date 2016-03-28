@@ -10,7 +10,18 @@ group: manual
 [HBase Shell](http://hbase.apache.org/book.html#shell) is a JRuby IRB client for Apache HBase. This interpreter provides all capabilities of Apache HBase shell within Apache Zeppelin. The interpreter assumes that Apache HBase client software has been installed and it can connect to the Apache HBase cluster from the machine on where Apache Zeppelin is installed.  
 To get start with HBase, please see [HBase Quickstart](https://hbase.apache.org/book.html#quickstart)
 
-> Note: currently only HBase 1.0.x releases are supported.
+## HBase release supported
+By default, Zeppelin is built against HBase 1.0.x releases. To work with HBase 1.1.x releases, use the following build command:
+```bash
+# HBase 1.1.4
+mvn clean package -DskipTests -Phadoop-2.6 -Dhadoop.version=2.6.0 -P build-distr -Dhbase.hbase.version=1.1.4 -Dhbase.hadoop.version=2.6.0
+```
+To work with HBase 1.2.0+, use the following build command:
+
+```bash
+# HBase 1.2.0
+mvn clean package -DskipTests -Phadoop-2.6 -Dhadoop.version=2.6.0 -P build-distr -Dhbase.hbase.version=1.2.0 -Dhbase.hadoop.version=2.6.0
+```
 
 ## Configuration
 
