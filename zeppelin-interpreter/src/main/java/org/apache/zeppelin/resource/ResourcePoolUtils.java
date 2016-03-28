@@ -56,13 +56,13 @@ public class ResourcePoolUtils {
         boolean broken = false;
         try {
           client = remoteInterpreterProcess.getClient();
-          List<String> resourceList = client.resourcePoolGetAll();
-          GsonBuilder gsonBuilder = new GsonBuilder();
-          gsonBuilder.registerTypeAdapter(Resource.class, new ResourceSerializer());
-          Gson gson = gsonBuilder.create();
+          RemoteInterpreterProcessResourcePoolConnector remoteConnector =
+              new RemoteInterpreterProcessResourcePoolConnector(client);
+          //List<String> resourceList = client.resourcePoolGetAll();
+          //gsonBuilder.registerTypeAdapter(Resource.class, new ResourceSerializer());
           
-          for (String res : resourceList) {
-            resourceSet.add(gson.fromJson(res, Resource.class));
+          for (Resource r: remoteConnector.getAllResources()) {
+            resourceSet.add(r);
           }
         } catch (Exception e) {
           logger.error(e.getMessage(), e);

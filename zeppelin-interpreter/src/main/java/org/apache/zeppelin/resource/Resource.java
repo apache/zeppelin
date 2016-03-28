@@ -23,7 +23,7 @@ import java.nio.ByteBuffer;
  * Information and reference to the resource
  */
 public class Resource {
-  private final Object r;
+  private final transient Object r;
   private final boolean serializable;
   private final ResourceId resourceId;
   private final String className;
