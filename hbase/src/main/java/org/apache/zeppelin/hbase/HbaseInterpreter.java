@@ -37,17 +37,17 @@ import java.util.List;
 import java.util.Properties;
 
 /**
- * Support for Hbase Shell. All the commands documented here
+ * Support for HBase Shell. All the commands documented here
  * http://hbase.apache.org/book.html#shell is supported.
  *
  * Requirements:
- * Hbase Shell should be installed on the same machine. To be more specific, the following dir.
+ * HBase Shell should be installed on the same machine. To be more specific, the following dir.
  * should be available: https://github.com/apache/hbase/tree/master/hbase-shell/src/main/ruby
- * Hbase Shell should be able to connect to the Hbase cluster from terminal. This makes sure
+ * HBase Shell should be able to connect to the HBase cluster from terminal. This makes sure
  * that the client is configured properly.
  *
  * The interpreter takes 3 config parameters:
- * hbase.home: Root directory where hbase is installed. Default is /usr/lib/hbase/
+ * hbase.home: Root directory where HBase is installed. Default is /usr/lib/hbase/
  * hbase.ruby.sources: Dir where shell ruby code is installed.
  *                          Path is relative to hbase.home. Default: lib/ruby
  * zeppelin.hbase.test.mode: (Testing only) Disable checks for unit and manual tests. Default: false
@@ -63,7 +63,7 @@ public class HbaseInterpreter extends Interpreter {
         new InterpreterPropertyBuilder()
             .add("hbase.home",
               getSystemDefault("HBASE_HOME", "hbase.home", "/usr/lib/hbase/"),
-              "Installation directory of Hbase")
+              "Installation directory of HBase")
             .add("hbase.ruby.sources", "lib/ruby",
                 "Path to Ruby scripts relative to 'hbase.home'")
             .add("zeppelin.hbase.test.mode", "false", "Disable checks for unit and manual tests")
@@ -90,7 +90,7 @@ public class HbaseInterpreter extends Interpreter {
 
       File f = abs_ruby_src.toFile();
       if (!f.exists() || !f.isDirectory()) {
-        throw new InterpreterException("hbase ruby sources is not available at '" + abs_ruby_src
+        throw new InterpreterException("HBase ruby sources is not available at '" + abs_ruby_src
             + "'");
       }
 

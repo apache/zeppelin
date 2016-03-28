@@ -132,7 +132,7 @@ elif [[ "${INTERPRETER_ID}" == "hbase" ]]; then
   if [[ -n "${HBASE_CONF_DIR}" ]]; then
     ZEPPELIN_CLASSPATH+=":${HBASE_CONF_DIR}"
   elif [[ -n "${HBASE_HOME}" ]]; then
-    ZEPPELIN_CLASSPATH+=":${HBASE_CONF_DIR}/conf"
+    ZEPPELIN_CLASSPATH+=":${HBASE_HOME}/conf"
   else
     echo "HBASE_HOME and HBASE_CONF_DIR are not set, configuration might not be loaded"
   fi

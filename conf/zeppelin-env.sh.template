@@ -62,3 +62,9 @@
 # export ZEPPELIN_SPARK_CONCURRENTSQL   # Execute multiple SQL concurrently if set true. false by default.
 # export ZEPPELIN_SPARK_MAXRESULT       # Max number of SparkSQL result to display. 1000 by default.
 
+#### HBase interpreter configuration ####
+
+## To connect to HBase running on a cluster, either HBASE_HOME or HBASE_CONF_DIR must be set
+
+# export HBASE_HOME=                    # (require) Under which HBase scripts and configuration should be
+# export HBASE_CONF_DIR=                # (optional) Alternatively, configuration directory can be set to point to the directory that has hbase-site.xml
