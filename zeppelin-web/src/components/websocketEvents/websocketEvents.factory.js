@@ -54,7 +54,11 @@ angular.module('zeppelinWebApp').factory('websocketEvents', function($rootScope,
     } else if (op === 'NOTES_INFO') {
       $rootScope.$broadcast('setNoteMenu', data.notes);
     } else if (op === 'AUTH_INFO') {
-      alert(data.info.toString());
+      BootstrapDialog.alert({
+        closable: true,
+        title: 'Insufficient privileges',
+        message: data.info.toString()
+      });
     } else if (op === 'PARAGRAPH') {
       $rootScope.$broadcast('updateParagraph', data);
     } else if (op === 'PARAGRAPH_APPEND_OUTPUT') {
