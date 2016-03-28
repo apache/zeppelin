@@ -715,6 +715,45 @@
     </profile>
 
     <profile>
+      <id>mapr51</id>
+      <activation>
+        <activeByDefault>false</activeByDefault>
+      </activation>
+      <properties>
+        <hadoop.version>2.7.0-mapr-1602</hadoop.version>
+        <yarn.version>2.7.0-mapr-1602</yarn.version>
+        <jets3t.version>0.9.3</jets3t.version>
+      </properties>
+      <dependencies>
+        <dependency>
+          <groupId>org.apache.curator</groupId>
+          <artifactId>curator-recipes</artifactId>
+          <version>2.4.0</version>
+          <exclusions>
+            <exclusion>
+              <groupId>org.apache.zookeeper</groupId>
+              <artifactId>zookeeper</artifactId>
+            </exclusion>
+          </exclusions>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.zookeeper</groupId>
+          <artifactId>zookeeper</artifactId>
+          <version>3.4.5-mapr-1503</version>
+        </dependency>
+      </dependencies>
+      <repositories>
+         <repository>
+           <id>mapr-releases</id>
+           <url>http://repository.mapr.com/maven/</url>
+           <snapshots><enabled>false</enabled></snapshots>
+           <releases><enabled>true</enabled></releases>
+         </repository>
+      </repositories>
+    </profile>
+
+
+    <profile>
       <id>yarn</id>
       <dependencies>
         <dependency>
