@@ -76,20 +76,6 @@ public class IgniteInterpreterTest {
   }
 
   @Test
-  public void testInterpret() {
-    String sizeVal = "size";
-
-    InterpreterResult result = intp.interpret("import org.apache.ignite.IgniteCache\n" +
-            "val " + sizeVal + " = ignite.cluster().nodes().size()", INTP_CONTEXT);
-
-    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-    assertTrue(result.message().contains(sizeVal + ": Int = " + ignite.cluster().nodes().size()));
-
-    result = intp.interpret("\"123\"\n  .toInt", INTP_CONTEXT);
-    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-  }
-
-  @Test
   public void testInterpretInvalidInput() {
     InterpreterResult result = intp.interpret("invalid input", INTP_CONTEXT);
 
@@ -110,6 +96,20 @@ public class IgniteInterpreterTest {
   public void testNextLineCompanionObject() {
     String code = "class Counter {\nvar value: Long = 0\n}\n // comment\n\n object Counter {\n def apply(x: Long) = new Counter()\n}";
     assertEquals(InterpreterResult.Code.SUCCESS, intp.interpret(code, INTP_CONTEXT).code());
+  }
+
+  @Test
+  public void testInterpret() {
+    String sizeVal = "size";
+
+    InterpreterResult result = intp.interpret("import org.apache.ignite.IgniteCache\n" +
+            "val " + sizeVal + " = ignite.cluster().nodes().size()", INTP_CONTEXT);
+
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    assertTrue(result.message().contains(sizeVal + ": Int = " + ignite.cluster().nodes().size()));
+
+    result = intp.interpret("\"123\"\n  .toInt", INTP_CONTEXT);
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
   }
 
 }
