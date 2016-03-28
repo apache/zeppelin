@@ -58,8 +58,6 @@ public class ResourcePoolUtils {
           client = remoteInterpreterProcess.getClient();
           RemoteInterpreterProcessResourcePoolConnector remoteConnector =
               new RemoteInterpreterProcessResourcePoolConnector(client);
-          //List<String> resourceList = client.resourcePoolGetAll();
-          //gsonBuilder.registerTypeAdapter(Resource.class, new ResourceSerializer());
           
           for (Resource r: remoteConnector.getAllResources()) {
             resourceSet.add(r);
