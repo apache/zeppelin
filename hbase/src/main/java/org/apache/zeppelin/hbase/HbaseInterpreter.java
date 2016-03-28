@@ -37,21 +37,20 @@ import java.util.List;
 import java.util.Properties;
 
 /**
- * Support for Hbase Shell. All the commands documented here
+ * Support for HBase Shell. All the commands documented here
  * http://hbase.apache.org/book.html#shell is supported.
  *
  * Requirements:
- * Hbase Shell should be installed on the same machine. To be more specific, the following dir.
+ * HBase Shell should be installed on the same machine. To be more specific, the following dir.
  * should be available: https://github.com/apache/hbase/tree/master/hbase-shell/src/main/ruby
- * Hbase Shell should be able to connect to the Hbase cluster from terminal. This makes sure
+ * HBase Shell should be able to connect to the HBase cluster from terminal. This makes sure
  * that the client is configured properly.
  *
  * The interpreter takes 3 config parameters:
- * hbase.home: Root dir. where hbase is installed. Default is /usr/lib/hbase/
+ * hbase.home: Root directory where HBase is installed. Default is /usr/lib/hbase/
  * hbase.ruby.sources: Dir where shell ruby code is installed.
  *                          Path is relative to hbase.home. Default: lib/ruby
- * hbase.irb.load: (Testing only) Default is true.
- *                      Whether to load irb in the interpreter.
+ * zeppelin.hbase.test.mode: (Testing only) Disable checks for unit and manual tests. Default: false
  */
 public class HbaseInterpreter extends Interpreter {
   private Logger logger = LoggerFactory.getLogger(HbaseInterpreter.class);
@@ -62,11 +61,13 @@ public class HbaseInterpreter extends Interpreter {
   static {
     Interpreter.register("hbase", "hbase", HbaseInterpreter.class.getName(),
         new InterpreterPropertyBuilder()
-            .add("hbase.home", "/usr/lib/hbase/", "Installation dir. of Hbase")
+            .add("hbase.home",
+              getSystemDefault("HBASE_HOME", "hbase.home", "/usr/lib/hbase/"),
+              "Installation directory of HBase")
             .add("hbase.ruby.sources", "lib/ruby",
                 "Path to Ruby scripts relative to 'hbase.home'")
-            .add("hbase.test.mode", "false", "Disable checks for unit and manual tests")
-            .build());
+            .add("zeppelin.hbase.test.mode", "false", "Disable checks for unit and manual tests")
+          .build());
   }
 
   public HbaseInterpreter(Properties property) {
@@ -79,7 +80,7 @@ public class HbaseInterpreter extends Interpreter {
     this.writer = new StringWriter();
     scriptingContainer.setOutput(this.writer);
 
-    if (!Boolean.parseBoolean(getProperty("hbase.test.mode"))) {
+    if (!Boolean.parseBoolean(getProperty("zeppelin.hbase.test.mode"))) {
       String hbase_home = getProperty("hbase.home");
       String ruby_src = getProperty("hbase.ruby.sources");
       Path abs_ruby_src = Paths.get(hbase_home, ruby_src).toAbsolutePath();
@@ -89,7 +90,7 @@ public class HbaseInterpreter extends Interpreter {
 
       File f = abs_ruby_src.toFile();
       if (!f.exists() || !f.isDirectory()) {
-        throw new InterpreterException("hbase ruby sources is not available at '" + abs_ruby_src
+        throw new InterpreterException("HBase ruby sources is not available at '" + abs_ruby_src
             + "'");
       }
 
@@ -155,4 +156,24 @@ public class HbaseInterpreter extends Interpreter {
     return null;
   }
 
+  private static String getSystemDefault(
+      String envName,
+      String propertyName,
+      String defaultValue) {
+
+    if (envName != null && !envName.isEmpty()) {
+      String envValue = System.getenv().get(envName);
+      if (envValue != null) {
+        return envValue;
+      }
+    }
+
+    if (propertyName != null && !propertyName.isEmpty()) {
+      String propValue = System.getProperty(propertyName);
+      if (propValue != null) {
+        return propValue;
+      }
+    }
+    return defaultValue;
+  }
 }

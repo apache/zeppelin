@@ -34,7 +34,7 @@ mvn clean package -DskipTests -Phadoop-2.6 -Dhadoop.version=2.6.0 -P build-distr
   <tr>
     <td>hbase.home</td>
     <td>/usr/lib/hbase</td>
-    <td>Installation directory of Hbase</td>
+    <td>Installation directory of HBase, defaults to HBASE_HOME in environment</td>
   </tr>
   <tr>
     <td>hbase.ruby.sources</td>
@@ -42,11 +42,30 @@ mvn clean package -DskipTests -Phadoop-2.6 -Dhadoop.version=2.6.0 -P build-distr
     <td>Path to Ruby scripts relative to 'hbase.home'</td>
   </tr>
   <tr>
-    <td>hbase.test.mode</td>
+    <td>zeppelin.hbase.test.mode</td>
     <td>false</td>
     <td>Disable checks for unit and manual tests</td>
   </tr>
 </table>
+
+If you want to connect to HBase running on a cluster, you'll need to follow the next step.
+
+### Export HBASE_HOME
+In **conf/zeppelin-env.sh**, export `HBASE_HOME` environment variable with your HBase installation path. This ensures `hbase-site.xml` can be loaded.
+
+for example
+
+```bash
+export HBASE_HOME=/usr/lib/hbase
+```
+
+or, when running with CDH
+
+```bash
+export HBASE_HOME="/opt/cloudera/parcels/CDH/lib/hbase"
+```
+
+You can optionally export `HBASE_CONF_DIR` instead of `HBASE_HOME` should you have custom HBase configurations.
 
 ## Enabling the HBase Shell Interpreter
 
