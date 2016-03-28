@@ -38,7 +38,12 @@ public class ResourceSerializer implements JsonDeserializer<Resource>, JsonSeria
   public JsonElement serialize(Resource src, Type typeOfSrc, JsonSerializationContext context) {
     // This is straightforward at the moment.
     Gson gson = new Gson();
-    return gson.toJsonTree(src);
+    JsonElement elem = gson.toJsonTree(src);
+    JsonObject obj = elem.getAsJsonObject();
+    if (src.isSerializable()) {
+      obj.add("r", gson.toJsonTree(src.get()));
+    }
+    return obj;
   }
 
   @Override
