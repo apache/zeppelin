@@ -11,7 +11,7 @@ group: manual
 To get start with HBase, please see [HBase Quickstart](https://hbase.apache.org/book.html#quickstart)
 
 ## HBase release supported
-By default, Zeppelin is built again HBase 1.0.x releases. To work with HBase 1.1.x releases, use the following build command:
+By default, Zeppelin is built against HBase 1.0.x releases. To work with HBase 1.1.x releases, use the following build command:
 ```bash
 # HBase 1.1.4
 mvn clean package -DskipTests -Phadoop-2.6 -Dhadoop.version=2.6.0 -P build-distr -Dhbase.hbase.version=1.1.4 -Dhbase.hadoop.version=2.6.0
