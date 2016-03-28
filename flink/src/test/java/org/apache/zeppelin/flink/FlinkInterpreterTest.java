@@ -79,8 +79,6 @@ public class FlinkInterpreterTest {
     assertEquals("1", result.message());
   }
 
-  
-
   @Test
   public void testWordCount() {
     flink.interpret("val text = env.fromElements(\"To be or not to be\")", context);
