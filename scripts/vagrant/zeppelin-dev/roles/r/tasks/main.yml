@@ -61,4 +61,5 @@
     - mplot
     - htmltools
     - base64enc
+    - data.table
 
