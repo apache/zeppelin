@@ -1,0 +1,65 @@
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements. See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License. You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Install R binaries and CRAN packages
+---
+
+# The Ubuntu archives on CRAN are signed with a key with ID E084DAB9. Add this key to the system.
+- name: repository | add public key
+  apt_key:
+    id: E084DAB9
+    keyserver: keyserver.ubuntu.com
+    state: present
+
+# in order to get the latest version of R, add CRAN repository to the to the list of sources
+- name: repository | add cran-r
+  apt_repository:
+    repo: "{{item.type}} {{item.url}}"
+    state: present
+    update_cache: true
+  with_items: r_repository
+
+- name: Install R. This may take a while.
+  apt: pkg=r-base state=present
+
+- name: openssl and libcurl required for R devtools package
+  apt: pkg={{item}} state=present
+  with_items:
+    - libssl-dev
+    - libcurl4-openssl-dev
+
+# knitr will also pull in the `evaluate` R package as a dependency
+- name: Install R packages required for the R interpreter. This may take a while.
+  shell: /usr/bin/Rscript --slave --no-save --no-restore-history -e "if (! ('{{item}}' %in% installed.packages()[,'Package'])) install.packages(pkgs=c('{{item}}'), repos=c('{{r_packages_repos}}'))"
+  with_items:
+    - knitr
+    - devtools
+
+- name: Install rCharts (requires devtools first).
+  shell: /usr/bin/Rscript --slave --no-save --no-restore-history -e "if (! ('rCharts' %in% installed.packages()[,'Package'])) devtools::install_github('rCharts', 'ramnathv')"
+
+- name: Install R repr package recommended for the R interpreter display system (requires devtools first).
+  shell: /usr/bin/Rscript --slave --no-save --no-restore-history -e "if (! ('repr' %in% installed.packages()[,'Package'])) devtools::install_github('IRkernel/repr')"
+
+- name: Install R packages recommended for the R interpreter.
+  shell: /usr/bin/Rscript --slave --no-save --no-restore-history -e "if (! ('{{item}}' %in% installed.packages()[,'Package'])) install.packages(pkgs=c('{{item}}'), repos=c('{{r_packages_repos}}'))"
+  with_items:
+    - ggplot2
+    - googleVis
+    - mplot
+    - htmltools
+    - base64enc
+    - data.table
+
