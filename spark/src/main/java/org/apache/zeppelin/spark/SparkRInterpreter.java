@@ -103,6 +103,7 @@ public class SparkRInterpreter extends Interpreter {
     try {
       zeppelinR.open();
     } catch (IOException e) {
+      logger.error("Exception while opening SparkRInterpreter", e);
       throw new InterpreterException(e);
     }
 
