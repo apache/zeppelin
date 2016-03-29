@@ -167,7 +167,7 @@ angular.module('zeppelinWebApp')
         angular.element('#p' + $scope.paragraph.id + '_text').bind('mousewheel', function(e) {
           $scope.keepScrollDown = false;
         });
-
+        $scope.flushStreamingOutput = true;
       } else {
         $timeout(retryRenderer, 10);
       }
@@ -445,13 +445,17 @@ angular.module('zeppelinWebApp')
 
   $scope.$on('appendParagraphOutput', function(event, data) {
     if ($scope.paragraph.id === data.paragraphId) {
+      if ($scope.flushStreamingOutput) {
+        $scope.clearTextOutput();
+        $scope.flushStreamingOutput = false;
+      }
       $scope.appendTextOutput(data.data);
     }
   });
 
   $scope.$on('updateParagraphOutput', function(event, data) {
     if ($scope.paragraph.id === data.paragraphId) {
-      $scope.clearTextOutput(data.data);
+      $scope.clearTextOutput();
       $scope.appendTextOutput(data.data);
     }
   });
