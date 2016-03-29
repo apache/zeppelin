@@ -15,10 +15,9 @@
 'use strict';
 
 angular.module('zeppelinWebApp').controller('LoginCtrl',
-  function($scope, $rootScope, $http, $httpParamSerializer, baseUrlSrv, websocketMsgSrv) {
+  function($scope, $rootScope, $http, $httpParamSerializer, baseUrlSrv) {
     $scope.loginParams = {};
     $scope.login = function() {
-
 
       $http({
         method: 'POST',

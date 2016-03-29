@@ -19,7 +19,9 @@ angular.module('zeppelinWebApp').controller('NavCtrl', function($scope, $rootSco
   /** Current list of notes (ids) */
 
   $scope.showLoginWindow = function() {
-    angular.element('#loginModal').modal('toggle');
+    setTimeout(function() {
+      angular.element('#userName').focus();
+    }, 500);
   };
 
   var vm = this;
@@ -66,6 +68,7 @@ angular.module('zeppelinWebApp').controller('NavCtrl', function($scope, $rootSco
 
   $scope.$on('loginSuccess', function(event, param) {
     $scope.checkUsername();
+    loadNotes();
   });
 
   $scope.search = function() {
