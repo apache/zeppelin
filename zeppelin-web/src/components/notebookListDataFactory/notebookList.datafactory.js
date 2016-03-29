@@ -32,7 +32,7 @@ angular.module('zeppelinWebApp').factory('notebookListDataFactory', function() {
       var curDir = notes.list;
       for (var t = 0; t < dirs.length; t++) {
         var dir = dirs[t];
-        if (t == dirs.length - 1) { // last item
+        if (t === dirs.length - 1) { // last item
           curDir.push({
             name : dir,
             id : note.id

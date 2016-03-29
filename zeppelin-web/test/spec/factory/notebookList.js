@@ -40,7 +40,7 @@ describe('Factory: NotebookList', function() {
     var folderList = notebookList.list;
     expect(folderList.length).toBe(4);
     expect(folderList[0].name).toBe('A');
-    expect(folderList[0].id).toBe('000001')
+    expect(folderList[0].id).toBe('000001');
     expect(folderList[1].name).toBe('B');
     expect(folderList[2].name).toBe('000003');
     expect(folderList[3].name).toBe('C');
