@@ -243,6 +243,11 @@
   margin-right: 2px;
 }
 
+.form-control.query-select {
+  width: auto;
+  min-width: 200px;
+}
+
 /*
   Ace Text Editor CSS
 */

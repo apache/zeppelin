@@ -179,7 +179,8 @@ public class Input implements Serializable {
   //            ${checkbox( or ):country(Country)=US|JP,US(United States)|UK|JP}
   //                                                checkbox form with " or " as delimiter: will be
   //                                                expanded to "US or JP"
-  private static final Pattern VAR_PTN = Pattern.compile("([_])?[$][{]([^=}]*([=][^}]*)?)[}]");
+  private static final Pattern VAR_PTN =
+          Pattern.compile("([_])?[=]?[\\s]*[\"']?[\\s]*[$][{]([^=}]*([=][^}]*)?)[}][\\s]*[\"']?");
 
   private static String[] getNameAndDisplayName(String str) {
     Pattern p = Pattern.compile("([^(]*)\\s*[(]([^)]*)[)]");
@@ -341,15 +342,19 @@ public class Input implements Serializable {
           }
         }
         params.put(input.name, validChecked);
-        expanded = StringUtils.join(validChecked, delimiter);
+        expanded = "'" + StringUtils.join(validChecked, "','") + "'";
+        if (expanded.equals(null)) {
+          expanded = input.defaultValue.toString();
+        }
+        expanded = " in (" + expanded + ") ";
       } else {  // single-selection
-        expanded = value.toString();
+        expanded = "='" + value.toString() + "' ";
       }
       replaced = match.replaceFirst(expanded);
       match = VAR_PTN.matcher(replaced);
     }
 
-    return replaced;
+    return replaced.trim();
   }
 
 

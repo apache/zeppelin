@@ -635,7 +635,7 @@ angular.module('zeppelinWebApp')
 
 
   $scope.loadForm = function(formulaire, params) {
-    var value = formulaire.defaultValue;
+    var value = [formulaire.defaultValue];
     if (params[formulaire.name]) {
       value = params[formulaire.name];
     }
