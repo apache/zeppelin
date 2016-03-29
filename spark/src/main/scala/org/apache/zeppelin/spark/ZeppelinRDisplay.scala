@@ -42,7 +42,7 @@ object ZeppelinRDisplay {
 
     val body = document.body()
 
-    if (body.getElementsByTag("p").isEmpty) return RDisplay(body.html(), HTML, ERROR)
+    if (body.getElementsByTag("p").isEmpty) return RDisplay(body.html(), HTML, SUCCESS)
 
     val bodyHtml = body.html()
 
