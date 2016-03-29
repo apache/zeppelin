@@ -1226,7 +1226,7 @@ angular.module('zeppelinWebApp')
 
     var renderTable = function() {
       var html = '';
-      html += '<table class="table table-hover table-condensed">';
+      html += '<table class="table table-hover table-condensed compact display">';
       html += '  <thead>';
       html += '    <tr style="background-color: #F6F6F6; font-weight: bold;">';
       for (var titleIndex in $scope.paragraph.result.columnNames) {
@@ -1253,6 +1253,40 @@ angular.module('zeppelinWebApp')
       html += '</table>';
 
       angular.element('#p' + $scope.paragraph.id + '_table').html(html);
+	  angular.element('#p' + $scope.paragraph.id + '_table').children(1).DataTable({
+		    paging: false,
+			info:     false,
+			autoWidth: true,
+			lengthChange: false,
+		    dom: '<"row"<"col-sm-6"B><"col-sm-6"f>>'+
+				'<"row"<"col-sm-12"t>>',
+			buttons: [
+				{
+					extend: 'csvHtml5',
+					text: 'TSV',
+					title: 'table',
+					fieldSeparator: '\t',
+					extension: '.tsv',
+					exportOptions: {
+						modifier: {
+							search: 'none'
+						}
+					}
+				},
+				{
+					extend: 'csvHtml5',
+					text: 'CSV',
+					title: 'table',
+					extension: '.csv',
+					exportOptions: {
+						modifier: {
+							search: 'none'
+						}
+					}
+				}
+
+        ]
+      });
       if ($scope.paragraph.result.msgTable.length > 10000) {
         angular.element('#p' + $scope.paragraph.id + '_table').css('overflow', 'scroll');
         // set table height
