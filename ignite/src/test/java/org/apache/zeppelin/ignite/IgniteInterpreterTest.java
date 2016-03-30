@@ -76,29 +76,6 @@ public class IgniteInterpreterTest {
   }
 
   @Test
-  public void testInterpretInvalidInput() {
-    InterpreterResult result = intp.interpret("invalid input", INTP_CONTEXT);
-
-    assertEquals(InterpreterResult.Code.ERROR, result.code());
-  }
-
-  @Test
-  public void testNextLineInvocation() {
-    assertEquals(InterpreterResult.Code.SUCCESS, intp.interpret("\"123\"\n.toInt", INTP_CONTEXT).code());
-  }
-
-  @Test
-  public void testNextLineComments() {
-    assertEquals(InterpreterResult.Code.SUCCESS, intp.interpret("\"123\"\n/*comment here\n*/.toInt", INTP_CONTEXT).code());
-  }
-
-  @Test
-  public void testNextLineCompanionObject() {
-    String code = "class Counter {\nvar value: Long = 0\n}\n // comment\n\n object Counter {\n def apply(x: Long) = new Counter()\n}";
-    assertEquals(InterpreterResult.Code.SUCCESS, intp.interpret(code, INTP_CONTEXT).code());
-  }
-
-  @Test
   public void testInterpret() {
     String sizeVal = "size";
 
@@ -110,6 +87,13 @@ public class IgniteInterpreterTest {
 
     result = intp.interpret("\"123\"\n  .toInt", INTP_CONTEXT);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+  }
+
+  @Test
+  public void testInterpretInvalidInput() {
+    InterpreterResult result = intp.interpret("invalid input", INTP_CONTEXT);
+
+    assertEquals(InterpreterResult.Code.ERROR, result.code());
   }
 
 }
