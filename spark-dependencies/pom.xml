@@ -505,7 +505,7 @@
     <profile>
       <id>spark-1.6</id>
       <properties>
-        <spark.version>1.6.0</spark.version>
+        <spark.version>1.6.1</spark.version>
         <py4j.version>0.9</py4j.version>
         <akka.group>com.typesafe.akka</akka.group>
         <akka.version>2.3.11</akka.version>
