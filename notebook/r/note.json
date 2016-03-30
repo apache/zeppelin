@@ -321,8 +321,9 @@
     },
     {
       "title": "Write Scala To R",
-      "text": "val s \u003d \"Hello R from Scala\"\nz.put(\"s\", s)\nval b \u003d new Integer(42)\nz.put(\"b\", b)\nval a: Array[Double] \u003d Array[Double](30.0, 20.0)\nz.put(\"a\", a)\nval m \u003d Array(Array(1, 2), Array(3, 4))\nz.put(\"m\", m)\n// val v \u003d Vector(1, 2, 3, 4)\n// z.put(\"v\", v)",
-      "dateUpdated": "Feb 23, 2016 3:07:59 PM",
+      "text": "val s \u003d \"Hello R from Scala\"\nz.put(\"s\", s)\nval b \u003d new Integer(42)\nz.put(\"b\", b)\nval a: Array[Double] \u003d Array[Double](30.1, 20.0)\nz.put(\"a\", a)\nval m \u003d Array(Array(1, 4), Array(8, 16))\nz.put(\"m\", m)\nval v \u003d Vector(1, 2, 3, 4)\nz.put(\"v\", v)",
+      "authenticationInfo": {},
+      "dateUpdated": "Mar 30, 2016 9:05:07 AM",
       "config": {
         "colWidth": 3.0,
         "graph": {
@@ -347,18 +348,19 @@
       "result": {
         "code": "SUCCESS",
         "type": "TEXT",
-        "msg": "s: String \u003d Hello R from Scala\nb: Integer \u003d 42\na: Array[Double] \u003d Array(30.0, 20.0)\nm: Array[Array[Int]] \u003d Array(Array(1, 2), Array(3, 4))\n"
+        "msg": "s: String \u003d Hello R from Scala\nb: Integer \u003d 42\na: Array[Double] \u003d Array(30.1, 20.0)\nm: Array[Array[Int]] \u003d Array(Array(1, 4), Array(8, 16))\nv: scala.collection.immutable.Vector[Int] \u003d Vector(1, 2, 3, 4)\n"
       },
       "dateCreated": "Apr 24, 2015 9:58:01 AM",
-      "dateStarted": "Feb 23, 2016 3:07:59 PM",
-      "dateFinished": "Feb 23, 2016 3:08:00 PM",
+      "dateStarted": "Mar 30, 2016 9:05:07 AM",
+      "dateFinished": "Mar 30, 2016 9:05:07 AM",
       "status": "FINISHED",
       "progressUpdateIntervalMs": 500
     },
     {
       "title": "Read from R the Scala Variables",
-      "text": "%r\nz.get(\"s\")\nz.get(\"b\")\nz.get(\"a\")\nz.get(\"m\")",
-      "dateUpdated": "Feb 23, 2016 3:06:07 PM",
+      "text": "%r\nz.get(\"s\")\nz.get(\"b\")\nprint(unlist(z.get(\"a\")))\nprint(unlist(z.get(\"m\")))\nz.get(\"v\")",
+      "authenticationInfo": {},
+      "dateUpdated": "Mar 30, 2016 9:05:08 AM",
       "config": {
         "colWidth": 3.0,
         "graph": {
@@ -383,18 +385,19 @@
       "result": {
         "code": "SUCCESS",
         "type": "TEXT",
-        "msg": "[1] “Hello R from Scala”\n[1] 42\n[[1]]\n[1] 30"
+        "msg": "[1] “Hello R from Scala”\n[1] 42\n[1] 30.1 20.0\n[1]  1  4  8 16\nJava ref type scala.collection.immutable.Vector id 92"
       },
       "dateCreated": "Aug 7, 2015 9:00:02 AM",
-      "dateStarted": "Feb 23, 2016 3:06:07 PM",
-      "dateFinished": "Feb 23, 2016 3:06:07 PM",
+      "dateStarted": "Mar 30, 2016 9:05:08 AM",
+      "dateFinished": "Mar 30, 2016 9:05:08 AM",
       "status": "FINISHED",
       "progressUpdateIntervalMs": 500
     },
     {
       "title": "Write R to Scala",
-      "text": "%r\nb \u003c- TRUE\nprint(b)\nz.put(\"b\", b)\nm \u003c- c(1, 2.5, 4)\nprint(m)\nz.put(\"rm\", m)\nd \u003c- 15.0\nprint(d)\nz.put(\"d\", d)\ns \u003c- \"Hello Scala from R\"\nprint(s)\nz.put(\"s\", s)",
-      "dateUpdated": "Feb 23, 2016 3:07:14 PM",
+      "text": "%r\ns \u003c- \"Hello Scala from R\"\nprint(s)\nz.put(\"rs\", s)\nb \u003c- TRUE\nprint(b)\nz.put(\"rb\", b)\nd \u003c- 15.0\nprint(d)\nz.put(\"rd\", d)\nm \u003c- c(2.4, 2.5, 4)\nprint(m)\nz.put(\"rm\", m)",
+      "authenticationInfo": {},
+      "dateUpdated": "Mar 30, 2016 9:05:25 AM",
       "config": {
         "colWidth": 3.0,
         "graph": {
@@ -419,18 +422,19 @@
       "result": {
         "code": "SUCCESS",
         "type": "TEXT",
-        "msg": "[1] TRUE\nNULL\n[1] 1.0 2.5 4.0\nNULL\n[1] 15\nNULL\n[1] “Hello Scala from R”\nNULL"
+        "msg": "[1] “Hello Scala from R”\nNULL\n[1] TRUE\nNULL\n[1] 15\nNULL\n[1] 2.4 2.5 4.0\nNULL"
       },
       "dateCreated": "Feb 10, 2016 9:58:54 PM",
-      "dateStarted": "Feb 23, 2016 3:07:14 PM",
-      "dateFinished": "Feb 23, 2016 3:07:15 PM",
+      "dateStarted": "Mar 30, 2016 9:05:25 AM",
+      "dateFinished": "Mar 30, 2016 9:05:25 AM",
       "status": "FINISHED",
       "progressUpdateIntervalMs": 500
     },
     {
       "title": "Read from Scala the R Variables",
-      "text": "println(\"b \u003d \"+ z.get(\"b\"))\nprintln(\"rm \u003d \"+ z.get(\"rm\"))\n// println(\"rm\u003d\"+ z.get(\"m\").asInstanceOf[Array[Double]].toSeq)\nprintln(\"d \u003d \"+ z.get(\"d\"))\nprintln(\"s \u003d \"+ z.get(\"s\"))",
-      "dateUpdated": "Feb 23, 2016 3:07:39 PM",
+      "text": "println(\"rs \u003d \"+ z.get(\"rs\"))\nprintln(\"rb \u003d \"+ z.get(\"rb\"))\nprintln(\"rd \u003d \"+ z.get(\"rd\"))\nprintln(\"rm \u003d \"+ z.get(\"rm\"))\n// println(z.get(\"rm\").getClass)\n// println(\"rm \u003d \"+ z.get(\"rm\").asInstanceOf[Array[Double]].toSeq)",
+      "authenticationInfo": {},
+      "dateUpdated": "Mar 30, 2016 9:05:27 AM",
       "config": {
         "colWidth": 3.0,
         "graph": {
@@ -455,11 +459,11 @@
       "result": {
         "code": "SUCCESS",
         "type": "TEXT",
-        "msg": "b \u003d true\nrm \u003d 1.0\nd \u003d 15.0\ns \u003d Hello Scala from R\n"
+        "msg": "rs \u003d Hello Scala from R\nrb \u003d true\nrd \u003d 15.0\nrm \u003d 2.4\n"
       },
       "dateCreated": "Feb 10, 2016 10:01:06 PM",
-      "dateStarted": "Feb 23, 2016 3:07:40 PM",
-      "dateFinished": "Feb 23, 2016 3:07:40 PM",
+      "dateStarted": "Mar 30, 2016 9:05:27 AM",
+      "dateFinished": "Mar 30, 2016 9:05:27 AM",
       "status": "FINISHED",
       "progressUpdateIntervalMs": 500
     },
@@ -1006,23 +1010,24 @@
   "name": "R Tutorial",
   "id": "r",
   "angularObjects": {
-    "2BC6J32GZ": [],
-    "2BAJDDX34": [],
-    "2BDG58SC2": [],
-    "2BBDGS154": [],
-    "2BDEQ9TF9": [],
-    "2BD8ZYWY5": [],
-    "2BE35KT1P": [],
-    "2BDUMV627": [],
-    "2BD94XCYN": [],
-    "2BCCGCH78": [],
-    "2BBM3GY16": [],
-    "2BE5P4YHR": [],
-    "2BE191EQG": [],
-    "2BBWT9M6B": [],
-    "2BBD5FT3H": [],
-    "2BC5QBC5S": [],
-    "2BCTX6MQK": []
+    "2BGNYGX62": [],
+    "2BH79J543": [],
+    "2BGEQ12SH": [],
+    "2BHEC1U86": [],
+    "2BFC8VSCU": [],
+    "2BEFFGZ94": [],
+    "2BHXPBPPB": [],
+    "2BEUFCFMV": [],
+    "2BEFB8NYY": [],
+    "2BE83RBH6": [],
+    "2BGHNUYS3": [],
+    "2BHWPPHUF": [],
+    "2BHZGMJB4": [],
+    "2BHRGU5SV": [],
+    "2BE19PPM5": [],
+    "2BF3RSAR9": [],
+    "2BFBDB2V5": [],
+    "2BHBNXNS5": []
   },
   "config": {
     "looknfeel": "default"
