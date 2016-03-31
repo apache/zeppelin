@@ -1327,12 +1327,12 @@ angular.module('zeppelinWebApp')
     }
     return groupedThousandsWith3DigitsFormatter(d);
   };
-  
+
   var setMapChart = function(type, data, refresh) {
     var latArr = [],
         lngArr = [],
         newmarkers = {};
-        
+
     if (!$scope.chart[type]) {
       var mapChartModel = function(d) {
         var key = d[1].replace('-', '_');
@@ -1352,9 +1352,9 @@ angular.module('zeppelinWebApp')
       for (var i = 0; i < data.rows.length; i++) {
         var row = data.rows[i];
         var rowMarker = mapChartModel(row);
-        newmarkers = $.extend(newmarkers, rowMarker);
+        newmarkers = angular.extend(newmarkers, rowMarker);
       }
-    } 
+    }
 
     $scope.markers = newmarkers;
     var bounds = leafletBoundsHelpers.createBoundsFromArray([
@@ -1366,17 +1366,17 @@ angular.module('zeppelinWebApp')
 
     //set map chart height
     var height = $scope.paragraph.config.graph.height;
-    $('#p'+$scope.paragraph.id+'_mapChart').height(height);
+    angular.extend('#p'+$scope.paragraph.id+'_mapChart').height(height);
 
     $scope.center = {};
   };
 
-  var setHeatmapChart = function(type, data, refresh) {    
+  var setHeatmapChart = function(type, data, refresh) {
     var layers = {},
         latlngs = [],
         // set starting bounding box to opposite extremes
-        bound_sw = [90, 180],
-        bound_ne = [-90, -180];
+        boundSW = [90, 180],
+        boundNE = [-90, -180];
 
     if (!$scope.chart[type]) {
       for (var i = 0; i < data.rows.length; i++) {
@@ -1384,8 +1384,8 @@ angular.module('zeppelinWebApp')
         var lat = row[2];
         var lng = row[3];
         latlngs.push([lat, lng]);
-        bound_sw = [Math.min(bound_sw[0], lat), Math.min(bound_sw[1], lng)];
-        bound_ne = [Math.max(bound_ne[0], lat), Math.max(bound_ne[1], lng)];
+        boundSW = [Math.min(boundSW[0], lat), Math.min(boundSW[1], lng)];
+        boundNE = [Math.max(boundNE[0], lat), Math.max(boundNE[1], lng)];
       }
 
       layers = {
@@ -1415,22 +1415,22 @@ angular.module('zeppelinWebApp')
           }
         }
       };
-      
+
     }
 
     $scope.defaults = {
       scrollWheelZoom: true
-    };    
-    
-    $scope.layers = $.extend({}, layers);
+    };
+
+    $scope.layers = angular.extend({}, layers);
 
     $scope.bounds = leafletBoundsHelpers.createBoundsFromArray(
-                      [bound_ne, bound_sw]
+                      [boundNE, boundSW]
                     );
-    
+
     // set map chart height
     var height = $scope.paragraph.config.graph.height;
-    $('#p'+$scope.paragraph.id+'_heatmapChart').height(height);
+    angular.extend('#p'+$scope.paragraph.id+'_heatmapChart').height(height);
 
     if (refresh) {
       $scope.layers.overlays.heat.doRefresh = true;
