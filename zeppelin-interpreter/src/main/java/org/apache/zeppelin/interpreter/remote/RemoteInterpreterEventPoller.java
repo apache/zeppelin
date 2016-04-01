@@ -22,6 +22,7 @@ import com.google.gson.reflect.TypeToken;
 import org.apache.thrift.TException;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
+import org.apache.zeppelin.helium.ApplicationEventListener;
 import org.apache.zeppelin.interpreter.InterpreterContextRunner;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterOutputListener;
@@ -47,14 +48,18 @@ import java.util.Map;
 public class RemoteInterpreterEventPoller extends Thread {
   private static final Logger logger = LoggerFactory.getLogger(RemoteInterpreterEventPoller.class);
   private final RemoteInterpreterProcessListener listener;
+  private final ApplicationEventListener appListener;
 
   private volatile boolean shutdown;
 
   private RemoteInterpreterProcess interpreterProcess;
   private InterpreterGroup interpreterGroup;
 
-  public RemoteInterpreterEventPoller(RemoteInterpreterProcessListener listener) {
+  public RemoteInterpreterEventPoller(
+      RemoteInterpreterProcessListener listener,
+      ApplicationEventListener appListener) {
     this.listener = listener;
+    this.appListener = appListener;
     shutdown = false;
   }
 
@@ -141,8 +146,13 @@ public class RemoteInterpreterEventPoller extends Thread {
           String noteId = outputAppend.get("noteId");
           String paragraphId = outputAppend.get("paragraphId");
           String outputToAppend = outputAppend.get("data");
+          String appId = outputAppend.get("appId");
 
-          listener.onOutputAppend(noteId, paragraphId, outputToAppend);
+          if (appId == null) {
+            listener.onOutputAppend(noteId, paragraphId, outputToAppend);
+          } else {
+            appListener.onOutputAppend(noteId, paragraphId, appId, outputToAppend);
+          }
         } else if (event.getType() == RemoteInterpreterEventType.OUTPUT_UPDATE) {
           // on output update
           Map<String, String> outputAppend = gson.fromJson(
@@ -150,8 +160,13 @@ public class RemoteInterpreterEventPoller extends Thread {
           String noteId = outputAppend.get("noteId");
           String paragraphId = outputAppend.get("paragraphId");
           String outputToUpdate = outputAppend.get("data");
+          String appId = outputAppend.get("appId");
 
-          listener.onOutputUpdated(noteId, paragraphId, outputToUpdate);
+          if (appId == null) {
+            listener.onOutputUpdated(noteId, paragraphId, outputToUpdate);
+          } else {
+            appListener.onOutputUpdated(noteId, paragraphId, appId, outputToUpdate);
+          }
         }
         logger.debug("Event from remoteproceess {}", event.getType());
       } catch (Exception e) {

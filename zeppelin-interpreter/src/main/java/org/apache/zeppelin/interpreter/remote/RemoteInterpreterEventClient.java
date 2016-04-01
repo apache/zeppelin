@@ -242,4 +242,28 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector {
     }
   }
 
+  public void onAppOutputAppend(String noteId, String paragraphId, String appId, String output) {
+    Map<String, String> appendOutput = new HashMap<String, String>();
+    appendOutput.put("noteId", noteId);
+    appendOutput.put("paragraphId", paragraphId);
+    appendOutput.put("appId", appId);
+    appendOutput.put("data", output);
+
+    sendEvent(new RemoteInterpreterEvent(
+        RemoteInterpreterEventType.OUTPUT_APPEND,
+        gson.toJson(appendOutput)));
+  }
+
+
+  public void onAppOutputUpdate(String noteId, String paragraphId, String appId, String output) {
+    Map<String, String> appendOutput = new HashMap<String, String>();
+    appendOutput.put("noteId", noteId);
+    appendOutput.put("paragraphId", paragraphId);
+    appendOutput.put("appId", appId);
+    appendOutput.put("data", output);
+
+    sendEvent(new RemoteInterpreterEvent(
+        RemoteInterpreterEventType.OUTPUT_UPDATE,
+        gson.toJson(appendOutput)));
+  }
 }

@@ -29,6 +29,7 @@ import org.apache.zeppelin.dep.Dependency;
 import org.apache.zeppelin.dep.DependencyResolver;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.AngularObjectRegistryListener;
+import org.apache.zeppelin.helium.ApplicationEventListener;
 import org.apache.zeppelin.interpreter.Interpreter.RegisteredInterpreter;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreter;
@@ -73,22 +74,27 @@ public class InterpreterFactory {
 
   AngularObjectRegistryListener angularObjectRegistryListener;
   private final RemoteInterpreterProcessListener remoteInterpreterProcessListener;
+  private final ApplicationEventListener appEventListener;
 
   private DependencyResolver depResolver;
+
+  private Map<String, String> env;
 
   public InterpreterFactory(ZeppelinConfiguration conf,
       AngularObjectRegistryListener angularObjectRegistryListener,
       RemoteInterpreterProcessListener remoteInterpreterProcessListener,
+      ApplicationEventListener appEventListener,
       DependencyResolver depResolver)
       throws InterpreterException, IOException, RepositoryException {
     this(conf, new InterpreterOption(true), angularObjectRegistryListener,
-            remoteInterpreterProcessListener, depResolver);
+            remoteInterpreterProcessListener, appEventListener, depResolver);
   }
 
 
   public InterpreterFactory(ZeppelinConfiguration conf, InterpreterOption defaultOption,
       AngularObjectRegistryListener angularObjectRegistryListener,
       RemoteInterpreterProcessListener remoteInterpreterProcessListener,
+      ApplicationEventListener appEventListener,
       DependencyResolver depResolver)
       throws InterpreterException, IOException, RepositoryException {
     this.conf = conf;
@@ -97,6 +103,7 @@ public class InterpreterFactory {
     this.depResolver = depResolver;
     this.interpreterRepositories = depResolver.getRepos();
     this.remoteInterpreterProcessListener = remoteInterpreterProcessListener;
+    this.appEventListener = appEventListener;
     String replsConf = conf.getString(ConfVars.ZEPPELIN_INTERPRETERS);
     interpreterClassList = replsConf.split(",");
 
@@ -812,10 +819,12 @@ public class InterpreterFactory {
     int connectTimeout = conf.getInt(ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT);
     String localRepoPath = conf.getInterpreterLocalRepoPath() + "/" + interpreterId;
     int maxPoolSize = conf.getInt(ConfVars.ZEPPELIN_INTERPRETER_MAX_POOL_SIZE);
-    LazyOpenInterpreter intp = new LazyOpenInterpreter(new RemoteInterpreter(
+    RemoteInterpreter remoteInterpreter = new RemoteInterpreter(
         property, noteId, className, conf.getInterpreterRemoteRunnerPath(),
         interpreterPath, localRepoPath, connectTimeout,
-        maxPoolSize, remoteInterpreterProcessListener));
+        maxPoolSize, remoteInterpreterProcessListener, appEventListener);
+    remoteInterpreter.setEnv(env);
+    LazyOpenInterpreter intp = new LazyOpenInterpreter(remoteInterpreter);
     return intp;
   }
 
@@ -852,5 +861,13 @@ public class InterpreterFactory {
   public void removeRepository(String id) throws IOException {
     depResolver.delRepo(id);
     saveToFile();
+  }
+
+  public Map<String, String> getEnv() {
+    return env;
+  }
+
+  public void setEnv(Map<String, String> env) {
+    this.env = env;
   }
 }

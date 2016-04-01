@@ -109,10 +109,12 @@ public class Message {
     CONFIGURATIONS_INFO, // [s-c] all key/value pairs of configurations
                   // @param settings serialized Map<String, String> object
 
-    CHECKPOINT_NOTEBOOK     // [c-s] checkpoint notebook to storage repository
+    CHECKPOINT_NOTEBOOK,    // [c-s] checkpoint notebook to storage repository
                             // @param noteId
                             // @param checkpointName
 
+    APP_APPEND_OUTPUT,      // [s-c] append output
+    APP_UPDATE_OUTPUT       // [s-c] update (replace) output
   }
 
   public OP op;

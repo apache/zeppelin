@@ -22,6 +22,7 @@ import org.apache.commons.exec.*;
 import org.apache.commons.exec.environment.EnvironmentUtils;
 import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.apache.thrift.TException;
+import org.apache.zeppelin.helium.ApplicationEventListener;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService.Client;
@@ -53,17 +54,19 @@ public class RemoteInterpreterProcess implements ExecuteResultHandler {
   private final InterpreterContextRunnerPool interpreterContextRunnerPool;
   private int connectTimeout;
 
-  public RemoteInterpreterProcess(String intpRunner,
+  public RemoteInterpreterProcess(
+      String intpRunner,
       String intpDir,
       String localRepoDir,
       Map<String, String> env,
       int connectTimeout,
-      RemoteInterpreterProcessListener listener) {
+      RemoteInterpreterProcessListener listener,
+      ApplicationEventListener appListener) {
     this(intpRunner,
         intpDir,
         localRepoDir,
         env,
-        new RemoteInterpreterEventPoller(listener),
+        new RemoteInterpreterEventPoller(listener, appListener),
         connectTimeout);
   }
 

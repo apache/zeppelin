@@ -53,7 +53,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
   Date dateUpdated;
   private Map<String, Object> config; // paragraph configs like isOpen, colWidth, etc
   public final GUI settings;          // form and parameter settings
-  private Map<String, ApplicationState> apps; // helium applications running
+  public final List<ApplicationState> apps =  new LinkedList<ApplicationState>();
 
   @VisibleForTesting
   Paragraph() {
@@ -72,7 +72,6 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     dateUpdated = null;
     settings = new GUI();
     config = new HashMap<String, Object>();
-    apps = new HashMap<String, ApplicationState>();
   }
 
   private static String generateId() {

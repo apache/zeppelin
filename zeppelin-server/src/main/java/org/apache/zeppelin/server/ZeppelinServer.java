@@ -32,6 +32,7 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.dep.DependencyResolver;
 import org.apache.zeppelin.helium.Helium;
+import org.apache.zeppelin.helium.HeliumApplicationFactory;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.NotebookAuthorization;
@@ -76,6 +77,7 @@ public class ZeppelinServer extends Application {
   private NotebookAuthorization notebookAuthorization;
   private DependencyResolver depResolver;
   private Helium helium;
+  private HeliumApplicationFactory heliumApplicationFactory;
 
   public ZeppelinServer() throws Exception {
     ZeppelinConfiguration conf = ZeppelinConfiguration.create();
@@ -84,15 +86,21 @@ public class ZeppelinServer extends Application {
         conf.getString(ConfVars.ZEPPELIN_INTERPRETER_LOCALREPO));
 
     this.helium = new Helium(conf.getHeliumConfPath());
+    this.heliumApplicationFactory = new HeliumApplicationFactory();
     this.schedulerFactory = new SchedulerFactory();
     this.replFactory = new InterpreterFactory(conf, notebookWsServer,
-            notebookWsServer, depResolver);
+        notebookWsServer, heliumApplicationFactory, depResolver);
     this.notebookRepo = new NotebookRepoSync(conf);
     this.notebookIndex = new LuceneSearch();
     this.notebookAuthorization = new NotebookAuthorization(conf);
     notebook = new Notebook(conf, 
         notebookRepo, schedulerFactory, replFactory, notebookWsServer,
             notebookIndex, notebookAuthorization);
+
+    // to update notebook from application event from remote process.
+    heliumApplicationFactory.setNotebook(notebook);
+    // to update fire websocket event on application event.
+    heliumApplicationFactory.setApplicationEventListener(notebookWsServer);
   }
 
   public static void main(String[] args) throws InterruptedException {

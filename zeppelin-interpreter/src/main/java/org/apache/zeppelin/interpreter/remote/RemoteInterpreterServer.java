@@ -706,9 +706,28 @@ public class RemoteInterpreterServer
     }
   }
 
+  private InterpreterOutput createAppOutput(final String noteId,
+                                            final String paragraphId,
+                                            final String appId) {
+    return new InterpreterOutput(new InterpreterOutputListener() {
+      @Override
+      public void onAppend(InterpreterOutput out, byte[] line) {
+        logger.info("Append output ----------------" + new String(line));
+        eventClient.onAppOutputAppend(noteId, paragraphId, appId, new String(line));
+      }
+
+      @Override
+      public void onUpdate(InterpreterOutput out, byte[] output) {
+        eventClient.onAppOutputUpdate(noteId, paragraphId, appId, new String(output));
+      }
+    });
+  }
+
   private ApplicationContext getApplicationContext(
-      HeliumPackage packageInfo, String noteId, String paragraphId) {
-    return new ApplicationContext(noteId, paragraphId);
+      HeliumPackage packageInfo, String noteId, String paragraphId, String applicationInstanceId) {
+    System.err.println("get app context ************");
+    InterpreterOutput out = createAppOutput(noteId, paragraphId, applicationInstanceId);
+    return new ApplicationContext(noteId, paragraphId, out);
   }
 
   @Override
@@ -720,11 +739,12 @@ public class RemoteInterpreterServer
       return new RemoteApplicationResult(true, "");
     }
     HeliumPackage pkgInfo = gson.fromJson(packageInfo, HeliumPackage.class);
-    ApplicationContext context = getApplicationContext(pkgInfo, noteId, paragraphId);
+    ApplicationContext context = getApplicationContext(
+        pkgInfo, noteId, paragraphId, applicationInstanceId);
     try {
       Application app = null;
       logger.info(
-          "Loading application {}({}). artifact={}, className={} into note={}, paragraph={}",
+          "Loading application {}({}), artifact={}, className={} into note={}, paragraph={}",
           pkgInfo.getName(),
           applicationInstanceId,
           pkgInfo.getArtifact(),

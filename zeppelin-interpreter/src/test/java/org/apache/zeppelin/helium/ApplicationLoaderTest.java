@@ -19,6 +19,8 @@ package org.apache.zeppelin.helium;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.zeppelin.dep.DependencyResolver;
+import org.apache.zeppelin.interpreter.InterpreterOutput;
+import org.apache.zeppelin.interpreter.InterpreterOutputListener;
 import org.apache.zeppelin.resource.LocalResourcePool;
 import org.junit.After;
 import org.junit.Before;
@@ -83,7 +85,18 @@ public class ApplicationLoaderTest {
   public ApplicationContext createContext(String noteId, String paragraphId) {
     ApplicationContext context1 = new ApplicationContext(
         noteId,
-        paragraphId);
+        paragraphId,
+        new InterpreterOutput(new InterpreterOutputListener() {
+          @Override
+          public void onAppend(InterpreterOutput out, byte[] line) {
+
+          }
+
+          @Override
+          public void onUpdate(InterpreterOutput out, byte[] output) {
+
+          }
+        }));
     return context1;
   }
 }

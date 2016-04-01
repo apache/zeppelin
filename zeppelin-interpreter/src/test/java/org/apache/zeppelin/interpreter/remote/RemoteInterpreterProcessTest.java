@@ -34,7 +34,7 @@ public class RemoteInterpreterProcessTest {
     InterpreterGroup intpGroup = new InterpreterGroup();
     RemoteInterpreterProcess rip = new RemoteInterpreterProcess(
         "../bin/interpreter.sh", "nonexists", "fakeRepo", new HashMap<String, String>(),
-        10 * 1000, null);
+        10 * 1000, null, null);
     assertFalse(rip.isRunning());
     assertEquals(0, rip.referenceCount());
     assertEquals(1, rip.reference(intpGroup));

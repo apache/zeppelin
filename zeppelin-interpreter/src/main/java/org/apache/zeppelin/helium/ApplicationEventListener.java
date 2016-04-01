@@ -16,27 +16,11 @@
  */
 package org.apache.zeppelin.helium;
 
-import org.apache.zeppelin.interpreter.InterpreterOutput;
-
 /**
- * ApplicationContext
+ * Event from HeliumApplication running on remote interpreter process
  */
-public class ApplicationContext {
-  private final String noteId;
-  private final String paragraphId;
-  public final InterpreterOutput out;
+public interface ApplicationEventListener {
+  public void onOutputAppend(String noteId, String paragraphId, String appId, String output);
+  public void onOutputUpdated(String noteId, String paragraphId, String appId, String output);
 
-  public ApplicationContext(String noteId, String paragraphId, InterpreterOutput out) {
-    this.noteId = noteId;
-    this.paragraphId = paragraphId;
-    this.out = out;
-  }
-
-  public String getNoteId() {
-    return noteId;
-  }
-
-  public String getParagraphId() {
-    return paragraphId;
-  }
 }

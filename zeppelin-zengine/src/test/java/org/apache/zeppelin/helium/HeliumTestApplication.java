@@ -16,27 +16,28 @@
  */
 package org.apache.zeppelin.helium;
 
-import org.apache.zeppelin.interpreter.InterpreterOutput;
+import org.apache.zeppelin.resource.ResourceSet;
 
-/**
- * ApplicationContext
- */
-public class ApplicationContext {
-  private final String noteId;
-  private final String paragraphId;
-  public final InterpreterOutput out;
+import java.io.IOException;
 
-  public ApplicationContext(String noteId, String paragraphId, InterpreterOutput out) {
-    this.noteId = noteId;
-    this.paragraphId = paragraphId;
-    this.out = out;
+public class HeliumTestApplication extends Application {
+  public HeliumTestApplication(ResourceSet args, ApplicationContext context)
+      throws ApplicationException {
+    super(args, context);
   }
 
-  public String getNoteId() {
-    return noteId;
+  @Override
+  public void run() throws ApplicationException {
+    try {
+      context().out.write("Hello world");
+      context().out.flush();
+    } catch (IOException e) {
+      throw new ApplicationException(e);
+    }
   }
 
-  public String getParagraphId() {
-    return paragraphId;
+  @Override
+  public void unload() throws ApplicationException {
+
   }
 }

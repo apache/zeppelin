@@ -16,8 +16,86 @@
  */
 package org.apache.zeppelin.notebook;
 
+import org.apache.zeppelin.helium.Application;
+import org.apache.zeppelin.helium.HeliumPackage;
+import org.apache.zeppelin.interpreter.InterpreterGroup;
+import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
+
 /**
  * Running ApplicationState
  */
 public class ApplicationState {
+
+  /**
+   * Status of Application
+   */
+  public static enum ApplicationStatus {
+    LOADING,
+    LOADED,
+    UNLOADING,
+    UNLOADED
+  };
+
+
+  String id; // unique id for this instance similar to note id or paragraph id
+  String name; // name of app
+  ApplicationStatus status;
+  String output;
+
+  public ApplicationState(String id, String name) {
+    this.id = id;
+    this.name = name;
+    status = ApplicationStatus.UNLOADED;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    String compareName;
+    if (o instanceof ApplicationState) {
+      compareName = ((ApplicationState) o).name;
+    } else if (o instanceof String) {
+      compareName = (String) o;
+    } else {
+      return false;
+    }
+
+    return name.equals(compareName);
+  }
+
+  @Override
+  public int hashCode() {
+    return name.hashCode();
+  }
+
+  public String getId() {
+    return id;
+  }
+
+  public void setStatus(ApplicationStatus status) {
+    this.status = status;
+  }
+
+  public ApplicationStatus getStatus() {
+    return status;
+  }
+
+  public String getOutput() {
+    return output;
+  }
+
+  public void setOutput(String output) {
+    this.output = output;
+  }
+
+  public synchronized void appendOutput(String output) {
+    if (this.output == null) {
+      this.output = output;
+    } else {
+      this.output += output;
+    }
+  }
+
+  public String getName() {
+    return name;
+  }
 }

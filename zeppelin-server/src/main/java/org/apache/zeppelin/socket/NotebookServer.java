@@ -34,6 +34,7 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.AngularObjectRegistryListener;
+import org.apache.zeppelin.helium.ApplicationEventListener;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.user.AuthenticationInfo;
@@ -60,7 +61,7 @@ import org.slf4j.LoggerFactory;
  */
 public class NotebookServer extends WebSocketServlet implements
         NotebookSocketListener, JobListenerFactory, AngularObjectRegistryListener,
-        RemoteInterpreterProcessListener {
+        RemoteInterpreterProcessListener, ApplicationEventListener {
   private static final Logger LOG = LoggerFactory.getLogger(NotebookServer.class);
   Gson gson = new Gson();
   final Map<String, List<NotebookSocket>> noteSocketMap = new HashMap<>();
@@ -965,7 +966,6 @@ public class NotebookServer extends WebSocketServlet implements
             .put("noteId", noteId)
             .put("paragraphId", paragraphId)
             .put("data", output);
-    Paragraph paragraph = notebook().getNote(noteId).getParagraph(paragraphId);
     broadcast(noteId, msg);
   }
 
@@ -981,7 +981,40 @@ public class NotebookServer extends WebSocketServlet implements
             .put("noteId", noteId)
             .put("paragraphId", paragraphId)
             .put("data", output);
-    Paragraph paragraph = notebook().getNote(noteId).getParagraph(paragraphId);
+    broadcast(noteId, msg);
+  }
+
+  /**
+   * When application append output
+   * @param noteId
+   * @param paragraphId
+   * @param appId
+   * @param output
+   */
+  @Override
+  public void onOutputAppend(String noteId, String paragraphId, String appId, String output) {
+    Message msg = new Message(OP.APP_APPEND_OUTPUT)
+        .put("noteId", noteId)
+        .put("paragraphId", paragraphId)
+        .put("appId", appId)
+        .put("data", output);
+    broadcast(noteId, msg);
+  }
+
+  /**
+   * When application update output
+   * @param noteId
+   * @param paragraphId
+   * @param appId
+   * @param output
+   */
+  @Override
+  public void onOutputUpdated(String noteId, String paragraphId, String appId, String output) {
+    Message msg = new Message(OP.APP_UPDATE_OUTPUT)
+        .put("noteId", noteId)
+        .put("paragraphId", paragraphId)
+        .put("appId", appId)
+        .put("data", output);
     broadcast(noteId, msg);
   }
 

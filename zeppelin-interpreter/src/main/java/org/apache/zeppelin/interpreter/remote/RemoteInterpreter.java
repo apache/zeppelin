@@ -23,6 +23,7 @@ import org.apache.thrift.TException;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.GUI;
+import org.apache.zeppelin.helium.ApplicationEventListener;
 import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.InterpreterResult.Type;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterContext;
@@ -41,6 +42,7 @@ import com.google.gson.reflect.TypeToken;
  */
 public class RemoteInterpreter extends Interpreter {
   private final RemoteInterpreterProcessListener remoteInterpreterProcessListener;
+  private final ApplicationEventListener applicationEventListener;
   Logger logger = LoggerFactory.getLogger(RemoteInterpreter.class);
   Gson gson = new Gson();
   private String interpreterRunner;
@@ -56,14 +58,15 @@ public class RemoteInterpreter extends Interpreter {
   private static String schedulerName;
 
   public RemoteInterpreter(Properties property,
-      String noteId,
-      String className,
-      String interpreterRunner,
-      String interpreterPath,
-      String localRepoPath,
-      int connectTimeout,
-      int maxPoolSize,
-      RemoteInterpreterProcessListener remoteInterpreterProcessListener) {
+                           String noteId,
+                           String className,
+                           String interpreterRunner,
+                           String interpreterPath,
+                           String localRepoPath,
+                           int connectTimeout,
+                           int maxPoolSize,
+                           RemoteInterpreterProcessListener remoteInterpreterProcessListener,
+                           ApplicationEventListener appListener) {
     super(property);
     this.noteId = noteId;
     this.className = className;
@@ -75,17 +78,19 @@ public class RemoteInterpreter extends Interpreter {
     this.connectTimeout = connectTimeout;
     this.maxPoolSize = maxPoolSize;
     this.remoteInterpreterProcessListener = remoteInterpreterProcessListener;
+    this.applicationEventListener = appListener;
   }
 
   public RemoteInterpreter(Properties property,
-      String noteId,
-      String className,
-      String interpreterRunner,
-      String interpreterPath,
-      String localRepoPath,
-      Map<String, String> env,
-      int connectTimeout,
-      RemoteInterpreterProcessListener remoteInterpreterProcessListener) {
+                           String noteId,
+                           String className,
+                           String interpreterRunner,
+                           String interpreterPath,
+                           String localRepoPath,
+                           Map<String, String> env,
+                           int connectTimeout,
+                           RemoteInterpreterProcessListener remoteInterpreterProcessListener,
+                           ApplicationEventListener appListener) {
     super(property);
     this.className = className;
     this.noteId = noteId;
@@ -96,6 +101,7 @@ public class RemoteInterpreter extends Interpreter {
     this.connectTimeout = connectTimeout;
     this.maxPoolSize = 10;
     this.remoteInterpreterProcessListener = remoteInterpreterProcessListener;
+    this.applicationEventListener = appListener;
   }
 
   @Override
@@ -114,7 +120,7 @@ public class RemoteInterpreter extends Interpreter {
         // create new remote process
         RemoteInterpreterProcess remoteProcess = new RemoteInterpreterProcess(
             interpreterRunner, interpreterPath, localRepoPath, env, connectTimeout,
-            remoteInterpreterProcessListener);
+            remoteInterpreterProcessListener, applicationEventListener);
 
         intpGroup.setRemoteInterpreterProcess(remoteProcess);
       }
@@ -422,5 +428,13 @@ public class RemoteInterpreter extends Interpreter {
       Gson gson = new Gson();
       client.angularRegistryPush(gson.toJson(registry, registryType));
     }
+  }
+
+  public Map<String, String> getEnv() {
+    return env;
+  }
+
+  public void setEnv(Map<String, String> env) {
+    this.env = env;
   }
 }
