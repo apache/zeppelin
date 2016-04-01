@@ -67,7 +67,12 @@ if [[ ! -d "${SPARK_HOME}" ]]; then
         ENDTIME=`date +%s`
         DOWNLOADTIME="$((ENDTIME-STARTTIME))"
     fi
-    tar zxf "${SPARK_ARCHIVE}.tgz"
+    # clean-up on failure
+    if ! tar zxf "${SPARK_ARCHIVE}.tgz" ; then
+        echo "Unable to extract ${SPARK_ARCHIVE}.tgz" >&2
+        rm -rf "${SPARK_ARCHIVE}"
+        rm -f "${SPARK_ARCHIVE}.tgz"
+    fi
 fi
 
 set +xe
