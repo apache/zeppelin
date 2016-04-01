@@ -1366,7 +1366,7 @@ angular.module('zeppelinWebApp')
 
     //set map chart height
     var height = $scope.paragraph.config.graph.height;
-    angular.extend('#p'+$scope.paragraph.id+'_mapChart').height(height);
+    angular.element('#p'+$scope.paragraph.id+'_mapChart').height(height);
 
     $scope.center = {};
   };
@@ -1430,7 +1430,7 @@ angular.module('zeppelinWebApp')
 
     // set map chart height
     var height = $scope.paragraph.config.graph.height;
-    angular.extend('#p'+$scope.paragraph.id+'_heatmapChart').height(height);
+    angular.element('#p'+$scope.paragraph.id+'_heatmapChart').height(height);
 
     if (refresh) {
       $scope.layers.overlays.heat.doRefresh = true;
