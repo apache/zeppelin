@@ -17,7 +17,7 @@
 #
 
 
-if [ $# -ne 2 ]; then
+if [[ "$#" -ne 2 ]]; then
     echo "usage) $0 [spark version] [hadoop version]"
     echo "   eg) $0 1.3.1 2.6"
     exit 1
@@ -26,10 +26,10 @@ fi
 SPARK_VERSION="${1}"
 HADOOP_VERSION="${2}"
 
-echo ${SPARK_VERSION} | grep "^1.[123].[0-9]" > /dev/null
-if [ $? -eq 0 ]; then
+echo "${SPARK_VERSION}" | grep "^1.[123].[0-9]" > /dev/null
+if [[ "$?" -eq 0 ]]; then
   echo "${SPARK_VERSION}" | grep "^1.[12].[0-9]" > /dev/null
-  if [ $? -eq 0 ]; then
+  if [[ "$?" -eq 0 ]]; then
     SPARK_VER_RANGE="<=1.2"
   else
     SPARK_VER_RANGE="<=1.3"
@@ -40,17 +40,17 @@ fi
 
 set -xe
 
-FWDIR=$(dirname "${BASH_SOURCE-$0}")
+FWDIR="$(dirname "${BASH_SOURCE-$0}")"
 ZEPPELIN_HOME="$(cd "${FWDIR}/.."; pwd)"
-export SPARK_HOME=${ZEPPELIN_HOME}/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}
+export SPARK_HOME="${ZEPPELIN_HOME}/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}"
 echo "SPARK_HOME is ${SPARK_HOME}"
-if [ ! -d "${SPARK_HOME}" ]; then
+if [[ ! -d "${SPARK_HOME}" ]]; then
     if [ "${SPARK_VER_RANGE}" == "<=1.2" ]; then
         # spark 1.1.x and spark 1.2.x can be downloaded from archive
         STARTTIME=`date +%s`
-        timeout -s KILL 300 wget -q http://archive.apache.org/dist/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz
+        timeout -s KILL 300 wget -q "http://archive.apache.org/dist/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz"
         ENDTIME=`date +%s`
-        DOWNLOADTIME=$((ENDTIME-STARTTIME))
+        DOWNLOADTIME="$((ENDTIME-STARTTIME))"
     else
         # spark 1.3.x and later can be downloaded from mirror
         # get download address from mirror
@@ -62,9 +62,9 @@ if [ ! -d "${SPARK_HOME}" ]; then
         STARTTIME=`date +%s`
         timeout -s KILL 590 wget -q "${PREFFERED}${PATHINFO}"
         ENDTIME=`date +%s`
-        DOWNLOADTIME=$((ENDTIME-STARTTIME))
+        DOWNLOADTIME="$((ENDTIME-STARTTIME))"
     fi
-    tar zxf spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz
+    tar zxf "spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz"
 fi
 
 set +xe
