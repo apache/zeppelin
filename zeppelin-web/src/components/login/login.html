@@ -1,0 +1,51 @@
+<!--
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+  <div id="loginModal" class="modal fade" role="dialog"
+       tabindex='-1'>
+    <div class="modal-dialog">
+
+      <!-- Modal content-->
+      <div class="modal-content" id="NoteImportCtrl" ng-init="NoteImportInit">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title">Login</h4>
+        </div>
+        <div class="modal-body">
+          <div class="form-group" ng-show="loginParams.errorText">
+            <div class="alert alert-danger">{{loginParams.errorText}}</div>
+          </div>
+          <div class="form-group">
+            <label for="userName">User Name</label>
+            <input placeholder="User Name" type="text" class="form-control" id="userName"
+                   ng-keypress="loginParams.errorText = ''"
+                   ng-model="loginParams.userName">
+          </div>
+          <div class="form-group">
+            <label for="password">Password</label>
+            <input placeholder="Password" type="password" class="form-control" id="password"
+                   ng-enter="login()"
+                   ng-keypress="loginParams.errorText = ''"
+                   ng-model="loginParams.password">
+          </div>
+
+        </div>
+        <div class="modal-footer">
+          <div>
+            <button type="button" class="btn btn-default btn-primary" ng-click="login()">Login</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>

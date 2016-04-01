@@ -627,7 +627,8 @@ public class InterpreterFactory {
 
   public void removeNoteInterpreterSettingBinding(String noteId) {
     synchronized (interpreterSettings) {
-      List<String> settingIds = interpreterBindings.remove(noteId);
+      List<String> settingIds = (interpreterBindings.containsKey(noteId) ?
+          interpreterBindings.remove(noteId) : Collections.<String>emptyList());
       for (String settingId : settingIds) {
         this.removeInterpretersForNote(get(settingId), noteId);
       }

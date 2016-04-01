@@ -20,7 +20,11 @@ angular.module('zeppelinWebApp').controller('HomeCtrl', function($scope, noteboo
   vm.arrayOrderingSrv = arrayOrderingSrv;
 
   vm.notebookHome = false;
-  vm.staticHome = false;
+  if ($rootScope.ticket !== undefined) {
+    vm.staticHome = false;
+  } else {
+    vm.staticHome = true;
+  }
 
   $scope.isReloading = false;
 
