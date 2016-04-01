@@ -34,6 +34,7 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.dep.DependencyResolver;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.interpreter.*;
+import org.apache.zeppelin.interpreter.mock.MockErrorInterpreter;
 import org.apache.zeppelin.interpreter.mock.MockInterpreter1;
 import org.apache.zeppelin.interpreter.mock.MockInterpreter2;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
@@ -75,7 +76,10 @@ public class NotebookTest implements JobListenerFactory{
 
     System.setProperty(ConfVars.ZEPPELIN_HOME.getVarName(), tmpDir.getAbsolutePath());
     System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_DIR.getVarName(), notebookDir.getAbsolutePath());
-    System.setProperty(ConfVars.ZEPPELIN_INTERPRETERS.getVarName(), "org.apache.zeppelin.interpreter.mock.MockInterpreter1,org.apache.zeppelin.interpreter.mock.MockInterpreter2");
+    System.setProperty(ConfVars.ZEPPELIN_INTERPRETERS.getVarName(),
+            "org.apache.zeppelin.interpreter.mock.MockInterpreter1,"
+            + "org.apache.zeppelin.interpreter.mock.MockInterpreter2,"
+            + "org.apache.zeppelin.interpreter.mock.MockErrorInterpreter");
 
     conf = ZeppelinConfiguration.create();
 
@@ -83,6 +87,7 @@ public class NotebookTest implements JobListenerFactory{
 
     MockInterpreter1.register("mock1", "org.apache.zeppelin.interpreter.mock.MockInterpreter1");
     MockInterpreter2.register("mock2", "org.apache.zeppelin.interpreter.mock.MockInterpreter2");
+    MockErrorInterpreter.register("mockerrorinterpreter", "org.apache.zeppelin.interpreter.mock.MockErrorInterpreter");
 
     depResolver = new DependencyResolver(tmpDir.getAbsolutePath() + "/local-repo");
     factory = new InterpreterFactory(conf, new InterpreterOption(false), null, null, depResolver);
@@ -271,7 +276,7 @@ public class NotebookTest implements JobListenerFactory{
     // create a note and a paragraph
     Note note = notebook.createNote();
     note.getNoteReplLoader().setInterpreters(factory.getDefaultInterpreterSettingList());
-    
+
     Paragraph p = note.addParagraph();
     Map config = new HashMap<String, Object>();
     p.setConfig(config);
@@ -300,7 +305,7 @@ public class NotebookTest implements JobListenerFactory{
       Thread.sleep(100);
     }
     assertNotEquals(dateFinished, p.getDateFinished());
-    
+
     // remove cron scheduler.
     config.put("cron", null);
     note.setConfig(config);
@@ -639,29 +644,70 @@ public class NotebookTest implements JobListenerFactory{
     }
   }
 
+  @Test
+  public void testSkipOnError() throws IOException {
+    Note note = notebook.createNote();
+    note.getNoteReplLoader().setInterpreters(factory.getDefaultInterpreterSettingList());
+
+    // p1
+    Paragraph p1 = note.addParagraph();
+    Map config1 = p1.getConfig();
+    config1.put("enabled", true);
+    p1.setConfig(config1);
+    p1.setText("%mockerrorinterpreter error");
+
+    // p2
+    Paragraph p2 = note.addParagraph();
+    Map config2 = p2.getConfig();
+    config2.put("skipOnError", true);
+    p2.setConfig(config2);
+    p2.setText("p2");
+
+    // p3
+    Paragraph p3 = note.addParagraph();
+    p3.setText("%mockerrorinterpreter p3");
+
+    // when
+    note.runAll();
+    // wait for finish
+    while(p3.isTerminated()==false) {
+      Thread.yield();
+    }
+
+    assertEquals("Error...", p1.getException().getMessage());
+    assertNull(p2.getResult());
+    assertEquals("error: p3", p3.getResult().message());
+
+    notebook.removeNote(note.getId());
+  }
+
   @Override
   public ParagraphJobListener getParagraphJobListener(Note note) {
-    return new ParagraphJobListener(){
+    return new TestParagraphJobListenerImpl(note);
+  }
 
-      @Override
-      public void onOutputAppend(Paragraph paragraph, InterpreterOutput out, String output) {
-      }
+  private static class TestParagraphJobListenerImpl implements ParagraphJobListener {
+    private Note note;
 
-      @Override
-      public void onOutputUpdate(Paragraph paragraph, InterpreterOutput out, String output) {
-      }
+    public TestParagraphJobListenerImpl(Note note) {
+      this.note = note;
+    }
 
-      @Override
-      public void onProgressUpdate(Job job, int progress) {
-      }
+    @Override
+    public void onOutputAppend(Paragraph paragraph, InterpreterOutput out, String output) { }
 
-      @Override
-      public void beforeStatusChange(Job job, Status before, Status after) {
-      }
+    @Override
+    public void onOutputUpdate(Paragraph paragraph, InterpreterOutput out, String output) { }
 
-      @Override
-      public void afterStatusChange(Job job, Status before, Status after) {
-      }
-    };
+    @Override
+    public void onProgressUpdate(Job job, int progress) { }
+
+    @Override
+    public void beforeStatusChange(Job job, Status before, Status after) { }
+
+    @Override
+    public void afterStatusChange(Job job, Status before, Status after) {
+      note.setExecutionStatus(job.getId(), after);
+    }
   }
 }

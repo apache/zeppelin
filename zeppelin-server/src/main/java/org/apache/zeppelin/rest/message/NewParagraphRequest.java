@@ -25,6 +25,7 @@ package org.apache.zeppelin.rest.message;
 public class NewParagraphRequest {
   String title;
   String text;
+  boolean skipOnError;
   Double index;
 
   public NewParagraphRequest() {
@@ -37,6 +38,10 @@ public class NewParagraphRequest {
 
   public String getText() {
     return text;
+  }
+
+  public boolean getSkipOnError() {
+    return skipOnError;
   }
 
   public Double getIndex() {

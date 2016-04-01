@@ -20,7 +20,6 @@ package org.apache.zeppelin.notebook;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.*;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -63,6 +62,7 @@ public class Note implements Serializable, JobListener {
 
   @SuppressWarnings("rawtypes")
   Map<String, List<AngularObject>> angularObjects = new HashMap<>();
+  private Map<String, Status> executionStatus = new HashMap<>();
 
   private transient NoteInterpreterLoader replLoader;
   private transient JobListenerFactory jobListenerFactory;
@@ -147,6 +147,10 @@ public class Note implements Serializable, JobListener {
   @SuppressWarnings("rawtypes")
   public Map<String, List<AngularObject>> getAngularObjects() {
     return angularObjects;
+  }
+
+  public void setExecutionStatus(String paraId, Status status) {
+    executionStatus.put(paraId, status);
   }
 
   /**
@@ -350,15 +354,27 @@ public class Note implements Serializable, JobListener {
    * Run all paragraphs sequentially.
    */
   public void runAll() {
-    synchronized (paragraphs) {
-      for (Paragraph p : paragraphs) {
-        if (!p.isEnabled()) {
-          continue;
-        }
-        p.setNoteReplLoader(replLoader);
-        p.setListener(jobListenerFactory.getParagraphJobListener(this));
-        Interpreter intp = replLoader.get(p.getRequiredReplName());
-        intp.getScheduler().submit(p);
+    boolean noteExecutionHasError = false;
+    for (Paragraph p : paragraphs) {
+      if (!p.isEnabled()) {
+        continue;
+      }
+
+      if (noteExecutionHasError && p.isSkipOnError()) {
+        logger.info("Paragraph " + p.getId() + " execution skipped as "
+              + "other para in note resulted in error");
+        continue;
+      }
+
+      p.setNoteReplLoader(replLoader);
+      p.setListener(jobListenerFactory.getParagraphJobListener(this));
+      Interpreter intp = replLoader.get(p.getRequiredReplName());
+      intp.getScheduler().submit(p);
+
+      Status lastParaExecutionStatus = getCompletionStatus(p.getId());
+      if (lastParaExecutionStatus.isError() ||
+              (p.getResult().code() == InterpreterResult.Code.ERROR)) {
+        noteExecutionHasError = true;
       }
     }
   }
@@ -392,6 +408,22 @@ public class Note implements Serializable, JobListener {
     synchronized (paragraphs) {
       return new LinkedList<Paragraph>(paragraphs);
     }
+  }
+
+  private Status getCompletionStatus(String paraId) {
+    while (!executionStatus.containsKey(paraId) ||
+          executionStatus.get(paraId).isPending() ||
+          executionStatus.get(paraId).isReady() ||
+          executionStatus.get(paraId).isRunning()) {
+      // Just wait until the paragraph is executed
+      try {
+        Thread.sleep(500);
+      } catch (InterruptedException e) {
+        logger.error("Error while waiting until paragraph gets executed", e);
+      }
+    }
+
+    return executionStatus.get(paraId);
   }
 
   private void snapshotAngularObjectRegistry() {

@@ -116,6 +116,11 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     return enabled == null || enabled.booleanValue();
   }
 
+  public boolean isSkipOnError() {
+    Boolean skipOnFailure = (Boolean) config.get("skipOnError");
+    return skipOnFailure != null && skipOnFailure.booleanValue();
+  }
+
   public String getRequiredReplName() {
     return getRequiredReplName(text);
   }

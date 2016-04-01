@@ -80,6 +80,10 @@ limitations under the License.
           {{paragraph.config.enabled ? "Disable" : "Enable"}} run</a>
       </li>
       <li>
+        <a ng-click="toggleSkipOnError()"><span class="icon-control-forward"></span>
+          {{paragraph.config.skipOnError ? "Disable" : "Enable"}} Skip On Error</a>
+      </li>
+      <li>      
         <a ng-click="goToSingleParagraph()"><span class="icon-share-alt"></span> Link this paragraph</a>
       </li>
       <li>
