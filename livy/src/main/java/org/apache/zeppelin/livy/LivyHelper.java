@@ -223,8 +223,15 @@ public class LivyHelper {
         return new InterpreterResult(Code.ERROR, errorMessage.toString());
       }
       if (((Map) jsonMap.get("output")).get("status").equals("ok")) {
-        return new InterpreterResult(Code.SUCCESS,
-            (String) ((Map) ((Map) jsonMap.get("output")).get("data")).get("text/plain"));
+        String result = (String) ((Map) ((Map) jsonMap.get("output"))
+            .get("data")).get("text/plain");
+        if (result.startsWith("<link")
+            || result.startsWith("<script")
+            || result.startsWith("<style")
+            || result.startsWith("<div")) {
+          result = "%html " + result;
+        }
+        return new InterpreterResult(Code.SUCCESS, result);
       }
     }
     return null;
