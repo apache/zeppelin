@@ -58,4 +58,15 @@ limitations under the License.
        ng-if="paragraph.status == 'ERROR'"
        ng-bind="paragraph.errorMessage">
   </div>
+
+  <div ng-if="(paragraph.status == 'ERROR') && checkErrorForRestart()">
+    <div
+      ng-class="{disable: paragraph.interpreterRestarting}"
+      ng-if="!paragraph.interpreterRestarted">
+      <button class="btn btn-default btn-xs" ng-click="restartInterpreterSetting(paragraph.id)"> <span class="fa fa-refresh"></span> Restart Interpreter</button>
+    </div>
+    <div ng-if="paragraph.interpreterRestarted">
+      <em>Interpreter restarted successfully, re-run the paragraph.</em>
+    </div>
+  </div>
 </div>

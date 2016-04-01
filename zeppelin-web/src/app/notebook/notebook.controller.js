@@ -16,8 +16,8 @@
 'use strict';
 
 angular.module('zeppelinWebApp').controller('NotebookCtrl',
-  function($scope, $route, $routeParams, $location, $rootScope, $http,
-    websocketMsgSrv, baseUrlSrv, $timeout, SaveAsService) {
+  function($scope, $route, $routeParams, $location, $rootScope, $http, websocketMsgSrv, baseUrlSrv,
+           $timeout, SaveAsService, baseInterpreterService) {
   $scope.note = null;
   $scope.showEditor = false;
   $scope.editorToggled = false;
@@ -700,6 +700,47 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl',
     } else {
       $scope.openPermissions();
     }
+  };
+
+  $scope.restartInterpreterSetting = function(id) {
+    var paragraph;
+    for (var paragraphIndex in $scope.note.paragraphs) {
+      if ($scope.note.paragraphs[paragraphIndex].id == id) {
+        paragraph = $scope.note.paragraphs[paragraphIndex];
+      }
+    }
+    var settingId = "";
+    var settingName = "";
+    var language;
+    if (paragraph.text.split('\n')[0][0] === '%') {
+      language = paragraph.text.split('\n')[0].split(' ')[0].split('.')[0].split('%')[1];
+    }
+    if (language) {
+      for (var settingIndex in $scope.interpreterBindings) {
+        if ($scope.interpreterBindings[settingIndex].name === language) {
+          settingId = $scope.interpreterBindings[settingIndex].id;
+          settingName = $scope.interpreterBindings[settingIndex].group;
+          break;
+        }
+      }
+    } else {
+      settingId = $scope.interpreterBindings[0].id;
+      settingName = $scope.interpreterBindings[0].group;
+    }
+
+    BootstrapDialog.confirm({
+      title: '',
+      message: 'Restart <strong>' + settingName + '</strong> interpreter? <div class="alert-warning"> Note that all interpreter states and local variables will be reset. </div>',
+      callback: function(result) {
+        if (result) {
+          $scope.paragraph.interpreterRestarting = true;
+
+          baseInterpreterService.restartInterpreterSetting(settingId).then(function() {
+            $scope.paragraph.interpreterRestarted = true;
+          });
+        }
+      }
+    });
   };
 
 

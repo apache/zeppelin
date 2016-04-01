@@ -14,24 +14,15 @@
  */
 'use strict';
 
-angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, $route, $routeParams, $location, $rootScope,
-                                                                         $http, baseUrlSrv, ngToast) {
+angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, $route,
+                                            $routeParams, $location, $rootScope, $http, baseUrlSrv,
+                                            ngToast, baseInterpreterService) {
   var interpreterSettingsTmp = [];
   $scope.interpreterSettings = [];
   $scope.availableInterpreters = {};
   $scope.showAddNewSetting = false;
   $scope.showRepositoryInfo = false;
   $scope._ = _;
-
-  var getInterpreterSettings = function() {
-    $http.get(baseUrlSrv.getRestApiBase()+'/interpreter/setting').
-      success(function(data, status, headers, config) {
-        $scope.interpreterSettings = data.body;
-      }).
-      error(function(data, status, headers, config) {
-        console.log('Error %o %o', status, data.message);
-      });
-  };
 
   var getAvailableInterpreters = function() {
     $http.get(baseUrlSrv.getRestApiBase()+'/interpreter').
@@ -153,14 +144,10 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
       message: 'Do you want to restart this interpreter?',
       callback: function(result) {
         if (result) {
-          $http.put(baseUrlSrv.getRestApiBase() + '/interpreter/setting/restart/' + settingId).
-            success(function(data, status, headers, config) {
-              var index = _.findIndex($scope.interpreterSettings, { 'id': settingId });
-              $scope.interpreterSettings[index] = data.body;
-            }).
-            error(function(data, status, headers, config) {
-              console.log('Error %o %o', status, data.message);
-            });
+          baseInterpreterService.restartInterpreterSetting(settingId).then(function(interpreterSettings) {
+            var index = _.findIndex($scope.interpreterSettings, {'id': settingId});
+            $scope.interpreterSettings[index] = interpreterSettings;
+          });
         }
       }
     });
@@ -202,16 +189,18 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
     }
     request.properties = newProperties;
 
-    $http.post(baseUrlSrv.getRestApiBase() + '/interpreter/setting', request).
-      success(function(data, status, headers, config) {
-        $scope.resetNewInterpreterSetting();
-        getInterpreterSettings();
-        $scope.showAddNewSetting = false;
-      }).
-      error(function(data, status, headers, config) {
-        console.log('Error %o %o', status, data.message);
-        ngToast.danger(data.message);
+    $http.post(baseUrlSrv.getRestApiBase()+'/interpreter/setting', newSetting).
+    success(function(data, status, headers, config) {
+      $scope.resetNewInterpreterSetting();
+      baseInterpreterService.getInterpreterSettings().then(function(setting) {
+        $scope.interpreterSettings = setting;
       });
+      $scope.showAddNewSetting = false;
+    }).
+    error(function(data, status, headers, config) {
+      console.log('Error %o %o', status, data.message);
+      ngToast.danger(data.message);
+    });
   };
 
   $scope.cancelInterpreterSetting = function() {
@@ -399,8 +388,9 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
 
   var init = function() {
     $scope.resetNewInterpreterSetting();
-    $scope.resetNewRepositorySetting();
-    getInterpreterSettings();
+    baseInterpreterService.getInterpreterSettings().then(function(setting) {
+      $scope.interpreterSettings = setting;
+    });
     getAvailableInterpreters();
     getRepositories();
   };

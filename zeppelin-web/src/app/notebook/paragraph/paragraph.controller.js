@@ -17,6 +17,7 @@
 angular.module('zeppelinWebApp')
   .controller('ParagraphCtrl', function($scope,$rootScope, $route, $window, $element, $routeParams, $location,
                                          $timeout, $compile, websocketMsgSrv) {
+
   var ANGULAR_FUNCTION_OBJECT_NAME_PREFIX = '_Z_ANGULAR_FUNC_';
   $scope.parentNote = null;
   $scope.paragraph = null;
@@ -382,6 +383,8 @@ angular.module('zeppelinWebApp')
       $scope.paragraph.status = data.paragraph.status;
       $scope.paragraph.result = data.paragraph.result;
       $scope.paragraph.settings = data.paragraph.settings;
+      $scope.paragraph.interpreterRestarting = undefined;
+      $scope.paragraph.interpreterRestarted = undefined;
 
       if (!$scope.asIframe) {
         $scope.paragraph.config = data.paragraph.config;
@@ -2138,7 +2141,20 @@ angular.module('zeppelinWebApp')
     $window.open(redirectToUrl);
   };
 
-  $scope.showScrollDownIcon = function(){
+  $scope.checkErrorForRestart = function() {
+    var errorText = $scope.paragraph.result.msg;
+    if (errorText) {
+      errorText = errorText.toLowerCase();
+      if (errorText.indexOf('timed out') > 0 ||
+        (errorText.indexOf('thrift') > 0) && errorText.indexOf('except') > 0 ||
+        errorText.indexOf('connection refused') > 0) {
+        return true;
+      }
+    }
+    return false;
+  };
+
+  $scope.showScrollDownIcon = function() {
     var doc = angular.element('#p' + $scope.paragraph.id + '_text');
     if(doc[0]){
       return doc[0].scrollHeight > doc.innerHeight();
