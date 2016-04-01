@@ -45,13 +45,14 @@ ZEPPELIN_HOME="$(cd "${FWDIR}/.."; pwd)"
 
 SPARK_CACHE=".spark-dist"
 SPARK_ARCHIVE="spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}"
-export SPARK_HOME="${ZEPPELIN_HOME}/${SPARK_CACHE}/${SPARK_ARCHIVE}"
+export SPARK_HOME="${ZEPPELIN_HOME}/${SPARK_ARCHIVE}"
 echo "SPARK_HOME is ${SPARK_HOME}"
 
 if [[ ! -d "${SPARK_HOME}" ]]; then
     mkdir -p "${SPARK_CACHE}"
     cd "${SPARK_CACHE}"
     if [[ ! -f "${SPARK_ARCHIVE}.tgz" ]]; then
+        echo "Cache does not have ${SPARK_ARCHIVE} downloading ..."
         # download archive if not cached
         if [[ "${SPARK_VER_RANGE}" == "<=1.2" ]]; then
             # spark 1.1.x and spark 1.2.x can be downloaded from archive
@@ -74,7 +75,9 @@ if [[ ! -d "${SPARK_HOME}" ]]; then
         fi
     fi
 
-    # extract archive, clean-up on failure
+    # extract archive in un-cached root, clean-up on failure
+    cp "${SPARK_ARCHIVE}.tgz" ..
+    cd ..
     if ! tar zxf "${SPARK_ARCHIVE}.tgz" ; then
         echo "Unable to extract ${SPARK_ARCHIVE}.tgz" >&2
         rm -rf "${SPARK_ARCHIVE}"
