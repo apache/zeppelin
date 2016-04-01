@@ -18,7 +18,7 @@ language: java
 sudo: false
 cache:
   directories:
-    - .spark
+    - .spark-dist
 
 matrix:
   include:

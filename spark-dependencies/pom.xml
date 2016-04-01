@@ -788,7 +788,7 @@
                 <configuration>
                   <url>${spark.download.url}</url>
                   <unpack>true</unpack>
-                  <outputDirectory>${project.build.directory}/spark-dist</outputDirectory>
+                  <outputDirectory>${project.build.directory}/../../.spark-dist</outputDirectory>
                 </configuration>
               </execution>
             </executions>
@@ -801,7 +801,7 @@
                   <directory>${basedir}/../python/build</directory>
                 </fileset>
                 <fileset>
-                  <directory>${project.build.directory}/spark-dist</directory>
+                  <directory>${project.build.directory}/../../.spark-dist</directory>
                 </fileset>
               </filesets>
             </configuration>
@@ -821,9 +821,9 @@
                   <target>
                     <delete dir="../interpreter/spark/pyspark"/>
                     <copy todir="../interpreter/spark/pyspark"
-                        file="${project.build.directory}/spark-dist/spark-${spark.version}/python/lib/py4j-${py4j.version}-src.zip"/>
+                        file="${project.build.directory}/../../.spark-dist/spark-${spark.version}/python/lib/py4j-${py4j.version}-src.zip"/>
                     <zip destfile="${project.build.directory}/../../interpreter/spark/pyspark/pyspark.zip"
-                         basedir="${project.build.directory}/spark-dist/spark-${spark.version}/python"
+                         basedir="${project.build.directory}/../../.spark-dist/spark-${spark.version}/python"
                          includes="pyspark/*.py,pyspark/**/*.py"/>
                   </target>
                 </configuration>

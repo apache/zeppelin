@@ -43,7 +43,7 @@ set -xe
 FWDIR="$(dirname "${BASH_SOURCE-$0}")"
 ZEPPELIN_HOME="$(cd "${FWDIR}/.."; pwd)"
 
-SPARK_CACHE=".spark"
+SPARK_CACHE=".spark-dist"
 SPARK_ARCHIVE="spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}"
 export SPARK_HOME="${ZEPPELIN_HOME}/${SPARK_CACHE}/${SPARK_ARCHIVE}"
 echo "SPARK_HOME is ${SPARK_HOME}"
