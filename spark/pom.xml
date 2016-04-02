@@ -41,15 +41,6 @@
     <spark.version>1.6.2</spark.version>
   </properties>
 
-  <profiles>
-    <profile>
-      <id>scala-2.11</id>
-      <properties>
-        <spark.version>1.6.2</spark.version>
-      </properties>
-    </profile>
-  </profiles>
-
   <dependencies>
     <dependency>
       <groupId>org.slf4j</groupId>
@@ -257,7 +248,7 @@
     <dependency>
       <groupId>org.scalatest</groupId>
       <artifactId>scalatest_${scala.binary.version}</artifactId>
-      <version>2.2.4</version>
+      <version>${scalatest.version}</version>
       <scope>test</scope>
     </dependency>
 
@@ -448,6 +439,12 @@
   </build>
 
   <profiles>
+    <profile>
+      <id>scala-2.11</id>
+      <properties>
+        <spark.version>1.6.2</spark.version>
+      </properties>
+    </profile>
 
     <!-- to deactivate 'exclude-sparkr' automatically when 'spark' is activated -->
     <profile>
