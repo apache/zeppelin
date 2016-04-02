@@ -26,6 +26,7 @@ import org.apache.zeppelin.interpreter.mock.MockInterpreter1;
 import org.apache.zeppelin.interpreter.mock.MockInterpreter2;
 import org.apache.zeppelin.notebook.*;
 import org.apache.zeppelin.notebook.repo.VFSNotebookRepo;
+import org.apache.zeppelin.scheduler.ExecutorFactory;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.apache.zeppelin.search.SearchService;
@@ -36,6 +37,8 @@ import org.junit.Test;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
@@ -70,7 +73,9 @@ public class HeliumApplicationFactoryTest implements JobListenerFactory {
     MockInterpreter1.register("mock1", "org.apache.zeppelin.interpreter.mock.MockInterpreter1");
     MockInterpreter2.register("mock2", "org.apache.zeppelin.interpreter.mock.MockInterpreter2");
 
-    heliumAppFactory = new HeliumApplicationFactory();
+
+    ExecutorService executor = ExecutorFactory.singleton().createOrGet("schedulerFactory", 100);
+    heliumAppFactory = new HeliumApplicationFactory(executor);
 
     depResolver = new DependencyResolver(tmpDir.getAbsolutePath() + "/local-repo");
     factory = new InterpreterFactory(conf,
@@ -124,15 +129,17 @@ public class HeliumApplicationFactoryTest implements JobListenerFactory {
     assertEquals("repl1: job", p1.getResult().message());
 
     // when
-    String appId = heliumAppFactory.load(pkg1, p1);
-    heliumAppFactory.run(p1, pkg1.getName());
+    assertEquals(0, p1.getAllApplicationStates().size());
+    String appId = heliumAppFactory.loadAndRun(pkg1, p1);
+    assertEquals(1, p1.getAllApplicationStates().size());
+    ApplicationState app = p1.getApplicationState(appId);
+    Thread.sleep(1000); // wait for enough time
 
     // then
-    Thread.sleep(1000);
-    assertEquals("Hello world", p1.apps.get(0).getOutput());
+    assertEquals("Hello world", app.getOutput());
 
     // clean
-    heliumAppFactory.unload(p1, pkg1.getName());
+    heliumAppFactory.unload(p1, appId);
     notebook.removeNote(note1.getId());
   }
 

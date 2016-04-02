@@ -22,5 +22,4 @@ package org.apache.zeppelin.helium;
 public interface ApplicationEventListener {
   public void onOutputAppend(String noteId, String paragraphId, String appId, String output);
   public void onOutputUpdated(String noteId, String paragraphId, String appId, String output);
-
 }

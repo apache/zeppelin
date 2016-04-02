@@ -18,6 +18,7 @@
 package org.apache.zeppelin.notebook;
 
 import org.apache.zeppelin.display.AngularObjectRegistry;
+import org.apache.zeppelin.helium.HeliumPackage;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.display.Input;
@@ -53,7 +54,11 @@ public class Paragraph extends Job implements Serializable, Cloneable {
   Date dateUpdated;
   private Map<String, Object> config; // paragraph configs like isOpen, colWidth, etc
   public final GUI settings;          // form and parameter settings
-  public final List<ApplicationState> apps =  new LinkedList<ApplicationState>();
+
+  /**
+   * Applicaiton states in this paragraph
+   */
+  private final List<ApplicationState> apps =  new LinkedList<ApplicationState>();
 
   @VisibleForTesting
   Paragraph() {
@@ -390,5 +395,44 @@ public class Paragraph extends Job implements Serializable, Cloneable {
   public Object clone() throws CloneNotSupportedException {
     Paragraph paraClone = (Paragraph) this.clone();
     return paraClone;
+  }
+
+
+  private String getApplicationId(HeliumPackage pkg) {
+    return "app_" + getNote().getId() + "-" + getId() + pkg.getName();
+  }
+
+  public ApplicationState createOrGetApplicationState(HeliumPackage pkg) {
+    synchronized (apps) {
+      for (ApplicationState as : apps) {
+        if (as.getName().equals(pkg.getName())) {
+          return as;
+        }
+      }
+
+      String appId = getApplicationId(pkg);
+      ApplicationState appState = new ApplicationState(appId, pkg.getName());
+      apps.add(appState);
+      return appState;
+    }
+  }
+
+
+  public ApplicationState getApplicationState(String appId) {
+    synchronized (apps) {
+      for (ApplicationState as : apps) {
+        if (as.getId().equals(appId)) {
+          return as;
+        }
+      }
+    }
+
+    return null;
+  }
+
+  public List<ApplicationState> getAllApplicationStates() {
+    synchronized (apps) {
+      return new LinkedList<ApplicationState>(apps);
+    }
   }
 }

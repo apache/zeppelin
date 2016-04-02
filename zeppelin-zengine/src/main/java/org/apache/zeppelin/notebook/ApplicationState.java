@@ -16,37 +16,44 @@
  */
 package org.apache.zeppelin.notebook;
 
-import org.apache.zeppelin.helium.Application;
-import org.apache.zeppelin.helium.HeliumPackage;
-import org.apache.zeppelin.interpreter.InterpreterGroup;
-import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
-
 /**
- * Running ApplicationState
+ * Current state of application
  */
 public class ApplicationState {
 
   /**
    * Status of Application
    */
-  public static enum ApplicationStatus {
+  public static enum Status {
     LOADING,
     LOADED,
     UNLOADING,
-    UNLOADED
+    UNLOADED,
+    ERROR
   };
 
+  Status status = Status.UNLOADED;
 
-  String id; // unique id for this instance similar to note id or paragraph id
+  String id;   // unique id for this instance. Similar to note id or paragraph id
   String name; // name of app
-  ApplicationStatus status;
   String output;
 
   public ApplicationState(String id, String name) {
     this.id = id;
     this.name = name;
-    status = ApplicationStatus.UNLOADED;
   }
+
+  /**
+   * After ApplicationState is restored from NotebookRepo,
+   * such as after Zeppelin daemon starts or Notebook import,
+   * Application status need to be reset.
+   */
+  public void resetStatus() {
+    if (status != Status.ERROR) {
+      status = Status.UNLOADED;
+    }
+  }
+
 
   @Override
   public boolean equals(Object o) {
@@ -71,11 +78,11 @@ public class ApplicationState {
     return id;
   }
 
-  public void setStatus(ApplicationStatus status) {
+  public void setStatus(Status status) {
     this.status = status;
   }
 
-  public ApplicationStatus getStatus() {
+  public Status getStatus() {
     return status;
   }
 

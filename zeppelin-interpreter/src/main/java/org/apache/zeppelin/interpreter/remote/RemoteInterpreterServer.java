@@ -712,7 +712,6 @@ public class RemoteInterpreterServer
     return new InterpreterOutput(new InterpreterOutputListener() {
       @Override
       public void onAppend(InterpreterOutput out, byte[] line) {
-        logger.info("Append output ----------------" + new String(line));
         eventClient.onAppOutputAppend(noteId, paragraphId, appId, new String(line));
       }
 
@@ -725,7 +724,6 @@ public class RemoteInterpreterServer
 
   private ApplicationContext getApplicationContext(
       HeliumPackage packageInfo, String noteId, String paragraphId, String applicationInstanceId) {
-    System.err.println("get app context ************");
     InterpreterOutput out = createAppOutput(noteId, paragraphId, applicationInstanceId);
     return new ApplicationContext(noteId, paragraphId, out);
   }
