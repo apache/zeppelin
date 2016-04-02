@@ -82,6 +82,8 @@
   <properties>
     <scala.version>2.10.5</scala.version>
     <scala.binary.version>2.10</scala.binary.version>
+    <scalatest.version>2.2.4</scalatest.version>
+    <scalacheck.version>1.12.5</scalacheck.version>
 
     <slf4j.version>1.7.10</slf4j.version>
     <log4j.version>1.2.17</log4j.version>

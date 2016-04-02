@@ -36,8 +36,6 @@
     <script.extension>.sh</script.extension>
     <path.separator>/</path.separator>
     <spark.version>1.4.1</spark.version>
-    <scala.version>2.10.4</scala.version>
-    <scala.binary.version>2.10</scala.binary.version>
   </properties>
 
   <dependencies>
@@ -118,13 +116,13 @@
     <dependency>
       <groupId>org.scalatest</groupId>
       <artifactId>scalatest_${scala.binary.version}</artifactId>
-      <version>2.2.4</version>
+      <version>${scalatest.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.scalacheck</groupId>
       <artifactId>scalacheck_${scala.binary.version}</artifactId>
-      <version>1.12.5</version>
+      <version>${scalacheck.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -376,4 +374,31 @@
       </plugin>
     </plugins>
   </build>
+
+
+  <profiles>
+    <profile>
+      <id>scala-2.10</id>
+      <activation>
+        <property><name>!scala-2.11</name></property>
+      </activation>
+      <properties>
+        <spark.version>1.6.1</spark.version>
+        <extra.source.dir>src/main/scala-2.10</extra.source.dir>
+        <extra.testsource.dir>src/test/scala-2.10</extra.testsource.dir>
+      </properties>
+    </profile>
+
+    <profile>
+      <id>scala-2.11</id>
+      <activation>
+        <property><name>scala-2.11</name></property>
+      </activation>
+      <properties>
+        <spark.version>1.6.1</spark.version>
+        <extra.source.dir>src/main/scala-2.11</extra.source.dir>
+        <extra.testsource.dir>src/test/scala/scala-2.11</extra.testsource.dir>
+      </properties>
+    </profile>
+  </profiles>
 </project>

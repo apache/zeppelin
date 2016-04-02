@@ -43,7 +43,6 @@
         <cassandra.guava.version>16.0.1</cassandra.guava.version>
 
         <!--TEST-->
-        <scalatest.version>2.2.4</scalatest.version>
         <junit.version>4.12</junit.version>
         <achilles.version>3.2.4-Zeppelin</achilles.version>
         <assertj.version>1.7.0</assertj.version>
