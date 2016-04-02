@@ -241,6 +241,7 @@
         <groupId>org.apache.rat</groupId>
         <artifactId>apache-rat-plugin</artifactId>
       </plugin>
+
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.1</version>
@@ -249,6 +250,7 @@
           <target>1.7</target>
         </configuration>
       </plugin>
+
       <!-- Test coverage plugin -->
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
@@ -270,6 +272,7 @@
           </execution>
         </executions>
       </plugin>
+
       <!-- Checkstyle plugin -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -488,6 +491,7 @@
               <exclude>conf/notebook-authorization.json</exclude>
               <exclude>conf/zeppelin-env.sh</exclude>
               <exclude>spark-*-bin*/**</exclude>
+              <exclude>.spark-dist/**</exclude>
 
               <!-- bundled from bootstrap -->
               <exclude>docs/assets/themes/zeppelin/bootstrap/**</exclude>
@@ -640,6 +644,13 @@
             </lifecycleMappingMetadata>
           </configuration>
         </plugin>
+
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-antrun-plugin</artifactId>
+          <version>1.7</version>
+        </plugin>
+
       </plugins>
     </pluginManagement>
   </build>
