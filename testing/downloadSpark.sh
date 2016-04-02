@@ -40,6 +40,7 @@ fi
 
 set -xe
 
+TIMEOUT_SEC=590
 FWDIR="$(dirname "${BASH_SOURCE-$0}")"
 ZEPPELIN_HOME="$(cd "${FWDIR}/.."; pwd)"
 
@@ -59,8 +60,7 @@ if [[ ! -d "${SPARK_HOME}" ]]; then
         if [[ "${SPARK_VER_RANGE}" == "<=1.2" ]]; then
             # spark 1.1.x and spark 1.2.x can be downloaded from archive
             STARTTIME=`date +%s`
-            #timeout -s KILL 300
-            wget -T 300 "http://archive.apache.org/dist/spark/spark-${SPARK_VERSION}/${SPARK_ARCHIVE}.tgz"
+            timeout -s KILL "${TIMEOUT_SEC}" wget -q "http://archive.apache.org/dist/spark/spark-${SPARK_VERSION}/${SPARK_ARCHIVE}.tgz"
             ENDTIME=`date +%s`
             DOWNLOADTIME="$((ENDTIME-STARTTIME))"
         else
@@ -72,8 +72,7 @@ if [[ ! -d "${SPARK_HOME}" ]]; then
             PATHINFO=$(echo "${MIRROR_INFO}" | grep path_info | sed 's/[^"]*.path_info.: .\([^"]*\).*/\1/g')
 
             STARTTIME=`date +%s`
-            #timeout -s KILL 590
-            wget -T 590 "${PREFFERED}${PATHINFO}"
+            timeout -s KILL "${TIMEOUT_SEC}" wget -q "${PREFFERED}${PATHINFO}"
             ENDTIME=`date +%s`
             DOWNLOADTIME="$((ENDTIME-STARTTIME))"
         fi
