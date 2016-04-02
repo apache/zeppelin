@@ -183,10 +183,8 @@ public class LivyHelper {
     if (stringLines.trim().equals("")) {
       return new InterpreterResult(Code.SUCCESS, "");
     }
-    LOGGER.error("stringLines==" + stringLines);
     Map jsonMap = executeCommand(stringLines, context, userSessionMap);
     Integer id = ((Double) jsonMap.get("id")).intValue();
-    LOGGER.error("jsonMap==" + jsonMap);
     InterpreterResult res = getResultFromMap(jsonMap);
     if (res != null) {
       return res;
@@ -225,11 +223,14 @@ public class LivyHelper {
       if (((Map) jsonMap.get("output")).get("status").equals("ok")) {
         String result = (String) ((Map) ((Map) jsonMap.get("output"))
             .get("data")).get("text/plain");
-        if (result.startsWith("<link")
-            || result.startsWith("<script")
-            || result.startsWith("<style")
-            || result.startsWith("<div")) {
-          result = "%html " + result;
+        if (result != null) {
+          result = result.trim();
+          if (result.startsWith("<link")
+              || result.startsWith("<script")
+              || result.startsWith("<style")
+              || result.startsWith("<div")) {
+            result = "%html " + result;
+          }
         }
         return new InterpreterResult(Code.SUCCESS, result);
       }
@@ -290,7 +291,6 @@ public class LivyHelper {
       request.addHeader("Content-Type", "application/json");
       response = client.execute(request);
     }
-
 
     if (response.getStatusLine().getStatusCode() == 200
         || response.getStatusLine().getStatusCode() == 201
