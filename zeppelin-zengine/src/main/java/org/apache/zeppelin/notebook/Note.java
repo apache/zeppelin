@@ -69,6 +69,7 @@ public class Note implements Serializable, JobListener {
   private transient NotebookRepo repo;
   private transient SearchService index;
   private transient ScheduledFuture delayedPersist;
+  private transient NoteEventListener noteEventListener;
 
   /**
    * note configurations.
@@ -88,11 +89,12 @@ public class Note implements Serializable, JobListener {
   public Note() {}
 
   public Note(NotebookRepo repo, NoteInterpreterLoader replLoader,
-      JobListenerFactory jlFactory, SearchService noteIndex) {
+      JobListenerFactory jlFactory, SearchService noteIndex, NoteEventListener noteEventListener) {
     this.repo = repo;
     this.replLoader = replLoader;
     this.jobListenerFactory = jlFactory;
     this.index = noteIndex;
+    this.noteEventListener = noteEventListener;
     generateId();
   }
 
@@ -158,6 +160,9 @@ public class Note implements Serializable, JobListener {
     synchronized (paragraphs) {
       paragraphs.add(p);
     }
+    if (noteEventListener != null) {
+      noteEventListener.onParagraphCreate(p);
+    }
     return p;
   }
 
@@ -187,6 +192,9 @@ public class Note implements Serializable, JobListener {
     synchronized (paragraphs) {
       paragraphs.add(newParagraph);
     }
+    if (noteEventListener != null) {
+      noteEventListener.onParagraphCreate(newParagraph);
+    }
   }
 
   /**
@@ -198,6 +206,9 @@ public class Note implements Serializable, JobListener {
     Paragraph p = new Paragraph(this, this, replLoader);
     synchronized (paragraphs) {
       paragraphs.add(index, p);
+    }
+    if (noteEventListener != null) {
+      noteEventListener.onParagraphCreate(p);
     }
     return p;
   }
@@ -218,12 +229,14 @@ public class Note implements Serializable, JobListener {
         if (p.getId().equals(paragraphId)) {
           index.deleteIndexDoc(this, p);
           i.remove();
+
+          if (noteEventListener != null) {
+            noteEventListener.onParagraphRemove(p);
+          }
           return p;
         }
       }
     }
-
-
     return null;
   }
 
@@ -513,4 +526,13 @@ public class Note implements Serializable, JobListener {
   @Override
   public void onProgressUpdate(Job job, int progress) {}
 
+
+
+  public NoteEventListener getNoteEventListener() {
+    return noteEventListener;
+  }
+
+  public void setNoteEventListener(NoteEventListener noteEventListener) {
+    this.noteEventListener = noteEventListener;
+  }
 }

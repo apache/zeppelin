@@ -27,6 +27,7 @@ import static org.mockito.Mockito.mock;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
@@ -623,6 +624,62 @@ public class NotebookTest implements JobListenerFactory{
     assertNotEquals(result.message(), p1.getResult().message());
 
     notebook.removeNote(note1.getId());
+  }
+
+  @Test
+  public void testNotebookEventListener() throws IOException {
+    final AtomicInteger onNoteRemove = new AtomicInteger(0);
+    final AtomicInteger onNoteCreate = new AtomicInteger(0);
+    final AtomicInteger onParagraphRemove = new AtomicInteger(0);
+    final AtomicInteger onParagraphCreate = new AtomicInteger(0);
+    final AtomicInteger unbindInterpreter = new AtomicInteger(0);
+
+    notebook.addNotebookEventListener(new NotebookEventListener() {
+      @Override
+      public void onNoteRemove(Note note) {
+        onNoteRemove.incrementAndGet();
+      }
+
+      @Override
+      public void onNoteCreate(Note note) {
+        onNoteCreate.incrementAndGet();
+      }
+
+      @Override
+      public void onUnbindInterpreter(Note note, InterpreterSetting setting) {
+        unbindInterpreter.incrementAndGet();
+      }
+
+      @Override
+      public void onParagraphRemove(Paragraph p) {
+        onParagraphRemove.incrementAndGet();
+      }
+
+      @Override
+      public void onParagraphCreate(Paragraph p) {
+        onParagraphCreate.incrementAndGet();
+      }
+    });
+
+    Note note1 = notebook.createNote();
+    assertEquals(1, onNoteCreate.get());
+
+    Paragraph p1 = note1.addParagraph();
+    assertEquals(1, onParagraphCreate.get());
+
+    note1.addCloneParagraph(p1);
+    assertEquals(2, onParagraphCreate.get());
+
+    note1.removeParagraph(p1.getId());
+    assertEquals(1, onParagraphRemove.get());
+
+    List<String> settings = notebook.getBindedInterpreterSettingsIds(note1.id());
+    notebook.bindInterpretersToNote(note1.id(), new LinkedList<String>());
+    assertEquals(settings.size(), unbindInterpreter.get());
+
+    notebook.removeNote(note1.getId());
+    assertEquals(1, onNoteRemove.get());
+    assertEquals(1, onParagraphRemove.get());
   }
 
 

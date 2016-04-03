@@ -34,7 +34,6 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
-import org.apache.zeppelin.helium.ApplicationEventListener;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
@@ -63,7 +62,7 @@ import com.google.gson.stream.JsonReader;
 /**
  * Collection of Notes.
  */
-public class Notebook {
+public class Notebook implements NoteEventListener {
   static Logger logger = LoggerFactory.getLogger(Notebook.class);
 
   @SuppressWarnings("unused") @Deprecated //TODO(bzz): remove unused
@@ -79,6 +78,8 @@ public class Notebook {
   private NotebookRepo notebookRepo;
   private SearchService notebookIndex;
   private NotebookAuthorization notebookAuthorization;
+  private final List<NotebookEventListener> notebookEventListeners =
+      Collections.synchronizedList(new LinkedList<NotebookEventListener>());
 
   /**
    * Main constructor \w manual Dependency Injection
@@ -147,7 +148,7 @@ public class Notebook {
    */
   public Note createNote(List<String> interpreterIds) throws IOException {
     NoteInterpreterLoader intpLoader = new NoteInterpreterLoader(replFactory);
-    Note note = new Note(notebookRepo, intpLoader, jobListenerFactory, notebookIndex);
+    Note note = new Note(notebookRepo, intpLoader, jobListenerFactory, notebookIndex, this);
     intpLoader.setNoteId(note.id());
     synchronized (notes) {
       notes.put(note.id(), note);
@@ -158,6 +159,7 @@ public class Notebook {
 
     notebookIndex.addIndexDoc(note);
     note.persist();
+    fireNoteCreateEvent(note);
     return note;
   }
   
@@ -209,7 +211,7 @@ public class Notebook {
       logger.error(e.toString(), e);
       throw e;
     }
-    
+
     return newNote;
   }
 
@@ -246,10 +248,17 @@ public class Notebook {
   }
 
   public void bindInterpretersToNote(String id,
-      List<String> interpreterSettingIds) throws IOException {
+      List<String> newBindings) throws IOException {
     Note note = getNote(id);
     if (note != null) {
-      note.getNoteReplLoader().setInterpreters(interpreterSettingIds);
+      List<InterpreterSetting> currentBindings = note.getNoteReplLoader().getInterpreterSettings();
+      for (InterpreterSetting setting : currentBindings) {
+        if (!newBindings.contains(setting.id())) {
+          fireUnbindInterpreter(note, setting);
+        }
+      }
+
+      note.getNoteReplLoader().setInterpreters(newBindings);
       // comment out while note.getNoteReplLoader().setInterpreters(...) do the same
       // replFactory.putNoteInterpreterSettingBinding(id, interpreterSettingIds);
     }
@@ -310,6 +319,8 @@ public class Notebook {
     }
 
     ResourcePoolUtils.removeResourcesBelongsToNote(id);
+
+    fireNoteRemoveEvent(note);
 
     try {
       note.unpersist();
@@ -372,6 +383,8 @@ public class Notebook {
       }
     }
 
+    note.setNoteEventListener(this);
+
     synchronized (notes) {
       notes.put(note.id(), note);
       refreshCron(note.id());
@@ -395,6 +408,7 @@ public class Notebook {
         }
       }
     }
+
     return note;
   }
 
@@ -597,4 +611,39 @@ public class Notebook {
     this.notebookIndex.close();
   }
 
+  public void addNotebookEventListener(NotebookEventListener listener) {
+    notebookEventListeners.add(listener);
+  }
+
+  private void fireNoteCreateEvent(Note note) {
+    for (NotebookEventListener listener : notebookEventListeners) {
+      listener.onNoteCreate(note);
+    }
+  }
+
+  private void fireNoteRemoveEvent(Note note) {
+    for (NotebookEventListener listener : notebookEventListeners) {
+      listener.onNoteRemove(note);
+    }
+  }
+
+  private void fireUnbindInterpreter(Note note, InterpreterSetting setting) {
+    for (NotebookEventListener listener : notebookEventListeners) {
+      listener.onUnbindInterpreter(note, setting);
+    }
+  }
+
+  @Override
+  public void onParagraphRemove(Paragraph p) {
+    for (NotebookEventListener listener : notebookEventListeners) {
+      listener.onParagraphRemove(p);
+    }
+  }
+
+  @Override
+  public void onParagraphCreate(Paragraph p) {
+    for (NotebookEventListener listener : notebookEventListeners) {
+      listener.onParagraphCreate(p);
+    }
+  }
 }

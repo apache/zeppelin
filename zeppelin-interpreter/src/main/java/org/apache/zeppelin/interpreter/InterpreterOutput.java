@@ -61,7 +61,6 @@ public class InterpreterOutput extends OutputStream {
   public void setType(InterpreterResult.Type type) {
     if (this.type != type) {
       clear();
-      flushListener.onUpdate(this, new byte[]{});
       this.type = type;
     }
   }
@@ -74,6 +73,8 @@ public class InterpreterOutput extends OutputStream {
       if (watcher != null) {
         watcher.clear();
       }
+
+      flushListener.onUpdate(this, new byte[]{});
     }
   }
 

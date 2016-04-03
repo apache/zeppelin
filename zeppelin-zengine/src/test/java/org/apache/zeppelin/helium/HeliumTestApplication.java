@@ -19,8 +19,10 @@ package org.apache.zeppelin.helium;
 import org.apache.zeppelin.resource.ResourceSet;
 
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class HeliumTestApplication extends Application {
+  AtomicInteger numRun = new AtomicInteger(0);
   public HeliumTestApplication(ResourceSet args, ApplicationContext context)
       throws ApplicationException {
     super(args, context);
@@ -29,7 +31,8 @@ public class HeliumTestApplication extends Application {
   @Override
   public void run() throws ApplicationException {
     try {
-      context().out.write("Hello world");
+      context().out.clear();
+      context().out.write("Hello world " + numRun.incrementAndGet());
       context().out.flush();
     } catch (IOException e) {
       throw new ApplicationException(e);

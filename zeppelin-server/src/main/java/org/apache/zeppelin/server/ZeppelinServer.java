@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
 
 import javax.net.ssl.SSLContext;
 import javax.servlet.DispatcherType;
@@ -101,6 +102,8 @@ public class ZeppelinServer extends Application {
     heliumApplicationFactory.setNotebook(notebook);
     // to update fire websocket event on application event.
     heliumApplicationFactory.setApplicationEventListener(notebookWsServer);
+
+    notebook.addNotebookEventListener(heliumApplicationFactory);
   }
 
   public static void main(String[] args) throws InterruptedException {

@@ -37,6 +37,7 @@ import org.junit.Test;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -74,8 +75,7 @@ public class HeliumApplicationFactoryTest implements JobListenerFactory {
     MockInterpreter2.register("mock2", "org.apache.zeppelin.interpreter.mock.MockInterpreter2");
 
 
-    ExecutorService executor = ExecutorFactory.singleton().createOrGet("schedulerFactory", 100);
-    heliumAppFactory = new HeliumApplicationFactory(executor);
+    heliumAppFactory = new HeliumApplicationFactory();
 
     depResolver = new DependencyResolver(tmpDir.getAbsolutePath() + "/local-repo");
     factory = new InterpreterFactory(conf,
@@ -97,6 +97,8 @@ public class HeliumApplicationFactoryTest implements JobListenerFactory {
         notebookAuthorization);
 
     heliumAppFactory.setNotebook(notebook);
+
+    notebook.addNotebookEventListener(heliumAppFactory);
   }
 
   @After
@@ -133,16 +135,100 @@ public class HeliumApplicationFactoryTest implements JobListenerFactory {
     String appId = heliumAppFactory.loadAndRun(pkg1, p1);
     assertEquals(1, p1.getAllApplicationStates().size());
     ApplicationState app = p1.getApplicationState(appId);
-    Thread.sleep(1000); // wait for enough time
+    Thread.sleep(500); // wait for enough time
 
     // then
-    assertEquals("Hello world", app.getOutput());
+    assertEquals("Hello world 1", app.getOutput());
+
+    // when
+    heliumAppFactory.run(p1, appId);
+    Thread.sleep(500); // wait for enough time
+
+    // then
+    assertEquals("Hello world 2", app.getOutput());
 
     // clean
     heliumAppFactory.unload(p1, appId);
     notebook.removeNote(note1.getId());
   }
 
+  @Test
+  public void testUnloadOnParagraphRemove() throws IOException {
+    // given
+    HeliumPackage pkg1 = new HeliumPackage(HeliumPackage.Type.APPLICATION,
+        "name1",
+        "desc1",
+        "",
+        HeliumTestApplication.class.getName(),
+        new String[][]{});
+
+    Note note1 = notebook.createNote();
+    note1.getNoteReplLoader().setInterpreters(factory.getDefaultInterpreterSettingList());
+
+    Paragraph p1 = note1.addParagraph();
+
+    // make sure interpreter process running
+    p1.setText("job");
+    note1.run(p1.getId());
+    while(p1.isTerminated()==false || p1.getResult()==null) Thread.yield();
+
+    assertEquals(0, p1.getAllApplicationStates().size());
+    String appId = heliumAppFactory.loadAndRun(pkg1, p1);
+    ApplicationState app = p1.getApplicationState(appId);
+    while (app.getStatus() != ApplicationState.Status.LOADED) {
+      Thread.yield();
+    }
+
+    // when remove paragraph
+    note1.removeParagraph(p1.getId());
+    while (app.getStatus() != ApplicationState.Status.UNLOADED) {
+      Thread.yield();
+    }
+
+    // then
+    assertEquals(ApplicationState.Status.UNLOADED, app.getStatus());
+
+    // clean
+    notebook.removeNote(note1.getId());
+  }
+
+
+  @Test
+  public void testUnloadOnInterpreterUnbind() throws IOException {
+    // given
+    HeliumPackage pkg1 = new HeliumPackage(HeliumPackage.Type.APPLICATION,
+        "name1",
+        "desc1",
+        "",
+        HeliumTestApplication.class.getName(),
+        new String[][]{});
+
+    Note note1 = notebook.createNote();
+    note1.getNoteReplLoader().setInterpreters(factory.getDefaultInterpreterSettingList());
+
+    Paragraph p1 = note1.addParagraph();
+
+    // make sure interpreter process running
+    p1.setText("job");
+    note1.run(p1.getId());
+    while(p1.isTerminated()==false || p1.getResult()==null) Thread.yield();
+
+    assertEquals(0, p1.getAllApplicationStates().size());
+    String appId = heliumAppFactory.loadAndRun(pkg1, p1);
+    ApplicationState app = p1.getApplicationState(appId);
+    while (app.getStatus() != ApplicationState.Status.LOADED) {
+      Thread.yield();
+    }
+
+    // when unbind interpreter
+    note1.getNoteReplLoader().setInterpreters(new LinkedList<String>());
+
+    // then
+    assertEquals(ApplicationState.Status.UNLOADED, app.getStatus());
+
+    // clean
+    notebook.removeNote(note1.getId());
+  }
 
   @Override
   public ParagraphJobListener getParagraphJobListener(Note note) {

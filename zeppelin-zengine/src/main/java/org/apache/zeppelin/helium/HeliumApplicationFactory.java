@@ -20,47 +20,39 @@ import com.google.gson.Gson;
 import org.apache.thrift.TException;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
+import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
 import org.apache.zeppelin.interpreter.thrift.RemoteApplicationResult;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService;
-import org.apache.zeppelin.notebook.ApplicationState;
-import org.apache.zeppelin.notebook.Note;
-import org.apache.zeppelin.notebook.Notebook;
-import org.apache.zeppelin.notebook.Paragraph;
+import org.apache.zeppelin.notebook.*;
+import org.apache.zeppelin.scheduler.ExecutorFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import sun.reflect.annotation.ExceptionProxy;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
 
 /**
  * HeliumApplicationFactory
  *
- * 1. sync api -> async api
- * 2. unload app when paragraph / note / interpreter remove
  * 3. front-end job
  * 4. example app
  * 5. dev mode
  * 6. app launcher
  * 7. offline mode. front-end table data / pivot panel access
  */
-public class HeliumApplicationFactory implements ApplicationEventListener {
+public class HeliumApplicationFactory implements ApplicationEventListener, NotebookEventListener {
   private final Logger logger = LoggerFactory.getLogger(HeliumApplicationFactory.class);
   private final ExecutorService executor;
-  private final Gson gson;
+  private final Gson gson = new Gson();
   private Notebook notebook;
   private ApplicationEventListener applicationEventListener;
 
-  public HeliumApplicationFactory(ExecutorService executor) {
-    gson = new Gson();
-    this.executor = executor;
+  public HeliumApplicationFactory() {
+    executor = ExecutorFactory.singleton().createOrGet(
+        HeliumApplicationFactory.class.getName(), 10);
   }
-
-
 
   private boolean isRemote(InterpreterGroup group) {
     return group.getAngularObjectRegistry() instanceof RemoteAngularObjectRegistry;
@@ -325,21 +317,6 @@ public class HeliumApplicationFactory implements ApplicationEventListener {
     }
   }
 
-
-
-  public void unloadAllInTheInterpreterProcess(RemoteInterpreterProcess process) {
-    // TODO
-  }
-
-  public void unloadAllInTheNote(Note note) {
-    // TODO
-  }
-
-  public void unloadAllInTheParagraph(Paragraph paragraph) {
-    // TODO
-  }
-
-
   @Override
   public void onOutputAppend(String noteId, String paragraphId, String appId, String output) {
     ApplicationState appToUpdate = getAppState(noteId, paragraphId, appId);
@@ -405,5 +382,41 @@ public class HeliumApplicationFactory implements ApplicationEventListener {
 
   public void setApplicationEventListener(ApplicationEventListener applicationEventListener) {
     this.applicationEventListener = applicationEventListener;
+  }
+
+  @Override
+  public void onNoteRemove(Note note) {
+  }
+
+  @Override
+  public void onNoteCreate(Note note) {
+
+  }
+
+  @Override
+  public void onUnbindInterpreter(Note note, InterpreterSetting setting) {
+    for (Paragraph p : note.getParagraphs()) {
+      Interpreter currentInterpreter = p.getCurrentRepl();
+      List<InterpreterSetting.InterpreterInfo> infos = setting.getInterpreterInfos();
+      for (InterpreterSetting.InterpreterInfo info : infos) {
+        if (info.getClassName().equals(currentInterpreter.getClassName())) {
+          onParagraphRemove(p);
+          break;
+        }
+      }
+    }
+  }
+
+  @Override
+  public void onParagraphRemove(Paragraph paragraph) {
+    List<ApplicationState> appStates = paragraph.getAllApplicationStates();
+    for (ApplicationState app : appStates) {
+      unload(paragraph, app.getId());
+    }
+  }
+
+  @Override
+  public void onParagraphCreate(Paragraph p) {
+
   }
 }
