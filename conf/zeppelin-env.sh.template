@@ -64,3 +64,9 @@
 # export ZEPPELIN_SPARK_MAXRESULT       # Max number of SparkSQL result to display. 1000 by default.
 # export ZEPPELIN_WEBSOCKET_MAX_TEXT_MESSAGE_SIZE       # Size in characters of the maximum text message to be received by websocket. Defaults to 1024000
 
+#### HBase interpreter configuration ####
+
+## To connect to HBase running on a cluster, either HBASE_HOME or HBASE_CONF_DIR must be set
+
+# export HBASE_HOME=                    # (require) Under which HBase scripts and configuration should be
+# export HBASE_CONF_DIR=                # (optional) Alternatively, configuration directory can be set to point to the directory that has hbase-site.xml

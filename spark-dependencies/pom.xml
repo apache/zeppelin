@@ -50,8 +50,11 @@
     <akka.group>org.spark-project.akka</akka.group>
     <akka.version>2.3.4-spark</akka.version>
 
-    <spark.download.url>http://archive.apache.org/dist/spark/spark-${spark.version}/spark-${spark.version}.tgz</spark.download.url>
-    <spark.bin.download.url>http://archive.apache.org/dist/spark/spark-${spark.version}/spark-${spark.version}-bin-without-hadoop.tgz</spark.bin.download.url>
+    <spark.archive>spark-${spark.version}</spark.archive>
+    <spark.download.url>
+      http://archive.apache.org/dist/spark/${spark.archive}/${spark.archive}.tgz
+    </spark.download.url>
+    <spark.dist.cache>${project.build.directory}/../../.spark-dist</spark.dist.cache>
     <py4j.version>0.8.2.1</py4j.version>
   </properties>
 
@@ -788,12 +791,12 @@
                 </goals>
                 <configuration>
                   <url>${spark.download.url}</url>
-                  <unpack>true</unpack>
-                  <outputDirectory>${project.build.directory}/spark-dist</outputDirectory>
+                  <outputDirectory>${spark.dist.cache}</outputDirectory>
                 </configuration>
               </execution>
             </executions>
           </plugin>
+
           <plugin>
             <artifactId>maven-clean-plugin</artifactId>
             <configuration>
@@ -807,13 +810,28 @@
               </filesets>
             </configuration>
           </plugin>
+
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-antrun-plugin</artifactId>
-            <version>1.7</version>
             <executions>
               <execution>
-                <id>download-and-zip-pyspark-files</id>
+                <id>unzip-pyspark-files</id>
+                <phase>validate</phase>
+                <goals>
+                  <goal>run</goal>
+                </goals>
+                <configuration>
+                  <target>
+                    <untar src="${spark.dist.cache}/${spark.archive}.tgz"
+                           dest="${project.build.directory}/spark-dist"
+                           compression="gzip"/>
+                  </target>
+                </configuration>
+              </execution>
+
+              <execution>
+                <id>zip-pyspark-files</id>
                 <phase>generate-resources</phase>
                 <goals>
                   <goal>run</goal>
@@ -822,11 +840,11 @@
                   <target>
                     <delete dir="../interpreter/spark/pyspark"/>
                     <copy todir="../interpreter/spark/pyspark"
-                          file="${project.build.directory}/spark-dist/spark-${spark.version}/python/lib/py4j-${py4j.version}-src.zip"/>
+                          file="${project.build.directory}/spark-dist/${spark.archive}/python/lib/py4j-${py4j.version}-src.zip"/>
                     <zip destfile="${project.build.directory}/../../interpreter/spark/pyspark/pyspark.zip"
-                         basedir="${project.build.directory}/spark-dist/spark-${spark.version}/python"
+                         basedir="${project.build.directory}/spark-dist/${spark.archive}/python"
                          includes="pyspark/*.py,pyspark/**/*.py"/>
-                  </target>
+                  </target>                
                 </configuration>
               </execution>
             </executions>
