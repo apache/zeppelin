@@ -31,6 +31,7 @@
             'monospaced.elastic',
             'puElasticInput',
             'xeditable',
+            'leaflet-directive',
             'ngToast',
             'focus-if',
             'ngResource'

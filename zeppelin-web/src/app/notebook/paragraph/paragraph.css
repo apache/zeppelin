@@ -63,6 +63,11 @@
   margin-bottom: 5px !important;
 }
 
+.angular-leaflet-map {
+  height: 300px;
+  width: 100%;
+}
+
 .resizable-helper {
   border: 3px solid #DDDDDD;
 }

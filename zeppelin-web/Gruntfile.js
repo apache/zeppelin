@@ -348,7 +348,7 @@ module.exports = function (grunt) {
           expand : true,
           cwd: '<%= yeoman.app %>',
           dest: '<%= yeoman.dist %>',
-          src: ['fonts/**/*.{eot,svg,ttf,woff}']
+          src: ['fonts/**/*.{eot,svg,ttf,woff,woff2}']
         }, {
           expand : true,
           cwd: '<%= yeoman.app %>',
@@ -364,6 +364,11 @@ module.exports = function (grunt) {
           cwd: 'bower_components/bootstrap/dist',
           src: 'fonts/*',
           dest: '<%= yeoman.dist %>'
+        }, {
+          expand: true,
+          cwd: 'bower_components/leaflet/dist/images',
+          src: '*.png',
+          dest: '<%= yeoman.dist %>/styles/images'
         }, {
           expand: true,
           cwd: 'bower_components/jquery-ui/themes/base/images',
