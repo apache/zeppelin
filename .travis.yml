@@ -16,6 +16,9 @@
 language: java
 
 sudo: false
+cache:
+  directories:
+    - .spark-dist
 
 matrix:
   include:
@@ -48,6 +51,7 @@ matrix:
       env: TEST_SELENIUM="true" SPARK_VER="1.6.0" HADOOP_VER="2.3" PROFILE="-Pspark-1.6 -Phadoop-2.3 -Ppyspark" BUILD_FLAG="package -DskipTests" TEST_FLAG="verify" TEST_PROJECTS="-pl zeppelin-interpreter,zeppelin-zengine,zeppelin-server,zeppelin-display,spark-dependencies,spark -Dtest=org.apache.zeppelin.AbstractFunctionalSuite -DfailIfNoTests=false"
 
 before_install:
+  - "ls -la .spark-dist"
   - "export DISPLAY=:99.0"
   - "sh -e /etc/init.d/xvfb start"
 
@@ -58,6 +62,7 @@ before_script:
   - travis_retry ./testing/downloadSpark.sh $SPARK_VER $HADOOP_VER
   - ./testing/startSparkCluster.sh $SPARK_VER $HADOOP_VER
   - echo "export SPARK_HOME=`pwd`/spark-$SPARK_VER-bin-hadoop$HADOOP_VER" > conf/zeppelin-env.sh
+  - tail conf/zeppelin-env.sh
 
 script:
   - mvn $TEST_FLAG $PROFILE -B $TEST_PROJECTS
