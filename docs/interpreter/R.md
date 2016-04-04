@@ -38,4 +38,3 @@ We recommend you to also install the following optional R libraries for happy da
 + caret
 + sqldf
 + wordcloud
-
