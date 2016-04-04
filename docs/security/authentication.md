@@ -53,7 +53,7 @@ This instruction based on Ubuntu 14.04 LTS but may work with other OS with few c
 
     ```
     upstream zeppelin {
-        server [YOUR-ZEPPELIN-SERVER-IP]:8090;
+        server [YOUR-ZEPPELIN-SERVER-IP]:8080;
     }
 
     # Zeppelin Website
