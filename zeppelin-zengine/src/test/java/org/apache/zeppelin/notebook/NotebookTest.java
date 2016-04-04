@@ -508,7 +508,9 @@ public class NotebookTest implements JobListenerFactory{
       assertEquals(Job.Status.READY, p.getStatus());
     }
 
-    note.runAll();
+    for (Paragraph p : paragraphs) {
+      note.run(p.getId());
+    }
 
     while (paragraphs.get(0).getStatus() != Status.FINISHED) Thread.yield();
 
