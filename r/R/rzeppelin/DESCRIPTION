@@ -1,0 +1,28 @@
+Package: rzeppelin
+Type: Package
+Title: Interface from scala to R, based on rscala, for the Apache (Incubation) Zeppelin project
+Version: 0.1.0
+Date: 2015-12-01
+Authors@R: c(person(given="David B.",family="Dahl",role=c("aut","cre"),email="dahl@stat.byu.edu"),
+             person(family="Scala developers",role="ctb",comment="see http://scala-lang.org/"))
+URL: http://dahl.byu.edu/software/rscala/
+Imports: utils,
+	evaluate
+Suggests:
+	goolgeVis,
+	htmltools,
+	knitr,
+	rCharts,
+	repr,
+	SparkR,
+	base64enc
+SystemRequirements: Scala (>= 2.10)
+Description:
+License: file LICENSE
+NeedsCompilation: no
+Packaged: 2015-05-15 13:36:01 UTC; dahl
+Author: David B. Dahl [aut, cre],
+  Scala developers [ctb] (see http://scala-lang.org/)
+Maintainer: Amos B. Elberg <amos.elberg@gmail.com>
+Repository:
+Date/Publication: 2015-12-01 21:50:02
