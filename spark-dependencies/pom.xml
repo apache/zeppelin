@@ -54,6 +54,7 @@
     <spark.download.url>
       http://archive.apache.org/dist/spark/${spark.archive}/${spark.archive}.tgz
     </spark.download.url>
+    <spark.bin.download.url>http://archive.apache.org/dist/spark/spark-${spark.version}/spark-${spark.version}-bin-without-hadoop.tgz</spark.bin.download.url>
     <spark.dist.cache>${project.build.directory}/../../.spark-dist</spark.dist.cache>
     <py4j.version>0.8.2.1</py4j.version>
   </properties>
@@ -802,10 +803,10 @@
             <configuration>
               <filesets>
                 <fileset>
-                  <directory>${basedir}/../python/build</directory>
+                  <directory>${project.build.directory}/spark-dist</directory>
                 </fileset>
                 <fileset>
-                  <directory>${project.build.directory}/spark-dist</directory>
+                  <directory>${basedir}/../python/build</directory>
                 </fileset>
               </filesets>
             </configuration>
@@ -844,7 +845,7 @@
                     <zip destfile="${project.build.directory}/../../interpreter/spark/pyspark/pyspark.zip"
                          basedir="${project.build.directory}/spark-dist/${spark.archive}/python"
                          includes="pyspark/*.py,pyspark/**/*.py"/>
-                  </target>
+                  </target>                
                 </configuration>
               </execution>
             </executions>
@@ -852,6 +853,65 @@
         </plugins>
       </build>
     </profile>
+
+    <profile>
+      <id>sparkr</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>com.googlecode.maven-download-plugin</groupId>
+            <artifactId>download-maven-plugin</artifactId>
+            <version>1.2.1</version>
+            <executions>
+              <execution>
+                <id>download-sparkr-files</id>
+                <phase>validate</phase>
+                <goals>
+                  <goal>wget</goal>
+                </goals>
+                <configuration>
+                  <url>${spark.bin.download.url}</url>
+                  <unpack>true</unpack>
+                  <outputDirectory>${project.build.directory}/spark-bin-dist</outputDirectory>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <artifactId>maven-clean-plugin</artifactId>
+            <configuration>
+              <filesets>
+                <fileset>
+                  <directory>${project.build.directory}/spark-bin-dist</directory>
+                </fileset>
+              </filesets>
+            </configuration>
+          </plugin>
+          <plugin>
+            <artifactId>maven-resources-plugin</artifactId>
+            <version>2.7</version>
+            <executions>
+              <execution>
+                <id>copy-sparkr-files</id>
+                <phase>generate-resources</phase>
+                <goals>
+                  <goal>copy-resources</goal>
+                </goals>
+                <configuration>
+                  <outputDirectory>${project.build.directory}/../../interpreter/spark/R/lib</outputDirectory>
+                  <resources>
+                    <resource>
+                      <directory>${project.build.directory}/spark-bin-dist/spark-${spark.version}-bin-without-hadoop/R/lib</directory>
+                    </resource>
+                  </resources>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    
   </profiles>
 
   <build>
