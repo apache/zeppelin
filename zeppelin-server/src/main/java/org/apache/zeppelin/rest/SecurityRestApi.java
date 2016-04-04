@@ -98,8 +98,8 @@ public class SecurityRestApi {
     try {
       GetUserList getUserListObj = new GetUserList();
       DefaultWebSecurityManager defaultWebSecurityManager;
-      String key = "org.apache.shiro.util.ThreadContext_SECURITY_MANAGER_KEY";
-      defaultWebSecurityManager = (DefaultWebSecurityManager) ThreadContext.get(key);
+
+      defaultWebSecurityManager = (DefaultWebSecurityManager) ThreadContext.get(ThreadContext.SECURITY_MANAGER_KEY);
       Collection<Realm> realms = defaultWebSecurityManager.getRealms();
       List realmsList = new ArrayList(realms);
       for (int i = 0; i < realmsList.size(); i++) {

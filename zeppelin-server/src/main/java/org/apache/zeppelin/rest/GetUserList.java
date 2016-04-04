@@ -27,7 +27,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.naming.NamingEnumeration;
-import javax.naming.NamingException;
 import javax.naming.directory.Attributes;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
@@ -36,7 +35,10 @@ import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 /**
  * This is class which help fetching users from different realms.
@@ -45,57 +47,55 @@ import java.util.*;
  */
 public class GetUserList {
 
-  List<String> userlist = new ArrayList<>();
   private static final Logger LOG = LoggerFactory.getLogger(GetUserList.class);
- /**
- * function to extract users from shiro.ini
- */
+
+  /**
+   * function to extract users from shiro.ini
+   */
   public List<String> getUserList(IniRealm r) {
-    List<String> userlist = new ArrayList<>();
-    Map getIniUser = new HashMap();
-    getIniUser = r.getIni().get("users");
+    List<String> userList = new ArrayList<>();
+    Map getIniUser = r.getIni().get("users");
     Iterator it = getIniUser.entrySet().iterator();
     while (it.hasNext()) {
       Map.Entry pair = (Map.Entry) it.next();
-      userlist.add(pair.getKey().toString());
+      userList.add(pair.getKey().toString());
     }
-    return userlist;
+    return userList;
   }
+
   /**
-  * function to extract users from LDAP
-  */
+   * function to extract users from LDAP
+   */
   public List<String> getUserList(JndiLdapRealm r) {
-    List<String> userlist = new ArrayList<>();
+    List<String> userList = new ArrayList<>();
     String userDnTemplate = r.getUserDnTemplate();
-    String userDn[] =  userDnTemplate.split(",", 2);
-    String userDnPrefix  =  userDn[0].split("=")[0];
-    String userDnSuffix =  userDn[1];
+    String userDn[] = userDnTemplate.split(",", 2);
+    String userDnPrefix = userDn[0].split("=")[0];
+    String userDnSuffix = userDn[1];
     JndiLdapContextFactory CF = (JndiLdapContextFactory) r.getContextFactory();
-    LdapContext ctx = null;
     try {
-      ctx = CF.getSystemLdapContext();
+      LdapContext ctx = CF.getSystemLdapContext();
       SearchControls constraints = new SearchControls();
       constraints.setSearchScope(SearchControls.SUBTREE_SCOPE);
-      String[] attrIDs = { userDnPrefix };
+      String[] attrIDs = {userDnPrefix};
       constraints.setReturningAttributes(attrIDs);
       NamingEnumeration result = ctx.search(userDnSuffix, "(objectclass=*)", constraints);
       while (result.hasMore()) {
         Attributes attrs = ((SearchResult) result.next()).getAttributes();
         if (attrs.get(userDnPrefix) != null) {
           String currentUser = attrs.get(userDnPrefix).toString();
-          userlist.add(currentUser.split(":")[1]);
+          userList.add(currentUser.split(":")[1]);
         }
       }
+    } catch (Exception e) {
+      LOG.error("Error retrieving User list from Ldap Realm", e);
     }
-    catch (Exception e) {
-      LOG.info("Error retrieving User list from Ldap Realm", e);
-    }
-    return userlist;
+    return userList;
   }
 
- /**
- * function to extract users from JDBCs
- */
+  /**
+   * function to extract users from JDBCs
+   */
   public List<String> getUserList(JdbcRealm obj) {
     List<String> userlist = new ArrayList<>();
     PreparedStatement ps = null;
@@ -112,8 +112,7 @@ public class GetUserList {
       LOG.info(authQuery);
       String authQueryLowerCase = authQuery.toLowerCase();
       retval = authQueryLowerCase.split("from", 2);
-      if (retval.length >= 2)
-      {
+      if (retval.length >= 2) {
         retval = retval[1].split("with|where", 2);
         tablename = retval[0];
         retval = retval[1].split("where", 2);
@@ -123,13 +122,14 @@ public class GetUserList {
           retval = retval[0].split("=", 2);
         username = retval[0];
       }
-      if (username.equals("") || tablename.equals("") )
+      if (username.equals("") || tablename.equals(""))
         return userlist;
       userquery = "select " + username + " from " + tablename;
 
     } catch (IllegalAccessException e) {
       return null;
     }
+
     try {
       Connection con = dataSource.getConnection();
       ps = con.prepareStatement(userquery);
@@ -138,7 +138,7 @@ public class GetUserList {
         userlist.add(rs.getString(1));
       }
     } catch (Exception e) {
-      LOG.info("Error retrieving User list from JDBC Realm", e);
+      LOG.error("Error retrieving User list from JDBC Realm", e);
     } finally {
       JdbcUtils.closeResultSet(rs);
       JdbcUtils.closeStatement(ps);
