@@ -188,6 +188,7 @@ public class Note implements Serializable, JobListener {
 
   public Paragraph addParagraph() {
     Paragraph p = new Paragraph(this, this, replLoader);
+    OccupiedInterpreter.setInterpreterNameIfEmptyText(p);
     synchronized (paragraphs) {
       paragraphs.add(p);
     }
@@ -231,6 +232,7 @@ public class Note implements Serializable, JobListener {
    */
   public Paragraph insertParagraph(int index) {
     Paragraph p = new Paragraph(this, this, replLoader);
+    OccupiedInterpreter.setInterpreterNameIfEmptyText(p);
     synchronized (paragraphs) {
       paragraphs.add(index, p);
     }
