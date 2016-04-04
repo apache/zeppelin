@@ -29,7 +29,8 @@ limitations under the License.
           <h4>Notebook
             <i ng-class="isReloadingNotes ? 'fa fa-refresh fa-spin' : 'fa fa-refresh'"
               ng-style="!isReloadingNotes && {'cursor': 'pointer'}" style="font-size: 13px;"
-              ng-click="reloadNotebookList();">
+              ng-click="reloadNotebookList();"
+              tooltip-placement="bottom" tooltip="Reload notes from storage">
             </i>
           </h4>
 
