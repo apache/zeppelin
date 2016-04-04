@@ -35,11 +35,13 @@
   <url>http://zeppelin.incubator.apache.org</url>
 
   <properties>
+    <jsoup.version>1.8.2</jsoup.version>
+    <mockito.version>1.10.19</mockito.version>
+    <powermock.version>1.6.4</powermock.version>
     <spark.version>1.4.1</spark.version>
     <scala.version>2.10.4</scala.version>
     <scala.binary.version>2.10</scala.binary.version>
   </properties>
-
 
   <dependencies>
     <dependency>
@@ -231,6 +233,11 @@
       <scope>provided</scope>
     </dependency>
 
+    <dependency>
+      <groupId>org.jsoup</groupId>
+      <artifactId>jsoup</artifactId>
+      <version>${jsoup.version}</version>
+    </dependency>
 
     <!--TEST-->
     <dependency>
@@ -267,6 +274,25 @@
       <scope>test</scope>
     </dependency>
 
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+      <version>${mockito.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.powermock</groupId>
+      <artifactId>powermock-api-mockito</artifactId>
+      <version>${powermock.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.powermock</groupId>
+      <artifactId>powermock-module-junit4</artifactId>
+      <version>${powermock.version}</version>
+      <scope>test</scope>
+    </dependency>
+
   </dependencies>
 
   <build>
@@ -286,7 +312,7 @@
             <exclude>**/derby.log</exclude>
             <exclude>**/metastore_db/</exclude>
             <exclude>**/README.md</exclude>
-            <exclude>dependency-reduced-pom.xml</exclude>
+            <exclude>**/dependency-reduced-pom.xml</exclude>
           </excludes>
         </configuration>
       </plugin>
@@ -404,4 +430,56 @@
 
     </plugins>
   </build>
+
+  <profiles>
+
+    <!-- to deactivate 'exclude-sparkr' automatically when 'spark' is activated -->
+    <profile>
+      <id>sparkr</id>
+    </profile>
+
+    <profile>
+      <id>exclude-sparkr</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <configuration>
+              <excludes>
+                <exclude>**/SparkRInterpreter.java</exclude>
+              </excludes>
+              <testExcludes>
+                <testExclude>**/SparkRInterpreterTest.java</testExclude>
+                <testExclude>**/ZeppelinRTest.java</testExclude>
+              </testExcludes>
+            </configuration>
+          </plugin>
+          <plugin>
+            <groupId>org.scala-tools</groupId>
+            <artifactId>maven-scala-plugin</artifactId>
+            <configuration>
+              <excludes>
+                <exclude>**/ZeppelinR.scala</exclude>
+                <exclude>**/SparkRBackend.scala</exclude>
+              </excludes>
+            </configuration>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <configuration>
+              <excludes>
+                <exclude>**/SparkRInterpreterTest.java</exclude>
+              </excludes>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+
 </project>
