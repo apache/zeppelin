@@ -17,6 +17,12 @@
 
 package org.apache.zeppelin.rest;
 
+import org.apache.shiro.realm.Realm;
+import org.apache.shiro.realm.jdbc.JdbcRealm;
+import org.apache.shiro.realm.ldap.JndiLdapRealm;
+import org.apache.shiro.realm.text.IniRealm;
+import org.apache.shiro.util.ThreadContext;
+import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.server.JsonResponse;
 import org.apache.zeppelin.ticket.TicketContainer;
@@ -28,9 +34,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Zeppelin security rest api endpoint.
@@ -78,5 +82,42 @@ public class SecurityRestApi {
     response = new JsonResponse(Response.Status.OK, "", data);
     LOG.warn(response.toString());
     return response.build();
+  }
+
+  /**
+   * Get userlist
+   * Returns list of all user from available realms
+   *
+   * @return 200 response
+   */
+  @GET
+  @Path("userlist")
+  public Response putUserList() {
+
+    List<String> userslist = new ArrayList<>();
+    try {
+      GetUserList getUserListObj = new GetUserList();
+      DefaultWebSecurityManager defaultWebSecurityManager;
+      String key = "org.apache.shiro.util.ThreadContext_SECURITY_MANAGER_KEY";
+      defaultWebSecurityManager = (DefaultWebSecurityManager) ThreadContext.get(key);
+      Collection<Realm> realms = defaultWebSecurityManager.getRealms();
+      List realmsList = new ArrayList(realms);
+      for (int i = 0; i < realmsList.size(); i++) {
+        String name = realmsList.get(i).getClass().getName();
+        if (name.equals("org.apache.shiro.realm.text.IniRealm")) {
+          userslist.addAll(getUserListObj.getUserList((IniRealm) realmsList.get(i)));
+        } else if (name.equals("org.apache.shiro.realm.ldap.JndiLdapRealm")) {
+          userslist.addAll(getUserListObj.getUserList((JndiLdapRealm) realmsList.get(i)));
+        } else if (name.equals("org.apache.shiro.realm.jdbc.JdbcRealm")) {
+          userslist.addAll(getUserListObj.getUserList((JdbcRealm) realmsList.get(i)));
+        }
+      }
+      if (userslist.size() == 0) {
+        userslist.add(" No user found");
+      }
+    } catch (Exception e) {
+      LOG.error("Exception in retrieving Users from realms ", e);
+    }
+    return new JsonResponse<>(Response.Status.OK, "", userslist).build();
   }
 }

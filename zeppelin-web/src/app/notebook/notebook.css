@@ -221,3 +221,41 @@
   text-decoration: none;
   cursor: default;
 }
+
+.userlist {
+   width:320px;
+   font-family:Georgia, Times, serif;
+   font-size:15px;
+   position:absolute;
+   z-index : 9999;
+  }
+
+.userlist ul {
+ list-style: none;
+  }
+
+.userlist ul li {
+  display:list-item;
+  text-decoration:none;
+  color:#000000;
+  background-color:#FFFFFF;
+  line-height:30px;
+  border-bottom-style:none;
+  border-bottom-width:1px;
+  border-bottom-color:#CCCCCC;
+  padding-left:10px;
+  cursor:pointer;
+  }
+
+.userlist ul li  strong {
+ margin-right:10px;
+  }
+
+.userlist li:hover {
+    background-color: #E0E0E0;
+}
+
+.userlist li:active,
+.userlist li.active {
+background-color: #428BCA;
+}
