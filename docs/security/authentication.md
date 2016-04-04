@@ -53,11 +53,7 @@ This instruction based on Ubuntu 14.04 LTS but may work with other OS with few c
 
     ```
     upstream zeppelin {
-        server [YOUR-ZEPPELIN-SERVER-IP]:8090;
-    }
-
-    upstream zeppelin-wss {
-        server [YOUR-ZEPPELIN-SERVER-IP]:8091;
+        server [YOUR-ZEPPELIN-SERVER-IP]:8080;
     }
 
     # Zeppelin Website
@@ -74,27 +70,18 @@ This instruction based on Ubuntu 14.04 LTS but may work with other OS with few c
         }
 
         location / {
+            proxy_pass http://zeppelin;
             proxy_set_header X-Real-IP $remote_addr;
             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
             proxy_set_header Host $http_host;
             proxy_set_header X-NginX-Proxy true;
-            proxy_pass http://zeppelin;
             proxy_redirect off;
             auth_basic "Restricted";
             auth_basic_user_file /etc/nginx/.htpasswd;
         }
-    }
 
-    # Zeppelin Websocket
-    server {
-        listen [YOUR-ZEPPELIN-WEBSOCKET-PORT] ssl;    # add ssl is optional, to serve HTTPS connection
-        server_name [YOUR-ZEPPELIN-SERVER-HOST];    # for example: zeppelin.mycompany.com
-
-        ssl_certificate [PATH-TO-YOUR-CERT-FILE];            # optional, to serve HTTPS connection
-        ssl_certificate_key [PATH-TO-YOUR-CERT-KEY-FILE];    # optional, to serve HTTPS connection
-
-        location / {
-            proxy_pass http://zeppelin-wss;
+        location /ws {
+            proxy_pass http://zeppelin;
             proxy_http_version 1.1;
             proxy_set_header Upgrade websocket;
             proxy_set_header Connection upgrade;
