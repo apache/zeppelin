@@ -37,6 +37,7 @@ module.exports = function(config) {
       'bower_components/ace-builds/src-noconflict/mode-sql.js',
       'bower_components/ace-builds/src-noconflict/mode-markdown.js',
       'bower_components/ace-builds/src-noconflict/mode-sh.js',
+      'bower_components/ace-builds/src-noconflict/mode-r.js',
       'bower_components/ace-builds/src-noconflict/keybinding-emacs.js',
       'bower_components/ace-builds/src-noconflict/ext-language_tools.js',
       'bower_components/ace-builds/src-noconflict/theme-chrome.js',
