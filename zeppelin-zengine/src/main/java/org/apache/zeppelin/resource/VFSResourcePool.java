@@ -1,7 +1,7 @@
+
 package org.apache.zeppelin.resource;
 
 import org.slf4j.Logger;
-import org.apache.zeppelin.conf.ZeppelinConfiguration;
 
 import java.io.File;
 import java.io.IOException;
@@ -89,7 +89,16 @@ public class VFSResourcePool extends DistributedResourcePool {
 
       try {
         Object o = ois.readObject();
-        return new Resource(new ResourceId(this.id(), name), o);
+        String[] splitName = name.split("___");
+        ResourceId r = null;
+        if (splitName.length == 3)
+        {
+          r = new ResourceId(this.id(), splitName[0], splitName[1], splitName[2]);
+        }
+        else {
+          r = new ResourceId(this.id(), name);
+        }
+        return new Resource(r, o);
       } catch (ClassNotFoundException e) {
         throw new RuntimeException(e);
       }
@@ -106,12 +115,26 @@ public class VFSResourcePool extends DistributedResourcePool {
 
   @Override
   public ResourceSet getAll() {
-    return super.getAll(true);
+    return getAll(true);
   }
 
   @Override
   public ResourceSet getAll(boolean remote) {
-    return super.getAll(remote);
+    ResourceSet resources = new ResourceSet();
+    try {
+      FileObject rootDir = getRootDir();
+      for (FileObject resourceDir: rootDir.getChildren())
+      {
+        if (resourceDir.getType() == FileType.FOLDER)
+          resources.add(get(resourceDir.getName().getBaseName()));
+      }
+    }
+    catch (IOException ex) {
+      throw new RuntimeException(ex);
+    }
+    if (remote)
+      resources.addAll(super.getAll(remote));
+    return resources; 
   }
 
   @Override
@@ -187,8 +210,6 @@ public class VFSResourcePool extends DistributedResourcePool {
     FileObject rootDir = fsManager.resolveFile(getPath("/"));
     // Does nothing if the folder already exists.
     rootDir.createFolder();
-
-
     if (!isDirectory(rootDir)) {
       throw new IOException("Root path is not a directory");
     }

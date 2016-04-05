@@ -134,17 +134,46 @@ public class RemoteInterpreterServer
     System.exit(0);
   }
 
+  private DistributedResourcePool getResourcePool()
+  /* InterpreterGroup group,
+        Properties prop,
+        RemoteInterpreterEventClient client) */
+      throws TException {
+    if (resourcePool != null)
+      return resourcePool;
+    try {
+      String resourcePoolClassName = (String) interpreterGroup.getProperty()
+          .getOrDefault("ResourcePoolClass",
+              "org.apache.zeppelin.resource.DistributedResourcePool");
+      logger.debug("Getting resource pool {}", resourcePoolClassName);
+      Class resourcePoolClass = Class.forName(resourcePoolClassName);
+
+      Constructor<ResourcePool> constructor = resourcePoolClass
+          .getConstructor(new Class[] {String.class,
+            ResourcePoolConnector.class,
+            Properties.class });
+      resourcePool = (DistributedResourcePool) constructor.newInstance(interpreterGroup.getId(),
+          this.eventClient,
+          interpreterGroup.getProperty());
+      interpreterGroup.setResourcePool(resourcePool);
+      return resourcePool;
+    } catch (SecurityException | NoSuchMethodException |
+        InstantiationException | IllegalAccessException |
+        IllegalArgumentException | InvocationTargetException |
+        ClassNotFoundException e) {
+      logger.error(e.toString(), e);
+      throw new TException(e);
+    }
+  }
 
   @Override
   public void createInterpreter(String interpreterGroupId, String noteId, String
       className,
-                                Map<String, String> properties) throws TException {
+      Map<String, String> properties) throws TException {
     if (interpreterGroup == null) {
       interpreterGroup = new InterpreterGroup(interpreterGroupId);
       angularObjectRegistry = new AngularObjectRegistry(interpreterGroup.getId(), this);
-      resourcePool = new DistributedResourcePool(interpreterGroup.getId(), eventClient);
       interpreterGroup.setAngularObjectRegistry(angularObjectRegistry);
-      interpreterGroup.setResourcePool(resourcePool);
     }
 
     try {
@@ -170,7 +199,12 @@ public class RemoteInterpreterServer
       }
 
       logger.info("Instantiate interpreter {}", className);
+
+      interpreterGroup.setResourcePool(getResourcePool());
+
       repl.setInterpreterGroup(interpreterGroup);
+
+      //setResourcePool(interpreterGroup, p, eventClient);
     } catch (ClassNotFoundException | NoSuchMethodException | SecurityException
         | InstantiationException | IllegalAccessException
         | IllegalArgumentException | InvocationTargetException e) {
@@ -178,7 +212,6 @@ public class RemoteInterpreterServer
       throw new TException(e);
     }
   }
-
   private Interpreter getInterpreter(String noteId, String className) throws TException {
     if (interpreterGroup == null) {
       throw new TException(
@@ -388,7 +421,7 @@ public class RemoteInterpreterServer
 
   @Override
   public int getProgress(String noteId, String className,
-                         RemoteInterpreterContext interpreterContext)
+      RemoteInterpreterContext interpreterContext)
       throws TException {
     Interpreter intp = getInterpreter(noteId, className);
     return intp.getProgress(convert(interpreterContext));
@@ -411,7 +444,7 @@ public class RemoteInterpreterServer
   private InterpreterContext convert(RemoteInterpreterContext ric) {
     List<InterpreterContextRunner> contextRunners = new LinkedList<InterpreterContextRunner>();
     List<InterpreterContextRunner> runners = gson.fromJson(ric.getRunners(),
-            new TypeToken<List<RemoteInterpreterContextRunner>>() {
+        new TypeToken<List<RemoteInterpreterContextRunner>>() {
         }.getType());
 
     for (InterpreterContextRunner r : runners) {
@@ -572,7 +605,7 @@ public class RemoteInterpreterServer
     if (value == null) {
       try {
         value = gson.fromJson(object,
-          new TypeToken<Map<String, Object>>() {
+            new TypeToken<Map<String, Object>>() {
           }.getType());
       } catch (Exception e) {
         // it's not a generic json object, too. okay, proceed to threat as a string type
@@ -608,7 +641,7 @@ public class RemoteInterpreterServer
     try {
       value = gson.fromJson(object,
           new TypeToken<Map<String, Object>>() {
-          }.getType());
+        }.getType());
     } catch (Exception e) {
       // it's okay. proceed to treat object as a string
       logger.debug(e.getMessage(), e);
@@ -624,7 +657,7 @@ public class RemoteInterpreterServer
 
   @Override
   public void angularObjectRemove(String name, String noteId, String paragraphId) throws
-          TException {
+  TException {
     AngularObjectRegistry registry = interpreterGroup.getAngularObjectRegistry();
     registry.remove(name, noteId, paragraphId, false);
   }
