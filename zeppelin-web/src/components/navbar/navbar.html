@@ -80,6 +80,9 @@ limitations under the License.
         <span ng-show="navbar.connected" ng-if="ticket.principal != 'anonymous' " tooltip-placement="bottom" tooltip="{{fullUsername}}">{{truncatedUsername}}</span>
         <span ng-show="!navbar.connected">Disconnected</span>
         </li>
+        <li ng-if="!ticket">
+            <button class="btn btn-default" data-toggle="modal" data-target="#loginModal" ng-click="showLoginWindow()" style="margin-left: 10px">Login</button>
+        </li>
       </ul>
     </div>
   </div>

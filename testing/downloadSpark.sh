@@ -17,7 +17,7 @@
 #
 
 
-if [ $# -ne 2 ]; then
+if [[ "$#" -ne 2 ]]; then
     echo "usage) $0 [spark version] [hadoop version]"
     echo "   eg) $0 1.3.1 2.6"
     exit 1
@@ -26,10 +26,10 @@ fi
 SPARK_VERSION="${1}"
 HADOOP_VERSION="${2}"
 
-echo ${SPARK_VERSION} | grep "^1.[123].[0-9]" > /dev/null
-if [ $? -eq 0 ]; then
+echo "${SPARK_VERSION}" | grep "^1.[123].[0-9]" > /dev/null
+if [[ "$?" -eq 0 ]]; then
   echo "${SPARK_VERSION}" | grep "^1.[12].[0-9]" > /dev/null
-  if [ $? -eq 0 ]; then
+  if [[ "$?" -eq 0 ]]; then
     SPARK_VER_RANGE="<=1.2"
   else
     SPARK_VER_RANGE="<=1.3"
@@ -40,31 +40,52 @@ fi
 
 set -xe
 
-FWDIR=$(dirname "${BASH_SOURCE-$0}")
+TIMEOUT_SEC=590
+FWDIR="$(dirname "${BASH_SOURCE-$0}")"
 ZEPPELIN_HOME="$(cd "${FWDIR}/.."; pwd)"
-export SPARK_HOME=${ZEPPELIN_HOME}/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}
+
+SPARK_CACHE=".spark-dist"
+SPARK_ARCHIVE="spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}"
+export SPARK_HOME="${ZEPPELIN_HOME}/${SPARK_ARCHIVE}"
 echo "SPARK_HOME is ${SPARK_HOME}"
-if [ ! -d "${SPARK_HOME}" ]; then
-    if [ "${SPARK_VER_RANGE}" == "<=1.2" ]; then
-        # spark 1.1.x and spark 1.2.x can be downloaded from archive
-        STARTTIME=`date +%s`
-        timeout -s KILL 300 wget -q http://archive.apache.org/dist/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz
-        ENDTIME=`date +%s`
-        DOWNLOADTIME=$((ENDTIME-STARTTIME))
-    else
-        # spark 1.3.x and later can be downloaded from mirror
-        # get download address from mirror
-        MIRROR_INFO=$(curl -s "http://www.apache.org/dyn/closer.cgi/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz?asjson=1")
 
-        PREFFERED=$(echo "${MIRROR_INFO}" | grep preferred | sed 's/[^"]*.preferred.: .\([^"]*\).*/\1/g')
-        PATHINFO=$(echo "${MIRROR_INFO}" | grep path_info | sed 's/[^"]*.path_info.: .\([^"]*\).*/\1/g')
+if [[ ! -d "${SPARK_HOME}" ]]; then
+    mkdir -p "${SPARK_CACHE}"
+    cd "${SPARK_CACHE}"
+    if [[ ! -f "${SPARK_ARCHIVE}.tgz" ]]; then
+        pwd
+        ls -la .
+        echo "${SPARK_CACHE} does not have ${SPARK_ARCHIVE} downloading ..."
+        # download archive if not cached
+        if [[ "${SPARK_VER_RANGE}" == "<=1.2" ]]; then
+            # spark 1.1.x and spark 1.2.x can be downloaded from archive
+            STARTTIME=`date +%s`
+            timeout -s KILL "${TIMEOUT_SEC}" wget -q "http://archive.apache.org/dist/spark/spark-${SPARK_VERSION}/${SPARK_ARCHIVE}.tgz"
+            ENDTIME=`date +%s`
+            DOWNLOADTIME="$((ENDTIME-STARTTIME))"
+        else
+            # spark 1.3.x and later can be downloaded from mirror
+            # get download address from mirror
+            MIRROR_INFO=$(curl -s "http://www.apache.org/dyn/closer.cgi/spark/spark-${SPARK_VERSION}/${SPARK_ARCHIVE}.tgz?asjson=1")
 
-        STARTTIME=`date +%s`
-        timeout -s KILL 590 wget -q "${PREFFERED}${PATHINFO}"
-        ENDTIME=`date +%s`
-        DOWNLOADTIME=$((ENDTIME-STARTTIME))
+            PREFFERED=$(echo "${MIRROR_INFO}" | grep preferred | sed 's/[^"]*.preferred.: .\([^"]*\).*/\1/g')
+            PATHINFO=$(echo "${MIRROR_INFO}" | grep path_info | sed 's/[^"]*.path_info.: .\([^"]*\).*/\1/g')
+
+            STARTTIME=`date +%s`
+            timeout -s KILL "${TIMEOUT_SEC}" wget -q "${PREFFERED}${PATHINFO}"
+            ENDTIME=`date +%s`
+            DOWNLOADTIME="$((ENDTIME-STARTTIME))"
+        fi
     fi
-    tar zxf spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz
+
+    # extract archive in un-cached root, clean-up on failure
+    cp "${SPARK_ARCHIVE}.tgz" ..
+    cd ..
+    if ! tar zxf "${SPARK_ARCHIVE}.tgz" ; then
+        echo "Unable to extract ${SPARK_ARCHIVE}.tgz" >&2
+        rm -rf "${SPARK_ARCHIVE}"
+        rm -f "${SPARK_ARCHIVE}.tgz"
+    fi
 fi
 
 set +xe

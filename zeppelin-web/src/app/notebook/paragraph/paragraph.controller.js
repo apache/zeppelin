@@ -16,7 +16,7 @@
 
 angular.module('zeppelinWebApp')
   .controller('ParagraphCtrl', function($scope,$rootScope, $route, $window, $element, $routeParams, $location,
-                                         $timeout, $compile, websocketMsgSrv) {
+                                         $timeout, $compile, websocketMsgSrv, ngToast) {
   var ANGULAR_FUNCTION_OBJECT_NAME_PREFIX = '_Z_ANGULAR_FUNC_';
   $scope.parentNote = null;
   $scope.paragraph = null;
@@ -39,8 +39,13 @@ angular.module('zeppelinWebApp')
           websocketMsgSrv.runParagraph(paragraph.id, paragraph.title, paragraph.text,
               paragraph.config, paragraph.settings.params);
         } else {
-          // Error message here
+          ngToast.danger({content: 'Cannot find a paragraph with id \'' + paragraphId + '\'',
+            verticalPosition: 'top', dismissOnTimeout: false});
         }
+      } else {
+        ngToast.danger({
+          content: 'Please provide a \'paragraphId\' when calling z.runParagraph(paragraphId)',
+          verticalPosition: 'top', dismissOnTimeout: false});
       }
     },
 
@@ -49,6 +54,11 @@ angular.module('zeppelinWebApp')
       // Only push to server if there paragraphId is defined
       if (paragraphId) {
         websocketMsgSrv.clientBindAngularObject($routeParams.noteId, varName, value, paragraphId);
+      } else {
+        ngToast.danger({
+          content: 'Please provide a \'paragraphId\' when calling ' +
+          'z.angularBind(varName, value, \'PUT_HERE_PARAGRAPH_ID\')',
+          verticalPosition: 'top', dismissOnTimeout: false});
       }
     },
 
@@ -57,6 +67,11 @@ angular.module('zeppelinWebApp')
       // Only push to server if paragraphId is defined
       if (paragraphId) {
         websocketMsgSrv.clientUnbindAngularObject($routeParams.noteId, varName, paragraphId);
+      } else {
+        ngToast.danger({
+          content: 'Please provide a \'paragraphId\' when calling ' +
+          'z.angularUnbind(varName, \'PUT_HERE_PARAGRAPH_ID\')',
+          verticalPosition: 'top', dismissOnTimeout: false});
       }
     }
   };

@@ -81,6 +81,9 @@ limitations under the License.
     <div ng-controller="NoteImportCtrl as noteimportctrl">
       <div id="note-import-container" ng-include src="'components/noteName-import/note-import-dialog.html'"></div>
     </div>
+    <div ng-controller="LoginCtrl as noteimportctrl">
+      <div id="login-container" ng-include src="'components/login/login.html'"></div>
+    </div>
     <!-- build:js(.) scripts/oldieshim.js -->
     <!--[if lt IE 9]>
     <script src="bower_components/es5-shim/es5-shim.js"></script>
@@ -107,6 +110,7 @@ limitations under the License.
     <script src="bower_components/ace-builds/src-noconflict/mode-sql.js"></script>
     <script src="bower_components/ace-builds/src-noconflict/mode-markdown.js"></script>
     <script src="bower_components/ace-builds/src-noconflict/mode-sh.js"></script>
+    <script src="bower_components/ace-builds/src-noconflict/mode-r.js"></script>
     <script src="bower_components/ace-builds/src-noconflict/keybinding-emacs.js"></script>
     <script src="bower_components/ace-builds/src-noconflict/ext-language_tools.js"></script>
     <script src="bower_components/ace-builds/src-noconflict/theme-chrome.js"></script>
@@ -165,6 +169,7 @@ limitations under the License.
     <script src="components/browser-detect/browserDetect.service.js"></script>
     <script src="components/saveAs/saveAs.service.js"></script>
     <script src="components/searchService/search.service.js"></script>
+    <script src="components/login/login.controller.js"></script>
     <!-- endbuild -->
   </body>
 </html>

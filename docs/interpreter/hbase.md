@@ -10,7 +10,18 @@ group: manual
 [HBase Shell](http://hbase.apache.org/book.html#shell) is a JRuby IRB client for Apache HBase. This interpreter provides all capabilities of Apache HBase shell within Apache Zeppelin. The interpreter assumes that Apache HBase client software has been installed and it can connect to the Apache HBase cluster from the machine on where Apache Zeppelin is installed.  
 To get start with HBase, please see [HBase Quickstart](https://hbase.apache.org/book.html#quickstart)
 
-> Note: currently only HBase 1.0.x releases are supported.
+## HBase release supported
+By default, Zeppelin is built against HBase 1.0.x releases. To work with HBase 1.1.x releases, use the following build command:
+```bash
+# HBase 1.1.4
+mvn clean package -DskipTests -Phadoop-2.6 -Dhadoop.version=2.6.0 -P build-distr -Dhbase.hbase.version=1.1.4 -Dhbase.hadoop.version=2.6.0
+```
+To work with HBase 1.2.0+, use the following build command:
+
+```bash
+# HBase 1.2.0
+mvn clean package -DskipTests -Phadoop-2.6 -Dhadoop.version=2.6.0 -P build-distr -Dhbase.hbase.version=1.2.0 -Dhbase.hadoop.version=2.6.0
+```
 
 ## Configuration
 
@@ -23,7 +34,7 @@ To get start with HBase, please see [HBase Quickstart](https://hbase.apache.org/
   <tr>
     <td>hbase.home</td>
     <td>/usr/lib/hbase</td>
-    <td>Installation directory of Hbase</td>
+    <td>Installation directory of HBase, defaults to HBASE_HOME in environment</td>
   </tr>
   <tr>
     <td>hbase.ruby.sources</td>
@@ -31,11 +42,30 @@ To get start with HBase, please see [HBase Quickstart](https://hbase.apache.org/
     <td>Path to Ruby scripts relative to 'hbase.home'</td>
   </tr>
   <tr>
-    <td>hbase.test.mode</td>
+    <td>zeppelin.hbase.test.mode</td>
     <td>false</td>
     <td>Disable checks for unit and manual tests</td>
   </tr>
 </table>
+
+If you want to connect to HBase running on a cluster, you'll need to follow the next step.
+
+### Export HBASE_HOME
+In **conf/zeppelin-env.sh**, export `HBASE_HOME` environment variable with your HBase installation path. This ensures `hbase-site.xml` can be loaded.
+
+for example
+
+```bash
+export HBASE_HOME=/usr/lib/hbase
+```
+
+or, when running with CDH
+
+```bash
+export HBASE_HOME="/opt/cloudera/parcels/CDH/lib/hbase"
+```
+
+You can optionally export `HBASE_CONF_DIR` instead of `HBASE_HOME` should you have custom HBase configurations.
 
 ## Enabling the HBase Shell Interpreter
 

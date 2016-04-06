@@ -245,3 +245,15 @@ The following components are provided under the Apache License. See project link
 The text of each license is also included at licenses/LICENSE-[project]-[version].txt.
 
     (Apache 2.0) Bootstrap v3.0.2 (http://getbootstrap.com/) - https://github.com/twbs/bootstrap/blob/v3.0.2/LICENSE
+
+========================================================================
+BSD 3-Clause licenses
+========================================================================
+The following components are provided under the BSD 3-Clause license.  See file headers and project links for details.
+
+  (BSD 3 Clause) portions of rscala 1.0.6 (https://dahl.byu.edu/software/rscala/) - https://cran.r-project.org/web/packages/rscala/index.html
+   r/R/rzeppelin/R/{common.R, globals.R,protocol.R,rServer.R,scalaInterpreter.R,zzz.R }
+   r/src/main/scala/org/apache/zeppelin/rinterpreter/rscala/{Package.scala, RClient.scala}
+
+  (BSD 3 Clause) portions of Scala (http://www.scala-lang.org/download) - http://www.scala-lang.org/download/#License
+   r/src/main/scala/scala/Console.scala
