@@ -48,6 +48,15 @@
   margin-bottom: 0;
 }
 
+table.dataTable {
+  /* clear: both; */
+  margin-top: 0px !important; 
+  margin-bottom: 6px !important;
+  /* max-width: none !important; */
+}
+div.dataTables_wrapper{
+  overflow: hidden;
+}
 .paragraph p {
   margin: 0;
 }

@@ -434,6 +434,8 @@ public class InterpreterFactory {
       angularObjectRegistry = new AngularObjectRegistry(
           id,
           angularObjectRegistryListener);
+
+      // TODO(moon) : create distributed resource pool for local interpreters and set
     }
 
     interpreterGroup.setAngularObjectRegistry(angularObjectRegistry);
@@ -625,7 +627,8 @@ public class InterpreterFactory {
 
   public void removeNoteInterpreterSettingBinding(String noteId) {
     synchronized (interpreterSettings) {
-      List<String> settingIds = interpreterBindings.remove(noteId);
+      List<String> settingIds = (interpreterBindings.containsKey(noteId) ?
+          interpreterBindings.remove(noteId) : Collections.<String>emptyList());
       for (String settingId : settingIds) {
         this.removeInterpretersForNote(get(settingId), noteId);
       }

@@ -246,4 +246,12 @@ public class AngularObjectRegistry {
   public String getInterpreterGroupId() {
     return interpreterId;
   }
+
+  public Map<String, Map<String, AngularObject>> getRegistry() {
+    return registry;
+  }
+
+  public void setRegistry(Map<String, Map<String, AngularObject>> registry) {
+    this.registry = registry;
+  }
 }

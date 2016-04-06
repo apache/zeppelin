@@ -18,16 +18,50 @@ angular.module('zeppelinWebApp')
   .controller('ParagraphCtrl', function($scope,$rootScope, $route, $window, $element, $routeParams, $location,
                                          $timeout, $compile, websocketMsgSrv) {
   var ANGULAR_FUNCTION_OBJECT_NAME_PREFIX = '_Z_ANGULAR_FUNC_';
+  $scope.parentNote = null;
   $scope.paragraph = null;
   $scope.originalText = '';
   $scope.editor = null;
 
   var paragraphScope = $rootScope.$new(true, $rootScope);
+
   // to keep backward compatibility
   $scope.compiledScope = paragraphScope;
 
-  var angularObjectRegistry = {};
+  paragraphScope.z = {
+    // z.runParagraph('20150213-231621_168813393')
+    runParagraph: function(paragraphId) {
+      if (paragraphId) {
+        var filtered = $scope.parentNote.paragraphs.filter(function(x) {
+          return x.id === paragraphId;});
+        if (filtered.length === 1) {
+          var paragraph = filtered[0];
+          websocketMsgSrv.runParagraph(paragraph.id, paragraph.title, paragraph.text,
+              paragraph.config, paragraph.settings.params);
+        } else {
+          // Error message here
+        }
+      }
+    },
 
+    // Example: z.angularBind('my_var', 'Test Value', '20150213-231621_168813393')
+    angularBind: function(varName, value, paragraphId) {
+      // Only push to server if there paragraphId is defined
+      if (paragraphId) {
+        websocketMsgSrv.clientBindAngularObject($routeParams.noteId, varName, value, paragraphId);
+      }
+    },
+
+    // Example: z.angularUnBind('my_var', '20150213-231621_168813393')
+    angularUnbind: function(varName, paragraphId) {
+      // Only push to server if paragraphId is defined
+      if (paragraphId) {
+        websocketMsgSrv.clientUnbindAngularObject($routeParams.noteId, varName, paragraphId);
+      }
+    }
+  };
+
+  var angularObjectRegistry = {};
 
   var editorModes = {
     'ace/mode/scala': /^%spark/,
@@ -37,8 +71,9 @@ angular.module('zeppelinWebApp')
   };
 
   // Controller init
-  $scope.init = function(newParagraph) {
+  $scope.init = function(newParagraph, note) {
     $scope.paragraph = newParagraph;
+    $scope.parentNote = note;
     $scope.originalText = angular.copy(newParagraph.text);
     $scope.chart = {};
     $scope.colWidthOption = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 ];
@@ -114,7 +149,7 @@ angular.module('zeppelinWebApp')
           $scope.appendTextOutput($scope.paragraph.result.msg);
         }
 
-        angular.element('#p' + $scope.paragraph.id + '_text').bind("mousewheel", function(e) {
+        angular.element('#p' + $scope.paragraph.id + '_text').bind('mousewheel', function(e) {
           $scope.keepScrollDown = false;
         });
 
@@ -1191,7 +1226,7 @@ angular.module('zeppelinWebApp')
 
     var renderTable = function() {
       var html = '';
-      html += '<table class="table table-hover table-condensed">';
+      html += '<table class="table table-hover table-condensed compact display">';
       html += '  <thead>';
       html += '    <tr style="background-color: #F6F6F6; font-weight: bold;">';
       for (var titleIndex in $scope.paragraph.result.columnNames) {
@@ -1218,6 +1253,40 @@ angular.module('zeppelinWebApp')
       html += '</table>';
 
       angular.element('#p' + $scope.paragraph.id + '_table').html(html);
+	  angular.element('#p' + $scope.paragraph.id + '_table').children(1).DataTable({
+		    paging: false,
+			info:     false,
+			autoWidth: true,
+			lengthChange: false,
+		    dom: '<"row"<"col-sm-6"B><"col-sm-6"f>>'+
+				'<"row"<"col-sm-12"t>>',
+			buttons: [
+				{
+					extend: 'csvHtml5',
+					text: 'TSV',
+					title: 'table',
+					fieldSeparator: '\t',
+					extension: '.tsv',
+					exportOptions: {
+						modifier: {
+							search: 'none'
+						}
+					}
+				},
+				{
+					extend: 'csvHtml5',
+					text: 'CSV',
+					title: 'table',
+					extension: '.csv',
+					exportOptions: {
+						modifier: {
+							search: 'none'
+						}
+					}
+				}
+
+        ]
+      });
       if ($scope.paragraph.result.msgTable.length > 10000) {
         angular.element('#p' + $scope.paragraph.id + '_table').css('overflow', 'scroll');
         // set table height
@@ -2119,7 +2188,7 @@ angular.module('zeppelinWebApp')
 
   $scope.showScrollUpIcon = function(){
     if(angular.element('#p' + $scope.paragraph.id + '_text')[0]){
-      return angular.element('#p' + $scope.paragraph.id + '_text')[0].scrollTop != 0;
+      return angular.element('#p' + $scope.paragraph.id + '_text')[0].scrollTop !== 0;
     }
     return false;
 
