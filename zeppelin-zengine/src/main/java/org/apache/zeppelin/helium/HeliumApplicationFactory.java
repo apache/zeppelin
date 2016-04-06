@@ -36,6 +36,7 @@ import java.util.concurrent.ExecutorService;
 /**
  * HeliumApplicationFactory
  *
+ * 2. unload on interpreter restart
  * 3. front-end job
  * 4. example app
  * 5. dev mode
@@ -211,8 +212,15 @@ public class HeliumApplicationFactory implements ApplicationEventListener, Noteb
               "Can't unload application status " + appsToUnload.getStatus());
         }
         appsToUnload.setStatus(ApplicationState.Status.UNLOADING);
-        RemoteInterpreterProcess intpProcess =
-            paragraph.getCurrentRepl().getInterpreterGroup().getRemoteInterpreterProcess();
+        Interpreter intp = paragraph.getCurrentRepl();
+        if (intp == null) {
+          throw new ApplicationException("No interpreter found");
+        }
+
+        RemoteInterpreterProcess intpProcess = intp.getInterpreterGroup().getRemoteInterpreterProcess();
+        if (intpProcess == null) {
+          throw new ApplicationException("Target interpreter process is not running");
+        }
 
         RemoteInterpreterService.Client client;
         try {
@@ -289,9 +297,16 @@ public class HeliumApplicationFactory implements ApplicationEventListener, Noteb
           throw new ApplicationException(
               "Can't run application status " + app.getStatus());
         }
-        RemoteInterpreterProcess intpProcess =
-            paragraph.getCurrentRepl().getInterpreterGroup().getRemoteInterpreterProcess();
 
+        Interpreter intp = paragraph.getCurrentRepl();
+        if (intp == null) {
+          throw new ApplicationException("No interpreter found");
+        }
+
+        RemoteInterpreterProcess intpProcess = intp.getInterpreterGroup().getRemoteInterpreterProcess();
+        if (intpProcess == null) {
+          throw new ApplicationException("Target interpreter process is not running");
+        }
         RemoteInterpreterService.Client client;
         try {
           client = intpProcess.getClient();
@@ -411,7 +426,8 @@ public class HeliumApplicationFactory implements ApplicationEventListener, Noteb
   public void onParagraphRemove(Paragraph paragraph) {
     List<ApplicationState> appStates = paragraph.getAllApplicationStates();
     for (ApplicationState app : appStates) {
-      unload(paragraph, app.getId());
+      UnloadApplication unloadJob = new UnloadApplication(paragraph, app.getId());
+      unloadJob.run();
     }
   }
 

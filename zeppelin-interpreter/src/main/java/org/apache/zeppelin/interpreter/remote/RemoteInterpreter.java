@@ -81,6 +81,7 @@ public class RemoteInterpreter extends Interpreter {
     this.applicationEventListener = appListener;
   }
 
+  // VisibleForTesting
   public RemoteInterpreter(Properties property,
                            String noteId,
                            String className,

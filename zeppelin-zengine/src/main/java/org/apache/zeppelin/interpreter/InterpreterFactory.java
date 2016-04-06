@@ -78,7 +78,7 @@ public class InterpreterFactory {
 
   private DependencyResolver depResolver;
 
-  private Map<String, String> env;
+  private Map<String, String> env = new HashMap<String, String>();
 
   public InterpreterFactory(ZeppelinConfiguration conf,
       AngularObjectRegistryListener angularObjectRegistryListener,

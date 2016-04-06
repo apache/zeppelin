@@ -136,8 +136,7 @@ public class ApplicationLoader {
   }
 
   private ResourceSet findRequiredResourceSet(
-      String [][] requiredResources, String noteId, String paragraphId)
-      throws ApplicationException {
+      String [][] requiredResources, String noteId, String paragraphId) {
     if (requiredResources == null || requiredResources.length == 0) {
       return new ResourceSet();
     }
@@ -151,7 +150,19 @@ public class ApplicationLoader {
       allResources = resourcePool.getAll();
     }
 
-    allResources = allResources.filterByNoteId(noteId).filterByParagraphId(paragraphId);
+    return findRequiredResourceSet(requiredResources, noteId, paragraphId, allResources);
+  }
+
+  static ResourceSet findRequiredResourceSet(String [][] requiredResources,
+                                             String noteId,
+                                             String paragraphId,
+                                             ResourceSet resources) {
+    ResourceSet args = new ResourceSet();
+    if (requiredResources == null || requiredResources.length == 0) {
+      return args;
+    }
+
+    resources = resources.filterByNoteId(noteId).filterByParagraphId(paragraphId);
 
     for (String [] requires : requiredResources) {
       args.clear();
@@ -159,7 +170,7 @@ public class ApplicationLoader {
       for (String require : requires) {
         boolean found = false;
 
-        for (Resource r : allResources) {
+        for (Resource r : resources) {
           if (r.getClassName().equals(require)) {
             args.add(r);
             found = true;
@@ -177,7 +188,7 @@ public class ApplicationLoader {
       }
     }
 
-    throw new ApplicationException("Can not find available resources");
+    return null;
   }
 
 

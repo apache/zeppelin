@@ -175,6 +175,9 @@ public class Paragraph extends Job implements Serializable, Cloneable {
   }
 
   public Interpreter getRepl(String name) {
+    if (replLoader == null) {
+      return null;
+    }
     return replLoader.get(name);
   }
 

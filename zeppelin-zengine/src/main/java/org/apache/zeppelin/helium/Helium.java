@@ -19,11 +19,19 @@ package org.apache.zeppelin.helium;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.apache.commons.io.FileUtils;
+import org.apache.zeppelin.interpreter.Interpreter;
+import org.apache.zeppelin.notebook.Paragraph;
+import org.apache.zeppelin.resource.DistributedResourcePool;
+import org.apache.zeppelin.resource.ResourcePool;
+import org.apache.zeppelin.resource.ResourcePoolUtils;
+import org.apache.zeppelin.resource.ResourceSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -76,7 +84,12 @@ public class Helium {
     File heliumConfFile = new File(path);
     if (!heliumConfFile.isFile()) {
       logger.warn("{} does not exists", path);
-      return new HeliumConf();
+      HeliumConf conf = new HeliumConf();
+      LinkedList<HeliumRegistry> defaultRegistry = new LinkedList<HeliumRegistry>();
+      defaultRegistry.add(new HeliumLocalRegistry("local", "../helium"));
+      conf.setRegistry(defaultRegistry);
+      this.registry = conf.getRegistry();
+      return conf;
     } else {
       String jsonString = FileUtils.readFileToString(heliumConfFile);
       HeliumConf conf = gson.fromJson(jsonString, HeliumConf.class);
@@ -114,5 +127,41 @@ public class Helium {
       }
     }
     return list;
+  }
+
+  public HeliumPackageSuggestion suggestApp(Paragraph paragraph) {
+    HeliumPackageSuggestion suggestion = new HeliumPackageSuggestion();
+
+    Interpreter intp = paragraph.getCurrentRepl();
+    if (intp == null) {
+      return suggestion;
+    }
+
+    ResourcePool resourcePool = intp.getInterpreterGroup().getResourcePool();
+    ResourceSet allResources;
+
+    if (resourcePool == null) {
+      allResources = new ResourceSet();
+    } else if (resourcePool instanceof DistributedResourcePool) {
+      allResources = ((DistributedResourcePool) resourcePool).getAll(false);
+    } else {
+      allResources = resourcePool.getAll();
+    }
+
+    for (HeliumPackageSearchResult pkg : getAllPackageInfo()) {
+      ResourceSet resources = ApplicationLoader.findRequiredResourceSet(
+          pkg.getPkg().getResources(),
+          paragraph.getNote().getId(),
+          paragraph.getId(),
+          allResources);
+      if (resources == null) {
+        continue;
+      } else {
+        suggestion.addAvailablePackage(pkg);
+      }
+    }
+
+    suggestion.sort();
+    return suggestion;
   }
 }

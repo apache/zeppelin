@@ -181,9 +181,6 @@ public class HeliumApplicationFactoryTest implements JobListenerFactory {
 
     // when remove paragraph
     note1.removeParagraph(p1.getId());
-    while (app.getStatus() != ApplicationState.Status.UNLOADED) {
-      Thread.yield();
-    }
 
     // then
     assertEquals(ApplicationState.Status.UNLOADED, app.getStatus());
@@ -204,7 +201,7 @@ public class HeliumApplicationFactoryTest implements JobListenerFactory {
         new String[][]{});
 
     Note note1 = notebook.createNote();
-    note1.getNoteReplLoader().setInterpreters(factory.getDefaultInterpreterSettingList());
+    notebook.bindInterpretersToNote(note1.id(), factory.getDefaultInterpreterSettingList());
 
     Paragraph p1 = note1.addParagraph();
 
@@ -221,7 +218,7 @@ public class HeliumApplicationFactoryTest implements JobListenerFactory {
     }
 
     // when unbind interpreter
-    note1.getNoteReplLoader().setInterpreters(new LinkedList<String>());
+    notebook.bindInterpretersToNote(note1.id(), new LinkedList<String>());
 
     // then
     assertEquals(ApplicationState.Status.UNLOADED, app.getStatus());

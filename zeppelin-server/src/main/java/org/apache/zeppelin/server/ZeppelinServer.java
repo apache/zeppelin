@@ -70,6 +70,8 @@ public class ZeppelinServer extends Application {
   public static Notebook notebook;
   public static Server jettyWebServer;
   public static NotebookServer notebookWsServer;
+  public static Helium helium;
+  public static HeliumApplicationFactory heliumApplicationFactory;
 
   private SchedulerFactory schedulerFactory;
   private InterpreterFactory replFactory;
@@ -77,8 +79,6 @@ public class ZeppelinServer extends Application {
   private SearchService notebookIndex;
   private NotebookAuthorization notebookAuthorization;
   private DependencyResolver depResolver;
-  private Helium helium;
-  private HeliumApplicationFactory heliumApplicationFactory;
 
   public ZeppelinServer() throws Exception {
     ZeppelinConfiguration conf = ZeppelinConfiguration.create();
@@ -297,6 +297,9 @@ public class ZeppelinServer extends Application {
 
     NotebookRestApi notebookApi = new NotebookRestApi(notebook, notebookWsServer, notebookIndex);
     singletons.add(notebookApi);
+
+    HeliumRestApi heliumApi = new HeliumRestApi(helium, heliumApplicationFactory, notebook);
+    singletons.add(heliumApi);
 
     InterpreterRestApi interpreterApi = new InterpreterRestApi(replFactory);
     singletons.add(interpreterApi);
