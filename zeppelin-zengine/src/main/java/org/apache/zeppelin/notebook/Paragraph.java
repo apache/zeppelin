@@ -24,7 +24,10 @@ import org.apache.zeppelin.display.Input;
 import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.Interpreter.FormType;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
+import org.apache.zeppelin.resource.Resource;
 import org.apache.zeppelin.resource.ResourcePool;
+import org.apache.zeppelin.resource.ResourcePoolUtils;
+import org.apache.zeppelin.resource.ResourceSet;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.JobListener;
 import org.apache.zeppelin.scheduler.Scheduler;
@@ -181,6 +184,24 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     this.replLoader = repls;
   }
 
+  /**
+   * Gets the first resource for this paragraph that responds to the interpreter result class.
+   */
+  public InterpreterResult getResultFromPool() {
+    ResourceSet resources = ResourcePoolUtils.getAllResources()
+        .filterByParagraphId(this.getId()).filterByNoteId(this.getNote().getId());
+    if (resources.size() > 0)
+    {
+      for (Resource r: resources)
+      {
+        if (InterpreterResult.class.isAssignableFrom(r.get().getClass()))
+          return (InterpreterResult) r.get();
+      }
+    }
+    return null;
+  }
+
+  
   public InterpreterResult getResult() {
     return (InterpreterResult) getReturn();
   }

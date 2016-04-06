@@ -38,6 +38,7 @@ public class JsonResponse<T> {
   private javax.ws.rs.core.Response.Status status;
   private String message;
   private T body;
+  private transient GsonBuilder builder;
   transient ArrayList<NewCookie> cookies;
   transient boolean pretty = false;
 
@@ -58,17 +59,27 @@ public class JsonResponse<T> {
     this.status = status;
     this.message = null;
     this.body = body;
+    this.builder = new GsonBuilder();
   }
 
   public JsonResponse(javax.ws.rs.core.Response.Status status, String message, T body) {
     this.status = status;
     this.message = message;
     this.body = body;
+    this.builder = new GsonBuilder();
   }
 
   public JsonResponse<T> setPretty(boolean pretty) {
     this.pretty = pretty;
     return this;
+  }
+  
+  public JsonResponse(javax.ws.rs.core.Response.Status status, String message, T body,
+      GsonBuilder builder) {
+    this.status = status;
+    this.message = message;
+    this.body = body;
+    this.builder = builder;
   }
 
   /**
@@ -99,14 +110,14 @@ public class JsonResponse<T> {
 
   @Override
   public String toString() {
-    GsonBuilder gsonBuilder = new GsonBuilder().registerTypeAdapter(
+    builder.registerTypeAdapter(
         InterpreterSetting.InterpreterInfo.class,
         new InterpreterInfoSerializer());
     if (pretty) {
-      gsonBuilder.setPrettyPrinting();
+      builder.setPrettyPrinting();
     }
-    gsonBuilder.setExclusionStrategies(new JsonExclusionStrategy());
-    Gson gson = gsonBuilder.create();
+    builder.setExclusionStrategies(new JsonExclusionStrategy());
+    Gson gson = builder.create();
     return gson.toJson(this);
   }
 
