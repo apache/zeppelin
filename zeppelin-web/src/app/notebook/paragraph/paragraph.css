@@ -48,6 +48,45 @@
   margin-bottom: 0;
 }
 
+table.dataTable {
+  /* clear: both; */
+  margin-top: 0px !important; 
+  margin-bottom: 0px !important;
+  top: 41px;
+  /* max-width: none !important; */
+}
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: @zindex-dropdown;
+  display: none; // none by default, but block on "open" of the menu
+  float: left;
+  min-width: 50px;
+  padding: 5px 0;
+  margin: 2px 0 0; // override default ul
+  list-style: none;
+  font-size: @font-size-base;
+  text-align: left;
+  }
+
+
+div.dataTables_wrapper {
+ overflow: hidden;
+ padding-right: 10px;
+}
+
+div.dataTables_filter input.form-control {
+  width: 100%;
+}
+
+a.buttons-collection {
+	margin-left: 1em;
+}
+.paragraph p {
+  margin: 0;
+}
+
 .paragraph div svg {
   width: 100%;
 }
@@ -317,7 +356,7 @@
 }
 
 .tableDisplay .btn-group span {
-  margin: 10px 0 0 10px;
+  margin: 10px 0 0 0px;
   font-size: 12px;
 }
 .tableDisplay .btn-group span a {
