@@ -143,7 +143,7 @@ public class RemoteInterpreterServer
       return resourcePool;
     try {
       String resourcePoolClassName = (String) interpreterGroup.getProperty()
-          .getOrDefault("ResourcePoolClass",
+          .getProperty("ResourcePoolClass",
               "org.apache.zeppelin.resource.DistributedResourcePool");
       logger.debug("Getting resource pool {}", resourcePoolClassName);
       Class resourcePoolClass = Class.forName(resourcePoolClassName);
