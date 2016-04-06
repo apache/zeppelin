@@ -157,12 +157,10 @@ public class RemoteInterpreterServer
           interpreterGroup.getProperty());
       interpreterGroup.setResourcePool(resourcePool);
       return resourcePool;
-    } catch (SecurityException | NoSuchMethodException |
-        InstantiationException | IllegalAccessException |
-        IllegalArgumentException | InvocationTargetException |
-        ClassNotFoundException e) {
+    } catch (Exception e) {
       logger.error(e.toString(), e);
-      throw new TException(e);
+      return null;
+  //    throw new TException(e);
     }
   }
 
@@ -386,11 +384,13 @@ public class RemoteInterpreterServer
         }
 
         // put result into resource pool
-        context.getResourcePool().put(
-            context.getNoteId(),
-            context.getParagraphId(),
-            WellKnownResourceName.ParagraphResult.toString(),
-            combinedResult);
+        if (context.getResourcePool() != null) {
+          context.getResourcePool().put(
+              context.getNoteId(),
+              context.getParagraphId(),
+              WellKnownResourceName.ParagraphResult.toString(),
+              combinedResult);
+        }
         return combinedResult;
       } finally {
         InterpreterContext.remove();
