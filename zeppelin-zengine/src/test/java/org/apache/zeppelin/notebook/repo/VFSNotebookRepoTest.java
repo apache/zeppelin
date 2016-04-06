@@ -80,7 +80,7 @@ public class VFSNotebookRepoTest implements JobListenerFactory {
 
     SearchService search = mock(SearchService.class);
     notebookRepo = new VFSNotebookRepo(conf);
-    notebook = new Notebook(conf, notebookRepo, schedulerFactory, factory, this, search);
+    notebook = new Notebook(conf, notebookRepo, schedulerFactory, factory, this, search, null);
   }
 
   @After
@@ -88,6 +88,20 @@ public class VFSNotebookRepoTest implements JobListenerFactory {
     if (!FileUtils.deleteQuietly(mainZepDir)) {
       LOG.error("Failed to delete {} ", mainZepDir.getName());
     }
+  }
+
+  @Test
+  public void testInvalidJsonFile() throws IOException {
+    // given
+    int numNotes = notebookRepo.list().size();
+
+    // when create invalid json file
+    File testNoteDir = new File(mainNotebookDir, "test");
+    testNoteDir.mkdir();
+    FileUtils.writeStringToFile(new File(testNoteDir, "note.json"), "");
+
+    // then
+    assertEquals(numNotes, notebookRepo.list().size());
   }
 
   @Test

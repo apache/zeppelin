@@ -55,7 +55,7 @@
 	<dependency>
       <groupId>com.amazonaws</groupId>
       <artifactId>aws-java-sdk-s3</artifactId>
-      <version>1.10.1</version>
+      <version>1.10.62</version>
 	</dependency>
 
     <dependency>
@@ -222,4 +222,13 @@
     </dependency>
 
   </dependencies>
+
+  <build>
+    <resources>
+      <resource>
+        <directory>src/main/resources</directory>
+        <filtering>true</filtering>
+      </resource>
+    </resources>
+  </build>
 </project>

@@ -439,6 +439,7 @@ module.exports = function (grunt) {
   ]);
 
   grunt.registerTask('build', [
+    'newer:jshint',
     'clean:dist',
     'wiredep',
     'useminPrepare',
@@ -454,12 +455,7 @@ module.exports = function (grunt) {
   ]);
 
   grunt.registerTask('default', [
-    'newer:jshint',
-    /*
-     * Since we dont have test (or up to date) there is no reason to keep this task
-     * I am commented this, but can be changed in the future (if someone want to implement front tests).
-    'test',
-    */
-    'build'
+    'build',
+    'test'
   ]);
 };

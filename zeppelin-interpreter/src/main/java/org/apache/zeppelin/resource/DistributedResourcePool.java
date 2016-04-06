@@ -33,6 +33,11 @@ public class DistributedResourcePool extends LocalResourcePool {
     return get(name, true);
   }
 
+  @Override
+  public Resource get(String noteId, String paragraphId, String name) {
+    return get(noteId, paragraphId, name, true);
+  }
+
   /**
    * get resource by name.
    * @param name
@@ -48,6 +53,35 @@ public class DistributedResourcePool extends LocalResourcePool {
 
     if (remote) {
       ResourceSet resources = connector.getAllResources().filterByName(name);
+      if (resources.isEmpty()) {
+        return null;
+      } else {
+        return resources.get(0);
+      }
+    } else {
+      return null;
+    }
+  }
+
+  /**
+   * get resource by name.
+   * @param name
+   * @param remote false only return from local resource
+   * @return null if resource not found.
+   */
+  public Resource get(String noteId, String paragraphId, String name, boolean remote) {
+    // try local first
+    Resource resource = super.get(noteId, paragraphId, name);
+    if (resource != null) {
+      return resource;
+    }
+
+    if (remote) {
+      ResourceSet resources = connector.getAllResources()
+          .filterByNoteId(noteId)
+          .filterByParagraphId(paragraphId)
+          .filterByName(name);
+
       if (resources.isEmpty()) {
         return null;
       } else {

@@ -39,6 +39,10 @@ bin=$(cd "${bin}">/dev/null; pwd)
 
 . "${bin}/common.sh"
 
+if [ "$1" == "--version" ] || [ "$1" == "-v" ]; then
+    getZeppelinVersion
+fi
+
 HOSTNAME=$(hostname)
 ZEPPELIN_LOGFILE="${ZEPPELIN_LOG_DIR}/zeppelin-${ZEPPELIN_IDENT_STRING}-${HOSTNAME}.log"
 LOG="${ZEPPELIN_LOG_DIR}/zeppelin-cli-${ZEPPELIN_IDENT_STRING}-${HOSTNAME}.out"

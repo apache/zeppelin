@@ -40,6 +40,7 @@ import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.apache.zeppelin.notebook.repo.NotebookRepoSync;
+import org.apache.zeppelin.resource.ResourcePoolUtils;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.apache.zeppelin.search.SearchService;
 import org.quartz.CronScheduleBuilder;
@@ -76,6 +77,7 @@ public class Notebook {
   private JobListenerFactory jobListenerFactory;
   private NotebookRepo notebookRepo;
   private SearchService notebookIndex;
+  private NotebookAuthorization notebookAuthorization;
 
   /**
    * Main constructor \w manual Dependency Injection
@@ -86,6 +88,7 @@ public class Notebook {
    * @param replFactory
    * @param jobListenerFactory
    * @param notebookIndex - (nullable) for indexing all notebooks on creating.
+   * @param notebookAuthorization
    *
    * @throws IOException
    * @throws SchedulerException
@@ -93,13 +96,15 @@ public class Notebook {
   public Notebook(ZeppelinConfiguration conf, NotebookRepo notebookRepo,
       SchedulerFactory schedulerFactory,
       InterpreterFactory replFactory, JobListenerFactory jobListenerFactory,
-      SearchService notebookIndex) throws IOException, SchedulerException {
+      SearchService notebookIndex,
+      NotebookAuthorization notebookAuthorization) throws IOException, SchedulerException {
     this.conf = conf;
     this.notebookRepo = notebookRepo;
     this.schedulerFactory = schedulerFactory;
     this.replFactory = replFactory;
     this.jobListenerFactory = jobListenerFactory;
     this.notebookIndex = notebookIndex;
+    this.notebookAuthorization = notebookAuthorization;
     quertzSchedFact = new org.quartz.impl.StdSchedulerFactory();
     quartzSched = quertzSchedFact.getScheduler();
     quartzSched.start();
@@ -281,6 +286,7 @@ public class Notebook {
     }
     replFactory.removeNoteInterpreterSettingBinding(id);
     notebookIndex.deleteIndexDocs(note);
+    notebookAuthorization.removeNote(id);
 
     // remove from all interpreter instance's angular object registry
     for (InterpreterSetting settings : replFactory.get()) {
@@ -301,6 +307,8 @@ public class Notebook {
         registry.removeAll(id, null);
       }
     }
+
+    ResourcePoolUtils.removeResourcesBelongsToNote(id);
 
     try {
       note.unpersist();
@@ -573,6 +581,10 @@ public class Notebook {
 
   public InterpreterFactory getInterpreterFactory() {
     return replFactory;
+  }
+
+  public NotebookAuthorization getNotebookAuthorization() {
+    return notebookAuthorization;
   }
 
   public ZeppelinConfiguration getConf() {

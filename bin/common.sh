@@ -81,6 +81,18 @@ function addJarInDir(){
   fi
 }
 
+ZEPPELIN_COMMANDLINE_MAIN=org.apache.zeppelin.utils.CommandLineUtils
+
+function getZeppelinVersion(){
+    if [[ -d "${ZEPPELIN_HOME}/zeppelin-server/target/classes" ]]; then
+      ZEPPELIN_CLASSPATH+=":${ZEPPELIN_HOME}/zeppelin-server/target/classes"
+    fi
+    addJarInDir "${ZEPPELIN_HOME}/zeppelin-server/target/lib"
+    CLASSPATH+=":${ZEPPELIN_CLASSPATH}"
+    $ZEPPELIN_RUNNER -cp $CLASSPATH $ZEPPELIN_COMMANDLINE_MAIN -v
+    exit 0
+}
+
 # Text encoding for 
 # read/write job into files,
 # receiving/displaying query/result.
@@ -104,7 +116,7 @@ if [[ -z "${ZEPPELIN_INTP_MEM}" ]]; then
   export ZEPPELIN_INTP_MEM="${ZEPPELIN_MEM}"
 fi
 
-JAVA_INTP_OPTS+=" ${ZEPPELIN_INTP_JAVA_OPTS} -Dfile.encoding=${ZEPPELIN_ENCODING}"
+JAVA_INTP_OPTS="${ZEPPELIN_INTP_JAVA_OPTS} -Dfile.encoding=${ZEPPELIN_ENCODING}"
 export JAVA_INTP_OPTS
 
 

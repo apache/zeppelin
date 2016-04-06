@@ -32,9 +32,6 @@ import org.openqa.selenium.WebElement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.apache.zeppelin.AbstractZeppelinIT.HelperKeys.*;
-import static org.openqa.selenium.Keys.*;
-
 public class SparkParagraphIT extends AbstractZeppelinIT {
   private static final Logger LOG = LoggerFactory.getLogger(SparkParagraphIT.class);
 
@@ -67,17 +64,10 @@ public class SparkParagraphIT extends AbstractZeppelinIT {
       return;
     }
     try {
-      WebElement paragraph1Editor = driver.findElement(By.xpath(getParagraphXPath(1) + "//textarea"));
-      paragraph1Editor.sendKeys("sc.version");
-      paragraph1Editor.sendKeys(SHIFT_ENTER);
+      setTextOfParagraph(1, "sc.version");
+      runParagraph(1);
 
       waitForParagraph(1, "FINISHED");
-      WebElement paragraph1Result = driver.findElement(By.xpath(
-          getParagraphXPath(1) + "//div[@class=\"tableDisplay\"]"));
-      Float sparkVersion = Float.parseFloat(paragraph1Result.getText().split("= ")[1].substring(0, 3));
-
-      WebElement paragraph2Editor = driver.findElement(By.xpath(getParagraphXPath(2) + "//textarea"));
-
 
       /*
       equivalent of
@@ -90,50 +80,15 @@ public class SparkParagraphIT extends AbstractZeppelinIT {
       val bank = bankText.map(s => s.split(";")).filter(s => s(0) != "\"age\"").map(s => Bank(s(0).toInt,s(1).replaceAll("\"", ""),s(2).replaceAll("\"", ""),s(3).replaceAll("\"", ""),s(5).replaceAll("\"", "").toInt)).toDF()
       bank.registerTempTable("bank")
        */
-      paragraph2Editor.sendKeys("import org.apache.commons.io.IOUtils" +
-          ENTER +
-
-          "import java.net.URL" +
-          ENTER +
-
-          "import java.nio.charset.Charset" +
-          ENTER +
-
-          "val bankText = sc.parallelize" + OPEN_PARENTHESIS +
-          "IOUtils.toString" + OPEN_PARENTHESIS + "new URL" + OPEN_PARENTHESIS
-          + "\"https://s3.amazonaws.com/apache" + SUBTRACT + "zeppelin/tutorial/bank/bank." +
-          "csv\"),Charset.forName" + OPEN_PARENTHESIS + "\"utf8\"))" +
-          ".split" + OPEN_PARENTHESIS + "\"\\n\"))" +
-          ENTER +
-
-          "case class Bank" + OPEN_PARENTHESIS +
-          "age: Integer, job: String, marital: String, education: String, balance: Integer)" +
-          ENTER +
-          ENTER +
-
-          "val bank = bankText.map" + OPEN_PARENTHESIS + "s => s.split" +
-          OPEN_PARENTHESIS + "\";\")).filter" + OPEN_PARENTHESIS +
-          "s => s" + OPEN_PARENTHESIS + "0) " + EXCLAMATION +
-          "= \"\\\"age\\\"\").map" + OPEN_PARENTHESIS +
-          "s => Bank" + OPEN_PARENTHESIS + "s" + OPEN_PARENTHESIS +
-          "0).toInt,s" + OPEN_PARENTHESIS + "1).replaceAll" +
-          OPEN_PARENTHESIS + "\"\\\"\", \"\")," +
-          "s" + OPEN_PARENTHESIS + "2).replaceAll" +
-          OPEN_PARENTHESIS + "\"\\\"\", \"\")," +
-          "s" + OPEN_PARENTHESIS + "3).replaceAll" +
-          OPEN_PARENTHESIS + "\"\\\"\", \"\")," +
-          "s" + OPEN_PARENTHESIS + "5).replaceAll" +
-          OPEN_PARENTHESIS + "\"\\\"\", \"\").toInt" + ")" +
-          ")" + (sparkVersion < 1.3f ? "" : ".toDF" + OPEN_PARENTHESIS + ")") +
-          ENTER +
-
-          "bank.registerTempTable" + OPEN_PARENTHESIS + "\"bank\")"
-      );
-      paragraph2Editor.sendKeys("" + END + BACK_SPACE + BACK_SPACE +
-          BACK_SPACE + BACK_SPACE + BACK_SPACE + BACK_SPACE +
-          BACK_SPACE + BACK_SPACE + BACK_SPACE + BACK_SPACE + BACK_SPACE);
-
-      paragraph2Editor.sendKeys(SHIFT_ENTER);
+      setTextOfParagraph(2, "import org.apache.commons.io.IOUtils\\n" +
+          "import java.net.URL\\n" +
+          "import java.nio.charset.Charset\\n" +
+          "val bankText = sc.parallelize(IOUtils.toString(new URL(\"https://s3.amazonaws.com/apache-zeppelin/tutorial/bank/bank.csv\"),Charset.forName(\"utf8\")).split(\"\\\\n\"))\\n" +
+          "case class Bank(age: Integer, job: String, marital: String, education: String, balance: Integer)\\n" +
+          "\\n" +
+          "val bank = bankText.map(s => s.split(\";\")).filter(s => s(0) != \"\\\\\"age\\\\\"\").map(s => Bank(s(0).toInt,s(1).replaceAll(\"\\\\\"\", \"\"),s(2).replaceAll(\"\\\\\"\", \"\"),s(3).replaceAll(\"\\\\\"\", \"\"),s(5).replaceAll(\"\\\\\"\", \"\").toInt)).toDF()\\n" +
+          "bank.registerTempTable(\"bank\")");
+      runParagraph(2);
 
       try {
         waitForParagraph(2, "FINISHED");
@@ -164,14 +119,11 @@ public class SparkParagraphIT extends AbstractZeppelinIT {
       return;
     }
     try {
-      WebElement paragraph1Editor = driver.findElement(By.xpath(getParagraphXPath(1) + "//textarea"));
+      setTextOfParagraph(1, "%pyspark\\n" +
+          "for x in range(0, 3):\\n" +
+          "    print \"test loop %d\" % (x)");
 
-      paragraph1Editor.sendKeys(PERCENTAGE + "pyspark" + ENTER +
-          "for x in range" + OPEN_PARENTHESIS + "0, 3):" + ENTER +
-          "    print \"test loop " + PERCENTAGE + "d\" " +
-          PERCENTAGE + " " + OPEN_PARENTHESIS + "x)" + ENTER);
-
-      paragraph1Editor.sendKeys(SHIFT_ENTER);
+      runParagraph(1);
 
       try {
         waitForParagraph(1, "FINISHED");
@@ -199,12 +151,9 @@ public class SparkParagraphIT extends AbstractZeppelinIT {
       return;
     }
     try {
-      WebElement paragraph1Editor = driver.findElement(By.xpath(getParagraphXPath(1) + "//textarea"));
-
-      paragraph1Editor.sendKeys(PERCENTAGE + "sql" + ENTER +
+      setTextOfParagraph(1,"%sql\\n" +
           "select * from bank limit 1");
-
-      paragraph1Editor.sendKeys(SHIFT_ENTER);
+      runParagraph(1);
 
       try {
         waitForParagraph(1, "FINISHED");

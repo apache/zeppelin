@@ -46,6 +46,10 @@ import org.junit.Test;
 
 public class RemoteSchedulerTest implements RemoteInterpreterProcessListener {
 
+  private static final String INTERPRETER_SCRIPT =
+          System.getProperty("os.name").startsWith("Windows") ?
+                  "../bin/interpreter.cmd" :
+                  "../bin/interpreter.sh";
   private SchedulerFactory schedulerSvc;
   private static final int TICK_WAIT = 100;
   private static final int MAX_WAIT_CYCLES = 100;
@@ -71,7 +75,7 @@ public class RemoteSchedulerTest implements RemoteInterpreterProcessListener {
         p,
         "note",
         MockInterpreterA.class.getName(),
-        new File("../bin/interpreter.sh").getAbsolutePath(),
+        new File(INTERPRETER_SCRIPT).getAbsolutePath(),
         "fake",
         "fakeRepo",
         env,
@@ -159,7 +163,7 @@ public class RemoteSchedulerTest implements RemoteInterpreterProcessListener {
         p,
         "note",
         MockInterpreterA.class.getName(),
-        new File("../bin/interpreter.sh").getAbsolutePath(),
+        new File(INTERPRETER_SCRIPT).getAbsolutePath(),
         "fake",
         "fakeRepo",
         env,

@@ -53,6 +53,12 @@ public class LocalResourcePool implements ResourcePool {
   }
 
   @Override
+  public Resource get(String noteId, String paragraphId, String name) {
+    ResourceId resourceId = new ResourceId(resourcePoolId, noteId, paragraphId, name);
+    return resources.get(resourceId);
+  }
+
+  @Override
   public ResourceSet getAll() {
     return new ResourceSet(resources.values());
   }
@@ -71,7 +77,20 @@ public class LocalResourcePool implements ResourcePool {
   }
 
   @Override
+  public void put(String noteId, String paragraphId, String name, Object object) {
+    ResourceId resourceId = new ResourceId(resourcePoolId, noteId, paragraphId, name);
+
+    Resource resource = new Resource(resourceId, object);
+    resources.put(resourceId, resource);
+  }
+
+  @Override
   public Resource remove(String name) {
     return resources.remove(new ResourceId(resourcePoolId, name));
+  }
+
+  @Override
+  public Resource remove(String noteId, String paragraphId, String name) {
+    return resources.remove(new ResourceId(resourcePoolId, noteId, paragraphId, name));
   }
 }
