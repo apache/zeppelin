@@ -48,7 +48,7 @@ public class OccupiedInterpreter {
     return StringUtils.defaultString(occupiedInterpreter, DEFAULT_INTERPRETER_NAME);
   }
 
-  static String getDefaultInterpreterName() {
+  public static String getDefaultInterpreterName() {
     return DEFAULT_INTERPRETER_NAME;
   }
 
