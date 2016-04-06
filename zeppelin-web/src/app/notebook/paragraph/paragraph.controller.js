@@ -1252,7 +1252,7 @@ angular.module('zeppelinWebApp')
       html += '  <tbody>';
       for (var r in $scope.paragraph.result.msgTable) {
         var row = $scope.paragraph.result.msgTable[r];
-        html += '    <tr>';
+		html += '    <tr>';
         for (var index in row) {
           var v = row[index].value;
           if (getTableContentFormat(v) !== 'html') {
@@ -1268,40 +1268,57 @@ angular.module('zeppelinWebApp')
       html += '</table>';
 
       angular.element('#p' + $scope.paragraph.id + '_table').html(html);
-	  angular.element('#p' + $scope.paragraph.id + '_table').children(1).DataTable({
+	  var dataTableTitle = ($scope.paragraph.title && $scope.paragraph.title.trim()) ? $scope.paragraph.title.trim() : $scope.paragraph.id;
+
+	  var oTable = angular.element('#p' + $scope.paragraph.id + '_table').children(1).DataTable({
 		    paging: false,
 			info:     false,
 			autoWidth: true,
 			lengthChange: false,
-		    dom: '<"row"<"col-sm-6"B><"col-sm-6"f>>'+
-				'<"row"<"col-sm-12"t>>',
-			buttons: [
-				{
-					extend: 'csvHtml5',
-					text: 'TSV',
-					title: 'table',
-					fieldSeparator: '\t',
-					extension: '.tsv',
-					exportOptions: {
-						modifier: {
-							search: 'none'
+			language: {
+				search: '_INPUT_',
+				searchPlaceholder: 'Search records'
+			},
+				dom : "<'row'<'col-sm-12't>>",
+		        buttons: [
+                    {
+                        extend: 'csvHtml5',
+						text: 'TSV',
+						className: 'btn btn-default btn-sm',
+						title: dataTableTitle,
+						fieldSeparator: '\t',
+						extension: '.tsv',
+						exportOptions: {
+							modifier: {
+								search: 'none'
+							}
 						}
-					}
-				},
-				{
-					extend: 'csvHtml5',
-					text: 'CSV',
-					title: 'table',
-					extension: '.csv',
-					exportOptions: {
-						modifier: {
-							search: 'none'
+                    },
+                    {
+                        extend: 'csvHtml5',
+						text: 'CSV',
+						className: 'btn btn-default btn-sm',
+						title: dataTableTitle,
+						extension: '.csv',
+						exportOptions: {
+							modifier: {
+								search: 'none'
+							}
 						}
-					}
-				}
-
-        ]
+                    }
+                ]
+            
       });
+	  
+	 if($('#'+$scope.paragraph.id+'_switch').parent().parent().find(".btn-group").length <= 2 ){
+		 oTable.buttons( 0, null ).containers().appendTo( '#'+$scope.paragraph.id+'_switch' );
+	 }
+
+	 $('#'+$scope.paragraph.id+'_search_input').keyup(function(){
+      oTable.search($(this).val()).draw() ;
+	 });
+		//
+      
       if ($scope.paragraph.result.msgTable.length > 10000) {
         angular.element('#p' + $scope.paragraph.id + '_table').css('overflow', 'scroll');
         // set table height
@@ -1309,7 +1326,10 @@ angular.module('zeppelinWebApp')
         angular.element('#p' + $scope.paragraph.id + '_table').css('height', height);
       } else {
         var dataTable = angular.element('#p' + $scope.paragraph.id + '_table .table');
+		var tableHead = dataTable.offset().top;
         dataTable.floatThead({
+		  position:'fixed',
+		  top: tableHead+5000,
           scrollContainer: function (dataTable) {
             return angular.element('#p' + $scope.paragraph.id + '_table');
           }
