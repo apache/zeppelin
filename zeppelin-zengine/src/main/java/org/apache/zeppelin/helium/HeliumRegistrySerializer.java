@@ -40,19 +40,14 @@ public class HeliumRegistrySerializer
       throws JsonParseException {
     JsonObject jsonObject = json.getAsJsonObject();
     String className = jsonObject.get("class").getAsString();
-    URI uri = null;
-    try {
-      uri = new URI(jsonObject.get("uri").getAsString());
-    } catch (URISyntaxException e) {
-      new JsonParseException(e);
-    }
+    String uri = jsonObject.get("uri").getAsString();
     String name = jsonObject.get("name").getAsString();
 
     try {
       logger.info("Restore helium registry {} {} {}", name, className, uri);
       Class<HeliumRegistry> cls =
           (Class<HeliumRegistry>) getClass().getClassLoader().loadClass(className);
-      Constructor<HeliumRegistry> constructor = cls.getConstructor(String.class, URI.class);
+      Constructor<HeliumRegistry> constructor = cls.getConstructor(String.class, String.class);
       HeliumRegistry registry = constructor.newInstance(name, uri);
       return registry;
     } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException |
@@ -68,7 +63,7 @@ public class HeliumRegistrySerializer
                                JsonSerializationContext jsonSerializationContext) {
     JsonObject json = new JsonObject();
     json.addProperty("class", heliumRegistry.getClass().getName());
-    json.addProperty("uri", heliumRegistry.uri().toString());
+    json.addProperty("uri", heliumRegistry.uri());
     json.addProperty("name", heliumRegistry.name());
     return json;
   }

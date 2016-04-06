@@ -45,7 +45,7 @@ public class HeliumLocalRegistryTest {
   public void testGetAllPackage() throws IOException {
     // given
     File r1Path = new File(tmpDir, "r1");
-    HeliumLocalRegistry r1 = new HeliumLocalRegistry("r1", r1Path.toURI());
+    HeliumLocalRegistry r1 = new HeliumLocalRegistry("r1", r1Path.getAbsolutePath());
     assertEquals(0, r1.getAll().size());
 
     // when

@@ -50,9 +50,9 @@ public class HeliumTest {
     File heliumConf = new File(tmpDir, "helium.conf");
     Helium helium = new Helium(heliumConf.getAbsolutePath());
     assertFalse(heliumConf.exists());
-    HeliumTestRegistry registry1 = new HeliumTestRegistry("r1", new URI("file:///r1"));
+    HeliumTestRegistry registry1 = new HeliumTestRegistry("r1", "r1");
     helium.addRegistry(registry1);
-    assertEquals(1, helium.getAllRegistry().size());
+    assertEquals(2, helium.getAllRegistry().size());
     assertEquals(0, helium.getAllPackageInfo().size());
 
     // when
@@ -63,15 +63,15 @@ public class HeliumTest {
 
     // then
     Helium heliumRestored = new Helium(heliumConf.getAbsolutePath());
-    assertEquals(1, heliumRestored.getAllRegistry().size());
+    assertEquals(2, heliumRestored.getAllRegistry().size());
   }
 
   @Test
   public void testRestoreRegistryInstances() throws IOException, URISyntaxException {
     File heliumConf = new File(tmpDir, "helium.conf");
     Helium helium = new Helium(heliumConf.getAbsolutePath());
-    HeliumTestRegistry registry1 = new HeliumTestRegistry("r1", new URI("file:///r1"));
-    HeliumTestRegistry registry2 = new HeliumTestRegistry("r2", new URI("file:///r2"));
+    HeliumTestRegistry registry1 = new HeliumTestRegistry("r1", "r1");
+    HeliumTestRegistry registry2 = new HeliumTestRegistry("r2", "r2");
     helium.addRegistry(registry1);
     helium.addRegistry(registry2);
 

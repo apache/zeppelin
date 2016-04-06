@@ -24,7 +24,7 @@ import java.util.List;
 public class HeliumTestRegistry extends HeliumRegistry {
   List<HeliumPackage> infos = new LinkedList<HeliumPackage>();
 
-  public HeliumTestRegistry(String name, URI uri) {
+  public HeliumTestRegistry(String name, String uri) {
     super(name, uri);
   }
 

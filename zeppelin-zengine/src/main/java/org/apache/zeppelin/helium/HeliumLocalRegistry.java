@@ -35,7 +35,7 @@ public class HeliumLocalRegistry extends HeliumRegistry {
 
   private final Gson gson;
 
-  public HeliumLocalRegistry(String name, URI uri) {
+  public HeliumLocalRegistry(String name, String uri) {
     super(name, uri);
     gson = new Gson();
   }
