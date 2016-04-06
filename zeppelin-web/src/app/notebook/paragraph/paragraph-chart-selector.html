@@ -41,6 +41,13 @@ limitations under the License.
           ng-click="setGraphMode('scatterChart', true)"><i class="cf cf-scatter-chart"></i>
   </button>
 </div>
+<div id="{{paragraph.id}}_search"
+     ng-if="paragraph.result.type == 'TABLE' && !asIframe && !viewOnly"
+     class="btn-group"
+     style='margin-bottom: 10px;'>
+<input type="search" class="form-control input-sm" id="{{paragraph.id}}_search_input" placeholder="Search records" >
+</div>
+
 <span ng-if="getResultType()=='TABLE' && getGraphMode()!='table' && !asIframe && !viewOnly"
       style="margin-left:10px; cursor:pointer; display: inline-block; vertical-align:top; position: relative; line-height:30px;">
   <a class="btnText" ng-click="toggleGraphOption()">
