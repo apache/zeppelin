@@ -23,6 +23,7 @@ angular.module('zeppelinWebApp')
   $scope.originalText = '';
   $scope.editor = null;
 
+
   var paragraphScope = $rootScope.$new(true, $rootScope);
 
   // to keep backward compatibility
