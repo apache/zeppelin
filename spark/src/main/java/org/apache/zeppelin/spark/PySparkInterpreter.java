@@ -91,7 +91,12 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
   public PySparkInterpreter(Properties property) {
     super(property);
 
-    scriptPath = System.getProperty("java.io.tmpdir") + "/zeppelin_pyspark.py";
+    try {
+      File scriptFile = File.createTempFile("zeppelin_pyspark-", ".py");
+      scriptPath = scriptFile.getAbsolutePath();
+    } catch (IOException e) {
+      throw new InterpreterException(e);
+    }
   }
 
   private void createPythonScript() {
@@ -235,6 +240,7 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
   @Override
   public void close() {
     executor.getWatchdog().destroyProcess();
+    new File(scriptPath).delete();
     gatewayServer.shutdown();
   }
 
