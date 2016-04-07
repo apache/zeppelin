@@ -111,8 +111,12 @@ public class ZeppelinR implements ExecuteResultHandler {
     this.rCmdPath = rCmdPath;
     this.libPath = libPath;
     this.port = sparkRBackendPort;
-    scriptPath = System.getProperty("java.io.tmpdir") + "/zeppelin_sparkr.R";
-
+    try {
+      File scriptFile = File.createTempFile("zeppelin_sparkr-", ".R");
+      scriptPath = scriptFile.getAbsolutePath();
+    } catch (IOException e) {
+      throw new InterpreterException(e);
+    }
   }
 
   /**
