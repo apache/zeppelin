@@ -47,7 +47,6 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl',
   $scope.suggestions = [];
   $scope.selectIndex = -1;
   var selectedUser = '';
-  var searchItems = [];
   var selectedUserIndex = 0;
   var previousSelectedList = [];
   var previousSelectedListOwners = [];
@@ -705,11 +704,15 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl',
       }
     $scope.savePermissions = function() {
       convertPermissionsToArray();
-      console.log('Note permissions %o saved', $scope.permissions);
       $http.put(baseUrlSrv.getRestApiBase() + '/notebook/' +$scope.note.id + '/permissions',
         $scope.permissions, {withCredentials: true}).
       success(function(data, status, headers, config) {
         console.log('Note permissions %o saved', $scope.permissions);
+        BootstrapDialog.alert({
+            closable: true,
+            title: 'Permissions Saved Successfully!!!',
+            message: 'Owners : ' + $scope.permissions.owners + '\n\n' + 'Readers : ' + $scope.permissions.readers + '\n\n' + 'Writers  : ' +  $scope.permissions.writers
+        });
         $scope.showPermissions = false;
       }).
       error(function(data, status, headers, config) {
@@ -818,19 +821,17 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl',
     }
   }
 
-  var getSearchItems = function() {
-    $http.get(baseUrlSrv.getRestApiBase() + '/security/userlist').then(function(response) {
+  function getSuggestions (searchQuery) {
+    $scope.suggestions =[];
+    $http.get(baseUrlSrv.getRestApiBase() + '/security/userlist/' + searchQuery ).then(function
+    (response) {
       var userlist = angular.fromJson(response.data).body;
-      $scope.suggestions = [];
       for (var k in userlist) {
-        searchItems.push(userlist[k]);
+        $scope.suggestions.push(userlist[k]);
       }
 
     });
-  };
-
-  getSearchItems();
-  searchItems.sort();
+  }
 
   function updatePreviousList() {
     for (var i = 0; i < searchText.length; i++) {
@@ -867,25 +868,13 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl',
     getChangedIndex();
     $scope.selectIndex = -1;
     $scope.suggestions = [];
-    if (selectedUserIndex !== -1) {
-      selectedUser = searchText[selectedUserIndex];
-      var maxLength = 0;
-      for (var i = 0; i < searchItems.length; i++) {
-        if (searchText[selectedUserIndex] !== '') {
-          var searchitemlowercase = angular.lowercase(searchItems[i]);
-          var searchtextlowercase = angular.lowercase(searchText[selectedUserIndex]);
-          if (searchitemlowercase.indexOf(searchtextlowercase) !== -1) {
-            maxLength++;
-            $scope.suggestions.push(searchItems[i]);
-          }
-          if (maxLength === 5) {
-            break;
-          }
-        }
-        else {
-          $scope.suggestions = [];
-        }
-      }
+    selectedUser = searchText[selectedUserIndex];
+    if(selectedUser !== ''){
+    getSuggestions(selectedUser);
+    }
+    else
+    {
+     $scope.suggestions = [];
     }
   };
 

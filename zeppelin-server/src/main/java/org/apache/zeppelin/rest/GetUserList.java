@@ -122,8 +122,11 @@ public class GetUserList {
           retval = retval[0].split("=", 2);
         username = retval[0];
       }
-      if (username.equals("") || tablename.equals(""))
+
+      if (username.equals("") || tablename.equals("")){
         return userlist;
+      }
+
       userquery = "select " + username + " from " + tablename;
 
     } catch (IllegalAccessException e) {

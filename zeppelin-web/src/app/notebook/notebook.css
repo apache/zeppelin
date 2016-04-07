@@ -154,6 +154,17 @@
   border: 1px solid #E5E5E5;
 }
 
+.permissions .owners {
+  margin-right: 10px;
+}
+
+.permissions .readers {
+    margin-right: 6px;
+}
+
+.permissions .writers {
+    margin-right: 11px;
+}
 /*
   Note Setting Panel
 */

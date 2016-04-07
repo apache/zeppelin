@@ -70,11 +70,11 @@ limitations under the License.
       </p>
       <div class="permissionsForm"
            data-ng-model="permissions">
-        <p>Owners:<input   ng-model="permissions.owners"
+        <p><span  class="owners">Owners </span><input   ng-model="permissions.owners"
                            placeholder="search for users"
                            class="input"  ng-change="search('owners')"
                            ng-keydown="checkKeyDown($event,'owners')"
-                           ng-keyup="checkKeyUp($event)"  >Owners can change permissions,read
+                           ng-keyup="checkKeyUp($event)"> Owners can change permissions,read
           and write the note.</p>
         <div ng-if="role === 'owners'" class="userlist" >
           <ul>
@@ -85,7 +85,7 @@ limitations under the License.
             </li>
           </ul>
         </div>
-        <p>Readers :<input   ng-model="permissions.readers"
+        <p><span  class="readers">Readers </span><input   ng-model="permissions.readers"
                              placeholder="search for users"
                              class="input"  ng-change="search('readers')"
                              ng-keydown="checkKeyDown($event,'readers')"
@@ -99,11 +99,11 @@ limitations under the License.
             </li>
           </ul>
         </div>
-        <p>Writers : <input   ng-model="permissions.writers"
+        <p><span  class="writers">Writers </span><input   ng-model="permissions.writers"
                               placeholder="search for users"
                               class="input"  ng-change="search('writers')"
                               ng-keydown="checkKeyDown($event,'writers')"
-                              ng-keyup="checkKeyUp($event)">Writers can read and write the note.</p>
+                              ng-keyup="checkKeyUp($event)"> Writers can read and write the note.</p>
         <div ng-if="role === 'writers'" class="userlist">
           <ul>
             <li ng-repeat="suggestion in suggestions"
