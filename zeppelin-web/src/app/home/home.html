@@ -60,7 +60,7 @@ limitations under the License.
             <ul id="notebook-names">
               <li class="filter-names" ng-include="'components/filterNoteNames/filter-note-names.html'"></li>
               <div ng-if="!query || query.name === ''">
-                <li ng-repeat="node in home.notes.list" ng-include="'notebook_folder_renderer.html'" />
+                <li ng-repeat="node in home.notes.root.children" ng-include="'notebook_folder_renderer.html'" />
               </div>
               <div ng-if="query && query.name !== ''">
                 <li ng-repeat="note in home.notes.flatList | filter:query | orderBy:home.arrayOrderingSrv.notebookListOrdering track by $index">

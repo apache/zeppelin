@@ -37,7 +37,7 @@ describe('Factory: NotebookList', function() {
     expect(flatList[6].name).toBe('/C/CB/CBA');
     expect(flatList[7].name).toBe('C///CB//CBB');
 
-    var folderList = notebookList.list;
+    var folderList = notebookList.root.children;
     expect(folderList.length).toBe(4);
     expect(folderList[0].name).toBe('A');
     expect(folderList[0].id).toBe('000001');
