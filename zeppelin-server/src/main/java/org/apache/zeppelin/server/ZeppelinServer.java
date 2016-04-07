@@ -18,7 +18,6 @@
 package org.apache.zeppelin.server;
 
 import org.apache.cxf.jaxrs.servlet.CXFNonSpringJaxrsServlet;
-import org.apache.shiro.web.servlet.IniShiroFilter;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.dep.DependencyResolver;
@@ -235,12 +234,10 @@ public class ZeppelinServer extends Application {
     cxfContext.addFilter(new FilterHolder(CorsFilter.class), "/*",
         EnumSet.allOf(DispatcherType.class));
 
+    cxfContext.setInitParameter("shiroConfigLocations", "file:" + conf.getConfDir() + "/shiro.ini");
+
     cxfContext.addFilter(org.apache.shiro.web.servlet.ShiroFilter.class, "/*",
         EnumSet.allOf(DispatcherType.class));
-
-    FilterHolder authFilterHolder = new FilterHolder(IniShiroFilter.class);
-    authFilterHolder.setInitParameter("configPath", "file:" + conf.getConfDir() + "/shiro.ini");
-    cxfContext.addFilter(authFilterHolder, "/*", EnumSet.allOf(DispatcherType.class));
 
     cxfContext.addEventListener(new org.apache.shiro.web.env.EnvironmentLoaderListener());
 
