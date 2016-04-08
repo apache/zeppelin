@@ -13,7 +13,9 @@ limitations under the License.
 -->
 ## Vagrant Virtual Machine for Apache Zeppelin
   
-This script creates a virtual machine that launches a repeatable, known set of core dependencies required for developing Zeppelin.  It can also be used to run an existing Zeppelin build if you don't plan to build from source.  For pyspark users, this script also includes several helpful [Python Libraries and one obscure configuration to help with matplotlib plotting inside Zeppelin](#pythonextras)
+This script creates a virtual machine that launches a repeatable, known set of core dependencies required for developing Zeppelin.  It can also be used to run an existing Zeppelin build if you don't plan to build from source.
+For PySpark users, this script includes several helpful [Python Libraries](#python-extras).
+For SparkR users, this script includes several helpful [R Libraries](#r-extras).
  
 ####Installing the required components to launch a virtual machine.
 
@@ -77,14 +79,15 @@ The virtual machine consists of:
  - libfontconfig to avoid phatomJs missing dependency issues
  - openjdk-7-jdk
  - Python addons: pip, matplotlib, scipy, numpy, pandas
+ - [R](https://www.r-project.org/) and R Packages required to run the R Interpreter & related R tutorial notebook
  
 ### How to build & run Zeppelin
 
-This assumes you've already cloned the project either on the host machine in the zeppelin-dev directory (to be shared with the guest machine) or cloned directly into a directory while running inside the guest machine.
+This assumes you've already cloned the project either on the host machine in the zeppelin-dev directory (to be shared with the guest machine) or cloned directly into a directory while running inside the guest machine.  The following build steps will also include Python and R support via PySpark and SparkR:
 
 ```
 cd /incubator-zeppelin
-mvn clean package -Pspark-1.5 -Ppyspark -Dhadoop.version=2.2.0 -Phadoop-2.2 -DskipTests
+mvn clean package -Pspark-1.6 -Ppyspark -Phadoop-2.4 -Psparkr -DskipTests'
 ./bin/zeppelin-daemon.sh start
 ```
 
@@ -160,8 +163,6 @@ plt.title('How fast do you want to go today?')
 show(plt)
 ``` 
 
+### [R Extras](id:rrextras)
 
-
-
-
-
+With zeppelin running, an R Tutorial notebook will be available.  The R packages required to run the examples and graphs in this tutorial notebook were installed by this virtual machine.

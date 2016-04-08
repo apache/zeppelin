@@ -26,7 +26,9 @@ Apache Zeppelin distribution includes a scripts directory
 
  `scripts/vagrant/zeppelin-dev`
  
-This script creates a virtual machine that launches a repeatable, known set of core dependencies required for developing Zeppelin.  It can also be used to run an existing Zeppelin build if you don't plan to build from source.  For pyspark users, this script also includes several helpful [Python Libraries](#pythonextras).
+This script creates a virtual machine that launches a repeatable, known set of core dependencies required for developing Zeppelin.  It can also be used to run an existing Zeppelin build if you don't plan to build from source.
+For PySpark users, this script includes several helpful [Python Libraries](#python-extras).
+For SparkR users, this script includes several helpful [R Libraries](#r-extras).
  
 ####Installing the required components to launch a virtual machine.
 
@@ -92,14 +94,15 @@ The virtual machine consists of:
  - libfontconfig to avoid phatomJs missing dependency issues
  - openjdk-7-jdk
  - Python addons: pip, matplotlib, scipy, numpy, pandas
+ - [R](https://www.r-project.org/) and R Packages required to run the R Interpreter & related R tutorial notebook
  
 ### How to build & run Zeppelin
 
-This assumes you've already cloned the project either on the host machine in the zeppelin-dev directory (to be shared with the guest machine) or cloned directly into a directory while running inside the guest machine.
+This assumes you've already cloned the project either on the host machine in the zeppelin-dev directory (to be shared with the guest machine) or cloned directly into a directory while running inside the guest machine.  The following build steps will also include Python and R support via PySpark and SparkR:
 
 ```
 cd /incubator-zeppelin
-mvn clean package -Pspark-1.5 -Ppyspark -Dhadoop.version=2.2.0 -Phadoop-2.2 -DskipTests
+mvn clean package -Pspark-1.6 -Ppyspark -Phadoop-2.4 -Psparkr -DskipTests'
 ./bin/zeppelin-daemon.sh start
 ```
 
@@ -123,7 +126,7 @@ config.vm.network "private_network", ip: "192.168.51.52"
 This approach usually is typically required if running other virtual machines that discover each other directly by IP address, such as Spark Masters and Slaves as well as Cassandra Nodes, Elasticsearch Nodes, and other Spark data sources.  You may wish to launch nodes in virtual machines with IP addresses in a subnet that works for your local network, such as: 192.168.51.53, 192.168.51.54, 192.168.51.53, etc..
 
 
-### [Python Extras](id:pythonextras)
+### Python Extras
 
 With Zeppelin running, **Numpy**, **SciPy**, **Pandas** and **Matplotlib** will be available.  Create a pyspark notebook, and try the below code.
 
@@ -175,10 +178,6 @@ plt.title('How fast do you want to go today?')
 show(plt)
 ``` 
 
+### R Extras
 
-
-
-
-
-
-
+With zeppelin running, an R Tutorial notebook will be available.  The R packages required to run the examples and graphs in this tutorial notebook were installed by this virtual machine.
