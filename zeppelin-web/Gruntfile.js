@@ -354,6 +354,11 @@ module.exports = function (grunt) {
           cwd: '<%= yeoman.app %>',
           dest: '<%= yeoman.dist %>',
           src: ['app/**/*.html', 'components/**/*.html']
+        },{
+          expand: true,
+          cwd: 'bower_components/datatables/media/images',
+          src: '{,*/}*.{png,jpg,jpeg,gif}',
+          dest: '<%= yeoman.dist %>/images'
         }, {
 			expand: true,
 			cwd: 'bower_components/datatables/media/images',
