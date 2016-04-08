@@ -234,7 +234,8 @@ public class ZeppelinServer extends Application {
     cxfContext.addFilter(new FilterHolder(CorsFilter.class), "/*",
         EnumSet.allOf(DispatcherType.class));
 
-    cxfContext.setInitParameter("shiroConfigLocations", "file:" + conf.getConfDir() + "/shiro.ini");
+    cxfContext.setInitParameter("shiroConfigLocations",
+        new File(conf.getShiroPath()).toURI().toString());
 
     cxfContext.addFilter(org.apache.shiro.web.servlet.ShiroFilter.class, "/*",
         EnumSet.allOf(DispatcherType.class));
