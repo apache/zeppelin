@@ -80,6 +80,7 @@ angular.module('zeppelinWebApp')
 
   var editorModes = {
     'ace/mode/scala': /^%spark/,
+    'ace/mode/python': /^%pyspark/,
     'ace/mode/sql': /^%(\w*\.)?\wql/,
     'ace/mode/markdown': /^%md/,
     'ace/mode/sh': /^%sh/
