@@ -84,11 +84,11 @@ limitations under the License.
 
   <div class="note-jump"></div>
 
-  <!-- Include the paragraphs according to the note -->
+  <!-- Include the paragraphs according to the note, pass the note to init function -->
   <div id="{{currentParagraph.id}}_paragraphColumn_main"
        ng-repeat="currentParagraph in note.paragraphs"
        ng-controller="ParagraphCtrl"
-       ng-Init="init(currentParagraph)"
+       ng-Init="init(currentParagraph, note)"
        ng-class="columnWidthClass(currentParagraph.config.colWidth)"
        class="paragraph-col">
     <div class="new-paragraph" ng-click="insertNew('above')" ng-hide="viewOnly || asIframe">

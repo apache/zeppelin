@@ -379,10 +379,10 @@ public class InterpreterFactory {
       List<InterpreterSetting.InterpreterInfo> interpreterInfos =
           new LinkedList<InterpreterSetting.InterpreterInfo>();
 
-      for (RegisteredInterpreter registeredInterpreter :
-          Interpreter.registeredInterpreters.values()) {
-        if (registeredInterpreter.getGroup().equals(groupName)) {
-          for (String className : interpreterClassList) {
+      for (String className : interpreterClassList) {
+        for (RegisteredInterpreter registeredInterpreter :
+            Interpreter.registeredInterpreters.values()) {
+          if (registeredInterpreter.getGroup().equals(groupName)) {
             if (registeredInterpreter.getClassName().equals(className)) {
               interpreterInfos.add(
                   new InterpreterSetting.InterpreterInfo(
@@ -627,7 +627,8 @@ public class InterpreterFactory {
 
   public void removeNoteInterpreterSettingBinding(String noteId) {
     synchronized (interpreterSettings) {
-      List<String> settingIds = interpreterBindings.remove(noteId);
+      List<String> settingIds = (interpreterBindings.containsKey(noteId) ?
+          interpreterBindings.remove(noteId) : Collections.<String>emptyList());
       for (String settingId : settingIds) {
         this.removeInterpretersForNote(get(settingId), noteId);
       }

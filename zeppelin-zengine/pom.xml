@@ -52,11 +52,11 @@
       <version>${project.version}</version>
     </dependency>
 
-	<dependency>
+    <dependency>
       <groupId>com.amazonaws</groupId>
       <artifactId>aws-java-sdk-s3</artifactId>
-      <version>1.10.1</version>
-	</dependency>
+      <version>1.10.62</version>
+    </dependency>
 
     <dependency>
       <groupId>com.microsoft.azure</groupId>
@@ -222,4 +222,13 @@
     </dependency>
 
   </dependencies>
+
+  <build>
+    <resources>
+      <resource>
+        <directory>src/main/resources</directory>
+        <filtering>true</filtering>
+      </resource>
+    </resources>
+  </build>
 </project>
