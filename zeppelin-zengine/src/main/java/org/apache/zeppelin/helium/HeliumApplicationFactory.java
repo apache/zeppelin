@@ -217,7 +217,8 @@ public class HeliumApplicationFactory implements ApplicationEventListener, Noteb
           throw new ApplicationException("No interpreter found");
         }
 
-        RemoteInterpreterProcess intpProcess = intp.getInterpreterGroup().getRemoteInterpreterProcess();
+        RemoteInterpreterProcess intpProcess =
+            intp.getInterpreterGroup().getRemoteInterpreterProcess();
         if (intpProcess == null) {
           throw new ApplicationException("Target interpreter process is not running");
         }
@@ -303,7 +304,8 @@ public class HeliumApplicationFactory implements ApplicationEventListener, Noteb
           throw new ApplicationException("No interpreter found");
         }
 
-        RemoteInterpreterProcess intpProcess = intp.getInterpreterGroup().getRemoteInterpreterProcess();
+        RemoteInterpreterProcess intpProcess =
+            intp.getInterpreterGroup().getRemoteInterpreterProcess();
         if (intpProcess == null) {
           throw new ApplicationException("Target interpreter process is not running");
         }
