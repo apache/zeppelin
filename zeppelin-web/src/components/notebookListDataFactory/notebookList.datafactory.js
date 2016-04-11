@@ -14,11 +14,11 @@
 'use strict';
 
 angular.module('zeppelinWebApp').factory('notebookListDataFactory', function() {
-  var notes = {};
-  notes.root = {
-    children : []
+  var notes = {
+    root: {children: []},
+    flatList: [],
+    setNotes: function() {}
   };
-  notes.flatList = [];
 
   notes.setNotes = function(notesList) {
     // a flat list to boost searching
@@ -30,32 +30,34 @@ angular.module('zeppelinWebApp').factory('notebookListDataFactory', function() {
       var nodes = noteName.match(/([^\\\][^\/]|\\\/)+/g);
 
       // recursively add nodes
-      var addNode = function(curDir, nodes) {
-        if (nodes.length === 1) {  // the leaf
-          curDir.children.push({
-            name : nodes[0],
-            id : note.id
-          });
-        } else {  // a folder node
-          var node = nodes.shift();
-          var dir = _.find(curDir.children,
-            function(c) {return c.name === node && c.children !== undefined;});
-          if (dir !== undefined) { // found an existing dir
-            addNode(dir, nodes);
-          } else {
-            var newDir = {
-              name : node,
-              hidden : true,
-              children : []
-            };
-            curDir.children.push(newDir);
-            addNode(newDir, nodes);
-          }
-        }
-      };
-      addNode(root, nodes);
+      addNode(root, nodes, note.id);
+
       return root;
     }, notes.root);
+  };
+
+  var addNode = function(curDir, nodes, noteId) {
+    if (nodes.length === 1) {  // the leaf
+      curDir.children.push({
+        name : nodes[0],
+        id : noteId
+      });
+    } else {  // a folder node
+      var node = nodes.shift();
+      var dir = _.find(curDir.children,
+        function(c) {return c.name === node && c.children !== undefined;});
+      if (dir !== undefined) { // found an existing dir
+        addNode(dir, nodes, noteId);
+      } else {
+        var newDir = {
+          name : node,
+          hidden : true,
+          children : []
+        };
+        curDir.children.push(newDir);
+        addNode(newDir, nodes, noteId);
+      }
+    }
   };
 
   return notes;

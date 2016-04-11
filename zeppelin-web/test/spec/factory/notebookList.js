@@ -23,7 +23,6 @@ describe('Factory: NotebookList', function() {
       {name: '/C/CB/CBA', id: '000007'}, // same name with another note
       {name: 'C///CB//CBB', id: '000008'}
     ];
-
     notebookList.setNotes(notesList);
 
     var flatList = notebookList.flatList;
