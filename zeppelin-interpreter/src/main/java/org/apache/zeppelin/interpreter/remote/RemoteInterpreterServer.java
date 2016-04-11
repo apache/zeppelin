@@ -142,24 +142,27 @@ public class RemoteInterpreterServer
     if (resourcePool != null)
       return resourcePool;
     try {
-      String resourcePoolClassName = (String) interpreterGroup.getProperty()
-          .getProperty("ResourcePoolClass",
+      Properties prop = interpreterGroup.getProperty();
+      //Happens during tests.
+      if (prop == null)
+        prop = new Properties();
+      String resourcePoolClassName = (String) prop.getProperty("ResourcePoolClass",
               "org.apache.zeppelin.resource.DistributedResourcePool");
       logger.debug("Getting resource pool {}", resourcePoolClassName);
       Class resourcePoolClass = Class.forName(resourcePoolClassName);
-
+      
       Constructor<ResourcePool> constructor = resourcePoolClass
           .getConstructor(new Class[] {String.class,
             ResourcePoolConnector.class,
             Properties.class });
       resourcePool = (DistributedResourcePool) constructor.newInstance(interpreterGroup.getId(),
           this.eventClient,
-          interpreterGroup.getProperty());
+          prop);
       interpreterGroup.setResourcePool(resourcePool);
       return resourcePool;
     } catch (Exception e) {
       logger.error(e.toString(), e);
-      return null;
+      return new DistributedResourcePool(interpreterGroup.getId(), this.eventClient);
   //    throw new TException(e);
     }
   }
