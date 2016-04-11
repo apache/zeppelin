@@ -142,27 +142,28 @@ public class RemoteInterpreterServer
     if (resourcePool != null)
       return resourcePool;
     try {
-      String resourcePoolClassName = (String) interpreterGroup.getProperty()
-          .getOrDefault("ResourcePoolClass",
+      Properties prop = interpreterGroup.getProperty();
+      //Happens during tests.
+      if (prop == null)
+        prop = new Properties();
+      String resourcePoolClassName = (String) prop.getProperty("ResourcePoolClass",
               "org.apache.zeppelin.resource.DistributedResourcePool");
       logger.debug("Getting resource pool {}", resourcePoolClassName);
       Class resourcePoolClass = Class.forName(resourcePoolClassName);
-
+      
       Constructor<ResourcePool> constructor = resourcePoolClass
           .getConstructor(new Class[] {String.class,
             ResourcePoolConnector.class,
             Properties.class });
       resourcePool = (DistributedResourcePool) constructor.newInstance(interpreterGroup.getId(),
           this.eventClient,
-          interpreterGroup.getProperty());
+          prop);
       interpreterGroup.setResourcePool(resourcePool);
       return resourcePool;
-    } catch (SecurityException | NoSuchMethodException |
-        InstantiationException | IllegalAccessException |
-        IllegalArgumentException | InvocationTargetException |
-        ClassNotFoundException e) {
+    } catch (Exception e) {
       logger.error(e.toString(), e);
-      throw new TException(e);
+      return new DistributedResourcePool(interpreterGroup.getId(), this.eventClient);
+  //    throw new TException(e);
     }
   }
 
@@ -386,11 +387,13 @@ public class RemoteInterpreterServer
         }
 
         // put result into resource pool
-        context.getResourcePool().put(
-            context.getNoteId(),
-            context.getParagraphId(),
-            WellKnownResourceName.ParagraphResult.toString(),
-            combinedResult);
+        if (context.getResourcePool() != null) {
+          context.getResourcePool().put(
+              context.getNoteId(),
+              context.getParagraphId(),
+              WellKnownResourceName.ParagraphResult.toString(),
+              combinedResult);
+        }
         return combinedResult;
       } finally {
         InterpreterContext.remove();

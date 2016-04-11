@@ -25,6 +25,13 @@ public class DistributedResourcePool extends LocalResourcePool {
 
   private final ResourcePoolConnector connector;
   protected Properties property;
+  
+  public DistributedResourcePool(String id, ResourcePoolConnector connector) {
+    super(id);
+    this.connector = connector;
+    this.property = new Properties();
+  }
+
 
   public DistributedResourcePool(String id, ResourcePoolConnector connector, Properties property) {
     super(id);
