@@ -20,6 +20,7 @@ package org.apache.zeppelin.livy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
@@ -36,6 +37,7 @@ import org.slf4j.LoggerFactory;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.Properties;
 
@@ -74,6 +76,16 @@ public class LivyHelper {
               }.getType());
           if (jsonMap.get("state").equals("idle")) {
             break;
+          } else if (jsonMap.get("state").equals("error")) {
+            json = executeHTTP(property.getProperty("zeppelin.livy.url") + "/sessions/" +
+                    sessionId + "/log",
+                "GET", null);
+            jsonMap = (Map<Object, Object>) gson.fromJson(json,
+                new TypeToken<Map<Object, Object>>() {
+                }.getType());
+            String logs = StringUtils.join((ArrayList<String>) jsonMap.get("log"), '\n');
+            LOGGER.error(String.format("Cannot start  %s.\n%s", kind, logs));
+            throw new Exception(String.format("Cannot start  %s.\n%s", kind, logs));
           }
         }
       }
@@ -292,6 +304,8 @@ public class LivyHelper {
       response = client.execute(request);
     }
 
+    LOGGER.error("response.getStatusLine().getStatusCode()============================="
+        + response.getStatusLine().getStatusCode());
     if (response.getStatusLine().getStatusCode() == 200
         || response.getStatusLine().getStatusCode() == 201
         || response.getStatusLine().getStatusCode() == 404) {
