@@ -56,38 +56,38 @@ For developers, to get latest *0.6.0-incubating-SNAPSHOT* check [README](https:/
   - 0.5.5-incubating released on Nov 18, 2015 ([release notes](./releases/zeppelin-release-0.5.5-incubating.html)) ([git tag](https://git-wip-us.apache.org/repos/asf?p=incubator-zeppelin.git;a=tag;h=refs/tags/v0.5.5))
 
     * Source:
-    <a style="cursor:pointer" onclick="ga('send', 'event', 'download', 'zeppelin-src', '0.5.5-incubating'); window.location.href='http://www.apache.org/dyn/closer.cgi/incubator/zeppelin/0.5.5-incubating/zeppelin-0.5.5-incubating.tgz'">zeppelin-0.5.5-incubating.tgz</a>
-    ([pgp](https://www.apache.org/dist/incubator/zeppelin/0.5.5-incubating/zeppelin-0.5.5-incubating.tgz.asc),
-     [md5](https://www.apache.org/dist/incubator/zeppelin/0.5.5-incubating/zeppelin-0.5.5-incubating.tgz.md5),
-     [sha](https://www.apache.org/dist/incubator/zeppelin/0.5.5-incubating/zeppelin-0.5.5-incubating.tgz.sha))
+    <a style="cursor:pointer" onclick="ga('send', 'event', 'download', 'zeppelin-src', '0.5.5-incubating'); window.location.href='http://archive.apache.org/dist/incubator/zeppelin/0.5.5-incubating/zeppelin-0.5.5-incubating.tgz'">zeppelin-0.5.5-incubating.tgz</a>
+    ([pgp](http://archive.apache.org/dist/incubator/zeppelin/0.5.5-incubating/zeppelin-0.5.5-incubating.tgz.asc),
+     [md5](http://archive.apache.org/dist/incubator/zeppelin/0.5.5-incubating/zeppelin-0.5.5-incubating.tgz.md5),
+     [sha](http://archive.apache.org/dist/incubator/zeppelin/0.5.5-incubating/zeppelin-0.5.5-incubating.tgz.sha512))
 
     * Binary package:
-    <a style="cursor:pointer" onclick="ga('send', 'event', 'download', 'zeppelin-bin', '0.5.5-incubating'); window.location.href='http://www.apache.org/dyn/closer.cgi/incubator/zeppelin/0.5.5-incubating/zeppelin-0.5.5-incubating-bin-all.tgz'">zeppelin-0.5.5-incubating-bin-all.tgz</a>
-    ([pgp](https://www.apache.org/dist/incubator/zeppelin/0.5.5-incubating/zeppelin-0.5.5-incubating-bin-all.tgz.asc),
-     [md5](https://www.apache.org/dist/incubator/zeppelin/0.5.5-incubating/zeppelin-0.5.5-incubating-bin-all.tgz.md5),
-     [sha](https://www.apache.org/dist/incubator/zeppelin/0.5.5-incubating/zeppelin-0.5.5-incubating-bin-all.tgz.sha))
+    <a style="cursor:pointer" onclick="ga('send', 'event', 'download', 'zeppelin-bin', '0.5.5-incubating'); window.location.href='http://archive.apache.org/dist/incubator/zeppelin/0.5.5-incubating/zeppelin-0.5.5-incubating-bin-all.tgz'">zeppelin-0.5.5-incubating-bin-all.tgz</a>
+    ([pgp](http://archive.apache.org/dist/incubator/zeppelin/0.5.5-incubating/zeppelin-0.5.5-incubating-bin-all.tgz.asc),
+     [md5](http://archive.apache.org/dist/incubator/zeppelin/0.5.5-incubating/zeppelin-0.5.5-incubating-bin-all.tgz.md5),
+     [sha](http://archive.apache.org/dist/incubator/zeppelin/0.5.5-incubating/zeppelin-0.5.5-incubating-bin-all.tgz.sha512))
 
 
   - 0.5.0-incubating released on July 23, 2015 ([release notes](./releases/zeppelin-release-0.5.0-incubating.html)) ([git tag](https://git-wip-us.apache.org/repos/asf?p=incubator-zeppelin.git;a=tag;h=refs/tags/v0.5.0))
 
 
     * Source:
-    <a style="cursor:pointer" onclick="ga('send', 'event', 'download', 'zeppelin-src', '0.5.0-incubating'); window.location.href='http://www.apache.org/dyn/closer.cgi/incubator/zeppelin/0.5.0-incubating/zeppelin-0.5.0-incubating.tgz'">zeppelin-0.5.0-incubating.tgz</a>
-    ([pgp](https://www.apache.org/dist/incubator/zeppelin/0.5.0-incubating/zeppelin-0.5.0-incubating.tgz.asc),
-     [md5](https://www.apache.org/dist/incubator/zeppelin/0.5.0-incubating/zeppelin-0.5.0-incubating.tgz.md5),
-     [sha](https://www.apache.org/dist/incubator/zeppelin/0.5.0-incubating/zeppelin-0.5.0-incubating.tgz.sha))
+    <a style="cursor:pointer" onclick="ga('send', 'event', 'download', 'zeppelin-src', '0.5.0-incubating'); window.location.href='http://archive.apache.org/dist/incubator/zeppelin/0.5.0-incubating/zeppelin-0.5.0-incubating.tgz'">zeppelin-0.5.0-incubating.tgz</a>
+    ([pgp](http://archive.apache.org/dist/incubator/zeppelin/0.5.0-incubating/zeppelin-0.5.0-incubating.tgz.asc),
+     [md5](http://archive.apache.org/dist/incubator/zeppelin/0.5.0-incubating/zeppelin-0.5.0-incubating.tgz.md5),
+     [sha](http://archive.apache.org/dist/incubator/zeppelin/0.5.0-incubating/zeppelin-0.5.0-incubating.tgz.sha))
 
     * Binary built with spark-1.4.0 and hadoop-2.3:
-    <a style="cursor:pointer" onclick="ga('send', 'event', 'download', 'zeppelin-bin', '0.5.0-incubating'); window.location.href='http://www.apache.org/dyn/closer.cgi/incubator/zeppelin/0.5.0-incubating/zeppelin-0.5.0-incubating-bin-spark-1.4.0_hadoop-2.3.tgz'">zeppelin-0.5.0-incubating-bin-spark-1.4.0_hadoop-2.3.tgz</a>
-    ([pgp](https://www.apache.org/dist/incubator/zeppelin/0.5.0-incubating/zeppelin-0.5.0-incubating-bin-spark-1.4.0_hadoop-2.3.tgz.asc),
-     [md5](https://www.apache.org/dist/incubator/zeppelin/0.5.0-incubating/zeppelin-0.5.0-incubating-bin-spark-1.4.0_hadoop-2.3.tgz.md5),
-     [sha](https://www.apache.org/dist/incubator/zeppelin/0.5.0-incubating/zeppelin-0.5.0-incubating-bin-spark-1.4.0_hadoop-2.3.tgz.sha))
+    <a style="cursor:pointer" onclick="ga('send', 'event', 'download', 'zeppelin-bin', '0.5.0-incubating'); window.location.href='http://archive.apache.org/dist/incubator/zeppelin/0.5.0-incubating/zeppelin-0.5.0-incubating-bin-spark-1.4.0_hadoop-2.3.tgz'">zeppelin-0.5.0-incubating-bin-spark-1.4.0_hadoop-2.3.tgz</a>
+    ([pgp](http://archive.apache.org/dist/incubator/zeppelin/0.5.0-incubating/zeppelin-0.5.0-incubating-bin-spark-1.4.0_hadoop-2.3.tgz.asc),
+     [md5](http://archive.apache.org/dist/incubator/zeppelin/0.5.0-incubating/zeppelin-0.5.0-incubating-bin-spark-1.4.0_hadoop-2.3.tgz.md5),
+     [sha](http://archive.apache.org/dist/incubator/zeppelin/0.5.0-incubating/zeppelin-0.5.0-incubating-bin-spark-1.4.0_hadoop-2.3.tgz.sha))
 
     * Binary built with spark-1.3.1 and hadoop-2.3:
-    <a style="cursor:pointer" onclick="ga('send', 'event', 'download', 'zeppelin-bin', '0.5.0-incubating'); window.location.href='http://www.apache.org/dyn/closer.cgi/incubator/zeppelin/0.5.0-incubating/zeppelin-0.5.0-incubating-bin-spark-1.3.1_hadoop-2.3.tgz'">zeppelin-0.5.0-incubating-bin-spark-1.3.1_hadoop-2.3.tgz</a>
-    ([pgp](https://www.apache.org/dist/incubator/zeppelin/0.5.0-incubating/zeppelin-0.5.0-incubating-bin-spark-1.3.1_hadoop-2.3.tgz.asc),
-     [md5](https://www.apache.org/dist/incubator/zeppelin/0.5.0-incubating/zeppelin-0.5.0-incubating-bin-spark-1.3.1_hadoop-2.3.tgz.md5),
-     [sha](https://www.apache.org/dist/incubator/zeppelin/0.5.0-incubating/zeppelin-0.5.0-incubating-bin-spark-1.3.1_hadoop-2.3.tgz.sha))
+    <a style="cursor:pointer" onclick="ga('send', 'event', 'download', 'zeppelin-bin', '0.5.0-incubating'); window.location.href='http://archive.apache.org/dist/incubator/zeppelin/0.5.0-incubating/zeppelin-0.5.0-incubating-bin-spark-1.3.1_hadoop-2.3.tgz'">zeppelin-0.5.0-incubating-bin-spark-1.3.1_hadoop-2.3.tgz</a>
+    ([pgp](http://archive.apache.org/dist/incubator/zeppelin/0.5.0-incubating/zeppelin-0.5.0-incubating-bin-spark-1.3.1_hadoop-2.3.tgz.asc),
+     [md5](http://archive.apache.org/dist/incubator/zeppelin/0.5.0-incubating/zeppelin-0.5.0-incubating-bin-spark-1.3.1_hadoop-2.3.tgz.md5),
+     [sha](http://archive.apache.org/dist/incubator/zeppelin/0.5.0-incubating/zeppelin-0.5.0-incubating-bin-spark-1.3.1_hadoop-2.3.tgz.sha))
 
 
 
