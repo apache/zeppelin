@@ -708,7 +708,7 @@ public class NotebookRestApi {
     }
     
     ResponseBuilder builder = Response.ok(p.getResultFromPool().message())
-        .header("Content-Disposition", "attachemnt; filename=" + paragraphId + ".txt");
+        .header("Content-Disposition", "attachment; filename=" + paragraphId + ".txt");
     
     return builder.build();
   }

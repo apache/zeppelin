@@ -16,6 +16,8 @@
  */
 package org.apache.zeppelin.resource;
 
+import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.List;
 
 import org.apache.thrift.TException;
@@ -28,6 +30,7 @@ import com.google.gson.Gson;
 public class RemoteInterpreterProcessResourcePoolConnector implements ResourcePoolConnector {
 
   private Client client;
+  private ResourceSet resources;
   
   public RemoteInterpreterProcessResourcePoolConnector(Client client) {
     this.client = client;
@@ -37,7 +40,7 @@ public class RemoteInterpreterProcessResourcePoolConnector implements ResourcePo
   public ResourceSet getAllResources() {
     try {
       List<String> resourceList = client.resourcePoolGetAll();
-      ResourceSet resources = new ResourceSet();
+      resources = new ResourceSet();
       Gson gson = new Gson();
       
       for (String res : resourceList) {
@@ -55,9 +58,13 @@ public class RemoteInterpreterProcessResourcePoolConnector implements ResourcePo
   @Override
   public Object readResource(ResourceId id) {
     try {
-      // TODO(Object): Deserialize object
-      return client.resourceGet(id.getNoteId(), id.getParagraphId(), id.getName());
-    } catch (TException e) {
+      ByteBuffer buffer = client.resourceGet(id.getNoteId(), id.getParagraphId(), id.getName());
+      for (Resource r: resources) {
+        if (r.getResourceId().equals(id))
+          return r.deserializeObject(buffer);
+      }
+      return null;
+    } catch (TException | ClassNotFoundException | IOException e) {
       throw new RuntimeException(e);
     }
   }
