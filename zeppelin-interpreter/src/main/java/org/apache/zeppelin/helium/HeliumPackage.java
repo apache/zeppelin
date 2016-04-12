@@ -27,7 +27,7 @@ public class HeliumPackage {
   private String className;      // entry point
   private String [][] resources; // resource classnames that requires
                                  // [[ .. and .. and .. ] or [ .. and .. and ..] ..]
-
+  private String icon;
   /**
    * Type of package
    */
@@ -88,5 +88,9 @@ public class HeliumPackage {
 
   public String[][] getResources() {
     return resources;
+  }
+
+  public String getIcon() {
+    return icon;
   }
 }

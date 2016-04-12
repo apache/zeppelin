@@ -16,7 +16,7 @@
 
 angular.module('zeppelinWebApp')
   .controller('ParagraphCtrl', function($scope,$rootScope, $route, $window, $element, $routeParams, $location,
-                                         $timeout, $compile, websocketMsgSrv) {
+                                         $timeout, $compile, $http, websocketMsgSrv, baseUrlSrv) {
   var ANGULAR_FUNCTION_OBJECT_NAME_PREFIX = '_Z_ANGULAR_FUNC_';
   $scope.paragraph = null;
   $scope.originalText = '';
@@ -75,10 +75,21 @@ angular.module('zeppelinWebApp')
     } else if ($scope.getResultType() === 'TEXT') {
       $scope.renderText();
     }
+
+    getApplicationStates();
+    getSuggestions();
+
+    var activeApp =  _.get($scope.paragraph.config, 'helium.activeApp');
+    if (activeApp) {
+      var app = _.find($scope.apps, {id: activeApp});
+      renderApp(app);
+    }
   };
 
-    $scope.renderHtml = function() {
-      var retryRenderer = function() {
+
+
+  $scope.renderHtml = function() {
+    var retryRenderer = function() {
       if (angular.element('#p' + $scope.paragraph.id + '_html').length) {
         try {
           angular.element('#p' + $scope.paragraph.id + '_html').html($scope.paragraph.result.msg);
@@ -328,6 +339,9 @@ angular.module('zeppelinWebApp')
 
       var statusChanged = (data.paragraph.status !== $scope.paragraph.status);
 
+      var oldActiveApp = _.get($scope.paragraph.config, 'helium.activeApp');
+      var newActiveApp = _.get(data.paragraph.config, 'helium.activeApp');
+
       //console.log("updateParagraph oldData %o, newData %o. type %o -> %o, mode %o -> %o", $scope.paragraph, data, oldType, newType, oldGraphMode, newGraphMode);
 
       if ($scope.paragraph.text !== data.paragraph.text) {
@@ -386,6 +400,14 @@ angular.module('zeppelinWebApp')
         $scope.renderAngular();
       } else if (newType === 'TEXT' && resultRefreshed) {
         $scope.renderText();
+      }
+
+      getApplicationStates();
+      getSuggestions();
+
+      if (newActiveApp && newActiveApp !== oldActiveApp) {
+        var app = _.find($scope.apps, { id : newActiveApp });
+        renderApp(app);
       }
 
       if (statusChanged || resultRefreshed) {
@@ -1160,6 +1182,9 @@ angular.module('zeppelinWebApp')
     // graph options
     newConfig.graph.mode = newMode;
 
+    // see switchApp()
+    _.set(newConfig, 'helium.activeApp', undefined);
+
     commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
   };
 
@@ -1417,7 +1442,8 @@ angular.module('zeppelinWebApp')
   };
 
   $scope.isGraphMode = function(graphName) {
-    if ($scope.getResultType() === 'TABLE' && $scope.getGraphMode()===graphName) {
+    var activeAppId = _.get($scope.paragraph.config, 'helium.activeApp');
+    if ($scope.getResultType() === 'TABLE' && $scope.getGraphMode()===graphName && !activeAppId) {
       return true;
     } else {
       return false;
@@ -2142,4 +2168,173 @@ angular.module('zeppelinWebApp')
     $scope.keepScrollDown = false;
   };
 
+  // Helium ---------------------------------------------
+
+  // app states
+  $scope.apps = [];
+
+  // suggested apps
+  $scope.suggestion = {};
+
+  $scope.switchApp = function(appId) {
+    var app = _.find($scope.apps, { id : appId });
+    var config = $scope.paragraph.config;
+    var settings = $scope.paragraph.settings;
+
+    var newConfig = angular.copy(config);
+    var newParams = angular.copy(settings.params);
+
+    // 'helium.activeApp' can be cleared by setGraphMode()
+    _.set(newConfig, 'helium.activeApp', appId);
+
+    commitConfig(newConfig, newParams);
+  };
+
+  $scope.loadApp = function(heliumPackage) {
+    var noteId = $route.current.pathParams.noteId;
+    $http.post(baseUrlSrv.getRestApiBase() + '/helium/load/' + noteId + '/' + $scope.paragraph.id,
+      heliumPackage)
+      .success(function(data, status, headers, config) {
+        console.log('Load app %o', data);
+      })
+      .error(function(err, status, headers, config) {
+        console.log('Error %o', err);
+      });
+  };
+
+  var commitConfig = function(config, params) {
+    var paragraph = $scope.paragraph;
+    commitParagraph(paragraph.title, paragraph.text, config, params);
+  };
+
+  var getApplicationStates = function() {
+    var appStates = [];
+    var paragraph = $scope.paragraph;
+
+    // Display ApplicationState
+    if (paragraph.apps) {
+      _.forEach(paragraph.apps, function (app) {
+        appStates.push({
+          id: app.id,
+          pkg: app.pkg,
+          status: app.status,
+          output: app.output
+        });
+      });
+    }
+
+    // update or remove app states no longer exists
+    _.forEach($scope.apps, function(currentAppState, idx) {
+      var newAppState = _.find(appStates, { id : currentAppState.id });
+      if (newAppState) {
+        angular.extend($scope.apps[idx], newAppState);
+      } else {
+        $scope.apps.splice(idx, 1);
+      }
+    });
+
+    // add new app states
+    _.forEach(appStates, function(app, idx) {
+      if ($scope.apps.length <= idx || $scope.apps[idx].id !== app.id) {
+        $scope.apps.splice(idx, 0, app);
+      }
+    });
+  };
+
+  var getSuggestions = function() {
+    // Get suggested apps
+    var noteId = $route.current.pathParams.noteId;
+    $http.get(baseUrlSrv.getRestApiBase() + '/helium/suggest/' + noteId + '/' + $scope.paragraph.id)
+      .success(function(data, status, headers, config) {
+        console.log('Suggested apps %o', data);
+        $scope.suggestion = data.body;
+      })
+      .error(function(err, status, headers, config) {
+        console.log('Error %o', err);
+      });
+  };
+
+
+  var renderApp = function(appState) {
+    var retryRenderer = function() {
+      var targetEl = angular.element(document.getElementById('p' + appState.id));
+      console.log('retry renderApp %o', targetEl);
+      if (targetEl.length) {
+        try {
+          console.log('renderApp %o', appState);
+          targetEl.html(appState.output);
+          $compile(targetEl.contents())(paragraphScope);
+        } catch(err) {
+          console.log('App rendering error %o', err);
+        }
+      } else {
+        $timeout(retryRenderer, 1000);
+      }
+    };
+    $timeout(retryRenderer);
+  };
+
+  $scope.$on('appendAppOutput', function(event, data) {
+    if ($scope.paragraph.id === data.paragraphId) {
+      var app = _.find($scope.apps, { id : data.appId });
+      if (app) {
+        app.output += data.data;
+
+        var paragraphAppState = _.find($scope.paragraph.apps, { id : data.appId });
+        paragraphAppState.output = app.output;
+
+        var targetEl = angular.element(document.getElementById('p' + app.id));
+        targetEl.html(app.output);
+        $compile(targetEl.contents())(paragraphScope);
+        console.log('append app output %o', $scope.apps);
+      }
+    }
+  });
+
+  $scope.$on('updateAppOutput', function(event, data) {
+    if ($scope.paragraph.id === data.paragraphId) {
+      var app = _.find($scope.apps, { id : data.appId });
+      if (app) {
+        app.output = data.data;
+
+        var paragraphAppState = _.find($scope.paragraph.apps, { id : data.appId });
+        paragraphAppState.output = app.output;
+
+        var targetEl = angular.element(document.getElementById('p' + app.id));
+        targetEl.html(app.output);
+        $compile(targetEl.contents())(paragraphScope);
+        console.log('append app output');
+      }
+    }
+  });
+
+  $scope.$on('appLoad', function(event, data) {
+    if ($scope.paragraph.id === data.paragraphId) {
+      var app = _.find($scope.apps, {id: data.appId});
+      if (!app) {
+        app = {
+          id: data.appId,
+          pkg: data.pkg,
+          status: 'UNLOADED',
+          output: ''
+        };
+
+        $scope.apps.push(app);
+        $scope.paragraph.apps.push(app);
+      }
+
+      $scope.switchApp(app.id);
+    }
+  });
+
+  $scope.$on('appStatusChange', function(event, data) {
+    if ($scope.paragraph.id === data.paragraphId) {
+      var app = _.find($scope.apps, {id: data.appId});
+      if (app) {
+        app.status = data.status;
+        var paragraphAppState = _.find($scope.paragraph.apps, { id : data.appId });
+        paragraphAppState.status = app.status;
+      }
+    }
+  });
 });

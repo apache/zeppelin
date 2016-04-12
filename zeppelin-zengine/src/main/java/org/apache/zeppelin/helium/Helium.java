@@ -62,6 +62,7 @@ public class Helium {
 
   /**
    * Add HeliumRegistry
+   *
    * @param registry
    */
   public void addRegistry(HeliumRegistry registry) {

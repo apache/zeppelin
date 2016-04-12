@@ -35,6 +35,7 @@ import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.AngularObjectRegistryListener;
 import org.apache.zeppelin.helium.ApplicationEventListener;
+import org.apache.zeppelin.helium.HeliumPackage;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.user.AuthenticationInfo;
@@ -1015,6 +1016,26 @@ public class NotebookServer extends WebSocketServlet implements
         .put("paragraphId", paragraphId)
         .put("appId", appId)
         .put("data", output);
+    broadcast(noteId, msg);
+  }
+
+  @Override
+  public void onLoad(String noteId, String paragraphId, String appId, HeliumPackage pkg) {
+    Message msg = new Message(OP.APP_LOAD)
+        .put("noteId", noteId)
+        .put("paragraphId", paragraphId)
+        .put("appId", appId)
+        .put("pkg", pkg);
+    broadcast(noteId, msg);
+  }
+
+  @Override
+  public void onStatusChange(String noteId, String paragraphId, String appId, String status) {
+    Message msg = new Message(OP.APP_STATUS_CHANGE)
+        .put("noteId", noteId)
+        .put("paragraphId", paragraphId)
+        .put("appId", appId)
+        .put("status", status);
     broadcast(noteId, msg);
   }
 

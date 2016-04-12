@@ -16,6 +16,8 @@
  */
 package org.apache.zeppelin.notebook;
 
+import org.apache.zeppelin.helium.HeliumPackage;
+
 /**
  * Current state of application
  */
@@ -35,12 +37,12 @@ public class ApplicationState {
   Status status = Status.UNLOADED;
 
   String id;   // unique id for this instance. Similar to note id or paragraph id
-  String name; // name of app
+  HeliumPackage pkg;
   String output;
 
-  public ApplicationState(String id, String name) {
+  public ApplicationState(String id, HeliumPackage pkg) {
     this.id = id;
-    this.name = name;
+    this.pkg = pkg;
   }
 
   /**
@@ -59,19 +61,17 @@ public class ApplicationState {
   public boolean equals(Object o) {
     String compareName;
     if (o instanceof ApplicationState) {
-      compareName = ((ApplicationState) o).name;
-    } else if (o instanceof String) {
-      compareName = (String) o;
+      return pkg.equals(((ApplicationState) o).getHeliumPackage());
+    } else if (o instanceof HeliumPackage) {
+      return pkg.equals((HeliumPackage) o);
     } else {
       return false;
     }
-
-    return name.equals(compareName);
   }
 
   @Override
   public int hashCode() {
-    return name.hashCode();
+    return pkg.hashCode();
   }
 
   public String getId() {
@@ -102,7 +102,7 @@ public class ApplicationState {
     }
   }
 
-  public String getName() {
-    return name;
+  public HeliumPackage getHeliumPackage() {
+    return pkg;
   }
 }

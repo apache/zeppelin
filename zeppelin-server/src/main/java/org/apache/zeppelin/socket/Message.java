@@ -114,7 +114,9 @@ public class Message {
                             // @param checkpointName
 
     APP_APPEND_OUTPUT,      // [s-c] append output
-    APP_UPDATE_OUTPUT       // [s-c] update (replace) output
+    APP_UPDATE_OUTPUT,      // [s-c] update (replace) output
+    APP_LOAD,               // [s-c] on app load
+    APP_STATUS_CHANGE       // [s-c] on app status change
   }
 
   public OP op;

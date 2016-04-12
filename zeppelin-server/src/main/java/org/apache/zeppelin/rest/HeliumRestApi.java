@@ -44,6 +44,9 @@ public class HeliumRestApi {
   private Notebook notebook;
   private Gson gson = new Gson();
 
+  public HeliumRestApi() {
+  }
+
   public HeliumRestApi(Helium helium,
                        HeliumApplicationFactory heliumApplicationFactory,
                        Notebook notebook) {

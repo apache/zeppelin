@@ -408,13 +408,13 @@ public class Paragraph extends Job implements Serializable, Cloneable {
   public ApplicationState createOrGetApplicationState(HeliumPackage pkg) {
     synchronized (apps) {
       for (ApplicationState as : apps) {
-        if (as.getName().equals(pkg.getName())) {
+        if (as.equals(pkg)) {
           return as;
         }
       }
 
       String appId = getApplicationId(pkg);
-      ApplicationState appState = new ApplicationState(appId, pkg.getName());
+      ApplicationState appState = new ApplicationState(appId, pkg);
       apps.add(appState);
       return appState;
     }

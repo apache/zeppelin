@@ -41,6 +41,7 @@ import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.apache.zeppelin.notebook.repo.NotebookRepoSync;
 import org.apache.zeppelin.resource.ResourcePoolUtils;
+import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.apache.zeppelin.search.SearchService;
 import org.quartz.CronScheduleBuilder;
@@ -644,6 +645,13 @@ public class Notebook implements NoteEventListener {
   public void onParagraphCreate(Paragraph p) {
     for (NotebookEventListener listener : notebookEventListeners) {
       listener.onParagraphCreate(p);
+    }
+  }
+
+  @Override
+  public void onParagraphStatusChange(Paragraph p, Job.Status status) {
+    for (NotebookEventListener listener : notebookEventListeners) {
+      listener.onParagraphStatusChange(p, status);
     }
   }
 }

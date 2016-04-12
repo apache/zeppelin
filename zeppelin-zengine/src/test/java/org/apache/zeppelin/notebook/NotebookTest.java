@@ -659,6 +659,10 @@ public class NotebookTest implements JobListenerFactory{
       public void onParagraphCreate(Paragraph p) {
         onParagraphCreate.incrementAndGet();
       }
+
+      @Override
+      public void onParagraphStatusChange(Paragraph p, Status status) {
+      }
     });
 
     Note note1 = notebook.createNote();
