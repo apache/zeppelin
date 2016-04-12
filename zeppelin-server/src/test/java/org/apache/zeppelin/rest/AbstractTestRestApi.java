@@ -168,7 +168,7 @@ public abstract class AbstractTestRestApi {
 
   private static String getSparkHome() {
     String sparkHome = getSparkHomeRecursively(new File(System.getProperty("user.dir")));
-    LOG.info("SPARK HOME detected {}", sparkHome);
+    System.out.println("SPARK HOME detected " + sparkHome);
     return sparkHome;
   }
 
