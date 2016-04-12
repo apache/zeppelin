@@ -1267,41 +1267,47 @@ angular.module('zeppelinWebApp')
       html += '  </tbody>';
       html += '</table>';
 
-      angular.element('#p' + $scope.paragraph.id + '_table').html(html);
-      var oTable = angular.element('#p' + $scope.paragraph.id + '_table').children(1).DataTable({
+      var tableDomEl = angular.element('#p' + $scope.paragraph.id + '_table');
+      tableDomEl.html(html);
+      var oTable = tableDomEl.children(1).DataTable({
         paging:       false,
         info:         false,
         autoWidth:    true,
         lengthChange: false,
-        dom : "<'row'<'col-sm-12't>>"
+        dom : '<"row"<"col-sm-12"t>>'
       });
 
       if ($scope.paragraph.result.msgTable.length > 10000) {
-        angular.element('#p' + $scope.paragraph.id + '_table').css('overflow', 'scroll');
-        // set table height
-        var height = $scope.paragraph.config.graph.height;
-        angular.element('#p' + $scope.paragraph.id + '_table').css('height', height);
+        tableDomEl.css({
+          'overflow': 'scroll',
+          'height': $scope.paragraph.config.graph.height
+        });
       } else {
+
         var dataTable = angular.element('#p' + $scope.paragraph.id + '_table .table');
         dataTable.floatThead({
-          scrollContainer: function (dataTable) {
-            return angular.element('#p' + $scope.paragraph.id + '_table');
+          scrollContainer: function(dataTable) {
+            return tableDomEl;
           }
         });
-        angular.element('#p' + $scope.paragraph.id + '_table .table').on('remove', function () {
-          angular.element('#p' + $scope.paragraph.id + '_table .table').floatThead('destroy');
+
+        dataTable.on('remove', function () {
+          dataTable.floatThead('destroy');
         });
 
-        angular.element('#p' + $scope.paragraph.id + '_table').css('position', 'relative');
-        angular.element('#p' + $scope.paragraph.id + '_table').css('height', '100%');
-        angular.element('#p' + $scope.paragraph.id + '_table').perfectScrollbar('destroy');
-        angular.element('#p' + $scope.paragraph.id + '_table').perfectScrollbar();
+        tableDomEl.css({
+          'position': 'relative',
+          'height': '100%'
+        });
+        tableDomEl.perfectScrollbar('destroy')
+                  .perfectScrollbar({minScrollbarLength: 20});
+
         angular.element('.ps-scrollbar-y-rail').css('z-index', '1002');
 
         // set table height
         var psHeight = $scope.paragraph.config.graph.height;
-        angular.element('#p' + $scope.paragraph.id + '_table').css('height', psHeight);
-        angular.element('#p' + $scope.paragraph.id + '_table').perfectScrollbar('update');
+        tableDomEl.css('height', psHeight);
+        tableDomEl.perfectScrollbar('update');
       }
 
     };
