@@ -46,13 +46,14 @@ public class JsonResponse<T> {
     this.status = status;
     this.message = null;
     this.body = null;
-
+    this.builder = new GsonBuilder();
   }
 
   public JsonResponse(javax.ws.rs.core.Response.Status status, String message) {
     this.status = status;
     this.message = message;
     this.body = null;
+    this.builder = new GsonBuilder();
   }
 
   public JsonResponse(javax.ws.rs.core.Response.Status status, T body) {
