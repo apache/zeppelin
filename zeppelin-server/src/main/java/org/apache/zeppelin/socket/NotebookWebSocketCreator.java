@@ -20,6 +20,9 @@ import org.eclipse.jetty.websocket.servlet.ServletUpgradeRequest;
 import org.eclipse.jetty.websocket.servlet.ServletUpgradeResponse;
 import org.eclipse.jetty.websocket.servlet.WebSocketCreator;
 
+/**
+ * Responsible to create the WebSockets for the NotebookServer.
+ */
 public class NotebookWebSocketCreator implements WebSocketCreator {
   private NotebookServer notebookServer;
 
