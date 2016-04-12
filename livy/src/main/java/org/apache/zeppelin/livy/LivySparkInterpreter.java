@@ -17,7 +17,10 @@
 
 package org.apache.zeppelin.livy;
 
+import org.apache.commons.exec.ExecuteWatchdog;
+import org.apache.commons.exec.Executor;
 import org.apache.zeppelin.interpreter.*;
+import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.slf4j.Logger;
@@ -82,7 +85,7 @@ public class LivySparkInterpreter extends Interpreter {
           userSessionMap.put(
               interpreterContext.getAuthenticationInfo().getUser(),
               livyHelper.createSession(
-                  interpreterContext.getAuthenticationInfo().getUser(),
+                  interpreterContext,
                   "spark")
           );
           livyHelper.initializeSpark(interpreterContext, userSessionMap);
@@ -104,6 +107,7 @@ public class LivySparkInterpreter extends Interpreter {
 
   @Override
   public void cancel(InterpreterContext context) {
+    livyHelper.cancelHTTP(context.getParagraphId());
   }
 
   @Override

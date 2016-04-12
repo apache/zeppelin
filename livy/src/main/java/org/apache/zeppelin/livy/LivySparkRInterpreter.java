@@ -71,7 +71,7 @@ public class LivySparkRInterpreter extends Interpreter {
           userSessionMap.put(
               interpreterContext.getAuthenticationInfo().getUser(),
               livyHelper.createSession(
-                  interpreterContext.getAuthenticationInfo().getUser(),
+                  interpreterContext,
                   "sparkr")
           );
         } catch (Exception e) {
@@ -93,6 +93,7 @@ public class LivySparkRInterpreter extends Interpreter {
 
   @Override
   public void cancel(InterpreterContext context) {
+    livyHelper.cancelHTTP(context.getParagraphId());
   }
 
   @Override

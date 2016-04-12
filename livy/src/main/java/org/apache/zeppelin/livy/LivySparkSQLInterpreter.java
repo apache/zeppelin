@@ -74,7 +74,7 @@ public class LivySparkSQLInterpreter extends Interpreter {
           userSessionMap.put(
               interpreterContext.getAuthenticationInfo().getUser(),
               livyHelper.createSession(
-                  interpreterContext.getAuthenticationInfo().getUser(),
+                  interpreterContext,
                   "spark")
           );
           livyHelper.initializeSpark(interpreterContext, userSessionMap);
@@ -136,6 +136,7 @@ public class LivySparkSQLInterpreter extends Interpreter {
 
   @Override
   public void cancel(InterpreterContext context) {
+    livyHelper.cancelHTTP(context.getParagraphId());
   }
 
   @Override
