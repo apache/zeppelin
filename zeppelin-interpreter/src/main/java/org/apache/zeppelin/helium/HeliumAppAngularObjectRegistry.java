@@ -16,37 +16,40 @@
  */
 package org.apache.zeppelin.helium;
 
+import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
-import org.apache.zeppelin.interpreter.InterpreterOutput;
+
+import java.util.List;
 
 /**
- * ApplicationContext
+ * Angular Registry for helium app
  */
-public class ApplicationContext {
+public class HeliumAppAngularObjectRegistry {
   private final String noteId;
-  private final String paragraphId;
-  private final HeliumAppAngularObjectRegistry angularObjectRegistry;
-  public final InterpreterOutput out;
+  private final String appId;
+  private final AngularObjectRegistry angularObjectRegistry;
 
-  public ApplicationContext(String noteId,
-                            String paragraphId,
-                            HeliumAppAngularObjectRegistry angularObjectRegistry,
-                            InterpreterOutput out) {
-    this.noteId = noteId;
-    this.paragraphId = paragraphId;
+  public HeliumAppAngularObjectRegistry(AngularObjectRegistry angularObjectRegistry,
+                                        String noteId,
+                                        String appId) {
     this.angularObjectRegistry = angularObjectRegistry;
-    this.out = out;
+    this.noteId = noteId;
+    this.appId = appId;
   }
 
-  public String getNoteId() {
-    return noteId;
+  public AngularObject add(String name, Object o) {
+    return angularObjectRegistry.add(name, o, noteId, appId);
   }
 
-  public String getParagraphId() {
-    return paragraphId;
+  public AngularObject remove(String name) {
+    return angularObjectRegistry.remove(name, noteId, appId);
   }
 
-  public HeliumAppAngularObjectRegistry getAngularObjectRegistry() {
-    return angularObjectRegistry;
+  public AngularObject get(String name) {
+    return angularObjectRegistry.get(name, noteId, appId);
+  }
+
+  public List<AngularObject> getAll() {
+    return angularObjectRegistry.getAll(noteId, appId);
   }
 }

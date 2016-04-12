@@ -725,7 +725,11 @@ public class RemoteInterpreterServer
   private ApplicationContext getApplicationContext(
       HeliumPackage packageInfo, String noteId, String paragraphId, String applicationInstanceId) {
     InterpreterOutput out = createAppOutput(noteId, paragraphId, applicationInstanceId);
-    return new ApplicationContext(noteId, paragraphId, out);
+    return new ApplicationContext(
+        noteId,
+        paragraphId,
+        new HeliumAppAngularObjectRegistry(angularObjectRegistry, noteId, applicationInstanceId),
+        out);
   }
 
   @Override

@@ -438,8 +438,25 @@ public class Note implements Serializable, ParagraphJobListener {
       if (registry instanceof RemoteAngularObjectRegistry) {
         // remove paragraph scope object
         ((RemoteAngularObjectRegistry) registry).removeAllAndNotifyRemoteProcess(id, paragraphId);
+
+        // remove app scope object
+        List<ApplicationState> appStates = getParagraph(paragraphId).getAllApplicationStates();
+        if (appStates != null) {
+          for (ApplicationState app : appStates) {
+            ((RemoteAngularObjectRegistry) registry).removeAllAndNotifyRemoteProcess(
+                id, app.getId());
+          }
+        }
       } else {
         registry.removeAll(id, paragraphId);
+
+        // remove app scope object
+        List<ApplicationState> appStates = getParagraph(paragraphId).getAllApplicationStates();
+        if (appStates != null) {
+          for (ApplicationState app : appStates) {
+            registry.removeAll(id, app.getId());
+          }
+        }
       }
     }
   }

@@ -172,8 +172,23 @@ angular.module('zeppelinWebApp')
 
   $scope.$on('angularObjectUpdate', function(event, data) {
     var noteId = $route.current.pathParams.noteId;
-    if (!data.noteId || (data.noteId === noteId && (!data.paragraphId || data.paragraphId === $scope.paragraph.id))) {
-      var scope = paragraphScope;
+    if (!data.noteId || data.noteId === noteId) {
+      var scope;
+      var registry;
+
+      if (!data.paragraphId || data.paragraphId === $scope.paragraph.id) {
+        scope = paragraphScope;
+        registry = angularObjectRegistry;
+      } else {
+        var app = _.find($scope.apps, { id: data.paragraphId})
+        if (app) {
+          scope = getAppScope(app);
+          registry = getAppRegistry(app);
+        } else {
+          // no matching app in this paragraph
+          return;
+        }
+      }
       var varName = data.angularObject.name;
 
       if (angular.equals(data.angularObject.object, scope[varName])) {
@@ -181,32 +196,32 @@ angular.module('zeppelinWebApp')
         return;
       }
 
-      if (!angularObjectRegistry[varName]) {
-        angularObjectRegistry[varName] = {
+      if (!registry[varName]) {
+        registry[varName] = {
           interpreterGroupId : data.interpreterGroupId,
           noteId : data.noteId,
           paragraphId : data.paragraphId
         };
       } else {
-        angularObjectRegistry[varName].noteId = angularObjectRegistry[varName].noteId || data.noteId;
-        angularObjectRegistry[varName].paragraphId = angularObjectRegistry[varName].paragraphId || data.paragraphId;
+        registry[varName].noteId = registry[varName].noteId || data.noteId;
+        registry[varName].paragraphId = registry[varName].paragraphId || data.paragraphId;
       }
 
-      angularObjectRegistry[varName].skipEmit = true;
+      registry[varName].skipEmit = true;
 
-      if (!angularObjectRegistry[varName].clearWatcher) {
-        angularObjectRegistry[varName].clearWatcher = scope.$watch(varName, function(newValue, oldValue) {
-          console.log('angular object (paragraph) updated %o %o', varName, angularObjectRegistry[varName]);
-          if (angularObjectRegistry[varName].skipEmit) {
-            angularObjectRegistry[varName].skipEmit = false;
+      if (!registry[varName].clearWatcher) {
+        registry[varName].clearWatcher = scope.$watch(varName, function(newValue, oldValue) {
+          console.log('angular object (paragraph) updated %o %o', varName, registry[varName]);
+          if (registry[varName].skipEmit) {
+            registry[varName].skipEmit = false;
             return;
           }
           websocketMsgSrv.updateAngularObject(
-            angularObjectRegistry[varName].noteId,
-            angularObjectRegistry[varName].paragraphId,
+            registry[varName].noteId,
+            registry[varName].paragraphId,
             varName,
             newValue,
-            angularObjectRegistry[varName].interpreterGroupId);
+            registry[varName].interpreterGroupId);
         });
       }
       console.log('angular object (paragraph) created %o', varName);
@@ -228,14 +243,30 @@ angular.module('zeppelinWebApp')
 
   $scope.$on('angularObjectRemove', function(event, data) {
     var noteId = $route.current.pathParams.noteId;
-    if (!data.noteId || (data.noteId === noteId && (!data.paragraphId || data.paragraphId === $scope.paragraph.id))) {
-      var scope = paragraphScope;
+    if (!data.noteId || data.noteId === noteId) {
+      var scope;
+      var registry;
+
+      if (!data.paragraphId || data.paragraphId === $scope.paragraph.id) {
+        scope = paragraphScope;
+        registry = angularObjectRegistry;
+      } else {
+        var app = _.find($scope.apps, { id: data.paragraphId})
+        if (app) {
+          scope = getAppScope(app);
+          registry = getAppRegistry(app);
+        } else {
+          // no matching app in this paragraph
+          return;
+        }
+      }
+
       var varName = data.name;
 
       // clear watcher
-      if (angularObjectRegistry[varName]) {
-        angularObjectRegistry[varName].clearWatcher();
-        angularObjectRegistry[varName] = undefined;
+      if (registry[varName]) {
+        registry[varName].clearWatcher();
+        registry[varName] = undefined;
       }
 
       // remove scope variable
@@ -2254,6 +2285,21 @@ angular.module('zeppelinWebApp')
       });
   };
 
+  var getAppScope = function(appState) {
+    if (!appState.scope) {
+      appState.scope = $rootScope.$new(true, $rootScope);
+    }
+
+    return appState.scope;
+  };
+
+  var getAppRegistry = function(appState) {
+    if (!appState.registry) {
+      appState.registry = {};
+    }
+
+    return appState.registry;
+  };
 
   var renderApp = function(appState) {
     var retryRenderer = function() {
@@ -2263,7 +2309,7 @@ angular.module('zeppelinWebApp')
         try {
           console.log('renderApp %o', appState);
           targetEl.html(appState.output);
-          $compile(targetEl.contents())(paragraphScope);
+          $compile(targetEl.contents())(getAppScope(appState));
         } catch(err) {
           console.log('App rendering error %o', err);
         }
@@ -2285,7 +2331,7 @@ angular.module('zeppelinWebApp')
 
         var targetEl = angular.element(document.getElementById('p' + app.id));
         targetEl.html(app.output);
-        $compile(targetEl.contents())(paragraphScope);
+        $compile(targetEl.contents())(getAppScope(app));
         console.log('append app output %o', $scope.apps);
       }
     }
@@ -2302,7 +2348,7 @@ angular.module('zeppelinWebApp')
 
         var targetEl = angular.element(document.getElementById('p' + app.id));
         targetEl.html(app.output);
-        $compile(targetEl.contents())(paragraphScope);
+        $compile(targetEl.contents())(getAppScope(app));
         console.log('append app output');
       }
     }

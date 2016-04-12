@@ -86,6 +86,7 @@ public class ApplicationLoaderTest {
     ApplicationContext context1 = new ApplicationContext(
         noteId,
         paragraphId,
+        null,
         new InterpreterOutput(new InterpreterOutputListener() {
           @Override
           public void onAppend(InterpreterOutput out, byte[] line) {
