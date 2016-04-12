@@ -1241,7 +1241,7 @@ angular.module('zeppelinWebApp')
 
     var renderTable = function() {
       var html = '';
-      html += '<table class="table table-hover table-condensed compact display">';
+      html += '<table class="table table-hover table-condensed">';
       html += '  <thead>';
       html += '    <tr style="background-color: #F6F6F6; font-weight: bold;">';
       for (var titleIndex in $scope.paragraph.result.columnNames) {
@@ -1272,9 +1272,10 @@ angular.module('zeppelinWebApp')
       var oTable = tableDomEl.children(1).DataTable({
         paging:       false,
         info:         false,
-        autoWidth:    true,
+        autoWidth:    false,
         lengthChange: false,
-        dom : '<"row"<"col-sm-12"t>>'
+        searching: false,
+        dom: '<>'
       });
 
       if ($scope.paragraph.result.msgTable.length > 10000) {
