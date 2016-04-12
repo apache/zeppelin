@@ -16,11 +16,18 @@
  */
 package org.apache.zeppelin.socket;
 
-/**
- * NoteboookSocket listener
- */
-public interface NotebookSocketListener {
-  void onClose(NotebookSocket socket, int code, String message);
-  void onOpen(NotebookSocket socket);
-  void onMessage(NotebookSocket socket, String message);
+import org.eclipse.jetty.websocket.servlet.ServletUpgradeRequest;
+import org.eclipse.jetty.websocket.servlet.ServletUpgradeResponse;
+import org.eclipse.jetty.websocket.servlet.WebSocketCreator;
+
+public class NotebookWebSocketCreator implements WebSocketCreator {
+  private NotebookServer notebookServer;
+
+  public NotebookWebSocketCreator(NotebookServer notebookServer) {
+    this.notebookServer = notebookServer;
+  }
+  public Object createWebSocket(ServletUpgradeRequest request, ServletUpgradeResponse response) {
+    return new NotebookSocket(request.getHttpServletRequest(), "", notebookServer);
+  }
+
 }
