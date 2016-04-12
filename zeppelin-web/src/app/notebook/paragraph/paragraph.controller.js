@@ -1268,51 +1268,14 @@ angular.module('zeppelinWebApp')
       html += '</table>';
 
       angular.element('#p' + $scope.paragraph.id + '_table').html(html);
-      var dataTableTitle = ($scope.paragraph.title && $scope.paragraph.title.trim()) ? $scope.paragraph.title.trim() : $scope.paragraph.id;
       var oTable = angular.element('#p' + $scope.paragraph.id + '_table').children(1).DataTable({
         paging:       false,
         info:         false,
         autoWidth:    true,
         lengthChange: false,
-        language: {
-          search: '_INPUT_',
-          searchPlaceholder: 'Search records'
-        },
-        dom : "<'row'<'col-sm-12't>>",
-        buttons: [
-                  {
-                    extend: 'csvHtml5',
-                    text: 'TSV',
-                    className: 'btn btn-default btn-sm',
-                    title: dataTableTitle,
-                    fieldSeparator: '\t',
-                    extension: '.tsv',
-                    exportOptions: {
-                        modifier: {
-                            search: 'none'
-                        }
-                    }
-                  },
-                  {
-                    extend: 'csvHtml5',
-                    text: 'CSV',
-                    className: 'btn btn-default btn-sm',
-                    title: dataTableTitle,
-                    extension: '.csv',
-                    exportOptions: {
-                        modifier: {
-                            search: 'none'
-                        }
-                    }
-                   }
-                 ]
+        dom : "<'row'<'col-sm-12't>>"
       });
-      if($('#'+$scope.paragraph.id+'_switch').parent().parent().find(".btn-group").length <= 2 ){
-         oTable.buttons( 0, null ).containers().appendTo( '#'+$scope.paragraph.id+'_switch' );
-      }
-      $('#'+$scope.paragraph.id+'_search_input').keyup(function(){
-         oTable.search($(this).val()).draw() ;
-      });
+
       if ($scope.paragraph.result.msgTable.length > 10000) {
         angular.element('#p' + $scope.paragraph.id + '_table').css('overflow', 'scroll');
         // set table height
