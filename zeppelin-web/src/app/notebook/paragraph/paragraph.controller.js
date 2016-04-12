@@ -366,12 +366,15 @@ angular.module('zeppelinWebApp')
       var newType = $scope.getResultType(data.paragraph);
       var oldGraphMode = $scope.getGraphMode();
       var newGraphMode = $scope.getGraphMode(data.paragraph);
-      var resultRefreshed = (data.paragraph.dateFinished !== $scope.paragraph.dateFinished) || isEmpty(data.paragraph.result) !== isEmpty($scope.paragraph.result);
+      var oldActiveApp = _.get($scope.paragraph.config, 'helium.activeApp');
+      var newActiveApp = _.get(data.paragraph.config, 'helium.activeApp');
+
+      var resultRefreshed = (data.paragraph.dateFinished !== $scope.paragraph.dateFinished) ||
+        isEmpty(data.paragraph.result) !== isEmpty($scope.paragraph.result) ||
+        (!newActiveApp && oldActiveApp !== newActiveApp);
 
       var statusChanged = (data.paragraph.status !== $scope.paragraph.status);
 
-      var oldActiveApp = _.get($scope.paragraph.config, 'helium.activeApp');
-      var newActiveApp = _.get(data.paragraph.config, 'helium.activeApp');
 
       //console.log("updateParagraph oldData %o, newData %o. type %o -> %o, mode %o -> %o", $scope.paragraph, data, oldType, newType, oldGraphMode, newGraphMode);
 
@@ -2367,9 +2370,8 @@ angular.module('zeppelinWebApp')
 
         $scope.apps.push(app);
         $scope.paragraph.apps.push(app);
+        $scope.switchApp(app.id);
       }
-
-      $scope.switchApp(app.id);
     }
   });
 

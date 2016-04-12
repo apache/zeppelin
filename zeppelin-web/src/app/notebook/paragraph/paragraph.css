@@ -434,3 +434,8 @@ table.table-striped {
   position: absolute;
   right: 15px;
 }
+
+.appSuggestion {
+  width: 200px;
+  padding: 5px 10px 5px 10px;
+}

@@ -96,7 +96,7 @@ public class RemoteAngularObjectRegistry extends AngularObjectRegistry {
   public AngularObject removeAndNotifyRemoteProcess(String name, String noteId, String
           paragraphId) {
     RemoteInterpreterProcess remoteInterpreterProcess = getRemoteInterpreterProcess();
-    if (!remoteInterpreterProcess.isRunning()) {
+    if (remoteInterpreterProcess == null || !remoteInterpreterProcess.isRunning()) {
       return super.remove(name, noteId, paragraphId);
     }
 

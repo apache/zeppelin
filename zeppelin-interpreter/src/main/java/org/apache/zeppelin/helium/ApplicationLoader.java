@@ -141,8 +141,6 @@ public class ApplicationLoader {
       return new ResourceSet();
     }
 
-    String localResourcePoolId = resourcePool.id();
-    ResourceSet args = new ResourceSet();
     ResourceSet allResources;
     if (resourcePool instanceof DistributedResourcePool) {
       allResources = ((DistributedResourcePool) resourcePool).getAll(false);
@@ -171,9 +169,14 @@ public class ApplicationLoader {
         boolean found = false;
 
         for (Resource r : resources) {
-          if (r.getClassName().equals(require)) {
-            args.add(r);
+          if (require.startsWith(":") && r.getClassName().equals(require)) {
             found = true;
+          } else if (r.getResourceId().getName().equals(require)) {
+            found = true;
+          }
+
+          if (found) {
+            args.add(r);
             break;
           }
         }

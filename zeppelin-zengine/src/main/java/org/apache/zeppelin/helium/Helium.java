@@ -141,12 +141,14 @@ public class Helium {
     ResourcePool resourcePool = intp.getInterpreterGroup().getResourcePool();
     ResourceSet allResources;
 
-    if (resourcePool == null) {
-      allResources = new ResourceSet();
-    } else if (resourcePool instanceof DistributedResourcePool) {
-      allResources = ((DistributedResourcePool) resourcePool).getAll(false);
+    if (resourcePool != null) {
+      if (resourcePool instanceof DistributedResourcePool) {
+        allResources = ((DistributedResourcePool) resourcePool).getAll(true);
+      } else {
+        allResources = resourcePool.getAll();
+      }
     } else {
-      allResources = resourcePool.getAll();
+      allResources = ResourcePoolUtils.getAllResources();
     }
 
     for (HeliumPackageSearchResult pkg : getAllPackageInfo()) {

@@ -362,11 +362,13 @@ public class RemoteInterpreterServer
         }
 
         // put result into resource pool
-        context.getResourcePool().put(
-            context.getNoteId(),
-            context.getParagraphId(),
-            WellKnownResourceName.ParagraphResult.toString(),
-            combinedResult);
+        if (combinedResult.type() == InterpreterResult.Type.TABLE) {
+          context.getResourcePool().put(
+              context.getNoteId(),
+              context.getParagraphId(),
+              WellKnownResourceName.ZeppelinTableResult.toString(),
+              combinedResult);
+        }
         return combinedResult;
       } finally {
         InterpreterContext.remove();
