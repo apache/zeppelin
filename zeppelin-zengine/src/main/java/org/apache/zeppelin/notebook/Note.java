@@ -547,7 +547,10 @@ public class Note implements Serializable, ParagraphJobListener {
       ParagraphJobListener listener = jobListenerFactory.getParagraphJobListener(this);
       listener.afterStatusChange(job, before, after);
     }
-    noteEventListener.onParagraphStatusChange((Paragraph) job, after);
+
+    if (noteEventListener != null) {
+      noteEventListener.onParagraphStatusChange((Paragraph) job, after);
+    }
   }
 
   @Override

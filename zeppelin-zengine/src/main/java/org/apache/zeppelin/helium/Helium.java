@@ -46,10 +46,12 @@ public class Helium {
 
   private final HeliumConf heliumConf;
   private final String heliumConfPath;
+  private final String defaultLocalRegistryPath;
   private final Gson gson;
 
-  public Helium(String heliumConfPath) throws IOException {
+  public Helium(String heliumConfPath, String defaultLocalRegistryPath) throws IOException {
     this.heliumConfPath = heliumConfPath;
+    this.defaultLocalRegistryPath = defaultLocalRegistryPath;
 
     GsonBuilder builder = new GsonBuilder();
     builder.setPrettyPrinting();
@@ -87,7 +89,7 @@ public class Helium {
       logger.warn("{} does not exists", path);
       HeliumConf conf = new HeliumConf();
       LinkedList<HeliumRegistry> defaultRegistry = new LinkedList<HeliumRegistry>();
-      defaultRegistry.add(new HeliumLocalRegistry("local", "../helium"));
+      defaultRegistry.add(new HeliumLocalRegistry("local", defaultLocalRegistryPath));
       conf.setRegistry(defaultRegistry);
       this.registry = conf.getRegistry();
       return conf;

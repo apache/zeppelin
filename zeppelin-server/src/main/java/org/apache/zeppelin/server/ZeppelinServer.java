@@ -86,7 +86,7 @@ public class ZeppelinServer extends Application {
     this.depResolver = new DependencyResolver(
         conf.getString(ConfVars.ZEPPELIN_INTERPRETER_LOCALREPO));
 
-    this.helium = new Helium(conf.getHeliumConfPath());
+    this.helium = new Helium(conf.getHeliumConfPath(), conf.getHeliumDefaultLocalRegistryPath());
     this.heliumApplicationFactory = new HeliumApplicationFactory();
     this.schedulerFactory = new SchedulerFactory();
     this.replFactory = new InterpreterFactory(conf, notebookWsServer,

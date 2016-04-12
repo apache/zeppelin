@@ -32,11 +32,14 @@ import static org.junit.Assert.assertTrue;
 
 public class HeliumTest {
   private File tmpDir;
+  private File localRegistryPath;
 
   @Before
   public void setUp() throws Exception {
     tmpDir = new File(System.getProperty("java.io.tmpdir") + "/ZeppelinLTest_" + System.currentTimeMillis());
     tmpDir.mkdirs();
+    localRegistryPath = new File(tmpDir, "helium");
+    localRegistryPath.mkdirs();
   }
 
   @After
@@ -48,7 +51,7 @@ public class HeliumTest {
   public void testSaveLoadConf() throws IOException, URISyntaxException {
     // given
     File heliumConf = new File(tmpDir, "helium.conf");
-    Helium helium = new Helium(heliumConf.getAbsolutePath());
+    Helium helium = new Helium(heliumConf.getAbsolutePath(), localRegistryPath.getAbsolutePath());
     assertFalse(heliumConf.exists());
     HeliumTestRegistry registry1 = new HeliumTestRegistry("r1", "r1");
     helium.addRegistry(registry1);
@@ -62,14 +65,14 @@ public class HeliumTest {
     assertTrue(heliumConf.exists());
 
     // then
-    Helium heliumRestored = new Helium(heliumConf.getAbsolutePath());
+    Helium heliumRestored = new Helium(heliumConf.getAbsolutePath(), localRegistryPath.getAbsolutePath());
     assertEquals(2, heliumRestored.getAllRegistry().size());
   }
 
   @Test
   public void testRestoreRegistryInstances() throws IOException, URISyntaxException {
     File heliumConf = new File(tmpDir, "helium.conf");
-    Helium helium = new Helium(heliumConf.getAbsolutePath());
+    Helium helium = new Helium(heliumConf.getAbsolutePath(), localRegistryPath.getAbsolutePath());
     HeliumTestRegistry registry1 = new HeliumTestRegistry("r1", "r1");
     HeliumTestRegistry registry2 = new HeliumTestRegistry("r2", "r2");
     helium.addRegistry(registry1);
