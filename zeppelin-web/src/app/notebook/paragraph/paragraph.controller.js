@@ -180,7 +180,7 @@ angular.module('zeppelinWebApp')
         scope = paragraphScope;
         registry = angularObjectRegistry;
       } else {
-        var app = _.find($scope.apps, { id: data.paragraphId})
+        var app = _.find($scope.apps, { id: data.paragraphId});
         if (app) {
           scope = getAppScope(app);
           registry = getAppRegistry(app);
@@ -251,7 +251,7 @@ angular.module('zeppelinWebApp')
         scope = paragraphScope;
         registry = angularObjectRegistry;
       } else {
-        var app = _.find($scope.apps, { id: data.paragraphId})
+        var app = _.find($scope.apps, { id: data.paragraphId});
         if (app) {
           scope = getAppScope(app);
           registry = getAppRegistry(app);
