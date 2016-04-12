@@ -160,8 +160,9 @@ public class ZeppelinServer extends Application {
 
       HttpConfiguration https_config = new HttpConfiguration(http_config);
       SecureRequestCustomizer src = new SecureRequestCustomizer();
-      src.setStsMaxAge(2000);
-      src.setStsIncludeSubDomains(true);
+      // Only with Jetty 9.3.x
+//      src.setStsMaxAge(2000);
+//      src.setStsIncludeSubDomains(true);
       https_config.addCustomizer(src);
 
       connector = new ServerConnector(
