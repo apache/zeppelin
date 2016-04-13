@@ -166,3 +166,4 @@ show(plt)
 ### R Extras
 
 With zeppelin running, an R Tutorial notebook will be available.  The R packages required to run the examples and graphs in this tutorial notebook were installed by this virtual machine.
+The installed R Packages include: Knitr, devtools, repr, rCharts, ggplot2, googleVis, mplot, htmltools, base64enc, data.table
