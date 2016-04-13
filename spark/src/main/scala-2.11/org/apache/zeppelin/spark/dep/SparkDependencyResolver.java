@@ -75,7 +75,7 @@ public class SparkDependencyResolver extends AbstractDependencyResolver {
                             String additionalRemoteRepository) {
     super(localRepoPath);
     this.intp = intp;
-    this.global = intp.global();
+    this.global = intp.interp().interpreter().global();
     this.sc = sc;
     addRepoFromProperty(additionalRemoteRepository);
   }
@@ -127,7 +127,7 @@ public class SparkDependencyResolver extends AbstractDependencyResolver {
   private void updateRuntimeClassPath_1_x(URL[] urls) throws SecurityException,
       IllegalAccessException, IllegalArgumentException,
       InvocationTargetException, NoSuchMethodException {
-    ClassLoader cl = intp.classLoader().getParent();
+    ClassLoader cl = intp.interp().interpreter().classLoader().getParent();
     Method addURL;
     addURL = cl.getClass().getDeclaredMethod("addURL", new Class[] {URL.class});
     addURL.setAccessible(true);
@@ -139,7 +139,7 @@ public class SparkDependencyResolver extends AbstractDependencyResolver {
   private void updateRuntimeClassPath_2_x(URL[] urls) throws SecurityException,
       IllegalAccessException, IllegalArgumentException,
       InvocationTargetException, NoSuchMethodException {
-    ClassLoader cl = intp.classLoader().getParent();
+    ClassLoader cl = intp.interp().interpreter().classLoader().getParent();
     Method addURL;
     addURL = cl.getClass().getDeclaredMethod("addNewUrl", new Class[] {URL.class});
     addURL.setAccessible(true);
@@ -209,7 +209,7 @@ public class SparkDependencyResolver extends AbstractDependencyResolver {
   private void loadFromFs(String artifact, boolean addSparkContext) throws Exception {
     File jarFile = new File(artifact);
 
-    intp.global().new Run();
+    intp.interp().interpreter().global().new Run();
 
     if (sc.version().startsWith("1.1")) {
       updateRuntimeClassPath_1_x(new URL[] {jarFile.toURI().toURL()});
@@ -257,7 +257,7 @@ public class SparkDependencyResolver extends AbstractDependencyResolver {
           + artifactResult.getArtifact().getVersion());
     }
 
-    intp.global().new Run();
+    intp.interp().interpreter().global().new Run();
     if (sc.version().startsWith("1.1")) {
       updateRuntimeClassPath_1_x(newClassPathList.toArray(new URL[0]));
     } else {

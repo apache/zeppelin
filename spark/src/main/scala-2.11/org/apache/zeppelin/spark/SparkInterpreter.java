@@ -34,10 +34,10 @@ import org.apache.spark.HttpServer;
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
 import org.apache.spark.SparkEnv;
-import org.apache.spark.repl.SparkCommandLine;
+// import org.apache.spark.repl.SparkCommandLine;
 import org.apache.spark.repl.SparkILoop;
 import org.apache.spark.repl.Main;
-import org.apache.spark.repl.SparkJLineCompletion;
+// import org.apache.spark.repl.SparkJLineCompletion;
 import org.apache.spark.scheduler.ActiveJob;
 import org.apache.spark.scheduler.DAGScheduler;
 import org.apache.spark.scheduler.Pool;
@@ -125,7 +125,7 @@ public class SparkInterpreter extends Interpreter {
 
   private SparkOutputStream out;
   private SparkDependencyResolver dep;
-  private SparkJLineCompletion completor;
+  // private SparkJLineCompletion completor;
 
   private Map<String, Object> binder;
   private SparkVersion sparkVersion;
@@ -257,7 +257,8 @@ public class SparkInterpreter extends Interpreter {
     System.err.println("------ Create new SparkContext " + getProperty("master") + " -------");
 
     String execUri = System.getenv("SPARK_EXECUTOR_URI");
-    String[] jars = SparkILoop.getAddedJars();
+    // TODO(lresende) Figure out added jars ==>> SparkILoop.getAddedJars();
+    String[] jars = new String[0];
 
     String classServerUri = null;
 
@@ -397,16 +398,6 @@ public class SparkInterpreter extends Interpreter {
     // Very nice discussion about how scala compiler handle classpath
     // https://groups.google.com/forum/#!topic/scala-user/MlVwo2xCCI0
 
-    /*
-     * > val env = new nsc.Settings(errLogger) > env.usejavacp.value = true > val p = new
-     * Interpreter(env) > p.setContextClassLoader > Alternatively you can set the class path through
-     * nsc.Settings.classpath.
-     *
-     * >> val settings = new Settings() >> settings.usejavacp.value = true >>
-     * settings.classpath.value += File.pathSeparator + >> System.getProperty("java.class.path") >>
-     * val in = new Interpreter(settings) { >> override protected def parentClassLoader =
-     * getClass.getClassLoader >> } >> in.setContextClassLoader()
-     */
     Settings settings = new Settings();
     if (getProperty("args") != null) {
       String[] argsArray = getProperty("args").split(" ");
@@ -415,10 +406,11 @@ public class SparkInterpreter extends Interpreter {
         argList.add(arg);
       }
 
+      /*
       SparkCommandLine command =
-          new SparkCommandLine(scala.collection.JavaConversions.asScalaBuffer(
-              argList).toList());
+          new SparkCommandLine(scala.collection.JavaConversions.asScalaBuffer(argList).toList());
       settings = command.settings();
+      */
     }
 
     // set classpath for scala compiler
@@ -480,8 +472,8 @@ public class SparkInterpreter extends Interpreter {
 
 
     // set classloader for scala compiler
-    settings.explicitParentLoader_$eq(new Some<ClassLoader>(Thread.currentThread()
-        .getContextClassLoader()));
+    settings.explicitParentLoader_$eq(
+            new Some<ClassLoader>(Thread.currentThread().getContextClassLoader()));
     BooleanSetting b = (BooleanSetting) settings.usejavacp();
     b.v_$eq(true);
     settings.scala$tools$nsc$settings$StandardScalaSettings$_setter_$usejavacp_$eq(b);
@@ -491,25 +483,27 @@ public class SparkInterpreter extends Interpreter {
     synchronized (sharedInterpreterLock) {
       /* create scala repl */
       if (printREPLOutput()) {
-        this.interpreter = new SparkILoop(null, new PrintWriter(out));
+        this.interpreter = new SparkILoop((java.io.BufferedReader) null,
+                new PrintWriter(out));
       } else {
-        this.interpreter = new SparkILoop(null, new PrintWriter(Console.out(), false));
+        this.interpreter = new SparkILoop((java.io.BufferedReader) null,
+                new PrintWriter(Console.out()));
       }
 
       interpreter.settings_$eq(settings);
 
       interpreter.createInterpreter();
 
-      intp = interpreter.intp();
-      intp.setContextClassLoader();
-      intp.initializeSynchronous();
+      intp.interp_$eq(this.interpreter);
+      intp.interp().interpreter().setContextClassLoader();
+      intp.interp().interpreter().initializeSynchronous();
 
       if (classOutputDir == null) {
         classOutputDir = settings.outputDirs().getSingleOutput().get();
       } else {
         // change Main class output dir
         settings.outputDirs().setSingleOutput(classOutputDir);
-        ClassLoader cl = intp.classLoader();
+        ClassLoader cl = intp.interp().interpreter().classLoader();
 
         try {
           Field rootField = cl.getClass().getSuperclass().getDeclaredField("root");
@@ -520,7 +514,8 @@ public class SparkInterpreter extends Interpreter {
         }
       }
 
-      completor = new SparkJLineCompletion(intp);
+      // TODO(lresende) support for completion
+      // completor = new SparkJLineCompletion(intp);
 
       sc = getSparkContext();
       if (sc.getPoolForName("fair").isEmpty()) {
@@ -540,28 +535,29 @@ public class SparkInterpreter extends Interpreter {
       z = new ZeppelinContext(sc, sqlc, null, dep,
               Integer.parseInt(getProperty("zeppelin.spark.maxResult")));
 
-      intp.interpret("@transient var _binder = new java.util.HashMap[String, Object]()");
+      intp.interp().interpreter().interpret("" +
+              "@transient var _binder = new java.util.HashMap[String, Object]()");
       binder = (Map<String, Object>) getValue("_binder");
       binder.put("sc", sc);
       binder.put("sqlc", sqlc);
       binder.put("z", z);
 
-      intp.interpret("@transient val z = "
+      intp.interp().interpreter().interpret("@transient val z = "
               + "_binder.get(\"z\").asInstanceOf[org.apache.zeppelin.spark.ZeppelinContext]");
-      intp.interpret("@transient val sc = "
+      intp.interp().interpreter().interpret("@transient val sc = "
               + "_binder.get(\"sc\").asInstanceOf[org.apache.spark.SparkContext]");
-      intp.interpret("@transient val sqlc = "
+      intp.interp().interpreter().interpret("@transient val sqlc = "
               + "_binder.get(\"sqlc\").asInstanceOf[org.apache.spark.sql.SQLContext]");
-      intp.interpret("@transient val sqlContext = "
+      intp.interp().interpreter().interpret("@transient val sqlContext = "
               + "_binder.get(\"sqlc\").asInstanceOf[org.apache.spark.sql.SQLContext]");
-      intp.interpret("import org.apache.spark.SparkContext._");
+      intp.interp().interpreter().interpret("import org.apache.spark.SparkContext._");
 
       if (sparkVersion.oldSqlContextImplicits()) {
-        intp.interpret("import sqlContext._");
+        intp.interp().interpreter().interpret("import sqlContext._");
       } else {
-        intp.interpret("import sqlContext.implicits._");
-        intp.interpret("import sqlContext.sql");
-        intp.interpret("import org.apache.spark.sql.functions._");
+        intp.interp().interpreter().interpret("import sqlContext.implicits._");
+        intp.interp().interpreter().interpret("import sqlContext.sql");
+        intp.interp().interpreter().interpret("import org.apache.spark.sql.functions._");
       }
     }
 
@@ -662,6 +658,7 @@ public class SparkInterpreter extends Interpreter {
 
   @Override
   public List<String> completion(String buf, int cursor) {
+    /*
     if (buf.length() < cursor) {
       cursor = buf.length();
     }
@@ -673,6 +670,8 @@ public class SparkInterpreter extends Interpreter {
     ScalaCompleter c = completor.completer();
     Candidates ret = c.complete(completionText, cursor);
     return scala.collection.JavaConversions.seqAsJavaList(ret.candidates());
+    */
+    return Collections.emptyList();
   }
 
   private String getCompletionTargetString(String text, int cursor) {
@@ -717,7 +716,7 @@ public class SparkInterpreter extends Interpreter {
   }
 
   public Object getValue(String name) {
-    Object ret = intp.valueOfTerm(name);
+    Object ret = intp.interp().interpreter().valueOfTerm(name);
     if (ret instanceof None) {
       return null;
     } else if (ret instanceof Some) {
@@ -809,7 +808,7 @@ public class SparkInterpreter extends Interpreter {
 
       scala.tools.nsc.interpreter.Results.Result res = null;
       try {
-        res = intp.interpret(incomplete + s);
+        res = intp.interp().interpreter().interpret(incomplete + s);
       } catch (Exception e) {
         sc.clearJobGroup();
         out.setInterpreterOutput(null);
@@ -979,7 +978,7 @@ public class SparkInterpreter extends Interpreter {
       sc = null;
     }
 
-    intp.close();
+    intp.interp().interpreter().close();
   }
 
   @Override
