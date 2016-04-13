@@ -17,21 +17,15 @@
 
 package org.apache.zeppelin.spark;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.PrintStream;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 
 import org.apache.spark.repl.SparkILoop;
 import org.apache.spark.repl.Main;
-import org.apache.spark.repl.SparkJLineCompletion;
+// import org.apache.spark.repl.SparkJLineCompletion;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
@@ -80,9 +74,10 @@ public class DepInterpreter extends Interpreter {
   }
 
   private Main intp;
+  private ByteArrayInputStream in;
   private ByteArrayOutputStream out;
   private SparkDependencyContext depc;
-  private SparkJLineCompletion completor;
+  // private SparkJLineCompletion completor;
   private SparkILoop interpreter;
   static final Logger LOGGER = LoggerFactory.getLogger(DepInterpreter.class);
 
@@ -118,7 +113,7 @@ public class DepInterpreter extends Interpreter {
   @Override
   public void close() {
     if (intp != null) {
-      intp.close();
+      intp.interp().interpreter().close();
     }
   }
 
@@ -164,31 +159,34 @@ public class DepInterpreter extends Interpreter {
     b.v_$eq(true);
     settings.scala$tools$nsc$settings$StandardScalaSettings$_setter_$usejavacp_$eq(b);
 
-    interpreter = new SparkILoop(null, new PrintWriter(out));
+    interpreter = new SparkILoop((java.io.BufferedReader) null, new PrintWriter(out));
     interpreter.settings_$eq(settings);
 
     interpreter.createInterpreter();
 
 
-    intp = interpreter.intp();
-    intp.setContextClassLoader();
-    intp.initializeSynchronous();
+    intp.interp_$eq(this.interpreter);
+    intp.interp().interpreter().setContextClassLoader();
+    intp.interp().interpreter().initializeSynchronous();
+
 
     depc = new SparkDependencyContext(getProperty("zeppelin.dep.localrepo"),
                                  getProperty("zeppelin.dep.additionalRemoteRepository"));
-    completor = new SparkJLineCompletion(intp);
-    intp.interpret("@transient var _binder = new java.util.HashMap[String, Object]()");
+    // TODO(lresende) Support for completion
+    // completor = new SparkJLineCompletion(intp);
+    intp.interp().interpreter().interpret("" +
+            "@transient var _binder = new java.util.HashMap[String, Object]()");
     Map<String, Object> binder = (Map<String, Object>) getValue("_binder");
     binder.put("depc", depc);
 
-    intp.interpret("@transient val z = "
+    intp.interp().interpreter().interpret("@transient val z = "
         + "_binder.get(\"depc\")"
         + ".asInstanceOf[org.apache.zeppelin.spark.dep.SparkDependencyContext]");
 
   }
 
   public Object getValue(String name) {
-    Object ret = intp.valueOfTerm(name);
+    Object ret = intp.interp().interpreter().valueOfTerm(name);
     if (ret instanceof None) {
       return null;
     } else if (ret instanceof Some) {
@@ -213,7 +211,7 @@ public class DepInterpreter extends Interpreter {
           "restart Zeppelin/Interpreter" );
     }
 
-    scala.tools.nsc.interpreter.Results.Result ret = intp.interpret(st);
+    scala.tools.nsc.interpreter.Results.Result ret = intp.interp().interpreter().interpret(st);
     Code code = getResultCode(ret);
 
     try {
@@ -260,9 +258,12 @@ public class DepInterpreter extends Interpreter {
 
   @Override
   public List<String> completion(String buf, int cursor) {
+    /*
     ScalaCompleter c = completor.completer();
     Candidates ret = c.complete(buf, cursor);
     return scala.collection.JavaConversions.seqAsJavaList(ret.candidates());
+    */
+    return Collections.emptyList();
   }
 
   private List<File> currentClassPath() {
