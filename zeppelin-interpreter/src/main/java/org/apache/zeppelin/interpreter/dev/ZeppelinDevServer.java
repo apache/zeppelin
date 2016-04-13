@@ -38,7 +38,6 @@ public class ZeppelinDevServer extends
   public static final int DEFAULT_TEST_INTERPRETER_PORT = 29914;
 
   DevInterpreter interpreter = null;
-  private InterpreterEvent listener;
   InterpreterOutput out;
   public ZeppelinDevServer(int port) throws TException {
     super(port);

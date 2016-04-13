@@ -19,6 +19,7 @@ package org.apache.zeppelin.interpreter.dev;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.net.URL;
 
 import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Level;
@@ -75,6 +76,13 @@ public class ZeppelinApplicationDevServer extends ZeppelinDevServer {
         Class<?> appClass = ClassLoader.getSystemClassLoader().loadClass(className);
         Constructor<?> constructor = appClass.getConstructor(
             ResourceSet.class, ApplicationContext.class);
+
+        // classPath will be ..../target/classes in dev mode most cases
+        String classPath = appClass.getProtectionDomain().getCodeSource().getLocation().getPath();
+
+        context.out.addResourceSearchPath(classPath + "../../src/main/resources/");
+        context.out.addResourceSearchPath(classPath + "../../src/test/resources/");
+
         app = (Application) constructor.newInstance(resourceSet, getApplicationContext(context));
       } catch (Exception e) {
         logger.error(e.getMessage(), e);

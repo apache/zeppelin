@@ -22,8 +22,10 @@ import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.net.URL;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * InterpreterOutput is OutputStream that supposed to print content on notebook
@@ -32,6 +34,7 @@ import java.util.List;
 public class InterpreterOutput extends OutputStream {
   Logger logger = LoggerFactory.getLogger(InterpreterOutput.class);
   private final int NEW_LINE_CHAR = '\n';
+  private List<String> resourceSearchPaths = Collections.synchronizedList(new LinkedList<String>());
 
   ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 
@@ -157,26 +160,32 @@ public class InterpreterOutput extends OutputStream {
     }
   }
 
-  public void writeResource(String resourceName) throws IOException {
-    // search file under resource dir first for dev mode
-    File mainResource = new File("./src/main/resources/" + resourceName);
-    File testResource = new File("./src/test/resources/" + resourceName);
-    if (mainResource.isFile()) {
-      write(mainResource);
-    } else if (testResource.isFile()) {
-      write(testResource);
-    } else {
-      // search from classpath
-      ClassLoader cl = Thread.currentThread().getContextClassLoader();
-      if (cl == null) {
-        cl = this.getClass().getClassLoader();
-      }
-      if (cl == null) {
-        cl = ClassLoader.getSystemClassLoader();
-      }
+  public void addResourceSearchPath(String path) {
+    resourceSearchPaths.add(path);
+  }
 
-      write(cl.getResource(resourceName));
+  public void writeResource(String resourceName) throws IOException {
+    // search file under provided paths first, for dev mode
+    for (String path : resourceSearchPaths) {
+      File res = new File(path + "/" + resourceName);
+      logger.info("path = " + path + ", res = " + resourceName);
+      logger.info("Search resource " + res.getAbsolutePath());
+      if (res.isFile()) {
+        write(res);
+        return;
+      }
     }
+
+    // search from classpath
+    ClassLoader cl = Thread.currentThread().getContextClassLoader();
+    if (cl == null) {
+      cl = this.getClass().getClassLoader();
+    }
+    if (cl == null) {
+      cl = ClassLoader.getSystemClassLoader();
+    }
+
+    write(cl.getResource(resourceName));
   }
 
   public byte[] toByteArray() throws IOException {
