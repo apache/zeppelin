@@ -22,6 +22,8 @@ package org.apache.zeppelin.interpreter;
  */
 public class InterpreterOption {
   boolean remote;
+  String host = null;
+  int port = -1;
   boolean perNoteSession;
 
   public InterpreterOption() {
@@ -46,5 +48,18 @@ public class InterpreterOption {
 
   public void setPerNoteSession(boolean perNoteSession) {
     this.perNoteSession = perNoteSession;
+  }
+
+
+  public boolean isConnectExistingProcess() {
+    return (host != null && port != -1);
+  }
+
+  public String getHost() {
+    return host;
+  }
+
+  public int getPort() {
+    return port;
   }
 }

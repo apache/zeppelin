@@ -506,11 +506,18 @@ public class InterpreterFactory {
           Interpreter intp;
 
           if (option.isRemote()) {
-            intp = createRemoteRepl(info.getPath(),
-                noteId,
-                info.getClassName(),
-                properties,
-                interpreterGroup.id);
+            if (option.isConnectExistingProcess()) {
+              intp = connectToRemoteRepl(
+                  noteId,
+                  info.getClassName(),
+                  option.getHost(), option.getPort(), properties);
+            } else {
+              intp = createRemoteRepl(info.getPath(),
+                  noteId,
+                  info.getClassName(),
+                  properties,
+                  interpreterGroup.id);
+            }
           } else {
             intp = createRepl(info.getPath(),
                 info.getClassName(),
@@ -813,6 +820,26 @@ public class InterpreterFactory {
     }
   }
 
+  private Interpreter connectToRemoteRepl(String noteId,
+                                          String className,
+                                          String host,
+                                          int port,
+                                          Properties property) {
+    int connectTimeout = conf.getInt(ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT);
+    int maxPoolSize = conf.getInt(ConfVars.ZEPPELIN_INTERPRETER_MAX_POOL_SIZE);
+    LazyOpenInterpreter intp = new LazyOpenInterpreter(
+        new RemoteInterpreter(
+            property,
+            noteId,
+            className,
+            host,
+            port,
+            connectTimeout,
+            maxPoolSize,
+            remoteInterpreterProcessListener,
+            appEventListener));
+    return intp;
+  }
 
   private Interpreter createRemoteRepl(String interpreterPath, String noteId, String className,
       Properties property, String interpreterId) {

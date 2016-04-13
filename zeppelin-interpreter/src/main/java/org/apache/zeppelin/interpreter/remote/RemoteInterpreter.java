@@ -55,8 +55,12 @@ public class RemoteInterpreter extends Interpreter {
   private Map<String, String> env;
   private int connectTimeout;
   private int maxPoolSize;
-  private static String schedulerName;
+  private String host;
+  private int port;
 
+  /**
+   * Remote interpreter and manage interpreter process
+   */
   public RemoteInterpreter(Properties property,
                            String noteId,
                            String className,
@@ -80,6 +84,32 @@ public class RemoteInterpreter extends Interpreter {
     this.remoteInterpreterProcessListener = remoteInterpreterProcessListener;
     this.applicationEventListener = appListener;
   }
+
+
+  /**
+   * Connect to existing process
+   */
+  public RemoteInterpreter(Properties property,
+                           String noteId,
+                           String className,
+                           String host,
+                           int port,
+                           int connectTimeout,
+                           int maxPoolSize,
+                           RemoteInterpreterProcessListener remoteInterpreterProcessListener,
+                           ApplicationEventListener appListener) {
+    super(property);
+    this.noteId = noteId;
+    this.className = className;
+    initialized = false;
+    this.host = host;
+    this.port = port;
+    this.connectTimeout = connectTimeout;
+    this.maxPoolSize = maxPoolSize;
+    this.remoteInterpreterProcessListener = remoteInterpreterProcessListener;
+    this.applicationEventListener = appListener;
+  }
+
 
   // VisibleForTesting
   public RemoteInterpreter(Properties property,
@@ -110,6 +140,10 @@ public class RemoteInterpreter extends Interpreter {
     return className;
   }
 
+  private boolean connectToExistingProcess() {
+    return host != null && port > 0;
+  }
+
   public RemoteInterpreterProcess getInterpreterProcess() {
     InterpreterGroup intpGroup = getInterpreterGroup();
     if (intpGroup == null) {
@@ -118,10 +152,20 @@ public class RemoteInterpreter extends Interpreter {
 
     synchronized (intpGroup) {
       if (intpGroup.getRemoteInterpreterProcess() == null) {
-        // create new remote process
-        RemoteInterpreterProcess remoteProcess = new RemoteInterpreterProcess(
-            interpreterRunner, interpreterPath, localRepoPath, env, connectTimeout,
-            remoteInterpreterProcessListener, applicationEventListener);
+        RemoteInterpreterProcess remoteProcess;
+        if (connectToExistingProcess()) {
+          remoteProcess = new RemoteInterpreterRunningProcess(
+              connectTimeout,
+              remoteInterpreterProcessListener,
+              applicationEventListener,
+              host,
+              port);
+        } else {
+          // create new remote process
+          remoteProcess = new RemoteInterpreterManagedProcess(
+              interpreterRunner, interpreterPath, localRepoPath, env, connectTimeout,
+              remoteInterpreterProcessListener, applicationEventListener);
+        }
 
         intpGroup.setRemoteInterpreterProcess(remoteProcess);
       }
