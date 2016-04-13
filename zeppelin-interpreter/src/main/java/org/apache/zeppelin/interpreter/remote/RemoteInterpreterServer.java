@@ -356,7 +356,6 @@ public class RemoteInterpreterServer
         context.out.flush();
         InterpreterResult.Type outputType = context.out.getType();
         byte[] interpreterOutput = context.out.toByteArray();
-        context.out.clear();
 
         if (interpreterOutput != null && interpreterOutput.length > 0) {
           message = new String(interpreterOutput);
