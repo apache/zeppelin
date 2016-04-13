@@ -73,7 +73,17 @@ public class RemoteInterpreterEventPoller extends Thread {
   public void run() {
     Client client = null;
 
-    while (!shutdown && interpreterProcess.isRunning()) {
+    while (!shutdown) {
+      // wait and retry
+      if (!interpreterProcess.isRunning()) {
+        try {
+          Thread.sleep(1000);
+        } catch (InterruptedException e) {
+          // nothing to do
+        }
+        continue;
+      }
+
       try {
         client = interpreterProcess.getClient();
       } catch (Exception e1) {
@@ -145,7 +155,7 @@ public class RemoteInterpreterEventPoller extends Thread {
           String paragraphId = outputAppend.get("paragraphId");
           String outputToAppend = outputAppend.get("data");
           String appId = outputAppend.get("appId");
-          logger.info("Append " + outputToAppend + ", appId = " + appId);
+
           if (appId == null) {
             listener.onOutputAppend(noteId, paragraphId, outputToAppend);
           } else {
@@ -159,7 +169,7 @@ public class RemoteInterpreterEventPoller extends Thread {
           String paragraphId = outputAppend.get("paragraphId");
           String outputToUpdate = outputAppend.get("data");
           String appId = outputAppend.get("appId");
-          logger.info("Update " + outputToUpdate + ", appId = " + appId);
+
           if (appId == null) {
             listener.onOutputUpdated(noteId, paragraphId, outputToUpdate);
           } else {

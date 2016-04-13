@@ -31,6 +31,8 @@ import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.AngularObjectRegistryListener;
 import org.apache.zeppelin.helium.ApplicationEventListener;
 import org.apache.zeppelin.interpreter.Interpreter.RegisteredInterpreter;
+import org.apache.zeppelin.interpreter.dev.DevInterpreter;
+import org.apache.zeppelin.interpreter.dev.ZeppelinDevServer;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreter;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
@@ -79,6 +81,8 @@ public class InterpreterFactory {
   private DependencyResolver depResolver;
 
   private Map<String, String> env = new HashMap<String, String>();
+
+  private Interpreter devInterpreter;
 
   public InterpreterFactory(ZeppelinConfiguration conf,
       AngularObjectRegistryListener angularObjectRegistryListener,
@@ -896,5 +900,27 @@ public class InterpreterFactory {
 
   public void setEnv(Map<String, String> env) {
     this.env = env;
+  }
+
+
+  public Interpreter getDevInterpreter() {
+    if (devInterpreter == null) {
+      InterpreterOption option = new InterpreterOption();
+      option.setRemote(true);
+
+      InterpreterGroup interpreterGroup = createInterpreterGroup("dev", option);
+
+      devInterpreter = connectToRemoteRepl("dev", DevInterpreter.class.getName(),
+          "localhost",
+          ZeppelinDevServer.DEFAULT_TEST_INTERPRETER_PORT,
+          new Properties());
+
+      LinkedList<Interpreter> intpList = new LinkedList<Interpreter>();
+      intpList.add(devInterpreter);
+      interpreterGroup.put("dev", intpList);
+
+      devInterpreter.setInterpreterGroup(interpreterGroup);
+    }
+    return devInterpreter;
   }
 }

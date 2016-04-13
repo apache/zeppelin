@@ -76,4 +76,9 @@ public class ClientFactory extends BasePooledObjectFactory<Client>{
       }
     }
   }
+
+  @Override
+  public boolean validateObject(PooledObject<Client> p) {
+    return p.getObject().getOutputProtocol().getTransport().isOpen();
+  }
 }

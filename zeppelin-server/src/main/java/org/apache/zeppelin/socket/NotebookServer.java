@@ -659,15 +659,10 @@ public class NotebookServer extends WebSocketServlet implements
     // propagate change to (Remote) AngularObjectRegistry
     Note note = notebook.getNote(noteId);
     if (note != null) {
-      List<InterpreterSetting> settings = note.getNoteReplLoader()
-          .getInterpreterSettings();
-      for (InterpreterSetting setting : settings) {
-        if (setting.getInterpreterGroup() == null) {
-          continue;
-        }
-        if (interpreterGroupId.equals(setting.getInterpreterGroup().getId())) {
-          AngularObjectRegistry angularObjectRegistry = setting
-              .getInterpreterGroup().getAngularObjectRegistry();
+      Collection<InterpreterGroup> interpreterGroups = InterpreterGroup.getAll();
+      for (InterpreterGroup interpreterGroup : interpreterGroups) {
+        if (interpreterGroupId.equals(interpreterGroup.getId())) {
+          AngularObjectRegistry angularObjectRegistry = interpreterGroup.getAngularObjectRegistry();
           // first trying to get local registry
           ao = angularObjectRegistry.get(varName, noteId, paragraphId);
           if (ao == null) {
@@ -1164,19 +1159,17 @@ public class NotebookServer extends WebSocketServlet implements
 
       List<InterpreterSetting> intpSettings = note.getNoteReplLoader()
           .getInterpreterSettings();
-      if (intpSettings.isEmpty())
+      if (intpSettings.isEmpty()) {
         continue;
-      for (InterpreterSetting setting : intpSettings) {
-        if (setting.getInterpreterGroup().getId().equals(interpreterGroupId)) {
-          broadcast(
-              note.id(),
-              new Message(OP.ANGULAR_OBJECT_UPDATE)
-                  .put("angularObject", object)
-                  .put("interpreterGroupId", interpreterGroupId)
-                  .put("noteId", note.id())
-                  .put("paragraphId", object.getParagraphId()));
-        }
       }
+
+      broadcast(
+          note.id(),
+          new Message(OP.ANGULAR_OBJECT_UPDATE)
+              .put("angularObject", object)
+              .put("interpreterGroupId", interpreterGroupId)
+              .put("noteId", note.id())
+              .put("paragraphId", object.getParagraphId()));
     }
   }
 
@@ -1189,15 +1182,10 @@ public class NotebookServer extends WebSocketServlet implements
         continue;
       }
 
-      List<String> ids = note.getNoteReplLoader().getInterpreters();
-      for (String id : ids) {
-        if (id.equals(interpreterGroupId)) {
-          broadcast(
-              note.id(),
-              new Message(OP.ANGULAR_OBJECT_REMOVE).put("name", name).put(
-                      "noteId", noteId).put("paragraphId", paragraphId));
-        }
-      }
+      broadcast(
+          note.id(),
+          new Message(OP.ANGULAR_OBJECT_REMOVE).put("name", name).put(
+                  "noteId", noteId).put("paragraphId", paragraphId));
     }
   }
 }

@@ -75,7 +75,7 @@ public abstract class RemoteInterpreterProcess {
 
       if (clientPool == null) {
         clientPool = new GenericObjectPool<Client>(new ClientFactory(getHost(), getPort()));
-        clientPool.setTestOnReturn(true);
+        clientPool.setTestOnBorrow(true);
 
         remoteInterpreterEventPoller.setInterpreterGroup(interpreterGroup);
         remoteInterpreterEventPoller.setInterpreterProcess(this);

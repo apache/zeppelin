@@ -27,6 +27,7 @@ import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
+import org.apache.zeppelin.interpreter.dev.DevInterpreter;
 
 /**
  * Interpreter loader per note.
@@ -181,6 +182,11 @@ public class NoteInterpreterLoader {
           return interpreters.get(0);
         }
       }
+    }
+
+    // dev interpreter
+    if (DevInterpreter.isInterpreterName(replName)) {
+      return factory.getDevInterpreter();
     }
 
     throw new InterpreterException(replName + " interpreter not found");

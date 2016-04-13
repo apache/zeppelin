@@ -30,8 +30,10 @@ import java.util.Map;
 /**
  * This class manages start / stop of remote interpreter process
  */
-public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess implements ExecuteResultHandler {
-  private static final Logger logger = LoggerFactory.getLogger(RemoteInterpreterManagedProcess.class);
+public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
+    implements ExecuteResultHandler {
+  private static final Logger logger = LoggerFactory.getLogger(
+      RemoteInterpreterManagedProcess.class);
   private final String interpreterRunner;
 
   private DefaultExecutor executor;

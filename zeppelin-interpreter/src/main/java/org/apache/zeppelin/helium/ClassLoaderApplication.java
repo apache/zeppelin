@@ -16,6 +16,8 @@
  */
 package org.apache.zeppelin.helium;
 
+import org.apache.zeppelin.resource.ResourceSet;
+
 /**
  * Application wrapper
  */
@@ -66,5 +68,15 @@ public class ClassLoaderApplication extends Application {
 
   public Application getInnerApplication() {
     return app;
+  }
+
+  @Override
+  public ResourceSet args() {
+    return app.args();
+  }
+
+  @Override
+  public ApplicationContext context() {
+    return app.context();
   }
 }

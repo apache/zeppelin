@@ -75,7 +75,6 @@ public class RemoteInterpreterServer
   private final Map<String, Application> runningApplications =
       Collections.synchronizedMap(new HashMap<String, Application>());
 
-
   public RemoteInterpreterServer(int port) throws TTransportException {
     this.port = port;
 
@@ -188,7 +187,19 @@ public class RemoteInterpreterServer
     }
   }
 
-  private Interpreter getInterpreter(String noteId, String className) throws TException {
+  protected InterpreterGroup getInterpreterGroup() {
+    return interpreterGroup;
+  }
+
+  protected ResourcePool getResourcePool() {
+    return resourcePool;
+  }
+
+  protected RemoteInterpreterEventClient getEventClient() {
+    return eventClient;
+  }
+
+  protected Interpreter getInterpreter(String noteId, String className) throws TException {
     if (interpreterGroup == null) {
       throw new TException(
           new InterpreterException("Interpreter instance " + className + " not created"));
@@ -393,7 +404,7 @@ public class RemoteInterpreterServer
     if (job != null) {
       job.setStatus(Status.ABORT);
     } else {
-      intp.cancel(convert(interpreterContext));
+      intp.cancel(convert(interpreterContext, null));
     }
   }
 
@@ -402,7 +413,7 @@ public class RemoteInterpreterServer
                          RemoteInterpreterContext interpreterContext)
       throws TException {
     Interpreter intp = getInterpreter(noteId, className);
-    return intp.getProgress(convert(interpreterContext));
+    return intp.getProgress(convert(interpreterContext, null));
   }
 
 
@@ -420,6 +431,10 @@ public class RemoteInterpreterServer
   }
 
   private InterpreterContext convert(RemoteInterpreterContext ric) {
+    return convert(ric, createInterpreterOutput(ric.getNoteId(), ric.getParagraphId()));
+  }
+
+  private InterpreterContext convert(RemoteInterpreterContext ric, InterpreterOutput output) {
     List<InterpreterContextRunner> contextRunners = new LinkedList<InterpreterContextRunner>();
     List<InterpreterContextRunner> runners = gson.fromJson(ric.getRunners(),
             new TypeToken<List<RemoteInterpreterContextRunner>>() {
@@ -440,11 +455,12 @@ public class RemoteInterpreterServer
         gson.fromJson(ric.getGui(), GUI.class),
         interpreterGroup.getAngularObjectRegistry(),
         interpreterGroup.getResourcePool(),
-        contextRunners, createInterpreterOutput(ric.getNoteId(), ric.getParagraphId()));
+        contextRunners, output);
   }
 
 
-  private InterpreterOutput createInterpreterOutput(final String noteId, final String paragraphId) {
+  protected InterpreterOutput createInterpreterOutput(final String noteId, final String
+      paragraphId) {
     return new InterpreterOutput(new InterpreterOutputListener() {
       @Override
       public void onAppend(InterpreterOutput out, byte[] line) {
@@ -659,9 +675,14 @@ public class RemoteInterpreterServer
   @Override
   public List<String> resourcePoolGetAll() throws TException {
     logger.debug("Request getAll from ZeppelinServer");
+    List<String> result = new LinkedList<String>();
+
+    if (resourcePool == null) {
+      return result;
+    }
 
     ResourceSet resourceSet = resourcePool.getAll(false);
-    List<String> result = new LinkedList<String>();
+
     Gson gson = new Gson();
 
     for (Resource r : resourceSet) {
@@ -708,7 +729,7 @@ public class RemoteInterpreterServer
     }
   }
 
-  private InterpreterOutput createAppOutput(final String noteId,
+  protected InterpreterOutput createAppOutput(final String noteId,
                                             final String paragraphId,
                                             final String appId) {
     return new InterpreterOutput(new InterpreterOutputListener() {
@@ -791,6 +812,7 @@ public class RemoteInterpreterServer
       return new RemoteApplicationResult(false, "Application instance does not exists");
     } else {
       try {
+        app.context().out.clear();
         app.run();
         return new RemoteApplicationResult(true, "");
       } catch (ApplicationException e) {
