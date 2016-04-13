@@ -94,7 +94,7 @@ The virtual machine consists of:
  - libfontconfig to avoid phatomJs missing dependency issues
  - openjdk-7-jdk
  - Python addons: pip, matplotlib, scipy, numpy, pandas
- - [R](https://www.r-project.org/) and R Packages required to run the R Interpreter & related R tutorial notebook
+ - [R](https://www.r-project.org/) and R Packages required to run the R Interpreter and the related R tutorial notebook, including:  Knitr, devtools, repr, rCharts, ggplot2, googleVis, mplot, htmltools, base64enc, data.table
  
 ### How to build & run Zeppelin
 
@@ -108,10 +108,10 @@ mvn clean package -Pspark-1.6 -Ppyspark -Phadoop-2.4 -Psparkr -DskipTests
 
 On your host machine browse to `http://localhost:8080/`
 
-If you [turned off port forwarding](#tweakvm) in the `Vagrantfile` browse to `http://192.168.51.52:8080`
+If you [turned off port forwarding](#tweaking-the-virtual-machine) in the `Vagrantfile` browse to `http://192.168.51.52:8080`
 
 
-### [Tweaking the Virtual Machine](id:tweakvm)
+### Tweaking the Virtual Machine
 
 If you plan to run this virtual machine along side other Vagrant images, you may wish to bind the virtual machine to a specific IP address, and not use port fowarding from your local host.
 

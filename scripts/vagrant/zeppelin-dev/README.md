@@ -79,7 +79,7 @@ The virtual machine consists of:
  - libfontconfig to avoid phatomJs missing dependency issues
  - openjdk-7-jdk
  - Python addons: pip, matplotlib, scipy, numpy, pandas
- - [R](https://www.r-project.org/) and R Packages required to run the R Interpreter & related R tutorial notebook
+ - [R](https://www.r-project.org/) and R Packages required to run the R Interpreter and the related R tutorial notebook, including:  Knitr, devtools, repr, rCharts, ggplot2, googleVis, mplot, htmltools, base64enc, data.table
  
 ### How to build & run Zeppelin
 
@@ -93,10 +93,10 @@ mvn clean package -Pspark-1.6 -Ppyspark -Phadoop-2.4 -Psparkr -DskipTests
 
 On your host machine browse to `http://localhost:8080/`
 
-If you [turned off port forwarding](#tweakvm) in the `Vagrantfile` browse to `http://192.168.51.52:8080`
+If you [turned off port forwarding](#tweaking-the-virtual-machine) in the `Vagrantfile` browse to `http://192.168.51.52:8080`
 
 
-### [Tweaking the Virtual Machine](id:tweakvm)
+### Tweaking the Virtual Machine
 
 If you plan to run this virtual machine along side other Vagrant images, you may wish to bind the virtual machine to a specific IP address, and not use port fowarding from your local host.
 
@@ -111,7 +111,7 @@ config.vm.network "private_network", ip: "192.168.51.52"
 This approach usually is typically required if running other virtual machines that discover each other directly by IP address, such as Spark Masters and Slaves as well as Cassandra Nodes, Elasticsearch Nodes, and other Spark data sources.  You may wish to launch nodes in virtual machines with IP Addresses in a subnet that works for your local network, such as: 192.168.51.53, 192.168.51.54, 192.168.51.53, etc..
 
 
-### [Python Extras](id:pythonextras)
+### [Python Extras]
 
 With zeppelin running, Numpy, SciPy, Pandas and Matplotlib will be available.  Create a pyspark notebook, and try
 
@@ -163,6 +163,6 @@ plt.title('How fast do you want to go today?')
 show(plt)
 ``` 
 
-### [R Extras](id:rrextras)
+### [R Extras]
 
 With zeppelin running, an R Tutorial notebook will be available.  The R packages required to run the examples and graphs in this tutorial notebook were installed by this virtual machine.
