@@ -56,8 +56,8 @@
     }
   },
   {
-    "interpreterGroup": "sql",
-    "interpreterName": "spark",
+    "interpreterGroup": "spark",
+    "interpreterName": "sql",
     "interpreterClassName": "org.apache.zeppelin.spark.SparkSqlInterpreter",
     "properties": {
       "zeppelin.spark.concurrentSQL": {
@@ -81,8 +81,8 @@
     }
   },
   {
-    "interpreterGroup": "dep",
-    "interpreterName": "spark",
+    "interpreterGroup": "spark",
+    "interpreterName": "dep",
     "interpreterClassName": "org.apache.zeppelin.spark.DepInterpreter",
     "properties": {
       "zeppelin.dep.localrepo": {
@@ -100,8 +100,8 @@
     }
   },
   {
-    "interpreterGroup": "pyspark",
-    "interpreterName": "spark",
+    "interpreterGroup": "spark",
+    "interpreterName": "pyspark",
     "interpreterClassName": "org.apache.zeppelin.spark.PySparkInterpreter",
     "properties": {
       "zeppelin.pyspark.python": {
@@ -111,10 +111,10 @@
         "description": "Python command to run pyspark with"
       }
     }
-  },
+  }/*, //
   {
-    "interpreterGroup": "r",
-    "interpreterName": "spark",
+    "interpreterGroup": "spark",
+    "interpreterName": "r",
     "interpreterClassName": "org.apache.zeppelin.spark.SparkRInterpreter",
     "properties": {
       "zeppelin.R.knitr": {
@@ -142,5 +142,5 @@
         "description": ""
       }
     }
-  }
+  }*/
 ]
