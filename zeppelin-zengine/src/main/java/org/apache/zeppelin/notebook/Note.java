@@ -537,7 +537,9 @@ public class Note implements Serializable, ParagraphJobListener {
   public void beforeStatusChange(Job job, Status before, Status after) {
     if (jobListenerFactory != null) {
       ParagraphJobListener listener = jobListenerFactory.getParagraphJobListener(this);
-      listener.beforeStatusChange(job, before, after);
+      if (listener != null) {
+        listener.beforeStatusChange(job, before, after);
+      }
     }
   }
 
@@ -545,7 +547,9 @@ public class Note implements Serializable, ParagraphJobListener {
   public void afterStatusChange(Job job, Status before, Status after) {
     if (jobListenerFactory != null) {
       ParagraphJobListener listener = jobListenerFactory.getParagraphJobListener(this);
-      listener.afterStatusChange(job, before, after);
+      if (listener != null) {
+        listener.afterStatusChange(job, before, after);
+      }
     }
 
     if (noteEventListener != null) {
@@ -557,7 +561,9 @@ public class Note implements Serializable, ParagraphJobListener {
   public void onProgressUpdate(Job job, int progress) {
     if (jobListenerFactory != null) {
       ParagraphJobListener listener = jobListenerFactory.getParagraphJobListener(this);
-      listener.onProgressUpdate(job, progress);
+      if (listener != null) {
+        listener.onProgressUpdate(job, progress);
+      }
     }
   }
 
@@ -566,7 +572,9 @@ public class Note implements Serializable, ParagraphJobListener {
   public void onOutputAppend(Paragraph paragraph, InterpreterOutput out, String output) {
     if (jobListenerFactory != null) {
       ParagraphJobListener listener = jobListenerFactory.getParagraphJobListener(this);
-      listener.onOutputAppend(paragraph, out, output);
+      if (listener != null) {
+        listener.onOutputAppend(paragraph, out, output);
+      }
     }
   }
 
@@ -574,7 +582,9 @@ public class Note implements Serializable, ParagraphJobListener {
   public void onOutputUpdate(Paragraph paragraph, InterpreterOutput out, String output) {
     if (jobListenerFactory != null) {
       ParagraphJobListener listener = jobListenerFactory.getParagraphJobListener(this);
-      listener.onOutputUpdate(paragraph, out, output);
+      if (listener != null) {
+        listener.onOutputUpdate(paragraph, out, output);
+      }
     }
   }
 
