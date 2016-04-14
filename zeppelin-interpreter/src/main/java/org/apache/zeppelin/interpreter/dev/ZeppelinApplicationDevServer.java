@@ -74,8 +74,7 @@ public class ZeppelinApplicationDevServer extends ZeppelinDevServer {
       logger.info("Create instance " + className);
       try {
         Class<?> appClass = ClassLoader.getSystemClassLoader().loadClass(className);
-        Constructor<?> constructor = appClass.getConstructor(
-            ResourceSet.class, ApplicationContext.class);
+        Constructor<?> constructor = appClass.getConstructor(ApplicationContext.class);
 
         // classPath will be ..../target/classes in dev mode most cases
         String classPath = appClass.getProtectionDomain().getCodeSource().getLocation().getPath();
@@ -83,7 +82,8 @@ public class ZeppelinApplicationDevServer extends ZeppelinDevServer {
         context.out.addResourceSearchPath(classPath + "../../src/main/resources/");
         context.out.addResourceSearchPath(classPath + "../../src/test/resources/");
 
-        app = (Application) constructor.newInstance(resourceSet, getApplicationContext(context));
+        ApplicationContext appContext = getApplicationContext(context);
+        app = (Application) constructor.newInstance(appContext);
       } catch (Exception e) {
         logger.error(e.getMessage(), e);
         return new InterpreterResult(Code.ERROR, e.getMessage());
@@ -94,8 +94,8 @@ public class ZeppelinApplicationDevServer extends ZeppelinDevServer {
       logger.info("Run " + className);
       app.context().out.clear();
       app.context().out.setType(InterpreterResult.Type.ANGULAR);
-      app.run();
-    } catch (ApplicationException e) {
+      app.run(resourceSet);
+    } catch (IOException | ApplicationException e) {
       logger.error(e.getMessage(), e);
       return new InterpreterResult(Code.ERROR, e.getMessage());
     }

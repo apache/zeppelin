@@ -72,8 +72,8 @@ public class RemoteInterpreterServer
   RemoteInterpreterEventClient eventClient = new RemoteInterpreterEventClient();
   private DependencyResolver depLoader;
 
-  private final Map<String, Application> runningApplications =
-      Collections.synchronizedMap(new HashMap<String, Application>());
+  private final Map<String, RunningApplication> runningApplications =
+      Collections.synchronizedMap(new HashMap<String, RunningApplication>());
 
   public RemoteInterpreterServer(int port) throws TTransportException {
     this.port = port;
@@ -776,7 +776,7 @@ public class RemoteInterpreterServer
           noteId,
           paragraphId);
       app = appLoader.load(pkgInfo, context);
-      runningApplications.put(applicationInstanceId, app);
+      runningApplications.put(applicationInstanceId, new RunningApplication(pkgInfo, app));
       return new RemoteApplicationResult(true, "");
     } catch (Exception e) {
       logger.error(e.getMessage(), e);
@@ -787,11 +787,11 @@ public class RemoteInterpreterServer
   @Override
   public RemoteApplicationResult unloadApplication(String applicationInstanceId)
       throws TException {
-    Application app = runningApplications.remove(applicationInstanceId);
-    if (app != null) {
+    RunningApplication runningApplication = runningApplications.remove(applicationInstanceId);
+    if (runningApplication != null) {
       try {
         logger.info("Unloading application {}", applicationInstanceId);
-        app.unload();
+        runningApplication.app.unload();
       } catch (ApplicationException e) {
         logger.error(e.getMessage(), e);
         return new RemoteApplicationResult(false, e.getMessage());
@@ -805,20 +805,27 @@ public class RemoteInterpreterServer
       throws TException {
     logger.info("run application {}", applicationInstanceId);
 
-    Application app = runningApplications.get(applicationInstanceId);
-    if (app == null) {
+    RunningApplication runningApp = runningApplications.get(applicationInstanceId);
+    if (runningApp == null) {
       logger.error("Application instance {} not exists", applicationInstanceId);
       return new RemoteApplicationResult(false, "Application instance does not exists");
     } else {
+      ApplicationContext context = runningApp.app.context();
       try {
-        app.context().out.clear();
-        app.context().out.setType(InterpreterResult.Type.ANGULAR);
-        app.run();
-        String output = new String(app.context().out.toByteArray());
-        logger.info("Update app output " + output);
+        context.out.clear();
+        context.out.setType(InterpreterResult.Type.ANGULAR);
+        ResourceSet resource = appLoader.findRequiredResourceSet(
+            runningApp.pkg.getResources(),
+            context.getNoteId(),
+            context.getParagraphId());
+        for (Resource res : resource) {
+          System.err.println("Resource " + res.get());
+        }
+        runningApp.app.run(resource);
+        String output = new String(context.out.toByteArray());
         eventClient.onAppOutputUpdate(
-            app.context().getNoteId(),
-            app.context().getParagraphId(),
+            context.getNoteId(),
+            context.getParagraphId(),
             applicationInstanceId,
             output);
         return new RemoteApplicationResult(true, "");
@@ -826,5 +833,18 @@ public class RemoteInterpreterServer
         return new RemoteApplicationResult(false, e.getMessage());
       }
     }
+
+
+
   }
+
+  private static class RunningApplication {
+    public final Application app;
+    public final HeliumPackage pkg;
+
+    public RunningApplication(HeliumPackage pkg, Application app) {
+      this.app = app;
+      this.pkg = pkg;
+    }
+  };
 }

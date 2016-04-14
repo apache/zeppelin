@@ -25,18 +25,18 @@ public class ClassLoaderApplication extends Application {
   Application app;
   ClassLoader cl;
   public ClassLoaderApplication(Application app, ClassLoader cl) throws ApplicationException {
-    super(null, null);
+    super(app.context());
     this.app = app;
     this.cl = cl;
   }
 
   @Override
-  public void run() throws ApplicationException {
+  public void run(ResourceSet args) throws ApplicationException {
     // instantiate
     ClassLoader oldcl = Thread.currentThread().getContextClassLoader();
     Thread.currentThread().setContextClassLoader(cl);
     try {
-      app.run();
+      app.run(args);
     } catch (ApplicationException e) {
       throw e;
     } catch (Exception e) {
@@ -68,15 +68,5 @@ public class ClassLoaderApplication extends Application {
 
   public Application getInnerApplication() {
     return app;
-  }
-
-  @Override
-  public ResourceSet args() {
-    return app.args();
-  }
-
-  @Override
-  public ApplicationContext context() {
-    return app.context();
   }
 }

@@ -19,20 +19,17 @@ package org.apache.zeppelin.helium;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.resource.ResourceSet;
 
+import java.io.IOException;
+
 /**
  * Zeppelin Application base
  */
 public abstract class Application {
-  private final ResourceSet args;
+
   private final ApplicationContext context;
 
-  public Application(ResourceSet args, ApplicationContext context) throws ApplicationException {
-    this.args = args;
+  public Application(ApplicationContext context) {
     this.context = context;
-  }
-
-  public ResourceSet args() {
-    return args;
   }
 
   public ApplicationContext context() {
@@ -43,7 +40,8 @@ public abstract class Application {
    * This method can be invoked multiple times before unload(),
    * Either just after application selected or when paragraph re-run after application load
    */
-  public abstract void run() throws ApplicationException;
+  public abstract void run(ResourceSet args)
+      throws ApplicationException, IOException;
 
 
   /**

@@ -23,13 +23,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class HeliumTestApplication extends Application {
   AtomicInteger numRun = new AtomicInteger(0);
-  public HeliumTestApplication(ResourceSet args, ApplicationContext context)
-      throws ApplicationException {
-    super(args, context);
+  public HeliumTestApplication(ApplicationContext context) {
+    super(context);
   }
 
   @Override
-  public void run() throws ApplicationException {
+  public void run(ResourceSet args) throws ApplicationException {
     try {
       context().out.clear();
       context().out.write("Hello world " + numRun.incrementAndGet());

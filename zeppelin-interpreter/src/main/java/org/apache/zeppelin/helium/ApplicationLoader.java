@@ -123,10 +123,9 @@ public class ApplicationLoader {
     ClassLoader cl = appClass.getClassLoader();
     Thread.currentThread().setContextClassLoader(cl);
     try {
-      Constructor<Application> constructor =
-          appClass.getConstructor(ResourceSet.class, ApplicationContext.class);
+      Constructor<Application> constructor = appClass.getConstructor(ApplicationContext.class);
 
-      Application app = new ClassLoaderApplication(constructor.newInstance(resources, context), cl);
+      Application app = new ClassLoaderApplication(constructor.newInstance(context), cl);
       return app;
     } catch (Exception e) {
       throw new ApplicationException(e);
@@ -135,7 +134,7 @@ public class ApplicationLoader {
     }
   }
 
-  private ResourceSet findRequiredResourceSet(
+  public ResourceSet findRequiredResourceSet(
       String [][] requiredResources, String noteId, String paragraphId) {
     if (requiredResources == null || requiredResources.length == 0) {
       return new ResourceSet();

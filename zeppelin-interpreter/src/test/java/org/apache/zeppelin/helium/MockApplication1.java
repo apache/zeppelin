@@ -26,14 +26,14 @@ public class MockApplication1 extends Application {
   boolean unloaded;
   int run;
 
-  public MockApplication1(ResourceSet args, ApplicationContext context) throws ApplicationException {
-    super(args, context);
+  public MockApplication1(ApplicationContext context) {
+    super(context);
     unloaded = false;
     run = 0;
   }
 
   @Override
-  public void run() {
+  public void run(ResourceSet args) {
     run++;
   }
 
