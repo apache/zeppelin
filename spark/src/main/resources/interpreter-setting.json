@@ -1,0 +1,57 @@
+[
+  {
+    "interpreterGroup": "spark",
+    "interpreterName": "spark",
+    "interpreterClassName": "org.apache.zeppelin.spark.SparkInterpreter",
+    "properties": {
+      "spark.executor.memory": {
+        "envName": null,
+        "propertyName": "spark.executor.memory",
+        "defaultValue": "",
+        "description": "Executor memory per worker instance. ex) 512m, 32g"
+      },
+      "args": {
+        "envName": null,
+        "propertyName": null,
+        "defaultValue": "",
+        "description": "spark commandline args"
+      },
+      "zeppelin.spark.useHiveContext": {
+        "envName": "ZEPPELIN_SPARK_USEHIVECONTEXT",
+        "propertyName": "zeppelin.spark.useHiveContext",
+        "defaultValue": "true",
+        "description": "Use HiveContext instead of SQLContext if it is true."
+      },
+      "spark.app.name": {
+        "envName": "SPARK_APP_NAME",
+        "propertyName": "spark.app.name",
+        "defaultValue": "Zeppelin",
+        "description": "The name of spark application."
+      },
+      "zeppelin.spark.printREPLOutput": {
+        "envName": null,
+        "propertyName": null,
+        "defaultValue": "true",
+        "description": "Print REPL output"
+      },
+      "spark.cores.max": {
+        "envName": null,
+        "propertyName": "spark.cores.max",
+        "defaultValue": "",
+        "description": "Total number of cores to use. Empty value uses all available core."
+      },
+      "zeppelin.spark.maxResult": {
+        "envName": "ZEPPELIN_SPARK_MAXRESULT",
+        "propertyName": "zeppelin.spark.maxResult",
+        "defaultValue": "1000",
+        "description": "Max number of SparkSQL result to display."
+      },
+      "master": {
+        "envName": "MASTER",
+        "propertyName": "spark.master",
+        "defaultValue": "local[*]",
+        "description": "Spark master uri. ex) spark://masterhost:7077"
+      }
+    }
+  }
+]

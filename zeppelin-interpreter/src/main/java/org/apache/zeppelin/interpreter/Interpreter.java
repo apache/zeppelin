@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import com.google.gson.annotations.SerializedName;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.slf4j.Logger;
@@ -129,6 +130,7 @@ public abstract class Interpreter {
   protected Properties property;
 
   public Interpreter(Properties property) {
+    logger.debug("Properties: {}", property);
     this.property = property;
   }
 
@@ -140,13 +142,16 @@ public abstract class Interpreter {
     Properties p = new Properties();
     p.putAll(property);
 
-    Map<String, InterpreterProperty> defaultProperties = Interpreter
-        .findRegisteredInterpreterByClassName(getClassName()).getProperties();
-    for (String k : defaultProperties.keySet()) {
-      if (!p.containsKey(k)) {
-        String value = defaultProperties.get(k).getDefaultValue();
-        if (value != null) {
-          p.put(k, defaultProperties.get(k).getDefaultValue());
+    RegisteredInterpreter registeredInterpreter = Interpreter.findRegisteredInterpreterByClassName(
+        getClassName());
+    if (null != registeredInterpreter) {
+      Map<String, InterpreterProperty> defaultProperties = registeredInterpreter.getProperties();
+      for (String k : defaultProperties.keySet()) {
+        if (!p.containsKey(k)) {
+          String value = defaultProperties.get(k).getValue();
+          if (value != null) {
+            p.put(k, defaultProperties.get(k).getValue());
+          }
         }
       }
     }
@@ -155,17 +160,7 @@ public abstract class Interpreter {
   }
 
   public String getProperty(String key) {
-    if (property.containsKey(key)) {
-      return property.getProperty(key);
-    }
-
-    Map<String, InterpreterProperty> defaultProperties = Interpreter
-        .findRegisteredInterpreterByClassName(getClassName()).getProperties();
-    if (defaultProperties.containsKey(key)) {
-      return defaultProperties.get(key).getDefaultValue();
-    }
-
-    return null;
+    return getProperty().getProperty(key);
   }
 
 
@@ -228,8 +223,11 @@ public abstract class Interpreter {
    * Represent registered interpreter class
    */
   public static class RegisteredInterpreter {
-    private String name;
+    @SerializedName("interpreterGroup")
     private String group;
+    @SerializedName("interpreterName")
+    private String name;
+    @SerializedName("interpreterClassName")
     private String className;
     private Map<String, InterpreterProperty> properties;
     private String path;
@@ -267,6 +265,10 @@ public abstract class Interpreter {
       return path;
     }
 
+    public String getInterpreterKey() {
+      return getGroup() + "." + getName();
+    }
+
   }
 
   /**
@@ -287,10 +289,16 @@ public abstract class Interpreter {
     register(name, group, className, new HashMap<String, InterpreterProperty>());
   }
 
+  @Deprecated
   public static void register(String name, String group, String className,
-      Map<String, InterpreterProperty> properties) {
-    registeredInterpreters.put(group + "." + name, new RegisteredInterpreter(
-        name, group, className, properties));
+                              Map<String, InterpreterProperty> properties) {
+    logger.error("Static initialization is deprecated. You should change it to use " +
+    "interpreter-setting.json in your jar or interpreter/{interpreter}/interpreter-setting.json");
+    register(new RegisteredInterpreter(name, group, className, properties));
+  }
+
+  public static void register(RegisteredInterpreter registeredInterpreter) {
+    registeredInterpreters.put(registeredInterpreter.getInterpreterKey(), registeredInterpreter);
   }
 
   public static RegisteredInterpreter findRegisteredInterpreterByClassName(String className) {

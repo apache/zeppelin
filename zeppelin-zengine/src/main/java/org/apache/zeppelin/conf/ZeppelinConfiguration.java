@@ -39,6 +39,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
   private static final long serialVersionUID = 4749305895693848035L;
   private static final Logger LOG = LoggerFactory.getLogger(ZeppelinConfiguration.class);
   private static ZeppelinConfiguration conf;
+  private String interpreterJson;
 
   public ZeppelinConfiguration(URL url) throws ConfigurationException {
     setDelimiterParsingDisabled(true);
@@ -342,6 +343,10 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     return getRelativeDir(ConfVars.ZEPPELIN_INTERPRETER_DIR);
   }
 
+  public String getInterpreterJson() {
+    return getString(ConfVars.ZEPPELIN_INTERPRETER_JSON);
+  }
+
   public String getInterpreterSettingPath() {
     return getRelativeDir(String.format("%s/interpreter.json", getConfDir()));
   }
@@ -480,6 +485,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
         + "org.apache.zeppelin.scalding.ScaldingInterpreter,"
         + "org.apache.zeppelin.jdbc.JDBCInterpreter,"
         + "org.apache.zeppelin.hbase.HbaseInterpreter"),
+    ZEPPELIN_INTERPRETER_JSON("zeppelin.interpreter.setting", "interpreter-setting.json"),
     ZEPPELIN_INTERPRETER_DIR("zeppelin.interpreter.dir", "interpreter"),
     ZEPPELIN_INTERPRETER_LOCALREPO("zeppelin.interpreter.localRepo", "local-repo"),
     ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT("zeppelin.interpreter.connect.timeout", 30000),

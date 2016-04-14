@@ -20,6 +20,7 @@ package org.apache.zeppelin.interpreter;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import com.google.gson.reflect.TypeToken;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.NullArgumentException;
@@ -45,9 +46,13 @@ import org.sonatype.aether.repository.RemoteRepository;
 import java.io.*;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Type;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 
 /**
@@ -112,37 +117,93 @@ public class InterpreterFactory implements InterpreterGroupFactory {
 
   private void init() throws InterpreterException, IOException, RepositoryException {
     ClassLoader oldcl = Thread.currentThread().getContextClassLoader();
+    String interpreterJson = conf.getInterpreterJson();
 
-    // Load classes
+    Type registeredInterpreterListType = new TypeToken<List<RegisteredInterpreter>>() {}.getType();
+    ArrayList<RegisteredInterpreter> registeredInterpreters;
+
+    Boolean registered;
     File[] interpreterDirs = new File(conf.getInterpreterDir()).listFiles();
     if (interpreterDirs != null) {
       for (File path : interpreterDirs) {
-        logger.info("Reading " + path.getAbsolutePath());
-        URL[] urls = null;
+        registered = false;
+        String absolutePath = path.getAbsolutePath();
+        logger.info("Reading " + absolutePath);
+
+        Path jsonPath = Paths.get(absolutePath, interpreterJson);
+        if (Files.exists(jsonPath)) {
+          logger.info("Reading {}", jsonPath.toString());
+          FileReader fileReader = new FileReader(jsonPath.toString());
+          registeredInterpreters = gson.fromJson(fileReader, registeredInterpreterListType);
+
+          registered = registerInterpreters(registeredInterpreters, absolutePath);
+          if (registered) {
+            for (RegisteredInterpreter registeredInterpreter : registeredInterpreters) {
+              logger.info("Interpreter {} found. class={}",
+                  registeredInterpreter.getInterpreterKey(),
+                  registeredInterpreter.getClassName());
+            }
+          }
+        }
+
+        URLClassLoader ccl;
         try {
-          urls = recursiveBuildLibList(path);
+          URL[] urls = recursiveBuildLibList(path);
+          ccl = new URLClassLoader(urls, oldcl);
+          if (!registered) {
+
+            InputStream inputStream = ccl.getResourceAsStream(interpreterJson);
+
+            if (null != inputStream) {
+              logger.info("Reading {} from resources in {}", interpreterJson, absolutePath);
+              registeredInterpreters = gson.fromJson(new InputStreamReader(inputStream),
+                  registeredInterpreterListType);
+              registered = registerInterpreters(registeredInterpreters, absolutePath);
+              if (registered) {
+                for (RegisteredInterpreter registeredInterpreter : registeredInterpreters) {
+                  logger.info("Interpreter {} found. class={}",
+                      registeredInterpreter.getInterpreterKey(),
+                      registeredInterpreter.getClassName());
+                }
+              }
+            }
+          }
+
+          if (!registered) {
+            for (String className : interpreterClassList) {
+              try {
+                // Load classes
+                Class.forName(className, true, ccl);
+                Set<String> interpreterKeys = Interpreter.registeredInterpreters.keySet();
+                for (String interpreterKey : interpreterKeys) {
+                  if (className.equals(
+                      Interpreter.registeredInterpreters.get(interpreterKey).getClassName())) {
+                    Interpreter.registeredInterpreters.get(interpreterKey).setPath(absolutePath);
+                    logger.info("Interpreter " + interpreterKey + " found. class=" + className);
+                    cleanCl.put(absolutePath, ccl);
+                    registered = true;
+                  }
+                }
+              } catch (ClassNotFoundException e) {
+                // nothing to do
+              }
+            }
+          }
         } catch (MalformedURLException e1) {
           logger.error("Can't load jars ", e1);
         }
-        URLClassLoader ccl = new URLClassLoader(urls, oldcl);
 
-        for (String className : interpreterClassList) {
-          try {
-            Class.forName(className, true, ccl);
-            Set<String> keys = Interpreter.registeredInterpreters.keySet();
-            for (String intName : keys) {
-              if (className.equals(
-                  Interpreter.registeredInterpreters.get(intName).getClassName())) {
-                Interpreter.registeredInterpreters.get(intName).setPath(path.getAbsolutePath());
-                logger.info("Interpreter " + intName + " found. class=" + className);
-                cleanCl.put(path.getAbsolutePath(), ccl);
-              }
-            }
-          } catch (ClassNotFoundException e) {
-            // nothing to do
-          }
+        if (!registered) {
+          logger.info("Failed to register Interpreter from {}", absolutePath);
         }
       }
+    }
+
+    for (RegisteredInterpreter registeredInterpreter:
+        Interpreter.registeredInterpreters.values()) {
+      logger.debug("Registered: {} -> {}. Properties: {}",
+          registeredInterpreter.getInterpreterKey(), registeredInterpreter.getClassName(),
+          registeredInterpreter.getProperties());
     }
 
     loadFromFile();
@@ -175,7 +236,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
               }
 
               for (String k : info.getProperties().keySet()) {
-                p.put(k, info.getProperties().get(k).getDefaultValue());
+                p.put(k, info.getProperties().get(k).getValue());
               }
             }
 
@@ -199,6 +260,32 @@ public class InterpreterFactory implements InterpreterGroupFactory {
       logger.info("Interpreter setting group {} : id={}, name={}",
           setting.getGroup(), settingId, setting.getName());
     }
+  }
+
+  private boolean registerInterpreters(List<RegisteredInterpreter> registeredInterpreters,
+                                         String absolutePath) {
+    if (validateRegisterInterpreters(registeredInterpreters)) {
+      for (RegisteredInterpreter registeredInterpreter : registeredInterpreters) {
+        registeredInterpreter.setPath(absolutePath);
+        Interpreter.register(registeredInterpreter);
+      }
+      return true;
+    } else {
+      return false;
+    }
+
+  }
+
+  private boolean validateRegisterInterpreters(List<RegisteredInterpreter> registeredInterpreters) {
+    Boolean isValid = true;
+
+    for (RegisteredInterpreter registeredInterpreter : registeredInterpreters) {
+      isValid &= null != registeredInterpreter.getGroup() &&
+                     null != registeredInterpreter.getName() &&
+                     null != registeredInterpreter.getClassName();
+    }
+
+    return isValid;
   }
 
   private void loadFromFile() throws IOException {
@@ -745,6 +832,8 @@ public class InterpreterFactory implements InterpreterGroupFactory {
       throws InterpreterException {
     logger.info("Create repl {} from {}", className, dirName);
 
+    updatePropertiesFromRegisteredInterpreter(property, className);
+
     ClassLoader oldcl = Thread.currentThread().getContextClassLoader();
     try {
 
@@ -806,11 +895,30 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     int connectTimeout = conf.getInt(ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT);
     String localRepoPath = conf.getInterpreterLocalRepoPath() + "/" + interpreterSettingId;
     int maxPoolSize = conf.getInt(ConfVars.ZEPPELIN_INTERPRETER_MAX_POOL_SIZE);
+
+    updatePropertiesFromRegisteredInterpreter(property, className);
+
     LazyOpenInterpreter intp = new LazyOpenInterpreter(new RemoteInterpreter(
         property, noteId, className, conf.getInterpreterRemoteRunnerPath(),
         interpreterPath, localRepoPath, connectTimeout,
         maxPoolSize, remoteInterpreterProcessListener));
     return intp;
+  }
+
+  private Properties updatePropertiesFromRegisteredInterpreter(Properties properties,
+                                                                  String className) {
+    RegisteredInterpreter registeredInterpreter = Interpreter.findRegisteredInterpreterByClassName(
+        className);
+    if (null != registeredInterpreter) {
+      Map<String, InterpreterProperty> defaultProperties = registeredInterpreter.getProperties();
+      for (String key : defaultProperties.keySet()) {
+        if (!properties.containsKey(key)) {
+          properties.setProperty(key, defaultProperties.get(key).getValue());
+        }
+      }
+    }
+
+    return properties;
   }
 
 
