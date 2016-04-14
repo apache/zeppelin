@@ -39,6 +39,10 @@ import static org.junit.Assert.assertTrue;
  * Unittest for DistributedResourcePool
  */
 public class DistributedResourcePoolTest {
+  private static final String INTERPRETER_SCRIPT =
+          System.getProperty("os.name").startsWith("Windows") ?
+                  "../bin/interpreter.cmd" :
+                  "../bin/interpreter.sh";
   private InterpreterGroup intpGroup1;
   private InterpreterGroup intpGroup2;
   private HashMap<String, String> env;
@@ -60,7 +64,7 @@ public class DistributedResourcePoolTest {
         p,
         "note",
         MockInterpreterResourcePool.class.getName(),
-        new File("../bin/interpreter.sh").getAbsolutePath(),
+        new File(INTERPRETER_SCRIPT).getAbsolutePath(),
         "fake",
         "fakeRepo",
         env,
@@ -78,7 +82,7 @@ public class DistributedResourcePoolTest {
         p,
         "note",
         MockInterpreterResourcePool.class.getName(),
-        new File("../bin/interpreter.sh").getAbsolutePath(),
+        new File(INTERPRETER_SCRIPT).getAbsolutePath(),
         "fake",
         "fakeRepo",        
         env,

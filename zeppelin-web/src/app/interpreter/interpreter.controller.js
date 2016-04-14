@@ -75,7 +75,7 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
       // add missing field of option
       if (!setting.option) {
         setting.option = {};
-      }      
+      }
       if (setting.option.remote === undefined) {
         // remote always true for now
         setting.option.remote = true;
@@ -94,7 +94,7 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
         }).
         error(function (data, status, headers, config) {
           console.log('Error %o %o', status, data.message);
-          ngToast.danger(data.message);
+          ngToast.danger({content: data.message, verticalPosition: 'bottom'});
           form.$show();
         });
     }
@@ -210,7 +210,7 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
       }).
       error(function(data, status, headers, config) {
         console.log('Error %o %o', status, data.message);
-        ngToast.danger(data.message);
+        ngToast.danger({content: data.message, verticalPosition: 'bottom'});
       });
   };
 

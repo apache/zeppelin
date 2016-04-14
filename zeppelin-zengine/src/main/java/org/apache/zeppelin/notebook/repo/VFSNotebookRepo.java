@@ -61,7 +61,11 @@ public class VFSNotebookRepo implements NotebookRepo {
     this.conf = conf;
 
     try {
-      filesystemRoot = new URI(conf.getNotebookDir());
+      if (conf.isWindowsPath(conf.getNotebookDir())) {
+        filesystemRoot = new File(conf.getNotebookDir()).toURI();
+      } else {
+        filesystemRoot = new URI(conf.getNotebookDir());
+      }
     } catch (URISyntaxException e1) {
       throw new IOException(e1);
     }
@@ -73,8 +77,6 @@ public class VFSNotebookRepo implements NotebookRepo {
       } catch (URISyntaxException e) {
         throw new IOException(e);
       }
-    } else {
-      this.filesystemRoot = filesystemRoot;
     }
 
     fsManager = VFS.getManager();
@@ -135,7 +137,7 @@ public class VFSNotebookRepo implements NotebookRepo {
         if (info != null) {
           infos.add(info);
         }
-      } catch (IOException e) {
+      } catch (Exception e) {
         logger.error("Can't read note " + f.getName().toString(), e);
       }
     }

@@ -17,14 +17,14 @@
 'use strict';
 (function() {
     var zeppelinWebApp = angular.module('zeppelinWebApp', [
-            'ngAnimate',
             'ngCookies',
+            'ngAnimate',
             'ngRoute',
             'ngSanitize',
             'angular-websocket',
             'ui.ace',
             'ui.bootstrap',
-            'ui.sortable',
+            'as.sortable',
             'ngTouch',
             'ngDragDrop',
             'angular.filter',
@@ -81,8 +81,7 @@
             ngToastProvider.configure({
                 dismissButton: true,
                 dismissOnClick: false,
-                timeout: 6000,
-                verticalPosition: 'bottom'
+                timeout: 6000
             });
         });
 

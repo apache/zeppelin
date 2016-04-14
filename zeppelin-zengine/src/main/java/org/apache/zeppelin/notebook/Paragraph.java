@@ -17,6 +17,7 @@
 
 package org.apache.zeppelin.notebook;
 
+import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.helium.HeliumPackage;
 import org.apache.zeppelin.user.AuthenticationInfo;
@@ -241,6 +242,12 @@ public class Paragraph extends Job implements Serializable, Cloneable {
       String scriptBody = getScriptBody();
       Map<String, Input> inputs = Input.extractSimpleQueryParam(scriptBody); // inputs will be built
                                                                              // from script body
+
+      final AngularObjectRegistry angularRegistry = repl.getInterpreterGroup()
+              .getAngularObjectRegistry();
+
+      scriptBody = extractVariablesFromAngularRegistry(scriptBody, inputs, angularRegistry);
+
       settings.setForms(inputs);
       script = Input.getSimpleQuery(settings.getParams(), scriptBody);
     }
@@ -404,7 +411,6 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     return paraClone;
   }
 
-
   private String getApplicationId(HeliumPackage pkg) {
     return "app_" + getNote().getId() + "-" + getId() + pkg.getName();
   }
@@ -441,5 +447,26 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     synchronized (apps) {
       return new LinkedList<ApplicationState>(apps);
     }
+  }
+
+  String extractVariablesFromAngularRegistry(String scriptBody, Map<String, Input> inputs,
+                                             AngularObjectRegistry angularRegistry) {
+
+    final String noteId = this.getNote().getId();
+    final String paragraphId = this.getId();
+
+    final Set<String> keys = new HashSet<>(inputs.keySet());
+
+    for (String varName : keys) {
+      final AngularObject paragraphScoped = angularRegistry.get(varName, noteId, paragraphId);
+      final AngularObject noteScoped = angularRegistry.get(varName, noteId, null);
+      final AngularObject angularObject = paragraphScoped != null ? paragraphScoped : noteScoped;
+      if (angularObject != null) {
+        inputs.remove(varName);
+        final String pattern = "[$][{]\\s*" + varName + "\\s*(?:=[^}]+)?[}]";
+        scriptBody = scriptBody.replaceAll(pattern, angularObject.get().toString());
+      }
+    }
+    return scriptBody;
   }
 }

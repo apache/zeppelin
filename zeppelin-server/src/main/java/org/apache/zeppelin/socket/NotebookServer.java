@@ -192,6 +192,9 @@ public class NotebookServer extends WebSocketServlet implements
           case ANGULAR_OBJECT_CLIENT_BIND:
             angularObjectClientBind(conn, userAndRoles, notebook, messagereceived);
             break;
+          case ANGULAR_OBJECT_CLIENT_UNBIND:
+            angularObjectClientUnbind(conn, userAndRoles, notebook, messagereceived);
+            break;
           case LIST_CONFIGURATIONS:
             sendAllConfigurations(conn, userAndRoles, notebook);
             break;
@@ -766,6 +769,45 @@ public class NotebookServer extends WebSocketServlet implements
     }
   }
 
+  /**
+   * Remove the given Angular variable to the target
+   * interpreter(s) angular registry given a noteId
+   * and an optional list of paragraph id(s)
+   * @param conn
+   * @param notebook
+   * @param fromMessage
+   * @throws Exception
+   */
+  protected void angularObjectClientUnbind(NotebookSocket conn, HashSet<String> userAndRoles,
+                                           Notebook notebook, Message fromMessage)
+      throws Exception{
+    String noteId = fromMessage.getType("noteId");
+    String varName = fromMessage.getType("name");
+    String paragraphId = fromMessage.getType("paragraphId");
+    Note note = notebook.getNote(noteId);
+
+    if (paragraphId == null) {
+      throw new IllegalArgumentException("target paragraph not specified for " +
+              "angular value unBind");
+    }
+
+    if (note != null) {
+      final InterpreterGroup interpreterGroup = findInterpreterGroupForParagraph(note,
+              paragraphId);
+
+      final AngularObjectRegistry registry = interpreterGroup.getAngularObjectRegistry();
+
+      if (registry instanceof RemoteAngularObjectRegistry) {
+        RemoteAngularObjectRegistry remoteRegistry = (RemoteAngularObjectRegistry) registry;
+        removeAngularFromRemoteRegistry(noteId, paragraphId, varName, remoteRegistry,
+                interpreterGroup.getId(), conn);
+      } else {
+        removeAngularObjectFromLocalRepo(noteId, paragraphId, varName, registry,
+                interpreterGroup.getId(), conn);
+      }
+    }
+  }
+
   private InterpreterGroup findInterpreterGroupForParagraph(Note note, String paragraphId)
       throws Exception {
     final Paragraph paragraph = note.getParagraph(paragraphId);
@@ -791,6 +833,20 @@ public class NotebookServer extends WebSocketServlet implements
             conn);
   }
 
+  private void removeAngularFromRemoteRegistry(String noteId, String paragraphId,
+    String varName, RemoteAngularObjectRegistry remoteRegistry,
+    String interpreterGroupId, NotebookSocket conn) {
+    final AngularObject ao = remoteRegistry.removeAndNotifyRemoteProcess(varName, noteId,
+            paragraphId);
+    this.broadcastExcept(
+            noteId,
+            new Message(OP.ANGULAR_OBJECT_REMOVE).put("angularObject", ao)
+                    .put("interpreterGroupId", interpreterGroupId)
+                    .put("noteId", noteId)
+                    .put("paragraphId", paragraphId),
+            conn);
+  }
+
   private void pushAngularObjectToLocalRepo(String noteId, String paragraphId, String varName,
     Object varValue, AngularObjectRegistry registry,
     String interpreterGroupId, NotebookSocket conn) {
@@ -808,6 +864,20 @@ public class NotebookServer extends WebSocketServlet implements
                     .put("noteId", noteId)
                     .put("paragraphId", paragraphId),
             conn);
+  }
+
+  private void removeAngularObjectFromLocalRepo(String noteId, String paragraphId, String varName,
+    AngularObjectRegistry registry, String interpreterGroupId, NotebookSocket conn) {
+    final AngularObject removed = registry.remove(varName, noteId, paragraphId);
+    if (removed != null) {
+      this.broadcastExcept(
+              noteId,
+              new Message(OP.ANGULAR_OBJECT_REMOVE).put("angularObject", removed)
+                      .put("interpreterGroupId", interpreterGroupId)
+                      .put("noteId", noteId)
+                      .put("paragraphId", paragraphId),
+              conn);
+    }
   }
 
   private void moveParagraph(NotebookSocket conn, HashSet<String> userAndRoles, Notebook notebook,

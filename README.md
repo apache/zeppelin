@@ -129,6 +129,7 @@ Available profiles are
 -Pmapr40
 -Pmapr41
 -Pmapr50
+-Pmapr51
 ```
 
 

@@ -41,8 +41,8 @@ import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.apache.zeppelin.notebook.repo.NotebookRepoSync;
 import org.apache.zeppelin.rest.*;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
-import org.apache.zeppelin.search.SearchService;
 import org.apache.zeppelin.search.LuceneSearch;
+import org.apache.zeppelin.search.SearchService;
 import org.apache.zeppelin.socket.NotebookServer;
 import org.eclipse.jetty.server.AbstractConnector;
 import org.eclipse.jetty.server.Handler;
@@ -94,7 +94,7 @@ public class ZeppelinServer extends Application {
     this.notebookRepo = new NotebookRepoSync(conf);
     this.notebookIndex = new LuceneSearch();
     this.notebookAuthorization = new NotebookAuthorization(conf);
-    notebook = new Notebook(conf, 
+    notebook = new Notebook(conf,
         notebookRepo, schedulerFactory, replFactory, notebookWsServer,
             notebookIndex, notebookAuthorization);
 
@@ -188,8 +188,9 @@ public class ZeppelinServer extends Application {
 
   private static ServletContextHandler setupNotebookServer(ZeppelinConfiguration conf) {
     notebookWsServer = new NotebookServer();
+    String maxTextMessageSize = conf.getWebsocketMaxTextMessageSize();
     final ServletHolder servletHolder = new ServletHolder(notebookWsServer);
-    servletHolder.setInitParameter("maxTextMessageSize", "1024000");
+    servletHolder.setInitParameter("maxTextMessageSize", maxTextMessageSize);
 
     final ServletContextHandler cxfContext = new ServletContextHandler(
         ServletContextHandler.SESSIONS);
@@ -249,6 +250,9 @@ public class ZeppelinServer extends Application {
     cxfContext.addFilter(new FilterHolder(CorsFilter.class), "/*",
         EnumSet.allOf(DispatcherType.class));
 
+    cxfContext.setInitParameter("shiroConfigLocations",
+        new File(conf.getShiroPath()).toURI().toString());
+
     cxfContext.addFilter(org.apache.shiro.web.servlet.ShiroFilter.class, "/*",
         EnumSet.allOf(DispatcherType.class));
 
@@ -306,6 +310,9 @@ public class ZeppelinServer extends Application {
 
     SecurityRestApi securityApi = new SecurityRestApi();
     singletons.add(securityApi);
+
+    LoginRestApi loginRestApi = new LoginRestApi();
+    singletons.add(loginRestApi);
 
     ConfigurationsRestApi settingsApi = new ConfigurationsRestApi(notebook);
     singletons.add(settingsApi);
