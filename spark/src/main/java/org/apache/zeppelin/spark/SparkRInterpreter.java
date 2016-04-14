@@ -42,6 +42,7 @@ public class SparkRInterpreter extends Interpreter {
   private static String renderOptions;
   private ZeppelinR zeppelinR;
 
+/*
   static {
     Interpreter.register(
       "r",
@@ -66,6 +67,7 @@ public class SparkRInterpreter extends Interpreter {
               "")
           .build());
   }
+*/
 
 
   public SparkRInterpreter(Properties property) {

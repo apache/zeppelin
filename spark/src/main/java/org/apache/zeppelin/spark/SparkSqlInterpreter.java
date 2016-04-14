@@ -46,6 +46,7 @@ public class SparkSqlInterpreter extends Interpreter {
   Logger logger = LoggerFactory.getLogger(SparkSqlInterpreter.class);
   AtomicInteger num = new AtomicInteger(0);
 
+/*
   static {
     Interpreter.register(
         "sql",
@@ -66,6 +67,7 @@ public class SparkSqlInterpreter extends Interpreter {
                 "Show full exception stacktrace for SQL queries if set to true.")
             .build());
   }
+*/
 
   private String getJobGroup(InterpreterContext context){
     return "zeppelin-" + context.getParagraphId();

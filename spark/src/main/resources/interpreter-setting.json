@@ -24,6 +24,7 @@
       },
       "spark.app.name": {
         "envName": "SPARK_APP_NAME",
+
         "propertyName": "spark.app.name",
         "defaultValue": "Zeppelin",
         "description": "The name of spark application."
@@ -51,6 +52,94 @@
         "propertyName": "spark.master",
         "defaultValue": "local[*]",
         "description": "Spark master uri. ex) spark://masterhost:7077"
+      }
+    }
+  },
+  {
+    "interpreterGroup": "sql",
+    "interpreterName": "spark",
+    "interpreterClassName": "org.apache.zeppelin.spark.SparkSqlInterpreter",
+    "properties": {
+      "zeppelin.spark.concurrentSQL": {
+        "envName": "ZEPPELIN_SPARK_CONCURRENTSQL",
+        "propertyName": "zeppelin.spark.concurrentSQL",
+        "defaultValue": "false",
+        "description": "Execute multiple SQL concurrently if set true."
+      },
+      "zeppelin.spark.sql.stacktrace": {
+        "envName": "ZEPPELIN_SPARK_SQL_STACKTRACE",
+        "propertyName": "zeppelin.spark.sql.stacktrace",
+        "defaultValue": "false",
+        "description": "Show full exception stacktrace for SQL queries if set to true."
+      },
+      "zeppelin.spark.maxResult": {
+        "envName": "ZEPPELIN_SPARK_MAXRESULT",
+        "propertyName": "zeppelin.spark.maxResult",
+        "defaultValue": "1000",
+        "description": "Max number of SparkSQL result to display."
+      }
+    }
+  },
+  {
+    "interpreterGroup": "dep",
+    "interpreterName": "spark",
+    "interpreterClassName": "org.apache.zeppelin.spark.DepInterpreter",
+    "properties": {
+      "zeppelin.dep.localrepo": {
+        "envName": "ZEPPELIN_DEP_LOCALREPO",
+        "propertyName": null,
+        "defaultValue": "local-repo",
+        "description": "local repository for dependency loader"
+      },
+      "zeppelin.dep.additionalRemoteRepository": {
+        "envName": null,
+        "propertyName": null,
+        "defaultValue": "spark-packages,http://dl.bintray.com/spark-packages/maven,false;",
+        "description": "A list of \u0027id,remote-repository-URL,is-snapshot;\u0027 for each remote repository."
+      }
+    }
+  },
+  {
+    "interpreterGroup": "pyspark",
+    "interpreterName": "spark",
+    "interpreterClassName": "org.apache.zeppelin.spark.PySparkInterpreter",
+    "properties": {
+      "zeppelin.pyspark.python": {
+        "envName": "PYSPARK_PYTHON",
+        "propertyName": null,
+        "defaultValue": "python",
+        "description": "Python command to run pyspark with"
+      }
+    }
+  },
+  {
+    "interpreterGroup": "r",
+    "interpreterName": "spark",
+    "interpreterClassName": "org.apache.zeppelin.spark.SparkRInterpreter",
+    "properties": {
+      "zeppelin.R.knitr": {
+        "envName": "ZEPPELIN_R_KNITR",
+        "propertyName": "zeppelin.R.knitr",
+        "defaultValue": "true",
+        "description": "whether use knitr or not"
+      },
+      "zeppelin.R.cmd": {
+        "envName": "ZEPPELIN_R_CMD",
+        "propertyName": "zeppelin.R.cmd",
+        "defaultValue": "R",
+        "description": "R repl path"
+      },
+      "zeppelin.R.image.width": {
+        "envName": "ZEPPELIN_R_IMAGE_WIDTH",
+        "propertyName": "zeppelin.R.image.width",
+        "defaultValue": "100%",
+        "description": ""
+      },
+      "zeppelin.R.render.options": {
+        "envName": "ZEPPELIN_R_RENDER_OPTIONS",
+        "propertyName": "zeppelin.R.render.options",
+        "defaultValue": "out.format \u003d \u0027html\u0027, comment \u003d NA, echo \u003d FALSE, results \u003d \u0027asis\u0027, message \u003d F, warning \u003d F",
+        "description": ""
       }
     }
   }

@@ -63,6 +63,7 @@ import scala.tools.nsc.settings.MutableSettings.PathSetting;
  */
 public class DepInterpreter extends Interpreter {
 
+/*
   static {
     Interpreter.register(
         "dep",
@@ -78,6 +79,7 @@ public class DepInterpreter extends Interpreter {
             .build());
 
   }
+*/
 
   private SparkIMain intp;
   private ByteArrayOutputStream out;
