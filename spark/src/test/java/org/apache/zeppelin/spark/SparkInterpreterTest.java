@@ -67,6 +67,7 @@ public class SparkInterpreterTest {
     Properties p = new Properties();
     p.setProperty("master", "local[*]");
     p.setProperty("spark.app.name", "Zeppelin Test");
+    p.setProperty("zeppelin.spark.useHiveContext", "true");
     p.setProperty("zeppelin.spark.maxResult", "1000");
 
     return p;
