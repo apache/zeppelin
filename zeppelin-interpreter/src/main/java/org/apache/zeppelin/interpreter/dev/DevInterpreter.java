@@ -114,4 +114,8 @@ public class DevInterpreter extends Interpreter {
   public void setInterpreterEvent(InterpreterEvent event) {
     this.interpreterEvent = event;
   }
+
+  public InterpreterEvent getInterpreterEvent() {
+    return interpreterEvent;
+  }
 }

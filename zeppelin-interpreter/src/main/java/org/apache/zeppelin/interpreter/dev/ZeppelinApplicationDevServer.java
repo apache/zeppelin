@@ -92,6 +92,7 @@ public class ZeppelinApplicationDevServer extends ZeppelinDevServer {
 
     try {
       logger.info("Run " + className);
+      app.context().out.clear();
       app.context().out.setType(InterpreterResult.Type.ANGULAR);
       app.run();
     } catch (ApplicationException e) {

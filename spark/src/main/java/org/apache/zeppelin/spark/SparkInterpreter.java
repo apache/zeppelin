@@ -837,8 +837,6 @@ public class SparkInterpreter extends Interpreter {
 
     Object lastObj = getValue(varName);
     if (lastObj != null) {
-      logger.info("Put LastValue {} {} {} into ResourcePool",
-          varName, lastObj, lastObj.getClass().getName());
       ResourcePool resourcePool = context.getResourcePool();
       resourcePool.put(context.getNoteId(), context.getParagraphId(),
           WellKnownResourceName.ZeppelinReplResult.toString(), lastObj);

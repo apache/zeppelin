@@ -21,6 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -153,11 +154,7 @@ public class InterpreterOutput extends OutputStream {
    * @throws IOException
    */
   public void write(URL url) throws IOException {
-    if ("file".equals(url.getProtocol())) {
-      write(new File(url.getPath()));
-    } else {
-      outList.add(url);
-    }
+    outList.add(url);
   }
 
   public void addResourceSearchPath(String path) {
@@ -168,8 +165,6 @@ public class InterpreterOutput extends OutputStream {
     // search file under provided paths first, for dev mode
     for (String path : resourceSearchPaths) {
       File res = new File(path + "/" + resourceName);
-      logger.info("path = " + path + ", res = " + resourceName);
-      logger.info("Search resource " + res.getAbsolutePath());
       if (res.isFile()) {
         write(res);
         return;

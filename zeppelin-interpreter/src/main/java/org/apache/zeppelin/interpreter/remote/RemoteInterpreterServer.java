@@ -812,9 +812,17 @@ public class RemoteInterpreterServer
     } else {
       try {
         app.context().out.clear();
+        app.context().out.setType(InterpreterResult.Type.ANGULAR);
         app.run();
+        String output = new String(app.context().out.toByteArray());
+        logger.info("Update app output " + output);
+        eventClient.onAppOutputUpdate(
+            app.context().getNoteId(),
+            app.context().getParagraphId(),
+            applicationInstanceId,
+            output);
         return new RemoteApplicationResult(true, "");
-      } catch (ApplicationException e) {
+      } catch (ApplicationException | IOException e) {
         return new RemoteApplicationResult(false, e.getMessage());
       }
     }
