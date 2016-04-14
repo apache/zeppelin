@@ -293,7 +293,8 @@ public abstract class Interpreter {
   public static void register(String name, String group, String className,
                               Map<String, InterpreterProperty> properties) {
     logger.error("Static initialization is deprecated. You should change it to use " +
-    "interpreter-setting.json in your jar or interpreter/{interpreter}/interpreter-setting.json");
+                     "interpreter-setting.json in your jar or " +
+                     "interpreter/{interpreter}/interpreter-setting.json");
     register(new RegisteredInterpreter(name, group, className, properties));
   }
 
