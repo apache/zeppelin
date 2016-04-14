@@ -160,6 +160,8 @@ public abstract class Interpreter {
   }
 
   public String getProperty(String key) {
+    logger.debug("key: {}, value: {}", key, getProperty().getProperty(key));
+
     return getProperty().getProperty(key);
   }
 

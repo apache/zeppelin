@@ -912,7 +912,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     if (null != registeredInterpreter) {
       Map<String, InterpreterProperty> defaultProperties = registeredInterpreter.getProperties();
       for (String key : defaultProperties.keySet()) {
-        if (!properties.containsKey(key)) {
+        if (!properties.containsKey(key) && null != defaultProperties.get(key).getValue()) {
           properties.setProperty(key, defaultProperties.get(key).getValue());
         }
       }
