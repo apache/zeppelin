@@ -169,7 +169,7 @@ public class ApplicationLoader {
         boolean found = false;
 
         for (Resource r : resources) {
-          if (require.startsWith(":") && r.getClassName().equals(require)) {
+          if (require.startsWith(":") && r.getClassName().equals(require.substring(1))) {
             found = true;
           } else if (r.getResourceId().getName().equals(require)) {
             found = true;
