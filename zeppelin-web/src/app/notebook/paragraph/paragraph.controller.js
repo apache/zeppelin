@@ -179,13 +179,11 @@ angular.module('zeppelinWebApp')
       if (!data.paragraphId || data.paragraphId === $scope.paragraph.id) {
         scope = paragraphScope;
         registry = angularObjectRegistry;
-        console.log("paragraph scope");
       } else {
         var app = _.find($scope.apps, { id: data.paragraphId});
         if (app) {
           scope = getAppScope(app);
           registry = getAppRegistry(app);
-          console.log("app scope");
         } else {
           // no matching app in this paragraph
           return;
