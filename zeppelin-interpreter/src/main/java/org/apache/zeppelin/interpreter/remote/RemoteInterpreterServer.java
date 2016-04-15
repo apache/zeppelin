@@ -146,8 +146,8 @@ public class RemoteInterpreterServer
       //Happens during tests.
       if (prop == null)
         prop = new Properties();
-      String resourcePoolClassName = (String) prop.getProperty("ResourcePoolClass",
-              "org.apache.zeppelin.resource.DistributedResourcePool");
+      String resourcePoolClassName = (String) prop.getProperty(
+          "zeppelin.interpreter.resourcePoolClass");
       logger.debug("Getting resource pool {}", resourcePoolClassName);
       Class resourcePoolClass = Class.forName(resourcePoolClassName);
       
