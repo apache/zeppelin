@@ -62,25 +62,6 @@ import scala.tools.nsc.settings.MutableSettings.PathSetting;
  *
  */
 public class DepInterpreter extends Interpreter {
-
-/*
-  static {
-    Interpreter.register(
-        "dep",
-        "spark",
-        DepInterpreter.class.getName(),
-        new InterpreterPropertyBuilder()
-            .add("zeppelin.dep.localrepo",
-                getSystemDefault("ZEPPELIN_DEP_LOCALREPO", null, "local-repo"),
-                "local repository for dependency loader")
-            .add("zeppelin.dep.additionalRemoteRepository",
-                "spark-packages,http://dl.bintray.com/spark-packages/maven,false;",
-                "A list of 'id,remote-repository-URL,is-snapshot;' for each remote repository.")
-            .build());
-
-  }
-*/
-
   private SparkIMain intp;
   private ByteArrayOutputStream out;
   private SparkDependencyContext depc;

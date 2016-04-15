@@ -46,29 +46,6 @@ public class SparkSqlInterpreter extends Interpreter {
   Logger logger = LoggerFactory.getLogger(SparkSqlInterpreter.class);
   AtomicInteger num = new AtomicInteger(0);
 
-/*
-  static {
-    Interpreter.register(
-        "sql",
-        "spark",
-        SparkSqlInterpreter.class.getName(),
-        new InterpreterPropertyBuilder()
-            .add("zeppelin.spark.maxResult",
-                SparkInterpreter.getSystemDefault("ZEPPELIN_SPARK_MAXRESULT",
-                    "zeppelin.spark.maxResult", "1000"),
-                "Max number of SparkSQL result to display.")
-            .add("zeppelin.spark.concurrentSQL",
-                SparkInterpreter.getSystemDefault("ZEPPELIN_SPARK_CONCURRENTSQL",
-                    "zeppelin.spark.concurrentSQL", "false"),
-                "Execute multiple SQL concurrently if set true.")
-            .add("zeppelin.spark.sql.stacktrace",
-                SparkInterpreter.getSystemDefault("ZEPPELIN_SPARK_SQL_STACKTRACE",
-                    "zeppelin.spark.sql.stacktrace", "false"),
-                "Show full exception stacktrace for SQL queries if set to true.")
-            .build());
-  }
-*/
-
   private String getJobGroup(InterpreterContext context){
     return "zeppelin-" + context.getParagraphId();
   }

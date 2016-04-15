@@ -39,7 +39,6 @@ public class ZeppelinConfiguration extends XMLConfiguration {
   private static final long serialVersionUID = 4749305895693848035L;
   private static final Logger LOG = LoggerFactory.getLogger(ZeppelinConfiguration.class);
   private static ZeppelinConfiguration conf;
-  private String interpreterJson;
 
   public ZeppelinConfiguration(URL url) throws ConfigurationException {
     setDelimiterParsingDisabled(true);

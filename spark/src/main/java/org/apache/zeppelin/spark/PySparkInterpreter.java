@@ -77,19 +77,6 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
   private String scriptPath;
   boolean pythonscriptRunning = false;
 
-/*
-  static {
-    Interpreter.register(
-        "pyspark",
-        "spark",
-        PySparkInterpreter.class.getName(),
-        new InterpreterPropertyBuilder()
-          .add("zeppelin.pyspark.python",
-               SparkInterpreter.getSystemDefault("PYSPARK_PYTHON", null, "python"),
-               "Python command to run pyspark with").build());
-  }
-*/
-
   public PySparkInterpreter(Properties property) {
     super(property);
 
