@@ -198,6 +198,8 @@ public class InterpreterFactory {
       logger.info("Interpreter setting group {} : id={}, name={}",
           setting.getGroup(), settingId, setting.getName());
     }
+    
+    
   }
 
   private void loadFromFile() throws IOException {
@@ -234,16 +236,19 @@ public class InterpreterFactory {
       // enable/disable option on GUI).
       // previously created setting should turn this feature on here.
       setting.getOption().setRemote(true);
-
+      
+      Properties mergedProperties = 
+          this.getInterpreterPropertiesFromZeppelinConf();
+      mergedProperties.putAll(setting.getProperties());;
+      
       InterpreterSetting intpSetting = new InterpreterSetting(
           setting.id(),
           setting.getName(),
           setting.getGroup(),
           setting.getInterpreterInfos(),
-          setting.getProperties(),
+          mergedProperties,
           setting.getDependencies(),
           setting.getOption());
-
       InterpreterGroup interpreterGroup = createInterpreterGroup(setting.id(), setting.getOption());
       intpSetting.setInterpreterGroup(interpreterGroup);
 
@@ -259,6 +264,16 @@ public class InterpreterFactory {
         }
       }
     }
+  }
+  
+  private Properties getInterpreterPropertiesFromZeppelinConf() {
+    Iterator<String> keySet = this.conf.getKeys("zeppelin.interpreter");
+    Properties p = new Properties();
+    while (keySet.hasNext()) {
+      String key = keySet.next();
+      p.setProperty(key, this.conf.getProperty(key).toString());
+    }
+    return p; 
   }
 
   private void loadInterpreterDependencies(InterpreterSetting intSetting)

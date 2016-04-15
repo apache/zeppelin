@@ -489,7 +489,9 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     // Allows a way to specify a ',' separated list of allowed origins for rest and websockets
     // i.e. http://localhost:8080
     ZEPPELIN_ALLOWED_ORIGINS("zeppelin.server.allowed.origins", "*"),
-    ZEPPELIN_ANONYMOUS_ALLOWED("zeppelin.anonymous.allowed", true);
+    ZEPPELIN_ANONYMOUS_ALLOWED("zeppelin.anonymous.allowed", true),
+    ZEPPELIN_RESOURCE_POOL_CLASS("zeppelin.interpreter.resourcePoolClass", 
+        "org.apacheorg.apache.zeppelin.resource.DistributedResourcePool");
 
     private String varName;
     @SuppressWarnings("rawtypes")
