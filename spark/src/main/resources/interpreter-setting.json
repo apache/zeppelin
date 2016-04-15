@@ -111,7 +111,7 @@
         "description": "Python command to run pyspark with"
       }
     }
-  }/*, //
+  },
   {
     "interpreterGroup": "spark",
     "interpreterName": "r",
@@ -142,5 +142,5 @@
         "description": ""
       }
     }
-  }*/
+  }
 ]
