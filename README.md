@@ -116,7 +116,7 @@ enable PySpark support for local mode
 enable 3rd party vendor repository (cloudera)
 
 
-##### -Pmapr[version] (optional)
+##### -Pmapr[version] \(optional)
 
 For the MapR Hadoop Distribution, these profiles will handle the Hadoop version. As MapR allows different versions
 of Spark to be installed, you should specify which version of Spark is installed on the cluster by adding a Spark profile (-Pspark-1.2, -Pspark-1.3, etc.) as needed. For Hive, check the hive/pom.xml and adjust the version installed as well. The correct Maven
