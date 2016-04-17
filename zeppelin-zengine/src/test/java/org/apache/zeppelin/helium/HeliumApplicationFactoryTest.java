@@ -63,11 +63,11 @@ public class HeliumApplicationFactoryTest implements JobListenerFactory {
     confDir.mkdirs();
     notebookDir = new File(tmpDir + "/notebook");
     notebookDir.mkdirs();
-    System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_CONF_DIR.getVarName(), confDir.getAbsolutePath());
+    System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_CONF_DIR.getVarName(), tmpDir.getAbsolutePath() + "/conf");
     System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_DIR.getVarName(), notebookDir.getAbsolutePath());
     System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETERS.getVarName(), "org.apache.zeppelin.interpreter.mock.MockInterpreter1,org.apache.zeppelin.interpreter.mock.MockInterpreter2");
 
-    conf = ZeppelinConfiguration.create();
+    conf = new ZeppelinConfiguration();
 
     this.schedulerFactory = new SchedulerFactory();
 
@@ -104,6 +104,8 @@ public class HeliumApplicationFactoryTest implements JobListenerFactory {
   @After
   public void tearDown() throws Exception {
     FileUtils.deleteDirectory(tmpDir);
+    System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_CONF_DIR.getVarName(),
+        ZeppelinConfiguration.ConfVars.ZEPPELIN_CONF_DIR.getStringValue());
   }
 
 

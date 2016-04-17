@@ -27,6 +27,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.NullArgumentException;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
@@ -67,20 +68,7 @@ public class InterpreterFactoryTest {
 
   @After
   public void tearDown() throws Exception {
-    delete(tmpDir);
-  }
-
-  private void delete(File file){
-    if(file.isFile()) file.delete();
-    else if(file.isDirectory()){
-      File [] files = file.listFiles();
-      if(files!=null && files.length>0){
-        for(File f : files){
-          delete(f);
-        }
-      }
-      file.delete();
-    }
+    FileUtils.deleteDirectory(tmpDir);
   }
 
   @Test
