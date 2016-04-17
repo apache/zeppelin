@@ -20,17 +20,22 @@ Spark Interpreter group, which consisted of 4 interpreters.
   <tr>
     <td>%spark</td>
     <td>SparkInterpreter</td>
-    <td>Creates SparkContext and provides scala environment</td>
+    <td>Creates a SparkContext and provides a scala environment</td>
   </tr>
   <tr>
     <td>%pyspark</td>
     <td>PySparkInterpreter</td>
-    <td>Provides python environment</td>
+    <td>Provides a python environment</td>
+  </tr>
+  <tr>
+    <td>%r</td>
+    <td>SparkRInterpreter</td>
+    <td>Provides an R environment with SparkR support</td>
   </tr>
   <tr>
     <td>%sql</td>
     <td>SparkSQLInterpreter</td>
-    <td>Provides SQL environment</td>
+    <td>Provides a SQL environment</td>
   </tr>
   <tr>
     <td>%dep</td>
@@ -40,8 +45,8 @@ Spark Interpreter group, which consisted of 4 interpreters.
 </table>
 
 ## Configuration
-Zeppelin provides the below properties for Spark interpreter. 
-You can also set other Spark properties which are not listed in the table. If so, please refer to [Spark Available Properties](http://spark.apache.org/docs/latest/configuration.html#available-properties).
+The Spark interpreter can be configured with properties provided by Zeppelin. 
+You can also set other Spark properties which are not listed in the table. For a list of additional properties, refer to [Spark Available Properties](http://spark.apache.org/docs/latest/configuration.html#available-properties).
 <table class="table-configuration">
   <tr>
     <th>Property</th>
