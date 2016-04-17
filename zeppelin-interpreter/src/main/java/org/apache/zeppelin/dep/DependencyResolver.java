@@ -81,18 +81,15 @@ public class DependencyResolver extends AbstractDependencyResolver {
       return loadFromMvn(artifact, excludes);
     } else {
       LinkedList<File> libs = new LinkedList<File>();
-      libs.add(new File(artifact));
+      libs.add(new File(getPath(artifact)));
       return libs;
     }
   }
-  
-  public List<File> load(String artifact, Collection<String> excludes, String destPath)
-      throws RepositoryException, IOException {
-    List<File> libs = new LinkedList<File>();
 
-    if (StringUtils.isNotBlank(artifact)) {
-      libs = load(artifact, excludes);
-
+  private String getPath(String path) {
+    if (path.startsWith("/")) {
+      return path;
+    } else {
       // find home dir
       String home = System.getenv("ZEPPELIN_HOME");
       if (home == null) {
@@ -102,11 +99,22 @@ public class DependencyResolver extends AbstractDependencyResolver {
         home = "..";
       }
 
+      return home + "/" + path;
+    }
+  }
+
+  public List<File> load(String artifact, Collection<String> excludes, String destPath)
+      throws RepositoryException, IOException {
+    List<File> libs = new LinkedList<File>();
+
+    if (StringUtils.isNotBlank(artifact)) {
+      libs = load(artifact, excludes);
+
       for (File srcFile : libs) {
-        File destFile = new File(home + "/" + destPath, srcFile.getName());
+        File destFile = new File(getPath(destPath), srcFile.getName());
         if (!destFile.exists() || !FileUtils.contentEquals(srcFile, destFile)) {
           FileUtils.copyFile(srcFile, destFile);
-          logger.info("copy {} to {}", srcFile.getAbsolutePath(), destPath);
+          logger.info("copy {} to {}", srcFile.getAbsolutePath(), getPath(destPath));
         }
       }
     }
