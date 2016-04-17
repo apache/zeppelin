@@ -17,12 +17,14 @@
 package org.apache.zeppelin.helium;
 
 import com.google.gson.Gson;
+import com.google.gson.stream.JsonReader;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.StringReader;
 import java.net.URI;
 import java.util.LinkedList;
 import java.util.List;
@@ -38,6 +40,7 @@ public class HeliumLocalRegistry extends HeliumRegistry {
   public HeliumLocalRegistry(String name, String uri) {
     super(name, uri);
     gson = new Gson();
+
   }
 
 
@@ -66,7 +69,10 @@ public class HeliumLocalRegistry extends HeliumRegistry {
 
   private HeliumPackage readPackageInfo(File f) {
     try {
-      return gson.fromJson(FileUtils.readFileToString(f), HeliumPackage.class);
+      JsonReader reader = new JsonReader(new StringReader(FileUtils.readFileToString(f)));
+      reader.setLenient(true);
+
+      return gson.fromJson(reader, HeliumPackage.class);
     } catch (IOException e) {
       logger.error(e.getMessage(), e);
       return null;
