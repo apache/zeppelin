@@ -173,7 +173,9 @@ public class Note implements Serializable, ParagraphJobListener {
    * @param srcParagraph
    */
   public void addCloneParagraph(Paragraph srcParagraph) {
-    Paragraph newParagraph = new Paragraph(this, this, replLoader);
+
+    // Keep paragraph original ID
+    final Paragraph newParagraph = new Paragraph(srcParagraph.getId(), this, this, replLoader);
 
     Map<String, Object> config = new HashMap<>(srcParagraph.getConfig());
     Map<String, Object> param = new HashMap<>(srcParagraph.settings.getParams());

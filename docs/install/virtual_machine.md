@@ -26,11 +26,13 @@ Apache Zeppelin distribution includes a scripts directory
 
  `scripts/vagrant/zeppelin-dev`
  
-This script creates a virtual machine that launches a repeatable, known set of core dependencies required for developing Zeppelin.  It can also be used to run an existing Zeppelin build if you don't plan to build from source.  For pyspark users, this script also includes several helpful [Python Libraries](#pythonextras).
+This script creates a virtual machine that launches a repeatable, known set of core dependencies required for developing Zeppelin.  It can also be used to run an existing Zeppelin build if you don't plan to build from source.
+For PySpark users, this script includes several helpful [Python Libraries](#python-extras).
+For SparkR users, this script includes several helpful [R Libraries](#r-extras).
  
 ####Installing the required components to launch a virtual machine.
 
-This script requires three applications, [Ansible](http://docs.ansible.com/ansible/intro_installation.html#latest-releases-via-pip "Ansible"), [Vagrant](http://www.vagrantup.com/downloads "Vagrant") and [Virtual Box](https://www.virtualbox.org/ "Virtual Box").  All of these applications are freely available as Open Source projects and extremely easy to set up on most operating systems.
+This script requires three applications, [Ansible](http://docs.ansible.com/ansible/intro_installation.html#latest-releases-via-pip "Ansible"), [Vagrant](http://www.vagrantup.com "Vagrant") and [Virtual Box](https://www.virtualbox.org/ "Virtual Box").  All of these applications are freely available as Open Source projects and extremely easy to set up on most operating systems.
 
 ### Create a Zeppelin Ready VM in 4 Steps (5 on Windows)
 
@@ -92,23 +94,24 @@ The virtual machine consists of:
  - libfontconfig to avoid phatomJs missing dependency issues
  - openjdk-7-jdk
  - Python addons: pip, matplotlib, scipy, numpy, pandas
+ - [R](https://www.r-project.org/) and R Packages required to run the R Interpreter and the related R tutorial notebook, including:  Knitr, devtools, repr, rCharts, ggplot2, googleVis, mplot, htmltools, base64enc, data.table
  
 ### How to build & run Zeppelin
 
-This assumes you've already cloned the project either on the host machine in the zeppelin-dev directory (to be shared with the guest machine) or cloned directly into a directory while running inside the guest machine.
+This assumes you've already cloned the project either on the host machine in the zeppelin-dev directory (to be shared with the guest machine) or cloned directly into a directory while running inside the guest machine.  The following build steps will also include Python and R support via PySpark and SparkR:
 
 ```
 cd /incubator-zeppelin
-mvn clean package -Pspark-1.5 -Ppyspark -Dhadoop.version=2.2.0 -Phadoop-2.2 -DskipTests
+mvn clean package -Pspark-1.6 -Ppyspark -Phadoop-2.4 -Psparkr -DskipTests
 ./bin/zeppelin-daemon.sh start
 ```
 
 On your host machine browse to `http://localhost:8080/`
 
-If you [turned off port forwarding](#tweakvm) in the `Vagrantfile` browse to `http://192.168.51.52:8080`
+If you [turned off port forwarding](#tweaking-the-virtual-machine) in the `Vagrantfile` browse to `http://192.168.51.52:8080`
 
 
-### [Tweaking the Virtual Machine](id:tweakvm)
+### Tweaking the Virtual Machine
 
 If you plan to run this virtual machine along side other Vagrant images, you may wish to bind the virtual machine to a specific IP address, and not use port fowarding from your local host.
 
@@ -123,7 +126,7 @@ config.vm.network "private_network", ip: "192.168.51.52"
 This approach usually is typically required if running other virtual machines that discover each other directly by IP address, such as Spark Masters and Slaves as well as Cassandra Nodes, Elasticsearch Nodes, and other Spark data sources.  You may wish to launch nodes in virtual machines with IP addresses in a subnet that works for your local network, such as: 192.168.51.53, 192.168.51.54, 192.168.51.53, etc..
 
 
-### [Python Extras](id:pythonextras)
+### Python Extras
 
 With Zeppelin running, **Numpy**, **SciPy**, **Pandas** and **Matplotlib** will be available.  Create a pyspark notebook, and try the below code.
 
@@ -175,10 +178,7 @@ plt.title('How fast do you want to go today?')
 show(plt)
 ``` 
 
+### R Extras
 
-
-
-
-
-
-
+With zeppelin running, an R Tutorial notebook will be available.  The R packages required to run the examples and graphs in this tutorial notebook were installed by this virtual machine.
+The installed R Packages include: Knitr, devtools, repr, rCharts, ggplot2, googleVis, mplot, htmltools, base64enc, data.table
