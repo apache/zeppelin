@@ -242,6 +242,23 @@ public class RemoteInterpreterServer
 
   @Override
   public void close(String noteId, String className) throws TException {
+    // unload all applications
+    for (String appId : runningApplications.keySet()) {
+      RunningApplication appInfo = runningApplications.get(appId);
+
+      // see NoteInterpreterLoader.SHARED_SESSION
+      if (appInfo.noteId.equals(noteId) || noteId.equals("shared_session")) {
+        try {
+          appInfo.app.unload();
+          // see ApplicationState.Status.UNLOADED
+          eventClient.onAppStatusUpdate(appInfo.noteId, appInfo.paragraphId, appId, "UNLOADED");
+        } catch (ApplicationException e) {
+          logger.error(e.getMessage(), e);
+        }
+      }
+    }
+
+    // close interpreters
     synchronized (interpreterGroup) {
       List<Interpreter> interpreters = interpreterGroup.get(noteId);
       if (interpreters != null) {
@@ -790,7 +807,9 @@ public class RemoteInterpreterServer
           noteId,
           paragraphId);
       app = appLoader.load(pkgInfo, context);
-      runningApplications.put(applicationInstanceId, new RunningApplication(pkgInfo, app));
+      runningApplications.put(
+          applicationInstanceId,
+          new RunningApplication(pkgInfo, app, noteId, paragraphId));
       return new RemoteApplicationResult(true, "");
     } catch (Exception e) {
       logger.error(e.getMessage(), e);
@@ -855,10 +874,17 @@ public class RemoteInterpreterServer
   private static class RunningApplication {
     public final Application app;
     public final HeliumPackage pkg;
+    public final String noteId;
+    public final String paragraphId;
 
-    public RunningApplication(HeliumPackage pkg, Application app) {
+    public RunningApplication(HeliumPackage pkg,
+                              Application app,
+                              String noteId,
+                              String paragraphId) {
       this.app = app;
       this.pkg = pkg;
+      this.noteId = noteId;
+      this.paragraphId = paragraphId;
     }
   };
 }

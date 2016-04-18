@@ -164,7 +164,7 @@ public class RemoteInterpreterEventPoller extends Thread {
         } else if (event.getType() == RemoteInterpreterEventType.OUTPUT_UPDATE) {
           // on output update
           Map<String, String> outputAppend = gson.fromJson(
-                  event.getData(), new TypeToken<Map<String, String>>() {}.getType());
+              event.getData(), new TypeToken<Map<String, String>>() {}.getType());
           String noteId = outputAppend.get("noteId");
           String paragraphId = outputAppend.get("paragraphId");
           String outputToUpdate = outputAppend.get("data");
@@ -175,6 +175,17 @@ public class RemoteInterpreterEventPoller extends Thread {
           } else {
             appListener.onOutputUpdated(noteId, paragraphId, appId, outputToUpdate);
           }
+        } else if (event.getType() == RemoteInterpreterEventType.APP_STATUS_UPDATE) {
+          // on output update
+          Map<String, String> appStatusUpdate = gson.fromJson(
+              event.getData(), new TypeToken<Map<String, String>>() {}.getType());
+
+          String noteId = appStatusUpdate.get("noteId");
+          String paragraphId = appStatusUpdate.get("paragraphId");
+          String appId = appStatusUpdate.get("appId");
+          String status = appStatusUpdate.get("status");
+
+          appListener.onStatusChange(noteId, paragraphId, appId, status);
         }
         logger.debug("Event from remoteproceess {}", event.getType());
       } catch (Exception e) {

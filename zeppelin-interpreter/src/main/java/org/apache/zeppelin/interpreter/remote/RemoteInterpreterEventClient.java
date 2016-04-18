@@ -266,4 +266,16 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector {
         RemoteInterpreterEventType.OUTPUT_UPDATE,
         gson.toJson(appendOutput)));
   }
+
+  public void onAppStatusUpdate(String noteId, String paragraphId, String appId, String status) {
+    Map<String, String> appendOutput = new HashMap<String, String>();
+    appendOutput.put("noteId", noteId);
+    appendOutput.put("paragraphId", paragraphId);
+    appendOutput.put("appId", appId);
+    appendOutput.put("status", status);
+
+    sendEvent(new RemoteInterpreterEvent(
+        RemoteInterpreterEventType.APP_STATUS_UPDATE,
+        gson.toJson(appendOutput)));
+  }
 }

@@ -229,6 +229,47 @@ public class HeliumApplicationFactoryTest implements JobListenerFactory {
     notebook.removeNote(note1.getId());
   }
 
+
+  @Test
+  public void testUnloadOnInterpreterRestart() throws IOException {
+    // given
+    HeliumPackage pkg1 = new HeliumPackage(HeliumPackage.Type.APPLICATION,
+        "name1",
+        "desc1",
+        "",
+        HeliumTestApplication.class.getName(),
+        new String[][]{});
+
+    Note note1 = notebook.createNote();
+    notebook.bindInterpretersToNote(note1.id(), factory.getDefaultInterpreterSettingList());
+
+    Paragraph p1 = note1.addParagraph();
+
+    // make sure interpreter process running
+    p1.setText("job");
+    note1.run(p1.getId());
+    while(p1.isTerminated()==false || p1.getResult()==null) Thread.yield();
+
+    assertEquals(0, p1.getAllApplicationStates().size());
+    String appId = heliumAppFactory.loadAndRun(pkg1, p1);
+    ApplicationState app = p1.getApplicationState(appId);
+    while (app.getStatus() != ApplicationState.Status.LOADED) {
+      Thread.yield();
+    }
+
+    // when unbind interpreter
+    factory.restart(factory.getDefaultInterpreterSettingList().get(0));
+    while (app.getStatus() == ApplicationState.Status.LOADED) {
+      Thread.yield();
+    }
+
+    // then
+    assertEquals(ApplicationState.Status.UNLOADED, app.getStatus());
+
+    // clean
+    notebook.removeNote(note1.getId());
+  }
+
   @Override
   public ParagraphJobListener getParagraphJobListener(Note note) {
     return new ParagraphJobListener() {
