@@ -40,9 +40,27 @@ fi
 
 set -xe
 
-TIMEOUT_SEC=590
+MAX_DOWNLOAD_TIME_SEC=590
 FWDIR="$(dirname "${BASH_SOURCE-$0}")"
 ZEPPELIN_HOME="$(cd "${FWDIR}/.."; pwd)"
+
+#######################################
+# Downloads file from the givrn URL.
+# Ties 3 times with 1s delay, 20s read and 15s connection timeouts.
+# Globals:
+#   None
+# Arguments:
+#   url - source URL
+# Returns:
+#   None
+#######################################
+download_with_retry() {
+    local url="$1"
+    wget --retry-connrefused --waitretry=1 --read-timeout=20 --timeout=15 -t 3 "${url}"
+    if [[ "$?" -ne 0 ]]; then
+        echo "3 download attempts for ${url} failed"
+    fi
+}
 
 SPARK_CACHE=".spark-dist"
 SPARK_ARCHIVE="spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}"
@@ -56,11 +74,13 @@ if [[ ! -d "${SPARK_HOME}" ]]; then
         pwd
         ls -la .
         echo "${SPARK_CACHE} does not have ${SPARK_ARCHIVE} downloading ..."
+
         # download archive if not cached
         if [[ "${SPARK_VER_RANGE}" == "<=1.2" ]]; then
             # spark 1.1.x and spark 1.2.x can be downloaded from archive
             STARTTIME=`date +%s`
-            timeout -s KILL "${TIMEOUT_SEC}" wget -q "http://archive.apache.org/dist/spark/spark-${SPARK_VERSION}/${SPARK_ARCHIVE}.tgz"
+            #timeout -s KILL "${MAX_DOWNLOAD_TIME_SEC}" wget "http://archive.apache.org/dist/spark/spark-${SPARK_VERSION}/${SPARK_ARCHIVE}.tgz"
+            download_with_retry "http://archive.apache.org/dist/spark/spark-${SPARK_VERSION}/${SPARK_ARCHIVE}.tgz"
             ENDTIME=`date +%s`
             DOWNLOADTIME="$((ENDTIME-STARTTIME))"
         else
@@ -72,7 +92,8 @@ if [[ ! -d "${SPARK_HOME}" ]]; then
             PATHINFO=$(echo "${MIRROR_INFO}" | grep path_info | sed 's/[^"]*.path_info.: .\([^"]*\).*/\1/g')
 
             STARTTIME=`date +%s`
-            timeout -s KILL "${TIMEOUT_SEC}" wget -q "${PREFFERED}${PATHINFO}"
+            #timeout -s KILL "${MAX_DOWNLOAD_TIME_SEC}" wget -q "${PREFFERED}${PATHINFO}"
+            download_with_retry "${PREFFERED}${PATHINFO}"
             ENDTIME=`date +%s`
             DOWNLOADTIME="$((ENDTIME-STARTTIME))"
         fi

@@ -79,7 +79,8 @@ angular.module('zeppelinWebApp')
   var angularObjectRegistry = {};
 
   var editorModes = {
-    'ace/mode/scala': /^%spark/,
+    'ace/mode/python': /^%(\w*\.)?pyspark\s*$/,
+    'ace/mode/scala': /^%(\w*\.)?spark\s*$/,
     'ace/mode/sql': /^%(\w*\.)?\wql/,
     'ace/mode/markdown': /^%md/,
     'ace/mode/sh': /^%sh/
@@ -167,7 +168,7 @@ angular.module('zeppelinWebApp')
         angular.element('#p' + $scope.paragraph.id + '_text').bind('mousewheel', function(e) {
           $scope.keepScrollDown = false;
         });
-
+        $scope.flushStreamingOutput = true;
       } else {
         $timeout(retryRenderer, 10);
       }
@@ -445,13 +446,17 @@ angular.module('zeppelinWebApp')
 
   $scope.$on('appendParagraphOutput', function(event, data) {
     if ($scope.paragraph.id === data.paragraphId) {
+      if ($scope.flushStreamingOutput) {
+        $scope.clearTextOutput();
+        $scope.flushStreamingOutput = false;
+      }
       $scope.appendTextOutput(data.data);
     }
   });
 
   $scope.$on('updateParagraphOutput', function(event, data) {
     if ($scope.paragraph.id === data.paragraphId) {
-      $scope.clearTextOutput(data.data);
+      $scope.clearTextOutput();
       $scope.appendTextOutput(data.data);
     }
   });
