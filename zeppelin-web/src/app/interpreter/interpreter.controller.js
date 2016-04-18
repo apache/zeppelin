@@ -65,23 +65,23 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
       closable: true,
       title: '',
       message: 'Do you want to update this interpreter and restart with new settings?',
-      callback: function(result) {
+      callback: function (result) {
         if (result) {
           var index = _.findIndex($scope.interpreterSettings, {'id': settingId});
           var setting = $scope.interpreterSettings[index];
           if (setting.propertyKey !== '' || setting.propertyKey) {
-             $scope.addNewInterpreterProperty(settingId);
+            $scope.addNewInterpreterProperty(settingId);
           }
           if (setting.depArtifact !== '' || setting.depArtifact) {
-             $scope.addNewInterpreterDependency(settingId);
+            $scope.addNewInterpreterDependency(settingId);
           }
           // add missing field of option
           if (!setting.option) {
-             setting.option = {};
+            setting.option = {};
           }
           if (setting.option.remote === undefined) {
-                      // remote always true for now
-             setting.option.remote = true;
+            // remote always true for now
+            setting.option.remote = true;
           }
           var request = {
             option: angular.copy(setting.option),
@@ -99,8 +99,8 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
               ngToast.danger({content: data.message, verticalPosition: 'bottom'});
               form.$show();
             });
-          }
         }
+      }
     });
   };
 
