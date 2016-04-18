@@ -30,6 +30,7 @@ import java.util.Properties;
 import org.apache.thrift.transport.TTransportException;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
+import org.apache.zeppelin.interpreter.remote.mock.MockInterpreterEnv;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService.Client;
 import org.apache.zeppelin.user.AuthenticationInfo;
@@ -699,6 +700,61 @@ public class RemoteInterpreterTest {
 
     //Then
     Mockito.verify(client).angularRegistryPush(expected);
+  }
+
+  @Test
+  public void testEnvStringPattern() {
+    assertFalse(RemoteInterpreter.isEnvString(null));
+    assertFalse(RemoteInterpreter.isEnvString(""));
+    assertFalse(RemoteInterpreter.isEnvString("abcDEF"));
+    assertFalse(RemoteInterpreter.isEnvString("ABC-DEF"));
+    assertTrue(RemoteInterpreter.isEnvString("ABCDEF"));
+    assertTrue(RemoteInterpreter.isEnvString("ABC_DEF"));
+    assertTrue(RemoteInterpreter.isEnvString("ABC_DEF123"));
+  }
+
+  @Test
+  public void testEnvronmentAndPropertySet() {
+    Properties p = new Properties();
+    p.setProperty("MY_ENV1", "env value 1");
+    p.setProperty("my.property.1", "property value 1");
+
+    RemoteInterpreter intp = new RemoteInterpreter(
+        p,
+        "note",
+        MockInterpreterEnv.class.getName(),
+        new File("../bin/interpreter.sh").getAbsolutePath(),
+        "fake",
+        "fakeRepo",
+        env,
+        10 * 1000,
+        null);
+
+    intpGroup.put("note", new LinkedList<Interpreter>());
+    intpGroup.get("note").add(intp);
+    intp.setInterpreterGroup(intpGroup);
+
+    intp.open();
+
+    InterpreterContext context = new InterpreterContext(
+        "noteId",
+        "id",
+        "title",
+        "text",
+        new AuthenticationInfo(),
+        new HashMap<String, Object>(),
+        new GUI(),
+        new AngularObjectRegistry(intpGroup.getId(), null),
+        new LocalResourcePool("pool1"),
+        new LinkedList<InterpreterContextRunner>(), null);
+
+
+    assertEquals("env value 1", intp.interpret("getEnv MY_ENV1", context).message());
+    assertEquals("", intp.interpret("getProperty MY_ENV1", context).message());
+    assertEquals("", intp.interpret("getEnv my.property.1", context).message());
+    assertEquals("property value 1", intp.interpret("getProperty my.property.1", context).message());
+
+    intp.close();
   }
 
 }
