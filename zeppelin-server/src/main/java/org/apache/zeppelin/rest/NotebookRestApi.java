@@ -22,6 +22,7 @@ import java.util.*;
 
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
+import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
@@ -32,6 +33,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
 
+import org.apache.commons.httpclient.util.DateUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.notebook.Note;
@@ -693,10 +695,11 @@ public class NotebookRestApi {
   @GET
   @Path("{notebookId}/paragraph/{paragraphId}/result")
   public Response getParagraphResult(@PathParam("notebookId") String notebookId,
-                                     @PathParam("paragraphId") String paragraphId)
+                                     @PathParam("paragraphId") String paragraphId,
+                                     @HeaderParam("If-Modified-Since") String modificationDateString)
       throws IOException {
     LOG.info("Downloading paragraph {} {}", notebookId, paragraphId);
-    
+  
     Note note = notebook.getNote(notebookId);
     if (note == null) {
       return new JsonResponse(Status.NOT_FOUND, "note not found.").build();
@@ -706,11 +709,17 @@ public class NotebookRestApi {
     if (p == null) {
       return new JsonResponse(Status.NOT_FOUND, "paragraph not found.").build();
     }
+    try {
+      Date modificationDate = DateUtil.parseDate(modificationDateString);
+      if(!p.getDateFinished().after(modificationDate))
+        return Response.ok()
+                .status(Response.Status.NOT_MODIFIED)
+                .build();
+    } catch (Exception e) { } 
     
     ResponseBuilder builder = Response.ok(p.getResultFromPool().message())
         .header("Content-Disposition", "attachment; filename=" + paragraphId + ".txt");
     
     return builder.build();
   }
-
 }
