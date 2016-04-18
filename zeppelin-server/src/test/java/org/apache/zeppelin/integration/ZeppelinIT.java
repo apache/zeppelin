@@ -205,7 +205,8 @@ public class ZeppelinIT extends AbstractZeppelinIT {
       String artifact = "org.apache.commons:commons-csv:1.1";
       depArtifact.sendKeys(artifact);
       driver.findElement(By.xpath("//button[contains(.,'Save')]")).submit();
-      driver.switchTo().alert().accept();
+      driver.findElement(By.xpath("//div[@class='modal-dialog'][contains(.,'Do you want to update this interpreter and restart with new settings?')]" +
+              "//div[@class='modal-footer']//button[contains(.,'OK')]")).click();
 
       driver.navigate().back();
       createNewNote();
@@ -241,7 +242,8 @@ public class ZeppelinIT extends AbstractZeppelinIT {
       sleep(5000, true);
       testDepRemoveBtn.click();
       driver.findElement(By.xpath("//button[contains(.,'Save')]")).submit();
-      driver.switchTo().alert().accept();
+      driver.findElement(By.xpath("//div[@class='modal-dialog'][contains(.,'Do you want to update this interpreter and restart with new settings?')]" +
+              "//div[@class='modal-footer']//button[contains(.,'OK')]")).click();
     } catch (Exception e) {
       handleException("Exception in ZeppelinIT while testSparkInterpreterDependencyLoading ", e);
     }
