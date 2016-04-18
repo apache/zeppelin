@@ -16,29 +16,80 @@
 
 angular.module('zeppelinWebApp')
   .controller('ParagraphCtrl', function($scope,$rootScope, $route, $window, $element, $routeParams, $location,
-                                         $timeout, $compile, websocketMsgSrv) {
+                                         $timeout, $compile, websocketMsgSrv, ngToast) {
   var ANGULAR_FUNCTION_OBJECT_NAME_PREFIX = '_Z_ANGULAR_FUNC_';
+  $scope.parentNote = null;
   $scope.paragraph = null;
   $scope.originalText = '';
   $scope.editor = null;
 
   var paragraphScope = $rootScope.$new(true, $rootScope);
+
   // to keep backward compatibility
   $scope.compiledScope = paragraphScope;
 
+  paragraphScope.z = {
+    // z.runParagraph('20150213-231621_168813393')
+    runParagraph: function(paragraphId) {
+      if (paragraphId) {
+        var filtered = $scope.parentNote.paragraphs.filter(function(x) {
+          return x.id === paragraphId;});
+        if (filtered.length === 1) {
+          var paragraph = filtered[0];
+          websocketMsgSrv.runParagraph(paragraph.id, paragraph.title, paragraph.text,
+              paragraph.config, paragraph.settings.params);
+        } else {
+          ngToast.danger({content: 'Cannot find a paragraph with id \'' + paragraphId + '\'',
+            verticalPosition: 'top', dismissOnTimeout: false});
+        }
+      } else {
+        ngToast.danger({
+          content: 'Please provide a \'paragraphId\' when calling z.runParagraph(paragraphId)',
+          verticalPosition: 'top', dismissOnTimeout: false});
+      }
+    },
+
+    // Example: z.angularBind('my_var', 'Test Value', '20150213-231621_168813393')
+    angularBind: function(varName, value, paragraphId) {
+      // Only push to server if there paragraphId is defined
+      if (paragraphId) {
+        websocketMsgSrv.clientBindAngularObject($routeParams.noteId, varName, value, paragraphId);
+      } else {
+        ngToast.danger({
+          content: 'Please provide a \'paragraphId\' when calling ' +
+          'z.angularBind(varName, value, \'PUT_HERE_PARAGRAPH_ID\')',
+          verticalPosition: 'top', dismissOnTimeout: false});
+      }
+    },
+
+    // Example: z.angularUnBind('my_var', '20150213-231621_168813393')
+    angularUnbind: function(varName, paragraphId) {
+      // Only push to server if paragraphId is defined
+      if (paragraphId) {
+        websocketMsgSrv.clientUnbindAngularObject($routeParams.noteId, varName, paragraphId);
+      } else {
+        ngToast.danger({
+          content: 'Please provide a \'paragraphId\' when calling ' +
+          'z.angularUnbind(varName, \'PUT_HERE_PARAGRAPH_ID\')',
+          verticalPosition: 'top', dismissOnTimeout: false});
+      }
+    }
+  };
+
   var angularObjectRegistry = {};
 
-
   var editorModes = {
-    'ace/mode/scala': /^%spark/,
+    'ace/mode/python': /^%(\w*\.)?pyspark\s*$/,
+    'ace/mode/scala': /^%(\w*\.)?spark\s*$/,
     'ace/mode/sql': /^%(\w*\.)?\wql/,
     'ace/mode/markdown': /^%md/,
     'ace/mode/sh': /^%sh/
   };
 
   // Controller init
-  $scope.init = function(newParagraph) {
+  $scope.init = function(newParagraph, note) {
     $scope.paragraph = newParagraph;
+    $scope.parentNote = note;
     $scope.originalText = angular.copy(newParagraph.text);
     $scope.chart = {};
     $scope.colWidthOption = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 ];
@@ -117,7 +168,7 @@ angular.module('zeppelinWebApp')
         angular.element('#p' + $scope.paragraph.id + '_text').bind('mousewheel', function(e) {
           $scope.keepScrollDown = false;
         });
-
+        $scope.flushStreamingOutput = true;
       } else {
         $timeout(retryRenderer, 10);
       }
@@ -395,13 +446,17 @@ angular.module('zeppelinWebApp')
 
   $scope.$on('appendParagraphOutput', function(event, data) {
     if ($scope.paragraph.id === data.paragraphId) {
+      if ($scope.flushStreamingOutput) {
+        $scope.clearTextOutput();
+        $scope.flushStreamingOutput = false;
+      }
       $scope.appendTextOutput(data.data);
     }
   });
 
   $scope.$on('updateParagraphOutput', function(event, data) {
     if ($scope.paragraph.id === data.paragraphId) {
-      $scope.clearTextOutput(data.data);
+      $scope.clearTextOutput();
       $scope.appendTextOutput(data.data);
     }
   });

@@ -33,3 +33,7 @@ body {
   border-color: white;
 }
 
+.ng-toast.ng-toast--top {
+  top: 100px;
+}
+

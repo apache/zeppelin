@@ -146,8 +146,8 @@ public class RemoteInterpreterServer
       //Happens during tests.
       if (prop == null)
         prop = new Properties();
-      String resourcePoolClassName = (String) prop.getProperty("ResourcePoolClass",
-              "org.apache.zeppelin.resource.DistributedResourcePool");
+      String resourcePoolClassName = (String) prop.getProperty(
+          "zeppelin.interpreter.resourcePoolClass");
       logger.debug("Getting resource pool {}", resourcePoolClassName);
       Class resourcePoolClass = Class.forName(resourcePoolClassName);
       
@@ -181,6 +181,7 @@ public class RemoteInterpreterServer
       Class<Interpreter> replClass = (Class<Interpreter>) Object.class.forName(className);
       Properties p = new Properties();
       p.putAll(properties);
+      setSystemProperty(p);
 
       Constructor<Interpreter> constructor =
           replClass.getConstructor(new Class[] {Properties.class});
@@ -213,6 +214,19 @@ public class RemoteInterpreterServer
       throw new TException(e);
     }
   }
+  private void setSystemProperty(Properties properties) {
+    for (Object key : properties.keySet()) {
+      if (!RemoteInterpreter.isEnvString((String) key)) {
+        String value = properties.getProperty((String) key);
+        if (value == null || value.isEmpty()) {
+          System.clearProperty((String) key);
+        } else {
+          System.setProperty((String) key, properties.getProperty((String) key));
+        }
+      }
+    }
+  }
+
   private Interpreter getInterpreter(String noteId, String className) throws TException {
     if (interpreterGroup == null) {
       throw new TException(
@@ -718,6 +732,18 @@ public class RemoteInterpreterServer
         logger.error(e.getMessage(), e);
         return ByteBuffer.allocate(0);
       }
+    }
+  }
+
+  @Override
+  public void angularRegistryPush(String registryAsString) throws TException {
+    try {
+      Map<String, Map<String, AngularObject>> deserializedRegistry = gson
+              .fromJson(registryAsString,
+                      new TypeToken<Map<String, Map<String, AngularObject>>>() { }.getType());
+      interpreterGroup.getAngularObjectRegistry().setRegistry(deserializedRegistry);
+    } catch (Exception e) {
+      logger.info("Exception in RemoteInterpreterServer while angularRegistryPush, nolock", e);
     }
   }
 }

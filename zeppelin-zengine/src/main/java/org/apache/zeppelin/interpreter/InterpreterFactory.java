@@ -198,6 +198,8 @@ public class InterpreterFactory {
       logger.info("Interpreter setting group {} : id={}, name={}",
           setting.getGroup(), settingId, setting.getName());
     }
+    
+    
   }
 
   private void loadFromFile() throws IOException {
@@ -234,16 +236,19 @@ public class InterpreterFactory {
       // enable/disable option on GUI).
       // previously created setting should turn this feature on here.
       setting.getOption().setRemote(true);
-
+      
+      Properties mergedProperties = 
+          this.getInterpreterPropertiesFromZeppelinConf();
+      mergedProperties.putAll(setting.getProperties());;
+      
       InterpreterSetting intpSetting = new InterpreterSetting(
           setting.id(),
           setting.getName(),
           setting.getGroup(),
           setting.getInterpreterInfos(),
-          setting.getProperties(),
+          mergedProperties,
           setting.getDependencies(),
           setting.getOption());
-
       InterpreterGroup interpreterGroup = createInterpreterGroup(setting.id(), setting.getOption());
       intpSetting.setInterpreterGroup(interpreterGroup);
 
@@ -259,6 +264,16 @@ public class InterpreterFactory {
         }
       }
     }
+  }
+  
+  private Properties getInterpreterPropertiesFromZeppelinConf() {
+    Iterator<String> keySet = this.conf.getKeys("zeppelin.interpreter");
+    Properties p = new Properties();
+    while (keySet.hasNext()) {
+      String key = keySet.next();
+      p.setProperty(key, this.conf.getProperty(key).toString());
+    }
+    return p; 
   }
 
   private void loadInterpreterDependencies(InterpreterSetting intSetting)
@@ -379,10 +394,10 @@ public class InterpreterFactory {
       List<InterpreterSetting.InterpreterInfo> interpreterInfos =
           new LinkedList<InterpreterSetting.InterpreterInfo>();
 
-      for (RegisteredInterpreter registeredInterpreter :
-          Interpreter.registeredInterpreters.values()) {
-        if (registeredInterpreter.getGroup().equals(groupName)) {
-          for (String className : interpreterClassList) {
+      for (String className : interpreterClassList) {
+        for (RegisteredInterpreter registeredInterpreter :
+            Interpreter.registeredInterpreters.values()) {
+          if (registeredInterpreter.getGroup().equals(groupName)) {
             if (registeredInterpreter.getClassName().equals(className)) {
               interpreterInfos.add(
                   new InterpreterSetting.InterpreterInfo(
@@ -627,7 +642,8 @@ public class InterpreterFactory {
 
   public void removeNoteInterpreterSettingBinding(String noteId) {
     synchronized (interpreterSettings) {
-      List<String> settingIds = interpreterBindings.remove(noteId);
+      List<String> settingIds = (interpreterBindings.containsKey(noteId) ?
+          interpreterBindings.remove(noteId) : Collections.<String>emptyList());
       for (String settingId : settingIds) {
         this.removeInterpretersForNote(get(settingId), noteId);
       }

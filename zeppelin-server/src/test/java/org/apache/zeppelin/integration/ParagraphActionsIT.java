@@ -87,8 +87,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
           "//div[@class='modal-footer']//button[contains(.,'OK')]")).click();
       ZeppelinITUtils.sleep(1000, false);
 
-      WebElement oldParagraphEditor = driver.findElement(By.xpath(getParagraphXPath(1) + "//textarea"));
-      oldParagraphEditor.sendKeys(" original paragraph ");
+      setTextOfParagraph(1, " original paragraph ");
 
       WebElement newPara = driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class,'new-paragraph')][1]"));
       action.moveToElement(newPara).click().build().perform();
@@ -98,8 +97,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       collector.checkThat("Paragraph is created above",
           driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'editor')]")).getText(),
           CoreMatchers.equalTo(""));
-      WebElement aboveParagraphEditor = driver.findElement(By.xpath(getParagraphXPath(1) + "//textarea"));
-      aboveParagraphEditor.sendKeys(" this is above ");
+      setTextOfParagraph(1, " this is above ");
 
       newPara = driver.findElement(By.xpath(getParagraphXPath(2) + "//div[contains(@class,'new-paragraph')][2]"));
       action.moveToElement(newPara).click().build().perform();
@@ -109,8 +107,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       collector.checkThat("Paragraph is created below",
           driver.findElement(By.xpath(getParagraphXPath(3) + "//div[contains(@class, 'editor')]")).getText(),
           CoreMatchers.equalTo(""));
-      WebElement belowParagraphEditor = driver.findElement(By.xpath(getParagraphXPath(3) + "//textarea"));
-      belowParagraphEditor.sendKeys(" this is below ");
+      setTextOfParagraph(3, " this is below ");
 
       collector.checkThat("The output field of paragraph1 contains",
           driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'editor')]")).getText(),
@@ -163,7 +160,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       deleteTestNotebook(driver);
 
     } catch (Exception e) {
-      handleException("Exception in ParagraphActionsIT while testMoveUpAndDown ", e);
+      handleException("Exception in ParagraphActionsIT while testRemoveButton ", e);
     }
   }
 
@@ -176,16 +173,14 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       createNewNote();
 
       waitForParagraph(1, "READY");
-      WebElement paragraph1Editor = driver.findElement(By.xpath(getParagraphXPath(1) + "//textarea"));
-      paragraph1Editor.sendKeys("1");
+      setTextOfParagraph(1, "1");
 
       driver.findElement(By.xpath(getParagraphXPath(1) + "//span[@class='icon-settings']")).click();
       driver.findElement(By.xpath(getParagraphXPath(1) + "//ul/li/a[@ng-click='insertNew()']")).click();
 
 
       waitForParagraph(2, "READY");
-      WebElement paragraph2Editor = driver.findElement(By.xpath(getParagraphXPath(2) + "//textarea"));
-      paragraph2Editor.sendKeys("2");
+      setTextOfParagraph(2, "2");
 
 
       collector.checkThat("The paragraph1 value contains",
@@ -236,9 +231,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       createNewNote();
 
       waitForParagraph(1, "READY");
-      WebElement paragraph1Editor = driver.findElement(By.xpath(getParagraphXPath(1) + "//textarea"));
-      paragraph1Editor.sendKeys("println" + Keys.chord(Keys.SHIFT, "9") + "\""
-          + "abcd\")");
+      setTextOfParagraph(1, "println (\"abcd\")");
 
       driver.findElement(By.xpath(getParagraphXPath(1) + "//span[@class='icon-settings']")).click();
       driver.findElement(By.xpath(getParagraphXPath(1) + "//ul/li/a[@ng-click='toggleEnableDisable()']")).click();
@@ -275,9 +268,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
 
       waitForParagraph(1, "READY");
       String xpathToOutputField=getParagraphXPath(1) + "//div[contains(@ng-if,'getResultType()')]";
-      WebElement paragraph1Editor = driver.findElement(By.xpath(getParagraphXPath(1) + "//textarea"));
-      paragraph1Editor.sendKeys("println" + Keys.chord(Keys.SHIFT, "9") + "\""
-          + "abcd\")");
+      setTextOfParagraph(1, "println (\"abcd\")");
       collector.checkThat("Before Run Output field contains ",
           driver.findElement(By.xpath(xpathToOutputField)).getText(),
           CoreMatchers.equalTo(""));

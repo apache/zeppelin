@@ -17,16 +17,6 @@
 
 package org.apache.zeppelin.server;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.EnumSet;
-import java.util.HashSet;
-import java.util.Set;
-
-import javax.net.ssl.SSLContext;
-import javax.servlet.DispatcherType;
-import javax.ws.rs.core.Application;
-
 import org.apache.cxf.jaxrs.servlet.CXFNonSpringJaxrsServlet;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
@@ -38,8 +28,8 @@ import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.apache.zeppelin.notebook.repo.NotebookRepoSync;
 import org.apache.zeppelin.rest.*;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
-import org.apache.zeppelin.search.SearchService;
 import org.apache.zeppelin.search.LuceneSearch;
+import org.apache.zeppelin.search.SearchService;
 import org.apache.zeppelin.socket.NotebookServer;
 import org.eclipse.jetty.server.AbstractConnector;
 import org.eclipse.jetty.server.Handler;
@@ -56,6 +46,15 @@ import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.net.ssl.SSLContext;
+import javax.servlet.DispatcherType;
+import javax.ws.rs.core.Application;
+import java.io.File;
+import java.io.IOException;
+import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Main class of Zeppelin.
@@ -86,7 +85,7 @@ public class ZeppelinServer extends Application {
     this.notebookRepo = new NotebookRepoSync(conf);
     this.notebookIndex = new LuceneSearch();
     this.notebookAuthorization = new NotebookAuthorization(conf);
-    notebook = new Notebook(conf, 
+    notebook = new Notebook(conf,
         notebookRepo, schedulerFactory, replFactory, notebookWsServer,
             notebookIndex, notebookAuthorization);
   }
@@ -173,8 +172,9 @@ public class ZeppelinServer extends Application {
 
   private static ServletContextHandler setupNotebookServer(ZeppelinConfiguration conf) {
     notebookWsServer = new NotebookServer();
+    String maxTextMessageSize = conf.getWebsocketMaxTextMessageSize();
     final ServletHolder servletHolder = new ServletHolder(notebookWsServer);
-    servletHolder.setInitParameter("maxTextMessageSize", "1024000");
+    servletHolder.setInitParameter("maxTextMessageSize", maxTextMessageSize);
 
     final ServletContextHandler cxfContext = new ServletContextHandler(
         ServletContextHandler.SESSIONS);
@@ -234,6 +234,9 @@ public class ZeppelinServer extends Application {
     cxfContext.addFilter(new FilterHolder(CorsFilter.class), "/*",
         EnumSet.allOf(DispatcherType.class));
 
+    cxfContext.setInitParameter("shiroConfigLocations",
+        new File(conf.getShiroPath()).toURI().toString());
+
     cxfContext.addFilter(org.apache.shiro.web.servlet.ShiroFilter.class, "/*",
         EnumSet.allOf(DispatcherType.class));
 
@@ -288,6 +291,9 @@ public class ZeppelinServer extends Application {
 
     SecurityRestApi securityApi = new SecurityRestApi();
     singletons.add(securityApi);
+
+    LoginRestApi loginRestApi = new LoginRestApi();
+    singletons.add(loginRestApi);
 
     ConfigurationsRestApi settingsApi = new ConfigurationsRestApi(notebook);
     singletons.add(settingsApi);

@@ -70,6 +70,29 @@ angular.module('zeppelinWebApp').service('websocketMsgSrv', function($rootScope,
       });
     },
 
+    clientBindAngularObject: function(noteId, name, value, paragraphId) {
+      websocketEvents.sendNewEvent({
+        op: 'ANGULAR_OBJECT_CLIENT_BIND',
+        data: {
+          noteId: noteId,
+          name: name,
+          value: value,
+          paragraphId: paragraphId
+        }
+      });
+    },
+
+    clientUnbindAngularObject: function(noteId, name, paragraphId) {
+      websocketEvents.sendNewEvent({
+        op: 'ANGULAR_OBJECT_CLIENT_UNBIND',
+        data: {
+          noteId: noteId,
+          name: name,
+          paragraphId: paragraphId
+        }
+      });
+    },
+
     cancelParagraphRun: function(paragraphId) {
       websocketEvents.sendNewEvent({op: 'CANCEL_PARAGRAPH', data: {id: paragraphId}});
     },

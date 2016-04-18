@@ -41,6 +41,9 @@ class Logger(object):
   def reset(self):
     self.out = ""
 
+  def flush(self):
+    pass
+
 
 class PyZeppelinContext(dict):
   def __init__(self, zc):

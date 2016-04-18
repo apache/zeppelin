@@ -333,6 +333,10 @@ public class ZeppelinConfiguration extends XMLConfiguration {
   public String getBucketName() {
     return getString(ConfVars.ZEPPELIN_NOTEBOOK_S3_BUCKET);
   }
+  
+  public String getEndpoint() {
+    return getString(ConfVars.ZEPPELIN_NOTEBOOK_S3_ENDPOINT);
+  }
 
   public String getInterpreterDir() {
     return getRelativeDir(ConfVars.ZEPPELIN_INTERPRETER_DIR);
@@ -344,6 +348,10 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 
   public String getNotebookAuthorizationPath() {
     return getRelativeDir(String.format("%s/notebook-authorization.json", getConfDir()));
+  }
+
+  public String getShiroPath() {
+    return getRelativeDir(String.format("%s/shiro.ini", getConfDir()));
   }
 
   public String getInterpreterRemoteRunnerPath() {
@@ -381,6 +389,10 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     }
 
     return Arrays.asList(getString(ConfVars.ZEPPELIN_ALLOWED_ORIGINS).toLowerCase().split(","));
+  }
+
+  public String getWebsocketMaxTextMessageSize() {
+    return getString(ConfVars.ZEPPELIN_WEBSOCKET_MAX_TEXT_MESSAGE_SIZE);
   }
 
   public Map<String, String> dumpConfigurations(ZeppelinConfiguration conf,
@@ -443,6 +455,9 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_WAR_TEMPDIR("zeppelin.war.tempdir", "webapps"),
     ZEPPELIN_INTERPRETERS("zeppelin.interpreters", "org.apache.zeppelin.spark.SparkInterpreter,"
         + "org.apache.zeppelin.spark.PySparkInterpreter,"
+        + "org.apache.zeppelin.rinterpreter.RRepl,"
+        + "org.apache.zeppelin.rinterpreter.KnitR,"
+        + "org.apache.zeppelin.spark.SparkRInterpreter,"
         + "org.apache.zeppelin.spark.SparkSqlInterpreter,"
         + "org.apache.zeppelin.spark.DepInterpreter,"
         + "org.apache.zeppelin.markdown.Markdown,"
@@ -476,12 +491,15 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     // whether homescreen notebook will be hidden from notebook list or not
     ZEPPELIN_NOTEBOOK_HOMESCREEN_HIDE("zeppelin.notebook.homescreen.hide", false),
     ZEPPELIN_NOTEBOOK_S3_BUCKET("zeppelin.notebook.s3.bucket", "zeppelin"),
+    ZEPPELIN_NOTEBOOK_S3_ENDPOINT("zeppelin.notebook.s3.endpoint", "s3.amazonaws.com"),
     ZEPPELIN_NOTEBOOK_S3_USER("zeppelin.notebook.s3.user", "user"),
     ZEPPELIN_NOTEBOOK_AZURE_CONNECTION_STRING("zeppelin.notebook.azure.connectionString", null),
     ZEPPELIN_NOTEBOOK_AZURE_SHARE("zeppelin.notebook.azure.share", "zeppelin"),
     ZEPPELIN_NOTEBOOK_AZURE_USER("zeppelin.notebook.azure.user", "user"),
     ZEPPELIN_NOTEBOOK_STORAGE("zeppelin.notebook.storage", VFSNotebookRepo.class.getName()),
-    ZEPPELIN_INTERPRETER_REMOTE_RUNNER("zeppelin.interpreter.remoterunner", "bin/interpreter.sh"),
+    ZEPPELIN_INTERPRETER_REMOTE_RUNNER("zeppelin.interpreter.remoterunner",
+        System.getProperty("os.name")
+                .startsWith("Windows") ? "bin/interpreter.cmd" : "bin/interpreter.sh"),
     // Decide when new note is created, interpreter settings will be binded automatically or not.
     ZEPPELIN_NOTEBOOK_AUTO_INTERPRETER_BINDING("zeppelin.notebook.autoInterpreterBinding", true),
     ZEPPELIN_CONF_DIR("zeppelin.conf.dir", "conf"),
@@ -489,7 +507,10 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     // Allows a way to specify a ',' separated list of allowed origins for rest and websockets
     // i.e. http://localhost:8080
     ZEPPELIN_ALLOWED_ORIGINS("zeppelin.server.allowed.origins", "*"),
-    ZEPPELIN_ANONYMOUS_ALLOWED("zeppelin.anonymous.allowed", true);
+    ZEPPELIN_ANONYMOUS_ALLOWED("zeppelin.anonymous.allowed", true),
+    ZEPPELIN_RESOURCE_POOL_CLASS("zeppelin.interpreter.resourcePoolClass", 
+        "org.apacheorg.apache.zeppelin.resource.DistributedResourcePool"),
+    ZEPPELIN_WEBSOCKET_MAX_TEXT_MESSAGE_SIZE("zeppelin.websocket.max.text.message.size", "1024000");
 
     private String varName;
     @SuppressWarnings("rawtypes")
