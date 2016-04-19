@@ -14,26 +14,26 @@
 'use strict';
 
 angular.module('zeppelinWebApp').factory('notebookListDataFactory', function() {
+
   var notes = {
     root: {children: []},
     flatList: [],
-    setNotes: function() {}
-  };
+    
+    setNotes: function(notesList) {
+      // a flat list to boost searching
+      notes.flatList = angular.copy(notesList);
 
-  notes.setNotes = function(notesList) {
-    // a flat list to boost searching
-    notes.flatList = angular.copy(notesList);
+      // construct the folder-based tree
+      _.reduce(notesList, function(root, note) {
+        var noteName = note.name || note.id;
+        var nodes = noteName.match(/([^\\\][^\/]|\\\/)+/g);
 
-    // construct the folder-based tree
-    _.reduce(notesList, function(root, note) {
-      var noteName = note.name || note.id;
-      var nodes = noteName.match(/([^\\\][^\/]|\\\/)+/g);
+        // recursively add nodes
+        addNode(root, nodes, note.id);
 
-      // recursively add nodes
-      addNode(root, nodes, note.id);
-
-      return root;
-    }, notes.root);
+        return root;
+      }, notes.root);
+    }
   };
 
   var addNode = function(curDir, nodes, noteId) {
