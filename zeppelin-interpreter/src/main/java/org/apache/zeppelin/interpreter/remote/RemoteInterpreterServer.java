@@ -158,15 +158,16 @@ public class RemoteInterpreterServer
       resourcePool = (DistributedResourcePool) constructor.newInstance(interpreterGroup.getId(),
           this.eventClient,
           prop);
+    } catch (Exception e) {
+      logger.error("Did not find resource pool.  Using DistributedResourcePool");
+      resourcePool = new DistributedResourcePool(interpreterGroup.getId(), this.eventClient);
+  //    throw new TException(e);
+    } finally {
       interpreterGroup.setResourcePool(resourcePool);
       return resourcePool;
-    } catch (Exception e) {
-      logger.error(e.toString(), e);
-      return new DistributedResourcePool(interpreterGroup.getId(), this.eventClient);
-  //    throw new TException(e);
     }
   }
-
+  
   @Override
   public void createInterpreter(String interpreterGroupId, String noteId, String
       className,
