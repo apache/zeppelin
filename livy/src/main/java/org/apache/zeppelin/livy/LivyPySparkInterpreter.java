@@ -47,7 +47,7 @@ public class LivyPySparkInterpreter extends Interpreter {
   }
 
   protected Map<String, Integer> userSessionMap;
-  private LivyHelper livyHelper;
+  protected LivyHelper livyHelper;
 
   public LivyPySparkInterpreter(Properties property) {
     super(property);
