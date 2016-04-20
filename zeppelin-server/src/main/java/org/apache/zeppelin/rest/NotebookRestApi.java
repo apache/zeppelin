@@ -695,8 +695,8 @@ public class NotebookRestApi {
   @GET
   @Path("{notebookId}/paragraph/{paragraphId}/result")
   public Response getParagraphResult(@PathParam("notebookId") String notebookId,
-                                     @PathParam("paragraphId") String paragraphId,
-                                     @HeaderParam("If-Modified-Since") String modificationDateString)
+      @PathParam("paragraphId") String paragraphId,
+      @HeaderParam("If-Modified-Since") String modificationDateString)
       throws IOException {
     LOG.info("Downloading paragraph {} {}", notebookId, paragraphId);
   
@@ -711,7 +711,7 @@ public class NotebookRestApi {
     }
     try {
       Date modificationDate = DateUtil.parseDate(modificationDateString);
-      if(!p.getDateFinished().after(modificationDate))
+      if (!p.getDateFinished().after(modificationDate))
         return Response.ok()
                 .status(Response.Status.NOT_MODIFIED)
                 .build();
