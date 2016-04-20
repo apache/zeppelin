@@ -46,14 +46,14 @@ public class LivyOutputStream extends OutputStream {
   }
 
   @Override
-  public void write(byte [] b) throws IOException {
+  public void write(byte[] b) throws IOException {
     if (interpreterOutput != null) {
       interpreterOutput.write(b);
     }
   }
 
   @Override
-  public void write(byte [] b, int offset, int len) throws IOException {
+  public void write(byte[] b, int offset, int len) throws IOException {
     if (interpreterOutput != null) {
       interpreterOutput.write(b, offset, len);
     }

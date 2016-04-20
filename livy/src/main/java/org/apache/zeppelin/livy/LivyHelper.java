@@ -23,6 +23,7 @@ import com.google.gson.reflect.TypeToken;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
@@ -300,7 +301,7 @@ public class LivyHelper {
   public String executeHTTP(String targetURL, String method, String jsonData, String paragraphId)
       throws Exception {
     HttpClient client = HttpClientBuilder.create().build();
-    HttpResponse response;
+    HttpResponse response = null;
     if (method.equals("POST")) {
       HttpPost request = new HttpPost(targetURL);
       request.addHeader("Content-Type", "application/json");
@@ -308,11 +309,19 @@ public class LivyHelper {
       request.setEntity(se);
       response = client.execute(request);
       paragraphHttpMap.put(paragraphId, request);
-    } else {
+    } else if (method.equals("GET")) {
       HttpGet request = new HttpGet(targetURL);
       request.addHeader("Content-Type", "application/json");
       response = client.execute(request);
       paragraphHttpMap.put(paragraphId, request);
+    } else if (method.equals("DELETE")) {
+      HttpDelete request = new HttpDelete(targetURL);
+      request.addHeader("Content-Type", "application/json");
+      response = client.execute(request);
+    }
+
+    if (response == null) {
+      return null;
     }
 
     if (response.getStatusLine().getStatusCode() == 200
@@ -340,4 +349,16 @@ public class LivyHelper {
     paragraphHttpMap.put(paragraphId, null);
   }
 
+  protected void closeSession(Map<String, Integer> userSessionMap, String kind) {
+    for (Map.Entry<String, Integer> entry : userSessionMap.entrySet()) {
+      try {
+        executeHTTP(property.getProperty("zeppelin.livy.url") + "/sessions/"
+                + entry.getValue(),
+            "DELETE", null, null);
+      } catch (Exception e) {
+        LOGGER.error(String.format("Error closing session for user with session ID: %s, kind: %s",
+            entry.getValue(), kind), e);
+      }
+    }
+  }
 }

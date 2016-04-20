@@ -46,7 +46,7 @@ public class LivyPySparkInterpreter extends Interpreter {
     );
   }
 
-  private Map<String, Integer> userSessionMap;
+  protected Map<String, Integer> userSessionMap;
   private LivyHelper livyHelper;
 
   public LivyPySparkInterpreter(Properties property) {
@@ -61,6 +61,7 @@ public class LivyPySparkInterpreter extends Interpreter {
 
   @Override
   public void close() {
+    livyHelper.closeSession(userSessionMap, "pyspark");
   }
 
   @Override

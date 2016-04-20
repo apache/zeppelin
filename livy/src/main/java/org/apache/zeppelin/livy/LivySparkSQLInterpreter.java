@@ -49,7 +49,7 @@ public class LivySparkSQLInterpreter extends Interpreter {
     );
   }
 
-  private Map<String, Integer> userSessionMap;
+  protected Map<String, Integer> userSessionMap;
   private LivyHelper livyHelper;
 
   public LivySparkSQLInterpreter(Properties property) {
@@ -64,6 +64,7 @@ public class LivySparkSQLInterpreter extends Interpreter {
 
   @Override
   public void close() {
+    livyHelper.closeSession(userSessionMap, "spark");
   }
 
   @Override

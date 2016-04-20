@@ -17,10 +17,7 @@
 
 package org.apache.zeppelin.livy;
 
-import org.apache.commons.exec.ExecuteWatchdog;
-import org.apache.commons.exec.Executor;
 import org.apache.zeppelin.interpreter.*;
-import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.slf4j.Logger;
@@ -51,7 +48,7 @@ public class LivySparkInterpreter extends Interpreter {
     );
   }
 
-  private static Map<String, Integer> userSessionMap;
+  protected static Map<String, Integer> userSessionMap;
   private LivyHelper livyHelper;
 
   public LivySparkInterpreter(Properties property) {
@@ -75,6 +72,7 @@ public class LivySparkInterpreter extends Interpreter {
 
   @Override
   public void close() {
+    livyHelper.closeSession(userSessionMap, "spark");
   }
 
   @Override
