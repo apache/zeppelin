@@ -39,8 +39,8 @@ public class LivySparkInterpreter extends Interpreter {
 
   static {
     Interpreter.register(
-        "lspark",
-        "lspark",
+        "spark",
+        "livy",
         LivySparkInterpreter.class.getName(),
         new InterpreterPropertyBuilder()
             .add("zeppelin.livy.url", DEFAULT_URL, "The URL for Livy Server.")

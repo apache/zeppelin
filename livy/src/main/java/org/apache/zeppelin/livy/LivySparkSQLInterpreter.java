@@ -39,7 +39,7 @@ public class LivySparkSQLInterpreter extends Interpreter {
   static {
     Interpreter.register(
         "sql",
-        "lspark",
+        "livy",
         LivySparkSQLInterpreter.class.getName(),
         new InterpreterPropertyBuilder()
             .add("livy.spark.maxResult",

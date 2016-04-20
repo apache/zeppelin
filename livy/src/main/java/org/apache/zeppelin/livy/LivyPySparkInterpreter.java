@@ -39,7 +39,7 @@ public class LivyPySparkInterpreter extends Interpreter {
   static {
     Interpreter.register(
         "pyspark",
-        "lspark",
+        "livy",
         LivyPySparkInterpreter.class.getName(),
         new InterpreterPropertyBuilder()
             .build()

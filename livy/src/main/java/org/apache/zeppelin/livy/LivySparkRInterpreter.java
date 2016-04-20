@@ -39,7 +39,7 @@ public class LivySparkRInterpreter extends Interpreter {
   static {
     Interpreter.register(
         "sparkr",
-        "lspark",
+        "livy",
         LivySparkRInterpreter.class.getName(),
         new InterpreterPropertyBuilder()
             .build()
