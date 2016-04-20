@@ -17,6 +17,7 @@
 
 package org.apache.zeppelin.notebook;
 
+import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.display.GUI;
@@ -59,6 +60,19 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     super(generateId(), null);
     config = new HashMap<>();
     settings = new GUI();
+  }
+
+  public Paragraph(String paragraphId, Note note, JobListener listener,
+                   NoteInterpreterLoader replLoader) {
+    super(paragraphId, generateId(), listener);
+    this.note = note;
+    this.replLoader = replLoader;
+    title = null;
+    text = null;
+    authenticationInfo = null;
+    dateUpdated = null;
+    settings = new GUI();
+    config = new HashMap<String, Object>();
   }
 
   public Paragraph(Note note, JobListener listener, NoteInterpreterLoader replLoader) {
@@ -232,6 +246,12 @@ public class Paragraph extends Job implements Serializable, Cloneable {
       String scriptBody = getScriptBody();
       Map<String, Input> inputs = Input.extractSimpleQueryParam(scriptBody); // inputs will be built
                                                                              // from script body
+
+      final AngularObjectRegistry angularRegistry = repl.getInterpreterGroup()
+              .getAngularObjectRegistry();
+
+      scriptBody = extractVariablesFromAngularRegistry(scriptBody, inputs, angularRegistry);
+
       settings.setForms(inputs);
       script = Input.getSimpleQuery(settings.getParams(), scriptBody);
     }
@@ -389,5 +409,26 @@ public class Paragraph extends Job implements Serializable, Cloneable {
   public Object clone() throws CloneNotSupportedException {
     Paragraph paraClone = (Paragraph) this.clone();
     return paraClone;
+  }
+
+  String extractVariablesFromAngularRegistry(String scriptBody, Map<String, Input> inputs,
+                                             AngularObjectRegistry angularRegistry) {
+
+    final String noteId = this.getNote().getId();
+    final String paragraphId = this.getId();
+
+    final Set<String> keys = new HashSet<>(inputs.keySet());
+
+    for (String varName : keys) {
+      final AngularObject paragraphScoped = angularRegistry.get(varName, noteId, paragraphId);
+      final AngularObject noteScoped = angularRegistry.get(varName, noteId, null);
+      final AngularObject angularObject = paragraphScoped != null ? paragraphScoped : noteScoped;
+      if (angularObject != null) {
+        inputs.remove(varName);
+        final String pattern = "[$][{]\\s*" + varName + "\\s*(?:=[^}]+)?[}]";
+        scriptBody = scriptBody.replaceAll(pattern, angularObject.get().toString());
+      }
+    }
+    return scriptBody;
   }
 }

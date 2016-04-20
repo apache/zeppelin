@@ -254,7 +254,7 @@ public class SparkInterpreter extends Interpreter {
   }
 
   public SparkContext createSparkContext() {
-    System.err.println("------ Create new SparkContext " + getProperty("master") + " -------");
+    logger.info("------ Create new SparkContext {} -------", getProperty("master"));
 
     String execUri = System.getenv("SPARK_EXECUTOR_URI");
     String[] jars = SparkILoop.getAddedJars();

@@ -36,6 +36,8 @@ Zeppelin interpreter setting is the configuration of a given interpreter on Zepp
 
 <img src="/assets/themes/zeppelin/img/screenshots/interpreter_setting.png">
 
+Properties are exported as environment variable when property name is consisted of upper characters, numbers and underscore ([A-Z_0-9]). Otherwise set properties as JVM property.
+
 Each notebook can be binded to multiple Interpreter Settings using setting icon on upper right corner of the notebook.
 
 <img src="/assets/themes/zeppelin/img/screenshots/interpreter_binding.png" width="800px">
