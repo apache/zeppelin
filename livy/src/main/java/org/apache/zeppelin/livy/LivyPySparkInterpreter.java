@@ -61,7 +61,7 @@ public class LivyPySparkInterpreter extends Interpreter {
 
   @Override
   public void close() {
-    livyHelper.closeSession(userSessionMap, "pyspark");
+    livyHelper.closeSession(userSessionMap, "LivyPySparkInterpreter");
   }
 
   @Override
