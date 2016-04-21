@@ -322,7 +322,9 @@ public class NotebookTest implements JobListenerFactory{
     Note cloneNote = notebook.cloneNote(note.getId(), "clone note");
     Paragraph cp = cloneNote.paragraphs.get(0);
     assertEquals(cp.getStatus(), Status.READY);
-    assertNotEquals(cp.getId(), p.getId());
+
+    // Keep same ParagraphID
+    assertEquals(cp.getId(), p.getId());
     assertEquals(cp.text, p.text);
     assertEquals(cp.getResult().message(), p.getResult().message());
   }
