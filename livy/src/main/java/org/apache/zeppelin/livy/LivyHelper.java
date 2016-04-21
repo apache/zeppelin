@@ -349,15 +349,15 @@ public class LivyHelper {
     paragraphHttpMap.put(paragraphId, null);
   }
 
-  protected void closeSession(Map<String, Integer> userSessionMap, String className) {
+  protected void closeSession(Map<String, Integer> userSessionMap) {
     for (Map.Entry<String, Integer> entry : userSessionMap.entrySet()) {
       try {
         executeHTTP(property.getProperty("zeppelin.livy.url") + "/sessions/"
                 + entry.getValue(),
             "DELETE", null, null);
       } catch (Exception e) {
-        LOGGER.error(String.format("Error closing session for user with session ID: %s, ClassName: %s",
-            entry.getValue(), className), e);
+        LOGGER.error(String.format("Error closing session for user with session ID: %s",
+            entry.getValue()), e);
       }
     }
   }

@@ -61,7 +61,7 @@ public class LivySparkRInterpreter extends Interpreter {
 
   @Override
   public void close() {
-    livyHelper.closeSession(userSessionMap, "LivySparkRInterpreter");
+    livyHelper.closeSession(userSessionMap);
   }
 
   @Override
