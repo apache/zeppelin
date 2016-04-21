@@ -178,6 +178,9 @@ Examples:
 * With a JSON query:
 ![Elasticsearch - Search with query](../assets/themes/zeppelin/img/docs-img/elasticsearch-search-json-query-table.png)
 
+* With a JSON query containing a `fields` parameter (for filtering the fields in the response): in this case, all the fields values in the response are arrays, so, after flattening the result, the format of all the field names is `field_name[x]`
+![Elasticsearch - Search with query and a fields param](../assets/themes/zeppelin/img/docs-img/elasticsearch-query-with-fields-param.png)
+
 * With a query string:
 ![Elasticsearch - Search with query string](../assets/themes/zeppelin/img/docs-img/elasticsearch-query-string.png)
 
