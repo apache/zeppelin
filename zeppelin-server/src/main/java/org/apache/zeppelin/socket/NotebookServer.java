@@ -16,7 +16,6 @@
  */
 package org.apache.zeppelin.socket;
 
-
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
@@ -48,15 +47,14 @@ import org.apache.zeppelin.server.ZeppelinServer;
 import org.apache.zeppelin.socket.Message.OP;
 import org.apache.zeppelin.ticket.TicketContainer;
 import org.apache.zeppelin.utils.SecurityUtils;
-import org.eclipse.jetty.websocket.WebSocket;
-import org.eclipse.jetty.websocket.WebSocketServlet;
+import org.eclipse.jetty.websocket.servlet.WebSocketServlet;
+import org.eclipse.jetty.websocket.servlet.WebSocketServletFactory;
 import org.quartz.SchedulerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * Zeppelin websocket service.
- *
  */
 public class NotebookServer extends WebSocketServlet implements
         NotebookSocketListener, JobListenerFactory, AngularObjectRegistryListener,
@@ -71,6 +69,10 @@ public class NotebookServer extends WebSocketServlet implements
   }
 
   @Override
+  public void configure(WebSocketServletFactory factory) {
+    factory.setCreator(new NotebookWebSocketCreator(this));
+  }
+
   public boolean checkOrigin(HttpServletRequest request, String origin) {
     try {
       return SecurityUtils.isValidOrigin(origin, ZeppelinConfiguration.create());
@@ -82,8 +84,7 @@ public class NotebookServer extends WebSocketServlet implements
     return false;
   }
 
-  @Override
-  public WebSocket doWebSocketConnect(HttpServletRequest req, String protocol) {
+  public NotebookSocket doWebSocketConnect(HttpServletRequest req, String protocol) {
     return new NotebookSocket(req, protocol, this);
   }
 
@@ -448,7 +449,7 @@ public class NotebookServer extends WebSocketServlet implements
     }
   }
 
-  private void updateNote(WebSocket conn, HashSet<String> userAndRoles,
+  private void updateNote(NotebookSocket conn, HashSet<String> userAndRoles,
                           Notebook notebook, Message fromMessage)
       throws SchedulerException, IOException {
     String noteId = (String) fromMessage.get("id");
