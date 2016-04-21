@@ -153,22 +153,22 @@ public class ZeppelinServer extends Application {
 
     if (conf.useSsl()) {
 
-      HttpConfiguration http_config = new HttpConfiguration();
-      http_config.setSecureScheme("https");
-      http_config.setSecurePort(conf.getServerPort());
-      http_config.setOutputBufferSize(32768);
+      HttpConfiguration httpConfig = new HttpConfiguration();
+      httpConfig.setSecureScheme("https");
+      httpConfig.setSecurePort(conf.getServerPort());
+      httpConfig.setOutputBufferSize(32768);
 
-      HttpConfiguration https_config = new HttpConfiguration(http_config);
+      HttpConfiguration httpsConfig = new HttpConfiguration(httpConfig);
       SecureRequestCustomizer src = new SecureRequestCustomizer();
       // Only with Jetty 9.3.x
 //      src.setStsMaxAge(2000);
 //      src.setStsIncludeSubDomains(true);
-      https_config.addCustomizer(src);
+      httpsConfig.addCustomizer(src);
 
       connector = new ServerConnector(
               server,
               new SslConnectionFactory(getSslContextFactory(conf), HttpVersion.HTTP_1_1.asString()),
-              new HttpConnectionFactory(https_config));
+              new HttpConnectionFactory(httpsConfig));
 
 
     } else {
