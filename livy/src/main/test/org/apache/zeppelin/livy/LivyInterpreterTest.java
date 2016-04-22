@@ -32,18 +32,17 @@ import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import java.util.HashMap;
+import java.util.Properties;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.doReturn;
 
 @RunWith(MockitoJUnitRunner.class)
-public class LivyPySparkInterpreterTest {
+public class LivyInterpreterTest {
 
   @Rule
   public ErrorCollector collector = new ErrorCollector();
 
-
-  @Mock(answer = Answers.RETURNS_DEEP_STUBS)
   private static LivyPySparkInterpreter interpreter;
 
   @Mock(answer = Answers.RETURNS_DEEP_STUBS)
@@ -56,24 +55,24 @@ public class LivyPySparkInterpreterTest {
 
   @Before
   public void prepareContext() throws Exception {
-    interpreter = Mockito.mock(LivyPySparkInterpreter.class);
+    interpreter = new LivyPySparkInterpreter(new Properties());
     interpreter.userSessionMap = new HashMap<>();
     interpreter.userSessionMap.put(null, 0);
     interpreter.livyHelper = Mockito.mock(LivyHelper.class);
     interpreter.open();
 
-    doReturn(0).when(interpreter.livyHelper).createSession(interpreterContext, "");
-    doReturn(new InterpreterResult(InterpreterResult.Code.SUCCESS)).when(interpreter).interpret("print \"x is 1.\"", interpreterContext);
+    doReturn(new InterpreterResult(InterpreterResult.Code.SUCCESS)).when(interpreter.livyHelper)
+        .interpret("print \"x is 1.\"", interpreterContext, interpreter.userSessionMap);
   }
 
   @Test
-  public void check_init_variables() throws Exception {
+  public void checkInitVariables() throws Exception {
     collector.checkThat("Check that, if userSessionMap is made: ",
         interpreter.userSessionMap, CoreMatchers.notNullValue());
   }
 
   @Test
-  public void check_basic_pyspark() throws Exception {
+  public void checkBasicInterpreter() throws Exception {
 
     String paragraphString = "print \"x is 1.\"";
 

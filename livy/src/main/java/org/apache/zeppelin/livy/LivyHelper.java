@@ -57,7 +57,7 @@ public class LivyHelper {
     this.property = property;
   }
 
-  protected Integer createSession(InterpreterContext context, String kind) throws Exception {
+  public Integer createSession(InterpreterContext context, String kind) throws Exception {
     try {
       String json = executeHTTP(property.getProperty("zeppelin.livy.url") + "/sessions",
           "POST",
@@ -185,7 +185,7 @@ public class LivyHelper {
     }
   }
 
-  protected InterpreterResult interpret(String stringLines,
+  public InterpreterResult interpret(String stringLines,
                                         final InterpreterContext context,
                                         final Map<String, Integer> userSessionMap)
       throws Exception {
@@ -298,7 +298,7 @@ public class LivyHelper {
     }
   }
 
-  public String executeHTTP(String targetURL, String method, String jsonData, String paragraphId)
+  protected String executeHTTP(String targetURL, String method, String jsonData, String paragraphId)
       throws Exception {
     HttpClient client = HttpClientBuilder.create().build();
     HttpResponse response = null;
@@ -349,7 +349,7 @@ public class LivyHelper {
     paragraphHttpMap.put(paragraphId, null);
   }
 
-  protected void closeSession(Map<String, Integer> userSessionMap) {
+  public void closeSession(Map<String, Integer> userSessionMap) {
     for (Map.Entry<String, Integer> entry : userSessionMap.entrySet()) {
       try {
         executeHTTP(property.getProperty("zeppelin.livy.url") + "/sessions/"
