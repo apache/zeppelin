@@ -1,0 +1,73 @@
+---
+layout: page
+title: "Livy Interpreter"
+description: ""
+group: manual
+---
+{% include JB/setup %}
+
+## Livy Interpreter for Apache Zeppelin
+Livy is an open source REST interface for interacting with Spark from anywhere. It supports executing snippets of code or programs in a Spark context that runs locally or in YARN.
+
+* Interactive Scala, Python and R shells
+* Batch submissions in Scala, Java, Python
+* Multi users can share the same server (impersonation support)
+* Can be used for submitting jobs from anywhere with REST
+* Does not require any code change to your programs
+
+### Configuration
+<table class="table-configuration">
+  <tr>
+    <th>Property</th>
+    <th>Default</th>
+    <th>Description</th>
+  </tr>
+  <tr>
+    <td>zeppelin.livy.url</td>
+    <td>http://localhost:8998</td>
+    <td>URL where livy server is running</td>
+  </tr>
+  <tr>
+    <td>livy.spark.maxResult</td>
+    <td>livy.spark.maxResult</td>
+    <td>Max number of SparkSQL result to display.</td>
+  </tr>
+</table>
+
+
+
+## How to use
+Basically, you can use
+
+**spark**
+```
+%livy.spark
+sc.version
+```
+
+
+**pyspark**
+```
+%livy.pyspark
+print "1"
+```
+
+**sparkR**
+```
+%livy.sparkr
+hello <- function( name ) {
+    sprintf( "Hello, %s", name );
+}
+
+hello("livy")
+```
+
+
+
+### Apply Zeppelin Dynamic Forms
+You can leverage [Zeppelin Dynamic Form]({{BASE_PATH}}/manual/dynamicform.html). You can use both the `text input` and `select form` parameterization features.
+
+```
+%livy.pyspark
+print "${group_by=product_id,product_id|product_name|customer_id|store_id}"
+```
