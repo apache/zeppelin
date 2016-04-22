@@ -20,7 +20,7 @@ limitations under the License.
 {% include JB/setup %}
 
 # Shiro authentication for Apache Zeppelin
-[Apache Shiro](http://shiro.apache.org/) is a powerful and easy-to-use Java security framework that performs authentication, authorization, cryptography, and session management. In this documentation, we will explain step by step how Shiro works for Zeppelin notebook authentication. 
+[Apache Shiro](http://shiro.apache.org/) is a powerful and easy-to-use Java security framework that performs authentication, authorization, cryptography, and session management. In this documentation, we will explain step by step how Shiro works for Zeppelin notebook authentication.
 
 When you connect to Apache Zeppelin, you will be asked to enter your credentials. Once you logged in, then you have access to all notes including other user's notes.
 
@@ -28,7 +28,7 @@ When you connect to Apache Zeppelin, you will be asked to enter your credentials
 You can setup **Zeppelin notebook authentication** in some simple steps.
 
 ####1. Secure the HTTP channel
-To secure the HTTP channel, you have to change both **anon** and **authcBasic** settings in `conf/shiro.ini`. In here, **anon** means "the access is anonymous" and **authcBasic** means "basic auth security". 
+To secure the HTTP channel, you have to change both **anon** and **authcBasic** settings in `conf/shiro.ini`. In here, **anon** means "the access is anonymous" and **authcBasic** means "basic auth security".
 
 The default status of them is
 
@@ -36,7 +36,7 @@ The default status of them is
 /** = anon
 #/** = authcBasic
 ```
-Deactivate the line "/** = anon" and activate the line "/** = authcBasic" in `conf/shiro.ini` file. 
+Deactivate the line "/** = anon" and activate the line "/** = authcBasic" in `conf/shiro.ini` file.
 
 ```
 #/** = anon
@@ -49,15 +49,15 @@ For the further information about  `shiro.ini` file format, please refer to [Shi
 Set to property **zeppelin.anonymous.allowed** to **false** in `conf/zeppelin-site.xml`. If you don't have this file yet, just copy `conf/zeppelin-site.xml.template` to `conf/zeppelin-site.xml`.
 
 ####3. Start Zeppelin
-	 
+
 ```
 bin/zeppelin-daemon.sh start (or restart)
 ```
-	
+
 Then you can browse Zeppelin at [http://localhost:8080](http://localhost:8080).
 
 ####4. Login
-Finally, you can login using one of the below **username/password** combinations. 
+Finally, you can login using one of the below **username/password** combinations.
 
 <center><img src="../assets/themes/zeppelin/img/docs-img/zeppelin-login.png" width="40%" height="40%"></center>
 
@@ -66,7 +66,7 @@ admin = password1
 user1 = password2
 user2 = password3
 ```
-	
+
 Those combinations are defined in the `conf/shiro.ini` file.
 
-> **NOTE :** This documentation is originally from [SECURITY-README.md](https://github.com/apache/incubator-zeppelin/blob/master/SECURITY-README.md). 
+> **NOTE :** This documentation is originally from [SECURITY-README.md](https://github.com/apache/incubator-zeppelin/blob/master/SECURITY-README.md).

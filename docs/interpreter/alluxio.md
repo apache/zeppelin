@@ -74,7 +74,7 @@ The **Alluxio** interpreter accepts the following commands.
     <tr>
       <td>copyFromLocal</td>
       <td>copyFromLocal "source path" "remote path"</td>
-      <td>Copy the specified file specified by "source path" to the path specified by "remote path". 
+      <td>Copy the specified file specified by "source path" to the path specified by "remote path".
       This command will fail if "remote path" already exists.</td>
     </tr>
     <tr>
@@ -230,4 +230,4 @@ Following steps are performed:
 
 <center>
   ![Alluxio Interpreter Example](../assets/themes/zeppelin/img/docs-img/alluxio-example.png)
-</center> 
+</center>

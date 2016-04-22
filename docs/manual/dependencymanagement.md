@@ -1,6 +1,6 @@
 ---
 layout: page
-title: "Dependnecy Management"
+title: "Dependency Management"
 description: ""
 group: manual
 ---
@@ -71,4 +71,3 @@ When your code requires external library, instead of doing download/copy/restart
     </ol>
   </div>
 </div>
-

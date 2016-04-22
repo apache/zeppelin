@@ -8,7 +8,7 @@ group: manual
 
 
 ## Spark Interpreter for Apache Zeppelin
-[Apache Spark](http://spark.apache.org) is supported in Zeppelin with 
+[Apache Spark](http://spark.apache.org) is supported in Zeppelin with
 Spark Interpreter group, which consisted of 4 interpreters.
 
 <table class="table-configuration">
@@ -40,7 +40,7 @@ Spark Interpreter group, which consisted of 4 interpreters.
 </table>
 
 ## Configuration
-Zeppelin provides the below properties for Spark interpreter. 
+Zeppelin provides the below properties for Spark interpreter.
 You can also set other Spark properties which are not listed in the table. If so, please refer to [Spark Available Properties](http://spark.apache.org/docs/latest/configuration.html#available-properties).
 <table class="table-configuration">
   <tr>
@@ -273,13 +273,13 @@ z.put("objName", myObject)
 %pyspark
 myObject = z.get("objName")
 {% endhighlight %}
-  
+
   </div>
 </div>
 
 ### Form Creation
 
-ZeppelinContext provides functions for creating forms. 
+ZeppelinContext provides functions for creating forms.
 In scala and python environments, you can create forms programmatically.
 <div class="codetabs">
   <div data-lang="scala" markdown="1">
@@ -306,13 +306,13 @@ z.select("formName", "option1", Seq(("option1", "option1DisplayName"),
 
 {% highlight python %}
 %pyspark
-# Create text input form 
+# Create text input form
 z.input("formName")
 
-# Create text input form with default value 
+# Create text input form with default value
 z.input("formName", "defaultValue")
 
-# Create select form 
+# Create select form
 z.select("formName", [("option1", "option1DisplayName"),
                       ("option2", "option2DisplayName")])
 
@@ -320,7 +320,7 @@ z.select("formName", [("option1", "option1DisplayName"),
 z.select("formName", [("option1", "option1DisplayName"),
                       ("option2", "option2DisplayName")], "option1")
 {% endhighlight %}
-  
+
   </div>
 </div>
 
@@ -359,5 +359,3 @@ This is to make the server communicate with KDC.
   > **NOTE:** If you do not have access to the above spark-defaults.conf file, optionally, you may add the lines to the Spark Interpreter through the Interpreter tab in the Zeppelin UI.
 
 4. That's it. Play with Zeppelin !
-
-

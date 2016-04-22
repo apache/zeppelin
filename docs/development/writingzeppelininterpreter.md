@@ -22,7 +22,7 @@ limitations under the License.
 ### What is Zeppelin Interpreter
 
 Zeppelin Interpreter is a language backend. For example to use scala code in Zeppelin, you need scala interpreter.
-Every Interpreter belongs to an InterpreterGroup. 
+Every Interpreter belongs to an InterpreterGroup.
 Interpreters in the same InterpreterGroup can reference each other. For example, SparkSqlInterpreter can reference SparkInterpreter to get SparkContext from it while they're in the same group.
 
 <img class="img-responsive" style="width:50%; border: 1px solid #ecf0f1;" height="auto" src="/assets/themes/zeppelin/img/interpreter.png" />

@@ -20,12 +20,12 @@ limitations under the License.
 ### Notebook Storage
 
 Zeppelin has a pluggable notebook storage mechanism controlled by `zeppelin.notebook.storage` configuration option with multiple implementations.
-There are few Notebook storages avaialble for a use out of the box:
+There are few Notebook storages available for a use out of the box:
  - (default) all notes are saved in the notebook folder in your local File System - `VFSNotebookRepo`
  - there is also an option to version it using local Git repository - `GitNotebookRepo`
  - another option is Amazon S3 service - `S3NotebookRepo`
 
-Multiple storages can be used at the same time by providing a comma-separated list of the calss-names in the confiruration.
+Multiple storages can be used at the same time by providing a comma-separated list of the class-names in the configuration.
 By default, only first two of them will be automatically kept in sync by Zeppelin.
 
 </br>
@@ -44,7 +44,7 @@ To enable versioning for all your local notebooks though a standard Git reposito
 </br>
 #### Notebook Storage in S3  <a name="S3"></a>
 
-For notebook storage in S3 you need the AWS credentials, for this there are three options, the enviroment variable ```AWS_ACCESS_KEY_ID``` and ```AWS_ACCESS_SECRET_KEY```,  credentials file in the folder .aws in you home and IAM role for your instance. For complete the need steps is necessary:
+For notebook storage in S3 you need the AWS credentials, for this there are three options, the environment variable ```AWS_ACCESS_KEY_ID``` and ```AWS_ACCESS_SECRET_KEY```,  credentials file in the folder .aws in you home and IAM role for your instance. For complete the need steps is necessary:
 
 </br>
 you need the following folder structure on S3
@@ -56,14 +56,14 @@ bucket_name/
 
 ```
 
-set the enviroment variable in the file **zeppelin-env.sh**:
+set the environment variable in the file **zeppelin-env.sh**:
 
 ```
 export ZEPPELIN_NOTEBOOK_S3_BUCKET = bucket_name
 export ZEPPELIN_NOTEBOOK_S3_USER = username
 ```
 
-in the file **zeppelin-site.xml** uncommet and complete the next property:
+in the file **zeppelin-site.xml** uncomment and complete the next property:
 
 ```
 <!--If used S3 to storage, it is necessary the following folder structure bucket_name/username/notebook/-->
