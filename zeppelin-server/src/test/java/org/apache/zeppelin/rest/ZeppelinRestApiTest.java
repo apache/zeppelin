@@ -18,6 +18,7 @@
 package org.apache.zeppelin.rest;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -689,6 +690,86 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     assertNull("paragraph should be deleted", retrParagrah);
 
     ZeppelinServer.notebook.removeNote(note.getId());
+  }
+
+  @Test
+  public void testSearch() throws IOException {
+    String jsonRequest;
+    PostMethod post;
+    PutMethod put;
+    GetMethod get;
+    Map<String, Object> resp;
+    Map<String, String> body;
+    ArrayList searchBody;
+    Map<String, ArrayList> permissions;
+
+    get = httpGet("/security/ticket");
+    get.addRequestHeader("Origin", "http://localhost");
+    resp = gson.fromJson(get.getResponseBodyAsString(),
+        new TypeToken<Map<String, Object>>() {
+        }.getType());
+    body = (Map<String, String>) resp.get("body");
+    String username = body.get("principal");
+    get.releaseConnection();
+
+
+    Note note1 = ZeppelinServer.notebook.createNote();
+    jsonRequest = "{\"title\": \"title1\", \"text\": \"ThisIsToTestSearchMethodWithPermissions 1\"}";
+    post = httpPost("/notebook/" + note1.getId() + "/paragraph", jsonRequest);
+    post.releaseConnection();
+
+    Note note2 = ZeppelinServer.notebook.createNote();
+    jsonRequest = "{\"title\": \"title1\", \"text\": \"ThisIsToTestSearchMethodWithPermissions 2\"}";
+    post = httpPost("/notebook/" + note2.getId() + "/paragraph", jsonRequest);
+    post.releaseConnection();
+
+    Note note3 = ZeppelinServer.notebook.createNote();
+    jsonRequest = "{\"title\": \"title1\", \"text\": \"ThisIsToTestSearchMethodWithPermissions 3\"}";
+    post = httpPost("/notebook/" + note3.getId() + "/paragraph", jsonRequest);
+    post.releaseConnection();
+
+    jsonRequest = "{\"owners\":[\"" + username + "\"],\"readers\":[\"" + username + "\"],\"writers\":[\"" + username + "\"]}";
+    put = httpPut("/notebook/" + note1.getId() + "/permissions", jsonRequest);
+    put.releaseConnection();
+
+    jsonRequest = "{\"owners\":[\"admin\"],\"readers\":[\"admin\"],\"writers\":[\"admin\"]}";
+    put = httpPut("/notebook/" + note2.getId() + "/permissions", jsonRequest);
+    put.releaseConnection();
+
+    jsonRequest = "{\"owners\":[\"" + username + "\"],\"readers\":[\"" + username + "\"],\"writers\":[\"" + username + "\"]}";
+    put = httpPut("/notebook/" + note3.getId() + "/permissions", jsonRequest);
+    put.releaseConnection();
+
+    get = httpGet("/notebook/search?q='ThisIsToTestSearchMethodWithPermissions'");
+    get.addRequestHeader("Origin", "http://localhost");
+    Map<String, Object> res = gson.fromJson(get.getResponseBodyAsString(),
+        new TypeToken<Map<String, Object>>() {
+        }.getType());
+    searchBody = (ArrayList) res.get("body");
+
+    for (int i = 0; i < searchBody.size(); i++) {
+      Map<String, String> searchResult = (Map<String, String>) searchBody.get(i);
+      String userId = searchResult.get("id").split("/", 2)[0];
+      GetMethod getPermission = httpGet("/notebook/" + userId + "/permissions");
+      getPermission.addRequestHeader("Origin", "http://localhost");
+      resp = gson.fromJson(getPermission.getResponseBodyAsString(),
+          new TypeToken<Map<String, Object>>() {
+          }.getType());
+      permissions = (Map<String, ArrayList>) resp.get("body");
+      ArrayList owners = permissions.get("owners");
+      ArrayList readers = permissions.get("readers");
+      ArrayList writers = permissions.get("writers");
+
+      if (owners.size() != 0 && readers.size() != 0 && writers.size() != 0) {
+        assertEquals("User has permissions  ", true, (owners.contains(username) || readers.contains(username) ||
+            writers.contains(username)));
+      }
+      getPermission.releaseConnection();
+    }
+    get.releaseConnection();
+    ZeppelinServer.notebook.removeNote(note1.getId());
+    ZeppelinServer.notebook.removeNote(note2.getId());
+    ZeppelinServer.notebook.removeNote(note3.getId());
   }
 }
 
