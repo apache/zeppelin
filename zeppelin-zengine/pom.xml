@@ -35,16 +35,6 @@
   <description>Zeppelin Zengine</description>
   <url>http://zeppelin.incubator.apache.org</url>
 
-  <developers>
-    <developer>
-      <id>moon</id>
-      <name>Lee moon soo</name>
-      <organization>NFLabs</organization>
-      <organizationUrl>http://www.nflabs.com</organizationUrl>
-    </developer>
-  </developers>
-
-
   <dependencies>
     <dependency>
       <groupId>${project.groupId}</groupId>

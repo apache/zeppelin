@@ -60,27 +60,6 @@
     <developerConnection>scm:git:https://git-wip-us.apache.org/repos/asf/incubator-zeppelin.git</developerConnection>
   </scm>
 
-  <developers>
-    <developer>
-      <id>moon</id>
-      <name>Lee moon soo</name>
-      <organization>NFLabs</organization>
-      <organizationUrl>http://www.nflabs.com</organizationUrl>
-    </developer>
-    <developer>
-      <id>alex</id>
-      <name>Alexander Bezzubov</name>
-      <organization>NFLabs</organization>
-      <organizationUrl>http://www.nflabs.com</organizationUrl>
-    </developer>
-    <developer>
-      <id>anthonycorbacho</id>
-      <name>Anthony Corbacho</name>
-      <organization>NFLabs</organization>
-      <organizationUrl>http://www.nflabs.com</organizationUrl>
-    </developer>
-  </developers>
-
   <inceptionYear>2013</inceptionYear>
 
   <modules>
