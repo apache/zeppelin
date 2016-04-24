@@ -966,7 +966,11 @@ angular.module('zeppelinWebApp')
       }
       return '';
     }
-    var desc = 'Took ' + (timeMs/1000) + ' seconds. Last executed by ' + pdata.authenticationInfo.user + ' at ' + pdata.dateUpdated;
+    var user = 'anonymous';
+    if (pdata.authenticationInfo != null && pdata.authenticationInfo.user != null) {
+      user = pdata.authenticationInfo.user;
+    }
+    var desc = 'Took ' + (timeMs/1000) + ' seconds. Last updated by ' + user + ' at ' + pdata.dateUpdated;
     if ($scope.isResultOutdated()){
       desc += ' (outdated)';
     }
