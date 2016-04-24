@@ -746,7 +746,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
         new TypeToken<Map<String, Object>>() {
         }.getType());
     searchBody = (ArrayList) res.get("body");
-
+    assertEquals("At-least two search results are there", true ,searchBody.size()>=2);
     for (int i = 0; i < searchBody.size(); i++) {
       Map<String, String> searchResult = (Map<String, String>) searchBody.get(i);
       String userId = searchResult.get("id").split("/", 2)[0];
