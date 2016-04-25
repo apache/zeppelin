@@ -132,6 +132,13 @@ limitations under the License.
                 </p>
               </div>
               <div>
+                <span>- Cron executing user (click enter in field to submit)</span>
+                <input type="text"
+                       ng-model="note.config.cronExecutingUser"
+                       ng-enter="setCronExecutingUser(note.config.cronExecutingUser)"
+                       dropdown-input />
+              </div>
+              <div>
                 <span>- auto-restart interpreter on cron execution </span>
                 <input type="checkbox"
                        ng-model="note.config.releaseresource"
