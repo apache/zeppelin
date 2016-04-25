@@ -21,18 +21,18 @@ limitations under the License.
 
 ## Zeppelin REST API
  Zeppelin provides several REST API's for interaction and remote activation of zeppelin functionality.
- 
+
  All REST API are available starting with the following endpoint ```http://[zeppelin-server]:[zeppelin-port]/api```
- 
- Note that zeppein REST API receive or return JSON objects, it it recommended you install some JSON viewers such as 
+
+ Note that Zeppelin REST API receive or return JSON objects, it it recommended you install some JSON viewers such as 
  [JSONView](https://chrome.google.com/webstore/detail/jsonview/chklaanhfefbnpoihckbnefhakgolnmc)
- 
- 
- If you work with zeppelin and find a need for an additional REST API please [file an issue or send us mail](../../community.html) 
+
+
+ If you work with zeppelin and find a need for an additional REST API please [file an issue or send us mail](../../community.html)
 
  <br />
 ### Configuration REST API list
-  
+
   <table class="table-configuration">
     <col width="200">
     <tr>
@@ -41,7 +41,7 @@ limitations under the License.
     </tr>
     <tr>
       <td>Description</td>
-      <td>This ```GET``` method return all key/value pair of configurations on the server.<br/> 
+      <td>This ```GET``` method return all key/value pair of configurations on the server.<br/>
       Note: For security reason, some pairs would not be shown.</td>
     </tr>
     <tr>
@@ -94,9 +94,9 @@ limitations under the License.
       </td>
     </tr>
   </table>
-  
+
 <br/>
-   
+
   <table class="table-configuration">
     <col width="200">
     <tr>
@@ -105,7 +105,7 @@ limitations under the License.
     </tr>
     <tr>
       <td>Description</td>
-      <td>This ```GET``` method return all prefix matched key/value pair of configurations on the server.<br/> 
+      <td>This ```GET``` method return all prefix matched key/value pair of configurations on the server.<br/>
       Note: For security reason, some pairs would not be shown.</td>
     </tr>
     <tr>

@@ -21,15 +21,15 @@ limitations under the License.
 
 
 ## Vagrant Virtual Machine for Apache Zeppelin
-  
+
 Apache Zeppelin distribution includes a scripts directory
 
  `scripts/vagrant/zeppelin-dev`
- 
+
 This script creates a virtual machine that launches a repeatable, known set of core dependencies required for developing Zeppelin.  It can also be used to run an existing Zeppelin build if you don't plan to build from source.
 For PySpark users, this script includes several helpful [Python Libraries](#python-extras).
 For SparkR users, this script includes several helpful [R Libraries](#r-extras).
- 
+
 ####Installing the required components to launch a virtual machine.
 
 This script requires three applications, [Ansible](http://docs.ansible.com/ansible/intro_installation.html#latest-releases-via-pip "Ansible"), [Vagrant](http://www.vagrantup.com "Vagrant") and [Virtual Box](https://www.virtualbox.org/ "Virtual Box").  All of these applications are freely available as Open Source projects and extremely easy to set up on most operating systems.
@@ -40,11 +40,11 @@ If you are running Windows and don't yet have python installed, [install Python 
 
 1. Download and Install Vagrant:  [Vagrant Downloads](http://www.vagrantup.com/downloads)
 2. Install Ansible:  [Ansible Python pip install](http://docs.ansible.com/ansible/intro_installation.html#latest-releases-via-pip)
-    
+
     ```
     sudo easy_install pip
     sudo pip install ansible
-    ansible --version 
+    ansible --version
     ```
     After then, please check whether it reports **ansible version 1.9.2 or higher**.
 
@@ -70,7 +70,7 @@ Cloning the project again may seem counter intuitive, since this script likley o
 
 Synced folders enable Vagrant to sync a folder on the host machine to the guest machine, allowing you to continue working on your project's files on your host machine, but use the resources in the guest machine to compile or run your project. _[(1) Synced Folder Description from Vagrant Up](https://docs.vagrantup.com/v2/synced-folders/index.html)_
 
-By default, Vagrant will share your project directory (the directory with the Vagrantfile) to `/vagrant`.  Which means you should be able to build within the guest machine after you 
+By default, Vagrant will share your project directory (the directory with the Vagrantfile) to `/vagrant`.  Which means you should be able to build within the guest machine after you
 `cd /vagrant/incubator-zeppelin`
 
 
@@ -95,7 +95,7 @@ The virtual machine consists of:
  - openjdk-7-jdk
  - Python addons: pip, matplotlib, scipy, numpy, pandas
  - [R](https://www.r-project.org/) and R Packages required to run the R Interpreter and the related R tutorial notebook, including:  Knitr, devtools, repr, rCharts, ggplot2, googleVis, mplot, htmltools, base64enc, data.table
- 
+
 ### How to build & run Zeppelin
 
 This assumes you've already cloned the project either on the host machine in the zeppelin-dev directory (to be shared with the guest machine) or cloned directly into a directory while running inside the guest machine.  The following build steps will also include Python and R support via PySpark and SparkR:
@@ -138,7 +138,7 @@ import scipy
 import pandas
 import matplotlib
 
-print "numpy " + numpy.__version__ 
+print "numpy " + numpy.__version__
 print "scipy " + scipy.__version__
 print "pandas " + pandas.__version__
 print "matplotlib " + matplotlib.__version__
@@ -176,7 +176,7 @@ plt.xlabel('Performance')
 plt.title('How fast do you want to go today?')
 
 show(plt)
-``` 
+```
 
 ### R Extras
 

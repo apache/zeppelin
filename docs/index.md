@@ -76,7 +76,7 @@ Some basic charts are already included in Zeppelin. Visualizations are not limit
 
 #### Pivot chart
 
-With simple drag and drop Zeppelin aggeregates the values and display them in pivot chart. You can easily create chart with multiple aggregated values including sum, count, average, min, max.
+With simple drag and drop Zeppelin aggregates the values and display them in pivot chart. You can easily create chart with multiple aggregated values including sum, count, average, min, max.
 
 <div class="row">
   <div class="col-md-8">

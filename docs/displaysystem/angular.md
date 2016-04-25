@@ -92,12 +92,12 @@ When the button is clicked, you'll see both `run` and `numWatched` are increment
 <img src="/assets/themes/zeppelin/img/screenshots/display_angular3.png" width="60%" />
 
 ## Let's make it Simpler and more Intuitive
-In this section, we will introduce a simpler and more intuitive way of using **Angular Display System** in Zeppelin. 
+In this section, we will introduce a simpler and more intuitive way of using **Angular Display System** in Zeppelin.
 
 ### How can we use it?
-Here are some usages. 
+Here are some usages.
 
-#### Import 
+#### Import
 
 #####  - In notebook scope
 ```scala
@@ -141,11 +141,11 @@ import AngularElem._
 <div></div>.model("myModel").display
 
 // bind model with initial value
-<div></div>.model("myModel", initialValue).display 
+<div></div>.model("myModel", initialValue).display
 ```
 
 #### Interact with Model
-```scala 
+```scala
 // read model
 AngularModel("myModel")()
 
@@ -155,7 +155,7 @@ AngularModel("myModel", "newValue")
 
 <br/>
 ### Example: Basic Usage
-Using the above basic usages, you can apply them like below examples. 
+Using the above basic usages, you can apply them like below examples.
 
 #### Display Elements
 
@@ -195,7 +195,7 @@ AngularModel("myModel", "New value")
 
 ### Example: String Converter
 Using below example, you can convert the lowercase string to uppercase.
- 
+
 {% raw %}
 ```scala
 // clear previously created angular object.
@@ -215,5 +215,3 @@ val button = <div class="btn btn-success btn-sm">Convert</div>.onClick{() =>
 {% endraw %}
 
 <img src="../assets/themes/zeppelin/img/docs-img/string-converter-angular.gif" width="70%">
-
- 
