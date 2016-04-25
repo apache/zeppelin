@@ -434,7 +434,7 @@ module.exports = function (grunt) {
   ]);
 
   grunt.registerTask('build', [
-    'newer:jshint',
+    'jshint:all',
     'clean:dist',
     'wiredep',
     'useminPrepare',
