@@ -644,7 +644,7 @@ public class NotebookRestApi {
   }  
 
   /**
-   * Search for a Notes
+   * Search for a Notes with permissions
    */
   @GET
   @Path("search")
@@ -656,8 +656,7 @@ public class NotebookRestApi {
     userAndRoles.add(principal);
     userAndRoles.addAll(roles);
     List<Map<String, String>> notebooksFound = notebookIndex.query(queryTerm);
-    for (int i = 0; i < notebooksFound.size(); i++)
-    {
+    for (int i = 0; i < notebooksFound.size(); i++) {
       String[] Id = notebooksFound.get(i).get("id").split("/", 2);
       String noteId = Id[0];
       if (!notebookAuthorization.isOwner(noteId, userAndRoles) &&
@@ -666,7 +665,6 @@ public class NotebookRestApi {
         notebooksFound.remove(i);
         i--;
       }
-      LOG.info("noteId", noteId);
     }
     LOG.info("{} notebooks found", notebooksFound.size());
     return new JsonResponse<>(Status.OK, notebooksFound).build();
