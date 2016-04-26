@@ -1245,62 +1245,26 @@ angular.module('zeppelinWebApp')
 
 
     var renderTable = function() {
-      var html = '';
-      html += '<table class="table table-hover table-condensed">';
-      html += '  <thead>';
-      html += '    <tr style="background-color: #F6F6F6; font-weight: bold;">';
-      for (var titleIndex in $scope.paragraph.result.columnNames) {
-        html += '<th>'+$scope.paragraph.result.columnNames[titleIndex].name+'</th>';
-      }
-      html += '    </tr>';
-      html += '  </thead>';
-      html += '  <tbody>';
-      for (var r in $scope.paragraph.result.msgTable) {
-        var row = $scope.paragraph.result.msgTable[r];
-        html += '    <tr>';
-        for (var index in row) {
-          var v = row[index].value;
-          if (getTableContentFormat(v) !== 'html') {
-            v = v.replace(/[\u00A0-\u9999<>\&]/gim, function(i) {
-              return '&#'+i.charCodeAt(0)+';';
-            });
-          }
-          html += '      <td>'+formatTableContent(v)+'</td>';
-        }
-        html += '    </tr>';
-      }
-      html += '  </tbody>';
-      html += '</table>';
+      var height = $scope.paragraph.config.graph.height;
+      angular.element('#p' + $scope.paragraph.id + '_table').css('height', height);
+      var messageTable = $scope.paragraph.result.rows;
+      var columnNames = _.pluck($scope.paragraph.result.columnNames, 'name');
+      var container = document.getElementById('p' + $scope.paragraph.id + '_table');
 
-      angular.element('#p' + $scope.paragraph.id + '_table').html(html);
-      if ($scope.paragraph.result.msgTable.length > 10000) {
-        angular.element('#p' + $scope.paragraph.id + '_table').css('overflow', 'scroll');
-        // set table height
-        var height = $scope.paragraph.config.graph.height;
-        angular.element('#p' + $scope.paragraph.id + '_table').css('height', height);
-      } else {
-        var dataTable = angular.element('#p' + $scope.paragraph.id + '_table .table');
-        dataTable.floatThead({
-          scrollContainer: function (dataTable) {
-            return angular.element('#p' + $scope.paragraph.id + '_table');
-          }
-        });
-        angular.element('#p' + $scope.paragraph.id + '_table .table').on('remove', function () {
-          angular.element('#p' + $scope.paragraph.id + '_table .table').floatThead('destroy');
-        });
-
-        angular.element('#p' + $scope.paragraph.id + '_table').css('position', 'relative');
-        angular.element('#p' + $scope.paragraph.id + '_table').css('height', '100%');
-        angular.element('#p' + $scope.paragraph.id + '_table').perfectScrollbar('destroy');
-        angular.element('#p' + $scope.paragraph.id + '_table').perfectScrollbar();
-        angular.element('.ps-scrollbar-y-rail').css('z-index', '1002');
-
-        // set table height
-        var psHeight = $scope.paragraph.config.graph.height;
-        angular.element('#p' + $scope.paragraph.id + '_table').css('height', psHeight);
-        angular.element('#p' + $scope.paragraph.id + '_table').perfectScrollbar('update');
-      }
-
+      var handsontable = new Handsontable(container, {
+        data: messageTable,
+        colHeaders: columnNames,
+        rowHeaders: false,
+        stretchH: 'all',
+        sortIndicator: true,
+        columnSorting: true,
+        contextMenu: false,
+        manualColumnResize: true,
+        manualRowResize: true,
+        editor: false,
+        fillHandle: false,
+        disableVisualSelection: true
+      });
     };
 
     var retryRenderer = function() {
