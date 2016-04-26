@@ -426,7 +426,6 @@ public class NotebookServer extends WebSocketServlet implements
     if (note != null) {
       if (!notebookAuthorization.isReader(noteId, userAndRoles)) {
         permissionError(conn, "read", userAndRoles, notebookAuthorization.getReaders(noteId));
-        broadcastNoteList();
         return;
       }
       addConnectionToNote(note.id(), conn);
@@ -448,7 +447,6 @@ public class NotebookServer extends WebSocketServlet implements
       NotebookAuthorization notebookAuthorization = notebook.getNotebookAuthorization();
       if (!notebookAuthorization.isReader(noteId, userAndRoles)) {
         permissionError(conn, "read", userAndRoles, notebookAuthorization.getReaders(noteId));
-        broadcastNoteList();
         return;
       }
       addConnectionToNote(note.id(), conn);
@@ -491,7 +489,6 @@ public class NotebookServer extends WebSocketServlet implements
 
       note.persist();
       broadcastNote(note);
-      broadcastNoteList();
     }
   }
 
