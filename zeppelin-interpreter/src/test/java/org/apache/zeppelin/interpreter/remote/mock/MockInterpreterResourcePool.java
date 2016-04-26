@@ -37,7 +37,7 @@ public class MockInterpreterResourcePool extends Interpreter {
     Interpreter.register(
         "resourcePoolTest",
         "resourcePool",
-        MockInterpreterA.class.getName(),
+        MockInterpreterResourcePool.class.getName(),
         new InterpreterPropertyBuilder()
             .add("p1", "v1", "property1").build());
 

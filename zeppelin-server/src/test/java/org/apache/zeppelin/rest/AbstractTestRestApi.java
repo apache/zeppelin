@@ -100,10 +100,10 @@ public abstract class AbstractTestRestApi {
     if (!wasRunning) {
       LOG.info("Staring test Zeppelin up...");
       executor = Executors.newSingleThreadExecutor();
-      executor.submit(server);
+      executor.execute(server);
       long s = System.currentTimeMillis();
       boolean started = false;
-      while (System.currentTimeMillis() - s < 1000 * 60 * 3) {  // 3 minutes
+      while (System.currentTimeMillis() - s < 1000 * 60 * 5) {  // 3 minutes
         Thread.sleep(2000);
         started = checkIfServerIsRunning();
         if (started == true) {
@@ -151,8 +151,11 @@ public abstract class AbstractTestRestApi {
           pySpark = true;
           sparkR = true;
         }
-
-        ZeppelinServer.notebook.getInterpreterFactory().restart(sparkIntpSetting.id());
+        // Only do this if we find a spark interpreter.
+        // Not all tests that use this code depend on spark.
+        if(sparkIntpSetting != null) {
+          ZeppelinServer.notebook.getInterpreterFactory().restart(sparkIntpSetting.id());
+        }
       }
     }
   }

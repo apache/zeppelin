@@ -22,6 +22,7 @@ import java.util.*;
 
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
+import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
@@ -29,14 +30,19 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
 
+import org.apache.commons.httpclient.util.DateUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.NotebookAuthorization;
 import org.apache.zeppelin.notebook.Paragraph;
+import org.apache.zeppelin.resource.Resource;
+import org.apache.zeppelin.resource.ResourcePoolUtils;
+import org.apache.zeppelin.resource.ResourceSet;
 import org.apache.zeppelin.rest.message.CronRequest;
 import org.apache.zeppelin.rest.message.InterpreterSettingListForNoteBind;
 import org.apache.zeppelin.rest.message.NewNotebookRequest;
@@ -654,5 +660,66 @@ public class NotebookRestApi {
     LOG.info("{} notbooks found", notebooksFound.size());
     return new JsonResponse<>(Status.OK, notebooksFound).build();
   }
+  
+  /**
+   * Get paragraphs that have a resource pool and what note they came from.
+   * @param
+   * @return JSON with status.OK
+   */
+  @GET
+  @Path("/results")
+  public Response getParagraphsWithResults() 
+      throws IOException {
+    LOG.info("Getting paragraphs from all notes");
+    ResourceSet resources = ResourcePoolUtils.getAllResources();
+    GsonBuilder builder = new GsonBuilder();
+    builder.registerTypeAdapter(Note.class, new NoteRestSerializer(resources));
+    List<Note> notes = new ArrayList<Note>();
+    for (Resource r: resources) {
+      notes.add(notebook.getNote(r.getResourceId().getNoteId()));
+    }
+    
+    // Want to control how the element is built, but not return it as a
+    // singleton of type element.
+    // If we add this as a JSON Array rather than including it with the builder,
+    // then it adds a pesky "element" field to the middle of the result.
+    return new JsonResponse<>(Status.OK, "", notes, builder).build();
+  }
+  
+  /**
+   * Get paragraph result REST API
+   * @param
+   * @return JSON with status.OK
+   * @throws IOException
+   */
+  @GET
+  @Path("{notebookId}/paragraph/{paragraphId}/result")
+  public Response getParagraphResult(@PathParam("notebookId") String notebookId,
+      @PathParam("paragraphId") String paragraphId,
+      @HeaderParam("If-Modified-Since") String modificationDateString)
+      throws IOException {
+    LOG.info("Downloading paragraph {} {}", notebookId, paragraphId);
+  
+    Note note = notebook.getNote(notebookId);
+    if (note == null) {
+      return new JsonResponse(Status.NOT_FOUND, "note not found.").build();
+    }
 
+    Paragraph p = note.getParagraph(paragraphId);
+    if (p == null) {
+      return new JsonResponse(Status.NOT_FOUND, "paragraph not found.").build();
+    }
+    try {
+      Date modificationDate = DateUtil.parseDate(modificationDateString);
+      if (!p.getDateFinished().after(modificationDate))
+        return Response.ok()
+                .status(Response.Status.NOT_MODIFIED)
+                .build();
+    } catch (Exception e) { } 
+    
+    ResponseBuilder builder = Response.ok(p.getResultFromPool().message())
+        .header("Content-Disposition", "attachment; filename=" + paragraphId + ".txt");
+    
+    return builder.build();
+  }
 }
