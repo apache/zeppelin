@@ -20,6 +20,9 @@ package org.apache.zeppelin.notebook;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.user.AuthenticationInfo;
+import org.apache.zeppelin.credential.Credentials;
+import org.apache.zeppelin.credential.UserCredentials;
+import org.apache.zeppelin.credential.UsernamePassword;
 import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.display.Input;
 import org.apache.zeppelin.interpreter.*;
@@ -314,6 +317,29 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     return true;
   }
 
+  /**
+   * Returns the property key of the specific data source
+   * e.g. getDataSourceKey("%hive(vertica)") -> "vertica"
+   * @param cmd
+   * @return property key of data source being queried
+   */
+  public static String getDataSourceKey(String cmd) {
+    if (cmd == null) {
+      return null;
+    }
+    int firstLineIndex = cmd.indexOf("\n");
+    if (-1 == firstLineIndex) {
+      firstLineIndex = cmd.length();
+    }
+    int configStartIndex = cmd.indexOf("(");
+    int configLastIndex = cmd.indexOf(")");
+    if (configStartIndex != -1 && configLastIndex != -1
+            && configLastIndex < firstLineIndex && configLastIndex < firstLineIndex) {
+      return cmd.substring(configStartIndex + 1, configLastIndex);
+    }
+    return null;
+  }
+
   private InterpreterContext getInterpreterContext() {
     AngularObjectRegistry registry = null;
     ResourcePool resourcePool = null;
@@ -330,6 +356,25 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     }
 
     final Paragraph self = this;
+
+    Credentials credentials = Credentials.getCredentials();
+    String dataSourceKey = null;
+    try {
+      dataSourceKey = getDataSourceKey(getScriptBody());
+    } catch (NullPointerException e) {
+      logger().info("NPE at dataSourceKey({}). cmd = {}", dataSourceKey, getScriptBody());
+    }
+    logger().info("{} {}", getScriptBody(), dataSourceKey);
+    UserCredentials userCredentials = credentials.getUserCredentials(authenticationInfo.getUser());
+    logger().info(userCredentials.toString());
+    if (userCredentials != null) {
+      UsernamePassword userPassword = userCredentials.getUsernamePassword(dataSourceKey);
+      if (userPassword != null) {
+        authenticationInfo.setDataSourceUser(userPassword.getUsername());
+        authenticationInfo.setDataSourcePassword(userPassword.getPassword());
+      }
+    }
+
     InterpreterContext interpreterContext = new InterpreterContext(
             note.id(),
             getId(),

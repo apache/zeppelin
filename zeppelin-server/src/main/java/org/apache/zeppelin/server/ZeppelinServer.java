@@ -292,6 +292,9 @@ public class ZeppelinServer extends Application {
     InterpreterRestApi interpreterApi = new InterpreterRestApi(replFactory);
     singletons.add(interpreterApi);
 
+    CredentialRestApi credentialApi = new CredentialRestApi();
+    singletons.add(credentialApi);
+
     SecurityRestApi securityApi = new SecurityRestApi();
     singletons.add(securityApi);
 
