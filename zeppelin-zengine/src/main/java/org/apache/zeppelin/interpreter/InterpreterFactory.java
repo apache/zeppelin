@@ -505,7 +505,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
                 key,
                 info.getClassName(),
                 properties,
-                interpreterGroup.id);
+                interpreterSetting.id());
           } else {
             intp = createRepl(info.getPath(),
                 info.getClassName(),
@@ -802,9 +802,9 @@ public class InterpreterFactory implements InterpreterGroupFactory {
 
 
   private Interpreter createRemoteRepl(String interpreterPath, String noteId, String className,
-      Properties property, String interpreterId) {
+      Properties property, String interpreterSettingId) {
     int connectTimeout = conf.getInt(ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT);
-    String localRepoPath = conf.getInterpreterLocalRepoPath() + "/" + interpreterId;
+    String localRepoPath = conf.getInterpreterLocalRepoPath() + "/" + interpreterSettingId;
     int maxPoolSize = conf.getInt(ConfVars.ZEPPELIN_INTERPRETER_MAX_POOL_SIZE);
     LazyOpenInterpreter intp = new LazyOpenInterpreter(new RemoteInterpreter(
         property, noteId, className, conf.getInterpreterRemoteRunnerPath(),
