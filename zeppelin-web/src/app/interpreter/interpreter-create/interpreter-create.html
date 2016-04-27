@@ -36,9 +36,39 @@ limitations under the License.
         </div>
 
         <b>Option</b>
-        <div class="checkbox">
-          <label><input type="checkbox" style="top:-5px" ng-model="newInterpreterSetting.option.perNoteSession">Separate Interpreter for each note</input></label>
+        <div>
+          <span class="btn-group">
+            <button type="button" class="btn btn-default btn-xs dropdown-toggle"
+                    data-toggle="dropdown">
+              {{getSessionOption(setting.id)}} <span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu" role="menu">
+              <li>
+                <a style="cursor:pointer"
+                   tooltip="Single interpreter instance are shared across notes"
+                   ng-click="setSessionOption(setting.id, 'shared')">
+                  shared
+                </a>
+              </li>
+              <li>
+                <a style="cursor:pointer"
+                   tooltip="Separate Interpreter instance for each note"
+                   ng-click="setSessionOption(setting.id, 'scoped')">
+                  scoped
+                </a>
+              </li>
+              <li>
+                <a style="cursor:pointer"
+                   tooltip="Separate Interpreter process for each note"
+                   ng-click="setSessionOption(setting.id, 'isolated')">
+                  isolated
+                </a>
+              </li>
+            </ul>
+          </span>
+          <span>Interpreter for note</span>
         </div>
+        <br />
         
         <b>Properties</b>
         <table class="table table-striped properties">

@@ -14,46 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.zeppelin.interpreter;
 
+import org.apache.commons.lang.NullArgumentException;
+
 /**
- *
+ * Created InterpreterGroup
  */
-public class InterpreterOption {
-  boolean remote;
-  boolean perNoteSession;
-  boolean perNoteProcess;
-
-  public InterpreterOption() {
-    remote = false;
-  }
-
-  public InterpreterOption(boolean remote) {
-    this.remote = remote;
-  }
-
-  public boolean isRemote() {
-    return remote;
-  }
-
-  public void setRemote(boolean remote) {
-    this.remote = remote;
-  }
-
-  public boolean isPerNoteSession() {
-    return perNoteSession;
-  }
-
-  public void setPerNoteSession(boolean perNoteSession) {
-    this.perNoteSession = perNoteSession;
-  }
-
-  public boolean isPerNoteProcess() {
-    return perNoteProcess;
-  }
-
-  public void setPerNoteProcess(boolean perNoteProcess) {
-    this.perNoteProcess = perNoteProcess;
-  }
+public interface InterpreterGroupFactory {
+  InterpreterGroup createInterpreterGroup(String interpreterGroupId, InterpreterOption option);
 }
