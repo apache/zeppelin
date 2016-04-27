@@ -18,12 +18,13 @@ angular.module('zeppelinWebApp').factory('notebookListDataFactory', function() {
   var notes = {
     root: {children: []},
     flatList: [],
-    
+
     setNotes: function(notesList) {
       // a flat list to boost searching
       notes.flatList = angular.copy(notesList);
 
       // construct the folder-based tree
+      notes.root = {children: []};
       _.reduce(notesList, function(root, note) {
         var noteName = note.name || note.id;
         var nodes = noteName.match(/([^\\\][^\/]|\\\/)+/g);
