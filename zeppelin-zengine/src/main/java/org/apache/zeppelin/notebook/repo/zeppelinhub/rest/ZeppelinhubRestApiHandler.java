@@ -1,4 +1,4 @@
-package org.apache.zeppelin.notebook.repo.zeppelinhub;
+package org.apache.zeppelin.notebook.repo.zeppelinhub.rest;
 
 import java.io.IOException;
 import java.io.InputStream;

@@ -12,6 +12,7 @@ import org.apache.commons.httpclient.HttpException;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
+import org.apache.zeppelin.notebook.repo.zeppelinhub.rest.ZeppelinhubRestApiHandler;
 import org.junit.Before;
 import org.junit.Test;
 
