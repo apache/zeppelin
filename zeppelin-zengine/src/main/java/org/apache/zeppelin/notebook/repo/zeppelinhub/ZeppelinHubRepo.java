@@ -42,8 +42,8 @@ public class ZeppelinHubRepo implements NotebookRepo {
     token = conf.getString("ZEPPELINHUB_API_TOKEN", ZEPPELIN_CONF_PROP_NAME_TOKEN, "");
     zeppelinhubHandler = ZeppelinhubRestApiHandler.newInstance(zeppelinHubUrl, token);
 
-    //TODO(khalid): add zeppelin uri?
-    websocketClient = new Client(StringUtils.EMPTY, getZeppelinhubWebsocketUri(conf), token);
+    websocketClient = Client.initialize(getZeppelinWebsocketUri(conf),
+        getZeppelinhubWebsocketUri(conf), token);
     websocketClient.start();
   }
   
@@ -84,7 +84,16 @@ public class ZeppelinHubRepo implements NotebookRepo {
     }
     return zeppelinHubUri;
   }
-  
+
+  private String getZeppelinWebsocketUri(ZeppelinConfiguration conf) {
+    int port = conf.getServerPort();
+    if (port <= 0) {
+      port = 80;
+    }
+    String ws = conf.useSsl() ? "wss" : "ws";
+    return ws + "://localhost:" + port + "/ws";
+  }
+
   public void setZeppelinhubRestApiHandler(ZeppelinhubRestApiHandler zeppelinhub) {
     zeppelinhubHandler = zeppelinhub;
   }

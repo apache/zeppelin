@@ -1,6 +1,5 @@
 package org.apache.zeppelin.notebook.repo.zeppelinhub.websocket.scheduler;
 
-import org.apache.zeppelin.notebook.repo.zeppelinhub.ZeppelinhubRestApiHandler;
 import org.apache.zeppelin.notebook.repo.zeppelinhub.websocket.ZeppelinhubClient;
 import org.apache.zeppelin.notebook.repo.zeppelinhub.websocket.utils.ZeppelinhubUtils;
 import org.slf4j.Logger;
@@ -11,7 +10,7 @@ import org.slf4j.LoggerFactory;
  *
  */
 public class ZeppelinHubHeartbeat implements Runnable {
-  private static final Logger LOG = LoggerFactory.getLogger(ZeppelinhubRestApiHandler.class);
+  private static final Logger LOG = LoggerFactory.getLogger(ZeppelinHubHeartbeat.class);
   private ZeppelinhubClient client;
   
   public static ZeppelinHubHeartbeat newInstance(ZeppelinhubClient client) {

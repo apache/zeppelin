@@ -4,7 +4,7 @@ package org.apache.zeppelin.notebook.repo.zeppelinhub.websocket.protocol;
  * Zeppelinhub Op.
  */
 public enum ZeppelinHubOp {
-  ALIVE,
+  LIVE,
   DEAD,
   PING,
   PONG,

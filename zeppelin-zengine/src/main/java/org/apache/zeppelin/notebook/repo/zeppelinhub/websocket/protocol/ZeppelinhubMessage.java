@@ -4,6 +4,7 @@ import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.notebook.repo.zeppelinhub.websocket.Client;
+import org.apache.zeppelin.notebook.socket.Message;
 import org.apache.zeppelin.notebook.socket.Message.OP;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,11 +40,18 @@ public class ZeppelinhubMessage {
   public static ZeppelinhubMessage newMessage(Object op, Object data, Map<String, String> meta) {
     return new ZeppelinhubMessage(op, data, meta);
   }
-  
+
+  public static ZeppelinhubMessage newMessage(Message zeppelinMsg, Map<String, String> meta) {
+    if (zeppelinMsg == null) {
+      return EMPTY;
+    }
+    return new ZeppelinhubMessage(zeppelinMsg.op, zeppelinMsg.data, meta);
+  }
+
   public String serialize() {
     return gson.toJson(this, ZeppelinhubMessage.class);
   }
-  
+
   public static ZeppelinhubMessage deserialize(String zeppelinhubMessage) {
     if (StringUtils.isBlank(zeppelinhubMessage)) {
       return EMPTY;
