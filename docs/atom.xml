@@ -4,7 +4,7 @@ title : Atom Feed
 ---
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
- 
+
  <title>{{ site.title }}</title>
  <link href="{{ site.production_url }}/{{ site.atom_path }}" rel="self"/>
  <link href="{{ site.production_url }}"/>
@@ -24,5 +24,5 @@ title : Atom Feed
    <content type="html">{{ post.content | xml_escape }}</content>
  </entry>
  {% endfor %}
- 
+
 </feed>

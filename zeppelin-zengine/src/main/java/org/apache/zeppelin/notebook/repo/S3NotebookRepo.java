@@ -72,14 +72,18 @@ public class S3NotebookRepo implements NotebookRepo {
   //  4. Instance profile credentials delivered through the Amazon EC2 metadata service
   private AmazonS3 s3client = new AmazonS3Client(new DefaultAWSCredentialsProviderChain());
   private static String bucketName = "";
+  private static String endpoint = "";
   private String user = "";
 
   private ZeppelinConfiguration conf;
 
   public S3NotebookRepo(ZeppelinConfiguration conf) throws IOException {
     this.conf = conf;
-    user = conf.getUser();
     bucketName = conf.getBucketName();
+    endpoint = conf.getEndpoint();
+    user = conf.getUser();
+    
+    s3client.setEndpoint(endpoint);
   }
 
   @Override

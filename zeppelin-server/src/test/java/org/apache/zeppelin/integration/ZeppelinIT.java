@@ -17,13 +17,11 @@
 
 package org.apache.zeppelin.integration;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.AbstractZeppelinIT;
 import org.apache.zeppelin.WebDriverManager;
 import org.hamcrest.CoreMatchers;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.rules.ErrorCollector;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
@@ -31,7 +29,9 @@ import org.openqa.selenium.WebElement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Test Zeppelin with web browser.
@@ -205,7 +205,8 @@ public class ZeppelinIT extends AbstractZeppelinIT {
       String artifact = "org.apache.commons:commons-csv:1.1";
       depArtifact.sendKeys(artifact);
       driver.findElement(By.xpath("//button[contains(.,'Save')]")).submit();
-      driver.switchTo().alert().accept();
+      driver.findElement(By.xpath("//div[@class='modal-dialog'][contains(.,'Do you want to update this interpreter and restart with new settings?')]" +
+              "//div[@class='modal-footer']//button[contains(.,'OK')]")).click();
 
       driver.navigate().back();
       createNewNote();
@@ -241,9 +242,74 @@ public class ZeppelinIT extends AbstractZeppelinIT {
       sleep(5000, true);
       testDepRemoveBtn.click();
       driver.findElement(By.xpath("//button[contains(.,'Save')]")).submit();
-      driver.switchTo().alert().accept();
+      driver.findElement(By.xpath("//div[@class='modal-dialog'][contains(.,'Do you want to update this interpreter and restart with new settings?')]" +
+              "//div[@class='modal-footer']//button[contains(.,'OK')]")).click();
     } catch (Exception e) {
       handleException("Exception in ZeppelinIT while testSparkInterpreterDependencyLoading ", e);
     }
+  }
+
+  @Test
+  public void testAngularRunParagraph() throws Exception {
+    if (!endToEndTestEnabled()) {
+      return;
+    }
+
+    try {
+      createNewNote();
+
+      // wait for first paragraph's " READY " status text
+      waitForParagraph(1, "READY");
+
+      // Create 1st paragraph
+      setTextOfParagraph(1,
+              "%angular <div id=\\'angularRunParagraph\\'>Run second paragraph</div>");
+      runParagraph(1);
+      waitForParagraph(1, "FINISHED");
+      waitForText("Run second paragraph", By.xpath(
+              getParagraphXPath(1) + "//div[@id=\"angularRunParagraph\"]"));
+
+      // Create 2nd paragraph
+      setTextOfParagraph(2, "%sh echo TEST");
+      runParagraph(2);
+      waitForParagraph(2, "FINISHED");
+
+      // Get 2nd paragraph id
+      final String secondParagraphId = driver.findElement(By.xpath(getParagraphXPath(2)
+              + "//div[@class=\"control ng-scope\"]//ul[@class=\"dropdown-menu\"]/li[1]"))
+              .getAttribute("textContent");
+
+      assertTrue("Cannot find paragraph id for the 2nd paragraph", isNotBlank(secondParagraphId));
+
+      // Update first paragraph to call z.runParagraph() with 2nd paragraph id
+      setTextOfParagraph(1,
+              "%angular <div id=\\'angularRunParagraph\\' ng-click=\\'z.runParagraph(\""
+                      + secondParagraphId.trim()
+                      + "\")\\'>Run second paragraph</div>");
+      runParagraph(1);
+      waitForParagraph(1, "FINISHED");
+
+      // Set new text value for 2nd paragraph
+      setTextOfParagraph(2, "%sh echo NEW_VALUE");
+
+      // Click on 1 paragraph to trigger z.runParagraph() function
+      driver.findElement(By.xpath(
+              getParagraphXPath(1) + "//div[@id=\"angularRunParagraph\"]")).click();
+
+      waitForParagraph(2, "FINISHED");
+
+      // Check that 2nd paragraph has been executed
+      waitForText("NEW_VALUE", By.xpath(
+              getParagraphXPath(2) + "//div[contains(@id,\"_text\") and @class=\"text\"]"));
+
+      //delete created notebook for cleanup.
+      deleteTestNotebook(driver);
+      sleep(1000, true);
+
+      LOG.info("testAngularRunParagraph Test executed");
+    }  catch (Exception e) {
+      handleException("Exception in ZeppelinIT while testAngularRunParagraph", e);
+    }
+
   }
 }

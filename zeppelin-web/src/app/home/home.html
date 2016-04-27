@@ -19,7 +19,7 @@ limitations under the License.
     </div>
     <div style="margin-top: -380px;">
       <h1 class="box-heading" id="welcome">
-        Welcome to Zeppelin!
+        Welcome to Zeppelin! <small>({{zeppelinVersion}})</small>
       </h1>
       Zeppelin is web-based notebook that enables interactive data analytics.<br>
       You can make beautiful data-driven, interactive, collaborative document with SQL, code and even more!<br>
@@ -29,7 +29,8 @@ limitations under the License.
           <h4>Notebook
             <i ng-class="isReloadingNotes ? 'fa fa-refresh fa-spin' : 'fa fa-refresh'"
               ng-style="!isReloadingNotes && {'cursor': 'pointer'}" style="font-size: 13px;"
-              ng-click="reloadNotebookList();">
+              ng-click="reloadNotebookList();"
+              tooltip-placement="bottom" tooltip="Reload notes from storage">
             </i>
           </h4>
 
@@ -72,7 +73,7 @@ limitations under the License.
   <div ng-show="home.notebookHome" id="{{currentParagraph.id}}_paragraphColumn_main"
        ng-repeat="currentParagraph in home.note.paragraphs"
        ng-controller="ParagraphCtrl"
-       ng-Init="init(currentParagraph)"
+       ng-Init="init(currentParagraph, home.note)"
        ng-class="columnWidthClass(currentParagraph.config.colWidth)"
        class="paragraph-col">
     <div id="{{currentParagraph.id}}_paragraphColumn"

@@ -116,6 +116,7 @@ public class NotebookAuthorization {
       if (existingEntities == null) {
         noteAuthInfo.put("owners", new LinkedHashSet(entities));
       } else {
+        existingEntities.clear();
         existingEntities.addAll(entities);
       }
     }
@@ -135,6 +136,7 @@ public class NotebookAuthorization {
       if (existingEntities == null) {
         noteAuthInfo.put("readers", new LinkedHashSet(entities));
       } else {
+        existingEntities.clear();
         existingEntities.addAll(entities);
       }
     }
@@ -154,6 +156,7 @@ public class NotebookAuthorization {
       if (existingEntities == null) {
         noteAuthInfo.put("writers", new LinkedHashSet(entities));
       } else {
+        existingEntities.clear();
         existingEntities.addAll(entities);
       }
     }

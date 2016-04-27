@@ -71,7 +71,7 @@ public class RemoteInterpreter extends Interpreter {
     this.interpreterRunner = interpreterRunner;
     this.interpreterPath = interpreterPath;
     this.localRepoPath = localRepoPath;
-    env = new HashMap<String, String>();
+    env = getEnvFromInterpreterProperty(property);
     this.connectTimeout = connectTimeout;
     this.maxPoolSize = maxPoolSize;
     this.remoteInterpreterProcessListener = remoteInterpreterProcessListener;
@@ -92,10 +92,29 @@ public class RemoteInterpreter extends Interpreter {
     this.interpreterRunner = interpreterRunner;
     this.interpreterPath = interpreterPath;
     this.localRepoPath = localRepoPath;
+    env.putAll(getEnvFromInterpreterProperty(property));
     this.env = env;
     this.connectTimeout = connectTimeout;
     this.maxPoolSize = 10;
     this.remoteInterpreterProcessListener = remoteInterpreterProcessListener;
+  }
+
+  private Map<String, String> getEnvFromInterpreterProperty(Properties property) {
+    Map<String, String> env = new HashMap<String, String>();
+    for (Object key : property.keySet()) {
+      if (isEnvString((String) key)) {
+        env.put((String) key, property.getProperty((String) key));
+      }
+    }
+    return env;
+  }
+
+  static boolean isEnvString(String key) {
+    if (key == null || key.length() == 0) {
+      return false;
+    }
+
+    return key.matches("^[A-Z_0-9]*");
   }
 
   @Override

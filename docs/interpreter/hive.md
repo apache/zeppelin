@@ -44,7 +44,7 @@ The [Apache Hive](https://hive.apache.org/) ™ data warehouse software facilita
   <tr>
     <td>${prefix}.driver</td>
     <td></td>
-    <td>Driver class path of <code>%hive(${prefix})</code> </td> 
+    <td>Driver class path of <code>%hive(${prefix})</code> </td>
   </tr>
   <tr>
     <td>${prefix}.url</td>
@@ -93,9 +93,9 @@ You can leverage [Zeppelin Dynamic Form]({{BASE_PATH}}/manual/dynamicform.html) 
 
 ```sql
 %hive
-SELECT ${group_by}, count(*) as count 
-FROM retail_demo.order_lineitems_pxf 
-GROUP BY ${group_by=product_id,product_id|product_name|customer_id|store_id} 
-ORDER BY count ${order=DESC,DESC|ASC} 
+SELECT ${group_by}, count(*) as count
+FROM retail_demo.order_lineitems_pxf
+GROUP BY ${group_by=product_id,product_id|product_name|customer_id|store_id}
+ORDER BY count ${order=DESC,DESC|ASC}
 LIMIT ${limit=10};
 ```
