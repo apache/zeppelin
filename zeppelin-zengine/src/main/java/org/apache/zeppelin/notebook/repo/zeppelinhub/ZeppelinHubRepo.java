@@ -11,6 +11,7 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
+import org.apache.zeppelin.notebook.repo.zeppelinhub.websocket.Client;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,8 +27,10 @@ public class ZeppelinHubRepo implements NotebookRepo {
   private static final String DEFAULT_SERVER = "https://www.zeppelinhub.com";
   static final String ZEPPELIN_CONF_PROP_NAME_SERVER = "zeppelinhub.api.address";
   static final String ZEPPELIN_CONF_PROP_NAME_TOKEN = "zeppelinhub.api.token";
+  public static final String TOKEN_HEADER = "X-Zeppelin-Token";
   private static final Gson GSON = new Gson();
   private static final Note EMPTY_NOTE = new Note();
+  private final Client websocketClient;
 
   private String token;
   private ZeppelinhubRestApiHandler zeppelinhubHandler;
@@ -37,8 +40,50 @@ public class ZeppelinHubRepo implements NotebookRepo {
     LOG.info("Initializing ZeppelinHub integration module version ?");
     token = conf.getString("ZEPPELINHUB_API_TOKEN", ZEPPELIN_CONF_PROP_NAME_TOKEN, "");
     zeppelinhubHandler = ZeppelinhubRestApiHandler.newInstance(zeppelinHubUrl, token);
+
+    //TODO(khalid): add zeppelin uri?
+    websocketClient = new Client(StringUtils.EMPTY, getZeppelinhubWebsocketUri(conf), token);
+    websocketClient.start();
+  }
+  
+  String getZeppelinHubWsUri(URI api) throws IOException {
+    URI apiRoot = api;
+    String scheme = apiRoot.getScheme();
+    int port = apiRoot.getPort();
+    if (port <= 0) {
+      port = (scheme != null && scheme.equals("https")) ? 443 : 80;
+    }
+
+    if (scheme == null) {
+      LOG.info("{} is not a valid zeppelinhub server address. proceed with default address {}",
+          apiRoot, DEFAULT_SERVER);
+      try {
+        apiRoot = new URI(DEFAULT_SERVER);
+      } catch (URISyntaxException e) {
+        LOG.error("Invalid default zeppelinhub url {}", DEFAULT_SERVER, e);
+        throw new IOException(e);
+      }
+      scheme = apiRoot.getScheme();
+      port = apiRoot.getPort();
+      if (port <= 0) {
+        port = (scheme != null && scheme.equals("https")) ? 443 : 80;
+      }
+    }
+    String ws = scheme.equals("https") ? "wss://" : "ws://";
+    return ws + apiRoot.getHost() + ":" + port + "/async";
   }
 
+  private String getZeppelinhubWebsocketUri(ZeppelinConfiguration conf) {
+    String zeppelinHubUri = StringUtils.EMPTY;
+    try {
+      zeppelinHubUri = getZeppelinHubWsUri(new URI(conf.getString("ZEPPELINHUB_API_ADDRESS",
+          ZEPPELIN_CONF_PROP_NAME_SERVER, DEFAULT_SERVER)));
+    } catch (URISyntaxException | IOException e) {
+      LOG.error("Cannot get zeppelinhub URI", e);
+    }
+    return zeppelinHubUri;
+  }
+  
   public void setZeppelinhubRestApiHandler(ZeppelinhubRestApiHandler zeppelinhub) {
     zeppelinhubHandler = zeppelinhub;
   }
@@ -118,7 +163,7 @@ public class ZeppelinHubRepo implements NotebookRepo {
 
   @Override
   public void close() {
-    
+    websocketClient.stop();
   }
 
   @Override

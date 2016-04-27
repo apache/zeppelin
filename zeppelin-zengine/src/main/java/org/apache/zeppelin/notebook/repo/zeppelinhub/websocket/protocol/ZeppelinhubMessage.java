@@ -21,7 +21,7 @@ public class ZeppelinhubMessage {
   private static final Logger LOG = LoggerFactory.getLogger(Client.class);
   public static final ZeppelinhubMessage EMPTY = new ZeppelinhubMessage();
 
-  public OP op;
+  public Object op;
   public Object data;
   public Map<String, String> meta = Maps.newHashMap();
   
@@ -30,13 +30,13 @@ public class ZeppelinhubMessage {
     this.data = null;
   }
   
-  private ZeppelinhubMessage(OP op, Object data, Map<String, String> meta) {
+  private ZeppelinhubMessage(Object op, Object data, Map<String, String> meta) {
     this.op = op;
     this.data = data;
     this.meta = meta;
   }
   
-  public static ZeppelinhubMessage newMessage(OP op, Object data, Map<String, String> meta) {
+  public static ZeppelinhubMessage newMessage(Object op, Object data, Map<String, String> meta) {
     return new ZeppelinhubMessage(op, data, meta);
   }
   
@@ -51,7 +51,7 @@ public class ZeppelinhubMessage {
     ZeppelinhubMessage msg;
     try {
       msg = gson.fromJson(zeppelinhubMessage, ZeppelinhubMessage.class);
-    } catch(JsonSyntaxException ex) {
+    } catch (JsonSyntaxException ex) {
       LOG.error("Cannot deserialize zeppelinhub message", ex);
       msg = EMPTY;
     }
