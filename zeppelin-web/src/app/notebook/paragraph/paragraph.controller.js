@@ -974,6 +974,13 @@ angular.module('zeppelinWebApp')
     return desc;
   };
 
+  $scope.getElapsedTime = function() {
+      var pdata = $scope.paragraph;
+      var timeMs =  Date.now() - Date.parse(pdata.dateStarted);
+      var desc = Math.floor(timeMs/1000) + ' seconds elapsed.';
+      return desc;
+    };
+
   $scope.isResultOutdated = function() {
     var pdata = $scope.paragraph;
     if (pdata.dateUpdated !==undefined && Date.parse(pdata.dateUpdated) > Date.parse(pdata.dateStarted)){
