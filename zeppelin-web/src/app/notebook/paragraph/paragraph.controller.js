@@ -1212,38 +1212,6 @@ angular.module('zeppelinWebApp')
   };
 
   var setTable = function(type, data, refresh) {
-    var getTableContentFormat = function(d) {
-      if (isNaN(d)) {
-        if (d.length>'%html'.length && '%html ' === d.substring(0, '%html '.length)) {
-          return 'html';
-        } else {
-          return '';
-        }
-      } else {
-        return '';
-      }
-    };
-
-    var formatTableContent = function(d) {
-      if (isNaN(d)) {
-        var f = getTableContentFormat(d);
-        if (f !== '') {
-          return d.substring(f.length+2);
-        } else {
-          return d;
-        }
-      } else {
-        var dStr = d.toString();
-        var splitted = dStr.split('.');
-        var formatted = splitted[0].replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,');
-        if (splitted.length>1) {
-          formatted+= '.'+splitted[1];
-        }
-        return formatted;
-      }
-    };
-
-
     var renderTable = function() {
       var height = $scope.paragraph.config.graph.height;
       angular.element('#p' + $scope.paragraph.id + '_table').css('height', height);
@@ -1263,7 +1231,20 @@ angular.module('zeppelinWebApp')
         manualRowResize: true,
         editor: false,
         fillHandle: false,
-        disableVisualSelection: true
+        disableVisualSelection: true,
+        cells: function (row, col, prop) {
+          var cellProperties = {};
+            cellProperties.renderer = function(instance, td, row, col, prop, value, cellProperties) {
+              Handsontable.NumericCell.renderer.apply(this, arguments);
+              if (!isNaN(value)) {
+                cellProperties.type = 'numeric';
+                cellProperties.format = '0,0';
+                cellProperties.editor = false;
+                td.style.textAlign="left"
+              }
+            };
+          return cellProperties;
+        }
       });
     };
 
