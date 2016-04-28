@@ -306,13 +306,13 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl',
     if(config) {
       $scope.note.config = config;
     }
-    websocketMsgSrv.updateNotebook($scope.note.id, $scope.note.name, '', $scope.note.config);
+    websocketMsgSrv.updateNotebook($scope.note.id, $scope.note.name, $scope.note.config);
   };
 
   /** Update the note name */
   $scope.sendNewName = function() {
     if ($scope.note.name) {
-      websocketMsgSrv.updateNotebook($scope.note.id, $scope.note.name, '', $scope.note.config);
+      websocketMsgSrv.updateNotebook($scope.note.id, $scope.note.name, $scope.note.config);
     }
   };
 
