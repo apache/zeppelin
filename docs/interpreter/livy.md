@@ -28,8 +28,8 @@ Livy is an open source REST interface for interacting with Spark from anywhere. 
     <td>URL where livy server is running</td>
   </tr>
   <tr>
-    <td>livy.spark.maxResult</td>
-    <td>livy.spark.maxResult</td>
+    <td>zeppelin.livy.spark.maxResult</td>
+    <td>1000</td>
     <td>Max number of SparkSQL result to display.</td>
   </tr>
 </table>
