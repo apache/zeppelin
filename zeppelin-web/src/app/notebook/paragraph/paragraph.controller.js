@@ -1240,7 +1240,7 @@ angular.module('zeppelinWebApp')
                 cellProperties.type = 'numeric';
                 cellProperties.format = '0,0';
                 cellProperties.editor = false;
-                td.style.textAlign="left"
+                td.style.textAlign = 'left';
               }
             };
           return cellProperties;
