@@ -419,7 +419,7 @@ public class Note implements Serializable, ParagraphJobListener {
     }
 
     for (InterpreterSetting setting : settings) {
-      InterpreterGroup intpGroup = setting.getInterpreterGroup();
+      InterpreterGroup intpGroup = setting.getInterpreterGroup(id);
       AngularObjectRegistry registry = intpGroup.getAngularObjectRegistry();
       angularObjects.put(intpGroup.getId(), registry.getAllWithGlobal(id));
     }
@@ -434,7 +434,7 @@ public class Note implements Serializable, ParagraphJobListener {
     }
 
     for (InterpreterSetting setting : settings) {
-      InterpreterGroup intpGroup = setting.getInterpreterGroup();
+      InterpreterGroup intpGroup = setting.getInterpreterGroup(id);
       AngularObjectRegistry registry = intpGroup.getAngularObjectRegistry();
 
       if (registry instanceof RemoteAngularObjectRegistry) {

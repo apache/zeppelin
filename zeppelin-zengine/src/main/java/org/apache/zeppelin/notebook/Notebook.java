@@ -301,7 +301,7 @@ public class Notebook implements NoteEventListener {
 
     // remove from all interpreter instance's angular object registry
     for (InterpreterSetting settings : replFactory.get()) {
-      AngularObjectRegistry registry = settings.getInterpreterGroup().getAngularObjectRegistry();
+      AngularObjectRegistry registry = settings.getInterpreterGroup(id).getAngularObjectRegistry();
       if (registry instanceof RemoteAngularObjectRegistry) {
         // remove paragraph scope object
         for (Paragraph p : note.getParagraphs()) {
@@ -412,7 +412,7 @@ public class Notebook implements NoteEventListener {
       SnapshotAngularObject snapshot = angularObjectSnapshot.get(name);
       List<InterpreterSetting> settings = replFactory.get();
       for (InterpreterSetting setting : settings) {
-        InterpreterGroup intpGroup = setting.getInterpreterGroup();
+        InterpreterGroup intpGroup = setting.getInterpreterGroup(note.id());
         if (intpGroup.getId().equals(snapshot.getIntpGroupId())) {
           AngularObjectRegistry registry = intpGroup.getAngularObjectRegistry();
           String noteId = snapshot.getAngularObject().getNoteId();

@@ -12,20 +12,20 @@ Apache Zeppelin (incubating) is an [Apache2 License](http://www.apache.org/licen
 Any contributions to Zeppelin (Source code, Documents, Image, Website) means you agree with license all your contributions as Apache2 License.
 
 ## Setting up
-Here are some tools you will need to build and test Zeppelin. 
+Here are some tools you will need to build and test Zeppelin.
 
 #### Software Configuration Management ( SCM )
 
-Since Zeppelin uses Git for it's SCM system, you need git client installed in your development machine. 
+Since Zeppelin uses Git for it's SCM system, you need git client installed in your development machine.
 
 #### Integrated Development Environment ( IDE )
 
-You are free to use whatever IDE you prefer, or your favorite command line editor. 
+You are free to use whatever IDE you prefer, or your favorite command line editor.
 
 ### Build Tools
 
 To build the code, install
-  
+
   * Oracle Java 7
   * Apache Maven
 

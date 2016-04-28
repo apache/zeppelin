@@ -25,6 +25,7 @@ public class InterpreterOption {
   String host = null;
   int port = -1;
   boolean perNoteSession;
+  boolean perNoteProcess;
 
   public InterpreterOption() {
     remote = false;
@@ -50,7 +51,6 @@ public class InterpreterOption {
     this.perNoteSession = perNoteSession;
   }
 
-
   public boolean isConnectExistingProcess() {
     return (host != null && port != -1);
   }
@@ -61,5 +61,13 @@ public class InterpreterOption {
 
   public int getPort() {
     return port;
+  }
+
+  public boolean isPerNoteProcess() {
+    return perNoteProcess;
+  }
+
+  public void setPerNoteProcess(boolean perNoteProcess) {
+    this.perNoteProcess = perNoteProcess;
   }
 }

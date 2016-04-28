@@ -33,5 +33,5 @@ Before executing a Note operation, it checks if the user and the groups associat
 operation, it checks if the user and the groups have at least one entity that belongs to the reader entities.
 
 To initialize and modify note permissions, we provide UI like "Interpreter binding". The user inputs comma separated entities for owners, readers and writers.
-We execute a rest api call with this information. In the backend we get the user information for the connection and allow the operation if the user and groups 
+We execute a rest api call with this information. In the backend we get the user information for the connection and allow the operation if the user and groups
 associated with the current user have at least one entity that belongs to owner entities for the note.

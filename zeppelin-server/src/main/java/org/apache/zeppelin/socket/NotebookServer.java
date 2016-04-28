@@ -16,7 +16,6 @@
  */
 package org.apache.zeppelin.socket;
 
-
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
@@ -50,15 +49,14 @@ import org.apache.zeppelin.server.ZeppelinServer;
 import org.apache.zeppelin.socket.Message.OP;
 import org.apache.zeppelin.ticket.TicketContainer;
 import org.apache.zeppelin.utils.SecurityUtils;
-import org.eclipse.jetty.websocket.WebSocket;
-import org.eclipse.jetty.websocket.WebSocketServlet;
+import org.eclipse.jetty.websocket.servlet.WebSocketServlet;
+import org.eclipse.jetty.websocket.servlet.WebSocketServletFactory;
 import org.quartz.SchedulerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * Zeppelin websocket service.
- *
  */
 public class NotebookServer extends WebSocketServlet implements
         NotebookSocketListener, JobListenerFactory, AngularObjectRegistryListener,
@@ -73,6 +71,10 @@ public class NotebookServer extends WebSocketServlet implements
   }
 
   @Override
+  public void configure(WebSocketServletFactory factory) {
+    factory.setCreator(new NotebookWebSocketCreator(this));
+  }
+
   public boolean checkOrigin(HttpServletRequest request, String origin) {
     try {
       return SecurityUtils.isValidOrigin(origin, ZeppelinConfiguration.create());
@@ -84,8 +86,7 @@ public class NotebookServer extends WebSocketServlet implements
     return false;
   }
 
-  @Override
-  public WebSocket doWebSocketConnect(HttpServletRequest req, String protocol) {
+  public NotebookSocket doWebSocketConnect(HttpServletRequest req, String protocol) {
     return new NotebookSocket(req, protocol, this);
   }
 
@@ -450,7 +451,7 @@ public class NotebookServer extends WebSocketServlet implements
     }
   }
 
-  private void updateNote(WebSocket conn, HashSet<String> userAndRoles,
+  private void updateNote(NotebookSocket conn, HashSet<String> userAndRoles,
                           Notebook notebook, Message fromMessage)
       throws SchedulerException, IOException {
     String noteId = (String) fromMessage.get("id");
@@ -701,12 +702,12 @@ public class NotebookServer extends WebSocketServlet implements
         List<InterpreterSetting> settings = note.getNoteReplLoader()
             .getInterpreterSettings();
         for (InterpreterSetting setting : settings) {
-          if (setting.getInterpreterGroup() == null) {
+          if (setting.getInterpreterGroup(n.id()) == null) {
             continue;
           }
-          if (interpreterGroupId.equals(setting.getInterpreterGroup().getId())) {
+          if (interpreterGroupId.equals(setting.getInterpreterGroup(n.id()).getId())) {
             AngularObjectRegistry angularObjectRegistry = setting
-                .getInterpreterGroup().getAngularObjectRegistry();
+                .getInterpreterGroup(n.id()).getAngularObjectRegistry();
             this.broadcastExcept(
                 n.id(),
                 new Message(OP.ANGULAR_OBJECT_UPDATE).put("angularObject", ao)
@@ -1194,14 +1195,14 @@ public class NotebookServer extends WebSocketServlet implements
     }
 
     for (InterpreterSetting intpSetting : settings) {
-      AngularObjectRegistry registry = intpSetting.getInterpreterGroup()
+      AngularObjectRegistry registry = intpSetting.getInterpreterGroup(note.id())
           .getAngularObjectRegistry();
       List<AngularObject> objects = registry.getAllWithGlobal(note.id());
       for (AngularObject object : objects) {
         conn.send(serializeMessage(new Message(OP.ANGULAR_OBJECT_UPDATE)
             .put("angularObject", object)
             .put("interpreterGroupId",
-                intpSetting.getInterpreterGroup().getId())
+                intpSetting.getInterpreterGroup(note.id()).getId())
             .put("noteId", note.id())
             .put("paragraphId", object.getParagraphId())
         ));

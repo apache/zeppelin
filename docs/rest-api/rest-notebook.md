@@ -21,20 +21,20 @@ limitations under the License.
 
 ## Zeppelin REST API
  Zeppelin provides several REST APIs for interaction and remote activation of zeppelin functionality.
- 
+
  All REST APIs are available starting with the following endpoint ```http://[zeppelin-server]:[zeppelin-port]/api```
- 
+
  Note that zeppelin REST APIs receive or return JSON objects, it is recommended for you to install some JSON viewers
   such as [JSONView](https://chrome.google.com/webstore/detail/jsonview/chklaanhfefbnpoihckbnefhakgolnmc)
- 
- 
- If you work with zeppelin and find a need for an additional REST API please [file an issue or send us mail](../../community.html) 
+
+
+ If you work with zeppelin and find a need for an additional REST API please [file an issue or send us mail](../../community.html)
 
  <br />
 ### Notebook REST API list
-  
-  Notebooks REST API supports the following operations: List, Create, Get, Delete, Clone, Run, Export, Import as detailed in the following table 
-  
+
+  Notebooks REST API supports the following operations: List, Create, Get, Delete, Clone, Run, Export, Import as detailed in the following table
+
   <table class="table-configuration">
     <col width="200">
     <tr>
@@ -64,7 +64,7 @@ limitations under the License.
       <td><pre>{"status":"OK","message":"","body":[{"name":"Homepage","id":"2AV4WUEMK"},{"name":"Zeppelin Tutorial","id":"2A94M5J1Z"}]}</pre></td>
     </tr>
   </table>
-  
+
 <br/>
 
   <table class="table-configuration">
@@ -99,7 +99,7 @@ limitations under the License.
       <td> sample JSON input (with initial paragraphs) </td>
       <td><pre>
 {
-  "name": "name of new notebook", 
+  "name": "name of new notebook",
   "paragraphs": [
     {
       "title": "paragraph title1",
@@ -118,7 +118,7 @@ limitations under the License.
       <td><pre>{"status": "CREATED","message": "","body": "2AZPHY918"}</pre></td>
     </tr>
   </table>
-  
+
 <br/>
 
   <table class="table-configuration">
@@ -220,7 +220,7 @@ limitations under the License.
       </pre></td>
     </tr>
   </table>
-  
+
 <br/>
 
   <table class="table-configuration">
@@ -251,9 +251,9 @@ limitations under the License.
       <td><pre>{"status":"OK","message":""}</pre></td>
     </tr>
   </table>
-  
+
 <br/>
-  
+
   <table class="table-configuration">
     <col width="200">
     <tr>
@@ -262,7 +262,7 @@ limitations under the License.
     </tr>
     <tr>
       <td>Description</td>
-      <td>This ```POST``` method clones a notebook by the given id and create a new notebook using the given name 
+      <td>This ```POST``` method clones a notebook by the given id and create a new notebook using the given name
           or default name if none given.
           The body field of the returned JSON contains the new notebook id.
       </td>
@@ -288,7 +288,7 @@ limitations under the License.
       <td><pre>{"status": "CREATED","message": "","body": "2AZPHY918"}</pre></td>
     </tr>
   </table>
-  
+
 <br/>
 
   <table class="table-configuration">
@@ -319,7 +319,7 @@ limitations under the License.
       <td><pre>{"status":"OK"}</pre></td>
     </tr>
   </table>
-  
+
 <br/>
 
   <table class="table-configuration">
@@ -330,7 +330,7 @@ limitations under the License.
     </tr>
     <tr>
       <td>Description</td>
-      <td>This ```DELETE``` method stops all paragraph in the given notebook id. 
+      <td>This ```DELETE``` method stops all paragraph in the given notebook id.
       </td>
     </tr>
     <tr>
@@ -350,9 +350,9 @@ limitations under the License.
       <td><pre>{"status":"OK"}</pre></td>
     </tr>
   </table>
-  
+
 <br/>
-  
+
 <br/>
 
   <table class="table-configuration">
@@ -363,7 +363,7 @@ limitations under the License.
     </tr>
     <tr>
       <td>Description</td>
-      <td>This ```GET``` method gets all paragraph status by the given notebook id. 
+      <td>This ```GET``` method gets all paragraph status by the given notebook id.
           The body field of the returned JSON contains of the array that compose of the paragraph id, paragraph status, paragraph finish date, paragraph started date.
       </td>
     </tr>
@@ -384,7 +384,7 @@ limitations under the License.
       <td><pre>{"status":"OK","body":[{"id":"20151121-212654_766735423","status":"FINISHED","finished":"Tue Nov 24 14:21:40 KST 2015","started":"Tue Nov 24 14:21:39 KST 2015"},{"progress":"1","id":"20151121-212657_730976687","status":"RUNNING","finished":"Tue Nov 24 14:21:35 KST 2015","started":"Tue Nov 24 14:21:40 KST 2015"}]}</pre></td>
     </tr>
   </table>
-  
+
 <br/>
 
   <table class="table-configuration">
@@ -395,7 +395,7 @@ limitations under the License.
     </tr>
     <tr>
       <td>Description</td>
-      <td>This ```POST``` method runs the paragraph by given notebook and paragraph id. 
+      <td>This ```POST``` method runs the paragraph by given notebook and paragraph id.
       </td>
     </tr>
     <tr>
@@ -427,7 +427,7 @@ limitations under the License.
       <td><pre>{"status":"OK"}</pre></td>
     </tr>
   </table>
-  
+
 <br/>
 
   <table class="table-configuration">
@@ -438,7 +438,7 @@ limitations under the License.
     </tr>
     <tr>
       <td>Description</td>
-      <td>This ```DELETE``` method stops the paragraph by given notebook and paragraph id. 
+      <td>This ```DELETE``` method stops the paragraph by given notebook and paragraph id.
       </td>
     </tr>
     <tr>
@@ -458,7 +458,7 @@ limitations under the License.
       <td><pre>{"status":"OK"}</pre></td>
     </tr>
   </table>
-  
+
 <br/>
 
   <table class="table-configuration">
@@ -469,7 +469,7 @@ limitations under the License.
     </tr>
     <tr>
       <td>Description</td>
-      <td>This ```POST``` method adds cron job by the given notebook id. 
+      <td>This ```POST``` method adds cron job by the given notebook id.
       </td>
     </tr>
     <tr>
@@ -493,7 +493,7 @@ limitations under the License.
       <td><pre>{"status":"OK"}</pre></td>
     </tr>
   </table>
-  
+
 <br/>
 
   <table class="table-configuration">
@@ -504,7 +504,7 @@ limitations under the License.
     </tr>
     <tr>
       <td>Description</td>
-      <td>This ```DELETE``` method removes cron job by the given notebook id. 
+      <td>This ```DELETE``` method removes cron job by the given notebook id.
       </td>
     </tr>
     <tr>
@@ -524,7 +524,7 @@ limitations under the License.
       <td><pre>{"status":"OK"}</pre></td>
     </tr>
   </table>
-  
+
 <br/>
 
   <table class="table-configuration">
@@ -535,7 +535,7 @@ limitations under the License.
     </tr>
     <tr>
       <td>Description</td>
-      <td>This ```GET``` method gets cron job expression of given notebook id. 
+      <td>This ```GET``` method gets cron job expression of given notebook id.
           The body field of the returned JSON contains the cron expression.
       </td>
     </tr>
@@ -585,7 +585,7 @@ limitations under the License.
       <td><pre>{"status":"OK", body: [{"id":"<noteId>/paragraph/<paragraphId>", "name":"Notebook Name", "snippet":"", "text":""}]}</pre></td>
     </tr>
   </table>
-  
+
 <br/>
 
 
@@ -616,16 +616,16 @@ limitations under the License.
     <tr>
       <td> sample JSON input (add to the last) </td>
       <td><pre>
-  { 
-    "title": "Paragraph insert revised", 
-    "text": "%spark\nprintln(\"Paragraph insert revised\")" 
+  {
+    "title": "Paragraph insert revised",
+    "text": "%spark\nprintln(\"Paragraph insert revised\")"
   }</pre></td>
     </tr>
     <tr>
       <td> sample JSON input (add to specific index) </td>
       <td><pre>
-  { 
-    "title": "Paragraph insert revised", 
+  {
+    "title": "Paragraph insert revised",
     "text": "%spark\nprintln(\"Paragraph insert revised\")",
     "index": 0
   }
@@ -636,7 +636,7 @@ limitations under the License.
       <td><pre>{"status": "CREATED","message": "","body": "20151218-100330_1754029574"}</pre></td>
     </tr>
   </table>
-  
+
 <br/>
 
   <table class="table-configuration">
@@ -709,7 +709,7 @@ limitations under the License.
       </pre></td>
     </tr>
   </table>
-  
+
 <br/>
 
   <table class="table-configuration">
@@ -740,7 +740,7 @@ limitations under the License.
       <td><pre>{"status":"OK","message":""}</pre></td>
     </tr>
   </table>
-  
+
 
 <br/>
 
@@ -772,9 +772,9 @@ limitations under the License.
       <td><pre>{"status":"OK","message":""}</pre></td>
     </tr>
   </table>
-  
 
-  
+
+
   <table class="table-configuration">
     <col width="200">
     <tr>
@@ -826,7 +826,7 @@ limitations under the License.
 }</pre></td>
     </tr>
   </table>
-  
+
   <table class="table-configuration">
     <col width="200">
     <tr>

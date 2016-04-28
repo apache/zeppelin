@@ -295,4 +295,3 @@ exec bin/zeppelin-daemon.sh upstart
 ```
 bin\zeppelin.cmd
 ```
-

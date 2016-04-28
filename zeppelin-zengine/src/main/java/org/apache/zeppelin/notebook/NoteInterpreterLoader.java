@@ -75,22 +75,23 @@ public class NoteInterpreterLoader {
     return settings;
   }
 
-  private String getInterpreterGroupKey(InterpreterSetting setting) {
-    if (!setting.getOption().isPerNoteSession()) {
-      return SHARED_SESSION;
-    } else {
+  private String getInterpreterInstanceKey(InterpreterSetting setting) {
+    if (setting.getOption().isPerNoteSession() || setting.getOption().isPerNoteProcess()) {
       return noteId;
+    } else {
+      return SHARED_SESSION;
     }
   }
 
   private List<Interpreter> createOrGetInterpreterList(InterpreterSetting setting) {
-    InterpreterGroup interpreterGroup = setting.getInterpreterGroup();
+    InterpreterGroup interpreterGroup =
+        setting.getInterpreterGroup(noteId);
     synchronized (interpreterGroup) {
-      String key = getInterpreterGroupKey(setting);
+      String key = getInterpreterInstanceKey(setting);
       if (!interpreterGroup.containsKey(key)) {
-        factory.createInterpretersForNote(setting, key);
+        factory.createInterpretersForNote(setting, noteId, key);
       }
-      return interpreterGroup.get(getInterpreterGroupKey(setting));
+      return interpreterGroup.get(getInterpreterInstanceKey(setting));
     }
   }
 
@@ -101,6 +102,7 @@ public class NoteInterpreterLoader {
       return;
     }
 
+    System.err.println("close");
     for (InterpreterSetting setting : settings) {
       factory.removeInterpretersForNote(setting, noteId);
     }
