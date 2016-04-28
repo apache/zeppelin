@@ -1,6 +1,6 @@
 ---
 layout: page
-title: "Angular Display System"
+title: "Front-end Angular Interactions"
 description: ""
 group: display
 ---
@@ -20,200 +20,140 @@ limitations under the License.
 {% include JB/setup %}
 
 
-## Angular Display System in Zeppelin
+## Front-end Angular Interactions in Zeppelin
 
-Angular display system treats output as a view template for [AngularJS](https://angularjs.org/).
-It compiles templates and displays them inside of Zeppelin.
+In addition to the back-end API to handle Angular objects binding, Zeppelin also exposes a simple AngularJS **`z`** object on the front-end side to expose the same capabilities.
 
-Zeppelin provides a gateway between your interpreter and your compiled **AngularJS view** templates.
-Therefore, you can not only update scope variables from your interpreter but also watch them in the interpreter, which is JVM process.
-
-### Print AngularJS view
-
-To use angular display system, you should start with `%angular`.
-<img src="/assets/themes/zeppelin/img/screenshots/display_angular.png" width="60%" />
-
-Since `name` is not defined, `Hello {{name}}` will display `Hello`.
-> **Please Note:** Display system is backend independent.
+This **`z`** object is accessible in the Angular isolated scope for each paragraph.
 
 <br />
 ### Bind / Unbind Variables
 
-Through **ZeppelinContext**, you can bind / unbind variables to **AngularJS view**. Currently, it only works in **Spark Interpreter ( scala )**.
+Through the **`z`**, you can bind / unbind variables to **AngularJS view**
 
-```scala
-// bind my 'object' as angular scope variable 'name' in current notebook.
-z.angularBind(String name, Object object)
+Bind a value to an angular object and a **mandatory** target paragraph:
 
-// bind my 'object' as angular scope variable 'name' in all notebooks related to current interpreter.
-z.angularBindGlobal(String name, Object object)
+```html
 
-// unbind angular scope variable 'name' in current notebook.
-z.angularUnbind(String name)
+%angular
 
-// unbind angular scope variable 'name' in all notebooks related to current interpreter.
-z.angularUnbindGlobal(String name)
+<form class="form-inline">
+  <div class="form-group">
+    <label for="superheroId">Super Hero: </label>
+    <input type="text" class="form-control" id="superheroId" placeholder="Superhero name ..." ng-model="superhero"></input>
+  </div>
+  <button type="submit" class="btn btn-primary" ng-click="z.angularBind('superhero',superhero,'20160222-232336_1472609686')"> Bind</button>
+</form>
 
 ```
 
-Using the above example, let's bind `world` variable to `name`. Then you can see **AngularJs view** is immediately updated.
+<img src="/assets/themes/zeppelin/img/screenshots/z_angularBind.gif" />
 
-<img src="/assets/themes/zeppelin/img/screenshots/display_angular1.png" width="60%" />
+<hr/>
+
+Unbind/remove a value from angular object and a **mandatory** target paragraph:
+
+```html
+
+%angular
+
+<form class="form-inline">
+  <button type="submit" class="btn btn-primary" ng-click="z.angularUnbind('superhero','20160222-232336_1472609686')"> UnBind</button>
+</form>
+
+```
+
+<img src="/assets/themes/zeppelin/img/screenshots/z_angularUnbind.gif" />
+
+The signature for the **`z.angularBind() / z.angularUnbind()`** functions are:
+
+```javascript
+
+z.angularBind(angularObjectName, angularObjectValue, paragraphId);
+
+z.angularUnbind(angularObjectName, angularObjectValue, paragraphId);
+
+```
+
+All the parameters are mandatory.
 
 
 <br />
-### Watch / Unwatch Variables
+### Run Paragraph
 
-Through **ZeppelinContext**, you can watch / unwatch variables in **AngularJs view**. Currently, it only works in **Spark Interpreter ( scala )**.
+You can also trigger paragraph execution by calling **`z.runParagraph()`** function passing the appropriate paragraphId: 
 
-```scala
-// register for angular scope variable 'name' (notebook)
-z.angularWatch(String name, (before, after) => { ... })
+```html
 
-// unregister watcher for angular variable 'name' (notebook)
-z.angularUnwatch(String name)
+%angular
 
-// register for angular scope variable 'name' (global)
-z.angularWatchGlobal(String name, (before, after) => { ... })
-
-// unregister watcher for angular variable 'name' (global)
-z.angularUnwatchGlobal(String name)
-
+<form class="form-inline">
+  <div class="form-group">
+    <label for="paragraphId">Paragraph Id: </label>
+    <input type="text" class="form-control" id="paragraphId" placeholder="Paragraph Id ..." ng-model="paragraph"></input>
+  </div>
+  <button type="submit" class="btn btn-primary" ng-click="z.runParagraph(paragraph)"> Run Paragraph</button>
+</form>
 
 ```
 
-Let's make a button. When it is clicked, the value of `run` will be increased 1 by 1.
+<img src="/assets/themes/zeppelin/img/screenshots/z_runParagraph.gif" />
 
-<img src="/assets/themes/zeppelin/img/screenshots/display_angular2.png" width="60%" />
+<br />
+### Overriding dynamic form with Angular Object
 
-`z.angularBind("run", 0)` will initialize `run` to zero. And then, it will be also applied to `run` in `z.angularWatch()`.
-When the button is clicked, you'll see both `run` and `numWatched` are incremented by 1.
+The front-end Angular Interaction API has been designed to offer richer form capabilities and variable binding. With the existing **Dynamic Form** system you can already create input text, select and checkbox forms but the choice is rather limited and the look & feel cannot be changed.
 
-<img src="/assets/themes/zeppelin/img/screenshots/display_angular3.png" width="60%" />
+The idea is to create a custom form using plain HTML/AngularJS code and bind actions on this form to push/remove Angular variables to targeted paragraphs using this new API. 
 
-## Let's make it Simpler and more Intuitive
-In this section, we will introduce a simpler and more intuitive way of using **Angular Display System** in Zeppelin. 
-
-### How can we use it?
-Here are some usages. 
-
-#### Import 
-
-#####  - In notebook scope
-```scala
-import org.apache.zeppelin.display.angular.notebookscope._
-import AngularElem._
-```
-
-#####  - In paragraph scope
-```scala
-import org.apache.zeppelin.display.angular.paragraphscope._
-import AngularElem._
-```
-
-
-#### Display Element
-```scala
-// automatically convert to string and print with %angular display system directive in front.
-<div><div>.display
-```
-#### Event Handler
-```scala
-// on click
-<div></div>.onClick(() => {
-   my callback routine
-}).display
-
-// on change
-<div></div>.onChange(() => {
-  my callback routine
-}).display
-
-// arbitrary event
-<div></div>.onEvent("ng-click", () => {
-  my callback routine
-}).display
-```
-
-#### Bind Model
-```scala
-// bind model
-<div></div>.model("myModel").display
-
-// bind model with initial value
-<div></div>.model("myModel", initialValue).display 
-```
-
-#### Interact with Model
-```scala 
-// read model
-AngularModel("myModel")()
-
-// update model
-AngularModel("myModel", "newValue")
-```
-
-<br/>
-### Example: Basic Usage
-Using the above basic usages, you can apply them like below examples. 
-
-#### Display Elements
-
-```scala
-<div style="color:blue">
-  <h4>Hello Angular Display System</h4>
-</div>.display
-```
-
-#### OnClick Event
-```scala
-<div class="btn btn-success">
-  Click me
-</div>.onClick{() =>
-  // callback for button click
-}.display
-```
-
-#### Bind Model
-
-{% raw %}
-```scala
-  <div>{{{{myModel}}}}</div>.model("myModel", "Initial Value").display
-```
-{% endraw %}
-
-#### Interact With Model
-```scala
-// read the value
-AngularModel("myModel")()
-
-// update the value
-AngularModel("myModel", "New value")
-```
-
-<img src="../assets/themes/zeppelin/img/docs-img/basic-usage-angular.png" width="70%">
-
-### Example: String Converter
-Using below example, you can convert the lowercase string to uppercase.
+Consequently if you use the **Dynamic Form** syntax in a paragraph and there is a bound Angular object having the same name as the _${formName}_, the Angular object will have higher priority and the **Dynamic Form** will not be displayed. Example: 
  
-{% raw %}
-```scala
-// clear previously created angular object.
-AngularElem.disassociate
 
-val button = <div class="btn btn-success btn-sm">Convert</div>.onClick{() =>
-  val inputString = AngularModel("input")().toString
-  AngularModel("title", inputString.toUpperCase)
-}
+<img src="/assets/themes/zeppelin/img/screenshots/z_angularJs_overriding_dynamic_form.gif" />
 
-<div>
-  { <h4> {{{{title}}}}</h4>.model("title", "Please type text to convert uppercase") }
-   Your text { <input type="text"></input>.model("input", "") }
-  {button}
-</div>.display
-```
-{% endraw %}
 
-<img src="../assets/themes/zeppelin/img/docs-img/string-converter-angular.gif" width="70%">
+<br />
+### Feature matrix comparison
 
- 
+How does the front-end AngularJS API compares to the back-end API ? Below is a comparison matrix for both APIs:
+
+<table>
+    <thead>
+        <tr>
+            <th>Actions</th>
+            <th>Front-end API</th>
+            <th>Back-end API</th>
+        </tr>
+    </thead>
+        <tr>
+            <td>Initiate binding</td>
+            <td>z.angularbind(var, initialValue, paragraphId)</td>
+            <td>z.angularBind(var, initialValue)</td>
+        </tr>
+        <tr>
+            <td>Update value</td>
+            <td>same to ordinary angularjs scope variable, or z.angularbind(var, newValue, paragraphId)</td>
+            <td>z.angularBind(var, newValue)</td>
+        </tr>
+        <tr>
+            <td>Watching value</td>
+            <td>same to ordinary angularjs scope variable</td>
+            <td>z.angularWatch(var, (oldVal, newVal) => ...)</td>
+        </tr>
+        <tr>
+            <td>Destroy binding</td>
+            <td>z.angularUnbind(var, paragraphId)</td>
+            <td>z.angularUnbind(var)</td>
+        </tr>
+        <tr>
+            <td>Executing Paragraph</td>
+            <td>z.runParagraph(paragraphId)</td>
+            <td>z.run(paragraphId)</td>
+        </tr>                                
+    <tbody>
+    <tbody>    
+</table>
+
+Both APIs are pretty similar, except for value watching where it is done naturally by AngularJS internals on the front-end and by user custom watcher functions in the back-end.
+
+There is also a slight difference in term of scope. Front-end API limits the Angular object binding to a paragraph scope whereas back-end API allows you to bind an Angular object at the global or note scope. This restriction has been designed purposely to avoid Angular object leaks and scope pollution.
