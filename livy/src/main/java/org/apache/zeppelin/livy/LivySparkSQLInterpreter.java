@@ -42,7 +42,7 @@ public class LivySparkSQLInterpreter extends Interpreter {
         "livy",
         LivySparkSQLInterpreter.class.getName(),
         new InterpreterPropertyBuilder()
-            .add("livy.spark.maxResult",
+            .add("zeppelin.livy.spark.maxResult",
                 DEFAULT_MAX_RESULT,
                 "Max number of SparkSQL result to display.")
             .build()
@@ -92,7 +92,7 @@ public class LivySparkSQLInterpreter extends Interpreter {
               line.replaceAll("\"", "\\\\\"")
                   .replaceAll("\\n", " ")
               + "\").show(" +
-              property.get("livy.spark.maxResult") + ")",
+              property.get("zeppelin.livy.spark.maxResult") + ")",
           interpreterContext, userSessionMap);
 
       if (res.code() == InterpreterResult.Code.SUCCESS) {
