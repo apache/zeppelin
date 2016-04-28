@@ -62,7 +62,7 @@ angular.module('zeppelinWebApp').factory('websocketEvents', function($rootScope,
     } else if (op === 'AUTH_INFO') {
       BootstrapDialog.show({
     	  closable: true,
-          title: 'Insufficient privileges', //权限不足
+          title: 'Insufficient privileges', 
           message: data.info.toString(),
           buttons: [{
               label: 'Login',

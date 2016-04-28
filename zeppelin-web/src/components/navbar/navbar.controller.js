@@ -79,7 +79,7 @@ angular.module('zeppelinWebApp').controller('NavCtrl', function($scope, $rootSco
        	$rootScope.ticket.ticket = "";
        	$rootScope.ticket.roles = "";
        	BootstrapDialog.show({
-            message: '退出成功!'
+            message: 'Logout Success!'
         });
       }).
       error(function(data, status, headers, config) {

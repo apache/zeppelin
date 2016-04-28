@@ -306,13 +306,13 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl',
     if(config) {
       $scope.note.config = config;
     }
-    websocketMsgSrv.updateNotebook($scope.note.id, $scope.note.name, $scope.note.config);
+    websocketMsgSrv.updateNotebook($scope.note.id, $scope.note.name, '', $scope.note.config);
   };
 
   /** Update the note name */
   $scope.sendNewName = function() {
     if ($scope.note.name) {
-      websocketMsgSrv.updateNotebook($scope.note.id, $scope.note.name, $scope.note.config);
+      websocketMsgSrv.updateNotebook($scope.note.id, $scope.note.name, '', $scope.note.config);
     }
   };
 
@@ -686,10 +686,24 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl',
     }).
     error(function(data, status, headers, config) {
       console.log('Error %o %o', status, data.message);
-      BootstrapDialog.alert({
-        closable: true,
-        title: 'Insufficient privileges',
-        message: data.message
+      BootstrapDialog.show({
+    	  closable: true,
+          title: 'Insufficient privileges', 
+          message: data.message,
+          buttons: [{
+              label: 'Login',
+              action: function(dialog) {
+            	  dialog.close();
+            	  $('#loginModal').modal({
+            	        show: 'true'
+            	    });
+              }
+          }, {
+              label: 'Cancel',
+              action: function(dialog){
+            	  dialog.close();
+              }
+          }]
       });
     });
   };
