@@ -14,8 +14,8 @@
 
 'use strict';
 
-angular.module('zeppelinWebApp').controller('NavCtrl', function($scope, $rootScope, $routeParams,
-    $location, notebookListDataFactory, websocketMsgSrv, arrayOrderingSrv) {
+angular.module('zeppelinWebApp').controller('NavCtrl', function($scope, $rootScope, $http, $routeParams,
+    $location, notebookListDataFactory, baseUrlSrv, websocketMsgSrv, arrayOrderingSrv) {
   /** Current list of notes (ids) */
 
   $scope.showLoginWindow = function() {
@@ -70,6 +70,23 @@ angular.module('zeppelinWebApp').controller('NavCtrl', function($scope, $rootSco
     $scope.checkUsername();
     loadNotes();
   });
+  
+  $scope.logout = function() {
+	  $http.post(baseUrlSrv.getRestApiBase()+'/login/logout').
+      success(function(data, status, headers, config) {
+       	$rootScope.userName = "";
+       	$rootScope.ticket.principal = "";
+       	$rootScope.ticket.ticket = "";
+       	$rootScope.ticket.roles = "";
+       	BootstrapDialog.show({
+            message: '退出成功!'
+        });
+      }).
+      error(function(data, status, headers, config) {
+        console.log('Error %o %o', status, data.message);
+      });
+	  
+  };
 
   $scope.search = function() {
     $location.url(/search/ + $scope.searchTerm);

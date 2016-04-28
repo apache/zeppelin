@@ -16,23 +16,29 @@
  */
 package org.apache.zeppelin.rest;
 
-import org.apache.shiro.authc.*;
-import org.apache.shiro.session.Session;
-import org.apache.shiro.subject.Subject;
-import org.apache.zeppelin.server.JsonResponse;
-import org.apache.zeppelin.ticket.TicketContainer;
-import org.apache.zeppelin.utils.SecurityUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
 
 import javax.ws.rs.FormParam;
+import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
+
+import org.apache.shiro.authc.AuthenticationException;
+import org.apache.shiro.authc.IncorrectCredentialsException;
+import org.apache.shiro.authc.LockedAccountException;
+import org.apache.shiro.authc.UnknownAccountException;
+import org.apache.shiro.authc.UsernamePasswordToken;
+import org.apache.shiro.subject.Subject;
+import org.apache.zeppelin.server.JsonResponse;
+import org.apache.zeppelin.socket.Message;
+import org.apache.zeppelin.ticket.TicketContainer;
+import org.apache.zeppelin.utils.SecurityUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Created for org.apache.zeppelin.rest.message on 17/03/16.
@@ -65,7 +71,10 @@ public class LoginRestApi {
     JsonResponse response = null;
     // ticket set to anonymous for anonymous user. Simplify testing.
     Subject currentUser = org.apache.shiro.SecurityUtils.getSubject();
-    if (!currentUser.isAuthenticated()) {
+    if (currentUser.isAuthenticated()) {
+      currentUser.logout();
+    }
+//    if (!currentUser.isAuthenticated()) {
       try {
         UsernamePasswordToken token = new UsernamePasswordToken(userName, password);
         //      token.setRememberMe(true);
@@ -98,12 +107,30 @@ public class LoginRestApi {
         //unexpected condition - error?
         LOG.error("Exception in login: ", ae);
       }
-    }
+//    }
 
     if (response == null) {
       response = new JsonResponse(Response.Status.FORBIDDEN, "", "");
     }
 
+    LOG.warn(response.toString());
+    return response.build();
+  }
+  
+  @POST
+  @Path("logout")
+  public Response logout() {
+    JsonResponse response;
+    
+    Subject currentUser = org.apache.shiro.SecurityUtils.getSubject();
+    currentUser.logout();
+
+    Map<String, String> data = new HashMap<>();
+    data.put("principal", "anonymous");
+    data.put("roles", "");
+    data.put("ticket", "anonymous");
+   
+    response = new JsonResponse(Response.Status.OK, "", data);
     LOG.warn(response.toString());
     return response.build();
   }
