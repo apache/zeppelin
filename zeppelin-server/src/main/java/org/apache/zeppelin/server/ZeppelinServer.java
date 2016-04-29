@@ -200,9 +200,6 @@ public class ZeppelinServer extends Application {
         ServletContextHandler.SESSIONS);
 
     webapp.addServlet(servletHolder, "/ws/*");
-    webapp.addFilter(new FilterHolder(CorsFilter.class), "/*",
-            EnumSet.allOf(DispatcherType.class));
-
   }
 
   private static SslContextFactory getSslContextFactory(ZeppelinConfiguration conf) {
