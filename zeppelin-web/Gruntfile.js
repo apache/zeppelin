@@ -72,10 +72,10 @@ module.exports = function (grunt) {
           livereload: '<%= connect.options.livereload %>'
         }
       },
-      jsTest: {
-        files: ['test/spec/{,*/}*.js'],
-        tasks: ['newer:jshint:test', 'karma']
-      },
+//      jsTest: {
+//        files: ['test/spec/{,*/}*.js'],
+//        tasks: ['newer:jshint:test', 'karma']
+//      },
       styles: {
         files: [
           '<%= yeoman.app %>/app/**/*.css',
@@ -395,12 +395,12 @@ module.exports = function (grunt) {
     },
 
     // Test settings
-    karma: {
-      unit: {
-        configFile: 'test/karma.conf.js',
-        singleRun: true
-      }
-    }
+//    karma: {
+//      unit: {
+//        configFile: 'test/karma.conf.js',
+//        singleRun: true
+//      }
+//    }
   });
 
 
@@ -429,8 +429,8 @@ module.exports = function (grunt) {
     'wiredep',
     'concurrent:test',
     'postcss',
-    'connect:test',
-    'karma'
+    'connect:test'
+    //'karma'
   ]);
 
   grunt.registerTask('build', [
@@ -449,9 +449,8 @@ module.exports = function (grunt) {
     'htmlmin'
   ]);
 
-  grunt.registerTask('buildSkipTests', [
-    'clean:dist',
-    'wiredep',
-    'useminPrepare'
+  grunt.registerTask('default', [
+    'build',
+    'test'
   ]);
 };
