@@ -108,11 +108,15 @@ enable YARN support for local mode
 
 ##### `-Ppyspark` (optional)
 
-enable PySpark support for local mode
+enable [PySpark](http://spark.apache.org/docs/latest/api/python/) support for local mode.
+
+##### `-Pr` (optional)
+
+enable [R](https://www.r-project.org/) support for local mode.
 
 ##### `-Psparkr` (optional)
 
-enable SparkR support for local mode
+enable [SparkR](https://spark.apache.org/docs/latest/sparkr.html) support for local mode.
 
 ##### `-Pvendor-repo` (optional)
 
