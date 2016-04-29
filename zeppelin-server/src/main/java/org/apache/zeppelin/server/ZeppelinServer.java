@@ -190,7 +190,7 @@ public class ZeppelinServer extends Application {
   }
 
   private static void setupNotebookServer(WebAppContext webapp,
-                                                           ZeppelinConfiguration conf) {
+                                          ZeppelinConfiguration conf) {
     notebookWsServer = new NotebookServer();
     String maxTextMessageSize = conf.getWebsocketMaxTextMessageSize();
     final ServletHolder servletHolder = new ServletHolder(notebookWsServer);
@@ -246,7 +246,7 @@ public class ZeppelinServer extends Application {
   }
 
   private static WebAppContext setupWebAppContext(ContextHandlerCollection contexts,
-      ZeppelinConfiguration conf) {
+                                                  ZeppelinConfiguration conf) {
 
     WebAppContext webApp = new WebAppContext();
     webApp.setContextPath(conf.getServerContextPath());
