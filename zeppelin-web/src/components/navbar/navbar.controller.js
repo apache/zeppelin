@@ -72,14 +72,14 @@ angular.module('zeppelinWebApp').controller('NavCtrl', function($scope, $rootSco
   });
   
   $scope.logout = function() {
-	  $http.post(baseUrlSrv.getRestApiBase()+'/login/logout').
+    $http.post(baseUrlSrv.getRestApiBase()+'/login/logout').
       success(function(data, status, headers, config) {
-       	$rootScope.userName = "";
-       	$rootScope.ticket.principal = "";
-       	$rootScope.ticket.ticket = "";
-       	$rootScope.ticket.roles = "";
-       	BootstrapDialog.show({
-            message: 'Logout Success!'
+        $rootScope.userName = "";
+        $rootScope.ticket.principal = "";
+        $rootScope.ticket.ticket = "";
+        $rootScope.ticket.roles = "";
+        BootstrapDialog.show({
+           message: 'Logout Success'
         });
       }).
       error(function(data, status, headers, config) {

@@ -687,21 +687,21 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl',
     error(function(data, status, headers, config) {
       console.log('Error %o %o', status, data.message);
       BootstrapDialog.show({
-    	  closable: true,
+          closable: true,
           title: 'Insufficient privileges', 
           message: data.message,
           buttons: [{
               label: 'Login',
               action: function(dialog) {
-            	  dialog.close();
-            	  $('#loginModal').modal({
-            	        show: 'true'
-            	    });
+                  dialog.close();
+                  $('#loginModal').modal({
+                     show: 'true'
+                    });
               }
           }, {
               label: 'Cancel',
               action: function(dialog){
-            	  dialog.close();
+                  dialog.close();
               }
           }]
       });

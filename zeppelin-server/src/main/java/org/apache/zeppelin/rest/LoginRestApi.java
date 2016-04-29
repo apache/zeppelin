@@ -74,7 +74,7 @@ public class LoginRestApi {
     if (currentUser.isAuthenticated()) {
       currentUser.logout();
     }
-//    if (!currentUser.isAuthenticated()) {
+    if (!currentUser.isAuthenticated()) {
       try {
         UsernamePasswordToken token = new UsernamePasswordToken(userName, password);
         //      token.setRememberMe(true);
@@ -107,7 +107,7 @@ public class LoginRestApi {
         //unexpected condition - error?
         LOG.error("Exception in login: ", ae);
       }
-//    }
+    }
 
     if (response == null) {
       response = new JsonResponse(Response.Status.FORBIDDEN, "", "");
