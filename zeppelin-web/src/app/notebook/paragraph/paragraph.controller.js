@@ -1241,6 +1241,8 @@ angular.module('zeppelinWebApp')
                 cellProperties.format = '0,0';
                 cellProperties.editor = false;
                 td.style.textAlign = 'left';
+              } else if (value.length > '%html'.length && '%html ' === value.substring(0, '%html '.length)) {
+                td.innerHTML = value.substring('%html'.length);
               }
             };
           return cellProperties;
