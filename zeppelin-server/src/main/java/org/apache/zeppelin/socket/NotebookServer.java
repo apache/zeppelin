@@ -489,6 +489,7 @@ public class NotebookServer extends WebSocketServlet implements
 
       note.persist();
       broadcastNote(note);
+      broadcastNoteList();
     }
   }
 
