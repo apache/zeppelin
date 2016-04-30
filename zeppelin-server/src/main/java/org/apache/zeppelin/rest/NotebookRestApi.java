@@ -50,6 +50,7 @@ import org.quartz.CronExpression;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.google.gson.GsonBuilder;
@@ -127,9 +128,29 @@ public class NotebookRestApi {
       return new JsonResponse<>(Status.FORBIDDEN, ownerPermissionError(userAndRoles,
               notebookAuthorization.getOwners(noteId))).build();
     }
-    notebookAuthorization.setOwners(noteId, permMap.get("owners"));
-    notebookAuthorization.setReaders(noteId, permMap.get("readers"));
-    notebookAuthorization.setWriters(noteId, permMap.get("writers"));
+
+    HashSet readers = permMap.get("readers");
+    HashSet owners = permMap.get("owners");
+    HashSet writers = permMap.get("writers");
+    // Set readers, if writers and owners is empty -> set to user requesting the change
+    if (readers != null && !readers.isEmpty()) {
+      if (writers.isEmpty()) {
+        writers = Sets.newHashSet(SecurityUtils.getPrincipal());
+      }
+      if (owners.isEmpty()) {
+        owners = Sets.newHashSet(SecurityUtils.getPrincipal());
+      }
+    }
+    // Set writers, if owners is empty -> set to user requesting the change
+    if ( writers != null && !writers.isEmpty()) {
+      if (owners.isEmpty()) {
+        owners = Sets.newHashSet(SecurityUtils.getPrincipal());
+      }
+    }
+
+    notebookAuthorization.setReaders(noteId, readers);
+    notebookAuthorization.setWriters(noteId, writers);
+    notebookAuthorization.setOwners(noteId, owners);
     LOG.debug("After set permissions {} {} {}",
             notebookAuthorization.getOwners(noteId),
             notebookAuthorization.getReaders(noteId),
