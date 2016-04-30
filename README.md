@@ -112,11 +112,11 @@ enable [PySpark](http://spark.apache.org/docs/latest/api/python/) support for lo
 
 ##### `-Pr` (optional)
 
-enable [R](https://www.r-project.org/) support for local mode.
+enable [R](https://www.r-project.org/) support with [SparkR](https://spark.apache.org/docs/latest/sparkr.html) integration.
 
 ##### `-Psparkr` (optional)
 
-enable [SparkR](https://spark.apache.org/docs/latest/sparkr.html) support for local mode.
+another [R](https://www.r-project.org/) support with [SparkR](https://spark.apache.org/docs/latest/sparkr.html) integration as well as local mode support.
 
 ##### `-Pvendor-repo` (optional)
 
