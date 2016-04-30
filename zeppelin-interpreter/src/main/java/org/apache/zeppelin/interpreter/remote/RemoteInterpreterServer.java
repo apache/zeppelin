@@ -151,6 +151,7 @@ public class RemoteInterpreterServer
       Class<Interpreter> replClass = (Class<Interpreter>) Object.class.forName(className);
       Properties p = new Properties();
       p.putAll(properties);
+      setSystemProperty(p);
 
       Constructor<Interpreter> constructor =
           replClass.getConstructor(new Class[] {Properties.class});
@@ -176,6 +177,19 @@ public class RemoteInterpreterServer
         | IllegalArgumentException | InvocationTargetException e) {
       logger.error(e.toString(), e);
       throw new TException(e);
+    }
+  }
+
+  private void setSystemProperty(Properties properties) {
+    for (Object key : properties.keySet()) {
+      if (!RemoteInterpreter.isEnvString((String) key)) {
+        String value = properties.getProperty((String) key);
+        if (value == null || value.isEmpty()) {
+          System.clearProperty((String) key);
+        } else {
+          System.setProperty((String) key, properties.getProperty((String) key));
+        }
+      }
     }
   }
 
