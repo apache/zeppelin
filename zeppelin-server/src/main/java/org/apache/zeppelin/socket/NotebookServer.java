@@ -133,7 +133,7 @@ public class NotebookServer extends WebSocketServlet implements
       /** Lets be elegant here */
       switch (messagereceived.op) {
           case LIST_NOTES:
-            broadcastNoteList();
+            unicastNoteList(conn);
             break;
           case RELOAD_NOTES_FROM_REPO:
             broadcastReloadedNoteList();
@@ -201,7 +201,6 @@ public class NotebookServer extends WebSocketServlet implements
             checkpointNotebook(conn, notebook, messagereceived);
             break;
           default:
-            broadcastNoteList();
             break;
       }
     } catch (Exception e) {
@@ -340,6 +339,14 @@ public class NotebookServer extends WebSocketServlet implements
     }
   }
 
+  private void unicast(Message m, NotebookSocket conn) {
+    try {
+      conn.send(serializeMessage(m));
+    } catch (IOException e) {
+      LOG.error("socket error", e);
+    }
+  }
+
   public List<Map<String, String>> generateNotebooksInfo(boolean needsReload) {
     Notebook notebook = notebook();
 
@@ -382,6 +389,11 @@ public class NotebookServer extends WebSocketServlet implements
     broadcastAll(new Message(OP.NOTES_INFO).put("notes", notesInfo));
   }
 
+  public void unicastNoteList(NotebookSocket conn) {
+    List<Map<String, String>> notesInfo = generateNotebooksInfo(false);
+    unicast(new Message(OP.NOTES_INFO).put("notes", notesInfo), conn);
+  }
+
   public void broadcastReloadedNoteList() {
     List<Map<String, String>> notesInfo = generateNotebooksInfo(true);
     broadcastAll(new Message(OP.NOTES_INFO).put("notes", notesInfo));
@@ -415,7 +427,6 @@ public class NotebookServer extends WebSocketServlet implements
     if (note != null) {
       if (!notebookAuthorization.isReader(noteId, userAndRoles)) {
         permissionError(conn, "read", userAndRoles, notebookAuthorization.getReaders(noteId));
-        broadcastNoteList();
         return;
       }
       addConnectionToNote(note.id(), conn);
@@ -437,7 +448,6 @@ public class NotebookServer extends WebSocketServlet implements
       NotebookAuthorization notebookAuthorization = notebook.getNotebookAuthorization();
       if (!notebookAuthorization.isReader(noteId, userAndRoles)) {
         permissionError(conn, "read", userAndRoles, notebookAuthorization.getReaders(noteId));
-        broadcastNoteList();
         return;
       }
       addConnectionToNote(note.id(), conn);
@@ -460,6 +470,12 @@ public class NotebookServer extends WebSocketServlet implements
       return;
     }
     if (config == null) {
+      return;
+    }
+
+    NotebookAuthorization notebookAuthorization = notebook.getNotebookAuthorization();
+    if (!notebookAuthorization.isWriter(noteId, userAndRoles)) {
+      permissionError(conn, "update", userAndRoles, notebookAuthorization.getWriters(noteId));
       return;
     }
 
