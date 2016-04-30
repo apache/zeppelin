@@ -1,4 +1,4 @@
-#Zeppelin 
+#Zeppelin
 
 **Documentation:** [User Guide](http://zeppelin.incubator.apache.org/docs/latest/index.html)<br/>
 **Mailing Lists:** [User and Dev mailing list](http://zeppelin.incubator.apache.org/community.html)<br/>
@@ -26,7 +26,7 @@ To know more about Zeppelin, visit our web site [http://zeppelin.incubator.apach
 ## Getting Started
 
 ### Before Build
-If you don't have requirements prepared, install it. 
+If you don't have requirements prepared, install it.
 (The installation method may vary according to your environment, example is for Ubuntu.)
 
 ```sh
@@ -125,7 +125,7 @@ enable 3rd party vendor repository (cloudera)
 
 ##### `-Pmapr[version]` (optional)
 
-For the MapR Hadoop Distribution, these profiles will handle the Hadoop version. As MapR allows different versions of Spark to be installed, you should specify which version of Spark is installed on the cluster by adding a Spark profile (`-Pspark-1.2`, `-Pspark-1.3`, etc.) as needed. 
+For the MapR Hadoop Distribution, these profiles will handle the Hadoop version. As MapR allows different versions of Spark to be installed, you should specify which version of Spark is installed on the cluster by adding a Spark profile (`-Pspark-1.2`, `-Pspark-1.3`, etc.) as needed.
 For Hive, check the hive/pom.xml and adjust the version installed as well. The correct Maven
 artifacts can be found for every version of MapR at http://doc.mapr.com
 
@@ -177,7 +177,7 @@ If you wish to configure Zeppelin option (like port number), configure the follo
 ./conf/zeppelin-site.xml
 ```
 
-(You can copy `./conf/zeppelin-env.sh.template` into `./conf/zeppelin-env.sh`. 
+(You can copy `./conf/zeppelin-env.sh.template` into `./conf/zeppelin-env.sh`.
 Same for `zeppelin-site.xml`.)
 
 
@@ -203,7 +203,7 @@ export MASTER=mesos://...
 export ZEPPELIN_JAVA_OPTS="-Dspark.executor.uri=/path/to/spark-*.tgz" or SPARK_HOME="/path/to/spark_home"
 export MESOS_NATIVE_LIBRARY=/path/to/libmesos.so
 ```
-    
+
 If you set `SPARK_HOME`, you should deploy spark binary on the same location to all worker nodes. And if you set `spark.executor.uri`, every worker can read that file on its node.
 
 Yarn
