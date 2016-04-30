@@ -84,7 +84,7 @@ public class PythonInterpreter extends Interpreter {
     try {
       process = builder.start();
     } catch (IOException e) {
-      logger.info(e.getMessage());
+      logger.error("Can't start python process", e);
     }
 
     pythonPid = getPidOfProcess(process);
@@ -98,7 +98,7 @@ public class PythonInterpreter extends Interpreter {
     try {
       bootStrapInterpreter();
     } catch (IOException e) {
-      e.printStackTrace();
+      logger.error("Can't execute bootstrap.py to initiate python process", e);
     }
   }
 
@@ -113,7 +113,7 @@ public class PythonInterpreter extends Interpreter {
       stdin.close();
       stdout.close();
     } catch (IOException e) {
-      logger.info(e.getMessage());
+      logger.error("Can't close the interpreter", e);
     }
 
   }
@@ -127,7 +127,7 @@ public class PythonInterpreter extends Interpreter {
       writer.write("print (\"*!?flush reader!?*\")\n\n");
       writer.flush();
     } catch (IOException e) {
-      e.printStackTrace();
+      logger.error("Error when sending commands to python process stdin", e);
     }
 
     String output = "";
@@ -145,7 +145,7 @@ public class PythonInterpreter extends Interpreter {
       }
 
     } catch (IOException e) {
-      e.printStackTrace();
+      logger.error("Error when sending commands to python process stdout", e);
     }
     return new InterpreterResult(Code.SUCCESS, output.replaceAll(">>>", "")
             .replaceAll("\\.\\.\\.", "").trim());
@@ -155,14 +155,14 @@ public class PythonInterpreter extends Interpreter {
   public void cancel(InterpreterContext context) {
     if (pythonPid > -1) {
       try {
-        logger.info("Sending SIGINT signal to PID" + pythonPid);
+        logger.info("Sending SIGINT signal to PID : " + pythonPid);
         Runtime.getRuntime().exec("kill -SIGINT " + pythonPid);
       } catch (IOException e) {
         e.printStackTrace();
       }
     }
     else {
-      logger.info("Non UNIX/Linux system, close the interpreter");
+      logger.warn("Non UNIX/Linux system, close the interpreter");
       close();
     }
   }
@@ -228,6 +228,7 @@ public class PythonInterpreter extends Interpreter {
       }
     }
     catch (Exception e) {
+      logger.warn("Can't find python pid process", e);
       pid = -1;
     }
     return pid;
