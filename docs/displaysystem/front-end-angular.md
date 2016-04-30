@@ -1,7 +1,7 @@
 ---
 layout: page
-title: "Front-end Angular Interactions"
-description: ""
+title: "Angular (frontend API)"
+description: "Angular (frontend API)"
 group: display
 ---
 <!--
@@ -20,7 +20,7 @@ limitations under the License.
 {% include JB/setup %}
 
 
-## Front-end Angular Interactions in Zeppelin
+## Front-end Angular API in Zeppelin
 
 In addition to the back-end API to handle Angular objects binding, Zeppelin also exposes a simple AngularJS **`z`** object on the front-end side to expose the same capabilities.
 

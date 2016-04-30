@@ -1,7 +1,7 @@
 ---
 layout: page
-title: "Back-end Angular Interactions"
-description: ""
+title: "Angular (backend API)"
+description: "Angular (backend API)"
 group: display
 ---
 <!--
@@ -20,7 +20,7 @@ limitations under the License.
 {% include JB/setup %}
 
 
-## Back-end Angular Interactions in Zeppelin
+## Back-end Angular API in Zeppelin
 
 Angular display system treats output as a view template for [AngularJS](https://angularjs.org/).
 It compiles templates and displays them inside of Zeppelin.
