@@ -28,6 +28,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
+import com.google.common.collect.Sets;
 import org.apache.commons.io.FileUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
@@ -364,7 +365,7 @@ public class NotebookTest implements JobListenerFactory{
     note.getNoteReplLoader().setInterpreters(factory.getDefaultInterpreterSettingList());
 
     AngularObjectRegistry registry = note.getNoteReplLoader()
-        .getInterpreterSettings().get(0).getInterpreterGroup()
+        .getInterpreterSettings().get(0).getInterpreterGroup("sharedProcess")
         .getAngularObjectRegistry();
 
     Paragraph p1 = note.addParagraph();
@@ -397,7 +398,7 @@ public class NotebookTest implements JobListenerFactory{
     note.getNoteReplLoader().setInterpreters(factory.getDefaultInterpreterSettingList());
 
     AngularObjectRegistry registry = note.getNoteReplLoader()
-        .getInterpreterSettings().get(0).getInterpreterGroup()
+        .getInterpreterSettings().get(0).getInterpreterGroup("sharedProcess")
         .getAngularObjectRegistry();
 
     Paragraph p1 = note.addParagraph();
@@ -430,7 +431,7 @@ public class NotebookTest implements JobListenerFactory{
     note.getNoteReplLoader().setInterpreters(factory.getDefaultInterpreterSettingList());
 
     AngularObjectRegistry registry = note.getNoteReplLoader()
-        .getInterpreterSettings().get(0).getInterpreterGroup()
+        .getInterpreterSettings().get(0).getInterpreterGroup("sharedProcess")
         .getAngularObjectRegistry();
 
     // add local scope object
@@ -441,7 +442,7 @@ public class NotebookTest implements JobListenerFactory{
     // restart interpreter
     factory.restart(note.getNoteReplLoader().getInterpreterSettings().get(0).id());
     registry = note.getNoteReplLoader()
-    .getInterpreterSettings().get(0).getInterpreterGroup()
+    .getInterpreterSettings().get(0).getInterpreterGroup("sharedProcess")
     .getAngularObjectRegistry();
 
     // local and global scope object should be removed
@@ -484,6 +485,13 @@ public class NotebookTest implements JobListenerFactory{
             new HashSet<String>(Arrays.asList("user2"))), false);
     assertEquals(notebookAuthorization.isWriter(note.id(),
             new HashSet<String>(Arrays.asList("user1"))), true);
+
+    // Test clearing of permssions
+    notebookAuthorization.setReaders(note.id(), Sets.<String>newHashSet());
+    assertEquals(notebookAuthorization.isReader(note.id(),
+            new HashSet<String>(Arrays.asList("user2"))), true);
+    assertEquals(notebookAuthorization.isReader(note.id(),
+            new HashSet<String>(Arrays.asList("user3"))), true);
 
     notebook.removeNote(note.id());
   }

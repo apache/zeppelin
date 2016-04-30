@@ -94,14 +94,13 @@ public class InterpreterRestApi {
           NewInterpreterSettingRequest.class);
       Properties p = new Properties();
       p.putAll(request.getProperties());
-      InterpreterGroup interpreterGroup = interpreterFactory.add(request.getName(),
+      InterpreterSetting interpreterSetting = interpreterFactory.add(request.getName(),
           request.getGroup(),
           request.getDependencies(),
           request.getOption(),
           p);
-      InterpreterSetting setting = interpreterFactory.get(interpreterGroup.getId());
-      logger.info("new setting created with {}", setting.id());
-      return new JsonResponse(Status.CREATED, "", setting).build();
+      logger.info("new setting created with {}", interpreterSetting.id());
+      return new JsonResponse(Status.CREATED, "", interpreterSetting).build();
     } catch (InterpreterException e) {
       logger.error("Exception in InterpreterRestApi while creating ", e);
       return new JsonResponse(
