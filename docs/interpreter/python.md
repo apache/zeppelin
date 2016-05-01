@@ -42,7 +42,14 @@ You can leverage [Zeppelin Dynamic Form]({{BASE_PATH}}/manual/dynamicform.html) 
 Example : 
 ```bash
 %python
-print "${input_form(name)=defaultValue}"
+# Input fom
+print (z.input("f1","defaultValue"))
+
+# Select fom
+print (z.select("f1",[("o1","1"),("o2","2")],"2"))
+
+#Checkbox form
+print("".join(z.checkbox("f3", [("o1","1"), ("o2","2")],["1"])))
 ```
 
 ## Matplotlib integration

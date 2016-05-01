@@ -46,12 +46,15 @@ def help():
     print ('<p>The interpreter can use all modules already installed ')
     print ('(with pip, easy_install, etc)</p>')
     print ('<h3>Forms</h3>')
+    print ('You must install py4j in order to use '
+           'the form feature (pip install py4j)')
     print ('<h4>Input form</h4>')
-    print ('<pre> print "&#36{input_form(name)=defaultValue}"</pre>')
+    print ('<pre>print (z.input("f1","defaultValue"))</pre>')
     print ('<h4>Selection form</h4>')
-    print ('<pre> print "&#36{select_form(Selection Form)=o1,o1|o2}"</pre>')
+    print ('<pre>print(z.select("f2", [("o1","1"), ("o2","2")],2))</pre>')
     print ('<h4>Checkbox form</h4>')
-    print ('<pre> print "&#36{checkbox:checkbox_form=o1,o1|o3}"</pre>')
+    print ('<pre> print("".join(z.checkbox("f3", [("o1","1"), '
+           '("o2","2")],["1"])))</pre>')
     print ('<h3>Matplotlib graph</h3>')
     print ('<div>The interpreter can display matplotlib graph with ')
     print ('the function zeppelin_show()</div>')
@@ -84,4 +87,22 @@ def zeppelin_show(p, width="0", height="0"):
             style += ","
             style += 'height:'+height
     print("%html <div style='" + style + "'>" + img.read() + "<div>")
+
+
+# If py4j is detected, these class will be override
+# with the implementation in bootstrap_input.py
+
+class PyZeppelinContext():
+    errorMsg = "You must install py4j Python module " \
+               "(pip install py4j) to use Zeppelin dynamic forms features"
+    def __init__(self, zc):
+        self.z = zc
+    def input(self, name, defaultValue=""):
+        print (self.errorMsg)
+    def select(self, name, options, defaultValue=""):
+        print (self.errorMsg)
+    def checkbox(self, name, options, defaultChecked=[]):
+        print (self.errorMsg)
+
+z = PyZeppelinContext("")
 
