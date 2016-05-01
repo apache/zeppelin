@@ -89,6 +89,35 @@ public class OccupiedInterpreterTest {
   }
 
   @Test
+  public void parseInterpreterName2() throws Exception {
+    String interpreter = "%md";
+
+    String text = "%md hello";
+    System.out.println(OccupiedInterpreter.parseInterpreterName(text));
+
+    assertTrue(interpreter.equals(OccupiedInterpreter.parseInterpreterName(text)));
+  }
+
+  @Test
+  public void parseInterpreterName3() throws Exception {
+    Note note = Mockito.mock(Note.class);
+    Mockito.when(note.getId()).thenReturn("test6");
+
+    Paragraph p1 = new Paragraph();
+    p1 = Mockito.spy(p1);
+    Mockito.when(p1.getNote()).thenReturn(note);
+    Mockito.when(p1.getText()).thenReturn("%md" + System.lineSeparator() + "hello");
+    OccupiedInterpreter.setOccupiedInterpreter(p1);
+
+    Mockito.when(p1.getText()).thenReturn("println(\"Hello\")");
+    OccupiedInterpreter.setOccupiedInterpreter(p1);
+
+    String expectedInterpreter = OccupiedInterpreter.getDefaultInterpreterName();
+    System.out.println(OccupiedInterpreter.getOccupiedInterpreter("test6"));
+    assertTrue(expectedInterpreter.equals(OccupiedInterpreter.getOccupiedInterpreter("test6")));
+  }
+
+  @Test
   public void setInterpreterNameIfEmptyText() throws Exception {
     String noteId = "test5";
 

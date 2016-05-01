@@ -27,7 +27,7 @@ import java.util.regex.Pattern;
  * Current occupied interpreter information for each note
  */
 public class OccupiedInterpreter {
-  private static final Pattern INTERPRETER_NAME_PATTERN = Pattern.compile("^%.*");
+  private static final Pattern INTERPRETER_NAME_PATTERN = Pattern.compile("^%\\S+");
   private static final String DEFAULT_INTERPRETER_NAME = "%..";
   private static final HashMap<String, String> occupiedInterpreterMap = new HashMap<>();
 
@@ -72,13 +72,16 @@ public class OccupiedInterpreter {
    * @param noteId          Note Id
    * @param interpreterName Current occupied interpreter name
    */
+  @SuppressWarnings("PointlessBooleanExpression")
   public static void setOccupiedInterpreter(String noteId, String interpreterName) {
-    if (StringUtils.isBlank(interpreterName)) {
-      return;
-    }
-
     synchronized (occupiedInterpreterMap) {
-      occupiedInterpreterMap.put(noteId, interpreterName);
+      if (occupiedInterpreterMap.containsKey(noteId) == false &&
+              StringUtils.isBlank(interpreterName)) {
+        return;
+      }
+      String newInterpreterName = StringUtils.defaultIfEmpty(interpreterName,
+              DEFAULT_INTERPRETER_NAME);
+      occupiedInterpreterMap.put(noteId, newInterpreterName);
     }
   }
 
@@ -94,10 +97,6 @@ public class OccupiedInterpreter {
     }
 
     String interpreterName = parseInterpreterName(p.getText());
-    if (interpreterName == null) {
-      return;
-    }
-
     setOccupiedInterpreter(p.getNote().getId(), interpreterName);
   }
 
