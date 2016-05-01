@@ -356,11 +356,6 @@ module.exports = function (grunt) {
           src: ['app/**/*.html', 'components/**/*.html']
         }, {
           expand: true,
-          cwd: 'bower_components/datatables/media/images',
-          src: '{,*/}*.{png,jpg,jpeg,gif}',
-          dest: '<%= yeoman.dist %>/images'
-        }, {
-          expand: true,
           cwd: '.tmp/images',
           dest: '<%= yeoman.dist %>/images',
           src: ['generated/*']
@@ -434,12 +429,12 @@ module.exports = function (grunt) {
     'wiredep',
     'concurrent:test',
     'postcss',
-    'connect:test',
+    'connect:test'
     'karma'
   ]);
 
   grunt.registerTask('build', [
-    'jshint:all',
+    'newer:jshint',
     'clean:dist',
     'wiredep',
     'useminPrepare',
