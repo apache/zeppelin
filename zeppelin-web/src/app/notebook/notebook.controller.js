@@ -694,7 +694,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl',
               label: 'Login',
               action: function(dialog) {
                   dialog.close();
-                  $('#loginModal').modal({
+                  angular.element('#loginModal').modal({
                      show: 'true'
                     });
               }
