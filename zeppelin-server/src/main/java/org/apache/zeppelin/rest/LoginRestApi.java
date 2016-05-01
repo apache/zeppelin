@@ -16,29 +16,23 @@
  */
 package org.apache.zeppelin.rest;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-
-import javax.ws.rs.FormParam;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.Response;
-
-import org.apache.shiro.authc.AuthenticationException;
-import org.apache.shiro.authc.IncorrectCredentialsException;
-import org.apache.shiro.authc.LockedAccountException;
-import org.apache.shiro.authc.UnknownAccountException;
-import org.apache.shiro.authc.UsernamePasswordToken;
+import org.apache.shiro.authc.*;
+import org.apache.shiro.session.Session;
 import org.apache.shiro.subject.Subject;
 import org.apache.zeppelin.server.JsonResponse;
-import org.apache.zeppelin.socket.Message;
 import org.apache.zeppelin.ticket.TicketContainer;
 import org.apache.zeppelin.utils.SecurityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.ws.rs.FormParam;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.Response;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
 
 /**
  * Created for org.apache.zeppelin.rest.message on 17/03/16.
@@ -116,7 +110,7 @@ public class LoginRestApi {
     LOG.warn(response.toString());
     return response.build();
   }
-  
+
   @POST
   @Path("logout")
   public Response logout() {
@@ -134,6 +128,5 @@ public class LoginRestApi {
     LOG.warn(response.toString());
     return response.build();
   }
-
 
 }

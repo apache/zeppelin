@@ -72,10 +72,10 @@ module.exports = function (grunt) {
           livereload: '<%= connect.options.livereload %>'
         }
       },
-//      jsTest: {
-//        files: ['test/spec/{,*/}*.js'],
-//        tasks: ['newer:jshint:test', 'karma']
-//      },
+      jsTest: {
+        files: ['test/spec/{,*/}*.js'],
+        tasks: ['newer:jshint:test', 'karma']
+      },
       styles: {
         files: [
           '<%= yeoman.app %>/app/**/*.css',
@@ -356,6 +356,11 @@ module.exports = function (grunt) {
           src: ['app/**/*.html', 'components/**/*.html']
         }, {
           expand: true,
+          cwd: 'bower_components/datatables/media/images',
+          src: '{,*/}*.{png,jpg,jpeg,gif}',
+          dest: '<%= yeoman.dist %>/images'
+        }, {
+          expand: true,
           cwd: '.tmp/images',
           dest: '<%= yeoman.dist %>/images',
           src: ['generated/*']
@@ -395,12 +400,12 @@ module.exports = function (grunt) {
     },
 
     // Test settings
-//    karma: {
-//      unit: {
-//        configFile: 'test/karma.conf.js',
-//        singleRun: true
-//      }
-//    }
+    karma: {
+      unit: {
+        configFile: 'test/karma.conf.js',
+        singleRun: true
+      }
+    }
   });
 
 
@@ -429,12 +434,12 @@ module.exports = function (grunt) {
     'wiredep',
     'concurrent:test',
     'postcss',
-    'connect:test'
-    //'karma'
+    'connect:test',
+    'karma'
   ]);
 
   grunt.registerTask('build', [
-    'newer:jshint',
+    'jshint:all',
     'clean:dist',
     'wiredep',
     'useminPrepare',
