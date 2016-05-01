@@ -42,8 +42,8 @@ public class PythonInterpreter extends Interpreter {
 
   public static final String BOOTSTRAP_PY = "/bootstrap.py";
   public static final String BOOTSTRAP_INPUT_PY = "/bootstrap_input.py";
-  public static final String PYTHON_PATH = "python.path";
-  public static final String DEFAULT_PYTHON_PATH = "/usr/bin/python";
+  public static final String PYTHON_PATH = "python";
+  public static final String DEFAULT_PYTHON_PATH = "python";
   private String pythonPath;
 
   private Integer port;
@@ -59,13 +59,13 @@ public class PythonInterpreter extends Interpreter {
 
   static {
     Interpreter.register(
-            "python",
-            "python",
-            PythonInterpreter.class.getName(),
-            new InterpreterPropertyBuilder()
-                    .add(PYTHON_PATH, DEFAULT_PYTHON_PATH,
-                            "Python path. Default : /usr/bin/python")
-                    .build()
+      "python",
+      "python",
+      PythonInterpreter.class.getName(),
+      new InterpreterPropertyBuilder()
+        .add(PYTHON_PATH, DEFAULT_PYTHON_PATH,
+                "Python directory. Default : python (assume python is in your $PATH)")
+        .build()
     );
   }
 
@@ -151,7 +151,7 @@ public class PythonInterpreter extends Interpreter {
 
     String output = sendCommandToPython(cmd);
     return new InterpreterResult(Code.SUCCESS, output.replaceAll(">>>", "")
-            .replaceAll("\\.\\.\\.", "").trim());
+        .replaceAll("\\.\\.\\.", "").trim());
   }
 
 
@@ -183,7 +183,7 @@ public class PythonInterpreter extends Interpreter {
   @Override
   public Scheduler getScheduler() {
     return SchedulerFactory.singleton().createOrGetParallelScheduler(
-            PythonInterpreter.class.getName() + this.hashCode(), 10);
+        PythonInterpreter.class.getName() + this.hashCode(), 10);
   }
 
   @Override
@@ -239,7 +239,7 @@ public class PythonInterpreter extends Interpreter {
 
     BufferedReader bootstrapReader = new BufferedReader(
             new InputStreamReader(
-                    PythonInterpreter.class.getResourceAsStream(file)));
+                      PythonInterpreter.class.getResourceAsStream(file)));
     String line = null;
     String bootstrapCode = "";
     while ((line = bootstrapReader.readLine()) != null)
