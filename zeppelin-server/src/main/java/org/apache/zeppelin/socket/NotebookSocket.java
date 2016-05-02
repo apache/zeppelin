@@ -20,18 +20,18 @@ import java.io.IOException;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.eclipse.jetty.websocket.WebSocket;
+import org.eclipse.jetty.websocket.api.Session;
+import org.eclipse.jetty.websocket.api.WebSocketAdapter;
 
 /**
  * Notebook websocket
  */
-public class NotebookSocket implements WebSocket.OnTextMessage{
+public class NotebookSocket extends WebSocketAdapter {
 
-  private Connection connection;
+  private Session connection;
   private NotebookSocketListener listener;
   private HttpServletRequest request;
   private String protocol;
-
 
   public NotebookSocket(HttpServletRequest req, String protocol,
       NotebookSocketListener listener) {
@@ -41,22 +41,22 @@ public class NotebookSocket implements WebSocket.OnTextMessage{
   }
 
   @Override
-  public void onClose(int closeCode, String message) {
+  public void onWebSocketClose(int closeCode, String message) {
     listener.onClose(this, closeCode, message);
   }
 
   @Override
-  public void onOpen(Connection connection) {
+  public void onWebSocketConnect(Session connection) {
     this.connection = connection;
     listener.onOpen(this);
   }
 
   @Override
-  public void onMessage(String message) {
+  public void onWebSocketText(String message) {
     listener.onMessage(this, message);
   }
-  
-  
+
+
   public HttpServletRequest getRequest() {
     return request;
   }
@@ -66,8 +66,7 @@ public class NotebookSocket implements WebSocket.OnTextMessage{
   }
 
   public void send(String serializeMessage) throws IOException {
-    connection.sendMessage(serializeMessage);
+    connection.getRemote().sendString(serializeMessage);
   }
 
-  
 }

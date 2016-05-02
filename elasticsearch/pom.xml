@@ -36,7 +36,7 @@
   <properties>
     <elasticsearch.version>2.1.0</elasticsearch.version>
     <guava.version>18.0</guava.version>
-    <json-flattener.version>0.1.1</json-flattener.version>
+    <json-flattener.version>0.1.6</json-flattener.version>
   </properties>
 
   <dependencies>
