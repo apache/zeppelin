@@ -70,7 +70,9 @@ public class LivyHelper {
           }.getType());
       Integer sessionId = ((Double) jsonMap.get("id")).intValue();
       if (!jsonMap.get("state").equals("idle")) {
-        while (true) {
+        Integer nosRetry = 60;
+        //Try for 60Sec, if session is not made then throw error.
+        while (nosRetry <= 0) {
           LOGGER.error(String.format("sessionId:%s state is %s",
               jsonMap.get("id"), jsonMap.get("state")));
           Thread.sleep(1000);
@@ -94,6 +96,11 @@ public class LivyHelper {
             LOGGER.error(String.format("Cannot start  %s.\n%s", kind, logs));
             throw new Exception(String.format("Cannot start  %s.\n%s", kind, logs));
           }
+          nosRetry--;
+        }
+        if (nosRetry <= 0) {
+          LOGGER.error("Error getting session for user within 60Sec.");
+          throw new Exception(String.format("Cannot start  %s.", kind));
         }
       }
       return sessionId;
@@ -186,8 +193,8 @@ public class LivyHelper {
   }
 
   public InterpreterResult interpret(String stringLines,
-                                        final InterpreterContext context,
-                                        final Map<String, Integer> userSessionMap)
+                                     final InterpreterContext context,
+                                     final Map<String, Integer> userSessionMap)
       throws Exception {
     stringLines = stringLines
         //for "\n" present in string
