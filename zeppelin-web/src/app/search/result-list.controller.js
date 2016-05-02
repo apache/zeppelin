@@ -84,7 +84,7 @@ angular
 
       var lines = result
         .split('\n')
-        .map(function (line, row) {
+        .map(function(line, row) {
 
           var match = line.match(/<B>(.+?)<\/B>/);
 
@@ -100,7 +100,7 @@ angular
 
           var indeces = getIndeces(term)(__line);
 
-          indeces.forEach(function (start) {
+          indeces.forEach(function(start) {
             var end = start + term.length;
             if (note.header !== '' && row === 0) {
               _editor
