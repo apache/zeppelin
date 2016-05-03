@@ -178,7 +178,7 @@ public class LivyHelper {
 
         if (r == Code.ERROR) {
           out.setInterpreterOutput(null);
-          return new InterpreterResult(r, "");
+          return res;
         } else if (r == Code.INCOMPLETE) {
           incomplete += s + "\n";
         } else {
