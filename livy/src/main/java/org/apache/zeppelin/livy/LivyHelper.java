@@ -174,7 +174,7 @@ public class LivyHelper {
           return new InterpreterResult(Code.ERROR, InterpreterUtils.getMostRelevantMessage(e));
         }
 
-        r = getResultCode(res);
+        r = res.code();
 
         if (r == Code.ERROR) {
           out.setInterpreterOutput(null);
@@ -198,16 +198,6 @@ public class LivyHelper {
     } catch (Exception e) {
       LOGGER.error("error in interpretInput", e);
       return new InterpreterResult(Code.ERROR, e.getMessage());
-    }
-  }
-
-  private Code getResultCode(InterpreterResult r) {
-    if (r.code().equals(Code.SUCCESS)) {
-      return Code.SUCCESS;
-    } else if (r.code().equals(Code.INCOMPLETE)) {
-      return Code.INCOMPLETE;
-    } else {
-      return Code.ERROR;
     }
   }
 
