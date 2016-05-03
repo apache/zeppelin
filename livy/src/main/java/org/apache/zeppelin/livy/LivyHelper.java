@@ -72,7 +72,7 @@ public class LivyHelper {
       if (!jsonMap.get("state").equals("idle")) {
         Integer nosRetry = 60;
         //Try for 60Sec, if session is not made then throw error.
-        while (nosRetry <= 0) {
+        while (nosRetry >= 0) {
           LOGGER.error(String.format("sessionId:%s state is %s",
               jsonMap.get("id"), jsonMap.get("state")));
           Thread.sleep(1000);
