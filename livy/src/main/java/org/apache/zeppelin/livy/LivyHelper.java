@@ -170,7 +170,7 @@ public class LivyHelper {
         try {
           res = interpret(incomplete + s, context, userSessionMap);
         } catch (Exception e) {
-          LOGGER.info("Interpreter exception", e);
+          LOGGER.error("Interpreter exception", e);
           return new InterpreterResult(Code.ERROR, InterpreterUtils.getMostRelevantMessage(e));
         }
 
