@@ -132,6 +132,7 @@ public class LivyHelper {
       context.out.clear();
       Code r = null;
       String incomplete = "";
+      boolean inComment = false;
 
       for (int l = 0; l < linesToRun.length; l++) {
         String s = linesToRun[l];
@@ -139,9 +140,27 @@ public class LivyHelper {
         //for spark
         if (l + 1 < linesToRun.length) {
           String nextLine = linesToRun[l + 1].trim();
-          if (nextLine.startsWith(".")
-              && !nextLine.startsWith("..")
-              && !nextLine.startsWith("./")) {
+          boolean continuation = false;
+          if (nextLine.isEmpty()
+              || nextLine.startsWith("//")         // skip empty line or comment
+              || nextLine.startsWith("}")
+              || nextLine.startsWith("object")) {  // include "} object" for Scala companion object
+            continuation = true;
+          } else if (!inComment && nextLine.startsWith("/*")) {
+            inComment = true;
+            continuation = true;
+          } else if (inComment && nextLine.lastIndexOf("*/") >= 0) {
+            inComment = false;
+            continuation = true;
+          } else if (nextLine.length() > 1
+              && nextLine.charAt(0) == '.'
+              && nextLine.charAt(1) != '.'     // ".."
+              && nextLine.charAt(1) != '/') {  // "./"
+            continuation = true;
+          } else if (inComment) {
+            continuation = true;
+          }
+          if (continuation) {
             incomplete += s + "\n";
             continue;
           }
