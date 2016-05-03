@@ -81,7 +81,7 @@ limitations under the License.
         <li ng-if="!ticket">
             <button class="btn btn-default" data-toggle="modal" data-target="#loginModal" ng-click="showLoginWindow()" style="margin-left: 10px">Login</button>
         </li>
-        <li ng-show="ticket.principal != ''">
+        <li ng-show="ticket.principal != 'anonymous'">
         	<button type="button" class="btn btn-default btn-xs" ng-click="logout()" tooltip-placement="bottom" tooltip="logout">{{ticket.principal}}</button>
         </li>
       </ul>
