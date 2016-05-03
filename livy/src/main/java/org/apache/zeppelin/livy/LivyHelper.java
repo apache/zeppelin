@@ -52,6 +52,7 @@ public class LivyHelper {
   Gson gson = new GsonBuilder().setPrettyPrinting().create();
   HashMap<String, Object> paragraphHttpMap = new HashMap<>();
   Properties property;
+  Integer MAX_NOS_RETRY = 60;
 
   LivyHelper(Properties property) {
     this.property = property;
@@ -70,8 +71,8 @@ public class LivyHelper {
           }.getType());
       Integer sessionId = ((Double) jsonMap.get("id")).intValue();
       if (!jsonMap.get("state").equals("idle")) {
-        Integer nosRetry = 60;
-        //Try for 60Sec, if session is not made then throw error.
+        Integer nosRetry = MAX_NOS_RETRY;
+
         while (nosRetry >= 0) {
           LOGGER.error(String.format("sessionId:%s state is %s",
               jsonMap.get("id"), jsonMap.get("state")));
@@ -294,6 +295,7 @@ public class LivyHelper {
           }.getType());
       return jsonMap;
     } catch (Exception e) {
+      LOGGER.error("Error executeCommand", e);
       throw e;
     }
   }
@@ -310,6 +312,7 @@ public class LivyHelper {
           }.getType());
       return jsonMap;
     } catch (Exception e) {
+      LOGGER.error("Error getStatusById", e);
       throw e;
     }
   }
