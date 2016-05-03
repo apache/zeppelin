@@ -33,6 +33,7 @@ angular.module('zeppelinWebApp').controller('LoginCtrl',
         $rootScope.ticket = response.data.body;
         angular.element('#loginModal').modal('toggle');
         $rootScope.$broadcast('loginSuccess', true);
+        $rootScope.userName = $scope.loginParams.userName;
       }, function errorCallback(errorResponse) {
         $scope.loginParams.errorText = 'The username and password that you entered don\'t match.';
       });
