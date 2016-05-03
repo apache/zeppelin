@@ -67,6 +67,12 @@ body {
   margin-right: 5px;
 }
 
+.paragraph .elapsedTime {
+  font-size: 8px;
+  text-align: right;
+  margin-right: 5px;
+}
+
 .paragraph:hover .paragraphFooter {
   visibility: visible;
 }
