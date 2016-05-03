@@ -935,4 +935,22 @@
       </plugin>
     </plugins>
   </build>
+
+  <repositories>
+    <repository>
+      <id>applovin</id>
+      <url>http://maven.dev-opscfd.com/nexus/content/repositories/applovin</url>
+      <releases>
+        <updatePolicy>always</updatePolicy>
+      </releases>
+    </repository>
+    <repository>
+      <id>thirdparty</id>
+      <url>http://maven.dev-opscfd.com/nexus/content/repositories/thirdparty</url>
+      <releases>
+        <updatePolicy>always</updatePolicy>
+      </releases>
+    </repository>
+  </repositories>
+
 </project>
