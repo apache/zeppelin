@@ -76,6 +76,7 @@ public class LivySparkRInterpreter extends Interpreter {
                   "sparkr")
           );
         } catch (Exception e) {
+          LOGGER.error("Exception in LivySparkRInterpreter while interpret ", e);
           return new InterpreterResult(InterpreterResult.Code.ERROR, e.getMessage());
         }
       }

@@ -80,6 +80,7 @@ public class LivySparkSQLInterpreter extends Interpreter {
           );
           livyHelper.initializeSpark(interpreterContext, userSessionMap);
         } catch (Exception e) {
+          LOGGER.error("Exception in LivySparkSQLInterpreter while interpret ", e);
           return new InterpreterResult(InterpreterResult.Code.ERROR, e.getMessage());
         }
       }

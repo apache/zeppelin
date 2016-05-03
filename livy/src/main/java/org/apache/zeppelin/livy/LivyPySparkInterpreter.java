@@ -76,6 +76,7 @@ public class LivyPySparkInterpreter extends Interpreter {
                   "pyspark")
           );
         } catch (Exception e) {
+          LOGGER.error("Exception in LivyPySparkInterpreter while interpret ", e);
           return new InterpreterResult(InterpreterResult.Code.ERROR, e.getMessage());
         }
       }
