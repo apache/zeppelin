@@ -399,14 +399,17 @@ public class NotebookServer extends WebSocketServlet implements
     broadcastAll(new Message(OP.NOTES_INFO).put("notes", notesInfo));
   }
 
-  void permissionError(NotebookSocket conn, String op, Set<String> current,
-                      Set<String> allowed) throws IOException {
+  void permissionError(NotebookSocket conn, String op, Set<String> userAndRoles,
+                       Set<String> allowed) throws IOException {
     LOG.info("Cannot {}. Connection readers {}. Allowed readers {}",
-            op, current, allowed);
+            op, userAndRoles, allowed);
+
+    String userName = userAndRoles.iterator().next();
+
     conn.send(serializeMessage(new Message(OP.AUTH_INFO).put("info",
-            "Insufficient privileges to " + op + " note.\n\n" +
+            "Insufficient privileges to " + op + " notebook.\n\n" +
                     "Allowed users or roles: " + allowed.toString() + "\n\n" +
-                    "User belongs to: " + current.toString())));
+                    "But the user " + userName + " belongs to: " + userAndRoles.toString())));
   }
 
   private void sendNote(NotebookSocket conn, HashSet<String> userAndRoles, Notebook notebook,
