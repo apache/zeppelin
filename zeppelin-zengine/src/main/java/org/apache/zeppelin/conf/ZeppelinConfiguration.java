@@ -112,13 +112,15 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     if (properties == null || properties.size() == 0) {
       return d;
     }
+    StringBuilder allvalues = new StringBuilder(); // comma separated values for same name
     for (ConfigurationNode p : properties) {
       if (p.getChildren("name") != null && p.getChildren("name").size() > 0
           && name.equals(p.getChildren("name").get(0).getValue())) {
-        return (String) p.getChildren("value").get(0).getValue();
+        allvalues.append((String) p.getChildren("value").get(0).getValue());
+        allvalues.append(",");
       }
     }
-    return d;
+    return allvalues.length() > 0 ? allvalues.substring(0, allvalues.length() - 1).toString() : d;
   }
 
   private int getIntValue(String name, int d) {
