@@ -1215,12 +1215,12 @@ angular.module('zeppelinWebApp')
     var renderTable = function() {
       var height = $scope.paragraph.config.graph.height;
       angular.element('#p' + $scope.paragraph.id + '_table').css('height', height);
-      var messageTable = $scope.paragraph.result.rows;
+      var resultRows = $scope.paragraph.result.rows;
       var columnNames = _.pluck($scope.paragraph.result.columnNames, 'name');
       var container = document.getElementById('p' + $scope.paragraph.id + '_table');
 
       var handsontable = new Handsontable(container, {
-        data: messageTable,
+        data: resultRows,
         colHeaders: columnNames,
         rowHeaders: false,
         stretchH: 'all',
