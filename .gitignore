@@ -39,6 +39,8 @@ zeppelin-web/bower_components
 **nbproject/
 **node/
 
+#R
+/r/lib/
 
 # project level
 /logs/

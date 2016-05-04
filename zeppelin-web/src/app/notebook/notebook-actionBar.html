@@ -13,9 +13,9 @@ limitations under the License.
 -->
 <div class="noteAction" ng-show="note.id && !paragraphUrl">
   <h3>
-    <input type="text" pu-elastic-input class="form-control2" placeholder="{{note.name.trim()==='' && 'Note ' + note.id || note.name}}" style="min-width: 200px; max-width: 600px;"
+    <input type="text" pu-elastic-input class="form-control2" placeholder="{{noteName(note)}}" style="min-width: 200px; max-width: 600px;"
            ng-show="showEditor" ng-model="note.name" ng-blur="sendNewName();showEditor = false;" ng-enter="sendNewName();showEditor = false;" ng-escape="note.name = oldName; showEditor = false" focus-if="showEditor" />
-    <p class="form-control-static2" ng-click="showEditor = true; oldName = note.name" ng-show="!showEditor">{{note.name.trim()==='' && 'Note ' + note.id || note.name}}</p>
+    <p class="form-control-static2" ng-click="showEditor = true; oldName = note.name" ng-show="!showEditor">{{noteName(note)}}</p>
     <span class="labelBtn btn-group">
       <button type="button"
               class="btn btn-default btn-xs"
