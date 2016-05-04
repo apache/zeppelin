@@ -64,7 +64,7 @@ limitations under the License.
                 <a style="text-decoration: none;" href="#/notebook/{{note.id}}">{{noteName(note)}}</a>
               </li>
               <div ng-if="!query || query.name === ''">
-                <li ng-repeat="node in home.notes.root.children" ng-include="'notebook_folder_renderer.html'" />
+                <li ng-repeat="node in home.notes.root.children | orderBy:home.arrayOrderingSrv.notebookListOrdering track by $index" ng-include="'notebook_folder_renderer.html'" />
               </div>
               <div ng-if="query && query.name !== ''">
                 <li ng-repeat="note in home.notes.flatList | filter:query | orderBy:home.arrayOrderingSrv.notebookListOrdering track by $index">

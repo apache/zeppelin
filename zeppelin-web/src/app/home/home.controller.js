@@ -76,8 +76,8 @@ angular.module('zeppelinWebApp').controller('HomeCtrl', function($scope, noteboo
     node.hidden = !node.hidden;
   };
 
-  $rootScope.noteName = function (note) {
-    return (note.name.trim()==='' && 'Note ' + note.id || note.name);
+  $rootScope.noteName = function(note) {
+    return arrayOrderingSrv.getNoteName(note);
   };
 
 });
