@@ -302,10 +302,10 @@ public class InterpreterLogicTest {
     }
 
     private <A> scala.collection.immutable.List<A> toScalaList(java.util.List<A> list)  {
-        return scala.collection.JavaConversions.asScalaIterable(list).toList();
+        return scala.collection.JavaConversions.collectionAsScalaIterable(list).toList();
     }
 
     private  <A> java.util.List<A> toJavaList(scala.collection.immutable.List<A> list){
-        return scala.collection.JavaConversions.asJavaList(list);
+        return scala.collection.JavaConversions.seqAsJavaList(list);
     }
 }

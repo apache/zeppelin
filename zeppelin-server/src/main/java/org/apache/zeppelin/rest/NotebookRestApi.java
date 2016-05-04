@@ -50,6 +50,7 @@ import org.quartz.CronExpression;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.google.gson.GsonBuilder;
@@ -127,9 +128,29 @@ public class NotebookRestApi {
       return new JsonResponse<>(Status.FORBIDDEN, ownerPermissionError(userAndRoles,
               notebookAuthorization.getOwners(noteId))).build();
     }
-    notebookAuthorization.setOwners(noteId, permMap.get("owners"));
-    notebookAuthorization.setReaders(noteId, permMap.get("readers"));
-    notebookAuthorization.setWriters(noteId, permMap.get("writers"));
+
+    HashSet readers = permMap.get("readers");
+    HashSet owners = permMap.get("owners");
+    HashSet writers = permMap.get("writers");
+    // Set readers, if writers and owners is empty -> set to user requesting the change
+    if (readers != null && !readers.isEmpty()) {
+      if (writers.isEmpty()) {
+        writers = Sets.newHashSet(SecurityUtils.getPrincipal());
+      }
+      if (owners.isEmpty()) {
+        owners = Sets.newHashSet(SecurityUtils.getPrincipal());
+      }
+    }
+    // Set writers, if owners is empty -> set to user requesting the change
+    if ( writers != null && !writers.isEmpty()) {
+      if (owners.isEmpty()) {
+        owners = Sets.newHashSet(SecurityUtils.getPrincipal());
+      }
+    }
+
+    notebookAuthorization.setReaders(noteId, readers);
+    notebookAuthorization.setWriters(noteId, writers);
+    notebookAuthorization.setOwners(noteId, owners);
     LOG.debug("After set permissions {} {} {}",
             notebookAuthorization.getOwners(noteId),
             notebookAuthorization.getReaders(noteId),
@@ -644,14 +665,29 @@ public class NotebookRestApi {
   }  
 
   /**
-   * Search for a Notes
+   * Search for a Notes with permissions
    */
   @GET
   @Path("search")
   public Response search(@QueryParam("q") String queryTerm) {
     LOG.info("Searching notebooks for: {}", queryTerm);
+    String principal = SecurityUtils.getPrincipal();
+    HashSet<String> roles = SecurityUtils.getRoles();
+    HashSet<String> userAndRoles = new HashSet<String>();
+    userAndRoles.add(principal);
+    userAndRoles.addAll(roles);
     List<Map<String, String>> notebooksFound = notebookIndex.query(queryTerm);
-    LOG.info("{} notbooks found", notebooksFound.size());
+    for (int i = 0; i < notebooksFound.size(); i++) {
+      String[] Id = notebooksFound.get(i).get("id").split("/", 2);
+      String noteId = Id[0];
+      if (!notebookAuthorization.isOwner(noteId, userAndRoles) &&
+              !notebookAuthorization.isReader(noteId, userAndRoles) &&
+              !notebookAuthorization.isWriter(noteId, userAndRoles)) {
+        notebooksFound.remove(i);
+        i--;
+      }
+    }
+    LOG.info("{} notebooks found", notebooksFound.size());
     return new JsonResponse<>(Status.OK, notebooksFound).build();
   }
 

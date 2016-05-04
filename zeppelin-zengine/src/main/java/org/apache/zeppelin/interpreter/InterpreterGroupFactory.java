@@ -14,13 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.zeppelin.socket;
+package org.apache.zeppelin.interpreter;
+
+import org.apache.commons.lang.NullArgumentException;
 
 /**
- * NoteboookSocket listener
+ * Created InterpreterGroup
  */
-public interface NotebookSocketListener {
-  void onClose(NotebookSocket socket, int code, String message);
-  void onOpen(NotebookSocket socket);
-  void onMessage(NotebookSocket socket, String message);
+public interface InterpreterGroupFactory {
+  InterpreterGroup createInterpreterGroup(String interpreterGroupId, InterpreterOption option);
 }
