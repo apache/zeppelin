@@ -16,7 +16,7 @@
  */
 package org.apache.zeppelin.conf;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
@@ -87,4 +87,14 @@ public class ZeppelinConfigurationTest {
         String notebookLocation = conf.getNotebookDir();
         Assert.assertEquals("notebook", notebookLocation);
     }
+
+    @Test
+    public void getNotebookReposTest() throws ConfigurationException {
+        ZeppelinConfiguration conf  = new ZeppelinConfiguration(this.getClass().getResource("/test-zeppelin-site3.xml"));
+        String allStorageClassNames = conf.getString(ConfVars.ZEPPELIN_NOTEBOOK_STORAGE).trim();
+        Assert.assertNotEquals(allStorageClassNames,"");
+        String[] storageClassNames = allStorageClassNames.split(",");
+        Assert.assertEquals(3,storageClassNames.length);
+    }
+
 }
