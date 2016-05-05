@@ -8,7 +8,7 @@ group: manual
 
 
 ## Spark Interpreter for Apache Zeppelin
-[Apache Spark](http://spark.apache.org) is supported in Zeppelin with 
+[Apache Spark](http://spark.apache.org) is supported in Zeppelin with
 Spark Interpreter group, which consisted of 4 interpreters.
 
 <table class="table-configuration">
@@ -278,13 +278,13 @@ z.put("objName", myObject)
 %pyspark
 myObject = z.get("objName")
 {% endhighlight %}
-  
+
   </div>
 </div>
 
 ### Form Creation
 
-ZeppelinContext provides functions for creating forms. 
+ZeppelinContext provides functions for creating forms.
 In scala and python environments, you can create forms programmatically.
 <div class="codetabs">
   <div data-lang="scala" markdown="1">
@@ -311,13 +311,13 @@ z.select("formName", "option1", Seq(("option1", "option1DisplayName"),
 
 {% highlight python %}
 %pyspark
-# Create text input form 
+# Create text input form
 z.input("formName")
 
-# Create text input form with default value 
+# Create text input form with default value
 z.input("formName", "defaultValue")
 
-# Create select form 
+# Create select form
 z.select("formName", [("option1", "option1DisplayName"),
                       ("option2", "option2DisplayName")])
 
@@ -325,7 +325,7 @@ z.select("formName", [("option1", "option1DisplayName"),
 z.select("formName", [("option1", "option1DisplayName"),
                       ("option2", "option2DisplayName")], "option1")
 {% endhighlight %}
-  
+
   </div>
 </div>
 
@@ -339,9 +339,10 @@ select * from ${table=defaultTableName} where text like '%${search}%'
 To learn more about dynamic form, checkout [Dynamic Form](../manual/dynamicform.html).
 
 
-### Separate Interpreter for each note
+### Interpreter setting option.
 
-In 'Separate Interpreter for each note' mode, SparkInterpreter creates scala compiler per each notebook. However it still shares the single SparkContext.
+Interpreter setting can choose one of 'shared', 'scoped', 'isolated' option. Spark interpreter creates separate scala compiler per each notebook but share a single SparkContext in 'scoped' mode (experimental). It creates separate SparkContext per each notebook in 'isolated' mode.
+
 
 ## Setting up Zeppelin with Kerberos
 Logical setup with Zeppelin, Kerberos Key Distribution Center (KDC), and Spark on YARN:
@@ -364,5 +365,3 @@ This is to make the server communicate with KDC.
   > **NOTE:** If you do not have access to the above spark-defaults.conf file, optionally, you may add the lines to the Spark Interpreter through the Interpreter tab in the Zeppelin UI.
 
 4. That's it. Play with Zeppelin !
-
-

@@ -44,7 +44,7 @@ It supports the basic shell file commands applied to HDFS, it currently only sup
 
 > **Tip :** Use ( Ctrl + . ) for autocompletion.
 
-### Create Interpreter 
+### Create Interpreter
 
 In a notebook, to enable the **HDFS** interpreter, click the **Gear** icon and select **HDFS**.
 

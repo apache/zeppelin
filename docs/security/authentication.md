@@ -19,10 +19,10 @@ limitations under the License.
 -->
 # Authentication
 
-Authentication is company-specific. 
+Authentication is company-specific.
 
 One option is to use [Basic Access Authentication](https://en.wikipedia.org/wiki/Basic_access_authentication)
- 
+
 ### HTTP Basic Authentication using NGINX
 
 > **Quote from Wikipedia:** NGINX is a web server. It can act as a reverse proxy server for HTTP, HTTPS, SMTP, POP3, and IMAP protocols, as well as a load balancer and an HTTP cache.
@@ -33,12 +33,12 @@ Here are instructions how to accomplish the setup NGINX as a front-end authentic
 This instruction based on Ubuntu 14.04 LTS but may work with other OS with few configuration changes.
 
 1. Install NGINX server on your server instance
-   
+
     You can install NGINX server with same machine where zeppelin installed or separate machine where it is dedicated to serve as proxy server.
 
     ```
     $ apt-get install nginx
-    ``` 
+    ```
 
 1. Setup init script in NGINX
 
@@ -53,11 +53,7 @@ This instruction based on Ubuntu 14.04 LTS but may work with other OS with few c
 
     ```
     upstream zeppelin {
-        server [YOUR-ZEPPELIN-SERVER-IP]:8090;
-    }
-
-    upstream zeppelin-wss {
-        server [YOUR-ZEPPELIN-SERVER-IP]:8091;
+        server [YOUR-ZEPPELIN-SERVER-IP]:8080;
     }
 
     # Zeppelin Website
@@ -69,32 +65,23 @@ This instruction based on Ubuntu 14.04 LTS but may work with other OS with few c
         ssl_certificate [PATH-TO-YOUR-CERT-FILE];            # optional, to serve HTTPS connection
         ssl_certificate_key [PATH-TO-YOUR-CERT-KEY-FILE];    # optional, to serve HTTPS connection
 
-        if ($ssl_protocol = "") { 
+        if ($ssl_protocol = "") {
             rewrite ^ https://$host$request_uri? permanent;        # optional, force to use HTTPS
         }
 
         location / {
+            proxy_pass http://zeppelin;
             proxy_set_header X-Real-IP $remote_addr;
             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
             proxy_set_header Host $http_host;
             proxy_set_header X-NginX-Proxy true;
-            proxy_pass http://zeppelin;
             proxy_redirect off;
             auth_basic "Restricted";
             auth_basic_user_file /etc/nginx/.htpasswd;
         }
-    }
 
-    # Zeppelin Websocket
-    server {
-        listen [YOUR-ZEPPELIN-WEBSOCKET-PORT] ssl;    # add ssl is optional, to serve HTTPS connection
-        server_name [YOUR-ZEPPELIN-SERVER-HOST];    # for example: zeppelin.mycompany.com
-
-        ssl_certificate [PATH-TO-YOUR-CERT-FILE];            # optional, to serve HTTPS connection
-        ssl_certificate_key [PATH-TO-YOUR-CERT-KEY-FILE];    # optional, to serve HTTPS connection
-
-        location / {
-            proxy_pass http://zeppelin-wss;
+        location /ws {
+            proxy_pass http://zeppelin;
             proxy_http_version 1.1;
             proxy_set_header Upgrade websocket;
             proxy_set_header Connection upgrade;
@@ -104,7 +91,7 @@ This instruction based on Ubuntu 14.04 LTS but may work with other OS with few c
     ```
 
     Then make a symbolic link to this file from `/etc/nginx/sites-enabled/` to enable configuration above when NGINX reloads.
-    
+
     ```
     $ ln -s /etc/nginx/sites-enabled/my-basic-auth /etc/nginx/sites-available/my-basic-auth
     ```
@@ -141,7 +128,5 @@ This instruction based on Ubuntu 14.04 LTS but may work with other OS with few c
 
 Another option is to have an authentication server that can verify user credentials in an LDAP server.
 If an incoming request to the Zeppelin server does not have a cookie with user information encrypted with the authentication server public key, the user
-is redirected to the authentication server. Once the user is verified, the authentication server redirects the browser to a specific 
-URL in the Zeppelin server which sets the authentication cookie in the browser. 
-The end result is that all requests to the Zeppelin
-web server have the authentication cookie which contains user and groups information.
+is redirected to the authentication server. Once the user is verified, the authentication server redirects the browser to a specific URL in the Zeppelin server which sets the authentication cookie in the browser.
+The end result is that all requests to the Zeppelin web server have the authentication cookie which contains user and groups information.
