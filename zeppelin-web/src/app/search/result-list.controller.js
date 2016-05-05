@@ -77,8 +77,7 @@ angular
       var result = '';
       if (note.header !== '') {
         result = note.header + '\n\n' + note.snippet;
-      }
-      else {
+      } else {
         result = note.snippet;
       }
 
@@ -117,8 +116,7 @@ angular
                 'search-results-highlight',
                 'line'
               );
-            }
-            else {
+            } else {
               _editor
                 .getSession()
                 .addMarker(

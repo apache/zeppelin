@@ -125,7 +125,7 @@ public class LuceneSearch implements SearchService {
   }
 
   private List<Map<String, String>> doSearch(IndexSearcher searcher, Query query,
-                                             Analyzer analyzer, Highlighter highlighter) {
+      Analyzer analyzer, Highlighter highlighter) {
     List<Map<String, String>> matchingParagraphs = Lists.newArrayList();
     ScoreDoc[] hits;
     try {
