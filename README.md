@@ -56,7 +56,7 @@ git config --global https.proxy http://localhost:3128
 git config --global url."http://".insteadOf git://
 ```
 
-After build is complete, run those commands to clenaup.
+After build is complete, run those commands to cleanup.
 ```
 npm config rm proxy
 npm config rm https-proxy
