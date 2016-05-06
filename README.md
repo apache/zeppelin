@@ -40,7 +40,7 @@ sudo apt-get install libfontconfig
 #### Proxy settings (optional)
 If you are behind a corporate Proxy with NTLM authentication you can use [Cntlm Authentication Proxy](http://cntlm.sourceforge.net/) .
 
-Before build start, run those commands from shell (replace "export" with "set" in Windows cmd). 
+Before build start, run those commands from shell. 
 ```
 export http_proxy=http://localhost:3128
 export https_proxy=http://localhost:3128
