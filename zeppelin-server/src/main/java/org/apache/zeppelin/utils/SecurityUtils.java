@@ -17,7 +17,6 @@
 package org.apache.zeppelin.utils;
 
 import org.apache.shiro.subject.Subject;
-import org.apache.shiro.realm.Realm;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 
 import java.net.InetAddress;
@@ -83,39 +82,6 @@ public class SecurityUtils {
       }
     }
     return roles;
-  }
-
-  public static boolean hasUser(String userName) {
-    
-    boolean state = false;
-    
-    org.apache.shiro.mgt.DefaultSecurityManager securityManager = (DefaultSecurityManager) org.apache.shiro.SecurityUtils.getSecurityManager();
-    
-    List realms = (List) securityManager.getRealms();
-    
-    org.apache.shiro.realm.SimpleAccountRealm simpleRealm = null;
-    Iterator iter = (securityManager.getRealms()).iterator();
-    
-    while (iter.hasNext()) {
-      
-      Realm realm = (Realm)iter.next();
-      
-      if (realm instanceof SimpleAccountRealm) {
-      
-        simpleRealm = (SimpleAccountRealm) realm;
-      
-      }
-      
-    }
-    
-    if (simpleRealm != null) {
-      
-      state = simpleRealm.accountExists(userName);
-      
-    }
-    
-    return state;
-    
   }
 
 }
