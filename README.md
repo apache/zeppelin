@@ -40,7 +40,7 @@ sudo apt-get install libfontconfig
 #### Proxy settings (optional)
 If you are behind a corporate Proxy with NTLM authentication you can use [Cntlm Authentication Proxy](http://cntlm.sourceforge.net/) .
 
-Before build start, run those commands from shell. 
+Before build start, run these commands from shell. 
 ```
 export http_proxy=http://localhost:3128
 export https_proxy=http://localhost:3128
@@ -56,7 +56,7 @@ git config --global https.proxy http://localhost:3128
 git config --global url."http://".insteadOf git://
 ```
 
-After build is complete, run those commands to cleanup.
+After build is complete, run these commands to cleanup.
 ```
 npm config rm proxy
 npm config rm https-proxy
