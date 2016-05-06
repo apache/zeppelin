@@ -18,10 +18,11 @@ Core feature:
 To know more about Zeppelin, visit our web site [http://zeppelin.incubator.apache.org](http://zeppelin.incubator.apache.org)
 
 ## Requirements
+ * Git 
  * Java 1.7
- * Tested on Mac OSX, Ubuntu 14.X, CentOS 6.X
+ * Tested on Mac OSX, Ubuntu 14.X, CentOS 6.X, Windows 7 Pro SP1
  * Maven (if you want to build from the source code)
- * Node.js Package Manager
+ * Node.js Package Manager (downloaded by Maven during build phase)
 
 ## Getting Started
 
@@ -35,6 +36,36 @@ sudo apt-get install git
 sudo apt-get install openjdk-7-jdk
 sudo apt-get install npm
 sudo apt-get install libfontconfig
+
+### Proxy settings (optional)
+If you are behind a corporate Proxy with NTLM authentication you can use [Cntlm Authentication Proxy](http://cntlm.sourceforge.net/) .
+
+Before build starts, run those commands from shell (replace "export" with "set" in Windows cmd).  
+Git configuration is needed because Bower use it for fetching some packages from GitHub.
+	
+	export http_proxy=http://localhost:3128
+	export https_proxy=http://localhost:3128
+	export HTTP_PROXY=http://localhost:3128
+	export HTTPS_PROXY=http://localhost:3128
+	
+	npm config set proxy http://localhost:3128
+	npm config set https-proxy http://localhost:3128
+	npm config set registry "http://registry.npmjs.org/"
+	npm config set strict-ssl false
+	npm cache clean
+	
+	git config --global http.proxy http://localhost:3128
+	git config --global https.proxy http://localhost:3128
+	git config --global url."http://".insteadOf git://
+	
+After build is complete, run those commands to clenaup.
+
+	npm config rm proxy
+	npm config rm https-proxy
+	
+	git config --global --unset http.proxy
+	git config --global --unset https.proxy
+	git config --global --unset url."http://".insteadOf
 
 # install maven
 wget http://www.eu.apache.org/dist/maven/maven-3/3.3.3/binaries/apache-maven-3.3.3-bin.tar.gz
