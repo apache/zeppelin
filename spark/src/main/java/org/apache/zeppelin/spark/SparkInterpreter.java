@@ -672,7 +672,7 @@ public class SparkInterpreter extends Interpreter {
     }
     ScalaCompleter c = completor.completer();
     Candidates ret = c.complete(completionText, cursor);
-    return scala.collection.JavaConversions.asJavaList(ret.candidates());
+    return scala.collection.JavaConversions.seqAsJavaList(ret.candidates());
   }
 
   private String getCompletionTargetString(String text, int cursor) {
@@ -901,14 +901,14 @@ public class SparkInterpreter extends Interpreter {
 
     Object completedTaskInfo = null;
 
-    completedTaskInfo = JavaConversions.asJavaMap(
+    completedTaskInfo = JavaConversions.mapAsJavaMap(
         (HashMap<Object, Object>) sparkListener.getClass()
             .getMethod("stageIdToTasksComplete").invoke(sparkListener)).get(id);
 
     if (completedTaskInfo != null) {
       completedTasks += (int) completedTaskInfo;
     }
-    List<Object> parents = JavaConversions.asJavaList((Seq<Object>) stage.getClass()
+    List<Object> parents = JavaConversions.seqAsJavaList((Seq<Object>) stage.getClass()
         .getMethod("parents").invoke(stage));
     if (parents != null) {
       for (Object s : parents) {
@@ -937,7 +937,7 @@ public class SparkInterpreter extends Interpreter {
 
       Method numCompletedTasks = stageUIDataClass.getMethod("numCompleteTasks");
       Set<Tuple2<Object, Object>> keys =
-          JavaConverters.asJavaSetConverter(stageIdData.keySet()).asJava();
+          JavaConverters.setAsJavaSetConverter(stageIdData.keySet()).asJava();
       for (Tuple2<Object, Object> k : keys) {
         if (id == (int) k._1()) {
           Object uiData = stageIdData.get(k).get();
@@ -948,7 +948,7 @@ public class SparkInterpreter extends Interpreter {
       logger.error("Error on getting progress information", e);
     }
 
-    List<Object> parents = JavaConversions.asJavaList((Seq<Object>) stage.getClass()
+    List<Object> parents = JavaConversions.seqAsJavaList((Seq<Object>) stage.getClass()
         .getMethod("parents").invoke(stage));
     if (parents != null) {
       for (Object s : parents) {

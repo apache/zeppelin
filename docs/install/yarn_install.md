@@ -25,16 +25,16 @@ This page describes how to pre-configure a bare metal node, configure Zeppelin a
 ## Prepare Node
 
 ### Zeppelin user (Optional)
-This step is optional, however its nice to run Zeppelin under its own user. In case you do not like to use Zeppelin (hope not) the user could be deleted along with all the pacakges that were installed for Zeppelin, Zeppelin binary itself and associated directories.
+This step is optional, however its nice to run Zeppelin under its own user. In case you do not like to use Zeppelin (hope not) the user could be deleted along with all the packages that were installed for Zeppelin, Zeppelin binary itself and associated directories.
 
 Create a zeppelin user and switch to zeppelin user or if zeppelin user is already created then login as zeppelin.
 
 ```bash
 useradd zeppelin
-su - zeppelin 
+su - zeppelin
 whoami
 ```
-Assuming a zeppelin user is created then running whoami command must return 
+Assuming a zeppelin user is created then running whoami command must return
 
 ```bash
 zeppelin
@@ -48,7 +48,7 @@ Its assumed in the rest of the document that zeppelin user is indeed created and
  * Java 1.7
  * Hadoop client
  * Spark
- * Internet connection is required. 
+ * Internet connection is required.
 
 It's assumed that the node has CentOS 6.x installed on it. Although any version of Linux distribution should work fine.
 
@@ -83,7 +83,7 @@ This document assumes that Zeppelin is located under `/home/zeppelin/incubator-z
 Zeppelin configuration needs to be modified to connect to YARN cluster. Create a copy of zeppelin environment shell script.
 
 ```bash
-cp /home/zeppelin/incubator-zeppelin/conf/zeppelin-env.sh.template /home/zeppelin/incubator-zeppelin/conf/zeppelin-env.sh 
+cp /home/zeppelin/incubator-zeppelin/conf/zeppelin-env.sh.template /home/zeppelin/incubator-zeppelin/conf/zeppelin-env.sh
 ```
 
 Set the following properties
@@ -127,7 +127,7 @@ Zeppelin supports Hive interpreter and hence copy hive-site.xml that should be p
 cp /etc/hive/conf/hive-site.xml  /home/zeppelin/incubator-zeppelin/conf
 ```
 
-Once Zeppelin server has started successfully, visit http://[zeppelin-server-host-name]:8080 with your web browser. Click on Interpreter tab next to Notebook dropdown. Look for Hive configurations and set them appropriately. By default hive.hiveserver2.url will be pointing to localhost and hive.hiveserver2.password/hive.hiveserver2.user are set to hive/hive. Set them as per Hive installation on YARN cluster. 
+Once Zeppelin server has started successfully, visit http://[zeppelin-server-host-name]:8080 with your web browser. Click on Interpreter tab next to Notebook dropdown. Look for Hive configurations and set them appropriately. By default hive.hiveserver2.url will be pointing to localhost and hive.hiveserver2.password/hive.hiveserver2.user are set to hive/hive. Set them as per Hive installation on YARN cluster.
 Click on Save button. Once these configurations are updated, Zeppelin will prompt you to restart the interpreter. Accept the prompt and the interpreter will reload the configurations.
 
 ### Spark
@@ -161,7 +161,7 @@ Click on Save button. Once these configurations are updated, Zeppelin will promp
 Spark & Hive notebooks can be written with Zeppelin now. The resulting Spark & Hive jobs will run on configured YARN cluster.
 
 ## Debug
-Zeppelin does not emit any kind of error messages on web interface when notebook/paragrah is run. If a paragraph fails it only displays ERROR. The reason for failure needs to be looked into log files which is present in logs directory under zeppelin installation base directory. Zeppelin creates a log file for each kind of interpreter.
+Zeppelin does not emit any kind of error messages on web interface when notebook/paragraph is run. If a paragraph fails it only displays ERROR. The reason for failure needs to be looked into log files which is present in logs directory under zeppelin installation base directory. Zeppelin creates a log file for each kind of interpreter.
 
 ```bash
 [zeppelin@zeppelin-3529 logs]$ pwd
@@ -172,5 +172,5 @@ total 844
 -rw-rw-r-- 1 zeppelin zeppelin 625050 Aug  3 16:05 zeppelin-interpreter-spark-zeppelin-zeppelin-3529.log
 -rw-rw-r-- 1 zeppelin zeppelin 200394 Aug  3 21:15 zeppelin-zeppelin-zeppelin-3529.log
 -rw-rw-r-- 1 zeppelin zeppelin  16162 Aug  3 14:03 zeppelin-zeppelin-zeppelin-3529.out
-[zeppelin@zeppelin-3529 logs]$ 
+[zeppelin@zeppelin-3529 logs]$
 ```
