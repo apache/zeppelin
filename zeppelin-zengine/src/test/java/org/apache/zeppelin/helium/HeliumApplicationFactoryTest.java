@@ -76,7 +76,6 @@ public class HeliumApplicationFactoryTest implements JobListenerFactory {
 
 
     heliumAppFactory = new HeliumApplicationFactory();
-
     depResolver = new DependencyResolver(tmpDir.getAbsolutePath() + "/local-repo");
     factory = new InterpreterFactory(conf,
         new InterpreterOption(true), null, null, heliumAppFactory, depResolver);
@@ -257,7 +256,12 @@ public class HeliumApplicationFactoryTest implements JobListenerFactory {
       Thread.yield();
     }
 
-    // when unbind interpreter
+    // wait until application is executed
+    while (!"Hello world 1".equals(app.getOutput())) {
+      Thread.yield();
+    }
+
+    // when restart interpreter
     factory.restart(factory.getDefaultInterpreterSettingList().get(0));
     while (app.getStatus() == ApplicationState.Status.LOADED) {
       Thread.yield();

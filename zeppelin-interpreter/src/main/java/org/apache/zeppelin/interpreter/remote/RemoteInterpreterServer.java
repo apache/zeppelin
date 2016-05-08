@@ -92,6 +92,7 @@ public class RemoteInterpreterServer
 
   @Override
   public void shutdown() throws TException {
+    eventClient.waitForEventQueueBecomesEmpty();
     if (interpreterGroup != null) {
       interpreterGroup.close();
       interpreterGroup.destroy();
@@ -249,6 +250,7 @@ public class RemoteInterpreterServer
       // see NoteInterpreterLoader.SHARED_SESSION
       if (appInfo.noteId.equals(noteId) || noteId.equals("shared_session")) {
         try {
+          logger.info("Unload App {} ", appInfo.pkg.getName());
           appInfo.app.unload();
           // see ApplicationState.Status.UNLOADED
           eventClient.onAppStatusUpdate(appInfo.noteId, appInfo.paragraphId, appId, "UNLOADED");

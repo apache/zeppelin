@@ -278,4 +278,19 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector {
         RemoteInterpreterEventType.APP_STATUS_UPDATE,
         gson.toJson(appendOutput)));
   }
+
+  /**
+   * Wait for eventQueue becomes empty
+   */
+  public void waitForEventQueueBecomesEmpty() {
+    synchronized (eventQueue) {
+      while (!eventQueue.isEmpty()) {
+        try {
+          eventQueue.wait(100);
+        } catch (InterruptedException e) {
+          // ignore exception
+        }
+      }
+    }
+  }
 }

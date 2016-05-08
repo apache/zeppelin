@@ -36,8 +36,6 @@ import java.util.concurrent.ExecutorService;
 
 /**
  * HeliumApplicationFactory
- *
- * TODO(moon): unload apps on interpreter restart
  */
 public class HeliumApplicationFactory implements ApplicationEventListener, NotebookEventListener {
   private final Logger logger = LoggerFactory.getLogger(HeliumApplicationFactory.class);
@@ -376,6 +374,11 @@ public class HeliumApplicationFactory implements ApplicationEventListener, Noteb
 
   @Override
   public void onStatusChange(String noteId, String paragraphId, String appId, String status) {
+    ApplicationState appToUpdate = getAppState(noteId, paragraphId, appId);
+    if (appToUpdate != null) {
+      appToUpdate.setStatus(ApplicationState.Status.valueOf(status));
+    }
+
     if (applicationEventListener != null) {
       applicationEventListener.onStatusChange(noteId, paragraphId, appId, status);
     }
