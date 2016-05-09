@@ -20,17 +20,22 @@ Spark Interpreter group, which consisted of 4 interpreters.
   <tr>
     <td>%spark</td>
     <td>SparkInterpreter</td>
-    <td>Creates SparkContext and provides scala environment</td>
+    <td>Creates a SparkContext and provides a scala environment</td>
   </tr>
   <tr>
     <td>%pyspark</td>
     <td>PySparkInterpreter</td>
-    <td>Provides python environment</td>
+    <td>Provides a python environment</td>
+  </tr>
+  <tr>
+    <td>%r</td>
+    <td>SparkRInterpreter</td>
+    <td>Provides an R environment with SparkR support</td>
   </tr>
   <tr>
     <td>%sql</td>
     <td>SparkSQLInterpreter</td>
-    <td>Provides SQL environment</td>
+    <td>Provides a SQL environment</td>
   </tr>
   <tr>
     <td>%dep</td>
@@ -40,8 +45,8 @@ Spark Interpreter group, which consisted of 4 interpreters.
 </table>
 
 ## Configuration
-Zeppelin provides the below properties for Spark interpreter.
-You can also set other Spark properties which are not listed in the table. If so, please refer to [Spark Available Properties](http://spark.apache.org/docs/latest/configuration.html#available-properties).
+The Spark interpreter can be configured with properties provided by Zeppelin. 
+You can also set other Spark properties which are not listed in the table. For a list of additional properties, refer to [Spark Available Properties](http://spark.apache.org/docs/latest/configuration.html#available-properties).
 <table class="table-configuration">
   <tr>
     <th>Property</th>
@@ -334,9 +339,10 @@ select * from ${table=defaultTableName} where text like '%${search}%'
 To learn more about dynamic form, checkout [Dynamic Form](../manual/dynamicform.html).
 
 
-### Separate Interpreter for each note
+### Interpreter setting option.
 
-In 'Separate Interpreter for each note' mode, SparkInterpreter creates scala compiler per each notebook. However it still shares the single SparkContext.
+Interpreter setting can choose one of 'shared', 'scoped', 'isolated' option. Spark interpreter creates separate scala compiler per each notebook but share a single SparkContext in 'scoped' mode (experimental). It creates separate SparkContext per each notebook in 'isolated' mode.
+
 
 ## Setting up Zeppelin with Kerberos
 Logical setup with Zeppelin, Kerberos Key Distribution Center (KDC), and Spark on YARN:

@@ -190,7 +190,7 @@ public class ZeppelinServer extends Application {
   }
 
   private static void setupNotebookServer(WebAppContext webapp,
-                                                           ZeppelinConfiguration conf) {
+                                          ZeppelinConfiguration conf) {
     notebookWsServer = new NotebookServer();
     String maxTextMessageSize = conf.getWebsocketMaxTextMessageSize();
     final ServletHolder servletHolder = new ServletHolder(notebookWsServer);
@@ -200,9 +200,6 @@ public class ZeppelinServer extends Application {
         ServletContextHandler.SESSIONS);
 
     webapp.addServlet(servletHolder, "/ws/*");
-    webapp.addFilter(new FilterHolder(CorsFilter.class), "/*",
-            EnumSet.allOf(DispatcherType.class));
-
   }
 
   private static SslContextFactory getSslContextFactory(ZeppelinConfiguration conf) {
@@ -249,7 +246,7 @@ public class ZeppelinServer extends Application {
   }
 
   private static WebAppContext setupWebAppContext(ContextHandlerCollection contexts,
-      ZeppelinConfiguration conf) {
+                                                  ZeppelinConfiguration conf) {
 
     WebAppContext webApp = new WebAppContext();
     webApp.setContextPath(conf.getServerContextPath());
