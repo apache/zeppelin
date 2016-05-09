@@ -83,12 +83,14 @@ public class ZeppelinClientTest {
 
   @Test
   public void zeppelinClientSingletonTest() {
-    ZeppelinClient client = ZeppelinClient.getInstance();
-    assertNull(client);
-    client = ZeppelinClient.initialize(validWebsocketUrl, "TOKEN");
-    assertNotNull(client);
-    client = ZeppelinClient.getInstance();
-    assertNotNull(client);
+    ZeppelinClient client1 = ZeppelinClient.getInstance();
+    if (client1 == null) {
+      client1 = ZeppelinClient.initialize(validWebsocketUrl, "TOKEN");
+    }
+    assertNotNull(client1);
+    ZeppelinClient client2 = ZeppelinClient.getInstance();
+    assertNotNull(client2);
+    assertEquals(client1, client2);
   }
 
   @Test

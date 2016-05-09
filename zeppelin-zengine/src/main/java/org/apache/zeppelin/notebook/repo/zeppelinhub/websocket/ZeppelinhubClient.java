@@ -198,18 +198,18 @@ public class ZeppelinhubClient {
     client.relayToZeppelin(zeppelinMsg, hubMsg.meta.get("noteId"));
   }
 
-  private void runAllParagraph(String noteId, String hubMsg) {
+  boolean runAllParagraph(String noteId, String hubMsg) {
     LOG.info("Running paragraph with noteId {}", noteId);
     try {
       JSONObject data = new JSONObject(hubMsg);
       if (data.equals(JSONObject.NULL) || !(data.get("data") instanceof JSONArray)) {
         LOG.error("Wrong \"data\" format for RUN_NOTEBOOK");
-        return;
+        return false;
       }
       Client client = Client.getInstance();
       if (client == null) {
         LOG.warn("Base client isn't initialized, returning");
-        return;
+        return false;
       }
       Message zeppelinMsg = new Message(OP.RUN_PARAGRAPH);
 
@@ -226,7 +226,9 @@ public class ZeppelinhubClient {
       }
     } catch (JSONException e) {
       LOG.error("Failed to parse RUN_NOTEBOOK message from ZeppelinHub ", e);
+      return false;
     }
+    return true;
   }
 
 }
