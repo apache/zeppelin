@@ -239,6 +239,27 @@
       <scope>test</scope>
     </dependency>
 
+	<dependency>
+      <groupId>org.eclipse.jetty</groupId>
+      <artifactId>jetty-server</artifactId>
+      <version>9.2.15.v20160210</version>
+      <scope>test</scope>
+	</dependency>
+
+	<dependency>
+      <groupId>org.eclipse.jetty</groupId>
+      <artifactId>jetty-servlet</artifactId>
+      <version>9.2.15.v20160210</version>
+      <scope>test</scope>
+	</dependency>
+
+	<dependency>
+      <groupId>org.eclipse.jetty.websocket</groupId>
+      <artifactId>websocket-server</artifactId>
+      <version>9.2.15.v20160210</version>
+      <scope>test</scope>
+	</dependency>
+
   </dependencies>
 
   <build>

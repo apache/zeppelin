@@ -198,4 +198,7 @@ public class ZeppelinClient {
     LOG.info("Removed Zeppelin ws connection for the following note {}", noteId);
   }
 
+  public int countConnectedNotes() {
+    return zeppelinConnectionMap.size();
+  }
 }
