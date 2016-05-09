@@ -57,7 +57,13 @@ body {
   visibility: hidden;
   height: 0;
   position: relative;
-  top : -13px;
+  top : -9px;
+  z-index: 99;
+}
+
+.paragraph .paragraphFooterElapsed {
+  height: 0px;
+  float: right;
   z-index: 99;
 }
 
