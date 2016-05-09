@@ -62,6 +62,9 @@
                     templateUrl: 'app/notebook/notebook.html',
                     controller: 'NotebookCtrl'
                 })
+                .when('/jobmanager', {
+                  templateUrl: 'app/jobmanager/jobmanager.html'
+                })
                 .when('/interpreter', {
                     templateUrl: 'app/interpreter/interpreter.html',
                     controller: 'InterpreterCtrl'
