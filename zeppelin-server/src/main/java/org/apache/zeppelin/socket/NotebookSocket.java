@@ -17,6 +17,8 @@
 package org.apache.zeppelin.socket;
 
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -32,12 +34,21 @@ public class NotebookSocket extends WebSocketAdapter {
   private NotebookSocketListener listener;
   private HttpServletRequest request;
   private String protocol;
+  private HashSet<String> userAndRoles;
 
   public NotebookSocket(HttpServletRequest req, String protocol,
       NotebookSocketListener listener) {
     this.listener = listener;
     this.request = req;
     this.protocol = protocol;
+  }
+
+  public Set<String> getUserAndRoles() {
+    return userAndRoles;
+  }
+
+  public void setUserAndRoles(Set<String> userAndRoles) {
+    this.userAndRoles = new HashSet<>(userAndRoles);
   }
 
   @Override

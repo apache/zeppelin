@@ -96,6 +96,19 @@ public class Note implements Serializable, JobListener {
     generateId();
   }
 
+  public NoteSubset getNoteSubset(Set<String> userAndRoles) {
+    NoteSubset ns = new NoteSubset();
+    ns.paragraphs = new LinkedList<>();
+    for (Paragraph p : this.paragraphs) {
+      ns.paragraphs.add(p.getParagraphSubset(userAndRoles));
+    }
+    ns.angularObjects = this.angularObjects;
+    ns.name = this.name;
+    ns.id = this.id;
+    ns.config = this.config;
+    return ns;
+  }
+
   private void generateId() {
     id = IdHashes.encode(System.currentTimeMillis() + new Random().nextInt());
   }
