@@ -50,10 +50,11 @@ public class Paragraph extends Job implements Serializable, Cloneable {
 
   private transient NoteInterpreterLoader replLoader;
   private transient Note note;
+  private transient AuthenticationInfo authenticationInfo;
 
   String title;
   String text;
-  AuthenticationInfo authenticationInfo;
+  String user;
   Date dateUpdated;
   private Map<String, Object> config; // paragraph configs like isOpen, colWidth, etc
   public final GUI settings;          // form and parameter settings
@@ -73,6 +74,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     title = null;
     text = null;
     authenticationInfo = null;
+    user = null;
     dateUpdated = null;
     settings = new GUI();
     config = new HashMap<String, Object>();
@@ -110,6 +112,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
 
   public void setAuthenticationInfo(AuthenticationInfo authenticationInfo) {
     this.authenticationInfo = authenticationInfo;
+    this.user = authenticationInfo.getUser();
   }
 
   public String getTitle() {
