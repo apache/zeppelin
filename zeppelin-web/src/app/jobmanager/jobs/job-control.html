@@ -12,20 +12,29 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<div id="{{notebook.id}}_control" class="control">
+<div id="{{notebookJob.notebookId}}_control" class="control">
   <span>
-    {{notebook.status}}
+    <span ng-if="notebookJob.isRunningJob === true">
+      RUNNING
+    </span>
+    <span ng-if="notebookJob.isRunningJob === false">
+      READY
+    </span>
   </span>
 
-  <span ng-if="notebook.status=='RUNNING'">
+  <span ng-if="notebookJob.isRunningJob === true">
     {{getProgress()}}%
   </span>
 
   <!-- Run / Cancel button -->
-  <span class="icon-control-play" style="cursor:pointer;color:#3071A9" tooltip-placement="top" tooltip="Run this paragraph (Shift+Enter)"
-        ng-click="">
-  </span>
-  <span class="icon-control-pause" style="cursor:pointer;color:#3071A9" tooltip-placement="top" tooltip="Run this paragraph (Shift+Enter)"
-        ng-click="">
-  </span>
+    <span
+      ng-if="notebookJob.isRunningJob === false"
+      class="icon-control-play" style="cursor:pointer;color:#3071A9" tooltip-placement="top" tooltip="START ALL Job"
+      ng-click="">
+    </span>
+    <span
+      ng-if="notebookJob.isRunningJob === true"
+      class="icon-control-pause" style="cursor:pointer;color:#3071A9" tooltip-placement="top" tooltip="STOP ALL Job"
+      ng-click="">
+    </span>
 </div>

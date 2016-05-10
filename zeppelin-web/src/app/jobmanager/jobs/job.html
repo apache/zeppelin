@@ -12,67 +12,78 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<div class="job" data-ng-init="init()">
+<div class="job" data-ng-init="init(notebookJob)">
   <div>
     <div ng-include src="'app/jobmanager/jobs/job-control.html'"></div>
     <span
       class="job-types"
-      ng-switch="jobType">
-      <i ng-switch-when="normal" class="icon-doc"/>
-      <i ng-switch-when="cron" class="icon-clock"/>
+      ng-switch="notebookJob.notebookType">
+      <i ng-switch-when="normal" class="icon-doc"></i>
+      <i ng-switch-when="cron" class="icon-clock"></i>
       <i ng-switch-default class="icon-question"></i>
     </span>
     &nbsp;
-    <span>
-     Notebook Title
-    </span>
-    <span>
-      &nbsp;-&nbsp;
-    </span>
-    <span style="color: gray">
-      interpreter name
-    </span>
+    <a ng-href="#/notebook/{{notebookJob.notebookId}}">
+      <span>
+       {{notebookJob.notebookName}}
+      </span>
+      <span>
+        &nbsp;-&nbsp;
+      </span>
+      <span style="color: gray">
+        {{notebookJob.interpreter}}
+      </span>
+    </a>
     <div ng-include src="'app/jobmanager/jobs/job-progressBar.html'"></div>
   </div>
 
   <div>
     <span
-      ng-repeat="jobStatus in ['READY', 'FINISHED', 'ABORT', 'ERROR','PENDING','RUNNING', 'err']"
-      ng-switch="jobStatus"
+      ng-repeat="paragraphJob in notebookJob.paragraphs"
+      ng-switch="paragraphJob.status"
     >
-      <i ng-switch-when="READY" style="color: green" class="fa fa-circle-o"
-        ng-click=""
-        tooltip="READY"
-      >
-      </i>
-      <i ng-switch-when="FINISHED" style="color: green" class="fa fa-circle"
-        ng-click=""
-        tooltip="FINISHED"
-      >
-      </i>
-      <i ng-switch-when="ABORT" style="color: orange" class="fa fa-circle"
-        ng-click=""
-        tooltip="ABORT"
-      >
-      </i>
-      <i ng-switch-when="ERROR" style="color: red" class="fa fa-circle"
-        ng-click=""
-        tooltip="ERROR"
-      >
-      </i>
-      <i ng-switch-when="PENDING" style="color: gray" class="fa fa-circle"
-        ng-click=""
-        tooltip="PENDING"
-      >
-      </i>
-      <i ng-switch-when="RUNNING" style="color: blue;" class="fa fa-spinner spinAnimation"
-        ng-click=""
-        tooltip="RUNNING"
-      >
-      </i>
-      <i ng-switch-default class="icon-question"
-         tooltip="{{jobStatus}}"
-      ></i>
+      <a ng-switch-when="READY"
+         ng-href="#/notebook/{{notebookJob.notebookId}}/paragraph/{{paragraphJob.id}}">
+        <i style="color: green" class="fa fa-circle-o"
+           tooltip="{{paragraphJob.name}} is READY">
+        </i>
+      </a>
+      <a ng-switch-when="FINISHED"
+         ng-href="#/notebook/{{notebookJob.notebookId}}/paragraph/{{paragraphJob.id}}">
+        <i style="color: green" class="fa fa-circle"
+           tooltip="{{paragraphJob.name}} is FINISHED">
+        </i>
+      </a>
+      <a ng-switch-when="ABORT"
+         ng-href="#/notebook/{{notebookJob.notebookId}}/paragraph/{{paragraphJob.id}}">
+        <i style="color: orange" class="fa fa-circle"
+           tooltip="{{paragraphJob.name}} is ABORT">
+        </i>
+      </a>
+      <a ng-switch-when="ERROR"
+         ng-href="#/notebook/{{notebookJob.notebookId}}/paragraph/{{paragraphJob.id}}">
+        <i style="color: red" class="fa fa-circle"
+           tooltip="{{paragraphJob.name}} is ERROR">
+        </i>
+      </a>
+      <a ng-switch-when="PENDING"
+         ng-href="#/notebook/{{notebookJob.notebookId}}/paragraph/{{paragraphJob.id}}">
+        <i style="color: gray" class="fa fa-circle"
+           tooltip="{{paragraphJob.name}} is PENDING">
+        </i>
+      </a>
+      <a ng-switch-when="RUNNING"
+         ng-href="#/notebook/{{notebookJob.notebookId}}/paragraph/{{paragraphJob.id}}">
+        <i style="color: blue" class="fa fa-spinner spinAnimation"
+           tooltip="{{paragraphJob.name}} is RUNNING">
+        </i>
+      </a>
+      <a ng-switch-default class="icon-question"
+         ng-href="#/notebook/{{notebookJob.notebookId}}/paragraph/{{paragraphJob.id}}">
+        <i class="icon-question"
+           tooltip="{{paragraphJob.name}} is {{paragraphJob.status}}">
+        </i>
+      </a>
     </span>
   </div>
 </div>

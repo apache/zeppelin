@@ -16,17 +16,18 @@
 
 angular.module('zeppelinWebApp')
   .controller('JobCtrl', function($scope,$rootScope, $route, $window, $element, $routeParams, $location,
-                                         $timeout, $compile, websocketMsgSrv, ngToast) {
+                                 $timeout, $compile, websocketMsgSrv, ngToast) {
 
-    $scope.init = function () {
-      $scope.jobType = 'cron';
-      //$scope.jobType = 'normal'
-      $scope.notebook = {};
-      $scope.notebook.status = 'RUNNING';
+    $scope.init = function (jobInformation) {
     };
 
     $scope.getProgress = function () {
-      return 100;
-    }
+      return 80;
+    };
+
+    $scope.isRunningNotebook = function (jobInformation) {
+      var NOT_FOUND_RUNNING_STATUS = -1;
+      return _.findIndex(jobInformation.paragraphs, {status : "RUNNING"}) !== NOT_FOUND_RUNNING_STATUS;
+    };
 
 });

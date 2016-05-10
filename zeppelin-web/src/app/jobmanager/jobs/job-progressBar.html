@@ -12,11 +12,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<div id="{{notebook.id}}_runControl" class="runControl">
-  <div id="{{notebook.id}}_progress" class="progress" ng-show="notebook.status=='RUNNING'">
-      <div ng-if="getProgress()>0 && getProgress()<100 && notebook.status=='RUNNING'"
+<div id="{{notebookJob.notebookId}}_runControl" class="runControl">
+  <div id="{{notebookJob.notebookId}}_progress" class="progress" ng-show="notebookJob.isRunningJob === true">
+      <div ng-if="getProgress()>0 && getProgress()<100 && notebookJob.isRunningJob === true"
         class="progress-bar" role="progressbar" style="width:{{getProgress()}}%;"></div>
-      <div ng-if="(getProgress()<=0 || getProgress()>=100) && (notebook.status=='RUNNING' )"
+      <div ng-if="(getProgress()<=0 || getProgress()>=100) && (notebookJob.isRunningJob === true)"
           class="progress-bar progress-bar-striped active" role="progressbar" style="width:100%;"></div>
   </div>
 </div>

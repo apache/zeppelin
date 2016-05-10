@@ -11,8 +11,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<!-- Here the controller <NotebookCtrl> is not needed because explicitly set in the app.js (route) -->
-<div class="jobManagerHead">
+<!-- Here the controller <JobmanagerCtrl> is not needed because explicitly set in the app.js (route) -->
+<div class="jobManagerHead" data-ng-init="init()">
   <div class="header">
     <div class="row">
       <div class="col-md-12">
@@ -36,10 +36,9 @@ limitations under the License.
     <span
       ng-switch-when="FINISHED"
     >
-      <i style="color: green" class="fa fa-circle"
+      <i style="color: green; margin-right: 3px;" class="fa fa-circle"
         ng-click=""
         tooltip="FINISHED"
-        style="margin-right: 3px;"
       >
       </i>
       {{jobStatus}}
@@ -102,14 +101,20 @@ limitations under the License.
   </span>
 </div>
 <div>
+  <select
+          ng-options="option.value as option.name for option in ACTIVE_INTERPRETERS"
+          ng-model="FILTER_VALUE_INTERPRETER"
+          ng-change="debugPrint(FILTER_VALUE_INTERPRETER)">
+  </select>
+</div>
+<div>
   <div class="note-jump"></div>
-  </div>
   <div id="{{currentParagraph.id}}_paragraphColumn_main"
-       ng-repeat="currentParagraph in [1,2,3]"
-       ng-controller="JobCtrl"
+       ng-repeat="notebookJob in jobInfomations | filter: {interpreter : FILTER_VALUE_INTERPRETER}:true"
        class="paragraph-col">
     <div ng-include src="'app/jobmanager/jobs/job.html'"
          class="job-space box job-margin"
+         ng-controller="JobCtrl"
     >
     </div>
   </div>
