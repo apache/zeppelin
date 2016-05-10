@@ -46,84 +46,81 @@ public class ZeppelinHubRepoTest {
     response =  Files.toByteArray(pathOfNotebook);
     when(mockedZeppelinhubHandler.asyncGet("AAAAA")).thenReturn(new String(response));
 
-    //when(mockedZeppelinhubHandler.asyncDel("AAAAA")).thenReturn(true);
-    //when(mockedZeppelinhubHandler.asyncDel("BBBBB")).thenReturn(false);
-
     return mockedZeppelinhubHandler;
   }
-/*
+
   @Test
-  public void testGetZeppelinUrl() throws IOException {
+  public void testGetZeppelinhubUrl() {
     System.setProperty(ZeppelinHubRepo.ZEPPELIN_CONF_PROP_NAME_SERVER, testAddr);
     
     ZeppelinConfiguration config = new ZeppelinConfiguration();
     ZeppelinHubRepo repository = new ZeppelinHubRepo(config);
-    assertThat(repository.getZeppelinUrl(config)).isEqualTo("http://zeppelinhub.ltd");
+    assertThat(repository.getZeppelinHubUrl(config)).isEqualTo("http://zeppelinhub.ltd");
 
     System.setProperty(ZeppelinHubRepo.ZEPPELIN_CONF_PROP_NAME_SERVER, "yolow");
 
     config = new ZeppelinConfiguration();
     repository = new ZeppelinHubRepo(config);
-    assertThat(repository.getZeppelinUrl(config)).isEqualTo("https://www.zeppelinhub.com");
+    assertThat(repository.getZeppelinHubUrl(config)).isEqualTo("https://www.zeppelinhub.com");
     
     System.setProperty(ZeppelinHubRepo.ZEPPELIN_CONF_PROP_NAME_SERVER, "http://zeppelinhub.ltd:4242");
 
     config = new ZeppelinConfiguration();
     repository = new ZeppelinHubRepo(config);
-    assertThat(repository.getZeppelinUrl(config)).isEqualTo("http://zeppelinhub.ltd:4242");
+    assertThat(repository.getZeppelinHubUrl(config)).isEqualTo("http://zeppelinhub.ltd:4242");
     
     System.setProperty(ZeppelinHubRepo.ZEPPELIN_CONF_PROP_NAME_SERVER, "http://zeppelinhub.ltd:0");
 
     config = new ZeppelinConfiguration();
     repository = new ZeppelinHubRepo(config);
-    assertThat(repository.getZeppelinUrl(config)).isEqualTo("http://zeppelinhub.ltd");
+    assertThat(repository.getZeppelinHubUrl(config)).isEqualTo("http://zeppelinhub.ltd");
   }
 
   @Test
-  public void testGetZeppelinHubWsEndpoint() throws IOException, URISyntaxException {
+  public void testGetZeppelinHubWsEndpoint() {
     System.setProperty(ZeppelinHubRepo.ZEPPELIN_CONF_PROP_NAME_SERVER, testAddr);
 
     ZeppelinConfiguration config = new ZeppelinConfiguration();
     ZeppelinHubRepo repository = new ZeppelinHubRepo(config);
-    assertThat(repository.getZeppelinHubWsUri()).isEqualTo("ws://zeppelinhub.ltd:80/async");
+    assertThat(repository.getZeppelinhubWebsocketUri(config)).isEqualTo("ws://zeppelinhub.ltd:80/async");
 
     System.setProperty(ZeppelinHubRepo.ZEPPELIN_CONF_PROP_NAME_SERVER, "https://zeppelinhub.ltd");
 
     config = new ZeppelinConfiguration();
     repository = new ZeppelinHubRepo(config);
-    assertThat(repository.getZeppelinHubWsUri()).isEqualTo("wss://zeppelinhub.ltd:443/async");
+    assertThat(repository.getZeppelinhubWebsocketUri(config)).isEqualTo("wss://zeppelinhub.ltd:443/async");
 
     System.setProperty(ZeppelinHubRepo.ZEPPELIN_CONF_PROP_NAME_SERVER, "yolow");
 
     config = new ZeppelinConfiguration();
     repository = new ZeppelinHubRepo(config);
-    assertThat(repository.getZeppelinHubWsUri()).isEqualTo("wss://www.zeppelinhub.com:443/async");
+    assertThat(repository.getZeppelinhubWebsocketUri(config)).isEqualTo("wss://www.zeppelinhub.com:443/async");
 
     System.setProperty(ZeppelinHubRepo.ZEPPELIN_CONF_PROP_NAME_SERVER, "http://zeppelinhub.ltd:4242");
 
     config = new ZeppelinConfiguration();
     repository = new ZeppelinHubRepo(config);
-    assertThat(repository.getZeppelinHubWsUri()).isEqualTo("ws://zeppelinhub.ltd:4242/async");
+    assertThat(repository.getZeppelinhubWebsocketUri(config)).isEqualTo("ws://zeppelinhub.ltd:4242/async");
 
     System.setProperty(ZeppelinHubRepo.ZEPPELIN_CONF_PROP_NAME_SERVER, "https://www.zeppelinhub.com");
 
     config = new ZeppelinConfiguration();
     repository = new ZeppelinHubRepo(config);
-    assertThat(repository.getZeppelinHubWsUri()).isEqualTo("wss://www.zeppelinhub.com:443/async");
+    assertThat(repository.getZeppelinhubWebsocketUri(config)).isEqualTo("wss://www.zeppelinhub.com:443/async");
 
     System.setProperty(ZeppelinHubRepo.ZEPPELIN_CONF_PROP_NAME_SERVER, "http://www.zeppelinhub.com");
 
     config = new ZeppelinConfiguration();
     repository = new ZeppelinHubRepo(config);
-    assertThat(repository.getZeppelinHubWsUri()).isEqualTo("ws://www.zeppelinhub.com:80/async");
+    assertThat(repository.getZeppelinhubWebsocketUri(config)).isEqualTo("ws://www.zeppelinhub.com:80/async");
 
     System.setProperty(ZeppelinHubRepo.ZEPPELIN_CONF_PROP_NAME_SERVER, "https://www.zeppelinhub.com:4242");
 
     config = new ZeppelinConfiguration();
     repository = new ZeppelinHubRepo(config);
-    assertThat(repository.getZeppelinHubWsUri()).isEqualTo("wss://www.zeppelinhub.com:4242/async");
+    assertThat(repository.getZeppelinhubWebsocketUri(config)).isEqualTo("wss://www.zeppelinhub.com:4242/async");
   }
-*/
+
   @Test
   public void testGetAllNotes() throws IOException {
     List<NoteInfo> notebooks = repo.list();

@@ -36,9 +36,9 @@ public class ZeppelinHubRepo implements NotebookRepo {
   private String token;
   private ZeppelinhubRestApiHandler zeppelinhubHandler;
 
-  public ZeppelinHubRepo(ZeppelinConfiguration conf) throws IOException {
+  public ZeppelinHubRepo(ZeppelinConfiguration conf) {
     String zeppelinHubUrl = getZeppelinHubUrl(conf);
-    LOG.info("Initializing ZeppelinHub integration module version ?");
+    LOG.info("Initializing ZeppelinHub integration module");
     token = conf.getString("ZEPPELINHUB_API_TOKEN", ZEPPELIN_CONF_PROP_NAME_TOKEN, "");
     zeppelinhubHandler = ZeppelinhubRestApiHandler.newInstance(zeppelinHubUrl, token);
 
@@ -47,7 +47,7 @@ public class ZeppelinHubRepo implements NotebookRepo {
     websocketClient.start();
   }
   
-  String getZeppelinHubWsUri(URI api) throws IOException {
+  private String getZeppelinHubWsUri(URI api) throws IOException {
     URI apiRoot = api;
     String scheme = apiRoot.getScheme();
     int port = apiRoot.getPort();
@@ -74,7 +74,7 @@ public class ZeppelinHubRepo implements NotebookRepo {
     return ws + apiRoot.getHost() + ":" + port + "/async";
   }
 
-  private String getZeppelinhubWebsocketUri(ZeppelinConfiguration conf) {
+  String getZeppelinhubWebsocketUri(ZeppelinConfiguration conf) {
     String zeppelinHubUri = StringUtils.EMPTY;
     try {
       zeppelinHubUri = getZeppelinHubWsUri(new URI(conf.getString("ZEPPELINHUB_API_ADDRESS",
@@ -98,10 +98,10 @@ public class ZeppelinHubRepo implements NotebookRepo {
     zeppelinhubHandler = zeppelinhub;
   }
 
-  private String getZeppelinHubUrl(ZeppelinConfiguration conf) throws IOException {
+  String getZeppelinHubUrl(ZeppelinConfiguration conf) {
     if (conf == null) {
-      LOG.error("Invalid configuration, cannot be null");
-      throw new IOException("Configuration is null");
+      LOG.error("Invalid configuration, cannot be null. Using default address {}", DEFAULT_SERVER);
+      return DEFAULT_SERVER;
     }
     URI apiRoot;
     String zeppelinhubUrl;
@@ -111,10 +111,10 @@ public class ZeppelinHubRepo implements NotebookRepo {
                                   DEFAULT_SERVER);
       apiRoot = new URI(url);
     } catch (URISyntaxException e) {
-      LOG.error("Invalid zeppelinhub url", e);
-      throw new IOException(e);
+      LOG.error("Invalid zeppelinhub url, using default address {}", DEFAULT_SERVER, e);
+      return DEFAULT_SERVER;
     }
-    
+
     String scheme = apiRoot.getScheme();
     if (scheme == null) {
       LOG.info("{} is not a valid zeppelinhub server address. proceed with default address {}",
