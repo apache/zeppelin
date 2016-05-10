@@ -969,11 +969,11 @@ angular.module('zeppelinWebApp')
       return '';
     }
     var user = 'anonymous';
-    if (pdata.authenticationInfo !== null && pdata.authenticationInfo.user !== null) {
+    if (pdata.authenticationInfo !== null && !isEmpty(pdata.authenticationInfo.user)) {
       user = pdata.authenticationInfo.user;
     }
     var dateUpdated = (pdata.dateUpdated === null) ? 'unknown' : pdata.dateUpdated;
-    var desc = 'Took ' + (timeMs/1000) + ' seconds. Last updated by ' + user + ' at time ' + dateUpdated + '.';
+    var desc = 'Took ' + (timeMs/1000) + ' seconds. Last updated by ' + user + ' at ' + dateUpdated + '.';
     if ($scope.isResultOutdated()){
       desc += ' (outdated)';
     }
