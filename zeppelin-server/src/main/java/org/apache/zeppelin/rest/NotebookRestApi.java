@@ -665,14 +665,29 @@ public class NotebookRestApi {
   }  
 
   /**
-   * Search for a Notes
+   * Search for a Notes with permissions
    */
   @GET
   @Path("search")
   public Response search(@QueryParam("q") String queryTerm) {
     LOG.info("Searching notebooks for: {}", queryTerm);
+    String principal = SecurityUtils.getPrincipal();
+    HashSet<String> roles = SecurityUtils.getRoles();
+    HashSet<String> userAndRoles = new HashSet<String>();
+    userAndRoles.add(principal);
+    userAndRoles.addAll(roles);
     List<Map<String, String>> notebooksFound = notebookIndex.query(queryTerm);
-    LOG.info("{} notbooks found", notebooksFound.size());
+    for (int i = 0; i < notebooksFound.size(); i++) {
+      String[] Id = notebooksFound.get(i).get("id").split("/", 2);
+      String noteId = Id[0];
+      if (!notebookAuthorization.isOwner(noteId, userAndRoles) &&
+              !notebookAuthorization.isReader(noteId, userAndRoles) &&
+              !notebookAuthorization.isWriter(noteId, userAndRoles)) {
+        notebooksFound.remove(i);
+        i--;
+      }
+    }
+    LOG.info("{} notebooks found", notebooksFound.size());
     return new JsonResponse<>(Status.OK, notebooksFound).build();
   }
 
