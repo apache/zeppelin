@@ -1219,110 +1219,42 @@ angular.module('zeppelinWebApp')
   };
 
   var setTable = function(type, data, refresh) {
-    var getTableContentFormat = function(d) {
-      if (isNaN(d)) {
-        if (d.length>'%html'.length && '%html ' === d.substring(0, '%html '.length)) {
-          return 'html';
-        } else {
-          return '';
-        }
-      } else {
-        return '';
-      }
-    };
-
-    var formatTableContent = function(d) {
-      if (isNaN(d)) {
-        var f = getTableContentFormat(d);
-        if (f !== '') {
-          return d.substring(f.length+2);
-        } else {
-          return d;
-        }
-      } else {
-        var dStr = d.toString();
-        var splitted = dStr.split('.');
-        var formatted = splitted[0].replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,');
-        if (splitted.length>1) {
-          formatted+= '.'+splitted[1];
-        }
-        return formatted;
-      }
-    };
-
-
     var renderTable = function() {
-      var html = '';
-      html += '<table class="table table-hover table-condensed">';
-      html += '  <thead>';
-      html += '    <tr style="background-color: #F6F6F6; font-weight: bold;">';
-      for (var titleIndex in $scope.paragraph.result.columnNames) {
-        html += '<th>'+$scope.paragraph.result.columnNames[titleIndex].name+'</th>';
-      }
-      html += '    </tr>';
-      html += '  </thead>';
-      html += '  <tbody>';
-      for (var r in $scope.paragraph.result.msgTable) {
-        var row = $scope.paragraph.result.msgTable[r];
-        html += '    <tr>';
-        for (var index in row) {
-          var v = row[index].value;
-          if (getTableContentFormat(v) !== 'html') {
-            v = v.replace(/[\u00A0-\u9999<>\&]/gim, function(i) {
-              return '&#'+i.charCodeAt(0)+';';
-            });
-          }
-        html += '      <td>'+formatTableContent(v)+'</td>';
+      var height = $scope.paragraph.config.graph.height;
+      angular.element('#p' + $scope.paragraph.id + '_table').css('height', height);
+      var resultRows = $scope.paragraph.result.rows;
+      var columnNames = _.pluck($scope.paragraph.result.columnNames, 'name');
+      var container = document.getElementById('p' + $scope.paragraph.id + '_table');
+
+      var handsontable = new Handsontable(container, {
+        data: resultRows,
+        colHeaders: columnNames,
+        rowHeaders: false,
+        stretchH: 'all',
+        sortIndicator: true,
+        columnSorting: true,
+        contextMenu: false,
+        manualColumnResize: true,
+        manualRowResize: true,
+        editor: false,
+        fillHandle: false,
+        disableVisualSelection: true,
+        cells: function (row, col, prop) {
+          var cellProperties = {};
+            cellProperties.renderer = function(instance, td, row, col, prop, value, cellProperties) {
+              Handsontable.NumericCell.renderer.apply(this, arguments);
+              if (!isNaN(value)) {
+                cellProperties.type = 'numeric';
+                cellProperties.format = '0,0';
+                cellProperties.editor = false;
+                td.style.textAlign = 'left';
+              } else if (value.length > '%html'.length && '%html ' === value.substring(0, '%html '.length)) {
+                td.innerHTML = value.substring('%html'.length);
+              }
+            };
+          return cellProperties;
         }
-        html += '    </tr>';
-      }
-      html += '  </tbody>';
-      html += '</table>';
-
-      var tableDomEl = angular.element('#p' + $scope.paragraph.id + '_table');
-      tableDomEl.html(html);
-      var oTable = tableDomEl.children(1).DataTable({
-        paging:       false,
-        info:         false,
-        autoWidth:    false,
-        lengthChange: false,
-        searching: false,
-        dom: '<>'
       });
-
-      if ($scope.paragraph.result.msgTable.length > 10000) {
-        tableDomEl.css({
-          'overflow': 'scroll',
-          'height': $scope.paragraph.config.graph.height
-        });
-      } else {
-
-        var dataTable = angular.element('#p' + $scope.paragraph.id + '_table .table');
-        dataTable.floatThead({
-          scrollContainer: function(dataTable) {
-            return tableDomEl;
-          }
-        });
-
-        dataTable.on('remove', function () {
-          dataTable.floatThead('destroy');
-        });
-
-        tableDomEl.css({
-          'position': 'relative',
-          'height': '100%'
-        });
-        tableDomEl.perfectScrollbar('destroy')
-                  .perfectScrollbar({minScrollbarLength: 20});
-
-        angular.element('.ps-scrollbar-y-rail').css('z-index', '1002');
-
-        // set table height
-        var psHeight = $scope.paragraph.config.graph.height;
-        tableDomEl.css('height', psHeight);
-        tableDomEl.perfectScrollbar('update');
-      }
-
     };
 
     var retryRenderer = function() {
