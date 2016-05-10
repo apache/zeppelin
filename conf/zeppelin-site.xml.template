@@ -141,11 +141,20 @@
 </property>
 -->
 
-<!-- For versioning your local norebook storage using Git repository
+<!-- For versioning your local notebook storage using Git repository
 <property>
   <name>zeppelin.notebook.storage</name>
   <value>org.apache.zeppelin.notebook.repo.GitNotebookRepo</value>
   <description>notebook persistence layer implementation</description>
+</property>
+-->
+
+<!-- For connecting your Zeppelin with ZeppelinHub -->
+<!--
+<property>
+  <name>zeppelin.notebook.storage</name>
+  <value>org.apache.zeppelin.notebook.repo.VFSNotebookRepo, org.apache.zeppelin.notebook.repo.zeppelinhub.ZeppelinHubRepo</value>
+  <description>two notebook persistence layers (local + ZeppelinHub)</description>
 </property>
 -->
 
