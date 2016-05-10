@@ -277,6 +277,9 @@ public class SparkInterpreter extends Interpreter {
       } catch (NoSuchMethodException | SecurityException | IllegalAccessException
           | IllegalArgumentException | InvocationTargetException e) {
         // continue instead of: throw new InterpreterException(e);
+        // Newer Spark versions (like the patched CDH5.7.0 one) don't contain this method
+        logger.warn(String.format("Spark method classServerUri not available due to: [%s]", 
+          e.getMessage()));
       }
     }
 
