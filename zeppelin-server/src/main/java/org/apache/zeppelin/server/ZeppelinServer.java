@@ -31,6 +31,7 @@ import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.apache.zeppelin.search.LuceneSearch;
 import org.apache.zeppelin.search.SearchService;
 import org.apache.zeppelin.socket.NotebookServer;
+import org.apache.zeppelin.user.Credentials;
 import org.eclipse.jetty.http.HttpVersion;
 import org.eclipse.jetty.server.*;
 import org.eclipse.jetty.server.handler.ContextHandlerCollection;
@@ -89,6 +90,9 @@ public class ZeppelinServer extends Application {
 
     ZeppelinConfiguration conf = ZeppelinConfiguration.create();
     conf.setProperty("args", args);
+
+    Credentials.initCredentials(conf.credentialsPersist(),
+            conf.getCredentialsPath());
 
     jettyWebServer = setupJettyServer(conf);
 

@@ -18,6 +18,8 @@
 package org.apache.zeppelin.user;
 
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,15 +35,30 @@ public class Credentials {
 
   private static Credentials credentials = null;
   private Map<String, UserCredentials> credentialsMap;
+  private Gson gson;
+  private Boolean credentialsPersist = true;
+  File credentialsFile;
 
-  private Credentials() {
+  private Credentials(Boolean credentialsPersist, String credentialsPath) {
+    this.credentialsPersist = credentialsPersist;
+    credentialsFile = new File(credentialsPath);
     credentialsMap = new HashMap<>();
+    if (credentialsPersist) {
+      GsonBuilder builder = new GsonBuilder();
+      builder.setPrettyPrinting();
+      gson = builder.create();
+      loadFromFile();
+    }
   }
 
-  public static synchronized Credentials getCredentials() {
+  public static synchronized void initCredentials(Boolean credentialsPersist,
+                                                        String credentialsPath) {
     if (credentials == null) {
-      credentials = new Credentials();
+      credentials = new Credentials(credentialsPersist, credentialsPath);
     }
+  }
+
+  public static Credentials getCredentials() {
     return credentials;
   }
 
@@ -55,6 +72,62 @@ public class Credentials {
 
   public void putUserCredentials(String username, UserCredentials uc) throws IOException {
     credentialsMap.put(username, uc);
+    if (credentialsPersist) {
+      saveToFile();
+    }
+  }
+
+  private void loadFromFile() {
+    LOG.info(credentialsFile.getAbsolutePath());
+    if (!credentialsFile.exists()) {
+      // nothing to read
+      return;
+    }
+
+    try {
+      FileInputStream fis = new FileInputStream(credentialsFile);
+      InputStreamReader isr = new InputStreamReader(fis);
+      BufferedReader bufferedReader = new BufferedReader(isr);
+      StringBuilder sb = new StringBuilder();
+      String line;
+      while ((line = bufferedReader.readLine()) != null) {
+        sb.append(line);
+      }
+      isr.close();
+      fis.close();
+
+      String json = sb.toString();
+      CredentialsInfoSaving info = gson.fromJson(json, CredentialsInfoSaving.class);
+      this.credentialsMap = info.credentialsMap;
+    } catch (IOException e) {
+      LOG.error("Error loading credentials file");
+      e.printStackTrace();
+    }
+  }
+
+  private void saveToFile() throws IOException {
+    String jsonString;
+
+    synchronized (credentials) {
+      CredentialsInfoSaving info = new CredentialsInfoSaving();
+      info.credentialsMap = credentialsMap;
+      jsonString = gson.toJson(info);
+    }
+
+    try {
+      if (!credentialsFile.exists()) {
+        credentialsFile.createNewFile();
+      }
+
+      FileOutputStream fos = new FileOutputStream(credentialsFile, false);
+      OutputStreamWriter out = new OutputStreamWriter(fos);
+      out.append(jsonString);
+      out.close();
+      fos.close();
+    } catch  (IOException e) {
+      LOG.error("Error saving credentials file");
+      e.printStackTrace();
+    }
   }
 
 }
