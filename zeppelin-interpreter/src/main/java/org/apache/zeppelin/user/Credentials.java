@@ -15,18 +15,15 @@
 * limitations under the License.
 */
 
-package org.apache.zeppelin.credential;
+package org.apache.zeppelin.user;
 
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.apache.zeppelin.conf.ZeppelinConfiguration;
 
 /**
  * Class defining credentials for data source authorization

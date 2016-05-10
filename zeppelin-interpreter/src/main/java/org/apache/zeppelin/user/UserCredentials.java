@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.zeppelin.credential;
+package org.apache.zeppelin.user;
 
 import java.util.HashMap;
 import java.util.Map;

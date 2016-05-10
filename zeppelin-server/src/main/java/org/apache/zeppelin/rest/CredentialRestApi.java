@@ -19,9 +19,9 @@ package org.apache.zeppelin.rest;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import org.apache.zeppelin.credential.Credentials;
-import org.apache.zeppelin.credential.UserCredentials;
-import org.apache.zeppelin.credential.UsernamePassword;
+import org.apache.zeppelin.user.Credentials;
+import org.apache.zeppelin.user.UserCredentials;
+import org.apache.zeppelin.user.UsernamePassword;
 import org.apache.zeppelin.server.JsonResponse;
 import org.apache.zeppelin.utils.SecurityUtils;
 import org.slf4j.Logger;

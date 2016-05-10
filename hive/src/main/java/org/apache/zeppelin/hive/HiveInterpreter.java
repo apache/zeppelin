@@ -36,6 +36,9 @@ import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
+import org.apache.zeppelin.user.AuthenticationInfo;
+import org.apache.zeppelin.user.UserCredentials;
+import org.apache.zeppelin.user.UsernamePassword;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -135,18 +138,15 @@ public class HiveInterpreter extends Interpreter {
   }
 
   public InterpreterResult executeSql(String propertyKey, String sql,
+                                      String user, String password,
                                       InterpreterContext interpreterContext) {
-    String executingUser = interpreterContext.getAuthenticationInfo().getDataSourceUser();
-    String password = interpreterContext.getAuthenticationInfo().getDataSourcePassword();
     Connection connection = null;
     Statement statement = null;
     try {
       Properties properties = propertiesMap.get(propertyKey);
       Class.forName(properties.getProperty(DRIVER_KEY));
       String url = properties.getProperty(URL_KEY);
-      String user;
-      user = executingUser;
-      if (null != user) {
+      if (user != null) {
         connection = DriverManager.getConnection(url, user, password);
       } else {
         connection = DriverManager.getConnection(url, properties);
@@ -239,7 +239,24 @@ public class HiveInterpreter extends Interpreter {
     logger.info("PropertyKey: {} User: {} SQL command: '{}'", propertyKey,
             contextInterpreter.getAuthenticationInfo().getUser(), cmd);
 
-    return executeSql(propertyKey, cmd, contextInterpreter);
+    UsernamePassword usernamePassword = null;
+    String username = null;
+    String password = null;
+
+    AuthenticationInfo authenticationInfo = contextInterpreter.getAuthenticationInfo();
+    UserCredentials userCredentials = authenticationInfo.getUserCredentials();
+    logger.info(userCredentials.toString());
+    if (userCredentials != null) {
+      usernamePassword = userCredentials.getUsernamePassword("hive(" + propertyKey + ")");
+    }
+    if (usernamePassword != null) {
+      username = usernamePassword.getUsername();
+      password = usernamePassword.getPassword();
+    }
+    if (username == null) {
+      username = authenticationInfo.getUser();
+    }
+    return executeSql(propertyKey, cmd, username, password, contextInterpreter);
   }
 
   private int getMaxResult() {

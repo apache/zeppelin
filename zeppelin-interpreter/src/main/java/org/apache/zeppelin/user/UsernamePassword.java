@@ -15,7 +15,7 @@
 * limitations under the License.
 */
 
-package org.apache.zeppelin.credential;
+package org.apache.zeppelin.user;
 
 /**
  * Username and Password POJO
