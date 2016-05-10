@@ -55,7 +55,6 @@ body {
 
 .paragraph .paragraphFooter {
   visibility: hidden;
-  height: 0;
   position: relative;
   top : -9px;
   z-index: 99;
