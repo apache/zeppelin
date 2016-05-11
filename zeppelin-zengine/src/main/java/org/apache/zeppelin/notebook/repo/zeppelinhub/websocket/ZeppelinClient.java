@@ -93,6 +93,7 @@ public class ZeppelinClient {
   public void stop() {
     try {
       if (wsClient != null) {
+        removeAllZeppelinConnections();
         wsClient.stop();
       } else {
         LOG.warn("Cannot stop zeppelin websocket client - isn't initialized");
@@ -212,6 +213,19 @@ public class ZeppelinClient {
     }
     // TODO(khalid): clean log later
     LOG.info("Removed Zeppelin ws connection for the following note {}", noteId);
+  }
+
+  /**
+   * Close and remove all ZeppelinConnection
+   */
+  public void removeAllZeppelinConnections() {
+    for (Map.Entry<String, Session> entry: zeppelinConnectionMap.entrySet()) {
+      if (isSessionOpen(entry.getValue())) {
+        entry.getValue().close();
+      }
+      zeppelinConnectionMap.remove(entry.getKey());
+    }
+    LOG.info("Removed all Zeppelin ws connections");
   }
 
   public int countConnectedNotes() {

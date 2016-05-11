@@ -26,7 +26,7 @@ public class ZeppelinhubMessageTest {
   public void testThastCanDeserialiseZeppelinhubMessage() {
     Map<String,String> meta = Maps.newHashMap();
     meta.put("key1", "val1");
-    ZeppelinhubMessage expected = ZeppelinhubMessage.newMessage(OP.LIST_NOTES, "my data", meta);
+    ZeppelinhubMessage expected = ZeppelinhubMessage.newMessage(OP.LIST_NOTES.toString(), "my data", meta);
     ZeppelinhubMessage zeppelinHubMsg = ZeppelinhubMessage.deserialize(msg);
 
     assertEquals(expected.op, zeppelinHubMsg.op);

@@ -66,6 +66,7 @@ public class ZeppelinhubClientTest {
     assertTrue(runStatus);
     runStatus = zeppelinhubClient.runAllParagraph("2AB7SY361", invalidRunNotebookMsg);
     assertFalse(runStatus);
+    Client.getInstance().stop();
   }
 
 }
