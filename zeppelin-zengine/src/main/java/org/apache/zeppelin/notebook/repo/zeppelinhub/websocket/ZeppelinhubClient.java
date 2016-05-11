@@ -189,9 +189,6 @@ public class ZeppelinhubClient {
         case RUN_NOTEBOOK:
           runAllParagraph(hubMsg.meta.get("noteId"), msg);
           break;
-        case PONG:
-          // do nothing
-          break;
         default:
           LOG.warn("Received {} from ZeppelinHub, not handled", op);
           break;

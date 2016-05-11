@@ -197,7 +197,7 @@ public class ZeppelinClient {
       LOG.warn("Client isn't initialized yet");
       return;
     }
-    client.relayToHub(hubMsg.serialize());
+    client.relayToZeppelinHub(hubMsg.serialize());
   }
 
   /**

@@ -50,9 +50,9 @@ public class Client {
   public void start() {
     if (zeppelinhubClient != null) {
       zeppelinhubClient.start();
-      if (zeppelinClient != null) {
-        zeppelinClient.start();
-      }
+    }
+    if (zeppelinClient != null) {
+      zeppelinClient.start();
     }
   }
 
@@ -65,7 +65,7 @@ public class Client {
     }
   }
 
-  public void relayToHub(String message) {
+  public void relayToZeppelinHub(String message) {
     zeppelinhubClient.send(message);
   }
 

@@ -38,7 +38,6 @@ import com.google.gson.reflect.TypeToken;
 /**
  * ZeppelinHub repo class.
  */
-
 public class ZeppelinHubRepo implements NotebookRepo {
   private static final Logger LOG = LoggerFactory.getLogger(ZeppelinhubRestApiHandler.class);
   private static final String DEFAULT_SERVER = "https://www.zeppelinhub.com";

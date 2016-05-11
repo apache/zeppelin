@@ -63,7 +63,6 @@ public class ZeppelinhubWebsocket implements WebSocketListener {
 
   @Override
   public void onWebSocketText(String message) {
-    LOG.info("Got msg {}", message);
     // handle message from ZeppelinHub.
     ZeppelinhubClient client = ZeppelinhubClient.getInstance();
     if (client != null) {
