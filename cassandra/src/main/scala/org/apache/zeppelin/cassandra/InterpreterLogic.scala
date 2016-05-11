@@ -73,7 +73,7 @@ object InterpreterLogic {
   val fallThroughRetryPolicy = FallthroughRetryPolicy.INSTANCE
   val loggingDefaultRetryPolicy = new LoggingRetryPolicy(defaultRetryPolicy)
   val loggingDownGradingRetryPolicy = new LoggingRetryPolicy(downgradingConsistencyRetryPolicy)
-  val loggingFallThrougRetryPolicy = new LoggingRetryPolicy(fallThroughRetryPolicy)
+  val loggingFallThroughRetryPolicy = new LoggingRetryPolicy(fallThroughRetryPolicy)
 
   val preparedStatements : mutable.Map[String,PreparedStatement] = new ConcurrentHashMap[String,PreparedStatement]().asScala
 
@@ -357,7 +357,7 @@ class InterpreterLogic(val session: Session)  {
       case FallThroughRetryPolicy => statement.setRetryPolicy(fallThroughRetryPolicy)
       case LoggingDefaultRetryPolicy => statement.setRetryPolicy(loggingDefaultRetryPolicy)
       case LoggingDowngradingRetryPolicy => statement.setRetryPolicy(loggingDownGradingRetryPolicy)
-      case LoggingFallThroughRetryPolicy => statement.setRetryPolicy(loggingFallThrougRetryPolicy)
+      case LoggingFallThroughRetryPolicy => statement.setRetryPolicy(loggingFallThroughRetryPolicy)
       case _ => throw new InterpreterException(s"""Unknown retry policy ${options.retryPolicy.getOrElse("???")}""")
     }
     options.fetchSize.foreach(statement.setFetchSize(_))
