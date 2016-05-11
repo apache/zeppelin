@@ -16,41 +16,31 @@
  */
 package org.apache.zeppelin.notebook.repo.zeppelinhub.websocket.scheduler;
 
+import org.apache.zeppelin.notebook.repo.zeppelinhub.websocket.ZeppelinhubClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * Check and test if zeppelinhub connection is still open.
  * 
- * @author anthonyc
- *
- *
-public class ZeppelinhubConntection extends Retryable implements Runnable {
-  private static final Logger LOG = LoggerFactory.getLogger(ZeppelinhubConntection.class);
-  private long delay;
-  private long interval;
-  private long timeout;
-  private final TimeUnit timeUnit = TimeUnit.MILLISECONDS;
+ */
+public class ZeppelinhubConnection implements Runnable {
+  private static final Logger LOG = LoggerFactory.getLogger(ZeppelinhubConnection.class);
+  private ZeppelinhubClient client;
   
-  private ZeppelinhubConntection(Session session, long delay, long interval, long timeout) {
-    ZeppelinhubSession = session;
-    this.delay = delay;
-    this.interval = interval;
-    this.timeout = timeout;
+  public static ZeppelinhubConnection newInstance(ZeppelinhubClient client) {
+    return new ZeppelinhubConnection(client);
+  }
+  
+  private ZeppelinhubConnection(ZeppelinhubClient client) {
+    this.client = client;
   }
   
   @Override
   public void run() {
-    try {
-      execute(delay, interval, timeout);
-    } catch (Exception e) {
-      LOG.error(
-          "Failed to execute retryable ZeppelinHub connection task with interval {} after {} ms {}",
-          interval, timeout, e);
-    }
-  }
-
-  @Override
-  protected void attempt() throws Exception {
-    LOG.info("Connecting to ZeppelinHub");
+    LOG.debug("Checking if Zeppelinbhub connection is open");
+    client.reconnectIfConectionLost();
   }
 
 }
-*/
+
