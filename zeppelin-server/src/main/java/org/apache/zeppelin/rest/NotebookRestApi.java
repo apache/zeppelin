@@ -125,11 +125,11 @@ public class NotebookRestApi {
             permMap.get("writers")
     );
     
-    String notExistsUserName = checkUser(permMap);
+    String noExistUser = checkUser(permMap);
     
-    if (!"".equals(notExistsUserName)) {
+    if (!"".equals(noExistUser)) {
       
-      return new JsonResponse<>(Status.FORBIDDEN, userNamePermissionError(notExistsUserName)).build();
+      return new JsonResponse<>(Status.FORBIDDEN, userNamePermissionError(noExistUser)).build();
       
     }
 
