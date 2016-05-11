@@ -27,7 +27,7 @@ angular.module('zeppelinWebApp').factory('notebookListDataFactory', function() {
       notes.root = {children: []};
       _.reduce(notesList, function(root, note) {
         var noteName = note.name || note.id;
-        var nodes = noteName.match(/([^\\\][^\/]|\\\/)+/g);
+        var nodes = noteName.match(/([^\/][^\/]*)/g);
 
         // recursively add nodes
         addNode(root, nodes, note.id);
