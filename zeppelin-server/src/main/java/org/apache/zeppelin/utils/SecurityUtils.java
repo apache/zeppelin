@@ -91,12 +91,12 @@ public class SecurityUtils {
     
     boolean state = false;
     
-    SecurityManager securityManager = (SecurityManager) org.apache.shiro.SecurityUtils.getSecurityManager();
+    SecurityManager scManager = (SecurityManager) org.apache.shiro.SecurityUtils.getSecurityManager();
     
     DefaultSecurityManager defSecurityManager = null;
-    if (securityManager instanceof DefaultSecurityManager) {
+    if (scManager instanceof DefaultSecurityManager) {
       
-      defSecurityManager = (DefaultSecurityManager) securityManager;
+      defSecurityManager = (DefaultSecurityManager) scManager;
       
     } else {
       
