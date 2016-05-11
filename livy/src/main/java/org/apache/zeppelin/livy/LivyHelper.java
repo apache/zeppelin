@@ -62,8 +62,11 @@ public class LivyHelper {
     try {
       String json = executeHTTP(property.getProperty("zeppelin.livy.url") + "/sessions",
           "POST",
-          "{\"kind\": \"" + kind + "\", \"proxyUser\": \""
-              + context.getAuthenticationInfo().getUser() + "\"}",
+          "{" +
+              "\"kind\": \"" + kind + "\", " +
+              "\"master\": \"" + property.getProperty("zeppelin.livy.master") + "\", " +
+              "\"proxyUser\": \"" + context.getAuthenticationInfo().getUser() + "\"" +
+              "}",
           context.getParagraphId()
       );
       Map jsonMap = (Map<Object, Object>) gson.fromJson(json,

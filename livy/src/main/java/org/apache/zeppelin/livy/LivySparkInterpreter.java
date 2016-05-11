@@ -34,6 +34,7 @@ import java.util.Properties;
 public class LivySparkInterpreter extends Interpreter {
 
   static String DEFAULT_URL = "http://localhost:8998";
+  static String LOCAL = "local";
   Logger LOGGER = LoggerFactory.getLogger(LivySparkInterpreter.class);
   private LivyOutputStream out;
 
@@ -44,6 +45,7 @@ public class LivySparkInterpreter extends Interpreter {
         LivySparkInterpreter.class.getName(),
         new InterpreterPropertyBuilder()
             .add("zeppelin.livy.url", DEFAULT_URL, "The URL for Livy Server.")
+            .add("zeppelin.livy.master", LOCAL, "Spark master uri. ex) spark://masterhost:7077")
             .build()
     );
   }
