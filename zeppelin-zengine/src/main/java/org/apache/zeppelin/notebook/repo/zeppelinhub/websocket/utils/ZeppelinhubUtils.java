@@ -68,7 +68,7 @@ public class ZeppelinhubUtils {
              .serialize();
   }
 
-  public static ZeppelinHubOp stringToHubOp(String text) {
+  public static ZeppelinHubOp toZeppelinHubOp(String text) {
     ZeppelinHubOp hubOp = null;
     try {
       hubOp = ZeppelinHubOp.valueOf(text);
@@ -78,11 +78,11 @@ public class ZeppelinhubUtils {
     return hubOp;
   }
 
-  public static boolean isHubOp(String text) {
-    return (stringToHubOp(text) != null); 
+  public static boolean isZeppelinHubOp(String text) {
+    return (toZeppelinHubOp(text) != null); 
   }
 
-  public static Message.OP stringToZeppelinOp(String text) {
+  public static Message.OP toZeppelinOp(String text) {
     Message.OP zeppelinOp = null;
     try {
       zeppelinOp = Message.OP.valueOf(text);
@@ -93,6 +93,6 @@ public class ZeppelinhubUtils {
   }
 
   public static boolean isZeppelinOp(String text) {
-    return (stringToZeppelinOp(text) != null); 
+    return (toZeppelinOp(text) != null); 
   }
 }

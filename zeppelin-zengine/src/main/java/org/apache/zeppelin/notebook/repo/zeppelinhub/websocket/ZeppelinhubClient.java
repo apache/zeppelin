@@ -173,14 +173,14 @@ public class ZeppelinhubClient {
       LOG.error("Message OP from ZeppelinHub isn't string {}", hubMsg.op);
       return;
     }
-    if (ZeppelinhubUtils.isHubOp(op)) {
-      handleHubOpMsg(ZeppelinhubUtils.stringToHubOp(op), hubMsg, message);
+    if (ZeppelinhubUtils.isZeppelinHubOp(op)) {
+      handleZeppelinHubOpMsg(ZeppelinhubUtils.toZeppelinHubOp(op), hubMsg, message);
     } else if (ZeppelinhubUtils.isZeppelinOp(op)) {
-      forwardToZeppelin(ZeppelinhubUtils.stringToZeppelinOp(op), hubMsg);
+      forwardToZeppelin(ZeppelinhubUtils.toZeppelinOp(op), hubMsg);
     }
   }
 
-  private void handleHubOpMsg(ZeppelinHubOp op, ZeppelinhubMessage hubMsg, String msg) {
+  private void handleZeppelinHubOpMsg(ZeppelinHubOp op, ZeppelinhubMessage hubMsg, String msg) {
     if (op == null || msg.equals(ZeppelinhubMessage.EMPTY)) {
       LOG.error("Cannot handle empty op or msg");
       return;
