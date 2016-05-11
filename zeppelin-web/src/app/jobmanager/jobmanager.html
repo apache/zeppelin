@@ -102,15 +102,19 @@ limitations under the License.
 </div>
 <div>
   <select
-          ng-options="option.value as option.name for option in ACTIVE_INTERPRETERS"
-          ng-model="FILTER_VALUE_INTERPRETER"
-          ng-change="debugPrint(FILTER_VALUE_INTERPRETER)">
+    ng-options="option.value as option.name for option in ACTIVE_INTERPRETERS"
+    ng-model="FILTER_VALUE_INTERPRETER"
+    ng-change="doFiltering(jobInfomations, FILTER_VALUE_INTERPRETER, FILTER_VALUE_NOTEBOOK_NAME)">
   </select>
+  <div>
+    <input type="text" ng-model="FILTER_VALUE_NOTEBOOK_NAME"
+      ng-change="doFiltering(jobInfomations, FILTER_VALUE_INTERPRETER, FILTER_VALUE_NOTEBOOK_NAME)"/>
+  </div>
 </div>
 <div>
   <div class="note-jump"></div>
   <div id="{{currentParagraph.id}}_paragraphColumn_main"
-       ng-repeat="notebookJob in jobInfomations | filter: {interpreter : FILTER_VALUE_INTERPRETER}:true"
+       ng-repeat="notebookJob in JobInfomationsByFilter"
        class="paragraph-col">
     <div ng-include src="'app/jobmanager/jobs/job.html'"
          class="job-space box job-margin"

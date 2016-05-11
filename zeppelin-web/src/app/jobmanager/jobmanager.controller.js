@@ -15,23 +15,50 @@
 'use strict';
 
 angular.module('zeppelinWebApp')
+  .filter('myJob', function() {
+
+    function filterContext(JobItems, FILTER_VALUE_INTERPRETER, FILTER_VALUE_NOTEBOOK_NAME) {
+      var filterItems = JobItems;
+      if (FILTER_VALUE_INTERPRETER !== '*') {
+        filterItems = _.where(filterItems, {interpreter : FILTER_VALUE_INTERPRETER});
+        console.log(filterItems)
+      }
+
+      if (FILTER_VALUE_NOTEBOOK_NAME !== "") {
+
+        filterItems = _.filter(filterItems, function(jobItem){
+          var lowerFilterValue = FILTER_VALUE_NOTEBOOK_NAME.toLocaleLowerCase();
+          var lowerNotebookName = jobItem.notebookName.toLocaleLowerCase();
+          return lowerNotebookName.match(new RegExp(".*"+lowerFilterValue+".*"))});
+      }
+
+      return filterItems;
+    }
+
+    return filterContext;
+  })
   .controller('JobmanagerCtrl',
     function($scope, $route, $routeParams, $location, $rootScope, $http,
-             websocketMsgSrv, baseUrlSrv, $timeout, SaveAsService) {
+             websocketMsgSrv, baseUrlSrv, $timeout, SaveAsService, myJobFilter) {
 
-      $scope.debugPrint = function (value) {
-        console.log(value);
+
+      $scope.doFiltering = function (jobInfomations, FILTER_VALUE_INTERPRETER, FILTER_VALUE_NOTEBOOK_NAME) {
+        $scope.JobInfomationsByFilter = $scope.jobTypeFilter(jobInfomations, FILTER_VALUE_INTERPRETER, FILTER_VALUE_NOTEBOOK_NAME)
       };
 
       $scope.init = function () {
-        $scope.FILTER_VALUE_INTERPRETER = /.*/;
+
+        $scope.FILTER_VALUE_NOTEBOOK_NAME = "";
+        $scope.FILTER_VALUE_INTERPRETER = "*";
+        $scope.jobTypeFilter = myJobFilter;
         $scope.ACTIVE_INTERPRETERS = [
           {
             name : 'ALL',
-            value : /.*/
+            value : '*'
           }
         ];
         $scope.jobInfomations = initTestPacket();
+        $scope.JobInfomationsByFilter = $scope.jobInfomations;
 
         var interpreterLists = _.pluck($scope.jobInfomations, 'interpreter');
         for (var index = 0, length = interpreterLists.length; index < length; index++) {
