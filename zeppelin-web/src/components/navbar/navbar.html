@@ -35,7 +35,7 @@ limitations under the License.
     </div>
 
     <div class="collapse navbar-collapse" ng-controller="NavCtrl as navbar">
-      <ul class="nav navbar-nav">
+      <ul class="nav navbar-nav" ng-if="ticket">
         <li class="dropdown" dropdown>
           <a href="#" class="dropdown-toggle" dropdown-toggle>Notebook <span class="caret"></span></a>
           <ul class="dropdown-menu" role="menu">
@@ -61,7 +61,7 @@ limitations under the License.
 
 
       <ul class="nav navbar-nav navbar-right" style="margin-top:10px; margin-right:5px;">
-        <li>
+        <li ng-if="ticket">
         <!--TODO(bzz): move to Typeahead https://angular-ui.github.io/bootstrap  -->
           <form role="search"
             style="width: 300px; display: inline-block; margin: 0 10px"
