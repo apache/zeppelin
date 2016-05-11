@@ -227,6 +227,18 @@ public class InterpreterLogicTest {
     }
 
     @Test
+    public void should_extract_request_timeout_option() throws Exception {
+        //Given
+        List<QueryParameters> options = Arrays.<QueryParameters>asList(new RequestTimeOut(100));
+
+        //When
+        final CassandraQueryOptions actual = helper.extractQueryOptions(toScalaList(options));
+
+        //Then
+        assertThat(actual.requestTimeOut().get()).isEqualTo(100);
+    }
+
+    @Test
     public void should_generate_simple_statement() throws Exception {
         //Given
         String input = "SELECT * FROM users LIMIT 10;";
@@ -234,6 +246,7 @@ public class InterpreterLogicTest {
                 Option.<ConsistencyLevel>empty(),
                 Option.empty(),
                 Option.<RetryPolicy>empty(),
+                Option.empty(),
                 Option.empty());
 
         //When
@@ -255,6 +268,7 @@ public class InterpreterLogicTest {
                 Option.<ConsistencyLevel>empty(),
                 Option.empty(),
                 Option.<RetryPolicy>empty(),
+                Option.empty(),
                 Option.empty());
 
         //When

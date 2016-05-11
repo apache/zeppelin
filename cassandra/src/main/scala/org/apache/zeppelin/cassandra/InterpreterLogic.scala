@@ -48,12 +48,14 @@ import scala.collection.mutable.ArrayBuffer
  * @param timestamp timestamp
  * @param retryPolicy retry policy
  * @param fetchSize query fetch size
+ * @param requestTimeOut request time out in millisecs
  */
 case class CassandraQueryOptions(consistency: Option[ConsistencyLevel],
                                  serialConsistency:Option[ConsistencyLevel],
                                  timestamp: Option[Long],
                                  retryPolicy: Option[RetryPolicy],
-                                 fetchSize: Option[Int])
+                                 fetchSize: Option[Int],
+                                 requestTimeOut: Option[Int])
 
 /**
  * Singleton object to store constants
@@ -275,7 +277,13 @@ class InterpreterLogic(val session: Session)  {
       .flatMap(x => Option(x.value))
       .headOption
 
-    CassandraQueryOptions(consistency,serialConsistency, timestamp, retryPolicy, fetchSize)
+    val requestTimeOut: Option[Int] = parameters
+      .filter(_.paramType == RequestTimeOutParam)
+      .map(_.getParam[RequestTimeOut])
+      .flatMap(x => Option(x.value))
+      .headOption
+
+    CassandraQueryOptions(consistency,serialConsistency, timestamp, retryPolicy, fetchSize, requestTimeOut)
   }
 
   def generateSimpleStatement(st: SimpleStm, options: CassandraQueryOptions,context: InterpreterContext): SimpleStatement = {
@@ -361,6 +369,7 @@ class InterpreterLogic(val session: Session)  {
       case _ => throw new InterpreterException(s"""Unknown retry policy ${options.retryPolicy.getOrElse("???")}""")
     }
     options.fetchSize.foreach(statement.setFetchSize(_))
+    options.requestTimeOut.foreach(statement.setReadTimeoutMillis(_))
   }
 
   private def createBoundStatement(codecRegistry: CodecRegistry, name: String, ps: PreparedStatement, rawBoundValues: String): BoundStatement = {

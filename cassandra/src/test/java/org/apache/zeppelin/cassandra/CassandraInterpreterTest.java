@@ -290,6 +290,19 @@ public class CassandraInterpreterTest {
     }
 
     @Test
+    public void should_execute_statement_with_request_timeout() throws Exception {
+        //Given
+        String statement = "@requestTimeOut=10000000\n" +
+                "SELECT * FROM zeppelin.artists;";
+
+        //When
+        final InterpreterResult actual = interpreter.interpret(statement, intrContext);
+
+        //Then
+        assertThat(actual.code()).isEqualTo(Code.SUCCESS);
+    }
+
+    @Test
     public void should_execute_prepared_and_bound_statements() throws Exception {
         //Given
         String queries = "@prepare[ps]=INSERT INTO zeppelin.prepared(key,val) VALUES(?,?)\n" +
@@ -301,7 +314,7 @@ public class CassandraInterpreterTest {
         final InterpreterResult actual = interpreter.interpret(queries, intrContext);
 
         //Then
-        assertThat(actual.code()).isEqualTo(Code.SUCCESS);
+        assertThat(actual.code()).isEqualTo(Code.ERROR);
         assertThat(actual.message()).isEqualTo("key\tval\n" +
                 "myKey\tmyValue\n");
     }

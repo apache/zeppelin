@@ -182,6 +182,12 @@ class ParagraphParserTest extends FlatSpec
     parsed should matchPattern { case parser.Success(FetchSize(100), _) =>}
   }
 
+  "Parser" should "parse request timeout" in {
+    val query:String ="@requestTimeOut=100"
+    val parsed = parser.parseAll(parser.requestTimeOut, query)
+    parsed should matchPattern { case parser.Success(RequestTimeOut(100), _) =>}
+  }
+
   "Parser" should "fails parsing invalid fetch size" in {
     val query:String =""" @fetchSize=TEST""".stripMargin
     val ex = intercept[InterpreterException] {
