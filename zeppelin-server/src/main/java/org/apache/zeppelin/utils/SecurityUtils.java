@@ -119,6 +119,8 @@ public class SecurityUtils {
       if (realm instanceof SimpleAccountRealm) {
       
         simpleRealm = (SimpleAccountRealm) realm;
+        
+        break;
       
       }
       
