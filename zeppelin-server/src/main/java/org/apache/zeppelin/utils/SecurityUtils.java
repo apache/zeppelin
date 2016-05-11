@@ -18,6 +18,8 @@ package org.apache.zeppelin.utils;
 
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.realm.Realm;
+import org.apache.shiro.mgt.DefaultSecurityManager;
+import org.apache.shiro.mgt.SecurityManager;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 
 import java.net.InetAddress;
@@ -89,7 +91,18 @@ public class SecurityUtils {
     
     boolean state = false;
     
-    org.apache.shiro.mgt.DefaultSecurityManager securityManager = (DefaultSecurityManager) org.apache.shiro.SecurityUtils.getSecurityManager();
+    SecurityManager securityManager = (SecurityManager) org.apache.shiro.SecurityUtils.getSecurityManager();
+    
+    DefaultSecurityManager defSecurityManager = null;
+    if (securityManager instanceof DefaultSecurityManager) {
+      
+      defSecurityManager = (DefaultSecurityManager) securityManager;
+      
+    } else {
+      
+      return true;
+      
+    }
     
     List realms = (List) securityManager.getRealms();
     
@@ -98,7 +111,7 @@ public class SecurityUtils {
     
     while (iter.hasNext()) {
       
-      Realm realm = (Realm)iter.next();
+      Realm realm = (Realm) iter.next();
       
       if (realm instanceof SimpleAccountRealm) {
       
