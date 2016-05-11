@@ -18,6 +18,7 @@ package org.apache.zeppelin.utils;
 
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.realm.Realm;
+import org.apache.shiro.realm.SimpleAccountRealm;
 import org.apache.shiro.mgt.DefaultSecurityManager;
 import org.apache.shiro.mgt.SecurityManager;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
@@ -28,6 +29,8 @@ import java.net.URISyntaxException;
 import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * Tools for securing Zeppelin
@@ -104,7 +107,7 @@ public class SecurityUtils {
       
     }
     
-    List realms = (List) securityManager.getRealms();
+    List realms = (List) defSecurityManager.getRealms();
     
     org.apache.shiro.realm.SimpleAccountRealm simpleRealm = null;
     Iterator iter = (securityManager.getRealms()).iterator();
