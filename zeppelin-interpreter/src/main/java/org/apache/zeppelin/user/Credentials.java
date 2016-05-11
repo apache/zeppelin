@@ -33,15 +33,16 @@ import java.util.Map;
 public class Credentials {
   private static final Logger LOG = LoggerFactory.getLogger(Credentials.class);
 
-  private static Credentials credentials = null;
   private Map<String, UserCredentials> credentialsMap;
   private Gson gson;
   private Boolean credentialsPersist = true;
   File credentialsFile;
 
-  private Credentials(Boolean credentialsPersist, String credentialsPath) {
+  public Credentials(Boolean credentialsPersist, String credentialsPath) {
     this.credentialsPersist = credentialsPersist;
-    credentialsFile = new File(credentialsPath);
+    if (credentialsPath != null) {
+      credentialsFile = new File(credentialsPath);
+    }
     credentialsMap = new HashMap<>();
     if (credentialsPersist) {
       GsonBuilder builder = new GsonBuilder();
@@ -49,17 +50,6 @@ public class Credentials {
       gson = builder.create();
       loadFromFile();
     }
-  }
-
-  public static synchronized void initCredentials(Boolean credentialsPersist,
-                                                        String credentialsPath) {
-    if (credentials == null) {
-      credentials = new Credentials(credentialsPersist, credentialsPath);
-    }
-  }
-
-  public static Credentials getCredentials() {
-    return credentials;
   }
 
   public UserCredentials getUserCredentials(String username) {
@@ -108,7 +98,7 @@ public class Credentials {
   private void saveToFile() throws IOException {
     String jsonString;
 
-    synchronized (credentials) {
+    synchronized (credentialsMap) {
       CredentialsInfoSaving info = new CredentialsInfoSaving();
       info.credentialsMap = credentialsMap;
       jsonString = gson.toJson(info);

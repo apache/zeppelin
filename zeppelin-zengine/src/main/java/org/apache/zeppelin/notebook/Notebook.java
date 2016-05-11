@@ -43,6 +43,7 @@ import org.apache.zeppelin.notebook.repo.NotebookRepoSync;
 import org.apache.zeppelin.resource.ResourcePoolUtils;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.apache.zeppelin.search.SearchService;
+import org.apache.zeppelin.user.Credentials;
 import org.quartz.CronScheduleBuilder;
 import org.quartz.CronTrigger;
 import org.quartz.JobBuilder;
@@ -78,6 +79,7 @@ public class Notebook {
   private NotebookRepo notebookRepo;
   private SearchService notebookIndex;
   private NotebookAuthorization notebookAuthorization;
+  private Credentials credentials;
 
   /**
    * Main constructor \w manual Dependency Injection
@@ -97,7 +99,8 @@ public class Notebook {
       SchedulerFactory schedulerFactory,
       InterpreterFactory replFactory, JobListenerFactory jobListenerFactory,
       SearchService notebookIndex,
-      NotebookAuthorization notebookAuthorization) throws IOException, SchedulerException {
+      NotebookAuthorization notebookAuthorization,
+      Credentials credentials) throws IOException, SchedulerException {
     this.conf = conf;
     this.notebookRepo = notebookRepo;
     this.schedulerFactory = schedulerFactory;
@@ -105,6 +108,7 @@ public class Notebook {
     this.jobListenerFactory = jobListenerFactory;
     this.notebookIndex = notebookIndex;
     this.notebookAuthorization = notebookAuthorization;
+    this.credentials = credentials;
     quertzSchedFact = new org.quartz.impl.StdSchedulerFactory();
     quartzSched = quertzSchedFact.getScheduler();
     quartzSched.start();
@@ -146,7 +150,7 @@ public class Notebook {
    */
   public Note createNote(List<String> interpreterIds) throws IOException {
     NoteInterpreterLoader intpLoader = new NoteInterpreterLoader(replFactory);
-    Note note = new Note(notebookRepo, intpLoader, jobListenerFactory, notebookIndex);
+    Note note = new Note(notebookRepo, intpLoader, jobListenerFactory, notebookIndex, credentials);
     intpLoader.setNoteId(note.id());
     synchronized (notes) {
       notes.put(note.id(), note);
@@ -335,6 +339,7 @@ public class Notebook {
 
     //Manually inject ALL dependencies, as DI constructor was NOT used
     note.setIndex(this.notebookIndex);
+    note.setCredentials(this.credentials);
 
     NoteInterpreterLoader replLoader = new NoteInterpreterLoader(replFactory);
     note.setReplLoader(replLoader);

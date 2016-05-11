@@ -337,9 +337,12 @@ public class Paragraph extends Job implements Serializable, Cloneable {
 
     final Paragraph self = this;
 
-    Credentials credentials = Credentials.getCredentials();
-    UserCredentials userCredentials = credentials.getUserCredentials(authenticationInfo.getUser());
-    authenticationInfo.setUserCredentials(userCredentials);
+    Credentials credentials = note.getCredentials();
+    if (authenticationInfo != null) {
+      UserCredentials userCredentials = credentials.getUserCredentials(
+              authenticationInfo.getUser());
+      authenticationInfo.setUserCredentials(userCredentials);
+    }
 
     InterpreterContext interpreterContext = new InterpreterContext(
             note.id(),

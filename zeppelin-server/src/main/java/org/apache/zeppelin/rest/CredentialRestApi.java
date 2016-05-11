@@ -50,7 +50,11 @@ public class CredentialRestApi {
   private HttpServletRequest servReq;
 
   public CredentialRestApi() {
-    this.credentials = Credentials.getCredentials();
+
+  }
+
+  public CredentialRestApi(Credentials credentials) {
+    this.credentials = credentials;
   }
 
   /**

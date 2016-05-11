@@ -23,9 +23,11 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
@@ -36,9 +38,6 @@ import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
-import org.apache.zeppelin.user.AuthenticationInfo;
-import org.apache.zeppelin.user.UserCredentials;
-import org.apache.zeppelin.user.UsernamePassword;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -75,23 +74,30 @@ public class HiveInterpreter extends Interpreter {
   static final String DEFAULT_PASSWORD = DEFAULT_KEY + DOT + PASSWORD_KEY;
 
   private final HashMap<String, Properties> propertiesMap;
+  private final Map<String, Statement> paragraphIdStatementMap;
+
+  private final Map<String, ArrayList<Connection>> propertyKeyUnusedConnectionListMap;
+  private final Map<String, Connection> paragraphIdConnectionMap;
 
   static {
     Interpreter.register(
-            "hql",
-            "hive",
-            HiveInterpreter.class.getName(),
-            new InterpreterPropertyBuilder()
-                    .add(COMMON_MAX_LINE, MAX_LINE_DEFAULT, "Maximum line of results")
-                    .add(DEFAULT_DRIVER, "org.apache.hive.jdbc.HiveDriver", "Hive JDBC driver")
-                    .add(DEFAULT_URL, "jdbc:hive2://localhost:10000", "The URL for HiveServer2.")
-                    .add(DEFAULT_USER, "hive", "The hive user")
-                    .add(DEFAULT_PASSWORD, "", "The password for the hive user").build());
+        "hql",
+        "hive",
+        HiveInterpreter.class.getName(),
+        new InterpreterPropertyBuilder()
+            .add(COMMON_MAX_LINE, MAX_LINE_DEFAULT, "Maximum line of results")
+            .add(DEFAULT_DRIVER, "org.apache.hive.jdbc.HiveDriver", "Hive JDBC driver")
+            .add(DEFAULT_URL, "jdbc:hive2://localhost:10000", "The URL for HiveServer2.")
+            .add(DEFAULT_USER, "hive", "The hive user")
+            .add(DEFAULT_PASSWORD, "", "The password for the hive user").build());
   }
 
   public HiveInterpreter(Properties property) {
     super(property);
     propertiesMap = new HashMap<>();
+    propertyKeyUnusedConnectionListMap = new HashMap<>();
+    paragraphIdStatementMap = new HashMap<>();
+    paragraphIdConnectionMap = new HashMap<>();
   }
 
   public HashMap<String, Properties> getPropertiesMap() {
@@ -137,25 +143,101 @@ public class HiveInterpreter extends Interpreter {
     logger.debug("propertiesMap: {}", propertiesMap);
   }
 
-  public InterpreterResult executeSql(String propertyKey, String sql,
-                                      String user, String password,
-                                      InterpreterContext interpreterContext) {
-    Connection connection = null;
-    Statement statement = null;
+  @Override
+  public void close() {
     try {
+      for (List<Connection> connectionList : propertyKeyUnusedConnectionListMap.values()) {
+        for (Connection c : connectionList) {
+          c.close();
+        }
+      }
+
+      for (Statement statement : paragraphIdStatementMap.values()) {
+        statement.close();
+      }
+      paragraphIdStatementMap.clear();
+
+      for (Connection connection : paragraphIdConnectionMap.values()) {
+        connection.close();
+      }
+      paragraphIdConnectionMap.clear();
+
+    } catch (SQLException e) {
+      logger.error("Error while closing...", e);
+    }
+  }
+
+  public Connection getConnection(String propertyKey) throws ClassNotFoundException, SQLException {
+    Connection connection = null;
+    if (propertyKey == null || propertiesMap.get(propertyKey) == null) {
+      return null;
+    }
+    if (propertyKeyUnusedConnectionListMap.containsKey(propertyKey)) {
+      ArrayList<Connection> connectionList = propertyKeyUnusedConnectionListMap.get(propertyKey);
+      if (0 != connectionList.size()) {
+        connection = propertyKeyUnusedConnectionListMap.get(propertyKey).remove(0);
+        if (null != connection && connection.isClosed()) {
+          connection.close();
+          connection = null;
+        }
+      }
+    }
+    if (null == connection) {
       Properties properties = propertiesMap.get(propertyKey);
       Class.forName(properties.getProperty(DRIVER_KEY));
       String url = properties.getProperty(URL_KEY);
-      if (user != null) {
+      String user = properties.getProperty(USER_KEY);
+      String password = properties.getProperty(PASSWORD_KEY);
+      if (null != user && null != password) {
         connection = DriverManager.getConnection(url, user, password);
       } else {
         connection = DriverManager.getConnection(url, properties);
       }
-      if (connection == null) {
-        return null;
-      }
+    }
+    return connection;
+  }
 
+  public Statement getStatement(String propertyKey, String paragraphId)
+      throws SQLException, ClassNotFoundException {
+    Connection connection;
+    if (paragraphIdConnectionMap.containsKey(paragraphId)) {
+      // Never enter for now.
+      connection = paragraphIdConnectionMap.get(paragraphId);
+    } else {
+      connection = getConnection(propertyKey);
+    }
+    
+    if (connection == null) {
+      return null;
+    }
+
+    Statement statement = connection.createStatement();
+    if (isStatementClosed(statement)) {
+      connection = getConnection(propertyKey);
       statement = connection.createStatement();
+    }
+    paragraphIdConnectionMap.put(paragraphId, connection);
+    paragraphIdStatementMap.put(paragraphId, statement);
+
+    return statement;
+  }
+
+  private boolean isStatementClosed(Statement statement) {
+    try {
+      return statement.isClosed();
+    } catch (Throwable t) {
+      logger.debug("{} doesn't support isClosed method", statement);
+      return false;
+    }
+  }
+
+  public InterpreterResult executeSql(String propertyKey, String sql,
+                                      InterpreterContext interpreterContext) {
+    String paragraphId = interpreterContext.getParagraphId();
+
+    try {
+
+      Statement statement = getStatement(propertyKey, paragraphId);
 
       if (statement == null) {
         return new InterpreterResult(Code.ERROR, "Prefix not found.");
@@ -207,14 +289,13 @@ public class HiveInterpreter extends Interpreter {
           msg.append(updateCount).append(NEWLINE);
         }
       } finally {
-        if (resultSet != null) {
-          resultSet.close();
-        }
-        if (statement != null) {
+        try {
+          if (resultSet != null) {
+            resultSet.close();
+          }
           statement.close();
-        }
-        if (connection != null) {
-          connection.close();
+        } finally {
+          moveConnectionToUnused(propertyKey, paragraphId);
         }
       }
 
@@ -223,6 +304,21 @@ public class HiveInterpreter extends Interpreter {
     } catch (SQLException | ClassNotFoundException ex) {
       logger.error("Cannot run " + sql, ex);
       return new InterpreterResult(Code.ERROR, ex.getMessage());
+    }
+  }
+
+  private void moveConnectionToUnused(String propertyKey, String paragraphId) {
+    if (paragraphIdConnectionMap.containsKey(paragraphId)) {
+      Connection connection = paragraphIdConnectionMap.remove(paragraphId);
+      if (null != connection) {
+        if (propertyKeyUnusedConnectionListMap.containsKey(propertyKey)) {
+          propertyKeyUnusedConnectionListMap.get(propertyKey).add(connection);
+        } else {
+          ArrayList<Connection> connectionList = new ArrayList<>();
+          connectionList.add(connection);
+          propertyKeyUnusedConnectionListMap.put(propertyKey, connectionList);
+        }
+      }
     }
   }
 
@@ -236,27 +332,9 @@ public class HiveInterpreter extends Interpreter {
 
     cmd = cmd.trim();
 
-    logger.info("PropertyKey: {} User: {} SQL command: '{}'", propertyKey,
-            contextInterpreter.getAuthenticationInfo().getUser(), cmd);
+    logger.info("PropertyKey: {}, SQL command: '{}'", propertyKey, cmd);
 
-    UsernamePassword usernamePassword = null;
-    String username = null;
-    String password = null;
-
-    AuthenticationInfo authenticationInfo = contextInterpreter.getAuthenticationInfo();
-    UserCredentials userCredentials = authenticationInfo.getUserCredentials();
-    logger.info(userCredentials.toString());
-    if (userCredentials != null) {
-      usernamePassword = userCredentials.getUsernamePassword("hive(" + propertyKey + ")");
-    }
-    if (usernamePassword != null) {
-      username = usernamePassword.getUsername();
-      password = usernamePassword.getPassword();
-    }
-    if (username == null) {
-      username = authenticationInfo.getUser();
-    }
-    return executeSql(propertyKey, cmd, username, password, contextInterpreter);
+    return executeSql(propertyKey, cmd, contextInterpreter);
   }
 
   private int getMaxResult() {
@@ -280,13 +358,19 @@ public class HiveInterpreter extends Interpreter {
     }
   }
 
-  public Connection getConnection(String propertyKey) throws ClassNotFoundException, SQLException {
-    return null;
+  @Override
+  public void cancel(InterpreterContext context) {
+    String paragraphId = context.getParagraphId();
+    try {
+      paragraphIdStatementMap.get(paragraphId).cancel();
+    } catch (SQLException e) {
+      logger.error("Error while cancelling...", e);
+    }
   }
 
   @Override
-  public void close() {
-
+  public FormType getFormType() {
+    return FormType.SIMPLE;
   }
 
   @Override
@@ -295,18 +379,9 @@ public class HiveInterpreter extends Interpreter {
   }
 
   @Override
-  public  void cancel(InterpreterContext context) {};
-
-
-  @Override
-  public FormType getFormType() {
-    return FormType.SIMPLE;
-  }
-
-  @Override
   public Scheduler getScheduler() {
     return SchedulerFactory.singleton().createOrGetParallelScheduler(
-        HiveInterpreter.class.getName() + this.hashCode(), 50);
+        HiveInterpreter.class.getName() + this.hashCode(), 10);
   }
 
   @Override
