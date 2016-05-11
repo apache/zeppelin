@@ -26,6 +26,11 @@ import java.io.Writer;
 import java.util.LinkedList;
 import java.util.List;
 
+import com.amazonaws.auth.AWSCredentialsProvider;
+import com.amazonaws.services.s3.AmazonS3EncryptionClient;
+import com.amazonaws.services.s3.model.EncryptionMaterialsProvider;
+import com.amazonaws.services.s3.model.KMSEncryptionMaterialsProvider;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
@@ -37,7 +42,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.amazonaws.AmazonClientException;
-import com.amazonaws.AmazonServiceException;
 import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3Client;
@@ -70,69 +74,95 @@ public class S3NotebookRepo implements NotebookRepo {
   //  3. Credential profiles file at the default location (~/.aws/credentials)
   //       shared by all AWS SDKs and the AWS CLI
   //  4. Instance profile credentials delivered through the Amazon EC2 metadata service
-  private AmazonS3 s3client = new AmazonS3Client(new DefaultAWSCredentialsProviderChain());
-  private static String bucketName = "";
-  private static String endpoint = "";
-  private String user = "";
-
-  private ZeppelinConfiguration conf;
+  private final AmazonS3 s3client;
+  private final String bucketName;
+  private final String user;
+  private final ZeppelinConfiguration conf;
 
   public S3NotebookRepo(ZeppelinConfiguration conf) throws IOException {
     this.conf = conf;
     bucketName = conf.getBucketName();
-    endpoint = conf.getEndpoint();
     user = conf.getUser();
-    
-    s3client.setEndpoint(endpoint);
+
+    // always use the default provider chain
+    AWSCredentialsProvider credentialsProvider = new DefaultAWSCredentialsProviderChain();
+
+    // see if we should be encrypting data in S3
+    String kmsKeyID = conf.getS3KMSKeyID();
+    if (kmsKeyID != null) {
+      // use the AWS KMS to encrypt data
+      KMSEncryptionMaterialsProvider emp = new KMSEncryptionMaterialsProvider(kmsKeyID);
+      this.s3client = new AmazonS3EncryptionClient(credentialsProvider, emp);
+    }
+    else if (conf.getS3EncryptionMaterialsProviderClass() != null) {
+      // use a custom encryption materials provider class
+      EncryptionMaterialsProvider emp = createCustomProvider(conf);
+      this.s3client = new AmazonS3EncryptionClient(credentialsProvider, emp);
+    }
+    else {
+      // regular S3
+      this.s3client = new AmazonS3Client(credentialsProvider);
+    }
+
+    // set S3 endpoint to use
+    s3client.setEndpoint(conf.getEndpoint());
+  }
+
+  /**
+   * Create an instance of a custom encryption materials provider class
+   * which supplies encryption keys to use when reading/writing data in S3.
+   */
+  private EncryptionMaterialsProvider createCustomProvider(ZeppelinConfiguration conf) {
+    // use a custom encryption materials provider class
+    String empClassname = conf.getS3EncryptionMaterialsProviderClass();
+    EncryptionMaterialsProvider emp;
+    try {
+      Object empInstance = Class.forName(empClassname).newInstance();
+      if (empInstance instanceof EncryptionMaterialsProvider) {
+        emp = (EncryptionMaterialsProvider) empInstance;
+      }
+      else {
+        throw new IllegalArgumentException("Class " + empClassname + " does not implement "
+                + EncryptionMaterialsProvider.class.getName());
+      }
+    }
+    catch (Exception e) {
+      throw new RuntimeException("Unable to instantiate encryption materials provider class "
+              + empClassname + ": " + e, e);
+    }
+
+    return emp;
   }
 
   @Override
   public List<NoteInfo> list() throws IOException {
-    List<NoteInfo> infos = new LinkedList<NoteInfo>();
-    NoteInfo info = null;
+    List<NoteInfo> infos = new LinkedList<>();
+    NoteInfo info;
     try {
       ListObjectsRequest listObjectsRequest = new ListObjectsRequest()
-          .withBucketName(bucketName)
-          .withPrefix(user + "/" + "notebook");
+              .withBucketName(bucketName)
+              .withPrefix(user + "/" + "notebook");
       ObjectListing objectListing;
       do {
         objectListing = s3client.listObjects(listObjectsRequest);
 
         for (S3ObjectSummary objectSummary :
-          objectListing.getObjectSummaries()) {
+                objectListing.getObjectSummaries()) {
           if (objectSummary.getKey().contains("note.json")) {
             try {
               info = getNoteInfo(objectSummary.getKey());
               if (info != null) {
                 infos.add(info);
               }
-            } catch (AmazonServiceException ase) {
-              LOG.warn("Caught an AmazonServiceException for some reason.\n" +
-                  "Error Message: {}", ase.getMessage());
-            } catch (AmazonClientException ace) {
-              LOG.info("Caught an AmazonClientException, " +
-                  "which means the client encountered " +
-                  "an internal error while trying to communicate" +
-                  " with S3, " +
-                  "such as not being able to access the network.");
-              LOG.info("Error Message: " + ace.getMessage());
-            } catch (Exception e) {
-              LOG.error("Can't read note ", e);
+            } catch (IOException e) {
+              LOG.error("Unable to read note: " + e, e);
             }
           }
         }
         listObjectsRequest.setMarker(objectListing.getNextMarker());
       } while (objectListing.isTruncated());
-    } catch (AmazonServiceException ase) {
-      LOG.warn("Caught an AmazonServiceException for some reason.\n" +
-          "Error Message: {}", ase.getMessage());
     } catch (AmazonClientException ace) {
-      LOG.info("Caught an AmazonClientException, " +
-          "which means the client encountered " +
-          "an internal error while trying to communicate" +
-          " with S3, " +
-          "such as not being able to access the network.");
-      LOG.info("Error Message: " + ace.getMessage());
+      LOG.error("Unable to list objects in S3: " + ace, ace);
     }
     return infos;
   }
@@ -142,13 +172,13 @@ public class S3NotebookRepo implements NotebookRepo {
     gsonBuilder.setPrettyPrinting();
     Gson gson = gsonBuilder.create();
 
-    S3Object s3object = s3client.getObject(new GetObjectRequest(
-        bucketName, key));
+    S3Object s3object = s3client.getObject(new GetObjectRequest(bucketName, key));
 
-    InputStream ins = s3object.getObjectContent();
-    String json = IOUtils.toString(ins, conf.getString(ConfVars.ZEPPELIN_ENCODING));
-    ins.close();
-    Note note = gson.fromJson(json, Note.class);
+    Note note;
+    try (InputStream ins = s3object.getObjectContent()) {
+      String json = IOUtils.toString(ins, conf.getString(ConfVars.ZEPPELIN_ENCODING));
+      note = gson.fromJson(json, Note.class);
+    }
 
     for (Paragraph p : note.getParagraphs()) {
       if (p.getStatus() == Status.PENDING || p.getStatus() == Status.RUNNING) {
@@ -177,12 +207,15 @@ public class S3NotebookRepo implements NotebookRepo {
     String key = user + "/" + "notebook" + "/" + note.id() + "/" + "note.json";
 
     File file = File.createTempFile("note", "json");
-    file.deleteOnExit();
-    Writer writer = new OutputStreamWriter(new FileOutputStream(file));
-
-    writer.write(json);
-    writer.close();
-    s3client.putObject(new PutObjectRequest(bucketName, key, file));
+    try {
+      Writer writer = new OutputStreamWriter(new FileOutputStream(file));
+      writer.write(json);
+      writer.close();
+      s3client.putObject(new PutObjectRequest(bucketName, key, file));
+    }
+    finally {
+      FileUtils.deleteQuietly(file);
+    }
   }
 
   @Override
