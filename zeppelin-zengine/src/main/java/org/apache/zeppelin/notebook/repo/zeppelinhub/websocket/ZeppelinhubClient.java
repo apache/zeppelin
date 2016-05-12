@@ -115,7 +115,7 @@ public class ZeppelinhubClient {
   
   public void reconnectIfConectionLost() {
     if (!isConnectedToZeppelinhub()) {
-      LOG.info("Zeppelinhub connection is not open, opening it");
+      LOG.debug("Zeppelinhub connection is not open, opening it");
       zeppelinhubSession = connect();
     } else {
       LOG.debug("Connection to Zeppelinhub is still open");
