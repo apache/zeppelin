@@ -1009,6 +1009,7 @@ public class NotebookServer extends WebSocketServlet implements
             new InterpreterResult(InterpreterResult.Code.ERROR, ex.getMessage()),
             ex);
         p.setStatus(Status.ERROR);
+        broadcast(note.id(), new Message(OP.PARAGRAPH).put("paragraph", p));
       }
     }
   }
