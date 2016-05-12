@@ -374,13 +374,13 @@ public abstract class AbstractTestRestApi {
   //Create new Setting and return Setting ID
   protected String createTempSetting(String tempName)
       throws IOException, RepositoryException {
-    InterpreterGroup interpreterGroup = ZeppelinServer.notebook.getInterpreterFactory()
+    InterpreterSetting setting = ZeppelinServer.notebook.getInterpreterFactory()
         .add(tempName,
             "newGroup",
             new LinkedList<Dependency>(),
             new InterpreterOption(false),
             new Properties());
-    return interpreterGroup.getId();
+    return setting.id();
   }
 
   protected TypeSafeMatcher<? super JsonElement> hasRootElementNamed(final String memberName) {

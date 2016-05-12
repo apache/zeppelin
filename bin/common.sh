@@ -105,6 +105,7 @@ if [[ -z "$ZEPPELIN_MEM" ]]; then
 fi
 
 JAVA_OPTS+=" ${ZEPPELIN_JAVA_OPTS} -Dfile.encoding=${ZEPPELIN_ENCODING} ${ZEPPELIN_MEM}"
+JAVA_OPTS+=" -Dlog4j.configuration=file://${ZEPPELIN_CONF_DIR}/log4j.properties"
 export JAVA_OPTS
 
 # jvm options for interpreter process
@@ -117,6 +118,7 @@ if [[ -z "${ZEPPELIN_INTP_MEM}" ]]; then
 fi
 
 JAVA_INTP_OPTS="${ZEPPELIN_INTP_JAVA_OPTS} -Dfile.encoding=${ZEPPELIN_ENCODING}"
+JAVA_INTP_OPTS+=" -Dlog4j.configuration=file://${ZEPPELIN_CONF_DIR}/log4j.properties"
 export JAVA_INTP_OPTS
 
 

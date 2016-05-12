@@ -62,6 +62,19 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     settings = new GUI();
   }
 
+  public Paragraph(String paragraphId, Note note, JobListener listener,
+                   NoteInterpreterLoader replLoader) {
+    super(paragraphId, generateId(), listener);
+    this.note = note;
+    this.replLoader = replLoader;
+    title = null;
+    text = null;
+    authenticationInfo = null;
+    dateUpdated = null;
+    settings = new GUI();
+    config = new HashMap<String, Object>();
+  }
+
   public Paragraph(Note note, JobListener listener, NoteInterpreterLoader replLoader) {
     super(generateId(), listener);
     this.note = note;
@@ -307,8 +320,8 @@ public class Paragraph extends Job implements Serializable, Cloneable {
 
     if (!getNoteReplLoader().getInterpreterSettings().isEmpty()) {
       InterpreterSetting intpGroup = getNoteReplLoader().getInterpreterSettings().get(0);
-      registry = intpGroup.getInterpreterGroup().getAngularObjectRegistry();
-      resourcePool = intpGroup.getInterpreterGroup().getResourcePool();
+      registry = intpGroup.getInterpreterGroup(note.id()).getAngularObjectRegistry();
+      resourcePool = intpGroup.getInterpreterGroup(note.id()).getResourcePool();
     }
 
     List<InterpreterContextRunner> runners = new LinkedList<InterpreterContextRunner>();

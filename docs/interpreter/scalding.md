@@ -72,6 +72,6 @@ If you click on the icon for the pie chart, you should be able to see a chart li
 ![Scalding - Pie - Chart](../assets/themes/zeppelin/img/docs-img/scalding-pie.png)
 
 ### Current Status & Future Work
-The current implementation of the Scalding interpreter does not support canceling jobs, or fine-grained progress updates. 
+The current implementation of the Scalding interpreter does not support canceling jobs, or fine-grained progress updates.
 
 The pre-configured Scalding interpreter only supports Scalding in local mode. Hadoop mode for Scalding is currently unsupported, and will be future work (contributions welcome!).
