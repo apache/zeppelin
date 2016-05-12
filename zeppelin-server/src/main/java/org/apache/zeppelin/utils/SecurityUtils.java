@@ -110,7 +110,7 @@ public class SecurityUtils {
     List realms = (List) defSecurityManager.getRealms();
     
     org.apache.shiro.realm.SimpleAccountRealm simpleRealm = null;
-    Iterator iter = (realms).iterator();
+    Iterator iter = realms.iterator();
     
     while (iter.hasNext()) {
       
