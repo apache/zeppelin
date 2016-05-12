@@ -100,10 +100,6 @@ public class NotebookRestApi {
             "Allowed owners: " + allowed.toString() + "\n\n" +
             "User belongs to: " + current.toString();
   }
-  
-  String userNamePermissionError(String userName) throws IOException {
-    return "User： " + userName + " not Exists，Please Check ！";
-  }
 
   /**
    * set note authorization information
@@ -129,7 +125,9 @@ public class NotebookRestApi {
     
     if (!"".equals(noExistUser)) {
       
-      return new JsonResponse<>(Status.FORBIDDEN, userNamePermissionError(noExistUser)).build();
+      String message = "User： " + userName + " not Exists，Please Check ！";
+      
+      return new JsonResponse<>(Status.FORBIDDEN, userNamePermissionError(message)).build();
       
     }
 
@@ -187,14 +185,12 @@ public class NotebookRestApi {
     
     for (String tmpUser : users) {
       
-      if (!"*".equals(tmpUser)) {
-        if (!org.apache.zeppelin.utils.SecurityUtils.hasUser(tmpUser)) {
+      if (!org.apache.zeppelin.utils.SecurityUtils.hasUser(tmpUser)) {
           
-          userName = tmpUser;
+        userName = tmpUser;
           
-          break;
+        break;
           
-        }
       }
       
     }
