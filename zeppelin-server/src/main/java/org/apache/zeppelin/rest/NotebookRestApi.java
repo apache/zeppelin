@@ -125,7 +125,7 @@ public class NotebookRestApi {
     
     if (!"".equals(noExistUser)) {
       
-      String message = "User： " + userName + " not Exists，Please Check ！";
+      String message = "User： " + noExistUser + " not Exists，Please Check ！";
       
       return new JsonResponse<>(Status.FORBIDDEN, message).build();
       
