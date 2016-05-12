@@ -53,7 +53,7 @@ public class ApplicationLoaderTest {
     ApplicationLoader appLoader = new ApplicationLoader(resourcePool, dep);
 
     HeliumPackage pkg1 = createPackageInfo(MockApplication1.class.getName(), "artifact1");
-    ApplicationContext context1 = createContext("note1", "paragraph1");
+    ApplicationContext context1 = createContext("note1", "paragraph1", "app1");
 
     // when load application
     MockApplication1 app = (MockApplication1) ((ClassLoaderApplication)
@@ -82,10 +82,11 @@ public class ApplicationLoaderTest {
     return app1;
   }
 
-  public ApplicationContext createContext(String noteId, String paragraphId) {
+  public ApplicationContext createContext(String noteId, String paragraphId, String appInstanceId) {
     ApplicationContext context1 = new ApplicationContext(
         noteId,
         paragraphId,
+        appInstanceId,
         null,
         new InterpreterOutput(new InterpreterOutputListener() {
           @Override

@@ -783,6 +783,7 @@ public class RemoteInterpreterServer
     return new ApplicationContext(
         noteId,
         paragraphId,
+        applicationInstanceId,
         new HeliumAppAngularObjectRegistry(angularObjectRegistry, noteId, applicationInstanceId),
         out);
   }

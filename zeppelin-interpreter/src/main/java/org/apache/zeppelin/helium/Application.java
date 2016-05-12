@@ -48,4 +48,48 @@ public abstract class Application {
    * this method is invoked just before application is removed
    */
   public abstract void unload() throws ApplicationException;
+
+  public void print(String string) throws IOException {
+    context.out.write(string);
+  }
+
+  public void println(String string) throws IOException {
+    print(string + "\n");
+  }
+
+  public void printResource(String resourceName) throws IOException {
+    context.out.writeResource(resourceName);
+  }
+
+  public void printResourceAsJavascript(String resourceName) throws IOException {
+    beginJavascript();
+    context.out.writeResource(resourceName);
+    endJavascript();
+  }
+
+  public void printStringAsJavascript(String js) throws IOException {
+    beginJavascript();
+    context.out.write(js);
+    endJavascript();
+  }
+
+  private void beginJavascript() throws IOException {
+    StringBuffer js = new StringBuffer();
+    js.append("\n<script id=\"app_js_" + js.hashCode() + "\">\n");
+    js.append("(function() {\n");
+    js.append("var $z = {\n");
+    js.append("id : \"" + context.getApplicationInstanceId() + "\",\n");
+    js.append("scope : angular.element(\"#app_js_" + js.hashCode() + "\").scope()\n");
+    js.append("};\n");
+    js.append("$z.result = ($z.scope._devmodeResult) ? " +
+        "$z.scope._devmodeResult : $z.scope.$parent.paragraph.result;\n");
+    context.out.write(js.toString());
+  }
+
+  private void endJavascript() throws IOException {
+    StringBuffer js = new StringBuffer();
+    js.append("\n})();\n");
+    js.append("</script>\n");
+    context.out.write(js.toString());
+  }
 }

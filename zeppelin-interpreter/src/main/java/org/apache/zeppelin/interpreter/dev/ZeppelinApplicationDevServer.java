@@ -21,6 +21,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 
+import com.google.gson.Gson;
 import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Level;
 import org.apache.log4j.PatternLayout;
@@ -29,6 +30,7 @@ import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterEventClient;
 import org.apache.zeppelin.resource.ResourceSet;
+import org.apache.zeppelin.resource.WellKnownResourceName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -94,6 +96,7 @@ public class ZeppelinApplicationDevServer extends ZeppelinDevServer {
       logger.info("Run " + className);
       app.context().out.clear();
       app.context().out.setType(InterpreterResult.Type.ANGULAR);
+      transferTableResultDataToFrontend();
       app.run(resourceSet);
     } catch (IOException | ApplicationException e) {
       logger.error(e.getMessage(), e);
@@ -102,10 +105,29 @@ public class ZeppelinApplicationDevServer extends ZeppelinDevServer {
     return new InterpreterResult(Code.SUCCESS, "");
   }
 
+  private void transferTableResultDataToFrontend() throws IOException {
+    ResourceSet results = resourceSet.filterByClassname(InterpreterResult.class.getName());
+    if (results.size() == 0) {
+      return;
+    }
+
+    InterpreterResult result = (InterpreterResult) results.get(0).get();
+    Gson gson = new Gson();
+    String resultJson = gson.toJson(result);
+    StringBuffer transferResult = new StringBuffer();
+    transferResult.append("$z.result = " + resultJson + ";\n");
+    if (result.type() == InterpreterResult.Type.TABLE) {
+      transferResult.append("$z.scope.loadTableData($z.result);\n");
+    }
+    transferResult.append("$z.scope._devmodeResult = $z.result;\n");
+    app.printStringAsJavascript(transferResult.toString());
+  }
+
   ApplicationContext getApplicationContext(InterpreterContext interpreterContext) {
     return new ApplicationContext(
         interpreterContext.getNoteId(),
         interpreterContext.getParagraphId(),
+        "app_" + this.hashCode(),
         new HeliumAppAngularObjectRegistry(
             interpreterContext.getAngularObjectRegistry(),
             interpreterContext.getNoteId(),
