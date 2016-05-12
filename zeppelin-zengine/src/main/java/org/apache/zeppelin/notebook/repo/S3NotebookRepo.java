@@ -112,7 +112,7 @@ public class S3NotebookRepo implements NotebookRepo {
    * Create an instance of a custom encryption materials provider class
    * which supplies encryption keys to use when reading/writing data in S3.
    */
-  private EncryptionMaterialsProvider createCustomProvider(ZeppelinConfiguration conf) {
+  private EncryptionMaterialsProvider createCustomProvider(ZeppelinConfiguration conf) throws IOException {
     // use a custom encryption materials provider class
     String empClassname = conf.getS3EncryptionMaterialsProviderClass();
     EncryptionMaterialsProvider emp;
@@ -122,12 +122,12 @@ public class S3NotebookRepo implements NotebookRepo {
         emp = (EncryptionMaterialsProvider) empInstance;
       }
       else {
-        throw new IllegalArgumentException("Class " + empClassname + " does not implement "
+        throw new IOException("Class " + empClassname + " does not implement "
                 + EncryptionMaterialsProvider.class.getName());
       }
     }
     catch (Exception e) {
-      throw new RuntimeException("Unable to instantiate encryption materials provider class "
+      throw new IOException("Unable to instantiate encryption materials provider class "
               + empClassname + ": " + e, e);
     }
 
@@ -145,24 +145,18 @@ public class S3NotebookRepo implements NotebookRepo {
       ObjectListing objectListing;
       do {
         objectListing = s3client.listObjects(listObjectsRequest);
-
-        for (S3ObjectSummary objectSummary :
-                objectListing.getObjectSummaries()) {
-          if (objectSummary.getKey().contains("note.json")) {
-            try {
-              info = getNoteInfo(objectSummary.getKey());
-              if (info != null) {
-                infos.add(info);
-              }
-            } catch (IOException e) {
-              LOG.error("Unable to read note: " + e, e);
+        for (S3ObjectSummary objectSummary : objectListing.getObjectSummaries()) {
+          if (objectSummary.getKey().endsWith("note.json")) {
+            info = getNoteInfo(objectSummary.getKey());
+            if (info != null) {
+              infos.add(info);
             }
           }
         }
         listObjectsRequest.setMarker(objectListing.getNextMarker());
       } while (objectListing.isTruncated());
     } catch (AmazonClientException ace) {
-      LOG.error("Unable to list objects in S3: " + ace, ace);
+      throw new IOException("Unable to list objects in S3: " + ace, ace);
     }
     return infos;
   }
@@ -172,7 +166,13 @@ public class S3NotebookRepo implements NotebookRepo {
     gsonBuilder.setPrettyPrinting();
     Gson gson = gsonBuilder.create();
 
-    S3Object s3object = s3client.getObject(new GetObjectRequest(bucketName, key));
+    S3Object s3object;
+    try {
+      s3object = s3client.getObject(new GetObjectRequest(bucketName, key));
+    }
+    catch (AmazonClientException ace) {
+      throw new IOException("Unable to retrieve object from S3: " + ace, ace);
+    }
 
     Note note;
     try (InputStream ins = s3object.getObjectContent()) {
@@ -185,6 +185,7 @@ public class S3NotebookRepo implements NotebookRepo {
         p.setStatus(Status.ABORT);
       }
     }
+
     return note;
   }
 
@@ -213,6 +214,9 @@ public class S3NotebookRepo implements NotebookRepo {
       writer.close();
       s3client.putObject(new PutObjectRequest(bucketName, key, file));
     }
+    catch (AmazonClientException ace) {
+      throw new IOException("Unable to store note in S3: " + ace, ace);
+    }
     finally {
       FileUtils.deleteQuietly(file);
     }
@@ -224,13 +228,18 @@ public class S3NotebookRepo implements NotebookRepo {
     final ListObjectsRequest listObjectsRequest = new ListObjectsRequest()
         .withBucketName(bucketName).withPrefix(key);
 
-    ObjectListing objects = s3client.listObjects(listObjectsRequest);
-    do {
-      for (S3ObjectSummary objectSummary : objects.getObjectSummaries()) {
-        s3client.deleteObject(bucketName, objectSummary.getKey());
-      }
-      objects = s3client.listNextBatchOfObjects(objects);
-    } while (objects.isTruncated());
+    try {
+      ObjectListing objects = s3client.listObjects(listObjectsRequest);
+      do {
+        for (S3ObjectSummary objectSummary : objects.getObjectSummaries()) {
+          s3client.deleteObject(bucketName, objectSummary.getKey());
+        }
+        objects = s3client.listNextBatchOfObjects(objects);
+      } while (objects.isTruncated());
+    }
+    catch (AmazonClientException ace) {
+      throw new IOException("Unable to remove note in S3: " + ace, ace);
+    }
   }
 
   @Override
