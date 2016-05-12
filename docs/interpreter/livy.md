@@ -23,6 +23,11 @@ Livy is an open source REST interface for interacting with Spark from anywhere. 
     <th>Description</th>
   </tr>
   <tr>
+      <td>zeppelin.livy.master</td>
+      <td>local[*]</td>
+      <td>Spark master uri. ex) spark://masterhost:7077</td>
+    </tr>
+  <tr>
     <td>zeppelin.livy.url</td>
     <td>http://localhost:8998</td>
     <td>URL where livy server is running</td>

@@ -34,7 +34,7 @@ import java.util.Properties;
 public class LivySparkInterpreter extends Interpreter {
 
   static String DEFAULT_URL = "http://localhost:8998";
-  static String LOCAL = "local";
+  static String LOCAL = "local[*]";
   Logger LOGGER = LoggerFactory.getLogger(LivySparkInterpreter.class);
   private LivyOutputStream out;
 
