@@ -127,7 +127,7 @@ public class NotebookRestApi {
       
       String message = "User： " + userName + " not Exists，Please Check ！";
       
-      return new JsonResponse<>(Status.FORBIDDEN, userNamePermissionError(message)).build();
+      return new JsonResponse<>(Status.FORBIDDEN, message).build();
       
     }
 
