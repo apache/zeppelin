@@ -364,7 +364,9 @@ angular.module('zeppelinWebApp')
       var newType = $scope.getResultType(data.paragraph);
       var oldGraphMode = $scope.getGraphMode();
       var newGraphMode = $scope.getGraphMode(data.paragraph);
-      var resultRefreshed = (data.paragraph.dateFinished !== $scope.paragraph.dateFinished) || isEmpty(data.paragraph.result) !== isEmpty($scope.paragraph.result);
+      var resultRefreshed = (data.paragraph.dateFinished !== $scope.paragraph.dateFinished) ||
+        isEmpty(data.paragraph.result) !== isEmpty($scope.paragraph.result) ||
+        data.paragraph.status === 'ERROR';
 
       var statusChanged = (data.paragraph.status !== $scope.paragraph.status);
 
