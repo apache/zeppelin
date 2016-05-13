@@ -16,17 +16,18 @@ describe('Factory: NotebookList', function() {
     var notesList = [
       {name: 'A', id: '000001'},
       {name: 'B', id: '000002'},
-      {id: '000003'}, // notebook without name
+      {id: '000003'},                     // notebook without name
       {name: '/C/CA', id: '000004'},
       {name: '/C/CB', id: '000005'},
       {name: '/C/CB/CBA', id: '000006'},  // same name with a dir
-      {name: '/C/CB/CBA', id: '000007'}, // same name with another note
-      {name: 'C///CB//CBB', id: '000008'}
+      {name: '/C/CB/CBA', id: '000007'},  // same name with another note
+      {name: 'C///CB//CBB', id: '000008'},
+      {name: 'D/D[A/DA]B', id:'000009'}   // check if '[' and ']' considered as folder seperator      
     ];
     notebookList.setNotes(notesList);
 
     var flatList = notebookList.flatList;
-    expect(flatList.length).toBe(8);
+    expect(flatList.length).toBe(9);
     expect(flatList[0].name).toBe('A');
     expect(flatList[0].id).toBe('000001');
     expect(flatList[1].name).toBe('B');
@@ -36,9 +37,10 @@ describe('Factory: NotebookList', function() {
     expect(flatList[5].name).toBe('/C/CB/CBA');
     expect(flatList[6].name).toBe('/C/CB/CBA');
     expect(flatList[7].name).toBe('C///CB//CBB');
+    expect(flatList[8].name).toBe('D/D[A/DA]B');
 
     var folderList = notebookList.root.children;
-    expect(folderList.length).toBe(4);
+    expect(folderList.length).toBe(5);
     expect(folderList[0].name).toBe('A');
     expect(folderList[0].id).toBe('000001');
     expect(folderList[1].name).toBe('B');
@@ -64,6 +66,14 @@ describe('Factory: NotebookList', function() {
     expect(folderList[3].children[2].children[2].name).toBe('CBB');
     expect(folderList[3].children[2].children[2].id).toBe('000008');
     expect(folderList[3].children[2].children[2].children).toBeUndefined();
+    expect(folderList[4].name).toBe('D');
+    expect(folderList[4].id).toBeUndefined();
+    expect(folderList[4].children.length).toBe(1);
+    expect(folderList[4].children[0].name).toBe('D[A');
+    expect(folderList[4].children[0].id).toBeUndefined();
+    expect(folderList[4].children[0].children[0].name).toBe('DA]B');
+    expect(folderList[4].children[0].children[0].id).toBe('000009');
+    expect(folderList[4].children[0].children[0].children).toBeUndefined();
   });
 
 });
