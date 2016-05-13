@@ -354,6 +354,7 @@ table.dataTable.table-condensed .sorting_desc:after {
 
 .tableDisplay .option .columns ul {
   background: white;
+  overflow: auto;
   width: auto;
   padding: 3px 3px 3px 3px;
   height: 150px;
