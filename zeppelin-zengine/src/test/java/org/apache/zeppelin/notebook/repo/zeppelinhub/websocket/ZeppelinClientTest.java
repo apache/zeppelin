@@ -53,7 +53,7 @@ public class ZeppelinClientTest {
       return;
     }
     // Initialize and start Zeppelin client
-    ZeppelinClient client = ZeppelinClient.initialize(validWebsocketUrl, "dummy token");
+    ZeppelinClient client = ZeppelinClient.initialize(validWebsocketUrl, "dummy token", null);
     client.start();
     LOG.info("Zeppelin websocket client started");
 
@@ -85,7 +85,7 @@ public class ZeppelinClientTest {
   public void zeppelinClientSingletonTest() {
     ZeppelinClient client1 = ZeppelinClient.getInstance();
     if (client1 == null) {
-      client1 = ZeppelinClient.initialize(validWebsocketUrl, "TOKEN");
+      client1 = ZeppelinClient.initialize(validWebsocketUrl, "TOKEN", null);
     }
     assertNotNull(client1);
     ZeppelinClient client2 = ZeppelinClient.getInstance();
@@ -98,7 +98,7 @@ public class ZeppelinClientTest {
     Message msg = new Message(OP.LIST_NOTES);
     msg.data = Maps.newHashMap();
     msg.data.put("key", "value");
-    ZeppelinClient client = ZeppelinClient.initialize(validWebsocketUrl, "TOKEN");
+    ZeppelinClient client = ZeppelinClient.initialize(validWebsocketUrl, "TOKEN", null);
     String serializedMsg = client.serialize(msg);
     Message deserializedMsg = client.deserialize(serializedMsg);
     assertEquals(msg.op, deserializedMsg.op);
@@ -111,7 +111,7 @@ public class ZeppelinClientTest {
 
   @Test
   public void sendToZeppelinTest() {
-    ZeppelinClient client = ZeppelinClient.initialize(validWebsocketUrl, "TOKEN");
+    ZeppelinClient client = ZeppelinClient.initialize(validWebsocketUrl, "TOKEN", null);
     client.start();
     Message msg = new Message(OP.LIST_NOTES);
     msg.data = Maps.newHashMap();

@@ -28,6 +28,7 @@ import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.apache.zeppelin.notebook.repo.zeppelinhub.rest.ZeppelinhubRestApiHandler;
+import org.apache.zeppelin.notebook.repo.zeppelinhub.security.Authentication;
 import org.apache.zeppelin.notebook.repo.zeppelinhub.websocket.Client;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,10 +59,10 @@ public class ZeppelinHubRepo implements NotebookRepo {
     zeppelinhubHandler = ZeppelinhubRestApiHandler.newInstance(zeppelinHubUrl, token);
 
     websocketClient = Client.initialize(getZeppelinWebsocketUri(conf),
-        getZeppelinhubWebsocketUri(conf), token);
+        getZeppelinhubWebsocketUri(conf), token, conf);
     websocketClient.start();
   }
-  
+
   private String getZeppelinHubWsUri(URI api) throws IOException {
     URI apiRoot = api;
     String scheme = apiRoot.getScheme();

@@ -25,8 +25,11 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
+import org.apache.zeppelin.notebook.repo.zeppelinhub.security.Authentication;
 import org.apache.zeppelin.notebook.repo.zeppelinhub.websocket.listener.ZeppelinWebsocket;
 import org.apache.zeppelin.notebook.repo.zeppelinhub.websocket.protocol.ZeppelinhubMessage;
+import org.apache.zeppelin.notebook.repo.zeppelinhub.websocket.scheduler.SchedulerService;
 import org.apache.zeppelin.notebook.socket.Message;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.websocket.api.Session;
@@ -51,9 +54,12 @@ public class ZeppelinClient {
   private ConcurrentHashMap<String, Session> zeppelinConnectionMap;
   private static ZeppelinClient instance = null;
 
-  public static ZeppelinClient initialize(String zeppelinUrl, String token) {
+  private Authentication authModule;
+
+  public static ZeppelinClient initialize(String zeppelinUrl, String token, 
+      ZeppelinConfiguration conf) {
     if (instance == null) {
-      instance = new ZeppelinClient(zeppelinUrl, token);
+      instance = new ZeppelinClient(zeppelinUrl, token, conf);
     }
     return instance;
   }
@@ -62,12 +68,16 @@ public class ZeppelinClient {
     return instance;
   }
 
-  private ZeppelinClient(String zeppelinUrl, String token) {
+  private ZeppelinClient(String zeppelinUrl, String token, ZeppelinConfiguration conf) {
     zeppelinWebsocketUrl = URI.create(zeppelinUrl);
     zeppelinhubToken = token;
     wsClient = createNewWebsocketClient();
     gson = new Gson();
     zeppelinConnectionMap = new ConcurrentHashMap<>();
+    authModule = Authentication.initialize(token, conf);
+    if (authModule != null) {
+      SchedulerService.getInstance().addOnce(authModule, 10);
+    }
     LOG.info("Initialized Zeppelin websocket client on {}", zeppelinWebsocketUrl);
   }
 
@@ -104,9 +114,17 @@ public class ZeppelinClient {
   }
 
   public String serialize(Message zeppelinMsg) {
-    // TODO(khalid): handle authentication
+    if (credentialsAvailable()) {
+      zeppelinMsg.principal = authModule.getPrincipal();
+      zeppelinMsg.ticket = authModule.getTicket();
+      zeppelinMsg.roles = authModule.getRoles();
+    }
     String msg = gson.toJson(zeppelinMsg);
     return msg;
+  }
+
+  private boolean credentialsAvailable() {
+    return Authentication.getInstance() != null && Authentication.getInstance().isAuthenticated();
   }
 
   public Message deserialize(String zeppelinMessage) {

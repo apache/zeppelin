@@ -16,6 +16,7 @@
  */
 package org.apache.zeppelin.notebook.repo.zeppelinhub.websocket;
 
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.socket.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,9 +31,10 @@ public class Client {
   private final ZeppelinClient zeppelinClient;
   private static Client instance = null;
 
-  public static Client initialize(String zeppelinUri, String zeppelinhubUri, String token) {
+  public static Client initialize(String zeppelinUri, String zeppelinhubUri, String token, 
+      ZeppelinConfiguration conf) {
     if (instance == null) {
-      instance = new Client(zeppelinUri, zeppelinhubUri, token);
+      instance = new Client(zeppelinUri, zeppelinhubUri, token, conf);
     }
     return instance;
   }
@@ -41,10 +43,11 @@ public class Client {
     return instance;
   }
 
-  private Client(String zeppelinUri, String zeppelinhubUri, String token) {
+  private Client(String zeppelinUri, String zeppelinhubUri, String token,
+      ZeppelinConfiguration conf) {
     LOG.debug("Init Client");
     zeppelinhubClient = ZeppelinhubClient.initialize(zeppelinhubUri, token);
-    zeppelinClient = ZeppelinClient.initialize(zeppelinUri, token);
+    zeppelinClient = ZeppelinClient.initialize(zeppelinUri, token, conf);
   }
 
   public void start() {
