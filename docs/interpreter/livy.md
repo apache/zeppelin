@@ -74,6 +74,8 @@ hello <- function( name ) {
 hello("livy")
 ```
 
+## Impersonation
+When Zeppelin server is running with authentication enabled, then this interpreter utilizes Livy’s user impersonation feature i.e. sends extra parameter for creating and running a session ("proxyUser": "${loggedInUser}"). This is particularly useful when multi users are sharing a Notebook server.
 
 
 ### Apply Zeppelin Dynamic Forms
