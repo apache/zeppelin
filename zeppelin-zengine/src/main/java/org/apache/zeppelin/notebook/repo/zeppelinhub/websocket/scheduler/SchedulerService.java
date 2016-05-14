@@ -25,21 +25,36 @@ import java.util.concurrent.TimeUnit;
  *
  */
 public class SchedulerService {
-  
+
   private final ScheduledExecutorService pool;
-  
+  private static SchedulerService instance = null;
+
   private SchedulerService(int numberOfThread) {
     pool = Executors.newScheduledThreadPool(numberOfThread);
   }
-  
+
   public static SchedulerService create(int numberOfThread) {
-    return new SchedulerService(numberOfThread);
+    if (instance == null) {
+      instance = new SchedulerService(numberOfThread);
+    }
+    return instance;
   }
-  
+
+  public static SchedulerService getInstance() {
+    if (instance == null) {
+      instance = new SchedulerService(2);
+    }
+    return instance;
+  }
+
   public void add(Runnable service, int firstExecution, int period) {
     pool.scheduleAtFixedRate(service, firstExecution, period, TimeUnit.SECONDS);
   }
-  
+
+  public void addOnce(Runnable service, int firstExecution) {
+    pool.schedule(service, firstExecution, TimeUnit.SECONDS);
+  }
+
   public void close() {
     pool.shutdown();
   }
