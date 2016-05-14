@@ -15,6 +15,13 @@ Livy is an open source REST interface for interacting with Spark from anywhere. 
 * Can be used for submitting jobs from anywhere with REST
 * Does not require any code change to your programs
 
+### Requirements
+
+Additional requirements for the Livy interpreter are:
+
+ * Spark 1.3 or above.
+ * Livy server.
+
 ### Configuration
 <table class="table-configuration">
   <tr>
