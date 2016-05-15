@@ -425,7 +425,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
   }
 
   private String getApplicationId(HeliumPackage pkg) {
-    return "app_" + getNote().getId() + "-" + getId() + pkg.getName();
+    return "app_" + getNote().getId() + "-" + getId() + pkg.getName().replaceAll("\\.", "_");
   }
 
   public ApplicationState createOrGetApplicationState(HeliumPackage pkg) {
