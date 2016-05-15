@@ -77,7 +77,7 @@ public abstract class Application {
     StringBuffer js = new StringBuffer();
     js.append("\n<script id=\"app_js_" + js.hashCode() + "\">\n");
     js.append("(function() {\n");
-    js.append("var $z = {\n");
+    js.append("let $z = {\n");
     js.append("id : \"" + context.getApplicationInstanceId() + "\",\n");
     js.append("scope : angular.element(\"#app_js_" + js.hashCode() + "\").scope()\n");
     js.append("};\n");
