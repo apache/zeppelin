@@ -68,38 +68,10 @@
         </configuration>
       </plugin>
 
-      <!-- plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-shade-plugin</artifactId>
-        <version>2.3</version>
-        <executions>
-          <execution>
-            <phase>package</phase>
-            <goals>
-              <goal>shade</goal>
-            </goals>
-
-            <configuration>
-              <artifactSet>
-                <excludes>
-                  <exclude>org.apache.zeppelin:zeppelin-interpreter</exclude>
-                </excludes>
-              </artifactSet>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin -->
-
       <plugin>
         <artifactId>maven-clean-plugin</artifactId>
         <configuration>
           <filesets>
-            <!-- fileset>
-              <directory>${project.basedir}/../../lib</directory>
-              <includes>
-                <include>${project.artifactId}-${project.version}.jar</include>
-              </includes>
-            </fileset -->
             <fileset>
               <directory>${project.basedir}/../../helium</directory>
               <includes>
@@ -109,35 +81,6 @@
           </filesets>
         </configuration>
       </plugin>
-
-      <!-- plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-dependency-plugin</artifactId>
-        <version>2.8</version>
-        <executions>
-          <execution>
-            <phase>package</phase>
-            <goals>
-              <goal>copy</goal>
-            </goals>
-            <configuration>
-              <outputDirectory>${project.basedir}/../../lib</outputDirectory>
-              <overWriteReleases>false</overWriteReleases>
-              <overWriteSnapshots>false</overWriteSnapshots>
-              <overWriteIfNewer>true</overWriteIfNewer>
-              <includeScope>runtime</includeScope>
-              <artifactItems>
-                <artifactItem>
-                  <groupId>${project.groupId}</groupId>
-                  <artifactId>${project.artifactId}</artifactId>
-                  <version>${project.version}</version>
-                  <type>${project.packaging}</type>
-                </artifactItem>
-              </artifactItems>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin -->
 
       <plugin>
         <artifactId>maven-resources-plugin</artifactId>
@@ -163,8 +106,6 @@
           </execution>
         </executions>
       </plugin>
-      
     </plugins>
   </build>
-
 </project>
