@@ -36,6 +36,7 @@
 
   <modules>
     <module>zeppelin-example-clock</module>
+    <module>zeppelin-example-horizontalbar</module>
   </modules>
   
   <build>
