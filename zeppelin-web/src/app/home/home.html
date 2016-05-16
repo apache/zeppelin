@@ -43,7 +43,7 @@ limitations under the License.
       You can make beautiful data-driven, interactive, collaborative document with SQL, code and even more!<br>
 
       <div class="row">
-        <div class="col-md-4">
+        <div class="col-md-4" ng-if="ticket">
           <h4>Notebook
             <i ng-class="isReloadingNotes ? 'fa fa-refresh fa-spin' : 'fa fa-refresh'"
               ng-style="!isReloadingNotes && {'cursor': 'pointer'}" style="font-size: 13px;"

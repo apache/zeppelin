@@ -70,10 +70,10 @@ angular.module('zeppelinWebApp').controller('NavCtrl', function($scope, $rootSco
     $scope.checkUsername();
     loadNotes();
   });
-  
+
   $scope.logout = function() {
-    $http.post(baseUrlSrv.getRestApiBase()+'/login/logout').
-      success(function(data, status, headers, config) {
+    $http.post(baseUrlSrv.getRestApiBase()+'/login/logout')
+      .success(function(data, status, headers, config) {
         $rootScope.userName = '';
         $rootScope.ticket.principal = '';
         $rootScope.ticket.ticket = '';
@@ -81,11 +81,14 @@ angular.module('zeppelinWebApp').controller('NavCtrl', function($scope, $rootSco
         BootstrapDialog.show({
            message: 'Logout Success'
         });
+        setTimeout(function() {
+          window.location = '#';
+          window.location.reload();
+        }, 1000);
       }).
       error(function(data, status, headers, config) {
         console.log('Error %o %o', status, data.message);
       });
-    
   };
 
   $scope.search = function() {
