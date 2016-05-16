@@ -756,5 +756,31 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     ZeppelinServer.notebook.removeNote(note2.getId());
   }
 
+  @Test
+  public void testTitleSearch() throws IOException {
+    Note note = ZeppelinServer.notebook.createNote();
+    String jsonRequest = "{\"title\": \"testTitleSearchOfParagraph\", \"text\": \"ThisIsToTestSearchMethodWithTitle \"}";
+    PostMethod postNotebookText = httpPost("/notebook/" + note.getId() + "/paragraph", jsonRequest);
+    postNotebookText.releaseConnection();
+
+    GetMethod searchNotebook = httpGet("/notebook/search?q='testTitleSearchOfParagraph'");
+    searchNotebook.addRequestHeader("Origin", "http://localhost");
+    Map<String, Object> respSearchResult = gson.fromJson(searchNotebook.getResponseBodyAsString(),
+        new TypeToken<Map<String, Object>>() {
+        }.getType());
+    ArrayList searchBody = (ArrayList) respSearchResult.get("body");
+
+    int numberOfTitleHits = 0;
+    for (int i = 0; i < searchBody.size(); i++) {
+      Map<String, String> searchResult = (Map<String, String>) searchBody.get(i);
+      if (searchResult.get("header").contains("testTitleSearchOfParagraph")) {
+        numberOfTitleHits++;
+      }
+    }
+    assertEquals("Paragraph title hits must be at-least one", true, numberOfTitleHits >= 1);
+    searchNotebook.releaseConnection();
+    ZeppelinServer.notebook.removeNote(note.getId());
+  }
+
 }
 

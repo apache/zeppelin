@@ -2,9 +2,7 @@
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
-
     http://www.apache.org/licenses/LICENSE-2.0
-
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -37,7 +35,7 @@ limitations under the License.
     </div>
 
     <div class="collapse navbar-collapse" ng-controller="NavCtrl as navbar">
-      <ul class="nav navbar-nav">
+      <ul class="nav navbar-nav" ng-if="ticket">
         <li class="dropdown" dropdown>
           <a href="#" class="dropdown-toggle" dropdown-toggle>Notebook <span class="caret"></span></a>
           <ul class="dropdown-menu" role="menu">
@@ -63,7 +61,7 @@ limitations under the License.
 
 
       <ul class="nav navbar-nav navbar-right" style="margin-top:10px; margin-right:5px;">
-        <li>
+        <li ng-if="ticket">
         <!--TODO(bzz): move to Typeahead https://angular-ui.github.io/bootstrap  -->
           <form role="search"
             style="width: 300px; display: inline-block; margin: 0 10px"
@@ -95,6 +93,9 @@ limitations under the License.
         </li>
         <li ng-if="!ticket">
             <button class="btn btn-default" data-toggle="modal" data-target="#loginModal" ng-click="showLoginWindow()" style="margin-left: 10px">Login</button>
+        </li>
+        <li ng-show="ticket.principal && ticket.principal!='anonymous'" style="left: 5px;">
+        	<button class="btn btn-default" ng-click="logout()" tooltip-placement="bottom" tooltip="logout">Logout</button>
         </li>
       </ul>
     </div>
