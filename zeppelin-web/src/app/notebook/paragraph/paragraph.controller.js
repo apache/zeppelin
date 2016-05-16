@@ -969,7 +969,8 @@ angular.module('zeppelinWebApp')
       return '';
     }
     var user = 'anonymous';
-    if (pdata.authenticationInfo !== null && pdata.authenticationInfo.user !== null) {
+    var authInfo = pdata.authenticationInfo;
+    if (authInfo && authInfo.user) {
       user = pdata.authenticationInfo.user;
     }
     var dateUpdated = (pdata.dateUpdated === null) ? 'unknown' : pdata.dateUpdated;
