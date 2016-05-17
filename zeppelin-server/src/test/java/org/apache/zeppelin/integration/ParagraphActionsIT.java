@@ -21,6 +21,7 @@ package org.apache.zeppelin.integration;
 import org.apache.zeppelin.AbstractZeppelinIT;
 import org.apache.zeppelin.WebDriverManager;
 import org.apache.zeppelin.ZeppelinITUtils;
+import org.apache.zeppelin.notebook.OccupiedInterpreter;
 import org.hamcrest.CoreMatchers;
 import org.junit.After;
 import org.junit.Before;
@@ -96,7 +97,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
 
       collector.checkThat("Paragraph is created above",
           driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'editor')]")).getText(),
-          CoreMatchers.equalTo(""));
+          CoreMatchers.equalTo(OccupiedInterpreter.getDefaultInterpreterName()));
       setTextOfParagraph(1, " this is above ");
 
       newPara = driver.findElement(By.xpath(getParagraphXPath(2) + "//div[contains(@class,'new-paragraph')][2]"));
@@ -106,7 +107,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
 
       collector.checkThat("Paragraph is created below",
           driver.findElement(By.xpath(getParagraphXPath(3) + "//div[contains(@class, 'editor')]")).getText(),
-          CoreMatchers.equalTo(""));
+          CoreMatchers.equalTo(OccupiedInterpreter.getDefaultInterpreterName()));
       setTextOfParagraph(3, " this is below ");
 
       collector.checkThat("The output field of paragraph1 contains",
