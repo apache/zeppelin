@@ -48,7 +48,7 @@ The `Notebook` menu proposes almost the same features as the note management sec
 2. Filter node by name
 3. Create a new note
 
-<img src="/assets/themes/zeppelin/img/ui-img/notebook_menu.png" />
+<img src="../assets/themes/zeppelin/img/ui-img/notebook_menu.png" />
 
 ### 2. Interpreter
 
@@ -57,13 +57,13 @@ In this menu you can:
 1. Configure existing **interpreter instance**
 2. Add/remove **interpreter instances**
 
-<img src="/assets/themes/zeppelin/img/ui-img/interpreter_menu.png" />
+<img src="../assets/themes/zeppelin/img/ui-img/interpreter_menu.png" />
 
 ### 3. Configuration
 
 This menu displays all the Zeppelin configuration that are set in the config file `$ZEPPELIN_HOME/conf/zeppelin-site.xml`
 
-<img src="/assets/themes/zeppelin/img/ui-img/configuration_menu.png" />
+<img src="../assets/themes/zeppelin/img/ui-img/configuration_menu.png" />
 
 
 <br />
@@ -71,13 +71,13 @@ This menu displays all the Zeppelin configuration that are set in the config fil
 
 Each Zeppelin note is composed of 1 .. N paragraphs. The note can be viewed as a paragraph container. 
  
-<img src="/assets/themes/zeppelin/img/ui-img/note_paragraph_layout.png" />
+<img src="../assets/themes/zeppelin/img/ui-img/note_paragraph_layout.png" />
 
 ### Paragraph
 
 Each paragraph consists of 2 sections: `code section` where you put your source code and `result section` where you can see the result of the code execution.
 
-<img src="/assets/themes/zeppelin/img/ui-img/paragraph_layout.png" />
+<img src="../assets/themes/zeppelin/img/ui-img/paragraph_layout.png" />
  
 On the top-right corner of each paragraph there are some commands to:
  
@@ -88,7 +88,7 @@ On the top-right corner of each paragraph there are some commands to:
 
 To configure the paragraph, just click on the gear icon:
  
-<img src="/assets/themes/zeppelin/img/ui-img/paragraph_configuration_dialog.png" />
+<img src="../assets/themes/zeppelin/img/ui-img/paragraph_configuration_dialog.png" />
  
 From this dialog, you can (in descending order):
  
@@ -108,7 +108,7 @@ From this dialog, you can (in descending order):
   
 At the top of the note, you can find a toolbar which exposes command buttons as well as configuration, security and display options
   
-<img src="/assets/themes/zeppelin/img/ui-img/note_toolbar.png" />  
+<img src="../assets/themes/zeppelin/img/ui-img/note_toolbar.png" />  
    
 On the far right is displayed the note name, just click on it to reveal the input form and update it
    
@@ -124,7 +124,7 @@ In the middle of the toolbar you can find the command buttons:
 * delete the note
 * schedule the execution of **all paragraph** using a CRON syntax
 
-<img src="/assets/themes/zeppelin/img/ui-img/note_commands.png" />
+<img src="../assets/themes/zeppelin/img/ui-img/note_commands.png" />
 
 On the right of the note tool bar you can find configuration icons:
  
@@ -133,7 +133,7 @@ On the right of the note tool bar you can find configuration icons:
 * configure the note permissions
 * switch the node display mode between `default`, `simple` and `report`
 
-<img src="/assets/themes/zeppelin/img/ui-img/note_configuration.png" />
+<img src="../assets/themes/zeppelin/img/ui-img/note_configuration.png" />
  
  
  

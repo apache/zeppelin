@@ -132,6 +132,10 @@ The text of each license is also included at licenses/LICENSE-[project]-[version
     (The MIT License) lodash v3.9.3 (https://lodash.com/) - https://github.com/lodash/lodash/blob/3.9.3/LICENSE.txt
     (The MIT License) angular-filter v0.5.4 (https://github.com/a8m/angular-filter) - https://github.com/a8m/angular-filter/blob/v0.5.4/license.md
     (The MIT License) ngToast v1.5.5 (http://tamerayd.in/ngToast/) - http://tameraydin.mit-license.org/
+    (The MIT License) Handsontable v0.24.2 (https://github.com/handsontable/handsontable) - https://github.com/handsontable/handsontable/blob/master/LICENSE
+    (The MIT License) Zeroclipboard v2.2.0 (https://github.com/zeroclipboard/zeroclipboard) - https://github.com/zeroclipboard/zeroclipboard/blob/v2.2.0/LICENSE
+    (The MIT License) Moment v2.9.0 (https://github.com/moment/moment) - https://github.com/moment/moment/blob/2.9.0/LICENSE
+    (The MIT License) Pikaday v1.3.2 (https://github.com/dbushell/Pikaday) - https://github.com/dbushell/Pikaday/blob/1.3.2/LICENSE
     (The MIT License) slf4j v1.7.10 (org.slf4j:slf4j-api:jar:1.7.10 - http://www.slf4j.org) - http://www.slf4j.org/license.html
     (The MIT License) slf4j-log4j12 v1.7.10 (org.slf4j:slf4j-log4j12:jar:1.7.10 - http://www.slf4j.org) - http://www.slf4j.org/license.html
     (The MIT License) bcprov-jdk15on v1.51 (org.bouncycastle:bcprov-jdk15on:jar:1.51 - http://www.bouncycastle.org/java.html) - http://www.bouncycastle.org/licence.html
