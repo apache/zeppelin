@@ -367,6 +367,7 @@ public class LivyHelper {
       if (responseString.contains("CreateInteractiveRequest[\\\"master\\\"]")) {
         return responseString;
       }
+      LOGGER.error("Error with 500 StatusCode: ", responseString);
     }
     return null;
   }

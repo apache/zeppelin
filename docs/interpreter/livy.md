@@ -85,3 +85,9 @@ You can leverage [Zeppelin Dynamic Form]({{BASE_PATH}}/manual/dynamicform.html).
 %livy.pyspark
 print "${group_by=product_id,product_id|product_name|customer_id|store_id}"
 ```
+
+## Know Issue
+If you are getting an error `Blacklisted configuration values in session config: spark.master`
+
+edit `conf/spark-blacklist.conf` file in livy server and comment out `#spark.master` line.
+
