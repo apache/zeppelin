@@ -112,7 +112,8 @@ public class S3NotebookRepo implements NotebookRepo {
    * Create an instance of a custom encryption materials provider class
    * which supplies encryption keys to use when reading/writing data in S3.
    */
-  private EncryptionMaterialsProvider createCustomProvider(ZeppelinConfiguration conf) throws IOException {
+  private EncryptionMaterialsProvider createCustomProvider(ZeppelinConfiguration conf)
+      throws IOException {
     // use a custom encryption materials provider class
     String empClassname = conf.getS3EncryptionMaterialsProviderClass();
     EncryptionMaterialsProvider emp;
