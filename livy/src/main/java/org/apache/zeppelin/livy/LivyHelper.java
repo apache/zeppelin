@@ -69,6 +69,18 @@ public class LivyHelper {
               "}",
           context.getParagraphId()
       );
+      if (json.contains("CreateInteractiveRequest[\\\"master\\\"]")) {
+        json = executeHTTP(property.getProperty("zeppelin.livy.url") + "/sessions",
+            "POST",
+            "{" +
+                "\"kind\": \"" + kind + "\", " +
+                "\"conf\":{\"spark.master\": \""
+                + property.getProperty("zeppelin.livy.master") + "\"}," +
+                "\"proxyUser\": \"" + context.getAuthenticationInfo().getUser() + "\"" +
+                "}",
+            context.getParagraphId()
+        );
+      }
       Map jsonMap = (Map<Object, Object>) gson.fromJson(json,
           new TypeToken<Map<Object, Object>>() {
           }.getType());
@@ -349,17 +361,26 @@ public class LivyHelper {
     if (response.getStatusLine().getStatusCode() == 200
         || response.getStatusLine().getStatusCode() == 201
         || response.getStatusLine().getStatusCode() == 404) {
-      BufferedReader rd = new BufferedReader(
-          new InputStreamReader(response.getEntity().getContent()));
-
-      StringBuffer result = new StringBuffer();
-      String line = "";
-      while ((line = rd.readLine()) != null) {
-        result.append(line);
+      return getResponse(response);
+    } else if (response.getStatusLine().getStatusCode() == 500) {
+      String responseString = getResponse(response);
+      if (responseString.contains("CreateInteractiveRequest[\\\"master\\\"]")) {
+        return responseString;
       }
-      return result.toString();
     }
     return null;
+  }
+
+  private String getResponse(HttpResponse response) throws Exception {
+    BufferedReader rd = new BufferedReader(
+        new InputStreamReader(response.getEntity().getContent()));
+
+    StringBuffer result = new StringBuffer();
+    String line = "";
+    while ((line = rd.readLine()) != null) {
+      result.append(line);
+    }
+    return result.toString();
   }
 
   public void cancelHTTP(String paragraphId) {
