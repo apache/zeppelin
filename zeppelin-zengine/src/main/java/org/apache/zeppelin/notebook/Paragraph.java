@@ -143,7 +143,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     int scriptHeadIndex = 0;
     for (int i = 0; i < text.length(); i++) {
       char ch = text.charAt(i);
-      if (ch == ' ' || ch == '\n' || ch == '(') {
+      if (ch == ' ' || ch == '\n' || ch == '\r' || ch == '(') {
         scriptHeadIndex = i;
         break;
       }

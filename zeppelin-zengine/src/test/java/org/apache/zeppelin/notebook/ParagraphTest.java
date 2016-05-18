@@ -41,10 +41,17 @@ public class ParagraphTest {
     text = "%table 1234567";
     assertEquals("1234567", Paragraph.getScriptBody(text));
   }
+
   @Test
   public void scriptBodyWithoutReplName() {
     String text = "12345678";
     assertEquals(text, Paragraph.getScriptBody(text));
+  }
+
+  @Test
+  public void replNameWithCR() {
+    String text = "%md\r\n###Hello";
+    assertEquals("md", Paragraph.getRequiredReplName(text));
   }
 
   @Test
