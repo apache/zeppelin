@@ -37,7 +37,7 @@ angular.module('zeppelinWebApp').controller('HomeCtrl', function($scope, noteboo
         console.log('Error %o %o', status, data.message);
       });
   };
-  
+
   var initHome = function() {
     websocketMsgSrv.getHomeNotebook();
     getZeppelinVersion();
@@ -77,7 +77,9 @@ angular.module('zeppelinWebApp').controller('HomeCtrl', function($scope, noteboo
   };
 
   $rootScope.noteName = function(note) {
-    return arrayOrderingSrv.getNoteName(note);
+    if (!_.isEmpty(note)) {
+      return arrayOrderingSrv.getNoteName(note);
+    }
   };
 
 });
