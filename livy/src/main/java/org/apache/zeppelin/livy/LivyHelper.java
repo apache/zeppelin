@@ -362,14 +362,15 @@ public class LivyHelper {
         || response.getStatusLine().getStatusCode() == 201
         || response.getStatusLine().getStatusCode() == 404) {
       return getResponse(response);
-    } else if (response.getStatusLine().getStatusCode() == 500) {
+    } else {
       String responseString = getResponse(response);
       if (responseString.contains("CreateInteractiveRequest[\\\"master\\\"]")) {
         return responseString;
       }
-      LOGGER.error("Error with 500 StatusCode: ", responseString);
+      LOGGER.error(String.format("Error with %s StatusCode: %s",
+          response.getStatusLine().getStatusCode(), responseString));
+      return null;
     }
-    return null;
   }
 
   private String getResponse(HttpResponse response) throws Exception {
