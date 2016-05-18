@@ -34,6 +34,7 @@ REM set ZEPPELIN_NOTEBOOK_S3_USER              REM User in bucket where notebook
 REM set ZEPPELIN_IDENT_STRING   		REM A string representing this instance of zeppelin. $USER by default.
 REM set ZEPPELIN_NICENESS       		REM The scheduling priority for daemons. Defaults to 0.
 REM set ZEPPELIN_INTERPRETER_LOCALREPO         REM Local repository for interpreter's additional dependency loading
+REM set ZEPPELIN_NOTEBOOK_STORAGE		REM Refers to pluggable notebook storage class, can have two classes simultaneously with a sync between them (e.g. local and remote).
 
 
 REM Spark interpreter configuration
@@ -62,3 +63,8 @@ REM set ZEPPELIN_SPARK_USEHIVECONTEXT  REM Use HiveContext instead of SQLContext
 REM set ZEPPELIN_SPARK_CONCURRENTSQL   REM Execute multiple SQL concurrently if set true. false by default.
 REM set ZEPPELIN_SPARK_MAXRESULT       REM Max number of SparkSQL result to display. 1000 by default.
 
+REM ZeppelinHub connection configuration
+REM
+REM set ZEPPELINHUB_API_ADDRESS	       REM Refers to the address of the ZeppelinHub service in use
+REM set ZEPPELINHUB_API_TOKEN          REM Refers to the Zeppelin instance token of the user
+REM set ZEPPELINHUB_USER_KEY           REM Optional, when using Zeppelin with authentication.
