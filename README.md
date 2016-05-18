@@ -36,6 +36,9 @@ sudo apt-get install openjdk-7-jdk
 sudo apt-get install npm
 sudo apt-get install libfontconfig
 
+# Optional: If you're limited to what ports you can access externally, use this (portions of the maven build use git):
+# git config --global url."https://".insteadOf git://
+
 # install maven
 wget http://www.eu.apache.org/dist/maven/maven-3/3.3.3/binaries/apache-maven-3.3.3-bin.tar.gz
 sudo tar -zxf apache-maven-3.3.3-bin.tar.gz -C /usr/local/
