@@ -47,7 +47,7 @@ Bind a value to an angular object and a **mandatory** target paragraph:
 
 ```
 
-<img src="/assets/themes/zeppelin/img/screenshots/z_angularBind.gif" />
+<img src="../assets/themes/zeppelin/img/screenshots/z_angularBind.gif" />
 
 <hr/>
 
@@ -63,7 +63,7 @@ Unbind/remove a value from angular object and a **mandatory** target paragraph:
 
 ```
 
-<img src="/assets/themes/zeppelin/img/screenshots/z_angularUnbind.gif" />
+<img src="../assets/themes/zeppelin/img/screenshots/z_angularUnbind.gif" />
 
 The signature for the **`z.angularBind() / z.angularUnbind()`** functions are:
 
@@ -97,7 +97,7 @@ You can also trigger paragraph execution by calling **`z.runParagraph()`** funct
 
 ```
 
-<img src="/assets/themes/zeppelin/img/screenshots/z_runParagraph.gif" />
+<img src="../assets/themes/zeppelin/img/screenshots/z_runParagraph.gif" />
 
 <br />
 ### Overriding dynamic form with Angular Object
@@ -109,7 +109,7 @@ The idea is to create a custom form using plain HTML/AngularJS code and bind act
 Consequently if you use the **Dynamic Form** syntax in a paragraph and there is a bound Angular object having the same name as the _${formName}_, the Angular object will have higher priority and the **Dynamic Form** will not be displayed. Example: 
  
 
-<img src="/assets/themes/zeppelin/img/screenshots/z_angularJs_overriding_dynamic_form.gif" />
+<img src="../assets/themes/zeppelin/img/screenshots/z_angularJs_overriding_dynamic_form.gif" />
 
 
 <br />

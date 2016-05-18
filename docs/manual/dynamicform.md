@@ -34,12 +34,12 @@ To create text input form, use _${formName}_ templates.
 
 for example
 
-<img src="/assets/themes/zeppelin/img/screenshots/form_input.png" />
+<img src="../assets/themes/zeppelin/img/screenshots/form_input.png" />
 
 
 Also you can provide default value, using _${formName=defaultValue}_.
 
-<img src="/assets/themes/zeppelin/img/screenshots/form_input_default.png" />
+<img src="../assets/themes/zeppelin/img/screenshots/form_input_default.png" />
 
 
 #### Select form
@@ -48,21 +48,21 @@ To create select form, use _${formName=defaultValue,option1|option2...}_
 
 for example
 
-<img src="/assets/themes/zeppelin/img/screenshots/form_select.png" />
+<img src="../assets/themes/zeppelin/img/screenshots/form_select.png" />
 
 Also you can separate option's display name and value, using _${formName=defaultValue,option1(DisplayName)|option2(DisplayName)...}_
 
-<img src="/assets/themes/zeppelin/img/screenshots/form_select_displayname.png" />
+<img src="../assets/themes/zeppelin/img/screenshots/form_select_displayname.png" />
 
 #### Checkbox form
 
 For multi-selection, you can create a checkbox form using _${checkbox:formName=defaultValue1|defaultValue2...,option1|option2...}_. The variable will be substituted by a comma-separated string based on the selected items. For example:
 
-<img src="/assets/themes/zeppelin/img/screenshots/form_checkbox.png">
+<img src="../assets/themes/zeppelin/img/screenshots/form_checkbox.png">
 
 Besides, you can specify the delimiter using _${checkbox(delimiter):formName=...}_:
 
-<img src="/assets/themes/zeppelin/img/screenshots/form_checkbox_delimiter.png">
+<img src="../assets/themes/zeppelin/img/screenshots/form_checkbox_delimiter.png">
 
 ### Creates Programmatically
 
@@ -89,7 +89,7 @@ print("Hello "+z.input("name"))
 
     </div>
 </div>
-<img src="/assets/themes/zeppelin/img/screenshots/form_input_prog.png" />
+<img src="../assets/themes/zeppelin/img/screenshots/form_input_prog.png" />
 
 ####Text input form with default value
 <div class="codetabs">
@@ -110,7 +110,7 @@ print("Hello "+z.input("name", "sun"))
 
     </div>
 </div>
-<img src="/assets/themes/zeppelin/img/screenshots/form_input_default_prog.png" />
+<img src="../assets/themes/zeppelin/img/screenshots/form_input_default_prog.png" />
 
 ####Select form
 <div class="codetabs">
@@ -143,7 +143,7 @@ print("Hello "+z.select("day", [("1","mon"),
 
     </div>
 </div>
-<img src="/assets/themes/zeppelin/img/screenshots/form_select_prog.png" />
+<img src="../assets/themes/zeppelin/img/screenshots/form_select_prog.png" />
 
 #### Checkbox form
 <div class="codetabs">
@@ -166,4 +166,4 @@ print("Hello "+ " and ".join(z.checkbox("fruit", options, ["apple"])))
 
     </div>
 </div>
-<img src="/assets/themes/zeppelin/img/screenshots/form_checkbox_prog.png" />
+<img src="../assets/themes/zeppelin/img/screenshots/form_checkbox_prog.png" />
