@@ -100,26 +100,43 @@ limitations under the License.
     </span>
   </span>
 </div>
-<div>
-  <select
-    ng-options="option.value as option.name for option in ACTIVE_INTERPRETERS"
-    ng-model="FILTER_VALUE_INTERPRETER"
-    ng-change="doFiltering(jobInfomations, FILTER_VALUE_INTERPRETER, FILTER_VALUE_NOTEBOOK_NAME)">
-  </select>
-  <div>
-    <input type="text" ng-model="FILTER_VALUE_NOTEBOOK_NAME"
-      ng-change="doFiltering(jobInfomations, FILTER_VALUE_INTERPRETER, FILTER_VALUE_NOTEBOOK_NAME)"/>
+<div class="note-jump"></div>
+<div class="row">
+  <div class="col-md-12" style="text-align: right">
+    <div class="form-inline">
+        <select
+          class="form-control"
+          ng-options="option.value as option.name for option in ACTIVE_INTERPRETERS"
+          ng-model="FILTER_VALUE_INTERPRETER"
+          ng-change="doFiltering(jobInfomations, FILTER_VALUE_INTERPRETER, FILTER_VALUE_NOTEBOOK_NAME)">
+        </select>
+        <input
+          class="form-control"
+          type="text" ng-model="FILTER_VALUE_NOTEBOOK_NAME"
+          ng-change="doFiltering(jobInfomations, FILTER_VALUE_INTERPRETER, FILTER_VALUE_NOTEBOOK_NAME)"/>
+    </div>
   </div>
 </div>
 <div>
   <div class="note-jump"></div>
-  <div id="{{currentParagraph.id}}_paragraphColumn_main"
-       ng-repeat="notebookJob in JobInfomationsByFilter"
-       class="paragraph-col">
+  <div
+    ng-if="JobInfomationsByFilter.length > 0"
+    ng-repeat="notebookJob in JobInfomationsByFilter"
+    class="paragraph-col">
     <div ng-include src="'app/jobmanager/jobs/job.html'"
          class="job-space box job-margin"
          ng-controller="JobCtrl"
     >
+    </div>
+  </div>
+  <div
+    ng-if="JobInfomationsByFilter.length <= 0"
+    class="paragraph-col"
+  >
+    <div
+      class="job-space box job-margin text-center"
+    >
+      Data does not exist
     </div>
   </div>
   <div style="clear:both;height:10px"></div>

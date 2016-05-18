@@ -14,6 +14,9 @@ limitations under the License.
 
 <div id="{{notebookJob.notebookId}}_control" class="control">
   <span>
+    {{lastExecuteTime(notebookJob.unixTimeLastRun)}}
+  </span>
+  <span>
     <span ng-if="notebookJob.isRunningJob === true">
       RUNNING
     </span>

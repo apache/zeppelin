@@ -16,7 +16,7 @@
 
 angular.module('zeppelinWebApp')
   .controller('JobCtrl', function($scope,$rootScope, $route, $window, $element, $routeParams, $location,
-                                 $timeout, $compile, websocketMsgSrv, ngToast) {
+                                 $timeout, $compile, websocketMsgSrv, ngToast, moment) {
 
     $scope.init = function (jobInformation) {
     };
@@ -27,7 +27,11 @@ angular.module('zeppelinWebApp')
 
     $scope.isRunningNotebook = function (jobInformation) {
       var NOT_FOUND_RUNNING_STATUS = -1;
-      return _.findIndex(jobInformation.paragraphs, {status : "RUNNING"}) !== NOT_FOUND_RUNNING_STATUS;
+      return _.findIndex(jobInformation.paragraphs, {status : 'RUNNING'}) !== NOT_FOUND_RUNNING_STATUS;
+    };
+
+    $scope.lastExecuteTime = function (unixtime) {
+      return moment.unix(unixtime).fromNow();
     };
 
 });
