@@ -701,7 +701,7 @@ public class NotebookRestApi {
   }  
 
   /**
-   * Search for a Notes with permissions
+   * Search for a Notes
    */
   @GET
   @Path("search")
