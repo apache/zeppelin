@@ -16,7 +16,7 @@
 
 angular.module('zeppelinWebApp')
   .controller('JobCtrl', function($scope,$rootScope, $route, $window, $element, $routeParams, $location,
-                                 $timeout, $compile, websocketMsgSrv, ngToast, moment) {
+                                 $timeout, $compile, websocketMsgSrv, ngToast) {
 
     $scope.init = function (jobInformation) {
     };
