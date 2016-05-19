@@ -50,8 +50,8 @@ public class PythonInterpreterTest {
 
   Logger logger = LoggerFactory.getLogger(PythonProcess.class);
 
-  public static final String PYTHON_PATH = "python";
-  public static final String DEFAULT_PYTHON_PATH = "python";
+  public static final String ZEPPELIN_PYTHON = "zeppelin.python";
+  public static final String DEFAULT_ZEPPELIN_PYTHON = "python";
 
   PythonInterpreter pythonInterpreter = null;
   PythonProcess mockPythonProcess;
@@ -87,7 +87,7 @@ public class PythonInterpreterTest {
     }
 
     Properties properties = new Properties();
-    properties.put(PYTHON_PATH, DEFAULT_PYTHON_PATH);
+    properties.put(ZEPPELIN_PYTHON, DEFAULT_ZEPPELIN_PYTHON);
     pythonInterpreter = spy(new PythonInterpreter(properties));
 
     when(pythonInterpreter.getPythonProcess()).thenReturn(mockPythonProcess);

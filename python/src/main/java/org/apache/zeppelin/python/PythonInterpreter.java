@@ -47,8 +47,8 @@ public class PythonInterpreter extends Interpreter {
 
   public static final String BOOTSTRAP_PY = "/bootstrap.py";
   public static final String BOOTSTRAP_INPUT_PY = "/bootstrap_input.py";
-  public static final String PYTHON_PATH = "python";
-  public static final String DEFAULT_PYTHON_PATH = "python";
+  public static final String ZEPPELIN_PYTHON = "zeppelin.python";
+  public static final String DEFAULT_ZEPPELIN_PYTHON = "python";
 
   private Integer port;
   private GatewayServer gatewayServer;
@@ -63,7 +63,7 @@ public class PythonInterpreter extends Interpreter {
         "python",
         PythonInterpreter.class.getName(),
         new InterpreterPropertyBuilder()
-            .add(PYTHON_PATH, DEFAULT_PYTHON_PATH,
+            .add(ZEPPELIN_PYTHON, DEFAULT_ZEPPELIN_PYTHON,
                 "Python directory. Default : python (assume python is in your $PATH)")
             .build()
     );
@@ -80,7 +80,7 @@ public class PythonInterpreter extends Interpreter {
     logger.info("Starting Python interpreter .....");
 
 
-    logger.info("Python path is set to:" + property.getProperty(PYTHON_PATH));
+    logger.info("Python path is set to:" + property.getProperty(ZEPPELIN_PYTHON));
 
     process = getPythonProcess();
 
@@ -177,7 +177,7 @@ public class PythonInterpreter extends Interpreter {
 
   public PythonProcess getPythonProcess() {
     if (process == null)
-      return new PythonProcess(getProperty(PYTHON_PATH));
+      return new PythonProcess(getProperty(ZEPPELIN_PYTHON));
     else
       return process;
   }
