@@ -134,7 +134,7 @@ public class NotebookAuthorization {
       noteAuthInfo.put("writers", new LinkedHashSet());
       authInfo.put(noteId, noteAuthInfo);
     } else {
-       Set<String> existingEntities = noteAuthInfo.get("readers");
+      Set<String> existingEntities = noteAuthInfo.get("readers");
       if (existingEntities == null) {
         noteAuthInfo.put("readers", new LinkedHashSet(entities));
       } else {
