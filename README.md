@@ -1,4 +1,4 @@
-#Zeppelin 
+#Zeppelin
 
 **Documentation:** [User Guide](http://zeppelin.incubator.apache.org/docs/latest/index.html)<br/>
 **Mailing Lists:** [User and Dev mailing list](http://zeppelin.incubator.apache.org/community.html)<br/>
@@ -18,15 +18,16 @@ Core feature:
 To know more about Zeppelin, visit our web site [http://zeppelin.incubator.apache.org](http://zeppelin.incubator.apache.org)
 
 ## Requirements
+ * Git 
  * Java 1.7
- * Tested on Mac OSX, Ubuntu 14.X, CentOS 6.X
+ * Tested on Mac OSX, Ubuntu 14.X, CentOS 6.X, Windows 7 Pro SP1
  * Maven (if you want to build from the source code)
- * Node.js Package Manager
+ * Node.js Package Manager (npm, downloaded by Maven during build phase)
 
 ## Getting Started
 
 ### Before Build
-If you don't have requirements prepared, install it. 
+If you don't have requirements prepared, install it.
 (The installation method may vary according to your environment, example is for Ubuntu.)
 
 ```
@@ -35,17 +36,52 @@ sudo apt-get install git
 sudo apt-get install openjdk-7-jdk
 sudo apt-get install npm
 sudo apt-get install libfontconfig
+```
 
-# install maven
+#### Proxy settings (optional)
+If you are behind a corporate Proxy with NTLM authentication you can use [Cntlm Authentication Proxy](http://cntlm.sourceforge.net/) .
+
+Before build start, run these commands from shell. 
+```
+export http_proxy=http://localhost:3128
+export https_proxy=http://localhost:3128
+export HTTP_PROXY=http://localhost:3128
+export HTTPS_PROXY=http://localhost:3128
+npm config set proxy http://localhost:3128
+npm config set https-proxy http://localhost:3128
+npm config set registry "http://registry.npmjs.org/"
+npm config set strict-ssl false
+npm cache clean
+git config --global http.proxy http://localhost:3128
+git config --global https.proxy http://localhost:3128
+git config --global url."http://".insteadOf git://
+```
+
+After build is complete, run these commands to cleanup.
+```
+npm config rm proxy
+npm config rm https-proxy
+git config --global --unset http.proxy
+git config --global --unset https.proxy
+git config --global --unset url."http://".insteadOf
+```
+
+_Notes:_ 
+ - If you are on Windows replace `export` with `set` to set env variables
+ - Replace `localhost:3128` with standard pattern `http://user:pwd@host:port`
+ - Git configuration is needed because Bower use it for fetching from GitHub
+ 
+#### Install maven
+```
 wget http://www.eu.apache.org/dist/maven/maven-3/3.3.3/binaries/apache-maven-3.3.3-bin.tar.gz
 sudo tar -zxf apache-maven-3.3.3-bin.tar.gz -C /usr/local/
 sudo ln -s /usr/local/apache-maven-3.3.3/bin/mvn /usr/local/bin/mvn
 ```
 
-_Notes:_ 
+_Notes:_
  - Ensure node is installed by running `node --version`  
  - Ensure maven is running version 3.1.x or higher with `mvn -version`
- - Configure maven to use more memory than usual by ```export MAVEN_OPTS="-Xmx2g -XX:MaxPermSize=1024m"```
+ - Configure maven to use more memory than usual by `export MAVEN_OPTS="-Xmx2g -XX:MaxPermSize=1024m"`
 
 ### Build
 If you want to build Zeppelin from the source, please first clone this repository, then:
@@ -61,7 +97,7 @@ Each Interpreter requires different Options.
 
 To build with a specific Spark version, Hadoop version or specific features, define one or more of the following profiles and options:
 
-##### -Pspark-[version]
+##### `-Pspark-[version]`
 
 Set spark major version
 
@@ -84,7 +120,7 @@ Available profiles are
 minor version can be adjusted by `-Dspark.version=x.x.x`
 
 
-##### -Phadoop-[version]
+##### `-Phadoop-[version]`
 
 set hadoop major version
 
@@ -101,25 +137,32 @@ Available profiles are
 
 minor version can be adjusted by `-Dhadoop.version=x.x.x`
 
-##### -Pyarn (optional)
+##### `-Pyarn` (optional)
 
 enable YARN support for local mode
-> YARN for local mode is not supported for Spark v1.5.0 or higher. Set SPARK_HOME instead.
+> YARN for local mode is not supported for Spark v1.5.0 or higher. Set `SPARK_HOME` instead.
 
-##### -Ppyspark (optional)
+##### `-Ppyspark` (optional)
 
-enable PySpark support for local mode
+enable [PySpark](http://spark.apache.org/docs/latest/api/python/) support for local mode.
 
+##### `-Pr` (optional)
 
-##### -Pvendor-repo (optional)
+enable [R](https://www.r-project.org/) support with [SparkR](https://spark.apache.org/docs/latest/sparkr.html) integration.
+
+##### `-Psparkr` (optional)
+
+another [R](https://www.r-project.org/) support with [SparkR](https://spark.apache.org/docs/latest/sparkr.html) integration as well as local mode support.
+
+##### `-Pvendor-repo` (optional)
 
 enable 3rd party vendor repository (cloudera)
 
 
-##### -Pmapr[version] (optional)
+##### `-Pmapr[version]` (optional)
 
-For the MapR Hadoop Distribution, these profiles will handle the Hadoop version. As MapR allows different versions
-of Spark to be installed, you should specify which version of Spark is installed on the cluster by adding a Spark profile (-Pspark-1.2, -Pspark-1.3, etc.) as needed. For Hive, check the hive/pom.xml and adjust the version installed as well. The correct Maven
+For the MapR Hadoop Distribution, these profiles will handle the Hadoop version. As MapR allows different versions of Spark to be installed, you should specify which version of Spark is installed on the cluster by adding a Spark profile (`-Pspark-1.2`, `-Pspark-1.3`, etc.) as needed.
+For Hive, check the hive/pom.xml and adjust the version installed as well. The correct Maven
 artifacts can be found for every version of MapR at http://doc.mapr.com
 
 Available profiles are
@@ -142,7 +185,7 @@ Bulid examples under zeppelin-examples directory
 
 Here're some examples:
 
-```
+```sh
 # basic build
 mvn clean package -Pspark-1.6 -Phadoop-2.4 -Pyarn -Ppyspark
 
@@ -159,13 +202,13 @@ mvn clean package -Pspark-1.5 -Pmapr50 -DskipTests
 
 #### Ignite Interpreter
 
-```
+```sh
 mvn clean package -Dignite.version=1.1.0-incubating -DskipTests
 ```
 
 #### Scalding Interpreter
 
-```
+```sh
 mvn clean package -Pscalding -DskipTests
 ```
 
@@ -177,67 +220,80 @@ If you wish to configure Zeppelin option (like port number), configure the follo
 ./conf/zeppelin-env.sh
 ./conf/zeppelin-site.xml
 ```
-(You can copy ```./conf/zeppelin-env.sh.template``` into ```./conf/zeppelin-env.sh```. 
-Same for ```zeppelin-site.xml```.)
+
+(You can copy `./conf/zeppelin-env.sh.template` into `./conf/zeppelin-env.sh`.
+Same for `zeppelin-site.xml`.)
 
 
 #### Setting SPARK_HOME and HADOOP_HOME
 
-Without SPARK_HOME and HADOOP_HOME, Zeppelin uses embedded Spark and Hadoop binaries that you have specified with mvn build option.
-If you want to use system provided Spark and Hadoop, export SPARK_HOME and HADOOP_HOME in zeppelin-env.sh
+Without `SPARK_HOME` and `HADOOP_HOME`, Zeppelin uses embedded Spark and Hadoop binaries that you have specified with mvn build option.
+If you want to use system provided Spark and Hadoop, export `SPARK_HOME` and `HADOOP_HOME` in `zeppelin-env.sh`.
 You can use any supported version of spark without rebuilding Zeppelin.
 
-```
+```sh
 # ./conf/zeppelin-env.sh
 export SPARK_HOME=...
 export HADOOP_HOME=...
 ```
 
 #### External cluster configuration
+
 Mesos
 
-    # ./conf/zeppelin-env.sh
-    export MASTER=mesos://...
-    export ZEPPELIN_JAVA_OPTS="-Dspark.executor.uri=/path/to/spark-*.tgz" or SPARK_HOME="/path/to/spark_home"
-    export MESOS_NATIVE_LIBRARY=/path/to/libmesos.so
-    
+```sh
+# ./conf/zeppelin-env.sh
+export MASTER=mesos://...
+export ZEPPELIN_JAVA_OPTS="-Dspark.executor.uri=/path/to/spark-*.tgz" or SPARK_HOME="/path/to/spark_home"
+export MESOS_NATIVE_LIBRARY=/path/to/libmesos.so
+```
+
 If you set `SPARK_HOME`, you should deploy spark binary on the same location to all worker nodes. And if you set `spark.executor.uri`, every worker can read that file on its node.
 
 Yarn
 
-    # ./conf/zeppelin-env.sh
-    export SPARK_HOME=/path/to/spark_dir
+```sh
+# ./conf/zeppelin-env.sh
+export SPARK_HOME=/path/to/spark_dir
+```
 
 ### Run
-    ./bin/zeppelin-daemon.sh start
 
-    browse localhost:8080 in your browser.
+```sh
+./bin/zeppelin-daemon.sh start
+```
+
+And browse [localhost:8080](localhost:8080) in your browser.
 
 
-For configuration details check __./conf__ subdirectory.
+For configuration details check __`./conf`__ subdirectory.
 
 ### Package
 To package the final distribution including the compressed archive, run:
 
-      mvn clean package -Pbuild-distr
+```sh
+mvn clean package -Pbuild-distr
+```
 
 To build a distribution with specific profiles, run:
 
-      mvn clean package -Pbuild-distr -Pspark-1.5 -Phadoop-2.4 -Pyarn -Ppyspark
+```sh
+mvn clean package -Pbuild-distr -Pspark-1.5 -Phadoop-2.4 -Pyarn -Ppyspark
+```
 
 The profiles `-Pspark-1.5 -Phadoop-2.4 -Pyarn -Ppyspark` can be adjusted if you wish to build to a specific spark versions, or omit support such as `yarn`.  
 
-The archive is generated under _zeppelin-distribution/target_ directory
+The archive is generated under _`zeppelin-distribution/target`_ directory
 
 ###Run end-to-end tests
 Zeppelin comes with a set of end-to-end acceptance tests driving headless selenium browser
 
-      #assumes zeppelin-server running on localhost:8080 (use -Durl=.. to override)
-      mvn verify
+```sh
+# assumes zeppelin-server running on localhost:8080 (use -Durl=.. to override)
+mvn verify
 
-      #or take care of starting\stoping zeppelin-server from packaged _zeppelin-distribuion/target_
-      mvn verify -P using-packaged-distr
-
-
+# or take care of starting/stoping zeppelin-server from packaged zeppelin-distribuion/target
+mvn verify -P using-packaged-distr
+```
 
 [![Analytics](https://ga-beacon.appspot.com/UA-45176241-4/apache/incubator-zeppelin/README.md?pixel)](https://github.com/igrigorik/ga-beacon)

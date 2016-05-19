@@ -135,7 +135,7 @@ public class NotebookServer extends WebSocketServlet implements
       /** Lets be elegant here */
       switch (messagereceived.op) {
           case LIST_NOTES:
-            broadcastNoteList();
+            unicastNoteList(conn);
             break;
           case RELOAD_NOTES_FROM_REPO:
             broadcastReloadedNoteList();
@@ -203,7 +203,6 @@ public class NotebookServer extends WebSocketServlet implements
             checkpointNotebook(conn, notebook, messagereceived);
             break;
           default:
-            broadcastNoteList();
             break;
       }
     } catch (Exception e) {
@@ -342,6 +341,14 @@ public class NotebookServer extends WebSocketServlet implements
     }
   }
 
+  private void unicast(Message m, NotebookSocket conn) {
+    try {
+      conn.send(serializeMessage(m));
+    } catch (IOException e) {
+      LOG.error("socket error", e);
+    }
+  }
+
   public List<Map<String, String>> generateNotebooksInfo(boolean needsReload) {
     Notebook notebook = notebook();
 
@@ -384,19 +391,27 @@ public class NotebookServer extends WebSocketServlet implements
     broadcastAll(new Message(OP.NOTES_INFO).put("notes", notesInfo));
   }
 
+  public void unicastNoteList(NotebookSocket conn) {
+    List<Map<String, String>> notesInfo = generateNotebooksInfo(false);
+    unicast(new Message(OP.NOTES_INFO).put("notes", notesInfo), conn);
+  }
+
   public void broadcastReloadedNoteList() {
     List<Map<String, String>> notesInfo = generateNotebooksInfo(true);
     broadcastAll(new Message(OP.NOTES_INFO).put("notes", notesInfo));
   }
 
-  void permissionError(NotebookSocket conn, String op, Set<String> current,
-                      Set<String> allowed) throws IOException {
+  void permissionError(NotebookSocket conn, String op, Set<String> userAndRoles,
+                       Set<String> allowed) throws IOException {
     LOG.info("Cannot {}. Connection readers {}. Allowed readers {}",
-            op, current, allowed);
+            op, userAndRoles, allowed);
+
+    String userName = userAndRoles.iterator().next();
+
     conn.send(serializeMessage(new Message(OP.AUTH_INFO).put("info",
-            "Insufficient privileges to " + op + " note.\n\n" +
+            "Insufficient privileges to " + op + " notebook.\n\n" +
                     "Allowed users or roles: " + allowed.toString() + "\n\n" +
-                    "User belongs to: " + current.toString())));
+                    "But the user " + userName + " belongs to: " + userAndRoles.toString())));
   }
 
   private void sendNote(NotebookSocket conn, HashSet<String> userAndRoles, Notebook notebook,
@@ -417,7 +432,6 @@ public class NotebookServer extends WebSocketServlet implements
     if (note != null) {
       if (!notebookAuthorization.isReader(noteId, userAndRoles)) {
         permissionError(conn, "read", userAndRoles, notebookAuthorization.getReaders(noteId));
-        broadcastNoteList();
         return;
       }
       addConnectionToNote(note.id(), conn);
@@ -439,7 +453,6 @@ public class NotebookServer extends WebSocketServlet implements
       NotebookAuthorization notebookAuthorization = notebook.getNotebookAuthorization();
       if (!notebookAuthorization.isReader(noteId, userAndRoles)) {
         permissionError(conn, "read", userAndRoles, notebookAuthorization.getReaders(noteId));
-        broadcastNoteList();
         return;
       }
       addConnectionToNote(note.id(), conn);
@@ -462,6 +475,12 @@ public class NotebookServer extends WebSocketServlet implements
       return;
     }
     if (config == null) {
+      return;
+    }
+
+    NotebookAuthorization notebookAuthorization = notebook.getNotebookAuthorization();
+    if (!notebookAuthorization.isWriter(noteId, userAndRoles)) {
+      permissionError(conn, "update", userAndRoles, notebookAuthorization.getWriters(noteId));
       return;
     }
 
@@ -990,6 +1009,7 @@ public class NotebookServer extends WebSocketServlet implements
             new InterpreterResult(InterpreterResult.Code.ERROR, ex.getMessage()),
             ex);
         p.setStatus(Status.ERROR);
+        broadcast(note.id(), new Message(OP.PARAGRAPH).put("paragraph", p));
       }
     }
   }

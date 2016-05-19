@@ -18,6 +18,7 @@
 package org.apache.zeppelin.rest;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -690,5 +691,96 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
 
     ZeppelinServer.notebook.removeNote(note.getId());
   }
+
+  @Test
+  public void testSearch() throws IOException {
+    Map<String, String> body;
+
+    GetMethod getSecurityTicket = httpGet("/security/ticket");
+    getSecurityTicket.addRequestHeader("Origin", "http://localhost");
+    Map<String, Object> respSecurityTicket = gson.fromJson(getSecurityTicket.getResponseBodyAsString(),
+        new TypeToken<Map<String, Object>>() {
+        }.getType());
+    body = (Map<String, String>) respSecurityTicket.get("body");
+    String username = body.get("principal");
+    getSecurityTicket.releaseConnection();
+
+    Note note1 = ZeppelinServer.notebook.createNote();
+    String jsonRequest = "{\"title\": \"title1\", \"text\": \"ThisIsToTestSearchMethodWithPermissions 1\"}";
+    PostMethod postNotebookText = httpPost("/notebook/" + note1.getId() + "/paragraph", jsonRequest);
+    postNotebookText.releaseConnection();
+
+    Note note2 = ZeppelinServer.notebook.createNote();
+    jsonRequest = "{\"title\": \"title1\", \"text\": \"ThisIsToTestSearchMethodWithPermissions 2\"}";
+    postNotebookText = httpPost("/notebook/" + note2.getId() + "/paragraph", jsonRequest);
+    postNotebookText.releaseConnection();
+
+    String jsonPermissions = "{\"owners\":[\"" + username + "\"],\"readers\":[\"" + username + "\"],\"writers\":[\"" + username + "\"]}";
+    PutMethod putPermission = httpPut("/notebook/" + note1.getId() + "/permissions", jsonPermissions);
+    putPermission.releaseConnection();
+
+    jsonPermissions = "{\"owners\":[\"admin\"],\"readers\":[\"admin\"],\"writers\":[\"admin\"]}";
+    putPermission = httpPut("/notebook/" + note2.getId() + "/permissions", jsonPermissions);
+    putPermission.releaseConnection();
+
+    GetMethod searchNotebook = httpGet("/notebook/search?q='ThisIsToTestSearchMethodWithPermissions'");
+    searchNotebook.addRequestHeader("Origin", "http://localhost");
+    Map<String, Object> respSearchResult = gson.fromJson(searchNotebook.getResponseBodyAsString(),
+        new TypeToken<Map<String, Object>>() {
+        }.getType());
+    ArrayList searchBody = (ArrayList) respSearchResult.get("body");
+
+    assertEquals("At-least one search results is there", true, searchBody.size() >= 1);
+
+    for (int i = 0; i < searchBody.size(); i++) {
+      Map<String, String> searchResult = (Map<String, String>) searchBody.get(i);
+      String userId = searchResult.get("id").split("/", 2)[0];
+      GetMethod getPermission = httpGet("/notebook/" + userId + "/permissions");
+      getPermission.addRequestHeader("Origin", "http://localhost");
+      Map<String, Object> resp = gson.fromJson(getPermission.getResponseBodyAsString(),
+          new TypeToken<Map<String, Object>>() {
+          }.getType());
+      Map<String, ArrayList> permissions = (Map<String, ArrayList>) resp.get("body");
+      ArrayList owners = permissions.get("owners");
+      ArrayList readers = permissions.get("readers");
+      ArrayList writers = permissions.get("writers");
+
+      if (owners.size() != 0 && readers.size() != 0 && writers.size() != 0) {
+        assertEquals("User has permissions  ", true, (owners.contains(username) || readers.contains(username) ||
+            writers.contains(username)));
+      }
+      getPermission.releaseConnection();
+    }
+    searchNotebook.releaseConnection();
+    ZeppelinServer.notebook.removeNote(note1.getId());
+    ZeppelinServer.notebook.removeNote(note2.getId());
+  }
+
+  @Test
+  public void testTitleSearch() throws IOException {
+    Note note = ZeppelinServer.notebook.createNote();
+    String jsonRequest = "{\"title\": \"testTitleSearchOfParagraph\", \"text\": \"ThisIsToTestSearchMethodWithTitle \"}";
+    PostMethod postNotebookText = httpPost("/notebook/" + note.getId() + "/paragraph", jsonRequest);
+    postNotebookText.releaseConnection();
+
+    GetMethod searchNotebook = httpGet("/notebook/search?q='testTitleSearchOfParagraph'");
+    searchNotebook.addRequestHeader("Origin", "http://localhost");
+    Map<String, Object> respSearchResult = gson.fromJson(searchNotebook.getResponseBodyAsString(),
+        new TypeToken<Map<String, Object>>() {
+        }.getType());
+    ArrayList searchBody = (ArrayList) respSearchResult.get("body");
+
+    int numberOfTitleHits = 0;
+    for (int i = 0; i < searchBody.size(); i++) {
+      Map<String, String> searchResult = (Map<String, String>) searchBody.get(i);
+      if (searchResult.get("header").contains("testTitleSearchOfParagraph")) {
+        numberOfTitleHits++;
+      }
+    }
+    assertEquals("Paragraph title hits must be at-least one", true, numberOfTitleHits >= 1);
+    searchNotebook.releaseConnection();
+    ZeppelinServer.notebook.removeNote(note.getId());
+  }
+
 }
 

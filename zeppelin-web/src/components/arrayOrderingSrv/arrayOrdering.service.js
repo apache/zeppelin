@@ -15,8 +15,18 @@
 
 angular.module('zeppelinWebApp').service('arrayOrderingSrv', function() {
 
+  var arrayOrderingSrv = this;
+
   this.notebookListOrdering = function(note) {
-    return (note.name ? note.name : 'Note ' + note.id);
+    return arrayOrderingSrv.getNoteName(note);
+  };
+
+  this.getNoteName = function(note) {
+    if(note.name === undefined || note.name.trim() === '') {
+      return'Note ' + note.id;
+    } else {
+      return note.name;
+    }
   };
 
 });

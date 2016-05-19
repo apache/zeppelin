@@ -81,11 +81,17 @@ before_script:
 script:
   - mvn $TEST_FLAG $PROFILE -B $TEST_PROJECTS
 
+
+after_success:
+  - echo "Travis exited with ${TRAVIS_TEST_RESULT}"
+
 after_failure:
+  - echo "Travis exited with ${TRAVIS_TEST_RESULT}"
   - cat target/rat.txt
   - cat zeppelin-server/target/rat.txt
   - cat zeppelin-distribution/target/zeppelin-*-SNAPSHOT/zeppelin-*-SNAPSHOT/logs/zeppelin*.log
   - cat zeppelin-distribution/target/zeppelin-*-SNAPSHOT/zeppelin-*-SNAPSHOT/logs/zeppelin*.out
+  - cat zeppelin-web/npm-debug.log
 
 after_script:
   - ./testing/stopSparkCluster.sh $SPARK_VER $HADOOP_VER

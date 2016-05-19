@@ -65,8 +65,8 @@ public class LuceneSearchTest {
 
   @Test public void canIndexNotebook() {
     //give
-    Note note1 = newNoteWithParapgraph("Notebook1", "test");
-    Note note2 = newNoteWithParapgraph("Notebook2", "not test");
+    Note note1 = newNoteWithParagraph("Notebook1", "test");
+    Note note2 = newNoteWithParagraph("Notebook2", "not test");
     List<Note> notebook = Arrays.asList(note1, note2);
 
     //when
@@ -75,8 +75,8 @@ public class LuceneSearchTest {
 
   @Test public void canIndexAndQuery() {
     //given
-    Note note1 = newNoteWithParapgraph("Notebook1", "test");
-    Note note2 = newNoteWithParapgraphs("Notebook2", "not test", "not test at all");
+    Note note1 = newNoteWithParagraph("Notebook1", "test");
+    Note note2 = newNoteWithParagraphs("Notebook2", "not test", "not test at all");
     notebookIndex.addIndexDocs(Arrays.asList(note1, note2));
 
     //when
@@ -91,8 +91,8 @@ public class LuceneSearchTest {
 
   @Test public void canIndexAndQueryByNotebookName() {
     //given
-    Note note1 = newNoteWithParapgraph("Notebook1", "test");
-    Note note2 = newNoteWithParapgraphs("Notebook2", "not test", "not test at all");
+    Note note1 = newNoteWithParagraph("Notebook1", "test");
+    Note note2 = newNoteWithParagraphs("Notebook2", "not test", "not test at all");
     notebookIndex.addIndexDocs(Arrays.asList(note1, note2));
 
     //when
@@ -104,9 +104,31 @@ public class LuceneSearchTest {
     assertThat(results.get(0)).containsEntry("id", note1.getId());
   }
 
+  @Test
+  public void canIndexAndQueryByParagraphTitle() {
+    //given
+    Note note1 = newNoteWithParagraph("Notebook1", "test", "testingTitleSearch");
+    Note note2 = newNoteWithParagraph("Notebook2", "not test", "notTestingTitleSearch");
+    notebookIndex.addIndexDocs(Arrays.asList(note1, note2));
+
+    //when
+    List<Map<String, String>> results = notebookIndex.query("testingTitleSearch");
+
+    //then
+    assertThat(results).isNotEmpty();
+    assertThat(results.size()).isAtLeast(1);
+    int TitleHits = 0;
+    for (Map<String, String> res : results) {
+      if (res.get("header").contains("testingTitleSearch")) {
+        TitleHits++;
+      }
+    }
+    assertThat(TitleHits).isAtLeast(1);
+  }
+
   @Test public void indexKeyContract() throws IOException {
     //give
-    Note note1 = newNoteWithParapgraph("Notebook1", "test");
+    Note note1 = newNoteWithParagraph("Notebook1", "test");
     //when
     notebookIndex.addIndexDoc(note1);
     //then
@@ -129,8 +151,8 @@ public class LuceneSearchTest {
 
   @Test public void canIndexAndReIndex() throws IOException {
     //given
-    Note note1 = newNoteWithParapgraph("Notebook1", "test");
-    Note note2 = newNoteWithParapgraphs("Notebook2", "not test", "not test at all");
+    Note note1 = newNoteWithParagraph("Notebook1", "test");
+    Note note2 = newNoteWithParagraphs("Notebook2", "not test", "not test at all");
     notebookIndex.addIndexDocs(Arrays.asList(note1, note2));
 
     //when
@@ -155,8 +177,8 @@ public class LuceneSearchTest {
 
   @Test public void canDeleteFromIndex() throws IOException {
     //given
-    Note note1 = newNoteWithParapgraph("Notebook1", "test");
-    Note note2 = newNoteWithParapgraphs("Notebook2", "not test", "not test at all");
+    Note note1 = newNoteWithParagraph("Notebook1", "test");
+    Note note2 = newNoteWithParagraphs("Notebook2", "not test", "not test at all");
     notebookIndex.addIndexDocs(Arrays.asList(note1, note2));
     assertThat(resultForQuery("Notebook2")).isNotEmpty();
 
@@ -174,8 +196,8 @@ public class LuceneSearchTest {
 
   @Test public void indexParagraphUpdatedOnNoteSave() throws IOException {
     //given: total 2 notebooks, 3 paragraphs
-    Note note1 = newNoteWithParapgraph("Notebook1", "test");
-    Note note2 = newNoteWithParapgraphs("Notebook2", "not test", "not test at all");
+    Note note1 = newNoteWithParagraph("Notebook1", "test");
+    Note note2 = newNoteWithParagraphs("Notebook2", "not test", "not test at all");
     notebookIndex.addIndexDocs(Arrays.asList(note1, note2));
     assertThat(resultForQuery("test").size()).isEqualTo(3);
 
@@ -199,8 +221,8 @@ public class LuceneSearchTest {
 
   @Test public void indexNoteNameUpdatedOnNoteSave() throws IOException {
     //given: total 2 notebooks, 3 paragraphs
-    Note note1 = newNoteWithParapgraph("Notebook1", "test");
-    Note note2 = newNoteWithParapgraphs("Notebook2", "not test", "not test at all");
+    Note note1 = newNoteWithParagraph("Notebook1", "test");
+    Note note2 = newNoteWithParagraphs("Notebook2", "not test", "not test at all");
     notebookIndex.addIndexDocs(Arrays.asList(note1, note2));
     assertThat(resultForQuery("test").size()).isEqualTo(3);
 
@@ -226,17 +248,23 @@ public class LuceneSearchTest {
    * @param parText text of the paragraph
    * @return Note
    */
-  private Note newNoteWithParapgraph(String noteName, String parText) {
+  private Note newNoteWithParagraph(String noteName, String parText) {
     Note note1 = newNote(noteName);
     addParagraphWithText(note1, parText);
     return note1;
+  }
+
+  private Note newNoteWithParagraph(String noteName, String parText,String title) {
+    Note note = newNote(noteName);
+    addParagraphWithTextAndTitle(note, parText, title);
+    return note;
   }
 
   /**
    * Creates a new Note \w given name,
    * adds N paragraphs \w given texts
    */
-  private Note newNoteWithParapgraphs(String noteName, String... parTexts) {
+  private Note newNoteWithParagraphs(String noteName, String... parTexts) {
     Note note1 = newNote(noteName);
     for (String parText : parTexts) {
       addParagraphWithText(note1, parText);
@@ -247,6 +275,13 @@ public class LuceneSearchTest {
   private Paragraph addParagraphWithText(Note note, String text) {
     Paragraph p = note.addParagraph();
     p.setText(text);
+    return p;
+  }
+
+  private Paragraph addParagraphWithTextAndTitle(Note note, String text, String title) {
+    Paragraph p = note.addParagraph();
+    p.setText(text);
+    p.setTitle(title);
     return p;
   }
 
