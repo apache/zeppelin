@@ -38,7 +38,7 @@
     <jsoup.version>1.8.2</jsoup.version>
     <mockito.version>1.10.19</mockito.version>
     <powermock.version>1.6.4</powermock.version>
-    <spark.version>1.4.1</spark.version>
+    <spark.version>1.6.1</spark.version>
     <scala.version>2.10.4</scala.version>
     <scala.binary.version>2.10</scala.binary.version>
   </properties>
@@ -243,7 +243,6 @@
     <dependency>
       <groupId>org.scalatest</groupId>
       <artifactId>scalatest_${scala.binary.version}</artifactId>
-      <version>2.2.4</version>
       <scope>test</scope>
     </dependency>
 
