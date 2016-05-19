@@ -142,18 +142,22 @@ public class NotebookRestApi {
     HashSet readers = permMap.get("readers");
     HashSet owners = permMap.get("owners");
     HashSet writers = permMap.get("writers");
-    String principal = SecurityUtils.getPrincipal();
-    if (!"anonymous".equals(princial)) {
-      if (owners.isEmpty()) {
-        owners = Sets.newHashSet(principal);
+    // Set readers, if writers and owners is empty -> set to user requesting the change
+    if (readers != null && !readers.isEmpty()) {
+      if (writers.isEmpty()) {
+        writers = Sets.newHashSet(SecurityUtils.getPrincipal());
       }
-      // Set writers, if owners is empty -> set to user requesting the change
-      if (readers != null && !readers.isEmpty()) {
-        if (writers.isEmpty()) {
-          writers = Sets.newHashSet(principal);
-        }
+      if (owners.isEmpty()) {
+        owners = Sets.newHashSet(SecurityUtils.getPrincipal());
       }
     }
+    // Set writers, if owners is empty -> set to user requesting the change
+    if ( writers != null && !writers.isEmpty()) {
+      if (owners.isEmpty()) {
+        owners = Sets.newHashSet(SecurityUtils.getPrincipal());
+      }
+    }
+  
 
     notebookAuthorization.setReaders(noteId, readers);
     notebookAuthorization.setWriters(noteId, writers);
