@@ -716,9 +716,7 @@ public class NotebookRestApi {
     for (int i = 0; i < notebooksFound.size(); i++) {
       String[] Id = notebooksFound.get(i).get("id").split("/", 2);
       String noteId = Id[0];
-      if (!notebookAuthorization.isOwner(noteId, userAndRoles) &&
-              !notebookAuthorization.isReader(noteId, userAndRoles) &&
-              !notebookAuthorization.isWriter(noteId, userAndRoles)) {
+      if (!notebookAuthorization.checkNoteUser(noteId, userAndRoles)) {
         notebooksFound.remove(i);
         i--;
       }
