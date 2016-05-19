@@ -52,6 +52,7 @@ Additional requirements for the Livy interpreter are:
 Basically, you can use
 
 **spark**
+
 ```
 %livy.spark
 sc.version
@@ -59,12 +60,14 @@ sc.version
 
 
 **pyspark**
+
 ```
 %livy.pyspark
 print "1"
 ```
 
 **sparkR**
+
 ```
 %livy.sparkr
 hello <- function( name ) {
@@ -86,8 +89,19 @@ You can leverage [Zeppelin Dynamic Form]({{BASE_PATH}}/manual/dynamicform.html).
 print "${group_by=product_id,product_id|product_name|customer_id|store_id}"
 ```
 
-## Know Issue
-If you are getting an error `Blacklisted configuration values in session config: spark.master`
+## FAQ
+
+Livy debugging: If you see any of these in error console
+
+> Connect to livyhost:8998 [livyhost/127.0.0.1, livyhost/0:0:0:0:0:0:0:1] failed: Connection refused
+
+Looks like the livy server is not up yet or the config is wrong
+
+> Exception: Session not found, Livy server would have restarted, or lost session.
+
+The session would have timed out, you may need to restart the interpreter.
+
+
+> Blacklisted configuration values in session config: spark.master
 
 edit `conf/spark-blacklist.conf` file in livy server and comment out `#spark.master` line.
-
