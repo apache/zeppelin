@@ -167,7 +167,9 @@ public class Note implements Serializable, JobListener {
    * @param srcParagraph
    */
   public void addCloneParagraph(Paragraph srcParagraph) {
-    Paragraph newParagraph = new Paragraph(this, this, replLoader);
+
+    // Keep paragraph original ID
+    final Paragraph newParagraph = new Paragraph(srcParagraph.getId(), this, this, replLoader);
 
     Map<String, Object> config = new HashMap<>(srcParagraph.getConfig());
     Map<String, Object> param = new HashMap<>(srcParagraph.settings.getParams());
@@ -403,7 +405,7 @@ public class Note implements Serializable, JobListener {
     }
 
     for (InterpreterSetting setting : settings) {
-      InterpreterGroup intpGroup = setting.getInterpreterGroup();
+      InterpreterGroup intpGroup = setting.getInterpreterGroup(id);
       AngularObjectRegistry registry = intpGroup.getAngularObjectRegistry();
       angularObjects.put(intpGroup.getId(), registry.getAllWithGlobal(id));
     }
@@ -418,7 +420,7 @@ public class Note implements Serializable, JobListener {
     }
 
     for (InterpreterSetting setting : settings) {
-      InterpreterGroup intpGroup = setting.getInterpreterGroup();
+      InterpreterGroup intpGroup = setting.getInterpreterGroup(id);
       AngularObjectRegistry registry = intpGroup.getAngularObjectRegistry();
 
       if (registry instanceof RemoteAngularObjectRegistry) {

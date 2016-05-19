@@ -31,6 +31,11 @@
   position: absolute;
 }
 
+.search-results-highlight-header {
+  background-color: #e6f2ff;
+  position: absolute;
+}
+
 /* remove error highlighting */
 .search-results .ace_invalid {
   background: none !important;

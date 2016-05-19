@@ -85,7 +85,10 @@ if [[ "${INTERPRETER_ID}" == "spark" ]]; then
     export SPARK_SUBMIT="${SPARK_HOME}/bin/spark-submit"
     SPARK_APP_JAR="$(ls ${ZEPPELIN_HOME}/interpreter/spark/zeppelin-spark*.jar)"
     # This will evantually passes SPARK_APP_JAR to classpath of SparkIMain
-    ZEPPELIN_CLASSPATH+=${SPARK_APP_JAR}
+    ZEPPELIN_CLASSPATH=${SPARK_APP_JAR}
+    # Need to add the R Interpreter
+    RZEPPELINPATH="$(ls ${ZEPPELIN_HOME}/interpreter/spark/zeppelin-zr*.jar)"
+    ZEPPELIN_CLASSPATH="${ZEPPELIN_CLASSPATH}:${RZEPPELINPATH}"
 
     pattern="$SPARK_HOME/python/lib/py4j-*-src.zip"
     py4j=($pattern)
@@ -130,6 +133,8 @@ if [[ "${INTERPRETER_ID}" == "spark" ]]; then
       ZEPPELIN_CLASSPATH+=":${HADOOP_CONF_DIR}"
     fi
 
+    RZEPPELINPATH="$(ls ${ZEPPELIN_HOME}/interpreter/spark/zeppelin-zr*.jar)"
+    ZEPPELIN_CLASSPATH="${ZEPPELIN_CLASSPATH}:${RZEPPELINPATH}"
     export SPARK_CLASSPATH+=":${ZEPPELIN_CLASSPATH}"
   fi
 elif [[ "${INTERPRETER_ID}" == "hbase" ]]; then

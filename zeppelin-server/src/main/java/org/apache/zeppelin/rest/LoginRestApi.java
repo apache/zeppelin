@@ -65,6 +65,9 @@ public class LoginRestApi {
     JsonResponse response = null;
     // ticket set to anonymous for anonymous user. Simplify testing.
     Subject currentUser = org.apache.shiro.SecurityUtils.getSubject();
+    if (currentUser.isAuthenticated()) {
+      currentUser.logout();
+    }
     if (!currentUser.isAuthenticated()) {
       try {
         UsernamePasswordToken token = new UsernamePasswordToken(userName, password);
@@ -107,6 +110,23 @@ public class LoginRestApi {
     LOG.warn(response.toString());
     return response.build();
   }
+  
+  @POST
+  @Path("logout")
+  public Response logout() {
+    JsonResponse response;
+    
+    Subject currentUser = org.apache.shiro.SecurityUtils.getSubject();
+    currentUser.logout();
 
+    Map<String, String> data = new HashMap<>();
+    data.put("principal", "anonymous");
+    data.put("roles", "");
+    data.put("ticket", "anonymous");
+   
+    response = new JsonResponse(Response.Status.OK, "", data);
+    LOG.warn(response.toString());
+    return response.build();
+  }
 
 }

@@ -60,10 +60,24 @@ angular.module('zeppelinWebApp').factory('websocketEvents', function($rootScope,
     } else if (op === 'NOTES_INFO') {
       $rootScope.$broadcast('setNoteMenu', data.notes);
     } else if (op === 'AUTH_INFO') {
-      BootstrapDialog.alert({
-        closable: true,
-        title: 'Insufficient privileges',
-        message: data.info.toString()
+      BootstrapDialog.show({
+          closable: true,
+          title: 'Insufficient privileges', 
+          message: data.info.toString(),
+          buttons: [{
+              label: 'Login',
+              action: function(dialog) {
+                  dialog.close();
+                  angular.element('#loginModal').modal({
+                    show: 'true'
+                  });
+              }
+          }, {
+              label: 'Cancel',
+              action: function(dialog){
+                 dialog.close();
+              }
+          }]
       });
     } else if (op === 'PARAGRAPH') {
       $rootScope.$broadcast('updateParagraph', data);

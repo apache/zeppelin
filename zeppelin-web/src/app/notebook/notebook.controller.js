@@ -702,25 +702,43 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl',
            }
 
       }
-    $scope.savePermissions = function() {
-      convertPermissionsToArray();
-      $http.put(baseUrlSrv.getRestApiBase() + '/notebook/' +$scope.note.id + '/permissions',
-        $scope.permissions, {withCredentials: true}).
-      success(function(data, status, headers, config) {
+
+  $scope.savePermissions = function () {
+    convertPermissionsToArray();
+    $http.put(baseUrlSrv.getRestApiBase() + '/notebook/' + $scope.note.id + '/permissions',
+      $scope.permissions, {withCredentials: true}).
+      success(function (data, status, headers, config) {
         console.log('Note permissions %o saved', $scope.permissions);
         BootstrapDialog.alert({
-            closable: true,
-            title: 'Permissions Saved Successfully!!!',
-            message: 'Owners : ' + $scope.permissions.owners + '\n\n' + 'Readers : ' + $scope.permissions.readers + '\n\n' + 'Writers  : ' +  $scope.permissions.writers
+          closable: true,
+          title: 'Permissions Saved Successfully!!!',
+          message: 'Owners : ' + $scope.permissions.owners + '\n\n' + 'Readers : ' + $scope.permissions.readers + '\n\n' + 'Writers  : ' + $scope.permissions.writers
         });
         $scope.showPermissions = false;
       }).
-      error(function(data, status, headers, config) {
+      error(function (data, status, headers, config) {
         console.log('Error %o %o', status, data.message);
-        BootstrapDialog.alert({
+        BootstrapDialog.show({
           closable: true,
           title: 'Insufficient privileges',
-          message: data.message
+          message: data.message,
+          buttons: [
+            {
+              label: 'Login',
+              action: function (dialog) {
+                dialog.close();
+                angular.element('#loginModal').modal({
+                  show: 'true'
+                });
+              }
+            },
+            {
+              label: 'Cancel',
+              action: function (dialog) {
+                dialog.close();
+              }
+            }
+          ]
         });
       });
     };

@@ -17,7 +17,7 @@
   -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.maven-v4_0_0.xsd">
 
   <!-- Licensed to the Apache Software Foundation (ASF) under one or more
     contributor license agreements. See the NOTICE file distributed with this
@@ -303,7 +303,6 @@
               <excludes>org/apache/zeppelin/interpreter/thrift/*</excludes>
             </configuration>
           </execution>
-
         </executions>
       </plugin>
 
@@ -460,6 +459,7 @@
               <exclude>.github/*</exclude>
               <exclude>.gitignore</exclude>
               <exclude>.repository/</exclude>
+  	      <exclude>.Rhistory</exclude>
               <exclude>**/*.diff</exclude>
               <exclude>**/*.patch</exclude>
               <exclude>**/*.avsc</exclude>
@@ -513,6 +513,7 @@
               <exclude>docs/Rakefile</exclude>
               <exclude>docs/rss.xml</exclude>
               <exclude>docs/sitemap.txt</exclude>
+              <exclude>**/dependency-reduced-pom.xml</exclude>
 
               <!-- bundled from jekyll -->
               <exclude>docs/assets/themes/zeppelin/css/syntax.css</exclude>
@@ -520,6 +521,23 @@
               <!-- docs (website) build target dir -->
               <exclude>docs/_site/**</exclude>
               <exclude>docs/Gemfile.lock</exclude>
+
+              <!-- compiled R packages (binaries) -->
+              <exclude>R/lib/**</exclude>
+
+              <!--R-related files with alternative licenses-->
+              <exclude>r/R/rzeppelin/R/globals.R</exclude>
+              <exclude>r/R/rzeppelin/R/common.R</exclude>
+              <exclude>r/R/rzeppelin/R/protocol.R</exclude>
+              <exclude>r/R/rzeppelin/R/rServer.R</exclude>
+              <exclude>r/R/rzeppelin/R/scalaInterpreter.R</exclude>
+              <exclude>r/R/rzeppelin/R/zzz.R</exclude>
+              <exclude>r/src/main/scala/scala/Console.scala</exclude>
+              <exclude>r/src/main/scala/org/apache/zeppelin/rinterpreter/rscala/Package.scala</exclude>
+              <exclude>r/src/main/scala/org/apache/zeppelin/rinterpreter/rscala/RClient.scala</exclude>
+              <!--The following files are mechanical-->
+              <exclude>r/R/rzeppelin/DESCRIPTION</exclude>
+              <exclude>r/R/rzeppelin/NAMESPACE</exclude>
             </excludes>
           </configuration>
 
@@ -671,6 +689,13 @@
       <id>geode</id>
       <modules>
         <module>geode</module>
+      </modules>
+    </profile>
+
+    <profile>
+      <id>r</id>
+      <modules>
+        <module>r</module>
       </modules>
     </profile>
 

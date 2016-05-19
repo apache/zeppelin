@@ -103,11 +103,16 @@ public abstract class Job {
     this(jobName, listener, JobProgressPoller.DEFAULT_INTERVAL_MSEC);
   }
 
+  public Job(String jobId, String jobName, JobListener listener) {
+    this(jobId, jobName, listener, JobProgressPoller.DEFAULT_INTERVAL_MSEC);
+  }
+
   public Job(String jobId, String jobName, JobListener listener, long progressUpdateIntervalMs) {
     this.jobName = jobName;
     this.listener = listener;
     this.progressUpdateIntervalMs = progressUpdateIntervalMs;
 
+    dateCreated = new Date();
     id = jobId;
 
     setStatus(Status.READY);

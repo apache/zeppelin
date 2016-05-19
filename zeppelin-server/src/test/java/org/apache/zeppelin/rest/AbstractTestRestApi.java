@@ -60,6 +60,7 @@ public abstract class AbstractTestRestApi {
   static final String url = getUrlToTest();
   protected static final boolean wasRunning = checkIfServerIsRunning();
   static boolean pySpark = false;
+  static boolean sparkR = false;
 
   private String getUrl(String path) {
     String url;
@@ -132,7 +133,7 @@ public abstract class AbstractTestRestApi {
         // set spark home for pyspark
         sparkIntpSetting.getProperties().setProperty("spark.home", getSparkHome());
         pySpark = true;
-
+        sparkR = true;
         ZeppelinServer.notebook.getInterpreterFactory().restart(sparkIntpSetting.id());
       } else {
         // assume first one is spark
@@ -148,6 +149,7 @@ public abstract class AbstractTestRestApi {
           // set spark home for pyspark
           sparkIntpSetting.getProperties().setProperty("spark.home", sparkHome);
           pySpark = true;
+          sparkR = true;
         }
 
         ZeppelinServer.notebook.getInterpreterFactory().restart(sparkIntpSetting.id());
@@ -172,6 +174,10 @@ public abstract class AbstractTestRestApi {
 
   boolean isPyspark() {
     return pySpark;
+  }
+
+  boolean isSparkR() {
+    return sparkR;
   }
 
   private static String getSparkHomeRecursively(File dir) {
@@ -368,13 +374,13 @@ public abstract class AbstractTestRestApi {
   //Create new Setting and return Setting ID
   protected String createTempSetting(String tempName)
       throws IOException, RepositoryException {
-    InterpreterGroup interpreterGroup = ZeppelinServer.notebook.getInterpreterFactory()
+    InterpreterSetting setting = ZeppelinServer.notebook.getInterpreterFactory()
         .add(tempName,
             "newGroup",
             new LinkedList<Dependency>(),
             new InterpreterOption(false),
             new Properties());
-    return interpreterGroup.getId();
+    return setting.id();
   }
 
   protected TypeSafeMatcher<? super JsonElement> hasRootElementNamed(final String memberName) {

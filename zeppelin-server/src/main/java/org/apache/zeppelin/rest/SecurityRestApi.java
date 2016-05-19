@@ -120,8 +120,7 @@ public class SecurityRestApi {
     List<String> autoSuggestList = new ArrayList<>();
     Collections.sort(usersList);
     int maxLength = 0;
-    for ( int i = 0; i < usersList.size(); i++ )
-    {
+    for (int i = 0; i < usersList.size(); i++) {
       String userLowerCase = usersList.get(i).toLowerCase();
       String searchTextLowerCase = searchText.toLowerCase();
       if (userLowerCase.indexOf(searchTextLowerCase) != -1) {

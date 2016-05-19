@@ -21,7 +21,7 @@ limitations under the License.
               <i style="font-size: 10px;" class="icon-doc"></i>
               <a class="search-results-header"
                  href="#/notebook/{{note.id}}">
-                  {{note.name || 'Note ' + note.id}}
+                  {{note.name.trim()==='' && 'Note ' + note.id.split('/',2)[0] || note.name}}
               </a>
             </h4>
           </div>

@@ -19,7 +19,7 @@ package org.apache.zeppelin.spark;
 
 import static scala.collection.JavaConversions.asJavaCollection;
 import static scala.collection.JavaConversions.asJavaIterable;
-import static scala.collection.JavaConversions.asScalaIterable;
+import static scala.collection.JavaConversions.collectionAsScalaIterable;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -95,13 +95,13 @@ public class ZeppelinContext {
     for (Tuple2<Object, String> option : asJavaIterable(options)) {
       allChecked.add(option._1());
     }
-    return checkbox(name, asScalaIterable(allChecked), options);
+    return checkbox(name, collectionAsScalaIterable(allChecked), options);
   }
 
   public scala.collection.Iterable<Object> checkbox(String name,
       scala.collection.Iterable<Object> defaultChecked,
       scala.collection.Iterable<Tuple2<Object, String>> options) {
-    return asScalaIterable(gui.checkbox(name, asJavaCollection(defaultChecked),
+    return collectionAsScalaIterable(gui.checkbox(name, asJavaCollection(defaultChecked),
       tuplesToParamOptions(options)));
   }
 
