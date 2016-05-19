@@ -110,16 +110,10 @@ public class NotebookAuthorization {
       noteAuthInfo.put("owners", new LinkedHashSet(entities));
       noteAuthInfo.put("readers", new LinkedHashSet());
       noteAuthInfo.put("writers", new LinkedHashSet());
-      authInfo.put(noteId, noteAuthInfo);
     } else {
-      Set<String> existingEntities = noteAuthInfo.get("owners");
-      if (existingEntities == null) {
-        noteAuthInfo.put("owners", new LinkedHashSet(entities));
-      } else {
-        existingEntities.clear();
-        existingEntities.addAll(entities);
-      }
+      noteAuthInfo.put("owners", new LinkedHashSet(entities));
     }
+    authInfo.put(noteId, noteAuthInfo);
     saveToFile();
   }
 
@@ -130,16 +124,10 @@ public class NotebookAuthorization {
       noteAuthInfo.put("owners", new LinkedHashSet());
       noteAuthInfo.put("readers", new LinkedHashSet(entities));
       noteAuthInfo.put("writers", new LinkedHashSet());
-      authInfo.put(noteId, noteAuthInfo);
     } else {
-      Set<String> existingEntities = noteAuthInfo.get("readers");
-      if (existingEntities == null) {
-        noteAuthInfo.put("readers", new LinkedHashSet(entities));
-      } else {
-        existingEntities.clear();
-        existingEntities.addAll(entities);
-      }
+      noteAuthInfo.put("readers", new LinkedHashSet(entities));
     }
+    authInfo.put(noteId, noteAuthInfo);
     saveToFile();
   }
 
@@ -150,17 +138,30 @@ public class NotebookAuthorization {
       noteAuthInfo.put("owners", new LinkedHashSet());
       noteAuthInfo.put("readers", new LinkedHashSet());
       noteAuthInfo.put("writers", new LinkedHashSet(entities));
-      authInfo.put(noteId, noteAuthInfo);
     } else {
-      Set<String> existingEntities = noteAuthInfo.get("writers");
-      if (existingEntities == null) {
-        noteAuthInfo.put("writers", new LinkedHashSet(entities));
-      } else {
-        existingEntities.clear();
-        existingEntities.addAll(entities);
-      }
+      noteAuthInfo.put("writers", new LinkedHashSet(entities));
     }
+    authInfo.put(noteId, noteAuthInfo);
     saveToFile();
+  }
+  
+  public boolean checkNoteUser(String noteId, HashSet<String> userAndRoles) {
+    boolean state = true;
+    Map<String, Set<String>> noteAuthInfo = authInfo.get(noteId);
+    Set<String> entities = null;
+    if (noteAuthInfo == null) {
+      entities = new HashSet<String>();
+    } else {
+      entities.addAll(noteAuthInfo.get("owners"));
+      entities.addAll(noteAuthInfo.get("readers"));
+      entities.addAll(noteAuthInfo.get("writers"));
+    }
+    
+    if (!entities.isEmpty()) {
+      state = isReader(noteId, entities);
+    }
+    
+    return state;
   }
 
   public Set<String> getOwners(String noteId) {
