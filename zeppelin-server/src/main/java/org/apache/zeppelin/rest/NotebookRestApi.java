@@ -120,6 +120,16 @@ public class NotebookRestApi {
             permMap.get("readers"),
             permMap.get("writers")
     );
+    
+    String noExistUser = checkUser(permMap);
+    
+    if (!"".equals(noExistUser)) {
+      
+      String message = "User： " + noExistUser + " not Exists，Please Check ！";
+      
+      return new JsonResponse<>(Status.FORBIDDEN, message).build();
+      
+    }
 
     HashSet<String> userAndRoles = new HashSet<String>();
     userAndRoles.add(principal);
@@ -158,6 +168,35 @@ public class NotebookRestApi {
     note.persist();
     notebookServer.broadcastNote(note);
     return new JsonResponse<>(Status.OK).build();
+  }
+  
+  private static String checkUser(HashMap<String, HashSet> permMap) {
+    
+    String userName = "";
+    
+    HashSet<String> owners = permMap.get("owners");
+    HashSet<String> readers = permMap.get("readers");
+    HashSet<String> writers = permMap.get("writers");
+    
+    HashSet<String> users = new HashSet<String>();
+    users.addAll(owners);
+    users.addAll(readers);
+    users.addAll(writers);
+    
+    for (String tmpUser : users) {
+      
+      if (!org.apache.zeppelin.utils.SecurityUtils.hasUser(tmpUser)) {
+          
+        userName = tmpUser;
+          
+        break;
+          
+      }
+      
+    }
+    
+    return userName;
+    
   }
 
   /**
