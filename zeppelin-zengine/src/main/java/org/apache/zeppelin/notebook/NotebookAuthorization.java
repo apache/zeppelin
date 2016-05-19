@@ -110,16 +110,10 @@ public class NotebookAuthorization {
       noteAuthInfo.put("owners", new LinkedHashSet(entities));
       noteAuthInfo.put("readers", new LinkedHashSet());
       noteAuthInfo.put("writers", new LinkedHashSet());
-      authInfo.put(noteId, noteAuthInfo);
     } else {
-      Set<String> existingEntities = noteAuthInfo.get("owners");
-      if (existingEntities == null) {
-        noteAuthInfo.put("owners", new LinkedHashSet(entities));
-      } else {
-        existingEntities.clear();
-        existingEntities.addAll(entities);
-      }
+      noteAuthInfo.put("owners", new LinkedHashSet(entities));
     }
+    authInfo.put(noteId, noteAuthInfo);
     saveToFile();
   }
 
@@ -130,16 +124,10 @@ public class NotebookAuthorization {
       noteAuthInfo.put("owners", new LinkedHashSet());
       noteAuthInfo.put("readers", new LinkedHashSet(entities));
       noteAuthInfo.put("writers", new LinkedHashSet());
-      authInfo.put(noteId, noteAuthInfo);
     } else {
-      Set<String> existingEntities = noteAuthInfo.get("readers");
-      if (existingEntities == null) {
-        noteAuthInfo.put("readers", new LinkedHashSet(entities));
-      } else {
-        existingEntities.clear();
-        existingEntities.addAll(entities);
-      }
+      noteAuthInfo.put("readers", new LinkedHashSet(entities));
     }
+    authInfo.put(noteId, noteAuthInfo);
     saveToFile();
   }
 
@@ -150,16 +138,10 @@ public class NotebookAuthorization {
       noteAuthInfo.put("owners", new LinkedHashSet());
       noteAuthInfo.put("readers", new LinkedHashSet());
       noteAuthInfo.put("writers", new LinkedHashSet(entities));
-      authInfo.put(noteId, noteAuthInfo);
     } else {
-      Set<String> existingEntities = noteAuthInfo.get("writers");
-      if (existingEntities == null) {
-        noteAuthInfo.put("writers", new LinkedHashSet(entities));
-      } else {
-        existingEntities.clear();
-        existingEntities.addAll(entities);
-      }
+      noteAuthInfo.put("writers", new LinkedHashSet(entities));
     }
+    authInfo.put(noteId, noteAuthInfo);
     saveToFile();
   }
   
