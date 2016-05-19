@@ -119,9 +119,7 @@ public class NotebookAuthorization {
         existingEntities.clear();
         existingEntities.addAll(entities);
       }
-      noteAuthInfo.put("owners", new LinkedHashSet(entities));
     }
-    authInfo.put(noteId, noteAuthInfo);
     saveToFile();
   }
 
@@ -141,9 +139,7 @@ public class NotebookAuthorization {
         existingEntities.clear();
         existingEntities.addAll(entities);
       }
-      noteAuthInfo.put("readers", new LinkedHashSet(entities));
     }
-    authInfo.put(noteId, noteAuthInfo);
     saveToFile();
   }
 
@@ -163,9 +159,7 @@ public class NotebookAuthorization {
         existingEntities.clear();
         existingEntities.addAll(entities);
       }
-      noteAuthInfo.put("writers", new LinkedHashSet(entities));
     }
-    authInfo.put(noteId, noteAuthInfo);
     saveToFile();
   }
   
