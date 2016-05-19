@@ -299,12 +299,11 @@ public class LivyHelper {
         "POST",
         "{\"code\": \"" + lines + "\" }",
         context.getParagraphId());
-    if (json.equals("Session not found")) {
+    if (json.matches("^(\")?Session (\'[0-9]\' )?not found(.?\"?)$")) {
       throw new Exception("Exception: Session not found, Livy server would have restarted, " +
           "or lost session.");
     }
     try {
-
       Map jsonMap = gson.fromJson(json,
           new TypeToken<Map>() {
           }.getType());
@@ -369,7 +368,8 @@ public class LivyHelper {
       }
       LOGGER.error(String.format("Error with %s StatusCode: %s",
           response.getStatusLine().getStatusCode(), responseString));
-      return null;
+      throw new Exception(String.format("Error with %s StatusCode: %s",
+          response.getStatusLine().getStatusCode(), responseString));
     }
   }
 
