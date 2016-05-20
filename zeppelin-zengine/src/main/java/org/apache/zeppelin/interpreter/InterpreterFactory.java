@@ -124,7 +124,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
         new DirectoryStream.Filter<Path>() {
           @Override
           public boolean accept(Path entry) throws IOException {
-            return Files.isDirectory(entry);
+            return Files.exists(entry) && Files.isDirectory(entry);
           }
         })) {
       String interpreterDirString = interpreterDir.toString();
