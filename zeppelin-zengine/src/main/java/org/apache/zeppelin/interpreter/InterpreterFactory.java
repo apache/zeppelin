@@ -140,24 +140,20 @@ public class InterpreterFactory implements InterpreterGroupFactory {
        */
       URLClassLoader ccl = new URLClassLoader(recursiveBuildLibList(interpreterDir.toFile()), cl);
       for (String className : interpreterClassList) {
-        // Check whether className is already registered through above logic
-        if (null == Interpreter.findRegisteredInterpreterByClassName(className)) {
-          try {
-            // Load classes
-            Class.forName(className, true, ccl);
-            Set<String> interpreterKeys = Interpreter.registeredInterpreters.keySet();
-            for (String interpreterKey : interpreterKeys) {
-              if (className.equals(
-                  Interpreter.registeredInterpreters.get(interpreterKey).getClassName())) {
-                Interpreter.registeredInterpreters.get(interpreterKey).setPath(
-                    interpreterDirString);
-                logger.info("Interpreter " + interpreterKey + " found. class=" + className);
-                cleanCl.put(interpreterDirString, ccl);
-              }
+        try {
+          // Load classes
+          Class.forName(className, true, ccl);
+          Set<String> interpreterKeys = Interpreter.registeredInterpreters.keySet();
+          for (String interpreterKey : interpreterKeys) {
+            if (className.equals(
+                Interpreter.registeredInterpreters.get(interpreterKey).getClassName())) {
+              Interpreter.registeredInterpreters.get(interpreterKey).setPath(interpreterDirString);
+              logger.info("Interpreter " + interpreterKey + " found. class=" + className);
+              cleanCl.put(interpreterDirString, ccl);
             }
-          } catch (ClassNotFoundException e) {
-            // nothing to do
           }
+        } catch (ClassNotFoundException e) {
+          // nothing to do
         }
       }
     }
