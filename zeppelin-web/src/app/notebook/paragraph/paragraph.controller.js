@@ -477,6 +477,13 @@ angular.module('zeppelinWebApp')
     websocketMsgSrv.cancelParagraphRun($scope.paragraph.id);
   };
 
+  $scope.toggleSkipOnError = function () {
+    $scope.paragraph.config.skipOnError = $scope.paragraph.config.skipOnError ? false : true;
+    var newParams = angular.copy($scope.paragraph.settings.params);
+    var newConfig = angular.copy($scope.paragraph.config);
+    commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
+  };
+
   $scope.runParagraph = function(data) {
     websocketMsgSrv.runParagraph($scope.paragraph.id, $scope.paragraph.title,
                                  data, $scope.paragraph.config, $scope.paragraph.settings.params);

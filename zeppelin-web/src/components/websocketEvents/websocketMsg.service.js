@@ -110,6 +110,10 @@ angular.module('zeppelinWebApp').service('websocketMsgSrv', function($rootScope,
       });
     },
 
+    runNote: function(noteId) {
+      websocketEvents.sendNewEvent({op: 'RUN_NOTE', data: {id: noteId}});
+    },
+
     removeParagraph: function(paragraphId) {
       websocketEvents.sendNewEvent({op: 'PARAGRAPH_REMOVE', data: {id: paragraphId}});
     },

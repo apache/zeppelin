@@ -169,17 +169,17 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl',
     document.getElementById('note.checkpoint.message').value='';
   };
 
-  $scope.runNote = function() {
+  $scope.runNote = function(noteId) {
     BootstrapDialog.confirm({
       closable: true,
       title: '',
       message: 'Run all paragraphs?',
       callback: function(result) {
-        if (result) {
-          _.forEach($scope.note.paragraphs, function (n, key) {
-            angular.element('#' + n.id + '_paragraphColumn_main').scope().runParagraph(n.text);
-          });
-        }
+        _.forEach($scope.note.paragraphs, function(n, key) {
+          angular.element('#' + n.id + '_paragraphColumn_main').scope().saveParagraph();
+        });
+
+        websocketMsgSrv.runNote(noteId);
       }
     });
   };

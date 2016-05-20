@@ -52,6 +52,8 @@ public class Message {
     IMPORT_NOTE,  // [c-s] import notebook
                   // @param object notebook
     NOTE_UPDATE,
+    RUN_NOTE,   // [c-s] run notebook
+                // @param id note id
 
     RUN_PARAGRAPH, // [c-s] run paragraph
                    // @param id paragraph id
@@ -100,7 +102,7 @@ public class Message {
 
     ANGULAR_OBJECT_UPDATE,  // [s-c] add/update angular object
     ANGULAR_OBJECT_REMOVE,  // [s-c] add angular object del
-    
+
     ANGULAR_OBJECT_UPDATED,  // [c-s] angular object value updated,
 
     ANGULAR_OBJECT_CLIENT_BIND,  // [c-s] angular object updated from AngularJS z object

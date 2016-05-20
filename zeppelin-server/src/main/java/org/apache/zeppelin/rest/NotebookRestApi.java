@@ -53,9 +53,6 @@ import org.slf4j.LoggerFactory;
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import com.google.gson.GsonBuilder;
-import com.google.gson.stream.JsonReader;
-import java.io.StringReader;
 /**
  * Rest api endpoint for the noteBook.
  */
@@ -235,7 +232,7 @@ public class NotebookRestApi {
 
   /**
    * export note REST API
-   * 
+   *
    * @param
    * @return note JSON with status.OK
    * @throws IOException
@@ -249,7 +246,7 @@ public class NotebookRestApi {
 
   /**
    * import new note REST API
-   * 
+   *
    * @param req - notebook Json
    * @return JSON with new note ID
    * @throws IOException
@@ -260,7 +257,7 @@ public class NotebookRestApi {
     Note newNote = notebook.importNote(req, null);
     return new JsonResponse<>(Status.CREATED, "", newNote.getId()).build();
   }
-  
+
   /**
    * Create new note REST API
    * @param message - JSON with new note name
@@ -280,6 +277,9 @@ public class NotebookRestApi {
         Paragraph p = note.addParagraph();
         p.setTitle(paragraphRequest.getTitle());
         p.setText(paragraphRequest.getText());
+        if (paragraphRequest.getSkipOnError()) {
+          p.getConfig().put("skipOnError", true);
+        }
       }
     }
     note.addParagraph(); // add one paragraph to the last
@@ -313,7 +313,7 @@ public class NotebookRestApi {
     notebookServer.broadcastNoteList();
     return new JsonResponse<>(Status.OK, "").build();
   }
-  
+
   /**
    * Clone note REST API
    * @param
@@ -472,7 +472,7 @@ public class NotebookRestApi {
     if (note == null) {
       return new JsonResponse<>(Status.NOT_FOUND, "note not found.").build();
     }
-    
+
     note.runAll();
     return new JsonResponse<>(Status.OK).build();
   }
@@ -500,7 +500,7 @@ public class NotebookRestApi {
     }
     return new JsonResponse<>(Status.OK).build();
   }
-  
+
   /**
    * Get notebook job status REST API
    * @param
@@ -519,10 +519,10 @@ public class NotebookRestApi {
 
     return new JsonResponse<>(Status.OK, null, note.generateParagraphsInfo()).build();
   }
-  
+
   /**
    * Run paragraph job REST API
-   * 
+   *
    * @param message - JSON with params if user wants to update dynamic form's value
    *                null, empty string, empty json if user doesn't want to update
    *
@@ -531,7 +531,7 @@ public class NotebookRestApi {
    */
   @POST
   @Path("job/{notebookId}/{paragraphId}")
-  public Response runParagraph(@PathParam("notebookId") String notebookId, 
+  public Response runParagraph(@PathParam("notebookId") String notebookId,
                                @PathParam("paragraphId") String paragraphId,
                                String message) throws
                                IOException, IllegalArgumentException {
@@ -570,7 +570,7 @@ public class NotebookRestApi {
    */
   @DELETE
   @Path("job/{notebookId}/{paragraphId}")
-  public Response stopParagraph(@PathParam("notebookId") String notebookId, 
+  public Response stopParagraph(@PathParam("notebookId") String notebookId,
                                 @PathParam("paragraphId") String paragraphId) throws
                                 IOException, IllegalArgumentException {
     LOG.info("stop paragraph job {} ", notebookId);
@@ -586,7 +586,7 @@ public class NotebookRestApi {
     p.abort();
     return new JsonResponse<>(Status.OK).build();
   }
-    
+
   /**
    * Register cron job REST API
    * @param message - JSON with cron expressions.
@@ -601,12 +601,12 @@ public class NotebookRestApi {
 
     CronRequest request = gson.fromJson(message,
                           CronRequest.class);
-    
+
     Note note = notebook.getNote(notebookId);
     if (note == null) {
       return new JsonResponse<>(Status.NOT_FOUND, "note not found.").build();
     }
-    
+
     if (!CronExpression.isValidExpression(request.getCronString())) {
       return new JsonResponse<>(Status.BAD_REQUEST, "wrong cron expressions.").build();
     }
@@ -615,10 +615,10 @@ public class NotebookRestApi {
     config.put("cron", request.getCronString());
     note.setConfig(config);
     notebook.refreshCron(note.id());
-    
+
     return new JsonResponse<>(Status.OK).build();
   }
-  
+
   /**
    * Remove cron job REST API
    * @param
@@ -635,15 +635,15 @@ public class NotebookRestApi {
     if (note == null) {
       return new JsonResponse<>(Status.NOT_FOUND, "note not found.").build();
     }
-    
+
     Map<String, Object> config = note.getConfig();
     config.put("cron", null);
     note.setConfig(config);
     notebook.refreshCron(note.id());
-    
+
     return new JsonResponse<>(Status.OK).build();
-  }  
-  
+  }
+
   /**
    * Get cron job REST API
    * @param
@@ -660,9 +660,9 @@ public class NotebookRestApi {
     if (note == null) {
       return new JsonResponse<>(Status.NOT_FOUND, "note not found.").build();
     }
-    
+
     return new JsonResponse<>(Status.OK, note.getConfig().get("cron")).build();
-  }  
+  }
 
   /**
    * Search for a Notes with permissions
