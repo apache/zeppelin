@@ -120,40 +120,44 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     String interpreterJson = conf.getInterpreterJson();
     ClassLoader cl = Thread.currentThread().getContextClassLoader();
 
-    for (Path interpreterDir : Files.newDirectoryStream(Paths.get(conf.getInterpreterDir()),
-        new DirectoryStream.Filter<Path>() {
-          @Override
-          public boolean accept(Path entry) throws IOException {
-            return Files.exists(entry) && Files.isDirectory(entry);
-          }
-        })) {
-      String interpreterDirString = interpreterDir.toString();
-
-      registerInterpreterFromPath(interpreterDirString, interpreterJson);
-
-      registerInterpreterFromResource(cl, interpreterDirString, interpreterJson);
-
-      /**
-       * TODO(jongyoul)
-       * - Remove these codes below because of legacy code
-       * - Support ThreadInterpreter
-       */
-      URLClassLoader ccl = new URLClassLoader(recursiveBuildLibList(interpreterDir.toFile()), cl);
-      for (String className : interpreterClassList) {
-        try {
-          // Load classes
-          Class.forName(className, true, ccl);
-          Set<String> interpreterKeys = Interpreter.registeredInterpreters.keySet();
-          for (String interpreterKey : interpreterKeys) {
-            if (className.equals(
-                Interpreter.registeredInterpreters.get(interpreterKey).getClassName())) {
-              Interpreter.registeredInterpreters.get(interpreterKey).setPath(interpreterDirString);
-              logger.info("Interpreter " + interpreterKey + " found. class=" + className);
-              cleanCl.put(interpreterDirString, ccl);
+    Path interpretersDir = Paths.get(conf.getInterpreterDir());
+    if (Files.exists(interpretersDir)) {
+      for (Path interpreterDir : Files.newDirectoryStream(interpretersDir,
+          new DirectoryStream.Filter<Path>() {
+            @Override
+            public boolean accept(Path entry) throws IOException {
+              return Files.exists(entry) && Files.isDirectory(entry);
             }
+          })) {
+        String interpreterDirString = interpreterDir.toString();
+
+        registerInterpreterFromPath(interpreterDirString, interpreterJson);
+
+        registerInterpreterFromResource(cl, interpreterDirString, interpreterJson);
+
+        /**
+         * TODO(jongyoul)
+         * - Remove these codes below because of legacy code
+         * - Support ThreadInterpreter
+         */
+        URLClassLoader ccl = new URLClassLoader(recursiveBuildLibList(interpreterDir.toFile()), cl);
+        for (String className : interpreterClassList) {
+          try {
+            // Load classes
+            Class.forName(className, true, ccl);
+            Set<String> interpreterKeys = Interpreter.registeredInterpreters.keySet();
+            for (String interpreterKey : interpreterKeys) {
+              if (className.equals(
+                  Interpreter.registeredInterpreters.get(interpreterKey).getClassName())) {
+                Interpreter.registeredInterpreters.get(interpreterKey).setPath(
+                    interpreterDirString);
+                logger.info("Interpreter " + interpreterKey + " found. class=" + className);
+                cleanCl.put(interpreterDirString, ccl);
+              }
+            }
+          } catch (ClassNotFoundException e) {
+            // nothing to do
           }
-        } catch (ClassNotFoundException e) {
-          // nothing to do
         }
       }
     }
