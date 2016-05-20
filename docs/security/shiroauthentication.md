@@ -2,7 +2,7 @@
 layout: page
 title: "Shiro Security for Apache Zeppelin"
 description: ""
-group: manual
+group: security
 ---
 <!--
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -59,7 +59,7 @@ Then you can browse Zeppelin at [http://localhost:8080](http://localhost:8080).
 ####4. Login
 Finally, you can login using one of the below **username/password** combinations.
 
-<center><img src="../assets/themes/zeppelin/img/docs-img/zeppelin-login.png" width="40%" height="40%"></center>
+<center><img src="../assets/themes/zeppelin/img/docs-img/zeppelin-login.png"></center>
 
 ```
 admin = password1
