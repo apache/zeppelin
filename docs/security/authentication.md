@@ -1,7 +1,7 @@
 ---
 layout: page
-title: "Authentication"
-description: "Authentication"
+title: "Authentication for NGINX"
+description: "Authentication for NGINX"
 group: security
 ---
 <!--
@@ -17,7 +17,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-# Authentication
+# Authentication for NGINX
 
 Authentication is company-specific.
 
