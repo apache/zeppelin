@@ -30,12 +30,12 @@ public class UserCredentials {
     this.userCredentials = new HashMap<>();
   }
 
-  public UsernamePassword getUsernamePassword(String dataSource) {
-    return userCredentials.get(dataSource);
+  public UsernamePassword getUsernamePassword(String entity) {
+    return userCredentials.get(entity);
   }
 
-  public void putUsernamePassword(String dataSource, UsernamePassword up) {
-    userCredentials.put(dataSource, up);
+  public void putUsernamePassword(String entity, UsernamePassword up) {
+    userCredentials.put(entity, up);
   }
 
   @Override

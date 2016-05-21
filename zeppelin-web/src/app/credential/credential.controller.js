@@ -20,13 +20,13 @@ angular.module('zeppelinWebApp').controller('CredentialCtrl', function($scope, $
 
   $scope.updateCredentials = function() {
     $http.put(baseUrlSrv.getRestApiBase() + '/credential',
-      { 'datasource': $scope.dataSource,
+      { 'entity': $scope.credentialEntity,
         'username': $scope.credentialUsername,
         'password': $scope.credentialPassword
       } ).
     success(function (data, status, headers, config) {
       alert('Successfully saved credentials');
-      $scope.dataSource = '';
+      $scope.credentialEntity = '';
       $scope.credentialUsername = '';
       $scope.credentialPassword = '';
       console.log('Success %o %o', status, data.message);
