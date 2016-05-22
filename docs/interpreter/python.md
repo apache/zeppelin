@@ -41,6 +41,9 @@ The interpreter can use all modules already installed (with pip, easy_install...
 
 ## Apply Zeppelin Dynamic Forms
 You can leverage [Zeppelin Dynamic Form]({{BASE_PATH}}/manual/dynamicform.html) inside your Python code.
+
+**Zeppelin Dynamic Form can only be used if py4j Python library is installed in your system. If not, you can install it with `pip install py4j`.**
+
 Example : 
 ```python
 %python
@@ -54,12 +57,14 @@ print (z.select("f1",[("o1","1"),("o2","2")],"2"))
 print("".join(z.checkbox("f3", [("o1","1"), ("o2","2")],["1"])))
 ```
 
+
+
+
 ## Zeppelin features not fully supported by the Python Interpreter
 
-* Interrupt a paragraph execution (`cancel()` method) is currently only supported in Linux and MacOs. If interpreter runs in another operating system (for instance MS Windows) , interrupt a paragraph will close the whole interpreter.
+* Interrupt a paragraph execution (`cancel()` method) is currently only supported in Linux and MacOs. If interpreter runs in another operating system (for instance MS Windows) , interrupt a paragraph will close the whole interpreter. A JIRA ticket is opened to implement this feature in a next release of the interpreter.
 * Progression bar in webUI  (`getProgress()` method) is currently not implemented.
 * Code-completion is currently not implemented.
-* Zeppelin Dynamic Form can only be used if py4j Python library is installed in your system. If not, you can install it with `pip install py4j`.
 
 ## Matplotlib integration
  The python interpreter can display matplotlib graph with the function **_zeppelin_show()_**
