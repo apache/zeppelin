@@ -191,13 +191,7 @@ public class JDBCInterpreter extends Interpreter {
       logger.info(properties.getProperty(DRIVER_KEY));
       Class.forName(properties.getProperty(DRIVER_KEY));
       String url = properties.getProperty(URL_KEY);
-      String user = properties.getProperty(USER_KEY);
-      String password = properties.getProperty(PASSWORD_KEY);
-      if (null != user && null != password) {
-        connection = DriverManager.getConnection(url, user, password);
-      } else {
-        connection = DriverManager.getConnection(url, properties);
-      }
+      connection = DriverManager.getConnection(url, properties);
     }
     return connection;
   }
