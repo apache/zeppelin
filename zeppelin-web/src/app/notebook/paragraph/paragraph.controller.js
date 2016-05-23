@@ -975,9 +975,9 @@ angular.module('zeppelinWebApp')
       user = pdata.authenticationInfo.user;
     }
     var dateUpdated = (pdata.dateUpdated === null) ? 'unknown' : pdata.dateUpdated;
-    var desc = 'Took '
-    + moment.duration(moment(pdata.dateFinished).diff(moment(pdata.dateStarted))).humanize()
-    + '. Last updated by ' + user + ' at ' + $rootScope.dateToString(dateUpdated) + '.';
+    var desc = 'Took ' +
+      moment.duration(moment(pdata.dateFinished).diff(moment(pdata.dateStarted))).humanize() +
+      '. Last updated by ' + user + ' at ' + $rootScope.dateToString(dateUpdated) + '.';
     if ($scope.isResultOutdated()){
       desc += ' (outdated)';
     }
