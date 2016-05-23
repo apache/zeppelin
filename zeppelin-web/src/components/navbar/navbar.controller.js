@@ -109,4 +109,8 @@ angular.module('zeppelinWebApp').controller('NavCtrl', function($scope, $rootSco
   vm.loadNotes();
   $scope.checkUsername();
 
+  $rootScope.dateToString = function(date) {
+    return moment(date).format('MMMM DD YYYY, h:mm:ss A');
+  };
+
 });
