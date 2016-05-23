@@ -262,7 +262,7 @@ public class InterpreterRestApi {
         throw new Exception("invalid request data");
       }
 
-      interpreterFactory.loadDynamicInterpreter(
+      boolean result = interpreterFactory.loadDynamicInterpreter(
         interpreterGroupName,
         interpreterName,
         request.getArtifact(),
@@ -271,10 +271,14 @@ public class InterpreterRestApi {
         request.isSnapshot()
       );
 
+      if (result == false) {
+        throw new Exception("can't not found artifact");
+      }
+
     } catch (Exception e) {
       logger.error("Exception in InterpreterRestApi while adding repository - load failed ", e);
       return new JsonResponse(
-        Status.INTERNAL_SERVER_ERROR, e.getMessage(), ExceptionUtils.getStackTrace(e)).build();
+        Status.NOT_FOUND, e.getMessage(), ExceptionUtils.getStackTrace(e)).build();
     }
     return new JsonResponse(Status.OK).build();
   }
