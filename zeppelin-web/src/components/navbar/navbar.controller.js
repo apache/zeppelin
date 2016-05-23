@@ -91,8 +91,9 @@ angular.module('zeppelinWebApp').controller('NavCtrl', function($scope, $rootSco
       });
   };
 
-  $scope.search = function() {
-    $location.url(/search/ + $scope.searchTerm);
+  $scope.search = function(searchTerm) {
+    console.log('search term ', searchTerm);
+    $location.url(/search/ + searchTerm);
   };
 
   function loadNotes() {
