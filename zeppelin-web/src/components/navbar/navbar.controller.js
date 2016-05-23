@@ -92,7 +92,6 @@ angular.module('zeppelinWebApp').controller('NavCtrl', function($scope, $rootSco
   };
 
   $scope.search = function(searchTerm) {
-    console.log('search term ', searchTerm);
     $location.url(/search/ + searchTerm);
   };
 
