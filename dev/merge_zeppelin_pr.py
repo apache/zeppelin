@@ -48,7 +48,7 @@ JIRA_USERNAME = os.environ.get("JIRA_USERNAME", "moon")
 # ASF JIRA password
 JIRA_PASSWORD = os.environ.get("JIRA_PASSWORD", "00000")
 
-GITHUB_BASE = "https://github.com/apache/incubator-zeppelin/pulls"
+GITHUB_BASE = "https://github.com/apache/incubator-zeppelin/pull"
 GITHUB_API_BASE = "https://api.github.com/repos/apache/incubator-zeppelin"
 JIRA_BASE = "https://issues.apache.org/jira/browse"
 JIRA_API_BASE = "https://issues.apache.org/jira"
