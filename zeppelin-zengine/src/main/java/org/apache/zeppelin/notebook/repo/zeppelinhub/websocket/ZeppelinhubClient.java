@@ -32,7 +32,6 @@ import org.apache.zeppelin.notebook.repo.zeppelinhub.websocket.protocol.Zeppelin
 import org.apache.zeppelin.notebook.repo.zeppelinhub.websocket.protocol.ZeppelinhubMessage;
 import org.apache.zeppelin.notebook.repo.zeppelinhub.websocket.scheduler.SchedulerService;
 import org.apache.zeppelin.notebook.repo.zeppelinhub.websocket.scheduler.ZeppelinHubHeartbeat;
-import org.apache.zeppelin.notebook.repo.zeppelinhub.websocket.scheduler.ZeppelinhubConnection;
 import org.apache.zeppelin.notebook.repo.zeppelinhub.websocket.session.ZeppelinhubSession;
 import org.apache.zeppelin.notebook.repo.zeppelinhub.websocket.utils.ZeppelinhubUtils;
 import org.apache.zeppelin.notebook.socket.Message;
@@ -112,16 +111,7 @@ public class ZeppelinhubClient {
       LOG.error("Cannot stop zeppelinhub websocket client", e);
     }
   }
-  
-  public void reconnectIfConectionLost() {
-    if (!isConnectedToZeppelinhub()) {
-      LOG.debug("Zeppelinhub connection is not open, opening it");
-      zeppelinhubSession = connect();
-    } else {
-      LOG.debug("Connection to Zeppelinhub is still open");
-    }
-  }
-  
+
   public String getToken() {
     return this.zeppelinhubToken;
   }
@@ -130,6 +120,10 @@ public class ZeppelinhubClient {
     if (!isConnectedToZeppelinhub()) {
       LOG.info("Zeppelinhub connection is not open, opening it");
       zeppelinhubSession = connect();
+      if (zeppelinhubSession == ZeppelinhubSession.EMPTY) {
+        LOG.warn("While connecting to ZeppelinHub received empty session, cannot send the message");
+        return;
+      }
     }
     zeppelinhubSession.sendByFuture(msg);
   }
@@ -168,7 +162,6 @@ public class ZeppelinhubClient {
   
   private void addRoutines() {
     schedulerService.add(ZeppelinHubHeartbeat.newInstance(this), 10, 23);
-    schedulerService.add(ZeppelinhubConnection.newInstance(this), 5, 10);
   }
 
   public void handleMsgFromZeppelinHub(String message) {
