@@ -117,9 +117,9 @@
 <!-- If using Azure for storage use the following settings -->
 <!--
 <property>
-  <name>zeppelin.notebook.azure.user</name>
-  <value>user</value>
-  <description>optional user name for Azure folder structure</description>
+  <name>zeppelin.notebook.azure.connectionString</name>
+  <value>DefaultEndpointsProtocol=https;AccountName=<accountName>;AccountKey=<accountKey></value>
+  <description>Azure account credentials</description>
 </property>
 
 <property>
@@ -129,9 +129,9 @@
 </property>
 
 <property>
-  <name>zeppelin.notebook.azure.connectionString</name>
-  <value>DefaultEndpointsProtocol=https;AccountName=<accountName>;AccountKey=<accountKey></value>
-  <description>share name for notebook storage</description>
+  <name>zeppelin.notebook.azure.user</name>
+  <value>user</value>
+  <description>optional user name for Azure folder structure</description>
 </property>
 
 <property>

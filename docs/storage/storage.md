@@ -22,8 +22,9 @@ limitations under the License.
 Zeppelin has a pluggable notebook storage mechanism controlled by `zeppelin.notebook.storage` configuration option with multiple implementations.
 There are few Notebook storage systems available for a use out of the box:
  - (default) all notes are saved in the notebook folder in your local File System - `VFSNotebookRepo`
- - there is also an option to version it using local Git repository - `GitNotebookRepo`
- - another option is Amazon's S3 service - `S3NotebookRepo`
+ - use local file system and version it using local Git repository - `GitNotebookRepo`
+ - storage using Amazon S3 service - `S3NotebookRepo`
+ - storage using Azure service - `AzureNotebookRepo`
 
 Multiple storage systems can be used at the same time by providing a comma-separated list of the class-names in the configuration.
 By default, only first two of them will be automatically kept in sync by Zeppelin.
@@ -136,5 +137,67 @@ Or using the following setting in **zeppelin-site.xml**:
   <name>zeppelin.notebook.s3.encryptionMaterialsProvider</name>
   <value>provider implementation class name</value>
   <description>Custom encryption materials provider used to encrypt notebook data in S3</description>
+```   
+
+</br>
+#### Notebook Storage  in Azure <a name="Azure"></a>
+
+Using `AzureNotebookRepo` you can connect your Zeppelin with your Azure account for notebook storage.
+
+</br>
+
+First of all, input your `AccountName`, `AccountKey`, and `Share Name` in the file **zeppelin-site.xml** by commenting out and completing the next properties:
+
+```
+<property>
+  <name>zeppelin.notebook.azure.connectionString</name>
+  <value>DefaultEndpointsProtocol=https;AccountName=<accountName>;AccountKey=<accountKey></value>
+  <description>Azure account credentials</description>
+</property>
+
+<property>
+  <name>zeppelin.notebook.azure.share</name>
+  <value>zeppelin</value>
+  <description>share name for notebook storage</description>
+</property>
+```
+
+Secondly, you can initialize `AzureNotebookRepo` class in the file **zeppelin-site.xml** by commenting the next property:
+
+```
+<property>
+  <name>zeppelin.notebook.storage</name>
+  <value>org.apache.zeppelin.notebook.repo.VFSNotebookRepo</value>
+  <description>notebook persistence layer implementation</description>
+</property>
+```
+
+and commenting out:
+
+```
+<property>
+  <name>zeppelin.notebook.storage</name>
+  <value>org.apache.zeppelin.notebook.repo.AzureNotebookRepo</value>
+  <description>notebook persistence layer implementation</description>
+</property>
+```
+
+In case you want to use simultaneously your local storage with Azure storage use the following property instead:
+
+ ```
+<property>
+  <name>zeppelin.notebook.storage</name>
+  <value>org.apache.zeppelin.notebook.repo.VFSNotebookRepo, apache.zeppelin.notebook.repo.AzureNotebookRepo</value>
+  <description>notebook persistence layer implementation</description>
+</property>
+```
+
+Optionally, you can specify Azure folder structure name in the file **zeppelin-site.xml** by commenting out the next property:
+
+ ```
+ <property>
+  <name>zeppelin.notebook.azure.user</name>
+  <value>user</value>
+  <description>optional user name for Azure folder structure</description>
 </property>
 ```
