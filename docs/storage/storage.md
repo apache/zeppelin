@@ -147,6 +147,7 @@ Using `AzureNotebookRepo` you can connect your Zeppelin with your Azure account 
 </br>
 
 First of all, input your `AccountName`, `AccountKey`, and `Share Name` in the file **zeppelin-site.xml** by commenting out and completing the next properties:
+
 ```
 <property>
   <name>zeppelin.notebook.azure.connectionString</name>
@@ -160,7 +161,9 @@ First of all, input your `AccountName`, `AccountKey`, and `Share Name` in the fi
   <description>share name for notebook storage</description>
 </property>
 ```
+
 Secondly, you can initialize `AzureNotebookRepo` class in the file **zeppelin-site.xml** by commenting the next property:
+
 ```
 <property>
   <name>zeppelin.notebook.storage</name>
@@ -168,7 +171,9 @@ Secondly, you can initialize `AzureNotebookRepo` class in the file **zeppelin-si
   <description>notebook persistence layer implementation</description>
 </property>
 ```
+
 and commenting out:
+
 ```
 <property>
   <name>zeppelin.notebook.storage</name>
@@ -176,7 +181,9 @@ and commenting out:
   <description>notebook persistence layer implementation</description>
 </property>
 ```
+
 In case you want to use simultaneously your local storage with Azure storage use the following property instead:
+
  ```
 <property>
   <name>zeppelin.notebook.storage</name>
@@ -184,7 +191,9 @@ In case you want to use simultaneously your local storage with Azure storage use
   <description>notebook persistence layer implementation</description>
 </property>
 ```
+
 Optionally, you can specify Azure folder structure name in the file **zeppelin-site.xml** by commenting out the next property:
+
  ```
  <property>
   <name>zeppelin.notebook.azure.user</name>
