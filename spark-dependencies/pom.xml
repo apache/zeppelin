@@ -37,7 +37,7 @@
 
 
   <properties>
-    <spark.version>1.6.1</spark.version>
+    <spark.version>1.4.1</spark.version>
     <scala.version>2.10.4</scala.version>
     <scala.binary.version>2.10</scala.binary.version>
 
@@ -513,6 +513,9 @@
 
     <profile>
       <id>spark-1.6</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
       <properties>
         <spark.version>1.6.1</spark.version>
         <py4j.version>0.9</py4j.version>
@@ -821,7 +824,7 @@
       <!--only used for pyspark/sparkR needed spark dist is downloaded, no need to download auto-->
       <id>spark-dist-cached</id>
       <properties>
-        <spark.iscached>deploy</spark.iscached>
+        <spark.iscached>validate</spark.iscached>
       </properties>
     </profile>
 
