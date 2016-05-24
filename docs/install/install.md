@@ -193,6 +193,18 @@ You can configure Zeppelin with both **environment variables** in `conf/zeppelin
     <td>Endpoint for the bucket</td>
   </tr>
   <tr>
+    <td>ZEPPELIN_NOTEBOOK_S3_KMS_KEY_ID</td>
+    <td>zeppelin.notebook.s3.kmsKeyID</td>
+    <td></td>
+    <td>AWS KMS Key ID to use for encrypting data in S3 (optional)</td>
+  </tr>
+  <tr>
+    <td>ZEPPELIN_NOTEBOOK_S3_EMP</td>
+    <td>zeppelin.notebook.s3.encryptionMaterialsProvider</td>
+    <td></td>
+    <td>Class name of a custom S3 encryption materials provider implementation to use for encrypting data in S3 (optional)</td>
+  </tr>
+  <tr>
     <td>ZEPPELIN_NOTEBOOK_AZURE_CONNECTION_STRING</td>
     <td>zeppelin.notebook.azure.connectionString</td>
     <td></td>
