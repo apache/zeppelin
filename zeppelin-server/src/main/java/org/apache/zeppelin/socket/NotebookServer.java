@@ -135,6 +135,9 @@ public class NotebookServer extends WebSocketServlet implements
           case LIST_NOTES:
             unicastNoteList(conn);
             break;
+          case LISTS_NOTEBOOK_JOBS:
+            unicastNotebookJobInfo(conn);
+            break;
           case RELOAD_NOTES_FROM_REPO:
             broadcastReloadedNoteList();
             break;
@@ -347,6 +350,120 @@ public class NotebookServer extends WebSocketServlet implements
     }
   }
 
+  /*
+  {
+            notebookId: '2BMFSNAAF',
+            notebookName: 'hiveNotebook',
+            notebookType: 'normal',
+            interpreter: 'hive',
+            isRunningJob: false,
+            unixTimeLastRun: 1463561562,
+            paragraphs: [
+              {
+                id: '20160509-112757_1030139246',
+                name: '20160509-112757_1030139246',
+                status: 'FINISHED'
+              },
+              {
+                id: '20160509-112757_1030139246',
+                name: '20160509-112757_1030139246',
+                status: 'FINISHED'
+              },
+
+              {
+                id: '20160509-112757_1030139246',
+                name: '20160509-112757_1030139246',
+                status: 'ABORT'
+              },
+              {
+                id: '20160509-112757_1030139246',
+                name: '20160509-112757_1030139246',
+                status: 'PENDING'
+              },
+              {
+                id: '20160509-112757_1030139246',
+                name: '20160509-112757_1030139246',
+                status: 'READY'
+              }
+            ]
+          }
+   */
+
+  public List<Map<String, Object>> generateNotebooksJobInfo(boolean needsReload) {
+    Notebook notebook = notebook();
+
+    ZeppelinConfiguration conf = notebook.getConf();
+    String homescreenNotebookId = conf.getString(ConfVars.ZEPPELIN_NOTEBOOK_HOMESCREEN);
+    boolean hideHomeScreenNotebookFromList = conf
+            .getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_HOMESCREEN_HIDE);
+
+    if (needsReload) {
+      try {
+        notebook.reloadAllNotes();
+      } catch (IOException e) {
+        LOG.error("Fail to reload notes from repository");
+      }
+    }
+
+    List<Note> notes = notebook.getAllNotes();
+    List<Map<String, Object>> notesInfo = new LinkedList<>();
+    for (Note note : notes) {
+      boolean isNotebookRunning = false;
+      Map<String, Object> info = new HashMap<>();
+
+      if (hideHomeScreenNotebookFromList && note.id().equals(homescreenNotebookId)) {
+        continue;
+      }
+
+      String cronTypeNotebookKeywork = "cron";
+      info.put("notebookId", note.id());
+      info.put("notebookName", note.getName());
+      if (note.getConfig().containsKey(cronTypeNotebookKeywork) == true
+          && !note.getConfig().get(cronTypeNotebookKeywork).equals("")) {
+        info.put("notebookType", "cron");
+      }
+      else {
+        info.put("notebookType", "normal");
+      }
+      long lastRunningUnixTime = 0;
+
+      List<Map<String, Object>> paragraphsInfo = new LinkedList<>();
+      Date lastRunningDate = null;
+      for (Paragraph paragraph : note.getParagraphs()) {
+        Map<String, Object> paragraphItem = new HashMap<>();
+        paragraphItem.put("id", paragraph.getId());
+        paragraphItem.put("name", paragraph.getTitle());
+        paragraphItem.put("status", paragraph.getStatus().toString());
+//        if (lastRunningDate == null) {
+//          lastRunningDate = paragraph.getDateStarted();
+//          lastRunningUnixTime = lastRunningDate.getTime();
+//        }
+//        else {
+//          LOG.info("start time {}", paragraph.());
+//          if (lastRunningDate.after(paragraph.getDateFinished()) == true) {
+//            lastRunningDate = paragraph.getDateFinished();
+//            lastRunningUnixTime = lastRunningDate.getTime();
+//          }
+//        }
+
+        if (paragraph.getStatus().isRunning() == true) {
+          isNotebookRunning = true;
+        }
+        paragraphsInfo.add(paragraphItem);
+      }
+
+      info.put("interpreter", note.getNoteReplLoader().getInterpreterSettings().get(0).getGroup());
+      info.put("isRunningJob", isNotebookRunning);
+      //info.put("unixTimeLastRun", lastRunningUnixTime);
+      info.put("unixTimeLastRun", 123123123);
+      info.put("paragraphs", paragraphsInfo);
+
+      notesInfo.add(info);
+    }
+
+    return notesInfo;
+  }
+
   public List<Map<String, String>> generateNotebooksInfo(boolean needsReload) {
     Notebook notebook = notebook();
 
@@ -392,6 +509,11 @@ public class NotebookServer extends WebSocketServlet implements
   public void unicastNoteList(NotebookSocket conn) {
     List<Map<String, String>> notesInfo = generateNotebooksInfo(false);
     unicast(new Message(OP.NOTES_INFO).put("notes", notesInfo), conn);
+  }
+
+  public void unicastNotebookJobInfo(NotebookSocket conn) {
+    List<Map<String, Object>> notebookJobs = generateNotebooksJobInfo(true);
+    unicast(new Message(OP.NOTES_INFO).put("notebookJobs", notebookJobs), conn);
   }
 
   public void broadcastReloadedNoteList() {
