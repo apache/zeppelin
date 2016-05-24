@@ -206,6 +206,7 @@ Optionally, you can specify Azure folder structure name in the file **zeppelin-s
 #### Notebook Storage in ZeppelinHub  <a name="ZeppelinHub"></a>
 
 ZeppelinHub storage layer allows out of the box connection of Zeppelin instance with your ZeppelinHub account. First of all, you need to either comment out the following  property in **zeppelin-site.xml**:
+
 ```
 <!-- For connecting your Zeppelin with ZeppelinHub -->
 <!--
@@ -216,11 +217,15 @@ ZeppelinHub storage layer allows out of the box connection of Zeppelin instance 
 </property>
 -->
 ```
+
 or set the environment variable in the file **zeppelin-env.sh**:
+
 ```
 export ZEPPELIN_NOTEBOOK_STORAGE="org.apache.zeppelin.notebook.repo.VFSNotebookRepo, org.apache.zeppelin.notebook.repo.zeppelinhub.ZeppelinHubRepo"
 ```
+
 Secondly, you need to set the environment variables in the file **zeppelin-env.sh**:
+
 ```
 export ZEPPELINHUB_API_TOKEN = ZeppelinHub token
 export ZEPPELINHUB_API_ADDRESS = address of ZeppelinHub service (e.g. https://www.zeppelinhub.com)
