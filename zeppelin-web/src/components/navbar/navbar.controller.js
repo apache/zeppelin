@@ -16,7 +16,6 @@
 
 angular.module('zeppelinWebApp').controller('NavCtrl', function($scope, $rootScope, $http, $routeParams,
     $location, notebookListDataFactory, baseUrlSrv, websocketMsgSrv, arrayOrderingSrv) {
-
   /** Current list of notes (ids) */
 
   $scope.showLoginWindow = function() {
