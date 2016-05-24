@@ -114,9 +114,8 @@ public class Credentials {
       out.append(jsonString);
       out.close();
       fos.close();
-    } catch  (IOException e) {
-      LOG.error("Error saving credentials file");
-      e.printStackTrace();
+    } catch (IOException e) {
+      LOG.error("Error saving credentials file", e);
     }
   }
 
