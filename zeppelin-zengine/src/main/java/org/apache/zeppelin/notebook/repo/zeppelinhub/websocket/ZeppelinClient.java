@@ -30,7 +30,10 @@ import org.apache.zeppelin.notebook.repo.zeppelinhub.security.Authentication;
 import org.apache.zeppelin.notebook.repo.zeppelinhub.websocket.listener.ZeppelinWebsocket;
 import org.apache.zeppelin.notebook.repo.zeppelinhub.websocket.protocol.ZeppelinhubMessage;
 import org.apache.zeppelin.notebook.repo.zeppelinhub.websocket.scheduler.SchedulerService;
+import org.apache.zeppelin.notebook.repo.zeppelinhub.websocket.scheduler.ZeppelinHeartbeat;
+import org.apache.zeppelin.notebook.repo.zeppelinhub.websocket.scheduler.ZeppelinHubHeartbeat;
 import org.apache.zeppelin.notebook.socket.Message;
+import org.apache.zeppelin.notebook.socket.Message.OP;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.client.ClientUpgradeRequest;
@@ -53,8 +56,9 @@ public class ZeppelinClient {
   private static Gson gson;
   private ConcurrentHashMap<String, Session> zeppelinConnectionMap;
   private static ZeppelinClient instance = null;
-
+  private SchedulerService schedulerService;
   private Authentication authModule;
+  private static final int min = 60;
 
   public static ZeppelinClient initialize(String zeppelinUrl, String token, 
       ZeppelinConfiguration conf) {
@@ -74,6 +78,7 @@ public class ZeppelinClient {
     wsClient = createNewWebsocketClient();
     gson = new Gson();
     zeppelinConnectionMap = new ConcurrentHashMap<>();
+    schedulerService = SchedulerService.getInstance();
     authModule = Authentication.initialize(token, conf);
     if (authModule != null) {
       SchedulerService.getInstance().addOnce(authModule, 10);
@@ -84,6 +89,7 @@ public class ZeppelinClient {
   private WebSocketClient createNewWebsocketClient() {
     SslContextFactory sslContextFactory = new SslContextFactory();
     WebSocketClient client = new WebSocketClient(sslContextFactory);
+    client.setMaxIdleTimeout(5 * min * 1000);
     //TODO(khalid): other client settings
     return client;
   }
@@ -92,12 +98,17 @@ public class ZeppelinClient {
     try {
       if (wsClient != null) {
         wsClient.start();
+        addRoutines();
       } else {
         LOG.warn("Cannot start zeppelin websocket client - isn't initialized");
       }
     } catch (Exception e) {
       LOG.error("Cannot start Zeppelin websocket client", e);
     }
+  }
+
+  private void addRoutines() {
+    schedulerService.add(ZeppelinHeartbeat.newInstance(this), 15, 4 * min);
   }
 
   public void stop() {
@@ -256,6 +267,17 @@ public class ZeppelinClient {
       zeppelinConnectionMap.remove(entry.getKey());
     }
     LOG.info("Removed all Zeppelin ws connections");
+  }
+
+  public void pingAllNotes() {
+    for (Map.Entry<String, Session> entry: zeppelinConnectionMap.entrySet()) {
+      if (isSessionOpen(entry.getValue())) {
+        send(new Message(OP.PING), entry.getKey());
+      } else {
+        // for cleanup
+        zeppelinConnectionMap.remove(entry.getKey());
+      }
+    }
   }
 
   public int countConnectedNotes() {
