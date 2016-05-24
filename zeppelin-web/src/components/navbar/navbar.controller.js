@@ -103,6 +103,12 @@ angular.module('zeppelinWebApp').controller('NavCtrl', function($scope, $rootSco
     return ($routeParams.noteId === noteId);
   }
 
+  $rootScope.noteName = function(note) {
+    if (!_.isEmpty(note)) {
+      return arrayOrderingSrv.getNoteName(note);
+    }
+  };
+
   vm.loadNotes = loadNotes;
   vm.isActive = isActive;
 
