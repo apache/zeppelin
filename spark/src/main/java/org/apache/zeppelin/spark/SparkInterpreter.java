@@ -276,15 +276,19 @@ public class SparkInterpreter extends Interpreter {
         classServerUri = (String) classServer.invoke(interpreter.intp());
       } catch (NoSuchMethodException | SecurityException | IllegalAccessException
           | IllegalArgumentException | InvocationTargetException e) {
-        throw new InterpreterException(e);
+        logger.warn(String.format("Spark method classServerUri not available due to: [%s]", 
+           e.getMessage()));
       }
     }
 
     SparkConf conf =
         new SparkConf()
             .setMaster(getProperty("master"))
-            .setAppName(getProperty("spark.app.name"))
-            .set("spark.repl.class.uri", classServerUri);
+            .setAppName(getProperty("spark.app.name"));
+
+    if (classServerUri != null) {
+      conf.set("spark.repl.class.uri", classServerUri);
+    } 
 
     if (jars.length > 0) {
       conf.setJars(jars);
