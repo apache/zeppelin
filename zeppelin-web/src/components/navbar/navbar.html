@@ -10,6 +10,18 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
+<script type="text/ng-template" id="notebook_list_renderer.html">
+  <a ng-if="note.id" href="#/notebook/{{note.id}}">{{noteName(note)}} </a>
+  <li ng-if="!note.id"
+      class="dropdown-submenu">
+    <a tabindex="-1" href="javascript: void(0)">{{noteName(note)}}</a>
+    <ul class="dropdown-menu">
+      <li ng-repeat="note in note.children track by $index" ng-class="{'active' : navbar.isActive(note.id)}" ng-include="'notebook_list_renderer.html'">
+      </li>
+    </ul>
+  </li>
+</script>
+
 <div class="navbar navbar-inverse navbar-fixed-top" style="display: none;" role="navigation" ng-class="{'displayNavBar': !asIframe}">
   <div class="container">
     <div class="navbar-header">
@@ -32,8 +44,7 @@ limitations under the License.
             <li class="divider"></li>
             <div id="notebook-list" class="scrollbar-container">
               <li class="filter-names" ng-include="'components/filterNoteNames/filter-note-names.html'"></li>
-              <li ng-repeat="note in navbar.notes.root.children | filter:query | orderBy:home.arrayOrderingSrv.notebookListOrdering track by $index">
-                <a style="text-decoration: none;" href="#/notebook/{{note.id}}">{{noteName(note)}}</a>
+              <li ng-repeat="note in navbar.notes.root.children | filter:query track by $index" ng-class="{'active' : navbar.isActive(note.id)}" ng-include="'notebook_list_renderer.html'">
               </li>
             </div>
           </ul>
