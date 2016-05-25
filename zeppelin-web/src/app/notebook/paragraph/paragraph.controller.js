@@ -984,7 +984,7 @@ angular.module('zeppelinWebApp')
   };
 
   $scope.getElapsedTime = function() {
-    return "Started " + moment($scope.paragraph.dateStarted).fromNow() + ".";
+    return 'Started ' + moment($scope.paragraph.dateStarted).fromNow() + '.';
   };
 
   $scope.isResultOutdated = function() {
