@@ -27,12 +27,12 @@ body {
  background-color:#3071a9;
 }
 
-.navbar-inverse .navbar-nav > li > a:hover, 
+.navbar-inverse .navbar-nav > li > a:hover,
 .navbar-inverse .navbar-nav > li > a:focus {
   color: #ffffff;
   background-color: #2C6094;
 }
-.navbar-inverse .navbar-nav > li > a.active:hover, 
+.navbar-inverse .navbar-nav > li > a.active:hover,
 .navbar-inverse .navbar-nav > li > a.active:focus {
   text-decoration: none;
   background-color: #265380;
@@ -311,9 +311,11 @@ body {
 .navbar-collapse.collapse {
     max-height: 50px;}
 
-#apache .caret {
+.navbar-inverse .navbar-nav a .caret,
+.navbar-inverse .navbar-nav a:hover .caret {
     margin-left: 4px;
     border-top-color: #FFF;
+    border-bottom-color: #FFF;
 }
 
 .navbar-inverse .navbar-nav > .open > a,
@@ -323,7 +325,7 @@ body {
   background-color: #286090;
 }
 
-/* Custom, iPhone Retina */ 
+/* Custom, iPhone Retina */
 @media only screen and (max-width : 480px) {
   .jumbotron h1 {
     display: none;
@@ -356,7 +358,7 @@ and (max-width : 1024px) {
 
 /* docs dropdown menu */
 #docs {
-    
+
 }
 
 #docs .dropdown-menu {
