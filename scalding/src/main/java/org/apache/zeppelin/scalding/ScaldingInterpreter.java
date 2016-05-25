@@ -17,21 +17,16 @@
 
 package org.apache.zeppelin.scalding;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.PrintStream;
-import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.io.*;
+import java.util.*;
 import java.net.URL;
 import java.net.URLClassLoader;
 
+import com.twitter.scalding.ScaldingILoop;
+import org.apache.commons.io.output.WriterOutputStream;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
+import org.apache.zeppelin.interpreter.InterpreterPropertyBuilder;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.scheduler.Scheduler;
@@ -44,6 +39,7 @@ import scala.Console;
 import scala.Some;
 import scala.None;
 import scala.tools.nsc.Settings;
+import scala.tools.nsc.interpreter.IMain;
 import scala.tools.nsc.settings.MutableSettings.BooleanSetting;
 import scala.tools.nsc.settings.MutableSettings.PathSetting;
 
@@ -54,16 +50,22 @@ import scala.tools.nsc.settings.MutableSettings.PathSetting;
 public class ScaldingInterpreter extends Interpreter {
   Logger logger = LoggerFactory.getLogger(ScaldingInterpreter.class);
 
+  static final String ARGS_STRING = "args.string";
+
   public static final List<String> NO_COMPLETION = 
     Collections.unmodifiableList(new ArrayList<String>());
 
   static {
-    Interpreter.register("scalding", ScaldingInterpreter.class.getName());
+    Interpreter.register(
+      "scalding",
+      "scalding",
+      ScaldingInterpreter.class.getName(),
+      new InterpreterPropertyBuilder()
+        .add(ARGS_STRING, "--hdfs --repl", "Arguments for scalding REPL").build());
   }
 
   private ScaldingILoop interpreter;
   private ByteArrayOutputStream out;
-  private Map<String, Object> binder;
 
   public ScaldingInterpreter(Properties property) {
     super(property);
@@ -72,104 +74,19 @@ public class ScaldingInterpreter extends Interpreter {
 
   @Override
   public void open() {
-    URL[] urls = getClassloaderUrls();
-
-    // Very nice discussion about how scala compiler handle classpath
-    // https://groups.google.com/forum/#!topic/scala-user/MlVwo2xCCI0
-
-    /*
-     * > val env = new nsc.Settings(errLogger) > env.usejavacp.value = true > val p = new
-     * Interpreter(env) > p.setContextClassLoader > Alternatively you can set the class path through
-     * nsc.Settings.classpath.
-     *
-     * >> val settings = new Settings() >> settings.usejavacp.value = true >>
-     * settings.classpath.value += File.pathSeparator + >> System.getProperty("java.class.path") >>
-     * val in = new Interpreter(settings) { >> override protected def parentClassLoader =
-     * getClass.getClassLoader >> } >> in.setContextClassLoader()
-     */
-    Settings settings = new Settings();
-
-    // set classpath for scala compiler
-    PathSetting pathSettings = settings.classpath();
-    String classpath = "";
-    List<File> paths = currentClassPath();
-    for (File f : paths) {
-      if (classpath.length() > 0) {
-        classpath += File.pathSeparator;
-      }
-      classpath += f.getAbsolutePath();
-    }
-
-    if (urls != null) {
-      for (URL u : urls) {
-        if (classpath.length() > 0) {
-          classpath += File.pathSeparator;
-        }
-        classpath += u.getFile();
-      }
-    }
-
-    pathSettings.v_$eq(classpath);
-    settings.scala$tools$nsc$settings$ScalaSettings$_setter_$classpath_$eq(pathSettings);
-
-
-    // set classloader for scala compiler
-    settings.explicitParentLoader_$eq(new Some<ClassLoader>(Thread.currentThread()
-        .getContextClassLoader()));
-    BooleanSetting b = (BooleanSetting) settings.usejavacp();
-    b.v_$eq(true);
-    settings.scala$tools$nsc$settings$StandardScalaSettings$_setter_$usejavacp_$eq(b);
-
-    /* Scalding interpreter */
-    PrintStream printStream = new PrintStream(out);
-    interpreter = new ScaldingILoop(null, new PrintWriter(out));
-    interpreter.settings_$eq(settings);
-    interpreter.createInterpreter();
-
-    interpreter.intp().
-      interpret("@transient var _binder = new java.util.HashMap[String, Object]()");
-    binder = (Map<String, Object>) getValue("_binder");
-    binder.put("out", printStream);
-  }
-
-  private Object getValue(String name) {
-    Object ret = interpreter.intp().valueOfTerm(name);
-    if (ret instanceof None) {
-      return null;
-    } else if (ret instanceof Some) {
-      return ((Some) ret).get();
+    logger.info("property: {}", property);
+    String argsString = property.getProperty(ARGS_STRING);
+    String[] args;
+    if (argsString == null) {
+      args = new String[0];
     } else {
-      return ret;
+      args = argsString.split(" ");
     }
-  }
+    logger.info("{}", Arrays.toString(args));
 
-  private List<File> currentClassPath() {
-    List<File> paths = classPath(Thread.currentThread().getContextClassLoader());
-    String[] cps = System.getProperty("java.class.path").split(File.pathSeparator);
-    if (cps != null) {
-      for (String cp : cps) {
-        paths.add(new File(cp));
-      }
-    }
-    return paths;
-  }
-
-  private List<File> classPath(ClassLoader cl) {
-    List<File> paths = new LinkedList<File>();
-    if (cl == null) {
-      return paths;
-    }
-
-    if (cl instanceof URLClassLoader) {
-      URLClassLoader ucl = (URLClassLoader) cl;
-      URL[] urls = ucl.getURLs();
-      if (urls != null) {
-        for (URL url : urls) {
-          paths.add(new File(url.getFile()));
-        }
-      }
-    }
-    return paths;
+    PrintWriter printWriter = new PrintWriter(out, true);
+    interpreter = com.twitter.scalding.ZeppelinScaldingShell.getRepl(args, printWriter);
+    interpreter.createInterpreter();
   }
 
   @Override
@@ -205,8 +122,13 @@ public class ScaldingInterpreter extends Interpreter {
     }
     linesToRun[lines.length] = "print(\"\")";
 
-    Console.setOut((java.io.PrintStream) binder.get("out"));
     out.reset();
+
+    // Moving two lines below from open() to this function.
+    // If they are in open output is incomplete.
+    PrintStream printStream = new PrintStream(out, true);
+    Console.setOut(printStream);
+
     Code r = null;
     String incomplete = "";
     boolean inComment = false;
@@ -261,7 +183,6 @@ public class ScaldingInterpreter extends Interpreter {
         incomplete = "";
       }
     }
-
     if (r == Code.INCOMPLETE) {
       return new InterpreterResult(r, "Incomplete expression");
     } else {
@@ -306,4 +227,5 @@ public class ScaldingInterpreter extends Interpreter {
   public List<String> completion(String buf, int cursor) {
     return NO_COMPLETION;
   }
+
 }
