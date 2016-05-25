@@ -129,7 +129,7 @@ public class ZeppelinhubClient {
   }
   
   private boolean isConnectedToZeppelinhub() {
-    return  (zeppelinhubSession == null || !zeppelinhubSession.isSessionOpen()) ? false : true;
+    return (zeppelinhubSession != null && zeppelinhubSession.isSessionOpen());
   }
 
   private ZeppelinhubSession connect() {

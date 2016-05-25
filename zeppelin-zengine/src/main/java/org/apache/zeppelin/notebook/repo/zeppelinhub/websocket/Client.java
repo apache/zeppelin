@@ -22,7 +22,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * TODO(xxx): Add description
+ * Client to connect Zeppelin and ZeppelinHub via websocket API.
+ * Implemented using singleton pattern.
  * 
  */
 public class Client {
