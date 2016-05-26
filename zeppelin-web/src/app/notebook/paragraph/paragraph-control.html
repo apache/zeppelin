@@ -76,6 +76,16 @@ limitations under the License.
            ng-show="!paragraph.config.lineNumbers"><span class="fa fa-list-ol"></span> Show line numbers</a>
       </li>
       <li>
+        <a ng-click="$event.stopPropagation()" class="dropdown"><span class="fa fa-ellipsis-h"></span> TabSize
+          <form style="display:inline; margin-left:5px;">
+            <select ng-model="paragraph.config.tabSize"
+                    class="selectpicker"
+                    ng-change="changeTabSize()"
+                    ng-options="col for col in tabSizeOption"></select>
+          </form>
+        </a>
+      </li>
+      <li>
         <a ng-click="toggleEnableDisable()"><span class="icon-control-play"></span>
           {{paragraph.config.enabled ? "Disable" : "Enable"}} run</a>
       </li>
