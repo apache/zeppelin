@@ -42,7 +42,7 @@ angular.module('zeppelinWebApp')
   })
   .controller('JobmanagerCtrl',
     function($scope, $route, $routeParams, $location, $rootScope, $http,
-             websocketMsgSrv, baseUrlSrv, $timeout, SaveAsService, myJobFilter) {
+             websocketMsgSrv, baseUrlSrv, $interval, SaveAsService, myJobFilter) {
 
       $scope.$on('setNotebookJobs', function(event, note) {
         console.log('packet recevied ', note);
@@ -56,7 +56,7 @@ angular.module('zeppelinWebApp')
             value : '*'
           }
         ];
-        var interpreterLists = _.uniq(_.pluck($scope.jobInfomations, 'interpreter'), true);
+        var interpreterLists = _.uniq(_.pluck($scope.jobInfomations, 'interpreter'), false);
         for (var index = 0, length = interpreterLists.length; index < length; index++) {
           $scope.ACTIVE_INTERPRETERS.push({
             name : interpreterLists[index],
@@ -73,243 +73,14 @@ angular.module('zeppelinWebApp')
         $scope.FILTER_VALUE_NOTEBOOK_NAME = '';
         $scope.FILTER_VALUE_INTERPRETER = '*';
         $scope.jobTypeFilter = myJobFilter;
-        //$scope.jobInfomations = initTestPacket();
         $scope.jobInfomations = [];
         $scope.JobInfomationsByFilter = $scope.jobInfomations;
 
         websocketMsgSrv.getNotebookJobsList();
-      };
+        var refreshObj = $interval(websocketMsgSrv.getNotebookJobsList, 1200);
 
-      var initTestPacket = function () {
-        return [
-          {
-            notebookId: '2BMFSNAAF',
-            notebookName: 'myNotebook',
-            notebookType: 'normal',
-            interpreter: 'mySpark',
-            isRunningJob: true,
-            unixTimeLastRun: 1463561562,
-            paragraphs: [
-              {
-                id: '20160509-112757_1030139246',
-                name: '20160509-112757_1030139246',
-                status: 'FINISHED'
-              },
-              {
-                id: '20160509-112757_1030139246',
-                name: '20160509-112757_1030139246',
-                status: 'FINISHED'
-              },
-              {
-                id: '20160509-112757_1030139246',
-                name: '20160509-112757_1030139246',
-                status: 'RUNNING'
-              },
-
-              {
-                id: '20160509-112757_1030139246',
-                name: '20160509-112757_1030139246',
-                status: 'PENDING'
-              },
-              {
-                id: '20160509-112757_1030139246',
-                name: '20160509-112757_1030139246',
-                status: 'PENDING'
-              },
-              {
-                id: '20160509-112757_1030139246',
-                name: '20160509-112757_1030139246',
-                status: 'READY'
-              }
-            ]
-          },
-          {
-            notebookId: '2BMFSNAAF',
-            notebookName: 'hiveNotebook',
-            notebookType: 'normal',
-            interpreter: 'hive',
-            isRunningJob: false,
-            unixTimeLastRun: 1463561562,
-            paragraphs: [
-              {
-                id: '20160509-112757_1030139246',
-                name: '20160509-112757_1030139246',
-                status: 'FINISHED'
-              },
-              {
-                id: '20160509-112757_1030139246',
-                name: '20160509-112757_1030139246',
-                status: 'FINISHED'
-              },
-
-              {
-                id: '20160509-112757_1030139246',
-                name: '20160509-112757_1030139246',
-                status: 'ABORT'
-              },
-              {
-                id: '20160509-112757_1030139246',
-                name: '20160509-112757_1030139246',
-                status: 'PENDING'
-              },
-              {
-                id: '20160509-112757_1030139246',
-                name: '20160509-112757_1030139246',
-                status: 'READY'
-              }
-            ]
-          },
-          {
-            notebookId: '2BMFSNAAF',
-            notebookName: 'R Notebook',
-            notebookType: 'cron',
-            interpreter: 'r',
-            isRunningJob: true,
-            unixTimeLastRun: 1463561562,
-            paragraphs: [
-              {
-                id: '20160509-112757_1030139246',
-                name: '20160509-112757_1030139246',
-                status: 'FINISHED'
-              },
-              {
-                id: '20160509-112757_1030139246',
-                name: '20160509-112757_1030139246',
-                status: 'FINISHED'
-              },
-              {
-                id: '20160509-112757_1030139246',
-                name: '20160509-112757_1030139246',
-                status: 'RUNNING'
-              },
-
-              {
-                id: '20160509-112757_1030139246',
-                name: '20160509-112757_1030139246',
-                status: 'PENDING'
-              },
-              {
-                id: '20160509-112757_1030139246',
-                name: '20160509-112757_1030139246',
-                status: 'ERROR'
-              },
-              {
-                id: '20160509-112757_1030139246',
-                name: '20160509-112757_1030139246',
-                status: 'ERROR'
-              }
-            ]
-          },
-          {
-            notebookId: '2BMFSNAAF',
-            notebookName: 'myNotebook',
-            notebookType: 'normal',
-            interpreter: 'mySpark',
-            isRunningJob: false,
-            unixTimeLastRun: 1463561562,
-            paragraphs: [
-              {
-                id: '20160509-112757_1030139246',
-                name: '20160509-112757_1030139246',
-                status: 'READY'
-              },
-              {
-                id: '20160509-112757_1030139246',
-                name: '20160509-112757_1030139246',
-                status: 'READY'
-              },
-              {
-                id: '20160509-112757_1030139246',
-                name: '20160509-112757_1030139246',
-                status: 'READY'
-              },
-              {
-                id: '20160509-112757_1030139246',
-                name: '20160509-112757_1030139246',
-                status: 'READY'
-              },
-              {
-                id: '20160509-112757_1030139246',
-                name: '20160509-112757_1030139246',
-                status: 'READY'
-              },
-              {
-                id: '20160509-112757_1030139246',
-                name: '20160509-112757_1030139246',
-                status: 'READY'
-              },
-              {
-                id: '20160509-112757_1030139246',
-                name: '20160509-112757_1030139246',
-                status: 'READY'
-              },
-              {
-                id: '20160509-112757_1030139246',
-                name: '20160509-112757_1030139246',
-                status: 'READY'
-              },
-              {
-                id: '20160509-112757_1030139246',
-                name: '20160509-112757_1030139246',
-                status: 'READY'
-              },
-              {
-                id: '20160509-112757_1030139246',
-                name: '20160509-112757_1030139246',
-                status: 'READY'
-              },
-              {
-                id: '20160509-112757_1030139246',
-                name: '20160509-112757_1030139246',
-                status: 'READY'
-              },
-              {
-                id: '20160509-112757_1030139246',
-                name: '20160509-112757_1030139246',
-                status: 'READY'
-              },
-              {
-                id: '20160509-112757_1030139246',
-                name: '20160509-112757_1030139246',
-                status: 'READY'
-              },
-              {
-                id: '20160509-112757_1030139246',
-                name: '20160509-112757_1030139246',
-                status: 'READY'
-              },
-              {
-                id: '20160509-112757_1030139246',
-                name: '20160509-112757_1030139246',
-                status: 'READY'
-              },
-              {
-                id: '20160509-112757_1030139246',
-                name: '20160509-112757_1030139246',
-                status: 'READY'
-              },
-              {
-                id: '20160509-112757_1030139246',
-                name: '20160509-112757_1030139246',
-                status: 'READY'
-              },
-              {
-                id: '20160509-112757_1030139246',
-                name: '20160509-112757_1030139246',
-                status: 'READY'
-              },
-              {
-                id: '20160509-112757_1030139246',
-                name: '20160509-112757_1030139246',
-                status: 'READY'
-              },
-              {
-                id: '20160509-112757_1030139246',
-                name: '20160509-112757_1030139246',
-                status: 'READY'
-              }
-            ]
-          }
-        ];
+        $scope.$on('$destroy', function() {
+          $interval.cancel(refreshObj);
+        });
       };
 });

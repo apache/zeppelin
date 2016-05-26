@@ -350,45 +350,6 @@ public class NotebookServer extends WebSocketServlet implements
     }
   }
 
-  /*
-  {
-            notebookId: '2BMFSNAAF',
-            notebookName: 'hiveNotebook',
-            notebookType: 'normal',
-            interpreter: 'hive',
-            isRunningJob: false,
-            unixTimeLastRun: 1463561562,
-            paragraphs: [
-              {
-                id: '20160509-112757_1030139246',
-                name: '20160509-112757_1030139246',
-                status: 'FINISHED'
-              },
-              {
-                id: '20160509-112757_1030139246',
-                name: '20160509-112757_1030139246',
-                status: 'FINISHED'
-              },
-
-              {
-                id: '20160509-112757_1030139246',
-                name: '20160509-112757_1030139246',
-                status: 'ABORT'
-              },
-              {
-                id: '20160509-112757_1030139246',
-                name: '20160509-112757_1030139246',
-                status: 'PENDING'
-              },
-              {
-                id: '20160509-112757_1030139246',
-                name: '20160509-112757_1030139246',
-                status: 'READY'
-              }
-            ]
-          }
-   */
-
   public List<Map<String, Object>> generateNotebooksJobInfo(boolean needsReload) {
     Notebook notebook = notebook();
 
@@ -431,27 +392,40 @@ public class NotebookServer extends WebSocketServlet implements
       else {
         info.put("notebookType", "normal");
       }
+
+      Date lastRunningDate = null;
       long lastRunningUnixTime = 0;
 
       List<Map<String, Object>> paragraphsInfo = new LinkedList<>();
-      Date lastRunningDate = null;
       for (Paragraph paragraph : note.getParagraphs()) {
         Map<String, Object> paragraphItem = new HashMap<>();
         paragraphItem.put("id", paragraph.getId());
-        paragraphItem.put("name", paragraph.getTitle());
-        LOG.info("{}, {}", paragraph.getTitle(), paragraph.isRunning());
+        String paragraphName = paragraph.getTitle();
+        if (paragraphName != null) {
+          paragraphItem.put("name", paragraphName);
+        } else {
+          paragraphItem.put("name", paragraph.getId());
+        }
         paragraphItem.put("status", paragraph.getStatus().toString());
-//        if (lastRunningDate == null) {
-//          lastRunningDate = paragraph.getDateStarted();
-//          lastRunningUnixTime = lastRunningDate.getTime();
-//        }
-//        else {
-//          LOG.info("start time {}", paragraph.());
-//          if (lastRunningDate.after(paragraph.getDateFinished()) == true) {
-//            lastRunningDate = paragraph.getDateFinished();
-//            lastRunningUnixTime = lastRunningDate.getTime();
-//          }
-//        }
+
+        LOG.info("lastRunningDate {}", lastRunningDate);
+        LOG.info("{} {} {}", paragraph.getDateCreated(),
+          paragraph.getDateStarted(), paragraph.getDateFinished());
+
+        Date paragaraphDate = paragraph.getDateStarted();
+        if (paragaraphDate == null) {
+          paragaraphDate = paragraph.getDateCreated();
+        }
+
+        if (lastRunningDate == null) {
+          lastRunningDate = paragaraphDate;
+        } else {
+          if (lastRunningDate.after(paragaraphDate) == true) {
+            lastRunningDate = paragaraphDate;
+          }
+        }
+
+        lastRunningUnixTime = lastRunningDate.getTime();
 
         if (paragraph.getStatus().isRunning() == true) {
           isNotebookRunning = true;
@@ -461,8 +435,7 @@ public class NotebookServer extends WebSocketServlet implements
 
       info.put("interpreter", note.getNoteReplLoader().getInterpreterSettings().get(0).getGroup());
       info.put("isRunningJob", isNotebookRunning);
-      //info.put("unixTimeLastRun", lastRunningUnixTime);
-      info.put("unixTimeLastRun", 123123123);
+      info.put("unixTimeLastRun", lastRunningUnixTime);
       info.put("paragraphs", paragraphsInfo);
 
       notesInfo.add(info);

@@ -22,7 +22,18 @@ angular.module('zeppelinWebApp')
     };
 
     $scope.getProgress = function () {
-      return 80;
+      var statusList = _.pluck($scope.notebookJob.paragraphs, 'status');
+      var runningJob = _.countBy(statusList, function (status) {
+        if (status === 'FINISHED' || status === 'RUNNING') {
+          return 'matchCount';
+        } else {
+          return 'none';
+        }
+      });
+      var totalCount = statusList.length;
+      var runningJobCount = runningJob.matchCount;
+      var result = Math.ceil(runningJobCount / totalCount * 100);
+      return isNaN(result)? 0 : result;
     };
 
     $scope.isRunningNotebook = function (jobInformation) {
@@ -31,7 +42,7 @@ angular.module('zeppelinWebApp')
     };
 
     $scope.lastExecuteTime = function (unixtime) {
-      return moment.unix(unixtime).fromNow();
+      return moment.unix(unixtime/1000).fromNow();
     };
 
 });
