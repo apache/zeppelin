@@ -21,21 +21,21 @@ limitations under the License.
 
 The first time you connect to Zeppelin, you'll land at the main page similar to the below screen capture
 
-<img src="/assets/themes/zeppelin/img/ui-img/homepage.png" />
+<img src="../assets/themes/zeppelin/img/ui-img/homepage.png" />
 
-On the left of the page are listed all existing notes. Those notes are stored by default in the `$ZEPPELIN_HOME/notebook` folder. 
+On the left of the page are listed all existing notes. Those notes are stored by default in the `$ZEPPELIN_HOME/notebook` folder.
 
-You can filter them by name using the input text form. You can also create an new note, refresh the list of existing notes 
+You can filter them by name using the input text form. You can also create an new note, refresh the list of existing notes
 (in case you manually copy them into the `$ZEPPELIN_HOME/notebook` folder) and import a note
-  
-<img src="/assets/themes/zeppelin/img/ui-img/notes_management.png" />
- 
+
+<img src="../assets/themes/zeppelin/img/ui-img/notes_management.png" />
+
 When clicking on `Import Note` link, a new dialog open. From there you can import your note from local disk or from a remote location
 if you provide the URL.
- 
-<img src="/assets/themes/zeppelin/img/ui-img/note_import_dialog.png" />
 
-By default, the name of the imported note is the same as the original note but you can override it by providing a new name 
+<img src="../assets/themes/zeppelin/img/ui-img/note_import_dialog.png" />
+
+By default, the name of the imported note is the same as the original note but you can override it by providing a new name
 
 <br />
 ## Menus
@@ -67,10 +67,10 @@ This menu displays all the Zeppelin configuration that are set in the config fil
 
 
 <br />
-## Note Layout 
+## Note Layout
 
-Each Zeppelin note is composed of 1 .. N paragraphs. The note can be viewed as a paragraph container. 
- 
+Each Zeppelin note is composed of 1 .. N paragraphs. The note can be viewed as a paragraph container.
+
 <img src="../assets/themes/zeppelin/img/ui-img/note_paragraph_layout.png" />
 
 ### Paragraph
@@ -78,20 +78,20 @@ Each Zeppelin note is composed of 1 .. N paragraphs. The note can be viewed as a
 Each paragraph consists of 2 sections: `code section` where you put your source code and `result section` where you can see the result of the code execution.
 
 <img src="../assets/themes/zeppelin/img/ui-img/paragraph_layout.png" />
- 
+
 On the top-right corner of each paragraph there are some commands to:
- 
+
 * execute the paragraph code
 * hide/show `code section`
 * hide/show `result section`
 * configure the paragraph
 
 To configure the paragraph, just click on the gear icon:
- 
+
 <img src="../assets/themes/zeppelin/img/ui-img/paragraph_configuration_dialog.png" />
- 
+
 From this dialog, you can (in descending order):
- 
+
 * find the **paragraph id** ( **20150924-163507_134879501** )
 * control paragraph width. Since Zeppelin is using the grid system of **Twitter Bootstrap**, each paragraph width can be changed from 1 to 12
 * move the paragraph 1 level up
@@ -103,19 +103,19 @@ From this dialog, you can (in descending order):
 * export the current paragraph as an **iframe** and open the **iframe** in a new window
 * clear the `result section`
 * delete the current paragraph
-  
+
 ### Note toolbar
-  
+
 At the top of the note, you can find a toolbar which exposes command buttons as well as configuration, security and display options
-  
-<img src="../assets/themes/zeppelin/img/ui-img/note_toolbar.png" />  
-   
+
+<img src="../assets/themes/zeppelin/img/ui-img/note_toolbar.png" />
+
 On the far right is displayed the note name, just click on it to reveal the input form and update it
-   
+
 In the middle of the toolbar you can find the command buttons:
-   
+
 * execute all the paragraphs **sequentially**, in their display order
-* hide/show `code section` of all paragraphs      
+* hide/show `code section` of all paragraphs
 * hide/show `result section` of all paragraphs
 * clear the `result section` of all paragraphs
 * clone the current note
@@ -127,13 +127,10 @@ In the middle of the toolbar you can find the command buttons:
 <img src="../assets/themes/zeppelin/img/ui-img/note_commands.png" />
 
 On the right of the note tool bar you can find configuration icons:
- 
+
 * display all the keyboard shorcuts
 * configure the interpreters binding to the current note
 * configure the note permissions
 * switch the node display mode between `default`, `simple` and `report`
 
 <img src="../assets/themes/zeppelin/img/ui-img/note_configuration.png" />
- 
- 
- 
