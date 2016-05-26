@@ -361,7 +361,7 @@ public class NotebookServer extends WebSocketServlet implements
       try {
         notebook.reloadAllNotes();
       } catch (IOException e) {
-        LOG.error("Fail to reload notes from repository");
+        LOG.error("Fail to reload notes from repository", e);
       }
     }
 
