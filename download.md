@@ -19,9 +19,9 @@ limitations under the License.
 -->
 {% include JB/setup %}
 
-### Download Zeppelin
+### Download Apache Zeppelin
 
-The latest release of Apache Zeppelin (incubating) is **0.5.6-incubating**.
+The latest release of Apache Zeppelin is **0.5.6-incubating**.
 
   - 0.5.6-incubating released on Jan 22, 2016 ([release notes](./releases/zeppelin-release-0.5.6-incubating.html)) ([git tag](https://git-wip-us.apache.org/repos/asf?p=incubator-zeppelin.git;a=tag;h=refs/tags/v0.5.6))
 
