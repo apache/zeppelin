@@ -44,35 +44,40 @@ angular.module('zeppelinWebApp')
     function($scope, $route, $routeParams, $location, $rootScope, $http,
              websocketMsgSrv, baseUrlSrv, $timeout, SaveAsService, myJobFilter) {
 
-
-      $scope.doFiltering = function (jobInfomations, FILTER_VALUE_INTERPRETER, FILTER_VALUE_NOTEBOOK_NAME) {
-        $scope.JobInfomationsByFilter = $scope.jobTypeFilter(jobInfomations, FILTER_VALUE_INTERPRETER, FILTER_VALUE_NOTEBOOK_NAME);
-      };
-
-      $scope.init = function () {
-
-        $scope.FILTER_VALUE_NOTEBOOK_NAME = '';
-        $scope.FILTER_VALUE_INTERPRETER = '*';
-        $scope.jobTypeFilter = myJobFilter;
+      $scope.$on('setNotebookJobs', function(event, note) {
+        console.log('packet recevied ', note);
+        $scope.jobInfomations = note;
+        $scope.JobInfomationsByFilter = $scope.jobTypeFilter(
+          $scope.jobInfomations, $scope.FILTER_VALUE_INTERPRETER, $scope.FILTER_VALUE_NOTEBOOK_NAME
+        );
         $scope.ACTIVE_INTERPRETERS = [
           {
             name : 'ALL',
             value : '*'
           }
         ];
-        $scope.jobInfomations = initTestPacket();
-        $scope.JobInfomationsByFilter = $scope.jobInfomations;
-        // initialize packet
-        $scope.JobInfomationsByFilter = $scope.jobTypeFilter(
-          $scope.jobInfomations, $scope.FILTER_VALUE_INTERPRETER, $scope.FILTER_VALUE_NOTEBOOK_NAME
-        );
-        var interpreterLists = _.pluck($scope.jobInfomations, 'interpreter');
+        var interpreterLists = _.uniq(_.pluck($scope.jobInfomations, 'interpreter'), true);
         for (var index = 0, length = interpreterLists.length; index < length; index++) {
           $scope.ACTIVE_INTERPRETERS.push({
             name : interpreterLists[index],
             value : interpreterLists[index]
           });
         }
+      });
+
+      $scope.doFiltering = function (jobInfomations, FILTER_VALUE_INTERPRETER, FILTER_VALUE_NOTEBOOK_NAME) {
+        $scope.JobInfomationsByFilter = $scope.jobTypeFilter(jobInfomations, FILTER_VALUE_INTERPRETER, FILTER_VALUE_NOTEBOOK_NAME);
+      };
+
+      $scope.init = function () {
+        $scope.FILTER_VALUE_NOTEBOOK_NAME = '';
+        $scope.FILTER_VALUE_INTERPRETER = '*';
+        $scope.jobTypeFilter = myJobFilter;
+        //$scope.jobInfomations = initTestPacket();
+        $scope.jobInfomations = [];
+        $scope.JobInfomationsByFilter = $scope.jobInfomations;
+
+        websocketMsgSrv.getNotebookJobsList();
       };
 
       var initTestPacket = function () {

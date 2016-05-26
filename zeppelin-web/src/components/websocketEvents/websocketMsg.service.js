@@ -37,6 +37,10 @@ angular.module('zeppelinWebApp').service('websocketMsgSrv', function($rootScope,
       websocketEvents.sendNewEvent({op: 'LIST_NOTES'});
     },
 
+    getNotebookJobsList: function() {
+      websocketEvents.sendNewEvent({op: 'LIST_NOTEBOOK_JOBS'});
+    },
+
     reloadAllNotesFromRepo: function() {
       websocketEvents.sendNewEvent({op: 'RELOAD_NOTES_FROM_REPO'});
     },

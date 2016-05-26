@@ -114,7 +114,7 @@ public class Message {
     CHECKPOINT_NOTEBOOK,     // [c-s] checkpoint notebook to storage repository
                             // @param noteId
                             // @param checkpointName
-    LISTS_NOTEBOOK_JOBS
+    LIST_NOTEBOOK_JOBS
 
   }
 

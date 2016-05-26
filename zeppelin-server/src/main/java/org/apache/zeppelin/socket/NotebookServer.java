@@ -135,7 +135,7 @@ public class NotebookServer extends WebSocketServlet implements
           case LIST_NOTES:
             unicastNoteList(conn);
             break;
-          case LISTS_NOTEBOOK_JOBS:
+          case LIST_NOTEBOOK_JOBS:
             unicastNotebookJobInfo(conn);
             break;
           case RELOAD_NOTES_FROM_REPO:
@@ -417,7 +417,13 @@ public class NotebookServer extends WebSocketServlet implements
 
       String cronTypeNotebookKeywork = "cron";
       info.put("notebookId", note.id());
-      info.put("notebookName", note.getName());
+      String notebookName = note.getName();
+      if (notebookName != null) {
+        info.put("notebookName", note.getName());
+      } else {
+        info.put("notebookName", note.id());
+      }
+
       if (note.getConfig().containsKey(cronTypeNotebookKeywork) == true
           && !note.getConfig().get(cronTypeNotebookKeywork).equals("")) {
         info.put("notebookType", "cron");
@@ -433,6 +439,7 @@ public class NotebookServer extends WebSocketServlet implements
         Map<String, Object> paragraphItem = new HashMap<>();
         paragraphItem.put("id", paragraph.getId());
         paragraphItem.put("name", paragraph.getTitle());
+        LOG.info("{}, {}", paragraph.getTitle(), paragraph.isRunning());
         paragraphItem.put("status", paragraph.getStatus().toString());
 //        if (lastRunningDate == null) {
 //          lastRunningDate = paragraph.getDateStarted();
@@ -512,8 +519,9 @@ public class NotebookServer extends WebSocketServlet implements
   }
 
   public void unicastNotebookJobInfo(NotebookSocket conn) {
-    List<Map<String, Object>> notebookJobs = generateNotebooksJobInfo(true);
-    unicast(new Message(OP.NOTES_INFO).put("notebookJobs", notebookJobs), conn);
+    LOG.info("request unicast notebook job info");
+    List<Map<String, Object>> notebookJobs = generateNotebooksJobInfo(false);
+    unicast(new Message(OP.LIST_NOTEBOOK_JOBS).put("notebookJobs", notebookJobs), conn);
   }
 
   public void broadcastReloadedNoteList() {
