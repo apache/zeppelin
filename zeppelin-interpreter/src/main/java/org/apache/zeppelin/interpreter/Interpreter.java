@@ -301,7 +301,11 @@ public abstract class Interpreter {
   }
 
   public static void register(RegisteredInterpreter registeredInterpreter) {
-    registeredInterpreters.put(registeredInterpreter.getInterpreterKey(), registeredInterpreter);
+    // TODO(jongyoul): Error should occur when two same interpreter key with different settings
+    String interpreterKey = registeredInterpreter.getInterpreterKey();
+    if (!registeredInterpreters.containsKey(interpreterKey)) {
+      registeredInterpreters.put(interpreterKey, registeredInterpreter);
+    }
   }
 
   public static RegisteredInterpreter findRegisteredInterpreterByClassName(String className) {
