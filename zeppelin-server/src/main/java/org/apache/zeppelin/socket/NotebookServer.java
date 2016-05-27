@@ -26,6 +26,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import com.google.common.base.Strings;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
@@ -60,7 +61,8 @@ public class NotebookServer extends WebSocketServlet implements
         NotebookSocketListener, JobListenerFactory, AngularObjectRegistryListener,
         RemoteInterpreterProcessListener {
   private static final Logger LOG = LoggerFactory.getLogger(NotebookServer.class);
-  Gson gson = new Gson();
+  Gson gson = new GsonBuilder()
+          .setDateFormat("yyyy-MM-dd'T'HH:mm:ssZ").create();
   final Map<String, List<NotebookSocket>> noteSocketMap = new HashMap<>();
   final Queue<NotebookSocket> connectedSockets = new ConcurrentLinkedQueue<>();
 
@@ -452,7 +454,7 @@ public class NotebookServer extends WebSocketServlet implements
       try {
         notebook.reloadAllNotes();
       } catch (IOException e) {
-        LOG.error("Fail to reload notes from repository");
+        LOG.error("Fail to reload notes from repository", e);
       }
     }
 
