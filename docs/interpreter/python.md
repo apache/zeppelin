@@ -47,13 +47,13 @@ You can leverage [Zeppelin Dynamic Form]({{BASE_PATH}}/manual/dynamicform.html) 
 Example : 
 ```python
 %python
-# Input fom
+### Input form
 print (z.input("f1","defaultValue"))
 
-# Select fom
+### Select form
 print (z.select("f1",[("o1","1"),("o2","2")],"2"))
 
-#Checkbox form
+### Checkbox form
 print("".join(z.checkbox("f3", [("o1","1"), ("o2","2")],["1"])))
 ```
 
@@ -62,13 +62,14 @@ print("".join(z.checkbox("f3", [("o1","1"), ("o2","2")],["1"])))
 
 ## Zeppelin features not fully supported by the Python Interpreter
 
-* Interrupt a paragraph execution (`cancel()` method) is currently only supported in Linux and MacOs. If interpreter runs in another operating system (for instance MS Windows) , interrupt a paragraph will close the whole interpreter. A JIRA ticket is opened to implement this feature in a next release of the interpreter.
+* Interrupt a paragraph execution (`cancel()` method) is currently only supported in Linux and MacOs. If interpreter runs in another operating system (for instance MS Windows) , interrupt a paragraph will close the whole interpreter. A JIRA ticket ([ZEPPELIN-893](https://issues.apache.org/jira/browse/ZEPPELIN-893)) is opened to implement this feature in a next release of the interpreter.
 * Progression bar in webUI  (`getProgress()` method) is currently not implemented.
 * Code-completion is currently not implemented.
 
 ## Matplotlib integration
  The python interpreter can display matplotlib graph with the function **_zeppelin_show()_**
  You need to already have matplotlib module installed  and a running XServer to use this functionality !
+ 
  ```python
 %python
 import matplotlib.pyplot as plt
@@ -78,13 +79,14 @@ zeppelin_show(plt)
 plt.close()
 ```
 zeppelin_show function can take optional parameters to adapt graph width and height
+
  ```python
 %python
 zeppelin_show(plt,width='50px')
 zeppelin_show(plt,height='150px')
 ```
 
-[![pythonmatplotlib](/docs/interpreter/screenshots/pythonMatplotlib.png)](/docs/interpreter/screenshots/pythonMatplotlib.png)
+[![pythonmatplotlib](../interpreter/screenshots/pythonMatplotlib.png)](/docs/interpreter/screenshots/pythonMatplotlib.png)
 
 
 ## Technical description - Interpreter architecture
