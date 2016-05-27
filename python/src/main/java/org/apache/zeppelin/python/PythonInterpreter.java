@@ -181,7 +181,7 @@ public class PythonInterpreter extends Interpreter {
     else
       return process;
   }
-  
+
   private Job getRunningJob(String paragraphId) {
     Job foundJob = null;
     Collection<Job> jobsRunning = getScheduler().getJobsRunning();
@@ -215,12 +215,13 @@ public class PythonInterpreter extends Interpreter {
             PythonInterpreter.class.getResourceAsStream(file)));
     String line = null;
     String bootstrapCode = "";
+
     while ((line = bootstrapReader.readLine()) != null) {
       bootstrapCode += line + "\n";
     }
-
-    if (py4J && port != null && port != -1)
+    if (py4J && port != null && port != -1) {
       bootstrapCode = bootstrapCode.replaceAll("\\%PORT\\%", port.toString());
+    }
     logger.info("Bootstrap python interpreter with \n " + bootstrapCode);
     sendCommandToPython(bootstrapCode);
   }

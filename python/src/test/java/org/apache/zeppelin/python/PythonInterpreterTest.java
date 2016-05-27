@@ -46,6 +46,9 @@ import java.net.Socket;
 import java.net.SocketAddress;
 import java.util.Properties;
 
+/**
+ * Python interpreter unit test
+ */
 public class PythonInterpreterTest {
 
   Logger logger = LoggerFactory.getLogger(PythonProcess.class);
@@ -65,21 +68,11 @@ public class PythonInterpreterTest {
     mockPythonProcess = mock(PythonProcess.class);
     when(mockPythonProcess.getPid()).thenReturn((long) 1);
     try {
-      when(mockPythonProcess.sendAndGetResult(anyString())).thenAnswer(new Answer<String>() {
+      when(mockPythonProcess.sendAndGetResult(anyString())).thenAnswer(
+          new Answer<String>() {
         @Override
         public String answer(InvocationOnMock invocationOnMock) throws Throwable {
-          Object[] args = invocationOnMock.getArguments();
-          String cmd = (String) args[0];
-          if (cmd != null) {
-            cmdHistory += cmd;
-            String[] lines = cmd.split("\\n");
-            String output = "";
-            for (int i = 0; i < lines.length; i++) {
-              output += ">>>" + lines[i];
-            }
-            return output;
-
-          } else return ">>>";
+          return answerFromPythonMock(invocationOnMock);
         }
       });
     } catch (IOException e) {
@@ -101,7 +94,6 @@ public class PythonInterpreterTest {
 
 
   }
-
 
   @Test
   public void testOpenInterpreter() {
@@ -216,6 +208,26 @@ public class PythonInterpreterTest {
       }
     }
     return working;
+  }
+
+
+
+  private String answerFromPythonMock(InvocationOnMock invocationOnMock) {
+    Object[] inputs = invocationOnMock.getArguments();
+    String cmdToExecute = (String) inputs[0];
+
+    if (cmdToExecute != null) {
+      cmdHistory += cmdToExecute;
+      String[] lines = cmdToExecute.split("\\n");
+      String output = "";
+
+      for (int i = 0; i < lines.length; i++) {
+        output += ">>>" + lines[i];
+      }
+      return output;
+    } else {
+      return ">>>";
+    }
   }
 
 }
