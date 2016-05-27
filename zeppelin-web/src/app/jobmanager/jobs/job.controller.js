@@ -98,7 +98,7 @@ angular.module('zeppelinWebApp')
                 message: errorText
               });
             });
-          };
+          }
         }
       });
     };
