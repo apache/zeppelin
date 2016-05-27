@@ -408,10 +408,6 @@ public class NotebookServer extends WebSocketServlet implements
         }
         paragraphItem.put("status", paragraph.getStatus().toString());
 
-        LOG.info("lastRunningDate {}", lastRunningDate);
-        LOG.info("{} {} {}", paragraph.getDateCreated(),
-          paragraph.getDateStarted(), paragraph.getDateFinished());
-
         Date paragaraphDate = paragraph.getDateStarted();
         if (paragaraphDate == null) {
           paragaraphDate = paragraph.getDateCreated();
@@ -492,7 +488,6 @@ public class NotebookServer extends WebSocketServlet implements
   }
 
   public void unicastNotebookJobInfo(NotebookSocket conn) {
-    LOG.info("request unicast notebook job info");
     List<Map<String, Object>> notebookJobs = generateNotebooksJobInfo(false);
     unicast(new Message(OP.LIST_NOTEBOOK_JOBS).put("notebookJobs", notebookJobs), conn);
   }

@@ -27,65 +27,60 @@ limitations under the License.
       </div>
     </div>
   </div>
-  <div>
-    <hr />
+  <div style="margin: 0px">
+    <hr style="margin-top: 10px; margin-bottom: 10px;" />
   </div>
+
   <div class="row">
     <div class="col-md-4 text-left">
           <div class="form-inline">
             <select
               class="form-control"
               ng-options="option.value as option.name for option in ACTIVE_INTERPRETERS"
-              ng-model="FILTER_VALUE_INTERPRETER"
-              ng-change="doFiltering(jobInfomations, FILTER_VALUE_INTERPRETER, FILTER_VALUE_NOTEBOOK_NAME)">
+              ng-model="filterConfig.FILTER_VALUE_INTERPRETER"
+              ng-change="doFiltering(jobInfomations, filterConfig)">
             </select>
             <input
               class="form-control"
-              type="text" ng-model="FILTER_VALUE_NOTEBOOK_NAME"
-              ng-change="doFiltering(jobInfomations, FILTER_VALUE_INTERPRETER, FILTER_VALUE_NOTEBOOK_NAME)"/>
+              type="text" ng-model="filterConfig.FILTER_VALUE_NOTEBOOK_NAME"
+              ng-change="doFiltering(jobInfomations, filterConfig)"/>
           </div>
     </div>
-    <div class="col-md-8 text-right">
+    <div
+      class="col-md-8 text-right"
+      style="padding-top: 6px;">
       <span
         ng-repeat="jobStatus in ['READY', 'FINISHED', 'ABORT', 'ERROR','PENDING','RUNNING']"
-        ng-switch="jobStatus"
-      >
+        ng-switch="jobStatus">
         <span
-          ng-switch-when="FINISHED"
-        >
+          ng-switch-when="FINISHED">
           <i style="color: green; margin-right: 3px;" class="fa fa-circle"
              ng-click=""
-             tooltip="FINISHED"
-          >
+             tooltip="FINISHED">
           </i>
           {{jobStatus}}
         </span>
         <span
           ng-switch-when="RUNNING"
-          style="margin-right: 3px;"
-        >
+          style="margin-right: 3px;">
           <i style="color: blue" class="fa fa-spinner"
              ng-click=""
-             tooltip="RUNNING"
-          >
+             tooltip="RUNNING">
           </i>
           {{jobStatus}}
         </span>
         <span
           ng-switch-when="READY"
-          style="margin-right: 3px;"
-        >
+          style="margin-right: 3px;">
           <i style="color: green" class="fa fa-circle-o"
              ng-click=""
-             tooltip="READY"
-          >
+             tooltip="READY">
           </i>
           {{jobStatus}}
         </span>
         <span
           ng-switch-when="PENDING"
-          style="margin-right: 3px;"
-        >
+          style="margin-right: 3px;">
           <i style="color: gray" class="fa fa-circle"
              ng-click=""
              tooltip="PENDING"
@@ -95,27 +90,33 @@ limitations under the License.
         </span>
         <span
           ng-switch-when="ABORT"
-          style="margin-right: 3px;"
-        >
+          style="margin-right: 3px;">
           <i style="color: orange" class="fa fa-circle"
              ng-click=""
-             tooltip="ABORT"
-          >
+             tooltip="ABORT">
           </i>
           {{jobStatus}}
         </span>
         <span
           ng-switch-when="ERROR"
-          style="margin-right: 3px;"
-        >
+          style="margin-right: 3px;">
           <i style="color: red" class="fa fa-circle"
              ng-click=""
-             tooltip="ERROR"
-          >
+             tooltip="ERROR">
           </i>
           {{jobStatus}}
         </span>
       </span>
+    </div>
+  </div>
+  <div class="row margin-top">
+    <div class="col-md-12 text-right">
+      <span>
+      Running the notebook always on top
+      </span>
+      <input type="checkbox"
+             ng-model="filterConfig.RUNNING_ALWAYS_TOP"
+             ng-click="onChangeRunJobToAlwaysTopToggle(jobInfomations, filterConfig)">
     </div>
   </div>
 </div>
@@ -127,17 +128,14 @@ limitations under the License.
     class="paragraph-col">
     <div ng-include src="'app/jobmanager/jobs/job.html'"
          class="job-space box job-margin"
-         ng-controller="JobCtrl"
-    >
+         ng-controller="JobCtrl">
     </div>
   </div>
   <div
     ng-if="JobInfomationsByFilter.length <= 0"
-    class="paragraph-col"
-  >
+    class="paragraph-col">
     <div
-      class="job-space box job-margin text-center"
-    >
+      class="job-space box job-margin text-center">
       Data does not exist
     </div>
   </div>

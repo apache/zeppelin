@@ -33,11 +33,11 @@ limitations under the License.
     <span
       ng-if="notebookJob.isRunningJob === false"
       class="icon-control-play" style="cursor:pointer;color:#3071A9" tooltip-placement="top" tooltip="START ALL Job"
-      ng-click="">
+      ng-click="runNotebookJob(notebookJob.notebookId)">
     </span>
     <span
       ng-if="notebookJob.isRunningJob === true"
       class="icon-control-pause" style="cursor:pointer;color:#3071A9" tooltip-placement="top" tooltip="STOP ALL Job"
-      ng-click="">
+      ng-click="stopNotebookJob(notebookJob.notebookId)">
     </span>
 </div>

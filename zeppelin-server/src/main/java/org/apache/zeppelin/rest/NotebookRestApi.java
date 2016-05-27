@@ -32,6 +32,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Notebook;
@@ -472,8 +473,13 @@ public class NotebookRestApi {
     if (note == null) {
       return new JsonResponse<>(Status.NOT_FOUND, "note not found.").build();
     }
-    
-    note.runAll();
+    try {
+      note.runAll();
+    } catch (InterpreterException intpException) {
+      return new JsonResponse<>(Status.INTERNAL_SERVER_ERROR, intpException.getMessage()).build();
+    } catch (Exception e) {
+      return new JsonResponse<>(Status.INTERNAL_SERVER_ERROR, e.getMessage()).build();
+    }
     return new JsonResponse<>(Status.OK).build();
   }
 
@@ -493,10 +499,14 @@ public class NotebookRestApi {
       return new JsonResponse<>(Status.NOT_FOUND, "note not found.").build();
     }
 
-    for (Paragraph p : note.getParagraphs()) {
-      if (!p.isTerminated()) {
-        p.abort();
+    try {
+      for (Paragraph p : note.getParagraphs()) {
+        if (!p.isTerminated()) {
+          p.abort();
+        }
       }
+    } catch (Exception e) {
+      return new JsonResponse<>(Status.INTERNAL_SERVER_ERROR, e.getMessage()).build();
     }
     return new JsonResponse<>(Status.OK).build();
   }

@@ -17,27 +17,29 @@
 angular.module('zeppelinWebApp')
   .filter('myJob', function() {
 
-    function filterContext(JobItems, FILTER_VALUE_INTERPRETER, FILTER_VALUE_NOTEBOOK_NAME) {
+    function filterContext(JobItems, filterConfig) {
+      var FILTER_VALUE_INTERPRETER = filterConfig.FILTER_VALUE_INTERPRETER;
+      var FILTER_VALUE_NOTEBOOK_NAME = filterConfig.FILTER_VALUE_NOTEBOOK_NAME;
+      var RUNNING_ALWAYS_TOP = filterConfig.RUNNING_ALWAYS_TOP;
+
       var filterItems = JobItems;
       if (FILTER_VALUE_INTERPRETER !== '*') {
         filterItems = _.where(filterItems, {interpreter : FILTER_VALUE_INTERPRETER});
-        console.log(filterItems);
+      }
+
+      if (RUNNING_ALWAYS_TOP === true) {
+        filterItems = _.sortBy(filterItems, 'isRunningJob').reverse();
       }
 
       if (FILTER_VALUE_NOTEBOOK_NAME !== '') {
-
         filterItems = _.filter(filterItems, function(jobItem){
           var lowerFilterValue = FILTER_VALUE_NOTEBOOK_NAME.toLocaleLowerCase();
           var lowerNotebookName = jobItem.notebookName.toLocaleLowerCase();
           return lowerNotebookName.match(new RegExp('.*'+lowerFilterValue+'.*'));
-		  });
+		    });
       }
-
-      console.log(_.sortBy(filterItems, 'isRunningJob'));
-
-      return _.sortBy(filterItems, 'isRunningJob').reverse();
+      return filterItems;
     }
-
     return filterContext;
   })
   .controller('JobmanagerCtrl',
@@ -45,11 +47,8 @@ angular.module('zeppelinWebApp')
              websocketMsgSrv, baseUrlSrv, $interval, SaveAsService, myJobFilter) {
 
       $scope.$on('setNotebookJobs', function(event, note) {
-        console.log('packet recevied ', note);
         $scope.jobInfomations = note;
-        $scope.JobInfomationsByFilter = $scope.jobTypeFilter(
-          $scope.jobInfomations, $scope.FILTER_VALUE_INTERPRETER, $scope.FILTER_VALUE_NOTEBOOK_NAME
-        );
+        $scope.JobInfomationsByFilter = $scope.jobTypeFilter($scope.jobInfomations, $scope.filterConfig);
         $scope.ACTIVE_INTERPRETERS = [
           {
             name : 'ALL',
@@ -65,19 +64,27 @@ angular.module('zeppelinWebApp')
         }
       });
 
-      $scope.doFiltering = function (jobInfomations, FILTER_VALUE_INTERPRETER, FILTER_VALUE_NOTEBOOK_NAME) {
-        $scope.JobInfomationsByFilter = $scope.jobTypeFilter(jobInfomations, FILTER_VALUE_INTERPRETER, FILTER_VALUE_NOTEBOOK_NAME);
+      $scope.doFiltering = function (jobInfomations, filterConfig) {
+        $scope.JobInfomationsByFilter = $scope.jobTypeFilter(jobInfomations, filterConfig);
+      };
+
+      $scope.onChangeRunJobToAlwaysTopToggle = function (jobInfomations, filterConfig) {
+        $scope.isRunJobToAlwaysTopToggle = !$scope.isRunJobToAlwaysTopToggle;
+        $scope.doFiltering(jobInfomations, filterConfig);
       };
 
       $scope.init = function () {
-        $scope.FILTER_VALUE_NOTEBOOK_NAME = '';
-        $scope.FILTER_VALUE_INTERPRETER = '*';
+        $scope.filterConfig = {
+          RUNNING_ALWAYS_TOP : true,
+          FILTER_VALUE_NOTEBOOK_NAME : '',
+          FILTER_VALUE_INTERPRETER : '*'
+        };
         $scope.jobTypeFilter = myJobFilter;
         $scope.jobInfomations = [];
         $scope.JobInfomationsByFilter = $scope.jobInfomations;
 
         websocketMsgSrv.getNotebookJobsList();
-        var refreshObj = $interval(websocketMsgSrv.getNotebookJobsList, 1200);
+        var refreshObj = $interval(websocketMsgSrv.getNotebookJobsList, 1000);
 
         $scope.$on('$destroy', function() {
           $interval.cancel(refreshObj);
