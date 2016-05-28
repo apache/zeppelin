@@ -249,9 +249,6 @@ public class ZeppelinServer extends Application {
     webapp.setSessionHandler(new SessionHandler());
     webapp.addServlet(cxfServletHolder, "/api/*");
 
-    webapp.addFilter(new FilterHolder(CorsFilter.class), "/*",
-        EnumSet.allOf(DispatcherType.class));
-
     webapp.setInitParameter("shiroConfigLocations",
         new File(conf.getShiroPath()).toURI().toString());
 
@@ -284,6 +281,9 @@ public class ZeppelinServer extends Application {
     // Explicit bind to root
     webApp.addServlet(new ServletHolder(new DefaultServlet()), "/*");
     contexts.addHandler(webApp);
+
+    webApp.addFilter(new FilterHolder(CorsFilter.class), "/*",
+        EnumSet.allOf(DispatcherType.class));
 
     return webApp;
 

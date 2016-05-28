@@ -1026,16 +1026,20 @@ angular.module('zeppelinWebApp')
       return '';
     }
     var user = 'anonymous';
-    var authInfo = pdata.authenticationInfo;
-    if (authInfo && authInfo.user) {
+    if (pdata.authenticationInfo !== null && !isEmpty(pdata.authenticationInfo.user)) {
       user = pdata.authenticationInfo.user;
     }
-    var dateUpdated = (pdata.dateUpdated === null) ? 'unknown' : pdata.dateUpdated;
-    var desc = 'Took ' + (timeMs/1000) + ' seconds. Last updated by ' + user + ' at time ' + dateUpdated + '.';
+    var desc = 'Took ' +
+      moment.duration(moment(pdata.dateFinished).diff(moment(pdata.dateStarted))).humanize() +
+      '. Last updated by ' + user + ' at ' + moment(pdata.dateUpdated).format('MMMM DD YYYY, h:mm:ss A') + '.';
     if ($scope.isResultOutdated()){
       desc += ' (outdated)';
     }
     return desc;
+  };
+
+  $scope.getElapsedTime = function() {
+    return 'Started ' + moment($scope.paragraph.dateStarted).fromNow() + '.';
   };
 
   $scope.isResultOutdated = function() {

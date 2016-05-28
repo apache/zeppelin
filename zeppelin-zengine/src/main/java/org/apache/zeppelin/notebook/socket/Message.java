@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.zeppelin.socket;
+package org.apache.zeppelin.notebook.socket;
 
 import java.util.HashMap;
 import java.util.Map;
