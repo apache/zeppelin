@@ -21,7 +21,7 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 -->
-  <Project rdf:about="http://zeppelin.incubator.apache.org/">
+  <Project rdf:about="http://zeppelin.apache.org/">
     <created>2015-09-12</created>
     <license rdf:resource="http://spdx.org/licenses/Apache-2.0" />
     <name>Apache Zeppelin</name>
