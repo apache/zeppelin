@@ -37,8 +37,8 @@ import org.slf4j.LoggerFactory;
 
 /**
  * REST API handler.
+ *
  */
-
 public class ZeppelinhubRestApiHandler {
   private static final Logger LOG = LoggerFactory.getLogger(ZeppelinhubRestApiHandler.class);
   public static final String ZEPPELIN_TOKEN_HEADER = "X-Zeppelin-Token";
