@@ -26,7 +26,7 @@ limitations under the License.
  Note that Zeppelin REST API receive or return JSON objects, it it recommended you install some JSON viewers such as 
  [JSON View](https://chrome.google.com/webstore/detail/jsonview/chklaanhfefbnpoihckbnefhakgolnmc).
 
- If you work with zeppelin and find a need for an additional REST API, please [file an issue or send us mail](http://zeppelin.incubator.apache.org/community.html).
+ If you work with zeppelin and find a need for an additional REST API, please [file an issue or send us mail](http://zeppelin.apache.org/community.html).
 
  <br />
 ## Interpreter REST API List

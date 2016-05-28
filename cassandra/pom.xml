@@ -32,7 +32,7 @@
     <version>0.6.0-incubating-SNAPSHOT</version>
     <name>Zeppelin: Cassandra</name>
     <description>Zeppelin cassandra support</description>
-    <url>http://zeppelin.incubator.apache.org</url>
+    <url>http://zeppelin.apache.org</url>
 
     <properties>
         <cassandra.driver.version>3.0.0-rc1</cassandra.driver.version>

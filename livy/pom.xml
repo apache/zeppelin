@@ -33,7 +33,7 @@
     <packaging>jar</packaging>
     <version>0.6.0-incubating-SNAPSHOT</version>
     <name>Zeppelin: Livy interpreter</name>
-    <url>http://zeppelin.incubator.apache.org</url>
+    <url>http://zeppelin.apache.org</url>
 
     <properties>
         <!--TEST-->
