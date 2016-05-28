@@ -59,8 +59,8 @@
     </release>
     <repository>
       <GitRepository>
-        <location rdf:resource="https://git-wip-us.apache.org/repos/asf/incubator-zeppelin.git"/>
-        <browse rdf:resource="https://git1-us-west.apache.org/repos/asf?p=incubator-zeppelin.git;a=summary"/>
+        <location rdf:resource="https://git-wip-us.apache.org/repos/asf/zeppelin.git"/>
+        <browse rdf:resource="https://git1-us-west.apache.org/repos/asf?p=zeppelin.git;a=summary"/>
       </GitRepository>
     </repository>
     <maintainer>
