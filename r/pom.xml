@@ -35,7 +35,7 @@
   <properties>
     <script.extension>.sh</script.extension>
     <path.separator>/</path.separator>
-    <spark.version>1.4.1</spark.version>
+    <spark.version>1.6.1</spark.version>
     <scala.version>2.10.4</scala.version>
     <scala.binary.version>2.10</scala.binary.version>
   </properties>
@@ -126,7 +126,7 @@
     <dependency>
       <groupId>org.scalatest</groupId>
       <artifactId>scalatest_${scala.binary.version}</artifactId>
-      <version>2.2.4</version>
+      <version>2.2.6</version>
       <scope>test</scope>
     </dependency>
     <dependency>

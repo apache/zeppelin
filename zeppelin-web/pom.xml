@@ -33,9 +33,9 @@
   <name>Zeppelin: web Application</name>
 
   <!-- See https://github.com/eirslett/frontend-maven-plugin/issues/229 -->
-  <prerequisites>
-    <maven>3.1.0</maven>
-  </prerequisites>
+  <!--<prerequisites>-->
+    <!--<maven>3.1.0</maven>-->
+  <!--</prerequisites>-->
 
   <build>
     <plugins>
@@ -86,7 +86,8 @@
       <plugin>
         <groupId>com.github.eirslett</groupId>
         <artifactId>frontend-maven-plugin</artifactId>
-        <version>0.0.25</version>
+        <version>1.0</version>
+        <!-- optional -->
         <executions>
 
           <execution>
