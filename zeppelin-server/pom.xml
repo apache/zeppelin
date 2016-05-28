@@ -35,7 +35,6 @@
 
   <properties>
     <cxf.version>2.7.7</cxf.version>
-    <jetty.version>9.2.15.v20160210</jetty.version>
     <commons.httpclient.version>4.3.6</commons.httpclient.version>
   </properties>
 
