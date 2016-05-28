@@ -16,10 +16,8 @@
  */
 package org.apache.zeppelin.display.angular
 
-import java.io.PrintStream
-
-import org.apache.zeppelin.display.{AngularObjectWatcher, AngularObject}
-import org.apache.zeppelin.interpreter.{InterpreterResult, InterpreterContext}
+import org.apache.zeppelin.display.{AngularObject, AngularObjectWatcher}
+import org.apache.zeppelin.interpreter.{InterpreterContext, InterpreterResult}
 
 import scala.xml._
 
@@ -35,12 +33,13 @@ abstract class AbstractAngularElem(val interpreterContext: InterpreterContext,
                                    scope: NamespaceBinding,
                                    minimizeEmpty: Boolean,
                                    child: Node*)
-  extends Elem(prefix, label, attributes1, scope, minimizeEmpty, child:_*) {
+  extends Elem(prefix, label, attributes1, scope, minimizeEmpty, child: _*) {
 
   val uniqueId = java.util.UUID.randomUUID.toString.replaceAll("-", "_")
 
   /**
     * On click element
+    *
     * @param callback
     * @return
     */
@@ -50,6 +49,7 @@ abstract class AbstractAngularElem(val interpreterContext: InterpreterContext,
 
   /**
     * On
+    *
     * @param callback
     * @return
     */
@@ -59,7 +59,8 @@ abstract class AbstractAngularElem(val interpreterContext: InterpreterContext,
 
   /**
     * Bind angularObject to ng-model directive
-    * @param name name of angularObject
+    *
+    * @param name  name of angularObject
     * @param value initialValue
     * @return
     */
@@ -68,7 +69,7 @@ abstract class AbstractAngularElem(val interpreterContext: InterpreterContext,
 
     // create AngularFunction in current paragraph
     val elem = this % Attribute(None, "ng-model",
-      Text(s"${name}"),
+      Text(s"$name"),
       Null)
 
     val angularObject = addAngularObject(name, value)
@@ -87,7 +88,7 @@ abstract class AbstractAngularElem(val interpreterContext: InterpreterContext,
 
     // create AngularFunction in current paragraph
     val elem = this % Attribute(None, "ng-model",
-      Text(s"${name}"),
+      Text(s"$name"),
       Null)
 
     newElem(
@@ -99,6 +100,7 @@ abstract class AbstractAngularElem(val interpreterContext: InterpreterContext,
 
   /**
     * Retrieve value of model
+    *
     * @return
     */
   def model(): Any = {
@@ -120,14 +122,14 @@ abstract class AbstractAngularElem(val interpreterContext: InterpreterContext,
     // create AngularFunction in current paragraph
     val functionName = eventName.replaceAll("-", "_") + "_" + uniqueId
     val elem = this % Attribute(None, eventName,
-      Text(s"${functionName}=$$event.timeStamp"),
+      Text(s"$functionName=$$event.timeStamp"),
       Null)
 
     val angularObject = addAngularObject(functionName, "")
 
     angularObject.addWatcher(new AngularObjectWatcher(interpreterContext) {
       override def watch(oldObject: scala.Any, newObject: scala.Any, context: InterpreterContext)
-      :Unit = {
+      : Unit = {
         InterpreterContext.set(interpreterContext)
         callback()
       }
@@ -151,20 +153,23 @@ abstract class AbstractAngularElem(val interpreterContext: InterpreterContext,
     * disassociate this element and it's child from front-end
     * by removing angularobject
     */
-  def disassociate() = {
+  def disassociate(): Unit = {
     remove(this)
   }
 
   /**
     * Remove all angularObject recursively
+    *
     * @param node
     */
   private def remove(node: Node): Unit = {
-    if (node.isInstanceOf[AbstractAngularElem]) {
-      node.asInstanceOf[AbstractAngularElem].angularObjects.values.foreach{ ao =>
-        interpreterContext.getAngularObjectRegistry.remove(ao.getName, ao.getNoteId, ao
-          .getParagraphId)
-      }
+    node match {
+      case elem: AbstractAngularElem =>
+        elem.angularObjects.values.foreach { ao =>
+          interpreterContext.getAngularObjectRegistry.remove(ao.getName, ao.getNoteId, ao
+            .getParagraphId)
+        }
+      case _ =>
     }
 
     node.child.foreach(remove _)
@@ -172,6 +177,7 @@ abstract class AbstractAngularElem(val interpreterContext: InterpreterContext,
 
   /**
     * Print into provided print stream
+    *
     * @return
     */
   def display(out: java.io.PrintStream): Unit = {

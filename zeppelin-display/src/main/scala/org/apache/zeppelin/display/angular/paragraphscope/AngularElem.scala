@@ -61,26 +61,26 @@ class AngularElem(override val interpreterContext: InterpreterContext,
       elem.attributes,
       elem.scope,
       elem.minimizeEmpty,
-      elem.child:_*)
+      elem.child: _*)
   }
 }
 
 object AngularElem {
-  implicit def Elem2AngularDisplayElem(elem: Elem): AbstractAngularElem = {
+  implicit def elem2AngularDisplayElem(elem: Elem): AbstractAngularElem = {
     new AngularElem(InterpreterContext.get(), null,
       Map[String, AngularObject[Any]](),
-      elem.prefix, elem.label, elem.attributes, elem.scope, elem.minimizeEmpty, elem.child:_*);
+      elem.prefix, elem.label, elem.attributes, elem.scope, elem.minimizeEmpty, elem.child: _*);
   }
 
   /**
     * Disassociate (remove) all angular object in this notebook
     */
-  def disassociate() = {
+  def disassociate(): Unit = {
     val ic = InterpreterContext.get
     val registry = ic.getAngularObjectRegistry
 
-    JavaConversions.asScalaBuffer(registry.getAll(ic.getNoteId, ic.getParagraphId)).foreach(ao =>
-      registry.remove(ao.getName, ao.getNoteId, ao.getParagraphId)
-    )
+    JavaConversions.asScalaBuffer(registry.getAll(ic.getNoteId, ic.getParagraphId)).foreach {
+      ao => registry.remove(ao.getName, ao.getNoteId, ao.getParagraphId)
+    }
   }
 }

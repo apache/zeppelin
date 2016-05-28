@@ -18,10 +18,10 @@
 package org.apache.zeppelin.display.angular.notebookscope
 
 import org.apache.zeppelin.display.angular.AbstractAngularElem
-import org.apache.zeppelin.display.{angular, AngularObject}
+import org.apache.zeppelin.display.{AngularObject, angular}
 import org.apache.zeppelin.interpreter.InterpreterContext
 
-import scala.collection.JavaConversions
+import scala.collection.{JavaConversions, mutable}
 import scala.xml._
 
 /**
@@ -59,21 +59,29 @@ class AngularElem(override val interpreterContext: InterpreterContext,
       elem.attributes,
       elem.scope,
       elem.minimizeEmpty,
-      elem.child:_*)
+      elem.child: _*)
   }
 }
 
 object AngularElem {
-  implicit def Elem2AngularDisplayElem(elem: Elem): AbstractAngularElem = {
-    new AngularElem(InterpreterContext.get(), null,
+  implicit def elem2AngularDisplayElem(elem: Elem): AbstractAngularElem = {
+    new AngularElem(
+      InterpreterContext.get(),
+      null,
       Map[String, AngularObject[Any]](),
-      elem.prefix, elem.label, elem.attributes, elem.scope, elem.minimizeEmpty, elem.child:_*);
+      elem.prefix,
+      elem.label,
+      elem.attributes,
+      elem.scope,
+      elem.minimizeEmpty,
+      elem.child: _*
+    )
   }
 
   /**
     * Disassociate (remove) all angular object in this notebook
     */
-  def disassociate() = {
+  def disassociate(): Unit = {
     val ic = InterpreterContext.get
     val registry = ic.getAngularObjectRegistry
 

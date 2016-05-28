@@ -62,7 +62,6 @@ object DisplaySystem {
   val KEYSPACE_CONTENT_TEMPLATE = "scalate/keyspaceContent.ssp"
 
 
-
   object TableDisplay {
 
     def format(statement: String, meta: TableMetadata, withCaption: Boolean): String = {
@@ -75,8 +74,18 @@ object DisplaySystem {
       val indicesDetails = MetaDataConverter.Table.tableMetaToIndexDetails(meta)
       val indicesAsCQL = indicesDetails.map(_.asCQL).mkString("\n")
 
-      engine.layout(TABLE_DETAILS_TEMPLATE,
-        Map[String, Any]("tableDetails" -> TableDetails(tableName, columnsDetails, indicesDetails, TableMetadataWrapper(meta).exportTableOnlyAsString(), indicesAsCQL), "withCaption" -> withCaption))
+      engine.layout(
+        TABLE_DETAILS_TEMPLATE,
+        Map[String, Any](
+          "tableDetails" ->
+            TableDetails(
+              tableName, columnsDetails,
+              indicesDetails,
+              TableMetadataWrapper(meta).exportTableOnlyAsString(),
+              indicesAsCQL
+            ),
+          "withCaption" -> withCaption)
+      )
     }
   }
 
@@ -85,12 +94,23 @@ object DisplaySystem {
       MenuDisplay.formatMenu(statement) ++ formatWithoutMenu(userType, withCaption)
     }
 
-    protected[DisplaySystem] def formatWithoutMenu(userType: UserType, withCaption: Boolean): String = {
+    protected[DisplaySystem] def formatWithoutMenu(userType: UserType, withCaption: Boolean)
+    : String = {
       val udtName: String = userType.getTypeName
       val columnsDetails = MetaDataConverter.UDT.userTypeToColumnDetails(userType)
 
-      engine.layout(UDT_DETAILS_TEMPLATE,
-        Map[String, Any]("udtDetails" -> UDTDetails(udtName,columnsDetails,userType.exportAsString()), "withCaption" -> withCaption))
+      engine.layout(
+        UDT_DETAILS_TEMPLATE,
+        Map[String, Any](
+          "udtDetails" ->
+            UDTDetails(
+              udtName,
+              columnsDetails,
+              userType.exportAsString()
+            ),
+          "withCaption" -> withCaption
+        )
+      )
     }
   }
 
@@ -99,22 +119,42 @@ object DisplaySystem {
       MenuDisplay.formatMenu(statement) ++ formatWithoutMenu(functions, withCaption)
     }
 
-    protected[DisplaySystem] def formatWithoutMenu(functions: List[FunctionMetadata], withCaption: Boolean): String = {
-      val functionDetails: List[FunctionDetails] = functions.map(MetaDataConverter.functionMetaToFunctionDetails(_))
+    protected[DisplaySystem] def formatWithoutMenu(
+      functions: List[FunctionMetadata], withCaption: Boolean): String = {
+      val functionDetails: List[FunctionDetails] = functions.map(MetaDataConverter.functionMetaToFunctionDetails)
       engine.layout(FUNCTION_DETAILS_TEMPLATE,
-        Map[String, Any]("sameNameFunctionDetails" -> SameNameFunctionDetails(functionDetails), "withCaption" -> withCaption))
+        Map[String, Any](
+          "sameNameFunctionDetails" -> SameNameFunctionDetails(functionDetails),
+          "withCaption" -> withCaption
+        )
+      )
     }
   }
 
   object AggregateDisplay {
-    def format(statement: String, aggregates: List[AggregateMetadata], withCaption: Boolean, codecRegistry: CodecRegistry): String = {
+
+    def format(
+      statement: String,
+      aggregates: List[AggregateMetadata],
+      withCaption: Boolean,
+      codecRegistry: CodecRegistry
+    ): String = {
       MenuDisplay.formatMenu(statement) ++ formatWithoutMenu(aggregates, withCaption, codecRegistry)
     }
 
-    protected[DisplaySystem] def formatWithoutMenu(aggregates: List[AggregateMetadata], withCaption: Boolean, codecRegistry: CodecRegistry): String = {
-      val aggDetails: List[AggregateDetails] = aggregates.map(agg => MetaDataConverter.aggregateMetaToAggregateDetails(codecRegistry, agg))
-      engine.layout(AGGREGATE_DETAILS_TEMPLATE,
-        Map[String, Any]("sameNameAggregateDetails" -> SameNameAggregateDetails(aggDetails), "withCaption" -> withCaption))
+    protected[DisplaySystem] def formatWithoutMenu(
+      aggregates: List[AggregateMetadata],
+      withCaption: Boolean,
+      codecRegistry: CodecRegistry
+    ): String = {
+      val aggDetails = aggregates.map(agg => MetaDataConverter.aggregateMetaToAggregateDetails(codecRegistry, agg))
+      engine.layout(
+        AGGREGATE_DETAILS_TEMPLATE,
+        Map[String, Any](
+          "sameNameAggregateDetails" -> SameNameAggregateDetails(aggDetails),
+          "withCaption" -> withCaption
+        )
+      )
     }
   }
 
@@ -133,9 +173,9 @@ object DisplaySystem {
   object KeyspaceDisplay {
 
     private def formatCQLQuery(cql: String): String = {
-      cql.replaceAll(""" WITH REPLICATION = \{"""," WITH REPLICATION = \\{")
-        .replaceAll("('[^']+'\\s*:\\s+'[^']+',?)","\n\t$1")
-        .replaceAll(""" \} AND DURABLE_WRITES = """," \\}\nAND DURABLE_WRITES = ")
+      cql.replaceAll(""" WITH REPLICATION = \{""", " WITH REPLICATION = \\{")
+        .replaceAll("('[^']+'\\s*:\\s+'[^']+',?)", "\n\t$1")
+        .replaceAll(""" \} AND DURABLE_WRITES = """, " \\}\nAND DURABLE_WRITES = ")
     }
 
     protected[cassandra] def formatKeyspaceOnly(meta: KeyspaceMetadata, withCaption: Boolean): String = {
@@ -150,11 +190,11 @@ object DisplaySystem {
 
     def formatKeyspaceContent(statement: String, meta: KeyspaceMetadata, codecRegistry: CodecRegistry): String = {
       val ksName: String = meta.getName
-      val ksDetails = formatKeyspaceOnly(meta, true)
+      val ksDetails = formatKeyspaceOnly(meta, withCaption = true)
 
       val tableDetails: List[(UUID, String, String)] = meta.getTables.asScala.toList
         .sortBy(_.getName)
-        .map(table => (UUIDs.timeBased(), table.getName, TableDisplay.formatWithoutMenu(table, false)))
+        .map(table => (UUIDs.timeBased(), table.getName, TableDisplay.formatWithoutMenu(table, withCaption = false)))
 
       val viewDetails: List[(UUID, String, String)] = meta.getMaterializedViews.asScala.toList
         .sortBy(_.getName)
@@ -162,15 +202,19 @@ object DisplaySystem {
 
       val udtDetails: List[(UUID, String, String)] = meta.getUserTypes.asScala.toList
         .sortBy(_.getTypeName)
-        .map(udt => (UUIDs.timeBased(), udt.getTypeName, UDTDisplay.formatWithoutMenu(udt, false)))
+        .map(udt => (UUIDs.timeBased(), udt.getTypeName, UDTDisplay.formatWithoutMenu(udt, withCaption = false)))
 
       val functionDetails: List[(UUID, String, String)] = meta.getFunctions.asScala.toList
         .sortBy(_.getSimpleName)
-        .map(function => (UUIDs.timeBased(), function.getSimpleName, FunctionDisplay.formatWithoutMenu(List(function), false)))
+        .map { fn =>
+          (UUIDs.timeBased(), fn.getSimpleName, FunctionDisplay.formatWithoutMenu(List(fn), withCaption = false))
+        }
 
       val aggregateDetails: List[(UUID, String, String)] = meta.getAggregates.asScala.toList
         .sortBy(_.getSimpleName)
-        .map(agg => (UUIDs.timeBased(), agg.getSimpleName, AggregateDisplay.formatWithoutMenu(List(agg), false, codecRegistry)))
+        .map { agg =>
+          (UUIDs.timeBased(), agg.getSimpleName, AggregateDisplay.formatWithoutMenu(List(agg), false, codecRegistry))
+        }
 
       val ksContent: KeyspaceContent = KeyspaceContent(ksName, ksDetails, tableDetails, viewDetails,
         udtDetails, functionDetails, aggregateDetails)
@@ -188,12 +232,12 @@ object DisplaySystem {
       val content: String = engine.layout(CLUSTER_DETAILS_TEMPLATE,
         Map[String, Any]("clusterDetails" -> clusterDetails))
 
-      if(withMenu) MenuDisplay.formatMenu(statement) + content else content
+      if (withMenu) MenuDisplay.formatMenu(statement) + content else content
     }
 
     def formatClusterContent(statement: String, meta: Metadata): String = {
       val clusterName: String = meta.getClusterName
-      val clusterDetails: String = formatClusterOnly(statement, meta, false)
+      val clusterDetails: String = formatClusterOnly(statement, meta, withMenu = false)
 
       val keyspaceDetails: List[(UUID, String, String)] = meta.getKeyspaces.asScala.toList
         .sortBy(ks => ks.getName)
@@ -210,7 +254,7 @@ object DisplaySystem {
       val ksMetas: List[KeyspaceMetadata] = meta.getKeyspaces.asScala.toList
         .filter(_.getTables.size > 0)
         .sortBy(ks => ks.getName)
-      if(ksMetas.isEmpty) {
+      if (ksMetas.isEmpty) {
         NoResultDisplay.formatNoResult
       } else {
         val allTables: Map[(UUID, String), List[String]] = ListMap.empty ++
@@ -219,12 +263,12 @@ object DisplaySystem {
               ((UUIDs.timeBased(), ks.getName),
                 ks.getTables.asScala.toList.map(table => table.getName).sortBy(name => name))
             })
-            .sortBy{case ((id,name), _) => name}
+            .sortBy { case ((id, name), _) => name }
 
 
         val keyspaceDetails: List[(UUID, String, String)] = allTables
-          .keySet.toList.sortBy{case(id,ksName) => ksName}
-          .map{case(id,ksName) => (id,ksName, "")}
+          .keySet.toList.sortBy { case (id, ksName) => ksName }
+          .map { case (id, ksName) => (id, ksName, "") }
 
         val clusterContent: ClusterContent = ClusterContent(meta.getClusterName, "", keyspaceDetails)
 
@@ -239,7 +283,7 @@ object DisplaySystem {
         .filter(_.getUserTypes.size > 0)
         .sortBy(ks => ks.getName)
 
-      if(ksMetas.isEmpty) {
+      if (ksMetas.isEmpty) {
         NoResultDisplay.formatNoResult
       } else {
         val allUDTs: Map[(UUID, String), List[String]] = ListMap.empty ++
@@ -268,7 +312,7 @@ object DisplaySystem {
         .filter(_.getFunctions.size > 0)
         .sortBy(ks => ks.getName)
 
-      if(ksMetas.isEmpty) {
+      if (ksMetas.isEmpty) {
         NoResultDisplay.formatNoResult
       } else {
         val allFunctions: Map[(UUID, String), List[FunctionSummary]] = ListMap.empty ++
@@ -299,7 +343,7 @@ object DisplaySystem {
         .filter(_.getAggregates.size > 0)
         .sortBy(ks => ks.getName)
 
-      if(ksMetas.isEmpty) {
+      if (ksMetas.isEmpty) {
         NoResultDisplay.formatNoResult
       } else {
         val allAggregates: Map[(UUID, String), List[AggregateSummary]] = ListMap.empty ++
@@ -330,7 +374,7 @@ object DisplaySystem {
         .filter(_.getMaterializedViews.size > 0)
         .sortBy(ks => ks.getName)
 
-      if(ksMetas.isEmpty) {
+      if (ksMetas.isEmpty) {
         NoResultDisplay.formatNoResult
       } else {
         val allMVs: Map[(UUID, String), List[MaterializedViewSummary]] = ListMap.empty ++
@@ -370,14 +414,20 @@ object DisplaySystem {
 
     def noResultWithExecutionInfo(lastQuery: String, execInfo: ExecutionInfo): String = {
       val consistency = Option(execInfo.getAchievedConsistencyLevel).getOrElse("N/A")
-      val queriedHosts = execInfo.getQueriedHost.toString.replaceAll("/","").replaceAll("""\[""","").replaceAll("""\]""","")
-      val triedHosts = execInfo.getTriedHosts.toString.replaceAll("/","").replaceAll("""\[""","").replaceAll("""\]""","")
+      val queriedHosts = execInfo.getQueriedHost.toString
+        .replaceAll("/", "")
+        .replaceAll("""\[""", "")
+        .replaceAll("""\]""", "")
+      val triedHosts = execInfo.getTriedHosts.toString
+        .replaceAll("/", "")
+        .replaceAll("""\[""", "")
+        .replaceAll("""\]""", "")
       val schemaInAgreement = Option(execInfo.isSchemaInAgreement).map(_.toString).getOrElse("N/A")
 
       engine.layout("/scalate/noResultWithExecutionInfo.ssp",
-        Map[String,Any]("query" -> lastQuery, "consistency" -> consistency,
-                        "triedHosts" -> triedHosts, "queriedHosts" -> queriedHosts,
-                        "schemaInAgreement" -> schemaInAgreement))
+        Map[String, Any]("query" -> lastQuery, "consistency" -> consistency,
+          "triedHosts" -> triedHosts, "queriedHosts" -> queriedHosts,
+          "schemaInAgreement" -> schemaInAgreement))
     }
   }
 
@@ -402,6 +452,7 @@ object DisplaySystem {
       formatMenu(statement, dropDownMenu)
     }
   }
+
 }
 
 class ColumnMetaWrapper(val columnMeta: ColumnMetadata) {
@@ -430,7 +481,7 @@ object MetaDataConverter {
       function.getSimpleName,
       function.getArguments.asScala
         .toMap
-        .map{case(paramName, dataType) => paramName + " " + dataType.asFunctionParameterString()}
+        .map { case (paramName, dataType) => paramName + " " + dataType.asFunctionParameterString() }
         .toList,
       function.isCalledOnNullInput,
       function.getReturnType.asFunctionParameterString(),
@@ -458,14 +509,14 @@ object MetaDataConverter {
     val sType = aggregate.getStateType
     val initCond: Option[String] = Option(aggregate.getInitCond).map(codecRegistry.codecFor(sType).format(_))
     val returnType: String = Option(aggregate.getFinalFunc) match {
-      case Some(finalFunc) => functionMetaToFunctionSummary(finalFunc).returnType
+      case Some(fn) => functionMetaToFunctionSummary(fn).returnType
       case None => sFunc.returnType
     }
 
     new AggregateDetails(aggregate.getKeyspace.getName,
       aggregate.getSimpleName,
       aggregate.getArgumentTypes.asScala.toList.map(_.asFunctionParameterString()),
-      sFunc.name + sFunc.arguments.mkString("(",", ", ")"),
+      sFunc.name + sFunc.arguments.mkString("(", ", ", ")"),
       sType.asFunctionParameterString(),
       finalFunc,
       initCond,
@@ -507,11 +558,15 @@ object MetaDataConverter {
         .map(c => new ColumnDetails(c.columnMeta.getName, StaticColumn, c.columnMeta.getType))
     }
 
-    protected def convertClusteringColumns(columns: List[ColumnMetaWrapper], orders: List[DriverClusteringOrder]): List[ColumnDetails] = {
+    protected def convertClusteringColumns(
+      columns: List[ColumnMetaWrapper],
+      orders: List[DriverClusteringOrder]
+    ): List[ColumnDetails] = {
       columns
         .zip(orders)
-        .map{case(c,order) => new ColumnDetails(c.columnMeta.getName,
-          new ClusteringColumn(OrderConverter.convert(order)),c.columnMeta.getType)}
+        .map { case (c, order) => new ColumnDetails(c.columnMeta.getName,
+          new ClusteringColumn(OrderConverter.convert(order)), c.columnMeta.getType)
+        }
 
     }
 
@@ -524,14 +579,16 @@ object MetaDataConverter {
   object Table extends TableOrView {
     def tableMetaToColumnDetails(meta: TableMetadata): List[ColumnDetails] = {
       val partitionKeys: List[ColumnMetaWrapper] = meta.getPartitionKey.asScala.toList.map(new ColumnMetaWrapper(_))
-      val clusteringColumns: List[ColumnMetaWrapper] = meta.getClusteringColumns.asScala.toList.map(new ColumnMetaWrapper(_))
+      val clusteringColumns: List[ColumnMetaWrapper] = meta.getClusteringColumns.asScala.toList.map { f =>
+        new ColumnMetaWrapper(f)
+      }
       val columns: List[ColumnMetaWrapper] = meta.getColumns.asScala.toList.map(new ColumnMetaWrapper(_))
         .diff(partitionKeys).diff(clusteringColumns)
       val clusteringOrders = meta.getClusteringOrder.asScala.toList
 
-      convertPartitionKeys(partitionKeys):::
-        extractStaticColumns(columns):::
-        convertClusteringColumns(clusteringColumns, clusteringOrders):::
+      convertPartitionKeys(partitionKeys) :::
+        extractStaticColumns(columns) :::
+        convertClusteringColumns(clusteringColumns, clusteringOrders) :::
         extractNormalColumns(columns)
     }
 
@@ -540,20 +597,20 @@ object MetaDataConverter {
         .map(index => IndexDetails(index.getName, index.getTarget, index.asCQLQuery()))
         .sortBy(index => index.name)
     }
-
-
   }
 
   object MV extends TableOrView {
     def mvMetaToColumnDetails(meta: MaterializedViewMetadata): List[ColumnDetails] = {
       val partitionKeys: List[ColumnMetaWrapper] = meta.getPartitionKey.asScala.toList.map(new ColumnMetaWrapper(_))
-      val clusteringColumns: List[ColumnMetaWrapper] = meta.getClusteringColumns.asScala.toList.map(new ColumnMetaWrapper(_))
+      val clusteringColumns: List[ColumnMetaWrapper] = meta.getClusteringColumns.asScala.toList.map {
+        new ColumnMetaWrapper(_)
+      }
       val columns: List[ColumnMetaWrapper] = meta.getColumns.asScala.toList.map(new ColumnMetaWrapper(_))
         .diff(partitionKeys).diff(clusteringColumns)
       val clusteringOrders = meta.getClusteringOrder.asScala.toList
 
-      convertPartitionKeys(partitionKeys):::
-        convertClusteringColumns(clusteringColumns, clusteringOrders):::
+      convertPartitionKeys(partitionKeys) :::
+        convertClusteringColumns(clusteringColumns, clusteringOrders) :::
         extractNormalColumns(columns)
     }
   }
@@ -565,11 +622,4 @@ object MetaDataConverter {
     }
   }
 
-
-
 }
-
-
-
-
-
