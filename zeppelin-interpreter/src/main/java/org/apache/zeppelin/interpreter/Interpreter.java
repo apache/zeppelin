@@ -35,7 +35,7 @@ import org.slf4j.LoggerFactory;
  * If you want to implement new Zeppelin interpreter, extend this class
  *
  * Please see,
- * https://zeppelin.incubator.apache.org/docs/latest/development/writingzeppelininterpreter.html
+ * https://zeppelin.apache.org/docs/latest/development/writingzeppelininterpreter.html
  *
  * open(), close(), interpreter() is three the most important method you need to implement.
  * cancel(), getProgress(), completion() is good to have
@@ -74,7 +74,7 @@ public abstract class Interpreter {
 
   /**
    * Dynamic form handling
-   * see http://zeppelin.incubator.apache.org/docs/dynamicform.html
+   * see http://zeppelin.apache.org/docs/dynamicform.html
    *
    * @return FormType.SIMPLE enables simple pattern replacement (eg. Hello ${name=world}),
    *         FormType.NATIVE handles form in API

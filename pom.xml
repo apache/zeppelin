@@ -38,7 +38,7 @@
   <version>0.6.0-incubating-SNAPSHOT</version>
   <name>Zeppelin</name>
   <description>Zeppelin project</description>
-  <url>http://zeppelin.incubator.apache.org/</url>
+  <url>http://zeppelin.apache.org/</url>
 
   <parent>
     <groupId>org.apache</groupId>

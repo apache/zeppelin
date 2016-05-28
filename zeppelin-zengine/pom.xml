@@ -33,7 +33,7 @@
   <version>0.6.0-incubating-SNAPSHOT</version>
   <name>Zeppelin: Zengine</name>
   <description>Zeppelin Zengine</description>
-  <url>http://zeppelin.incubator.apache.org</url>
+  <url>http://zeppelin.apache.org</url>
 
   <developers>
     <developer>
