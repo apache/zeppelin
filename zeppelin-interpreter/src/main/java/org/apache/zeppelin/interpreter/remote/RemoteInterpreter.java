@@ -177,9 +177,10 @@ public class RemoteInterpreter extends Interpreter {
         }
 
       } catch (TException e) {
-        broken = true;
+        logger.error("Failed to create interpreter: {}", getClassName());
         throw new InterpreterException(e);
       } finally {
+        // TODO(jongyoul): Fixed it when not all of interpreter in same interpreter group are broken
         interpreterProcess.releaseClient(client, broken);
       }
     }
@@ -195,12 +196,18 @@ public class RemoteInterpreter extends Interpreter {
     synchronized (interpreterGroup) {
       // initialize all interpreters in this interpreter group
       List<Interpreter> interpreters = interpreterGroup.get(noteId);
-      for (Interpreter intp : interpreters) {
+      for (Interpreter intp : new ArrayList<>(interpreters)) {
         Interpreter p = intp;
         while (p instanceof WrappedInterpreter) {
           p = ((WrappedInterpreter) p).getInnerInterpreter();
         }
-        ((RemoteInterpreter) p).init();
+        try {
+          ((RemoteInterpreter) p).init();
+        } catch (InterpreterException e) {
+          logger.error("Failed to initialize interpreter: {}. Remove it from interpreterGroup",
+              p.getClassName());
+          interpreters.remove(p);
+        }
       }
     }
   }
