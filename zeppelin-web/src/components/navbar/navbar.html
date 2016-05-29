@@ -2,15 +2,26 @@
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
-
     http://www.apache.org/licenses/LICENSE-2.0
-
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
+
+<script type="text/ng-template" id="notebook_list_renderer.html">
+  <a ng-if="note.id" href="#/notebook/{{note.id}}">{{noteName(note)}} </a>
+  <li ng-if="!note.id"
+      class="dropdown-submenu">
+    <a tabindex="-1" href="javascript: void(0)">{{noteName(note)}}</a>
+    <ul class="dropdown-menu">
+      <li ng-repeat="note in note.children track by $index" ng-class="{'active' : navbar.isActive(note.id)}" ng-include="'notebook_list_renderer.html'">
+      </li>
+    </ul>
+  </li>
+</script>
+
 <div class="navbar navbar-inverse navbar-fixed-top" style="display: none;" role="navigation" ng-class="{'displayNavBar': !asIframe}">
   <div class="container">
     <div class="navbar-header">
@@ -25,7 +36,7 @@ limitations under the License.
     </div>
 
     <div class="collapse navbar-collapse" ng-controller="NavCtrl as navbar">
-      <ul class="nav navbar-nav">
+      <ul class="nav navbar-nav" ng-if="ticket">
         <li class="dropdown" dropdown>
           <a href="#" class="dropdown-toggle" dropdown-toggle>Notebook <span class="caret"></span></a>
           <ul class="dropdown-menu" role="menu">
@@ -33,9 +44,7 @@ limitations under the License.
             <li class="divider"></li>
             <div id="notebook-list" class="scrollbar-container">
               <li class="filter-names" ng-include="'components/filterNoteNames/filter-note-names.html'"></li>
-              <li ng-repeat="note in navbar.notes.list | filter:query | orderBy:navbar.arrayOrderingSrv.notebookListOrdering track by $index"
-                  ng-class="{'active' : navbar.isActive(note.id)}">
-                <a href="#/notebook/{{note.id}}">{{note.name || 'Note ' + note.id}} </a>
+              <li ng-repeat="note in navbar.notes.root.children | filter:query track by $index" ng-class="{'active' : navbar.isActive(note.id)}" ng-include="'notebook_list_renderer.html'">
               </li>
             </div>
           </ul>
@@ -50,11 +59,11 @@ limitations under the License.
 
 
       <ul class="nav navbar-nav navbar-right" style="margin-top:10px; margin-right:5px;">
-        <li>
+        <li ng-if="ticket">
         <!--TODO(bzz): move to Typeahead https://angular-ui.github.io/bootstrap  -->
           <form role="search"
             style="width: 300px; display: inline-block; margin: 0 10px"
-             ng-submit="search()">
+             ng-submit="search(searchTerm)">
             <div class="input-group">
               <input
                 type="text"
@@ -74,11 +83,17 @@ limitations under the License.
               </span>
             </div>
           </form>
-        </li>
-        <li class="server-status">
+        <li class="server-status"  >
           <i class="fa fa-circle" ng-class="{'server-connected':navbar.connected, 'server-disconnected':!navbar.connected}"></i>
-          <span ng-show="navbar.connected">Connected</span>
-          <span ng-show="!navbar.connected">Disconnected</span>
+        <span ng-show="navbar.connected" ng-if="ticket.principal == 'anonymous' ">Connected</span>
+        <span ng-show="navbar.connected" ng-if="ticket.principal != 'anonymous' " tooltip-placement="bottom" tooltip="{{fullUsername}}">{{truncatedUsername}}</span>
+        <span ng-show="!navbar.connected">Disconnected</span>
+        </li>
+        <li ng-if="!ticket">
+            <button class="btn btn-default" data-toggle="modal" data-target="#loginModal" ng-click="showLoginWindow()" style="margin-left: 10px">Login</button>
+        </li>
+        <li ng-show="ticket.principal && ticket.principal!='anonymous'" style="left: 5px;">
+        	<button class="btn btn-default" ng-click="logout()" tooltip-placement="bottom" tooltip="logout">Logout</button>
         </li>
       </ul>
     </div>

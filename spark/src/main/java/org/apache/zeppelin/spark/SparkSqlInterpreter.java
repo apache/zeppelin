@@ -60,6 +60,10 @@ public class SparkSqlInterpreter extends Interpreter {
                 SparkInterpreter.getSystemDefault("ZEPPELIN_SPARK_CONCURRENTSQL",
                     "zeppelin.spark.concurrentSQL", "false"),
                 "Execute multiple SQL concurrently if set true.")
+            .add("zeppelin.spark.sql.stacktrace",
+                SparkInterpreter.getSystemDefault("ZEPPELIN_SPARK_SQL_STACKTRACE",
+                    "zeppelin.spark.sql.stacktrace", "false"),
+                "Show full exception stacktrace for SQL queries if set to true.")
             .build());
   }
 
@@ -131,8 +135,16 @@ public class SparkSqlInterpreter extends Interpreter {
       // Therefore need to use reflection to keep binary compatibility for all spark versions.
       Method sqlMethod = sqlc.getClass().getMethod("sql", String.class);
       rdd = sqlMethod.invoke(sqlc, st);
+    } catch (InvocationTargetException ite) {
+      if (Boolean.parseBoolean(getProperty("zeppelin.spark.sql.stacktrace"))) {
+        throw new InterpreterException(ite);
+      }
+      logger.error("Invocation target exception", ite);
+      String msg = ite.getTargetException().getMessage()
+              + "\nset zeppelin.spark.sql.stacktrace = true to see full stacktrace";
+      return new InterpreterResult(Code.ERROR, msg);
     } catch (NoSuchMethodException | SecurityException | IllegalAccessException
-        | IllegalArgumentException | InvocationTargetException e) {
+        | IllegalArgumentException e) {
       throw new InterpreterException(e);
     }
 

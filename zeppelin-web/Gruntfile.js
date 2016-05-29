@@ -356,6 +356,11 @@ module.exports = function (grunt) {
           src: ['app/**/*.html', 'components/**/*.html']
         }, {
           expand: true,
+          cwd: 'bower_components/datatables/media/images',
+          src: '{,*/}*.{png,jpg,jpeg,gif}',
+          dest: '<%= yeoman.dist %>/images'
+        }, {
+          expand: true,
           cwd: '.tmp/images',
           dest: '<%= yeoman.dist %>/images',
           src: ['generated/*']
@@ -434,6 +439,7 @@ module.exports = function (grunt) {
   ]);
 
   grunt.registerTask('build', [
+    'jshint:all',
     'clean:dist',
     'wiredep',
     'useminPrepare',
@@ -449,12 +455,7 @@ module.exports = function (grunt) {
   ]);
 
   grunt.registerTask('default', [
-    'newer:jshint',
-    /*
-     * Since we dont have test (or up to date) there is no reason to keep this task
-     * I am commented this, but can be changed in the future (if someone want to implement front tests).
-    'test',
-    */
-    'build'
+    'build',
+    'test'
   ]);
 };

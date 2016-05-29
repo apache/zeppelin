@@ -60,44 +60,89 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
     interpreterSettingsTmp[index] = angular.copy($scope.interpreterSettings[index]);
   };
 
-  $scope.updateInterpreterSetting = function(form, settingId) {
-    var result = confirm('Do you want to update this interpreter and restart with new settings?');
-    if (result) {
+  $scope.setSessionOption = function(settingId, sessionOption) {
+    var option;
+    if (settingId === undefined) {
+      option = $scope.newInterpreterSetting.option;
+    } else {
       var index = _.findIndex($scope.interpreterSettings, {'id': settingId});
       var setting = $scope.interpreterSettings[index];
-      if (setting.propertyKey !== '' || setting.propertyKey) {
-        $scope.addNewInterpreterProperty(settingId);
-      }
-      if (setting.depArtifact !== '' || setting.depArtifact) {
-        $scope.addNewInterpreterDependency(settingId);
-      }
-
-      // add missing field of option
-      if (!setting.option) {
-        setting.option = {};
-      }      
-      if (setting.option.remote === undefined) {
-        // remote always true for now
-        setting.option.remote = true;
-      }
-
-      var request = {
-        option: angular.copy(setting.option),
-        properties: angular.copy(setting.properties),
-        dependencies: angular.copy(setting.dependencies)
-      };
-
-      $http.put(baseUrlSrv.getRestApiBase() + '/interpreter/setting/' + settingId, request).
-        success(function (data, status, headers, config) {
-          $scope.interpreterSettings[index] = data.body;
-          removeTMPSettings(index);
-        }).
-        error(function (data, status, headers, config) {
-          console.log('Error %o %o', status, data.message);
-          ngToast.danger(data.message);
-          form.$show();
-        });
+      option = setting.option;
     }
+
+    if (sessionOption === 'isolated') {
+      option.perNoteSession = false;
+      option.perNoteProcess = true;
+    } else if (sessionOption === 'scoped') {
+      option.perNoteSession = true;
+      option.perNoteProcess = false;
+    } else {
+      option.perNoteSession = false;
+      option.perNoteProcess = false;
+    }
+  };
+
+  $scope.getSessionOption = function(settingId) {
+    var option;
+    if (settingId === undefined) {
+      option = $scope.newInterpreterSetting.option;
+    } else {
+      var index = _.findIndex($scope.interpreterSettings, {'id': settingId});
+      var setting = $scope.interpreterSettings[index];
+      option = setting.option;
+    }
+
+    if (option.perNoteSession) {
+      return 'scoped';
+    } else if (option.perNoteProcess) {
+      return 'isolated';
+    } else {
+      return 'shared';
+    }
+  };
+
+  $scope.updateInterpreterSetting = function(form, settingId) {
+    BootstrapDialog.confirm({
+      closable: true,
+      title: '',
+      message: 'Do you want to update this interpreter and restart with new settings?',
+      callback: function (result) {
+        if (result) {
+          var index = _.findIndex($scope.interpreterSettings, {'id': settingId});
+          var setting = $scope.interpreterSettings[index];
+          if (setting.propertyKey !== '' || setting.propertyKey) {
+            $scope.addNewInterpreterProperty(settingId);
+          }
+          if (setting.depArtifact !== '' || setting.depArtifact) {
+            $scope.addNewInterpreterDependency(settingId);
+          }
+          // add missing field of option
+          if (!setting.option) {
+            setting.option = {};
+          }
+          if (setting.option.remote === undefined) {
+            // remote always true for now
+            setting.option.remote = true;
+          }
+          var request = {
+            option: angular.copy(setting.option),
+            properties: angular.copy(setting.properties),
+            dependencies: angular.copy(setting.dependencies)
+          };
+
+          $http.put(baseUrlSrv.getRestApiBase() + '/interpreter/setting/' + settingId, request).
+            success(function (data, status, headers, config) {
+              $scope.interpreterSettings[index] = data.body;
+              removeTMPSettings(index);
+            }).
+            error(function (data, status, headers, config) {
+              console.log('Error %o %o', status, data.message);
+              ngToast.danger({content: data.message, verticalPosition: 'bottom'});
+              form.$show();
+            });
+        }
+      }
+    });
   };
 
   $scope.resetInterpreterSetting = function(settingId){
@@ -210,7 +255,7 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
       }).
       error(function(data, status, headers, config) {
         console.log('Error %o %o', status, data.message);
-        ngToast.danger(data.message);
+        ngToast.danger({content: data.message, verticalPosition: 'bottom'});
       });
   };
 
@@ -227,7 +272,8 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
       dependencies: [],
       option: {
         remote: true,
-        perNoteSession: false
+        perNoteSession: false,
+        perNoteProcess: false
       }
     };
     emptyNewProperty($scope.newInterpreterSetting);

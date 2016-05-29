@@ -63,7 +63,7 @@ public class RemoteAngularObjectRegistry extends AngularObjectRegistry {
     Gson gson = new Gson();
     RemoteInterpreterProcess remoteInterpreterProcess = getRemoteInterpreterProcess();
     if (!remoteInterpreterProcess.isRunning()) {
-      return null;
+      return super.add(name, o, noteId, paragraphId, true);
     }
 
     Client client = null;
@@ -97,7 +97,7 @@ public class RemoteAngularObjectRegistry extends AngularObjectRegistry {
           paragraphId) {
     RemoteInterpreterProcess remoteInterpreterProcess = getRemoteInterpreterProcess();
     if (!remoteInterpreterProcess.isRunning()) {
-      return null;
+      return super.remove(name, noteId, paragraphId);
     }
 
     Client client = null;

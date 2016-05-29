@@ -37,6 +37,7 @@ import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.Term;
+import org.apache.lucene.queryparser.classic.MultiFieldQueryParser;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.IndexSearcher;
@@ -69,7 +70,8 @@ import com.google.common.collect.Lists;
 public class LuceneSearch implements SearchService {
   private static final Logger LOG = LoggerFactory.getLogger(LuceneSearch.class);
 
-  private static final String SEARCH_FIELD = "contents";
+  private static final String SEARCH_FIELD_TEXT = "contents";
+  private static final String SEARCH_FIELD_TITLE = "header";
   static final String PARAGRAPH = "paragraph";
   static final String ID_FIELD = "id";
 
@@ -85,7 +87,7 @@ public class LuceneSearch implements SearchService {
     try {
       writer = new IndexWriter(ramDirectory, iwc);
     } catch (IOException e) {
-      LOG.error("Failed to reate new IndexWriter", e);
+      LOG.error("Failed to create new IndexWriter", e);
     }
   }
 
@@ -102,10 +104,12 @@ public class LuceneSearch implements SearchService {
     try (IndexReader indexReader = DirectoryReader.open(ramDirectory)) {
       IndexSearcher indexSearcher = new IndexSearcher(indexReader);
       Analyzer analyzer = new StandardAnalyzer();
-      QueryParser parser = new QueryParser(SEARCH_FIELD, analyzer);
+      MultiFieldQueryParser parser = new MultiFieldQueryParser(
+          new String[] {SEARCH_FIELD_TEXT, SEARCH_FIELD_TITLE},
+          analyzer);
 
       Query query = parser.parse(queryStr);
-      LOG.debug("Searching for: " + query.toString(SEARCH_FIELD));
+      LOG.debug("Searching for: " + query.toString(SEARCH_FIELD_TEXT));
 
       SimpleHTMLFormatter htmlFormatter = new SimpleHTMLFormatter();
       Highlighter highlighter = new Highlighter(htmlFormatter, new QueryScorer(query));
@@ -139,20 +143,33 @@ public class LuceneSearch implements SearchService {
             LOG.debug("   Title: {}", doc.get("title"));
           }
 
-          String text = doc.get(SEARCH_FIELD);
-          TokenStream tokenStream = TokenSources.getTokenStream(searcher.getIndexReader(), id,
-              SEARCH_FIELD, analyzer);
-          TextFragment[] frag = highlighter.getBestTextFragments(tokenStream, text, true, 3);
-          LOG.debug("    {} fragments found for query '{}'", frag.length, query);
-          for (int j = 0; j < frag.length; j++) {
-            if ((frag[j] != null) && (frag[j].getScore() > 0)) {
-              LOG.debug("    Fragment: {}", frag[j].toString());
-            }
-          }
-          String fragment = (frag != null && frag.length > 0) ? frag[0].toString() : "";
+          String text = doc.get(SEARCH_FIELD_TEXT);
+          String header = doc.get(SEARCH_FIELD_TITLE);
+          String fragment = "";
 
+          if (text != null) {
+            TokenStream tokenStream = TokenSources.getTokenStream(searcher.getIndexReader(), id,
+                SEARCH_FIELD_TEXT, analyzer);
+            TextFragment[] frag = highlighter.getBestTextFragments(tokenStream, text, true, 3);
+            LOG.debug("    {} fragments found for query '{}'", frag.length, query);
+            for (int j = 0; j < frag.length; j++) {
+              if ((frag[j] != null) && (frag[j].getScore() > 0)) {
+                LOG.debug("    Fragment: {}", frag[j].toString());
+              }
+            }
+            fragment = (frag != null && frag.length > 0) ? frag[0].toString() : "";
+          }
+
+          if (header != null) {
+            TokenStream tokenTitle = TokenSources.getTokenStream(searcher.getIndexReader(), id,
+                SEARCH_FIELD_TITLE, analyzer);
+            TextFragment[] frgTitle = highlighter.getBestTextFragments(tokenTitle, header, true, 3);
+            header = (frgTitle != null && frgTitle.length > 0) ? frgTitle[0].toString() : "";
+          } else {
+            header = "";
+          }
           matchingParagraphs.add(ImmutableMap.of("id", path, // <noteId>/paragraph/<paragraphId>
-              "name", title, "snippet", fragment, "text", text));
+              "name", title, "snippet", fragment, "text", text, "header", header));
         } else {
           LOG.info("{}. No {} for this document", i + 1, ID_FIELD);
         }
@@ -252,11 +269,14 @@ public class LuceneSearch implements SearchService {
     doc.add(new StringField("title", noteName, Field.Store.YES));
 
     if (null != p) {
-      doc.add(new TextField(SEARCH_FIELD, p.getText(), Field.Store.YES));
+      doc.add(new TextField(SEARCH_FIELD_TEXT, p.getText(), Field.Store.YES));
+      if (p.getTitle() != null) {
+        doc.add(new TextField(SEARCH_FIELD_TITLE, p.getTitle(), Field.Store.YES));
+      }
       Date date = p.getDateStarted() != null ? p.getDateStarted() : p.getDateCreated();
       doc.add(new LongField("modified", date.getTime(), Field.Store.NO));
     } else {
-      doc.add(new TextField(SEARCH_FIELD, noteName, Field.Store.YES));
+      doc.add(new TextField(SEARCH_FIELD_TEXT, noteName, Field.Store.YES));
     }
     return doc;
   }

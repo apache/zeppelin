@@ -48,12 +48,23 @@
   margin-bottom: 0;
 }
 
-.paragraph p {
-  margin: 0;
-}
-
 .paragraph div svg {
   width: 100%;
+}
+
+table.dataTable {
+  margin-top: 0px !important;
+  margin-bottom: 6px !important;
+}
+
+table.dataTable.table-condensed > thead > tr > th {
+  padding-right: 28px;
+}
+
+table.dataTable.table-condensed .sorting:after,
+table.dataTable.table-condensed .sorting_asc:after,
+table.dataTable.table-condensed .sorting_desc:after {
+  right: 12px;
 }
 
 .graphContainer {
@@ -71,11 +82,13 @@
   border: 3px solid #DDDDDD;
 }
 
-.paragraph .paragraphFooter {
-  height: 9px;
+.paragraph .executionTime {
+  color: #999;
+  font-size: 10px;
+  font-family: 'Roboto', sans-serif;
 }
 
-.paragraph .executionTime {
+.paragraph .elapsedTime {
   color: #999;
   font-size: 10px;
   font-family: 'Roboto', sans-serif;
@@ -343,6 +356,7 @@
 
 .tableDisplay .option .columns ul {
   background: white;
+  overflow: auto;
   width: auto;
   padding: 3px 3px 3px 3px;
   height: 150px;
@@ -383,6 +397,29 @@
 
 .paragraph .tableDisplay .hljs {
   background: none;
+}
+
+/*
+  Handsontable
+*/
+
+.handsontable th {
+  font-weight: bold;
+}
+
+.handsontable th, .handsontable td {
+  border-right: 0px;
+  border-left: 0px !important;
+  padding: 4px;
+}
+
+.handsontable tr:first-child th {
+  text-align: left;
+  border-top: 0px;
+  padding: 4px 0px 0px 0px;
+  border-left: 0px;
+  border-right: 0px;
+  border-bottom: 2px solid #CCC;
 }
 
 /*

@@ -151,6 +151,7 @@ public class RemoteInterpreterServer
       Class<Interpreter> replClass = (Class<Interpreter>) Object.class.forName(className);
       Properties p = new Properties();
       p.putAll(properties);
+      setSystemProperty(p);
 
       Constructor<Interpreter> constructor =
           replClass.getConstructor(new Class[] {Properties.class});
@@ -176,6 +177,19 @@ public class RemoteInterpreterServer
         | IllegalArgumentException | InvocationTargetException e) {
       logger.error(e.toString(), e);
       throw new TException(e);
+    }
+  }
+
+  private void setSystemProperty(Properties properties) {
+    for (Object key : properties.keySet()) {
+      if (!RemoteInterpreter.isEnvString((String) key)) {
+        String value = properties.getProperty((String) key);
+        if (value == null || value.isEmpty()) {
+          System.clearProperty((String) key);
+        } else {
+          System.setProperty((String) key, properties.getProperty((String) key));
+        }
+      }
     }
   }
 
@@ -343,12 +357,22 @@ public class RemoteInterpreterServer
         }
 
         String interpreterResultMessage = result.message();
+
+        InterpreterResult combinedResult;
         if (interpreterResultMessage != null && !interpreterResultMessage.isEmpty()) {
           message += interpreterResultMessage;
-          return new InterpreterResult(result.code(), result.type(), message);
+          combinedResult = new InterpreterResult(result.code(), result.type(), message);
         } else {
-          return new InterpreterResult(result.code(), outputType, message);
+          combinedResult = new InterpreterResult(result.code(), outputType, message);
         }
+
+        // put result into resource pool
+        context.getResourcePool().put(
+            context.getNoteId(),
+            context.getParagraphId(),
+            WellKnownResourceName.ParagraphResult.toString(),
+            combinedResult);
+        return combinedResult;
       } finally {
         InterpreterContext.remove();
       }
@@ -636,7 +660,7 @@ public class RemoteInterpreterServer
   }
 
   @Override
-  public List<String> resoucePoolGetAll() throws TException {
+  public List<String> resourcePoolGetAll() throws TException {
     logger.debug("Request getAll from ZeppelinServer");
 
     ResourceSet resourceSet = resourcePool.getAll(false);
@@ -651,9 +675,17 @@ public class RemoteInterpreterServer
   }
 
   @Override
-  public ByteBuffer resourceGet(String resourceName) throws TException {
+  public boolean resourceRemove(String noteId, String paragraphId, String resourceName)
+      throws TException {
+    Resource resource = resourcePool.remove(noteId, paragraphId, resourceName);
+    return resource != null;
+  }
+
+  @Override
+  public ByteBuffer resourceGet(String noteId, String paragraphId, String resourceName)
+      throws TException {
     logger.debug("Request resourceGet {} from ZeppelinServer", resourceName);
-    Resource resource = resourcePool.get(resourceName, false);
+    Resource resource = resourcePool.get(noteId, paragraphId, resourceName, false);
 
     if (resource == null || resource.get() == null || !resource.isSerializable()) {
       return ByteBuffer.allocate(0);
@@ -664,6 +696,18 @@ public class RemoteInterpreterServer
         logger.error(e.getMessage(), e);
         return ByteBuffer.allocate(0);
       }
+    }
+  }
+
+  @Override
+  public void angularRegistryPush(String registryAsString) throws TException {
+    try {
+      Map<String, Map<String, AngularObject>> deserializedRegistry = gson
+              .fromJson(registryAsString,
+                      new TypeToken<Map<String, Map<String, AngularObject>>>() { }.getType());
+      interpreterGroup.getAngularObjectRegistry().setRegistry(deserializedRegistry);
+    } catch (Exception e) {
+      logger.info("Exception in RemoteInterpreterServer while angularRegistryPush, nolock", e);
     }
   }
 }

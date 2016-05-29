@@ -34,6 +34,15 @@ public interface ResourcePool {
   public Resource get(String name);
 
   /**
+   * Get resource from name
+   * @param noteId
+   * @param paragraphId
+   * @param name Resource name
+   * @return null if resource not found
+   */
+  public Resource get(String noteId, String paragraphId, String name);
+
+  /**
    * Get all resources
    * @return
    */
@@ -47,9 +56,30 @@ public interface ResourcePool {
   public void put(String name, Object object);
 
   /**
+   * Put an object into resource pool
+   * Given noteId and paragraphId is identifying resource along with name.
+   * Object will be automatically removed on related note or paragraph removal.
+   *
+   * @param noteId
+   * @param paragraphId
+   * @param name
+   * @param object
+   */
+  public void put(String noteId, String paragraphId, String name, Object object);
+
+  /**
    * Remove object
    * @param name Resource name to remove
    * @return removed Resource. null if resource not found
    */
   public Resource remove(String name);
+
+  /**
+   * Remove object
+   * @param noteId
+   * @param paragraphId
+   * @param name Resource name to remove
+   * @return removed Resource. null if resource not found
+   */
+  public Resource remove(String noteId, String paragraphId, String name);
 }

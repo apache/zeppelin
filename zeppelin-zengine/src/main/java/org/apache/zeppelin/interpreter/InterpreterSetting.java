@@ -17,28 +17,32 @@
 
 package org.apache.zeppelin.interpreter;
 
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Properties;
-import java.util.Random;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.commons.lang.NullArgumentException;
 import org.apache.zeppelin.dep.Dependency;
+import org.apache.zeppelin.display.AngularObjectRegistry;
+import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.notebook.utility.IdHashes;
 
 /**
  * Interpreter settings
  */
 public class InterpreterSetting {
+  private static final String SHARED_PROCESS = "shared_process";
   private String id;
   private String name;
   private String group;
   private String description;
   private Properties properties;
+  private transient InterpreterGroupFactory interpreterGroupFactory;
 
   // use 'interpreterGroup' as a field name to keep backward compatibility of
   // conf/interpreter.json file format
   private List<InterpreterInfo> interpreterGroup;
-  private transient InterpreterGroup interpreterGroupRef;
+  private transient Map<String, InterpreterGroup> interpreterGroupRef =
+      new HashMap<String, InterpreterGroup>();
   private List<Dependency> dependencies;
   private InterpreterOption option;
 
@@ -56,6 +60,7 @@ public class InterpreterSetting {
     this.properties = properties;
     this.dependencies = dependencies;
     this.option = option;
+    this.interpreterGroupFactory = interpreterGroupFactory;
   }
 
   public InterpreterSetting(String name,
@@ -117,16 +122,62 @@ public class InterpreterSetting {
     return group;
   }
 
-  public InterpreterGroup getInterpreterGroup() {
-    return interpreterGroupRef;
+
+  private String getInterpreterProcessKey(String noteId) {
+    if (getOption().isPerNoteProcess()) {
+      return noteId;
+    } else {
+      return SHARED_PROCESS;
+    }
   }
 
-  public void setInterpreterGroup(InterpreterGroup interpreterGroup) {
-    this.interpreterGroupRef = interpreterGroup;
+  public InterpreterGroup getInterpreterGroup(String noteId) {
+    String key = getInterpreterProcessKey(noteId);
+    synchronized (interpreterGroupRef) {
+      if (!interpreterGroupRef.containsKey(key)) {
+        String interpreterGroupId = id() + ":" + key;
+        InterpreterGroup intpGroup =
+            interpreterGroupFactory.createInterpreterGroup(interpreterGroupId, getOption());
+        interpreterGroupRef.put(key, intpGroup);
+      }
+      return interpreterGroupRef.get(key);
+    }
+  }
+
+  public Collection<InterpreterGroup> getAllInterpreterGroups() {
+    synchronized (interpreterGroupRef) {
+      return new LinkedList<InterpreterGroup>(interpreterGroupRef.values());
+    }
+  }
+
+  public void closeAndRemoveInterpreterGroup(String noteId) {
+    String key = getInterpreterProcessKey(noteId);
+    InterpreterGroup groupToRemove;
+    synchronized (interpreterGroupRef) {
+      groupToRemove = interpreterGroupRef.remove(key);
+    }
+
+    if (groupToRemove != null) {
+      groupToRemove.close();
+      groupToRemove.destroy();
+    }
+  }
+
+  public void closeAndRmoveAllInterpreterGroups() {
+    synchronized (interpreterGroupRef) {
+      HashSet<String> groupsToRemove = new HashSet<String>(interpreterGroupRef.keySet());
+      for (String key : groupsToRemove) {
+        closeAndRemoveInterpreterGroup(key);
+      }
+    }
   }
 
   public Properties getProperties() {
     return properties;
+  }
+
+  public void setProperties(Properties properties) {
+    this.properties = properties;
   }
 
   public List<Dependency> getDependencies() {
@@ -154,5 +205,13 @@ public class InterpreterSetting {
 
   public List<InterpreterInfo> getInterpreterInfos() {
     return interpreterGroup;
+  }
+
+  public InterpreterGroupFactory getInterpreterGroupFactory() {
+    return interpreterGroupFactory;
+  }
+
+  public void setInterpreterGroupFactory(InterpreterGroupFactory interpreterGroupFactory) {
+    this.interpreterGroupFactory = interpreterGroupFactory;
   }
 }

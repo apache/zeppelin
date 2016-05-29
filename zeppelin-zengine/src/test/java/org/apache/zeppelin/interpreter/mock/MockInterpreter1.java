@@ -45,13 +45,20 @@ public class MockInterpreter1 extends Interpreter{
 
 	@Override
 	public InterpreterResult interpret(String st, InterpreterContext context) {
+		InterpreterResult result;
 
 		if ("getId".equals(st)) {
 			// get unique id of this interpreter instance
-			return new InterpreterResult(InterpreterResult.Code.SUCCESS, "" + this.hashCode());
+			result = new InterpreterResult(InterpreterResult.Code.SUCCESS, "" + this.hashCode());
 		} else {
-			return new InterpreterResult(InterpreterResult.Code.SUCCESS, "repl1: " + st);
+			result = new InterpreterResult(InterpreterResult.Code.SUCCESS, "repl1: " + st);
 		}
+
+		if (context.getResourcePool() != null) {
+			context.getResourcePool().put(context.getNoteId(), context.getParagraphId(), "result", result);
+		}
+
+		return result;
 	}
 
 	@Override

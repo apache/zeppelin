@@ -41,6 +41,9 @@ class Logger(object):
   def reset(self):
     self.out = ""
 
+  def flush(self):
+    pass
+
 
 class PyZeppelinContext(dict):
   def __init__(self, zc):
@@ -80,14 +83,14 @@ class PyZeppelinContext(dict):
 
   def select(self, name, options, defaultValue = ""):
     # auto_convert to ArrayList doesn't match the method signature on JVM side
-    tuples = map(lambda items: self.__tupleToScalaTuple2(items), options)
+    tuples = list(map(lambda items: self.__tupleToScalaTuple2(items), options))
     iterables = gateway.jvm.scala.collection.JavaConversions.collectionAsScalaIterable(tuples)
     return self.z.select(name, defaultValue, iterables)
 
   def checkbox(self, name, options, defaultChecked = None):
     if defaultChecked is None:
-      defaultChecked = map(lambda items: items[0], options)
-    optionTuples = map(lambda items: self.__tupleToScalaTuple2(items), options)
+      defaultChecked = list(map(lambda items: items[0], options))
+    optionTuples = list(map(lambda items: self.__tupleToScalaTuple2(items), options))
     optionIterables = gateway.jvm.scala.collection.JavaConversions.collectionAsScalaIterable(optionTuples)
     defaultCheckedIterables = gateway.jvm.scala.collection.JavaConversions.collectionAsScalaIterable(defaultChecked)
 

@@ -8,7 +8,7 @@ group: manual
 
 
 ## Spark Interpreter for Apache Zeppelin
-[Apache Spark](http://spark.apache.org) is supported in Zeppelin with 
+[Apache Spark](http://spark.apache.org) is supported in Zeppelin with
 Spark Interpreter group, which consisted of 4 interpreters.
 
 <table class="table-configuration">
@@ -20,17 +20,22 @@ Spark Interpreter group, which consisted of 4 interpreters.
   <tr>
     <td>%spark</td>
     <td>SparkInterpreter</td>
-    <td>Creates SparkContext and provides scala environment</td>
+    <td>Creates a SparkContext and provides a scala environment</td>
   </tr>
   <tr>
     <td>%pyspark</td>
     <td>PySparkInterpreter</td>
-    <td>Provides python environment</td>
+    <td>Provides a python environment</td>
+  </tr>
+  <tr>
+    <td>%r</td>
+    <td>SparkRInterpreter</td>
+    <td>Provides an R environment with SparkR support</td>
   </tr>
   <tr>
     <td>%sql</td>
     <td>SparkSQLInterpreter</td>
-    <td>Provides SQL environment</td>
+    <td>Provides a SQL environment</td>
   </tr>
   <tr>
     <td>%dep</td>
@@ -40,6 +45,74 @@ Spark Interpreter group, which consisted of 4 interpreters.
 </table>
 
 ## Configuration
+The Spark interpreter can be configured with properties provided by Zeppelin. 
+You can also set other Spark properties which are not listed in the table. For a list of additional properties, refer to [Spark Available Properties](http://spark.apache.org/docs/latest/configuration.html#available-properties).
+<table class="table-configuration">
+  <tr>
+    <th>Property</th>
+    <th>Default</th>
+    <th>Description</th>
+  </tr>
+  <tr>
+    <td>args</td>
+    <td></td>
+    <td>Spark commandline args</td>
+  </tr>
+    <td>master</td>
+    <td>local[*]</td>
+    <td>Spark master uri. <br/> ex) spark://masterhost:7077</td>
+  <tr>
+    <td>spark.app.name</td>
+    <td>Zeppelin</td>
+    <td>The name of spark application.</td>
+  </tr>
+  <tr>
+    <td>spark.cores.max</td>
+    <td></td>
+    <td>Total number of cores to use. <br/> Empty value uses all available core.</td>
+  </tr>
+  <tr>
+    <td>spark.executor.memory </td>
+    <td>512m</td>
+    <td>Executor memory per worker instance. <br/> ex) 512m, 32g</td>
+  </tr>
+  <tr>
+    <td>zeppelin.dep.additionalRemoteRepository</td>
+    <td>spark-packages, <br/> http://dl.bintray.com/spark-packages/maven, <br/> false;</td>
+    <td>A list of `id,remote-repository-URL,is-snapshot;` <br/> for each remote repository.</td>
+  </tr>
+  <tr>
+    <td>zeppelin.dep.localrepo</td>
+    <td>local-repo</td>
+    <td>Local repository for dependency loader</td>
+  </tr>
+  <tr>
+    <td>zeppelin.pyspark.python</td>
+    <td>python</td>
+    <td>Python command to run pyspark with</td>
+  </tr>
+  <tr>
+    <td>zeppelin.spark.concurrentSQL</td>
+    <td>false</td>
+    <td>Execute multiple SQL concurrently if set true.</td>
+  </tr>
+  <tr>
+    <td>zeppelin.spark.maxResult</td>
+    <td>1000</td>
+    <td>Max number of SparkSQL result to display.</td>
+  </tr>
+  <tr>
+    <td>zeppelin.spark.printREPLOutput</td>
+    <td>true</td>
+    <td>Print REPL output</td>
+  </tr>
+  <tr>
+    <td>zeppelin.spark.useHiveContext</td>
+    <td>true</td>
+    <td>Use HiveContext instead of SQLContext if it is true.</td>
+  </tr>
+</table>
+
 Without any configuration, Spark interpreter works out of box in local mode. But if you want to connect to your Spark cluster, you'll need to follow below two simple steps.
 
 ### 1. Export SPARK_HOME
@@ -57,6 +130,8 @@ You can optionally export HADOOP\_CONF\_DIR and SPARK\_SUBMIT\_OPTIONS
 export HADOOP_CONF_DIR=/usr/lib/hadoop
 export SPARK_SUBMIT_OPTIONS="--packages com.databricks:spark-csv_2.10:1.2.0"
 ```
+
+For Windows, ensure you have `winutils.exe` in `%HADOOP_HOME%\bin`. For more details please see [Problems running Hadoop on Windows](https://wiki.apache.org/hadoop/WindowsProblems)
 
 ### 2. Set master in Interpreter menu
 After start Zeppelin, go to **Interpreter** menu and edit **master** property in your Spark interpreter setting. The value may vary depending on your Spark cluster deployment type.
@@ -203,13 +278,13 @@ z.put("objName", myObject)
 %pyspark
 myObject = z.get("objName")
 {% endhighlight %}
-  
+
   </div>
 </div>
 
 ### Form Creation
 
-ZeppelinContext provides functions for creating forms. 
+ZeppelinContext provides functions for creating forms.
 In scala and python environments, you can create forms programmatically.
 <div class="codetabs">
   <div data-lang="scala" markdown="1">
@@ -236,13 +311,13 @@ z.select("formName", "option1", Seq(("option1", "option1DisplayName"),
 
 {% highlight python %}
 %pyspark
-# Create text input form 
+# Create text input form
 z.input("formName")
 
-# Create text input form with default value 
+# Create text input form with default value
 z.input("formName", "defaultValue")
 
-# Create select form 
+# Create select form
 z.select("formName", [("option1", "option1DisplayName"),
                       ("option2", "option2DisplayName")])
 
@@ -250,7 +325,7 @@ z.select("formName", [("option1", "option1DisplayName"),
 z.select("formName", [("option1", "option1DisplayName"),
                       ("option2", "option2DisplayName")], "option1")
 {% endhighlight %}
-  
+
   </div>
 </div>
 
@@ -264,12 +339,13 @@ select * from ${table=defaultTableName} where text like '%${search}%'
 To learn more about dynamic form, checkout [Dynamic Form](../manual/dynamicform.html).
 
 
-### Separate Interpreter for each note
+### Interpreter setting option.
 
-In 'Separate Interpreter for each note' mode, SparkInterpreter creates scala compiler per each notebook. However it still shares the single SparkContext.
+Interpreter setting can choose one of 'shared', 'scoped', 'isolated' option. Spark interpreter creates separate scala compiler per each notebook but share a single SparkContext in 'scoped' mode (experimental). It creates separate SparkContext per each notebook in 'isolated' mode.
+
 
 ## Setting up Zeppelin with Kerberos
-Logical setup with Zeppelin, Kerberos Distribution Center (KDC), and Spark on YARN:
+Logical setup with Zeppelin, Kerberos Key Distribution Center (KDC), and Spark on YARN:
 
 <img src="../assets/themes/zeppelin/img/docs-img/kdc_zeppelin.png">
 
@@ -289,5 +365,3 @@ This is to make the server communicate with KDC.
   > **NOTE:** If you do not have access to the above spark-defaults.conf file, optionally, you may add the lines to the Spark Interpreter through the Interpreter tab in the Zeppelin UI.
 
 4. That's it. Play with Zeppelin !
-
-

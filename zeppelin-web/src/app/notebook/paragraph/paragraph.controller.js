@@ -16,29 +16,80 @@
 
 angular.module('zeppelinWebApp')
   .controller('ParagraphCtrl', function($scope,$rootScope, $route, $window, $element, $routeParams, $location,
-                                         $timeout, $compile, websocketMsgSrv) {
+                                         $timeout, $compile, websocketMsgSrv, ngToast) {
   var ANGULAR_FUNCTION_OBJECT_NAME_PREFIX = '_Z_ANGULAR_FUNC_';
+  $scope.parentNote = null;
   $scope.paragraph = null;
   $scope.originalText = '';
   $scope.editor = null;
 
   var paragraphScope = $rootScope.$new(true, $rootScope);
+
   // to keep backward compatibility
   $scope.compiledScope = paragraphScope;
 
+  paragraphScope.z = {
+    // z.runParagraph('20150213-231621_168813393')
+    runParagraph: function(paragraphId) {
+      if (paragraphId) {
+        var filtered = $scope.parentNote.paragraphs.filter(function(x) {
+          return x.id === paragraphId;});
+        if (filtered.length === 1) {
+          var paragraph = filtered[0];
+          websocketMsgSrv.runParagraph(paragraph.id, paragraph.title, paragraph.text,
+              paragraph.config, paragraph.settings.params);
+        } else {
+          ngToast.danger({content: 'Cannot find a paragraph with id \'' + paragraphId + '\'',
+            verticalPosition: 'top', dismissOnTimeout: false});
+        }
+      } else {
+        ngToast.danger({
+          content: 'Please provide a \'paragraphId\' when calling z.runParagraph(paragraphId)',
+          verticalPosition: 'top', dismissOnTimeout: false});
+      }
+    },
+
+    // Example: z.angularBind('my_var', 'Test Value', '20150213-231621_168813393')
+    angularBind: function(varName, value, paragraphId) {
+      // Only push to server if there paragraphId is defined
+      if (paragraphId) {
+        websocketMsgSrv.clientBindAngularObject($routeParams.noteId, varName, value, paragraphId);
+      } else {
+        ngToast.danger({
+          content: 'Please provide a \'paragraphId\' when calling ' +
+          'z.angularBind(varName, value, \'PUT_HERE_PARAGRAPH_ID\')',
+          verticalPosition: 'top', dismissOnTimeout: false});
+      }
+    },
+
+    // Example: z.angularUnBind('my_var', '20150213-231621_168813393')
+    angularUnbind: function(varName, paragraphId) {
+      // Only push to server if paragraphId is defined
+      if (paragraphId) {
+        websocketMsgSrv.clientUnbindAngularObject($routeParams.noteId, varName, paragraphId);
+      } else {
+        ngToast.danger({
+          content: 'Please provide a \'paragraphId\' when calling ' +
+          'z.angularUnbind(varName, \'PUT_HERE_PARAGRAPH_ID\')',
+          verticalPosition: 'top', dismissOnTimeout: false});
+      }
+    }
+  };
+
   var angularObjectRegistry = {};
 
-
   var editorModes = {
-    'ace/mode/scala': /^%spark/,
+    'ace/mode/python': /^%(\w*\.)?pyspark\s*$/,
+    'ace/mode/scala': /^%(\w*\.)?spark\s*$/,
     'ace/mode/sql': /^%(\w*\.)?\wql/,
     'ace/mode/markdown': /^%md/,
     'ace/mode/sh': /^%sh/
   };
 
   // Controller init
-  $scope.init = function(newParagraph) {
+  $scope.init = function(newParagraph, note) {
     $scope.paragraph = newParagraph;
+    $scope.parentNote = note;
     $scope.originalText = angular.copy(newParagraph.text);
     $scope.chart = {};
     $scope.colWidthOption = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 ];
@@ -114,10 +165,10 @@ angular.module('zeppelinWebApp')
           $scope.appendTextOutput($scope.paragraph.result.msg);
         }
 
-        angular.element('#p' + $scope.paragraph.id + '_text').bind("mousewheel", function(e) {
+        angular.element('#p' + $scope.paragraph.id + '_text').bind('mousewheel', function(e) {
           $scope.keepScrollDown = false;
         });
-
+        $scope.flushStreamingOutput = true;
       } else {
         $timeout(retryRenderer, 10);
       }
@@ -313,7 +364,9 @@ angular.module('zeppelinWebApp')
       var newType = $scope.getResultType(data.paragraph);
       var oldGraphMode = $scope.getGraphMode();
       var newGraphMode = $scope.getGraphMode(data.paragraph);
-      var resultRefreshed = (data.paragraph.dateFinished !== $scope.paragraph.dateFinished) || isEmpty(data.paragraph.result) !== isEmpty($scope.paragraph.result);
+      var resultRefreshed = (data.paragraph.dateFinished !== $scope.paragraph.dateFinished) ||
+        isEmpty(data.paragraph.result) !== isEmpty($scope.paragraph.result) ||
+        data.paragraph.status === 'ERROR';
 
       var statusChanged = (data.paragraph.status !== $scope.paragraph.status);
 
@@ -335,6 +388,7 @@ angular.module('zeppelinWebApp')
       }
 
       /** push the rest */
+      $scope.paragraph.authenticationInfo = data.paragraph.authenticationInfo;
       $scope.paragraph.aborted = data.paragraph.aborted;
       $scope.paragraph.dateUpdated = data.paragraph.dateUpdated;
       $scope.paragraph.dateCreated = data.paragraph.dateCreated;
@@ -395,13 +449,17 @@ angular.module('zeppelinWebApp')
 
   $scope.$on('appendParagraphOutput', function(event, data) {
     if ($scope.paragraph.id === data.paragraphId) {
+      if ($scope.flushStreamingOutput) {
+        $scope.clearTextOutput();
+        $scope.flushStreamingOutput = false;
+      }
       $scope.appendTextOutput(data.data);
     }
   });
 
   $scope.$on('updateParagraphOutput', function(event, data) {
     if ($scope.paragraph.id === data.paragraphId) {
-      $scope.clearTextOutput(data.data);
+      $scope.clearTextOutput();
       $scope.appendTextOutput(data.data);
     }
   });
@@ -912,11 +970,21 @@ angular.module('zeppelinWebApp')
       }
       return '';
     }
-    var desc = 'Took ' + (timeMs/1000) + ' seconds';
+    var user = 'anonymous';
+    if (pdata.authenticationInfo !== null && !isEmpty(pdata.authenticationInfo.user)) {
+      user = pdata.authenticationInfo.user;
+    }
+    var desc = 'Took ' +
+      moment.duration(moment(pdata.dateFinished).diff(moment(pdata.dateStarted))).humanize() +
+      '. Last updated by ' + user + ' at ' + moment(pdata.dateUpdated).format('MMMM DD YYYY, h:mm:ss A') + '.';
     if ($scope.isResultOutdated()){
       desc += ' (outdated)';
     }
     return desc;
+  };
+
+  $scope.getElapsedTime = function() {
+    return 'Started ' + moment($scope.paragraph.dateStarted).fromNow() + '.';
   };
 
   $scope.isResultOutdated = function() {
@@ -1157,95 +1225,42 @@ angular.module('zeppelinWebApp')
   };
 
   var setTable = function(type, data, refresh) {
-    var getTableContentFormat = function(d) {
-      if (isNaN(d)) {
-        if (d.length>'%html'.length && '%html ' === d.substring(0, '%html '.length)) {
-          return 'html';
-        } else {
-          return '';
-        }
-      } else {
-        return '';
-      }
-    };
-
-    var formatTableContent = function(d) {
-      if (isNaN(d)) {
-        var f = getTableContentFormat(d);
-        if (f !== '') {
-          return d.substring(f.length+2);
-        } else {
-          return d;
-        }
-      } else {
-        var dStr = d.toString();
-        var splitted = dStr.split('.');
-        var formatted = splitted[0].replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,');
-        if (splitted.length>1) {
-          formatted+= '.'+splitted[1];
-        }
-        return formatted;
-      }
-    };
-
-
     var renderTable = function() {
-      var html = '';
-      html += '<table class="table table-hover table-condensed">';
-      html += '  <thead>';
-      html += '    <tr style="background-color: #F6F6F6; font-weight: bold;">';
-      for (var titleIndex in $scope.paragraph.result.columnNames) {
-        html += '<th>'+$scope.paragraph.result.columnNames[titleIndex].name+'</th>';
-      }
-      html += '    </tr>';
-      html += '  </thead>';
-      html += '  <tbody>';
-      for (var r in $scope.paragraph.result.msgTable) {
-        var row = $scope.paragraph.result.msgTable[r];
-        html += '    <tr>';
-        for (var index in row) {
-          var v = row[index].value;
-          if (getTableContentFormat(v) !== 'html') {
-            v = v.replace(/[\u00A0-\u9999<>\&]/gim, function(i) {
-              return '&#'+i.charCodeAt(0)+';';
-            });
-          }
-          html += '      <td>'+formatTableContent(v)+'</td>';
+      var height = $scope.paragraph.config.graph.height;
+      angular.element('#p' + $scope.paragraph.id + '_table').css('height', height);
+      var resultRows = $scope.paragraph.result.rows;
+      var columnNames = _.pluck($scope.paragraph.result.columnNames, 'name');
+      var container = document.getElementById('p' + $scope.paragraph.id + '_table');
+
+      var handsontable = new Handsontable(container, {
+        data: resultRows,
+        colHeaders: columnNames,
+        rowHeaders: false,
+        stretchH: 'all',
+        sortIndicator: true,
+        columnSorting: true,
+        contextMenu: false,
+        manualColumnResize: true,
+        manualRowResize: true,
+        editor: false,
+        fillHandle: false,
+        disableVisualSelection: true,
+        cells: function (row, col, prop) {
+          var cellProperties = {};
+            cellProperties.renderer = function(instance, td, row, col, prop, value, cellProperties) {
+              Handsontable.NumericCell.renderer.apply(this, arguments);
+              if (!isNaN(value)) {
+                cellProperties.type = 'numeric';
+                cellProperties.format = '0,0';
+                cellProperties.editor = false;
+                td.style.textAlign = 'left';
+              } else if (value.length > '%html'.length && '%html ' === value.substring(0, '%html '.length)) {
+                td.innerHTML = value.substring('%html'.length);
+              }
+            };
+          return cellProperties;
         }
-        html += '    </tr>';
-      }
-      html += '  </tbody>';
-      html += '</table>';
-
-      angular.element('#p' + $scope.paragraph.id + '_table').html(html);
-      if ($scope.paragraph.result.msgTable.length > 10000) {
-        angular.element('#p' + $scope.paragraph.id + '_table').css('overflow', 'scroll');
-        // set table height
-        var height = $scope.paragraph.config.graph.height;
-        angular.element('#p' + $scope.paragraph.id + '_table').css('height', height);
-      } else {
-        var dataTable = angular.element('#p' + $scope.paragraph.id + '_table .table');
-        dataTable.floatThead({
-          scrollContainer: function (dataTable) {
-            return angular.element('#p' + $scope.paragraph.id + '_table');
-          }
-        });
-        angular.element('#p' + $scope.paragraph.id + '_table .table').on('remove', function () {
-          angular.element('#p' + $scope.paragraph.id + '_table .table').floatThead('destroy');
-        });
-
-        angular.element('#p' + $scope.paragraph.id + '_table').css('position', 'relative');
-        angular.element('#p' + $scope.paragraph.id + '_table').css('height', '100%');
-        angular.element('#p' + $scope.paragraph.id + '_table').perfectScrollbar('destroy');
-        angular.element('#p' + $scope.paragraph.id + '_table').perfectScrollbar();
-        angular.element('.ps-scrollbar-y-rail').css('z-index', '1002');
-
-        // set table height
-        var psHeight = $scope.paragraph.config.graph.height;
-        angular.element('#p' + $scope.paragraph.id + '_table').css('height', psHeight);
-        angular.element('#p' + $scope.paragraph.id + '_table').perfectScrollbar('update');
-      }
-
+      });
     };
 
     var retryRenderer = function() {
@@ -2119,7 +2134,7 @@ angular.module('zeppelinWebApp')
 
   $scope.showScrollUpIcon = function(){
     if(angular.element('#p' + $scope.paragraph.id + '_text')[0]){
-      return angular.element('#p' + $scope.paragraph.id + '_text')[0].scrollTop != 0;
+      return angular.element('#p' + $scope.paragraph.id + '_text')[0].scrollTop !== 0;
     }
     return false;
 

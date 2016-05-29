@@ -17,6 +17,7 @@
 
 package org.apache.zeppelin.notebook;
 
+import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.display.GUI;
@@ -35,6 +36,8 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.*;
 
+import com.google.common.annotations.VisibleForTesting;
+
 /**
  * Paragraph is a representation of an execution unit.
  *
@@ -51,6 +54,26 @@ public class Paragraph extends Job implements Serializable, Cloneable {
   Date dateUpdated;
   private Map<String, Object> config; // paragraph configs like isOpen, colWidth, etc
   public final GUI settings;          // form and parameter settings
+
+  @VisibleForTesting
+  Paragraph() {
+    super(generateId(), null);
+    config = new HashMap<>();
+    settings = new GUI();
+  }
+
+  public Paragraph(String paragraphId, Note note, JobListener listener,
+                   NoteInterpreterLoader replLoader) {
+    super(paragraphId, generateId(), listener);
+    this.note = note;
+    this.replLoader = replLoader;
+    title = null;
+    text = null;
+    authenticationInfo = null;
+    dateUpdated = null;
+    settings = new GUI();
+    config = new HashMap<String, Object>();
+  }
 
   public Paragraph(Note note, JobListener listener, NoteInterpreterLoader replLoader) {
     super(generateId(), listener);
@@ -120,7 +143,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     int scriptHeadIndex = 0;
     for (int i = 0; i < text.length(); i++) {
       char ch = text.charAt(i);
-      if (ch == ' ' || ch == '\n' || ch == '(') {
+      if (Character.isWhitespace(ch) || ch == '(') {
         scriptHeadIndex = i;
         break;
       }
@@ -161,6 +184,10 @@ public class Paragraph extends Job implements Serializable, Cloneable {
 
   public Interpreter getRepl(String name) {
     return replLoader.get(name);
+  }
+
+  public Interpreter getCurrentRepl() {
+    return getRepl(getRequiredReplName());
   }
 
   public List<String> completion(String buffer, int cursor) {
@@ -219,6 +246,12 @@ public class Paragraph extends Job implements Serializable, Cloneable {
       String scriptBody = getScriptBody();
       Map<String, Input> inputs = Input.extractSimpleQueryParam(scriptBody); // inputs will be built
                                                                              // from script body
+
+      final AngularObjectRegistry angularRegistry = repl.getInterpreterGroup()
+              .getAngularObjectRegistry();
+
+      scriptBody = extractVariablesFromAngularRegistry(scriptBody, inputs, angularRegistry);
+
       settings.setForms(inputs);
       script = Input.getSimpleQuery(settings.getParams(), scriptBody);
     }
@@ -287,8 +320,8 @@ public class Paragraph extends Job implements Serializable, Cloneable {
 
     if (!getNoteReplLoader().getInterpreterSettings().isEmpty()) {
       InterpreterSetting intpGroup = getNoteReplLoader().getInterpreterSettings().get(0);
-      registry = intpGroup.getInterpreterGroup().getAngularObjectRegistry();
-      resourcePool = intpGroup.getInterpreterGroup().getResourcePool();
+      registry = intpGroup.getInterpreterGroup(note.id()).getAngularObjectRegistry();
+      resourcePool = intpGroup.getInterpreterGroup(note.id()).getResourcePool();
     }
 
     List<InterpreterContextRunner> runners = new LinkedList<InterpreterContextRunner>();
@@ -339,7 +372,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
   }
 
   static class ParagraphRunner extends InterpreterContextRunner {
-    private Note note;
+    private transient Note note;
 
     public ParagraphRunner(Note note, String noteId, String paragraphId) {
       super(noteId, paragraphId);
@@ -376,5 +409,26 @@ public class Paragraph extends Job implements Serializable, Cloneable {
   public Object clone() throws CloneNotSupportedException {
     Paragraph paraClone = (Paragraph) this.clone();
     return paraClone;
+  }
+
+  String extractVariablesFromAngularRegistry(String scriptBody, Map<String, Input> inputs,
+                                             AngularObjectRegistry angularRegistry) {
+
+    final String noteId = this.getNote().getId();
+    final String paragraphId = this.getId();
+
+    final Set<String> keys = new HashSet<>(inputs.keySet());
+
+    for (String varName : keys) {
+      final AngularObject paragraphScoped = angularRegistry.get(varName, noteId, paragraphId);
+      final AngularObject noteScoped = angularRegistry.get(varName, noteId, null);
+      final AngularObject angularObject = paragraphScoped != null ? paragraphScoped : noteScoped;
+      if (angularObject != null) {
+        inputs.remove(varName);
+        final String pattern = "[$][{]\\s*" + varName + "\\s*(?:=[^}]+)?[}]";
+        scriptBody = scriptBody.replaceAll(pattern, angularObject.get().toString());
+      }
+    }
+    return scriptBody;
   }
 }

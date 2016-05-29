@@ -13,19 +13,34 @@
  */
 'use strict';
 
-angular.module('zeppelinWebApp').controller('HomeCtrl', function($scope, notebookListDataFactory, websocketMsgSrv, $rootScope, arrayOrderingSrv) {
+angular.module('zeppelinWebApp').controller('HomeCtrl', function($scope, notebookListDataFactory, websocketMsgSrv, $rootScope, arrayOrderingSrv, $http, baseUrlSrv) {
   var vm = this;
   vm.notes = notebookListDataFactory;
   vm.websocketMsgSrv = websocketMsgSrv;
   vm.arrayOrderingSrv = arrayOrderingSrv;
 
   vm.notebookHome = false;
-  vm.staticHome = false;
+  if ($rootScope.ticket !== undefined) {
+    vm.staticHome = false;
+  } else {
+    vm.staticHome = true;
+  }
 
   $scope.isReloading = false;
-  
+
+  var getZeppelinVersion = function() {
+    $http.get(baseUrlSrv.getRestApiBase() +'/version').
+      success(function (data, status, headers, config) {
+        $scope.zeppelinVersion = data.body;
+      }).
+      error(function(data, status, headers, config) {
+        console.log('Error %o %o', status, data.message);
+      });
+  };
+
   var initHome = function() {
     websocketMsgSrv.getHomeNotebook();
+    getZeppelinVersion();
   };
 
   initHome();
@@ -56,4 +71,9 @@ angular.module('zeppelinWebApp').controller('HomeCtrl', function($scope, noteboo
     websocketMsgSrv.reloadAllNotesFromRepo();
     $scope.isReloadingNotes = true;
   };
+
+  $scope.toggleFolderNode = function(node) {
+    node.hidden = !node.hidden;
+  };
+
 });

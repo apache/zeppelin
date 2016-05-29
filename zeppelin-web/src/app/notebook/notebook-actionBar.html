@@ -13,9 +13,9 @@ limitations under the License.
 -->
 <div class="noteAction" ng-show="note.id && !paragraphUrl">
   <h3>
-    <input type="text" pu-elastic-input class="form-control2" placeholder="{{note.name || 'Note ' + note.id}}" style="min-width: 200px; max-width: 600px;"
+    <input type="text" pu-elastic-input class="form-control2" placeholder="{{noteName(note)}}" style="min-width: 200px; max-width: 600px;"
            ng-show="showEditor" ng-model="note.name" ng-blur="sendNewName();showEditor = false;" ng-enter="sendNewName();showEditor = false;" ng-escape="note.name = oldName; showEditor = false" focus-if="showEditor" />
-    <p class="form-control-static2" ng-click="showEditor = true; oldName = note.name" ng-show="!showEditor">{{note.name || 'Note ' + note.id}}</p>
+    <p class="form-control-static2" ng-click="showEditor = true; oldName = note.name" ng-show="!showEditor">{{noteName(note)}}</p>
     <span class="labelBtn btn-group">
       <button type="button"
               class="btn btn-default btn-xs"
@@ -132,6 +132,13 @@ limitations under the License.
                 </p>
               </div>
               <div>
+                <span>- Cron executing user (click enter in field to submit)</span>
+                <input type="text"
+                       ng-model="note.config.cronExecutingUser"
+                       ng-enter="setCronExecutingUser(note.config.cronExecutingUser)"
+                       dropdown-input />
+              </div>
+              <div>
                 <span>- auto-restart interpreter on cron execution </span>
                 <input type="checkbox"
                        ng-model="note.config.releaseresource"
@@ -158,7 +165,7 @@ limitations under the License.
       <span style="position:relative; top:2px; margin-right:4px; cursor:pointer;"
             ng-click="togglePermissions()"
             tooltip-placement="bottom" tooltip="Note permissions">
-        <i class="fa fa-lock" ng-style="{color: showSetting ? '#3071A9' : 'black' }"></i>
+        <i class="fa fa-lock" ng-style="{color: showPermissions ? '#3071A9' : 'black' }"></i>
       </span>
 
       <span class="btn-group">

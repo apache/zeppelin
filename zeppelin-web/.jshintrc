@@ -31,6 +31,8 @@
     "nv": false,
     "ace": false,
     "d3": false,
-    "BootstrapDialog": false
+    "BootstrapDialog": false,
+    "Handsontable": false,
+    "moment": false
   }
 }

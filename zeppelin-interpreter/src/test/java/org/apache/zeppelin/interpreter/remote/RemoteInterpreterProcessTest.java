@@ -28,12 +28,16 @@ import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService.Client;
 import org.junit.Test;
 
 public class RemoteInterpreterProcessTest {
+  private static final String INTERPRETER_SCRIPT =
+          System.getProperty("os.name").startsWith("Windows") ?
+                  "../bin/interpreter.cmd" :
+                  "../bin/interpreter.sh";
 
   @Test
   public void testStartStop() {
     InterpreterGroup intpGroup = new InterpreterGroup();
     RemoteInterpreterProcess rip = new RemoteInterpreterProcess(
-        "../bin/interpreter.sh", "nonexists", "fakeRepo", new HashMap<String, String>(),
+        INTERPRETER_SCRIPT, "nonexists", "fakeRepo", new HashMap<String, String>(),
         10 * 1000, null);
     assertFalse(rip.isRunning());
     assertEquals(0, rip.referenceCount());
@@ -50,7 +54,7 @@ public class RemoteInterpreterProcessTest {
   public void testClientFactory() throws Exception {
     InterpreterGroup intpGroup = new InterpreterGroup();
     RemoteInterpreterProcess rip = new RemoteInterpreterProcess(
-        "../bin/interpreter.sh", "nonexists", "fakeRepo", new HashMap<String, String>(),
+        INTERPRETER_SCRIPT, "nonexists", "fakeRepo", new HashMap<String, String>(),
         mock(RemoteInterpreterEventPoller.class), 10 * 1000);
     rip.reference(intpGroup);
     assertEquals(0, rip.getNumActiveClient());

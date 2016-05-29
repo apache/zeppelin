@@ -24,17 +24,18 @@
 # export ZEPPELIN_INTP_JAVA_OPTS 		# zeppelin interpreter process jvm options. Default = ZEPPELIN_JAVA_OPTS
 
 # export ZEPPELIN_LOG_DIR        		# Where log files are stored.  PWD by default.
-# export ZEPPELIN_PID_DIR        		# The pid files are stored. /tmp by default.
+# export ZEPPELIN_PID_DIR        		# The pid files are stored. ${ZEPPELIN_HOME}/run by default.
 # export ZEPPELIN_WAR_TEMPDIR    		# The location of jetty temporary directory.
 # export ZEPPELIN_NOTEBOOK_DIR   		# Where notebook saved
 # export ZEPPELIN_NOTEBOOK_HOMESCREEN		# Id of notebook to be displayed in homescreen. ex) 2A94M5J1Z
 # export ZEPPELIN_NOTEBOOK_HOMESCREEN_HIDE	# hide homescreen notebook from list when this value set to "true". default "false"
-# export ZEPPELIN_NOTEBOOK_S3_BUCKET            # Bucket where notebook saved
-# export ZEPPELIN_NOTEBOOK_S3_USER              # User in bucket where notebook saved. For example bucket/user/notebook/2A94M5J1Z/note.json
+# export ZEPPELIN_NOTEBOOK_S3_BUCKET        # Bucket where notebook saved
+# export ZEPPELIN_NOTEBOOK_S3_ENDPOINT      # Endpoint of the bucket
+# export ZEPPELIN_NOTEBOOK_S3_USER          # User in bucket where notebook saved. For example bucket/user/notebook/2A94M5J1Z/note.json
 # export ZEPPELIN_IDENT_STRING   		# A string representing this instance of zeppelin. $USER by default.
 # export ZEPPELIN_NICENESS       		# The scheduling priority for daemons. Defaults to 0.
 # export ZEPPELIN_INTERPRETER_LOCALREPO         # Local repository for interpreter's additional dependency loading
-
+# export ZEPPELIN_NOTEBOOK_STORAGE 		# Refers to pluggable notebook storage class, can have two classes simultaneously with a sync between them (e.g. local and remote).
 
 #### Spark interpreter configuration ####
 
@@ -61,4 +62,17 @@
 # export ZEPPELIN_SPARK_USEHIVECONTEXT  # Use HiveContext instead of SQLContext if set true. true by default.
 # export ZEPPELIN_SPARK_CONCURRENTSQL   # Execute multiple SQL concurrently if set true. false by default.
 # export ZEPPELIN_SPARK_MAXRESULT       # Max number of SparkSQL result to display. 1000 by default.
+# export ZEPPELIN_WEBSOCKET_MAX_TEXT_MESSAGE_SIZE       # Size in characters of the maximum text message to be received by websocket. Defaults to 1024000
+
+#### HBase interpreter configuration ####
+
+## To connect to HBase running on a cluster, either HBASE_HOME or HBASE_CONF_DIR must be set
+
+# export HBASE_HOME=                    # (require) Under which HBase scripts and configuration should be
+# export HBASE_CONF_DIR=                # (optional) Alternatively, configuration directory can be set to point to the directory that has hbase-site.xml
+
+#### ZeppelinHub connection configuration ####
+# export ZEPPELINHUB_API_ADDRESS		# Refers to the address of the ZeppelinHub service in use
+# export ZEPPELINHUB_API_TOKEN			# Refers to the Zeppelin instance token of the user
+# export ZEPPELINHUB_USER_KEY			# Optional, when using Zeppelin with authentication.
 

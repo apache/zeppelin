@@ -28,6 +28,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
+import com.google.common.collect.Sets;
 import org.apache.commons.io.FileUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
@@ -38,6 +39,8 @@ import org.apache.zeppelin.interpreter.mock.MockInterpreter1;
 import org.apache.zeppelin.interpreter.mock.MockInterpreter2;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.apache.zeppelin.notebook.repo.VFSNotebookRepo;
+import org.apache.zeppelin.resource.LocalResourcePool;
+import org.apache.zeppelin.resource.ResourcePoolUtils;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.scheduler.JobListener;
@@ -87,7 +90,8 @@ public class NotebookTest implements JobListenerFactory{
 
     SearchService search = mock(SearchService.class);
     notebookRepo = new VFSNotebookRepo(conf);
-    notebook = new Notebook(conf, notebookRepo, schedulerFactory, factory, this, search);
+    NotebookAuthorization notebookAuthorization = new NotebookAuthorization(conf);
+    notebook = new Notebook(conf, notebookRepo, schedulerFactory, factory, this, search, notebookAuthorization);
   }
 
   @After
@@ -171,7 +175,7 @@ public class NotebookTest implements JobListenerFactory{
 
     Notebook notebook2 = new Notebook(
         conf, notebookRepo, schedulerFactory,
-        new InterpreterFactory(conf, null, null, null, depResolver), this, null);
+        new InterpreterFactory(conf, null, null, null, depResolver), this, null, null);
     assertEquals(1, notebook2.getAllNotes().size());
   }
 
@@ -319,9 +323,38 @@ public class NotebookTest implements JobListenerFactory{
     Note cloneNote = notebook.cloneNote(note.getId(), "clone note");
     Paragraph cp = cloneNote.paragraphs.get(0);
     assertEquals(cp.getStatus(), Status.READY);
-    assertNotEquals(cp.getId(), p.getId());
+
+    // Keep same ParagraphID
+    assertEquals(cp.getId(), p.getId());
     assertEquals(cp.text, p.text);
     assertEquals(cp.getResult().message(), p.getResult().message());
+  }
+
+  @Test
+  public void testResourceRemovealOnParagraphNoteRemove() throws IOException {
+    Note note = notebook.createNote();
+    note.getNoteReplLoader().setInterpreters(factory.getDefaultInterpreterSettingList());
+    for (InterpreterGroup intpGroup : InterpreterGroup.getAll()) {
+      intpGroup.setResourcePool(new LocalResourcePool(intpGroup.getId()));
+    }
+    Paragraph p1 = note.addParagraph();
+    p1.setText("hello");
+    Paragraph p2 = note.addParagraph();
+    p2.setText("%mock2 world");
+
+    note.runAll();
+    while(p1.isTerminated()==false || p1.getResult()==null) Thread.yield();
+    while(p2.isTerminated()==false || p2.getResult()==null) Thread.yield();
+
+    assertEquals(2, ResourcePoolUtils.getAllResources().size());
+
+    // remove a paragraph
+    note.removeParagraph(p1.getId());
+    assertEquals(1, ResourcePoolUtils.getAllResources().size());
+
+    // remove note
+    notebook.removeNote(note.id());
+    assertEquals(0, ResourcePoolUtils.getAllResources().size());
   }
 
   @Test
@@ -332,7 +365,7 @@ public class NotebookTest implements JobListenerFactory{
     note.getNoteReplLoader().setInterpreters(factory.getDefaultInterpreterSettingList());
 
     AngularObjectRegistry registry = note.getNoteReplLoader()
-        .getInterpreterSettings().get(0).getInterpreterGroup()
+        .getInterpreterSettings().get(0).getInterpreterGroup("sharedProcess")
         .getAngularObjectRegistry();
 
     Paragraph p1 = note.addParagraph();
@@ -365,7 +398,7 @@ public class NotebookTest implements JobListenerFactory{
     note.getNoteReplLoader().setInterpreters(factory.getDefaultInterpreterSettingList());
 
     AngularObjectRegistry registry = note.getNoteReplLoader()
-        .getInterpreterSettings().get(0).getInterpreterGroup()
+        .getInterpreterSettings().get(0).getInterpreterGroup("sharedProcess")
         .getAngularObjectRegistry();
 
     Paragraph p1 = note.addParagraph();
@@ -398,7 +431,7 @@ public class NotebookTest implements JobListenerFactory{
     note.getNoteReplLoader().setInterpreters(factory.getDefaultInterpreterSettingList());
 
     AngularObjectRegistry registry = note.getNoteReplLoader()
-        .getInterpreterSettings().get(0).getInterpreterGroup()
+        .getInterpreterSettings().get(0).getInterpreterGroup("sharedProcess")
         .getAngularObjectRegistry();
 
     // add local scope object
@@ -409,7 +442,7 @@ public class NotebookTest implements JobListenerFactory{
     // restart interpreter
     factory.restart(note.getNoteReplLoader().getInterpreterSettings().get(0).id());
     registry = note.getNoteReplLoader()
-    .getInterpreterSettings().get(0).getInterpreterGroup()
+    .getInterpreterSettings().get(0).getInterpreterGroup("sharedProcess")
     .getAngularObjectRegistry();
 
     // local and global scope object should be removed
@@ -422,23 +455,43 @@ public class NotebookTest implements JobListenerFactory{
   public void testPermissions() throws IOException {
     // create a note and a paragraph
     Note note = notebook.createNote();
+    NotebookAuthorization notebookAuthorization = notebook.getNotebookAuthorization();
     // empty owners, readers and writers means note is public
-    assertEquals(note.isOwner(new HashSet<String>(Arrays.asList("user2"))), true);
-    assertEquals(note.isReader(new HashSet<String>(Arrays.asList("user2"))), true);
-    assertEquals(note.isWriter(new HashSet<String>(Arrays.asList("user2"))), true);
+    assertEquals(notebookAuthorization.isOwner(note.id(),
+            new HashSet<String>(Arrays.asList("user2"))), true);
+    assertEquals(notebookAuthorization.isReader(note.id(),
+            new HashSet<String>(Arrays.asList("user2"))), true);
+    assertEquals(notebookAuthorization.isWriter(note.id(),
+            new HashSet<String>(Arrays.asList("user2"))), true);
 
-    note.setOwners(new HashSet<String>(Arrays.asList("user1")));
-    note.setReaders(new HashSet<String>(Arrays.asList("user1", "user2")));
-    note.setWriters(new HashSet<String>(Arrays.asList("user1")));
+    notebookAuthorization.setOwners(note.id(),
+            new HashSet<String>(Arrays.asList("user1")));
+    notebookAuthorization.setReaders(note.id(),
+            new HashSet<String>(Arrays.asList("user1", "user2")));
+    notebookAuthorization.setWriters(note.id(),
+            new HashSet<String>(Arrays.asList("user1")));
 
-    assertEquals(note.isOwner(new HashSet<String>(Arrays.asList("user2"))), false);
-    assertEquals(note.isOwner(new HashSet<String>(Arrays.asList("user1"))), true);
+    assertEquals(notebookAuthorization.isOwner(note.id(),
+            new HashSet<String>(Arrays.asList("user2"))), false);
+    assertEquals(notebookAuthorization.isOwner(note.id(),
+            new HashSet<String>(Arrays.asList("user1"))), true);
 
-    assertEquals(note.isReader(new HashSet<String>(Arrays.asList("user3"))), false);
-    assertEquals(note.isReader(new HashSet<String>(Arrays.asList("user2"))), true);
+    assertEquals(notebookAuthorization.isReader(note.id(),
+            new HashSet<String>(Arrays.asList("user3"))), false);
+    assertEquals(notebookAuthorization.isReader(note.id(),
+            new HashSet<String>(Arrays.asList("user2"))), true);
 
-    assertEquals(note.isWriter(new HashSet<String>(Arrays.asList("user2"))), false);
-    assertEquals(note.isWriter(new HashSet<String>(Arrays.asList("user1"))), true);
+    assertEquals(notebookAuthorization.isWriter(note.id(),
+            new HashSet<String>(Arrays.asList("user2"))), false);
+    assertEquals(notebookAuthorization.isWriter(note.id(),
+            new HashSet<String>(Arrays.asList("user1"))), true);
+
+    // Test clearing of permssions
+    notebookAuthorization.setReaders(note.id(), Sets.<String>newHashSet());
+    assertEquals(notebookAuthorization.isReader(note.id(),
+            new HashSet<String>(Arrays.asList("user2"))), true);
+    assertEquals(notebookAuthorization.isReader(note.id(),
+            new HashSet<String>(Arrays.asList("user3"))), true);
 
     notebook.removeNote(note.id());
   }

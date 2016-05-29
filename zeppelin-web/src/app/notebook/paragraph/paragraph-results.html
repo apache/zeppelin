@@ -13,6 +13,7 @@ limitations under the License.
 -->
 <div
   id="p{{paragraph.id}}_resize"
+  style='padding-bottom: 5px;'
   resize='{"allowresize": "{{!asIframe && !viewOnly}}", "graphType": "{{getResultType()}}"}'
      resizable on-resize="resizeParagraph(width, height);">
   <div ng-include src="'app/notebook/paragraph/paragraph-graph.html'"></div>
