@@ -15,8 +15,10 @@
  * limitations under the License.
  */
 
-package org.apache.zeppelin.notebook;
+package org.apache.zeppelin.interpreter;
 
+import org.apache.zeppelin.notebook.Note;
+import org.apache.zeppelin.notebook.Paragraph;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
@@ -55,7 +57,7 @@ public class OccupiedInterpreterTest {
 
     String noteId = "test3";
     String interpreter = "%sh";
-    Paragraph p = new Paragraph();
+    Paragraph p = new Paragraph(null, null, null);
     p.setText(interpreter + System.lineSeparator() + "echo hello");
 
     p = Mockito.spy(p);
@@ -103,7 +105,7 @@ public class OccupiedInterpreterTest {
     Note note = Mockito.mock(Note.class);
     Mockito.when(note.getId()).thenReturn("test6");
 
-    Paragraph p1 = new Paragraph();
+    Paragraph p1 = new Paragraph(null, null, null);
     p1 = Mockito.spy(p1);
     Mockito.when(p1.getNote()).thenReturn(note);
     Mockito.when(p1.getText()).thenReturn("%md" + System.lineSeparator() + "hello");
@@ -121,7 +123,7 @@ public class OccupiedInterpreterTest {
   public void setInterpreterNameIfEmptyText() throws Exception {
     String noteId = "test5";
 
-    Paragraph p = new Paragraph();
+    Paragraph p = new Paragraph(null, null, null);
     p = Mockito.spy(p);
     Note note = Mockito.mock(Note.class);
 

@@ -28,6 +28,7 @@ import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
+import org.apache.zeppelin.interpreter.OccupiedInterpreter;
 
 /**
  * Interpreter loader per note.
@@ -117,7 +118,8 @@ public class NoteInterpreterLoader {
       return null;
     }
 
-    if (replName == null || replName.trim().length() == 0) {
+    if (replName == null || replName.trim().length() == 0
+            || OccupiedInterpreter.isDefaultInterpreter(replName)) {
       // get default settings (first available)
       InterpreterSetting defaultSettings = settings.get(0);
       return createOrGetInterpreterList(defaultSettings).get(0);

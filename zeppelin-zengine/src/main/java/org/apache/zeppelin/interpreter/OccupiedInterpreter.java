@@ -15,9 +15,10 @@
  * limitations under the License.
  */
 
-package org.apache.zeppelin.notebook;
+package org.apache.zeppelin.interpreter;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.zeppelin.notebook.Paragraph;
 
 import java.util.HashMap;
 import java.util.regex.Matcher;
@@ -50,6 +51,10 @@ public class OccupiedInterpreter {
 
   public static String getDefaultInterpreterName() {
     return DEFAULT_INTERPRETER_NAME;
+  }
+
+  public static boolean isDefaultInterpreter(String replName) {
+    return DEFAULT_INTERPRETER_NAME.equals(replName);
   }
 
   /**

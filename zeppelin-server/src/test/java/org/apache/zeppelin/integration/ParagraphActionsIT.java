@@ -21,7 +21,7 @@ package org.apache.zeppelin.integration;
 import org.apache.zeppelin.AbstractZeppelinIT;
 import org.apache.zeppelin.WebDriverManager;
 import org.apache.zeppelin.ZeppelinITUtils;
-import org.apache.zeppelin.notebook.OccupiedInterpreter;
+import org.apache.zeppelin.interpreter.OccupiedInterpreter;
 import org.hamcrest.CoreMatchers;
 import org.junit.After;
 import org.junit.Before;
@@ -29,13 +29,10 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ErrorCollector;
 import org.openqa.selenium.*;
-import org.openqa.selenium.interactions.Action;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.Select;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.File;
 
 public class ParagraphActionsIT extends AbstractZeppelinIT {
   private static final Logger LOG = LoggerFactory.getLogger(ParagraphActionsIT.class);

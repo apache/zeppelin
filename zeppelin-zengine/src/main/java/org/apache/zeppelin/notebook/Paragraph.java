@@ -168,7 +168,9 @@ public class Paragraph extends Job implements Serializable, Cloneable {
       return null;
     }
     String head = text.substring(0, scriptHeadIndex);
-    if (head.startsWith("%")) {
+    if (OccupiedInterpreter.isDefaultInterpreter(head)) {
+      return head;
+    } else if (head.startsWith("%")) {
       return head.substring(1);
     } else {
       return null;
