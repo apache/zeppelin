@@ -257,7 +257,3 @@ The following components are provided under the BSD 3-Clause license.  See file 
 
   (BSD 3 Clause) portions of Scala (http://www.scala-lang.org/download) - http://www.scala-lang.org/download/#License
    r/src/main/scala/scala/Console.scala
-
-  (The New BSD License) Py4J (net.sf.py4j:py4j:0.9.2 - http://py4j.sourceforge.net/)
-  python/src/main/java/org/apache/zeppelin/python/PythonInterpreter.java
-  python/src/main/resources/bootstrap_input.py
