@@ -314,7 +314,7 @@ public class CassandraInterpreterTest {
         final InterpreterResult actual = interpreter.interpret(queries, intrContext);
 
         //Then
-        assertThat(actual.code()).isEqualTo(Code.ERROR);
+        assertThat(actual.code()).isEqualTo(Code.SUCCESS);
         assertThat(actual.message()).isEqualTo("key\tval\n" +
                 "myKey\tmyValue\n");
     }
