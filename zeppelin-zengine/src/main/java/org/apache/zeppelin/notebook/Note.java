@@ -39,6 +39,7 @@ import org.apache.zeppelin.scheduler.JobListener;
 import org.apache.zeppelin.search.SearchService;
 
 import com.google.gson.Gson;
+import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -352,11 +353,15 @@ public class Note implements Serializable, JobListener {
    * Run all paragraphs sequentially.
    */
   public void runAll() {
+    String cronExecutingUser = (String) getConfig().get("cronExecutingUser");
     synchronized (paragraphs) {
       for (Paragraph p : paragraphs) {
         if (!p.isEnabled()) {
           continue;
         }
+        AuthenticationInfo authenticationInfo = new AuthenticationInfo();
+        authenticationInfo.setUser(cronExecutingUser);
+        p.setAuthenticationInfo(authenticationInfo);
         p.setNoteReplLoader(replLoader);
         p.setListener(jobListenerFactory.getParagraphJobListener(this));
         Interpreter intp = replLoader.get(p.getRequiredReplName());

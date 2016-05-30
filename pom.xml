@@ -118,6 +118,7 @@
     <libthrift.version>0.9.2</libthrift.version>
     <gson.version>2.2</gson.version>
     <guava.version>15.0</guava.version>
+    <jetty.version>9.2.15.v20160210</jetty.version>
 
     <PermGen>64m</PermGen>
     <MaxPermGen>512m</MaxPermGen>
