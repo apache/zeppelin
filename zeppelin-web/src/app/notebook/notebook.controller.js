@@ -549,7 +549,10 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl',
     for (var f=0; f<$scope.note.paragraphs.length; f++) {
       if (paragraphToBeFocused === $scope.note.paragraphs[f].id) {
         $scope.note.paragraphs[f].focus = true;
-        angular.element('#' + paragraphId + '_paragraphColumn_main').scope().goToLineEnd();
+        var paragraph = angular.element('#' + paragraphToBeFocused + '_paragraphColumn_main').scope();
+        if(paragraph) {
+          paragraph.goToLineEnd();
+        }
       }
     }
   };
