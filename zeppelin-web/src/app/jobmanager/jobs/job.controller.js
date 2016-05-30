@@ -54,9 +54,8 @@ angular.module('zeppelinWebApp')
                 'Content-Type': 'application/x-www-form-urlencoded'
               }
             }).then(function successCallback(response) {
-              console.log('run job at management', response);
+              // success
             }, function errorCallback(errorResponse) {
-              console.log(errorResponse);
               var errorText = 'SERVER ERROR';
               if (errorResponse.data.message !== undefined) {
                 errorText = errorResponse.data.message;
@@ -86,7 +85,7 @@ angular.module('zeppelinWebApp')
                 'Content-Type': 'application/x-www-form-urlencoded'
               }
             }).then(function successCallback(response) {
-              console.log('run job at management', response);
+              // success
             }, function errorCallback(errorResponse) {
               var errorText = 'SERVER ERROR';
               if (errorResponse.data.message !== undefined) {

@@ -43,7 +43,7 @@ limitations under the License.
             <input
               class="form-control"
               type="text" ng-model="filterConfig.FILTER_VALUE_NOTEBOOK_NAME"
-              ng-change="doFiltering(jobInfomations, filterConfig)"/>
+              ng-keypress="doFilterInputTyping($event, jobInfomations, filterConfig)"/>
           </div>
     </div>
     <div

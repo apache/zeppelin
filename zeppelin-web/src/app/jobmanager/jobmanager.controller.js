@@ -24,16 +24,20 @@ angular.module('zeppelinWebApp')
 
       var filterItems = jobItems;
 
+      if (RUNNING_ALWAYS_TOP === true) {
+        var runningJobList = _.where(filterItems, {isRunningJob : true});
+        filterItems = _.reject(filterItems, {isRunningJob : true});
+        runningJobList.map(function (runningJob) {
+          filterItems.splice(0,0, runningJob);
+        });
+      }
+
       if (FILTER_VALUE_INTERPRETER === undefined) {
         filterItems = _.filter(filterItems, function (jobItem) {
           return jobItem.interpreter === undefined? true : false;
         });
       } else if (FILTER_VALUE_INTERPRETER !== '*') {
         filterItems = _.where(filterItems, {interpreter : FILTER_VALUE_INTERPRETER});
-      }
-
-      if (RUNNING_ALWAYS_TOP === true) {
-        filterItems = _.sortBy(filterItems, 'isRunningJob').reverse();
       }
 
       if (FILTER_VALUE_NOTEBOOK_NAME !== '') {
@@ -49,10 +53,12 @@ angular.module('zeppelinWebApp')
   })
   .controller('JobmanagerCtrl',
     function($scope, $route, $routeParams, $location, $rootScope, $http,
-             websocketMsgSrv, baseUrlSrv, $interval, SaveAsService, myJobFilter) {
+             websocketMsgSrv, baseUrlSrv, $interval, $timeout, SaveAsService, myJobFilter) {
 
-      $scope.$on('setNotebookJobs', function(event, note) {
-        $scope.jobInfomations = note;
+      $scope.$on('setNotebookJobs', function(event, responseData) {
+        $scope.lastJobServerUnixTime = responseData.lastResponseUnixTime;
+        $scope.jobInfomations = responseData.jobs;
+        $scope.jobInfomationsIndexs = $scope.jobInfomations? _.indexBy($scope.jobInfomations, 'notebookId') : {};
         $scope.JobInfomationsByFilter = $scope.jobTypeFilter($scope.jobInfomations, $scope.filterConfig);
         $scope.ACTIVE_INTERPRETERS = [
           {
@@ -69,6 +75,28 @@ angular.module('zeppelinWebApp')
         }
       });
 
+      $scope.$on('setUpdateNotebookJobs', function(event, responseData) {
+        var jobInfomations = $scope.jobInfomations;
+        var indexStore = $scope.jobInfomationsIndexs;
+        $scope.lastJobServerUnixTime = responseData.lastResponseUnixTime;
+        var notes = responseData.jobs;
+        notes.map(function (changedItem) {
+          if (indexStore[changedItem.notebookId] === undefined) {
+            var newItem = angular.copy(changedItem);
+            jobInfomations.push(newItem);
+            indexStore[changedItem.notebookId] = newItem;
+          } else {
+            var changeOriginTarget = indexStore[changedItem.notebookId];
+            changeOriginTarget.isRunningJob = changedItem.isRunningJob;
+            changeOriginTarget.notebookName = changedItem.notebookName;
+            changeOriginTarget.notebookType = changedItem.notebookType;
+            changeOriginTarget.unixTimeLastRun = changedItem.unixTimeLastRun;
+            changeOriginTarget.paragraphs = changedItem.paragraphs;
+          }
+          $scope.doFiltering(jobInfomations, $scope.filterConfig);
+        });
+      });
+
       $scope.doFiltering = function (jobInfomations, filterConfig) {
         $scope.JobInfomationsByFilter = $scope.jobTypeFilter(jobInfomations, filterConfig);
       };
@@ -76,6 +104,16 @@ angular.module('zeppelinWebApp')
       $scope.onChangeRunJobToAlwaysTopToggle = function (jobInfomations, filterConfig) {
         $scope.isRunJobToAlwaysTopToggle = !$scope.isRunJobToAlwaysTopToggle;
         $scope.doFiltering(jobInfomations, filterConfig);
+      };
+
+      $scope.doFilterInputTyping = function (keyEvent, jobInfomations, filterConfig) {
+        var returnKey = 13;
+        $timeout.cancel($scope.dofilterTimeoutObject);
+        $scope.dofilterTimeoutObject = $timeout(function(){$scope.doFiltering(jobInfomations, filterConfig);}, 1000);
+        if (keyEvent.which === returnKey) {
+          $timeout.cancel($scope.dofilterTimeoutObject);
+          $scope.doFiltering(jobInfomations, filterConfig);
+        }
       };
 
       $scope.init = function () {
@@ -89,10 +127,12 @@ angular.module('zeppelinWebApp')
         $scope.JobInfomationsByFilter = $scope.jobInfomations;
 
         websocketMsgSrv.getNotebookJobsList();
-        var refreshObj = $interval(websocketMsgSrv.getNotebookJobsList, 1000);
-
+        var refreshObj = $interval(function () {
+          websocketMsgSrv.getUpdateNotebookJobsList($scope.lastJobServerUnixTime);
+        }, 1000);
         $scope.$on('$destroy', function() {
           $interval.cancel(refreshObj);
         });
+
       };
 });

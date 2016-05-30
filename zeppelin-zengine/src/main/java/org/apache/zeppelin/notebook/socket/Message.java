@@ -114,7 +114,9 @@ public class Message {
     CHECKPOINT_NOTEBOOK,     // [c-s] checkpoint notebook to storage repository
                             // @param noteId
                             // @param checkpointName
-    LIST_NOTEBOOK_JOBS
+    LIST_NOTEBOOK_JOBS,     // [c-s] get notebook job management infomations
+    LIST_UPDATE_NOTEBOOK_JOBS // [c-s] get job management informations for until unixtime
+                              // @param unixTime
 
   }
 
