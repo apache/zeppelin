@@ -21,17 +21,17 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 -->
-  <Project rdf:about="http://zeppelin.incubator.apache.org/">
+  <Project rdf:about="http://zeppelin.apache.org/">
     <created>2015-09-12</created>
     <license rdf:resource="http://spdx.org/licenses/Apache-2.0" />
     <name>Apache Zeppelin (incubating)</name>
-    <homepage rdf:resource="http://zeppelin.incubator.apache.org/" />
+    <homepage rdf:resource="http://zeppelin.apache.org/" />
     <asfext:pmc rdf:resource="http://incubator.apache.org" />
     <shortdesc>Zeppelin is a collaborative data analytics and visualization tool for distributed, general-purpose data processing systems</shortdesc>
     <description>Zeppelin is a modern web-based tool for the data scientists to collaborate over large-scale data exploration and visualization projects. </description>
     <bug-database rdf:resource="https://issues.apache.org/jira/browse/ZEPPELIN" />
-    <mailing-list rdf:resource="http://zeppelin.incubator.apache.org/community.html" />
-    <download-page rdf:resource="http://zeppelin.incubator.apache.org/download.html" />
+    <mailing-list rdf:resource="http://zeppelin.apache.org/community.html" />
+    <download-page rdf:resource="http://zeppelin.apache.org/download.html" />
     <programming-language>Java</programming-language>
     <programming-language>JavaScript</programming-language>
     <programming-language>Scala</programming-language>
