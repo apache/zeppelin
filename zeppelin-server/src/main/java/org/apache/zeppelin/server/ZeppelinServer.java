@@ -17,7 +17,6 @@
 
 package org.apache.zeppelin.server;
 
-import org.apache.cxf.jaxrs.servlet.CXFNonSpringJaxrsServlet;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.dep.DependencyResolver;
@@ -224,13 +223,14 @@ public class ZeppelinServer extends Application {
   private static void setupRestApiContextHandler(WebAppContext webapp,
                                                  ZeppelinConfiguration conf) {
 
-    final ServletHolder cxfServletHolder = new ServletHolder(new CXFNonSpringJaxrsServlet());
-    cxfServletHolder.setInitParameter("javax.ws.rs.Application", ZeppelinServer.class.getName());
-    cxfServletHolder.setName("rest");
-    cxfServletHolder.setForcedPath("rest");
+    final ServletHolder servletHolder = new ServletHolder(new org.glassfish.jersey.servlet.ServletContainer());
+
+    servletHolder.setInitParameter("javax.ws.rs.Application", ZeppelinServer.class.getName());
+    servletHolder.setName("rest");
+    servletHolder.setForcedPath("rest");
 
     webapp.setSessionHandler(new SessionHandler());
-    webapp.addServlet(cxfServletHolder, "/api/*");
+    webapp.addServlet(servletHolder, "/api/*");
 
     webapp.setInitParameter("shiroConfigLocations",
         new File(conf.getShiroPath()).toURI().toString());

@@ -369,4 +369,20 @@ public class TestHttpServletRequest implements HttpServletRequest {
     public AsyncContext startAsync(ServletRequest servletRequest, ServletResponse servletResponse) {
         return null;
     }
+
+    @Override
+    public String changeSessionId() {
+        return null;
+    }
+
+    @Override
+    public long getContentLengthLong() {
+        return 0;
+    }
+
+    @Override
+    public <T extends HttpUpgradeHandler> T upgrade(Class<T> handlerClass) throws IOException, ServletException {
+        return null;
+    }
+
 }
