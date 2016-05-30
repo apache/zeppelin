@@ -304,9 +304,11 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-checkstyle-plugin</artifactId>
         <configuration>
-          <configLocation>_tools/checkstyle.xml</configLocation>
+          <configLocation>_tools/javastyle.xml</configLocation>
           <enableRSS>false</enableRSS>
           <encoding>UTF-8</encoding>
+          <sourceDirectories>${basedir}/src/main/java</sourceDirectories>
+          <testSourceDirectory>${basedir}/src/test/java</testSourceDirectory>
         </configuration>
         <executions>
           <execution>
@@ -408,7 +410,8 @@
                 <!-- Will generate META-INF/DEPENDENCIES META-INF/LICENSE META-INF/NOTICE -->
                 <resourceBundle>org.apache.apache.resources:apache-jar-resource-bundle:1.5-SNAPSHOT</resourceBundle>
                 <!-- Will generate META-INF/DISCLAIMER  -->
-                <resourceBundle>org.apache.apache.resources:apache-incubator-disclaimer-resource-bundle:1.2-SNAPSHOT</resourceBundle>
+                <resourceBundle>org.apache.apache.resources:apache-incubator-disclaimer-resource-bundle:1.2-SNAPSHOT
+                </resourceBundle>
               </resourceBundles>
             </configuration>
           </execution>
@@ -486,7 +489,7 @@
               <exclude>.github/*</exclude>
               <exclude>.gitignore</exclude>
               <exclude>.repository/</exclude>
-  	      <exclude>.Rhistory</exclude>
+              <exclude>.Rhistory</exclude>
               <exclude>**/*.diff</exclude>
               <exclude>**/*.patch</exclude>
               <exclude>**/*.avsc</exclude>
