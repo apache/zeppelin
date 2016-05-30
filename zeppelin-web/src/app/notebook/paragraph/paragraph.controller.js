@@ -1001,6 +1001,10 @@ angular.module('zeppelinWebApp')
     return false;
   };
 
+  $scope.goToLineEnd = function () {
+    $scope.editor.navigateLineEnd();
+  };
+
   $scope.$on('updateProgress', function(event, data) {
     if (data.id === $scope.paragraph.id) {
       $scope.currentProgress = data.progress;
