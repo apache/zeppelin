@@ -17,13 +17,18 @@
 angular.module('zeppelinWebApp')
   .filter('myJob', function() {
 
-    function filterContext(JobItems, filterConfig) {
+    function filterContext(jobItems, filterConfig) {
       var FILTER_VALUE_INTERPRETER = filterConfig.FILTER_VALUE_INTERPRETER;
       var FILTER_VALUE_NOTEBOOK_NAME = filterConfig.FILTER_VALUE_NOTEBOOK_NAME;
       var RUNNING_ALWAYS_TOP = filterConfig.RUNNING_ALWAYS_TOP;
 
-      var filterItems = JobItems;
-      if (FILTER_VALUE_INTERPRETER !== '*') {
+      var filterItems = jobItems;
+
+      if (FILTER_VALUE_INTERPRETER === undefined) {
+        filterItems = _.filter(filterItems, function (jobItem) {
+          return jobItem.interpreter === undefined? true : false;
+        });
+      } else if (FILTER_VALUE_INTERPRETER !== '*') {
         filterItems = _.where(filterItems, {interpreter : FILTER_VALUE_INTERPRETER});
       }
 

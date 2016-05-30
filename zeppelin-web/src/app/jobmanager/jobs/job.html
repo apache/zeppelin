@@ -30,8 +30,13 @@ limitations under the License.
       <span>
         &nbsp;-&nbsp;
       </span>
-      <span style="color: gray">
-        {{notebookJob.interpreter}}
+      <span>
+        <span ng-if="notebookJob.interpreter === undefined" style="color: orange">
+          Interpreter is not set
+        </span>
+        <span ng-if="notebookJob.interpreter !== undefined" style="color: gray">
+          {{notebookJob.interpreter}}
+        </span>
       </span>
     </a>
     <div ng-include src="'app/jobmanager/jobs/job-progressBar.html'"></div>

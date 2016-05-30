@@ -431,7 +431,14 @@ public class NotebookServer extends WebSocketServlet implements
         paragraphsInfo.add(paragraphItem);
       }
 
-      info.put("interpreter", note.getNoteReplLoader().getInterpreterSettings().get(0).getGroup());
+      // Interpreter is set does not exist.
+      String interpreterGroupName = null;
+      if (note.getNoteReplLoader().getInterpreterSettings() != null
+          && note.getNoteReplLoader().getInterpreterSettings().size() >= 1) {
+        interpreterGroupName = note.getNoteReplLoader().getInterpreterSettings().get(0).getGroup();
+      }
+
+      info.put("interpreter", interpreterGroupName);
       info.put("isRunningJob", isNotebookRunning);
       info.put("unixTimeLastRun", lastRunningUnixTime);
       info.put("paragraphs", paragraphsInfo);
