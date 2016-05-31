@@ -88,7 +88,7 @@ limitations under the License.
 
 <div class="box width-full home"
      ng-repeat="setting in interpreterSettings | orderBy: 'group' | filter: searchInterpreter">
-  <div>
+  <div id="{{setting.name | lowercase}}">
     <div class="row interpreter">
       <div class="col-md-12">
         <h3 class="interpreter-title">{{setting.name}}
