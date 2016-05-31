@@ -16,7 +16,8 @@
   ~ limitations under the License.
   -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
@@ -42,7 +43,7 @@
     <hadoop.version>2.3.0</hadoop.version>
     <yarn.version>${hadoop.version}</yarn.version>
     <avro.version>1.7.7</avro.version>
-    <avro.mapred.classifier></avro.mapred.classifier>
+    <avro.mapred.classifier/>
     <jets3t.version>0.7.1</jets3t.version>
     <protobuf.version>2.4.1</protobuf.version>
 
@@ -53,7 +54,9 @@
     <spark.download.url>
       http://archive.apache.org/dist/spark/${spark.archive}/${spark.archive}.tgz
     </spark.download.url>
-    <spark.bin.download.url>http://archive.apache.org/dist/spark/spark-${spark.version}/spark-${spark.version}-bin-without-hadoop.tgz</spark.bin.download.url>
+    <spark.bin.download.url>
+      http://archive.apache.org/dist/spark/spark-${spark.version}/spark-${spark.version}-bin-without-hadoop.tgz
+    </spark.bin.download.url>
     <spark.dist.cache>${project.build.directory}/../../.spark-dist</spark.dist.cache>
     <py4j.version>0.8.2.1</py4j.version>
   </properties>
@@ -248,7 +251,7 @@
     <!-- Spark -->
     <dependency>
       <groupId>org.apache.spark</groupId>
-      <artifactId>spark-core_2.10</artifactId>
+      <artifactId>spark-core_${scala.binary.version}</artifactId>
       <version>${spark.version}</version>
       <exclusions>
         <exclusion>
@@ -260,31 +263,31 @@
 
     <dependency>
       <groupId>org.apache.spark</groupId>
-      <artifactId>spark-repl_2.10</artifactId>
+      <artifactId>spark-repl_${scala.binary.version}</artifactId>
       <version>${spark.version}</version>
     </dependency>
 
     <dependency>
       <groupId>org.apache.spark</groupId>
-      <artifactId>spark-sql_2.10</artifactId>
+      <artifactId>spark-sql_${scala.binary.version}</artifactId>
       <version>${spark.version}</version>
     </dependency>
 
     <dependency>
       <groupId>org.apache.spark</groupId>
-      <artifactId>spark-hive_2.10</artifactId>
+      <artifactId>spark-hive_${scala.binary.version}</artifactId>
       <version>${spark.version}</version>
     </dependency>
 
     <dependency>
       <groupId>org.apache.spark</groupId>
-      <artifactId>spark-streaming_2.10</artifactId>
+      <artifactId>spark-streaming_${scala.binary.version}</artifactId>
       <version>${spark.version}</version>
     </dependency>
 
     <dependency>
       <groupId>org.apache.spark</groupId>
-      <artifactId>spark-streaming-twitter_2.10</artifactId>
+      <artifactId>spark-streaming-twitter_${scala.binary.version}</artifactId>
       <version>${spark.version}</version>
     </dependency>
 
@@ -437,7 +440,7 @@
       </dependencies>
     </profile>
 
-   <profile>
+    <profile>
       <id>spark-1.4</id>
       <properties>
         <spark.version>1.4.1</spark.version>
@@ -508,6 +511,9 @@
 
     <profile>
       <id>spark-1.6</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
       <properties>
         <spark.version>1.6.1</spark.version>
         <py4j.version>0.9</py4j.version>
@@ -515,9 +521,6 @@
         <akka.version>2.3.11</akka.version>
         <protobuf.version>2.5.0</protobuf.version>
       </properties>
-
-      <dependencies>
-      </dependencies>
     </profile>
 
     <profile>
@@ -585,6 +588,16 @@
     </profile>
 
     <profile>
+      <id>hadoop-2.7</id>
+      <properties>
+        <hadoop.version>2.7.2</hadoop.version>
+        <protobuf.version>2.5.0</protobuf.version>
+        <jets3t.version>0.9.0</jets3t.version>
+        <avro.mapred.classifier>hadoop2</avro.mapred.classifier>
+      </properties>
+    </profile>
+
+    <profile>
       <id>mapr3</id>
       <activation>
         <activeByDefault>false</activeByDefault>
@@ -595,12 +608,16 @@
         <jets3t.version>0.7.1</jets3t.version>
       </properties>
       <repositories>
-         <repository>
-           <id>mapr-releases</id>
-           <url>http://repository.mapr.com/maven/</url>
-           <snapshots><enabled>false</enabled></snapshots>
-           <releases><enabled>true</enabled></releases>
-         </repository>
+        <repository>
+          <id>mapr-releases</id>
+          <url>http://repository.mapr.com/maven/</url>
+          <snapshots>
+            <enabled>false</enabled>
+          </snapshots>
+          <releases>
+            <enabled>true</enabled>
+          </releases>
+        </repository>
       </repositories>
     </profile>
 
@@ -633,12 +650,16 @@
         </dependency>
       </dependencies>
       <repositories>
-         <repository>
-           <id>mapr-releases</id>
-           <url>http://repository.mapr.com/maven/</url>
-           <snapshots><enabled>false</enabled></snapshots>
-           <releases><enabled>true</enabled></releases>
-         </repository>
+        <repository>
+          <id>mapr-releases</id>
+          <url>http://repository.mapr.com/maven/</url>
+          <snapshots>
+            <enabled>false</enabled>
+          </snapshots>
+          <releases>
+            <enabled>true</enabled>
+          </releases>
+        </repository>
       </repositories>
     </profile>
 
@@ -671,12 +692,16 @@
         </dependency>
       </dependencies>
       <repositories>
-         <repository>
-           <id>mapr-releases</id>
-           <url>http://repository.mapr.com/maven/</url>
-           <snapshots><enabled>false</enabled></snapshots>
-           <releases><enabled>true</enabled></releases>
-         </repository>
+        <repository>
+          <id>mapr-releases</id>
+          <url>http://repository.mapr.com/maven/</url>
+          <snapshots>
+            <enabled>false</enabled>
+          </snapshots>
+          <releases>
+            <enabled>true</enabled>
+          </releases>
+        </repository>
       </repositories>
     </profile>
 
@@ -709,12 +734,16 @@
         </dependency>
       </dependencies>
       <repositories>
-         <repository>
-           <id>mapr-releases</id>
-           <url>http://repository.mapr.com/maven/</url>
-           <snapshots><enabled>false</enabled></snapshots>
-           <releases><enabled>true</enabled></releases>
-         </repository>
+        <repository>
+          <id>mapr-releases</id>
+          <url>http://repository.mapr.com/maven/</url>
+          <snapshots>
+            <enabled>false</enabled>
+          </snapshots>
+          <releases>
+            <enabled>true</enabled>
+          </releases>
+        </repository>
       </repositories>
     </profile>
 
@@ -747,12 +776,16 @@
         </dependency>
       </dependencies>
       <repositories>
-         <repository>
-           <id>mapr-releases</id>
-           <url>http://repository.mapr.com/maven/</url>
-           <snapshots><enabled>false</enabled></snapshots>
-           <releases><enabled>true</enabled></releases>
-         </repository>
+        <repository>
+          <id>mapr-releases</id>
+          <url>http://repository.mapr.com/maven/</url>
+          <snapshots>
+            <enabled>false</enabled>
+          </snapshots>
+          <releases>
+            <enabled>true</enabled>
+          </releases>
+        </repository>
       </repositories>
     </profile>
 
@@ -762,7 +795,7 @@
       <dependencies>
         <dependency>
           <groupId>org.apache.spark</groupId>
-          <artifactId>spark-yarn_2.10</artifactId>
+          <artifactId>spark-yarn_${scala.binary.version}</artifactId>
           <version>${spark.version}</version>
         </dependency>
 
@@ -844,7 +877,7 @@
                     <zip destfile="${project.build.directory}/../../interpreter/spark/pyspark/pyspark.zip"
                          basedir="${project.build.directory}/spark-dist/${spark.archive}/python"
                          includes="pyspark/*.py,pyspark/**/*.py"/>
-                  </target>                
+                  </target>
                 </configuration>
               </execution>
             </executions>
@@ -900,7 +933,9 @@
                   <outputDirectory>${project.build.directory}/../../interpreter/spark/R/lib</outputDirectory>
                   <resources>
                     <resource>
-                      <directory>${project.build.directory}/spark-bin-dist/spark-${spark.version}-bin-without-hadoop/R/lib</directory>
+                      <directory>
+                        ${project.build.directory}/spark-bin-dist/spark-${spark.version}-bin-without-hadoop/R/lib
+                      </directory>
                     </resource>
                   </resources>
                 </configuration>
@@ -910,7 +945,7 @@
         </plugins>
       </build>
     </profile>
-    
+
   </profiles>
 
   <build>
