@@ -356,8 +356,7 @@ public class NotebookServer extends WebSocketServlet implements
     }
   }
 
-  public List<Map<String, Object>> generateNotebooksJobInfo(
-      boolean needsReload, boolean isOnlyRunningJob) {
+  public List<Map<String, Object>> generateNotebooksJobInfo(boolean needsReload) {
     Notebook notebook = notebook();
 
     ZeppelinConfiguration conf = notebook.getConf();
@@ -383,7 +382,7 @@ public class NotebookServer extends WebSocketServlet implements
         continue;
       }
 
-      String cronTypeNotebookKeywork = "cron";
+      String CRON_TYPE_NOTEBOOK_KEYWORD = "cron";
       info.put("notebookId", note.id());
       String notebookName = note.getName();
       if (notebookName != null) {
@@ -392,8 +391,8 @@ public class NotebookServer extends WebSocketServlet implements
         info.put("notebookName", note.id());
       }
 
-      if (note.getConfig().containsKey(cronTypeNotebookKeywork) == true
-          && !note.getConfig().get(cronTypeNotebookKeywork).equals("")) {
+      if (note.getConfig().containsKey(CRON_TYPE_NOTEBOOK_KEYWORD) == true
+          && !note.getConfig().get(CRON_TYPE_NOTEBOOK_KEYWORD).equals("")) {
         info.put("notebookType", "cron");
       }
       else {
@@ -407,26 +406,27 @@ public class NotebookServer extends WebSocketServlet implements
       for (Paragraph paragraph : note.getParagraphs()) {
         if (paragraph.getStatus().isRunning() == true) {
           isNotebookRunning = true;
-        } else {
-          if (isOnlyRunningJob == true) {
-            continue;
-          }
         }
         Map<String, Object> paragraphItem = new HashMap<>();
+        // set paragraph id
         paragraphItem.put("id", paragraph.getId());
+
+        // set paragraph name
         String paragraphName = paragraph.getTitle();
         if (paragraphName != null) {
           paragraphItem.put("name", paragraphName);
         } else {
           paragraphItem.put("name", paragraph.getId());
         }
+
+        // set status for paragraph.
         paragraphItem.put("status", paragraph.getStatus().toString());
 
+        // get last update time.
         Date paragaraphDate = paragraph.getDateStarted();
         if (paragaraphDate == null) {
           paragaraphDate = paragraph.getDateCreated();
         }
-
         if (lastRunningDate == null) {
           lastRunningDate = paragaraphDate;
         } else {
@@ -434,13 +434,11 @@ public class NotebookServer extends WebSocketServlet implements
             lastRunningDate = paragaraphDate;
           }
         }
+
+        // convert date to unixtime(ms).
         lastRunningUnixTime = lastRunningDate.getTime();
 
         paragraphsInfo.add(paragraphItem);
-      }
-
-      if (isOnlyRunningJob == true && isNotebookRunning == false) {
-        continue;
       }
 
       // Interpreter is set does not exist.
@@ -450,6 +448,7 @@ public class NotebookServer extends WebSocketServlet implements
         interpreterGroupName = note.getNoteReplLoader().getInterpreterSettings().get(0).getGroup();
       }
 
+      // notebook json object root information.
       info.put("interpreter", interpreterGroupName);
       info.put("isRunningJob", isNotebookRunning);
       info.put("unixTimeLastRun", lastRunningUnixTime);
@@ -483,13 +482,15 @@ public class NotebookServer extends WebSocketServlet implements
     for (Note note : notes) {
       boolean isNotebookRunning = false;
       boolean isUpdateNotebook = false;
+
       Map<String, Object> info = new HashMap<>();
 
       if (hideHomeScreenNotebookFromList && note.id().equals(homescreenNotebookId)) {
         continue;
       }
 
-      String cronTypeNotebookKeywork = "cron";
+      // set const keyword for cron type
+      String CRON_TYPE_NOTEBOOK_KEYWORD = "cron";
       info.put("notebookId", note.id());
       String notebookName = note.getName();
       if (notebookName != null) {
@@ -498,8 +499,8 @@ public class NotebookServer extends WebSocketServlet implements
         info.put("notebookName", note.id());
       }
 
-      if (note.getConfig().containsKey(cronTypeNotebookKeywork) == true
-              && !note.getConfig().get(cronTypeNotebookKeywork).equals("")) {
+      if (note.getConfig().containsKey(CRON_TYPE_NOTEBOOK_KEYWORD) == true
+          && !note.getConfig().get(CRON_TYPE_NOTEBOOK_KEYWORD).equals("")) {
         info.put("notebookType", "cron");
       }
       else {
@@ -512,6 +513,7 @@ public class NotebookServer extends WebSocketServlet implements
       List<Map<String, Object>> paragraphsInfo = new LinkedList<>();
       for (Paragraph paragraph : note.getParagraphs()) {
 
+        // check date for update time.
         Date startedDate = paragraph.getDateStarted();
         Date createdDate = paragraph.getDateCreated();
         Date finishedDate = paragraph.getDateFinished();
@@ -527,13 +529,19 @@ public class NotebookServer extends WebSocketServlet implements
         }
 
         Map<String, Object> paragraphItem = new HashMap<>();
+
+        // set paragraph id
         paragraphItem.put("id", paragraph.getId());
+
+        // set paragraph name
         String paragraphName = paragraph.getTitle();
         if (paragraphName != null) {
           paragraphItem.put("name", paragraphName);
         } else {
           paragraphItem.put("name", paragraph.getId());
         }
+
+        // set status for paragraph
         paragraphItem.put("status", paragraph.getStatus().toString());
 
         Date paragaraphDate = startedDate;
@@ -541,6 +549,7 @@ public class NotebookServer extends WebSocketServlet implements
           paragaraphDate = createdDate;
         }
 
+        // set last update unixtime(ms).
         if (lastRunningDate == null) {
           lastRunningDate = paragaraphDate;
         } else {
@@ -556,6 +565,7 @@ public class NotebookServer extends WebSocketServlet implements
         paragraphsInfo.add(paragraphItem);
       }
 
+      // Insert only data that has changed.
       if (isUpdateNotebook != true) {
         continue;
       }
@@ -567,6 +577,7 @@ public class NotebookServer extends WebSocketServlet implements
         interpreterGroupName = note.getNoteReplLoader().getInterpreterSettings().get(0).getGroup();
       }
 
+      // set notebook root information.
       info.put("interpreter", interpreterGroupName);
       info.put("isRunningJob", isNotebookRunning);
       info.put("unixTimeLastRun", lastRunningUnixTime);
@@ -625,7 +636,7 @@ public class NotebookServer extends WebSocketServlet implements
   }
 
   public void unicastNotebookJobInfo(NotebookSocket conn) {
-    List<Map<String, Object>> notebookJobs = generateNotebooksJobInfo(false, false);
+    List<Map<String, Object>> notebookJobs = generateNotebooksJobInfo(false);
     Map<String, Object> response = new HashMap<>();
 
     response.put("lastResponseUnixTime", System.currentTimeMillis());
