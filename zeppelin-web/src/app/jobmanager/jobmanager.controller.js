@@ -85,7 +85,9 @@ angular.module('zeppelinWebApp')
             var newItem = angular.copy(changedItem);
             jobInfomations.push(newItem);
             indexStore[changedItem.notebookId] = newItem;
+            console.log('111111111111111111111111');
           } else {
+            console.log('222222222222222222222222');
             var changeOriginTarget = indexStore[changedItem.notebookId];
             changeOriginTarget.isRunningJob = changedItem.isRunningJob;
             changeOriginTarget.notebookName = changedItem.notebookName;
@@ -108,6 +110,7 @@ angular.module('zeppelinWebApp')
 
       $scope.doFilterInputTyping = function (keyEvent, jobInfomations, filterConfig) {
         var returnKey = 13;
+        console.log('key ', keyEvent.which);
         $timeout.cancel($scope.dofilterTimeoutObject);
         $scope.dofilterTimeoutObject = $timeout(function(){$scope.doFiltering(jobInfomations, filterConfig);}, 1000);
         if (keyEvent.which === returnKey) {

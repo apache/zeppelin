@@ -35,6 +35,11 @@ angular.module('zeppelinWebApp').service('baseUrlSrv', function() {
     return wsProtocol + '//' + location.hostname + ':' + this.getPort() + skipTrailingSlash(location.pathname) + '/ws';
   };
 
+  this.getJobManagerWebsocketUrl = function() {
+    var wsProtocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+    return wsProtocol + '//' + location.hostname + ':' + this.getPort() + skipTrailingSlash(location.pathname) + '/ws/job';
+  };
+
   this.getRestApiBase = function() {
     return location.protocol + '//' + location.hostname + ':' + this.getPort() + skipTrailingSlash(location.pathname) + '/api';
   };

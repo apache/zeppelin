@@ -14,20 +14,21 @@
 'use strict';
 
 angular.module('zeppelinWebApp').factory('websocketEvents', function($rootScope, $websocket, $location, baseUrlSrv) {
-  var websocketCalls = {};
+  var websocketCalls = { notebookServer : {}, jobManagerServer : {} };
 
-  websocketCalls.ws = $websocket(baseUrlSrv.getWebsocketUrl());
-  websocketCalls.ws.reconnectIfNotNormalClose = true;
+  // create socket for notebook server
+  websocketCalls.notebookServer.ws = $websocket(baseUrlSrv.getWebsocketUrl());
+  websocketCalls.notebookServer.ws.reconnectIfNotNormalClose = true;
 
-  websocketCalls.ws.onOpen(function() {
-    console.log('Websocket created');
-    $rootScope.$broadcast('setConnectedStatus', true);
+  websocketCalls.notebookServer.ws.onOpen(function() {
+    console.log('Websocket Notebook Server created');
+    $rootScope.$broadcast('setNotebookWSConnectedStatus', true);
     setInterval(function(){
-      websocketCalls.sendNewEvent({op: 'PING'});
+      websocketCalls.notebookServer.sendNewEvent({op: 'PING'});
     }, 10000);
   });
 
-  websocketCalls.sendNewEvent = function(data) {
+  websocketCalls.notebookServer.sendNewEvent = function(data) {
     if ($rootScope.ticket !== undefined) {
       data.principal = $rootScope.ticket.principal;
       data.ticket = $rootScope.ticket.ticket;
@@ -37,20 +38,20 @@ angular.module('zeppelinWebApp').factory('websocketEvents', function($rootScope,
       data.ticket = '';
       data.roles = '';
     }
-    console.log('Send >> %o, %o, %o, %o, %o', data.op, data.principal, data.ticket, data.roles, data);
-    websocketCalls.ws.send(JSON.stringify(data));
+    console.log('Send Notebook Server >> %o, %o, %o, %o, %o', data.op, data.principal, data.ticket, data.roles, data);
+    websocketCalls.notebookServer.ws.send(JSON.stringify(data));
   };
 
-  websocketCalls.isConnected = function() {
-    return (websocketCalls.ws.socket.readyState === 1);
+  websocketCalls.notebookServer.isConnected = function() {
+    return (websocketCalls.notebookServer.ws.socket.readyState === 1);
   };
 
-  websocketCalls.ws.onMessage(function(event) {
+  websocketCalls.notebookServer.ws.onMessage(function(event) {
     var payload;
     if (event.data) {
       payload = angular.fromJson(event.data);
     }
-    console.log('Receive << %o, %o', payload.op, payload);
+    console.log('Receive Notebook Server << %o, %o', payload.op, payload);
     var op = payload.op;
     var data = payload.data;
     if (op === 'NOTE') {
@@ -59,10 +60,6 @@ angular.module('zeppelinWebApp').factory('websocketEvents', function($rootScope,
       $location.path('notebook/' + data.note.id);
     } else if (op === 'NOTES_INFO') {
       $rootScope.$broadcast('setNoteMenu', data.notes);
-    } else if (op === 'LIST_NOTEBOOK_JOBS') {
-      $rootScope.$broadcast('setNotebookJobs', data.notebookJobs);
-    } else if (op === 'LIST_UPDATE_NOTEBOOK_JOBS') {
-      $rootScope.$broadcast('setUpdateNotebookJobs', data.notebookRunningJobs);
     } else if (op === 'AUTH_INFO') {
       BootstrapDialog.show({
           closable: true,
@@ -100,14 +97,69 @@ angular.module('zeppelinWebApp').factory('websocketEvents', function($rootScope,
     }
   });
 
-  websocketCalls.ws.onError(function(event) {
-    console.log('error message: ', event);
-    $rootScope.$broadcast('setConnectedStatus', false);
+  websocketCalls.notebookServer.ws.onError(function(event) {
+    console.log('[notebookWS] Notebook Server message: ', event);
+    $rootScope.$broadcast('setNotebookWSConnectedStatus', false);
   });
 
-  websocketCalls.ws.onClose(function(event) {
-    console.log('close message: ', event);
-    $rootScope.$broadcast('setConnectedStatus', false);
+  websocketCalls.notebookServer.ws.onClose(function(event) {
+    console.log('[notebookWS] close message: ', event);
+    $rootScope.$broadcast('setNotebookWSConnectedStatus', false);
+  });
+
+  // create socket for job manager server
+  websocketCalls.jobManagerServer.ws = $websocket(baseUrlSrv.getJobManagerWebsocketUrl());
+  websocketCalls.jobManagerServer.ws.reconnectIfNotNormalClose = true;
+
+  websocketCalls.jobManagerServer.ws.onOpen(function() {
+    console.log('Websocket Job Manager Server created');
+    $rootScope.$broadcast('setJobManagerWSConnectedStatus', true);
+    setInterval(function(){
+      websocketCalls.jobManagerServer.sendNewEvent({op: 'PING'});
+    }, 10000);
+  });
+
+  websocketCalls.jobManagerServer.sendNewEvent = function(data) {
+    if ($rootScope.ticket !== undefined) {
+      data.principal = $rootScope.ticket.principal;
+      data.ticket = $rootScope.ticket.ticket;
+      data.roles = $rootScope.ticket.roles;
+    } else {
+      data.principal = '';
+      data.ticket = '';
+      data.roles = '';
+    }
+    console.log('Send Job Manager Server >> %o, %o, %o, %o, %o', data.op, data.principal, data.ticket, data.roles, data);
+    websocketCalls.jobManagerServer.ws.send(JSON.stringify(data));
+  };
+
+  websocketCalls.jobManagerServer.isConnected = function() {
+    return (websocketCalls.notebookServer.ws.socket.readyState === 1);
+  };
+
+  websocketCalls.jobManagerServer.ws.onMessage(function(event) {
+    var payload;
+    if (event.data) {
+      payload = angular.fromJson(event.data);
+    }
+    console.log('Receive Job Manager Server<< %o, %o', payload.op, payload);
+    var op = payload.op;
+    var data = payload.data;
+    if (op === 'LIST_NOTEBOOK_JOBS') {
+      $rootScope.$broadcast('setNotebookJobs', data.notebookJobs);
+    } else if (op === 'LIST_UPDATE_NOTEBOOK_JOBS') {
+      $rootScope.$broadcast('setUpdateNotebookJobs', data.notebookRunningJobs);
+    }
+  });
+
+  websocketCalls.jobManagerServer.ws.onError(function(event) {
+    console.log('[jobManagerWS] error message: ', event);
+    $rootScope.$broadcast('setJobManagerWSConnectedStatus', false);
+  });
+
+  websocketCalls.jobManagerServer.ws.onClose(function(event) {
+    console.log('[jobManagerWS] close message: ', event);
+    $rootScope.$broadcast('setJobManagerWSConnectedStatus', false);
   });
 
   return websocketCalls;
