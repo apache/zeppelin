@@ -251,7 +251,6 @@
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-exec</artifactId>
       <version>1.3</version>
-      <scope>test</scope>
     </dependency>
 
 
