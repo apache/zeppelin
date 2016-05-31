@@ -695,19 +695,17 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl',
     }
   };
 
-  function  convertPermissionsToArray()
-      {
-         if (!angular.isArray($scope.permissions.owners)){
-               $scope.permissions.owners = $scope.permissions.owners.split(',');
-           }
-         if (!angular.isArray($scope.permissions.readers)){
-                  $scope.permissions.readers = $scope.permissions.readers.split(',');
-           }
-         if (!angular.isArray($scope.permissions.writers)){
-                  $scope.permissions.writers = $scope.permissions.writers.split(',');
-           }
-
-      }
+  function convertPermissionsToArray() {
+    if (!angular.isArray($scope.permissions.owners)) {
+      $scope.permissions.owners = $scope.permissions.owners.split(',');
+    }
+    if (!angular.isArray($scope.permissions.readers)) {
+      $scope.permissions.readers = $scope.permissions.readers.split(',');
+    }
+    if (!angular.isArray($scope.permissions.writers)) {
+      $scope.permissions.writers = $scope.permissions.writers.split(',');
+    }
+  }
 
   $scope.savePermissions = function () {
     convertPermissionsToArray();
@@ -853,7 +851,6 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl',
       for (var k in userlist) {
         $scope.suggestions.push(userlist[k]);
       }
-
     });
   }
 
@@ -865,11 +862,8 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl',
 
 
   var getChangedIndex = function() {
-
     if (previousSelectedList.length === 0) {
       selectedUserIndex = searchText.length - 1;
-
-
     }
     else {
       for (var i = 0; i < searchText.length; i++) {
@@ -879,14 +873,12 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl',
           break;
         }
       }
-
     }
     updatePreviousList();
   };
 
   // function to find suggestion list on change
   $scope.search = function(role) {
-
     convertToArray(role);
     checkPreviousRole(role);
     getChangedIndex();
@@ -904,7 +896,6 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl',
 
 
   var checkIfSelected = function() {
-
     if (($scope.suggestions.length === 0) && ($scope.selectIndex < 0 || $scope.selectIndex >= $scope.suggestions.length) || ( $scope.suggestions.length !== 0 && ( $scope.selectIndex < 0 || $scope.selectIndex >= $scope.suggestions.length   ))) {
       searchText[selectedUserIndex] = selectedUser;
       $scope.suggestions = [];
@@ -913,14 +904,11 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl',
     else {
       return false;
     }
-
   };
 
 
   $scope.checkKeyDown = function(event, role) {
-
     if (event.keyCode === 40) {
-
       event.preventDefault();
       if ($scope.selectIndex + 1 !== $scope.suggestions.length) {
         $scope.selectIndex++;
@@ -935,7 +923,6 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl',
       }
     }
     else if (event.keyCode === 13) {
-
       event.preventDefault();
       if (!checkIfSelected()) {
         selectedUser = $scope.suggestions[$scope.selectIndex];
