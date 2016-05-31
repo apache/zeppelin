@@ -219,6 +219,9 @@ Server will be run on http://localhost:8080
 ## JIRA
 Zeppelin manages it's issues in Jira. [https://issues.apache.org/jira/browse/ZEPPELIN](https://issues.apache.org/jira/browse/ZEPPELIN)
 
+## Where to Start
+You can find issues for [beginner](https://issues.apache.org/jira/browse/ZEPPELIN-924?jql=project%20%3D%20ZEPPELIN%20and%20status%20%3D%20Open%20and%20labels%20in%20\(beginner%2C%20newbie\))
+
 ## Stay involved
 Everyone is welcome to join our mailing list:
 
