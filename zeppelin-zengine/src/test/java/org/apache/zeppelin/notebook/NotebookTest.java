@@ -309,6 +309,28 @@ public class NotebookTest implements JobListenerFactory{
   }
 
   @Test
+  public void testExportAndImportNote() throws IOException, CloneNotSupportedException,
+          InterruptedException {
+    Note note = notebook.createNote();
+    note.getNoteReplLoader().setInterpreters(factory.getDefaultInterpreterSettingList());
+
+    final Paragraph p = note.addParagraph();
+    String simpleText = "hello world";
+    p.setText(simpleText);
+
+    String exportedNoteJson = notebook.exportNote(note.getId());
+
+    Note importedNote = notebook.importNote(exportedNoteJson, "Title");
+
+    Paragraph p2 = importedNote.getParagraphs().get(0);
+
+    // Test
+    assertEquals(p.getId(), p2.getId());
+    assertEquals(p.text, p2.text);
+    assertEquals(p.getResult().message(), p2.getResult().message());
+  }
+
+  @Test
   public void testCloneNote() throws IOException, CloneNotSupportedException,
       InterruptedException {
     Note note = notebook.createNote();
