@@ -38,7 +38,7 @@
   <version>0.6.0-incubating-SNAPSHOT</version>
   <name>Zeppelin</name>
   <description>Zeppelin project</description>
-  <url>http://zeppelin.incubator.apache.org/</url>
+  <url>http://zeppelin.apache.org/</url>
 
   <parent>
     <groupId>org.apache</groupId>
@@ -60,27 +60,6 @@
     <developerConnection>scm:git:https://git-wip-us.apache.org/repos/asf/incubator-zeppelin.git</developerConnection>
   </scm>
 
-  <developers>
-    <developer>
-      <id>moon</id>
-      <name>Lee moon soo</name>
-      <organization>NFLabs</organization>
-      <organizationUrl>http://www.nflabs.com</organizationUrl>
-    </developer>
-    <developer>
-      <id>alex</id>
-      <name>Alexander Bezzubov</name>
-      <organization>NFLabs</organization>
-      <organizationUrl>http://www.nflabs.com</organizationUrl>
-    </developer>
-    <developer>
-      <id>anthonycorbacho</id>
-      <name>Anthony Corbacho</name>
-      <organization>NFLabs</organization>
-      <organizationUrl>http://www.nflabs.com</organizationUrl>
-    </developer>
-  </developers>
-
   <inceptionYear>2013</inceptionYear>
 
   <modules>
@@ -92,6 +71,7 @@
     <module>markdown</module>
     <module>angular</module>
     <module>shell</module>
+    <module>livy</module>
     <module>hive</module>
     <module>hbase</module>
     <module>phoenix</module>
@@ -117,6 +97,7 @@
     <libthrift.version>0.9.2</libthrift.version>
     <gson.version>2.2</gson.version>
     <guava.version>15.0</guava.version>
+    <jetty.version>9.2.15.v20160210</jetty.version>
 
     <PermGen>64m</PermGen>
     <MaxPermGen>512m</MaxPermGen>

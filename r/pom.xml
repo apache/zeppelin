@@ -40,14 +40,6 @@
     <scala.binary.version>2.10</scala.binary.version>
   </properties>
 
-  <developers>
-    <developer>
-      <id>amos</id>
-      <name>Amos Elberg</name>
-    </developer>
-  </developers>
-
-
   <dependencies>
     <dependency>
       <groupId>org.slf4j</groupId>

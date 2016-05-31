@@ -17,11 +17,13 @@
 
 package org.apache.zeppelin.integration;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.AbstractZeppelinIT;
 import org.apache.zeppelin.WebDriverManager;
 import org.hamcrest.CoreMatchers;
-import org.junit.*;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
 import org.junit.rules.ErrorCollector;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
@@ -194,19 +196,19 @@ public class ZeppelinIT extends AbstractZeppelinIT {
     }
     try {
       // navigate to interpreter page
-      WebElement interpreterLink = driver.findElement(By.linkText("Interpreter"));
+      WebElement interpreterLink = driver.findElement(By.xpath("//a[contains(.,'Interpreter')]"));
       interpreterLink.click();
 
       // add new dependency to spark interpreter
-      WebElement sparkEditBtn = pollingWait(By.xpath("//div[h3[text()[contains(.,'spark')]]]//button[contains(.,'edit')]"),
+      driver.findElement(By.xpath("//div[h3[text()[contains(.,'spark')]]]//button[contains(.,'edit')]")).sendKeys(Keys.ENTER);
+
+      WebElement depArtifact = pollingWait(By.xpath("//input[@ng-model='setting.depArtifact']"),
           MAX_BROWSER_TIMEOUT_SEC);
-      sparkEditBtn.click();
-      WebElement depArtifact = driver.findElement(By.xpath("//input[@ng-model='setting.depArtifact']"));
       String artifact = "org.apache.commons:commons-csv:1.1";
       depArtifact.sendKeys(artifact);
-      driver.findElement(By.xpath("//button[contains(.,'Save')]")).submit();
+      driver.findElement(By.xpath("//div[contains(@class,'box')][contains(.,'%spark')]//form//button[1]")).click();
       driver.findElement(By.xpath("//div[@class='modal-dialog'][contains(.,'Do you want to update this interpreter and restart with new settings?')]" +
-              "//div[@class='modal-footer']//button[contains(.,'OK')]")).click();
+          "//div[@class='modal-footer']//button[contains(.,'OK')]")).click();
 
       driver.navigate().back();
       createNewNote();
@@ -230,20 +232,17 @@ public class ZeppelinIT extends AbstractZeppelinIT {
 
       //delete created notebook for cleanup.
       deleteTestNotebook(driver);
-      sleep(1000, true);
+      sleep(1000, false);
 
       // reset dependency
       interpreterLink.click();
-      sparkEditBtn = pollingWait(By.xpath("//div[h3[text()[contains(.,'spark')]]]//button[contains(.,'edit')]"),
-          MAX_BROWSER_TIMEOUT_SEC);
-      sparkEditBtn.click();
-      WebElement testDepRemoveBtn = driver.findElement(By.xpath("//tr[descendant::text()[contains(.,'" +
-          artifact + "')]]/td[3]/div"));
-      sleep(5000, true);
+      driver.findElement(By.xpath("//div[h3[text()[contains(.,'spark')]]]//button[contains(.,'edit')]")).sendKeys(Keys.ENTER);
+      WebElement testDepRemoveBtn = pollingWait(By.xpath("//tr[descendant::text()[contains(.,'" +
+          artifact + "')]]/td[3]/div"), MAX_IMPLICIT_WAIT);
       testDepRemoveBtn.click();
-      driver.findElement(By.xpath("//button[contains(.,'Save')]")).submit();
+      driver.findElement(By.xpath("//div[contains(@class,'box')][contains(.,'%spark')]//form//button[1]")).click();
       driver.findElement(By.xpath("//div[@class='modal-dialog'][contains(.,'Do you want to update this interpreter and restart with new settings?')]" +
-              "//div[@class='modal-footer']//button[contains(.,'OK')]")).click();
+          "//div[@class='modal-footer']//button[contains(.,'OK')]")).click();
     } catch (Exception e) {
       handleException("Exception in ZeppelinIT while testSparkInterpreterDependencyLoading ", e);
     }

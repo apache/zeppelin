@@ -34,7 +34,7 @@
   <version>0.6.0-incubating-SNAPSHOT</version>
   <name>Zeppelin: Interpreter</name>
   <description>Zeppelin Interpreter</description>
-  <url>http://zeppelin.incubator.apache.org</url>
+  <url>http://zeppelin.apache.org</url>
 
   <properties>
     <commons-lang.version>3.4</commons-lang.version>

@@ -75,7 +75,7 @@ This document assumes Spark 1.6.0 is installed at /usr/lib/spark.
 
 #### Zeppelin
 
-Checkout source code from [git://git.apache.org/incubator-zeppelin.git](https://github.com/apache/incubator-zeppelin.git) or download binary package from [Download page](https://zeppelin.incubator.apache.org/download.html).
+Checkout source code from [git://git.apache.org/incubator-zeppelin.git](https://github.com/apache/incubator-zeppelin.git) or download binary package from [Download page](https://zeppelin.apache.org/download.html).
 You can refer [Install](install.html) page for the details.
 This document assumes that Zeppelin is located under `/home/zeppelin/incubator-zeppelin`.
 

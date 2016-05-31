@@ -35,7 +35,7 @@
 # export ZEPPELIN_IDENT_STRING   		# A string representing this instance of zeppelin. $USER by default.
 # export ZEPPELIN_NICENESS       		# The scheduling priority for daemons. Defaults to 0.
 # export ZEPPELIN_INTERPRETER_LOCALREPO         # Local repository for interpreter's additional dependency loading
-
+# export ZEPPELIN_NOTEBOOK_STORAGE 		# Refers to pluggable notebook storage class, can have two classes simultaneously with a sync between them (e.g. local and remote).
 
 #### Spark interpreter configuration ####
 
@@ -70,3 +70,9 @@
 
 # export HBASE_HOME=                    # (require) Under which HBase scripts and configuration should be
 # export HBASE_CONF_DIR=                # (optional) Alternatively, configuration directory can be set to point to the directory that has hbase-site.xml
+
+#### ZeppelinHub connection configuration ####
+# export ZEPPELINHUB_API_ADDRESS		# Refers to the address of the ZeppelinHub service in use
+# export ZEPPELINHUB_API_TOKEN			# Refers to the Zeppelin instance token of the user
+# export ZEPPELINHUB_USER_KEY			# Optional, when using Zeppelin with authentication.
+

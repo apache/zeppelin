@@ -41,10 +41,32 @@ public class ParagraphTest {
     text = "%table 1234567";
     assertEquals("1234567", Paragraph.getScriptBody(text));
   }
+
   @Test
   public void scriptBodyWithoutReplName() {
     String text = "12345678";
     assertEquals(text, Paragraph.getScriptBody(text));
+  }
+
+  @Test
+  public void replNameEndsWithWhitespace() {
+    String text = "%md\r\n###Hello";
+    assertEquals("md", Paragraph.getRequiredReplName(text));
+
+    text = "%md\t###Hello";
+    assertEquals("md", Paragraph.getRequiredReplName(text));
+
+    text = "%md\u000b###Hello";
+    assertEquals("md", Paragraph.getRequiredReplName(text));
+
+    text = "%md\f###Hello";
+    assertEquals("md", Paragraph.getRequiredReplName(text));
+
+    text = "%md\n###Hello";
+    assertEquals("md", Paragraph.getRequiredReplName(text));
+
+    text = "%md ###Hello";
+    assertEquals("md", Paragraph.getRequiredReplName(text));
   }
 
   @Test

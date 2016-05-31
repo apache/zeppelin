@@ -29,18 +29,18 @@ Zeppelin Interpreter is a plug-in which enables Zeppelin users to use a specific
 
 When you click the ```+Create``` button in the interpreter page, the interpreter drop-down list box will show all the available interpreters on your server.
 
-<img src="/assets/themes/zeppelin/img/screenshots/interpreter_create.png">
+<img src="../assets/themes/zeppelin/img/screenshots/interpreter_create.png">
 
 ## What is Zeppelin Interpreter Setting?
 Zeppelin interpreter setting is the configuration of a given interpreter on Zeppelin server. For example, the properties are required for hive JDBC interpreter to connect to the Hive server.
 
-<img src="/assets/themes/zeppelin/img/screenshots/interpreter_setting.png">
+<img src="../assets/themes/zeppelin/img/screenshots/interpreter_setting.png">
 
 Properties are exported as environment variable when property name is consisted of upper characters, numbers and underscore ([A-Z_0-9]). Otherwise set properties as JVM property.
 
 Each notebook can be bound to multiple Interpreter Settings using setting icon on upper right corner of the notebook.
 
-<img src="/assets/themes/zeppelin/img/screenshots/interpreter_binding.png" width="800px">
+<img src="../assets/themes/zeppelin/img/screenshots/interpreter_binding.png" width="800px">
 
 
 
@@ -51,7 +51,7 @@ By default, every interpreter is belonged to a single group, but the group might
 Technically, Zeppelin interpreters from the same group are running in the same JVM. For more information about this, please checkout [here](../development/writingzeppelininterpreter.html).
 
 Each interpreters is belonged to a single group and registered together. All of their properties are listed in the interpreter setting like below image.
-<img src="/assets/themes/zeppelin/img/screenshots/interpreter_setting_spark.png">
+<img src="../assets/themes/zeppelin/img/screenshots/interpreter_setting_spark.png">
 
 
 ## Interpreter binding mode
@@ -59,4 +59,4 @@ Each interpreters is belonged to a single group and registered together. All of 
 Each Interpreter Setting can choose one of 'shared', 'scoped', 'isolated' interpreter binding mode.
 In 'shared' mode, every notebook bound to the Interpreter Setting will share the single Interpreter instance. In 'scoped' mode, each notebook will create new Interpreter instance in the same interpreter process. In 'isolated' mode, each notebook will create new Interpreter process.
 
-<img src="/assets/themes/zeppelin/img/screenshots/interpreter_persession.png" width="400px">
+<img src="../assets/themes/zeppelin/img/screenshots/interpreter_persession.png" width="400px">

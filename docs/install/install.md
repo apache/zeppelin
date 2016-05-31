@@ -28,7 +28,7 @@ In this documentation, we will explain how you can install Zeppelin from **Binar
 
 ### Install with Binary Package
 
-If you want to install Zeppelin with latest binary package, please visit [this page](http://zeppelin.incubator.apache.org/download.html).
+If you want to install Zeppelin with latest binary package, please visit [this page](http://zeppelin.apache.org/download.html).
 
 ### Build from Zeppelin Source
 
@@ -191,6 +191,18 @@ You can configure Zeppelin with both **environment variables** in `conf/zeppelin
     <td>zeppelin.notebook.s3.endpoint</td>
     <td>s3.amazonaws.com</td>
     <td>Endpoint for the bucket</td>
+  </tr>
+  <tr>
+    <td>ZEPPELIN_NOTEBOOK_S3_KMS_KEY_ID</td>
+    <td>zeppelin.notebook.s3.kmsKeyID</td>
+    <td></td>
+    <td>AWS KMS Key ID to use for encrypting data in S3 (optional)</td>
+  </tr>
+  <tr>
+    <td>ZEPPELIN_NOTEBOOK_S3_EMP</td>
+    <td>zeppelin.notebook.s3.encryptionMaterialsProvider</td>
+    <td></td>
+    <td>Class name of a custom S3 encryption materials provider implementation to use for encrypting data in S3 (optional)</td>
   </tr>
   <tr>
     <td>ZEPPELIN_NOTEBOOK_AZURE_CONNECTION_STRING</td>

@@ -68,5 +68,11 @@ limitations under the License.
          id="{{paragraph.id}}_executionTime"
          class="executionTime" ng-bind-html="getExecutionTime()">
     </div>
+    <div ng-if = "paragraph.status === 'RUNNING'" class = "paragraphFooterElapsed">
+      <div
+           id="{{paragraph.id}}_elapsedTime"
+           class="elapsedTime" ng-bind-html="getElapsedTime()">
+      </div>
+    </div>
   </div>
 </div>

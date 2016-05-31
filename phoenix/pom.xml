@@ -31,7 +31,7 @@
   <version>0.6.0-incubating-SNAPSHOT</version>
   <name>Zeppelin: Apache Phoenix Interpreter</name>
   <description>Zeppelin interprter for Apache Phoenix</description>
-  <url>http://zeppelin.incubator.apache.org</url>
+  <url>http://zeppelin.apache.org</url>
   
   <properties>
     <phoenix.version>4.4.0-HBase-1.0</phoenix.version>
