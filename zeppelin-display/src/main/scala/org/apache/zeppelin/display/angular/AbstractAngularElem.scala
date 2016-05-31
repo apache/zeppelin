@@ -18,6 +18,7 @@ package org.apache.zeppelin.display.angular
 
 import java.io.PrintStream
 
+import org.apache.zeppelin.annotation.ZeppelinApi
 import org.apache.zeppelin.display.{AngularObjectWatcher, AngularObject}
 import org.apache.zeppelin.interpreter.{InterpreterResult, InterpreterContext}
 
@@ -41,28 +42,34 @@ abstract class AbstractAngularElem(val interpreterContext: InterpreterContext,
 
   /**
     * On click element
+ *
     * @param callback
     * @return
     */
+  @ZeppelinApi
   def onClick(callback: () => Unit): AbstractAngularElem = {
     onEvent("ng-click", callback)
   }
 
   /**
     * On
+ *
     * @param callback
     * @return
     */
+  @ZeppelinApi
   def onChange(callback: () => Unit): AbstractAngularElem = {
     onEvent("ng-change", callback)
   }
 
   /**
     * Bind angularObject to ng-model directive
+ *
     * @param name name of angularObject
     * @param value initialValue
     * @return
     */
+  @ZeppelinApi
   def model(name: String, value: Any): AbstractAngularElem = {
     val registry = interpreterContext.getAngularObjectRegistry
 
@@ -82,6 +89,7 @@ abstract class AbstractAngularElem(val interpreterContext: InterpreterContext,
   }
 
 
+  @ZeppelinApi
   def model(name: String): AbstractAngularElem = {
     val registry = interpreterContext.getAngularObjectRegistry
 
@@ -99,8 +107,10 @@ abstract class AbstractAngularElem(val interpreterContext: InterpreterContext,
 
   /**
     * Retrieve value of model
+    *
     * @return
     */
+  @ZeppelinApi
   def model(): Any = {
     if (angularObjects.contains(modelName)) {
       angularObjects(modelName).get()
@@ -114,6 +124,7 @@ abstract class AbstractAngularElem(val interpreterContext: InterpreterContext,
     * @param eventName angular directive like ng-click, ng-change, etc.
     * @return
     */
+  @ZeppelinApi
   def onEvent(eventName: String, callback: () => Unit): AbstractAngularElem = {
     val registry = interpreterContext.getAngularObjectRegistry
 
@@ -151,12 +162,14 @@ abstract class AbstractAngularElem(val interpreterContext: InterpreterContext,
     * disassociate this element and it's child from front-end
     * by removing angularobject
     */
+  @ZeppelinApi
   def disassociate() = {
     remove(this)
   }
 
   /**
     * Remove all angularObject recursively
+    *
     * @param node
     */
   private def remove(node: Node): Unit = {
@@ -172,8 +185,10 @@ abstract class AbstractAngularElem(val interpreterContext: InterpreterContext,
 
   /**
     * Print into provided print stream
+    *
     * @return
     */
+  @ZeppelinApi
   def display(out: java.io.PrintStream): Unit = {
     out.print(this.toString)
     out.flush()
@@ -182,6 +197,7 @@ abstract class AbstractAngularElem(val interpreterContext: InterpreterContext,
   /**
     * Print into InterpreterOutput
     */
+  @ZeppelinApi
   def display(): Unit = {
     val out = interpreterContext.out
     out.setType(InterpreterResult.Type.ANGULAR)

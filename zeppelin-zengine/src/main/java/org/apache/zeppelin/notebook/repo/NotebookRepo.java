@@ -20,6 +20,7 @@ package org.apache.zeppelin.notebook.repo;
 import java.io.IOException;
 import java.util.List;
 
+import org.apache.zeppelin.annotation.ZeppelinApi;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
 
@@ -27,18 +28,18 @@ import org.apache.zeppelin.notebook.NoteInfo;
  * Notebook repository (persistence layer) abstraction
  */
 public interface NotebookRepo {
-  public List<NoteInfo> list() throws IOException;
-  public Note get(String noteId) throws IOException;
-  public void save(Note note) throws IOException;
-  public void remove(String noteId) throws IOException;
+  @ZeppelinApi public List<NoteInfo> list() throws IOException;
+  @ZeppelinApi public Note get(String noteId) throws IOException;
+  @ZeppelinApi public void save(Note note) throws IOException;
+  @ZeppelinApi public void remove(String noteId) throws IOException;
 
   /**
    * Release any underlying resources
    */
-  public void close();
+  @ZeppelinApi public void close();
 
   /**
    * chekpoint (versioning) for notebooks (optional)
    */
-  public void checkpoint(String noteId, String checkPointName) throws IOException;
+  @ZeppelinApi public void checkpoint(String noteId, String checkPointName) throws IOException;
 }
