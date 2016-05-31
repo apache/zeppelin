@@ -318,6 +318,9 @@ public class NotebookTest implements JobListenerFactory{
     String simpleText = "hello world";
     p.setText(simpleText);
 
+    note.runAll();
+    while(p.isTerminated()==false || p.getResult()==null) Thread.yield();
+
     String exportedNoteJson = notebook.exportNote(note.getId());
 
     Note importedNote = notebook.importNote(exportedNoteJson, "Title");
