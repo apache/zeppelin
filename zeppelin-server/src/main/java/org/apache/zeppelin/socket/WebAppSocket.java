@@ -16,24 +16,25 @@
  */
 package org.apache.zeppelin.socket;
 
-import org.eclipse.jetty.websocket.api.Session;
-import org.eclipse.jetty.websocket.api.WebSocketAdapter;
+import java.io.IOException;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.IOException;
+
+import org.eclipse.jetty.websocket.api.Session;
+import org.eclipse.jetty.websocket.api.WebSocketAdapter;
 
 /**
  * Notebook websocket
  */
-public class JobManagerSocket extends WebSocketAdapter {
+public class WebAppSocket extends WebSocketAdapter {
 
   private Session connection;
-  private JobManagerSocketListener listener;
+  private WebSocketListener listener;
   private HttpServletRequest request;
   private String protocol;
 
-  public JobManagerSocket(HttpServletRequest req, String protocol,
-                          JobManagerSocketListener listener) {
+  public WebAppSocket(HttpServletRequest req, String protocol,
+                      WebSocketListener listener) {
     this.listener = listener;
     this.request = req;
     this.protocol = protocol;

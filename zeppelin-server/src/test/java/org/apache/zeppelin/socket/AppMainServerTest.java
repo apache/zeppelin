@@ -53,9 +53,9 @@ import static org.mockito.Mockito.*;
 /**
  * BASIC Zeppelin rest api tests
  */
-public class NotebookServerTest extends AbstractTestRestApi {
+public class AppMainServerTest extends AbstractTestRestApi {
   private static Notebook notebook;
-  private static NotebookServer notebookServer;
+  private static AppMainServer appMainServer;
   private static Gson gson;
 
   @BeforeClass
@@ -63,7 +63,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
     AbstractTestRestApi.startUp();
     gson = new Gson();
     notebook = ZeppelinServer.notebook;
-    notebookServer = ZeppelinServer.notebookWsServer;
+    appMainServer = ZeppelinServer.notebookWsServer;
   }
 
   @AfterClass
@@ -73,7 +73,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
 
   @Test
   public void checkOrigin() throws UnknownHostException {
-    NotebookServer server = new NotebookServer();
+    AppMainServer server = new AppMainServer();
     String origin = "http://" + InetAddress.getLocalHost().getHostName() + ":8080";
 
     assertTrue("Origin " + origin + " is not allowed. Please check your hostname.",
@@ -82,7 +82,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
 
   @Test
   public void checkInvalidOrigin(){
-    NotebookServer server = new NotebookServer();
+    AppMainServer server = new AppMainServer();
     assertFalse(server.checkOrigin(new TestHttpServletRequest(), "http://evillocalhost:8080"));
   }
 
@@ -116,18 +116,18 @@ public class NotebookServerTest extends AbstractTestRestApi {
     assertEquals(sock1, sock1);
     assertNotEquals(sock1, sock2);
 
-    notebookServer.onOpen(sock1);
-    notebookServer.onOpen(sock2);
+    appMainServer.onOpen(sock1);
+    appMainServer.onOpen(sock2);
     verify(sock1, times(0)).send(anyString()); // getNote, getAngularObject
     // open the same notebook from sockets
-    notebookServer.onMessage(sock1, gson.toJson(new Message(OP.GET_NOTE).put("id", note1.getId())));
-    notebookServer.onMessage(sock2, gson.toJson(new Message(OP.GET_NOTE).put("id", note1.getId())));
+    appMainServer.onMessage(sock1, gson.toJson(new Message(OP.GET_NOTE).put("id", note1.getId())));
+    appMainServer.onMessage(sock2, gson.toJson(new Message(OP.GET_NOTE).put("id", note1.getId())));
 
     reset(sock1);
     reset(sock2);
 
     // update object from sock1
-    notebookServer.onMessage(sock1, gson.toJson(
+    appMainServer.onMessage(sock1, gson.toJson(
         new Message(OP.ANGULAR_OBJECT_UPDATED)
         .put("noteId", note1.getId())
         .put("name", "object1")
@@ -149,13 +149,13 @@ public class NotebookServerTest extends AbstractTestRestApi {
         "paragraphs import\",\"config\":{},\"settings\":{}}]," +
         "\"name\": \"Test Zeppelin notebook import\",\"config\": " +
         "{}}}}";
-    Message messageReceived = notebookServer.deserializeMessage(msg);
+    Message messageReceived = appMainServer.deserializeMessage(msg);
     Note note = null;
     try {
-      note = notebookServer.importNote(null, null, notebook, messageReceived);
+      note = appMainServer.importNote(null, null, notebook, messageReceived);
     } catch (NullPointerException e) {
       //broadcastNoteList(); failed nothing to worry.
-      LOG.error("Exception in NotebookServerTest while testImportNotebook, failed nothing to " +
+      LOG.error("Exception in AppMainServerTest while testImportNotebook, failed nothing to " +
           "worry ", e);
     }
 
@@ -176,7 +176,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
             .put("value", value)
             .put("paragraphId", "paragraphId");
 
-    final NotebookServer server = new NotebookServer();
+    final AppMainServer server = new AppMainServer();
     final Notebook notebook = mock(Notebook.class);
     final Note note = mock(Note.class, RETURNS_DEEP_STUBS);
 
@@ -227,7 +227,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
             .put("value", value)
             .put("paragraphId", "paragraphId");
 
-    final NotebookServer server = new NotebookServer();
+    final AppMainServer server = new AppMainServer();
     final Notebook notebook = mock(Notebook.class);
     final Note note = mock(Note.class, RETURNS_DEEP_STUBS);
     when(notebook.getNote("noteId")).thenReturn(note);
@@ -273,7 +273,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
             .put("name", varName)
             .put("paragraphId", "paragraphId");
 
-    final NotebookServer server = new NotebookServer();
+    final AppMainServer server = new AppMainServer();
     final Notebook notebook = mock(Notebook.class);
     final Note note = mock(Note.class, RETURNS_DEEP_STUBS);
     when(notebook.getNote("noteId")).thenReturn(note);
@@ -318,7 +318,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
             .put("name", varName)
             .put("paragraphId", "paragraphId");
 
-    final NotebookServer server = new NotebookServer();
+    final AppMainServer server = new AppMainServer();
     final Notebook notebook = mock(Notebook.class);
     final Note note = mock(Note.class, RETURNS_DEEP_STUBS);
     when(notebook.getNote("noteId")).thenReturn(note);

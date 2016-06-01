@@ -45,7 +45,7 @@ import org.apache.zeppelin.rest.message.NewParagraphRequest;
 import org.apache.zeppelin.rest.message.RunParagraphWithParametersRequest;
 import org.apache.zeppelin.search.SearchService;
 import org.apache.zeppelin.server.JsonResponse;
-import org.apache.zeppelin.socket.NotebookServer;
+import org.apache.zeppelin.socket.AppMainServer;
 import org.apache.zeppelin.utils.SecurityUtils;
 import org.quartz.CronExpression;
 import org.slf4j.Logger;
@@ -54,9 +54,7 @@ import org.slf4j.LoggerFactory;
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import com.google.gson.GsonBuilder;
-import com.google.gson.stream.JsonReader;
-import java.io.StringReader;
+
 /**
  * Rest api endpoint for the noteBook.
  */
@@ -66,15 +64,15 @@ public class NotebookRestApi {
   private static final Logger LOG = LoggerFactory.getLogger(NotebookRestApi.class);
   Gson gson = new Gson();
   private Notebook notebook;
-  private NotebookServer notebookServer;
+  private AppMainServer appMainServer;
   private SearchService notebookIndex;
   private NotebookAuthorization notebookAuthorization;
 
   public NotebookRestApi() {}
 
-  public NotebookRestApi(Notebook notebook, NotebookServer notebookServer, SearchService search) {
+  public NotebookRestApi(Notebook notebook, AppMainServer appMainServer, SearchService search) {
     this.notebook = notebook;
-    this.notebookServer = notebookServer;
+    this.appMainServer = appMainServer;
     this.notebookIndex = search;
     this.notebookAuthorization = notebook.getNotebookAuthorization();
   }
@@ -157,7 +155,7 @@ public class NotebookRestApi {
             notebookAuthorization.getReaders(noteId),
             notebookAuthorization.getWriters(noteId));
     note.persist();
-    notebookServer.broadcastNote(note);
+    appMainServer.broadcastNote(note);
     return new JsonResponse<>(Status.OK).build();
   }
 
@@ -219,7 +217,7 @@ public class NotebookRestApi {
   @GET
   @Path("/")
   public Response getNotebookList() throws IOException {
-    List<Map<String, String>> notesInfo = notebookServer.generateNotebooksInfo(false);
+    List<Map<String, String>> notesInfo = appMainServer.generateNotebooksInfo(false);
     return new JsonResponse<>(Status.OK, "", notesInfo ).build();
   }
 
@@ -290,8 +288,8 @@ public class NotebookRestApi {
     }
     note.setName(noteName);
     note.persist();
-    notebookServer.broadcastNote(note);
-    notebookServer.broadcastNoteList();
+    appMainServer.broadcastNote(note);
+    appMainServer.broadcastNoteList();
     return new JsonResponse<>(Status.CREATED, "", note.getId() ).build();
   }
 
@@ -311,7 +309,7 @@ public class NotebookRestApi {
         notebook.removeNote(notebookId);
       }
     }
-    notebookServer.broadcastNoteList();
+    appMainServer.broadcastNoteList();
     return new JsonResponse<>(Status.OK, "").build();
   }
   
@@ -330,8 +328,8 @@ public class NotebookRestApi {
         NewNotebookRequest.class);
     String newNoteName = request.getName();
     Note newNote = notebook.cloneNote(notebookId, newNoteName);
-    notebookServer.broadcastNote(newNote);
-    notebookServer.broadcastNoteList();
+    appMainServer.broadcastNote(newNote);
+    appMainServer.broadcastNoteList();
     return new JsonResponse<>(Status.CREATED, "", newNote.getId()).build();
   }
 
@@ -365,7 +363,7 @@ public class NotebookRestApi {
     p.setText(request.getText());
 
     note.persist();
-    notebookServer.broadcastNote(note);
+    appMainServer.broadcastNote(note);
     return new JsonResponse(Status.CREATED, "", p.getId()).build();
   }
 
@@ -421,7 +419,7 @@ public class NotebookRestApi {
       note.moveParagraph(paragraphId, Integer.parseInt(newIndex), true);
 
       note.persist();
-      notebookServer.broadcastNote(note);
+      appMainServer.broadcastNote(note);
       return new JsonResponse(Status.OK, "").build();
     } catch (IndexOutOfBoundsException e) {
       LOG.error("Exception in NotebookRestApi while moveParagraph ", e);
@@ -453,7 +451,7 @@ public class NotebookRestApi {
 
     note.removeParagraph(paragraphId);
     note.persist();
-    notebookServer.broadcastNote(note);
+    appMainServer.broadcastNote(note);
 
     return new JsonResponse(Status.OK, "").build();
   }

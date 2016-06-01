@@ -85,15 +85,15 @@ angular.module('zeppelinWebApp')
             var newItem = angular.copy(changedItem);
             jobInfomations.push(newItem);
             indexStore[changedItem.notebookId] = newItem;
-            console.log('111111111111111111111111');
+            console.log('new Item Notebook Job ', newItem);
           } else {
-            console.log('222222222222222222222222');
             var changeOriginTarget = indexStore[changedItem.notebookId];
             changeOriginTarget.isRunningJob = changedItem.isRunningJob;
             changeOriginTarget.notebookName = changedItem.notebookName;
             changeOriginTarget.notebookType = changedItem.notebookType;
             changeOriginTarget.unixTimeLastRun = changedItem.unixTimeLastRun;
             changeOriginTarget.paragraphs = changedItem.paragraphs;
+            console.log('new Event for Notebook job ', changedItem.notebookName);
           }
           $scope.doFiltering(jobInfomations, $scope.filterConfig);
         });

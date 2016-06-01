@@ -30,8 +30,7 @@ import org.apache.zeppelin.rest.*;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.apache.zeppelin.search.LuceneSearch;
 import org.apache.zeppelin.search.SearchService;
-import org.apache.zeppelin.socket.JobManagerServer;
-import org.apache.zeppelin.socket.NotebookServer;
+import org.apache.zeppelin.socket.AppMainServer;
 import org.eclipse.jetty.http.HttpVersion;
 import org.eclipse.jetty.server.*;
 import org.eclipse.jetty.server.handler.ContextHandlerCollection;
@@ -61,8 +60,7 @@ public class ZeppelinServer extends Application {
 
   public static Notebook notebook;
   public static Server jettyWebServer;
-  public static NotebookServer notebookWsServer;
-  public static JobManagerServer jobManagerWsServer;
+  public static AppMainServer notebookWsServer;
 
   private SchedulerFactory schedulerFactory;
   private InterpreterFactory replFactory;
@@ -102,9 +100,6 @@ public class ZeppelinServer extends Application {
 
     // REST api
     setupRestApiContextHandler(webApp, conf);
-
-    // Job Manager server
-    setupJobManagerServer(webApp, conf);
 
     // Notebook server
     setupNotebookServer(webApp, conf);
@@ -196,7 +191,7 @@ public class ZeppelinServer extends Application {
 
   private static void setupNotebookServer(WebAppContext webapp,
                                           ZeppelinConfiguration conf) {
-    notebookWsServer = new NotebookServer();
+    notebookWsServer = new AppMainServer();
     String maxTextMessageSize = conf.getWebsocketMaxTextMessageSize();
     final ServletHolder servletHolder = new ServletHolder(notebookWsServer);
     servletHolder.setInitParameter("maxTextMessageSize", maxTextMessageSize);
@@ -205,19 +200,6 @@ public class ZeppelinServer extends Application {
         ServletContextHandler.SESSIONS);
 
     webapp.addServlet(servletHolder, "/ws/*");
-  }
-
-  private static void setupJobManagerServer(WebAppContext webapp,
-                                          ZeppelinConfiguration conf) {
-    jobManagerWsServer = new JobManagerServer();
-    String maxTextMessageSize = conf.getWebsocketMaxTextMessageSize();
-    final ServletHolder servletHolder = new ServletHolder(jobManagerWsServer);
-    servletHolder.setInitParameter("maxTextMessageSize", maxTextMessageSize);
-
-    final ServletContextHandler cxfContext = new ServletContextHandler(
-            ServletContextHandler.SESSIONS);
-
-    webapp.addServlet(servletHolder, "/ws/job/*");
   }
 
   private static SslContextFactory getSslContextFactory(ZeppelinConfiguration conf) {

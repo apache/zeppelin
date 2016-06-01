@@ -16,21 +16,9 @@
  */
 package org.apache.zeppelin.socket;
 
-import org.eclipse.jetty.websocket.servlet.ServletUpgradeRequest;
-import org.eclipse.jetty.websocket.servlet.ServletUpgradeResponse;
-import org.eclipse.jetty.websocket.servlet.WebSocketCreator;
-
 /**
- * Responsible to create the WebSockets for the NotebookServer.
+ * WebSocket Server Interface
  */
-public class NotebookWebSocketCreator implements WebSocketCreator {
-  private NotebookServer notebookServer;
-
-  public NotebookWebSocketCreator(NotebookServer notebookServer) {
-    this.notebookServer = notebookServer;
-  }
-  public Object createWebSocket(ServletUpgradeRequest request, ServletUpgradeResponse response) {
-    return new NotebookSocket(request.getHttpServletRequest(), "", notebookServer);
-  }
-
+public interface WebSocketServer {
+  void onMessage(WebAppSocket conn, String msg);
 }

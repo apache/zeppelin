@@ -17,10 +17,10 @@
 package org.apache.zeppelin.socket;
 
 /**
- * NoteboookSocket listener
+ * WebSocket listener
  */
-public interface NotebookSocketListener {
-  void onClose(NotebookSocket socket, int code, String message);
-  void onOpen(NotebookSocket socket);
-  void onMessage(NotebookSocket socket, String message);
+public interface WebSocketListener {
+  void onClose(WebAppSocket socket, int code, String message);
+  void onOpen(WebAppSocket socket);
+  void onMessage(WebAppSocket socket, String message);
 }

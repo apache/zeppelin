@@ -56,11 +56,11 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 /**
  * Zeppelin websocket service.
  */
-public class NotebookServer extends AppMainServer implements JobListenerFactory,
-    AngularObjectRegistryListener, RemoteInterpreterProcessListener {
-  private static final Logger LOG = LoggerFactory.getLogger(NotebookServer.class);
+public class JobMangerServer extends AppMainServer implements WebSocketServer {
+  private static final Logger LOG = LoggerFactory.getLogger(JobMangerServer.class);
   Gson gson = new GsonBuilder()
           .setDateFormat("yyyy-MM-dd'T'HH:mm:ssZ").create();
+  final Map<String, List<WebAppSocket>> noteSocketMap = new HashMap<>();
   final Queue<WebAppSocket> connectedSockets = new ConcurrentLinkedQueue<>();
 
   private Notebook notebook() {
@@ -131,73 +131,11 @@ public class NotebookServer extends AppMainServer implements JobListenerFactory,
       LOG.info("lcs notebook received");
       /** Lets be elegant here */
       switch (messagereceived.op) {
-          case LIST_NOTES:
-            unicastNoteList(conn);
+          case LIST_NOTEBOOK_JOBS:
+            unicastNotebookJobInfo(conn);
             break;
-          case RELOAD_NOTES_FROM_REPO:
-            broadcastReloadedNoteList();
-            break;
-          case GET_HOME_NOTE:
-            sendHomeNote(conn, userAndRoles, notebook);
-            break;
-          case GET_NOTE:
-            sendNote(conn, userAndRoles, notebook, messagereceived);
-            break;
-          case NEW_NOTE:
-            createNote(conn, userAndRoles, notebook, messagereceived);
-            break;
-          case DEL_NOTE:
-            removeNote(conn, userAndRoles, notebook, messagereceived);
-            break;
-          case CLONE_NOTE:
-            cloneNote(conn, userAndRoles, notebook, messagereceived);
-            break;
-          case IMPORT_NOTE:
-            importNote(conn, userAndRoles, notebook, messagereceived);
-            break;
-          case COMMIT_PARAGRAPH:
-            updateParagraph(conn, userAndRoles, notebook, messagereceived);
-            break;
-          case RUN_PARAGRAPH:
-            runParagraph(conn, userAndRoles, notebook, messagereceived);
-            break;
-          case CANCEL_PARAGRAPH:
-            cancelParagraph(conn, userAndRoles, notebook, messagereceived);
-            break;
-          case MOVE_PARAGRAPH:
-            moveParagraph(conn, userAndRoles, notebook, messagereceived);
-            break;
-          case INSERT_PARAGRAPH:
-            insertParagraph(conn, userAndRoles, notebook, messagereceived);
-            break;
-          case PARAGRAPH_REMOVE:
-            removeParagraph(conn, userAndRoles, notebook, messagereceived);
-            break;
-          case PARAGRAPH_CLEAR_OUTPUT:
-            clearParagraphOutput(conn, userAndRoles, notebook, messagereceived);
-            break;
-          case NOTE_UPDATE:
-            updateNote(conn, userAndRoles, notebook, messagereceived);
-            break;
-          case COMPLETION:
-            completion(conn, userAndRoles, notebook, messagereceived);
-            break;
-          case PING:
-            break; //do nothing
-          case ANGULAR_OBJECT_UPDATED:
-            angularObjectUpdated(conn, userAndRoles, notebook, messagereceived);
-            break;
-          case ANGULAR_OBJECT_CLIENT_BIND:
-            angularObjectClientBind(conn, userAndRoles, notebook, messagereceived);
-            break;
-          case ANGULAR_OBJECT_CLIENT_UNBIND:
-            angularObjectClientUnbind(conn, userAndRoles, notebook, messagereceived);
-            break;
-          case LIST_CONFIGURATIONS:
-            sendAllConfigurations(conn, userAndRoles, notebook);
-            break;
-          case CHECKPOINT_NOTEBOOK:
-            checkpointNotebook(conn, notebook, messagereceived);
+          case LIST_UPDATE_NOTEBOOK_JOBS:
+            unicastUpdateNotebookJobInfo(conn, messagereceived);
             break;
           default:
             break;
@@ -223,26 +161,320 @@ public class NotebookServer extends AppMainServer implements JobListenerFactory,
     return gson.toJson(m);
   }
 
+
+  public void unicastNotebookJobInfo(WebAppSocket conn) {
+    List<Map<String, Object>> notebookJobs = generateNotebooksJobInfo(false);
+    Map<String, Object> response = new HashMap<>();
+
+    response.put("lastResponseUnixTime", System.currentTimeMillis());
+    response.put("jobs", notebookJobs);
+
+    unicast(new Message(OP.LIST_NOTEBOOK_JOBS).put("notebookJobs", response), conn);
+  }
+
+  public void unicastUpdateNotebookJobInfo(WebAppSocket conn, Message fromMessage) {
+    double lastUpdateUnixTimeRaw = (double) fromMessage.get("lastUpdateUnixTime");
+    long lastUpdateUnixTime = new Double(lastUpdateUnixTimeRaw).longValue();
+    List<Map<String, Object>> notebookJobs;
+    notebookJobs = generateUpdateNotebooksJobInfo(false, lastUpdateUnixTime);
+    Map<String, Object> response = new HashMap<>();
+
+    response.put("lastResponseUnixTime", System.currentTimeMillis());
+    response.put("jobs", notebookJobs);
+
+    unicast(new Message(OP.LIST_UPDATE_NOTEBOOK_JOBS)
+            .put("notebookRunningJobs", response), conn);
+  }
+
+
+  public List<Map<String, Object>> generateNotebooksJobInfo(boolean needsReload) {
+    Notebook notebook = notebook();
+
+    ZeppelinConfiguration conf = notebook.getConf();
+    String homescreenNotebookId = conf.getString(ConfVars.ZEPPELIN_NOTEBOOK_HOMESCREEN);
+    boolean hideHomeScreenNotebookFromList = conf
+            .getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_HOMESCREEN_HIDE);
+
+    if (needsReload) {
+      try {
+        notebook.reloadAllNotes();
+      } catch (IOException e) {
+        LOG.error("Fail to reload notes from repository");
+      }
+    }
+
+    List<Note> notes = notebook.getAllNotes();
+    List<Map<String, Object>> notesInfo = new LinkedList<>();
+    for (Note note : notes) {
+      boolean isNotebookRunning = false;
+      Map<String, Object> info = new HashMap<>();
+
+      if (hideHomeScreenNotebookFromList && note.id().equals(homescreenNotebookId)) {
+        continue;
+      }
+
+      String CRON_TYPE_NOTEBOOK_KEYWORD = "cron";
+      info.put("notebookId", note.id());
+      String notebookName = note.getName();
+      if (notebookName != null) {
+        info.put("notebookName", note.getName());
+      } else {
+        info.put("notebookName", note.id());
+      }
+
+      if (note.getConfig().containsKey(CRON_TYPE_NOTEBOOK_KEYWORD) == true
+              && !note.getConfig().get(CRON_TYPE_NOTEBOOK_KEYWORD).equals("")) {
+        info.put("notebookType", "cron");
+      }
+      else {
+        info.put("notebookType", "normal");
+      }
+
+      Date lastRunningDate = null;
+      long lastRunningUnixTime = 0;
+
+      List<Map<String, Object>> paragraphsInfo = new LinkedList<>();
+      for (Paragraph paragraph : note.getParagraphs()) {
+        if (paragraph.getStatus().isRunning() == true) {
+          isNotebookRunning = true;
+        }
+        Map<String, Object> paragraphItem = new HashMap<>();
+        // set paragraph id
+        paragraphItem.put("id", paragraph.getId());
+
+        // set paragraph name
+        String paragraphName = paragraph.getTitle();
+        if (paragraphName != null) {
+          paragraphItem.put("name", paragraphName);
+        } else {
+          paragraphItem.put("name", paragraph.getId());
+        }
+
+        // set status for paragraph.
+        paragraphItem.put("status", paragraph.getStatus().toString());
+
+        // get last update time.
+        Date paragaraphDate = paragraph.getDateStarted();
+        if (paragaraphDate == null) {
+          paragaraphDate = paragraph.getDateCreated();
+        }
+        if (lastRunningDate == null) {
+          lastRunningDate = paragaraphDate;
+        } else {
+          if (lastRunningDate.after(paragaraphDate) == true) {
+            lastRunningDate = paragaraphDate;
+          }
+        }
+
+        // convert date to unixtime(ms).
+        lastRunningUnixTime = lastRunningDate.getTime();
+
+        paragraphsInfo.add(paragraphItem);
+      }
+
+      // Interpreter is set does not exist.
+      String interpreterGroupName = null;
+      if (note.getNoteReplLoader().getInterpreterSettings() != null
+              && note.getNoteReplLoader().getInterpreterSettings().size() >= 1) {
+        interpreterGroupName = note.getNoteReplLoader().getInterpreterSettings().get(0).getGroup();
+      }
+
+      // notebook json object root information.
+      info.put("interpreter", interpreterGroupName);
+      info.put("isRunningJob", isNotebookRunning);
+      info.put("unixTimeLastRun", lastRunningUnixTime);
+      info.put("paragraphs", paragraphsInfo);
+      notesInfo.add(info);
+    }
+    return notesInfo;
+  }
+
+
+  public List<Map<String, Object>> generateUpdateNotebooksJobInfo(
+          boolean needsReload, long lastUpdateServerUnixTime) {
+    Notebook notebook = notebook();
+
+    ZeppelinConfiguration conf = notebook.getConf();
+    String homescreenNotebookId = conf.getString(ConfVars.ZEPPELIN_NOTEBOOK_HOMESCREEN);
+    boolean hideHomeScreenNotebookFromList = conf
+            .getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_HOMESCREEN_HIDE);
+
+    if (needsReload) {
+      try {
+        notebook.reloadAllNotes();
+      } catch (IOException e) {
+        LOG.error("Fail to reload notes from repository");
+      }
+    }
+
+    List<Note> notes = notebook.getAllNotes();
+    List<Map<String, Object>> notesInfo = new LinkedList<>();
+    for (Note note : notes) {
+      boolean isNotebookRunning = false;
+      boolean isUpdateNotebook = false;
+
+      Map<String, Object> info = new HashMap<>();
+
+      if (hideHomeScreenNotebookFromList && note.id().equals(homescreenNotebookId)) {
+        continue;
+      }
+
+      // set const keyword for cron type
+      String CRON_TYPE_NOTEBOOK_KEYWORD = "cron";
+      info.put("notebookId", note.id());
+      String notebookName = note.getName();
+      if (notebookName != null) {
+        info.put("notebookName", note.getName());
+      } else {
+        info.put("notebookName", note.id());
+      }
+
+
+      if (note.getConfig().containsKey(CRON_TYPE_NOTEBOOK_KEYWORD) == true
+              && !note.getConfig().get(CRON_TYPE_NOTEBOOK_KEYWORD).equals("")) {
+        info.put("notebookType", "cron");
+      }
+      else {
+        info.put("notebookType", "normal");
+      }
+
+      Date lastRunningDate = null;
+      long lastRunningUnixTime = 0;
+
+      List<Map<String, Object>> paragraphsInfo = new LinkedList<>();
+      for (Paragraph paragraph : note.getParagraphs()) {
+
+        // check date for update time.
+        Date startedDate = paragraph.getDateStarted();
+        Date createdDate = paragraph.getDateCreated();
+        Date finishedDate = paragraph.getDateFinished();
+
+        if (startedDate != null && startedDate.getTime() > lastUpdateServerUnixTime) {
+          isUpdateNotebook = true;
+        }
+        if (createdDate != null && createdDate.getTime() > lastUpdateServerUnixTime) {
+          isUpdateNotebook = true;
+        }
+        if (finishedDate != null && finishedDate.getTime() > lastUpdateServerUnixTime) {
+          isUpdateNotebook = true;
+        }
+
+        Map<String, Object> paragraphItem = new HashMap<>();
+
+        // set paragraph id
+        paragraphItem.put("id", paragraph.getId());
+
+        // set paragraph name
+        String paragraphName = paragraph.getTitle();
+        if (paragraphName != null) {
+          paragraphItem.put("name", paragraphName);
+        } else {
+          paragraphItem.put("name", paragraph.getId());
+        }
+
+        // set status for paragraph
+        paragraphItem.put("status", paragraph.getStatus().toString());
+
+        Date paragaraphDate = startedDate;
+        if (paragaraphDate == null) {
+          paragaraphDate = createdDate;
+        }
+
+        // set last update unixtime(ms).
+        if (lastRunningDate == null) {
+          lastRunningDate = paragaraphDate;
+        } else {
+          if (lastRunningDate.after(paragaraphDate) == true) {
+            lastRunningDate = paragaraphDate;
+          }
+        }
+        lastRunningUnixTime = lastRunningDate.getTime();
+        if (paragraph.getStatus().isRunning() == true) {
+          isNotebookRunning = true;
+          isUpdateNotebook = true;
+        }
+        paragraphsInfo.add(paragraphItem);
+      }
+
+      // Insert only data that has changed.
+      if (isUpdateNotebook != true) {
+        continue;
+      }
+
+      // Interpreter is set does not exist.
+      String interpreterGroupName = null;
+      if (note.getNoteReplLoader().getInterpreterSettings() != null
+              && note.getNoteReplLoader().getInterpreterSettings().size() >= 1) {
+        interpreterGroupName = note.getNoteReplLoader().getInterpreterSettings().get(0).getGroup();
+      }
+
+      // set notebook root information.
+      info.put("interpreter", interpreterGroupName);
+      info.put("isRunningJob", isNotebookRunning);
+      info.put("unixTimeLastRun", lastRunningUnixTime);
+      info.put("paragraphs", paragraphsInfo);
+      notesInfo.add(info);
+    }
+    if (notesInfo.size() > 0) {
+      LOG.info("update count {}", notesInfo.size());
+    }
+    return notesInfo;
+  }
+
   private void addConnectionToNote(String noteId, WebAppSocket socket) {
-    addConnectionToKey(noteId, socket);
+    synchronized (noteSocketMap) {
+      removeConnectionFromAllNote(socket); // make sure a socket relates only a
+      // single note.
+      List<WebAppSocket> socketList = noteSocketMap.get(noteId);
+      if (socketList == null) {
+        socketList = new LinkedList<>();
+        noteSocketMap.put(noteId, socketList);
+      }
+      if (!socketList.contains(socket)) {
+        socketList.add(socket);
+      }
+    }
   }
 
   private void removeConnectionFromNote(String noteId, WebAppSocket socket) {
-    removeConnectionFromKey(noteId, socket);
+    synchronized (noteSocketMap) {
+      List<WebAppSocket> socketList = noteSocketMap.get(noteId);
+      if (socketList != null) {
+        socketList.remove(socket);
+      }
+    }
   }
 
   private void removeNote(String noteId) {
-    removeKey(noteId);
+    synchronized (noteSocketMap) {
+      List<WebAppSocket> socketList = noteSocketMap.remove(noteId);
+    }
   }
 
   private void removeConnectionFromAllNote(WebAppSocket socket) {
-    removeConnectionFromAllKey(socket);
+    synchronized (noteSocketMap) {
+      Set<String> keys = noteSocketMap.keySet();
+      for (String noteId : keys) {
+        removeConnectionFromNote(noteId, socket);
+      }
+    }
   }
 
   private String getOpenNoteId(WebAppSocket socket) {
-    return getOpenKey(socket);
+    String id = null;
+    synchronized (noteSocketMap) {
+      Set<String> keys = noteSocketMap.keySet();
+      for (String noteId : keys) {
+        List<WebAppSocket> sockets = noteSocketMap.get(noteId);
+        if (sockets.contains(socket)) {
+          id = noteId;
+        }
+      }
+    }
+
+    return id;
   }
-//lcs 여기까지
+
   private void broadcastToNoteBindedInterpreter(String interpreterGroupId,
       Message m) {
     Notebook notebook = notebook();
@@ -1047,10 +1279,10 @@ public class NotebookServer extends AppMainServer implements JobListenerFactory,
    *
    */
   public static class ParagraphListenerImpl implements ParagraphJobListener {
-    private NotebookServer appMainServer;
+    private JobMangerServer appMainServer;
     private Note note;
 
-    public ParagraphListenerImpl(NotebookServer appMainServer, Note note) {
+    public ParagraphListenerImpl(JobMangerServer appMainServer, Note note) {
       this.appMainServer = appMainServer;
       this.note = note;
     }
