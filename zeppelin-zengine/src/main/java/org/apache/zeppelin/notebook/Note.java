@@ -187,7 +187,7 @@ public class Note implements Serializable, JobListener {
       String resultJson = gson.toJson(srcParagraph.getReturn());
       InterpreterResult result = gson.fromJson(resultJson, InterpreterResult.class);
       newParagraph.setReturn(result, null);
-    } catch (Exception e) { /*ignore*/ }
+    } catch (Exception e) { /* ignore */ }
 
     synchronized (paragraphs) {
       paragraphs.add(newParagraph);
