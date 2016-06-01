@@ -20,6 +20,9 @@ package org.apache.zeppelin.notebook;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.user.AuthenticationInfo;
+import org.apache.zeppelin.user.Credentials;
+import org.apache.zeppelin.user.UserCredentials;
+import org.apache.zeppelin.user.UsernamePassword;
 import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.display.Input;
 import org.apache.zeppelin.interpreter.*;
@@ -47,10 +50,11 @@ public class Paragraph extends Job implements Serializable, Cloneable {
 
   private transient NoteInterpreterLoader replLoader;
   private transient Note note;
+  private transient AuthenticationInfo authenticationInfo;
 
   String title;
   String text;
-  AuthenticationInfo authenticationInfo;
+  String user;
   Date dateUpdated;
   private Map<String, Object> config; // paragraph configs like isOpen, colWidth, etc
   public final GUI settings;          // form and parameter settings
@@ -70,6 +74,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     title = null;
     text = null;
     authenticationInfo = null;
+    user = null;
     dateUpdated = null;
     settings = new GUI();
     config = new HashMap<String, Object>();
@@ -107,6 +112,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
 
   public void setAuthenticationInfo(AuthenticationInfo authenticationInfo) {
     this.authenticationInfo = authenticationInfo;
+    this.user = authenticationInfo.getUser();
   }
 
   public String getTitle() {
@@ -330,6 +336,14 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     }
 
     final Paragraph self = this;
+
+    Credentials credentials = note.getCredentials();
+    if (authenticationInfo != null) {
+      UserCredentials userCredentials = credentials.getUserCredentials(
+              authenticationInfo.getUser());
+      authenticationInfo.setUserCredentials(userCredentials);
+    }
+
     InterpreterContext interpreterContext = new InterpreterContext(
             note.id(),
             getId(),

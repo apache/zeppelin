@@ -15,51 +15,33 @@
  * limitations under the License.
  */
 
-
 package org.apache.zeppelin.user;
 
-/***
- *
+import java.util.HashMap;
+import java.util.Map;
+
+/**
+ * User Credentials POJO
  */
-public class AuthenticationInfo {
-  String user;
-  String ticket;
-  UserCredentials userCredentials;
+public class UserCredentials {
+  private Map<String, UsernamePassword> userCredentials;
 
-  public AuthenticationInfo() {}
-
-  /***
-   *
-   * @param user
-   * @param ticket
-   */
-  public AuthenticationInfo(String user, String ticket) {
-    this.user = user;
-    this.ticket = ticket;
+  public UserCredentials() {
+    this.userCredentials = new HashMap<>();
   }
 
-  public String getUser() {
-    return user;
+  public UsernamePassword getUsernamePassword(String entity) {
+    return userCredentials.get(entity);
   }
 
-  public void setUser(String user) {
-    this.user = user;
+  public void putUsernamePassword(String entity, UsernamePassword up) {
+    userCredentials.put(entity, up);
   }
 
-  public String getTicket() {
-    return ticket;
+  @Override
+  public String toString() {
+    return "UserCredentials{" +
+        "userCredentials=" + userCredentials +
+        '}';
   }
-
-  public void setTicket(String ticket) {
-    this.ticket = ticket;
-  }
-
-  public UserCredentials getUserCredentials() {
-    return userCredentials;
-  }
-
-  public void setUserCredentials(UserCredentials userCredentials) {
-    this.userCredentials = userCredentials;
-  }
-
 }

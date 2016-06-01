@@ -15,51 +15,13 @@
  * limitations under the License.
  */
 
-
 package org.apache.zeppelin.user;
 
-/***
- *
+import java.util.Map;
+
+/**
+ * Helper class to save credentials
  */
-public class AuthenticationInfo {
-  String user;
-  String ticket;
-  UserCredentials userCredentials;
-
-  public AuthenticationInfo() {}
-
-  /***
-   *
-   * @param user
-   * @param ticket
-   */
-  public AuthenticationInfo(String user, String ticket) {
-    this.user = user;
-    this.ticket = ticket;
-  }
-
-  public String getUser() {
-    return user;
-  }
-
-  public void setUser(String user) {
-    this.user = user;
-  }
-
-  public String getTicket() {
-    return ticket;
-  }
-
-  public void setTicket(String ticket) {
-    this.ticket = ticket;
-  }
-
-  public UserCredentials getUserCredentials() {
-    return userCredentials;
-  }
-
-  public void setUserCredentials(UserCredentials userCredentials) {
-    this.userCredentials = userCredentials;
-  }
-
+public class CredentialsInfoSaving {
+  public Map<String, UserCredentials> credentialsMap;
 }

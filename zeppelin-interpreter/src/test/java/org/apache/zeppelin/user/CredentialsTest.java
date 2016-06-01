@@ -15,51 +15,26 @@
  * limitations under the License.
  */
 
-
 package org.apache.zeppelin.user;
 
-/***
- *
- */
-public class AuthenticationInfo {
-  String user;
-  String ticket;
-  UserCredentials userCredentials;
+import static org.junit.Assert.*;
 
-  public AuthenticationInfo() {}
+import org.junit.Test;
 
-  /***
-   *
-   * @param user
-   * @param ticket
-   */
-  public AuthenticationInfo(String user, String ticket) {
-    this.user = user;
-    this.ticket = ticket;
+import java.io.IOException;
+
+public class CredentialsTest {
+
+  @Test
+  public void testDefaultProperty() throws IOException {
+    Credentials credentials = new Credentials(false, null);
+    UserCredentials userCredentials = new UserCredentials();
+    UsernamePassword up1 = new UsernamePassword("user2", "password");
+    userCredentials.putUsernamePassword("hive(vertica)", up1);
+    credentials.putUserCredentials("user1", userCredentials);
+    UserCredentials uc2 = credentials.getUserCredentials("user1");
+    UsernamePassword up2 = uc2.getUsernamePassword("hive(vertica)");
+    assertEquals(up1.getUsername(), up2.getUsername());
+    assertEquals(up1.getPassword(), up2.getPassword());
   }
-
-  public String getUser() {
-    return user;
-  }
-
-  public void setUser(String user) {
-    this.user = user;
-  }
-
-  public String getTicket() {
-    return ticket;
-  }
-
-  public void setTicket(String ticket) {
-    this.ticket = ticket;
-  }
-
-  public UserCredentials getUserCredentials() {
-    return userCredentials;
-  }
-
-  public void setUserCredentials(UserCredentials userCredentials) {
-    this.userCredentials = userCredentials;
-  }
-
 }
