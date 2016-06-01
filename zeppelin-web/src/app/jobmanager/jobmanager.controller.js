@@ -132,7 +132,9 @@ angular.module('zeppelinWebApp')
 
         websocketMsgSrv.getNotebookJobsList();
         var refreshObj = $interval(function () {
-          websocketMsgSrv.getUpdateNotebookJobsList($scope.lastJobServerUnixTime);
+          if ($scope.lastJobServerUnixTime !== undefined) {
+            websocketMsgSrv.getUpdateNotebookJobsList($scope.lastJobServerUnixTime);
+          }
         }, 1000);
         $scope.$on('$destroy', function() {
           $interval.cancel(refreshObj);
