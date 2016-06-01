@@ -8,7 +8,7 @@ group: development
 # Contributing to Apache Zeppelin ( Code )
 
 ## IMPORTANT
-Apache Zeppelin (incubating) is an [Apache2 License](http://www.apache.org/licenses/LICENSE-2.0.html) Software.
+Apache Zeppelin is an [Apache2 License](http://www.apache.org/licenses/LICENSE-2.0.html) Software.
 Any contributions to Zeppelin (Source code, Documents, Image, Website) means you agree with license all your contributions as Apache2 License.
 
 ## Setting up
