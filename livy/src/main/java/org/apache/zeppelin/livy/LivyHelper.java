@@ -60,27 +60,45 @@ public class LivyHelper {
 
   public Integer createSession(InterpreterContext context, String kind) throws Exception {
     try {
+      Map<String, String> conf = new HashMap<String, String>();
+      
+      conf.put("spark.master", property.getProperty("zeppelin.livy.master"));
+      
+      conf.put("spark.driver.cores", property.getProperty("spark.driver.cores"));
+      conf.put("spark.executor.cores", property.getProperty("spark.executor.cores"));
+      conf.put("spark.driver.memory", property.getProperty("spark.driver.memory"));
+      conf.put("spark.executor.memory", property.getProperty("spark.executor.memory"));
+
+      if (!property.getProperty("spark.dynamicAllocation.enabled").equals("true")) {
+        conf.put("spark.executor.instances", property.getProperty("spark.executor.instances"));
+      }
+
+      if (property.getProperty("spark.dynamicAllocation.enabled").equals("true")) {
+        conf.put("spark.dynamicAllocation.enabled",
+            property.getProperty("spark.dynamicAllocation.enabled"));
+        conf.put("spark.shuffle.service.enabled", "true");
+        conf.put("spark.dynamicAllocation.cachedExecutorIdleTimeout",
+            property.getProperty("spark.dynamicAllocation.cachedExecutorIdleTimeout"));
+        conf.put("spark.dynamicAllocation.minExecutors",
+            property.getProperty("spark.dynamicAllocation.minExecutors"));
+        conf.put("spark.dynamicAllocation.initialExecutors",
+            property.getProperty("spark.dynamicAllocation.initialExecutors"));
+        conf.put("spark.dynamicAllocation.maxExecutors",
+            property.getProperty("spark.dynamicAllocation.maxExecutors"));
+      }
+
+      String confData = gson.toJson(conf);
+
       String json = executeHTTP(property.getProperty("zeppelin.livy.url") + "/sessions",
-          "POST",
+          "POST", 
           "{" +
               "\"kind\": \"" + kind + "\", " +
-              "\"master\": \"" + property.getProperty("zeppelin.livy.master") + "\", " +
-              "\"proxyUser\": \"" + context.getAuthenticationInfo().getUser() + "\"" +
+              "\"conf\": " + confData + ", " + 
+              "\"proxyUser\": " + context.getAuthenticationInfo().getUser() + 
               "}",
           context.getParagraphId()
       );
-      if (json.contains("CreateInteractiveRequest[\\\"master\\\"]")) {
-        json = executeHTTP(property.getProperty("zeppelin.livy.url") + "/sessions",
-            "POST",
-            "{" +
-                "\"kind\": \"" + kind + "\", " +
-                "\"conf\":{\"spark.master\": \""
-                + property.getProperty("zeppelin.livy.master") + "\"}," +
-                "\"proxyUser\": \"" + context.getAuthenticationInfo().getUser() + "\"" +
-                "}",
-            context.getParagraphId()
-        );
-      }
+
       Map jsonMap = (Map<Object, Object>) gson.fromJson(json,
           new TypeToken<Map<Object, Object>>() {
           }.getType());
