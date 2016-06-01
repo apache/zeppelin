@@ -20,6 +20,7 @@ package org.apache.zeppelin.notebook;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.*;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -39,6 +40,7 @@ import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.scheduler.JobListener;
 import org.apache.zeppelin.search.SearchService;
 
+import com.google.gson.Gson;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.user.Credentials;
 import org.slf4j.Logger;
@@ -213,8 +215,11 @@ public class Note implements Serializable, JobListener {
     newParagraph.setTitle(srcParagraph.getTitle());
 
     try {
-      newParagraph.setReturn((InterpreterResult) srcParagraph.getReturn(), null);
-    } catch (ClassCastException e) { /*ignore*/ }
+      Gson gson = new Gson();
+      String resultJson = gson.toJson(srcParagraph.getReturn());
+      InterpreterResult result = gson.fromJson(resultJson, InterpreterResult.class);
+      newParagraph.setReturn(result, null);
+    } catch (Exception e) { /*ignore*/ }
 
     synchronized (paragraphs) {
       paragraphs.add(newParagraph);
