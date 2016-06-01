@@ -59,39 +59,11 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 public class NotebookServer extends AppMainServer implements JobListenerFactory,
     AngularObjectRegistryListener, RemoteInterpreterProcessListener {
   private static final Logger LOG = LoggerFactory.getLogger(NotebookServer.class);
-  Gson gson = new GsonBuilder()
-          .setDateFormat("yyyy-MM-dd'T'HH:mm:ssZ").create();
+
   final Queue<WebAppSocket> connectedSockets = new ConcurrentLinkedQueue<>();
 
   private Notebook notebook() {
     return ZeppelinServer.notebook;
-  }
-
-  @Override
-  public void configure(WebSocketServletFactory factory) {
-    factory.setCreator(new WebAppSocketCreator(this));
-  }
-
-  public boolean checkOrigin(HttpServletRequest request, String origin) {
-    try {
-      return SecurityUtils.isValidOrigin(origin, ZeppelinConfiguration.create());
-    } catch (UnknownHostException e) {
-      LOG.error(e.toString(), e);
-    } catch (URISyntaxException e) {
-      LOG.error(e.toString(), e);
-    }
-    return false;
-  }
-
-  public WebAppSocket doWebSocketConnect(HttpServletRequest req, String protocol) {
-    return new WebAppSocket(req, protocol, this);
-  }
-
-  @Override
-  public void onOpen(WebAppSocket conn) {
-    LOG.info("New connection from {} : {}", conn.getRequest().getRemoteAddr(),
-        conn.getRequest().getRemotePort());
-    connectedSockets.add(conn);
   }
 
   @Override
@@ -207,22 +179,6 @@ public class NotebookServer extends AppMainServer implements JobListenerFactory,
     }
   }
 
-  @Override
-  public void onClose(WebAppSocket conn, int code, String reason) {
-    LOG.info("Closed connection to {} : {}. ({}) {}", conn.getRequest()
-        .getRemoteAddr(), conn.getRequest().getRemotePort(), code, reason);
-    removeConnectionFromAllNote(conn);
-    connectedSockets.remove(conn);
-  }
-
-  protected Message deserializeMessage(String msg) {
-    return gson.fromJson(msg, Message.class);
-  }
-
-  protected String serializeMessage(Message m) {
-    return gson.toJson(m);
-  }
-
   private void addConnectionToNote(String noteId, WebAppSocket socket) {
     addConnectionToKey(noteId, socket);
   }
@@ -242,9 +198,8 @@ public class NotebookServer extends AppMainServer implements JobListenerFactory,
   private String getOpenNoteId(WebAppSocket socket) {
     return getOpenKey(socket);
   }
-//lcs 여기까지
-  private void broadcastToNoteBindedInterpreter(String interpreterGroupId,
-      Message m) {
+
+  private void broadcastToNoteBindedInterpreter(String interpreterGroupId, Message m) {
     Notebook notebook = notebook();
     List<Note> notes = notebook.getAllNotes();
     for (Note note : notes) {
@@ -256,62 +211,6 @@ public class NotebookServer extends AppMainServer implements JobListenerFactory,
       }
     }
   }
-
-  private void broadcast(String noteId, Message m) {
-    synchronized (noteSocketMap) {
-      List<WebAppSocket> socketLists = noteSocketMap.get(noteId);
-      if (socketLists == null || socketLists.size() == 0) {
-        return;
-      }
-      LOG.debug("SEND >> " + m.op);
-      for (WebAppSocket conn : socketLists) {
-        try {
-          conn.send(serializeMessage(m));
-        } catch (IOException e) {
-          LOG.error("socket error", e);
-        }
-      }
-    }
-  }
-
-  private void broadcastExcept(String noteId, Message m, WebAppSocket exclude) {
-    synchronized (noteSocketMap) {
-      List<WebAppSocket> socketLists = noteSocketMap.get(noteId);
-      if (socketLists == null || socketLists.size() == 0) {
-        return;
-      }
-      LOG.debug("SEND >> " + m.op);
-      for (WebAppSocket conn : socketLists) {
-        if (exclude.equals(conn)) {
-          continue;
-        }
-        try {
-          conn.send(serializeMessage(m));
-        } catch (IOException e) {
-          LOG.error("socket error", e);
-        }
-      }
-    }
-  }
-
-  private void broadcastAll(Message m) {
-    for (WebAppSocket conn : connectedSockets) {
-      try {
-        conn.send(serializeMessage(m));
-      } catch (IOException e) {
-        LOG.error("socket error", e);
-      }
-    }
-  }
-
-  private void unicast(Message m, WebAppSocket conn) {
-    try {
-      conn.send(serializeMessage(m));
-    } catch (IOException e) {
-      LOG.error("socket error", e);
-    }
-  }
-
 
   public List<Map<String, String>> generateNotebooksInfo(boolean needsReload) {
     Notebook notebook = notebook();

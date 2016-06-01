@@ -43,7 +43,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl',
 
   var connectedOnce = false;
 
-  $scope.$on('setNotebookWSConnectedStatus', function(event, param) {
+  $scope.$on('setWSConnectedStatus', function(event, param) {
     if(connectedOnce && param){
       initNotebook();
     }

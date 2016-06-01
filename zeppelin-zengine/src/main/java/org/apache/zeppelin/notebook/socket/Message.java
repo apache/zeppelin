@@ -121,6 +121,7 @@ public class Message {
   }
 
   public OP op;
+  public String target;
   public Map<String, Object> data = new HashMap<String, Object>();
   public String ticket = "anonymous";
   public String principal = "anonymous";

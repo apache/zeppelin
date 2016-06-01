@@ -57,6 +57,7 @@ angular.module('zeppelinWebApp')
 
       $scope.$on('setNotebookJobs', function(event, responseData) {
         $scope.lastJobServerUnixTime = responseData.lastResponseUnixTime;
+        console.log('recev time ', $scope.lastJobServerUnixTime);
         $scope.jobInfomations = responseData.jobs;
         $scope.jobInfomationsIndexs = $scope.jobInfomations? _.indexBy($scope.jobInfomations, 'notebookId') : {};
         $scope.JobInfomationsByFilter = $scope.jobTypeFilter($scope.jobInfomations, $scope.filterConfig);

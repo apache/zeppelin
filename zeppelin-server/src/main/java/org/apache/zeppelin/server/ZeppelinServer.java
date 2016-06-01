@@ -31,6 +31,9 @@ import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.apache.zeppelin.search.LuceneSearch;
 import org.apache.zeppelin.search.SearchService;
 import org.apache.zeppelin.socket.AppMainServer;
+import org.apache.zeppelin.socket.JobMangerServer;
+import org.apache.zeppelin.socket.NotebookServer;
+import org.apache.zeppelin.socket.WebSocketServer;
 import org.eclipse.jetty.http.HttpVersion;
 import org.eclipse.jetty.server.*;
 import org.eclipse.jetty.server.handler.ContextHandlerCollection;
@@ -45,6 +48,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.servlet.DispatcherType;
+import javax.servlet.Servlet;
 import javax.ws.rs.core.Application;
 import java.io.File;
 import java.io.IOException;
@@ -60,7 +64,7 @@ public class ZeppelinServer extends Application {
 
   public static Notebook notebook;
   public static Server jettyWebServer;
-  public static AppMainServer notebookWsServer;
+  public static NotebookServer notebookWsServer;
 
   private SchedulerFactory schedulerFactory;
   private InterpreterFactory replFactory;
@@ -101,8 +105,16 @@ public class ZeppelinServer extends Application {
     // REST api
     setupRestApiContextHandler(webApp, conf);
 
-    // Notebook server
-    setupNotebookServer(webApp, conf);
+    // Main WS server
+    AppMainServer mainWsServer = setupWSAppMainServer(webApp, conf);
+
+    // Notebook WS server
+    notebookWsServer = setupNotebookServer(webApp, conf);
+    mainWsServer.setSubWebSocketServer("notebookServer", notebookWsServer);
+
+    // Job Manager WS server
+    WebSocketServer jobManagerServer = setupJobManagerServer(webApp, conf);
+    mainWsServer.setSubWebSocketServer("jobManagerServer", jobManagerServer);
 
     //Below is commented since zeppelin-docs module is removed.
     //final WebAppContext webAppSwagg = setupWebAppSwagger(conf);
@@ -189,17 +201,41 @@ public class ZeppelinServer extends Application {
     return server;
   }
 
-  private static void setupNotebookServer(WebAppContext webapp,
-                                          ZeppelinConfiguration conf) {
-    notebookWsServer = new AppMainServer();
+  private static AppMainServer setupWSAppMainServer(WebAppContext webapp,
+      ZeppelinConfiguration conf) {
+    AppMainServer appMainWsServer = new AppMainServer();
+    String maxTextMessageSize = conf.getWebsocketMaxTextMessageSize();
+    final ServletHolder servletHolder = new ServletHolder(appMainWsServer);
+    servletHolder.setInitParameter("maxTextMessageSize", maxTextMessageSize);
+    final ServletContextHandler cxfContext = new ServletContextHandler(
+        ServletContextHandler.SESSIONS);
+    webapp.addServlet(servletHolder, "/ws/*");
+
+    return appMainWsServer;
+  }
+
+  private static NotebookServer setupNotebookServer(WebAppContext webapp,
+      ZeppelinConfiguration conf) {
+    NotebookServer notebookWsServer = new NotebookServer();
     String maxTextMessageSize = conf.getWebsocketMaxTextMessageSize();
     final ServletHolder servletHolder = new ServletHolder(notebookWsServer);
     servletHolder.setInitParameter("maxTextMessageSize", maxTextMessageSize);
-
     final ServletContextHandler cxfContext = new ServletContextHandler(
-        ServletContextHandler.SESSIONS);
+            ServletContextHandler.SESSIONS);
+    webapp.addServlet(servletHolder, "/notebook/*");
+    return notebookWsServer;
+  }
 
-    webapp.addServlet(servletHolder, "/ws/*");
+  private static JobMangerServer setupJobManagerServer(WebAppContext webapp,
+      ZeppelinConfiguration conf) {
+    JobMangerServer jobMangerWsServer = new JobMangerServer();
+    String maxTextMessageSize = conf.getWebsocketMaxTextMessageSize();
+    final ServletHolder servletHolder = new ServletHolder(jobMangerWsServer);
+    servletHolder.setInitParameter("maxTextMessageSize", maxTextMessageSize);
+    final ServletContextHandler cxfContext = new ServletContextHandler(
+            ServletContextHandler.SESSIONS);
+    webapp.addServlet(servletHolder, "/jobmanager/*");
+    return jobMangerWsServer;
   }
 
   private static SslContextFactory getSslContextFactory(ZeppelinConfiguration conf) {

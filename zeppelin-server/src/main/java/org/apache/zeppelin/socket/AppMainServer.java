@@ -46,8 +46,12 @@ public class AppMainServer extends WebSocketServlet implements
   private static final Logger LOG = LoggerFactory.getLogger(AppMainServer.class);
   Gson gson = new GsonBuilder()
           .setDateFormat("yyyy-MM-dd'T'HH:mm:ssZ").create();
+
+  final Map<String, WebSocketServer> subWebSocketServer = new HashMap<>();
+
   final Map<String, List<WebAppSocket>> userWebSocketMap = new HashMap<>();
   final Queue<WebAppSocket> connectedSockets = new ConcurrentLinkedQueue<>();
+
 
   @Override
   public void configure(WebSocketServletFactory factory) {
@@ -69,6 +73,13 @@ public class AppMainServer extends WebSocketServlet implements
     return new WebAppSocket(req, protocol, this);
   }
 
+  public void setSubWebSocketServer(String key, WebSocketServer server) {
+    synchronized (subWebSocketServer) {
+      subWebSocketServer.remove(key);
+      subWebSocketServer.put(key, server);
+    }
+  }
+
   @Override
   public void onOpen(WebAppSocket conn) {
     LOG.info("New connection from {} : {}", conn.getRequest().getRemoteAddr(),
@@ -88,28 +99,15 @@ public class AppMainServer extends WebSocketServlet implements
       if (LOG.isTraceEnabled()) {
         LOG.trace("RECEIVE MSG = " + messagereceived);
       }
-      
-      String ticket = TicketContainer.instance.getTicket(messagereceived.principal);
-      if (ticket != null && !ticket.equals(messagereceived.ticket))
-        throw new Exception("Invalid ticket " + messagereceived.ticket + " != " + ticket);
 
-      ZeppelinConfiguration conf = ZeppelinConfiguration.create();
-      boolean allowAnonymous = conf.
-          getBoolean(ZeppelinConfiguration.ConfVars.ZEPPELIN_ANONYMOUS_ALLOWED);
-      if (!allowAnonymous && messagereceived.principal.equals("anonymous")) {
-        throw new Exception("Anonymous access not allowed ");
+      WebSocketServer processServer = subWebSocketServer.get(messagereceived.target);
+      if (processServer != null) {
+        LOG.info("target {} received.", messagereceived.target);
+        processServer.onMessage(conn, msg);
+      } else {
+        LOG.info("target {} received.", AppMainServer.class.toString());
       }
 
-      HashSet<String> userAndRoles = new HashSet<String>();
-      userAndRoles.add(messagereceived.principal);
-      if (!messagereceived.roles.equals("")) {
-        HashSet<String> roles = gson.fromJson(messagereceived.roles,
-                new TypeToken<HashSet<String>>(){}.getType());
-        if (roles != null) {
-          userAndRoles.addAll(roles);
-        }
-      }
-      LOG.info("lcs main server received");
       /** Lets be elegant here */
       switch (messagereceived.op) {
           case PING:
@@ -192,7 +190,7 @@ public class AppMainServer extends WebSocketServlet implements
     return key;
   }
 
-  private void broadcast(String key, Message m) {
+  protected void broadcast(String key, Message m) {
     synchronized (userWebSocketMap) {
       List<WebAppSocket> socketLists = userWebSocketMap.get(key);
       if (socketLists == null || socketLists.size() == 0) {
@@ -209,7 +207,7 @@ public class AppMainServer extends WebSocketServlet implements
     }
   }
 
-  private void broadcastExcept(String key, Message m, WebAppSocket exclude) {
+  protected void broadcastExcept(String key, Message m, WebAppSocket exclude) {
     synchronized (userWebSocketMap) {
       List<WebAppSocket> socketLists = userWebSocketMap.get(key);
       if (socketLists == null || socketLists.size() == 0) {
@@ -229,7 +227,7 @@ public class AppMainServer extends WebSocketServlet implements
     }
   }
 
-  private void broadcastAll(Message m) {
+  protected void broadcastAll(Message m) {
     for (WebAppSocket conn : connectedSockets) {
       try {
         conn.send(serializeMessage(m));
@@ -239,7 +237,7 @@ public class AppMainServer extends WebSocketServlet implements
     }
   }
 
-  private void unicast(Message m, WebAppSocket conn) {
+  protected void unicast(Message m, WebAppSocket conn) {
     try {
       conn.send(serializeMessage(m));
     } catch (IOException e) {

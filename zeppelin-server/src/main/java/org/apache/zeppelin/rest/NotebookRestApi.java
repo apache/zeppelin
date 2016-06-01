@@ -45,7 +45,7 @@ import org.apache.zeppelin.rest.message.NewParagraphRequest;
 import org.apache.zeppelin.rest.message.RunParagraphWithParametersRequest;
 import org.apache.zeppelin.search.SearchService;
 import org.apache.zeppelin.server.JsonResponse;
-import org.apache.zeppelin.socket.AppMainServer;
+import org.apache.zeppelin.socket.NotebookServer;
 import org.apache.zeppelin.utils.SecurityUtils;
 import org.quartz.CronExpression;
 import org.slf4j.Logger;
@@ -64,15 +64,15 @@ public class NotebookRestApi {
   private static final Logger LOG = LoggerFactory.getLogger(NotebookRestApi.class);
   Gson gson = new Gson();
   private Notebook notebook;
-  private AppMainServer appMainServer;
+  private NotebookServer notebookServer;
   private SearchService notebookIndex;
   private NotebookAuthorization notebookAuthorization;
 
   public NotebookRestApi() {}
 
-  public NotebookRestApi(Notebook notebook, AppMainServer appMainServer, SearchService search) {
+  public NotebookRestApi(Notebook notebook, NotebookServer notebookServer, SearchService search) {
     this.notebook = notebook;
-    this.appMainServer = appMainServer;
+    this.notebookServer = notebookServer;
     this.notebookIndex = search;
     this.notebookAuthorization = notebook.getNotebookAuthorization();
   }
@@ -155,7 +155,7 @@ public class NotebookRestApi {
             notebookAuthorization.getReaders(noteId),
             notebookAuthorization.getWriters(noteId));
     note.persist();
-    appMainServer.broadcastNote(note);
+    notebookServer.broadcastNote(note);
     return new JsonResponse<>(Status.OK).build();
   }
 
@@ -217,7 +217,7 @@ public class NotebookRestApi {
   @GET
   @Path("/")
   public Response getNotebookList() throws IOException {
-    List<Map<String, String>> notesInfo = appMainServer.generateNotebooksInfo(false);
+    List<Map<String, String>> notesInfo = notebookServer.generateNotebooksInfo(false);
     return new JsonResponse<>(Status.OK, "", notesInfo ).build();
   }
 
@@ -288,8 +288,8 @@ public class NotebookRestApi {
     }
     note.setName(noteName);
     note.persist();
-    appMainServer.broadcastNote(note);
-    appMainServer.broadcastNoteList();
+    notebookServer.broadcastNote(note);
+    notebookServer.broadcastNoteList();
     return new JsonResponse<>(Status.CREATED, "", note.getId() ).build();
   }
 
@@ -309,7 +309,7 @@ public class NotebookRestApi {
         notebook.removeNote(notebookId);
       }
     }
-    appMainServer.broadcastNoteList();
+    notebookServer.broadcastNoteList();
     return new JsonResponse<>(Status.OK, "").build();
   }
   
@@ -328,8 +328,8 @@ public class NotebookRestApi {
         NewNotebookRequest.class);
     String newNoteName = request.getName();
     Note newNote = notebook.cloneNote(notebookId, newNoteName);
-    appMainServer.broadcastNote(newNote);
-    appMainServer.broadcastNoteList();
+    notebookServer.broadcastNote(newNote);
+    notebookServer.broadcastNoteList();
     return new JsonResponse<>(Status.CREATED, "", newNote.getId()).build();
   }
 
@@ -363,7 +363,7 @@ public class NotebookRestApi {
     p.setText(request.getText());
 
     note.persist();
-    appMainServer.broadcastNote(note);
+    notebookServer.broadcastNote(note);
     return new JsonResponse(Status.CREATED, "", p.getId()).build();
   }
 
@@ -419,7 +419,7 @@ public class NotebookRestApi {
       note.moveParagraph(paragraphId, Integer.parseInt(newIndex), true);
 
       note.persist();
-      appMainServer.broadcastNote(note);
+      notebookServer.broadcastNote(note);
       return new JsonResponse(Status.OK, "").build();
     } catch (IndexOutOfBoundsException e) {
       LOG.error("Exception in NotebookRestApi while moveParagraph ", e);
@@ -451,7 +451,7 @@ public class NotebookRestApi {
 
     note.removeParagraph(paragraphId);
     note.persist();
-    appMainServer.broadcastNote(note);
+    notebookServer.broadcastNote(note);
 
     return new JsonResponse(Status.OK, "").build();
   }
