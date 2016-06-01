@@ -90,7 +90,7 @@ public class Credentials {
       CredentialsInfoSaving info = gson.fromJson(json, CredentialsInfoSaving.class);
       this.credentialsMap = info.credentialsMap;
     } catch (IOException e) {
-      LOG.error("Error loading credentials file");
+      LOG.error("Error loading credentials file", e);
       e.printStackTrace();
     }
   }
