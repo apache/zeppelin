@@ -44,6 +44,26 @@ Additional requirements for the Livy interpreter are:
     <td>1000</td>
     <td>Max number of SparkSQL result to display.</td>
   </tr>
+    <tr>
+    <td>spark.driver.cores</td>
+    <td>1</td>
+    <td>Driver cores. ex) 1, 2.</td>
+  </tr>
+    <tr>
+    <td>spark.driver.memory</td>
+    <td>512m</td>
+    <td>Driver memory. ex) 512m, 32g.</td>
+  </tr>
+    <tr>
+    <td>spark.executor.instances</td>
+    <td>3</td>
+    <td>Executor instances. ex) 1, 4.</td>
+  </tr>
+    <tr>
+    <td>spark.executor.cores</td>
+    <td>1</td>
+    <td>Max number of SparkSQL result to display.</td>
+  </tr>
 </table>
 
 
@@ -105,3 +125,6 @@ The session would have timed out, you may need to restart the interpreter.
 > Blacklisted configuration values in session config: spark.master
 
 edit `conf/spark-blacklist.conf` file in livy server and comment out `#spark.master` line.
+
+if you choose to work on livy https://github.com/cloudera/hue/tree/master/apps/spark/java,
+copy `spark-user-configurable-options.template` to `spark-user-configurable-options.conf` file in livy server and comment out `#spark.master` 
