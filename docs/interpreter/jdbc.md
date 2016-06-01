@@ -195,6 +195,47 @@ To develop this functionality use this [method](http://docs.oracle.com/javase/7/
   </tr>
 </table>
 
+### Examples
+#### Hive
+##### Properties
+ <table class="table-configuration">
+   <tr>
+     <th>Name</th>
+     <th>Value</th>
+   </tr>
+   <tr>
+     <td>hive.driver</td>
+     <td>org.apache.hive.jdbc.HiveDriver</td>
+   </tr>
+   <tr>
+     <td>hive.url</td>
+     <td>jdbc:hive2://localhost:10000</td>
+   </tr>
+   <tr>
+     <td>hive.user</td>
+     <td>hive_user</td>
+   </tr>
+   <tr>
+     <td>hive.password</td>
+     <td>hive_password</td>
+   </tr>
+ </table>
+##### Dependencies
+ <table>
+   <tr>
+     <th>Artifact</th>
+     <th>Excludes</th>
+   </tr>
+   <tr>
+     <td>org.apache.hive:hive-jdbc:0.14.0</td>
+     <td></td>
+   </tr>
+   <tr>
+     <td>org.apache.hadoop:hadoop-common:2.6.0</td>
+     <td></td>
+   </tr>
+ </table>
+
 ### How to use
 
 #### Reference in paragraph
