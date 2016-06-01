@@ -43,6 +43,7 @@
 
 .configuration table {
   table-layout: fixed;
+  word-break: break-all;
 }
 
 .configuration table tr .configurationPropertyKey {
