@@ -100,9 +100,9 @@ thrift -out zeppelin-interpreter/src/main/java/ --gen java zeppelin-interpreter/
 Zeppelin manages its issues in Jira. [https://issues.apache.org/jira/browse/ZEPPELIN](https://issues.apache.org/jira/browse/ZEPPELIN)
 
 ## Where to Start
-You can find issues for [beginner](https://issues.apache.org/jira/browse/ZEPPELIN-924?jql=project%20%3D%20ZEPPELIN%20and%20status%20%3D%20Open%20and%20labels%20in%20\(beginner%2C%20newbie\))
+You can find issues for [beginner](https://issues.apache.org/jira/browse/ZEPPELIN-924?jql=project%20%3D%20ZEPPELIN%20and%20status%20%3D%20Open%20and%20labels%20in%20\(beginner%2C%20newbie\)).
 
 ## Stay involved
 Contributors should join the Zeppelin mailing lists.
 
-* [dev@zeppelin.apache.org](http://mail-archives.apache.org/mod_mbox/incubator-zeppelin-dev/) is for people who want to contribute code to Zeppelin. [subscribe](mailto:dev-subscribe@zeppelin.apache.org?subject=send this email to subscribe), [unsubscribe](mailto:dev-unsubscribe@zeppelin.apache.org?subject=send this email to unsubscribe), [archives](http://mail-archives.apache.org/mod_mbox/incubator-zeppelin-dev/)
+* [dev@zeppelin.apache.org](http://mail-archives.apache.org/mod_mbox/zeppelin-dev/) is for people who want to contribute code to Zeppelin. [subscribe](mailto:dev-subscribe@zeppelin.apache.org?subject=send this email to subscribe), [unsubscribe](mailto:dev-unsubscribe@zeppelin.apache.org?subject=send this email to unsubscribe), [archives](http://mail-archives.apache.org/mod_mbox/zeppelin-dev/)
