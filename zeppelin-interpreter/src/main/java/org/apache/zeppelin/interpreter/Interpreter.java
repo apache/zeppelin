@@ -183,7 +183,6 @@ public abstract class Interpreter {
     return this.getClass().getName();
   }
 
-  @DeveloperApi
   public void setInterpreterGroup(InterpreterGroup interpreterGroup) {
     this.interpreterGroup = interpreterGroup;
   }
