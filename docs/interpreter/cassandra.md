@@ -811,7 +811,7 @@ Below are the configuration parameters and their default value.
 [standard CQL syntax]: http://docs.datastax.com/en/cql/3.1/cql/cql_using/use_collections_c.html
 [Tuple CQL syntax]: http://docs.datastax.com/en/cql/3.1/cql/cql_reference/tupleType.html
 [UDT CQL syntax]: http://docs.datastax.com/en/cql/3.1/cql/cql_using/cqlUseUDT.html
-[Zeppelin dynamic form]: http://zeppelin.incubator.apache.org/docs/latest/manual/dynamicform.html
-[Interpreter Binding Mode]: http://zeppelin.incubator.apache.org/docs/0.6.0-incubating-SNAPSHOT/manual/interpreters.html
+[Zeppelin dynamic form]: http://zeppelin.apache.org/docs/0.6.0-SNAPSHOT/manual/dynamicform.html
+[Interpreter Binding Mode]: http://zeppelin.apache.org/docs/0.6.0-SNAPSHOT/manual/interpreters.html
 [JIRA]: https://issues.apache.org/jira/browse/ZEPPELIN-382?jql=project%20%3D%20ZEPPELIN
 [@doanduyhai]: https://twitter.com/doanduyhai
