@@ -50,7 +50,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
 
   String title;
   String text;
-  AuthenticationInfo authenticationInfo;
+  transient AuthenticationInfo authenticationInfo;
   Date dateUpdated;
   private Map<String, Object> config; // paragraph configs like isOpen, colWidth, etc
   public final GUI settings;          // form and parameter settings

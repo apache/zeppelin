@@ -19,6 +19,7 @@ package org.apache.zeppelin.notebook;
 
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -27,8 +28,11 @@ import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectBuilder;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.Input;
+import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.Test;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -106,5 +110,19 @@ public class ParagraphTest {
     verify(registry).get("name", noteId, paragraphId);
     verify(registry).get("age", noteId, null);
     assertEquals(actual, expected);
+  }
+
+  @Test
+  public void not_persist_authentication() throws Exception {
+    Paragraph p = new Paragraph();
+    p.setAuthenticationInfo(new AuthenticationInfo("admin", "test"));
+
+    GsonBuilder gsonBuilder = new GsonBuilder();
+    gsonBuilder.setPrettyPrinting();
+    Gson gson = gsonBuilder.create();
+    String json = gson.toJson(p);
+
+    assertFalse(json.contains("authenticationInfo"));
+    System.out.println(json);
   }
 }
