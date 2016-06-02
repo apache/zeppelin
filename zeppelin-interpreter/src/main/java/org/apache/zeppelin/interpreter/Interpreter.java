@@ -225,11 +225,11 @@ public abstract class Interpreter {
    * Represent registered interpreter class
    */
   public static class RegisteredInterpreter {
-    @SerializedName("interpreterGroup")
+    //@SerializedName("interpreterGroup")
     private String group;
-    @SerializedName("interpreterName")
+    //@SerializedName("interpreterName")
     private String name;
-    @SerializedName("interpreterClassName")
+    //@SerializedName("interpreterClassName")
     private String className;
     private Map<String, InterpreterProperty> properties;
     private String path;
