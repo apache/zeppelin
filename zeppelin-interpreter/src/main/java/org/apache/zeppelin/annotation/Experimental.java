@@ -23,7 +23,7 @@ import java.lang.annotation.Target;
 
 /**
  * Experimental API
- * Might change or be removed at anytime, or be adopted as ZeppelinApi, DeveloperApi
+ * Might change or be removed at anytime, or be adopted as ZeppelinApi
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE, ElementType.FIELD, ElementType.METHOD, ElementType.PARAMETER,
