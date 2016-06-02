@@ -474,6 +474,7 @@
               <exclude>conf/zeppelin-env.sh</exclude>
               <exclude>spark-*-bin*/**</exclude>
               <exclude>.spark-dist/**</exclude>
+              <exclude>**/interpreter-setting.json</exclude>
 
               <!-- bundled from bootstrap -->
               <exclude>docs/assets/themes/zeppelin/bootstrap/**</exclude>
