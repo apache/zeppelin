@@ -83,19 +83,65 @@ limitations under the License.
               </span>
             </div>
           </form>
-        <li class="server-status"  >
+        <li class="server-status">
+        <div class="dropdown">
           <i class="fa fa-circle" ng-class="{'server-connected':navbar.connected, 'server-disconnected':!navbar.connected}"></i>
-        <span ng-show="navbar.connected" ng-if="ticket.principal == 'anonymous' ">Connected</span>
-        <span ng-show="navbar.connected" ng-if="ticket.principal != 'anonymous' " tooltip-placement="bottom" tooltip="{{fullUsername}}">{{truncatedUsername}}</span>
-        <span ng-show="!navbar.connected">Disconnected</span>
+          <button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown"
+                  ng-show="navbar.connected" ng-if="ticket.principal == 'anonymous' ">Connected
+            <span class="caret"></span></button>
+          <button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown"
+                  ng-show="navbar.connected" ng-if="ticket.principal != 'anonymous' "
+                  tooltip-placement="bottom" tooltip="{{fullUsername}}">{{truncatedUsername}}
+            <span class="caret"></span></button>
+          <button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown"
+                  ng-show="!navbar.connected">Disconnected
+            <span class="caret"></span></button>
+          <ul class="dropdown-menu">
+            <li><a href="" data-toggle="modal" data-target="#aboutModal" >
+              <i style="font-size: 15px;" class="fa fa-info"></i> About</a></li>
+            <li ng-show="ticket.principal && ticket.principal!='anonymous'" style="left: 5px;">
+              <a  ng-click="logout()" tooltip-placement="bottom" tooltip="logout">Logout</a>
+            </li>
+          </ul>
+        </div>
         </li>
         <li ng-if="!ticket">
-            <button class="btn btn-default" data-toggle="modal" data-target="#loginModal" ng-click="showLoginWindow()" style="margin-left: 10px">Login</button>
-        </li>
-        <li ng-show="ticket.principal && ticket.principal!='anonymous'" style="left: 5px;">
-        	<button class="btn btn-default" ng-click="logout()" tooltip-placement="bottom" tooltip="logout">Logout</button>
+          <button class="btn btn-default" data-toggle="modal" data-target="#loginModal" ng-click="showLoginWindow()" style="margin-left: 10px">Login</button>
         </li>
       </ul>
+    </div>
+  </div>
+</div>
+<div id="aboutModal" class="modal fade" role="dialog"
+     tabindex='-1'>
+  <div class="modal-dialog">
+
+    <!-- Modal content-->
+    <div class="modal-content" id="NoteImportCtrl" ng-init="NoteImportInit">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title">About Zeppelin</h4>
+      </div>
+      <div class="modal-body">
+
+        <div class="about">
+          <div class="logo">
+            <img src="assets/images/zepLogo.png" alt="Apache Zeppelin" title="Apache Zeppelin">
+          </div>
+          <div class="content">
+            <h3>Apache Zeppelin</h3>
+            <br>
+            <span id="i18n-14">Version</span>
+            {{zeppelinVersion}}
+            <br>
+            <br>
+            <a href="http://zeppelin.apache.org/" target="_blank"><span id="i18n-15">Get involved!</span></a>
+            <br>
+            <a href="http://www.apache.org/licenses/LICENSE-2.0" target="_blank"><span id="i18n-16">Licensed under the Apache License, Version 2.0</span></a>
+          </div>
+        </div>
+
+      </div>
     </div>
   </div>
 </div>
