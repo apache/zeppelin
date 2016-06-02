@@ -35,6 +35,7 @@ import com.datastax.driver.core.Session;
 
 import info.archinnov.achilles.embedded.CassandraEmbeddedServerBuilder;
 
+import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterResult;
@@ -45,7 +46,6 @@ import org.mockito.Answers;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -63,7 +63,7 @@ public class CassandraInterpreterTest {
         .withScript("prepare_data.cql")
         .withProtocolVersion(ProtocolVersion.V3)
         .buildNativeSessionOnly();
-//    public static Session session = null;
+
     private static CassandraInterpreter interpreter;
 
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
@@ -73,7 +73,7 @@ public class CassandraInterpreterTest {
     public static void setUp() {
         Properties properties = new Properties();
         final Cluster cluster = session.getCluster();
-//        final Cluster cluster = null;
+
         properties.setProperty(CASSANDRA_CLUSTER_NAME, cluster.getClusterName());
         properties.setProperty(CASSANDRA_COMPRESSION_PROTOCOL, "NONE");
         properties.setProperty(CASSANDRA_CREDENTIALS_USERNAME, "none");
@@ -290,6 +290,19 @@ public class CassandraInterpreterTest {
     }
 
     @Test
+    public void should_execute_statement_with_request_timeout() throws Exception {
+        //Given
+        String statement = "@requestTimeOut=10000000\n" +
+                "SELECT * FROM zeppelin.artists;";
+
+        //When
+        final InterpreterResult actual = interpreter.interpret(statement, intrContext);
+
+        //Then
+        assertThat(actual.code()).isEqualTo(Code.SUCCESS);
+    }
+
+    @Test
     public void should_execute_prepared_and_bound_statements() throws Exception {
         //Given
         String queries = "@prepare[ps]=INSERT INTO zeppelin.prepared(key,val) VALUES(?,?)\n" +
@@ -354,6 +367,8 @@ public class CassandraInterpreterTest {
     @Test
     public void should_extract_variable_from_statement() throws Exception {
         //Given
+        AngularObjectRegistry angularObjectRegistry = new AngularObjectRegistry("cassandra", null);
+        when(intrContext.getAngularObjectRegistry()).thenReturn(angularObjectRegistry);
         when(intrContext.getGui().input("login", "hsue")).thenReturn("hsue");
         when(intrContext.getGui().input("age", "27")).thenReturn("27");
 
