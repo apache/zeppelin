@@ -17,6 +17,8 @@
 
 package org.apache.zeppelin.notebook;
 
+import static java.lang.String.format;
+
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashMap;
@@ -169,6 +171,28 @@ public class Note implements Serializable, ParagraphJobListener {
       for (Paragraph p : paragraphs) {
         p.setInterpreterFactory(factory);
       }
+    }
+  }
+
+  public void initializeJobListenerForParagraph(Paragraph paragraph) {
+    final Note paragraphNote = paragraph.getNote();
+    if (paragraphNote.getId().equals(this.getId())) {
+      throw new IllegalArgumentException(format("The paragraph %s from note %s " +
+              "does not belong to note %s", paragraph.getId(), paragraphNote.getId(),
+              this.getId()));
+    }
+
+    boolean foundParagraph = false;
+    for (Paragraph ownParagraph : paragraphs) {
+      if (paragraph.getId().equals(ownParagraph.getId())) {
+        paragraph.setListener(this.jobListenerFactory.getParagraphJobListener(this));
+        foundParagraph = true;
+      }
+    }
+
+    if (!foundParagraph) {
+      throw new IllegalArgumentException(format("Cannot find paragraph %s " +
+                      "from note %s", paragraph.getId(), paragraphNote.getId()));
     }
   }
 
@@ -484,7 +508,7 @@ public class Note implements Serializable, ParagraphJobListener {
         logger.debug("New paragraph: {}", pText);
         p.setEffectiveText(pText);
       } else {
-        String intpExceptionMsg = String.format("%s",
+        String intpExceptionMsg = format("%s",
           p.getJobName()
           + "'s Interpreter "
           + requiredReplName + " not found"

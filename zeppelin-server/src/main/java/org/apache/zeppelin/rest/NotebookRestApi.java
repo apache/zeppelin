@@ -567,7 +567,7 @@ public class NotebookRestApi {
   }
 
   /**
-   * Run paragraph job REST API
+   * Run asynchronously paragraph job REST API
    *
    * @param message - JSON with params if user wants to update dynamic form's value
    *                null, empty string, empty json if user doesn't want to update
@@ -580,7 +580,7 @@ public class NotebookRestApi {
   public Response runParagraph(@PathParam("notebookId") String notebookId,
       @PathParam("paragraphId") String paragraphId, String message)
       throws IOException, IllegalArgumentException {
-    LOG.info("run paragraph job {} {} {}", notebookId, paragraphId, message);
+    LOG.info("run paragraph job asynchronously {} {} {}", notebookId, paragraphId, message);
 
     Note note = notebook.getNote(notebookId);
     if (note == null) {
@@ -593,17 +593,7 @@ public class NotebookRestApi {
     }
 
     // handle params if presented
-    if (!StringUtils.isEmpty(message)) {
-      RunParagraphWithParametersRequest request =
-          gson.fromJson(message, RunParagraphWithParametersRequest.class);
-      Map<String, Object> paramsForUpdating = request.getParams();
-      if (paramsForUpdating != null) {
-        paragraph.settings.getParams().putAll(paramsForUpdating);
-        AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
-        note.setLastReplName(paragraph.getId());
-        note.persist(subject);
-      }
-    }
+    handleParagraphParams(message, note, paragraph);
 
     note.run(paragraph.getId());
     return new JsonResponse<>(Status.OK).build();
@@ -642,12 +632,8 @@ public class NotebookRestApi {
     // handle params if presented
     handleParagraphParams(message, note, paragraph);
 
-    if (paragraph.getNoteReplLoader() == null) {
-      paragraph.setNoteReplLoader(note.getNoteReplLoader());
-    }
-
     if (paragraph.getListener() == null) {
-      paragraph.setListener(note.getJobListenerFactory().getParagraphJobListener(note));
+      note.initializeJobListenerForParagraph(paragraph);
     }
 
     paragraph.run();
@@ -857,12 +843,14 @@ public class NotebookRestApi {
       throws IOException {
     // handle params if presented
     if (!StringUtils.isEmpty(message)) {
-      RunParagraphWithParametersRequest request = gson.fromJson(message,
-              RunParagraphWithParametersRequest.class);
+      RunParagraphWithParametersRequest request =
+              gson.fromJson(message, RunParagraphWithParametersRequest.class);
       Map<String, Object> paramsForUpdating = request.getParams();
       if (paramsForUpdating != null) {
         paragraph.settings.getParams().putAll(paramsForUpdating);
-        note.persist();
+        AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
+        note.setLastReplName(paragraph.getId());
+        note.persist(subject);
       }
     }
   }
