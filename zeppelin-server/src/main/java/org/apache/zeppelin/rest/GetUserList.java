@@ -130,6 +130,7 @@ public class GetUserList {
       userquery = "select " + username + " from " + tablename;
 
     } catch (IllegalAccessException e) {
+      LOG.error("Error while accessing dataSource for JDBC Realm", e);
       return null;
     }
 

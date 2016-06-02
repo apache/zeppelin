@@ -246,6 +246,7 @@
 }
 
 .userlist ul li {
+  box-shadow: 3px 3px 5px #888888;
   display: list-item;
   text-decoration: none;
   color: #000000;
@@ -256,6 +257,16 @@
   border-bottom:1px  #CCCCCC solid;
   padding-left: 10px;
   cursor: pointer;
+}
+
+.userlist ul li:first-child {
+  border-top-right-radius: 5px;
+  border-top-left-radius: 5px;
+}
+
+.userlist ul li:last-child {
+  border-bottom-right-radius: 5px;
+  border-bottom-left-radius: 5px;
 }
 
 .userlist ul li strong {
