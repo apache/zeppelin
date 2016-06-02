@@ -14,42 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.zeppelin.annotation;
 
-package org.apache.zeppelin.rest;
-
-import org.apache.zeppelin.annotation.ZeppelinApi;
-import org.apache.zeppelin.server.JsonResponse;
-import org.apache.zeppelin.util.Util;
-
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.core.Response;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * Zeppelin root rest api endpoint.
- *
- * @since 0.3.4
+ * APIs exposed to extends pluggable components or exposed to enduser
  */
-@Path("/")
-public class ZeppelinRestApi {
-
-  public ZeppelinRestApi() {
-  }
-
-  /**
-   * Get the root endpoint Return always 200.
-   *
-   * @return 200 response
-   */
-  @GET
-  public Response getRoot() {
-    return Response.ok().build();
-  }
-
-  @GET
-  @Path("version")
-  @ZeppelinApi
-  public Response getVersion() {
-    return new JsonResponse<>(Response.Status.OK, "Zeppelin version", Util.getVersion()).build();
-  }
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.TYPE, ElementType.FIELD, ElementType.METHOD, ElementType.PARAMETER,
+    ElementType.CONSTRUCTOR, ElementType.LOCAL_VARIABLE, ElementType.PACKAGE})
+public @interface ZeppelinApi {
 }

@@ -17,6 +17,7 @@
 
 package org.apache.zeppelin.rest;
 
+import org.apache.zeppelin.annotation.ZeppelinApi;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.server.JsonResponse;
 import org.apache.zeppelin.ticket.TicketContainer;
@@ -58,6 +59,7 @@ public class SecurityRestApi {
    */
   @GET
   @Path("ticket")
+  @ZeppelinApi
   public Response ticket() {
     ZeppelinConfiguration conf = ZeppelinConfiguration.create();
     String principal = SecurityUtils.getPrincipal();
