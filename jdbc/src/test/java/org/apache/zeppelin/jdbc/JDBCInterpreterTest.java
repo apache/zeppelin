@@ -51,6 +51,17 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     }
     return jdbcConnection;
   }
+
+  public static Properties getJDBCTestProperties() {
+    Properties p = new Properties();
+    p.setProperty("default.driver", "org.postgresql.Driver");
+    p.setProperty("default.url", "jdbc:postgresql://localhost:5432/");
+    p.setProperty("default.user", "gpadmin");
+    p.setProperty("default.password", "");
+    p.setProperty("common.max_count", "1000");
+
+    return p;
+  }
   
   @Before
   public void setUp() throws Exception {
@@ -116,7 +127,7 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
   
   @Test
   public void testDefaultProperties() throws SQLException {
-    JDBCInterpreter jdbcInterpreter = new JDBCInterpreter(new Properties());
+    JDBCInterpreter jdbcInterpreter = new JDBCInterpreter(getJDBCTestProperties());
     
     assertEquals("org.postgresql.Driver", jdbcInterpreter.getProperty(DEFAULT_DRIVER));
     assertEquals("jdbc:postgresql://localhost:5432/", jdbcInterpreter.getProperty(DEFAULT_URL));
