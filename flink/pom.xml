@@ -32,7 +32,7 @@
   <version>0.6.0-incubating-SNAPSHOT</version>
   <name>Zeppelin: Flink</name>
   <description>Zeppelin flink support</description>
-  <url>http://zeppelin.incubator.apache.org</url>
+  <url>http://zeppelin.apache.org</url>
 
   <properties>
     <flink.version>1.0.0</flink.version>

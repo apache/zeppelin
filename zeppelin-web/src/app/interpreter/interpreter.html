@@ -19,15 +19,15 @@ limitations under the License.
           Interpreters
         </h3>
         <div class="pull-right" style="margin-top:10px;">
+          <span style="cursor:pointer;margin-right:8px;"
+                ng-click="showRepositoryInfo = !showRepositoryInfo"
+                tooltip-placement="bottom" tooltip="Repository information">
+            <i class="fa fa-cog" ng-style="{color: showRepositoryInfo ? '#3071A9' : 'black' }"></i>
+          </span>
           <span class="btn btn-default fa fa-plus"
                 ng-click="showAddNewSetting = !showAddNewSetting"
                 style="margin-right:6px;">
             Create
-          </span>
-          <span style="cursor:pointer;margin-right:4px;"
-                ng-click="showRepositoryInfo = !showRepositoryInfo"
-                tooltip-placement="bottom" tooltip="Repository information">
-            <i class="fa fa-cog" ng-style="{color: showRepositoryInfo ? '#3071A9' : 'black' }"></i>
           </span>
         </div>
       </div>
@@ -88,7 +88,7 @@ limitations under the License.
 
 <div class="box width-full home"
      ng-repeat="setting in interpreterSettings | orderBy: 'group' | filter: searchInterpreter">
-  <div>
+  <div id="{{setting.name | lowercase}}">
     <div class="row interpreter">
       <div class="col-md-12">
         <h3 class="interpreter-title">{{setting.name}}

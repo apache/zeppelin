@@ -16,7 +16,7 @@ title : Apache Zeppelin (incubating)
 tagline: Simplify bigdata analytics
 author :
   name : The Apache Software Foundation
-  email : dev@zeppelin.incubator.apache.org
+  email : dev@zeppelin.apache.org
   github : apache
   twitter : ASF
   feedburner : feedname
@@ -31,7 +31,7 @@ ZEPPELIN_VERSION : 0.6.0-incubating-SNAPSHOT
 # Else if you are pushing to username.github.io, replace with your username.
 # Finally if you are pushing to a GitHub project page, include the project name at the end.
 #
-production_url : http://zeppelin.incubator.apache.org
+production_url : http://zeppelin.apache.org
 # All Jekyll-Bootstrap specific configurations are namespaced into this hash
 #
 JB :
@@ -108,7 +108,7 @@ JB :
         tracking_id : 'UA-45176241-2'
     google_universal :
         tracking_id : 'UA-45176241-5'
-        domain : 'zeppelin.incubator.apache.org'
+        domain : 'zeppelin.apache.org'
     getclicky :
       site_id :
     mixpanel :

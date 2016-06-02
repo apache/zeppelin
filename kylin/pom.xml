@@ -32,7 +32,7 @@
     <packaging>jar</packaging>
     <version>0.6.0-incubating-SNAPSHOT</version>
     <name>Zeppelin: Kylin interpreter</name>
-    <url>http://zeppelin.incubator.apache.org</url>
+    <url>http://zeppelin.apache.org</url>
 
 
     <dependencies>
