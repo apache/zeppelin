@@ -113,8 +113,9 @@ public class ZeppelinServer extends Application {
     mainWsServer.setSubWebSocketServer("notebookServer", notebookWsServer);
 
     // Job Manager WS server
-    WebSocketServer jobManagerServer = setupJobManagerServer(webApp, conf);
-    mainWsServer.setSubWebSocketServer("jobManagerServer", jobManagerServer);
+//    JobMangerServer jobManagerServer = setupJobManagerServer(webApp, conf);
+//    mainWsServer.setSubWebSocketServer("jobManagerServer", jobManagerServer);
+
 
     //Below is commented since zeppelin-docs module is removed.
     //final WebAppContext webAppSwagg = setupWebAppSwagger(conf);
@@ -127,6 +128,9 @@ public class ZeppelinServer extends Application {
       System.exit(-1);
     }
     LOG.info("Done, zeppelin server started");
+
+    // register observer for job manager.
+//    notebook.getNotebookEventObserver().addObserver(jobManagerServer);
 
     Runtime.getRuntime().addShutdownHook(new Thread(){
       @Override public void run() {
@@ -217,24 +221,24 @@ public class ZeppelinServer extends Application {
   private static NotebookServer setupNotebookServer(WebAppContext webapp,
       ZeppelinConfiguration conf) {
     NotebookServer notebookWsServer = new NotebookServer();
-    String maxTextMessageSize = conf.getWebsocketMaxTextMessageSize();
-    final ServletHolder servletHolder = new ServletHolder(notebookWsServer);
-    servletHolder.setInitParameter("maxTextMessageSize", maxTextMessageSize);
-    final ServletContextHandler cxfContext = new ServletContextHandler(
-            ServletContextHandler.SESSIONS);
-    webapp.addServlet(servletHolder, "/notebook/*");
+//    String maxTextMessageSize = conf.getWebsocketMaxTextMessageSize();
+//    final ServletHolder servletHolder = new ServletHolder(notebookWsServer);
+//    servletHolder.setInitParameter("maxTextMessageSize", maxTextMessageSize);
+//    final ServletContextHandler cxfContext = new ServletContextHandler(
+//            ServletContextHandler.SESSIONS);
+//    webapp.addServlet(servletHolder, "/notebook/*");
     return notebookWsServer;
   }
 
   private static JobMangerServer setupJobManagerServer(WebAppContext webapp,
       ZeppelinConfiguration conf) {
     JobMangerServer jobMangerWsServer = new JobMangerServer();
-    String maxTextMessageSize = conf.getWebsocketMaxTextMessageSize();
-    final ServletHolder servletHolder = new ServletHolder(jobMangerWsServer);
-    servletHolder.setInitParameter("maxTextMessageSize", maxTextMessageSize);
-    final ServletContextHandler cxfContext = new ServletContextHandler(
-            ServletContextHandler.SESSIONS);
-    webapp.addServlet(servletHolder, "/jobmanager/*");
+//    String maxTextMessageSize = conf.getWebsocketMaxTextMessageSize();
+//    final ServletHolder servletHolder = new ServletHolder(jobMangerWsServer);
+//    servletHolder.setInitParameter("maxTextMessageSize", maxTextMessageSize);
+//    final ServletContextHandler cxfContext = new ServletContextHandler(
+//            ServletContextHandler.SESSIONS);
+//    webapp.addServlet(servletHolder, "/jobmanager/*");
     return jobMangerWsServer;
   }
 

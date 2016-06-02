@@ -70,6 +70,7 @@ public class Note implements Serializable, JobListener {
   private transient NotebookRepo repo;
   private transient SearchService index;
   private transient ScheduledFuture delayedPersist;
+  private transient NotebookEventObserver notebookEventObserver;
 
   /**
    * note configurations.
@@ -89,11 +90,13 @@ public class Note implements Serializable, JobListener {
   public Note() {}
 
   public Note(NotebookRepo repo, NoteInterpreterLoader replLoader,
-      JobListenerFactory jlFactory, SearchService noteIndex) {
+      JobListenerFactory jlFactory, SearchService noteIndex,
+      NotebookEventObserver notebookEventObserver) {
     this.repo = repo;
     this.replLoader = replLoader;
     this.jobListenerFactory = jlFactory;
     this.index = noteIndex;
+    this.notebookEventObserver = notebookEventObserver;
     generateId();
   }
 
@@ -115,6 +118,7 @@ public class Note implements Serializable, JobListener {
 
   public void setName(String name) {
     this.name = name;
+    notebookEventObserver.notifyChanged(id, NotebookEventObserver.ACTIONS.CHNAGED_NOTE_NAME);
   }
 
   public NoteInterpreterLoader getNoteReplLoader() {
@@ -123,6 +127,7 @@ public class Note implements Serializable, JobListener {
 
   public void setReplLoader(NoteInterpreterLoader replLoader) {
     this.replLoader = replLoader;
+    notebookEventObserver.notifyChanged(id, NotebookEventObserver.ACTIONS.BIND_INTERPRETER);
   }
 
   public JobListenerFactory getJobListenerFactory() {
@@ -159,6 +164,9 @@ public class Note implements Serializable, JobListener {
     synchronized (paragraphs) {
       paragraphs.add(p);
     }
+
+    notebookEventObserver.notifyChanged(id, NotebookEventObserver.ACTIONS.ADD_PARAGRAPH);
+
     return p;
   }
 
@@ -190,6 +198,8 @@ public class Note implements Serializable, JobListener {
     synchronized (paragraphs) {
       paragraphs.add(newParagraph);
     }
+
+    notebookEventObserver.notifyChanged(id, NotebookEventObserver.ACTIONS.ADD_PARAGRAPH);
   }
 
   /**
@@ -202,6 +212,9 @@ public class Note implements Serializable, JobListener {
     synchronized (paragraphs) {
       paragraphs.add(index, p);
     }
+
+    notebookEventObserver.notifyChanged(id, NotebookEventObserver.ACTIONS.ADD_PARAGRAPH);
+
     return p;
   }
 
@@ -293,6 +306,7 @@ public class Note implements Serializable, JobListener {
 
       if (p != null) {
         paragraphs.add(index, p);
+        notebookEventObserver.notifyChanged(id, NotebookEventObserver.ACTIONS.MOVED_PARAGRAPH);
       }
     }
   }
@@ -386,6 +400,8 @@ public class Note implements Serializable, JobListener {
     if (p.getConfig().get("enabled") == null || (Boolean) p.getConfig().get("enabled")) {
       intp.getScheduler().submit(p);
     }
+
+    notebookEventObserver.notifyChanged(id, NotebookEventObserver.ACTIONS.RUN_PARAGRAPH);
   }
 
   public List<String> completion(String paragraphId, String buffer, int cursor) {

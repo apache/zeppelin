@@ -16,47 +16,25 @@
  */
 package org.apache.zeppelin.socket;
 
-import com.google.common.base.Strings;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
-import org.apache.zeppelin.display.AngularObject;
-import org.apache.zeppelin.display.AngularObjectRegistry;
-import org.apache.zeppelin.display.AngularObjectRegistryListener;
-import org.apache.zeppelin.interpreter.InterpreterGroup;
-import org.apache.zeppelin.interpreter.InterpreterOutput;
-import org.apache.zeppelin.interpreter.InterpreterResult;
-import org.apache.zeppelin.interpreter.InterpreterSetting;
-import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
-import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
 import org.apache.zeppelin.notebook.*;
 import org.apache.zeppelin.notebook.socket.Message;
 import org.apache.zeppelin.notebook.socket.Message.OP;
-import org.apache.zeppelin.scheduler.Job;
-import org.apache.zeppelin.scheduler.Job.Status;
+import org.apache.zeppelin.notebook.NotebookEventObserver.NotebookChnagedEvent;
 import org.apache.zeppelin.server.ZeppelinServer;
 import org.apache.zeppelin.ticket.TicketContainer;
-import org.apache.zeppelin.user.AuthenticationInfo;
-import org.apache.zeppelin.utils.SecurityUtils;
-import org.eclipse.jetty.websocket.servlet.WebSocketServlet;
-import org.eclipse.jetty.websocket.servlet.WebSocketServletFactory;
-import org.quartz.SchedulerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
-import java.net.URISyntaxException;
-import java.net.UnknownHostException;
 import java.util.*;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * Zeppelin websocket service.
  */
-public class JobMangerServer extends AppMainServer implements WebSocketServer {
+public class JobMangerServer extends AppMainServer implements WebSocketServer, Observer{
   private static final Logger LOG = LoggerFactory.getLogger(JobMangerServer.class);
 
   private Notebook notebook() {
@@ -381,6 +359,18 @@ public class JobMangerServer extends AppMainServer implements WebSocketServer {
       LOG.info("update count {}", notesInfo.size());
     }
     return notesInfo;
+  }
+
+  /**
+   * Notebook Observer Event Listener
+   */
+  @Override
+  public void update(Observable observer, Object notebookChnagedEvent) {
+
+    NotebookChnagedEvent noteEvent = (NotebookChnagedEvent) notebookChnagedEvent;
+    LOG.info("event note {}", noteEvent.getNoteId());
+
+
   }
 
 }

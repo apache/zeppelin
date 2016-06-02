@@ -78,6 +78,7 @@ public class Notebook {
   private NotebookRepo notebookRepo;
   private SearchService notebookIndex;
   private NotebookAuthorization notebookAuthorization;
+  private NotebookEventObserver notebookEventObserver;
 
   /**
    * Main constructor \w manual Dependency Injection
@@ -109,6 +110,7 @@ public class Notebook {
     quartzSched = quertzSchedFact.getScheduler();
     quartzSched.start();
     CronJob.notebook = this;
+    notebookEventObserver = new NotebookEventObserver();
 
     loadAllNotes();
     if (this.notebookIndex != null) {
@@ -119,6 +121,10 @@ public class Notebook {
           TimeUnit.NANOSECONDS.toSeconds(start - System.nanoTime()));
     }
 
+  }
+
+  public NotebookEventObserver getNotebookEventObserver() {
+    return notebookEventObserver;
   }
 
   /**
@@ -135,6 +141,7 @@ public class Notebook {
       note = createNote(null);
     }
     notebookIndex.addIndexDoc(note);
+    notebookEventObserver.notifyChanged(note.id(), NotebookEventObserver.ACTIONS.CREATE);
     return note;
   }
 
@@ -146,7 +153,8 @@ public class Notebook {
    */
   public Note createNote(List<String> interpreterIds) throws IOException {
     NoteInterpreterLoader intpLoader = new NoteInterpreterLoader(replFactory);
-    Note note = new Note(notebookRepo, intpLoader, jobListenerFactory, notebookIndex);
+    Note note = new Note(notebookRepo, intpLoader,
+      jobListenerFactory, notebookIndex, notebookEventObserver);
     intpLoader.setNoteId(note.id());
     synchronized (notes) {
       notes.put(note.id(), note);
@@ -157,6 +165,7 @@ public class Notebook {
 
     notebookIndex.addIndexDoc(note);
     note.persist();
+    notebookEventObserver.notifyChanged(note.id(), NotebookEventObserver.ACTIONS.CREATE);
     return note;
   }
   
@@ -204,6 +213,7 @@ public class Notebook {
       }
 
       newNote.persist();
+      notebookEventObserver.notifyChanged(newNote.id(), NotebookEventObserver.ACTIONS.CREATE);
     } catch (IOException e) {
       logger.error(e.toString(), e);
       throw e;
@@ -241,6 +251,7 @@ public class Notebook {
 
     notebookIndex.addIndexDoc(newNote);
     newNote.persist();
+    notebookEventObserver.notifyChanged(newNote.id(), NotebookEventObserver.ACTIONS.CREATE);
     return newNote;
   }
 
@@ -251,6 +262,8 @@ public class Notebook {
       note.getNoteReplLoader().setInterpreters(interpreterSettingIds);
       // comment out while note.getNoteReplLoader().setInterpreters(...) do the same
       // replFactory.putNoteInterpreterSettingBinding(id, interpreterSettingIds);
+      notebookEventObserver.notifyChanged(note.id(),
+        NotebookEventObserver.ACTIONS.BIND_INTERPRETER);
     }
   }
 
@@ -284,6 +297,8 @@ public class Notebook {
     synchronized (notes) {
       note = notes.remove(id);
     }
+    notebookEventObserver.notifyChanged(note.id(), NotebookEventObserver.ACTIONS.REMOVED);
+
     replFactory.removeNoteInterpreterSettingBinding(id);
     notebookIndex.deleteIndexDocs(note);
     notebookAuthorization.removeNote(id);
@@ -495,6 +510,10 @@ public class Notebook {
 
       String noteId = context.getJobDetail().getJobDataMap().getString("noteId");
       Note note = notebook.getNote(noteId);
+
+      NotebookEventObserver notebookEventObserver = notebook.getNotebookEventObserver();
+      notebookEventObserver.notifyChanged(note.id(), NotebookEventObserver.ACTIONS.RUN);
+
       note.runAll();
     
       while (!note.getLastParagraph().isTerminated()) {
@@ -569,6 +588,7 @@ public class Notebook {
         info.put("cron", "Scheduler Exception");
       }
     }
+    notebookEventObserver.notifyChanged(id, NotebookEventObserver.ACTIONS.CHANGED_CONFIG);
   }
 
   private void removeCron(String id) {
@@ -577,6 +597,7 @@ public class Notebook {
     } catch (SchedulerException e) {
       logger.error("Can't remove quertz " + id, e);
     }
+    notebookEventObserver.notifyChanged(id, NotebookEventObserver.ACTIONS.CHANGED_CONFIG);
   }
 
   public InterpreterFactory getInterpreterFactory() {
