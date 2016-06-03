@@ -219,7 +219,10 @@ public class Note implements Serializable, JobListener {
       String resultJson = gson.toJson(srcParagraph.getReturn());
       InterpreterResult result = gson.fromJson(resultJson, InterpreterResult.class);
       newParagraph.setReturn(result, null);
-    } catch (Exception e) { /* ignore */ }
+    } catch (Exception e) {
+      // 'result' part of Note consists of exception, instead of actual interpreter results
+      logger.info("Paragraph " + srcParagraph.getId() + " has a result with exception.");
+    }
 
     synchronized (paragraphs) {
       paragraphs.add(newParagraph);
