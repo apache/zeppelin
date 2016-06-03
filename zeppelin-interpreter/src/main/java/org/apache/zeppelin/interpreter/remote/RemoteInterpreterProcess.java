@@ -31,12 +31,18 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.Properties;
 
 /**
  *
  */
 public class RemoteInterpreterProcess implements ExecuteResultHandler {
   private static final Logger logger = LoggerFactory.getLogger(RemoteInterpreterProcess.class);
+  private static final String ZEPPELIN_INTERPRETER_PORT = "zeppelin.interpreter.port";
+
+  private static final String ZEPPELIN_INTERPRETER_HOST = "zeppelin.interpreter.host";
+
+  public static final String ZEPPELIN_INTERPRETER_ISEXECUTING = "zeppelin.interpreter.isexecuting";
 
   private final AtomicInteger referenceCount;
   private DefaultExecutor executor;
@@ -52,6 +58,8 @@ public class RemoteInterpreterProcess implements ExecuteResultHandler {
   private final RemoteInterpreterEventPoller remoteInterpreterEventPoller;
   private final InterpreterContextRunnerPool interpreterContextRunnerPool;
   private int connectTimeout;
+  String host = "localhost";
+  boolean isInterpreterAlreadyExecuting = false;
 
   public RemoteInterpreterProcess(String intpRunner,
       String intpDir,
@@ -91,54 +99,82 @@ public class RemoteInterpreterProcess implements ExecuteResultHandler {
   public int reference(InterpreterGroup interpreterGroup) {
     synchronized (referenceCount) {
       if (executor == null) {
-        // start server process
-        try {
-          port = RemoteInterpreterUtils.findRandomAvailablePortOnAllLocalInterfaces();
-        } catch (IOException e1) {
-          throw new InterpreterException(e1);
+        Properties properties = interpreterGroup.getProperty();
+
+        if (properties.containsKey(ZEPPELIN_INTERPRETER_ISEXECUTING)) {
+          isInterpreterAlreadyExecuting =
+              Boolean.parseBoolean(properties.getProperty(ZEPPELIN_INTERPRETER_ISEXECUTING));
+          if (isInterpreterAlreadyExecuting) {
+            if (properties.containsKey(ZEPPELIN_INTERPRETER_HOST)) {
+              host = properties.getProperty(ZEPPELIN_INTERPRETER_HOST);
+
+            } else {
+              throw new InterpreterException("Can't find property " + ZEPPELIN_INTERPRETER_HOST
+                  + ".Please specify the host on which interpreter is executing");
+            }
+            if (properties.containsKey(ZEPPELIN_INTERPRETER_PORT)) {
+              port = Integer
+                  .parseInt(interpreterGroup.getProperty().getProperty(ZEPPELIN_INTERPRETER_PORT));
+            } else {
+              throw new InterpreterException("Can't find property " + ZEPPELIN_INTERPRETER_PORT
+                  + ".Please specify the port on which interpreter is listening");
+            }
+          }
+          running = true;
         }
 
-        CommandLine cmdLine = CommandLine.parse(interpreterRunner);
-        cmdLine.addArgument("-d", false);
-        cmdLine.addArgument(interpreterDir, false);
-        cmdLine.addArgument("-p", false);
-        cmdLine.addArgument(Integer.toString(port), false);
-        cmdLine.addArgument("-l", false);
-        cmdLine.addArgument(localRepoDir, false);
+        if (!isInterpreterAlreadyExecuting) {
+          try {
+            port = RemoteInterpreterUtils.findRandomAvailablePortOnAllLocalInterfaces();
+          } catch (IOException e1) {
+            throw new InterpreterException(e1);
+          }
+          CommandLine cmdLine = CommandLine.parse(interpreterRunner);
+          cmdLine.addArgument("-d", false);
+          cmdLine.addArgument(interpreterDir, false);
+          cmdLine.addArgument("-p", false);
+          cmdLine.addArgument(Integer.toString(port), false);
+          cmdLine.addArgument("-l", false);
+          cmdLine.addArgument(localRepoDir, false);
 
-        executor = new DefaultExecutor();
+          executor = new DefaultExecutor();
 
-        watchdog = new ExecuteWatchdog(ExecuteWatchdog.INFINITE_TIMEOUT);
-        executor.setWatchdog(watchdog);
+          watchdog = new ExecuteWatchdog(ExecuteWatchdog.INFINITE_TIMEOUT);
+          executor.setWatchdog(watchdog);
 
-        running = true;
-        try {
-          Map procEnv = EnvironmentUtils.getProcEnvironment();
-          procEnv.putAll(env);
+          running = true;
+          try {
+            Map procEnv = EnvironmentUtils.getProcEnvironment();
+            procEnv.putAll(env);
 
-          logger.info("Run interpreter process {}", cmdLine);
-          executor.execute(cmdLine, procEnv, this);
-        } catch (IOException e) {
-          running = false;
-          throw new InterpreterException(e);
+            logger.info("Run interpreter process {}", cmdLine);
+            executor.execute(cmdLine, procEnv, this);
+
+          } catch (IOException e) {
+            running = false;
+            throw new InterpreterException(e);
+          }
+
+        } else {
+          logger.info(
+              "Not starting interpreter as \"zeppelin.interpreter.isexecuting\" is set to true");
         }
-
 
         long startTime = System.currentTimeMillis();
         while (System.currentTimeMillis() - startTime < connectTimeout) {
-          if (RemoteInterpreterUtils.checkIfRemoteEndpointAccessible("localhost", port)) {
+          if (RemoteInterpreterUtils.checkIfRemoteEndpointAccessible(host, port)) {
             break;
           } else {
             try {
               Thread.sleep(500);
             } catch (InterruptedException e) {
-              logger.error("Exception in RemoteInterpreterProcess while synchronized reference " +
-                  "Thread.sleep", e);
+              logger.error("Exception in RemoteInterpreterProcess while synchronized reference "
+                  + "Thread.sleep", e);
             }
           }
         }
 
-        clientPool = new GenericObjectPool<Client>(new ClientFactory("localhost", port));
+        clientPool = new GenericObjectPool<Client>(new ClientFactory(host, port));
 
         remoteInterpreterEventPoller.setInterpreterGroup(interpreterGroup);
         remoteInterpreterEventPoller.setInterpreterProcess(this);
