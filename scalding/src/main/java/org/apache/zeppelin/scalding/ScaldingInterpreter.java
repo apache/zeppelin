@@ -63,7 +63,8 @@ public class ScaldingInterpreter extends Interpreter {
       ScaldingInterpreter.class.getName(),
       new InterpreterPropertyBuilder()
         .add(ARGS_STRING, ARGS_STRING_DEFAULT, "Arguments for scalding REPL")
-        .add(MAX_OPEN_INSTANCES, MAX_OPEN_INSTANCES_DEFAULT, "Maximum number of open interpreter instances")
+        .add(MAX_OPEN_INSTANCES, MAX_OPEN_INSTANCES_DEFAULT,
+                "Maximum number of open interpreter instances")
         .build());
   }
 
