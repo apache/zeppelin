@@ -27,7 +27,7 @@ import scala.xml.Elem
 class AngularElemTest extends AbstractAngularElemTest {
 
   override def angularElem(elem: Elem): AbstractAngularElem = {
-    AngularElem.Elem2AngularDisplayElem(elem)
+    AngularElem.elem2AngularDisplayElem(elem)
   }
 
   override def angularModel(name: String): AbstractAngularModel = {

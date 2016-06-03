@@ -18,12 +18,11 @@
 package org.apache.zeppelin.spark
 
 import org.apache.zeppelin.interpreter.InterpreterResult.Code
-import org.apache.zeppelin.interpreter.InterpreterResult.Code.{SUCCESS, ERROR}
+import org.apache.zeppelin.interpreter.InterpreterResult.Code.SUCCESS
 import org.apache.zeppelin.interpreter.InterpreterResult.Type
 import org.apache.zeppelin.interpreter.InterpreterResult.Type.{TEXT, HTML, TABLE, IMG}
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
-import org.jsoup.nodes.Document
 
 import scala.collection.JavaConversions._
 
@@ -39,32 +38,24 @@ object ZeppelinRDisplay {
 
     val document = Jsoup.parse(html)
     document.outputSettings().prettyPrint(false)
-
     val body = document.body()
+    body.getElementsByTag("p").isEmpty match {
+      case true => RDisplay(body.html(), HTML, SUCCESS)
+      case false =>
+        val bodyHtml = body.html()
+        val isTxt = !bodyHtml.contains("<img") &&
+          !bodyHtml.contains("<script") &&
+          !bodyHtml.contains("%html ") &&
+          !bodyHtml.contains("%table ") &&
+          !bodyHtml.contains("%img ")
 
-    if (body.getElementsByTag("p").isEmpty) return RDisplay(body.html(), HTML, SUCCESS)
-
-    val bodyHtml = body.html()
-
-    if (! bodyHtml.contains("<img")
-      &&  ! bodyHtml.contains("<script")
-      && ! bodyHtml.contains("%html ")
-      && ! bodyHtml.contains("%table ")
-      && ! bodyHtml.contains("%img ")
-    ) {
-      return textDisplay(body)
+        isTxt match {
+          case true => textDisplay(body)
+          case x if bodyHtml.contains("%table") => tableDisplay(body)
+          case x if bodyHtml.contains("%img") => imgDisplay(body)
+          case x => htmlDisplay(body, imageWidth)
+        }
     }
-
-    if (bodyHtml.contains("%table")) {
-      return tableDisplay(body)
-    }
-
-    if (bodyHtml.contains("%img")) {
-      return imgDisplay(body)
-    }
-
-    return htmlDisplay(body, imageWidth)
-
   }
 
   private def textDisplay(body: Element): RDisplay = {
@@ -72,48 +63,38 @@ object ZeppelinRDisplay {
   }
 
   private def tableDisplay(body: Element): RDisplay = {
-    val p = body.getElementsByTag("p").get(0).html.replace("“%table " , "").replace("”", "")
+    val p = body.getElementsByTag("p").get(0).html.replace("“%table ", "").replace("”", "")
     val r = (pattern findFirstIn p).getOrElse("")
     val table = p.replace(r, "").replace("\\t", "\t").replace("\\n", "\n")
     RDisplay(table, TABLE, SUCCESS)
   }
 
   private def imgDisplay(body: Element): RDisplay = {
-    val p = body.getElementsByTag("p").get(0).html.replace("“%img " , "").replace("”", "")
+    val p = body.getElementsByTag("p").get(0).html.replace("“%img ", "").replace("”", "")
     val r = (pattern findFirstIn p).getOrElse("")
     val img = p.replace(r, "")
     RDisplay(img, IMG, SUCCESS)
   }
 
   private def htmlDisplay(body: Element, imageWidth: String): RDisplay = {
-
     var div = new String()
-
     for (element <- body.children) {
-
       val eHtml = element.html()
       var eOuterHtml = element.outerHtml()
-
-      eOuterHtml = eOuterHtml.replace("“%html " , "").replace("”", "")
-
+      eOuterHtml = eOuterHtml.replace("“%html ", "").replace("”", "")
       val r = (pattern findFirstIn eHtml).getOrElse("")
-
       div = div + eOuterHtml.replace(r, "")
-
     }
 
-    val content =  div
+    val content = div
       .replaceAll("src=\"//", "src=\"http://")
       .replaceAll("href=\"//", "href=\"http://")
 
     body.html(content)
-
     for (image <- body.getElementsByTag("img")) {
       image.attr("width", imageWidth)
     }
 
     RDisplay(body.html, HTML, SUCCESS)
-
   }
-
 }

@@ -60,7 +60,7 @@ class EnhancedSession(val session: Session) {
 
   private def execute(describeTables: DescribeTablesCmd): String = {
     val metadata: Metadata = session.getCluster.getMetadata
-    HTML_MAGIC + clusterDisplay.formatAllTables(describeTables.statement,metadata)
+    HTML_MAGIC + clusterDisplay.formatAllTables(describeTables.statement, metadata)
   }
 
   private def execute(describeKeyspace: DescribeKeyspaceCmd): String = {
@@ -79,7 +79,7 @@ class EnhancedSession(val session: Session) {
     val keyspace: String = describeTable.keyspace.orElse(Option(session.getLoggedKeyspace)).getOrElse("system")
 
     Option(metaData.getKeyspace(keyspace)).flatMap(ks => Option(ks.getTable(tableName))) match {
-      case Some(tableMeta) => HTML_MAGIC + tableDisplay.format(describeTable.statement, tableMeta, true)
+      case Some(tableMeta) => HTML_MAGIC + tableDisplay.format(describeTable.statement, tableMeta, withCaption = true)
       case None => throw new InterpreterException(s"Cannot find table $keyspace.$tableName")
     }
   }
@@ -90,7 +90,7 @@ class EnhancedSession(val session: Session) {
     val udtName: String = describeUDT.udtName
 
     Option(metaData.getKeyspace(keyspace)).flatMap(ks => Option(ks.getUserType(udtName))) match {
-      case Some(userType) => HTML_MAGIC + udtDisplay.format(describeUDT.statement, userType, true)
+      case Some(userType) => HTML_MAGIC + udtDisplay.format(describeUDT.statement, userType, withCaption = true)
       case None => throw new InterpreterException(s"Cannot find type $keyspace.$udtName")
     }
   }
@@ -103,19 +103,18 @@ class EnhancedSession(val session: Session) {
   private def execute(describeFunction: DescribeFunctionCmd): String = {
     val metaData = session.getCluster.getMetadata
     val keyspaceName: String = describeFunction.keyspace.orElse(Option(session.getLoggedKeyspace)).getOrElse("system")
-    val functionName: String = describeFunction.function;
+    val functionName: String = describeFunction.function
 
     Option(metaData.getKeyspace(keyspaceName)) match {
-      case Some(keyspace) => {
+      case Some(keyspace) =>
         val functionMetas: List[FunctionMetadata] = keyspace.getFunctions.asScala.toList
           .filter(func => func.getSimpleName.toLowerCase == functionName.toLowerCase)
 
-        if(functionMetas.isEmpty) {
+        if (functionMetas.isEmpty) {
           throw new InterpreterException(s"Cannot find function ${keyspaceName}.$functionName")
         } else {
-          HTML_MAGIC + functionDisplay.format(describeFunction.statement, functionMetas, true)
+          HTML_MAGIC + functionDisplay.format(describeFunction.statement, functionMetas, withCaption = true)
         }
-      }
       case None => throw new InterpreterException(s"Cannot find function ${keyspaceName}.$functionName")
     }
   }
@@ -128,23 +127,22 @@ class EnhancedSession(val session: Session) {
   private def execute(describeAggregate: DescribeAggregateCmd): String = {
     val metaData = session.getCluster.getMetadata
     val keyspaceName: String = describeAggregate.keyspace.orElse(Option(session.getLoggedKeyspace)).getOrElse("system")
-    val aggregateName: String = describeAggregate.aggregate;
+    val aggregateName: String = describeAggregate.aggregate
 
     Option(metaData.getKeyspace(keyspaceName)) match {
-      case Some(keyspace) => {
+      case Some(keyspace) =>
         val aggMetas: List[AggregateMetadata] = keyspace.getAggregates.asScala.toList
           .filter(agg => agg.getSimpleName.toLowerCase == aggregateName.toLowerCase)
 
-        if(aggMetas.isEmpty) {
+        if (aggMetas.isEmpty) {
           throw new InterpreterException(s"Cannot find aggregate ${keyspaceName}.$aggregateName")
         } else {
-          HTML_MAGIC + aggregateDisplay.format(describeAggregate.statement, aggMetas, true,
+          HTML_MAGIC + aggregateDisplay.format(describeAggregate.statement, aggMetas, withCaption = true,
             session
-            .getCluster
-            .getConfiguration
-            .getCodecRegistry)
+              .getCluster
+              .getConfiguration
+              .getCodecRegistry)
         }
-      }
       case None => throw new InterpreterException(s"Cannot find aggregate ${keyspaceName}.$aggregateName")
     }
   }
@@ -180,24 +178,23 @@ class EnhancedSession(val session: Session) {
     HTML_MAGIC + helpDisplay.formatHelp()
   }
 
-
   def execute(st: Any): Any = {
     st match {
-      case x:DescribeClusterCmd => execute(x)
-      case x:DescribeKeyspaceCmd => execute(x)
-      case x:DescribeKeyspacesCmd => execute(x)
-      case x:DescribeTableCmd => execute(x)
-      case x:DescribeTablesCmd => execute(x)
-      case x:DescribeTypeCmd => execute(x)
-      case x:DescribeTypesCmd => execute(x)
-      case x:DescribeFunctionCmd => execute(x)
-      case x:DescribeFunctionsCmd => execute(x)
-      case x:DescribeAggregateCmd => execute(x)
-      case x:DescribeAggregatesCmd => execute(x)
-      case x:DescribeMaterializedViewCmd => execute(x)
-      case x:DescribeMaterializedViewsCmd => execute(x)
-      case x:HelpCmd => execute(x)
-      case x:Statement => session.execute(x)
+      case x: DescribeClusterCmd => execute(x)
+      case x: DescribeKeyspaceCmd => execute(x)
+      case x: DescribeKeyspacesCmd => execute(x)
+      case x: DescribeTableCmd => execute(x)
+      case x: DescribeTablesCmd => execute(x)
+      case x: DescribeTypeCmd => execute(x)
+      case x: DescribeTypesCmd => execute(x)
+      case x: DescribeFunctionCmd => execute(x)
+      case x: DescribeFunctionsCmd => execute(x)
+      case x: DescribeAggregateCmd => execute(x)
+      case x: DescribeAggregatesCmd => execute(x)
+      case x: DescribeMaterializedViewCmd => execute(x)
+      case x: DescribeMaterializedViewsCmd => execute(x)
+      case x: HelpCmd => execute(x)
+      case x: Statement => session.execute(x)
       case _ => throw new InterpreterException(s"Cannot execute statement '$st' of type ${st.getClass}")
     }
   }

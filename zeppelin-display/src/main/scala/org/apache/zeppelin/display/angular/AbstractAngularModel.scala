@@ -29,7 +29,8 @@ abstract class AbstractAngularModel(name: String) {
 
   /**
     * Create AngularModel with initial Value
-    * @param name name of model
+    *
+    * @param name     name of model
     * @param newValue value
     */
   def this(name: String, newValue: Any) = {
@@ -38,10 +39,12 @@ abstract class AbstractAngularModel(name: String) {
   }
 
   protected def getAngularObject(): AngularObject[Any]
+
   protected def addAngularObject(value: Any): AngularObject[Any]
 
   /**
     * Get value of the model
+    *
     * @return
     */
   def apply(): Any = {
@@ -50,6 +53,7 @@ abstract class AbstractAngularModel(name: String) {
 
   /**
     * Get value of the model
+    *
     * @return
     */
   def value(): Any = {
@@ -69,6 +73,7 @@ abstract class AbstractAngularModel(name: String) {
 
   /**
     * Set value of the model
+    *
     * @param newValue
     */
   def value(newValue: Any): Unit = {
@@ -88,7 +93,7 @@ abstract class AbstractAngularModel(name: String) {
     if (angularObject == null) {
       None
     } else {
-      registry.remove(name, angularObject.getNoteId(), angularObject.getParagraphId())
+      registry.remove(name, angularObject.getNoteId, angularObject.getParagraphId)
       angularObject.get
     }
   }
