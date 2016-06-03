@@ -36,7 +36,7 @@
   <properties>
     <scala.version>2.11.8</scala.version>
     <hadoop.version>2.6.0</hadoop.version>
-    <scalding.version>0.16.1-SNAPSHOT</scalding.version>
+    <scalding.version>0.16.1-RC1</scalding.version>
   </properties>
 
   <repositories>
