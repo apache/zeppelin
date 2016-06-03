@@ -36,7 +36,7 @@
   <properties>
     <scala.version>2.11.8</scala.version>
     <hadoop.version>2.6.0</hadoop.version>
-    <scalding.version>0.16.0</scalding.version>
+    <scalding.version>0.16.1-SNAPSHOT</scalding.version>
   </properties>
 
   <repositories>
@@ -44,11 +44,6 @@
       <id>conjars</id>
       <name>Concurrent Maven Repo</name>
       <url>http://conjars.org/repo</url>
-    </repository>
-    <repository>
-      <id>twitter</id>
-      <name>Twitter Maven Repo</name>
-      <url>http://maven.twttr.com</url>
     </repository>
   </repositories>
 
@@ -132,12 +127,12 @@
       <version>${scala.version}</version>
     </dependency>
 
-    <!-- Scalding REPL needs org.apache.hadoop.conf.Configuration even in local mode -->
     <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-client</artifactId>
       <version>${hadoop.version}</version>
     </dependency>
+
   </dependencies>
 
   <build>

@@ -17,13 +17,8 @@
 
 package org.apache.zeppelin.scalding;
 
-import java.io.*;
-import java.util.*;
-import java.net.URL;
-import java.net.URLClassLoader;
-
 import com.twitter.scalding.ScaldingILoop;
-import org.apache.commons.io.output.WriterOutputStream;
+import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterPropertyBuilder;
@@ -31,17 +26,20 @@ import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import scala.Console;
-import scala.Some;
-import scala.None;
-import scala.tools.nsc.Settings;
-import scala.tools.nsc.interpreter.IMain;
-import scala.tools.nsc.settings.MutableSettings.BooleanSetting;
-import scala.tools.nsc.settings.MutableSettings.PathSetting;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.security.PrivilegedExceptionAction;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Properties;
 
 /**
  * Scalding interpreter for Zeppelin. Based off the Spark interpreter code.
@@ -51,6 +49,9 @@ public class ScaldingInterpreter extends Interpreter {
   Logger logger = LoggerFactory.getLogger(ScaldingInterpreter.class);
 
   static final String ARGS_STRING = "args.string";
+  static final String ARGS_STRING_DEFAULT = "--local --repl";
+  static final String MAX_OPEN_INSTANCES = "max.open.instances";
+  static final String MAX_OPEN_INSTANCES_DEFAULT = "50";
 
   public static final List<String> NO_COMPLETION = 
     Collections.unmodifiableList(new ArrayList<String>());
@@ -61,9 +62,12 @@ public class ScaldingInterpreter extends Interpreter {
       "scalding",
       ScaldingInterpreter.class.getName(),
       new InterpreterPropertyBuilder()
-        .add(ARGS_STRING, "--hdfs --repl", "Arguments for scalding REPL").build());
+        .add(ARGS_STRING, ARGS_STRING_DEFAULT, "Arguments for scalding REPL")
+        .add(MAX_OPEN_INSTANCES, MAX_OPEN_INSTANCES_DEFAULT, "Maximum number of open interpreter instances")
+        .build());
   }
 
+  static int numOpenInstances = 0;
   private ScaldingILoop interpreter;
   private ByteArrayOutputStream out;
 
@@ -74,8 +78,23 @@ public class ScaldingInterpreter extends Interpreter {
 
   @Override
   public void open() {
+    numOpenInstances = numOpenInstances + 1;
+    String maxOpenInstancesStr = property.getProperty(MAX_OPEN_INSTANCES,
+            MAX_OPEN_INSTANCES_DEFAULT);
+    int maxOpenInstances = 50;
+    try {
+      maxOpenInstances = Integer.valueOf(maxOpenInstancesStr);
+    } catch (Exception e) {
+      logger.error("Error reading max.open.instances", e);
+    }
+    logger.info("max.open.instances = {}", maxOpenInstances);
+    if (numOpenInstances > maxOpenInstances) {
+      logger.error("Reached maximum number of open instances");
+      return;
+    }
+    logger.info("Opening instance {}", numOpenInstances);
     logger.info("property: {}", property);
-    String argsString = property.getProperty(ARGS_STRING);
+    String argsString = property.getProperty(ARGS_STRING, ARGS_STRING_DEFAULT);
     String[] args;
     if (argsString == null) {
       args = new String[0];
@@ -85,7 +104,7 @@ public class ScaldingInterpreter extends Interpreter {
     logger.info("{}", Arrays.toString(args));
 
     PrintWriter printWriter = new PrintWriter(out, true);
-    interpreter = com.twitter.scalding.ZeppelinScaldingShell.getRepl(args, printWriter);
+    interpreter = ZeppelinScaldingShell.getRepl(args, printWriter);
     interpreter.createInterpreter();
   }
 
@@ -97,12 +116,43 @@ public class ScaldingInterpreter extends Interpreter {
 
   @Override
   public InterpreterResult interpret(String cmd, InterpreterContext contextInterpreter) {
-    logger.info("Running Scalding command '" + cmd + "'");
+    String user = contextInterpreter.getAuthenticationInfo().getUser();
+    logger.info("Running Scalding command: user: {} cmd: '{}'", user, cmd);
 
+    if (interpreter == null) {
+      logger.error(
+        "interpreter == null, open may not have been called because max.open.instances reached");
+      return new InterpreterResult(Code.ERROR,
+        "interpreter == null\n" +
+        "open may not have been called because max.open.instances reached"
+      );
+    }
     if (cmd == null || cmd.trim().length() == 0) {
       return new InterpreterResult(Code.SUCCESS);
     }
-    return interpret(cmd.split("\n"), contextInterpreter);
+    InterpreterResult interpreterResult = new InterpreterResult(Code.ERROR);
+    if (property.getProperty(ARGS_STRING).contains("hdfs")) {
+      UserGroupInformation ugi = null;
+      try {
+        ugi = UserGroupInformation.createProxyUser(user, UserGroupInformation.getLoginUser());
+      } catch (IOException e) {
+        logger.error("Error creating UserGroupInformation", e);
+        return new InterpreterResult(Code.ERROR, e.getMessage());
+      }
+      try {
+        interpreterResult = ugi.doAs(new PrivilegedExceptionAction<InterpreterResult>() {
+          public InterpreterResult run() throws Exception {
+            return interpret(cmd.split("\n"), contextInterpreter);
+          }
+        });
+      } catch (Exception e) {
+        logger.error("Error running command with ugi.doAs", e);
+        return new InterpreterResult(Code.ERROR, e.getMessage());
+      }
+    } else {
+      interpreterResult = interpret(cmd.split("\n"), contextInterpreter);
+    }
+    return interpreterResult;
   }
 
   public InterpreterResult interpret(String[] lines, InterpreterContext context) {

@@ -15,9 +15,11 @@
  * limitations under the License.
  */
 
-package com.twitter.scalding
+package org.apache.zeppelin.scalding
 
 import java.io.BufferedReader
+import com.twitter.scalding.ScaldingILoop
+
 import scala.tools.nsc.interpreter._
 
 /**
@@ -36,9 +38,9 @@ class ZeppelinScaldingILoop(in: Option[BufferedReader], out: JPrintWriter)
       valuePipeToShellValuePipe
     }""",
     "com.twitter.scalding.ReplImplicits",
-    "com.twitter.scalding.ZeppelinReplImplicitContext._",
-    "com.twitter.scalding.ZeppelinReplState",
-    "com.twitter.scalding.ZeppelinReplState._"
+    "org.apache.zeppelin.scalding.ZeppelinReplImplicitContext._",
+    "org.apache.zeppelin.scalding.ZeppelinReplState",
+    "org.apache.zeppelin.scalding.ZeppelinReplState._"
   )
 
 }
