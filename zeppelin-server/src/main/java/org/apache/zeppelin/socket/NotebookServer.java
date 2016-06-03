@@ -36,6 +36,7 @@ import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.AngularObjectRegistryListener;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
+import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterProgress;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.interpreter.InterpreterOutput;
 import org.apache.zeppelin.interpreter.InterpreterResult;
@@ -1093,11 +1094,11 @@ public class NotebookServer extends WebSocketServlet implements
     }
 
     @Override
-    public void onProgressUpdate(Job job, int progress) {
+    public void onProgressUpdate(Job job, RemoteInterpreterProgress progress) {
       notebookServer.broadcast(
           note.id(),
           new Message(OP.PROGRESS).put("id", job.getId()).put("progress",
-              job.progress()));
+              progress));
     }
 
     @Override

@@ -21,6 +21,7 @@ import java.net.URL;
 import java.util.List;
 import java.util.Properties;
 
+import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterProgress;
 import org.apache.zeppelin.scheduler.Scheduler;
 
 /**
@@ -105,7 +106,7 @@ public class LazyOpenInterpreter
   }
 
   @Override
-  public int getProgress(InterpreterContext context) {
+  public RemoteInterpreterProgress getProgress(InterpreterContext context) {
     open();
     return intp.getProgress(context);
   }

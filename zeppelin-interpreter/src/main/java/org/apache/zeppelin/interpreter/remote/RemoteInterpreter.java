@@ -26,6 +26,7 @@ import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.InterpreterResult.Type;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterContext;
+import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterProgress;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterResult;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService.Client;
 import org.apache.zeppelin.scheduler.Scheduler;
@@ -340,10 +341,10 @@ public class RemoteInterpreter extends Interpreter {
   }
 
   @Override
-  public int getProgress(InterpreterContext context) {
+  public RemoteInterpreterProgress getProgress(InterpreterContext context) {
     RemoteInterpreterProcess interpreterProcess = getInterpreterProcess();
     if (interpreterProcess == null || !interpreterProcess.isRunning()) {
-      return 0;
+      return new RemoteInterpreterProgress();
     }
 
     Client client = null;

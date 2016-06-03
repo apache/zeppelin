@@ -17,6 +17,7 @@
 package org.apache.zeppelin.interpreter.remote.mock;
 
 import org.apache.zeppelin.interpreter.*;
+import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterProgress;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 
@@ -81,8 +82,8 @@ public class MockInterpreterOutputStream extends Interpreter {
   }
 
   @Override
-  public int getProgress(InterpreterContext context) {
-    return 0;
+  public RemoteInterpreterProgress getProgress(InterpreterContext context) {
+    return new RemoteInterpreterProgress();
   }
 
   @Override

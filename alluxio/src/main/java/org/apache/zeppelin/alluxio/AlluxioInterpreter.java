@@ -28,6 +28,7 @@ import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterPropertyBuilder;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
+import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterProgress;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -169,8 +170,8 @@ public class AlluxioInterpreter extends Interpreter {
   }
 
   @Override
-  public int getProgress(InterpreterContext context) {
-    return completedCommands * 100 / totalCommands;
+  public RemoteInterpreterProgress getProgress(InterpreterContext context) {
+    return new RemoteInterpreterProgress(completedCommands * 100 / totalCommands, getLog());
   }
 
   @Override

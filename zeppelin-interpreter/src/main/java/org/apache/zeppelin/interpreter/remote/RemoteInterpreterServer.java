@@ -32,10 +32,7 @@ import org.apache.thrift.transport.TTransportException;
 import org.apache.zeppelin.display.*;
 import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
-import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterContext;
-import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterEvent;
-import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterResult;
-import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService;
+import org.apache.zeppelin.interpreter.thrift.*;
 import org.apache.zeppelin.resource.*;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.Job.Status;
@@ -289,7 +286,7 @@ public class RemoteInterpreterServer
   class InterpretJobListener implements JobListener {
 
     @Override
-    public void onProgressUpdate(Job job, int progress) {
+    public void onProgressUpdate(Job job, RemoteInterpreterProgress progress) {
     }
 
     @Override
@@ -326,8 +323,8 @@ public class RemoteInterpreterServer
     }
 
     @Override
-    public int progress() {
-      return 0;
+    public RemoteInterpreterProgress progress() {
+      return new RemoteInterpreterProgress();
     }
 
     @Override
@@ -401,7 +398,7 @@ public class RemoteInterpreterServer
   }
 
   @Override
-  public int getProgress(String noteId, String className,
+  public RemoteInterpreterProgress getProgress(String noteId, String className,
                          RemoteInterpreterContext interpreterContext)
       throws TException {
     Interpreter intp = getInterpreter(noteId, className);

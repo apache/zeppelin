@@ -38,6 +38,7 @@ import org.apache.zeppelin.interpreter.InterpreterPropertyBuilder;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.InterpreterUtils;
+import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterProgress;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -339,8 +340,8 @@ public class FlinkInterpreter extends Interpreter {
   }
 
   @Override
-  public int getProgress(InterpreterContext context) {
-    return 0;
+  public RemoteInterpreterProgress getProgress(InterpreterContext context) {
+    return new RemoteInterpreterProgress(0, getLog());
   }
 
   @Override

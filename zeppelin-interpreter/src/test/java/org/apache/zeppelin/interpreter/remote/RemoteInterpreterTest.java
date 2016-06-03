@@ -31,6 +31,7 @@ import org.apache.thrift.transport.TTransportException;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.interpreter.remote.mock.MockInterpreterEnv;
+import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterProgress;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService.Client;
 import org.apache.zeppelin.user.AuthenticationInfo;
@@ -285,8 +286,8 @@ public class RemoteInterpreterTest {
     Job jobA = new Job("jobA", null) {
 
       @Override
-      public int progress() {
-        return 0;
+      public RemoteInterpreterProgress progress() {
+        return new RemoteInterpreterProgress();
       }
 
       @Override
@@ -321,8 +322,8 @@ public class RemoteInterpreterTest {
     Job jobB = new Job("jobB", null) {
 
       @Override
-      public int progress() {
-        return 0;
+      public RemoteInterpreterProgress progress() {
+        return new RemoteInterpreterProgress();
       }
 
       @Override
@@ -388,8 +389,8 @@ public class RemoteInterpreterTest {
       scheduler.submit(new Job(jobId, Integer.toString(i), null, 200) {
 
         @Override
-        public int progress() {
-          return 0;
+        public RemoteInterpreterProgress progress() {
+          return new RemoteInterpreterProgress();
         }
 
         @Override
@@ -467,8 +468,8 @@ public class RemoteInterpreterTest {
       scheduler.submit(new Job(jobId, Integer.toString(i), null, 300) {
 
         @Override
-        public int progress() {
-          return 0;
+        public RemoteInterpreterProgress progress() {
+          return new RemoteInterpreterProgress();
         }
 
         @Override
@@ -569,8 +570,8 @@ public class RemoteInterpreterTest {
     Job jobA = new Job("jobA", null) {
 
       @Override
-      public int progress() {
-        return 0;
+      public RemoteInterpreterProgress progress() {
+        return new RemoteInterpreterProgress();
       }
 
       @Override

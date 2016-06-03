@@ -35,6 +35,7 @@ import org.apache.zeppelin.interpreter.InterpreterOption;
 import org.apache.zeppelin.interpreter.InterpreterOutput;
 import org.apache.zeppelin.interpreter.mock.MockInterpreter1;
 import org.apache.zeppelin.interpreter.mock.MockInterpreter2;
+import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterProgress;
 import org.apache.zeppelin.notebook.*;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.Job.Status;
@@ -285,7 +286,7 @@ public class NotebookRepoSyncTest implements JobListenerFactory {
       }
 
       @Override
-      public void onProgressUpdate(Job job, int progress) {
+      public void onProgressUpdate(Job job, RemoteInterpreterProgress progress) {
       }
 
       @Override

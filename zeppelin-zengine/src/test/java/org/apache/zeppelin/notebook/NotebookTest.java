@@ -37,6 +37,7 @@ import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.mock.MockInterpreter1;
 import org.apache.zeppelin.interpreter.mock.MockInterpreter2;
+import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterProgress;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.apache.zeppelin.notebook.repo.VFSNotebookRepo;
 import org.apache.zeppelin.resource.LocalResourcePool;
@@ -670,7 +671,7 @@ public class NotebookTest implements JobListenerFactory{
       }
 
       @Override
-      public void onProgressUpdate(Job job, int progress) {
+      public void onProgressUpdate(Job job, RemoteInterpreterProgress progress) {
       }
 
       @Override

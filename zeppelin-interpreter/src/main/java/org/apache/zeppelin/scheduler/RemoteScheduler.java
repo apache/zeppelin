@@ -21,6 +21,7 @@ import org.apache.thrift.TException;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
+import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterProgress;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService.Client;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.slf4j.Logger;
@@ -318,7 +319,7 @@ public class RemoteScheduler implements Scheduler {
         return;
       }
 
-      JobStatusPoller jobStatusPoller = new JobStatusPoller(1500, 100, 500,
+      JobStatusPoller jobStatusPoller = new JobStatusPoller(100, 100, 100,
           job, this);
       jobStatusPoller.start();
 
@@ -361,7 +362,7 @@ public class RemoteScheduler implements Scheduler {
     }
 
     @Override
-    public void onProgressUpdate(Job job, int progress) {
+    public void onProgressUpdate(Job job, RemoteInterpreterProgress progress) {
     }
 
     @Override
