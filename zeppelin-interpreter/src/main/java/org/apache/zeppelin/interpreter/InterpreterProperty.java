@@ -21,14 +21,37 @@ package org.apache.zeppelin.interpreter;
  * Represent property of interpreter
  */
 public class InterpreterProperty {
+  String envName;
+  String propertyName;
   String defaultValue;
   String description;
 
-  public InterpreterProperty(String defaultValue,
-      String description) {
-    super();
+  public InterpreterProperty(String envName, String propertyName, String defaultValue,
+                                String description) {
+    this.envName = envName;
+    this.propertyName = propertyName;
     this.defaultValue = defaultValue;
     this.description = description;
+  }
+
+  public InterpreterProperty(String defaultValue, String description) {
+    this(null, null, defaultValue, description);
+  }
+
+  public String getEnvName() {
+    return envName;
+  }
+
+  public void setEnvName(String envName) {
+    this.envName = envName;
+  }
+
+  public String getPropertyName() {
+    return propertyName;
+  }
+
+  public void setPropertyName(String propertyName) {
+    this.propertyName = propertyName;
   }
 
   public String getDefaultValue() {
@@ -45,5 +68,29 @@ public class InterpreterProperty {
 
   public void setDescription(String description) {
     this.description = description;
+  }
+
+  public String getValue() {
+    //TODO(jongyoul): Remove SparkInterpreter's getSystemDefault method
+    if (envName != null && !envName.isEmpty()) {
+      String envValue = System.getenv().get(envName);
+      if (envValue != null) {
+        return envValue;
+      }
+    }
+
+    if (propertyName != null && !propertyName.isEmpty()) {
+      String propValue = System.getProperty(propertyName);
+      if (propValue != null) {
+        return propValue;
+      }
+    }
+    return defaultValue;
+  }
+
+  @Override
+  public String toString() {
+    return String.format("{envName=%s, propertyName=%s, defaultValue=%s, description=%20s", envName,
+        propertyName, defaultValue, description);
   }
 }

@@ -70,6 +70,10 @@
                     templateUrl: 'app/interpreter/interpreter.html',
                     controller: 'InterpreterCtrl'
                 })
+                .when('/credential', {
+                    templateUrl: 'app/credential/credential.html',
+                    controller: 'CredentialCtrl'
+                })
                 .when('/configuration', {
                     templateUrl: 'app/configuration/configuration.html',
                     controller: 'ConfigurationCtrl'

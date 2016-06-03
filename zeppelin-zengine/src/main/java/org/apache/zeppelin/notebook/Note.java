@@ -41,6 +41,7 @@ import org.apache.zeppelin.search.SearchService;
 
 import com.google.gson.Gson;
 import org.apache.zeppelin.user.AuthenticationInfo;
+import org.apache.zeppelin.user.Credentials;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -72,6 +73,7 @@ public class Note implements Serializable, JobListener {
   private transient SearchService index;
   private transient ScheduledFuture delayedPersist;
   private transient NotebookEventObserver notebookEventObserver;
+  private transient Credentials credentials;
 
   /**
    * note configurations.
@@ -92,12 +94,14 @@ public class Note implements Serializable, JobListener {
 
   public Note(NotebookRepo repo, NoteInterpreterLoader replLoader,
       JobListenerFactory jlFactory, SearchService noteIndex,
+      Credentials credentials,
       NotebookEventObserver notebookEventObserver) {
     this.repo = repo;
     this.replLoader = replLoader;
     this.jobListenerFactory = jlFactory;
     this.index = noteIndex;
     this.notebookEventObserver = notebookEventObserver;
+    this.credentials = credentials;
     generateId();
   }
 
@@ -164,6 +168,15 @@ public class Note implements Serializable, JobListener {
   public void setIndex(SearchService index) {
     this.index = index;
   }
+
+  public Credentials getCredentials() {
+    return credentials;
+  };
+
+  public void setCredentials(Credentials credentials) {
+    this.credentials = credentials;
+  }
+
 
   @SuppressWarnings("rawtypes")
   public Map<String, List<AngularObject>> getAngularObjects() {
