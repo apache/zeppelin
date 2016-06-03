@@ -83,30 +83,35 @@ limitations under the License.
               </span>
             </div>
           </form>
-        <li class="server-status">
-        <div class="dropdown">
-          <i class="fa fa-circle" ng-class="{'server-connected':navbar.connected, 'server-disconnected':!navbar.connected}"></i>
-          <button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown"
-                  ng-show="navbar.connected" ng-if="ticket.principal == 'anonymous' ">Connected
-            <span class="caret"></span></button>
-          <button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown"
-                  ng-show="navbar.connected" ng-if="ticket.principal != 'anonymous' "
-                  tooltip-placement="bottom" tooltip="{{fullUsername}}">{{truncatedUsername}}
-            <span class="caret"></span></button>
-          <button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown"
-                  ng-show="!navbar.connected">Disconnected
-            <span class="caret"></span></button>
+        <li class="dropdown" dropdown="">
+          <a class="dropdown-toggle connected-a" type="button" data-toggle="dropdown"
+             ng-show="navbar.connected" ng-if="ticket.principal == 'anonymous' ">
+            <i class="fa fa-circle"
+               ng-class="{'server-connected':navbar.connected, 'server-disconnected':!navbar.connected}"></i>
+            Connected
+            <span class="caret"></span>
+          </a>
+          <a class="connected-a dropdown-toggle" type="button" data-toggle="dropdown"
+             ng-show="navbar.connected" ng-if="ticket.principal != 'anonymous' "
+             tooltip-placement="bottom" tooltip="{{fullUsername}}">
+            <i class="fa fa-circle"
+               ng-class="{'server-connected':navbar.connected, 'server-disconnected':!navbar.connected}"></i>
+            {{truncatedUsername}}
+            <span class="caret"></span></a>
+          <a class="connected-a dropdown-toggle" type="button" data-toggle="dropdown"
+             ng-show="!navbar.connected">
+            <i class="fa fa-circle"
+               ng-class="{'server-connected':navbar.connected, 'server-disconnected':!navbar.connected}"></i>
+            Disconnected
+            <span class="caret"></span></a>
+
           <ul class="dropdown-menu">
-            <li><a href="" data-toggle="modal" data-target="#aboutModal" >
+            <li><a href="" data-toggle="modal" data-target="#aboutModal">
               <i style="font-size: 15px;" class="fa fa-info"></i> About</a></li>
             <li ng-show="ticket.principal && ticket.principal!='anonymous'" style="left: 5px;">
-              <a  ng-click="logout()" tooltip-placement="bottom" tooltip="logout">Logout</a>
+              <a ng-click="logout()">Logout</a>
             </li>
           </ul>
-        </div>
-        </li>
-        <li ng-if="!ticket">
-          <button class="btn btn-default" data-toggle="modal" data-target="#loginModal" ng-click="showLoginWindow()" style="margin-left: 10px">Login</button>
         </li>
       </ul>
     </div>

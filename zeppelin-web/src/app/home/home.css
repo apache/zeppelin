@@ -756,6 +756,12 @@ This part should be removed when new version of bootstrap handles this issue.
   background: #3071a9;
 }
 
+.connected-a {
+  cursor: pointer;
+  margin-top: -10px;
+  font-size: 16px;
+}
+
 .about{
   height: 200px;
   padding-top: 20px;
