@@ -46,20 +46,20 @@ public class LivySparkInterpreter extends Interpreter {
         new InterpreterPropertyBuilder()
             .add("zeppelin.livy.url", DEFAULT_URL, "The URL for Livy Server.")
             .add("spark.master", LOCAL, "Spark master uri. ex) spark://masterhost:7077")
-            .add("spark.driver.cores", "1", "Driver cores. ex) 1, 2")
-            .add("spark.driver.memory", "512m", "Driver memory. ex) 512m, 32g")
-            .add("spark.executor.instances", "3", "Executor instances. ex) 1, 4")
-            .add("spark.executor.cores", "1", "Num cores per executor. ex) 1, 4")
-            .add("spark.executor.memory", "512m", 
+            .add("spark.driver.cores", "", "Driver cores. ex) 1, 2")
+            .add("spark.driver.memory", "", "Driver memory. ex) 512m, 32g")
+            .add("spark.executor.instances", "", "Executor instances. ex) 1, 4")
+            .add("spark.executor.cores", "", "Num cores per executor. ex) 1, 4")
+            .add("spark.executor.memory", "", 
                  "Executor memory per worker instance. ex) 512m, 32g")
-            .add("spark.dynamicAllocation.enabled", "false", "Use dynamic resource allocation")
-            .add("spark.dynamicAllocation.cachedExecutorIdleTimeout", "120s", 
+            .add("spark.dynamicAllocation.enabled", "", "Use dynamic resource allocation")
+            .add("spark.dynamicAllocation.cachedExecutorIdleTimeout", "", 
                  "Remove an executor which has cached data blocks")
-            .add("spark.dynamicAllocation.minExecutors", "0", 
+            .add("spark.dynamicAllocation.minExecutors", "", 
                  "Lower bound for the number of executors if dynamic allocation is enabled. ")
-            .add("spark.dynamicAllocation.initialExecutors", "1", 
+            .add("spark.dynamicAllocation.initialExecutors", "", 
                  "Initial number of executors to run if dynamic allocation is enabled. ")
-            .add("spark.dynamicAllocation.maxExecutors", "10", 
+            .add("spark.dynamicAllocation.maxExecutors", "", 
                  "Upper bound for the number of executors if dynamic allocation is enabled. ")
             .build()
     );
