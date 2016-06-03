@@ -20,6 +20,7 @@ package org.apache.zeppelin.livy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -40,7 +41,9 @@ import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 
 
@@ -62,29 +65,11 @@ public class LivyHelper {
     try {
       Map<String, String> conf = new HashMap<String, String>();
       
-      conf.put("spark.master", property.getProperty("zeppelin.livy.master"));
-      
-      conf.put("spark.driver.cores", property.getProperty("spark.driver.cores"));
-      conf.put("spark.executor.cores", property.getProperty("spark.executor.cores"));
-      conf.put("spark.driver.memory", property.getProperty("spark.driver.memory"));
-      conf.put("spark.executor.memory", property.getProperty("spark.executor.memory"));
-
-      if (!property.getProperty("spark.dynamicAllocation.enabled").equals("true")) {
-        conf.put("spark.executor.instances", property.getProperty("spark.executor.instances"));
-      }
-
-      if (property.getProperty("spark.dynamicAllocation.enabled").equals("true")) {
-        conf.put("spark.dynamicAllocation.enabled",
-            property.getProperty("spark.dynamicAllocation.enabled"));
-        conf.put("spark.shuffle.service.enabled", "true");
-        conf.put("spark.dynamicAllocation.cachedExecutorIdleTimeout",
-            property.getProperty("spark.dynamicAllocation.cachedExecutorIdleTimeout"));
-        conf.put("spark.dynamicAllocation.minExecutors",
-            property.getProperty("spark.dynamicAllocation.minExecutors"));
-        conf.put("spark.dynamicAllocation.initialExecutors",
-            property.getProperty("spark.dynamicAllocation.initialExecutors"));
-        conf.put("spark.dynamicAllocation.maxExecutors",
-            property.getProperty("spark.dynamicAllocation.maxExecutors"));
+      Iterator<Entry<Object, Object>> it = property.entrySet().iterator();
+      while (it.hasNext()) {
+        Entry<Object, Object> pair = it.next();
+        if (pair.getKey().toString().startsWith("spark.") && !pair.getValue().toString().isEmpty())
+          conf.put(pair.getKey().toString(), pair.getValue().toString());
       }
 
       String confData = gson.toJson(conf);

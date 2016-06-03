@@ -45,7 +45,7 @@ public class LivySparkInterpreter extends Interpreter {
         LivySparkInterpreter.class.getName(),
         new InterpreterPropertyBuilder()
             .add("zeppelin.livy.url", DEFAULT_URL, "The URL for Livy Server.")
-            .add("zeppelin.livy.master", LOCAL, "Spark master uri. ex) spark://masterhost:7077")
+            .add("spark.master", LOCAL, "Spark master uri. ex) spark://masterhost:7077")
             .add("spark.driver.cores", "1", "Driver cores. ex) 1, 2")
             .add("spark.driver.memory", "512m", "Driver memory. ex) 512m, 32g")
             .add("spark.executor.instances", "3", "Executor instances. ex) 1, 4")

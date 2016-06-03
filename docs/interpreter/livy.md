@@ -30,7 +30,7 @@ Additional requirements for the Livy interpreter are:
     <th>Description</th>
   </tr>
   <tr>
-      <td>zeppelin.livy.master</td>
+      <td>spark.master</td>
       <td>local[*]</td>
       <td>Spark master uri. ex) spark://masterhost:7077</td>
     </tr>
@@ -126,5 +126,5 @@ The session would have timed out, you may need to restart the interpreter.
 
 edit `conf/spark-blacklist.conf` file in livy server and comment out `#spark.master` line.
 
-if you choose to work on livy https://github.com/cloudera/hue/tree/master/apps/spark/java,
+if you choose to work on livy in `apps/spark/java` directory in https://github.com/cloudera/hue ,
 copy `spark-user-configurable-options.template` to `spark-user-configurable-options.conf` file in livy server and comment out `#spark.master` 
