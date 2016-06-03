@@ -7,8 +7,8 @@
       "shell.command.timeout.millisecs": {
         "envName": "SHELL_COMMAND_TIMEOUT",
         "propertyName": "shell.command.timeout.millisecs",
-        "defaultValue": "5000",
-        "description": "Shell command time out in millisecs. Default = 5000"
+        "defaultValue": "60000",
+        "description": "Shell command time out in millisecs. Default = 60000"
       }
     }
   }
