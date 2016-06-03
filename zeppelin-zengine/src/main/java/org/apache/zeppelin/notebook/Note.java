@@ -221,7 +221,8 @@ public class Note implements Serializable, JobListener {
       newParagraph.setReturn(result, null);
     } catch (Exception e) {
       // 'result' part of Note consists of exception, instead of actual interpreter results
-      logger.warn("Paragraph " + srcParagraph.getId() + " has a result with exception. " + e.getMessage());
+      logger.warn("Paragraph " + srcParagraph.getId() + " has a result with exception. "
+              + e.getMessage());
     }
 
     synchronized (paragraphs) {
