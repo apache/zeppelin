@@ -155,15 +155,18 @@
 }
 
 .permissions .owners {
-  margin-right: 10px;
+    width:60px;
+    display: inline-block;
 }
 
 .permissions .readers {
-    margin-right: 6px;
+    width:60px;
+    display: inline-block;
 }
 
 .permissions .writers {
-    margin-right: 11px;
+    width:60px;
+    display: inline-block;
 }
 /*
   Note Setting Panel
