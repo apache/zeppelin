@@ -115,8 +115,9 @@ public class Message {
                             // @param noteId
                             // @param checkpointName
     LIST_NOTEBOOK_JOBS,     // [c-s] get notebook job management infomations
-    LIST_UPDATE_NOTEBOOK_JOBS // [c-s] get job management informations for until unixtime
+    LIST_UPDATE_NOTEBOOK_JOBS, // [c-s] get job management informations for until unixtime
                               // @param unixTime
+    UNSUBSCRIBE_JOBMANAGER // [c-s] Unsubscribe notification for job manger.
 
   }
 

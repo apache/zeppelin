@@ -128,6 +128,14 @@ public class Note implements Serializable, JobListener {
     notifyChanged(NotebookEventObserver.ACTIONS.CHNAGED_NOTE_NAME);
   }
 
+  public NotebookEventObserver getNotebookEventObserver() {
+    return notebookEventObserver;
+  }
+
+  public void setNotebookEventObserver(NotebookEventObserver notebookEventObserver) {
+    this.notebookEventObserver = notebookEventObserver;
+  }
+
   public NoteInterpreterLoader getNoteReplLoader() {
     return replLoader;
   }
@@ -408,7 +416,6 @@ public class Note implements Serializable, JobListener {
       intp.getScheduler().submit(p);
     }
 
-    notifyChanged(NotebookEventObserver.ACTIONS.RUN_PARAGRAPH);
   }
 
   public List<String> completion(String paragraphId, String buffer, int cursor) {

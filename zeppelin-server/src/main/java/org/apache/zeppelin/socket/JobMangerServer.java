@@ -35,6 +35,21 @@ import java.util.*;
  * Zeppelin websocket service.
  */
 public class JobMangerServer extends AppMainServer implements WebSocketServer, Observer{
+
+  /**
+   * Job manager service type
+   */
+  protected enum JOB_MANAGER_SERVICE {
+    JOB_MANAGER_PAGE("JOB_MANAGER_PAGE");
+    private String serviceTypeKey;
+    JOB_MANAGER_SERVICE(String serviceType) {
+      this.serviceTypeKey = serviceType;
+    }
+    String getKey() {
+      return this.serviceTypeKey;
+    }
+  }
+
   private static final Logger LOG = LoggerFactory.getLogger(JobMangerServer.class);
 
   private Notebook notebook() {
@@ -75,14 +90,17 @@ public class JobMangerServer extends AppMainServer implements WebSocketServer, O
           userAndRoles.addAll(roles);
         }
       }
-      LOG.info("lcs notebook received");
+
       /** Lets be elegant here */
       switch (messagereceived.op) {
           case LIST_NOTEBOOK_JOBS:
-            unicastNotebookJobInfo(conn);
+            sendNotebookJobInfo(conn);
             break;
           case LIST_UPDATE_NOTEBOOK_JOBS:
-            unicastUpdateNotebookJobInfo(conn, messagereceived);
+            sendUpdateNotebookJobInfo(conn, messagereceived);
+            break;
+          case UNSUBSCRIBE_JOBMANAGER:
+            unsubscribeJobManager(conn);
             break;
           default:
             break;
@@ -90,6 +108,15 @@ public class JobMangerServer extends AppMainServer implements WebSocketServer, O
     } catch (Exception e) {
       LOG.error("Can't handle message", e);
     }
+  }
+
+
+  private void addConnectionToJobManagerService(String serviceType, WebAppSocket socket) {
+    addConnectionToKey(serviceType, socket);
+  }
+
+  private void removeConnectionToJobManagerService(WebAppSocket socket) {
+    removeConnectionFromAllKey(socket);
   }
 
   protected Message deserializeMessage(String msg) {
@@ -100,19 +127,25 @@ public class JobMangerServer extends AppMainServer implements WebSocketServer, O
     return gson.toJson(m);
   }
 
+  public void unsubscribeJobManager(WebAppSocket conn) {
+    LOG.info("unsubscribe");
+    removeConnectionToJobManagerService(conn);
+  }
 
-  public void unicastNotebookJobInfo(WebAppSocket conn) {
+  public void sendNotebookJobInfo(WebAppSocket conn) throws IOException {
+
     List<Map<String, Object>> notebookJobs = generateNotebooksJobInfo(false);
     Map<String, Object> response = new HashMap<>();
 
     response.put("lastResponseUnixTime", System.currentTimeMillis());
     response.put("jobs", notebookJobs);
 
-    unicast(new Message(OP.LIST_NOTEBOOK_JOBS).put("notebookJobs", response), conn);
+    conn.send(serializeMessage(new Message(OP.LIST_NOTEBOOK_JOBS)
+      .put("notebookJobs", response)));
   }
 
-  public void unicastUpdateNotebookJobInfo(WebAppSocket conn, Message fromMessage) {
-    LOG.info("update time {}", fromMessage);
+  public void sendUpdateNotebookJobInfo(WebAppSocket conn, Message fromMessage)
+      throws IOException {
     double lastUpdateUnixTimeRaw = (double) fromMessage.get("lastUpdateUnixTime");
     long lastUpdateUnixTime = new Double(lastUpdateUnixTimeRaw).longValue();
     List<Map<String, Object>> notebookJobs;
@@ -122,10 +155,53 @@ public class JobMangerServer extends AppMainServer implements WebSocketServer, O
     response.put("lastResponseUnixTime", System.currentTimeMillis());
     response.put("jobs", notebookJobs);
 
-    unicast(new Message(OP.LIST_UPDATE_NOTEBOOK_JOBS)
-            .put("notebookRunningJobs", response), conn);
+    conn.send(serializeMessage(new Message(OP.LIST_UPDATE_NOTEBOOK_JOBS)
+      .put("notebookRunningJobs", response)));
   }
 
+  private Map<String, Object> getParagraphPacketItem(Paragraph paragraph) {
+    Map<String, Object> paragraphItem = new HashMap<>();
+
+    // set paragraph id
+    paragraphItem.put("id", paragraph.getId());
+
+    // set paragraph name
+    String paragraphName = paragraph.getTitle();
+    if (paragraphName != null) {
+      paragraphItem.put("name", paragraphName);
+    } else {
+      paragraphItem.put("name", paragraph.getId());
+    }
+
+    // set status for paragraph.
+    paragraphItem.put("status", paragraph.getStatus().toString());
+
+    return paragraphItem;
+  }
+
+  private long getUnixTimeLastRunParagraph(Paragraph paragraph) {
+
+    Date lastRunningDate = null;
+    long lastRunningUnixTime = 0;
+
+    Date paragaraphDate = paragraph.getDateStarted();
+    if (paragaraphDate == null) {
+      paragaraphDate = paragraph.getDateCreated();
+    }
+
+    // set last update unixtime(ms).
+    if (lastRunningDate == null) {
+      lastRunningDate = paragaraphDate;
+    } else {
+      if (lastRunningDate.after(paragaraphDate) == true) {
+        lastRunningDate = paragaraphDate;
+      }
+    }
+
+    lastRunningUnixTime = lastRunningDate.getTime();
+
+    return lastRunningUnixTime;
+  }
 
   public List<Map<String, Object>> generateNotebooksJobInfo(boolean needsReload) {
     Notebook notebook = notebook();
@@ -159,7 +235,7 @@ public class JobMangerServer extends AppMainServer implements WebSocketServer, O
       if (notebookName != null) {
         info.put("notebookName", note.getName());
       } else {
-        info.put("notebookName", note.id());
+        info.put("notebookName", "Note " + note.id());
       }
 
       if (note.getConfig().containsKey(CRON_TYPE_NOTEBOOK_KEYWORD) == true
@@ -170,7 +246,6 @@ public class JobMangerServer extends AppMainServer implements WebSocketServer, O
         info.put("notebookType", "normal");
       }
 
-      Date lastRunningDate = null;
       long lastRunningUnixTime = 0;
 
       List<Map<String, Object>> paragraphsInfo = new LinkedList<>();
@@ -178,36 +253,10 @@ public class JobMangerServer extends AppMainServer implements WebSocketServer, O
         if (paragraph.getStatus().isRunning() == true) {
           isNotebookRunning = true;
         }
-        Map<String, Object> paragraphItem = new HashMap<>();
-        // set paragraph id
-        paragraphItem.put("id", paragraph.getId());
 
-        // set paragraph name
-        String paragraphName = paragraph.getTitle();
-        if (paragraphName != null) {
-          paragraphItem.put("name", paragraphName);
-        } else {
-          paragraphItem.put("name", paragraph.getId());
-        }
+        Map<String, Object> paragraphItem = getParagraphPacketItem(paragraph);
 
-        // set status for paragraph.
-        paragraphItem.put("status", paragraph.getStatus().toString());
-
-        // get last update time.
-        Date paragaraphDate = paragraph.getDateStarted();
-        if (paragaraphDate == null) {
-          paragaraphDate = paragraph.getDateCreated();
-        }
-        if (lastRunningDate == null) {
-          lastRunningDate = paragaraphDate;
-        } else {
-          if (lastRunningDate.after(paragaraphDate) == true) {
-            lastRunningDate = paragaraphDate;
-          }
-        }
-
-        // convert date to unixtime(ms).
-        lastRunningUnixTime = lastRunningDate.getTime();
+        lastRunningUnixTime = getUnixTimeLastRunParagraph(paragraph);
 
         paragraphsInfo.add(paragraphItem);
       }
@@ -278,7 +327,6 @@ public class JobMangerServer extends AppMainServer implements WebSocketServer, O
         info.put("notebookType", "normal");
       }
 
-      Date lastRunningDate = null;
       long lastRunningUnixTime = 0;
 
       List<Map<String, Object>> paragraphsInfo = new LinkedList<>();
@@ -299,36 +347,10 @@ public class JobMangerServer extends AppMainServer implements WebSocketServer, O
           isUpdateNotebook = true;
         }
 
-        Map<String, Object> paragraphItem = new HashMap<>();
+        Map<String, Object> paragraphItem = getParagraphPacketItem(paragraph);
 
-        // set paragraph id
-        paragraphItem.put("id", paragraph.getId());
+        lastRunningUnixTime = getUnixTimeLastRunParagraph(paragraph);
 
-        // set paragraph name
-        String paragraphName = paragraph.getTitle();
-        if (paragraphName != null) {
-          paragraphItem.put("name", paragraphName);
-        } else {
-          paragraphItem.put("name", paragraph.getId());
-        }
-
-        // set status for paragraph
-        paragraphItem.put("status", paragraph.getStatus().toString());
-
-        Date paragaraphDate = startedDate;
-        if (paragaraphDate == null) {
-          paragaraphDate = createdDate;
-        }
-
-        // set last update unixtime(ms).
-        if (lastRunningDate == null) {
-          lastRunningDate = paragaraphDate;
-        } else {
-          if (lastRunningDate.after(paragaraphDate) == true) {
-            lastRunningDate = paragaraphDate;
-          }
-        }
-        lastRunningUnixTime = lastRunningDate.getTime();
         if (paragraph.getStatus().isRunning() == true) {
           isNotebookRunning = true;
           isUpdateNotebook = true;
@@ -361,16 +383,116 @@ public class JobMangerServer extends AppMainServer implements WebSocketServer, O
     return notesInfo;
   }
 
+  public boolean broadUpdateNote(String noteId) {
+
+    Note note = notebook().getNote(noteId);
+
+    if (note == null) {
+      LOG.info("broadUpdateNote - not found note");
+      return false;
+    }
+
+    List<Map<String, Object>> notesList = new LinkedList<>();
+
+    Map<String, Object> noteItem = new HashMap<>();
+
+    noteItem.put("notebookId", note.id());
+    String notebookName = note.getName();
+    if (notebookName != null) {
+      noteItem.put("notebookName", note.getName());
+    } else {
+      noteItem.put("notebookName", note.id());
+    }
+
+    // set const keyword for cron type
+    String CRON_TYPE_NOTEBOOK_KEYWORD = "cron";
+    if (note.getConfig().containsKey(CRON_TYPE_NOTEBOOK_KEYWORD) == true
+            && !note.getConfig().get(CRON_TYPE_NOTEBOOK_KEYWORD).equals("")) {
+      noteItem.put("notebookType", "cron");
+    }
+    else {
+      noteItem.put("notebookType", "normal");
+    }
+
+
+    long lastRunningUnixTime = 0;
+    boolean isNotebookRunning = false;
+    List<Map<String, Object>> paragraphsInfo = new LinkedList<>();
+    for (Paragraph paragraph : note.getParagraphs()) {
+      Map<String, Object> paragraphItem = getParagraphPacketItem(paragraph);
+
+      if (paragraph.getStatus().isRunning() == true) {
+        isNotebookRunning = true;
+      }
+
+      lastRunningUnixTime = getUnixTimeLastRunParagraph(paragraph);
+
+      paragraphsInfo.add(paragraphItem);
+    }
+
+    // Interpreter is set does not exist.
+    String interpreterGroupName = null;
+    if (note.getNoteReplLoader().getInterpreterSettings() != null
+            && note.getNoteReplLoader().getInterpreterSettings().size() >= 1) {
+      interpreterGroupName = note.getNoteReplLoader().getInterpreterSettings().get(0).getGroup();
+    }
+
+    // set notebook root information.
+    noteItem.put("interpreter", interpreterGroupName);
+    noteItem.put("isRunningJob", isNotebookRunning);
+    noteItem.put("unixTimeLastRun", lastRunningUnixTime);
+    noteItem.put("paragraphs", paragraphsInfo);
+    notesList.add(noteItem);
+
+    Map<String, Object> response = new HashMap<>();
+
+    response.put("lastResponseUnixTime", System.currentTimeMillis());
+    response.put("jobs", notesList);
+
+    broadcast(JOB_MANAGER_SERVICE.JOB_MANAGER_PAGE.getKey(),
+      new Message(OP.LIST_UPDATE_NOTEBOOK_JOBS).put("notebookRunningJobs", response));
+
+    return true;
+  }
+
+  public boolean broadRemovedNote(String noteId) {
+
+    List<Map<String, Object>> notesList = new LinkedList<>();
+    Map<String, Object> noteItem = new HashMap<>();
+
+    // set notebook root information.
+    noteItem.put("notebookId", noteId);
+    noteItem.put("isRemoved", true);
+    notesList.add(noteItem);
+
+    Map<String, Object> response = new HashMap<>();
+
+    response.put("lastResponseUnixTime", System.currentTimeMillis());
+    response.put("jobs", notesList);
+
+    broadcast(JOB_MANAGER_SERVICE.JOB_MANAGER_PAGE.getKey(),
+            new Message(OP.LIST_UPDATE_NOTEBOOK_JOBS).put("notebookRunningJobs", response));
+
+    return true;
+  }
+
   /**
    * Notebook Observer Event Listener
    */
   @Override
   public void update(Observable observer, Object notebookChnagedEvent) {
-
     NotebookChnagedEvent noteEvent = (NotebookChnagedEvent) notebookChnagedEvent;
-    LOG.info("event note {}", noteEvent.getNoteId());
+    LOG.info("event note {}-{}", noteEvent.getNoteId(), noteEvent.getAction().name());
+    try {
+      if (noteEvent.getAction() == NotebookEventObserver.ACTIONS.REMOVED) {
+        broadRemovedNote(noteEvent.getNoteId());
+      } else {
+        broadUpdateNote(noteEvent.getNoteId());
+      }
 
-
+    } catch (Exception e) {
+      LOG.info("socket error job {}", e.getMessage());
+    }
   }
 
 }

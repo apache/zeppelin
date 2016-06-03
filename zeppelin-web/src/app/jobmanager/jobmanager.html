@@ -32,22 +32,37 @@ limitations under the License.
   </div>
 
   <div class="row">
-    <div class="col-md-4 text-left">
-          <div class="form-inline">
-            <select
-              class="form-control"
-              ng-options="option.value as option.name for option in ACTIVE_INTERPRETERS"
-              ng-model="filterConfig.FILTER_VALUE_INTERPRETER"
-              ng-change="doFiltering(jobInfomations, filterConfig)">
-            </select>
-            <input
-              class="form-control"
-              type="text" ng-model="filterConfig.FILTER_VALUE_NOTEBOOK_NAME"
-              ng-keyup="doFilterInputTyping($event, jobInfomations, filterConfig)"/>
-          </div>
+    <div class="col-md-6 text-left">
+        <div class="form-inline">
+          <span class="labelBtn btn-group">
+            <button type="button"
+                    class="btn btn-default"
+                    ng-click="onChangeRunJobToAlwaysTopToggle()"
+                    ng-class="{true : 'btn-primary', false : ''}[filterConfig.RUNNING_ALWAYS_TOP]"
+                    tooltip-placement="right" tooltip="Running the Notebook always on top">
+              <i class="fa fa-thumb-tack"></i>
+            </button>
+            <button type="button"
+                    class="btn btn-default"
+                    ng-click="onChangeSortAsc()"
+                    tooltip-placement="top" tooltip="Sort by Notebook name">
+              <i class="fa" ng-class="{true: 'fa-sort-alpha-asc', false : 'fa-sort-alpha-desc'}[filterConfig.SORT_BY_ASC]"></i>
+            </button>
+          </span>
+          <select
+            class="form-control"
+            ng-options="option.value as option.name for option in ACTIVE_INTERPRETERS"
+            ng-model="filterConfig.FILTER_VALUE_INTERPRETER"
+            ng-change="doFiltering(jobInfomations, filterConfig, isLoadingFilter)">
+          </select>
+          <input
+            class="form-control"
+            type="text" ng-model="filterConfig.FILTER_VALUE_NOTEBOOK_NAME"
+            ng-keyup="doFilterInputTyping($event, jobInfomations, filterConfig, isLoadingFilter)"/>
+        </div>
     </div>
     <div
-      class="col-md-8 text-right"
+      class="col-md-6 text-right"
       style="padding-top: 6px;">
       <span
         ng-repeat="jobStatus in ['READY', 'FINISHED', 'ABORT', 'ERROR','PENDING','RUNNING']"
@@ -109,19 +124,18 @@ limitations under the License.
       </span>
     </div>
   </div>
-  <div class="row margin-top">
-    <div class="col-md-12 text-right">
-      <span>
-      Running the notebook always on top
-      </span>
-      <input type="checkbox"
-             ng-model="filterConfig.RUNNING_ALWAYS_TOP"
-             ng-click="onChangeRunJobToAlwaysTopToggle(jobInfomations, filterConfig)">
-    </div>
-  </div>
 </div>
 <div>
   <div class="note-jump"></div>
+  <div
+    ng-if="isLoadingFilter === true"
+    class="paragraph-col">
+    <div
+      class="job-space box job-margin text-center">
+      <i style="color: blue" class="fa fa-spinner spinAnimation">
+      </i>&nbsp;Loading...
+    </div>
+  </div>
   <div
     ng-if="JobInfomationsByFilter.length > 0"
     ng-repeat="notebookJob in JobInfomationsByFilter"
@@ -132,7 +146,7 @@ limitations under the License.
     </div>
   </div>
   <div
-    ng-if="JobInfomationsByFilter.length <= 0"
+    ng-if="isLoadingFilter === false && JobInfomationsByFilter.length <= 0"
     class="paragraph-col">
     <div
       class="job-space box job-margin text-center">

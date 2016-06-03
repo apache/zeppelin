@@ -102,10 +102,10 @@ public class AppMainServer extends WebSocketServlet implements
 
       WebSocketServer processServer = subWebSocketServer.get(messagereceived.target);
       if (processServer != null) {
-        LOG.info("target {} received.", messagereceived.target);
+        LOG.debug("server {} received.", messagereceived.target);
         processServer.onMessage(conn, msg);
       } else {
-        LOG.info("target {} received.", AppMainServer.class.toString());
+        LOG.debug("server {} received.", AppMainServer.class.toString());
       }
 
       /** Lets be elegant here */
@@ -202,6 +202,7 @@ public class AppMainServer extends WebSocketServlet implements
           conn.send(serializeMessage(m));
         } catch (IOException e) {
           LOG.error("socket error", e);
+          removeConnectionFromAllKey(conn);
         }
       }
     }

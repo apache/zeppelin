@@ -100,7 +100,6 @@ public class NotebookServer extends AppMainServer implements JobListenerFactory,
           userAndRoles.addAll(roles);
         }
       }
-      LOG.info("lcs notebook received");
       /** Lets be elegant here */
       switch (messagereceived.op) {
           case LIST_NOTES:

@@ -357,7 +357,7 @@ public class Notebook {
 
     note.setJobListenerFactory(jobListenerFactory);
     note.setNotebookRepo(notebookRepo);
-
+    note.setNotebookEventObserver(notebookEventObserver);
     Map<String, SnapshotAngularObject> angularObjectSnapshot = new HashMap<>();
 
     // restore angular object --------------
@@ -512,7 +512,6 @@ public class Notebook {
       Note note = notebook.getNote(noteId);
 
       NotebookEventObserver notebookEventObserver = notebook.getNotebookEventObserver();
-      notebookEventObserver.notifyChanged(note.id(), NotebookEventObserver.ACTIONS.RUN);
 
       note.runAll();
     

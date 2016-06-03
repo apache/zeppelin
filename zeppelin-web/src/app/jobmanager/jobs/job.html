@@ -23,9 +23,9 @@ limitations under the License.
       <i ng-switch-default class="icon-question"></i>
     </span>
     &nbsp;
-    <a style="text-decoration: none !important;" ng-href="#/notebook/{{::notebookJob.notebookId}}">
+    <a style="text-decoration: none !important;" ng-href="#/notebook/{{notebookJob.notebookId}}">
       <span>
-       {{::notebookJob.notebookName}}
+       {{notebookJob.notebookName}}
       </span>
       <span>
         &nbsp;-&nbsp;
@@ -35,7 +35,7 @@ limitations under the License.
           Interpreter is not set
         </span>
         <span ng-if="notebookJob.interpreter !== undefined" style="color: gray">
-          {{::notebookJob.interpreter}}
+          {{notebookJob.interpreter}}
         </span>
       </span>
     </a>
@@ -48,51 +48,51 @@ limitations under the License.
       ng-switch="paragraphJob.status">
       <a ng-switch-when="READY"
          style="text-decoration: none !important;"
-         ng-href="#/notebook/{{notebookJob.notebookId}}/paragraph/{{::paragraphJob.id}}">
+         ng-href="#/notebook/{{notebookJob.notebookId}}/paragraph/{{paragraphJob.id}}">
         <i style="color: green" class="fa fa-circle-o"
-           tooltip="{{::paragraphJob.name}} is READY">
+           tooltip="{{paragraphJob.name}} is READY">
         </i>
       </a>
       <a ng-switch-when="FINISHED"
          style="text-decoration: none !important;"
-         ng-href="#/notebook/{{notebookJob.notebookId}}/paragraph/{{::paragraphJob.id}}">
+         ng-href="#/notebook/{{notebookJob.notebookId}}/paragraph/{{paragraphJob.id}}">
         <i style="color: green" class="fa fa-circle"
-           tooltip="{{::paragraphJob.name}} is FINISHED">
+           tooltip="{{paragraphJob.name}} is FINISHED">
         </i>
       </a>
       <a ng-switch-when="ABORT"
          style="text-decoration: none !important;"
-         ng-href="#/notebook/{{notebookJob.notebookId}}/paragraph/{{::paragraphJob.id}}">
+         ng-href="#/notebook/{{notebookJob.notebookId}}/paragraph/{{paragraphJob.id}}">
         <i style="color: orange" class="fa fa-circle"
-           tooltip="{{::paragraphJob.name}} is ABORT">
+           tooltip="{{paragraphJob.name}} is ABORT">
         </i>
       </a>
       <a ng-switch-when="ERROR"
          style="text-decoration: none !important;"
-         ng-href="#/notebook/{{notebookJob.notebookId}}/paragraph/{{::paragraphJob.id}}">
+         ng-href="#/notebook/{{notebookJob.notebookId}}/paragraph/{{paragraphJob.id}}">
         <i style="color: red" class="fa fa-circle"
-           tooltip="{{::paragraphJob.name}} is ERROR">
+           tooltip="{{paragraphJob.name}} is ERROR">
         </i>
       </a>
       <a ng-switch-when="PENDING"
          style="text-decoration: none !important;"
-         ng-href="#/notebook/{{notebookJob.notebookId}}/paragraph/{{::paragraphJob.id}}">
+         ng-href="#/notebook/{{notebookJob.notebookId}}/paragraph/{{paragraphJob.id}}">
         <i style="color: gray" class="fa fa-circle"
-           tooltip="{{::paragraphJob.name}} is PENDING">
+           tooltip="{{paragraphJob.name}} is PENDING">
         </i>
       </a>
       <a ng-switch-when="RUNNING"
          style="text-decoration: none !important;"
-         ng-href="#/notebook/{{notebookJob.notebookId}}/paragraph/{{::paragraphJob.id}}">
+         ng-href="#/notebook/{{notebookJob.notebookId}}/paragraph/{{paragraphJob.id}}">
         <i style="color: blue" class="fa fa-spinner spinAnimation"
-           tooltip="{{::paragraphJob.name}} is RUNNING">
+           tooltip="{{paragraphJob.name}} is RUNNING">
         </i>
       </a>
       <a ng-switch-default class="icon-question"
          style="text-decoration: none !important;"
-         ng-href="#/notebook/{{notebookJob.notebookId}}/paragraph/{{::paragraphJob.id}}">
+         ng-href="#/notebook/{{notebookJob.notebookId}}/paragraph/{{paragraphJob.id}}">
         <i class="icon-question"
-           tooltip="{{::paragraphJob.name}} is {{::paragraphJob.status}}">
+           tooltip="{{paragraphJob.name}} is {{paragraphJob.status}}">
         </i>
       </a>
     </span>

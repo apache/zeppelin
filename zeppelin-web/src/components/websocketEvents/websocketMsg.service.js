@@ -174,7 +174,11 @@ angular.module('zeppelinWebApp').service('websocketMsgSrv', function($rootScope,
         {op: 'LIST_UPDATE_NOTEBOOK_JOBS', data : {lastUpdateUnixTime : lastUpdateServerUnixTime*1}},
         'jobManagerServer'
       );
-    }
+    },
+
+    unsubscribeJobManager: function() {
+      websocketEvents.sendNewEvent({op: 'UNSUBSCRIBE_JOBMANAGER'}, 'jobManagerServer');
+    },
 
   };
 

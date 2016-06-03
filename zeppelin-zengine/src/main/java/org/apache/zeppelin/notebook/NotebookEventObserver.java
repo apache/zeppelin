@@ -28,7 +28,7 @@ public class NotebookEventObserver extends Observable {
    * Notebook event Enum
    */
   public static enum ACTIONS {
-    REMOVED, CREATE, CLONE, RUN, MOVE,
+    REMOVED, CREATE, RUN,
     BIND_INTERPRETER, CHANGED_CONFIG, CHNAGED_NOTE_NAME, ADD_PARAGRAPH, MOVED_PARAGRAPH,
     RUN_PARAGRAPH
   }
