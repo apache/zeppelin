@@ -68,18 +68,18 @@ object ZeppelinRDisplay {
   }
 
   private def textDisplay(body: Element): RDisplay = {
-    RDisplay(body.getElementsByTag("p").get(0).html(), TEXT, SUCCESS)
+    RDisplay(body.getElementsByTag("p").first().html(), TEXT, SUCCESS)
   }
 
   private def tableDisplay(body: Element): RDisplay = {
-    val p = body.getElementsByTag("p").get(0).html.replace("“%table " , "").replace("”", "")
+    val p = body.getElementsByTag("p").first().html.replace("“%table " , "").replace("”", "")
     val r = (pattern findFirstIn p).getOrElse("")
     val table = p.replace(r, "").replace("\\t", "\t").replace("\\n", "\n")
     RDisplay(table, TABLE, SUCCESS)
   }
 
   private def imgDisplay(body: Element): RDisplay = {
-    val p = body.getElementsByTag("p").get(0).html.replace("“%img " , "").replace("”", "")
+    val p = body.getElementsByTag("p").first().html.replace("“%img " , "").replace("”", "")
     val r = (pattern findFirstIn p).getOrElse("")
     val img = p.replace(r, "")
     RDisplay(img, IMG, SUCCESS)

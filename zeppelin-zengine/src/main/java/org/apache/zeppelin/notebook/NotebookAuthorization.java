@@ -49,8 +49,7 @@ public class NotebookAuthorization {
     try {
       loadFromFile();
     } catch (IOException e) {
-      LOG.error("Error loading NotebookAuthorization");
-      e.printStackTrace();
+      LOG.error("Error loading NotebookAuthorization", e);
     }
   }
 

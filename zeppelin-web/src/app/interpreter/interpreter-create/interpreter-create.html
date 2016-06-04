@@ -83,8 +83,8 @@ limitations under the License.
             <td><textarea msd-elastic ng-model="value.value"></textarea></td>
             <td>{{value.description}}</td>
             <td>
-              <div class="btn btn-default btn-sm fa fa-remove" ng-click="removeInterpreterProperty(key)">
-              </div>
+              <button class="btn btn-default btn-sm fa fa-remove" ng-click="removeInterpreterProperty(key)">
+              </button>
             </td>
           </tr>
 
@@ -96,8 +96,8 @@ limitations under the License.
             <td><textarea msd-elastic ng-model="newInterpreterSetting.propertyValue"></textarea></td>
             <td></td>
             <td>
-              <div class="btn btn-default btn-sm fa fa-plus" ng-click="addNewInterpreterProperty()">
-              </div>
+              <button class="btn btn-default btn-sm fa fa-plus" ng-click="addNewInterpreterProperty()">
+              </button>
             </td>
           </tr>
         </table>
@@ -121,9 +121,9 @@ limitations under the License.
               </textarea>
             </td>
             <td>
-              <div class="btn btn-default btn-sm fa fa-remove"
+              <button class="btn btn-default btn-sm fa fa-remove"
                    ng-click="removeInterpreterDependency(dep.groupArtifactVersion)">
-              </div>
+              </button>
             </td>
           </tr>
 
@@ -140,8 +140,8 @@ limitations under the License.
               </textarea>
             </td>
             <td>
-              <div class="btn btn-default btn-sm fa fa-plus" ng-click="addNewInterpreterDependency()">
-              </div>
+              <button class="btn btn-default btn-sm fa fa-plus" ng-click="addNewInterpreterDependency()">
+              </button>
             </td>
           </tr>
         </table>

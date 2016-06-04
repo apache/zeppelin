@@ -53,24 +53,29 @@ limitations under the License.
           <a href="#/interpreter">Interpreter</a>
         </li>
         <li>
+          <a href="#/credential">Credential</a>
+        </li>
+        <li>
           <a href="#/configuration">Configuration</a>
         </li>
       </ul>
 
 
-      <ul class="nav navbar-nav navbar-right" style="margin-top:10px; margin-right:5px;">
-        <li ng-if="ticket">
+      <ul class="nav navbar-nav navbar-right" style="margin-right:5px;">
+        <li ng-if="ticket" style="margin-top:10px;">
         <!--TODO(bzz): move to Typeahead https://angular-ui.github.io/bootstrap  -->
           <form role="search"
-            style="width: 300px; display: inline-block; margin: 0 10px"
+            style="display: inline-block; margin: 0px"
+             class="navbar-form"
              ng-submit="search(searchTerm)">
             <div class="input-group">
               <input
                 type="text"
+                style="min-width:300px;"
                 ng-model="searchTerm"
                 ng-disabled="!navbar.connected"
                 class="form-control"
-                placeholder="Search in your notebooks"
+                placeholder="Search your Notebooks"
               />
               <span class="input-group-btn">
                 <button
@@ -83,24 +88,25 @@ limitations under the License.
               </span>
             </div>
           </form>
-        <li class="dropdown" dropdown="">
-          <a class="dropdown-toggle connected-a" type="button" data-toggle="dropdown"
+        </li>
+        <li class="dropdown " dropdown="">
+          <a class="dropdown-toggle" type="button" data-toggle="dropdown" href="#"
              ng-show="navbar.connected" ng-if="ticket.principal == 'anonymous' ">
-            <i class="fa fa-circle"
+            <i class="fa fa-circle server-status"
                ng-class="{'server-connected':navbar.connected, 'server-disconnected':!navbar.connected}"></i>
             Connected
             <span class="caret"></span>
           </a>
-          <a class="connected-a dropdown-toggle" type="button" data-toggle="dropdown"
+          <a class="dropdown-toggle" type="button" data-toggle="dropdown" href="#"
              ng-show="navbar.connected" ng-if="ticket.principal != 'anonymous' "
              tooltip-placement="bottom" tooltip="{{fullUsername}}">
-            <i class="fa fa-circle"
+            <i class="fa fa-circle server-status"
                ng-class="{'server-connected':navbar.connected, 'server-disconnected':!navbar.connected}"></i>
             {{truncatedUsername}}
             <span class="caret"></span></a>
-          <a class="connected-a dropdown-toggle" type="button" data-toggle="dropdown"
+          <a class="dropdown-toggle" type="button" data-toggle="dropdown" href="#"
              ng-show="!navbar.connected">
-            <i class="fa fa-circle"
+            <i class="fa fa-circle server-status"
                ng-class="{'server-connected':navbar.connected, 'server-disconnected':!navbar.connected}"></i>
             Disconnected
             <span class="caret"></span></a>
@@ -113,6 +119,12 @@ limitations under the License.
             </li>
           </ul>
         </li>
+        <li ng-if="!ticket">
+          <button class="btn btn-default" data-toggle="modal" data-target="#loginModal"
+                  ng-click="showLoginWindow()" style="margin-top: 8px">Login
+          </button>
+        </li>
+
       </ul>
     </div>
   </div>

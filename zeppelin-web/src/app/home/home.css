@@ -272,8 +272,10 @@ a.navbar-brand:hover {
   }
 }
 
-.server-status {
+i.server-status {
   font-size: 12px;
+  top: -2px;
+  position: relative;
 }
 
 .server-connected {
@@ -754,12 +756,6 @@ This part should be removed when new version of bootstrap handles this issue.
 
 .bootstrap-dialog.type-primary .modal-header {
   background: #3071a9;
-}
-
-.connected-a {
-  cursor: pointer;
-  margin-top: -10px;
-  font-size: 16px;
 }
 
 .about{
