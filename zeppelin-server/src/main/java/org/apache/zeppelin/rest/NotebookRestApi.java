@@ -32,11 +32,8 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import org.apache.commons.lang3.StringUtils;
-<<<<<<< HEAD
 import org.apache.zeppelin.interpreter.InterpreterException;
-=======
 import org.apache.zeppelin.annotation.ZeppelinApi;
->>>>>>> master
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Notebook;
