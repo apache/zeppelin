@@ -65,15 +65,17 @@ limitations under the License.
         <li ng-if="ticket">
         <!--TODO(bzz): move to Typeahead https://angular-ui.github.io/bootstrap  -->
           <form role="search"
-            style="width: 300px; display: inline-block; margin: 0 10px"
+            style="display: inline-block; margin: 0 10px"
+             class="navbar-form"
              ng-submit="search(searchTerm)">
             <div class="input-group">
               <input
                 type="text"
+                style="min-width:300px;"
                 ng-model="searchTerm"
                 ng-disabled="!navbar.connected"
                 class="form-control"
-                placeholder="Search in your notebooks"
+                placeholder="Search your Notebooks"
               />
               <span class="input-group-btn">
                 <button
@@ -86,6 +88,7 @@ limitations under the License.
               </span>
             </div>
           </form>
+        </li>
         <li class="server-status"  >
           <i class="fa fa-circle" ng-class="{'server-connected':navbar.connected, 'server-disconnected':!navbar.connected}"></i>
         <span ng-show="navbar.connected" ng-if="ticket.principal == 'anonymous' ">Connected</span>

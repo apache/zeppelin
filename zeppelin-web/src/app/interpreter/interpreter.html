@@ -175,9 +175,9 @@ limitations under the License.
               </span>
             </td>
             <td ng-if="valueform.$visible">
-              <div class="btn btn-default btn-sm fa fa-remove"
+              <button class="btn btn-default btn-sm fa fa-remove"
                    ng-click="removeInterpreterProperty(key, setting.id)">
-              </div>
+              </button>
             </td>
           </tr>
           <tr ng-if="valueform.$visible">
@@ -190,9 +190,9 @@ limitations under the License.
               <textarea msd-elastic ng-model="setting.propertyValue"></textarea>
             </td>
             <td>
-              <div class="btn btn-default btn-sm fa fa-plus"
+              <button class="btn btn-default btn-sm fa fa-plus"
                    ng-click="addNewInterpreterProperty(setting.id)">
-              </div>
+              </button>
             </td>
           </tr>
         </table>
@@ -227,9 +227,9 @@ limitations under the License.
               <div ng-if="!valueform.$visible">{{dep.exclusions.join()}}</div>
             </td>
             <td ng-if="valueform.$visible">
-              <div class="btn btn-default btn-sm fa fa-remove"
+              <button class="btn btn-default btn-sm fa fa-remove"
                    ng-click="removeInterpreterDependency(dep.groupArtifactVersion, setting.id)">
-              </div>
+              </button>
             </td>
           </tr>
           <tr ng-if="valueform.$visible">
@@ -246,9 +246,9 @@ limitations under the License.
               </textarea>
             </td>
             <td>
-              <div class="btn btn-default btn-sm fa fa-plus"
+              <button class="btn btn-default btn-sm fa fa-plus"
                    ng-click="addNewInterpreterDependency(setting.id)">
-              </div>
+              </button>
             </td>
           </tr>
         </table>
