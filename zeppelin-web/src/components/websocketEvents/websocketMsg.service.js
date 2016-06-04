@@ -166,7 +166,7 @@ angular.module('zeppelinWebApp').service('websocketMsgSrv', function($rootScope,
     },
 
     getNotebookJobsList: function() {
-      websocketEvents.sendNewEvent({op: 'LIST_NOTEBOOK_JOBS'}, 'jobManagerServer');
+      websocketEvents.sendNewEvent({op: 'LIST_NOTEBOOK_JOBS'});
     },
 
     getUpdateNotebookJobsList: function(lastUpdateServerUnixTime) {
@@ -177,7 +177,7 @@ angular.module('zeppelinWebApp').service('websocketMsgSrv', function($rootScope,
     },
 
     unsubscribeJobManager: function() {
-      websocketEvents.sendNewEvent({op: 'UNSUBSCRIBE_JOBMANAGER'}, 'jobManagerServer');
+      websocketEvents.sendNewEvent({op: 'UNSUBSCRIBE_JOBMANAGER'});
     },
 
   };

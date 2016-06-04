@@ -27,7 +27,7 @@ angular.module('zeppelinWebApp').factory('websocketEvents', function($rootScope,
     }, 10000);
   });
 
-  websocketCalls.sendNewEvent = function(data, targetServer) {
+  websocketCalls.sendNewEvent = function(data) {
     if ($rootScope.ticket !== undefined) {
       data.principal = $rootScope.ticket.principal;
       data.ticket = $rootScope.ticket.ticket;
@@ -36,12 +36,6 @@ angular.module('zeppelinWebApp').factory('websocketEvents', function($rootScope,
       data.principal = '';
       data.ticket = '';
       data.roles = '';
-    }
-
-    if (targetServer !== undefined) {
-      data.target = targetServer;
-    } else {
-      data.target = '';
     }
 
     console.log('Send Notebook Server >> %o, %o, %o, %o, %o', data.op, data.principal, data.ticket, data.roles, data);
