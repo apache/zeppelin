@@ -1,6 +1,6 @@
 ---
 layout: page
-title: "Table Display System"
+title: "Text/Html Display System"
 description: ""
 group: display
 ---
@@ -18,19 +18,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 {% include JB/setup %}
+## Text
 
-## Table
+Zeppelin prints output of language backend in text, by default.
 
-If you have data that row seprated by '\n' (newline) and column separated by '\t' (tab) with first row as header row, for example
+<img src="/assets/themes/zeppelin/img/screenshots/display_text.png" />
 
-<img src="/assets/themes/zeppelin/img/screenshots/display_table.png" />
+You can explicitly say you're using text display system.
 
-You can simply use %table display system to leverage Zeppelin's built in visualization.
-
-<img src="/assets/themes/zeppelin/img/screenshots/display_table1.png" />
+<img src="/assets/themes/zeppelin/img/screenshots/display_text1.png" />
 
 Note that display system is backend independent.
-
-If table contents start with %html, it is interpreted as an HTML.
-
-<img src="/assets/themes/zeppelin/img/screenshots/display_table_html.png" />
