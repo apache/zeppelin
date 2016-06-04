@@ -141,11 +141,16 @@ public class ScaldingInterpreter extends Interpreter {
         return new InterpreterResult(Code.ERROR, e.getMessage());
       }
       try {
-        interpreterResult = ugi.doAs(new PrivilegedExceptionAction<InterpreterResult>() {
+        // Make variables final to avoid "local variable is accessed from within inner class;
+        // needs to be declared final" exception in JDK7
+        final String cmd1 = cmd;
+        final InterpreterContext contextInterpreter1 = contextInterpreter;
+        PrivilegedExceptionAction<InterpreterResult> action = new PrivilegedExceptionAction<InterpreterResult>() {
           public InterpreterResult run() throws Exception {
-            return interpret(cmd.split("\n"), contextInterpreter);
+            return interpret(cmd1.split("\n"), contextInterpreter1);
           }
-        });
+        };
+        interpreterResult = ugi.doAs(action);
       } catch (Exception e) {
         logger.error("Error running command with ugi.doAs", e);
         return new InterpreterResult(Code.ERROR, e.getMessage());
