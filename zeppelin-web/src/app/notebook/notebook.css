@@ -200,6 +200,7 @@
   padding: 10px 20px 0 20px;
   font-weight: normal;
   word-wrap: break-word;
+  white-space: initial;
 }
 
 .cron-preset-container > div {
