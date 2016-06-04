@@ -46,15 +46,6 @@ angular.module('zeppelinWebApp').controller('NavCtrl', function($scope, $rootSco
     vm.connected = param;
   });
 
-  $rootScope.$on('$locationChangeSuccess', function () {
-    var path = $location.path();
-    // hacky solution to clear search bar
-    // TODO(felizbear): figure out how to make ng-click work in navbar
-    if (path === '/') {
-      $scope.searchTerm = '';
-    }
-  });
-
   $scope.checkUsername = function () {
     if ($rootScope.ticket) {
       if ($rootScope.ticket.principal.length <= MAX_USERNAME_LENGTH) {
@@ -91,8 +82,8 @@ angular.module('zeppelinWebApp').controller('NavCtrl', function($scope, $rootSco
       });
   };
 
-  $scope.search = function() {
-    $location.url(/search/ + $scope.searchTerm);
+  $scope.search = function(searchTerm) {
+    $location.url(/search/ + searchTerm);
   };
 
   function loadNotes() {
@@ -102,6 +93,12 @@ angular.module('zeppelinWebApp').controller('NavCtrl', function($scope, $rootSco
   function isActive(noteId) {
     return ($routeParams.noteId === noteId);
   }
+
+  $rootScope.noteName = function(note) {
+    if (!_.isEmpty(note)) {
+      return arrayOrderingSrv.getNoteName(note);
+    }
+  };
 
   vm.loadNotes = loadNotes;
   vm.isActive = isActive;

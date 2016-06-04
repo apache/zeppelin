@@ -388,8 +388,8 @@ angular.module('zeppelinWebApp')
       }
 
       /** push the rest */
-      $scope.paragraph.authenticationInfo = data.paragraph.authenticationInfo;
       $scope.paragraph.aborted = data.paragraph.aborted;
+      $scope.paragraph.user = data.paragraph.user;
       $scope.paragraph.dateUpdated = data.paragraph.dateUpdated;
       $scope.paragraph.dateCreated = data.paragraph.dateCreated;
       $scope.paragraph.dateFinished = data.paragraph.dateFinished;
@@ -970,17 +970,18 @@ angular.module('zeppelinWebApp')
       }
       return '';
     }
-    var user = 'anonymous';
-    var authInfo = pdata.authenticationInfo;
-    if (authInfo && authInfo.user) {
-      user = pdata.authenticationInfo.user;
-    }
-    var dateUpdated = (pdata.dateUpdated === null) ? 'unknown' : pdata.dateUpdated;
-    var desc = 'Took ' + (timeMs/1000) + ' seconds. Last updated by ' + user + ' at time ' + dateUpdated + '.';
+    var user = (pdata.user === undefined || pdata.user === null) ? 'anonymous' : pdata.user;
+    var desc = 'Took ' +
+      moment.duration(moment(pdata.dateFinished).diff(moment(pdata.dateStarted))).humanize() +
+      '. Last updated by ' + user + ' at ' + moment(pdata.dateUpdated).format('MMMM DD YYYY, h:mm:ss A') + '.';
     if ($scope.isResultOutdated()){
       desc += ' (outdated)';
     }
     return desc;
+  };
+
+  $scope.getElapsedTime = function() {
+    return 'Started ' + moment($scope.paragraph.dateStarted).fromNow() + '.';
   };
 
   $scope.isResultOutdated = function() {

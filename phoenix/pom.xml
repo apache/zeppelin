@@ -22,16 +22,16 @@
   <parent>
     <artifactId>zeppelin</artifactId>
     <groupId>org.apache.zeppelin</groupId>
-    <version>0.6.0-incubating-SNAPSHOT</version>
+    <version>0.6.0-SNAPSHOT</version>
   </parent>
 
   <groupId>org.apache.zeppelin</groupId>
   <artifactId>zeppelin-phoenix</artifactId>
   <packaging>jar</packaging>
-  <version>0.6.0-incubating-SNAPSHOT</version>
+  <version>0.6.0-SNAPSHOT</version>
   <name>Zeppelin: Apache Phoenix Interpreter</name>
   <description>Zeppelin interprter for Apache Phoenix</description>
-  <url>http://zeppelin.incubator.apache.org</url>
+  <url>http://zeppelin.apache.org</url>
   
   <properties>
     <phoenix.version>4.4.0-HBase-1.0</phoenix.version>

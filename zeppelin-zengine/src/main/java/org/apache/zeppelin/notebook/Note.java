@@ -39,6 +39,8 @@ import org.apache.zeppelin.scheduler.JobListener;
 import org.apache.zeppelin.search.SearchService;
 
 import com.google.gson.Gson;
+import org.apache.zeppelin.user.AuthenticationInfo;
+import org.apache.zeppelin.user.Credentials;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,6 +71,7 @@ public class Note implements Serializable, JobListener {
   private transient NotebookRepo repo;
   private transient SearchService index;
   private transient ScheduledFuture delayedPersist;
+  private transient Credentials credentials;
 
   /**
    * note configurations.
@@ -88,11 +91,12 @@ public class Note implements Serializable, JobListener {
   public Note() {}
 
   public Note(NotebookRepo repo, NoteInterpreterLoader replLoader,
-      JobListenerFactory jlFactory, SearchService noteIndex) {
+      JobListenerFactory jlFactory, SearchService noteIndex, Credentials credentials) {
     this.repo = repo;
     this.replLoader = replLoader;
     this.jobListenerFactory = jlFactory;
     this.index = noteIndex;
+    this.credentials = credentials;
     generateId();
   }
 
@@ -143,6 +147,15 @@ public class Note implements Serializable, JobListener {
   public void setIndex(SearchService index) {
     this.index = index;
   }
+
+  public Credentials getCredentials() {
+    return credentials;
+  };
+
+  public void setCredentials(Credentials credentials) {
+    this.credentials = credentials;
+  }
+
 
   @SuppressWarnings("rawtypes")
   public Map<String, List<AngularObject>> getAngularObjects() {
@@ -352,11 +365,15 @@ public class Note implements Serializable, JobListener {
    * Run all paragraphs sequentially.
    */
   public void runAll() {
+    String cronExecutingUser = (String) getConfig().get("cronExecutingUser");
     synchronized (paragraphs) {
       for (Paragraph p : paragraphs) {
         if (!p.isEnabled()) {
           continue;
         }
+        AuthenticationInfo authenticationInfo = new AuthenticationInfo();
+        authenticationInfo.setUser(cronExecutingUser);
+        p.setAuthenticationInfo(authenticationInfo);
         p.setNoteReplLoader(replLoader);
         p.setListener(jobListenerFactory.getParagraphJobListener(this));
         Interpreter intp = replLoader.get(p.getRequiredReplName());

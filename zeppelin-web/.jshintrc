@@ -32,6 +32,7 @@
     "ace": false,
     "d3": false,
     "BootstrapDialog": false,
-    "Handsontable": false
+    "Handsontable": false,
+    "moment": false
   }
 }

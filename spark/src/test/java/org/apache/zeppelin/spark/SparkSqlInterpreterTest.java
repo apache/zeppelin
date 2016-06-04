@@ -46,6 +46,10 @@ public class SparkSqlInterpreterTest {
   @Before
   public void setUp() throws Exception {
     Properties p = new Properties();
+    p.putAll(SparkInterpreterTest.getSparkTestProperties());
+    p.setProperty("zeppelin.spark.maxResult", "1000");
+    p.setProperty("zeppelin.spark.concurrentSQL", "false");
+    p.setProperty("zeppelin.spark.sql.stacktrace", "false");
 
     if (repl == null) {
 

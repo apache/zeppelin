@@ -22,20 +22,19 @@
   <parent>
     <artifactId>zeppelin</artifactId>
     <groupId>org.apache.zeppelin</groupId>
-    <version>0.6.0-incubating-SNAPSHOT</version>
+    <version>0.6.0-SNAPSHOT</version>
     <relativePath>..</relativePath>
   </parent>
 
   <groupId>org.apache.zeppelin</groupId>
   <artifactId>zeppelin-server</artifactId>
   <packaging>jar</packaging>
-  <version>0.6.0-incubating-SNAPSHOT</version>
+  <version>0.6.0-SNAPSHOT</version>
   <name>Zeppelin: Server</name>
   <url>http://www.nflabs.com</url>
 
   <properties>
     <cxf.version>2.7.7</cxf.version>
-    <jetty.version>9.2.15.v20160210</jetty.version>
     <commons.httpclient.version>4.3.6</commons.httpclient.version>
   </properties>
 
@@ -184,9 +183,9 @@
     </dependency>
 
     <dependency>
-      <groupId>commons-httpclient</groupId>
-      <artifactId>commons-httpclient</artifactId>
-      <version>3.1</version>
+      <groupId>org.apache.httpcomponents</groupId>
+      <artifactId>httpclient</artifactId>
+      <version>4.3.6</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -247,12 +246,6 @@
           <artifactId>websocket-client</artifactId>
         </exclusion>
       </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.commons</groupId>
-      <artifactId>commons-exec</artifactId>
-      <version>1.3</version>
-      <scope>test</scope>
     </dependency>
 
 

@@ -62,7 +62,8 @@
 </property>
 
 
-<!-- If used S3 to storage the notebooks, it is necessary the following folder structure bucketname/username/notebook/ -->
+<!-- Amazon S3 notebook storage -->
+<!-- Creates the following directory structure: s3://{bucket}/{username}/{notebook-id}/note.json -->
 <!--
 <property>
   <name>zeppelin.notebook.s3.user</name>
@@ -89,12 +90,36 @@
 </property>
 -->
 
+<!-- Additionally, encryption is supported for notebook data stored in S3 -->
+<!-- Use the AWS KMS to encrypt data -->
+<!-- If used, the EC2 role assigned to the EMR cluster must have rights to use the given key -->
+<!-- See https://aws.amazon.com/kms/ and http://docs.aws.amazon.com/kms/latest/developerguide/concepts.html -->
+<!--
+<property>
+  <name>zeppelin.notebook.s3.kmsKeyID</name>
+  <value>AWS-KMS-Key-UUID</value>
+  <description>AWS KMS key ID used to encrypt notebook data in S3</description>
+</property>
+-->
+
+<!-- Use a custom encryption materials provider to encrypt data -->
+<!-- No configuration is given to the provider, so you must use system properties or another means to configure -->
+<!-- See https://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/services/s3/model/EncryptionMaterialsProvider.html -->
+<!--
+<property>
+  <name>zeppelin.notebook.s3.encryptionMaterialsProvider</name>
+  <value>provider implementation class name</value>
+  <description>Custom encryption materials provider used to encrypt notebook data in S3</description>
+</property>
+-->
+
+
 <!-- If using Azure for storage use the following settings -->
 <!--
 <property>
-  <name>zeppelin.notebook.azure.user</name>
-  <value>user</value>
-  <description>optional user name for Azure folder structure</description>
+  <name>zeppelin.notebook.azure.connectionString</name>
+  <value>DefaultEndpointsProtocol=https;AccountName=<accountName>;AccountKey=<accountKey></value>
+  <description>Azure account credentials</description>
 </property>
 
 <property>
@@ -104,9 +129,9 @@
 </property>
 
 <property>
-  <name>zeppelin.notebook.azure.connectionString</name>
-  <value>DefaultEndpointsProtocol=https;AccountName=<accountName>;AccountKey=<accountKey></value>
-  <description>share name for notebook storage</description>
+  <name>zeppelin.notebook.azure.user</name>
+  <value>user</value>
+  <description>optional user name for Azure folder structure</description>
 </property>
 
 <property>
@@ -116,11 +141,20 @@
 </property>
 -->
 
-<!-- For versioning your local norebook storage using Git repository
+<!-- For versioning your local notebook storage using Git repository
 <property>
   <name>zeppelin.notebook.storage</name>
   <value>org.apache.zeppelin.notebook.repo.GitNotebookRepo</value>
   <description>notebook persistence layer implementation</description>
+</property>
+-->
+
+<!-- For connecting your Zeppelin with ZeppelinHub -->
+<!--
+<property>
+  <name>zeppelin.notebook.storage</name>
+  <value>org.apache.zeppelin.notebook.repo.VFSNotebookRepo, org.apache.zeppelin.notebook.repo.zeppelinhub.ZeppelinHubRepo</value>
+  <description>two notebook persistence layers (local + ZeppelinHub)</description>
 </property>
 -->
 
@@ -144,7 +178,7 @@
 
 <property>
   <name>zeppelin.interpreters</name>
-  <value>org.apache.zeppelin.spark.SparkInterpreter,org.apache.zeppelin.spark.PySparkInterpreter,org.apache.zeppelin.rinterpreter.RRepl,org.apache.zeppelin.rinterpreter.KnitR,org.apache.zeppelin.spark.SparkRInterpreter,org.apache.zeppelin.spark.SparkSqlInterpreter,org.apache.zeppelin.spark.DepInterpreter,org.apache.zeppelin.markdown.Markdown,org.apache.zeppelin.angular.AngularInterpreter,org.apache.zeppelin.shell.ShellInterpreter,org.apache.zeppelin.hive.HiveInterpreter,org.apache.zeppelin.tajo.TajoInterpreter,org.apache.zeppelin.file.HDFSFileInterpreter,org.apache.zeppelin.flink.FlinkInterpreter,org.apache.zeppelin.lens.LensInterpreter,org.apache.zeppelin.ignite.IgniteInterpreter,org.apache.zeppelin.ignite.IgniteSqlInterpreter,org.apache.zeppelin.cassandra.CassandraInterpreter,org.apache.zeppelin.geode.GeodeOqlInterpreter,org.apache.zeppelin.postgresql.PostgreSqlInterpreter,org.apache.zeppelin.jdbc.JDBCInterpreter,org.apache.zeppelin.phoenix.PhoenixInterpreter,org.apache.zeppelin.kylin.KylinInterpreter,org.apache.zeppelin.elasticsearch.ElasticsearchInterpreter,org.apache.zeppelin.scalding.ScaldingInterpreter,org.apache.zeppelin.alluxio.AlluxioInterpreter,org.apache.zeppelin.hbase.HbaseInterpreter</value>
+  <value>org.apache.zeppelin.spark.SparkInterpreter,org.apache.zeppelin.spark.PySparkInterpreter,org.apache.zeppelin.rinterpreter.RRepl,org.apache.zeppelin.rinterpreter.KnitR,org.apache.zeppelin.spark.SparkRInterpreter,org.apache.zeppelin.spark.SparkSqlInterpreter,org.apache.zeppelin.spark.DepInterpreter,org.apache.zeppelin.markdown.Markdown,org.apache.zeppelin.angular.AngularInterpreter,org.apache.zeppelin.shell.ShellInterpreter,org.apache.zeppelin.hive.HiveInterpreter,org.apache.zeppelin.tajo.TajoInterpreter,org.apache.zeppelin.file.HDFSFileInterpreter,org.apache.zeppelin.flink.FlinkInterpreter,,org.apache.zeppelin.python.PythonInterpreter,org.apache.zeppelin.lens.LensInterpreter,org.apache.zeppelin.ignite.IgniteInterpreter,org.apache.zeppelin.ignite.IgniteSqlInterpreter,org.apache.zeppelin.cassandra.CassandraInterpreter,org.apache.zeppelin.geode.GeodeOqlInterpreter,org.apache.zeppelin.postgresql.PostgreSqlInterpreter,org.apache.zeppelin.jdbc.JDBCInterpreter,org.apache.zeppelin.phoenix.PhoenixInterpreter,org.apache.zeppelin.kylin.KylinInterpreter,org.apache.zeppelin.elasticsearch.ElasticsearchInterpreter,org.apache.zeppelin.scalding.ScaldingInterpreter,org.apache.zeppelin.alluxio.AlluxioInterpreter,org.apache.zeppelin.hbase.HbaseInterpreter,org.apache.zeppelin.livy.LivySparkInterpreter,org.apache.zeppelin.livy.LivyPySparkInterpreter,org.apache.zeppelin.livy.LivySparkRInterpreter,org.apache.zeppelin.livy.LivySparkSQLInterpreter</value>
   <description>Comma separated interpreter configurations. First interpreter become a default</description>
 </property>
 

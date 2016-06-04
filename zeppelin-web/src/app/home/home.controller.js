@@ -76,10 +76,4 @@ angular.module('zeppelinWebApp').controller('HomeCtrl', function($scope, noteboo
     node.hidden = !node.hidden;
   };
 
-  $rootScope.noteName = function(note) {
-    if (!_.isEmpty(note)) {
-      return arrayOrderingSrv.getNoteName(note);
-    }
-  };
-
 });

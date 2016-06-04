@@ -338,8 +338,20 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     return getString(ConfVars.ZEPPELIN_NOTEBOOK_S3_ENDPOINT);
   }
 
+  public String getS3KMSKeyID() {
+    return getString(ConfVars.ZEPPELIN_NOTEBOOK_S3_KMS_KEY_ID);
+  }
+
+  public String getS3EncryptionMaterialsProviderClass() {
+    return getString(ConfVars.ZEPPELIN_NOTEBOOK_S3_EMP);
+  }
+
   public String getInterpreterDir() {
     return getRelativeDir(ConfVars.ZEPPELIN_INTERPRETER_DIR);
+  }
+
+  public String getInterpreterJson() {
+    return getString(ConfVars.ZEPPELIN_INTERPRETER_JSON);
   }
 
   public String getInterpreterSettingPath() {
@@ -348,6 +360,14 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 
   public String getNotebookAuthorizationPath() {
     return getRelativeDir(String.format("%s/notebook-authorization.json", getConfDir()));
+  }
+
+  public Boolean credentialsPersist() {
+    return getBoolean(ConfVars.ZEPPELIN_CREDENTIALS_PERSIST);
+  }
+
+  public String getCredentialsPath() {
+    return getRelativeDir(String.format("%s/credentials.json", getConfDir()));
   }
 
   public String getShiroPath() {
@@ -463,6 +483,10 @@ public class ZeppelinConfiguration extends XMLConfiguration {
         + "org.apache.zeppelin.markdown.Markdown,"
         + "org.apache.zeppelin.angular.AngularInterpreter,"
         + "org.apache.zeppelin.shell.ShellInterpreter,"
+        + "org.apache.zeppelin.livy.LivySparkInterpreter,"
+        + "org.apache.zeppelin.livy.LivySparkSQLInterpreter,"
+        + "org.apache.zeppelin.livy.LivyPySparkInterpreter,"
+        + "org.apache.zeppelin.livy.LivySparkRInterpreter,"
         + "org.apache.zeppelin.hive.HiveInterpreter,"
         + "org.apache.zeppelin.alluxio.AlluxioInterpreter,"
         + "org.apache.zeppelin.file.HDFSFileInterpreter,"
@@ -470,6 +494,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
         + "org.apache.zeppelin.postgresql.PostgreSqlInterpreter,"
         + "org.apache.zeppelin.tajo.TajoInterpreter,"
         + "org.apache.zeppelin.flink.FlinkInterpreter,"
+        + "org.apache.zeppelin.python.PythonInterpreter,"
         + "org.apache.zeppelin.ignite.IgniteInterpreter,"
         + "org.apache.zeppelin.ignite.IgniteSqlInterpreter,"
         + "org.apache.zeppelin.lens.LensInterpreter,"
@@ -480,6 +505,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
         + "org.apache.zeppelin.scalding.ScaldingInterpreter,"
         + "org.apache.zeppelin.jdbc.JDBCInterpreter,"
         + "org.apache.zeppelin.hbase.HbaseInterpreter"),
+    ZEPPELIN_INTERPRETER_JSON("zeppelin.interpreter.setting", "interpreter-setting.json"),
     ZEPPELIN_INTERPRETER_DIR("zeppelin.interpreter.dir", "interpreter"),
     ZEPPELIN_INTERPRETER_LOCALREPO("zeppelin.interpreter.localRepo", "local-repo"),
     ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT("zeppelin.interpreter.connect.timeout", 30000),
@@ -493,6 +519,8 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_NOTEBOOK_S3_BUCKET("zeppelin.notebook.s3.bucket", "zeppelin"),
     ZEPPELIN_NOTEBOOK_S3_ENDPOINT("zeppelin.notebook.s3.endpoint", "s3.amazonaws.com"),
     ZEPPELIN_NOTEBOOK_S3_USER("zeppelin.notebook.s3.user", "user"),
+    ZEPPELIN_NOTEBOOK_S3_EMP("zeppelin.notebook.s3.encryptionMaterialsProvider", null),
+    ZEPPELIN_NOTEBOOK_S3_KMS_KEY_ID("zeppelin.notebook.s3.kmsKeyID", null),
     ZEPPELIN_NOTEBOOK_AZURE_CONNECTION_STRING("zeppelin.notebook.azure.connectionString", null),
     ZEPPELIN_NOTEBOOK_AZURE_SHARE("zeppelin.notebook.azure.share", "zeppelin"),
     ZEPPELIN_NOTEBOOK_AZURE_USER("zeppelin.notebook.azure.user", "user"),
@@ -509,7 +537,9 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     // i.e. http://localhost:8080
     ZEPPELIN_ALLOWED_ORIGINS("zeppelin.server.allowed.origins", "*"),
     ZEPPELIN_ANONYMOUS_ALLOWED("zeppelin.anonymous.allowed", true),
+    ZEPPELIN_CREDENTIALS_PERSIST("zeppelin.credentials.persist", true),
     ZEPPELIN_WEBSOCKET_MAX_TEXT_MESSAGE_SIZE("zeppelin.websocket.max.text.message.size", "1024000");
+
 
     private String varName;
     @SuppressWarnings("rawtypes")
