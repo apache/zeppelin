@@ -145,11 +145,12 @@ public class ScaldingInterpreter extends Interpreter {
         // needs to be declared final" exception in JDK7
         final String cmd1 = cmd;
         final InterpreterContext contextInterpreter1 = contextInterpreter;
-        PrivilegedExceptionAction<InterpreterResult> action = new PrivilegedExceptionAction<InterpreterResult>() {
-          public InterpreterResult run() throws Exception {
-            return interpret(cmd1.split("\n"), contextInterpreter1);
-          }
-        };
+        PrivilegedExceptionAction<InterpreterResult> action =
+          new PrivilegedExceptionAction<InterpreterResult>() {
+            public InterpreterResult run() throws Exception {
+              return interpret(cmd1.split("\n"), contextInterpreter1);
+            }
+          };
         interpreterResult = ugi.doAs(action);
       } catch (Exception e) {
         logger.error("Error running command with ugi.doAs", e);
