@@ -16,6 +16,7 @@
  */
 package org.apache.zeppelin.display.angular
 
+import org.apache.zeppelin.annotation.ZeppelinApi
 import org.apache.zeppelin.display.AngularObject
 import org.apache.zeppelin.interpreter.InterpreterContext
 
@@ -29,9 +30,11 @@ abstract class AbstractAngularModel(name: String) {
 
   /**
     * Create AngularModel with initial Value
+    *
     * @param name name of model
     * @param newValue value
     */
+  @ZeppelinApi
   def this(name: String, newValue: Any) = {
     this(name)
     value(newValue)
@@ -42,16 +45,20 @@ abstract class AbstractAngularModel(name: String) {
 
   /**
     * Get value of the model
+    *
     * @return
     */
+  @ZeppelinApi
   def apply(): Any = {
     value()
   }
 
   /**
     * Get value of the model
+    *
     * @return
     */
+  @ZeppelinApi
   def value(): Any = {
     val angularObject = getAngularObject()
     if (angularObject == null) {
@@ -61,7 +68,7 @@ abstract class AbstractAngularModel(name: String) {
     }
   }
 
-
+  @ZeppelinApi
   def apply(newValue: Any): Unit = {
     value(newValue)
   }
@@ -69,8 +76,10 @@ abstract class AbstractAngularModel(name: String) {
 
   /**
     * Set value of the model
+    *
     * @param newValue
     */
+  @ZeppelinApi
   def value(newValue: Any): Unit = {
     var angularObject = getAngularObject()
     if (angularObject == null) {
@@ -82,6 +91,7 @@ abstract class AbstractAngularModel(name: String) {
     angularObject.get()
   }
 
+  @ZeppelinApi
   def remove(): Any = {
     val angularObject = getAngularObject()
 
