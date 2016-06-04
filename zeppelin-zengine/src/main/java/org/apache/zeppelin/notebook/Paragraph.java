@@ -19,6 +19,7 @@ package org.apache.zeppelin.notebook;
 
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
+import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterProgress;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.user.Credentials;
 import org.apache.zeppelin.user.UserCredentials;
@@ -219,13 +220,13 @@ public class Paragraph extends Job implements Serializable, Cloneable {
   }
 
   @Override
-  public int progress() {
+  public RemoteInterpreterProgress progress() {
     String replName = getRequiredReplName();
     Interpreter repl = getRepl(replName);
     if (repl != null) {
       return repl.getProgress(getInterpreterContext());
     } else {
-      return 0;
+      return new RemoteInterpreterProgress();
     }
   }
 

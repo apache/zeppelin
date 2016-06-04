@@ -36,6 +36,7 @@ import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterPropertyBuilder;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
+import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterProgress;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.slf4j.Logger;
@@ -388,7 +389,7 @@ public class LensInterpreter extends Interpreter {
   }
 
   @Override
-  public int getProgress(InterpreterContext context) {
+  public RemoteInterpreterProgress getProgress(InterpreterContext context) {
     if (s_paraToQH.containsKey(context.getParagraphId())) {
       s_logger.info("number of items for which progress can be reported :" + s_paraToQH.size());
       s_logger.info("number of open lensclient :" + s_clientMap.size());
@@ -410,15 +411,15 @@ public class LensInterpreter extends Interpreter {
           if (d.intValue() == 100) {
             s_paraToQH.remove(context.getParagraphId());
           }
-          return d.intValue();
+          return new RemoteInterpreterProgress(d.intValue(), getLog());
         } else {
-          return 1;
+          return new RemoteInterpreterProgress(1, getLog());
         }
       }
       catch (Exception e) {
         s_logger.error("unable to get progress for (" + context.getParagraphId() + ") :" + qh, e);
         s_paraToQH.remove(context.getParagraphId());
-        return 0;
+        return new RemoteInterpreterProgress(0, getLog());
       } finally {
         if (lensClient != null) {
           closeLensClient(lensClient);
@@ -429,7 +430,7 @@ public class LensInterpreter extends Interpreter {
         }
       }
     }
-    return 0;
+    return new RemoteInterpreterProgress(0, getLog());
   }
 
   @Override

@@ -51,6 +51,7 @@ import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.InterpreterUtils;
 import org.apache.zeppelin.interpreter.WrappedInterpreter;
+import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterProgress;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.apache.zeppelin.spark.dep.SparkDependencyContext;
@@ -829,18 +830,18 @@ public class SparkInterpreter extends Interpreter {
   }
 
   @Override
-  public int getProgress(InterpreterContext context) {
+  public RemoteInterpreterProgress getProgress(InterpreterContext context) {
     String jobGroup = getJobGroup(context);
     int completedTasks = 0;
     int totalTasks = 0;
 
     DAGScheduler scheduler = sc.dagScheduler();
     if (scheduler == null) {
-      return 0;
+      return new RemoteInterpreterProgress(0, getLog());
     }
     HashSet<ActiveJob> jobs = scheduler.activeJobs();
     if (jobs == null || jobs.size() == 0) {
-      return 0;
+      return new RemoteInterpreterProgress(0, getLog());
     }
     Iterator<ActiveJob> it = jobs.iterator();
     while (it.hasNext()) {
@@ -859,7 +860,7 @@ public class SparkInterpreter extends Interpreter {
             | InvocationTargetException | NoSuchMethodException
             | SecurityException e) {
           logger.error("Can't get progress info", e);
-          return 0;
+          return new RemoteInterpreterProgress(0, getLog());
         }
         totalTasks += progressInfo[0];
         completedTasks += progressInfo[1];
@@ -867,9 +868,9 @@ public class SparkInterpreter extends Interpreter {
     }
 
     if (totalTasks == 0) {
-      return 0;
+      return new RemoteInterpreterProgress(0, getLog());
     }
-    return completedTasks * 100 / totalTasks;
+    return new RemoteInterpreterProgress(completedTasks * 100 / totalTasks, getLog());
   }
 
   private int[] getProgressFromStage_1_0x(JobProgressListener sparkListener, Object stage)

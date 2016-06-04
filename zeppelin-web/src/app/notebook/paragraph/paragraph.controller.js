@@ -994,7 +994,9 @@ angular.module('zeppelinWebApp')
 
   $scope.$on('updateProgress', function(event, data) {
     if (data.id === $scope.paragraph.id) {
-      $scope.currentProgress = data.progress;
+      $scope.currentProgress = data.progress.progress;
+      console.log(data.progress.progressLog);
+      $scope.appendTextOutput(data.progress.progressLog);
     }
   });
 

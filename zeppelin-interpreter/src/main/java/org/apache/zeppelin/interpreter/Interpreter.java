@@ -18,6 +18,7 @@
 package org.apache.zeppelin.interpreter;
 
 
+import java.io.StringWriter;
 import java.net.URL;
 import java.util.Collections;
 import java.util.HashMap;
@@ -26,6 +27,9 @@ import java.util.Map;
 import java.util.Properties;
 
 import com.google.gson.annotations.SerializedName;
+import org.apache.log4j.SimpleLayout;
+import org.apache.log4j.WriterAppender;
+import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterProgress;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.slf4j.Logger;
@@ -86,9 +90,9 @@ public abstract class Interpreter {
    * get interpret() method running process in percentage.
    *
    * @param context
-   * @return number between 0-100
+   * @return RemoteInterpreterProgress
    */
-  public abstract int getProgress(InterpreterContext context);
+  public abstract RemoteInterpreterProgress getProgress(InterpreterContext context);
 
   /**
    * Get completion list based on cursor position.
@@ -128,10 +132,21 @@ public abstract class Interpreter {
   private InterpreterGroup interpreterGroup;
   private URL [] classloaderUrls;
   protected Properties property;
+  protected StringWriter logWriter;
 
   public Interpreter(Properties property) {
     logger.debug("Properties: {}", property);
     this.property = property;
+    this.logWriter = new StringWriter();
+    org.apache.log4j.Logger.getRootLogger()
+        .addAppender(new WriterAppender(new SimpleLayout(), logWriter));
+  }
+
+  protected String getLog() {
+    String log = logWriter.toString();
+    System.out.println("getLog: " + log);
+    logWriter.getBuffer().setLength(0);
+    return log;
   }
 
   public void setProperty(Properties property) {

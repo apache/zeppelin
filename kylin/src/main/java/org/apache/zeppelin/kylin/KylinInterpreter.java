@@ -28,6 +28,7 @@ import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterPropertyBuilder;
 import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterProgress;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -107,8 +108,8 @@ public class KylinInterpreter extends Interpreter {
   }
 
   @Override
-  public int getProgress(InterpreterContext context) {
-    return 0;
+  public RemoteInterpreterProgress getProgress(InterpreterContext context) {
+    return new RemoteInterpreterProgress(0, getLog());
   }
 
   @Override

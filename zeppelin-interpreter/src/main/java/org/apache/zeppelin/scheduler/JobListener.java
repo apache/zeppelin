@@ -17,11 +17,13 @@
 
 package org.apache.zeppelin.scheduler;
 
+import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterProgress;
+
 /**
  * TODO(moon) : add description.
  */
 public interface JobListener {
-  public void onProgressUpdate(Job job, int progress);
+  public void onProgressUpdate(Job job, RemoteInterpreterProgress progress);
 
   public void beforeStatusChange(Job job, Job.Status before, Job.Status after);
 

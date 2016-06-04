@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.apache.zeppelin.display.AngularObjectRegistry;
+import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterProgress;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.interpreter.Interpreter;
@@ -95,8 +96,8 @@ public class RemoteSchedulerTest implements RemoteInterpreterProcessListener {
     Job job = new Job("jobId", "jobName", null, 200) {
 
       @Override
-      public int progress() {
-        return 0;
+      public RemoteInterpreterProgress progress() {
+        return new RemoteInterpreterProgress();
       }
 
       @Override
@@ -194,8 +195,8 @@ public class RemoteSchedulerTest implements RemoteInterpreterProcessListener {
           new LinkedList<InterpreterContextRunner>(), null);
 
       @Override
-      public int progress() {
-        return 0;
+      public RemoteInterpreterProgress progress() {
+        return new RemoteInterpreterProgress();
       }
 
       @Override
@@ -232,8 +233,8 @@ public class RemoteSchedulerTest implements RemoteInterpreterProcessListener {
           new LinkedList<InterpreterContextRunner>(), null);
 
       @Override
-      public int progress() {
-        return 0;
+      public RemoteInterpreterProgress progress() {
+        return new RemoteInterpreterProgress();
       }
 
       @Override

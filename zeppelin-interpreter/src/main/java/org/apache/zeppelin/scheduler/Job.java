@@ -22,6 +22,7 @@ import java.util.Date;
 import java.util.Map;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterProgress;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -227,7 +228,7 @@ public abstract class Job {
     this.jobName = jobName;
   }
 
-  public abstract int progress();
+  public abstract RemoteInterpreterProgress progress();
 
   public abstract Map<String, Object> info();
 

@@ -20,6 +20,7 @@ package org.apache.zeppelin.scheduler;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterProgress;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.JobListener;
 import org.slf4j.Logger;
@@ -62,11 +63,11 @@ public class SleepingJob extends Job{
 	}
 
 	@Override
-  public int progress() {
+  public RemoteInterpreterProgress progress() {
 		long p = (System.currentTimeMillis() - start)*100 / time;
 		if(p<0) p = 0;
 		if(p>100) p = 100;
-		return (int) p;
+		return new RemoteInterpreterProgress((int) p, "");
 	}
 
 	@Override
