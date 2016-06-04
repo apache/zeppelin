@@ -175,6 +175,12 @@ You can configure Zeppelin with both **environment variables** in `conf/zeppelin
     <td>The root directory where Zeppelin notebook directories are saved</td>
   </tr>
   <tr>
+    <td>ZEPPELIN_INTERPRETER_DOWNLOAD_DIR</td>
+    <td>zeppelin.interpreter.download.dir</td>
+    <td>interpreter</td>
+    <td>Path for interpreter download</td>
+  </tr>
+  <tr>
     <td>ZEPPELIN_NOTEBOOK_S3_BUCKET</td>
     <td>zeppelin.notebook.s3.bucket</td>
     <td>zeppelin</td>
