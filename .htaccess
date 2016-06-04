@@ -1,0 +1,4 @@
+# redirect rules to prevent old links from breaking
+RewriteEngine On
+
+RewriteRule ^/?docs/0.6.0-incubating-SNAPSHOT/(.*) http://zeppelin.apache.org/docs/0.6.0-SNAPSHOT/$1  [R=301,L,NE]
