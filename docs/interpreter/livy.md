@@ -23,7 +23,7 @@ Additional requirements for the Livy interpreter are:
  * Livy server.
 
 ### Configuration
-We added some common configurations for spark, and you can set any configuration you want which should start with `spark.`
+We added some common configurations for spark, and you can set any configuration you want which should start with `livy.spark.`
 <table class="table-configuration">
   <tr>
     <th>Property</th>
@@ -31,7 +31,7 @@ We added some common configurations for spark, and you can set any configuration
     <th>Description</th>
   </tr>
   <tr>
-      <td>spark.master</td>
+      <td>livy.spark.master</td>
       <td>local[*]</td>
       <td>Spark master uri. ex) spark://masterhost:7077</td>
     </tr>
@@ -46,22 +46,22 @@ We added some common configurations for spark, and you can set any configuration
     <td>Max number of SparkSQL result to display.</td>
   </tr>
     <tr>
-    <td>spark.driver.cores</td>
+    <td>livy.spark.driver.cores</td>
     <td>1</td>
     <td>Driver cores. ex) 1, 2.</td>
   </tr>
     <tr>
-    <td>spark.driver.memory</td>
+    <td>livy.spark.driver.memory</td>
     <td>512m</td>
     <td>Driver memory. ex) 512m, 32g.</td>
   </tr>
     <tr>
-    <td>spark.executor.instances</td>
+    <td>livy.spark.executor.instances</td>
     <td>3</td>
     <td>Executor instances. ex) 1, 4.</td>
   </tr>
     <tr>
-    <td>spark.executor.cores</td>
+    <td>livy.spark.executor.cores</td>
     <td>1</td>
     <td>Max number of SparkSQL result to display.</td>
   </tr>

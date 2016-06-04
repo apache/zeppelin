@@ -68,8 +68,9 @@ public class LivyHelper {
       Iterator<Entry<Object, Object>> it = property.entrySet().iterator();
       while (it.hasNext()) {
         Entry<Object, Object> pair = it.next();
-        if (pair.getKey().toString().startsWith("spark.") && !pair.getValue().toString().isEmpty())
-          conf.put(pair.getKey().toString(), pair.getValue().toString());
+        if (pair.getKey().toString().startsWith("livy.spark.") && 
+            !pair.getValue().toString().isEmpty())
+          conf.put(pair.getKey().toString().substring(5), pair.getValue().toString());
       }
 
       String confData = gson.toJson(conf);

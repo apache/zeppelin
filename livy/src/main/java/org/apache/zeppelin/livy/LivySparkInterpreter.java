@@ -45,21 +45,21 @@ public class LivySparkInterpreter extends Interpreter {
         LivySparkInterpreter.class.getName(),
         new InterpreterPropertyBuilder()
             .add("zeppelin.livy.url", DEFAULT_URL, "The URL for Livy Server.")
-            .add("spark.master", LOCAL, "Spark master uri. ex) spark://masterhost:7077")
-            .add("spark.driver.cores", "", "Driver cores. ex) 1, 2")
-            .add("spark.driver.memory", "", "Driver memory. ex) 512m, 32g")
-            .add("spark.executor.instances", "", "Executor instances. ex) 1, 4")
-            .add("spark.executor.cores", "", "Num cores per executor. ex) 1, 4")
-            .add("spark.executor.memory", "", 
+            .add("livy.spark.master", LOCAL, "Spark master uri. ex) spark://masterhost:7077")
+            .add("livy.spark.driver.cores", "", "Driver cores. ex) 1, 2")
+            .add("livy.spark.driver.memory", "", "Driver memory. ex) 512m, 32g")
+            .add("livy.spark.executor.instances", "", "Executor instances. ex) 1, 4")
+            .add("livy.spark.executor.cores", "", "Num cores per executor. ex) 1, 4")
+            .add("livy.spark.executor.memory", "", 
                  "Executor memory per worker instance. ex) 512m, 32g")
-            .add("spark.dynamicAllocation.enabled", "", "Use dynamic resource allocation")
-            .add("spark.dynamicAllocation.cachedExecutorIdleTimeout", "", 
+            .add("livy.spark.dynamicAllocation.enabled", "", "Use dynamic resource allocation")
+            .add("livy.spark.dynamicAllocation.cachedExecutorIdleTimeout", "", 
                  "Remove an executor which has cached data blocks")
-            .add("spark.dynamicAllocation.minExecutors", "", 
+            .add("livy.spark.dynamicAllocation.minExecutors", "", 
                  "Lower bound for the number of executors if dynamic allocation is enabled. ")
-            .add("spark.dynamicAllocation.initialExecutors", "", 
+            .add("livy.spark.dynamicAllocation.initialExecutors", "", 
                  "Initial number of executors to run if dynamic allocation is enabled. ")
-            .add("spark.dynamicAllocation.maxExecutors", "", 
+            .add("livy.spark.dynamicAllocation.maxExecutors", "", 
                  "Upper bound for the number of executors if dynamic allocation is enabled. ")
             .build()
     );
