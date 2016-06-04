@@ -31,9 +31,7 @@ import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.apache.zeppelin.search.LuceneSearch;
 import org.apache.zeppelin.search.SearchService;
 import org.apache.zeppelin.socket.AppMainServer;
-import org.apache.zeppelin.socket.JobMangerServer;
 import org.apache.zeppelin.socket.NotebookServer;
-import org.apache.zeppelin.socket.WebSocketServer;
 import org.apache.zeppelin.user.Credentials;
 import org.eclipse.jetty.http.HttpVersion;
 import org.eclipse.jetty.server.*;
@@ -49,7 +47,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.servlet.DispatcherType;
-import javax.servlet.Servlet;
 import javax.ws.rs.core.Application;
 import java.io.File;
 import java.io.IOException;
@@ -108,17 +105,8 @@ public class ZeppelinServer extends Application {
     // REST api
     setupRestApiContextHandler(webApp, conf);
 
-    // Main WS server
-    AppMainServer mainWsServer = setupWSAppMainServer(webApp, conf);
-
-    // Notebook WS server
+    // Main Notebook WS server
     notebookWsServer = setupNotebookServer(webApp, conf);
-    mainWsServer.setSubWebSocketServer("notebookServer", notebookWsServer);
-
-    // Job Manager WS server
-    JobMangerServer jobManagerServer = setupJobManagerServer(webApp, conf);
-    mainWsServer.setSubWebSocketServer("jobManagerServer", jobManagerServer);
-
 
     //Below is commented since zeppelin-docs module is removed.
     //final WebAppContext webAppSwagg = setupWebAppSwagger(conf);
@@ -133,7 +121,7 @@ public class ZeppelinServer extends Application {
     LOG.info("Done, zeppelin server started");
 
     // register observer for job manager.
-    notebook.getNotebookEventObserver().addObserver(jobManagerServer);
+    notebook.getNotebookEventObserver().addObserver(notebookWsServer);
 
     Runtime.getRuntime().addShutdownHook(new Thread(){
       @Override public void run() {
@@ -208,19 +196,6 @@ public class ZeppelinServer extends Application {
     return server;
   }
 
-  private static AppMainServer setupWSAppMainServer(WebAppContext webapp,
-      ZeppelinConfiguration conf) {
-    AppMainServer appMainWsServer = new AppMainServer();
-    String maxTextMessageSize = conf.getWebsocketMaxTextMessageSize();
-    final ServletHolder servletHolder = new ServletHolder(appMainWsServer);
-    servletHolder.setInitParameter("maxTextMessageSize", maxTextMessageSize);
-    final ServletContextHandler cxfContext = new ServletContextHandler(
-        ServletContextHandler.SESSIONS);
-    webapp.addServlet(servletHolder, "/ws/*");
-
-    return appMainWsServer;
-  }
-
   private static NotebookServer setupNotebookServer(WebAppContext webapp,
       ZeppelinConfiguration conf) {
     NotebookServer notebookWsServer = new NotebookServer();
@@ -229,20 +204,8 @@ public class ZeppelinServer extends Application {
     servletHolder.setInitParameter("maxTextMessageSize", maxTextMessageSize);
     final ServletContextHandler cxfContext = new ServletContextHandler(
             ServletContextHandler.SESSIONS);
-    webapp.addServlet(servletHolder, "/notebook/*");
+    webapp.addServlet(servletHolder, "/ws/*");
     return notebookWsServer;
-  }
-
-  private static JobMangerServer setupJobManagerServer(WebAppContext webapp,
-      ZeppelinConfiguration conf) {
-    JobMangerServer jobMangerWsServer = new JobMangerServer();
-    String maxTextMessageSize = conf.getWebsocketMaxTextMessageSize();
-    final ServletHolder servletHolder = new ServletHolder(jobMangerWsServer);
-    servletHolder.setInitParameter("maxTextMessageSize", maxTextMessageSize);
-    final ServletContextHandler cxfContext = new ServletContextHandler(
-            ServletContextHandler.SESSIONS);
-    webapp.addServlet(servletHolder, "/jobmanager/*");
-    return jobMangerWsServer;
   }
 
   private static SslContextFactory getSslContextFactory(ZeppelinConfiguration conf) {

@@ -103,12 +103,18 @@ angular.module('zeppelinWebApp')
             var changeOriginTarget = indexStore[changedItem.notebookId];
 
             if (changedItem.isRemoved !== undefined && changedItem.isRemoved === true) {
+
               // remove Item.
-              delete indexStore[changedItem.notebookId];
               var removeIndex = _.findIndex(indexStore, changedItem.notebookId);
-              indexStore.splice(removeIndex, 1);
+              if (removeIndex > -1) {
+                indexStore.splice(removeIndex, 1);
+              }
+
               removeIndex = _.findIndex(jobInfomations, { 'notebookId' : changedItem.notebookId});
-              indexStore.splice(removeIndex, 1);
+              if (removeIndex) {
+                jobInfomations.splice(removeIndex, 1);
+              }
+
             } else {
               // change value for item.
               changeOriginTarget.isRunningJob = changedItem.isRunningJob;
