@@ -33,3 +33,11 @@
 .jobManagerHead .header {
   font-family: 'Roboto', sans-serif;
 }
+
+.job-note-name-query {
+  padding: 6px;
+  color: #000;
+  height: 22px;
+  width: 200px;
+  font: normal normal normal 14px/1 FontAwesome;
+}

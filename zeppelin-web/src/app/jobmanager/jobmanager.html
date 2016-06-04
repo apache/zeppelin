@@ -36,27 +36,38 @@ limitations under the License.
         <div class="form-inline">
           <span class="labelBtn btn-group">
             <button type="button"
-                    class="btn btn-default"
+                    class="btn btn-default btn-xs"
                     ng-click="onChangeRunJobToAlwaysTopToggle()"
                     ng-class="{true : 'btn-primary', false : ''}[filterConfig.RUNNING_ALWAYS_TOP]"
                     tooltip-placement="right" tooltip="Running the Notebook always on top">
               <i class="fa fa-thumb-tack"></i>
             </button>
             <button type="button"
-                    class="btn btn-default"
+                    class="btn btn-default btn-xs"
                     ng-click="onChangeSortAsc()"
                     tooltip-placement="top" tooltip="Sort by Notebook name">
               <i class="fa" ng-class="{true: 'fa-sort-alpha-asc', false : 'fa-sort-alpha-desc'}[filterConfig.SORT_BY_ASC]"></i>
             </button>
           </span>
-          <select
-            class="form-control"
-            ng-options="option.value as option.name for option in ACTIVE_INTERPRETERS"
-            ng-model="filterConfig.FILTER_VALUE_INTERPRETER"
-            ng-change="doFiltering(jobInfomations, filterConfig, isLoadingFilter)">
-          </select>
+          <span class="btn-group">
+            <button type="button" class="btn btn-default btn-xs dropdown-toggle"
+                    data-toggle="dropdown"
+                    style="width:100px; text-align: right !important;">
+              <span class="text-right">
+                {{filterValueToName(filterConfig.FILTER_VALUE_INTERPRETER)}} <span class="caret"></span>
+              </span>
+            </button>
+            <ul class="dropdown-menu pull-left" role="menu">
+              <li ng-repeat="interpreterOption in ACTIVE_INTERPRETERS">
+                <a style="cursor:pointer" ng-click="setFilterValue(interpreterOption.value)">
+                  {{filterValueToName(interpreterOption.value)}}
+                </a>
+              </li>
+            </ul>
+          </span>
           <input
-            class="form-control"
+            class="job-note-name-query form-control btn-xs"
+            placeholder="&#xf002 Filter"
             type="text" ng-model="filterConfig.FILTER_VALUE_NOTEBOOK_NAME"
             ng-keyup="doFilterInputTyping($event, jobInfomations, filterConfig, isLoadingFilter)"/>
         </div>

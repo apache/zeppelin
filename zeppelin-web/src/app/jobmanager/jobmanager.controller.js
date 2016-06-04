@@ -140,6 +140,21 @@ angular.module('zeppelinWebApp')
         });
       };
 
+      $scope.filterValueToName = function (filterValue) {
+        var index = _.findIndex($scope.ACTIVE_INTERPRETERS, {value : filterValue});
+
+        if ($scope.ACTIVE_INTERPRETERS[index].name !== undefined) {
+          return $scope.ACTIVE_INTERPRETERS[index].name;
+        } else {
+          return 'undefined';
+        }
+      };
+
+      $scope.setFilterValue = function (filterValue) {
+        $scope.filterConfig.FILTER_VALUE_INTERPRETER = filterValue;
+        $scope.doFiltering($scope.jobInfomations, $scope.filterConfig);
+      };
+
       $scope.onChangeRunJobToAlwaysTopToggle = function () {
         $scope.filterConfig.RUNNING_ALWAYS_TOP = !$scope.filterConfig.RUNNING_ALWAYS_TOP;
         $scope.doFiltering($scope.jobInfomations, $scope.filterConfig);
