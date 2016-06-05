@@ -25,7 +25,7 @@ angular.module('zeppelinWebApp')
     var filteringNote = function(notebooks, filteredNotes) {
       _.each(notebooks, function(notebook) {
 
-        if (notebook.name.toLowerCase().indexOf(searchText) != -1) {
+        if (notebook.name.toLowerCase().indexOf(searchText) !== -1) {
           filteredNotes.push(notebook);
           return notebook;
         }
@@ -34,7 +34,7 @@ angular.module('zeppelinWebApp')
           filteringNote(notebook.children, filteredNotes);
         }
       });
-    }
+    };
 
     return _.filter(notebooks, function(notebook) {
       if (notebook.children) {
@@ -46,11 +46,11 @@ angular.module('zeppelinWebApp')
         }
       }
 
-      if(notebook.name.toLowerCase().indexOf(searchText) != -1) {
+      if(notebook.name.toLowerCase().indexOf(searchText) !== -1) {
         return notebook;
       }
     });
-  }
+  };
 })
 .controller('NavCtrl', function($scope, $rootScope, $http, $routeParams,
     $location, notebookListDataFactory, baseUrlSrv, websocketMsgSrv, arrayOrderingSrv) {
