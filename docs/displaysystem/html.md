@@ -1,6 +1,6 @@
 ---
 layout: page
-title: "Text/Html Display System"
+title: "Html Display System"
 description: ""
 group: display
 ---

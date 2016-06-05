@@ -69,6 +69,7 @@ export ZEPPELIN_NOTEBOOK_S3_USER = username
 ```
 
 Or using the file **zeppelin-site.xml** uncomment and complete the S3 settings:
+
 ```
 <property>
   <name>zeppelin.notebook.s3.bucket</name>

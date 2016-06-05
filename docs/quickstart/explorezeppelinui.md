@@ -1,8 +1,8 @@
 ---
 layout: page
-title: "Zeppelin UI Layout"
+title: "Explore Zeppelin UI"
 description: "Description of Zeppelin UI Layout"
-group: ui_layout
+group: quickstart
 ---
 <!--
 Licensed under the Apache License, Version 2.0 (the "License");
