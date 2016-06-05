@@ -1,8 +1,8 @@
 ---
 layout: page
-title: "Zeppelin UI Layout"
+title: "Explore Zeppelin UI"
 description: "Description of Zeppelin UI Layout"
-group: ui_layout
+group: quickstart
 ---
 <!--
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -26,7 +26,7 @@ The first time you connect to Zeppelin, you'll land at the main page similar to 
 On the left of the page are listed all existing notes. Those notes are stored by default in the `$ZEPPELIN_HOME/notebook` folder.
 
 You can filter them by name using the input text form. You can also create an new note, refresh the list of existing notes
-(in case you manually copy them into the `$ZEPPELIN_HOME/notebook` folder) and import a note
+(in case you manually copy them into the `$ZEPPELIN_HOME/notebook` folder) and import a note.
 
 <img src="../assets/themes/zeppelin/img/ui-img/notes_management.png" />
 
@@ -35,7 +35,7 @@ if you provide the URL.
 
 <img src="../assets/themes/zeppelin/img/ui-img/note_import_dialog.png" />
 
-By default, the name of the imported note is the same as the original note but you can override it by providing a new name
+By default, the name of the imported note is the same as the original note but you can override it by providing a new name.
 
 <br />
 ## Menus
@@ -106,11 +106,11 @@ From this dialog, you can (in descending order):
 
 ### Note toolbar
 
-At the top of the note, you can find a toolbar which exposes command buttons as well as configuration, security and display options
+At the top of the note, you can find a toolbar which exposes command buttons as well as configuration, security and display options.
 
 <img src="../assets/themes/zeppelin/img/ui-img/note_toolbar.png" />
 
-On the far right is displayed the note name, just click on it to reveal the input form and update it
+On the far right is displayed the note name, just click on it to reveal the input form and update it.
 
 In the middle of the toolbar you can find the command buttons:
 

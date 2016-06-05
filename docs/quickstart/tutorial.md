@@ -2,7 +2,7 @@
 layout: page
 title: "Tutorial"
 description: "Tutorial is valid for Spark 1.3 and higher"
-group: tutorial
+group: quickstart
 ---
 <!--
 Licensed under the Apache License, Version 2.0 (the "License");
