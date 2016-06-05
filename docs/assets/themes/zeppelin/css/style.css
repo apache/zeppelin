@@ -316,10 +316,10 @@ a.anchor {
   display: inline-block;
 }
 .content ul :first-child, ol :first-child {
-  margin-top: 10px;
+  margin-top: 0px;
 }
 
-.content p {
+.content .nav-tabs {
   margin-bottom: 10px;
 }
 
