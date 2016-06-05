@@ -23,7 +23,11 @@ Additional requirements for the Livy interpreter are:
  * Livy server.
 
 ### Configuration
-We added some common configurations for spark, and you can set any configuration you want which should start with `livy.spark.`
+We added some common configurations for spark, and you can set any configuration you want.
+This link contains all spark configurations: http://spark.apache.org/docs/latest/configuration.html#available-properties.
+And instead of starting property with `spark.` it should be replaced with `livy.spark.`.
+Example: `spark.master` to `livy.spark.master`
+
 <table class="table-configuration">
   <tr>
     <th>Property</th>
