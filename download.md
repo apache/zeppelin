@@ -67,9 +67,9 @@ For developers, to get latest *0.6.0-incubating-SNAPSHOT* check [README](https:/
      [md5](http://archive.apache.org/dist/incubator/zeppelin/0.5.5-incubating/zeppelin-0.5.5-incubating-bin-all.tgz.md5),
      [sha](http://archive.apache.org/dist/incubator/zeppelin/0.5.5-incubating/zeppelin-0.5.5-incubating-bin-all.tgz.sha512))
 
+<p />
 
   - 0.5.0-incubating released on July 23, 2015 ([release notes](./releases/zeppelin-release-0.5.0-incubating.html)) ([git tag](https://git-wip-us.apache.org/repos/asf?p=incubator-zeppelin.git;a=tag;h=refs/tags/v0.5.0))
-
 
     * Source:
     <a style="cursor:pointer" onclick="ga('send', 'event', 'download', 'zeppelin-src', '0.5.0-incubating'); window.location.href='http://archive.apache.org/dist/incubator/zeppelin/0.5.0-incubating/zeppelin-0.5.0-incubating.tgz'">zeppelin-0.5.0-incubating.tgz</a>
