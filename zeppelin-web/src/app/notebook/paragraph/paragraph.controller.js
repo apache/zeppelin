@@ -1241,20 +1241,19 @@ angular.module('zeppelinWebApp')
         manualRowResize: true,
         editor: false,
         fillHandle: false,
-        disableVisualSelection: true,
         cells: function (row, col, prop) {
           var cellProperties = {};
-            cellProperties.renderer = function(instance, td, row, col, prop, value, cellProperties) {
-              Handsontable.NumericCell.renderer.apply(this, arguments);
-              if (!isNaN(value)) {
-                cellProperties.type = 'numeric';
-                cellProperties.format = '0,0';
-                cellProperties.editor = false;
-                td.style.textAlign = 'left';
-              } else if (value.length > '%html'.length && '%html ' === value.substring(0, '%html '.length)) {
-                td.innerHTML = value.substring('%html'.length);
-              }
-            };
+          cellProperties.renderer = function(instance, td, row, col, prop, value, cellProperties) {
+            if (!isNaN(value)) {
+              cellProperties.format = '0,0.[00000]';
+              td.style.textAlign = 'left';
+              Handsontable.renderers.NumericRenderer.apply(this, arguments);
+            } else if (value.length > '%html'.length && '%html ' === value.substring(0, '%html '.length)) {
+              td.innerHTML = value.substring('%html'.length);
+            } else {
+              Handsontable.renderers.TextRenderer.apply(this, arguments);
+            }
+          };
           return cellProperties;
         }
       });
