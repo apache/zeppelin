@@ -125,8 +125,8 @@ please check [its own contribution guidelines](https://github.com/apache/incubat
 
 ### Code convention
 We are following Google Code style:
-* [Java style](http://google-styleguide.googlecode.com/svn/trunk/javaguide.html) 
-* [Shell style](https://google-styleguide.googlecode.com/svn/trunk/shell.xml)
+* [Java style](https://google.github.io/styleguide/javaguide.html)
+* [Shell style](https://google.github.io/styleguide/shell.xml)
 
 Check style report location are in `${submodule}/target/site/checkstyle.html`
 Test coverage report location are in `${submodule}/target/site/cobertura/index.html`
