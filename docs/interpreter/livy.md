@@ -51,23 +51,53 @@ Example: `spark.master` to `livy.spark.master`
   </tr>
     <tr>
     <td>livy.spark.driver.cores</td>
-    <td>1</td>
+    <td></td>
     <td>Driver cores. ex) 1, 2.</td>
   </tr>
     <tr>
     <td>livy.spark.driver.memory</td>
-    <td>512m</td>
+    <td></td>
     <td>Driver memory. ex) 512m, 32g.</td>
   </tr>
     <tr>
     <td>livy.spark.executor.instances</td>
-    <td>3</td>
+    <td></td>
     <td>Executor instances. ex) 1, 4.</td>
   </tr>
     <tr>
     <td>livy.spark.executor.cores</td>
-    <td>1</td>
-    <td>Max number of SparkSQL result to display.</td>
+    <td></td>
+    <td>Num cores per executor. ex) 1, 4.</td>
+  </tr>
+  <tr>
+    <td>livy.spark.executor.memory</td>
+    <td></td>
+    <td>Executor memory per worker instance. ex) 512m, 32g.</td>
+  </tr>
+  <tr>
+    <td>livy.spark.dynamicAllocation.enabled</td>
+    <td></td>
+    <td>Use dynamic resource allocation. ex) True, False.</td>
+  </tr>
+  <tr>
+    <td>livy.spark.dynamicAllocation.cachedExecutorIdleTimeout</td>
+    <td></td>
+    <td>Remove an executor which has cached data blocks.</td>
+  </tr>
+  <tr>
+    <td>livy.spark.dynamicAllocation.minExecutors</td>
+    <td></td>
+    <td>Lower bound for the number of executors.</td>
+  </tr>
+  <tr>
+    <td>livy.spark.dynamicAllocation.initialExecutors</td>
+    <td></td>
+    <td>Initial number of executors to run.</td>
+  </tr>
+  <tr>
+    <td>livy.spark.dynamicAllocation.maxExecutors</td>
+    <td></td>
+    <td>Upper bound for the number of executors.</td>
   </tr>
 </table>
 
