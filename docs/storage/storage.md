@@ -114,7 +114,6 @@ export ZEPPELIN_NOTEBOOK_S3_KMS_KEY_ID = kms-key-id
 ```
 
 Or using the following setting in **zeppelin-site.xml**:
-
 ```
 <property>
   <name>zeppelin.notebook.s3.kmsKeyID</name>
@@ -133,7 +132,6 @@ export ZEPPELIN_NOTEBOOK_S3_EMP = class-name
 ```
 
 Or using the following setting in **zeppelin-site.xml**:
-
 ```
 <property>
   <name>zeppelin.notebook.s3.encryptionMaterialsProvider</name>
@@ -146,6 +144,7 @@ Or using the following setting in **zeppelin-site.xml**:
 
 Using `AzureNotebookRepo` you can connect your Zeppelin with your Azure account for notebook storage.
 
+</br>
 
 First of all, input your `AccountName`, `AccountKey`, and `Share Name` in the file **zeppelin-site.xml** by commenting out and completing the next properties:
 
