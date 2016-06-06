@@ -64,11 +64,29 @@ limitations under the License.
                   isolated
                 </a>
               </li>
+              <li>
+                <a style="cursor:pointer"
+                   tooltip="Already executing Remote Interpreter Process"
+                   ng-click="setSessionOption(setting.id, 'executing')">
+                  executing
+                </a>
+              </li>
+              
             </ul>
           </span>
           <span>Interpreter for note</span>
         </div>
         <br />
+        <div ng-show="newInterpreterSetting.option.executing" class="form-group" style="width:200px">
+          <b>Host</b>
+            <input id="newInterpreterSettingHost" input pu-elastic-input
+              pu-elastic-input-minwidth="180px" ng-model="newInterpreterSetting.option.host" />
+        </div>
+        <div ng-show="newInterpreterSetting.option.executing" class="form-group" style="width:200px">
+          <b>Port</b>
+           <input id="newInterpreterSettingPort" input pu-elastic-input
+            pu-elastic-input-minwidth="180px" ng-model="newInterpreterSetting.option.port" />
+        </div>
 
         <b>Properties</b>
         <table class="table table-striped properties">
