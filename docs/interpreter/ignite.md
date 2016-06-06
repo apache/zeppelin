@@ -74,7 +74,7 @@ After configuring Ignite interpreter, create your own notebook. Then you can bin
 
 ![Binding Interpreters](../assets/themes/zeppelin/img/docs-img/ignite-interpreter-binding.png)
 
-For more interpreter binding information see [here](http://zeppelin.incubator.apache.org/docs/manual/interpreters.html).
+For more interpreter binding information see [here](http://zeppelin.apache.org/docs/manual/interpreters.html).
 
 ### How to use Ignite SQL interpreter
 In order to execute SQL query, use ` %ignite.ignitesql ` prefix. <br>

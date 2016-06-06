@@ -28,7 +28,7 @@ In this documentation, we will explain how you can install Zeppelin from **Binar
 
 ### Install with Binary Package
 
-If you want to install Zeppelin with latest binary package, please visit [this page](http://zeppelin.incubator.apache.org/download.html).
+If you want to install Zeppelin with latest binary package, please visit [this page](http://zeppelin.apache.org/download.html).
 
 ### Build from Zeppelin Source
 

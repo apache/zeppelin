@@ -42,6 +42,7 @@ import org.apache.zeppelin.scheduler.JobListener;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.apache.zeppelin.search.SearchService;
 import org.apache.zeppelin.search.LuceneSearch;
+import org.apache.zeppelin.user.Credentials;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -63,6 +64,7 @@ public class NotebookRepoSyncTest implements JobListenerFactory {
   private DependencyResolver depResolver;
   private SearchService search;
   private NotebookAuthorization notebookAuthorization;
+  private Credentials credentials;
   private static final Logger LOG = LoggerFactory.getLogger(NotebookRepoSyncTest.class);
   
   @Before
@@ -97,7 +99,9 @@ public class NotebookRepoSyncTest implements JobListenerFactory {
     search = mock(SearchService.class);
     notebookRepoSync = new NotebookRepoSync(conf);
     notebookAuthorization = new NotebookAuthorization(conf);
-    notebookSync = new Notebook(conf, notebookRepoSync, schedulerFactory, factory, this, search, notebookAuthorization);
+    credentials = new Credentials(conf.credentialsPersist(), conf.getCredentialsPath());
+    notebookSync = new Notebook(conf, notebookRepoSync, schedulerFactory, factory, this, search,
+            notebookAuthorization, credentials);
   }
 
   @After
@@ -222,7 +226,8 @@ public class NotebookRepoSyncTest implements JobListenerFactory {
     ZeppelinConfiguration vConf = ZeppelinConfiguration.create();
 
     NotebookRepoSync vRepoSync = new NotebookRepoSync(vConf);
-    Notebook vNotebookSync = new Notebook(vConf, vRepoSync, schedulerFactory, factory, this, search, null);
+    Notebook vNotebookSync = new Notebook(vConf, vRepoSync, schedulerFactory, factory, this, search,
+            notebookAuthorization, credentials);
 
     // one git versioned storage initialized
     assertThat(vRepoSync.getRepoCount()).isEqualTo(1);

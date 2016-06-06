@@ -36,14 +36,52 @@ In 'Separate Interpreter for each note' mode, new Interpreter instance will be c
 ### Make your own Interpreter
 
 Creating a new interpreter is quite simple. Just extend [org.apache.zeppelin.interpreter](https://github.com/apache/incubator-zeppelin/blob/master/zeppelin-interpreter/src/main/java/org/apache/zeppelin/interpreter/Interpreter.java) abstract class and implement some methods.
-You can include `org.apache.zeppelin:zeppelin-interpreter:[VERSION]` artifact in your build system.
-Your interpreter name is derived from the static register method.
+You can include `org.apache.zeppelin:zeppelin-interpreter:[VERSION]` artifact in your build system. And you should your jars under your interpreter directory with specific directory name. Zeppelin server reads interpreter directories recursively and initializes interpreters including your own interpreter.
+
+There are three locations where you can store your interpreter group, name and other information. Zeppelin server tries to find the location below. Next, Zeppelin tries to find `interpareter-setting.json` in your interpreter jar. 
+
+```
+{ZEPPELIN_INTERPRETER_DIR}/{YOUR_OWN_INTERPRETER_DIR}/interpreter-setting.json
+```
+
+Here is an example of `interpareter-setting.json` on your own interpreter.
+
+```json
+[
+  {
+    "group": "your-group",
+    "name": "your-name",
+    "className": "your.own.interpreter.class",
+    "properties": {
+      "propertiies1": {
+        "envName": null,
+        "propertyName": "property.1.name",
+        "defaultValue": "propertyDefaultValue",
+        "description": "Property description"
+      },
+      "properties2": {
+        "envName": PROPERTIES_2,
+        "propertyName": null,
+        "defaultValue": "property2DefaultValue",
+        "description": "Property 2 description"
+      }, ...
+    }
+  },
+  {
+    ...
+  } 
+]
+```
+
+Finally, Zeppelin uses static initialization with the following:
 
 ```
 static {
     Interpreter.register("MyInterpreterName", MyClassName.class.getName());
   }
 ```
+
+**Static initialization is deprecated and will be supported until 0.6.0.**
 
 The name will appear later in the interpreter name option box during the interpreter configuration process.
 The name of the interpreter is what you later write to identify a paragraph which should be interpreted using this interpreter.

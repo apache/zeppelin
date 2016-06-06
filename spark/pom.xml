@@ -22,17 +22,17 @@
   <parent>
     <artifactId>zeppelin</artifactId>
     <groupId>org.apache.zeppelin</groupId>
-    <version>0.6.0-incubating-SNAPSHOT</version>
+    <version>0.6.0-SNAPSHOT</version>
     <relativePath>..</relativePath>
   </parent>
 
   <groupId>org.apache.zeppelin</groupId>
   <artifactId>zeppelin-spark</artifactId>
   <packaging>jar</packaging>
-  <version>0.6.0-incubating-SNAPSHOT</version>
+  <version>0.6.0-SNAPSHOT</version>
   <name>Zeppelin: Spark</name>
   <description>Zeppelin spark support</description>
-  <url>http://zeppelin.incubator.apache.org</url>
+  <url>http://zeppelin.apache.org</url>
 
   <properties>
     <jsoup.version>1.8.2</jsoup.version>
@@ -313,6 +313,7 @@
             <exclude>**/metastore_db/</exclude>
             <exclude>**/README.md</exclude>
             <exclude>**/dependency-reduced-pom.xml</exclude>
+            <exclude>**/interpreter-setting.json</exclude>
           </excludes>
         </configuration>
       </plugin>

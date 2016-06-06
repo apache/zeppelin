@@ -32,3 +32,5 @@ The interpret method takes the user string as parameter and executes the jdbc ca
 
 In case of Presto, we don't need password if the Presto DB server runs backend code using HDFS authorization for the user.
 For databases like Vertica and Mysql we have to store password information for users.
+
+The Credentials tab in the navbar allows users to save credentials for data sources which are passed to interpreters.

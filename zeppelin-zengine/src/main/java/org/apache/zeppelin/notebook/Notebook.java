@@ -44,6 +44,7 @@ import org.apache.zeppelin.resource.ResourcePoolUtils;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.apache.zeppelin.search.SearchService;
+import org.apache.zeppelin.user.Credentials;
 import org.quartz.CronScheduleBuilder;
 import org.quartz.CronTrigger;
 import org.quartz.JobBuilder;
@@ -81,6 +82,7 @@ public class Notebook implements NoteEventListener {
   private NotebookAuthorization notebookAuthorization;
   private final List<NotebookEventListener> notebookEventListeners =
       Collections.synchronizedList(new LinkedList<NotebookEventListener>());
+  private Credentials credentials;
 
   /**
    * Main constructor \w manual Dependency Injection
@@ -100,7 +102,8 @@ public class Notebook implements NoteEventListener {
       SchedulerFactory schedulerFactory,
       InterpreterFactory replFactory, JobListenerFactory jobListenerFactory,
       SearchService notebookIndex,
-      NotebookAuthorization notebookAuthorization) throws IOException, SchedulerException {
+      NotebookAuthorization notebookAuthorization,
+      Credentials credentials) throws IOException, SchedulerException {
     this.conf = conf;
     this.notebookRepo = notebookRepo;
     this.schedulerFactory = schedulerFactory;
@@ -108,6 +111,7 @@ public class Notebook implements NoteEventListener {
     this.jobListenerFactory = jobListenerFactory;
     this.notebookIndex = notebookIndex;
     this.notebookAuthorization = notebookAuthorization;
+    this.credentials = credentials;
     quertzSchedFact = new org.quartz.impl.StdSchedulerFactory();
     quartzSched = quertzSchedFact.getScheduler();
     quartzSched.start();
@@ -149,7 +153,7 @@ public class Notebook implements NoteEventListener {
    */
   public Note createNote(List<String> interpreterIds) throws IOException {
     NoteInterpreterLoader intpLoader = new NoteInterpreterLoader(replFactory);
-    Note note = new Note(notebookRepo, intpLoader, jobListenerFactory, notebookIndex, this);
+    Note note = new Note(notebookRepo, intpLoader, jobListenerFactory, notebookIndex, credentials, this);
     intpLoader.setNoteId(note.id());
     synchronized (notes) {
       notes.put(note.id(), note);
@@ -365,6 +369,7 @@ public class Notebook implements NoteEventListener {
 
     //Manually inject ALL dependencies, as DI constructor was NOT used
     note.setIndex(this.notebookIndex);
+    note.setCredentials(this.credentials);
 
     NoteInterpreterLoader replLoader = new NoteInterpreterLoader(replFactory);
     note.setReplLoader(replLoader);
