@@ -514,6 +514,22 @@ public class NotebookServer extends WebSocketServlet implements
 
     return cronUpdated;
   }
+  private String normalizeNoteName(String path){
+    path = path.trim();
+    path = path.replace("\\", "/");
+    while (path.indexOf("///") >= 0) {
+      path = path.replaceAll("///", "/");
+    }
+    path = path.replaceAll("//", "/");
+    if (path.length() == 0) {
+      path = "/";
+    } else if (path.charAt(0) != '/'){
+      path = "/" + path;
+    }
+
+    LOG.debug("normalize note name : " + path);
+    return path;
+  }
   private void createNote(NotebookSocket conn, HashSet<String> userAndRoles,
                           Notebook notebook, Message message)
       throws IOException {
@@ -523,6 +539,9 @@ public class NotebookServer extends WebSocketServlet implements
       String noteName = (String) message.get("name");
       if (noteName == null || noteName.isEmpty()){
         noteName = "Note " + note.getId();
+      }
+      if (noteName.indexOf('/') >= 0) {
+        noteName = normalizeNoteName(noteName);
       }
       note.setName(noteName);
     }
