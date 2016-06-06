@@ -31,6 +31,7 @@ import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.apache.zeppelin.search.LuceneSearch;
 import org.apache.zeppelin.search.SearchService;
 import org.apache.zeppelin.socket.NotebookServer;
+import org.apache.zeppelin.user.Credentials;
 import org.eclipse.jetty.http.HttpVersion;
 import org.eclipse.jetty.server.*;
 import org.eclipse.jetty.server.handler.ContextHandlerCollection;
@@ -67,6 +68,7 @@ public class ZeppelinServer extends Application {
   private NotebookRepo notebookRepo;
   private SearchService notebookIndex;
   private NotebookAuthorization notebookAuthorization;
+  private Credentials credentials;
   private DependencyResolver depResolver;
 
   public ZeppelinServer() throws Exception {
@@ -80,9 +82,10 @@ public class ZeppelinServer extends Application {
     this.notebookRepo = new NotebookRepoSync(conf);
     this.notebookIndex = new LuceneSearch();
     this.notebookAuthorization = new NotebookAuthorization(conf);
+    this.credentials = new Credentials(conf.credentialsPersist(), conf.getCredentialsPath());
     notebook = new Notebook(conf,
         notebookRepo, schedulerFactory, replFactory, notebookWsServer,
-            notebookIndex, notebookAuthorization);
+            notebookIndex, notebookAuthorization, credentials);
   }
 
   public static void main(String[] args) throws InterruptedException {
@@ -291,6 +294,9 @@ public class ZeppelinServer extends Application {
 
     InterpreterRestApi interpreterApi = new InterpreterRestApi(replFactory);
     singletons.add(interpreterApi);
+
+    CredentialRestApi credentialApi = new CredentialRestApi(credentials);
+    singletons.add(credentialApi);
 
     SecurityRestApi securityApi = new SecurityRestApi();
     singletons.add(securityApi);

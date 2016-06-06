@@ -44,7 +44,7 @@ angular.module('zeppelinWebApp').controller('NotenameCtrl', function($scope, not
 
   vm.newNoteName = function () {
     var newCount = 1;
-    angular.forEach(vm.notes.list, function (noteName) {
+    angular.forEach(vm.notes.flatList, function (noteName) {
       noteName = noteName.name;
       if (noteName.match(/^Untitled Note [0-9]*$/)) {
         var lastCount = noteName.substr(14) * 1;

@@ -17,12 +17,14 @@
 
 package org.apache.zeppelin.rest;
 
+
 import org.apache.shiro.realm.Realm;
 import org.apache.shiro.realm.jdbc.JdbcRealm;
 import org.apache.shiro.realm.ldap.JndiLdapRealm;
 import org.apache.shiro.realm.text.IniRealm;
 import org.apache.shiro.util.ThreadContext;
 import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
+import org.apache.zeppelin.annotation.ZeppelinApi;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.server.JsonResponse;
 import org.apache.zeppelin.ticket.TicketContainer;
@@ -63,6 +65,7 @@ public class SecurityRestApi {
    */
   @GET
   @Path("ticket")
+  @ZeppelinApi
   public Response ticket() {
     ZeppelinConfiguration conf = ZeppelinConfiguration.create();
     String principal = SecurityUtils.getPrincipal();

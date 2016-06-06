@@ -70,6 +70,7 @@ import scala.reflect.io.AbstractFile;
 import scala.tools.nsc.Settings;
 import scala.tools.nsc.interpreter.Completion.Candidates;
 import scala.tools.nsc.interpreter.Completion.ScalaCompleter;
+import scala.tools.nsc.settings.MutableSettings;
 import scala.tools.nsc.settings.MutableSettings.BooleanSetting;
 import scala.tools.nsc.settings.MutableSettings.PathSetting;
 
@@ -461,6 +462,12 @@ public class SparkInterpreter extends Interpreter {
     settings.scala$tools$nsc$settings$StandardScalaSettings$_setter_$usejavacp_$eq(b);
 
     System.setProperty("scala.repl.name.line", "line" + this.hashCode() + "$");
+
+    // To prevent 'File name too long' error on some file system.
+    MutableSettings.IntSetting numClassFileSetting = settings.maxClassfileName();
+    numClassFileSetting.v_$eq(128);
+    settings.scala$tools$nsc$settings$ScalaSettings$_setter_$maxClassfileName_$eq(
+        numClassFileSetting);
 
     synchronized (sharedInterpreterLock) {
       /* create scala repl */

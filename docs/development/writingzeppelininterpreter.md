@@ -47,9 +47,9 @@ Here is an example of `interpareter-setting.json` on your own interpreter.
 ```json
 [
   {
-    "interpreterGroup": "your-group",
-    "interpreterName": "your-name",
-    "interpreterClassName": "your.own.interpreter.class",
+    "group": "your-group",
+    "name": "your-name",
+    "className": "your.own.interpreter.class",
     "properties": {
       "propertiies1": {
         "envName": null,
