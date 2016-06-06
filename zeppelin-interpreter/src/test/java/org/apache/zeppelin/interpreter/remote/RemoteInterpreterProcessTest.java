@@ -26,6 +26,7 @@ import java.util.Properties;
 
 import org.apache.thrift.TException;
 import org.apache.thrift.transport.TTransportException;
+import org.apache.zeppelin.interpreter.Constants;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService.Client;
 import org.junit.Test;
@@ -90,11 +91,11 @@ public class RemoteInterpreterProcessTest {
       }
     }
     Properties properties = new Properties();
-    properties.setProperty("zeppelin.interpreter.port", "3678");
-    properties.setProperty("zeppelin.interpreter.host", "localhost");
-    properties.setProperty("zeppelin.interpreter.isexecuting", "true");
+    properties.setProperty(Constants.ZEPPELIN_INTERPRETER_PORT, "3678");
+    properties.setProperty(Constants.ZEPPELIN_INTERPRETER_HOST, "localhost");
     InterpreterGroup intpGroup = mock(InterpreterGroup.class);
     when(intpGroup.getProperty()).thenReturn(properties);
+    when(intpGroup.containsKey(Constants.EXECUTING_PROCESS)).thenReturn(true);
     RemoteInterpreterProcess rip = new RemoteInterpreterProcess(INTERPRETER_SCRIPT, "nonexists",
         "fakeRepo", new HashMap<String, String>(), 10 * 1000, null);
     assertFalse(rip.isRunning());

@@ -22,6 +22,7 @@ import org.apache.commons.exec.*;
 import org.apache.commons.exec.environment.EnvironmentUtils;
 import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.apache.thrift.TException;
+import org.apache.zeppelin.interpreter.Constants;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService.Client;
@@ -38,12 +39,6 @@ import java.util.Properties;
  */
 public class RemoteInterpreterProcess implements ExecuteResultHandler {
   private static final Logger logger = LoggerFactory.getLogger(RemoteInterpreterProcess.class);
-  private static final String ZEPPELIN_INTERPRETER_PORT = "zeppelin.interpreter.port";
-
-  private static final String ZEPPELIN_INTERPRETER_HOST = "zeppelin.interpreter.host";
-
-  public static final String ZEPPELIN_INTERPRETER_ISEXECUTING = "zeppelin.interpreter.isexecuting";
-
   private final AtomicInteger referenceCount;
   private DefaultExecutor executor;
   private ExecuteWatchdog watchdog;
@@ -99,25 +94,23 @@ public class RemoteInterpreterProcess implements ExecuteResultHandler {
   public int reference(InterpreterGroup interpreterGroup) {
     synchronized (referenceCount) {
       if (executor == null) {
-        Properties properties = interpreterGroup.getProperty();
-
-        if (properties.containsKey(ZEPPELIN_INTERPRETER_ISEXECUTING)) {
-          isInterpreterAlreadyExecuting =
-              Boolean.parseBoolean(properties.getProperty(ZEPPELIN_INTERPRETER_ISEXECUTING));
+        if (interpreterGroup.containsKey(Constants.EXECUTING_PROCESS)) {
+          Properties properties = interpreterGroup.getProperty();
+          isInterpreterAlreadyExecuting = true;
           if (isInterpreterAlreadyExecuting) {
-            if (properties.containsKey(ZEPPELIN_INTERPRETER_HOST)) {
-              host = properties.getProperty(ZEPPELIN_INTERPRETER_HOST);
+            if (properties.containsKey(Constants.ZEPPELIN_INTERPRETER_HOST)) {
+              host = properties.getProperty(Constants.ZEPPELIN_INTERPRETER_HOST);
 
             } else {
-              throw new InterpreterException("Can't find property " + ZEPPELIN_INTERPRETER_HOST
-                  + ".Please specify the host on which interpreter is executing");
+              throw new InterpreterException("Can't find value for option Host."
+                  + "Please specify the host on which interpreter is executing");
             }
-            if (properties.containsKey(ZEPPELIN_INTERPRETER_PORT)) {
-              port = Integer
-                  .parseInt(interpreterGroup.getProperty().getProperty(ZEPPELIN_INTERPRETER_PORT));
+            if (properties.containsKey(Constants.ZEPPELIN_INTERPRETER_PORT)) {
+              port = Integer.parseInt(
+                  interpreterGroup.getProperty().getProperty(Constants.ZEPPELIN_INTERPRETER_PORT));
             } else {
-              throw new InterpreterException("Can't find property " + ZEPPELIN_INTERPRETER_PORT
-                  + ".Please specify the port on which interpreter is listening");
+              throw new InterpreterException("Can't find value for option Port."
+                  + "Please specify the port on which interpreter is listening");
             }
           }
           running = true;
