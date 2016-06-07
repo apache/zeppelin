@@ -13,10 +13,13 @@ limitations under the License.
 -->
 <div class="noteAction" ng-show="note.id && !paragraphUrl">
   <h3>
-    <input type="text" pu-elastic-input class="form-control2" placeholder="{{noteName(note)}}" style="min-width: 200px; max-width: 600px;"
+    <div style="float: left">
+      <input type="text" pu-elastic-input class="form-control2" placeholder="{{noteName(note)}}" style="min-width: 200px; max-width: 600px;"
            ng-show="showEditor" ng-model="note.name" ng-blur="sendNewName();showEditor = false;" ng-enter="sendNewName();showEditor = false;" ng-escape="note.name = oldName; showEditor = false" focus-if="showEditor" />
-    <p class="form-control-static2" ng-click="showEditor = true; oldName = note.name" ng-show="!showEditor">{{noteName(note)}}</p>
-    <span class="labelBtn btn-group">
+      <p class="form-control-static2" ng-click="showEditor = true; oldName = note.name" ng-show="!showEditor">{{noteName(note)}}</p>
+    </div>
+    <div style="float: left; padding-bottom: 10px">
+      <span class="labelBtn btn-group">
       <button type="button"
               class="btn btn-default btn-xs"
               ng-click="runNote()"
@@ -90,17 +93,17 @@ limitations under the License.
     </span>
 
 <!-- put the delete action by itself for your protection -->
-    <span class="labelBtn" style="vertical-align:middle; display:inline-block;">
-      <button type="button"
-              class="btn btn-default btn-xs"
-              ng-click="removeNote(note.id)"
-              ng-hide="viewOnly"
-              tooltip-placement="bottom" tooltip="Remove the notebook">
-        <i class="icon-trash"></i>
-      </button>
-    </span>
+      <span class="labelBtn" style="vertical-align:middle; display:inline-block;">
+        <button type="button"
+                class="btn btn-default btn-xs"
+                ng-click="removeNote(note.id)"
+                ng-hide="viewOnly"
+                tooltip-placement="bottom" tooltip="Remove the notebook">
+          <i class="icon-trash"></i>
+        </button>
+      </span>
 
-    <span ng-hide="viewOnly">
+      <span ng-hide="viewOnly">
       <div class="labelBtn btn-group">
         <div class="btn btn-default btn-xs dropdown-toggle"
              type="button"
@@ -149,8 +152,9 @@ limitations under the License.
         </ul>
       </div>
     </span>
+    </div>
 
-    <div class="pull-right" style="margin-top:15px; margin-right:15px; font-size:15px;">
+    <div class="pull-right" style="margin-top:15px; margin-right:15px; margin-left: 15px; margin-bottom: 13px; font-size:15px;">
       <span style="position:relative; top:3px; margin-right:4px; cursor:pointer"
             data-toggle="modal"
             data-target="#shortcutModal"
