@@ -87,7 +87,6 @@
     <module>cassandra</module>
     <module>elasticsearch</module>
     <module>alluxio</module>
-    <module>scalding</module>
     <module>zeppelin-web</module>
     <module>zeppelin-server</module>
     <module>zeppelin-distribution</module>
@@ -680,6 +679,13 @@
       <id>r</id>
       <modules>
         <module>r</module>
+      </modules>
+    </profile>
+
+    <profile>
+      <id>scalding</id>
+      <modules>
+        <module>scalding</module>
       </modules>
     </profile>
 
