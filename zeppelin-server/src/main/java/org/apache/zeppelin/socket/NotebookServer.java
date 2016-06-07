@@ -37,6 +37,7 @@ import org.apache.zeppelin.display.AngularObjectRegistryListener;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.user.AuthenticationInfo;
+import org.apache.zeppelin.util.Util;
 import org.apache.zeppelin.interpreter.InterpreterOutput;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
@@ -514,22 +515,6 @@ public class NotebookServer extends WebSocketServlet implements
 
     return cronUpdated;
   }
-  private String normalizePath(String path){
-    path = path.trim();
-    path = path.replace("\\", "/");
-    while (path.indexOf("///") >= 0) {
-      path = path.replaceAll("///", "/");
-    }
-    path = path.replaceAll("//", "/");
-    if (path.length() == 0) {
-      path = "/";
-    } else if (path.charAt(0) != '/'){
-      path = "/" + path;
-    }
-
-    LOG.debug("normalize note name : " + path);
-    return path;
-  }
   private void createNote(NotebookSocket conn, HashSet<String> userAndRoles,
                           Notebook notebook, Message message)
       throws IOException {
@@ -541,7 +526,7 @@ public class NotebookServer extends WebSocketServlet implements
         noteName = "Note " + note.getId();
       }
       if (noteName.indexOf('/') >= 0) {
-        noteName = normalizePath(noteName);
+        noteName = Util.normalizePath(noteName);
       }
       note.setName(noteName);
     }
