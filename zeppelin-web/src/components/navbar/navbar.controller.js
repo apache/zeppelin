@@ -30,7 +30,7 @@ angular.module('zeppelinWebApp')
           return notebook;
         }
 
-        if(notebook.children) { 
+        if (notebook.children) { 
           filteringNote(notebook.children, filteredNotes);
         }
       });
@@ -46,7 +46,7 @@ angular.module('zeppelinWebApp')
         }
       }
 
-      if(notebook.name.toLowerCase().indexOf(searchText) !== -1) {
+      if (notebook.name.toLowerCase().indexOf(searchText) !== -1) {
         return notebook;
       }
     });
