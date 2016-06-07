@@ -20,7 +20,8 @@ package org.apache.zeppelin.interpreter;
 import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.notebook.Paragraph;
 
-import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -30,7 +31,7 @@ import java.util.regex.Pattern;
 public class OccupiedInterpreter {
   private static final Pattern INTERPRETER_NAME_PATTERN = Pattern.compile("^%\\S+");
   private static final String DEFAULT_INTERPRETER_NAME = "%..";
-  private static final HashMap<String, String> occupiedInterpreterMap = new HashMap<>();
+  private static final Map<String, String> occupiedInterpreterMap = new ConcurrentHashMap<>();
 
   private OccupiedInterpreter() {
   }
@@ -39,13 +40,14 @@ public class OccupiedInterpreter {
    * Get current occupied interpreter name
    *
    * @param noteId Note Id
-   * @return Current occupied interpreter name, or "" if no mapping occupied interpreter name.
+   * @return Current occupied interpreter name, or {@link OccupiedInterpreter#DEFAULT_INTERPRETER_NAME}
+   * if no mapping occupied interpreter name.
    */
   public static String getOccupiedInterpreter(String noteId) {
-    String occupiedInterpreter;
-    synchronized (occupiedInterpreterMap) {
-      occupiedInterpreter = occupiedInterpreterMap.get(noteId);
+    if (StringUtils.isBlank(noteId)) {
+      return DEFAULT_INTERPRETER_NAME;
     }
+    String occupiedInterpreter = occupiedInterpreterMap.get(noteId);
     return StringUtils.defaultString(occupiedInterpreter, DEFAULT_INTERPRETER_NAME);
   }
 
@@ -66,9 +68,7 @@ public class OccupiedInterpreter {
     if (StringUtils.isBlank(noteId)) {
       return;
     }
-    synchronized (occupiedInterpreterMap) {
-      occupiedInterpreterMap.remove(noteId);
-    }
+    occupiedInterpreterMap.remove(noteId);
   }
 
   /**
@@ -77,17 +77,13 @@ public class OccupiedInterpreter {
    * @param noteId          Note Id
    * @param interpreterName Current occupied interpreter name
    */
-  @SuppressWarnings("PointlessBooleanExpression")
   public static void setOccupiedInterpreter(String noteId, String interpreterName) {
-    synchronized (occupiedInterpreterMap) {
-      if (occupiedInterpreterMap.containsKey(noteId) == false &&
-              StringUtils.isBlank(interpreterName)) {
-        return;
-      }
-      String newInterpreterName = StringUtils.defaultIfEmpty(interpreterName,
-              DEFAULT_INTERPRETER_NAME);
-      occupiedInterpreterMap.put(noteId, newInterpreterName);
+    if (StringUtils.isBlank(noteId)) {
+      return;
     }
+    String newInterpreterName = StringUtils.defaultIfEmpty(interpreterName,
+            DEFAULT_INTERPRETER_NAME);
+    occupiedInterpreterMap.put(noteId, newInterpreterName);
   }
 
   /**
