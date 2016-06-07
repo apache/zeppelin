@@ -25,18 +25,20 @@ public class InterpreterOption {
   boolean perNoteSession;
   boolean perNoteProcess;
   
-  boolean executing;
+  boolean isExistingProcess;
 
   String host;
   String port;
 
 
-  public boolean isExecuting() {
-    return executing;
+  
+
+  public boolean isExistingProcess() {
+    return isExistingProcess;
   }
 
-  public void setExecuting(boolean executing) {
-    this.executing = executing;
+  public void setExistingProcess(boolean isExistingProcess) {
+    this.isExistingProcess = isExistingProcess;
   }
 
   public String getPort() {

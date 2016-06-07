@@ -95,7 +95,7 @@ public class RemoteInterpreterProcessTest {
     properties.setProperty(Constants.ZEPPELIN_INTERPRETER_HOST, "localhost");
     InterpreterGroup intpGroup = mock(InterpreterGroup.class);
     when(intpGroup.getProperty()).thenReturn(properties);
-    when(intpGroup.containsKey(Constants.EXECUTING_PROCESS)).thenReturn(true);
+    when(intpGroup.containsKey(Constants.EXISTING_PROCESS)).thenReturn(true);
     RemoteInterpreterProcess rip = new RemoteInterpreterProcess(INTERPRETER_SCRIPT, "nonexists",
         "fakeRepo", new HashMap<String, String>(), 10 * 1000, null);
     assertFalse(rip.isRunning());

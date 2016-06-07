@@ -26,6 +26,6 @@ public class Constants {
 
   public static final String ZEPPELIN_INTERPRETER_HOST = "zeppelin.interpreter.host";
 
-  public static final String EXECUTING_PROCESS = "executing_process";
+  public static final String EXISTING_PROCESS = "existing_process";
 
 }

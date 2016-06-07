@@ -94,7 +94,7 @@ public class RemoteInterpreterProcess implements ExecuteResultHandler {
   public int reference(InterpreterGroup interpreterGroup) {
     synchronized (referenceCount) {
       if (executor == null) {
-        if (interpreterGroup.containsKey(Constants.EXECUTING_PROCESS)) {
+        if (interpreterGroup.containsKey(Constants.EXISTING_PROCESS)) {
           Properties properties = interpreterGroup.getProperty();
           isInterpreterAlreadyExecuting = true;
           if (isInterpreterAlreadyExecuting) {
@@ -150,7 +150,7 @@ public class RemoteInterpreterProcess implements ExecuteResultHandler {
 
         } else {
           logger.info(
-              "Not starting interpreter as \"zeppelin.interpreter.isexecuting\" is set to true");
+              "Not starting interpreter as \"isExistingProcess\" is enabled");
         }
 
         long startTime = System.currentTimeMillis();

@@ -76,10 +76,10 @@ public class NoteInterpreterLoader {
   }
 
   private String getInterpreterInstanceKey(InterpreterSetting setting) {
-    if (setting.getOption().isPerNoteSession() || setting.getOption().isPerNoteProcess()) {
+    if (setting.getOption().isExistingProcess()) {
+      return Constants.EXISTING_PROCESS;
+    } else if (setting.getOption().isPerNoteSession() || setting.getOption().isPerNoteProcess()) {
       return noteId;
-    } else if (setting.getOption().isExecuting()) {
-      return Constants.EXECUTING_PROCESS;
     } else {
       return SHARED_SESSION;
     }

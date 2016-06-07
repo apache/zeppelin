@@ -73,19 +73,12 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
     if (sessionOption === 'isolated') {
       option.perNoteSession = false;
       option.perNoteProcess = true;
-      option.executing = false;
     } else if (sessionOption === 'scoped') {
       option.perNoteSession = true;
       option.perNoteProcess = false;
-      option.executing = false;
-    } else if (sessionOption === 'executing') {
-      option.executing = true;
-      option.perNoteProcess = false;
-      option.perNoteSession = false;
     } else {
       option.perNoteSession = false;
       option.perNoteProcess = false;
-      option.executing = false;
     }
   };
 
@@ -103,8 +96,6 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
       return 'scoped';
     } else if (option.perNoteProcess) {
       return 'isolated';
-    } else if (option.executing) {
-      return 'executing';
     } else {
       return 'shared';
     }
@@ -128,6 +119,9 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
           // add missing field of option
           if (!setting.option) {
             setting.option = {};
+          }
+          if (setting.option.isExistingProcess === undefined) {
+            setting.option.isExistingProcess = false;
           }
           if (setting.option.remote === undefined) {
             // remote always true for now
@@ -282,7 +276,7 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
       dependencies: [],
       option: {
         remote: true,
-        executing: false,
+        isExistingProcess: false,
         perNoteSession: false,
         perNoteProcess: false
 

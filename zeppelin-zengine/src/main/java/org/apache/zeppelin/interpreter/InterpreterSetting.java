@@ -124,10 +124,10 @@ public class InterpreterSetting {
 
 
   private String getInterpreterProcessKey(String noteId) {
-    if (getOption().isPerNoteProcess()) {
+    if (getOption().isExistingProcess) {
+      return Constants.EXISTING_PROCESS;
+    } else if (getOption().isPerNoteProcess()) {
       return noteId;
-    } else if (getOption().isExecuting()) {
-      return Constants.EXECUTING_PROCESS;
     } else {
       return SHARED_PROCESS;
     }
