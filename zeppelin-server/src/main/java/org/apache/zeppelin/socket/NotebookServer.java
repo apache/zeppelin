@@ -514,7 +514,7 @@ public class NotebookServer extends WebSocketServlet implements
 
     return cronUpdated;
   }
-  private String normalizeNoteName(String path){
+  private String normalizePath(String path){
     path = path.trim();
     path = path.replace("\\", "/");
     while (path.indexOf("///") >= 0) {
@@ -541,7 +541,7 @@ public class NotebookServer extends WebSocketServlet implements
         noteName = "Note " + note.getId();
       }
       if (noteName.indexOf('/') >= 0) {
-        noteName = normalizeNoteName(noteName);
+        noteName = normalizePath(noteName);
       }
       note.setName(noteName);
     }
