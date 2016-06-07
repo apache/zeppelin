@@ -489,6 +489,138 @@ public class Notebook {
     this.jobListenerFactory = jobListenerFactory;
   }
 
+  private Map<String, Object> getParagraphForJobManagerItem(Paragraph paragraph) {
+    Map<String, Object> paragraphItem = new HashMap<>();
+
+    // set paragraph id
+    paragraphItem.put("id", paragraph.getId());
+
+    // set paragraph name
+    String paragraphName = paragraph.getTitle();
+    if (paragraphName != null) {
+      paragraphItem.put("name", paragraphName);
+    } else {
+      paragraphItem.put("name", paragraph.getId());
+    }
+
+    // set status for paragraph.
+    paragraphItem.put("status", paragraph.getStatus().toString());
+
+    return paragraphItem;
+  }
+
+  private long getUnixTimeLastRunParagraph(Paragraph paragraph) {
+
+    Date lastRunningDate = null;
+    long lastRunningUnixTime = 0;
+
+    Date paragaraphDate = paragraph.getDateStarted();
+    // diff started time <-> finishied time
+    if (paragaraphDate == null) {
+      paragaraphDate = paragraph.getDateFinished();
+    } else {
+      if (paragraph.getDateFinished() != null &&
+          paragraph.getDateFinished().after(paragaraphDate)) {
+        paragaraphDate = paragraph.getDateFinished();
+      }
+    }
+
+    // finished time and started time is not exists.
+    if (paragaraphDate == null) {
+      paragaraphDate = paragraph.getDateCreated();
+    }
+
+    // set last update unixtime(ms).
+    lastRunningDate = paragaraphDate;
+
+    lastRunningUnixTime = lastRunningDate.getTime();
+
+    return lastRunningUnixTime;
+  }
+
+  public List<Map<String, Object>> getJobListforNotebook(boolean needsReload,
+      long lastUpdateServerUnixTime) {
+    final String CRON_TYPE_NOTEBOOK_KEYWORD = "cron";
+
+    if (needsReload) {
+      try {
+        reloadAllNotes();
+      } catch (IOException e) {
+        logger.error("Fail to reload notes from repository");
+      }
+    }
+
+    List<Note> notes = getAllNotes();
+    List<Map<String, Object>> notesInfo = new LinkedList<>();
+    for (Note note : notes) {
+      boolean isNotebookRunning = false;
+      boolean isUpdateNotebook = false;
+      long lastRunningUnixTime = 0;
+      Map<String, Object> info = new HashMap<>();
+
+      // set notebook ID
+      info.put("notebookId", note.id());
+
+      // set notebook Name
+      String notebookName = note.getName();
+      if (notebookName != null) {
+        info.put("notebookName", note.getName());
+      } else {
+        info.put("notebookName", "Note " + note.id());
+      }
+
+      // set notebook type ( cron or normal )
+      if (note.getConfig().containsKey(CRON_TYPE_NOTEBOOK_KEYWORD) == true
+              && !note.getConfig().get(CRON_TYPE_NOTEBOOK_KEYWORD).equals("")) {
+        info.put("notebookType", "cron");
+      }
+      else {
+        info.put("notebookType", "normal");
+      }
+
+      // set paragraphs
+      List<Map<String, Object>> paragraphsInfo = new LinkedList<>();
+      for (Paragraph paragraph : note.getParagraphs()) {
+        // check paragraph's status.
+        if (paragraph.getStatus().isRunning() == true) {
+          isNotebookRunning = true;
+          isUpdateNotebook = true;
+        }
+
+        // get data for the job manager.
+        Map<String, Object> paragraphItem = getParagraphForJobManagerItem(paragraph);
+        lastRunningUnixTime = getUnixTimeLastRunParagraph(paragraph);
+
+        // is update notebook for last server update time.
+        if (lastRunningUnixTime > lastUpdateServerUnixTime) {
+          paragraphsInfo.add(paragraphItem);
+          isUpdateNotebook = true;
+        }
+      }
+
+      // set interpreter bind type
+      String interpreterGroupName = null;
+      if (note.getNoteReplLoader().getInterpreterSettings() != null
+              && note.getNoteReplLoader().getInterpreterSettings().size() >= 1) {
+        interpreterGroupName = note.getNoteReplLoader().getInterpreterSettings().get(0).getGroup();
+      }
+
+      // not update and not running -> pass
+      if (isUpdateNotebook == false && isNotebookRunning == false) {
+        continue;
+      }
+
+      // notebook json object root information.
+      info.put("interpreter", interpreterGroupName);
+      info.put("isRunningJob", isNotebookRunning);
+      info.put("unixTimeLastRun", lastRunningUnixTime);
+      info.put("paragraphs", paragraphsInfo);
+      notesInfo.add(info);
+    }
+
+    return notesInfo;
+  }
+
   /**
    * Cron task for the note.
    */
