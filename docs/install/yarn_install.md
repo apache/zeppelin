@@ -20,7 +20,7 @@ limitations under the License.
 {% include JB/setup %}
 
 ## Introduction
-This page describes how to pre-configure a bare metal node, configure Zeppelin and connect it to existing YARN cluster running Hortonworks flavour of Hadoop. It also describes steps to configure Spark & Hive interpreter of Zeppelin.
+This page describes how to pre-configure a bare metal node, configure Zeppelin and connect it to existing YARN cluster running Hortonworks flavour of Hadoop. It also describes steps to configure Spark interpreter of Zeppelin.
 
 ## Prepare Node
 
@@ -118,16 +118,12 @@ bin/zeppelin-daemon.sh stop
 ```
 
 ## Interpreter
-Zeppelin provides various distributed processing frameworks to process data that ranges from Spark, Hive, Tajo, Ignite and Lens to name a few. This document describes to configure Hive & Spark interpreters.
+Zeppelin provides various distributed processing frameworks to process data that ranges from Spark, JDBC, Tajo, Ignite and Lens to name a few. This document describes to configure JDBC & Spark interpreters.
 
 ### Hive
-Zeppelin supports Hive interpreter and hence copy hive-site.xml that should be present at /etc/hive/conf to the configuration folder of Zeppelin. Once Zeppelin is built it will have conf folder under /home/zeppelin/incubator-zeppelin.
+Zeppelin supports Hive through JDBC interpreter. You might need the information to use Hive and can find in your hive-site.xml
 
-```bash
-cp /etc/hive/conf/hive-site.xml  /home/zeppelin/incubator-zeppelin/conf
-```
-
-Once Zeppelin server has started successfully, visit http://[zeppelin-server-host-name]:8080 with your web browser. Click on Interpreter tab next to Notebook dropdown. Look for Hive configurations and set them appropriately. By default hive.hiveserver2.url will be pointing to localhost and hive.hiveserver2.password/hive.hiveserver2.user are set to hive/hive. Set them as per Hive installation on YARN cluster.
+Once Zeppelin server has started successfully, visit http://[zeppelin-server-host-name]:8080 with your web browser. Click on Interpreter tab next to Notebook dropdown. Look for Hive configurations and set them appropriately. Set them as per Hive installation on YARN cluster.
 Click on Save button. Once these configurations are updated, Zeppelin will prompt you to restart the interpreter. Accept the prompt and the interpreter will reload the configurations.
 
 ### Spark

@@ -199,7 +199,7 @@ Checkout some interpreters released with Zeppelin by default.
  - [spark](https://github.com/apache/incubator-zeppelin/tree/master/spark)
  - [markdown](https://github.com/apache/incubator-zeppelin/tree/master/markdown)
  - [shell](https://github.com/apache/incubator-zeppelin/tree/master/shell)
- - [hive](https://github.com/apache/incubator-zeppelin/tree/master/hive)
+ - [jdbc](https://github.com/apache/incubator-zeppelin/tree/master/jdbc)
 
 ### Contributing a new Interpreter to Zeppelin releases
 
