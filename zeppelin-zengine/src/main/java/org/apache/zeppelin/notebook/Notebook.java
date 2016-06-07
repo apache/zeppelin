@@ -570,8 +570,8 @@ public class Notebook {
       }
 
       // set notebook type ( cron or normal )
-      if (note.getConfig().containsKey(CRON_TYPE_NOTEBOOK_KEYWORD) == true
-              && !note.getConfig().get(CRON_TYPE_NOTEBOOK_KEYWORD).equals("")) {
+      if (note.getConfig().containsKey(CRON_TYPE_NOTEBOOK_KEYWORD) == true &&
+          !note.getConfig().get(CRON_TYPE_NOTEBOOK_KEYWORD).equals("")) {
         info.put("notebookType", "cron");
       }
       else {
@@ -600,8 +600,8 @@ public class Notebook {
 
       // set interpreter bind type
       String interpreterGroupName = null;
-      if (note.getNoteReplLoader().getInterpreterSettings() != null
-              && note.getNoteReplLoader().getInterpreterSettings().size() >= 1) {
+      if (note.getNoteReplLoader().getInterpreterSettings() != null &&
+          note.getNoteReplLoader().getInterpreterSettings().size() >= 1) {
         interpreterGroupName = note.getNoteReplLoader().getInterpreterSettings().get(0).getGroup();
       }
 
