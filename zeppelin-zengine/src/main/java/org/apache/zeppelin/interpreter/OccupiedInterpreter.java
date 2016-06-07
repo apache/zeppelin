@@ -40,8 +40,8 @@ public class OccupiedInterpreter {
    * Get current occupied interpreter name
    *
    * @param noteId Note Id
-   * @return Current occupied interpreter name, or {@link OccupiedInterpreter#DEFAULT_INTERPRETER_NAME}
-   * if no mapping occupied interpreter name.
+   * @return Current occupied interpreter name, or
+   * {@link OccupiedInterpreter#DEFAULT_INTERPRETER_NAME} if no mapping occupied interpreter name.
    */
   public static String getOccupiedInterpreter(String noteId) {
     if (StringUtils.isBlank(noteId)) {
