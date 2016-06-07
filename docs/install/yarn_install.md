@@ -121,7 +121,7 @@ bin/zeppelin-daemon.sh stop
 Zeppelin provides various distributed processing frameworks to process data that ranges from Spark, JDBC, Tajo, Ignite and Lens to name a few. This document describes to configure JDBC & Spark interpreters.
 
 ### Hive
-Zeppelin supports Hive throught JDBC interpreter. You might need the information to use Hive and can find in your hive-site.xml
+Zeppelin supports Hive through JDBC interpreter. You might need the information to use Hive and can find in your hive-site.xml
 
 Once Zeppelin server has started successfully, visit http://[zeppelin-server-host-name]:8080 with your web browser. Click on Interpreter tab next to Notebook dropdown. Look for Hive configurations and set them appropriately. Set them as per Hive installation on YARN cluster.
 Click on Save button. Once these configurations are updated, Zeppelin will prompt you to restart the interpreter. Accept the prompt and the interpreter will reload the configurations.
