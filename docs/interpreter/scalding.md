@@ -9,6 +9,13 @@ group: manual
 ## Scalding Interpreter for Apache Zeppelin
 [Scalding](https://github.com/twitter/scalding) is an open source Scala library for writing MapReduce jobs.
 
+### Building the Scalding Interpreter
+You have to first build the Scalding interpreter by enable the **scalding** profile as follows:
+
+```
+mvn clean package -Pscalding -DskipTests
+```
+
 ### Enabling the Scalding Interpreter
 In a notebook, to enable the **Scalding** interpreter, click on the **Gear** icon,select **Scalding**, and hit **Save**.
 
