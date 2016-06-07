@@ -2143,4 +2143,15 @@ angular.module('zeppelinWebApp')
     $scope.keepScrollDown = false;
   };
 
+  $scope.goToCSVExportParagraph = function () {
+    var noteId = $route.current.pathParams.noteId;
+    var redirectToUrl = location.protocol + '//' + location.host + location.pathname + 'api/export/job/runThenExportCSV/' + noteId + '/paragraph/' + $scope.paragraph.id + '-export.csv';
+    $window.open(redirectToUrl);
+  };
+
+  $scope.goToTableauWDCExportParagraph = function () {
+    var noteId = $route.current.pathParams.noteId;
+    var redirectToUrl = location.protocol + '//' + location.host + location.pathname + 'api/export/job/runThenExportWDC/' + noteId + '/paragraph/' + $scope.paragraph.id + '-export.html';
+    $window.open(redirectToUrl);
+  };
 });
