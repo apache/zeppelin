@@ -221,7 +221,7 @@ To develop this functionality use this [method](http://docs.oracle.com/javase/7/
    </tr>
  </table>
 ##### Dependencies
- <table>
+ <table class="table-configuration">
    <tr>
      <th>Artifact</th>
      <th>Excludes</th>
