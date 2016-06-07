@@ -31,6 +31,7 @@ import org.apache.zeppelin.display.Input;
 import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
+import org.apache.zeppelin.notebook.NotebookEventObserver.ACTIONS;
 import org.apache.zeppelin.notebook.utility.IdHashes;
 import org.apache.zeppelin.resource.ResourcePoolUtils;
 import org.apache.zeppelin.scheduler.Job;
@@ -71,6 +72,7 @@ public class Note implements Serializable, JobListener {
   private transient NotebookRepo repo;
   private transient SearchService index;
   private transient ScheduledFuture delayedPersist;
+  private transient NotebookEventObserver notebookEventObserver;
   private transient Credentials credentials;
 
   /**
@@ -91,13 +93,22 @@ public class Note implements Serializable, JobListener {
   public Note() {}
 
   public Note(NotebookRepo repo, NoteInterpreterLoader replLoader,
-      JobListenerFactory jlFactory, SearchService noteIndex, Credentials credentials) {
+      JobListenerFactory jlFactory, SearchService noteIndex,
+      Credentials credentials,
+      NotebookEventObserver notebookEventObserver) {
     this.repo = repo;
     this.replLoader = replLoader;
     this.jobListenerFactory = jlFactory;
     this.index = noteIndex;
+    this.notebookEventObserver = notebookEventObserver;
     this.credentials = credentials;
     generateId();
+  }
+
+  private void notifyChanged(ACTIONS event) {
+    if (notebookEventObserver != null) {
+      notebookEventObserver.notifyChanged(id, event);
+    }
   }
 
   private void generateId() {
@@ -118,6 +129,15 @@ public class Note implements Serializable, JobListener {
 
   public void setName(String name) {
     this.name = name;
+    notifyChanged(NotebookEventObserver.ACTIONS.CHNAGED_NOTE_NAME);
+  }
+
+  public NotebookEventObserver getNotebookEventObserver() {
+    return notebookEventObserver;
+  }
+
+  public void setNotebookEventObserver(NotebookEventObserver notebookEventObserver) {
+    this.notebookEventObserver = notebookEventObserver;
   }
 
   public NoteInterpreterLoader getNoteReplLoader() {
@@ -126,6 +146,7 @@ public class Note implements Serializable, JobListener {
 
   public void setReplLoader(NoteInterpreterLoader replLoader) {
     this.replLoader = replLoader;
+    notifyChanged(NotebookEventObserver.ACTIONS.BIND_INTERPRETER);
   }
 
   public JobListenerFactory getJobListenerFactory() {
@@ -171,6 +192,9 @@ public class Note implements Serializable, JobListener {
     synchronized (paragraphs) {
       paragraphs.add(p);
     }
+
+    notifyChanged(NotebookEventObserver.ACTIONS.ADD_PARAGRAPH);
+
     return p;
   }
 
@@ -202,6 +226,8 @@ public class Note implements Serializable, JobListener {
     synchronized (paragraphs) {
       paragraphs.add(newParagraph);
     }
+
+    notifyChanged(NotebookEventObserver.ACTIONS.ADD_PARAGRAPH);
   }
 
   /**
@@ -214,6 +240,9 @@ public class Note implements Serializable, JobListener {
     synchronized (paragraphs) {
       paragraphs.add(index, p);
     }
+
+    notifyChanged(NotebookEventObserver.ACTIONS.ADD_PARAGRAPH);
+
     return p;
   }
 
@@ -305,6 +334,7 @@ public class Note implements Serializable, JobListener {
 
       if (p != null) {
         paragraphs.add(index, p);
+        notifyChanged(NotebookEventObserver.ACTIONS.MOVED_PARAGRAPH);
       }
     }
   }
@@ -398,6 +428,7 @@ public class Note implements Serializable, JobListener {
     if (p.getConfig().get("enabled") == null || (Boolean) p.getConfig().get("enabled")) {
       intp.getScheduler().submit(p);
     }
+
   }
 
   public List<String> completion(String paragraphId, String buffer, int cursor) {

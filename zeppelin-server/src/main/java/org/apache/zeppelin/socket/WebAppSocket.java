@@ -26,15 +26,15 @@ import org.eclipse.jetty.websocket.api.WebSocketAdapter;
 /**
  * Notebook websocket
  */
-public class NotebookSocket extends WebSocketAdapter {
+public class WebAppSocket extends WebSocketAdapter {
 
   private Session connection;
-  private NotebookSocketListener listener;
+  private WebSocketListener listener;
   private HttpServletRequest request;
   private String protocol;
 
-  public NotebookSocket(HttpServletRequest req, String protocol,
-      NotebookSocketListener listener) {
+  public WebAppSocket(HttpServletRequest req, String protocol,
+                      WebSocketListener listener) {
     this.listener = listener;
     this.request = req;
     this.protocol = protocol;

@@ -28,6 +28,7 @@ import java.util.Map;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInterpreterLoader;
+import org.apache.zeppelin.notebook.NotebookEventObserver;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.junit.After;
@@ -286,7 +287,7 @@ public class LuceneSearchTest {
   }
 
   private Note newNote(String name) {
-    Note note = new Note(notebookRepoMock, replLoaderMock, null, notebookIndex, null);
+    Note note = new Note(notebookRepoMock, replLoaderMock, null, notebookIndex, null, new NotebookEventObserver());
     note.setName(name);
     return note;
   }

@@ -16,11 +16,21 @@
  */
 package org.apache.zeppelin.socket;
 
+import org.eclipse.jetty.websocket.servlet.ServletUpgradeRequest;
+import org.eclipse.jetty.websocket.servlet.ServletUpgradeResponse;
+import org.eclipse.jetty.websocket.servlet.WebSocketCreator;
+
 /**
- * NoteboookSocket listener
+ * Responsible to create the WebSockets for the AppMainServer.
  */
-public interface NotebookSocketListener {
-  void onClose(NotebookSocket socket, int code, String message);
-  void onOpen(NotebookSocket socket);
-  void onMessage(NotebookSocket socket, String message);
+public class WebAppSocketCreator implements WebSocketCreator {
+  private AppMainServer appMainServer;
+
+  public WebAppSocketCreator(AppMainServer appMainServer) {
+    this.appMainServer = appMainServer;
+  }
+  public Object createWebSocket(ServletUpgradeRequest request, ServletUpgradeResponse response) {
+    return new WebAppSocket(request.getHttpServletRequest(), "", appMainServer);
+  }
+
 }

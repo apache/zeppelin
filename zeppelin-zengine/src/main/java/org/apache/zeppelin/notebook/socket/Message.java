@@ -111,13 +111,18 @@ public class Message {
     CONFIGURATIONS_INFO, // [s-c] all key/value pairs of configurations
                   // @param settings serialized Map<String, String> object
 
-    CHECKPOINT_NOTEBOOK     // [c-s] checkpoint notebook to storage repository
+    CHECKPOINT_NOTEBOOK,     // [c-s] checkpoint notebook to storage repository
                             // @param noteId
                             // @param checkpointName
+    LIST_NOTEBOOK_JOBS,     // [c-s] get notebook job management infomations
+    LIST_UPDATE_NOTEBOOK_JOBS, // [c-s] get job management informations for until unixtime
+                              // @param unixTime
+    UNSUBSCRIBE_JOBMANAGER // [c-s] Unsubscribe notification for job manger.
 
   }
 
   public OP op;
+  public String target;
   public Map<String, Object> data = new HashMap<String, Object>();
   public String ticket = "anonymous";
   public String principal = "anonymous";

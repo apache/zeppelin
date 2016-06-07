@@ -43,7 +43,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl',
 
   var connectedOnce = false;
 
-  $scope.$on('setConnectedStatus', function(event, param) {
+  $scope.$on('setWSConnectedStatus', function(event, param) {
     if(connectedOnce && param){
       initNotebook();
     }
@@ -694,7 +694,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl',
       console.log('Error %o %o', status, data.message);
       BootstrapDialog.show({
           closable: true,
-          title: 'Insufficient privileges', 
+          title: 'Insufficient privileges',
           message: data.message,
           buttons: [{
               label: 'Login',

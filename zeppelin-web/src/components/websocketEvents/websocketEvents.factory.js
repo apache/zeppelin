@@ -21,7 +21,7 @@ angular.module('zeppelinWebApp').factory('websocketEvents', function($rootScope,
 
   websocketCalls.ws.onOpen(function() {
     console.log('Websocket created');
-    $rootScope.$broadcast('setConnectedStatus', true);
+    $rootScope.$broadcast('setWSConnectedStatus', true);
     setInterval(function(){
       websocketCalls.sendNewEvent({op: 'PING'});
     }, 10000);
@@ -37,7 +37,8 @@ angular.module('zeppelinWebApp').factory('websocketEvents', function($rootScope,
       data.ticket = '';
       data.roles = '';
     }
-    console.log('Send >> %o, %o, %o, %o, %o', data.op, data.principal, data.ticket, data.roles, data);
+
+    console.log('Send Notebook Server >> %o, %o, %o, %o, %o', data.op, data.principal, data.ticket, data.roles, data);
     websocketCalls.ws.send(JSON.stringify(data));
   };
 
@@ -50,7 +51,7 @@ angular.module('zeppelinWebApp').factory('websocketEvents', function($rootScope,
     if (event.data) {
       payload = angular.fromJson(event.data);
     }
-    console.log('Receive << %o, %o', payload.op, payload);
+    console.log('Receive Notebook Server << %o, %o', payload.op, payload);
     var op = payload.op;
     var data = payload.data;
     if (op === 'NOTE') {
@@ -59,10 +60,14 @@ angular.module('zeppelinWebApp').factory('websocketEvents', function($rootScope,
       $location.path('notebook/' + data.note.id);
     } else if (op === 'NOTES_INFO') {
       $rootScope.$broadcast('setNoteMenu', data.notes);
+    } else if (op === 'LIST_NOTEBOOK_JOBS') {
+      $rootScope.$broadcast('setNotebookJobs', data.notebookJobs);
+    } else if (op === 'LIST_UPDATE_NOTEBOOK_JOBS') {
+      $rootScope.$broadcast('setUpdateNotebookJobs', data.notebookRunningJobs);
     } else if (op === 'AUTH_INFO') {
       BootstrapDialog.show({
           closable: true,
-          title: 'Insufficient privileges', 
+          title: 'Insufficient privileges',
           message: data.info.toString(),
           buttons: [{
               label: 'Login',
@@ -97,13 +102,13 @@ angular.module('zeppelinWebApp').factory('websocketEvents', function($rootScope,
   });
 
   websocketCalls.ws.onError(function(event) {
-    console.log('error message: ', event);
-    $rootScope.$broadcast('setConnectedStatus', false);
+    console.log('[notebookWS] Notebook Server message: ', event);
+    $rootScope.$broadcast('setWSConnectedStatus', false);
   });
 
   websocketCalls.ws.onClose(function(event) {
-    console.log('close message: ', event);
-    $rootScope.$broadcast('setConnectedStatus', false);
+    console.log('[notebookWS] close message: ', event);
+    $rootScope.$broadcast('setWSConnectedStatus', false);
   });
 
   return websocketCalls;

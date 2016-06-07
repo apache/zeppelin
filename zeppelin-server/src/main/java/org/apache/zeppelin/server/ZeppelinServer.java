@@ -30,6 +30,7 @@ import org.apache.zeppelin.rest.*;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.apache.zeppelin.search.LuceneSearch;
 import org.apache.zeppelin.search.SearchService;
+import org.apache.zeppelin.socket.AppMainServer;
 import org.apache.zeppelin.socket.NotebookServer;
 import org.apache.zeppelin.user.Credentials;
 import org.eclipse.jetty.http.HttpVersion;
@@ -104,8 +105,8 @@ public class ZeppelinServer extends Application {
     // REST api
     setupRestApiContextHandler(webApp, conf);
 
-    // Notebook server
-    setupNotebookServer(webApp, conf);
+    // Main Notebook WS server
+    notebookWsServer = setupNotebookServer(webApp, conf);
 
     //Below is commented since zeppelin-docs module is removed.
     //final WebAppContext webAppSwagg = setupWebAppSwagger(conf);
@@ -118,6 +119,9 @@ public class ZeppelinServer extends Application {
       System.exit(-1);
     }
     LOG.info("Done, zeppelin server started");
+
+    // register observer for job manager.
+    notebook.getNotebookEventObserver().addObserver(notebookWsServer);
 
     Runtime.getRuntime().addShutdownHook(new Thread(){
       @Override public void run() {
@@ -192,17 +196,16 @@ public class ZeppelinServer extends Application {
     return server;
   }
 
-  private static void setupNotebookServer(WebAppContext webapp,
-                                          ZeppelinConfiguration conf) {
-    notebookWsServer = new NotebookServer();
+  private static NotebookServer setupNotebookServer(WebAppContext webapp,
+      ZeppelinConfiguration conf) {
+    NotebookServer notebookWsServer = new NotebookServer();
     String maxTextMessageSize = conf.getWebsocketMaxTextMessageSize();
     final ServletHolder servletHolder = new ServletHolder(notebookWsServer);
     servletHolder.setInitParameter("maxTextMessageSize", maxTextMessageSize);
-
     final ServletContextHandler cxfContext = new ServletContextHandler(
-        ServletContextHandler.SESSIONS);
-
+            ServletContextHandler.SESSIONS);
     webapp.addServlet(servletHolder, "/ws/*");
+    return notebookWsServer;
   }
 
   private static SslContextFactory getSslContextFactory(ZeppelinConfiguration conf) {

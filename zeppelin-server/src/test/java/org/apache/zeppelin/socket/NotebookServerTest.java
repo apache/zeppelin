@@ -110,8 +110,8 @@ public class NotebookServerTest extends AbstractTestRestApi {
     interpreterGroup.getAngularObjectRegistry().add("object1", "value1", note1.getId(), null);
 
     // create two sockets and open it
-    NotebookSocket sock1 = createWebSocket();
-    NotebookSocket sock2 = createWebSocket();
+    WebAppSocket sock1 = createWebSocket();
+    WebAppSocket sock2 = createWebSocket();
 
     assertEquals(sock1, sock1);
     assertNotEquals(sock1, sock2);
@@ -196,8 +196,8 @@ public class NotebookServerTest extends AbstractTestRestApi {
 
     when(mdRegistry.addAndNotifyRemoteProcess(varName, value, "noteId", "paragraphId")).thenReturn(ao1);
 
-    NotebookSocket conn = mock(NotebookSocket.class);
-    NotebookSocket otherConn = mock(NotebookSocket.class);
+    WebAppSocket conn = mock(WebAppSocket.class);
+    WebAppSocket otherConn = mock(WebAppSocket.class);
 
     final String mdMsg1 =  server.serializeMessage(new Message(OP.ANGULAR_OBJECT_UPDATE)
             .put("angularObject", ao1)
@@ -205,7 +205,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
             .put("noteId", "noteId")
             .put("paragraphId", "paragraphId"));
 
-    server.noteSocketMap.put("noteId", asList(conn, otherConn));
+    server.userWebSocketMap.put("noteId", asList(conn, otherConn));
 
     // When
     server.angularObjectClientBind(conn, new HashSet<String>(), notebook, messageReceived);
@@ -245,8 +245,8 @@ public class NotebookServerTest extends AbstractTestRestApi {
 
     when(mdRegistry.add(varName, value, "noteId", "paragraphId")).thenReturn(ao1);
 
-    NotebookSocket conn = mock(NotebookSocket.class);
-    NotebookSocket otherConn = mock(NotebookSocket.class);
+    WebAppSocket conn = mock(WebAppSocket.class);
+    WebAppSocket otherConn = mock(WebAppSocket.class);
 
     final String mdMsg1 =  server.serializeMessage(new Message(OP.ANGULAR_OBJECT_UPDATE)
             .put("angularObject", ao1)
@@ -254,7 +254,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
             .put("noteId", "noteId")
             .put("paragraphId", "paragraphId"));
 
-    server.noteSocketMap.put("noteId", asList(conn, otherConn));
+    server.userWebSocketMap.put("noteId", asList(conn, otherConn));
 
     // When
     server.angularObjectClientBind(conn, new HashSet<String>(), notebook, messageReceived);
@@ -288,8 +288,8 @@ public class NotebookServerTest extends AbstractTestRestApi {
 
     final AngularObject ao1 = AngularObjectBuilder.build(varName, value, "noteId", "paragraphId");
     when(mdRegistry.removeAndNotifyRemoteProcess(varName, "noteId", "paragraphId")).thenReturn(ao1);
-    NotebookSocket conn = mock(NotebookSocket.class);
-    NotebookSocket otherConn = mock(NotebookSocket.class);
+    WebAppSocket conn = mock(WebAppSocket.class);
+    WebAppSocket otherConn = mock(WebAppSocket.class);
 
     final String mdMsg1 =  server.serializeMessage(new Message(OP.ANGULAR_OBJECT_REMOVE)
             .put("angularObject", ao1)
@@ -297,7 +297,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
             .put("noteId", "noteId")
             .put("paragraphId", "paragraphId"));
 
-    server.noteSocketMap.put("noteId", asList(conn, otherConn));
+    server.userWebSocketMap.put("noteId", asList(conn, otherConn));
 
     // When
     server.angularObjectClientUnbind(conn, new HashSet<String>(), notebook, messageReceived);
@@ -336,15 +336,15 @@ public class NotebookServerTest extends AbstractTestRestApi {
 
     when(mdRegistry.remove(varName, "noteId", "paragraphId")).thenReturn(ao1);
 
-    NotebookSocket conn = mock(NotebookSocket.class);
-    NotebookSocket otherConn = mock(NotebookSocket.class);
+    WebAppSocket conn = mock(WebAppSocket.class);
+    WebAppSocket otherConn = mock(WebAppSocket.class);
 
     final String mdMsg1 =  server.serializeMessage(new Message(OP.ANGULAR_OBJECT_REMOVE)
             .put("angularObject", ao1)
             .put("interpreterGroupId", "mdGroup")
             .put("noteId", "noteId")
             .put("paragraphId", "paragraphId"));
-    server.noteSocketMap.put("noteId", asList(conn, otherConn));
+    server.userWebSocketMap.put("noteId", asList(conn, otherConn));
 
     // When
     server.angularObjectClientUnbind(conn, new HashSet<String>(), notebook, messageReceived);
@@ -353,8 +353,8 @@ public class NotebookServerTest extends AbstractTestRestApi {
     verify(otherConn).send(mdMsg1);
   }
 
-  private NotebookSocket createWebSocket() {
-    NotebookSocket sock = mock(NotebookSocket.class);
+  private WebAppSocket createWebSocket() {
+    WebAppSocket sock = mock(WebAppSocket.class);
     when(sock.getRequest()).thenReturn(createHttpServletRequest());
     return sock;
   }

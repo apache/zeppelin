@@ -42,7 +42,7 @@ angular.module('zeppelinWebApp').controller('NavCtrl', function($scope, $rootSco
     notebookListDataFactory.setNotes(notes);
   });
 
-  $scope.$on('setConnectedStatus', function(event, param) {
+  $scope.$on('setWSConnectedStatus', function(event, param) {
     vm.connected = param;
   });
 
