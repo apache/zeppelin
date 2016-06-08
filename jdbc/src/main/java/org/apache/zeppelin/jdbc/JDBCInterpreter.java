@@ -4,9 +4,9 @@
  * copyright ownership. The ASF licenses this file to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance with the License. You may obtain a
  * copy of the License at
- *
+ * <p>
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
  * Unless required by applicable law or agreed to in writing, software distributed under the License
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
@@ -50,7 +50,7 @@ import com.google.common.collect.Sets.SetView;
 /**
  * JDBC interpreter for Zeppelin. This interpreter can also be used for accessing HAWQ,
  * GreenplumDB, MariaDB, MySQL, Postgres and Redshit.
- * 
+ * <p>
  * <ul>
  * <li>{@code default.url} - JDBC URL to connect to.</li>
  * <li>{@code default.user} - JDBC user name..</li>
@@ -58,22 +58,21 @@ import com.google.common.collect.Sets.SetView;
  * <li>{@code default.driver.name} - JDBC driver name.</li>
  * <li>{@code common.max.result} - Max number of SQL result to display.</li>
  * </ul>
- * 
+ * <p>
  * <p>
  * How to use: <br/>
  * {@code %jdbc.sql} <br/>
- * {@code 
- *  SELECT store_id, count(*) 
- *  FROM retail_demo.order_lineitems_pxf 
- *  GROUP BY store_id;
+ * {@code
+ * SELECT store_id, count(*)
+ * FROM retail_demo.order_lineitems_pxf
+ * GROUP BY store_id;
  * }
  * </p>
- * 
  */
 public class JDBCInterpreter extends Interpreter {
 
   private Logger logger = LoggerFactory.getLogger(JDBCInterpreter.class);
- 
+
   static final String COMMON_KEY = "common";
   static final String MAX_LINE_KEY = "max_count";
   static final String MAX_LINE_DEFAULT = "1000";
@@ -84,7 +83,7 @@ public class JDBCInterpreter extends Interpreter {
   static final String USER_KEY = "user";
   static final String PASSWORD_KEY = "password";
   static final String DOT = ".";
-  
+
   private static final char WHITESPACE = ' ';
   private static final char NEWLINE = '\n';
   private static final char TAB = '\t';
@@ -100,12 +99,23 @@ public class JDBCInterpreter extends Interpreter {
   static final String DEFAULT_PASSWORD = DEFAULT_KEY + DOT + PASSWORD_KEY;
 
   static final String EMPTY_COLUMN_VALUE = "";
-  
+
   private final HashMap<String, Properties> propertiesMap;
   private final Map<String, Statement> paragraphIdStatementMap;
 
   private final Map<String, ArrayList<Connection>> propertyKeyUnusedConnectionListMap;
   private final Map<String, Connection> paragraphIdConnectionMap;
+
+  private final Map<String, SqlCompleter> propertyKeySqlCompleterMap;
+
+  private static final Function<CharSequence, String> sequenceToStringTransformer =
+      new Function<CharSequence, String>() {
+        public String apply(CharSequence seq) {
+          return seq.toString();
+        }
+      };
+
+  private static final List<String> NO_COMPLETION = new ArrayList<String>();
 
   public JDBCInterpreter(Properties property) {
     super(property);
@@ -113,8 +123,9 @@ public class JDBCInterpreter extends Interpreter {
     propertyKeyUnusedConnectionListMap = new HashMap<>();
     paragraphIdStatementMap = new HashMap<>();
     paragraphIdConnectionMap = new HashMap<>();
+    propertyKeySqlCompleterMap = new HashMap<>();
   }
-  
+
   public HashMap<String, Properties> getPropertiesMap() {
     return propertiesMap;
   }
@@ -154,9 +165,38 @@ public class JDBCInterpreter extends Interpreter {
     }
 
     logger.debug("propertiesMap: {}", propertiesMap);
+
+    Connection connection = null;
+    SqlCompleter sqlCompleter = null;
+    for (String propertyKey : propertiesMap.keySet()) {
+      try {
+        connection = getConnection(propertyKey);
+        sqlCompleter = createSqlCompleter(connection);
+      } catch (Exception e) {
+        sqlCompleter = createSqlCompleter(null);
+      }
+      propertyKeySqlCompleterMap.put(propertyKey, sqlCompleter);
+    }
   }
-  
-  public Connection getConnection(String propertyKey)  throws ClassNotFoundException, SQLException {
+
+  private SqlCompleter createSqlCompleter(Connection jdbcConnection) {
+
+    SqlCompleter completer = null;
+    try {
+      Set<String> keywordsCompletions = SqlCompleter.getSqlKeywordsCompletions(jdbcConnection);
+      Set<String> dataModelCompletions =
+          SqlCompleter.getDataModelMetadataCompletions(jdbcConnection);
+      SetView<String> allCompletions = Sets.union(keywordsCompletions, dataModelCompletions);
+      completer = new SqlCompleter(allCompletions, dataModelCompletions);
+
+    } catch (IOException | SQLException e) {
+      logger.error("Cannot create SQL completer", e);
+    }
+
+    return completer;
+  }
+
+  public Connection getConnection(String propertyKey) throws ClassNotFoundException, SQLException {
     Connection connection = null;
     if (propertyKey == null || propertiesMap.get(propertyKey) == null) {
       return null;
@@ -180,7 +220,7 @@ public class JDBCInterpreter extends Interpreter {
     }
     return connection;
   }
-  
+
   public Statement getStatement(String propertyKey, String paragraphId)
       throws SQLException, ClassNotFoundException {
     Connection connection;
@@ -189,7 +229,7 @@ public class JDBCInterpreter extends Interpreter {
     } else {
       connection = getConnection(propertyKey);
     }
-    
+
     if (connection == null) {
       return null;
     }
@@ -213,7 +253,7 @@ public class JDBCInterpreter extends Interpreter {
       return false;
     }
   }
-  
+
   @Override
   public void close() {
 
@@ -241,13 +281,13 @@ public class JDBCInterpreter extends Interpreter {
 
   private InterpreterResult executeSql(String propertyKey, String sql,
       InterpreterContext interpreterContext) {
-    
+
     String paragraphId = interpreterContext.getParagraphId();
 
     try {
 
       Statement statement = getStatement(propertyKey, paragraphId);
-      
+
       if (statement == null) {
         return new InterpreterResult(Code.ERROR, "Prefix not found.");
       }
@@ -346,7 +386,7 @@ public class JDBCInterpreter extends Interpreter {
     if (null != propertyKey && !propertyKey.equals(DEFAULT_KEY)) {
       cmd = cmd.substring(propertyKey.length() + 2);
     }
-    
+
     cmd = cmd.trim();
 
     logger.info("PropertyKey: {}, SQL command: '{}'", propertyKey, cmd);
@@ -382,7 +422,7 @@ public class JDBCInterpreter extends Interpreter {
       return DEFAULT_KEY;
     }
   }
-  
+
   @Override
   public FormType getFormType() {
     return FormType.SIMPLE;
@@ -401,7 +441,13 @@ public class JDBCInterpreter extends Interpreter {
 
   @Override
   public List<String> completion(String buf, int cursor) {
-    return null;
+    List<CharSequence> candidates = new ArrayList<CharSequence>();
+    SqlCompleter sqlCompleter = propertyKeySqlCompleterMap.get(getPropertyKey(buf));
+    if (sqlCompleter != null && sqlCompleter.complete(buf, cursor, candidates) >= 0) {
+      return Lists.transform(candidates, sequenceToStringTransformer);
+    } else {
+      return NO_COMPLETION;
+    }
   }
 
   public int getMaxResult() {
