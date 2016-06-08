@@ -159,6 +159,7 @@
             <exclude>**/.project</exclude>
             <exclude>**/target/**</exclude>
             <exclude>**/README.md</exclude>
+            <exclude>**/interpreter-setting.json</exclude>
             <exclude>dependency-reduced-pom.xml</exclude>
           </excludes>
         </configuration>
