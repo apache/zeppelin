@@ -153,7 +153,13 @@ public class Notebook implements NoteEventListener {
    */
   public Note createNote(List<String> interpreterIds) throws IOException {
     NoteInterpreterLoader intpLoader = new NoteInterpreterLoader(replFactory);
-    Note note = new Note(notebookRepo, intpLoader, jobListenerFactory, notebookIndex, credentials, this);
+    Note note = new Note(
+        notebookRepo,
+        intpLoader,
+        jobListenerFactory,
+        notebookIndex,
+        credentials,
+        this);
     intpLoader.setNoteId(note.id());
     synchronized (notes) {
       notes.put(note.id(), note);

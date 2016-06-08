@@ -927,10 +927,11 @@ public class InterpreterFactory implements InterpreterGroupFactory {
 
     updatePropertiesFromRegisteredInterpreter(property, className);
 
-    LazyOpenInterpreter intp = new LazyOpenInterpreter(new RemoteInterpreter(
+    RemoteInterpreter remoteInterpreter = new RemoteInterpreter(
         property, noteId, className, conf.getInterpreterRemoteRunnerPath(),
         interpreterPath, localRepoPath, connectTimeout,
-        maxPoolSize, remoteInterpreterProcessListener, appEventListener);
+        maxPoolSize, remoteInterpreterProcessListener, appEventListener)
+
     remoteInterpreter.setEnv(env);
     LazyOpenInterpreter intp = new LazyOpenInterpreter(remoteInterpreter);
     return intp;
