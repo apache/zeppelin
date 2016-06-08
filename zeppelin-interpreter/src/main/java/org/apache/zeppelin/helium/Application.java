@@ -23,7 +23,9 @@ import org.apache.zeppelin.resource.ResourceSet;
 import java.io.IOException;
 
 /**
- * Zeppelin Application base
+ * Base class for pluggable application (e.g. visualization)
+ * Application can access resources from ResourcePool and interact with front-end using
+ * AngularDisplay system
  */
 @Experimental
 public abstract class Application {
@@ -53,21 +55,51 @@ public abstract class Application {
   @Experimental
   public abstract void unload() throws ApplicationException;
 
+  /**
+   * Print string on the notebook
+   * @param string
+   * @throws IOException
+   */
   @Experimental
   public void print(String string) throws IOException {
     context.out.write(string);
   }
 
+  /**
+   * Print string on the notebook with newline
+   * @param string
+   * @throws IOException
+   */
   @Experimental
   public void println(String string) throws IOException {
     print(string + "\n");
   }
 
+  /**
+   * Print resource on the notebook
+   * @param resourceName
+   * @throws IOException
+   */
   @Experimental
   public void printResource(String resourceName) throws IOException {
     context.out.writeResource(resourceName);
   }
 
+  /**
+   * Print resource as a javascript
+   *
+   * Using this method does not require print javascript inside of <script></script> tag.
+   * Javascript printed using this method will be run in the un-named function.
+   * i.e. each method call will creates different variable scope for the javascript code.
+   *
+   * This method inject '$z' into the variable scope for convenience.
+   *
+   * $z.scope : angularjs scope object for this application
+   * $z.id : unique id for this application instance
+   *
+   * @param resourceName
+   * @throws IOException
+   */
   @Experimental
   public void printResourceAsJavascript(String resourceName) throws IOException {
     beginJavascript();
@@ -75,6 +107,21 @@ public abstract class Application {
     endJavascript();
   }
 
+  /**
+   * Print string as a javascript
+   *
+   * Using this method does not require print javascript inside of <script></script> tag.
+   * Javascript printed using this method will be run in the un-named function.
+   * i.e. each method call will creates different variable scope for the javascript code.
+   *
+   * This method inject '$z' into the variable scope for convenience.
+   *
+   * $z.scope : angularjs scope object for this application
+   * $z.id : unique id for this application instance
+   *
+   * @param js
+   * @throws IOException
+   */
   @Experimental
   public void printStringAsJavascript(String js) throws IOException {
     beginJavascript();
