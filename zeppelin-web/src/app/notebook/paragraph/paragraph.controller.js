@@ -1241,6 +1241,8 @@ angular.module('zeppelinWebApp')
         manualRowResize: true,
         editor: false,
         fillHandle: false,
+        fragmentSelection: true,
+        disableVisualSelection: true,
         cells: function (row, col, prop) {
           var cellProperties = {};
           cellProperties.renderer = function(instance, td, row, col, prop, value, cellProperties) {
