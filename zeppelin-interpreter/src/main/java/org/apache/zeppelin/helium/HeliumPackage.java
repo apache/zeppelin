@@ -16,9 +16,12 @@
  */
 package org.apache.zeppelin.helium;
 
+import org.apache.zeppelin.annotation.Experimental;
+
 /**
  * Helium package definition
  */
+@Experimental
 public class HeliumPackage {
   private Type type;
   private String name;           // user friendly name of this application

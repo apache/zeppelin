@@ -16,6 +16,7 @@
  */
 package org.apache.zeppelin.helium;
 
+import org.apache.zeppelin.annotation.Experimental;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.resource.ResourceSet;
 
@@ -24,6 +25,7 @@ import java.io.IOException;
 /**
  * Zeppelin Application base
  */
+@Experimental
 public abstract class Application {
 
   private final ApplicationContext context;
@@ -40,6 +42,7 @@ public abstract class Application {
    * This method can be invoked multiple times before unload(),
    * Either just after application selected or when paragraph re-run after application load
    */
+  @Experimental
   public abstract void run(ResourceSet args)
       throws ApplicationException, IOException;
 
@@ -47,26 +50,32 @@ public abstract class Application {
   /**
    * this method is invoked just before application is removed
    */
+  @Experimental
   public abstract void unload() throws ApplicationException;
 
+  @Experimental
   public void print(String string) throws IOException {
     context.out.write(string);
   }
 
+  @Experimental
   public void println(String string) throws IOException {
     print(string + "\n");
   }
 
+  @Experimental
   public void printResource(String resourceName) throws IOException {
     context.out.writeResource(resourceName);
   }
 
+  @Experimental
   public void printResourceAsJavascript(String resourceName) throws IOException {
     beginJavascript();
     context.out.writeResource(resourceName);
     endJavascript();
   }
 
+  @Experimental
   public void printStringAsJavascript(String js) throws IOException {
     beginJavascript();
     context.out.write(js);
