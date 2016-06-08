@@ -286,7 +286,7 @@ public class LuceneSearchTest {
   }
 
   private Note newNote(String name) {
-    Note note = new Note(notebookRepoMock, replLoaderMock, null, notebookIndex, null);
+    Note note = new Note(notebookRepoMock, replLoaderMock, null, notebookIndex, null, null);
     note.setName(name);
     return note;
   }

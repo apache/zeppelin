@@ -930,11 +930,10 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     RemoteInterpreter remoteInterpreter = new RemoteInterpreter(
         property, noteId, className, conf.getInterpreterRemoteRunnerPath(),
         interpreterPath, localRepoPath, connectTimeout,
-        maxPoolSize, remoteInterpreterProcessListener, appEventListener)
-
+        maxPoolSize, remoteInterpreterProcessListener, appEventListener);
     remoteInterpreter.setEnv(env);
-    LazyOpenInterpreter intp = new LazyOpenInterpreter(remoteInterpreter);
-    return intp;
+
+    return new LazyOpenInterpreter(remoteInterpreter);
   }
 
   private Properties updatePropertiesFromRegisteredInterpreter(Properties properties,

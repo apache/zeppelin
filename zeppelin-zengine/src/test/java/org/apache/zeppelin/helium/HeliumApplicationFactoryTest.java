@@ -93,7 +93,8 @@ public class HeliumApplicationFactoryTest implements JobListenerFactory {
         factory,
         this,
         search,
-        notebookAuthorization);
+        notebookAuthorization,
+        null);
 
     heliumAppFactory.setNotebook(notebook);
 
