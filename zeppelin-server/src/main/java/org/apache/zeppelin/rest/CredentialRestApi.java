@@ -69,7 +69,7 @@ public class CredentialRestApi {
     String password = messageMap.get("password");
 
     if (entity == null || username == null || password == null) {
-      return new JsonResponse(Status.INTERNAL_SERVER_ERROR, "", "").build();
+      return new JsonResponse(Status.BAD_REQUEST, "", "").build();
     }
 
     String user = SecurityUtils.getPrincipal();
