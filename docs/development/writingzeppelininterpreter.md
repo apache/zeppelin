@@ -39,11 +39,13 @@ Creating a new interpreter is quite simple. Just extend [org.apache.zeppelin.int
 You can include `org.apache.zeppelin:zeppelin-interpreter:[VERSION]` artifact in your build system. And you should your jars under your interpreter directory with specific directory name. Zeppelin server reads interpreter directories recursively and initializes interpreters including your own interpreter.
 
 There are three locations where you can store your interpreter group, name and other information. Zeppelin server tries to find the location below. Next, Zeppelin tries to find `interpareter-setting.json` in your interpreter jar. 
+
 ```
 {ZEPPELIN_INTERPRETER_DIR}/{YOUR_OWN_INTERPRETER_DIR}/interpreter-setting.json
 ```
 
 Here is an example of `interpareter-setting.json` on your own interpreter.
+
 ```json
 [
   {
@@ -72,11 +74,13 @@ Here is an example of `interpareter-setting.json` on your own interpreter.
 ```
 
 Finally, Zeppelin uses static initialization with the following:
+
 ```
 static {
     Interpreter.register("MyInterpreterName", MyClassName.class.getName());
   }
 ```
+
 **Static initialization is deprecated and will be supported until 0.6.0.**
 
 The name will appear later in the interpreter name option box during the interpreter configuration process.

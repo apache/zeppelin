@@ -33,6 +33,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.zeppelin.annotation.ZeppelinApi;
 import org.apache.zeppelin.dep.Repository;
 import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.Interpreter.RegisteredInterpreter;
@@ -74,6 +75,7 @@ public class InterpreterRestApi {
    */
   @GET
   @Path("setting")
+  @ZeppelinApi
   public Response listSettings() {
     List<InterpreterSetting> interpreterSettings = null;
     interpreterSettings = interpreterFactory.get();
@@ -89,6 +91,7 @@ public class InterpreterRestApi {
    */
   @POST
   @Path("setting")
+  @ZeppelinApi
   public Response newSettings(String message) {
     try {
       NewInterpreterSettingRequest request = gson.fromJson(message,
@@ -119,6 +122,7 @@ public class InterpreterRestApi {
 
   @PUT
   @Path("setting/{settingId}")
+  @ZeppelinApi
   public Response updateSetting(String message, @PathParam("settingId") String settingId) {
     logger.info("Update interpreterSetting {}", settingId);
 
@@ -150,6 +154,7 @@ public class InterpreterRestApi {
    */
   @DELETE
   @Path("setting/{settingId}")
+  @ZeppelinApi
   public Response removeSetting(@PathParam("settingId") String settingId) throws IOException {
     logger.info("Remove interpreterSetting {}", settingId);
     interpreterFactory.remove(settingId);
@@ -161,6 +166,7 @@ public class InterpreterRestApi {
    */
   @PUT
   @Path("setting/restart/{settingId}")
+  @ZeppelinApi
   public Response restartSetting(@PathParam("settingId") String settingId) {
     logger.info("Restart interpreterSetting {}", settingId);
     try {
@@ -181,6 +187,7 @@ public class InterpreterRestApi {
    * List all available interpreters by group
    */
   @GET
+  @ZeppelinApi
   public Response listInterpreter(String message) {
     Map<String, RegisteredInterpreter> m = Interpreter.registeredInterpreters;
     return new JsonResponse(Status.OK, "", m).build();
@@ -192,6 +199,7 @@ public class InterpreterRestApi {
    */
   @GET
   @Path("repository")
+  @ZeppelinApi
   public Response listRepositories() {
     List<RemoteRepository> interpreterRepositories = null;
     interpreterRepositories = interpreterFactory.getRepositories();
@@ -205,6 +213,7 @@ public class InterpreterRestApi {
    */
   @POST
   @Path("repository")
+  @ZeppelinApi
   public Response addRepository(String message) {
     try {
       Repository request = gson.fromJson(message, Repository.class);
@@ -229,6 +238,7 @@ public class InterpreterRestApi {
    */
   @DELETE
   @Path("repository/{repoId}")
+  @ZeppelinApi
   public Response removeRepository(@PathParam("repoId") String repoId) {
     logger.info("Remove repository {}", repoId);
     try {
