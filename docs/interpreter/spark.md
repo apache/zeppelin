@@ -9,7 +9,7 @@ group: manual
 
 ## Spark Interpreter for Apache Zeppelin
 [Apache Spark](http://spark.apache.org) is supported in Zeppelin with
-Spark Interpreter group, which consisted of 4 interpreters.
+Spark Interpreter group, which consists of five interpreters.
 
 <table class="table-configuration">
   <tr>
@@ -354,14 +354,14 @@ Logical setup with Zeppelin, Kerberos Key Distribution Center (KDC), and Spark o
 1. On the server that Zeppelin is installed, install Kerberos client modules and configuration, krb5.conf.
 This is to make the server communicate with KDC.
 
-2. Set SPARK\_HOME in [ZEPPELIN\_HOME]/conf/zeppelin-env.sh to use spark-submit
-( Additionally, you might have to set “export HADOOP\_CONF\_DIR=/etc/hadoop/conf” )
+2. Set SPARK\_HOME in `[ZEPPELIN\_HOME]/conf/zeppelin-env.sh` to use spark-submit
+(Additionally, you might have to set `export HADOOP\_CONF\_DIR=/etc/hadoop/conf`)
 
-3. Add the two properties below to spark configuration ( [SPARK_HOME]/conf/spark-defaults.conf ):
+3. Add the two properties below to spark configuration (`[SPARK_HOME]/conf/spark-defaults.conf`):
 
         spark.yarn.principal
         spark.yarn.keytab
 
   > **NOTE:** If you do not have access to the above spark-defaults.conf file, optionally, you may add the lines to the Spark Interpreter through the Interpreter tab in the Zeppelin UI.
 
-4. That's it. Play with Zeppelin !
+4. That's it. Play with Zeppelin!
