@@ -116,7 +116,7 @@ If you want to learn more about this feature, please visit [this page](./manual/
 <br />
 ### 100% Opensource
 
-Apache Zeppelin is Apache2 Licensed software. Please check out the [source repository](http://git.apache.org/incubator-zeppelin.git) and [How to contribute](./development/howtocontribute.html)
+Apache Zeppelin is Apache2 Licensed software. Please check out the [source repository](http://git.apache.org/zeppelin.git) and [How to contribute](./development/howtocontribute.html)
 
 Zeppelin has a very active development community.
 Join the [Mailing list](https://zeppelin.apache.org/community.html) and report issues on our [Issue tracker](https://issues.apache.org/jira/browse/ZEPPELIN).

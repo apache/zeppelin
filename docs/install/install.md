@@ -40,7 +40,7 @@ You can also build Zeppelin from the source.
  * Maven(3.1.x or higher)
  * Node.js Package Manager
 
-If you don't have requirements prepared, please check instructions in [README.md](https://github.com/apache/incubator-zeppelin/blob/master/README.md) for the details.
+If you don't have requirements prepared, please check instructions in [README.md](https://github.com/apache/zeppelin/blob/master/README.md) for the details.
 
 <a name="zeppelin-configuration"> </a>
 ## Zeppelin Configuration

@@ -69,4 +69,4 @@ user2 = password3
 
 Those combinations are defined in the `conf/shiro.ini` file.
 
-> **NOTE :** This documentation is originally from [SECURITY-README.md](https://github.com/apache/incubator-zeppelin/blob/master/SECURITY-README.md).
+> **NOTE :** This documentation is originally from [SECURITY-README.md](https://github.com/apache/zeppelin/blob/master/SECURITY-README.md).
