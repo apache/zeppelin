@@ -110,7 +110,6 @@ The top-level pom.xml describes the basic project structure. Currently Zeppelin 
     <module>angular</module>
     <module>shell</module>
     <module>hive</module>
-    <module>tajo</module>
     <module>flink</module>
     <module>ignite</module>
     <module>lens</module>
