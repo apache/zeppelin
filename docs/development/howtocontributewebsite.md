@@ -8,7 +8,7 @@ group: development
 # Contributing to Apache Zeppelin ( Website )
 
 ## IMPORTANT
-Apache Zeppelin (incubating) is an [Apache2 License](http://www.apache.org/licenses/LICENSE-2.0.html) Software.
+Apache Zeppelin is an [Apache2 License](http://www.apache.org/licenses/LICENSE-2.0.html) Software.
 Any contribution to Zeppelin (Source code, Documents, Image, Website) means you agree license all your contributions as Apache2 License.
 
 
@@ -52,4 +52,4 @@ Zeppelin manages its issues in Jira. [https://issues.apache.org/jira/browse/ZEPP
 ## Stay involved
 Contributors should join the Zeppelin mailing lists.
 
-* [dev@zeppelin.apache.org](http://mail-archives.apache.org/mod_mbox/incubator-zeppelin-dev/) is for people who want to contribute code to Zeppelin. [subscribe](mailto:dev-subscribe@zeppelin.apache.org?subject=send this email to subscribe), [unsubscribe](mailto:dev-unsubscribe@zeppelin.apache.org?subject=send this email to unsubscribe), [archives](http://mail-archives.apache.org/mod_mbox/incubator-zeppelin-dev/)
+* [dev@zeppelin.apache.org](http://mail-archives.apache.org/mod_mbox/zeppelin-dev/) is for people who want to contribute code to Zeppelin. [subscribe](mailto:dev-subscribe@zeppelin.apache.org?subject=send this email to subscribe), [unsubscribe](mailto:dev-unsubscribe@zeppelin.apache.org?subject=send this email to unsubscribe), [archives](http://mail-archives.apache.org/mod_mbox/zeppelin-dev/)
