@@ -21,8 +21,6 @@ import java.lang.StringBuilder
 
 import org.apache.spark.rdd.RDD
 
-import scala.collection.IterableLike
-
 object DisplayUtils {
 
   implicit def toDisplayRDDFunctions[T <: Product](rdd: RDD[T]): DisplayRDDFunctions[T] = new DisplayRDDFunctions[T](rdd)

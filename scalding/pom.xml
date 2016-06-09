@@ -69,13 +69,13 @@
 
     <dependency>
       <groupId>com.twitter</groupId>
-      <artifactId>scalding-core_2.10</artifactId>
+      <artifactId>scalding-core_${scala.binary.version}</artifactId>
       <version>${scalding.version}</version>
     </dependency>
 
     <dependency>
       <groupId>com.twitter</groupId>
-      <artifactId>scalding-repl_2.10</artifactId>
+      <artifactId>scalding-repl_${scala.binary.version}</artifactId>
       <version>${scalding.version}</version>
     </dependency>
 

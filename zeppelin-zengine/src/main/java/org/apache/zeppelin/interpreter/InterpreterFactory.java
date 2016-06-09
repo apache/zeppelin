@@ -140,6 +140,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
          * - Remove these codes below because of legacy code
          * - Support ThreadInterpreter
          */
+      /* TODO(ECH)
         URLClassLoader ccl = new URLClassLoader(recursiveBuildLibList(interpreterDir.toFile()), cl);
         for (String className : interpreterClassList) {
           try {
@@ -159,6 +160,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
             // nothing to do
           }
         }
+      */
       }
     }
 

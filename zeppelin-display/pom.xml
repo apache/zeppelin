@@ -33,11 +33,6 @@
   <name>Zeppelin: Display system apis</name>
   <url>http://incubator.zeppelin.apache.org</url>
 
-  <properties>
-    <scala.version>2.10.4</scala.version>
-    <scala.binary.version>2.10</scala.binary.version>
-  </properties>
-
   <dependencyManagement>
     <dependencies>
       <dependency>
@@ -45,17 +40,20 @@
         <artifactId>scala-library</artifactId>
         <version>${scala.version}</version>
       </dependency>
-
       <dependency>
         <groupId>org.scala-lang</groupId>
         <artifactId>scala-compiler</artifactId>
         <version>${scala.version}</version>
       </dependency>
-
       <dependency>
         <groupId>org.scala-lang</groupId>
         <artifactId>scalap</artifactId>
         <version>${scala.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.scala-lang.modules</groupId>
+        <artifactId>scala-xml_${scala.binary.version}</artifactId>
+        <version>1.0.4</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -87,11 +85,15 @@
       <groupId>org.scala-lang</groupId>
       <artifactId>scala-library</artifactId>
     </dependency>
+    <dependency>
+      <groupId>org.scala-lang.modules</groupId>
+      <artifactId>scala-xml_${scala.binary.version}</artifactId>
+    </dependency>
 
     <dependency>
       <groupId>org.scalatest</groupId>
-      <artifactId>scalatest_2.10</artifactId>
-      <version>2.1.1</version>
+      <artifactId>scalatest_${scala.binary.version}</artifactId>
+      <version>2.2.4</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
