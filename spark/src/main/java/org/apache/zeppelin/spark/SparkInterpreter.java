@@ -51,6 +51,7 @@ import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.InterpreterUtils;
 import org.apache.zeppelin.interpreter.WrappedInterpreter;
+import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.apache.zeppelin.spark.dep.SparkDependencyContext;
@@ -642,7 +643,7 @@ public class SparkInterpreter extends Interpreter {
   }
 
   @Override
-  public List<String> completion(String buf, int cursor) {
+  public List<InterpreterCompletion> completion(String buf, int cursor) {
     if (buf.length() < cursor) {
       cursor = buf.length();
     }
@@ -653,7 +654,9 @@ public class SparkInterpreter extends Interpreter {
     }
     ScalaCompleter c = completor.completer();
     Candidates ret = c.complete(completionText, cursor);
-    return scala.collection.JavaConversions.seqAsJavaList(ret.candidates());
+    List completion = scala.collection.JavaConversions.seqAsJavaList(ret.candidates());
+
+    return completion;
   }
 
   private String getCompletionTargetString(String text, int cursor) {

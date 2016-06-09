@@ -56,6 +56,12 @@ struct RemoteInterpreterEvent {
   2: string data      // json serialized data
 }
 
+/*
+ * The below variables(name, value) will be connected to getCompletions in paragraph.controller.js
+ *
+ * name: which is shown in the suggestion list
+ * value: actual return value what you selected
+ */
 struct InterpreterCompletion {
   1: string name,
   2: string value

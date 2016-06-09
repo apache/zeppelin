@@ -39,6 +39,7 @@ import org.apache.zeppelin.interpreter.InterpreterPropertyBuilder;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.WrappedInterpreter;
+import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.spark.dep.SparkDependencyContext;
 import org.slf4j.Logger;
@@ -242,10 +243,11 @@ public class DepInterpreter extends Interpreter {
   }
 
   @Override
-  public List<String> completion(String buf, int cursor) {
+  public List<InterpreterCompletion> completion(String buf, int cursor) {
     ScalaCompleter c = completor.completer();
     Candidates ret = c.complete(buf, cursor);
-    return scala.collection.JavaConversions.seqAsJavaList(ret.candidates());
+    List completion = scala.collection.JavaConversions.seqAsJavaList(ret.candidates());
+    return completion;
   }
 
   private List<File> currentClassPath() {
