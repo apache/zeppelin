@@ -7,7 +7,7 @@ group: manual
 {% include JB/setup %}
 
 ## Important Notice
-Postgresq Interpreter will be deprecated and merged into JDBC Interpreter. You can use Postgresql by using JDBC Interpreter with same functionality. See the example below of settings and dependencies.
+Postgresql Interpreter will be deprecated and merged into JDBC Interpreter. You can use Postgresql by using JDBC Interpreter with same functionality. See the example below of settings and dependencies.
 
 ### Properties
 <table class="table-configuration">

@@ -4,9 +4,9 @@
  * copyright ownership. The ASF licenses this file to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance with the License. You may obtain a
  * copy of the License at
- * <p>
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * <p>
+ *
  * Unless required by applicable law or agreed to in writing, software distributed under the License
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
@@ -33,8 +33,6 @@ import java.util.Set;
 
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
-import org.apache.zeppelin.interpreter.InterpreterException;
-import org.apache.zeppelin.interpreter.InterpreterPropertyBuilder;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.scheduler.Scheduler;
@@ -50,7 +48,7 @@ import com.google.common.collect.Sets.SetView;
 /**
  * JDBC interpreter for Zeppelin. This interpreter can also be used for accessing HAWQ,
  * GreenplumDB, MariaDB, MySQL, Postgres and Redshit.
- * <p>
+ *
  * <ul>
  * <li>{@code default.url} - JDBC URL to connect to.</li>
  * <li>{@code default.user} - JDBC user name..</li>
@@ -58,7 +56,7 @@ import com.google.common.collect.Sets.SetView;
  * <li>{@code default.driver.name} - JDBC driver name.</li>
  * <li>{@code common.max.result} - Max number of SQL result to display.</li>
  * </ul>
- * <p>
+ *
  * <p>
  * How to use: <br/>
  * {@code %jdbc.sql} <br/>
@@ -115,7 +113,7 @@ public class JDBCInterpreter extends Interpreter {
         }
       };
 
-  private static final List<String> NO_COMPLETION = new ArrayList<String>();
+  private static final List<String> NO_COMPLETION = new ArrayList<>();
 
   public JDBCInterpreter(Properties property) {
     super(property);
@@ -441,7 +439,7 @@ public class JDBCInterpreter extends Interpreter {
 
   @Override
   public List<String> completion(String buf, int cursor) {
-    List<CharSequence> candidates = new ArrayList<CharSequence>();
+    List<CharSequence> candidates = new ArrayList<>();
     SqlCompleter sqlCompleter = propertyKeySqlCompleterMap.get(getPropertyKey(buf));
     if (sqlCompleter != null && sqlCompleter.complete(buf, cursor, candidates) >= 0) {
       return Lists.transform(candidates, sequenceToStringTransformer);
