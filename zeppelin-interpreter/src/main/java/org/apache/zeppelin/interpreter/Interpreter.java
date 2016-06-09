@@ -27,6 +27,7 @@ import java.util.Properties;
 
 import com.google.gson.annotations.SerializedName;
 import org.apache.zeppelin.annotation.ZeppelinApi;
+import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.slf4j.Logger;
@@ -106,7 +107,7 @@ public abstract class Interpreter {
    * @return list of possible completion. Return empty list if there're nothing to return.
    */
   @ZeppelinApi
-  public abstract List<String> completion(String buf, int cursor);
+  public abstract List<InterpreterCompletion> completion(String buf, int cursor);
 
   /**
    * Interpreter can implements it's own scheduler by overriding this method.
