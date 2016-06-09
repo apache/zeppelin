@@ -416,7 +416,8 @@ public class RemoteInterpreterServer
                                                 int cursor)
       throws TException {
     Interpreter intp = getInterpreter(noteId, className);
-    return intp.completion(buf, cursor);
+    List completion = intp.completion(buf, cursor);
+    return completion;
   }
 
   private InterpreterContext convert(RemoteInterpreterContext ric) {

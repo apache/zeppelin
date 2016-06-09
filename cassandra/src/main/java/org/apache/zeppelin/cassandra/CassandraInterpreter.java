@@ -140,7 +140,7 @@ public class CassandraInterpreter extends Interpreter {
   public static final String LOGGING_DOWNGRADING_RETRY = "LOGGING_DOWNGRADING";
   public static final String LOGGING_FALLTHROUGH_RETRY = "LOGGING_FALLTHROUGH";
 
-  public static final List<InterpreterCompletion> NO_COMPLETION = new ArrayList<>();
+  public static final List NO_COMPLETION = new ArrayList<>();
 
   InterpreterLogic helper;
   Cluster cluster;

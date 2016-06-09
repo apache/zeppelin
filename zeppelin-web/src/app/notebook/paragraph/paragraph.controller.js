@@ -784,6 +784,7 @@ angular.module('zeppelinWebApp')
               var completions = [];
               for (var c in data.completions) {
                 var v = data.completions[c];
+                console.log('%o', v);
                 console.log('%o %o', v.name, v.value);
                 completions.push({
                   name: v.name,

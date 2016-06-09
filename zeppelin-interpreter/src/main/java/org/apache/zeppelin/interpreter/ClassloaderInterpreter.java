@@ -156,7 +156,8 @@ public class ClassloaderInterpreter
     ClassLoader oldcl = Thread.currentThread().getContextClassLoader();
     Thread.currentThread().setContextClassLoader(cl);
     try {
-      return intp.completion(buf, cursor);
+      List completion = intp.completion(buf, cursor);
+      return completion;
     } catch (Exception e) {
       throw new InterpreterException(e);
     } finally {
