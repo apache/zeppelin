@@ -60,7 +60,7 @@ public class SqlCompleter extends StringsCompleter {
     }
   };
 
-  private Set<String> modelCompletions = new HashSet<String>();
+  private Set<String> modelCompletions = new HashSet<>();
 
   public SqlCompleter(Set<String> allCompletions, Set<String> dataModelCompletions) {
     super(allCompletions);
@@ -219,8 +219,8 @@ public class SqlCompleter extends StringsCompleter {
       }
 
       logger.debug(Joiner.on(',').join(names));
-    } catch (Throwable t) {
-      logger.error("Failed to retrieve the column name", t);
+    } catch (Exception e) {
+      logger.error("Failed to retrieve the column name", e);
     }
   }
 
@@ -238,8 +238,8 @@ public class SqlCompleter extends StringsCompleter {
       } finally {
         schemas.close();
       }
-    } catch (Throwable t) {
-      logger.error("Failed to retrieve the column name", t);
+    } catch (Exception e) {
+      logger.error("Failed to retrieve the column name", e);
     }
   }
 
