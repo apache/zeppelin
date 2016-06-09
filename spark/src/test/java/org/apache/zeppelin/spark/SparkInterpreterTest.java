@@ -24,8 +24,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Properties;
 
-import org.apache.spark.HttpServer;
-import org.apache.spark.SecurityManager;
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
 import org.apache.zeppelin.display.AngularObjectRegistry;

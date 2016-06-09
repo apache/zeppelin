@@ -68,12 +68,6 @@
       <groupId>org.apache.spark</groupId>
       <artifactId>spark-repl_${scala.binary.version}</artifactId>
       <version>${spark.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.spark</groupId>
-      <artifactId>spark-repl_${scala.binary.version}</artifactId>
-      <version>${spark.version}</version>
       <scope>provided</scope>
     </dependency>
 
@@ -412,38 +406,6 @@
         </executions>
       </plugin>
 
-      <!-- Include a source dir depending on the Scala version -->
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>build-helper-maven-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>add-source</id>
-            <phase>generate-sources</phase>
-            <goals>
-              <goal>add-source</goal>
-            </goals>
-            <configuration>
-              <sources>
-                <source>${extra.source.dir}</source>
-              </sources>
-            </configuration>
-          </execution>
-          <execution>
-            <id>add-test-sources</id>
-            <phase>generate-test-sources</phase>
-            <goals>
-              <goal>add-test-source</goal>
-            </goals>
-            <configuration>
-              <sources>
-                <source>${extra.testsource.dir}</source>
-              </sources>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-
       <!-- Plugin to compile Scala code -->
       <plugin>
         <groupId>org.scala-tools</groupId>
@@ -477,30 +439,6 @@
   </build>
 
   <profiles>
-    <profile>
-      <id>scala-2.10</id>
-      <activation>
-        <property><name>!scala-2.11</name></property>
-      </activation>
-      <properties>
-        <spark.version>1.6.1</spark.version>
-        <extra.source.dir>src/main/scala-2.10</extra.source.dir>
-        <extra.testsource.dir>src/test/scala-2.10</extra.testsource.dir>
-      </properties>
-    </profile>
-
-    <profile>
-      <id>scala-2.11</id>
-      <activation>
-        <property><name>scala-2.11</name></property>
-      </activation>
-      <properties>
-        <spark.version>1.6.2</spark.version>
-        <extra.source.dir>src/main/scala-2.11</extra.source.dir>
-        <extra.testsource.dir>src/test/scala/scala-2.11</extra.testsource.dir>
-      </properties>
-    </profile>
-
     <!-- to deactivate 'exclude-sparkr' automatically when 'spark' is activated -->
     <profile>
       <id>sparkr</id>
