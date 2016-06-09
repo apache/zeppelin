@@ -22,8 +22,10 @@ import com.google.gson.GsonBuilder;
 
 import com.google.gson.reflect.TypeToken;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOExceptionWithCause;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.NullArgumentException;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.dep.Dependency;
@@ -156,7 +158,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
   }
 
   protected void setDynamicInterpreter(String interpreterClassName, String fileDirPath)
-      throws InterpreterException, IOException {
+      throws InterpreterException, IOException, ClassNotFoundException {
     logger.info("load Dynamic Interpreter ClassName : {}", interpreterClassName);
     logger.info("load Dynamic Interpreter FilePath : {}", interpreterClassName);
 
@@ -169,8 +171,9 @@ public class InterpreterFactory implements InterpreterGroupFactory {
       URL[] urls = null;
       try {
         urls = recursiveBuildLibList(interpreterDir);
-      } catch (MalformedURLException e1) {
-        logger.error("Can't load jars ", e1);
+      } catch (MalformedURLException e) {
+        logger.error("Can't load jars ", e);
+        throw new IOException(e);
       }
       URLClassLoader ccl = new URLClassLoader(urls, oldcl);
 
@@ -187,6 +190,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
         }
       } catch (ClassNotFoundException e) {
         logger.error("Load error : ", e);
+        throw e;
       }
     }
 
