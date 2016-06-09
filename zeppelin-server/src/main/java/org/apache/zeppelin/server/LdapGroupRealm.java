@@ -31,6 +31,7 @@ import javax.naming.directory.Attributes;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 import javax.naming.ldap.LdapContext;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -55,8 +56,7 @@ public class LdapGroupRealm extends JndiLdapRealm {
                                          LdapContext ldapContext,
                                          String userDnTemplate) throws NamingException {
     try {
-      Set<String> roleNames;
-      roleNames = new LinkedHashSet<String>();
+      Set<String> roleNames = new LinkedHashSet<String>();
 
       SearchControls searchCtls = new SearchControls();
       searchCtls.setSearchScope(SearchControls.SUBTREE_SCOPE);
@@ -89,6 +89,6 @@ public class LdapGroupRealm extends JndiLdapRealm {
       LOG.error("Error", e);
     }
 
-    return null;
+    return new HashSet<>();
   }
 }
