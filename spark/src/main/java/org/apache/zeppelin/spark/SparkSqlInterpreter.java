@@ -36,6 +36,7 @@ import org.apache.zeppelin.interpreter.LazyOpenInterpreter;
 import org.apache.zeppelin.interpreter.WrappedInterpreter;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
+import org.apache.zeppelin.spark.utils.SparkSqlCompleter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,6 +46,7 @@ import org.slf4j.LoggerFactory;
 public class SparkSqlInterpreter extends Interpreter {
   Logger logger = LoggerFactory.getLogger(SparkSqlInterpreter.class);
   AtomicInteger num = new AtomicInteger(0);
+  SparkSqlCompleter completer;
 
   private String getJobGroup(InterpreterContext context){
     return "zeppelin-" + context.getParagraphId();
@@ -59,6 +61,7 @@ public class SparkSqlInterpreter extends Interpreter {
   @Override
   public void open() {
     this.maxResult = Integer.parseInt(getProperty("zeppelin.spark.maxResult"));
+    completer = new SparkSqlCompleter(this.getSparkInterpreter().getSQLContext());
   }
 
   private SparkInterpreter getSparkInterpreter() {
@@ -178,6 +181,6 @@ public class SparkSqlInterpreter extends Interpreter {
 
   @Override
   public List<String> completion(String buf, int cursor) {
-    return null;
+    return completer.completion(buf, cursor);
   }
 }
