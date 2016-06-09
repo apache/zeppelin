@@ -528,8 +528,7 @@ angular.module('zeppelinWebApp')
         closable: true,
         message: 'The last paragraph can\'t be deleted.'
       });
-    }
-    else {
+    } else {
       BootstrapDialog.confirm({
         closable: true,
         title: '',
