@@ -56,6 +56,11 @@ struct RemoteInterpreterEvent {
   2: string data      // json serialized data
 }
 
+struct InterpreterCompletion {
+  1: string name,
+  2: string value
+}
+
 service RemoteInterpreterService {
   void createInterpreter(1: string intpGroupId, 2: string noteId, 3: string className, 4: map<string, string> properties);
 
@@ -65,7 +70,7 @@ service RemoteInterpreterService {
   void cancel(1: string noteId, 2: string className, 3: RemoteInterpreterContext interpreterContext);
   i32 getProgress(1: string noteId, 2: string className, 3: RemoteInterpreterContext interpreterContext);
   string getFormType(1: string noteId, 2: string className);
-  list<string> completion(1: string noteId, 2: string className, 3: string buf, 4: i32 cursor);
+  list<InterpreterCompletion> completion(1: string noteId, 2: string className, 3: string buf, 4: i32 cursor);
   void shutdown();
 
   string getStatus(1: string noteId, 2:string jobId);
