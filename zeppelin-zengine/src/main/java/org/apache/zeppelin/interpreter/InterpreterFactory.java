@@ -544,7 +544,10 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     String groupName = interpreterSetting.getGroup();
     InterpreterOption option = interpreterSetting.getOption();
     Properties properties = interpreterSetting.getProperties();
-
+    if (option.isExistingProcess) {
+      properties.put(Constants.ZEPPELIN_INTERPRETER_HOST, option.getHost());
+      properties.put(Constants.ZEPPELIN_INTERPRETER_PORT, option.getPort());
+    }
     // if interpreters are already there, wait until they're being removed
     synchronized (interpreterGroup) {
       long interpreterRemovalWaitStart = System.nanoTime();
