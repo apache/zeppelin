@@ -177,7 +177,7 @@ public class DepInterpreter extends Interpreter {
                                  getProperty("zeppelin.dep.additionalRemoteRepository"));
     if (isScala2_10()) {
       completor = instantiateClass(
-          "SparkJLineCompletion",
+          "org.apache.spark.repl.SparkJLineCompletion",
           new Class[]{findClass("org.apache.spark.repl.SparkIMain")},
           new Object[]{intp});
     }
