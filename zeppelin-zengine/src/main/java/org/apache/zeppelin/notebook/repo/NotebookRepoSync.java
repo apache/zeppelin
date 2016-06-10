@@ -128,13 +128,13 @@ public class NotebookRepoSync implements NotebookRepo {
    *  Returns from Notebook from the first repository
    */
   @Override
-  public Note get(String noteId) throws IOException {
-    return getRepo(0).get(noteId);
+  public Note get(String noteId, AuthenticationInfo subject) throws IOException {
+    return getRepo(0).get(noteId, subject);
   }
 
   /* get note from specific repo (for tests) */
-  Note get(int repoIndex, String noteId) throws IOException {
-    return getRepo(repoIndex).get(noteId);
+  Note get(int repoIndex, String noteId, AuthenticationInfo subject) throws IOException {
+    return getRepo(repoIndex).get(noteId, subject);
   }
 
   /**
@@ -211,7 +211,7 @@ public class NotebookRepoSync implements NotebookRepo {
   private void pushNotes(List<String> ids, NotebookRepo localRepo,
       NotebookRepo remoteRepo) throws IOException {
     for (String id : ids) {
-      remoteRepo.save(localRepo.get(id));
+      remoteRepo.save(localRepo.get(id, null));
     }
   }
 
@@ -243,8 +243,8 @@ public class NotebookRepoSync implements NotebookRepo {
       dnote = containsID(destNotes, snote.getId());
       if (dnote != null) {
         /* note exists in source and destination storage systems */
-        sdate = lastModificationDate(sourceRepo.get(snote.getId()));
-        ddate = lastModificationDate(destRepo.get(dnote.getId()));
+        sdate = lastModificationDate(sourceRepo.get(snote.getId(), null));
+        ddate = lastModificationDate(destRepo.get(dnote.getId(), null));
         if (sdate.after(ddate)) {
           /* source contains more up to date note - push */
           pushIDs.add(snote.getId());

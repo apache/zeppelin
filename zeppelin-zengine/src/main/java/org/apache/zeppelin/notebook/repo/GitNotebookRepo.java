@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.Note;
+import org.apache.zeppelin.user.AuthenticationInfo;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.NoHeadException;
@@ -96,9 +97,9 @@ public class GitNotebookRepo extends VFSNotebookRepo {
   }
 
   @Override
-  public Note get(String noteId, Revision rev) throws IOException {
+  public Note get(String noteId, String rev, AuthenticationInfo subject) throws IOException {
     //TODO(bzz): something like 'git checkout rev', that will not change-the-world though
-    return super.get(noteId);
+    return super.get(noteId, subject);
   }
 
   @Override

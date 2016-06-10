@@ -183,7 +183,7 @@ public class VFSNotebookRepo implements NotebookRepo {
   }
 
   @Override
-  public Note get(String noteId) throws IOException {
+  public Note get(String noteId, AuthenticationInfo subject) throws IOException {
     FileObject rootDir = fsManager.resolveFile(getPath("/"));
     FileObject noteDir = rootDir.resolveFile(noteId, NameScope.CHILD);
 

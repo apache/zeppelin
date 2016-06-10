@@ -153,7 +153,7 @@ public class ZeppelinHubRepo implements NotebookRepo {
   }
 
   @Override
-  public Note get(String noteId) throws IOException {
+  public Note get(String noteId, AuthenticationInfo subject) throws IOException {
     if (StringUtils.isBlank(noteId)) {
       return EMPTY_NOTE;
     }

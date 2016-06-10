@@ -197,7 +197,7 @@ public class S3NotebookRepo implements NotebookRepo {
   }
 
   @Override
-  public Note get(String noteId) throws IOException {
+  public Note get(String noteId, AuthenticationInfo subject) throws IOException {
     return getNote(user + "/" + "notebook" + "/" + noteId + "/" + "note.json");
   }
 
