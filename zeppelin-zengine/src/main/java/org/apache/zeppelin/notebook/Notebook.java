@@ -43,6 +43,7 @@ import org.apache.zeppelin.notebook.repo.NotebookRepoSync;
 import org.apache.zeppelin.resource.ResourcePoolUtils;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.apache.zeppelin.search.SearchService;
+import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.user.Credentials;
 import org.quartz.CronScheduleBuilder;
 import org.quartz.CronTrigger;
@@ -403,7 +404,7 @@ public class Notebook {
   }
 
   private void loadAllNotes() throws IOException {
-    List<NoteInfo> noteInfos = notebookRepo.list();
+    List<NoteInfo> noteInfos = notebookRepo.list(null);
 
     for (NoteInfo info : noteInfos) {
       loadNoteFromRepo(info.getId());
@@ -417,7 +418,7 @@ public class Notebook {
    * @return
    * @throws IOException
    */
-  public void reloadAllNotes() throws IOException {
+  public void reloadAllNotes(AuthenticationInfo subject) throws IOException {
     synchronized (notes) {
       notes.clear();
     }
@@ -429,7 +430,7 @@ public class Notebook {
       }
     }
 
-    List<NoteInfo> noteInfos = notebookRepo.list();
+    List<NoteInfo> noteInfos = notebookRepo.list(subject);
     for (NoteInfo info : noteInfos) {
       loadNoteFromRepo(info.getId());
     }

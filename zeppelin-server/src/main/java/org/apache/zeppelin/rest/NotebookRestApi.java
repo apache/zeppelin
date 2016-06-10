@@ -46,6 +46,7 @@ import org.apache.zeppelin.rest.message.RunParagraphWithParametersRequest;
 import org.apache.zeppelin.search.SearchService;
 import org.apache.zeppelin.server.JsonResponse;
 import org.apache.zeppelin.socket.NotebookServer;
+import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.utils.SecurityUtils;
 import org.quartz.CronExpression;
 import org.slf4j.Logger;
@@ -224,7 +225,8 @@ public class NotebookRestApi {
   @Path("/")
   @ZeppelinApi
   public Response getNotebookList() throws IOException {
-    List<Map<String, String>> notesInfo = notebookServer.generateNotebooksInfo(false);
+    AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
+    List<Map<String, String>> notesInfo = notebookServer.generateNotebooksInfo(false, subject);
     return new JsonResponse<>(Status.OK, "", notesInfo ).build();
   }
 
@@ -297,10 +299,11 @@ public class NotebookRestApi {
     if (noteName.isEmpty()) {
       noteName = "Note " + note.getId();
     }
+    AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
     note.setName(noteName);
     note.persist();
     notebookServer.broadcastNote(note);
-    notebookServer.broadcastNoteList();
+    notebookServer.broadcastNoteList(subject);
     return new JsonResponse<>(Status.CREATED, "", note.getId() ).build();
   }
 
@@ -321,7 +324,8 @@ public class NotebookRestApi {
         notebook.removeNote(notebookId);
       }
     }
-    notebookServer.broadcastNoteList();
+    AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
+    notebookServer.broadcastNoteList(subject);
     return new JsonResponse<>(Status.OK, "").build();
   }
   
@@ -342,7 +346,8 @@ public class NotebookRestApi {
     String newNoteName = request.getName();
     Note newNote = notebook.cloneNote(notebookId, newNoteName);
     notebookServer.broadcastNote(newNote);
-    notebookServer.broadcastNoteList();
+    AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
+    notebookServer.broadcastNoteList(subject);
     return new JsonResponse<>(Status.CREATED, "", newNote.getId()).build();
   }
 
