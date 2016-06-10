@@ -52,9 +52,11 @@ import scala.Console;
 import scala.None;
 import scala.Some;
 import scala.collection.convert.WrapAsJava$;
+import scala.collection.JavaConversions;
 import scala.tools.nsc.Settings;
 import scala.tools.nsc.interpreter.Completion.Candidates;
 import scala.tools.nsc.interpreter.Completion.ScalaCompleter;
+import scala.tools.nsc.interpreter.IMain;
 import scala.tools.nsc.interpreter.Results;
 import scala.tools.nsc.settings.MutableSettings.BooleanSetting;
 import scala.tools.nsc.settings.MutableSettings.PathSetting;
@@ -180,7 +182,12 @@ public class DepInterpreter extends Interpreter {
           new Object[]{intp});
     }
     interpret("@transient var _binder = new java.util.HashMap[String, Object]()");
-    Map<String, Object> binder = (Map<String, Object>) getValue("_binder");
+    Map<String, Object> binder;
+    if (isScala2_10()) {
+      binder = (Map<String, Object>) getValue("_binder");
+    } else {
+      binder = (Map<String, Object>) getLastObject();
+    }
     binder.put("depc", depc);
 
     interpret("@transient val z = "
@@ -206,6 +213,13 @@ public class DepInterpreter extends Interpreter {
     } else {
       return ret;
     }
+  }
+
+  public Object getLastObject() {
+    IMain.Request r = (IMain.Request) invokeMethod(intp, "lastRequest");
+    Object obj = r.lineRep().call("$result",
+        JavaConversions.asScalaBuffer(new LinkedList<Object>()));
+    return obj;
   }
 
   @Override
@@ -285,7 +299,6 @@ public class DepInterpreter extends Interpreter {
     } else {
       return new LinkedList<InterpreterCompletion>();
     }
-
   }
 
   private List<File> currentClassPath() {
