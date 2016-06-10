@@ -23,12 +23,13 @@ import java.util.List;
 import org.apache.zeppelin.annotation.ZeppelinApi;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
+import org.apache.zeppelin.user.AuthenticationInfo;
 
 /**
  * Notebook repository (persistence layer) abstraction
  */
 public interface NotebookRepo {
-  @ZeppelinApi public List<NoteInfo> list() throws IOException;
+  @ZeppelinApi public List<NoteInfo> list(AuthenticationInfo subject) throws IOException;
   @ZeppelinApi public Note get(String noteId) throws IOException;
   @ZeppelinApi public void save(Note note) throws IOException;
   @ZeppelinApi public void remove(String noteId) throws IOException;
