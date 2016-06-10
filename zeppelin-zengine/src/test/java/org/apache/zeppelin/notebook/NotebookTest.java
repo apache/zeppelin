@@ -148,7 +148,7 @@ public class NotebookTest implements JobListenerFactory{
     assertEquals(notes.size(), 0);
 
     // load copied notebook on memory when reloadAllNotes() is called
-    Note copiedNote = notebookRepo.get("2A94M5J1Z");
+    Note copiedNote = notebookRepo.get("2A94M5J1Z", null);
     notebook.reloadAllNotes(null);
     notes = notebook.getAllNotes();
     assertEquals(notes.size(), 1);

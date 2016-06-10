@@ -132,7 +132,7 @@ public class GitNotebookRepoTest {
     int initialCount = notebookHistoryBefore.size();
     
     // add changes to note
-    Note note = notebookRepo.get(TEST_NOTE_ID);
+    Note note = notebookRepo.get(TEST_NOTE_ID, null);
     Paragraph p = note.addParagraph();
     Map<String, Object> config = p.getConfig();
     config.put("enabled", true);

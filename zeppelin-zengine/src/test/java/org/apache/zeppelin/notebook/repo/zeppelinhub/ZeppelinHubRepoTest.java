@@ -130,7 +130,7 @@ public class ZeppelinHubRepoTest {
   
   @Test
   public void testGetNote() throws IOException {
-    Note notebook = repo.get("AAAAA");
+    Note notebook = repo.get("AAAAA", null);
     assertThat(notebook).isNotNull();
     assertThat(notebook.id()).isEqualTo("2A94M5J1Z");
   }

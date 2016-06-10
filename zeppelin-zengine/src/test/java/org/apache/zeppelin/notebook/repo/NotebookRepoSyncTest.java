@@ -170,29 +170,29 @@ public class NotebookRepoSyncTest implements JobListenerFactory {
     
     /* new paragraph not yet saved into storages */
     assertEquals(0, notebookRepoSync.get(0,
-        notebookRepoSync.list(0, null).get(0).getId()).getParagraphs().size());
+        notebookRepoSync.list(0, null).get(0).getId(), null).getParagraphs().size());
     assertEquals(0, notebookRepoSync.get(1,
-        notebookRepoSync.list(1, null).get(0).getId()).getParagraphs().size());
+        notebookRepoSync.list(1, null).get(0).getId(), null).getParagraphs().size());
     
     /* save to storage under index 0 (first storage) */ 
     notebookRepoSync.save(0, note);
     
     /* check paragraph saved to first storage */
     assertEquals(1, notebookRepoSync.get(0,
-        notebookRepoSync.list(0, null).get(0).getId()).getParagraphs().size());
+        notebookRepoSync.list(0, null).get(0).getId(), null).getParagraphs().size());
     /* check paragraph isn't saved to second storage */
     assertEquals(0, notebookRepoSync.get(1,
-        notebookRepoSync.list(1, null).get(0).getId()).getParagraphs().size());
+        notebookRepoSync.list(1, null).get(0).getId(), null).getParagraphs().size());
     /* apply sync */
     notebookRepoSync.sync();
     /* check whether added to second storage */
     assertEquals(1, notebookRepoSync.get(1,
-    notebookRepoSync.list(1, null).get(0).getId()).getParagraphs().size());
+    notebookRepoSync.list(1, null).get(0).getId(), null).getParagraphs().size());
     /* check whether same paragraph id */
     assertEquals(p1.getId(), notebookRepoSync.get(0,
-        notebookRepoSync.list(0, null).get(0).getId()).getLastParagraph().getId());
+        notebookRepoSync.list(0, null).get(0).getId(), null).getLastParagraph().getId());
     assertEquals(p1.getId(), notebookRepoSync.get(1,
-        notebookRepoSync.list(1, null).get(0).getId()).getLastParagraph().getId());
+        notebookRepoSync.list(1, null).get(0).getId(), null).getLastParagraph().getId());
   }
 
   @Test
