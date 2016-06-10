@@ -450,7 +450,7 @@ public class SparkInterpreter extends Interpreter {
 
       Object sparkCommandLine = instantiateClass(
           "org.apache.spark.repl.SparkCommandLine",
-          new Class[]{ list.getClass() },
+          new Class[]{ scala.collection.immutable.List.class },
           new Object[]{ list });
 
       settings = (Settings) invokeMethod(sparkCommandLine, "settings");
