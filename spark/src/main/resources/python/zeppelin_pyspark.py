@@ -118,6 +118,9 @@ class SparkVersion(object):
     return self.version >= self.SPARK_1_3_0
 
 class PySparkCompletion:
+  def __init__(self, interpreterObject):
+    self.interpreterObject = interpreterObject
+
   def getGlobalCompletion(self):
     objectDefList = []
     try:
@@ -159,9 +162,10 @@ class PySparkCompletion:
         for completionItem in list(objectCompletionList):
           completionList.add(completionItem)
     if len(completionList) <= 0:
-      print("")
+      self.interpreterObject.setStatementsFinished("", False)
     else:
-      print(json.dumps(list(filter(lambda x : not re.match("^__.*", x), list(completionList)))))
+      result = json.dumps(list(filter(lambda x : not re.match("^__.*", x), list(completionList))))
+      self.interpreterObject.setStatementsFinished(result, False)
 
 
 output = Logger()
@@ -205,7 +209,7 @@ sc = SparkContext(jsc=jsc, gateway=gateway, conf=conf)
 sqlc = SQLContext(sc, intp.getSQLContext())
 sqlContext = sqlc
 
-completion = PySparkCompletion()
+completion = PySparkCompletion(intp)
 z = PyZeppelinContext(intp.getZeppelinContext())
 
 while True :
