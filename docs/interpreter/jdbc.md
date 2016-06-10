@@ -259,7 +259,7 @@ To develop this functionality use this [method](http://docs.oracle.com/javase/7/
      <th>Excludes</th>
    </tr>
    <tr>
-     <tdorg.apache.tajo:tajo-jdbc:0.11.0</td>
+     <td>org.apache.tajo:tajo-jdbc:0.11.0</td>
      <td></td>
    </tr>
  </table>
