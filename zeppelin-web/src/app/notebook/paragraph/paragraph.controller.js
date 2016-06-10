@@ -779,13 +779,10 @@ angular.module('zeppelinWebApp')
           websocketMsgSrv.completion($scope.paragraph.id, buf, pos);
 
           $scope.$on('completionList', function(event, data) {
-            console.log('%o', data);
             if (data.completions) {
               var completions = [];
               for (var c in data.completions) {
                 var v = data.completions[c];
-                console.log('%o', v);
-                console.log('%o %o', v.name, v.value);
                 completions.push({
                   name: v.name,
                   value: v.value,
