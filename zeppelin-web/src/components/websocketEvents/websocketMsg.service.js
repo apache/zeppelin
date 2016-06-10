@@ -151,6 +151,15 @@ angular.module('zeppelinWebApp').service('websocketMsgSrv', function($rootScope,
       });
     },
 
+    importNoteFromIpfs: function(hashUrl) {
+      websocketEvents.sendNewEvent({
+        op: 'IMPORT_NOTE_URL',
+        data: {
+          hash: hashUrl
+        }
+      });
+    },
+
     checkpointNotebook: function(noteId, commitMessage) {
       websocketEvents.sendNewEvent({
         op: 'CHECKPOINT_NOTEBOOK',

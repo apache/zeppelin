@@ -14,11 +14,12 @@
 
 'use strict';
 
-angular.module('zeppelinWebApp').controller('NoteImportCtrl', function($scope, $timeout, websocketMsgSrv) {
+angular.module('zeppelinWebApp').controller('NoteImportCtrl', function($scope, $timeout, ngToast, websocketMsgSrv) {
   var vm = this;
   $scope.note = {};
   $scope.note.step1 = true;
   $scope.note.step2 = false;
+  $scope.note.urlType = 'normal';
 
   vm.resetFlags = function() {
     $scope.note = {};
@@ -65,12 +66,16 @@ angular.module('zeppelinWebApp').controller('NoteImportCtrl', function($scope, $
   vm.importNote = function() {
     $scope.note.errorText = '';
     if ($scope.note.importUrl) {
-      jQuery.getJSON($scope.note.importUrl, function(result) {
-        vm.processImportJson(result);
-      }).fail(function() {
-        $scope.note.errorText = 'Unable to Fetch URL';
-        $scope.$apply();
-      });
+      if ($scope.note.urlType === 'normal') {
+        jQuery.getJSON($scope.note.importUrl, function(result) {
+          vm.processImportJson(result);
+        }).fail(function() {
+          $scope.note.errorText = 'Unable to Fetch URL';
+          $scope.$apply();
+        });
+      } else {
+        websocketMsgSrv.importNoteFromIpfs($scope.note.importUrl);
+      }
     } else {
       $scope.note.errorText = 'Enter URL';
       $scope.$apply();
@@ -110,4 +115,27 @@ angular.module('zeppelinWebApp').controller('NoteImportCtrl', function($scope, $
     vm.resetFlags();
     angular.element('#noteImportModal').modal('hide');
   });
+
+  $scope.$on('importNoteFail', function(event, data) {
+    vm.resetFlags();
+    angular.element('#noteImportModal').modal('hide');
+    var status = data.importStatus;
+    console.log('Data is %o', data);
+    if (status === 'success') {
+      ngToast.success({
+        content: 'Successfully imported Note',
+        verticalPosition: 'bottom',
+        horizontalPosition: 'center',
+        timeout: '5000'
+      });
+    } else {
+      ngToast.danger({
+        content: 'Failed to import Note with hash',
+        verticalPosition: 'bottom',
+        horizontalPosition: 'center',
+        timeout: '5000'
+      });
+    }
+  });
+
 });

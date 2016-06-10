@@ -183,6 +183,34 @@ public class Notebook implements NoteEventListener {
   }
 
   /**
+   *
+   * @param url - the ipfs url or hash to get note from
+   * @param subject
+   * @return note
+   * @throws IOException
+   */
+  public Note importNote(String url, AuthenticationInfo subject) throws IOException {
+    Note newNote = null;
+    Note oldNote = notebookRepo.getNoteFromUrl(url, subject);
+    if (oldNote != null) {
+      try {
+        newNote = createNote(subject);
+        newNote.setName(oldNote.getName());
+        List<Paragraph> paragraphs = oldNote.getParagraphs();
+        for (Paragraph p : paragraphs) {
+          newNote.addCloneParagraph(p);
+        }
+        newNote.persist(subject);
+      } catch (IOException e) {
+        logger.error(e.toString(), e);
+        throw e;
+      }
+    }
+
+    return newNote;
+  }
+
+  /**
    * import JSON as a new note.
    *
    * @param sourceJson - the note JSON to import

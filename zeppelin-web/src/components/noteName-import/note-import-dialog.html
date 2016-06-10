@@ -56,6 +56,14 @@ limitations under the License.
             <label for="noteImportUrl">URL</label>
             <input placeholder="Note name" type="text" class="form-control" id="noteImportUrl"
                    ng-model="note.importUrl" />
+            <label class="radio-inline">
+            <input type="radio" name="noteUrlType" value="ipfs" ng-model="note.urlType"/>
+            IPFS Hash
+            </label>
+            <label class="radio-inline">
+            <input type="radio" name="noteUrlType" value="normal" ng-model="note.urlType"/>
+              Other Url
+            </label>
           </div>
 
         </div>

@@ -188,6 +188,9 @@ public class NotebookServer extends WebSocketServlet implements
           case IMPORT_NOTE:
             importNote(conn, userAndRoles, notebook, messagereceived);
             break;
+          case IMPORT_NOTE_URL:
+            importNoteFromUrl(conn, userAndRoles, notebook, messagereceived);
+            break;
           case COMMIT_PARAGRAPH:
             updateParagraph(conn, userAndRoles, notebook, messagereceived);
             break;
@@ -723,6 +726,27 @@ public class NotebookServer extends WebSocketServlet implements
       note = notebook.importNote(noteJson, noteName, subject);
       note.persist(subject);
       broadcastNote(note);
+      broadcastNoteList(subject);
+    }
+    return note;
+  }
+
+  protected Note importNoteFromUrl(NotebookSocket conn, HashSet<String> userAndRoles,
+                                   Notebook notebook, Message fromMessage) throws IOException {
+    Note note = null;
+    if (fromMessage != null) {
+      String urlHash = (String) fromMessage.get("hash");
+      AuthenticationInfo subject = new AuthenticationInfo(fromMessage.principal);
+      note = notebook.importNote(urlHash, subject);
+      Message message = new Message(OP.IMPORT_NOTE_STATUS);
+      if (note != null) {
+        note.persist(subject);
+        message.put("importStatus", "success");
+      }
+      else {
+        message.put("importStatus", "failure");
+      }
+      conn.send(serializeMessage(message));
       broadcastNoteList(subject);
     }
     return note;

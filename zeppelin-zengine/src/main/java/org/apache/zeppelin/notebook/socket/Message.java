@@ -51,6 +51,10 @@ public class Message {
                 // @param name name fpor the cloned note
     IMPORT_NOTE,  // [c-s] import notebook
                   // @param object notebook
+    IMPORT_NOTE_URL,  // [c-s] import notebook
+                      // @param hash ipfs hash
+    IMPORT_NOTE_STATUS, //[s-c] notebook import through url failed
+                        // @param status success or failure
     NOTE_UPDATE,
 
     RUN_PARAGRAPH, // [c-s] run paragraph
