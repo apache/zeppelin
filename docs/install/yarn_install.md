@@ -53,7 +53,7 @@ Its assumed in the rest of the document that zeppelin user is indeed created and
 It's assumed that the node has CentOS 6.x installed on it. Although any version of Linux distribution should work fine.
 
 #### Hadoop client
-Zeppelin can work with multiple versions & distributions of Hadoop. A complete list is available [here](https://github.com/apache/incubator-zeppelin#build). This document assumes Hadoop 2.7.x client libraries including configuration files are installed on Zeppelin node. It also assumes /etc/hadoop/conf contains various Hadoop configuration files. The location of Hadoop configuration files may vary, hence use appropriate location.
+Zeppelin can work with multiple versions & distributions of Hadoop. A complete list is available [here](https://github.com/apache/zeppelin#build). This document assumes Hadoop 2.7.x client libraries including configuration files are installed on Zeppelin node. It also assumes /etc/hadoop/conf contains various Hadoop configuration files. The location of Hadoop configuration files may vary, hence use appropriate location.
 
 ```bash
 hadoop version
@@ -67,7 +67,7 @@ This command was run using /usr/hdp/2.3.1.0-2574/hadoop/lib/hadoop-common-2.7.1.
 
 #### Spark
 Spark is supported out of the box and to take advantage of this, you need to Download appropriate version of Spark binary packages from [Spark Download page](http://spark.apache.org/downloads.html) and unzip it.
-Zeppelin can work with multiple versions of Spark. A complete list is available [here](https://github.com/apache/incubator-zeppelin#build).
+Zeppelin can work with multiple versions of Spark. A complete list is available [here](https://github.com/apache/zeppelin#build).
 This document assumes Spark 1.6.0 is installed at /usr/lib/spark.
 > Note: Spark should be installed on the same node as Zeppelin.
 
@@ -75,15 +75,15 @@ This document assumes Spark 1.6.0 is installed at /usr/lib/spark.
 
 #### Zeppelin
 
-Checkout source code from [git://git.apache.org/incubator-zeppelin.git](https://github.com/apache/incubator-zeppelin.git) or download binary package from [Download page](https://zeppelin.apache.org/download.html).
+Checkout source code from [git://git.apache.org/zeppelin.git](https://github.com/apache/zeppelin.git) or download binary package from [Download page](https://zeppelin.apache.org/download.html).
 You can refer [Install](install.html) page for the details.
-This document assumes that Zeppelin is located under `/home/zeppelin/incubator-zeppelin`.
+This document assumes that Zeppelin is located under `/home/zeppelin/zeppelin`.
 
 ## Zeppelin Configuration
 Zeppelin configuration needs to be modified to connect to YARN cluster. Create a copy of zeppelin environment shell script.
 
 ```bash
-cp /home/zeppelin/incubator-zeppelin/conf/zeppelin-env.sh.template /home/zeppelin/incubator-zeppelin/conf/zeppelin-env.sh
+cp /home/zeppelin/zeppelin/conf/zeppelin-env.sh.template /home/zeppelin/zeppelin/conf/zeppelin-env.sh
 ```
 
 Set the following properties
@@ -106,7 +106,7 @@ hdp-select status hadoop-client | sed 's/hadoop-client - \(.*\)/\1/'
 ### Start Zeppelin
 
 ```
-cd /home/zeppelin/incubator-zeppelin
+cd /home/zeppelin/zeppelin
 bin/zeppelin-daemon.sh start
 ```
 After successful start, visit http://[zeppelin-server-host-name]:8080 with your web browser.
@@ -161,7 +161,7 @@ Zeppelin does not emit any kind of error messages on web interface when notebook
 
 ```bash
 [zeppelin@zeppelin-3529 logs]$ pwd
-/home/zeppelin/incubator-zeppelin/logs
+/home/zeppelin/zeppelin/logs
 [zeppelin@zeppelin-3529 logs]$ ls -l
 total 844
 -rw-rw-r-- 1 zeppelin zeppelin  14648 Aug  3 14:45 zeppelin-interpreter-hive-zeppelin-zeppelin-3529.log
