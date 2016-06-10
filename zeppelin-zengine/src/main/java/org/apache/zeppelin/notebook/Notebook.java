@@ -327,10 +327,10 @@ public class Notebook {
   }
 
   @SuppressWarnings("rawtypes")
-  private Note loadNoteFromRepo(String id) {
+  private Note loadNoteFromRepo(String id, AuthenticationInfo subject) {
     Note note = null;
     try {
-      note = notebookRepo.get(id);
+      note = notebookRepo.get(id, subject);
     } catch (IOException e) {
       logger.error("Failed to load " + id, e);
     }
@@ -407,7 +407,7 @@ public class Notebook {
     List<NoteInfo> noteInfos = notebookRepo.list(null);
 
     for (NoteInfo info : noteInfos) {
-      loadNoteFromRepo(info.getId());
+      loadNoteFromRepo(info.getId(), null);
     }
   }
 
@@ -432,7 +432,7 @@ public class Notebook {
 
     List<NoteInfo> noteInfos = notebookRepo.list(subject);
     for (NoteInfo info : noteInfos) {
-      loadNoteFromRepo(info.getId());
+      loadNoteFromRepo(info.getId(), subject);
     }
   }
 
