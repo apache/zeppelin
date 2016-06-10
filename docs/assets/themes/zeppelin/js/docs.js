@@ -107,7 +107,12 @@ function maybeScrollToHash() {
 
 $(function() {
   codeTabs();
-  viewSolution();
+  // Display anchor links when hovering over headers. For documentation of the
+  // configuration options, see the AnchorJS documentation.
+  anchors.options = {
+    placement: 'right'
+  };
+  anchors.add();
 
   $(window).bind('hashchange', function() {
     maybeScrollToHash();
@@ -115,5 +120,5 @@ $(function() {
 
   // Scroll now too in case we had opened the page on a hash, but wait a bit because some browsers
   // will try to do *their* initial scroll after running the onReady handler.
-  $(window).load(function() { setTimeout(function() { maybeScrollToHash(); }, 25); });
+  $(window).load(function() { setTimeout(function() { maybeScrollToHash(); }, 25); }); 
 });
