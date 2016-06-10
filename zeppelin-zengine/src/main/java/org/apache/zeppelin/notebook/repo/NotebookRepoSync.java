@@ -31,6 +31,7 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.notebook.Paragraph;
+import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -114,13 +115,13 @@ public class NotebookRepoSync implements NotebookRepo {
    *  Lists Notebooks from the first repository
    */
   @Override
-  public List<NoteInfo> list() throws IOException {
-    return getRepo(0).list();
+  public List<NoteInfo> list(AuthenticationInfo subject) throws IOException {
+    return getRepo(0).list(subject);
   }
 
   /* list from specific repo (for tests) */
-  List<NoteInfo> list(int repoIndex) throws IOException {
-    return getRepo(repoIndex).list();
+  List<NoteInfo> list(int repoIndex, AuthenticationInfo subject) throws IOException {
+    return getRepo(repoIndex).list(subject);
   }
 
   /**
@@ -174,8 +175,8 @@ public class NotebookRepoSync implements NotebookRepo {
     LOG.info("Sync started");
     NotebookRepo srcRepo = getRepo(sourceRepoIndex);
     NotebookRepo dstRepo = getRepo(destRepoIndex);
-    List <NoteInfo> srcNotes = srcRepo.list();
-    List <NoteInfo> dstNotes = dstRepo.list();
+    List <NoteInfo> srcNotes = srcRepo.list(null);
+    List <NoteInfo> dstNotes = dstRepo.list(null);
 
     Map<String, List<String>> noteIDs = notesCheckDiff(srcNotes, srcRepo, dstNotes, dstRepo);
     List<String> pushNoteIDs = noteIDs.get(pushKey);
