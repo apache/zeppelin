@@ -149,7 +149,7 @@ public class NotebookTest implements JobListenerFactory{
 
     // load copied notebook on memory when reloadAllNotes() is called
     Note copiedNote = notebookRepo.get("2A94M5J1Z");
-    notebook.reloadAllNotes();
+    notebook.reloadAllNotes(null);
     notes = notebook.getAllNotes();
     assertEquals(notes.size(), 1);
     assertEquals(notes.get(0).id(), copiedNote.id());
@@ -164,7 +164,7 @@ public class NotebookTest implements JobListenerFactory{
     assertEquals(notes.size(), 1);
 
     // delete notebook from notebook list when reloadAllNotes() is called
-    notebook.reloadAllNotes();
+    notebook.reloadAllNotes(null);
     notes = notebook.getAllNotes();
     assertEquals(notes.size(), 0);
   }

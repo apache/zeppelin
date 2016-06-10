@@ -97,7 +97,7 @@ public class GitNotebookRepoTest {
     assertThat(git).isNotNull();
 
     assertThat(dotGit.exists()).isEqualTo(true);
-    assertThat(notebookRepo.list()).isNotEmpty();
+    assertThat(notebookRepo.list(null)).isNotEmpty();
 
     List<DiffEntry> diff = git.diff().call();
     // no commit, diff isn't empty
@@ -108,7 +108,7 @@ public class GitNotebookRepoTest {
   public void showNotebookHistory() throws GitAPIException, IOException {
     //given
     notebookRepo = new GitNotebookRepo(conf);
-    assertThat(notebookRepo.list()).isNotEmpty();
+    assertThat(notebookRepo.list(null)).isNotEmpty();
 
     //when
     List<Revision> testNotebookHistory = notebookRepo.revisionHistory(TEST_NOTE_ID);
@@ -122,9 +122,9 @@ public class GitNotebookRepoTest {
   public void addCheckpoint() throws IOException {
     // initial checks
     notebookRepo = new GitNotebookRepo(conf);
-    assertThat(notebookRepo.list()).isNotEmpty();
-    assertThat(containsNote(notebookRepo.list(), TEST_NOTE_ID)).isTrue();
-    assertThat(notebookRepo.revisionHistory(TEST_NOTE_ID)).isEmpty();
+    assertThat(notebookRepo.list(null)).isNotEmpty();
+    assertThat(containsNote(notebookRepo.list(null), TEST_NOTE_ID)).isTrue();
+    assertThat(notebookRepo.history(TEST_NOTE_ID)).isEmpty();
 
     notebookRepo.checkpoint(TEST_NOTE_ID, "first commit");
     List<Revision> notebookHistoryBefore = notebookRepo.revisionHistory(TEST_NOTE_ID);

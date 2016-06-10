@@ -123,7 +123,7 @@ public class ZeppelinHubRepoTest {
 
   @Test
   public void testGetAllNotes() throws IOException {
-    List<NoteInfo> notebooks = repo.list();
+    List<NoteInfo> notebooks = repo.list(null);
     assertThat(notebooks).isNotEmpty();
     assertThat(notebooks.size()).isEqualTo(3);
   }
