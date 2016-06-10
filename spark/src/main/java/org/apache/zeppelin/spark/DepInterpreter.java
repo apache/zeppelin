@@ -21,14 +21,14 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.PrintStream;
 import java.io.PrintWriter;
+import java.lang.reflect.Type;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 
+import com.google.common.reflect.TypeToken;
+import com.google.gson.Gson;
 import org.apache.spark.repl.SparkILoop;
 import org.apache.spark.repl.SparkIMain;
 import org.apache.spark.repl.SparkJLineCompletion;
@@ -50,6 +50,7 @@ import org.sonatype.aether.resolution.DependencyResolutionException;
 import scala.Console;
 import scala.None;
 import scala.Some;
+import scala.collection.convert.WrapAsJava$;
 import scala.tools.nsc.Settings;
 import scala.tools.nsc.interpreter.Completion.Candidates;
 import scala.tools.nsc.interpreter.Completion.ScalaCompleter;
@@ -246,8 +247,15 @@ public class DepInterpreter extends Interpreter {
   public List<InterpreterCompletion> completion(String buf, int cursor) {
     ScalaCompleter c = completor.completer();
     Candidates ret = c.complete(buf, cursor);
-    List completion = scala.collection.JavaConversions.seqAsJavaList(ret.candidates());
-    return completion;
+
+    List<String> candidates = WrapAsJava$.MODULE$.seqAsJavaList(ret.candidates());
+    List<InterpreterCompletion> completions = new LinkedList<InterpreterCompletion>();
+
+    for (String candidate : candidates) {
+      completions.add(new InterpreterCompletion(candidate, candidate));
+    }
+
+    return completions;
   }
 
   private List<File> currentClassPath() {
