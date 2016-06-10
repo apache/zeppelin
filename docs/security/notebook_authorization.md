@@ -45,11 +45,11 @@ If someone who doesn't have **read** permission is trying to access the notebook
 In this section, we will explain the detail about how the notebook authorization works in backend side.
 
 #### NotebookServer
-The [NotebookServer](https://github.com/apache/incubator-zeppelin/blob/master/zeppelin-server/src/main/java/org/apache/zeppelin/socket/NotebookServer.java) classifies every notebook operations into three categories: **Read**, **Write**, **Manage**.
+The [NotebookServer](https://github.com/apache/zeppelin/blob/master/zeppelin-server/src/main/java/org/apache/zeppelin/socket/NotebookServer.java) classifies every notebook operations into three categories: **Read**, **Write**, **Manage**.
 Before executing a notebook operation, it checks if the user and the groups associated with the `NotebookSocket` have permissions. 
 For example, before executing a **Read** operation, it checks if the user and the groups have at least one entity that belongs to the **Reader** entities.
 
 #### Notebook REST API call
-Zeppelin executes a [REST API call](https://github.com/apache/incubator-zeppelin/blob/master/zeppelin-server/src/main/java/org/apache/zeppelin/rest/NotebookRestApi.java) for the notebook permission information.
+Zeppelin executes a [REST API call](https://github.com/apache/zeppelin/blob/master/zeppelin-server/src/main/java/org/apache/zeppelin/rest/NotebookRestApi.java) for the notebook permission information.
 In the backend side, Zeppelin gets the user information for the connection and allows the operation if the users and groups
 associated with the current user have at least one entity that belongs to owner entities for the notebook.
