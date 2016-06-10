@@ -27,105 +27,108 @@
 # http://www.apache.org/dev/publishing-maven-artifacts.html
 
 if [[ -z "${TAR}" ]]; then
-    TAR=/usr/bin/tar
+  TAR=/usr/bin/tar
 fi
 
 if [[ -z "${SHASUM}" ]]; then
-    SHASUM="/usr/bin/shasum -a 512"
+  SHASUM="/usr/bin/shasum -a 512"
 fi
 
 
 if [[ -z "${WORKING_DIR}" ]]; then
-    WORKING_DIR=/tmp/zeppelin-release
+  WORKING_DIR=/tmp/zeppelin-release
 fi
 
 if [[ -z "${GPG_PASSPHRASE}" ]]; then
-    echo "You need GPG_PASSPHRASE variable set"
-    exit 1
+  echo "You need GPG_PASSPHRASE variable set"
+  exit 1
 fi
 
 
 if [[ $# -ne 2 ]]; then
-    echo "usage) $0 [Release name] [Branch or Tag]"
-    echo "   ex. $0 0.6.0 branch-0.6"
-    exit 1
+  echo "usage) $0 [Release version] [Tag]"
+  echo "   ex. $0 0.6.0 v0.6.0-rc1"
+  exit 1
 fi
 
-RELEASE_NAME="${1}"
-BRANCH="${2}"
-
+RELEASE_VERSION="${1}"
+GIT_TAG="${2}"
 
 if [[ -d "${WORKING_DIR}" ]]; then
-    echo "Dir ${WORKING_DIR} already exists"
-    exit 1
+  echo "Dir ${WORKING_DIR} already exists"
+  exit 1
 fi
 
 mkdir ${WORKING_DIR}
 
 echo "Cloning the source and packaging"
 # clone source
-git clone -b ${BRANCH} git@github.com:apache/zeppelin.git ${WORKING_DIR}/zeppelin
+git clone https://git-wip-us.apache.org/repos/asf/zeppelin.git ${WORKING_DIR}/zeppelin
+
 if [[ $? -ne 0 ]]; then
-    echo "Can not clone source repository"
-    exit 1
+  echo "Can not clone source repository"
+  exit 1
 fi
+
+cd ${WORKING_DIR}/zeppelin
+git checkout ${GIT_TAG}
+echo "Checked out ${GIT_TAG}"
 
 # remove unnecessary files
 rm ${WORKING_DIR}/zeppelin/.gitignore
 rm -rf ${WORKING_DIR}/zeppelin/.git
 
 
-
 # create source package
 cd ${WORKING_DIR}
-cp -r zeppelin zeppelin-${RELEASE_NAME}
-${TAR} cvzf zeppelin-${RELEASE_NAME}.tgz zeppelin-${RELEASE_NAME}
+cp -r zeppelin zeppelin-${RELEASE_VERSION}
+${TAR} cvzf zeppelin-${RELEASE_VERSION}.tgz zeppelin-${RELEASE_VERSION}
 
 echo "Signing the source package"
 cd ${WORKING_DIR}
-echo $GPG_PASSPHRASE | gpg --passphrase-fd 0 --armor --output zeppelin-${RELEASE_NAME}.tgz.asc --detach-sig ${WORKING_DIR}/zeppelin-${RELEASE_NAME}.tgz
-echo $GPG_PASSPHRASE | gpg --passphrase-fd 0 --print-md MD5 zeppelin-${RELEASE_NAME}.tgz > ${WORKING_DIR}/zeppelin-${RELEASE_NAME}.tgz.md5
-${SHASUM} zeppelin-${RELEASE_NAME}.tgz > ${WORKING_DIR}/zeppelin-${RELEASE_NAME}.tgz.sha512
+echo $GPG_PASSPHRASE | gpg --passphrase-fd 0 --armor --output zeppelin-${RELEASE_VERSION}.tgz.asc --detach-sig ${WORKING_DIR}/zeppelin-${RELEASE_VERSION}.tgz
+echo $GPG_PASSPHRASE | gpg --passphrase-fd 0 --print-md MD5 zeppelin-${RELEASE_VERSION}.tgz > ${WORKING_DIR}/zeppelin-${RELEASE_VERSION}.tgz.md5
+${SHASUM} zeppelin-${RELEASE_VERSION}.tgz > ${WORKING_DIR}/zeppelin-${RELEASE_VERSION}.tgz.sha512
 
 
 function make_binary_release() {
-    BIN_RELEASE_NAME="${1}"
-    BUILD_FLAGS="${2}"
+  BIN_RELEASE_NAME="${1}"
+  BUILD_FLAGS="${2}"
 
-    cp -r ${WORKING_DIR}/zeppelin ${WORKING_DIR}/zeppelin-${RELEASE_NAME}-bin-${BIN_RELEASE_NAME}
-    cd ${WORKING_DIR}/zeppelin-${RELEASE_NAME}-bin-${BIN_RELEASE_NAME}
-    echo "mvn clean package -Pbuild-distr -DskipTests ${BUILD_FLAGS}"
-    mvn clean package -Pbuild-distr -DskipTests ${BUILD_FLAGS}
-    if [[ $? -ne 0 ]]; then
-        echo "Build failed. ${BUILD_FLAGS}"
-        exit 1
-    fi
+  cp -r ${WORKING_DIR}/zeppelin ${WORKING_DIR}/zeppelin-${RELEASE_VERSION}-bin-${BIN_RELEASE_NAME}
+  cd ${WORKING_DIR}/zeppelin-${RELEASE_VERSION}-bin-${BIN_RELEASE_NAME}
+  echo "mvn clean package -Pbuild-distr -DskipTests ${BUILD_FLAGS}"
+  mvn clean package -Pbuild-distr -DskipTests ${BUILD_FLAGS}
+  if [[ $? -ne 0 ]]; then
+    echo "Build failed. ${BUILD_FLAGS}"
+    exit 1
+  fi
 
-    # re-create package with proper dir name with binary license
-    cd zeppelin-distribution/target/zeppelin-*
-    mv zeppelin-* zeppelin-${RELEASE_NAME}-bin-${BIN_RELEASE_NAME}
-    cat ../../src/bin_license/LICENSE >> zeppelin-${RELEASE_NAME}-bin-${BIN_RELEASE_NAME}/LICENSE
-    cat ../../src/bin_license/NOTICE >> zeppelin-${RELEASE_NAME}-bin-${BIN_RELEASE_NAME}/NOTICE
-    cp ../../src/bin_license/licenses/* zeppelin-${RELEASE_NAME}-bin-${BIN_RELEASE_NAME}/licenses/
-    ${TAR} cvzf zeppelin-${RELEASE_NAME}-bin-${BIN_RELEASE_NAME}.tgz zeppelin-${RELEASE_NAME}-bin-${BIN_RELEASE_NAME}
+  # re-create package with proper dir name with binary license
+  cd zeppelin-distribution/target/zeppelin-*
+  mv zeppelin-* zeppelin-${RELEASE_VERSION}-bin-${BIN_RELEASE_NAME}
+  cat ../../src/bin_license/LICENSE >> zeppelin-${RELEASE_VERSION}-bin-${BIN_RELEASE_NAME}/LICENSE
+  cat ../../src/bin_license/NOTICE >> zeppelin-${RELEASE_VERSION}-bin-${BIN_RELEASE_NAME}/NOTICE
+  cp ../../src/bin_license/licenses/* zeppelin-${RELEASE_VERSION}-bin-${BIN_RELEASE_NAME}/licenses/
+  ${TAR} cvzf zeppelin-${RELEASE_VERSION}-bin-${BIN_RELEASE_NAME}.tgz zeppelin-${RELEASE_VERSION}-bin-${BIN_RELEASE_NAME}
 
-    # sign bin package
-    echo $GPG_PASSPHRASE | gpg --passphrase-fd 0 --armor --output zeppelin-${RELEASE_NAME}-bin-${BIN_RELEASE_NAME}.tgz.asc --detach-sig zeppelin-${RELEASE_NAME}-bin-${BIN_RELEASE_NAME}.tgz
-    echo $GPG_PASSPHRASE | gpg --passphrase-fd 0 --print-md MD5 zeppelin-${RELEASE_NAME}-bin-${BIN_RELEASE_NAME}.tgz > zeppelin-${RELEASE_NAME}-bin-${BIN_RELEASE_NAME}.tgz.md5
-    ${SHASUM} zeppelin-${RELEASE_NAME}-bin-${BIN_RELEASE_NAME}.tgz > zeppelin-${RELEASE_NAME}-bin-${BIN_RELEASE_NAME}.tgz.sha512
+  # sign bin package
+  echo $GPG_PASSPHRASE | gpg --passphrase-fd 0 --armor --output zeppelin-${RELEASE_VERSION}-bin-${BIN_RELEASE_NAME}.tgz.asc --detach-sig zeppelin-${RELEASE_VERSION}-bin-${BIN_RELEASE_NAME}.tgz
+  echo $GPG_PASSPHRASE | gpg --passphrase-fd 0 --print-md MD5 zeppelin-${RELEASE_VERSION}-bin-${BIN_RELEASE_NAME}.tgz > zeppelin-${RELEASE_VERSION}-bin-${BIN_RELEASE_NAME}.tgz.md5
+  ${SHASUM} zeppelin-${RELEASE_VERSION}-bin-${BIN_RELEASE_NAME}.tgz > zeppelin-${RELEASE_VERSION}-bin-${BIN_RELEASE_NAME}.tgz.sha512
 
-    mv zeppelin-${RELEASE_NAME}-bin-${BIN_RELEASE_NAME}.tgz ${WORKING_DIR}/
-    mv zeppelin-${RELEASE_NAME}-bin-${BIN_RELEASE_NAME}.tgz.asc ${WORKING_DIR}/
-    mv zeppelin-${RELEASE_NAME}-bin-${BIN_RELEASE_NAME}.tgz.md5 ${WORKING_DIR}/
-    mv zeppelin-${RELEASE_NAME}-bin-${BIN_RELEASE_NAME}.tgz.sha512 ${WORKING_DIR}/
+  mv zeppelin-${RELEASE_VERSION}-bin-${BIN_RELEASE_NAME}.tgz ${WORKING_DIR}/
+  mv zeppelin-${RELEASE_VERSION}-bin-${BIN_RELEASE_NAME}.tgz.asc ${WORKING_DIR}/
+  mv zeppelin-${RELEASE_VERSION}-bin-${BIN_RELEASE_NAME}.tgz.md5 ${WORKING_DIR}/
+  mv zeppelin-${RELEASE_VERSION}-bin-${BIN_RELEASE_NAME}.tgz.sha512 ${WORKING_DIR}/
 
-    # clean up build dir
-    rm -rf ${WORKING_DIR}/zeppelin-${RELEASE_NAME}-bin-${BIN_RELEASE_NAME}
+  # clean up build dir
+  rm -rf ${WORKING_DIR}/zeppelin-${RELEASE_VERSION}-bin-${BIN_RELEASE_NAME}
 }
 
 make_binary_release all "-Pspark-1.6 -Phadoop-2.4 -Pyarn -Ppyspark"
 
 # remove non release files and dirs
 rm -rf ${WORKING_DIR}/zeppelin
-rm -rf ${WORKING_DIR}/zeppelin-${RELEASE_NAME}
+rm -rf ${WORKING_DIR}/zeppelin-${RELEASE_VERSION}
 echo "Release files are created under ${WORKING_DIR}"
