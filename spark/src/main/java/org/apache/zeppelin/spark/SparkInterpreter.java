@@ -608,7 +608,12 @@ public class SparkInterpreter extends Interpreter {
               Integer.parseInt(getProperty("zeppelin.spark.maxResult")));
 
       interpret("@transient val _binder = new java.util.HashMap[String, Object]()");
-      binder = (Map<String, Object>) getLastObject();
+      Map<String, Object> binder;
+      if (isScala2_10()) {
+        binder = (Map<String, Object>) getValue("_binder");
+      } else {
+        binder = (Map<String, Object>) getLastObject();
+      }
       binder.put("sc", sc);
       binder.put("sqlc", sqlc);
       binder.put("z", z);
