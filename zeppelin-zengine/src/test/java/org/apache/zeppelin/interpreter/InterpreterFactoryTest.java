@@ -57,7 +57,7 @@ public class InterpreterFactoryTest {
     System.setProperty(ConfVars.ZEPPELIN_INTERPRETERS.getVarName(), "org.apache.zeppelin.interpreter.mock.MockInterpreter1,org.apache.zeppelin.interpreter.mock.MockInterpreter2");
     conf = new ZeppelinConfiguration();
     depResolver = new DependencyResolver(tmpDir.getAbsolutePath() + "/local-repo");
-    factory = new InterpreterFactory(conf, new InterpreterOption(false), null, null, depResolver);
+    factory = new InterpreterFactory(conf, new InterpreterOption(), null, null, depResolver);
     context = new InterpreterContext("note", "id", "title", "text", null, null, null, null, null, null, null);
 
   }
@@ -115,7 +115,7 @@ public class InterpreterFactoryTest {
       assertEquals("Test null option" , e.getMessage(),new NullArgumentException("option").getMessage());
     }
     try {
-      factory.add("a mock", "mock2", new LinkedList<Dependency>(), new InterpreterOption(false), null);
+      factory.add("a mock", "mock2", new LinkedList<Dependency>(), new InterpreterOption(), null);
     } catch (NullArgumentException e){
       assertEquals("Test null properties" , e.getMessage(),new NullArgumentException("properties").getMessage());
     }
@@ -130,7 +130,7 @@ public class InterpreterFactoryTest {
     // check if file saved
     assertTrue(new File(conf.getInterpreterSettingPath()).exists());
 
-    factory.add("newsetting", "mock1", new LinkedList<Dependency>(), new InterpreterOption(false), new Properties());
+    factory.add("newsetting", "mock1", new LinkedList<Dependency>(), new InterpreterOption(), new Properties());
     assertEquals(3, factory.get().size());
 
     InterpreterFactory factory2 = new InterpreterFactory(conf, null, null, null, depResolver);
