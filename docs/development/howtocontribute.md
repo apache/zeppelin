@@ -30,24 +30,24 @@ To build the code, install
   * Apache Maven
 
 ## Getting the source code
-First of all, you need Zeppelin source code. The official location of Zeppelin is [http://git.apache.org/incubator-zeppelin.git](http://git.apache.org/incubator-zeppelin.git).
+First of all, you need Zeppelin source code. The official location of Zeppelin is [http://git.apache.org/zeppelin.git](http://git.apache.org/zeppelin.git).
 
 ### git access
 
 Get the source code on your development machine using git.
 
 ```
-git clone git://git.apache.org/incubator-zeppelin.git zeppelin
+git clone git://git.apache.org/zeppelin.git zeppelin
 ```
 
 You may also want to develop against a specific branch. For example, for branch-0.5.6
 
 ```
-git clone -b branch-0.5.6 git://git.apache.org/incubator-zeppelin.git zeppelin
+git clone -b branch-0.5.6 git://git.apache.org/zeppelin.git zeppelin
 ```
 
 #### Fork repository
-If you want not only build Zeppelin but also make any changes, then you need fork [Zeppelin github mirror repository](https://github.com/apache/incubator-zeppelin) and make a pull request.
+If you want not only build Zeppelin but also make any changes, then you need fork [Zeppelin github mirror repository](https://github.com/apache/zeppelin) and make a pull request.
 
 ###Build
 

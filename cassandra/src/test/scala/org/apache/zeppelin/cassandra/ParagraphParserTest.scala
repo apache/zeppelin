@@ -182,6 +182,12 @@ class ParagraphParserTest extends FlatSpec
     parsed should matchPattern { case parser.Success(FetchSize(100), _) =>}
   }
 
+  "Parser" should "parse request timeout" in {
+    val query:String ="@requestTimeOut=100"
+    val parsed = parser.parseAll(parser.requestTimeOut, query)
+    parsed should matchPattern { case parser.Success(RequestTimeOut(100), _) =>}
+  }
+
   "Parser" should "fails parsing invalid fetch size" in {
     val query:String =""" @fetchSize=TEST""".stripMargin
     val ex = intercept[InterpreterException] {
@@ -937,6 +943,17 @@ class ParagraphParserTest extends FlatSpec
         | AS SELECT * FROM myTable
         | WHERE partition IS NOT NULL
         | PRIMARY KEY(col, partition);""".stripMargin
+
+    val parsed = parser.parseAll(parser.queries, query)
+
+    parsed should matchPattern {
+      case parser.Success(List(SimpleStm(query)), _) =>
+    }
+  }
+
+  "Parser" should "parse ALTER KEYSPACE" in {
+    val query = "ALTER KEYSPACE toto WITH replication = " +
+      "{'class': 'SimpleStrategy', 'replication_factor': 1};"
 
     val parsed = parser.parseAll(parser.queries, query)
 

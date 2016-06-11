@@ -44,6 +44,7 @@ object ParagraphParser {
     LOGGING_DEFAULT_RETRY, LOGGING_DOWNGRADING_RETRY, LOGGING_FALLTHROUGH_RETRY)
     .mkString("""^\s*@retryPolicy\s*=\s*(""", "|" , """)\s*$""").r
   val FETCHSIZE_PATTERN = """^\s*@fetchSize\s*=\s*([0-9]+)\s*$""".r
+  val REQUEST_TIMEOUT_PATTERN = """^\s*@requestTimeOut\s*=\s*([0-9]+)\s*$""".r
 
   val SIMPLE_STATEMENT_PATTERN = """([^;]+;)""".r
   val PREPARE_STATEMENT_PATTERN = """^\s*@prepare\[([^]]+)\]\s*=\s*([^;]+)$""".r
@@ -69,7 +70,7 @@ object ParagraphParser {
   val UDF_PATTERN = """(?is)\s*(CREATE(?:\s+OR REPLACE)?\s+FUNCTION(?:\s+IF\s+NOT\s+EXISTS)?.+?(?:\s+|\n|\r|\f)AS(?:\s+|\n|\r|\f)(?:'|\$\$).+?(?:'|\$\$)\s*;)""".r
 
   val GENERIC_STATEMENT_PREFIX =
-    """(?is)\s*(?:INSERT|UPDATE|DELETE|SELECT|CREATE|UPDATE|
+    """(?is)\s*(?:INSERT|UPDATE|DELETE|SELECT|CREATE|ALTER|
       |DROP|GRANT|REVOKE|TRUNCATE|LIST|USE)\s+""".r
 
   val VALID_IDENTIFIER = "[a-z][a-z0-9_]*"
@@ -146,6 +147,7 @@ class ParagraphParser extends RegexParsers{
   def timestamp: Parser[Timestamp] = """\s*@timestamp.+""".r ^^ {case x => extractTimestamp(x.trim)}
   def retryPolicy: Parser[RetryPolicy] = """\s*@retryPolicy.+""".r ^^ {case x => extractRetryPolicy(x.trim)}
   def fetchSize: Parser[FetchSize] = """\s*@fetchSize.+""".r ^^ {case x => extractFetchSize(x.trim)}
+  def requestTimeOut: Parser[RequestTimeOut] = """\s*@requestTimeOut.+""".r ^^ {case x => extractRequestTimeOut(x.trim)}
 
   //Statements
   def createFunctionStatement: Parser[SimpleStm] = UDF_PATTERN ^^{case x => extractUdfStatement(x.trim)}
@@ -188,7 +190,7 @@ class ParagraphParser extends RegexParsers{
     case begin ~ cqls ~ end => BatchStm(extractBatchType(begin),cqls)}
 
   def queries:Parser[List[AnyBlock]] = rep(singleLineComment | multiLineComment | consistency | serialConsistency |
-    timestamp | retryPolicy | fetchSize | removePrepare | prepare | bind | batch | describeCluster |
+    timestamp | retryPolicy | fetchSize | requestTimeOut | removePrepare | prepare | bind | batch | describeCluster |
     describeKeyspace | describeKeyspaces |
     describeTable | describeTables |
     describeType | describeTypes |
@@ -241,6 +243,14 @@ class ParagraphParser extends RegexParsers{
       case FETCHSIZE_PATTERN(fetchSize) => FetchSize(fetchSize.trim.toInt)
       case _ => throw new InterpreterException(s"Invalid syntax for @fetchSize. " +
         s"It should comply to the pattern ${FETCHSIZE_PATTERN.toString}")
+    }
+  }
+
+  def extractRequestTimeOut(text: String): RequestTimeOut = {
+    text match {
+      case REQUEST_TIMEOUT_PATTERN(requestTimeOut) => RequestTimeOut(requestTimeOut.trim.toInt)
+      case _ => throw new InterpreterException(s"Invalid syntax for @requestTimeOut. " +
+        s"It should comply to the pattern ${REQUEST_TIMEOUT_PATTERN.toString}")
     }
   }
 

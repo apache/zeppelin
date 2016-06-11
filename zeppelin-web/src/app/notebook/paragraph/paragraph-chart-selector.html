@@ -92,6 +92,12 @@ limitations under the License.
 </div>
 
 
+<span>
+  <button type="button" class="btn btn-default btn-sm" style="margin-left:10px"
+          tooltip="Download Data as TSV" tooltip-placement="bottom"
+          ng-click="exportToTSV()"><i class="fa fa-download"></i>
+  </button>
+</span>
 <span
   ng-if="getResultType()=='TABLE' && !paragraph.config.helium.activeApp && getGraphMode()!='table' && !asIframe && !viewOnly"
       style="margin-left:10px; cursor:pointer; display: inline-block; vertical-align:top; position: relative; line-height:30px;">

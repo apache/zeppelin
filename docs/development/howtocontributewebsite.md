@@ -17,22 +17,22 @@ Any contribution to Zeppelin (Source code, Documents, Image, Website) means you 
 #### Getting the source code
 Website is hosted in 'master' branch under `/docs/` dir.
 
-First of all, you need the website source code. The official location of mirror for Zeppelin is [http://git.apache.org/incubator-zeppelin.git](http://git.apache.org/incubator-zeppelin.git).
+First of all, you need the website source code. The official location of mirror for Zeppelin is [http://git.apache.org/zeppelin.git](http://git.apache.org/zeppelin.git).
 
 Get the source code on your development machine using git.
 
 ```
-git clone git://git.apache.org/incubator-zeppelin.git
+git clone git://git.apache.org/zeppelin.git
 cd docs
 ```
 
 #### Build
 
-To build, you'll need to install some prerequisites. Please check 'Build documentation' section in [docs/README.md](https://github.com/apache/incubator-zeppelin/blob/master/docs/README.md#build-documentation).
+To build, you'll need to install some prerequisites. Please check 'Build documentation' section in [docs/README.md](https://github.com/apache/zeppelin/blob/master/docs/README.md#build-documentation).
 
 #### Run website in development mode
 
-While you're modifying website, you'll want to see preview of it. Please check 'Run website' section in [docs/README.md](https://github.com/apache/incubator-zeppelin/blob/master/docs/README.md#run-website).
+While you're modifying website, you'll want to see preview of it. Please check 'Run website' section in [docs/README.md](https://github.com/apache/zeppelin/blob/master/docs/README.md#run-website).
 
 You'll be able to access it on [http://localhost:4000](http://localhost:4000) with your web browser.
 

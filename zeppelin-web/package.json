@@ -41,6 +41,6 @@
   },
   "repository": {
     "type": "git",
-    "url": "git@github.com:apache/incubator-zeppelin.git"
+    "url": "git@github.com:apache/zeppelin.git"
   }
 }
