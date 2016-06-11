@@ -23,8 +23,6 @@
 # Here's some helpful documents for the release
 # http://www.apache.org/dev/release.html
 # http://www.apache.org/dev/release-publishing
-# http://incubator.apache.org/guides/releasemanagement.html
-# http://incubator.apache.org/guides/release.html
 # http://www.apache.org/dev/release-signing.html
 # http://www.apache.org/dev/publishing-maven-artifacts.html
 
@@ -38,7 +36,7 @@ fi
 
 
 if [[ -z "${WORKING_DIR}" ]]; then
-    WORKING_DIR=/tmp/incubator-zeppelin-release
+    WORKING_DIR=/tmp/zeppelin-release
 fi
 
 if [[ -z "${GPG_PASSPHRASE}" ]]; then
@@ -49,7 +47,7 @@ fi
 
 if [[ $# -ne 2 ]]; then
     echo "usage) $0 [Release name] [Branch or Tag]"
-    echo "   ex. $0 0.5.0-incubating branch-0.5"
+    echo "   ex. $0 0.6.0 branch-0.6"
     exit 1
 fi
 
@@ -66,7 +64,7 @@ mkdir ${WORKING_DIR}
 
 echo "Cloning the source and packaging"
 # clone source
-git clone -b ${BRANCH} git@github.com:apache/incubator-zeppelin.git ${WORKING_DIR}/zeppelin
+git clone -b ${BRANCH} git@github.com:apache/zeppelin.git ${WORKING_DIR}/zeppelin
 if [[ $? -ne 0 ]]; then
     echo "Can not clone source repository"
     exit 1

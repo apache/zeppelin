@@ -44,7 +44,7 @@ should be updated
 
  2. checkout ASF repo
     ```
-    svn co https://svn.apache.org/repos/asf/incubator/zeppelin asf-zeppelin
+    svn co https://svn.apache.org/repos/asf/zeppelin asf-zeppelin
     ```
  3. copy `zeppelin/docs/_site` to `asf-zeppelin/site/docs/[VERSION]`
  4. ```svn commit```

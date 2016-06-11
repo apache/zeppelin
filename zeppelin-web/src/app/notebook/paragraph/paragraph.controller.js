@@ -79,8 +79,9 @@ angular.module('zeppelinWebApp')
   var angularObjectRegistry = {};
 
   var editorModes = {
-    'ace/mode/python': /^%(\w*\.)?pyspark\s*$/,
+    'ace/mode/python': /^%(\w*\.)?(pyspark|python)\s*$/,
     'ace/mode/scala': /^%(\w*\.)?spark\s*$/,
+    'ace/mode/r': /^%(\w*\.)?(r|sparkr|knitr)\s*$/,
     'ace/mode/sql': /^%(\w*\.)?\wql/,
     'ace/mode/markdown': /^%md/,
     'ace/mode/sh': /^%sh/
@@ -1241,20 +1242,21 @@ angular.module('zeppelinWebApp')
         manualRowResize: true,
         editor: false,
         fillHandle: false,
+        fragmentSelection: true,
         disableVisualSelection: true,
         cells: function (row, col, prop) {
           var cellProperties = {};
-            cellProperties.renderer = function(instance, td, row, col, prop, value, cellProperties) {
-              Handsontable.NumericCell.renderer.apply(this, arguments);
-              if (!isNaN(value)) {
-                cellProperties.type = 'numeric';
-                cellProperties.format = '0,0';
-                cellProperties.editor = false;
-                td.style.textAlign = 'left';
-              } else if (value.length > '%html'.length && '%html ' === value.substring(0, '%html '.length)) {
-                td.innerHTML = value.substring('%html'.length);
-              }
-            };
+          cellProperties.renderer = function(instance, td, row, col, prop, value, cellProperties) {
+            if (!isNaN(value)) {
+              cellProperties.format = '0,0.[00000]';
+              td.style.textAlign = 'left';
+              Handsontable.renderers.NumericRenderer.apply(this, arguments);
+            } else if (value.length > '%html'.length && '%html ' === value.substring(0, '%html '.length)) {
+              td.innerHTML = value.substring('%html'.length);
+            } else {
+              Handsontable.renderers.TextRenderer.apply(this, arguments);
+            }
+          };
           return cellProperties;
         }
       });
