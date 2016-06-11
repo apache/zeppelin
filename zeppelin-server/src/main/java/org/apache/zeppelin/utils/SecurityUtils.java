@@ -85,7 +85,7 @@ public class SecurityUtils {
   public static HashSet<String> getRoles() {
     Subject subject = org.apache.shiro.SecurityUtils.getSubject();
     HashSet<String> roles = new HashSet<>();
-    Map allRoles = new HashMap();
+    Map allRoles = null;
 
     if (subject.isAuthenticated()) {
       Collection realmsList = SecurityUtils.getRealmsList();
@@ -93,20 +93,20 @@ public class SecurityUtils {
         Realm realm = iterator.next();
         String name = realm.getName();
         if (name.equals("iniRealm")) {
-          IniRealm r = (IniRealm) realm;
-          allRoles = r.getIni().get("roles");
+          allRoles = ((IniRealm) realm).getIni().get("roles");
           break;
         }
       }
 
-      Iterator it = allRoles.entrySet().iterator();
-      while (it.hasNext()) {
-        Map.Entry pair = (Map.Entry) it.next();
-        if (subject.hasRole((String) pair.getKey())) {
-          roles.add((String) pair.getKey());
+      if (allRoles != null) {
+        Iterator it = allRoles.entrySet().iterator();
+        while (it.hasNext()) {
+          Map.Entry pair = (Map.Entry) it.next();
+          if (subject.hasRole((String) pair.getKey())) {
+            roles.add((String) pair.getKey());
+          }
         }
       }
-
     }
     return roles;
   }
