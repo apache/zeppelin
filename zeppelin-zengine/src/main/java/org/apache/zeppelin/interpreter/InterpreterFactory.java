@@ -312,7 +312,6 @@ public class InterpreterFactory implements InterpreterGroupFactory {
       // While we decided to turn this feature on always (without providing
       // enable/disable option on GUI).
       // previously created setting should turn this feature on here.
-//      setting.getOption().setRemote(true);
 
       InterpreterSetting intpSetting = new InterpreterSetting(
           setting.id(),
@@ -499,19 +498,11 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     AngularObjectRegistry angularObjectRegistry;
 
     InterpreterGroup interpreterGroup = new InterpreterGroup(id);
-//    if (option.isRemote()) {
     angularObjectRegistry = new RemoteAngularObjectRegistry(
         id,
         angularObjectRegistryListener,
         interpreterGroup
     );
-//    } else {
-//      angularObjectRegistry = new AngularObjectRegistry(
-//          id,
-//          angularObjectRegistryListener);
-//
-//      // TODO(moon) : create distributed resource pool for local interpreters and set
-//    }
 
     interpreterGroup.setAngularObjectRegistry(angularObjectRegistry);
     return interpreterGroup;
@@ -581,17 +572,11 @@ public class InterpreterFactory implements InterpreterGroupFactory {
             && info.getGroup().equals(groupName)) {
           Interpreter intp;
 
-//          if (option.isRemote()) {
           intp = createRemoteRepl(info.getPath(),
               key,
               info.getClassName(),
               properties,
               interpreterSetting.id());
-//          } else {
-//            intp = createRepl(info.getPath(),
-//                info.getClassName(),
-//                properties);
-//          }
 
           synchronized (interpreterGroup) {
             List<Interpreter> interpreters = interpreterGroup.get(key);
