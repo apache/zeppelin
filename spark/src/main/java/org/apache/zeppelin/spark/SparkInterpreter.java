@@ -1240,7 +1240,7 @@ public class SparkInterpreter extends Interpreter {
       return (HttpServer) instantiateClass(
           HttpServer.class.getName(),
           new Class[] { SparkConf.class, File.class, SecurityManager.class, Integer.class,
-              String.class},
+            String.class},
           new Object[] { conf, outputDir, new SecurityManager(conf), 0, "HTTP Server"}
       );
     }
