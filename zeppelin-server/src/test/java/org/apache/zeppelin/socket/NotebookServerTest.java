@@ -89,7 +89,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
   @Test
   public void testMakeSureNoAngularObjectBroadcastToWebsocketWhoFireTheEvent() throws IOException {
     // create a notebook
-    Note note1 = notebook.createNote();
+    Note note1 = notebook.createNote(null);
 
     // get reference to interpreterGroup
     InterpreterGroup interpreterGroup = null;

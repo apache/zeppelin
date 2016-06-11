@@ -140,7 +140,7 @@ public class GitNotebookRepoTest {
     p.setText("%md checkpoint test text");
     
     // save and checkpoint note
-    notebookRepo.save(note);
+    notebookRepo.save(note, null);
     notebookRepo.checkpoint(TEST_NOTE_ID, "second commit");
     
     // see if commit is added

@@ -122,7 +122,7 @@ public class NotebookRepoSyncTest implements JobListenerFactory {
     assertEquals(0, notebookRepoSync.list(1, null).size());
     
     /* create note */
-    Note note = notebookSync.createNote();
+    Note note = notebookSync.createNote(null);
 
     // check that automatically saved on both storages
     assertEquals(1, notebookRepoSync.list(0, null).size());
@@ -138,7 +138,7 @@ public class NotebookRepoSyncTest implements JobListenerFactory {
     assertEquals(0, notebookRepoSync.list(0, null).size());
     assertEquals(0, notebookRepoSync.list(1, null).size());
     
-    Note note = notebookSync.createNote();
+    Note note = notebookSync.createNote(null);
 
     /* check that created in both storage systems */
     assertEquals(1, notebookRepoSync.list(0, null).size());
@@ -158,7 +158,7 @@ public class NotebookRepoSyncTest implements JobListenerFactory {
   public void testSyncUpdateMain() throws IOException {
     
     /* create note */
-    Note note = notebookSync.createNote();
+    Note note = notebookSync.createNote(null);
     Paragraph p1 = note.addParagraph();
     Map config = p1.getConfig();
     config.put("enabled", true);
@@ -175,7 +175,7 @@ public class NotebookRepoSyncTest implements JobListenerFactory {
         notebookRepoSync.list(1, null).get(0).getId(), null).getParagraphs().size());
     
     /* save to storage under index 0 (first storage) */ 
-    notebookRepoSync.save(0, note);
+    notebookRepoSync.save(0, note, null);
     
     /* check paragraph saved to first storage */
     assertEquals(1, notebookRepoSync.get(0,
@@ -238,7 +238,7 @@ public class NotebookRepoSyncTest implements JobListenerFactory {
     // no notes
     assertThat(vRepoSync.list(null).size()).isEqualTo(0);
     // create note
-    Note note = vNotebookSync.createNote();
+    Note note = vNotebookSync.createNote(null);
     assertThat(vRepoSync.list(null).size()).isEqualTo(1);
     
     String noteId = vRepoSync.list(null).get(0).getId();
@@ -254,7 +254,7 @@ public class NotebookRepoSyncTest implements JobListenerFactory {
     p.setText("%md checkpoint test");
     
     // save and checkpoint again
-    vRepoSync.save(note);
+    vRepoSync.save(note, null);
     vRepoSync.checkpoint(noteId, "checkpoint message 2");
     assertThat(gitRepo.revisionHistory(noteId).size()).isEqualTo(vCount + 1);
   }

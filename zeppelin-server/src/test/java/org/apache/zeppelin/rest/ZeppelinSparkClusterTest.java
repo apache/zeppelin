@@ -68,7 +68,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
     @Test
     public void basicRDDTransformationAndActionTest() throws IOException {
         // create new note
-        Note note = ZeppelinServer.notebook.createNote();
+        Note note = ZeppelinServer.notebook.createNote(null);
 
         // run markdown paragraph, again
         Paragraph p = note.addParagraph();
@@ -86,7 +86,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
     @Test
     public void sparkRTest() throws IOException {
       // create new note
-      Note note = ZeppelinServer.notebook.createNote();
+      Note note = ZeppelinServer.notebook.createNote(null);
       int sparkVersion = getSparkVersionNumber(note);
 
       if (isSparkR() && sparkVersion >= 14) {   // sparkr supported from 1.4.0
@@ -110,7 +110,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
     @Test
     public void pySparkTest() throws IOException {
         // create new note
-        Note note = ZeppelinServer.notebook.createNote();
+        Note note = ZeppelinServer.notebook.createNote(null);
         note.setName("note");
         int sparkVersion = getSparkVersionNumber(note);
 
@@ -133,7 +133,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
     @Test
     public void pySparkAutoConvertOptionTest() throws IOException {
         // create new note
-        Note note = ZeppelinServer.notebook.createNote();
+        Note note = ZeppelinServer.notebook.createNote(null);
         note.setName("note");
 
         int sparkVersion = getSparkVersionNumber(note);
@@ -158,7 +158,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
     @Test
     public void zRunTest() throws IOException {
         // create new note
-        Note note = ZeppelinServer.notebook.createNote();
+        Note note = ZeppelinServer.notebook.createNote(null);
         Paragraph p0 = note.addParagraph();
         Map config0 = p0.getConfig();
         config0.put("enabled", true);
@@ -190,7 +190,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
     @Test
     public void pySparkDepLoaderTest() throws IOException {
         // create new note
-        Note note = ZeppelinServer.notebook.createNote();
+        Note note = ZeppelinServer.notebook.createNote(null);
 
         if (isPyspark() && getSparkVersionNumber(note) >= 14) {
             // restart spark interpreter
