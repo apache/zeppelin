@@ -187,7 +187,7 @@ public class AzureNotebookRepo implements NotebookRepo {
   }
 
   @Override
-  public void remove(String noteId) throws IOException {
+  public void remove(String noteId, AuthenticationInfo subject) throws IOException {
     try {
       CloudFileDirectory dir = rootDir.getDirectoryReference(noteId);
 

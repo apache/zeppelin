@@ -178,7 +178,7 @@ public class ZeppelinHubRepo implements NotebookRepo {
   }
 
   @Override
-  public void remove(String noteId) throws IOException {
+  public void remove(String noteId, AuthenticationInfo subject) throws IOException {
     restApiClient.asyncDel(noteId);
     LOG.info("ZeppelinHub REST API removing note {} ", noteId);
   }

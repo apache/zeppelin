@@ -225,7 +225,7 @@ public class S3NotebookRepo implements NotebookRepo {
   }
 
   @Override
-  public void remove(String noteId) throws IOException {
+  public void remove(String noteId, AuthenticationInfo subject) throws IOException {
     String key = user + "/" + "notebook" + "/" + noteId;
     final ListObjectsRequest listObjectsRequest = new ListObjectsRequest()
         .withBucketName(bucketName).withPrefix(key);

@@ -159,9 +159,9 @@ public class NotebookRepoSync implements NotebookRepo {
   }
 
   @Override
-  public void remove(String noteId) throws IOException {
+  public void remove(String noteId, AuthenticationInfo subject) throws IOException {
     for (NotebookRepo repo : repos) {
-      repo.remove(noteId);
+      repo.remove(noteId, subject);
     }
     /* TODO(khalid): handle case when removing from secondary storage fails */
   }
