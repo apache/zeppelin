@@ -168,7 +168,7 @@ public class ZeppelinHubRepo implements NotebookRepo {
   }
 
   @Override
-  public void save(Note note) throws IOException {
+  public void save(Note note, AuthenticationInfo subject) throws IOException {
     if (note == null) {
       throw new IOException("Zeppelinhub failed to save empty note");
     }

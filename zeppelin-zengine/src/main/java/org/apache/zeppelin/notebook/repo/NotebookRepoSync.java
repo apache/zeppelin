@@ -141,11 +141,11 @@ public class NotebookRepoSync implements NotebookRepo {
    *  Saves to all repositories
    */
   @Override
-  public void save(Note note) throws IOException {
-    getRepo(0).save(note);
+  public void save(Note note, AuthenticationInfo subject) throws IOException {
+    getRepo(0).save(note, subject);
     if (getRepoCount() > 1) {
       try {
-        getRepo(1).save(note);
+        getRepo(1).save(note, subject);
       }
       catch (IOException e) {
         LOG.info(e.getMessage() + ": Failed to write to secondary storage");
@@ -154,8 +154,8 @@ public class NotebookRepoSync implements NotebookRepo {
   }
 
   /* save note to specific repo (for tests) */
-  void save(int repoIndex, Note note) throws IOException {
-    getRepo(repoIndex).save(note);
+  void save(int repoIndex, Note note, AuthenticationInfo subject) throws IOException {
+    getRepo(repoIndex).save(note, subject);
   }
 
   @Override
@@ -211,7 +211,7 @@ public class NotebookRepoSync implements NotebookRepo {
   private void pushNotes(List<String> ids, NotebookRepo localRepo,
       NotebookRepo remoteRepo) throws IOException {
     for (String id : ids) {
-      remoteRepo.save(localRepo.get(id, null));
+      remoteRepo.save(localRepo.get(id, null), null);
     }
   }
 

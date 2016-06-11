@@ -140,7 +140,7 @@ public class AzureNotebookRepo implements NotebookRepo {
   }
 
   @Override
-  public void save(Note note) throws IOException {
+  public void save(Note note, AuthenticationInfo subject) throws IOException {
     GsonBuilder gsonBuilder = new GsonBuilder();
     gsonBuilder.setPrettyPrinting();
     Gson gson = gsonBuilder.create();

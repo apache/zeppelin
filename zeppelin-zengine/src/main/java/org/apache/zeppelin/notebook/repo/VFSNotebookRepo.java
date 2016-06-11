@@ -205,7 +205,7 @@ public class VFSNotebookRepo implements NotebookRepo {
   }
 
   @Override
-  public synchronized void save(Note note) throws IOException {
+  public synchronized void save(Note note, AuthenticationInfo subject) throws IOException {
     GsonBuilder gsonBuilder = new GsonBuilder();
     gsonBuilder.setPrettyPrinting();
     Gson gson = gsonBuilder.create();
