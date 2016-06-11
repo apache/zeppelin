@@ -31,7 +31,7 @@ import org.apache.zeppelin.user.AuthenticationInfo;
 public interface NotebookRepo {
   @ZeppelinApi public List<NoteInfo> list(AuthenticationInfo subject) throws IOException;
   @ZeppelinApi public Note get(String noteId, AuthenticationInfo subject) throws IOException;
-  @ZeppelinApi public void save(Note note) throws IOException;
+  @ZeppelinApi public void save(Note note, AuthenticationInfo subject) throws IOException;
   @ZeppelinApi public void remove(String noteId) throws IOException;
 
   /**
