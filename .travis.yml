@@ -96,4 +96,3 @@ after_failure:
 
 after_script:
   - ./testing/stopSparkCluster.sh $SPARK_VER $HADOOP_VER
-
