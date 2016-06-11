@@ -647,8 +647,8 @@ public class NotebookTest implements JobListenerFactory{
   public void testNormalizeNoteName() throws IOException {
     // create a notes
     Note note1  = notebook.createNote();
-    note1.setName("MyNote");
 
+    note1.setName("MyNote");
     assertEquals(note1.getName(), "MyNote");
 
     note1.setName("/MyNote");
