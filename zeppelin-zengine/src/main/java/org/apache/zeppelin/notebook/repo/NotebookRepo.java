@@ -32,7 +32,7 @@ public interface NotebookRepo {
   @ZeppelinApi public List<NoteInfo> list(AuthenticationInfo subject) throws IOException;
   @ZeppelinApi public Note get(String noteId, AuthenticationInfo subject) throws IOException;
   @ZeppelinApi public void save(Note note, AuthenticationInfo subject) throws IOException;
-  @ZeppelinApi public void remove(String noteId) throws IOException;
+  @ZeppelinApi public void remove(String noteId, AuthenticationInfo subject) throws IOException;
 
   /**
    * Release any underlying resources
