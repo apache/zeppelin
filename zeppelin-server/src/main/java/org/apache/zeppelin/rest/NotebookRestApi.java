@@ -159,7 +159,8 @@ public class NotebookRestApi {
             notebookAuthorization.getOwners(noteId),
             notebookAuthorization.getReaders(noteId),
             notebookAuthorization.getWriters(noteId));
-    note.persist();
+    AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
+    note.persist(subject);
     notebookServer.broadcastNote(note);
     return new JsonResponse<>(Status.OK).build();
   }
@@ -268,7 +269,8 @@ public class NotebookRestApi {
   @Path("import")
   @ZeppelinApi
   public Response importNotebook(String req) throws IOException {
-    Note newNote = notebook.importNote(req, null);
+    AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
+    Note newNote = notebook.importNote(req, null, subject);
     return new JsonResponse<>(Status.CREATED, "", newNote.getId()).build();
   }
   
@@ -285,7 +287,8 @@ public class NotebookRestApi {
     LOG.info("Create new notebook by JSON {}" , message);
     NewNotebookRequest request = gson.fromJson(message,
         NewNotebookRequest.class);
-    Note note = notebook.createNote();
+    AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
+    Note note = notebook.createNote(subject);
     List<NewParagraphRequest> initialParagraphs = request.getParagraphs();
     if (initialParagraphs != null) {
       for (NewParagraphRequest paragraphRequest : initialParagraphs) {
@@ -299,9 +302,9 @@ public class NotebookRestApi {
     if (noteName.isEmpty()) {
       noteName = "Note " + note.getId();
     }
-    AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
+
     note.setName(noteName);
-    note.persist();
+    note.persist(subject);
     notebookServer.broadcastNote(note);
     notebookServer.broadcastNoteList(subject);
     return new JsonResponse<>(Status.CREATED, "", note.getId() ).build();
@@ -344,9 +347,9 @@ public class NotebookRestApi {
     NewNotebookRequest request = gson.fromJson(message,
         NewNotebookRequest.class);
     String newNoteName = request.getName();
-    Note newNote = notebook.cloneNote(notebookId, newNoteName);
-    notebookServer.broadcastNote(newNote);
     AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
+    Note newNote = notebook.cloneNote(notebookId, newNoteName, subject);
+    notebookServer.broadcastNote(newNote);
     notebookServer.broadcastNoteList(subject);
     return new JsonResponse<>(Status.CREATED, "", newNote.getId()).build();
   }
@@ -381,7 +384,8 @@ public class NotebookRestApi {
     p.setTitle(request.getTitle());
     p.setText(request.getText());
 
-    note.persist();
+    AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
+    note.persist(subject);
     notebookServer.broadcastNote(note);
     return new JsonResponse(Status.CREATED, "", p.getId()).build();
   }
@@ -439,7 +443,8 @@ public class NotebookRestApi {
     try {
       note.moveParagraph(paragraphId, Integer.parseInt(newIndex), true);
 
-      note.persist();
+      AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
+      note.persist(subject);
       notebookServer.broadcastNote(note);
       return new JsonResponse(Status.OK, "").build();
     } catch (IndexOutOfBoundsException e) {
@@ -471,8 +476,9 @@ public class NotebookRestApi {
       return new JsonResponse(Status.NOT_FOUND, "paragraph not found.").build();
     }
 
+    AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
     note.removeParagraph(paragraphId);
-    note.persist();
+    note.persist(subject);
     notebookServer.broadcastNote(note);
 
     return new JsonResponse(Status.OK, "").build();
@@ -579,7 +585,8 @@ public class NotebookRestApi {
       Map<String, Object> paramsForUpdating = request.getParams();
       if (paramsForUpdating != null) {
         paragraph.settings.getParams().putAll(paramsForUpdating);
-        note.persist();
+        AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
+        note.persist(subject);
       }
     }
 

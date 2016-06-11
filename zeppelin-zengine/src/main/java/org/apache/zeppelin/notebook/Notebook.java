@@ -132,12 +132,12 @@ public class Notebook {
    * @return
    * @throws IOException
    */
-  public Note createNote() throws IOException {
+  public Note createNote(AuthenticationInfo subject) throws IOException {
     Note note;
     if (conf.getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_AUTO_INTERPRETER_BINDING)) {
-      note = createNote(replFactory.getDefaultInterpreterSettingList());
+      note = createNote(replFactory.getDefaultInterpreterSettingList(), subject);
     } else {
-      note = createNote(null);
+      note = createNote(null, subject);
     }
     notebookIndex.addIndexDoc(note);
     return note;
@@ -149,7 +149,8 @@ public class Notebook {
    * @return
    * @throws IOException
    */
-  public Note createNote(List<String> interpreterIds) throws IOException {
+  public Note createNote(List<String> interpreterIds, AuthenticationInfo subject)
+      throws IOException {
     NoteInterpreterLoader intpLoader = new NoteInterpreterLoader(replFactory);
     Note note = new Note(notebookRepo, intpLoader, jobListenerFactory, notebookIndex, credentials);
     intpLoader.setNoteId(note.id());
@@ -161,7 +162,7 @@ public class Notebook {
     }
 
     notebookIndex.addIndexDoc(note);
-    note.persist();
+    note.persist(subject);
     return note;
   }
   
@@ -189,7 +190,8 @@ public class Notebook {
    * @return notebook ID
    * @throws IOException
    */
-  public Note importNote(String sourceJson, String noteName) throws IOException {
+  public Note importNote(String sourceJson, String noteName, AuthenticationInfo subject)
+      throws IOException {
     GsonBuilder gsonBuilder = new GsonBuilder();
     gsonBuilder.setPrettyPrinting();
     Gson gson = gsonBuilder.create();
@@ -198,7 +200,7 @@ public class Notebook {
     Note newNote;
     try {
       Note oldNote = gson.fromJson(reader, Note.class);
-      newNote = createNote();
+      newNote = createNote(subject);
       if (noteName != null)
         newNote.setName(noteName);
       else
@@ -208,7 +210,7 @@ public class Notebook {
         newNote.addCloneParagraph(p);
       }
 
-      newNote.persist();
+      newNote.persist(subject);
     } catch (IOException e) {
       logger.error(e.toString(), e);
       throw e;
@@ -224,14 +226,14 @@ public class Notebook {
    * @return noteId
    * @throws IOException, CloneNotSupportedException, IllegalArgumentException
    */
-  public Note cloneNote(String sourceNoteID, String newNoteName) throws
+  public Note cloneNote(String sourceNoteID, String newNoteName, AuthenticationInfo subject) throws
       IOException, CloneNotSupportedException, IllegalArgumentException {
 
     Note sourceNote = getNote(sourceNoteID);
     if (sourceNote == null) {
       throw new IllegalArgumentException(sourceNoteID + "not found");
     }
-    Note newNote = createNote();
+    Note newNote = createNote(subject);
     if (newNoteName != null) {
       newNote.setName(newNoteName);
     }
@@ -245,7 +247,7 @@ public class Notebook {
     }
 
     notebookIndex.addIndexDoc(newNote);
-    newNote.persist();
+    newNote.persist(subject);
     return newNote;
   }
 

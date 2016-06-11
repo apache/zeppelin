@@ -547,7 +547,7 @@ public class NotebookServer extends WebSocketServlet implements
       }
 
       AuthenticationInfo subject = new AuthenticationInfo(fromMessage.principal);
-      note.persist();
+      note.persist(subject);
       broadcastNote(note);
       broadcastNoteList(subject);
     }
@@ -570,7 +570,8 @@ public class NotebookServer extends WebSocketServlet implements
   private void createNote(NotebookSocket conn, HashSet<String> userAndRoles,
                           Notebook notebook, Message message)
       throws IOException {
-    Note note = notebook.createNote();
+    AuthenticationInfo subject = new AuthenticationInfo(message.principal);
+    Note note = notebook.createNote(subject);
     note.addParagraph(); // it's an empty note. so add one paragraph
     if (message != null) {
       String noteName = (String) message.get("name");
@@ -580,8 +581,7 @@ public class NotebookServer extends WebSocketServlet implements
       note.setName(noteName);
     }
 
-    AuthenticationInfo subject = new AuthenticationInfo(message.principal);
-    note.persist();
+    note.persist(subject);
     addConnectionToNote(note.id(), (NotebookSocket) conn);
     conn.send(serializeMessage(new Message(OP.NEW_NOTE).put("note", note)));
     broadcastNoteList(subject);
@@ -622,6 +622,7 @@ public class NotebookServer extends WebSocketServlet implements
     String noteId = getOpenNoteId(conn);
     final Note note = notebook.getNote(noteId);
     NotebookAuthorization notebookAuthorization = notebook.getNotebookAuthorization();
+    AuthenticationInfo subject = new AuthenticationInfo(fromMessage.principal);
     if (!notebookAuthorization.isWriter(noteId, userAndRoles)) {
       permissionError(conn, "write", userAndRoles, notebookAuthorization.getWriters(noteId));
       return;
@@ -632,7 +633,7 @@ public class NotebookServer extends WebSocketServlet implements
     p.setConfig(config);
     p.setTitle((String) fromMessage.get("title"));
     p.setText((String) fromMessage.get("paragraph"));
-    note.persist();
+    note.persist(subject);
     broadcast(note.id(), new Message(OP.PARAGRAPH).put("paragraph", p));
   }
 
@@ -641,7 +642,7 @@ public class NotebookServer extends WebSocketServlet implements
       throws IOException, CloneNotSupportedException {
     String noteId = getOpenNoteId(conn);
     String name = (String) fromMessage.get("name");
-    Note newNote = notebook.cloneNote(noteId, name);
+    Note newNote = notebook.cloneNote(noteId, name, new AuthenticationInfo(fromMessage.principal));
     AuthenticationInfo subject = new AuthenticationInfo(fromMessage.principal);
     addConnectionToNote(newNote.id(), (NotebookSocket) conn);
     conn.send(serializeMessage(new Message(OP.NEW_NOTE).put("note", newNote)));
@@ -656,8 +657,8 @@ public class NotebookServer extends WebSocketServlet implements
       String noteName = (String) ((Map) fromMessage.get("notebook")).get("name");
       String noteJson = gson.toJson(fromMessage.get("notebook"));
       AuthenticationInfo subject = new AuthenticationInfo(fromMessage.principal);
-      note = notebook.importNote(noteJson, noteName);
-      note.persist();
+      note = notebook.importNote(noteJson, noteName, subject);
+      note.persist(subject);
       broadcastNote(note);
       broadcastNoteList(subject);
     }
@@ -673,6 +674,7 @@ public class NotebookServer extends WebSocketServlet implements
     String noteId = getOpenNoteId(conn);
     final Note note = notebook.getNote(noteId);
     NotebookAuthorization notebookAuthorization = notebook.getNotebookAuthorization();
+    AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
     if (!notebookAuthorization.isWriter(noteId, userAndRoles)) {
       permissionError(conn, "write", userAndRoles, notebookAuthorization.getWriters(noteId));
       return;
@@ -681,7 +683,7 @@ public class NotebookServer extends WebSocketServlet implements
     /** We dont want to remove the last paragraph */
     if (!note.isLastParagraph(paragraphId)) {
       note.removeParagraph(paragraphId);
-      note.persist();
+      note.persist(subject);
       broadcastNote(note);
     }
   }
@@ -975,13 +977,14 @@ public class NotebookServer extends WebSocketServlet implements
     String noteId = getOpenNoteId(conn);
     final Note note = notebook.getNote(noteId);
     NotebookAuthorization notebookAuthorization = notebook.getNotebookAuthorization();
+    AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
     if (!notebookAuthorization.isWriter(noteId, userAndRoles)) {
       permissionError(conn, "write", userAndRoles, notebookAuthorization.getWriters(noteId));
       return;
     }
 
     note.moveParagraph(paragraphId, newIndex);
-    note.persist();
+    note.persist(subject);
     broadcastNote(note);
   }
 
@@ -992,13 +995,14 @@ public class NotebookServer extends WebSocketServlet implements
     String noteId = getOpenNoteId(conn);
     final Note note = notebook.getNote(noteId);
     NotebookAuthorization notebookAuthorization = notebook.getNotebookAuthorization();
+    AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
     if (!notebookAuthorization.isWriter(noteId, userAndRoles)) {
       permissionError(conn, "write", userAndRoles, notebookAuthorization.getWriters(noteId));
       return;
     }
 
     note.insertParagraph(index);
-    note.persist();
+    note.persist(subject);
     broadcastNote(note);
   }
 
@@ -1062,7 +1066,8 @@ public class NotebookServer extends WebSocketServlet implements
       note.addParagraph();
     }
 
-    note.persist();
+    AuthenticationInfo subject = new AuthenticationInfo(fromMessage.principal);
+    note.persist(subject);
     try {
       note.run(paragraphId);
     } catch (Exception ex) {
@@ -1172,7 +1177,8 @@ public class NotebookServer extends WebSocketServlet implements
       if (job.isTerminated()) {
         LOG.info("Job {} is finished", job.getId());
         try {
-          note.persist();
+          //TODO(khalid): may change interface for JobListener and pass subject from interpreter
+          note.persist(null);
         } catch (IOException e) {
           LOG.error(e.toString(), e);
         }
