@@ -42,6 +42,7 @@ public interface NotebookRepo {
   /**
    * Versioning API
    */
+
   /**
    * chekpoint (set revision) for notebook.
    * @param noteId Id of the Notebook
@@ -49,7 +50,9 @@ public interface NotebookRepo {
    * @return Rev
    * @throws IOException
    */
-  @ZeppelinApi public Revision checkpoint(String noteId, String checkpointMsg) throws IOException;
+  @ZeppelinApi
+  public Revision checkpoint(String noteId, String checkpointMsg, AuthenticationInfo subject)
+      throws IOException;
 
   /**
    * Get particular revision of the Notebook.
@@ -82,4 +85,5 @@ public interface NotebookRepo {
     public String message;
     public int time;
   }
+
 }
