@@ -525,7 +525,7 @@ public class NotebookServer extends WebSocketServlet implements
       if (noteName == null || noteName.isEmpty()){
         noteName = "Note " + note.getId();
       }
-      if (noteName.indexOf('/') >= 0) {
+      if (noteName.indexOf('/') >= 0 || noteName.indexOf('\\') >= 0) {
         noteName = Util.normalizePath(noteName);
       }
       note.setName(noteName);
