@@ -29,9 +29,37 @@ import org.apache.zeppelin.user.AuthenticationInfo;
  * Notebook repository (persistence layer) abstraction
  */
 public interface NotebookRepo {
+  /**
+   * Lists notebook information about all notebooks in storage.
+   * @param subject contains user information.
+   * @return
+   * @throws IOException
+   */
   @ZeppelinApi public List<NoteInfo> list(AuthenticationInfo subject) throws IOException;
+
+  /**
+   * Get the notebook with the given id.
+   * @param noteId is notebook id.
+   * @param subject contains user information.
+   * @return
+   * @throws IOException
+   */
   @ZeppelinApi public Note get(String noteId, AuthenticationInfo subject) throws IOException;
+
+  /**
+   * Save given note in storage
+   * @param note is the note itself.
+   * @param subject contains user information.
+   * @throws IOException
+   */
   @ZeppelinApi public void save(Note note, AuthenticationInfo subject) throws IOException;
+
+  /**
+   * Remove note with given id.
+   * @param noteId is the note id.
+   * @param subject contains user information.
+   * @throws IOException
+   */
   @ZeppelinApi public void remove(String noteId, AuthenticationInfo subject) throws IOException;
 
   /**
