@@ -250,7 +250,7 @@ public class S3NotebookRepo implements NotebookRepo {
   }
 
   @Override
-  public Revision checkpoint(String noteId, String checkpointMsg) throws IOException {
+  public Revision checkpoint(String noteId, String checkpointMsg, AuthenticationInfo subject) throws IOException {
     // Auto-generated method stub
     return null;
   }
