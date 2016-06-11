@@ -116,7 +116,23 @@ public class Note implements Serializable, JobListener {
     return name;
   }
 
+  private String normalizeNoteName(String name){
+    name = name.trim();
+    name = name.replace("\\", "/");
+    while (name.indexOf("///") >= 0) {
+      name = name.replaceAll("///", "/");
+    }
+    name = name.replaceAll("//", "/");
+    if (name.length() == 0) {
+      name = "/";
+    }
+    return name;
+  }
+
   public void setName(String name) {
+    if (name.indexOf('/') >= 0 || name.indexOf('\\') >= 0) {
+      name = normalizeNoteName(name);
+    }
     this.name = name;
   }
 
