@@ -80,7 +80,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
         waitForFinish(p);
         assertEquals(Status.FINISHED, p.getStatus());
         assertEquals("55", p.getResult().message());
-        ZeppelinServer.notebook.removeNote(note.id());
+        ZeppelinServer.notebook.removeNote(note.id(), null);
     }
 
     @Test
@@ -104,7 +104,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
         assertEquals(Status.FINISHED, p.getStatus());
         assertEquals("[1] 3", p.getResult().message());
       }
-      ZeppelinServer.notebook.removeNote(note.id());
+      ZeppelinServer.notebook.removeNote(note.id(), null);
     }
 
     @Test
@@ -127,7 +127,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
             assertEquals(Status.FINISHED, p.getStatus());
             assertEquals("55\n", p.getResult().message());
         }
-        ZeppelinServer.notebook.removeNote(note.id());
+        ZeppelinServer.notebook.removeNote(note.id(), null);
     }
 
     @Test
@@ -152,7 +152,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
             assertEquals(Status.FINISHED, p.getStatus());
             assertEquals("10\n", p.getResult().message());
         }
-        ZeppelinServer.notebook.removeNote(note.id());
+        ZeppelinServer.notebook.removeNote(note.id(), null);
     }
 
     @Test
@@ -184,7 +184,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
         assertEquals(Status.FINISHED, p2.getStatus());
         assertEquals("10", p2.getResult().message());
 
-        ZeppelinServer.notebook.removeNote(note.id());
+        ZeppelinServer.notebook.removeNote(note.id(), null);
     }
 
     @Test

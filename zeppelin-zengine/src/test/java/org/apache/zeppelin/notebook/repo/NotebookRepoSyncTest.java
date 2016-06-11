@@ -146,7 +146,7 @@ public class NotebookRepoSyncTest implements JobListenerFactory {
     assertEquals(notebookRepoSync.list(0, null).get(0).getId(),notebookRepoSync.list(1, null).get(0).getId());
     
     /* remove Note */
-    notebookSync.removeNote(notebookRepoSync.list(0, null).get(0).getId());
+    notebookSync.removeNote(notebookRepoSync.list(0, null).get(0).getId(), null);
     
     /* check that deleted in both storages */
     assertEquals(0, notebookRepoSync.list(0, null).size());

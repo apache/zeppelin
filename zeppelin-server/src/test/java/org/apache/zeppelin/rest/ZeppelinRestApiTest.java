@@ -153,7 +153,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
       assertTrue("paragraph text check failed", p.getText().startsWith("text"));
     }
     // cleanup
-    ZeppelinServer.notebook.removeNote(newNotebookId);
+    ZeppelinServer.notebook.removeNote(newNotebookId, null);
     post.releaseConnection();
   }
 
@@ -180,7 +180,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     }
     assertEquals("compare note name", expectedNoteName, newNoteName);
     // cleanup
-    ZeppelinServer.notebook.removeNote(newNotebookId);
+    ZeppelinServer.notebook.removeNote(newNotebookId, null);
     post.releaseConnection();
 
   }
@@ -227,7 +227,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     String exportJSON = (String) resp.get("body");
     assertNotNull("Can not find new notejson", exportJSON);
     LOG.info("export JSON:=" + exportJSON);
-    ZeppelinServer.notebook.removeNote(sourceNoteID);
+    ZeppelinServer.notebook.removeNote(sourceNoteID, null);
     get.releaseConnection();
 
   }
@@ -264,8 +264,8 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     assertEquals("Compare paragraphs count", note.getParagraphs().size(), newNote.getParagraphs()
         .size());
     // cleanup
-    ZeppelinServer.notebook.removeNote(note.getId());
-    ZeppelinServer.notebook.removeNote(newNote.getId());
+    ZeppelinServer.notebook.removeNote(note.getId(), null);
+    ZeppelinServer.notebook.removeNote(newNote.getId(), null);
     importPost.releaseConnection();
   }
 
@@ -328,8 +328,8 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     assertEquals("Compare note names", noteName, newNote.getName());
     assertEquals("Compare paragraphs count", note.getParagraphs().size(), newNote.getParagraphs().size());
     //cleanup
-    ZeppelinServer.notebook.removeNote(note.getId());
-    ZeppelinServer.notebook.removeNote(newNote.getId());
+    ZeppelinServer.notebook.removeNote(note.getId(), null);
+    ZeppelinServer.notebook.removeNote(newNote.getId(), null);
     post.releaseConnection();
   }
 
@@ -397,7 +397,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     Thread.sleep(1000);
     
     //cleanup
-    ZeppelinServer.notebook.removeNote(note.getId());
+    ZeppelinServer.notebook.removeNote(note.getId(), null);
   }
 
   @Test
@@ -450,7 +450,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
       }
     }
 
-    ZeppelinServer.notebook.removeNote(note.getId());
+    ZeppelinServer.notebook.removeNote(note.getId(), null);
   }
 
   @Test
@@ -495,7 +495,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     assertEquals("world", params.get("param2"));
 
     //cleanup
-    ZeppelinServer.notebook.removeNote(note.getId());
+    ZeppelinServer.notebook.removeNote(note.getId(), null);
   }
 
   @Test
@@ -545,7 +545,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     DeleteMethod deleteCron = httpDelete("/notebook/cron/" + note.getId());
     assertThat("", deleteCron, isAllowed());
     deleteCron.releaseConnection();
-    ZeppelinServer.notebook.removeNote(note.getId());
+    ZeppelinServer.notebook.removeNote(note.getId(), null);
   }
 
   @Test
@@ -567,7 +567,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     assertFalse(body.get(0).containsKey("finished"));
     getNoteJobs.releaseConnection();
 
-    ZeppelinServer.notebook.removeNote(note.getId());
+    ZeppelinServer.notebook.removeNote(note.getId(), null);
   }
 
   @Test
@@ -607,7 +607,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     assertEquals("title2", paragraphAtIdx0.getTitle());
     assertEquals("text2", paragraphAtIdx0.getText());
 
-    ZeppelinServer.notebook.removeNote(note.getId());
+    ZeppelinServer.notebook.removeNote(note.getId(), null);
   }
 
   @Test
@@ -636,7 +636,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     assertEquals("hello", body.get("title"));
     assertEquals("world", body.get("text"));
 
-    ZeppelinServer.notebook.removeNote(note.getId());
+    ZeppelinServer.notebook.removeNote(note.getId(), null);
   }
 
   @Test
@@ -668,7 +668,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     assertThat("Test post method: ", post2, isBadRequest());
     post.releaseConnection();
 
-    ZeppelinServer.notebook.removeNote(note.getId());
+    ZeppelinServer.notebook.removeNote(note.getId(), null);
   }
 
   @Test
@@ -689,7 +689,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     Paragraph retrParagrah = retrNote.getParagraph(p.getId());
     assertNull("paragraph should be deleted", retrParagrah);
 
-    ZeppelinServer.notebook.removeNote(note.getId());
+    ZeppelinServer.notebook.removeNote(note.getId(), null);
   }
 
   @Test
@@ -752,8 +752,8 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
       getPermission.releaseConnection();
     }
     searchNotebook.releaseConnection();
-    ZeppelinServer.notebook.removeNote(note1.getId());
-    ZeppelinServer.notebook.removeNote(note2.getId());
+    ZeppelinServer.notebook.removeNote(note1.getId(), null);
+    ZeppelinServer.notebook.removeNote(note2.getId(), null);
   }
 
   @Test
@@ -779,7 +779,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     }
     assertEquals("Paragraph title hits must be at-least one", true, numberOfTitleHits >= 1);
     searchNotebook.releaseConnection();
-    ZeppelinServer.notebook.removeNote(note.getId());
+    ZeppelinServer.notebook.removeNote(note.getId(), null);
   }
 
 }

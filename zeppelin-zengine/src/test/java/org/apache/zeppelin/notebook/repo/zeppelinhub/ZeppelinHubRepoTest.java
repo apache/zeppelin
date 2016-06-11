@@ -138,13 +138,13 @@ public class ZeppelinHubRepoTest {
   @Test
   public void testRemoveNote() throws IOException {
     // not suppose to throw
-    repo.remove("AAAAA");
+    repo.remove("AAAAA", null);
   }
   
   @Test
   public void testRemoveNoteError() throws IOException {
     // not suppose to throw
-    repo.remove("BBBBB");
+    repo.remove("BBBBB", null);
   }
 
 }

@@ -240,7 +240,7 @@ public class NotebookTest implements JobListenerFactory{
     assertNull(p2.getResult());
     assertEquals("repl1: p3", p3.getResult().message());
 
-    notebook.removeNote(note.getId());
+    notebook.removeNote(note.getId(), null);
   }
 
   @Test
@@ -361,7 +361,7 @@ public class NotebookTest implements JobListenerFactory{
     assertEquals(1, ResourcePoolUtils.getAllResources().size());
 
     // remove note
-    notebook.removeNote(note.id());
+    notebook.removeNote(note.id(), null);
     assertEquals(0, ResourcePoolUtils.getAllResources().size());
   }
 
@@ -388,7 +388,7 @@ public class NotebookTest implements JobListenerFactory{
     registry.add("o3", "object3", null, null);
 
     // remove notebook
-    notebook.removeNote(note.id());
+    notebook.removeNote(note.id(), null);
 
     // notebook scope or paragraph scope object should be removed
     assertNull(registry.get("o1", note.id(), null));
@@ -456,7 +456,7 @@ public class NotebookTest implements JobListenerFactory{
     // local and global scope object should be removed
     assertNull(registry.get("o1", note.id(), null));
     assertNull(registry.get("o2", null, null));
-    notebook.removeNote(note.id());
+    notebook.removeNote(note.id(), null);
   }
 
   @Test
@@ -501,7 +501,7 @@ public class NotebookTest implements JobListenerFactory{
     assertEquals(notebookAuthorization.isReader(note.id(),
             new HashSet<String>(Arrays.asList("user3"))), true);
 
-    notebook.removeNote(note.id());
+    notebook.removeNote(note.id(), null);
   }
 
   @Test
@@ -559,7 +559,7 @@ public class NotebookTest implements JobListenerFactory{
     InterpreterResult result = p1.getResult();
 
     // remove note and recreate
-    notebook.removeNote(note1.getId());
+    notebook.removeNote(note1.getId(), null);
     note1 = notebook.createNote(null);
     p1 = note1.addParagraph();
     p1.setText("getId");
@@ -568,7 +568,7 @@ public class NotebookTest implements JobListenerFactory{
     while (p1.getStatus() != Status.FINISHED) Thread.yield();
     assertNotEquals(p1.getResult().message(), result.message());
 
-    notebook.removeNote(note1.getId());
+    notebook.removeNote(note1.getId(), null);
   }
 
   @Test
@@ -608,8 +608,8 @@ public class NotebookTest implements JobListenerFactory{
 
     assertNotEquals(p1.getResult().message(), p2.getResult().message());
 
-    notebook.removeNote(note1.getId());
-    notebook.removeNote(note2.getId());
+    notebook.removeNote(note1.getId(), null);
+    notebook.removeNote(note2.getId(), null);
   }
 
   @Test
@@ -640,7 +640,7 @@ public class NotebookTest implements JobListenerFactory{
 
     assertNotEquals(result.message(), p1.getResult().message());
 
-    notebook.removeNote(note1.getId());
+    notebook.removeNote(note1.getId(), null);
   }
 
   @Test

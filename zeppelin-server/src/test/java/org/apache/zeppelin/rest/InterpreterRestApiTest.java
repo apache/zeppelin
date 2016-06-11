@@ -136,7 +136,7 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
 
     get.releaseConnection();
     //cleanup
-    ZeppelinServer.notebook.removeNote(note.getId());
+    ZeppelinServer.notebook.removeNote(note.getId(), null);
   }
 
   @Test
@@ -179,7 +179,7 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
     }
     assertEquals("<p>markdown restarted</p>\n", p.getResult().message());
     //cleanup
-    ZeppelinServer.notebook.removeNote(note.getId());
+    ZeppelinServer.notebook.removeNote(note.getId(), null);
   }
 
   @Test

@@ -139,7 +139,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
     verify(sock1, times(0)).send(anyString());
     verify(sock2, times(1)).send(anyString());
 
-    notebook.removeNote(note1.getId());
+    notebook.removeNote(note1.getId(), null);
   }
 
   @Test
@@ -162,7 +162,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
     assertNotEquals(null, notebook.getNote(note.getId()));
     assertEquals("Test Zeppelin notebook import", notebook.getNote(note.getId()).getName());
     assertEquals("Test paragraphs import", notebook.getNote(note.getId()).getParagraphs().get(0).getText());
-    notebook.removeNote(note.getId());
+    notebook.removeNote(note.getId(), null);
   }
 
   @Test
