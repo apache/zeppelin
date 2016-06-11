@@ -285,7 +285,7 @@ public class Notebook {
     }
   }
 
-  public void removeNote(String id) {
+  public void removeNote(String id, AuthenticationInfo subject) {
     Note note;
 
     synchronized (notes) {
@@ -318,7 +318,7 @@ public class Notebook {
     ResourcePoolUtils.removeResourcesBelongsToNote(id);
 
     try {
-      note.unpersist();
+      note.unpersist(subject);
     } catch (IOException e) {
       logger.error(e.toString(), e);
     }

@@ -494,8 +494,8 @@ public class Note implements Serializable, JobListener {
     startDelayedPersistTimer(maxDelaySec, subject);
   }
 
-  public void unpersist() throws IOException {
-    repo.remove(id());
+  public void unpersist(AuthenticationInfo subject) throws IOException {
+    repo.remove(id(), subject);
   }
 
 

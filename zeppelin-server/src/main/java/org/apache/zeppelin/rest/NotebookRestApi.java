@@ -321,13 +321,14 @@ public class NotebookRestApi {
   @ZeppelinApi
   public Response deleteNote(@PathParam("notebookId") String notebookId) throws IOException {
     LOG.info("Delete notebook {} ", notebookId);
+    AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
     if (!(notebookId.isEmpty())) {
       Note note = notebook.getNote(notebookId);
       if (note != null) {
-        notebook.removeNote(notebookId);
+        notebook.removeNote(notebookId, subject);
       }
     }
-    AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
+
     notebookServer.broadcastNoteList(subject);
     return new JsonResponse<>(Status.OK, "").build();
   }
