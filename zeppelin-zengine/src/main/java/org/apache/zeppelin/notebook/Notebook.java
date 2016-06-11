@@ -324,8 +324,9 @@ public class Notebook {
     }
   }
 
-  public void checkpointNote(String noteId, String checkpointMessage) throws IOException {
-    notebookRepo.checkpoint(noteId, checkpointMessage);
+  public void checkpointNote(String noteId, String checkpointMessage, AuthenticationInfo subject)
+      throws IOException {
+    notebookRepo.checkpoint(noteId, checkpointMessage, subject);
   }
 
   @SuppressWarnings("rawtypes")
