@@ -209,20 +209,4 @@ public class Util {
     return StringUtils.defaultIfEmpty(projectProperties.getProperty(PROJECT_PROPERTIES_VERSION_KEY),
             StringUtils.EMPTY);
   }
-
-  public static String normalizePath(String path){
-    path = path.trim();
-    path = path.replace("\\", "/");
-    while (path.indexOf("///") >= 0) {
-      path = path.replaceAll("///", "/");
-    }
-    path = path.replaceAll("//", "/");
-    if (path.length() == 0) {
-      path = "/";
-    } else if (path.charAt(0) != '/'){
-      path = "/" + path;
-    }
-
-    return path;
-  }
 }

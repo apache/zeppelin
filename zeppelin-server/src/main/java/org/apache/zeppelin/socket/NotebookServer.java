@@ -37,7 +37,6 @@ import org.apache.zeppelin.display.AngularObjectRegistryListener;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.user.AuthenticationInfo;
-import org.apache.zeppelin.util.Util;
 import org.apache.zeppelin.interpreter.InterpreterOutput;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
@@ -524,9 +523,6 @@ public class NotebookServer extends WebSocketServlet implements
       String noteName = (String) message.get("name");
       if (noteName == null || noteName.isEmpty()){
         noteName = "Note " + note.getId();
-      }
-      if (noteName.indexOf('/') >= 0 || noteName.indexOf('\\') >= 0) {
-        noteName = Util.normalizePath(noteName);
       }
       note.setName(noteName);
     }
