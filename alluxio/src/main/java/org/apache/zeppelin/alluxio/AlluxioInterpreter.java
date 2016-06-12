@@ -28,6 +28,7 @@ import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterPropertyBuilder;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
+import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -174,13 +175,13 @@ public class AlluxioInterpreter extends Interpreter {
   }
 
   @Override
-  public List<String> completion(String buf, int cursor) {
+  public List<InterpreterCompletion> completion(String buf, int cursor) {
     String[] words = splitAndRemoveEmpty(splitAndRemoveEmpty(buf, "\n"), " ");
     String lastWord = "";
     if (words.length > 0) {
       lastWord = words[ words.length - 1 ];
     }
-    ArrayList<String> voices = new ArrayList<String>();
+    ArrayList voices = new ArrayList<>();
     for (String command : keywords) {
       if (command.startsWith(lastWord)) {
         voices.add(command);

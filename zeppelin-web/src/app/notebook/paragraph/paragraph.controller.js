@@ -792,9 +792,9 @@ angular.module('zeppelinWebApp')
               for (var c in data.completions) {
                 var v = data.completions[c];
                 completions.push({
-                  name:v,
-                  value:v,
-                  score:300
+                  name: v.name,
+                  value: v.value,
+                  score: 300
                 });
               }
               callback(null, completions);
