@@ -110,7 +110,7 @@ $(function() {
   // Display anchor links when hovering over headers. For documentation of the
   // configuration options, see the AnchorJS documentation.
   anchors.options = {
-    placement: 'right'
+    placement: 'left'
   };
   anchors.add();
 
