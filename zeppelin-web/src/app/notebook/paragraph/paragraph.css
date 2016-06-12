@@ -82,11 +82,13 @@ table.dataTable.table-condensed .sorting_desc:after {
   border: 3px solid #DDDDDD;
 }
 
-.paragraph .paragraphFooter {
-  height: 9px;
+.paragraph .executionTime {
+  color: #999;
+  font-size: 10px;
+  font-family: 'Roboto', sans-serif;
 }
 
-.paragraph .executionTime {
+.paragraph .elapsedTime {
   color: #999;
   font-size: 10px;
   font-family: 'Roboto', sans-serif;
@@ -354,6 +356,7 @@ table.dataTable.table-condensed .sorting_desc:after {
 
 .tableDisplay .option .columns ul {
   background: white;
+  overflow: auto;
   width: auto;
   padding: 3px 3px 3px 3px;
   height: 150px;

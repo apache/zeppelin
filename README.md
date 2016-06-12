@@ -1,11 +1,11 @@
 #Zeppelin
 
-**Documentation:** [User Guide](http://zeppelin.incubator.apache.org/docs/latest/index.html)<br/>
-**Mailing Lists:** [User and Dev mailing list](http://zeppelin.incubator.apache.org/community.html)<br/>
-**Continuous Integration:** [![Build Status](https://secure.travis-ci.org/apache/incubator-zeppelin.png?branch=master)](https://travis-ci.org/apache/incubator-zeppelin) <br/>
-**Contributing:** [Contribution Guide](https://github.com/apache/incubator-zeppelin/blob/master/CONTRIBUTING.md)<br/>
+**Documentation:** [User Guide](http://zeppelin.apache.org/docs/latest/index.html)<br/>
+**Mailing Lists:** [User and Dev mailing list](http://zeppelin.apache.org/community.html)<br/>
+**Continuous Integration:** [![Build Status](https://secure.travis-ci.org/apache/zeppelin.png?branch=master)](https://travis-ci.org/apache/zeppelin) <br/>
+**Contributing:** [Contribution Guide](https://github.com/apache/zeppelin/blob/master/CONTRIBUTING.md)<br/>
 **Issue Tracker:** [Jira](https://issues.apache.org/jira/browse/ZEPPELIN)<br/>
-**License:** [Apache 2.0](https://github.com/apache/incubator-zeppelin/blob/master/LICENSE)
+**License:** [Apache 2.0](https://github.com/apache/zeppelin/blob/master/LICENSE)
 
 
 **Zeppelin**, a web-based notebook that enables interactive data analytics. You can make beautiful data-driven, interactive and collaborative documents with SQL, Scala and more.
@@ -15,13 +15,14 @@ Core feature:
    * Built-in Apache Spark support
 
 
-To know more about Zeppelin, visit our web site [http://zeppelin.incubator.apache.org](http://zeppelin.incubator.apache.org)
+To know more about Zeppelin, visit our web site [http://zeppelin.apache.org](http://zeppelin.apache.org)
 
 ## Requirements
+ * Git 
  * Java 1.7
- * Tested on Mac OSX, Ubuntu 14.X, CentOS 6.X
+ * Tested on Mac OSX, Ubuntu 14.X, CentOS 6.X, Windows 7 Pro SP1
  * Maven (if you want to build from the source code)
- * Node.js Package Manager (npm)
+ * Node.js Package Manager (npm, downloaded by Maven during build phase)
 
 ## Getting Started
 
@@ -29,14 +30,49 @@ To know more about Zeppelin, visit our web site [http://zeppelin.incubator.apach
 If you don't have requirements prepared, install it.
 (The installation method may vary according to your environment, example is for Ubuntu.)
 
-```sh
+```
 sudo apt-get update
 sudo apt-get install git
 sudo apt-get install openjdk-7-jdk
 sudo apt-get install npm
 sudo apt-get install libfontconfig
+```
 
-# install maven
+#### Proxy settings (optional)
+If you are behind a corporate Proxy with NTLM authentication you can use [Cntlm Authentication Proxy](http://cntlm.sourceforge.net/) .
+
+Before build start, run these commands from shell. 
+```
+export http_proxy=http://localhost:3128
+export https_proxy=http://localhost:3128
+export HTTP_PROXY=http://localhost:3128
+export HTTPS_PROXY=http://localhost:3128
+npm config set proxy http://localhost:3128
+npm config set https-proxy http://localhost:3128
+npm config set registry "http://registry.npmjs.org/"
+npm config set strict-ssl false
+npm cache clean
+git config --global http.proxy http://localhost:3128
+git config --global https.proxy http://localhost:3128
+git config --global url."http://".insteadOf git://
+```
+
+After build is complete, run these commands to cleanup.
+```
+npm config rm proxy
+npm config rm https-proxy
+git config --global --unset http.proxy
+git config --global --unset https.proxy
+git config --global --unset url."http://".insteadOf
+```
+
+_Notes:_ 
+ - If you are on Windows replace `export` with `set` to set env variables
+ - Replace `localhost:3128` with standard pattern `http://user:pwd@host:port`
+ - Git configuration is needed because Bower use it for fetching from GitHub
+ 
+#### Install maven
+```
 wget http://www.eu.apache.org/dist/maven/maven-3/3.3.3/binaries/apache-maven-3.3.3-bin.tar.gz
 sudo tar -zxf apache-maven-3.3.3-bin.tar.gz -C /usr/local/
 sudo ln -s /usr/local/apache-maven-3.3.3/bin/mvn /usr/local/bin/mvn
@@ -126,8 +162,7 @@ enable 3rd party vendor repository (cloudera)
 ##### `-Pmapr[version]` (optional)
 
 For the MapR Hadoop Distribution, these profiles will handle the Hadoop version. As MapR allows different versions of Spark to be installed, you should specify which version of Spark is installed on the cluster by adding a Spark profile (`-Pspark-1.2`, `-Pspark-1.3`, etc.) as needed.
-For Hive, check the hive/pom.xml and adjust the version installed as well. The correct Maven
-artifacts can be found for every version of MapR at http://doc.mapr.com
+The correct Maven artifacts can be found for every version of MapR at http://doc.mapr.com
 
 Available profiles are
 
@@ -160,7 +195,7 @@ mvn clean package -Pspark-1.5 -Pmapr50 -DskipTests
 #### Ignite Interpreter
 
 ```sh
-mvn clean package -Dignite.version=1.1.0-incubating -DskipTests
+mvn clean package -Dignite.version=1.6.0 -DskipTests
 ```
 
 #### Scalding Interpreter
@@ -252,4 +287,4 @@ mvn verify
 mvn verify -P using-packaged-distr
 ```
 
-[![Analytics](https://ga-beacon.appspot.com/UA-45176241-4/apache/incubator-zeppelin/README.md?pixel)](https://github.com/igrigorik/ga-beacon)
+[![Analytics](https://ga-beacon.appspot.com/UA-45176241-4/apache/zeppelin/README.md?pixel)](https://github.com/igrigorik/ga-beacon)

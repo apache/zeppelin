@@ -8,7 +8,7 @@ group: manual
 
 ## R Interpreter
 
-This is a the Apache (incubating) Zeppelin project, with the addition of support for the R programming language and R-spark integration.
+This is a the Apache Zeppelin project, with the addition of support for the R programming language and R-spark integration.
 
 ### Requirements
 

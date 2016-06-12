@@ -48,8 +48,8 @@ JIRA_USERNAME = os.environ.get("JIRA_USERNAME", "moon")
 # ASF JIRA password
 JIRA_PASSWORD = os.environ.get("JIRA_PASSWORD", "00000")
 
-GITHUB_BASE = "https://github.com/apache/incubator-zeppelin/pull"
-GITHUB_API_BASE = "https://api.github.com/repos/apache/incubator-zeppelin"
+GITHUB_BASE = "https://github.com/apache/zeppelin/pull"
+GITHUB_API_BASE = "https://api.github.com/repos/apache/zeppelin"
 JIRA_BASE = "https://issues.apache.org/jira/browse"
 JIRA_API_BASE = "https://issues.apache.org/jira"
 # Prefix added to temporary branches
@@ -280,7 +280,7 @@ def resolve_jira_issue(merge_branches, comment, default_jira_id=""):
 
 
 def resolve_jira_issues(title, merge_branches, comment):
-    jira_ids = re.findall("ZEPPELIN-[0-9]{4,5}", title)
+    jira_ids = re.findall("ZEPPELIN-[0-9]{3,5}", title)
 
     if len(jira_ids) == 0:
         resolve_jira_issue(merge_branches, comment)

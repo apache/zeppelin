@@ -82,7 +82,7 @@ After configuring Lens interpreter, create your own notebook, then you can bind 
 
 ![Zeppelin Notebook Interpreter Binding](../assets/themes/zeppelin/img/docs-img/lens-interpreter-binding.png)
 
-For more interpreter binding information see [here](http://zeppelin.incubator.apache.org/docs/manual/interpreters.html).
+For more interpreter binding information see [here](http://zeppelin.apache.org/docs/manual/interpreters.html).
 
 ### How to use
 You can analyze your data by using [OLAP Cube](http://lens.apache.org/user/olap-cube.html) [QL](http://lens.apache.org/user/cli.html) which is a high level SQL like language to query and describe data sets organized in data cubes.

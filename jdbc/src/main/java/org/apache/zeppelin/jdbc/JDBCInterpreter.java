@@ -106,21 +106,6 @@ public class JDBCInterpreter extends Interpreter {
 
   private final Map<String, ArrayList<Connection>> propertyKeyUnusedConnectionListMap;
   private final Map<String, Connection> paragraphIdConnectionMap;
-  
-  static {
-    Interpreter.register(
-        "sql",
-        "jdbc",
-        JDBCInterpreter.class.getName(),
-        new InterpreterPropertyBuilder()
-            .add(DEFAULT_URL, "jdbc:postgresql://localhost:5432/", "The URL for JDBC.")
-            .add(DEFAULT_USER, "gpadmin", "The JDBC user name")
-            .add(DEFAULT_PASSWORD, "",
-                "The JDBC user password")
-            .add(DEFAULT_DRIVER, "org.postgresql.Driver", "JDBC Driver Name")
-            .add(COMMON_MAX_LINE, MAX_LINE_DEFAULT,
-                "Max number of SQL result to display.").build());
-  }
 
   public JDBCInterpreter(Properties property) {
     super(property);
@@ -191,13 +176,7 @@ public class JDBCInterpreter extends Interpreter {
       logger.info(properties.getProperty(DRIVER_KEY));
       Class.forName(properties.getProperty(DRIVER_KEY));
       String url = properties.getProperty(URL_KEY);
-      String user = properties.getProperty(USER_KEY);
-      String password = properties.getProperty(PASSWORD_KEY);
-      if (null != user && null != password) {
-        connection = DriverManager.getConnection(url, user, password);
-      } else {
-        connection = DriverManager.getConnection(url, properties);
-      }
+      connection = DriverManager.getConnection(url, properties);
     }
     return connection;
   }

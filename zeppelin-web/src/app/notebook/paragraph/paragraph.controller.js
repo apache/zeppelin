@@ -16,7 +16,7 @@
 
 angular.module('zeppelinWebApp')
   .controller('ParagraphCtrl', function($scope,$rootScope, $route, $window, $element, $routeParams, $location,
-                                         $timeout, $compile, websocketMsgSrv, ngToast) {
+                                         $timeout, $compile, websocketMsgSrv, ngToast, SaveAsService) {
   var ANGULAR_FUNCTION_OBJECT_NAME_PREFIX = '_Z_ANGULAR_FUNC_';
   $scope.parentNote = null;
   $scope.paragraph = null;
@@ -79,8 +79,9 @@ angular.module('zeppelinWebApp')
   var angularObjectRegistry = {};
 
   var editorModes = {
-    'ace/mode/python': /^%(\w*\.)?pyspark\s*$/,
+    'ace/mode/python': /^%(\w*\.)?(pyspark|python)\s*$/,
     'ace/mode/scala': /^%(\w*\.)?spark\s*$/,
+    'ace/mode/r': /^%(\w*\.)?(r|sparkr|knitr)\s*$/,
     'ace/mode/sql': /^%(\w*\.)?\wql/,
     'ace/mode/markdown': /^%md/,
     'ace/mode/sh': /^%sh/
@@ -364,7 +365,9 @@ angular.module('zeppelinWebApp')
       var newType = $scope.getResultType(data.paragraph);
       var oldGraphMode = $scope.getGraphMode();
       var newGraphMode = $scope.getGraphMode(data.paragraph);
-      var resultRefreshed = (data.paragraph.dateFinished !== $scope.paragraph.dateFinished) || isEmpty(data.paragraph.result) !== isEmpty($scope.paragraph.result);
+      var resultRefreshed = (data.paragraph.dateFinished !== $scope.paragraph.dateFinished) ||
+        isEmpty(data.paragraph.result) !== isEmpty($scope.paragraph.result) ||
+        data.paragraph.status === 'ERROR';
 
       var statusChanged = (data.paragraph.status !== $scope.paragraph.status);
 
@@ -386,8 +389,8 @@ angular.module('zeppelinWebApp')
       }
 
       /** push the rest */
-      $scope.paragraph.authenticationInfo = data.paragraph.authenticationInfo;
       $scope.paragraph.aborted = data.paragraph.aborted;
+      $scope.paragraph.user = data.paragraph.user;
       $scope.paragraph.dateUpdated = data.paragraph.dateUpdated;
       $scope.paragraph.dateCreated = data.paragraph.dateCreated;
       $scope.paragraph.dateFinished = data.paragraph.dateFinished;
@@ -968,17 +971,18 @@ angular.module('zeppelinWebApp')
       }
       return '';
     }
-    var user = 'anonymous';
-    var authInfo = pdata.authenticationInfo;
-    if (authInfo && authInfo.user) {
-      user = pdata.authenticationInfo.user;
-    }
-    var dateUpdated = (pdata.dateUpdated === null) ? 'unknown' : pdata.dateUpdated;
-    var desc = 'Took ' + (timeMs/1000) + ' seconds. Last updated by ' + user + ' at time ' + dateUpdated + '.';
+    var user = (pdata.user === undefined || pdata.user === null) ? 'anonymous' : pdata.user;
+    var desc = 'Took ' +
+      moment.duration(moment(pdata.dateFinished).diff(moment(pdata.dateStarted))).humanize() +
+      '. Last updated by ' + user + ' at ' + moment(pdata.dateUpdated).format('MMMM DD YYYY, h:mm:ss A') + '.';
     if ($scope.isResultOutdated()){
       desc += ' (outdated)';
     }
     return desc;
+  };
+
+  $scope.getElapsedTime = function() {
+    return 'Started ' + moment($scope.paragraph.dateStarted).fromNow() + '.';
   };
 
   $scope.isResultOutdated = function() {
@@ -1238,20 +1242,21 @@ angular.module('zeppelinWebApp')
         manualRowResize: true,
         editor: false,
         fillHandle: false,
+        fragmentSelection: true,
         disableVisualSelection: true,
         cells: function (row, col, prop) {
           var cellProperties = {};
-            cellProperties.renderer = function(instance, td, row, col, prop, value, cellProperties) {
-              Handsontable.NumericCell.renderer.apply(this, arguments);
-              if (!isNaN(value)) {
-                cellProperties.type = 'numeric';
-                cellProperties.format = '0,0';
-                cellProperties.editor = false;
-                td.style.textAlign = 'left';
-              } else if (value.length > '%html'.length && '%html ' === value.substring(0, '%html '.length)) {
-                td.innerHTML = value.substring('%html'.length);
-              }
-            };
+          cellProperties.renderer = function(instance, td, row, col, prop, value, cellProperties) {
+            if (!isNaN(value)) {
+              cellProperties.format = '0,0.[00000]';
+              td.style.textAlign = 'left';
+              Handsontable.renderers.NumericRenderer.apply(this, arguments);
+            } else if (value.length > '%html'.length && '%html ' === value.substring(0, '%html '.length)) {
+              td.innerHTML = value.substring('%html'.length);
+            } else {
+              Handsontable.renderers.TextRenderer.apply(this, arguments);
+            }
+          };
           return cellProperties;
         }
       });
@@ -2140,4 +2145,21 @@ angular.module('zeppelinWebApp')
     $scope.keepScrollDown = false;
   };
 
+  $scope.exportToTSV = function () {
+    var data = $scope.paragraph.result;
+    var tsv = '';
+    for (var titleIndex in $scope.paragraph.result.columnNames) {
+      tsv += $scope.paragraph.result.columnNames[titleIndex].name + '\t';
+    }
+    tsv = tsv.substring(0, tsv.length - 1) + '\n';
+    for (var r in $scope.paragraph.result.msgTable) {
+      var row = $scope.paragraph.result.msgTable[r];
+      var tsvRow = '';
+      for (var index in row) {
+        tsvRow += row[index].value + '\t';
+      }
+      tsv += tsvRow.substring(0, tsvRow.length - 1) + '\n';
+    }
+    SaveAsService.SaveAs(tsv, 'data', 'tsv');
+  };
 });

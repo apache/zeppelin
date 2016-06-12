@@ -46,15 +46,6 @@ angular.module('zeppelinWebApp').controller('NavCtrl', function($scope, $rootSco
     vm.connected = param;
   });
 
-  $rootScope.$on('$locationChangeSuccess', function () {
-    var path = $location.path();
-    // hacky solution to clear search bar
-    // TODO(felizbear): figure out how to make ng-click work in navbar
-    if (path === '/') {
-      $scope.searchTerm = '';
-    }
-  });
-
   $scope.checkUsername = function () {
     if ($rootScope.ticket) {
       if ($rootScope.ticket.principal.length <= MAX_USERNAME_LENGTH) {
@@ -63,6 +54,9 @@ angular.module('zeppelinWebApp').controller('NavCtrl', function($scope, $rootSco
       else {
         $rootScope.truncatedUsername = $rootScope.ticket.principal.substr(0, MAX_USERNAME_LENGTH) + '..';
       }
+    }
+    if (_.isEmpty($rootScope.truncatedUsername)) {
+      $rootScope.truncatedUsername = 'Connected';
     }
   };
 
@@ -91,8 +85,8 @@ angular.module('zeppelinWebApp').controller('NavCtrl', function($scope, $rootSco
       });
   };
 
-  $scope.search = function() {
-    $location.url(/search/ + $scope.searchTerm);
+  $scope.search = function(searchTerm) {
+    $location.url(/search/ + searchTerm);
   };
 
   function loadNotes() {
@@ -103,9 +97,27 @@ angular.module('zeppelinWebApp').controller('NavCtrl', function($scope, $rootSco
     return ($routeParams.noteId === noteId);
   }
 
+  $rootScope.noteName = function(note) {
+    if (!_.isEmpty(note)) {
+      return arrayOrderingSrv.getNoteName(note);
+    }
+  };
+
+  function getZeppelinVersion() {
+    console.log('version');
+    $http.get(baseUrlSrv.getRestApiBase() + '/version').success(
+      function(data, status, headers, config) {
+        $rootScope.zeppelinVersion = data.body;
+      }).error(
+      function(data, status, headers, config) {
+        console.log('Error %o %o', status, data.message);
+      });
+  }
+
   vm.loadNotes = loadNotes;
   vm.isActive = isActive;
 
+  getZeppelinVersion();
   vm.loadNotes();
   $scope.checkUsername();
 

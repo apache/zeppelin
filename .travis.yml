@@ -20,6 +20,7 @@ sudo: false
 cache:
   directories:
     - .spark-dist
+    - ${HOME}/.m2/repository/.cache/maven-download-plugin
 
 addons:
   apt:
@@ -61,7 +62,7 @@ matrix:
       env: TEST_SELENIUM="true" SPARK_VER="1.6.1" HADOOP_VER="2.3" PROFILE="-Pspark-1.6 -Phadoop-2.3 -Ppyspark" BUILD_FLAG="package -DskipTests" TEST_FLAG="verify" TEST_PROJECTS="-pl zeppelin-interpreter,zeppelin-zengine,zeppelin-server,zeppelin-display,spark-dependencies,spark -Dtest=org.apache.zeppelin.AbstractFunctionalSuite -DfailIfNoTests=false"
 
 before_install:
-  - "ls -la .spark-dist"
+  - "ls -la .spark-dist ${HOME}/.m2/repository/.cache/maven-download-plugin"
   - mkdir -p ~/R
   - echo 'R_LIBS=~/R' > ~/.Renviron
   - R -e "install.packages('knitr', repos = 'http://cran.us.r-project.org', lib='~/R')"
@@ -95,4 +96,3 @@ after_failure:
 
 after_script:
   - ./testing/stopSparkCluster.sh $SPARK_VER $HADOOP_VER
-

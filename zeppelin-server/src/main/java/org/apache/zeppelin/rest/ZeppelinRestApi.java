@@ -17,6 +17,7 @@
 
 package org.apache.zeppelin.rest;
 
+import org.apache.zeppelin.annotation.ZeppelinApi;
 import org.apache.zeppelin.server.JsonResponse;
 import org.apache.zeppelin.util.Util;
 
@@ -47,6 +48,7 @@ public class ZeppelinRestApi {
 
   @GET
   @Path("version")
+  @ZeppelinApi
   public Response getVersion() {
     return new JsonResponse<>(Response.Status.OK, "Zeppelin version", Util.getVersion()).build();
   }

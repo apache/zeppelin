@@ -9,6 +9,51 @@ group: manual
 ## Hive Interpreter for Apache Zeppelin
 The [Apache Hive](https://hive.apache.org/) ™ data warehouse software facilitates querying and managing large datasets residing in distributed storage. Hive provides a mechanism to project structure onto this data and query the data using a SQL-like language called HiveQL. At the same time this language also allows traditional map/reduce programmers to plug in their custom mappers and reducers when it is inconvenient or inefficient to express this logic in HiveQL.
 
+## Important Notice
+Hive Interpreter will be deprecated and merged into JDBC Interpreter. You can use Hive Interpreter by using JDBC Interpreter with same functionality. See the example below of settings and dependencies.
+
+### Properties
+<table class="table-configuration">
+  <tr>
+    <th>Property</th>
+    <th>Value</th>
+  </tr>
+  <tr>
+    <td>hive.driver</td>
+    <td>org.apache.hive.jdbc.HiveDriver</td>
+  </tr>
+  <tr>
+    <td>hive.url</td>
+    <td>jdbc:hive2://localhost:10000</td>
+  </tr>
+  <tr>
+    <td>hive.user</td>
+    <td>hiveUser</td>
+  </tr>
+  <tr>
+    <td>hive.password</td>
+    <td>hivePassword</td>
+  </tr>
+</table>
+
+### Dependencies
+<table class="table-configuration">
+  <tr>
+    <th>Artifact</th>
+    <th>Exclude</th>
+  </tr>
+  <tr>
+    <td>org.apache.hive:hive-jdbc:0.14.0</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>org.apache.hadoop:hadoop-common:2.6.0</td>
+    <td></td>
+  </tr>
+</table>
+
+----
+
 ### Configuration
 <table class="table-configuration">
   <tr>

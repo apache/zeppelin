@@ -28,7 +28,7 @@ In this documentation, we will explain how you can install Zeppelin from **Binar
 
 ### Install with Binary Package
 
-If you want to install Zeppelin with latest binary package, please visit [this page](http://zeppelin.incubator.apache.org/download.html).
+If you want to install Zeppelin with latest binary package, please visit [this page](http://zeppelin.apache.org/download.html).
 
 ### Build from Zeppelin Source
 
@@ -40,7 +40,7 @@ You can also build Zeppelin from the source.
  * Maven(3.1.x or higher)
  * Node.js Package Manager
 
-If you don't have requirements prepared, please check instructions in [README.md](https://github.com/apache/incubator-zeppelin/blob/master/README.md) for the details.
+If you don't have requirements prepared, please check instructions in [README.md](https://github.com/apache/zeppelin/blob/master/README.md) for the details.
 
 <a name="zeppelin-configuration"> </a>
 ## Zeppelin Configuration
@@ -193,6 +193,18 @@ You can configure Zeppelin with both **environment variables** in `conf/zeppelin
     <td>Endpoint for the bucket</td>
   </tr>
   <tr>
+    <td>ZEPPELIN_NOTEBOOK_S3_KMS_KEY_ID</td>
+    <td>zeppelin.notebook.s3.kmsKeyID</td>
+    <td></td>
+    <td>AWS KMS Key ID to use for encrypting data in S3 (optional)</td>
+  </tr>
+  <tr>
+    <td>ZEPPELIN_NOTEBOOK_S3_EMP</td>
+    <td>zeppelin.notebook.s3.encryptionMaterialsProvider</td>
+    <td></td>
+    <td>Class name of a custom S3 encryption materials provider implementation to use for encrypting data in S3 (optional)</td>
+  </tr>
+  <tr>
     <td>ZEPPELIN_NOTEBOOK_AZURE_CONNECTION_STRING</td>
     <td>zeppelin.notebook.azure.connectionString</td>
     <td></td>
@@ -220,7 +232,7 @@ You can configure Zeppelin with both **environment variables** in `conf/zeppelin
     <td>ZEPPELIN_INTERPRETERS</td>
     <td>zeppelin.interpreters</td>
   <description></description>
-    <td>org.apache.zeppelin.spark.SparkInterpreter,<br />org.apache.zeppelin.spark.PySparkInterpreter,<br />org.apache.zeppelin.spark.SparkSqlInterpreter,<br />org.apache.zeppelin.spark.DepInterpreter,<br />org.apache.zeppelin.markdown.Markdown,<br />org.apache.zeppelin.shell.ShellInterpreter,<br />org.apache.zeppelin.hive.HiveInterpreter<br />
+    <td>org.apache.zeppelin.spark.SparkInterpreter,<br />org.apache.zeppelin.spark.PySparkInterpreter,<br />org.apache.zeppelin.spark.SparkSqlInterpreter,<br />org.apache.zeppelin.spark.DepInterpreter,<br />org.apache.zeppelin.markdown.Markdown,<br />org.apache.zeppelin.shell.ShellInterpreter,<br />
     ...
     </td>
     <td>Comma separated interpreter configurations [Class] <br /> The first interpreter will be a default value. <br /> It means only the first interpreter in this list can be available without <code>%interpreter_name</code> annotation in Zeppelin notebook paragraph. </td>

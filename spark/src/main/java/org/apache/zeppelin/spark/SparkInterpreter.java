@@ -70,6 +70,7 @@ import scala.reflect.io.AbstractFile;
 import scala.tools.nsc.Settings;
 import scala.tools.nsc.interpreter.Completion.Candidates;
 import scala.tools.nsc.interpreter.Completion.ScalaCompleter;
+import scala.tools.nsc.settings.MutableSettings;
 import scala.tools.nsc.settings.MutableSettings.BooleanSetting;
 import scala.tools.nsc.settings.MutableSettings.PathSetting;
 
@@ -79,38 +80,6 @@ import scala.tools.nsc.settings.MutableSettings.PathSetting;
  */
 public class SparkInterpreter extends Interpreter {
   public static Logger logger = LoggerFactory.getLogger(SparkInterpreter.class);
-
-  static {
-    Interpreter.register(
-      "spark",
-      "spark",
-      SparkInterpreter.class.getName(),
-      new InterpreterPropertyBuilder()
-        .add("spark.app.name",
-          getSystemDefault("SPARK_APP_NAME", "spark.app.name", "Zeppelin"),
-          "The name of spark application.")
-        .add("master",
-          getSystemDefault("MASTER", "spark.master", "local[*]"),
-          "Spark master uri. ex) spark://masterhost:7077")
-        .add("spark.executor.memory",
-          getSystemDefault(null, "spark.executor.memory", ""),
-          "Executor memory per worker instance. ex) 512m, 32g")
-        .add("spark.cores.max",
-          getSystemDefault(null, "spark.cores.max", ""),
-          "Total number of cores to use. Empty value uses all available core.")
-        .add("zeppelin.spark.useHiveContext",
-          getSystemDefault("ZEPPELIN_SPARK_USEHIVECONTEXT",
-            "zeppelin.spark.useHiveContext", "true"),
-          "Use HiveContext instead of SQLContext if it is true.")
-        .add("zeppelin.spark.maxResult",
-          getSystemDefault("ZEPPELIN_SPARK_MAXRESULT", "zeppelin.spark.maxResult", "1000"),
-          "Max number of SparkSQL result to display.")
-        .add("args", "", "spark commandline args")
-        .add("zeppelin.spark.printREPLOutput", "true",
-          "Print REPL output")
-        .build()
-    );
-  }
 
   private ZeppelinContext z;
   private SparkILoop interpreter;
@@ -276,15 +245,21 @@ public class SparkInterpreter extends Interpreter {
         classServerUri = (String) classServer.invoke(interpreter.intp());
       } catch (NoSuchMethodException | SecurityException | IllegalAccessException
           | IllegalArgumentException | InvocationTargetException e) {
-        throw new InterpreterException(e);
+        // continue instead of: throw new InterpreterException(e);
+        // Newer Spark versions (like the patched CDH5.7.0 one) don't contain this method
+        logger.warn(String.format("Spark method classServerUri not available due to: [%s]", 
+          e.getMessage()));
       }
     }
 
     SparkConf conf =
         new SparkConf()
             .setMaster(getProperty("master"))
-            .setAppName(getProperty("spark.app.name"))
-            .set("spark.repl.class.uri", classServerUri);
+            .setAppName(getProperty("spark.app.name"));
+
+    if (classServerUri != null) {
+      conf.set("spark.repl.class.uri", classServerUri);
+    }
 
     if (jars.length > 0) {
       conf.setJars(jars);
@@ -487,6 +462,12 @@ public class SparkInterpreter extends Interpreter {
     settings.scala$tools$nsc$settings$StandardScalaSettings$_setter_$usejavacp_$eq(b);
 
     System.setProperty("scala.repl.name.line", "line" + this.hashCode() + "$");
+
+    // To prevent 'File name too long' error on some file system.
+    MutableSettings.IntSetting numClassFileSetting = settings.maxClassfileName();
+    numClassFileSetting.v_$eq(128);
+    settings.scala$tools$nsc$settings$ScalaSettings$_setter_$maxClassfileName_$eq(
+        numClassFileSetting);
 
     synchronized (sharedInterpreterLock) {
       /* create scala repl */

@@ -100,6 +100,7 @@ Each statement should be separated by a semi-colon ( **;** ) except the special 
 6. @timestamp
 7. @retryPolicy
 8. @fetchSize
+9. @requestTimeOut
 
 Multi-line statements as well as multiple statements on the same line are also supported as long as they are separated by a semi-colon. Ex:
 
@@ -145,6 +146,15 @@ The complete list of all CQL statements and versions can be found below:
      <th>Cassandra Version</th>
      <th>Documentation Link</th>
    </tr>
+   <tr>
+     <td><strong>3.x</strong></td>
+     <td>
+        <a target="_blank"
+          href="http://docs.datastax.com/en/cql/3.3/cql/cqlIntro.html">
+          http://docs.datastax.com/en/cql/3.3/cql/cqlIntro.html
+        </a>
+     </td>
+   </tr>   
    <tr>
      <td><strong>2.2</strong></td>
      <td>
@@ -333,6 +343,11 @@ Below is the list of all parameters:
      <td><strong>@fetchSize=<em>integer value</em></strong></td>
      <td>Apply the given fetch size to all queries in the paragraph</td>
    </tr>
+   <tr>
+     <td nowrap>Request Time Out</td>
+     <td><strong>@requestTimeOut=<em>integer value</em></strong></td>
+     <td>Apply the given request timeout <strong>in millisecs</strong> to all queries in the paragraph</td>
+   </tr>   
  </table>
 </center>
 
@@ -379,19 +394,19 @@ CREATE TABLE IF NOT EXISTS spark_demo.ts(
 );
 TRUNCATE spark_demo.ts;
 
-# Timestamp in the past
+// Timestamp in the past
 @timestamp=10
 
-# Force timestamp directly in the first insert
+// Force timestamp directly in the first insert
 INSERT INTO spark_demo.ts(key,value) VALUES(1,'first insert') USING TIMESTAMP 100;
 
-# Select some data to make the clock turn
+// Select some data to make the clock turn
 SELECT * FROM spark_demo.albums LIMIT 100;
 
-# Now insert using the timestamp parameter set at the beginning(10)
+// Now insert using the timestamp parameter set at the beginning(10)
 INSERT INTO spark_demo.ts(key,value) VALUES(1,'second insert');
 
-# Check for the result. You should see 'first insert'
+// Check for the result. You should see 'first insert'
 SELECT value FROM spark_demo.ts WHERE key=1;
 ```
 
@@ -415,25 +430,25 @@ This interpreter provides 3 commands to handle prepared and bound statements:
 Example:
 
 ```
-@prepare[statement_name]=...
+@prepare[statement-name]=...
 
-@bind[statement_name]=’text’, 1223, ’2015-07-30 12:00:01’, null, true, [‘list_item1’, ’list_item2’]
+@bind[statement-name]=’text’, 1223, ’2015-07-30 12:00:01’, null, true, [‘list_item1’, ’list_item2’]
 
-@bind[statement_name_with_no_bound_value]
+@bind[statement-name-with-no-bound-value]
 
-@remove_prepare[statement_name]
+@remove_prepare[statement-name]
 ```
 
 #### @prepare
 
-You can use the syntax _"@prepare[statement_name]=SELECT ..."_ to create a prepared statement.
-The _statement_name_ is **mandatory** because the interpreter prepares the given statement with the Java driver and
-saves the generated prepared statement in an **internal hash map**, using the provided _statement_name_ as search key.
+You can use the syntax _"@prepare[statement-name]=SELECT..."_ to create a prepared statement.
+The _statement-name_ is **mandatory** because the interpreter prepares the given statement with the Java driver and
+saves the generated prepared statement in an **internal hash map**, using the provided _statement-name_ as search key.
 
 > Please note that this internal prepared statement map is shared with **all notebooks** and **all paragraphs** because
 there is only one instance of the interpreter for Cassandra
 
-> If the interpreter encounters **many** @prepare for the **same _statement_name_ (key)**, only the **first** statement will be taken into account.
+> If the interpreter encounters **many** @prepare for the **same _statement-name_ (key)**, only the **first** statement will be taken into account.
 
 Example:
 
@@ -443,8 +458,8 @@ Example:
 @prepare[select]=SELECT * FROM spark_demo.artists LIMIT ?
 ```
 
-For the above example, the prepared statement is _SELECT * FROM spark_demo.albums LIMIT ?_.
-_SELECT * FROM spark_demo.artists LIMIT ?_ is ignored because an entry already exists in the prepared statements map with the key select.
+For the above example, the prepared statement is `SELECT * FROM spark_demo.albums LIMIT ?`.
+`SELECT * FROM spark_demo.artists LIMIT ? is ignored because an entry already exists in the prepared statements map with the key select.
 
 In the context of **Zeppelin**, a notebook can be scheduled to be executed at regular interval,
 thus it is necessary to **avoid re-preparing many time the same statement (considered an anti-pattern)**.
@@ -483,18 +498,22 @@ Bound values are not mandatory for the **@bind** statement. However if you provi
 #### @remove_prepare
 
 To avoid for a prepared statement to stay forever in the prepared statement map, you can use the
-**@remove_prepare[statement_name]** syntax to remove it.
+**@remove_prepare[statement-name]** syntax to remove it.
 Removing a non-existing prepared statement yields no error.
 
 ## Using Dynamic Forms
 
-Instead of hard-coding your CQL queries, it is possible to use the mustache syntax ( **\{\{ \}\}** ) to inject simple value or multiple choices forms.
+Instead of hard-coding your CQL queries, it is possible to use **[Zeppelin dynamic form]** syntax to inject simple value or multiple choices forms.
 
-The syntax for simple parameter is: **\{\{input_Label=default value\}\}**. The default value is mandatory because the first time the paragraph is executed,
-we launch the CQL query before rendering the form so at least one value should be provided.
+The legacy mustache syntax ( **\{\{ \}\}** ) to bind input text and select form is still supported but is deprecated and will be removed in future releases.
 
-The syntax for multiple choices parameter is: **\{\{input_Label=value1 | value2 | … | valueN \}\}**. By default the first choice is used for CQL query
-the first time the paragraph is executed.
+> **Legacy**
+> The syntax for simple parameter is: **\{\{input_Label=default value\}\}**. The default value is mandatory because the first time the paragraph is executed,
+> we launch the CQL query before rendering the form so at least one value should be provided.
+>
+> The syntax for multiple choices parameter is: **\{\{input_Label=value1 | value2 | … | valueN \}\}**. By default the first choice is used for CQL query
+> the first time the paragraph is executed.
+
 
 Example:
 
@@ -502,22 +521,22 @@ Example:
     #Secondary index on performer style
     SELECT name, country, performer
     FROM spark_demo.performers
-    WHERE name='{{performer=Sheryl Crow|Doof|Fanfarlo|Los Paranoia}}'
-    AND styles CONTAINS '{{style=Rock}}';
+    WHERE name='${performer=Sheryl Crow|Doof|Fanfarlo|Los Paranoia}'
+    AND styles CONTAINS '${style=Rock}';
 {% endraw %}
 
 
 In the above example, the first CQL query will be executed for _performer='Sheryl Crow' AND style='Rock'_.
 For subsequent queries, you can change the value directly using the form.
 
-> Please note that we enclosed the **\{\{ \}\}** block between simple quotes ( **'** ) because Cassandra expects a String here.
-> We could have also use the **\{\{style='Rock'\}\}** syntax but this time, the value displayed on the form is **_'Rock'_** and not **_Rock_**.
+> Please note that we enclosed the **$\{ \}** block between simple quotes ( **'** ) because Cassandra expects a String here.
+> We could have also use the **$\{style='Rock'\}** syntax but this time, the value displayed on the form is **_'Rock'_** and not **_Rock_**.
 
 It is also possible to use dynamic forms for **prepared statements**:
 
 {% raw %}
 
-    @bind[select]=='{{performer=Sheryl Crow|Doof|Fanfarlo|Los Paranoia}}', '{{style=Rock}}'
+    @bind[select]=='${performer=Sheryl Crow|Doof|Fanfarlo|Los Paranoia}', '${style=Rock}'
 
 {% endraw %}
 
@@ -527,39 +546,26 @@ It is possible to execute many paragraphs in parallel. However, at the back-end 
 _Asynchronous execution_ is only possible when it is possible to return a `Future` value in the `InterpreterResult`.
 It may be an interesting proposal for the **Zeppelin** project.
 
-Another caveat is that the same `com.datastax.driver.core.Session` object is used for **all** notebooks and paragraphs.
+Recently, **Zeppelin** allows you to choose the level of isolation for your interpreters (see **[Interpreter Binding Mode]** ).
+
+Long story short, you have 3 available bindings:
+ 
+ - **shared** : _same JVM_ and _same Interpreter instance_ for all notes
+ - **scoped** : _same JVM_ but _different Interpreter instances_, one for each note
+ - **isolated**: _different JVM_ running a _single Interpreter instance_, one JVM for each note
+     
+Using the **shared** binding, the same `com.datastax.driver.core.Session` object is used for **all** notes and paragraphs.
 Consequently, if you use the **USE _keyspace name_;** statement to log into a keyspace, it will change the keyspace for
 **all current users** of the **Cassandra** interpreter because we only create 1 `com.datastax.driver.core.Session` object
 per instance of **Cassandra** interpreter.
 
 The same remark does apply to the **prepared statement hash map**, it is shared by **all users** using the same instance of **Cassandra** interpreter.
 
-Until **Zeppelin** offers a real multi-users separation, there is a work-around to segregate user environment and states:
-_create different **Cassandra** interpreter instances_
+When using **scoped** binding, in the _same JVM_ **Zeppelin** will create multiple instances of the Cassandra interpreter, thus 
+multiple `com.datastax.driver.core.Session` objects. **Beware of resource and memory usage using this binding !** 
 
-For this, first go to the **Interpreter** menu and click on the **Create** button
-<center>
-  ![Create Interpreter](../assets/themes/zeppelin/img/docs-img/cassandra-NewInterpreterInstance.png)
-</center>
+The **isolated** mode is the most extreme and will create as many JVM/`com.datastax.driver.core.Session` object as there are distinct notes.
 
-In the interpreter creation form, put **cass-instance2** as **Name** and select the **cassandra**
-in the interpreter drop-down list
-<center>
-  ![Interpreter Name](../assets/themes/zeppelin/img/docs-img/cassandra-InterpreterName.png)
-</center>
-
- Click on **Save** to create the new interpreter instance. Now you should be able to see it in the interpreter list.
-<center>
-  ![Interpreter In List](../assets/themes/zeppelin/img/docs-img/cassandra-NewInterpreterInList.png)
-</center>
-
-Go back to your notebook and click on the **Gear** icon to configure interpreter bindings.
-You should be able to see and select the **cass-instance2** interpreter instance in the available
-interpreter list instead of the standard **cassandra** instance.
-
-<center>
-  ![Interpreter Instance Selection](../assets/themes/zeppelin/img/docs-img/cassandra-InterpreterInstanceSelection.png)
-</center>
 
 ## Interpreter Configuration
 
@@ -694,7 +700,7 @@ Below are the configuration parameters and their default value.
    <tr>
      <td>cassandra.protocol.version</td>
      <td>Cassandra binary protocol version</td>
-     <td>3</td>
+     <td>4</td>
    </tr>
    <tr>
      <td>cassandra.query.default.consistency</td>
@@ -771,12 +777,28 @@ Below are the configuration parameters and their default value.
 
 ## Change Log
 
+**3.0** _(Zeppelin {{ site.ZEPPELIN_VERSION }})_ :
+
+* Update documentation
+* Update interactive documentation
+* Add support for binary protocol **V4**
+* Implement new `@requestTimeOut` runtime option
+* Upgrade Java driver version to **3.0.1**
+* Allow interpreter to add dynamic forms programmatically when using FormType.SIMPLE
+* Allow dynamic form using default Zeppelin syntax
+* Fixing typo on FallThroughPolicy
+* Look for data in AngularObjectRegistry before creating dynamic form
+* Add missing support for `ALTER` statements
+
+
 **2.0** _(Zeppelin {{ site.ZEPPELIN_VERSION }})_ :
+
 * Update help menu and add changelog
 * Add Support for **User Defined Functions**, **User Defined Aggregates** and **Materialized Views**
 * Upgrade Java driver version to **3.0.0-rc1**
 
 **1.0** _(Zeppelin 0.5.5-incubating)_ :
+
 * Initial version
 
 ## Bugs & Contacts
@@ -789,5 +811,7 @@ Below are the configuration parameters and their default value.
 [standard CQL syntax]: http://docs.datastax.com/en/cql/3.1/cql/cql_using/use_collections_c.html
 [Tuple CQL syntax]: http://docs.datastax.com/en/cql/3.1/cql/cql_reference/tupleType.html
 [UDT CQL syntax]: http://docs.datastax.com/en/cql/3.1/cql/cql_using/cqlUseUDT.html
+[Zeppelin dynamic form]: http://zeppelin.apache.org/docs/0.6.0-SNAPSHOT/manual/dynamicform.html
+[Interpreter Binding Mode]: http://zeppelin.apache.org/docs/0.6.0-SNAPSHOT/manual/interpreters.html
 [JIRA]: https://issues.apache.org/jira/browse/ZEPPELIN-382?jql=project%20%3D%20ZEPPELIN
 [@doanduyhai]: https://twitter.com/doanduyhai

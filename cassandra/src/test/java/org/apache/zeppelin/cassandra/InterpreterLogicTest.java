@@ -31,6 +31,8 @@ import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.SimpleStatement;
 import com.datastax.driver.core.Statement;
+
+import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.display.Input.ParamOption;
 import org.apache.zeppelin.interpreter.InterpreterContext;
@@ -101,6 +103,8 @@ public class InterpreterLogicTest {
     @Test
     public void should_extract_variable_and_default_value() throws Exception {
         //Given
+        AngularObjectRegistry angularObjectRegistry = new AngularObjectRegistry("cassandra", null);
+        when(intrContext.getAngularObjectRegistry()).thenReturn(angularObjectRegistry);
         when(intrContext.getGui().input("table", "zeppelin.demo")).thenReturn("zeppelin.demo");
         when(intrContext.getGui().input("id", "'John'")).thenReturn("'John'");
 
@@ -114,6 +118,8 @@ public class InterpreterLogicTest {
     @Test
     public void should_extract_variable_and_choices() throws Exception {
         //Given
+        AngularObjectRegistry angularObjectRegistry = new AngularObjectRegistry("cassandra", null);
+        when(intrContext.getAngularObjectRegistry()).thenReturn(angularObjectRegistry);
         when(intrContext.getGui().select(eq("name"), eq("'Paul'"), optionsCaptor.capture())).thenReturn("'Jack'");
 
         //When
@@ -139,6 +145,23 @@ public class InterpreterLogicTest {
         //Then
         verifyZeroInteractions(gui);
         assertThat(actual).isEqualTo("SELECT * FROM zeppelin.demo");
+    }
+
+    @Test
+    public void should_extract_variable_from_angular_object_registry() throws Exception {
+        //Given
+        AngularObjectRegistry angularObjectRegistry = new AngularObjectRegistry("cassandra", null);
+        angularObjectRegistry.add("id", "from_angular_registry", "noteId", "paragraphId");
+        when(intrContext.getAngularObjectRegistry()).thenReturn(angularObjectRegistry);
+        when(intrContext.getNoteId()).thenReturn("noteId");
+        when(intrContext.getParagraphId()).thenReturn("paragraphId");
+
+        //When
+        final String actual = helper.maybeExtractVariables("SELECT * FROM zeppelin.demo WHERE id='{{id=John}}'", intrContext);
+
+        //Then
+        assertThat(actual).isEqualTo("SELECT * FROM zeppelin.demo WHERE id='from_angular_registry'");
+        verify(intrContext, never()).getGui();
     }
 
     @Test
@@ -204,6 +227,18 @@ public class InterpreterLogicTest {
     }
 
     @Test
+    public void should_extract_request_timeout_option() throws Exception {
+        //Given
+        List<QueryParameters> options = Arrays.<QueryParameters>asList(new RequestTimeOut(100));
+
+        //When
+        final CassandraQueryOptions actual = helper.extractQueryOptions(toScalaList(options));
+
+        //Then
+        assertThat(actual.requestTimeOut().get()).isEqualTo(100);
+    }
+
+    @Test
     public void should_generate_simple_statement() throws Exception {
         //Given
         String input = "SELECT * FROM users LIMIT 10;";
@@ -211,6 +246,7 @@ public class InterpreterLogicTest {
                 Option.<ConsistencyLevel>empty(),
                 Option.empty(),
                 Option.<RetryPolicy>empty(),
+                Option.empty(),
                 Option.empty());
 
         //When
@@ -232,6 +268,7 @@ public class InterpreterLogicTest {
                 Option.<ConsistencyLevel>empty(),
                 Option.empty(),
                 Option.<RetryPolicy>empty(),
+                Option.empty(),
                 Option.empty());
 
         //When

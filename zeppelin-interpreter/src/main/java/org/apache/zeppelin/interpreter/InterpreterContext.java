@@ -20,6 +20,7 @@ package org.apache.zeppelin.interpreter;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.zeppelin.annotation.ZeppelinApi;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.display.GUI;
@@ -31,6 +32,7 @@ import org.apache.zeppelin.resource.ResourcePool;
 public class InterpreterContext {
   private static final ThreadLocal<InterpreterContext> threadIC =
       new ThreadLocal<InterpreterContext>();
+
   public final InterpreterOutput out;
 
   public static InterpreterContext get() {

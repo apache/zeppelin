@@ -20,7 +20,7 @@ limitations under the License.
 {% include JB/setup %}
 <br />
 <div class="row">
- <div class="col-md-5">
+ <div class="col-md-6">
 <h2>Multi-purpose Notebook</h2>
 
 <p style="font-size:16px; color:#555555;font-style:italic;margin-bottom: 15px;">
@@ -34,14 +34,14 @@ limitations under the License.
 </ul>
 
  </div>
- <div class="col-md-7"><img class="img-responsive" style="border: 1px solid #ecf0f1;" height="auto" src="/assets/themes/zeppelin/img/notebook.png" /></div>
+ <div class="col-md-6"><img class="img-responsive" style="border: 1px solid #ecf0f1;" height="auto" src="/assets/themes/zeppelin/img/notebook.png" /></div>
 </div>
 
 <br />
 ### Multiple language backend
 
 Zeppelin interpreter concept allows any language/data-processing-backend to be plugged into Zeppelin.
-Currently Zeppelin supports many interpreters such as Scala(with Apache Spark), Python(with Apache Spark), SparkSQL, Hive, Markdown and Shell.
+Currently Zeppelin supports many interpreters such as Scala(with Apache Spark), Python(with Apache Spark), SparkSQL, JDBC, Markdown and Shell.
 
 <img class="img-responsive" src="/assets/themes/zeppelin/img/screenshots/multiple_language_backend.png" />
 
@@ -116,11 +116,7 @@ If you want to learn more about this feature, please visit [this page](./manual/
 <br />
 ### 100% Opensource
 
-Apache Zeppelin (incubating) is Apache2 Licensed software. Please check out the [source repository](http://git.apache.org/incubator-zeppelin.git) and [How to contribute](./development/howtocontribute.html)
+Apache Zeppelin is Apache2 Licensed software. Please check out the [source repository](http://git.apache.org/zeppelin.git) and [How to contribute](./development/howtocontribute.html)
 
 Zeppelin has a very active development community.
-Join the [Mailing list](./community.html) and report issues on our [Issue tracker](https://issues.apache.org/jira/browse/ZEPPELIN).
-
-<br />
-### Undergoing Incubation
-Apache Zeppelin is an effort undergoing [incubation](https://incubator.apache.org/index.html) at The Apache Software Foundation (ASF), sponsored by the Incubator. Incubation is required of all newly accepted projects until a further review indicates that the infrastructure, communications, and decision making process have stabilized in a manner consistent with other successful ASF projects. While incubation status is not necessarily a reflection of the completeness or stability of the code, it does indicate that the project has yet to be fully endorsed by the ASF.
+Join the [Mailing list](https://zeppelin.apache.org/community.html) and report issues on our [Issue tracker](https://issues.apache.org/jira/browse/ZEPPELIN).

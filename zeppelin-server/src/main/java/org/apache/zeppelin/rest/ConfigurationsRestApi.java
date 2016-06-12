@@ -17,6 +17,7 @@
 
 package org.apache.zeppelin.rest;
 
+import org.apache.zeppelin.annotation.ZeppelinApi;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.server.JsonResponse;
@@ -46,6 +47,7 @@ public class ConfigurationsRestApi {
 
   @GET
   @Path("all")
+  @ZeppelinApi
   public Response getAll() {
     ZeppelinConfiguration conf = notebook.getConf();
 
@@ -67,6 +69,7 @@ public class ConfigurationsRestApi {
 
   @GET
   @Path("prefix/{prefix}")
+  @ZeppelinApi
   public Response getByPrefix(@PathParam("prefix") final String prefix) {
     ZeppelinConfiguration conf = notebook.getConf();
 
