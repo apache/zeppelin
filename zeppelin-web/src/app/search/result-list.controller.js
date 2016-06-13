@@ -45,6 +45,7 @@ angular
     var routeChangeEvent = $rootScope.$on('$routeChangeStart', function (event, next, current) {
       if (next.originalPath !== '/search/:searchTerm') {
         angular.element('#searchTermId').val('');
+        $rootScope.searchForm.searchTerm = '';
         routeChangeEvent();
       }
     });

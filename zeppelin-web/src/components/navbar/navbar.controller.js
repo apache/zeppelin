@@ -24,11 +24,13 @@ angular.module('zeppelinWebApp').controller('NavCtrl', function($scope, $rootSco
     }, 500);
   };
 
+
   var vm = this;
   vm.notes = notebookListDataFactory;
   vm.connected = websocketMsgSrv.isConnected();
   vm.websocketMsgSrv = websocketMsgSrv;
   vm.arrayOrderingSrv = arrayOrderingSrv;
+  $rootScope.searchForm = {};
   if ($rootScope.ticket) {
     $rootScope.fullUsername = $rootScope.ticket.principal;
     $rootScope.truncatedUsername = $rootScope.ticket.principal;
