@@ -354,22 +354,4 @@ public class FlinkInterpreter extends Interpreter {
   static final String toString(Object o) {
     return (o instanceof String) ? (String) o : "";
   }
-
-  private Object invokeMethod(Object o, String name) {
-    return invokeMethod(o, name, new Class[]{}, new Object[]{});
-  }
-
-  private Object invokeMethod(Object o, String name, Class [] argTypes, Object [] params) {
-    try {
-      return o.getClass().getMethod(name, argTypes).invoke(o, params);
-    } catch (NoSuchMethodException e) {
-      logger.error(e.getMessage(), e);
-    } catch (InvocationTargetException e) {
-      logger.error(e.getMessage(), e);
-    } catch (IllegalAccessException e) {
-      logger.error(e.getMessage(), e);
-    }
-
-    return null;
-  }
 }
