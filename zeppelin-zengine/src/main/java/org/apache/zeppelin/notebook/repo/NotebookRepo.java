@@ -39,7 +39,46 @@ public interface NotebookRepo {
   @ZeppelinApi public void close();
 
   /**
-   * chekpoint (versioning) for notebooks (optional)
+   * Versioning API
    */
-  @ZeppelinApi public void checkpoint(String noteId, String checkPointName) throws IOException;
+  /**
+   * chekpoint (set revision) for notebook.
+   * @param noteId Id of the Notebook
+   * @param checkpointMsg message description of the checkpoint
+   * @return Rev
+   * @throws IOException
+   */
+  @ZeppelinApi public Rev checkpoint(String noteId, String checkpointMsg) throws IOException;
+
+  /**
+   * Get particular revision of the Notebook.
+   * 
+   * @param noteId Id of the Notebook
+   * @param rev revision of the Notebook
+   * @return a Notebook
+   * @throws IOException
+   */
+  @ZeppelinApi public Note get(String noteId, Rev rev) throws IOException;
+
+  /**
+   * List of revisions of the given Notebook.
+   * 
+   * @param noteId id of the Notebook
+   * @return list of revisions
+   */
+  @ZeppelinApi public List<Rev> revisionHistory(String noteId);
+
+  /**
+   * Represents the 'Revision' a point in life of the notebook
+   */
+  static class Rev {
+    public Rev(String revId, String message, int time) {
+      this.revId = revId;
+      this.message = message;
+      this.time = time;
+    }
+    public String revId;
+    public String message;
+    public int time;
+  }
 }
