@@ -43,6 +43,7 @@ import org.slf4j.LoggerFactory;
 import scala.Console;
 import scala.None;
 import scala.Some;
+import scala.collection.JavaConversions;
 import scala.collection.immutable.Nil;
 import scala.runtime.AbstractFunction0;
 import scala.tools.nsc.Settings;
@@ -93,7 +94,7 @@ public class FlinkInterpreter extends Interpreter {
 
     // prepare bindings
     imain.interpret("@transient var _binder = new java.util.HashMap[String, Object]()");
-    binder = (Map<String, Object>) getValue("_binder");    
+    Map<String, Object> binder = (Map<String, Object>) getLastObject();
 
     // import libraries
     imain.interpret("import scala.tools.nsc.io._");
@@ -103,39 +104,9 @@ public class FlinkInterpreter extends Interpreter {
     imain.interpret("import org.apache.flink.api.scala._");
     imain.interpret("import org.apache.flink.api.common.functions._");
 
-    String scalaVersion = scalaVersion(imain);
-    // scala 2.10 use imain.bindValue("env" env)
-    // scala 2.11 use imain.put("env", env);
-    String bindMethod = "bindValue";
-    if (scalaVersion.equals("2.11")) {
-      bindMethod = "put";
-    }
-
-    java.lang.reflect.Method method;
-    try {
-      method = imain.getClass().getMethod(bindMethod, String.class, Object.class);
-      if (method != null) {
-        method.invoke(imain, "env", env);
-      }
-    } catch (Exception e) {
-      if (logger.isDebugEnabled()) {
-        logger.debug("Error binding environment variable: " + e.getMessage(), e);
-      }
-    }
-  }
-
-  private String scalaVersion(IMain imain) {
-    String version = "2.10";
-
-    try {
-      if (imain.getClass().getMethod("put", String.class, Object.class) != null) {
-        version = "2.11";
-      }
-    } catch (Exception e) {
-      // ignore
-    }
-
-    return version;
+    binder.put("env", env);
+    imain.interpret("val env = _binder.get(\"env\").asInstanceOf["
+        + env.getClass().getName() + "]");
   }
 
   private boolean localMode() {
@@ -224,16 +195,11 @@ public class FlinkInterpreter extends Interpreter {
     return paths;
   }
 
-  public Object getValue(String name) {
-    IMain imain = flinkIloop.intp();
-    Object ret = imain.valueOfTerm(name);
-    if (ret instanceof None) {
-      return null;
-    } else if (ret instanceof Some) {
-      return ((Some) ret).get();
-    } else {
-      return ret;
-    }
+  public Object getLastObject() {
+    Object obj = imain.lastRequest().lineRep().call(
+        "$result",
+        JavaConversions.asScalaBuffer(new LinkedList<Object>()));
+    return obj;
   }
 
   @Override
@@ -387,5 +353,23 @@ public class FlinkInterpreter extends Interpreter {
 
   static final String toString(Object o) {
     return (o instanceof String) ? (String) o : "";
+  }
+
+  private Object invokeMethod(Object o, String name) {
+    return invokeMethod(o, name, new Class[]{}, new Object[]{});
+  }
+
+  private Object invokeMethod(Object o, String name, Class [] argTypes, Object [] params) {
+    try {
+      return o.getClass().getMethod(name, argTypes).invoke(o, params);
+    } catch (NoSuchMethodException e) {
+      logger.error(e.getMessage(), e);
+    } catch (InvocationTargetException e) {
+      logger.error(e.getMessage(), e);
+    } catch (IllegalAccessException e) {
+      logger.error(e.getMessage(), e);
+    }
+
+    return null;
   }
 }
