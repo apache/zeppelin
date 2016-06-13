@@ -257,3 +257,11 @@ The following components are provided under the BSD 3-Clause license.  See file 
 
   (BSD 3 Clause) portions of Scala (http://www.scala-lang.org/download) - http://www.scala-lang.org/download/#License
    r/src/main/scala/scala/Console.scala
+
+========================================================================
+BSD 2-Clause licenses
+========================================================================
+The following components are provided under the BSD 3-Clause license.  See file headers and project links for details.
+
+  (BSD 2 Clause) portions of SQLLine (http://sqlline.sourceforge.net/) - http://sqlline.sourceforge.net/#license
+   jdbc/src/main/java/org/apache/zeppelin/jdbc/SqlCompleter.java

@@ -60,3 +60,19 @@ Each Interpreter Setting can choose one of 'shared', 'scoped', 'isolated' interp
 In 'shared' mode, every notebook bound to the Interpreter Setting will share the single Interpreter instance. In 'scoped' mode, each notebook will create new Interpreter instance in the same interpreter process. In 'isolated' mode, each notebook will create new Interpreter process.
 
 <img src="../assets/themes/zeppelin/img/screenshots/interpreter_persession.png" width="400px">
+
+
+## Connecting to the Existing Remote Interpreter
+
+Zeppelin users can start interpreter thread embedded in their service. This will provide flexibility to user to start interpreter on remote host. To start interpreter along with your service you have to create an instance of ``RemoteInterpreterServer`` and start it as follows:
+
+```
+RemoteInterpreterServer interpreter=new RemoteInterpreterServer(3678); 
+// Here, 3678 is the port on which interpreter will listen.    
+interpreter.start()  
+
+```
+
+The above code will start interpreter thread inside your process. Once the interpreter is started you can configure zeppelin to connect to RemoteInterpreter by checking **Connect to existing process** checkbox and then provide **Host** and **Port** on which interpreter porocess is listening as shown in the image below:
+
+<img src="../assets/themes/zeppelin/img/screenshots/existing_interpreter.png" width="400px">

@@ -69,6 +69,24 @@ limitations under the License.
           <span>Interpreter for note</span>
         </div>
         <br />
+        
+        <div class="col-md-12" style="padding-left:0px">
+          <div class="checkbox">
+            <span class="input-group">
+              <label><input type="checkbox" style="width:0%;height:0%" ng-model="newInterpreterSetting.option.isExistingProcess"> </input> Connect to existing process </label>
+            </span>
+          </div>
+        </div>
+        <div ng-show="newInterpreterSetting.option.isExistingProcess" class="form-group" style="width:200px">
+          <b>Host</b>
+            <input id="newInterpreterSettingHost" input pu-elastic-input
+              pu-elastic-input-minwidth="180px" ng-model="newInterpreterSetting.option.host" />
+        </div>
+        <div ng-show="newInterpreterSetting.option.isExistingProcess" class="form-group" style="width:200px">
+          <b>Port</b>
+           <input id="newInterpreterSettingPort" input pu-elastic-input
+            pu-elastic-input-minwidth="180px" ng-model="newInterpreterSetting.option.port" />
+        </div>
 
         <b>Properties</b>
         <table class="table table-striped properties">
