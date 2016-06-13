@@ -32,7 +32,7 @@ import org.apache.zeppelin.interpreter.mock.MockInterpreter2;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.notebook.Paragraph;
-import org.apache.zeppelin.notebook.repo.NotebookRepoVersioned.Rev;
+import org.apache.zeppelin.notebook.repo.NotebookRepo.Rev;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.diff.DiffEntry;
@@ -111,7 +111,7 @@ public class GitNotebookRepoTest {
     assertThat(notebookRepo.list()).isNotEmpty();
 
     //when
-    List<Rev> testNotebookHistory = notebookRepo.history(TEST_NOTE_ID);
+    List<Rev> testNotebookHistory = notebookRepo.revisionHistory(TEST_NOTE_ID);
 
     //then
     //no initial commit, empty history
@@ -124,11 +124,11 @@ public class GitNotebookRepoTest {
     notebookRepo = new GitNotebookRepo(conf);
     assertThat(notebookRepo.list()).isNotEmpty();
     assertThat(containsNote(notebookRepo.list(), TEST_NOTE_ID)).isTrue();
-    assertThat(notebookRepo.history(TEST_NOTE_ID)).isEmpty();
+    assertThat(notebookRepo.revisionHistory(TEST_NOTE_ID)).isEmpty();
 
     notebookRepo.checkpoint(TEST_NOTE_ID, "first commit");
-    List<Rev> notebookHistoryBefore = notebookRepo.history(TEST_NOTE_ID);
-    assertThat(notebookRepo.history(TEST_NOTE_ID)).isNotEmpty();
+    List<Rev> notebookHistoryBefore = notebookRepo.revisionHistory(TEST_NOTE_ID);
+    assertThat(notebookRepo.revisionHistory(TEST_NOTE_ID)).isNotEmpty();
     int initialCount = notebookHistoryBefore.size();
     
     // add changes to note
@@ -144,7 +144,7 @@ public class GitNotebookRepoTest {
     notebookRepo.checkpoint(TEST_NOTE_ID, "second commit");
     
     // see if commit is added
-    List<Rev> notebookHistoryAfter = notebookRepo.history(TEST_NOTE_ID);
+    List<Rev> notebookHistoryAfter = notebookRepo.revisionHistory(TEST_NOTE_ID);
     assertThat(notebookHistoryAfter.size()).isEqualTo(initialCount + 1);
   }
   
