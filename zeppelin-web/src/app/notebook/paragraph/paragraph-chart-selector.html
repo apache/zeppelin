@@ -41,11 +41,17 @@ limitations under the License.
             ng-click="setGraphMode('scatterChart', true)"><i class="cf cf-scatter-chart"></i>
     </button>
   </div>
-  <span>
-    <button type="button" class="btn btn-default btn-sm" style="margin-left:10px"
-            tooltip="Download Data as TSV" tooltip-placement="bottom"
-            ng-click="exportToTSV()"><i class="fa fa-download"></i>
+  <span class="dropdown">
+    <button type="button" class="btn btn-default btn-sm"
+            style="margin-left:10px"
+            data-toggle="dropdown">
+      <i class="fa fa-download"></i>
+      <span class="caret"></span>
     </button>
+    <ul class="dropdown-menu" style="margin: 10px; min-width: 70px;">
+      <li ng-click="exportToDSV('\t')"><a>TSV</a></li>
+      <li ng-click="exportToDSV(',')"><a>CSV</a></li>
+    </ul>
   </span>
   <span ng-if="getGraphMode()!='table'"
         style="margin-left:5px; cursor:pointer; display: inline-block; vertical-align:top; position: relative; line-height:30px;">

@@ -2145,21 +2145,27 @@ angular.module('zeppelinWebApp')
     $scope.keepScrollDown = false;
   };
 
-  $scope.exportToTSV = function () {
+  $scope.exportToDSV = function (delimiter) {
     var data = $scope.paragraph.result;
-    var tsv = '';
+    var dsv = '';
     for (var titleIndex in $scope.paragraph.result.columnNames) {
-      tsv += $scope.paragraph.result.columnNames[titleIndex].name + '\t';
+      dsv += $scope.paragraph.result.columnNames[titleIndex].name + delimiter;
     }
-    tsv = tsv.substring(0, tsv.length - 1) + '\n';
+    dsv = dsv.substring(0, dsv.length - 1) + '\n';
     for (var r in $scope.paragraph.result.msgTable) {
       var row = $scope.paragraph.result.msgTable[r];
-      var tsvRow = '';
+      var dsvRow = '';
       for (var index in row) {
-        tsvRow += row[index].value + '\t';
+        dsvRow += row[index].value + delimiter;
       }
-      tsv += tsvRow.substring(0, tsvRow.length - 1) + '\n';
+      dsv += dsvRow.substring(0, dsvRow.length - 1) + '\n';
     }
-    SaveAsService.SaveAs(tsv, 'data', 'tsv');
+    var extension = '';
+    if (delimiter === '\t') {
+      extension = 'tsv';
+    } else if (delimiter === ',') {
+      extension = 'csv';
+    }
+    SaveAsService.SaveAs(dsv, 'data', extension);
   };
 });
