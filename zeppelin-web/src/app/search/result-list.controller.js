@@ -42,11 +42,10 @@ angular
       $scope.isResult = true;
     }
 
-    var routeChangeEvent = $rootScope.$on('$routeChangeStart', function (event, next, current) {
+    var unbindRouteChangeEvent = $scope.$on('$routeChangeStart', function (event, next, current) {
       if (next.originalPath !== '/search/:searchTerm') {
-        angular.element('#searchTermId').val('');
-        $rootScope.searchForm.searchTerm = '';
-        routeChangeEvent();
+        searchService.searchTerm = '';
+        unbindRouteChangeEvent();
       }
     });
   });

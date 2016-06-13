@@ -26,4 +26,6 @@ angular.module('zeppelinWebApp').service('searchService', function($resource, ba
     });
   };
 
+  this.searchTerm = '';
+
 });

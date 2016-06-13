@@ -15,7 +15,7 @@
 'use strict';
 
 angular.module('zeppelinWebApp').controller('NavCtrl', function($scope, $rootScope, $http, $routeParams,
-    $location, notebookListDataFactory, baseUrlSrv, websocketMsgSrv, arrayOrderingSrv) {
+    $location, notebookListDataFactory, baseUrlSrv, websocketMsgSrv, arrayOrderingSrv, searchService) {
   /** Current list of notes (ids) */
 
   $scope.showLoginWindow = function() {
@@ -30,7 +30,8 @@ angular.module('zeppelinWebApp').controller('NavCtrl', function($scope, $rootSco
   vm.connected = websocketMsgSrv.isConnected();
   vm.websocketMsgSrv = websocketMsgSrv;
   vm.arrayOrderingSrv = arrayOrderingSrv;
-  $rootScope.searchForm = {};
+  $scope.searchForm = searchService;
+
   if ($rootScope.ticket) {
     $rootScope.fullUsername = $rootScope.ticket.principal;
     $rootScope.truncatedUsername = $rootScope.ticket.principal;
