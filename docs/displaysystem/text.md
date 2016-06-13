@@ -1,8 +1,8 @@
 ---
 layout: page
-title: "Security Overview"
-description: "Security Overview"
-group: security
+title: "Text Display System"
+description: ""
+group: display
 ---
 <!--
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,11 +18,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 {% include JB/setup %}
+## Text
 
-# Security Overview
+Zeppelin prints output of language backend in text, by default.
 
-There are three aspects to Zeppelin security:
+<img src="/assets/themes/zeppelin/img/screenshots/display_text.png" />
 
-* Authentication: is the user who they say they are? [More](authentication.html)
-* Notebook authorization: does the user have permissions to read or write to a note? [More](notebook_authorization.html)
-* Interpreter and data source authorization: does the user have permissions to perform interpreter operations or access data source objects? [More](interpreter_authorization.html)
+You can explicitly say you're using text display system.
+
+<img src="/assets/themes/zeppelin/img/screenshots/display_text1.png" />
+
+Note that display system is backend independent.

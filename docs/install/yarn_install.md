@@ -20,7 +20,7 @@ limitations under the License.
 {% include JB/setup %}
 
 ## Introduction
-This page describes how to pre-configure a bare metal node, configure Zeppelin and connect it to existing YARN cluster running Hortonworks flavour of Hadoop. It also describes steps to configure Spark & Hive interpreter of Zeppelin.
+This page describes how to pre-configure a bare metal node, configure Zeppelin and connect it to existing YARN cluster running Hortonworks flavour of Hadoop. It also describes steps to configure Spark interpreter of Zeppelin.
 
 ## Prepare Node
 
@@ -53,7 +53,7 @@ Its assumed in the rest of the document that zeppelin user is indeed created and
 It's assumed that the node has CentOS 6.x installed on it. Although any version of Linux distribution should work fine.
 
 #### Hadoop client
-Zeppelin can work with multiple versions & distributions of Hadoop. A complete list is available [here](https://github.com/apache/incubator-zeppelin#build). This document assumes Hadoop 2.7.x client libraries including configuration files are installed on Zeppelin node. It also assumes /etc/hadoop/conf contains various Hadoop configuration files. The location of Hadoop configuration files may vary, hence use appropriate location.
+Zeppelin can work with multiple versions & distributions of Hadoop. A complete list is available [here](https://github.com/apache/zeppelin#build). This document assumes Hadoop 2.7.x client libraries including configuration files are installed on Zeppelin node. It also assumes /etc/hadoop/conf contains various Hadoop configuration files. The location of Hadoop configuration files may vary, hence use appropriate location.
 
 ```bash
 hadoop version
@@ -67,7 +67,7 @@ This command was run using /usr/hdp/2.3.1.0-2574/hadoop/lib/hadoop-common-2.7.1.
 
 #### Spark
 Spark is supported out of the box and to take advantage of this, you need to Download appropriate version of Spark binary packages from [Spark Download page](http://spark.apache.org/downloads.html) and unzip it.
-Zeppelin can work with multiple versions of Spark. A complete list is available [here](https://github.com/apache/incubator-zeppelin#build).
+Zeppelin can work with multiple versions of Spark. A complete list is available [here](https://github.com/apache/zeppelin#build).
 This document assumes Spark 1.6.0 is installed at /usr/lib/spark.
 > Note: Spark should be installed on the same node as Zeppelin.
 
@@ -75,15 +75,15 @@ This document assumes Spark 1.6.0 is installed at /usr/lib/spark.
 
 #### Zeppelin
 
-Checkout source code from [git://git.apache.org/incubator-zeppelin.git](https://github.com/apache/incubator-zeppelin.git) or download binary package from [Download page](https://zeppelin.apache.org/download.html).
+Checkout source code from [git://git.apache.org/zeppelin.git](https://github.com/apache/zeppelin.git) or download binary package from [Download page](https://zeppelin.apache.org/download.html).
 You can refer [Install](install.html) page for the details.
-This document assumes that Zeppelin is located under `/home/zeppelin/incubator-zeppelin`.
+This document assumes that Zeppelin is located under `/home/zeppelin/zeppelin`.
 
 ## Zeppelin Configuration
 Zeppelin configuration needs to be modified to connect to YARN cluster. Create a copy of zeppelin environment shell script.
 
 ```bash
-cp /home/zeppelin/incubator-zeppelin/conf/zeppelin-env.sh.template /home/zeppelin/incubator-zeppelin/conf/zeppelin-env.sh
+cp /home/zeppelin/zeppelin/conf/zeppelin-env.sh.template /home/zeppelin/zeppelin/conf/zeppelin-env.sh
 ```
 
 Set the following properties
@@ -106,7 +106,7 @@ hdp-select status hadoop-client | sed 's/hadoop-client - \(.*\)/\1/'
 ### Start Zeppelin
 
 ```
-cd /home/zeppelin/incubator-zeppelin
+cd /home/zeppelin/zeppelin
 bin/zeppelin-daemon.sh start
 ```
 After successful start, visit http://[zeppelin-server-host-name]:8080 with your web browser.
@@ -118,16 +118,12 @@ bin/zeppelin-daemon.sh stop
 ```
 
 ## Interpreter
-Zeppelin provides various distributed processing frameworks to process data that ranges from Spark, Hive, Tajo, Ignite and Lens to name a few. This document describes to configure Hive & Spark interpreters.
+Zeppelin provides various distributed processing frameworks to process data that ranges from Spark, JDBC, Tajo, Ignite and Lens to name a few. This document describes to configure JDBC & Spark interpreters.
 
 ### Hive
-Zeppelin supports Hive interpreter and hence copy hive-site.xml that should be present at /etc/hive/conf to the configuration folder of Zeppelin. Once Zeppelin is built it will have conf folder under /home/zeppelin/incubator-zeppelin.
+Zeppelin supports Hive through JDBC interpreter. You might need the information to use Hive and can find in your hive-site.xml
 
-```bash
-cp /etc/hive/conf/hive-site.xml  /home/zeppelin/incubator-zeppelin/conf
-```
-
-Once Zeppelin server has started successfully, visit http://[zeppelin-server-host-name]:8080 with your web browser. Click on Interpreter tab next to Notebook dropdown. Look for Hive configurations and set them appropriately. By default hive.hiveserver2.url will be pointing to localhost and hive.hiveserver2.password/hive.hiveserver2.user are set to hive/hive. Set them as per Hive installation on YARN cluster.
+Once Zeppelin server has started successfully, visit http://[zeppelin-server-host-name]:8080 with your web browser. Click on Interpreter tab next to Notebook dropdown. Look for Hive configurations and set them appropriately. Set them as per Hive installation on YARN cluster.
 Click on Save button. Once these configurations are updated, Zeppelin will prompt you to restart the interpreter. Accept the prompt and the interpreter will reload the configurations.
 
 ### Spark
@@ -165,7 +161,7 @@ Zeppelin does not emit any kind of error messages on web interface when notebook
 
 ```bash
 [zeppelin@zeppelin-3529 logs]$ pwd
-/home/zeppelin/incubator-zeppelin/logs
+/home/zeppelin/zeppelin/logs
 [zeppelin@zeppelin-3529 logs]$ ls -l
 total 844
 -rw-rw-r-- 1 zeppelin zeppelin  14648 Aug  3 14:45 zeppelin-interpreter-hive-zeppelin-zeppelin-3529.log

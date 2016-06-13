@@ -44,6 +44,7 @@ object TextBlockHierarchy {
   object TimestampParam extends ParameterType
   object RetryPolicyParam extends ParameterType
   object FetchSizeParam extends ParameterType
+  object RequestTimeOutParam extends ParameterType
 
 
   abstract class QueryParameters(val paramType: ParameterType) extends AnyBlock(ParameterBlock) {
@@ -59,6 +60,8 @@ object TextBlockHierarchy {
   case class Timestamp(value: Long) extends QueryParameters(TimestampParam)
   
   case class FetchSize(value: Int) extends QueryParameters(FetchSizeParam)
+
+  case class RequestTimeOut(value: Int) extends QueryParameters(RequestTimeOutParam)
 
   abstract class RetryPolicy extends QueryParameters(RetryPolicyParam)
 

@@ -57,6 +57,9 @@ angular.module('zeppelinWebApp').controller('NavCtrl', function($scope, $rootSco
         $rootScope.truncatedUsername = $rootScope.ticket.principal.substr(0, MAX_USERNAME_LENGTH) + '..';
       }
     }
+    if (_.isEmpty($rootScope.truncatedUsername)) {
+      $rootScope.truncatedUsername = 'Connected';
+    }
   };
 
   $scope.$on('loginSuccess', function(event, param) {
@@ -102,9 +105,21 @@ angular.module('zeppelinWebApp').controller('NavCtrl', function($scope, $rootSco
     }
   };
 
+  function getZeppelinVersion() {
+    console.log('version');
+    $http.get(baseUrlSrv.getRestApiBase() + '/version').success(
+      function(data, status, headers, config) {
+        $rootScope.zeppelinVersion = data.body;
+      }).error(
+      function(data, status, headers, config) {
+        console.log('Error %o %o', status, data.message);
+      });
+  }
+
   vm.loadNotes = loadNotes;
   vm.isActive = isActive;
 
+  getZeppelinVersion();
   vm.loadNotes();
   $scope.checkUsername();
 
