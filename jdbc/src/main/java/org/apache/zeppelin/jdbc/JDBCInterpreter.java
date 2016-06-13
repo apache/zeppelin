@@ -433,8 +433,8 @@ public class JDBCInterpreter extends Interpreter {
 
   @Override
   public Scheduler getScheduler() {
-    return SchedulerFactory.singleton().createOrGetFIFOScheduler(
-        JDBCInterpreter.class.getName() + this.hashCode());
+    return SchedulerFactory.singleton().createOrGetParallelScheduler(
+        JDBCInterpreter.class.getName() + this.hashCode(), 10);
   }
 
   @Override
