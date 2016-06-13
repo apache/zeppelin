@@ -108,7 +108,7 @@ public class GitNotebookRepo extends VFSNotebookRepo {
     try {
       Iterable<RevCommit> logs = git.log().addPath(noteId).call();
       for (RevCommit log: logs) {
-        history.add(new Rev(log.getName(), log.getShortMessage(),log.getCommitTime()));
+        history.add(new Rev(log.getName(), log.getShortMessage(), log.getCommitTime()));
         LOG.debug(" - ({},{},{})", log.getName(), log.getCommitTime(), log.getFullMessage());
       }
     } catch (NoHeadException e) {

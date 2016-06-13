@@ -388,13 +388,13 @@ public class NotebookRepoSync implements NotebookRepo {
 
   @Override
   public Note get(String noteId, Rev rev) throws IOException {
-    // TODO Auto-generated method stub
+    // Auto-generated method stub
     return null;
   }
 
   @Override
   public List<Rev> revisionHistory(String noteId) {
-    // TODO Auto-generated method stub
+    // Auto-generated method stub
     return null;
   }
 }
