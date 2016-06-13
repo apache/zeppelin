@@ -1138,11 +1138,7 @@ public class SparkInterpreter extends Interpreter {
   private Object invokeMethod(Object o, String name, Class [] argTypes, Object [] params) {
     try {
       return o.getClass().getMethod(name, argTypes).invoke(o, params);
-    } catch (NoSuchMethodException e) {
-      logger.error(e.getMessage(), e);
-    } catch (InvocationTargetException e) {
-      logger.error(e.getMessage(), e);
-    } catch (IllegalAccessException e) {
+    } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
       logger.error(e.getMessage(), e);
     }
 
@@ -1156,12 +1152,7 @@ public class SparkInterpreter extends Interpreter {
   private Object invokeStaticMethod(Class c, String name, Class [] argTypes, Object [] params) {
     try {
       return c.getMethod(name, argTypes).invoke(null, params);
-    } catch (NoSuchMethodException e) {
-      logger.error(e.getMessage(), e);
-    } catch (InvocationTargetException e) {
-      logger.error(e.getMessage(), e);
-      e.printStackTrace();
-    } catch (IllegalAccessException e) {
+    } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
       logger.error(e.getMessage(), e);
     }
 
@@ -1173,15 +1164,8 @@ public class SparkInterpreter extends Interpreter {
       Constructor<?> constructor = getClass().getClassLoader()
           .loadClass(name).getConstructor(argTypes);
       return constructor.newInstance(params);
-    } catch (NoSuchMethodException e) {
-      logger.error(e.getMessage(), e);
-    } catch (ClassNotFoundException e) {
-      logger.error(e.getMessage(), e);
-    } catch (IllegalAccessException e) {
-      logger.error(e.getMessage(), e);
-    } catch (InstantiationException e) {
-      logger.error(e.getMessage(), e);
-    } catch (InvocationTargetException e) {
+    } catch (NoSuchMethodException | ClassNotFoundException | IllegalAccessException |
+        InstantiationException | InvocationTargetException e) {
       logger.error(e.getMessage(), e);
     }
     return null;
@@ -1212,38 +1196,53 @@ public class SparkInterpreter extends Interpreter {
   }
 
   private File createTempDir(String dir) {
+    // try Utils.createTempDir()
     try {
-      return (File) invokeStaticMethod(
-          Utils.class,
+      return (File) Utils.class.getMethod(
           "createTempDir",
-          new Class[]{String.class},
-          new Object[]{dir});
-    } catch (Exception e) {
-      return (File) invokeStaticMethod(
-          Utils.class,
-          "createTempDir",
-          new Class[]{String.class, String.class},
-          new Object[]{dir, "spark"});
+          new Class[]{String.class, String.class})
+          .invoke(null, new Object[]{dir, "spark"});
+    } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
+      // fallback to old method
+      try {
+        return (File) Utils.class.getMethod(
+            "createTempDir",
+            new Class[]{String.class})
+            .invoke(null, new Object[]{dir});
+      } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e1) {
+        logger.error(e1.getMessage(), e1);
+        return null;
+      }
     }
   }
 
   private HttpServer createHttpServer(File outputDir) {
     SparkConf conf = new SparkConf();
-
     try {
-      return (HttpServer) instantiateClass(
-          HttpServer.class.getName(),
-          new Class[] { File.class, SecurityManager.class, Integer.class, String.class},
-          new Object[] { outputDir, new SecurityManager(conf), 0, "HTTP Server"}
-      );
-    } catch (Exception e) {
-      return (HttpServer) instantiateClass(
-          HttpServer.class.getName(),
-          new Class[] { SparkConf.class, File.class, SecurityManager.class, Integer.class,
-            String.class},
-          new Object[] { conf, outputDir, new SecurityManager(conf), 0, "HTTP Server"}
-      );
+      // try to create HttpServer
+      Constructor<?> constructor = getClass().getClassLoader()
+          .loadClass(HttpServer.class.getName())
+          .getConstructor(new Class[]{
+              SparkConf.class, File.class, SecurityManager.class, int.class, String.class});
+
+      return (HttpServer) constructor.newInstance(new Object[] {
+          conf, outputDir, new SecurityManager(conf), 0, "HTTP Server"});
+    } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException |
+        InstantiationException | InvocationTargetException e) {
+      // fallback to old constructor
+      Constructor<?> constructor = null;
+      try {
+        constructor = getClass().getClassLoader()
+            .loadClass(HttpServer.class.getName())
+            .getConstructor(new Class[]{
+                File.class, SecurityManager.class, int.class, String.class});
+        return (HttpServer) constructor.newInstance(new Object[] {
+            outputDir, new SecurityManager(conf), 0, "HTTP Server"});
+      } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException |
+          InstantiationException | InvocationTargetException e1) {
+        logger.error(e1.getMessage(), e1);
+        return null;
+      }
     }
   }
-
 }
