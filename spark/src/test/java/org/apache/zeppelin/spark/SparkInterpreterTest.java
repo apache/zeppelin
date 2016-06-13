@@ -178,21 +178,23 @@ public class SparkInterpreterTest {
 
   @Test
   public void testSparkSql(){
-    repl.interpret("case class Person(name:String, age:Int)\n", context);
-    repl.interpret("val people = sc.parallelize(Seq(Person(\"moon\", 33), Person(\"jobs\", 51), Person(\"gates\", 51), Person(\"park\", 34)))\n", context);
-    assertEquals(Code.SUCCESS, repl.interpret("people.take(3)", context).code());
+    if (repl.isScala2_10()) {
+      repl.interpret("case class Person(name:String, age:Int)\n", context);
+      repl.interpret("val people = sc.parallelize(Seq(Person(\"moon\", 33), Person(\"jobs\", 51), Person(\"gates\", 51), Person(\"park\", 34)))\n", context);
+      assertEquals(Code.SUCCESS, repl.interpret("people.take(3)", context).code());
 
 
-    if (getSparkVersionNumber() <= 11) { // spark 1.2 or later does not allow create multiple SparkContext in the same jvm by default.
-    // create new interpreter
-    Properties p = new Properties();
-    SparkInterpreter repl2 = new SparkInterpreter(p);
-    repl2.open();
+      if (getSparkVersionNumber() <= 11) { // spark 1.2 or later does not allow create multiple SparkContext in the same jvm by default.
+        // create new interpreter
+        Properties p = new Properties();
+        SparkInterpreter repl2 = new SparkInterpreter(p);
+        repl2.open();
 
-    repl.interpret("case class Man(name:String, age:Int)", context);
-    repl.interpret("val man = sc.parallelize(Seq(Man(\"moon\", 33), Man(\"jobs\", 51), Man(\"gates\", 51), Man(\"park\", 34)))", context);
-    assertEquals(Code.SUCCESS, repl.interpret("man.take(3)", context).code());
-    repl2.getSparkContext().stop();
+        repl.interpret("case class Man(name:String, age:Int)", context);
+        repl.interpret("val man = sc.parallelize(Seq(Man(\"moon\", 33), Man(\"jobs\", 51), Man(\"gates\", 51), Man(\"park\", 34)))", context);
+        assertEquals(Code.SUCCESS, repl.interpret("man.take(3)", context).code());
+        repl2.getSparkContext().stop();
+      }
     }
   }
 
@@ -219,18 +221,20 @@ public class SparkInterpreterTest {
 
   @Test
   public void shareSingleSparkContext() throws InterruptedException {
-    // create another SparkInterpreter
-    SparkInterpreter repl2 = new SparkInterpreter(getSparkTestProperties());
-    repl2.setInterpreterGroup(intpGroup);
-    intpGroup.get("note").add(repl2);
-    repl2.open();
+    if (repl.isScala2_10()) {
+      // create another SparkInterpreter
+      SparkInterpreter repl2 = new SparkInterpreter(getSparkTestProperties());
+      repl2.setInterpreterGroup(intpGroup);
+      intpGroup.get("note").add(repl2);
+      repl2.open();
 
-    assertEquals(Code.SUCCESS,
-        repl.interpret("print(sc.parallelize(1 to 10).count())", context).code());
-    assertEquals(Code.SUCCESS,
-        repl2.interpret("print(sc.parallelize(1 to 10).count())", context).code());
+      assertEquals(Code.SUCCESS,
+          repl.interpret("print(sc.parallelize(1 to 10).count())", context).code());
+      assertEquals(Code.SUCCESS,
+          repl2.interpret("print(sc.parallelize(1 to 10).count())", context).code());
 
-    repl2.close();
+      repl2.close();
+    }
   }
 
   @Test
