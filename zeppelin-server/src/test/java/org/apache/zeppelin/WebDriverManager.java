@@ -118,6 +118,7 @@ public class WebDriverManager {
     driver.manage().timeouts().implicitlyWait(AbstractZeppelinIT.MAX_IMPLICIT_WAIT,
         TimeUnit.SECONDS);
     driver.get(url);
+    driver.manage().window().maximize();
 
     while (System.currentTimeMillis() - start < 60 * 1000) {
       // wait for page load
