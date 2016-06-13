@@ -1223,10 +1223,10 @@ public class SparkInterpreter extends Interpreter {
       Constructor<?> constructor = getClass().getClassLoader()
           .loadClass(HttpServer.class.getName())
           .getConstructor(new Class[]{
-              SparkConf.class, File.class, SecurityManager.class, int.class, String.class});
+            SparkConf.class, File.class, SecurityManager.class, int.class, String.class});
 
       return (HttpServer) constructor.newInstance(new Object[] {
-          conf, outputDir, new SecurityManager(conf), 0, "HTTP Server"});
+        conf, outputDir, new SecurityManager(conf), 0, "HTTP Server"});
     } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException |
         InstantiationException | InvocationTargetException e) {
       // fallback to old constructor
@@ -1235,9 +1235,9 @@ public class SparkInterpreter extends Interpreter {
         constructor = getClass().getClassLoader()
             .loadClass(HttpServer.class.getName())
             .getConstructor(new Class[]{
-                File.class, SecurityManager.class, int.class, String.class});
+              File.class, SecurityManager.class, int.class, String.class});
         return (HttpServer) constructor.newInstance(new Object[] {
-            outputDir, new SecurityManager(conf), 0, "HTTP Server"});
+          outputDir, new SecurityManager(conf), 0, "HTTP Server"});
       } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException |
           InstantiationException | InvocationTargetException e1) {
         logger.error(e1.getMessage(), e1);
