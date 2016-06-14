@@ -38,7 +38,7 @@ This script requires three applications, [Ansible](http://docs.ansible.com/ansib
 
 If you are running Windows and don't yet have python installed, [install Python 2.7.x](https://www.python.org/downloads/release/python-2710/) first.
 
-1. Download and Install Vagrant:  [Vagrant Downloads](http://www.vagrantup.com/downloads)
+1. Download and Install Vagrant:  [Vagrant Downloads](http://www.vagrantup.com/downloads.html)
 2. Install Ansible:  [Ansible Python pip install](http://docs.ansible.com/ansible/intro_installation.html#latest-releases-via-pip)
 
     ```

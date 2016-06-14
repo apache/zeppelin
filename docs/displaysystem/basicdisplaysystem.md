@@ -1,6 +1,6 @@
 ---
 layout: page
-title: "Table Display System"
+title: "Basic Display System"
 description: ""
 group: display
 ---
@@ -19,18 +19,34 @@ limitations under the License.
 -->
 {% include JB/setup %}
 
+## Text
+
+By default, Apache Zeppelin prints interpreter responce as a plain text using `text` display system.
+
+<img src="/assets/themes/zeppelin/img/screenshots/display_text.png" />
+
+You can explicitly say you're using `text` display system.
+
+<img src="/assets/themes/zeppelin/img/screenshots/display_text1.png" />
+
+## Html
+
+With `%html` directive, Zeppelin treats your output as HTML
+
+<img src="/assets/themes/zeppelin/img/screenshots/display_html.png" />
+
 ## Table
 
 If you have data that row seprated by '\n' (newline) and column separated by '\t' (tab) with first row as header row, for example
 
 <img src="/assets/themes/zeppelin/img/screenshots/display_table.png" />
 
-You can simply use %table display system to leverage Zeppelin's built in visualization.
+You can simply use `%table` display system to leverage Zeppelin's built in visualization.
 
 <img src="/assets/themes/zeppelin/img/screenshots/display_table1.png" />
 
-Note that display system is backend independent.
-
-If table contents start with %html, it is interpreted as an HTML.
+If table contents start with `%html`, it is interpreted as an HTML.
 
 <img src="/assets/themes/zeppelin/img/screenshots/display_table_html.png" />
+
+> **Note :** Display system is backend independent.
