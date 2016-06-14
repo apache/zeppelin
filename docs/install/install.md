@@ -19,38 +19,117 @@ limitations under the License.
 -->
 {% include JB/setup %}
 
-## Zeppelin Installation
-Welcome to your first trial to explore Zeppelin!
+# Quick Start
+Welcome to your first trial to explore Apache Zeppelin! 
+This page will help you to get started with Zeppelin. Here is the list of this page. 
 
-In this documentation, we will explain how you can install Zeppelin from **Binary Package** or build from **Source** by yourself. Plus, you can see all of Zeppelin's configurations in the [Zeppelin Configuration](install.html#zeppelin-configuration) section below.
+* [Installation](#installation)
+  * [Downloading Binary Package](#downloading-binary-package)
+  * [Building from Source](#building-from-source)
+* [Starting Zeppelin with Command Line](#starting-zeppelin-with-command-line)
+  * [Start Zeppelin](#start-zeppelin)
+  * [Stop Zeppelin](#stop-zeppelin)
+  * [(Optional) Start Zeppelin with a service manager](#optional-start-zeppelin-with-a-service-manager)
+* [What is the next?](#what-is-the-next)
+* [Zeppelin Configuration](#zeppelin-configuration)
 
-### Install with Binary Package
+## Installation
 
-If you want to install Zeppelin with latest binary package, please visit [this page](http://zeppelin.apache.org/download.html).
+Apache Zeppelin officially tested on the below environment. 
 
-### Build from Zeppelin Source
+<table class="table-configuration">
+  <tr>
+    <th>Name</th>
+    <th>Value</th>
+  </tr>
+  <tr>
+    <td>Oracle JDK</td>
+    <td>1.7 <br /> (set <code>JAVA_HOME</code>)</td>
+  </tr>
+  <tr>
+    <td>OS</td>
+    <td>Mac OSX <br /> Ubuntu 14.X <br /> CentOS 6.X <br /> Windows 7 Pro SP1</td>
+  </tr>
+</table>
 
-You can also build Zeppelin from the source.
+There are two options to install Zeppelin on your machine. One is [downloading prebuild binary package](#downloading-binary-package) from the archive. 
+You can download not only the latest stable version but also the older one if you need. 
+The other option is [building from the source](#building-from-source).
+Although it can be unstable somehow since it is on development status, you can explore newly added feature and change it as you want.
 
-#### Prerequisites for build
- * Java 1.7
- * Git
- * Maven(3.1.x or higher)
- * Node.js Package Manager
+### Downloading Binary Package
 
-If you don't have requirements prepared, please check instructions in [README.md](https://github.com/apache/zeppelin/blob/master/README.md) for the details.
+If you want to install Zeppelin with a stable binary package, please visit [Zeppelin download Page](http://zeppelin.apache.org/download.html). 
+After unpacking, jump to [Starting Zeppelin with Command Line](#starting-zeppelin-with-command-line) section.
 
+### Building from Source
+If you want to build from the source, there are more requirements. 
 
+<table class="table-configuration">
+  <tr>
+    <th>Name</th>
+    <th>Value</th>
+  </tr>
+  <tr>
+    <td>Git</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>Maven</td>
+    <td>3.1.x or higher</td>
+  </tr>
+  <tr>
+    <td>Node.js Package Manager(npm)</td>
+    <td></td>
+  </tr>
+</table>
 
-Maybe you need to configure individual interpreter. If so, please check **Interpreter** section in Zeppelin documentation.
-[Spark Interpreter for Apache Zeppelin](../interpreter/spark.html) will be a good example.
+If you don't have the above requirements yet, please check [Before Build](https://github.com/apache/zeppelin/blob/master/README.md#before-build) section and follow step by step.
 
-## Zeppelin Start / Stop
+####1. Clone Zeppelin repository
+
+```
+git clone https://github.com/apache/zeppelin.git
+```
+
+####2. Build source with options 
+Each interpreters requires different build options. For the further information about options, please see [Build](https://github.com/apache/zeppelin#build) section.
+
+```
+mvn clean package -DskipTests [Options]
+```
+
+Here are some examples with several options
+
+```
+# basic build
+mvn clean package -Pspark-1.6 -Phadoop-2.4 -Pyarn -Ppyspark
+
+# spark-cassandra integration
+mvn clean package -Pcassandra-spark-1.5 -Dhadoop.version=2.6.0 -Phadoop-2.6 -DskipTests
+
+# with CDH
+mvn clean package -Pspark-1.5 -Dhadoop.version=2.6.0-cdh5.5.0 -Phadoop-2.6 -Pvendor-repo -DskipTests
+
+# with MapR
+mvn clean package -Pspark-1.5 -Pmapr50 -DskipTests
+```
+
+For the further information about building with source, please see [README.md](https://github.com/apache/zeppelin/blob/master/README.md) in Zeppelin repository.
+
+## Starting Zeppelin with Command Line
 #### Start Zeppelin
 
 ```
 bin/zeppelin-daemon.sh start
 ```
+
+If you are using Windows 
+
+```
+bin\zeppelin.cmd
+```
+
 After successful start, visit [http://localhost:8080](http://localhost:8080) with your web browser.
 
 #### Stop Zeppelin
@@ -59,21 +138,28 @@ After successful start, visit [http://localhost:8080](http://localhost:8080) wit
 bin/zeppelin-daemon.sh stop
 ```
 
-#### Start Zeppelin with a service manager such as upstart
+#### (Optional) Start Zeppelin with a service manager
 
-Zeppelin can auto start as a service with an init script, such as services managed by upstart.
+> **Note :** The below description was written based on Ubuntu Linux.
 
-The following is an example upstart script to be saved as `/etc/init/zeppelin.conf`
-This example has been tested with Ubuntu Linux.
+Zeppelin can be auto started as a service with an init script, such as services managed by **upstart**.
+
+The following is an example of upstart script to be saved as `/etc/init/zeppelin.conf`
 This also allows the service to be managed with commands such as
 
-`sudo service zeppelin start`  
-`sudo service zeppelin stop`  
-`sudo service zeppelin restart`
+```
+sudo service zeppelin start  
+sudo service zeppelin stop  
+sudo service zeppelin restart
+```
 
-Other service managers could use a similar approach with the `upstart` argument passed to the zeppelin-daemon.sh script:  `bin/zeppelin-daemon.sh upstart`
+Other service managers could use a similar approach with the `upstart` argument passed to the `zeppelin-daemon.sh` script.
 
-##### zeppelin.conf
+```
+bin/zeppelin-daemon.sh upstart
+```
+
+**zeppelin.conf**
 
 ```
 description "zeppelin"
@@ -93,11 +179,12 @@ chdir /usr/share/zeppelin
 exec bin/zeppelin-daemon.sh upstart
 ```
 
-#### Running on Windows
+## What is the next?
+Congratulation to your successful Zeppelin installation! Here are two next steps you might need.
 
-```
-bin\zeppelin.cmd
-```
+ * For an in-depth overview of Zeppelin UI, head to [Explore Zeppelin UI](../quickstart/explorezeppelinui.html)
+ * After getting familiar with Zeppelin UI, have fun with a short walk-through [Tutorial](../quickstart/tutorial.html) that uses Apache Spark backend
+ * If you need more configuration setting for Zeppelin, jump to the next section: [Zeppelin Configuration](#zeppelin-configuration)
 
 ## Zeppelin Configuration
 
