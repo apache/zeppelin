@@ -108,8 +108,12 @@ public class ActiveDirectoryGroupRealm extends AbstractLdapRealm {
     LdapContext ctx = null;
 
     try {
+      String userPrincipalName = upToken.getUsername();
+      if (this.principalSuffix != null) {
+        userPrincipalName = upToken.getUsername() + this.principalSuffix;
+      }
       ctx = ldapContextFactory.getLdapContext(
-          upToken.getUsername(), upToken.getPassword());
+          userPrincipalName, upToken.getPassword());
     } finally {
       LdapUtils.closeContext(ctx);
     }
