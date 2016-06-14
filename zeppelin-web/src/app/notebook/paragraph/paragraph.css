@@ -460,10 +460,16 @@ table.table-striped {
   cursor: pointer;
 }
 
-
 .scroll-paragraph-up {
   bottom: 5px;
   cursor: pointer;
   position: absolute;
   right: 15px;
+}
+
+/* DSV download toggle button */
+.caretBtn {
+  padding-right: 4px !important;
+  padding-left: 4px !important;
+  width: 20px;
 }
