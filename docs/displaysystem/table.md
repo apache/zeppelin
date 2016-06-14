@@ -19,8 +19,7 @@ limitations under the License.
 -->
 {% include JB/setup %}
 
-
-### Table
+## Table
 
 If you have data that row seprated by '\n' (newline) and column separated by '\t' (tab) with first row as header row, for example
 

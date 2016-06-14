@@ -76,15 +76,17 @@ if [[ ! -d "${SPARK_HOME}" ]]; then
         echo "${SPARK_CACHE} does not have ${SPARK_ARCHIVE} downloading ..."
 
         # download archive if not cached
-        if [[ "${SPARK_VER_RANGE}" == "<=1.2" ]]; then
-            # spark 1.1.x and spark 1.2.x can be downloaded from archive
+        if [[ "${SPARK_VERSION}" = "1.1.1" || "${SPARK_VERSION}" = "1.2.2" || "${SPARK_VERSION}" = "1.3.1" || "${SPARK_VERSION}" = "1.4.1" ]]; then
+            echo "${SPARK_VERSION} being downloaded from archives"
+            # spark old versions are only available only on the archives (prior to 1.5.2)
             STARTTIME=`date +%s`
             #timeout -s KILL "${MAX_DOWNLOAD_TIME_SEC}" wget "http://archive.apache.org/dist/spark/spark-${SPARK_VERSION}/${SPARK_ARCHIVE}.tgz"
             download_with_retry "http://archive.apache.org/dist/spark/spark-${SPARK_VERSION}/${SPARK_ARCHIVE}.tgz"
             ENDTIME=`date +%s`
             DOWNLOADTIME="$((ENDTIME-STARTTIME))"
         else
-            # spark 1.3.x and later can be downloaded from mirror
+            echo "${SPARK_VERSION} being downloaded from mirror"
+            # spark 1.5.2 and up and later can be downloaded from mirror
             # get download address from mirror
             MIRROR_INFO=$(curl -s "http://www.apache.org/dyn/closer.cgi/spark/spark-${SPARK_VERSION}/${SPARK_ARCHIVE}.tgz?asjson=1")
 

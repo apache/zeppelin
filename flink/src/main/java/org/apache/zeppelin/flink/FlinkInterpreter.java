@@ -67,19 +67,6 @@ public class FlinkInterpreter extends Interpreter {
     super(property);
   }
 
-  static {
-    Interpreter.register(
-        "flink",
-        "flink",
-        FlinkInterpreter.class.getName(),
-        new InterpreterPropertyBuilder()
-                .add("host", "local",
-                    "host name of running JobManager. 'local' runs flink in local mode")
-          .add("port", "6123", "port of running JobManager")
-          .build()
-    );
-  }
-
   @Override
   public void open() {
     out = new ByteArrayOutputStream();

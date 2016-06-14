@@ -19,6 +19,7 @@ package org.apache.zeppelin.rest;
 import org.apache.shiro.authc.*;
 import org.apache.shiro.session.Session;
 import org.apache.shiro.subject.Subject;
+import org.apache.zeppelin.annotation.ZeppelinApi;
 import org.apache.zeppelin.server.JsonResponse;
 import org.apache.zeppelin.ticket.TicketContainer;
 import org.apache.zeppelin.utils.SecurityUtils;
@@ -60,6 +61,7 @@ public class LoginRestApi {
    * @return 200 response
    */
   @POST
+  @ZeppelinApi
   public Response postLogin(@FormParam("userName") String userName,
                             @FormParam("password") String password) {
     JsonResponse response = null;
@@ -113,6 +115,7 @@ public class LoginRestApi {
   
   @POST
   @Path("logout")
+  @ZeppelinApi
   public Response logout() {
     JsonResponse response;
     

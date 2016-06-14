@@ -9,7 +9,7 @@ group: manual
 
 ## Spark Interpreter for Apache Zeppelin
 [Apache Spark](http://spark.apache.org) is supported in Zeppelin with
-Spark Interpreter group, which consisted of 4 interpreters.
+Spark Interpreter group, which consists of five interpreters.
 
 <table class="table-configuration">
   <tr>
@@ -143,7 +143,7 @@ for example,
  * **yarn-client** in Yarn client mode
  * **mesos://host:5050** in Mesos cluster
 
-That's it. Zeppelin will work with any version of Spark and any deployment type without rebuilding Zeppelin in this way. ( Zeppelin 0.5.5-incubating release works up to Spark 1.5.2 )
+That's it. Zeppelin will work with any version of Spark and any deployment type without rebuilding Zeppelin in this way. (Zeppelin 0.5.6-incubating release works up to Spark 1.6.1 )
 
 > Note that without exporting `SPARK_HOME`, it's running in local mode with included version of Spark. The included version may vary depending on the build profile.
 
@@ -204,7 +204,7 @@ Here are few examples:
 		spark.files				/path/mylib1.py,/path/mylib2.egg,/path/mylib3.zip
 
 ### 3. Dynamic Dependency Loading via %dep interpreter
-> Note: `%dep` interpreter is deprecated since v0.6.0-incubating.
+> Note: `%dep` interpreter is deprecated since v0.6.0.
 `%dep` interpreter load libraries to `%spark` and `%pyspark` but not to  `%spark.sql` interpreter so we recommend you to use first option instead.
 
 When your code requires external library, instead of doing download/copy/restart Zeppelin, you can easily do following jobs using `%dep` interpreter.
@@ -354,14 +354,14 @@ Logical setup with Zeppelin, Kerberos Key Distribution Center (KDC), and Spark o
 1. On the server that Zeppelin is installed, install Kerberos client modules and configuration, krb5.conf.
 This is to make the server communicate with KDC.
 
-2. Set SPARK\_HOME in [ZEPPELIN\_HOME]/conf/zeppelin-env.sh to use spark-submit
-( Additionally, you might have to set “export HADOOP\_CONF\_DIR=/etc/hadoop/conf” )
+2. Set SPARK\_HOME in `[ZEPPELIN\_HOME]/conf/zeppelin-env.sh` to use spark-submit
+(Additionally, you might have to set `export HADOOP\_CONF\_DIR=/etc/hadoop/conf`)
 
-3. Add the two properties below to spark configuration ( [SPARK_HOME]/conf/spark-defaults.conf ):
+3. Add the two properties below to spark configuration (`[SPARK_HOME]/conf/spark-defaults.conf`):
 
         spark.yarn.principal
         spark.yarn.keytab
 
   > **NOTE:** If you do not have access to the above spark-defaults.conf file, optionally, you may add the lines to the Spark Interpreter through the Interpreter tab in the Zeppelin UI.
 
-4. That's it. Play with Zeppelin !
+4. That's it. Play with Zeppelin!

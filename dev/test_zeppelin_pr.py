@@ -34,7 +34,7 @@ if len(sys.argv) == 1:
 
 
 pr=sys.argv[1]
-githubApi="https://api.github.com/repos/apache/incubator-zeppelin"
+githubApi="https://api.github.com/repos/apache/zeppelin"
 
 prInfo = json.load(urllib.urlopen(githubApi + "/pulls/" + pr))
 if "message" in prInfo and prInfo["message"] == "Not Found":

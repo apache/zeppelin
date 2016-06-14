@@ -8,7 +8,7 @@ group: development
 # Contributing to Apache Zeppelin ( Code )
 
 ## IMPORTANT
-Apache Zeppelin (incubating) is an [Apache2 License](http://www.apache.org/licenses/LICENSE-2.0.html) Software.
+Apache Zeppelin is an [Apache2 License](http://www.apache.org/licenses/LICENSE-2.0.html) Software.
 Any contributions to Zeppelin (Source code, Documents, Image, Website) means you agree with license all your contributions as Apache2 License.
 
 ## Setting up
@@ -30,24 +30,24 @@ To build the code, install
   * Apache Maven
 
 ## Getting the source code
-First of all, you need Zeppelin source code. The official location of Zeppelin is [http://git.apache.org/incubator-zeppelin.git](http://git.apache.org/incubator-zeppelin.git).
+First of all, you need Zeppelin source code. The official location of Zeppelin is [http://git.apache.org/zeppelin.git](http://git.apache.org/zeppelin.git).
 
 ### git access
 
 Get the source code on your development machine using git.
 
 ```
-git clone git://git.apache.org/incubator-zeppelin.git zeppelin
+git clone git://git.apache.org/zeppelin.git zeppelin
 ```
 
 You may also want to develop against a specific branch. For example, for branch-0.5.6
 
 ```
-git clone -b branch-0.5.6 git://git.apache.org/incubator-zeppelin.git zeppelin
+git clone -b branch-0.5.6 git://git.apache.org/zeppelin.git zeppelin
 ```
 
 #### Fork repository
-If you want not only build Zeppelin but also make any changes, then you need fork [Zeppelin github mirror repository](https://github.com/apache/incubator-zeppelin) and make a pull request.
+If you want not only build Zeppelin but also make any changes, then you need fork [Zeppelin github mirror repository](https://github.com/apache/zeppelin) and make a pull request.
 
 ###Build
 
@@ -100,9 +100,9 @@ thrift -out zeppelin-interpreter/src/main/java/ --gen java zeppelin-interpreter/
 Zeppelin manages its issues in Jira. [https://issues.apache.org/jira/browse/ZEPPELIN](https://issues.apache.org/jira/browse/ZEPPELIN)
 
 ## Where to Start
-You can find issues for [beginner](https://issues.apache.org/jira/browse/ZEPPELIN-924?jql=project%20%3D%20ZEPPELIN%20and%20status%20%3D%20Open%20and%20labels%20in%20\(beginner%2C%20newbie\))
+You can find issues for [beginner](https://issues.apache.org/jira/browse/ZEPPELIN-924?jql=project%20%3D%20ZEPPELIN%20and%20status%20%3D%20Open%20and%20labels%20in%20\(beginner%2C%20newbie\)).
 
 ## Stay involved
 Contributors should join the Zeppelin mailing lists.
 
-* [dev@zeppelin.apache.org](http://mail-archives.apache.org/mod_mbox/incubator-zeppelin-dev/) is for people who want to contribute code to Zeppelin. [subscribe](mailto:dev-subscribe@zeppelin.apache.org?subject=send this email to subscribe), [unsubscribe](mailto:dev-unsubscribe@zeppelin.apache.org?subject=send this email to unsubscribe), [archives](http://mail-archives.apache.org/mod_mbox/incubator-zeppelin-dev/)
+* [dev@zeppelin.apache.org](http://mail-archives.apache.org/mod_mbox/zeppelin-dev/) is for people who want to contribute code to Zeppelin. [subscribe](mailto:dev-subscribe@zeppelin.apache.org?subject=send this email to subscribe), [unsubscribe](mailto:dev-unsubscribe@zeppelin.apache.org?subject=send this email to unsubscribe), [archives](http://mail-archives.apache.org/mod_mbox/zeppelin-dev/)

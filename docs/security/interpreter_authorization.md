@@ -27,8 +27,10 @@ Interpreter authorization involves permissions like creating an interpreter and 
 
 Data source authorization involves authenticating to the data source like a Mysql database and letting it determine user permissions.
 
-For the Hive interpreter, we need to maintain per-user connection pools.
+For the JDBC interpreter, we need to maintain per-user connection pools.
 The interpret method takes the user string as parameter and executes the jdbc call using a connection in the user's connection pool.
 
 In case of Presto, we don't need password if the Presto DB server runs backend code using HDFS authorization for the user.
 For databases like Vertica and Mysql we have to store password information for users.
+
+The Credentials tab in the navbar allows users to save credentials for data sources which are passed to interpreters.

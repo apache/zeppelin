@@ -12,7 +12,7 @@ encoding: utf-8
 # Themes are encouraged to use these universal variables
 # so be sure to set them if your theme uses them.
 #
-title : Apache Zeppelin (incubating)
+title : Apache Zeppelin
 tagline: Simplify bigdata analytics
 author :
   name : The Apache Software Foundation
@@ -21,7 +21,7 @@ author :
   twitter : ASF
   feedburner : feedname
 
-ZEPPELIN_VERSION : 0.6.0-incubating-SNAPSHOT
+ZEPPELIN_VERSION : 0.6.0-SNAPSHOT
 
 # The production_url is only used when full-domain names are needed
 # such as sitemap.txt
@@ -59,7 +59,7 @@ JB :
   #   - Only the following values are falsy: ["", null, false]
   #   - When setting BASE_PATH it must be a valid url.
   #     This means always setting the protocol (http|https) or prefixing with "/"
-  BASE_PATH : /docs/0.6.0-incubating-SNAPSHOT
+  BASE_PATH : /docs/0.6.0-SNAPSHOT
 
   # By default, the asset_path is automatically defined relative to BASE_PATH plus the enabled theme.
   # ex: [BASE_PATH]/assets/themes/[THEME-NAME]

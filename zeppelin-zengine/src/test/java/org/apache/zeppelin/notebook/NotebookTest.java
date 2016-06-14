@@ -46,6 +46,7 @@ import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.scheduler.JobListener;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.apache.zeppelin.search.SearchService;
+import org.apache.zeppelin.user.Credentials;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -65,9 +66,12 @@ public class NotebookTest implements JobListenerFactory{
   private NotebookRepo notebookRepo;
   private InterpreterFactory factory;
   private DependencyResolver depResolver;
+  private NotebookAuthorization notebookAuthorization;
+  private Credentials credentials;
 
   @Before
   public void setUp() throws Exception {
+
     tmpDir = new File(System.getProperty("java.io.tmpdir")+"/ZeppelinLTest_"+System.currentTimeMillis());
     tmpDir.mkdirs();
     new File(tmpDir, "conf").mkdirs();
@@ -90,8 +94,12 @@ public class NotebookTest implements JobListenerFactory{
 
     SearchService search = mock(SearchService.class);
     notebookRepo = new VFSNotebookRepo(conf);
-    NotebookAuthorization notebookAuthorization = new NotebookAuthorization(conf);
-    notebook = new Notebook(conf, notebookRepo, schedulerFactory, factory, this, search, notebookAuthorization);
+    notebookAuthorization = new NotebookAuthorization(conf);
+    credentials = new Credentials(conf.credentialsPersist(), conf.getCredentialsPath());
+
+    notebook = new Notebook(conf, notebookRepo, schedulerFactory, factory, this, search,
+            notebookAuthorization, credentials);
+
   }
 
   @After
@@ -175,7 +183,7 @@ public class NotebookTest implements JobListenerFactory{
 
     Notebook notebook2 = new Notebook(
         conf, notebookRepo, schedulerFactory,
-        new InterpreterFactory(conf, null, null, null, depResolver), this, null, null);
+        new InterpreterFactory(conf, null, null, null, depResolver), this, null, null, null);
     assertEquals(1, notebook2.getAllNotes().size());
   }
 
@@ -635,6 +643,31 @@ public class NotebookTest implements JobListenerFactory{
     notebook.removeNote(note1.getId());
   }
 
+  @Test
+  public void testNormalizeNoteName() throws IOException {
+    // create a notes
+    Note note1  = notebook.createNote();
+
+    note1.setName("MyNote");
+    assertEquals(note1.getName(), "MyNote");
+
+    note1.setName("/MyNote");
+    assertEquals(note1.getName(), "/MyNote");
+
+    note1.setName("MyNote/sub");
+    assertEquals(note1.getName(), "MyNote/sub");
+
+    note1.setName("/MyNote/sub");
+    assertEquals(note1.getName(), "/MyNote/sub");
+
+    note1.setName("///////MyNote//////sub");
+    assertEquals(note1.getName(), "/MyNote/sub");
+
+    note1.setName("\\\\\\MyNote///sub");
+    assertEquals(note1.getName(), "/MyNote/sub");
+
+    notebook.removeNote(note1.getId());
+  }
 
   private void delete(File file){
     if(file.isFile()) file.delete();

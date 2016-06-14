@@ -238,8 +238,8 @@ public class ZeppelinIT extends AbstractZeppelinIT {
       interpreterLink.click();
       driver.findElement(By.xpath("//div[@id='spark']//button[contains(.,'edit')]")).sendKeys(Keys.ENTER);
       WebElement testDepRemoveBtn = pollingWait(By.xpath("//tr[descendant::text()[contains(.,'" +
-          artifact + "')]]/td[3]/div"), MAX_IMPLICIT_WAIT);
-      testDepRemoveBtn.click();
+          artifact + "')]]/td[3]/button"), MAX_IMPLICIT_WAIT);
+      testDepRemoveBtn.sendKeys(Keys.ENTER);
       driver.findElement(By.xpath("//div[@id='spark']//form//button[1]")).click();
       driver.findElement(By.xpath("//div[@class='modal-dialog'][contains(.,'Do you want to update this interpreter and restart with new settings?')]" +
           "//div[@class='modal-footer']//button[contains(.,'OK')]")).click();

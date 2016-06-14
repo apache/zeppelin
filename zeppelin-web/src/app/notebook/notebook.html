@@ -70,9 +70,49 @@ limitations under the License.
       </p>
       <div class="permissionsForm"
            data-ng-model="permissions">
-        <p>Owners : <input ng-list ng-model="permissions.owners" placeholder="*"> Owners can change permissions, read and write the note. </p>
-        <p>Readers : <input ng-list ng-model="permissions.readers" placeholder="*"> Readers can only read the note.</p>
-        <p>Writers : <input ng-list ng-model="permissions.writers" placeholder="*"> Writers can read and write the note.</p>
+        <p><span  class="owners">Owners </span><input   ng-model="permissions.owners"
+                           placeholder="search for users"
+                           class="input"  ng-change="search('owners')"
+                           ng-keydown="checkKeyDown($event,'owners')"
+                           ng-keyup="checkKeyUp($event)"> Owners can change permissions,read
+          and write the note.</p>
+        <div ng-if="role === 'owners'" class="userlist" >
+          <ul>
+            <li ng-repeat="suggestion in suggestions"
+                ng-class="{active : selectIndex === $index  }"
+                ng-click="assignValueAndHide($index,'owners')" >
+              {{suggestion}}
+            </li>
+          </ul>
+        </div>
+        <p><span  class="readers">Readers </span><input   ng-model="permissions.readers"
+                             placeholder="search for users"
+                             class="input"  ng-change="search('readers')"
+                             ng-keydown="checkKeyDown($event,'readers')"
+                             ng-keyup="checkKeyUp($event)"> Readers can only read the note.</p>
+        <div ng-if="role === 'readers'" class="userlist">
+          <ul>
+            <li ng-repeat="suggestion in suggestions"
+                ng-class="{active : selectIndex === $index  }"
+                ng-click="assignValueAndHide($index,'readers')" >
+              {{suggestion}}
+            </li>
+          </ul>
+        </div>
+        <p><span  class="writers">Writers </span><input   ng-model="permissions.writers"
+                              placeholder="search for users"
+                              class="input"  ng-change="search('writers')"
+                              ng-keydown="checkKeyDown($event,'writers')"
+                              ng-keyup="checkKeyUp($event)"> Writers can read and write the note.</p>
+        <div ng-if="role === 'writers'" class="userlist">
+          <ul>
+            <li ng-repeat="suggestion in suggestions"
+                ng-class="{active : selectIndex === $index  }"
+                ng-click="assignValueAndHide($index,'writers')">
+              {{suggestion}}
+            </li>
+          </ul>
+        </div>
       </div>
     </div>
     <br />
