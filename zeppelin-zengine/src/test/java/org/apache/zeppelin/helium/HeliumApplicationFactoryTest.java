@@ -63,6 +63,14 @@ public class HeliumApplicationFactoryTest implements JobListenerFactory {
     confDir.mkdirs();
     notebookDir = new File(tmpDir + "/notebook");
     notebookDir.mkdirs();
+
+    File home = new File(getClass().getClassLoader().getResource("note").getFile()) // zeppelin/zeppelin-zengine/target/test-classes/note
+        .getParentFile()               // zeppelin/zeppelin-zengine/target/test-classes
+        .getParentFile()               // zeppelin/zeppelin-zengine/target
+        .getParentFile()               // zeppelin/zeppelin-zengine
+        .getParentFile();              // zeppelin
+
+    System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_HOME.getVarName(), home.getAbsolutePath());
     System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_CONF_DIR.getVarName(), tmpDir.getAbsolutePath() + "/conf");
     System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_DIR.getVarName(), notebookDir.getAbsolutePath());
     System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETERS.getVarName(), "org.apache.zeppelin.interpreter.mock.MockInterpreter1,org.apache.zeppelin.interpreter.mock.MockInterpreter2");
