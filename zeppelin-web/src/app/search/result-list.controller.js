@@ -16,7 +16,7 @@
 
 angular
   .module('zeppelinWebApp')
-  .controller('SearchResultCtrl', function($scope, $routeParams, searchService, $rootScope) {
+  .controller('SearchResultCtrl', function($scope, $routeParams, searchService) {
 
   $scope.isResult = true ;
   $scope.searchTerm = $routeParams.searchTerm;
@@ -42,10 +42,9 @@ angular
       $scope.isResult = true;
     }
 
-    var unbindRouteChangeEvent = $scope.$on('$routeChangeStart', function (event, next, current) {
+  $scope.$on('$routeChangeStart', function (event, next, current) {
       if (next.originalPath !== '/search/:searchTerm') {
         searchService.searchTerm = '';
-        unbindRouteChangeEvent();
       }
     });
   });
