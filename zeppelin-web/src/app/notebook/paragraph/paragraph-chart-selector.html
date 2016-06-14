@@ -46,6 +46,7 @@ limitations under the License.
           ng-class="{'active': isGraphMode('scatterChart')}"
           ng-click="setGraphMode('scatterChart', true)"><i class="cf cf-scatter-chart"></i>
   </button>
+  
   <button type="button"
           ng-if="paragraph.result.type != 'TABLE'"
           ng-click="switchApp()"
@@ -61,6 +62,19 @@ limitations under the License.
           ng-bind-html="app.pkg.icon">
   </button>
 
+  <span>
+    <button type="button" class="btn btn-default btn-sm" style="margin-left:10px"
+            tooltip="Download Data as TSV" tooltip-placement="bottom"
+            ng-click="exportToTSV()"><i class="fa fa-download"></i>
+    </button>
+  </span>
+  <span
+     ng-if="getResultType()=='TABLE' && !paragraph.config.helium.activeApp && getGraphMode()!='table' && !asIframe && !viewOnly"
+     style="margin-left:10px; cursor:pointer; display: inline-block; vertical-align:top; position: relative; line-height:30px;">
+    <a class="btnText" ng-click="toggleGraphOption()">
+      settings <span ng-class="paragraph.config.graph.optionOpen ? 'fa fa-caret-up' : 'fa fa-caret-down'"></span>
+    </a>
+  </span>  
 </div>
 
 <div id="{{paragraph.id}}_helium"
@@ -92,16 +106,3 @@ limitations under the License.
 </div>
 
 
-<span>
-  <button type="button" class="btn btn-default btn-sm" style="margin-left:10px"
-          tooltip="Download Data as TSV" tooltip-placement="bottom"
-          ng-click="exportToTSV()"><i class="fa fa-download"></i>
-  </button>
-</span>
-<span
-  ng-if="getResultType()=='TABLE' && !paragraph.config.helium.activeApp && getGraphMode()!='table' && !asIframe && !viewOnly"
-      style="margin-left:10px; cursor:pointer; display: inline-block; vertical-align:top; position: relative; line-height:30px;">
-  <a class="btnText" ng-click="toggleGraphOption()">
-    settings <span ng-class="paragraph.config.graph.optionOpen ? 'fa fa-caret-up' : 'fa fa-caret-down'"></span>
-  </a>
-</span>

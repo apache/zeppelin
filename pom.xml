@@ -76,7 +76,6 @@
     <module>phoenix</module>
     <module>postgresql</module>
     <module>jdbc</module>
-    <module>tajo</module>
     <module>file</module>
     <module>flink</module>
     <module>ignite</module>
@@ -495,6 +494,9 @@
               <exclude>docs/rss.xml</exclude>
               <exclude>docs/sitemap.txt</exclude>
               <exclude>**/dependency-reduced-pom.xml</exclude>
+
+              <!-- bundled from anchor -->
+              <exclude>docs/assets/themes/zeppelin/js/anchor.min.js</exclude>
 
               <!-- bundled from jekyll -->
               <exclude>docs/assets/themes/zeppelin/css/syntax.css</exclude>

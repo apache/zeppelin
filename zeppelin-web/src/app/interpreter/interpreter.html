@@ -152,6 +152,28 @@ limitations under the License.
         </span>
         <span>Interpreter for note</span>
       </div>
+      
+      <br />
+      <div class="col-md-12">
+        <div class="checkbox">
+          <span class="input-group">
+            <label><input type="checkbox" style="width:0%;height:0%" id="isExistingProcess" ng-model="setting.option.isExistingProcess" ng-disabled="!valueform.$visible"> </input>
+            Connect to existing process <label>
+          </span>
+        </div>
+      </div>
+
+      <div class="col-md-12" ng-show="setting.option.isExistingProcess">
+        <b>Host</b>
+          <input id="newInterpreterSettingHost" input pu-elastic-input
+            pu-elastic-input-minwidth="180px" ng-model="setting.option.host" ng-disabled="!valueform.$visible"  />
+      </div>
+      <div class="col-md-12" ng-show="setting.option.isExistingProcess">
+         <b>Port</b>
+         <input id="newInterpreterSettingPort" input pu-elastic-input
+            pu-elastic-input-minwidth="180px" ng-model="setting.option.port"  ng-disabled="!valueform.$visible" />
+      </div>
+
 
 
       <div ng-show="_.isEmpty(setting.properties) && _.isEmpty(setting.dependencies) || valueform.$hidden" class="col-md-12 gray40-message">

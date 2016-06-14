@@ -6,7 +6,49 @@ group: manual
 ---
 {% include JB/setup %}
 
+## Important Notice
+Postgresql Interpreter will be deprecated and merged into JDBC Interpreter. You can use Postgresql by using JDBC Interpreter with same functionality. See the example below of settings and dependencies.
+
+### Properties
+<table class="table-configuration">
+  <tr>
+    <th>Property</th>
+    <th>Value</th>
+  </tr>
+  <tr>
+    <td>psql.driver</td>
+    <td>org.postgresql.Driver</td>
+  </tr>
+  <tr>
+    <td>psql.url</td>
+    <td>jdbc:postgresql://localhost:5432/</td>
+  </tr>
+  <tr>
+    <td>psql.user</td>
+    <td>psqlUser</td>
+  </tr>
+  <tr>
+    <td>psql.password</td>
+    <td>psqlPassword</td>
+  </tr>
+</table>
+
+### Dependencies
+<table class="table-configuration">
+  <tr>
+    <th>Artifact</th>
+    <th>Exclude</th>
+  </tr>
+  <tr>
+    <td>org.postgresql:postgresql:9.4-1201-jdbc41</td>
+    <td></td>
+  </tr>
+</table>
+
+----
+
 ## PostgreSQL, HAWQ  Interpreter for Apache Zeppelin
+
 <table class="table-configuration">
   <tr>
     <th>Name</th>

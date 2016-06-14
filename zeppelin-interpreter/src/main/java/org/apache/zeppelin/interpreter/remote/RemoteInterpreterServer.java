@@ -166,7 +166,6 @@ public class RemoteInterpreterServer
           replClass.getConstructor(new Class[] {Properties.class});
       Interpreter repl = constructor.newInstance(p);
 
-      ClassLoader cl = ClassLoader.getSystemClassLoader();
       repl.setClassloaderUrls(new URL[]{});
 
       synchronized (interpreterGroup) {
@@ -176,7 +175,7 @@ public class RemoteInterpreterServer
           interpreterGroup.put(noteId, interpreters);
         }
 
-        interpreters.add(new LazyOpenInterpreter(new ClassloaderInterpreter(repl, cl)));
+        interpreters.add(new LazyOpenInterpreter(repl));
       }
 
       logger.info("Instantiate interpreter {}", className);

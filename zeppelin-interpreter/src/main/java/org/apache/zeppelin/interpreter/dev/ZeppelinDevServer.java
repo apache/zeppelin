@@ -56,8 +56,7 @@ public class ZeppelinDevServer extends
 
         Interpreter intp = super.getInterpreter(noteId, className);
         interpreter = (DevInterpreter) (
-            (ClassloaderInterpreter) ((LazyOpenInterpreter) intp).getInnerInterpreter())
-            .getInnerInterpreter();
+            ((LazyOpenInterpreter) intp).getInnerInterpreter());
         interpreter.setInterpreterEvent(this);
         notify();
       }

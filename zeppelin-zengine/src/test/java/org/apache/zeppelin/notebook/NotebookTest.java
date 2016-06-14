@@ -704,6 +704,31 @@ public class NotebookTest implements JobListenerFactory{
     assertEquals(1, onParagraphRemove.get());
   }
 
+  @Test
+  public void testNormalizeNoteName() throws IOException {
+    // create a notes
+    Note note1  = notebook.createNote();
+
+    note1.setName("MyNote");
+    assertEquals(note1.getName(), "MyNote");
+
+    note1.setName("/MyNote");
+    assertEquals(note1.getName(), "/MyNote");
+
+    note1.setName("MyNote/sub");
+    assertEquals(note1.getName(), "MyNote/sub");
+
+    note1.setName("/MyNote/sub");
+    assertEquals(note1.getName(), "/MyNote/sub");
+
+    note1.setName("///////MyNote//////sub");
+    assertEquals(note1.getName(), "/MyNote/sub");
+
+    note1.setName("\\\\\\MyNote///sub");
+    assertEquals(note1.getName(), "/MyNote/sub");
+
+    notebook.removeNote(note1.getId());
+  }
 
   private void delete(File file){
     if(file.isFile()) file.delete();
