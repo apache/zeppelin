@@ -11,8 +11,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<div ng-controller="SearchResultCtrl" class="searchResults">
-  <div class="row">
+<div class="searchResults">
+    <div ng-if="isResult" class="row">
     <div class="col-sm-8" style="margin: 0 auto; float: none">
       <ul class="search-results">
         <li class="panel panel-default" ng-repeat="note in notes">
@@ -37,6 +37,10 @@ limitations under the License.
           </div>
           </div>
        </li>
+      </ul>
     </div>
+  </div>
+  <div ng-if="!isResult" class="search-no-result-found">
+      <span class="glyphicon glyphicon-search"></span> We couldn’t find any notebook matching <b>'{{searchTerm}}' </b>
   </div>
 </div>
