@@ -25,6 +25,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.Input;
@@ -62,6 +63,8 @@ public class Note implements Serializable, JobListener {
 
   private String name = "";
   private String id;
+
+  private ZeppelinConfiguration conf = ZeppelinConfiguration.create();
 
   @SuppressWarnings("rawtypes")
   Map<String, List<AngularObject>> angularObjects = new HashMap<>();
@@ -407,9 +410,17 @@ public class Note implements Serializable, JobListener {
     Paragraph p = getParagraph(paragraphId);
     p.setNoteReplLoader(replLoader);
     p.setListener(jobListenerFactory.getParagraphJobListener(this));
-    Interpreter intp = replLoader.get(p.getRequiredReplName());
+    String requiredReplName = p.getRequiredReplName();
+    Interpreter intp = replLoader.get(requiredReplName);
     if (intp == null) {
-      throw new InterpreterException("Interpreter " + p.getRequiredReplName() + " not found");
+      // TODO(jongyoul): Make "%jdbc" configurable from JdbcInterpreter
+      if (conf.getUseJdbcAlias() && null != (intp = replLoader.get("jdbc"))) {
+        String pText = p.getText().replaceFirst(requiredReplName, "jdbc(" + requiredReplName + ")");
+        logger.debug("New paragraph: {}", pText);
+        p.setText(pText);
+      } else {
+        throw new InterpreterException("Interpreter " + requiredReplName + " not found");
+      }
     }
     if (p.getConfig().get("enabled") == null || (Boolean) p.getConfig().get("enabled")) {
       intp.getScheduler().submit(p);
