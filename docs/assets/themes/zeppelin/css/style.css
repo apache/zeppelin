@@ -138,8 +138,7 @@ body {
 
 .scrollable-menu {
   max-height: 500px;
-  overflow-y: auto;
-  overflow-x: auto;
+  overflow: auto;
 }
 
 .index-header {
