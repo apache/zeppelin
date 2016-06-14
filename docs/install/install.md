@@ -21,17 +21,17 @@ limitations under the License.
 
 # Quick Start
 Welcome to your first trial to explore Apache Zeppelin! 
-This page will help you to get started with Zeppelin. Here is the list of this page. 
+This page will help you to get started with Apache Zeppelin. Here is the list of this page. 
 
 * [Installation](#installation)
   * [Downloading Binary Package](#downloading-binary-package)
   * [Building from Source](#building-from-source)
-* [Starting Zeppelin with Command Line](#starting-zeppelin-with-command-line)
+* [Starting Apache Zeppelin with Command Line](#starting-apache-zeppelin-with-command-line)
   * [Start Zeppelin](#start-zeppelin)
   * [Stop Zeppelin](#stop-zeppelin)
-  * [(Optional) Start Zeppelin with a service manager](#optional-start-zeppelin-with-a-service-manager)
+  * [(Optional) Start Apache Zeppelin with a service manager](#optional-start-apache-zeppelin-with-a-service-manager)
 * [What is the next?](#what-is-the-next)
-* [Zeppelin Configuration](#zeppelin-configuration)
+* [Apache Zeppelin Configuration](#apache-zeppelin-configuration)
 
 ## Installation
 
@@ -52,15 +52,15 @@ Apache Zeppelin officially tested on the below environment.
   </tr>
 </table>
 
-There are two options to install Zeppelin on your machine. One is [downloading prebuild binary package](#downloading-binary-package) from the archive. 
+There are two options to install Apache Zeppelin on your machine. One is [downloading prebuild binary package](#downloading-binary-package) from the archive. 
 You can download not only the latest stable version but also the older one if you need. 
 The other option is [building from the source](#building-from-source).
 Although it can be unstable somehow since it is on development status, you can explore newly added feature and change it as you want.
 
 ### Downloading Binary Package
 
-If you want to install Zeppelin with a stable binary package, please visit [Zeppelin download Page](http://zeppelin.apache.org/download.html). 
-After unpacking, jump to [Starting Zeppelin with Command Line](#starting-zeppelin-with-command-line) section.
+If you want to install Apache Zeppelin with a stable binary package, please visit [Apache Zeppelin download Page](http://zeppelin.apache.org/download.html). 
+After unpacking, jump to [Starting Apache Zeppelin with Command Line](#starting-apache-zeppelin-with-command-line) section.
 
 ### Building from Source
 If you want to build from the source, there are more requirements. 
@@ -78,15 +78,11 @@ If you want to build from the source, there are more requirements.
     <td>Maven</td>
     <td>3.1.x or higher</td>
   </tr>
-  <tr>
-    <td>Node.js Package Manager(npm)</td>
-    <td></td>
-  </tr>
 </table>
 
 If you don't have the above requirements yet, please check [Before Build](https://github.com/apache/zeppelin/blob/master/README.md#before-build) section and follow step by step.
 
-####1. Clone Zeppelin repository
+####1. Clone Apache Zeppelin repository
 
 ```
 git clone https://github.com/apache/zeppelin.git
@@ -117,7 +113,7 @@ mvn clean package -Pspark-1.5 -Pmapr50 -DskipTests
 
 For the further information about building with source, please see [README.md](https://github.com/apache/zeppelin/blob/master/README.md) in Zeppelin repository.
 
-## Starting Zeppelin with Command Line
+## Starting Apache Zeppelin with Command Line
 #### Start Zeppelin
 
 ```
@@ -138,11 +134,11 @@ After successful start, visit [http://localhost:8080](http://localhost:8080) wit
 bin/zeppelin-daemon.sh stop
 ```
 
-#### (Optional) Start Zeppelin with a service manager
+#### (Optional) Start Apache Zeppelin with a service manager
 
 > **Note :** The below description was written based on Ubuntu Linux.
 
-Zeppelin can be auto started as a service with an init script, such as services managed by **upstart**.
+Apache Zeppelin can be auto started as a service with an init script, such as services managed by **upstart**.
 
 The following is an example of upstart script to be saved as `/etc/init/zeppelin.conf`
 This also allows the service to be managed with commands such as
@@ -180,15 +176,15 @@ exec bin/zeppelin-daemon.sh upstart
 ```
 
 ## What is the next?
-Congratulation to your successful Zeppelin installation! Here are two next steps you might need.
+Congratulation on your successful Apache Zeppelin installation! Here are two next steps you might need.
 
- * For an in-depth overview of Zeppelin UI, head to [Explore Zeppelin UI](../quickstart/explorezeppelinui.html)
- * After getting familiar with Zeppelin UI, have fun with a short walk-through [Tutorial](../quickstart/tutorial.html) that uses Apache Spark backend
- * If you need more configuration setting for Zeppelin, jump to the next section: [Zeppelin Configuration](#zeppelin-configuration)
+ * For an in-depth overview of Apache Zeppelin UI, head to [Explore Apache Zeppelin UI](../quickstart/explorezeppelinui.html)
+ * After getting familiar with Apache Zeppelin UI, have fun with a short walk-through [Tutorial](../quickstart/tutorial.html) that uses Apache Spark backend
+ * If you need more configuration setting for Apache Zeppelin, jump to the next section: [Apache Zeppelin Configuration](#apache-zeppelin-configuration)
 
-## Zeppelin Configuration
+## Apache Zeppelin Configuration
 
-You can configure Zeppelin with both **environment variables** in `conf/zeppelin-env.sh` (`conf\zeppelin-env.cmd` for Windows) and **Java properties** in `conf/zeppelin-site.xml`. If both are defined, then the **environment variables** will take priority.
+You can configure Apache Zeppelin with both **environment variables** in `conf/zeppelin-env.sh` (`conf\zeppelin-env.cmd` for Windows) and **Java properties** in `conf/zeppelin-site.xml`. If both are defined, then the **environment variables** will take priority.
 
 <table class="table-configuration">
   <tr>
@@ -297,13 +293,13 @@ You can configure Zeppelin with both **environment variables** in `conf/zeppelin
     <td>ZEPPELIN_NOTEBOOK_HOMESCREEN</td>
     <td>zeppelin.notebook.homescreen</td>
     <td></td>
-    <td>A notebook id displayed in Zeppelin homescreen <br />i.e. 2A94M5J1Z</td>
+    <td>A notebook id displayed in Apache Zeppelin homescreen <br />i.e. 2A94M5J1Z</td>
   </tr>
   <tr>
     <td>ZEPPELIN_NOTEBOOK_HOMESCREEN_HIDE</td>
     <td>zeppelin.notebook.homescreen.hide</td>
     <td>false</td>
-    <td>This value can be "true" when to hide the notebook id set by <code>ZEPPELIN_NOTEBOOK_HOMESCREEN</code> on the Zeppelin homescreen. <br />For the further information, please read <a href="../manual/notebookashomepage.html">Customize your Zeppelin homepage</a>.</td>
+    <td>This value can be "true" when to hide the notebook id set by <code>ZEPPELIN_NOTEBOOK_HOMESCREEN</code> on the Apache Zeppelin homescreen. <br />For the further information, please read <a href="../manual/notebookashomepage.html">Customize your Zeppelin homepage</a>.</td>
   </tr>
   <tr>
     <td>ZEPPELIN_WAR_TEMPDIR</td>
@@ -315,13 +311,13 @@ You can configure Zeppelin with both **environment variables** in `conf/zeppelin
     <td>ZEPPELIN_NOTEBOOK_DIR</td>
     <td>zeppelin.notebook.dir</td>
     <td>notebook</td>
-    <td>The root directory where Zeppelin notebook directories are saved</td>
+    <td>The root directory where notebook directories are saved</td>
   </tr>
   <tr>
     <td>ZEPPELIN_NOTEBOOK_S3_BUCKET</td>
     <td>zeppelin.notebook.s3.bucket</td>
     <td>zeppelin</td>
-    <td>S3 Bucket where Zeppelin notebook files will be saved</td>
+    <td>S3 Bucket where notebook files will be saved</td>
   </tr>
   <tr>
     <td>ZEPPELIN_NOTEBOOK_S3_USER</td>
@@ -357,7 +353,7 @@ You can configure Zeppelin with both **environment variables** in `conf/zeppelin
     <td>ZEPPELIN_NOTEBOOK_AZURE_SHARE</td>
     <td>zeppelin.notebook.azure.share</td>
     <td>zeppelin</td>
-    <td>Share where the Zeppelin notebook files will be saved</td>
+    <td>Share where the notebook files will be saved</td>
   </tr>
   <tr>
     <td>ZEPPELIN_NOTEBOOK_AZURE_USER</td>
@@ -378,13 +374,13 @@ You can configure Zeppelin with both **environment variables** in `conf/zeppelin
     <td>org.apache.zeppelin.spark.SparkInterpreter,<br />org.apache.zeppelin.spark.PySparkInterpreter,<br />org.apache.zeppelin.spark.SparkSqlInterpreter,<br />org.apache.zeppelin.spark.DepInterpreter,<br />org.apache.zeppelin.markdown.Markdown,<br />org.apache.zeppelin.shell.ShellInterpreter,<br />
     ...
     </td>
-    <td>Comma separated interpreter configurations [Class] <br /> The first interpreter will be a default value. <br /> It means only the first interpreter in this list can be available without <code>%interpreter_name</code> annotation in Zeppelin notebook paragraph. </td>
+    <td>Comma separated interpreter configurations [Class] <br /> The first interpreter will be a default value. <br /> It means only the first interpreter in this list can be available without <code>%interpreter_name</code> annotation in notebook paragraph. </td>
   </tr>
   <tr>
     <td>ZEPPELIN_INTERPRETER_DIR</td>
     <td>zeppelin.interpreter.dir</td>
     <td>interpreter</td>
-    <td>Zeppelin interpreter directory</td>
+    <td>Interpreter directory</td>
   </tr>
   <tr>
     <td>ZEPPELIN_WEBSOCKET_MAX_TEXT_MESSAGE_SIZE</td>
