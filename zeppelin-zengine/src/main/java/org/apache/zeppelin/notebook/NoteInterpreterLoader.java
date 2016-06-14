@@ -188,6 +188,6 @@ public class NoteInterpreterLoader {
       }
     }
 
-    throw new InterpreterException(replName + " interpreter not found");
+    return null;
   }
 }
