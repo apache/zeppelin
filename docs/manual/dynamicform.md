@@ -34,7 +34,7 @@ To create text input form, use `${formName}` templates.
 
 for example
 
-<img src="../assets/themes/zeppelin/img/screenshots/form_input.png" />
+<img class="img-responsive" src="/assets/themes/zeppelin/img/screenshots/form_input.png" width="450px" />
 
 
 Also you can provide default value, using `${formName=defaultValue}`.
