@@ -40,11 +40,11 @@ limitations under the License.
 <br />
 ## Multiple Language Backend
 [Apache Zeppelin interpreter](./manual/interpreters.html) concept allows any language/data-processing-backend to be plugged into Zeppelin.
-Currently Zeppelin supports many interpreters such as Apache Spark, Python, JDBC, Markdown and Shell.
+Currently Apache Zeppelin supports many interpreters such as Apache Spark, Python, JDBC, Markdown and Shell.
 
 <img class="img-responsive" width="500px" style="margin:0 auto; padding: 26px;" src="/assets/themes/zeppelin/img/available_interpreters.png" />
 
-Adding new language-backend is really simple. Learn [how to write a zeppelin interpreter](./development/writingzeppelininterpreter.html).
+Adding new language-backend is really simple. Learn [how to create your own interpreter](./development/writingzeppelininterpreter.html#make-your-own-interpreter).
 
 #### Apache Spark integration
 Especially, Apache Zeppelin provides built-in [Apache Spark](http://spark.apache.org/) integration. You don't need to build a separate module, plugin or library for it.
@@ -57,7 +57,7 @@ Apache Zeppelin with Spark integration provides
 - Runtime jar dependency loading from local filesystem or maven repository. Learn more about [dependency loader](./interpreter/spark.html#dependencyloading).
 - Canceling job and displaying its progress
 
-For the further information about Apache Spark in Zeppelin, please see [Spark interpreter for Apache Zeppelin](./interpreter/spark.html).
+For the further information about Apache Spark in Apache Zeppelin, please see [Spark interpreter for Apache Zeppelin](./interpreter/spark.html).
 
 <br />
 ## Data visualization
@@ -88,7 +88,7 @@ Learn more about [display systems](#display-system) in Apache Zeppelin.
 <br />
 ## Dynamic forms
 
-Zeppelin can dynamically create some input forms in your notebook.
+Apache Zeppelin can dynamically create some input forms in your notebook.
 <div class="row">
   <div class="col-md-12">
     <img class="img-responsive" style="margin: 16px auto;" src="/assets/themes/zeppelin/img/screenshots/dynamicform.png" />
@@ -126,20 +126,20 @@ Join to our [Mailing list](https://zeppelin.apache.org/community.html) and repor
 * Getting Started
   * [Quick Start](./install/install.html) for basic instructions on installing Zeppelin
   * [Configuration](./install/install.html#zeppelin-configuration) lists for Zeppelin
-  * [Explore Zeppelin UI](./quickstart/explorezeppelinui.html): basic components of Zeppelin home
+  * [Explore Apache Zeppelin UI](./quickstart/explorezeppelinui.html): basic components of Zeppelin home
   * [Tutorial](./quickstart/tutorial.html): a short walk-through tutorial that uses Apache Spark backend
 * Basic Feature Guide
   * [Dynamic Form](./manual/dynamicform.html): a step by step guide for creating dynamic forms
   * [Publish your Paragraph](./manual/publish.html) results into your external website
   * [Customize Zeppelin Homepage](./manual/notebookashomepage.html) with one of your notebooks
 * More
-  * [Zeppelin on Vagrant VM](./install/virtual_machine.html): a guide for installing Zeppelin on Vagrant virtual machine
-  * [Upgrade Zeppelin Version](./install/upgrade.html): a manual procedure of upgrading Zeppelin version
+  * [Apache Zeppelin on Vagrant VM](./install/virtual_machine.html): a guide for installing Apache Zeppelin on Vagrant virtual machine
+  * [Upgrade Apache Zeppelin Version](./install/upgrade.html): a manual procedure of upgrading Apache Zeppelin version
 
 ####Interpreter
 
-* [Interpreters in Zeppelin](./manual/interpreters.html): what is Zeppelin interpreter group? how can you set interpreters in Zeppelin?
-* Available Interpreters: currently, about 20 interpreters are available in Zeppelin.
+* [Interpreters in Apache Zeppelin](./manual/interpreters.html): what is interpreter group? how can you set interpreters in Apache Zeppelin?
+* Available Interpreters: currently, about 20 interpreters are available in Apache Zeppelin.
 * Usage
   * [Dynamic Interpreter Loading](./manual/dynamicinterpreterload.html) using REST API
   * [Interpreter Dependency Management](./manual/dependencymanagement.html) when you include external libraries to interpreter
@@ -159,17 +159,17 @@ Join to our [Mailing list](https://zeppelin.apache.org/community.html) and repor
   * [S3 Storage](./storage/storage.html#notebook-storage-in-s3)
   * [Azure Storage](./storage/storage.html#notebook-storage-in-azure)
   * [ZeppelinHub Storage](./storage/storage.html#storage-in-zeppelinhub)
-* REST API: available REST API list in Zeppelin
+* REST API: available REST API list in Apache Zeppelin
   * [Interpreter API](./rest-api/rest-interpreter.html)
   * [Notebook API](./rest-api/rest-notebook.html)
   * [Configuration API](./rest-api/rest-configuration.html)
-* Security: available security support in Zeppelin
+* Security: available security support in Apache Zeppelin
   * [Authentication for NGINX](./security/authentication.html)
   * [Shiro Authentication](./security/shiroauthentication.html)
   * [Notebook Authorization](./security/notebook_authorization.html)
   * [Interpreter & Data Resource Authorization](./security/interpreter_authorization.html)
 * Contribute
-  * [Writing Zeppelin Interpreter](./development/writingzeppelininterpreter.html)
+  * [Writing a new Interpreter](./development/writingzeppelininterpreter.html)
   * [How to contribute (code)](./development/howtocontribute.html)
   * [How to contribute (documentation website)](./development/howtocontributewebsite.html)
 
