@@ -24,7 +24,7 @@ limitations under the License.
                  pu-elastic-input-minwidth="180px" ng-model="newInterpreterSetting.name" />
         </div>
 
-        <b>Interpreter</b>
+        <b>Interpreter group</b>
         <div class="form-group"
              style="width:180px">
           <select class="form-control input-sm" ng-model="newInterpreterSetting.group"
@@ -69,6 +69,24 @@ limitations under the License.
           <span>Interpreter for note</span>
         </div>
         <br />
+        
+        <div class="col-md-12" style="padding-left:0px">
+          <div class="checkbox">
+            <span class="input-group">
+              <label><input type="checkbox" style="width:0%;height:0%" ng-model="newInterpreterSetting.option.isExistingProcess"> </input> Connect to existing process </label>
+            </span>
+          </div>
+        </div>
+        <div ng-show="newInterpreterSetting.option.isExistingProcess" class="form-group" style="width:200px">
+          <b>Host</b>
+            <input id="newInterpreterSettingHost" input pu-elastic-input
+              pu-elastic-input-minwidth="180px" ng-model="newInterpreterSetting.option.host" />
+        </div>
+        <div ng-show="newInterpreterSetting.option.isExistingProcess" class="form-group" style="width:200px">
+          <b>Port</b>
+           <input id="newInterpreterSettingPort" input pu-elastic-input
+            pu-elastic-input-minwidth="180px" ng-model="newInterpreterSetting.option.port" />
+        </div>
 
         <b>Properties</b>
         <table class="table table-striped properties">
@@ -83,8 +101,8 @@ limitations under the License.
             <td><textarea msd-elastic ng-model="value.value"></textarea></td>
             <td>{{value.description}}</td>
             <td>
-              <div class="btn btn-default btn-sm fa fa-remove" ng-click="removeInterpreterProperty(key)">
-              </div>
+              <button class="btn btn-default btn-sm fa fa-remove" ng-click="removeInterpreterProperty(key)">
+              </button>
             </td>
           </tr>
 
@@ -96,8 +114,8 @@ limitations under the License.
             <td><textarea msd-elastic ng-model="newInterpreterSetting.propertyValue"></textarea></td>
             <td></td>
             <td>
-              <div class="btn btn-default btn-sm fa fa-plus" ng-click="addNewInterpreterProperty()">
-              </div>
+              <button class="btn btn-default btn-sm fa fa-plus" ng-click="addNewInterpreterProperty()">
+              </button>
             </td>
           </tr>
         </table>
@@ -121,9 +139,9 @@ limitations under the License.
               </textarea>
             </td>
             <td>
-              <div class="btn btn-default btn-sm fa fa-remove"
+              <button class="btn btn-default btn-sm fa fa-remove"
                    ng-click="removeInterpreterDependency(dep.groupArtifactVersion)">
-              </div>
+              </button>
             </td>
           </tr>
 
@@ -140,8 +158,8 @@ limitations under the License.
               </textarea>
             </td>
             <td>
-              <div class="btn btn-default btn-sm fa fa-plus" ng-click="addNewInterpreterDependency()">
-              </div>
+              <button class="btn btn-default btn-sm fa fa-plus" ng-click="addNewInterpreterDependency()">
+              </button>
             </td>
           </tr>
         </table>

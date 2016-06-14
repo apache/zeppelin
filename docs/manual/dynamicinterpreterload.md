@@ -56,7 +56,7 @@ http://127.0.0.1:8080/api/interpreter/load/md/markdown
 
 ```
 {
-  "artifact": "org.apache.zeppelin:zeppelin-markdown:0.6.0-incubating-SNAPSHOT",
+  "artifact": "org.apache.zeppelin:zeppelin-markdown:0.6.0-SNAPSHOT",
   "className": "org.apache.zeppelin.markdown.Markdown",
   "repository": {
     "url": "http://dl.bintray.com/spark-packages/maven",
@@ -71,7 +71,7 @@ The meaning of each parameters is:
   1. **Artifact**
 	- groupId: org.apache.zeppelin
 	- artifactId: zeppelin-markdown
-	- version: 0.6.0-incubating-SNAPSHOT
+	- version: 0.6.0-SNAPSHOT
 
   2. **Class Name**
 	- Package Name: org.apache.zeppelin

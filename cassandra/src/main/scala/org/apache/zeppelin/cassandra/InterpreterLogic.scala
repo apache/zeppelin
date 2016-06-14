@@ -29,6 +29,7 @@ import com.datastax.driver.core._
 import com.datastax.driver.core.exceptions.DriverException
 import com.datastax.driver.core.policies.{LoggingRetryPolicy, FallthroughRetryPolicy, DowngradingConsistencyRetryPolicy, Policies}
 import org.apache.zeppelin.cassandra.TextBlockHierarchy._
+import org.apache.zeppelin.display.AngularObjectRegistry
 import org.apache.zeppelin.display.Input.ParamOption
 import org.apache.zeppelin.interpreter.InterpreterResult.Code
 import org.apache.zeppelin.interpreter.{InterpreterException, InterpreterResult, InterpreterContext}
@@ -41,17 +42,20 @@ import scala.collection.mutable.ArrayBuffer
 
 /**
  * Value object to store runtime query parameters
- * @param consistency consistency level
+  *
+  * @param consistency consistency level
  * @param serialConsistency serial consistency level
  * @param timestamp timestamp
  * @param retryPolicy retry policy
  * @param fetchSize query fetch size
+ * @param requestTimeOut request time out in millisecs
  */
 case class CassandraQueryOptions(consistency: Option[ConsistencyLevel],
                                  serialConsistency:Option[ConsistencyLevel],
                                  timestamp: Option[Long],
                                  retryPolicy: Option[RetryPolicy],
-                                 fetchSize: Option[Int])
+                                 fetchSize: Option[Int],
+                                 requestTimeOut: Option[Int])
 
 /**
  * Singleton object to store constants
@@ -71,7 +75,7 @@ object InterpreterLogic {
   val fallThroughRetryPolicy = FallthroughRetryPolicy.INSTANCE
   val loggingDefaultRetryPolicy = new LoggingRetryPolicy(defaultRetryPolicy)
   val loggingDownGradingRetryPolicy = new LoggingRetryPolicy(downgradingConsistencyRetryPolicy)
-  val loggingFallThrougRetryPolicy = new LoggingRetryPolicy(fallThroughRetryPolicy)
+  val loggingFallThroughRetryPolicy = new LoggingRetryPolicy(fallThroughRetryPolicy)
 
   val preparedStatements : mutable.Map[String,PreparedStatement] = new ConcurrentHashMap[String,PreparedStatement]().asScala
 
@@ -273,7 +277,13 @@ class InterpreterLogic(val session: Session)  {
       .flatMap(x => Option(x.value))
       .headOption
 
-    CassandraQueryOptions(consistency,serialConsistency, timestamp, retryPolicy, fetchSize)
+    val requestTimeOut: Option[Int] = parameters
+      .filter(_.paramType == RequestTimeOutParam)
+      .map(_.getParam[RequestTimeOut])
+      .flatMap(x => Option(x.value))
+      .headOption
+
+    CassandraQueryOptions(consistency,serialConsistency, timestamp, retryPolicy, fetchSize, requestTimeOut)
   }
 
   def generateSimpleStatement(st: SimpleStm, options: CassandraQueryOptions,context: InterpreterContext): SimpleStatement = {
@@ -305,19 +315,38 @@ class InterpreterLogic(val session: Session)  {
 
   def maybeExtractVariables(statement: String, context: InterpreterContext): String = {
 
+    def findInAngularRepository(variable: String): Option[AnyRef] = {
+      val registry = context.getAngularObjectRegistry
+      val noteId = context.getNoteId
+      val paragraphId = context.getParagraphId
+      val paragraphScoped: Option[AnyRef] = Option(registry.get(variable, noteId, paragraphId)).map[AnyRef](_.get())
+
+      paragraphScoped
+    }
+
     def extractVariableAndDefaultValue(statement: String, exp: String):String = {
       exp match {
-        case MULTIPLE_CHOICES_VARIABLE_DEFINITION_PATTERN(variable,choices) => {
+        case MULTIPLE_CHOICES_VARIABLE_DEFINITION_PATTERN(variable, choices) => {
           val escapedExp: String = exp.replaceAll( """\{""", """\\{""").replaceAll( """\}""", """\\}""").replaceAll("""\|""","""\\|""")
-          val listChoices:List[String] = choices.trim.split(CHOICES_SEPARATOR).toList
-          val paramOptions= listChoices.map(choice => new ParamOption(choice, choice))
-          val selected = context.getGui.select(variable, listChoices.head, paramOptions.toArray)
-          statement.replaceAll(escapedExp,selected.toString)
+          findInAngularRepository(variable) match {
+            case Some(value) => statement.replaceAll(escapedExp,value.toString)
+            case None => {
+              val listChoices:List[String] = choices.trim.split(CHOICES_SEPARATOR).toList
+              val paramOptions= listChoices.map(choice => new ParamOption(choice, choice))
+              val selected = context.getGui.select(variable, listChoices.head, paramOptions.toArray)
+              statement.replaceAll(escapedExp,selected.toString)
+            }
+          }
         }
         case SIMPLE_VARIABLE_DEFINITION_PATTERN(variable,defaultVal) => {
           val escapedExp: String = exp.replaceAll( """\{""", """\\{""").replaceAll( """\}""", """\\}""")
-          val value = context.getGui.input(variable,defaultVal)
-          statement.replaceAll(escapedExp,value.toString)
+          findInAngularRepository(variable) match {
+            case Some(value) => statement.replaceAll(escapedExp,value.toString)
+            case None => {
+              val value = context.getGui.input(variable,defaultVal)
+              statement.replaceAll(escapedExp,value.toString)
+            }
+          }
         }
         case _ => throw new ParsingException(s"Invalid bound variable definition for '$exp' in '$statement'. It should be of form 'variable=defaultValue' or 'variable=value1|value2|...|valueN'")
       }
@@ -336,10 +365,11 @@ class InterpreterLogic(val session: Session)  {
       case FallThroughRetryPolicy => statement.setRetryPolicy(fallThroughRetryPolicy)
       case LoggingDefaultRetryPolicy => statement.setRetryPolicy(loggingDefaultRetryPolicy)
       case LoggingDowngradingRetryPolicy => statement.setRetryPolicy(loggingDownGradingRetryPolicy)
-      case LoggingFallThroughRetryPolicy => statement.setRetryPolicy(loggingFallThrougRetryPolicy)
+      case LoggingFallThroughRetryPolicy => statement.setRetryPolicy(loggingFallThroughRetryPolicy)
       case _ => throw new InterpreterException(s"""Unknown retry policy ${options.retryPolicy.getOrElse("???")}""")
     }
     options.fetchSize.foreach(statement.setFetchSize(_))
+    options.requestTimeOut.foreach(statement.setReadTimeoutMillis(_))
   }
 
   private def createBoundStatement(codecRegistry: CodecRegistry, name: String, ps: PreparedStatement, rawBoundValues: String): BoundStatement = {

@@ -26,6 +26,7 @@ conf/truststore
 conf/interpreter.json
 conf/notebook-authorization.json
 conf/shiro.ini
+conf/credentials.json
 
 # other generated files
 spark/dependency-reduced-pom.xml

@@ -47,7 +47,7 @@ curl -fsSL https://raw.githubusercontent.com/NFLabs/z-manager/master/zeppelin-in
 
 ### Building Zeppelin
 
-You can now `git clone git://git.apache.org/incubator-zeppelin.git` into a directory on your host machine, or directly in your virtual machine.
+You can now `git clone git://git.apache.org/zeppelin.git` into a directory on your host machine, or directly in your virtual machine.
 
 Cloning zeppelin into the `/scripts/vagrant/zeppelin-dev` directory from the host, will allow the directory to be shared between your host and the guest machine.
 
@@ -56,7 +56,7 @@ Cloning the project again may seem counter intuitive, since this script likley o
 Synced folders enable Vagrant to sync a folder on the host machine to the guest machine, allowing you to continue working on your project's files on your host machine, but use the resources in the guest machine to compile or run your project. _[(1) Synced Folder Description from Vagrant Up](https://docs.vagrantup.com/v2/synced-folders/index.html)_
 
 By default, Vagrant will share your project directory (the directory with the Vagrantfile) to `/vagrant`.  Which means you should be able to build within the guest machine after you 
-`cd /vagrant/incubator-zeppelin`
+`cd /vagrant/zeppelin`
 
 
 ### What's in this VM?
@@ -86,7 +86,7 @@ The virtual machine consists of:
 This assumes you've already cloned the project either on the host machine in the zeppelin-dev directory (to be shared with the guest machine) or cloned directly into a directory while running inside the guest machine.  The following build steps will also include Python and R support via PySpark and SparkR:
 
 ```
-cd /incubator-zeppelin
+cd /zeppelin
 mvn clean package -Pspark-1.6 -Ppyspark -Phadoop-2.4 -Psparkr -DskipTests
 ./bin/zeppelin-daemon.sh start
 ```

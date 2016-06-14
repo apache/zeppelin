@@ -35,15 +35,53 @@ In 'Separate Interpreter for each note' mode, new Interpreter instance will be c
 
 ### Make your own Interpreter
 
-Creating a new interpreter is quite simple. Just extend [org.apache.zeppelin.interpreter](https://github.com/apache/incubator-zeppelin/blob/master/zeppelin-interpreter/src/main/java/org/apache/zeppelin/interpreter/Interpreter.java) abstract class and implement some methods.
-You can include `org.apache.zeppelin:zeppelin-interpreter:[VERSION]` artifact in your build system.
-Your interpreter name is derived from the static register method.
+Creating a new interpreter is quite simple. Just extend [org.apache.zeppelin.interpreter](https://github.com/apache/zeppelin/blob/master/zeppelin-interpreter/src/main/java/org/apache/zeppelin/interpreter/Interpreter.java) abstract class and implement some methods.
+You can include `org.apache.zeppelin:zeppelin-interpreter:[VERSION]` artifact in your build system. And you should your jars under your interpreter directory with specific directory name. Zeppelin server reads interpreter directories recursively and initializes interpreters including your own interpreter.
+
+There are three locations where you can store your interpreter group, name and other information. Zeppelin server tries to find the location below. Next, Zeppelin tries to find `interpareter-setting.json` in your interpreter jar. 
+
+```
+{ZEPPELIN_INTERPRETER_DIR}/{YOUR_OWN_INTERPRETER_DIR}/interpreter-setting.json
+```
+
+Here is an example of `interpareter-setting.json` on your own interpreter.
+
+```json
+[
+  {
+    "group": "your-group",
+    "name": "your-name",
+    "className": "your.own.interpreter.class",
+    "properties": {
+      "propertiies1": {
+        "envName": null,
+        "propertyName": "property.1.name",
+        "defaultValue": "propertyDefaultValue",
+        "description": "Property description"
+      },
+      "properties2": {
+        "envName": PROPERTIES_2,
+        "propertyName": null,
+        "defaultValue": "property2DefaultValue",
+        "description": "Property 2 description"
+      }, ...
+    }
+  },
+  {
+    ...
+  } 
+]
+```
+
+Finally, Zeppelin uses static initialization with the following:
 
 ```
 static {
     Interpreter.register("MyInterpreterName", MyClassName.class.getName());
   }
 ```
+
+**Static initialization is deprecated and will be supported until 0.6.0.**
 
 The name will appear later in the interpreter name option box during the interpreter configuration process.
 The name of the interpreter is what you later write to identify a paragraph which should be interpreted using this interpreter.
@@ -88,14 +126,14 @@ To configure your interpreter you need to follow these steps:
 </property>
 ```
 
-2. Add your interpreter to the [default configuration](https://github.com/apache/incubator-zeppelin/blob/master/zeppelin-zengine/src/main/java/org/apache/zeppelin/conf/ZeppelinConfiguration.java#L397) which is used when there is no `zeppelin-site.xml`.
+2. Add your interpreter to the [default configuration](https://github.com/apache/zeppelin/blob/master/zeppelin-zengine/src/main/java/org/apache/zeppelin/conf/ZeppelinConfiguration.java#L397) which is used when there is no `zeppelin-site.xml`.
 
 3. Start Zeppelin by running `./bin/zeppelin-daemon.sh start`.
 
 4. In the interpreter page, click the `+Create` button and configure your interpreter properties.
 Now you are done and ready to use your interpreter.
 
-Note that the interpreters released with zeppelin have a [default configuration](https://github.com/apache/incubator-zeppelin/blob/master/zeppelin-zengine/src/main/java/org/apache/zeppelin/conf/ZeppelinConfiguration.java#L397) which is used when there is no `conf/zeppelin-site.xml`.
+Note that the interpreters released with zeppelin have a [default configuration](https://github.com/apache/zeppelin/blob/master/zeppelin-zengine/src/main/java/org/apache/zeppelin/conf/ZeppelinConfiguration.java#L397) which is used when there is no `conf/zeppelin-site.xml`.
 
 ### Use your interpreter
 
@@ -158,10 +196,10 @@ codes for myintp2
 
 Checkout some interpreters released with Zeppelin by default.
 
- - [spark](https://github.com/apache/incubator-zeppelin/tree/master/spark)
- - [markdown](https://github.com/apache/incubator-zeppelin/tree/master/markdown)
- - [shell](https://github.com/apache/incubator-zeppelin/tree/master/shell)
- - [hive](https://github.com/apache/incubator-zeppelin/tree/master/hive)
+ - [spark](https://github.com/apache/zeppelin/tree/master/spark)
+ - [markdown](https://github.com/apache/zeppelin/tree/master/markdown)
+ - [shell](https://github.com/apache/zeppelin/tree/master/shell)
+ - [jdbc](https://github.com/apache/zeppelin/tree/master/jdbc)
 
 ### Contributing a new Interpreter to Zeppelin releases
 
@@ -169,9 +207,9 @@ We welcome contribution to a new interpreter. Please follow these few steps:
 
  - First, check out the general contribution guide [here](./howtocontributewebsite.html).
  - Follow the steps in "Make your own Interpreter" section above.
- - Add your interpreter as in the "Configure your interpreter" section above; also add it to the example template [zeppelin-site.xml.template](https://github.com/apache/incubator-zeppelin/blob/master/conf/zeppelin-site.xml.template).
+ - Add your interpreter as in the "Configure your interpreter" section above; also add it to the example template [zeppelin-site.xml.template](https://github.com/apache/zeppelin/blob/master/conf/zeppelin-site.xml.template).
  - Add tests! They are run by Travis for all changes and it is important that they are self-contained.
- - Include your interpreter as a module in [`pom.xml`](https://github.com/apache/incubator-zeppelin/blob/master/pom.xml).
- - Add documentation on how to use your interpreter under `docs/interpreter/`. Follow the Markdown style as this [example](https://github.com/apache/incubator-zeppelin/blob/master/docs/interpreter/elasticsearch.md). Make sure you list config settings and provide working examples on using your interpreter in code boxes in Markdown. Link to images as appropriate (images should go to `docs/assets/themes/zeppelin/img/docs-img/`). And add a link to your documentation in the navigation menu (`docs/_includes/themes/zeppelin/_navigation.html`).
- - Most importantly, ensure licenses of the transitive closure of all dependencies are list in [license file](https://github.com/apache/incubator-zeppelin/blob/master/zeppelin-distribution/src/bin_license/LICENSE).
- - Commit your changes and open a Pull Request on the project [Mirror on GitHub](https://github.com/apache/incubator-zeppelin); check to make sure Travis CI build is passing.
+ - Include your interpreter as a module in [`pom.xml`](https://github.com/apache/zeppelin/blob/master/pom.xml).
+ - Add documentation on how to use your interpreter under `docs/interpreter/`. Follow the Markdown style as this [example](https://github.com/apache/zeppelin/blob/master/docs/interpreter/elasticsearch.md). Make sure you list config settings and provide working examples on using your interpreter in code boxes in Markdown. Link to images as appropriate (images should go to `docs/assets/themes/zeppelin/img/docs-img/`). And add a link to your documentation in the navigation menu (`docs/_includes/themes/zeppelin/_navigation.html`).
+ - Most importantly, ensure licenses of the transitive closure of all dependencies are list in [license file](https://github.com/apache/zeppelin/blob/master/zeppelin-distribution/src/bin_license/LICENSE).
+ - Commit your changes and open a Pull Request on the project [Mirror on GitHub](https://github.com/apache/zeppelin); check to make sure Travis CI build is passing.

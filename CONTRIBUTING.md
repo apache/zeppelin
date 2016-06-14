@@ -1,6 +1,6 @@
 # How to contribute
 
-**Zeppelin** is [Apache2 License](https://github.com/apache/incubator-zeppelin/blob/master/CONTRIBUTING.md) Software.
+**Zeppelin** is [Apache2 License](https://github.com/apache/zeppelin/blob/master/CONTRIBUTING.md) Software.
 Contributing to Zeppelin (Source code, Documents, Image, Website) means you agree to the Apache2 License.
 
 1. Make sure your issue is not already in the [Jira issue tracker](https://issues.apache.org/jira/browse/ZEPPELIN)
@@ -17,7 +17,7 @@ In order to make the review process easier, please follow this template when mak
 ```
 ### What is this PR for?
 A few sentences describing the overall goals of the pull request's commits.
-First time? Check out the contributing guide - https://github.com/apache/incubator-zeppelin/blob/master/CONTRIBUTING.md
+First time? Check out the contributing guide - https://github.com/apache/zeppelin/blob/master/CONTRIBUTING.md
 
 ### What type of PR is it?
 [Bug Fix | Improvement | Feature | Documentation | Hot Fix | Refactoring]
@@ -58,7 +58,7 @@ You can also test and review a particular Pull Request. Here are two useful ways
 * Another way is using [github/hub](https://github.com/github/hub). 
      
     ```
-    hub checkout https://github.com/apache/incubator-zeppelin/pull/[# of PR]
+    hub checkout https://github.com/apache/zeppelin/pull/[# of PR]
     ```
 
 The above two methods will help you test and review Pull Requests.
@@ -91,8 +91,8 @@ Here are some things you will need to build and test Zeppelin.
 
 ### Software Configuration Management (SCM)
 
-Zeppelin uses Git for its SCM system. `http://git.apache.org/incubator-zeppelin.git` you'll need git client installed in your development machine.
-For write access, `https://git-wip-us.apache.org/repos/asf/incubator-zeppelin.git`
+Zeppelin uses Git for its SCM system. `http://git.apache.org/zeppelin.git` you'll need git client installed in your development machine.
+For write access, `https://git-wip-us.apache.org/repos/asf/zeppelin.git`
 
 ### Integrated Development Environment (IDE)
 
@@ -110,7 +110,6 @@ The top-level pom.xml describes the basic project structure. Currently Zeppelin 
     <module>angular</module>
     <module>shell</module>
     <module>hive</module>
-    <module>tajo</module>
     <module>flink</module>
     <module>ignite</module>
     <module>lens</module>
@@ -121,12 +120,12 @@ The top-level pom.xml describes the basic project structure. Currently Zeppelin 
     
 ### Web Project Contribution Guidelines
 If you plan on making a contribution to Zeppelin's WebApplication,
-please check [its own contribution guidelines](https://github.com/apache/incubator-zeppelin/blob/master/zeppelin-web/CONTRIBUTING.md)
+please check [its own contribution guidelines](https://github.com/apache/zeppelin/blob/master/zeppelin-web/CONTRIBUTING.md)
 
 ### Code convention
 We are following Google Code style:
-* [Java style](http://google-styleguide.googlecode.com/svn/trunk/javaguide.html) 
-* [Shell style](https://google-styleguide.googlecode.com/svn/trunk/shell.xml)
+* [Java style](https://google.github.io/styleguide/javaguide.html)
+* [Shell style](https://google.github.io/styleguide/shell.xml)
 
 Check style report location are in `${submodule}/target/site/checkstyle.html`
 Test coverage report location are in `${submodule}/target/site/cobertura/index.html`
@@ -138,31 +137,31 @@ To build the code, install
  * Apache Maven
 
 ## Getting the source code
-First of all, you need the Zeppelin source code. The official location for Zeppelin is [http://git.apache.org/incubator-zeppelin.git](http://git.apache.org/incubator-zeppelin.git).
+First of all, you need the Zeppelin source code. The official location for Zeppelin is [http://git.apache.org/zeppelin.git](http://git.apache.org/zeppelin.git).
 
 ### git access
 
 Get the source code on your development machine using git.
 
 ```
-git clone git://git.apache.org/incubator-zeppelin.git zeppelin
+git clone git://git.apache.org/zeppelin.git zeppelin
 ```
 
 You may also want to develop against a specific branch. For example, for branch-0.5.6
 
 ```
-git clone -b branch-0.5.6 git://git.apache.org/incubator-zeppelin.git zeppelin
+git clone -b branch-0.5.6 git://git.apache.org/zeppelin.git zeppelin
 ```
 
 or with write access
 
 ```
-git clone https://git-wip-us.apache.org/repos/asf/incubator-zeppelin.git
+git clone https://git-wip-us.apache.org/repos/asf/zeppelin.git
 ```
 
 ### Fork repository
 
-If you want not only build Zeppelin but also make change, then you need fork Zeppelin github mirror repository (https://github.com/apache/incubator-zeppelin) and make pull request.
+If you want not only build Zeppelin but also make change, then you need fork Zeppelin github mirror repository (https://github.com/apache/zeppelin) and make pull request.
 
 
 ## Build
@@ -193,11 +192,11 @@ Zeppelin has 3 types of tests:
   2. Integration Tests: The integration tests run after all modules are build. The integration tests launch an instance of Zeppelin server. ZeppelinRestApiTest is an example integration test. 
   3. GUI integration tests: These tests validate the Zeppelin UI elements. These tests require a running Zeppelin server and launches a web browser to validate Notebook UI elements like Notes and their execution. See ZeppelinIT as an example.  
 
-Currently the GUI integration tests are not run in the Maven and are only run in the CI environment when the pull request is submitted to github. Make sure to watch the [CI results] (https://travis-ci.org/apache/incubator-zeppelin/pull_requests) for your pull request.
+Currently the GUI integration tests are not run in the Maven and are only run in the CI environment when the pull request is submitted to github. Make sure to watch the [CI results] (https://travis-ci.org/apache/zeppelin/pull_requests) for your pull request.
 
 ## Continuous Integration
 
-Zeppelin uses Travis for CI. In the project root there is .travis.yml that configures CI and [publishes CI results] (https://travis-ci.org/apache/incubator-zeppelin/builds)
+Zeppelin uses Travis for CI. In the project root there is .travis.yml that configures CI and [publishes CI results] (https://travis-ci.org/apache/zeppelin/builds)
   
 
 ## Run Zeppelin server in development mode
@@ -219,9 +218,12 @@ Server will be run on http://localhost:8080
 ## JIRA
 Zeppelin manages it's issues in Jira. [https://issues.apache.org/jira/browse/ZEPPELIN](https://issues.apache.org/jira/browse/ZEPPELIN)
 
+## Where to Start
+You can find issues for [beginner](https://issues.apache.org/jira/browse/ZEPPELIN-924?jql=project%20%3D%20ZEPPELIN%20and%20status%20%3D%20Open%20and%20labels%20in%20\(beginner%2C%20newbie\))
+
 ## Stay involved
 Everyone is welcome to join our mailing list:
 
- * [users@zeppelin.incubator.apache.org](http://mail-archives.apache.org/mod_mbox/incubator-zeppelin-users/) is for usage questions, help, and announcements [ [subscribe](mailto:users-subscribe@zeppelin.incubator.apache.org?subject=send%20this%20email%20to%20subscribe), [unsubscribe](mailto:users-unsubscribe@zeppelin.incubator.apache.org?subject=send%20this%20email%20to%20unsubscribe), [archive](http://mail-archives.apache.org/mod_mbox/incubator-zeppelin-users/) ]
- * [dev@zeppelin.incubator.apache.org](http://mail-archives.apache.org/mod_mbox/incubator-zeppelin-users/) is for people who want to contribute code to Zeppelin.[ [subscribe](mailto:dev-subscribe@zeppelin.incubator.apache.org?subject=send%20this%20email%20to%20subscribe), [unsubscribe](mailto:dev-unsubscribe@zeppelin.incubator.apache.org?subject=send%20this%20email%20to%20unsubscribe), [archive](http://mail-archives.apache.org/mod_mbox/incubator-zeppelin-dev/) ]
- * [commits@zeppelin.incubator.apache.org](http://mail-archives.apache.org/mod_mbox/incubator-zeppelin-commits/) is for commit messages and patches to Zeppelin. [ [subscribe](mailto:commits-subscribe@zeppelin.incubator.apache.org?subject=send%20this%20email%20to%20subscribe), [unsubscribe](mailto:commits-unsubscribe@zeppelin.incubator.apache.org?subject=send%20this%20email%20to%20unsubscribe), [archive](http://mail-archives.apache.org/mod_mbox/incubator-zeppelin-commits/) ]
+ * [users@zeppelin.apache.org](http://mail-archives.apache.org/mod_mbox/zeppelin-users/) is for usage questions, help, and announcements [ [subscribe](mailto:users-subscribe@zeppelin.apache.org?subject=send%20this%20email%20to%20subscribe), [unsubscribe](mailto:users-unsubscribe@zeppelin.apache.org?subject=send%20this%20email%20to%20unsubscribe), [archive](http://mail-archives.apache.org/mod_mbox/zeppelin-users/) ]
+ * [dev@zeppelin.apache.org](http://mail-archives.apache.org/mod_mbox/zeppelin-users/) is for people who want to contribute code to Zeppelin.[ [subscribe](mailto:dev-subscribe@zeppelin.apache.org?subject=send%20this%20email%20to%20subscribe), [unsubscribe](mailto:dev-unsubscribe@zeppelin.apache.org?subject=send%20this%20email%20to%20unsubscribe), [archive](http://mail-archives.apache.org/mod_mbox/zeppelin-dev/) ]
+ * [commits@zeppelin.apache.org](http://mail-archives.apache.org/mod_mbox/zeppelin-commits/) is for commit messages and patches to Zeppelin. [ [subscribe](mailto:commits-subscribe@zeppelin.apache.org?subject=send%20this%20email%20to%20subscribe), [unsubscribe](mailto:commits-unsubscribe@zeppelin.apache.org?subject=send%20this%20email%20to%20unsubscribe), [archive](http://mail-archives.apache.org/mod_mbox/zeppelin-commits/) ]

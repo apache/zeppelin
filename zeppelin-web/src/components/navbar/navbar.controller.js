@@ -14,7 +14,45 @@
 
 'use strict';
 
-angular.module('zeppelinWebApp').controller('NavCtrl', function($scope, $rootScope, $http, $routeParams,
+angular.module('zeppelinWebApp')
+.filter('notebookFilter', function() {
+  return function (notebooks, searchText)
+  {
+    if (!searchText) {
+      return notebooks;
+    }
+
+    var filteringNote = function(notebooks, filteredNotes) {
+      _.each(notebooks, function(notebook) {
+
+        if (notebook.name.toLowerCase().indexOf(searchText) !== -1) {
+          filteredNotes.push(notebook);
+          return notebook;
+        }
+
+        if (notebook.children) { 
+          filteringNote(notebook.children, filteredNotes);
+        }
+      });
+    };
+
+    return _.filter(notebooks, function(notebook) {
+      if (notebook.children) {
+        var filteredNotes = [];
+        filteringNote(notebook.children, filteredNotes);
+
+        if (filteredNotes.length > 0) {
+          return filteredNotes;
+        }
+      }
+
+      if (notebook.name.toLowerCase().indexOf(searchText) !== -1) {
+        return notebook;
+      }
+    });
+  };
+})
+.controller('NavCtrl', function($scope, $rootScope, $http, $routeParams,
     $location, notebookListDataFactory, baseUrlSrv, websocketMsgSrv, arrayOrderingSrv) {
   /** Current list of notes (ids) */
 
@@ -54,6 +92,9 @@ angular.module('zeppelinWebApp').controller('NavCtrl', function($scope, $rootSco
       else {
         $rootScope.truncatedUsername = $rootScope.ticket.principal.substr(0, MAX_USERNAME_LENGTH) + '..';
       }
+    }
+    if (_.isEmpty($rootScope.truncatedUsername)) {
+      $rootScope.truncatedUsername = 'Connected';
     }
   };
 
@@ -100,9 +141,21 @@ angular.module('zeppelinWebApp').controller('NavCtrl', function($scope, $rootSco
     }
   };
 
+  function getZeppelinVersion() {
+    console.log('version');
+    $http.get(baseUrlSrv.getRestApiBase() + '/version').success(
+      function(data, status, headers, config) {
+        $rootScope.zeppelinVersion = data.body;
+      }).error(
+      function(data, status, headers, config) {
+        console.log('Error %o %o', status, data.message);
+      });
+  }
+
   vm.loadNotes = loadNotes;
   vm.isActive = isActive;
 
+  getZeppelinVersion();
   vm.loadNotes();
   $scope.checkUsername();
 

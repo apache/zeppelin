@@ -20,6 +20,7 @@ package org.apache.zeppelin.livy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -40,7 +41,9 @@ import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 
 
@@ -60,27 +63,28 @@ public class LivyHelper {
 
   public Integer createSession(InterpreterContext context, String kind) throws Exception {
     try {
+      Map<String, String> conf = new HashMap<String, String>();
+      
+      Iterator<Entry<Object, Object>> it = property.entrySet().iterator();
+      while (it.hasNext()) {
+        Entry<Object, Object> pair = it.next();
+        if (pair.getKey().toString().startsWith("livy.spark.") && 
+            !pair.getValue().toString().isEmpty())
+          conf.put(pair.getKey().toString().substring(5), pair.getValue().toString());
+      }
+
+      String confData = gson.toJson(conf);
+
       String json = executeHTTP(property.getProperty("zeppelin.livy.url") + "/sessions",
-          "POST",
+          "POST", 
           "{" +
               "\"kind\": \"" + kind + "\", " +
-              "\"master\": \"" + property.getProperty("zeppelin.livy.master") + "\", " +
-              "\"proxyUser\": \"" + context.getAuthenticationInfo().getUser() + "\"" +
+              "\"conf\": " + confData + ", " + 
+              "\"proxyUser\": " + context.getAuthenticationInfo().getUser() + 
               "}",
           context.getParagraphId()
       );
-      if (json.contains("CreateInteractiveRequest[\\\"master\\\"]")) {
-        json = executeHTTP(property.getProperty("zeppelin.livy.url") + "/sessions",
-            "POST",
-            "{" +
-                "\"kind\": \"" + kind + "\", " +
-                "\"conf\":{\"spark.master\": \""
-                + property.getProperty("zeppelin.livy.master") + "\"}," +
-                "\"proxyUser\": \"" + context.getAuthenticationInfo().getUser() + "\"" +
-                "}",
-            context.getParagraphId()
-        );
-      }
+
       Map jsonMap = (Map<Object, Object>) gson.fromJson(json,
           new TypeToken<Map<Object, Object>>() {
           }.getType());

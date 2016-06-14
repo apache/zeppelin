@@ -115,7 +115,7 @@ public class DependencyContext {
       throws DependencyResolutionException, ArtifactResolutionException {
     Artifact artifact = new DefaultArtifact(dep.getGroupArtifactVersion());
 
-    DependencyFilter classpathFlter = DependencyFilterUtils
+    DependencyFilter classpathFilter = DependencyFilterUtils
         .classpathFilter(JavaScopes.COMPILE);
     PatternExclusionsDependencyFilter exclusionFilter = new PatternExclusionsDependencyFilter(
         dep.getExclusions());
@@ -133,7 +133,7 @@ public class DependencyContext {
     }
 
     DependencyRequest dependencyRequest = new DependencyRequest(collectRequest,
-        DependencyFilterUtils.andFilter(exclusionFilter, classpathFlter));
+        DependencyFilterUtils.andFilter(exclusionFilter, classpathFilter));
 
     return system.resolveDependencies(session, dependencyRequest).getArtifactResults();
   }

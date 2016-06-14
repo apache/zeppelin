@@ -22,21 +22,21 @@
   <parent>
     <artifactId>zeppelin</artifactId>
     <groupId>org.apache.zeppelin</groupId>
-    <version>0.6.0-incubating-SNAPSHOT</version>
+    <version>0.6.0-SNAPSHOT</version>
     <relativePath>..</relativePath>
   </parent>
 
   <groupId>org.apache.zeppelin</groupId>
   <artifactId>zeppelin-scalding</artifactId>
   <packaging>jar</packaging>
-  <version>0.6.0-incubating-SNAPSHOT</version>
+  <version>0.6.0-SNAPSHOT</version>
   <name>Zeppelin: Scalding interpreter</name>
-  <url>http://zeppelin.incubator.apache.org</url>
+  <url>http://zeppelin.apache.org</url>
 
   <properties>
-    <scala.version>2.10.4</scala.version>
-    <hadoop.version>2.3.0</hadoop.version>
-    <scalding.version>0.15.1-RC13</scalding.version>
+    <scala.version>2.11.8</scala.version>
+    <hadoop.version>2.6.0</hadoop.version>
+    <scalding.version>0.16.1-RC1</scalding.version>
   </properties>
 
   <repositories>
@@ -44,6 +44,11 @@
       <id>conjars</id>
       <name>Concurrent Maven Repo</name>
       <url>http://conjars.org/repo</url>
+    </repository>
+    <repository>
+      <id>twitter</id>
+      <name>Twitter Maven Repo</name>
+      <url>http://maven.twttr.com</url>
     </repository>
   </repositories>
 
@@ -69,13 +74,43 @@
 
     <dependency>
       <groupId>com.twitter</groupId>
-      <artifactId>scalding-core_2.10</artifactId>
+      <artifactId>scalding-core_2.11</artifactId>
       <version>${scalding.version}</version>
     </dependency>
 
     <dependency>
       <groupId>com.twitter</groupId>
-      <artifactId>scalding-repl_2.10</artifactId>
+      <artifactId>scalding-args_2.11</artifactId>
+      <version>${scalding.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.twitter</groupId>
+      <artifactId>scalding-date_2.11</artifactId>
+      <version>${scalding.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.twitter</groupId>
+      <artifactId>scalding-commons_2.11</artifactId>
+      <version>${scalding.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.twitter</groupId>
+      <artifactId>scalding-avro_2.11</artifactId>
+      <version>${scalding.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.twitter</groupId>
+      <artifactId>scalding-parquet_2.11</artifactId>
+      <version>${scalding.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.twitter</groupId>
+      <artifactId>scalding-repl_2.11</artifactId>
       <version>${scalding.version}</version>
     </dependency>
 
@@ -97,12 +132,12 @@
       <version>${scala.version}</version>
     </dependency>
 
-    <!-- Scalding REPL needs org.apache.hadoop.conf.Configuration even in local mode -->
     <dependency>
       <groupId>org.apache.hadoop</groupId>
-      <artifactId>hadoop-common</artifactId>
+      <artifactId>hadoop-client</artifactId>
       <version>${hadoop.version}</version>
     </dependency>
+
   </dependencies>
 
   <build>

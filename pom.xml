@@ -35,10 +35,10 @@
   <groupId>org.apache.zeppelin</groupId>
   <artifactId>zeppelin</artifactId>
   <packaging>pom</packaging>
-  <version>0.6.0-incubating-SNAPSHOT</version>
+  <version>0.6.0-SNAPSHOT</version>
   <name>Zeppelin</name>
   <description>Zeppelin project</description>
-  <url>http://zeppelin.incubator.apache.org/</url>
+  <url>http://zeppelin.apache.org/</url>
 
   <parent>
     <groupId>org.apache</groupId>
@@ -55,31 +55,10 @@
   </licenses>
 
   <scm>
-    <url>https://git-wip-us.apache.org/repos/asf/incubator-zeppelin.git</url>
-    <connection>scm:git:https://git-wip-us.apache.org/repos/asf/incubator-zeppelin.git</connection>
-    <developerConnection>scm:git:https://git-wip-us.apache.org/repos/asf/incubator-zeppelin.git</developerConnection>
+    <url>https://git-wip-us.apache.org/repos/asf/zeppelin.git</url>
+    <connection>scm:git:https://git-wip-us.apache.org/repos/asf/zeppelin.git</connection>
+    <developerConnection>scm:git:https://git-wip-us.apache.org/repos/asf/zeppelin.git</developerConnection>
   </scm>
-
-  <developers>
-    <developer>
-      <id>moon</id>
-      <name>Lee moon soo</name>
-      <organization>NFLabs</organization>
-      <organizationUrl>http://www.nflabs.com</organizationUrl>
-    </developer>
-    <developer>
-      <id>alex</id>
-      <name>Alexander Bezzubov</name>
-      <organization>NFLabs</organization>
-      <organizationUrl>http://www.nflabs.com</organizationUrl>
-    </developer>
-    <developer>
-      <id>anthonycorbacho</id>
-      <name>Anthony Corbacho</name>
-      <organization>NFLabs</organization>
-      <organizationUrl>http://www.nflabs.com</organizationUrl>
-    </developer>
-  </developers>
 
   <inceptionYear>2013</inceptionYear>
 
@@ -93,16 +72,15 @@
     <module>angular</module>
     <module>shell</module>
     <module>livy</module>
-    <module>hive</module>
     <module>hbase</module>
     <module>phoenix</module>
     <module>postgresql</module>
     <module>jdbc</module>
-    <module>tajo</module>
     <module>file</module>
     <module>flink</module>
     <module>ignite</module>
     <module>kylin</module>
+    <module>python</module>
     <module>lens</module>
     <module>cassandra</module>
     <module>elasticsearch</module>
@@ -382,8 +360,6 @@
               <resourceBundles>
                 <!-- Will generate META-INF/DEPENDENCIES META-INF/LICENSE META-INF/NOTICE -->
                 <resourceBundle>org.apache.apache.resources:apache-jar-resource-bundle:1.5-SNAPSHOT</resourceBundle>
-                <!-- Will generate META-INF/DISCLAIMER  -->
-                <resourceBundle>org.apache.apache.resources:apache-incubator-disclaimer-resource-bundle:1.2-SNAPSHOT</resourceBundle>
               </resourceBundles>
             </configuration>
           </execution>
@@ -491,9 +467,11 @@
               <exclude>**/zeppelin-distribution/src/bin_license/**</exclude>
               <exclude>conf/interpreter.json</exclude>
               <exclude>conf/notebook-authorization.json</exclude>
+              <exclude>conf/credentials.json</exclude>
               <exclude>conf/zeppelin-env.sh</exclude>
               <exclude>spark-*-bin*/**</exclude>
               <exclude>.spark-dist/**</exclude>
+              <exclude>**/interpreter-setting.json</exclude>
 
               <!-- bundled from bootstrap -->
               <exclude>docs/assets/themes/zeppelin/bootstrap/**</exclude>
@@ -516,6 +494,9 @@
               <exclude>docs/rss.xml</exclude>
               <exclude>docs/sitemap.txt</exclude>
               <exclude>**/dependency-reduced-pom.xml</exclude>
+
+              <!-- bundled from anchor -->
+              <exclude>docs/assets/themes/zeppelin/js/anchor.min.js</exclude>
 
               <!-- bundled from jekyll -->
               <exclude>docs/assets/themes/zeppelin/css/syntax.css</exclude>

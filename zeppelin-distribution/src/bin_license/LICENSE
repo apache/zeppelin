@@ -42,7 +42,6 @@ The following components are provided under Apache License.
     (Apache 2.0) Apache Kylin (http://kylin.apache.org/)
     (Apache 2.0) Apache Lens (http://lens.apache.org/)
     (Apache 2.0) Apache Phoenix (http://phoenix.apache.org/)
-    (Apache 2.0) Apache Tajo (http://tajo.apache.org/)
     (Apache 2.0) Apache Flink (http://flink.apache.org/)
     (Apache 2.0) Apache Thrift (http://thrift.apache.org/)
     (Apache 2.0) Apache Lucene (https://lucene.apache.org/)
@@ -121,7 +120,6 @@ The text of each license is also included at licenses/LICENSE-[project]-[version
     (The MIT License) Angular Websocket v1.0.13 (http://angularclass.github.io/angular-websocket/) - https://github.com/AngularClass/angular-websocket/blob/v1.0.13/LICENSE
     (The MIT License) UI.Ace v0.1.1 (http://angularclass.github.io/angular-websocket/) - https://github.com/angular-ui/ui-ace/blob/master/LICENSE
     (The MIT License) jquery.scrollTo v1.4.13 (https://github.com/flesler/jquery.scrollTo) - https://github.com/flesler/jquery.scrollTo/blob/1.4.13/LICENSE
-    (The MIT License) jquery.floatThead v1.3.2 (https://github.com/mkoryak/floatThead) - https://github.com/mkoryak/floatThead/blob/master/license.txt
     (The MIT License) angular-dragdrop v1.0.8 (http://codef0rmer.github.io/angular-dragdrop/#/) - https://github.com/codef0rmer/angular-dragdrop/blob/v1.0.8/LICENSE
     (The MIT License) perfect-scrollbar v0.5.4 (http://noraesae.github.io/perfect-scrollbar/) - https://github.com/noraesae/perfect-scrollbar/tree/0.5.4
     (The MIT License) ng-sortable v1.1.9 (https://github.com/a5hik/ng-sortable) - https://github.com/a5hik/ng-sortable/blob/1.1.9/LICENSE
@@ -139,7 +137,8 @@ The text of each license is also included at licenses/LICENSE-[project]-[version
     (The MIT License) slf4j v1.7.10 (org.slf4j:slf4j-api:jar:1.7.10 - http://www.slf4j.org) - http://www.slf4j.org/license.html
     (The MIT License) slf4j-log4j12 v1.7.10 (org.slf4j:slf4j-log4j12:jar:1.7.10 - http://www.slf4j.org) - http://www.slf4j.org/license.html
     (The MIT License) bcprov-jdk15on v1.51 (org.bouncycastle:bcprov-jdk15on:jar:1.51 - http://www.bouncycastle.org/java.html) - http://www.bouncycastle.org/licence.html
-
+    (The MIT License) AnchorJS (https://github.com/bryanbraun/anchorjs) - https://github.com/bryanbraun/anchorjs/blob/master/README.md#license
+    
 The following components are provided under the MIT License.
 
     (The MIT License) Objenesis (org.objenesis:objenesis:2.1 - https://github.com/easymock/objenesis) - Copyright (c) 2006-2015 the original author and authors

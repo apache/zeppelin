@@ -120,6 +120,9 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
           if (!setting.option) {
             setting.option = {};
           }
+          if (setting.option.isExistingProcess === undefined) {
+            setting.option.isExistingProcess = false;
+          }
           if (setting.option.remote === undefined) {
             // remote always true for now
             setting.option.remote = true;
@@ -212,11 +215,12 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
   };
 
   $scope.addNewInterpreterSetting = function() {
-    if (!$scope.newInterpreterSetting.name || !$scope.newInterpreterSetting.group) {
+    //user input validation on interpreter creation
+    if (!$scope.newInterpreterSetting.name.trim() || !$scope.newInterpreterSetting.group) {
       BootstrapDialog.alert({
         closable: true,
         title: 'Add interpreter',
-        message: 'Please determine name and interpreter'
+        message: 'Please fill in interpreter name and choose a group'
       });
       return;
     }
@@ -272,8 +276,10 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
       dependencies: [],
       option: {
         remote: true,
+        isExistingProcess: false,
         perNoteSession: false,
         perNoteProcess: false
+
       }
     };
     emptyNewProperty($scope.newInterpreterSetting);

@@ -28,10 +28,49 @@ In a notebook, to enable the **Scalding** interpreter, click on the **Gear** ico
 </center>
 
 ### Configuring the Interpreter
-Zeppelin comes with a pre-configured Scalding interpreter in local mode, so you do not need to install anything.
+
+Scalding interpreter runs in two modes:
+
+* local
+* hdfs
+
+In the local mode, you can access files on the local server and scalding transformation are done locally.
+
+In hdfs mode you can access files in HDFS and scalding transformation are run as hadoop map-reduce jobs.
+
+Zeppelin comes with a pre-configured Scalding interpreter in local mode.
+
+To run the scalding interpreter in the hdfs mode you have to do the following:
+
+**Set the classpath with ZEPPELIN\_CLASSPATH\_OVERRIDES**
+
+In conf/zeppelin_env.sh, you have to set
+ZEPPELIN_CLASSPATH_OVERRIDES to the contents of 'hadoop classpath'
+and directories with custom jar files you need for your scalding commands.
+
+**Set arguments to the scalding repl**
+
+The default arguments are: "--local --repl"
+
+For hdfs mode you need to add: "--hdfs --repl"
+
+If you want to add custom jars, you need to add:
+"-libjars directory/*:directory/*"
+
+For reducer estimation, you need to add something like:
+"-Dscalding.reducer.estimator.classes=com.twitter.scalding.reducer_estimation.InputSizeReducerEstimator"
+
+**Set max.open.instances**
+
+If you want to control the maximum number of open interpreters, you have to select "scoped" interpreter for note
+option and set max.open.instances argument.
 
 ### Testing the Interpreter
-In example, by using the [Alice in Wonderland](https://gist.github.com/johnynek/a47699caa62f4f38a3e2) tutorial, we will count words (of course!), and plot a graph of the top 10 words in the book.
+
+#### Local mode
+
+In example, by using the [Alice in Wonderland](https://gist.github.com/johnynek/a47699caa62f4f38a3e2) tutorial, 
+we will count words (of course!), and plot a graph of the top 10 words in the book.
 
 ```
 %scalding
@@ -71,7 +110,44 @@ print("%table " + table)
 If you click on the icon for the pie chart, you should be able to see a chart like this:
 ![Scalding - Pie - Chart](../assets/themes/zeppelin/img/docs-img/scalding-pie.png)
 
-### Current Status & Future Work
-The current implementation of the Scalding interpreter does not support canceling jobs, or fine-grained progress updates.
 
-The pre-configured Scalding interpreter only supports Scalding in local mode. Hadoop mode for Scalding is currently unsupported, and will be future work (contributions welcome!).
+#### HDFS mode
+
+**Test mode**
+
+```
+%scalding
+mode
+```
+This command should print:
+
+```
+res4: com.twitter.scalding.Mode = Hdfs(true,Configuration: core-default.xml, core-site.xml, mapred-default.xml, mapred-site.xml, yarn-default.xml, yarn-site.xml, hdfs-default.xml, hdfs-site.xml)
+```
+
+
+**Test HDFS read**
+
+```
+val testfile = TypedPipe.from(TextLine("/user/x/testfile"))
+testfile.dump
+```
+
+This command should print the contents of the hdfs file /user/x/testfile.
+
+**Test map-reduce job**
+
+```
+val testfile = TypedPipe.from(TextLine("/user/x/testfile"))
+val a = testfile.groupAll.size.values
+a.toList
+
+```
+
+This command should create a map reduce job.
+
+### Future Work
+* Better user feedback (hadoop url, progress updates)
+* Ability to cancel jobs
+* Ability to dynamically load jars without restarting the interpreter
+* Multiuser scalability (run scalding interpreters on different servers)
