@@ -111,6 +111,10 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     this.effectiveText = effectiveText;
   }
 
+  public String getEffectiveText() {
+    return effectiveText;
+  }
+
   public AuthenticationInfo getAuthenticationInfo() {
     return authenticationInfo;
   }

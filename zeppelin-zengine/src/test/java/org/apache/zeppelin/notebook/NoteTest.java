@@ -78,15 +78,17 @@ public class NoteTest {
     when(replLoader.get("jdbc")).thenReturn(interpreter);
     when(interpreter.getScheduler()).thenReturn(scheduler);
 
+    String pText = "%mysql show databases";
     Note note = new Note(repo, replLoader, jobListenerFactory, index, credentials);
     Paragraph p = note.addParagraph();
-    p.setText("%mysql show databases");
+    p.setText(pText);
     note.run(p.getId());
 
     ArgumentCaptor<Paragraph> pCaptor = ArgumentCaptor.forClass(Paragraph.class);
     verify(scheduler, only()).submit(pCaptor.capture());
     verify(replLoader, times(2)).get(anyString());
 
-    assertEquals("Change paragraph text", "%jdbc(mysql) show databases", pCaptor.getValue().getText());
+    assertEquals("Change paragraph text", "%jdbc(mysql) show databases", pCaptor.getValue().getEffectiveText());
+    assertEquals("Change paragraph text", pText, pCaptor.getValue().getText());
   }
 }
