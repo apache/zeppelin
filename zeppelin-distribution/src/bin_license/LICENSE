@@ -36,7 +36,6 @@ The following components are provided under Apache License.
     (Apache 2.0) Apache Curator (org.apache.curator:curator:2.4.0 - http://curator.apache.org/)
     (Apache 2.0) Apache Cassandra (http://cassandra.apache.org/)
     (Apache 2.0) Apache CXF (http://cxf.apache.org/)
-    (Apache 2.0) Apache Hive (http://hive.apache.org/)
     (Apache 2.0) Apache HBase (http://hbase.apache.org/)
     (Apache 2.0) Apache Ignite (http://ignite.apache.org/)
     (Apache 2.0) Apache Kylin (http://kylin.apache.org/)
@@ -111,7 +110,7 @@ MIT licenses
 The following components are provided under the MIT License. See project link for details.
 The text of each license is also included at licenses/LICENSE-[project]-[version].txt.
 
-    (The MIT License) AngularJS v1.3.8 (https://angularjs.org/) - https://github.com/angular/angular.js/blob/v1.3.8/LICENSE
+    (The MIT License) AngularJS v1.5.0 (https://angularjs.org/) - https://github.com/angular/angular.js/blob/v1.5.0/LICENSE
     (The MIT License) Json3 v3.3.1 (http://bestiejs.github.io/json3) - https://github.com/bestiejs/json3/blob/v3.3.1/LICENSE
     (The MIT License) es5-shim v3.1.0 (https://github.com/es-shims/es5-shim) - https://github.com/es-shims/es5-shim/blob/v3.1.0/LICENSE
     (The MIT License) bootstrap v3.2.0 (http://getbootstrap.com/) - https://github.com/twbs/bootstrap/blob/v3.2.0/LICENSE
@@ -122,14 +121,14 @@ The text of each license is also included at licenses/LICENSE-[project]-[version
     (The MIT License) jquery.scrollTo v1.4.13 (https://github.com/flesler/jquery.scrollTo) - https://github.com/flesler/jquery.scrollTo/blob/1.4.13/LICENSE
     (The MIT License) angular-dragdrop v1.0.8 (http://codef0rmer.github.io/angular-dragdrop/#/) - https://github.com/codef0rmer/angular-dragdrop/blob/v1.0.8/LICENSE
     (The MIT License) perfect-scrollbar v0.5.4 (http://noraesae.github.io/perfect-scrollbar/) - https://github.com/noraesae/perfect-scrollbar/tree/0.5.4
-    (The MIT License) ng-sortable v1.1.9 (https://github.com/a5hik/ng-sortable) - https://github.com/a5hik/ng-sortable/blob/1.1.9/LICENSE
+    (The MIT License) ng-sortable v1.3.6 (https://github.com/a5hik/ng-sortable) - https://github.com/a5hik/ng-sortable/blob/1.3.6/LICENSE
     (The MIT License) angular-elastic v2.4.2 (https://github.com/monospaced/angular-elastic) - https://github.com/monospaced/angular-elastic/blob/v2.4.2/LICENCE.txt
     (The MIT License) angular-elastic-input v2.2.0 (https://github.com/jacek-pulit/angular-elastic-input) - https://github.com/jacek-pulit/angular-elastic-input/blob/v2.2.0/LICENSE
     (The MIT License) ng-focus-if v1.0.2 (https://github.com/hiebj/ng-focus-if) - https://github.com/hiebj/ng-focus-if/blob/v1.0.2/LICENSE
     (The MIT License) angular-xeditable v0.1.8 (http://vitalets.github.io/angular-xeditable/) - https://github.com/vitalets/angular-xeditable/tree/0.1.8
     (The MIT License) lodash v3.9.3 (https://lodash.com/) - https://github.com/lodash/lodash/blob/3.9.3/LICENSE.txt
     (The MIT License) angular-filter v0.5.4 (https://github.com/a8m/angular-filter) - https://github.com/a8m/angular-filter/blob/v0.5.4/license.md
-    (The MIT License) ngToast v1.5.5 (http://tamerayd.in/ngToast/) - http://tameraydin.mit-license.org/
+    (The MIT License) ngToast v2.0.0 (http://tamerayd.in/ngToast/) - http://tameraydin.mit-license.org/
     (The MIT License) Handsontable v0.24.2 (https://github.com/handsontable/handsontable) - https://github.com/handsontable/handsontable/blob/master/LICENSE
     (The MIT License) Zeroclipboard v2.2.0 (https://github.com/zeroclipboard/zeroclipboard) - https://github.com/zeroclipboard/zeroclipboard/blob/v2.2.0/LICENSE
     (The MIT License) Moment v2.9.0 (https://github.com/moment/moment) - https://github.com/moment/moment/blob/2.9.0/LICENSE
@@ -160,7 +159,7 @@ The text of each license is also included at licenses/LICENSE-[project]-[version
     (BSD 3 Clause) Ace v1.1.9 (http://ace.c9.io/) - https://github.com/ajaxorg/ace/blob/v1.1.9/LICENSE
     (BSD Style) dom4j v1.6.1 (http://www.dom4j.org) - https://github.com/dom4j/dom4j/blob/dom4j_1_6_1/LICENSE.txt
     (BSD Style) JSch v0.1.53 (http://www.jcraft.com) - http://www.jcraft.com/jsch/LICENSE.txt
-    (BSD 3 Clause) highlightjs v8.4.0 (https://highlightjs.org/) - https://github.com/isagalaev/highlight.js/blob/8.4/LICENSE
+    (BSD 3 Clause) highlightjs v9.4.0 (https://highlightjs.org/) - https://github.com/isagalaev/highlight.js/blob/9.4.0/LICENSE
     (BSD 3 Clause) hamcrest v1.3 (http://hamcrest.org/JavaHamcrest/) - http://opensource.org/licenses/BSD-3-Clause
     (BSD Style) JLine v2.12.1 (https://github.com/jline/jline2) - https://github.com/jline/jline2/blob/master/LICENSE.txt
 
