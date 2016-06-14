@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.apache.zeppelin.interpreter.Constants;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.Interpreter.RegisteredInterpreter;
 import org.apache.zeppelin.interpreter.InterpreterException;
@@ -75,7 +76,9 @@ public class NoteInterpreterLoader {
   }
 
   private String getInterpreterInstanceKey(InterpreterSetting setting) {
-    if (setting.getOption().isPerNoteSession() || setting.getOption().isPerNoteProcess()) {
+    if (setting.getOption().isExistingProcess()) {
+      return Constants.EXISTING_PROCESS;
+    } else if (setting.getOption().isPerNoteSession() || setting.getOption().isPerNoteProcess()) {
       return noteId;
     } else {
       return SHARED_SESSION;
