@@ -170,7 +170,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     }
   }
 
-  private String getScriptBody() {
+  public String getScriptBody() {
     return getScriptBody(null != effectiveText ? effectiveText : text);
   }
 
