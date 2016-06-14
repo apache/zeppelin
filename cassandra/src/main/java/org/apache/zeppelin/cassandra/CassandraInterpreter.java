@@ -110,7 +110,7 @@ public class CassandraInterpreter extends Interpreter {
   public static final String DEFAULT_PORT = "9042";
   public static final String DEFAULT_CLUSTER = "Test Cluster";
   public static final String DEFAULT_KEYSPACE = "system";
-  public static final String DEFAULT_PROTOCOL_VERSION = "3";
+  public static final String DEFAULT_PROTOCOL_VERSION = "4";
   public static final String DEFAULT_COMPRESSION = "NONE";
   public static final String DEFAULT_CREDENTIAL = "none";
   public static final String DEFAULT_POLICY = "DEFAULT";
@@ -159,7 +159,7 @@ public class CassandraInterpreter extends Interpreter {
                 "IP address). Default = localhost. Ex: '192.168.0.12,node2,node3'")
         .add(CASSANDRA_PORT, DEFAULT_PORT, "Cassandra native port. Default = 9042")
         .add(CASSANDRA_PROTOCOL_VERSION, DEFAULT_PROTOCOL_VERSION,
-                "Cassandra protocol version. Default = 3")
+                "Cassandra protocol version. Default = 4")
         .add(CASSANDRA_CLUSTER_NAME, DEFAULT_CLUSTER, "Cassandra cluster name. " +
                 "Default = 'Test Cluster'")
         .add(CASSANDRA_KEYSPACE_NAME, DEFAULT_KEYSPACE, "Cassandra keyspace name. " +
@@ -311,7 +311,7 @@ public class CassandraInterpreter extends Interpreter {
 
   @Override
   public FormType getFormType() {
-    return FormType.NATIVE;
+    return FormType.SIMPLE;
   }
 
   @Override

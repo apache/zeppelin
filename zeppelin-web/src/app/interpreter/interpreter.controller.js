@@ -120,6 +120,9 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
           if (!setting.option) {
             setting.option = {};
           }
+          if (setting.option.isExistingProcess === undefined) {
+            setting.option.isExistingProcess = false;
+          }
           if (setting.option.remote === undefined) {
             // remote always true for now
             setting.option.remote = true;
@@ -273,8 +276,10 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
       dependencies: [],
       option: {
         remote: true,
+        isExistingProcess: false,
         perNoteSession: false,
         perNoteProcess: false
+
       }
     };
     emptyNewProperty($scope.newInterpreterSetting);

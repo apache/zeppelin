@@ -43,7 +43,9 @@ angular
     return function(_editor) {
       function getEditorMode(text) {
         var editorModes = {
-          'ace/mode/scala': /^%spark/,
+          'ace/mode/scala': /^%(\w*\.)?spark/,
+          'ace/mode/python': /^%(\w*\.)?(pyspark|python)/,
+          'ace/mode/r': /^%(\w*\.)?(r|sparkr|knitr)/,
           'ace/mode/sql': /^%(\w*\.)?\wql/,
           'ace/mode/markdown': /^%md/,
           'ace/mode/sh': /^%sh/

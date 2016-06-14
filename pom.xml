@@ -55,9 +55,9 @@
   </licenses>
 
   <scm>
-    <url>https://git-wip-us.apache.org/repos/asf/incubator-zeppelin.git</url>
-    <connection>scm:git:https://git-wip-us.apache.org/repos/asf/incubator-zeppelin.git</connection>
-    <developerConnection>scm:git:https://git-wip-us.apache.org/repos/asf/incubator-zeppelin.git</developerConnection>
+    <url>https://git-wip-us.apache.org/repos/asf/zeppelin.git</url>
+    <connection>scm:git:https://git-wip-us.apache.org/repos/asf/zeppelin.git</connection>
+    <developerConnection>scm:git:https://git-wip-us.apache.org/repos/asf/zeppelin.git</developerConnection>
   </scm>
 
   <inceptionYear>2013</inceptionYear>
@@ -72,12 +72,10 @@
     <module>angular</module>
     <module>shell</module>
     <module>livy</module>
-    <module>hive</module>
     <module>hbase</module>
     <module>phoenix</module>
     <module>postgresql</module>
     <module>jdbc</module>
-    <module>tajo</module>
     <module>file</module>
     <module>flink</module>
     <module>ignite</module>
@@ -362,8 +360,6 @@
               <resourceBundles>
                 <!-- Will generate META-INF/DEPENDENCIES META-INF/LICENSE META-INF/NOTICE -->
                 <resourceBundle>org.apache.apache.resources:apache-jar-resource-bundle:1.5-SNAPSHOT</resourceBundle>
-                <!-- Will generate META-INF/DISCLAIMER  -->
-                <resourceBundle>org.apache.apache.resources:apache-incubator-disclaimer-resource-bundle:1.2-SNAPSHOT</resourceBundle>
               </resourceBundles>
             </configuration>
           </execution>
@@ -498,6 +494,9 @@
               <exclude>docs/rss.xml</exclude>
               <exclude>docs/sitemap.txt</exclude>
               <exclude>**/dependency-reduced-pom.xml</exclude>
+
+              <!-- bundled from anchor -->
+              <exclude>docs/assets/themes/zeppelin/js/anchor.min.js</exclude>
 
               <!-- bundled from jekyll -->
               <exclude>docs/assets/themes/zeppelin/css/syntax.css</exclude>

@@ -1,6 +1,6 @@
 Package: rzeppelin
 Type: Package
-Title: Interface from scala to R, based on rscala, for the Apache (Incubation) Zeppelin project
+Title: Interface from scala to R, based on rscala, for the Apache Zeppelin project
 Version: 0.1.0
 Date: 2015-12-01
 Authors@R: c(person(given="David B.",family="Dahl",role=c("aut","cre"),email="dahl@stat.byu.edu"),

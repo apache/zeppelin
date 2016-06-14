@@ -24,6 +24,39 @@ public class InterpreterOption {
   boolean remote;
   boolean perNoteSession;
   boolean perNoteProcess;
+  
+  boolean isExistingProcess;
+
+  String host;
+  String port;
+
+
+  
+
+  public boolean isExistingProcess() {
+    return isExistingProcess;
+  }
+
+  public void setExistingProcess(boolean isExistingProcess) {
+    this.isExistingProcess = isExistingProcess;
+  }
+
+  public String getPort() {
+    return port;
+  }
+
+  public void setPort(String port) {
+    this.port = port;
+  }
+
+  public String getHost() {
+    return host;
+  }
+
+  public void setHost(String host) {
+    this.host = host;
+  }
+
 
   public InterpreterOption() {
     remote = false;
