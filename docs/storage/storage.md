@@ -31,7 +31,7 @@ By default, only first two of them will be automatically kept in sync by Zeppeli
 
 </br>
 
-## Notebook Storage in local Git repository <a name="Git"></a>
+## Notebook Storage in local Git repository
 
 To enable versioning for all your local notebooks though a standard Git repository - uncomment the next property in `zeppelin-site.xml` in order to use GitNotebookRepo class:
 
@@ -45,7 +45,7 @@ To enable versioning for all your local notebooks though a standard Git reposito
 
 </br>
 
-## Notebook Storage in S3 <a name="S3"></a>
+## Notebook Storage in S3
 
 Notebooks may be stored in S3, and optionally encrypted.  The [``DefaultAWSCredentialsProviderChain``](https://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/auth/DefaultAWSCredentialsProviderChain.html) credentials provider is used for credentials and checks the following:
 
@@ -142,7 +142,7 @@ Or using the following setting in **zeppelin-site.xml**:
 ```   
 
 </br>
-## Notebook Storage  in Azure <a name="Azure"></a>
+## Notebook Storage  in Azure
 
 Using `AzureNotebookRepo` you can connect your Zeppelin with your Azure account for notebook storage.
 
@@ -205,7 +205,7 @@ Optionally, you can specify Azure folder structure name in the file **zeppelin-s
 ```
 
 </br>
-## Storage in ZeppelinHub  <a name="ZeppelinHub"></a>
+## Storage in ZeppelinHub
 
 ZeppelinHub storage layer allows out of the box connection of Zeppelin instance with your ZeppelinHub account. First of all, you need to either comment out the following  property in **zeppelin-site.xml**:
 
