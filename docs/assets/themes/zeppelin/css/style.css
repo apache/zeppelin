@@ -137,9 +137,9 @@ body {
 }
 
 .scrollable-menu {
-  height: auto;
-  max-height: 650px;
-  overflow-x: hidden;
+  max-height: 500px;
+  overflow-y: auto;
+  overflow-x: auto;
 }
 
 .index-header {
