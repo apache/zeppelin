@@ -24,9 +24,6 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-/**
- * Created by jl on 6/13/16.
- */
 public class LazyOpenInterpreterTest {
   Interpreter interpreter = mock(Interpreter.class);
 
