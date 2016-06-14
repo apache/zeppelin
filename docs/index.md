@@ -32,7 +32,9 @@ limitations under the License.
       <li style="font-size:18px; margin: 5px;"><span class="glyphicon glyphicon-dashboard" style="margin-right:10px"></span> Data Visualization & Collaboration</li>
     </ul>
   </div>
-  <div class="col-md-6" style="padding:0"><img class="img-responsive" style="border: 1px solid #ecf0f1;" src="/assets/themes/zeppelin/img/notebook.png" /></div>
+  <div class="col-md-6" style="padding:0">
+    <img class="img-responsive" style="border: 1px solid #ecf0f1;" src="/assets/themes/zeppelin/img/notebook.png" />
+  </div>
 </div>
 
 <br />
