@@ -205,8 +205,21 @@ public class AzureNotebookRepo implements NotebookRepo {
   }
 
   @Override
-  public void checkpoint(String noteId, String checkPointName) throws IOException {
+  public Revision checkpoint(String noteId, String checkpointMsg) throws IOException {
     // no-op
     LOG.info("Checkpoint feature isn't supported in {}", this.getClass().toString());
+    return null;
+  }
+
+  @Override
+  public Note get(String noteId, Revision rev) throws IOException {
+    // Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public List<Revision> revisionHistory(String noteId) {
+    // Auto-generated method stub
+    return null;
   }
 }

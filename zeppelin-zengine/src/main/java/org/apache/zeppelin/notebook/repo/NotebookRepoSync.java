@@ -354,13 +354,16 @@ public class NotebookRepoSync implements NotebookRepo {
 
   //checkpoint to all available storages
   @Override
-  public void checkpoint(String noteId, String checkPointName) throws IOException {
+  public Revision checkpoint(String noteId, String checkpointMsg) throws IOException {
     int repoCount = getRepoCount();
+    int repoBound = Math.min(repoCount, getMaxRepoNum());
     int errorCount = 0;
     String errorMessage = "";
-    for (int i = 0; i < Math.min(repoCount, getMaxRepoNum()); i++) {
+    List<Revision> allRepoCheckpoints = new ArrayList<Revision>();
+    Revision rev = null;
+    for (int i = 0; i < repoBound; i++) {
       try {
-        getRepo(i).checkpoint(noteId, checkPointName);
+        allRepoCheckpoints.add(getRepo(i).checkpoint(noteId, checkpointMsg));
       } catch (IOException e) {
         LOG.warn("Couldn't checkpoint in {} storage with index {} for note {}", 
           getRepo(i).getClass().toString(), i, noteId);
@@ -370,9 +373,28 @@ public class NotebookRepoSync implements NotebookRepo {
       }
     }
     // throw exception if failed to commit for all initialized repos
-    if (errorCount == Math.min(repoCount, getMaxRepoNum())) {
+    if (errorCount == repoBound) {
       throw new IOException(errorMessage);
     }
+    if (allRepoCheckpoints.size() > 0) {
+      rev = allRepoCheckpoints.get(0);
+      // if failed to checkpoint on first storage, then return result on second
+      if (allRepoCheckpoints.size() > 1 && rev == null) {
+        rev = allRepoCheckpoints.get(1);
+      }
+    }
+    return rev;
+  }
 
+  @Override
+  public Note get(String noteId, Revision rev) throws IOException {
+    // Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public List<Revision> revisionHistory(String noteId) {
+    // Auto-generated method stub
+    return null;
   }
 }
