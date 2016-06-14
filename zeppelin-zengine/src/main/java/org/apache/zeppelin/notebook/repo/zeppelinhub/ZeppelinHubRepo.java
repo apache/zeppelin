@@ -188,8 +188,21 @@ public class ZeppelinHubRepo implements NotebookRepo {
   }
 
   @Override
-  public void checkpoint(String noteId, String checkPointName) throws IOException {
-    
+  public Revision checkpoint(String noteId, String checkpointMsg) throws IOException {
+    // Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public Note get(String noteId, Revision rev) throws IOException {
+    // Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public List<Revision> revisionHistory(String noteId) {
+    // Auto-generated method stub
+    return null;
   }
 
 }
