@@ -76,8 +76,8 @@ public class GitNotebookRepo extends VFSNotebookRepo {
    * @see org.apache.zeppelin.notebook.repo.VFSNotebookRepo#checkpoint(String, String)
    */
   @Override
-  public Rev checkpoint(String pattern, String commitMessage) {
-    Rev revision = null;
+  public Revision checkpoint(String pattern, String commitMessage) {
+    Revision revision = null;
     try {
       List<DiffEntry> gitDiff = git.diff().call();
       if (!gitDiff.isEmpty()) {
@@ -85,7 +85,7 @@ public class GitNotebookRepo extends VFSNotebookRepo {
         DirCache added = git.add().addFilepattern(pattern).call();
         LOG.debug("{} changes are about to be commited", added.getEntryCount());
         RevCommit commit = git.commit().setMessage(commitMessage).call();
-        revision = new Rev(commit.getName(), commit.getShortMessage(), commit.getCommitTime());
+        revision = new Revision(commit.getName(), commit.getShortMessage(), commit.getCommitTime());
       } else {
         LOG.debug("No changes found {}", pattern);
       }
@@ -96,19 +96,19 @@ public class GitNotebookRepo extends VFSNotebookRepo {
   }
 
   @Override
-  public Note get(String noteId, Rev rev) throws IOException {
+  public Note get(String noteId, Revision rev) throws IOException {
     //TODO(bzz): something like 'git checkout rev', that will not change-the-world though
     return super.get(noteId);
   }
 
   @Override
-  public List<Rev> revisionHistory(String noteId) {
-    List<Rev> history = Lists.newArrayList();
+  public List<Revision> revisionHistory(String noteId) {
+    List<Revision> history = Lists.newArrayList();
     LOG.debug("Listing history for {}:", noteId);
     try {
       Iterable<RevCommit> logs = git.log().addPath(noteId).call();
       for (RevCommit log: logs) {
-        history.add(new Rev(log.getName(), log.getShortMessage(), log.getCommitTime()));
+        history.add(new Revision(log.getName(), log.getShortMessage(), log.getCommitTime()));
         LOG.debug(" - ({},{},{})", log.getName(), log.getCommitTime(), log.getFullMessage());
       }
     } catch (NoHeadException e) {

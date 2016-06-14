@@ -253,19 +253,19 @@ public class VFSNotebookRepo implements NotebookRepo {
   }
 
   @Override
-  public Rev checkpoint(String noteId, String checkpointMsg) throws IOException {
+  public Revision checkpoint(String noteId, String checkpointMsg) throws IOException {
     // Auto-generated method stub
     return null;
   }
 
   @Override
-  public Note get(String noteId, Rev rev) throws IOException {
+  public Note get(String noteId, Revision rev) throws IOException {
     // Auto-generated method stub
     return null;
   }
 
   @Override
-  public List<Rev> revisionHistory(String noteId) {
+  public List<Revision> revisionHistory(String noteId) {
     // Auto-generated method stub
     return null;
   }

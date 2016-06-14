@@ -354,13 +354,13 @@ public class NotebookRepoSync implements NotebookRepo {
 
   //checkpoint to all available storages
   @Override
-  public Rev checkpoint(String noteId, String checkpointMsg) throws IOException {
+  public Revision checkpoint(String noteId, String checkpointMsg) throws IOException {
     int repoCount = getRepoCount();
     int repoBound = Math.min(repoCount, getMaxRepoNum());
     int errorCount = 0;
     String errorMessage = "";
-    List<Rev> allRepoCheckpoints = new ArrayList<Rev>();
-    Rev rev = null;
+    List<Revision> allRepoCheckpoints = new ArrayList<Revision>();
+    Revision rev = null;
     for (int i = 0; i < repoBound; i++) {
       try {
         allRepoCheckpoints.add(getRepo(i).checkpoint(noteId, checkpointMsg));
@@ -387,13 +387,13 @@ public class NotebookRepoSync implements NotebookRepo {
   }
 
   @Override
-  public Note get(String noteId, Rev rev) throws IOException {
+  public Note get(String noteId, Revision rev) throws IOException {
     // Auto-generated method stub
     return null;
   }
 
   @Override
-  public List<Rev> revisionHistory(String noteId) {
+  public List<Revision> revisionHistory(String noteId) {
     // Auto-generated method stub
     return null;
   }
