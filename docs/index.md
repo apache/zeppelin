@@ -38,7 +38,7 @@ limitations under the License.
 <br />
 ## Multiple Language Backend
 [Apache Zeppelin interpreter](./manual/interpreters.html) concept allows any language/data-processing-backend to be plugged into Zeppelin.
-Currently Zeppelin supports many interpreters such as Scala(with Apache Spark), Python(with Apache Spark), SparkSQL, JDBC, Markdown and Shell.
+Currently Zeppelin supports many interpreters such as Apache Spark, Python, JDBC, Markdown and Shell.
 
 <img class="img-responsive" width="500px" style="margin:0 auto; padding: 26px;" src="/assets/themes/zeppelin/img/available_interpreters.png" />
 
@@ -76,8 +76,8 @@ Some basic charts are already included in Apache Zeppelin. Visualizations are no
 Apache Zeppelin aggregates values and displays them in pivot chart with simple drag and drop. You can easily create chart with multiple aggregated values including sum, count, average, min, max.
 
 <div class="row">
-  <div class="col-md-8">
-    <img class="img-responsive" src="/assets/themes/zeppelin/img/screenshots/pivot.png" />
+  <div class="col-md-12">
+    <img class="img-responsive" style="margin: 16px auto;" src="/assets/themes/zeppelin/img/screenshots/pivot.png" width="480px" />
   </div>
 </div>
 
@@ -87,9 +87,11 @@ Learn more about [display systems](#display-system) in Apache Zeppelin.
 ## Dynamic forms
 
 Zeppelin can dynamically create some input forms in your notebook.
-
-<img class="img-responsive" src="/assets/themes/zeppelin/img/screenshots/form_input.png" width="450px" />
-
+<div class="row">
+  <div class="col-md-12">
+    <img class="img-responsive" style="margin: 16px auto;" src="/assets/themes/zeppelin/img/screenshots/dynamicform.png" />
+  </div>
+</div>
 Learn more about [Dynamic Forms](./manual/dynamicform.html).
 
 <br />
@@ -97,7 +99,9 @@ Learn more about [Dynamic Forms](./manual/dynamicform.html).
 Your notebook URL can be shared among collaborators. Then Apache Zeppelin will broadcast any changes in realtime, just like the collaboration in Google docs.
 
 <div class="row">
-  <img class="img-responsive" style="margin: 20px auto" src="/assets/themes/zeppelin/img/screenshots/publish.png" width="650px"/>
+  <div class="col-md-12">
+    <img class="img-responsive" style="margin: 20px auto" src="/assets/themes/zeppelin/img/screenshots/publish.png" width="650px"/>
+  </div>
 </div>
 
 Apache Zeppelin provides an URL to display the result only, that page does not include any menus and buttons inside of notebooks.
@@ -141,7 +145,7 @@ Join to our [Mailing list](https://zeppelin.apache.org/community.html) and repor
 
 ####Display System
 
-* Basic Display System: [HTML](./displaysystem/basicdisplaysystem.html#html), [Table](./displaysystem/basicdisplaysystem.html#table), [Text](./displaysystem/basicdisplaysystem.html#text) is available
+* Basic Display System: [Text](./displaysystem/basicdisplaysystem.html#text), [HTML](./displaysystem/basicdisplaysystem.html#html), [Table](./displaysystem/basicdisplaysystem.html#table) is available
 * Angular API: a description about avilable backend and frontend AngularJS API with examples
   * [Angular (backend API)](./displaysystem/back-end-angular.html)
   * [Angular (frontend API)](./displaysystem/front-end-angular.html)
