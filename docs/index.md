@@ -86,7 +86,7 @@ Learn more about [display systems](#display-system) in Apache Zeppelin.
 <br />
 ## Dynamic forms
 
-You can dynamically create some input forms in your notebook.
+Zeppelin can dynamically create some input forms in your notebook.
 
 <img class="img-responsive" src="/assets/themes/zeppelin/img/screenshots/form_input.png" width="450px" />
 

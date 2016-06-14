@@ -20,7 +20,7 @@ limitations under the License.
 {% include JB/setup %}
 ## Html
 
-With `%html` directive, Zeppelin treats your output as html
+With `%html` directive, Zeppelin treats your output as HTML
 
 <img src="/assets/themes/zeppelin/img/screenshots/display_html.png" />
 
@@ -42,12 +42,10 @@ If table contents start with `%html`, it is interpreted as an HTML.
 
 ## Text
 
-Zeppelin prints output of language backend in text, by default.
+By default, Apache Zeppelin prints interpreter responce as a plain text using `text` display system.
 
 <img src="/assets/themes/zeppelin/img/screenshots/display_text.png" />
 
-You can explicitly say you're using text display system.
+You can explicitly say you're using `text` display system.
 
 <img src="/assets/themes/zeppelin/img/screenshots/display_text1.png" />
-
-Note that display system is backend independent.
