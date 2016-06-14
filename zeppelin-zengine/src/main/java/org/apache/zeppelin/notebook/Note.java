@@ -64,7 +64,7 @@ public class Note implements Serializable, JobListener {
   private String name = "";
   private String id;
 
-  private ZeppelinConfiguration conf = ZeppelinConfiguration.create();
+  private transient ZeppelinConfiguration conf = ZeppelinConfiguration.create();
 
   @SuppressWarnings("rawtypes")
   Map<String, List<AngularObject>> angularObjects = new HashMap<>();
@@ -417,7 +417,7 @@ public class Note implements Serializable, JobListener {
       if (conf.getUseJdbcAlias() && null != (intp = replLoader.get("jdbc"))) {
         String pText = p.getText().replaceFirst(requiredReplName, "jdbc(" + requiredReplName + ")");
         logger.debug("New paragraph: {}", pText);
-        p.setText(pText);
+        p.setEffectiveText(pText);
       } else {
         throw new InterpreterException("Interpreter " + requiredReplName + " not found");
       }
