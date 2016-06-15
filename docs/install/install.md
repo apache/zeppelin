@@ -21,7 +21,7 @@ limitations under the License.
 
 # Quick Start
 Welcome to your first trial to explore Apache Zeppelin! 
-This page will help you to get started with Apache Zeppelin. Here is the list of this page. 
+This page will help you to get started and here is the list of topics covered.
 
 * [Installation](#installation)
   * [Downloading Binary Package](#downloading-binary-package)
@@ -35,7 +35,7 @@ This page will help you to get started with Apache Zeppelin. Here is the list of
 
 ## Installation
 
-Apache Zeppelin officially tested on the below environment. 
+Apache Zeppelin officially supports and is tested on next environments.
 
 <table class="table-configuration">
   <tr>
@@ -63,7 +63,7 @@ If you want to install Apache Zeppelin with a stable binary package, please visi
 After unpacking, jump to [Starting Apache Zeppelin with Command Line](#starting-apache-zeppelin-with-command-line) section.
 
 ### Building from Source
-If you want to build from the source, there are more requirements. 
+If you want to build from the source, the software below needs to be installed on your system.
 
 <table class="table-configuration">
   <tr>
@@ -80,7 +80,7 @@ If you want to build from the source, there are more requirements.
   </tr>
 </table>
 
-If you don't have the above requirements yet, please check [Before Build](https://github.com/apache/zeppelin/blob/master/README.md#before-build) section and follow step by step.
+If you don't have it installed yet, please check [Before Build](https://github.com/apache/zeppelin/blob/master/README.md#before-build) section and follow step by step instructions from there.
 
 ####1. Clone Apache Zeppelin repository
 
