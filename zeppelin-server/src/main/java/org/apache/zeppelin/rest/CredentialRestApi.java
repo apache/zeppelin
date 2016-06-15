@@ -63,10 +63,15 @@ public class CredentialRestApi {
   @PUT
   public Response putCredentials(String message) throws IOException {
     Map<String, String> messageMap = gson.fromJson(message,
-            new TypeToken<Map<String, String>>(){}.getType());
+      new TypeToken<Map<String, String>>(){}.getType());
     String entity = messageMap.get("entity");
     String username = messageMap.get("username");
     String password = messageMap.get("password");
+
+    if (entity == null || username == null || password == null) {
+      return new JsonResponse(Status.BAD_REQUEST, "", "").build();
+    }
+
     String user = SecurityUtils.getPrincipal();
     logger.info("Update credentials for user {} entity {}", user, entity);
     UserCredentials uc = credentials.getUserCredentials(user);
