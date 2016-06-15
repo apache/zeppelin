@@ -119,6 +119,10 @@ public class Message {
     APP_UPDATE_OUTPUT,      // [s-c] update (replace) output
     APP_LOAD,               // [s-c] on app load
     APP_STATUS_CHANGE       // [s-c] on app status change
+
+    LIST_NOTEBOOK_JOBS,     // [c-s] get notebook job management infomations
+    LIST_UPDATE_NOTEBOOK_JOBS // [c-s] get job management informations for until unixtime
+                               // @param unixTime
   }
 
   public OP op;

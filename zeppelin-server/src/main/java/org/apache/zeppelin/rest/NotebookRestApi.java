@@ -686,7 +686,52 @@ public class NotebookRestApi {
     }
     
     return new JsonResponse<>(Status.OK, note.getConfig().get("cron")).build();
-  }  
+  }
+
+  /**
+   * Get notebook jobs for job manager
+   * @param
+   * @return JSON with status.OK
+   * @throws IOException, IllegalArgumentException
+   */
+  @GET
+  @Path("jobmanager/")
+  @ZeppelinApi
+  public Response getJobListforNotebook() throws IOException, IllegalArgumentException {
+    LOG.info("Get notebook jobs for job manager");
+
+    List<Map<String, Object>> notebookJobs = notebook.getJobListforNotebook(false, 0);
+    Map<String, Object> response = new HashMap<>();
+
+    response.put("lastResponseUnixTime", System.currentTimeMillis());
+    response.put("jobs", notebookJobs);
+
+    return new JsonResponse<>(Status.OK, response).build();
+  }
+
+  /**
+   * Get updated notebook jobs for job manager
+   * @param
+   * @return JSON with status.OK
+   * @throws IOException, IllegalArgumentException
+   */
+  @GET
+  @Path("jobmanager/{lastUpdateUnixtime}/")
+  @ZeppelinApi
+  public Response getUpdatedJobListforNotebook(
+      @PathParam("lastUpdateUnixtime") long lastUpdateUnixTime) throws
+      IOException, IllegalArgumentException {
+    LOG.info("Get updated notebook jobs lastUpdateTime {}", lastUpdateUnixTime);
+
+    List<Map<String, Object>> notebookJobs;
+    notebookJobs = notebook.getJobListforNotebook(false, lastUpdateUnixTime);
+    Map<String, Object> response = new HashMap<>();
+
+    response.put("lastResponseUnixTime", System.currentTimeMillis());
+    response.put("jobs", notebookJobs);
+
+    return new JsonResponse<>(Status.OK, response).build();
+  }
 
   /**
    * Search for a Notes with permissions

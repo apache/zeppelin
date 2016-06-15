@@ -125,8 +125,12 @@ public class PythonInterpreter extends Interpreter {
 
     logger.info("closing Python interpreter .....");
     try {
-      process.close();
-      gatewayServer.shutdown();
+      if (process != null) {
+        process.close();
+      }
+      if (gatewayServer != null) {
+        gatewayServer.shutdown();
+      }
     } catch (IOException e) {
       logger.error("Can't close the interpreter", e);
     }

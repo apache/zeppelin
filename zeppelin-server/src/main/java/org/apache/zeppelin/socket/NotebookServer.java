@@ -63,6 +63,20 @@ import org.slf4j.LoggerFactory;
 public class NotebookServer extends WebSocketServlet implements
         NotebookSocketListener, JobListenerFactory, AngularObjectRegistryListener,
         RemoteInterpreterProcessListener, ApplicationEventListener {
+  /**
+   * Job manager service type
+   */
+  protected enum JOB_MANAGER_SERVICE {
+    JOB_MANAGER_PAGE("JOB_MANAGER_PAGE");
+    private String serviceTypeKey;
+    JOB_MANAGER_SERVICE(String serviceType) {
+      this.serviceTypeKey = serviceType;
+    }
+    String getKey() {
+      return this.serviceTypeKey;
+    }
+  }
+
   private static final Logger LOG = LoggerFactory.getLogger(NotebookServer.class);
   Gson gson = new GsonBuilder()
           .setDateFormat("yyyy-MM-dd'T'HH:mm:ssZ").create();
@@ -204,6 +218,12 @@ public class NotebookServer extends WebSocketServlet implements
             break;
           case CHECKPOINT_NOTEBOOK:
             checkpointNotebook(conn, notebook, messagereceived);
+            break;
+          case LIST_NOTEBOOK_JOBS:
+            unicastNotebookJobInfo(conn);
+            break;
+          case LIST_UPDATE_NOTEBOOK_JOBS:
+            unicastUpdateNotebookJobInfo(conn, messagereceived);
             break;
           default:
             break;
@@ -350,6 +370,34 @@ public class NotebookServer extends WebSocketServlet implements
     } catch (IOException e) {
       LOG.error("socket error", e);
     }
+  }
+
+  public void unicastNotebookJobInfo(NotebookSocket conn) throws IOException {
+
+    List<Map<String, Object>> notebookJobs = notebook().getJobListforNotebook(false, 0);
+    Map<String, Object> response = new HashMap<>();
+
+    response.put("lastResponseUnixTime", System.currentTimeMillis());
+    response.put("jobs", notebookJobs);
+
+    conn.send(serializeMessage(new Message(OP.LIST_NOTEBOOK_JOBS)
+      .put("notebookJobs", response)));
+  }
+
+  public void unicastUpdateNotebookJobInfo(NotebookSocket conn, Message fromMessage)
+      throws IOException {
+    double lastUpdateUnixTimeRaw = (double) fromMessage.get("lastUpdateUnixTime");
+    long lastUpdateUnixTime = new Double(lastUpdateUnixTimeRaw).longValue();
+
+    List<Map<String, Object>> notebookJobs;
+    notebookJobs = notebook().getJobListforNotebook(false, lastUpdateUnixTime);
+
+    Map<String, Object> response = new HashMap<>();
+    response.put("lastResponseUnixTime", System.currentTimeMillis());
+    response.put("jobs", notebookJobs);
+
+    conn.send(serializeMessage(new Message(OP.LIST_UPDATE_NOTEBOOK_JOBS)
+            .put("notebookRunningJobs", response)));
   }
 
   public List<Map<String, String>> generateNotebooksInfo(boolean needsReload) {

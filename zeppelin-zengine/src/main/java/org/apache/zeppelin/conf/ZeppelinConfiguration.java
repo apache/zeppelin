@@ -495,7 +495,6 @@ public class ZeppelinConfiguration extends XMLConfiguration {
         + "org.apache.zeppelin.livy.LivySparkSQLInterpreter,"
         + "org.apache.zeppelin.livy.LivyPySparkInterpreter,"
         + "org.apache.zeppelin.livy.LivySparkRInterpreter,"
-        + "org.apache.zeppelin.hive.HiveInterpreter,"
         + "org.apache.zeppelin.alluxio.AlluxioInterpreter,"
         + "org.apache.zeppelin.file.HDFSFileInterpreter,"
         + "org.apache.zeppelin.phoenix.PhoenixInterpreter,"
