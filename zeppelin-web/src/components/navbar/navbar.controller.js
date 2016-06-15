@@ -76,7 +76,7 @@ angular.module('zeppelinWebApp')
     $rootScope.truncatedUsername = $rootScope.ticket.principal;
   }
 
-  var MAX_USERNAME_LENGTH=16;
+  var MAX_USERNAME_LENGTH=20;
 
   angular.element('#notebook-list').perfectScrollbar({suppressScrollX: true});
 

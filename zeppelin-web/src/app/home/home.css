@@ -242,10 +242,6 @@ a.navbar-brand:hover {
     background: #080808;
   }
 
-  .server-status {
-    float: right;
-  }
-
   .navbar-inverse .navbar-nav .open .dropdown-menu .divider {
     background: #3071A9;
   }
@@ -272,20 +268,40 @@ a.navbar-brand:hover {
   }
 }
 
-i.server-status {
-  font-size: 12px;
-  top: -2px;
-  position: relative;
+.nav-component {
+  margin-top: 8px;
+}
+
+.nav-config-btn {
+  color: #fff;
+  background-color: #3071a9;
+  border-color: #3071a9;
+}
+
+.nav-config-btn:hover,
+.nav-config-btn:focus,
+.nav-config-btn:active, .open > .dropdown-toggle.nav-config-btn {
+  color: #fff;
+  background-color: #428bca;
+  border-color: #357ebd;
+}
+
+.nav-login-btn,
+.nav-login-btn:hover,
+.nav-login-btn:focus {
+  color: #fff;
+  background-color: #428bca;
+  border-color: #357ebd;
 }
 
 .server-connected {
   color: #00CC00;
+  font-size: 12px !important;
 }
 
 .server-disconnected {
   color: rgba(240, 48, 0, 1);
   font-size: 12px !important;
-  font-weight: bold !important;
 }
 
 .box {
