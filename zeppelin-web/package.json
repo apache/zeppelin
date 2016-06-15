@@ -1,5 +1,6 @@
 {
   "name": "zeppelin-web",
+  "license": "Apache-2.0",
   "version": "0.0.0",
   "dependencies": {
     "grunt-angular-templates": "^0.5.7",

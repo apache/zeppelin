@@ -36,9 +36,6 @@
     "angular-mocks": "1.5.0"
   },
   "appPath": "src",
-  "resolutions": {
-    "perfect-scrollbar": "~0.5.4"
-  },
   "overrides": {
     "ace-builds": {
       "main": [
