@@ -90,15 +90,16 @@ public class RemoteInterpreter extends Interpreter {
   /**
    * Connect to existing process
    */
-  public RemoteInterpreter(Properties property,
-                           String noteId,
-                           String className,
-                           String host,
-                           int port,
-                           int connectTimeout,
-                           int maxPoolSize,
-                           RemoteInterpreterProcessListener remoteInterpreterProcessListener,
-                           ApplicationEventListener appListener) {
+  public RemoteInterpreter(
+      Properties property,
+      String noteId,
+      String className,
+      String host,
+      int port,
+      int connectTimeout,
+      int maxPoolSize,
+      RemoteInterpreterProcessListener remoteInterpreterProcessListener,
+      ApplicationEventListener appListener) {
     super(property);
     this.noteId = noteId;
     this.className = className;
@@ -113,16 +114,17 @@ public class RemoteInterpreter extends Interpreter {
 
 
   // VisibleForTesting
-  public RemoteInterpreter(Properties property,
-                           String noteId,
-                           String className,
-                           String interpreterRunner,
-                           String interpreterPath,
-                           String localRepoPath,
-                           Map<String, String> env,
-                           int connectTimeout,
-                           RemoteInterpreterProcessListener remoteInterpreterProcessListener,
-                           ApplicationEventListener appListener) {
+  public RemoteInterpreter(
+      Properties property,
+      String noteId,
+      String className,
+      String interpreterRunner,
+      String interpreterPath,
+      String localRepoPath,
+      Map<String, String> env,
+      int connectTimeout,
+      RemoteInterpreterProcessListener remoteInterpreterProcessListener,
+      ApplicationEventListener appListener) {
     super(property);
     this.className = className;
     this.noteId = noteId;
