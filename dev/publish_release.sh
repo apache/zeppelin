@@ -53,7 +53,7 @@ RELEASE_VERSION="$1"
 GIT_TAG="$2"
 
 PUBLISH_PROFILES="-Pspark-1.6 -Phadoop-2.4 -Pyarn -Ppyspark -Psparkr -Pr"
-PROJECT_OPTIONS="-pl !zeppelin-server,!zeppelin-distribution"
+PROJECT_OPTIONS="-pl !zeppelin-distribution"
 NEXUS_STAGING="https://repository.apache.org/service/local/staging"
 NEXUS_PROFILE="153446d1ac37c4"
 
