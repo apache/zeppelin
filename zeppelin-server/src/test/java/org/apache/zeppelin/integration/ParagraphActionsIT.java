@@ -83,6 +83,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       driver.findElement(By.xpath(getParagraphXPath(1) + "//span[@class='icon-settings']")).click();
       driver.findElement(By.xpath(getParagraphXPath(1) + "//ul/li/a[@ng-click='removeParagraph()']")).click();
       ZeppelinITUtils.sleep(1000, false);
+      
       driver.findElement(By.xpath("//div[@class='modal-dialog'][contains(.,'delete this paragraph')]" +
           "//div[@class='modal-footer']//button[contains(.,'OK')]")).click();
       ZeppelinITUtils.sleep(1000, false);
