@@ -501,8 +501,9 @@ a.anchor {
 
 .navbar-brand small {
   font-size: 14px;
-  font-family: 'Helvetica Neue', Helvetica;
+  font-family: 'Open Sans', 'Helvetica Neue', Helvetica;
   color: white;
+  vertical-align: bottom;
 }
 
 .navbar-collapse.collapse {
