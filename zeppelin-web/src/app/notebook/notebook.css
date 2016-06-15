@@ -210,6 +210,19 @@
   border: 0;
 }
 
+.commit-container {
+  padding: 10px 20px 6px 20px;
+  font-weight: normal;
+  word-wrap: break-word;
+  white-space: initial;
+}
+
+/* overwrite bootstrap css for version control button */
+.btn-group > .btn + .dropdown-toggle {
+  padding-right: 5px;
+  padding-left: 5px;
+}
+
 .cron-preset-container {
   padding: 10px 20px 0 20px;
   font-weight: normal;
