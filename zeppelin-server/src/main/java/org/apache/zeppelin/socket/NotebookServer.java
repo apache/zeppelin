@@ -146,6 +146,7 @@ public class NotebookServer extends WebSocketServlet implements
           userAndRoles.addAll(roles);
         }
       }
+      conn.setUserAndRoles(userAndRoles);
 
       /** Lets be elegant here */
       switch (messagereceived.op) {
@@ -432,7 +433,23 @@ public class NotebookServer extends WebSocketServlet implements
   }
 
   public void broadcastNote(Note note) {
-    broadcast(note.id(), new Message(OP.NOTE).put("note", note));
+    String noteId = note.id();
+    synchronized (noteSocketMap) {
+      List<NotebookSocket> socketLists = noteSocketMap.get(noteId);
+      if (socketLists == null || socketLists.size() == 0) {
+        return;
+      }
+      for (NotebookSocket conn : socketLists) {
+        try {
+          NoteSubset ns = note.getNoteSubset(conn.getUserAndRoles());
+          Message m = new Message(OP.NOTE).put("note", ns);
+          LOG.debug("SEND >> " + m.op);
+          conn.send(serializeMessage(m));
+        } catch (IOException e) {
+          LOG.error("socket error", e);
+        }
+      }
+    }
   }
 
   public void broadcastNoteList() {
@@ -484,7 +501,8 @@ public class NotebookServer extends WebSocketServlet implements
         return;
       }
       addConnectionToNote(note.id(), conn);
-      conn.send(serializeMessage(new Message(OP.NOTE).put("note", note)));
+      NoteSubset ns = note.getNoteSubset(userAndRoles);
+      conn.send(serializeMessage(new Message(OP.NOTE).put("note", ns)));
       sendAllAngularObjects(note, conn);
     }
   }
@@ -505,7 +523,8 @@ public class NotebookServer extends WebSocketServlet implements
         return;
       }
       addConnectionToNote(note.id(), conn);
-      conn.send(serializeMessage(new Message(OP.NOTE).put("note", note)));
+      NoteSubset ns = note.getNoteSubset(userAndRoles);
+      conn.send(serializeMessage(new Message(OP.NOTE).put("note", ns)));
       sendAllAngularObjects(note, conn);
     } else {
       removeConnectionFromAllNote(conn);

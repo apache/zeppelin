@@ -17,6 +17,7 @@
 
 package org.apache.zeppelin.notebook;
 
+import com.google.gson.internal.StringMap;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.user.AuthenticationInfo;
@@ -46,6 +47,7 @@ import com.google.common.annotations.VisibleForTesting;
  *
  */
 public class Paragraph extends Job implements Serializable, Cloneable {
+  static Logger logger = LoggerFactory.getLogger(Paragraph.class);
   private static final long serialVersionUID = -6328572073497992016L;
 
   private transient NoteInterpreterLoader replLoader;
@@ -90,6 +92,84 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     dateUpdated = null;
     settings = new GUI();
     config = new HashMap<String, Object>();
+  }
+  public ParagraphSubset getParagraphSubset(Set<String> userAndRoles) {
+    ParagraphSubset ps = new ParagraphSubset();
+    ps.title = this.title;
+    ps.text = this.text;
+    ps.authenticationInfo = this.authenticationInfo;
+    ps.dateUpdated = this.dateUpdated;
+    ps.config = this.config;
+    ps.settings = this.settings;
+
+    ps.jobName = this.getJobName();
+    ps.id = this.getId();
+    logger.info("{} {} {} {} {}", this.getId(), this.getTitle(), this.getText(), this.config,
+            this.getReturn());
+    Object result = this.getReturn();
+    if (result == null) {
+      ps.result = result;
+    } else if (result.getClass() == com.google.gson.internal.StringMap.class) {
+      logger.info(result.getClass().toString());
+      StringMap sm = (StringMap) result;
+      if (sm.get("type").equals("TABLE")) {
+        String msg = (String) sm.get("msg");
+        String newMsg = msgSubset(msg, userAndRoles);
+        sm.put("msg", newMsg);
+      }
+      ps.result = sm;
+    } else if (result.getClass() == org.apache.zeppelin.interpreter.InterpreterResult.class) {
+      logger.info(result.getClass().toString());
+      InterpreterResult ir = (InterpreterResult) result;
+      if (ir.type() == InterpreterResult.Type.TABLE) {
+        String msg = ir.message();
+        String newMsg = msgSubset(msg, userAndRoles);
+        InterpreterResult irNew = new InterpreterResult(ir.code(), ir.type(), newMsg);
+        ps.result = irNew;
+      } else {
+        ps.result = ir;
+      }
+    } else {
+      logger.info(result.getClass().toString());
+      ps.result = result;
+    }
+    ps.dateCreated = this.getDateCreated();
+    ps.dateStarted = this.getDateStarted();
+    ps.dateFinished = this.getDateFinished();
+    ps.status = this.getStatus();
+    return ps;
+  }
+
+  private String msgSubset(String msg, Set<String> userAndRoles) {
+    logger.info("Before {} {}", msg, userAndRoles);
+    if (userAndRoles == null || userAndRoles.contains("anonymous")) {
+      return msg;
+    }
+    int eolIndex = 0;
+    String[] fields;
+    eolIndex = msg.indexOf('\n');
+    if (eolIndex == -1) {
+      return msg;
+    }
+    String firstLine = msg.substring(0, eolIndex);
+    fields = firstLine.split("\t");
+    int zeppelinUserIndex = Arrays.asList(fields).indexOf("zeppelin_user");
+    if (zeppelinUserIndex == -1) {
+      return msg;
+    }
+
+    String[] arr = msg.substring(eolIndex + 1).split("\n");
+    List<String> newList = new ArrayList<>();
+    newList.add(firstLine);
+    for (String a : arr) {
+      fields = a.split("\t");
+      if (userAndRoles.contains(fields[zeppelinUserIndex])) {
+        newList.add(a);
+      }
+    }
+    String result = String.join("\n", newList);
+    logger.info("After {} {}", result, userAndRoles);
+    return result;
   }
 
   private static String generateId() {
