@@ -89,7 +89,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
           deleteParagaphModal,
           CoreMatchers.equalTo(1));
 
-      driver.findElement(By.xpath("//div[@class='modal-footer']//button[contains(text() ,'OK')]")).click();
+      driver.findElement(By.xpath("//div[@class='bootstrap-dialog-footer']//button[contains(text() ,'OK')]")).click();
 
       ZeppelinITUtils.sleep(1000, false);
 
@@ -162,7 +162,8 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
           deleteParagaphModal,
           CoreMatchers.equalTo(1));
 
-      driver.findElement(By.xpath("//div[@class='modal-footer']//button[contains(text() ,'OK')]")).click();
+
+      driver.findElement(By.xpath("//div[@class='bootstrap-dialog-footer']//button[contains(text() ,'OK')]")).click();
       ZeppelinITUtils.sleep(1000, false);
 
       Integer newNosOfParas = driver.findElements(By.xpath("//div[@ng-controller=\"ParagraphCtrl\"]")).size();
