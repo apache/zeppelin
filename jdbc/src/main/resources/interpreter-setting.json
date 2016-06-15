@@ -33,6 +33,18 @@
         "propertyName": "common.max_count",
         "defaultValue": "1000",
         "description": "Max number of SQL result to display."
+      },
+      "zeppelin.jdbc.concurrent.use": {
+        "envName": null,
+        "propertyName": "zeppelin.jdbc.concurrent.use",
+        "defaultValue": "true",
+        "description": "Use parallel scheduler"
+      },
+      "zeppelin.jdbc.concurrent.max_connection": {
+        "envName": null,
+        "propertyName": "zeppelin.jdbc.concurrent.max_connection",
+        "defaultValue": "10",
+        "description": "Number of concurrent execution"
       }
     }
   }
