@@ -433,6 +433,8 @@ a.anchor {
   word-break: keep-all;
   -webkit-overflow-scrolling: touch;
   font-size: 90%;
+  margin-top: 16px;
+  margin-bottom: 16px;
 }
 .content table th {
   font-weight: bold;
