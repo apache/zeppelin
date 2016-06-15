@@ -18,28 +18,34 @@
             <li>
               <a href="#" data-toggle="dropdown" class="dropdown-toggle">Quick Start <b class="caret"></b></a>
               <ul class="dropdown-menu">
-                <!-- li><span><b>Overview</b><span></li -->
-                <li><a href="{{BASE_PATH}}/index.html">Overview</a></li>
+                <li><a href="{{BASE_PATH}}/index.html">What is Apache Zeppelin ?</a></li>
+                <li role="separator" class="divider"></li>
+                <li class="title"><span><b>Getting Started</b><span></li>
+                <li><a href="{{BASE_PATH}}/install/install.html">Quick Start</a></li>
+                <li><a href="{{BASE_PATH}}/install/install.html#zeppelin-configuration">Configuration</a></li>
                 <li><a href="{{BASE_PATH}}/quickstart/explorezeppelinui.html">Explore Zeppelin UI</a></li>
                 <li><a href="{{BASE_PATH}}/quickstart/tutorial.html">Tutorial</a></li>
                 <li role="separator" class="divider"></li>
-                <!-- li><span><b>Install</b><span></li -->
-                <li><a href="{{BASE_PATH}}/install/install.html">Install</a></li>
-                <li><a href="{{BASE_PATH}}/install/yarn_install.html">YARN Install</a></li>
-                <li><a href="{{BASE_PATH}}/install/virtual_machine.html">Virtual Machine Install</a></li>
-                <li role="separator" class="divider"></li>
-                <li><a href="{{BASE_PATH}}/install/upgrade.html">Upgrade Version</a></li>
-                <li role="separator" class="divider"></li>
-                <!-- li><span><b>Guide</b><span></li -->
+                <li class="title"><span><b>Basic Feature Guide</b><span></li>
                 <li><a href="{{BASE_PATH}}/manual/dynamicform.html">Dynamic Form</a></li>
                 <li><a href="{{BASE_PATH}}/manual/publish.html">Publish your Paragraph</a></li>
+                <li><a href="{{BASE_PATH}}/manual/notebookashomepage.html">Customize Zeppelin Homepage</a></li>
+                <li role="separator" class="divider"></li>
+                <li class="title"><span><b>More</b><span></li>
+                <li><a href="{{BASE_PATH}}/install/virtual_machine.html">Zeppelin on Vagrant VM</a></li>
+                <li><a href="{{BASE_PATH}}/install/upgrade.html">Upgrade Zeppelin Version</a></li>
               </ul>
             </li>
             <li>
               <a href="#" data-toggle="dropdown" class="dropdown-toggle">Interpreter <b class="caret"></b></a>
-              <ul class="dropdown-menu">
+              <ul class="dropdown-menu scrollable-menu">
                 <li><a href="{{BASE_PATH}}/manual/interpreters.html">Overview</a></li>
                 <li role="separator" class="divider"></li>
+                <li class="title"><span><b>Usage</b><span></li>
+                <li><a href="{{BASE_PATH}}/manual/dynamicinterpreterload.html">Dynamic Interpreter Loading</a></li>
+                <li><a href="{{BASE_PATH}}/manual/dependencymanagement.html">Interpreter Dependency Management</a></li>
+                <li role="separator" class="divider"></li>
+                <li class="title"><span><b>Available Interpreters</b><span></li>
                 <li><a href="{{BASE_PATH}}/interpreter/alluxio.html">Alluxio</a></li>
                 <li><a href="{{BASE_PATH}}/interpreter/cassandra.html">Cassandra</a></li>
                 <li><a href="{{BASE_PATH}}/interpreter/elasticsearch.html">Elasticsearch</a></li>
@@ -59,45 +65,42 @@
                 <li><a href="{{BASE_PATH}}/interpreter/scalding.html">Scalding</a></li>
                 <li><a href="{{BASE_PATH}}/pleasecontribute.html">Shell</a></li>
                 <li><a href="{{BASE_PATH}}/interpreter/spark.html">Spark</a></li>
-                <li role="separator" class="divider"></li>
-                <li><a href="{{BASE_PATH}}/manual/dynamicinterpreterload.html">Dynamic Interpreter Loading</a></li>
-                <li><a href="{{BASE_PATH}}/manual/dependencymanagement.html">Interpreter Dependency Management</a></li>
               </ul>
             </li>
             <li>
               <a href="#" data-toggle="dropdown" class="dropdown-toggle">Display System <b class="caret"></b></a>
               <ul class="dropdown-menu">
-                <li><a href="{{BASE_PATH}}/displaysystem/text.html">Text</a></li>
-                <li><a href="{{BASE_PATH}}/displaysystem/html.html">Html</a></li>
-                <li><a href="{{BASE_PATH}}/displaysystem/table.html">Table</a></li>
+                <li class="title"><span><b>Basic Display System</b><span></li>
+                <li><a href="{{BASE_PATH}}/displaysystem/basicdisplaysystem.html#text">Text</a></li>
+                <li><a href="{{BASE_PATH}}/displaysystem/basicdisplaysystem.html#html">Html</a></li>
+                <li><a href="{{BASE_PATH}}/displaysystem/basicdisplaysystem.html#table">Table</a></li>
+                <li role="separator" class="divider"></li>
+                <li class="title"><span><b>Angular API</b><span></li>
                 <li><a href="{{BASE_PATH}}/displaysystem/back-end-angular.html">Angular (backend API)</a></li>
                 <li><a href="{{BASE_PATH}}/displaysystem/front-end-angular.html">Angular (frontend API)</a></li>
               </ul>
             </li>
             <li>
-              <a href="#" data-toggle="dropdown" class="dropdown-toggle">More <b class="caret"></b></a>
-              <ul class="dropdown-menu">
-                <!-- li><span><b>Manual</b><span></li -->
-                <li><a href="{{BASE_PATH}}/manual/notebookashomepage.html">Notebook as Homepage</a></li>
+              <a href="#" data-toggle="dropdown" class="dropdown-toggle">More<b class="caret"></b></a>
+              <ul class="dropdown-menu scrollable-menu" style="right: 0; left: auto;">
+                <li class="title"><span><b>Notebook Storage</b><span></li>
+                <li><a href="{{BASE_PATH}}/storage/storage.html#notebook-storage-in-local-git-repository">Git Storage</a></li>
+                <li><a href="{{BASE_PATH}}/storage/storage.html#notebook-storage-in-s3">S3 Storage</a></li>
+                <li><a href="{{BASE_PATH}}/storage/storage.html#notebook-storage-in-azure">Azure Storage</a></li>
+                <li><a href="{{BASE_PATH}}/storage/storage.html#storage-in-zeppelinhub">ZeppelinHub Storage</a></li>
                 <li role="separator" class="divider"></li>
-                <!-- li><span><b>Notebook Storage</b><span></li -->
-                <li><a href="{{BASE_PATH}}/storage/storage.html#Git">Git Storage</a></li>
-                <li><a href="{{BASE_PATH}}/storage/storage.html#S3">S3 Storage</a></li>
-                <li><a href="{{BASE_PATH}}/storage/storage.html#Azure">Azure Storage</a></li>
-                <li><a href="{{BASE_PATH}}/storage/storage.html#ZeppelinHub">ZeppelinHub Storage</a></li>
-                <li role="separator" class="divider"></li>
-                <!-- li><span><b>REST API</b><span></li -->
+                <li class="title"><span><b>REST API</b><span></li>
                 <li><a href="{{BASE_PATH}}/rest-api/rest-interpreter.html">Interpreter API</a></li>
                 <li><a href="{{BASE_PATH}}/rest-api/rest-notebook.html">Notebook API</a></li>
                 <li><a href="{{BASE_PATH}}/rest-api/rest-configuration.html">Configuration API</a></li>
                 <li role="separator" class="divider"></li>
-                <!-- li><span><b>Security</b><span></li -->
+                <li class="title"><span><b>Security</b><span></li>
                 <li><a href="{{BASE_PATH}}/security/authentication.html">Authentication for NGINX</a></li>
                 <li><a href="{{BASE_PATH}}/security/shiroauthentication.html">Shiro Authentication</a></li>
                 <li><a href="{{BASE_PATH}}/security/notebook_authorization.html">Notebook Authorization</a></li>
-                <li><a href="{{BASE_PATH}}/security/interpreter_authorization.html">Interpreter Authorization</a></li>
+                <li><a href="{{BASE_PATH}}/security/interpreter_authorization.html">Interpreter & Data Resource Authorization</a></li>
                 <li role="separator" class="divider"></li>
-                <!-- li><span><b>Development</b><span></li -->
+                <li class="title"><span><b>Contibute</b><span></li>
                 <li><a href="{{BASE_PATH}}/development/writingzeppelininterpreter.html">Writing Zeppelin Interpreter</a></li>
                 <li><a href="{{BASE_PATH}}/development/howtocontribute.html">How to contribute (code)</a></li>
                 <li><a href="{{BASE_PATH}}/development/howtocontributewebsite.html">How to contribute (website)</a></li>

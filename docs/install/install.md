@@ -1,6 +1,6 @@
 ---
 layout: page
-title: "Zeppelin Installation"
+title: "Getting Started"
 description: ""
 group: install
 ---
@@ -18,8 +18,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 {% include JB/setup %}
-
-
 
 ## Zeppelin Installation
 Welcome to your first trial to explore Zeppelin!
@@ -42,7 +40,65 @@ You can also build Zeppelin from the source.
 
 If you don't have requirements prepared, please check instructions in [README.md](https://github.com/apache/zeppelin/blob/master/README.md) for the details.
 
-<a name="zeppelin-configuration"> </a>
+
+
+Maybe you need to configure individual interpreter. If so, please check **Interpreter** section in Zeppelin documentation.
+[Spark Interpreter for Apache Zeppelin](../interpreter/spark.html) will be a good example.
+
+## Zeppelin Start / Stop
+#### Start Zeppelin
+
+```
+bin/zeppelin-daemon.sh start
+```
+After successful start, visit [http://localhost:8080](http://localhost:8080) with your web browser.
+
+#### Stop Zeppelin
+
+```
+bin/zeppelin-daemon.sh stop
+```
+
+#### Start Zeppelin with a service manager such as upstart
+
+Zeppelin can auto start as a service with an init script, such as services managed by upstart.
+
+The following is an example upstart script to be saved as `/etc/init/zeppelin.conf`
+This example has been tested with Ubuntu Linux.
+This also allows the service to be managed with commands such as
+
+`sudo service zeppelin start`  
+`sudo service zeppelin stop`  
+`sudo service zeppelin restart`
+
+Other service managers could use a similar approach with the `upstart` argument passed to the zeppelin-daemon.sh script:  `bin/zeppelin-daemon.sh upstart`
+
+##### zeppelin.conf
+
+```
+description "zeppelin"
+
+start on (local-filesystems and net-device-up IFACE!=lo)
+stop on shutdown
+
+# Respawn the process on unexpected termination
+respawn
+
+# respawn the job up to 7 times within a 5 second period.
+# If the job exceeds these values, it will be stopped and marked as failed.
+respawn limit 7 5
+
+# zeppelin was installed in /usr/share/zeppelin in this example
+chdir /usr/share/zeppelin
+exec bin/zeppelin-daemon.sh upstart
+```
+
+#### Running on Windows
+
+```
+bin\zeppelin.cmd
+```
+
 ## Zeppelin Configuration
 
 You can configure Zeppelin with both **environment variables** in `conf/zeppelin-env.sh` (`conf\zeppelin-env.cmd` for Windows) and **Java properties** in `conf/zeppelin-site.xml`. If both are defined, then the **environment variables** will take priority.
@@ -250,60 +306,3 @@ You can configure Zeppelin with both **environment variables** in `conf/zeppelin
     <td>Size in characters of the maximum text message to be received by websocket.</td>
   </tr>
 </table>
-
-Maybe you need to configure individual interpreter. If so, please check **Interpreter** section in Zeppelin documentation.
-[Spark Interpreter for Apache Zeppelin](../interpreter/spark.html) will be a good example.
-
-## Zeppelin Start / Stop
-#### Start Zeppelin
-
-```
-bin/zeppelin-daemon.sh start
-```
-After successful start, visit [http://localhost:8080](http://localhost:8080) with your web browser.
-
-#### Stop Zeppelin
-
-```
-bin/zeppelin-daemon.sh stop
-```
-
-#### Start Zeppelin with a service manager such as upstart
-
-Zeppelin can auto start as a service with an init script, such as services managed by upstart.
-
-The following is an example upstart script to be saved as `/etc/init/zeppelin.conf`
-This example has been tested with Ubuntu Linux.
-This also allows the service to be managed with commands such as
-
-`sudo service zeppelin start`  
-`sudo service zeppelin stop`  
-`sudo service zeppelin restart`
-
-Other service managers could use a similar approach with the `upstart` argument passed to the zeppelin-daemon.sh script:  `bin/zeppelin-daemon.sh upstart`
-
-##### zeppelin.conf
-
-```
-description "zeppelin"
-
-start on (local-filesystems and net-device-up IFACE!=lo)
-stop on shutdown
-
-# Respawn the process on unexpected termination
-respawn
-
-# respawn the job up to 7 times within a 5 second period.
-# If the job exceeds these values, it will be stopped and marked as failed.
-respawn limit 7 5
-
-# zeppelin was installed in /usr/share/zeppelin in this example
-chdir /usr/share/zeppelin
-exec bin/zeppelin-daemon.sh upstart
-```
-
-#### Running on Windows
-
-```
-bin\zeppelin.cmd
-```
