@@ -72,8 +72,15 @@
           </descriptors>
         </configuration>
       </plugin>
-    </plugins>
 
+     <plugin>
+        <!--assembly does all the job here-->
+        <artifactId>maven-dependency-plugin</artifactId>
+        <configuration>
+          <skip>true</skip>
+        </configuration>
+      </plugin>
+    </plugins>
   </build>
 
   <profiles>
