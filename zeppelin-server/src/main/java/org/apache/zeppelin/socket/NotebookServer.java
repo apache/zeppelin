@@ -220,7 +220,7 @@ public class NotebookServer extends WebSocketServlet implements
             checkpointNotebook(conn, notebook, messagereceived);
             break;
           case LIST_NOTEBOOK_JOBS:
-            unicastNotebookJobInfo(conn);
+            unicastNotebookJobInfo(conn, messagereceived);
             break;
           case LIST_UPDATE_NOTEBOOK_JOBS:
             unicastUpdateNotebookJobInfo(conn, messagereceived);
@@ -372,9 +372,10 @@ public class NotebookServer extends WebSocketServlet implements
     }
   }
 
-  public void unicastNotebookJobInfo(NotebookSocket conn) throws IOException {
+  public void unicastNotebookJobInfo(NotebookSocket conn, Message fromMessage) throws IOException {
 
-    List<Map<String, Object>> notebookJobs = notebook().getJobListforNotebook(false, 0);
+    AuthenticationInfo subject = new AuthenticationInfo(fromMessage.principal);
+    List<Map<String, Object>> notebookJobs = notebook().getJobListforNotebook(false, 0, subject);
     Map<String, Object> response = new HashMap<>();
 
     response.put("lastResponseUnixTime", System.currentTimeMillis());
@@ -390,7 +391,8 @@ public class NotebookServer extends WebSocketServlet implements
     long lastUpdateUnixTime = new Double(lastUpdateUnixTimeRaw).longValue();
 
     List<Map<String, Object>> notebookJobs;
-    notebookJobs = notebook().getJobListforNotebook(false, lastUpdateUnixTime);
+    AuthenticationInfo subject = new AuthenticationInfo(fromMessage.principal);
+    notebookJobs = notebook().getJobListforNotebook(false, lastUpdateUnixTime, subject);
 
     Map<String, Object> response = new HashMap<>();
     response.put("lastResponseUnixTime", System.currentTimeMillis());

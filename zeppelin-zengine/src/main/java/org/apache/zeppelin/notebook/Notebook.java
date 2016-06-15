@@ -543,12 +543,12 @@ public class Notebook {
   }
 
   public List<Map<String, Object>> getJobListforNotebook(boolean needsReload,
-      long lastUpdateServerUnixTime) {
+      long lastUpdateServerUnixTime, AuthenticationInfo subject) {
     final String CRON_TYPE_NOTEBOOK_KEYWORD = "cron";
 
     if (needsReload) {
       try {
-        reloadAllNotes();
+        reloadAllNotes(subject);
       } catch (IOException e) {
         logger.error("Fail to reload notes from repository");
       }

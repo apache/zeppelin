@@ -713,7 +713,8 @@ public class NotebookRestApi {
   public Response getJobListforNotebook() throws IOException, IllegalArgumentException {
     LOG.info("Get notebook jobs for job manager");
 
-    List<Map<String, Object>> notebookJobs = notebook.getJobListforNotebook(false, 0);
+    AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
+    List<Map<String, Object>> notebookJobs = notebook.getJobListforNotebook(false, 0, subject);
     Map<String, Object> response = new HashMap<>();
 
     response.put("lastResponseUnixTime", System.currentTimeMillis());
@@ -737,7 +738,8 @@ public class NotebookRestApi {
     LOG.info("Get updated notebook jobs lastUpdateTime {}", lastUpdateUnixTime);
 
     List<Map<String, Object>> notebookJobs;
-    notebookJobs = notebook.getJobListforNotebook(false, lastUpdateUnixTime);
+    AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
+    notebookJobs = notebook.getJobListforNotebook(false, lastUpdateUnixTime, subject);
     Map<String, Object> response = new HashMap<>();
 
     response.put("lastResponseUnixTime", System.currentTimeMillis());
