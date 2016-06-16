@@ -33,15 +33,15 @@ import java.lang.reflect.Field;
  * Object encapsulated interactive
  * Python process (REPL) used by python interpreter
  */
-
 public class PythonProcess {
-
   Logger logger = LoggerFactory.getLogger(PythonProcess.class);
+
   InputStream stdout;
   OutputStream stdin;
   BufferedWriter writer;
   BufferedReader reader;
   Process process;
+
   private String binPath;
   private long pid;
 
@@ -64,22 +64,17 @@ public class PythonProcess {
       logger.warn("Can't find python pid process", e);
       pid = -1;
     }
-
-
   }
 
   public void close() throws IOException {
-
     process.destroy();
     reader.close();
     writer.close();
     stdin.close();
     stdout.close();
-
   }
 
   public void interrupt() throws IOException {
-
     if (pid > -1) {
       logger.info("Sending SIGINT signal to PID : " + pid);
       Runtime.getRuntime().exec("kill -SIGINT " + pid);
@@ -87,12 +82,9 @@ public class PythonProcess {
       logger.warn("Non UNIX/Linux system, close the interpreter");
       close();
     }
-
-
   }
 
   public String sendAndGetResult(String cmd) throws IOException {
-
     writer.write(cmd + "\n\n");
     writer.write("print (\"*!?flush reader!?*\")\n\n");
     writer.flush();
@@ -106,18 +98,13 @@ public class PythonProcess {
         output += "Syntax error ! ";
         break;
       }
-
       output += "\r" + line + "\n";
     }
-
     return output;
-
   }
-
 
   private long findPid() throws NoSuchFieldException, IllegalAccessException {
     long pid = -1;
-
     if (process.getClass().getName().equals("java.lang.UNIXProcess")) {
       Field f = process.getClass().getDeclaredField("pid");
       f.setAccessible(true);
@@ -130,4 +117,5 @@ public class PythonProcess {
   public long getPid() {
     return pid;
   }
+
 }
