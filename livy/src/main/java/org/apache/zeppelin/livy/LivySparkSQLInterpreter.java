@@ -34,20 +34,6 @@ import java.util.Properties;
 public class LivySparkSQLInterpreter extends Interpreter {
 
   Logger LOGGER = LoggerFactory.getLogger(LivySparkSQLInterpreter.class);
-  static String DEFAULT_MAX_RESULT = "1000";
-
-  static {
-    Interpreter.register(
-        "sql",
-        "livy",
-        LivySparkSQLInterpreter.class.getName(),
-        new InterpreterPropertyBuilder()
-            .add("zeppelin.livy.spark.maxResult",
-                DEFAULT_MAX_RESULT,
-                "Max number of SparkSQL result to display.")
-            .build()
-    );
-  }
 
   protected Map<String, Integer> userSessionMap;
   private LivyHelper livyHelper;
@@ -93,7 +79,7 @@ public class LivySparkSQLInterpreter extends Interpreter {
               line.replaceAll("\"", "\\\\\"")
                   .replaceAll("\\n", " ")
               + "\").show(" +
-              property.get("zeppelin.livy.spark.maxResult") + ")",
+              property.get("livy.spark.sql.maxResult") + ")",
           interpreterContext, userSessionMap);
 
       if (res.code() == InterpreterResult.Code.SUCCESS) {

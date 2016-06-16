@@ -36,16 +36,6 @@ public class LivySparkRInterpreter extends Interpreter {
 
   Logger LOGGER = LoggerFactory.getLogger(LivySparkRInterpreter.class);
 
-  static {
-    Interpreter.register(
-        "sparkr",
-        "livy",
-        LivySparkRInterpreter.class.getName(),
-        new InterpreterPropertyBuilder()
-            .build()
-    );
-  }
-
   protected Map<String, Integer> userSessionMap;
   private LivyHelper livyHelper;
 
