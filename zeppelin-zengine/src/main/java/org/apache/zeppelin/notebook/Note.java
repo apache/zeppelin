@@ -266,7 +266,7 @@ public class Note implements Serializable, JobListener {
   }
 
   private String getInterpreterName(String replName) {
-    return "%" + replName;
+    return StringUtils.isBlank(replName) ? StringUtils.EMPTY : "%" + replName;
   }
 
   /**
