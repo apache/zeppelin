@@ -59,10 +59,14 @@ angular.module('zeppelinWebApp').factory('websocketEvents', function($rootScope,
       $location.path('notebook/' + data.note.id);
     } else if (op === 'NOTES_INFO') {
       $rootScope.$broadcast('setNoteMenu', data.notes);
+    } else if (op === 'LIST_NOTEBOOK_JOBS') {
+      $rootScope.$broadcast('setNotebookJobs', data.notebookJobs);
+    } else if (op === 'LIST_UPDATE_NOTEBOOK_JOBS') {
+      $rootScope.$broadcast('setUpdateNotebookJobs', data.notebookRunningJobs);
     } else if (op === 'AUTH_INFO') {
       BootstrapDialog.show({
           closable: true,
-          title: 'Insufficient privileges', 
+          title: 'Insufficient privileges',
           message: data.info.toString(),
           buttons: [{
               label: 'Login',
