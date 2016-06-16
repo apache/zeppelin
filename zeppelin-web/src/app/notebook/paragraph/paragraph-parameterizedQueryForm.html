@@ -27,7 +27,7 @@ limitations under the License.
              ng-class="{'disable': paragraph.status == 'RUNNING' || paragraph.status == 'PENDING' }"
              name="{{formulaire.name}}" />
 
-      <select class="form-control input-sm"
+      <select multiple class="query-select form-control input-sm"
              ng-if="paragraph.settings.forms[formulaire.name].options && paragraph.settings.forms[formulaire.name].type != 'checkbox'"
              ng-change="runParagraph(getEditorValue())"
              ng-model="paragraph.settings.params[formulaire.name]"
