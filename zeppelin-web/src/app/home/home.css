@@ -272,18 +272,27 @@ a.navbar-brand:hover {
   margin-top: 8px;
 }
 
-.nav-config-btn {
+.nav-btn {
   color: #fff;
   background-color: #3071a9;
   border-color: #3071a9;
 }
 
-.nav-config-btn:hover,
-.nav-config-btn:focus,
-.nav-config-btn:active, .open > .dropdown-toggle.nav-config-btn {
+.nav-btn:hover,
+.nav-btn:focus,
+.nav-btn:active, .open > .dropdown-toggle.nav-btn {
   color: #fff;
   background-color: #428bca;
   border-color: #357ebd;
+}
+
+.nav-status-btn,
+.nav-status-btn:hover,
+.nav-status-btn:focus {
+  color: #fff;
+  background-color: #3071a9;
+  border-color: #3071a9;
+  cursor: default;
 }
 
 .nav-login-btn,

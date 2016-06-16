@@ -76,7 +76,7 @@ angular.module('zeppelinWebApp')
     $rootScope.truncatedUsername = $rootScope.ticket.principal;
   }
 
-  var MAX_USERNAME_LENGTH=20;
+  var MAX_USERNAME_LENGTH=16;
 
   angular.element('#notebook-list').perfectScrollbar({suppressScrollX: true});
 
@@ -92,8 +92,7 @@ angular.module('zeppelinWebApp')
     if ($rootScope.ticket) {
       if ($rootScope.ticket.principal.length <= MAX_USERNAME_LENGTH) {
         $rootScope.truncatedUsername = $rootScope.ticket.principal;
-      }
-      else {
+      } else {
         $rootScope.truncatedUsername = $rootScope.ticket.principal.substr(0, MAX_USERNAME_LENGTH) + '..';
       }
     }
@@ -146,7 +145,6 @@ angular.module('zeppelinWebApp')
   };
 
   function getZeppelinVersion() {
-    console.log('version');
     $http.get(baseUrlSrv.getRestApiBase() + '/version').success(
       function(data, status, headers, config) {
         $rootScope.zeppelinVersion = data.body;

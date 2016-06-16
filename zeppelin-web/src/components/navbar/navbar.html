@@ -82,29 +82,21 @@ limitations under the License.
           </form>
         <li class="nav-component">
           <div class="dropdown">
-            <button class="btn nav-config-btn dropdown-toggle" type="button" data-toggle="dropdown" style="margin-right: 5px;">
+            <button class="btn dropdown-toggle" type="button" data-toggle="dropdown" style="margin-right: 5px;"
+                    ng-class="{'nav-status-btn': !ticket.principal || ticket.principal === 'anonymous',
+                             'nav-btn': ticket.principal && ticket.principal !== 'anonymous'}">
               <i class="fa fa-circle" ng-class="{'server-connected':navbar.connected, 'server-disconnected':!navbar.connected}"></i>
               <span ng-show="navbar.connected" ng-if="ticket.principal === 'anonymous'">Connected</span>
               <span ng-show="navbar.connected" ng-if="ticket.principal !== 'anonymous'">{{truncatedUsername}}</span>
               <span ng-show="!navbar.connected">Disconnected</span>
-              <span class="caret"></span>
+              <span class="caret" ng-if="ticket.principal && ticket.principal !== 'anonymous'"></span>
             </button>
-            <ul class="dropdown-menu">
-              <li><a href="" data-toggle="modal" data-target="#aboutModal">
-                <i class="fa fa-info"></i>&nbsp;&nbsp;About</a>
+            <ul class="dropdown-menu" ng-if="ticket.principal && ticket.principal !== 'anonymous'">
+              <li class="dropdown-header">
+                <strong>{{ticket.principal}}</strong>
               </li>
-              <li ng-if="ticket">
-                <a href="#/interpreter">Interpreter</a>
-              </li>
-              <li ng-if="ticket">
-                <a href="#/credential">Credential</a>
-              </li>
-              <li ng-if="ticket">
-                <a href="#/configuration">Configuration</a>
-              </li>
-              <li ng-show="ticket.principal && ticket.principal!='anonymous'">
-                <a ng-click="logout()">Logout</a>
-              </li>
+              <li role="separator" class="divider"></li>
+              <li><a ng-click="logout()">Logout</a></li>
             </ul>
           </div>
         </li>
@@ -112,6 +104,20 @@ limitations under the License.
           <button class="btn nav-login-btn" data-toggle="modal" data-target="#loginModal"
                   ng-click="showLoginWindow()">Login
           </button>
+        </li>
+        <li class="nav-component" ng-if="ticket">
+          <div class="dropdown">
+            <button class="btn nav-btn dropdown-toggle" type="button" data-toggle="dropdown" style="margin-right: 5px;">
+              <i class="fa fa-cog"></i>
+            </button>
+            <ul class="dropdown-menu">
+              <li><a href="#/interpreter">Interpreter</a></li>
+              <li><a href="#/credential">Credential</a></li>
+              <li><a href="#/configuration">Configuration</a></li>
+              <li role="separator" class="divider"></li>
+              <li><a href="" data-toggle="modal" data-target="#aboutModal">About</a>
+            </ul>
+          </div>
         </li>
       </ul>
     </div>
