@@ -31,6 +31,7 @@ import alluxio.client.WriteType;
 import alluxio.client.file.URIStatus;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
+import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.junit.*;
 
 import alluxio.Constants;
@@ -76,19 +77,19 @@ public class AlluxioInterpreterTest {
 
   @Test
   public void testCompletion() {
-    List<String> expectedResultOne = Arrays.asList("cat", "chgrp",
+    List expectedResultOne = Arrays.asList("cat", "chgrp",
             "chmod", "chown", "copyFromLocal", "copyToLocal", "count",
             "createLineage");
-    List<String> expectedResultTwo = Arrays.asList("copyFromLocal",
+    List expectedResultTwo = Arrays.asList("copyFromLocal",
             "copyToLocal", "count");
-    List<String> expectedResultThree = Arrays.asList("copyFromLocal", "copyToLocal");
-    List<String> expectedResultNone = new ArrayList<String>();
+    List expectedResultThree = Arrays.asList("copyFromLocal", "copyToLocal");
+    List expectedResultNone = new ArrayList<String>();
 
-    List<String> resultOne = alluxioInterpreter.completion("c", 0);
-    List<String> resultTwo = alluxioInterpreter.completion("co", 0);
-    List<String> resultThree = alluxioInterpreter.completion("copy", 0);
-    List<String> resultNotMatch = alluxioInterpreter.completion("notMatch", 0);
-    List<String> resultAll = alluxioInterpreter.completion("", 0);
+    List<InterpreterCompletion> resultOne = alluxioInterpreter.completion("c", 0);
+    List<InterpreterCompletion> resultTwo = alluxioInterpreter.completion("co", 0);
+    List<InterpreterCompletion> resultThree = alluxioInterpreter.completion("copy", 0);
+    List<InterpreterCompletion> resultNotMatch = alluxioInterpreter.completion("notMatch", 0);
+    List<InterpreterCompletion> resultAll = alluxioInterpreter.completion("", 0);
 
     Assert.assertEquals(expectedResultOne, resultOne);
     Assert.assertEquals(expectedResultTwo, resultTwo);
