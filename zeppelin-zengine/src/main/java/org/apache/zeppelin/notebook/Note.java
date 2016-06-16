@@ -428,6 +428,22 @@ public class Note implements Serializable, JobListener {
     }
   }
 
+  /**
+   * Check whether all paragraphs belongs to this note has terminated
+   * @return
+   */
+  public boolean isTerminated() {
+    synchronized (paragraphs) {
+      for (Paragraph p : paragraphs) {
+        if (!p.isTerminated()) {
+          return false;
+        }
+      }
+    }
+
+    return true;
+  }
+
   public List<InterpreterCompletion> completion(String paragraphId, String buffer, int cursor) {
     Paragraph p = getParagraph(paragraphId);
     p.setNoteReplLoader(replLoader);
@@ -561,5 +577,4 @@ public class Note implements Serializable, JobListener {
 
   @Override
   public void onProgressUpdate(Job job, int progress) {}
-
 }
