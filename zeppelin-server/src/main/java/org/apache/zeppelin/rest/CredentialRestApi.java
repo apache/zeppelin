@@ -50,7 +50,6 @@ public class CredentialRestApi {
   private HttpServletRequest servReq;
 
   public CredentialRestApi() {
-
   }
 
   public CredentialRestApi(Credentials credentials) {
@@ -58,10 +57,13 @@ public class CredentialRestApi {
   }
 
   /**
-   * Update credentials for current user
+   * Put User Credentials REST API
+   * @param message - JSON with entity, username, password.
+   * @return JSON with status.OK
+   * @throws IOException, IllegalArgumentException
    */
   @PUT
-  public Response putCredentials(String message) throws IOException {
+  public Response putCredentials(String message) throws IOException, IllegalArgumentException {
     Map<String, String> messageMap = gson.fromJson(message,
       new TypeToken<Map<String, String>>(){}.getType());
     String entity = messageMap.get("entity");
@@ -69,7 +71,7 @@ public class CredentialRestApi {
     String password = messageMap.get("password");
 
     if (entity == null || username == null || password == null) {
-      return new JsonResponse(Status.BAD_REQUEST, "", "").build();
+      return new JsonResponse(Status.BAD_REQUEST).build();
     }
 
     String user = SecurityUtils.getPrincipal();
@@ -77,7 +79,57 @@ public class CredentialRestApi {
     UserCredentials uc = credentials.getUserCredentials(user);
     uc.putUsernamePassword(entity, new UsernamePassword(username, password));
     credentials.putUserCredentials(user, uc);
-    return new JsonResponse(Status.OK, "", "").build();
+    return new JsonResponse(Status.OK).build();
   }
 
+  /**
+   * Get User Credentials list REST API
+   * @param
+   * @return JSON with status.OK
+   * @throws IOException, IllegalArgumentException
+   */
+  @GET
+  public Response getCredentials(String message) throws
+      IOException, IllegalArgumentException {
+    String user = SecurityUtils.getPrincipal();
+    logger.info("getCredentials credentials for user {} ", user);
+    UserCredentials uc = credentials.getUserCredentials(user);
+    return new JsonResponse(Status.OK, uc).build();
+  }
+
+ /**
+  * Remove User Credentials REST API
+  * @param
+  * @return JSON with status.OK
+  * @throws IOException, IllegalArgumentException
+  */
+  @DELETE
+  public Response removeCredentials(String message) throws
+      IOException, IllegalArgumentException {
+    String user = SecurityUtils.getPrincipal();
+    logger.info("removeCredentials credentials for user {} ", user);
+    UserCredentials uc = credentials.removeUserCredentials(user);
+    if (uc == null) {
+      return new JsonResponse(Status.NOT_FOUND).build();
+    }
+    return new JsonResponse(Status.OK).build();
+  }
+
+  /**
+   * Remove Entity of User Credential entity REST API
+   * @param
+   * @return JSON with status.OK
+   * @throws IOException, IllegalArgumentException
+   */
+  @DELETE
+  @Path("{entity}")
+  public Response removeCredentialEntity(@PathParam("entity") String entity) throws
+          IOException, IllegalArgumentException {
+    String user = SecurityUtils.getPrincipal();
+    logger.info("removeCredentialEntity for user {} entity {}", user, entity);
+    if (credentials.removeCredentialEntity(user, entity) == false) {
+      return new JsonResponse(Status.NOT_FOUND).build();
+    }
+    return new JsonResponse(Status.OK).build();
+  }
 }

@@ -61,7 +61,33 @@ public class Credentials {
   }
 
   public void putUserCredentials(String username, UserCredentials uc) throws IOException {
-    credentialsMap.put(username, uc);
+    synchronized (credentialsMap) {
+      credentialsMap.put(username, uc);
+    }
+    saveCredentials();
+  }
+
+  public UserCredentials removeUserCredentials(String username) throws IOException {
+    UserCredentials uc;
+    synchronized (credentialsMap) {
+      uc = credentialsMap.remove(username);
+    }
+    saveCredentials();
+    return uc;
+  }
+
+  public boolean removeCredentialEntity(String username, String entity) throws IOException {
+    UserCredentials uc = credentialsMap.get(username);
+    if (uc != null && uc.existUsernamePassword(entity) == false) {
+      return false;
+    }
+
+    uc.removeUsernamePassword(entity);
+    saveCredentials();
+    return true;
+  }
+
+  public void saveCredentials() throws IOException {
     if (credentialsPersist) {
       saveToFile();
     }
@@ -118,5 +144,4 @@ public class Credentials {
       LOG.error("Error saving credentials file", e);
     }
   }
-
 }

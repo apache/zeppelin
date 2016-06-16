@@ -35,7 +35,21 @@ public class UserCredentials {
   }
 
   public void putUsernamePassword(String entity, UsernamePassword up) {
-    userCredentials.put(entity, up);
+    synchronized (userCredentials) {
+      userCredentials.put(entity, up);
+    }
+  }
+
+  public void removeUsernamePassword(String entity) {
+    synchronized (userCredentials) {
+      userCredentials.remove(entity);
+    }
+  }
+
+  public boolean existUsernamePassword(String entity) {
+    synchronized (userCredentials) {
+      return userCredentials.containsKey(entity);
+    }
   }
 
   @Override
