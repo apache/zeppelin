@@ -75,13 +75,13 @@ public class LivyHelper {
 
       String confData = gson.toJson(conf);
 
-      String json = executeHTTP(property.getProperty("zeppelin.livy.url") + "/sessions",
+      String json = executeHTTP(property.getProperty("livy.host.url") + "/sessions",
           "POST", 
           "{" +
               "\"kind\": \"" + kind + "\", " +
               "\"conf\": " + confData + ", " + 
-              "\"proxyUser\": " + context.getAuthenticationInfo().getUser() + 
-              "}",
+              "\"proxyUser\": \"" + context.getAuthenticationInfo().getUser() +
+              "\"}",
           context.getParagraphId()
       );
 
@@ -96,7 +96,7 @@ public class LivyHelper {
           LOGGER.error(String.format("sessionId:%s state is %s",
               jsonMap.get("id"), jsonMap.get("state")));
           Thread.sleep(1000);
-          json = executeHTTP(property.getProperty("zeppelin.livy.url") + "/sessions/" + sessionId,
+          json = executeHTTP(property.getProperty("livy.host.url") + "/sessions/" + sessionId,
               "GET", null,
               context.getParagraphId());
           jsonMap = (Map<Object, Object>) gson.fromJson(json,
@@ -105,7 +105,7 @@ public class LivyHelper {
           if (jsonMap.get("state").equals("idle")) {
             break;
           } else if (jsonMap.get("state").equals("error")) {
-            json = executeHTTP(property.getProperty("zeppelin.livy.url") + "/sessions/" +
+            json = executeHTTP(property.getProperty("livy.host.url") + "/sessions/" +
                     sessionId + "/log",
                 "GET", null,
                 context.getParagraphId());
@@ -297,7 +297,7 @@ public class LivyHelper {
 
   private Map executeCommand(String lines, InterpreterContext context,
                              Map<String, Integer> userSessionMap) throws Exception {
-    String json = executeHTTP(property.get("zeppelin.livy.url") + "/sessions/"
+    String json = executeHTTP(property.get("livy.host.url") + "/sessions/"
             + userSessionMap.get(context.getAuthenticationInfo().getUser())
             + "/statements",
         "POST",
@@ -320,7 +320,7 @@ public class LivyHelper {
 
   private Map getStatusById(InterpreterContext context,
                             Map<String, Integer> userSessionMap, Integer id) throws Exception {
-    String json = executeHTTP(property.getProperty("zeppelin.livy.url") + "/sessions/"
+    String json = executeHTTP(property.getProperty("livy.host.url") + "/sessions/"
             + userSessionMap.get(context.getAuthenticationInfo().getUser())
             + "/statements/" + id,
         "GET", null, context.getParagraphId());
@@ -401,7 +401,7 @@ public class LivyHelper {
   public void closeSession(Map<String, Integer> userSessionMap) {
     for (Map.Entry<String, Integer> entry : userSessionMap.entrySet()) {
       try {
-        executeHTTP(property.getProperty("zeppelin.livy.url") + "/sessions/"
+        executeHTTP(property.getProperty("livy.host.url") + "/sessions/"
                 + entry.getValue(),
             "DELETE", null, null);
       } catch (Exception e) {
