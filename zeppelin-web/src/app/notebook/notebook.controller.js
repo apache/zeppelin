@@ -879,6 +879,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl',
 
   // function to find suggestion list on change
   $scope.search = function(role) {
+    $('.userlist').show();
     convertToArray(role);
     checkPreviousRole(role);
     getChangedIndex();
@@ -950,5 +951,8 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl',
     $scope.suggestions = [];
   };
 
+$(document).click(function(){
+     $('.userlist').hide();
+});
 
 });
