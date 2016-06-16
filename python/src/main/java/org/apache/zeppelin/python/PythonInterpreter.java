@@ -70,7 +70,6 @@ public class PythonInterpreter extends Interpreter {
     );
   }
 
-
   public PythonInterpreter(Properties property) {
     super(property);
   }
@@ -171,10 +170,11 @@ public class PythonInterpreter extends Interpreter {
   }
 
   public PythonProcess getPythonProcess() {
-    if (process == null)
+    if (process == null) {
       return new PythonProcess(getProperty(ZEPPELIN_PYTHON));
-    else
+    } else {
       return process;
+    }
   }
 
   private Job getRunningJob(String paragraphId) {
@@ -227,9 +227,11 @@ public class PythonInterpreter extends Interpreter {
 
   public Boolean isPy4jInstalled() {
     String output = sendCommandToPython("\n\nimport py4j\n");
-    if (output.contains("ImportError"))
+    if (output.contains("ImportError")) {
       return false;
-    else return true;
+    } else {
+      return true;
+    }
   }
 
   private int findRandomOpenPortOnAllLocalInterfaces() {
