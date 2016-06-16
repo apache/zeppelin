@@ -194,6 +194,6 @@ public class NoteInterpreterLoader {
       return factory.getDevInterpreter();
     }
 
-    throw new InterpreterException(replName + " interpreter not found");
+    return null;
   }
 }

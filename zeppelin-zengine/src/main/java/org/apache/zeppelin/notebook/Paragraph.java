@@ -52,6 +52,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
   private transient NoteInterpreterLoader replLoader;
   private transient Note note;
   private transient AuthenticationInfo authenticationInfo;
+  private transient String effectiveText;
 
   String title;
   String text;
@@ -112,6 +113,14 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     this.dateUpdated = new Date();
   }
 
+  public void setEffectiveText(String effectiveText) {
+    this.effectiveText = effectiveText;
+  }
+
+  public String getEffectiveText() {
+    return effectiveText;
+  }
+
   public AuthenticationInfo getAuthenticationInfo() {
     return authenticationInfo;
   }
@@ -143,7 +152,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
   }
 
   public String getRequiredReplName() {
-    return getRequiredReplName(text);
+    return getRequiredReplName(null != effectiveText ? effectiveText : text);
   }
 
   public static String getRequiredReplName(String text) {
@@ -171,8 +180,8 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     }
   }
 
-  private String getScriptBody() {
-    return getScriptBody(text);
+  public String getScriptBody() {
+    return getScriptBody(null != effectiveText ? effectiveText : text);
   }
 
   public static String getScriptBody(String text) {
@@ -303,6 +312,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
       }
     } finally {
       InterpreterContext.remove();
+      effectiveText = null;
     }
   }
 
