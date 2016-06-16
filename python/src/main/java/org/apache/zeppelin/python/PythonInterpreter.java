@@ -183,6 +183,7 @@ public class PythonInterpreter extends Interpreter {
     for (Job job : jobsRunning) {
       if (job.getId().equals(paragraphId)) {
         foundJob = job;
+        break;
       }
     }
     return foundJob;
