@@ -76,3 +76,9 @@
 # export ZEPPELINHUB_API_TOKEN			# Refers to the Zeppelin instance token of the user
 # export ZEPPELINHUB_USER_KEY			# Optional, when using Zeppelin with authentication.
 
+#### HBase interpreter configuration ####
+
+## To connect to HBase running on a cluster, either HBASE_HOME or HBASE_CONF_DIR must be set
+
+# export HBASE_HOME=                    # (require) Under which HBase scripts and configuration should be
+# export HBASE_CONF_DIR=                # (optional) Alternatively, configuration directory can be set to point to the directory that has hbase-site.xml
