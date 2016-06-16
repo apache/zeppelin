@@ -563,7 +563,7 @@ public class Notebook {
 
       // set notebook Name
       String notebookName = note.getName();
-      if (notebookName != null) {
+      if (notebookName != null && !notebookName.equals("")) {
         info.put("notebookName", note.getName());
       } else {
         info.put("notebookName", "Note " + note.id());
@@ -593,9 +593,9 @@ public class Notebook {
 
         // is update notebook for last server update time.
         if (lastRunningUnixTime > lastUpdateServerUnixTime) {
-          paragraphsInfo.add(paragraphItem);
           isUpdateNotebook = true;
         }
+        paragraphsInfo.add(paragraphItem);
       }
 
       // set interpreter bind type
