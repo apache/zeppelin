@@ -80,7 +80,7 @@ public class GitNotebookRepoTest {
 
   @After
   public void tearDown() throws Exception {
-    NotebookRepoSyncTest.delete(zeppelinDir);
+    //NotebookRepoSyncTest.delete(zeppelinDir);
   }
 
   @Test
@@ -155,5 +155,60 @@ public class GitNotebookRepoTest {
       }
     }
     return false;
+  }
+
+  @Test
+  public void getRevisionTest() throws IOException {
+    // initial checks
+    notebookRepo = new GitNotebookRepo(conf);
+    assertThat(notebookRepo.list(null)).isNotEmpty();
+    assertThat(containsNote(notebookRepo.list(null), TEST_NOTE_ID)).isTrue();
+    assertThat(notebookRepo.revisionHistory(TEST_NOTE_ID, null)).isEmpty();
+
+    // add first checkpoint
+    Revision revision_1 = notebookRepo.checkpoint(TEST_NOTE_ID, "first commit", null);
+    assertThat(notebookRepo.revisionHistory(TEST_NOTE_ID, null).size()).isEqualTo(1);
+    int paragraphCount_1 = notebookRepo.get(TEST_NOTE_ID, null).getParagraphs().size();
+
+    // add paragraph and save
+    Note note = notebookRepo.get(TEST_NOTE_ID, null);
+    Paragraph p1 = note.addParagraph();
+    Map<String, Object> config = p1.getConfig();
+    config.put("enabled", true);
+    p1.setConfig(config);
+    p1.setText("%md checkpoint test text");
+    notebookRepo.save(note, null);
+
+    // second checkpoint
+    notebookRepo.checkpoint(TEST_NOTE_ID, "second commit", null);
+    assertThat(notebookRepo.revisionHistory(TEST_NOTE_ID, null).size()).isEqualTo(2);
+    int paragraphCount_2 = notebookRepo.get(TEST_NOTE_ID, null).getParagraphs().size();
+    assertThat(paragraphCount_2).isEqualTo(paragraphCount_1 + 1);
+
+    // get note from revision 1
+    Note noteRevision_1 = notebookRepo.get(TEST_NOTE_ID, revision_1, null);
+    assertThat(noteRevision_1.getParagraphs().size()).isEqualTo(paragraphCount_1);
+
+    // get current note
+    note = notebookRepo.get(TEST_NOTE_ID, null);
+    assertThat(note.getParagraphs().size()).isEqualTo(paragraphCount_2);
+
+    // add one more paragraph and save
+    Paragraph p2 = note.addParagraph();
+    config.put("enabled", false);
+    p2.setConfig(config);
+    p2.setText("%md get revision when modified note test text");
+    notebookRepo.save(note, null);
+    note = notebookRepo.get(TEST_NOTE_ID, null);
+    int paragraphCount_3 = note.getParagraphs().size();
+    assertThat(paragraphCount_3).isEqualTo(paragraphCount_2 + 1);
+
+    // get revision 1 again
+    noteRevision_1 = notebookRepo.get(TEST_NOTE_ID, revision_1, null);
+    assertThat(noteRevision_1.getParagraphs().size()).isEqualTo(paragraphCount_1);
+
+    // check that note is unchanged
+    note = notebookRepo.get(TEST_NOTE_ID, null);
+    assertThat(note.getParagraphs().size()).isEqualTo(paragraphCount_3);
   }
 }
