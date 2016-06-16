@@ -33,7 +33,7 @@ limitations under the License.
     </ul>
   </div>
   <div class="col-md-6" style="padding:0">
-    <img class="img-responsive" style="border: 1px solid #ecf0f1;" src="../assets/themes/zeppelin/img/notebook.png" />
+    <img class="img-responsive" style="border: 1px solid #ecf0f1;" src="./assets/themes/zeppelin/img/notebook.png" />
   </div>
 </div>
 
@@ -42,14 +42,14 @@ limitations under the License.
 [Apache Zeppelin interpreter](./manual/interpreters.html) concept allows any language/data-processing-backend to be plugged into Zeppelin.
 Currently Apache Zeppelin supports many interpreters such as Apache Spark, Python, JDBC, Markdown and Shell.
 
-<img class="img-responsive" width="500px" style="margin:0 auto; padding: 26px;" src="../assets/themes/zeppelin/img/available_interpreters.png" />
+<img class="img-responsive" width="500px" style="margin:0 auto; padding: 26px;" src="./assets/themes/zeppelin/img/available_interpreters.png" />
 
 Adding new language-backend is really simple. Learn [how to create your own interpreter](./development/writingzeppelininterpreter.html#make-your-own-interpreter).
 
 #### Apache Spark integration
 Especially, Apache Zeppelin provides built-in [Apache Spark](http://spark.apache.org/) integration. You don't need to build a separate module, plugin or library for it.
 
-<img class="img-responsive" src="../assets/themes/zeppelin/img/spark_logo.jpg" width="140px" />
+<img class="img-responsive" src="./assets/themes/zeppelin/img/spark_logo.jpg" width="140px" />
 
 Apache Zeppelin with Spark integration provides
 
@@ -66,10 +66,10 @@ Some basic charts are already included in Apache Zeppelin. Visualizations are no
 
 <div class="row">
   <div class="col-md-6">
-    <img class="img-responsive" src="../assets/themes/zeppelin/img/graph1.png" />
+    <img class="img-responsive" src="./assets/themes/zeppelin/img/graph1.png" />
   </div>
   <div class="col-md-6">
-    <img class="img-responsive" src="../assets/themes/zeppelin/img/graph2.png" />
+    <img class="img-responsive" src="./assets/themes/zeppelin/img/graph2.png" />
   </div>
 </div>
 
@@ -79,7 +79,7 @@ Apache Zeppelin aggregates values and displays them in pivot chart with simple d
 
 <div class="row">
   <div class="col-md-12">
-    <img class="img-responsive" style="margin: 16px auto;" src="../assets/themes/zeppelin/img/screenshots/pivot.png" width="480px" />
+    <img class="img-responsive" style="margin: 16px auto;" src="./assets/themes/zeppelin/img/screenshots/pivot.png" width="480px" />
   </div>
 </div>
 
@@ -91,7 +91,7 @@ Learn more about [display systems](#display-system) in Apache Zeppelin.
 Apache Zeppelin can dynamically create some input forms in your notebook.
 <div class="row">
   <div class="col-md-12">
-    <img class="img-responsive" style="margin: 16px auto;" src="../assets/themes/zeppelin/img/screenshots/dynamicform.png" />
+    <img class="img-responsive" style="margin: 16px auto;" src="./assets/themes/zeppelin/img/screenshots/dynamicform.png" />
   </div>
 </div>
 Learn more about [Dynamic Forms](./manual/dynamicform.html).
@@ -102,7 +102,7 @@ Your notebook URL can be shared among collaborators. Then Apache Zeppelin will b
 
 <div class="row">
   <div class="col-md-12">
-    <img class="img-responsive" style="margin: 20px auto" src="../assets/themes/zeppelin/img/screenshots/publish.png" width="650px"/>
+    <img class="img-responsive" style="margin: 20px auto" src="./assets/themes/zeppelin/img/screenshots/publish.png" width="650px"/>
   </div>
 </div>
 
@@ -113,7 +113,7 @@ If you want to learn more about this feature, please visit [this page](./manual/
 <br />
 ## 100% Opensource
 
-<img class="img-responsive" style="margin:0 auto; padding: 15px;" src="../assets/themes/zeppelin/img/asf_logo.png" width="250px"/>
+<img class="img-responsive" style="margin:0 auto; padding: 15px;" src="./assets/themes/zeppelin/img/asf_logo.png" width="250px"/>
 
 Apache Zeppelin is Apache2 Licensed software. Please check out the [source repository](http://git.apache.org/zeppelin.git) and [how to contribute](./development/howtocontribute.html).
 Apache Zeppelin has a very active development community.
