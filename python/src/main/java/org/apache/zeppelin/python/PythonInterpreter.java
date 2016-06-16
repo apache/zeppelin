@@ -192,7 +192,7 @@ public class PythonInterpreter extends Interpreter {
 
   private String sendCommandToPython(String cmd) {
     String output = "";
-    logger.info("Sending : \n " + cmd);
+    logger.info("Sending : \n" + (cmd.length() > 200 ? cmd.substring(0, 120) + "..." : cmd));
     try {
       output = process.sendAndGetResult(cmd);
     } catch (IOException e) {
@@ -214,7 +214,7 @@ public class PythonInterpreter extends Interpreter {
     if (py4J && port != null && port != -1) {
       bootstrapCode = bootstrapCode.replaceAll("\\%PORT\\%", port.toString());
     }
-    logger.info("Bootstrap python interpreter with \n " + bootstrapCode);
+    logger.info("Bootstrap python interpreter with code from \n " + file);
     sendCommandToPython(bootstrapCode);
   }
 
