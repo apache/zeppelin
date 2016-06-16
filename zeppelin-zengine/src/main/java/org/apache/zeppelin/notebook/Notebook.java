@@ -502,7 +502,7 @@ public class Notebook {
       Note note = notebook.getNote(noteId);
       note.runAll();
     
-      while (!note.getLastParagraph().isTerminated()) {
+      while (!note.isTerminated()) {
         try {
           Thread.sleep(1000);
         } catch (InterruptedException e) {

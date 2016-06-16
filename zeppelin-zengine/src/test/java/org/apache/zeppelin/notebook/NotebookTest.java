@@ -17,11 +17,7 @@
 
 package org.apache.zeppelin.notebook;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 
 import java.io.File;
@@ -284,36 +280,47 @@ public class NotebookTest implements JobListenerFactory{
     Paragraph p = note.addParagraph();
     Map config = new HashMap<String, Object>();
     p.setConfig(config);
-    p.setText("p1");
+    p.setText("sleep 1000");
+
+    Paragraph p2 = note.addParagraph();
+    p2.setConfig(config);
+    p2.setText("%mock2 sleep 500");
 
     // set cron scheduler, once a second
     config = note.getConfig();
     config.put("enabled", true);
-    config.put("cron", "* * * * * ?");
-    config.put("releaseresource", "true");
+    config.put("cron", "1/3 * * * * ?");
+    config.put("releaseresource", true);
     note.setConfig(config);
     notebook.refreshCron(note.id());
-    while (p.getStatus() != Status.FINISHED) {
-      Thread.sleep(100);
-    }
-    Date dateFinished = p.getDateFinished();
-    assertNotNull(dateFinished);
 
-    // restart interpreter
-    for (InterpreterSetting setting : note.getNoteReplLoader().getInterpreterSettings()) {
-      notebook.getInterpreterFactory().restart(setting.id());
+
+    MockInterpreter1 mock1 = ((MockInterpreter1) (((ClassloaderInterpreter)
+        ((LazyOpenInterpreter) note.getNoteReplLoader().get("mock1")).getInnerInterpreter())
+        .getInnerInterpreter()));
+
+    MockInterpreter2 mock2 = ((MockInterpreter2) (((ClassloaderInterpreter)
+        ((LazyOpenInterpreter) note.getNoteReplLoader().get("mock2")).getInnerInterpreter())
+        .getInnerInterpreter()));
+
+    // wait until interpreters are started
+    while (!mock1.isOpen() || !mock2.isOpen()) {
+      Thread.yield();
     }
 
-    Thread.sleep(1000);
-    while (p.getStatus() != Status.FINISHED) {
-      Thread.sleep(100);
+    // wait until interpreters are closed
+    while (mock1.isOpen() || mock2.isOpen()) {
+      Thread.yield();
     }
-    assertNotEquals(dateFinished, p.getDateFinished());
-    
+
     // remove cron scheduler.
     config.put("cron", null);
     note.setConfig(config);
     notebook.refreshCron(note.id());
+
+    // make sure all paragraph has been executed
+    assertNotNull(p.getDateFinished());
+    assertNotNull(p2.getDateFinished());
   }
 
   @Test
