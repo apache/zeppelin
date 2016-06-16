@@ -121,7 +121,7 @@ public class NoteInterpreterLoader {
 
     if (replName == null || replName.trim().length() == 0) {
       // get default settings (first available)
-      InterpreterSetting defaultSettings = getDefaultInterpreterSetting(settings);
+      InterpreterSetting defaultSettings = getDefaultInterpreterSetting(settings).get();
       return createOrGetInterpreterList(defaultSettings).get(0);
     }
 
@@ -158,7 +158,7 @@ public class NoteInterpreterLoader {
     } else {
       // first assume replName is 'name' of interpreter. ('groupName' is ommitted)
       // search 'name' from first (default) interpreter group
-      InterpreterSetting defaultSetting = getDefaultInterpreterSetting(settings);
+      InterpreterSetting defaultSetting = getDefaultInterpreterSetting(settings).get();
       Interpreter.RegisteredInterpreter registeredInterpreter =
           Interpreter.registeredInterpreters.get(defaultSetting.getGroup() + "." + replName);
       if (registeredInterpreter != null) {
@@ -193,15 +193,15 @@ public class NoteInterpreterLoader {
     return null;
   }
 
-  private InterpreterSetting getDefaultInterpreterSetting(List<InterpreterSetting> settings) {
-    return settings.get(0);
-  }
-
-  Optional<InterpreterSetting> getDefaultInterpreterSetting() {
-    List<InterpreterSetting> settings = getInterpreterSettings();
+  private Optional<InterpreterSetting>
+  getDefaultInterpreterSetting(List<InterpreterSetting> settings) {
     if (settings == null || settings.isEmpty()) {
       return Optional.absent();
     }
     return Optional.of(settings.get(0));
+  }
+
+  Optional<InterpreterSetting> getDefaultInterpreterSetting() {
+    return getDefaultInterpreterSetting(getInterpreterSettings());
   }
 }
