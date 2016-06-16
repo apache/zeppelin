@@ -35,7 +35,6 @@ import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.AngularObjectRegistryListener;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
-import org.apache.zeppelin.interpreter.OccupiedInterpreter;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.user.AuthenticationInfo;
@@ -1076,6 +1075,7 @@ public class NotebookServer extends WebSocketServlet implements
     // if it's the last paragraph, let's add a new one
     boolean isTheLastParagraph = note.getLastParagraph().getId()
         .equals(p.getId());
+    note.setLastReplName(paragraphId);
     if (!Strings.isNullOrEmpty(text) && isTheLastParagraph) {
       note.addParagraph();
     }

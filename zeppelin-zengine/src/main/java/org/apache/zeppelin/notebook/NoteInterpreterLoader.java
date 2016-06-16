@@ -17,6 +17,8 @@
 
 package org.apache.zeppelin.notebook;
 
+import com.google.common.base.Optional;
+
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
@@ -28,7 +30,6 @@ import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
-import org.apache.zeppelin.interpreter.OccupiedInterpreter;
 
 /**
  * Interpreter loader per note.
@@ -118,10 +119,9 @@ public class NoteInterpreterLoader {
       return null;
     }
 
-    if (replName == null || replName.trim().length() == 0
-            || OccupiedInterpreter.isDefaultInterpreter(replName)) {
+    if (replName == null || replName.trim().length() == 0) {
       // get default settings (first available)
-      InterpreterSetting defaultSettings = settings.get(0);
+      InterpreterSetting defaultSettings = getDefaultInterpreterSetting(settings);
       return createOrGetInterpreterList(defaultSettings).get(0);
     }
 
@@ -158,7 +158,7 @@ public class NoteInterpreterLoader {
     } else {
       // first assume replName is 'name' of interpreter. ('groupName' is ommitted)
       // search 'name' from first (default) interpreter group
-      InterpreterSetting defaultSetting = settings.get(0);
+      InterpreterSetting defaultSetting = getDefaultInterpreterSetting(settings);
       Interpreter.RegisteredInterpreter registeredInterpreter =
           Interpreter.registeredInterpreters.get(defaultSetting.getGroup() + "." + replName);
       if (registeredInterpreter != null) {
@@ -191,5 +191,17 @@ public class NoteInterpreterLoader {
     }
 
     return null;
+  }
+
+  private InterpreterSetting getDefaultInterpreterSetting(List<InterpreterSetting> settings) {
+    return settings.get(0);
+  }
+
+  Optional<InterpreterSetting> getDefaultInterpreterSetting() {
+    List<InterpreterSetting> settings = getInterpreterSettings();
+    if (settings == null || settings.isEmpty()) {
+      return Optional.absent();
+    }
+    return Optional.of(settings.get(0));
   }
 }

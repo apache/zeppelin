@@ -159,6 +159,7 @@ public class Notebook {
     }
     if (interpreterIds != null) {
       bindInterpretersToNote(note.id(), interpreterIds);
+      note.putDefaultReplName();
     }
 
     notebookIndex.addIndexDoc(note);
