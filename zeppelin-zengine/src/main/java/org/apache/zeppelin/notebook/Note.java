@@ -20,11 +20,12 @@ package org.apache.zeppelin.notebook;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.*;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
@@ -40,6 +41,7 @@ import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.scheduler.JobListener;
 import org.apache.zeppelin.search.SearchService;
 
+import com.google.common.base.Optional;
 import com.google.gson.Gson;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.user.Credentials;
@@ -65,6 +67,7 @@ public class Note implements Serializable, JobListener {
   private String name = "";
   private String id;
 
+  private AtomicReference<String> lastReplName = new AtomicReference<>(StringUtils.EMPTY);
   private transient ZeppelinConfiguration conf = ZeppelinConfiguration.create();
 
   @SuppressWarnings("rawtypes")
@@ -106,6 +109,17 @@ public class Note implements Serializable, JobListener {
 
   private void generateId() {
     id = IdHashes.encode(System.currentTimeMillis() + new Random().nextInt());
+  }
+
+  private String getDefaultInterpreterName() {
+    Optional<InterpreterSetting> settingOptional = replLoader.getDefaultInterpreterSetting();
+    return settingOptional.isPresent() ? settingOptional.get().getName() : StringUtils.EMPTY;
+  }
+
+  void putDefaultReplName() {
+    String defaultInterpreterName = getDefaultInterpreterName();
+    logger.info("defaultInterpreterName is '{}'", defaultInterpreterName);
+    lastReplName.set(defaultInterpreterName);
   }
 
   public String id() {
@@ -188,6 +202,7 @@ public class Note implements Serializable, JobListener {
 
   public Paragraph addParagraph() {
     Paragraph p = new Paragraph(this, this, replLoader);
+    addLastReplNameIfEmptyText(p);
     synchronized (paragraphs) {
       paragraphs.add(p);
     }
@@ -231,10 +246,27 @@ public class Note implements Serializable, JobListener {
    */
   public Paragraph insertParagraph(int index) {
     Paragraph p = new Paragraph(this, this, replLoader);
+    addLastReplNameIfEmptyText(p);
     synchronized (paragraphs) {
       paragraphs.add(index, p);
     }
     return p;
+  }
+
+  /**
+   * Add Last Repl name If Paragraph has empty text
+   *
+   * @param p Paragraph
+   */
+  private void addLastReplNameIfEmptyText(Paragraph p) {
+    String replName = lastReplName.get();
+    if (StringUtils.isEmpty(p.getText()) && StringUtils.isNotEmpty(replName)) {
+      p.setText(getInterpreterName(replName) + " ");
+    }
+  }
+
+  private String getInterpreterName(String replName) {
+    return StringUtils.isBlank(replName) ? StringUtils.EMPTY : "%" + replName;
   }
 
   /**
@@ -387,6 +419,9 @@ public class Note implements Serializable, JobListener {
   public void runAll() {
     String cronExecutingUser = (String) getConfig().get("cronExecutingUser");
     synchronized (paragraphs) {
+      if (!paragraphs.isEmpty()) {
+        setLastReplName(paragraphs.get(paragraphs.size() - 1));
+      }
       for (Paragraph p : paragraphs) {
         if (!p.isEnabled()) {
           continue;
@@ -502,6 +537,16 @@ public class Note implements Serializable, JobListener {
     repo.save(this, subject);
   }
 
+  private void setLastReplName(Paragraph lastParagraphStarted) {
+    if (StringUtils.isNotEmpty(lastParagraphStarted.getRequiredReplName())) {
+      lastReplName.set(lastParagraphStarted.getRequiredReplName());
+    }
+  }
+
+  public void setLastReplName(String paragraphId) {
+    setLastReplName(getParagraph(paragraphId));
+  }
+
   /**
    * Persist this note with maximum delay.
    * @param maxDelaySec
@@ -565,6 +610,14 @@ public class Note implements Serializable, JobListener {
 
   public void setInfo(Map<String, Object> info) {
     this.info = info;
+  }
+
+  public String getLastReplName() {
+    return lastReplName.get();
+  }
+
+  public String getLastInterpreterName() {
+    return getInterpreterName(getLastReplName());
   }
 
   @Override
