@@ -196,8 +196,8 @@ public class ZeppelinIT extends AbstractZeppelinIT {
     }
     try {
       // navigate to interpreter page
-      WebElement configButton = driver.findElement(By.xpath("//button[contains(.,'Connected')]"));
-      configButton.click();
+      WebElement settingButton = driver.findElement(By.xpath("//button[@class='btn nav-btn dropdown-toggle']"));
+      settingButton.click();
       WebElement interpreterLink = driver.findElement(By.xpath("//a[@href='#/interpreter']"));
       interpreterLink.click();
 
@@ -237,7 +237,7 @@ public class ZeppelinIT extends AbstractZeppelinIT {
       sleep(1000, false);
 
       // reset dependency
-      configButton.click();
+      settingButton.click();
       interpreterLink.click();
       driver.findElement(By.xpath("//div[@id='spark']//button[contains(.,'edit')]")).sendKeys(Keys.ENTER);
       WebElement testDepRemoveBtn = pollingWait(By.xpath("//tr[descendant::text()[contains(.,'" +
