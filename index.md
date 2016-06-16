@@ -17,54 +17,51 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 {% include JB/setup %}
-
+<br />
 <div class="row">
- <div class="col-md-6">
-<h2>Multi-purpose Notebook</h2>
-
-<p style="font-size:16px; color:#555555;font-style:italic;margin-bottom: 15px;">
-  The Notebook is the place for all your needs
-</p>
-<ul style="list-style-type: none;padding-left:10px;" >
-  <li style="font-size:20px; margin: 5px;"><span class="glyphicon glyphicon-import"></span> Data Ingestion</li>
-  <li style="font-size:20px; margin: 5px;"><span class="glyphicon glyphicon-eye-open"></span> Data Discovery</li>
-  <li style="font-size:20px; margin: 5px;"><span class="glyphicon glyphicon-wrench"></span> Data Analytics</li>
-  <li style="font-size:20px; margin: 5px;"><span class="glyphicon glyphicon-dashboard"></span> Data Visualization & Collaboration</li>
-</ul>
-
- </div>
- <div class="col-md-6"><img class="img-responsive" style="border: 1px solid #ecf0f1;" height="auto" src="assets/themes/zeppelin/img/notebook.png" /></div>
+  <div class="col-md-6" style="padding-right:0">
+    <h1 style="color:#4c555a">Multi-purpose Notebook</h1>
+    <p class="index-header">
+      The Notebook is the place for all your needs
+    </p>
+    <ul style="list-style-type: none;padding-left:10px;" >
+      <li style="font-size:18px; margin: 5px;"><span class="glyphicon glyphicon-import" style="margin-right:10px"></span> Data Ingestion</li>
+      <li style="font-size:18px; margin: 5px;"><span class="glyphicon glyphicon-eye-open" style="margin-right:10px"></span> Data Discovery</li>
+      <li style="font-size:18px; margin: 5px;"><span class="glyphicon glyphicon-wrench" style="margin-right:10px"></span> Data Analytics</li>
+      <li style="font-size:18px; margin: 5px;"><span class="glyphicon glyphicon-dashboard" style="margin-right:10px"></span> Data Visualization & Collaboration</li>
+    </ul>
+  </div>
+  <div class="col-md-6" style="padding:0">
+    <img class="img-responsive" style="border: 1px solid #ecf0f1;" src="./assets/themes/zeppelin/img/notebook.png" />
+  </div>
 </div>
 
-
 <br />
-### Multiple language backend
+## Multiple Language Backend
+[Apache Zeppelin interpreter](./docs/latest/manual/interpreters.html) concept allows any language/data-processing-backend to be plugged into Zeppelin.
+Currently Apache Zeppelin supports many interpreters such as Apache Spark, Python, JDBC, Markdown and Shell.
 
-Zeppelin interpreter concept allows any language/data-processing-backend to be plugged into Zeppelin.
-Currently Zeppelin supports many interpreters such as Scala(with Apache Spark), Python(with Apache Spark), SparkSQL, Hive, Markdown and Shell.
+<img class="img-responsive" width="500px" style="margin:0 auto; padding: 26px;" src="./assets/themes/zeppelin/img/available_interpreters.png" />
 
-<img class="img-responsive" src="assets/themes/zeppelin/img/screenshots/multiple_language_backend.png" />
+Adding new language-backend is really simple. Learn [how to create a new interpreter](./docs/latest/development/writingzeppelininterpreter.html#make-your-own-interpreter).
 
-Adding new language-backend is really simple. Learn [how to write a zeppelin interpreter](./docs/latest/development/writingzeppelininterpreter.html).
+#### Apache Spark integration
+Especially, Apache Zeppelin provides built-in [Apache Spark](http://spark.apache.org/) integration. You don't need to build a separate module, plugin or library for it.
 
+<img class="img-responsive" src="./assets/themes/zeppelin/img/spark_logo.jpg" width="140px" />
 
-<br />
-### Apache Spark integration
-
-Zeppelin provides built-in Apache Spark integration. You don't need to build a separate module, plugin or library for it.
-
-<img src="assets/themes/zeppelin/img/spark_logo.jpg" width="80px" />
-
-Zeppelin's Spark integration provides
+Apache Zeppelin with Spark integration provides
 
 - Automatic SparkContext and SQLContext injection
 - Runtime jar dependency loading from local filesystem or maven repository. Learn more about [dependency loader](./docs/latest/interpreter/spark.html#dependencyloading).
 - Canceling job and displaying its progress
 
-<br />
-### Data visualization
+For the further information about Apache Spark in Apache Zeppelin, please see [Spark interpreter for Apache Zeppelin](./docs/latest/interpreter/spark.html).
 
-Some basic charts are already included in Zeppelin. Visualizations are not limited to SparkSQL's query, any output from any language backend can be recognized and visualized.
+<br />
+## Data visualization
+
+Some basic charts are already included in Apache Zeppelin. Visualizations are not limited to SparkSQL query, any output from any language backend can be recognized and visualized.
 
 <div class="row">
   <div class="col-md-6">
@@ -75,51 +72,49 @@ Some basic charts are already included in Zeppelin. Visualizations are not limit
   </div>
 </div>
 
-#### Pivot chart
+### Pivot chart
 
-With simple drag and drop Zeppelin aggeregates the values and display them in pivot chart. You can easily create chart with multiple aggregated values including sum, count, average, min, max.
+Apache Zeppelin aggregates values and displays them in pivot chart with simple drag and drop. You can easily create chart with multiple aggregated values including sum, count, average, min, max.
 
 <div class="row">
-  <div class="col-md-8">
-    <img class="img-responsive" src="./assets/themes/zeppelin/img/screenshots/pivot.png" />
+  <div class="col-md-12">
+    <img class="img-responsive" style="margin: 16px auto;" src="./assets/themes/zeppelin/img/screenshots/pivot.png" width="480px" />
   </div>
 </div>
-Learn more about Zeppelin's Display system. ( [text](./docs/latest/displaysystem/display.html), [html](./docs/latest/displaysystem/display.html#html), [table](./docs/latest/displaysystem/table.html), [angular](./docs/latest/displaysystem/angular.html) )
 
+Learn more about [basic display systems](./docs/latest/displaysystem/basicdisplaysystem.html) and Angular API([frontend](./docs/latest/displaysystem/front-end-angular.html) , [backend](./docs/latest/displaysystem/back-end-angular.html)) in Apache Zeppelin.
 
 <br />
-### Dynamic forms
+## Dynamic forms
 
-Zeppelin can dynamically create some input forms into your notebook.
-
-<img class="img-responsive" src="./assets/themes/zeppelin/img/screenshots/form_input.png" />
-
+Apache Zeppelin can dynamically create some input forms in your notebook.
+<div class="row">
+  <div class="col-md-12">
+    <img class="img-responsive" style="margin: 16px auto;" src="./assets/themes/zeppelin/img/screenshots/dynamicform.png" />
+  </div>
+</div>
 Learn more about [Dynamic Forms](./docs/latest/manual/dynamicform.html).
 
-
 <br />
-### Collaboration
-
-Notebook URL can be shared among collaborators. Zeppelin can then broadcast any changes in realtime, just like the collaboration in Google docs.
-
-<img src="./assets/themes/zeppelin/img/screenshots/collaboration.png" />
-
-<br />
-### Publish
-
-<p>Zeppelin provides an URL to display the result only, that page does not include Zeppelin's menu and buttons.
-This way, you can easily embed it as an iframe inside of your website.</p>
+## Collaborate by sharing your Notebook & Paragraph
+Your notebook URL can be shared among collaborators. Then Apache Zeppelin will broadcast any changes in realtime, just like the collaboration in Google docs.
 
 <div class="row">
-  <img class="img-responsive center-block" src="./assets/themes/zeppelin/img/screenshots/publish.png" />
+  <div class="col-md-12">
+    <img class="img-responsive" style="margin: 20px auto" src="./assets/themes/zeppelin/img/screenshots/publish.png" width="650px"/>
+  </div>
 </div>
 
+Apache Zeppelin provides an URL to display the result only, that page does not include any menus and buttons inside of notebooks.
+You can easily embed it as an iframe inside of your website in this way.
+If you want to learn more about this feature, please visit [this page](./docs/latest/manual/publish.html).
+
 <br />
-### 100% Opensource
+## 100% Opensource
 
-Apache Zeppelin is Apache2 Licensed software. Please check out the [source repository](http://git.apache.org/incubator-zeppelin.git) and [How to contribute](./docs/latest/development/howtocontribute.html)
+<img class="img-responsive" style="margin:0 auto; padding: 15px;" src="./assets/themes/zeppelin/img/asf_logo.png" width="250px"/>
 
-Zeppelin has a very active development community.
-Join the [Mailing list](./community.html) and report issues on our [Issue tracker](https://issues.apache.org/jira/browse/ZEPPELIN).
+Apache Zeppelin is Apache2 Licensed software. Please check out the [source repository](http://git.apache.org/zeppelin.git) and [how to contribute](./docs/latest/development/howtocontribute.html).
+Apache Zeppelin has a very active development community.
+Join to our [Mailing list](https://zeppelin.apache.org/community.html) and report issues on [Jira Issue tracker](https://issues.apache.org/jira/browse/ZEPPELIN).
 
-<br /> 
