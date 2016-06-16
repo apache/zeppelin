@@ -43,7 +43,7 @@ Currently Apache Zeppelin supports many interpreters such as Apache Spark, Pytho
 
 <img class="img-responsive" width="500px" style="margin:0 auto; padding: 26px;" src="./assets/themes/zeppelin/img/available_interpreters.png" />
 
-Adding new language-backend is really simple. Learn [how to create your own interpreter](./docs/latest/development/writingzeppelininterpreter.html#make-your-own-interpreter).
+Adding new language-backend is really simple. Learn [how to create a new interpreter](./docs/latest/development/writingzeppelininterpreter.html#make-your-own-interpreter).
 
 #### Apache Spark integration
 Especially, Apache Zeppelin provides built-in [Apache Spark](http://spark.apache.org/) integration. You don't need to build a separate module, plugin or library for it.
