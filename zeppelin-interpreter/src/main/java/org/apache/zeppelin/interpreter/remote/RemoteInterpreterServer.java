@@ -455,10 +455,12 @@ public class RemoteInterpreterServer
   }
 
   @Override
-  public List<String> completion(String noteId, String className, String buf, int cursor)
+  public List<InterpreterCompletion> completion(String noteId,
+      String className, String buf, int cursor)
       throws TException {
     Interpreter intp = getInterpreter(noteId, className);
-    return intp.completion(buf, cursor);
+    List completion = intp.completion(buf, cursor);
+    return completion;
   }
 
   private InterpreterContext convert(RemoteInterpreterContext ric) {

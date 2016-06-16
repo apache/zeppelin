@@ -449,10 +449,6 @@ table.dataTable.table-condensed .sorting_desc:after {
   font-weight: 500;
 }
 
-.dropdown-menu > li:first-child > a:hover {
-  background-color: transparent;
-}
-
 table.table-striped {
   border-top: 1px solid #ddd;
   margin-top: 20px;
@@ -464,7 +460,6 @@ table.table-striped {
   cursor: pointer;
 }
 
-
 .scroll-paragraph-up {
   bottom: 5px;
   cursor: pointer;
@@ -475,4 +470,11 @@ table.table-striped {
 .appSuggestion {
   width: 200px;
   padding: 5px 10px 5px 10px;
+}
+
+/* DSV download toggle button */
+.caretBtn {
+  padding-right: 4px !important;
+  padding-left: 4px !important;
+  width: 20px;
 }

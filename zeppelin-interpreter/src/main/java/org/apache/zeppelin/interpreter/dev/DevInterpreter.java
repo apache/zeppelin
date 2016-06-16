@@ -26,6 +26,7 @@ import org.apache.zeppelin.interpreter.InterpreterContextRunner;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterPropertyBuilder;
 import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 
 /**
  * Dummy interpreter to support development mode for Zeppelin app
@@ -103,8 +104,8 @@ public class DevInterpreter extends Interpreter {
   }
 
   @Override
-  public List<String> completion(String buf, int cursor) {
-    return new LinkedList<String>();
+  public List<InterpreterCompletion> completion(String buf, int cursor) {
+    return new LinkedList<InterpreterCompletion>();
   }
 
   public InterpreterContext getLastInterpretContext() {

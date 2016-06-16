@@ -16,6 +16,7 @@ limitations under the License.
      ng-if="(paragraph.result.type == 'TABLE' || apps.length > 0 || suggestion.available && suggestion.available.length > 0) && !asIframe && !viewOnly"
      class="btn-group"
      style='margin-bottom: 10px;'>
+
   <button type="button" class="btn btn-default btn-sm"
           ng-if="paragraph.result.type == 'TABLE'"
           ng-class="{'active': isGraphMode('table')}"
@@ -62,11 +63,23 @@ limitations under the License.
           ng-bind-html="app.pkg.icon">
   </button>
 
-  <span>
-    <button type="button" class="btn btn-default btn-sm" style="margin-left:10px"
-            tooltip="Download Data as TSV" tooltip-placement="bottom"
-            ng-click="exportToTSV()"><i class="fa fa-download"></i>
+
+  <span class="btn-group">
+    <button type="button" class="btn btn-default btn-sm"
+            style="margin-left:10px"
+            ng-click="exportToDSV(',')"
+            tooltip="Download Data as CSV" tooltip-placement="bottom">
+      <i class="fa fa-download"></i>
     </button>
+    <button type="button" class="btn btn-default btn-sm dropdown-toggle caretBtn"
+            data-toggle="dropdown">
+      <span class="caret" style="margin: 0px;"></span>
+      <span class="sr-only">Toggle Dropdown</span>
+    </button>
+    <ul class="dropdown-menu" role="menu" style="min-width: 70px;">
+      <li ng-click="exportToDSV(',')"><a>CSV</a></li>
+      <li ng-click="exportToDSV('\t')"><a>TSV</a></li>
+    </ul>
   </span>
 </div>
 

@@ -27,6 +27,7 @@ import org.apache.zeppelin.helium.ApplicationEventListener;
 import org.apache.zeppelin.display.Input;
 import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.InterpreterResult.Type;
+import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterContext;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterResult;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService.Client;
@@ -432,7 +433,7 @@ public class RemoteInterpreter extends Interpreter {
 
 
   @Override
-  public List<String> completion(String buf, int cursor) {
+  public List<InterpreterCompletion> completion(String buf, int cursor) {
     RemoteInterpreterProcess interpreterProcess = getInterpreterProcess();
     Client client = null;
     try {
@@ -443,7 +444,8 @@ public class RemoteInterpreter extends Interpreter {
 
     boolean broken = false;
     try {
-      return client.completion(noteId, className, buf, cursor);
+      List completion = client.completion(noteId, className, buf, cursor);
+      return completion;
     } catch (TException e) {
       broken = true;
       throw new InterpreterException(e);

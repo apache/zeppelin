@@ -95,12 +95,12 @@ abstract class RInterpreter(properties : Properties, startSpark : Boolean = true
   override def getScheduler : Scheduler = rContext.getScheduler
 
   // TODO:  completion is disabled because it could not be tested with current Zeppelin code
-  def completion(buf :String,cursor : Int) : List[String] = Array[String]("").toList
+  /*def completion(buf :String,cursor : Int) : List[String] = Array[String]("").toList
 
   private[rinterpreter] def hiddenCompletion(buf :String,cursor : Int) : List[String] =
     rContext.evalS1(s"""
        |rzeppelin:::.z.completion("$buf", $cursor)
-     """.stripMargin).toList
+     """.stripMargin).toList*/
 }
 
 object RInterpreter {
