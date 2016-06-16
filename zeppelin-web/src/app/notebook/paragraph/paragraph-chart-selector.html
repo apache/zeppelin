@@ -62,25 +62,6 @@ limitations under the License.
           ng-class="{'active' : app.id == paragraph.config.helium.activeApp}"
           ng-bind-html="app.pkg.icon">
   </button>
-
-
-  <span class="btn-group">
-    <button type="button" class="btn btn-default btn-sm"
-            style="margin-left:10px"
-            ng-click="exportToDSV(',')"
-            tooltip="Download Data as CSV" tooltip-placement="bottom">
-      <i class="fa fa-download"></i>
-    </button>
-    <button type="button" class="btn btn-default btn-sm dropdown-toggle caretBtn"
-            data-toggle="dropdown">
-      <span class="caret" style="margin: 0px;"></span>
-      <span class="sr-only">Toggle Dropdown</span>
-    </button>
-    <ul class="dropdown-menu" role="menu" style="min-width: 70px;">
-      <li ng-click="exportToDSV(',')"><a>CSV</a></li>
-      <li ng-click="exportToDSV('\t')"><a>TSV</a></li>
-    </ul>
-  </span>
 </div>
 
 <div id="{{paragraph.id}}_helium"
@@ -99,7 +80,8 @@ limitations under the License.
       ng-if="suggestion.available && suggestion.available.length > 0"
       role="menu">
     <li class="appSuggestion">
-      <div ng-repeat="pkgInfo in suggestion.available">
+      <div ng-repeat="pkgInfo in suggestion.available"
+           style="margin-bottom:5px">
         <button type="button"
                 class="btn btn-default btn-sm"
                 ng-click="loadApp(pkgInfo.pkg)"
@@ -108,6 +90,26 @@ limitations under the License.
         <span class="inline">{{pkgInfo.pkg.name}}</span>
       </div>
     </li>
+  </ul>
+</div>
+
+<div class="btn-group"
+     ng-if="paragraph.result.type == 'TABLE' && !asIframe && !viewOnly"
+     style="margin-bottom: 10px;">
+  <button type="button" class="btn btn-default btn-sm"
+          style="margin-left:10px"
+          ng-click="exportToDSV(',')"
+          tooltip="Download Data as CSV" tooltip-placement="bottom">
+    <i class="fa fa-download"></i>
+  </button>
+  <button type="button" class="btn btn-default btn-sm dropdown-toggle caretBtn"
+          data-toggle="dropdown">
+    <span class="caret" style="margin: 0px;"></span>
+    <span class="sr-only">Toggle Dropdown</span>
+  </button>
+  <ul class="dropdown-menu" role="menu" style="min-width: 70px;">
+    <li ng-click="exportToDSV(',')"><a>CSV</a></li>
+    <li ng-click="exportToDSV('\t')"><a>TSV</a></li>
   </ul>
 </div>
 
