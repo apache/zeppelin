@@ -587,6 +587,7 @@ public class NotebookRestApi {
       if (paramsForUpdating != null) {
         paragraph.settings.getParams().putAll(paramsForUpdating);
         AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
+        note.setLastReplName(paragraph.getId());
         note.persist(subject);
       }
     }
