@@ -260,8 +260,12 @@ public class Note implements Serializable, JobListener {
   private void addLastReplNameIfEmptyText(Paragraph p) {
     String replName = lastReplName.get();
     if (StringUtils.isEmpty(p.getText()) && StringUtils.isNotEmpty(replName)) {
-      p.setText("%" + replName + " ");
+      p.setText(getInterpreterName(replName) + " ");
     }
+  }
+
+  private String getInterpreterName(String replName) {
+    return "%" + replName;
   }
 
   /**
@@ -605,6 +609,14 @@ public class Note implements Serializable, JobListener {
 
   public void setInfo(Map<String, Object> info) {
     this.info = info;
+  }
+
+  public String getLastReplName() {
+    return lastReplName.get();
+  }
+
+  public String getLastInterpreterName() {
+    return getInterpreterName(getLastReplName());
   }
 
   @Override
