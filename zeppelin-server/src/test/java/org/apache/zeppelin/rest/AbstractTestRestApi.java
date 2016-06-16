@@ -247,7 +247,7 @@ public abstract class AbstractTestRestApi {
       request = httpGet("/");
       isRunning = request.getStatusCode() == 200;
     } catch (IOException e) {
-      LOG.error("Exception in AbstractTestRestApi while checkIfServerIsRunning ", e);
+      LOG.error("AbstractTestRestApi.checkIfServerIsRunning() fails .. ZeppelinServer is not running");
       isRunning = false;
     } finally {
       if (request != null) {
