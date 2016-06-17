@@ -19,9 +19,7 @@ package org.apache.zeppelin.helium;
 import org.apache.commons.io.FileUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.dep.DependencyResolver;
-import org.apache.zeppelin.interpreter.InterpreterFactory;
-import org.apache.zeppelin.interpreter.InterpreterOption;
-import org.apache.zeppelin.interpreter.InterpreterOutput;
+import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.mock.MockInterpreter1;
 import org.apache.zeppelin.interpreter.mock.MockInterpreter2;
 import org.apache.zeppelin.notebook.*;
@@ -38,6 +36,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -111,6 +110,13 @@ public class HeliumApplicationFactoryTest implements JobListenerFactory {
 
   @After
   public void tearDown() throws Exception {
+    List<InterpreterSetting> settings = factory.get();
+    for (InterpreterSetting setting : settings) {
+      for (InterpreterGroup intpGroup : setting.getAllInterpreterGroups()) {
+        intpGroup.close();
+      }
+    }
+
     FileUtils.deleteDirectory(tmpDir);
     System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_CONF_DIR.getVarName(),
         ZeppelinConfiguration.ConfVars.ZEPPELIN_CONF_DIR.getStringValue());
