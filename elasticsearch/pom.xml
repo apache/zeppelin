@@ -34,7 +34,7 @@
   <url>http://www.apache.org</url>
 
   <properties>
-    <elasticsearch.version>2.1.0</elasticsearch.version>
+    <elasticsearch.version>2.3.3</elasticsearch.version>
     <guava.version>18.0</guava.version>
     <json-flattener.version>0.1.6</json-flattener.version>
   </properties>
