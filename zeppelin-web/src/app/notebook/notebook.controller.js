@@ -951,7 +951,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl',
     $scope.suggestions = [];
   };
 
-$(document).click(function(){
+angular.element(document).click(function(){
      $('.userlist').hide();
 });
 
