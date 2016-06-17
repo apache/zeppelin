@@ -19,6 +19,10 @@ limitations under the License.
 -->
 {% include JB/setup %}
 
+# Basic Display System in Apache Zeppelin
+
+<div id="toc"></div>
+
 ## Text
 
 By default, Apache Zeppelin prints interpreter responce as a plain text using `text` display system.
