@@ -4,9 +4,9 @@
     "name": "spark",
     "className": "org.apache.zeppelin.livy.LivySparkInterpreter",
     "properties": {
-      "livy.host.url": {
+      "zeppelin.livy.url": {
         "envName": "ZEPPELIN_LIVY_HOST_URL",
-        "propertyName": "livy.host.url",
+        "propertyName": "zeppelin.livy.url",
         "defaultValue": "http://localhost:8998",
         "description": "The URL for Livy Server."
       },
@@ -72,9 +72,9 @@
     "name": "sql",
     "className": "org.apache.zeppelin.livy.LivySparkSQLInterpreter",
     "properties": {
-      "livy.spark.sql.maxResult": {
+      "zeppelin.livy.spark.sql.maxResult": {
         "envName": "ZEPPELIN_LIVY_MAXRESULT",
-        "propertyName": "livy.spark.sql.maxResult",
+        "propertyName": "zeppelin.livy.spark.sql.maxResult",
         "defaultValue": "1000",
         "description": "Max number of SparkSQL result to display."
       }

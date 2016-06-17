@@ -59,7 +59,7 @@ public class LivyHelperTest {
     interpreter.userSessionMap.put(null, 1);
 
     Properties properties = new Properties();
-    properties.setProperty("livy.host.url", "http://localhost:8998");
+    properties.setProperty("zeppelin.livy.url", "http://localhost:8998");
     livyHelper.property = properties;
     livyHelper.paragraphHttpMap = new HashMap<>();
     livyHelper.gson = new GsonBuilder().setPrettyPrinting().create();
@@ -68,7 +68,7 @@ public class LivyHelperTest {
     doReturn("{\"id\":1,\"state\":\"idle\",\"kind\":\"spark\",\"proxyUser\":\"null\",\"log\":[]}")
         .when(livyHelper)
         .executeHTTP(
-            livyHelper.property.getProperty("livy.host.url") + "/sessions",
+            livyHelper.property.getProperty("zeppelin.livy.url") + "/sessions",
             "POST",
             "{\"kind\": \"spark\", \"proxyUser\": \"null\"}",
             null
@@ -78,7 +78,7 @@ public class LivyHelperTest {
         "\"execution_count\":1,\"data\":{\"text/plain\":\"1\"}}}")
         .when(livyHelper)
         .executeHTTP(
-            livyHelper.property.getProperty("livy.host.url") + "/sessions/1/statements",
+            livyHelper.property.getProperty("zeppelin.livy.url") + "/sessions/1/statements",
             "POST",
             "{\"code\": \"print(1)\" }",
             null
