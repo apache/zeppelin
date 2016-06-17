@@ -37,16 +37,6 @@ public class LivyPySparkInterpreter extends Interpreter {
 
   Logger LOGGER = LoggerFactory.getLogger(LivyPySparkInterpreter.class);
 
-  static {
-    Interpreter.register(
-        "pyspark",
-        "livy",
-        LivyPySparkInterpreter.class.getName(),
-        new InterpreterPropertyBuilder()
-            .build()
-    );
-  }
-
   protected Map<String, Integer> userSessionMap;
   protected LivyHelper livyHelper;
 
