@@ -14,11 +14,12 @@
 # limitations under the License.
 
 # PYTHON 2 / 3 comptability :
-# bootstrap.py must be runnable with Python 2 and 3
+# bootstrap.py must be runnable with Python 2 or 3
 
 # Remove interactive mode displayhook
 import sys
 import signal
+
 try:
     import StringIO as io
 except ImportError:
@@ -26,13 +27,11 @@ except ImportError:
 
 sys.displayhook = lambda x: None
 
-
 def intHandler(signum, frame):  # Set the signal handler
     print ("Paragraph interrupted")
     raise KeyboardInterrupt()
 
 signal.signal(signal.SIGINT, intHandler)
-
 
 def help():
     print ('%html')
@@ -72,9 +71,7 @@ plt.close()
     print('''<pre>zeppelin_show(plt,width='50px')
 zeppelin_show(plt,height='150px') </pre></div>''')
 
-
 # Matplotlib show function
-
 def zeppelin_show(p, width="0", height="0"):
     img = io.StringIO()
     p.savefig(img, format='svg')
@@ -88,10 +85,8 @@ def zeppelin_show(p, width="0", height="0"):
             style += 'height:'+height
     print("%html <div style='" + style + "'>" + img.read() + "<div>")
 
-
 # If py4j is detected, these class will be override
 # with the implementation in bootstrap_input.py
-
 class PyZeppelinContext():
     errorMsg = "You must install py4j Python module " \
                "(pip install py4j) to use Zeppelin dynamic forms features"
