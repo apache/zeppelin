@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.interpreter.mock.MockInterpreter1;
@@ -211,4 +212,45 @@ public class GitNotebookRepoTest {
     note = notebookRepo.get(TEST_NOTE_ID, null);
     assertThat(note.getParagraphs().size()).isEqualTo(paragraphCount_3);
   }
+
+  @Test
+  public void getRevisionFailTest() throws IOException {
+    // initial checks
+    notebookRepo = new GitNotebookRepo(conf);
+    assertThat(notebookRepo.list(null)).isNotEmpty();
+    assertThat(containsNote(notebookRepo.list(null), TEST_NOTE_ID)).isTrue();
+    assertThat(notebookRepo.revisionHistory(TEST_NOTE_ID, null)).isEmpty();
+
+    // add first checkpoint
+    Revision revision_1 = notebookRepo.checkpoint(TEST_NOTE_ID, "first commit", null);
+    assertThat(notebookRepo.revisionHistory(TEST_NOTE_ID, null).size()).isEqualTo(1);
+    int paragraphCount_1 = notebookRepo.get(TEST_NOTE_ID, null).getParagraphs().size();
+
+    // get current note
+    Note note = notebookRepo.get(TEST_NOTE_ID, null);
+    assertThat(note.getParagraphs().size()).isEqualTo(paragraphCount_1);
+
+    // add one more paragraph and save
+    Paragraph p1 = note.addParagraph();
+    Map<String, Object> config = p1.getConfig();
+    config.put("enabled", true);
+    p1.setConfig(config);
+    p1.setText("%md get revision when modified note test text");
+    notebookRepo.save(note, null);
+    int paragraphCount_2 = note.getParagraphs().size();
+
+    // get note from revision 1
+    Note noteRevision_1 = notebookRepo.get(TEST_NOTE_ID, revision_1, null);
+    assertThat(noteRevision_1.getParagraphs().size()).isEqualTo(paragraphCount_1);
+
+    // get current note
+    note = notebookRepo.get(TEST_NOTE_ID, null);
+    assertThat(note.getParagraphs().size()).isEqualTo(paragraphCount_2);
+
+    // test for absent revision
+    Revision absentRevision = new Revision("absentId", StringUtils.EMPTY, 0);
+    note = notebookRepo.get(TEST_NOTE_ID, absentRevision, null);
+    assertThat(note).isNull();
+  }
+
 }
