@@ -24,7 +24,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.exec.CommandLine;
+import org.apache.commons.exec.DefaultExecutor;
+import org.apache.commons.exec.ExecuteWatchdog;
+import org.apache.commons.exec.PumpStreamHandler;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Paragraph;
@@ -101,11 +106,33 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
         );
         note.run(p.getId());
         waitForFinish(p);
+        ps();
         System.err.println("sparkRTest=" + p.getResult().message());
         assertEquals(Status.FINISHED, p.getStatus());
         assertEquals("[1] 3", p.getResult().message());
       }
       ZeppelinServer.notebook.removeNote(note.id());
+    }
+
+    @Test
+    public void testPs() {
+        ps();
+    }
+
+    private void ps() {
+        CommandLine cmdLine = CommandLine.parse("ps aux");
+        DefaultExecutor executor = new DefaultExecutor();
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        executor.setStreamHandler(new PumpStreamHandler(out, out));
+
+        try {
+            executor.execute(cmdLine);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        System.err.println("ps>>>>>>>>>>>>>>>>>\n" + new String(out.toByteArray()) +
+            "\n<<<<<<<<<<<<<<<<<<");
     }
 
     @Test
