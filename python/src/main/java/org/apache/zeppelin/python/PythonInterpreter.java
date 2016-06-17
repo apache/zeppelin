@@ -171,8 +171,8 @@ public class PythonInterpreter extends Interpreter {
 
   @Override
   public Scheduler getScheduler() {
-    return SchedulerFactory.singleton().createOrGetParallelScheduler(
-        PythonInterpreter.class.getName() + this.hashCode(), 10);
+    return SchedulerFactory.singleton().createOrGetFIFOScheduler(
+        PythonInterpreter.class.getName() + this.hashCode());
   }
 
   @Override
