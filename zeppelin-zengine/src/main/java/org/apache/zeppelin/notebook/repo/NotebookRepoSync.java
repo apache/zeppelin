@@ -355,7 +355,8 @@ public class NotebookRepoSync implements NotebookRepo {
 
   //checkpoint to all available storages
   @Override
-  public Revision checkpoint(String noteId, String checkpointMsg, AuthenticationInfo subject) throws IOException {
+  public Revision checkpoint(String noteId, String checkpointMsg, AuthenticationInfo subject)
+      throws IOException {
     int repoCount = getRepoCount();
     int repoBound = Math.min(repoCount, getMaxRepoNum());
     int errorCount = 0;
