@@ -86,16 +86,12 @@ limitations under the License.
                     ng-class="{'nav-status-btn': !ticket.principal || ticket.principal === 'anonymous',
                              'nav-btn': ticket.principal && ticket.principal !== 'anonymous'}">
               <i class="fa fa-circle" ng-class="{'server-connected':navbar.connected, 'server-disconnected':!navbar.connected}"></i>
-              <span ng-show="navbar.connected" ng-if="ticket.principal === 'anonymous'">Connected</span>
-              <span ng-show="navbar.connected" ng-if="ticket.principal !== 'anonymous'">{{truncatedUsername}}</span>
+              <span ng-show="navbar.connected" ng-if="!ticket.principal || ticket.principal === 'anonymous'">Connected</span>
+              <span ng-show="navbar.connected" ng-if="ticket.principal && ticket.principal !== 'anonymous'">{{ticket.principal}}</span>
               <span ng-show="!navbar.connected">Disconnected</span>
               <span class="caret" ng-if="ticket.principal && ticket.principal !== 'anonymous'"></span>
             </button>
             <ul class="dropdown-menu" ng-if="ticket.principal && ticket.principal !== 'anonymous'">
-              <li class="dropdown-header">
-                <strong>{{ticket.principal}}</strong>
-              </li>
-              <li role="separator" class="divider"></li>
               <li><a ng-click="logout()">Logout</a></li>
             </ul>
           </div>
