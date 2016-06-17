@@ -43,6 +43,7 @@ import org.apache.zeppelin.notebook.repo.NotebookRepoSync;
 import org.apache.zeppelin.resource.ResourcePoolUtils;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.apache.zeppelin.search.SearchService;
+import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.user.Credentials;
 import org.quartz.CronScheduleBuilder;
 import org.quartz.CronTrigger;
@@ -131,12 +132,12 @@ public class Notebook {
    * @return
    * @throws IOException
    */
-  public Note createNote() throws IOException {
+  public Note createNote(AuthenticationInfo subject) throws IOException {
     Note note;
     if (conf.getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_AUTO_INTERPRETER_BINDING)) {
-      note = createNote(replFactory.getDefaultInterpreterSettingList());
+      note = createNote(replFactory.getDefaultInterpreterSettingList(), subject);
     } else {
-      note = createNote(null);
+      note = createNote(null, subject);
     }
     notebookIndex.addIndexDoc(note);
     return note;
@@ -148,7 +149,8 @@ public class Notebook {
    * @return
    * @throws IOException
    */
-  public Note createNote(List<String> interpreterIds) throws IOException {
+  public Note createNote(List<String> interpreterIds, AuthenticationInfo subject)
+      throws IOException {
     NoteInterpreterLoader intpLoader = new NoteInterpreterLoader(replFactory);
     Note note = new Note(notebookRepo, intpLoader, jobListenerFactory, notebookIndex, credentials);
     intpLoader.setNoteId(note.id());
@@ -160,7 +162,7 @@ public class Notebook {
     }
 
     notebookIndex.addIndexDoc(note);
-    note.persist();
+    note.persist(subject);
     return note;
   }
   
@@ -188,7 +190,8 @@ public class Notebook {
    * @return notebook ID
    * @throws IOException
    */
-  public Note importNote(String sourceJson, String noteName) throws IOException {
+  public Note importNote(String sourceJson, String noteName, AuthenticationInfo subject)
+      throws IOException {
     GsonBuilder gsonBuilder = new GsonBuilder();
     gsonBuilder.setPrettyPrinting();
     Gson gson = gsonBuilder.create();
@@ -197,7 +200,7 @@ public class Notebook {
     Note newNote;
     try {
       Note oldNote = gson.fromJson(reader, Note.class);
-      newNote = createNote();
+      newNote = createNote(subject);
       if (noteName != null)
         newNote.setName(noteName);
       else
@@ -207,7 +210,7 @@ public class Notebook {
         newNote.addCloneParagraph(p);
       }
 
-      newNote.persist();
+      newNote.persist(subject);
     } catch (IOException e) {
       logger.error(e.toString(), e);
       throw e;
@@ -223,14 +226,14 @@ public class Notebook {
    * @return noteId
    * @throws IOException, CloneNotSupportedException, IllegalArgumentException
    */
-  public Note cloneNote(String sourceNoteID, String newNoteName) throws
+  public Note cloneNote(String sourceNoteID, String newNoteName, AuthenticationInfo subject) throws
       IOException, CloneNotSupportedException, IllegalArgumentException {
 
     Note sourceNote = getNote(sourceNoteID);
     if (sourceNote == null) {
       throw new IllegalArgumentException(sourceNoteID + "not found");
     }
-    Note newNote = createNote();
+    Note newNote = createNote(subject);
     if (newNoteName != null) {
       newNote.setName(newNoteName);
     }
@@ -244,7 +247,7 @@ public class Notebook {
     }
 
     notebookIndex.addIndexDoc(newNote);
-    newNote.persist();
+    newNote.persist(subject);
     return newNote;
   }
 
@@ -282,7 +285,7 @@ public class Notebook {
     }
   }
 
-  public void removeNote(String id) {
+  public void removeNote(String id, AuthenticationInfo subject) {
     Note note;
 
     synchronized (notes) {
@@ -315,21 +318,22 @@ public class Notebook {
     ResourcePoolUtils.removeResourcesBelongsToNote(id);
 
     try {
-      note.unpersist();
+      note.unpersist(subject);
     } catch (IOException e) {
       logger.error(e.toString(), e);
     }
   }
 
-  public void checkpointNote(String noteId, String checkpointMessage) throws IOException {
-    notebookRepo.checkpoint(noteId, checkpointMessage);
+  public void checkpointNote(String noteId, String checkpointMessage, AuthenticationInfo subject)
+      throws IOException {
+    notebookRepo.checkpoint(noteId, checkpointMessage, subject);
   }
 
   @SuppressWarnings("rawtypes")
-  private Note loadNoteFromRepo(String id) {
+  private Note loadNoteFromRepo(String id, AuthenticationInfo subject) {
     Note note = null;
     try {
-      note = notebookRepo.get(id);
+      note = notebookRepo.get(id, subject);
     } catch (IOException e) {
       logger.error("Failed to load " + id, e);
     }
@@ -403,10 +407,10 @@ public class Notebook {
   }
 
   private void loadAllNotes() throws IOException {
-    List<NoteInfo> noteInfos = notebookRepo.list();
+    List<NoteInfo> noteInfos = notebookRepo.list(null);
 
     for (NoteInfo info : noteInfos) {
-      loadNoteFromRepo(info.getId());
+      loadNoteFromRepo(info.getId(), null);
     }
   }
 
@@ -417,7 +421,7 @@ public class Notebook {
    * @return
    * @throws IOException
    */
-  public void reloadAllNotes() throws IOException {
+  public void reloadAllNotes(AuthenticationInfo subject) throws IOException {
     synchronized (notes) {
       notes.clear();
     }
@@ -429,9 +433,9 @@ public class Notebook {
       }
     }
 
-    List<NoteInfo> noteInfos = notebookRepo.list();
+    List<NoteInfo> noteInfos = notebookRepo.list(subject);
     for (NoteInfo info : noteInfos) {
-      loadNoteFromRepo(info.getId());
+      loadNoteFromRepo(info.getId(), subject);
     }
   }
 
@@ -539,12 +543,12 @@ public class Notebook {
   }
 
   public List<Map<String, Object>> getJobListforNotebook(boolean needsReload,
-      long lastUpdateServerUnixTime) {
+      long lastUpdateServerUnixTime, AuthenticationInfo subject) {
     final String CRON_TYPE_NOTEBOOK_KEYWORD = "cron";
 
     if (needsReload) {
       try {
-        reloadAllNotes();
+        reloadAllNotes(subject);
       } catch (IOException e) {
         logger.error("Fail to reload notes from repository");
       }
