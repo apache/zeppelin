@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.Note;
+import org.apache.zeppelin.user.AuthenticationInfo;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.NoHeadException;
@@ -65,8 +66,8 @@ public class GitNotebookRepo extends VFSNotebookRepo {
   }
 
   @Override
-  public synchronized void save(Note note) throws IOException {
-    super.save(note);
+  public synchronized void save(Note note, AuthenticationInfo subject) throws IOException {
+    super.save(note, subject);
   }
 
   /* implemented as git add+commit
@@ -76,7 +77,7 @@ public class GitNotebookRepo extends VFSNotebookRepo {
    * @see org.apache.zeppelin.notebook.repo.VFSNotebookRepo#checkpoint(String, String)
    */
   @Override
-  public Revision checkpoint(String pattern, String commitMessage) {
+  public Revision checkpoint(String pattern, String commitMessage, AuthenticationInfo subject) {
     Revision revision = null;
     try {
       List<DiffEntry> gitDiff = git.diff().call();
@@ -96,13 +97,13 @@ public class GitNotebookRepo extends VFSNotebookRepo {
   }
 
   @Override
-  public Note get(String noteId, Revision rev) throws IOException {
+  public Note get(String noteId, Revision rev, AuthenticationInfo subject) throws IOException {
     //TODO(bzz): something like 'git checkout rev', that will not change-the-world though
-    return super.get(noteId);
+    return super.get(noteId, subject);
   }
 
   @Override
-  public List<Revision> revisionHistory(String noteId) {
+  public List<Revision> revisionHistory(String noteId, AuthenticationInfo subject) {
     List<Revision> history = Lists.newArrayList();
     LOG.debug("Listing history for {}:", noteId);
     try {

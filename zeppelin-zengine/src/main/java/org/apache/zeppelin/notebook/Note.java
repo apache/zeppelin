@@ -495,27 +495,27 @@ public class Note implements Serializable, JobListener {
     }
   }
 
-  public void persist() throws IOException {
+  public void persist(AuthenticationInfo subject) throws IOException {
     stopDelayedPersistTimer();
     snapshotAngularObjectRegistry();
     index.updateIndexDoc(this);
-    repo.save(this);
+    repo.save(this, subject);
   }
 
   /**
    * Persist this note with maximum delay.
    * @param maxDelaySec
    */
-  public void persist(int maxDelaySec) {
-    startDelayedPersistTimer(maxDelaySec);
+  public void persist(int maxDelaySec, AuthenticationInfo subject) {
+    startDelayedPersistTimer(maxDelaySec, subject);
   }
 
-  public void unpersist() throws IOException {
-    repo.remove(id());
+  public void unpersist(AuthenticationInfo subject) throws IOException {
+    repo.remove(id(), subject);
   }
 
 
-  private void startDelayedPersistTimer(int maxDelaySec) {
+  private void startDelayedPersistTimer(int maxDelaySec, final AuthenticationInfo subject) {
     synchronized (this) {
       if (delayedPersist != null) {
         return;
@@ -526,7 +526,7 @@ public class Note implements Serializable, JobListener {
         @Override
         public void run() {
           try {
-            persist();
+            persist(subject);
           } catch (IOException e) {
             logger.error(e.getMessage(), e);
           }

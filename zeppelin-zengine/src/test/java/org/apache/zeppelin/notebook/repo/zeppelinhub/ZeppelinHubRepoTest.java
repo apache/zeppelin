@@ -123,14 +123,14 @@ public class ZeppelinHubRepoTest {
 
   @Test
   public void testGetAllNotes() throws IOException {
-    List<NoteInfo> notebooks = repo.list();
+    List<NoteInfo> notebooks = repo.list(null);
     assertThat(notebooks).isNotEmpty();
     assertThat(notebooks.size()).isEqualTo(3);
   }
   
   @Test
   public void testGetNote() throws IOException {
-    Note notebook = repo.get("AAAAA");
+    Note notebook = repo.get("AAAAA", null);
     assertThat(notebook).isNotNull();
     assertThat(notebook.id()).isEqualTo("2A94M5J1Z");
   }
@@ -138,13 +138,13 @@ public class ZeppelinHubRepoTest {
   @Test
   public void testRemoveNote() throws IOException {
     // not suppose to throw
-    repo.remove("AAAAA");
+    repo.remove("AAAAA", null);
   }
   
   @Test
   public void testRemoveNoteError() throws IOException {
     // not suppose to throw
-    repo.remove("BBBBB");
+    repo.remove("BBBBB", null);
   }
 
 }
