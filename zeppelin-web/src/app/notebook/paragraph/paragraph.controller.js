@@ -443,7 +443,6 @@ angular.module('zeppelinWebApp')
           }, 500);
         }
       }
-
     }
 
   });
