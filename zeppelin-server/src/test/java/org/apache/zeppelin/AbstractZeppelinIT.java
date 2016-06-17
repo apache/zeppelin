@@ -75,7 +75,7 @@ abstract public class AbstractZeppelinIT {
 
 
   protected String getParagraphXPath(int paragraphNo) {
-    return "//div[@ng-controller=\"ParagraphCtrl\"][" + paragraphNo + "]";
+    return "(//div[@ng-controller=\"ParagraphCtrl\"])[" + paragraphNo + "]";
   }
 
   protected boolean waitForParagraph(final int paragraphNo, final String state) {
