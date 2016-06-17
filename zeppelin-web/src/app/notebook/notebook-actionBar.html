@@ -151,21 +151,26 @@ limitations under the License.
     </span>
 
     <div class="pull-right" style="margin-top:15px; margin-right:15px; font-size:15px;">
-      <span style="position:relative; top:3px; margin-right:4px; cursor:pointer"
+      <span>
+        <button type="button"
+            class="btn btn-default btn-xs"
             data-toggle="modal"
             data-target="#shortcutModal"
             tooltip-placement="bottom" tooltip="List of shortcut">
-        <i class="icon-question"></i>
-      </span>
-      <span style="position:relative; top:2px; margin-right:4px; cursor:pointer;"
+          <i class="icon-question"></i>
+        </button>
+        <button type="button"
+            class="btn btn-default btn-xs"
             ng-click="toggleSetting()"
             tooltip-placement="bottom" tooltip="Interpreter binding">
-        <i class="fa fa-cog" ng-style="{color: showSetting ? '#3071A9' : 'black' }"></i>
-      </span>
-      <span style="position:relative; top:2px; margin-right:4px; cursor:pointer;"
+          <i class="fa fa-cog" ng-style="{color: showSetting ? '#3071A9' : 'black' }"></i>
+        </button>
+        <button type="button"
+            class="btn btn-default btn-xs"
             ng-click="togglePermissions()"
             tooltip-placement="bottom" tooltip="Note permissions">
-        <i class="fa fa-lock" ng-style="{color: showPermissions ? '#3071A9' : 'black' }"></i>
+          <i class="fa fa-lock" ng-style="{color: showPermissions ? '#3071A9' : 'black' }"></i>
+        </button>
       </span>
 
       <span class="btn-group">
