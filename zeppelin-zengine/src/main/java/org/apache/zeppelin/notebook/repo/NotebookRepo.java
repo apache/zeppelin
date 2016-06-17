@@ -68,7 +68,7 @@ public interface NotebookRepo {
   @ZeppelinApi public void close();
 
   /**
-   * Versioning API
+   * Versioning API (optional, preferred to have).
    */
 
   /**
@@ -78,9 +78,8 @@ public interface NotebookRepo {
    * @return Rev
    * @throws IOException
    */
-  @ZeppelinApi
-  public Revision checkpoint(String noteId, String checkpointMsg, AuthenticationInfo subject)
-      throws IOException;
+  @ZeppelinApi public Revision checkpoint(String noteId, String checkpointMsg, 
+      AuthenticationInfo subject) throws IOException;
 
   /**
    * Get particular revision of the Notebook.
@@ -90,7 +89,8 @@ public interface NotebookRepo {
    * @return a Notebook
    * @throws IOException
    */
-  @ZeppelinApi public Note get(String noteId, Revision rev) throws IOException;
+  @ZeppelinApi public Note get(String noteId, Revision rev, AuthenticationInfo subject)
+      throws IOException;
 
   /**
    * List of revisions of the given Notebook.
@@ -98,7 +98,7 @@ public interface NotebookRepo {
    * @param noteId id of the Notebook
    * @return list of revisions
    */
-  @ZeppelinApi public List<Revision> revisionHistory(String noteId);
+  @ZeppelinApi public List<Revision> revisionHistory(String noteId, AuthenticationInfo subject);
 
   /**
    * Represents the 'Revision' a point in life of the notebook

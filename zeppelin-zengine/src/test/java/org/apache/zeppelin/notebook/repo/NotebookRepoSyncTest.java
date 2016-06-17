@@ -244,7 +244,7 @@ public class NotebookRepoSyncTest implements JobListenerFactory {
     String noteId = vRepoSync.list(null).get(0).getId();
     // first checkpoint
     vRepoSync.checkpoint(noteId, "checkpoint message", null);
-    int vCount = gitRepo.revisionHistory(noteId).size();
+    int vCount = gitRepo.revisionHistory(noteId, null).size();
     assertThat(vCount).isEqualTo(1);
     
     Paragraph p = note.addParagraph();
@@ -256,7 +256,7 @@ public class NotebookRepoSyncTest implements JobListenerFactory {
     // save and checkpoint again
     vRepoSync.save(note, null);
     vRepoSync.checkpoint(noteId, "checkpoint message 2", null);
-    assertThat(gitRepo.revisionHistory(noteId).size()).isEqualTo(vCount + 1);
+    assertThat(gitRepo.revisionHistory(noteId, null).size()).isEqualTo(vCount + 1);
   }
   
   static void delete(File file){

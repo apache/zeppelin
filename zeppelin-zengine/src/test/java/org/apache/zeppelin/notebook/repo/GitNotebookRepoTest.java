@@ -111,7 +111,7 @@ public class GitNotebookRepoTest {
     assertThat(notebookRepo.list(null)).isNotEmpty();
 
     //when
-    List<Revision> testNotebookHistory = notebookRepo.revisionHistory(TEST_NOTE_ID);
+    List<Revision> testNotebookHistory = notebookRepo.revisionHistory(TEST_NOTE_ID, null);
 
     //then
     //no initial commit, empty history
@@ -124,11 +124,11 @@ public class GitNotebookRepoTest {
     notebookRepo = new GitNotebookRepo(conf);
     assertThat(notebookRepo.list(null)).isNotEmpty();
     assertThat(containsNote(notebookRepo.list(null), TEST_NOTE_ID)).isTrue();
-    assertThat(notebookRepo.history(TEST_NOTE_ID)).isEmpty();
+    assertThat(notebookRepo.revisionHistory(TEST_NOTE_ID, null)).isEmpty();
 
     notebookRepo.checkpoint(TEST_NOTE_ID, "first commit", null);
-    List<Revision> notebookHistoryBefore = notebookRepo.revisionHistory(TEST_NOTE_ID);
-    assertThat(notebookRepo.revisionHistory(TEST_NOTE_ID)).isNotEmpty();
+    List<Revision> notebookHistoryBefore = notebookRepo.revisionHistory(TEST_NOTE_ID, null);
+    assertThat(notebookRepo.revisionHistory(TEST_NOTE_ID, null)).isNotEmpty();
     int initialCount = notebookHistoryBefore.size();
     
     // add changes to note
@@ -144,7 +144,7 @@ public class GitNotebookRepoTest {
     notebookRepo.checkpoint(TEST_NOTE_ID, "second commit", null);
     
     // see if commit is added
-    List<Revision> notebookHistoryAfter = notebookRepo.revisionHistory(TEST_NOTE_ID);
+    List<Revision> notebookHistoryAfter = notebookRepo.revisionHistory(TEST_NOTE_ID, null);
     assertThat(notebookHistoryAfter.size()).isEqualTo(initialCount + 1);
   }
   

@@ -97,13 +97,13 @@ public class GitNotebookRepo extends VFSNotebookRepo {
   }
 
   @Override
-  public Note get(String noteId, String rev, AuthenticationInfo subject) throws IOException {
+  public Note get(String noteId, Revision rev, AuthenticationInfo subject) throws IOException {
     //TODO(bzz): something like 'git checkout rev', that will not change-the-world though
     return super.get(noteId, subject);
   }
 
   @Override
-  public List<Revision> revisionHistory(String noteId) {
+  public List<Revision> revisionHistory(String noteId, AuthenticationInfo subject) {
     List<Revision> history = Lists.newArrayList();
     LOG.debug("Listing history for {}:", noteId);
     try {
