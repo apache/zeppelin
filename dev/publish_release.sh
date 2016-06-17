@@ -17,30 +17,20 @@
 # limitations under the License.
 #
 
-# The script helps publishing release to mavene.
-# You need to specify release version and tag name.
+# The script helps publishing release to maven.
+# You need to specify release version and branch|tag name.
 #
-# Here are some helpful documents for the release.
-# http://www.apache.org/dev/release.html
-# http://www.apache.org/dev/release-publishing
-# http://www.apache.org/dev/release-signing.html
+# Here's some helpful documents for the release.
 # http://www.apache.org/dev/publishing-maven-artifacts.html
 
-if [[ -z "${SHASUM}" ]]; then
-  SHASUM="/usr/bin/shasum -a 1"
+BASEDIR="$(dirname "$0")"
+. "${BASEDIR}/common_release.sh"
+
+if [[ $# -ne 2 ]]; then
+  usage
 fi
 
-if [[ -z "${WORKING_DIR}" ]]; then
-  WORKING_DIR="/tmp/zeppelin-release"
-fi
-
-if [ $# -ne 2 ]; then
-  echo "usage) $0 [Release version] [Tag]"
-  echo "   ex. $0 0.6.0 v0.6.0"
-  exit 1
-fi
-
-for var in GPG_PASSPHRASE; do ASF_USERID ASF_PASSWORD; do
+for var in GPG_PASSPHRASE ASF_USERID ASF_PASSWORD; do
   if [[ -z "${!var}" ]]; then
     echo "You need ${var} variable set"
     exit 1
@@ -52,34 +42,10 @@ export MAVEN_OPTS="-Xmx2g -XX:MaxPermSize=512m"
 RELEASE_VERSION="$1"
 GIT_TAG="$2"
 
-PUBLISH_PROFILES="-Pspark-1.6 -Phadoop-2.4 -Pyarn -Ppyspark -Psparkr -Pr"
+PUBLISH_PROFILES="-Pspark-1.6 -Phadoop-2.4 -Pyarn -Ppyspark"
 PROJECT_OPTIONS="-pl !zeppelin-distribution"
 NEXUS_STAGING="https://repository.apache.org/service/local/staging"
 NEXUS_PROFILE="153446d1ac37c4"
-
-if [[ -d "${WORKING_DIR}" ]]; then
-  echo "Dir ${WORKING_DIR} already exists"
-  exit 1
-fi
-
-mkdir "${WORKING_DIR}"
-
-echo "Cloning the source"
-# clone source
-git clone https://git-wip-us.apache.org/repos/asf/zeppelin.git "${WORKING_DIR}/zeppelin"
-
-if [[ $? -ne 0 ]]; then
-  echo "Can not clone source repository"
-  exit 1
-fi
-
-cd "${WORKING_DIR}/zeppelin"
-git checkout "${GIT_TAG}"
-echo "Checked out ${GIT_TAG}"
-
-# remove unnecessary files
-rm "${WORKING_DIR}/zeppelin/.gitignore"
-rm -rf "${WORKING_DIR}/zeppelin/.git"
 
 function publish_to_maven() {
   cd "${WORKING_DIR}/zeppelin"
@@ -117,7 +83,7 @@ function publish_to_maven() {
     echo "${GPG_PASSPHRASE}" | gpg --passphrase-fd 0 --output "${file}.asc" \
       --detach-sig --armor "${file}"
     md5 -q "${file}" > "${file}.md5"
-    ${SHASUM} "${file}" | cut -f1 -d' ' > "${file}.sha1"
+    ${SHASUM} -a 1 "${file}" | cut -f1 -d' ' > "${file}.sha1"
   done
 
   nexus_upload="${NEXUS_STAGING}/deployByRepositoryId/${staged_repo_id}"
@@ -140,7 +106,8 @@ function publish_to_maven() {
   rm -rf "${tmp_repo}"
 }
 
+git_clone
 publish_to_maven
 
 # remove working directory
-rm -rf "${WORKING_DIR}"
+rm -rf "${WORKING_DIR}/zeppelin"
