@@ -6,7 +6,7 @@ group: manual
 ---
 {% include JB/setup %}
 
-# PostgreSQL, HAWQ  Interpreter for Apache Zeppelin
+# PostgreSQL, Apache HAWQ (incubating) Interpreter for Apache Zeppelin
 
 <div id="toc"></div>
 
@@ -58,7 +58,7 @@ Postgresql Interpreter will be deprecated and merged into JDBC Interpreter. You 
 This interpreter seamlessly supports the following SQL data processing engines:
 
 * [PostgreSQL](http://www.postgresql.org/) - OSS, Object-relational database management system (ORDBMS)
-* [Apache HAWQ](http://pivotal.io/big-data/pivotal-hawq) - Powerful [Open Source](https://wiki.apache.org/incubator/HAWQProposal) SQL-On-Hadoop engine.
+* [pache HAWQ (incubating)](http://hawq.incubator.apache.org/) - Powerful open source SQL-On-Hadoop engine.
 * [Greenplum](http://pivotal.io/big-data/pivotal-greenplum-database) - MPP database built on open source PostgreSQL.
 
 This [Video Tutorial](https://www.youtube.com/watch?v=wqXXQhJ5Uk8) illustrates some of the features provided by the `Postgresql Interpreter`.

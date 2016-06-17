@@ -62,11 +62,11 @@ Restart your Zeppelin server
 ./bin/zeppelin-deamon stop
 ./bin/zeppelin-deamon start
 ```
-That's it! Open your browser and navigate to Zeppelin and see your customized homepage.
+That's it! Open your browser and navigate to Apache Zeppelin and see your customized homepage.
 
 <br />
 ## Show notebooks list in your custom homepage
-If you want to display the list of notebooks on your custom Zeppelin homepage all
+If you want to display the list of notebooks on your custom Apache Zeppelin homepage all
 you need to do is use our %angular support.
 
 Add the following code to a paragraph in you home page and run it... walla! you have your notebooks list.

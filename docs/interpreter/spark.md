@@ -12,7 +12,7 @@ group: manual
 <div id="toc"></div>
 
 ## Overview
-[Apache Spark](http://spark.apache.org)  is a fast and general-purpose cluster computing system.
+[Apache Spark](http://spark.apache.org) is a fast and general-purpose cluster computing system.
 It provides high-level APIs in Java, Scala, Python and R, and an optimized engine that supports general execution graphs
 Apache Spark is supported in Zeppelin with
 Spark Interpreter group, which consists of five interpreters.

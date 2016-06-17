@@ -46,4 +46,4 @@ For example,
 Finally, you can show off your beautiful visualization results in your website. 
 <center><img src="../assets/themes/zeppelin/img/docs-img/your-website.png" height="90%" width="90%"></center>
 
-> **Note**: To embed the paragraph in a website, Apache Zeppelin needs to be reachable by that website. And please use this feature with caution and in a trusted environment only, as Zeppelin entire Webapp could be accessible for whoever visits your website. 
+> **Note**: To embed the paragraph in a website, Apache Zeppelin needs to be reachable by that website. And please use this feature with caution and in a trusted environment only, as Zeppelin entire Webapp could be accessible by whoever visits your website. 
