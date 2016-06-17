@@ -1,6 +1,6 @@
 ---
 layout: page
-title: "Explore Zeppelin UI"
+title: "Explore Apache Zeppelin UI"
 description: "Description of Zeppelin UI Layout"
 group: quickstart
 ---
@@ -17,9 +17,13 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-## Home Page
+# Explore Apache Zeppelin UI
 
-The first time you connect to Zeppelin, you'll land at the main page similar to the below screen capture
+<div id="toc"></div>
+
+## Main home
+
+The first time you connect to Zeppelin, you'll land at the main page similar to the below screen capture.
 
 <img src="../assets/themes/zeppelin/img/ui-img/homepage.png" />
 
@@ -28,7 +32,7 @@ On the left of the page are listed all existing notes. Those notes are stored by
 You can filter them by name using the input text form. You can also create an new note, refresh the list of existing notes
 (in case you manually copy them into the `$ZEPPELIN_HOME/notebook` folder) and import a note.
 
-<img src="../assets/themes/zeppelin/img/ui-img/notes_management.png" />
+<img src="../assets/themes/zeppelin/img/ui-img/notes_management.png" width="230px" />
 
 When clicking on `Import Note` link, a new dialog open. From there you can import your note from local disk or from a remote location
 if you provide the URL.
@@ -40,7 +44,7 @@ By default, the name of the imported note is the same as the original note but y
 <br />
 ## Menus
 
-### 1. Notebook
+### Notebook
 
 The `Notebook` menu proposes almost the same features as the note management section in the home page. From the drop-down menu you can:
 
@@ -48,9 +52,9 @@ The `Notebook` menu proposes almost the same features as the note management sec
 2. Filter node by name
 3. Create a new note
 
-<img src="../assets/themes/zeppelin/img/ui-img/notebook_menu.png" />
+<img src="../assets/themes/zeppelin/img/ui-img/notebook_menu.png" width="170px" />
 
-### 2. Interpreter
+### Interpreter
 
 In this menu you can:
 
@@ -59,7 +63,7 @@ In this menu you can:
 
 <img src="../assets/themes/zeppelin/img/ui-img/interpreter_menu.png" />
 
-### 3. Configuration
+### Configuration
 
 This menu displays all the Zeppelin configuration that are set in the config file `$ZEPPELIN_HOME/conf/zeppelin-site.xml`
 
@@ -88,7 +92,7 @@ On the top-right corner of each paragraph there are some commands to:
 
 To configure the paragraph, just click on the gear icon:
 
-<img src="../assets/themes/zeppelin/img/ui-img/paragraph_configuration_dialog.png" />
+<img src="../assets/themes/zeppelin/img/ui-img/paragraph_configuration_dialog.png" width="180px" />
 
 From this dialog, you can (in descending order):
 
@@ -124,7 +128,7 @@ In the middle of the toolbar you can find the command buttons:
 * delete the note
 * schedule the execution of **all paragraph** using a CRON syntax
 
-<img src="../assets/themes/zeppelin/img/ui-img/note_commands.png" />
+<img src="../assets/themes/zeppelin/img/ui-img/note_commands.png" width="300px"/>
 
 On the right of the note tool bar you can find configuration icons:
 
@@ -133,4 +137,4 @@ On the right of the note tool bar you can find configuration icons:
 * configure the note permissions
 * switch the node display mode between `default`, `simple` and `report`
 
-<img src="../assets/themes/zeppelin/img/ui-img/note_configuration.png" />
+<img src="../assets/themes/zeppelin/img/ui-img/note_configuration.png" width="180px"/>
