@@ -69,4 +69,36 @@ user2 = password3
 
 Those combinations are defined in the `conf/shiro.ini` file.
 
+####5. Groups and permissions (optional)
+In case you want to leverage user groups and permissions, use one of the following configuration for LDAP or AD under `[main]` segment of shiro.ini
+
+```
+activeDirectoryRealm = org.apache.zeppelin.server.ActiveDirectoryGroupRealm
+activeDirectoryRealm.systemUsername = userNameA
+activeDirectoryRealm.systemPassword = passwordA
+activeDirectoryRealm.searchBase = CN=Users,DC=SOME_GROUP,DC=COMPANY,DC=COM
+activeDirectoryRealm.url = ldap://ldap.test.com:389
+activeDirectoryRealm.groupRolesMap = "CN=aGroupName,OU=groups,DC=SOME_GROUP,DC=COMPANY,DC=COM":"group1"
+activeDirectoryRealm.authorizationCachingEnabled = false
+
+ldapRealm = org.apache.zeppelin.server.LdapGroupRealm
+# search base for ldap groups (only relevant for LdapGroupRealm):
+ldapRealm.contextFactory.environment[ldap.searchBase] = dc=COMPANY,dc=COM
+ldapRealm.contextFactory.url = ldap://ldap.test.com:389
+ldapRealm.userDnTemplate = uid={0},ou=Users,dc=COMPANY,dc=COM
+ldapRealm.contextFactory.authenticationMechanism = SIMPLE
+```
+ 
+also define roles/groups that you want to have in system, like below;
+
+```
+[roles]
+admin = *
+hr = *
+finance = *
+group1 = *
+```
+
+All of above configurations are defined in the `conf/shiro.ini` file.
+
 > **NOTE :** This documentation is originally from [SECURITY-README.md](https://github.com/apache/zeppelin/blob/master/SECURITY-README.md).

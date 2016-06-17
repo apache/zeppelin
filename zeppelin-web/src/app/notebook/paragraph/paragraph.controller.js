@@ -792,9 +792,9 @@ angular.module('zeppelinWebApp')
               for (var c in data.completions) {
                 var v = data.completions[c];
                 completions.push({
-                  name:v,
-                  value:v,
-                  score:300
+                  name: v.name,
+                  value: v.value,
+                  score: 300
                 });
               }
               callback(null, completions);
@@ -1052,19 +1052,6 @@ angular.module('zeppelinWebApp')
         $scope.changeColWidth();
       } else if (keyEvent.ctrlKey && keyEvent.shiftKey && keyCode === 187) { // Ctrl + Shift + =
         $scope.paragraph.config.colWidth = Math.min(12, $scope.paragraph.config.colWidth + 1);
-        $scope.changeColWidth();
-      } else if (keyEvent.ctrlKey && keyEvent.altKey && ((keyCode >= 48 && keyCode <=57) || keyCode === 189 || keyCode === 187)) { // Ctrl + Alt + [1~9,0,-,=]
-        var colWidth = 12;
-        if (keyCode === 48) {
-          colWidth = 10;
-        } else if (keyCode === 189) {
-          colWidth = 11;
-        } else if (keyCode === 187) {
-          colWidth = 12;
-        } else {
-          colWidth = keyCode - 48;
-        }
-        $scope.paragraph.config.colWidth = colWidth;
         $scope.changeColWidth();
       } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 84) { // Ctrl + Alt + t
         if ($scope.paragraph.config.title) {

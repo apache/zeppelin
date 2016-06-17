@@ -35,6 +35,7 @@ import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
+import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.slf4j.Logger;
@@ -113,7 +114,7 @@ public class JDBCInterpreter extends Interpreter {
         }
       };
 
-  private static final List<String> NO_COMPLETION = new ArrayList<>();
+  private static final List<InterpreterCompletion> NO_COMPLETION = new ArrayList<>();
 
   public JDBCInterpreter(Properties property) {
     super(property);
@@ -438,11 +439,12 @@ public class JDBCInterpreter extends Interpreter {
   }
 
   @Override
-  public List<String> completion(String buf, int cursor) {
+  public List<InterpreterCompletion> completion(String buf, int cursor) {
     List<CharSequence> candidates = new ArrayList<>();
     SqlCompleter sqlCompleter = propertyKeySqlCompleterMap.get(getPropertyKey(buf));
     if (sqlCompleter != null && sqlCompleter.complete(buf, cursor, candidates) >= 0) {
-      return Lists.transform(candidates, sequenceToStringTransformer);
+      List completion = Lists.transform(candidates, sequenceToStringTransformer);
+      return completion;
     } else {
       return NO_COMPLETION;
     }

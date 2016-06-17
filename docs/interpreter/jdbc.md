@@ -18,6 +18,7 @@ This interpreter lets you create a JDBC connection to any data source, by now it
 * Apache Hive
 * Apache Drill
   * Details on using [Drill JDBC Driver](https://drill.apache.org/docs/using-the-jdbc-driver)
+* Apache Phoenix
 * Apache Tajo
 
 If someone else used another database please report how it works to improve functionality.
@@ -233,6 +234,41 @@ To develop this functionality use this [method](http://docs.oracle.com/javase/7/
    </tr>
    <tr>
      <td>org.apache.hadoop:hadoop-common:2.6.0</td>
+     <td></td>
+   </tr>
+ </table>
+#### Phoenix
+##### Properties
+ <table class="table-configuration">
+   <tr>
+     <th>Name</th>
+     <th>Value</th>
+   </tr>
+   <tr>
+     <td>phoenix.driver</td>
+     <td>org.apache.phoenix.jdbc.PhoenixDriver</td>
+   </tr>
+   <tr>
+     <td>phoenix.url</td>
+     <td>jdbc:phoenix:localhost:2181:/hbase-unsecure</td>
+   </tr>
+   <tr>
+     <td>phoenix.user</td>
+     <td>phoenix_user</td>
+   </tr>
+   <tr>
+     <td>phoenix.password</td>
+     <td>phoenix_password</td>
+   </tr>
+ </table>
+##### Dependencies
+ <table class="table-configuration">
+   <tr>
+     <th>Artifact</th>
+     <th>Excludes</th>
+   </tr>
+   <tr>
+     <td>org.apache.phoenix:phoenix-core:4.4.0-HBase-1.0</td>
      <td></td>
    </tr>
  </table>
