@@ -6,7 +6,9 @@ group: manual
 ---
 {% include JB/setup %}
 
-## Python 2 & 3 Interpreter for Apache Zeppelin
+# Python 2 & 3 Interpreter for Apache Zeppelin
+
+<div id="toc"></div>
 
 ## Configuration
 <table class="table-configuration">
@@ -63,8 +65,6 @@ print (z.select("f1",[("o1","1"),("o2","2")],"2"))
 print("".join(z.checkbox("f3", [("o1","1"), ("o2","2")],["1"])))
 ```
 
-
-
 ## Zeppelin features not fully supported by the Python Interpreter
 
 * Interrupt a paragraph execution (`cancel()` method) is currently only supported in Linux and MacOs. If interpreter runs in another operating system (for instance MS Windows) , interrupt a paragraph will close the whole interpreter. A JIRA ticket ([ZEPPELIN-893](https://issues.apache.org/jira/browse/ZEPPELIN-893)) is opened to implement this feature in a next release of the interpreter.
@@ -105,7 +105,6 @@ rates = pd.read_csv("bank.csv", sep=";")
 z.show(rates)
 ```
 
-
 ## Technical description
 
-For in-depth technical details on current implementation plese reffer [python/README.md](https://github.com/apache/zeppelin/blob/master/python/README.md)
+For in-depth technical details on current implementation plese reffer [python/README.md](https://github.com/apache/zeppelin/blob/master/python/README.md).
