@@ -17,6 +17,7 @@
 
 package org.apache.zeppelin.rest;
 
+import com.google.common.base.Strings;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import org.apache.zeppelin.user.Credentials;
@@ -70,7 +71,8 @@ public class CredentialRestApi {
     String username = messageMap.get("username");
     String password = messageMap.get("password");
 
-    if (entity == null || username == null || password == null) {
+    if (Strings.isNullOrEmpty(entity)
+            || Strings.isNullOrEmpty(username) || Strings.isNullOrEmpty(password) ) {
       return new JsonResponse(Status.BAD_REQUEST).build();
     }
 
