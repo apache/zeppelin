@@ -113,6 +113,28 @@ public class DependencyResolver extends AbstractDependencyResolver {
     return libs;
   }
 
+  public List<File> load(String artifact, File destPath) throws IOException, RepositoryException {
+    return load(artifact, new LinkedList<String>(), destPath);
+  }
+
+  public List<File> load(String artifact, Collection<String> excludes, File destPath)
+      throws RepositoryException, IOException {
+    List<File> libs = new LinkedList<File>();
+
+    if (StringUtils.isNotBlank(artifact)) {
+      libs = load(artifact, excludes);
+
+      for (File srcFile : libs) {
+        File destFile = new File(destPath, srcFile.getName());
+        if (!destFile.exists() || !FileUtils.contentEquals(srcFile, destFile)) {
+          FileUtils.copyFile(srcFile, destFile);
+          logger.info("copy {} to {}", srcFile.getAbsolutePath(), destPath);
+        }
+      }
+    }
+    return libs;
+  }
+
   private List<File> loadFromMvn(String artifact, Collection<String> excludes)
       throws RepositoryException {
     Collection<String> allExclusions = new LinkedList<String>();
