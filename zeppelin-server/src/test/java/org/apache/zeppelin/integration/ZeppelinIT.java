@@ -87,7 +87,7 @@ public class ZeppelinIT extends AbstractZeppelinIT {
       setTextOfParagraph(1, "println(\"%html <div style=\\'height:200px\\'></div>\")");
       runParagraph(1);
       waitForParagraph(1, "FINISHED");
-
+      try { handleException("Debug 11", new RuntimeException());} catch (Exception e) {};
       /*
        * print angular template
        * %angular <div id='angularTestButton' ng-click='myVar=myVar+1'>BindingTest_{{myVar}}_</div>
@@ -95,7 +95,7 @@ public class ZeppelinIT extends AbstractZeppelinIT {
       setTextOfParagraph(2, "println(\"%angular <div id=\\'angularTestButton\\' ng-click=\\'myVar=myVar+1\\'>BindingTest_{{myVar}}_</div>\")");
       runParagraph(2);
       waitForParagraph(2, "FINISHED");
-
+      try { handleException("Debug 12", new RuntimeException());} catch (Exception e) {};
       // check expected text
       waitForText("BindingTest__", By.xpath(
               getParagraphXPath(2) + "//div[@id=\"angularTestButton\"]"));
