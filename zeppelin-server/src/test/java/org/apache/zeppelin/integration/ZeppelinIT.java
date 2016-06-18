@@ -146,7 +146,8 @@ public class ZeppelinIT extends AbstractZeppelinIT {
       runParagraph(5);
       waitForParagraph(5, "FINISHED");
       try { handleException("Debug 1", new RuntimeException());} catch (Exception e) {};
-
+      System.err.println("angularButtonName = " + driver.findElement(By.xpath(
+          getParagraphXPath(2) + "//div[@id=\"angularTestButton\"]")).getText());
       /*
        * Click element, again and see watcher works
        */
