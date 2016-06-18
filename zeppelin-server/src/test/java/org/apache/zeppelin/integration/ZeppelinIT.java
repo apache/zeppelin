@@ -84,7 +84,7 @@ public class ZeppelinIT extends AbstractZeppelinIT {
        * run a paragraph that takes some height of screen, so next paragraph is not hid by main
        * menu bar. that prevent click event over angular element don't does to menu bar
        */
-      setTextOfParagraph(1, "println(\"%html <div style='height:200px'></div>\")");
+      setTextOfParagraph(1, "println(\"%html <div style=\\'height:200px\\'></div>\")");
       runParagraph(1);
       waitForParagraph(1, "FINISHED");
 
