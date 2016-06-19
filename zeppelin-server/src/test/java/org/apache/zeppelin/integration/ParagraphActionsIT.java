@@ -72,9 +72,13 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       collector.checkThat("Before Insert New : the number of  paragraph ",
           oldNosOfParas,
           CoreMatchers.equalTo(1));
+      try { handleException("Debug 1", new RuntimeException()); } catch (Exception e) {};
       driver.findElement(By.xpath(getParagraphXPath(1) + "//span[@class='icon-settings']")).click();
+      try { handleException("Debug 2", new RuntimeException()); } catch (Exception e) {};
       driver.findElement(By.xpath(getParagraphXPath(1) + "//ul/li/a[@ng-click='insertNew()']")).click();
+      try { handleException("Debug 3", new RuntimeException()); } catch (Exception e) {};
       waitForParagraph(2, "READY");
+      try { handleException("Debug 4", new RuntimeException()); } catch (Exception e) {};
       Integer newNosOfParas = driver.findElements(By.xpath("//div[@ng-controller=\"ParagraphCtrl\"]")).size();
       collector.checkThat("After Insert New (using Insert New button) :  number of  paragraph",
           oldNosOfParas + 1,
