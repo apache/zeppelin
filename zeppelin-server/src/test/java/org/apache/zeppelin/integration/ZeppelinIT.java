@@ -96,7 +96,7 @@ public class ZeppelinIT extends AbstractZeppelinIT {
        * Bind variable
        * z.angularBind("myVar", 1)
        */
-      assertEquals(1, driver.findElements(By.xpath(getParagraphXPath(3) + "//textarea")).size());
+      assertEquals(1, driver.findElements(By.xpath(getParagraphXPath(2) + "//textarea")).size());
       setTextOfParagraph(2, "z.angularBind(\"myVar\", 1)");
       runParagraph(2);
       waitForParagraph(2, "FINISHED");
