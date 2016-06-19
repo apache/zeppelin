@@ -16,7 +16,6 @@
 language: java
 
 sudo: false
-dist: trusty
 
 cache:
   directories:
@@ -31,7 +30,6 @@ addons:
     - r-base-dev
     - r-cran-evaluate
     - r-cran-base64enc
-  firefox: "31.0"
 
 matrix:
   include:

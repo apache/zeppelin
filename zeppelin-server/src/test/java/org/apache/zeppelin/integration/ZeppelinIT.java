@@ -105,6 +105,7 @@ public class ZeppelinIT extends AbstractZeppelinIT {
       waitForText("BindingTest_1_", By.xpath(
               getParagraphXPath(1) + "//div[@id=\"angularTestButton\"]"));
 
+
       /*
        * print variable
        * print("myVar="+z.angular("myVar"))
@@ -136,6 +137,7 @@ public class ZeppelinIT extends AbstractZeppelinIT {
       setTextOfParagraph(4, "z.angularWatch(\"myVar\", (before:Object, after:Object, context:org.apache.zeppelin.interpreter.InterpreterContext)=>{ z.run(2, context)})");
       runParagraph(4);
       waitForParagraph(4, "FINISHED");
+
 
       /*
        * Click element, again and see watcher works
