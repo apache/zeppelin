@@ -75,7 +75,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       try { handleException("Debug 1", new RuntimeException()); } catch (Exception e) {};
       driver.findElement(By.xpath(getParagraphXPath(1) + "//span[@class='icon-settings']")).click();
       try { handleException("Debug 2", new RuntimeException()); } catch (Exception e) {};
-      driver.findElement(By.xpath(getParagraphXPath(1) + "//ul/li/a[@ng-click='insertNew()']")).click();
+      driver.findElement(By.xpath(getParagraphXPath(1) + "//a[@ng-click='insertNew()']")).click();
       try { handleException("Debug 3", new RuntimeException()); } catch (Exception e) {};
       waitForParagraph(2, "READY");
       try { handleException("Debug 4", new RuntimeException()); } catch (Exception e) {};
@@ -85,7 +85,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
           CoreMatchers.equalTo(newNosOfParas));
 
       driver.findElement(By.xpath(getParagraphXPath(1) + "//span[@class='icon-settings']")).click();
-      driver.findElement(By.xpath(getParagraphXPath(1) + "//ul/li/a[@ng-click='removeParagraph()']")).click();
+      driver.findElement(By.xpath(getParagraphXPath(1) + "//a[@ng-click='removeParagraph()']")).click();
       ZeppelinITUtils.sleep(1000, false);
       driver.findElement(By.xpath("//div[@class='modal-dialog'][contains(.,'delete this paragraph')]" +
           "//div[@class='modal-footer']//button[contains(.,'OK')]")).click();
