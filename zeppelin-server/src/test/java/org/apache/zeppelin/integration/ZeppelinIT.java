@@ -87,7 +87,7 @@ public class ZeppelinIT extends AbstractZeppelinIT {
       setTextOfParagraph(1, "println(\"%html <div style=\\'height:200px\\'></div>\")");
       runParagraph(1);
       waitForParagraph(1, "FINISHED");
-      try { handleException("Debug 11", new RuntimeException());} catch (Exception e) {};
+      try { handleException("Debug 1", new RuntimeException());} catch (Exception e) {};
       /*
        * print angular template
        * %angular <div id='angularTestButton' ng-click='myVar=myVar+1'>BindingTest_{{myVar}}_</div>
@@ -95,7 +95,7 @@ public class ZeppelinIT extends AbstractZeppelinIT {
       setTextOfParagraph(2, "println(\"%angular <div id=\\'angularTestButton\\' ng-click=\\'myVar=myVar+1\\'>BindingTest_{{myVar}}_</div>\")");
       runParagraph(2);
       waitForParagraph(2, "FINISHED");
-      try { handleException("Debug 12", new RuntimeException());} catch (Exception e) {};
+      try { handleException("Debug 2", new RuntimeException());} catch (Exception e) {};
       // check expected text
       waitForText("BindingTest__", By.xpath(
               getParagraphXPath(2) + "//div[@id=\"angularTestButton\"]"));
@@ -112,7 +112,7 @@ public class ZeppelinIT extends AbstractZeppelinIT {
       // check expected text
       waitForText("BindingTest_1_", By.xpath(
               getParagraphXPath(2) + "//div[@id=\"angularTestButton\"]"));
-
+      try { handleException("Debug 3", new RuntimeException());} catch (Exception e) {};
 
       /*
        * print variable
@@ -125,7 +125,7 @@ public class ZeppelinIT extends AbstractZeppelinIT {
       // check expected text
       waitForText("myVar=1", By.xpath(
               getParagraphXPath(4) + "//div[contains(@id,\"_text\") and @class=\"text\"]"));
-
+      try { handleException("Debug 4", new RuntimeException());} catch (Exception e) {};
       /*
        * Click element
        */
@@ -145,7 +145,7 @@ public class ZeppelinIT extends AbstractZeppelinIT {
       setTextOfParagraph(5, "z.angularWatch(\"myVar\", (before:Object, after:Object, context:org.apache.zeppelin.interpreter.InterpreterContext)=>{ z.run(2, context)})");
       runParagraph(5);
       waitForParagraph(5, "FINISHED");
-      try { handleException("Debug 1", new RuntimeException());} catch (Exception e) {};
+      try { handleException("Debug 5", new RuntimeException());} catch (Exception e) {};
       System.err.println("angularButtonName = " + driver.findElement(By.xpath(
           getParagraphXPath(2) + "//div[@id=\"angularTestButton\"]")).getText());
       /*
@@ -153,7 +153,7 @@ public class ZeppelinIT extends AbstractZeppelinIT {
        */
       driver.findElement(By.xpath(
               getParagraphXPath(2) + "//div[@id=\"angularTestButton\"]")).click();
-      try { handleException("Debug 1", new RuntimeException());} catch (Exception e) {};
+      try { handleException("Debug 6", new RuntimeException());} catch (Exception e) {};
       // check expected text
       waitForText("BindingTest_3_", By.xpath(
               getParagraphXPath(2) + "//div[@id=\"angularTestButton\"]"));
