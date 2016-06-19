@@ -75,7 +75,9 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       try { handleException("Debug 1", new RuntimeException()); } catch (Exception e) {};
       driver.findElement(By.xpath(getParagraphXPath(1) + "//span[@class='icon-settings']")).click();
       try { handleException("Debug 2", new RuntimeException()); } catch (Exception e) {};
+      Thread.sleep(1000);
       driver.findElement(By.xpath(getParagraphXPath(1) + "//a[@ng-click='insertNew()']")).click();
+      Thread.sleep(1000);
       try { handleException("Debug 3", new RuntimeException()); } catch (Exception e) {};
       waitForParagraph(2, "READY");
       try { handleException("Debug 4", new RuntimeException()); } catch (Exception e) {};
