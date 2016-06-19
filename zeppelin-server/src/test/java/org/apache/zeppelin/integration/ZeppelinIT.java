@@ -80,61 +80,52 @@ public class ZeppelinIT extends AbstractZeppelinIT {
       // wait for first paragraph's " READY " status text
       waitForParagraph(1, "READY");
 
-      /**
-       * run a paragraph that takes some height of screen, so next paragraph is not hid by main
-       * menu bar. that prevent click event over angular element don't does to menu bar
-       */
-      setTextOfParagraph(1, "println(\"%html <div style=\\'height:200px\\'></div>\")");
-      runParagraph(1);
-      waitForParagraph(1, "FINISHED");
-      try { handleException("Debug 1", new RuntimeException());} catch (Exception e) {};
       /*
        * print angular template
        * %angular <div id='angularTestButton' ng-click='myVar=myVar+1'>BindingTest_{{myVar}}_</div>
        */
-      setTextOfParagraph(2, "println(\"%angular <div id=\\'angularTestButton\\' ng-click=\\'myVar=myVar+1\\'>BindingTest_{{myVar}}_</div>\")");
-      runParagraph(2);
-      waitForParagraph(2, "FINISHED");
-      try { handleException("Debug 2", new RuntimeException());} catch (Exception e) {};
+      setTextOfParagraph(1, "println(\"%angular <div id=\\'angularTestButton\\' ng-click=\\'myVar=myVar+1\\'>BindingTest_{{myVar}}_</div>\")");
+      runParagraph(1);
+      waitForParagraph(1, "FINISHED");
+
       // check expected text
       waitForText("BindingTest__", By.xpath(
-              getParagraphXPath(2) + "//div[@id=\"angularTestButton\"]"));
+              getParagraphXPath(1) + "//div[@id=\"angularTestButton\"]"));
 
       /*
        * Bind variable
        * z.angularBind("myVar", 1)
        */
       assertEquals(1, driver.findElements(By.xpath(getParagraphXPath(3) + "//textarea")).size());
-      setTextOfParagraph(3, "z.angularBind(\"myVar\", 1)");
-      runParagraph(3);
-      waitForParagraph(3, "FINISHED");
+      setTextOfParagraph(2, "z.angularBind(\"myVar\", 1)");
+      runParagraph(2);
+      waitForParagraph(2, "FINISHED");
 
       // check expected text
       waitForText("BindingTest_1_", By.xpath(
-              getParagraphXPath(2) + "//div[@id=\"angularTestButton\"]"));
-      try { handleException("Debug 3", new RuntimeException());} catch (Exception e) {};
+              getParagraphXPath(1) + "//div[@id=\"angularTestButton\"]"));
 
       /*
        * print variable
        * print("myVar="+z.angular("myVar"))
        */
-      setTextOfParagraph(4, "print(\"myVar=\"+z.angular(\"myVar\"))");
-      runParagraph(4);
-      waitForParagraph(4, "FINISHED");
+      setTextOfParagraph(3, "print(\"myVar=\"+z.angular(\"myVar\"))");
+      runParagraph(3);
+      waitForParagraph(3, "FINISHED");
 
       // check expected text
       waitForText("myVar=1", By.xpath(
-              getParagraphXPath(4) + "//div[contains(@id,\"_text\") and @class=\"text\"]"));
-      try { handleException("Debug 4", new RuntimeException());} catch (Exception e) {};
+              getParagraphXPath(3) + "//div[contains(@id,\"_text\") and @class=\"text\"]"));
+
       /*
        * Click element
        */
       driver.findElement(By.xpath(
-              getParagraphXPath(2) + "//div[@id=\"angularTestButton\"]")).click();
+              getParagraphXPath(1) + "//div[@id=\"angularTestButton\"]")).click();
 
       // check expected text
       waitForText("BindingTest_2_", By.xpath(
-              getParagraphXPath(2) + "//div[@id=\"angularTestButton\"]"));
+              getParagraphXPath(1) + "//div[@id=\"angularTestButton\"]"));
 
       /*
        * Register watcher
@@ -142,48 +133,46 @@ public class ZeppelinIT extends AbstractZeppelinIT {
        *   z.run(2, context)
        * }
        */
-      setTextOfParagraph(5, "z.angularWatch(\"myVar\", (before:Object, after:Object, context:org.apache.zeppelin.interpreter.InterpreterContext)=>{ z.run(2, context)})");
-      runParagraph(5);
-      waitForParagraph(5, "FINISHED");
-      try { handleException("Debug 5", new RuntimeException());} catch (Exception e) {};
-      System.err.println("angularButtonName = " + driver.findElement(By.xpath(
-          getParagraphXPath(2) + "//div[@id=\"angularTestButton\"]")).getText());
+      setTextOfParagraph(4, "z.angularWatch(\"myVar\", (before:Object, after:Object, context:org.apache.zeppelin.interpreter.InterpreterContext)=>{ z.run(2, context)})");
+      runParagraph(4);
+      waitForParagraph(4, "FINISHED");
+
       /*
        * Click element, again and see watcher works
        */
       driver.findElement(By.xpath(
-              getParagraphXPath(2) + "//div[@id=\"angularTestButton\"]")).click();
-      try { handleException("Debug 6", new RuntimeException());} catch (Exception e) {};
+              getParagraphXPath(1) + "//div[@id=\"angularTestButton\"]")).click();
+
       // check expected text
       waitForText("BindingTest_3_", By.xpath(
-              getParagraphXPath(2) + "//div[@id=\"angularTestButton\"]"));
-      waitForParagraph(4, "FINISHED");
+              getParagraphXPath(1) + "//div[@id=\"angularTestButton\"]"));
+      waitForParagraph(3, "FINISHED");
 
       // check expected text by watcher
       waitForText("myVar=3", By.xpath(
-              getParagraphXPath(4) + "//div[contains(@id,\"_text\") and @class=\"text\"]"));
+              getParagraphXPath(3) + "//div[contains(@id,\"_text\") and @class=\"text\"]"));
 
       /*
        * Unbind
        * z.angularUnbind("myVar")
        */
-      setTextOfParagraph(6, "z.angularUnbind(\"myVar\")");
-      runParagraph(6);
-      waitForParagraph(6, "FINISHED");
+      setTextOfParagraph(5, "z.angularUnbind(\"myVar\")");
+      runParagraph(5);
+      waitForParagraph(5, "FINISHED");
 
       // check expected text
       waitForText("BindingTest__",
-          By.xpath(getParagraphXPath(2) + "//div[@id=\"angularTestButton\"]"));
+          By.xpath(getParagraphXPath(1) + "//div[@id=\"angularTestButton\"]"));
 
       /*
        * Bind again and see rebind works.
        */
-      runParagraph(3);
-      waitForParagraph(3, "FINISHED");
+      runParagraph(2);
+      waitForParagraph(2, "FINISHED");
 
       // check expected text
       waitForText("BindingTest_1_",
-          By.xpath(getParagraphXPath(2) + "//div[@id=\"angularTestButton\"]"));
+          By.xpath(getParagraphXPath(1) + "//div[@id=\"angularTestButton\"]"));
 
       driver.findElement(By.xpath("//*[@id='main']/div//h3/span/button[@tooltip='Remove the notebook']"))
           .sendKeys(Keys.ENTER);
