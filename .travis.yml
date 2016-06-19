@@ -16,6 +16,7 @@
 language: java
 
 sudo: false
+dist: trusty
 
 cache:
   directories:
