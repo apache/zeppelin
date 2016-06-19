@@ -523,25 +523,17 @@ angular.module('zeppelinWebApp')
   };
 
   $scope.removeParagraph = function() {
-    var paragraphs = angular.element('div[id$="_paragraphColumn_main"');
-    if (paragraphs[paragraphs.length-1].id.startsWith($scope.paragraph.id)) {
-      BootstrapDialog.alert({
-        closable: true,
-        message: 'The last paragraph can\'t be deleted.'
-      });
-    } else {
-      BootstrapDialog.confirm({
-        closable: true,
-        title: '',
-        message: 'Do you want to delete this paragraph?',
-        callback: function(result) {
-          if (result) {
-            console.log('Remove paragraph');
-            websocketMsgSrv.removeParagraph($scope.paragraph.id);
-          }
+    BootstrapDialog.confirm({
+      closable: true,
+      title: '',
+      message: 'Do you want to delete this paragraph?',
+      callback: function(result) {
+        if (result) {
+          console.log('Remove paragraph');
+          websocketMsgSrv.removeParagraph($scope.paragraph.id);
         }
-      });
-    }
+      }
+    });
   };
 
   $scope.clearParagraphOutput = function() {
