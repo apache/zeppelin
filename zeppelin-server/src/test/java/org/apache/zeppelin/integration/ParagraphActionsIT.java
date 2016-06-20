@@ -18,6 +18,7 @@
 package org.apache.zeppelin.integration;
 
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.AbstractZeppelinIT;
 import org.apache.zeppelin.WebDriverManager;
 import org.apache.zeppelin.ZeppelinITUtils;
@@ -28,13 +29,10 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ErrorCollector;
 import org.openqa.selenium.*;
-import org.openqa.selenium.interactions.Action;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.Select;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.File;
 
 public class ParagraphActionsIT extends AbstractZeppelinIT {
   private static final Logger LOG = LoggerFactory.getLogger(ParagraphActionsIT.class);
@@ -96,7 +94,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
 
       collector.checkThat("Paragraph is created above",
           driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'editor')]")).getText(),
-          CoreMatchers.equalTo(""));
+          CoreMatchers.equalTo(StringUtils.EMPTY));
       setTextOfParagraph(1, " this is above ");
 
       newPara = driver.findElement(By.xpath(getParagraphXPath(2) + "//div[contains(@class,'new-paragraph')][2]"));
@@ -106,7 +104,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
 
       collector.checkThat("Paragraph is created below",
           driver.findElement(By.xpath(getParagraphXPath(3) + "//div[contains(@class, 'editor')]")).getText(),
-          CoreMatchers.equalTo(""));
+          CoreMatchers.equalTo(StringUtils.EMPTY));
       setTextOfParagraph(3, " this is below ");
 
       collector.checkThat("The output field of paragraph1 contains",
