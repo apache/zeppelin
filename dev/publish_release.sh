@@ -38,6 +38,8 @@ for var in GPG_PASSPHRASE ASF_USERID ASF_PASSWORD; do
 done
 
 export MAVEN_OPTS="-Xmx2g -XX:MaxPermSize=512m"
+RED='\033[0;31m'
+NC='\033[0m' # No Color
 
 RELEASE_VERSION="$1"
 GIT_TAG="$2"
@@ -46,6 +48,24 @@ PUBLISH_PROFILES="-Pspark-1.6 -Phadoop-2.4 -Pyarn -Ppyspark -Psparkr -Pr -Pgeode
 PROJECT_OPTIONS="-pl !zeppelin-distribution"
 NEXUS_STAGING="https://repository.apache.org/service/local/staging"
 NEXUS_PROFILE="153446d1ac37c4"
+
+function cleanup() {
+  echo "Remove working directory and maven local repository"
+  rm -rf ${WORKING_DIR}
+  rm -rf ${tmp_repo}
+}
+
+function curl_error() {
+  ret=${1}
+  if [[ $ret -ne 0 ]]; then
+    echo "curl response code is: ($ret)"
+    echo "See https://curl.haxx.se/libcurl/c/libcurl-errors.html to know the detailed cause of error."
+    echo -e "${RED}Failed to publish maven artifact to staging repository."
+    echo -e "IMPORTANT: You will have to re-run publish_release.sh to complete maven artifact publish.${NC}"
+    cleanup
+    exit 1
+  fi
+}
 
 function publish_to_maven() {
   cd "${WORKING_DIR}/zeppelin"
@@ -60,6 +80,8 @@ function publish_to_maven() {
   out="$(curl -X POST -d "${repo_request}" -u "${ASF_USERID}:${ASF_PASSWORD}" \
     -H 'Content-Type:application/xml' -v \
     "${NEXUS_STAGING}/profiles/${NEXUS_PROFILE}/start")"
+  create_ret=$?
+  curl_error $create_ret
   staged_repo_id="$(echo "${out}" | sed -e 's/.*\(orgapachezeppelin-[0-9]\{4\}\).*/\1/')"
   echo "Created Nexus staging repository: ${staged_repo_id}"
 
@@ -94,6 +116,8 @@ function publish_to_maven() {
     dest_url="${nexus_upload}/org/apache/zeppelin/$file_short"
     echo "  Uploading ${file_short}"
     curl -u "${ASF_USERID}:${ASF_PASSWORD}" --upload-file "${file_short}" "${dest_url}"
+    upload_ret=$?
+    curl_error $upload_ret
   done
 
   echo "Closing nexus staging repository"
@@ -101,13 +125,14 @@ function publish_to_maven() {
   out="$(curl -X POST -d "${repo_request}" -u "${ASF_USERID}:${ASF_PASSWORD}" \
     -H 'Content-Type:application/xml' -v \
     "${NEXUS_STAGING}}/profiles/${NEXUS_PROFILE}/finish")"
+  close_ret=$?
+  curl_error $close_ret
   echo "Closed Nexus staging repository: ${staged_repo_id}"
   popd
-  rm -rf "${tmp_repo}"
+  echo "Complete publishing maven artifacts to apache staging repository"
+  echo "Once release candidate pass the vote, do not forget to hit the release button in https://repository.apache.org"
 }
 
 git_clone
 publish_to_maven
-
-# remove working directory
-rm -rf "${WORKING_DIR}/zeppelin"
+cleanup
