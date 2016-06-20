@@ -71,33 +71,41 @@ plt.close()
     print('''<pre>zeppelin_show(plt,width='50px')
 zeppelin_show(plt,height='150px') </pre></div>''')
 
-# Matplotlib show function
-def zeppelin_show(p, width="0", height="0"):
-    img = io.StringIO()
-    p.savefig(img, format='svg')
-    img.seek(0)
-    style = ""
-    if(width != "0"):
-        style += 'width:'+width
-    if(height != "0"):
-        if(len(style) != 0):
-            style += ","
-            style += 'height:'+height
-    print("%html <div style='" + style + "'>" + img.read() + "<div>")
 
-# If py4j is detected, these class will be override
-# with the implementation in bootstrap_input.py
-class PyZeppelinContext():
+class PyZeppelinContext(object):
+    """ If py4j is detected, these class will be override
+        with the implementation in bootstrap_input.py
+    """
     errorMsg = "You must install py4j Python module " \
                "(pip install py4j) to use Zeppelin dynamic forms features"
+    
     def __init__(self, zc):
         self.z = zc
+    
     def input(self, name, defaultValue=""):
         print (self.errorMsg)
+    
     def select(self, name, options, defaultValue=""):
         print (self.errorMsg)
+    
     def checkbox(self, name, options, defaultChecked=[]):
         print (self.errorMsg)
+    
+    def show(self, p, width="0", height="0"):
+        """Matplotlib show function
+        """
+        img = io.StringIO()
+        p.savefig(img, format='svg')
+        img.seek(0)
+        style = ""
+        if (width != "0"):
+            style += 'width:' + width
+        if (height != "0"):
+            if (len(style) != 0):
+                style += ","
+                style += 'height:' + height
+        print("%html <div style='" + style + "'>" + img.read() + "<div>")
+
 
 z = PyZeppelinContext("")
 
