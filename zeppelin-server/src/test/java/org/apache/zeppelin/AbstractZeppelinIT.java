@@ -38,7 +38,7 @@ import static org.openqa.selenium.Keys.ENTER;
 import static org.openqa.selenium.Keys.SHIFT;
 
 abstract public class AbstractZeppelinIT {
-  protected WebDriver driver;
+  protected static WebDriver driver;
 
   protected final static Logger LOG = LoggerFactory.getLogger(AbstractZeppelinIT.class);
   protected static final long MAX_IMPLICIT_WAIT = 30;
@@ -114,7 +114,7 @@ abstract public class AbstractZeppelinIT {
     });
   }
 
-  protected boolean endToEndTestEnabled() {
+  protected static boolean endToEndTestEnabled() {
     return null != System.getenv("TEST_SELENIUM");
   }
 

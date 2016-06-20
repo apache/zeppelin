@@ -38,10 +38,8 @@ import org.slf4j.LoggerFactory;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
+import java.util.Map.Entry;
 
 
 /***
@@ -60,27 +58,28 @@ public class LivyHelper {
 
   public Integer createSession(InterpreterContext context, String kind) throws Exception {
     try {
+      Map<String, String> conf = new HashMap<String, String>();
+
+      Iterator<Entry<Object, Object>> it = property.entrySet().iterator();
+      while (it.hasNext()) {
+        Entry<Object, Object> pair = it.next();
+        if (pair.getKey().toString().startsWith("livy.spark.") &&
+            !pair.getValue().toString().isEmpty())
+          conf.put(pair.getKey().toString().substring(5), pair.getValue().toString());
+      }
+
+      String confData = gson.toJson(conf);
+
       String json = executeHTTP(property.getProperty("zeppelin.livy.url") + "/sessions",
           "POST",
           "{" +
               "\"kind\": \"" + kind + "\", " +
-              "\"master\": \"" + property.getProperty("zeppelin.livy.master") + "\", " +
-              "\"proxyUser\": \"" + context.getAuthenticationInfo().getUser() + "\"" +
-              "}",
+              "\"conf\": " + confData + ", " +
+              "\"proxyUser\": \"" + context.getAuthenticationInfo().getUser() +
+              "\"}",
           context.getParagraphId()
       );
-      if (json.contains("CreateInteractiveRequest[\\\"master\\\"]")) {
-        json = executeHTTP(property.getProperty("zeppelin.livy.url") + "/sessions",
-            "POST",
-            "{" +
-                "\"kind\": \"" + kind + "\", " +
-                "\"conf\":{\"spark.master\": \""
-                + property.getProperty("zeppelin.livy.master") + "\"}," +
-                "\"proxyUser\": \"" + context.getAuthenticationInfo().getUser() + "\"" +
-                "}",
-            context.getParagraphId()
-        );
-      }
+
       Map jsonMap = (Map<Object, Object>) gson.fromJson(json,
           new TypeToken<Map<Object, Object>>() {
           }.getType());
@@ -92,9 +91,8 @@ public class LivyHelper {
           LOGGER.error(String.format("sessionId:%s state is %s",
               jsonMap.get("id"), jsonMap.get("state")));
           Thread.sleep(1000);
-          json = executeHTTP(property.getProperty("zeppelin.livy.url") + "/sessions/" + sessionId,
-              "GET", null,
-              context.getParagraphId());
+          json = executeHTTP(property.getProperty("zeppelin.livy.url") + "/sessions/" +
+              sessionId, "GET", null, context.getParagraphId());
           jsonMap = (Map<Object, Object>) gson.fromJson(json,
               new TypeToken<Map<Object, Object>>() {
               }.getType());

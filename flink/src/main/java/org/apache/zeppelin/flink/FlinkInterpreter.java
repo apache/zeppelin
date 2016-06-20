@@ -38,6 +38,7 @@ import org.apache.zeppelin.interpreter.InterpreterPropertyBuilder;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.InterpreterUtils;
+import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,19 +66,6 @@ public class FlinkInterpreter extends Interpreter {
 
   public FlinkInterpreter(Properties property) {
     super(property);
-  }
-
-  static {
-    Interpreter.register(
-        "flink",
-        "flink",
-        FlinkInterpreter.class.getName(),
-        new InterpreterPropertyBuilder()
-                .add("host", "local",
-                    "host name of running JobManager. 'local' runs flink in local mode")
-          .add("port", "6123", "port of running JobManager")
-          .build()
-    );
   }
 
   @Override
@@ -344,8 +332,8 @@ public class FlinkInterpreter extends Interpreter {
   }
 
   @Override
-  public List<String> completion(String buf, int cursor) {
-    return new LinkedList<String>();
+  public List<InterpreterCompletion> completion(String buf, int cursor) {
+    return new LinkedList<>();
   }
 
   private void startFlinkMiniCluster() {

@@ -23,8 +23,10 @@ import org.apache.thrift.TException;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.GUI;
+import org.apache.zeppelin.display.Input;
 import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.InterpreterResult.Type;
+import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterContext;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterResult;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService.Client;
@@ -262,7 +264,8 @@ public class RemoteInterpreter extends Interpreter {
 
     boolean broken = false;
     try {
-      GUI settings = context.getGui();
+
+      final GUI currentGUI = context.getGui();
       RemoteInterpreterResult remoteResult = client.interpret(
           noteId, className, st, convert(context));
 
@@ -272,11 +275,20 @@ public class RemoteInterpreter extends Interpreter {
       context.getConfig().clear();
       context.getConfig().putAll(remoteConfig);
 
+
       if (form == FormType.NATIVE) {
         GUI remoteGui = gson.fromJson(remoteResult.getGui(), GUI.class);
-        context.getGui().clear();
-        context.getGui().setParams(remoteGui.getParams());
-        context.getGui().setForms(remoteGui.getForms());
+        currentGUI.clear();
+        currentGUI.setParams(remoteGui.getParams());
+        currentGUI.setForms(remoteGui.getForms());
+      } else if (form == FormType.SIMPLE) {
+        final Map<String, Input> currentForms = currentGUI.getForms();
+        final Map<String, Object> currentParams = currentGUI.getParams();
+        final GUI remoteGUI = gson.fromJson(remoteResult.getGui(), GUI.class);
+        final Map<String, Input> remoteForms = remoteGUI.getForms();
+        final Map<String, Object> remoteParams = remoteGUI.getParams();
+        currentForms.putAll(remoteForms);
+        currentParams.putAll(remoteParams);
       }
 
       InterpreterResult result = convert(remoteResult);
@@ -366,7 +378,7 @@ public class RemoteInterpreter extends Interpreter {
 
 
   @Override
-  public List<String> completion(String buf, int cursor) {
+  public List<InterpreterCompletion> completion(String buf, int cursor) {
     RemoteInterpreterProcess interpreterProcess = getInterpreterProcess();
     Client client = null;
     try {
@@ -377,7 +389,8 @@ public class RemoteInterpreter extends Interpreter {
 
     boolean broken = false;
     try {
-      return client.completion(noteId, className, buf, cursor);
+      List completion = client.completion(noteId, className, buf, cursor);
+      return completion;
     } catch (TException e) {
       broken = true;
       throw new InterpreterException(e);

@@ -16,7 +16,7 @@
 
 angular.module('zeppelinWebApp')
   .controller('ParagraphCtrl', function($scope,$rootScope, $route, $window, $element, $routeParams, $location,
-                                         $timeout, $compile, websocketMsgSrv, ngToast) {
+                                         $timeout, $compile, websocketMsgSrv, ngToast, SaveAsService) {
   var ANGULAR_FUNCTION_OBJECT_NAME_PREFIX = '_Z_ANGULAR_FUNC_';
   $scope.parentNote = null;
   $scope.paragraph = null;
@@ -79,8 +79,9 @@ angular.module('zeppelinWebApp')
   var angularObjectRegistry = {};
 
   var editorModes = {
-    'ace/mode/python': /^%(\w*\.)?pyspark\s*$/,
+    'ace/mode/python': /^%(\w*\.)?(pyspark|python)\s*$/,
     'ace/mode/scala': /^%(\w*\.)?spark\s*$/,
+    'ace/mode/r': /^%(\w*\.)?(r|sparkr|knitr)\s*$/,
     'ace/mode/sql': /^%(\w*\.)?\wql/,
     'ace/mode/markdown': /^%md/,
     'ace/mode/sh': /^%sh/
@@ -522,17 +523,25 @@ angular.module('zeppelinWebApp')
   };
 
   $scope.removeParagraph = function() {
-    BootstrapDialog.confirm({
-      closable: true,
-      title: '',
-      message: 'Do you want to delete this paragraph?',
-      callback: function(result) {
-        if (result) {
-          console.log('Remove paragraph');
-          websocketMsgSrv.removeParagraph($scope.paragraph.id);
+    var paragraphs = angular.element('div[id$="_paragraphColumn_main"');
+    if (paragraphs[paragraphs.length-1].id.startsWith($scope.paragraph.id)) {
+      BootstrapDialog.alert({
+        closable: true,
+        message: 'The last paragraph can\'t be deleted.'
+      });
+    } else {
+      BootstrapDialog.confirm({
+        closable: true,
+        title: '',
+        message: 'Do you want to delete this paragraph?',
+        callback: function(result) {
+          if (result) {
+            console.log('Remove paragraph');
+            websocketMsgSrv.removeParagraph($scope.paragraph.id);
+          }
         }
-      }
-    });
+      });
+    }
   };
 
   $scope.clearParagraphOutput = function() {
@@ -783,9 +792,9 @@ angular.module('zeppelinWebApp')
               for (var c in data.completions) {
                 var v = data.completions[c];
                 completions.push({
-                  name:v,
-                  value:v,
-                  score:300
+                  name: v.name,
+                  value: v.value,
+                  score: 300
                 });
               }
               callback(null, completions);
@@ -1044,19 +1053,6 @@ angular.module('zeppelinWebApp')
       } else if (keyEvent.ctrlKey && keyEvent.shiftKey && keyCode === 187) { // Ctrl + Shift + =
         $scope.paragraph.config.colWidth = Math.min(12, $scope.paragraph.config.colWidth + 1);
         $scope.changeColWidth();
-      } else if (keyEvent.ctrlKey && keyEvent.altKey && ((keyCode >= 48 && keyCode <=57) || keyCode === 189 || keyCode === 187)) { // Ctrl + Alt + [1~9,0,-,=]
-        var colWidth = 12;
-        if (keyCode === 48) {
-          colWidth = 10;
-        } else if (keyCode === 189) {
-          colWidth = 11;
-        } else if (keyCode === 187) {
-          colWidth = 12;
-        } else {
-          colWidth = keyCode - 48;
-        }
-        $scope.paragraph.config.colWidth = colWidth;
-        $scope.changeColWidth();
       } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 84) { // Ctrl + Alt + t
         if ($scope.paragraph.config.title) {
           $scope.hideTitle();
@@ -1241,20 +1237,21 @@ angular.module('zeppelinWebApp')
         manualRowResize: true,
         editor: false,
         fillHandle: false,
+        fragmentSelection: true,
         disableVisualSelection: true,
         cells: function (row, col, prop) {
           var cellProperties = {};
-            cellProperties.renderer = function(instance, td, row, col, prop, value, cellProperties) {
-              Handsontable.NumericCell.renderer.apply(this, arguments);
-              if (!isNaN(value)) {
-                cellProperties.type = 'numeric';
-                cellProperties.format = '0,0';
-                cellProperties.editor = false;
-                td.style.textAlign = 'left';
-              } else if (value.length > '%html'.length && '%html ' === value.substring(0, '%html '.length)) {
-                td.innerHTML = value.substring('%html'.length);
-              }
-            };
+          cellProperties.renderer = function(instance, td, row, col, prop, value, cellProperties) {
+            if (!isNaN(value)) {
+              cellProperties.format = '0,0.[00000]';
+              td.style.textAlign = 'left';
+              Handsontable.renderers.NumericRenderer.apply(this, arguments);
+            } else if (value.length > '%html'.length && '%html ' === value.substring(0, '%html '.length)) {
+              td.innerHTML = value.substring('%html'.length);
+            } else {
+              Handsontable.renderers.TextRenderer.apply(this, arguments);
+            }
+          };
           return cellProperties;
         }
       });
@@ -2143,4 +2140,27 @@ angular.module('zeppelinWebApp')
     $scope.keepScrollDown = false;
   };
 
+  $scope.exportToDSV = function (delimiter) {
+    var data = $scope.paragraph.result;
+    var dsv = '';
+    for (var titleIndex in $scope.paragraph.result.columnNames) {
+      dsv += $scope.paragraph.result.columnNames[titleIndex].name + delimiter;
+    }
+    dsv = dsv.substring(0, dsv.length - 1) + '\n';
+    for (var r in $scope.paragraph.result.msgTable) {
+      var row = $scope.paragraph.result.msgTable[r];
+      var dsvRow = '';
+      for (var index in row) {
+        dsvRow += row[index].value + delimiter;
+      }
+      dsv += dsvRow.substring(0, dsvRow.length - 1) + '\n';
+    }
+    var extension = '';
+    if (delimiter === '\t') {
+      extension = 'tsv';
+    } else if (delimiter === ',') {
+      extension = 'csv';
+    }
+    SaveAsService.SaveAs(dsv, 'data', extension);
+  };
 });

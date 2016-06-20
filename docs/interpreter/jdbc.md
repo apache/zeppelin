@@ -15,9 +15,11 @@ This interpreter lets you create a JDBC connection to any data source, by now it
 * MySql
 * MariaDB
 * Redshift
-* Hive
+* Apache Hive
 * Apache Drill
   * Details on using [Drill JDBC Driver](https://drill.apache.org/docs/using-the-jdbc-driver)
+* Apache Phoenix
+* Apache Tajo
 
 If someone else used another database please report how it works to improve functionality.
 
@@ -195,6 +197,109 @@ To develop this functionality use this [method](http://docs.oracle.com/javase/7/
   </tr>
 </table>
 
+### Examples
+#### Hive
+##### Properties
+ <table class="table-configuration">
+   <tr>
+     <th>Name</th>
+     <th>Value</th>
+   </tr>
+   <tr>
+     <td>hive.driver</td>
+     <td>org.apache.hive.jdbc.HiveDriver</td>
+   </tr>
+   <tr>
+     <td>hive.url</td>
+     <td>jdbc:hive2://localhost:10000</td>
+   </tr>
+   <tr>
+     <td>hive.user</td>
+     <td>hive_user</td>
+   </tr>
+   <tr>
+     <td>hive.password</td>
+     <td>hive_password</td>
+   </tr>
+ </table>
+##### Dependencies
+ <table class="table-configuration">
+   <tr>
+     <th>Artifact</th>
+     <th>Excludes</th>
+   </tr>
+   <tr>
+     <td>org.apache.hive:hive-jdbc:0.14.0</td>
+     <td></td>
+   </tr>
+   <tr>
+     <td>org.apache.hadoop:hadoop-common:2.6.0</td>
+     <td></td>
+   </tr>
+ </table>
+#### Phoenix
+##### Properties
+ <table class="table-configuration">
+   <tr>
+     <th>Name</th>
+     <th>Value</th>
+   </tr>
+   <tr>
+     <td>phoenix.driver</td>
+     <td>org.apache.phoenix.jdbc.PhoenixDriver</td>
+   </tr>
+   <tr>
+     <td>phoenix.url</td>
+     <td>jdbc:phoenix:localhost:2181:/hbase-unsecure</td>
+   </tr>
+   <tr>
+     <td>phoenix.user</td>
+     <td>phoenix_user</td>
+   </tr>
+   <tr>
+     <td>phoenix.password</td>
+     <td>phoenix_password</td>
+   </tr>
+ </table>
+##### Dependencies
+ <table class="table-configuration">
+   <tr>
+     <th>Artifact</th>
+     <th>Excludes</th>
+   </tr>
+   <tr>
+     <td>org.apache.phoenix:phoenix-core:4.4.0-HBase-1.0</td>
+     <td></td>
+   </tr>
+ </table>
+#### Tajo
+##### Properties
+ <table class="table-configuration">
+   <tr>
+     <th>Name</th>
+     <th>Value</th>
+   </tr>
+   <tr>
+     <td>tajo.driver</td>
+     <td>org.apache.tajo.jdbc.TajoDriver</td>
+   </tr>
+   <tr>
+     <td>tajo.url</td>
+     <td>jdbc:tajo://localhost:26002/default</td>
+   </tr>
+ </table>
+##### Dependencies
+ <table class="table-configuration">
+   <tr>
+     <th>Artifact</th>
+     <th>Excludes</th>
+   </tr>
+   <tr>
+     <td>org.apache.tajo:tajo-jdbc:0.11.0</td>
+     <td></td>
+   </tr>
+ </table>
+ 
 ### How to use
 
 #### Reference in paragraph

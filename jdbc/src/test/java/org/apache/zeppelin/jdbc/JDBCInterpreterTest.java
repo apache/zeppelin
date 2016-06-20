@@ -22,6 +22,8 @@ import static org.apache.zeppelin.jdbc.JDBCInterpreter.DEFAULT_PASSWORD;
 import static org.apache.zeppelin.jdbc.JDBCInterpreter.DEFAULT_USER;
 import static org.apache.zeppelin.jdbc.JDBCInterpreter.DEFAULT_URL;
 import static org.apache.zeppelin.jdbc.JDBCInterpreter.COMMON_MAX_LINE;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -32,6 +34,9 @@ import java.util.Properties;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.jdbc.JDBCInterpreter;
+import org.apache.zeppelin.scheduler.FIFOScheduler;
+import org.apache.zeppelin.scheduler.ParallelScheduler;
+import org.apache.zeppelin.scheduler.Scheduler;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -50,6 +55,17 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
       jdbcConnection = format("jdbc:h2:%s", tmpDir);
     }
     return jdbcConnection;
+  }
+
+  public static Properties getJDBCTestProperties() {
+    Properties p = new Properties();
+    p.setProperty("default.driver", "org.postgresql.Driver");
+    p.setProperty("default.url", "jdbc:postgresql://localhost:5432/");
+    p.setProperty("default.user", "gpadmin");
+    p.setProperty("default.password", "");
+    p.setProperty("common.max_count", "1000");
+
+    return p;
   }
   
   @Before
@@ -116,7 +132,7 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
   
   @Test
   public void testDefaultProperties() throws SQLException {
-    JDBCInterpreter jdbcInterpreter = new JDBCInterpreter(new Properties());
+    JDBCInterpreter jdbcInterpreter = new JDBCInterpreter(getJDBCTestProperties());
     
     assertEquals("org.postgresql.Driver", jdbcInterpreter.getProperty(DEFAULT_DRIVER));
     assertEquals("jdbc:postgresql://localhost:5432/", jdbcInterpreter.getProperty(DEFAULT_URL));
@@ -188,5 +204,28 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
     assertEquals(InterpreterResult.Type.TABLE, interpreterResult.type());
     assertEquals("ID\tNAME\na\ta_name\n", interpreterResult.message());
+  }
+
+  @Test
+  public void concurrentSettingTest() {
+    Properties properties = new Properties();
+    properties.setProperty("zeppelin.jdbc.concurrent.use", "true");
+    properties.setProperty("zeppelin.jdbc.concurrent.max_connection", "10");
+    JDBCInterpreter jdbcInterpreter = new JDBCInterpreter(properties);
+
+    assertTrue(jdbcInterpreter.isConcurrentExecution());
+    assertEquals(10, jdbcInterpreter.getMaxConcurrentConnection());
+
+    Scheduler scheduler = jdbcInterpreter.getScheduler();
+    assertTrue(scheduler instanceof ParallelScheduler);
+
+    properties.clear();
+    properties.setProperty("zeppelin.jdbc.concurrent.use", "false");
+    jdbcInterpreter = new JDBCInterpreter(properties);
+
+    assertFalse(jdbcInterpreter.isConcurrentExecution());
+
+    scheduler = jdbcInterpreter.getScheduler();
+    assertTrue(scheduler instanceof FIFOScheduler);
   }
 }

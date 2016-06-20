@@ -44,8 +44,7 @@ limitations under the License.
             <li class="divider"></li>
             <div id="notebook-list" class="scrollbar-container">
               <li class="filter-names" ng-include="'components/filterNoteNames/filter-note-names.html'"></li>
-              <li ng-repeat="note in navbar.notes.root.children | filter:query track by $index" ng-class="{'active' : navbar.isActive(note.id)}" ng-include="'notebook_list_renderer.html'">
-              </li>
+              <li ng-repeat="note in navbar.notes.root.children |notebookFilter:query track by $index" ng-class="{'active' : navbar.isActive(note.id)}" ng-include="'notebook_list_renderer.html'"></li>
             </div>
           </ul>
         </li>
@@ -64,15 +63,17 @@ limitations under the License.
       <ul class="nav navbar-nav navbar-right" style="margin-right:5px;">
         <li ng-if="ticket" style="margin-top:10px;">
         <!--TODO(bzz): move to Typeahead https://angular-ui.github.io/bootstrap  -->
-          <form role="search"
+
+          <form role="search" data-ng-model="searchForm"
             style="display: inline-block; margin: 0px"
              class="navbar-form"
-             ng-submit="search(searchTerm)">
+             ng-submit="search(searchForm.searchTerm)">
             <div class="input-group">
               <input
                 type="text"
                 style="min-width:300px;"
-                ng-model="searchTerm"
+                ng-model="searchForm.searchTerm"
+                id="searchTermId"
                 ng-disabled="!navbar.connected"
                 class="form-control"
                 placeholder="Search your Notebooks"
@@ -81,7 +82,7 @@ limitations under the License.
                 <button
                   type="submit"
                   class="btn btn-default"
-                  ng-disabled="!navbar.connected"
+                  ng-disabled="!navbar.connected || !searchForm.searchTerm"
                 >
                   <i class="glyphicon glyphicon-search"></i>
                 </button>

@@ -58,6 +58,11 @@
   list-style-type: none;
 }
 
+.interpreter table {
+  table-layout: fixed;
+  word-break: break-all;
+}
+
 .interpreter table tr .interpreterPropertyKey {
   padding : 5px 5px 5px 5px;
 }

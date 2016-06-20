@@ -17,35 +17,30 @@
 
 package org.apache.zeppelin.scalding;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.PrintStream;
-import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.net.URL;
-import java.net.URLClassLoader;
-
+import com.twitter.scalding.ScaldingILoop;
+import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
+import org.apache.zeppelin.interpreter.InterpreterPropertyBuilder;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
+import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import scala.Console;
-import scala.Some;
-import scala.None;
-import scala.tools.nsc.Settings;
-import scala.tools.nsc.settings.MutableSettings.BooleanSetting;
-import scala.tools.nsc.settings.MutableSettings.PathSetting;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.security.PrivilegedExceptionAction;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Properties;
 
 /**
  * Scalding interpreter for Zeppelin. Based off the Spark interpreter code.
@@ -54,16 +49,29 @@ import scala.tools.nsc.settings.MutableSettings.PathSetting;
 public class ScaldingInterpreter extends Interpreter {
   Logger logger = LoggerFactory.getLogger(ScaldingInterpreter.class);
 
-  public static final List<String> NO_COMPLETION = 
-    Collections.unmodifiableList(new ArrayList<String>());
+  static final String ARGS_STRING = "args.string";
+  static final String ARGS_STRING_DEFAULT = "--local --repl";
+  static final String MAX_OPEN_INSTANCES = "max.open.instances";
+  static final String MAX_OPEN_INSTANCES_DEFAULT = "50";
+
+  public static final List NO_COMPLETION =
+    Collections.unmodifiableList(new ArrayList<>());
 
   static {
-    Interpreter.register("scalding", ScaldingInterpreter.class.getName());
+    Interpreter.register(
+      "scalding",
+      "scalding",
+      ScaldingInterpreter.class.getName(),
+      new InterpreterPropertyBuilder()
+        .add(ARGS_STRING, ARGS_STRING_DEFAULT, "Arguments for scalding REPL")
+        .add(MAX_OPEN_INSTANCES, MAX_OPEN_INSTANCES_DEFAULT,
+                "Maximum number of open interpreter instances")
+        .build());
   }
 
+  static int numOpenInstances = 0;
   private ScaldingILoop interpreter;
   private ByteArrayOutputStream out;
-  private Map<String, Object> binder;
 
   public ScaldingInterpreter(Properties property) {
     super(property);
@@ -72,104 +80,34 @@ public class ScaldingInterpreter extends Interpreter {
 
   @Override
   public void open() {
-    URL[] urls = getClassloaderUrls();
-
-    // Very nice discussion about how scala compiler handle classpath
-    // https://groups.google.com/forum/#!topic/scala-user/MlVwo2xCCI0
-
-    /*
-     * > val env = new nsc.Settings(errLogger) > env.usejavacp.value = true > val p = new
-     * Interpreter(env) > p.setContextClassLoader > Alternatively you can set the class path through
-     * nsc.Settings.classpath.
-     *
-     * >> val settings = new Settings() >> settings.usejavacp.value = true >>
-     * settings.classpath.value += File.pathSeparator + >> System.getProperty("java.class.path") >>
-     * val in = new Interpreter(settings) { >> override protected def parentClassLoader =
-     * getClass.getClassLoader >> } >> in.setContextClassLoader()
-     */
-    Settings settings = new Settings();
-
-    // set classpath for scala compiler
-    PathSetting pathSettings = settings.classpath();
-    String classpath = "";
-    List<File> paths = currentClassPath();
-    for (File f : paths) {
-      if (classpath.length() > 0) {
-        classpath += File.pathSeparator;
-      }
-      classpath += f.getAbsolutePath();
+    numOpenInstances = numOpenInstances + 1;
+    String maxOpenInstancesStr = property.getProperty(MAX_OPEN_INSTANCES,
+            MAX_OPEN_INSTANCES_DEFAULT);
+    int maxOpenInstances = 50;
+    try {
+      maxOpenInstances = Integer.valueOf(maxOpenInstancesStr);
+    } catch (Exception e) {
+      logger.error("Error reading max.open.instances", e);
     }
-
-    if (urls != null) {
-      for (URL u : urls) {
-        if (classpath.length() > 0) {
-          classpath += File.pathSeparator;
-        }
-        classpath += u.getFile();
-      }
+    logger.info("max.open.instances = {}", maxOpenInstances);
+    if (numOpenInstances > maxOpenInstances) {
+      logger.error("Reached maximum number of open instances");
+      return;
     }
-
-    pathSettings.v_$eq(classpath);
-    settings.scala$tools$nsc$settings$ScalaSettings$_setter_$classpath_$eq(pathSettings);
-
-
-    // set classloader for scala compiler
-    settings.explicitParentLoader_$eq(new Some<ClassLoader>(Thread.currentThread()
-        .getContextClassLoader()));
-    BooleanSetting b = (BooleanSetting) settings.usejavacp();
-    b.v_$eq(true);
-    settings.scala$tools$nsc$settings$StandardScalaSettings$_setter_$usejavacp_$eq(b);
-
-    /* Scalding interpreter */
-    PrintStream printStream = new PrintStream(out);
-    interpreter = new ScaldingILoop(null, new PrintWriter(out));
-    interpreter.settings_$eq(settings);
-    interpreter.createInterpreter();
-
-    interpreter.intp().
-      interpret("@transient var _binder = new java.util.HashMap[String, Object]()");
-    binder = (Map<String, Object>) getValue("_binder");
-    binder.put("out", printStream);
-  }
-
-  private Object getValue(String name) {
-    Object ret = interpreter.intp().valueOfTerm(name);
-    if (ret instanceof None) {
-      return null;
-    } else if (ret instanceof Some) {
-      return ((Some) ret).get();
+    logger.info("Opening instance {}", numOpenInstances);
+    logger.info("property: {}", property);
+    String argsString = property.getProperty(ARGS_STRING, ARGS_STRING_DEFAULT);
+    String[] args;
+    if (argsString == null) {
+      args = new String[0];
     } else {
-      return ret;
+      args = argsString.split(" ");
     }
-  }
+    logger.info("{}", Arrays.toString(args));
 
-  private List<File> currentClassPath() {
-    List<File> paths = classPath(Thread.currentThread().getContextClassLoader());
-    String[] cps = System.getProperty("java.class.path").split(File.pathSeparator);
-    if (cps != null) {
-      for (String cp : cps) {
-        paths.add(new File(cp));
-      }
-    }
-    return paths;
-  }
-
-  private List<File> classPath(ClassLoader cl) {
-    List<File> paths = new LinkedList<File>();
-    if (cl == null) {
-      return paths;
-    }
-
-    if (cl instanceof URLClassLoader) {
-      URLClassLoader ucl = (URLClassLoader) cl;
-      URL[] urls = ucl.getURLs();
-      if (urls != null) {
-        for (URL url : urls) {
-          paths.add(new File(url.getFile()));
-        }
-      }
-    }
-    return paths;
+    PrintWriter printWriter = new PrintWriter(out, true);
+    interpreter = ZeppelinScaldingShell.getRepl(args, printWriter);
+    interpreter.createInterpreter();
   }
 
   @Override
@@ -180,12 +118,49 @@ public class ScaldingInterpreter extends Interpreter {
 
   @Override
   public InterpreterResult interpret(String cmd, InterpreterContext contextInterpreter) {
-    logger.info("Running Scalding command '" + cmd + "'");
+    String user = contextInterpreter.getAuthenticationInfo().getUser();
+    logger.info("Running Scalding command: user: {} cmd: '{}'", user, cmd);
 
+    if (interpreter == null) {
+      logger.error(
+        "interpreter == null, open may not have been called because max.open.instances reached");
+      return new InterpreterResult(Code.ERROR,
+        "interpreter == null\n" +
+        "open may not have been called because max.open.instances reached"
+      );
+    }
     if (cmd == null || cmd.trim().length() == 0) {
       return new InterpreterResult(Code.SUCCESS);
     }
-    return interpret(cmd.split("\n"), contextInterpreter);
+    InterpreterResult interpreterResult = new InterpreterResult(Code.ERROR);
+    if (property.getProperty(ARGS_STRING).contains("hdfs")) {
+      UserGroupInformation ugi = null;
+      try {
+        ugi = UserGroupInformation.createProxyUser(user, UserGroupInformation.getLoginUser());
+      } catch (IOException e) {
+        logger.error("Error creating UserGroupInformation", e);
+        return new InterpreterResult(Code.ERROR, e.getMessage());
+      }
+      try {
+        // Make variables final to avoid "local variable is accessed from within inner class;
+        // needs to be declared final" exception in JDK7
+        final String cmd1 = cmd;
+        final InterpreterContext contextInterpreter1 = contextInterpreter;
+        PrivilegedExceptionAction<InterpreterResult> action =
+          new PrivilegedExceptionAction<InterpreterResult>() {
+            public InterpreterResult run() throws Exception {
+              return interpret(cmd1.split("\n"), contextInterpreter1);
+            }
+          };
+        interpreterResult = ugi.doAs(action);
+      } catch (Exception e) {
+        logger.error("Error running command with ugi.doAs", e);
+        return new InterpreterResult(Code.ERROR, e.getMessage());
+      }
+    } else {
+      interpreterResult = interpret(cmd.split("\n"), contextInterpreter);
+    }
+    return interpreterResult;
   }
 
   public InterpreterResult interpret(String[] lines, InterpreterContext context) {
@@ -205,8 +180,13 @@ public class ScaldingInterpreter extends Interpreter {
     }
     linesToRun[lines.length] = "print(\"\")";
 
-    Console.setOut((java.io.PrintStream) binder.get("out"));
     out.reset();
+
+    // Moving two lines below from open() to this function.
+    // If they are in open output is incomplete.
+    PrintStream printStream = new PrintStream(out, true);
+    Console.setOut(printStream);
+
     Code r = null;
     String incomplete = "";
     boolean inComment = false;
@@ -261,7 +241,6 @@ public class ScaldingInterpreter extends Interpreter {
         incomplete = "";
       }
     }
-
     if (r == Code.INCOMPLETE) {
       return new InterpreterResult(r, "Incomplete expression");
     } else {
@@ -303,7 +282,8 @@ public class ScaldingInterpreter extends Interpreter {
   }
 
   @Override
-  public List<String> completion(String buf, int cursor) {
+  public List<InterpreterCompletion> completion(String buf, int cursor) {
     return NO_COMPLETION;
   }
+
 }

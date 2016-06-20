@@ -52,8 +52,8 @@ public abstract class AbstractDependencyResolver {
     synchronized (repos) {
       delRepo(id);
       RemoteRepository rr = new RemoteRepository(id, "default", url);
-      rr.setPolicy(true, new RepositoryPolicy(
-          snapshot,
+      rr.setPolicy(snapshot, new RepositoryPolicy(
+          true,
           RepositoryPolicy.UPDATE_POLICY_DAILY,
           RepositoryPolicy.CHECKSUM_POLICY_WARN));
       repos.add(rr);
@@ -64,8 +64,8 @@ public abstract class AbstractDependencyResolver {
     synchronized (repos) {
       delRepo(id);
       RemoteRepository rr = new RemoteRepository(id, "default", url);
-      rr.setPolicy(true, new RepositoryPolicy(
-          snapshot,
+      rr.setPolicy(snapshot, new RepositoryPolicy(
+          true,
           RepositoryPolicy.UPDATE_POLICY_DAILY,
           RepositoryPolicy.CHECKSUM_POLICY_WARN));
       rr.setAuthentication(auth);

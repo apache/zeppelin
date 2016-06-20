@@ -18,6 +18,10 @@ angular.module('zeppelinWebApp').controller('CredentialCtrl', function($scope, $
                                                                          $http, baseUrlSrv) {
   $scope._ = _;
 
+  $scope.credentialEntity = '';
+  $scope.credentialUsername = '';
+  $scope.credentialPassword = '';
+  
   $scope.updateCredentials = function() {
     $http.put(baseUrlSrv.getRestApiBase() + '/credential',
       { 'entity': $scope.credentialEntity,

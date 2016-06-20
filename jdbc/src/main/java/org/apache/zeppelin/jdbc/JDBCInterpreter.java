@@ -33,10 +33,9 @@ import java.util.Set;
 
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
-import org.apache.zeppelin.interpreter.InterpreterException;
-import org.apache.zeppelin.interpreter.InterpreterPropertyBuilder;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
+import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.slf4j.Logger;
@@ -50,7 +49,7 @@ import com.google.common.collect.Sets.SetView;
 /**
  * JDBC interpreter for Zeppelin. This interpreter can also be used for accessing HAWQ,
  * GreenplumDB, MariaDB, MySQL, Postgres and Redshit.
- * 
+ *
  * <ul>
  * <li>{@code default.url} - JDBC URL to connect to.</li>
  * <li>{@code default.user} - JDBC user name..</li>
@@ -58,22 +57,21 @@ import com.google.common.collect.Sets.SetView;
  * <li>{@code default.driver.name} - JDBC driver name.</li>
  * <li>{@code common.max.result} - Max number of SQL result to display.</li>
  * </ul>
- * 
+ *
  * <p>
  * How to use: <br/>
  * {@code %jdbc.sql} <br/>
- * {@code 
- *  SELECT store_id, count(*) 
- *  FROM retail_demo.order_lineitems_pxf 
- *  GROUP BY store_id;
+ * {@code
+ * SELECT store_id, count(*)
+ * FROM retail_demo.order_lineitems_pxf
+ * GROUP BY store_id;
  * }
  * </p>
- * 
  */
 public class JDBCInterpreter extends Interpreter {
 
   private Logger logger = LoggerFactory.getLogger(JDBCInterpreter.class);
- 
+
   static final String COMMON_KEY = "common";
   static final String MAX_LINE_KEY = "max_count";
   static final String MAX_LINE_DEFAULT = "1000";
@@ -84,7 +82,7 @@ public class JDBCInterpreter extends Interpreter {
   static final String USER_KEY = "user";
   static final String PASSWORD_KEY = "password";
   static final String DOT = ".";
-  
+
   private static final char WHITESPACE = ' ';
   private static final char NEWLINE = '\n';
   private static final char TAB = '\t';
@@ -100,27 +98,26 @@ public class JDBCInterpreter extends Interpreter {
   static final String DEFAULT_PASSWORD = DEFAULT_KEY + DOT + PASSWORD_KEY;
 
   static final String EMPTY_COLUMN_VALUE = "";
-  
+
+  private final String CONCURRENT_EXECUTION_KEY = "zeppelin.jdbc.concurrent.use";
+  private final String CONCURRENT_EXECUTION_COUNT = "zeppelin.jdbc.concurrent.max_connection";
+
   private final HashMap<String, Properties> propertiesMap;
   private final Map<String, Statement> paragraphIdStatementMap;
 
   private final Map<String, ArrayList<Connection>> propertyKeyUnusedConnectionListMap;
   private final Map<String, Connection> paragraphIdConnectionMap;
-  
-  static {
-    Interpreter.register(
-        "sql",
-        "jdbc",
-        JDBCInterpreter.class.getName(),
-        new InterpreterPropertyBuilder()
-            .add(DEFAULT_URL, "jdbc:postgresql://localhost:5432/", "The URL for JDBC.")
-            .add(DEFAULT_USER, "gpadmin", "The JDBC user name")
-            .add(DEFAULT_PASSWORD, "",
-                "The JDBC user password")
-            .add(DEFAULT_DRIVER, "org.postgresql.Driver", "JDBC Driver Name")
-            .add(COMMON_MAX_LINE, MAX_LINE_DEFAULT,
-                "Max number of SQL result to display.").build());
-  }
+
+  private final Map<String, SqlCompleter> propertyKeySqlCompleterMap;
+
+  private static final Function<CharSequence, String> sequenceToStringTransformer =
+      new Function<CharSequence, String>() {
+        public String apply(CharSequence seq) {
+          return seq.toString();
+        }
+      };
+
+  private static final List<InterpreterCompletion> NO_COMPLETION = new ArrayList<>();
 
   public JDBCInterpreter(Properties property) {
     super(property);
@@ -128,8 +125,9 @@ public class JDBCInterpreter extends Interpreter {
     propertyKeyUnusedConnectionListMap = new HashMap<>();
     paragraphIdStatementMap = new HashMap<>();
     paragraphIdConnectionMap = new HashMap<>();
+    propertyKeySqlCompleterMap = new HashMap<>();
   }
-  
+
   public HashMap<String, Properties> getPropertiesMap() {
     return propertiesMap;
   }
@@ -169,9 +167,38 @@ public class JDBCInterpreter extends Interpreter {
     }
 
     logger.debug("propertiesMap: {}", propertiesMap);
+
+    Connection connection = null;
+    SqlCompleter sqlCompleter = null;
+    for (String propertyKey : propertiesMap.keySet()) {
+      try {
+        connection = getConnection(propertyKey);
+        sqlCompleter = createSqlCompleter(connection);
+      } catch (Exception e) {
+        sqlCompleter = createSqlCompleter(null);
+      }
+      propertyKeySqlCompleterMap.put(propertyKey, sqlCompleter);
+    }
   }
-  
-  public Connection getConnection(String propertyKey)  throws ClassNotFoundException, SQLException {
+
+  private SqlCompleter createSqlCompleter(Connection jdbcConnection) {
+
+    SqlCompleter completer = null;
+    try {
+      Set<String> keywordsCompletions = SqlCompleter.getSqlKeywordsCompletions(jdbcConnection);
+      Set<String> dataModelCompletions =
+          SqlCompleter.getDataModelMetadataCompletions(jdbcConnection);
+      SetView<String> allCompletions = Sets.union(keywordsCompletions, dataModelCompletions);
+      completer = new SqlCompleter(allCompletions, dataModelCompletions);
+
+    } catch (IOException | SQLException e) {
+      logger.error("Cannot create SQL completer", e);
+    }
+
+    return completer;
+  }
+
+  public Connection getConnection(String propertyKey) throws ClassNotFoundException, SQLException {
     Connection connection = null;
     if (propertyKey == null || propertiesMap.get(propertyKey) == null) {
       return null;
@@ -195,7 +222,7 @@ public class JDBCInterpreter extends Interpreter {
     }
     return connection;
   }
-  
+
   public Statement getStatement(String propertyKey, String paragraphId)
       throws SQLException, ClassNotFoundException {
     Connection connection;
@@ -204,7 +231,7 @@ public class JDBCInterpreter extends Interpreter {
     } else {
       connection = getConnection(propertyKey);
     }
-    
+
     if (connection == null) {
       return null;
     }
@@ -228,7 +255,7 @@ public class JDBCInterpreter extends Interpreter {
       return false;
     }
   }
-  
+
   @Override
   public void close() {
 
@@ -256,13 +283,13 @@ public class JDBCInterpreter extends Interpreter {
 
   private InterpreterResult executeSql(String propertyKey, String sql,
       InterpreterContext interpreterContext) {
-    
+
     String paragraphId = interpreterContext.getParagraphId();
 
     try {
 
       Statement statement = getStatement(propertyKey, paragraphId);
-      
+
       if (statement == null) {
         return new InterpreterResult(Code.ERROR, "Prefix not found.");
       }
@@ -361,7 +388,7 @@ public class JDBCInterpreter extends Interpreter {
     if (null != propertyKey && !propertyKey.equals(DEFAULT_KEY)) {
       cmd = cmd.substring(propertyKey.length() + 2);
     }
-    
+
     cmd = cmd.trim();
 
     logger.info("PropertyKey: {}, SQL command: '{}'", propertyKey, cmd);
@@ -397,7 +424,7 @@ public class JDBCInterpreter extends Interpreter {
       return DEFAULT_KEY;
     }
   }
-  
+
   @Override
   public FormType getFormType() {
     return FormType.SIMPLE;
@@ -410,18 +437,39 @@ public class JDBCInterpreter extends Interpreter {
 
   @Override
   public Scheduler getScheduler() {
-    return SchedulerFactory.singleton().createOrGetFIFOScheduler(
-        JDBCInterpreter.class.getName() + this.hashCode());
+    String schedulerName = JDBCInterpreter.class.getName() + this.hashCode();
+    return isConcurrentExecution() ?
+            SchedulerFactory.singleton().createOrGetParallelScheduler(schedulerName, 10)
+            : SchedulerFactory.singleton().createOrGetFIFOScheduler(schedulerName);
   }
 
   @Override
-  public List<String> completion(String buf, int cursor) {
-    return null;
+  public List<InterpreterCompletion> completion(String buf, int cursor) {
+    List<CharSequence> candidates = new ArrayList<>();
+    SqlCompleter sqlCompleter = propertyKeySqlCompleterMap.get(getPropertyKey(buf));
+    if (sqlCompleter != null && sqlCompleter.complete(buf, cursor, candidates) >= 0) {
+      List completion = Lists.transform(candidates, sequenceToStringTransformer);
+      return completion;
+    } else {
+      return NO_COMPLETION;
+    }
   }
 
   public int getMaxResult() {
     return Integer.valueOf(
         propertiesMap.get(COMMON_KEY).getProperty(MAX_LINE_KEY, MAX_LINE_DEFAULT));
+  }
+
+  boolean isConcurrentExecution() {
+    return Boolean.valueOf(getProperty(CONCURRENT_EXECUTION_KEY));
+  }
+
+  int getMaxConcurrentConnection() {
+    try {
+      return Integer.valueOf(getProperty(CONCURRENT_EXECUTION_COUNT));
+    } catch (Exception e) {
+      return 10;
+    }
   }
 }
 

@@ -23,6 +23,7 @@ import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterPropertyBuilder;
 import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.slf4j.Logger;
@@ -110,7 +111,7 @@ public class CassandraInterpreter extends Interpreter {
   public static final String DEFAULT_PORT = "9042";
   public static final String DEFAULT_CLUSTER = "Test Cluster";
   public static final String DEFAULT_KEYSPACE = "system";
-  public static final String DEFAULT_PROTOCOL_VERSION = "3";
+  public static final String DEFAULT_PROTOCOL_VERSION = "4";
   public static final String DEFAULT_COMPRESSION = "NONE";
   public static final String DEFAULT_CREDENTIAL = "none";
   public static final String DEFAULT_POLICY = "DEFAULT";
@@ -139,7 +140,7 @@ public class CassandraInterpreter extends Interpreter {
   public static final String LOGGING_DOWNGRADING_RETRY = "LOGGING_DOWNGRADING";
   public static final String LOGGING_FALLTHROUGH_RETRY = "LOGGING_FALLTHROUGH";
 
-  public static final List<String> NO_COMPLETION = new ArrayList<>();
+  public static final List NO_COMPLETION = new ArrayList<>();
 
   InterpreterLogic helper;
   Cluster cluster;
@@ -159,7 +160,7 @@ public class CassandraInterpreter extends Interpreter {
                 "IP address). Default = localhost. Ex: '192.168.0.12,node2,node3'")
         .add(CASSANDRA_PORT, DEFAULT_PORT, "Cassandra native port. Default = 9042")
         .add(CASSANDRA_PROTOCOL_VERSION, DEFAULT_PROTOCOL_VERSION,
-                "Cassandra protocol version. Default = 3")
+                "Cassandra protocol version. Default = 4")
         .add(CASSANDRA_CLUSTER_NAME, DEFAULT_CLUSTER, "Cassandra cluster name. " +
                 "Default = 'Test Cluster'")
         .add(CASSANDRA_KEYSPACE_NAME, DEFAULT_KEYSPACE, "Cassandra keyspace name. " +
@@ -311,7 +312,7 @@ public class CassandraInterpreter extends Interpreter {
 
   @Override
   public FormType getFormType() {
-    return FormType.NATIVE;
+    return FormType.SIMPLE;
   }
 
   @Override
@@ -320,7 +321,7 @@ public class CassandraInterpreter extends Interpreter {
   }
 
   @Override
-  public List<String> completion(String buf, int cursor) {
+  public List<InterpreterCompletion> completion(String buf, int cursor) {
     return NO_COMPLETION;
   }
 

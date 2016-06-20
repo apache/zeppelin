@@ -25,11 +25,13 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.Input;
 import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
+import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.apache.zeppelin.notebook.utility.IdHashes;
 import org.apache.zeppelin.resource.ResourcePoolUtils;
@@ -62,6 +64,8 @@ public class Note implements Serializable, JobListener {
 
   private String name = "";
   private String id;
+
+  private transient ZeppelinConfiguration conf = ZeppelinConfiguration.create();
 
   @SuppressWarnings("rawtypes")
   Map<String, List<AngularObject>> angularObjects = new HashMap<>();
@@ -116,7 +120,23 @@ public class Note implements Serializable, JobListener {
     return name;
   }
 
+  private String normalizeNoteName(String name){
+    name = name.trim();
+    name = name.replace("\\", "/");
+    while (name.indexOf("///") >= 0) {
+      name = name.replaceAll("///", "/");
+    }
+    name = name.replaceAll("//", "/");
+    if (name.length() == 0) {
+      name = "/";
+    }
+    return name;
+  }
+
   public void setName(String name) {
+    if (name.indexOf('/') >= 0 || name.indexOf('\\') >= 0) {
+      name = normalizeNoteName(name);
+    }
     this.name = name;
   }
 
@@ -391,20 +411,46 @@ public class Note implements Serializable, JobListener {
     Paragraph p = getParagraph(paragraphId);
     p.setNoteReplLoader(replLoader);
     p.setListener(jobListenerFactory.getParagraphJobListener(this));
-    Interpreter intp = replLoader.get(p.getRequiredReplName());
+    String requiredReplName = p.getRequiredReplName();
+    Interpreter intp = replLoader.get(requiredReplName);
     if (intp == null) {
-      throw new InterpreterException("Interpreter " + p.getRequiredReplName() + " not found");
+      // TODO(jongyoul): Make "%jdbc" configurable from JdbcInterpreter
+      if (conf.getUseJdbcAlias() && null != (intp = replLoader.get("jdbc"))) {
+        String pText = p.getText().replaceFirst(requiredReplName, "jdbc(" + requiredReplName + ")");
+        logger.debug("New paragraph: {}", pText);
+        p.setEffectiveText(pText);
+      } else {
+        throw new InterpreterException("Interpreter " + requiredReplName + " not found");
+      }
     }
     if (p.getConfig().get("enabled") == null || (Boolean) p.getConfig().get("enabled")) {
       intp.getScheduler().submit(p);
     }
   }
 
-  public List<String> completion(String paragraphId, String buffer, int cursor) {
+  /**
+   * Check whether all paragraphs belongs to this note has terminated
+   * @return
+   */
+  public boolean isTerminated() {
+    synchronized (paragraphs) {
+      for (Paragraph p : paragraphs) {
+        if (!p.isTerminated()) {
+          return false;
+        }
+      }
+    }
+
+    return true;
+  }
+
+  public List<InterpreterCompletion> completion(String paragraphId, String buffer, int cursor) {
     Paragraph p = getParagraph(paragraphId);
     p.setNoteReplLoader(replLoader);
     p.setListener(jobListenerFactory.getParagraphJobListener(this));
-    return p.completion(buffer, cursor);
+    List completion = p.completion(buffer, cursor);
+
+    return completion;
   }
 
   public List<Paragraph> getParagraphs() {
@@ -449,27 +495,27 @@ public class Note implements Serializable, JobListener {
     }
   }
 
-  public void persist() throws IOException {
+  public void persist(AuthenticationInfo subject) throws IOException {
     stopDelayedPersistTimer();
     snapshotAngularObjectRegistry();
     index.updateIndexDoc(this);
-    repo.save(this);
+    repo.save(this, subject);
   }
 
   /**
    * Persist this note with maximum delay.
    * @param maxDelaySec
    */
-  public void persist(int maxDelaySec) {
-    startDelayedPersistTimer(maxDelaySec);
+  public void persist(int maxDelaySec, AuthenticationInfo subject) {
+    startDelayedPersistTimer(maxDelaySec, subject);
   }
 
-  public void unpersist() throws IOException {
-    repo.remove(id());
+  public void unpersist(AuthenticationInfo subject) throws IOException {
+    repo.remove(id(), subject);
   }
 
 
-  private void startDelayedPersistTimer(int maxDelaySec) {
+  private void startDelayedPersistTimer(int maxDelaySec, final AuthenticationInfo subject) {
     synchronized (this) {
       if (delayedPersist != null) {
         return;
@@ -480,7 +526,7 @@ public class Note implements Serializable, JobListener {
         @Override
         public void run() {
           try {
-            persist();
+            persist(subject);
           } catch (IOException e) {
             logger.error(e.getMessage(), e);
           }
@@ -531,5 +577,4 @@ public class Note implements Serializable, JobListener {
 
   @Override
   public void onProgressUpdate(Job job, int progress) {}
-
 }
