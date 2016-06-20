@@ -449,10 +449,6 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
     }
   };
 
-  $scope.sortedKeys = function(obj){
-    return obj? Object.keys(obj).sort() : [];
-  };
-
   var init = function() {
     $scope.resetNewInterpreterSetting();
     $scope.resetNewRepositorySetting();
