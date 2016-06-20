@@ -31,6 +31,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterResult;
@@ -361,11 +362,11 @@ public class JDBCInterpreter extends Interpreter {
 
       return new InterpreterResult(Code.SUCCESS, msg.toString());
 
-    } catch (SQLException ex) {
-      logger.error("Cannot run " + sql, ex);
-      return new InterpreterResult(Code.ERROR, ex.getMessage());
-    } catch (ClassNotFoundException e) {
+    } catch (Exception e) {
       logger.error("Cannot run " + sql, e);
+      if (e.getMessage() == null) {
+        return new InterpreterResult(Code.ERROR, StringUtils.join(e.getStackTrace(), "\n"));
+      }
       return new InterpreterResult(Code.ERROR, e.getMessage());
     }
   }
