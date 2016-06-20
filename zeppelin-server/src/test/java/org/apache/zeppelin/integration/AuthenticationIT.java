@@ -84,7 +84,6 @@ public class AuthenticationIT extends AbstractZeppelinIT {
     } catch (IOException e) {
       LOG.error("Error in AuthenticationIT startUp::", e);
     }
-    ZeppelinITUtils.sleep(3000 * 1000 * 10, true);
     ZeppelinITUtils.restartZeppelin();
     driver = WebDriverManager.getWebDriver();
   }
