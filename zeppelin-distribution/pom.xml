@@ -73,7 +73,7 @@
         </configuration>
       </plugin>
 
-     <plugin>
+      <plugin>
         <!--assembly does all the job here-->
         <artifactId>maven-dependency-plugin</artifactId>
         <configuration>
