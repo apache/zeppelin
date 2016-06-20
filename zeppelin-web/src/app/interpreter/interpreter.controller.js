@@ -335,6 +335,15 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
     }
   };
 
+  $scope.sortProperties = function(properties) {
+    var arr = new Array();
+    properties.map(function(key, value) {
+      arr.push(key, value);
+    });
+    arr.sort();
+    return arr;
+  };
+
   $scope.addNewInterpreterDependency = function(settingId) {
     if(settingId === undefined) {
       // Add new dependency from create form
@@ -447,6 +456,10 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
     } else {
       return false;
     }
+  };
+
+  $scope.sortedKeys = function(obj){
+    return obj? Object.keys(obj).sort() : [];
   };
 
   var init = function() {
