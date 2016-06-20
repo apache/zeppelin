@@ -68,22 +68,40 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       createNewNote();
       Actions action = new Actions(driver);
       waitForParagraph(1, "READY");
-      LOG.info("clover create New Button=========\n {} ======\n",driver.getPageSource());
       Integer oldNosOfParas = driver.findElements(By.xpath("//div[@ng-controller=\"ParagraphCtrl\"]")).size();
       collector.checkThat("Before Insert New : the number of  paragraph ",
           oldNosOfParas,
           CoreMatchers.equalTo(1));
-      driver.findElement(By.xpath(getParagraphXPath(1) + "//span[@class='icon-settings']")).click();
-      driver.findElement(By.xpath(getParagraphXPath(1) + "//ul/li/a[@ng-click='insertNew()']")).click();
+      WebElement settingButton = driver.findElement(By.xpath(getParagraphXPath(1) + "//span[@class='icon-settings']"));
+      // focus on
+      action.moveToElement(settingButton).perform();
+      // click setting icon
+      action.moveToElement(settingButton).click().build().perform();
+
+      WebElement insertButton = driver.findElement(By.xpath(getParagraphXPath(1) + "//ul/li/a[@ng-click='insertNew()']"));
+      // focus on
+      action.moveToElement(insertButton).perform();
+      //click insert button
+      action.moveToElement(insertButton).click().build().perform();;
+
       waitForParagraph(2, "READY");
-      LOG.info("clover create New Button=========\n {} ======\n",driver.getPageSource());
       Integer newNosOfParas = driver.findElements(By.xpath("//div[@ng-controller=\"ParagraphCtrl\"]")).size();
       collector.checkThat("After Insert New (using Insert New button) :  number of  paragraph",
           oldNosOfParas + 1,
           CoreMatchers.equalTo(newNosOfParas));
 
-      driver.findElement(By.xpath(getParagraphXPath(1) + "//span[@class='icon-settings']")).click();
-      driver.findElement(By.xpath(getParagraphXPath(1) + "//ul/li/a[@ng-click='removeParagraph()']")).click();
+      settingButton = driver.findElement(By.xpath(getParagraphXPath(1) + "//span[@class='icon-settings']"));
+      // focus on
+      action.moveToElement(settingButton).perform();
+      // click setting icon
+      action.moveToElement(settingButton).click().build().perform();
+
+      WebElement removeButton = driver.findElement(By.xpath(getParagraphXPath(1) + "//ul/li/a[@ng-click='removeParagraph()']"));
+      // focus on
+      action.moveToElement(removeButton).perform();
+      // click remove button
+      action.moveToElement(removeButton).click().build().perform();
+
       ZeppelinITUtils.sleep(1000, false);
       driver.findElement(By.xpath("//div[@class='modal-dialog'][contains(.,'delete this paragraph')]" +
           "//div[@class='modal-footer']//button[contains(.,'OK')]")).click();
@@ -140,23 +158,37 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
     }
     try {
       createNewNote();
-
+      Actions action = new Actions(driver);
       waitForParagraph(1, "READY");
-      driver.findElement(By.xpath(getParagraphXPath(1) + "//span[@class='icon-settings']")).click();
-      driver.findElement(By.xpath(getParagraphXPath(1) + "//ul/li/a[@ng-click='insertNew()']")).click();
+      WebElement settingButton = driver.findElement(By.xpath(getParagraphXPath(1) + "//span[@class='icon-settings']"));
+      action.moveToElement(settingButton).perform();
+      action.moveToElement(settingButton).click().build().perform();
+
+      WebElement insertButton = driver.findElement(By.xpath(getParagraphXPath(1) + "//ul/li/a[@ng-click='insertNew()']"));
+      action.moveToElement(insertButton).perform();
+      action.moveToElement(insertButton).click().build().perform();
+
       waitForParagraph(2, "READY");
-      LOG.info("clover testRemoveButton=========\n {} ======\n",driver.getPageSource());
       Integer oldNosOfParas = driver.findElements(By.xpath("//div[@ng-controller=\"ParagraphCtrl\"]")).size();
       collector.checkThat("Before Remove : Number of paragraphs are ",
           oldNosOfParas,
           CoreMatchers.equalTo(2));
-      driver.findElement(By.xpath(getParagraphXPath(1) + "//span[@class='icon-settings']")).click();
-      driver.findElement(By.xpath(getParagraphXPath(1) + "//ul/li/a[@ng-click='removeParagraph()']")).click();
+
+      settingButton = driver.findElement(By.xpath(getParagraphXPath(1) + "//span[@class='icon-settings']"));
+      action.moveToElement(settingButton).perform();
+      action.moveToElement(settingButton).click().build().perform();
+
+      WebElement removeButton = driver.findElement(By.xpath(getParagraphXPath(1) + "//ul/li/a[@ng-click='removeParagraph()']"));
+      action.moveToElement(removeButton).perform();
+      action.moveToElement(removeButton).click().build().perform();
+
       sleep(1000, true);
-      driver.findElement(By.xpath("//div[@class='modal-dialog'][contains(.,'delete this paragraph')]" +
-          "//div[@class='modal-footer']//button[contains(.,'OK')]")).click();
+      WebElement closeModalButton = driver.findElement(By.xpath("//div[@class='modal-dialog'][contains(.,'delete this paragraph')]" +
+          "//div[@class='modal-footer']//button[contains(.,'OK')]"));
+      action.moveToElement(closeModalButton).perform();
+      action.moveToElement(closeModalButton).click().build().perform();
+
       sleep(1000, true);
-      LOG.info("clover testRemoveButton=========\n {} ======\n",driver.getPageSource());
       Integer newNosOfParas = driver.findElements(By.xpath("//div[@ng-controller=\"ParagraphCtrl\"]")).size();
       collector.checkThat("After Remove : Number of paragraphs are",
           oldNosOfParas-1,
@@ -177,17 +209,22 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
     try {
       createNewNote();
 
+      Actions action = new Actions(driver);
+
       waitForParagraph(1, "READY");
       setTextOfParagraph(1, "1");
-      LOG.info("clover testmove updwon=========\n {} ======\n",driver.getPageSource());
-      driver.findElement(By.xpath(getParagraphXPath(1) + "//span[@class='icon-settings']")).click();
-      driver.findElement(By.xpath(getParagraphXPath(1) + "//ul/li/a[@ng-click='insertNew()']")).click();
 
+      WebElement settingButton = driver.findElement(By.xpath(getParagraphXPath(1) + "//span[@class='icon-settings']"));
+      action.moveToElement(settingButton).perform();
+      action.moveToElement(settingButton).click().build().perform();
+
+      WebElement insertButton = driver.findElement(By.xpath(getParagraphXPath(1) + "//ul/li/a[@ng-click='insertNew()']"));
+      action.moveToElement(insertButton).perform();
+      action.moveToElement(insertButton).click().build().perform();
 
       waitForParagraph(2, "READY");
       setTextOfParagraph(2, "2");
 
-      LOG.info("clover testmove updwon=========\n {} ======\n",driver.getPageSource());
       collector.checkThat("The paragraph1 value contains",
           driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'editor')]")).getText(),
           CoreMatchers.equalTo("1"));
@@ -195,8 +232,13 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
           driver.findElement(By.xpath(getParagraphXPath(2) + "//div[contains(@class, 'editor')]")).getText(),
           CoreMatchers.equalTo("2"));
 
-      driver.findElement(By.xpath(getParagraphXPath(1) + "//span[@class='icon-settings']")).click();
-      driver.findElement(By.xpath(getParagraphXPath(1) + "//ul/li/a[@ng-click='moveDown()']")).click();
+      settingButton = driver.findElement(By.xpath(getParagraphXPath(1) + "//span[@class='icon-settings']"));
+      action.moveToElement(settingButton).perform();
+      action.moveToElement(settingButton).click().build().perform();
+
+      WebElement moveDownButton = driver.findElement(By.xpath(getParagraphXPath(1) + "//ul/li/a[@ng-click='moveDown()']"));
+      action.moveToElement(moveDownButton).perform();
+      action.moveToElement(moveDownButton).click().build().perform();
 
       ZeppelinITUtils.sleep(1000,false);
 
@@ -207,8 +249,14 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
           driver.findElement(By.xpath(getParagraphXPath(2) + "//div[contains(@class, 'editor')]")).getText(),
           CoreMatchers.equalTo("1"));
 
-      driver.findElement(By.xpath(getParagraphXPath(2) + "//span[@class='icon-settings']")).click();
-      driver.findElement(By.xpath(getParagraphXPath(2) + "//ul/li/a[@ng-click='moveUp()']")).click();
+      settingButton = driver.findElement(By.xpath(getParagraphXPath(2) + "//span[@class='icon-settings']"));
+      action.moveToElement(settingButton).perform();
+      action.moveToElement(settingButton).click().build().perform();
+
+      WebElement moveUpButton = driver.findElement(By.xpath(getParagraphXPath(2) + "//ul/li/a[@ng-click='moveUp()']"));
+      action.moveToElement(moveUpButton).perform();
+      action.moveToElement(moveUpButton).click().build().perform();
+
 
       ZeppelinITUtils.sleep(1000,false);
 
