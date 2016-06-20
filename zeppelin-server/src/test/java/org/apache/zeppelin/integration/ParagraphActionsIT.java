@@ -65,32 +65,40 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       return;
     }
     try {
+      LOG.info("clover debug {}", 1);
       createNewNote();
       Actions action = new Actions(driver);
+      LOG.info("clover debug {}", 2);
       waitForParagraph(1, "READY");
       Integer oldNosOfParas = driver.findElements(By.xpath("//div[@ng-controller=\"ParagraphCtrl\"]")).size();
+      LOG.info("clover debug {}", 3);
       collector.checkThat("Before Insert New : the number of  paragraph ",
           oldNosOfParas,
           CoreMatchers.equalTo(1));
+      LOG.info("clover debug {}", 4);
       driver.findElement(By.xpath(getParagraphXPath(1) + "//span[@class='icon-settings']")).click();
       sleep(1000, false);
       driver.findElement(By.xpath(getParagraphXPath(1) + "//ul/li/a[@ng-click='insertNew()']")).click();
+      LOG.info("clover debug {}", 5);
       sleep(1000, false);
       waitForParagraph(2, "READY");
       Integer newNosOfParas = driver.findElements(By.xpath("//div[@ng-controller=\"ParagraphCtrl\"]")).size();
+      LOG.info("clover debug {}", 6);
       collector.checkThat("After Insert New (using Insert New button) :  number of  paragraph",
           oldNosOfParas + 1,
           CoreMatchers.equalTo(newNosOfParas));
 
+      LOG.info("clover debug {}", 7);
       driver.findElement(By.xpath(getParagraphXPath(1) + "//span[@class='icon-settings']")).click();
       driver.findElement(By.xpath(getParagraphXPath(1) + "//ul/li/a[@ng-click='removeParagraph()']")).click();
       ZeppelinITUtils.sleep(1000, false);
       driver.findElement(By.xpath("//div[@class='modal-dialog'][contains(.,'delete this paragraph')]" +
           "//div[@class='modal-footer']//button[contains(.,'OK')]")).click();
+      LOG.info("clover debug {}", 8);
       ZeppelinITUtils.sleep(1000, false);
 
       setTextOfParagraph(1, " original paragraph ");
-
+      LOG.info("clover debug {}", 9);
       WebElement newPara = driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class,'new-paragraph')][1]"));
       action.moveToElement(newPara).click().build().perform();
       ZeppelinITUtils.sleep(1000, false);
@@ -100,17 +108,17 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
           driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'editor')]")).getText(),
           CoreMatchers.equalTo(""));
       setTextOfParagraph(1, " this is above ");
-
+      LOG.info("clover debug {}", 10);
       newPara = driver.findElement(By.xpath(getParagraphXPath(2) + "//div[contains(@class,'new-paragraph')][2]"));
       action.moveToElement(newPara).click().build().perform();
 
       waitForParagraph(3, "READY");
-
+      LOG.info("clover debug {}", 11);
       collector.checkThat("Paragraph is created below",
           driver.findElement(By.xpath(getParagraphXPath(3) + "//div[contains(@class, 'editor')]")).getText(),
           CoreMatchers.equalTo(""));
       setTextOfParagraph(3, " this is below ");
-
+      LOG.info("clover debug {}", 12);
       collector.checkThat("The output field of paragraph1 contains",
           driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'editor')]")).getText(),
           CoreMatchers.equalTo(" this is above "));
@@ -123,10 +131,10 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       collector.checkThat("The current number of paragraphs after creating  paragraph above and below",
           driver.findElements(By.xpath("//div[@ng-controller=\"ParagraphCtrl\"]")).size(),
           CoreMatchers.equalTo(3));
-
+      LOG.info("clover debug {}", 13);
       ZeppelinITUtils.sleep(1000, false);
       deleteTestNotebook(driver);
-
+      LOG.info("clover debug {}", 14);
     } catch (Exception e) {
       handleException("Exception in ParagraphActionsIT while testCreateNewButton ", e);
     }
