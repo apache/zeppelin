@@ -37,8 +37,8 @@ import java.util.*;
  */
 public class SecurityUtils {
 
-  public static void initSecurityManager() {
-    IniSecurityManagerFactory factory = new IniSecurityManagerFactory();
+  public static void initSecurityManager(String shiroPath) {
+    IniSecurityManagerFactory factory = new IniSecurityManagerFactory("file:" + shiroPath);
     SecurityManager securityManager = factory.getInstance();
     org.apache.shiro.SecurityUtils.setSecurityManager( securityManager );
   }

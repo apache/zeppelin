@@ -239,7 +239,7 @@ public class ZeppelinServer extends Application {
     webapp.setInitParameter("shiroConfigLocations",
         new File(conf.getShiroPath()).toURI().toString());
 
-    SecurityUtils.initSecurityManager();
+    SecurityUtils.initSecurityManager(conf.getShiroPath());
     webapp.addFilter(org.apache.shiro.web.servlet.ShiroFilter.class, "/api/*",
         EnumSet.allOf(DispatcherType.class));
 
