@@ -120,7 +120,7 @@ abstract public class AbstractZeppelinIT {
 
   protected void createNewNote() {
     List<WebElement> notebookLinks = driver.findElements(By
-        .xpath("//div[contains(@class, \"col-md-4\")]/div/ul/li"));
+        .xpath("//*[@id=\"notebook-names\"]/div/li"));
     List<String> notebookTitles = new LinkedList<String>();
     for (WebElement el : notebookLinks) {
       notebookTitles.add(el.getText());
