@@ -22,7 +22,6 @@ import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.ThreadContext;
 import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
 import org.apache.shiro.mgt.SecurityManager;
-import org.apache.shiro.config.Ini;
 import org.apache.shiro.config.IniSecurityManagerFactory;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 
@@ -40,7 +39,7 @@ public class SecurityUtils {
   public static void initSecurityManager(String shiroPath) {
     IniSecurityManagerFactory factory = new IniSecurityManagerFactory("file:" + shiroPath);
     SecurityManager securityManager = factory.getInstance();
-    org.apache.shiro.SecurityUtils.setSecurityManager( securityManager );
+    org.apache.shiro.SecurityUtils.setSecurityManager(securityManager);
   }
 
   public static Boolean isValidOrigin(String sourceHost, ZeppelinConfiguration conf)
