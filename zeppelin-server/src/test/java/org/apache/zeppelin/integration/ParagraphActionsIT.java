@@ -70,7 +70,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       Actions action = new Actions(driver);
       LOG.info("clover debug {}", 2);
       waitForParagraph(1, "READY");
-      Integer oldNosOfParas = driver.findElements(By.xpath("//div[@ng-controller=\"ParagraphCtrl\"]")).size();
+      Integer oldNosOfParas = driver.findElements(By.xpath("div[id$=\"_paragraphColumn_main\"")).size();
       LOG.info("clover debug {}", 3);
       collector.checkThat("Before Insert New : the number of  paragraph ",
           oldNosOfParas,
@@ -82,7 +82,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       LOG.info("clover debug {}", 5);
       sleep(1000, false);
       waitForParagraph(2, "READY");
-      Integer newNosOfParas = driver.findElements(By.xpath("//div[@ng-controller=\"ParagraphCtrl\"]")).size();
+      Integer newNosOfParas = driver.findElements(By.xpath("div[id$=\"_paragraphColumn_main\"")).size();
       LOG.info("clover debug {}", 6);
       collector.checkThat("After Insert New (using Insert New button) :  number of  paragraph",
           oldNosOfParas + 1,
@@ -129,7 +129,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
           driver.findElement(By.xpath(getParagraphXPath(3) + "//div[contains(@class, 'editor')]")).getText(),
           CoreMatchers.equalTo(" this is below "));
       collector.checkThat("The current number of paragraphs after creating  paragraph above and below",
-          driver.findElements(By.xpath("//div[@ng-controller=\"ParagraphCtrl\"]")).size(),
+          driver.findElements(By.xpath("div[id$=\"_paragraphColumn_main\"")).size(),
           CoreMatchers.equalTo(3));
       LOG.info("clover debug {}", 13);
       ZeppelinITUtils.sleep(1000, false);
@@ -154,7 +154,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       driver.findElement(By.xpath(getParagraphXPath(1) + "//ul/li/a[@ng-click='insertNew()']")).click();
       sleep(1000, false);
       waitForParagraph(2, "READY");
-      Integer oldNosOfParas = driver.findElements(By.xpath("//div[@ng-controller=\"ParagraphCtrl\"]")).size();
+      Integer oldNosOfParas = driver.findElements(By.xpath("div[id$=\"_paragraphColumn_main\"")).size();
       collector.checkThat("Before Remove : Number of paragraphs are ",
           oldNosOfParas,
           CoreMatchers.equalTo(2));
@@ -163,7 +163,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       sleep(1000, true);
       driver.findElement(By.xpath("//div[@class='modal-dialog'][contains(.,'delete this paragraph')]" +
           "//div[@class='modal-footer']//button[contains(.,'OK')]")).click();
-      Integer newNosOfParas = driver.findElements(By.xpath("//div[@ng-controller=\"ParagraphCtrl\"]")).size();
+      Integer newNosOfParas = driver.findElements(By.xpath("div[id$=\"_paragraphColumn_main\"")).size();
       collector.checkThat("After Remove : Number of paragraphs are",
           oldNosOfParas-1,
           CoreMatchers.equalTo(newNosOfParas));
