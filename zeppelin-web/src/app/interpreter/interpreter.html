@@ -152,7 +152,7 @@ limitations under the License.
         </span>
         <span>Interpreter for note</span>
       </div>
-      
+
       <br />
       <div class="col-md-12">
         <div class="checkbox">
@@ -189,11 +189,11 @@ limitations under the License.
               <th ng-if="valueform.$visible">action</th>
             </tr>
           </thead>
-          <tr ng-repeat="(key, value) in setting.properties" >
+          <tr ng-repeat="key in setting.properties | sortByKey" >
             <td>{{key}}</td>
             <td>
               <span editable-textarea="setting.properties[key]" e-form="valueform" e-msd-elastic>
-                {{value | breakFilter}}
+                {{setting.properties[key] | breakFilter}}
               </span>
             </td>
             <td ng-if="valueform.$visible">
