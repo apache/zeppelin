@@ -57,6 +57,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
 
     driver.quit();
   }
+
   @Test
   public void testCreateNewButton() throws Exception {
     if (!endToEndTestEnabled()) {
@@ -68,21 +69,21 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       waitForParagraph(1, "READY");
       Integer oldNosOfParas = driver.findElements(By.xpath("//div[@ng-controller=\"ParagraphCtrl\"]")).size();
       collector.checkThat("Before Insert New : the number of  paragraph ",
-        oldNosOfParas,
-        CoreMatchers.equalTo(1));
+              oldNosOfParas,
+              CoreMatchers.equalTo(1));
       driver.findElement(By.xpath(getParagraphXPath(1) + "//span[@class='icon-settings']")).click();
       driver.findElement(By.xpath(getParagraphXPath(1) + "//ul/li/a[@ng-click='insertNew()']")).click();
       waitForParagraph(2, "READY");
       Integer newNosOfParas = driver.findElements(By.xpath("//div[@ng-controller=\"ParagraphCtrl\"]")).size();
       collector.checkThat("After Insert New (using Insert New button) :  number of  paragraph",
-        oldNosOfParas + 1,
-        CoreMatchers.equalTo(newNosOfParas));
+              oldNosOfParas + 1,
+              CoreMatchers.equalTo(newNosOfParas));
 
       driver.findElement(By.xpath(getParagraphXPath(1) + "//span[@class='icon-settings']")).click();
       driver.findElement(By.xpath(getParagraphXPath(1) + "//ul/li/a[@ng-click='removeParagraph()']")).click();
       ZeppelinITUtils.sleep(1000, false);
       driver.findElement(By.xpath("//div[@class='modal-dialog'][contains(.,'delete this paragraph')]" +
-        "//div[@class='modal-footer']//button[contains(.,'OK')]")).click();
+              "//div[@class='modal-footer']//button[contains(.,'OK')]")).click();
       ZeppelinITUtils.sleep(1000, false);
 
       setTextOfParagraph(1, " original paragraph ");
@@ -92,33 +93,40 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       ZeppelinITUtils.sleep(1000, false);
       waitForParagraph(1, "READY");
 
+      String oldIntpTag = driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'editor')]")).getText();
+
       collector.checkThat("Paragraph is created above",
-        driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'editor')]")).getText(),
-        CoreMatchers.equalTo("%spark"));
+              driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'editor')]")).getText(),
+              CoreMatchers.not(StringUtils.EMPTY));
       setTextOfParagraph(1, " this is above ");
+
 
       newPara = driver.findElement(By.xpath(getParagraphXPath(2) + "//div[contains(@class,'new-paragraph')][2]"));
       action.moveToElement(newPara).click().build().perform();
 
       waitForParagraph(3, "READY");
 
+      String lastIntpTag = driver.findElement(By.xpath(getParagraphXPath(3) + "//div[contains(@class, 'editor')]")).getText();
+
       collector.checkThat("Paragraph is created below",
-        driver.findElement(By.xpath(getParagraphXPath(3) + "//div[contains(@class, 'editor')]")).getText(),
-        CoreMatchers.equalTo("%spark"));
+              driver.findElement(By.xpath(getParagraphXPath(3) + "//div[contains(@class, 'editor')]")).getText(),
+              CoreMatchers.not(StringUtils.EMPTY));
       setTextOfParagraph(3, " this is below ");
 
+      collector.checkThat("Compare interpreter name tag", oldIntpTag, CoreMatchers.equalTo(lastIntpTag));
+
       collector.checkThat("The output field of paragraph1 contains",
-        driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'editor')]")).getText(),
-        CoreMatchers.equalTo(" this is above "));
+              driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'editor')]")).getText(),
+              CoreMatchers.equalTo(" this is above "));
       collector.checkThat("The output field paragraph2 contains",
-        driver.findElement(By.xpath(getParagraphXPath(2) + "//div[contains(@class, 'editor')]")).getText(),
-        CoreMatchers.equalTo(" original paragraph "));
+              driver.findElement(By.xpath(getParagraphXPath(2) + "//div[contains(@class, 'editor')]")).getText(),
+              CoreMatchers.equalTo(" original paragraph "));
       collector.checkThat("The output field paragraph3 contains",
-        driver.findElement(By.xpath(getParagraphXPath(3) + "//div[contains(@class, 'editor')]")).getText(),
-        CoreMatchers.equalTo(" this is below "));
+              driver.findElement(By.xpath(getParagraphXPath(3) + "//div[contains(@class, 'editor')]")).getText(),
+              CoreMatchers.equalTo(" this is below "));
       collector.checkThat("The current number of paragraphs after creating  paragraph above and below",
-        driver.findElements(By.xpath("//div[@ng-controller=\"ParagraphCtrl\"]")).size(),
-        CoreMatchers.equalTo(3));
+              driver.findElements(By.xpath("//div[@ng-controller=\"ParagraphCtrl\"]")).size(),
+              CoreMatchers.equalTo(3));
 
       ZeppelinITUtils.sleep(1000, false);
       deleteTestNotebook(driver);
