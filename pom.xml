@@ -211,6 +211,10 @@
         <artifactId>shiro-web</artifactId>
         <version>1.2.3</version>
       </dependency>
+      <dependency>
+        <groupId>org.apache.shiro</groupId>
+        <artifactId>shiro-config-core</artifactId>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 
