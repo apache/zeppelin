@@ -102,7 +102,7 @@ function make_binary_release() {
 
 git_clone
 make_source_package
-make_binary_release all "-Pspark-1.6 -Phadoop-2.4 -Pyarn -Ppyspark"
+make_binary_release all "-Pspark-1.6 -Phadoop-2.4 -Pyarn -Ppyspark -Psparkr -Pr"
 
 # remove non release files and dirs
 rm -rf "${WORKING_DIR}/zeppelin"
