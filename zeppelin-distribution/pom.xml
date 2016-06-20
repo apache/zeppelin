@@ -95,6 +95,35 @@
   </build>
 
   <profiles>
+    <!-- Enable the Geode binary generation. Activated automatically if Java8 is used or the -Pgeode profile is set.
+    See https://issues.apache.org/jira/browse/ZEPPELIN-375 -->
+    <profile>
+      <id>geode</id>
+      <activation>
+        <jdk>[1.8,1.9]</jdk>
+      </activation>
+      <dependencies>
+        <dependency>
+          <groupId>org.apache.zeppelin</groupId>
+          <artifactId>zeppelin-geode</artifactId>
+          <version>${project.version}</version>
+          <scope>test</scope>
+        </dependency>
+      </dependencies>
+      <build>
+        <plugins>
+          <plugin>
+            <artifactId>maven-enforcer-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>enforce</id>
+                <phase>none</phase>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
     <profile>
       <id>publish-distr</id>
       <activation>
