@@ -163,11 +163,11 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       WebElement settingButton = driver.findElement(By.xpath(getParagraphXPath(1) + "//span[@class='icon-settings']"));
       action.moveToElement(settingButton).perform();
       action.moveToElement(settingButton).click().build().perform();
-
+      LOG.info("\n\nclover=====================testRemove Start ===================\n\n {}\n\n\n=======", driver.getPageSource());
       WebElement insertButton = driver.findElement(By.xpath(getParagraphXPath(1) + "//ul/li/a[@ng-click='insertNew()']"));
       action.moveToElement(insertButton).perform();
       action.moveToElement(insertButton).click().build().perform();
-
+      LOG.info("\n\nclover=====================testRemove2 Start ===================\n\n {}\n\n\n======", driver.getPageSource());
       waitForParagraph(2, "READY");
       Integer oldNosOfParas = driver.findElements(By.xpath("//div[@ng-controller=\"ParagraphCtrl\"]")).size();
       collector.checkThat("Before Remove : Number of paragraphs are ",
