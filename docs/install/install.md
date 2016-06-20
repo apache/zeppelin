@@ -23,15 +23,7 @@ limitations under the License.
 Welcome to your first trial to explore Apache Zeppelin! 
 This page will help you to get started and here is the list of topics covered.
 
-* [Installation](#installation)
-  * [Downloading Binary Package](#downloading-binary-package)
-  * [Building from Source](#building-from-source)
-* [Starting Apache Zeppelin with Command Line](#starting-apache-zeppelin-with-command-line)
-  * [Start Zeppelin](#start-zeppelin)
-  * [Stop Zeppelin](#stop-zeppelin)
-  * [(Optional) Start Apache Zeppelin with a service manager](#optional-start-apache-zeppelin-with-a-service-manager)
-* [What is the next?](#what-is-the-next)
-* [Apache Zeppelin Configuration](#apache-zeppelin-configuration)
+<div id="toc"></div>
 
 ## Installation
 
