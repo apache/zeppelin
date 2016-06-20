@@ -84,6 +84,10 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       //click insert button
       action.moveToElement(insertButton).click().build().perform();;
 
+      //refresh
+      driver.navigate().refresh();
+
+
       waitForParagraph(2, "READY");
       Integer newNosOfParas = driver.findElements(By.xpath("//div[@ng-controller=\"ParagraphCtrl\"]")).size();
       collector.checkThat("After Insert New (using Insert New button) :  number of  paragraph",
@@ -163,11 +167,15 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       WebElement settingButton = driver.findElement(By.xpath(getParagraphXPath(1) + "//span[@class='icon-settings']"));
       action.moveToElement(settingButton).perform();
       action.moveToElement(settingButton).click().build().perform();
-
+      LOG.info("\n\nclover=====================testRemove Start ===================\n\n {}\n\n\n=======", driver.getPageSource());
       WebElement insertButton = driver.findElement(By.xpath(getParagraphXPath(1) + "//ul/li/a[@ng-click='insertNew()']"));
       action.moveToElement(insertButton).perform();
       action.moveToElement(insertButton).click().build().perform();
 
+      //refresh
+      driver.navigate().refresh();
+
+      LOG.info("\n\nclover=====================testRemove2 Start ===================\n\n {}\n\n\n======", driver.getPageSource());
       waitForParagraph(2, "READY");
       Integer oldNosOfParas = driver.findElements(By.xpath("//div[@ng-controller=\"ParagraphCtrl\"]")).size();
       collector.checkThat("Before Remove : Number of paragraphs are ",
@@ -221,6 +229,9 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       WebElement insertButton = driver.findElement(By.xpath(getParagraphXPath(1) + "//ul/li/a[@ng-click='insertNew()']"));
       action.moveToElement(insertButton).perform();
       action.moveToElement(insertButton).click().build().perform();
+
+      //refresh
+      driver.navigate().refresh();
 
       waitForParagraph(2, "READY");
       setTextOfParagraph(2, "2");
