@@ -83,8 +83,14 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       driver.findElement(By.xpath(getParagraphXPath(1) + "//span[@class='icon-settings']")).click();
       driver.findElement(By.xpath(getParagraphXPath(1) + "//ul/li/a[@ng-click='removeParagraph()']")).click();
       ZeppelinITUtils.sleep(1000, false);
-      driver.findElement(By.xpath("//div[@class='modal-dialog'][contains(.,'delete this paragraph')]" +
-          "//div[@class='modal-footer']//button[contains(.,'OK')]")).click();
+
+      Integer deleteParagaphModal = driver.findElements(By.xpath("//div[@class='modal-dialog'][contains(. ,'delete this paragraph?')]")).size();
+      collector.checkThat("Before delete paragraph, Modal is shown",
+          deleteParagaphModal,
+          CoreMatchers.equalTo(1));
+
+      driver.findElement(By.xpath("//div[@class='bootstrap-dialog-footer']//button[contains(text() ,'OK')]")).click();
+
       ZeppelinITUtils.sleep(1000, false);
 
       setTextOfParagraph(1, " original paragraph ");
@@ -150,8 +156,16 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       driver.findElement(By.xpath(getParagraphXPath(1) + "//span[@class='icon-settings']")).click();
       driver.findElement(By.xpath(getParagraphXPath(1) + "//ul/li/a[@ng-click='removeParagraph()']")).click();
       sleep(1000, true);
-      driver.findElement(By.xpath("//div[@class='modal-dialog'][contains(.,'delete this paragraph')]" +
-          "//div[@class='modal-footer']//button[contains(.,'OK')]")).click();
+
+      Integer deleteParagaphModal = driver.findElements(By.xpath("//div[@class='modal-dialog'][contains(. ,'delete this paragraph')]")).size();
+      collector.checkThat("Before delete paragraph, Modal is shown",
+          deleteParagaphModal,
+          CoreMatchers.equalTo(1));
+
+
+      driver.findElement(By.xpath("//div[@class='bootstrap-dialog-footer']//button[contains(text() ,'OK')]")).click();
+      ZeppelinITUtils.sleep(1000, false);
+
       Integer newNosOfParas = driver.findElements(By.xpath("//div[@ng-controller=\"ParagraphCtrl\"]")).size();
       collector.checkThat("After Remove : Number of paragraphs are",
           oldNosOfParas-1,
