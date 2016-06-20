@@ -69,6 +69,7 @@ public class SparkInterpreterTest {
     p.setProperty("spark.app.name", "Zeppelin Test");
     p.setProperty("zeppelin.spark.useHiveContext", "true");
     p.setProperty("zeppelin.spark.maxResult", "1000");
+    p.setProperty("zeppelin.spark.importImplicit", "true");
 
     return p;
   }
@@ -226,6 +227,30 @@ public class SparkInterpreterTest {
     assertEquals(Code.SUCCESS,
         repl2.interpret("print(sc.parallelize(1 to 10).count())", context).code());
 
+    repl2.close();
+  }
+
+  @Test
+  public void testEnableImplicitImport() {
+    Properties p = new Properties();
+    p.setProperty("zeppelin.spark.importImplicit", "true");
+    SparkInterpreter repl2 = new SparkInterpreter(p);
+
+    repl2.open();
+    String ddl = "val df = Seq((1, true), (2, false)).toDF(\"num\", \"bool\")";
+    assertEquals(Code.SUCCESS, repl2.interpret(ddl, context).code());
+    repl2.close();
+  }
+
+  @Test
+  public void testDisableImplicitImport() {
+    Properties p = new Properties();
+    p.setProperty("zeppelin.spark.importImplicit", "false");
+    SparkInterpreter repl2 = new SparkInterpreter(p);
+
+    repl2.open();
+    String ddl = "val df = Seq((1, true), (2, false)).toDF(\"num\", \"bool\")";
+    assertEquals(Code.ERROR, repl2.interpret(ddl, context).code());
     repl2.close();
   }
 }
