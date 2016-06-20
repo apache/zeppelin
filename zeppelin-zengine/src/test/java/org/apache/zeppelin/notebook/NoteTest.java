@@ -17,7 +17,11 @@
 
 package org.apache.zeppelin.notebook;
 
+import com.google.common.base.Optional;
+
+import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.interpreter.Interpreter;
+import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.search.SearchService;
@@ -26,6 +30,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import static org.junit.Assert.*;
@@ -90,5 +95,74 @@ public class NoteTest {
 
     assertEquals("Change paragraph text", "%jdbc(mysql) show databases", pCaptor.getValue().getEffectiveText());
     assertEquals("Change paragraph text", pText, pCaptor.getValue().getText());
+  }
+
+  @Test
+  public void putDefaultReplNameIfInterpreterSettingAbsent() {
+    when(replLoader.getDefaultInterpreterSetting())
+            .thenReturn(Optional.<InterpreterSetting>absent());
+
+    Note note = new Note(repo, replLoader, jobListenerFactory, index, credentials);
+    note.putDefaultReplName();
+
+    assertEquals(StringUtils.EMPTY, note.getLastReplName());
+    assertEquals(StringUtils.EMPTY, note.getLastInterpreterName());
+  }
+
+  @Test
+  public void putDefaultReplNameIfInterpreterSettingPresent() {
+    InterpreterSetting interpreterSetting = Mockito.mock(InterpreterSetting.class);
+    when(interpreterSetting.getName()).thenReturn("spark");
+    when(replLoader.getDefaultInterpreterSetting())
+            .thenReturn(Optional.of(interpreterSetting));
+
+    Note note = new Note(repo, replLoader, jobListenerFactory, index, credentials);
+    note.putDefaultReplName();
+
+    assertEquals("spark", note.getLastReplName());
+    assertEquals("%spark", note.getLastInterpreterName());
+  }
+
+  @Test
+  public void addParagraphWithLastReplName() {
+    InterpreterSetting interpreterSetting = Mockito.mock(InterpreterSetting.class);
+    when(interpreterSetting.getName()).thenReturn("spark");
+    when(replLoader.getDefaultInterpreterSetting())
+            .thenReturn(Optional.of(interpreterSetting));
+
+    Note note = new Note(repo, replLoader, jobListenerFactory, index, credentials);
+    note.putDefaultReplName(); //set lastReplName
+
+    Paragraph p = note.addParagraph();
+
+    assertEquals("%spark ", p.getText());
+  }
+
+  @Test
+  public void insertParagraphWithLastReplName() {
+    InterpreterSetting interpreterSetting = Mockito.mock(InterpreterSetting.class);
+    when(interpreterSetting.getName()).thenReturn("spark");
+    when(replLoader.getDefaultInterpreterSetting())
+            .thenReturn(Optional.of(interpreterSetting));
+
+    Note note = new Note(repo, replLoader, jobListenerFactory, index, credentials);
+    note.putDefaultReplName(); //set lastReplName
+
+    Paragraph p = note.insertParagraph(note.getParagraphs().size());
+
+    assertEquals("%spark ", p.getText());
+  }
+
+  @Test
+  public void setLastReplName() {
+    String paragraphId = "HelloWorld";
+    Note note = Mockito.spy(new Note(repo, replLoader, jobListenerFactory, index, credentials));
+    Paragraph mockParagraph = Mockito.mock(Paragraph.class);
+    when(note.getParagraph(paragraphId)).thenReturn(mockParagraph);
+    when(mockParagraph.getRequiredReplName()).thenReturn("spark");
+
+    note.setLastReplName(paragraphId);
+
+    assertEquals("spark", note.getLastReplName());
   }
 }
