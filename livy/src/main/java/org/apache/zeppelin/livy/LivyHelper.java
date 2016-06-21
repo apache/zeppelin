@@ -21,8 +21,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
+
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
@@ -70,14 +69,13 @@ public class LivyHelper {
       String confData = gson.toJson(conf);
       String user = context.getAuthenticationInfo().getUser();
 
-      String json = executeHTTP(property.getProperty("zeppelin.livy.url") + "/sessions",
-              "POST",
-              "{" +
-                "\"kind\": \"" + kind + "\", " +
-                "\"conf\": " + confData + ", " +
-                "\"proxyUser\": " + (user == null ? null : "\"" + user + "\"") +
+      String json = executeHTTP(property.getProperty("zeppelin.livy.url") + "/sessions", "POST",
+          "{" +
+              "\"kind\": \"" + kind + "\", " +
+              "\"conf\": " + confData + ", " +
+              "\"proxyUser\": " + (StringUtils.isEmpty(user) ? null : "\"" + user + "\"") +
               "}",
-              context.getParagraphId()
+          context.getParagraphId()
       );
 
       Map jsonMap = (Map<Object, Object>) gson.fromJson(json,
@@ -377,11 +375,6 @@ public class LivyHelper {
   }
 
   public void cancelHTTP(String paragraphId) {
-    if (paragraphHttpMap.get(paragraphId).getClass().getName().contains("HttpPost")) {
-      ((HttpPost) paragraphHttpMap.get(paragraphId)).abort();
-    } else {
-      ((HttpGet) paragraphHttpMap.get(paragraphId)).abort();
-    }
     paragraphHttpMap.put(paragraphId, null);
   }
 
