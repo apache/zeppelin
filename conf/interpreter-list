@@ -1,0 +1,40 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+#
+# [name]  [maven artifact]  [description]
+
+alluxio         org.apache.zeppelin.zeppelin-alluxio:0.6.0              Alluxio interpreter
+angular         org.apache.zeppelin.zeppelin-angular:0.6.0              HTML and AngularJS view rendering
+cassandra       org.apache.zeppelin.zeppelin-cassandra:0.6.0            Cassandra interpreter
+elasticsearch   org.apache.zeppelin.zeppelin-cassandra:0.6.0            Elasticsearch interpreter
+file            org.apache.zeppelin:zeppelin-file:0.6.0                 HDFS file interpreter
+flink           org.apache.zeppelin:zeppelin-flink:0.6.0                Flink interpreter
+hbase           org.apache.zeppelin:zeppelin-hbase:0.6.0                Hbase interpreter
+ignite          org.apache.zeppelin:zeppelin-ignite:0.6.0               Ignite interpreter
+jdbc            org.apache.zeppelin:zeppelin-jdbc:0.6.0                 Jdbc interpreter
+kylin           org.apache.zeppelin:zeppelin-kylin:0.6.0                Kylin interpreter
+lens            org.apache.zeppelin:zeppelin-lens:0.6.0                 Lens interpreter
+livy            org.apache.zeppelin:zeppelin-livy:0.6.0                 Livy interpreter
+md              org.apache.zeppelin:zeppelin-markdown:0.6.0             Markdown support
+postgresql      org.apache.zeppelin:zeppelin-postgresql:0.6.0           Postgresql interpreter
+python          org.apache.zeppelin:zeppelin-python:0.6.0               Python interpreter
+shell           org.apache.zeppelin:zeppelin-shell:0.6.0                Shell command
+test1            org.apache.commons:commons-csv:1.1                     test
+test2           org.apache.commons:commons-csv:1.1                      test
+
+
+
