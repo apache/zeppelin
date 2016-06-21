@@ -90,8 +90,7 @@ z.show function can take optional parameters to adapt graph width and height
 z.show(plt, width='50px')
 z.show(plt, height='150px')
 ```
-
-[![pythonmatplotlib](../interpreter/screenshots/pythonMatplotlib.png)](/docs/interpreter/screenshots/pythonMatplotlib.png)
+<img class="img-responsive" src="../assets/themes/zeppelin/img/docs-img/pythonMatplotlib.png" />
 
 
 ## Pandas integration
