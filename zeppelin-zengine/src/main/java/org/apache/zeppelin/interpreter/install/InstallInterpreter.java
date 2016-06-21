@@ -16,6 +16,7 @@
  */
 package org.apache.zeppelin.interpreter.install;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Logger;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
@@ -24,64 +25,121 @@ import org.apache.zeppelin.util.Util;
 import org.sonatype.aether.RepositoryException;
 import java.io.File;
 import java.io.IOException;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Commandline utility to install interpreter from maven repository
  */
 public class InstallInterpreter {
-  static ZeppelinConfiguration conf = ZeppelinConfiguration.create();
+  private final File interpreterListFile;
+  private final File interpreterBaseDir;
+  private final List<AvailableInterpreterInfo> availableInterpreters;
+  private final String localRepoDir;
 
-  static String [] availableInterpreters = {
-    "md",     "zeppelin-markdown",   "Markdown interpreter",
-    "sh",     "zeppelin-shell",      "Allows shell command",
-    "jdbc",   "zeppelin-jdbc",
-    "Generic JDBC interpreter for hive, phoenix, postsgresql, mysql, etc",
-  };
+  /**
+   *
+   * @param interpreterListFile
+   * @param interpreterBaseDir interpreter directory for installing binaries
+   * @throws IOException
+   */
+  public InstallInterpreter(File interpreterListFile, File interpreterBaseDir, String localRepoDir)
+      throws IOException {
+    this.interpreterListFile = interpreterListFile;
+    this.interpreterBaseDir = interpreterBaseDir;
+    this.localRepoDir = localRepoDir;
+    availableInterpreters = new LinkedList<AvailableInterpreterInfo>();
+    readAvailableInterpreters();
+  }
 
-  public static void list() {
-    for (int i = 0; i < availableInterpreters.length; i++) {
-      System.out.println(availableInterpreters[i] + "\t\t" + availableInterpreters[i + 2]);
-      i += 2;
+
+  /**
+   * Information for available informations
+   */
+  private static class AvailableInterpreterInfo {
+    public final String name;
+    public final String artifact;
+    public final String description;
+
+    public AvailableInterpreterInfo(String name, String artifact, String description) {
+      this.name = name;
+      this.artifact = artifact;
+      this.description = description;
     }
   }
 
-  public static void installAll() {
-    for (int i = 0; i < availableInterpreters.length; i++) {
-      install(availableInterpreters[i], getArtifactName(availableInterpreters[i + 1]));
-      i += 2;
+  private void readAvailableInterpreters() throws IOException {
+    if (!interpreterListFile.isFile()) {
+      System.err.print("Can't find interpreter list " + interpreterListFile.getAbsolutePath());
+      return;
+    }
+    String text = FileUtils.readFileToString(interpreterListFile);
+    String[] lines = text.split("\n");
+
+    Pattern pattern = Pattern.compile("(\\S+)\\s+(\\S+)\\s+(.*)");
+
+    int lineNo = 0;
+    for (String line : lines) {
+      lineNo++;
+      if (line == null || line.length() == 0 || line.startsWith("#")) {
+        continue;
+      }
+
+      Matcher match = pattern.matcher(line);
+      if (match.groupCount() != 3) {
+        System.err.println("Error on line " + lineNo + ", " + line);
+        continue;
+      }
+
+      match.find();
+
+      String name = match.group(1);
+      String artifact = match.group(2);
+      String description = match.group(3);
+
+      availableInterpreters.add(new AvailableInterpreterInfo(name, artifact, description));
     }
   }
 
-  public static void install(String [] names) {
+  public List<AvailableInterpreterInfo> list() {
+    for (AvailableInterpreterInfo info : availableInterpreters) {
+      System.out.println(info.name + "\t\t" + info.description);
+    }
+
+    return availableInterpreters;
+  }
+
+  public void installAll() {
+    for (AvailableInterpreterInfo info : availableInterpreters) {
+      install(info.name, info.artifact);
+    }
+  }
+
+  public void install(String [] names) {
     for (String name : names) {
       install(name);
     }
   }
 
-  public static void install(String name) {
+  public void install(String name) {
     // find artifact name
-    for (int i = 0; i < availableInterpreters.length; i++) {
-      if (name.equals(availableInterpreters[i])) {
-        install(name, getArtifactName(availableInterpreters[i + 1]));
+    for (AvailableInterpreterInfo info : availableInterpreters) {
+      if (name.equals(info.name)) {
+        install(name, info.artifact);
         return;
       }
-      i += 2;
     }
 
-    System.err.println("Can't find interpreter '" + name + "'");
-    System.exit(1);
+    throw new RuntimeException("Can't find interpreter '" + name + "'");
   }
 
-  private static String getArtifactName(String name) {
-    return "org.apache.zeppelin:" + name + ":" + Util.getVersion();
-  }
-
-  public static void install(String [] names, String [] artifacts) {
+  public void install(String [] names, String [] artifacts) {
     if (names.length != artifacts.length) {
-      System.err.println("Length of given names and artifacts are different");
-      System.exit(1);
+      throw new RuntimeException("Length of given names and artifacts are different");
     }
 
     for (int i = 0; i < names.length; i++) {
@@ -89,11 +147,9 @@ public class InstallInterpreter {
     }
   }
 
-  public static void install(String name, String artifact) {
-    DependencyResolver depResolver = new DependencyResolver(
-        conf.getInterpreterLocalRepoPath());
+  public void install(String name, String artifact) {
+    DependencyResolver depResolver = new DependencyResolver(localRepoDir);
 
-    File interpreterBaseDir = new File(conf.getInterpreterDir());
     File installDir = new File(interpreterBaseDir, name);
     if (installDir.exists()) {
       System.err.println("Directory " + installDir.getAbsolutePath() + " already exists. Skipping");
@@ -125,11 +181,17 @@ public class InstallInterpreter {
         "e.g. customGroup:customArtifact:customVersion");
   }
 
-  public static void main(String [] args) {
+  public static void main(String [] args) throws IOException {
     if (args.length == 0) {
       usage();
       return;
     }
+
+    ZeppelinConfiguration conf = ZeppelinConfiguration.create();
+    InstallInterpreter installer = new InstallInterpreter(
+        new File(conf.getInterpreterListPath()),
+        new File(conf.getInterpreterDir()),
+        conf.getInterpreterLocalRepoPath());
 
     String names = null;
     String artifacts = null;
@@ -139,12 +201,12 @@ public class InstallInterpreter {
       switch (arg) {
           case "--list":
           case "-l":
-            list();
+            installer.list();
             System.exit(0);
             break;
           case "--all":
           case "-a":
-            installAll();
+            installer.installAll();
             System.exit(0);
             break;
           case "--name":
@@ -171,9 +233,9 @@ public class InstallInterpreter {
 
     if (names != null) {
       if (artifacts != null) {
-        install(names.split(","), artifacts.split(","));
+        installer.install(names.split(","), artifacts.split(","));
       } else {
-        install(names.split(","));
+        installer.install(names.split(","));
       }
     }
   }
