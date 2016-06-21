@@ -113,7 +113,7 @@ public class Note implements Serializable, JobListener {
 
   private String getDefaultInterpreterName() {
     Optional<InterpreterSetting> settingOptional = replLoader.getDefaultInterpreterSetting();
-    return settingOptional.isPresent() ? settingOptional.get().getName() : StringUtils.EMPTY;
+    return settingOptional.isPresent() ? settingOptional.get().getGroup() : StringUtils.EMPTY;
   }
 
   void putDefaultReplName() {
