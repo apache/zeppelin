@@ -61,32 +61,34 @@ limitations under the License.
               tooltip-placement="bottom" tooltip="Export the notebook">
         <i class="fa fa-download"></i>
       </button>
-        <ul class="dropdown-menu" role="menu" style="width:250px">
-          <li>
-            <div class="cron-preset-container">
-              <div>
-                <input type="text"
-                       dropdown-input
-                       placeholder="commit message"
-                       id="note.checkpoint.message"
-                       ng-model="note.checkpoint.message"/>
-                <button type="button"
-                  class="btn btn-default btn-xs"
-                  ng-hide="viewOnly"
-                  ng-click="checkpointNotebook(note.checkpoint.message)"
-                  tooltip-placement="bottom" tooltip="Commit the notebook">Commit
-                </button>
-              </div>
+      <button type="button"
+              class="btn btn-default btn-xs dropdown-toggle"
+              ng-hide="viewOnly"
+              data-toggle="dropdown"
+              tooltip-placement="bottom" tooltip="Version control">
+        <i class="fa fa-file-code-o"></i>
+      </button>
+      <ul class="dropdown-menu" role="menu" style="width:250px">
+        <li>
+          <div class="commit-container">
+            <div>
+              <input type="text"
+                     dropdown-input
+                     placeholder="commit message"
+                     id="note.checkpoint.message"
+                     style="width: 145px;"
+                     ng-model="note.checkpoint.message"/>
+              <button type="button"
+                      class="btn btn-default btn-xs"
+                      ng-hide="viewOnly"
+                      ng-click="checkpointNotebook(note.checkpoint.message)"
+                      style="margin-left: 4px;"
+                      tooltip-placement="bottom" tooltip="Commit the notebook">Commit
+              </button>
             </div>
-          </li>
-        </ul>
-        <button type="button"
-                class="btn btn-default btn-xs dropdown-toggle"
-                ng-hide="viewOnly"
-                data-toggle="dropdown"
-                tooltip-placement="bottom" tooltip="Version control">
-          <i class="fa fa-file-code-o"></i>
-        </button>
+          </div>
+        </li>
+      </ul>
     </span>
 
 <!-- put the delete action by itself for your protection -->
