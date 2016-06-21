@@ -175,7 +175,7 @@ public class InstallInterpreter {
     System.out.println("  -l, --list                  List available interpreters");
     System.out.println("  -a, --all                   Install all available interpreters");
     System.out.println("  -n, --name     [NAMES]      Install interpreters (comma separated list)" +
-        "e.g. spark,md,shell");
+        "e.g. md,shell,jdbc,python,angular");
     System.out.println("  -t, --artifact [ARTIFACTS]  (Optional with -n) custom artifact names. " +
         "(comma separated list correspond to --name) " +
         "e.g. customGroup:customArtifact:customVersion");
