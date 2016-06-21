@@ -13,7 +13,7 @@
  */
 'use strict';
 
-angular.module('zeppelinWebApp').factory('websocketEvents', function($rootScope, $websocket, $location, baseUrlSrv) {
+angular.module('zeppelinWebApp').factory('websocketEvents', function($rootScope, $websocket, $location, $window, baseUrlSrv) {
   var websocketCalls = {};
 
   websocketCalls.ws = $websocket(baseUrlSrv.getWebsocketUrl());
@@ -74,8 +74,9 @@ angular.module('zeppelinWebApp').factory('websocketEvents', function($rootScope,
               }
           }, {
               label: 'Cancel',
-              action: function(dialog){
-                 dialog.close();
+              action: function(dialog) {
+                  dialog.close();
+                  $window.history.back();
               }
           }]
       });
