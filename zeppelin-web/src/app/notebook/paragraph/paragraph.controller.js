@@ -1224,12 +1224,16 @@ angular.module('zeppelinWebApp')
   var setTable = function(type, data, refresh) {
     var renderTable = function() {
       var height = $scope.paragraph.config.graph.height;
-      angular.element('#p' + $scope.paragraph.id + '_table').css('height', height);
+      var container = angular.element('#p' + $scope.paragraph.id + '_table').css('height', height).get(0);
       var resultRows = $scope.paragraph.result.rows;
       var columnNames = _.pluck($scope.paragraph.result.columnNames, 'name');
-      var container = document.getElementById('p' + $scope.paragraph.id + '_table');
 
-      var handsontable = new Handsontable(container, {
+      if ($scope.hot) {
+        // properly destroy old table. otherwise leftover event handlers can cause problems.
+        $scope.hot.destroy();
+      }
+
+      $scope.hot = new Handsontable(container, {
         data: resultRows,
         colHeaders: columnNames,
         rowHeaders: false,
@@ -1239,7 +1243,8 @@ angular.module('zeppelinWebApp')
         contextMenu: false,
         manualColumnResize: true,
         manualRowResize: true,
-        editor: false,
+        readOnly: true,
+        readOnlyCellClassName: '',  // don't apply any special class so we can retain current styling
         fillHandle: false,
         fragmentSelection: true,
         disableVisualSelection: true,
