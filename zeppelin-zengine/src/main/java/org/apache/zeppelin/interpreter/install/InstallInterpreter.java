@@ -74,7 +74,7 @@ public class InstallInterpreter {
 
   private void readAvailableInterpreters() throws IOException {
     if (!interpreterListFile.isFile()) {
-      System.err.print("Can't find interpreter list " + interpreterListFile.getAbsolutePath());
+      System.err.println("Can't find interpreter list " + interpreterListFile.getAbsolutePath());
       return;
     }
     String text = FileUtils.readFileToString(interpreterListFile);
@@ -234,9 +234,23 @@ public class InstallInterpreter {
     if (names != null) {
       if (artifacts != null) {
         installer.install(names.split(","), artifacts.split(","));
+        configurationTip();
+        interpreterSettingTip();
       } else {
         installer.install(names.split(","));
+        interpreterSettingTip();
       }
     }
+  }
+
+  private static void configurationTip() {
+    System.out.println("Add interpreter class name to '"
+        + ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETERS.getVarName() + "' property "
+        + "in your conf/zeppelin-site.xml file");
+  }
+
+  private static void interpreterSettingTip() {
+    System.out.println("Create interpreter setting in 'Interpreter' menu on GUI."
+        + "And then you can bind interpreter to your notebook to use");
   }
 }
