@@ -100,6 +100,13 @@ public class GitNotebookRepo extends VFSNotebookRepo {
     return revision;
   }
 
+  /**
+   * the idea is to:
+   * 1. stash current changes
+   * 2. remember head commit and checkout to the desired revision
+   * 3. get note and checkout back to the head
+   * 4. apply stash on top and remove it
+   */
   @Override
   public synchronized Note get(String noteId, Revision rev, AuthenticationInfo subject)
       throws IOException {
