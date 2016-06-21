@@ -232,9 +232,12 @@ public class SparkInterpreterTest {
 
   @Test
   public void testEnableImplicitImport() {
-    Properties p = new Properties();
+    // Set option of importing implicits to "true", and initialize new Spark repl
+    Properties p = getSparkTestProperties();
     p.setProperty("zeppelin.spark.importImplicit", "true");
     SparkInterpreter repl2 = new SparkInterpreter(p);
+    repl2.setInterpreterGroup(intpGroup);
+    intpGroup.get("note").add(repl2);
 
     repl2.open();
     String ddl = "val df = Seq((1, true), (2, false)).toDF(\"num\", \"bool\")";
@@ -244,9 +247,13 @@ public class SparkInterpreterTest {
 
   @Test
   public void testDisableImplicitImport() {
-    Properties p = new Properties();
+    // Set option of importing implicits to "false", and initialize new Spark repl
+    // this test should return error status when creating DataFrame from sequence
+    Properties p = getSparkTestProperties();
     p.setProperty("zeppelin.spark.importImplicit", "false");
     SparkInterpreter repl2 = new SparkInterpreter(p);
+    repl2.setInterpreterGroup(intpGroup);
+    intpGroup.get("note").add(repl2);
 
     repl2.open();
     String ddl = "val df = Seq((1, true), (2, false)).toDF(\"num\", \"bool\")";
