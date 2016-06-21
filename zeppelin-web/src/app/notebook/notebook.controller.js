@@ -16,7 +16,7 @@
 'use strict';
 
 angular.module('zeppelinWebApp').controller('NotebookCtrl',
-  function($scope, $route, $routeParams, $location, $rootScope, $http,
+  function($scope, $route, $routeParams, $location, $rootScope, $http, $window,
     websocketMsgSrv, baseUrlSrv, $timeout, SaveAsService) {
   $scope.note = null;
   $scope.showEditor = false;
@@ -723,7 +723,9 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl',
       error(function (data, status, headers, config) {
         console.log('Error %o %o', status, data.message);
         BootstrapDialog.show({
-          closable: true,
+          closable: false,
+          closeByBackdrop: false,
+          closeByKeyboard: false,
           title: 'Insufficient privileges',
           message: data.message,
           buttons: [
@@ -740,6 +742,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl',
               label: 'Cancel',
               action: function (dialog) {
                 dialog.close();
+                $window.history.back();
               }
             }
           ]

@@ -61,7 +61,9 @@ angular.module('zeppelinWebApp').factory('websocketEvents', function($rootScope,
       $rootScope.$broadcast('setNoteMenu', data.notes);
     } else if (op === 'AUTH_INFO') {
       BootstrapDialog.show({
-          closable: true,
+          closable: false,
+          closeByBackdrop: false,
+          closeByKeyboard: false,
           title: 'Insufficient privileges', 
           message: data.info.toString(),
           buttons: [{
