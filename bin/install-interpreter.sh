@@ -26,9 +26,11 @@ bin=$(cd "${bin}">/dev/null; pwd)
 
 
 ZEPPELIN_INSTALL_INTERPRETER_MAIN=org.apache.zeppelin.interpreter.install.InstallInterpreter
+ZEPPELIN_LOGFILE="${ZEPPELIN_LOG_DIR}/install-interpreter.log"
+JAVA_OPTS+=" -Dzeppelin.log.file=${ZEPPELIN_LOGFILE}"
 
-if [[ -d "${ZEPPELIN_HOME}/zeppelin-server/target/classes" ]]; then
-  ZEPPELIN_CLASSPATH+=":${ZEPPELIN_HOME}/zeppelin-server/target/classes"
+if [[ -d "${ZEPPELIN_HOME}/zeppelin-zengine/target/classes" ]]; then
+  ZEPPELIN_CLASSPATH+=":${ZEPPELIN_HOME}/zeppelin-zengine/target/classes"
 fi
 addJarInDir "${ZEPPELIN_HOME}/zeppelin-server/target/lib"
 
