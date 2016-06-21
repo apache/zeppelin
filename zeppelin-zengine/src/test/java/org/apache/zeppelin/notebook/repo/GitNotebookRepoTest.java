@@ -32,7 +32,7 @@ import org.apache.zeppelin.interpreter.mock.MockInterpreter2;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.notebook.Paragraph;
-import org.apache.zeppelin.notebook.repo.NotebookRepoVersioned.Rev;
+import org.apache.zeppelin.notebook.repo.NotebookRepo.Revision;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.diff.DiffEntry;
@@ -97,7 +97,7 @@ public class GitNotebookRepoTest {
     assertThat(git).isNotNull();
 
     assertThat(dotGit.exists()).isEqualTo(true);
-    assertThat(notebookRepo.list()).isNotEmpty();
+    assertThat(notebookRepo.list(null)).isNotEmpty();
 
     List<DiffEntry> diff = git.diff().call();
     // no commit, diff isn't empty
@@ -108,10 +108,10 @@ public class GitNotebookRepoTest {
   public void showNotebookHistory() throws GitAPIException, IOException {
     //given
     notebookRepo = new GitNotebookRepo(conf);
-    assertThat(notebookRepo.list()).isNotEmpty();
+    assertThat(notebookRepo.list(null)).isNotEmpty();
 
     //when
-    List<Rev> testNotebookHistory = notebookRepo.history(TEST_NOTE_ID);
+    List<Revision> testNotebookHistory = notebookRepo.revisionHistory(TEST_NOTE_ID, null);
 
     //then
     //no initial commit, empty history
@@ -122,17 +122,17 @@ public class GitNotebookRepoTest {
   public void addCheckpoint() throws IOException {
     // initial checks
     notebookRepo = new GitNotebookRepo(conf);
-    assertThat(notebookRepo.list()).isNotEmpty();
-    assertThat(containsNote(notebookRepo.list(), TEST_NOTE_ID)).isTrue();
-    assertThat(notebookRepo.history(TEST_NOTE_ID)).isEmpty();
+    assertThat(notebookRepo.list(null)).isNotEmpty();
+    assertThat(containsNote(notebookRepo.list(null), TEST_NOTE_ID)).isTrue();
+    assertThat(notebookRepo.revisionHistory(TEST_NOTE_ID, null)).isEmpty();
 
-    notebookRepo.checkpoint(TEST_NOTE_ID, "first commit");
-    List<Rev> notebookHistoryBefore = notebookRepo.history(TEST_NOTE_ID);
-    assertThat(notebookRepo.history(TEST_NOTE_ID)).isNotEmpty();
+    notebookRepo.checkpoint(TEST_NOTE_ID, "first commit", null);
+    List<Revision> notebookHistoryBefore = notebookRepo.revisionHistory(TEST_NOTE_ID, null);
+    assertThat(notebookRepo.revisionHistory(TEST_NOTE_ID, null)).isNotEmpty();
     int initialCount = notebookHistoryBefore.size();
     
     // add changes to note
-    Note note = notebookRepo.get(TEST_NOTE_ID);
+    Note note = notebookRepo.get(TEST_NOTE_ID, null);
     Paragraph p = note.addParagraph();
     Map<String, Object> config = p.getConfig();
     config.put("enabled", true);
@@ -140,11 +140,11 @@ public class GitNotebookRepoTest {
     p.setText("%md checkpoint test text");
     
     // save and checkpoint note
-    notebookRepo.save(note);
-    notebookRepo.checkpoint(TEST_NOTE_ID, "second commit");
+    notebookRepo.save(note, null);
+    notebookRepo.checkpoint(TEST_NOTE_ID, "second commit", null);
     
     // see if commit is added
-    List<Rev> notebookHistoryAfter = notebookRepo.history(TEST_NOTE_ID);
+    List<Revision> notebookHistoryAfter = notebookRepo.revisionHistory(TEST_NOTE_ID, null);
     assertThat(notebookHistoryAfter.size()).isEqualTo(initialCount + 1);
   }
   

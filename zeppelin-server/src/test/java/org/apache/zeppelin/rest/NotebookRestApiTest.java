@@ -61,7 +61,7 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
 
   @Test
   public void testPermissions() throws IOException {
-    Note note1 = ZeppelinServer.notebook.createNote();
+    Note note1 = ZeppelinServer.notebook.createNote(null);
     // Set only readers
     String jsonRequest = "{\"readers\":[\"admin-team\"],\"owners\":[]," +
             "\"writers\":[]}";
@@ -84,7 +84,7 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
     get.releaseConnection();
 
 
-    Note note2 = ZeppelinServer.notebook.createNote();
+    Note note2 = ZeppelinServer.notebook.createNote(null);
     // Set only writers
     jsonRequest = "{\"readers\":[],\"owners\":[]," +
             "\"writers\":[\"admin-team\"]}";
@@ -118,8 +118,8 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
     assertEquals(authInfo.get("owners"), Lists.newArrayList());
     get.releaseConnection();
     //cleanup
-    ZeppelinServer.notebook.removeNote(note1.getId());
-    ZeppelinServer.notebook.removeNote(note2.getId());
+    ZeppelinServer.notebook.removeNote(note1.getId(), null);
+    ZeppelinServer.notebook.removeNote(note2.getId(), null);
 
   }
 }

@@ -73,7 +73,6 @@
     <module>shell</module>
     <module>livy</module>
     <module>hbase</module>
-    <module>phoenix</module>
     <module>postgresql</module>
     <module>jdbc</module>
     <module>file</module>
@@ -95,7 +94,7 @@
     <log4j.version>1.2.17</log4j.version>
     <libthrift.version>0.9.2</libthrift.version>
     <gson.version>2.2</gson.version>
-    <guava.version>15.0</guava.version>
+    <guava.version>19.0</guava.version>
     <jetty.version>9.2.15.v20160210</jetty.version>
 
     <PermGen>64m</PermGen>
@@ -210,6 +209,11 @@
       <dependency>
         <groupId>org.apache.shiro</groupId>
         <artifactId>shiro-web</artifactId>
+        <version>1.2.3</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.shiro</groupId>
+        <artifactId>shiro-config-core</artifactId>
         <version>1.2.3</version>
       </dependency>
     </dependencies>

@@ -32,28 +32,44 @@ import org.apache.zeppelin.scheduler.SchedulerFactory;
 public class MockInterpreter1 extends Interpreter{
 Map<String, Object> vars = new HashMap<String, Object>();
 
-public MockInterpreter1(Properties property) {
-	super(property);
-}
-
-@Override
-public void open() {
-}
-
-@Override
-public void close() {
-}
-
-@Override
-public InterpreterResult interpret(String st, InterpreterContext context) {
-	InterpreterResult result;
-
-	if ("getId".equals(st)) {
-		// get unique id of this interpreter instance
-		result = new InterpreterResult(InterpreterResult.Code.SUCCESS, "" + this.hashCode());
-	} else {
-		result = new InterpreterResult(InterpreterResult.Code.SUCCESS, "repl1: " + st);
+	public MockInterpreter1(Properties property) {
+		super(property);
 	}
+	boolean open;
+
+
+	@Override
+	public void open() {
+		open = true;
+	}
+
+	@Override
+	public void close() {
+		open = false;
+	}
+
+
+	public boolean isOpen() {
+		return open;
+	}
+
+	@Override
+	public InterpreterResult interpret(String st, InterpreterContext context) {
+		InterpreterResult result;
+
+		if ("getId".equals(st)) {
+			// get unique id of this interpreter instance
+			result = new InterpreterResult(InterpreterResult.Code.SUCCESS, "" + this.hashCode());
+		} else if (st.startsWith("sleep")) {
+			try {
+				Thread.sleep(Integer.parseInt(st.split(" ")[1]));
+			} catch (InterruptedException e) {
+				// nothing to do
+			}
+			result = new InterpreterResult(InterpreterResult.Code.SUCCESS, "repl1: " + st);
+		} else {
+			result = new InterpreterResult(InterpreterResult.Code.SUCCESS, "repl1: " + st);
+		}
 
 		if (context.getResourcePool() != null) {
 			context.getResourcePool().put(context.getNoteId(), context.getParagraphId(), "result", result);

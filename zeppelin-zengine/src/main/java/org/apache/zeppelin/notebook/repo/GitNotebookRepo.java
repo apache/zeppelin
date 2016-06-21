@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.Note;
+import org.apache.zeppelin.user.AuthenticationInfo;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.NoHeadException;
@@ -46,7 +47,7 @@ import com.google.common.collect.Lists;
  *
  *   TODO(bzz): add default .gitignore
  */
-public class GitNotebookRepo extends VFSNotebookRepo implements NotebookRepoVersioned {
+public class GitNotebookRepo extends VFSNotebookRepo {
   private static final Logger LOG = LoggerFactory.getLogger(GitNotebookRepo.class);
 
   private String localPath;
@@ -65,47 +66,50 @@ public class GitNotebookRepo extends VFSNotebookRepo implements NotebookRepoVers
   }
 
   @Override
-  public synchronized void save(Note note) throws IOException {
-    super.save(note);
+  public synchronized void save(Note note, AuthenticationInfo subject) throws IOException {
+    super.save(note, subject);
   }
 
   /* implemented as git add+commit
    * @param pattern is the noteId
-   * @param commitMessage is a commit message (checkpoint name)
+   * @param commitMessage is a commit message (checkpoint message)
    * (non-Javadoc)
    * @see org.apache.zeppelin.notebook.repo.VFSNotebookRepo#checkpoint(String, String)
    */
   @Override
-  public void checkpoint(String pattern, String commitMessage) {
+  public Revision checkpoint(String pattern, String commitMessage, AuthenticationInfo subject) {
+    Revision revision = null;
     try {
       List<DiffEntry> gitDiff = git.diff().call();
       if (!gitDiff.isEmpty()) {
         LOG.debug("Changes found for pattern '{}': {}", pattern, gitDiff);
         DirCache added = git.add().addFilepattern(pattern).call();
         LOG.debug("{} changes are about to be commited", added.getEntryCount());
-        git.commit().setMessage(commitMessage).call();
+        RevCommit commit = git.commit().setMessage(commitMessage).call();
+        revision = new Revision(commit.getName(), commit.getShortMessage(), commit.getCommitTime());
       } else {
         LOG.debug("No changes found {}", pattern);
       }
     } catch (GitAPIException e) {
       LOG.error("Failed to add+comit {} to Git", pattern, e);
     }
+    return revision;
   }
 
   @Override
-  public Note get(String noteId, String rev) throws IOException {
+  public Note get(String noteId, Revision rev, AuthenticationInfo subject) throws IOException {
     //TODO(bzz): something like 'git checkout rev', that will not change-the-world though
-    return super.get(noteId);
+    return super.get(noteId, subject);
   }
 
   @Override
-  public List<Rev> history(String noteId) {
-    List<Rev> history = Lists.newArrayList();
+  public List<Revision> revisionHistory(String noteId, AuthenticationInfo subject) {
+    List<Revision> history = Lists.newArrayList();
     LOG.debug("Listing history for {}:", noteId);
     try {
       Iterable<RevCommit> logs = git.log().addPath(noteId).call();
       for (RevCommit log: logs) {
-        history.add(new Rev(log.getName(), log.getCommitTime()));
+        history.add(new Revision(log.getName(), log.getShortMessage(), log.getCommitTime()));
         LOG.debug(" - ({},{},{})", log.getName(), log.getCommitTime(), log.getFullMessage());
       }
     } catch (NoHeadException e) {
@@ -130,6 +134,5 @@ public class GitNotebookRepo extends VFSNotebookRepo implements NotebookRepoVers
   void setGit(Git git) {
     this.git = git;
   }
-
 
 }

@@ -45,6 +45,7 @@ import org.apache.zeppelin.search.LuceneSearch;
 import org.apache.zeppelin.search.SearchService;
 import org.apache.zeppelin.socket.NotebookServer;
 import org.apache.zeppelin.user.Credentials;
+import org.apache.zeppelin.utils.SecurityUtils;
 import org.eclipse.jetty.http.HttpVersion;
 import org.eclipse.jetty.server.*;
 import org.eclipse.jetty.server.handler.ContextHandlerCollection;
@@ -255,6 +256,7 @@ public class ZeppelinServer extends Application {
     webapp.setInitParameter("shiroConfigLocations",
         new File(conf.getShiroPath()).toURI().toString());
 
+    SecurityUtils.initSecurityManager(conf.getShiroPath());
     webapp.addFilter(org.apache.shiro.web.servlet.ShiroFilter.class, "/api/*",
         EnumSet.allOf(DispatcherType.class));
 

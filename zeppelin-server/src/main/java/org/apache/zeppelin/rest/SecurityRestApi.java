@@ -22,8 +22,6 @@ import org.apache.shiro.realm.Realm;
 import org.apache.shiro.realm.jdbc.JdbcRealm;
 import org.apache.shiro.realm.ldap.JndiLdapRealm;
 import org.apache.shiro.realm.text.IniRealm;
-import org.apache.shiro.util.ThreadContext;
-import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
 import org.apache.zeppelin.annotation.ZeppelinApi;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.server.JsonResponse;
@@ -41,7 +39,6 @@ import java.util.*;
 
 /**
  * Zeppelin security rest api endpoint.
- *
  */
 @Path("/security")
 @Produces("application/json")
@@ -101,19 +98,16 @@ public class SecurityRestApi {
     List<String> usersList = new ArrayList<>();
     try {
       GetUserList getUserListObj = new GetUserList();
-      DefaultWebSecurityManager defaultWebSecurityManager;
-      String key = ThreadContext.SECURITY_MANAGER_KEY;
-      defaultWebSecurityManager = (DefaultWebSecurityManager) ThreadContext.get(key);
-      Collection<Realm> realms = defaultWebSecurityManager.getRealms();
-      List realmsList = new ArrayList(realms);
-      for (int i = 0; i < realmsList.size(); i++) {
-        String name = ((Realm) realmsList.get(i)).getName();
+      Collection realmsList = SecurityUtils.getRealmsList();
+      for (Iterator<Realm> iterator = realmsList.iterator(); iterator.hasNext(); ) {
+        Realm realm = iterator.next();
+        String name = realm.getName();
         if (name.equals("iniRealm")) {
-          usersList.addAll(getUserListObj.getUserList((IniRealm) realmsList.get(i)));
+          usersList.addAll(getUserListObj.getUserList((IniRealm) realm));
         } else if (name.equals("ldapRealm")) {
-          usersList.addAll(getUserListObj.getUserList((JndiLdapRealm) realmsList.get(i)));
+          usersList.addAll(getUserListObj.getUserList((JndiLdapRealm) realm));
         } else if (name.equals("jdbcRealm")) {
-          usersList.addAll(getUserListObj.getUserList((JdbcRealm) realmsList.get(i)));
+          usersList.addAll(getUserListObj.getUserList((JdbcRealm) realm));
         }
       }
 

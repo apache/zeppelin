@@ -204,7 +204,7 @@ public class LuceneSearchTest {
     //when
     Paragraph p1 = note1.getLastParagraph();
     p1.setText("no no no");
-    note1.persist();
+    note1.persist(null);
 
     //then
     assertThat(resultForQuery("Notebook1").size()).isEqualTo(1);
@@ -228,7 +228,7 @@ public class LuceneSearchTest {
 
     //when
     note1.setName("NotebookN");
-    note1.persist();
+    note1.persist(null);
 
     //then
     assertThat(resultForQuery("Notebook1")).isEmpty();

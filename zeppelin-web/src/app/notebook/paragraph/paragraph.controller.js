@@ -490,7 +490,7 @@ angular.module('zeppelinWebApp')
       if (statusChanged || resultRefreshed) {
         // when last paragraph runs, zeppelin automatically appends new paragraph.
         // this broadcast will focus to the newly inserted paragraph
-        var paragraphs = angular.element('div[id$="_paragraphColumn_main"');
+        var paragraphs = angular.element('div[id$="_paragraphColumn_main"]');
         if (paragraphs.length >= 2 && paragraphs[paragraphs.length-2].id.startsWith($scope.paragraph.id)) {
           // rendering output can took some time. So delay scrolling event firing for sometime.
           setTimeout(function() {
@@ -498,7 +498,6 @@ angular.module('zeppelinWebApp')
           }, 500);
         }
       }
-
     }
 
   });
@@ -578,7 +577,7 @@ angular.module('zeppelinWebApp')
   };
 
   $scope.removeParagraph = function() {
-    var paragraphs = angular.element('div[id$="_paragraphColumn_main"');
+    var paragraphs = angular.element('div[id$="_paragraphColumn_main"]');
     if (paragraphs[paragraphs.length-1].id.startsWith($scope.paragraph.id)) {
       BootstrapDialog.alert({
         closable: true,
@@ -787,6 +786,7 @@ angular.module('zeppelinWebApp')
       $scope.editor.setTheme('ace/theme/chrome');
       if ($scope.paragraphFocused) {
         $scope.editor.focus();
+        $scope.goToLineEnd();
       }
 
       autoAdjustEditorHeight(_editor.container.id);
@@ -960,7 +960,7 @@ angular.module('zeppelinWebApp')
 
   $rootScope.$on('scrollToCursor', function(event) {
     // scroll on 'scrollToCursor' event only when cursor is in the last paragraph
-    var paragraphs = angular.element('div[id$="_paragraphColumn_main"');
+    var paragraphs = angular.element('div[id$="_paragraphColumn_main"]');
     if (paragraphs[paragraphs.length-1].id.startsWith($scope.paragraph.id)) {
       $scope.scrollToCursor($scope.paragraph.id, 0);
     }
@@ -1056,6 +1056,10 @@ angular.module('zeppelinWebApp')
     return false;
   };
 
+  $scope.goToLineEnd = function () {
+    $scope.editor.navigateLineEnd();
+  };
+
   $scope.$on('updateProgress', function(event, data) {
     if (data.id === $scope.paragraph.id) {
       $scope.currentProgress = data.progress;
@@ -1107,19 +1111,6 @@ angular.module('zeppelinWebApp')
         $scope.changeColWidth();
       } else if (keyEvent.ctrlKey && keyEvent.shiftKey && keyCode === 187) { // Ctrl + Shift + =
         $scope.paragraph.config.colWidth = Math.min(12, $scope.paragraph.config.colWidth + 1);
-        $scope.changeColWidth();
-      } else if (keyEvent.ctrlKey && keyEvent.altKey && ((keyCode >= 48 && keyCode <=57) || keyCode === 189 || keyCode === 187)) { // Ctrl + Alt + [1~9,0,-,=]
-        var colWidth = 12;
-        if (keyCode === 48) {
-          colWidth = 10;
-        } else if (keyCode === 189) {
-          colWidth = 11;
-        } else if (keyCode === 187) {
-          colWidth = 12;
-        } else {
-          colWidth = keyCode - 48;
-        }
-        $scope.paragraph.config.colWidth = colWidth;
         $scope.changeColWidth();
       } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 84) { // Ctrl + Alt + t
         if ($scope.paragraph.config.title) {

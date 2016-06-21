@@ -93,7 +93,7 @@ public class VFSNotebookRepoTest implements JobListenerFactory {
   @Test
   public void testInvalidJsonFile() throws IOException {
     // given
-    int numNotes = notebookRepo.list().size();
+    int numNotes = notebookRepo.list(null).size();
 
     // when create invalid json file
     File testNoteDir = new File(mainNotebookDir, "test");
@@ -101,12 +101,12 @@ public class VFSNotebookRepoTest implements JobListenerFactory {
     FileUtils.writeStringToFile(new File(testNoteDir, "note.json"), "");
 
     // then
-    assertEquals(numNotes, notebookRepo.list().size());
+    assertEquals(numNotes, notebookRepo.list(null).size());
   }
 
   @Test
   public void testSaveNotebook() throws IOException, InterruptedException {
-    Note note = notebook.createNote();
+    Note note = notebook.createNote(null);
     note.getNoteReplLoader().setInterpreters(factory.getDefaultInterpreterSettingList());
 
     Paragraph p1 = note.addParagraph();
@@ -133,7 +133,7 @@ public class VFSNotebookRepoTest implements JobListenerFactory {
     }
 
     note.setName("SaveTest");
-    notebookRepo.save(note);
+    notebookRepo.save(note, null);
     assertEquals(note.getName(), "SaveTest");
   }
 
@@ -146,7 +146,7 @@ public class VFSNotebookRepoTest implements JobListenerFactory {
     @Override
     public void run() {
       try {
-        notebookRepo.save(note);
+        notebookRepo.save(note, null);
       } catch (IOException e) {
         LOG.error(e.toString(), e);
       }
