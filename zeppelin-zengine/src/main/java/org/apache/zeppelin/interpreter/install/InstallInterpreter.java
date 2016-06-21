@@ -54,6 +54,12 @@ public class InstallInterpreter {
     }
   }
 
+  public static void install(String [] names) {
+    for (String name : names) {
+      install(name);
+    }
+  }
+
   public static void install(String name) {
     // find artifact name
     for (int i = 0; i < availableInterpreters.length; i++) {
@@ -70,6 +76,17 @@ public class InstallInterpreter {
 
   private static String getArtifactName(String name) {
     return "org.apache.zeppelin:" + name + ":" + Util.getVersion();
+  }
+
+  public static void install(String [] names, String [] artifacts) {
+    if (names.length != artifacts.length) {
+      System.err.println("Length of given names and artifacts are different");
+      System.exit(1);
+    }
+
+    for (int i = 0; i < names.length; i++) {
+      install(names[i], artifacts[i]);
+    }
   }
 
   public static void install(String name, String artifact) {
@@ -101,8 +118,10 @@ public class InstallInterpreter {
     System.out.println("Options");
     System.out.println("  -l, --list                  List available interpreters");
     System.out.println("  -a, --all                   Install all available interpreters");
-    System.out.println("  -n, --name     [NAME]       Install an interpreter");
-    System.out.println("  -t, --artifact [ARTIFACT]   (Optional with -n) custom artifact name." +
+    System.out.println("  -n, --name     [NAMES]      Install interpreters (comma separated list)" +
+        "e.g. spark,md,shell");
+    System.out.println("  -t, --artifact [ARTIFACT]   (Optional with -n) custom artifact names. " +
+        "(comma separated list correspond to --name) " +
         "e.g. customGroup:customArtifact:customVersion");
   }
 
@@ -112,8 +131,8 @@ public class InstallInterpreter {
       return;
     }
 
-    String name = null;
-    String artifact = null;
+    String names = null;
+    String artifacts = null;
 
     for (int i = 0; i < args.length; i++) {
       String arg = args[i].toLowerCase(Locale.US);
@@ -130,11 +149,11 @@ public class InstallInterpreter {
             break;
           case "--name":
           case "-n":
-            name = args[++i];
+            names = args[++i];
             break;
           case "--artifact":
           case "-t":
-            artifact = args[++i];
+            artifacts = args[++i];
             break;
           case "--version":
           case "-v":
@@ -150,11 +169,11 @@ public class InstallInterpreter {
       }
     }
 
-    if (name != null) {
-      if (artifact != null) {
-        install(name, artifact);
+    if (names != null) {
+      if (artifacts != null) {
+        install(names.split(","), artifacts.split(","));
       } else {
-        install(name);
+        install(names.split(","));
       }
     }
   }
