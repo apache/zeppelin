@@ -105,7 +105,7 @@ public class NoteTest {
     when(replLoader.getDefaultInterpreterSetting())
             .thenReturn(Optional.<InterpreterSetting>absent());
 
-    Note note = new Note(repo, replLoader, jobListenerFactory, index, credentials);
+    Note note = new Note(repo, replLoader, jobListenerFactory, index, credentials, noteEventListener);
     note.putDefaultReplName();
 
     assertEquals(StringUtils.EMPTY, note.getLastReplName());
@@ -119,7 +119,7 @@ public class NoteTest {
     when(replLoader.getDefaultInterpreterSetting())
             .thenReturn(Optional.of(interpreterSetting));
 
-    Note note = new Note(repo, replLoader, jobListenerFactory, index, credentials);
+    Note note = new Note(repo, replLoader, jobListenerFactory, index, credentials, noteEventListener);
     note.putDefaultReplName();
 
     assertEquals("spark", note.getLastReplName());
@@ -133,7 +133,7 @@ public class NoteTest {
     when(replLoader.getDefaultInterpreterSetting())
             .thenReturn(Optional.of(interpreterSetting));
 
-    Note note = new Note(repo, replLoader, jobListenerFactory, index, credentials);
+    Note note = new Note(repo, replLoader, jobListenerFactory, index, credentials, noteEventListener);
     note.putDefaultReplName(); //set lastReplName
 
     Paragraph p = note.addParagraph();
@@ -148,7 +148,7 @@ public class NoteTest {
     when(replLoader.getDefaultInterpreterSetting())
             .thenReturn(Optional.of(interpreterSetting));
 
-    Note note = new Note(repo, replLoader, jobListenerFactory, index, credentials);
+    Note note = new Note(repo, replLoader, jobListenerFactory, index, credentials, noteEventListener);
     note.putDefaultReplName(); //set lastReplName
 
     Paragraph p = note.insertParagraph(note.getParagraphs().size());
@@ -159,7 +159,7 @@ public class NoteTest {
   @Test
   public void setLastReplName() {
     String paragraphId = "HelloWorld";
-    Note note = Mockito.spy(new Note(repo, replLoader, jobListenerFactory, index, credentials));
+    Note note = Mockito.spy(new Note(repo, replLoader, jobListenerFactory, index, credentials, noteEventListener));
     Paragraph mockParagraph = Mockito.mock(Paragraph.class);
     when(note.getParagraph(paragraphId)).thenReturn(mockParagraph);
     when(mockParagraph.getRequiredReplName()).thenReturn("spark");

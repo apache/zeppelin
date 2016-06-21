@@ -690,7 +690,7 @@ public class NotebookTest implements JobListenerFactory{
       }
     });
 
-    Note note1 = notebook.createNote();
+    Note note1 = notebook.createNote(null);
     assertEquals(1, onNoteCreate.get());
 
     Paragraph p1 = note1.addParagraph();
@@ -706,7 +706,7 @@ public class NotebookTest implements JobListenerFactory{
     notebook.bindInterpretersToNote(note1.id(), new LinkedList<String>());
     assertEquals(settings.size(), unbindInterpreter.get());
 
-    notebook.removeNote(note1.getId());
+    notebook.removeNote(note1.getId(), null);
     assertEquals(1, onNoteRemove.get());
     assertEquals(1, onParagraphRemove.get());
   }

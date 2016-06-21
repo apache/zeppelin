@@ -134,7 +134,7 @@ public class HeliumApplicationFactoryTest implements JobListenerFactory {
         HeliumTestApplication.class.getName(),
         new String[][]{});
 
-    Note note1 = notebook.createNote();
+    Note note1 = notebook.createNote(null);
     note1.getNoteReplLoader().setInterpreters(factory.getDefaultInterpreterSettingList());
 
     Paragraph p1 = note1.addParagraph();
@@ -165,7 +165,7 @@ public class HeliumApplicationFactoryTest implements JobListenerFactory {
 
     // clean
     heliumAppFactory.unload(p1, appId);
-    notebook.removeNote(note1.getId());
+    notebook.removeNote(note1.getId(), null);
   }
 
   @Test
@@ -178,7 +178,7 @@ public class HeliumApplicationFactoryTest implements JobListenerFactory {
         HeliumTestApplication.class.getName(),
         new String[][]{});
 
-    Note note1 = notebook.createNote();
+    Note note1 = notebook.createNote(null);
     note1.getNoteReplLoader().setInterpreters(factory.getDefaultInterpreterSettingList());
 
     Paragraph p1 = note1.addParagraph();
@@ -202,7 +202,7 @@ public class HeliumApplicationFactoryTest implements JobListenerFactory {
     assertEquals(ApplicationState.Status.UNLOADED, app.getStatus());
 
     // clean
-    notebook.removeNote(note1.getId());
+    notebook.removeNote(note1.getId(), null);
   }
 
 
@@ -216,7 +216,7 @@ public class HeliumApplicationFactoryTest implements JobListenerFactory {
         HeliumTestApplication.class.getName(),
         new String[][]{});
 
-    Note note1 = notebook.createNote();
+    Note note1 = notebook.createNote(null);
     notebook.bindInterpretersToNote(note1.id(), factory.getDefaultInterpreterSettingList());
 
     Paragraph p1 = note1.addParagraph();
@@ -240,7 +240,7 @@ public class HeliumApplicationFactoryTest implements JobListenerFactory {
     assertEquals(ApplicationState.Status.UNLOADED, app.getStatus());
 
     // clean
-    notebook.removeNote(note1.getId());
+    notebook.removeNote(note1.getId(), null);
   }
 
 
@@ -254,7 +254,7 @@ public class HeliumApplicationFactoryTest implements JobListenerFactory {
         HeliumTestApplication.class.getName(),
         new String[][]{});
 
-    Note note1 = notebook.createNote();
+    Note note1 = notebook.createNote(null);
     notebook.bindInterpretersToNote(note1.id(), factory.getDefaultInterpreterSettingList());
 
     Paragraph p1 = note1.addParagraph();
@@ -286,7 +286,7 @@ public class HeliumApplicationFactoryTest implements JobListenerFactory {
     assertEquals(ApplicationState.Status.UNLOADED, app.getStatus());
 
     // clean
-    notebook.removeNote(note1.getId());
+    notebook.removeNote(note1.getId(), null);
   }
 
   @Override
