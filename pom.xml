@@ -87,6 +87,7 @@
     <module>cassandra</module>
     <module>elasticsearch</module>
     <module>alluxio</module>
+    <module>solr</module>
     <module>zeppelin-web</module>
     <module>zeppelin-server</module>
     <module>zeppelin-distribution</module>
