@@ -107,7 +107,7 @@ public class InstallInterpreter {
 
   public List<AvailableInterpreterInfo> list() {
     for (AvailableInterpreterInfo info : availableInterpreters) {
-      System.out.println(info.name + "\t\t" + info.description);
+      System.out.println(info.name + "\t\t\t" + info.description);
     }
 
     return availableInterpreters;
@@ -162,7 +162,7 @@ public class InstallInterpreter {
     try {
       depResolver.load(artifact, installDir);
       System.out.println("Interpreter " + name + " installed under " +
-          installDir.getAbsolutePath());
+          installDir.getAbsolutePath() + ".");
     } catch (RepositoryException e) {
       e.printStackTrace();
     } catch (IOException e) {
@@ -176,7 +176,7 @@ public class InstallInterpreter {
     System.out.println("  -a, --all                   Install all available interpreters");
     System.out.println("  -n, --name     [NAMES]      Install interpreters (comma separated list)" +
         "e.g. spark,md,shell");
-    System.out.println("  -t, --artifact [ARTIFACT]   (Optional with -n) custom artifact names. " +
+    System.out.println("  -t, --artifact [ARTIFACTS]  (Optional with -n) custom artifact names. " +
         "(comma separated list correspond to --name) " +
         "e.g. customGroup:customArtifact:customVersion");
   }
@@ -234,13 +234,19 @@ public class InstallInterpreter {
     if (names != null) {
       if (artifacts != null) {
         installer.install(names.split(","), artifacts.split(","));
+        startTip();
         configurationTip();
         interpreterSettingTip();
       } else {
         installer.install(names.split(","));
+        startTip();
         interpreterSettingTip();
       }
     }
+  }
+
+  private static void startTip() {
+    System.out.println("");
   }
 
   private static void configurationTip() {
@@ -251,6 +257,6 @@ public class InstallInterpreter {
 
   private static void interpreterSettingTip() {
     System.out.println("Create interpreter setting in 'Interpreter' menu on GUI."
-        + "And then you can bind interpreter to your notebook to use");
+        + " And then you can bind interpreter on your notebook");
   }
 }
