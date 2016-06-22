@@ -73,6 +73,7 @@
     <module>shell</module>
     <module>jdbc</module>
 
+
 <!--
     <module>livy</module>
     <module>hbase</module>
