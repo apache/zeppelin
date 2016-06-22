@@ -82,6 +82,7 @@
     <module>python</module>
     <module>lens</module>
     <!--<module>cassandra</module>-->
+
     <module>elasticsearch</module>
     <module>alluxio</module>
     <module>zeppelin-web</module>
