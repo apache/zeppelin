@@ -71,7 +71,16 @@ plt.close()
     print ("<div><b>example </b>:")
     print ('''<pre>z.show(plt,width='50px')
 z.show(plt,height='150px') </pre></div>''')
-
+    print ('<h3>Pandas DataFrame</h3>')
+    print """
+<div>The interpreter can visualize Pandas DataFrame
+with the function z.show()
+<pre>
+import matplotlib.pyplot as plt
+df = pd.read_csv("bank.csv", sep=";")
+z.show(df)
+</pre></div>
+"""
 
 class PyZeppelinContext(object):
     """ If py4j is detected, these class will be override
@@ -82,6 +91,7 @@ class PyZeppelinContext(object):
     
     def __init__(self, zc):
         self.z = zc
+        self.max_result = 1000
     
     def input(self, name, defaultValue=""):
         print (self.errorMsg)
@@ -101,24 +111,30 @@ class PyZeppelinContext(object):
             self.show_dataframe(p, **kwargs)
     
     def show_dataframe(self, df, **kwargs):
-        """Pretty prints DF as nice Table
+        """Pretty prints DF using Table Display System
         """
+        limit = len(df) > self.max_result
         header_buf = io.StringIO("")
         header_buf.write(df.columns[0])
         for col in df.columns[1:]:
             header_buf.write("\t")
             header_buf.write(col)
+        header_buf.write("\n")
         
         body_buf = io.StringIO("")
-        rows = df.head().values
-        for row in rows: #TODO(bzz): limit N rows
+        rows = df.head(self.max_result).values if limit else df.values
+        for row in rows:
             body_buf.write(row[0])
             for cell in row[1:]:
                 body_buf.write("\t")
                 body_buf.write(cell)
             body_buf.write("\n")
         body_buf.seek(0); header_buf.seek(0)
-        print("%table " + header_buf.read() + body_buf.read())
+        #TODO(bzz): fix it, so it shows red notice, as in Spark
+        print("%table " + header_buf.read() + body_buf.read()) # +
+        #      ("\n<font color=red>Results are limited by {}.</font>" \
+        #          .format(self.max_result) if limit else "")
+        #)
         body_buf.close(); header_buf.close()
     
     def show_matplotlib(self, p, width="0", height="0", **kwargs):
