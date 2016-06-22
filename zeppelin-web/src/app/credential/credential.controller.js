@@ -21,15 +21,28 @@ angular.module('zeppelinWebApp').controller('CredentialCtrl', function($scope, $
   $scope.credentialEntity = '';
   $scope.credentialUsername = '';
   $scope.credentialPassword = '';
-  
+
   $scope.updateCredentials = function() {
+    if (_.isEmpty($scope.credentialEntity.trim()) ||
+        _.isEmpty($scope.credentialUsername.trim()) ||
+        _.isEmpty($scope.credentialPassword.trim())) {
+      BootstrapDialog.alert({
+        closable: true,
+        message: 'The values must be filled.'
+      });
+      return;
+    }
+
     $http.put(baseUrlSrv.getRestApiBase() + '/credential',
       { 'entity': $scope.credentialEntity,
         'username': $scope.credentialUsername,
         'password': $scope.credentialPassword
       } ).
     success(function (data, status, headers, config) {
-      alert('Successfully saved credentials');
+      BootstrapDialog.alert({
+        closable: true,
+        message: 'Successfully saved credentials.'
+      });
       $scope.credentialEntity = '';
       $scope.credentialUsername = '';
       $scope.credentialPassword = '';
