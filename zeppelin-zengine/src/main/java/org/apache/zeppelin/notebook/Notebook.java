@@ -196,7 +196,7 @@ public class Notebook {
     GsonBuilder gsonBuilder = new GsonBuilder();
     gsonBuilder.setPrettyPrinting();
 
-    Gson gson = gsonBuilder.registerTypeAdapter(Date.class, new NotebookImportSerializer())
+    Gson gson = gsonBuilder.registerTypeAdapter(Date.class, new NotebookImportDeserializer())
       .create();
     JsonReader reader = new JsonReader(new StringReader(sourceJson));
     reader.setLenient(true);

@@ -32,7 +32,7 @@ import java.util.Locale;
 /**
  *  Notebook Import serializer for gson
  */
-public class NotebookImportSerializer implements JsonDeserializer<Date> {
+public class NotebookImportDeserializer implements JsonDeserializer<Date> {
   private static final String[] DATE_FORMATS = new String[] {
     "yyyy-MM-dd'T'HH:mm:ssZ",
     "MMM dd, yyyy HH:mm:ss"
