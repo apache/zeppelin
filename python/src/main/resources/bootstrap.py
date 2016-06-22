@@ -69,7 +69,7 @@ plt.close()
     print ('<div><br/> z.show function can take optional parameters ')
     print ('to adapt graph width and height</div>')
     print ("<div><b>example </b>:")
-    print('''<pre>z.show(plt,width='50px')
+    print ('''<pre>z.show(plt,width='50px')
 z.show(plt,height='150px') </pre></div>''')
 
 
@@ -93,13 +93,33 @@ class PyZeppelinContext(object):
         print (self.errorMsg)
     
     def show(self, p, **kwargs):
-        if instance(p, Matplotlib):
-            self.show_matplotlib(p, kwargs)
-        elif instance(p, PandaDataframe):
-            self.show_dataframe(p, kwargs)
+        if hasattr(p, '__name__') and p.__name__ == "matplotlib.pyplot":
+            self.show_matplotlib(p, **kwargs)
+        elif type(p).__name__ == "DataFrame": # does not play well with sub-classes
+            # `isinstance(p, DataFrame)` would req `import pandas.core.frame.DataFrame`
+            # and so a dependency on pandas
+            self.show_dataframe(p, **kwargs)
     
     def show_dataframe(self, df, **kwargs):
-        print("%table col1\tcol2\tcol3\n")
+        """Pretty prints DF as nice Table
+        """
+        header_buf = io.StringIO("")
+        header_buf.write(df.columns[0])
+        for col in df.columns[1:]:
+            header_buf.write("\t")
+            header_buf.write(col)
+        
+        body_buf = io.StringIO("")
+        rows = df.head().values
+        for row in rows: #TODO(bzz): limit N rows
+            body_buf.write(row[0])
+            for cell in row[1:]:
+                body_buf.write("\t")
+                body_buf.write(cell)
+            body_buf.write("\n")
+        body_buf.seek(0); header_buf.seek(0)
+        print("%table " + header_buf.read() + body_buf.read())
+        body_buf.close(); header_buf.close()
     
     def show_matplotlib(self, p, width="0", height="0", **kwargs):
         """Matplotlib show function
@@ -115,6 +135,7 @@ class PyZeppelinContext(object):
                 style += ","
                 style += 'height:' + height
         print("%html <div style='" + style + "'>" + img.read() + "<div>")
+        img.close()
 
 
 z = PyZeppelinContext("")
