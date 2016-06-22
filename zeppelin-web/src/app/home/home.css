@@ -303,6 +303,13 @@ a.navbar-brand:hover {
   border-color: #357ebd;
 }
 
+.username {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 180px;
+}
+
 .server-connected {
   color: #00CC00;
   font-size: 12px !important;
