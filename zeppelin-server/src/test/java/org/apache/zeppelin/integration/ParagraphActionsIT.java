@@ -338,6 +338,12 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       String xpathToShowTitle=getParagraphXPath(1) + "//ul/li/a[@ng-click='showTitle()']";
       String xpathToHideTitle=getParagraphXPath(1) + "//ul/li/a[@ng-click='hideTitle()']";
 
+      LOG.info("1clover is displaded {}", driver.findElement(By.xpath(xpathToTitle)).isDisplayed());
+
+      sleep(1000, false);
+
+
+      LOG.info("2clover is displaded {}", driver.findElement(By.xpath(xpathToTitle)).isDisplayed());
       collector.checkThat("Before Show Title : The title field contains",
           driver.findElement(By.xpath(xpathToTitle)).getText(),
           CoreMatchers.equalTo(""));
@@ -345,17 +351,17 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       collector.checkThat("Before Show Title : The title option in option panel of paragraph is labeled as  ",
           driver.findElement(By.xpath(xpathToShowTitle)).getText(),
           CoreMatchers.equalTo("Show title"));
-
+      LOG.info("3clover is displaded {}", driver.findElement(By.xpath(xpathToTitle)).isDisplayed());
       driver.findElement(By.xpath(xpathToShowTitle)).click();
       collector.checkThat("After Show Title : The title field contains",
           driver.findElement(By.xpath(xpathToTitle)).getText(),
           CoreMatchers.equalTo("Untitled"));
-
+      LOG.info("4clover is displaded {}", driver.findElement(By.xpath(xpathToTitle)).isDisplayed());
       driver.findElement(By.xpath(xpathToSettingIcon)).click();
       collector.checkThat("After Show Title : The title option in option panel of paragraph is labeled as",
           driver.findElement(By.xpath(xpathToHideTitle)).getText(),
           CoreMatchers.equalTo("Hide title"));
-
+      LOG.info("5clover is displaded {}", driver.findElement(By.xpath(xpathToTitle)).isDisplayed());
       driver.findElement(By.xpath(xpathToHideTitle)).click();
       collector.checkThat("After Hide Title : The title field contains",
           driver.findElement(By.xpath(xpathToTitle)).getText(),
