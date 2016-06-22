@@ -612,7 +612,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl',
       BootstrapDialog.confirm({
         closable: true,
         title: '',
-        message: 'Changes will be discarded.',
+        message: 'Interpreter setting changes will be discarded.',
         callback: function(result) {
           if (result) {
             $scope.$apply(function() {
@@ -651,6 +651,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl',
       $scope.closeSetting();
     } else {
       $scope.openSetting();
+      $scope.closePermissions();
     }
   };
 
@@ -752,6 +753,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl',
       $scope.closePermissions();
     } else {
       $scope.openPermissions();
+      $scope.closeSetting();
     }
   };
 
