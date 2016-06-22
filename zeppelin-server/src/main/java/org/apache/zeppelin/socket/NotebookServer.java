@@ -205,12 +205,6 @@ public class NotebookServer extends WebSocketServlet implements
           case CHECKPOINT_NOTEBOOK:
             checkpointNotebook(conn, notebook, messagereceived);
             break;
-          case LIST_NOTEBOOK_JOBS:
-            unicastNotebookJobInfo(conn, messagereceived);
-            break;
-          case LIST_UPDATE_NOTEBOOK_JOBS:
-            unicastUpdateNotebookJobInfo(conn, messagereceived);
-            break;
           default:
             break;
       }
@@ -358,43 +352,8 @@ public class NotebookServer extends WebSocketServlet implements
     }
   }
 
-<<<<<<< HEAD
-  public List<Map<String, String>> generateNotebooksInfo(boolean needsReload) {
-=======
-  public void unicastNotebookJobInfo(NotebookSocket conn, Message fromMessage) throws IOException {
-
-    AuthenticationInfo subject = new AuthenticationInfo(fromMessage.principal);
-    List<Map<String, Object>> notebookJobs = notebook().getJobListforNotebook(false, 0, subject);
-    Map<String, Object> response = new HashMap<>();
-
-    response.put("lastResponseUnixTime", System.currentTimeMillis());
-    response.put("jobs", notebookJobs);
-
-    conn.send(serializeMessage(new Message(OP.LIST_NOTEBOOK_JOBS)
-      .put("notebookJobs", response)));
-  }
-
-  public void unicastUpdateNotebookJobInfo(NotebookSocket conn, Message fromMessage)
-      throws IOException {
-    double lastUpdateUnixTimeRaw = (double) fromMessage.get("lastUpdateUnixTime");
-    long lastUpdateUnixTime = new Double(lastUpdateUnixTimeRaw).longValue();
-
-    List<Map<String, Object>> notebookJobs;
-    AuthenticationInfo subject = new AuthenticationInfo(fromMessage.principal);
-    notebookJobs = notebook().getJobListforNotebook(false, lastUpdateUnixTime, subject);
-
-    Map<String, Object> response = new HashMap<>();
-    response.put("lastResponseUnixTime", System.currentTimeMillis());
-    response.put("jobs", notebookJobs);
-
-    conn.send(serializeMessage(new Message(OP.LIST_UPDATE_NOTEBOOK_JOBS)
-            .put("notebookRunningJobs", response)));
-  }
-
   public List<Map<String, String>> generateNotebooksInfo(boolean needsReload,
       AuthenticationInfo subject) {
-
->>>>>>> 4a0dce5... Authenticated user aware notebook storage layer
     Notebook notebook = notebook();
 
     ZeppelinConfiguration conf = notebook.getConf();
