@@ -68,8 +68,7 @@
     <module>zeppelin-display</module>
     <module>spark-dependencies</module>
     <module>spark</module>
-    <!--<module>markdown</module>-->
-
+    <module>markdown</module>
     <module>angular</module>
     <module>shell</module>
     <module>jdbc</module>
