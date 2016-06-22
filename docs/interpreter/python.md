@@ -39,7 +39,7 @@ To access the help, type **help()**
 ## Python modules
 The interpreter can use all modules already installed (with pip, easy_install...)
 
-## Apply Zeppelin Dynamic Forms
+## Use Zeppelin Dynamic Forms
 You can leverage [Zeppelin Dynamic Form]({{BASE_PATH}}/manual/dynamicform.html) inside your Python code.
 
 **Zeppelin Dynamic Form can only be used if py4j Python library is installed in your system. If not, you can install it with `pip install py4j`.**
@@ -57,7 +57,6 @@ print (z.select("f1",[("o1","1"),("o2","2")],"2"))
 ### Checkbox form
 print("".join(z.checkbox("f3", [("o1","1"), ("o2","2")],["1"])))
 ```
-
 
 
 
@@ -83,11 +82,23 @@ zeppelin_show function can take optional parameters to adapt graph width and hei
 
  ```python
 %python
-zeppelin_show(plt,width='50px')
-zeppelin_show(plt,height='150px')
+zeppelin_show(plt, width='50px')
+zeppelin_show(plt, height='150px')
 ```
 
 [![pythonmatplotlib](../interpreter/screenshots/pythonMatplotlib.png)](/docs/interpreter/screenshots/pythonMatplotlib.png)
+
+
+## Pandas integration
+[Zeppelin Display System]({{BASE_PATH}}/displaysystem/basicdisplaysystem.html#table) provides simple API to visualize data in Pandas DataFrames, same as in Matplotlib.
+
+Example:
+
+```python
+import pandas as pd
+rates = pd.read_csv("bank.csv", sep=";")
+z.show(rates)
+```
 
 
 ## Technical description
