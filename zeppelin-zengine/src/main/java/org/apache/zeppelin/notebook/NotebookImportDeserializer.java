@@ -30,7 +30,7 @@ import java.util.Date;
 import java.util.Locale;
 
 /**
- *  Notebook Import serializer for gson
+ *  importNote date format deserializer
  */
 public class NotebookImportDeserializer implements JsonDeserializer<Date> {
   private static final String[] DATE_FORMATS = new String[] {
