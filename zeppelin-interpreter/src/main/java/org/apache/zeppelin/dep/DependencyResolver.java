@@ -19,6 +19,7 @@ package org.apache.zeppelin.dep;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;

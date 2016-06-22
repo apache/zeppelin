@@ -25,6 +25,7 @@ import org.apache.zeppelin.util.Util;
 import org.sonatype.aether.RepositoryException;
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
@@ -40,6 +41,9 @@ public class InstallInterpreter {
   private final File interpreterBaseDir;
   private final List<AvailableInterpreterInfo> availableInterpreters;
   private final String localRepoDir;
+  private URL proxyUrl;
+  private String proxyUser;
+  private String proxyPassword;
 
   /**
    *
@@ -149,6 +153,9 @@ public class InstallInterpreter {
 
   public void install(String name, String artifact) {
     DependencyResolver depResolver = new DependencyResolver(localRepoDir);
+    if (proxyUrl != null) {
+      depResolver.setProxy(proxyUrl, proxyUser, proxyPassword);
+    }
 
     File installDir = new File(interpreterBaseDir, name);
     if (installDir.exists()) {
@@ -170,15 +177,26 @@ public class InstallInterpreter {
     }
   }
 
+  public void setProxy(URL proxyUrl, String proxyUser, String proxyPassword) {
+    this.proxyUrl = proxyUrl;
+    this.proxyUser = proxyUser;
+    this.proxyPassword = proxyPassword;
+  }
+
   public static void usage() {
     System.out.println("Options");
-    System.out.println("  -l, --list                  List available interpreters");
-    System.out.println("  -a, --all                   Install all available interpreters");
-    System.out.println("  -n, --name     [NAMES]      Install interpreters (comma separated list)" +
+    System.out.println("  -l, --list                   List available interpreters");
+    System.out.println("  -a, --all                    Install all available interpreters");
+    System.out.println("  -n, --name       [NAMES]     Install interpreters (comma separated " +
+        "list)" +
         "e.g. md,shell,jdbc,python,angular");
-    System.out.println("  -t, --artifact [ARTIFACTS]  (Optional with -n) custom artifact names. " +
+    System.out.println("  -t, --artifact   [ARTIFACTS] (Optional with -n) custom artifact names" +
+        ". " +
         "(comma separated list correspond to --name) " +
         "e.g. customGroup:customArtifact:customVersion");
+    System.out.println("  --proxy-url      [url]       (Optional) proxy url. http(s)://host:port");
+    System.out.println("  --proxy-user     [user]      (Optional) proxy user");
+    System.out.println("  --proxy-password [password]  (Optional) proxy password");
   }
 
   public static void main(String [] args) throws IOException {
@@ -195,6 +213,10 @@ public class InstallInterpreter {
 
     String names = null;
     String artifacts = null;
+    URL proxyUrl = null;
+    String proxyUser = null;
+    String proxyPassword = null;
+    boolean all = false;
 
     for (int i = 0; i < args.length; i++) {
       String arg = args[i].toLowerCase(Locale.US);
@@ -206,8 +228,7 @@ public class InstallInterpreter {
             break;
           case "--all":
           case "-a":
-            installer.installAll();
-            System.exit(0);
+            all = true;
             break;
           case "--name":
           case "-n":
@@ -221,6 +242,15 @@ public class InstallInterpreter {
           case "-v":
             Util.getVersion();
             break;
+          case "--proxy-url":
+            proxyUrl = new URL(args[++i]);
+            break;
+          case "--proxy-user":
+            proxyUser = args[++i];
+            break;
+          case "--proxy-password":
+            proxyPassword = args[++i];
+            break;
           case "--help":
           case "-h":
             usage();
@@ -229,6 +259,15 @@ public class InstallInterpreter {
           default:
             System.out.println("Unknown option " + arg);
       }
+    }
+
+    if (proxyUrl != null) {
+      installer.setProxy(proxyUrl, proxyUser, proxyPassword);
+    }
+
+    if (all) {
+      installer.installAll();
+      System.exit(0);
     }
 
     if (names != null) {
