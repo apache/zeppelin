@@ -33,6 +33,7 @@ def intHandler(signum, frame):  # Set the signal handler
 
 signal.signal(signal.SIGINT, intHandler)
 
+
 def help():
     print ('%html')
     print ('<h2>Python Interpreter help</h2>')
@@ -56,20 +57,20 @@ def help():
            '("o2","2")],["1"])))</pre>')
     print ('<h3>Matplotlib graph</h3>')
     print ('<div>The interpreter can display matplotlib graph with ')
-    print ('the function zeppelin_show()</div>')
+    print ('the function z.show()</div>')
     print ('<div> You need to already have matplotlib module installed ')
     print ('to use this functionality !</div><br/>')
     print ('''<pre>import matplotlib.pyplot as plt
 plt.figure()
 (.. ..)
-zeppelin_show(plt)
+z.show(plt)
 plt.close()
 </pre>''')
-    print ('<div><br/> zeppelin_show function can take optional parameters ')
+    print ('<div><br/> z.show function can take optional parameters ')
     print ('to adapt graph width and height</div>')
     print ("<div><b>example </b>:")
-    print('''<pre>zeppelin_show(plt,width='50px')
-zeppelin_show(plt,height='150px') </pre></div>''')
+    print('''<pre>z.show(plt,width='50px')
+z.show(plt,height='150px') </pre></div>''')
 
 
 class PyZeppelinContext(object):
@@ -91,7 +92,16 @@ class PyZeppelinContext(object):
     def checkbox(self, name, options, defaultChecked=[]):
         print (self.errorMsg)
     
-    def show(self, p, width="0", height="0"):
+    def show(self, p, **kwargs):
+        if instance(p, Matplotlib):
+            self.show_matplotlib(p, kwargs)
+        elif instance(p, PandaDataframe):
+            self.show_dataframe(p, kwargs)
+    
+    def show_dataframe(self, df, **kwargs):
+        print("%table col1\tcol2\tcol3\n")
+    
+    def show_matplotlib(self, p, width="0", height="0", **kwargs):
         """Matplotlib show function
         """
         img = io.StringIO()
