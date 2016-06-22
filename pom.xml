@@ -31,7 +31,7 @@
     the specific language governing permissions and limitations under the License. -->
 
   <modelVersion>4.0.0</modelVersion>
-  
+
   <groupId>org.apache.zeppelin</groupId>
   <artifactId>zeppelin</artifactId>
   <packaging>pom</packaging>
@@ -71,7 +71,7 @@
     <module>markdown</module>
     <module>angular</module>
     <module>shell</module>
-    <module>livy</module>
+    <!--<module>livy</module>-->
     <module>hbase</module>
     <module>postgresql</module>
     <module>jdbc</module>
