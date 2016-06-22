@@ -74,6 +74,7 @@
     <module>livy</module>
     <module>hbase</module>
     <!--<module>postgresql</module>-->
+
     <module>jdbc</module>
     <module>file</module>
     <module>flink</module>
