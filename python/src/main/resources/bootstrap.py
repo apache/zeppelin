@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# PYTHON 2 / 3 comptability :
+# PYTHON 2 / 3 compatibility :
 # bootstrap.py must be runnable with Python 2 or 3
 
 # Remove interactive mode displayhook
@@ -36,7 +36,7 @@ signal.signal(signal.SIGINT, intHandler)
 def help():
     print ('%html')
     print ('<h2>Python Interpreter help</h2>')
-    print ('<h3>Python 2 & 3 comptability</h3>')
+    print ('<h3>Python 2 & 3 compatibility</h3>')
     print ('<p>The interpreter is compatible with Python 2 & 3.<br/>')
     print ('To change Python version, ')
     print ('change in the interpreter configuration the python to the ')
@@ -100,4 +100,3 @@ class PyZeppelinContext():
         print (self.errorMsg)
 
 z = PyZeppelinContext("")
-

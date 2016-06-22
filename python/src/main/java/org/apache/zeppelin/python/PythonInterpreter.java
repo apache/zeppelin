@@ -48,13 +48,14 @@ public class PythonInterpreter extends Interpreter {
   public static final String BOOTSTRAP_PY = "/bootstrap.py";
   public static final String BOOTSTRAP_INPUT_PY = "/bootstrap_input.py";
   public static final String ZEPPELIN_PYTHON = "zeppelin.python";
+  public static final String DEFAULT_ZEPPELIN_PYTHON = "python";
+  public static final String MAX_RESULT = "zeppelin.python.maxResult";
 
   private Integer port;
   private GatewayServer gatewayServer;
-  private long pythonPid;
-
   private Boolean py4J = false;
   private InterpreterContext context;
+  private int maxResult;
 
   PythonProcess process = null;
 
@@ -67,6 +68,7 @@ public class PythonInterpreter extends Interpreter {
     logger.info("Starting Python interpreter .....");
     logger.info("Python path is set to:" + property.getProperty(ZEPPELIN_PYTHON));
 
+    maxResult = Integer.valueOf(getProperty(MAX_RESULT));
     process = getPythonProcess();
 
     try {
@@ -234,4 +236,7 @@ public class PythonInterpreter extends Interpreter {
     return port;
   }
 
+  public int getMaxResult() {
+    return maxResult;
+  }
 }

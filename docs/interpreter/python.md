@@ -16,11 +16,16 @@ group: manual
     <th>Description</th>
   </tr>
   <tr>
-    <td>python</td>
+    <td>zeppelin.python</td>
     <td>python</td>
     <td>Path of the already installed Python binary (could be python2 or python3).
     If python is not in your $PATH you can set the absolute directory (example : /usr/bin/python)
     </td>
+  </tr>
+  <tr>
+    <td>zeppelin.python.maxResult</td>
+    <td>1000</td>
+    <td>Max number of dataframe rows to display.</td>
   </tr>
 </table>
 

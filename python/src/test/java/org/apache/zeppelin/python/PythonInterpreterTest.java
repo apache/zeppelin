@@ -17,6 +17,7 @@
 
 package org.apache.zeppelin.python;
 
+import static org.apache.zeppelin.python.PythonInterpreter.*;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -53,9 +54,6 @@ public class PythonInterpreterTest {
 
   Logger logger = LoggerFactory.getLogger(PythonProcess.class);
 
-  public static final String ZEPPELIN_PYTHON = "zeppelin.python";
-  public static final String DEFAULT_ZEPPELIN_PYTHON = "python";
-
   PythonInterpreter pythonInterpreter = null;
   PythonProcess mockPythonProcess;
   String cmdHistory;
@@ -63,6 +61,7 @@ public class PythonInterpreterTest {
   public static Properties getPythonTestProperties() {
     Properties p = new Properties();
     p.setProperty(ZEPPELIN_PYTHON, DEFAULT_ZEPPELIN_PYTHON);
+    p.setProperty(MAX_RESULT, "1000");
     return p;
   }
 
