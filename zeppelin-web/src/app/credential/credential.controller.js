@@ -24,11 +24,10 @@ angular.module('zeppelinWebApp').controller('CredentialCtrl', function($scope, $
 
   $scope.updateCredentials = function() {
     if (_.isEmpty($scope.credentialEntity.trim()) ||
-        _.isEmpty($scope.credentialUsername.trim()) ||
-        _.isEmpty($scope.credentialPassword.trim())) {
+        _.isEmpty($scope.credentialUsername.trim())) {
       BootstrapDialog.alert({
         closable: true,
-        message: 'The values must be filled.'
+        message: 'Username \\ Entity can not be empty.'
       });
       return;
     }
