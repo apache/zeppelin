@@ -73,8 +73,7 @@
     <module>shell</module>
     <module>livy</module>
     <module>hbase</module>
-    <!--<module>postgresql</module>-->
-
+    <module>postgresql</module>
     <module>jdbc</module>
     <module>file</module>
     <module>flink</module>
@@ -82,7 +81,7 @@
     <module>kylin</module>
     <module>python</module>
     <module>lens</module>
-    <module>cassandra</module>
+    <!--<module>cassandra</module>-->
     <module>elasticsearch</module>
     <module>alluxio</module>
     <module>zeppelin-web</module>
