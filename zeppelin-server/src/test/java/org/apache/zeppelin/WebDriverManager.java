@@ -126,7 +126,7 @@ public class WebDriverManager {
           @Override
           public Boolean apply(WebDriver d) {
             return d.findElement(By.xpath(
-                "//button[@class='btn dropdown-toggle nav-status-btn']" +
+                "//button[contains(@class,'username')]" +
                 "/span[contains(.,'Connected')]"))
                 .isDisplayed();
           }
