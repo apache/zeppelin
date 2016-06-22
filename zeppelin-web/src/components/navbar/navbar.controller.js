@@ -15,43 +15,6 @@
 'use strict';
 
 angular.module('zeppelinWebApp')
-.filter('notebookFilter', function() {
-  return function (notebooks, searchText)
-  {
-    if (!searchText) {
-      return notebooks;
-    }
-
-    var filteringNote = function(notebooks, filteredNotes) {
-      _.each(notebooks, function(notebook) {
-
-        if (notebook.name.toLowerCase().indexOf(searchText) !== -1) {
-          filteredNotes.push(notebook);
-          return notebook;
-        }
-
-        if (notebook.children) { 
-          filteringNote(notebook.children, filteredNotes);
-        }
-      });
-    };
-
-    return _.filter(notebooks, function(notebook) {
-      if (notebook.children) {
-        var filteredNotes = [];
-        filteringNote(notebook.children, filteredNotes);
-
-        if (filteredNotes.length > 0) {
-          return filteredNotes;
-        }
-      }
-
-      if (notebook.name.toLowerCase().indexOf(searchText) !== -1) {
-        return notebook;
-      }
-    });
-  };
-})
 .controller('NavCtrl', function($scope, $rootScope, $http, $routeParams,
     $location, notebookListDataFactory, baseUrlSrv, websocketMsgSrv, arrayOrderingSrv, searchService) {
 
