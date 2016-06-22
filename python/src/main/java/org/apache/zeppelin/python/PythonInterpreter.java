@@ -20,7 +20,6 @@ package org.apache.zeppelin.python;
 import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
-import org.apache.zeppelin.interpreter.InterpreterPropertyBuilder;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
@@ -49,27 +48,15 @@ public class PythonInterpreter extends Interpreter {
   public static final String BOOTSTRAP_PY = "/bootstrap.py";
   public static final String BOOTSTRAP_INPUT_PY = "/bootstrap_input.py";
   public static final String ZEPPELIN_PYTHON = "zeppelin.python";
-  public static final String DEFAULT_ZEPPELIN_PYTHON = "python";
 
   private Integer port;
   private GatewayServer gatewayServer;
   private long pythonPid;
+
   private Boolean py4J = false;
   private InterpreterContext context;
 
   PythonProcess process = null;
-
-  static {
-    Interpreter.register(
-        "python",
-        "python",
-        PythonInterpreter.class.getName(),
-        new InterpreterPropertyBuilder()
-            .add(ZEPPELIN_PYTHON, DEFAULT_ZEPPELIN_PYTHON,
-                "Python directory. Default : python (assume python is in your $PATH)")
-            .build()
-    );
-  }
 
   public PythonInterpreter(Properties property) {
     super(property);
@@ -223,7 +210,7 @@ public class PythonInterpreter extends Interpreter {
     return context.getGui();
   }
 
-  public Integer getPy4JPort() {
+  public Integer getPy4jPort() {
     return port;
   }
 

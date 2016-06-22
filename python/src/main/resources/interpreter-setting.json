@@ -1,0 +1,15 @@
+[
+  {
+    "group": "python",
+    "name": "python",
+    "className": "org.apache.zeppelin.python.PythonInterpreter",
+    "properties": {
+      "zeppelin.python": {
+        "envName": null,
+        "propertyName": "zeppelin.python",
+        "defaultValue": "python",
+        "description": "Python directory. It is set to python by default.(assume python is in your $PATH)"
+      }
+    }
+  }
+]

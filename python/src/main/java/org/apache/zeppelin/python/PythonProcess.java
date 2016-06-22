@@ -92,7 +92,7 @@ public class PythonProcess {
     String output = "";
     String line;
     while (!(line = reader.readLine()).contains("*!?flush reader!?*")) {
-      logger.debug("Readed line from python shell : " + line);
+      logger.debug("Read line from python shell : " + line);
       if (line.equals("...")) {
         logger.warn("Syntax error ! ");
         output += "Syntax error ! ";
