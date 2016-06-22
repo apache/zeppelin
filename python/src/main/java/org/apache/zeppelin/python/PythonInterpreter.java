@@ -134,7 +134,9 @@ public class PythonInterpreter extends Interpreter {
   @Override
   public InterpreterResult interpret(String cmd, InterpreterContext contextInterpreter) {
     this.context = contextInterpreter;
-
+    if (cmd == null || cmd.isEmpty()) {
+      return new InterpreterResult(Code.SUCCESS, "");
+    }
     String output = sendCommandToPython(cmd);
     return new InterpreterResult(Code.SUCCESS, output.replaceAll(">>>", "")
         .replaceAll("\\.\\.\\.", "").trim());
