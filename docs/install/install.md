@@ -62,6 +62,8 @@ Although it can be unstable somehow since it is on development status, you can e
 If you want to install Apache Zeppelin with a stable binary package, please visit [Apache Zeppelin download Page](http://zeppelin.apache.org/download.html). 
 After unpacking, jump to [Starting Apache Zeppelin with Command Line](#starting-apache-zeppelin-with-command-line) section.
 
+If you have downloaded `netinst` binary, [install additional interpreters](http://localhost:4000/install/install.html#install-interpreters) or simply run `./bin/install-interpreter.sh --all` before you jump to [Starting Apache Zeppelin with Command Line](#starting-apache-zeppelin-with-command-line) section.
+
 ### Building from Source
 If you want to build from the source, the software below needs to be installed on your system.
 
@@ -389,3 +391,56 @@ You can configure Apache Zeppelin with both **environment variables** in `conf/z
     <td>Size in characters of the maximum text message to be received by websocket.</td>
   </tr>
 </table>
+
+## Install interpreters
+
+You can install additional [interpreters](../manual/interpreters.html) using `bin/install-interpreter.sh` command.
+
+### Community managed interpreters
+
+Informations of community managed interpreters are listed in `conf/interpreter-list` file. `bin/install-interpreter.sh` command will read this file to install interpreters.
+
+##### Install all community managed interpreters
+
+```
+./bin/install-interpreter.sh --all
+```
+
+##### Install specific interpreters
+
+```
+./bin/install-interpreter.sh --name md,shell,jdbc,python
+```
+
+You can get full list of community managed interpreters by running
+
+```
+./bin/install-interpreter.sh --list
+```
+
+Once you have installed interpreter, restart Zeppelin. And then you'll need [create interpreter setting](../manual/interpreters.html#what-is-zeppelin-interpreter) and [binding it with your notebook](../manual/interpreters.html#what-is-zeppelin-interpreter-setting).
+
+
+### 3rd party interpreters
+
+`./bin/install-interpreter.sh` command can install 3rd party interpreters available in maven repository.
+
+##### Install 3rd party interpreters
+
+```
+./bin/install-interpreter.sh --name interpreter1 --repository groupId1:artifact1:version1
+```
+
+The command will download maven artifact `groupId1:artifact1:version1` and all of it's transitive dependencies into `interpreter/interpreter1` directory.
+
+Once you have installed interpreters, you'll need to add interpreter class name into `zeppelin.interpreters` property in [configuration](install.html#zeppelin-configuration).
+And then restart Zeppelin, [create interpreter setting](../manual/interpreters.html#what-is-zeppelin-interpreter) and [binding it with your notebook](../manual/interpreters.html#what-is-zeppelin-interpreter-setting).
+
+
+##### Install multiple 3rd party interpreters at once
+
+`--name` and `--repository` argument receives comma separated list
+
+```
+./bin/install-interpreter.sh --name interpreter1,interpreter2 --repository groupId1:artifact1:version1,groupId2:artifact2:version2
+```
