@@ -42,8 +42,8 @@ import java.util.List;
 /**
  * Created for org.apache.zeppelin.integration on 13/06/16.
  */
-public class AuthenticationIT extends AbstractZeppelinIT {
-  private static final Logger LOG = LoggerFactory.getLogger(AuthenticationIT.class);
+public class ZeppelinShiroAuthenticationIT extends AbstractZeppelinIT {
+  private static final Logger LOG = LoggerFactory.getLogger(ZeppelinShiroAuthenticationIT.class);
 
   @Rule
   public ErrorCollector collector = new ErrorCollector();
@@ -133,7 +133,7 @@ public class AuthenticationIT extends AbstractZeppelinIT {
       return;
     }
     try {
-      AuthenticationIT authenticationIT = new AuthenticationIT();
+      ZeppelinShiroAuthenticationIT authenticationIT = new ZeppelinShiroAuthenticationIT();
       authenticationIT.authenticationUser("admin", "password1");
 
       collector.checkThat("Check is user logged in", true,
@@ -152,7 +152,7 @@ public class AuthenticationIT extends AbstractZeppelinIT {
       return;
     }
     try {
-      AuthenticationIT authenticationIT = new AuthenticationIT();
+      ZeppelinShiroAuthenticationIT authenticationIT = new ZeppelinShiroAuthenticationIT();
       authenticationIT.authenticationUser("finance1", "finance1");
       createNewNote();
 
