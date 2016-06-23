@@ -422,6 +422,23 @@ table.dataTable.table-condensed .sorting_desc:after {
   border-bottom: 2px solid #CCC;
 }
 
+.handsontable .columnSorting.ascending::after {
+  content: '\f160';
+  margin-left: 3px;
+  font-size: 12px;
+  font-family: FontAwesome;
+  line-height: 2;
+}
+
+.handsontable .columnSorting.descending::after {
+  content: '\f161';
+  margin-left: 3px;
+  font-size: 12px;
+  margin-left: 3px;
+  font-family: FontAwesome;
+  line-height: 2;
+}
+
 /*
   Pivot CSS
 */

@@ -19,16 +19,16 @@ limitations under the License.
           Interpreters
         </h3>
         <div class="pull-right" style="margin-top:10px;">
-          <span style="cursor:pointer;margin-right:8px;"
+          <span style="cursor:pointer;margin-right:4px;"
                 ng-click="showRepositoryInfo = !showRepositoryInfo"
                 tooltip-placement="bottom" tooltip="Repository information">
             <i class="fa fa-cog" ng-style="{color: showRepositoryInfo ? '#3071A9' : 'black' }"></i>
           </span>
-          <span class="btn btn-default fa fa-plus"
-                ng-click="showAddNewSetting = !showAddNewSetting"
-                style="margin-right:6px;">
+          <button class="btn btn-default btn-sm"
+                  ng-click="showAddNewSetting = !showAddNewSetting">
+            <i class="fa fa-plus"></i>
             Create
-          </span>
+          </button>
         </div>
       </div>
     </div>
@@ -152,7 +152,7 @@ limitations under the License.
         </span>
         <span>Interpreter for note</span>
       </div>
-      
+
       <br />
       <div class="col-md-12">
         <div class="checkbox">
@@ -189,11 +189,11 @@ limitations under the License.
               <th ng-if="valueform.$visible">action</th>
             </tr>
           </thead>
-          <tr ng-repeat="(key, value) in setting.properties" >
+          <tr ng-repeat="key in setting.properties | sortByKey" >
             <td>{{key}}</td>
             <td>
               <span editable-textarea="setting.properties[key]" e-form="valueform" e-msd-elastic>
-                {{value | breakFilter}}
+                {{setting.properties[key] | breakFilter}}
               </span>
             </td>
             <td ng-if="valueform.$visible">

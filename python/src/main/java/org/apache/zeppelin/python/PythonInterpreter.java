@@ -20,7 +20,6 @@ package org.apache.zeppelin.python;
 import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
-import org.apache.zeppelin.interpreter.InterpreterPropertyBuilder;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
@@ -50,26 +49,15 @@ public class PythonInterpreter extends Interpreter {
   public static final String BOOTSTRAP_INPUT_PY = "/bootstrap_input.py";
   public static final String ZEPPELIN_PYTHON = "zeppelin.python";
   public static final String DEFAULT_ZEPPELIN_PYTHON = "python";
+  public static final String MAX_RESULT = "zeppelin.python.maxResult";
 
   private Integer port;
   private GatewayServer gatewayServer;
-  private long pythonPid;
   private Boolean py4J = false;
   private InterpreterContext context;
+  private int maxResult;
 
   PythonProcess process = null;
-
-  static {
-    Interpreter.register(
-        "python",
-        "python",
-        PythonInterpreter.class.getName(),
-        new InterpreterPropertyBuilder()
-            .add(ZEPPELIN_PYTHON, DEFAULT_ZEPPELIN_PYTHON,
-                "Python directory. Default : python (assume python is in your $PATH)")
-            .build()
-    );
-  }
 
   public PythonInterpreter(Properties property) {
     super(property);
@@ -80,6 +68,7 @@ public class PythonInterpreter extends Interpreter {
     logger.info("Starting Python interpreter .....");
     logger.info("Python path is set to:" + property.getProperty(ZEPPELIN_PYTHON));
 
+    maxResult = Integer.valueOf(getProperty(MAX_RESULT));
     process = getPythonProcess();
 
     try {
@@ -134,7 +123,9 @@ public class PythonInterpreter extends Interpreter {
   @Override
   public InterpreterResult interpret(String cmd, InterpreterContext contextInterpreter) {
     this.context = contextInterpreter;
-
+    if (cmd == null || cmd.isEmpty()) {
+      return new InterpreterResult(Code.SUCCESS, "");
+    }
     String output = sendCommandToPython(cmd);
     return new InterpreterResult(Code.SUCCESS, output.replaceAll(">>>", "")
         .replaceAll("\\.\\.\\.", "").trim());
@@ -193,12 +184,13 @@ public class PythonInterpreter extends Interpreter {
 
   private String sendCommandToPython(String cmd) {
     String output = "";
-    logger.info("Sending : \n" + (cmd.length() > 200 ? cmd.substring(0, 120) + "..." : cmd));
+    logger.info("Sending : \n" + (cmd.length() > 200 ? cmd.substring(0, 200) + "..." : cmd));
     try {
       output = process.sendAndGetResult(cmd);
     } catch (IOException e) {
       logger.error("Error when sending commands to python process", e);
     }
+    //logger.info("Got : \n" + output);
     return output;
   }
 
@@ -223,7 +215,7 @@ public class PythonInterpreter extends Interpreter {
     return context.getGui();
   }
 
-  public Integer getPy4JPort() {
+  public Integer getPy4jPort() {
     return port;
   }
 
@@ -247,4 +239,7 @@ public class PythonInterpreter extends Interpreter {
     return port;
   }
 
+  public int getMaxResult() {
+    return maxResult;
+  }
 }

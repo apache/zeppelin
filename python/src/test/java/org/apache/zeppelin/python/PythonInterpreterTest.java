@@ -17,6 +17,7 @@
 
 package org.apache.zeppelin.python;
 
+import static org.apache.zeppelin.python.PythonInterpreter.*;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -53,12 +54,16 @@ public class PythonInterpreterTest {
 
   Logger logger = LoggerFactory.getLogger(PythonProcess.class);
 
-  public static final String ZEPPELIN_PYTHON = "zeppelin.python";
-  public static final String DEFAULT_ZEPPELIN_PYTHON = "python";
-
   PythonInterpreter pythonInterpreter = null;
   PythonProcess mockPythonProcess;
   String cmdHistory;
+
+  public static Properties getPythonTestProperties() {
+    Properties p = new Properties();
+    p.setProperty(ZEPPELIN_PYTHON, DEFAULT_ZEPPELIN_PYTHON);
+    p.setProperty(MAX_RESULT, "1000");
+    return p;
+  }
 
   @Before
   public void beforeTest() {
@@ -79,20 +84,15 @@ public class PythonInterpreterTest {
       logger.error("Can't initiate python process", e);
     }
 
-    Properties properties = new Properties();
-    properties.put(ZEPPELIN_PYTHON, DEFAULT_ZEPPELIN_PYTHON);
-    pythonInterpreter = spy(new PythonInterpreter(properties));
+    pythonInterpreter = spy(new PythonInterpreter(getPythonTestProperties()));
 
     when(pythonInterpreter.getPythonProcess()).thenReturn(mockPythonProcess);
-
 
     try {
       when(mockPythonProcess.sendAndGetResult(eq("\n\nimport py4j\n"))).thenReturn("ImportError");
     } catch (IOException e) {
       e.printStackTrace();
     }
-
-
   }
 
   @Test
@@ -111,19 +111,18 @@ public class PythonInterpreterTest {
     py4j JavaGateway is not running
      */
     pythonInterpreter.open();
-    assertNull(pythonInterpreter.getPy4JPort());
+    assertNull(pythonInterpreter.getPy4jPort());
 
     assertTrue(cmdHistory.contains("def help()"));
-    assertTrue(cmdHistory.contains("class PyZeppelinContext():"));
+    assertTrue(cmdHistory.contains("class PyZeppelinContext(object):"));
     assertTrue(cmdHistory.contains("z = PyZeppelinContext"));
-    assertTrue(cmdHistory.contains("def zeppelin_show"));
+    assertTrue(cmdHistory.contains("z.show"));
     assertFalse(cmdHistory.contains("GatewayClient"));
 
   }
 
   @Test
-  public void testPy4JInstalled() {
-
+  public void testPy4jInstalled() {
 
     /*
     If Py4J installed, bootstrap_input.py
@@ -137,18 +136,17 @@ public class PythonInterpreterTest {
       e.printStackTrace();
     }
     pythonInterpreter.open();
-    Integer py4jPort = pythonInterpreter.getPy4JPort();
+    Integer py4jPort = pythonInterpreter.getPy4jPort();
     assertNotNull(py4jPort);
 
     assertTrue(cmdHistory.contains("def help()"));
-    assertTrue(cmdHistory.contains("class PyZeppelinContext():"));
+    assertTrue(cmdHistory.contains("class PyZeppelinContext(object):"));
     assertTrue(cmdHistory.contains("z = PyZeppelinContext"));
-    assertTrue(cmdHistory.contains("def zeppelin_show"));
+    assertTrue(cmdHistory.contains("z.show"));
     assertTrue(cmdHistory.contains("GatewayClient(port=" + py4jPort + ")"));
     assertTrue(cmdHistory.contains("org.apache.zeppelin.display.Input"));
 
-
-    assertTrue(checkSocketAdress(py4jPort));
+    assertTrue(checkSocketAddress(py4jPort));
 
   }
 
@@ -162,12 +160,12 @@ public class PythonInterpreterTest {
       e.printStackTrace();
     }
     pythonInterpreter.open();
-    Integer py4jPort = pythonInterpreter.getPy4JPort();
+    Integer py4jPort = pythonInterpreter.getPy4jPort();
 
     assertNotNull(py4jPort);
     pythonInterpreter.close();
 
-    assertFalse(checkSocketAdress(py4jPort));
+    assertFalse(checkSocketAddress(py4jPort));
     try {
       verify(mockPythonProcess, times(1)).close();
     } catch (IOException e) {
@@ -189,7 +187,7 @@ public class PythonInterpreterTest {
 
 
 
-  private boolean checkSocketAdress(Integer py4jPort) {
+  private boolean checkSocketAddress(Integer py4jPort) {
     Socket s = new Socket();
     SocketAddress sa = new InetSocketAddress("localhost", py4jPort);
     Boolean working = null;

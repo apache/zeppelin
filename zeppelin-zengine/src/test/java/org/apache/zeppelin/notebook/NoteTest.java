@@ -115,7 +115,7 @@ public class NoteTest {
   @Test
   public void putDefaultReplNameIfInterpreterSettingPresent() {
     InterpreterSetting interpreterSetting = Mockito.mock(InterpreterSetting.class);
-    when(interpreterSetting.getName()).thenReturn("spark");
+    when(interpreterSetting.getGroup()).thenReturn("spark");
     when(replLoader.getDefaultInterpreterSetting())
             .thenReturn(Optional.of(interpreterSetting));
 
@@ -129,7 +129,7 @@ public class NoteTest {
   @Test
   public void addParagraphWithLastReplName() {
     InterpreterSetting interpreterSetting = Mockito.mock(InterpreterSetting.class);
-    when(interpreterSetting.getName()).thenReturn("spark");
+    when(interpreterSetting.getGroup()).thenReturn("spark");
     when(replLoader.getDefaultInterpreterSetting())
             .thenReturn(Optional.of(interpreterSetting));
 
@@ -144,7 +144,7 @@ public class NoteTest {
   @Test
   public void insertParagraphWithLastReplName() {
     InterpreterSetting interpreterSetting = Mockito.mock(InterpreterSetting.class);
-    when(interpreterSetting.getName()).thenReturn("spark");
+    when(interpreterSetting.getGroup()).thenReturn("spark");
     when(replLoader.getDefaultInterpreterSetting())
             .thenReturn(Optional.of(interpreterSetting));
 

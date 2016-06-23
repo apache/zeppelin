@@ -117,7 +117,7 @@ public class Note implements Serializable, ParagraphJobListener {
 
   private String getDefaultInterpreterName() {
     Optional<InterpreterSetting> settingOptional = replLoader.getDefaultInterpreterSetting();
-    return settingOptional.isPresent() ? settingOptional.get().getName() : StringUtils.EMPTY;
+    return settingOptional.isPresent() ? settingOptional.get().getGroup() : StringUtils.EMPTY;
   }
 
   void putDefaultReplName() {
@@ -229,17 +229,23 @@ public class Note implements Serializable, ParagraphJobListener {
     Map<String, Object> config = new HashMap<>(srcParagraph.getConfig());
     Map<String, Object> param = new HashMap<>(srcParagraph.settings.getParams());
     Map<String, Input> form = new HashMap<>(srcParagraph.settings.getForms());
-    Gson gson = new Gson();
-    InterpreterResult result = gson.fromJson(
-        gson.toJson(srcParagraph.getReturn()),
-        InterpreterResult.class);
 
     newParagraph.setConfig(config);
     newParagraph.settings.setParams(param);
     newParagraph.settings.setForms(form);
     newParagraph.setText(srcParagraph.getText());
     newParagraph.setTitle(srcParagraph.getTitle());
-    newParagraph.setReturn(result, null);
+
+    try {
+      Gson gson = new Gson();
+      String resultJson = gson.toJson(srcParagraph.getReturn());
+      InterpreterResult result = gson.fromJson(resultJson, InterpreterResult.class);
+      newParagraph.setReturn(result, null);
+    } catch (Exception e) {
+      // 'result' part of Note consists of exception, instead of actual interpreter results
+      logger.warn("Paragraph " + srcParagraph.getId() + " has a result with exception. "
+              + e.getMessage());
+    }
 
     synchronized (paragraphs) {
       paragraphs.add(newParagraph);
