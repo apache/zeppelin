@@ -44,7 +44,7 @@ Apache Zeppelin officially supports and is tested on next environments.
   </tr>
 </table>
 
-There are two options to install Apache Zeppelin on your machine. One is [downloading prebuild binary package](#downloading-binary-package) from the archive. 
+There are two options to install Apache Zeppelin on your machine. One is [downloading pre-built binary package](#downloading-binary-package) from the archive. 
 You can download not only the latest stable version but also the older one if you need. 
 The other option is [building from the source](#building-from-source).
 Although it can be unstable somehow since it is on development status, you can explore newly added feature and change it as you want.
