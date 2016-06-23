@@ -114,9 +114,9 @@ public class PythonInterpreterTest {
     assertNull(pythonInterpreter.getPy4JPort());
 
     assertTrue(cmdHistory.contains("def help()"));
-    assertTrue(cmdHistory.contains("class PyZeppelinContext():"));
+    assertTrue(cmdHistory.contains("class PyZeppelinContext(object):"));
     assertTrue(cmdHistory.contains("z = PyZeppelinContext"));
-    assertTrue(cmdHistory.contains("def zeppelin_show"));
+    assertTrue(cmdHistory.contains("z.show"));
     assertFalse(cmdHistory.contains("GatewayClient"));
 
   }
@@ -141,9 +141,9 @@ public class PythonInterpreterTest {
     assertNotNull(py4jPort);
 
     assertTrue(cmdHistory.contains("def help()"));
-    assertTrue(cmdHistory.contains("class PyZeppelinContext():"));
+    assertTrue(cmdHistory.contains("class PyZeppelinContext(object):"));
     assertTrue(cmdHistory.contains("z = PyZeppelinContext"));
-    assertTrue(cmdHistory.contains("def zeppelin_show"));
+    assertTrue(cmdHistory.contains("z.show"));
     assertTrue(cmdHistory.contains("GatewayClient(port=" + py4jPort + ")"));
     assertTrue(cmdHistory.contains("org.apache.zeppelin.display.Input"));
 
