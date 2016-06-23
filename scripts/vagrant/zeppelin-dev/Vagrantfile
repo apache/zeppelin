@@ -19,6 +19,13 @@
 # Vagrantfile API/syntax version. Don't touch unless you know what you're doing!
 VAGRANTFILE_API_VERSION = "2"
 
+## proxy settings
+################################################
+http_proxy = ENV.fetch('http_proxy', '')
+https_proxy = ENV.fetch('https_proxy', '')
+no_proxy = ENV.fetch('no_proxy', 'localhost,127.0.0.1')
+proxy_on = !http_proxy.empty? and !https_proxy.empty?
+
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   # All Vagrant configuration is done here. The most common configuration
   # options are documented and commented below. For a complete reference,
@@ -27,6 +34,16 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   # Every Vagrant virtual environment requires a box to build off of.
   # ubuntu/trusty64 Official Ubuntu Server 14.04 LTS (Trusty Tahr) builds
   config.vm.box = "ubuntu/trusty64"
+
+  # Vagrant Plugin Configuration: vagrant-proxyconf
+  if Vagrant.has_plugin?("vagrant-proxyconf")
+    if proxy_on
+      # set proxy
+      config.proxy.http     = http_proxy
+      config.proxy.https    = https_proxy
+      config.proxy.no_proxy = no_proxy
+    end
+  end
 
   # Disable automatic box update checking. If you disable this, then
   # boxes will only be checked for updates when the user runs
