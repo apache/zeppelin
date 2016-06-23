@@ -274,25 +274,9 @@ a.navbar-brand:hover {
 
 .nav-btn {
   color: #fff;
-  background-color: #3071a9;
-  border-color: #3071a9;
-}
-
-.nav-btn:hover,
-.nav-btn:focus,
-.nav-btn:active, .open > .dropdown-toggle.nav-btn {
-  color: #fff;
-  background-color: #428bca;
-  border-color: #357ebd;
-}
-
-.nav-status-btn,
-.nav-status-btn:hover,
-.nav-status-btn:focus {
-  color: #fff;
-  background-color: #3071a9;
-  border-color: #3071a9;
-  cursor: default;
+  background-color: transparent;
+  border-color: transparent;
+  font-size: 14px;
 }
 
 .nav-login-btn,
@@ -307,15 +291,18 @@ a.navbar-brand:hover {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 180px;
+  max-width: 120px;
+  display: inline-block;
 }
 
 .server-connected {
+  padding-top: 12px;
   color: #00CC00;
   font-size: 12px !important;
 }
 
 .server-disconnected {
+  padding-top: 12px;
   color: rgba(240, 48, 0, 1);
   font-size: 12px !important;
 }

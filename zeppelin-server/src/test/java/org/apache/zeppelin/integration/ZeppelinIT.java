@@ -196,7 +196,7 @@ public class ZeppelinIT extends AbstractZeppelinIT {
     }
     try {
       // navigate to interpreter page
-      WebElement settingButton = driver.findElement(By.xpath("//button[@class='btn nav-btn dropdown-toggle']"));
+      WebElement settingButton = driver.findElement(By.xpath("//button[@class='nav-btn dropdown-toggle ng-scope']"));
       settingButton.click();
       WebElement interpreterLink = driver.findElement(By.xpath("//a[@href='#/interpreter']"));
       interpreterLink.click();
