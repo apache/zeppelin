@@ -325,7 +325,7 @@ public class NotebookTest implements JobListenerFactory{
   @Test
   public void testExportAndImportNote() throws IOException, CloneNotSupportedException,
           InterruptedException {
-    Note note = notebook.createNote();
+    Note note = notebook.createNote(null);
     note.getNoteReplLoader().setInterpreters(factory.getDefaultInterpreterSettingList());
 
     final Paragraph p = note.addParagraph();
@@ -339,7 +339,7 @@ public class NotebookTest implements JobListenerFactory{
 
     String exportedNoteJson = notebook.exportNote(note.getId());
 
-    Note importedNote = notebook.importNote(exportedNoteJson, "Title");
+    Note importedNote = notebook.importNote(exportedNoteJson, "Title", null);
 
     Paragraph p2 = importedNote.getParagraphs().get(0);
 
@@ -374,7 +374,7 @@ public class NotebookTest implements JobListenerFactory{
   @Test
   public void testCloneNoteWithExceptionResult() throws IOException, CloneNotSupportedException,
       InterruptedException {
-    Note note = notebook.createNote();
+    Note note = notebook.createNote(null);
     note.getNoteReplLoader().setInterpreters(factory.getDefaultInterpreterSettingList());
 
     final Paragraph p = note.addParagraph();
@@ -386,7 +386,7 @@ public class NotebookTest implements JobListenerFactory{
     // Force paragraph to have String type object
     p.setResult("Exception");
 
-    Note cloneNote = notebook.cloneNote(note.getId(), "clone note with Exception result");
+    Note cloneNote = notebook.cloneNote(note.getId(), "clone note with Exception result", null);
     Paragraph cp = cloneNote.paragraphs.get(0);
 
     // Keep same ParagraphID
