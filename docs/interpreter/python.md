@@ -78,7 +78,7 @@ plt.figure()
 z.show(plt)
 plt.close()
 ```
-zeppelin_show function can take optional parameters to adapt graph width and height
+z.show function can take optional parameters to adapt graph width and height
 
  ```python
 %python
