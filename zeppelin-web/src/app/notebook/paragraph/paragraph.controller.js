@@ -1226,7 +1226,7 @@ angular.module('zeppelinWebApp')
       var height = $scope.paragraph.config.graph.height;
       var container = angular.element('#p' + $scope.paragraph.id + '_table').css('height', height).get(0);
       var resultRows = data.rows;
-      var columnNames = _.pluck($scope.paragraph.result.columnNames, 'name');
+      var columnNames = _.pluck(data.columnNames, 'name');
 
       // on chart type change, destroy table to force reinitialization.
       if ($scope.hot && !refresh) {
