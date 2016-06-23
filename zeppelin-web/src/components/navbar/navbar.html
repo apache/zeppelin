@@ -44,24 +44,15 @@ limitations under the License.
             <li class="divider"></li>
             <div id="notebook-list" class="scrollbar-container">
               <li class="filter-names" ng-include="'components/filterNoteNames/filter-note-names.html'"></li>
-              <li ng-repeat="note in navbar.notes.root.children |notebookFilter:query track by $index" ng-class="{'active' : navbar.isActive(note.id)}" ng-include="'notebook_list_renderer.html'"></li>
+              <li ng-repeat="note in navbar.notes.root.children |notebookFilter:query track by $index"
+                  ng-class="{'active' : navbar.isActive(note.id)}" ng-include="'notebook_list_renderer.html'"></li>
             </div>
           </ul>
         </li>
-        <li>
-          <a href="#/interpreter">Interpreter</a>
-        </li>
-        <li>
-          <a href="#/credential">Credential</a>
-        </li>
-        <li>
-          <a href="#/configuration">Configuration</a>
-        </li>
       </ul>
 
-
       <ul class="nav navbar-nav navbar-right" style="margin-right:5px;">
-        <li ng-if="ticket" style="margin-top:10px;">
+        <li class="nav-component" ng-if="ticket">
         <!--TODO(bzz): move to Typeahead https://angular-ui.github.io/bootstrap  -->
 
           <form role="search" data-ng-model="searchForm"
@@ -89,43 +80,35 @@ limitations under the License.
               </span>
             </div>
           </form>
+        <li class="nav-component">
+          <i ng-if="navbar.connected" class="fa fa-circle server-connected"
+             tooltip="WebSocket Connected" tooltip-placement="bottom"></i>
+          <i ng-if="!navbar.connected" class="fa fa-circle server-disconnected"
+             tooltip="WebSocket Disconnected" tooltip-placement="bottom"></i>
         </li>
-        <li class="dropdown " dropdown="">
-          <a class="dropdown-toggle" type="button" data-toggle="dropdown" href="#"
-             ng-show="navbar.connected" ng-if="ticket.principal == 'anonymous' ">
-            <i class="fa fa-circle server-status"
-               ng-class="{'server-connected':navbar.connected, 'server-disconnected':!navbar.connected}"></i>
-            Connected
-            <span class="caret"></span>
-          </a>
-          <a class="dropdown-toggle" type="button" data-toggle="dropdown" href="#"
-             ng-show="navbar.connected" ng-if="ticket.principal != 'anonymous' "
-             tooltip-placement="bottom" tooltip="{{fullUsername}}">
-            <i class="fa fa-circle server-status"
-               ng-class="{'server-connected':navbar.connected, 'server-disconnected':!navbar.connected}"></i>
-            {{truncatedUsername}}
-            <span class="caret"></span></a>
-          <a class="dropdown-toggle" type="button" data-toggle="dropdown" href="#"
-             ng-show="!navbar.connected">
-            <i class="fa fa-circle server-status"
-               ng-class="{'server-connected':navbar.connected, 'server-disconnected':!navbar.connected}"></i>
-            Disconnected
-            <span class="caret"></span></a>
-
-          <ul class="dropdown-menu">
-            <li><a href="" data-toggle="modal" data-target="#aboutModal">
-              <i style="font-size: 15px;" class="fa fa-info"></i> About</a></li>
-            <li ng-show="ticket.principal && ticket.principal!='anonymous'" style="left: 5px;">
-              <a ng-click="logout()">Logout</a>
-            </li>
-          </ul>
+        <li>
+          <div class="dropdown">
+            <button ng-if="ticket" class="nav-btn dropdown-toggle" type="button" data-toggle="dropdown" style="margin:11px 5px 0 0;">
+              <span class="username">{{ticket.principal}}</span>
+              <span class="caret" style="margin-bottom: 8px"></span>
+            </button>
+            <span ng-if="!ticket" style="margin: 5px;"></span>
+            <ul class="dropdown-menu">
+              <li><a href="" data-toggle="modal" data-target="#aboutModal">About Zeppelin</a>
+              <li role="separator" style="margin: 5px 0;" class="divider"></li>
+              <li><a href="#/interpreter">Interpreter</a></li>
+              <li><a href="#/credential">Credential</a></li>
+              <li><a href="#/configuration">Configuration</a></li>
+              <li ng-if="ticket.principal && ticket.principal !== 'anonymous'" role="separator" style="margin: 5px 0;" class="divider"></li>
+              <li ng-if="ticket.principal && ticket.principal !== 'anonymous'"><a ng-click="logout()">Logout</a></li>
+            </ul>
+          </div>
         </li>
-        <li ng-if="!ticket">
-          <button class="btn btn-default" data-toggle="modal" data-target="#loginModal"
-                  ng-click="showLoginWindow()" style="margin-top: 8px">Login
+        <li class="nav-component" ng-if="!ticket">
+          <button class="btn nav-login-btn" data-toggle="modal" data-target="#loginModal"
+                  ng-click="showLoginWindow()">Login
           </button>
         </li>
-
       </ul>
     </div>
   </div>

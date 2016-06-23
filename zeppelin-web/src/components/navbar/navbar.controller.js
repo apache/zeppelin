@@ -63,20 +63,12 @@ angular.module('zeppelinWebApp')
     }, 500);
   };
 
-
   var vm = this;
   vm.notes = notebookListDataFactory;
   vm.connected = websocketMsgSrv.isConnected();
   vm.websocketMsgSrv = websocketMsgSrv;
   vm.arrayOrderingSrv = arrayOrderingSrv;
   $scope.searchForm = searchService;
-
-  if ($rootScope.ticket) {
-    $rootScope.fullUsername = $rootScope.ticket.principal;
-    $rootScope.truncatedUsername = $rootScope.ticket.principal;
-  }
-
-  var MAX_USERNAME_LENGTH=16;
 
   angular.element('#notebook-list').perfectScrollbar({suppressScrollX: true});
 
@@ -88,22 +80,7 @@ angular.module('zeppelinWebApp')
     vm.connected = param;
   });
 
-  $scope.checkUsername = function () {
-    if ($rootScope.ticket) {
-      if ($rootScope.ticket.principal.length <= MAX_USERNAME_LENGTH) {
-        $rootScope.truncatedUsername = $rootScope.ticket.principal;
-      }
-      else {
-        $rootScope.truncatedUsername = $rootScope.ticket.principal.substr(0, MAX_USERNAME_LENGTH) + '..';
-      }
-    }
-    if (_.isEmpty($rootScope.truncatedUsername)) {
-      $rootScope.truncatedUsername = 'Connected';
-    }
-  };
-
   $scope.$on('loginSuccess', function(event, param) {
-    $scope.checkUsername();
     loadNotes();
   });
 
@@ -146,7 +123,6 @@ angular.module('zeppelinWebApp')
   };
 
   function getZeppelinVersion() {
-    console.log('version');
     $http.get(baseUrlSrv.getRestApiBase() + '/version').success(
       function(data, status, headers, config) {
         $rootScope.zeppelinVersion = data.body;
@@ -161,6 +137,5 @@ angular.module('zeppelinWebApp')
 
   getZeppelinVersion();
   vm.loadNotes();
-  $scope.checkUsername();
 
 });
