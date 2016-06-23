@@ -1,8 +1,8 @@
 ---
 layout: page
-title: "Getting Started"
+title: "Interpreter Installation"
 description: ""
-group: install
+group: manual
 ---
 <!--
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -45,7 +45,7 @@ You can get full list of community managed interpreters by running
 ./bin/install-interpreter.sh --list
 ```
 
-Once you have installed interpreter, restart Zeppelin. And then you'll need to [create interpreter setting](../manual/interpreters.html#what-is-zeppelin-interpreter) and [bind it with your notebook](../manual/interpreters.html#what-is-zeppelin-interpreter-setting).
+Once you have installed interpreters, you need to restart Zeppelin. And then [create interpreter setting](../manual/interpreters.html#what-is-zeppelin-interpreter) and [bind it with your notebook](../manual/interpreters.html#what-is-zeppelin-interpreter-setting).
 
 
 ## 3rd party interpreters
@@ -70,7 +70,7 @@ And then restart Zeppelin, [create interpreter setting](../manual/interpreters.h
 ./bin/install-interpreter.sh --name interpreter1,interpreter2 --repository groupId1:artifact1:version1,groupId2:artifact2:version2
 ```
 
-`--name` and `--repository` argument will recieve comma separated list.
+`--name` and `--repository` arguments will recieve comma separated list.
 
 ## Available community managed interpreters
 
