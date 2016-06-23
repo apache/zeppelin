@@ -103,6 +103,7 @@ function make_binary_release() {
 git_clone
 make_source_package
 make_binary_release all "-Pspark-1.6 -Phadoop-2.4 -Pyarn -Ppyspark -Psparkr -Pr"
+make_binary_release netinst "-Pspark-1.6 -Phadoop-2.4 -Pyarn -Ppyspark -pl !alluxio,!angular,!cassandra,!elasticsearch,!file,!flink,!hbase,!ignite,!jdbc,!kylin,!lens,!livy,!markdown,!postgresql,!python,!shell"
 
 # remove non release files and dirs
 rm -rf "${WORKING_DIR}/zeppelin"

@@ -60,6 +60,9 @@ Although it can be unstable somehow since it is on development status, you can e
 ### Downloading Binary Package
 
 If you want to install Apache Zeppelin with a stable binary package, please visit [Apache Zeppelin download Page](http://zeppelin.apache.org/download.html). 
+
+If you have downloaded `netinst` binary, [install additional interpreters](../manual/interpreterinstallation.html) before you start Zeppelin. Or simply run `./bin/install-interpreter.sh --all`.
+
 After unpacking, jump to [Starting Apache Zeppelin with Command Line](#starting-apache-zeppelin-with-command-line) section.
 
 ### Building from Source
