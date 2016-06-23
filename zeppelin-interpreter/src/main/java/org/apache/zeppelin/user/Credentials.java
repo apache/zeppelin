@@ -24,6 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -43,7 +44,7 @@ public class Credentials {
     if (credentialsPath != null) {
       credentialsFile = new File(credentialsPath);
     }
-    credentialsMap = new HashMap<>();
+    credentialsMap = Collections.synchronizedMap(new HashMap<String, UserCredentials>());
     if (credentialsPersist) {
       GsonBuilder builder = new GsonBuilder();
       builder.setPrettyPrinting();
@@ -61,17 +62,13 @@ public class Credentials {
   }
 
   public void putUserCredentials(String username, UserCredentials uc) throws IOException {
-    synchronized (credentialsMap) {
-      credentialsMap.put(username, uc);
-    }
+    credentialsMap.put(username, uc);
     saveCredentials();
   }
 
   public UserCredentials removeUserCredentials(String username) throws IOException {
     UserCredentials uc;
-    synchronized (credentialsMap) {
-      uc = credentialsMap.remove(username);
-    }
+    uc = credentialsMap.remove(username);
     saveCredentials();
     return uc;
   }
@@ -124,11 +121,9 @@ public class Credentials {
   private void saveToFile() throws IOException {
     String jsonString;
 
-    synchronized (credentialsMap) {
-      CredentialsInfoSaving info = new CredentialsInfoSaving();
-      info.credentialsMap = credentialsMap;
-      jsonString = gson.toJson(info);
-    }
+    CredentialsInfoSaving info = new CredentialsInfoSaving();
+    info.credentialsMap = credentialsMap;
+    jsonString = gson.toJson(info);
 
     try {
       if (!credentialsFile.exists()) {

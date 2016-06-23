@@ -17,6 +17,7 @@
 
 package org.apache.zeppelin.user;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -27,7 +28,7 @@ public class UserCredentials {
   private Map<String, UsernamePassword> userCredentials;
 
   public UserCredentials() {
-    this.userCredentials = new HashMap<>();
+    userCredentials = Collections.synchronizedMap(new HashMap<String, UsernamePassword>());
   }
 
   public UsernamePassword getUsernamePassword(String entity) {
@@ -35,21 +36,15 @@ public class UserCredentials {
   }
 
   public void putUsernamePassword(String entity, UsernamePassword up) {
-    synchronized (userCredentials) {
-      userCredentials.put(entity, up);
-    }
+    userCredentials.put(entity, up);
   }
 
   public void removeUsernamePassword(String entity) {
-    synchronized (userCredentials) {
-      userCredentials.remove(entity);
-    }
+    userCredentials.remove(entity);
   }
 
   public boolean existUsernamePassword(String entity) {
-    synchronized (userCredentials) {
-      return userCredentials.containsKey(entity);
-    }
+    return userCredentials.containsKey(entity);
   }
 
   @Override
