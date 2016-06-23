@@ -222,17 +222,23 @@ public class Note implements Serializable, JobListener {
     Map<String, Object> config = new HashMap<>(srcParagraph.getConfig());
     Map<String, Object> param = new HashMap<>(srcParagraph.settings.getParams());
     Map<String, Input> form = new HashMap<>(srcParagraph.settings.getForms());
-    Gson gson = new Gson();
-    InterpreterResult result = gson.fromJson(
-        gson.toJson(srcParagraph.getReturn()),
-        InterpreterResult.class);
 
     newParagraph.setConfig(config);
     newParagraph.settings.setParams(param);
     newParagraph.settings.setForms(form);
     newParagraph.setText(srcParagraph.getText());
     newParagraph.setTitle(srcParagraph.getTitle());
-    newParagraph.setReturn(result, null);
+
+    try {
+      Gson gson = new Gson();
+      String resultJson = gson.toJson(srcParagraph.getReturn());
+      InterpreterResult result = gson.fromJson(resultJson, InterpreterResult.class);
+      newParagraph.setReturn(result, null);
+    } catch (Exception e) {
+      // 'result' part of Note consists of exception, instead of actual interpreter results
+      logger.warn("Paragraph " + srcParagraph.getId() + " has a result with exception. "
+              + e.getMessage());
+    }
 
     synchronized (paragraphs) {
       paragraphs.add(newParagraph);
