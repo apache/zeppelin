@@ -67,7 +67,7 @@ print("".join(z.checkbox("f3", [("o1","1"), ("o2","2")],["1"])))
 * Code-completion is currently not implemented.
 
 ## Matplotlib integration
- The python interpreter can display matplotlib graph with the function `zeppelin_show()`.
+ The python interpreter can display matplotlib graph with the function `z.show()`.
  You need to have matplotlib module installed and a XServer running to use this functionality !
  
  ```python
@@ -75,15 +75,15 @@ print("".join(z.checkbox("f3", [("o1","1"), ("o2","2")],["1"])))
 import matplotlib.pyplot as plt
 plt.figure()
 (.. ..)
-zeppelin_show(plt)
+z.show(plt)
 plt.close()
 ```
 zeppelin_show function can take optional parameters to adapt graph width and height
 
  ```python
 %python
-zeppelin_show(plt, width='50px')
-zeppelin_show(plt, height='150px')
+z.show(plt, width='50px')
+z.show(plt, height='150px')
 ```
 
 [![pythonmatplotlib](../interpreter/screenshots/pythonMatplotlib.png)](/docs/interpreter/screenshots/pythonMatplotlib.png)

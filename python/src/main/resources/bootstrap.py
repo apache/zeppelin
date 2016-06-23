@@ -76,7 +76,7 @@ z.show(plt,height='150px') </pre></div>''')
 <div>The interpreter can visualize Pandas DataFrame
 with the function z.show()
 <pre>
-import matplotlib.pyplot as plt
+import pandas as pd
 df = pd.read_csv("bank.csv", sep=";")
 z.show(df)
 </pre></div>
