@@ -55,7 +55,7 @@ You can also install 3rd party interpreters located in the maven repository by u
 #### Install 3rd party interpreters
 
 ```
-./bin/install-interpreter.sh --name interpreter1 --repository groupId1:artifact1:version1
+./bin/install-interpreter.sh --name interpreter1 --artifact groupId1:artifact1:version1
 ```
 
 The above command will download maven artifact `groupId1:artifact1:version1` and all of it's transitive dependencies into `interpreter/interpreter1` directory.
@@ -67,10 +67,10 @@ And then restart Zeppelin, [create interpreter setting](../manual/interpreters.h
 #### Install multiple 3rd party interpreters at once
 
 ```
-./bin/install-interpreter.sh --name interpreter1,interpreter2 --repository groupId1:artifact1:version1,groupId2:artifact2:version2
+./bin/install-interpreter.sh --name interpreter1,interpreter2 --artifact groupId1:artifact1:version1,groupId2:artifact2:version2
 ```
 
-`--name` and `--repository` arguments will recieve comma separated list.
+`--name` and `--artifact` arguments will recieve comma separated list.
 
 ## Available community managed interpreters
 
