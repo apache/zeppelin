@@ -123,7 +123,9 @@ public class PythonInterpreter extends Interpreter {
   @Override
   public InterpreterResult interpret(String cmd, InterpreterContext contextInterpreter) {
     this.context = contextInterpreter;
-
+    if (cmd == null || cmd.isEmpty()) {
+      return new InterpreterResult(Code.SUCCESS, "");
+    }
     String output = sendCommandToPython(cmd);
     return new InterpreterResult(Code.SUCCESS, output.replaceAll(">>>", "")
         .replaceAll("\\.\\.\\.", "").trim());
@@ -182,12 +184,13 @@ public class PythonInterpreter extends Interpreter {
 
   private String sendCommandToPython(String cmd) {
     String output = "";
-    logger.info("Sending : \n" + (cmd.length() > 200 ? cmd.substring(0, 120) + "..." : cmd));
+    logger.info("Sending : \n" + (cmd.length() > 200 ? cmd.substring(0, 200) + "..." : cmd));
     try {
       output = process.sendAndGetResult(cmd);
     } catch (IOException e) {
       logger.error("Error when sending commands to python process", e);
     }
+    //logger.info("Got : \n" + output);
     return output;
   }
 
