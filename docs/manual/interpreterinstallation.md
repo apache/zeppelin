@@ -83,22 +83,22 @@ You can also find the below community managed interpreter list in `conf/interpre
   </tr>
   <tr>
     <td>alluxio</td>
-    <td>org.apache.zeppelin.zeppelin-alluxio:0.6.0</td>
+    <td>org.apache.zeppelin:zeppelin-alluxio:0.6.0</td>
     <td>Alluxio interpreter</td>
   </tr>
   <tr>
     <td>angular</td>
-    <td>org.apache.zeppelin.zeppelin-angular:0.6.0</td>
+    <td>org.apache.zeppelin:zeppelin-angular:0.6.0</td>
     <td>HTML and AngularJS view rendering</td>
   </tr>
   <tr>
     <td>cassandra</td>
-    <td>org.apache.zeppelin.zeppelin-cassandra:0.6.0</td>
+    <td>org.apache.zeppelin:zeppelin-cassandra:0.6.0</td>
     <td>Cassandra interpreter</td>
   </tr>
   <tr>
     <td>elasticsearch</td>
-    <td>org.apache.zeppelin.zeppelin-elasticsearch:0.6.0</td>
+    <td>org.apache.zeppelin:zeppelin-elasticsearch:0.6.0</td>
     <td>Elasticsearch interpreter</td>
   </tr>
   <tr>
