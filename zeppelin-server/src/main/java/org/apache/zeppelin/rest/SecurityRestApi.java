@@ -95,7 +95,7 @@ public class SecurityRestApi {
    */
   @GET
   @Path("userlist/{searchText}")
-  public Response getUserList(@PathParam("searchText") String searchText) {
+  public Response getUserList(@PathParam("searchText") final String searchText) {
 
     List<String> usersList = new ArrayList<>();
     try {
@@ -121,6 +121,17 @@ public class SecurityRestApi {
     }
     List<String> autoSuggestList = new ArrayList<>();
     Collections.sort(usersList);
+    Collections.sort(usersList, new Comparator<String>() {
+      @Override
+      public int compare(String o1, String o2) {
+        if (o1.matches(searchText + "(.*)") && o2.matches(searchText + "(.*)")) {
+          return 0;
+        } else if (o1.matches(searchText + "(.*)")) {
+          return -1;
+        }
+        return 0;
+      }
+    });
     int maxLength = 0;
     for (int i = 0; i < usersList.size(); i++) {
       String userLowerCase = usersList.get(i).toLowerCase();
