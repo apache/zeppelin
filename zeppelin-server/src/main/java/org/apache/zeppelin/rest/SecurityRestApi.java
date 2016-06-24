@@ -20,10 +20,12 @@ package org.apache.zeppelin.rest;
 
 import org.apache.shiro.realm.Realm;
 import org.apache.shiro.realm.jdbc.JdbcRealm;
+import org.apache.shiro.realm.ldap.AbstractLdapRealm;
 import org.apache.shiro.realm.ldap.JndiLdapRealm;
 import org.apache.shiro.realm.text.IniRealm;
 import org.apache.zeppelin.annotation.ZeppelinApi;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
+import org.apache.zeppelin.server.ActiveDirectoryGroupRealm;
 import org.apache.zeppelin.server.JsonResponse;
 import org.apache.zeppelin.ticket.TicketContainer;
 import org.apache.zeppelin.utils.SecurityUtils;
@@ -105,7 +107,10 @@ public class SecurityRestApi {
         if (name.equals("iniRealm")) {
           usersList.addAll(getUserListObj.getUserList((IniRealm) realm));
         } else if (name.equals("ldapRealm")) {
-          usersList.addAll(getUserListObj.getUserList((JndiLdapRealm) realm));
+          usersList.addAll(getUserListObj.getUserList((JndiLdapRealm) realm, searchText));
+        } else if (name.equals("activeDirectoryRealm")) {
+          usersList.addAll(getUserListObj.getUserList((ActiveDirectoryGroupRealm) realm,
+              searchText));
         } else if (name.equals("jdbcRealm")) {
           usersList.addAll(getUserListObj.getUserList((JdbcRealm) realm));
         }

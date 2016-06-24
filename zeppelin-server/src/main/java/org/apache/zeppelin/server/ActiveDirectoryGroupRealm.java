@@ -24,6 +24,7 @@ import org.apache.shiro.authz.AuthorizationInfo;
 import org.apache.shiro.authz.SimpleAuthorizationInfo;
 import org.apache.shiro.realm.Realm;
 import org.apache.shiro.realm.ldap.AbstractLdapRealm;
+import org.apache.shiro.realm.ldap.DefaultLdapContextFactory;
 import org.apache.shiro.realm.ldap.LdapContextFactory;
 import org.apache.shiro.realm.ldap.LdapUtils;
 import org.apache.shiro.subject.PrincipalCollection;
@@ -77,6 +78,25 @@ public class ActiveDirectoryGroupRealm extends AbstractLdapRealm {
     |               M E T H O D S               |
     ============================================*/
 
+  LdapContextFactory ldapContextFactory;
+
+  public LdapContextFactory getLdapContextFactory() {
+    if (this.ldapContextFactory == null) {
+      if (log.isDebugEnabled()) {
+        log.debug("No LdapContextFactory specified - creating a default instance.");
+      }
+
+      DefaultLdapContextFactory defaultFactory = new DefaultLdapContextFactory();
+      defaultFactory.setPrincipalSuffix(this.principalSuffix);
+      defaultFactory.setSearchBase(this.searchBase);
+      defaultFactory.setUrl(this.url);
+      defaultFactory.setSystemUsername(this.systemUsername);
+      defaultFactory.setSystemPassword(this.systemPassword);
+      this.ldapContextFactory = defaultFactory;
+    }
+
+    return this.ldapContextFactory;
+  }
 
   /**
    * Builds an {@link AuthenticationInfo} object by querying the active directory LDAP context for
@@ -157,6 +177,40 @@ public class ActiveDirectoryGroupRealm extends AbstractLdapRealm {
 
   protected AuthorizationInfo buildAuthorizationInfo(Set<String> roleNames) {
     return new SimpleAuthorizationInfo(roleNames);
+  }
+
+  public List<String> searchForUserName(String nameILIke, LdapContext ldapContext) throws
+      NamingException {
+    List<String> userNameList = new ArrayList<>();
+
+    SearchControls searchCtls = new SearchControls();
+    searchCtls.setSearchScope(SearchControls.SUBTREE_SCOPE);
+
+    String searchFilter = "(&(objectClass=*)(userPrincipalName=*" + nameILIke + "*))";
+    Object[] searchArguments = new Object[]{nameILIke};
+
+    NamingEnumeration answer = ldapContext.search(searchBase, searchFilter, searchArguments,
+        searchCtls);
+
+    while (answer.hasMoreElements()) {
+      SearchResult sr = (SearchResult) answer.next();
+
+      if (log.isDebugEnabled()) {
+        log.debug("Retrieving userprincipalname names for user [" + sr.getName() + "]");
+      }
+
+      Attributes attrs = sr.getAttributes();
+      if (attrs != null) {
+        NamingEnumeration ae = attrs.getAll();
+        while (ae.hasMore()) {
+          Attribute attr = (Attribute) ae.next();
+          if (attr.getID().toLowerCase().equals("cn")) {
+            userNameList.addAll(LdapUtils.getAllAttributeValues(attr));
+          }
+        }
+      }
+    }
+    return userNameList;
   }
 
   private Set<String> getRoleNamesForUser(String username, LdapContext ldapContext)
