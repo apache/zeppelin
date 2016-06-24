@@ -102,8 +102,19 @@ public class NotebookAuthorization {
     }
   }
 
+  private Set<String> validateUser(Set<String> users) {
+    Set<String> returnUser = new HashSet<>();
+    for (String user : users) {
+      if (!user.trim().isEmpty()) {
+        returnUser.add(user.trim());
+      }
+    }
+    return returnUser;
+  }
+
   public void setOwners(String noteId, Set<String> entities) {
     Map<String, Set<String>> noteAuthInfo = authInfo.get(noteId);
+    entities = validateUser(entities);
     if (noteAuthInfo == null) {
       noteAuthInfo = new LinkedHashMap();
       noteAuthInfo.put("owners", new LinkedHashSet(entities));
@@ -118,6 +129,7 @@ public class NotebookAuthorization {
 
   public void setReaders(String noteId, Set<String> entities) {
     Map<String, Set<String>> noteAuthInfo = authInfo.get(noteId);
+    entities = validateUser(entities);
     if (noteAuthInfo == null) {
       noteAuthInfo = new LinkedHashMap();
       noteAuthInfo.put("owners", new LinkedHashSet());
@@ -132,6 +144,7 @@ public class NotebookAuthorization {
 
   public void setWriters(String noteId, Set<String> entities) {
     Map<String, Set<String>> noteAuthInfo = authInfo.get(noteId);
+    entities = validateUser(entities);
     if (noteAuthInfo == null) {
       noteAuthInfo = new LinkedHashMap();
       noteAuthInfo.put("owners", new LinkedHashSet());
