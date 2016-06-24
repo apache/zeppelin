@@ -173,10 +173,18 @@ exec bin/zeppelin-daemon.sh upstart
 ## What is the next?
 Congratulation on your successful Apache Zeppelin installation! Here are two next steps you might need.
 
- * For an in-depth overview of Apache Zeppelin UI, head to [Explore Apache Zeppelin UI](../quickstart/explorezeppelinui.html)
- * After getting familiar with Apache Zeppelin UI, have fun with a short walk-through [Tutorial](../quickstart/tutorial.html) that uses Apache Spark backend
- * If you need more configuration setting for Apache Zeppelin, jump to the next section: [Apache Zeppelin Configuration](#apache-zeppelin-configuration)
-
+#### If you are new to Apache Zeppelin
+ * For an in-depth overview of Apache Zeppelin UI, head to [Explore Apache Zeppelin UI](../quickstart/explorezeppelinui.html).
+ * After getting familiar with Apache Zeppelin UI, have fun with a short walk-through [Tutorial](../quickstart/tutorial.html) that uses Apache Spark backend.
+ * If you need more configuration setting for Apache Zeppelin, jump to the next section: [Apache Zeppelin Configuration](#apache-zeppelin-configuration).
+ 
+#### If you need more information about Spark or JDBC interpreter setting
+ * Apache Zeppelin provides deep integration with [Apache Spark](http://spark.apache.org/). For the further informtation, see [Spark Interpreter for Apache Zeppelin](../interpreter/spark.html). 
+ * Also, you can use generic JDBC connections in Apache Zeppelin. Go to [Generic JDBC Interpreter for Apache Zeppelin](../interpreter/jdbc.html).
+ 
+#### If you are in multi-user environment
+ * You can set permissions for your notebooks and secure data resource in multi-user environment. Go to **More** -> **Security** section.
+   
 ## Apache Zeppelin Configuration
 
 You can configure Apache Zeppelin with both **environment variables** in `conf/zeppelin-env.sh` (`conf\zeppelin-env.cmd` for Windows) and **Java properties** in `conf/zeppelin-site.xml`. If both are defined, then the **environment variables** will take priority.
