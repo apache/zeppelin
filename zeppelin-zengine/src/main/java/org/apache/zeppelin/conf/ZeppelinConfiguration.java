@@ -346,6 +346,10 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     return getString(ConfVars.ZEPPELIN_NOTEBOOK_S3_EMP);
   }
 
+  public String getInterpreterListPath() {
+    return getRelativeDir(String.format("%s/interpreter-list", getConfDir()));
+  }
+
   public String getInterpreterDir() {
     return getRelativeDir(ConfVars.ZEPPELIN_INTERPRETER_DIR);
   }
