@@ -99,10 +99,29 @@ a.navbar-brand:hover {
   color: #fff !important;
 }
 
+/* Css for the Notebook Dropdown */
+
+.expandable ul {
+  padding-left: 10px !important;
+}
+
+.expandable li {
+  list-style-type: none;
+}
+
+.dropdown-menu .notebook-list-item {
+  text-decoration: none;
+}
+
+.dropdown-menu .notebook-list-item:hover {
+  background: #f5f5f5;
+}
+
 /* bootstrap customization for scrollable dropdown menu */
-.dropdown-menu > .scrollbar-container > li > a {
+.dropdown-menu > .scrollbar-container > li > a,
+.dropdown-menu .notebook-list-item {
   display: block;
-  padding: 3px 20px;
+  padding: 1px 10px;
   clear: both;
   font-weight: normal;
   line-height: 1.42857143;
@@ -117,9 +136,9 @@ a.navbar-brand:hover {
   background: #f5f5f5;
 }
 
-.dropdown-menu > .scrollbar-container > .active > a,
-.dropdown-menu > .scrollbar-container > .active > a:hover,
-.dropdown-menu > .scrollbar-container > .active > a:focus {
+#notebook-list li.active > a,
+#notebook-list li.active > a:hover,
+#notebook-list li.active > a:focus {
   color: #fff;
   text-decoration: none;
   background: #428bca;
@@ -263,8 +282,9 @@ a.navbar-brand:hover {
 }
 
 @media (min-width: 768px) {
-  #notebook-list {
-    max-height: 500px;
+  .dropdown-menu.navbar-dropdown-maxHeight {
+    max-height: calc(100vh - 60px);
+    overflow: auto;
   }
 }
 
