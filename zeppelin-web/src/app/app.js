@@ -62,6 +62,10 @@
               templateUrl: 'app/notebook/notebook.html',
               controller: 'NotebookCtrl'
             })
+            .when('/notebook/:noteId/offlineView', {
+                templateUrl: 'app/notebook/notebook.html',
+                controller: 'NotebookCtrl'
+            })
             .when('/jobmanager', {
               templateUrl: 'app/jobmanager/jobmanager.html',
               controller: 'JobmanagerCtrl'

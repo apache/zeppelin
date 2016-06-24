@@ -40,8 +40,20 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
   $scope.interpreterBindings = [];
   $scope.isNoteDirty = null;
   $scope.saveTimer = null;
-
   var connectedOnce = false;
+
+
+  // offline view mode
+  var pattern = new RegExp('^.*\/notebook\/[a-zA-Z0-9_]*\/offlineView$');
+  $scope.offlineView = pattern.test($location.path());
+  var path = '';
+  if ($scope.offlineView) {
+    path = '/#' + $location.path();
+  } else {
+    path = '/#' + $location.path() + '/offlineView';
+  }
+  $scope.offlineViewPath = path;
+  $scope.offlineViewLoaded = false;
 
   // user auto complete related
   $scope.suggestions = [];
@@ -338,6 +350,9 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
 
   /** update the current note */
   $scope.$on('setNoteContent', function(event, note) {
+    if ($scope.offlineView && $scope.offlineViewLoaded) {
+      return;
+    }
     $scope.paragraphUrl = $routeParams.paragraphId;
     $scope.asIframe = $routeParams.asIframe;
     if ($scope.paragraphUrl) {
@@ -353,6 +368,8 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
     initializeLookAndFeel();
     //open interpreter binding setting when there're none selected
     getInterpreterBindings(getInterpreterBindingsCallBack);
+    //note loaded for viewOnly mode
+    $scope.offlineViewLoaded = true;
   });
 
   var initializeLookAndFeel = function() {

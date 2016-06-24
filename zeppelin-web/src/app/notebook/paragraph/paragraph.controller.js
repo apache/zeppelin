@@ -385,6 +385,9 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
 
   // TODO: this may have impact on performance when there are many paragraphs in a note.
   $scope.$on('updateParagraph', function(event, data) {
+    if ($scope.offlineView) {
+      return;
+    }
     if (data.paragraph.id === $scope.paragraph.id &&
         (data.paragraph.dateCreated !== $scope.paragraph.dateCreated ||
          data.paragraph.dateFinished !== $scope.paragraph.dateFinished ||
@@ -528,6 +531,9 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
   };
 
   $scope.runParagraph = function(data) {
+    if ($scope.offlineView) {
+      return;
+    }
     websocketMsgSrv.runParagraph($scope.paragraph.id, $scope.paragraph.title,
                                  data, $scope.paragraph.config, $scope.paragraph.settings.params);
     $scope.originalText = angular.copy(data);
@@ -599,6 +605,9 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
   };
 
   $scope.toggleEditor = function() {
+    if ($scope.offlineView) {
+      return;
+    }
     if ($scope.paragraph.config.editorHide) {
       $scope.openEditor();
     } else {
@@ -720,6 +729,9 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
   };
 
   $scope.toggleOutput = function() {
+    if ($scope.offlineView) {
+      return;
+    }
     var newConfig = angular.copy($scope.paragraph.config);
     newConfig.tableHide = !newConfig.tableHide;
     var newParams = angular.copy($scope.paragraph.settings.params);
