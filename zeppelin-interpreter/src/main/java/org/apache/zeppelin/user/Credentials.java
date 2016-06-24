@@ -24,9 +24,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Class defining credentials for data source authorization
@@ -44,7 +43,7 @@ public class Credentials {
     if (credentialsPath != null) {
       credentialsFile = new File(credentialsPath);
     }
-    credentialsMap = Collections.synchronizedMap(new HashMap<String, UserCredentials>());
+    credentialsMap = new ConcurrentHashMap<String, UserCredentials>();
     if (credentialsPersist) {
       GsonBuilder builder = new GsonBuilder();
       builder.setPrettyPrinting();

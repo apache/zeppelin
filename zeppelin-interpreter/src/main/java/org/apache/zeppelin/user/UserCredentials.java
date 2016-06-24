@@ -17,9 +17,8 @@
 
 package org.apache.zeppelin.user;
 
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * User Credentials POJO
@@ -28,7 +27,7 @@ public class UserCredentials {
   private Map<String, UsernamePassword> userCredentials;
 
   public UserCredentials() {
-    userCredentials = Collections.synchronizedMap(new HashMap<String, UsernamePassword>());
+    userCredentials = new ConcurrentHashMap<String, UsernamePassword>();
   }
 
   public UsernamePassword getUsernamePassword(String entity) {
