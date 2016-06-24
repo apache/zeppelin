@@ -34,7 +34,7 @@ limitations under the License.
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```GET``` method return all key/value pair of credential informations on the server.</td>
+      <td>This ```GET``` method returns all key/value pairs of credential information on the server.</td>
     </tr>
     <tr>
       <td>URL</td>
@@ -78,7 +78,7 @@ limitations under the License.
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```PUT``` method create an credential information with new properties.</td>
+      <td>This ```PUT``` method creates an credential information with new properties.</td>
     </tr>
     <tr>
       <td>URL</td>
