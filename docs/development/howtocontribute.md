@@ -98,6 +98,9 @@ To regenerate the code, install **thrift-0.9.2** and change directory into Zeppe
 thrift -out zeppelin-interpreter/src/main/java/ --gen java zeppelin-interpreter/src/main/thrift/RemoteInterpreterService.thrift
 ```
 
+## Where to Start
+You can find issues for <a href="https://issues.apache.org/jira/browse/ZEPPELIN-981?jql=project%20%3D%20ZEPPELIN%20AND%20labels%20in%20(beginner%2C%20newbie)">beginner & newbie</a>
+
 ## Stay involved
 Contributors should join the Zeppelin mailing lists.
 
