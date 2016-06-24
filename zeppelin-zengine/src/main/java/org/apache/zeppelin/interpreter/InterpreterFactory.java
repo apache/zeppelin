@@ -188,11 +188,11 @@ public class InterpreterFactory implements InterpreterGroupFactory {
           groupClassNameMap.get(info.getGroup()).add(info);
         }
 
-        for(String groupName: groupClassNameMap.keySet()) {
+        for (String groupName : groupClassNameMap.keySet()) {
           Properties p = new Properties();
-          for(RegisteredInterpreter registeredInterpreter: groupClassNameMap.get(groupName)) {
+          for (RegisteredInterpreter registeredInterpreter : groupClassNameMap.get(groupName)) {
             Map<String, InterpreterProperty> interpreterProperties = registeredInterpreter.getProperties();
-            for(String key: interpreterProperties.keySet()) {
+            for (String key : interpreterProperties.keySet()) {
               p.put(key, interpreterProperties.get(key).getValue());
             }
           }
@@ -617,7 +617,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
   public List<InterpreterSetting> get() {
     synchronized (interpreterSettings) {
       List<InterpreterSetting> settings = new LinkedList<InterpreterSetting>(interpreterSettings.values());
-      Collections.sort(settings, new Comparator<InterpreterSetting>(){
+      Collections.sort(settings, new Comparator<InterpreterSetting>() {
         @Override
         public int compare(InterpreterSetting o1, InterpreterSetting o2) {
           return o1.getName().compareTo(o2.getName());
