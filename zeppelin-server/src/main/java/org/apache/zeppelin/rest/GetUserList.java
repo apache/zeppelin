@@ -17,9 +17,9 @@
 
 package org.apache.zeppelin.rest;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.shiro.realm.jdbc.JdbcRealm;
-import org.apache.shiro.realm.ldap.AbstractLdapRealm;
 import org.apache.shiro.realm.ldap.JndiLdapContextFactory;
 import org.apache.shiro.realm.ldap.JndiLdapRealm;
 import org.apache.shiro.realm.text.IniRealm;
@@ -60,7 +60,7 @@ public class GetUserList {
     Iterator it = getIniUser.entrySet().iterator();
     while (it.hasNext()) {
       Map.Entry pair = (Map.Entry) it.next();
-      userList.add(pair.getKey().toString());
+      userList.add(pair.getKey().toString().trim());
     }
     return userList;
   }
@@ -137,7 +137,7 @@ public class GetUserList {
         username = retval[0];
       }
 
-      if (username.equals("") || tablename.equals("")){
+      if (StringUtils.isBlank(username) || StringUtils.isBlank(tablename)) {
         return userlist;
       }
 
@@ -153,7 +153,7 @@ public class GetUserList {
       ps = con.prepareStatement(userquery);
       rs = ps.executeQuery();
       while (rs.next()) {
-        userlist.add(rs.getString(1));
+        userlist.add(rs.getString(1).trim());
       }
     } catch (Exception e) {
       LOG.error("Error retrieving User list from JDBC Realm", e);
