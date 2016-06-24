@@ -66,8 +66,8 @@ module.exports = function (grunt) {
           svg: true,
           fontname: 'Patua One',
           fontstyles: '400',
-          fontdest: '<%= yeoman.app %>/fonts/npmFonts/',
-          cssdest: '<%= yeoman.app %>/fonts/npmFonts/Patua-One.css',
+          fontdest: '<%= yeoman.app %>/fonts/',
+          cssdest: '<%= yeoman.app %>/fonts/Patua-One.css',
           cssprefix: '',
           subset: ''
         }
@@ -81,8 +81,8 @@ module.exports = function (grunt) {
           svg: true,
           fontname: 'Source Code Pro',
           fontstyles: '300, 400, 500',
-          fontdest: '<%= yeoman.app %>/fonts/npmFonts/',
-          cssdest: '<%= yeoman.app %>/fonts/npmFonts/Source-Code-Pro.css',
+          fontdest: '<%= yeoman.app %>/fonts/',
+          cssdest: '<%= yeoman.app %>/fonts/Source-Code-Pro.css',
           cssprefix: '',
           subset: ''
         }
@@ -96,8 +96,8 @@ module.exports = function (grunt) {
           svg: true,
           fontname: 'Roboto',
           fontstyles: '300, 400, 500',
-          fontdest: '<%= yeoman.app %>/fonts/npmFonts/',
-          cssdest: '<%= yeoman.app %>/fonts/npmFonts/Roboto.css',
+          fontdest: '<%= yeoman.app %>/fonts/',
+          cssdest: '<%= yeoman.app %>/fonts/Roboto.css',
           cssprefix: '',
           subset: ''
         }
