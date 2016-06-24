@@ -39,7 +39,6 @@ import org.apache.zeppelin.resource.LocalResourcePool;
 import org.apache.zeppelin.resource.ResourcePoolUtils;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.Job.Status;
-import org.apache.zeppelin.scheduler.JobListener;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.apache.zeppelin.search.SearchService;
 import org.apache.zeppelin.user.Credentials;
@@ -324,6 +323,33 @@ public class NotebookTest implements JobListenerFactory{
   }
 
   @Test
+  public void testExportAndImportNote() throws IOException, CloneNotSupportedException,
+          InterruptedException {
+    Note note = notebook.createNote(null);
+    note.getNoteReplLoader().setInterpreters(factory.getDefaultInterpreterSettingList());
+
+    final Paragraph p = note.addParagraph();
+    String simpleText = "hello world";
+    p.setText(simpleText);
+
+    note.runAll();
+    while (p.isTerminated() == false || p.getResult() == null) {
+      Thread.yield();
+    }
+
+    String exportedNoteJson = notebook.exportNote(note.getId());
+
+    Note importedNote = notebook.importNote(exportedNoteJson, "Title", null);
+
+    Paragraph p2 = importedNote.getParagraphs().get(0);
+
+    // Test
+    assertEquals(p.getId(), p2.getId());
+    assertEquals(p.text, p2.text);
+    assertEquals(p.getResult().message(), p2.getResult().message());
+  }
+
+  @Test
   public void testCloneNote() throws IOException, CloneNotSupportedException,
       InterruptedException {
     Note note = notebook.createNote(null);
@@ -343,6 +369,30 @@ public class NotebookTest implements JobListenerFactory{
     assertEquals(cp.getId(), p.getId());
     assertEquals(cp.text, p.text);
     assertEquals(cp.getResult().message(), p.getResult().message());
+  }
+
+  @Test
+  public void testCloneNoteWithExceptionResult() throws IOException, CloneNotSupportedException,
+      InterruptedException {
+    Note note = notebook.createNote(null);
+    note.getNoteReplLoader().setInterpreters(factory.getDefaultInterpreterSettingList());
+
+    final Paragraph p = note.addParagraph();
+    p.setText("hello world");
+    note.runAll();
+    while (p.isTerminated() == false || p.getResult() == null) {
+      Thread.yield();
+    }
+    // Force paragraph to have String type object
+    p.setResult("Exception");
+
+    Note cloneNote = notebook.cloneNote(note.getId(), "clone note with Exception result", null);
+    Paragraph cp = cloneNote.paragraphs.get(0);
+
+    // Keep same ParagraphID
+    assertEquals(cp.getId(), p.getId());
+    assertEquals(cp.text, p.text);
+    assertNull(cp.getResult());
   }
 
   @Test

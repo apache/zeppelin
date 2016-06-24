@@ -23,7 +23,7 @@
 }
 
 .labelBtn {
-  padding: .7em .6em .3em;
+  padding: .8em .6em .3em;
   font-size: 75%;
   font-weight: bold;
   line-height: 1;
@@ -213,6 +213,26 @@
 
 .setting .modal-footer {
   border: 0;
+}
+
+.commit-container {
+  padding: 10px 20px 6px 20px;
+  font-weight: normal;
+  word-wrap: break-word;
+  white-space: initial;
+}
+
+/* overwrite bootstrap css for version control button */
+.btn-group > .btn + .dropdown-toggle {
+  padding-right: 5px;
+  padding-left: 5px;
+}
+
+.setting-btn {
+  position: relative;
+  top: 2px;
+  margin-right: 4px;
+  cursor: pointer;
 }
 
 .cron-preset-container {

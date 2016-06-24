@@ -64,32 +64,34 @@ limitations under the License.
               tooltip-placement="bottom" tooltip="Export the notebook">
         <i class="fa fa-download"></i>
       </button>
-        <ul class="dropdown-menu" role="menu" style="width:250px">
-          <li>
-            <div class="cron-preset-container">
-              <div>
-                <input type="text"
-                       dropdown-input
-                       placeholder="commit message"
-                       id="note.checkpoint.message"
-                       ng-model="note.checkpoint.message"/>
-                <button type="button"
-                  class="btn btn-default btn-xs"
-                  ng-hide="viewOnly"
-                  ng-click="checkpointNotebook(note.checkpoint.message)"
-                  tooltip-placement="bottom" tooltip="Commit the notebook">Commit
-                </button>
-              </div>
+      <button type="button"
+              class="btn btn-default btn-xs dropdown-toggle"
+              ng-hide="viewOnly"
+              data-toggle="dropdown"
+              tooltip-placement="bottom" tooltip="Version control">
+        <i class="fa fa-file-code-o"></i>
+      </button>
+      <ul class="dropdown-menu" role="menu" style="width:250px">
+        <li>
+          <div class="commit-container">
+            <div>
+              <input type="text"
+                     dropdown-input
+                     placeholder="commit message"
+                     id="note.checkpoint.message"
+                     style="width: 145px;"
+                     ng-model="note.checkpoint.message"/>
+              <button type="button"
+                      class="btn btn-default btn-xs"
+                      ng-hide="viewOnly"
+                      ng-click="checkpointNotebook(note.checkpoint.message)"
+                      style="margin-left: 4px;"
+                      tooltip-placement="bottom" tooltip="Commit the notebook">Commit
+              </button>
             </div>
-          </li>
-        </ul>
-        <button type="button"
-                class="btn btn-default btn-xs dropdown-toggle"
-                ng-hide="viewOnly"
-                data-toggle="dropdown"
-                tooltip-placement="bottom" tooltip="Version control">
-          <i class="fa fa-file-code-o"></i>
-        </button>
+          </div>
+        </li>
+      </ul>
     </span>
 
 <!-- put the delete action by itself for your protection -->
@@ -155,26 +157,24 @@ limitations under the License.
     </div>
 
     <div class="pull-right" style="margin-top:15px; margin-right:15px; margin-left: 15px; margin-bottom: 13px; font-size:15px;">
-      <span>
-        <button type="button"
-            class="btn btn-default btn-xs"
+      <span class="setting-btn"
+            type="button"
             data-toggle="modal"
             data-target="#shortcutModal"
             tooltip-placement="bottom" tooltip="List of shortcut">
-          <i class="icon-question"></i>
-        </button>
-        <button type="button"
-            class="btn btn-default btn-xs"
+        <i class="fa fa-keyboard-o"></i>
+      </span>
+      <span class="setting-btn"
+            type="button"
             ng-click="toggleSetting()"
             tooltip-placement="bottom" tooltip="Interpreter binding">
-          <i class="fa fa-cog" ng-style="{color: showSetting ? '#3071A9' : 'black' }"></i>
-        </button>
-        <button type="button"
-            class="btn btn-default btn-xs"
+        <i class="fa fa-cog" ng-style="{color: showSetting ? '#3071A9' : 'black' }"></i>
+      </span>
+      <span class="setting-btn"
+            type="button"
             ng-click="togglePermissions()"
             tooltip-placement="bottom" tooltip="Note permissions">
-          <i class="fa fa-lock" ng-style="{color: showPermissions ? '#3071A9' : 'black' }"></i>
-        </button>
+        <i class="fa fa-lock" ng-style="{color: showPermissions ? '#3071A9' : 'black' }"></i>
       </span>
 
       <span class="btn-group">

@@ -242,10 +242,6 @@ a.navbar-brand:hover {
     background: #080808;
   }
 
-  .server-status {
-    float: right;
-  }
-
   .navbar-inverse .navbar-nav .open .dropdown-menu .divider {
     background: #3071A9;
   }
@@ -272,20 +268,43 @@ a.navbar-brand:hover {
   }
 }
 
-i.server-status {
-  font-size: 12px;
-  top: -2px;
-  position: relative;
+.nav-component {
+  margin-top: 8px;
+}
+
+.nav-btn {
+  color: #fff;
+  background-color: transparent;
+  border-color: transparent;
+  font-size: 14px;
+}
+
+.nav-login-btn,
+.nav-login-btn:hover,
+.nav-login-btn:focus {
+  color: #fff;
+  background-color: #428bca;
+  border-color: #357ebd;
+}
+
+.username {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 120px;
+  display: inline-block;
 }
 
 .server-connected {
+  padding-top: 12px;
   color: #00CC00;
+  font-size: 12px !important;
 }
 
 .server-disconnected {
+  padding-top: 12px;
   color: rgba(240, 48, 0, 1);
   font-size: 12px !important;
-  font-weight: bold !important;
 }
 
 .box {

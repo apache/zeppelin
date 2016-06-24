@@ -312,6 +312,7 @@ SELECT * FROM db_name;
 
 ```
 or
+
 ```sql
 %jdbc(prefix)
 SELECT * FROM db_name;

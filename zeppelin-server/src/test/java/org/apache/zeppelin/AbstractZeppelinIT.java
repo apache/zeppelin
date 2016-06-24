@@ -22,6 +22,9 @@ import com.google.common.base.Function;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FileUtils;
 import org.openqa.selenium.*;
+import org.openqa.selenium.logging.LogEntries;
+import org.openqa.selenium.logging.LogEntry;
+import org.openqa.selenium.logging.LogType;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.FluentWait;
 import org.openqa.selenium.support.ui.Wait;
@@ -30,6 +33,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -75,7 +79,7 @@ abstract public class AbstractZeppelinIT {
 
 
   protected String getParagraphXPath(int paragraphNo) {
-    return "//div[@ng-controller=\"ParagraphCtrl\"][" + paragraphNo + "]";
+    return "(//div[@ng-controller=\"ParagraphCtrl\"])[" + paragraphNo + "]";
   }
 
   protected boolean waitForParagraph(final int paragraphNo, final String state) {
@@ -151,6 +155,10 @@ abstract public class AbstractZeppelinIT {
 
   protected void handleException(String message, Exception e) throws Exception {
     LOG.error(message, e);
+    LogEntries logEntries = driver.manage().logs().get(LogType.BROWSER);
+    for (LogEntry entry : logEntries) {
+      LOG.error(new Date(entry.getTimestamp()) + " " + entry.getLevel() + " " + entry.getMessage());
+    }
     File scrFile = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
     LOG.error("ScreenShot::\ndata:image/png;base64," + new String(Base64.encodeBase64(FileUtils.readFileToByteArray(scrFile))));
     throw e;
