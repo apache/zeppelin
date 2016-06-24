@@ -44,8 +44,7 @@ limitations under the License.
             <li class="divider"></li>
             <div id="notebook-list" class="scrollbar-container">
               <li class="filter-names" ng-include="'components/filterNoteNames/filter-note-names.html'"></li>
-              <li ng-repeat="note in navbar.notes.root.children |notebookFilter:query track by $index"
-                  ng-class="{'active' : navbar.isActive(note.id)}" ng-include="'notebook_list_renderer.html'"></li>
+              <li ng-repeat="note in navbar.notes.root.children | filter:query | orderBy:home.arrayOrderingSrv.notebookListOrdering track by $index" ng-class="{'active' : navbar.isActive(note.id)}" ng-include="'notebook_list_renderer.html'"></li>
             </div>
           </ul>
         </li>
