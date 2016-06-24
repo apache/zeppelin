@@ -175,6 +175,7 @@ public class AuthenticationIT extends AbstractZeppelinIT {
       authenticationIT.logoutUser("finance1");
 
       authenticationIT.authenticationUser("hr1", "hr1");
+
       pollingWait(By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + noteId + "')]"),
           MAX_BROWSER_TIMEOUT_SEC).click();
 
