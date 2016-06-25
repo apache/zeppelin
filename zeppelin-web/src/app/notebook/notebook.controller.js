@@ -878,20 +878,20 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl',
     updatePreviousList();
   };
 
-  $scope.$watch("permissions.owners", _.debounce(function(readers) {
+  $scope.$watch('permissions.owners', _.debounce(function(readers) {
     $scope.$apply(function() {
       $scope.search('owners');
-    })
+    });
   }, 350));
-  $scope.$watch("permissions.readers", _.debounce(function(readers) {
+  $scope.$watch('permissions.readers', _.debounce(function(readers) {
     $scope.$apply(function() {
       $scope.search('readers');
-    })
+    });
   }, 350));
-  $scope.$watch("permissions.writers", _.debounce(function(readers) {
+  $scope.$watch('permissions.writers', _.debounce(function(readers) {
     $scope.$apply(function() {
       $scope.search('writers');
-    })
+    });
   }, 350));
 
   // function to find suggestion list on change

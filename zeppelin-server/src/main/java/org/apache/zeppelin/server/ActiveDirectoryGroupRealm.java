@@ -179,15 +179,15 @@ public class ActiveDirectoryGroupRealm extends AbstractLdapRealm {
     return new SimpleAuthorizationInfo(roleNames);
   }
 
-  public List<String> searchForUserName(String nameILIke, LdapContext ldapContext) throws
+  public List<String> searchForUserName(String containString, LdapContext ldapContext) throws
       NamingException {
     List<String> userNameList = new ArrayList<>();
 
     SearchControls searchCtls = new SearchControls();
     searchCtls.setSearchScope(SearchControls.SUBTREE_SCOPE);
 
-    String searchFilter = "(&(objectClass=*)(userPrincipalName=*" + nameILIke + "*))";
-    Object[] searchArguments = new Object[]{nameILIke};
+    String searchFilter = "(&(objectClass=*)(userPrincipalName=*" + containString + "*))";
+    Object[] searchArguments = new Object[]{containString};
 
     NamingEnumeration answer = ldapContext.search(searchBase, searchFilter, searchArguments,
         searchCtls);
