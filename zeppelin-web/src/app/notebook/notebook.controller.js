@@ -742,7 +742,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl',
               label: 'Cancel',
               action: function (dialog) {
                 dialog.close();
-                $window.history.back();
+                $window.location.replace('/');
               }
             }
           ]

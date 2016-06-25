@@ -78,7 +78,7 @@ angular.module('zeppelinWebApp').factory('websocketEvents', function($rootScope,
               label: 'Cancel',
               action: function(dialog) {
                   dialog.close();
-                  $window.history.back();
+                  $window.location.replace('/');
               }
           }]
       });
