@@ -713,13 +713,16 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl',
     $http.put(baseUrlSrv.getRestApiBase() + '/notebook/' + $scope.note.id + '/permissions',
       $scope.permissions, {withCredentials: true}).
       success(function (data, status, headers, config) {
-        console.log('Note permissions %o saved', $scope.permissions);
-        BootstrapDialog.alert({
-          closable: true,
-          title: 'Permissions Saved Successfully!!!',
-          message: 'Owners : ' + $scope.permissions.owners + '\n\n' + 'Readers : ' + $scope.permissions.readers + '\n\n' + 'Writers  : ' + $scope.permissions.writers
+        getPermissions(function() {
+          console.log('Note permissions %o saved', $scope.permissions);
+          BootstrapDialog.alert({
+            closable: true,
+            title: 'Permissions Saved Successfully!!!',
+            message: 'Owners : ' + $scope.permissions.owners + '\n\n' + 'Readers : ' +
+            $scope.permissions.readers + '\n\n' + 'Writers  : ' + $scope.permissions.writers
+          });
+          $scope.showPermissions = false;
         });
-        $scope.showPermissions = false;
       }).
       error(function (data, status, headers, config) {
         console.log('Error %o %o', status, data.message);
