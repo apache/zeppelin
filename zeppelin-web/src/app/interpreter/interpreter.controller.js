@@ -150,6 +150,8 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
               thisConfirm.close();
             });
           return false;
+        } else {
+          getInterpreterSettings();
         }
       }
     });
