@@ -19,18 +19,22 @@ limitations under the License.
 -->
 {% include JB/setup %}
 
-## Zeppelin REST API
- Zeppelin provides several REST APIs for interaction and remote activation of zeppelin functionality.
+# Apache Zeppelin Configuration REST API
 
- All REST APIs are available starting with the following endpoint `http://[zeppelin-server]:[zeppelin-port]/api`. Note that zeppelin REST APIs receive or return JSON objects, it is recommended for you to install some JSON viewers such as [JSONView](https://chrome.google.com/webstore/detail/jsonview/chklaanhfefbnpoihckbnefhakgolnmc).
+<div id="toc"></div>
 
- If you work with Zeppelin and find a need for an additional REST API, please [file an issue or send us mail](../../community.html).
+## Overview
+Apache Zeppelin provides several REST APIs for interaction and remote activation of zeppelin functionality.
+All REST APIs are available starting with the following endpoint `http://[zeppelin-server]:[zeppelin-port]/api`. 
+Note that Apache Zeppelin REST APIs receive or return JSON objects, it is recommended for you to install some JSON viewers such as [JSONView](https://chrome.google.com/webstore/detail/jsonview/chklaanhfefbnpoihckbnefhakgolnmc).
 
- <br />
+If you work with Apache Zeppelin and find a need for an additional REST API, please [file an issue or send us an email](http://zeppelin.apache.org/community.html).
+nd a need for an additional REST API, please [file an issue or send us mail](../../community.html).
+
 
 ## Configuration REST API list
 
-### List Configurations
+### List all key/value pair of configurations
   <table class="table-configuration">
     <col width="200">
     <tr>
@@ -89,7 +93,7 @@ limitations under the License.
 
 <br/>
 
-### List Configurations(prefix match)
+### List all prefix matched key/value pair of configurations
   <table class="table-configuration">
     <col width="200">
     <tr>
@@ -128,3 +132,4 @@ limitations under the License.
       </td>
     </tr>
   </table>
+  

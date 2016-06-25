@@ -484,6 +484,9 @@
               <!-- bundled from anchor -->
               <exclude>docs/assets/themes/zeppelin/js/anchor.min.js</exclude>
 
+              <!-- bundled from toc -->
+              <exclude>docs/assets/themes/zeppelin/js/toc.js</exclude>
+
               <!-- bundled from jekyll -->
               <exclude>docs/assets/themes/zeppelin/css/syntax.css</exclude>
 

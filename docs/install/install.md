@@ -23,15 +23,7 @@ limitations under the License.
 Welcome to your first trial to explore Apache Zeppelin! 
 This page will help you to get started and here is the list of topics covered.
 
-* [Installation](#installation)
-  * [Downloading Binary Package](#downloading-binary-package)
-  * [Building from Source](#building-from-source)
-* [Starting Apache Zeppelin with Command Line](#starting-apache-zeppelin-with-command-line)
-  * [Start Zeppelin](#start-zeppelin)
-  * [Stop Zeppelin](#stop-zeppelin)
-  * [(Optional) Start Apache Zeppelin with a service manager](#optional-start-apache-zeppelin-with-a-service-manager)
-* [What is the next?](#what-is-the-next)
-* [Apache Zeppelin Configuration](#apache-zeppelin-configuration)
+<div id="toc"></div>
 
 ## Installation
 
@@ -52,7 +44,7 @@ Apache Zeppelin officially supports and is tested on next environments.
   </tr>
 </table>
 
-There are two options to install Apache Zeppelin on your machine. One is [downloading prebuild binary package](#downloading-binary-package) from the archive. 
+There are two options to install Apache Zeppelin on your machine. One is [downloading pre-built binary package](#downloading-binary-package) from the archive. 
 You can download not only the latest stable version but also the older one if you need. 
 The other option is [building from the source](#building-from-source).
 Although it can be unstable somehow since it is on development status, you can explore newly added feature and change it as you want.
@@ -181,10 +173,18 @@ exec bin/zeppelin-daemon.sh upstart
 ## What is the next?
 Congratulation on your successful Apache Zeppelin installation! Here are two next steps you might need.
 
- * For an in-depth overview of Apache Zeppelin UI, head to [Explore Apache Zeppelin UI](../quickstart/explorezeppelinui.html)
- * After getting familiar with Apache Zeppelin UI, have fun with a short walk-through [Tutorial](../quickstart/tutorial.html) that uses Apache Spark backend
- * If you need more configuration setting for Apache Zeppelin, jump to the next section: [Apache Zeppelin Configuration](#apache-zeppelin-configuration)
-
+#### If you are new to Apache Zeppelin
+ * For an in-depth overview of Apache Zeppelin UI, head to [Explore Apache Zeppelin UI](../quickstart/explorezeppelinui.html).
+ * After getting familiar with Apache Zeppelin UI, have fun with a short walk-through [Tutorial](../quickstart/tutorial.html) that uses Apache Spark backend.
+ * If you need more configuration setting for Apache Zeppelin, jump to the next section: [Apache Zeppelin Configuration](#apache-zeppelin-configuration).
+ 
+#### If you need more information about Spark or JDBC interpreter setting
+ * Apache Zeppelin provides deep integration with [Apache Spark](http://spark.apache.org/). For the further informtation, see [Spark Interpreter for Apache Zeppelin](../interpreter/spark.html). 
+ * Also, you can use generic JDBC connections in Apache Zeppelin. Go to [Generic JDBC Interpreter for Apache Zeppelin](../interpreter/jdbc.html).
+ 
+#### If you are in multi-user environment
+ * You can set permissions for your notebooks and secure data resource in multi-user environment. Go to **More** -> **Security** section.
+   
 ## Apache Zeppelin Configuration
 
 You can configure Apache Zeppelin with both **environment variables** in `conf/zeppelin-env.sh` (`conf\zeppelin-env.cmd` for Windows) and **Java properties** in `conf/zeppelin-site.xml`. If both are defined, then the **environment variables** will take priority.
