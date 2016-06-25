@@ -11,22 +11,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+'use strict';
 
 angular.module('zeppelinWebApp').directive('expandCollapse', function() {
   return {
           restrict: 'EA',
           link: function(scope, element, attrs){
-            $(element).click( function(event) {
-              if($(element).find(".expandable:visible").length > 1) {
-                $(element).find(".expandable:visible").slideUp('slow');
-                $(element).find("i.icon-folder-alt").toggleClass('icon-folder icon-folder-alt');
+            angular.element(element).click( function(event) {
+              if(angular.element(element).find('.expandable:visible').length > 1) {
+                angular.element(element).find('.expandable:visible').slideUp('slow');
+                angular.element(element).find('i.icon-folder-alt').toggleClass('icon-folder icon-folder-alt');
             	} else {
-                $(element).find(".expandable").first().slideToggle('200',function() {
-                  $(element).find("i").first().toggleClass('icon-folder icon-folder-alt');
+                angular.element(element).find('.expandable').first().slideToggle('200',function() {
+                  angular.element(element).find('i').first().toggleClass('icon-folder icon-folder-alt');
                 });
               }
               event.stopPropagation();
        		  });
           }
-        }
+        };
 });

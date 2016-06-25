@@ -33,7 +33,8 @@ limitations under the License.
             <div id="notebook-list" class="scrollbar-container">
               <li class="filter-names" ng-include="'components/filterNoteNames/filter-note-names.html'"></li>
               <li ng-repeat="note in navbar.notes.root.children | filter:query | orderBy:home.arrayOrderingSrv.notebookListOrdering track by $index"
-                  ng-class="{'active' : navbar.isActive(note.id)}" ng-include="'components/navbar/navbar-notebookList-elem.html'"></li>
+                  ng-class="{'active' : navbar.isActive(note.id)}" ng-include="'components/navbar/navbar-notebookList-elem.html'">
+              </li>
             </div>
           </ul>
         </li>
@@ -82,7 +83,7 @@ limitations under the License.
             </button>
             <span ng-if="!ticket" style="margin: 5px;"></span>
             <ul class="dropdown-menu">
-              <li><a href="" data-toggle="modal" data-target="#aboutModal">About Zeppelin</a>
+              <li><a href="" data-toggle="modal" data-target="#aboutModal">About Zeppelin</a></li>
               <li role="separator" style="margin: 5px 0;" class="divider"></li>
               <li><a href="#/interpreter">Interpreter</a></li>
               <li><a href="#/credential">Credential</a></li>

@@ -23,6 +23,10 @@ body {
   -ms-overflow-style: scrollbar;
 }
 
+.home {
+  margin-bottom: 0px !important;
+}
+
 .bodyAsIframe {
   background: white;
 }
