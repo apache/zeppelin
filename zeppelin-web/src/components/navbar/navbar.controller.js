@@ -92,7 +92,7 @@ angular.module('zeppelinWebApp')
     request.open('post', logoutURL, true, 'false', 'false');
     request.onreadystatechange = function() {
       if (request.readyState === 4) {
-        if (request.status === 401 || request.status === 405) {
+        if (request.status === 401 || request.status === 405 || request.status === 500) {
           $rootScope.userName = '';
           $rootScope.ticket.principal = '';
           $rootScope.ticket.ticket = '';
