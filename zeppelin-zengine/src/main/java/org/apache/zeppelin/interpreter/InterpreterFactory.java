@@ -191,7 +191,8 @@ public class InterpreterFactory implements InterpreterGroupFactory {
         for (String groupName : groupClassNameMap.keySet()) {
           Properties p = new Properties();
           for (RegisteredInterpreter registeredInterpreter : groupClassNameMap.get(groupName)) {
-            Map<String, InterpreterProperty> interpreterProperties = registeredInterpreter.getProperties();
+            Map<String, InterpreterProperty> interpreterProperties =
+                registeredInterpreter.getProperties();
             for (String key : interpreterProperties.keySet()) {
               p.put(key, interpreterProperties.get(key).getValue());
             }
@@ -443,7 +444,8 @@ public class InterpreterFactory implements InterpreterGroupFactory {
           Interpreter.registeredInterpreters.values()) {
         if (registeredInterpreter.getGroup().equals(groupName)) {
           String className = registeredInterpreter.getClassName();
-          interpreterInfos.add(new InterpreterSetting.InterpreterInfo(className, registeredInterpreter.getName()));
+          interpreterInfos.add(
+              new InterpreterSetting.InterpreterInfo(className, registeredInterpreter.getName()));
         }
       }
 
@@ -616,16 +618,47 @@ public class InterpreterFactory implements InterpreterGroupFactory {
    */
   public List<InterpreterSetting> get() {
     synchronized (interpreterSettings) {
-      List<InterpreterSetting> settings = new LinkedList<InterpreterSetting>(interpreterSettings.values());
-      Collections.sort(settings, new Comparator<InterpreterSetting>() {
-        @Override
-        public int compare(InterpreterSetting o1, InterpreterSetting o2) {
-          return o1.getName().compareTo(o2.getName());
-        }
-      });
-
-      return settings;
+      return sortByInterpreterClassList(new LinkedList<>(interpreterSettings.values()));
     }
+  }
+
+  public List<InterpreterSetting> sortByInterpreterClassList(List<InterpreterSetting> origin) {
+    Map<String, InterpreterSetting> classNameInterpreterSettingMap = new HashMap<>();
+    List<InterpreterSetting> ordered = new ArrayList<>();
+
+    for (InterpreterSetting interpreterSetting : origin) {
+      for (InterpreterSetting.InterpreterInfo interpreterInfo :
+          interpreterSetting.getInterpreterInfos()) {
+        classNameInterpreterSettingMap.put(interpreterInfo.getClassName(), interpreterSetting);
+      }
+    }
+
+    /**
+     * Fix order by interpreterClassList first, and append rest of them ordered by themselves
+     */
+    InterpreterSetting interpreterSetting;
+    for (String className : interpreterClassList) {
+      if (classNameInterpreterSettingMap.containsKey(className)) {
+        interpreterSetting = classNameInterpreterSettingMap.get(className);
+        if (!ordered.contains(interpreterSetting)) {
+          ordered.add(interpreterSetting);
+        }
+        classNameInterpreterSettingMap.remove(className);
+      }
+    }
+
+    origin.removeAll(ordered);
+
+    Collections.sort(origin, new Comparator<InterpreterSetting>() {
+      @Override
+      public int compare(InterpreterSetting o1, InterpreterSetting o2) {
+        return o1.getName().compareTo(o2.getName());
+      }
+    });
+
+    ordered.addAll(origin);
+
+    return ordered;
   }
 
   public InterpreterSetting get(String name) {
