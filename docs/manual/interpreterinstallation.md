@@ -21,6 +21,8 @@ limitations under the License.
 
 # Interpreter Installation
 
+<div id="toc"></div>
+
 Apache Zeppelin provides **Interpreter Installation** mechanism for whom downloaded Zeppelin `netinst` binary package, or just want to install another 3rd party interpreters. 
 
 ## Community managed interpreters
