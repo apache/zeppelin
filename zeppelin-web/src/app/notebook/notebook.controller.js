@@ -824,15 +824,16 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl',
 
 
   function convertToArray(role) {
-    if (role === 'owners') {
+    if (!$scope.permissions) {
+      return;
+    } else if (role === 'owners' && typeof $scope.permissions.owners === 'string') {
       searchText = $scope.permissions.owners.split(',');
-    }
-    else if (role === 'readers') {
+    } else if (role === 'readers' && typeof $scope.permissions.readers === 'string') {
       searchText = $scope.permissions.readers.split(',');
-    }
-    else if (role === 'writers') {
+    } else if (role === 'writers' && typeof $scope.permissions.writers === 'string') {
       searchText = $scope.permissions.writers.split(',');
     }
+
     for (var i = 0; i < searchText.length; i++) {
       searchText[i] = searchText[i].trim();
     }
@@ -885,6 +886,22 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl',
     updatePreviousList();
   };
 
+  $scope.$watch('permissions.owners', _.debounce(function(readers) {
+    $scope.$apply(function() {
+      $scope.search('owners');
+    });
+  }, 350));
+  $scope.$watch('permissions.readers', _.debounce(function(readers) {
+    $scope.$apply(function() {
+      $scope.search('readers');
+    });
+  }, 350));
+  $scope.$watch('permissions.writers', _.debounce(function(readers) {
+    $scope.$apply(function() {
+      $scope.search('writers');
+    });
+  }, 350));
+
   // function to find suggestion list on change
   $scope.search = function(role) {
     convertToArray(role);
@@ -893,12 +910,10 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl',
     $scope.selectIndex = -1;
     $scope.suggestions = [];
     selectedUser = searchText[selectedUserIndex];
-    if(selectedUser !== ''){
-    getSuggestions(selectedUser);
-    }
-    else
-    {
-     $scope.suggestions = [];
+    if (selectedUser !== '') {
+      getSuggestions(selectedUser);
+    } else {
+      $scope.suggestions = [];
     }
   };
 
