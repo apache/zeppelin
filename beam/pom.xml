@@ -1,0 +1,418 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+
+
+	<parent>
+		<artifactId>zeppelin</artifactId>
+		<groupId>org.apache.zeppelin</groupId>
+		<version>0.6.0-incubating-SNAPSHOT</version>
+		<relativePath>..</relativePath>
+	</parent>
+
+	<groupId>org.apache.zeppelin</groupId>
+	<artifactId>zeppelin-beam</artifactId>
+	<version>0.6.0-incubating-SNAPSHOT</version>
+
+
+
+	<repositories>
+		<repository>
+			<id>repo.bodar.com</id>
+			<url>http://repo.bodar.com</url>
+		</repository>
+	</repositories>
+
+
+	<dependencies>
+		<!-- <dependency> <groupId>com.google.cloud.dataflow</groupId> <artifactId>google-cloud-dataflow-java-sdk-all</artifactId> 
+			<version>1.6.0</version> </dependency> <dependency> <groupId>org.apache.beam</groupId> 
+			<artifactId>beam-runners-parent</artifactId> <version>0.2.0-incubating-SNAPSHOT</version> 
+			<type>pom</type> </dependency> <dependency> <groupId>org.apache.beam</groupId> 
+			<artifactId>beam-sdks-java-io-google-cloud-platform</artifactId> <version>0.2.0-incubating-SNAPSHOT</version> 
+			</dependency> <dependency> <groupId>org.apache.beam</groupId> <artifactId>beam-parent</artifactId> 
+			<version>0.2.0-incubating-SNAPSHOT</version> <type>pom</type> </dependency> 
+			<dependency> <groupId>org.apache.beam</groupId> <artifactId>beam-runners-google-cloud-dataflow-java</artifactId> 
+			<version>0.2.0-incubating</version> </dependency> <dependency> <groupId>org.apache.beam</groupId> 
+			<artifactId>beam-runners-core-java</artifactId> <version>0.2.0-incubating</version> 
+			</dependency> <dependency> <groupId>org.apache.beam</groupId> <artifactId>beam-sdks-java-core</artifactId> 
+			<version>0.2.0-incubating-SNAPSHOT</version> </dependency> -->
+
+<!-- 
+<dependency>
+ <groupId>com.google.cloud.dataflow</groupId> 
+ <artifactId>google-cloud-dataflow-java-sdk-all</artifactId> 
+			<version>1.6.0</version>
+			<exclusions>
+				<exclusion>
+					<artifactId>google-api-client-jackson2</artifactId>
+					<groupId>com.google.api-client</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>google-http-client-jackson2</artifactId>
+					<groupId>com.google.http-client</groupId>
+				</exclusion>
+			</exclusions>
+</dependency>
+ -->
+
+		
+	 	<dependency>
+			<groupId>org.apache.spark</groupId>
+			<artifactId>spark-core_2.10</artifactId>
+			<version>1.4.1</version>
+			<exclusions>
+				<exclusion>
+					<artifactId>slf4j-log4j12</artifactId>
+					<groupId>org.slf4j</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>netty-all</artifactId>
+					<groupId>io.netty</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>akka-actor_2.10</artifactId>
+					<groupId>org.spark-project.akka</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>akka-remote_2.10</artifactId>
+					<groupId>org.spark-project.akka</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>akka-slf4j_2.10</artifactId>
+					<groupId>org.spark-project.akka</groupId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.spark</groupId>
+			<artifactId>spark-streaming_2.10</artifactId>
+			<version>1.4.1</version>
+		</dependency>
+
+	<dependency>
+    <groupId>org.apache.hadoop</groupId>
+    <artifactId>hadoop-mapreduce-client-core</artifactId>
+    <version>2.3.0</version>
+    <exclusions>
+    	<exclusion>
+    		<artifactId>slf4j-log4j12</artifactId>
+    		<groupId>org.slf4j</groupId>
+    	</exclusion>
+    </exclusions>
+	</dependency>
+	
+	<dependency>
+    <groupId>org.apache.hadoop</groupId>
+    <artifactId>hadoop-common</artifactId>
+    <version>2.3.0</version>
+    <exclusions>
+    	<exclusion>
+    		<artifactId>slf4j-log4j12</artifactId>
+    		<groupId>org.slf4j</groupId>
+    	</exclusion>
+    </exclusions>
+	</dependency>
+	
+<dependency>
+    <groupId>org.apache.hadoop</groupId>
+    <artifactId>hadoop-hdfs</artifactId>
+    <version>2.3.0</version>
+</dependency>
+<dependency>
+    <groupId>org.apache.hadoop</groupId>
+    <artifactId>hadoop-client</artifactId>
+    <version>2.3.0</version>
+    <exclusions>
+    	<exclusion>
+    		<artifactId>slf4j-log4j12</artifactId>
+    		<groupId>org.slf4j</groupId>
+    	</exclusion>
+    </exclusions>
+</dependency>
+<dependency>
+    <groupId>org.apache.hadoop</groupId>
+    <artifactId>hadoop-annotations</artifactId>
+    <version>2.3.0</version>
+</dependency>
+<dependency>
+    <groupId>org.apache.hadoop</groupId>
+    <artifactId>hadoop-yarn-common</artifactId>
+    <version>2.3.0</version>
+</dependency>
+<dependency>
+    <groupId>org.apache.hadoop</groupId>
+    <artifactId>hadoop-mapreduce-client-common</artifactId>
+    <version>2.3.0</version>
+    <exclusions>
+    	<exclusion>
+    		<artifactId>slf4j-log4j12</artifactId>
+    		<groupId>org.slf4j</groupId>
+    	</exclusion>
+    </exclusions>
+</dependency>
+<dependency>
+    <groupId>org.apache.hadoop</groupId>
+    <artifactId>hadoop-core</artifactId>
+    <version>1.2.1</version>
+</dependency>
+
+	
+		<dependency>
+			<groupId>com.thoughtworks.qdox</groupId>
+			<artifactId>qdox</artifactId>
+			<version>2.0-M3</version>
+		</dependency>
+
+
+		<dependency>
+			<groupId>org.mdkt.compiler</groupId>
+			<artifactId>InMemoryJavaCompiler</artifactId>
+			<version>1.2</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.ning</groupId>
+			<artifactId>async-http-client</artifactId>
+			<version>1.9.31</version>
+
+		</dependency>
+
+		<dependency>
+			<groupId>com.google.code.gson</groupId>
+			<artifactId>gson</artifactId>
+			<version>2.6.2</version>
+		</dependency>
+		<dependency>
+			<groupId>jline</groupId>
+			<artifactId>jline</artifactId>
+			<version>2.12</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.googlecode.totallylazy</groupId>
+			<artifactId>totallylazy</artifactId>
+			<version>1.83</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.beam</groupId>
+			<artifactId>beam-runners-parent</artifactId>
+			<version>0.2.0-incubating-SNAPSHOT</version>
+			<type>pom</type>
+		</dependency>
+		<!-- 
+		<dependency>
+			<groupId>org.apache.beam</groupId>
+			<artifactId>beam-examples-java</artifactId>
+			<version>0.2.0-incubating-SNAPSHOT</version>
+
+			<exclusions>
+				<exclusion>
+					<artifactId>slf4j-jdk14</artifactId>
+					<groupId>org.slf4j</groupId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		 -->
+		<dependency>
+			<groupId>org.apache.beam</groupId>
+			<artifactId>beam-runners-core-java</artifactId>
+			<version>0.2.0-incubating-SNAPSHOT</version>
+			<exclusions>
+				<exclusion>
+					<artifactId>google-http-client-jackson2</artifactId>
+					<groupId>com.google.http-client</groupId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.beam</groupId>
+			<artifactId>beam-runners-direct-java</artifactId>
+			<version>0.2.0-incubating-SNAPSHOT</version>
+
+		</dependency>
+		<dependency>
+			<groupId>org.apache.beam</groupId>
+			<artifactId>beam-runners-flink_2.10</artifactId>
+			<version>0.2.0-incubating-SNAPSHOT</version>
+
+			<exclusions>
+				<exclusion>
+					<artifactId>slf4j-log4j12</artifactId>
+					<groupId>org.slf4j</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>netty-all</artifactId>
+					<groupId>io.netty</groupId>
+				</exclusion>
+		
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.beam</groupId>
+			<artifactId>beam-runners-flink_2.10-examples</artifactId>
+			<version>0.2.0-incubating-SNAPSHOT</version>
+
+			<exclusions>
+				<exclusion>
+					<artifactId>slf4j-log4j12</artifactId>
+					<groupId>org.slf4j</groupId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+<!--  
+		<dependency>
+			<groupId>org.apache.beam</groupId>
+			<artifactId>beam-runners-google-cloud-dataflow-java</artifactId>
+			<version>0.2.0-incubating-SNAPSHOT</version>
+
+			<exclusions>
+				<exclusion>
+					<artifactId>google-http-client-jackson2</artifactId>
+					<groupId>com.google.http-client</groupId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		--><dependency>
+		
+			<groupId>org.apache.beam</groupId>
+			<artifactId>beam-runners-spark</artifactId>
+			<version>0.2.0-incubating-SNAPSHOT</version>
+			<type>jar</type>
+		</dependency>
+		
+		<!-- <dependency>
+    <groupId>com.google.api.client</groupId>
+    <artifactId>google-api-client-json</artifactId>
+    <version>1.2.3-alpha</version>
+</dependency> 
+		<dependency>
+    <groupId>com.google.api.client</groupId>
+    <artifactId>google-api-client-util</artifactId>
+    <version>1.2.3-alpha</version>
+</dependency>
+<dependency>
+    <groupId>com.google.api.client</groupId>
+    <artifactId>google-api-client-auth</artifactId>
+    <version>1.2.3-alpha</version>
+</dependency>
+
+		-->
+		
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>zeppelin-interpreter</artifactId>
+			<version>${project.version}</version>
+			<scope>provided</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-exec</artifactId>
+			<version>1.3</version>
+		</dependency>
+		<!-- <dependency> <groupId>org.slf4j</groupId> <artifactId>slf4j-api</artifactId> 
+			</dependency> <dependency> <groupId>org.slf4j</groupId> <artifactId>slf4j-log4j12</artifactId> 
+			</dependency> -->
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+	</dependencies>
+
+	<build>
+		<plugins>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-shade-plugin</artifactId>
+        <version>2.4.1</version>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+            <configuration>
+              <transformers>
+                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                  <mainClass>org.apache.beam.runners.flink.examples.WordCount</mainClass>
+                </transformer>
+              </transformers>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-deploy-plugin</artifactId>
+				<version>2.7</version>
+				<configuration>
+					<skip>true</skip>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<artifactId>maven-enforcer-plugin</artifactId>
+				<version>1.3.1</version>
+				<executions>
+					<execution>
+						<id>enforce</id>
+						<phase>none</phase>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<version>2.8</version>
+				<executions>
+					<execution>
+						<id>copy-dependencies</id>
+						<phase>package</phase>
+						<goals>
+							<goal>copy-dependencies</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${project.build.directory}/../../interpreter/beam
+							</outputDirectory>
+							<overWriteReleases>false</overWriteReleases>
+							<overWriteSnapshots>false</overWriteSnapshots>
+							<overWriteIfNewer>true</overWriteIfNewer>
+							<includeScope>runtime</includeScope>
+						</configuration>
+					</execution>
+					<execution>
+						<id>copy-artifact</id>
+						<phase>package</phase>
+						<goals>
+							<goal>copy</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${project.build.directory}/../../interpreter/beam
+							</outputDirectory>
+							<overWriteReleases>false</overWriteReleases>
+							<overWriteSnapshots>false</overWriteSnapshots>
+							<overWriteIfNewer>true</overWriteIfNewer>
+							<includeScope>runtime</includeScope>
+							<artifactItems>
+								<artifactItem>
+									<groupId>${project.groupId}</groupId>
+									<artifactId>${project.artifactId}</artifactId>
+									<version>${project.version}</version>
+									<type>${project.packaging}</type>
+								</artifactItem>
+							</artifactItems>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+</project>
