@@ -239,11 +239,13 @@ a.navbar-brand:hover {
 }
 
 @media (max-width: 767px) {
-  .navbar-inverse .navbar-nav .open .dropdown-menu > li > a {
+  .navbar-inverse .navbar-nav .open .dropdown-menu > li > a,
+  #notebook-list li a {
     color: #D3D3D3;
   }
 
-  .navbar-nav .open .dropdown-menu > .scrollbar-container > li > a {
+  .navbar-nav .open .dropdown-menu > .scrollbar-container > li > a,
+  #notebook-list li a {
     padding: 5px 15px 5px 25px;
     line-height: 20px;
   }
@@ -253,7 +255,8 @@ a.navbar-brand:hover {
   }
 
   .navbar-inverse .navbar-nav .open .dropdown-menu > .scrollbar-container > li > a:hover,
-  .navbar-inverse .navbar-nav .open .dropdown-menu > .scrollbar-container > li > a:focus {
+  .navbar-inverse .navbar-nav .open .dropdown-menu > .scrollbar-container > li > a:focus,
+  #notebook-list li a:hover {
     color: #fff;
     background: transparent;
   }
