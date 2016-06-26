@@ -99,7 +99,7 @@ The following components are provided under Apache License.
     (Apache 2.0) Alluxio Minicluster (org.alluxio:alluxio-minicluster:1.0.0 - http://alluxio.org)
     (Apache 2.0) Alluxio Underfs Local (org.alluxio:alluxio-underfs-local:1.0.0 - http://alluxio.org)
     (Apache 2.0) Microsoft Azure Storage Library for Java (com.microsoft.azure:azure-storage:4.0.0 - https://github.com/Azure/azure-storage-java)
-
+    (Apache 2.0) Roboto Font (https://github.com/google/roboto/)
 
 
 ========================================================================
@@ -136,7 +136,7 @@ The text of each license is also included at licenses/LICENSE-[project]-[version
     (The MIT License) slf4j-log4j12 v1.7.10 (org.slf4j:slf4j-log4j12:jar:1.7.10 - http://www.slf4j.org) - http://www.slf4j.org/license.html
     (The MIT License) bcprov-jdk15on v1.51 (org.bouncycastle:bcprov-jdk15on:jar:1.51 - http://www.bouncycastle.org/java.html) - http://www.bouncycastle.org/licence.html
     (The MIT License) AnchorJS (https://github.com/bryanbraun/anchorjs) - https://github.com/bryanbraun/anchorjs/blob/master/README.md#license
-    
+
 The following components are provided under the MIT License.
 
     (The MIT License) Objenesis (org.objenesis:objenesis:2.1 - https://github.com/easymock/objenesis) - Copyright (c) 2006-2015 the original author and authors
@@ -205,6 +205,16 @@ The following components are provided under the EPL License.
     (EPL 1.0) Aether (org.sonatype.aether - http://www.eclipse.org/aether/)
     (EPL 1.0) JDT Annotations For Enhanced Null Analysis (org.eclipse.jdt:org.eclipse.jdt.annotation:1.1.0 - https://repo.eclipse.org/content/repositories/eclipse-releases/org/eclipse/jdt/org.eclipse.jdt.annotation)
     (EPL 1.0) JRuby (org.jruby.jruby-complete:v1.6.8 - http://www.jruby.org/)
+
+
+
+========================================================================
+SIL OPEN FONT LICENSE
+========================================================================
+
+    (OFL 1.1) Patua One Font (see licenses/LICENSE-patuaOne-font)
+    (OFL 1.1) Source Code Pro Font (see licenses/LICENSE-source_code_pro-font)
+
 
 
 ========================================================================
