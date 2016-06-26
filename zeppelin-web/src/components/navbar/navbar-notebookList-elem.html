@@ -26,7 +26,7 @@ limitations under the License.
       </div>
       <div class="expandable" style="color: black;">
         <ul>
-          <li ng-repeat="note in note.children track by $index"
+          <li ng-repeat="note in note.children | orderBy:navbar.arrayOrderingSrv.notebookListOrdering track by $index"
               ng-class="{'active' : navbar.isActive(note.id)}"
               ng-include="'components/navbar/navbar-notebookList-elem.html'">
           </li>
