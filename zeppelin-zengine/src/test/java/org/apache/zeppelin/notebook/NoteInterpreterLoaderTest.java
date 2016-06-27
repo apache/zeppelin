@@ -50,7 +50,6 @@ public class NoteInterpreterLoaderTest {
     new File(tmpDir, "conf").mkdirs();
 
     System.setProperty(ConfVars.ZEPPELIN_HOME.getVarName(), tmpDir.getAbsolutePath());
-    System.setProperty(ConfVars.ZEPPELIN_INTERPRETER_GROUP_ORDER.getVarName(), "group1,group2");
 
     conf = ZeppelinConfiguration.create();
 
