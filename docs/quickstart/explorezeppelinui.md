@@ -29,7 +29,7 @@ The first time you connect to Zeppelin, you'll land at the main page similar to 
 
 On the left of the page are listed all existing notes. Those notes are stored by default in the `$ZEPPELIN_HOME/notebook` folder.
 
-You can filter them by name using the input text form. You can also create an new note, refresh the list of existing notes
+You can filter them by name using the input text form. You can also create a new note, refresh the list of existing notes
 (in case you manually copy them into the `$ZEPPELIN_HOME/notebook` folder) and import a note.
 
 <img src="../assets/themes/zeppelin/img/ui-img/notes_management.png" width="230px" />
@@ -54,7 +54,19 @@ The `Notebook` menu proposes almost the same features as the note management sec
 
 <img src="../assets/themes/zeppelin/img/ui-img/notebook_menu.png" width="170px" />
 
-### Interpreter
+### Settings
+This menu gives you access to settings and displays information about Zeppelin. User name is set to `anonymous` if you use default shiro configuration. If you want to set up authentification, see [Shiro authentication](../security/shiroauthentication.html).
+
+<img src="../assets/themes/zeppelin/img/ui-img/settings_menu.png" width="170px" />
+
+
+#### About Zeppelin
+
+You can check Zeppelin version in this menu.
+
+<img src="../assets/themes/zeppelin/img/ui-img/about_menu.png" width="450px" />
+
+#### Interpreter
 
 In this menu you can:
 
@@ -63,7 +75,13 @@ In this menu you can:
 
 <img src="../assets/themes/zeppelin/img/ui-img/interpreter_menu.png" />
 
-### Configuration
+#### Credential
+
+This menu allows you to save credentials for data sources which are passed to interpreters.
+
+<img src="../assets/themes/zeppelin/img/ui-img/credential_menu.png" />
+
+#### Configuration
 
 This menu displays all the Zeppelin configuration that are set in the config file `$ZEPPELIN_HOME/conf/zeppelin-site.xml`
 
