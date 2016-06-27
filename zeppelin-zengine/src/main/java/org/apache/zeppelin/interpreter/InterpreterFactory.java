@@ -645,21 +645,35 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     synchronized (interpreterSettings) {
       List<InterpreterSetting> orderedSettings = new LinkedList<InterpreterSetting>();
 
-      Map<String, InterpreterSetting> groupNameInterpreterSettingMap = new HashMap<>();
+      Map<String, List<InterpreterSetting>> groupNameInterpreterSettingMap = new HashMap<>();
       for (InterpreterSetting interpreterSetting : interpreterSettings.values()) {
-        groupNameInterpreterSettingMap.put(interpreterSetting.getGroup(), interpreterSetting);
+        String groupName = interpreterSetting.getGroup();
+        if (!groupNameInterpreterSettingMap.containsKey(groupName)) {
+          groupNameInterpreterSettingMap.put(groupName, new ArrayList<InterpreterSetting>());
+        }
+        groupNameInterpreterSettingMap.get(groupName).add(interpreterSetting);
       }
 
       for (String groupName : interpreterGroupOrderList) {
-        InterpreterSetting interpreterSetting = groupNameInterpreterSettingMap.remove(groupName);
-        if (null != interpreterSetting) {
-          orderedSettings.add(interpreterSetting);
+        List<InterpreterSetting> interpreterSettingList =
+            groupNameInterpreterSettingMap.remove(groupName);
+        if (null != interpreterSettingList) {
+          for (InterpreterSetting interpreterSetting : interpreterSettingList) {
+            orderedSettings.add(interpreterSetting);
+          }
         }
       }
 
-      List<InterpreterSetting> settings = new ArrayList<>(groupNameInterpreterSettingMap.values());
+      List<InterpreterSetting> settings = new ArrayList<>();
 
-      Collections.sort(settings, new Comparator<InterpreterSetting>(){
+      for (List<InterpreterSetting> interpreterSettingList :
+          groupNameInterpreterSettingMap.values()) {
+        for (InterpreterSetting interpreterSetting : interpreterSettingList) {
+          settings.add(interpreterSetting);
+        }
+      }
+
+      Collections.sort(settings, new Comparator<InterpreterSetting>() {
         @Override
         public int compare(InterpreterSetting o1, InterpreterSetting o2) {
           return o1.getName().compareTo(o2.getName());
