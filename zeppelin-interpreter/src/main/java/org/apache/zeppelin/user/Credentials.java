@@ -34,7 +34,6 @@ import java.util.concurrent.ConcurrentHashMap;
 public class Credentials {
   private static final Logger LOG = LoggerFactory.getLogger(Credentials.class);
 
-  //private Map<String, UserCredentials> credentialsMap = new ConcurrentHashMap<>();
   private Map<String, UserCredentials> credentialsMap;
   private Gson gson;
   private Boolean credentialsPersist = true;
