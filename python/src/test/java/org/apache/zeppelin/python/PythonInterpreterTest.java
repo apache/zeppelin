@@ -65,32 +65,22 @@ public class PythonInterpreterTest {
   }
 
   @Before
-  public void beforeTest() {
+  public void beforeTest() throws IOException {
     cmdHistory = "";
 
     /*Mock python process*/
     mockPythonProcess = mock(PythonProcess.class);
-    when(mockPythonProcess.getPid()).thenReturn((long) 1);
-    try {
-      when(mockPythonProcess.sendAndGetResult(anyString())).thenAnswer(
-          new Answer<String>() {
-        @Override
-        public String answer(InvocationOnMock invocationOnMock) throws Throwable {
-          return answerFromPythonMock(invocationOnMock);
-        }
-      });
-    } catch (IOException e) {
-      LOG.error("Can't initiate python process", e);
-    }
+    when(mockPythonProcess.getPid()).thenReturn(1L);
+    when(mockPythonProcess.sendAndGetResult(anyString())).thenAnswer(new Answer<String>() {
+      @Override public String answer(InvocationOnMock invocationOnMock) throws Throwable {
+        return answerFromPythonMock(invocationOnMock);
+      }
+    });
 
     pythonInterpreter = spy(new PythonInterpreter(getPythonTestProperties()));
-    when(pythonInterpreter.getPythonProcess()).thenReturn(mockPythonProcess);
 
-    try {
-      when(mockPythonProcess.sendAndGetResult(eq("\n\nimport py4j\n"))).thenReturn("ImportError");
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
+    when(pythonInterpreter.getPythonProcess()).thenReturn(mockPythonProcess);
+    when(mockPythonProcess.sendAndGetResult(eq("\n\nimport py4j\n"))).thenReturn("ImportError");
   }
 
   @Test
@@ -99,16 +89,13 @@ public class PythonInterpreterTest {
     assertEquals(pythonInterpreter.getPythonProcess().getPid(), 1);
   }
 
-  @Test
-  public void testPy4jIsNotInstalled() {
-    /*
-    If Py4J is not installed, bootstrap_input.py
-    is not sent to Python process and
-    py4j JavaGateway is not running
-     */
+  /**
+   * If Py4J is not installed, bootstrap_input.py
+   * is not sent to Python process and py4j JavaGateway is not running
+   */
+  @Test public void testPy4jIsNotInstalled() {
     pythonInterpreter.open();
     assertNull(pythonInterpreter.getPy4jPort());
-
     assertTrue(cmdHistory.contains("def help()"));
     assertTrue(cmdHistory.contains("class PyZeppelinContext(object):"));
     assertTrue(cmdHistory.contains("z = PyZeppelinContext"));
@@ -116,18 +103,16 @@ public class PythonInterpreterTest {
     assertFalse(cmdHistory.contains("GatewayClient"));
   }
 
-  @Test
-  public void testPy4jInstalled() {
-    /*
-    If Py4J installed, bootstrap_input.py
-    is sent to interpreter and JavaGateway is
-    running
-     */
-    try {
-      when(mockPythonProcess.sendAndGetResult(eq("\n\nimport py4j\n"))).thenReturn(">>>");
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
+  /**
+   * If Py4J installed, bootstrap_input.py
+   * is sent to interpreter and JavaGateway is
+   * running
+   *
+   * @throws IOException
+   */
+  @Test public void testPy4jInstalled() throws IOException {
+    when(mockPythonProcess.sendAndGetResult(eq("\n\nimport py4j\n"))).thenReturn(">>>");
+
     pythonInterpreter.open();
     Integer py4jPort = pythonInterpreter.getPy4jPort();
     assertNotNull(py4jPort);
@@ -143,12 +128,8 @@ public class PythonInterpreterTest {
   }
 
   @Test
-  public void testClose() {
-    try {
-      when(mockPythonProcess.sendAndGetResult(eq("\n\nimport py4j\n"))).thenReturn(">>>");
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
+  public void testClose() throws IOException {
+    when(mockPythonProcess.sendAndGetResult(eq("\n\nimport py4j\n"))).thenReturn(">>>");
     pythonInterpreter.open();
     Integer py4jPort = pythonInterpreter.getPy4jPort();
 
@@ -156,11 +137,7 @@ public class PythonInterpreterTest {
     pythonInterpreter.close();
 
     assertFalse(checkSocketAddress(py4jPort));
-    try {
-      verify(mockPythonProcess, times(1)).close();
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
+    verify(mockPythonProcess, times(1)).close();
   }
 
   @Test
