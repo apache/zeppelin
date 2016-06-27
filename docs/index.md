@@ -139,11 +139,10 @@ Join to our [Mailing list](https://zeppelin.apache.org/community.html) and repor
 ####Interpreter
 
 * [Interpreters in Apache Zeppelin](./manual/interpreters.html): what is interpreter group? how can you set interpreters in Apache Zeppelin?
-* Available Interpreters: currently, about 20 interpreters are available in Apache Zeppelin.
 * Usage
-  * [Dynamic Interpreter Loading](./manual/dynamicinterpreterload.html) using REST API
+  * [Interpreter Installation](./manual/interpreterinstallation.html): Install not only community managed interpreters but also 3rd party interpreters
   * [Interpreter Dependency Management](./manual/dependencymanagement.html) when you include external libraries to interpreter
-
+* Available Interpreters: currently, about 20 interpreters are available in Apache Zeppelin.
 
 ####Display System
 
