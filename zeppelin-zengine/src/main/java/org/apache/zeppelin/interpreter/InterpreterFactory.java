@@ -460,7 +460,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
       for (RegisteredInterpreter registeredInterpreter :
           Interpreter.registeredInterpreters.values()) {
         if (registeredInterpreter.getGroup().equals(groupName)) {
-          if(registeredInterpreter.isDefaultInterpreter()) {
+          if (registeredInterpreter.isDefaultInterpreter()) {
             interpreterInfos.add(0,
                 new InterpreterSetting.InterpreterInfo(
                     registeredInterpreter.getClassName(), registeredInterpreter.getName()));
@@ -599,7 +599,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
             interpreters = new LinkedList<Interpreter>();
             interpreterGroup.put(key, interpreters);
           }
-          if(info.isDefaultInterpreter()) {
+          if (info.isDefaultInterpreter()) {
             interpreters.add(0, intp);
           } else {
             interpreters.add(intp);
