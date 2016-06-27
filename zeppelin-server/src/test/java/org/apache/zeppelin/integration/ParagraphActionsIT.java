@@ -157,10 +157,11 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       sleep(1000, true);
       driver.findElement(By.xpath("//div[@class='modal-dialog'][contains(.,'delete this paragraph')]" +
           "//div[@class='modal-footer']//button[contains(.,'OK')]")).click();
+      sleep(1000, true);
       Integer newNosOfParas = driver.findElements(By.xpath("//div[@ng-controller=\"ParagraphCtrl\"]")).size();
       collector.checkThat("After Remove : Number of paragraphs are",
-          oldNosOfParas-1,
-          CoreMatchers.equalTo(newNosOfParas));
+          newNosOfParas,
+          CoreMatchers.equalTo(oldNosOfParas - 1));
       ZeppelinITUtils.sleep(1000, false);
       deleteTestNotebook(driver);
 
