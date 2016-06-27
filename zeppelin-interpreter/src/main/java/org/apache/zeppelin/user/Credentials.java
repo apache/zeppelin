@@ -24,6 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -33,7 +34,8 @@ import java.util.concurrent.ConcurrentHashMap;
 public class Credentials {
   private static final Logger LOG = LoggerFactory.getLogger(Credentials.class);
 
-  private Map<String, UserCredentials> credentialsMap = new ConcurrentHashMap<>();;
+  //private Map<String, UserCredentials> credentialsMap = new ConcurrentHashMap<>();
+  private Map<String, UserCredentials> credentialsMap;
   private Gson gson;
   private Boolean credentialsPersist = true;
   File credentialsFile;
@@ -43,6 +45,8 @@ public class Credentials {
     if (credentialsPath != null) {
       credentialsFile = new File(credentialsPath);
     }
+    credentialsMap = new HashMap<>();
+
     if (credentialsPersist) {
       GsonBuilder builder = new GsonBuilder();
       builder.setPrettyPrinting();
@@ -119,9 +123,11 @@ public class Credentials {
   private void saveToFile() throws IOException {
     String jsonString;
 
-    CredentialsInfoSaving info = new CredentialsInfoSaving();
-    info.credentialsMap = credentialsMap;
-    jsonString = gson.toJson(info);
+    synchronized (credentialsMap) {
+      CredentialsInfoSaving info = new CredentialsInfoSaving();
+      info.credentialsMap = credentialsMap;
+      jsonString = gson.toJson(info);
+    }
 
     try {
       if (!credentialsFile.exists()) {
