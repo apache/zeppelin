@@ -389,11 +389,11 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
 
   $scope.resetNewRepositorySetting = function() {
     $scope.newRepoSetting = {
-      id: undefined,
-      url: undefined,
+      id: '',
+      url: '',
       snapshot: false,
-      username: undefined,
-      password: undefined
+      username: '',
+      password: ''
     };
   };
 
