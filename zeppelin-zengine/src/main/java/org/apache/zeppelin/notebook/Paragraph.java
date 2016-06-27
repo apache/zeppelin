@@ -208,7 +208,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
 
   public List<InterpreterCompletion> completion(String buffer, int cursor) {
     String replName = getRequiredReplName(buffer);
-    if (replName != null) {
+    if (replName != null && cursor > replName.length()) {
       cursor -= replName.length() + 1;
     }
     String body = getScriptBody(buffer);
