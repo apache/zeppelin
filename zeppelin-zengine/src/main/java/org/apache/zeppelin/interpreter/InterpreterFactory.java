@@ -644,11 +644,9 @@ public class InterpreterFactory implements InterpreterGroupFactory {
   public List<InterpreterSetting> get() {
     synchronized (interpreterSettings) {
       List<InterpreterSetting> orderedSettings = new LinkedList<InterpreterSetting>();
-      List<InterpreterSetting> settings = new LinkedList<InterpreterSetting>(
-          interpreterSettings.values());
 
       Map<String, InterpreterSetting> groupNameInterpreterSettingMap = new HashMap<>();
-      for (InterpreterSetting interpreterSetting : settings) {
+      for (InterpreterSetting interpreterSetting : interpreterSettings.values()) {
         groupNameInterpreterSettingMap.put(interpreterSetting.getGroup(), interpreterSetting);
       }
 
@@ -658,6 +656,17 @@ public class InterpreterFactory implements InterpreterGroupFactory {
           orderedSettings.add(interpreterSetting);
         }
       }
+
+      List<InterpreterSetting> settings = new ArrayList<>(groupNameInterpreterSettingMap.values());
+
+      Collections.sort(settings, new Comparator<InterpreterSetting>(){
+        @Override
+        public int compare(InterpreterSetting o1, InterpreterSetting o2) {
+          return o1.getName().compareTo(o2.getName());
+        }
+      });
+
+      orderedSettings.addAll(settings);
 
       return orderedSettings;
     }
