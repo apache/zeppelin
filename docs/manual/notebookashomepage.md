@@ -47,7 +47,7 @@ the code sections.
 To set the notebook id in the config file, you should copy it from the last word in the notebook url.
 For example,
 
-<img src="/assets/themes/zeppelin/img/screenshots/homepage_notebook_id.png" />
+<img src="/assets/themes/zeppelin/img/screenshots/homepage_notebook_id.png" width="400px" />
 
 Set the notebook id to the ```ZEPPELIN_NOTEBOOK_HOMESCREEN``` environment variable
 or ```zeppelin.notebook.homescreen``` property.
