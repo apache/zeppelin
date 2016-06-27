@@ -3,6 +3,7 @@
     "group": "spark",
     "name": "spark",
     "className": "org.apache.zeppelin.spark.SparkInterpreter",
+    "defaultInterpreter": true,
     "properties": {
       "spark.executor.memory": {
         "envName": null,
