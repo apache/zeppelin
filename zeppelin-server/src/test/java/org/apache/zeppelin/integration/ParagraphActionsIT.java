@@ -21,6 +21,7 @@ package org.apache.zeppelin.integration;
 import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.AbstractZeppelinIT;
 import org.apache.zeppelin.WebDriverManager;
+import org.apache.zeppelin.ZeppelinITUtils;
 import org.hamcrest.CoreMatchers;
 import org.junit.After;
 import org.junit.Before;
@@ -79,16 +80,16 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
 
       driver.findElement(By.xpath(getParagraphXPath(1) + "//span[@class='icon-settings']")).click();
       driver.findElement(By.xpath(getParagraphXPath(1) + "//ul/li/a[@ng-click='removeParagraph()']")).click();
-      sleep(1000, false);
+      ZeppelinITUtils.sleep(1000, false);
       driver.findElement(By.xpath("//div[@class='modal-dialog'][contains(.,'delete this paragraph')]" +
           "//div[@class='modal-footer']//button[contains(.,'OK')]")).click();
-      sleep(1000, false);
+      ZeppelinITUtils.sleep(1000, false);
 
       setTextOfParagraph(1, " original paragraph ");
 
       WebElement newPara = driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class,'new-paragraph')][1]"));
       action.moveToElement(newPara).click().build().perform();
-      sleep(1000, false);
+      ZeppelinITUtils.sleep(1000, false);
       waitForParagraph(1, "READY");
 
       String oldIntpTag = driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'editor')]")).getText();
@@ -126,7 +127,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
           driver.findElements(By.xpath("//div[@ng-controller=\"ParagraphCtrl\"]")).size(),
           CoreMatchers.equalTo(3));
 
-      sleep(1000, false);
+      ZeppelinITUtils.sleep(1000, false);
       deleteTestNotebook(driver);
 
     } catch (Exception e) {
@@ -160,7 +161,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       collector.checkThat("After Remove : Number of paragraphs are",
           oldNosOfParas-1,
           CoreMatchers.equalTo(newNosOfParas));
-      sleep(1000, false);
+      ZeppelinITUtils.sleep(1000, false);
       deleteTestNotebook(driver);
 
     } catch (Exception e) {
@@ -197,7 +198,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       driver.findElement(By.xpath(getParagraphXPath(1) + "//span[@class='icon-settings']")).click();
       driver.findElement(By.xpath(getParagraphXPath(1) + "//ul/li/a[@ng-click='moveDown()']")).click();
 
-      sleep(1000,false);
+      ZeppelinITUtils.sleep(1000,false);
 
       collector.checkThat("The paragraph1 value contains",
           driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'editor')]")).getText(),
@@ -209,7 +210,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       driver.findElement(By.xpath(getParagraphXPath(2) + "//span[@class='icon-settings']")).click();
       driver.findElement(By.xpath(getParagraphXPath(2) + "//ul/li/a[@ng-click='moveUp()']")).click();
 
-      sleep(1000,false);
+      ZeppelinITUtils.sleep(1000,false);
 
       collector.checkThat("The paragraph1 value contains",
           driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'editor')]")).getText(),
@@ -217,7 +218,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       collector.checkThat("The paragraph1 value contains",
           driver.findElement(By.xpath(getParagraphXPath(2) + "//div[contains(@class, 'editor')]")).getText(),
           CoreMatchers.equalTo("2"));
-      sleep(1000,false);
+      ZeppelinITUtils.sleep(1000,false);
       deleteTestNotebook(driver);
 
     } catch (Exception e) {
@@ -286,7 +287,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       collector.checkThat("After Clear  Output field contains ",
           driver.findElement(By.xpath(xpathToOutputField)).getText(),
           CoreMatchers.equalTo(""));
-      sleep(1000, false);
+      ZeppelinITUtils.sleep(1000, false);
       deleteTestNotebook(driver);
 
     } catch (Exception e) {
@@ -341,25 +342,25 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
           driver.findElement(By.xpath(xpathToTitle)).getText(),
           CoreMatchers.equalTo(""));
       driver.findElement(By.xpath(xpathToSettingIcon)).click();
-      sleep(500, false);
+      ZeppelinITUtils.sleep(500, false);
       collector.checkThat("Before Show Title : The title option in option panel of paragraph is labeled as  ",
           driver.findElement(By.xpath(xpathToShowTitle)).getText(),
           CoreMatchers.equalTo("Show title"));
 
       driver.findElement(By.xpath(xpathToShowTitle)).click();
-      sleep(500, false);
+      ZeppelinITUtils.sleep(500, false);
       collector.checkThat("After Show Title : The title field contains",
           driver.findElement(By.xpath(xpathToTitle)).getText(),
           CoreMatchers.equalTo("Untitled"));
 
       driver.findElement(By.xpath(xpathToSettingIcon)).click();
-      sleep(500, false);
+      ZeppelinITUtils.sleep(500, false);
       collector.checkThat("After Show Title : The title option in option panel of paragraph is labeled as",
           driver.findElement(By.xpath(xpathToHideTitle)).getText(),
           CoreMatchers.equalTo("Hide title"));
 
       driver.findElement(By.xpath(xpathToHideTitle)).click();
-      sleep(500, false);
+      ZeppelinITUtils.sleep(500, false);
       collector.checkThat("After Hide Title : The title field contains",
           driver.findElement(By.xpath(xpathToTitle)).getText(),
           CoreMatchers.equalTo(""));
@@ -368,16 +369,16 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
 
       driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'title')]")).click();
       driver.findElement(By.xpath(getParagraphXPath(1) + "//input")).sendKeys("NEW TITLE" + Keys.ENTER);
-      sleep(500, false);
+      ZeppelinITUtils.sleep(500, false);
       collector.checkThat("After Editing the Title : The title field contains ",
           driver.findElement(By.xpath(xpathToTitle)).getText(),
           CoreMatchers.equalTo("NEW TITLE"));
       driver.navigate().refresh();
-      sleep(1000, false);
+      ZeppelinITUtils.sleep(1000, false);
       collector.checkThat("After Page Refresh : The title field contains ",
           driver.findElement(By.xpath(xpathToTitle)).getText(),
           CoreMatchers.equalTo("NEW TITLE"));
-      sleep(1000, false);
+      ZeppelinITUtils.sleep(1000, false);
       deleteTestNotebook(driver);
 
     } catch (Exception e) {
@@ -418,7 +419,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       collector.checkThat("After \"Hide line number\" the Line Number is Enabled",
           driver.findElement(By.xpath(xpathToLineNumberField)).isDisplayed(),
           CoreMatchers.equalTo(false));
-      sleep(1000, false);
+      ZeppelinITUtils.sleep(1000, false);
       deleteTestNotebook(driver);
 
     } catch (Exception e) {
