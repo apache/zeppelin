@@ -36,6 +36,9 @@ reports
 zeppelin-web/node_modules
 zeppelin-web/dist
 zeppelin-web/.tmp
+zeppelin-web/src/fonts/Roboto*
+zeppelin-web/src/fonts/Source-Code-Pro*
+zeppelin-web/src/fonts/Patua-One*
 zeppelin-web/.sass-cache
 zeppelin-web/bower_components
 **nbproject/

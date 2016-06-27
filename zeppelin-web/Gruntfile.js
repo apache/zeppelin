@@ -56,6 +56,54 @@ module.exports = function (grunt) {
       }
     },
 
+    'goog-webfont-dl': {
+      patuaOne: {
+        options: {
+          ttf: true,
+          eot: true,
+          woff: true,
+          woff2: true,
+          svg: true,
+          fontname: 'Patua One',
+          fontstyles: '400',
+          fontdest: '<%= yeoman.app %>/fonts/',
+          cssdest: '<%= yeoman.app %>/fonts/Patua-One.css',
+          cssprefix: '',
+          subset: ''
+        }
+      },
+      sourceCodePro: {
+        options: {
+          ttf: true,
+          eot: true,
+          woff: true,
+          woff2: true,
+          svg: true,
+          fontname: 'Source Code Pro',
+          fontstyles: '300, 400, 500',
+          fontdest: '<%= yeoman.app %>/fonts/',
+          cssdest: '<%= yeoman.app %>/fonts/Source-Code-Pro.css',
+          cssprefix: '',
+          subset: ''
+        }
+      },
+      roboto: {
+        options: {
+          ttf: true,
+          eot: true,
+          woff: true,
+          woff2: true,
+          svg: true,
+          fontname: 'Roboto',
+          fontstyles: '300, 400, 500',
+          fontdest: '<%= yeoman.app %>/fonts/',
+          cssdest: '<%= yeoman.app %>/fonts/Roboto.css',
+          cssprefix: '',
+          subset: ''
+        }
+      }
+    },
+
     // Watches files for changes and runs tasks based on the changed files
     watch: {
       bower: {
@@ -442,6 +490,7 @@ module.exports = function (grunt) {
     'jshint:all',
     'clean:dist',
     'wiredep',
+    'goog-webfont-dl',
     'useminPrepare',
     'concurrent:dist',
     'postcss',

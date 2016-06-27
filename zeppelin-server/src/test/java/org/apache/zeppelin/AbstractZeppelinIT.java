@@ -38,9 +38,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import static org.openqa.selenium.Keys.ENTER;
-import static org.openqa.selenium.Keys.SHIFT;
-
 abstract public class AbstractZeppelinIT {
   protected static WebDriver driver;
 
@@ -48,21 +45,6 @@ abstract public class AbstractZeppelinIT {
   protected static final long MAX_IMPLICIT_WAIT = 30;
   protected static final long MAX_BROWSER_TIMEOUT_SEC = 30;
   protected static final long MAX_PARAGRAPH_TIMEOUT_SEC = 60;
-
-  protected void sleep(long millis, boolean logOutput) {
-    if (logOutput) {
-      LOG.info("Starting sleeping for " + (millis / 1000) + " seconds...");
-      LOG.info("Caller: " + Thread.currentThread().getStackTrace()[2]);
-    }
-    try {
-      Thread.sleep(millis);
-    } catch (InterruptedException e) {
-      e.printStackTrace();
-    }
-    if (logOutput) {
-      LOG.info("Finished.");
-    }
-  }
 
   protected void setTextOfParagraph(int paragraphNo, String text) {
     String editorId = driver.findElement(By.xpath(getParagraphXPath(paragraphNo) + "//div[contains(@class, 'editor')]")).getAttribute("id");
@@ -147,10 +129,15 @@ abstract public class AbstractZeppelinIT {
   protected void deleteTestNotebook(final WebDriver driver) {
     driver.findElement(By.xpath(".//*[@id='main']//button[@ng-click='removeNote(note.id)']"))
         .sendKeys(Keys.ENTER);
-    sleep(1000, true);
+    ZeppelinITUtils.sleep(1000, true);
     driver.findElement(By.xpath("//div[@class='modal-dialog'][contains(.,'delete this notebook')]" +
         "//div[@class='modal-footer']//button[contains(.,'OK')]")).click();
-    sleep(100, true);
+    ZeppelinITUtils.sleep(100, true);
+  }
+
+  protected void clickAndWait(final By locator) {
+    driver.findElement(locator).click();
+    ZeppelinITUtils.sleep(1000, true);
   }
 
   protected void handleException(String message, Exception e) throws Exception {
