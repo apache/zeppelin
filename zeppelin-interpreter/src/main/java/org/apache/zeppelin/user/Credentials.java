@@ -33,7 +33,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class Credentials {
   private static final Logger LOG = LoggerFactory.getLogger(Credentials.class);
 
-  private Map<String, UserCredentials> credentialsMap;
+  private Map<String, UserCredentials> credentialsMap = new ConcurrentHashMap<>();;
   private Gson gson;
   private Boolean credentialsPersist = true;
   File credentialsFile;
@@ -43,7 +43,6 @@ public class Credentials {
     if (credentialsPath != null) {
       credentialsFile = new File(credentialsPath);
     }
-    credentialsMap = new ConcurrentHashMap<String, UserCredentials>();
     if (credentialsPersist) {
       GsonBuilder builder = new GsonBuilder();
       builder.setPrettyPrinting();

@@ -24,11 +24,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * User Credentials POJO
  */
 public class UserCredentials {
-  private Map<String, UsernamePassword> userCredentials;
-
-  public UserCredentials() {
-    userCredentials = new ConcurrentHashMap<String, UsernamePassword>();
-  }
+  private Map<String, UsernamePassword> userCredentials = new ConcurrentHashMap<>();
 
   public UsernamePassword getUsernamePassword(String entity) {
     return userCredentials.get(entity);
