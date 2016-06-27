@@ -85,7 +85,6 @@ public class PythonInterpreterTest {
     }
 
     pythonInterpreter = spy(new PythonInterpreter(getPythonTestProperties()));
-
     when(pythonInterpreter.getPythonProcess()).thenReturn(mockPythonProcess);
 
     try {
@@ -99,12 +98,10 @@ public class PythonInterpreterTest {
   public void testOpenInterpreter() {
     pythonInterpreter.open();
     assertEquals(pythonInterpreter.getPythonProcess().getPid(), 1);
-
   }
 
   @Test
   public void testPy4jIsNotInstalled() {
-
     /*
     If Py4J is not installed, bootstrap_input.py
     is not sent to Python process and
@@ -118,18 +115,15 @@ public class PythonInterpreterTest {
     assertTrue(cmdHistory.contains("z = PyZeppelinContext"));
     assertTrue(cmdHistory.contains("def show"));
     assertFalse(cmdHistory.contains("GatewayClient"));
-
   }
 
   @Test
   public void testPy4jInstalled() {
-
     /*
     If Py4J installed, bootstrap_input.py
     is sent to interpreter and JavaGateway is
     running
      */
-
     try {
       when(mockPythonProcess.sendAndGetResult(eq("\n\nimport py4j\n"))).thenReturn(">>>");
     } catch (IOException e) {
@@ -147,13 +141,10 @@ public class PythonInterpreterTest {
     assertTrue(cmdHistory.contains("org.apache.zeppelin.display.Input"));
 
     assertTrue(checkSocketAddress(py4jPort));
-
   }
-
 
   @Test
   public void testClose() {
-
     try {
       when(mockPythonProcess.sendAndGetResult(eq("\n\nimport py4j\n"))).thenReturn(">>>");
     } catch (IOException e) {
@@ -173,19 +164,14 @@ public class PythonInterpreterTest {
     }
   }
 
-
   @Test
   public void testInterpret() {
-
     pythonInterpreter.open();
     cmdHistory = "";
     InterpreterResult result = pythonInterpreter.interpret("print a", null);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
     assertEquals("%text print a", result.toString());
-
   }
-
-
 
   private boolean checkSocketAddress(Integer py4jPort) {
     Socket s = new Socket();
@@ -207,8 +193,6 @@ public class PythonInterpreterTest {
     }
     return working;
   }
-
-
 
   private String answerFromPythonMock(InvocationOnMock invocationOnMock) {
     Object[] inputs = invocationOnMock.getArguments();
