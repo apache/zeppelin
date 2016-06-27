@@ -1769,7 +1769,7 @@ angular.module('zeppelinWebApp')
     var colNameIndex = {};
     var colIdx = 0;
     var rowIndexValue = {};
-    var maxRowValue = Math.max(Object.keys(schema).size(), Math.max.apply(null, Object.keys(schema).filter(function(obj){return !isNaN(obj)}).map(parseFloat)));
+    var maxRowValue = Math.max(Object.keys(schema).length, Math.max.apply(null, Object.keys(schema).filter(function(obj){return !isNaN(obj)}).map(parseFloat)));
 
     for (var k in rows) {
       traverse(sKey, schema[sKey], k, rows[k], function(rowName, rowValue, colName, value) {
