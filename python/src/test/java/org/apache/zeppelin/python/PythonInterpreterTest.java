@@ -20,17 +20,25 @@ package org.apache.zeppelin.python;
 import static org.apache.zeppelin.python.PythonInterpreter.*;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.mockito.Mockito.eq;
-import static org.mockito.Mockito.times;
+import static org.junit.Assert.assertTrue;
+
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
+
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.when;
+
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+import java.net.SocketAddress;
+import java.util.Properties;
 
 import org.apache.zeppelin.interpreter.InterpreterResult;
 
@@ -38,14 +46,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.net.Socket;
-import java.net.SocketAddress;
-import java.util.Properties;
 
 /**
  * Python interpreter unit test

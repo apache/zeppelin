@@ -17,6 +17,14 @@
 
 package org.apache.zeppelin.python;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.ServerSocket;
+import java.util.Collection;
+import java.util.List;
+import java.util.Properties;
+
 import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
@@ -29,15 +37,8 @@ import org.apache.zeppelin.scheduler.SchedulerFactory;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import py4j.GatewayServer;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.ServerSocket;
-import java.util.Collection;
-import java.util.List;
-import java.util.Properties;
+import py4j.GatewayServer;
 
 /**
  * Python interpreter for Zeppelin.
