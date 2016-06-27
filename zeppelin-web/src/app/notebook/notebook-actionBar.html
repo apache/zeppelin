@@ -13,10 +13,13 @@ limitations under the License.
 -->
 <div class="noteAction" ng-show="note.id && !paragraphUrl">
   <h3>
-    <input type="text" pu-elastic-input class="form-control2" placeholder="{{noteName(note)}}" style="min-width: 200px; max-width: 600px;"
+    <div style="float: left; width: auto; max-width: 40%">
+      <input type="text" pu-elastic-input class="form-control2" placeholder="{{noteName(note)}}" style="min-width: 0px; max-width: 95%;"
            ng-show="showEditor" ng-model="note.name" ng-blur="sendNewName();showEditor = false;" ng-enter="sendNewName();showEditor = false;" ng-escape="note.name = oldName; showEditor = false" focus-if="showEditor" />
-    <p class="form-control-static2" ng-click="showEditor = true; oldName = note.name" ng-show="!showEditor">{{noteName(note)}}</p>
-    <span class="labelBtn btn-group">
+      <p class="form-control-static2" ng-click="showEditor = true; oldName = note.name" ng-show="!showEditor">{{noteName(note)}}</p>
+    </div>
+    <div style="float: left; padding-bottom: 10px">
+      <span class="labelBtn btn-group">
       <button type="button"
               class="btn btn-default btn-xs"
               ng-click="runNote()"
@@ -61,46 +64,48 @@ limitations under the License.
               tooltip-placement="bottom" tooltip="Export the notebook">
         <i class="fa fa-download"></i>
       </button>
-        <ul class="dropdown-menu" role="menu" style="width:250px">
-          <li>
-            <div class="cron-preset-container">
-              <div>
-                <input type="text"
-                       dropdown-input
-                       placeholder="commit message"
-                       id="note.checkpoint.message"
-                       ng-model="note.checkpoint.message"/>
-                <button type="button"
-                  class="btn btn-default btn-xs"
-                  ng-hide="viewOnly"
-                  ng-click="checkpointNotebook(note.checkpoint.message)"
-                  tooltip-placement="bottom" tooltip="Commit the notebook">Commit
-                </button>
-              </div>
+      <button type="button"
+              class="btn btn-default btn-xs dropdown-toggle"
+              ng-hide="viewOnly"
+              data-toggle="dropdown"
+              tooltip-placement="bottom" tooltip="Version control">
+        <i class="fa fa-file-code-o"></i>
+      </button>
+      <ul class="dropdown-menu" role="menu" style="width:250px">
+        <li>
+          <div class="commit-container">
+            <div>
+              <input type="text"
+                     dropdown-input
+                     placeholder="commit message"
+                     id="note.checkpoint.message"
+                     style="width: 145px;"
+                     ng-model="note.checkpoint.message"/>
+              <button type="button"
+                      class="btn btn-default btn-xs"
+                      ng-hide="viewOnly"
+                      ng-click="checkpointNotebook(note.checkpoint.message)"
+                      style="margin-left: 4px;"
+                      tooltip-placement="bottom" tooltip="Commit the notebook">Commit
+              </button>
             </div>
-          </li>
-        </ul>
-        <button type="button"
-                class="btn btn-default btn-xs dropdown-toggle"
-                ng-hide="viewOnly"
-                data-toggle="dropdown"
-                tooltip-placement="bottom" tooltip="Version control">
-          <i class="fa fa-file-code-o"></i>
-        </button>
+          </div>
+        </li>
+      </ul>
     </span>
 
 <!-- put the delete action by itself for your protection -->
-    <span class="labelBtn" style="vertical-align:middle; display:inline-block;">
-      <button type="button"
-              class="btn btn-default btn-xs"
-              ng-click="removeNote(note.id)"
-              ng-hide="viewOnly"
-              tooltip-placement="bottom" tooltip="Remove the notebook">
-        <i class="icon-trash"></i>
-      </button>
-    </span>
+      <span class="labelBtn" style="vertical-align:middle; display:inline-block;">
+        <button type="button"
+                class="btn btn-default btn-xs"
+                ng-click="removeNote(note.id)"
+                ng-hide="viewOnly"
+                tooltip-placement="bottom" tooltip="Remove the notebook">
+          <i class="icon-trash"></i>
+        </button>
+      </span>
 
-    <span ng-hide="viewOnly">
+      <span ng-hide="viewOnly">
       <div class="labelBtn btn-group">
         <div class="btn btn-default btn-xs dropdown-toggle"
              type="button"
@@ -149,20 +154,24 @@ limitations under the License.
         </ul>
       </div>
     </span>
+    </div>
 
-    <div class="pull-right" style="margin-top:15px; margin-right:15px; font-size:15px;">
-      <span style="position:relative; top:3px; margin-right:4px; cursor:pointer"
+    <div class="pull-right" style="margin-top:15px; margin-right:15px; margin-left: 15px; margin-bottom: 13px; font-size:15px;">
+      <span class="setting-btn"
+            type="button"
             data-toggle="modal"
             data-target="#shortcutModal"
             tooltip-placement="bottom" tooltip="List of shortcut">
-        <i class="icon-question"></i>
+        <i class="fa fa-keyboard-o"></i>
       </span>
-      <span style="position:relative; top:2px; margin-right:4px; cursor:pointer;"
+      <span class="setting-btn"
+            type="button"
             ng-click="toggleSetting()"
             tooltip-placement="bottom" tooltip="Interpreter binding">
         <i class="fa fa-cog" ng-style="{color: showSetting ? '#3071A9' : 'black' }"></i>
       </span>
-      <span style="position:relative; top:2px; margin-right:4px; cursor:pointer;"
+      <span class="setting-btn"
+            type="button"
             ng-click="togglePermissions()"
             tooltip-placement="bottom" tooltip="Note permissions">
         <i class="fa fa-lock" ng-style="{color: showPermissions ? '#3071A9' : 'black' }"></i>

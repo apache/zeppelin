@@ -433,6 +433,8 @@ a.anchor {
   word-break: keep-all;
   -webkit-overflow-scrolling: touch;
   font-size: 90%;
+  margin-top: 16px;
+  margin-bottom: 16px;
 }
 .content table th {
   font-weight: bold;
@@ -542,6 +544,20 @@ a.anchor {
 }
 
 a.anchorjs-link:hover { text-decoration: none; }
+
+/* Table of Contents(TOC) */
+#toc {
+  padding-top: 12px;
+  padding-bottom: 12px;
+}
+
+#toc ul {
+  margin-left: -14px;
+}
+
+#toc ul ul {
+  margin-left: -18px;
+}
 
 /* Custom, iPhone Retina */
 @media only screen and (max-width: 480px) {

@@ -18,6 +18,7 @@
 package org.apache.zeppelin.livy;
 
 import org.apache.zeppelin.interpreter.*;
+import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.slf4j.Logger;
@@ -33,37 +34,8 @@ import java.util.Properties;
  */
 public class LivySparkInterpreter extends Interpreter {
 
-  static String DEFAULT_URL = "http://localhost:8998";
-  static String LOCAL = "local[*]";
   Logger LOGGER = LoggerFactory.getLogger(LivySparkInterpreter.class);
   private LivyOutputStream out;
-
-  static {
-    Interpreter.register(
-        "spark",
-        "livy",
-        LivySparkInterpreter.class.getName(),
-        new InterpreterPropertyBuilder()
-            .add("zeppelin.livy.url", DEFAULT_URL, "The URL for Livy Server.")
-            .add("livy.spark.master", LOCAL, "Spark master uri. ex) spark://masterhost:7077")
-            .add("livy.spark.driver.cores", "", "Driver cores. ex) 1, 2")
-            .add("livy.spark.driver.memory", "", "Driver memory. ex) 512m, 32g")
-            .add("livy.spark.executor.instances", "", "Executor instances. ex) 1, 4")
-            .add("livy.spark.executor.cores", "", "Num cores per executor. ex) 1, 4")
-            .add("livy.spark.executor.memory", "", 
-                 "Executor memory per worker instance. ex) 512m, 32g")
-            .add("livy.spark.dynamicAllocation.enabled", "", "Use dynamic resource allocation")
-            .add("livy.spark.dynamicAllocation.cachedExecutorIdleTimeout", "", 
-                 "Remove an executor which has cached data blocks")
-            .add("livy.spark.dynamicAllocation.minExecutors", "", 
-                 "Lower bound for the number of executors if dynamic allocation is enabled. ")
-            .add("livy.spark.dynamicAllocation.initialExecutors", "", 
-                 "Initial number of executors to run if dynamic allocation is enabled. ")
-            .add("livy.spark.dynamicAllocation.maxExecutors", "", 
-                 "Upper bound for the number of executors if dynamic allocation is enabled. ")
-            .build()
-    );
-  }
 
   protected static Map<String, Integer> userSessionMap;
   private LivyHelper livyHelper;
@@ -143,7 +115,7 @@ public class LivySparkInterpreter extends Interpreter {
   }
 
   @Override
-  public List<String> completion(String buf, int cursor) {
+  public List<InterpreterCompletion> completion(String buf, int cursor) {
     return null;
   }
 

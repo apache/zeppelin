@@ -17,14 +17,19 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-## Notebook Storage
+# Notebook storage options for Apache Zeppelin
 
-Zeppelin has a pluggable notebook storage mechanism controlled by `zeppelin.notebook.storage` configuration option with multiple implementations.
-There are few Notebook storage systems available for a use out of the box:
- - (default) all notes are saved in the notebook folder in your local File System - `VFSNotebookRepo`
- - use local file system and version it using local Git repository - `GitNotebookRepo`
- - storage using Amazon S3 service - `S3NotebookRepo`
- - storage using Azure service - `AzureNotebookRepo`
+<div id="toc"></div>
+
+## Overview
+
+Apache Zeppelin has a pluggable notebook storage mechanism controlled by `zeppelin.notebook.storage` configuration option with multiple implementations.
+There are few notebook storage systems available for a use out of the box:
+
+  * (default) all notes are saved in the notebook folder in your local File System - `VFSNotebookRepo`
+  * use local file system and version it using local Git repository - `GitNotebookRepo`
+  * storage using Amazon S3 service - `S3NotebookRepo`
+  * storage using Azure service - `AzureNotebookRepo`
 
 Multiple storage systems can be used at the same time by providing a comma-separated list of the class-names in the configuration.
 By default, only first two of them will be automatically kept in sync by Zeppelin.
@@ -145,8 +150,6 @@ Or using the following setting in **zeppelin-site.xml**:
 ## Notebook Storage  in Azure <a name="Azure"></a>
 
 Using `AzureNotebookRepo` you can connect your Zeppelin with your Azure account for notebook storage.
-
-</br>
 
 First of all, input your `AccountName`, `AccountKey`, and `Share Name` in the file **zeppelin-site.xml** by commenting out and completing the next properties:
 

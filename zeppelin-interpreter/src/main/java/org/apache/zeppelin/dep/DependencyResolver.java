@@ -19,6 +19,7 @@ package org.apache.zeppelin.dep;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
@@ -63,11 +64,6 @@ public class DependencyResolver extends AbstractDependencyResolver {
     return load(artifact, new LinkedList<String>());
   }
   
-  public List<File> load(String artifact, String destPath)
-      throws RepositoryException, IOException {
-    return load(artifact, new LinkedList<String>(), destPath);
-  }
-
   public synchronized List<File> load(String artifact, Collection<String> excludes)
       throws RepositoryException, IOException {
     if (StringUtils.isBlank(artifact)) {
@@ -85,25 +81,20 @@ public class DependencyResolver extends AbstractDependencyResolver {
       return libs;
     }
   }
-  
-  public List<File> load(String artifact, Collection<String> excludes, String destPath)
+
+  public List<File> load(String artifact, File destPath) throws IOException, RepositoryException {
+    return load(artifact, new LinkedList<String>(), destPath);
+  }
+
+  public List<File> load(String artifact, Collection<String> excludes, File destPath)
       throws RepositoryException, IOException {
     List<File> libs = new LinkedList<File>();
 
     if (StringUtils.isNotBlank(artifact)) {
       libs = load(artifact, excludes);
 
-      // find home dir
-      String home = System.getenv("ZEPPELIN_HOME");
-      if (home == null) {
-        home = System.getProperty("zeppelin.home");
-      }
-      if (home == null) {
-        home = "..";
-      }
-
       for (File srcFile : libs) {
-        File destFile = new File(home + "/" + destPath, srcFile.getName());
+        File destFile = new File(destPath, srcFile.getName());
         if (!destFile.exists() || !FileUtils.contentEquals(srcFile, destFile)) {
           FileUtils.copyFile(srcFile, destFile);
           logger.info("copy {} to {}", srcFile.getAbsolutePath(), destPath);

@@ -54,6 +54,7 @@ import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.LazyOpenInterpreter;
 import org.apache.zeppelin.interpreter.WrappedInterpreter;
+import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.spark.dep.SparkDependencyContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -402,7 +403,7 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
 
 
   @Override
-  public List<String> completion(String buf, int cursor) {
+  public List<InterpreterCompletion> completion(String buf, int cursor) {
     if (buf.length() < cursor) {
       cursor = buf.length();
     }
@@ -413,7 +414,7 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
     SparkInterpreter sparkInterpreter = getSparkInterpreter();
     if (sparkInterpreter.getSparkVersion().isUnsupportedVersion() == false
             && pythonscriptRunning == false) {
-      return new LinkedList<String>();
+      return new LinkedList<>();
     }
 
     pythonInterpretRequest = new PythonInterpretRequest(completionCommand, "");
@@ -430,13 +431,13 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
         } catch (InterruptedException e) {
           // not working
           logger.info("wait drop");
-          return new LinkedList<String>();
+          return new LinkedList<>();
         }
       }
     }
 
     if (statementError) {
-      return new LinkedList<String>();
+      return new LinkedList<>();
     }
     InterpreterResult completionResult = new InterpreterResult(Code.SUCCESS, statementOutput);
     //end code for completion

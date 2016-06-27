@@ -32,7 +32,7 @@ conf/credentials.json
 spark/dependency-reduced-pom.xml
 reports
 
-#webapp
+# webapp
 zeppelin-web/node_modules
 zeppelin-web/dist
 zeppelin-web/.tmp
@@ -41,8 +41,9 @@ zeppelin-web/bower_components
 **nbproject/
 **node/
 
-#R
+# R
 /r/lib/
+.Rhistory
 
 # project level
 /logs/
@@ -80,7 +81,7 @@ Thumbs.db
 .project
 .settings/
 
-#intelliJ IDEA project files
+# intelliJ IDEA project files
 .idea/
 *.iml
 

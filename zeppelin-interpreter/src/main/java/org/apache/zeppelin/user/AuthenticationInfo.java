@@ -28,6 +28,10 @@ public class AuthenticationInfo {
 
   public AuthenticationInfo() {}
 
+  public AuthenticationInfo(String user) {
+    this.user = user;
+  }
+
   /***
    *
    * @param user

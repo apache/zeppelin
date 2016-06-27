@@ -125,7 +125,7 @@ public class WebDriverManager {
         (new WebDriverWait(driver, 5)).until(new ExpectedCondition<Boolean>() {
           @Override
           public Boolean apply(WebDriver d) {
-            return d.findElement(By.partialLinkText("Create new note"))
+            return d.findElement(By.xpath("//i[@tooltip='WebSocket Connected']"))
                 .isDisplayed();
           }
         });

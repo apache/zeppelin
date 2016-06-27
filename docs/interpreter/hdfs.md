@@ -6,8 +6,11 @@ group: manual
 ---
 {% include JB/setup %}
 
-## HDFS File System Interpreter for Apache Zeppelin
+# HDFS File System Interpreter for Apache Zeppelin
 
+<div id="toc"></div>
+
+## Overview
 [Hadoop File System](http://hadoop.apache.org/) is a distributed, fault tolerant file system part of the hadoop project and is often used as storage for distributed processing engines like [Hadoop MapReduce](http://hadoop.apache.org/) and [Apache Spark](http://spark.apache.org/) or underlying file systems like [Alluxio](http://www.alluxio.org/).
 
 ## Configuration
@@ -44,13 +47,17 @@ It supports the basic shell file commands applied to HDFS, it currently only sup
 
 > **Tip :** Use ( Ctrl + . ) for autocompletion.
 
-### Create Interpreter
+## Create Interpreter
 
 In a notebook, to enable the **HDFS** interpreter, click the **Gear** icon and select **HDFS**.
 
 
-#### WebHDFS REST API
+## WebHDFS REST API
 You can confirm that you're able to access the WebHDFS API by running a curl command against the WebHDFS end point provided to the interpreter.
 
 Here is an example:
+
+```bash
 $> curl "http://localhost:50070/webhdfs/v1/?op=LISTSTATUS"
+```
+

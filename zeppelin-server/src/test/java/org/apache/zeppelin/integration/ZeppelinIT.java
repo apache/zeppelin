@@ -176,7 +176,7 @@ public class ZeppelinIT extends AbstractZeppelinIT {
       waitForText("BindingTest_1_",
           By.xpath(getParagraphXPath(1) + "//div[@id=\"angularTestButton\"]"));
 
-      driver.findElement(By.xpath("//*[@id='main']/div//h3/span/button[@tooltip='Remove the notebook']"))
+      driver.findElement(By.xpath(".//*[@id='main']//button[@ng-click='removeNote(note.id)']"))
           .sendKeys(Keys.ENTER);
       sleep(1000, true);
       driver.findElement(By.xpath("//div[@class='modal-dialog'][contains(.,'delete this notebook')]" +
@@ -196,7 +196,9 @@ public class ZeppelinIT extends AbstractZeppelinIT {
     }
     try {
       // navigate to interpreter page
-      WebElement interpreterLink = driver.findElement(By.xpath("//a[contains(.,'Interpreter')]"));
+      WebElement settingButton = driver.findElement(By.xpath("//button[@class='nav-btn dropdown-toggle ng-scope']"));
+      settingButton.click();
+      WebElement interpreterLink = driver.findElement(By.xpath("//a[@href='#/interpreter']"));
       interpreterLink.click();
 
       // add new dependency to spark interpreter
@@ -235,6 +237,7 @@ public class ZeppelinIT extends AbstractZeppelinIT {
       sleep(1000, false);
 
       // reset dependency
+      settingButton.click();
       interpreterLink.click();
       driver.findElement(By.xpath("//div[@id='spark']//button[contains(.,'edit')]")).sendKeys(Keys.ENTER);
       WebElement testDepRemoveBtn = pollingWait(By.xpath("//tr[descendant::text()[contains(.,'" +

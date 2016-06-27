@@ -7,8 +7,14 @@ group: manual
 {% include JB/setup %}
 
 
-## Spark Interpreter for Apache Zeppelin
-[Apache Spark](http://spark.apache.org) is supported in Zeppelin with
+# Spark Interpreter for Apache Zeppelin
+
+<div id="toc"></div>
+
+## Overview
+[Apache Spark](http://spark.apache.org) is a fast and general-purpose cluster computing system.
+It provides high-level APIs in Java, Scala, Python and R, and an optimized engine that supports general execution graphs
+Apache Spark is supported in Zeppelin with
 Spark Interpreter group, which consists of five interpreters.
 
 <table class="table-configuration">
@@ -45,7 +51,7 @@ Spark Interpreter group, which consists of five interpreters.
 </table>
 
 ## Configuration
-The Spark interpreter can be configured with properties provided by Zeppelin. 
+The Spark interpreter can be configured with properties provided by Zeppelin.
 You can also set other Spark properties which are not listed in the table. For a list of additional properties, refer to [Spark Available Properties](http://spark.apache.org/docs/latest/configuration.html#available-properties).
 <table class="table-configuration">
   <tr>
@@ -110,6 +116,11 @@ You can also set other Spark properties which are not listed in the table. For a
     <td>zeppelin.spark.useHiveContext</td>
     <td>true</td>
     <td>Use HiveContext instead of SQLContext if it is true.</td>
+  </tr>
+  <tr>
+    <td>zeppelin.spark.importImplicit</td>
+    <td>true</td>
+    <td>Import implicits, UDF collection, and sql if set true.</td>
   </tr>
 </table>
 
@@ -195,13 +206,13 @@ Here are few examples:
 
 * SPARK\_SUBMIT\_OPTIONS in conf/zeppelin-env.sh
 
-		export SPARK_SUBMIT_OPTIONS="--packages com.databricks:spark-csv_2.10:1.2.0 --jars /path/mylib1.jar,/path/mylib2.jar --files /path/mylib1.py,/path/mylib2.zip,/path/mylib3.egg"
+    export SPARK_SUBMIT_OPTIONS="--packages com.databricks:spark-csv_2.10:1.2.0 --jars /path/mylib1.jar,/path/mylib2.jar --files /path/mylib1.py,/path/mylib2.zip,/path/mylib3.egg"
 
 * SPARK_HOME/conf/spark-defaults.conf
 
-		spark.jars				/path/mylib1.jar,/path/mylib2.jar
-		spark.jars.packages		com.databricks:spark-csv_2.10:1.2.0
-		spark.files				/path/mylib1.py,/path/mylib2.egg,/path/mylib3.zip
+    spark.jars        /path/mylib1.jar,/path/mylib2.jar
+    spark.jars.packages   com.databricks:spark-csv_2.10:1.2.0
+    spark.files       /path/mylib1.py,/path/mylib2.egg,/path/mylib3.zip
 
 ### 3. Dynamic Dependency Loading via %dep interpreter
 > Note: `%dep` interpreter is deprecated since v0.6.0.
@@ -339,7 +350,7 @@ select * from ${table=defaultTableName} where text like '%${search}%'
 To learn more about dynamic form, checkout [Dynamic Form](../manual/dynamicform.html).
 
 
-### Interpreter setting option.
+## Interpreter setting option
 
 Interpreter setting can choose one of 'shared', 'scoped', 'isolated' option. Spark interpreter creates separate scala compiler per each notebook but share a single SparkContext in 'scoped' mode (experimental). It creates separate SparkContext per each notebook in 'isolated' mode.
 
@@ -349,7 +360,7 @@ Logical setup with Zeppelin, Kerberos Key Distribution Center (KDC), and Spark o
 
 <img src="../assets/themes/zeppelin/img/docs-img/kdc_zeppelin.png">
 
-####Configuration Setup
+### Configuration Setup
 
 1. On the server that Zeppelin is installed, install Kerberos client modules and configuration, krb5.conf.
 This is to make the server communicate with KDC.

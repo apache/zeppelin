@@ -17,6 +17,8 @@
 
 package org.apache.zeppelin.notebook;
 
+import com.google.common.base.Optional;
+
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
@@ -119,7 +121,7 @@ public class NoteInterpreterLoader {
 
     if (replName == null || replName.trim().length() == 0) {
       // get default settings (first available)
-      InterpreterSetting defaultSettings = settings.get(0);
+      InterpreterSetting defaultSettings = getDefaultInterpreterSetting(settings).get();
       return createOrGetInterpreterList(defaultSettings).get(0);
     }
 
@@ -156,7 +158,7 @@ public class NoteInterpreterLoader {
     } else {
       // first assume replName is 'name' of interpreter. ('groupName' is ommitted)
       // search 'name' from first (default) interpreter group
-      InterpreterSetting defaultSetting = settings.get(0);
+      InterpreterSetting defaultSetting = getDefaultInterpreterSetting(settings).get();
       Interpreter.RegisteredInterpreter registeredInterpreter =
           Interpreter.registeredInterpreters.get(defaultSetting.getGroup() + "." + replName);
       if (registeredInterpreter != null) {
@@ -188,6 +190,18 @@ public class NoteInterpreterLoader {
       }
     }
 
-    throw new InterpreterException(replName + " interpreter not found");
+    return null;
+  }
+
+  private Optional<InterpreterSetting>
+  getDefaultInterpreterSetting(List<InterpreterSetting> settings) {
+    if (settings == null || settings.isEmpty()) {
+      return Optional.absent();
+    }
+    return Optional.of(settings.get(0));
+  }
+
+  Optional<InterpreterSetting> getDefaultInterpreterSetting() {
+    return getDefaultInterpreterSetting(getInterpreterSettings());
   }
 }

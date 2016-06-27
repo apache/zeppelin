@@ -435,7 +435,7 @@ angular.module('zeppelinWebApp')
       if (statusChanged || resultRefreshed) {
         // when last paragraph runs, zeppelin automatically appends new paragraph.
         // this broadcast will focus to the newly inserted paragraph
-        var paragraphs = angular.element('div[id$="_paragraphColumn_main"');
+        var paragraphs = angular.element('div[id$="_paragraphColumn_main"]');
         if (paragraphs.length >= 2 && paragraphs[paragraphs.length-2].id.startsWith($scope.paragraph.id)) {
           // rendering output can took some time. So delay scrolling event firing for sometime.
           setTimeout(function() {
@@ -443,7 +443,6 @@ angular.module('zeppelinWebApp')
           }, 500);
         }
       }
-
     }
 
   });
@@ -523,7 +522,7 @@ angular.module('zeppelinWebApp')
   };
 
   $scope.removeParagraph = function() {
-    var paragraphs = angular.element('div[id$="_paragraphColumn_main"');
+    var paragraphs = angular.element('div[id$="_paragraphColumn_main"]');
     if (paragraphs[paragraphs.length-1].id.startsWith($scope.paragraph.id)) {
       BootstrapDialog.alert({
         closable: true,
@@ -732,6 +731,7 @@ angular.module('zeppelinWebApp')
       $scope.editor.setTheme('ace/theme/chrome');
       if ($scope.paragraphFocused) {
         $scope.editor.focus();
+        $scope.goToLineEnd();
       }
 
       autoAdjustEditorHeight(_editor.container.id);
@@ -792,9 +792,9 @@ angular.module('zeppelinWebApp')
               for (var c in data.completions) {
                 var v = data.completions[c];
                 completions.push({
-                  name:v,
-                  value:v,
-                  score:300
+                  name: v.name,
+                  value: v.value,
+                  score: 300
                 });
               }
               callback(null, completions);
@@ -905,7 +905,7 @@ angular.module('zeppelinWebApp')
 
   $rootScope.$on('scrollToCursor', function(event) {
     // scroll on 'scrollToCursor' event only when cursor is in the last paragraph
-    var paragraphs = angular.element('div[id$="_paragraphColumn_main"');
+    var paragraphs = angular.element('div[id$="_paragraphColumn_main"]');
     if (paragraphs[paragraphs.length-1].id.startsWith($scope.paragraph.id)) {
       $scope.scrollToCursor($scope.paragraph.id, 0);
     }
@@ -1001,6 +1001,10 @@ angular.module('zeppelinWebApp')
     return false;
   };
 
+  $scope.goToLineEnd = function () {
+    $scope.editor.navigateLineEnd();
+  };
+
   $scope.$on('updateProgress', function(event, data) {
     if (data.id === $scope.paragraph.id) {
       $scope.currentProgress = data.progress;
@@ -1052,19 +1056,6 @@ angular.module('zeppelinWebApp')
         $scope.changeColWidth();
       } else if (keyEvent.ctrlKey && keyEvent.shiftKey && keyCode === 187) { // Ctrl + Shift + =
         $scope.paragraph.config.colWidth = Math.min(12, $scope.paragraph.config.colWidth + 1);
-        $scope.changeColWidth();
-      } else if (keyEvent.ctrlKey && keyEvent.altKey && ((keyCode >= 48 && keyCode <=57) || keyCode === 189 || keyCode === 187)) { // Ctrl + Alt + [1~9,0,-,=]
-        var colWidth = 12;
-        if (keyCode === 48) {
-          colWidth = 10;
-        } else if (keyCode === 189) {
-          colWidth = 11;
-        } else if (keyCode === 187) {
-          colWidth = 12;
-        } else {
-          colWidth = keyCode - 48;
-        }
-        $scope.paragraph.config.colWidth = colWidth;
         $scope.changeColWidth();
       } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 84) { // Ctrl + Alt + t
         if ($scope.paragraph.config.title) {
@@ -1230,43 +1221,56 @@ angular.module('zeppelinWebApp')
     websocketMsgSrv.commitParagraph($scope.paragraph.id, title, text, config, params);
   };
 
-  var setTable = function(type, data, refresh) {
+  var setTable = function(data, refresh) {
     var renderTable = function() {
       var height = $scope.paragraph.config.graph.height;
-      angular.element('#p' + $scope.paragraph.id + '_table').css('height', height);
-      var resultRows = $scope.paragraph.result.rows;
-      var columnNames = _.pluck($scope.paragraph.result.columnNames, 'name');
-      var container = document.getElementById('p' + $scope.paragraph.id + '_table');
+      var container = angular.element('#p' + $scope.paragraph.id + '_table').css('height', height).get(0);
+      var resultRows = data.rows;
+      var columnNames = _.pluck(data.columnNames, 'name');
 
-      var handsontable = new Handsontable(container, {
-        data: resultRows,
+      // on chart type change, destroy table to force reinitialization.
+      if ($scope.hot && !refresh) {
+        $scope.hot.destroy();
+        $scope.hot = null;
+      }
+
+      // create table if not exists.
+      if (!$scope.hot) {
+        $scope.hot = new Handsontable(container, {
+          rowHeaders: false,
+          stretchH: 'all',
+          sortIndicator: true,
+          columnSorting: true,
+          contextMenu: false,
+          manualColumnResize: true,
+          manualRowResize: true,
+          readOnly: true,
+          readOnlyCellClassName: '',  // don't apply any special class so we can retain current styling
+          fillHandle: false,
+          fragmentSelection: true,
+          disableVisualSelection: true,
+          cells: function (row, col, prop) {
+            var cellProperties = {};
+            cellProperties.renderer = function(instance, td, row, col, prop, value, cellProperties) {
+              if (!isNaN(value)) {
+                cellProperties.format = '0,0.[00000]';
+                td.style.textAlign = 'left';
+                Handsontable.renderers.NumericRenderer.apply(this, arguments);
+              } else if (value.length > '%html'.length && '%html ' === value.substring(0, '%html '.length)) {
+                td.innerHTML = value.substring('%html'.length);
+              } else {
+                Handsontable.renderers.TextRenderer.apply(this, arguments);
+              }
+            };
+            return cellProperties;
+          }
+        });
+      }
+
+      // load data into table.
+      $scope.hot.updateSettings({
         colHeaders: columnNames,
-        rowHeaders: false,
-        stretchH: 'all',
-        sortIndicator: true,
-        columnSorting: true,
-        contextMenu: false,
-        manualColumnResize: true,
-        manualRowResize: true,
-        editor: false,
-        fillHandle: false,
-        fragmentSelection: true,
-        disableVisualSelection: true,
-        cells: function (row, col, prop) {
-          var cellProperties = {};
-          cellProperties.renderer = function(instance, td, row, col, prop, value, cellProperties) {
-            if (!isNaN(value)) {
-              cellProperties.format = '0,0.[00000]';
-              td.style.textAlign = 'left';
-              Handsontable.renderers.NumericRenderer.apply(this, arguments);
-            } else if (value.length > '%html'.length && '%html ' === value.substring(0, '%html '.length)) {
-              td.innerHTML = value.substring('%html'.length);
-            } else {
-              Handsontable.renderers.TextRenderer.apply(this, arguments);
-            }
-          };
-          return cellProperties;
-        }
+        data: resultRows
       });
     };
 
@@ -2153,21 +2157,27 @@ angular.module('zeppelinWebApp')
     $scope.keepScrollDown = false;
   };
 
-  $scope.exportToTSV = function () {
+  $scope.exportToDSV = function (delimiter) {
     var data = $scope.paragraph.result;
-    var tsv = '';
+    var dsv = '';
     for (var titleIndex in $scope.paragraph.result.columnNames) {
-      tsv += $scope.paragraph.result.columnNames[titleIndex].name + '\t';
+      dsv += $scope.paragraph.result.columnNames[titleIndex].name + delimiter;
     }
-    tsv = tsv.substring(0, tsv.length - 1) + '\n';
+    dsv = dsv.substring(0, dsv.length - 1) + '\n';
     for (var r in $scope.paragraph.result.msgTable) {
       var row = $scope.paragraph.result.msgTable[r];
-      var tsvRow = '';
+      var dsvRow = '';
       for (var index in row) {
-        tsvRow += row[index].value + '\t';
+        dsvRow += row[index].value + delimiter;
       }
-      tsv += tsvRow.substring(0, tsvRow.length - 1) + '\n';
+      dsv += dsvRow.substring(0, dsvRow.length - 1) + '\n';
     }
-    SaveAsService.SaveAs(tsv, 'data', 'tsv');
+    var extension = '';
+    if (delimiter === '\t') {
+      extension = 'tsv';
+    } else if (delimiter === ',') {
+      extension = 'csv';
+    }
+    SaveAsService.SaveAs(dsv, 'data', extension);
   };
 });

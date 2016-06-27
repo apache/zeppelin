@@ -25,6 +25,7 @@ import java.util.Properties;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 
@@ -34,13 +35,22 @@ public class MockInterpreter1 extends Interpreter{
 	public MockInterpreter1(Properties property) {
 		super(property);
 	}
+	boolean open;
+
 
 	@Override
 	public void open() {
+		open = true;
 	}
 
 	@Override
 	public void close() {
+		open = false;
+	}
+
+
+	public boolean isOpen() {
+		return open;
 	}
 
 	@Override
@@ -50,6 +60,13 @@ public class MockInterpreter1 extends Interpreter{
 		if ("getId".equals(st)) {
 			// get unique id of this interpreter instance
 			result = new InterpreterResult(InterpreterResult.Code.SUCCESS, "" + this.hashCode());
+		} else if (st.startsWith("sleep")) {
+			try {
+				Thread.sleep(Integer.parseInt(st.split(" ")[1]));
+			} catch (InterruptedException e) {
+				// nothing to do
+			}
+			result = new InterpreterResult(InterpreterResult.Code.SUCCESS, "repl1: " + st);
 		} else {
 			result = new InterpreterResult(InterpreterResult.Code.SUCCESS, "repl1: " + st);
 		}
@@ -81,7 +98,7 @@ public class MockInterpreter1 extends Interpreter{
 	}
 
 	@Override
-	public List<String> completion(String buf, int cursor) {
+	public List<InterpreterCompletion> completion(String buf, int cursor) {
 		return null;
 	}
 }
