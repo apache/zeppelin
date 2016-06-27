@@ -1769,13 +1769,20 @@ angular.module('zeppelinWebApp')
     var colNameIndex = {};
     var colIdx = 0;
     var rowIndexValue = {};
+    var maxRowValue = Math.max(Object.keys(schema).size(), Math.max.apply(null, Object.keys(schema).filter(function(obj){return !isNaN(obj)}).map(parseFloat)));
 
     for (var k in rows) {
       traverse(sKey, schema[sKey], k, rows[k], function(rowName, rowValue, colName, value) {
         //console.log("RowName=%o, row=%o, col=%o, value=%o", rowName, rowValue, colName, value);
         if (rowNameIndex[rowValue] === undefined) {
-          rowIndexValue[rowIdx] = rowValue;
-          rowNameIndex[rowValue] = rowIdx++;
+          if (!allowTextXAxis && isNaN(rowValue)) {
+            rowIndexValue[maxRowValue + 1] = rowValue; // rowIndexValue[53] : "NULL"
+            rowNameIndex[rowValue] = maxRowValue + 1; // rowNameIndex["NULL"] : 53
+            rowIdx++;
+          } else {
+            rowIndexValue[rowIdx] = rowValue;
+            rowNameIndex[rowValue] = rowIdx++;
+          }
         }
 
         if (colNameIndex[colName] === undefined) {
