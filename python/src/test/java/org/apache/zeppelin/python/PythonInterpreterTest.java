@@ -18,16 +18,13 @@
 package org.apache.zeppelin.python;
 
 import static org.apache.zeppelin.python.PythonInterpreter.*;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
-
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
@@ -41,12 +38,10 @@ import java.net.SocketAddress;
 import java.util.Properties;
 
 import org.apache.zeppelin.interpreter.InterpreterResult;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -127,19 +122,23 @@ public class PythonInterpreterTest {
     assertTrue(cmdHistory.contains("GatewayClient(port=" + py4jPort + ")"));
     assertTrue(cmdHistory.contains("org.apache.zeppelin.display.Input"));
 
-    assertTrue(checkSocketAddress(py4jPort));
+    assertTrue(serverIsListeningOn(py4jPort));
   }
 
   @Test
-  public void testClose() throws IOException {
+  public void testClose() throws IOException, InterruptedException {
+    //given: py4j is installed
     when(mockPythonProcess.sendAndGetResult(eq("\n\nimport py4j\n"))).thenReturn(">>>");
+
     pythonInterpreter.open();
     Integer py4jPort = pythonInterpreter.getPy4jPort();
-
     assertNotNull(py4jPort);
+
+    //when
     pythonInterpreter.close();
 
-    assertFalse(checkSocketAddress(py4jPort));
+    //then
+    assertFalse(serverIsListeningOn(py4jPort));
     verify(mockPythonProcess, times(1)).close();
   }
 
@@ -152,25 +151,40 @@ public class PythonInterpreterTest {
     assertEquals("%text print a", result.toString());
   }
 
-  private boolean checkSocketAddress(Integer py4jPort) {
+  /**
+   * Checks if given port is open on 'localhost'
+   * @param port
+   */
+  private boolean serverIsListeningOn(Integer port) {
+    boolean serverIsListening = false;
     Socket s = new Socket();
-    SocketAddress sa = new InetSocketAddress("localhost", py4jPort);
-    Boolean working = null;
+
+    boolean connected = tryToConnect(s, port);
+    if (connected) {
+      serverIsListening = true;
+      tryToClose(s);
+    }
+    return serverIsListening;
+  }
+
+  private boolean tryToConnect(Socket s, Integer port) {
+    boolean connected = false;
+    SocketAddress sa = new InetSocketAddress("localhost", port);
     try {
       s.connect(sa, 10000);
+      connected = true;
     } catch (IOException e) {
-      working = false;
+      LOG.error("Can't open connection to " + sa, e);
     }
+    return connected;
+  }
 
-    if (working == null) {
-      working = s.isConnected();
-      try {
-        s.close();
-      } catch (IOException e) {
-        LOG.error("Can't close connection to localhost:" + py4jPort, e);
-      }
+  private void tryToClose(Socket s) {
+    try {
+      s.close();
+    } catch (IOException e) {
+      LOG.error("Can't close connection to " + s.getInetAddress(), e);
     }
-    return working;
   }
 
   private String answerFromPythonMock(InvocationOnMock invocationOnMock) {
