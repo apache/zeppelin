@@ -51,8 +51,7 @@ import java.util.Properties;
  * Python interpreter unit test
  */
 public class PythonInterpreterTest {
-
-  Logger logger = LoggerFactory.getLogger(PythonProcess.class);
+  private static final Logger LOG = LoggerFactory.getLogger(PythonProcess.class);
 
   PythonInterpreter pythonInterpreter = null;
   PythonProcess mockPythonProcess;
@@ -81,7 +80,7 @@ public class PythonInterpreterTest {
         }
       });
     } catch (IOException e) {
-      logger.error("Can't initiate python process", e);
+      LOG.error("Can't initiate python process", e);
     }
 
     pythonInterpreter = spy(new PythonInterpreter(getPythonTestProperties()));
@@ -188,7 +187,7 @@ public class PythonInterpreterTest {
       try {
         s.close();
       } catch (IOException e) {
-        logger.error("Can't close connection to localhost:" + py4jPort, e);
+        LOG.error("Can't close connection to localhost:" + py4jPort, e);
       }
     }
     return working;
