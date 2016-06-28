@@ -37,6 +37,7 @@ import org.apache.zeppelin.annotation.ZeppelinApi;
 import org.apache.zeppelin.dep.Repository;
 import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.Interpreter.RegisteredInterpreter;
+import org.apache.zeppelin.rest.message.LoadDynamicInterpreterRequest;
 import org.apache.zeppelin.rest.message.NewInterpreterSettingRequest;
 import org.apache.zeppelin.rest.message.UpdateInterpreterSettingRequest;
 import org.apache.zeppelin.server.JsonResponse;
@@ -246,6 +247,48 @@ public class InterpreterRestApi {
       logger.error("Exception in InterpreterRestApi while removing repository ", e);
       return new JsonResponse(
           Status.INTERNAL_SERVER_ERROR, e.getMessage(), ExceptionUtils.getStackTrace(e)).build();
+    }
+    return new JsonResponse(Status.OK).build();
+  }
+
+  /**
+   * load a downloaded interpreter via external repository
+   */
+  @POST
+  @Path("load/{interpreterGroupName}/{interpreterName}")
+  public Response loadDynamicInterpreter(
+      @PathParam("interpreterGroupName") String interpreterGroupName,
+      @PathParam("interpreterName") String interpreterName, String message) {
+    logger.info("dynamic load interpreter interpreterGroupName [{}] name [{}]",
+      interpreterGroupName, interpreterName);
+    try {
+      LoadDynamicInterpreterRequest request = gson.fromJson(
+        message, LoadDynamicInterpreterRequest.class
+      );
+
+      if (request.getClassName() == null
+          || request.getArtifact() == null
+          || request.getUrl() == null) {
+        throw new Exception("invalid request data");
+      }
+
+      boolean result = interpreterFactory.loadDynamicInterpreter(
+        interpreterGroupName,
+        interpreterName,
+        request.getArtifact(),
+        request.getClassName(),
+        request.getUrl(),
+        request.isSnapshot()
+      );
+
+      if (result == false) {
+        throw new Exception("can't not found artifact");
+      }
+
+    } catch (Exception e) {
+      logger.error("Exception in InterpreterRestApi while adding repository - load failed ", e);
+      return new JsonResponse(
+        Status.NOT_FOUND, e.getMessage(), ExceptionUtils.getStackTrace(e)).build();
     }
     return new JsonResponse(Status.OK).build();
   }
