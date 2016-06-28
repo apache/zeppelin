@@ -1,3 +1,4 @@
+/* jshint loopfunc: true */
 /*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -11,7 +12,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+'use strict';
 
-@import url(//fonts.googleapis.com/css?family=Patua+One);
-@import url(//fonts.googleapis.com/css?family=Roboto);
-@import url(//fonts.googleapis.com/css?family=Source+Code+Pro);
+angular.module('zeppelinWebApp').filter('sortByKey', function () {
+  return function (properties) {
+    var sortedKeys = properties ? Object.keys(properties) : [];
+    return sortedKeys.sort();
+  };
+});

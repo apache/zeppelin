@@ -255,7 +255,7 @@ public abstract class Job {
     return dateFinished;
   }
 
-  protected void setResult(Object result) {
+  public void setResult(Object result) {
     this.result = result;
   }
 }

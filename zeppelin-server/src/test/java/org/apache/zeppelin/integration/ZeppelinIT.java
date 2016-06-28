@@ -19,6 +19,7 @@ package org.apache.zeppelin.integration;
 
 import org.apache.zeppelin.AbstractZeppelinIT;
 import org.apache.zeppelin.WebDriverManager;
+import org.apache.zeppelin.ZeppelinITUtils;
 import org.hamcrest.CoreMatchers;
 import org.junit.After;
 import org.junit.Before;
@@ -176,12 +177,12 @@ public class ZeppelinIT extends AbstractZeppelinIT {
       waitForText("BindingTest_1_",
           By.xpath(getParagraphXPath(1) + "//div[@id=\"angularTestButton\"]"));
 
-      driver.findElement(By.xpath("//*[@id='main']/div//h3/span/button[@tooltip='Remove the notebook']"))
+      driver.findElement(By.xpath(".//*[@id='main']//button[@ng-click='removeNote(note.id)']"))
           .sendKeys(Keys.ENTER);
-      sleep(1000, true);
+      ZeppelinITUtils.sleep(1000, true);
       driver.findElement(By.xpath("//div[@class='modal-dialog'][contains(.,'delete this notebook')]" +
           "//div[@class='modal-footer']//button[contains(.,'OK')]")).click();
-      sleep(100, true);
+      ZeppelinITUtils.sleep(100, true);
 
       LOG.info("testCreateNotebook Test executed");
     } catch (Exception e) {
@@ -196,7 +197,9 @@ public class ZeppelinIT extends AbstractZeppelinIT {
     }
     try {
       // navigate to interpreter page
-      WebElement interpreterLink = driver.findElement(By.xpath("//a[contains(.,'Interpreter')]"));
+      WebElement settingButton = driver.findElement(By.xpath("//button[@class='nav-btn dropdown-toggle ng-scope']"));
+      settingButton.click();
+      WebElement interpreterLink = driver.findElement(By.xpath("//a[@href='#/interpreter']"));
       interpreterLink.click();
 
       // add new dependency to spark interpreter
@@ -232,9 +235,10 @@ public class ZeppelinIT extends AbstractZeppelinIT {
 
       //delete created notebook for cleanup.
       deleteTestNotebook(driver);
-      sleep(1000, false);
+      ZeppelinITUtils.sleep(1000, false);
 
       // reset dependency
+      settingButton.click();
       interpreterLink.click();
       driver.findElement(By.xpath("//div[@id='spark']//button[contains(.,'edit')]")).sendKeys(Keys.ENTER);
       WebElement testDepRemoveBtn = pollingWait(By.xpath("//tr[descendant::text()[contains(.,'" +
@@ -303,7 +307,7 @@ public class ZeppelinIT extends AbstractZeppelinIT {
 
       //delete created notebook for cleanup.
       deleteTestNotebook(driver);
-      sleep(1000, true);
+      ZeppelinITUtils.sleep(1000, true);
 
       LOG.info("testAngularRunParagraph Test executed");
     }  catch (Exception e) {

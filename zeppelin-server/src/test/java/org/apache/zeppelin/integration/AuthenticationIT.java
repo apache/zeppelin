@@ -109,22 +109,22 @@ public class AuthenticationIT extends AbstractZeppelinIT {
     pollingWait(By.xpath(
         "//div[contains(@class, 'navbar-collapse')]//li//button[contains(.,'Login')]"),
         MAX_BROWSER_TIMEOUT_SEC).click();
-    sleep(1000, false);
+    ZeppelinITUtils.sleep(1000, false);
     pollingWait(By.xpath("//*[@id='userName']"), MAX_BROWSER_TIMEOUT_SEC).sendKeys(userName);
     pollingWait(By.xpath("//*[@id='password']"), MAX_BROWSER_TIMEOUT_SEC).sendKeys(password);
     pollingWait(By.xpath("//*[@id='NoteImportCtrl']//button[contains(.,'Login')]"),
         MAX_BROWSER_TIMEOUT_SEC).click();
-    sleep(1000, false);
+    ZeppelinITUtils.sleep(1000, false);
   }
 
   private void logoutUser(String userName) {
-    sleep(500, false);
+    ZeppelinITUtils.sleep(500, false);
     driver.findElement(By.xpath("//div[contains(@class, 'navbar-collapse')]//li[contains(.,'" +
         userName + "')]")).click();
-    sleep(500, false);
+    ZeppelinITUtils.sleep(500, false);
     driver.findElement(By.xpath("//div[contains(@class, 'navbar-collapse')]//li[contains(.,'" +
         userName + "')]//a[@ng-click='logout()']")).click();
-    sleep(5000, false);
+    ZeppelinITUtils.sleep(5000, false);
   }
 
   //  @Test
@@ -158,8 +158,8 @@ public class AuthenticationIT extends AbstractZeppelinIT {
 
       String noteId = driver.getCurrentUrl().substring(driver.getCurrentUrl().lastIndexOf("/") + 1);
 
-      pollingWait(By.xpath("//button[@tooltip='Note permissions']"),
-          MAX_BROWSER_TIMEOUT_SEC).sendKeys(Keys.ENTER);
+      pollingWait(By.xpath("//span[@tooltip='Note permissions']"),
+          MAX_BROWSER_TIMEOUT_SEC).click();
       pollingWait(By.xpath("//input[@ng-model='permissions.owners']"), MAX_BROWSER_TIMEOUT_SEC)
           .sendKeys("finance");
       pollingWait(By.xpath("//input[@ng-model='permissions.readers']"), MAX_BROWSER_TIMEOUT_SEC)

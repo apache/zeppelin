@@ -64,6 +64,16 @@
         "propertyName": "livy.spark.dynamicAllocation.maxExecutors",
         "defaultValue": "",
         "description": "Upper bound for the number of executors if dynamic allocation is enabled."
+      },
+      "zeppelin.livy.principal": {
+        "propertyName": "zeppelin.livy.principal",
+        "defaultValue": "",
+        "description": "Kerberos principal to authenticate livy"
+      },
+      "zeppelin.livy.keytab": {
+        "propertyName": "zeppelin.livy.keytab",
+        "defaultValue": "",
+        "description": "Kerberos keytab to authenticate livy"
       }
     }
   },

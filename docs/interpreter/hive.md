@@ -6,8 +6,9 @@ group: manual
 ---
 {% include JB/setup %}
 
-## Hive Interpreter for Apache Zeppelin
-The [Apache Hive](https://hive.apache.org/) ™ data warehouse software facilitates querying and managing large datasets residing in distributed storage. Hive provides a mechanism to project structure onto this data and query the data using a SQL-like language called HiveQL. At the same time this language also allows traditional map/reduce programmers to plug in their custom mappers and reducers when it is inconvenient or inefficient to express this logic in HiveQL.
+# Hive Interpreter for Apache Zeppelin
+
+<div id="toc"></div>
 
 ## Important Notice
 Hive Interpreter will be deprecated and merged into JDBC Interpreter. You can use Hive Interpreter by using JDBC Interpreter with same functionality. See the example below of settings and dependencies.
@@ -52,7 +53,6 @@ Hive Interpreter will be deprecated and merged into JDBC Interpreter. You can us
   </tr>
 </table>
 
-----
 
 ### Configuration
 <table class="table-configuration">
@@ -114,6 +114,10 @@ Hive Interpreter will be deprecated and merged into JDBC Interpreter. You can us
 </table>
 
 This interpreter provides multiple configuration with `${prefix}`. User can set a multiple connection properties by this prefix. It can be used like `%hive(${prefix})`.
+
+## Overview
+
+The [Apache Hive](https://hive.apache.org/) ™ data warehouse software facilitates querying and managing large datasets residing in distributed storage. Hive provides a mechanism to project structure onto this data and query the data using a SQL-like language called HiveQL. At the same time this language also allows traditional map/reduce programmers to plug in their custom mappers and reducers when it is inconvenient or inefficient to express this logic in HiveQL.
 
 ## How to use
 Basically, you can use
