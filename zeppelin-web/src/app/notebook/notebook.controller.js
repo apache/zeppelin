@@ -956,8 +956,12 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl',
     $scope.suggestions = [];
   };
 
-angular.element(document).click(function(){
-     angular.element('.userlist').hide();
-});
+  angular.element(document).click(function(){
+       angular.element('.userlist').hide();
+  });
+
+  angular.element(document).click(function(){
+    angular.element('.ace_autocomplete').hide();
+  });
 
 });
