@@ -52,14 +52,17 @@ public class NoteInterpreterLoader {
    * @param ids InterpreterSetting id list
    * @throws IOException
    */
+  @Deprecated
   public void setInterpreters(List<String> ids) throws IOException {
     factory.putNoteInterpreterSettingBinding(noteId, ids);
   }
 
+  @Deprecated
   public List<String> getInterpreters() {
     return factory.getNoteInterpreterSettingBinding(noteId);
   }
 
+  @Deprecated
   public List<InterpreterSetting> getInterpreterSettings() {
     List<String> interpreterSettingIds = factory.getNoteInterpreterSettingBinding(noteId);
     LinkedList<InterpreterSetting> settings = new LinkedList<InterpreterSetting>();
@@ -76,6 +79,7 @@ public class NoteInterpreterLoader {
     }
     return settings;
   }
+
 
   private String getInterpreterInstanceKey(InterpreterSetting setting) {
     if (setting.getOption().isExistingProcess()) {
@@ -99,9 +103,10 @@ public class NoteInterpreterLoader {
     }
   }
 
+  @Deprecated
   public void close() {
     // close interpreters in this note session
-    List<InterpreterSetting> settings = this.getInterpreterSettings();
+    List<InterpreterSetting> settings = factory.getInterpreterSettings(noteId);
     if (settings == null || settings.size() == 0) {
       return;
     }
@@ -112,8 +117,9 @@ public class NoteInterpreterLoader {
     }
   }
 
+  @Deprecated
   public Interpreter get(String replName) {
-    List<InterpreterSetting> settings = getInterpreterSettings();
+    List<InterpreterSetting> settings = factory.getInterpreterSettings(noteId);
 
     if (settings == null || settings.size() == 0) {
       return null;
@@ -202,6 +208,6 @@ public class NoteInterpreterLoader {
   }
 
   Optional<InterpreterSetting> getDefaultInterpreterSetting() {
-    return getDefaultInterpreterSetting(getInterpreterSettings());
+    return getDefaultInterpreterSetting(factory.getInterpreterSettings(noteId));
   }
 }

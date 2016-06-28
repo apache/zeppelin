@@ -258,7 +258,7 @@ public class Notebook {
       List<String> interpreterSettingIds) throws IOException {
     Note note = getNote(id);
     if (note != null) {
-      note.getNoteReplLoader().setInterpreters(interpreterSettingIds);
+      replFactory.setInterpreters(note.getId(), interpreterSettingIds);
       // comment out while note.getNoteReplLoader().setInterpreters(...) do the same
       // replFactory.putNoteInterpreterSettingBinding(id, interpreterSettingIds);
     }
@@ -267,7 +267,7 @@ public class Notebook {
   public List<String> getBindedInterpreterSettingsIds(String id) {
     Note note = getNote(id);
     if (note != null) {
-      return note.getNoteReplLoader().getInterpreters();
+      return getInterpreterFactory().getInterpreters(note.getId());
     } else {
       return new LinkedList<String>();
     }
@@ -276,7 +276,7 @@ public class Notebook {
   public List<InterpreterSetting> getBindedInterpreterSettings(String id) {
     Note note = getNote(id);
     if (note != null) {
-      return note.getNoteReplLoader().getInterpreterSettings();
+      return replFactory.getInterpreterSettings(note.getId());
     } else {
       return new LinkedList<InterpreterSetting>();
     }
@@ -607,9 +607,9 @@ public class Notebook {
 
       // set interpreter bind type
       String interpreterGroupName = null;
-      if (note.getNoteReplLoader().getInterpreterSettings() != null &&
-          note.getNoteReplLoader().getInterpreterSettings().size() >= 1) {
-        interpreterGroupName = note.getNoteReplLoader().getInterpreterSettings().get(0).getGroup();
+      if (replFactory.getInterpreterSettings(note.getId()) != null &&
+          replFactory.getInterpreterSettings(note.getId()).size() >= 1) {
+        interpreterGroupName = replFactory.getInterpreterSettings(note.getId()).get(0).getGroup();
       }
 
       // not update and not running -> pass
@@ -659,7 +659,8 @@ public class Notebook {
         logger.error(e.getMessage(), e);
       }
       if (releaseResource) {
-        for (InterpreterSetting setting : note.getNoteReplLoader().getInterpreterSettings()) {
+        for (InterpreterSetting setting :
+            notebook.getInterpreterFactory().getInterpreterSettings(note.getId())) {
           notebook.getInterpreterFactory().restart(setting.id());
         }
       }      

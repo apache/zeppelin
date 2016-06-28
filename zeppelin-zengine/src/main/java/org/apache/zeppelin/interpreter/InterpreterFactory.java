@@ -17,6 +17,7 @@
 
 package org.apache.zeppelin.interpreter;
 
+import com.google.common.base.*;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -61,6 +62,8 @@ import java.util.*;
  */
 public class InterpreterFactory implements InterpreterGroupFactory {
   Logger logger = LoggerFactory.getLogger(InterpreterFactory.class);
+
+  private static String SHARED_SESSION = "shared_session";
 
   private Map<String, URLClassLoader> cleanCl = Collections
       .synchronizedMap(new HashMap<String, URLClassLoader>());
@@ -923,6 +926,164 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     return properties;
   }
 
+  /**
+   * map interpreter ids into noteId
+   * @param noteId note id
+   * @param ids InterpreterSetting id list
+   * @throws IOException
+   */
+  public void setInterpreters(String noteId, List<String> ids) throws IOException {
+    putNoteInterpreterSettingBinding(noteId, ids);
+  }
+
+  public List<String> getInterpreters(String noteId) {
+    return getNoteInterpreterSettingBinding(noteId);
+  }
+
+  public List<InterpreterSetting> getInterpreterSettings(String noteId) {
+    List<String> interpreterSettingIds = getNoteInterpreterSettingBinding(noteId);
+    LinkedList<InterpreterSetting> settings = new LinkedList<InterpreterSetting>();
+    synchronized (interpreterSettingIds) {
+      for (String id : interpreterSettingIds) {
+        InterpreterSetting setting = get(id);
+        if (setting == null) {
+          // interpreter setting is removed from factory. remove id from here, too
+          interpreterSettingIds.remove(id);
+        } else {
+          settings.add(setting);
+        }
+      }
+    }
+    return settings;
+  }
+
+  public void closeNote(String noteId) {
+    // close interpreters in this note session
+    List<InterpreterSetting> settings = getInterpreterSettings(noteId);
+    if (settings == null || settings.size() == 0) {
+      return;
+    }
+
+    System.err.println("close");
+    for (InterpreterSetting setting : settings) {
+      removeInterpretersForNote(setting, noteId);
+    }
+  }
+
+  private String getInterpreterInstanceKey(String noteId, InterpreterSetting setting) {
+    if (setting.getOption().isExistingProcess()) {
+      return Constants.EXISTING_PROCESS;
+    } else if (setting.getOption().isPerNoteSession() || setting.getOption().isPerNoteProcess()) {
+      return noteId;
+    } else {
+      return SHARED_SESSION;
+    }
+  }
+
+  private List<Interpreter> createOrGetInterpreterList(String noteId, InterpreterSetting setting) {
+    InterpreterGroup interpreterGroup =
+        setting.getInterpreterGroup(noteId);
+    synchronized (interpreterGroup) {
+      String key = getInterpreterInstanceKey(noteId, setting);
+      if (!interpreterGroup.containsKey(key)) {
+        createInterpretersForNote(setting, noteId, key);
+      }
+      return interpreterGroup.get(getInterpreterInstanceKey(noteId, setting));
+    }
+  }
+
+  private com.google.common.base.Optional<InterpreterSetting>
+  getDefaultInterpreterSetting(List<InterpreterSetting> settings) {
+    if (settings == null || settings.isEmpty()) {
+      return com.google.common.base.Optional.absent();
+    }
+    return com.google.common.base.Optional.of(settings.get(0));
+  }
+
+  com.google.common.base.Optional<InterpreterSetting> getDefaultInterpreterSetting(String noteId) {
+    return getDefaultInterpreterSetting(getInterpreterSettings(noteId));
+  }
+
+  public Interpreter getInterpreter(String noteId, String replName) {
+    List<InterpreterSetting> settings = getInterpreterSettings(noteId);
+
+    if (settings == null || settings.size() == 0) {
+      return null;
+    }
+
+    if (replName == null || replName.trim().length() == 0) {
+      // get default settings (first available)
+      InterpreterSetting defaultSettings = getDefaultInterpreterSetting(settings).get();
+      return createOrGetInterpreterList(noteId, defaultSettings).get(0);
+    }
+
+    if (Interpreter.registeredInterpreters == null) {
+      return null;
+    }
+
+    String[] replNameSplit = replName.split("\\.");
+    String group = null;
+    String name = null;
+    if (replNameSplit.length == 2) {
+      group = replNameSplit[0];
+      name = replNameSplit[1];
+
+      Interpreter.RegisteredInterpreter registeredInterpreter = Interpreter.registeredInterpreters
+          .get(group + "." + name);
+      if (registeredInterpreter == null
+          || registeredInterpreter.getClassName() == null) {
+        throw new InterpreterException(replName + " interpreter not found");
+      }
+      String interpreterClassName = registeredInterpreter.getClassName();
+
+      for (InterpreterSetting setting : settings) {
+        if (registeredInterpreter.getGroup().equals(setting.getGroup())) {
+          List<Interpreter> intpGroup = createOrGetInterpreterList(noteId, setting);
+          for (Interpreter interpreter : intpGroup) {
+            if (interpreterClassName.equals(interpreter.getClassName())) {
+              return interpreter;
+            }
+          }
+        }
+      }
+      throw new InterpreterException(replName + " interpreter not found");
+    } else {
+      // first assume replName is 'name' of interpreter. ('groupName' is ommitted)
+      // search 'name' from first (default) interpreter group
+      InterpreterSetting defaultSetting = getDefaultInterpreterSetting(settings).get();
+      Interpreter.RegisteredInterpreter registeredInterpreter =
+          Interpreter.registeredInterpreters.get(defaultSetting.getGroup() + "." + replName);
+      if (registeredInterpreter != null) {
+        List<Interpreter> interpreters = createOrGetInterpreterList(noteId, defaultSetting);
+        for (Interpreter interpreter : interpreters) {
+
+          RegisteredInterpreter intp =
+              Interpreter.findRegisteredInterpreterByClassName(interpreter.getClassName());
+          if (intp == null) {
+            continue;
+          }
+
+          if (intp.getName().equals(replName)) {
+            return interpreter;
+          }
+        }
+
+        throw new InterpreterException(
+            defaultSetting.getGroup() + "." + replName + " interpreter not found");
+      }
+
+      // next, assume replName is 'group' of interpreter ('name' is ommitted)
+      // search interpreter group and return first interpreter.
+      for (InterpreterSetting setting : settings) {
+        if (setting.getGroup().equals(replName)) {
+          List<Interpreter> interpreters = createOrGetInterpreterList(noteId, setting);
+          return interpreters.get(0);
+        }
+      }
+    }
+
+    return null;
+  }
 
   private URL[] recursiveBuildLibList(File path) throws MalformedURLException {
     URL[] urls = new URL[0];

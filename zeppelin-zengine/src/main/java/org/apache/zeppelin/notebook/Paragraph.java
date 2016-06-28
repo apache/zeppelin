@@ -49,6 +49,7 @@ import com.google.common.annotations.VisibleForTesting;
 public class Paragraph extends Job implements Serializable, Cloneable {
   private static final long serialVersionUID = -6328572073497992016L;
 
+  private transient InterpreterFactory factory;
   private transient NoteInterpreterLoader replLoader;
   private transient Note note;
   private transient AuthenticationInfo authenticationInfo;
@@ -199,7 +200,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
   }
 
   public Interpreter getRepl(String name) {
-    return replLoader.get(name);
+    return factory.getInterpreter(note.getId(), name);
   }
 
   public Interpreter getCurrentRepl() {
@@ -336,8 +337,8 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     AngularObjectRegistry registry = null;
     ResourcePool resourcePool = null;
 
-    if (!getNoteReplLoader().getInterpreterSettings().isEmpty()) {
-      InterpreterSetting intpGroup = getNoteReplLoader().getInterpreterSettings().get(0);
+    if (!factory.getInterpreterSettings(note.getId()).isEmpty()) {
+      InterpreterSetting intpGroup = factory.getInterpreterSettings(note.getId()).get(0);
       registry = intpGroup.getInterpreterGroup(note.id()).getAngularObjectRegistry();
       resourcePool = intpGroup.getInterpreterGroup(note.id()).getResourcePool();
     }

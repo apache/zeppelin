@@ -49,8 +49,8 @@ public class LuceneSearchTest {
     notebookRepoMock = mock(NotebookRepo.class);
     replLoaderMock = mock(NoteInterpreterLoader.class);
 
-    when(replLoaderMock.getInterpreterSettings())
-      .thenReturn(ImmutableList.<InterpreterSetting>of());
+//    when(replLoaderMock.getInterpreterSettings())
+//      .thenReturn(ImmutableList.<InterpreterSetting>of());
   }
 
   @Before

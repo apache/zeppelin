@@ -21,6 +21,7 @@ import com.google.common.base.Optional;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.interpreter.Interpreter;
+import org.apache.zeppelin.interpreter.InterpreterFactory;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.apache.zeppelin.scheduler.Scheduler;
@@ -59,9 +60,12 @@ public class NoteTest {
   @Mock
   Scheduler scheduler;
 
+  @Mock
+  InterpreterFactory interpreterFactory;
+
   @Test
   public void runNormalTest() {
-    when(replLoader.get("spark")).thenReturn(interpreter);
+    when(interpreterFactory.getInterpreter(anyString(), "spark")).thenReturn(interpreter);
     when(interpreter.getScheduler()).thenReturn(scheduler);
 
     String pText = "%spark sc.version";
@@ -72,15 +76,15 @@ public class NoteTest {
 
     ArgumentCaptor<Paragraph> pCaptor = ArgumentCaptor.forClass(Paragraph.class);
     verify(scheduler, only()).submit(pCaptor.capture());
-    verify(replLoader, only()).get("spark");
+    verify(interpreterFactory, only()).getInterpreter(anyString(), "spark");
 
     assertEquals("Paragraph text", pText, pCaptor.getValue().getText());
   }
 
   @Test
   public void runJdbcTest() {
-    when(replLoader.get("mysql")).thenReturn(null);
-    when(replLoader.get("jdbc")).thenReturn(interpreter);
+    when(interpreterFactory.getInterpreter(anyString(), "mysql")).thenReturn(null);
+    when(interpreterFactory.getInterpreter(anyString(), "jdbc")).thenReturn(interpreter);
     when(interpreter.getScheduler()).thenReturn(scheduler);
 
     String pText = "%mysql show databases";
@@ -91,7 +95,7 @@ public class NoteTest {
 
     ArgumentCaptor<Paragraph> pCaptor = ArgumentCaptor.forClass(Paragraph.class);
     verify(scheduler, only()).submit(pCaptor.capture());
-    verify(replLoader, times(2)).get(anyString());
+    verify(interpreterFactory, times(2)).getInterpreter(anyString(), anyString());
 
     assertEquals("Change paragraph text", "%jdbc(mysql) show databases", pCaptor.getValue().getEffectiveText());
     assertEquals("Change paragraph text", pText, pCaptor.getValue().getText());
@@ -99,7 +103,7 @@ public class NoteTest {
 
   @Test
   public void putDefaultReplNameIfInterpreterSettingAbsent() {
-    when(replLoader.getDefaultInterpreterSetting())
+    when(interpreterFactory.getDefaultInterpreterSetting(anyListOf(InterpreterSetting.class)))
             .thenReturn(Optional.<InterpreterSetting>absent());
 
     Note note = new Note(repo, replLoader, jobListenerFactory, index, credentials);

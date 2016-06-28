@@ -307,7 +307,7 @@ public class NotebookServer extends WebSocketServlet implements
     Notebook notebook = notebook();
     List<Note> notes = notebook.getAllNotes();
     for (Note note : notes) {
-      List<String> ids = note.getNoteReplLoader().getInterpreters();
+      List<String> ids = notebook.getInterpreterFactory().getInterpreters(note.getId());
       for (String id : ids) {
         if (id.equals(interpreterGroupId)) {
           broadcast(note.id(), m);
@@ -750,8 +750,8 @@ public class NotebookServer extends WebSocketServlet implements
     // propagate change to (Remote) AngularObjectRegistry
     Note note = notebook.getNote(noteId);
     if (note != null) {
-      List<InterpreterSetting> settings = note.getNoteReplLoader()
-          .getInterpreterSettings();
+      List<InterpreterSetting> settings = notebook.getInterpreterFactory()
+          .getInterpreterSettings(note.getId());
       for (InterpreterSetting setting : settings) {
         if (setting.getInterpreterGroup(note.id()) == null) {
           continue;
@@ -791,8 +791,8 @@ public class NotebookServer extends WebSocketServlet implements
     if (global) { // broadcast change to all web session that uses related
       // interpreter.
       for (Note n : notebook.getAllNotes()) {
-        List<InterpreterSetting> settings = note.getNoteReplLoader()
-            .getInterpreterSettings();
+        List<InterpreterSetting> settings = notebook.getInterpreterFactory()
+            .getInterpreterSettings(note.getId());
         for (InterpreterSetting setting : settings) {
           if (setting.getInterpreterGroup(n.id()) == null) {
             continue;
@@ -1239,8 +1239,8 @@ public class NotebookServer extends WebSocketServlet implements
   }
 
   private void sendAllAngularObjects(Note note, NotebookSocket conn) throws IOException {
-    List<InterpreterSetting> settings = note.getNoteReplLoader()
-        .getInterpreterSettings();
+    List<InterpreterSetting> settings =
+        notebook().getInterpreterFactory().getInterpreterSettings(note.getId());
     if (settings == null || settings.size() == 0) {
       return;
     }
@@ -1279,8 +1279,8 @@ public class NotebookServer extends WebSocketServlet implements
         continue;
       }
 
-      List<InterpreterSetting> intpSettings = note.getNoteReplLoader()
-          .getInterpreterSettings();
+      List<InterpreterSetting> intpSettings = notebook.getInterpreterFactory()
+          .getInterpreterSettings(note.getId());
       if (intpSettings.isEmpty())
         continue;
       for (InterpreterSetting setting : intpSettings) {
@@ -1306,7 +1306,7 @@ public class NotebookServer extends WebSocketServlet implements
         continue;
       }
 
-      List<String> ids = note.getNoteReplLoader().getInterpreters();
+      List<String> ids = notebook.getInterpreterFactory().getInterpreters(note.getId());
       for (String id : ids) {
         if (id.equals(interpreterGroupId)) {
           broadcast(

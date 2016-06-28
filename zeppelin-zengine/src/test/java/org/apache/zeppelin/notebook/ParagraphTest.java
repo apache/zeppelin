@@ -19,6 +19,7 @@ package org.apache.zeppelin.notebook;
 
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -28,6 +29,7 @@ import org.apache.zeppelin.display.AngularObjectBuilder;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.Input;
 import org.apache.zeppelin.interpreter.Interpreter;
+import org.apache.zeppelin.interpreter.InterpreterFactory;
 import org.junit.Test;
 
 import java.util.HashMap;
@@ -72,6 +74,7 @@ public class ParagraphTest {
 
   @Test
   public void effectiveTextTest() {
+    InterpreterFactory interpreterFactory = mock(InterpreterFactory.class);
     NoteInterpreterLoader noteInterpreterLoader = mock(NoteInterpreterLoader.class);
     Interpreter interpreter = mock(Interpreter.class);
 
@@ -81,7 +84,7 @@ public class ParagraphTest {
     assertEquals("Get right replName", "jdbc", p.getRequiredReplName());
     assertEquals("Get right scriptBody", "(h2) show databases", p.getScriptBody());
 
-    when(noteInterpreterLoader.get("jdbc")).thenReturn(interpreter);
+    when(interpreterFactory.getInterpreter(anyString(), "jdbc")).thenReturn(interpreter);
     when(interpreter.getFormType()).thenReturn(Interpreter.FormType.NATIVE);
 
     try {

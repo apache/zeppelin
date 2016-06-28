@@ -73,6 +73,7 @@ public class Note implements Serializable, JobListener {
   @SuppressWarnings("rawtypes")
   Map<String, List<AngularObject>> angularObjects = new HashMap<>();
 
+  private transient InterpreterFactory factory;
   private transient NoteInterpreterLoader replLoader;
   private transient JobListenerFactory jobListenerFactory;
   private transient NotebookRepo repo;
@@ -437,7 +438,7 @@ public class Note implements Serializable, JobListener {
         p.setAuthenticationInfo(authenticationInfo);
         p.setNoteReplLoader(replLoader);
         p.setListener(jobListenerFactory.getParagraphJobListener(this));
-        Interpreter intp = replLoader.get(p.getRequiredReplName());
+        Interpreter intp = factory.get(getId(), p.getRequiredReplName());
         intp.getScheduler().submit(p);
       }
     }
@@ -453,10 +454,10 @@ public class Note implements Serializable, JobListener {
     p.setNoteReplLoader(replLoader);
     p.setListener(jobListenerFactory.getParagraphJobListener(this));
     String requiredReplName = p.getRequiredReplName();
-    Interpreter intp = replLoader.get(requiredReplName);
+    Interpreter intp = factory.getInterpreter(getId(), requiredReplName);
     if (intp == null) {
       // TODO(jongyoul): Make "%jdbc" configurable from JdbcInterpreter
-      if (conf.getUseJdbcAlias() && null != (intp = replLoader.get("jdbc"))) {
+      if (conf.getUseJdbcAlias() && null != (intp = factory.getInterpreter(getId(), "jdbc"))) {
         String pText = p.getText().replaceFirst(requiredReplName, "jdbc(" + requiredReplName + ")");
         logger.debug("New paragraph: {}", pText);
         p.setEffectiveText(pText);
@@ -503,7 +504,7 @@ public class Note implements Serializable, JobListener {
   private void snapshotAngularObjectRegistry() {
     angularObjects = new HashMap<>();
 
-    List<InterpreterSetting> settings = replLoader.getInterpreterSettings();
+    List<InterpreterSetting> settings = factory.getInterpreterSettings(getId());
     if (settings == null || settings.size() == 0) {
       return;
     }
@@ -518,7 +519,7 @@ public class Note implements Serializable, JobListener {
   private void removeAllAngularObjectInParagraph(String paragraphId) {
     angularObjects = new HashMap<String, List<AngularObject>>();
 
-    List<InterpreterSetting> settings = replLoader.getInterpreterSettings();
+    List<InterpreterSetting> settings = factory.getInterpreterSettings(getId());
     if (settings == null || settings.size() == 0) {
       return;
     }
