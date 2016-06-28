@@ -151,9 +151,7 @@ public class Notebook {
    */
   public Note createNote(List<String> interpreterIds, AuthenticationInfo subject)
       throws IOException {
-    NoteInterpreterLoader intpLoader = new NoteInterpreterLoader(replFactory);
-    Note note = new Note(notebookRepo, intpLoader, jobListenerFactory, notebookIndex, credentials);
-    intpLoader.setNoteId(note.id());
+    Note note = new Note(notebookRepo, replFactory, jobListenerFactory, notebookIndex, credentials);
     synchronized (notes) {
       notes.put(note.id(), note);
     }
@@ -348,9 +346,7 @@ public class Notebook {
     note.setIndex(this.notebookIndex);
     note.setCredentials(this.credentials);
 
-    NoteInterpreterLoader replLoader = new NoteInterpreterLoader(replFactory);
-    note.setReplLoader(replLoader);
-    replLoader.setNoteId(note.id());
+    note.setInterpreterFactory(replFactory);
 
     note.setJobListenerFactory(jobListenerFactory);
     note.setNotebookRepo(notebookRepo);

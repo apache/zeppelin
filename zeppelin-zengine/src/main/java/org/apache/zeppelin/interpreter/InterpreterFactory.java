@@ -17,7 +17,6 @@
 
 package org.apache.zeppelin.interpreter;
 
-import com.google.common.base.*;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -35,7 +34,6 @@ import org.apache.zeppelin.interpreter.Interpreter.RegisteredInterpreter;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreter;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
-import org.apache.zeppelin.notebook.NoteInterpreterLoader;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.slf4j.Logger;
@@ -1000,7 +998,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     return com.google.common.base.Optional.of(settings.get(0));
   }
 
-  com.google.common.base.Optional<InterpreterSetting> getDefaultInterpreterSetting(String noteId) {
+  public com.google.common.base.Optional<InterpreterSetting> getDefaultInterpreterSetting(String noteId) {
     return getDefaultInterpreterSetting(getInterpreterSettings(noteId));
   }
 

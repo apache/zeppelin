@@ -74,7 +74,6 @@ public class Note implements Serializable, JobListener {
   Map<String, List<AngularObject>> angularObjects = new HashMap<>();
 
   private transient InterpreterFactory factory;
-  private transient NoteInterpreterLoader replLoader;
   private transient JobListenerFactory jobListenerFactory;
   private transient NotebookRepo repo;
   private transient SearchService index;
@@ -98,10 +97,10 @@ public class Note implements Serializable, JobListener {
 
   public Note() {}
 
-  public Note(NotebookRepo repo, NoteInterpreterLoader replLoader,
+  public Note(NotebookRepo repo, InterpreterFactory factory,
       JobListenerFactory jlFactory, SearchService noteIndex, Credentials credentials) {
     this.repo = repo;
-    this.replLoader = replLoader;
+    this.factory = factory;
     this.jobListenerFactory = jlFactory;
     this.index = noteIndex;
     this.credentials = credentials;
@@ -113,7 +112,7 @@ public class Note implements Serializable, JobListener {
   }
 
   private String getDefaultInterpreterName() {
-    Optional<InterpreterSetting> settingOptional = replLoader.getDefaultInterpreterSetting();
+    Optional<InterpreterSetting> settingOptional = factory.getDefaultInterpreterSetting(getId());
     return settingOptional.isPresent() ? settingOptional.get().getGroup() : StringUtils.EMPTY;
   }
 
@@ -155,12 +154,8 @@ public class Note implements Serializable, JobListener {
     this.name = name;
   }
 
-  public NoteInterpreterLoader getNoteReplLoader() {
-    return replLoader;
-  }
-
-  public void setReplLoader(NoteInterpreterLoader replLoader) {
-    this.replLoader = replLoader;
+  public void setInterpreterFactory(InterpreterFactory factory) {
+    this.factory = factory;
   }
 
   public JobListenerFactory getJobListenerFactory() {
@@ -202,7 +197,7 @@ public class Note implements Serializable, JobListener {
    */
 
   public Paragraph addParagraph() {
-    Paragraph p = new Paragraph(this, this, replLoader);
+    Paragraph p = new Paragraph(this, this, factory);
     addLastReplNameIfEmptyText(p);
     synchronized (paragraphs) {
       paragraphs.add(p);
@@ -218,7 +213,7 @@ public class Note implements Serializable, JobListener {
   public void addCloneParagraph(Paragraph srcParagraph) {
 
     // Keep paragraph original ID
-    final Paragraph newParagraph = new Paragraph(srcParagraph.getId(), this, this, replLoader);
+    final Paragraph newParagraph = new Paragraph(srcParagraph.getId(), this, this, factory);
 
     Map<String, Object> config = new HashMap<>(srcParagraph.getConfig());
     Map<String, Object> param = new HashMap<>(srcParagraph.settings.getParams());
@@ -252,7 +247,7 @@ public class Note implements Serializable, JobListener {
    * @param index
    */
   public Paragraph insertParagraph(int index) {
-    Paragraph p = new Paragraph(this, this, replLoader);
+    Paragraph p = new Paragraph(this, this, factory);
     addLastReplNameIfEmptyText(p);
     synchronized (paragraphs) {
       paragraphs.add(index, p);
@@ -436,9 +431,9 @@ public class Note implements Serializable, JobListener {
         AuthenticationInfo authenticationInfo = new AuthenticationInfo();
         authenticationInfo.setUser(cronExecutingUser);
         p.setAuthenticationInfo(authenticationInfo);
-        p.setNoteReplLoader(replLoader);
+        p.setInterpreterFactory(factory);
         p.setListener(jobListenerFactory.getParagraphJobListener(this));
-        Interpreter intp = factory.get(getId(), p.getRequiredReplName());
+        Interpreter intp = factory.getInterpreter(getId(), p.getRequiredReplName());
         intp.getScheduler().submit(p);
       }
     }
@@ -451,7 +446,7 @@ public class Note implements Serializable, JobListener {
    */
   public void run(String paragraphId) {
     Paragraph p = getParagraph(paragraphId);
-    p.setNoteReplLoader(replLoader);
+    p.setInterpreterFactory(factory);
     p.setListener(jobListenerFactory.getParagraphJobListener(this));
     String requiredReplName = p.getRequiredReplName();
     Interpreter intp = factory.getInterpreter(getId(), requiredReplName);
@@ -488,7 +483,7 @@ public class Note implements Serializable, JobListener {
 
   public List<InterpreterCompletion> completion(String paragraphId, String buffer, int cursor) {
     Paragraph p = getParagraph(paragraphId);
-    p.setNoteReplLoader(replLoader);
+    p.setInterpreterFactory(factory);
     p.setListener(jobListenerFactory.getParagraphJobListener(this));
     List completion = p.completion(buffer, cursor);
 

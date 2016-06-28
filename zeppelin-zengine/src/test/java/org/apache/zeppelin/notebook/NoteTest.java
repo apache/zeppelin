@@ -43,9 +43,6 @@ public class NoteTest {
   NotebookRepo repo;
 
   @Mock
-  NoteInterpreterLoader replLoader;
-
-  @Mock
   JobListenerFactory jobListenerFactory;
 
   @Mock
@@ -65,30 +62,30 @@ public class NoteTest {
 
   @Test
   public void runNormalTest() {
-    when(interpreterFactory.getInterpreter(anyString(), "spark")).thenReturn(interpreter);
+    when(interpreterFactory.getInterpreter(anyString(), eq("spark"))).thenReturn(interpreter);
     when(interpreter.getScheduler()).thenReturn(scheduler);
 
     String pText = "%spark sc.version";
-    Note note = new Note(repo, replLoader, jobListenerFactory, index, credentials);
+    Note note = new Note(repo, interpreterFactory, jobListenerFactory, index, credentials);
     Paragraph p = note.addParagraph();
     p.setText(pText);
     note.run(p.getId());
 
     ArgumentCaptor<Paragraph> pCaptor = ArgumentCaptor.forClass(Paragraph.class);
     verify(scheduler, only()).submit(pCaptor.capture());
-    verify(interpreterFactory, only()).getInterpreter(anyString(), "spark");
+    verify(interpreterFactory, only()).getInterpreter(anyString(), eq("spark"));
 
     assertEquals("Paragraph text", pText, pCaptor.getValue().getText());
   }
 
   @Test
   public void runJdbcTest() {
-    when(interpreterFactory.getInterpreter(anyString(), "mysql")).thenReturn(null);
-    when(interpreterFactory.getInterpreter(anyString(), "jdbc")).thenReturn(interpreter);
+    when(interpreterFactory.getInterpreter(anyString(), eq("mysql"))).thenReturn(null);
+    when(interpreterFactory.getInterpreter(anyString(), eq("jdbc"))).thenReturn(interpreter);
     when(interpreter.getScheduler()).thenReturn(scheduler);
 
     String pText = "%mysql show databases";
-    Note note = new Note(repo, replLoader, jobListenerFactory, index, credentials);
+    Note note = new Note(repo, interpreterFactory, jobListenerFactory, index, credentials);
     Paragraph p = note.addParagraph();
     p.setText(pText);
     note.run(p.getId());
@@ -103,10 +100,10 @@ public class NoteTest {
 
   @Test
   public void putDefaultReplNameIfInterpreterSettingAbsent() {
-    when(interpreterFactory.getDefaultInterpreterSetting(anyListOf(InterpreterSetting.class)))
+    when(interpreterFactory.getDefaultInterpreterSetting(anyString()))
             .thenReturn(Optional.<InterpreterSetting>absent());
 
-    Note note = new Note(repo, replLoader, jobListenerFactory, index, credentials);
+    Note note = new Note(repo, interpreterFactory, jobListenerFactory, index, credentials);
     note.putDefaultReplName();
 
     assertEquals(StringUtils.EMPTY, note.getLastReplName());
@@ -117,10 +114,10 @@ public class NoteTest {
   public void putDefaultReplNameIfInterpreterSettingPresent() {
     InterpreterSetting interpreterSetting = Mockito.mock(InterpreterSetting.class);
     when(interpreterSetting.getGroup()).thenReturn("spark");
-    when(replLoader.getDefaultInterpreterSetting())
+    when(interpreterFactory.getDefaultInterpreterSetting(anyString()))
             .thenReturn(Optional.of(interpreterSetting));
 
-    Note note = new Note(repo, replLoader, jobListenerFactory, index, credentials);
+    Note note = new Note(repo, interpreterFactory, jobListenerFactory, index, credentials);
     note.putDefaultReplName();
 
     assertEquals("spark", note.getLastReplName());
@@ -131,10 +128,10 @@ public class NoteTest {
   public void addParagraphWithLastReplName() {
     InterpreterSetting interpreterSetting = Mockito.mock(InterpreterSetting.class);
     when(interpreterSetting.getGroup()).thenReturn("spark");
-    when(replLoader.getDefaultInterpreterSetting())
+    when(interpreterFactory.getDefaultInterpreterSetting(anyString()))
             .thenReturn(Optional.of(interpreterSetting));
 
-    Note note = new Note(repo, replLoader, jobListenerFactory, index, credentials);
+    Note note = new Note(repo, interpreterFactory, jobListenerFactory, index, credentials);
     note.putDefaultReplName(); //set lastReplName
 
     Paragraph p = note.addParagraph();
@@ -146,10 +143,10 @@ public class NoteTest {
   public void insertParagraphWithLastReplName() {
     InterpreterSetting interpreterSetting = Mockito.mock(InterpreterSetting.class);
     when(interpreterSetting.getGroup()).thenReturn("spark");
-    when(replLoader.getDefaultInterpreterSetting())
+    when(interpreterFactory.getDefaultInterpreterSetting(anyString()))
             .thenReturn(Optional.of(interpreterSetting));
 
-    Note note = new Note(repo, replLoader, jobListenerFactory, index, credentials);
+    Note note = new Note(repo, interpreterFactory, jobListenerFactory, index, credentials);
     note.putDefaultReplName(); //set lastReplName
 
     Paragraph p = note.insertParagraph(note.getParagraphs().size());
@@ -160,7 +157,7 @@ public class NoteTest {
   @Test
   public void setLastReplName() {
     String paragraphId = "HelloWorld";
-    Note note = Mockito.spy(new Note(repo, replLoader, jobListenerFactory, index, credentials));
+    Note note = Mockito.spy(new Note(repo, interpreterFactory, jobListenerFactory, index, credentials));
     Paragraph mockParagraph = Mockito.mock(Paragraph.class);
     when(note.getParagraph(paragraphId)).thenReturn(mockParagraph);
     when(mockParagraph.getRequiredReplName()).thenReturn("spark");

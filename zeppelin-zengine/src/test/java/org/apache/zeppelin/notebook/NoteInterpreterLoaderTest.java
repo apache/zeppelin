@@ -71,9 +71,6 @@ public class NoteInterpreterLoaderTest {
 
   @Test
   public void testGetInterpreter() throws IOException {
-    NoteInterpreterLoader loader = new NoteInterpreterLoader(factory);
-    loader.setNoteId("note");
-//    loader.setInterpreters(factory.getDefaultInterpreterSettingList());
     factory.setInterpreters("note", factory.getDefaultInterpreterSettingList());
 
     // when there're no interpreter selection directive
@@ -120,7 +117,7 @@ public class NoteInterpreterLoaderTest {
     assertNotNull(factory.getInterpreterSettings("noteB").get(0).getInterpreterGroup("shared_process").get("noteB"));
 
     // when
-    factory.closeNote("noteB");
+    factory.closeNote("noteA");
     factory.closeNote("noteB");
 
     // interpreters are destroyed after close

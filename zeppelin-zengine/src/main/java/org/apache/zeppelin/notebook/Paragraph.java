@@ -50,7 +50,6 @@ public class Paragraph extends Job implements Serializable, Cloneable {
   private static final long serialVersionUID = -6328572073497992016L;
 
   private transient InterpreterFactory factory;
-  private transient NoteInterpreterLoader replLoader;
   private transient Note note;
   private transient AuthenticationInfo authenticationInfo;
   private transient String effectiveText;
@@ -70,10 +69,10 @@ public class Paragraph extends Job implements Serializable, Cloneable {
   }
 
   public Paragraph(String paragraphId, Note note, JobListener listener,
-                   NoteInterpreterLoader replLoader) {
+                   InterpreterFactory factory) {
     super(paragraphId, generateId(), listener);
     this.note = note;
-    this.replLoader = replLoader;
+    this.factory = factory;
     title = null;
     text = null;
     authenticationInfo = null;
@@ -83,10 +82,10 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     config = new HashMap<String, Object>();
   }
 
-  public Paragraph(Note note, JobListener listener, NoteInterpreterLoader replLoader) {
+  public Paragraph(Note note, JobListener listener, InterpreterFactory factory) {
     super(generateId(), listener);
     this.note = note;
-    this.replLoader = replLoader;
+    this.factory = factory;
     title = null;
     text = null;
     authenticationInfo = null;
@@ -195,10 +194,6 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     return text.substring(magic.length() + 1).trim();
   }
 
-  public NoteInterpreterLoader getNoteReplLoader() {
-    return replLoader;
-  }
-
   public Interpreter getRepl(String name) {
     return factory.getInterpreter(note.getId(), name);
   }
@@ -222,8 +217,8 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     return completion;
   }
 
-  public void setNoteReplLoader(NoteInterpreterLoader repls) {
-    this.replLoader = repls;
+  public void setInterpreterFactory(InterpreterFactory factory) {
+    this.factory = factory;
   }
 
   public InterpreterResult getResult() {
