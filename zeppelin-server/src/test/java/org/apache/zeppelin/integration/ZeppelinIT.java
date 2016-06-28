@@ -210,9 +210,12 @@ public class ZeppelinIT extends AbstractZeppelinIT {
       String artifact = "org.apache.commons:commons-csv:1.1";
       depArtifact.sendKeys(artifact);
       driver.findElement(By.xpath("//div[@id='spark']//form//button[1]")).click();
-      driver.findElement(By.xpath("//div[@class='modal-dialog'][contains(.,'Do you want to update this interpreter and restart with new settings?')]" +
-          "//div[@class='modal-footer']//button[contains(.,'OK')]")).click();
+      clickAndWait(By.xpath("//div[@class='modal-dialog'][contains(.,'Do you want to update this interpreter and restart with new settings?')]" +
+          "//div[@class='modal-footer']//button[contains(.,'OK')]"));
 
+      clickAndWait(By.xpath("//div[@class='modal-dialog'][contains(.,'Do you want to update this " +
+          "interpreter and restart with new settings?')]//" +
+          "div[@class='bootstrap-dialog-close-button']/button"));
       driver.navigate().back();
       createNewNote();
 
