@@ -28,6 +28,7 @@ import org.junit.Test;
 import org.junit.rules.ErrorCollector;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
+import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebElement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -213,9 +214,14 @@ public class ZeppelinIT extends AbstractZeppelinIT {
       clickAndWait(By.xpath("//div[@class='modal-dialog'][contains(.,'Do you want to update this interpreter and restart with new settings?')]" +
           "//div[@class='modal-footer']//button[contains(.,'OK')]"));
 
-      clickAndWait(By.xpath("//div[@class='modal-dialog'][contains(.,'Do you want to update this " +
-          "interpreter and restart with new settings?')]//" +
-          "div[@class='bootstrap-dialog-close-button']/button"));
+      try {
+        clickAndWait(By.xpath("//div[@class='modal-dialog'][contains(.,'Do you want to " +
+            "update this interpreter and restart with new settings?')]//" +
+            "div[@class='bootstrap-dialog-close-button']/button"));
+      } catch (TimeoutException e) {
+        //Modal dialog got closed earlier than expected nothing to worry.
+      }
+
       driver.navigate().back();
       createNewNote();
 
