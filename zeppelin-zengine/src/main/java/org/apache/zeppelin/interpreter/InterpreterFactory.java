@@ -998,7 +998,8 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     return com.google.common.base.Optional.of(settings.get(0));
   }
 
-  public com.google.common.base.Optional<InterpreterSetting> getDefaultInterpreterSetting(String noteId) {
+  public com.google.common.base.Optional<InterpreterSetting>
+  getDefaultInterpreterSetting(String noteId) {
     return getDefaultInterpreterSetting(getInterpreterSettings(noteId));
   }
 
