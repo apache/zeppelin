@@ -45,7 +45,7 @@ Spark Interpreter group, which consists of five interpreters.
 </table>
 
 ## Configuration
-The Spark interpreter can be configured with properties provided by Zeppelin. 
+The Spark interpreter can be configured with properties provided by Zeppelin.
 You can also set other Spark properties which are not listed in the table. For a list of additional properties, refer to [Spark Available Properties](http://spark.apache.org/docs/latest/configuration.html#available-properties).
 <table class="table-configuration">
   <tr>
@@ -110,6 +110,11 @@ You can also set other Spark properties which are not listed in the table. For a
     <td>zeppelin.spark.useHiveContext</td>
     <td>true</td>
     <td>Use HiveContext instead of SQLContext if it is true.</td>
+  </tr>
+  <tr>
+    <td>zeppelin.spark.importImplicit</td>
+    <td>true</td>
+    <td>Import implicits, UDF collection, and sql if set true.</td>
   </tr>
 </table>
 
