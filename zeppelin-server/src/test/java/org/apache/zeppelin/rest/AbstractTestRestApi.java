@@ -379,7 +379,7 @@ public abstract class AbstractTestRestApi {
         .add(tempName,
             "newGroup",
             new LinkedList<Dependency>(),
-            new InterpreterOption(false),
+            new InterpreterOption(),
             new Properties());
     return setting.id();
   }
