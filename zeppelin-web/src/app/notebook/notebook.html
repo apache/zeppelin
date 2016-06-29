@@ -72,7 +72,7 @@ limitations under the License.
            data-ng-model="permissions">
         <p><span  class="owners">Owners </span><input   ng-model="permissions.owners"
                            placeholder="search for users"
-                           class="input"  ng-change="search('owners')"
+                           class="input"
                            ng-keydown="checkKeyDown($event,'owners')"
                            ng-keyup="checkKeyUp($event)"> Owners can change permissions,read
           and write the note.</p>
@@ -87,7 +87,7 @@ limitations under the License.
         </div>
         <p><span  class="readers">Readers </span><input   ng-model="permissions.readers"
                              placeholder="search for users"
-                             class="input"  ng-change="search('readers')"
+                             class="input"
                              ng-keydown="checkKeyDown($event,'readers')"
                              ng-keyup="checkKeyUp($event)"> Readers can only read the note.</p>
         <div ng-if="role === 'readers'" class="userlist">
@@ -101,7 +101,7 @@ limitations under the License.
         </div>
         <p><span  class="writers">Writers </span><input   ng-model="permissions.writers"
                               placeholder="search for users"
-                              class="input"  ng-change="search('writers')"
+                              class="input"
                               ng-keydown="checkKeyDown($event,'writers')"
                               ng-keyup="checkKeyUp($event)"> Writers can read and write the note.</p>
         <div ng-if="role === 'writers'" class="userlist">
