@@ -102,6 +102,30 @@ public abstract class AbstractTestRestApi {
       System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_HOME.getVarName(), "../");
       System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_WAR.getVarName(), "../zeppelin-web/dist");
       LOG.info("Staring test Zeppelin up...");
+
+
+      // exclude org.apache.zeppelin.rinterpreter.* for scala 2.11 test
+      ZeppelinConfiguration conf = ZeppelinConfiguration.create();
+      String interpreters = conf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETERS);
+      String interpretersCompatibleWithScala211Test = null;
+
+      for (String intp : interpreters.split(",")) {
+        if (intp.startsWith("org.apache.zeppelin.rinterpreter")) {
+          continue;
+        }
+
+        if (interpretersCompatibleWithScala211Test == null) {
+          interpretersCompatibleWithScala211Test = intp;
+        } else {
+          interpretersCompatibleWithScala211Test += "," + intp;
+        }
+      }
+
+      System.setProperty(
+          ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETERS.getVarName(),
+          interpretersCompatibleWithScala211Test);
+
+
       executor = Executors.newSingleThreadExecutor();
       executor.submit(server);
       long s = System.currentTimeMillis();
@@ -241,6 +265,8 @@ public abstract class AbstractTestRestApi {
       }
 
       LOG.info("Test Zeppelin terminated.");
+
+      System.clearProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETERS.getVarName());
     }
   }
 

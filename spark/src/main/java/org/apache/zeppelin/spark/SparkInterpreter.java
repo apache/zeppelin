@@ -266,8 +266,8 @@ public class SparkInterpreter extends Interpreter {
     String classServerUri = null;
 
     try { // in case of spark 1.1x, spark 1.2x
-      Method classServer = interpreter.intp().getClass().getMethod("classServer");
-      HttpServer httpServer = (HttpServer) classServer.invoke(interpreter.intp());
+      Method classServer = intp.getClass().getMethod("classServer");
+      HttpServer httpServer = (HttpServer) classServer.invoke(intp);
       classServerUri = httpServer.uri();
     } catch (NoSuchMethodException | SecurityException | IllegalAccessException
         | IllegalArgumentException | InvocationTargetException e) {
@@ -276,8 +276,8 @@ public class SparkInterpreter extends Interpreter {
 
     if (classServerUri == null) {
       try { // for spark 1.3x
-        Method classServer = interpreter.intp().getClass().getMethod("classServerUri");
-        classServerUri = (String) classServer.invoke(interpreter.intp());
+        Method classServer = intp.getClass().getMethod("classServerUri");
+        classServerUri = (String) classServer.invoke(intp);
       } catch (NoSuchMethodException | SecurityException | IllegalAccessException
           | IllegalArgumentException | InvocationTargetException e) {
         // continue instead of: throw new InterpreterException(e);
@@ -556,7 +556,7 @@ public class SparkInterpreter extends Interpreter {
 
       interpreter.createInterpreter();
 
-      intp = interpreter.intp();
+      intp = invokeMethod(interpreter, "intp");
 
       if (isScala2_10()) {
         invokeMethod(intp, "setContextClassLoader");
