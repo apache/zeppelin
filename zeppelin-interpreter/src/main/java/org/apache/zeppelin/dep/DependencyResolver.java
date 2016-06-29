@@ -77,7 +77,7 @@ public class DependencyResolver extends AbstractDependencyResolver {
       return loadFromMvn(artifact, excludes);
     } else {
       LinkedList<File> libs = new LinkedList<File>();
-      libs.add(new File(getPath(artifact)));
+      libs.add(new File(artifact));
       return libs;
     }
   }
@@ -97,7 +97,7 @@ public class DependencyResolver extends AbstractDependencyResolver {
         File destFile = new File(destPath, srcFile.getName());
         if (!destFile.exists() || !FileUtils.contentEquals(srcFile, destFile)) {
           FileUtils.copyFile(srcFile, destFile);
-          logger.info("copy {} to {}", srcFile.getAbsolutePath(), getPath(destPath));
+          logger.info("copy {} to {}", srcFile.getAbsolutePath(), destPath);
         }
       }
     }
