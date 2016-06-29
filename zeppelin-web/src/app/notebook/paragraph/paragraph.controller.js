@@ -365,10 +365,6 @@ angular.module('zeppelinWebApp')
       var newType = $scope.getResultType(data.paragraph);
       var oldGraphMode = $scope.getGraphMode();
       var newGraphMode = $scope.getGraphMode(data.paragraph);
-      var resultRefreshed = (data.paragraph.dateFinished !== $scope.paragraph.dateFinished) ||
-        isEmpty(data.paragraph.result) !== isEmpty($scope.paragraph.result) ||
-        data.paragraph.status === 'ERROR';
-
       var statusChanged = (data.paragraph.status !== $scope.paragraph.status);
 
       //console.log("updateParagraph oldData %o, newData %o. type %o -> %o, mode %o -> %o", $scope.paragraph, data, oldType, newType, oldGraphMode, newGraphMode);
@@ -414,7 +410,7 @@ angular.module('zeppelinWebApp')
 
       if (newType === 'TABLE') {
         $scope.loadTableData($scope.paragraph.result);
-        if (oldType !== 'TABLE' || resultRefreshed) {
+        if (oldType !== 'TABLE') {
           clearUnknownColsFromGraphOption();
           selectDefaultColsForGraphOption();
         }
@@ -424,15 +420,15 @@ angular.module('zeppelinWebApp')
         } else {
           $scope.setGraphMode(newGraphMode, false, true);
         }
-      } else if (newType === 'HTML' && resultRefreshed) {
+      } else if (newType === 'HTML') {
         $scope.renderHtml();
-      } else if (newType === 'ANGULAR' && resultRefreshed) {
+      } else if (newType === 'ANGULAR') {
         $scope.renderAngular();
-      } else if (newType === 'TEXT' && resultRefreshed) {
+      } else if (newType === 'TEXT') {
         $scope.renderText();
       }
 
-      if (statusChanged || resultRefreshed) {
+      if (statusChanged) {
         // when last paragraph runs, zeppelin automatically appends new paragraph.
         // this broadcast will focus to the newly inserted paragraph
         var paragraphs = angular.element('div[id$="_paragraphColumn_main"]');
