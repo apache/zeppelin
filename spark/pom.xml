@@ -437,6 +437,19 @@
     <!-- to deactivate 'exclude-sparkr' automatically when 'spark' is activated -->
     <profile>
       <id>sparkr</id>
+      <build>
+        <resources>
+          <resource>
+            <directory>src/main/resources</directory>
+            <excludes>
+              <exclude>interpreter-setting.json</exclude>
+            </excludes>
+          </resource>
+          <resource>
+            <directory>src/main/sparkr-resources</directory>
+          </resource>
+        </resources>
+      </build>
     </profile>
 
     <profile>
