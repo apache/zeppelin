@@ -29,9 +29,9 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class ShellInterpreterTest {
-  
+
   private ShellInterpreter shell;
-  
+
   @Before
   public void setUp() throws Exception {
     Properties p = new Properties();
