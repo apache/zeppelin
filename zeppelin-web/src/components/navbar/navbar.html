@@ -10,18 +10,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<script type="text/ng-template" id="notebook_list_renderer.html">
-  <a ng-if="note.id" href="#/notebook/{{note.id}}">{{noteName(note)}} </a>
-  <li ng-if="!note.id"
-      class="dropdown-submenu">
-    <a tabindex="-1" href="javascript: void(0)">{{noteName(note)}}</a>
-    <ul class="dropdown-menu">
-      <li ng-repeat="note in note.children track by $index" ng-class="{'active' : navbar.isActive(note.id)}" ng-include="'notebook_list_renderer.html'">
-      </li>
-    </ul>
-  </li>
-</script>
-
 <div class="navbar navbar-inverse navbar-fixed-top" style="display: none;" role="navigation" ng-class="{'displayNavBar': !asIframe}">
   <div class="container">
     <div class="navbar-header">
@@ -39,13 +27,14 @@ limitations under the License.
       <ul class="nav navbar-nav" ng-if="ticket">
         <li class="dropdown" dropdown>
           <a href="#" class="dropdown-toggle" dropdown-toggle>Notebook <span class="caret"></span></a>
-          <ul class="dropdown-menu" role="menu">
+          <ul class="dropdown-menu navbar-dropdown-maxHeight" role="menu">
             <li><a href="" data-toggle="modal" data-target="#noteNameModal"><i class="fa fa-plus"></i> Create new note</a></li>
             <li class="divider"></li>
             <div id="notebook-list" class="scrollbar-container">
               <li class="filter-names" ng-include="'components/filterNoteNames/filter-note-names.html'"></li>
-              <li ng-repeat="note in navbar.notes.root.children |notebookFilter:query track by $index"
-                  ng-class="{'active' : navbar.isActive(note.id)}" ng-include="'notebook_list_renderer.html'"></li>
+              <li ng-repeat="note in navbar.notes.root.children | filter:query | orderBy:navbar.arrayOrderingSrv.notebookListOrdering track by $index"
+                  ng-class="{'active' : navbar.isActive(note.id)}" ng-include="'components/navbar/navbar-notebookList-elem.html'">
+              </li>
             </div>
           </ul>
         </li>
@@ -62,7 +51,7 @@ limitations under the License.
             <div class="input-group">
               <input
                 type="text"
-                style="min-width:300px;"
+                style="min-width:200px;"
                 ng-model="searchForm.searchTerm"
                 id="searchTermId"
                 ng-disabled="!navbar.connected"
@@ -94,7 +83,7 @@ limitations under the License.
             </button>
             <span ng-if="!ticket" style="margin: 5px;"></span>
             <ul class="dropdown-menu">
-              <li><a href="" data-toggle="modal" data-target="#aboutModal">About Zeppelin</a>
+              <li><a href="" data-toggle="modal" data-target="#aboutModal">About Zeppelin</a></li>
               <li role="separator" style="margin: 5px 0;" class="divider"></li>
               <li><a href="#/interpreter">Interpreter</a></li>
               <li><a href="#/credential">Credential</a></li>

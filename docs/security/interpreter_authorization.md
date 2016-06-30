@@ -19,6 +19,8 @@ limitations under the License.
 -->
 # Interpreter and Data Source Authorization
 
+<div id="toc"></div>
+
 ## Interpreter Authorization
 
 Interpreter authorization involves permissions like creating an interpreter and execution queries using it.

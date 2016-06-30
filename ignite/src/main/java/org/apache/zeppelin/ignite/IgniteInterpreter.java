@@ -80,6 +80,7 @@ public class IgniteInterpreter extends Interpreter {
             "ignite",
             "ignite",
             IgniteInterpreter.class.getName(),
+            true,
             new InterpreterPropertyBuilder()
                     .add(IGNITE_ADDRESSES, "127.0.0.1:47500..47509",
                             "Coma separated list of addresses "

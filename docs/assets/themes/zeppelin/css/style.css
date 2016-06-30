@@ -545,6 +545,20 @@ a.anchor {
 
 a.anchorjs-link:hover { text-decoration: none; }
 
+/* Table of Contents(TOC) */
+#toc {
+  padding-top: 12px;
+  padding-bottom: 12px;
+}
+
+#toc ul {
+  margin-left: -14px;
+}
+
+#toc ul ul {
+  margin-left: -18px;
+}
+
 /* Custom, iPhone Retina */
 @media only screen and (max-width: 480px) {
   .jumbotron h1 {

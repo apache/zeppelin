@@ -1279,43 +1279,56 @@ angular.module('zeppelinWebApp')
     websocketMsgSrv.commitParagraph($scope.paragraph.id, title, text, config, params);
   };
 
-  var setTable = function(type, data, refresh) {
+  var setTable = function(data, refresh) {
     var renderTable = function() {
       var height = $scope.paragraph.config.graph.height;
-      angular.element('#p' + $scope.paragraph.id + '_table').css('height', height);
-      var resultRows = $scope.paragraph.result.rows;
-      var columnNames = _.pluck($scope.paragraph.result.columnNames, 'name');
-      var container = document.getElementById('p' + $scope.paragraph.id + '_table');
+      var container = angular.element('#p' + $scope.paragraph.id + '_table').css('height', height).get(0);
+      var resultRows = data.rows;
+      var columnNames = _.pluck(data.columnNames, 'name');
 
-      var handsontable = new Handsontable(container, {
-        data: resultRows,
+      // on chart type change, destroy table to force reinitialization.
+      if ($scope.hot && !refresh) {
+        $scope.hot.destroy();
+        $scope.hot = null;
+      }
+
+      // create table if not exists.
+      if (!$scope.hot) {
+        $scope.hot = new Handsontable(container, {
+          rowHeaders: false,
+          stretchH: 'all',
+          sortIndicator: true,
+          columnSorting: true,
+          contextMenu: false,
+          manualColumnResize: true,
+          manualRowResize: true,
+          readOnly: true,
+          readOnlyCellClassName: '',  // don't apply any special class so we can retain current styling
+          fillHandle: false,
+          fragmentSelection: true,
+          disableVisualSelection: true,
+          cells: function (row, col, prop) {
+            var cellProperties = {};
+            cellProperties.renderer = function(instance, td, row, col, prop, value, cellProperties) {
+              if (!isNaN(value)) {
+                cellProperties.format = '0,0.[00000]';
+                td.style.textAlign = 'left';
+                Handsontable.renderers.NumericRenderer.apply(this, arguments);
+              } else if (value.length > '%html'.length && '%html ' === value.substring(0, '%html '.length)) {
+                td.innerHTML = value.substring('%html'.length);
+              } else {
+                Handsontable.renderers.TextRenderer.apply(this, arguments);
+              }
+            };
+            return cellProperties;
+          }
+        });
+      }
+
+      // load data into table.
+      $scope.hot.updateSettings({
         colHeaders: columnNames,
-        rowHeaders: false,
-        stretchH: 'all',
-        sortIndicator: true,
-        columnSorting: true,
-        contextMenu: false,
-        manualColumnResize: true,
-        manualRowResize: true,
-        editor: false,
-        fillHandle: false,
-        fragmentSelection: true,
-        disableVisualSelection: true,
-        cells: function (row, col, prop) {
-          var cellProperties = {};
-          cellProperties.renderer = function(instance, td, row, col, prop, value, cellProperties) {
-            if (!isNaN(value)) {
-              cellProperties.format = '0,0.[00000]';
-              td.style.textAlign = 'left';
-              Handsontable.renderers.NumericRenderer.apply(this, arguments);
-            } else if (value.length > '%html'.length && '%html ' === value.substring(0, '%html '.length)) {
-              td.innerHTML = value.substring('%html'.length);
-            } else {
-              Handsontable.renderers.TextRenderer.apply(this, arguments);
-            }
-          };
-          return cellProperties;
-        }
+        data: resultRows
       });
     };
 

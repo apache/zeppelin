@@ -3,6 +3,7 @@
     "group": "spark",
     "name": "spark",
     "className": "org.apache.zeppelin.spark.SparkInterpreter",
+    "defaultInterpreter": true,
     "properties": {
       "spark.executor.memory": {
         "envName": null,
@@ -115,37 +116,6 @@
         "propertyName": null,
         "defaultValue": "python",
         "description": "Python command to run pyspark with"
-      }
-    }
-  },
-  {
-    "group": "spark",
-    "name": "r",
-    "className": "org.apache.zeppelin.spark.SparkRInterpreter",
-    "properties": {
-      "zeppelin.R.knitr": {
-        "envName": "ZEPPELIN_R_KNITR",
-        "propertyName": "zeppelin.R.knitr",
-        "defaultValue": "true",
-        "description": "whether use knitr or not"
-      },
-      "zeppelin.R.cmd": {
-        "envName": "ZEPPELIN_R_CMD",
-        "propertyName": "zeppelin.R.cmd",
-        "defaultValue": "R",
-        "description": "R repl path"
-      },
-      "zeppelin.R.image.width": {
-        "envName": "ZEPPELIN_R_IMAGE_WIDTH",
-        "propertyName": "zeppelin.R.image.width",
-        "defaultValue": "100%",
-        "description": ""
-      },
-      "zeppelin.R.render.options": {
-        "envName": "ZEPPELIN_R_RENDER_OPTIONS",
-        "propertyName": "zeppelin.R.render.options",
-        "defaultValue": "out.format = 'html', comment = NA, echo = FALSE, results = 'asis', message = F, warning = F",
-        "description": ""
       }
     }
   }

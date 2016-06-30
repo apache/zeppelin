@@ -12,6 +12,6 @@
  * limitations under the License.
  */
 
-@import url(//fonts.googleapis.com/css?family=Patua+One);
-@import url(//fonts.googleapis.com/css?family=Roboto);
-@import url(//fonts.googleapis.com/css?family=Source+Code+Pro);
+ .expandable {
+  display: none;
+}
