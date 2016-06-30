@@ -115,7 +115,7 @@ public class ShellInterpreter extends Interpreter {
         DefaultExecutor executor = executors.get(paragraphId);
         executor.getWatchdog().destroyProcess();
       }
-    }    
+    }
   }
   
   @Override
