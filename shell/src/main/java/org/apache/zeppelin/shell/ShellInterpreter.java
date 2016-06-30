@@ -47,21 +47,10 @@ import org.slf4j.LoggerFactory;
  */
 public class ShellInterpreter extends Interpreter {
   private static final Logger LOGGER = LoggerFactory.getLogger(ShellInterpreter.class);
-  private static final String SHELL_COMMAND_TIMEOUT = "shell.command.timeout.millisecs";
-  private static final String DEFAULT_COMMAND_TIMEOUT = "600000";
+  private static final String TIMEOUT_PROPERTY = "shell.command.timeout.millisecs";
   private final boolean isWindows = System.getProperty("os.name").startsWith("Windows");
   private final String shell = isWindows ? "cmd /c" : "bash -c";
   private Map<String, DefaultExecutor> executors;
-
-  static {
-    Interpreter.register(
-      "sh", "sh",
-      ShellInterpreter.class.getName(),
-      new InterpreterPropertyBuilder()
-        .add(SHELL_COMMAND_TIMEOUT, DEFAULT_COMMAND_TIMEOUT,
-          "Shell command time out in millisecs. Default = " + DEFAULT_COMMAND_TIMEOUT).build()
-    );
-  }
 
   public ShellInterpreter(Properties property) {
     super(property);
@@ -69,7 +58,7 @@ public class ShellInterpreter extends Interpreter {
 
   @Override
   public void open() {
-    LOGGER.info("Command timeout is set to: {}", DEFAULT_COMMAND_TIMEOUT);
+    LOGGER.info("Command timeout property: {}", TIMEOUT_PROPERTY);
     executors = new HashMap<String, DefaultExecutor>();
   }
 
@@ -95,7 +84,7 @@ public class ShellInterpreter extends Interpreter {
     try {
       DefaultExecutor executor = new DefaultExecutor();
       executor.setStreamHandler(new PumpStreamHandler(outStream, errStream));
-      executor.setWatchdog(new ExecuteWatchdog(Long.valueOf(getProperty(SHELL_COMMAND_TIMEOUT))));
+      executor.setWatchdog(new ExecuteWatchdog(Long.valueOf(getProperty(TIMEOUT_PROPERTY))));
       executors.put(contextInterpreter.getParagraphId(), executor);
       int exitVal = executor.execute(cmdLine);
       LOGGER.info("Paragraph " + contextInterpreter.getParagraphId() 

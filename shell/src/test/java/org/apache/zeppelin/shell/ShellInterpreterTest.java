@@ -34,7 +34,9 @@ public class ShellInterpreterTest {
   
   @Before
   public void setUp() throws Exception {
-    shell = new ShellInterpreter(new Properties());
+    Properties p = new Properties();
+    p.setProperty("shell.command.timeout.millisecs", "60000");
+    shell = new ShellInterpreter(p);
   }
 
   @After
@@ -51,7 +53,6 @@ public class ShellInterpreterTest {
     } else {
       result = shell.interpret("ls", context);
     }
-    // System.out.println(result.message());
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
   }
   
