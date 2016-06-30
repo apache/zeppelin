@@ -101,7 +101,7 @@ public class NoteTest {
   @Test
   public void putDefaultReplNameIfInterpreterSettingAbsent() {
     when(interpreterFactory.getDefaultInterpreterSetting(anyString()))
-            .thenReturn(Optional.<InterpreterSetting>absent());
+            .thenReturn(null);
 
     Note note = new Note(repo, interpreterFactory, jobListenerFactory, index, credentials);
     note.putDefaultReplName();
@@ -115,7 +115,7 @@ public class NoteTest {
     InterpreterSetting interpreterSetting = Mockito.mock(InterpreterSetting.class);
     when(interpreterSetting.getGroup()).thenReturn("spark");
     when(interpreterFactory.getDefaultInterpreterSetting(anyString()))
-            .thenReturn(Optional.of(interpreterSetting));
+            .thenReturn(interpreterSetting);
 
     Note note = new Note(repo, interpreterFactory, jobListenerFactory, index, credentials);
     note.putDefaultReplName();
@@ -129,7 +129,7 @@ public class NoteTest {
     InterpreterSetting interpreterSetting = Mockito.mock(InterpreterSetting.class);
     when(interpreterSetting.getGroup()).thenReturn("spark");
     when(interpreterFactory.getDefaultInterpreterSetting(anyString()))
-            .thenReturn(Optional.of(interpreterSetting));
+            .thenReturn(interpreterSetting);
 
     Note note = new Note(repo, interpreterFactory, jobListenerFactory, index, credentials);
     note.putDefaultReplName(); //set lastReplName
@@ -144,7 +144,7 @@ public class NoteTest {
     InterpreterSetting interpreterSetting = Mockito.mock(InterpreterSetting.class);
     when(interpreterSetting.getGroup()).thenReturn("spark");
     when(interpreterFactory.getDefaultInterpreterSetting(anyString()))
-            .thenReturn(Optional.of(interpreterSetting));
+            .thenReturn(interpreterSetting);
 
     Note note = new Note(repo, interpreterFactory, jobListenerFactory, index, credentials);
     note.putDefaultReplName(); //set lastReplName
