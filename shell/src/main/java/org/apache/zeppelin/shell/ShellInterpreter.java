@@ -117,7 +117,7 @@ public class ShellInterpreter extends Interpreter {
       }
     }
   }
-  
+
   @Override
   public FormType getFormType() {
     return FormType.SIMPLE;
