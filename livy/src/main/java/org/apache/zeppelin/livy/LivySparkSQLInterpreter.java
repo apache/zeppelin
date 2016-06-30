@@ -80,7 +80,7 @@ public class LivySparkSQLInterpreter extends Interpreter {
               line.replaceAll("\"", "\\\\\"")
                   .replaceAll("\\n", " ")
               + "\").show(" +
-              property.get("livy.spark.sql.maxResult") + ")",
+              property.get("zeppelin.livy.spark.sql.maxResult") + ")",
           interpreterContext, userSessionMap);
 
       if (res.code() == InterpreterResult.Code.SUCCESS) {
@@ -123,6 +123,10 @@ public class LivySparkSQLInterpreter extends Interpreter {
     }
   }
 
+  public boolean concurrentSQL() {
+    return Boolean.parseBoolean(getProperty("zeppelin.livy.concurrentSQL"));
+  }
+
   @Override
   public void cancel(InterpreterContext context) {
     livyHelper.cancelHTTP(context.getParagraphId());
@@ -140,8 +144,19 @@ public class LivySparkSQLInterpreter extends Interpreter {
 
   @Override
   public Scheduler getScheduler() {
-    return SchedulerFactory.singleton().createOrGetFIFOScheduler(
-        LivySparkInterpreter.class.getName() + this.hashCode());
+    if (concurrentSQL()) {
+      int maxConcurrency = 10;
+      return SchedulerFactory.singleton().createOrGetParallelScheduler(
+          LivySparkInterpreter.class.getName() + this.hashCode(), maxConcurrency);
+    } else {
+      Interpreter intp =
+          getInterpreterInTheSameSessionByClassName(LivySparkInterpreter.class.getName());
+      if (intp != null) {
+        return intp.getScheduler();
+      } else {
+        return null;
+      }
+    }
   }
 
   @Override
