@@ -90,7 +90,7 @@ public class InterpreterFactoryTest {
   public void testFactoryDefaultList() throws IOException, RepositoryException {
     // get default settings
     List<String> all = factory.getDefaultInterpreterSettingList();
-    assertEquals(2, all.size());
+    assertTrue(factory.getRegisteredInterpreterList().size() >= all.size());
   }
 
   @Test
@@ -113,15 +113,15 @@ public class InterpreterFactoryTest {
   @Test
   public void testSaveLoad() throws IOException, RepositoryException {
     // interpreter settings
-    assertEquals(2, factory.get().size());
+    int numInterpreters = factory.get().size();
 
     // check if file saved
     assertTrue(new File(conf.getInterpreterSettingPath()).exists());
 
     factory.add("newsetting", "mock1", new LinkedList<Dependency>(), new InterpreterOption(false), new Properties());
-    assertEquals(3, factory.get().size());
+    assertEquals(numInterpreters + 1, factory.get().size());
 
     InterpreterFactory factory2 = new InterpreterFactory(conf, null, null, null, depResolver);
-    assertEquals(3, factory2.get().size());
+    assertEquals(numInterpreters + 1, factory2.get().size());
   }
 }
