@@ -59,7 +59,7 @@ limitations under the License.
               <i style="font-size: 15px;" class="icon-notebook"></i> Create new note</a></h5>
             <ul id="notebook-names">
               <li class="filter-names" ng-include="'components/filterNoteNames/filter-note-names.html'"></li>
-              <li ng-repeat="note in home.notes.list | filter:query | orderBy:home.arrayOrderingSrv.notebookListOrdering track by $index">
+              <li ng-repeat="note in home.notes.list | filter:query.q | orderBy:home.arrayOrderingSrv.notebookListOrdering track by $index">
                 <i style="font-size: 10px;" class="icon-doc"></i>
                 <a style="text-decoration: none;" href="#/notebook/{{note.id}}">{{noteName(note)}}</a>
               </li>
@@ -67,7 +67,7 @@ limitations under the License.
                 <li ng-repeat="node in home.notes.root.children | orderBy:home.arrayOrderingSrv.notebookListOrdering track by $index" ng-include="'notebook_folder_renderer.html'" />
               </div>
               <div ng-if="query && query.name !== ''">
-                <li ng-repeat="note in home.notes.flatList | filter:query | orderBy:home.arrayOrderingSrv.notebookListOrdering track by $index">
+                <li ng-repeat="note in home.notes.flatList | filter:query.q | orderBy:home.arrayOrderingSrv.notebookListOrdering track by $index">
                   <i style="font-size: 10px;" class="icon-doc"></i>
                   <a style="text-decoration: none;" href="#/notebook/{{note.id}}">{{noteName(note)}}</a>
                 </li>
