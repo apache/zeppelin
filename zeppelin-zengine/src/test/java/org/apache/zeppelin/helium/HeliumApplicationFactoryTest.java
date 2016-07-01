@@ -140,7 +140,7 @@ public class HeliumApplicationFactoryTest implements JobListenerFactory {
     Paragraph p1 = note1.addParagraph();
 
     // make sure interpreter process running
-    p1.setText("job");
+    p1.setText("%mock1 job");
     note1.run(p1.getId());
     while(p1.isTerminated()==false || p1.getResult()==null) Thread.yield();
 
@@ -184,7 +184,7 @@ public class HeliumApplicationFactoryTest implements JobListenerFactory {
     Paragraph p1 = note1.addParagraph();
 
     // make sure interpreter process running
-    p1.setText("job");
+    p1.setText("%mock1 job");
     note1.run(p1.getId());
     while(p1.isTerminated()==false || p1.getResult()==null) Thread.yield();
 
@@ -222,7 +222,7 @@ public class HeliumApplicationFactoryTest implements JobListenerFactory {
     Paragraph p1 = note1.addParagraph();
 
     // make sure interpreter process running
-    p1.setText("job");
+    p1.setText("%mock1 job");
     note1.run(p1.getId());
     while(p1.isTerminated()==false || p1.getResult()==null) Thread.yield();
 
@@ -256,32 +256,35 @@ public class HeliumApplicationFactoryTest implements JobListenerFactory {
 
     Note note1 = notebook.createNote(null);
     notebook.bindInterpretersToNote(note1.id(), factory.getDefaultInterpreterSettingList());
+    String mock1IntpSettingId = null;
+    for (InterpreterSetting setting : notebook.getBindedInterpreterSettings(note1.id())) {
+      if (setting.getName().equals("mock1")) {
+        mock1IntpSettingId = setting.id();
+        break;
+      }
+    }
 
     Paragraph p1 = note1.addParagraph();
 
     // make sure interpreter process running
-    p1.setText("job");
+    p1.setText("%mock1 job");
     note1.run(p1.getId());
     while(p1.isTerminated()==false || p1.getResult()==null) Thread.yield();
-
     assertEquals(0, p1.getAllApplicationStates().size());
     String appId = heliumAppFactory.loadAndRun(pkg1, p1);
     ApplicationState app = p1.getApplicationState(appId);
     while (app.getStatus() != ApplicationState.Status.LOADED) {
       Thread.yield();
     }
-
     // wait until application is executed
     while (!"Hello world 1".equals(app.getOutput())) {
       Thread.yield();
     }
-
     // when restart interpreter
-    factory.restart(factory.getDefaultInterpreterSettingList().get(0));
+    factory.restart(mock1IntpSettingId);
     while (app.getStatus() == ApplicationState.Status.LOADED) {
       Thread.yield();
     }
-
     // then
     assertEquals(ApplicationState.Status.UNLOADED, app.getStatus());
 
