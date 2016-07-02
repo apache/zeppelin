@@ -77,6 +77,7 @@ public class AuthenticationIT extends AbstractZeppelinIT {
     }
 
     try {
+      System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_HOME.getVarName(), "../");
       ZeppelinConfiguration conf = ZeppelinConfiguration.create();
       File file = new File(conf.getShiroPath());
       originalShiro = StringUtils.join(FileUtils.readLines(file, "UTF-8"), "\n");
