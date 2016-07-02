@@ -532,10 +532,6 @@
             <encoding>UTF-8</encoding>
             <inputEncoding>UTF-8</inputEncoding>
             <outputEncoding>UTF-8</outputEncoding>
-            <systemPropertyVariables>
-              <ZEPPELIN_HOME>../</ZEPPELIN_HOME>
-              <ZEPPELIN_WAR>../zeppelin-web/dist</ZEPPELIN_WAR>
-            </systemPropertyVariables>
           </configuration>
           <!-- <excludes> <exclude>**/itest/**</exclude> </excludes> <executions>
             <execution> <id>surefire-itest</id> <phase>integration-test</phase> <goals>
