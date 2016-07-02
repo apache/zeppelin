@@ -206,11 +206,31 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     return getRepl(getRequiredReplName());
   }
 
+  public List<InterpreterCompletion> getInterpreterCompletion() {
+    List<InterpreterCompletion> completion = new LinkedList();
+    for (InterpreterSetting intp: getNoteReplLoader().getInterpreterSettings()){
+      completion.add(new InterpreterCompletion(intp.getGroup(), intp.getGroup()));
+    }
+    return completion;
+  }
+
   public List<InterpreterCompletion> completion(String buffer, int cursor) {
     String replName = getRequiredReplName(buffer);
     if (replName != null && cursor > replName.length()) {
       cursor -= replName.length() + 1;
     }
+
+    String lines[] = buffer.split(System.getProperty("line.separator"));
+    if (lines.length > 0) {
+      logger().info("replName={}, cursor={}, line[0]={},{}",
+        replName, cursor, lines[0].trim().length(), lines[0]);
+    }
+    if (lines.length > 0
+      && ((lines[0].startsWith("%") && cursor <= 0)
+      || (lines[0].startsWith("%") && cursor < lines[0].trim().length()))) {
+      return getInterpreterCompletion();
+    }
+
     String body = getScriptBody(buffer);
     Interpreter repl = getRepl(replName);
     if (repl == null) {
