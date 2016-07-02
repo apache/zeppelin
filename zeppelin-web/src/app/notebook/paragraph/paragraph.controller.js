@@ -423,9 +423,9 @@ angular.module('zeppelinWebApp')
         } else {
           $scope.setGraphMode(newGraphMode, false, true);
         }
-      } else if (newType === 'HTML' || resultRefreshed) {
+      } else if (newType === 'HTML' && resultRefreshed) {
         $scope.renderHtml();
-      } else if (newType === 'ANGULAR' || resultRefreshed) {
+      } else if (newType === 'ANGULAR' && resultRefreshed) {
         $scope.renderAngular();
       } else if (newType === 'TEXT') {
         $scope.renderText();
