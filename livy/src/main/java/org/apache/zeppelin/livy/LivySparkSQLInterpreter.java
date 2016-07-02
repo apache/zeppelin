@@ -35,6 +35,20 @@ import java.util.Properties;
 public class LivySparkSQLInterpreter extends Interpreter {
 
   Logger LOGGER = LoggerFactory.getLogger(LivySparkSQLInterpreter.class);
+  static String DEFAULT_MAX_RESULT = "1000";
+
+  static {
+    Interpreter.register(
+        "sql",
+        "livy",
+        LivySparkSQLInterpreter.class.getName(),
+        new InterpreterPropertyBuilder()
+            .add("zeppelin.livy.spark.maxResult",
+                DEFAULT_MAX_RESULT,
+                "Max number of SparkSQL result to display.")
+            .build()
+    );
+  }
 
   protected Map<String, Integer> userSessionMap;
   private LivyHelper livyHelper;
@@ -80,7 +94,7 @@ public class LivySparkSQLInterpreter extends Interpreter {
               line.replaceAll("\"", "\\\\\"")
                   .replaceAll("\\n", " ")
               + "\").show(" +
-              property.get("zeppelin.livy.spark.sql.maxResult") + ")",
+              property.get("zeppelin.livy.spark.maxResult") + ")",
           interpreterContext, userSessionMap);
 
       if (res.code() == InterpreterResult.Code.SUCCESS) {
@@ -123,10 +137,6 @@ public class LivySparkSQLInterpreter extends Interpreter {
     }
   }
 
-  public boolean concurrentSQL() {
-    return Boolean.parseBoolean(getProperty("zeppelin.livy.concurrentSQL"));
-  }
-
   @Override
   public void cancel(InterpreterContext context) {
     livyHelper.cancelHTTP(context.getParagraphId());
@@ -144,19 +154,8 @@ public class LivySparkSQLInterpreter extends Interpreter {
 
   @Override
   public Scheduler getScheduler() {
-    if (concurrentSQL()) {
-      int maxConcurrency = 10;
-      return SchedulerFactory.singleton().createOrGetParallelScheduler(
-          LivySparkInterpreter.class.getName() + this.hashCode(), maxConcurrency);
-    } else {
-      Interpreter intp =
-          getInterpreterInTheSameSessionByClassName(LivySparkInterpreter.class.getName());
-      if (intp != null) {
-        return intp.getScheduler();
-      } else {
-        return null;
-      }
-    }
+    return SchedulerFactory.singleton().createOrGetFIFOScheduler(
+        LivySparkInterpreter.class.getName() + this.hashCode());
   }
 
   @Override
