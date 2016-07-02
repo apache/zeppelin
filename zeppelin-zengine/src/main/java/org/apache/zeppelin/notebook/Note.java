@@ -266,7 +266,8 @@ public class Note implements Serializable, JobListener {
    */
   private void addLastReplNameIfEmptyText(Paragraph p) {
     String replName = lastReplName.get();
-    if (StringUtils.isEmpty(p.getText()) && StringUtils.isNotEmpty(replName)) {
+    if (StringUtils.isEmpty(p.getText()) && StringUtils.isNotEmpty(replName)
+            && replLoader.isBinding(replName)) {
       p.setText(getInterpreterName(replName) + " ");
     }
   }

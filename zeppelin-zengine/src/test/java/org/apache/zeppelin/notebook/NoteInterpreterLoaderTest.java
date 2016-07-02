@@ -169,6 +169,23 @@ public class NoteInterpreterLoaderTest {
     assertNull(loaderB.getInterpreterSettings().get(0).getInterpreterGroup("noteB").get("noteB"));
   }
 
+  @Test
+  public void testIsBinding() throws Exception {
+//    noteId: null
+    NoteInterpreterLoader loaderA = new NoteInterpreterLoader(factory);
+    assertFalse(loaderA.isBinding("hello"));
+
+//    noteId: not null
+//    interpreter group: group1, group2
+    loaderA.setNoteId("noteHello");
+    loaderA.setInterpreters(factory.getDefaultInterpreterSettingList());
+    assertFalse(loaderA.isBinding(""));
+    assertFalse(loaderA.isBinding("  "));
+
+    assertTrue(loaderA.isBinding("group1"));
+    assertTrue(loaderA.isBinding("group2"));
+  }
+
 
   private void delete(File file){
     if(file.isFile()) file.delete();
