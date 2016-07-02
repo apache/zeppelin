@@ -135,7 +135,7 @@ public class HeliumApplicationFactoryTest implements JobListenerFactory {
         new String[][]{});
 
     Note note1 = notebook.createNote(null);
-    note1.getNoteReplLoader().setInterpreters(factory.getDefaultInterpreterSettingList());
+    factory.setInterpreters(note1.getId(),factory.getDefaultInterpreterSettingList());
 
     Paragraph p1 = note1.addParagraph();
 
@@ -179,7 +179,7 @@ public class HeliumApplicationFactoryTest implements JobListenerFactory {
         new String[][]{});
 
     Note note1 = notebook.createNote(null);
-    note1.getNoteReplLoader().setInterpreters(factory.getDefaultInterpreterSettingList());
+    factory.setInterpreters(note1.id(), factory.getDefaultInterpreterSettingList());
 
     Paragraph p1 = note1.addParagraph();
 
