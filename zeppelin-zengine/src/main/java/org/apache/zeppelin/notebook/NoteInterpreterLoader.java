@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.interpreter.Constants;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.Interpreter.RegisteredInterpreter;
@@ -203,5 +204,18 @@ public class NoteInterpreterLoader {
 
   Optional<InterpreterSetting> getDefaultInterpreterSetting() {
     return getDefaultInterpreterSetting(getInterpreterSettings());
+  }
+
+  boolean isBinding(String replName) {
+    if (StringUtils.isBlank(replName) || StringUtils.isEmpty(noteId)) {
+      return false;
+    }
+    List<InterpreterSetting> interpreterSettings = getInterpreterSettings();
+    for (InterpreterSetting interpreterSetting : interpreterSettings) {
+      if (interpreterSetting.getGroup().equals(replName)) {
+        return true;
+      }
+    }
+    return false;
   }
 }
