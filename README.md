@@ -69,15 +69,10 @@ First of all, set your proxy configuration on Maven `settings.xml`.
 
 Then, run these commands from shell. 
 ```
-export http_proxy=http://localhost:3128
-export https_proxy=http://localhost:3128
-export HTTP_PROXY=http://localhost:3128
-export HTTPS_PROXY=http://localhost:3128
 npm config set proxy http://localhost:3128
 npm config set https-proxy http://localhost:3128
 npm config set registry "http://registry.npmjs.org/"
 npm config set strict-ssl false
-npm cache clean
 git config --global http.proxy http://localhost:3128
 git config --global https.proxy http://localhost:3128
 git config --global url."http://".insteadOf git://
@@ -94,9 +89,7 @@ git config --global --unset url."http://".insteadOf
 
 _Notes:_ 
  - If you are behind NTLM proxy you can use [Cntlm Authentication Proxy](http://cntlm.sourceforge.net/).
- - If you are on Windows replace `export` with `set` to set env variables
- - Replace `localhost:3128` with the standard pattern `http://user:pwd@host:port`
- - For zeppelin-web: currently there is no way to reach Bower main repo through NTLM proxy
+ - Replace `localhost:3128` with the standard pattern `http://user:pwd@host:port`.
  
 #### Install maven
 ```
