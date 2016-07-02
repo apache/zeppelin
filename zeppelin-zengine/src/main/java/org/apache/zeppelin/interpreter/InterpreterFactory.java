@@ -168,7 +168,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
                 cleanCl.put(interpreterDirString, ccl);
               }
             }
-          } catch (ClassNotFoundException e) {
+          } catch (Throwable t) {
             // nothing to do
           }
         }
