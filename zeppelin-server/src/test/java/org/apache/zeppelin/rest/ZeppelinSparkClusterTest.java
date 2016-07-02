@@ -106,33 +106,11 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
         );
         note.run(p.getId());
         waitForFinish(p);
-        ps();
         System.err.println("sparkRTest=" + p.getResult().message());
         assertEquals(Status.FINISHED, p.getStatus());
         assertEquals("[1] 3", p.getResult().message());
       }
       ZeppelinServer.notebook.removeNote(note.id(), null);
-    }
-
-    @Test
-    public void testPs() {
-        ps();
-    }
-
-    private void ps() {
-        CommandLine cmdLine = CommandLine.parse("ps aux");
-        DefaultExecutor executor = new DefaultExecutor();
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        executor.setStreamHandler(new PumpStreamHandler(out, out));
-
-        try {
-            executor.execute(cmdLine);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        System.err.println("ps>>>>>>>>>>>>>>>>>\n" + new String(out.toByteArray()) +
-            "\n<<<<<<<<<<<<<<<<<<");
     }
 
     @Test

@@ -60,7 +60,6 @@ public class InterpreterFactoryTest {
     depResolver = new DependencyResolver(tmpDir.getAbsolutePath() + "/local-repo");
     factory = new InterpreterFactory(conf, new InterpreterOption(false), null, null, null, depResolver);
     context = new InterpreterContext("note", "id", "title", "text", null, null, null, null, null, null, null);
-
   }
 
   @After
@@ -70,10 +69,17 @@ public class InterpreterFactoryTest {
 
   @Test
   public void testBasic() {
-    List<String> all = factory.getDefaultInterpreterSettingList();
-    InterpreterSetting setting = factory.get(all.get(0));
-    InterpreterGroup interpreterGroup = setting.getInterpreterGroup("sharedProcess");
-    factory.createInterpretersForNote(setting, "sharedProcess", "session");
+    List<InterpreterSetting> all = factory.get();
+    InterpreterSetting mock1Setting = null;
+    for (InterpreterSetting setting : all) {
+      if (setting.getName().equals("mock1")) {
+        mock1Setting = setting;
+        break;
+      }
+    }
+
+    InterpreterGroup interpreterGroup = mock1Setting.getInterpreterGroup("sharedProcess");
+    factory.createInterpretersForNote(mock1Setting, "sharedProcess", "session");
 
     // get interpreter
     assertNotNull("get Interpreter", interpreterGroup.get("session").get(0));
@@ -82,8 +88,8 @@ public class InterpreterFactoryTest {
     assertNull(factory.get("unknown"));
 
     // restart interpreter
-    factory.restart(all.get(0));
-    assertNull(setting.getInterpreterGroup("sharedProcess").get("session"));
+    factory.restart(mock1Setting.id());
+    assertNull(mock1Setting.getInterpreterGroup("sharedProcess").get("session"));
   }
 
   @Test
