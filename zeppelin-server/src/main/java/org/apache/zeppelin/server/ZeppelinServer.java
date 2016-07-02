@@ -50,7 +50,6 @@ import javax.servlet.DispatcherType;
 import javax.ws.rs.core.Application;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Paths;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
