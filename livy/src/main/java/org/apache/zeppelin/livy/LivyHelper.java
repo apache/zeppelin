@@ -96,7 +96,7 @@ public class LivyHelper {
               }.getType());
           if (jsonMap.get("state").equals("idle")) {
             break;
-          } else if (jsonMap.get("state").equals("error")) {
+          } else if (jsonMap.get("state").equals("error") || jsonMap.get("state").equals("dead")) {
             json = executeHTTP(property.getProperty("zeppelin.livy.url") + "/sessions/" +
                     sessionId + "/log",
                 "GET", null,
@@ -124,7 +124,7 @@ public class LivyHelper {
 
   protected void initializeSpark(final InterpreterContext context,
                                  final Map<String, Integer> userSessionMap) throws Exception {
-    interpret("val sqlContext= new org.apache.spark.sql.SQLContext(sc)\n" +
+    interpret("val sqlContext = new org.apache.spark.sql.SQLContext(sc)\n" +
         "import sqlContext.implicits._", context, userSessionMap);
   }
 

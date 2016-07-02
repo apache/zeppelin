@@ -105,20 +105,12 @@ abstract public class AbstractZeppelinIT {
   }
 
   protected void createNewNote() {
-    List<WebElement> notebookLinks = driver.findElements(By
-        .xpath("//div[contains(@class, \"col-md-4\")]/div/ul/li"));
-    List<String> notebookTitles = new LinkedList<String>();
-    for (WebElement el : notebookLinks) {
-      notebookTitles.add(el.getText());
-    }
-
-    WebElement createNoteLink = driver.findElement(By.xpath("//div[contains(@class, \"col-md-4\")]/div/h5/a[contains(.,'Create new note')]"));
-    createNoteLink.click();
+    clickAndWait(By.xpath("//div[contains(@class, \"col-md-4\")]/div/h5/a[contains(.,'Create new" +
+        " note')]"));
 
     WebDriverWait block = new WebDriverWait(driver, MAX_BROWSER_TIMEOUT_SEC);
-    WebElement modal = block.until(ExpectedConditions.visibilityOfElementLocated(By.id("noteNameModal")));
-    WebElement createNoteButton = modal.findElement(By.id("createNoteButton"));
-    createNoteButton.click();
+    block.until(ExpectedConditions.visibilityOfElementLocated(By.id("noteNameModal")));
+    clickAndWait(By.id("createNoteButton"));
 
     try {
       Thread.sleep(500); // wait for notebook list updated
@@ -136,7 +128,7 @@ abstract public class AbstractZeppelinIT {
   }
 
   protected void clickAndWait(final By locator) {
-    driver.findElement(locator).click();
+    pollingWait(locator, MAX_IMPLICIT_WAIT).click();
     ZeppelinITUtils.sleep(1000, true);
   }
 

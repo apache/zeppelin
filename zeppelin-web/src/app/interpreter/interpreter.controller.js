@@ -102,7 +102,7 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
   };
 
   $scope.updateInterpreterSetting = function(form, settingId) {
-    BootstrapDialog.confirm({
+    var thisConfirm = BootstrapDialog.confirm({
       closable: true,
       title: '',
       message: 'Do you want to update this interpreter and restart with new settings?',
@@ -133,16 +133,23 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
             dependencies: angular.copy(setting.dependencies)
           };
 
-          $http.put(baseUrlSrv.getRestApiBase() + '/interpreter/setting/' + settingId, request).
-            success(function (data, status, headers, config) {
+          thisConfirm.$modalFooter.find('button').addClass('disabled');
+          thisConfirm.$modalFooter.find('button:contains("OK")')
+            .html('<i class="fa fa-circle-o-notch fa-spin"></i> Saving Setting');
+
+          $http.put(baseUrlSrv.getRestApiBase() + '/interpreter/setting/' + settingId, request)
+            .success(function(data, status, headers, config) {
               $scope.interpreterSettings[index] = data.body;
               removeTMPSettings(index);
-            }).
-            error(function (data, status, headers, config) {
+              thisConfirm.close();
+            })
+            .error(function(data, status, headers, config) {
               console.log('Error %o %o', status, data.message);
               ngToast.danger({content: data.message, verticalPosition: 'bottom'});
               form.$show();
+              thisConfirm.close();
             });
+          return false;
         }
       }
     });
@@ -389,11 +396,11 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
 
   $scope.resetNewRepositorySetting = function() {
     $scope.newRepoSetting = {
-      id: undefined,
-      url: undefined,
+      id: '',
+      url: '',
       snapshot: false,
-      username: undefined,
-      password: undefined
+      username: '',
+      password: ''
     };
   };
 

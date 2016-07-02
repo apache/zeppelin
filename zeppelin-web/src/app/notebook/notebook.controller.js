@@ -713,13 +713,16 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl',
     $http.put(baseUrlSrv.getRestApiBase() + '/notebook/' + $scope.note.id + '/permissions',
       $scope.permissions, {withCredentials: true}).
       success(function (data, status, headers, config) {
-        console.log('Note permissions %o saved', $scope.permissions);
-        BootstrapDialog.alert({
-          closable: true,
-          title: 'Permissions Saved Successfully!!!',
-          message: 'Owners : ' + $scope.permissions.owners + '\n\n' + 'Readers : ' + $scope.permissions.readers + '\n\n' + 'Writers  : ' + $scope.permissions.writers
+        getPermissions(function() {
+          console.log('Note permissions %o saved', $scope.permissions);
+          BootstrapDialog.alert({
+            closable: true,
+            title: 'Permissions Saved Successfully!!!',
+            message: 'Owners : ' + $scope.permissions.owners + '\n\n' + 'Readers : ' +
+            $scope.permissions.readers + '\n\n' + 'Writers  : ' + $scope.permissions.writers
+          });
+          $scope.showPermissions = false;
         });
-        $scope.showPermissions = false;
       }).
       error(function (data, status, headers, config) {
         console.log('Error %o %o', status, data.message);
@@ -821,15 +824,16 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl',
 
 
   function convertToArray(role) {
-    if (role === 'owners') {
+    if (!$scope.permissions) {
+      return;
+    } else if (role === 'owners' && typeof $scope.permissions.owners === 'string') {
       searchText = $scope.permissions.owners.split(',');
-    }
-    else if (role === 'readers') {
+    } else if (role === 'readers' && typeof $scope.permissions.readers === 'string') {
       searchText = $scope.permissions.readers.split(',');
-    }
-    else if (role === 'writers') {
+    } else if (role === 'writers' && typeof $scope.permissions.writers === 'string') {
       searchText = $scope.permissions.writers.split(',');
     }
+
     for (var i = 0; i < searchText.length; i++) {
       searchText[i] = searchText[i].trim();
     }
@@ -882,6 +886,22 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl',
     updatePreviousList();
   };
 
+  $scope.$watch('permissions.owners', _.debounce(function(readers) {
+    $scope.$apply(function() {
+      $scope.search('owners');
+    });
+  }, 350));
+  $scope.$watch('permissions.readers', _.debounce(function(readers) {
+    $scope.$apply(function() {
+      $scope.search('readers');
+    });
+  }, 350));
+  $scope.$watch('permissions.writers', _.debounce(function(readers) {
+    $scope.$apply(function() {
+      $scope.search('writers');
+    });
+  }, 350));
+
   // function to find suggestion list on change
   $scope.search = function(role) {
     angular.element('.userlist').show();
@@ -891,12 +911,10 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl',
     $scope.selectIndex = -1;
     $scope.suggestions = [];
     selectedUser = searchText[selectedUserIndex];
-    if(selectedUser !== ''){
-    getSuggestions(selectedUser);
-    }
-    else
-    {
-     $scope.suggestions = [];
+    if (selectedUser !== '') {
+      getSuggestions(selectedUser);
+    } else {
+      $scope.suggestions = [];
     }
   };
 
@@ -956,8 +974,9 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl',
     $scope.suggestions = [];
   };
 
-angular.element(document).click(function(){
-     angular.element('.userlist').hide();
-});
+  angular.element(document).click(function(){
+    angular.element('.userlist').hide();
+    angular.element('.ace_autocomplete').hide();
+  });
 
 });

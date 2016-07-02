@@ -162,6 +162,7 @@ Join to our [Mailing list](https://zeppelin.apache.org/community.html) and repor
   * [Interpreter API](./rest-api/rest-interpreter.html)
   * [Notebook API](./rest-api/rest-notebook.html)
   * [Configuration API](./rest-api/rest-configuration.html)
+  * [Credential API](./rest-api/rest-credential.html)
 * Security: available security support in Apache Zeppelin
   * [Authentication for NGINX](./security/authentication.html)
   * [Shiro Authentication](./security/shiroauthentication.html)
