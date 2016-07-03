@@ -94,6 +94,12 @@
         "defaultValue": "org.apache.phoenix.jdbc.PhoenixDriver",
         "description": ""
       },
+      "phoenix.hbase.client.retries.number": {
+        "envName": null,
+        "propertyName": "phoenix.hbase.client.retries.number",
+        "defaultValue": "1",
+        "description": "Maximum retries.  Used as maximum for all retryable operations such as the getting of a cell's value, starting a row update, etc."
+      },
       "tajo.url": {
         "envName": null,
         "propertyName": "tajo.url",

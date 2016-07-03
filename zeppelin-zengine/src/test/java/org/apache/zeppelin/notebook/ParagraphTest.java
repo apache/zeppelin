@@ -19,6 +19,8 @@ package org.apache.zeppelin.notebook;
 
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -28,6 +30,7 @@ import org.apache.zeppelin.display.AngularObjectBuilder;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.Input;
 import org.apache.zeppelin.interpreter.Interpreter;
+import org.apache.zeppelin.interpreter.InterpreterFactory;
 import org.junit.Test;
 
 import java.util.HashMap;
@@ -72,17 +75,19 @@ public class ParagraphTest {
 
   @Test
   public void effectiveTextTest() {
-    NoteInterpreterLoader noteInterpreterLoader = mock(NoteInterpreterLoader.class);
+    InterpreterFactory interpreterFactory = mock(InterpreterFactory.class);
     Interpreter interpreter = mock(Interpreter.class);
+    Note note = mock(Note.class);
 
-    Paragraph p = new Paragraph(null, null, null, noteInterpreterLoader);
+    Paragraph p = new Paragraph("paragraph", note, null, interpreterFactory);
     p.setText("%h2 show databases");
     p.setEffectiveText("%jdbc(h2) show databases");
     assertEquals("Get right replName", "jdbc", p.getRequiredReplName());
     assertEquals("Get right scriptBody", "(h2) show databases", p.getScriptBody());
 
-    when(noteInterpreterLoader.get("jdbc")).thenReturn(interpreter);
+    when(interpreterFactory.getInterpreter(anyString(), eq("jdbc"))).thenReturn(interpreter);
     when(interpreter.getFormType()).thenReturn(Interpreter.FormType.NATIVE);
+    when(note.getId()).thenReturn("noteId");
 
     try {
       p.jobRun();

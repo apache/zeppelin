@@ -93,7 +93,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
 
     // get reference to interpreterGroup
     InterpreterGroup interpreterGroup = null;
-    List<InterpreterSetting> settings = note1.getNoteReplLoader().getInterpreterSettings();
+    List<InterpreterSetting> settings = notebook.getInterpreterFactory().getInterpreterSettings(note1.getId());
     for (InterpreterSetting setting : settings) {
       if (setting.getName().equals("md")) {
         interpreterGroup = setting.getInterpreterGroup("sharedProcess");
