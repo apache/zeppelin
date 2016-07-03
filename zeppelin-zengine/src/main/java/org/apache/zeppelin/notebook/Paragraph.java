@@ -214,16 +214,15 @@ public class Paragraph extends Job implements Serializable, Cloneable {
   }
 
   public List<InterpreterCompletion> completion(String buffer, int cursor) {
-    String replName = getRequiredReplName(buffer);
-    int bodyCursor = cursor;
-    if (replName != null && cursor > replName.length()) {
-      bodyCursor -= replName.length() + 1;
-    }
-
     String lines[] = buffer.split(System.getProperty("line.separator"));
     if (lines.length > 0
       && (lines[0].startsWith("%") && cursor <= lines[0].trim().length())) {
       return getInterpreterCompletion();
+    }
+
+    String replName = getRequiredReplName(buffer);
+    if (replName != null && cursor > replName.length()) {
+      cursor -= replName.length() + 1;
     }
 
     String body = getScriptBody(buffer);
@@ -232,7 +231,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
       return null;
     }
 
-    List completion = repl.completion(body, bodyCursor);
+    List completion = repl.completion(body, cursor);
     return completion;
   }
 
