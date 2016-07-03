@@ -77,12 +77,22 @@ public class AlluxioInterpreterTest {
 
   @Test
   public void testCompletion() {
-    List expectedResultOne = Arrays.asList("cat", "chgrp",
-            "chmod", "chown", "copyFromLocal", "copyToLocal", "count",
-            "createLineage");
-    List expectedResultTwo = Arrays.asList("copyFromLocal",
-            "copyToLocal", "count");
-    List expectedResultThree = Arrays.asList("copyFromLocal", "copyToLocal");
+    List expectedResultOne = Arrays.asList(
+      new InterpreterCompletion("cat", "cat"),
+      new InterpreterCompletion("chgrp", "chgrp"),
+      new InterpreterCompletion("chmod", "chmod"),
+      new InterpreterCompletion("chown", "chown"),
+      new InterpreterCompletion("copyFromLocal", "copyFromLocal"),
+      new InterpreterCompletion("copyToLocal", "copyToLocal"),
+      new InterpreterCompletion("count", "count"),
+      new InterpreterCompletion("createLineage", "createLineage"));
+    List expectedResultTwo = Arrays.asList(
+      new InterpreterCompletion("copyFromLocal", "copyFromLocal"),
+      new InterpreterCompletion("copyToLocal", "copyToLocal"),
+      new InterpreterCompletion("count", "count"));
+    List expectedResultThree = Arrays.asList(
+      new InterpreterCompletion("copyFromLocal", "copyFromLocal"),
+      new InterpreterCompletion("copyToLocal", "copyToLocal"));
     List expectedResultNone = new ArrayList<String>();
 
     List<InterpreterCompletion> resultOne = alluxioInterpreter.completion("c", 0);
@@ -95,7 +105,12 @@ public class AlluxioInterpreterTest {
     Assert.assertEquals(expectedResultTwo, resultTwo);
     Assert.assertEquals(expectedResultThree, resultThree);
     Assert.assertEquals(expectedResultNone, resultNotMatch);
-    Assert.assertEquals(alluxioInterpreter.keywords, resultAll);
+
+    List allCompletionList = new ArrayList<>();
+    for (InterpreterCompletion ic : resultAll) {
+      allCompletionList.add(ic.getName());
+    }
+    Assert.assertEquals(alluxioInterpreter.keywords, allCompletionList);
   }
 
   @Test
