@@ -23,7 +23,6 @@ import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.user.Credentials;
 import org.apache.zeppelin.user.UserCredentials;
-import org.apache.zeppelin.user.UsernamePassword;
 import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.display.Input;
 import org.apache.zeppelin.interpreter.*;
@@ -216,18 +215,14 @@ public class Paragraph extends Job implements Serializable, Cloneable {
 
   public List<InterpreterCompletion> completion(String buffer, int cursor) {
     String replName = getRequiredReplName(buffer);
+    int bodyCursor = cursor;
     if (replName != null && cursor > replName.length()) {
-      cursor -= replName.length() + 1;
+      bodyCursor -= replName.length() + 1;
     }
 
     String lines[] = buffer.split(System.getProperty("line.separator"));
-    if (lines.length > 0) {
-      logger().info("replName={}, cursor={}, line[0]={},{}",
-        replName, cursor, lines[0].trim().length(), lines[0]);
-    }
     if (lines.length > 0
-      && ((lines[0].startsWith("%") && cursor <= 0)
-      || (lines[0].startsWith("%") && cursor < lines[0].trim().length()))) {
+      && (lines[0].startsWith("%") && cursor <= lines[0].trim().length())) {
       return getInterpreterCompletion();
     }
 
@@ -237,7 +232,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
       return null;
     }
 
-    List completion = repl.completion(body, cursor);
+    List completion = repl.completion(body, bodyCursor);
     return completion;
   }
 
