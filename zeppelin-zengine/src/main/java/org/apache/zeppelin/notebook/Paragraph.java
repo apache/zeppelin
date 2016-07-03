@@ -203,7 +203,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
 
   public List<InterpreterCompletion> getInterpreterCompletion() {
     List<InterpreterCompletion> completion = new LinkedList();
-    for (InterpreterSetting intp: getNoteReplLoader().getInterpreterSettings()){
+    for (InterpreterSetting intp: factory.getInterpreterSettings(note.getId())){
       completion.add(new InterpreterCompletion(intp.getGroup(), intp.getGroup()));
     }
     return completion;
