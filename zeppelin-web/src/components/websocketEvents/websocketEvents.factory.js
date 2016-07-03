@@ -96,6 +96,14 @@ angular.module('zeppelinWebApp').factory('websocketEvents', function($rootScope,
       $rootScope.$broadcast('angularObjectUpdate', data);
     } else if (op === 'ANGULAR_OBJECT_REMOVE') {
       $rootScope.$broadcast('angularObjectRemove', data);
+    } else if (op === 'APP_APPEND_OUTPUT') {
+      $rootScope.$broadcast('appendAppOutput', data);
+    } else if (op === 'APP_UPDATE_OUTPUT') {
+      $rootScope.$broadcast('updateAppOutput', data);
+    } else if (op === 'APP_LOAD') {
+      $rootScope.$broadcast('appLoad', data);
+    } else if (op === 'APP_STATUS_CHANGE') {
+      $rootScope.$broadcast('appStatusChange', data);
     }
   });
 

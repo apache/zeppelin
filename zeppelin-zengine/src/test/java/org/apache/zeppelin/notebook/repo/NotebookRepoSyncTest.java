@@ -94,7 +94,7 @@ public class NotebookRepoSyncTest implements JobListenerFactory {
     MockInterpreter2.register("mock2", "org.apache.zeppelin.interpreter.mock.MockInterpreter2");
 
     depResolver = new DependencyResolver(mainZepDir.getAbsolutePath() + "/local-repo");
-    factory = new InterpreterFactory(conf, new InterpreterOption(false), null, null, depResolver);
+    factory = new InterpreterFactory(conf, new InterpreterOption(false), null, null, null, depResolver);
     
     search = mock(SearchService.class);
     notebookRepoSync = new NotebookRepoSync(conf);

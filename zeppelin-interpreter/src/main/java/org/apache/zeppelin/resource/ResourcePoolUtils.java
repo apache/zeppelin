@@ -19,6 +19,7 @@ package org.apache.zeppelin.resource;
 
 import com.google.gson.Gson;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
+import org.apache.zeppelin.interpreter.remote.RemoteInterpreterManagedProcess;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService;
 import org.slf4j.Logger;
@@ -134,3 +135,4 @@ public class ResourcePoolUtils {
     }
   }
 }
+

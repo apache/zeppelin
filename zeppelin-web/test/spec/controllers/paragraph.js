@@ -10,6 +10,13 @@ describe('Controller: ParagraphCtrl', function() {
   var paragraphMock = {
     config: {}
   };
+  var route = {
+    current : {
+      pathParams : {
+        noteId : 'noteId'
+      }
+    }
+  };
 
   beforeEach(inject(function($controller, $rootScope) {
     scope = $rootScope.$new();
@@ -18,8 +25,10 @@ describe('Controller: ParagraphCtrl', function() {
     ParagraphCtrl = $controller('ParagraphCtrl', {
       $scope: scope,
       websocketMsgSrv: websocketMsgSrvMock,
-      $element: {}
+      $element: {},
+      $route: route
     });
+
     scope.init(paragraphMock);
   }));
 

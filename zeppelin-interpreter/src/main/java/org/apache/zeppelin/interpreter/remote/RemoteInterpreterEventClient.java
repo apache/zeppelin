@@ -242,4 +242,55 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector {
     }
   }
 
+  public void onAppOutputAppend(String noteId, String paragraphId, String appId, String output) {
+    Map<String, String> appendOutput = new HashMap<String, String>();
+    appendOutput.put("noteId", noteId);
+    appendOutput.put("paragraphId", paragraphId);
+    appendOutput.put("appId", appId);
+    appendOutput.put("data", output);
+
+    sendEvent(new RemoteInterpreterEvent(
+        RemoteInterpreterEventType.OUTPUT_APPEND,
+        gson.toJson(appendOutput)));
+  }
+
+
+  public void onAppOutputUpdate(String noteId, String paragraphId, String appId, String output) {
+    Map<String, String> appendOutput = new HashMap<String, String>();
+    appendOutput.put("noteId", noteId);
+    appendOutput.put("paragraphId", paragraphId);
+    appendOutput.put("appId", appId);
+    appendOutput.put("data", output);
+
+    sendEvent(new RemoteInterpreterEvent(
+        RemoteInterpreterEventType.OUTPUT_UPDATE,
+        gson.toJson(appendOutput)));
+  }
+
+  public void onAppStatusUpdate(String noteId, String paragraphId, String appId, String status) {
+    Map<String, String> appendOutput = new HashMap<String, String>();
+    appendOutput.put("noteId", noteId);
+    appendOutput.put("paragraphId", paragraphId);
+    appendOutput.put("appId", appId);
+    appendOutput.put("status", status);
+
+    sendEvent(new RemoteInterpreterEvent(
+        RemoteInterpreterEventType.APP_STATUS_UPDATE,
+        gson.toJson(appendOutput)));
+  }
+
+  /**
+   * Wait for eventQueue becomes empty
+   */
+  public void waitForEventQueueBecomesEmpty() {
+    synchronized (eventQueue) {
+      while (!eventQueue.isEmpty()) {
+        try {
+          eventQueue.wait(100);
+        } catch (InterruptedException e) {
+          // ignore exception
+        }
+      }
+    }
+  }
 }

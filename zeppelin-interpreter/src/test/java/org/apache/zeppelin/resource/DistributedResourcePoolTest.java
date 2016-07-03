@@ -69,6 +69,7 @@ public class DistributedResourcePoolTest {
         "fakeRepo",
         env,
         10 * 1000,
+        null,
         null
     );
 
@@ -86,6 +87,7 @@ public class DistributedResourcePoolTest {
         "fakeRepo",        
         env,
         10 * 1000,
+        null,
         null
     );
 
@@ -110,11 +112,11 @@ public class DistributedResourcePoolTest {
     intp1.open();
     intp2.open();
 
-    eventPoller1 = new RemoteInterpreterEventPoller(null);
+    eventPoller1 = new RemoteInterpreterEventPoller(null, null);
     eventPoller1.setInterpreterGroup(intpGroup1);
     eventPoller1.setInterpreterProcess(intpGroup1.getRemoteInterpreterProcess());
 
-    eventPoller2 = new RemoteInterpreterEventPoller(null);
+    eventPoller2 = new RemoteInterpreterEventPoller(null, null);
     eventPoller2.setInterpreterGroup(intpGroup2);
     eventPoller2.setInterpreterProcess(intpGroup2.getRemoteInterpreterProcess());
 
@@ -140,13 +142,12 @@ public class DistributedResourcePoolTest {
     InterpreterResult ret;
     intp1.interpret("put key1 value1", context);
     intp2.interpret("put key2 value2", context);
-    int numInterpreterResult = 2;
 
     ret = intp1.interpret("getAll", context);
-    assertEquals(numInterpreterResult + 2, gson.fromJson(ret.message(), ResourceSet.class).size());
+    assertEquals(2, gson.fromJson(ret.message(), ResourceSet.class).size());
 
     ret = intp2.interpret("getAll", context);
-    assertEquals(numInterpreterResult + 2, gson.fromJson(ret.message(), ResourceSet.class).size());
+    assertEquals(2, gson.fromJson(ret.message(), ResourceSet.class).size());
 
     ret = intp1.interpret("get key1", context);
     assertEquals("value1", gson.fromJson(ret.message(), String.class));
@@ -218,16 +219,15 @@ public class DistributedResourcePoolTest {
     intp2.interpret("put note2:paragraph1:key1 value1", context);
     intp2.interpret("put note2:paragraph2:key2 value2", context);
 
-    int numInterpreterResult = 2;
 
     // then get all resources.
-    assertEquals(numInterpreterResult + 4, ResourcePoolUtils.getAllResources().size());
+    assertEquals(4, ResourcePoolUtils.getAllResources().size());
 
     // when remove all resources from note1
     ResourcePoolUtils.removeResourcesBelongsToNote("note1");
 
     // then resources should be removed.
-    assertEquals(numInterpreterResult + 2, ResourcePoolUtils.getAllResources().size());
+    assertEquals(2, ResourcePoolUtils.getAllResources().size());
     assertEquals("", gson.fromJson(
         intp1.interpret("get note1:paragraph1:key1", context).message(),
         String.class));
@@ -240,7 +240,7 @@ public class DistributedResourcePoolTest {
     ResourcePoolUtils.removeResourcesBelongsToParagraph("note2", "paragraph1");
 
     // then 1
-    assertEquals(numInterpreterResult + 1, ResourcePoolUtils.getAllResources().size());
+    assertEquals(1, ResourcePoolUtils.getAllResources().size());
     assertEquals("value2", gson.fromJson(
         intp1.interpret("get note2:paragraph2:key2", context).message(),
         String.class));
