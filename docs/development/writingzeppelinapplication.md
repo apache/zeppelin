@@ -19,13 +19,13 @@ limitations under the License.
 -->
 {% include JB/setup %}
 
-### What is Zeppelin Application (Experimental)
+# What is Zeppelin Application (Experimental)
 
-Zeppelin Application is a package that runs on Interpreter process and display it's output inside of the notebook. While application runs on Interpreter process, it's able to access resources provided by Interpreter through ResourcePool. Output is always rendered by AngularDisplaySystem. Therefore application provides all the possiblity of making interactive graphical application that uses data and processing power of any Interpreter.
+Apache Zeppelin Application is a package that runs on Interpreter process and displays it's output inside of the notebook. While application runs on Interpreter process, it's able to access resources provided by Interpreter through ResourcePool. Output is always rendered by AngularDisplaySystem. Therefore application provides all the possiblities of making interactive graphical application that uses data and processing power of any Interpreter.
 
 
 
-### Writing your own Application
+## Writing your own Application
 
 Writing Application means extending `org.apache.zeppelin.helium.Application`. You can use your favorite IDE and language while Java class files are packaged into jar. `Application` class looks like
 
@@ -53,7 +53,7 @@ public abstract void unload();
 You can check example applications under [./zeppelin-examples](https://github.com/apache/incubator-zeppelin/tree/master/zeppelin-examples) directory.
 
 
-### Development mode
+## Development mode
 
 In the development mode, you can run your Application in your IDE as a normal java application and see the result inside of Zeppelin notebook.
 
@@ -86,7 +86,7 @@ In the Zeppelin notebook, run `%dev run` will connect to application running in 
 
 
 
-### Package flie
+## Package file
 
 Package file is a json file that provides information about the application.
 Json file contains following informations
