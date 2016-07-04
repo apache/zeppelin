@@ -34,12 +34,6 @@ import java.util.Properties;
 public class KnitR extends Interpreter implements WrappedInterpreter {
   KnitRInterpreter intp;
 
-  static {
-    Interpreter.register("knitr", "spark", KnitR.class.getName(),
-        RInterpreter.getProps()
-    );
-  }
-
   public KnitR(Properties property, Boolean startSpark) {
     super(property);
     intp = new KnitRInterpreter(property, startSpark);

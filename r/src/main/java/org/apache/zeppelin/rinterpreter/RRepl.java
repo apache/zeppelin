@@ -34,12 +34,6 @@ import java.util.Properties;
 public class RRepl extends Interpreter implements WrappedInterpreter {
   RReplInterpreter intp;
 
-  static {
-    Interpreter.register("r", "spark", RRepl.class.getName(),
-            RInterpreter.getProps()
-    );
-  }
-
   public RRepl(Properties property, Boolean startSpark) {
     super(property);
     intp = new RReplInterpreter(property, startSpark);
