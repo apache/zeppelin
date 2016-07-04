@@ -54,7 +54,7 @@ public class PythonInterpreter extends Interpreter {
 
   private Integer port;
   private GatewayServer gatewayServer;
-  private Boolean py4J = false;
+  private Boolean py4JisInstalled = false;
   private InterpreterContext context;
   private int maxResult;
 
@@ -91,7 +91,8 @@ public class PythonInterpreter extends Interpreter {
       LOG.error("Can't execute " + BOOTSTRAP_PY + " to initiate python process", e);
     }
 
-    if (py4J = isPy4jInstalled()) {
+    py4JisInstalled = isPy4jInstalled();
+    if (py4JisInstalled) {
       port = findRandomOpenPortOnAllLocalInterfaces();
       LOG.info("Py4j gateway port : " + port);
       try {
@@ -205,7 +206,7 @@ public class PythonInterpreter extends Interpreter {
     while ((line = bootstrapReader.readLine()) != null) {
       bootstrapCode += line + "\n";
     }
-    if (py4J && port != null && port != -1) {
+    if (py4JisInstalled && port != null && port != -1) {
       bootstrapCode = bootstrapCode.replaceAll("\\%PORT\\%", port.toString());
     }
     LOG.info("Bootstrap python interpreter with code from \n " + file);
