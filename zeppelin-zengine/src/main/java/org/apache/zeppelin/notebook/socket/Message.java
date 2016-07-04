@@ -114,6 +114,8 @@ public class Message {
     CHECKPOINT_NOTEBOOK,    // [c-s] checkpoint notebook to storage repository
                             // @param noteId
                             // @param checkpointName
+    LIST_REVISION_HISTORY,  // [c-s] list revision history of the notebook
+                            // @param noteId
 
     APP_APPEND_OUTPUT,      // [s-c] append output
     APP_UPDATE_OUTPUT,      // [s-c] update (replace) output

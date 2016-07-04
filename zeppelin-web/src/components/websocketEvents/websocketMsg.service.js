@@ -161,7 +161,16 @@ angular.module('zeppelinWebApp').service('websocketMsgSrv', function($rootScope,
       });
     },
 
-    isConnected: function() {
+    listRevisionHistory: function(noteId) {
+      websocketEvents.sendNewEvent({
+        op: 'LIST_REVISION_HISTORY',
+        data: {
+          noteId: noteId
+        }
+      });
+    },
+
+    isConnected: function(){
       return websocketEvents.isConnected();
     },
 

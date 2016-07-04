@@ -175,6 +175,17 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
     document.getElementById('note.checkpoint.message').value = '';
   };
 
+  $scope.listRevisionHistory = function() {
+    websocketMsgSrv.listRevisionHistory($routeParams.noteId);
+  };
+
+  $scope.$on('listRevisionHistory', function(event, data) {
+    console.log(data);
+    if (data === '{}') {
+      console.log('empty data');
+    }
+  });
+
   $scope.runNote = function() {
     BootstrapDialog.confirm({
       closable: true,
