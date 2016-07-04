@@ -124,8 +124,6 @@ public class InterpreterFactory implements InterpreterGroupFactory {
 
     GsonBuilder builder = new GsonBuilder();
     builder.setPrettyPrinting();
-    builder.registerTypeAdapter(
-        InterpreterSetting.InterpreterInfo.class, new InterpreterInfoSerializer());
     gson = builder.create();
 
     init();
@@ -306,12 +304,6 @@ public class InterpreterFactory implements InterpreterGroupFactory {
   }
 
   private void loadFromFile() throws IOException {
-    GsonBuilder builder = new GsonBuilder();
-    builder.setPrettyPrinting();
-    builder.registerTypeAdapter(
-        InterpreterSetting.InterpreterInfo.class, new InterpreterInfoSerializer());
-    Gson gson = builder.create();
-
     File settingFile = new File(conf.getInterpreterSettingPath());
     if (!settingFile.exists()) {
       // nothing to read

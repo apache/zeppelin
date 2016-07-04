@@ -20,6 +20,7 @@ package org.apache.zeppelin.interpreter;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.google.gson.annotations.SerializedName;
 import org.apache.commons.lang.NullArgumentException;
 import org.apache.zeppelin.dep.Dependency;
 import org.apache.zeppelin.display.AngularObjectRegistry;
@@ -78,6 +79,7 @@ public class InterpreterSetting {
    */
   public static class InterpreterInfo {
     private final String name;
+    @SerializedName("class")
     private final String className;
 
     public InterpreterInfo(String className, String name) {
