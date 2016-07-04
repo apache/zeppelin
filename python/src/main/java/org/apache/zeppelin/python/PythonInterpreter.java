@@ -24,6 +24,8 @@ import java.net.ServerSocket;
 import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.interpreter.Interpreter;
@@ -34,7 +36,6 @@ import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,6 +57,7 @@ public class PythonInterpreter extends Interpreter {
   private GatewayServer gatewayServer;
   private Boolean py4JisInstalled = false;
   private InterpreterContext context;
+  private Pattern errorInLastLine = Pattern.compile(".*(Error|Exception): .*$");
   private int maxResult;
 
   PythonProcess process = null;
@@ -124,13 +126,31 @@ public class PythonInterpreter extends Interpreter {
 
   @Override
   public InterpreterResult interpret(String cmd, InterpreterContext contextInterpreter) {
-    this.context = contextInterpreter;
     if (cmd == null || cmd.isEmpty()) {
       return new InterpreterResult(Code.SUCCESS, "");
     }
+    this.context = contextInterpreter;
     String output = sendCommandToPython(cmd);
-    return new InterpreterResult(Code.SUCCESS, output.replaceAll(">>>", "")
-        .replaceAll("\\.\\.\\.", "").trim());
+
+    InterpreterResult result;
+    if (pythonErrorIn(output)) {
+      result = new InterpreterResult(Code.ERROR, output.replaceAll(">>>", "").trim());
+    } else {
+      result = new InterpreterResult(Code.SUCCESS, output.replaceAll(">>>", "")
+          .replaceAll("\\.\\.\\.", "").trim());
+    }
+    return result;
+  }
+
+  /**
+   * Checks if there is a syntax error or an exception
+   *
+   * @param output Python interpreter output
+   * @return true if syntax error or exception has happened
+   */
+  private boolean pythonErrorIn(String output) {
+    Matcher errorMatcher = errorInLastLine.matcher(output);
+    return errorMatcher.find();
   }
 
   @Override
@@ -196,7 +216,7 @@ public class PythonInterpreter extends Interpreter {
     return output;
   }
 
-  private void bootStrapInterpreter(String file) throws IOException {
+  void bootStrapInterpreter(String file) throws IOException {
     BufferedReader bootstrapReader = new BufferedReader(
         new InputStreamReader(
             PythonInterpreter.class.getResourceAsStream(file)));
