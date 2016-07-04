@@ -25,7 +25,7 @@ The Apache Zeppelin community is pleased to announce the availability of the 0.6
 
 The community put significant effort into improving Apache Zeppelin since the last release, focusing on having new backend support, implementing authentication and authorization for enterprise.
 More than 70+ contributors provided 360+ patches for new features, improvements and bug fixes.
-More than 200+ issues has been resolved.
+More than 200+ issues have been resolved.
 
 We encourage to [download](../../download.html) the latest release. Feedback through the [mailing lists](../../community.html) is very welcome.
 
@@ -96,7 +96,7 @@ You can visit [issue tracker](https://issues.apache.org/jira/secure/ReleaseNote.
 <br />
 ### Contributors
 
-This release would not be possible without the following community members's contributions:
+This release would not be possible without the following community members' contributions:
 
 Lee moon soo, Mina Lee, Prabhjyot Singh, Jongyoul Lee, Ahyoung Ryu, Ravi Ranjan, Luciano Resende, Felix Cheung, DuyHai Doan, Alexander Bezzubov, Khalid Huseynov, Renjith Kamath, Hyung Sung Shim, Damien Corneau, Prasad Wagle, Zhong Wang, Chae-Sung Lim, Minwoo Kang, Eric Charles, Michael Chen, Jeff Steinmetz, Cheng-Yu Hsu, Victor Manuel, Sagar Kulkarni, Jesang Yoon, Chris Matta, Hao Xia, agura, Bruno Bonnin, johnnyws, karuppayya, Sejun Ra, maocorte, Silvio Fiorito, Brent Schneeman, Andrey Oskin, Rohan Ramakrishna, Rohit Choudhary, Rusty Phillips, Andrea, Sachin, Sujen Shah, Tom Runyon, Trevor Grant, Vinay Shukla, Amos Elb, ankur_jain, AllenFang, haden.kim, mahmoudelgamal, michrawson, rerngvit, sadikovi, shijinkui, suvam97, swakrish, wind0727, Federico Valeri, zhangminglei, Frank Rosner, Hayssam Saleh, Hervé Riviere, Jiri Simsa, Johan Muedsam, Jonathan Kelly, Fawad Halim, Jungtaek Lim, Kevin Kim, Kris Geusebroek, Kwon Yeong-Eon, Dr. Stefan Schimanski, Darren Ha, Nate Sammons, Rajat Venkatesh, Ralph Geerkens, Ramu Malur
 
