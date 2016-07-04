@@ -151,9 +151,7 @@ public class Notebook {
    */
   public Note createNote(List<String> interpreterIds, AuthenticationInfo subject)
       throws IOException {
-    NoteInterpreterLoader intpLoader = new NoteInterpreterLoader(replFactory);
-    Note note = new Note(notebookRepo, intpLoader, jobListenerFactory, notebookIndex, credentials);
-    intpLoader.setNoteId(note.id());
+    Note note = new Note(notebookRepo, replFactory, jobListenerFactory, notebookIndex, credentials);
     synchronized (notes) {
       notes.put(note.id(), note);
     }
@@ -258,7 +256,7 @@ public class Notebook {
       List<String> interpreterSettingIds) throws IOException {
     Note note = getNote(id);
     if (note != null) {
-      note.getNoteReplLoader().setInterpreters(interpreterSettingIds);
+      replFactory.setInterpreters(note.getId(), interpreterSettingIds);
       // comment out while note.getNoteReplLoader().setInterpreters(...) do the same
       // replFactory.putNoteInterpreterSettingBinding(id, interpreterSettingIds);
     }
@@ -267,7 +265,7 @@ public class Notebook {
   public List<String> getBindedInterpreterSettingsIds(String id) {
     Note note = getNote(id);
     if (note != null) {
-      return note.getNoteReplLoader().getInterpreters();
+      return getInterpreterFactory().getInterpreters(note.getId());
     } else {
       return new LinkedList<String>();
     }
@@ -276,7 +274,7 @@ public class Notebook {
   public List<InterpreterSetting> getBindedInterpreterSettings(String id) {
     Note note = getNote(id);
     if (note != null) {
-      return note.getNoteReplLoader().getInterpreterSettings();
+      return replFactory.getInterpreterSettings(note.getId());
     } else {
       return new LinkedList<InterpreterSetting>();
     }
@@ -348,9 +346,7 @@ public class Notebook {
     note.setIndex(this.notebookIndex);
     note.setCredentials(this.credentials);
 
-    NoteInterpreterLoader replLoader = new NoteInterpreterLoader(replFactory);
-    note.setReplLoader(replLoader);
-    replLoader.setNoteId(note.id());
+    note.setInterpreterFactory(replFactory);
 
     note.setJobListenerFactory(jobListenerFactory);
     note.setNotebookRepo(notebookRepo);
@@ -607,9 +603,9 @@ public class Notebook {
 
       // set interpreter bind type
       String interpreterGroupName = null;
-      if (note.getNoteReplLoader().getInterpreterSettings() != null &&
-          note.getNoteReplLoader().getInterpreterSettings().size() >= 1) {
-        interpreterGroupName = note.getNoteReplLoader().getInterpreterSettings().get(0).getGroup();
+      if (replFactory.getInterpreterSettings(note.getId()) != null &&
+          replFactory.getInterpreterSettings(note.getId()).size() >= 1) {
+        interpreterGroupName = replFactory.getInterpreterSettings(note.getId()).get(0).getGroup();
       }
 
       // not update and not running -> pass
@@ -659,7 +655,8 @@ public class Notebook {
         logger.error(e.getMessage(), e);
       }
       if (releaseResource) {
-        for (InterpreterSetting setting : note.getNoteReplLoader().getInterpreterSettings()) {
+        for (InterpreterSetting setting :
+            notebook.getInterpreterFactory().getInterpreterSettings(note.getId())) {
           notebook.getInterpreterFactory().restart(setting.id());
         }
       }      
