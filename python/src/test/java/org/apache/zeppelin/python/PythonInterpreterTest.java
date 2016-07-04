@@ -17,7 +17,9 @@
 
 package org.apache.zeppelin.python;
 
-import static org.apache.zeppelin.python.PythonInterpreter.*;
+import static org.apache.zeppelin.python.PythonInterpreter.DEFAULT_ZEPPELIN_PYTHON;
+import static org.apache.zeppelin.python.PythonInterpreter.MAX_RESULT;
+import static org.apache.zeppelin.python.PythonInterpreter.ZEPPELIN_PYTHON;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -45,8 +47,12 @@ import org.mockito.stubbing.Answer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+
 /**
  * Python interpreter unit test
+ *
+ * Important: ALL tests here DO NOT REQUIRE Python to be installed
+ * If Python dependency is required, please look at PythonInterpreterWithPythonInstalledTest
  */
 public class PythonInterpreterTest {
   private static final Logger LOG = LoggerFactory.getLogger(PythonProcess.class);
@@ -91,7 +97,8 @@ public class PythonInterpreterTest {
    * If Py4J is not installed, bootstrap_input.py
    * is not sent to Python process and py4j JavaGateway is not running
    */
-  @Test public void testPy4jIsNotInstalled() {
+  @Test
+  public void testPy4jIsNotInstalled() {
     pythonInterpreter.open();
     assertNull(pythonInterpreter.getPy4jPort());
     assertTrue(cmdHistory.contains("def help()"));
@@ -108,7 +115,8 @@ public class PythonInterpreterTest {
    *
    * @throws IOException
    */
-  @Test public void testPy4jInstalled() throws IOException {
+  @Test
+  public void testPy4jInstalled() throws IOException {
     when(mockPythonProcess.sendAndGetResult(eq("\n\nimport py4j\n"))).thenReturn(">>>");
 
     pythonInterpreter.open();
