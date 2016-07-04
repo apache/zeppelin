@@ -34,6 +34,7 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.AngularObjectRegistryListener;
+import org.apache.zeppelin.display.RelationJob;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
@@ -50,6 +51,9 @@ import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.server.ZeppelinServer;
 import org.apache.zeppelin.ticket.TicketContainer;
 import org.apache.zeppelin.utils.SecurityUtils;
+import org.apache.zeppelin.workflow.WorkflowJob;
+import org.apache.zeppelin.workflow.WorkflowJobItem;
+import org.apache.zeppelin.workflow.WorkflowManager;
 import org.eclipse.jetty.websocket.servlet.WebSocketServlet;
 import org.eclipse.jetty.websocket.servlet.WebSocketServletFactory;
 import org.quartz.SchedulerException;
@@ -80,6 +84,7 @@ public class NotebookServer extends WebSocketServlet implements
   Gson gson = new GsonBuilder().setDateFormat("yyyy-MM-dd'T'HH:mm:ssZ").create();
   final Map<String, List<NotebookSocket>> noteSocketMap = new HashMap<>();
   final Queue<NotebookSocket> connectedSockets = new ConcurrentLinkedQueue<>();
+  public WorkflowManager workflowManager = new WorkflowManager();
 
   private Notebook notebook() {
     return ZeppelinServer.notebook;
@@ -1068,6 +1073,24 @@ public class NotebookServer extends WebSocketServlet implements
     Map<String, Object> params = (Map<String, Object>) fromMessage
        .get("params");
     p.settings.setParams(params);
+
+    //clover test
+    List<RelationJob> testJobs = new LinkedList<>();
+    RelationJob testJob = new RelationJob("2BQVKJ1V2");
+    testJob.addParagaraph("20160628-175748_456467780");
+    p.settings.setRelationJobs(testJobs);
+
+    synchronized (workflowManager) {
+      workflowManager.setWorkflow(
+        "2BQVKJ1V2", "2BQVKJ1V2", "20160628-175748_456467780");
+      WorkflowJob job = workflowManager.getWorkflow("2BQVKJ1V2");
+      WorkflowJobItem item;
+      item = job.getWorkflowJobItemTarget("2BQVKJ1V2", "20160628-175748_456467780");
+      WorkflowJobItem newJob = new WorkflowJobItem("2BQVKJ1V2", "20160624-152949_1611139341");
+      item.setOnSuccessJob(newJob);
+    }
+
+
     Map<String, Object> config = (Map<String, Object>) fromMessage
        .get("config");
     p.setConfig(config);
@@ -1182,6 +1205,7 @@ public class NotebookServer extends WebSocketServlet implements
 
     @Override
     public void afterStatusChange(Job job, Status before, Status after) {
+
       if (after == Status.ERROR) {
         if (job.getException() != null) {
           LOG.error("Error", job.getException());
@@ -1197,6 +1221,32 @@ public class NotebookServer extends WebSocketServlet implements
           LOG.error(e.toString(), e);
         }
       }
+
+      notebookServer.workflowManager.setJobNotify(after, note.getId(), job.getId());
+
+      if (!after.isPending() && !after.isRunning()) {
+        Map<String, List<String>> waitJobLists;
+        WorkflowManager workflowManager = notebookServer.workflowManager;
+        synchronized (workflowManager) {
+          waitJobLists = workflowManager.getNextJob(note.getId(), job.getId());
+
+          if (waitJobLists != null) {
+            for (String notebookId : waitJobLists.keySet()) {
+              String paragraphId = waitJobLists.get(notebookId).get(0);
+              Note nextNote = notebookServer.notebook().getNote(notebookId);
+              Paragraph p = nextNote.getParagraph(paragraphId);
+              try {
+                nextNote.persist(null);
+              } catch (IOException e) {
+                LOG.error(e.toString(), e);
+              }
+              nextNote.run(paragraphId);
+              workflowManager.setJobNotify(Status.RUNNING, notebookId, paragraphId);
+            }
+          }
+        }
+      }
+
       notebookServer.broadcastNote(note);
     }
 
@@ -1212,7 +1262,8 @@ public class NotebookServer extends WebSocketServlet implements
               .put("noteId", paragraph.getNote().getId())
               .put("paragraphId", paragraph.getId())
               .put("data", output);
-
+      LOG.info("append status {} note {} para {}",
+        paragraph.getStatus(), paragraph.getNote().getId(), paragraph.getId());
       notebookServer.broadcast(paragraph.getNote().getId(), msg);
     }
 
@@ -1228,6 +1279,9 @@ public class NotebookServer extends WebSocketServlet implements
               .put("noteId", paragraph.getNote().getId())
               .put("paragraphId", paragraph.getId())
               .put("data", output);
+
+      LOG.info("append updated {} note {} para {}",
+        paragraph.getStatus(), paragraph.getNote().getId(), paragraph.getId());
 
       notebookServer.broadcast(paragraph.getNote().getId(), msg);
     }

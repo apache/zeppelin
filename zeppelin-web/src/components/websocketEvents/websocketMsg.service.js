@@ -108,6 +108,13 @@ angular.module('zeppelinWebApp').service('websocketMsgSrv', function($rootScope,
           params: paragraphParams
         }
       });
+      console.log('send ', {
+        id: paragraphId,
+        title: paragraphTitle,
+        paragraph: paragraphData,
+        config: paragraphConfig,
+        params: paragraphParams
+      });
     },
 
     removeParagraph: function(paragraphId) {
