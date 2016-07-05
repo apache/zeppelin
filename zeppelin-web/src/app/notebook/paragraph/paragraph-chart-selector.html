@@ -59,6 +59,11 @@ limitations under the License.
           ng-click="setGraphMode('map', true)"
           tooltip="Map" tooltip-placement="bottom"><i class="fa fa-map-marker"></i>
   </button>
+  <button type="button" class="btn btn-default btn-sm"
+          ng-if="paragraph.result.type == 'TABLE'"
+          ng-class="{'active': isGraphMode('forceLayout')}"
+          ng-click="setGraphMode('forceLayout', true)"><i class="fa fa-share-alt"></i>
+  </button>
 
   <button type="button"
           ng-if="paragraph.result.type != 'TABLE'"
