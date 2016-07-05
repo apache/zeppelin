@@ -96,6 +96,11 @@
   to{-ms-transform:rotate(360deg);}
 }
 
+@keyframes spinnerRotateAnimation {
+  from {transform: rotate(0deg);}
+  to{transform: rotate(360deg);}
+}
+
 .spinAnimation{
   -webkit-animation-name: spinnerRotateAnimation;
   -webkit-animation-duration: 1s;
