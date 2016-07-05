@@ -38,6 +38,7 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketAddress;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.junit.Before;
@@ -110,10 +111,7 @@ public class PythonInterpreterTest {
 
   /**
    * If Py4J installed, bootstrap_input.py
-   * is sent to interpreter and JavaGateway is
-   * running
-   *
-   * @throws IOException
+   * is sent to interpreter and JavaGateway is running
    */
   @Test
   public void testPy4jInstalled() throws IOException {
@@ -131,6 +129,8 @@ public class PythonInterpreterTest {
     assertTrue(cmdHistory.contains("org.apache.zeppelin.display.Input"));
 
     assertTrue(serverIsListeningOn(py4jPort));
+    pythonInterpreter.close();
+    assertFalse(serverIsListeningOn(py4jPort));
   }
 
   @Test
@@ -144,6 +144,7 @@ public class PythonInterpreterTest {
 
     //when
     pythonInterpreter.close();
+    TimeUnit.SECONDS.sleep(1);
 
     //then
     assertFalse(serverIsListeningOn(py4jPort));
@@ -164,13 +165,16 @@ public class PythonInterpreterTest {
    * @param port
    */
   private boolean serverIsListeningOn(Integer port) {
-    boolean serverIsListening = false;
     Socket s = new Socket();
+    boolean serverIsListening = false;
 
-    boolean connected = tryToConnect(s, port);
-    if (connected) {
-      serverIsListening = true;
+    int retryCount = 0;
+    boolean connected = false;
+    while (connected = tryToConnect(s, port) && retryCount < 10) {
+      serverIsListening = connected;
       tryToClose(s);
+      retryCount++;
+      s = new Socket();
     }
     return serverIsListening;
   }
