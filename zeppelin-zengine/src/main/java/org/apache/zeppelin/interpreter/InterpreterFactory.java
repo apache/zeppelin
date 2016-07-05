@@ -212,8 +212,11 @@ public class InterpreterFactory implements InterpreterGroupFactory {
           if (null != infos) {
             Properties p = new Properties();
             for (RegisteredInterpreter info : infos) {
-              for (String key : info.getProperties().keySet()) {
-                p.put(key, info.getProperties().get(key).getValue());
+              Map<String, InterpreterProperty> interpreterProperties = info.getProperties();
+              if (null != interpreterProperties) {
+                for (String key : info.getProperties().keySet()) {
+                  p.put(key, info.getProperties().get(key).getValue());
+                }
               }
             }
             add(groupName, groupName, new LinkedList<Dependency>(), defaultOption, p);
@@ -224,8 +227,11 @@ public class InterpreterFactory implements InterpreterGroupFactory {
           List<RegisteredInterpreter> infos = groupClassNameMap.get(groupName);
           Properties p = new Properties();
           for (RegisteredInterpreter info : infos) {
-            for (String key : info.getProperties().keySet()) {
-              p.put(key, info.getProperties().get(key).getValue());
+            Map<String, InterpreterProperty> interpreterProperties = info.getProperties();
+            if (null != interpreterProperties) {
+              for (String key : info.getProperties().keySet()) {
+                p.put(key, info.getProperties().get(key).getValue());
+              }
             }
           }
           add(groupName, groupName, new LinkedList<Dependency>(), defaultOption, p);
