@@ -39,9 +39,35 @@ sudo apt-get install libfontconfig
 ```
 
 #### Proxy settings (optional)
-If you are behind a corporate Proxy with NTLM authentication you can use [Cntlm Authentication Proxy](http://cntlm.sourceforge.net/) .
+First of all, set your proxy configuration on Maven `settings.xml`.
+```
+<settings>
+  <proxies>
+    <proxy>
+      <id>proxy-http</id>
+      <active>true</active>
+      <protocol>http</protocol>
+      <host>localhost</host>
+      <port>3128</port>
+      <!-- <username>usr</username>
+      <password>pwd</password> -->
+      <nonProxyHosts>localhost|127.0.0.1</nonProxyHosts>
+    </proxy>
+    <proxy>
+      <id>proxy-https</id>
+      <active>true</active>
+      <protocol>https</protocol>
+      <host>localhost</host>
+      <port>3128</port>
+      <!-- <username>usr</username>
+      <password>pwd</password> -->
+      <nonProxyHosts>localhost|127.0.0.1</nonProxyHosts>
+    </proxy>
+  </proxies>
+</settings>
+```
 
-Before build start, run these commands from shell. 
+Then, run these commands from shell. 
 ```
 export http_proxy=http://localhost:3128
 export https_proxy=http://localhost:3128
@@ -57,7 +83,7 @@ git config --global https.proxy http://localhost:3128
 git config --global url."http://".insteadOf git://
 ```
 
-After build is complete, run these commands to cleanup.
+Cleanup: set `active false` in Maven `settings.xml` and run these commands.
 ```
 npm config rm proxy
 npm config rm https-proxy
@@ -67,9 +93,10 @@ git config --global --unset url."http://".insteadOf
 ```
 
 _Notes:_ 
+ - If you are behind NTLM proxy you can use [Cntlm Authentication Proxy](http://cntlm.sourceforge.net/).
  - If you are on Windows replace `export` with `set` to set env variables
- - Replace `localhost:3128` with standard pattern `http://user:pwd@host:port`
- - Git configuration is needed because Bower use it for fetching from GitHub
+ - Replace `localhost:3128` with the standard pattern `http://user:pwd@host:port`
+ - For zeppelin-web: currently there is no way to reach Bower main repo through NTLM proxy
  
 #### Install maven
 ```
@@ -174,6 +201,13 @@ Available profiles are
 -Pmapr51
 ```
 
+#### -Pexamples (optional)
+
+Bulid examples under zeppelin-examples directory
+
+
+
+
 
 Here're some examples:
 
@@ -203,6 +237,7 @@ mvn clean package -Dignite.version=1.6.0 -DskipTests
 ```sh
 mvn clean package -Pscalding -DskipTests
 ```
+
 
 ### Configure
 If you wish to configure Zeppelin option (like port number), configure the following files:

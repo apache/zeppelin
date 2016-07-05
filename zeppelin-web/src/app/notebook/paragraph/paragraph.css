@@ -484,6 +484,11 @@ table.table-striped {
   right: 15px;
 }
 
+.appSuggestion {
+  width: 200px;
+  padding: 5px 10px 5px 10px;
+}
+
 /* DSV download toggle button */
 .caretBtn {
   padding-right: 4px !important;

@@ -76,7 +76,7 @@ public class VFSNotebookRepoTest implements JobListenerFactory {
 
     this.schedulerFactory = new SchedulerFactory();
     depResolver = new DependencyResolver(mainZepDir.getAbsolutePath() + "/local-repo");
-    factory = new InterpreterFactory(conf, new InterpreterOption(false), null, null, depResolver);
+    factory = new InterpreterFactory(conf, new InterpreterOption(false), null, null, null, depResolver);
 
     SearchService search = mock(SearchService.class);
     notebookRepo = new VFSNotebookRepo(conf);
@@ -107,7 +107,7 @@ public class VFSNotebookRepoTest implements JobListenerFactory {
   @Test
   public void testSaveNotebook() throws IOException, InterruptedException {
     Note note = notebook.createNote(null);
-    note.getNoteReplLoader().setInterpreters(factory.getDefaultInterpreterSettingList());
+    factory.setInterpreters(note.getId(), factory.getDefaultInterpreterSettingList());
 
     Paragraph p1 = note.addParagraph();
     Map<String, Object> config = p1.getConfig();

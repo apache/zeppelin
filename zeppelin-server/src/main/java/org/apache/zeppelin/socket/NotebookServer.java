@@ -34,6 +34,8 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.AngularObjectRegistryListener;
+import org.apache.zeppelin.helium.ApplicationEventListener;
+import org.apache.zeppelin.helium.HeliumPackage;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
@@ -61,7 +63,7 @@ import org.slf4j.LoggerFactory;
  */
 public class NotebookServer extends WebSocketServlet implements
         NotebookSocketListener, JobListenerFactory, AngularObjectRegistryListener,
-        RemoteInterpreterProcessListener {
+        RemoteInterpreterProcessListener, ApplicationEventListener {
   /**
    * Job manager service type
    */
@@ -307,7 +309,7 @@ public class NotebookServer extends WebSocketServlet implements
     Notebook notebook = notebook();
     List<Note> notes = notebook.getAllNotes();
     for (Note note : notes) {
-      List<String> ids = note.getNoteReplLoader().getInterpreters();
+      List<String> ids = notebook.getInterpreterFactory().getInterpreters(note.getId());
       for (String id : ids) {
         if (id.equals(interpreterGroupId)) {
           broadcast(note.id(), m);
@@ -750,8 +752,8 @@ public class NotebookServer extends WebSocketServlet implements
     // propagate change to (Remote) AngularObjectRegistry
     Note note = notebook.getNote(noteId);
     if (note != null) {
-      List<InterpreterSetting> settings = note.getNoteReplLoader()
-          .getInterpreterSettings();
+      List<InterpreterSetting> settings = notebook.getInterpreterFactory()
+          .getInterpreterSettings(note.getId());
       for (InterpreterSetting setting : settings) {
         if (setting.getInterpreterGroup(note.id()) == null) {
           continue;
@@ -759,6 +761,7 @@ public class NotebookServer extends WebSocketServlet implements
         if (interpreterGroupId.equals(setting.getInterpreterGroup(note.id()).getId())) {
           AngularObjectRegistry angularObjectRegistry = setting
               .getInterpreterGroup(note.id()).getAngularObjectRegistry();
+
           // first trying to get local registry
           ao = angularObjectRegistry.get(varName, noteId, paragraphId);
           if (ao == null) {
@@ -791,8 +794,8 @@ public class NotebookServer extends WebSocketServlet implements
     if (global) { // broadcast change to all web session that uses related
       // interpreter.
       for (Note n : notebook.getAllNotes()) {
-        List<InterpreterSetting> settings = note.getNoteReplLoader()
-            .getInterpreterSettings();
+        List<InterpreterSetting> settings = notebook.getInterpreterFactory()
+            .getInterpreterSettings(note.getId());
         for (InterpreterSetting setting : settings) {
           if (setting.getInterpreterGroup(n.id()) == null) {
             continue;
@@ -1075,7 +1078,8 @@ public class NotebookServer extends WebSocketServlet implements
     boolean isTheLastParagraph = note.getLastParagraph().getId()
         .equals(p.getId());
     note.setLastReplName(paragraphId);
-    if (!Strings.isNullOrEmpty(text) && isTheLastParagraph) {
+    if (!(text.equals(note.getLastInterpreterName() + " ") || Strings.isNullOrEmpty(text)) &&
+        isTheLastParagraph) {
       note.addParagraph();
     }
 
@@ -1135,7 +1139,6 @@ public class NotebookServer extends WebSocketServlet implements
             .put("noteId", noteId)
             .put("paragraphId", paragraphId)
             .put("data", output);
-    Paragraph paragraph = notebook().getNote(noteId).getParagraph(paragraphId);
     broadcast(noteId, msg);
   }
 
@@ -1151,7 +1154,60 @@ public class NotebookServer extends WebSocketServlet implements
             .put("noteId", noteId)
             .put("paragraphId", paragraphId)
             .put("data", output);
-    Paragraph paragraph = notebook().getNote(noteId).getParagraph(paragraphId);
+    broadcast(noteId, msg);
+  }
+
+  /**
+   * When application append output
+   * @param noteId
+   * @param paragraphId
+   * @param appId
+   * @param output
+   */
+  @Override
+  public void onOutputAppend(String noteId, String paragraphId, String appId, String output) {
+    Message msg = new Message(OP.APP_APPEND_OUTPUT)
+        .put("noteId", noteId)
+        .put("paragraphId", paragraphId)
+        .put("appId", appId)
+        .put("data", output);
+    broadcast(noteId, msg);
+  }
+
+  /**
+   * When application update output
+   * @param noteId
+   * @param paragraphId
+   * @param appId
+   * @param output
+   */
+  @Override
+  public void onOutputUpdated(String noteId, String paragraphId, String appId, String output) {
+    Message msg = new Message(OP.APP_UPDATE_OUTPUT)
+        .put("noteId", noteId)
+        .put("paragraphId", paragraphId)
+        .put("appId", appId)
+        .put("data", output);
+    broadcast(noteId, msg);
+  }
+
+  @Override
+  public void onLoad(String noteId, String paragraphId, String appId, HeliumPackage pkg) {
+    Message msg = new Message(OP.APP_LOAD)
+        .put("noteId", noteId)
+        .put("paragraphId", paragraphId)
+        .put("appId", appId)
+        .put("pkg", pkg);
+    broadcast(noteId, msg);
+  }
+
+  @Override
+  public void onStatusChange(String noteId, String paragraphId, String appId, String status) {
+    Message msg = new Message(OP.APP_STATUS_CHANGE)
+        .put("noteId", noteId)
+        .put("paragraphId", paragraphId)
+        .put("appId", appId)
+        .put("status", status);
     broadcast(noteId, msg);
   }
 
@@ -1239,8 +1295,8 @@ public class NotebookServer extends WebSocketServlet implements
   }
 
   private void sendAllAngularObjects(Note note, NotebookSocket conn) throws IOException {
-    List<InterpreterSetting> settings = note.getNoteReplLoader()
-        .getInterpreterSettings();
+    List<InterpreterSetting> settings =
+        notebook().getInterpreterFactory().getInterpreterSettings(note.getId());
     if (settings == null || settings.size() == 0) {
       return;
     }
@@ -1279,21 +1335,19 @@ public class NotebookServer extends WebSocketServlet implements
         continue;
       }
 
-      List<InterpreterSetting> intpSettings = note.getNoteReplLoader()
-          .getInterpreterSettings();
-      if (intpSettings.isEmpty())
+      List<InterpreterSetting> intpSettings = notebook.getInterpreterFactory()
+          .getInterpreterSettings(note.getId());
+      if (intpSettings.isEmpty()) {
         continue;
-      for (InterpreterSetting setting : intpSettings) {
-        if (setting.getInterpreterGroup(note.id()).getId().equals(interpreterGroupId)) {
-          broadcast(
-              note.id(),
-              new Message(OP.ANGULAR_OBJECT_UPDATE)
-                  .put("angularObject", object)
-                  .put("interpreterGroupId", interpreterGroupId)
-                  .put("noteId", note.id())
-                  .put("paragraphId", object.getParagraphId()));
-        }
       }
+
+      broadcast(
+          note.id(),
+          new Message(OP.ANGULAR_OBJECT_UPDATE)
+              .put("angularObject", object)
+              .put("interpreterGroupId", interpreterGroupId)
+              .put("noteId", note.id())
+              .put("paragraphId", object.getParagraphId()));
     }
   }
 
@@ -1306,7 +1360,7 @@ public class NotebookServer extends WebSocketServlet implements
         continue;
       }
 
-      List<String> ids = note.getNoteReplLoader().getInterpreters();
+      List<String> ids = notebook.getInterpreterFactory().getInterpreters(note.getId());
       for (String id : ids) {
         if (id.equals(interpreterGroupId)) {
           broadcast(

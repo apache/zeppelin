@@ -48,12 +48,18 @@ enum RemoteInterpreterEventType {
   RESOURCE_GET = 7
   OUTPUT_APPEND = 8,
   OUTPUT_UPDATE = 9,
-  ANGULAR_REGISTRY_PUSH=10
+  ANGULAR_REGISTRY_PUSH = 10,
+  APP_STATUS_UPDATE = 11,
 }
 
 struct RemoteInterpreterEvent {
   1: RemoteInterpreterEventType type,
   2: string data      // json serialized data
+}
+
+struct RemoteApplicationResult {
+  1: bool success,
+  2: string msg
 }
 
 /*
@@ -99,4 +105,8 @@ service RemoteInterpreterService {
   void angularObjectAdd(1: string name, 2: string noteId, 3: string paragraphId, 4: string object);
   void angularObjectRemove(1: string name, 2: string noteId, 3: string paragraphId);
   void angularRegistryPush(1: string registry);
+
+  RemoteApplicationResult loadApplication(1: string applicationInstanceId, 2: string packageInfo, 3: string noteId, 4: string paragraphId);
+  RemoteApplicationResult unloadApplication(1: string applicationInstanceId);
+  RemoteApplicationResult runApplication(1: string applicationInstanceId);
 }

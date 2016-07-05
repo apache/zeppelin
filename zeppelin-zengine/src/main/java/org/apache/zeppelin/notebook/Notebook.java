@@ -41,6 +41,7 @@ import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.apache.zeppelin.notebook.repo.NotebookRepoSync;
 import org.apache.zeppelin.resource.ResourcePoolUtils;
+import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.apache.zeppelin.search.SearchService;
 import org.apache.zeppelin.user.AuthenticationInfo;
@@ -64,7 +65,7 @@ import com.google.gson.stream.JsonReader;
 /**
  * Collection of Notes.
  */
-public class Notebook {
+public class Notebook implements NoteEventListener {
   static Logger logger = LoggerFactory.getLogger(Notebook.class);
 
   @SuppressWarnings("unused") @Deprecated //TODO(bzz): remove unused
@@ -80,6 +81,8 @@ public class Notebook {
   private NotebookRepo notebookRepo;
   private SearchService notebookIndex;
   private NotebookAuthorization notebookAuthorization;
+  private final List<NotebookEventListener> notebookEventListeners =
+      Collections.synchronizedList(new LinkedList<NotebookEventListener>());
   private Credentials credentials;
 
   /**
@@ -151,9 +154,13 @@ public class Notebook {
    */
   public Note createNote(List<String> interpreterIds, AuthenticationInfo subject)
       throws IOException {
-    NoteInterpreterLoader intpLoader = new NoteInterpreterLoader(replFactory);
-    Note note = new Note(notebookRepo, intpLoader, jobListenerFactory, notebookIndex, credentials);
-    intpLoader.setNoteId(note.id());
+    Note note = new Note(
+        notebookRepo,
+        replFactory,
+        jobListenerFactory,
+        notebookIndex,
+        credentials,
+        this);
     synchronized (notes) {
       notes.put(note.id(), note);
     }
@@ -164,6 +171,7 @@ public class Notebook {
 
     notebookIndex.addIndexDoc(note);
     note.persist(subject);
+    fireNoteCreateEvent(note);
     return note;
   }
   
@@ -218,7 +226,7 @@ public class Notebook {
       logger.error(e.toString(), e);
       throw e;
     }
-    
+
     return newNote;
   }
 
@@ -258,7 +266,14 @@ public class Notebook {
       List<String> interpreterSettingIds) throws IOException {
     Note note = getNote(id);
     if (note != null) {
-      note.getNoteReplLoader().setInterpreters(interpreterSettingIds);
+      List<InterpreterSetting> currentBindings = replFactory.getInterpreterSettings(id);
+      for (InterpreterSetting setting : currentBindings) {
+        if (!interpreterSettingIds.contains(setting.id())) {
+          fireUnbindInterpreter(note, setting);
+        }
+      }
+
+      replFactory.setInterpreters(note.getId(), interpreterSettingIds);
       // comment out while note.getNoteReplLoader().setInterpreters(...) do the same
       // replFactory.putNoteInterpreterSettingBinding(id, interpreterSettingIds);
     }
@@ -267,7 +282,7 @@ public class Notebook {
   public List<String> getBindedInterpreterSettingsIds(String id) {
     Note note = getNote(id);
     if (note != null) {
-      return note.getNoteReplLoader().getInterpreters();
+      return getInterpreterFactory().getInterpreters(note.getId());
     } else {
       return new LinkedList<String>();
     }
@@ -276,7 +291,7 @@ public class Notebook {
   public List<InterpreterSetting> getBindedInterpreterSettings(String id) {
     Note note = getNote(id);
     if (note != null) {
-      return note.getNoteReplLoader().getInterpreterSettings();
+      return replFactory.getInterpreterSettings(note.getId());
     } else {
       return new LinkedList<InterpreterSetting>();
     }
@@ -305,6 +320,15 @@ public class Notebook {
         // remove paragraph scope object
         for (Paragraph p : note.getParagraphs()) {
           ((RemoteAngularObjectRegistry) registry).removeAllAndNotifyRemoteProcess(id, p.getId());
+
+          // remove app scope object
+          List<ApplicationState> appStates = p.getAllApplicationStates();
+          if (appStates != null) {
+            for (ApplicationState app : appStates) {
+              ((RemoteAngularObjectRegistry) registry).removeAllAndNotifyRemoteProcess(
+                  id, app.getId());
+            }
+          }
         }
         // remove notebook scope object
         ((RemoteAngularObjectRegistry) registry).removeAllAndNotifyRemoteProcess(id, null);
@@ -312,6 +336,14 @@ public class Notebook {
         // remove paragraph scope object
         for (Paragraph p : note.getParagraphs()) {
           registry.removeAll(id, p.getId());
+
+          // remove app scope object
+          List<ApplicationState> appStates = p.getAllApplicationStates();
+          if (appStates != null) {
+            for (ApplicationState app : appStates) {
+              registry.removeAll(id, app.getId());
+            }
+          }
         }
         // remove notebook scope object
         registry.removeAll(id, null);
@@ -319,6 +351,8 @@ public class Notebook {
     }
 
     ResourcePoolUtils.removeResourcesBelongsToNote(id);
+
+    fireNoteRemoveEvent(note);
 
     try {
       note.unpersist(subject);
@@ -348,9 +382,7 @@ public class Notebook {
     note.setIndex(this.notebookIndex);
     note.setCredentials(this.credentials);
 
-    NoteInterpreterLoader replLoader = new NoteInterpreterLoader(replFactory);
-    note.setReplLoader(replLoader);
-    replLoader.setNoteId(note.id());
+    note.setInterpreterFactory(replFactory);
 
     note.setJobListenerFactory(jobListenerFactory);
     note.setNotebookRepo(notebookRepo);
@@ -383,6 +415,8 @@ public class Notebook {
       }
     }
 
+    note.setNoteEventListener(this);
+
     synchronized (notes) {
       notes.put(note.id(), note);
       refreshCron(note.id());
@@ -406,6 +440,7 @@ public class Notebook {
         }
       }
     }
+
     return note;
   }
 
@@ -607,9 +642,9 @@ public class Notebook {
 
       // set interpreter bind type
       String interpreterGroupName = null;
-      if (note.getNoteReplLoader().getInterpreterSettings() != null &&
-          note.getNoteReplLoader().getInterpreterSettings().size() >= 1) {
-        interpreterGroupName = note.getNoteReplLoader().getInterpreterSettings().get(0).getGroup();
+      if (replFactory.getInterpreterSettings(note.getId()) != null &&
+          replFactory.getInterpreterSettings(note.getId()).size() >= 1) {
+        interpreterGroupName = replFactory.getInterpreterSettings(note.getId()).get(0).getGroup();
       }
 
       // not update and not running -> pass
@@ -659,7 +694,8 @@ public class Notebook {
         logger.error(e.getMessage(), e);
       }
       if (releaseResource) {
-        for (InterpreterSetting setting : note.getNoteReplLoader().getInterpreterSettings()) {
+        for (InterpreterSetting setting :
+            notebook.getInterpreterFactory().getInterpreterSettings(note.getId())) {
           notebook.getInterpreterFactory().restart(setting.id());
         }
       }      
@@ -740,4 +776,46 @@ public class Notebook {
     this.notebookIndex.close();
   }
 
+  public void addNotebookEventListener(NotebookEventListener listener) {
+    notebookEventListeners.add(listener);
+  }
+
+  private void fireNoteCreateEvent(Note note) {
+    for (NotebookEventListener listener : notebookEventListeners) {
+      listener.onNoteCreate(note);
+    }
+  }
+
+  private void fireNoteRemoveEvent(Note note) {
+    for (NotebookEventListener listener : notebookEventListeners) {
+      listener.onNoteRemove(note);
+    }
+  }
+
+  private void fireUnbindInterpreter(Note note, InterpreterSetting setting) {
+    for (NotebookEventListener listener : notebookEventListeners) {
+      listener.onUnbindInterpreter(note, setting);
+    }
+  }
+
+  @Override
+  public void onParagraphRemove(Paragraph p) {
+    for (NotebookEventListener listener : notebookEventListeners) {
+      listener.onParagraphRemove(p);
+    }
+  }
+
+  @Override
+  public void onParagraphCreate(Paragraph p) {
+    for (NotebookEventListener listener : notebookEventListeners) {
+      listener.onParagraphCreate(p);
+    }
+  }
+
+  @Override
+  public void onParagraphStatusChange(Paragraph p, Job.Status status) {
+    for (NotebookEventListener listener : notebookEventListeners) {
+      listener.onParagraphStatusChange(p, status);
+    }
+  }
 }
