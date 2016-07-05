@@ -61,7 +61,7 @@ Several interpreters are merged into JDBC interpreter. If you were using one of 
 ### New features
    * [Shiro Authentication](../../docs/0.6.0/security/shiroauthentication.html)
    * [Notebook Authorization](../../docs/0.6.0/security/notebook_authorization.html)
-   * [Azure](..//docs/0.6.0/storage/storage.html#notebook-storage-in-azure), [ZeppelinHub](../../docs/0.6.0/storage/storage.html#storage-in-zeppelinhub) Notebook Storage
+   * [Azure](../../docs/0.6.0/storage/storage.html#notebook-storage-in-azure), [ZeppelinHub](../../docs/0.6.0/storage/storage.html#storage-in-zeppelinhub) Notebook Storage
    * Paragraph Result Output Streaming
    * Folder Structure Notebook
    * CSV, TSV Download
