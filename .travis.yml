@@ -81,7 +81,6 @@ before_script:
 script:
   - mvn $TEST_FLAG $PROFILE -B $TEST_PROJECTS
 
-
 after_success:
   - echo "Travis exited with ${TRAVIS_TEST_RESULT}"
 
