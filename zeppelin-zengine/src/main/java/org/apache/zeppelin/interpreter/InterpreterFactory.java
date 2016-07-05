@@ -89,7 +89,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
 
   private DependencyResolver depResolver;
 
-  private Map<String, String> env = new HashMap<String, String>();
+  private Map<String, String> env = new HashMap<>();
 
   private Interpreter devInterpreter;
 
@@ -100,7 +100,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
       DependencyResolver depResolver)
       throws InterpreterException, IOException, RepositoryException {
     this(conf, new InterpreterOption(true), angularObjectRegistryListener,
-            remoteInterpreterProcessListener, appEventListener, depResolver);
+        remoteInterpreterProcessListener, appEventListener, depResolver);
   }
 
 
@@ -870,10 +870,10 @@ public class InterpreterFactory implements InterpreterGroupFactory {
   }
 
   private Interpreter connectToRemoteRepl(String noteId,
-                                          String className,
-                                          String host,
-                                          int port,
-                                          Properties property) {
+      String className,
+      String host,
+      int port,
+      Properties property) {
     int connectTimeout = conf.getInt(ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT);
     int maxPoolSize = conf.getInt(ConfVars.ZEPPELIN_INTERPRETER_MAX_POOL_SIZE);
     LazyOpenInterpreter intp = new LazyOpenInterpreter(
@@ -1143,7 +1143,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
           ZeppelinDevServer.DEFAULT_TEST_INTERPRETER_PORT,
           new Properties());
 
-      LinkedList<Interpreter> intpList = new LinkedList<Interpreter>();
+      LinkedList<Interpreter> intpList = new LinkedList<>();
       intpList.add(devInterpreter);
       interpreterGroup.put("dev", intpList);
 
