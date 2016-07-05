@@ -475,7 +475,7 @@ angular.module('zeppelinWebApp')
         $scope.renderHtml();
       } else if (newType === 'ANGULAR' && resultRefreshed) {
         $scope.renderAngular();
-      } else if (newType === 'TEXT' && resultRefreshed) {
+      } else if (newType === 'TEXT') {
         $scope.renderText();
       }
 
