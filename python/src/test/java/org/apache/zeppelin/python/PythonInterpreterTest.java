@@ -114,7 +114,7 @@ public class PythonInterpreterTest {
    * is sent to interpreter and JavaGateway is running
    */
   @Test
-  public void testPy4jInstalled() throws IOException {
+  public void testPy4jInstalled() throws IOException, InterruptedException {
     when(mockPythonProcess.sendAndGetResult(eq("\n\nimport py4j\n"))).thenReturn(">>>");
 
     pythonInterpreter.open();
@@ -130,6 +130,7 @@ public class PythonInterpreterTest {
 
     assertTrue(serverIsListeningOn(py4jPort));
     pythonInterpreter.close();
+    TimeUnit.SECONDS.sleep(1);
     assertFalse(serverIsListeningOn(py4jPort));
   }
 
