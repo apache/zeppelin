@@ -17,14 +17,14 @@
 angular.module('zeppelinWebApp').controller('CredentialCtrl', function($scope, $route, $routeParams, $location, $rootScope,
                                                                        $http, baseUrlSrv, ngToast) {
   $scope._ = _;
-
+  
   $scope.credentialInfo = [];
   $scope.showAddNewCredentialInfo = false;
-
+  
   var getCredentialInfo = function() {
     $http.get(baseUrlSrv.getRestApiBase()+'/credential').
       success(function(data, status, headers, config) {
-
+        
         $scope.credentialInfo  = _.map(data.body.userCredentials, function(value, prop) {
           return {entity: prop, password: value.password, username: value.username };
         });
@@ -34,7 +34,7 @@ angular.module('zeppelinWebApp').controller('CredentialCtrl', function($scope, $
         console.log('Error %o %o', status, data.message);
       });
   };
-
+  
   $scope.addNewCredentialInfo = function() {
     if ($scope.entity && _.isEmpty($scope.entity.trim()) &&
       $scope.username && _.isEmpty($scope.username.trim())) {
@@ -45,13 +45,13 @@ angular.module('zeppelinWebApp').controller('CredentialCtrl', function($scope, $
       });
       return;
     }
-
+    
     var newCredential  = {
       'entity': $scope.entity,
       'username': $scope.username,
       'password': $scope.password
     };
-
+    
     $http.put(baseUrlSrv.getRestApiBase() + '/credential', newCredential).
       success(function(data, status, headers, config) {
         ngToast.success({
@@ -73,18 +73,18 @@ angular.module('zeppelinWebApp').controller('CredentialCtrl', function($scope, $
         console.log('Error %o %o', status, data.message);
       });
   };
-
+  
   $scope.cancelCredentialInfo = function() {
     $scope.showAddNewCredentialInfo = false;
     resetCredentialInfo();
   };
-
+  
   var resetCredentialInfo = function() {
     $scope.entity = '';
     $scope.username = '';
     $scope.password = '';
   };
-
+  
   $scope.copyOriginCredentialsInfo = function() {
     ngToast.info({
       content: 'Since entity is a unique key, you can edit only username & password',
@@ -92,14 +92,14 @@ angular.module('zeppelinWebApp').controller('CredentialCtrl', function($scope, $
       timeout: '3000'
     });
   };
-
+  
   $scope.updateCredentialInfo = function(form, data, entity) {
     var request = {
       entity: entity,
       username: data.username,
       password: data.password
     };
-
+    
     $http.put(baseUrlSrv.getRestApiBase() + '/credential/', request).
       success(function(data, status, headers, config) {
         var index = _.findIndex($scope.credentialInfo, { 'entity': entity });
@@ -117,7 +117,7 @@ angular.module('zeppelinWebApp').controller('CredentialCtrl', function($scope, $
       });
     return false;
   };
-
+  
   $scope.removeCredentialInfo = function(entity) {
     BootstrapDialog.confirm({
       closable: false,
@@ -140,10 +140,10 @@ angular.module('zeppelinWebApp').controller('CredentialCtrl', function($scope, $
       }
     });
   };
-
+  
   var init = function() {
     getCredentialInfo();
   };
-
+  
   init();
 });
