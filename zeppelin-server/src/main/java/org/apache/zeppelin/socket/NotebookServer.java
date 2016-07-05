@@ -1088,6 +1088,9 @@ public class NotebookServer extends WebSocketServlet implements
       item = job.getWorkflowJobItemTarget("2BQVKJ1V2", "20160628-175748_456467780");
       WorkflowJobItem newJob = new WorkflowJobItem("2BQVKJ1V2", "20160624-152949_1611139341");
       item.setOnSuccessJob(newJob);
+      item = job.getWorkflowJobItemTarget("2BQVKJ1V2", "20160624-152949_1611139341");
+      WorkflowJobItem newJob = new WorkflowJobItem("2BQVKJ1V2", "20160624-152949_1611139341");
+      item.setOnSuccessJob();
     }
 
 
