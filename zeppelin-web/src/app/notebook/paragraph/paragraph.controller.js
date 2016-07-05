@@ -1054,7 +1054,7 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
   };
 
   var setD3Chart = function(type, data, refresh) {
-    if (!$scope.chart[type]) {
+    if (!$scope.chart[type] && type !== 'forceLayout') {
       var chart = nv.models[type]();
       $scope.chart[type] = chart;
     }
@@ -1087,6 +1087,8 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
       $scope.chart[type].showDistX(true)
         .showDistY(true);
       //handle the problem of tooltip not showing when muliple points have same value.
+    } else if (type === 'forceLayout') {
+      var forceLayoutData = setForceLayoutData(data, 1000);
     } else {
       var p = pivot(data);
       if (type === 'pieChart') {
@@ -1158,11 +1160,140 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
       nv.utils.windowResize($scope.chart[type].update);
     };
 
+    var renderForceLayout = function() {
+      var color = d3.scale.category10();
+      var r = 5;
+      var margin = {top: -5, right: -5, bottom: -5, left: -5};
+      var height = $scope.paragraph.config.graph.height;
+      var width = angular.element('#p' + $scope.paragraph.id + '_' + 'resize').width();
+
+      function zoomed() {
+        container.attr('transform', 'translate(' + d3.event.translate + ')scale(' + d3.event.scale + ')');
+      }
+
+      function dragstarted(d) {
+        d3.event.sourceEvent.stopPropagation();
+        /*jshint validthis:true */
+        d3.select(this).classed('dragging', true);
+        force.start();
+      }
+
+      function dragged(d) {
+        /*jshint validthis:true */
+        d3.select(this).attr('cx', d.x = d3.event.x).attr('cy', d.y = d3.event.y);
+      }
+
+      function dragended(d) {
+        /*jshint validthis:true */
+        d3.select(this).classed('dragging', false);
+      }
+
+      d3.select('#p' + $scope.paragraph.id + '_' + type + ' svg g').remove();
+      d3.select('#p' + $scope.paragraph.id + '_' + type + ' div.tooltip').remove();
+
+      if (forceLayoutData) {
+        var force = d3.layout.force()
+          .charge(-120)
+          .linkDistance(30)
+          .size([width, height]);
+
+        var zoom = d3.behavior.zoom()
+          .scaleExtent([0, 10])
+          .on('zoom', zoomed);
+
+        var drag = d3.behavior.drag()
+          .origin(function(d) { return d; })
+          .on('dragstart', dragstarted)
+          .on('drag', dragged)
+          .on('dragend', dragended);
+
+        var svg = d3.select('#p' + $scope.paragraph.id + '_' + type + ' svg')
+          .attr('width', width)
+          .attr('height', height)
+          .append('g')
+          .attr('transform', 'translate(' + margin.left + ',' + margin.right + ')')
+          .call(zoom);
+
+        var tooltip = d3.select('#p' + $scope.paragraph.id + '_' + type).append('div')
+          .attr('class', 'tooltip')
+          .style('opacity', 0);
+
+        var rect = svg.append('rect')
+          .attr('width', width)
+          .attr('height', height)
+          .style('fill', 'none')
+          .style('pointer-events', 'all');
+
+        var container = svg.append('g')
+          .attr('class', 'container');
+
+        force.nodes(forceLayoutData.nodes)
+          .links(forceLayoutData.links)
+          .start();
+
+        var link = container.append('g')
+          .attr('class', 'links')
+          .selectAll('.link')
+          .data(forceLayoutData.links)
+          .enter().append('line')
+          .attr('class', 'link')
+          .style('stroke-width', function(d) { return Math.sqrt(d.value); });
+
+        var node = container.append('g')
+          .attr('class', 'nodes')
+          .selectAll('.node')
+          .data(forceLayoutData.nodes)
+          .enter().append('g')
+          .attr('class', 'node')
+          .attr('cx', function(d) { return d.x; })
+          .attr('cy', function(d) { return d.y; })
+          .call(drag);
+
+        node.append('circle')
+          .attr('r', r)
+          .style('fill', function(d) { return color(d.group); });
+
+        node.on('mouseover', function(d) {
+          console.log(d.group);
+          var offsetX = d3.transform(container.attr('transform')).translate[0];
+          var offsetY = d3.transform(container.attr('transform')).translate[1];
+          var scale = d3.transform(container.attr('transform')).scale[0];
+          tooltip.transition()
+            .duration(200)
+            .style('opacity', 0.9);
+          tooltip.html('<strong>name: <span class=\'tooltip-text\'>' + d.name + '</span><br>' +
+                       'group: <span class=\'tooltip-text\'>' + d.group + '</span></strong>')
+            .style('left', (d.px*scale + offsetX + 15) + 'px')
+            .style('top', (d.py*scale + offsetY - 18) + 'px');
+        })
+        .on('mouseout', function(d) {
+          tooltip.transition()
+            .duration(200)
+            .style('opacity', 0);
+        });
+
+        force.on('tick', function() {
+          link.attr('x1', function(d) { return d.source.x; })
+              .attr('y1', function(d) { return d.source.y; })
+              .attr('x2', function(d) { return d.target.x; })
+              .attr('y2', function(d) { return d.target.y; });
+
+          node.attr('transform', function(d) { return 'translate(' + d.x + ',' + d.y + ')'; });
+        });
+      } else {
+        throw new Error('No data available');
+      }
+    };
+
     var retryRenderer = function() {
       if (angular.element('#p' + $scope.paragraph.id + '_' + type + ' svg').length !== 0) {
         try {
-          renderChart();
-        } catch (err) {
+          if (type !== 'forceLayout') {
+            renderChart();
+          } else {
+            renderForceLayout();
+          }
+        } catch(err) {
           console.log('Chart drawing error %o', err);
         }
       } else {
@@ -1478,6 +1609,30 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
 
   $scope.removeMapOptionPinInfo = function(idx) {
     $scope.paragraph.config.graph.map.pinCols.splice(idx, 1);
+    clearUnknownColsFromGraphOption();
+    $scope.setGraphMode($scope.paragraph.config.graph.mode, true, false);
+  };
+
+  $scope.removeForceLayoutOptionSource = function(idx) {
+    $scope.paragraph.config.graph.forceLayout.source = null;
+    clearUnknownColsFromGraphOption();
+    $scope.setGraphMode($scope.paragraph.config.graph.mode, true, false);
+  };
+
+  $scope.removeForceLayoutOptionSourceGroup = function(idx) {
+    $scope.paragraph.config.graph.forceLayout.sourceGroup = null;
+    clearUnknownColsFromGraphOption();
+    $scope.setGraphMode($scope.paragraph.config.graph.mode, true, false);
+  };
+
+  $scope.removeForceLayoutOptionDest = function(idx) {
+    $scope.paragraph.config.graph.forceLayout.dest = null;
+    clearUnknownColsFromGraphOption();
+    $scope.setGraphMode($scope.paragraph.config.graph.mode, true, false);
+  };
+
+  $scope.removeForceLayoutOptionDestGroup = function(idx) {
+    $scope.paragraph.config.graph.forceLayout.destGroup = null;
     clearUnknownColsFromGraphOption();
     $scope.setGraphMode($scope.paragraph.config.graph.mode, true, false);
   };
@@ -2032,6 +2187,38 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
       yLabels: colIndexValue,
       d3g: d3g
     };
+  };
+
+  var setForceLayoutData = function(data, limit) {
+    try {
+      var source = $scope.paragraph.config.graph.forceLayout.source;
+      var dest = $scope.paragraph.config.graph.forceLayout.dest;
+      var sourceGroup = $scope.paragraph.config.graph.forceLayout.sourceGroup;
+      var destGroup = $scope.paragraph.config.graph.forceLayout.destGroup;
+      var nodes = [];
+      var links = [];
+      var nodesMap = {};
+      angular.forEach(data.rows, function(row, index) {
+        if (index < limit) {
+          if (!(row[source.index] in nodesMap)) {
+            nodesMap[row[source.index]] = nodes.length;
+            nodes.push({ name: row[source.index], group: row[sourceGroup.index]});
+          }
+          if (!(row[dest.index] in nodesMap)) {
+            nodesMap[row[dest.index]] = nodes.length;
+            nodes.push({ name: row[dest.index], group: row[destGroup.index]});
+          }
+        }
+      });
+      angular.forEach(data.rows, function(row, index) {
+        if (index < limit) {
+          links.push({ source: nodesMap[row[source.index]], target: nodesMap[row[dest.index]], value: 1 });
+        }
+      });
+      return { nodes: nodes, links: links };
+    } catch(e) {
+      console.log(e.name + ': ' + e.message);
+    }
   };
 
   var isDiscrete = function(field) {
