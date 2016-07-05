@@ -110,7 +110,7 @@ Json file contains the following information
 
 Name is a string in `[group].[name]` format.
 `[group]` and `[name]` allow only `[A-Za-z0-9_]`.
-Group is normally the name of organization who creates this application.
+Group is normally the name of an organization who creates this application.
 
 #### description
 
