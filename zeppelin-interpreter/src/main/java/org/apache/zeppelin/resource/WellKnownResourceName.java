@@ -20,7 +20,8 @@ package org.apache.zeppelin.resource;
  * Well known resource names in ResourcePool
  */
 public enum WellKnownResourceName {
-  ParagraphResult("zeppelin.paragraph.result");     // paragraph run result
+  ZeppelinReplResult("zeppelin.repl.result"),                 // last object of repl
+  ZeppelinTableResult("zeppelin.paragraph.result.table");     // paragraph run result
 
   String name;
   WellKnownResourceName(String name) {

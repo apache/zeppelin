@@ -22,6 +22,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.NullArgumentException;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
@@ -57,35 +58,28 @@ public class InterpreterFactoryTest {
     System.setProperty(ConfVars.ZEPPELIN_INTERPRETERS.getVarName(), "org.apache.zeppelin.interpreter.mock.MockInterpreter1,org.apache.zeppelin.interpreter.mock.MockInterpreter2");
     conf = new ZeppelinConfiguration();
     depResolver = new DependencyResolver(tmpDir.getAbsolutePath() + "/local-repo");
-    factory = new InterpreterFactory(conf, new InterpreterOption(false), null, null, depResolver);
+    factory = new InterpreterFactory(conf, new InterpreterOption(false), null, null, null, depResolver);
     context = new InterpreterContext("note", "id", "title", "text", null, null, null, null, null, null, null);
-
   }
 
   @After
   public void tearDown() throws Exception {
-    delete(tmpDir);
-  }
-
-  private void delete(File file){
-    if(file.isFile()) file.delete();
-    else if(file.isDirectory()){
-      File [] files = file.listFiles();
-      if(files!=null && files.length>0){
-        for(File f : files){
-          delete(f);
-        }
-      }
-      file.delete();
-    }
+    FileUtils.deleteDirectory(tmpDir);
   }
 
   @Test
   public void testBasic() {
-    List<String> all = factory.getDefaultInterpreterSettingList();
-    InterpreterSetting setting = factory.get(all.get(0));
-    InterpreterGroup interpreterGroup = setting.getInterpreterGroup("sharedProcess");
-    factory.createInterpretersForNote(setting, "sharedProcess", "session");
+    List<InterpreterSetting> all = factory.get();
+    InterpreterSetting mock1Setting = null;
+    for (InterpreterSetting setting : all) {
+      if (setting.getName().equals("mock1")) {
+        mock1Setting = setting;
+        break;
+      }
+    }
+
+    InterpreterGroup interpreterGroup = mock1Setting.getInterpreterGroup("sharedProcess");
+    factory.createInterpretersForNote(mock1Setting, "sharedProcess", "session");
 
     // get interpreter
     assertNotNull("get Interpreter", interpreterGroup.get("session").get(0));
@@ -94,15 +88,15 @@ public class InterpreterFactoryTest {
     assertNull(factory.get("unknown"));
 
     // restart interpreter
-    factory.restart(all.get(0));
-    assertNull(setting.getInterpreterGroup("sharedProcess").get("session"));
+    factory.restart(mock1Setting.id());
+    assertNull(mock1Setting.getInterpreterGroup("sharedProcess").get("session"));
   }
 
   @Test
   public void testFactoryDefaultList() throws IOException, RepositoryException {
     // get default settings
     List<String> all = factory.getDefaultInterpreterSettingList();
-    assertEquals(2, all.size());
+    assertTrue(factory.getRegisteredInterpreterList().size() >= all.size());
   }
 
   @Test
@@ -125,15 +119,15 @@ public class InterpreterFactoryTest {
   @Test
   public void testSaveLoad() throws IOException, RepositoryException {
     // interpreter settings
-    assertEquals(2, factory.get().size());
+    int numInterpreters = factory.get().size();
 
     // check if file saved
     assertTrue(new File(conf.getInterpreterSettingPath()).exists());
 
     factory.add("newsetting", "mock1", new LinkedList<Dependency>(), new InterpreterOption(false), new Properties());
-    assertEquals(3, factory.get().size());
+    assertEquals(numInterpreters + 1, factory.get().size());
 
     InterpreterFactory factory2 = new InterpreterFactory(conf, null, null, null, depResolver);
-    assertEquals(3, factory2.get().size());
+    assertEquals(numInterpreters + 1, factory2.get().size());
   }
 }

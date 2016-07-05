@@ -13,6 +13,7 @@ limitations under the License.
 -->
 <div
   id="p{{paragraph.id}}_resize"
+  ng-if="!paragraph.config.helium.activeApp"
   style='padding-bottom: 5px;'
   resize='{"allowresize": "{{!asIframe && !viewOnly}}", "graphType": "{{getResultType()}}"}'
      resizable on-resize="resizeParagraph(width, height);">
@@ -60,3 +61,11 @@ limitations under the License.
        ng-bind="paragraph.errorMessage">
   </div>
 </div>
+
+<div ng-repeat="app in apps">
+  <div id="p{{app.id}}"
+       ng-show="paragraph.config.helium.activeApp == app.id">
+  </div>
+</div>
+
+

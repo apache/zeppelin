@@ -668,6 +668,13 @@
     </profile>
 
     <profile>
+      <id>examples</id>
+      <modules>
+        <module>zeppelin-examples</module>
+      </modules>
+    </profile>
+
+    <profile>
       <id>build-distr</id>
       <activation>
         <activeByDefault>false</activeByDefault>
