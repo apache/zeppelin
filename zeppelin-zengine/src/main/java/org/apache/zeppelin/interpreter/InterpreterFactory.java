@@ -17,6 +17,7 @@
 
 package org.apache.zeppelin.interpreter;
 
+import com.google.common.base.Preconditions;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -1001,8 +1002,53 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     return getDefaultInterpreterSetting(getInterpreterSettings(noteId));
   }
 
+
+  private InterpreterSetting getInterpreterSettingByGroup(List<InterpreterSetting> settings,
+      String group) {
+    Preconditions.checkNotNull(group, "group should be not null");
+
+    for (InterpreterSetting setting : settings) {
+      if (group.equals(setting.getGroup())) {
+        return setting;
+      }
+    }
+    return null;
+  }
+
+  private String getInterpreterClassFromInterpreterSetting(InterpreterSetting setting,
+      String name) {
+    Preconditions.checkNotNull(name, "name should be not null");
+
+    for (InterpreterSetting.InterpreterInfo info : setting.getInterpreterInfos()) {
+      String infoName = info.getName();
+      if (null != info.getName() && name.equals(infoName)) {
+        return info.getClassName();
+      }
+    }
+    return null;
+  }
+
+  private Interpreter getInterpreter(String noteId, InterpreterSetting setting, String name) {
+    Preconditions.checkNotNull(noteId, "noteId should be not null");
+    Preconditions.checkNotNull(setting, "setting should be not null");
+    Preconditions.checkNotNull(name, "name should be not null");
+
+    String className;
+    if (null != (className = getInterpreterClassFromInterpreterSetting(setting, name))) {
+      List<Interpreter> interpreterGroup = createOrGetInterpreterList(noteId, setting);
+      for (Interpreter interpreter : interpreterGroup) {
+        if (className.equals(interpreter.getClassName())) {
+          return interpreter;
+        }
+      }
+    }
+    return null;
+  }
+
   public Interpreter getInterpreter(String noteId, String replName) {
     List<InterpreterSetting> settings = getInterpreterSettings(noteId);
+    InterpreterSetting setting;
+    Interpreter interpreter;
 
     if (settings == null || settings.size() == 0) {
       return null;
@@ -1020,61 +1066,43 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     }
 
     String[] replNameSplit = replName.split("\\.");
-    String group = null;
-    String name = null;
     if (replNameSplit.length == 2) {
+      String group = null;
+      String name = null;
       group = replNameSplit[0];
       name = replNameSplit[1];
 
-      Interpreter.RegisteredInterpreter registeredInterpreter = Interpreter.registeredInterpreters
-          .get(group + "." + name);
-      if (registeredInterpreter == null
-          || registeredInterpreter.getClassName() == null) {
-        throw new InterpreterException(replName + " interpreter not found");
-      }
-      String interpreterClassName = registeredInterpreter.getClassName();
+      setting = getInterpreterSettingByGroup(settings, group);
 
-      for (InterpreterSetting setting : settings) {
-        if (registeredInterpreter.getGroup().equals(setting.getGroup())) {
-          List<Interpreter> intpGroup = createOrGetInterpreterList(noteId, setting);
-          for (Interpreter interpreter : intpGroup) {
-            if (interpreterClassName.equals(interpreter.getClassName())) {
-              return interpreter;
-            }
-          }
+      if (null != setting) {
+        interpreter = getInterpreter(noteId, setting, name);
+
+        if (null != interpreter) {
+          return interpreter;
         }
       }
+
       throw new InterpreterException(replName + " interpreter not found");
+
     } else {
       // first assume replName is 'name' of interpreter. ('groupName' is ommitted)
       // search 'name' from first (default) interpreter group
-      InterpreterSetting defaultSetting = getDefaultInterpreterSetting(settings);
-      Interpreter.RegisteredInterpreter registeredInterpreter =
-          Interpreter.registeredInterpreters.get(defaultSetting.getGroup() + "." + replName);
-      if (registeredInterpreter != null) {
-        List<Interpreter> interpreters = createOrGetInterpreterList(noteId, defaultSetting);
-        for (Interpreter interpreter : interpreters) {
+      // TODO(jl): Handle with noteId to support defaultInterpreter per note.
+      setting = getDefaultInterpreterSetting(settings);
 
-          RegisteredInterpreter intp =
-              Interpreter.findRegisteredInterpreterByClassName(interpreter.getClassName());
-          if (intp == null) {
-            continue;
-          }
+      interpreter = getInterpreter(noteId, setting, replName);
 
-          if (intp.getName().equals(replName)) {
-            return interpreter;
-          }
-        }
-
-        throw new InterpreterException(
-            defaultSetting.getGroup() + "." + replName + " interpreter not found");
+      if (null != interpreter) {
+        return interpreter;
       }
 
       // next, assume replName is 'group' of interpreter ('name' is ommitted)
       // search interpreter group and return first interpreter.
-      for (InterpreterSetting setting : settings) {
-        if (setting.getGroup().equals(replName)) {
-          List<Interpreter> interpreters = createOrGetInterpreterList(noteId, setting);
+      setting = getInterpreterSettingByGroup(settings, replName);
+
+      if (null != setting) {
+        List<Interpreter> interpreters = createOrGetInterpreterList(noteId, setting);
+        if (null != interpreters) {
           return interpreters.get(0);
         }
       }
