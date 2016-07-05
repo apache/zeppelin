@@ -15,7 +15,7 @@ limitations under the License.
 <div id="{{paragraph.id}}_switch"
      ng-if="(paragraph.result.type == 'TABLE' || apps.length > 0 || suggestion.available && suggestion.available.length > 0) && !asIframe && !viewOnly"
      class="btn-group"
-     style='margin-bottom: 10px;'>
+     style="margin-bottom: 10px;">
 
   <button type="button" class="btn btn-default btn-sm"
           ng-if="paragraph.result.type == 'TABLE'"
@@ -47,7 +47,7 @@ limitations under the License.
           ng-class="{'active': isGraphMode('scatterChart')}"
           ng-click="setGraphMode('scatterChart', true)"><i class="cf cf-scatter-chart"></i>
   </button>
-  
+
   <button type="button"
           ng-if="paragraph.result.type != 'TABLE'"
           ng-click="switchApp()"
@@ -67,7 +67,7 @@ limitations under the License.
 <div id="{{paragraph.id}}_helium"
      ng-if="(suggestion.available && suggestion.available.length > 0) && !asIframe && !viewOnly"
      class="btn-group"
-     style='margin-bottom: 10px;'>
+     style="margin-bottom: 10px;">
   <button type="button"
           class="btn btn-default btn-sm dropdown-toggle"
           ng-if="suggestion.available && suggestion.available.length > 0"
@@ -120,4 +120,3 @@ limitations under the License.
     settings <span ng-class="paragraph.config.graph.optionOpen ? 'fa fa-caret-up' : 'fa fa-caret-down'"></span>
   </a>
 </span>
-
