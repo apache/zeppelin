@@ -245,12 +245,11 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     jdbcInterpreter.open();
 
     List<InterpreterCompletion> completionList = jdbcInterpreter.completion("SEL", 0);
-    for (InterpreterCompletion intp : completionList) {
-      logger.info("completion result test - {} {}", intp.getName(), intp.getValue());
-    }
+    
+    InterpreterCompletion correctCompletionKeyword = new InterpreterCompletion("SELECT", "SELECT");
 
     assertEquals(2, completionList.size());
-    assertEquals(true, completionList.contains("SELECT"));
+    assertEquals(true, completionList.contains(correctCompletionKeyword));
     assertEquals(0, jdbcInterpreter.completion("SEL", 100).size());
   }
 
