@@ -19,7 +19,7 @@ angular.module('zeppelinWebApp').controller('ConfigurationCtrl', function($scope
   $scope._ = _;
 
   var getConfigurations = function() {
-    $http.get(baseUrlSrv.getRestApiBase()+'/configurations/all').
+    $http.get(baseUrlSrv.getRestApiBase() + '/configurations/all').
     success(function(data, status, headers, config) {
       $scope.configurations = data.body;
     }).
