@@ -2,19 +2,39 @@
 layout: page
 title: "Shell Interpreter"
 description: "Shell Interpreter"
-group: manual
+group: interpreter
 ---
 {% include JB/setup %}
 
-## Shell interpreter for Apache Zeppelin
+# Shell interpreter for Apache Zeppelin
 
-### Overview
+<div id="toc"></div>
+
+## Overview
 Shell interpreter uses [Apache Commons Exec](https://commons.apache.org/proper/commons-exec) to execute external processes. 
-
 In Zeppelin notebook, you can use ` %sh ` in the beginning of a paragraph to invoke system shell and run commands.
-Note: Currently each command runs as Zeppelin user.
 
-### Example
+> **Note :** Currently each command runs as Zeppelin user.
+
+## Configuration
+At the "Interpreters" menu in Zeppelin dropdown menu, you can set the property value for Shell interpreter.
+
+<table class="table-configuration">
+  <tr>
+    <th>Name</th>
+    <th>Value</th>
+    <th>Description</th>
+  </tr>
+  <tr>
+    <td>shell.command.timeout.millisecs</td>
+    <td>60000</td>
+    <td>Shell command time out in millisecs</td>
+  </tr>
+</table>
+
+## Example
 The following example demonstrates the basic usage of Shell in a Zeppelin notebook.
 
-<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/shell-example.png" width="70%" />
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/shell-example.png" />
+
+If you need further information about **Zeppelin Interpreter Setting** for using Shell interpreter, please read [What is interpreter setting?](../manual/interpreters.html#what-is-interpreter-setting) section first.
