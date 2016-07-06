@@ -1076,34 +1076,14 @@ public class NotebookServer extends WebSocketServlet implements
 
     List<Map<String, String>> workflow = (List<Map<String, String>>) fromMessage.get("relationJob");
 
-    //clover test
-//    HashMap<String, String> workflowItem = new HashMap<>();
-//    workflowItem.put("notebookId", "2BQVKJ1V2");
-//    workflowItem.put("paragraphId", "20160624-152949_1611139341");
-//    workflow.add(workflowItem);
-//
-//    workflowItem = new HashMap<>();
-//    workflowItem.put("notebookId", "2BQJQHXHC");
-//    workflowItem.put("paragraphId", "20160705-134208_1492672408");
-//    workflow.add(workflowItem);
-
-
-//    List<RelationJob> testJobs = new LinkedList<>();
-//    RelationJob testJob = new RelationJob("2BQVKJ1V2");
-//    testJob.addParagaraph("20160628-175748_456467780");
-//    p.settings.setRelationJobs(testJobs);
-
     if (workflow != null && workflow.size() > 0) {
       synchronized (workflowManager) {
         workflowManager.setWorkflow(noteId, noteId, paragraphId);
         WorkflowJob workflowJob = workflowManager.getWorkflow(noteId);
-
-        String parentNotebookId = noteId;
-        String parentParagraphId = paragraphId;
         WorkflowJobItem parentItem = null;
         WorkflowJobItem newJob;
         for (Map<String, String> workflowJobItem : workflow) {
-          parentItem = workflowJob.getWorkflowJobItemTarget(parentNotebookId, parentParagraphId);
+          parentItem = workflowJob.getWorkflowJobItemLast();
           String newJobNotebookId = workflowJobItem.get("notebookId");
           String newJobParagraphId = workflowJobItem.get("paragraphId");
           if (parentItem == null || newJobNotebookId == null || newJobParagraphId == null) {
@@ -1111,20 +1091,7 @@ public class NotebookServer extends WebSocketServlet implements
           }
           newJob = new WorkflowJobItem(newJobNotebookId, newJobParagraphId);
           parentItem.setOnSuccessJob(newJob);
-          parentNotebookId = newJobNotebookId;
-          parentParagraphId = newJobParagraphId;
-          LOG.info("clover insert workflow - {}", paragraphId);
         }
-
-        // check to infinity loop
-        //workflowManager.changeToSafeWorkflow(noteId, noteId, paragraphId);
-
-//        item = job.getWorkflowJobItemTarget("2BQVKJ1V2", "20160628-175748_456467780");
-//        WorkflowJobItem newJob = new WorkflowJobItem("2BQVKJ1V2", "20160624-152949_1611139341");
-//        item.setOnSuccessJob(newJob);
-//        item = job.getWorkflowJobItemTarget("2BQVKJ1V2", "20160624-152949_1611139341");
-//        newJob = new WorkflowJobItem("2BQJQHXHC", "20160705-134208_1492672408");
-//        item.setOnSuccessJob(newJob);
       }
     }
 

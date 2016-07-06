@@ -101,19 +101,20 @@ public class WorkflowJobItem {
   }
 
   public WorkflowJobItem getIfNextJob(String finishedNotebookId, String finishedParagraphId) {
-
-    if (isMyJob(finishedNotebookId, finishedParagraphId) && getStatus() == WorkflowStatus.SUCCESS) {
-      if (this.onSuccessJob != null && this.onSuccessJob.getStatus() == WorkflowStatus.WAIT) {
-        return this.onSuccessJob;
+    String childNotebookId = null;
+    String childParagraphId = null;
+    if (getStatus() == WorkflowStatus.SUCCESS) {
+      if (this.onSuccessJob != null) {
+        childNotebookId = this.onSuccessJob.getNotebookId();
+        childParagraphId = this.onSuccessJob.getParagaraphId();
+        return this.onSuccessJob.getIfNextJob(childNotebookId, childParagraphId);
       }
     }
 
     if (getStatus() == WorkflowStatus.WAIT) {
-      return this;
-    }
-
-    if (this.onSuccessJob != null) {
-      return this.onSuccessJob.getIfNextJob(finishedNotebookId, finishedParagraphId);
+      if (isMyJob(finishedNotebookId, finishedParagraphId)) {
+        return this;
+      }
     }
 
     return null;
@@ -122,13 +123,8 @@ public class WorkflowJobItem {
   public void notifyJobFinishied(
       Status status, String finishedNotebookId, String finishedParagraphId) {
 
-    if (getStatus() != WorkflowStatus.PROGRESS && getStatus() != WorkflowStatus.WAIT) {
-      if (this.onSuccessJob != null) {
-        this.onSuccessJob.notifyJobFinishied(status, finishedNotebookId, finishedParagraphId);
-      }
-    }
-
-    if (isMyJob(finishedNotebookId, finishedParagraphId)) {
+    if (isMyJob(finishedNotebookId, finishedParagraphId) &&
+        (getStatus() == WorkflowStatus.WAIT || getStatus() == WorkflowStatus.PROGRESS)) {
       if (Status.ABORT == status) {
         setStatus(WorkflowStatus.ABORT);
       } else if (Status.ERROR == status) {
@@ -137,10 +133,13 @@ public class WorkflowJobItem {
         setStatus(WorkflowStatus.SUCCESS);
       } else if (Status.RUNNING == status) {
         setStatus(WorkflowStatus.PROGRESS);
-      } else if (Status.PENDING == status) {
-        setStatus(WorkflowStatus.WAIT);
+      }
+    } else {
+      if (this.onSuccessJob != null) {
+        this.onSuccessJob.notifyJobFinishied(status, finishedNotebookId, finishedParagraphId);
       }
     }
+
   }
 
   private boolean isMyJob(String finishedNotebookId, String finishedParagraphId) {
