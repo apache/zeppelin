@@ -244,7 +244,7 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     jdbcInterpreter.open();
 
     List<InterpreterCompletion> completionList = jdbcInterpreter.completion("SEL", 0);
-    assertEquals(1, completionList.size());
+    assertEquals(2, completionList.size());
     assertEquals(true, completionList.contains("SELECT"));
     assertEquals(0, jdbcInterpreter.completion("SEL", 100).size());
   }
