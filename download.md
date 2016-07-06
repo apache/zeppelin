@@ -21,39 +21,61 @@ limitations under the License.
 
 ### Download Apache Zeppelin
 
-The latest release of Apache Zeppelin is **0.5.6-incubating**.
+The latest release of Apache Zeppelin is **0.6.0**.
 
-  - 0.5.6-incubating released on Jan 22, 2016 ([release notes](./releases/zeppelin-release-0.5.6-incubating.html)) ([git tag](https://git-wip-us.apache.org/repos/asf?p=incubator-zeppelin.git;a=tag;h=refs/tags/v0.5.6))
+  - 0.6.0 released on Jul 2, 2016 ([release notes](./releases/zeppelin-release-0.6.0.html)) ([git tag](https://git-wip-us.apache.org/repos/asf?p=zeppelin.git;a=commit;h=fa2c0ff93cca49428df8792e7ee35d2b561669bd))
 
     * Source:
-    <a style="cursor:pointer" onclick="ga('send', 'event', 'download', 'zeppelin-src', '0.5.6-incubating'); window.location.href='http://www.apache.org/dyn/closer.cgi/incubator/zeppelin/0.5.6-incubating/zeppelin-0.5.6-incubating.tgz'">zeppelin-0.5.6-incubating.tgz</a>
-    ([pgp](https://www.apache.org/dist/incubator/zeppelin/0.5.6-incubating/zeppelin-0.5.6-incubating.tgz.asc),
-     [md5](https://www.apache.org/dist/incubator/zeppelin/0.5.6-incubating/zeppelin-0.5.6-incubating.tgz.md5),
-     [sha](https://www.apache.org/dist/incubator/zeppelin/0.5.6-incubating/zeppelin-0.5.6-incubating.tgz.sha))
+    <a style="cursor:pointer" onclick="ga('send', 'event', 'download', 'zeppelin-src', '0.6.0'); window.location.href='http://www.apache.org/dyn/closer.cgi/zeppelin/zeppelin-0.6.0/zeppelin-0.6.0.tgz'">zeppelin-0.6.0.tgz</a>
+    ([pgp](https://www.apache.org/dist/zeppelin/zeppelin-0.6.0/zeppelin-0.6.0.tgz.asc),
+     [md5](https://www.apache.org/dist/zeppelin/zeppelin-0.6.0/zeppelin-0.6.0.tgz.md5),
+     [sha](https://www.apache.org/dist/zeppelin/zeppelin-0.6.0/zeppelin-0.6.0.tgz.sha))
 
-    * Binary package:
-    <a style="cursor:pointer" onclick="ga('send', 'event', 'download', 'zeppelin-bin', '0.5.6-incubating'); window.location.href='http://www.apache.org/dyn/closer.cgi/incubator/zeppelin/0.5.6-incubating/zeppelin-0.5.6-incubating-bin-all.tgz'">zeppelin-0.5.6-incubating-bin-all.tgz</a>
-    ([pgp](https://www.apache.org/dist/incubator/zeppelin/0.5.6-incubating/zeppelin-0.5.6-incubating-bin-all.tgz.asc),
-     [md5](https://www.apache.org/dist/incubator/zeppelin/0.5.6-incubating/zeppelin-0.5.6-incubating-bin-all.tgz.md5),
-     [sha](https://www.apache.org/dist/incubator/zeppelin/0.5.6-incubating/zeppelin-0.5.6-incubating-bin-all.tgz.sha))
+    * Binary package with all interpreters:
+    <a style="cursor:pointer" onclick="ga('send', 'event', 'download', 'zeppelin-bin-all', '0.6.0'); window.location.href='http://www.apache.org/dyn/closer.cgi/zeppelin/zeppelin-0.6.0/zeppelin-0.6.0-bin-all.tgz'">zeppelin-0.6.0-bin-all.tgz</a>
+    ([pgp](https://www.apache.org/dist/zeppelin/zeppelin-0.6.0/zeppelin-0.6.0-bin-all.tgz.asc),
+     [md5](https://www.apache.org/dist/zeppelin/zeppelin-0.6.0/zeppelin-0.6.0-bin-all.tgz.md5),
+     [sha](https://www.apache.org/dist/zeppelin/zeppelin-0.6.0/zeppelin-0.6.0-bin-all.tgz.sha))
+
+    * Binary package with Spark interpreter and interpreter net-install script ([interpreter installation guide](../../docs/0.6.0/manual/interpreterinstallation.html)):
+    <a style="cursor:pointer" onclick="ga('send', 'event', 'download', 'zeppelin-bin-netinst', '0.6.0'); window.location.href='http://www.apache.org/dyn/closer.cgi/zeppelin/zeppelin-0.6.0/zeppelin-0.6.0-bin-netinst.tgz'">zeppelin-0.6.0-bin-netinst.tgz</a>
+    ([pgp](https://www.apache.org/dist/zeppelin/zeppelin-0.6.0/zeppelin-0.6.0-bin-netinst.tgz.asc),
+     [md5](https://www.apache.org/dist/zeppelin/zeppelin-0.6.0/zeppelin-0.6.0-bin-netinst.tgz.md5),
+     [sha](https://www.apache.org/dist/zeppelin/zeppelin-0.6.0/zeppelin-0.6.0-bin-netinst.tgz.sha))
 
 
 
 ### Verify the integrity of the files
 
-It is essential that you [verify](https://www.apache.org/info/verification.html) the integrity of the downloaded files using the PGP or MD5 signatures. This signature should be matched against the [KEYS](https://www.apache.org/dist/incubator/zeppelin/KEYS) file.
+It is essential that you [verify](https://www.apache.org/info/verification.html) the integrity of the downloaded files using the PGP or MD5 signatures. This signature should be matched against the [KEYS](https://www.apache.org/dist/zeppelin/KEYS) file.
 
 
 
 ### Build from source
 
-For developers, to get latest *0.6.0-incubating-SNAPSHOT* check [README](https://github.com/apache/incubator-zeppelin/blob/master/README.md).
+For developers, to get latest *0.7.0-SNAPSHOT* check [README](https://github.com/apache/zeppelin/blob/master/README.md).
 
 
 
 ### Old releases
 
-  - 0.5.5-incubating released on Nov 18, 2015 ([release notes](./releases/zeppelin-release-0.5.5-incubating.html)) ([git tag](https://git-wip-us.apache.org/repos/asf?p=incubator-zeppelin.git;a=tag;h=refs/tags/v0.5.5))
+  - 0.5.6-incubating released on Jan 22, 2016 ([release notes](./releases/zeppelin-release-0.5.6-incubating.html)) ([git tag](https://git-wip-us.apache.org/repos/asf?p=zeppelin.git;a=tag;h=refs/tags/v0.5.6))
+
+    * Source:
+    <a style="cursor:pointer" onclick="ga('send', 'event', 'download', 'zeppelin-src', '0.5.6-incubating'); window.location.href='http://archive.apache.org/dist/incubator/zeppelin/0.5.6-incubating/zeppelin-0.5.6-incubating.tgz'">zeppelin-0.5.6-incubating.tgz</a>
+    ([pgp](http://archive.apache.org/dist/incubator/zeppelin/0.5.6-incubating/zeppelin-0.5.6-incubating.tgz.asc),
+     [md5](http://archive.apache.org/dist/incubator/zeppelin/0.5.6-incubating/zeppelin-0.5.6-incubating.tgz.md5),
+     [sha](http://archive.apache.org/dist/incubator/zeppelin/0.5.6-incubating/zeppelin-0.5.6-incubating.tgz.sha512))
+
+    * Binary package:
+    <a style="cursor:pointer" onclick="ga('send', 'event', 'download', 'zeppelin-bin', '0.5.6-incubating'); window.location.href='http://archive.apache.org/dist/incubator/zeppelin/0.5.6-incubating/zeppelin-0.5.6-incubating-bin-all.tgz'">zeppelin-0.5.6-incubating-bin-all.tgz</a>
+    ([pgp](http://archive.apache.org/dist/incubator/zeppelin/0.5.6-incubating/zeppelin-0.5.6-incubating-bin-all.tgz.asc),
+     [md5](http://archive.apache.org/dist/incubator/zeppelin/0.5.6-incubating/zeppelin-0.5.6-incubating-bin-all.tgz.md5),
+     [sha](http://archive.apache.org/dist/incubator/zeppelin/0.5.6-incubating/zeppelin-0.5.6-incubating-bin-all.tgz.sha512))
+
+<p />
+
+  - 0.5.5-incubating released on Nov 18, 2015 ([release notes](./releases/zeppelin-release-0.5.5-incubating.html)) ([git tag](https://git-wip-us.apache.org/repos/asf?p=zeppelin.git;a=tag;h=refs/tags/v0.5.5))
 
     * Source:
     <a style="cursor:pointer" onclick="ga('send', 'event', 'download', 'zeppelin-src', '0.5.5-incubating'); window.location.href='http://archive.apache.org/dist/incubator/zeppelin/0.5.5-incubating/zeppelin-0.5.5-incubating.tgz'">zeppelin-0.5.5-incubating.tgz</a>
@@ -69,7 +91,7 @@ For developers, to get latest *0.6.0-incubating-SNAPSHOT* check [README](https:/
 
 <p />
 
-  - 0.5.0-incubating released on July 23, 2015 ([release notes](./releases/zeppelin-release-0.5.0-incubating.html)) ([git tag](https://git-wip-us.apache.org/repos/asf?p=incubator-zeppelin.git;a=tag;h=refs/tags/v0.5.0))
+  - 0.5.0-incubating released on July 23, 2015 ([release notes](./releases/zeppelin-release-0.5.0-incubating.html)) ([git tag](https://git-wip-us.apache.org/repos/asf?p=zeppelin.git;a=tag;h=refs/tags/v0.5.0))
 
     * Source:
     <a style="cursor:pointer" onclick="ga('send', 'event', 'download', 'zeppelin-src', '0.5.0-incubating'); window.location.href='http://archive.apache.org/dist/incubator/zeppelin/0.5.0-incubating/zeppelin-0.5.0-incubating.tgz'">zeppelin-0.5.0-incubating.tgz</a>
