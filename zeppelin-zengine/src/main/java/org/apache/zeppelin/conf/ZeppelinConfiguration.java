@@ -362,6 +362,14 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     return getRelativeDir(String.format("%s/interpreter.json", getConfDir()));
   }
 
+  public String getHeliumConfPath() {
+    return getRelativeDir(String.format("%s/helium.json", getConfDir()));
+  }
+
+  public String getHeliumDefaultLocalRegistryPath() {
+    return getRelativeDir(ConfVars.ZEPPELIN_HELIUM_LOCALREGISTRY_DEFAULT);
+  }
+
   public String getNotebookAuthorizationPath() {
     return getRelativeDir(String.format("%s/notebook-authorization.json", getConfDir()));
   }
@@ -466,7 +474,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
    * Wrapper class.
    */
   public static enum ConfVars {
-    ZEPPELIN_HOME("zeppelin.home", "../"),
+    ZEPPELIN_HOME("zeppelin.home", "./"),
     ZEPPELIN_ADDR("zeppelin.server.addr", "0.0.0.0"),
     ZEPPELIN_PORT("zeppelin.server.port", 8080),
     ZEPPELIN_SERVER_CONTEXT_PATH("zeppelin.server.context.path", "/"),
@@ -479,7 +487,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_SSL_TRUSTSTORE_PATH("zeppelin.ssl.truststore.path", null),
     ZEPPELIN_SSL_TRUSTSTORE_TYPE("zeppelin.ssl.truststore.type", null),
     ZEPPELIN_SSL_TRUSTSTORE_PASSWORD("zeppelin.ssl.truststore.password", null),
-    ZEPPELIN_WAR("zeppelin.war", "../zeppelin-web/dist"),
+    ZEPPELIN_WAR("zeppelin.war", "zeppelin-web/dist"),
     ZEPPELIN_WAR_TEMPDIR("zeppelin.war.tempdir", "webapps"),
     ZEPPELIN_INTERPRETERS("zeppelin.interpreters", "org.apache.zeppelin.spark.SparkInterpreter,"
         + "org.apache.zeppelin.spark.PySparkInterpreter,"
@@ -540,6 +548,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_NOTEBOOK_AUTO_INTERPRETER_BINDING("zeppelin.notebook.autoInterpreterBinding", true),
     ZEPPELIN_CONF_DIR("zeppelin.conf.dir", "conf"),
     ZEPPELIN_DEP_LOCALREPO("zeppelin.dep.localrepo", "local-repo"),
+    ZEPPELIN_HELIUM_LOCALREGISTRY_DEFAULT("zeppelin.helium.localregistry.default", "helium"),
     // Allows a way to specify a ',' separated list of allowed origins for rest and websockets
     // i.e. http://localhost:8080
     ZEPPELIN_ALLOWED_ORIGINS("zeppelin.server.allowed.origins", "*"),

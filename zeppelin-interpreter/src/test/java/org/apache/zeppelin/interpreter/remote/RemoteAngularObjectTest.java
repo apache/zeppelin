@@ -73,6 +73,7 @@ public class RemoteAngularObjectTest implements AngularObjectRegistryListener {
         "fakeRepo",
         env,
         10 * 1000,
+        null,
         null
     );
 

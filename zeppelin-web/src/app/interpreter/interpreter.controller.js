@@ -103,7 +103,9 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
 
   $scope.updateInterpreterSetting = function(form, settingId) {
     var thisConfirm = BootstrapDialog.confirm({
-      closable: true,
+      closable: false,
+      closeByBackdrop: false,
+      closeByKeyboard: false,
       title: '',
       message: 'Do you want to update this interpreter and restart with new settings?',
       callback: function (result) {
@@ -150,6 +152,8 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
               thisConfirm.close();
             });
           return false;
+        } else {
+          form.$show();
         }
       }
     });

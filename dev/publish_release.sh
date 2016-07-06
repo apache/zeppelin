@@ -129,7 +129,7 @@ function publish_to_maven() {
   repo_request="<promoteRequest><data><stagedRepositoryId>${staged_repo_id}</stagedRepositoryId><description>Apache Zeppelin ${RELEASE_VERSION}</description></data></promoteRequest>"
   out="$(curl -X POST -d "${repo_request}" -u "${ASF_USERID}:${ASF_PASSWORD}" \
     -H 'Content-Type:application/xml' -v \
-    "${NEXUS_STAGING}}/profiles/${NEXUS_PROFILE}/finish")"
+    "${NEXUS_STAGING}/profiles/${NEXUS_PROFILE}/finish")"
   close_ret=$?
   curl_error $close_ret
   echo "Closed Nexus staging repository: ${staged_repo_id}"

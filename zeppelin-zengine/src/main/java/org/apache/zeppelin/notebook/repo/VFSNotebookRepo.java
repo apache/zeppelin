@@ -36,6 +36,7 @@ import org.apache.commons.vfs2.Selectors;
 import org.apache.commons.vfs2.VFS;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
+import org.apache.zeppelin.notebook.ApplicationState;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.notebook.Paragraph;
@@ -171,6 +172,15 @@ public class VFSNotebookRepo implements NotebookRepo {
     for (Paragraph p : note.getParagraphs()) {
       if (p.getStatus() == Status.PENDING || p.getStatus() == Status.RUNNING) {
         p.setStatus(Status.ABORT);
+      }
+
+      List<ApplicationState> appStates = p.getAllApplicationStates();
+      if (appStates != null) {
+        for (ApplicationState app : appStates) {
+          if (app.getStatus() != ApplicationState.Status.ERROR) {
+            app.setStatus(ApplicationState.Status.UNLOADED);
+          }
+        }
       }
     }
 

@@ -35,6 +35,8 @@ import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.AngularObjectRegistryListener;
 import org.apache.zeppelin.display.RelationJob;
+import org.apache.zeppelin.helium.ApplicationEventListener;
+import org.apache.zeppelin.helium.HeliumPackage;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
@@ -65,7 +67,7 @@ import org.slf4j.LoggerFactory;
  */
 public class NotebookServer extends WebSocketServlet implements
         NotebookSocketListener, JobListenerFactory, AngularObjectRegistryListener,
-        RemoteInterpreterProcessListener {
+        RemoteInterpreterProcessListener, ApplicationEventListener {
   /**
    * Job manager service type
    */
@@ -764,6 +766,7 @@ public class NotebookServer extends WebSocketServlet implements
         if (interpreterGroupId.equals(setting.getInterpreterGroup(note.id()).getId())) {
           AngularObjectRegistry angularObjectRegistry = setting
               .getInterpreterGroup(note.id()).getAngularObjectRegistry();
+
           // first trying to get local registry
           ao = angularObjectRegistry.get(varName, noteId, paragraphId);
           if (ao == null) {
@@ -1163,7 +1166,6 @@ public class NotebookServer extends WebSocketServlet implements
             .put("noteId", noteId)
             .put("paragraphId", paragraphId)
             .put("data", output);
-    Paragraph paragraph = notebook().getNote(noteId).getParagraph(paragraphId);
     broadcast(noteId, msg);
   }
 
@@ -1179,7 +1181,60 @@ public class NotebookServer extends WebSocketServlet implements
             .put("noteId", noteId)
             .put("paragraphId", paragraphId)
             .put("data", output);
-    Paragraph paragraph = notebook().getNote(noteId).getParagraph(paragraphId);
+    broadcast(noteId, msg);
+  }
+
+  /**
+   * When application append output
+   * @param noteId
+   * @param paragraphId
+   * @param appId
+   * @param output
+   */
+  @Override
+  public void onOutputAppend(String noteId, String paragraphId, String appId, String output) {
+    Message msg = new Message(OP.APP_APPEND_OUTPUT)
+        .put("noteId", noteId)
+        .put("paragraphId", paragraphId)
+        .put("appId", appId)
+        .put("data", output);
+    broadcast(noteId, msg);
+  }
+
+  /**
+   * When application update output
+   * @param noteId
+   * @param paragraphId
+   * @param appId
+   * @param output
+   */
+  @Override
+  public void onOutputUpdated(String noteId, String paragraphId, String appId, String output) {
+    Message msg = new Message(OP.APP_UPDATE_OUTPUT)
+        .put("noteId", noteId)
+        .put("paragraphId", paragraphId)
+        .put("appId", appId)
+        .put("data", output);
+    broadcast(noteId, msg);
+  }
+
+  @Override
+  public void onLoad(String noteId, String paragraphId, String appId, HeliumPackage pkg) {
+    Message msg = new Message(OP.APP_LOAD)
+        .put("noteId", noteId)
+        .put("paragraphId", paragraphId)
+        .put("appId", appId)
+        .put("pkg", pkg);
+    broadcast(noteId, msg);
+  }
+
+  @Override
+  public void onStatusChange(String noteId, String paragraphId, String appId, String status) {
+    Message msg = new Message(OP.APP_STATUS_CHANGE)
+        .put("noteId", noteId)
+        .put("paragraphId", paragraphId)
+        .put("appId", appId)
+        .put("status", status);
     broadcast(noteId, msg);
   }
 
@@ -1340,19 +1395,17 @@ public class NotebookServer extends WebSocketServlet implements
 
       List<InterpreterSetting> intpSettings = notebook.getInterpreterFactory()
           .getInterpreterSettings(note.getId());
-      if (intpSettings.isEmpty())
+      if (intpSettings.isEmpty()) {
         continue;
-      for (InterpreterSetting setting : intpSettings) {
-        if (setting.getInterpreterGroup(note.id()).getId().equals(interpreterGroupId)) {
-          broadcast(
-              note.id(),
-              new Message(OP.ANGULAR_OBJECT_UPDATE)
-                  .put("angularObject", object)
-                  .put("interpreterGroupId", interpreterGroupId)
-                  .put("noteId", note.id())
-                  .put("paragraphId", object.getParagraphId()));
-        }
       }
+
+      broadcast(
+          note.id(),
+          new Message(OP.ANGULAR_OBJECT_UPDATE)
+              .put("angularObject", object)
+              .put("interpreterGroupId", interpreterGroupId)
+              .put("noteId", note.id())
+              .put("paragraphId", object.getParagraphId()));
     }
   }
 

@@ -29,6 +29,7 @@ import org.apache.spark.SecurityManager;
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
 import org.apache.zeppelin.display.AngularObjectRegistry;
+import org.apache.zeppelin.resource.LocalResourcePool;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.interpreter.*;
@@ -95,7 +96,7 @@ public class SparkInterpreterTest {
         new HashMap<String, Object>(),
         new GUI(),
         new AngularObjectRegistry(intpGroup.getId(), null),
-        null,
+        new LocalResourcePool("id"),
         new LinkedList<InterpreterContextRunner>(),
         new InterpreterOutput(new InterpreterOutputListener() {
           @Override

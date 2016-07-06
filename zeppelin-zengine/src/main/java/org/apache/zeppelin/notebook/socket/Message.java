@@ -111,9 +111,15 @@ public class Message {
     CONFIGURATIONS_INFO, // [s-c] all key/value pairs of configurations
                   // @param settings serialized Map<String, String> object
 
-    CHECKPOINT_NOTEBOOK,     // [c-s] checkpoint notebook to storage repository
-                             // @param noteId
-                             // @param checkpointName
+    CHECKPOINT_NOTEBOOK,    // [c-s] checkpoint notebook to storage repository
+                            // @param noteId
+                            // @param checkpointName
+
+    APP_APPEND_OUTPUT,      // [s-c] append output
+    APP_UPDATE_OUTPUT,      // [s-c] update (replace) output
+    APP_LOAD,               // [s-c] on app load
+    APP_STATUS_CHANGE,      // [s-c] on app status change
+
     LIST_NOTEBOOK_JOBS,     // [c-s] get notebook job management infomations
     LIST_UPDATE_NOTEBOOK_JOBS // [c-s] get job management informations for until unixtime
                                // @param unixTime

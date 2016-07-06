@@ -201,6 +201,13 @@ Available profiles are
 -Pmapr51
 ```
 
+#### -Pexamples (optional)
+
+Bulid examples under zeppelin-examples directory
+
+
+
+
 
 Here're some examples:
 
@@ -230,6 +237,7 @@ mvn clean package -Dignite.version=1.6.0 -DskipTests
 ```sh
 mvn clean package -Pscalding -DskipTests
 ```
+
 
 ### Configure
 If you wish to configure Zeppelin option (like port number), configure the following files:
