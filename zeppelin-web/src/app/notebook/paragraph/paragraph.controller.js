@@ -701,7 +701,9 @@ angular.module('zeppelinWebApp')
   $scope.changeColWidth = function(width) {
     angular.element('.navbar-right.open').removeClass('open');
     if (!width || width !== $scope.paragraph.config.colWidth) {
-      $scope.paragraph.config.colWidth = width;
+      if (width) {
+        $scope.paragraph.config.colWidth = width;
+      }
       var newParams = angular.copy($scope.paragraph.settings.params);
       var newConfig = angular.copy($scope.paragraph.config);
 
