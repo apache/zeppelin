@@ -26,10 +26,7 @@ import org.apache.zeppelin.utils.SecurityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.FormParam;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -113,7 +110,7 @@ public class LoginRestApi {
     return response.build();
   }
   
-  @POST
+  @GET
   @Path("logout")
   @ZeppelinApi
   public Response logout() {
@@ -126,8 +123,9 @@ public class LoginRestApi {
     data.put("principal", "anonymous");
     data.put("roles", "");
     data.put("ticket", "anonymous");
+    data.put("WWW-Authenticate", "Basic realm=\"Login required\"");
    
-    response = new JsonResponse(Response.Status.OK, "", data);
+    response = new JsonResponse(Response.Status.UNAUTHORIZED, "", data);
     LOG.warn(response.toString());
     return response.build();
   }
