@@ -101,39 +101,45 @@ public class WorkflowJobItem {
   }
 
   public WorkflowJobItem getIfNextJob(String finishedNotebookId, String finishedParagraphId) {
-    if (isMyJob(finishedNotebookId, finishedParagraphId)) {
-      if (getStatus() == WorkflowStatus.WAIT) {
-        return this;
-      } else {
+
+    if (isMyJob(finishedNotebookId, finishedParagraphId) && getStatus() == WorkflowStatus.SUCCESS) {
+      if (this.onSuccessJob != null && this.onSuccessJob.getStatus() == WorkflowStatus.WAIT) {
         return this.onSuccessJob;
       }
-    } else {
-      if (this.onSuccessJob != null) {
-        return this.onSuccessJob.getIfNextJob(finishedNotebookId, finishedParagraphId);
-      }
     }
+
+    if (getStatus() == WorkflowStatus.WAIT) {
+      return this;
+    }
+
+    if (this.onSuccessJob != null) {
+      return this.onSuccessJob.getIfNextJob(finishedNotebookId, finishedParagraphId);
+    }
+
     return null;
   }
 
   public void notifyJobFinishied(
       Status status, String finishedNotebookId, String finishedParagraphId) {
-    if (!isMyJob(finishedNotebookId, finishedParagraphId)) {
-      if (this.onSuccessJob != null && Status.RUNNING != status) {
+
+    if (getStatus() != WorkflowStatus.PROGRESS && getStatus() != WorkflowStatus.WAIT) {
+      if (this.onSuccessJob != null) {
         this.onSuccessJob.notifyJobFinishied(status, finishedNotebookId, finishedParagraphId);
       }
-      return;
     }
 
-    if (Status.ABORT == status) {
-      setStatus(WorkflowStatus.ABORT);
-    } else if (Status.ERROR == status) {
-      setStatus(WorkflowStatus.ERROR);
-    } else if (Status.FINISHED == status) {
-      setStatus(WorkflowStatus.SUCCESS);
-    } else if (Status.RUNNING == status) {
-      setStatus(WorkflowStatus.PROGRESS);
-    } else if (Status.PENDING == status) {
-      setStatus(WorkflowStatus.WAIT);
+    if (isMyJob(finishedNotebookId, finishedParagraphId)) {
+      if (Status.ABORT == status) {
+        setStatus(WorkflowStatus.ABORT);
+      } else if (Status.ERROR == status) {
+        setStatus(WorkflowStatus.ERROR);
+      } else if (Status.FINISHED == status) {
+        setStatus(WorkflowStatus.SUCCESS);
+      } else if (Status.RUNNING == status) {
+        setStatus(WorkflowStatus.PROGRESS);
+      } else if (Status.PENDING == status) {
+        setStatus(WorkflowStatus.WAIT);
+      }
     }
   }
 

@@ -1074,25 +1074,59 @@ public class NotebookServer extends WebSocketServlet implements
        .get("params");
     p.settings.setParams(params);
 
+    List<Map<String, String>> workflow = (List<Map<String, String>>) fromMessage.get("relationJob");
+
     //clover test
-    List<RelationJob> testJobs = new LinkedList<>();
-    RelationJob testJob = new RelationJob("2BQVKJ1V2");
-    testJob.addParagaraph("20160628-175748_456467780");
-    p.settings.setRelationJobs(testJobs);
+//    HashMap<String, String> workflowItem = new HashMap<>();
+//    workflowItem.put("notebookId", "2BQVKJ1V2");
+//    workflowItem.put("paragraphId", "20160624-152949_1611139341");
+//    workflow.add(workflowItem);
+//
+//    workflowItem = new HashMap<>();
+//    workflowItem.put("notebookId", "2BQJQHXHC");
+//    workflowItem.put("paragraphId", "20160705-134208_1492672408");
+//    workflow.add(workflowItem);
 
-    synchronized (workflowManager) {
-      workflowManager.setWorkflow(
-        "2BQVKJ1V2", "2BQVKJ1V2", "20160628-175748_456467780");
-      WorkflowJob job = workflowManager.getWorkflow("2BQVKJ1V2");
-      WorkflowJobItem item;
-      item = job.getWorkflowJobItemTarget("2BQVKJ1V2", "20160628-175748_456467780");
-      WorkflowJobItem newJob = new WorkflowJobItem("2BQVKJ1V2", "20160624-152949_1611139341");
-      item.setOnSuccessJob(newJob);
-      item = job.getWorkflowJobItemTarget("2BQVKJ1V2", "20160624-152949_1611139341");
-      WorkflowJobItem newJob = new WorkflowJobItem("2BQVKJ1V2", "20160624-152949_1611139341");
-      item.setOnSuccessJob();
+
+//    List<RelationJob> testJobs = new LinkedList<>();
+//    RelationJob testJob = new RelationJob("2BQVKJ1V2");
+//    testJob.addParagaraph("20160628-175748_456467780");
+//    p.settings.setRelationJobs(testJobs);
+
+    if (workflow != null && workflow.size() > 0) {
+      synchronized (workflowManager) {
+        workflowManager.setWorkflow(noteId, noteId, paragraphId);
+        WorkflowJob workflowJob = workflowManager.getWorkflow(noteId);
+
+        String parentNotebookId = noteId;
+        String parentParagraphId = paragraphId;
+        WorkflowJobItem parentItem = null;
+        WorkflowJobItem newJob;
+        for (Map<String, String> workflowJobItem : workflow) {
+          parentItem = workflowJob.getWorkflowJobItemTarget(parentNotebookId, parentParagraphId);
+          String newJobNotebookId = workflowJobItem.get("notebookId");
+          String newJobParagraphId = workflowJobItem.get("paragraphId");
+          if (parentItem == null || newJobNotebookId == null || newJobParagraphId == null) {
+            continue;
+          }
+          newJob = new WorkflowJobItem(newJobNotebookId, newJobParagraphId);
+          parentItem.setOnSuccessJob(newJob);
+          parentNotebookId = newJobNotebookId;
+          parentParagraphId = newJobParagraphId;
+          LOG.info("clover insert workflow - {}", paragraphId);
+        }
+
+        // check to infinity loop
+        //workflowManager.changeToSafeWorkflow(noteId, noteId, paragraphId);
+
+//        item = job.getWorkflowJobItemTarget("2BQVKJ1V2", "20160628-175748_456467780");
+//        WorkflowJobItem newJob = new WorkflowJobItem("2BQVKJ1V2", "20160624-152949_1611139341");
+//        item.setOnSuccessJob(newJob);
+//        item = job.getWorkflowJobItemTarget("2BQVKJ1V2", "20160624-152949_1611139341");
+//        newJob = new WorkflowJobItem("2BQJQHXHC", "20160705-134208_1492672408");
+//        item.setOnSuccessJob(newJob);
+      }
     }
-
 
     Map<String, Object> config = (Map<String, Object>) fromMessage
        .get("config");
@@ -1233,8 +1267,8 @@ public class NotebookServer extends WebSocketServlet implements
         WorkflowManager workflowManager = notebookServer.workflowManager;
         synchronized (workflowManager) {
           waitJobLists = workflowManager.getNextJob(note.getId(), job.getId());
-
           if (waitJobLists != null) {
+            LOG.info("clover job count {}", waitJobLists.size());
             for (String notebookId : waitJobLists.keySet()) {
               String paragraphId = waitJobLists.get(notebookId).get(0);
               Note nextNote = notebookServer.notebook().getNote(notebookId);

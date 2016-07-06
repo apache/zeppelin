@@ -22,6 +22,9 @@ import org.apache.zeppelin.scheduler.Job;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.LinkedList;
+import java.util.List;
+
 /**
  * workflow job object
  *
@@ -54,6 +57,35 @@ public class WorkflowJob {
 
   public WorkflowJobItem getWorkflowJobItemFirst() {
     return this.workflowJob;
+  }
+
+  public WorkflowJobItem getWorkflowJobItemLast() {
+    WorkflowJobItem currentJobItem = this.workflowJob;
+    WorkflowJobItem lastJobItem = null;
+
+    while (currentJobItem != null) {
+      lastJobItem = currentJobItem;
+      currentJobItem = currentJobItem.getOnSuccessJob();
+    }
+    return lastJobItem;
+  }
+
+  public void removeWorkflowJobItemLast() {
+    List<WorkflowJobItem> seqJobList = new LinkedList<>();
+    WorkflowJobItem currentJobItem = this.workflowJob;
+    WorkflowJobItem lastJobItem = null;
+
+    while (currentJobItem != null) {
+      seqJobList.add(currentJobItem);
+      currentJobItem = currentJobItem.getOnSuccessJob();
+    }
+
+    int workflowJobItemListSize = seqJobList.size();
+    if (workflowJobItemListSize > 0) {
+      lastJobItem = seqJobList.get(workflowJobItemListSize - 1);
+      lastJobItem.setOnSuccessJob(null);
+    }
+
   }
 
   public WorkflowJobItem getWorkflowJobItemTarget(String notebookId, String paragraphId) {

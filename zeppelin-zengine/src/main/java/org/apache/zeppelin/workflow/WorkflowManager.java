@@ -81,4 +81,20 @@ public class WorkflowManager {
 
     return nextJobList;
   }
+
+  /**
+   * If you could experience problems such as infinite loop and fix it.
+   */
+  public void changeToSafeWorkflow(
+      String workflowId, String runRootNotebookId, String runRootParagraphId) {
+    WorkflowJob firstJob = getWorkflow(workflowId);
+    WorkflowJobItem lastJob = firstJob.getWorkflowJobItemLast();
+
+    if (lastJob.getNotebookId().equals(runRootNotebookId) &&
+        lastJob.getParagaraphId().equals(runRootParagraphId)) {
+      logger.info("clover replace workflow - cut to tail");
+      firstJob.removeWorkflowJobItemLast();
+    }
+
+  }
 }
