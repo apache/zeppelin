@@ -29,10 +29,12 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.*;
+import java.util.List;
 import java.util.Properties;
 
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.jdbc.JDBCInterpreter;
 import org.apache.zeppelin.scheduler.FIFOScheduler;
 import org.apache.zeppelin.scheduler.ParallelScheduler;
@@ -228,4 +230,23 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     scheduler = jdbcInterpreter.getScheduler();
     assertTrue(scheduler instanceof FIFOScheduler);
   }
+
+  @Test
+  public void testAutoCompletion() throws SQLException, IOException {
+    Properties properties = new Properties();
+    properties.setProperty("common.max_count", "1000");
+    properties.setProperty("common.max_retry", "3");
+    properties.setProperty("default.driver", "org.h2.Driver");
+    properties.setProperty("default.url", getJdbcConnection());
+    properties.setProperty("default.user", "");
+    properties.setProperty("default.password", "");
+    JDBCInterpreter jdbcInterpreter = new JDBCInterpreter(properties);
+    jdbcInterpreter.open();
+
+    List<InterpreterCompletion> completionList = jdbcInterpreter.completion("SEL", 0);
+    assertEquals(1, completionList.size());
+    assertEquals(true, completionList.contains("SELECT"));
+    assertEquals(0, jdbcInterpreter.completion("SEL", 100).size());
+  }
+
 }
