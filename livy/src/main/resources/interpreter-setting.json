@@ -82,6 +82,9 @@
         "defaultValue": "",
         "description": "Kerberos keytab to authenticate livy"
       }
+    },
+    "editor": {
+      "mode": "scala"
     }
   },
   {
@@ -100,6 +103,9 @@
         "defaultValue": "false",
         "description": "Execute multiple SQL concurrently if set true."
       }
+    },
+    "editor": {
+      "mode": "sql"
     }
   },
   {
@@ -107,6 +113,9 @@
     "name": "pyspark",
     "className": "org.apache.zeppelin.livy.LivyPySparkInterpreter",
     "properties": {
+    },
+    "editor": {
+      "mode": "python"
     }
   },
   {
@@ -114,6 +123,9 @@
     "name": "sparkr",
     "className": "org.apache.zeppelin.livy.LivySparkRInterpreter",
     "properties": {
+    },
+    "editor": {
+      "mode": "r"
     }
   }
 ]
