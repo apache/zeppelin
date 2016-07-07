@@ -259,7 +259,6 @@ public class JDBCInterpreter extends Interpreter {
 
   @Override
   public void close() {
-
     try {
       for (List<Connection> connectionList : propertyKeyUnusedConnectionListMap.values()) {
         for (Connection c : connectionList) {
@@ -288,7 +287,6 @@ public class JDBCInterpreter extends Interpreter {
         }
       }
       paragraphIdConnectionMap.clear();
-
     } catch (Exception e) {
       logger.error("Error while closing...", e);
     }
