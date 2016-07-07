@@ -443,8 +443,12 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
     //end code for completion
 
     Gson gson = new Gson();
-
-    return gson.fromJson(completionResult.message(), LinkedList.class);
+    String[] completionList = gson.fromJson(completionResult.message(), String[].class);
+    List<InterpreterCompletion> results = new LinkedList<>();
+    for (String name: completionList) {
+      results.add(new InterpreterCompletion(name, name));
+    }
+    return results;
   }
 
   private String getCompletionTargetString(String text, int cursor) {
