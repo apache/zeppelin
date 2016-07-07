@@ -14,7 +14,7 @@ group: interpreter
 Shell interpreter uses [Apache Commons Exec](https://commons.apache.org/proper/commons-exec) to execute external processes. 
 In Zeppelin notebook, you can use ` %sh ` in the beginning of a paragraph to invoke system shell and run commands.
 
-> **Note :** Currently each command runs as Zeppelin user.
+> **Note :** Currently each command runs as the user Zeppelin server is running as.
 
 ## Configuration
 At the "Interpreters" menu in Zeppelin dropdown menu, you can set the property value for Shell interpreter.
