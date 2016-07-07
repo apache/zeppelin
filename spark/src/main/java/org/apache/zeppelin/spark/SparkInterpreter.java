@@ -932,8 +932,8 @@ public class SparkInterpreter extends Interpreter {
 
     // make sure code does not finish with comment
     if (r == Code.INCOMPLETE) {
-      scala.tools.nsc.interpreter.Results.Result res;
-      res = intp.interpret(incomplete + "\nprint(\"\")");
+      scala.tools.nsc.interpreter.Results.Result res = null;
+      res = interpret(incomplete + "\nprint(\"\")");
       r = getResultCode(res);
     }
 
@@ -950,7 +950,7 @@ public class SparkInterpreter extends Interpreter {
   }
 
   private void putLatestVarInResourcePool(InterpreterContext context) {
-    String varName = intp.mostRecentVar();
+    String varName = (String) invokeMethod(intp, "mostRecentVar");
     if (varName == null || varName.isEmpty()) {
       return;
     }
