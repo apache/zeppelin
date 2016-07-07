@@ -41,9 +41,9 @@ public class RemoteInterpreterProcessTest {
   @Test
   public void testStartStop() {
     InterpreterGroup intpGroup = new InterpreterGroup();
-    RemoteInterpreterProcess rip = new RemoteInterpreterProcess(
+    RemoteInterpreterManagedProcess rip = new RemoteInterpreterManagedProcess(
         INTERPRETER_SCRIPT, "nonexists", "fakeRepo", new HashMap<String, String>(),
-        10 * 1000, null);
+        10 * 1000, null, null);
     assertFalse(rip.isRunning());
     assertEquals(0, rip.referenceCount());
     assertEquals(1, rip.reference(intpGroup));
@@ -58,7 +58,7 @@ public class RemoteInterpreterProcessTest {
   @Test
   public void testClientFactory() throws Exception {
     InterpreterGroup intpGroup = new InterpreterGroup();
-    RemoteInterpreterProcess rip = new RemoteInterpreterProcess(
+    RemoteInterpreterManagedProcess rip = new RemoteInterpreterManagedProcess(
         INTERPRETER_SCRIPT, "nonexists", "fakeRepo", new HashMap<String, String>(),
         mock(RemoteInterpreterEventPoller.class), 10 * 1000);
     rip.reference(intpGroup);
@@ -96,8 +96,14 @@ public class RemoteInterpreterProcessTest {
     InterpreterGroup intpGroup = mock(InterpreterGroup.class);
     when(intpGroup.getProperty()).thenReturn(properties);
     when(intpGroup.containsKey(Constants.EXISTING_PROCESS)).thenReturn(true);
-    RemoteInterpreterProcess rip = new RemoteInterpreterProcess(INTERPRETER_SCRIPT, "nonexists",
-        "fakeRepo", new HashMap<String, String>(), 10 * 1000, null);
+
+    RemoteInterpreterProcess rip = new RemoteInterpreterManagedProcess(
+        INTERPRETER_SCRIPT,
+        "nonexists",
+        "fakeRepo",
+        new HashMap<String, String>(),
+        mock(RemoteInterpreterEventPoller.class)
+        , 10 * 1000);
     assertFalse(rip.isRunning());
     assertEquals(0, rip.referenceCount());
     assertEquals(1, rip.reference(intpGroup));

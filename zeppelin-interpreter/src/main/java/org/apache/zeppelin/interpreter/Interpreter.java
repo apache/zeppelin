@@ -40,7 +40,7 @@ import org.slf4j.LoggerFactory;
  * Please see,
  * https://zeppelin.apache.org/docs/latest/development/writingzeppelininterpreter.html
  *
- * open(), close(), interpreter() is three the most important method you need to implement.
+ * open(), close(), interpret() is three the most important method you need to implement.
  * cancel(), getProgress(), completion() is good to have
  * getFormType(), getScheduler() determine Zeppelin's behavior
  *

@@ -36,6 +36,7 @@ import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.PutMethod;
 import org.apache.commons.httpclient.methods.RequestEntity;
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.dep.Dependency;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterOption;
@@ -98,6 +99,8 @@ public abstract class AbstractTestRestApi {
 
   protected static void startUp() throws Exception {
     if (!wasRunning) {
+      System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_HOME.getVarName(), "../");
+      System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_WAR.getVarName(), "../zeppelin-web/dist");
       LOG.info("Staring test Zeppelin up...");
       executor = Executors.newSingleThreadExecutor();
       executor.submit(server);
@@ -248,7 +251,7 @@ public abstract class AbstractTestRestApi {
       request = httpGet("/");
       isRunning = request.getStatusCode() == 200;
     } catch (IOException e) {
-      LOG.error("Exception in AbstractTestRestApi while checkIfServerIsRunning ", e);
+      LOG.error("AbstractTestRestApi.checkIfServerIsRunning() fails .. ZeppelinServer is not running");
       isRunning = false;
     } finally {
       if (request != null) {
