@@ -75,6 +75,16 @@ public class InterpreterFactory implements InterpreterGroupFactory {
   private String[] interpreterClassList;
   private String[] interpreterGroupOrderList;
 
+  /**
+   * This is only references with default group, name and properties
+   * key: InterpreterSetting.group
+   */
+  private Map<String, InterpreterSetting> interpreterSettingsRef = new HashMap<>();
+
+  /**
+   * This is used by creating and running Interpreters
+   * key: InterpreterSetting.id <- This is becuase backward compatibility
+   */
   private Map<String, InterpreterSetting> interpreterSettings = new HashMap<>();
 
   private Map<String, List<String>> interpreterBindings = new HashMap<>();
@@ -183,71 +193,60 @@ public class InterpreterFactory implements InterpreterGroupFactory {
           registeredInterpreter.getProperties());
     }
 
+    // RegisteredInterpreters -> interpreterSettingRef
+    for (RegisteredInterpreter r : Interpreter.registeredInterpreters.values()) {
+      add(r.getName(), r.getGroup(),
+          new InterpreterInfo(r.getClassName(), r.getName(), r.isDefaultInterpreter()),
+          convertInterpreterProperties(r.getProperties()),r.getPath());
+    }
+
+    for (String settingId : interpreterSettingsRef.keySet()) {
+      InterpreterSetting setting = interpreterSettingsRef.get(settingId);
+      logger.info("InterpreterSetting group {} : id={}, name={}", setting.getGroup(), settingId,
+          setting.getName());
+    }
+
     loadFromFile();
 
     // if no interpreter settings are loaded, create default set
-    synchronized (interpreterSettings) {
-      if (interpreterSettings.size() == 0) {
-        HashMap<String, List<RegisteredInterpreter>> groupClassNameMap = new HashMap<>();
+    if (0 == interpreterSettings.size()) {
+      Map<String, InterpreterSetting> temp = new HashMap<>();
+      for (InterpreterSetting setting : interpreterSettingsRef.values()) {
+        setting.setRefGroup(setting.getGroup());
+        temp.put(setting.getGroup(), setting);
+      }
 
-        for (String k : Interpreter.registeredInterpreters.keySet()) {
-          RegisteredInterpreter info = Interpreter.registeredInterpreters.get(k);
-          String group = info.getGroup();
-
-          if (!groupClassNameMap.containsKey(group)) {
-            groupClassNameMap.put(group, new LinkedList<RegisteredInterpreter>());
-            groupClassNameMap.get(group).add(info);
-          } else {
-            if (info.isDefaultInterpreter()) {
-              groupClassNameMap.get(group).add(0, info);
-            } else {
-              groupClassNameMap.get(group).add(info);
-            }
-          }
-        }
-
-        for (String groupName : interpreterGroupOrderList) {
-          List<RegisteredInterpreter> infos = groupClassNameMap.remove(groupName);
-          if (null != infos) {
-            Properties p = new Properties();
-            for (RegisteredInterpreter info : infos) {
-              Map<String, InterpreterProperty> interpreterProperties = info.getProperties();
-              if (null != interpreterProperties) {
-                for (String key : info.getProperties().keySet()) {
-                  p.put(key, info.getProperties().get(key).getValue());
-                }
-              }
-            }
-            add(groupName, groupName, new LinkedList<Dependency>(), defaultOption, p);
-          }
-        }
-
-        for (String groupName : groupClassNameMap.keySet()) {
-          List<RegisteredInterpreter> infos = groupClassNameMap.get(groupName);
-          Properties p = new Properties();
-          for (RegisteredInterpreter info : infos) {
-            Map<String, InterpreterProperty> interpreterProperties = info.getProperties();
-            if (null != interpreterProperties) {
-              for (String key : info.getProperties().keySet()) {
-                p.put(key, info.getProperties().get(key).getValue());
-              }
-            }
-          }
-          add(groupName, groupName, new LinkedList<Dependency>(), defaultOption, p);
+      InterpreterSetting interpreterSetting;
+      for (String group : interpreterGroupOrderList) {
+        if (null != (interpreterSetting = temp.remove(group))) {
+          interpreterSettings.put(interpreterSetting.id(), interpreterSetting);
         }
       }
+
+      for (InterpreterSetting setting : temp.values()) {
+        interpreterSettings.put(setting.id(), setting);
+      }
+      saveToFile();
     }
 
     for (String settingId : interpreterSettings.keySet()) {
       InterpreterSetting setting = interpreterSettings.get(settingId);
-      logger.info("Interpreter setting group {} : id={}, name={}", setting.getGroup(), settingId,
+      logger.info("InterpreterSetting group {} : id={}, name={}", setting.getGroup(), settingId,
           setting.getName());
     }
   }
 
+  private Properties convertInterpreterProperties(Map<String, InterpreterProperty> p) {
+    Properties properties = new Properties();
+    for(String key : p.keySet()) {
+      properties.put(key, p.get(key).getValue());
+    }
+    return properties;
+  }
+
   private void registerInterpreterFromResource(ClassLoader cl, String interpreterDir,
       String interpreterJson)
-      throws MalformedURLException {
+      throws IOException, RepositoryException {
     URL[] urls = recursiveBuildLibList(new File(interpreterDir));
     ClassLoader tempClassLoader = new URLClassLoader(urls, cl);
 
@@ -262,7 +261,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
   }
 
   private void registerInterpreterFromPath(String interpreterDir,
-      String interpreterJson) throws IOException {
+      String interpreterJson) throws IOException, RepositoryException {
 
     Path interpreterJsonPath = Paths.get(interpreterDir, interpreterJson);
     if (Files.exists(interpreterJsonPath)) {
@@ -285,18 +284,24 @@ public class InterpreterFactory implements InterpreterGroupFactory {
   }
 
   private void registerInterpreters(List<RegisteredInterpreter> registeredInterpreters,
-      String absolutePath) {
+      String absolutePath) throws IOException, RepositoryException {
+
     for (RegisteredInterpreter registeredInterpreter : registeredInterpreters) {
-      String className = registeredInterpreter.getClassName();
-      if (validateRegisterInterpreter(registeredInterpreter) &&
-          null == Interpreter.findRegisteredInterpreterByClassName(className)) {
-        registeredInterpreter.setPath(absolutePath);
-        Interpreter.register(registeredInterpreter);
-        logger.debug("Registered. key: {}, className: {}, path: {}",
-            registeredInterpreter.getInterpreterKey(), registeredInterpreter.getClassName(),
-            registeredInterpreter.getProperties());
+      InterpreterInfo interpreterInfo = new InterpreterInfo(registeredInterpreter.getClassName(),
+          registeredInterpreter.getName(), registeredInterpreter.isDefaultInterpreter());
+      Properties properties = new Properties();
+      Map<String, InterpreterProperty> p = registeredInterpreter.getProperties();
+
+      if (null != p) {
+        for (String key : p.keySet()) {
+          properties.setProperty(key, p.get(key).getValue());
+        }
       }
+
+      add(registeredInterpreter.getName(), registeredInterpreter.getGroup(), interpreterInfo,
+          properties, absolutePath);
     }
+
   }
 
   private boolean validateRegisterInterpreter(RegisteredInterpreter registeredInterpreter) {
@@ -334,8 +339,13 @@ public class InterpreterFactory implements InterpreterGroupFactory {
       setting.getOption().setRemote(true);
 
       InterpreterSetting intpSetting = new InterpreterSetting(setting.id(), setting.getName(),
-          setting.getGroup(), setting.getInterpreterInfos(), setting.getProperties(),
-          setting.getDependencies(), setting.getOption());
+          setting.getGroup(), setting.getRefGroup(), setting.getInterpreterInfos(),
+          setting.getProperties(), setting.getDependencies(), setting.getOption(),
+          setting.getPath());
+
+      if (null == setting.getRefGroup()) {
+        intpSetting.setRefGroup(setting.getGroup());
+      }
 
       intpSetting.setInterpreterGroupFactory(this);
       interpreterSettings.put(k, intpSetting);
@@ -433,46 +443,109 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     return new ArrayList<>(Interpreter.registeredInterpreters.values());
   }
 
+
+  public boolean findDefaultInterpreter(List<InterpreterInfo> infos) {
+    for (InterpreterInfo interpreterInfo : infos) {
+      if (interpreterInfo.isDefaultInterpreter())
+        return true;
+    }
+    return false;
+  }
+
+  public InterpreterSetting createNewSetting(String name, String group, String refGroup,
+      List<Dependency> dependencies, InterpreterOption option, Properties p) {
+    InterpreterSetting interpreterSetting =
+        new InterpreterSetting(interpreterSettingsRef.get(refGroup));
+    interpreterSetting.regenerateId();
+    interpreterSetting.setName(name);
+    interpreterSetting.setGroup(group);
+    interpreterSetting.setRefGroup(refGroup);
+    interpreterSetting.appendDependencies(dependencies);
+    interpreterSetting.setInterpreterOption(option);
+    interpreterSetting.updateProperties(p);
+    interpreterSetting.setInterpreterGroupFactory(this);
+    interpreterSettings.put(interpreterSetting.id(), interpreterSetting);
+    return interpreterSetting;
+  }
+
+  private InterpreterSetting add(String name, String group,
+      InterpreterInfo interpreterInfo, Properties properties, String path)
+      throws InterpreterException, IOException, RepositoryException {
+    ArrayList<InterpreterInfo> infos = new ArrayList<>();
+    infos.add(interpreterInfo);
+    return add(name, group, infos, new ArrayList<Dependency>(), defaultOption, properties, path);
+  }
+
   /**
    * @param name       user defined name
-   * @param groupName  interpreter group name to instantiate
+   * @param group      interpreter group name to instantiate
    * @param properties
    * @return
    * @throws InterpreterException
    * @throws IOException
    */
-  public InterpreterSetting add(String name, String groupName, List<Dependency> dependencies,
-      InterpreterOption option, Properties properties)
+  public InterpreterSetting add(String name, String group,
+      ArrayList<InterpreterInfo> interpreterInfos, List<Dependency> dependencies,
+      InterpreterOption option, Properties properties, String path)
       throws InterpreterException, IOException, RepositoryException {
-    synchronized (interpreterSettings) {
-      List<InterpreterSetting.InterpreterInfo> interpreterInfos = new ArrayList<>();
+    Preconditions.checkNotNull(name, "name should not be null");
+    Preconditions.checkNotNull(group, "group should not be null");
+    Preconditions.checkNotNull(interpreterInfos, "interpreterInfos should not be null");
+    Preconditions.checkNotNull(dependencies, "dependencies should not be null");
+    Preconditions.checkNotNull(option, "option should not be null");
+    Preconditions.checkNotNull(properties, "properties should not be null");
+//    Preconditions.checkNotNull(path, "path should not be null");
 
-      for (RegisteredInterpreter registeredInterpreter :
-          Interpreter.registeredInterpreters.values()) {
-        if (registeredInterpreter.getGroup().equals(groupName)) {
-          if (registeredInterpreter.isDefaultInterpreter()) {
-            interpreterInfos.add(0,
-                new InterpreterSetting.InterpreterInfo(
-                    registeredInterpreter.getClassName(), registeredInterpreter.getName()));
-          } else {
-            interpreterInfos.add(new InterpreterSetting.InterpreterInfo(
-                registeredInterpreter.getClassName(), registeredInterpreter.getName()));
+    InterpreterSetting interpreterSetting;
+
+    synchronized (interpreterSettingsRef) {
+      if (interpreterSettingsRef.containsKey(group)) {
+        interpreterSetting = interpreterSettingsRef.get(group);
+
+        // Append InterpreterInfo
+        List<InterpreterInfo> infos = interpreterSetting.getInterpreterInfos();
+        boolean hasDefaultInterpreter = findDefaultInterpreter(infos);
+        for (InterpreterInfo interpreterInfo : interpreterInfos) {
+          if (!infos.contains(interpreterInfo)) {
+            if (!hasDefaultInterpreter && interpreterInfo.isDefaultInterpreter()) {
+              hasDefaultInterpreter = true;
+              infos.add(0, interpreterInfo);
+            } else {
+              infos.add(interpreterInfo);
+            }
           }
         }
+
+        // Append dependencies
+        List<Dependency> dependencyList = interpreterSetting.getDependencies();
+        for (Dependency dependency : dependencies) {
+          if (!dependencyList.contains(dependency)) {
+            dependencyList.add(dependency);
+          }
+        }
+
+        // Append properties
+        Properties interpreterProperties = interpreterSetting.getProperties();
+        for (String key : properties.stringPropertyNames()) {
+          if (!interpreterProperties.containsKey(key)) {
+            interpreterProperties.setProperty(key, properties.getProperty(key));
+          }
+        }
+
+      } else {
+        interpreterSetting = new InterpreterSetting(name, group, interpreterInfos, properties,
+            dependencies, option, path);
+        interpreterSettingsRef.put(group, interpreterSetting);
       }
-
-      InterpreterSetting intpSetting = new InterpreterSetting(name, groupName, interpreterInfos,
-          properties, dependencies, option);
-
-      if (dependencies.size() > 0) {
-        loadInterpreterDependencies(intpSetting);
-      }
-
-      intpSetting.setInterpreterGroupFactory(this);
-      interpreterSettings.put(intpSetting.id(), intpSetting);
-      saveToFile();
-      return intpSetting;
     }
+
+
+    if (dependencies.size() > 0) {
+      loadInterpreterDependencies(interpreterSetting);
+    }
+
+    interpreterSetting.setInterpreterGroupFactory(this);
+    return interpreterSetting;
   }
 
   @Override
@@ -550,44 +623,38 @@ public class InterpreterFactory implements InterpreterGroupFactory {
 
     logger.info("Create interpreter instance {} for note {}", interpreterSetting.getName(), noteId);
 
-    Set<String> keys = Interpreter.registeredInterpreters.keySet();
-    for (String intName : keys) {
-      RegisteredInterpreter info = Interpreter.registeredInterpreters.get(intName);
-      if (info.getGroup().equals(groupName)) {
-        Interpreter intp;
-
-        if (option.isRemote()) {
-          if (option.isConnectExistingProcess()) {
-            intp = connectToRemoteRepl(
-                noteId,
-                info.getClassName(),
-                option.getHost(), option.getPort(), properties);
-          } else {
-            intp = createRemoteRepl(info.getPath(),
-                key,
-                info.getClassName(),
-                properties,
-                interpreterSetting.id());
-          }
+    List<InterpreterInfo> interpreterInfos = interpreterSetting.getInterpreterInfos();
+    InterpreterSetting refInterpreterSetting =
+        interpreterSettingsRef.get(interpreterSetting.getRefGroup());
+    String path = refInterpreterSetting.getPath();
+    Interpreter interpreter;
+    for(InterpreterInfo info: interpreterInfos) {
+      if (option.isRemote()) {
+        if (option.isConnectExistingProcess()) {
+          interpreter = connectToRemoteRepl(noteId, info.getClassName(), option.getHost(),
+              option.getPort(), properties);
         } else {
-          intp = createRepl(info.getPath(), info.getClassName(), properties);
+          interpreter = createRemoteRepl(path, key, info.getClassName(),
+              properties, interpreterSetting.id());
         }
-
-        synchronized (interpreterGroup) {
-          List<Interpreter> interpreters = interpreterGroup.get(key);
-          if (interpreters == null) {
-            interpreters = new LinkedList<>();
-            interpreterGroup.put(key, interpreters);
-          }
-          if (info.isDefaultInterpreter()) {
-            interpreters.add(0, intp);
-          } else {
-            interpreters.add(intp);
-          }
-        }
-        logger.info("Interpreter " + intp.getClassName() + " " + intp.hashCode() + " created");
-        intp.setInterpreterGroup(interpreterGroup);
+      } else {
+        interpreter = createRepl(interpreterSetting.getPath(), info.getClassName(), properties);
       }
+
+      synchronized (interpreterGroup) {
+        List<Interpreter> interpreters = interpreterGroup.get(key);
+        if (null == interpreters) {
+          interpreters = new ArrayList<>();
+          interpreterGroup.put(key, interpreters);
+        }
+        if (info.isDefaultInterpreter()) {
+          interpreters.add(0, interpreter);
+        } else {
+          interpreters.add(interpreter);
+        }
+      }
+      logger.info("Interpreter {} {} created", interpreter.getClassName(), interpreter.hashCode());
+      interpreter.setInterpreterGroup(interpreterGroup);
     }
   }
 
@@ -1019,7 +1086,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
       String name) {
     Preconditions.checkNotNull(name, "name should be not null");
 
-    for (InterpreterSetting.InterpreterInfo info : setting.getInterpreterInfos()) {
+    for (InterpreterInfo info : setting.getInterpreterInfos()) {
       String infoName = info.getName();
       if (null != info.getName() && name.equals(infoName)) {
         return info.getClassName();
@@ -1059,10 +1126,6 @@ public class InterpreterFactory implements InterpreterGroupFactory {
       // TODO(jl): Fix it in case of returning null
       InterpreterSetting defaultSettings = getDefaultInterpreterSetting(settings);
       return createOrGetInterpreterList(noteId, defaultSettings).get(0);
-    }
-
-    if (Interpreter.registeredInterpreters == null) {
-      return null;
     }
 
     String[] replNameSplit = replName.split("\\.");
@@ -1114,6 +1177,10 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     }
 
     return null;
+  }
+
+  public Map<String, InterpreterSetting> getAvailableInterpreterSettings() {
+    return interpreterSettingsRef;
   }
 
   private URL[] recursiveBuildLibList(File path) throws MalformedURLException {

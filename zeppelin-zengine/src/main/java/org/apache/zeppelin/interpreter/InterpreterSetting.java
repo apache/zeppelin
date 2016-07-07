@@ -19,7 +19,6 @@ package org.apache.zeppelin.interpreter;
 
 import java.util.*;
 
-import com.google.gson.annotations.SerializedName;
 import org.apache.zeppelin.dep.Dependency;
 import org.apache.zeppelin.notebook.utility.IdHashes;
 
@@ -31,9 +30,11 @@ public class InterpreterSetting {
   private String id;
   private String name;
   private String group;
+  private String refGroup = null;
   private String description;
   private Properties properties;
   private transient InterpreterGroupFactory interpreterGroupFactory;
+  private transient String InterpreterPath;
 
   // use 'interpreterGroup' as a field name to keep backward compatibility of
   // conf/interpreter.json file format
@@ -41,49 +42,39 @@ public class InterpreterSetting {
   private transient Map<String, InterpreterGroup> interpreterGroupRef = new HashMap<>();
   private List<Dependency> dependencies;
   private InterpreterOption option;
+  private transient String path;
 
-  public InterpreterSetting(String id, String name, String group,
+  public InterpreterSetting(String id, String name, String group, String refGroup,
       List<InterpreterInfo> interpreterInfos, Properties properties, List<Dependency> dependencies,
-      InterpreterOption option) {
+      InterpreterOption option, String path) {
     this.id = id;
     this.name = name;
     this.group = group;
+    this.refGroup = refGroup;
     this.interpreterGroup = interpreterInfos;
     this.properties = properties;
     this.dependencies = dependencies;
     this.option = option;
+    this.path = path;
   }
 
   public InterpreterSetting(String name, String group, List<InterpreterInfo> interpreterInfos,
-      Properties properties, List<Dependency> dependencies, InterpreterOption option) {
-    this(generateId(), name, group, interpreterInfos, properties, dependencies, option);
+      Properties properties, List<Dependency> dependencies, InterpreterOption option, String path) {
+    this(generateId(), name, group, null, interpreterInfos, properties, dependencies, option, path);
   }
 
-  /**
-   * Information of interpreters in this interpreter setting.
-   * this will be serialized for conf/interpreter.json and REST api response.
-   */
-  public static class InterpreterInfo {
-    private final String name;
-    @SerializedName("class")
-    private final String className;
-
-    public InterpreterInfo(String className, String name) {
-      this.className = className;
-      this.name = name;
-    }
-
-    public String getName() {
-      return name;
-    }
-
-    public String getClassName() {
-      return className;
-    }
+  public InterpreterSetting(InterpreterSetting o) {
+    this(generateId(), o.getName(), o.getGroup(), o.getRefGroup(), o.getInterpreterInfos(), o.getProperties(),
+        o.getDependencies(), o.getOption(), o.getPath());
+    this.refGroup = o.getRefGroup();
   }
 
   public String id() {
     return id;
+  }
+
+  public void regenerateId() {
+    this.id = generateId();
   }
 
   private static String generateId() {
@@ -106,10 +97,21 @@ public class InterpreterSetting {
     this.description = desc;
   }
 
+  public void setGroup(String group) {
+    this.group = group;
+  }
+
   public String getGroup() {
     return group;
   }
 
+  public String getRefGroup() {
+    return refGroup;
+  }
+
+  public void setRefGroup(String refGroup) {
+    this.refGroup = refGroup;
+  }
 
   private String getInterpreterProcessKey(String noteId) {
     if (getOption().isExistingProcess) {
@@ -193,11 +195,35 @@ public class InterpreterSetting {
     this.option = option;
   }
 
+  public String getPath() {
+    return path;
+  }
+
+  public void setPath(String path) {
+    this.path = path;
+  }
+
   public List<InterpreterInfo> getInterpreterInfos() {
     return interpreterGroup;
   }
 
   public void setInterpreterGroupFactory(InterpreterGroupFactory interpreterGroupFactory) {
     this.interpreterGroupFactory = interpreterGroupFactory;
+  }
+
+  public void appendDependencies(List<Dependency> dependencies) {
+    for (Dependency dependency : dependencies) {
+      if (!this.dependencies.contains(dependency)) {
+        this.dependencies.add(dependency);
+      }
+    }
+  }
+
+  public void setInterpreterOption(InterpreterOption interpreterOption) {
+    this.option = interpreterOption;
+  }
+
+  public void updateProperties(Properties p) {
+    this.properties.putAll(p);
   }
 }

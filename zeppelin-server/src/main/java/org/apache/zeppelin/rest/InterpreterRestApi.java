@@ -97,8 +97,9 @@ public class InterpreterRestApi {
           NewInterpreterSettingRequest.class);
       Properties p = new Properties();
       p.putAll(request.getProperties());
-      InterpreterSetting interpreterSetting = interpreterFactory.add(request.getName(),
+      InterpreterSetting interpreterSetting = interpreterFactory.createNewSetting(request.getName(),
           request.getGroup(),
+          request.getRefGroup(),
           request.getDependencies(),
           request.getOption(),
           p);
@@ -108,12 +109,6 @@ public class InterpreterRestApi {
       logger.error("Exception in InterpreterRestApi while creating ", e);
       return new JsonResponse(
           Status.NOT_FOUND,
-          e.getMessage(),
-          ExceptionUtils.getStackTrace(e)).build();
-    } catch (IOException | RepositoryException e) {
-      logger.error("Exception in InterpreterRestApi while creating ", e);
-      return new JsonResponse(
-          Status.INTERNAL_SERVER_ERROR,
           e.getMessage(),
           ExceptionUtils.getStackTrace(e)).build();
     }
@@ -188,7 +183,7 @@ public class InterpreterRestApi {
   @GET
   @ZeppelinApi
   public Response listInterpreter(String message) {
-    Map<String, RegisteredInterpreter> m = Interpreter.registeredInterpreters;
+    Map<String, InterpreterSetting> m = interpreterFactory.getAvailableInterpreterSettings();
     return new JsonResponse(Status.OK, "", m).build();
   }
 

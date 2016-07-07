@@ -20,6 +20,7 @@ import com.google.gson.Gson;
 import org.apache.thrift.TException;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
+import org.apache.zeppelin.interpreter.InterpreterInfo;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
@@ -442,8 +443,8 @@ public class HeliumApplicationFactory implements ApplicationEventListener, Noteb
   public void onUnbindInterpreter(Note note, InterpreterSetting setting) {
     for (Paragraph p : note.getParagraphs()) {
       Interpreter currentInterpreter = p.getCurrentRepl();
-      List<InterpreterSetting.InterpreterInfo> infos = setting.getInterpreterInfos();
-      for (InterpreterSetting.InterpreterInfo info : infos) {
+      List<InterpreterInfo> infos = setting.getInterpreterInfos();
+      for (InterpreterInfo info : infos) {
         if (info.getClassName().equals(currentInterpreter.getClassName())) {
           onParagraphRemove(p);
           break;

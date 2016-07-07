@@ -30,6 +30,7 @@ import org.apache.zeppelin.interpreter.InterpreterOption;
 public class NewInterpreterSettingRequest {
   String name;
   String group;
+  String refGroup;
 
   Map<String, String> properties;
   List<Dependency> dependencies;
@@ -45,6 +46,10 @@ public class NewInterpreterSettingRequest {
 
   public String getGroup() {
     return group;
+  }
+
+  public String getRefGroup() {
+    return refGroup;
   }
 
   public Map<String, String> getProperties() {

@@ -24,10 +24,16 @@ limitations under the License.
                  pu-elastic-input-minwidth="180px" ng-model="newInterpreterSetting.name" />
         </div>
 
+        <div class="form-group" style="width:200px">
+          <b>Alias</b>
+          <input id="newInterpreterSettingGroup" input pu-elastic-input
+                 pu-elastic-input-minwidth="180px" ng-model="newInterpreterSetting.group" />
+        </div>
+
         <b>Interpreter group</b>
         <div class="form-group"
              style="width:180px">
-          <select class="form-control input-sm" ng-model="newInterpreterSetting.group"
+          <select class="form-control input-sm" ng-model="newInterpreterSetting.refGroup"
                   ng-change="newInterpreterGroupChange()">
             <option ng-repeat="availableInterpreter in availableInterpreters | unique: 'group'| orderBy: 'group'" value="{{availableInterpreter.group}}">
               {{availableInterpreter.group}}
