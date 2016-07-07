@@ -14,8 +14,8 @@ limitations under the License.
 -->
 <html ng-controller="MainCtrl" class="no-js">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta charset="utf-8" />
     <title></title>
     <!-- disable caches for all browser -->
     <meta http-equiv="cache-control" content="max-age=0" />
@@ -25,8 +25,8 @@ limitations under the License.
     <meta http-equiv="expires" content="Tue, 01 Jan 1980 1:00:00 GMT" />
     <meta http-equiv="pragma" content="no-cache" />
 
-    <meta name="description" content="">
-    <meta name="viewport" content="width=device-width">
+    <meta name="description" content="" />
+    <meta name="viewport" content="width=device-width" />
 
     <!-- ACE CSS autocomplition issue workarounds -->
     <style type="text/css">
@@ -50,24 +50,26 @@ limitations under the License.
     <link rel="stylesheet" href="bower_components/jquery-ui/themes/base/all.css" />
     <!-- endbuild -->
     <!-- build:css(.tmp) styles/main.css -->
-    <link rel="stylesheet" href="app/home/home.css">
-    <link rel="stylesheet" href="app/search/search.css">
-    <link rel="stylesheet" href="app/notebook/notebook.css">
-    <link rel="stylesheet" href="app/notebook/paragraph/paragraph.css">
-    <link rel="stylesheet" href="app/interpreter/interpreter.css">
-    <link rel="stylesheet" href="app/credential/credential.css">
-    <link rel="stylesheet" href="app/configuration/configuration.css">
-    <link rel="stylesheet" href="components/expandCollapse/expandCollapse.css">
-    <link rel="stylesheet" href="fonts/font-awesome.min.css">
-    <link rel="stylesheet" href="fonts/simple-line-icons.css">
-    <link rel="stylesheet" href="fonts/custom-font.css">
-    <link rel="stylesheet" href="fonts/Patua-One.css">
-    <link rel="stylesheet" href="fonts/Source-Code-Pro.css">
-    <link rel="stylesheet" href="fonts/Roboto.css">
+    <link rel="stylesheet" href="app/home/home.css" />
+    <link rel="stylesheet" href="app/search/search.css" />
+    <link rel="stylesheet" href="app/notebook/notebook.css" />
+    <link rel="stylesheet" href="app/notebook/paragraph/paragraph.css" />
+    <link rel="stylesheet" href="app/jobmanager/jobmanager.css">
+    <link rel="stylesheet" href="app/jobmanager/jobs/job.css">
+    <link rel="stylesheet" href="app/interpreter/interpreter.css" />
+    <link rel="stylesheet" href="app/credential/credential.css" />
+    <link rel="stylesheet" href="app/configuration/configuration.css" />
+    <link rel="stylesheet" href="components/expandCollapse/expandCollapse.css" />
+    <link rel="stylesheet" href="fonts/font-awesome.min.css" />
+    <link rel="stylesheet" href="fonts/simple-line-icons.css" />
+    <link rel="stylesheet" href="fonts/custom-font.css" />
+    <link rel="stylesheet" href="fonts/Patua-One.css" />
+    <link rel="stylesheet" href="fonts/Source-Code-Pro.css" />
+    <link rel="stylesheet" href="fonts/Roboto.css" />
     <!-- endbuild -->
-    <link rel="stylesheet" ng-href="assets/styles/looknfeel/{{looknfeel}}.css">
+    <link rel="stylesheet" ng-href="assets/styles/looknfeel/{{looknfeel}}.css" />
   </head>
-  <body ng-class="{'bodyAsIframe': asIframe}" >
+  <body ng-class="{'bodyAsIframe': asIframe}">
     <!--[if lt IE 7]>
     <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
     <![endif]-->
@@ -80,7 +82,7 @@ limitations under the License.
     <!-- Modal ::  Keyboard shortcuts -->
     <div ng-include src="'components/modal-shortcut/modal-shortcut.html'"></div>
     <div ng-controller="NotenameCtrl as notenamectrl">
-   		 <div id="note-modal-container" ng-include src="'components/noteName-create/note-name-dialog.html'"></div>
+      <div id="note-modal-container" ng-include src="'components/noteName-create/note-name-dialog.html'"></div>
     </div>
     <div ng-controller="NoteImportCtrl as noteimportctrl">
       <div id="note-import-container" ng-include src="'components/noteName-import/note-import-dialog.html'"></div>
@@ -147,6 +149,8 @@ limitations under the License.
     <script src="app/app.controller.js"></script>
     <script src="app/home/home.controller.js"></script>
     <script src="app/notebook/notebook.controller.js"></script>
+    <script src="app/jobmanager/jobmanager.controller.js"></script>
+    <script src="app/jobmanager/jobs/job.controller.js"></script>
     <script src="app/interpreter/interpreter.controller.js"></script>
     <script src="app/interpreter/interpreter.filter.js"></script>
     <script src="app/credential/credential.controller.js"></script>
