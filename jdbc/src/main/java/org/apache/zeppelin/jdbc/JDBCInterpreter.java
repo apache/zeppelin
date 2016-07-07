@@ -289,7 +289,7 @@ public class JDBCInterpreter extends Interpreter {
       }
       paragraphIdConnectionMap.clear();
 
-    } catch (SQLException e) {
+    } catch (Exception e) {
       logger.error("Error while closing...", e);
     }
   }
