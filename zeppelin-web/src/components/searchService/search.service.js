@@ -17,13 +17,13 @@ angular.module('zeppelinWebApp').service('searchService', function($resource, ba
 
   this.search = function(term) {
     this.searchTerm = term.q;
-     console.log('Searching for: %o', term.q);
+    console.log('Searching for: %o', term.q);
     if (!term.q) { //TODO(bzz): empty string check
       return;
     }
     var encQuery = window.encodeURIComponent(term.q);
-    return $resource(baseUrlSrv.getRestApiBase()+'/notebook/search?q='+encQuery, {}, {
-      query: {method:'GET'}
+    return $resource(baseUrlSrv.getRestApiBase() + '/notebook/search?q=' + encQuery, {}, {
+      query: {method: 'GET'}
     });
   };
 

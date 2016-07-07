@@ -71,8 +71,7 @@ angular.module('zeppelinWebApp').controller('NoteImportCtrl', function($scope, $
         $scope.note.errorText = 'Unable to Fetch URL';
         $scope.$apply();
       });
-    }
-    else {
+    } else {
       $scope.note.errorText = 'Enter URL';
       $scope.$apply();
     }

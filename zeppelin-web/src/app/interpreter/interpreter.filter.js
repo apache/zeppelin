@@ -14,8 +14,8 @@
  */
 'use strict';
 
-angular.module('zeppelinWebApp').filter('sortByKey', function () {
-  return function (properties) {
+angular.module('zeppelinWebApp').filter('sortByKey', function() {
+  return function(properties) {
     var sortedKeys = properties ? Object.keys(properties) : [];
     return sortedKeys.sort();
   };

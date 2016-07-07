@@ -31,6 +31,7 @@
     "grunt-svgmin": "^0.4.0",
     "grunt-usemin": "^2.1.1",
     "grunt-wiredep": "~2.0.0",
+    "grunt-jscs": "^2.1.0",
     "jshint-stylish": "^0.2.0",
     "karma": "~0.12.23",
     "karma-coverage": "^0.5.1",
