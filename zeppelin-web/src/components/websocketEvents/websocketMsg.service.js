@@ -99,20 +99,20 @@ angular.module('zeppelinWebApp').service('websocketMsgSrv', function($rootScope,
 
     runParagraph: function(paragraphId, paragraphTitle, paragraphData, paragraphConfig, paragraphParams) {
       // clover test
-      var relationJob = [
-        {
-          notebookId : '2BQVKJ1V2',
-          paragraphId : '20160624-152949_1611139341',
-        },
-        {
-          notebookId : '2BQJQHXHC',
-          paragraphId : '20160705-134208_1492672408',
-        },
-        {
-          notebookId : '2BQJQHXHC',
-            paragraphId : '20160705-134338_1509613230',
-        }
-      ];
+      // var relationJob = [
+      //   {
+      //     notebookId : '2BQVKJ1V2',
+      //     paragraphId : '20160624-152949_1611139341',
+      //   },
+      //   {
+      //     notebookId : '2BQJQHXHC',
+      //     paragraphId : '20160705-134208_1492672408',
+      //   },
+      //   {
+      //     notebookId : '2BQJQHXHC',
+      //       paragraphId : '20160705-134338_1509613230',
+      //   }
+      // ];
 
       websocketEvents.sendNewEvent({
         op: 'RUN_PARAGRAPH',
@@ -121,8 +121,7 @@ angular.module('zeppelinWebApp').service('websocketMsgSrv', function($rootScope,
           title: paragraphTitle,
           paragraph: paragraphData,
           config: paragraphConfig,
-          params: paragraphParams,
-          relationJob : relationJob
+          params: paragraphParams
         }
       });
     },

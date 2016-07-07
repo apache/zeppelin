@@ -1077,7 +1077,7 @@ public class NotebookServer extends WebSocketServlet implements
        .get("params");
     p.settings.setParams(params);
 
-    List<Map<String, String>> workflow = (List<Map<String, String>>) fromMessage.get("relationJob");
+    List<Map<String, String>> workflow = (List<Map<String, String>>) fromMessage.get("workflowJob");
 
     if (workflow != null && workflow.size() > 0) {
       synchronized (workflowManager) {

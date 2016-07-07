@@ -450,6 +450,24 @@ angular.module('zeppelinWebApp')
       $scope.paragraph.result = data.paragraph.result;
       $scope.paragraph.settings = data.paragraph.settings;
 
+      //clover test
+      $scope.paragraph.settings.workflow = [
+        {
+          notebookId : '2BQVKJ1V2',
+          paragraphId : '20160624-152949_1611139341',
+        },
+        {
+          notebookId : '2BQJQHXHC',
+          paragraphId : '20160705-134208_1492672408',
+        },
+        {
+          notebookId : '2BQJQHXHC',
+            paragraphId : '20160705-134338_1509613230',
+        }
+      ];
+
+      //clover test end
+
       if (!$scope.asIframe) {
         $scope.paragraph.config = data.paragraph.config;
         initializeDefault();
