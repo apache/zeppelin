@@ -2,7 +2,7 @@
 layout: page
 title: "Generic JDBC Interpreter"
 description: "JDBC user guide"
-group: manual
+group: interpreter
 ---
 {% include JB/setup %}
 

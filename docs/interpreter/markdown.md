@@ -2,7 +2,7 @@
 layout: page
 title: "Markdown Interpreter"
 description: "Markdown Interpreter"
-group: manual
+group: interpreter
 ---
 {% include JB/setup %}
 

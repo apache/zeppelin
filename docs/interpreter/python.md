@@ -2,7 +2,7 @@
 layout: page
 title: "Python Interpreter"
 description: "Python Interpreter"
-group: manual
+group: interpreter
 ---
 {% include JB/setup %}
 

@@ -2,7 +2,7 @@
 layout: page
 title: "R Interpreter"
 description: ""
-group: manual
+group: interpreter
 ---
 {% include JB/setup %}
 

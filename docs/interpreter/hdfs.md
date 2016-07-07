@@ -2,7 +2,7 @@
 layout: page
 title: "HDFS File System Interpreter"
 description: ""
-group: manual
+group: interpreter
 ---
 {% include JB/setup %}
 
