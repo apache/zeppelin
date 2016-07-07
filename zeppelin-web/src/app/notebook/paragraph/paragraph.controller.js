@@ -94,6 +94,7 @@ angular.module('zeppelinWebApp')
     $scope.originalText = angular.copy(newParagraph.text);
     $scope.chart = {};
     $scope.colWidthOption = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 ];
+    $scope.tabSizeOption = [ 1, 2, 3, 4, 5, 6, 7, 8 ];
     $scope.showTitleEditor = false;
     $scope.paragraphFocused = false;
     if (newParagraph.focus) {
@@ -326,6 +327,10 @@ angular.module('zeppelinWebApp')
 
     if (!config.colWidth) {
       config.colWidth = 12;
+    }
+
+    if (!config.tabSize) {
+      config.tabSize = 4;
     }
 
     if (!config.graph) {
@@ -709,6 +714,14 @@ angular.module('zeppelinWebApp')
 
       commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
     }
+  };
+
+  $scope.changeTabSize = function() {
+    var newParams = angular.copy($scope.paragraph.settings.params);
+    var newConfig = angular.copy($scope.paragraph.config);
+    $scope.editor.getSession().setTabSize($scope.paragraph.config.tabSize);
+
+    commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
   };
 
   $scope.toggleGraphOption = function() {
