@@ -65,7 +65,7 @@ public class InterpreterInfo {
 
   @Override
   public boolean equals(Object obj) {
-    if(!(obj instanceof InterpreterInfo)) {
+    if (!(obj instanceof InterpreterInfo)) {
       return false;
     }
     InterpreterInfo other = (InterpreterInfo) obj;
@@ -77,6 +77,6 @@ public class InterpreterInfo {
             getClassName().equals(other.getClassName());
     boolean sameIsDefaultInterpreter = defaultInterpreter == other.isDefaultInterpreter();
 
-    return  sameName && sameClassName && sameIsDefaultInterpreter;
+    return sameName && sameClassName && sameIsDefaultInterpreter;
   }
 }

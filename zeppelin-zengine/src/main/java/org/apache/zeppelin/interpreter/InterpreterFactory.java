@@ -197,7 +197,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     for (RegisteredInterpreter r : Interpreter.registeredInterpreters.values()) {
       add(r.getName(), r.getGroup(),
           new InterpreterInfo(r.getClassName(), r.getName(), r.isDefaultInterpreter()),
-          convertInterpreterProperties(r.getProperties()),r.getPath());
+          convertInterpreterProperties(r.getProperties()), r.getPath());
     }
 
     for (String settingId : interpreterSettingsRef.keySet()) {
@@ -238,7 +238,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
 
   private Properties convertInterpreterProperties(Map<String, InterpreterProperty> p) {
     Properties properties = new Properties();
-    for(String key : p.keySet()) {
+    for (String key : p.keySet()) {
       properties.put(key, p.get(key).getValue());
     }
     return properties;
@@ -628,7 +628,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
         interpreterSettingsRef.get(interpreterSetting.getRefGroup());
     String path = refInterpreterSetting.getPath();
     Interpreter interpreter;
-    for(InterpreterInfo info: interpreterInfos) {
+    for (InterpreterInfo info : interpreterInfos) {
       if (option.isRemote()) {
         if (option.isConnectExistingProcess()) {
           interpreter = connectToRemoteRepl(noteId, info.getClassName(), option.getHost(),

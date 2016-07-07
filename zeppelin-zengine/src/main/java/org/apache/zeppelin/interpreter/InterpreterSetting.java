@@ -64,8 +64,8 @@ public class InterpreterSetting {
   }
 
   public InterpreterSetting(InterpreterSetting o) {
-    this(generateId(), o.getName(), o.getGroup(), o.getRefGroup(), o.getInterpreterInfos(), o.getProperties(),
-        o.getDependencies(), o.getOption(), o.getPath());
+    this(generateId(), o.getName(), o.getGroup(), o.getRefGroup(), o.getInterpreterInfos(),
+        o.getProperties(), o.getDependencies(), o.getOption(), o.getPath());
     this.refGroup = o.getRefGroup();
   }
 
