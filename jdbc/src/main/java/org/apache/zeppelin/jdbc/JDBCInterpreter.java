@@ -364,7 +364,9 @@ public class JDBCInterpreter extends Interpreter {
 
     } catch (Exception e) {
       logger.error("Cannot run " + sql, e);
-      StringBuilder stringBuilder = new StringBuilder(e.getClass().toString()).append("\n");
+      StringBuilder stringBuilder = new StringBuilder();
+      stringBuilder.append(e.getMessage()).append("\n");
+      stringBuilder.append(e.getClass().toString()).append("\n");
       stringBuilder.append(StringUtils.join(e.getStackTrace(), "\n"));
       return new InterpreterResult(Code.ERROR, stringBuilder.toString());
     }
