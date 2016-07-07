@@ -311,7 +311,7 @@ public class HDFSFileInterpreter extends FileInterpreter {
                 String beforeLastPeriod = unfinished.substring(0, unfinished.lastIndexOf('.') + 1);
                 //beforeLastPeriod should be the start of fs.pathSuffix, so take the end of it.
                 String suggestedFinish = fs.pathSuffix.substring(beforeLastPeriod.length());
-                suggestions.add(new InterpreterCompletion(suggestedFinish,suggestedFinish));
+                suggestions.add(new InterpreterCompletion(suggestedFinish, suggestedFinish));
               }
             }
             return suggestions;
