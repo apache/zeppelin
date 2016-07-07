@@ -130,7 +130,7 @@ public class PythonInterpreterTest {
 
     assertTrue(serverIsListeningOn(py4jPort));
     pythonInterpreter.close();
-    TimeUnit.SECONDS.sleep(1);
+    TimeUnit.MILLISECONDS.sleep(100);
     assertFalse(serverIsListeningOn(py4jPort));
   }
 
@@ -145,7 +145,7 @@ public class PythonInterpreterTest {
 
     //when
     pythonInterpreter.close();
-    TimeUnit.SECONDS.sleep(1);
+    TimeUnit.MILLISECONDS.sleep(100);
 
     //then
     assertFalse(serverIsListeningOn(py4jPort));
