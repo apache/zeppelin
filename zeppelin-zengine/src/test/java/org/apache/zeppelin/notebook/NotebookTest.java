@@ -128,12 +128,19 @@ public class NotebookTest implements JobListenerFactory{
 
   @Test
   public void testReloadAllNotes() throws IOException {
-    File srcDir = new File("src/test/resources/2A94M5J1Z");
-    File destDir = new File(notebookDir.getAbsolutePath() + "/2A94M5J1Z");
+    /**
+     * 2A94M5J1Z old date format without timezone
+     * 2BQA35CJZ new date format with timezone
+     */
+    String[] noteNames = new String[]{"2A94M5J1Z", "2BQA35CJZ"};
 
     // copy the notebook
     try {
-      FileUtils.copyDirectory(srcDir, destDir);
+      for (String note : noteNames) {
+        File srcDir = new File("src/test/resources/" + note);
+        File destDir = new File(notebookDir.getAbsolutePath() + "/" + note);
+        FileUtils.copyDirectory(srcDir, destDir);
+      }
     } catch (IOException e) {
       logger.error(e.toString(), e);
     }
@@ -146,17 +153,20 @@ public class NotebookTest implements JobListenerFactory{
     Note copiedNote = notebookRepo.get("2A94M5J1Z", null);
     notebook.reloadAllNotes(null);
     notes = notebook.getAllNotes();
-    assertEquals(notes.size(), 1);
-    assertEquals(notes.get(0).id(), copiedNote.id());
-    assertEquals(notes.get(0).getName(), copiedNote.getName());
-    assertEquals(notes.get(0).getParagraphs(), copiedNote.getParagraphs());
+    assertEquals(notes.size(), 2);
+    assertEquals(notes.get(1).id(), copiedNote.id());
+    assertEquals(notes.get(1).getName(), copiedNote.getName());
+    assertEquals(notes.get(1).getParagraphs(), copiedNote.getParagraphs());
 
     // delete the notebook
-    FileUtils.deleteDirectory(destDir);
+    for (String note : noteNames) {
+      File destDir = new File(notebookDir.getAbsolutePath() + "/" + note);
+      FileUtils.deleteDirectory(destDir);
+    }
 
     // keep notebook in memory before reloading
     notes = notebook.getAllNotes();
-    assertEquals(notes.size(), 1);
+    assertEquals(notes.size(), 2);
 
     // delete notebook from notebook list when reloadAllNotes() is called
     notebook.reloadAllNotes(null);

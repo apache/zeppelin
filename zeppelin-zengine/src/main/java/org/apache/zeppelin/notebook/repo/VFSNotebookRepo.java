@@ -23,6 +23,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -39,6 +40,7 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.notebook.Paragraph;
+import org.apache.zeppelin.notebook.NotebookImportDeserializer;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
@@ -157,7 +159,8 @@ public class VFSNotebookRepo implements NotebookRepo {
 
     GsonBuilder gsonBuilder = new GsonBuilder();
     gsonBuilder.setPrettyPrinting();
-    Gson gson = gsonBuilder.create();
+    Gson gson = gsonBuilder.registerTypeAdapter(Date.class, new NotebookImportDeserializer())
+        .create();
 
     FileContent content = noteJson.getContent();
     InputStream ins = content.getInputStream();
