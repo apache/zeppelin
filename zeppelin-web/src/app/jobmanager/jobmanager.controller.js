@@ -22,7 +22,7 @@ angular.module('zeppelinWebApp')
       $scope.$on('setNotebookJobs', function(event, responseData) {
         $scope.lastJobServerUnixTime = responseData.lastResponseUnixTime;
         $scope.jobInfomations = responseData.jobs;
-        $scope.jobInfomationsIndexs = $scope.jobInfomations? _.indexBy($scope.jobInfomations, 'notebookId') : {};
+        $scope.jobInfomationsIndexs = $scope.jobInfomations ? _.indexBy($scope.jobInfomations, 'notebookId') : {};
       });
 
       $scope.$on('setUpdateNotebookJobs', function(event, responseData) {
@@ -30,7 +30,7 @@ angular.module('zeppelinWebApp')
         var indexStore = $scope.jobInfomationsIndexs;
         $scope.lastJobServerUnixTime = responseData.lastResponseUnixTime;
         var notes = responseData.jobs;
-        notes.map(function (changedItem) {
+        notes.map(function(changedItem) {
           if (indexStore[changedItem.notebookId] === undefined) {
             var newItem = angular.copy(changedItem);
             jobInfomations.push(newItem);
@@ -46,7 +46,7 @@ angular.module('zeppelinWebApp')
                 indexStore.splice(removeIndex, 1);
               }
 
-              removeIndex = _.findIndex(jobInfomations, { 'notebookId' : changedItem.notebookId});
+              removeIndex = _.findIndex(jobInfomations, {'notebookId': changedItem.notebookId});
               if (removeIndex) {
                 jobInfomations.splice(removeIndex, 1);
               }
@@ -64,8 +64,8 @@ angular.module('zeppelinWebApp')
         });
       });
 
-      $scope.filterValueToName = function (filterValue) {
-        var index = _.findIndex($scope.ACTIVE_INTERPRETERS, {value : filterValue});
+      $scope.filterValueToName = function(filterValue) {
+        var index = _.findIndex($scope.ACTIVE_INTERPRETERS, {value: filterValue});
 
         if ($scope.ACTIVE_INTERPRETERS[index].name !== undefined) {
           return $scope.ACTIVE_INTERPRETERS[index].name;
@@ -74,12 +74,12 @@ angular.module('zeppelinWebApp')
         }
       };
 
-      $scope.init = function () {
+      $scope.init = function() {
         $scope.jobInfomations = [];
         $scope.JobInfomationsByFilter = $scope.jobInfomations;
 
         websocketMsgSrv.getNotebookJobsList();
-        var refreshObj = $interval(function () {
+        var refreshObj = $interval(function() {
           if ($scope.lastJobServerUnixTime !== undefined) {
             websocketMsgSrv.getUpdateNotebookJobsList($scope.lastJobServerUnixTime);
           }
@@ -90,4 +90,4 @@ angular.module('zeppelinWebApp')
           websocketMsgSrv.unsubscribeJobManager();
         });
       };
-});
+    });

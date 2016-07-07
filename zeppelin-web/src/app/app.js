@@ -47,44 +47,44 @@
           $httpProvider.defaults.withCredentials = true;
 
           $routeProvider
-                .when('/', {
-                  templateUrl: 'app/home/home.html'
-                })
-                .when('/notebook/:noteId', {
-                  templateUrl: 'app/notebook/notebook.html',
-                  controller: 'NotebookCtrl'
-                })
-                .when('/notebook/:noteId/paragraph?=:paragraphId', {
-                  templateUrl: 'app/notebook/notebook.html',
-                  controller: 'NotebookCtrl'
-                })
-                .when('/notebook/:noteId/paragraph/:paragraphId?', {
-                  templateUrl: 'app/notebook/notebook.html',
-                  controller: 'NotebookCtrl'
-                })
-                .when('/jobmanager', {
-                    templateUrl: 'app/jobmanager/jobmanager.html',
-                    controller: 'JobmanagerCtrl'
-                })
-                .when('/interpreter', {
-                  templateUrl: 'app/interpreter/interpreter.html',
-                  controller: 'InterpreterCtrl'
-                })
-                .when('/credential', {
-                  templateUrl: 'app/credential/credential.html',
-                  controller: 'CredentialCtrl'
-                })
-                .when('/configuration', {
-                    templateUrl: 'app/configuration/configuration.html',
-                    controller: 'ConfigurationCtrl'
-                })
-                .when('/search/:searchTerm', {
-                  templateUrl: 'app/search/result-list.html',
-                  controller: 'SearchResultCtrl'
-                })
-                .otherwise({
-                  redirectTo: '/'
-                });
+            .when('/', {
+              templateUrl: 'app/home/home.html'
+            })
+            .when('/notebook/:noteId', {
+              templateUrl: 'app/notebook/notebook.html',
+              controller: 'NotebookCtrl'
+            })
+            .when('/notebook/:noteId/paragraph?=:paragraphId', {
+              templateUrl: 'app/notebook/notebook.html',
+              controller: 'NotebookCtrl'
+            })
+            .when('/notebook/:noteId/paragraph/:paragraphId?', {
+              templateUrl: 'app/notebook/notebook.html',
+              controller: 'NotebookCtrl'
+            })
+            .when('/jobmanager', {
+              templateUrl: 'app/jobmanager/jobmanager.html',
+              controller: 'JobmanagerCtrl'
+            })
+            .when('/interpreter', {
+              templateUrl: 'app/interpreter/interpreter.html',
+              controller: 'InterpreterCtrl'
+            })
+            .when('/credential', {
+              templateUrl: 'app/credential/credential.html',
+              controller: 'CredentialCtrl'
+            })
+            .when('/configuration', {
+              templateUrl: 'app/configuration/configuration.html',
+              controller: 'ConfigurationCtrl'
+            })
+            .when('/search/:searchTerm', {
+              templateUrl: 'app/search/result-list.html',
+              controller: 'SearchResultCtrl'
+            })
+            .otherwise({
+              redirectTo: '/'
+            });
 
           ngToastProvider.configure({
             dismissButton: true,
@@ -117,4 +117,3 @@
   });
 
 }());
-

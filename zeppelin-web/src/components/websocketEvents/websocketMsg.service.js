@@ -171,7 +171,7 @@ angular.module('zeppelinWebApp').service('websocketMsgSrv', function($rootScope,
 
     getUpdateNotebookJobsList: function(lastUpdateServerUnixTime) {
       websocketEvents.sendNewEvent(
-        {op: 'LIST_UPDATE_NOTEBOOK_JOBS', data : {lastUpdateUnixTime : lastUpdateServerUnixTime*1}}
+        {op: 'LIST_UPDATE_NOTEBOOK_JOBS', data: {lastUpdateUnixTime: lastUpdateServerUnixTime * 1}}
       );
     },
 
