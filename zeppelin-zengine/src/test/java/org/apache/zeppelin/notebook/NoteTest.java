@@ -17,8 +17,6 @@
 
 package org.apache.zeppelin.notebook;
 
-import com.google.common.base.Optional;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
@@ -106,7 +104,7 @@ public class NoteTest {
   @Test
   public void putDefaultReplNameIfInterpreterSettingAbsent() {
     when(interpreterFactory.getDefaultInterpreterSetting(anyString()))
-            .thenReturn(null);
+        .thenReturn(null);
 
     Note note = new Note(repo, interpreterFactory, jobListenerFactory, index, credentials, noteEventListener);
     note.putDefaultReplName();
