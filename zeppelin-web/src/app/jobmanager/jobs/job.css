@@ -1,0 +1,118 @@
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/*
+  job Style
+*/
+
+.job-space {
+  margin-bottom: 5px !important;
+  padding: 10px 10px 10px 10px !important;
+  min-height: 30px;
+}
+
+.job-margin {
+  margin-right: 2px;
+  margin-left: 2px;
+}
+
+.job-types i {
+  font-weight: bold;
+  font-size: 10px;
+}
+
+
+/*
+  job Controls CSS
+*/
+
+.job .runControl {
+  font-size: 1px;
+  color: #AAAAAA;
+  height:4px;
+  margin: 0px 0px 0px 0px;
+}
+
+.job .runControl .progress {
+  position: relative;
+  width: 100%;
+  height: 4px;
+  z-index: 100;
+  border-radius: 0;
+}
+
+.job .control span {
+  margin-left: 4px;
+}
+
+.job .control {
+  background: rgba(255,255,255,0.85);
+  float: right;
+  color: #999;
+  margin-top: 1px;
+  margin-right: 5px;
+  position: absolute;
+  clear: both;
+  right: 15px;
+  text-align: right;
+  font-size: 12px;
+  padding: 4px;
+}
+
+.job .control li {
+  font-size: 12px;
+  margin-bottom: 4px;
+  color: #333333;
+}
+
+.job .control .tooltip {
+  z-index: 10003;
+}
+
+@-webkit-keyframes spinnerRotateAnimation
+{
+  from{-webkit-transform:rotate(0deg);}
+  to{-webkit-transform:rotate(360deg);}
+}
+@-moz-keyframes spinnerRotateAnimation
+{
+  from{-moz-transform:rotate(0deg);}
+  to{-moz-transform:rotate(360deg);}
+}
+@-ms-keyframes spinnerRotateAnimation
+{
+  from{-ms-transform:rotate(0deg);}
+  to{-ms-transform:rotate(360deg);}
+}
+
+@keyframes spinnerRotateAnimation {
+  from {transform: rotate(0deg);}
+  to{transform: rotate(360deg);}
+}
+
+.spinAnimation{
+  -webkit-animation-name: spinnerRotateAnimation;
+  -webkit-animation-duration: 1s;
+  -webkit-animation-iteration-count: infinite;
+  -webkit-animation-timing-function: linear;
+  -moz-animation-name: spinnerRotateAnimation;
+  -moz-animation-duration: 1s;
+  -moz-animation-iteration-count: infinite;
+  -moz-animation-timing-function: linear;
+  -ms-animation-name: spinnerRotateAnimation;
+  -ms-animation-duration: 1s;
+  -ms-animation-iteration-count: infinite;
+  -ms-animation-timing-function: linear;
+}
+

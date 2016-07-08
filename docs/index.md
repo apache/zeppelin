@@ -169,7 +169,8 @@ Join to our [Mailing list](https://zeppelin.apache.org/community.html) and repor
   * [Notebook Authorization](./security/notebook_authorization.html)
   * [Interpreter & Data Resource Authorization](./security/interpreter_authorization.html)
 * Contribute
-  * [Writing a new Interpreter](./development/writingzeppelininterpreter.html)
+  * [Writing Zeppelin Interpreter](./development/writingzeppelininterpreter.html)
+  * [Writing Zeppelin Application (Experimental)](./development/writingzeppelinapplication.html)
   * [How to contribute (code)](./development/howtocontribute.html)
   * [How to contribute (documentation website)](./development/howtocontributewebsite.html)
 
