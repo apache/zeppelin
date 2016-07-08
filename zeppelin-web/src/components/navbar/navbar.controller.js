@@ -55,9 +55,11 @@ angular.module('zeppelinWebApp')
   $scope.logout = function() {
     var logoutURL = baseUrlSrv.getRestApiBase() + '/login/logout';
 
-    $http.get(logoutURL).error(function() {
+    //for firefox and safari
+    logoutURL = logoutURL.replace('//', '//false:false@');
+    $http.post(logoutURL).error(function() {
       //force authcBasic (if configured) to logout
-      $http.get(logoutURL).error(function() {
+      $http.post(logoutURL).error(function() {
         $rootScope.userName = '';
         $rootScope.ticket.principal = '';
         $rootScope.ticket.ticket = '';
@@ -69,7 +71,7 @@ angular.module('zeppelinWebApp')
           window.location.replace('/');
         }, 1000);
       });
-      });
+    });
   };
 
   $scope.search = function(searchTerm) {

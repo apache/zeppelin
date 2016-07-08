@@ -17,7 +17,6 @@
 package org.apache.zeppelin.rest;
 
 import org.apache.shiro.authc.*;
-import org.apache.shiro.session.Session;
 import org.apache.shiro.subject.Subject;
 import org.apache.zeppelin.annotation.ZeppelinApi;
 import org.apache.zeppelin.server.JsonResponse;
@@ -26,7 +25,10 @@ import org.apache.zeppelin.utils.SecurityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.*;
+import javax.ws.rs.FormParam;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -109,23 +111,15 @@ public class LoginRestApi {
     LOG.warn(response.toString());
     return response.build();
   }
-  
-  @GET
+
+  @POST
   @Path("logout")
   @ZeppelinApi
   public Response logout() {
     JsonResponse response;
-    
     Subject currentUser = org.apache.shiro.SecurityUtils.getSubject();
     currentUser.logout();
-
-    Map<String, String> data = new HashMap<>();
-    data.put("principal", "anonymous");
-    data.put("roles", "");
-    data.put("ticket", "anonymous");
-    data.put("WWW-Authenticate", "Basic realm=\"Login required\"");
-   
-    response = new JsonResponse(Response.Status.UNAUTHORIZED, "", data);
+    response = new JsonResponse(Response.Status.UNAUTHORIZED, "", "");
     LOG.warn(response.toString());
     return response.build();
   }
