@@ -149,8 +149,7 @@ angular.module('zeppelinWebApp')
           console.log('filtervalue [{}]', filterValue, ' ', $scope.activeInterpreters);
         }
         if ($scope.activeInterpreters[index].name !== undefined) {
-          if (maxStringLength !== undefined
-              && maxStringLength > $scope.activeInterpreters[index].name) {
+          if (maxStringLength !== undefined && maxStringLength > $scope.activeInterpreters[index].name) {
             return $scope.activeInterpreters[index].name.substr(0, maxStringLength -3) + '...';
           }
           return $scope.activeInterpreters[index].name;
