@@ -82,7 +82,7 @@ public class LivyHelper {
           }.getType());
       Integer sessionId = ((Double) jsonMap.get("id")).intValue();
       if (!jsonMap.get("state").equals("idle")) {
-        Integer retryCount = 120;
+        Integer retryCount = 60;
 
         try {
           retryCount = Integer.valueOf(
