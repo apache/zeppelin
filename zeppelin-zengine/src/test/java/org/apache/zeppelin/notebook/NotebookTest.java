@@ -128,6 +128,22 @@ public class NotebookTest implements JobListenerFactory{
   }
 
   @Test
+  public void testReloadAndSetInterpreter() throws IOException {
+    // given a notebook
+    File srcDir = new File("src/test/resources/2A94M5J1Z");
+    File destDir = new File(notebookDir.getAbsolutePath() + "/2A94M5J1Z");
+    FileUtils.copyDirectory(srcDir, destDir);
+
+    // when load
+    notebook.reloadAllNotes(null);
+    assertEquals(1, notebook.getAllNotes().size());
+
+    // then interpreter factory should be injected into all the paragraphs
+    Note note = notebook.getAllNotes().get(0);
+    assertNull(note.getParagraphs().get(0).getRepl(null));
+  }
+
+  @Test
   public void testReloadAllNotes() throws IOException {
     File srcDir = new File("src/test/resources/2A94M5J1Z");
     File destDir = new File(notebookDir.getAbsolutePath() + "/2A94M5J1Z");
