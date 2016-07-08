@@ -143,7 +143,7 @@ public class NotebookTest implements JobListenerFactory{
     assertNull(note.getParagraphs().get(0).getRepl(null));
   }
 
-    @Test
+  @Test
   public void testReloadAllNotes() throws IOException {
     File srcDir = new File("src/test/resources/2A94M5J1Z");
     File destDir = new File(notebookDir.getAbsolutePath() + "/2A94M5J1Z");
