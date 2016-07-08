@@ -54,30 +54,24 @@ angular.module('zeppelinWebApp')
 
   $scope.logout = function() {
     var logoutURL = baseUrlSrv.getRestApiBase() + '/login/logout';
-    var request = new XMLHttpRequest();
 
-    //force authcBasic (if configured) to logout by setting credentials as false:false
-    request.open('post', logoutURL, true, 'false', 'false');
-    request.onreadystatechange = function() {
-      if (request.readyState === 4) {
-        if (request.status === 401 || request.status === 405 || request.status === 500) {
-          $rootScope.userName = '';
-          $rootScope.ticket.principal = '';
-          $rootScope.ticket.ticket = '';
-          $rootScope.ticket.roles = '';
-          BootstrapDialog.show({
-            message: 'Logout Success'
-          });
-          setTimeout(function() {
-            window.location.replace('/');
-          }, 1000);
-        } else {
-          request.open('post', logoutURL, true, 'false', 'false');
-          request.send();
-        }
-      }
-    };
-    request.send();
+    //for firefox and safari
+    logoutURL = logoutURL.replace('//', '//false:false@');
+    $http.post(logoutURL).error(function() {
+      //force authcBasic (if configured) to logout
+      $http.post(logoutURL).error(function() {
+        $rootScope.userName = '';
+        $rootScope.ticket.principal = '';
+        $rootScope.ticket.ticket = '';
+        $rootScope.ticket.roles = '';
+        BootstrapDialog.show({
+          message: 'Logout Success'
+        });
+        setTimeout(function() {
+          window.location.replace('/');
+        }, 1000);
+      });
+    });
   };
 
   $scope.search = function(searchTerm) {
