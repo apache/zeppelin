@@ -56,6 +56,18 @@ module.exports = function (grunt) {
       }
     },
 
+    htmlhint: {
+      options: {
+        'tagname-lowercase': true,
+        'attr-lowercase': true,
+        'space-tab-mixed-disabled': 'space',
+        'tag-pair': true,
+        'tag-self-close': true,
+        'attr-no-duplication': true
+      },
+      src: ['src/**/*.html']
+    },
+
     'goog-webfont-dl': {
       patuaOne: {
         options: {
@@ -119,6 +131,12 @@ module.exports = function (grunt) {
         options: {
           livereload: '<%= connect.options.livereload %>'
         }
+      },
+      html: {
+        files: [
+          '<%= yeoman.app %>/**/*.html'
+        ],
+        tasks: ['newer:htmlhint']
       },
       jsTest: {
         files: ['test/spec/{,*/}*.js'],
@@ -488,6 +506,7 @@ module.exports = function (grunt) {
 
   grunt.registerTask('build', [
     'jshint:all',
+    'htmlhint',
     'clean:dist',
     'wiredep',
     'goog-webfont-dl',

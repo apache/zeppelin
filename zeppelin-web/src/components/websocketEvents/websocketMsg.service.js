@@ -179,6 +179,20 @@ angular.module('zeppelinWebApp').service('websocketMsgSrv', function($rootScope,
 
     isConnected: function(){
       return websocketEvents.isConnected();
+    },
+
+    getNotebookJobsList: function() {
+      websocketEvents.sendNewEvent({op: 'LIST_NOTEBOOK_JOBS'});
+    },
+
+    getUpdateNotebookJobsList: function(lastUpdateServerUnixTime) {
+      websocketEvents.sendNewEvent(
+        {op: 'LIST_UPDATE_NOTEBOOK_JOBS', data : {lastUpdateUnixTime : lastUpdateServerUnixTime*1}}
+      );
+    },
+
+    unsubscribeJobManager: function() {
+      websocketEvents.sendNewEvent({op: 'UNSUBSCRIBE_JOBMANAGER'});
     }
 
   };

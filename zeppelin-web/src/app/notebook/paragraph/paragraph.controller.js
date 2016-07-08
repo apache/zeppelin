@@ -716,12 +716,17 @@ angular.module('zeppelinWebApp')
     }
   };
 
-  $scope.changeColWidth = function() {
+  $scope.changeColWidth = function(width) {
     angular.element('.navbar-right.open').removeClass('open');
-    var newParams = angular.copy($scope.paragraph.settings.params);
-    var newConfig = angular.copy($scope.paragraph.config);
+    if (!width || width !== $scope.paragraph.config.colWidth) {
+      if (width) {
+        $scope.paragraph.config.colWidth = width;
+      }
+      var newParams = angular.copy($scope.paragraph.settings.params);
+      var newConfig = angular.copy($scope.paragraph.config);
 
-    commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
+      commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
+    }
   };
 
   $scope.toggleGraphOption = function() {
@@ -1125,11 +1130,9 @@ angular.module('zeppelinWebApp')
           $scope.showLineNumbers();
         }
       } else if (keyEvent.ctrlKey && keyEvent.shiftKey && keyCode === 189) { // Ctrl + Shift + -
-        $scope.paragraph.config.colWidth = Math.max(1, $scope.paragraph.config.colWidth - 1);
-        $scope.changeColWidth();
+        $scope.changeColWidth(Math.max(1, $scope.paragraph.config.colWidth - 1));
       } else if (keyEvent.ctrlKey && keyEvent.shiftKey && keyCode === 187) { // Ctrl + Shift + =
-        $scope.paragraph.config.colWidth = Math.min(12, $scope.paragraph.config.colWidth + 1);
-        $scope.changeColWidth();
+        $scope.changeColWidth(Math.min(12, $scope.paragraph.config.colWidth + 1));
       } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 84) { // Ctrl + Alt + t
         if ($scope.paragraph.config.title) {
           $scope.hideTitle();
@@ -2170,18 +2173,11 @@ angular.module('zeppelinWebApp')
   };
 
   $scope.resizeParagraph = function(width, height) {
-    if ($scope.paragraph.config.colWidth !== width) {
-
-        $scope.paragraph.config.colWidth = width;
-        $scope.changeColWidth();
-        $timeout(function() {
-          autoAdjustEditorHeight($scope.paragraph.id + '_editor');
-          $scope.changeHeight(height);
-        }, 200);
-
-    } else {
+    $scope.changeColWidth(width);
+    $timeout(function() {
+      autoAdjustEditorHeight($scope.paragraph.id + '_editor');
       $scope.changeHeight(height);
-    }
+    }, 200);
   };
 
   $scope.changeHeight = function(height) {
