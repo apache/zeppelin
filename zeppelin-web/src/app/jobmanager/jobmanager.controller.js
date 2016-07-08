@@ -15,14 +15,78 @@
 'use strict';
 
 angular.module('zeppelinWebApp')
+  .filter('jobManager', function() {
+
+    function filterContext(jobItems, filterConfig) {
+      var filterValueInterpreter = filterConfig.filterValueInterpreter;
+      var filterValueNotebookName = filterConfig.filterValueNotebookName;
+      var isRunningAlwaysTop = filterConfig.isRunningAlwaysTop;
+      var isSortByAsc = filterConfig.isSortByAsc;
+
+      var filterItems = jobItems;
+
+      if (filterValueInterpreter === undefined) {
+        filterItems = _.filter(filterItems, function (jobItem) {
+          return jobItem.interpreter === undefined? true : false;
+        });
+      } else if (filterValueInterpreter !== '*') {
+        filterItems = _.where(filterItems, {interpreter : filterValueInterpreter});
+      }
+
+      if (filterValueNotebookName !== '') {
+        filterItems = _.filter(filterItems, function(jobItem){
+          var lowerFilterValue = filterValueNotebookName.toLocaleLowerCase();
+          var lowerNotebookName = jobItem.notebookName.toLocaleLowerCase();
+          return lowerNotebookName.match(new RegExp('.*'+lowerFilterValue+'.*'));
+        });
+      }
+
+      if (isSortByAsc === true) {
+        filterItems = _.sortBy(filterItems, function (sortItem) {
+          return sortItem.notebookName;
+        });
+      } else {
+        filterItems = _.sortBy(filterItems, function (sortItem) {
+          return sortItem.notebookName;
+        });
+        filterItems = filterItems.reverse();
+      }
+
+      if (isRunningAlwaysTop === true) {
+        var runningJobList = _.where(filterItems, {isRunningJob : true});
+        filterItems = _.reject(filterItems, {isRunningJob : true});
+        runningJobList.map(function (runningJob) {
+          filterItems.splice(0,0, runningJob);
+        });
+      }
+
+      return filterItems;
+    }
+    return filterContext;
+  })
   .controller('JobmanagerCtrl',
     function($scope, $route, $routeParams, $location, $rootScope, $http, $q,
-             websocketMsgSrv, baseUrlSrv, $interval, $timeout, SaveAsService) {
+             websocketMsgSrv, baseUrlSrv, $interval, $timeout, jobManagerFilter) {
 
       $scope.$on('setNotebookJobs', function(event, responseData) {
         $scope.lastJobServerUnixTime = responseData.lastResponseUnixTime;
         $scope.jobInfomations = responseData.jobs;
         $scope.jobInfomationsIndexs = $scope.jobInfomations? _.indexBy($scope.jobInfomations, 'notebookId') : {};
+        $scope.JobInfomationsByFilter = $scope.jobTypeFilter($scope.jobInfomations, $scope.filterConfig);
+        $scope.activeInterpreters = [
+          {
+            name : 'ALL',
+            value : '*'
+          }
+        ];
+        var interpreterLists = _.uniq(_.pluck($scope.jobInfomations, 'interpreter'), false);
+        for (var index = 0, length = interpreterLists.length; index < length; index++) {
+          $scope.activeInterpreters.push({
+            name : interpreterLists[index],
+            value : interpreterLists[index]
+          });
+        }
+        $scope.doFiltering($scope.jobInfomations, $scope.filterConfig);
       });
 
       $scope.$on('setUpdateNotebookJobs', function(event, responseData) {
@@ -61,20 +125,76 @@ angular.module('zeppelinWebApp')
               changeOriginTarget.paragraphs = changedItem.paragraphs;
             }
           }
+          $scope.doFiltering(jobInfomations, $scope.filterConfig);
         });
       });
 
-      $scope.filterValueToName = function (filterValue) {
-        var index = _.findIndex($scope.ACTIVE_INTERPRETERS, {value : filterValue});
+      $scope.doFiltering = function (jobInfomations, filterConfig) {
+        asyncNotebookJobFilter(jobInfomations, filterConfig).then(
+          function () {
+            // success
+            $scope.isLoadingFilter = false;
+          },
+          function (){
+            // failed
+          });
+      };
 
-        if ($scope.ACTIVE_INTERPRETERS[index].name !== undefined) {
-          return $scope.ACTIVE_INTERPRETERS[index].name;
+      $scope.filterValueToName = function (filterValue, maxStringLength) {
+        if ($scope.activeInterpreters === undefined) {
+          return;
+        }
+        var index = _.findIndex($scope.activeInterpreters, {value : filterValue});
+        if (index < 0) {
+          console.log('filtervalue [{}]', filterValue, ' ', $scope.activeInterpreters);
+        }
+        if ($scope.activeInterpreters[index].name !== undefined) {
+          if (maxStringLength !== undefined
+              && maxStringLength > $scope.activeInterpreters[index].name) {
+            return $scope.activeInterpreters[index].name.substr(0, maxStringLength -3) + '...';
+          }
+          return $scope.activeInterpreters[index].name;
         } else {
-          return 'undefined';
+          return 'Undefined';
+        }
+      };
+
+      $scope.setFilterValue = function (filterValue) {
+        $scope.filterConfig.filterValueInterpreter = filterValue;
+        $scope.doFiltering($scope.jobInfomations, $scope.filterConfig);
+      };
+
+      $scope.onChangeRunJobToAlwaysTopToggle = function () {
+        $scope.filterConfig.isRunningAlwaysTop = !$scope.filterConfig.isRunningAlwaysTop;
+        $scope.doFiltering($scope.jobInfomations, $scope.filterConfig);
+      };
+
+      $scope.onChangeSortAsc = function () {
+        $scope.filterConfig.isSortByAsc = !$scope.filterConfig.isSortByAsc;
+        $scope.doFiltering($scope.jobInfomations, $scope.filterConfig);
+      };
+
+      $scope.doFilterInputTyping = function (keyEvent, jobInfomations, filterConfig) {
+        var RETURN_KEY_CODE = 13;
+        $timeout.cancel($scope.dofilterTimeoutObject);
+        $scope.dofilterTimeoutObject = $timeout(function(){
+          $scope.doFiltering(jobInfomations, filterConfig);
+        }, 1000);
+        if (keyEvent.which === RETURN_KEY_CODE) {
+          $timeout.cancel($scope.dofilterTimeoutObject);
+          $scope.doFiltering(jobInfomations, filterConfig);
         }
       };
 
       $scope.init = function () {
+        $scope.isLoadingFilter = true;
+        $scope.filterConfig = {
+          isRunningAlwaysTop : true,
+          filterValueNotebookName : '',
+          filterValueInterpreter : '*',
+          isSortByAsc : true
+        };
+        $scope.jobTypeFilter = jobManagerFilter;
         $scope.jobInfomations = [];
         $scope.JobInfomationsByFilter = $scope.jobInfomations;
 
@@ -88,6 +208,13 @@ angular.module('zeppelinWebApp')
         $scope.$on('$destroy', function() {
           $interval.cancel(refreshObj);
           websocketMsgSrv.unsubscribeJobManager();
+        });
+      };
+
+      var asyncNotebookJobFilter = function (jobInfomations, filterConfig) {
+        return $q(function(resolve, reject) {
+          $scope.JobInfomationsByFilter = $scope.jobTypeFilter(jobInfomations, filterConfig);
+          resolve($scope.JobInfomationsByFilter);
         });
       };
 });
