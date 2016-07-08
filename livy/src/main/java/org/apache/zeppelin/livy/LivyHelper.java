@@ -88,7 +88,8 @@ public class LivyHelper {
           retryCount = Integer.valueOf(
               property.getProperty("zeppelin.livy.create.session.retries"));
         } catch (Exception e) {
-          //nothing to do
+          LOGGER.info("zeppelin.livy.create.session.retries property is not configured." +
+              " Using default retry count.");
         }
 
         while (retryCount >= 0) {
@@ -117,7 +118,7 @@ public class LivyHelper {
           retryCount--;
         }
         if (retryCount <= 0) {
-          LOGGER.error("Error getting session for user within 60Sec.");
+          LOGGER.error("Error getting session for user within the given number of retries.");
           throw new Exception(String.format("Cannot start  %s.", kind));
         }
       }
