@@ -557,11 +557,10 @@ public class SparkInterpreter extends Interpreter {
       interpreter.createInterpreter();
 
       intp = invokeMethod(interpreter, "intp");
+      invokeMethod(intp, "setContextClassLoader");
+      invokeMethod(intp, "initializeSynchronous");
 
       if (isScala2_10()) {
-        invokeMethod(intp, "setContextClassLoader");
-        invokeMethod(intp, "initializeSynchronous");
-
         if (classOutputDir == null) {
           classOutputDir = settings.outputDirs().getSingleOutput().get();
         } else {
