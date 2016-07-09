@@ -41,9 +41,9 @@ angular.module('zeppelinWebApp').controller('LoginCtrl',
     };
 
     $rootScope.$on('initLoginValues', function() {
-      initLoginValues();
+      initValues();
     });
-    var initLoginValues = function() {
+    var initValues = function() {
       $scope.loginParams = {
         userName: '',
         password: ''
