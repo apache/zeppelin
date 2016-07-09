@@ -37,6 +37,7 @@ import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
+import org.apache.zeppelin.jdbc.security.JDBCSecurityImpl;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.slf4j.Logger;
@@ -171,6 +172,9 @@ public class JDBCInterpreter extends Interpreter {
 
     Connection connection = null;
     SqlCompleter sqlCompleter = null;
+    if (!StringUtils.isAnyEmpty(property.getProperty("zeppelin.jdbc.auth.type"))) {
+      JDBCSecurityImpl.createSecureConfiguration(property);
+    }
     for (String propertyKey : propertiesMap.keySet()) {
       try {
         connection = getConnection(propertyKey);
