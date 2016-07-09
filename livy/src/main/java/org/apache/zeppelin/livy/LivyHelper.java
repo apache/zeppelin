@@ -118,7 +118,7 @@ public class LivyHelper {
           retryCount--;
         }
         if (retryCount <= 0) {
-          LOGGER.error("Error getting session for user within the given number of retries.");
+          LOGGER.error("Error getting session for user within the configured number of retries.");
           throw new Exception(String.format("Cannot start  %s.", kind));
         }
       }
