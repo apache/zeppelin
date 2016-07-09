@@ -332,9 +332,25 @@ public class InterpreterFactory implements InterpreterGroupFactory {
       // previously created setting should turn this feature on here.
       setting.getOption().setRemote(true);
 
-      InterpreterSetting intpSetting = new InterpreterSetting(setting.id(), setting.getName(),
+      final InterpreterSetting intpSetting = new InterpreterSetting(setting.id(), setting.getName(),
           setting.getGroup(), setting.getInterpreterInfos(), setting.getProperties(),
           setting.getDependencies(), setting.getOption());
+
+      Thread t = new Thread() {
+        public void run() {
+          try {
+            loadInterpreterDependencies(intpSetting);
+          } catch (RepositoryException e) {
+            logger.error("Error while downloading repos for interpreter group :" +
+                intpSetting.getGroup(), e);
+          } catch (IOException e) {
+            logger.error("Error while downloading repos for interpreter group :" +
+                intpSetting.getGroup(), e);
+          }
+        }
+      };
+      t.start();
+
 
       intpSetting.setInterpreterGroupFactory(this);
       interpreterSettings.put(k, intpSetting);
