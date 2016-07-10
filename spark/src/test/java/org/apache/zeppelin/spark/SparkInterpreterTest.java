@@ -174,6 +174,14 @@ public class SparkInterpreterTest {
   }
 
   @Test
+  public void testCreateDataFrame() {
+    repl.interpret("case class Person(name:String, age:Int)\n", context);
+    repl.interpret("val people = sc.parallelize(Seq(Person(\"moon\", 33), Person(\"jobs\", 51), Person(\"gates\", 51), Person(\"park\", 34)))\n", context);
+    repl.interpret("people.toDF.count", context);
+    assertEquals(new Long(4), repl.getLastObject());
+  }
+
+  @Test
   public void testSparkSql(){
     repl.interpret("case class Person(name:String, age:Int)\n", context);
     repl.interpret("val people = sc.parallelize(Seq(Person(\"moon\", 33), Person(\"jobs\", 51), Person(\"gates\", 51), Person(\"park\", 34)))\n", context);
