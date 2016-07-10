@@ -24,7 +24,6 @@ import org.apache.zeppelin.interpreter.mock.MockInterpreter1;
 import org.apache.zeppelin.interpreter.mock.MockInterpreter2;
 import org.apache.zeppelin.notebook.*;
 import org.apache.zeppelin.notebook.repo.VFSNotebookRepo;
-import org.apache.zeppelin.scheduler.ExecutorFactory;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.apache.zeppelin.search.SearchService;
@@ -37,8 +36,6 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
@@ -259,7 +256,7 @@ public class HeliumApplicationFactoryTest implements JobListenerFactory {
     String mock1IntpSettingId = null;
     for (InterpreterSetting setting : notebook.getBindedInterpreterSettings(note1.id())) {
       if (setting.getName().equals("mock1")) {
-        mock1IntpSettingId = setting.id();
+        mock1IntpSettingId = setting.getId();
         break;
       }
     }

@@ -24,13 +24,11 @@ import org.apache.zeppelin.dep.Dependency;
 import org.apache.zeppelin.interpreter.InterpreterOption;
 
 /**
- *  NewInterpreterSetting rest api request message
- *
+ * NewInterpreterSetting rest api request message
  */
 public class NewInterpreterSettingRequest {
   String name;
-  String group;
-  String refGroup;
+  String refName;
 
   Map<String, String> properties;
   List<Dependency> dependencies;
@@ -44,12 +42,8 @@ public class NewInterpreterSettingRequest {
     return name;
   }
 
-  public String getGroup() {
-    return group;
-  }
-
-  public String getRefGroup() {
-    return refGroup;
+  public String getRefName() {
+    return refName;
   }
 
   public Map<String, String> getProperties() {

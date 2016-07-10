@@ -17,10 +17,18 @@
 
 package org.apache.zeppelin.interpreter;
 
-import java.util.*;
-
+import com.google.gson.annotations.SerializedName;
 import org.apache.zeppelin.dep.Dependency;
-import org.apache.zeppelin.notebook.utility.IdHashes;
+
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+
+import static org.apache.zeppelin.notebook.utility.IdHashes.generateId;
 
 /**
  * Interpreter settings
@@ -29,88 +37,67 @@ public class InterpreterSetting {
   private static final String SHARED_PROCESS = "shared_process";
   private String id;
   private String name;
-  private String group;
-  private String refGroup = null;
-  private String description;
+  private String refName; // always be null in case of InterpreterSettingRef
   private Properties properties;
-  private transient InterpreterGroupFactory interpreterGroupFactory;
-  private transient String InterpreterPath;
 
-  // use 'interpreterGroup' as a field name to keep backward compatibility of
-  // conf/interpreter.json file format
-  private List<InterpreterInfo> interpreterGroup;
+  @SerializedName("interpreterGroup")
+  private List<InterpreterInfo> interpreterInfos;
   private transient Map<String, InterpreterGroup> interpreterGroupRef = new HashMap<>();
   private List<Dependency> dependencies;
   private InterpreterOption option;
   private transient String path;
 
-  public InterpreterSetting(String id, String name, String group, String refGroup,
+  @Deprecated
+  private String group;
+  @Deprecated
+  private transient InterpreterGroupFactory interpreterGroupFactory;
+
+  public InterpreterSetting() {
+
+  }
+
+  public InterpreterSetting(String id, String name, String refName,
       List<InterpreterInfo> interpreterInfos, Properties properties, List<Dependency> dependencies,
       InterpreterOption option, String path) {
     this.id = id;
     this.name = name;
-    this.group = group;
-    this.refGroup = refGroup;
-    this.interpreterGroup = interpreterInfos;
+    this.refName = refName;
+    this.interpreterInfos = interpreterInfos;
     this.properties = properties;
     this.dependencies = dependencies;
     this.option = option;
     this.path = path;
   }
 
-  public InterpreterSetting(String name, String group, List<InterpreterInfo> interpreterInfos,
+  public InterpreterSetting(String name, String refName, List<InterpreterInfo> interpreterInfos,
       Properties properties, List<Dependency> dependencies, InterpreterOption option, String path) {
-    this(generateId(), name, group, null, interpreterInfos, properties, dependencies, option, path);
+    this(generateId(), name, refName, interpreterInfos, properties, dependencies, option, path);
   }
 
+  /**
+   * Create interpreter from interpreterSettingRef
+   * @param o interpreterSetting from interpreterSettingRef
+   */
   public InterpreterSetting(InterpreterSetting o) {
-    this(generateId(), o.getName(), o.getGroup(), o.getRefGroup(), o.getInterpreterInfos(),
-        o.getProperties(), o.getDependencies(), o.getOption(), o.getPath());
-    this.refGroup = o.getRefGroup();
+    this(generateId(), o.getName(), o.getRefName(), o.getInterpreterInfos(), o.getProperties(),
+        o.getDependencies(), o.getOption(), o.getPath());
   }
 
-  public String id() {
+  public String getId() {
     return id;
-  }
-
-  public void regenerateId() {
-    this.id = generateId();
-  }
-
-  private static String generateId() {
-    return IdHashes.encode(System.currentTimeMillis() + new Random().nextInt());
   }
 
   public String getName() {
     return name;
   }
 
-  public void setName(String name) {
-    this.name = name;
+  public String getRefName() {
+    return refName;
   }
 
-  public String getDescription() {
-    return description;
-  }
-
-  public void setDescription(String desc) {
-    this.description = desc;
-  }
-
-  public void setGroup(String group) {
-    this.group = group;
-  }
-
+  @Deprecated
   public String getGroup() {
     return group;
-  }
-
-  public String getRefGroup() {
-    return refGroup;
-  }
-
-  public void setRefGroup(String refGroup) {
-    this.refGroup = refGroup;
   }
 
   private String getInterpreterProcessKey(String noteId) {
@@ -127,7 +114,7 @@ public class InterpreterSetting {
     String key = getInterpreterProcessKey(noteId);
     synchronized (interpreterGroupRef) {
       if (!interpreterGroupRef.containsKey(key)) {
-        String interpreterGroupId = id() + ":" + key;
+        String interpreterGroupId = getId() + ":" + key;
         InterpreterGroup intpGroup =
             interpreterGroupFactory.createInterpreterGroup(interpreterGroupId, getOption());
         interpreterGroupRef.put(key, intpGroup);
@@ -168,10 +155,6 @@ public class InterpreterSetting {
     return properties;
   }
 
-  public void setProperties(Properties properties) {
-    this.properties = properties;
-  }
-
   public List<Dependency> getDependencies() {
     if (dependencies == null) {
       return new LinkedList<>();
@@ -204,7 +187,7 @@ public class InterpreterSetting {
   }
 
   public List<InterpreterInfo> getInterpreterInfos() {
-    return interpreterGroup;
+    return interpreterInfos;
   }
 
   public void setInterpreterGroupFactory(InterpreterGroupFactory interpreterGroupFactory) {
@@ -225,5 +208,13 @@ public class InterpreterSetting {
 
   public void updateProperties(Properties p) {
     this.properties.putAll(p);
+  }
+
+  public void setRefName(String refName) {
+    this.refName = refName;
+  }
+
+  public void setName(String name) {
+    this.name = name;
   }
 }

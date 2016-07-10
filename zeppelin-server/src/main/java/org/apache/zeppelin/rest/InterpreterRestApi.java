@@ -36,7 +36,6 @@ import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.zeppelin.annotation.ZeppelinApi;
 import org.apache.zeppelin.dep.Repository;
 import org.apache.zeppelin.interpreter.*;
-import org.apache.zeppelin.interpreter.Interpreter.RegisteredInterpreter;
 import org.apache.zeppelin.rest.message.NewInterpreterSettingRequest;
 import org.apache.zeppelin.rest.message.UpdateInterpreterSettingRequest;
 import org.apache.zeppelin.server.JsonResponse;
@@ -98,12 +97,8 @@ public class InterpreterRestApi {
       Properties p = new Properties();
       p.putAll(request.getProperties());
       InterpreterSetting interpreterSetting = interpreterFactory.createNewSetting(request.getName(),
-          request.getGroup(),
-          request.getRefGroup(),
-          request.getDependencies(),
-          request.getOption(),
-          p);
-      logger.info("new setting created with {}", interpreterSetting.id());
+          request.getRefName(), request.getDependencies(), request.getOption(), p);
+      logger.info("new setting created with {}", interpreterSetting.getId());
       return new JsonResponse(Status.CREATED, "", interpreterSetting).build();
     } catch (InterpreterException e) {
       logger.error("Exception in InterpreterRestApi while creating ", e);

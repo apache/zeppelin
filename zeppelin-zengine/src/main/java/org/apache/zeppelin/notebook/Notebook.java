@@ -268,7 +268,7 @@ public class Notebook implements NoteEventListener {
     if (note != null) {
       List<InterpreterSetting> currentBindings = replFactory.getInterpreterSettings(id);
       for (InterpreterSetting setting : currentBindings) {
-        if (!interpreterSettingIds.contains(setting.id())) {
+        if (!interpreterSettingIds.contains(setting.getId())) {
           fireUnbindInterpreter(note, setting);
         }
       }
@@ -696,7 +696,7 @@ public class Notebook implements NoteEventListener {
       if (releaseResource) {
         for (InterpreterSetting setting :
             notebook.getInterpreterFactory().getInterpreterSettings(note.getId())) {
-          notebook.getInterpreterFactory().restart(setting.id());
+          notebook.getInterpreterFactory().restart(setting.getId());
         }
       }      
     }

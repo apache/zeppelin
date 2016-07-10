@@ -55,9 +55,7 @@ import org.slf4j.LoggerFactory;
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import com.google.gson.GsonBuilder;
-import com.google.gson.stream.JsonReader;
-import java.io.StringReader;
+
 /**
  * Rest api endpoint for the noteBook.
  */
@@ -191,7 +189,7 @@ public class NotebookRestApi {
     List<InterpreterSetting> selectedSettings = notebook.getBindedInterpreterSettings(noteId);
     for (InterpreterSetting setting : selectedSettings) {
       settingList.add(new InterpreterSettingListForNoteBind(
-          setting.id(),
+          setting.getId(),
           setting.getName(),
           setting.getGroup(),
           setting.getInterpreterInfos(),
@@ -203,7 +201,7 @@ public class NotebookRestApi {
     for (InterpreterSetting setting : availableSettings) {
       boolean selected = false;
       for (InterpreterSetting selectedSetting : selectedSettings) {
-        if (selectedSetting.id().equals(setting.id())) {
+        if (selectedSetting.getId().equals(setting.getId())) {
           selected = true;
           break;
         }
@@ -211,7 +209,7 @@ public class NotebookRestApi {
 
       if (!selected) {
         settingList.add(new InterpreterSettingListForNoteBind(
-            setting.id(),
+            setting.getId(),
             setting.getName(),
             setting.getGroup(),
             setting.getInterpreterInfos(),
