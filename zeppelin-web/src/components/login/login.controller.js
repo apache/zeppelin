@@ -40,7 +40,7 @@ angular.module('zeppelinWebApp').controller('LoginCtrl',
 
     };
 
-    $rootScope.$on('initLoginValues', function() {
+    $scope.$on('initLoginValues', function() {
       initValues();
     });
     var initValues = function() {
