@@ -17,10 +17,20 @@
 
 package org.apache.zeppelin.rest;
 
-import java.io.IOException;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import com.google.gson.Gson;
+import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.zeppelin.annotation.ZeppelinApi;
+import org.apache.zeppelin.dep.Repository;
+import org.apache.zeppelin.interpreter.InterpreterException;
+import org.apache.zeppelin.interpreter.InterpreterFactory;
+import org.apache.zeppelin.interpreter.InterpreterSetting;
+import org.apache.zeppelin.rest.message.NewInterpreterSettingRequest;
+import org.apache.zeppelin.rest.message.UpdateInterpreterSettingRequest;
+import org.apache.zeppelin.server.JsonResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.sonatype.aether.RepositoryException;
+import org.sonatype.aether.repository.RemoteRepository;
 
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -31,24 +41,13 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
-
-import org.apache.commons.lang.exception.ExceptionUtils;
-import org.apache.zeppelin.annotation.ZeppelinApi;
-import org.apache.zeppelin.dep.Repository;
-import org.apache.zeppelin.interpreter.*;
-import org.apache.zeppelin.rest.message.NewInterpreterSettingRequest;
-import org.apache.zeppelin.rest.message.UpdateInterpreterSettingRequest;
-import org.apache.zeppelin.server.JsonResponse;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.gson.Gson;
-import org.sonatype.aether.RepositoryException;
-import org.sonatype.aether.repository.RemoteRepository;
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
 /**
  * Interpreter Rest API
- *
  */
 @Path("/interpreter")
 @Produces("application/json")
@@ -69,6 +68,7 @@ public class InterpreterRestApi {
 
   /**
    * List all interpreter settings
+   *
    * @return
    */
   @GET
@@ -82,6 +82,7 @@ public class InterpreterRestApi {
 
   /**
    * Add new interpreter setting
+   *
    * @param message
    * @return
    * @throws IOException
@@ -184,6 +185,7 @@ public class InterpreterRestApi {
 
   /**
    * List of dependency resolving repositories
+   *
    * @return
    */
   @GET
@@ -197,6 +199,7 @@ public class InterpreterRestApi {
 
   /**
    * Add new repository
+   *
    * @param message
    * @return
    */
@@ -222,6 +225,7 @@ public class InterpreterRestApi {
 
   /**
    * Delete repository
+   *
    * @param repoId
    * @return
    */
