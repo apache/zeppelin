@@ -58,17 +58,14 @@ limitations under the License.
           <a tabindex="0" class="btn btn-info" role="button"
              popover-trigger="focus"
              popover-placement="right"
-             popover-html-unsafe="
-               <label>URL: </label>
-               {{repo.url}}<br/>
-               <label>Snapshot: </label>
-               {{repo.snapshotPolicy.enabled}}<br/>
+             popover-html-unsafe="<label>URL: </label>
+               {{repo.url}}<br>
                <label>Username: </label>
                {{repo.authentication.username}}">
             <span class="fa fa-database"></span>
             {{repo.id}}&nbsp;
-            <span ng-if="!isDefaultRepository(repo.id)"
-                  class="fa fa-close blackOpc" ng-click="removeRepository(repo.id)"></span>
+            <span ng-if="!isDefaultRepository(repo.id)" class="fa fa-close blackOpc"
+                  ng-click="removeRepository(repo.id)"></span>
           </a>
         </li>
         <li class="liVertical">
