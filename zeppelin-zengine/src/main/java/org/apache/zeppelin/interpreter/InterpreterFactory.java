@@ -235,7 +235,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
 
     for (String settingId : interpreterSettings.keySet()) {
       InterpreterSetting setting = interpreterSettings.get(settingId);
-      logger.info("InterpreterSetting group {} : id={}, name={}", setting.getGroup(), settingId,
+      logger.info("InterpreterSetting group {} : id={}, name={}", setting.getRefName(), settingId,
           setting.getName());
     }
   }
@@ -319,11 +319,6 @@ public class InterpreterFactory implements InterpreterGroupFactory {
       add(registeredInterpreter.getGroup(), interpreterInfo, properties, absolutePath);
     }
 
-  }
-
-  private boolean validateRegisterInterpreter(RegisteredInterpreter registeredInterpreter) {
-    return null != registeredInterpreter.getGroup() && null != registeredInterpreter.getName() &&
-        null != registeredInterpreter.getClassName();
   }
 
   private void loadFromFile() throws IOException {
@@ -452,9 +447,9 @@ public class InterpreterFactory implements InterpreterGroupFactory {
         continue;
       }
 
-      if (!interpreterGroupCheck.containsKey(setting.getGroup())) {
+      if (!interpreterGroupCheck.containsKey(setting.getName())) {
         defaultSettings.add(setting.getId());
-        interpreterGroupCheck.put(setting.getGroup(), true);
+        interpreterGroupCheck.put(setting.getName(), true);
       }
     }
     return defaultSettings;
@@ -608,7 +603,6 @@ public class InterpreterFactory implements InterpreterGroupFactory {
   public void createInterpretersForNote(InterpreterSetting interpreterSetting, String noteId,
       String key) {
     InterpreterGroup interpreterGroup = interpreterSetting.getInterpreterGroup(noteId);
-    String groupName = interpreterSetting.getGroup();
     InterpreterOption option = interpreterSetting.getOption();
     Properties properties = interpreterSetting.getProperties();
     if (option.isExistingProcess) {
@@ -639,9 +633,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     logger.info("Create interpreter instance {} for note {}", interpreterSetting.getName(), noteId);
 
     List<InterpreterInfo> interpreterInfos = interpreterSetting.getInterpreterInfos();
-    InterpreterSetting refInterpreterSetting =
-        interpreterSettingsRef.get(interpreterSetting.getRefName());
-    String path = refInterpreterSetting.getPath();
+    String path = interpreterSetting.getPath();
     Interpreter interpreter;
     for (InterpreterInfo info : interpreterInfos) {
       if (option.isRemote()) {
@@ -707,18 +699,18 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     synchronized (interpreterSettings) {
       List<InterpreterSetting> orderedSettings = new LinkedList<>();
 
-      Map<String, List<InterpreterSetting>> groupNameInterpreterSettingMap = new HashMap<>();
+      Map<String, List<InterpreterSetting>> nameInterpreterSettingMap = new HashMap<>();
       for (InterpreterSetting interpreterSetting : interpreterSettings.values()) {
-        String groupName = interpreterSetting.getGroup();
-        if (!groupNameInterpreterSettingMap.containsKey(groupName)) {
-          groupNameInterpreterSettingMap.put(groupName, new ArrayList<InterpreterSetting>());
+        String name = interpreterSetting.getName();
+        if (!nameInterpreterSettingMap.containsKey(name)) {
+          nameInterpreterSettingMap.put(name, new ArrayList<InterpreterSetting>());
         }
-        groupNameInterpreterSettingMap.get(groupName).add(interpreterSetting);
+        nameInterpreterSettingMap.get(name).add(interpreterSetting);
       }
 
       for (String groupName : interpreterGroupOrderList) {
         List<InterpreterSetting> interpreterSettingList =
-            groupNameInterpreterSettingMap.remove(groupName);
+            nameInterpreterSettingMap.remove(groupName);
         if (null != interpreterSettingList) {
           for (InterpreterSetting interpreterSetting : interpreterSettingList) {
             orderedSettings.add(interpreterSetting);
@@ -729,7 +721,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
       List<InterpreterSetting> settings = new ArrayList<>();
 
       for (List<InterpreterSetting> interpreterSettingList :
-          groupNameInterpreterSettingMap.values()) {
+          nameInterpreterSettingMap.values()) {
         for (InterpreterSetting interpreterSetting : interpreterSettingList) {
           settings.add(interpreterSetting);
         }
