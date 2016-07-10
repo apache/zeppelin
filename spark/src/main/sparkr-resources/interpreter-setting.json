@@ -56,7 +56,7 @@
       }
     },
     "editor": {
-      "mode": "scala"
+      "language": "scala"
     }
   },
   {
@@ -90,7 +90,7 @@
       }
     },
     "editor": {
-      "mode": "sql"
+      "language": "sql"
     }
   },
   {
@@ -112,7 +112,7 @@
       }
     },
     "editor": {
-      "mode": "scala"
+      "language": "scala"
     }
   },
   {
@@ -128,7 +128,7 @@
       }
     },
     "editor": {
-      "mode": "python"
+      "language": "python"
     }
   },
   {
@@ -162,7 +162,7 @@
       }
     },
     "editor": {
-      "mode": "r"
+      "language": "r"
     }
   }
 ]

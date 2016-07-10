@@ -841,16 +841,16 @@ public class NotebookTest implements JobListenerFactory{
 
     // get editor setting from interpreter-setting.json
     Map<String, Object> editor = note.getEditorSetting("mock11");
-    assertEquals("java", editor.get("mode"));
+    assertEquals("java", editor.get("language"));
 
     // when interpreter is not loaded via interpreter-setting.json
     // or editor setting doesn't exit
     editor = note.getEditorSetting("mock1");
-    assertEquals(null, editor.get("mode"));
+    assertEquals(null, editor.get("language"));
 
     // when interpreter is not bound to note
     editor = note.getEditorSetting("mock2");
-    assertEquals("text", editor.get("mode"));
+    assertEquals("text", editor.get("language"));
   }
 
   @Override

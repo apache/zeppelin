@@ -71,7 +71,7 @@ Here is an example of `interpreter-setting.json` on your own interpreter.
       },...
     },
     "editor": {
-      "mode": "your-syntax-highlight-language"
+      "language": "your-syntax-highlight-language"
     }
   },
   {
@@ -110,7 +110,7 @@ If you want to add a new set of syntax highlighting,
 
   ```
   "editor": {
-      "mode": "java"
+      "language": "java"
   }
   ```
 

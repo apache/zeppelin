@@ -660,7 +660,7 @@ public class Note implements Serializable, ParagraphJobListener {
     try {
       editor = intp.findRegisteredInterpreterByClassName(intp.getClassName()).getEditor();
     } catch (NullPointerException e) {
-      editor.put("mode", "text");
+      editor.put("language", "text");
     }
     return editor;
   }

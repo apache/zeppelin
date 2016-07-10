@@ -560,7 +560,7 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
       }
 
       var remoteCompleter = {
-        getCompletions : function(editor, session, pos, prefix, callback) {
+        getCompletions: function(editor, session, pos, prefix, callback) {
           if (!$scope.editor.isFocused()) {
             return;
           }
@@ -715,7 +715,7 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
           var promise = getEditorSetting(magic);
           promise.then(function(editorSetting) {
             if (!_.isEmpty(editorSetting.editor)) {
-              var mode = 'ace/mode/' + editorSetting.editor.mode;
+              var mode = 'ace/mode/' + editorSetting.editor.language;
               $scope.paragraph.config.editorMode = mode;
               session.setMode(mode);
             }
@@ -727,7 +727,7 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
               if (!editorModes[oldMode] || !editorModes[oldMode].test(paragraphText)) {
                 for (var key in editorModes) {
                   if (key !== oldMode) {
-                    if (editorModes[key].test(paragraphText)){
+                    if (editorModes[key].test(paragraphText)) {
                       $scope.paragraph.config.editorMode = key;
                       session.setMode(key);
                       return true;
