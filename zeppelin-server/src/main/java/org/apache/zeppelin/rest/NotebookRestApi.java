@@ -183,18 +183,12 @@ public class NotebookRestApi {
   @Path("interpreter/bind/{noteId}")
   @ZeppelinApi
   public Response bind(@PathParam("noteId") String noteId) {
-    List<InterpreterSettingListForNoteBind> settingList
-      = new LinkedList<InterpreterSettingListForNoteBind>();
+    List<InterpreterSettingListForNoteBind> settingList = new LinkedList<>();
 
     List<InterpreterSetting> selectedSettings = notebook.getBindedInterpreterSettings(noteId);
     for (InterpreterSetting setting : selectedSettings) {
-      settingList.add(new InterpreterSettingListForNoteBind(
-          setting.getId(),
-          setting.getName(),
-          setting.getGroup(),
-          setting.getInterpreterInfos(),
-          true)
-      );
+      settingList.add(new InterpreterSettingListForNoteBind(setting.getId(), setting.getName(),
+          setting.getInterpreterInfos(), true));
     }
 
     List<InterpreterSetting> availableSettings = notebook.getInterpreterFactory().get();
@@ -208,13 +202,8 @@ public class NotebookRestApi {
       }
 
       if (!selected) {
-        settingList.add(new InterpreterSettingListForNoteBind(
-            setting.getId(),
-            setting.getName(),
-            setting.getGroup(),
-            setting.getInterpreterInfos(),
-            false)
-        );
+        settingList.add(new InterpreterSettingListForNoteBind(setting.getId(), setting.getName(),
+            setting.getInterpreterInfos(), false));
       }
     }
     return new JsonResponse<>(Status.OK, "", settingList).build();

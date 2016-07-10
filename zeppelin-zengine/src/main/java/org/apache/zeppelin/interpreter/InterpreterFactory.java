@@ -204,8 +204,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
 
     for (String settingId : interpreterSettingsRef.keySet()) {
       InterpreterSetting setting = interpreterSettingsRef.get(settingId);
-      logger.info("InterpreterSettingRef group {} : id={}, name={}", setting.getGroup(), settingId,
-          setting.getName());
+      logger.info("InterpreterSettingRef name {}", setting.getName());
     }
 
     loadFromFile();
@@ -490,7 +489,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
   }
 
   /**
-   * @param refName       user defined name
+   * @param refName    user defined name
    * @param properties
    * @return
    * @throws InterpreterException

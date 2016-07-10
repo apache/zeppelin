@@ -119,7 +119,7 @@ public abstract class AbstractTestRestApi {
         // assume first one is spark
         InterpreterSetting sparkIntpSetting = null;
         for(InterpreterSetting intpSetting : ZeppelinServer.notebook.getInterpreterFactory().get()) {
-          if (intpSetting.getGroup().equals("spark")) {
+          if (intpSetting.getName().equals("spark")) {
             sparkIntpSetting = intpSetting;
           }
         }
@@ -137,7 +137,7 @@ public abstract class AbstractTestRestApi {
         // assume first one is spark
         InterpreterSetting sparkIntpSetting = null;
         for(InterpreterSetting intpSetting : ZeppelinServer.notebook.getInterpreterFactory().get()) {
-          if (intpSetting.getGroup().equals("spark")) {
+          if (intpSetting.getName().equals("spark")) {
             sparkIntpSetting = intpSetting;
           }
         }

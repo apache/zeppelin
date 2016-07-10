@@ -644,7 +644,7 @@ public class Notebook implements NoteEventListener {
       String interpreterGroupName = null;
       if (replFactory.getInterpreterSettings(note.getId()) != null &&
           replFactory.getInterpreterSettings(note.getId()).size() >= 1) {
-        interpreterGroupName = replFactory.getInterpreterSettings(note.getId()).get(0).getGroup();
+        interpreterGroupName = replFactory.getInterpreterSettings(note.getId()).get(0).getName();
       }
 
       // not update and not running -> pass

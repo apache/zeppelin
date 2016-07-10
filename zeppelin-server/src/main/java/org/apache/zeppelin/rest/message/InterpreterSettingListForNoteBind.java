@@ -27,18 +27,14 @@ import org.apache.zeppelin.interpreter.InterpreterInfo;
 public class InterpreterSettingListForNoteBind {
   String id;
   String name;
-  String group;
   private boolean selected;
   private List<InterpreterInfo> interpreters;
 
   public InterpreterSettingListForNoteBind(String id, String name,
-                                           String group,
-                                           List<InterpreterInfo> interpreters,
-                                           boolean selected) {
+      List<InterpreterInfo> interpreters, boolean selected) {
     super();
     this.id = id;
     this.name = name;
-    this.group = group;
     this.interpreters = interpreters;
     this.selected = selected;
   }
@@ -58,29 +54,4 @@ public class InterpreterSettingListForNoteBind {
   public void setName(String name) {
     this.name = name;
   }
-
-  public String getGroup() {
-    return group;
-  }
-
-  public void setGroup(String group) {
-    this.group = group;
-  }
-
-  public List<InterpreterInfo> getInterpreterNames() {
-    return interpreters;
-  }
-
-  public void setInterpreterNames(List<InterpreterInfo> interpreters) {
-    this.interpreters = interpreters;
-  }
-
-  public boolean isSelected() {
-    return selected;
-  }
-
-  public void setSelected(boolean selected) {
-    this.selected = selected;
-  }
-
 }

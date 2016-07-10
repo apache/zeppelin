@@ -117,7 +117,7 @@ public class Note implements Serializable, ParagraphJobListener {
 
   private String getDefaultInterpreterName() {
     InterpreterSetting setting = factory.getDefaultInterpreterSetting(getId());
-    return null != setting ? setting.getGroup() : StringUtils.EMPTY;
+    return null != setting ? setting.getName() : StringUtils.EMPTY;
   }
 
   void putDefaultReplName() {
