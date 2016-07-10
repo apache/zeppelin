@@ -43,9 +43,10 @@ limitations under the License.
             <div class="form-group">
               <label class="control-label col-sm-2" for="repoSnapshot">Snapshot</label>
               <div class="col-sm-10">
-                <select class="form-control" id="repoSnapshot" ng-model="newRepoSetting.snapshot">
-                  <option ng-selected="true">false</option>
-                  <option>true</option>
+                <select class="form-control"
+                        id="repoSnapshot"
+                        ng-model="newRepoSetting.snapshot"
+                        ng-options="col for col in [false,true]">
                 </select>
               </div>
             </div>
