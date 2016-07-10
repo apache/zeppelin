@@ -34,7 +34,6 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl',
     var getAvailableInterpreters = function() {
       $http.get(baseUrlSrv.getRestApiBase() + '/interpreter').success(function(data, status, headers, config) {
         $scope.availableInterpreters = data.body;
-        console.log(data.body);
       }).error(function(data, status, headers, config) {
         console.log('Error %o %o', status, data.message);
       });
