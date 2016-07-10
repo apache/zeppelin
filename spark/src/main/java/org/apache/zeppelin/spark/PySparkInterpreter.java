@@ -528,6 +528,15 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
     }
   }
 
+  public Object getSparkSession() {
+    SparkInterpreter intp = getSparkInterpreter();
+    if (intp == null) {
+      return null;
+    } else {
+      return intp.getSparkSession();
+    }
+  }
+
   public SparkConf getSparkConf() {
     JavaSparkContext sc = getJavaSparkContext();
     if (sc == null) {
