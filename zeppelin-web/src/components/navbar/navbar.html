@@ -19,7 +19,7 @@ limitations under the License.
         <span class="icon-bar"></span>
       </button>
       <a class="navbar-brand" href="#/">
-        <img style="margin-top: -7px;" src="assets/images/zepLogoW.png" width="50" alt="I'm zeppelin"> Zeppelin
+        <img style="margin-top: -7px;" src="assets/images/zepLogoW.png" width="50" alt="I'm zeppelin" /> Zeppelin
       </a>
     </div>
 
@@ -32,12 +32,13 @@ limitations under the License.
             <li class="divider"></li>
             <div id="notebook-list" class="scrollbar-container">
               <li class="filter-names" ng-include="'components/filterNoteNames/filter-note-names.html'"></li>
-              <li ng-repeat="note in navbar.notes.root.children | filter:query | orderBy:navbar.arrayOrderingSrv.notebookListOrdering track by $index"
+              <li ng-repeat="note in navbar.notes.root.children | filter:query.q | orderBy:navbar.arrayOrderingSrv.notebookListOrdering track by $index"
                   ng-class="{'active' : navbar.isActive(note.id)}" ng-include="'components/navbar/navbar-notebookList-elem.html'">
               </li>
             </div>
           </ul>
         </li>
+        <li><a href="#/jobmanager">Job</a></li>
       </ul>
 
       <ul class="nav navbar-nav navbar-right" style="margin-right:5px;">
@@ -69,6 +70,7 @@ limitations under the License.
               </span>
             </div>
           </form>
+        </li>
         <li class="nav-component">
           <i ng-if="navbar.connected" class="fa fa-circle server-connected"
              tooltip="WebSocket Connected" tooltip-placement="bottom"></i>
@@ -103,7 +105,7 @@ limitations under the License.
   </div>
 </div>
 <div id="aboutModal" class="modal fade" role="dialog"
-     tabindex='-1'>
+     tabindex="-1">
   <div class="modal-dialog">
 
     <!-- Modal content-->
@@ -116,17 +118,17 @@ limitations under the License.
 
         <div class="about">
           <div class="logo">
-            <img src="assets/images/zepLogo.png" alt="Apache Zeppelin" title="Apache Zeppelin">
+            <img src="assets/images/zepLogo.png" alt="Apache Zeppelin" title="Apache Zeppelin" />
           </div>
           <div class="content">
             <h3>Apache Zeppelin</h3>
-            <br>
+            <br/>
             <span id="i18n-14">Version</span>
             {{zeppelinVersion}}
-            <br>
-            <br>
+            <br/>
+            <br/>
             <a href="http://zeppelin.apache.org/" target="_blank"><span id="i18n-15">Get involved!</span></a>
-            <br>
+            <br/>
             <a href="http://www.apache.org/licenses/LICENSE-2.0" target="_blank"><span id="i18n-16">Licensed under the Apache License, Version 2.0</span></a>
           </div>
         </div>

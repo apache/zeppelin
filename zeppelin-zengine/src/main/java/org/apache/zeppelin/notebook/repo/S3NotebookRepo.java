@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -36,6 +37,7 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
+import org.apache.zeppelin.notebook.NotebookImportDeserializer;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.user.AuthenticationInfo;
@@ -166,7 +168,8 @@ public class S3NotebookRepo implements NotebookRepo {
   private Note getNote(String key) throws IOException {
     GsonBuilder gsonBuilder = new GsonBuilder();
     gsonBuilder.setPrettyPrinting();
-    Gson gson = gsonBuilder.create();
+    Gson gson = gsonBuilder.registerTypeAdapter(Date.class, new NotebookImportDeserializer())
+        .create();
 
     S3Object s3object;
     try {

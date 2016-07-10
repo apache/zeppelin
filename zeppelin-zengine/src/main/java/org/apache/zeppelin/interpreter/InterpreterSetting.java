@@ -18,12 +18,9 @@
 package org.apache.zeppelin.interpreter;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
-import org.apache.commons.lang.NullArgumentException;
+import com.google.gson.annotations.SerializedName;
 import org.apache.zeppelin.dep.Dependency;
-import org.apache.zeppelin.display.AngularObjectRegistry;
-import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.notebook.utility.IdHashes;
 
 /**
@@ -41,17 +38,12 @@ public class InterpreterSetting {
   // use 'interpreterGroup' as a field name to keep backward compatibility of
   // conf/interpreter.json file format
   private List<InterpreterInfo> interpreterGroup;
-  private transient Map<String, InterpreterGroup> interpreterGroupRef =
-      new HashMap<String, InterpreterGroup>();
+  private transient Map<String, InterpreterGroup> interpreterGroupRef = new HashMap<>();
   private List<Dependency> dependencies;
   private InterpreterOption option;
 
-  public InterpreterSetting(String id,
-      String name,
-      String group,
-      List<InterpreterInfo> interpreterInfos,
-      Properties properties,
-      List<Dependency> dependencies,
+  public InterpreterSetting(String id, String name, String group,
+      List<InterpreterInfo> interpreterInfos, Properties properties, List<Dependency> dependencies,
       InterpreterOption option) {
     this.id = id;
     this.name = name;
@@ -60,15 +52,10 @@ public class InterpreterSetting {
     this.properties = properties;
     this.dependencies = dependencies;
     this.option = option;
-    this.interpreterGroupFactory = interpreterGroupFactory;
   }
 
-  public InterpreterSetting(String name,
-      String group,
-      List<InterpreterInfo> interpreterInfos,
-      Properties properties,
-      List<Dependency> dependencies,
-      InterpreterOption option) {
+  public InterpreterSetting(String name, String group, List<InterpreterInfo> interpreterInfos,
+      Properties properties, List<Dependency> dependencies, InterpreterOption option) {
     this(generateId(), name, group, interpreterInfos, properties, dependencies, option);
   }
 
@@ -78,6 +65,7 @@ public class InterpreterSetting {
    */
   public static class InterpreterInfo {
     private final String name;
+    @SerializedName("class")
     private final String className;
 
     public InterpreterInfo(String className, String name) {
@@ -148,7 +136,7 @@ public class InterpreterSetting {
 
   public Collection<InterpreterGroup> getAllInterpreterGroups() {
     synchronized (interpreterGroupRef) {
-      return new LinkedList<InterpreterGroup>(interpreterGroupRef.values());
+      return new LinkedList<>(interpreterGroupRef.values());
     }
   }
 
@@ -167,7 +155,7 @@ public class InterpreterSetting {
 
   public void closeAndRmoveAllInterpreterGroups() {
     synchronized (interpreterGroupRef) {
-      HashSet<String> groupsToRemove = new HashSet<String>(interpreterGroupRef.keySet());
+      HashSet<String> groupsToRemove = new HashSet<>(interpreterGroupRef.keySet());
       for (String key : groupsToRemove) {
         closeAndRemoveInterpreterGroup(key);
       }
@@ -184,7 +172,7 @@ public class InterpreterSetting {
 
   public List<Dependency> getDependencies() {
     if (dependencies == null) {
-      return new LinkedList<Dependency>();
+      return new LinkedList<>();
     }
     return dependencies;
   }
@@ -207,10 +195,6 @@ public class InterpreterSetting {
 
   public List<InterpreterInfo> getInterpreterInfos() {
     return interpreterGroup;
-  }
-
-  public InterpreterGroupFactory getInterpreterGroupFactory() {
-    return interpreterGroupFactory;
   }
 
   public void setInterpreterGroupFactory(InterpreterGroupFactory interpreterGroupFactory) {

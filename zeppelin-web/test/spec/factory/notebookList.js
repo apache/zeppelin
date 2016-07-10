@@ -4,10 +4,10 @@ describe('Factory: NotebookList', function() {
 
   var notebookList;
 
-  beforeEach(function () {
+  beforeEach(function() {
     module('zeppelinWebApp');
 
-    inject(function ($injector) {
+    inject(function($injector) {
       notebookList = $injector.get('notebookListDataFactory');
     });
   });
@@ -22,7 +22,7 @@ describe('Factory: NotebookList', function() {
       {name: '/C/CB/CBA', id: '000006'},  // same name with a dir
       {name: '/C/CB/CBA', id: '000007'},  // same name with another note
       {name: 'C///CB//CBB', id: '000008'},
-      {name: 'D/D[A/DA]B', id:'000009'}   // check if '[' and ']' considered as folder seperator      
+      {name: 'D/D[A/DA]B', id: '000009'}   // check if '[' and ']' considered as folder seperator
     ];
     notebookList.setNotes(notesList);
 
