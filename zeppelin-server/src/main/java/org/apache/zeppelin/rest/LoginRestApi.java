@@ -131,5 +131,4 @@ public class LoginRestApi {
     LOG.warn(response.toString());
     return response.build();
   }
-
 }
