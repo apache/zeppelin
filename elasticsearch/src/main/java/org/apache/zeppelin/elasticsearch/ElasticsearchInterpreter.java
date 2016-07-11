@@ -103,7 +103,7 @@ public class ElasticsearchInterpreter extends Interpreter {
   public static final String ELASTICSEARCH_CLUSTER_NAME = "elasticsearch.cluster.name";
   public static final String ELASTICSEARCH_RESULT_SIZE = "elasticsearch.result.size";
 
-  static {
+  /*static {
     Interpreter.register(
       "elasticsearch",
       "elasticsearch",
@@ -114,7 +114,7 @@ public class ElasticsearchInterpreter extends Interpreter {
           .add(ELASTICSEARCH_CLUSTER_NAME, "elasticsearch", "The cluster name for Elasticsearch")
           .add(ELASTICSEARCH_RESULT_SIZE, "10", "The size of the result set of a search query")
           .build());
-  }
+  }*/
 
   private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
   private Client client;
