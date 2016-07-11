@@ -388,12 +388,20 @@
         </executions>
       </plugin>
 
-      <!--TODO(alex): make part of the build and reconcile conflicts <plugin>
-        <groupId>com.ning.maven.plugins</groupId> <artifactId>maven-duplicate-finder-plugin</artifactId>
-        <version>1.0.4</version> <executions> <execution> <id>default</id> <phase>verify</phase>
-        <goals> <goal>check</goal> </goals> </execution> </executions> <configuration>
-        <failBuildInCaseOfConflict>true</failBuildInCaseOfConflict> </configuration>
-        </plugin> -->
+      <!--TODO(alex): make part of the build and reconcile conflicts
+    <plugin>
+      <groupId>com.ning.maven.plugins</groupId>
+      <artifactId>maven-duplicate-finder-plugin</artifactId>
+      <version>1.0.4</version>
+      <executions>
+        <execution>
+          <id>default</id>
+          <phase>verify</phase>
+          <goals>
+            <goal>check</goal> </goals> </execution> </executions> <configuration>
+      <failBuildInCaseOfConflict>true</failBuildInCaseOfConflict> </configuration>
+    </plugin>
+    -->
     </plugins>
 
     <pluginManagement>
