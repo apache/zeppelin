@@ -1263,8 +1263,8 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
             .style('opacity', 0.9);
           tooltip.html('<strong>name: <span class=\'tooltip-text\'>' + d.name + '</span><br>' +
                        'group: <span class=\'tooltip-text\'>' + d.group + '</span></strong>')
-            .style('left', (d.px*scale + offsetX + 15) + 'px')
-            .style('top', (d.py*scale + offsetY - 18) + 'px');
+            .style('left', (d.px * scale + offsetX + 15) + 'px')
+            .style('top', (d.py * scale + offsetY - 18) + 'px');
         })
         .on('mouseout', function(d) {
           tooltip.transition()
@@ -1293,7 +1293,7 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
           } else {
             renderForceLayout();
           }
-        } catch(err) {
+        } catch (err) {
           console.log('Chart drawing error %o', err);
         }
       } else {
@@ -2202,21 +2202,21 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
         if (index < limit) {
           if (!(row[source.index] in nodesMap)) {
             nodesMap[row[source.index]] = nodes.length;
-            nodes.push({ name: row[source.index], group: row[sourceGroup.index]});
+            nodes.push({name: row[source.index], group: row[sourceGroup.index]});
           }
           if (!(row[dest.index] in nodesMap)) {
             nodesMap[row[dest.index]] = nodes.length;
-            nodes.push({ name: row[dest.index], group: row[destGroup.index]});
+            nodes.push({name: row[dest.index], group: row[destGroup.index]});
           }
         }
       });
       angular.forEach(data.rows, function(row, index) {
         if (index < limit) {
-          links.push({ source: nodesMap[row[source.index]], target: nodesMap[row[dest.index]], value: 1 });
+          links.push({source: nodesMap[row[source.index]], target: nodesMap[row[dest.index]], value: 1});
         }
       });
-      return { nodes: nodes, links: links };
-    } catch(e) {
+      return {nodes: nodes, links: links};
+    } catch (e) {
       console.log(e.name + ': ' + e.message);
     }
   };
