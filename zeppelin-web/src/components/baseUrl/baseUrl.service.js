@@ -36,7 +36,8 @@ angular.module('zeppelinWebApp').service('baseUrlSrv', function() {
   };
 
   this.getRestApiBase = function() {
-    return location.protocol + '//' + location.hostname + ':' + this.getPort() + skipTrailingSlash(location.pathname) + '/api';
+    return location.protocol + '//' + location.hostname + ':' + this.getPort() + skipTrailingSlash(location.pathname) +
+      '/api';
   };
 
   var skipTrailingSlash = function(path) {

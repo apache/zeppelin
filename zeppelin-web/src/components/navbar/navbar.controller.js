@@ -18,7 +18,7 @@ angular.module('zeppelinWebApp')
 .controller('NavCtrl', function($scope, $rootScope, $http, $routeParams,
     $location, notebookListDataFactory, baseUrlSrv, websocketMsgSrv, arrayOrderingSrv, searchService) {
 
-  $scope.query = {q : '' };
+  $scope.query = {q: ''};
   /** Current list of notes (ids) */
 
   $scope.showLoginWindow = function() {
@@ -36,7 +36,7 @@ angular.module('zeppelinWebApp')
 
   angular.element('#notebook-list').perfectScrollbar({suppressScrollX: true});
 
-  angular.element(document).click(function(){
+  angular.element(document).click(function() {
     $scope.query.q = '';
   });
 

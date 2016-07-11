@@ -15,15 +15,15 @@
 'use strict';
 
 angular.module('zeppelinWebApp')
-  .controller('JobCtrl', function($scope,$rootScope, $http, baseUrlSrv) {
+  .controller('JobCtrl', function($scope, $rootScope, $http, baseUrlSrv) {
 
-    $scope.init = function (jobInformation) {
+    $scope.init = function(jobInformation) {
       $scope.progressValue = 0;
     };
 
-    $scope.getProgress = function () {
+    $scope.getProgress = function() {
       var statusList = _.pluck($scope.notebookJob.paragraphs, 'status');
-      var runningJob = _.countBy(statusList, function (status) {
+      var runningJob = _.countBy(statusList, function(status) {
         if (status === 'FINISHED' || status === 'RUNNING') {
           return 'matchCount';
         } else {
@@ -33,8 +33,9 @@ angular.module('zeppelinWebApp')
       var totalCount = statusList.length;
       var runningJobCount = runningJob.matchCount;
       var result = Math.ceil(runningJobCount / totalCount * 100);
-      return isNaN(result)? 0 : result;
+      return isNaN(result) ? 0 : result;
     };
+
 
     $scope.lastExecuteTime = function (unixtime) {
       return moment.unix(unixtime/1000).fromNow();
@@ -101,5 +102,4 @@ angular.module('zeppelinWebApp')
         }
       });
     };
-
   });

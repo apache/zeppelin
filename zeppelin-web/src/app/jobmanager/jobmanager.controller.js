@@ -94,7 +94,7 @@ angular.module('zeppelinWebApp')
         var indexStore = $scope.jobInfomationsIndexs;
         $scope.lastJobServerUnixTime = responseData.lastResponseUnixTime;
         var notes = responseData.jobs;
-        notes.map(function (changedItem) {
+        notes.map(function(changedItem) {
           if (indexStore[changedItem.notebookId] === undefined) {
             var newItem = angular.copy(changedItem);
             jobInfomations.push(newItem);
@@ -110,7 +110,7 @@ angular.module('zeppelinWebApp')
                 indexStore.splice(removeIndex, 1);
               }
 
-              removeIndex = _.findIndex(jobInfomations, { 'notebookId' : changedItem.notebookId});
+              removeIndex = _.findIndex(jobInfomations, {'notebookId': changedItem.notebookId});
               if (removeIndex) {
                 jobInfomations.splice(removeIndex, 1);
               }
@@ -198,7 +198,7 @@ angular.module('zeppelinWebApp')
         $scope.JobInfomationsByFilter = $scope.jobInfomations;
 
         websocketMsgSrv.getNotebookJobsList();
-        var refreshObj = $interval(function () {
+        var refreshObj = $interval(function() {
           if ($scope.lastJobServerUnixTime !== undefined) {
             websocketMsgSrv.getUpdateNotebookJobsList($scope.lastJobServerUnixTime);
           }

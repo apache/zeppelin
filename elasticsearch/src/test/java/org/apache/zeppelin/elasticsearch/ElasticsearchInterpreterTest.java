@@ -21,20 +21,19 @@ import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.Properties;
-import java.util.UUID;
+import java.util.*;
 
 import org.apache.commons.lang.math.RandomUtils;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
+import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.node.Node;
 import org.elasticsearch.node.NodeBuilder;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -209,6 +208,25 @@ public class ElasticsearchInterpreterTest {
 
     res = interpreter.interpret("   \n \n ", null);
     assertEquals(Code.SUCCESS, res.code());
+  }
+
+  @Test
+  public void testCompletion() {
+    List expectedResultOne = Arrays.asList(new InterpreterCompletion("count", "count"));
+    List expectedResultTwo = Arrays.asList(new InterpreterCompletion("help", "help"));
+
+    List<InterpreterCompletion> resultOne = interpreter.completion("co", 0);
+    List<InterpreterCompletion> resultTwo = interpreter.completion("he", 0);
+    List<InterpreterCompletion> resultAll = interpreter.completion("", 0);
+
+    Assert.assertEquals(expectedResultOne, resultOne);
+    Assert.assertEquals(expectedResultTwo, resultTwo);
+
+    List allCompletionList = new ArrayList<>();
+    for (InterpreterCompletion ic : resultAll) {
+      allCompletionList.add(ic.getName());
+    }
+    Assert.assertEquals(interpreter.COMMANDS, allCompletionList);
   }
 
 }
