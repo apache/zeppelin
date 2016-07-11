@@ -110,8 +110,7 @@
   function bootstrapApplication() {
     zeppelinWebApp.run(function($rootScope, $location) {
       $rootScope.$on('$routeChangeStart', function(event, next, current) {
-        if (!$rootScope.ticket && !next.$$route.publicAccess) {
-          event.preventDefault();
+        if (!$rootScope.ticket && next.$$route && !next.$$route.publicAccess) {
           $location.path('/');
         }
       });
