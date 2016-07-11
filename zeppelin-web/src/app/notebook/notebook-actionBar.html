@@ -91,16 +91,10 @@ limitations under the License.
             </div>
           </div>
         </li>
-        <li>
+        <li ng-repeat="revision in ::noteRevisions">
           <div>
-            <button type="button"
-                    class="btn btn-default btn-xs"
-                    ng-hide="viewOnly"
-                    ng-click="listRevisionHistory()"
-                    style="margin-left: 4px;"
-                    tooltip-placement="bottom" tooltip="List revision history">List
-            </button>
-            table
+            message: {{revision[$index].message}}
+            time: {{revision[$index].time}}
           </div>
         </li>
       </ul>

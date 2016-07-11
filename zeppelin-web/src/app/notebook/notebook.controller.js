@@ -55,6 +55,16 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
   var searchText = [];
   $scope.role = '';
 
+  $scope.noteRevisions = websocketMsgSrv.listRevisionHistory($routeParams.noteId);
+
+
+  $scope.$on('setConnectedStatus', function(event, param) {
+    if (connectedOnce && param) {
+      initNotebook();
+    }
+    connectedOnce = true;
+  });
+
   $scope.getCronOptionNameFromValue = function(value) {
     if (!value) {
       return '';
@@ -175,15 +185,9 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
     document.getElementById('note.checkpoint.message').value = '';
   };
 
-  $scope.listRevisionHistory = function() {
-    websocketMsgSrv.listRevisionHistory($routeParams.noteId);
-  };
-
   $scope.$on('listRevisionHistory', function(event, data) {
     console.log(data);
-    if (data === '{}') {
-      console.log('empty data');
-    }
+    $scope.noteRevisions = data;
   });
 
   $scope.runNote = function() {
