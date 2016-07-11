@@ -9,6 +9,24 @@
         "propertyName": "shell.command.timeout.millisecs",
         "defaultValue": "60000",
         "description": "Shell command time out in millisecs. Default = 60000"
+      },
+      "shell.auth.type": {
+        "envName": null,
+        "propertyName": "shell.auth.type",
+        "defaultValue": "",
+        "description": "If auth type is needed, Example: KERBEROS"
+      },
+      "shell.keytab.location": {
+        "envName": null,
+        "propertyName": "shell.keytab.location",
+        "defaultValue": "",
+        "description": "Kerberos keytab location"
+      },
+      "shell.principal": {
+        "envName": null,
+        "propertyName": "shell.principal",
+        "defaultValue": "",
+        "description": "Kerberos principal"
       }
     }
   }
