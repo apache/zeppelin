@@ -46,7 +46,7 @@ To access the help, type **help()**
 ## Python modules
 The interpreter can use all modules already installed (with pip, easy_install...)
 
-## Use Zeppelin Dynamic Forms
+## Using Zeppelin Dynamic Forms
 You can leverage [Zeppelin Dynamic Form]({{BASE_PATH}}/manual/dynamicform.html) inside your Python code.
 
 **Zeppelin Dynamic Form can only be used if py4j Python library is installed in your system. If not, you can install it with `pip install py4j`.**
@@ -64,6 +64,7 @@ print (z.select("f1",[("o1","1"),("o2","2")],"2"))
 ### Checkbox form
 print("".join(z.checkbox("f3", [("o1","1"), ("o2","2")],["1"])))
 ```
+
 
 ## Zeppelin features not fully supported by the Python Interpreter
 
@@ -94,7 +95,7 @@ z.show(plt, height='150px')
 
 
 ## Pandas integration
-[Zeppelin Display System]({{BASE_PATH}}/displaysystem/basicdisplaysystem.html#table) provides simple API to visualize data in Pandas DataFrames, same as in Matplotlib.
+Apace Zeppelin [Table Display System]({{BASE_PATH}}/displaysystem/basicdisplaysystem.html#table) provides build-in data visualization capabilities. Python interpreter leverages it to visualize Pandas DataFrames though similar `z.show()` API, same as with [Matplotlib integration](#matplotlib-integration).
 
 Example:
 
@@ -103,6 +104,34 @@ import pandas as pd
 rates = pd.read_csv("bank.csv", sep=";")
 z.show(rates)
 ```
+
+## SQL over DataFrames
+
+There is a convenience `%python.sql` interpreter that matches Apache Spark experience in Zeppelin and enables usage of SQL language to query Pandas DataFrames and visualization of results though build-in [Table Dispaly System]({{BASE_PATH}}/displaysystem/basicdisplaysystem.html#table).
+
+ **Pre-requests**
+
+  - Pandas `pip install pandas`
+  - PandaSQL `pip install -U pandasql`
+
+In case default binded interpreter is Python (first in the interpreter list, under the _Gear Icon_), you can just use it as `%sql` i.e
+
+ - first paragraph
+
+  ```python
+import pandas as pd
+rates = pd.read_csv("bank.csv", sep=";")
+  ```
+
+ - next paragraph
+
+  ```sql
+%sql
+SELECT * FROM rates WHERE age < 40
+  ```
+
+Otherwise it can be reffered as `%python.sql`
+
 
 ## Technical description
 

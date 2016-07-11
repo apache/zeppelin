@@ -65,8 +65,8 @@ public class PythonPandasSqlInterpreter extends Interpreter {
   public void open() {
     LOG.info("Open Python SQL interpreter instance: {}", this.toString());
 
-  //TODO(bzz): check by importing and catching ImportError
-  //if (pandasAndNumpyAndPandasqlAreInstalled) {
+  //TODO(bzz): check i.e by importing and catching ImportError
+  //if (py4jAndPandasAndPandasqlAreInstalled) {
     try {
       LOG.info("Bootstrap {} interpreter with {}", this.toString(), SQL_BOOTSTRAP_FILE_PY);
       PythonInterpreter python = getPythonInterpreter();

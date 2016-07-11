@@ -40,3 +40,5 @@ Current interpreter implementation spawns new system python process through `Pro
  * JavaBuilder can't send SIGINT signal to interrupt paragraph execution. Therefore interpreter directly  send a `kill SIGINT PID` to python process to interrupt execution. Python process catch SIGINT signal with some code defined in bootstrap.py
 
  * Matplotlib display feature is made with SVG export (in string) and then displays it with html code.
+
+ * `%python.sql` support for Pandas DataFrames is optional and provided using https://github.com/yhat/pandasql if user have one installed
