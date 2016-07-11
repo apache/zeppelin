@@ -107,14 +107,14 @@ public class AlluxioInterpreter extends Interpreter {
     System.setOut(ps);
     
     for (String command : commands) {
-      int commandResuld = 1;
+      int commandResult = 1;
       String[] args = splitAndRemoveEmpty(command, " ");
       if (args.length > 0 && args[0].equals("help")) {
         System.out.println(getCommandList());
       } else {
-        commandResuld = fs.run(args);
+        commandResult = fs.run(args);
       }
-      if (commandResuld != 0) {
+      if (commandResult != 0) {
         isSuccess = false;
         break;
       } else {
