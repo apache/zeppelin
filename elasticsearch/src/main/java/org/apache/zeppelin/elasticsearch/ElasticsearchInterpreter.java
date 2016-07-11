@@ -103,19 +103,6 @@ public class ElasticsearchInterpreter extends Interpreter {
   public static final String ELASTICSEARCH_CLUSTER_NAME = "elasticsearch.cluster.name";
   public static final String ELASTICSEARCH_RESULT_SIZE = "elasticsearch.result.size";
 
-  /*static {
-    Interpreter.register(
-      "elasticsearch",
-      "elasticsearch",
-      ElasticsearchInterpreter.class.getName(),
-        new InterpreterPropertyBuilder()
-          .add(ELASTICSEARCH_HOST, "localhost", "The host for Elasticsearch")
-          .add(ELASTICSEARCH_PORT, "9300", "The port for Elasticsearch")
-          .add(ELASTICSEARCH_CLUSTER_NAME, "elasticsearch", "The cluster name for Elasticsearch")
-          .add(ELASTICSEARCH_RESULT_SIZE, "10", "The size of the result set of a search query")
-          .build());
-  }*/
-
   private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
   private Client client;
   private String host = "localhost";
