@@ -24,7 +24,6 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -55,7 +54,7 @@ import org.slf4j.LoggerFactory;
  * Binded interpreters for a note
  */
 public class Note implements Serializable, ParagraphJobListener {
-  static Logger logger = LoggerFactory.getLogger(Note.class);
+  private static final Logger logger = LoggerFactory.getLogger(Note.class);
   private static final long serialVersionUID = 7920699076577612429L;
 
   // threadpool for delayed persist of note
@@ -73,8 +72,7 @@ public class Note implements Serializable, ParagraphJobListener {
   private AtomicReference<String> lastReplName = new AtomicReference<>(StringUtils.EMPTY);
   private transient ZeppelinConfiguration conf = ZeppelinConfiguration.create();
 
-  @SuppressWarnings("rawtypes")
-  Map<String, List<AngularObject>> angularObjects = new HashMap<>();
+  private Map<String, List<AngularObject>> angularObjects = new HashMap<>();
 
   private transient InterpreterFactory factory;
   private transient JobListenerFactory jobListenerFactory;
@@ -114,7 +112,7 @@ public class Note implements Serializable, ParagraphJobListener {
   }
 
   private void generateId() {
-    id = IdHashes.encode(System.currentTimeMillis() + new Random().nextInt());
+    id = IdHashes.generateId();
   }
 
   private String getDefaultInterpreterName() {
@@ -198,7 +196,6 @@ public class Note implements Serializable, ParagraphJobListener {
   }
 
 
-  @SuppressWarnings("rawtypes")
   public Map<String, List<AngularObject>> getAngularObjects() {
     return angularObjects;
   }
@@ -507,14 +504,14 @@ public class Note implements Serializable, ParagraphJobListener {
   public List<InterpreterCompletion> completion(String paragraphId, String buffer, int cursor) {
     Paragraph p = getParagraph(paragraphId);
     p.setListener(jobListenerFactory.getParagraphJobListener(this));
-    List completion = p.completion(buffer, cursor);
+    List<InterpreterCompletion> completion = p.completion(buffer, cursor);
 
     return completion;
   }
 
   public List<Paragraph> getParagraphs() {
     synchronized (paragraphs) {
-      return new LinkedList<Paragraph>(paragraphs);
+      return new LinkedList<>(paragraphs);
     }
   }
 
@@ -534,7 +531,7 @@ public class Note implements Serializable, ParagraphJobListener {
   }
 
   private void removeAllAngularObjectInParagraph(String paragraphId) {
-    angularObjects = new HashMap<String, List<AngularObject>>();
+    angularObjects = new HashMap<>();
 
     List<InterpreterSetting> settings = factory.getInterpreterSettings(getId());
     if (settings == null || settings.size() == 0) {
@@ -714,12 +711,6 @@ public class Note implements Serializable, ParagraphJobListener {
         listener.onOutputUpdate(paragraph, out, output);
       }
     }
-  }
-
-
-
-  public NoteEventListener getNoteEventListener() {
-    return noteEventListener;
   }
 
   public void setNoteEventListener(NoteEventListener noteEventListener) {
