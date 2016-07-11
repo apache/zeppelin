@@ -18,7 +18,7 @@ angular.module('zeppelinWebApp')
     return {
       restrict: 'EA',
       replace: true,
-      scope: { title: '@', content: '@', placement: '@', animation: '&', isOpen: '&' },
+      scope: {title: '@', content: '@', placement: '@', animation: '&', isOpen: '&'},
       templateUrl: 'components/popover-html-unsafe/popover-html-unsafe-popup.html'
     };
   })

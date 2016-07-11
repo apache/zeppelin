@@ -14,8 +14,8 @@
  */
 'use strict';
 
-angular.module('zeppelinWebApp').controller('CredentialCtrl', function($scope, $route, $routeParams, $location, $rootScope,
-                                                                         $http, baseUrlSrv) {
+angular.module('zeppelinWebApp').controller('CredentialCtrl', function($scope, $route, $routeParams, $location,
+                                                                       $rootScope, $http, baseUrlSrv) {
   $scope._ = _;
 
   $scope.credentialEntity = '';
@@ -33,11 +33,11 @@ angular.module('zeppelinWebApp').controller('CredentialCtrl', function($scope, $
     }
 
     $http.put(baseUrlSrv.getRestApiBase() + '/credential',
-      { 'entity': $scope.credentialEntity,
+      {'entity': $scope.credentialEntity,
         'username': $scope.credentialUsername,
         'password': $scope.credentialPassword
-      } ).
-    success(function (data, status, headers, config) {
+      }).
+    success(function(data, status, headers, config) {
       BootstrapDialog.alert({
         closable: true,
         message: 'Successfully saved credentials.'
@@ -47,7 +47,7 @@ angular.module('zeppelinWebApp').controller('CredentialCtrl', function($scope, $
       $scope.credentialPassword = '';
       console.log('Success %o %o', status, data.message);
     }).
-    error(function (data, status, headers, config) {
+    error(function(data, status, headers, config) {
       alert('Error saving credentials');
       console.log('Error %o %o', status, data.message);
     });
