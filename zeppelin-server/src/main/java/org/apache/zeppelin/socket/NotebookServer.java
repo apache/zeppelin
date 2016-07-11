@@ -46,6 +46,7 @@ import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
 import org.apache.zeppelin.notebook.*;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
+import org.apache.zeppelin.notebook.repo.NotebookRepo.Revision;
 import org.apache.zeppelin.notebook.socket.Message;
 import org.apache.zeppelin.notebook.socket.Message.OP;
 import org.apache.zeppelin.scheduler.Job;
@@ -1130,7 +1131,12 @@ public class NotebookServer extends WebSocketServlet implements
     String noteId = (String) fromMessage.get("noteId");
     String commitMessage = (String) fromMessage.get("commitMessage");
     AuthenticationInfo subject = new AuthenticationInfo(fromMessage.principal);
-    notebook.checkpointNote(noteId, commitMessage, subject);
+    Revision revision = notebook.checkpointNote(noteId, commitMessage, subject);
+    if (revision != null) {
+      List<NotebookRepo.Revision> revisions = notebook.listRevisionHistory(noteId, subject);
+      conn.send(serializeMessage(new Message(OP.LIST_REVISION_HISTORY)
+        .put("revisionList", revisions)));
+    }
   }
 
   private void listRevisionHistory(NotebookSocket conn, Notebook notebook,
