@@ -6,6 +6,14 @@ Current interpreter implementation spawns new system python process through `Pro
 
 # Details
 
+ - **UnitTests**
+
+  To run full suit of tests, including ones that depend on real Python interpreter AND external libraries installed (like Pandas, Pandasql, etc) do
+
+  ```
+mvn -Dpython.test.exclude='' test -pl python -am
+  ```
+
  - **Py4j support**
 
   [Py4j](https://www.py4j.org/) enables Python programs to dynamically access Java objects in a JVM.
