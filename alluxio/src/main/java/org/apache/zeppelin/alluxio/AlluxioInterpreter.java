@@ -68,15 +68,6 @@ public class AlluxioInterpreter extends Interpreter {
     alluxioMasterPort = property.getProperty(ALLUXIO_MASTER_PORT);
   }
 
-  static {
-    Interpreter.register("alluxio", "alluxio",
-        AlluxioInterpreter.class.getName(),
-        new InterpreterPropertyBuilder()
-                .add(ALLUXIO_MASTER_HOSTNAME, "localhost", "Alluxio master hostname")
-                .add(ALLUXIO_MASTER_PORT, "19998", "Alluxio master port")
-                .build());
-  }
-
   @Override
   public void open() {
     logger.info("Starting Alluxio shell to connect to " + alluxioMasterHostname +
