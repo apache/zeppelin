@@ -706,7 +706,7 @@ public class SparkInterpreter extends Interpreter {
         }
 
         completor = instantiateClass(
-            "SparkJLineCompletion",
+            "org.apache.spark.repl.SparkJLineCompletion",
             new Class[]{findClass("org.apache.spark.repl.SparkIMain")},
             new Object[]{intp});
       }
