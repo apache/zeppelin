@@ -101,21 +101,22 @@ public class SecurityRestApi {
     try {
       GetUserList getUserListObj = new GetUserList();
       Collection realmsList = SecurityUtils.getRealmsList();
-      for (Iterator<Realm> iterator = realmsList.iterator(); iterator.hasNext(); ) {
-        Realm realm = iterator.next();
-        String name = realm.getName();
-        if (name.equals("iniRealm")) {
-          usersList.addAll(getUserListObj.getUserList((IniRealm) realm));
-        } else if (name.equals("ldapRealm")) {
-          usersList.addAll(getUserListObj.getUserList((JndiLdapRealm) realm, searchText));
-        } else if (name.equals("activeDirectoryRealm")) {
-          usersList.addAll(getUserListObj.getUserList((ActiveDirectoryGroupRealm) realm,
-              searchText));
-        } else if (name.equals("jdbcRealm")) {
-          usersList.addAll(getUserListObj.getUserList((JdbcRealm) realm));
+      if (realmsList != null) {
+        for (Iterator<Realm> iterator = realmsList.iterator(); iterator.hasNext(); ) {
+          Realm realm = iterator.next();
+          String name = realm.getName();
+          if (name.equals("iniRealm")) {
+            usersList.addAll(getUserListObj.getUserList((IniRealm) realm));
+          } else if (name.equals("ldapRealm")) {
+            usersList.addAll(getUserListObj.getUserList((JndiLdapRealm) realm, searchText));
+          } else if (name.equals("activeDirectoryRealm")) {
+            usersList.addAll(getUserListObj.getUserList((ActiveDirectoryGroupRealm) realm,
+                searchText));
+          } else if (name.equals("jdbcRealm")) {
+            usersList.addAll(getUserListObj.getUserList((JdbcRealm) realm));
+          }
         }
       }
-
     } catch (Exception e) {
       LOG.error("Exception in retrieving Users from realms ", e);
     }

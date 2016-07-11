@@ -141,6 +141,16 @@ body {
   overflow: auto;
 }
 
+.scrollable-menu::-webkit-scrollbar {
+  -webkit-appearance: none;
+  width: 7px;        
+}  
+
+.scrollable-menu::-webkit-scrollbar-thumb {
+  border-radius: 3px;
+  background-color: gray; 
+}
+
 .index-header {
   font-size: 16px;
   font-style: italic;

@@ -40,8 +40,8 @@ angular.module('zeppelinWebApp').factory('notebookListDataFactory', function() {
   var addNode = function(curDir, nodes, noteId) {
     if (nodes.length === 1) {  // the leaf
       curDir.children.push({
-        name : nodes[0],
-        id : noteId
+        name: nodes[0],
+        id: noteId
       });
     } else {  // a folder node
       var node = nodes.shift();
@@ -51,9 +51,9 @@ angular.module('zeppelinWebApp').factory('notebookListDataFactory', function() {
         addNode(dir, nodes, noteId);
       } else {
         var newDir = {
-          name : node,
-          hidden : true,
-          children : []
+          name: node,
+          hidden: true,
+          children: []
         };
         curDir.children.push(newDir);
         addNode(newDir, nodes, noteId);

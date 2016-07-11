@@ -18,11 +18,11 @@ angular
   .module('zeppelinWebApp')
   .controller('SearchResultCtrl', function($scope, $routeParams, searchService) {
 
-  $scope.isResult = true ;
-  $scope.searchTerm = $routeParams.searchTerm;
-  var results = searchService.search({'q': $routeParams.searchTerm}).query();
+    $scope.isResult = true ;
+    $scope.searchTerm = $routeParams.searchTerm;
+    var results = searchService.search({'q': $routeParams.searchTerm}).query();
 
-  results.$promise.then(function(result) {
+    results.$promise.then(function(result) {
     $scope.notes = result.body.map(function(note) {
       // redirect to notebook when search result is a notebook itself,
       // not a paragraph
@@ -42,17 +42,17 @@ angular
       $scope.isResult = true;
     }
 
-  $scope.$on('$routeChangeStart', function (event, next, current) {
+    $scope.$on('$routeChangeStart', function(event, next, current) {
       if (next.originalPath !== '/search/:searchTerm') {
         searchService.searchTerm = '';
       }
     });
   });
 
-  $scope.page = 0;
-  $scope.allResults = false;
+    $scope.page = 0;
+    $scope.allResults = false;
 
-  $scope.highlightSearchResults = function(note) {
+    $scope.highlightSearchResults = function(note) {
     return function(_editor) {
       function getEditorMode(text) {
         var editorModes = {
@@ -65,7 +65,7 @@ angular
         };
 
         return Object.keys(editorModes).reduce(function(res, mode) {
-          return editorModes[mode].test(text)? mode : res;
+          return editorModes[mode].test(text) ? mode : res;
         }, 'ace/mode/scala');
       }
 
@@ -82,7 +82,7 @@ angular
         return function(str) {
           var indeces = [];
           var i = -1;
-          while((i = str.indexOf(term, i + 1)) >= 0) {
+          while ((i = str.indexOf(term, i + 1)) >= 0) {
             indeces.push(i);
           }
           return indeces;
@@ -155,4 +155,4 @@ angular
     };
   };
 
-});
+  });

@@ -10,6 +10,13 @@ describe('Controller: ParagraphCtrl', function() {
   var paragraphMock = {
     config: {}
   };
+  var route = {
+    current: {
+      pathParams: {
+        noteId: 'noteId'
+      }
+    }
+  };
 
   beforeEach(inject(function($controller, $rootScope) {
     scope = $rootScope.$new();
@@ -18,8 +25,10 @@ describe('Controller: ParagraphCtrl', function() {
     ParagraphCtrl = $controller('ParagraphCtrl', {
       $scope: scope,
       websocketMsgSrv: websocketMsgSrvMock,
-      $element: {}
+      $element: {},
+      $route: route
     });
+
     scope.init(paragraphMock);
   }));
 
@@ -51,17 +60,18 @@ describe('Controller: ParagraphCtrl', function() {
     expect(scope.paragraphFocused).toEqual(false);
   });
 
-  it('should call loadTableData() and getGraphMode() should return "table" when the result type is "TABLE"', function() {
-    scope.getResultType = jasmine.createSpy('getResultType spy').andCallFake(function() {
-      return 'TABLE';
+  it('should call loadTableData() and getGraphMode() should return "table" when the result type is "TABLE"',
+    function() {
+      scope.getResultType = jasmine.createSpy('getResultType spy').andCallFake(function() {
+        return 'TABLE';
+      });
+      spyOn(scope, 'loadTableData');
+      spyOn(scope, 'setGraphMode');
+      scope.init(paragraphMock);
+      expect(scope.loadTableData).toHaveBeenCalled();
+      expect(scope.setGraphMode).toHaveBeenCalled();
+      expect(scope.getGraphMode()).toEqual('table');
     });
-    spyOn(scope, 'loadTableData');
-    spyOn(scope, 'setGraphMode');
-    scope.init(paragraphMock);
-    expect(scope.loadTableData).toHaveBeenCalled();
-    expect(scope.setGraphMode).toHaveBeenCalled();
-    expect(scope.getGraphMode()).toEqual('table');
-  });
 
   it('should call renderHtml() when the result type is "HTML"', function() {
     scope.getResultType = jasmine.createSpy('getResultType spy').andCallFake(function() {

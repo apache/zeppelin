@@ -57,10 +57,12 @@ public class GetUserList {
   public List<String> getUserList(IniRealm r) {
     List<String> userList = new ArrayList<>();
     Map getIniUser = r.getIni().get("users");
-    Iterator it = getIniUser.entrySet().iterator();
-    while (it.hasNext()) {
-      Map.Entry pair = (Map.Entry) it.next();
-      userList.add(pair.getKey().toString().trim());
+    if (getIniUser != null) {
+      Iterator it = getIniUser.entrySet().iterator();
+      while (it.hasNext()) {
+        Map.Entry pair = (Map.Entry) it.next();
+        userList.add(pair.getKey().toString().trim());
+      }
     }
     return userList;
   }

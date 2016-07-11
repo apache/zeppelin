@@ -30,7 +30,10 @@ import org.apache.zeppelin.dep.Dependency;
 import org.apache.zeppelin.dep.DependencyResolver;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.AngularObjectRegistryListener;
+import org.apache.zeppelin.helium.ApplicationEventListener;
 import org.apache.zeppelin.interpreter.Interpreter.RegisteredInterpreter;
+import org.apache.zeppelin.interpreter.dev.DevInterpreter;
+import org.apache.zeppelin.interpreter.dev.ZeppelinDevServer;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreter;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
@@ -82,22 +85,29 @@ public class InterpreterFactory implements InterpreterGroupFactory {
 
   private AngularObjectRegistryListener angularObjectRegistryListener;
   private final RemoteInterpreterProcessListener remoteInterpreterProcessListener;
+  private final ApplicationEventListener appEventListener;
 
   private DependencyResolver depResolver;
+
+  private Map<String, String> env = new HashMap<>();
+
+  private Interpreter devInterpreter;
 
   public InterpreterFactory(ZeppelinConfiguration conf,
       AngularObjectRegistryListener angularObjectRegistryListener,
       RemoteInterpreterProcessListener remoteInterpreterProcessListener,
+      ApplicationEventListener appEventListener,
       DependencyResolver depResolver)
       throws InterpreterException, IOException, RepositoryException {
     this(conf, new InterpreterOption(true), angularObjectRegistryListener,
-        remoteInterpreterProcessListener, depResolver);
+        remoteInterpreterProcessListener, appEventListener, depResolver);
   }
 
 
   public InterpreterFactory(ZeppelinConfiguration conf, InterpreterOption defaultOption,
       AngularObjectRegistryListener angularObjectRegistryListener,
       RemoteInterpreterProcessListener remoteInterpreterProcessListener,
+      ApplicationEventListener appEventListener,
       DependencyResolver depResolver)
       throws InterpreterException, IOException, RepositoryException {
     this.conf = conf;
@@ -106,6 +116,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     this.depResolver = depResolver;
     this.interpreterRepositories = depResolver.getRepos();
     this.remoteInterpreterProcessListener = remoteInterpreterProcessListener;
+    this.appEventListener = appEventListener;
     String replsConf = conf.getString(ConfVars.ZEPPELIN_INTERPRETERS);
     interpreterClassList = replsConf.split(",");
     String groupOrder = conf.getString(ConfVars.ZEPPELIN_INTERPRETER_GROUP_ORDER);
@@ -113,8 +124,6 @@ public class InterpreterFactory implements InterpreterGroupFactory {
 
     GsonBuilder builder = new GsonBuilder();
     builder.setPrettyPrinting();
-    builder.registerTypeAdapter(
-        InterpreterSetting.InterpreterInfo.class, new InterpreterInfoSerializer());
     gson = builder.create();
 
     init();
@@ -159,7 +168,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
                 cleanCl.put(interpreterDirString, ccl);
               }
             }
-          } catch (ClassNotFoundException e) {
+          } catch (Throwable t) {
             // nothing to do
           }
         }
@@ -201,8 +210,11 @@ public class InterpreterFactory implements InterpreterGroupFactory {
           if (null != infos) {
             Properties p = new Properties();
             for (RegisteredInterpreter info : infos) {
-              for (String key : info.getProperties().keySet()) {
-                p.put(key, info.getProperties().get(key).getValue());
+              Map<String, InterpreterProperty> interpreterProperties = info.getProperties();
+              if (null != interpreterProperties) {
+                for (String key : info.getProperties().keySet()) {
+                  p.put(key, info.getProperties().get(key).getValue());
+                }
               }
             }
             add(groupName, groupName, new LinkedList<Dependency>(), defaultOption, p);
@@ -213,8 +225,11 @@ public class InterpreterFactory implements InterpreterGroupFactory {
           List<RegisteredInterpreter> infos = groupClassNameMap.get(groupName);
           Properties p = new Properties();
           for (RegisteredInterpreter info : infos) {
-            for (String key : info.getProperties().keySet()) {
-              p.put(key, info.getProperties().get(key).getValue());
+            Map<String, InterpreterProperty> interpreterProperties = info.getProperties();
+            if (null != interpreterProperties) {
+              for (String key : info.getProperties().keySet()) {
+                p.put(key, info.getProperties().get(key).getValue());
+              }
             }
           }
           add(groupName, groupName, new LinkedList<Dependency>(), defaultOption, p);
@@ -289,12 +304,6 @@ public class InterpreterFactory implements InterpreterGroupFactory {
   }
 
   private void loadFromFile() throws IOException {
-    GsonBuilder builder = new GsonBuilder();
-    builder.setPrettyPrinting();
-    builder.registerTypeAdapter(
-        InterpreterSetting.InterpreterInfo.class, new InterpreterInfoSerializer());
-    Gson gson = builder.create();
-
     File settingFile = new File(conf.getInterpreterSettingPath());
     if (!settingFile.exists()) {
       // nothing to read
@@ -547,8 +556,18 @@ public class InterpreterFactory implements InterpreterGroupFactory {
         Interpreter intp;
 
         if (option.isRemote()) {
-          intp = createRemoteRepl(info.getPath(), key, info.getClassName(), properties,
-              interpreterSetting.id());
+          if (option.isConnectExistingProcess()) {
+            intp = connectToRemoteRepl(
+                noteId,
+                info.getClassName(),
+                option.getHost(), option.getPort(), properties);
+          } else {
+            intp = createRemoteRepl(info.getPath(),
+                key,
+                info.getClassName(),
+                properties,
+                interpreterSetting.id());
+          }
         } else {
           intp = createRepl(info.getPath(), info.getClassName(), properties);
         }
@@ -850,6 +869,26 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     }
   }
 
+  private Interpreter connectToRemoteRepl(String noteId,
+      String className,
+      String host,
+      int port,
+      Properties property) {
+    int connectTimeout = conf.getInt(ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT);
+    int maxPoolSize = conf.getInt(ConfVars.ZEPPELIN_INTERPRETER_MAX_POOL_SIZE);
+    LazyOpenInterpreter intp = new LazyOpenInterpreter(
+        new RemoteInterpreter(
+            property,
+            noteId,
+            className,
+            host,
+            port,
+            connectTimeout,
+            maxPoolSize,
+            remoteInterpreterProcessListener,
+            appEventListener));
+    return intp;
+  }
 
   private Interpreter createRemoteRepl(String interpreterPath, String noteId, String className,
       Properties property, String interpreterSettingId) {
@@ -859,10 +898,14 @@ public class InterpreterFactory implements InterpreterGroupFactory {
 
     updatePropertiesFromRegisteredInterpreter(property, className);
 
-    LazyOpenInterpreter intp = new LazyOpenInterpreter(new RemoteInterpreter(property, noteId,
-        className, conf.getInterpreterRemoteRunnerPath(), interpreterPath, localRepoPath,
-        connectTimeout, maxPoolSize, remoteInterpreterProcessListener));
-    return intp;
+
+    RemoteInterpreter remoteInterpreter = new RemoteInterpreter(
+        property, noteId, className, conf.getInterpreterRemoteRunnerPath(),
+        interpreterPath, localRepoPath, connectTimeout,
+        maxPoolSize, remoteInterpreterProcessListener, appEventListener);
+    remoteInterpreter.setEnv(env);
+
+    return new LazyOpenInterpreter(remoteInterpreter);
   }
 
   private Properties updatePropertiesFromRegisteredInterpreter(Properties properties,
@@ -1037,6 +1080,11 @@ public class InterpreterFactory implements InterpreterGroupFactory {
       }
     }
 
+    // dev interpreter
+    if (DevInterpreter.isInterpreterName(replName)) {
+      return getDevInterpreter();
+    }
+
     return null;
   }
 
@@ -1072,5 +1120,35 @@ public class InterpreterFactory implements InterpreterGroupFactory {
   public void removeRepository(String id) throws IOException {
     depResolver.delRepo(id);
     saveToFile();
+  }
+
+  public Map<String, String> getEnv() {
+    return env;
+  }
+
+  public void setEnv(Map<String, String> env) {
+    this.env = env;
+  }
+
+
+  public Interpreter getDevInterpreter() {
+    if (devInterpreter == null) {
+      InterpreterOption option = new InterpreterOption();
+      option.setRemote(true);
+
+      InterpreterGroup interpreterGroup = createInterpreterGroup("dev", option);
+
+      devInterpreter = connectToRemoteRepl("dev", DevInterpreter.class.getName(),
+          "localhost",
+          ZeppelinDevServer.DEFAULT_TEST_INTERPRETER_PORT,
+          new Properties());
+
+      LinkedList<Interpreter> intpList = new LinkedList<>();
+      intpList.add(devInterpreter);
+      interpreterGroup.put("dev", intpList);
+
+      devInterpreter.setInterpreterGroup(interpreterGroup);
+    }
+    return devInterpreter;
   }
 }

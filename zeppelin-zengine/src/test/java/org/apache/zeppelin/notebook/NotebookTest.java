@@ -23,6 +23,7 @@ import static org.mockito.Mockito.mock;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import com.google.common.collect.Sets;
 import org.apache.commons.io.FileUtils;
@@ -85,7 +86,7 @@ public class NotebookTest implements JobListenerFactory{
     MockInterpreter2.register("mock2", "org.apache.zeppelin.interpreter.mock.MockInterpreter2");
 
     depResolver = new DependencyResolver(tmpDir.getAbsolutePath() + "/local-repo");
-    factory = new InterpreterFactory(conf, new InterpreterOption(false), null, null, depResolver);
+    factory = new InterpreterFactory(conf, new InterpreterOption(false), null, null, null, depResolver);
 
     SearchService search = mock(SearchService.class);
     notebookRepo = new VFSNotebookRepo(conf);
@@ -127,13 +128,36 @@ public class NotebookTest implements JobListenerFactory{
   }
 
   @Test
-  public void testReloadAllNotes() throws IOException {
+  public void testReloadAndSetInterpreter() throws IOException {
+    // given a notebook
     File srcDir = new File("src/test/resources/2A94M5J1Z");
     File destDir = new File(notebookDir.getAbsolutePath() + "/2A94M5J1Z");
+    FileUtils.copyDirectory(srcDir, destDir);
+
+    // when load
+    notebook.reloadAllNotes(null);
+    assertEquals(1, notebook.getAllNotes().size());
+
+    // then interpreter factory should be injected into all the paragraphs
+    Note note = notebook.getAllNotes().get(0);
+    assertNull(note.getParagraphs().get(0).getRepl(null));
+  }
+
+  @Test
+  public void testReloadAllNotes() throws IOException {
+    /**
+     * 2A94M5J1Z old date format without timezone
+     * 2BQA35CJZ new date format with timezone
+     */
+    String[] noteNames = new String[]{"2A94M5J1Z", "2BQA35CJZ"};
 
     // copy the notebook
     try {
-      FileUtils.copyDirectory(srcDir, destDir);
+      for (String note : noteNames) {
+        File srcDir = new File("src/test/resources/" + note);
+        File destDir = new File(notebookDir.getAbsolutePath() + "/" + note);
+        FileUtils.copyDirectory(srcDir, destDir);
+      }
     } catch (IOException e) {
       logger.error(e.toString(), e);
     }
@@ -146,17 +170,20 @@ public class NotebookTest implements JobListenerFactory{
     Note copiedNote = notebookRepo.get("2A94M5J1Z", null);
     notebook.reloadAllNotes(null);
     notes = notebook.getAllNotes();
-    assertEquals(notes.size(), 1);
-    assertEquals(notes.get(0).id(), copiedNote.id());
-    assertEquals(notes.get(0).getName(), copiedNote.getName());
-    assertEquals(notes.get(0).getParagraphs(), copiedNote.getParagraphs());
+    assertEquals(notes.size(), 2);
+    assertEquals(notes.get(1).id(), copiedNote.id());
+    assertEquals(notes.get(1).getName(), copiedNote.getName());
+    assertEquals(notes.get(1).getParagraphs(), copiedNote.getParagraphs());
 
     // delete the notebook
-    FileUtils.deleteDirectory(destDir);
+    for (String note : noteNames) {
+      File destDir = new File(notebookDir.getAbsolutePath() + "/" + note);
+      FileUtils.deleteDirectory(destDir);
+    }
 
     // keep notebook in memory before reloading
     notes = notebook.getAllNotes();
-    assertEquals(notes.size(), 1);
+    assertEquals(notes.size(), 2);
 
     // delete notebook from notebook list when reloadAllNotes() is called
     notebook.reloadAllNotes(null);
@@ -697,6 +724,66 @@ public class NotebookTest implements JobListenerFactory{
     assertNotEquals(result.message(), p1.getResult().message());
 
     notebook.removeNote(note1.getId(), null);
+  }
+
+  @Test
+  public void testNotebookEventListener() throws IOException {
+    final AtomicInteger onNoteRemove = new AtomicInteger(0);
+    final AtomicInteger onNoteCreate = new AtomicInteger(0);
+    final AtomicInteger onParagraphRemove = new AtomicInteger(0);
+    final AtomicInteger onParagraphCreate = new AtomicInteger(0);
+    final AtomicInteger unbindInterpreter = new AtomicInteger(0);
+
+    notebook.addNotebookEventListener(new NotebookEventListener() {
+      @Override
+      public void onNoteRemove(Note note) {
+        onNoteRemove.incrementAndGet();
+      }
+
+      @Override
+      public void onNoteCreate(Note note) {
+        onNoteCreate.incrementAndGet();
+      }
+
+      @Override
+      public void onUnbindInterpreter(Note note, InterpreterSetting setting) {
+        unbindInterpreter.incrementAndGet();
+      }
+
+      @Override
+      public void onParagraphRemove(Paragraph p) {
+        onParagraphRemove.incrementAndGet();
+      }
+
+      @Override
+      public void onParagraphCreate(Paragraph p) {
+        onParagraphCreate.incrementAndGet();
+      }
+
+      @Override
+      public void onParagraphStatusChange(Paragraph p, Status status) {
+      }
+    });
+
+    Note note1 = notebook.createNote(null);
+    assertEquals(1, onNoteCreate.get());
+
+    Paragraph p1 = note1.addParagraph();
+    assertEquals(1, onParagraphCreate.get());
+
+    note1.addCloneParagraph(p1);
+    assertEquals(2, onParagraphCreate.get());
+
+    note1.removeParagraph(p1.getId());
+    assertEquals(1, onParagraphRemove.get());
+
+    List<String> settings = notebook.getBindedInterpreterSettingsIds(note1.id());
+    notebook.bindInterpretersToNote(note1.id(), new LinkedList<String>());
+    assertEquals(settings.size(), unbindInterpreter.get());
+
+    notebook.removeNote(note1.getId(), null);
+    assertEquals(1, onNoteRemove.get());
+    assertEquals(1, onParagraphRemove.get());
   }
 
   @Test
