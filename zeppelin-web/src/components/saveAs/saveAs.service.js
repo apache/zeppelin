@@ -20,7 +20,7 @@ angular.module('zeppelinWebApp').service('SaveAsService', function(browserDetect
     if (browserDetectService.detectIE()) {
       angular.element('body').append('<iframe id="SaveAsId" style="display: none"></iframe>');
       var frameSaveAs = angular.element('body > iframe#SaveAsId')[0].contentWindow;
-      content= BOM + content;
+      content = BOM + content;
       frameSaveAs.document.open('text/json', 'replace');
       frameSaveAs.document.write(content);
       frameSaveAs.document.close();
