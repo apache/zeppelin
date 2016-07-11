@@ -28,6 +28,7 @@ import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.resource.LocalResourcePool;
+import org.apache.zeppelin.resource.WellKnownResourceName;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.interpreter.*;
@@ -178,7 +179,10 @@ public class SparkInterpreterTest {
     repl.interpret("case class Person(name:String, age:Int)\n", context);
     repl.interpret("val people = sc.parallelize(Seq(Person(\"moon\", 33), Person(\"jobs\", 51), Person(\"gates\", 51), Person(\"park\", 34)))\n", context);
     repl.interpret("people.toDF.count", context);
-    assertEquals(new Long(4), repl.getLastObject());
+    assertEquals(new Long(4), context.getResourcePool().get(
+        context.getNoteId(),
+        context.getParagraphId(),
+        WellKnownResourceName.ZeppelinReplResult.toString()).get());
   }
 
   @Test
