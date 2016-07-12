@@ -10,21 +10,21 @@
         "defaultValue": "60000",
         "description": "Shell command time out in millisecs. Default = 60000"
       },
-      "shell.auth.type": {
+      "zeppelin.shell.auth.type": {
         "envName": null,
-        "propertyName": "shell.auth.type",
+        "propertyName": "zeppelin.shell.auth.type",
         "defaultValue": "",
         "description": "If auth type is needed, Example: KERBEROS"
       },
-      "shell.keytab.location": {
+      "zeppelin.shell.keytab.location": {
         "envName": null,
-        "propertyName": "shell.keytab.location",
+        "propertyName": "zeppelin.shell.keytab.location",
         "defaultValue": "",
         "description": "Kerberos keytab location"
       },
-      "shell.principal": {
+      "zeppelin.shell.principal": {
         "envName": null,
-        "propertyName": "shell.principal",
+        "propertyName": "zeppelin.shell.principal",
         "defaultValue": "",
         "description": "Kerberos principal"
       }

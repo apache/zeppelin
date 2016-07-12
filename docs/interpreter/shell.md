@@ -24,15 +24,15 @@ You can modify the interpreter configuration in the `Interpreter` section. The m
     <td>Shell command time out in millisecs. Default = 60000</td>
   </tr>
   <tr>
-   <td>shell.auth.type</td>
+   <td>zeppelin.shell.auth.type</td>
    <td>Types of authentications' methods supported are SIMPLE, and KERBEROS</td>
   </tr>
   <tr>
-   <td>shell.principal</td>
+   <td>zeppelin.shell.principal</td>
    <td>The principal name to load from the keytab</td>
   </tr>
   <tr>
-   <td>shell.keytab.location</td>
+   <td>zeppelin.shell.keytab.location</td>
    <td>The path to the keytab file</td>
   </tr>
 </table>

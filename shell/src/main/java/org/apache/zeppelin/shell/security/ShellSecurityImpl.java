@@ -41,11 +41,11 @@ public class ShellSecurityImpl {
     UserGroupInformation.AuthenticationMethod authType;
     try {
       authType = UserGroupInformation
-        .AuthenticationMethod.valueOf(properties.getProperty("shell.auth.type")
+        .AuthenticationMethod.valueOf(properties.getProperty("zeppelin.shell.auth.type")
           .trim().toUpperCase());
     } catch (Exception e) {
       LOGGER.error(String.format("Invalid auth.type detected with value %s, defaulting " +
-        "auth.type to SIMPLE", properties.getProperty("shell.auth.type").trim()));
+        "auth.type to SIMPLE", properties.getProperty("zeppelin.shell.auth.type").trim()));
       authType = SIMPLE;
     }
 
@@ -55,8 +55,8 @@ public class ShellSecurityImpl {
           CommandLine cmdLine = CommandLine.parse(shell);
           cmdLine.addArgument("-c", false);
           String kinitCommand = String.format("kinit -k -t %s %s",
-            properties.getProperty("shell.keytab.location"),
-            properties.getProperty("shell.principal"));
+            properties.getProperty("zeppelin.shell.keytab.location"),
+            properties.getProperty("zeppelin.shell.principal"));
           cmdLine.addArgument(kinitCommand, false);
           DefaultExecutor executor = new DefaultExecutor();
 

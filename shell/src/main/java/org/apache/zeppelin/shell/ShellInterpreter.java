@@ -60,7 +60,7 @@ public class ShellInterpreter extends Interpreter {
   public void open() {
     LOGGER.info("Command timeout property: {}", getProperty(TIMEOUT_PROPERTY));
     executors = new HashMap<String, DefaultExecutor>();
-    if (!StringUtils.isAnyEmpty(getProperty("shell.auth.type"))) {
+    if (!StringUtils.isAnyEmpty(getProperty("zeppelin.shell.auth.type"))) {
       ShellSecurityImpl.createSecureCinfiguration(getProperty(), shell);
     }
   }
