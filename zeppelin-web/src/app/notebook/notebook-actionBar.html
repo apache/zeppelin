@@ -64,40 +64,56 @@ limitations under the License.
               tooltip-placement="bottom" tooltip="Export the notebook">
         <i class="fa fa-download"></i>
       </button>
-      <button type="button"
-              class="btn btn-default btn-xs dropdown-toggle"
-              ng-hide="viewOnly"
-              data-toggle="dropdown"
-              tooltip-placement="bottom" tooltip="Version control">
-        <i class="fa fa-file-code-o"></i>
-      </button>
-      <ul class="dropdown-menu" role="menu" style="width:250px">
-        <li>
-          <div class="commit-container">
-            <div>
-              <input type="text"
-                     dropdown-input
-                     placeholder="commit message"
-                     id="note.checkpoint.message"
-                     style="width: 145px;"
-                     ng-model="note.checkpoint.message"/>
-              <button type="button"
-                      class="btn btn-default btn-xs"
-                      ng-hide="viewOnly"
-                      ng-click="checkpointNotebook(note.checkpoint.message)"
-                      style="margin-left: 4px;"
-                      tooltip-placement="bottom" tooltip="Commit the notebook">Commit
-              </button>
+    </span>
+
+    <span class="labelBtn btn-group" role="group">
+      <div class="btn-group" role="group">
+        <button type="button"
+                class="btn btn-default btn-xs dropdown-toggle"
+                id="versionControlDropdown"
+                ng-hide="viewOnly"
+                data-toggle="dropdown"
+                tooltip-placement="bottom" tooltip="Version control">
+          <i class="fa fa-file-code-o"></i>
+        </button>
+        <ul class="dropdown-menu" style="width:250px"
+          aria-labelledby="versionControlDropdown">
+          <li>
+            <div class="commit-container">
+              <div>
+                <input type="text"
+                       dropdown-input
+                       placeholder="commit message"
+                       id="note.checkpoint.message"
+                       style="width: 145px;"
+                       ng-model="note.checkpoint.message"/>
+                <button type="button"
+                        class="btn btn-default btn-xs"
+                        ng-hide="viewOnly"
+                        ng-click="checkpointNotebook(note.checkpoint.message)"
+                        style="margin-left: 4px;"
+                        tooltip-placement="bottom" tooltip="Commit the notebook">Commit
+                </button>
+              </div>
             </div>
-          </div>
-        </li>
-        <li ng-repeat="revision in ::noteRevisions">
-          <div>
-            message: {{revision[$index].message}}
-            time: {{revision[$index].time}}
-          </div>
-        </li>
-      </ul>
+          </li>
+        </ul>
+      </div>
+      <div class="btn-group" role="group">
+        <button type="button" class="btn btn-default btn-xs revisionName">
+          Head
+        </button>
+        <button type="button" ng-if="noteRevisions.length > 0"
+          class="btn btn-default dropdown-toggle caretSeparator"
+          data-toggle="dropdown" id="revisionsDropdown">
+          <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu pull-right" aria-labelledby="revisionsDropdown">
+          <li ng-repeat="revision in noteRevisions | orderBy:'time'" class="revision">
+            <a style="cursor:pointer"><strong>{{moment.unix(revision.time).format("YY/MM/DD")}}</strong> - {{revision.message}}</a>
+          </li>
+        </ul>
+      </div>
     </span>
 
 <!-- put the delete action by itself for your protection -->

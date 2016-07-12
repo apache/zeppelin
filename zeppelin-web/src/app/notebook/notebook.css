@@ -14,6 +14,38 @@
 
 .notebookContent {
   padding-top: 36px;
+
+.revision  {
+  max-width: 250px;
+  margin-bottom: 0 !important;
+}
+
+.revision a  {
+  width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 2px 10px !important;
+}
+
+.revisionName {
+  cursor: default;
+  padding: 1px 10px !important;
+  max-width: 150px;
+}
+
+.revisionName:hover,
+.revisionName:focus,
+.revisionName:active {
+  background: transparent;
+  border-color: #ccc;
+}
+
+.caretSeparator {
+  height: 22px;
+  line-height: 9px;
+  width: 16px;
+  padding-left: 3px !important;
 }
 
 .paragraph-col {

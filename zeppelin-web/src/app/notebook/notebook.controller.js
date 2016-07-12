@@ -19,6 +19,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
                                                                      $rootScope, $http, websocketMsgSrv,
                                                                      baseUrlSrv, $timeout, SaveAsService) {
   $scope.note = null;
+  $scope.moment = moment;
   $scope.showEditor = false;
   $scope.editorToggled = false;
   $scope.tableToggled = false;
@@ -54,8 +55,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
   var previousSelectedListWriters = [];
   var searchText = [];
   $scope.role = '';
-
-  $scope.noteRevisions = websocketMsgSrv.listRevisionHistory($routeParams.noteId);
+  $scope.noteRevisions = [];
 
   $scope.$on('setConnectedStatus', function(event, param) {
     if (connectedOnce && param) {
@@ -80,6 +80,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
   /** Init the new controller */
   var initNotebook = function() {
     websocketMsgSrv.getNotebook($routeParams.noteId);
+    websocketMsgSrv.listRevisionHistory($routeParams.noteId);
 
     var currentRoute = $route.current;
     if (currentRoute) {
@@ -185,8 +186,8 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
   };
 
   $scope.$on('listRevisionHistory', function(event, data) {
-    console.log(data);
-    $scope.noteRevisions = data;
+    console.log("We got the revisions yeahh %o", data);
+    $scope.noteRevisions = data.revisionList;
   });
 
   $scope.runNote = function() {
