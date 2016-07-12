@@ -35,11 +35,11 @@ angular.module('zeppelinWebApp').controller('workflowWidgetCtrl', function($scop
   .directive('workflowWidget', function() {
   return {
     restrict: 'E',
-    scope : {
-      'workflowJobInputData' : '=workflowJobInputData',
-      'workflowJobResultData' : '=workflowJobResultData'
+    scope: {
+      'workflowJobInputData': '=workflowJobInputData',
+      'workflowJobResultData': '=workflowJobResultData'
     },
-    templateUrl : 'components/workflow-widget/workflow-widget.html',
+    templateUrl: 'components/workflow-widget/workflow-widget.html',
     link: function(scope, elem, attrs) {
 
     }
