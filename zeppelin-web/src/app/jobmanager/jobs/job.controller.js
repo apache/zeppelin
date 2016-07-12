@@ -36,12 +36,11 @@ angular.module('zeppelinWebApp')
       return isNaN(result) ? 0 : result;
     };
 
-
-    $scope.lastExecuteTime = function (unixtime) {
-      return moment.unix(unixtime/1000).fromNow();
+    $scope.lastExecuteTime = function(unixtime) {
+      return moment.unix(unixtime / 1000).fromNow();
     };
 
-    $scope.runNotebookJob = function (notebookId) {
+    $scope.runNotebookJob = function(notebookId) {
       BootstrapDialog.confirm({
         closable: true,
         title: '',
@@ -72,7 +71,7 @@ angular.module('zeppelinWebApp')
       });
     };
 
-    $scope.stopNotebookJob = function (notebookId) {
+    $scope.stopNotebookJob = function(notebookId) {
       BootstrapDialog.confirm({
         closable: true,
         title: '',
