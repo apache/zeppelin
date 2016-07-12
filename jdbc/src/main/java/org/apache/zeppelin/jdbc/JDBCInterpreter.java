@@ -264,7 +264,7 @@ public class JDBCInterpreter extends Interpreter {
         for (Connection c : connectionList) {
           try {
             c.close();
-          } catch (SQLException e) {
+          } catch (Exception e) {
             logger.error("Error while closing propertyKeyUnusedConnectionListMap connection...", e);
           }
         }
@@ -273,7 +273,7 @@ public class JDBCInterpreter extends Interpreter {
       for (Statement statement : paragraphIdStatementMap.values()) {
         try {
           statement.close();
-        } catch (SQLException e) {
+        } catch (Exception e) {
           logger.error("Error while closing paragraphIdStatementMap statement...", e);
         }
       }
@@ -282,7 +282,7 @@ public class JDBCInterpreter extends Interpreter {
       for (Connection connection : paragraphIdConnectionMap.values()) {
         try {
           connection.close();
-        } catch (SQLException e) {
+        } catch (Exception e) {
           logger.error("Error while closing paragraphIdConnectionMap connection...", e);
         }
       }
