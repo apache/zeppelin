@@ -236,9 +236,9 @@ public class SparkInterpreter extends Interpreter {
    */
   private SQLContext getSQLContext_2() {
     if (sqlc == null) {
-      sqlc = (SQLContext) invokeMethod(sparkSession, "sqlContext");
+      sqlc = (SQLContext) invokeMethod(sparkSession, "wrapped");
       if (sqlc == null) {
-        sqlc = (SQLContext) invokeMethod(sparkSession, "wrapped");
+        sqlc = (SQLContext) invokeMethod(sparkSession, "sqlContext");
       }
     }
     return sqlc;
@@ -972,6 +972,9 @@ public class SparkInterpreter extends Interpreter {
 
   public Object getLastObject() {
     IMain.Request r = (IMain.Request) invokeMethod(intp, "lastRequest");
+    if (r == null || r.lineRep() == null) {
+      return null;
+    }
     Object obj = r.lineRep().call("$result",
         JavaConversions.asScalaBuffer(new LinkedList<Object>()));
     return obj;
@@ -1103,7 +1106,18 @@ public class SparkInterpreter extends Interpreter {
       return;
     }
 
-    Object lastObj = getValue(varName);
+    Object lastObj = null;
+    try {
+      if (isScala2_10()) {
+        lastObj = getValue(varName);
+      } else {
+        lastObj = getLastObject();
+      }
+    } catch (NullPointerException e) {
+      // Some case, scala.tools.nsc.interpreter.IMain$ReadEvalPrint.call throws an NPE
+      logger.error(e.getMessage(), e);
+    }
+
     if (lastObj != null) {
       ResourcePool resourcePool = context.getResourcePool();
       resourcePool.put(context.getNoteId(), context.getParagraphId(),
