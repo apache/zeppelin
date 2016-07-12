@@ -19,15 +19,11 @@ package org.apache.zeppelin.shell.security;
 
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
-import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Properties;
-
-import static org.apache.hadoop.security.UserGroupInformation.AuthenticationMethod.KERBEROS;
-import static org.apache.hadoop.security.UserGroupInformation.AuthenticationMethod.SIMPLE;
 
 
 /***
@@ -38,34 +34,26 @@ public class ShellSecurityImpl {
   private static Logger LOGGER = LoggerFactory.getLogger(ShellSecurityImpl.class);
 
   public static void createSecureCinfiguration(Properties properties, String shell) {
-    UserGroupInformation.AuthenticationMethod authType;
-    try {
-      authType = UserGroupInformation
-        .AuthenticationMethod.valueOf(properties.getProperty("zeppelin.shell.auth.type")
-          .trim().toUpperCase());
-    } catch (Exception e) {
-      LOGGER.error(String.format("Invalid auth.type detected with value %s, defaulting " +
-        "auth.type to SIMPLE", properties.getProperty("zeppelin.shell.auth.type").trim()));
-      authType = SIMPLE;
-    }
 
+    String authType = properties.getProperty("zeppelin.shell.auth.type")
+      .trim().toUpperCase();
 
     switch (authType) {
-        case KERBEROS:
-          CommandLine cmdLine = CommandLine.parse(shell);
-          cmdLine.addArgument("-c", false);
-          String kinitCommand = String.format("kinit -k -t %s %s",
-            properties.getProperty("zeppelin.shell.keytab.location"),
-            properties.getProperty("zeppelin.shell.principal"));
-          cmdLine.addArgument(kinitCommand, false);
-          DefaultExecutor executor = new DefaultExecutor();
+      case "KERBEROS":
+        CommandLine cmdLine = CommandLine.parse(shell);
+        cmdLine.addArgument("-c", false);
+        String kinitCommand = String.format("kinit -k -t %s %s",
+          properties.getProperty("zeppelin.shell.keytab.location"),
+          properties.getProperty("zeppelin.shell.principal"));
+        cmdLine.addArgument(kinitCommand, false);
+        DefaultExecutor executor = new DefaultExecutor();
 
-          try {
-            int exitVal = executor.execute(cmdLine);
-          } catch (Exception e) {
-            LOGGER.error("Unable to run kinit for zeppelin user " + kinitCommand, e);
-            throw new InterpreterException(e);
-          }
+        try {
+          int exitVal = executor.execute(cmdLine);
+        } catch (Exception e) {
+          LOGGER.error("Unable to run kinit for zeppelin user " + kinitCommand, e);
+          throw new InterpreterException(e);
+        }
     }
   }
 }
