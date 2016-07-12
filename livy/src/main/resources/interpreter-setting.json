@@ -11,6 +11,12 @@
         "defaultValue": "http://localhost:8998",
         "description": "The URL for Livy Server."
       },
+      "zeppelin.livy.create.session.retries": {
+        "envName": "ZEPPELIN_LIVY_CREATE_SESSION_RETRIES",
+        "propertyName": "zeppelin.livy.create.session.retries",
+        "defaultValue": "120",
+        "description": "Livy Server create session retry count."
+      },
       "livy.spark.master": {
         "propertyName": "livy.spark.master",
         "defaultValue": "local[*]",

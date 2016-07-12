@@ -2,7 +2,7 @@
 layout: page
 title: "Cassandra Interpreter"
 description: "Cassandra Interpreter"
-group: manual
+group: interpreter
 ---
 {% include JB/setup %}
 

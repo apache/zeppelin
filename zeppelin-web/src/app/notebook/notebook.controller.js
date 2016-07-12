@@ -93,6 +93,10 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
             $('html, body').scrollTo({top: top, left: 0});
           }
 
+          // force notebook reload on user change
+          $scope.$on('setNoteMenu', function(event, note) {
+            initNotebook();
+          });
         },
         1000
       );

@@ -2,7 +2,7 @@
 layout: page
 title: "Spark Interpreter Group"
 description: ""
-group: manual
+group: interpreter
 ---
 {% include JB/setup %}
 

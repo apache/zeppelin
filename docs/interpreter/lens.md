@@ -2,7 +2,7 @@
 layout: page
 title: "Lens Interpreter"
 description: "Lens user guide"
-group: manual
+group: interpreter
 ---
 {% include JB/setup %}
 
