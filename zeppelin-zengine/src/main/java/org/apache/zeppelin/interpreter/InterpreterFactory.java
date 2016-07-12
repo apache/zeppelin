@@ -340,12 +340,11 @@ public class InterpreterFactory implements InterpreterGroupFactory {
         public void run() {
           try {
             loadInterpreterDependencies(intpSetting);
-          } catch (RepositoryException e) {
-            logger.error("Error while downloading repos for interpreter group :" +
-                intpSetting.getGroup(), e);
-          } catch (IOException e) {
-            logger.error("Error while downloading repos for interpreter group :" +
-                intpSetting.getGroup(), e);
+          } catch (Exception e) {
+            logger.error(String.format("Error while downloading repos for interpreter group : %s," +
+                " go to interpreter setting page click on edit and save it again to make this " +
+                "interpreter work properly." ,
+                intpSetting.getGroup()), e);
           }
         }
       };
