@@ -57,7 +57,6 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
 
   $scope.noteRevisions = websocketMsgSrv.listRevisionHistory($routeParams.noteId);
 
-
   $scope.$on('setConnectedStatus', function(event, param) {
     if (connectedOnce && param) {
       initNotebook();
