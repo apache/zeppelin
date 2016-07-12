@@ -245,6 +245,12 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
       config.graph.scatter = {};
     }
 
+    if (!config.graph.map) {
+      config.graph.map = {
+        pin: []
+      };
+    }
+
     if (config.enabled === undefined) {
       config.enabled = true;
     }
@@ -907,6 +913,8 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
 
       if (!type || type === 'table') {
         setTable($scope.paragraph.result, refresh);
+      } else if (type === 'map') {
+        setMap($scope.paragraph.result, refresh);
       } else {
         setD3Chart(type, $scope.paragraph.result, refresh);
       }
@@ -1131,6 +1139,9 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
     $timeout(retryRenderer);
   };
 
+  var setMap = function(data, refresh) {
+  };
+
   $scope.isGraphMode = function(graphName) {
     var activeAppId = _.get($scope.paragraph.config, 'helium.activeApp');
     if ($scope.getResultType() === 'TABLE' && $scope.getGraphMode() === graphName && !activeAppId) {
@@ -1193,6 +1204,24 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
     $scope.setGraphMode($scope.paragraph.config.graph.mode, true, false);
   };
 
+  $scope.removeMapOptionLat = function(idx) {
+    $scope.paragraph.config.graph.map.lat = null;
+    clearUnknownColsFromGraphOption();
+    $scope.setGraphMode($scope.paragraph.config.graph.mode, true, false);
+  };
+
+  $scope.removeMapOptionLng = function(idx) {
+    $scope.paragraph.config.graph.map.lng = null;
+    clearUnknownColsFromGraphOption();
+    $scope.setGraphMode($scope.paragraph.config.graph.mode, true, false);
+  };
+
+  $scope.removeMapOptionPinInfo = function(idx) {
+    $scope.paragraph.config.graph.map.pin.splice(idx, 1);
+    clearUnknownColsFromGraphOption();
+    $scope.setGraphMode($scope.paragraph.config.graph.mode, true, false);
+  };
+
   /* Clear unknown columns from graph option */
   var clearUnknownColsFromGraphOption = function() {
     var unique = function(list) {
@@ -1223,7 +1252,7 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
       }
     };
 
-    var removeUnknownFromScatterSetting = function(fields) {
+    var removeUnknownFromFields = function(fields) {
       for (var f in fields) {
         if (fields[f]) {
           var found = false;
@@ -1235,7 +1264,7 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
               break;
             }
           }
-          if (!found) {
+          if (!found && !(fields[f] instanceof Array)) {
             fields[f] = null;
           }
         }
@@ -1250,7 +1279,10 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
     unique($scope.paragraph.config.graph.groups);
     removeUnknown($scope.paragraph.config.graph.groups);
 
-    removeUnknownFromScatterSetting($scope.paragraph.config.graph.scatter);
+    removeUnknownFromFields($scope.paragraph.config.graph.scatter);
+
+    removeUnknownFromFields($scope.paragraph.config.graph.map);
+    removeUnknown($scope.paragraph.config.graph.map.pin);
   };
 
   /* select default key and value if there're none selected */
@@ -1270,6 +1302,12 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
       } else if ($scope.paragraph.result.columnNames.length === 1) {
         $scope.paragraph.config.graph.scatter.xAxis = $scope.paragraph.result.columnNames[0];
       }
+    }
+
+    if (!$scope.paragraph.config.graph.map.lat && !$scope.paragraph.config.graph.map.lng &&
+            $scope.paragraph.result.columnNames.length > 1) {
+      $scope.paragraph.config.graph.map.lat = $scope.paragraph.result.columnNames[0];
+      $scope.paragraph.config.graph.map.lng = $scope.paragraph.result.columnNames[1];
     }
   };
 
