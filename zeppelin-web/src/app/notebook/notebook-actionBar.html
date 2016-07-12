@@ -109,7 +109,7 @@ limitations under the License.
           <span class="caret"></span>
         </button>
         <ul class="dropdown-menu pull-right" aria-labelledby="revisionsDropdown">
-          <li ng-repeat="revision in noteRevisions | orderBy:'time'" class="revision">
+          <li ng-repeat="revision in noteRevisions | orderBy:'time':true" class="revision">
             <a style="cursor:pointer"><strong>{{moment.unix(revision.time).format("YY/MM/DD")}}</strong> - {{revision.message}}</a>
           </li>
         </ul>
