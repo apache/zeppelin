@@ -225,7 +225,6 @@ public class Paragraph extends Job implements Serializable, Cloneable {
 
   public List<InterpreterCompletion> completion(String buffer, int cursor) {
     String lines[] = buffer.split(System.getProperty("line.separator"));
-
     if (lines.length > 0
       && lines[0].startsWith("%")
       && cursor <= lines[0].trim().length()) {
