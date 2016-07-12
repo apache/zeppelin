@@ -30,6 +30,21 @@ At the "Interpreters" menu in Zeppelin dropdown menu, you can set the property v
     <td>60000</td>
     <td>Shell command time out in millisecs</td>
   </tr>
+  <tr>
+    <td>zeppelin.shell.auth.type</td>
+    <td></td>
+    <td>Types of authentications' methods supported are SIMPLE, and KERBEROS</td>
+  </tr>
+  <tr>
+    <td>zeppelin.shell.principal</td>
+    <td></td>
+    <td>The principal name to load from the keytab</td>
+  </tr>
+  <tr>
+    <td>zeppelin.shell.keytab.location</td>
+    <td></td>
+    <td>The path to the keytab file</td>
+  </tr>
 </table>
 
 ## Example

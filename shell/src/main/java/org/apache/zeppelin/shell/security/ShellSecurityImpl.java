@@ -39,21 +39,21 @@ public class ShellSecurityImpl {
       .trim().toUpperCase();
 
     switch (authType) {
-      case "KERBEROS":
-        CommandLine cmdLine = CommandLine.parse(shell);
-        cmdLine.addArgument("-c", false);
-        String kinitCommand = String.format("kinit -k -t %s %s",
-          properties.getProperty("zeppelin.shell.keytab.location"),
-          properties.getProperty("zeppelin.shell.principal"));
-        cmdLine.addArgument(kinitCommand, false);
-        DefaultExecutor executor = new DefaultExecutor();
+        case "KERBEROS":
+          CommandLine cmdLine = CommandLine.parse(shell);
+          cmdLine.addArgument("-c", false);
+          String kinitCommand = String.format("kinit -k -t %s %s",
+            properties.getProperty("zeppelin.shell.keytab.location"),
+            properties.getProperty("zeppelin.shell.principal"));
+          cmdLine.addArgument(kinitCommand, false);
+          DefaultExecutor executor = new DefaultExecutor();
 
-        try {
-          int exitVal = executor.execute(cmdLine);
-        } catch (Exception e) {
-          LOGGER.error("Unable to run kinit for zeppelin user " + kinitCommand, e);
-          throw new InterpreterException(e);
-        }
+          try {
+            int exitVal = executor.execute(cmdLine);
+          } catch (Exception e) {
+            LOGGER.error("Unable to run kinit for zeppelin user " + kinitCommand, e);
+            throw new InterpreterException(e);
+          }
     }
   }
 }
