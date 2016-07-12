@@ -263,25 +263,35 @@ public class JDBCInterpreter extends Interpreter {
 
   @Override
   public void close() {
-
     try {
       for (List<Connection> connectionList : propertyKeyUnusedConnectionListMap.values()) {
         for (Connection c : connectionList) {
-          c.close();
+          try {
+            c.close();
+          } catch (Exception e) {
+            logger.error("Error while closing propertyKeyUnusedConnectionListMap connection...", e);
+          }
         }
       }
 
       for (Statement statement : paragraphIdStatementMap.values()) {
-        statement.close();
+        try {
+          statement.close();
+        } catch (Exception e) {
+          logger.error("Error while closing paragraphIdStatementMap statement...", e);
+        }
       }
       paragraphIdStatementMap.clear();
 
       for (Connection connection : paragraphIdConnectionMap.values()) {
-        connection.close();
+        try {
+          connection.close();
+        } catch (Exception e) {
+          logger.error("Error while closing paragraphIdConnectionMap connection...", e);
+        }
       }
       paragraphIdConnectionMap.clear();
-
-    } catch (SQLException e) {
+    } catch (Exception e) {
       logger.error("Error while closing...", e);
     }
   }
