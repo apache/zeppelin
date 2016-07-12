@@ -11,10 +11,21 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-  <div ng-controller="workflowWidgetCtrl">
-    <div ng-repeat="workflowItem in workflowJobLists track by $index">
-      <button class="btn btn-default">{{workflowItem.notebookId}} - {{workflowItem.paragraphId}}</button>
+<div>
+  <div>
+    <div>
+      <div ng-repeat="workflowItem in workflowJobLists track by $index">
+        <div class="btn-group" role="group" aria-label="...">
+          <button type="button" class="btn btn-default">
+            {{workflowItem.notebookId}} - {{workflowItem.paragraphId}}
+          </button>
+          <button type="button" class="btn btn-default" ng-click="removeJob($index)">
+            <i class="fa fa-times" aria-hidden="true"></i>
+          </button>
+        </div>
+      </div>
+      <br />
+      r-- {{workflowJobResultData | json}}
     </div>
-    <br />
-    r-- {{workflowJobResultData}}
   </div>
+</div>

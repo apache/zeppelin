@@ -97,7 +97,7 @@ angular.module('zeppelinWebApp').service('websocketMsgSrv', function($rootScope,
       websocketEvents.sendNewEvent({op: 'CANCEL_PARAGRAPH', data: {id: paragraphId}});
     },
 
-    runParagraph: function(paragraphId, paragraphTitle, paragraphData, paragraphConfig, paragraphParams) {
+    runParagraph: function(paragraphId, paragraphTitle, paragraphData, paragraphConfig, paragraphParams, workflowJob) {
       // clover test
       // var relationJob = [
       //   {
@@ -113,7 +113,6 @@ angular.module('zeppelinWebApp').service('websocketMsgSrv', function($rootScope,
       //       paragraphId : '20160705-134338_1509613230',
       //   }
       // ];
-
       websocketEvents.sendNewEvent({
         op: 'RUN_PARAGRAPH',
         data: {
@@ -121,7 +120,19 @@ angular.module('zeppelinWebApp').service('websocketMsgSrv', function($rootScope,
           title: paragraphTitle,
           paragraph: paragraphData,
           config: paragraphConfig,
-          params: paragraphParams
+          params: paragraphParams,
+          workflowJob: workflowJob ? workflowJob : null
+        }
+      });
+      console.log('data ', {
+        op: 'RUN_PARAGRAPH',
+        data: {
+          id: paragraphId,
+          title: paragraphTitle,
+          paragraph: paragraphData,
+          config: paragraphConfig,
+          params: paragraphParams,
+          workflowJob: workflowJob ? workflowJob : null
         }
       });
     },

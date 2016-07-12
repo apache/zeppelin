@@ -51,10 +51,10 @@ limitations under the License.
       <div>
         <workflow-widget
           workflow-job-input-data="paragraph.settings.forms.workflow.options"
-          workflow-job-result-data="paragraph.settings.forms.workflow.options">
+          workflow-job-result-data="paragraph.settings.workflowJob">
         </workflow-widget>
-        <div>{{paragraph.settings | json}}</div>
       </div>
     </div>
+    -{{paragraph.settings.workflowJob | json}}-
   </div>
 </form>

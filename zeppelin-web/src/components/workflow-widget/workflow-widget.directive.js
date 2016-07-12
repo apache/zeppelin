@@ -15,33 +15,39 @@
 
 angular.module('zeppelinWebApp').controller('workflowWidgetCtrl', function($scope, notebookListDataFactory,
                                                                            $rootScope, $routeParams, websocketMsgSrv) {
-  console.log('data ', $scope.workflowJobInputData);
+  console.log('data ', $scope.workflowJobResultData);
 
   $scope.workflowJobLists = [];
+  $scope.workflowJobResultData = [];
 
-  $scope.$watch('workflowJobInputData', function () {
+  $scope.$watchCollection('workflowJobInputData', function() {
     $scope.workflowJobLists = [];
-    $scope.workflowJobInputData.map(function (item) {
+    $scope.workflowJobResultData = [];
+    $scope.workflowJobInputData.map(function(item) {
       var workflowJob = item.value.split(':');
-      if (workflowJob[0] == undefined || workflowJob[1] == undefined) {
+      if (workflowJob[0] === undefined || workflowJob[1] === undefined) {
         return;
       }
-      $scope.workflowJobLists.push({notebookId :workflowJob[0], paragraphId:workflowJob[1]});
+      $scope.workflowJobLists.push({notebookId: workflowJob[0], paragraphId: workflowJob[1]});
+      $scope.workflowJobResultData.push({notebookId: workflowJob[0], paragraphId: workflowJob[1]});
     });
-  })
+  });
 
+  $scope.removeJob = function(jobIndex) {
+    $scope.workflowJobInputData.splice(jobIndex, 1);
+  };
 
-  })
+})
   .directive('workflowWidget', function() {
   return {
     restrict: 'E',
     scope: {
-      'workflowJobInputData': '=workflowJobInputData',
-      'workflowJobResultData': '=workflowJobResultData'
+      'workflowJobInputData': '=',
+      'workflowJobResultData': '='
     },
+    controller: 'workflowWidgetCtrl',
     templateUrl: 'components/workflow-widget/workflow-widget.html',
     link: function(scope, elem, attrs) {
-
     }
   };
 });
