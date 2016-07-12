@@ -92,7 +92,7 @@ public class ElasticsearchInterpreter extends Interpreter {
     + "  - index /ndex/type/id <json-formatted document>\n"
     + "    . the id can be omitted, elasticsearch will generate one";
 
-  private static final List<String> COMMANDS = Arrays.asList(
+  protected static final List<String> COMMANDS = Arrays.asList(
     "count", "delete", "get", "help", "index", "search");
 
   private static final Pattern FIELD_NAME_PATTERN = Pattern.compile("\\[\\\\\"(.+)\\\\\"\\](.*)");
@@ -248,17 +248,11 @@ public class ElasticsearchInterpreter extends Interpreter {
   public List<InterpreterCompletion> completion(String s, int i) {
     final List suggestions = new ArrayList<>();
 
-    if (StringUtils.isEmpty(s)) {
-      suggestions.addAll(COMMANDS);
-    }
-    else {
-      for (String cmd : COMMANDS) {
-        if (cmd.toLowerCase().contains(s)) {
-          suggestions.add(cmd);
-        }
+    for (String cmd : COMMANDS) {
+      if (cmd.toLowerCase().contains(s)) {
+        suggestions.add(new InterpreterCompletion(cmd, cmd));
       }
     }
-
     return suggestions;
   }
 

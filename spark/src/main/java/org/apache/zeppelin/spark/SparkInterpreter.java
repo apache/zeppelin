@@ -50,6 +50,8 @@ import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.InterpreterUtils;
 import org.apache.zeppelin.interpreter.WrappedInterpreter;
+import org.apache.zeppelin.resource.ResourcePool;
+import org.apache.zeppelin.resource.WellKnownResourceName;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
@@ -533,7 +535,9 @@ public class SparkInterpreter extends Interpreter {
       binder.put("sc", sc);
       binder.put("sqlc", sqlc);
       binder.put("z", z);
-
+      binder.put("intp", intp);
+      intp.interpret("@transient val intp = _binder.get(\"intp\").asInstanceOf[org.apache.spark" +
+          ".repl.SparkIMain]");
       intp.interpret("@transient val z = "
               + "_binder.get(\"z\").asInstanceOf[org.apache.zeppelin.spark.ZeppelinContext]");
       intp.interpret("@transient val sc = "
@@ -759,13 +763,10 @@ public class SparkInterpreter extends Interpreter {
   public InterpreterResult interpretInput(String[] lines, InterpreterContext context) {
     SparkEnv.set(env);
 
-    // add print("") to make sure not finishing with comment
-    // see https://github.com/NFLabs/zeppelin/issues/151
-    String[] linesToRun = new String[lines.length + 1];
+    String[] linesToRun = new String[lines.length];
     for (int i = 0; i < lines.length; i++) {
       linesToRun[i] = lines[i];
     }
-    linesToRun[lines.length] = "print(\"\")";
 
     Console.setOut(context.out);
     out.setInterpreterOutput(context.out);
@@ -828,16 +829,38 @@ public class SparkInterpreter extends Interpreter {
       }
     }
 
+    // make sure code does not finish with comment
+    if (r == Code.INCOMPLETE) {
+      scala.tools.nsc.interpreter.Results.Result res;
+      res = intp.interpret(incomplete + "\nprint(\"\")");
+      r = getResultCode(res);
+    }
+
     if (r == Code.INCOMPLETE) {
       sc.clearJobGroup();
       out.setInterpreterOutput(null);
       return new InterpreterResult(r, "Incomplete expression");
     } else {
       sc.clearJobGroup();
+      putLatestVarInResourcePool(context);
       out.setInterpreterOutput(null);
       return new InterpreterResult(Code.SUCCESS);
     }
   }
+
+  private void putLatestVarInResourcePool(InterpreterContext context) {
+    String varName = intp.mostRecentVar();
+    if (varName == null || varName.isEmpty()) {
+      return;
+    }
+
+    Object lastObj = getValue(varName);
+    if (lastObj != null) {
+      ResourcePool resourcePool = context.getResourcePool();
+      resourcePool.put(context.getNoteId(), context.getParagraphId(),
+          WellKnownResourceName.ZeppelinReplResult.toString(), lastObj);
+    }
+  };
 
 
   @Override

@@ -13,7 +13,8 @@ limitations under the License.
 -->
 <div
   id="p{{paragraph.id}}_resize"
-  style='padding-bottom: 5px;'
+  ng-if="!paragraph.config.helium.activeApp"
+  style="padding-bottom: 5px;"
   resize='{"allowresize": "{{!asIframe && !viewOnly}}", "graphType": "{{getResultType()}}"}'
      resizable on-resize="resizeParagraph(width, height);">
   <div ng-include src="'app/notebook/paragraph/paragraph-graph.html'"></div>
@@ -51,12 +52,17 @@ limitations under the License.
 
   <img id="{{paragraph.id}}_img"
        ng-if="getResultType() == 'IMG'"
-       ng-src="{{getBase64ImageSrc(paragraph.result.msg)}}">
-  </img>
+       ng-src="{{getBase64ImageSrc(paragraph.result.msg)}}" />
 
   <div id="{{paragraph.id}}_error"
        class="error text"
        ng-if="paragraph.status == 'ERROR'"
        ng-bind="paragraph.errorMessage">
+  </div>
+</div>
+
+<div ng-repeat="app in apps">
+  <div id="p{{app.id}}"
+       ng-show="paragraph.config.helium.activeApp == app.id">
   </div>
 </div>

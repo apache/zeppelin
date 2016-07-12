@@ -35,6 +35,7 @@ import java.sql.SQLException;
 import java.util.Properties;
 
 import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -254,7 +255,8 @@ public class PostgreSqlInterpreterTest extends BasicJDBCTestCaseAdapter {
   public void testAutoCompletion() throws SQLException {
     psqlInterpreter.open();
     assertEquals(1, psqlInterpreter.completion("SEL", 0).size());
-    assertEquals("SELECT ", psqlInterpreter.completion("SEL", 0).iterator().next());
+    InterpreterCompletion selectCompletion = new InterpreterCompletion("SELECT ", "SELECT ");
+    assertEquals(selectCompletion, psqlInterpreter.completion("SEL", 0).iterator().next());
     assertEquals(0, psqlInterpreter.completion("SEL", 100).size());
   }
 }

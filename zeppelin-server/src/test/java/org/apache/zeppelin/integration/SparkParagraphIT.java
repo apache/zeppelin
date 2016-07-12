@@ -165,7 +165,7 @@ public class SparkParagraphIT extends AbstractZeppelinIT {
       }
 
       WebElement paragraph1Result = driver.findElement(By.xpath(
-          getParagraphXPath(1) + "//div[@class=\"tableDisplay\"]//table"));
+          getParagraphXPath(1) + "//div[@class=\"tableDisplay\"]/div/div/div/div/div/div[1]"));
       collector.checkThat("Paragraph from SparkParagraphIT of testSqlSpark result: ",
           paragraph1Result.getText().toString(), CoreMatchers.equalTo("age\njob\nmarital\neducation\nbalance\n" +
           "30 unemployed married primary 1,787"));

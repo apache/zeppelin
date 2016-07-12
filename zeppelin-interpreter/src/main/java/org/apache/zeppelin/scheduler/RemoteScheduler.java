@@ -20,6 +20,7 @@ package org.apache.zeppelin.scheduler;
 import org.apache.thrift.TException;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
+import org.apache.zeppelin.interpreter.remote.RemoteInterpreterManagedProcess;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService.Client;
 import org.apache.zeppelin.scheduler.Job.Status;
@@ -49,8 +50,8 @@ public class RemoteScheduler implements Scheduler {
   private RemoteInterpreterProcess interpreterProcess;
 
   public RemoteScheduler(String name, ExecutorService executor, String noteId,
-      RemoteInterpreterProcess interpreterProcess, SchedulerListener listener,
-      int maxConcurrency) {
+                         RemoteInterpreterProcess interpreterProcess, SchedulerListener listener,
+                         int maxConcurrency) {
     this.name = name;
     this.executor = executor;
     this.listener = listener;

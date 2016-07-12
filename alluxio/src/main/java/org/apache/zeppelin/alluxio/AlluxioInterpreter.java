@@ -181,10 +181,11 @@ public class AlluxioInterpreter extends Interpreter {
     if (words.length > 0) {
       lastWord = words[ words.length - 1 ];
     }
-    ArrayList voices = new ArrayList<>();
+    
+    List<InterpreterCompletion>  voices = new LinkedList<>();
     for (String command : keywords) {
       if (command.startsWith(lastWord)) {
-        voices.add(command);
+        voices.add(new InterpreterCompletion(command, command));
       }
     }
     return voices;

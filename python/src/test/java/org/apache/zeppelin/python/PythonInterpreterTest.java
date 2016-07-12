@@ -17,7 +17,9 @@
 
 package org.apache.zeppelin.python;
 
-import static org.apache.zeppelin.python.PythonInterpreter.*;
+import static org.apache.zeppelin.python.PythonInterpreter.DEFAULT_ZEPPELIN_PYTHON;
+import static org.apache.zeppelin.python.PythonInterpreter.MAX_RESULT;
+import static org.apache.zeppelin.python.PythonInterpreter.ZEPPELIN_PYTHON;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -36,6 +38,7 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketAddress;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.junit.Before;
@@ -45,8 +48,12 @@ import org.mockito.stubbing.Answer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+
 /**
  * Python interpreter unit test
+ *
+ * Important: ALL tests here DO NOT REQUIRE Python to be installed
+ * If Python dependency is required, please look at PythonInterpreterWithPythonInstalledTest
  */
 public class PythonInterpreterTest {
   private static final Logger LOG = LoggerFactory.getLogger(PythonProcess.class);
@@ -91,7 +98,8 @@ public class PythonInterpreterTest {
    * If Py4J is not installed, bootstrap_input.py
    * is not sent to Python process and py4j JavaGateway is not running
    */
-  @Test public void testPy4jIsNotInstalled() {
+  @Test
+  public void testPy4jIsNotInstalled() {
     pythonInterpreter.open();
     assertNull(pythonInterpreter.getPy4jPort());
     assertTrue(cmdHistory.contains("def help()"));
@@ -103,12 +111,10 @@ public class PythonInterpreterTest {
 
   /**
    * If Py4J installed, bootstrap_input.py
-   * is sent to interpreter and JavaGateway is
-   * running
-   *
-   * @throws IOException
+   * is sent to interpreter and JavaGateway is running
    */
-  @Test public void testPy4jInstalled() throws IOException {
+  @Test
+  public void testPy4jInstalled() throws IOException, InterruptedException {
     when(mockPythonProcess.sendAndGetResult(eq("\n\nimport py4j\n"))).thenReturn(">>>");
 
     pythonInterpreter.open();
@@ -123,6 +129,9 @@ public class PythonInterpreterTest {
     assertTrue(cmdHistory.contains("org.apache.zeppelin.display.Input"));
 
     assertTrue(serverIsListeningOn(py4jPort));
+    pythonInterpreter.close();
+    TimeUnit.MILLISECONDS.sleep(100);
+    assertFalse(serverIsListeningOn(py4jPort));
   }
 
   @Test
@@ -136,6 +145,7 @@ public class PythonInterpreterTest {
 
     //when
     pythonInterpreter.close();
+    TimeUnit.MILLISECONDS.sleep(100);
 
     //then
     assertFalse(serverIsListeningOn(py4jPort));
@@ -156,13 +166,16 @@ public class PythonInterpreterTest {
    * @param port
    */
   private boolean serverIsListeningOn(Integer port) {
-    boolean serverIsListening = false;
     Socket s = new Socket();
+    boolean serverIsListening = false;
 
-    boolean connected = tryToConnect(s, port);
-    if (connected) {
-      serverIsListening = true;
+    int retryCount = 0;
+    boolean connected = false;
+    while (connected = tryToConnect(s, port) && retryCount < 10) {
+      serverIsListening = connected;
       tryToClose(s);
+      retryCount++;
+      s = new Socket();
     }
     return serverIsListening;
   }

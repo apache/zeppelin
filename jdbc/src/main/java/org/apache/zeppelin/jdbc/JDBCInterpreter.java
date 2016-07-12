@@ -111,10 +111,10 @@ public class JDBCInterpreter extends Interpreter {
 
   private final Map<String, SqlCompleter> propertyKeySqlCompleterMap;
 
-  private static final Function<CharSequence, String> sequenceToStringTransformer =
-      new Function<CharSequence, String>() {
-        public String apply(CharSequence seq) {
-          return seq.toString();
+  private static final Function<CharSequence, InterpreterCompletion> sequenceToStringTransformer =
+      new Function<CharSequence, InterpreterCompletion>() {
+        public InterpreterCompletion apply(CharSequence seq) {
+          return new InterpreterCompletion(seq.toString(), seq.toString());
         }
       };
 
@@ -364,7 +364,9 @@ public class JDBCInterpreter extends Interpreter {
 
     } catch (Exception e) {
       logger.error("Cannot run " + sql, e);
-      StringBuilder stringBuilder = new StringBuilder(e.getClass().toString()).append("\n");
+      StringBuilder stringBuilder = new StringBuilder();
+      stringBuilder.append(e.getMessage()).append("\n");
+      stringBuilder.append(e.getClass().toString()).append("\n");
       stringBuilder.append(StringUtils.join(e.getStackTrace(), "\n"));
       return new InterpreterResult(Code.ERROR, stringBuilder.toString());
     }
@@ -448,7 +450,9 @@ public class JDBCInterpreter extends Interpreter {
     List<CharSequence> candidates = new ArrayList<>();
     SqlCompleter sqlCompleter = propertyKeySqlCompleterMap.get(getPropertyKey(buf));
     if (sqlCompleter != null && sqlCompleter.complete(buf, cursor, candidates) >= 0) {
-      List completion = Lists.transform(candidates, sequenceToStringTransformer);
+      List<InterpreterCompletion> completion;
+      completion = Lists.transform(candidates, sequenceToStringTransformer);
+
       return completion;
     } else {
       return NO_COMPLETION;

@@ -17,10 +17,23 @@
 
 package org.apache.zeppelin.server;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.ExecutorService;
+
+import javax.net.ssl.SSLContext;
+import javax.servlet.DispatcherType;
+import javax.ws.rs.core.Application;
+
 import org.apache.cxf.jaxrs.servlet.CXFNonSpringJaxrsServlet;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.dep.DependencyResolver;
+import org.apache.zeppelin.helium.Helium;
+import org.apache.zeppelin.helium.HeliumApplicationFactory;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.NotebookAuthorization;
@@ -46,14 +59,6 @@ import org.eclipse.jetty.webapp.WebAppContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.servlet.DispatcherType;
-import javax.ws.rs.core.Application;
-import java.io.File;
-import java.io.IOException;
-import java.util.EnumSet;
-import java.util.HashSet;
-import java.util.Set;
-
 /**
  * Main class of Zeppelin.
  */
@@ -63,6 +68,8 @@ public class ZeppelinServer extends Application {
   public static Notebook notebook;
   public static Server jettyWebServer;
   public static NotebookServer notebookWsServer;
+  public static Helium helium;
+  public static HeliumApplicationFactory heliumApplicationFactory;
 
   private SchedulerFactory schedulerFactory;
   private InterpreterFactory replFactory;
@@ -77,9 +84,12 @@ public class ZeppelinServer extends Application {
 
     this.depResolver = new DependencyResolver(
         conf.getString(ConfVars.ZEPPELIN_INTERPRETER_LOCALREPO));
+
+    this.helium = new Helium(conf.getHeliumConfPath(), conf.getHeliumDefaultLocalRegistryPath());
+    this.heliumApplicationFactory = new HeliumApplicationFactory();
     this.schedulerFactory = new SchedulerFactory();
     this.replFactory = new InterpreterFactory(conf, notebookWsServer,
-            notebookWsServer, depResolver);
+        notebookWsServer, heliumApplicationFactory, depResolver);
     this.notebookRepo = new NotebookRepoSync(conf);
     this.notebookIndex = new LuceneSearch();
     this.notebookAuthorization = new NotebookAuthorization(conf);
@@ -87,6 +97,13 @@ public class ZeppelinServer extends Application {
     notebook = new Notebook(conf,
         notebookRepo, schedulerFactory, replFactory, notebookWsServer,
             notebookIndex, notebookAuthorization, credentials);
+
+    // to update notebook from application event from remote process.
+    heliumApplicationFactory.setNotebook(notebook);
+    // to update fire websocket event on application event.
+    heliumApplicationFactory.setApplicationEventListener(notebookWsServer);
+
+    notebook.addNotebookEventListener(heliumApplicationFactory);
   }
 
   public static void main(String[] args) throws InterruptedException {
@@ -293,6 +310,9 @@ public class ZeppelinServer extends Application {
 
     NotebookRestApi notebookApi = new NotebookRestApi(notebook, notebookWsServer, notebookIndex);
     singletons.add(notebookApi);
+
+    HeliumRestApi heliumApi = new HeliumRestApi(helium, heliumApplicationFactory, notebook);
+    singletons.add(heliumApi);
 
     InterpreterRestApi interpreterApi = new InterpreterRestApi(replFactory);
     singletons.add(interpreterApi);

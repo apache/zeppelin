@@ -38,7 +38,8 @@ public enum RemoteInterpreterEventType implements org.apache.thrift.TEnum {
   RESOURCE_GET(7),
   OUTPUT_APPEND(8),
   OUTPUT_UPDATE(9),
-  ANGULAR_REGISTRY_PUSH(10);
+  ANGULAR_REGISTRY_PUSH(10),
+  APP_STATUS_UPDATE(11);
 
   private final int value;
 
@@ -79,6 +80,8 @@ public enum RemoteInterpreterEventType implements org.apache.thrift.TEnum {
         return OUTPUT_UPDATE;
       case 10:
         return ANGULAR_REGISTRY_PUSH;
+      case 11:
+        return APP_STATUS_UPDATE;
       default:
         return null;
     }

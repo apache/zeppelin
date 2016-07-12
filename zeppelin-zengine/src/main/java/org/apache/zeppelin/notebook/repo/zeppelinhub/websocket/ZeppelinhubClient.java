@@ -60,9 +60,7 @@ public class ZeppelinhubClient {
   private final URI zeppelinhubWebsocketUrl;
   private final ClientUpgradeRequest conectionRequest;
   private final String zeppelinhubToken;
-  
-  private static final int MB = 1048576;
-  private static final int MAXIMUN_TEXT_SIZE = 64 * MB;
+
   private static final long CONNECTION_IDLE_TIME = TimeUnit.SECONDS.toMillis(30);
   private static ZeppelinhubClient instance = null;
   private static Gson gson;
@@ -155,7 +153,8 @@ public class ZeppelinhubClient {
   private WebSocketClient createNewWebsocketClient() {
     SslContextFactory sslContextFactory = new SslContextFactory();
     WebSocketClient client = new WebSocketClient(sslContextFactory);
-    client.setMaxTextMessageBufferSize(MAXIMUN_TEXT_SIZE);
+    client.setMaxTextMessageBufferSize(Client.getMaxNoteSize());
+    client.getPolicy().setMaxTextMessageSize(Client.getMaxNoteSize());
     client.setMaxIdleTimeout(CONNECTION_IDLE_TIME);
     return client;
   }
