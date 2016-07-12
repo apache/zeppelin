@@ -63,6 +63,7 @@ public class ShellSecurityImpl {
           try {
             int exitVal = executor.execute(cmdLine);
           } catch (Exception e) {
+            LOGGER.error("Unable to run kinit for zeppelin user " + kinitCommand, e);
             throw new InterpreterException(e);
           }
     }
