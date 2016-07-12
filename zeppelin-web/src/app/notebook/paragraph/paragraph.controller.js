@@ -16,7 +16,7 @@
 angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $rootScope, $route, $window,
                                                                       $routeParams, $location, $timeout, $compile,
                                                                       $http, websocketMsgSrv, baseUrlSrv, ngToast,
-                                                                      saveAsService) {
+                                                                      saveAsService, esriLoader) {
   var ANGULAR_FUNCTION_OBJECT_NAME_PREFIX = '_Z_ANGULAR_FUNC_';
   $scope.parentNote = null;
   $scope.paragraph = null;
@@ -1140,6 +1140,53 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
   };
 
   var setMap = function(data, refresh) {
+    var createMap = function(MapView, Map) {
+      var mapdiv = angular.element('#p' + $scope.paragraph.id + '_map div')
+      .css('height', $scope.paragraph.config.graph.height).get(0);
+
+      esriLoader.require(['esri/views/MapView', 'esri/Map'], function(MapView, Map) {
+        $scope.map = new MapView({
+          container: mapdiv,
+          map: new Map({
+            basemap: 'streets'
+          }),
+          center: [-75.69719, 45.42153],  // Apption (lng, lat)
+          zoom: 16
+        });
+      });
+    };
+
+    var renderMap = function() {
+      // on chart type change, destroy map to force reinitialization.
+      if ($scope.map && !refresh) {
+        $scope.map.map.destroy();
+        $scope.map = null;
+      }
+
+      // create map if not exists.
+      if (!$scope.map) {
+        if (!esriLoader.isLoaded()) {
+          esriLoader.bootstrap({
+            url: '//js.arcgis.com/4.0'
+          }).then(createMap);
+        } else {
+          createMap();
+        }
+      }
+    };
+
+    var retryRenderer = function() {
+      if (angular.element('#p' + $scope.paragraph.id + '_map div').length) {
+        try {
+          renderMap();
+        } catch (err) {
+          console.log('Map drawing error %o', err);
+        }
+      } else {
+        $timeout(retryRenderer,10);
+      }
+    };
+    $timeout(retryRenderer);
   };
 
   $scope.isGraphMode = function(graphName) {
