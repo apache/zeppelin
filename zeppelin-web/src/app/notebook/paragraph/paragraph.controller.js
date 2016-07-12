@@ -903,6 +903,7 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
 
       // remove binding
       $scope.editor.commands.bindKey('ctrl-alt-n.', null);
+      $scope.editor.commands.removeCommand('showSettingsMenu');
 
       // autocomplete on 'ctrl+.'
       $scope.editor.commands.bindKey('ctrl-.', 'startAutocomplete');
