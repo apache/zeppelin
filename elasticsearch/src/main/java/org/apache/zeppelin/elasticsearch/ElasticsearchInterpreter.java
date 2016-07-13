@@ -108,14 +108,20 @@ public class ElasticsearchInterpreter extends Interpreter {
   private String host = "localhost";
   private int port = 9300;
   private String clusterName = "elasticsearch";
-  private int resultSize = 10;
+  private int resultSize;
 
   public ElasticsearchInterpreter(Properties property) {
     super(property);
     this.host = getProperty(ELASTICSEARCH_HOST);
     this.port = Integer.parseInt(getProperty(ELASTICSEARCH_PORT));
     this.clusterName = getProperty(ELASTICSEARCH_CLUSTER_NAME);
-    this.resultSize = Integer.parseInt(getProperty(ELASTICSEARCH_RESULT_SIZE));
+    try {
+      this.resultSize = Integer.parseInt(getProperty(ELASTICSEARCH_RESULT_SIZE));
+    } catch (NumberFormatException e) {
+      this.resultSize = 10;
+      logger.error("Unable to parse " + ELASTICSEARCH_RESULT_SIZE + " : " +
+        property.get(ELASTICSEARCH_RESULT_SIZE), e);
+    }
   }
 
   @Override
