@@ -114,7 +114,7 @@ public class DepInterpreter extends Interpreter {
   @Override
   public void close() {
     if (intp != null) {
-      invokeMethod(intp, "close");
+      Utils.invokeMethod(intp, "close");
     }
   }
 
@@ -166,24 +166,24 @@ public class DepInterpreter extends Interpreter {
     interpreter.createInterpreter();
 
 
-    intp = invokeMethod(interpreter, "intp");
+    intp = Utils.invokeMethod(interpreter, "intp");
 
-    if (isScala2_10()) {
-      invokeMethod(intp, "setContextClassLoader");
-      invokeMethod(intp, "initializeSynchronous");
+    if (Utils.isScala2_10()) {
+      Utils.invokeMethod(intp, "setContextClassLoader");
+      Utils.invokeMethod(intp, "initializeSynchronous");
     }
 
     depc = new SparkDependencyContext(getProperty("zeppelin.dep.localrepo"),
                                  getProperty("zeppelin.dep.additionalRemoteRepository"));
-    if (isScala2_10()) {
-      completor = instantiateClass(
+    if (Utils.isScala2_10()) {
+      completor = Utils.instantiateClass(
           "org.apache.spark.repl.SparkJLineCompletion",
-          new Class[]{findClass("org.apache.spark.repl.SparkIMain")},
+          new Class[]{Utils.findClass("org.apache.spark.repl.SparkIMain")},
           new Object[]{intp});
     }
     interpret("@transient var _binder = new java.util.HashMap[String, Object]()");
     Map<String, Object> binder;
-    if (isScala2_10()) {
+    if (Utils.isScala2_10()) {
       binder = (Map<String, Object>) getValue("_binder");
     } else {
       binder = (Map<String, Object>) getLastObject();
@@ -197,7 +197,7 @@ public class DepInterpreter extends Interpreter {
   }
 
   private Results.Result interpret(String line) {
-    return (Results.Result) invokeMethod(
+    return (Results.Result) Utils.invokeMethod(
         intp,
         "interpret",
         new Class[] {String.class},
@@ -205,7 +205,8 @@ public class DepInterpreter extends Interpreter {
   }
 
   public Object getValue(String name) {
-    Object ret = invokeMethod(intp, "valueOfTerm", new Class[]{String.class}, new Object[]{name});
+    Object ret = Utils.invokeMethod(
+      intp, "valueOfTerm", new Class[]{String.class}, new Object[]{name});
     if (ret instanceof None) {
       return null;
     } else if (ret instanceof Some) {
@@ -216,7 +217,7 @@ public class DepInterpreter extends Interpreter {
   }
 
   public Object getLastObject() {
-    IMain.Request r = (IMain.Request) invokeMethod(intp, "lastRequest");
+    IMain.Request r = (IMain.Request) Utils.invokeMethod(intp, "lastRequest");
     Object obj = r.lineRep().call("$result",
         JavaConversions.asScalaBuffer(new LinkedList<Object>()));
     return obj;
@@ -284,8 +285,8 @@ public class DepInterpreter extends Interpreter {
 
   @Override
   public List<InterpreterCompletion> completion(String buf, int cursor) {
-    if (isScala2_10()) {
-      ScalaCompleter c = (ScalaCompleter) invokeMethod(completor, "completer");
+    if (Utils.isScala2_10()) {
+      ScalaCompleter c = (ScalaCompleter) Utils.invokeMethod(completor, "completer");
       Candidates ret = c.complete(buf, cursor);
 
       List<String> candidates = WrapAsJava$.MODULE$.seqAsJavaList(ret.candidates());
@@ -353,86 +354,6 @@ public class DepInterpreter extends Interpreter {
     if (sparkInterpreter != null) {
       return getSparkInterpreter().getScheduler();
     } else {
-      return null;
-    }
-  }
-
-  private Object invokeMethod(Object o, String name) {
-    return invokeMethod(o, name, new Class[]{}, new Object[]{});
-  }
-
-  private Object invokeMethod(Object o, String name, Class [] argTypes, Object [] params) {
-    try {
-      return o.getClass().getMethod(name, argTypes).invoke(o, params);
-    } catch (NoSuchMethodException e) {
-      logger.error(e.getMessage(), e);
-    } catch (InvocationTargetException e) {
-      logger.error(e.getMessage(), e);
-    } catch (IllegalAccessException e) {
-      logger.error(e.getMessage(), e);
-    }
-
-    return null;
-  }
-
-  private Object invokeStaticMethod(Class c, String name) {
-    return invokeStaticMethod(c, name, new Class[]{}, new Object[]{});
-  }
-
-  private Object invokeStaticMethod(Class c, String name, Class [] argTypes, Object [] params) {
-    try {
-      return c.getMethod(name, argTypes).invoke(null, params);
-    } catch (NoSuchMethodException e) {
-      logger.error(e.getMessage(), e);
-    } catch (InvocationTargetException e) {
-      logger.error(e.getMessage(), e);
-      e.printStackTrace();
-    } catch (IllegalAccessException e) {
-      logger.error(e.getMessage(), e);
-    }
-
-    return null;
-  }
-
-  private Object instantiateClass(String name, Class [] argTypes, Object [] params) {
-    try {
-      Constructor<?> constructor = getClass().getClassLoader()
-          .loadClass(name).getConstructor(argTypes);
-      return constructor.newInstance(params);
-    } catch (NoSuchMethodException e) {
-      logger.error(e.getMessage(), e);
-    } catch (ClassNotFoundException e) {
-      logger.error(e.getMessage(), e);
-    } catch (IllegalAccessException e) {
-      logger.error(e.getMessage(), e);
-    } catch (InstantiationException e) {
-      logger.error(e.getMessage(), e);
-    } catch (InvocationTargetException e) {
-      logger.error(e.getMessage(), e);
-    }
-    return null;
-  }
-
-  // function works after intp is initialized
-  private boolean isScala2_10() {
-    try {
-      this.getClass().forName("org.apache.spark.repl.SparkIMain");
-      return true;
-    } catch (ClassNotFoundException e) {
-      return false;
-    }
-  }
-
-  private boolean isScala2_11() {
-    return !isScala2_11();
-  }
-
-
-  private Class findClass(String name) {
-    try {
-      return this.getClass().forName(name);
-    } catch (ClassNotFoundException e) {
-      logger.error(e.getMessage(), e);
       return null;
     }
   }
