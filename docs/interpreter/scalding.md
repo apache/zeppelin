@@ -2,7 +2,7 @@
 layout: page
 title: "Scalding Interpreter"
 description: ""
-group: manual
+group: interpreter
 ---
 {% include JB/setup %}
 

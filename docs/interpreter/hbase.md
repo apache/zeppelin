@@ -2,7 +2,7 @@
 layout: page
 title: "HBase Shell Interpreter"
 description: ""
-group: manual
+group: interpreter
 ---
 {% include JB/setup %}
 

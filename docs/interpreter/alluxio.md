@@ -2,7 +2,7 @@
 layout: page
 title: "Alluxio Interpreter"
 description: "Alluxio Interpreter"
-group: manual
+group: interpreter
 ---
 {% include JB/setup %}
 
