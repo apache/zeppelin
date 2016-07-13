@@ -65,7 +65,8 @@ public class ZeppelinHubRealm extends AuthorizingRealm {
   public ZeppelinHubRealm() {
     super();
     LOG.debug("Init ZeppelinhubRealm");
-    //TODO(anthonyc): think about more setting for this HTTP client. eg: if user use proxy etcetc... 
+    //TODO(anthonyc): think about more setting for this HTTP client.
+    //                eg: if user uses proxy etcetc...
     httpClient = new HttpClient();
     gson = new Gson();
     name = getClass().getName() + "_" + INSTANCE_COUNT.getAndIncrement();
@@ -188,7 +189,7 @@ public class ZeppelinHubRealm extends AuthorizingRealm {
   }
 
   /**
-   * Helper class that will be used to deserialise ZeppelinHub response.
+   * Helper class that will be use to deserialize ZeppelinHub response.
    */
   protected class User {
     public String login;
