@@ -365,11 +365,12 @@ angular.module('zeppelinWebApp')
       var newType = $scope.getResultType(data.paragraph);
       var oldGraphMode = $scope.getGraphMode();
       var newGraphMode = $scope.getGraphMode(data.paragraph);
-      var resultRefreshed = (data.paragraph.dateFinished !== $scope.paragraph.dateFinished) ||
-        isEmpty(data.paragraph.result) !== isEmpty($scope.paragraph.result) ||
-        data.paragraph.status === 'ERROR';
 
       var statusChanged = (data.paragraph.status !== $scope.paragraph.status);
+
+      var resultRefreshed = (data.paragraph.dateFinished !== $scope.paragraph.dateFinished) ||
+        isEmpty(data.paragraph.result) !== isEmpty($scope.paragraph.result) ||
+        data.paragraph.status === 'ERROR' || (data.paragraph.status === 'FINISHED' && statusChanged);
 
       //console.log("updateParagraph oldData %o, newData %o. type %o -> %o, mode %o -> %o", $scope.paragraph, data, oldType, newType, oldGraphMode, newGraphMode);
 
@@ -1224,7 +1225,7 @@ angular.module('zeppelinWebApp')
       var columnNames = _.pluck(data.columnNames, 'name');
 
       // on chart type change, destroy table to force reinitialization.
-      if ($scope.hot && !refresh) {
+      if ($scope.hot) {
         $scope.hot.destroy();
         $scope.hot = null;
       }
