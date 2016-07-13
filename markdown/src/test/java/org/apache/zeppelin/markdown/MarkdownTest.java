@@ -43,7 +43,6 @@ public class MarkdownTest {
 		md.open();
 		InterpreterResult result = md.interpret("This is ~~deleted~~ text", null);
 		assertEquals("<p>This is <s>deleted</s> text</p>\n", result.message());
-		System.out.println(MarkdownTest.class.getName());
 	}
 
 }
