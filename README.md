@@ -296,10 +296,10 @@ For configuration details check __`./conf`__ subdirectory.
 
 ### Building for Scala 2.11
 
-To produce a Zeppelin package compiled with Scala 2.11, use the -Dscala-2.11 property:
+To produce a Zeppelin package compiled with Scala 2.11, use the -Pscala-2.11 profile:
 
 ```
-mvn clean package -Pspark-1.6 -Phadoop-2.4 -Pyarn -Ppyspark -Dscala-2.11 -DskipTests clean install
+mvn clean package -Pspark-1.6 -Phadoop-2.4 -Pyarn -Ppyspark -Pscala-2.11 -DskipTests clean install
 ```
 
 ### Package
