@@ -26,9 +26,9 @@ import java.util.Random;
  * Generate Tiny ID.
  */
 public class IdHashes {
-  public static final char[] DICTIONARY = new char[] {'1', '2', '3', '4', '5', '6', '7', '8', '9',
-    'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'J', 'K', 'M', 'N', 'P', 'Q', 'R', 'S', 'T', 'U',
-    'V', 'W', 'X', 'Y', 'Z'};
+  private static final char[] DICTIONARY =
+      new char[] {'1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F', 'G',
+          'H', 'J', 'K', 'M', 'N', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'};
 
   /**
    * encodes the given string into the base of the dictionary provided in the constructor.
@@ -36,7 +36,7 @@ public class IdHashes {
    * @param value the number to encode.
    * @return the encoded string.
    */
-  public static String encode(Long value) {
+  private static String encode(Long value) {
 
     List<Character> result = new ArrayList<Character>();
     BigInteger base = new BigInteger("" + DICTIONARY.length);

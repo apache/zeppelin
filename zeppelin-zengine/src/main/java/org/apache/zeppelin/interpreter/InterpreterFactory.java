@@ -468,12 +468,12 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     return defaultSettings;
   }
 
-  public List<RegisteredInterpreter> getRegisteredInterpreterList() {
+  List<RegisteredInterpreter> getRegisteredInterpreterList() {
     return new ArrayList<>(Interpreter.registeredInterpreters.values());
   }
 
 
-  public boolean findDefaultInterpreter(List<InterpreterInfo> infos) {
+  private boolean findDefaultInterpreter(List<InterpreterInfo> infos) {
     for (InterpreterInfo interpreterInfo : infos) {
       if (interpreterInfo.isDefaultInterpreter())
         return true;
@@ -1230,7 +1230,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
   }
 
 
-  public Interpreter getDevInterpreter() {
+  private Interpreter getDevInterpreter() {
     if (devInterpreter == null) {
       InterpreterOption option = new InterpreterOption();
       option.setRemote(true);

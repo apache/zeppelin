@@ -17,9 +17,6 @@
 
 package org.apache.zeppelin.interpreter;
 
-import com.google.gson.annotations.SerializedName;
-import org.apache.zeppelin.dep.Dependency;
-
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -27,6 +24,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+
+import com.google.gson.annotations.SerializedName;
+
+import org.apache.zeppelin.dep.Dependency;
 
 import static org.apache.zeppelin.notebook.utility.IdHashes.generateId;
 
@@ -40,17 +41,14 @@ public class InterpreterSetting {
   private String refName; // always be null in case of InterpreterSettingRef
   private Properties properties;
 
-  @SerializedName("interpreterGroup")
-  private List<InterpreterInfo> interpreterInfos;
-  private transient Map<String, InterpreterGroup> interpreterGroupRef = new HashMap<>();
+  @SerializedName("interpreterGroup") private List<InterpreterInfo> interpreterInfos;
+  private final transient Map<String, InterpreterGroup> interpreterGroupRef = new HashMap<>();
   private List<Dependency> dependencies;
   private InterpreterOption option;
   private transient String path;
 
-  @Deprecated
-  private String group;
-  @Deprecated
-  private transient InterpreterGroupFactory interpreterGroupFactory;
+  @Deprecated private String group;
+  @Deprecated private transient InterpreterGroupFactory interpreterGroupFactory;
 
   public InterpreterSetting() {
 
@@ -76,6 +74,7 @@ public class InterpreterSetting {
 
   /**
    * Create interpreter from interpreterSettingRef
+   *
    * @param o interpreterSetting from interpreterSettingRef
    */
   public InterpreterSetting(InterpreterSetting o) {
@@ -91,7 +90,7 @@ public class InterpreterSetting {
     return name;
   }
 
-  public String getRefName() {
+  String getRefName() {
     return refName;
   }
 
@@ -129,7 +128,7 @@ public class InterpreterSetting {
     }
   }
 
-  public void closeAndRemoveInterpreterGroup(String noteId) {
+  void closeAndRemoveInterpreterGroup(String noteId) {
     String key = getInterpreterProcessKey(noteId);
     InterpreterGroup groupToRemove;
     synchronized (interpreterGroupRef) {
@@ -142,7 +141,7 @@ public class InterpreterSetting {
     }
   }
 
-  public void closeAndRmoveAllInterpreterGroups() {
+  void closeAndRmoveAllInterpreterGroups() {
     synchronized (interpreterGroupRef) {
       HashSet<String> groupsToRemove = new HashSet<>(interpreterGroupRef.keySet());
       for (String key : groupsToRemove) {
@@ -190,11 +189,11 @@ public class InterpreterSetting {
     return interpreterInfos;
   }
 
-  public void setInterpreterGroupFactory(InterpreterGroupFactory interpreterGroupFactory) {
+  void setInterpreterGroupFactory(InterpreterGroupFactory interpreterGroupFactory) {
     this.interpreterGroupFactory = interpreterGroupFactory;
   }
 
-  public void appendDependencies(List<Dependency> dependencies) {
+  void appendDependencies(List<Dependency> dependencies) {
     for (Dependency dependency : dependencies) {
       if (!this.dependencies.contains(dependency)) {
         this.dependencies.add(dependency);
@@ -202,19 +201,19 @@ public class InterpreterSetting {
     }
   }
 
-  public void setInterpreterOption(InterpreterOption interpreterOption) {
+  void setInterpreterOption(InterpreterOption interpreterOption) {
     this.option = interpreterOption;
   }
 
-  public void updateProperties(Properties p) {
+  void updateProperties(Properties p) {
     this.properties.putAll(p);
   }
 
-  public void setRefName(String refName) {
+  void setRefName(String refName) {
     this.refName = refName;
   }
 
-  public void setName(String name) {
+  void setName(String name) {
     this.name = name;
   }
 }

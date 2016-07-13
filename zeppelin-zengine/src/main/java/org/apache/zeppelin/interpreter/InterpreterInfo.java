@@ -25,15 +25,10 @@ import com.google.gson.annotations.SerializedName;
  */
 public class InterpreterInfo {
   private String name;
-  @SerializedName("class")
-  private String className;
+  @SerializedName("class") private String className;
   private boolean defaultInterpreter = false;
 
-  public InterpreterInfo(String className, String name) {
-    this(className, name, false);
-  }
-
-  public InterpreterInfo(String className, String name, boolean defaultInterpreter) {
+  InterpreterInfo(String className, String name, boolean defaultInterpreter) {
     this.className = className;
     this.name = name;
     this.defaultInterpreter = defaultInterpreter;
@@ -51,16 +46,8 @@ public class InterpreterInfo {
     this.name = name;
   }
 
-  public void setClassName(String className) {
-    this.className = className;
-  }
-
-  public boolean isDefaultInterpreter() {
+  boolean isDefaultInterpreter() {
     return defaultInterpreter;
-  }
-
-  public void setDefaultInterpreter(boolean defaultInterpreter) {
-    this.defaultInterpreter = defaultInterpreter;
   }
 
   @Override
@@ -72,9 +59,9 @@ public class InterpreterInfo {
 
     boolean sameName =
         null == getName() ? null == other.getName() : getName().equals(other.getName());
-    boolean sameClassName =
-        null == getClassName() ? null == other.getClassName() :
-            getClassName().equals(other.getClassName());
+    boolean sameClassName = null == getClassName() ?
+        null == other.getClassName() :
+        getClassName().equals(other.getClassName());
     boolean sameIsDefaultInterpreter = defaultInterpreter == other.isDefaultInterpreter();
 
     return sameName && sameClassName && sameIsDefaultInterpreter;
