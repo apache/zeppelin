@@ -45,8 +45,6 @@ import com.google.gson.JsonParseException;
 
 /**
  * A {@code Realm} implementation that uses the ZeppelinHub to authenticate users.
- * 
- * @author anthonyc
  *
  */
 public class ZeppelinHubRealm extends AuthorizingRealm {
