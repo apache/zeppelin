@@ -186,7 +186,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
   };
 
   $scope.$on('listRevisionHistory', function(event, data) {
-    console.log("We got the revisions yeahh %o", data);
+    console.log('We got the revisions %o', data);
     $scope.noteRevisions = data.revisionList;
   });
 
