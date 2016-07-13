@@ -131,7 +131,7 @@ public class InterpreterFactoryTest {
     assertEquals(numInterpreters + 1, factory.get().size());
 
     InterpreterFactory factory2 = new InterpreterFactory(conf, null, null, null, depResolver);
-    assertEquals(numInterpreters, factory2.get().size());
+    assertEquals(numInterpreters + 1, factory2.get().size());
   }
 
   @Test
