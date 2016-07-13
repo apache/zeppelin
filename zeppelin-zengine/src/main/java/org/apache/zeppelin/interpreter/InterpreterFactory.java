@@ -93,8 +93,8 @@ public class InterpreterFactory implements InterpreterGroupFactory {
   private String[] interpreterGroupOrderList;
 
   /**
-   * This is only references with default group, name and properties
-   * key: InterpreterSetting.group
+   * This is only references with default settings, name and properties
+   * key: InterpreterSetting.name
    */
   private Map<String, InterpreterSetting> interpreterSettingsRef = new HashMap<>();
 
@@ -504,7 +504,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
   }
 
   /**
-   * @param refName    user defined name
+   * @param refName    InterpreterSetting reference name
    * @param properties
    * @return
    * @throws InterpreterException
@@ -518,7 +518,6 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     Preconditions.checkNotNull(dependencies, "dependencies should not be null");
     Preconditions.checkNotNull(option, "option should not be null");
     Preconditions.checkNotNull(properties, "properties should not be null");
-    //    Preconditions.checkNotNull(path, "path should not be null");
 
     InterpreterSetting interpreterSetting;
 
