@@ -1089,9 +1089,16 @@ public class NotebookServer extends WebSocketServlet implements
           parentItem = workflowJob.getWorkflowJobItemLast();
           String newJobNotebookId = workflowJobItem.get("notebookId");
           String newJobParagraphId = workflowJobItem.get("paragraphId");
+
           if (parentItem == null || newJobNotebookId == null || newJobParagraphId == null) {
             continue;
           }
+
+          Note noteCheckObject = notebook.getNote(newJobNotebookId);
+          if (noteCheckObject == null && noteCheckObject.getParagraph(newJobParagraphId) == null) {
+            continue;
+          }
+
           newJob = new WorkflowJobItem(newJobNotebookId, newJobParagraphId);
           parentItem.setOnSuccessJob(newJob);
         }
