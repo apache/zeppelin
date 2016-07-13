@@ -389,7 +389,7 @@
       </plugin>
 
       <!--TODO(alex): make part of the build and reconcile conflicts
-    <plugin>
+    <plugin> 
       <groupId>com.ning.maven.plugins</groupId>
       <artifactId>maven-duplicate-finder-plugin</artifactId>
       <version>1.0.4</version>
