@@ -1225,49 +1225,40 @@ angular.module('zeppelinWebApp')
       var resultRows = data.rows;
       var columnNames = _.pluck(data.columnNames, 'name');
 
-      // on chart type change, destroy table to force reinitialization.
       if ($scope.hot) {
         $scope.hot.destroy();
-        $scope.hot = null;
       }
 
-      // create table if not exists.
-      if (!$scope.hot) {
-        $scope.hot = new Handsontable(container, {
-          rowHeaders: false,
-          stretchH: 'all',
-          sortIndicator: true,
-          columnSorting: true,
-          contextMenu: false,
-          manualColumnResize: true,
-          manualRowResize: true,
-          readOnly: true,
-          readOnlyCellClassName: '',  // don't apply any special class so we can retain current styling
-          fillHandle: false,
-          fragmentSelection: true,
-          disableVisualSelection: true,
-          cells: function (row, col, prop) {
-            var cellProperties = {};
-            cellProperties.renderer = function(instance, td, row, col, prop, value, cellProperties) {
-              if (!isNaN(value)) {
-                cellProperties.format = '0,0.[00000]';
-                td.style.textAlign = 'left';
-                Handsontable.renderers.NumericRenderer.apply(this, arguments);
-              } else if (value.length > '%html'.length && '%html ' === value.substring(0, '%html '.length)) {
-                td.innerHTML = value.substring('%html'.length);
-              } else {
-                Handsontable.renderers.TextRenderer.apply(this, arguments);
-              }
-            };
-            return cellProperties;
-          }
-        });
-      }
-
-      // load data into table.
-      $scope.hot.updateSettings({
+      $scope.hot = new Handsontable(container, {
         colHeaders: columnNames,
-        data: resultRows
+        data: resultRows,
+        rowHeaders: false,
+        stretchH: 'all',
+        sortIndicator: true,
+        columnSorting: true,
+        contextMenu: false,
+        manualColumnResize: true,
+        manualRowResize: true,
+        readOnly: true,
+        readOnlyCellClassName: '',  // don't apply any special class so we can retain current styling
+        fillHandle: false,
+        fragmentSelection: true,
+        disableVisualSelection: true,
+        cells: function(row, col, prop) {
+          var cellProperties = {};
+          cellProperties.renderer = function(instance, td, row, col, prop, value, cellProperties) {
+            if (!isNaN(value)) {
+              cellProperties.format = '0,0.[00000]';
+              td.style.textAlign = 'left';
+              Handsontable.renderers.NumericRenderer.apply(this, arguments);
+            } else if (value.length > '%html'.length && '%html ' === value.substring(0, '%html '.length)) {
+              td.innerHTML = value.substring('%html'.length);
+            } else {
+              Handsontable.renderers.TextRenderer.apply(this, arguments);
+            }
+          };
+          return cellProperties;
+        }
       });
     };
 
