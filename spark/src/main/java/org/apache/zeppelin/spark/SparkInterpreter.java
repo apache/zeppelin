@@ -1143,24 +1143,25 @@ public class SparkInterpreter extends Interpreter {
   }
 
   private File createTempDir(String dir) {
+    File file = null;
+
     // try Utils.createTempDir()
-    try {
-      return (File) Utils.class.getMethod(
-          "createTempDir",
-          new Class[]{String.class, String.class})
-          .invoke(null, new Object[]{dir, "spark"});
-    } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
-      // fallback to old method
-      try {
-        return (File) Utils.class.getMethod(
-            "createTempDir",
-            new Class[]{String.class})
-            .invoke(null, new Object[]{dir});
-      } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e1) {
-        logger.error(e1.getMessage(), e1);
-        return null;
-      }
+    file = (File) Utils.invokeStaticMethod(
+      Utils.findClass("org.apache.spark.util.Utils"),
+      "createTempDir",
+      new Class[]{String.class, String.class},
+      new Object[]{dir, "spark"});
+
+    // fallback to old method
+    if (file == null) {
+      file = (File) Utils.invokeStaticMethod(
+        Utils.findClass("org.apache.spark.util.Utils"),
+        "createTempDir",
+        new Class[]{String.class},
+        new Object[]{dir});
     }
+
+    return file;
   }
 
   private HttpServer createHttpServer(File outputDir) {
