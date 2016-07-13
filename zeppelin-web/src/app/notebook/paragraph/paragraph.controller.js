@@ -413,8 +413,6 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
         data.paragraph.status === 'ERROR' || (data.paragraph.status === 'FINISHED' && statusChanged) ||
         (!newActiveApp && oldActiveApp !== newActiveApp);
 
-
-
       //console.log("updateParagraph oldData %o, newData %o. type %o -> %o, mode %o -> %o", $scope.paragraph, data, oldType, newType, oldGraphMode, newGraphMode);
 
       if ($scope.paragraph.text !== data.paragraph.text) {
