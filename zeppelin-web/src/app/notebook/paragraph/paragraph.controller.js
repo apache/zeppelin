@@ -38,7 +38,7 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
         if (filtered.length === 1) {
           var paragraph = filtered[0];
           websocketMsgSrv.runParagraph(paragraph.id, paragraph.title, paragraph.text,
-              paragraph.config, paragraph.settings.params);
+              paragraph.config, paragraph.settings.params, paragraph.settings.workflowJob);
         } else {
           ngToast.danger({content: 'Cannot find a paragraph with id \'' + paragraphId + '\'',
             verticalPosition: 'top', dismissOnTimeout: false});
@@ -529,7 +529,8 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
 
   $scope.runParagraph = function(data) {
     websocketMsgSrv.runParagraph($scope.paragraph.id, $scope.paragraph.title,
-                                 data, $scope.paragraph.config, $scope.paragraph.settings.params);
+                                 data, $scope.paragraph.config, $scope.paragraph.settings.params,
+                                 $scope.paragraph.settings.workflowJob);
     $scope.originalText = angular.copy(data);
     $scope.dirtyText = undefined;
   };
