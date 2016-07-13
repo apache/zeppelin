@@ -15,7 +15,7 @@ limitations under the License.
 <div id="{{paragraph.id}}_container"
      ng-class="{'paragraph': !asIframe, 'paragraphAsIframe': asIframe}">
 
-  <div ng-show="paragraph.config.title"
+  <div ng-if="paragraph.config.title"
        id="{{paragraph.id}}_title"
        class="title">
     <input type="text"
@@ -23,7 +23,7 @@ limitations under the License.
            style="min-width: 400px; max-width: 80%;"
            placeholder="Untitled"
            ng-model="paragraph.title"
-           ng-show="showTitleEditor"
+           ng-if="showTitleEditor"
            ng-escape="showTitleEditor = false; paragraph.title = oldTitle;"
            ng-blur="setTitle(); showTitleEditor = false"
            ng-enter="setTitle(); showTitleEditor = false"
