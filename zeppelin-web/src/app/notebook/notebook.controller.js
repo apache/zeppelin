@@ -553,9 +553,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
   var getInterpreterBindings = function(callback) {
     $http.get(baseUrlSrv.getRestApiBase() + '/notebook/interpreter/bind/' + $scope.note.id).
     success(function(data, status, headers, config) {
-      console.log("success", angular.copy(data.body));
       $scope.interpreterBindings = data.body;
-      console.log("bindings", $scope.interpreterBindings);
       $scope.interpreterBindingsOrig = angular.copy($scope.interpreterBindings); // to check dirty
       if (callback) {
         callback();
@@ -572,8 +570,6 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
     var selected = false;
     var key;
     var setting;
-
-    console.log("callback", $scope.interpreterBindings);
 
     for (key in $scope.interpreterBindings) {
       setting = $scope.interpreterBindings[key];
