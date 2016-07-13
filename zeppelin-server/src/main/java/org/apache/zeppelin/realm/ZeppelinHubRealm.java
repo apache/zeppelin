@@ -77,8 +77,8 @@ public class ZeppelinHubRealm extends AuthorizingRealm {
   protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken authToken)
       throws AuthenticationException {
     UsernamePasswordToken token = (UsernamePasswordToken) authToken;
-    if (token.getUsername() == null) {
-      throw new AccountException("Null usernames are not allowed by this realm.");
+    if (StringUtils.isBlank(token.getUsername())) {
+      throw new AccountException("Empty usernames are not allowed by this realm.");
     }
     String loginPayload = createLoginPayload(token.getUsername(), token.getPassword());
     User user = authenticateUser(loginPayload);
