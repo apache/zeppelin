@@ -101,7 +101,7 @@ public class InterpreterRestApi {
           request.getRefName(), request.getDependencies(), request.getOption(), p);
       logger.info("new setting created with {}", interpreterSetting.getId());
       return new JsonResponse(Status.CREATED, "", interpreterSetting).build();
-    } catch (InterpreterException e) {
+    } catch (InterpreterException | IOException e) {
       logger.error("Exception in InterpreterRestApi while creating ", e);
       return new JsonResponse(
           Status.NOT_FOUND,
