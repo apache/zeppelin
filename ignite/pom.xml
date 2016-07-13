@@ -33,9 +33,7 @@
   <url>http://zeppelin.apache.org</url>
 
   <properties>
-    <ignite.version>1.6.0</ignite.version>
-    <ignite.scala.binary.version>2.10</ignite.scala.binary.version>
-    <ignite.scala.version>2.10.4</ignite.scala.version>
+    <ignite.version>1.5.0.final</ignite.version>
   </properties>
 
   <dependencies>
@@ -73,19 +71,19 @@
     <dependency>
       <groupId>org.scala-lang</groupId>
       <artifactId>scala-library</artifactId>
-      <version>${ignite.scala.version}</version>
+      <version>${scala.version}</version>
     </dependency>
 
     <dependency>
       <groupId>org.scala-lang</groupId>
       <artifactId>scala-compiler</artifactId>
-      <version>${ignite.scala.version}</version>
+      <version>${scala.version}</version>
     </dependency>
 
     <dependency>
       <groupId>org.scala-lang</groupId>
       <artifactId>scala-reflect</artifactId>
-      <version>${ignite.scala.version}</version>
+      <version>${scala.version}</version>
     </dependency>
 
     <dependency>

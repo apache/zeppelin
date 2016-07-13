@@ -44,6 +44,7 @@ import java.util.Properties;
 import scala.Console;
 import scala.None;
 import scala.Some;
+import scala.collection.JavaConversions;
 import scala.tools.nsc.Settings;
 import scala.tools.nsc.interpreter.IMain;
 import scala.tools.nsc.interpreter.Results.Result;
@@ -173,16 +174,11 @@ public class IgniteInterpreter extends Interpreter {
     return paths;
   }
 
-  public Object getValue(String name) {
-    Object val = imain.valueOfTerm(name);
-
-    if (val instanceof None) {
-      return null;
-    } else if (val instanceof Some) {
-      return ((Some) val).get();
-    } else {
-      return val;
-    }
+  public Object getLastObject() {
+    Object obj = imain.lastRequest().lineRep().call(
+        "$result",
+        JavaConversions.asScalaBuffer(new LinkedList<Object>()));
+    return obj;
   }
 
   private Ignite getIgnite() {
@@ -221,7 +217,7 @@ public class IgniteInterpreter extends Interpreter {
 
   private void initIgnite() {
     imain.interpret("@transient var _binder = new java.util.HashMap[String, Object]()");
-    Map<String, Object> binder = (Map<String, Object>) getValue("_binder");
+    Map<String, Object> binder = (Map<String, Object>) getLastObject();
 
     if (getIgnite() != null) {
       binder.put("ignite", ignite);

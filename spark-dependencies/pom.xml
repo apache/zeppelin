@@ -37,8 +37,6 @@
 
   <properties>
     <spark.version>1.4.1</spark.version>
-    <scala.version>2.10.4</scala.version>
-    <scala.binary.version>2.10</scala.binary.version>
 
     <hadoop.version>2.3.0</hadoop.version>
     <yarn.version>${hadoop.version}</yarn.version>
@@ -346,6 +344,14 @@
   </dependencies>
 
   <profiles>
+    <profile>
+      <id>scala-2.11</id>
+      <properties>
+        <spark.version>1.6.1</spark.version>
+        <spark.download.url>http://archive.apache.org/dist/spark/spark-${spark.version}/spark-${spark.version}.tgz</spark.download.url>
+      </properties>
+    </profile>
+
     <profile>
       <id>spark-1.1</id>
       <dependencies>

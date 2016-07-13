@@ -19,15 +19,15 @@ package org.apache.zeppelin.spark;
 
 import static org.junit.Assert.*;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Properties;
 
-import org.apache.spark.HttpServer;
-import org.apache.spark.SecurityManager;
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
+import org.apache.spark.repl.SparkILoop;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.display.GUI;
@@ -40,6 +40,7 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import scala.tools.nsc.interpreter.IMain;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class SparkInterpreterTest {
@@ -138,6 +139,7 @@ public class SparkInterpreterTest {
     assertEquals(InterpreterResult.Code.INCOMPLETE, incomplete.code());
     assertTrue(incomplete.message().length() > 0); // expecting some error
                                                    // message
+
     /*
      * assertEquals(1, repl.getValue("a")); assertEquals(2, repl.getValue("b"));
      * repl.interpret("val ver = sc.version");
@@ -181,15 +183,15 @@ public class SparkInterpreterTest {
 
 
     if (getSparkVersionNumber() <= 11) { // spark 1.2 or later does not allow create multiple SparkContext in the same jvm by default.
-    // create new interpreter
-    Properties p = new Properties();
-    SparkInterpreter repl2 = new SparkInterpreter(p);
-    repl2.open();
+      // create new interpreter
+      Properties p = new Properties();
+      SparkInterpreter repl2 = new SparkInterpreter(p);
+      repl2.open();
 
-    repl.interpret("case class Man(name:String, age:Int)", context);
-    repl.interpret("val man = sc.parallelize(Seq(Man(\"moon\", 33), Man(\"jobs\", 51), Man(\"gates\", 51), Man(\"park\", 34)))", context);
-    assertEquals(Code.SUCCESS, repl.interpret("man.take(3)", context).code());
-    repl2.getSparkContext().stop();
+      repl.interpret("case class Man(name:String, age:Int)", context);
+      repl.interpret("val man = sc.parallelize(Seq(Man(\"moon\", 33), Man(\"jobs\", 51), Man(\"gates\", 51), Man(\"park\", 34)))", context);
+      assertEquals(Code.SUCCESS, repl.interpret("man.take(3)", context).code());
+      repl2.getSparkContext().stop();
     }
   }
 

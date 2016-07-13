@@ -19,10 +19,15 @@ package org.apache.zeppelin.spark;
 
 import java.io.File;
 import java.io.PrintWriter;
-import java.lang.reflect.*;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.*;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.google.common.base.Joiner;
@@ -33,10 +38,9 @@ import org.apache.spark.HttpServer;
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
 import org.apache.spark.SparkEnv;
-import org.apache.spark.repl.SparkCommandLine;
+
+import org.apache.spark.SecurityManager;
 import org.apache.spark.repl.SparkILoop;
-import org.apache.spark.repl.SparkIMain;
-import org.apache.spark.repl.SparkJLineCompletion;
 import org.apache.spark.scheduler.ActiveJob;
 import org.apache.spark.scheduler.DAGScheduler;
 import org.apache.spark.scheduler.Pool;
@@ -45,7 +49,6 @@ import org.apache.spark.ui.jobs.JobProgressListener;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
-import org.apache.zeppelin.interpreter.InterpreterPropertyBuilder;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.InterpreterUtils;
@@ -70,9 +73,12 @@ import scala.collection.convert.WrapAsScala;
 import scala.collection.mutable.HashMap;
 import scala.collection.mutable.HashSet;
 import scala.reflect.io.AbstractFile;
+import scala.tools.nsc.Global;
 import scala.tools.nsc.Settings;
 import scala.tools.nsc.interpreter.Completion.Candidates;
 import scala.tools.nsc.interpreter.Completion.ScalaCompleter;
+import scala.tools.nsc.interpreter.IMain;
+import scala.tools.nsc.interpreter.Results;
 import scala.tools.nsc.settings.MutableSettings;
 import scala.tools.nsc.settings.MutableSettings.BooleanSetting;
 import scala.tools.nsc.settings.MutableSettings.PathSetting;
@@ -86,7 +92,11 @@ public class SparkInterpreter extends Interpreter {
 
   private ZeppelinContext z;
   private SparkILoop interpreter;
-  private SparkIMain intp;
+  /**
+   * intp - org.apache.spark.repl.SparkIMain (scala 2.10)
+   * intp - scala.tools.nsc.interpreter.IMain; (scala 2.11)
+   */
+  private Object intp;
   private static SparkContext sc;
   private static SQLContext sqlc;
   private static SparkEnv env;
@@ -97,10 +107,16 @@ public class SparkInterpreter extends Interpreter {
 
   private SparkOutputStream out;
   private SparkDependencyResolver dep;
-  private SparkJLineCompletion completor;
+
+  /**
+   * completor - org.apache.spark.repl.SparkJLineCompletion (scala 2.10)
+   */
+  private Object completor;
 
   private Map<String, Object> binder;
   private SparkVersion sparkVersion;
+  private File outputDir;          // class outputdir for scala 2.11
+  private HttpServer classServer;  // classserver for scala 2.11
 
 
   public SparkInterpreter(Properties property) {
@@ -207,12 +223,15 @@ public class SparkInterpreter extends Interpreter {
     }
   }
 
+
   public SparkDependencyResolver getDependencyResolver() {
     if (dep == null) {
-      dep = new SparkDependencyResolver(intp,
-                                   sc,
-                                   getProperty("zeppelin.dep.localrepo"),
-                                   getProperty("zeppelin.dep.additionalRemoteRepository"));
+      dep = new SparkDependencyResolver(
+          (Global) Utils.invokeMethod(intp, "global"),
+          (ClassLoader) Utils.invokeMethod(Utils.invokeMethod(intp, "classLoader"), "getParent"),
+          sc,
+          getProperty("zeppelin.dep.localrepo"),
+          getProperty("zeppelin.dep.additionalRemoteRepository"));
     }
     return dep;
   }
@@ -233,13 +252,20 @@ public class SparkInterpreter extends Interpreter {
     logger.info("------ Create new SparkContext {} -------", getProperty("master"));
 
     String execUri = System.getenv("SPARK_EXECUTOR_URI");
-    String[] jars = SparkILoop.getAddedJars();
+    String[] jars = null;
+
+    if (Utils.isScala2_10()) {
+      jars = (String[]) Utils.invokeStaticMethod(SparkILoop.class, "getAddedJars");
+    } else {
+      jars = (String[]) Utils.invokeStaticMethod(
+              findClass("org.apache.spark.repl.Main"), "getAddedJars");
+    }
 
     String classServerUri = null;
 
     try { // in case of spark 1.1x, spark 1.2x
-      Method classServer = interpreter.intp().getClass().getMethod("classServer");
-      HttpServer httpServer = (HttpServer) classServer.invoke(interpreter.intp());
+      Method classServer = intp.getClass().getMethod("classServer");
+      HttpServer httpServer = (HttpServer) classServer.invoke(intp);
       classServerUri = httpServer.uri();
     } catch (NoSuchMethodException | SecurityException | IllegalAccessException
         | IllegalArgumentException | InvocationTargetException e) {
@@ -248,8 +274,8 @@ public class SparkInterpreter extends Interpreter {
 
     if (classServerUri == null) {
       try { // for spark 1.3x
-        Method classServer = interpreter.intp().getClass().getMethod("classServerUri");
-        classServerUri = (String) classServer.invoke(interpreter.intp());
+        Method classServer = intp.getClass().getMethod("classServerUri");
+        classServerUri = (String) classServer.invoke(intp);
       } catch (NoSuchMethodException | SecurityException | IllegalAccessException
           | IllegalArgumentException | InvocationTargetException e) {
         // continue instead of: throw new InterpreterException(e);
@@ -257,6 +283,13 @@ public class SparkInterpreter extends Interpreter {
         logger.warn(String.format("Spark method classServerUri not available due to: [%s]",
           e.getMessage()));
       }
+    }
+
+
+    if (Utils.isScala2_11()) {
+      classServer = createHttpServer(outputDir);
+      classServer.start();
+      classServerUri = classServer.uri();
     }
 
     SparkConf conf =
@@ -390,17 +423,49 @@ public class SparkInterpreter extends Interpreter {
      * getClass.getClassLoader >> } >> in.setContextClassLoader()
      */
     Settings settings = new Settings();
-    if (getProperty("args") != null) {
-      String[] argsArray = getProperty("args").split(" ");
-      LinkedList<String> argList = new LinkedList<String>();
-      for (String arg : argsArray) {
-        argList.add(arg);
+
+    // process args
+    String args = getProperty("args");
+    if (args == null) {
+      args = "";
+    }
+
+    String[] argsArray = args.split(" ");
+    LinkedList<String> argList = new LinkedList<String>();
+    for (String arg : argsArray) {
+      argList.add(arg);
+    }
+
+    if (Utils.isScala2_10()) {
+      scala.collection.immutable.List<String> list =
+          JavaConversions.asScalaBuffer(argList).toList();
+
+      Object sparkCommandLine = Utils.instantiateClass(
+          "org.apache.spark.repl.SparkCommandLine",
+          new Class[]{ scala.collection.immutable.List.class },
+          new Object[]{ list });
+
+      settings = (Settings) Utils.invokeMethod(sparkCommandLine, "settings");
+    } else {
+      String sparkReplClassDir = getProperty("spark.repl.classdir");
+      if (sparkReplClassDir == null) {
+        sparkReplClassDir = System.getProperty("spark.repl.classdir");
+      }
+      if (sparkReplClassDir == null) {
+        sparkReplClassDir = System.getProperty("java.io.tmpdir");
       }
 
-      SparkCommandLine command =
-          new SparkCommandLine(scala.collection.JavaConversions.asScalaBuffer(
-              argList).toList());
-      settings = command.settings();
+      outputDir = createTempDir(sparkReplClassDir);
+
+      argList.add("-Yrepl-class-based");
+      argList.add("-Yrepl-outdir");
+      argList.add(outputDir.getAbsolutePath());
+
+
+      scala.collection.immutable.List<String> list =
+          JavaConversions.asScalaBuffer(argList).toList();
+
+      settings.processArguments(list, true);
     }
 
     // set classpath for scala compiler
@@ -479,36 +544,41 @@ public class SparkInterpreter extends Interpreter {
     synchronized (sharedInterpreterLock) {
       /* create scala repl */
       if (printREPLOutput()) {
-        this.interpreter = new SparkILoop(null, new PrintWriter(out));
+        this.interpreter = new SparkILoop((java.io.BufferedReader) null, new PrintWriter(out));
       } else {
-        this.interpreter = new SparkILoop(null, new PrintWriter(Console.out(), false));
+        this.interpreter = new SparkILoop((java.io.BufferedReader) null,
+            new PrintWriter(Console.out(), false));
       }
 
       interpreter.settings_$eq(settings);
 
       interpreter.createInterpreter();
 
-      intp = interpreter.intp();
-      intp.setContextClassLoader();
-      intp.initializeSynchronous();
+      intp = Utils.invokeMethod(interpreter, "intp");
+      Utils.invokeMethod(intp, "setContextClassLoader");
+      Utils.invokeMethod(intp, "initializeSynchronous");
 
-      if (classOutputDir == null) {
-        classOutputDir = settings.outputDirs().getSingleOutput().get();
-      } else {
-        // change SparkIMain class output dir
-        settings.outputDirs().setSingleOutput(classOutputDir);
-        ClassLoader cl = intp.classLoader();
-
-        try {
-          Field rootField = cl.getClass().getSuperclass().getDeclaredField("root");
-          rootField.setAccessible(true);
-          rootField.set(cl, classOutputDir);
-        } catch (NoSuchFieldException | IllegalAccessException e) {
-          logger.error(e.getMessage(), e);
+      if (Utils.isScala2_10()) {
+        if (classOutputDir == null) {
+          classOutputDir = settings.outputDirs().getSingleOutput().get();
+        } else {
+          // change SparkIMain class output dir
+          settings.outputDirs().setSingleOutput(classOutputDir);
+          ClassLoader cl = (ClassLoader) Utils.invokeMethod(intp, "classLoader");
+          try {
+            Field rootField = cl.getClass().getSuperclass().getDeclaredField("root");
+            rootField.setAccessible(true);
+            rootField.set(cl, classOutputDir);
+          } catch (NoSuchFieldException | IllegalAccessException e) {
+            logger.error(e.getMessage(), e);
+          }
         }
-      }
 
-      completor = new SparkJLineCompletion(intp);
+        completor = Utils.instantiateClass(
+            "SparkJLineCompletion",
+            new Class[]{findClass("org.apache.spark.repl.SparkIMain")},
+            new Object[]{intp});
+      }
 
       sc = getSparkContext();
       if (sc.getPoolForName("fair").isEmpty()) {
@@ -528,29 +598,34 @@ public class SparkInterpreter extends Interpreter {
       z = new ZeppelinContext(sc, sqlc, null, dep,
               Integer.parseInt(getProperty("zeppelin.spark.maxResult")));
 
-      intp.interpret("@transient var _binder = new java.util.HashMap[String, Object]()");
-      binder = (Map<String, Object>) getValue("_binder");
+      interpret("@transient val _binder = new java.util.HashMap[String, Object]()");
+      Map<String, Object> binder;
+      if (Utils.isScala2_10()) {
+        binder = (Map<String, Object>) getValue("_binder");
+      } else {
+        binder = (Map<String, Object>) getLastObject();
+      }
       binder.put("sc", sc);
       binder.put("sqlc", sqlc);
       binder.put("z", z);
 
-      intp.interpret("@transient val z = "
+      interpret("@transient val z = "
               + "_binder.get(\"z\").asInstanceOf[org.apache.zeppelin.spark.ZeppelinContext]");
-      intp.interpret("@transient val sc = "
+      interpret("@transient val sc = "
               + "_binder.get(\"sc\").asInstanceOf[org.apache.spark.SparkContext]");
-      intp.interpret("@transient val sqlc = "
+      interpret("@transient val sqlc = "
               + "_binder.get(\"sqlc\").asInstanceOf[org.apache.spark.sql.SQLContext]");
-      intp.interpret("@transient val sqlContext = "
+      interpret("@transient val sqlContext = "
               + "_binder.get(\"sqlc\").asInstanceOf[org.apache.spark.sql.SQLContext]");
-      intp.interpret("import org.apache.spark.SparkContext._");
+      interpret("import org.apache.spark.SparkContext._");
 
       if (importImplicit()) {
         if (sparkVersion.oldSqlContextImplicits()) {
-          intp.interpret("import sqlContext._");
+          interpret("import sqlContext._");
         } else {
-          intp.interpret("import sqlContext.implicits._");
-          intp.interpret("import sqlContext.sql");
-          intp.interpret("import org.apache.spark.sql.functions._");
+          interpret("import sqlContext.implicits._");
+          interpret("import sqlContext.sql");
+          interpret("import org.apache.spark.sql.functions._");
         }
       }
     }
@@ -566,18 +641,20 @@ public class SparkInterpreter extends Interpreter {
             Integer.parseInt(getProperty("zeppelin.spark.maxResult")) + ")");
      */
 
-    try {
-      if (sparkVersion.oldLoadFilesMethodName()) {
-        Method loadFiles = this.interpreter.getClass().getMethod("loadFiles", Settings.class);
-        loadFiles.invoke(this.interpreter, settings);
-      } else {
-        Method loadFiles = this.interpreter.getClass().getMethod(
-                "org$apache$spark$repl$SparkILoop$$loadFiles", Settings.class);
-        loadFiles.invoke(this.interpreter, settings);
+    if (Utils.isScala2_10()) {
+      try {
+        if (sparkVersion.oldLoadFilesMethodName()) {
+          Method loadFiles = this.interpreter.getClass().getMethod("loadFiles", Settings.class);
+          loadFiles.invoke(this.interpreter, settings);
+        } else {
+          Method loadFiles = this.interpreter.getClass().getMethod(
+              "org$apache$spark$repl$SparkILoop$$loadFiles", Settings.class);
+          loadFiles.invoke(this.interpreter, settings);
+        }
+      } catch (NoSuchMethodException | SecurityException | IllegalAccessException
+          | IllegalArgumentException | InvocationTargetException e) {
+        throw new InterpreterException(e);
       }
-    } catch (NoSuchMethodException | SecurityException | IllegalAccessException
-            | IllegalArgumentException | InvocationTargetException e) {
-      throw new InterpreterException(e);
     }
 
     // add jar from DepInterpreter
@@ -621,6 +698,14 @@ public class SparkInterpreter extends Interpreter {
     numReferenceOfSparkContext.incrementAndGet();
   }
 
+  private Results.Result interpret(String line) {
+    return (Results.Result) Utils.invokeMethod(
+        intp,
+        "interpret",
+        new Class[] {String.class},
+        new Object[] {line});
+  }
+
   private List<File> currentClassPath() {
     List<File> paths = classPath(Thread.currentThread().getContextClassLoader());
     String[] cps = System.getProperty("java.class.path").split(File.pathSeparator);
@@ -660,17 +745,22 @@ public class SparkInterpreter extends Interpreter {
       completionText = "";
       cursor = completionText.length();
     }
-    ScalaCompleter c = completor.completer();
-    Candidates ret = c.complete(completionText, cursor);
+    if (Utils.isScala2_10()) {
+      ScalaCompleter c = (ScalaCompleter) Utils.invokeMethod(completor, "completor");
+      Candidates ret = c.complete(completionText, cursor);
 
-    List<String> candidates = WrapAsJava$.MODULE$.seqAsJavaList(ret.candidates());
-    List<InterpreterCompletion> completions = new LinkedList<InterpreterCompletion>();
+      List<String> candidates = WrapAsJava$.MODULE$.seqAsJavaList(ret.candidates());
+      List<InterpreterCompletion> completions = new LinkedList<InterpreterCompletion>();
 
-    for (String candidate : candidates) {
-      completions.add(new InterpreterCompletion(candidate, candidate));
+      for (String candidate : candidates) {
+        completions.add(new InterpreterCompletion(candidate, candidate));
+      }
+
+      return completions;
+    } else {
+      return new LinkedList<InterpreterCompletion>();
     }
 
-    return completions;
   }
 
   private String getCompletionTargetString(String text, int cursor) {
@@ -714,15 +804,28 @@ public class SparkInterpreter extends Interpreter {
     return resultCompletionText;
   }
 
+  /*
+   * this method doesn't work in scala 2.11
+   * Somehow intp.valueOfTerm returns scala.None always with -Yrepl-class-based option
+   */
   public Object getValue(String name) {
-    Object ret = intp.valueOfTerm(name);
-    if (ret instanceof None) {
+    Object ret = Utils.invokeMethod(
+            intp, "valueOfTerm", new Class[]{String.class}, new Object[]{name});
+
+    if (ret instanceof None || ret instanceof scala.None$) {
       return null;
     } else if (ret instanceof Some) {
       return ((Some) ret).get();
     } else {
       return ret;
     }
+  }
+
+  public Object getLastObject() {
+    IMain.Request r = (IMain.Request) Utils.invokeMethod(intp, "lastRequest");
+    Object obj = r.lineRep().call("$result",
+        JavaConversions.asScalaBuffer(new LinkedList<Object>()));
+    return obj;
   }
 
   String getJobGroup(InterpreterContext context){
@@ -807,7 +910,7 @@ public class SparkInterpreter extends Interpreter {
 
       scala.tools.nsc.interpreter.Results.Result res = null;
       try {
-        res = intp.interpret(incomplete + s);
+        res = interpret(incomplete + s);
       } catch (Exception e) {
         sc.clearJobGroup();
         out.setInterpreterOutput(null);
@@ -828,6 +931,13 @@ public class SparkInterpreter extends Interpreter {
       }
     }
 
+    // make sure code does not finish with comment
+    if (r == Code.INCOMPLETE) {
+      scala.tools.nsc.interpreter.Results.Result res = null;
+      res = interpret(incomplete + "\nprint(\"\")");
+      r = getResultCode(res);
+    }
+
     if (r == Code.INCOMPLETE) {
       sc.clearJobGroup();
       out.setInterpreterOutput(null);
@@ -838,7 +948,6 @@ public class SparkInterpreter extends Interpreter {
       return new InterpreterResult(Code.SUCCESS);
     }
   }
-
 
   @Override
   public void cancel(InterpreterContext context) {
@@ -975,9 +1084,13 @@ public class SparkInterpreter extends Interpreter {
     if (numReferenceOfSparkContext.decrementAndGet() == 0) {
       sc.stop();
       sc = null;
+      if (classServer != null) {
+        classServer.stop();
+        classServer = null;
+      }
     }
 
-    intp.close();
+    Utils.invokeMethod(intp, "close");
   }
 
   @Override
@@ -1001,5 +1114,68 @@ public class SparkInterpreter extends Interpreter {
 
   public SparkVersion getSparkVersion() {
     return sparkVersion;
+  }
+
+
+
+  private Class findClass(String name) {
+    try {
+      return this.getClass().forName(name);
+    } catch (ClassNotFoundException e) {
+      logger.error(e.getMessage(), e);
+      return null;
+    }
+  }
+
+  private File createTempDir(String dir) {
+    File file = null;
+
+    // try Utils.createTempDir()
+    file = (File) Utils.invokeStaticMethod(
+      Utils.findClass("org.apache.spark.util.Utils"),
+      "createTempDir",
+      new Class[]{String.class, String.class},
+      new Object[]{dir, "spark"});
+
+    // fallback to old method
+    if (file == null) {
+      file = (File) Utils.invokeStaticMethod(
+        Utils.findClass("org.apache.spark.util.Utils"),
+        "createTempDir",
+        new Class[]{String.class},
+        new Object[]{dir});
+    }
+
+    return file;
+  }
+
+  private HttpServer createHttpServer(File outputDir) {
+    SparkConf conf = new SparkConf();
+    try {
+      // try to create HttpServer
+      Constructor<?> constructor = getClass().getClassLoader()
+          .loadClass(HttpServer.class.getName())
+          .getConstructor(new Class[]{
+            SparkConf.class, File.class, SecurityManager.class, int.class, String.class});
+
+      return (HttpServer) constructor.newInstance(new Object[] {
+        conf, outputDir, new SecurityManager(conf), 0, "HTTP Server"});
+    } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException |
+        InstantiationException | InvocationTargetException e) {
+      // fallback to old constructor
+      Constructor<?> constructor = null;
+      try {
+        constructor = getClass().getClassLoader()
+            .loadClass(HttpServer.class.getName())
+            .getConstructor(new Class[]{
+              File.class, SecurityManager.class, int.class, String.class});
+        return (HttpServer) constructor.newInstance(new Object[] {
+          outputDir, new SecurityManager(conf), 0, "HTTP Server"});
+      } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException |
+          InstantiationException | InvocationTargetException e1) {
+        logger.error(e1.getMessage(), e1);
+        return null;
+      }
+    }
   }
 }
