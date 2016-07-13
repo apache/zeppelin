@@ -40,18 +40,6 @@ angular.module('zeppelinWebApp')
     $scope.query.q = '';
   });
 
-  $scope.$on('setNoteMenu', function(event, notes) {
-    notebookListDataFactory.setNotes(notes);
-  });
-
-  $scope.$on('setConnectedStatus', function(event, param) {
-    vm.connected = param;
-  });
-
-  $scope.$on('loginSuccess', function(event, param) {
-    loadNotes();
-  });
-
   $scope.logout = function() {
     var logoutURL = baseUrlSrv.getRestApiBase() + '/login/logout';
 
@@ -107,5 +95,21 @@ angular.module('zeppelinWebApp')
 
   getZeppelinVersion();
   vm.loadNotes();
+
+  /*
+  ** $scope.$on functions below
+  */
+
+  $scope.$on('setNoteMenu', function(event, notes) {
+    notebookListDataFactory.setNotes(notes);
+  });
+
+  $scope.$on('setConnectedStatus', function(event, param) {
+    vm.connected = param;
+  });
+
+  $scope.$on('loginSuccess', function(event, param) {
+    loadNotes();
+  });
 
 });

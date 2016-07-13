@@ -18,6 +18,37 @@ angular.module('zeppelinWebApp')
   .controller('JobmanagerCtrl',
     function($scope, websocketMsgSrv, $interval) {
 
+      $scope.filterValueToName = function(filterValue) {
+        var index = _.findIndex($scope.ACTIVE_INTERPRETERS, {value: filterValue});
+
+        if ($scope.ACTIVE_INTERPRETERS[index].name !== undefined) {
+          return $scope.ACTIVE_INTERPRETERS[index].name;
+        } else {
+          return 'undefined';
+        }
+      };
+
+      $scope.init = function() {
+        $scope.jobInfomations = [];
+        $scope.JobInfomationsByFilter = $scope.jobInfomations;
+
+        websocketMsgSrv.getNotebookJobsList();
+        var refreshObj = $interval(function() {
+          if ($scope.lastJobServerUnixTime !== undefined) {
+            websocketMsgSrv.getUpdateNotebookJobsList($scope.lastJobServerUnixTime);
+          }
+        }, 1000);
+
+        $scope.$on('$destroy', function() {
+          $interval.cancel(refreshObj);
+          websocketMsgSrv.unsubscribeJobManager();
+        });
+      };
+
+      /*
+      ** $scope.$on functions below
+      */
+
       $scope.$on('setNotebookJobs', function(event, responseData) {
         $scope.lastJobServerUnixTime = responseData.lastResponseUnixTime;
         $scope.jobInfomations = responseData.jobs;
@@ -62,31 +93,4 @@ angular.module('zeppelinWebApp')
           }
         });
       });
-
-      $scope.filterValueToName = function(filterValue) {
-        var index = _.findIndex($scope.ACTIVE_INTERPRETERS, {value: filterValue});
-
-        if ($scope.ACTIVE_INTERPRETERS[index].name !== undefined) {
-          return $scope.ACTIVE_INTERPRETERS[index].name;
-        } else {
-          return 'undefined';
-        }
-      };
-
-      $scope.init = function() {
-        $scope.jobInfomations = [];
-        $scope.JobInfomationsByFilter = $scope.jobInfomations;
-
-        websocketMsgSrv.getNotebookJobsList();
-        var refreshObj = $interval(function() {
-          if ($scope.lastJobServerUnixTime !== undefined) {
-            websocketMsgSrv.getUpdateNotebookJobsList($scope.lastJobServerUnixTime);
-          }
-        }, 1000);
-
-        $scope.$on('$destroy', function() {
-          $interval.cancel(refreshObj);
-          websocketMsgSrv.unsubscribeJobManager();
-        });
-      };
     });
