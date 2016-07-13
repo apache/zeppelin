@@ -348,6 +348,7 @@ public class LivyHelper {
     RestTemplate restTemplate = getRestTemplate();
     HttpHeaders headers = new HttpHeaders();
     headers.add("Content-Type", "application/json");
+    headers.add("X-Requested-By", "zeppelin");
     ResponseEntity<String> response = null;
     if (method.equals("POST")) {
       HttpEntity<String> entity = new HttpEntity<String>(jsonData, headers);
