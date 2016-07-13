@@ -99,7 +99,8 @@ public class ZeppelinHubRealm extends AuthorizingRealm {
   /**
    * Setter of ZeppelinHub URL, this will be called by Shiro based on zeppelinhubUrl property
    * in shiro.ini file.</p>
-   * It will also perform a check of ZeppelinHub url.
+   * It will also perform a check of ZeppelinHub url {@link #isZeppelinHubUrlValid}, 
+   * if the url is not valid, the default zeppelinhub url will be used.
    * 
    * @param url
    */
@@ -115,8 +116,7 @@ public class ZeppelinHubRealm extends AuthorizingRealm {
 
   /**
    * Send to ZeppelinHub a login request based on the request body which is a JSON that contains 2 
-   * field "login" and password.
-   * </p>
+   * fields "login" and "password".
    * 
    * @param requestBody JSON string of ZeppelinHub payload.
    * @return Account object with login, name (if set in ZeppelinHub), and mail.
@@ -169,6 +169,14 @@ public class ZeppelinHubRealm extends AuthorizingRealm {
     return sb.append(login).append("\", \"password\":\"").append(pwd).append("\"}").toString();
   }
 
+  /**
+   * Perform a Simple URL check by using <code>URI(url).toURL()</code>.
+   * If the url is not valid, the try-catch condition will catch the exceptions and return false,
+   * otherwise true will be returned.
+   * 
+   * @param url
+   * @return
+   */
   protected boolean isZeppelinHubUrlValid(String url) {
     boolean valid;
     try {
