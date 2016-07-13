@@ -102,6 +102,10 @@ angular.module('zeppelinWebApp').controller('NoteImportCtrl', function($scope, $
     $scope.$apply();
   };
 
+  /*
+  ** $scope.$on functions below
+  */
+
   $scope.$on('setNoteMenu', function(event, notes) {
     vm.resetFlags();
     angular.element('#noteImportModal').modal('hide');
