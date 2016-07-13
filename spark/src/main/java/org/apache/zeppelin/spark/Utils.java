@@ -57,7 +57,7 @@ class Utils {
 
   static Class findClass(String name) {
     try {
-      return Utils.class.getClass().forName(name);
+      return Utils.class.forName(name);
     } catch (ClassNotFoundException e) {
       logger.error(e.getMessage(), e);
       return null;
@@ -66,7 +66,7 @@ class Utils {
 
   static Object instantiateClass(String name, Class[] argTypes, Object[] params) {
     try {
-      Constructor<?> constructor = Utils.class.getClass().getClassLoader()
+      Constructor<?> constructor = Utils.class.getClassLoader()
               .loadClass(name).getConstructor(argTypes);
       return constructor.newInstance(params);
     } catch (NoSuchMethodException | ClassNotFoundException | IllegalAccessException |
@@ -79,7 +79,7 @@ class Utils {
   // function works after intp is initialized
   static boolean isScala2_10() {
     try {
-      Utils.class.getClass().forName("org.apache.spark.repl.SparkIMain");
+      Utils.class.forName("org.apache.spark.repl.SparkIMain");
       return true;
     } catch (ClassNotFoundException e) {
       return false;
