@@ -19,11 +19,7 @@ package org.apache.zeppelin.display;
 
 import java.io.Serializable;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 import org.apache.zeppelin.display.Input.ParamOption;
 
@@ -34,6 +30,7 @@ public class GUI implements Serializable {
 
   Map<String, Object> params = new HashMap<String, Object>(); // form parameters from client
   Map<String, Input> forms = new TreeMap<String, Input>(); // form configuration
+  List<RelationJob> relationJobs = new LinkedList<>(); // relation job list
 
   public GUI() {
 
@@ -53,6 +50,14 @@ public class GUI implements Serializable {
 
   public void setForms(Map<String, Input> forms) {
     this.forms = forms;
+  }
+
+  public List<RelationJob> getRelationJobs() {
+    return relationJobs;
+  }
+
+  public void setRelationJobs(List<RelationJob> relationJobs) {
+    this.relationJobs = relationJobs;
   }
 
   public Object input(String id, Object defaultValue) {
