@@ -1296,7 +1296,6 @@ public class NotebookServer extends WebSocketServlet implements
         synchronized (workflowManager) {
           waitJobLists = workflowManager.getNextJob(note.getId(), job.getId());
           if (waitJobLists != null) {
-            LOG.info("clover job count {}", waitJobLists.size());
             for (String notebookId : waitJobLists.keySet()) {
               String paragraphId = waitJobLists.get(notebookId).get(0);
               Note nextNote = notebookServer.notebook().getNote(notebookId);
@@ -1328,8 +1327,6 @@ public class NotebookServer extends WebSocketServlet implements
               .put("noteId", paragraph.getNote().getId())
               .put("paragraphId", paragraph.getId())
               .put("data", output);
-      LOG.info("append status {} note {} para {}",
-        paragraph.getStatus(), paragraph.getNote().getId(), paragraph.getId());
       notebookServer.broadcast(paragraph.getNote().getId(), msg);
     }
 
