@@ -333,6 +333,10 @@ table.dataTable.table-condensed .sorting_desc:after {
   height: auto;
 }
 
+.esri-display-object > svg {
+  overflow: visible;
+}
+
 .tableDisplay .btn-group span {
   margin: 10px 0 0 10px;
   font-size: 12px;
