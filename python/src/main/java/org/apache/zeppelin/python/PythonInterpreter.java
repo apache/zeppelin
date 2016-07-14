@@ -204,15 +204,20 @@ public class PythonInterpreter extends Interpreter {
   }
 
 
-  private String sendCommandToPython(String cmd) {
+  /**
+   * Sends given text to Python interpreter, blocks and returns the output
+   * @param cmd Python expression text
+   * @return output
+   */
+  String sendCommandToPython(String cmd) {
     String output = "";
-    LOG.info("Sending : \n" + (cmd.length() > 200 ? cmd.substring(0, 200) + "..." : cmd));
+    LOG.debug("Sending : \n" + (cmd.length() > 200 ? cmd.substring(0, 200) + "..." : cmd));
     try {
       output = process.sendAndGetResult(cmd);
     } catch (IOException e) {
       LOG.error("Error when sending commands to python process", e);
     }
-    //logger.info("Got : \n" + output);
+    LOG.debug("Got : \n" + output);
     return output;
   }
 
@@ -243,11 +248,7 @@ public class PythonInterpreter extends Interpreter {
 
   public Boolean isPy4jInstalled() {
     String output = sendCommandToPython("\n\nimport py4j\n");
-    if (output.contains("ImportError")) {
-      return false;
-    } else {
-      return true;
-    }
+    return !output.contains("ImportError");
   }
 
   private int findRandomOpenPortOnAllLocalInterfaces() {

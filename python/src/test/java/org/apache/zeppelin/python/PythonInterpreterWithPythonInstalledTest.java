@@ -36,7 +36,7 @@ import org.junit.Test;
  *
  * or
  * <code>
- * mvn -Dpython.test.exclude='' test -pl python
+ * mvn -Dpython.test.exclude='' test -pl python -am
  * </code>
  */
 public class PythonInterpreterWithPythonInstalledTest {

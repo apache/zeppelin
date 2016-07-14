@@ -13,15 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# This is for org.apache.zeppelin.python.PythonPandasSqlInterpreterTest
+# Setup SQL over Pandas DataFrames
 # It requires next dependencies to be installed:
-#  - numpy
 #  - pandas
 #  - pandasql
 
+from __future__ import print_function
 
-import numpy as np
-import pandas as pd
-from pandasql import sqldf
-
-pysqldf = lambda q: sqldf(q, globals())
+try:
+    from pandasql import sqldf
+    pysqldf = lambda q: sqldf(q, globals())
+except ImportError:
+    pysqldf = lambda q: print("Can not run SQL over Pandas DataFrame" +
+                              "Make sure 'pandas' and 'pandasql' libraries are installed")

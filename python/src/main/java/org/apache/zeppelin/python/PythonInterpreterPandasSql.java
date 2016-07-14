@@ -33,16 +33,16 @@ import org.slf4j.LoggerFactory;
  *
  * Match experience of %sparpk.sql over Spark DataFrame
  */
-public class PythonPandasSqlInterpreter extends Interpreter {
-  private static final Logger LOG = LoggerFactory.getLogger(PythonPandasSqlInterpreter.class);
+public class PythonInterpreterPandasSql extends Interpreter {
+  private static final Logger LOG = LoggerFactory.getLogger(PythonInterpreterPandasSql.class);
 
   private String SQL_BOOTSTRAP_FILE_PY = "/bootstrap_sql.py";
 
-  public PythonPandasSqlInterpreter(Properties property) {
+  public PythonInterpreterPandasSql(Properties property) {
     super(property);
   }
 
-  private PythonInterpreter getPythonInterpreter() {
+  PythonInterpreter getPythonInterpreter() {
     LazyOpenInterpreter lazy = null;
     PythonInterpreter python = null;
     Interpreter p = getInterpreterInTheSameSessionByClassName(PythonInterpreter.class.getName());
@@ -64,9 +64,6 @@ public class PythonPandasSqlInterpreter extends Interpreter {
   @Override
   public void open() {
     LOG.info("Open Python SQL interpreter instance: {}", this.toString());
-
-  //TODO(bzz): check i.e by importing and catching ImportError
-  //if (py4jAndPandasAndPandasqlAreInstalled) {
     try {
       LOG.info("Bootstrap {} interpreter with {}", this.toString(), SQL_BOOTSTRAP_FILE_PY);
       PythonInterpreter python = getPythonInterpreter();
@@ -74,7 +71,16 @@ public class PythonPandasSqlInterpreter extends Interpreter {
     } catch (IOException e) {
       LOG.error("Can't execute " + SQL_BOOTSTRAP_FILE_PY + " to import SQL dependencies", e);
     }
-  //}
+  }
+
+  /**
+   * Checks if Python dependencies pandas and pandasql are installed
+   * @return True if they are
+   */
+  boolean isPandasAndPandasqlInstalled() {
+    PythonInterpreter python = getPythonInterpreter();
+    String output = python.sendCommandToPython("\n\nimport pandas\nimport pandasql\n");
+    return !output.contains("ImportError");
   }
 
   @Override

@@ -44,7 +44,8 @@ import org.junit.Test;
  * <ol>
  *  - <li>Python</li>
  *  - <li>NumPy</li>
- *  - <li>Pandas DataFrame</li>
+ *  - <li>Pandas</li>
+ *  - <li>PandaSql</li>
  * <ol>
  *
  * To run manually on such environment, use:
@@ -52,10 +53,10 @@ import org.junit.Test;
  *   mvn -Dpython.test.exclude='' test -pl python -am
  * </code>
  */
-public class PythonPandasSqlInterpreterTest {
+public class PythonInterpreterPandasSqlTest {
 
   private InterpreterGroup intpGroup;
-  private PythonPandasSqlInterpreter sql;
+  private PythonInterpreterPandasSql sql;
   private PythonInterpreter python;
 
   private InterpreterContext context;
@@ -72,7 +73,7 @@ public class PythonPandasSqlInterpreterTest {
     python.setInterpreterGroup(intpGroup);
     python.open();
 
-    sql = new PythonPandasSqlInterpreter(p);
+    sql = new PythonInterpreterPandasSql(p);
     sql.setInterpreterGroup(intpGroup);
 
     intpGroup.put("note", Arrays.asList(python, sql));
@@ -92,23 +93,47 @@ public class PythonPandasSqlInterpreterTest {
   }
 
   @Test
-  public void sqlOverTestDataPrintsTable() {
-    //given
-    // `import pandas as pd` and `import numpy as np` done
-    // DataFrame \w test data
-    String expectedTable = "name\tage\n\nmoon\t33\n\npark\t34";
-    python.interpret("df2 = pd.DataFrame({ 'age'  : np.array([33, 51, 51, 34]), "+
-                                          "'name' : pd.Categorical(['moon','jobs','gates','park'])})", context);
+  public void dependenciesAreInstalled() {
+    InterpreterResult ret = python.interpret("import pandas\nimport pandasql\nimport numpy\n", context);
+    assertEquals(ret.message(), InterpreterResult.Code.SUCCESS, ret.code());
+  }
 
+  @Test
+  public void errorMessageIfDependenciesNotInstalled() {
+    InterpreterResult ret;
+    // given
+    ret = python.interpret(
+        "pysqldf = lambda q: print('Can not execute SQL as Python dependency is not installed')",
+         context);
+    assertEquals(ret.message(), InterpreterResult.Code.SUCCESS, ret.code());
+
+    // when
+    ret = sql.interpret("SELECT * from something", context);
+
+    // then
+    assertNotNull(ret);
+    assertEquals(ret.message(), InterpreterResult.Code.SUCCESS, ret.code());
+    assertTrue(ret.message().contains("dependency is not installed"));
+  }
+
+  @Test
+  public void sqlOverTestDataPrintsTable() {
+    InterpreterResult ret;
+    // given
+    //String expectedTable = "name\tage\n\nmoon\t33\n\npark\t34";
+    ret = python.interpret("import pandas as pd", context);
+    ret = python.interpret("import numpy as np", context);
+    // DataFrame df2 \w test data
+    ret = python.interpret("df2 = pd.DataFrame({ 'age'  : np.array([33, 51, 51, 34]), "+
+                           "'name' : pd.Categorical(['moon','jobs','gates','park'])})", context);
+    assertEquals(ret.message(), InterpreterResult.Code.SUCCESS, ret.code());
 
     //when
-    InterpreterResult ret = sql.interpret("select name, age from df2 where age < 40", context);
+    ret = sql.interpret("select name, age from df2 where age < 40", context);
 
     //then
-    assertEquals(InterpreterResult.Code.SUCCESS, ret.code());
-    assertEquals(Type.TABLE, ret.type());
-    //System.out.println(ret.message());
-    //System.out.println(expectedTable);
+    assertEquals(ret.message(), InterpreterResult.Code.SUCCESS, ret.code());
+    assertEquals(ret.message(), Type.TABLE, ret.type());
     //assertEquals(expectedTable, ret.message()); //somehow it's same but not equal
     assertTrue(ret.message().indexOf("moon\t33") > 0);
     assertTrue(ret.message().indexOf("park\t34") > 0);
@@ -124,9 +149,8 @@ public class PythonPandasSqlInterpreterTest {
     //then
     assertNotNull("Interpreter returned 'null'", ret);
     //System.out.println("\nInterpreter response: \n" + ret.message());
-    assertEquals(InterpreterResult.Code.ERROR, ret.code());
+    assertEquals(ret.toString(), InterpreterResult.Code.ERROR, ret.code());
     assertTrue(ret.message().length() > 0);
   }
-
 
 }

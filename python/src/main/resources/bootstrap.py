@@ -132,6 +132,8 @@ class PyZeppelinContext(object):
             # `isinstance(p, DataFrame)` would req `import pandas.core.frame.DataFrame`
             # and so a dependency on pandas
             self.show_dataframe(p, **kwargs)
+        elif hasattr(p, '__call__'):
+            p() #error reporting
     
     def show_dataframe(self, df, **kwargs):
         """Pretty prints DF using Table Display System
