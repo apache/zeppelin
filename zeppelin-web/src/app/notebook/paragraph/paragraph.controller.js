@@ -1036,8 +1036,7 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
       return '';
     }
     var user = (pdata.user === undefined || pdata.user === null) ? 'anonymous' : pdata.user;
-    var desc = 'Took ' +
-      moment.duration(moment(pdata.dateFinished).diff(moment(pdata.dateStarted))).humanize() +
+    var desc = 'Took ' + moment.duration((timeMs / 1000), 'seconds').format('h [hrs] m [min] s [sec]') +
       '. Last updated by ' + user + ' at ' + moment(pdata.dateUpdated).format('MMMM DD YYYY, h:mm:ss A') + '.';
     if ($scope.isResultOutdated()) {
       desc += ' (outdated)';
