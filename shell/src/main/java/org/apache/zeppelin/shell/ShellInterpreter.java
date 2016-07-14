@@ -38,6 +38,7 @@ import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
+import org.apache.zeppelin.shell.security.ShellSecurityImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,8 +58,11 @@ public class ShellInterpreter extends Interpreter {
 
   @Override
   public void open() {
-    LOGGER.info("Command timeout property: {}", TIMEOUT_PROPERTY);
+    LOGGER.info("Command timeout property: {}", getProperty(TIMEOUT_PROPERTY));
     executors = new HashMap<String, DefaultExecutor>();
+    if (!StringUtils.isAnyEmpty(getProperty("zeppelin.shell.auth.type"))) {
+      ShellSecurityImpl.createSecureConfiguration(getProperty(), shell);
+    }
   }
 
   @Override
