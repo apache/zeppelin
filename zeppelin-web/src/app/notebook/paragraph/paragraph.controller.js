@@ -406,12 +406,12 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
       var oldActiveApp = _.get($scope.paragraph.config, 'helium.activeApp');
       var newActiveApp = _.get(data.paragraph.config, 'helium.activeApp');
 
+      var statusChanged = (data.paragraph.status !== $scope.paragraph.status);
+
       var resultRefreshed = (data.paragraph.dateFinished !== $scope.paragraph.dateFinished) ||
         isEmpty(data.paragraph.result) !== isEmpty($scope.paragraph.result) ||
-        data.paragraph.status === 'ERROR' ||
+        data.paragraph.status === 'ERROR' || (data.paragraph.status === 'FINISHED' && statusChanged) ||
         (!newActiveApp && oldActiveApp !== newActiveApp);
-
-      var statusChanged = (data.paragraph.status !== $scope.paragraph.status);
 
       //console.log("updateParagraph oldData %o, newData %o. type %o -> %o, mode %o -> %o", $scope.paragraph, data, oldType, newType, oldGraphMode, newGraphMode);
 
@@ -470,7 +470,7 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
         $scope.renderHtml();
       } else if (newType === 'ANGULAR' && resultRefreshed) {
         $scope.renderAngular();
-      } else if (newType === 'TEXT') {
+      } else if (newType === 'TEXT' && resultRefreshed) {
         $scope.renderText();
       }
 
@@ -1284,7 +1284,7 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
       var columnNames = _.pluck(data.columnNames, 'name');
 
       // on chart type change, destroy table to force reinitialization.
-      if ($scope.hot && !refresh) {
+      if ($scope.hot) {
         $scope.hot.destroy();
         $scope.hot = null;
       }
