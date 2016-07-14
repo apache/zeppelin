@@ -12,6 +12,10 @@
  * limitations under the License.
  */
 
+.notebookContent {
+  padding-top: 36px;
+}
+
 .paragraph-col {
   margin: 0;
   padding: 0;
