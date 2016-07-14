@@ -646,7 +646,7 @@ public class Notebook implements NoteEventListener {
   /**
    * Cron task for the note.
    */
-  private static class CronJob implements org.quartz.Job {
+  public static class CronJob implements org.quartz.Job {
     public static Notebook notebook;
 
     @Override
