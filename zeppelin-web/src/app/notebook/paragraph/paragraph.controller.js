@@ -1219,7 +1219,7 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
       getMapPins(function(pins) {
         createPinMapLayer(pins, function(pinLayer) {
           $scope.map.map.add(pinLayer);
-          if (pins.length > 0) {
+          if (pinLayer.source.length > 0) {
             $scope.map.goTo(pinLayer.source);
           }
         });
@@ -1241,7 +1241,7 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
             basemap: 'streets'
           }),
           center: [-75.7325985, 45.4041593],  // Apption (lng, lat)
-          zoom: 16,
+          zoom: 14,
           pinRenderer: new SimpleRenderer({
             symbol: new SimpleMarkerSymbol({
               'color': [255, 0, 0, 0.5],
@@ -1258,7 +1258,7 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
             })
           })
         });
-        updateMapPins();
+        $scope.map.then(updateMapPins);
       });
     };
 
@@ -1461,10 +1461,27 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
       }
     }
 
-    if (!$scope.paragraph.config.graph.map.lat && !$scope.paragraph.config.graph.map.lng &&
-            $scope.paragraph.result.columnNames.length > 1) {
-      $scope.paragraph.config.graph.map.lat = $scope.paragraph.result.columnNames[0];
-      $scope.paragraph.config.graph.map.lng = $scope.paragraph.result.columnNames[1];
+    /* try to find columns for the map logitude and latitude */
+    var i;
+    var col;
+    if (!$scope.paragraph.config.graph.map.lat) {
+      for (i = 0; i < $scope.paragraph.result.columnNames.length; ++i) {
+        col = $scope.paragraph.result.columnNames[i];
+        if (col.name.toUpperCase().indexOf('LAT') !== -1) {
+          $scope.paragraph.config.graph.map.lat = col;
+          break;
+        }
+      }
+    }
+
+    if (!$scope.paragraph.config.graph.map.lng) {
+      for (i = 0; i < $scope.paragraph.result.columnNames.length; ++i) {
+        col = $scope.paragraph.result.columnNames[i];
+        if (col.name.toUpperCase().indexOf('LONG') !== -1) {
+          $scope.paragraph.config.graph.map.lng = col;
+          break;
+        }
+      }
     }
   };
 
