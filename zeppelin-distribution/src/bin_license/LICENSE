@@ -136,6 +136,7 @@ The text of each license is also included at licenses/LICENSE-[project]-[version
     (The MIT License) slf4j-log4j12 v1.7.10 (org.slf4j:slf4j-log4j12:jar:1.7.10 - http://www.slf4j.org) - http://www.slf4j.org/license.html
     (The MIT License) bcprov-jdk15on v1.51 (org.bouncycastle:bcprov-jdk15on:jar:1.51 - http://www.bouncycastle.org/java.html) - http://www.bouncycastle.org/licence.html
     (The MIT License) AnchorJS (https://github.com/bryanbraun/anchorjs) - https://github.com/bryanbraun/anchorjs/blob/master/README.md#license
+    (The MIT License) moment-duration-format v1.3.0 (https://github.com/jsmreese/moment-duration-format) - https://github.com/jsmreese/moment-duration-format/blob/master/LICENSE
 
 The following components are provided under the MIT License.
 
@@ -144,7 +145,6 @@ The following components are provided under the MIT License.
     (The MIT License) JUL to SLF4J bridge (org.slf4j:jul-to-slf4j:1.7.5 - http://www.slf4j.org)
     (The MIT License) angular-resource (angular-resource - https://github.com/angular/angular.js/tree/master/src/ngResource)
     (The MIT License) minimal-json (com.eclipsesource.minimal-json:minimal-json:0.9.4 - https://github.com/ralfstx/minimal-json)
-
 
 ========================================================================
 BSD-style licenses
