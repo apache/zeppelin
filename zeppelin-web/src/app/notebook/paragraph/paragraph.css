@@ -327,20 +327,10 @@ table.dataTable.table-condensed .sorting_desc:after {
 .tableDisplay div {
 }
 
-.tableDisplay img {
+.tableDisplay img:not(.esri-bitmap) {
   display: block;
   max-width: 100%;
   height: auto;
-}
-
-/*
-  Above, the max-width property of img tags inside tableDisplay divs was just
-  set to a percentage (max-width is relative to the parent element). However, the
-  parent elements of Esri map tiles don't have a width, resulting in an invisible
-  map (100% of 0px is 0px)! The below rule corrects for this.
-*/
-.tableDisplay .esri-display-object {
-	width: 100%;
 }
 
 .tableDisplay .btn-group span {

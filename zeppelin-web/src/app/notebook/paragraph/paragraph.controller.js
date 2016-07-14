@@ -1140,19 +1140,125 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
   };
 
   var setMap = function(data, refresh) {
-    var createMap = function(MapView, Map) {
+    var createPinMapLayer = function(pins, cb) {
+      esriLoader.require(['esri/layers/FeatureLayer'], function(FeatureLayer) {
+        var pinLayer = new FeatureLayer({
+          id: 'pins',
+          spatialReference: $scope.map.spatialReference,
+          geometryType: 'point',
+          source: pins,
+          fields: [],
+          objectIdField: '_ObjectID',
+          renderer: $scope.map.pinRenderer,
+          popupTemplate: {
+            title: '[{_lng}, {_lat}]',
+            content: [{
+              type: 'fields',
+              fieldInfos: []
+            }]
+          }
+        });
+
+        // add user-selected pin info fields to popup
+        var pinInfoCols = $scope.paragraph.config.graph.map.pin;
+        for (var i = 0; i < pinInfoCols.length; ++i) {
+          pinLayer.popupTemplate.content[0].fieldInfos.push({
+            fieldName: pinInfoCols[i].name,
+            visible: true
+          });
+        }
+        cb(pinLayer);
+      });
+    };
+
+    var getMapPins = function(cb) {
+      esriLoader.require(['esri/geometry/Point'], function(Point, FeatureLayer) {
+        var latCol = $scope.paragraph.config.graph.map.lat;
+        var lngCol = $scope.paragraph.config.graph.map.lng;
+        var pinInfoCols = $scope.paragraph.config.graph.map.pin;
+        var pins = [];
+
+        // construct objects for pins
+        if (latCol && lngCol && data.rows) {
+          for (var i = 0; i < data.rows.length; ++i) {
+            var row = data.rows[i];
+            var lng = row[lngCol.index];
+            var lat = row[latCol.index];
+            var pin = {
+              geometry: new Point({
+                x: lng,
+                y: lat
+              }),
+              attributes: {
+                _ObjectID: i,
+                _lng: lng,
+                _lat: lat
+              }
+            };
+
+            // add pin info from user-selected columns
+            for (var j = 0; j < pinInfoCols.length; ++j) {
+              var col = pinInfoCols[j];
+              pin.attributes[col.name] = row[col.index];
+            }
+            pins.push(pin);
+          }
+        }
+        cb(pins);
+      });
+    };
+
+    var updateMapPins = function() {
+      var pinLayer = $scope.map.map.findLayerById('pins');
+      $scope.map.popup.close();
+      if (pinLayer) {
+        $scope.map.map.remove(pinLayer);
+      }
+
+      // add pins to map as layer
+      getMapPins(function(pins) {
+        createPinMapLayer(pins, function(pinLayer) {
+          $scope.map.map.add(pinLayer);
+          if (pins.length > 0) {
+            $scope.map.goTo(pinLayer.source);
+          }
+        });
+      });
+    };
+
+    var createMap = function() {
       var mapdiv = angular.element('#p' + $scope.paragraph.id + '_map div')
       .css('height', $scope.paragraph.config.graph.height).get(0);
 
-      esriLoader.require(['esri/views/MapView', 'esri/Map'], function(MapView, Map) {
+      esriLoader.require(['esri/views/MapView',
+                          'esri/Map',
+                          'esri/renderers/SimpleRenderer',
+                          'esri/symbols/SimpleMarkerSymbol'],
+                          function(MapView, Map, SimpleRenderer, SimpleMarkerSymbol) {
         $scope.map = new MapView({
           container: mapdiv,
           map: new Map({
             basemap: 'streets'
           }),
-          center: [-75.69719, 45.42153],  // Apption (lng, lat)
-          zoom: 16
+          center: [-75.7325985, 45.4041593],  // Apption (lng, lat)
+          zoom: 16,
+          pinRenderer: new SimpleRenderer({
+            symbol: new SimpleMarkerSymbol({
+              'color': [255, 0, 0, 0.5],
+              'size': 16.5,
+              'outline': {
+                'color': [0, 0, 0, 1],
+                'width': 1.125,
+              },
+              // map pin SVG path
+              'path': 'M16,3.5c-4.142,0-7.5,3.358-7.5,7.5c0,4.143,7.5,18.121,7.5,' +
+                      '18.121S23.5,15.143,23.5,11C23.5,6.858,20.143,3.5,16,3.5z ' +
+                      'M16,14.584c-1.979,0-3.584-1.604-3.584-3.584S14.021,7.416,' +
+                      '16,7.416S19.584,9.021,19.584,11S17.979,14.584,16,14.584z'
+            })
+          })
         });
+        updateMapPins();
       });
     };
 
@@ -1160,6 +1266,7 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
       // on chart type change, destroy map to force reinitialization.
       if ($scope.map && !refresh) {
         $scope.map.map.destroy();
+        $scope.map.pinRenderer = null;
         $scope.map = null;
       }
 
@@ -1172,6 +1279,8 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
         } else {
           createMap();
         }
+      } else {
+        updateMapPins();
       }
     };
 
@@ -1329,6 +1438,7 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
     removeUnknownFromFields($scope.paragraph.config.graph.scatter);
 
     removeUnknownFromFields($scope.paragraph.config.graph.map);
+    unique($scope.paragraph.config.graph.map.pin);
     removeUnknown($scope.paragraph.config.graph.map.pin);
   };
 
