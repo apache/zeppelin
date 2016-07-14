@@ -59,6 +59,9 @@ public class InterpreterRestApi {
 
   Gson gson = new Gson();
 
+  public InterpreterRestApi() {
+  }
+
   public InterpreterRestApi(InterpreterFactory interpreterFactory) {
     this.interpreterFactory = interpreterFactory;
   }

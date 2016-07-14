@@ -73,6 +73,9 @@ public class NotebookRestApi {
   private SearchService notebookIndex;
   private NotebookAuthorization notebookAuthorization;
 
+  public NotebookRestApi() {
+  }
+
   public NotebookRestApi(Notebook notebook, NotebookServer notebookServer, SearchService search) {
     this.notebook = notebook;
     this.notebookServer = notebookServer;
