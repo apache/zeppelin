@@ -148,7 +148,8 @@ public class ZeppelinServer extends Application {
     LOG.info("Done, zeppelin server started");
 
     Runtime.getRuntime().addShutdownHook(new Thread() {
-      @Override public void run() {
+      @Override
+      public void run() {
         LOG.info("Shutting down Zeppelin Server ... ");
         try {
           jettyWebServer.stop();
@@ -300,12 +301,14 @@ public class ZeppelinServer extends Application {
 
   }
 
-  @Override public Set<Class<?>> getClasses() {
+  @Override
+  public Set<Class<?>> getClasses() {
     Set<Class<?>> classes = new HashSet<Class<?>>();
     return classes;
   }
 
-  @Override public Set<Object> getSingletons() {
+  @Override
+  public Set<Object> getSingletons() {
     Set<Object> singletons = new HashSet<>();
 
     /** Rest-api root endpoint */
