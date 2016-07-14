@@ -15,7 +15,7 @@ limitations under the License.
 <div id="{{paragraph.id}}_container"
      ng-class="{'paragraph': !asIframe, 'paragraphAsIframe': asIframe}">
 
-  <div ng-if="paragraph.config.title"
+  <div ng-show="paragraph.config.title"
        id="{{paragraph.id}}_title"
        class="title">
     <input type="text"
