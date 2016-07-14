@@ -163,7 +163,8 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     if (Files.exists(interpretersDir)) {
       for (Path interpreterDir : Files
           .newDirectoryStream(interpretersDir, new DirectoryStream.Filter<Path>() {
-            @Override public boolean accept(Path entry) throws IOException {
+            @Override
+            public boolean accept(Path entry) throws IOException {
               return Files.exists(entry) && Files.isDirectory(entry);
             }
           })) {
@@ -248,7 +249,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
 
     for (String settingId : interpreterSettings.keySet()) {
       InterpreterSetting setting = interpreterSettings.get(settingId);
-      logger.info("InterpreterSetting group {} : id={}, name={}", setting.getRefName(), settingId,
+      logger.info("InterpreterSetting group {} : id={}, name={}", setting.getGroup(), settingId,
           setting.getName());
     }
   }
@@ -363,18 +364,10 @@ public class InterpreterFactory implements InterpreterGroupFactory {
       // previously created setting should turn this feature on here.
       setting.getOption().setRemote(true);
 
-      /**
-       * Check whether it's old setting or not. If it's old, set the refName from group
-       */
-      if (null == setting.getRefName()) {
-        setting.setRefName(setting.getGroup());
-      }
-
-      /**
-       * Update transient information from InterpreterSettingRef
-       */
+      // Update transient information from InterpreterSettingRef
       // TODO(jl): Check if reference of setting is null
-      setting.setPath(interpreterSettingsRef.get(setting.getRefName()).getPath());
+
+      setting.setPath(interpreterSettingsRef.get(setting.getGroup()).getPath());
 
       setting.setInterpreterGroupFactory(this);
       interpreterSettings.put(k, setting);
@@ -481,11 +474,11 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     return false;
   }
 
-  public InterpreterSetting createNewSetting(String name, String refName,
+  public InterpreterSetting createNewSetting(String name, String group,
       List<Dependency> dependencies, InterpreterOption option, Properties p) throws IOException {
-    InterpreterSetting setting = createFromInterpreterSettingRef(refName);
+    InterpreterSetting setting = createFromInterpreterSettingRef(group);
     setting.setName(name);
-    setting.setRefName(refName);
+    setting.setGroup(group);
     setting.appendDependencies(dependencies);
     setting.setInterpreterOption(option);
     setting.updateProperties(p);
@@ -495,25 +488,25 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     return setting;
   }
 
-  private InterpreterSetting add(String refName, InterpreterInfo interpreterInfo,
+  private InterpreterSetting add(String group, InterpreterInfo interpreterInfo,
       Properties properties, String path)
       throws InterpreterException, IOException, RepositoryException {
     ArrayList<InterpreterInfo> infos = new ArrayList<>();
     infos.add(interpreterInfo);
-    return add(refName, infos, new ArrayList<Dependency>(), defaultOption, properties, path);
+    return add(group, infos, new ArrayList<Dependency>(), defaultOption, properties, path);
   }
 
   /**
-   * @param refName    InterpreterSetting reference name
+   * @param group    InterpreterSetting reference name
    * @param properties
    * @return
    * @throws InterpreterException
    * @throws IOException
    */
-  public InterpreterSetting add(String refName, ArrayList<InterpreterInfo> interpreterInfos,
+  public InterpreterSetting add(String group, ArrayList<InterpreterInfo> interpreterInfos,
       List<Dependency> dependencies, InterpreterOption option, Properties properties, String path)
       throws InterpreterException, IOException, RepositoryException {
-    Preconditions.checkNotNull(refName, "name should not be null");
+    Preconditions.checkNotNull(group, "name should not be null");
     Preconditions.checkNotNull(interpreterInfos, "interpreterInfos should not be null");
     Preconditions.checkNotNull(dependencies, "dependencies should not be null");
     Preconditions.checkNotNull(option, "option should not be null");
@@ -522,8 +515,8 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     InterpreterSetting interpreterSetting;
 
     synchronized (interpreterSettingsRef) {
-      if (interpreterSettingsRef.containsKey(refName)) {
-        interpreterSetting = interpreterSettingsRef.get(refName);
+      if (interpreterSettingsRef.containsKey(group)) {
+        interpreterSetting = interpreterSettingsRef.get(group);
 
         // Append InterpreterInfo
         List<InterpreterInfo> infos = interpreterSetting.getInterpreterInfos();
@@ -557,9 +550,9 @@ public class InterpreterFactory implements InterpreterGroupFactory {
 
       } else {
         interpreterSetting =
-            new InterpreterSetting(refName, null, interpreterInfos, properties, dependencies,
+            new InterpreterSetting(group, null, interpreterInfos, properties, dependencies,
                 option, path);
-        interpreterSettingsRef.put(refName, interpreterSetting);
+        interpreterSettingsRef.put(group, interpreterSetting);
       }
     }
 
@@ -572,7 +565,8 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     return interpreterSetting;
   }
 
-  @Override public InterpreterGroup createInterpreterGroup(String id, InterpreterOption option)
+  @Override
+  public InterpreterGroup createInterpreterGroup(String id, InterpreterOption option)
       throws InterpreterException, NullArgumentException {
 
     //When called from REST API without option we receive NPE
@@ -740,7 +734,8 @@ public class InterpreterFactory implements InterpreterGroupFactory {
       }
 
       Collections.sort(settings, new Comparator<InterpreterSetting>() {
-        @Override public int compare(InterpreterSetting o1, InterpreterSetting o2) {
+        @Override
+        public int compare(InterpreterSetting o1, InterpreterSetting o2) {
           return o1.getName().compareTo(o2.getName());
         }
       });

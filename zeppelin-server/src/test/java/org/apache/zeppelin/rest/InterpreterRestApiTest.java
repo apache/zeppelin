@@ -87,7 +87,7 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
   @Test
   public void testSettingsCRUD() throws IOException {
     // Call Create Setting REST API
-    String jsonRequest = "{\"name\":\"md2\",\"refName\":\"md\",\"properties\":{\"propname\":\"propvalue\"}," +
+    String jsonRequest = "{\"name\":\"md2\",\"group\":\"md\",\"properties\":{\"propname\":\"propvalue\"}," +
         "\"interpreterGroup\":[{\"class\":\"org.apache.zeppelin.markdown.Markdown\",\"name\":\"md\"}]," +
         "\"dependencies\":[]," +
         "\"option\": { \"remote\": true, \"perNoteSession\": false }}";

@@ -184,7 +184,7 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl',
     };
 
     $scope.newInterpreterGroupChange = function() {
-      var el = _.pluck(_.filter($scope.availableInterpreters, {'name': $scope.newInterpreterSetting.refName}),
+      var el = _.pluck(_.filter($scope.availableInterpreters, {'name': $scope.newInterpreterSetting.group}),
         'properties');
       var properties = {};
       for (var i = 0; i < el.length; i++) {
@@ -221,7 +221,7 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl',
 
     $scope.addNewInterpreterSetting = function() {
       //user input validation on interpreter creation
-      if (!$scope.newInterpreterSetting.name.trim() || !$scope.newInterpreterSetting.refName) {
+      if (!$scope.newInterpreterSetting.name.trim() || !$scope.newInterpreterSetting.group) {
         BootstrapDialog.alert({
           closable: true,
           title: 'Add interpreter',

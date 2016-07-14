@@ -27,12 +27,12 @@ import org.apache.zeppelin.interpreter.InterpreterOption;
  * NewInterpreterSetting rest api request message
  */
 public class NewInterpreterSettingRequest {
-  String name;
-  String refName;
+  private String name;
+  private String group;
 
-  Map<String, String> properties;
-  List<Dependency> dependencies;
-  InterpreterOption option;
+  private Map<String, String> properties;
+  private List<Dependency> dependencies;
+  private InterpreterOption option;
 
   public NewInterpreterSettingRequest() {
 
@@ -42,8 +42,8 @@ public class NewInterpreterSettingRequest {
     return name;
   }
 
-  public String getRefName() {
-    return refName;
+  public String getGroup() {
+    return group;
   }
 
   public Map<String, String> getProperties() {

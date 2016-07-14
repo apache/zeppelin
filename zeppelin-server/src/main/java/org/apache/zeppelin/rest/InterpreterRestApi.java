@@ -90,7 +90,7 @@ public class InterpreterRestApi {
       Properties p = new Properties();
       p.putAll(request.getProperties());
       InterpreterSetting interpreterSetting = interpreterFactory
-          .createNewSetting(request.getName(), request.getRefName(), request.getDependencies(),
+          .createNewSetting(request.getName(), request.getGroup(), request.getDependencies(),
               request.getOption(), p);
       logger.info("new setting created with {}", interpreterSetting.getId());
       return new JsonResponse<>(Status.CREATED, "", interpreterSetting).build();

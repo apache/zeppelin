@@ -89,16 +89,14 @@ public class Note implements Serializable, ParagraphJobListener {
   private transient NoteEventListener noteEventListener;
   private transient Credentials credentials;
 
-  /**
+  /*
    * note configurations.
-   * <p>
    * - looknfeel - cron
    */
   private Map<String, Object> config = new HashMap<>();
 
-  /**
+  /*
    * note information.
-   * <p>
    * - cron : cron expression validity.
    */
   private Map<String, Object> info = new HashMap<>();
@@ -202,7 +200,6 @@ public class Note implements Serializable, ParagraphJobListener {
   /**
    * Add paragraph last.
    */
-
   public Paragraph addParagraph() {
     Paragraph p = new Paragraph(this, this, factory);
     addLastReplNameIfEmptyText(p);

@@ -38,7 +38,7 @@ public class InterpreterSetting {
   private static final String SHARED_PROCESS = "shared_process";
   private String id;
   private String name;
-  private String refName; // always be null in case of InterpreterSettingRef
+  private String group; // always be null in case of InterpreterSettingRef
   private Properties properties;
 
   @SerializedName("interpreterGroup") private List<InterpreterInfo> interpreterInfos;
@@ -47,19 +47,18 @@ public class InterpreterSetting {
   private InterpreterOption option;
   private transient String path;
 
-  @Deprecated private String group;
   @Deprecated private transient InterpreterGroupFactory interpreterGroupFactory;
 
   public InterpreterSetting() {
 
   }
 
-  public InterpreterSetting(String id, String name, String refName,
+  public InterpreterSetting(String id, String name, String group,
       List<InterpreterInfo> interpreterInfos, Properties properties, List<Dependency> dependencies,
       InterpreterOption option, String path) {
     this.id = id;
     this.name = name;
-    this.refName = refName;
+    this.group = group;
     this.interpreterInfos = interpreterInfos;
     this.properties = properties;
     this.dependencies = dependencies;
@@ -67,9 +66,9 @@ public class InterpreterSetting {
     this.path = path;
   }
 
-  public InterpreterSetting(String name, String refName, List<InterpreterInfo> interpreterInfos,
+  public InterpreterSetting(String name, String group, List<InterpreterInfo> interpreterInfos,
       Properties properties, List<Dependency> dependencies, InterpreterOption option, String path) {
-    this(generateId(), name, refName, interpreterInfos, properties, dependencies, option, path);
+    this(generateId(), name, group, interpreterInfos, properties, dependencies, option, path);
   }
 
   /**
@@ -78,7 +77,7 @@ public class InterpreterSetting {
    * @param o interpreterSetting from interpreterSettingRef
    */
   public InterpreterSetting(InterpreterSetting o) {
-    this(generateId(), o.getName(), o.getRefName(), o.getInterpreterInfos(), o.getProperties(),
+    this(generateId(), o.getName(), o.getGroup(), o.getInterpreterInfos(), o.getProperties(),
         o.getDependencies(), o.getOption(), o.getPath());
   }
 
@@ -90,12 +89,7 @@ public class InterpreterSetting {
     return name;
   }
 
-  String getRefName() {
-    return refName;
-  }
-
-  @Deprecated
-  public String getGroup() {
+  String getGroup() {
     return group;
   }
 
@@ -209,8 +203,8 @@ public class InterpreterSetting {
     this.properties.putAll(p);
   }
 
-  void setRefName(String refName) {
-    this.refName = refName;
+  void setGroup(String group) {
+    this.group = group;
   }
 
   void setName(String name) {

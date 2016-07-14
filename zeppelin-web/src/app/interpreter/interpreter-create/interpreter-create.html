@@ -27,7 +27,7 @@ limitations under the License.
         <b>Interpreter group</b>
         <div class="form-group"
              style="width:180px">
-          <select class="form-control input-sm" ng-model="newInterpreterSetting.refName"
+          <select class="form-control input-sm" ng-model="newInterpreterSetting.group"
                   ng-change="newInterpreterGroupChange()">
             <option ng-repeat="availableInterpreter in availableInterpreters | unique: 'name'| orderBy: 'name'" value="{{availableInterpreter.name}}">
               {{availableInterpreter.name}}
