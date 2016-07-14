@@ -108,7 +108,7 @@ public class ElasticsearchInterpreter extends Interpreter {
   private String host = "localhost";
   private int port = 9300;
   private String clusterName = "elasticsearch";
-  private int resultSize;
+  private int resultSize = 10;
 
   public ElasticsearchInterpreter(Properties property) {
     super(property);
