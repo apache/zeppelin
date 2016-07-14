@@ -80,7 +80,6 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
     websocketMsgSrv.getNotebook($routeParams.noteId);
 
     var currentRoute = $route.current;
-
     if (currentRoute) {
       setTimeout(
         function() {
@@ -338,6 +337,10 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
 
   /** update the current note */
   $scope.$on('setNoteContent', function(event, note) {
+    if (note === undefined) {
+      $window.location.href = '/';
+    }
+
     $scope.paragraphUrl = $routeParams.paragraphId;
     $scope.asIframe = $routeParams.asIframe;
     if ($scope.paragraphUrl) {
