@@ -40,7 +40,7 @@ limitations under the License.
             <small>
               <span style="display:inline-block" ng-repeat="intp in item.interpreters">
                 <span ng-show="!$first">, </span>
-                %<span ng-show="!$parent.$first || $first">{{item.group}}</span
+                %<span ng-show="!$parent.$first || $first">{{item.name}}</span
                 ><span ng-show="(!$parent.$first || $first) && !$first">.</span
                 ><span ng-show="!$first">{{intp.name}}</span>
                 <span ng-show="$parent.$first && $first">(default)</span>

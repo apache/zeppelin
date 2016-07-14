@@ -194,15 +194,14 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl',
     };
 
     $scope.newInterpreterGroupChange = function() {
-      var el = _.pluck(_.filter($scope.availableInterpreters, {'group': $scope.newInterpreterSetting.group}),
+      var el = _.pluck(_.filter($scope.availableInterpreters, {'name': $scope.newInterpreterSetting.group}),
         'properties');
-
       var properties = {};
       for (var i = 0; i < el.length; i++) {
         var intpInfo = el[i];
         for (var key in intpInfo) {
           properties[key] = {
-            value: intpInfo[key].defaultValue,
+            value: intpInfo[key],
             description: intpInfo[key].description
           };
         }

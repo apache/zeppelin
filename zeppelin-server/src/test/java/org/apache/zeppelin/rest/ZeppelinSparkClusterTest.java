@@ -20,16 +20,10 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.exec.CommandLine;
-import org.apache.commons.exec.DefaultExecutor;
-import org.apache.commons.exec.ExecuteWatchdog;
-import org.apache.commons.exec.PumpStreamHandler;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Paragraph;
@@ -204,8 +198,8 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
                     ZeppelinServer.notebook.getBindedInterpreterSettings(note.id());
 
             for (InterpreterSetting setting : settings) {
-                if (setting.getGroup().equals("spark")) {
-                    ZeppelinServer.notebook.getInterpreterFactory().restart(setting.id());
+                if (setting.getName().equals("spark")) {
+                    ZeppelinServer.notebook.getInterpreterFactory().restart(setting.getId());
                     break;
                 }
             }

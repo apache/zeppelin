@@ -19,69 +19,22 @@ package org.apache.zeppelin.rest.message;
 
 import java.util.List;
 
-import org.apache.zeppelin.interpreter.Interpreter;
-import org.apache.zeppelin.interpreter.InterpreterSetting;
+import org.apache.zeppelin.interpreter.InterpreterInfo;
 
 /**
  * InterpreterSetting information for binding
  */
 public class InterpreterSettingListForNoteBind {
-  String id;
-  String name;
-  String group;
+  private String id;
+  private String name;
   private boolean selected;
-  private List<InterpreterSetting.InterpreterInfo> interpreters;
+  private List<InterpreterInfo> interpreters;
 
   public InterpreterSettingListForNoteBind(String id, String name,
-                                           String group,
-                                           List<InterpreterSetting.InterpreterInfo> interpreters,
-                                           boolean selected) {
-    super();
+      List<InterpreterInfo> interpreters, boolean selected) {
     this.id = id;
     this.name = name;
-    this.group = group;
     this.interpreters = interpreters;
     this.selected = selected;
   }
-
-  public String getId() {
-    return id;
-  }
-
-  public void setId(String id) {
-    this.id = id;
-  }
-
-  public String getName() {
-    return name;
-  }
-
-  public void setName(String name) {
-    this.name = name;
-  }
-
-  public String getGroup() {
-    return group;
-  }
-
-  public void setGroup(String group) {
-    this.group = group;
-  }
-
-  public List<InterpreterSetting.InterpreterInfo> getInterpreterNames() {
-    return interpreters;
-  }
-
-  public void setInterpreterNames(List<InterpreterSetting.InterpreterInfo> interpreters) {
-    this.interpreters = interpreters;
-  }
-
-  public boolean isSelected() {
-    return selected;
-  }
-
-  public void setSelected(boolean selected) {
-    this.selected = selected;
-  }
-
 }

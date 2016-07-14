@@ -588,9 +588,9 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
       var selectedIntp = {};
       for (key in $scope.interpreterBindings) {
         setting = $scope.interpreterBindings[key];
-        if (!selectedIntp[setting.group]) {
+        if (!selectedIntp[setting.name]) {
           setting.selected = true;
-          selectedIntp[setting.group] = true;
+          selectedIntp[setting.name] = true;
         }
       }
       $scope.showSetting = true;
