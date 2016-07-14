@@ -336,19 +336,16 @@ public class InterpreterFactory implements InterpreterGroupFactory {
           setting.getGroup(), setting.getInterpreterInfos(), setting.getProperties(),
           setting.getDependencies(), setting.getOption());
 
-      Thread t = new Thread() {
-        public void run() {
-          try {
-            loadInterpreterDependencies(intpSetting);
-          } catch (Exception e) {
-            logger.error(String.format("Error while downloading repos for interpreter group : %s," +
-                " go to interpreter setting page click on edit and save it again to make this " +
-                "interpreter work properly." ,
-                intpSetting.getGroup()), e);
-          }
+      try {
+        synchronized (interpreterSettings) {
+          loadInterpreterDependencies(intpSetting);
         }
-      };
-      t.start();
+      } catch (Exception e) {
+        logger.error(String.format("Error while downloading repos for interpreter group : %s," +
+                " go to interpreter setting page click on edit and save it again to make this " +
+                "interpreter work properly.",
+            intpSetting.getGroup()), e);
+      }
 
 
       intpSetting.setInterpreterGroupFactory(this);
