@@ -33,7 +33,7 @@ public class ShellSecurityImpl {
 
   private static Logger LOGGER = LoggerFactory.getLogger(ShellSecurityImpl.class);
 
-  public static void createSecureCinfiguration(Properties properties, String shell) {
+  public static void createSecureConfiguration(Properties properties, String shell) {
 
     String authType = properties.getProperty("zeppelin.shell.auth.type")
       .trim().toUpperCase();
