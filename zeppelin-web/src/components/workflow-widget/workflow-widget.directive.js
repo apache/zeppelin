@@ -21,14 +21,33 @@ angular.module('zeppelinWebApp').controller('workflowWidgetCtrl', function($scop
   $scope.workflowJobResultData = [];
 
   $scope.$watchCollection('workflowJobInputData', function() {
+    var NOTE_NOT_FOUNT = -1;
     $scope.workflowJobLists = [];
     $scope.workflowJobResultData = [];
+    var noteLists = notebookListDataFactory.root.children;
     $scope.workflowJobInputData.map(function(item) {
       var workflowJob = item.value.split(':');
-      if (workflowJob[0] === undefined || workflowJob[1] === undefined) {
+      if (workflowJob[0] === undefined) {
         return;
       }
-      $scope.workflowJobLists.push({notebookId: workflowJob[0], paragraphId: workflowJob[1]});
+      if (workflowJob[1] === undefined) {
+        workflowJob[1] = '*';
+      }
+
+      var noteIndex = _.findIndex(noteLists, {'id': workflowJob[0]});
+      if (noteIndex === NOTE_NOT_FOUNT) {
+        return;
+      }
+
+      var paragraphNameValue = workflowJob[1] === '*' ? 'ALL Paragraph' : workflowJob[1];
+      $scope.workflowJobLists.push(
+        {
+          noteName: noteLists[noteIndex].name,
+          paragraphName: paragraphNameValue,
+          notebookId: workflowJob[0],
+          paragraphId: workflowJob[1]
+        }
+      );
       $scope.workflowJobResultData.push({notebookId: workflowJob[0], paragraphId: workflowJob[1]});
     });
   });

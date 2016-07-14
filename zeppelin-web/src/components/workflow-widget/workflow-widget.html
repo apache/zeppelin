@@ -14,13 +14,34 @@ limitations under the License.
 <div>
   <div>
     <div>
+      <div class="text-left">
+        <strong style="font-size: small">
+          <span class="text-muted font-size-small">Job Count ({{workflowJobLists.length}})</span>
+        </strong>
+      </div>
       <div ng-repeat="workflowItem in workflowJobLists track by $index">
-        <div class="btn-group" role="group" aria-label="...">
+        <div class="btn-group" role="group" aria-label="..." style="width: 100%; text-left">
           <a href="#/notebook/{{workflowItem.notebookId}}?paragraph={{workflowItem.paragraphId}}">
           <button
+            style="width: 100%; text-align: left !important;"
             type="button" class="btn btn-default"
           >
-            {{workflowItem.notebookId}} - {{workflowItem.paragraphId}}
+            <strong>{{workflowItem.noteName}}</strong>
+            &nbsp;-&nbsp;
+            <strong>
+              <!-- each paragraph -->
+              <span
+                ng-if="workflowItem.paragraphId !== '*'"
+                class="text-muted">
+                {{workflowItem.paragraphName}}
+              </span>
+              <!-- all paragraph in note -->
+              <span
+                ng-if="workflowItem.paragraphId === '*'"
+                class="text-warning">
+                {{workflowItem.paragraphName}}
+              </span>
+            </strong>
           </button>
           </a>
         </div>
