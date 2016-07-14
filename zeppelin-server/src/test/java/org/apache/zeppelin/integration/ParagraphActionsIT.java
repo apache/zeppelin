@@ -368,7 +368,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       clickAndWait(By.xpath(xpathToHideTitle));
       ZeppelinITUtils.turnOffImplicitWaits(driver);
       titleElems = driver.findElements(By.xpath(xpathToTitle)).size();
-      collector.checkThat("After Hide Title : The title field contains",
+      collector.checkThat("After Hide Title : The title field is hidden",
           titleElems,
           CoreMatchers.equalTo(0));
       ZeppelinITUtils.turnOnImplicitWaits(driver);
