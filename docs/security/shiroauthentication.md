@@ -66,13 +66,17 @@ Finally, you can login using one of the below **username/password** combinations
 <center><img src="../assets/themes/zeppelin/img/docs-img/zeppelin-login.png"></center>
 
 ```
-admin = password1
-user1 = password2
-user2 = password3
-```
+[users]
 
-### 5. Groups and permissions (optional)
-In case you want to leverage user groups and permissions, use one of the following configuration for LDAP or AD under `[main]` segment in `shiro.ini`
+admin = password1, admin
+user1 = password2, role1, role2
+user2 = password3, role3
+user3 = password4, role2
+```
+You can set the roles for each users next to the password.
+
+## Groups and permissions (optional)
+In case you want to leverage user groups and permissions, use one of the following configuration for LDAP or AD under `[main]` segment in `shiro.ini`.
 
 ```
 activeDirectoryRealm = org.apache.zeppelin.server.ActiveDirectoryGroupRealm
@@ -101,6 +105,21 @@ finance = *
 group1 = *
 ```
 
-All of above configurations are defined in the `conf/shiro.ini` file.
+## Secure your Zeppelin information (optional)
+By default, anyone who defined in `[users]` can share **Interpreter Setting**, **Credential** and **Configuration** information in Apache Zeppelin. 
+Sometimes you might want to hide these information for your use case. 
+Since Shiro provides **url-based security**, you can hide the information by commenting or uncommenting these below lines in `conf/shiro.ini`.
 
-> **NOTE :** This documentation is originally from [SECURITY-README.md](https://github.com/apache/zeppelin/blob/master/SECURITY-README.md).
+```
+[urls]
+
+/api/interpreter/** = authc, roles[admin]
+/api/configurations/** = authc, roles[admin]
+/api/credential/** = authc, roles[admin]
+```
+
+In this case, only who have `admin` role can see **Interpreter Setting**, **Credential** and **Configuration** information. 
+If you want to grant this permission to other users, you can change **roles[ ]** as you defined at `[users]` section.
+
+<br/>
+> **NOTE :** All of the above configurations are defined in the `conf/shiro.ini` file. This documentation is originally from [SECURITY-README.md](https://github.com/apache/zeppelin/blob/master/SECURITY-README.md).

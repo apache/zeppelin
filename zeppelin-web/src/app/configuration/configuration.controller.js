@@ -14,7 +14,7 @@
 'use strict';
 
 angular.module('zeppelinWebApp').controller('ConfigurationCtrl', function($scope, $route, $routeParams, $location,
-                                                                          $rootScope, $http, baseUrlSrv) {
+                                                                          $rootScope, $http, baseUrlSrv, ngToast) {
   $scope.configrations = [];
   $scope._ = _;
 
@@ -24,6 +24,16 @@ angular.module('zeppelinWebApp').controller('ConfigurationCtrl', function($scope
       $scope.configurations = data.body;
     }).
     error(function(data, status, headers, config) {
+      if (status === 401) {
+        ngToast.danger({
+          content: 'You don\'t have permission on this page',
+          verticalPosition: 'bottom',
+          timeout: '3000'
+        });
+        setTimeout(function() {
+          window.location.replace('/');
+        }, 3000);
+      }
       console.log('Error %o %o', status, data.message);
     });
   };

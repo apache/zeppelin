@@ -27,6 +27,16 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl',
       $http.get(baseUrlSrv.getRestApiBase() + '/interpreter/setting').success(function(data, status, headers, config) {
         $scope.interpreterSettings = data.body;
       }).error(function(data, status, headers, config) {
+        if (status === 401) {
+          ngToast.danger({
+            content: 'You don\'t have permission on this page',
+            verticalPosition: 'bottom',
+            timeout: '3000'
+          });
+          setTimeout(function() {
+            window.location.replace('/');
+          }, 3000);
+        }
         console.log('Error %o %o', status, data.message);
       });
     };
