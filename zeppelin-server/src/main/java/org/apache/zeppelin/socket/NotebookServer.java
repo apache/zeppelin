@@ -1094,12 +1094,27 @@ public class NotebookServer extends WebSocketServlet implements
           }
 
           Note noteCheckObject = notebook.getNote(newJobNotebookId);
-          if (noteCheckObject == null && noteCheckObject.getParagraph(newJobParagraphId) == null) {
+
+          if (noteCheckObject == null) {
             continue;
           }
 
-          newJob = new WorkflowJobItem(newJobNotebookId, newJobParagraphId);
-          parentItem.setOnSuccessJob(newJob);
+          if (noteCheckObject.getParagraph(newJobParagraphId) == null) {
+            if (newJobParagraphId.equals("*") == false) {
+              continue;
+            }
+            // run to all paragraph in note.
+            List<Paragraph> allParagaraphsInNote = noteCheckObject.getParagraphs();
+            for (Paragraph jobParagraph : allParagaraphsInNote) {
+              newJob = new WorkflowJobItem(newJobNotebookId, jobParagraph.getId());
+              parentItem.setOnSuccessJob(newJob);
+              parentItem = workflowJob.getWorkflowJobItemLast();
+            }
+          } else {
+            // run to each paragraph.
+            newJob = new WorkflowJobItem(newJobNotebookId, newJobParagraphId);
+            parentItem.setOnSuccessJob(newJob);
+          }
         }
       }
     }
@@ -1299,7 +1314,18 @@ public class NotebookServer extends WebSocketServlet implements
             for (String notebookId : waitJobLists.keySet()) {
               String paragraphId = waitJobLists.get(notebookId).get(0);
               Note nextNote = notebookServer.notebook().getNote(notebookId);
-              Paragraph p = nextNote.getParagraph(paragraphId);
+
+              if (nextNote == null) {
+                workflowManager.setJobNotify(Status.ERROR, notebookId, paragraphId);
+                continue;
+              }
+
+              Paragraph paragraph = nextNote.getParagraph(paragraphId);
+              if (paragraph == null) {
+                workflowManager.setJobNotify(Status.ERROR, notebookId, paragraphId);
+                continue;
+              }
+
               try {
                 nextNote.persist(null);
               } catch (IOException e) {
