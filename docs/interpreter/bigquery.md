@@ -12,6 +12,31 @@ group: interpreter
 ## Overview
 [BigQuery](https://cloud.google.com/bigquery/what-is-bigquery) is a highly scalable no-ops data warehouse in the Google Cloud Platform. Querying massive datasets can be time consuming and expensive without the right hardware and infrastructure. Google BigQuery solves this problem by enabling super-fast SQL queries against append-only tables using the processing power of Google's infrastructure. Simply move your data into BigQuery and let us handle the hard work. You can control access to both the project and your data based on your business needs, such as giving others the ability to view or query your data.  
 
+## Configuration
+<table class="table-configuration">
+  <tr>
+    <th>Name</th>
+    <th>Default Value</th>
+    <th>Description</th>
+  </tr>
+  <tr>
+    <td>zeppelin.bigquery.project_id</td>
+    <td>  </td>
+    <td>Google Project Id</td>
+  </tr>
+  <tr>
+    <td>zeppelin.bigquery.wait_time</td>
+    <td>5000</td>
+    <td>Query Timeout in Milliseconds</td>
+  </tr>
+  <tr>
+    <td>zeppelin.bigquery.max_no_of_rows</td>
+    <td>100000</td>
+    <td>Max result set size</td>
+  </tr>
+</table>
+
+
 ## BigQuery API
 Zeppelin is built against BigQuery API version v2-rev265-1.21.0.
 
