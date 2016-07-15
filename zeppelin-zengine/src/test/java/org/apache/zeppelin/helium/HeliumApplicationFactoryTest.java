@@ -240,6 +240,27 @@ public class HeliumApplicationFactoryTest implements JobListenerFactory {
     notebook.removeNote(note1.getId(), null);
   }
 
+  @Test
+  public void testInterpreterUnbindOfNullReplParagraph() throws IOException {
+    // create note
+    Note note1 = notebook.createNote(null);
+
+    // add paragraph with invalid magic
+    Paragraph p1 = note1.addParagraph();
+    p1.setText("%fake ");
+
+    // make sure that p1's repl is null
+    Interpreter intp = p1.getCurrentRepl();
+    assertEquals(intp, null);
+
+    // Unbind all interpreter from note
+    // NullPointerException shouldn't occur here
+    notebook.bindInterpretersToNote(note1.id(), new LinkedList<String>());
+
+    // remove note
+    notebook.removeNote(note1.getId(), null);
+  }
+
 
   @Test
   public void testUnloadOnInterpreterRestart() throws IOException {

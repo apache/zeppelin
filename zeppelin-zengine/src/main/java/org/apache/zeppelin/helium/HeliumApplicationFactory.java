@@ -445,7 +445,8 @@ public class HeliumApplicationFactory implements ApplicationEventListener, Noteb
       Interpreter currentInterpreter = p.getCurrentRepl();
       List<InterpreterInfo> infos = setting.getInterpreterInfos();
       for (InterpreterInfo info : infos) {
-        if (info.getClassName().equals(currentInterpreter.getClassName())) {
+        if (currentInterpreter != null &&
+            info.getClassName().equals(currentInterpreter.getClassName())) {
           onParagraphRemove(p);
           break;
         }
