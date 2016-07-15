@@ -31,7 +31,6 @@ import java.util.List;
 import org.apache.spark.SparkContext;
 import org.apache.spark.sql.SQLContext;
 import org.apache.spark.sql.catalyst.expressions.Attribute;
-import org.apache.spark.sql.hive.HiveContext;
 import org.apache.zeppelin.annotation.ZeppelinApi;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
@@ -70,7 +69,6 @@ public class ZeppelinContext {
 
   public SparkContext sc;
   public SQLContext sqlContext;
-  public HiveContext hiveContext;
   private GUI gui;
 
   @ZeppelinApi
