@@ -97,9 +97,9 @@ import java.util.NoSuchElementException;
  */
 
 
-public class bigQueryInterpreter extends Interpreter {
+public class BigQueryInterpreter extends Interpreter {
 
-  private Logger logger = LoggerFactory.getLogger(bigQueryInterpreter.class);
+  private Logger logger = LoggerFactory.getLogger(BigQueryInterpreter.class);
   private static final char NEWLINE = '\n';
   private static final char TAB = '\t';
   private static Bigquery service = null;
@@ -123,7 +123,7 @@ public class bigQueryInterpreter extends Interpreter {
       }
     };
 
-  public bigQueryInterpreter(Properties property) {
+  public BigQueryInterpreter(Properties property) {
     super(property);
   }
 
@@ -138,7 +138,7 @@ public class bigQueryInterpreter extends Interpreter {
             service = createAuthorizedClient();
             exceptionOnConnect = null;
             logger.info("Opened BigQuery SQL Connection");
-          }  catch (IOException e) {
+          } catch (IOException e) {
             logger.error("Cannot open connection", e);
             exceptionOnConnect = e;   
             close();
@@ -181,8 +181,7 @@ public class bigQueryInterpreter extends Interpreter {
         msg.append(NEWLINE);
       }
       return msg.toString();
-    }
-    catch ( NullPointerException ex ) {
+    } catch ( NullPointerException ex ) {
       throw new NullPointerException("SQL Execution returned an error!");
     }
   }
@@ -221,14 +220,11 @@ public class bigQueryInterpreter extends Interpreter {
           T response = request.execute();
           if (response.containsKey("pageToken")) {
             request = request.set("pageToken", response.get("pageToken"));
-          } 
-          else {
+          } else {
             hasNext = false;
           }
           return response;
-        } 
-        catch (IOException e) {
-          e.printStackTrace();
+        } catch (IOException e) {
           return null;
         }
       }
@@ -255,8 +251,7 @@ public class bigQueryInterpreter extends Interpreter {
         finalmessage.append(printRows(pages.next()));
       }
       return new InterpreterResult(Code.SUCCESS, finalmessage.toString());
-    }
-    catch ( NullPointerException ex ) {
+    } catch ( NullPointerException ex ) {
       return new InterpreterResult(Code.ERROR, ex.getMessage());
     }
   }
@@ -275,9 +270,7 @@ public class bigQueryInterpreter extends Interpreter {
           projectId,
           jobId);
       return getPages(getRequest);
-    }
-    catch (IOException e) {
-      e.printStackTrace();
+    } catch (IOException ex) {
       return null;
     }
   }
@@ -299,7 +292,7 @@ public class bigQueryInterpreter extends Interpreter {
   @Override
   public Scheduler getScheduler() {
     return SchedulerFactory.singleton().createOrGetFIFOScheduler(
-        bigQueryInterpreter.class.getName() + this.hashCode());
+        BigQueryInterpreter.class.getName() + this.hashCode());
   }
 
   @Override
@@ -323,12 +316,10 @@ public class bigQueryInterpreter extends Interpreter {
         JobCancelResponse response = request.execute();
         jobId = null;
         logger.info("Query Execution cancelled");
-      }
-      catch (IOException ex) {
+      } catch (IOException ex) {
         logger.error("Could not cancel the SQL execution");
       }
-    }
-    else {
+    } else {
       logger.info("Query Execution was already cancelled");
     }
   }
