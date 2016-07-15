@@ -1,0 +1,70 @@
+---
+layout: page
+title: "BigQuery Interpreter"
+description: ""
+group: interpreter
+---
+
+# BigQuery Interpreter for Apache Zeppelin
+
+<div id="toc"></div>
+
+## Overview
+[BigQuery](https://cloud.google.com/bigquery/what-is-bigquery) is a highly scalable no-ops data warehouse in the Google Cloud Platform. Querying massive datasets can be time consuming and expensive without the right hardware and infrastructure. Google BigQuery solves this problem by enabling super-fast SQL queries against append-only tables using the processing power of Google's infrastructure. Simply move your data into BigQuery and let us handle the hard work. You can control access to both the project and your data based on your business needs, such as giving others the ability to view or query your data.  
+
+## BigQuery API
+Zeppelin is built against BigQuery API version v2-rev265-1.21.0.
+
+## Enabling the BigQuery Interpreter
+
+In a notebook, to enable the **BigQuery** interpreter, click the **Gear** icon and select **bigquery**.
+
+## Using the BigQuery Interpreter
+
+In a paragraph, use `%bigquery.sql` to select the **BigQuery** interpreter and then input SQL statements against your datasets stored in BigQuery.
+You can use [BigQuery SQL Reference](https://cloud.google.com/bigquery/query-reference) to build your own SQL.
+
+For Example, SQL to query for top 10 departure delays across airports using the flights public dataset
+
+```bash
+%bigquery.sql
+SELECT departure_airport,count(case when departure_delay>0 then 1 else 0 end) as no_of_delays 
+FROM [bigquery-samples:airline_ontime_data.flights] 
+group by departure_airport 
+order by 2 desc 
+limit 10
+```
+
+Another Example, SQL to query for most commonly used java packages from the github data hosted in BigQuery 
+
+```bash
+%bigquery.sql
+SELECT
+  package,
+  COUNT(*) count
+FROM (
+  SELECT
+    REGEXP_EXTRACT(line, r' ([a-z0-9\._]*)\.') package,
+    id
+  FROM (
+    SELECT
+      SPLIT(content, '\n') line,
+      id
+    FROM
+      [bigquery-public-data:github_repos.sample_contents]
+    WHERE
+      content CONTAINS 'import'
+      AND sample_path LIKE '%.java'
+    HAVING
+      LEFT(line, 6)='import' )
+  GROUP BY
+    package,
+    id )
+GROUP BY
+  1
+ORDER BY
+  count DESC
+LIMIT
+  40
+```
+
