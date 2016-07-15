@@ -16,8 +16,7 @@
 
 angular.module('zeppelinWebApp')
   .controller('JobmanagerCtrl',
-    function($scope, $route, $routeParams, $location, $rootScope, $http, $q,
-             websocketMsgSrv, baseUrlSrv, $interval, $timeout, SaveAsService) {
+    function($scope, websocketMsgSrv, $interval) {
 
       $scope.$on('setNotebookJobs', function(event, responseData) {
         $scope.lastJobServerUnixTime = responseData.lastResponseUnixTime;

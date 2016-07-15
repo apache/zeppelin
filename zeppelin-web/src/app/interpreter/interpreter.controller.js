@@ -15,7 +15,7 @@
 'use strict';
 
 angular.module('zeppelinWebApp').controller('InterpreterCtrl',
-  function($scope, $route, $routeParams, $location, $rootScope, $http, baseUrlSrv, ngToast) {
+  function($scope, $http, baseUrlSrv, ngToast) {
     var interpreterSettingsTmp = [];
     $scope.interpreterSettings = [];
     $scope.availableInterpreters = {};
