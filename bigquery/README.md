@@ -91,3 +91,6 @@ LIMIT
   40
 ```
 
+# Sample Screenshot
+
+![screenshot from 2016-07-12 14 27 30](https://cloud.githubusercontent.com/assets/4242273/16785302/31b104e2-4842-11e6-87c0-b79763dd85c0.png)
