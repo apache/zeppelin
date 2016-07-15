@@ -14,7 +14,7 @@
 'use strict';
 
 angular.module('zeppelinWebApp').factory('websocketEvents',
-  function($rootScope, $websocket, $location, $window, baseUrlSrv) {
+  function($rootScope, $websocket, $location, baseUrlSrv) {
   var websocketCalls = {};
 
   websocketCalls.ws = $websocket(baseUrlSrv.getWebsocketUrl());
@@ -83,7 +83,7 @@ angular.module('zeppelinWebApp').factory('websocketEvents',
           label: 'Cancel',
           action: function(dialog) {
             dialog.close();
-            $window.location.replace('/');
+            $location.path('/');
           }
         }]
       });
