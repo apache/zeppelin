@@ -40,6 +40,7 @@ import com.google.api.services.bigquery.Bigquery.Jobs.GetQueryResults;
 import com.google.api.services.bigquery.model.GetQueryResultsResponse;
 import com.google.api.services.bigquery.model.QueryRequest;
 import com.google.api.services.bigquery.model.QueryResponse;
+import com.google.api.services.bigquery.model.JobCancelResponse;
 import com.google.gson.Gson;
 
 import java.io.IOException;
@@ -76,12 +77,14 @@ import java.util.NoSuchElementException;
  * BigQuery interpreter for Zeppelin.
  * 
  * <ul>
- * <li>{@code bigquery.project_id} - Project ID in GCP</li>
+ * <li>{@code zeppelin.bigquery.project_id} - Project ID in GCP</li>
+ * <li>{@code zeppelin.bigquery.wait_time} - Query Timeout in ms</li>
+ * <li>{@code zeppelin.bigquery.max_no_of_rows} - Max Result size</li>
  * </ul>
  * 
  * <p>
  * How to use: <br/>
- * {@code %bqsql.sql<br/>
+ * {@code %bigquery.sql<br/>
  * {@code
  *  SELECT departure_airport,count(case when departure_delay>0 then 1 else 0 end) as no_of_delays 
  *  FROM [bigquery-samples:airline_ontime_data.flights] 
@@ -103,22 +106,12 @@ public class bigQueryInterpreter extends Interpreter {
   //Mutex created to create the singleton in thread-safe fashion.
   private static Object serviceLock = new Object();
 
-  static final String PROJECT_ID = "bqsql.project_id";
-  static final String DEFAULT_PROJECT_ID = "";
-  static final String WAIT_TIME = "bqsql.query_wait_time";
-  static final String DEFAULT_WAIT_TIME = "5000";
+  static final String PROJECT_ID = "zeppelin.bigquery.project_id";
+  static final String WAIT_TIME = "zeppelin.bigquery.wait_time";
+  static final String MAX_ROWS = "zeppelin.bigquery.max_no_of_rows";
 
-  // Registering BigQuery Interpreter and defining attributes
-  static {
-    Interpreter.register(
-        "sql",
-        "bqsql",
-        bigQueryInterpreter.class.getName(),
-        new InterpreterPropertyBuilder()
-            .add(PROJECT_ID, DEFAULT_PROJECT_ID, "Google Project ID")
-            .add(WAIT_TIME, DEFAULT_WAIT_TIME, "Query timeout in Milliseconds") 
-            .build());
-  }
+  private static String jobId = null;
+  private static String projectId = null;
 
   private static final List NO_COMPLETION = new ArrayList<>();
   private Exception exceptionOnConnect;
@@ -174,19 +167,24 @@ public class bigQueryInterpreter extends Interpreter {
   public static String printRows(final GetQueryResultsResponse response) {
     StringBuilder msg = null;
     msg = new StringBuilder();
-    for (TableFieldSchema schem: response.getSchema().getFields()) {
-      msg.append(schem.getName());
-      msg.append(TAB);
-    }      
-    msg.append(NEWLINE);
-    for (TableRow row : response.getRows()) {
-      for (TableCell field : row.getF()) {
-        msg.append(field.getV().toString());
+    try {
+      for (TableFieldSchema schem: response.getSchema().getFields()) {
+        msg.append(schem.getName());
         msg.append(TAB);
-      }
+      }      
       msg.append(NEWLINE);
+      for (TableRow row : response.getRows()) {
+        for (TableCell field : row.getF()) {
+          msg.append(field.getV().toString());
+          msg.append(TAB);
+        }
+        msg.append(NEWLINE);
+      }
+      return msg.toString();
     }
-    return msg.toString();
+    catch ( NullPointerException ex ) {
+      throw new NullPointerException("SQL Execution returned an error!");
+    }
   }
 
   //Function to poll a job for completion. Future use
@@ -250,24 +248,32 @@ public class bigQueryInterpreter extends Interpreter {
     finalmessage = new StringBuilder("%table ");
     String projId = getProperty(PROJECT_ID);
     long wTime = Long.parseLong(getProperty(WAIT_TIME));
-    Iterator<GetQueryResultsResponse> pages = run(sql, projId, wTime);
-    while (pages.hasNext()) {
-      finalmessage.append(printRows(pages.next()));
+    long maxRows = Long.parseLong(getProperty(MAX_ROWS));
+    Iterator<GetQueryResultsResponse> pages = run(sql, projId, wTime, maxRows);
+    try {
+      while (pages.hasNext()) {
+        finalmessage.append(printRows(pages.next()));
+      }
+      return new InterpreterResult(Code.SUCCESS, finalmessage.toString());
     }
-    return new InterpreterResult(Code.SUCCESS, finalmessage.toString());
+    catch ( NullPointerException ex ) {
+      return new InterpreterResult(Code.ERROR, ex.getMessage());
+    }
   }
 
   //Function to run the SQL on bigQuery service
   public static Iterator<GetQueryResultsResponse> run(final String queryString, 
-    final String projId, final long wTime) {
+    final String projId, final long wTime, final long maxRows) {
     try {
       QueryResponse query = service.jobs().query(
           projId,
-          new QueryRequest().setTimeoutMs(wTime).setQuery(queryString))
+          new QueryRequest().setTimeoutMs(wTime).setQuery(queryString).setMaxResults(maxRows))
           .execute();
+      jobId = query.getJobReference().getJobId();
+      projectId = query.getJobReference().getProjectId();
       GetQueryResults getRequest = service.jobs().getQueryResults(
-          query.getJobReference().getProjectId(),
-          query.getJobReference().getJobId());
+          projectId,
+          jobId);
       return getPages(getRequest);
     }
     catch (IOException e) {
@@ -309,10 +315,21 @@ public class bigQueryInterpreter extends Interpreter {
   @Override
   public void cancel(InterpreterContext context) {
 
-    logger.info("Cancel current query statement.");
+    logger.info("Trying to Cancel current query statement.");
 
-    if (service != null) {
-      service = null;
+    if (service != null && jobId != null && projectId != null) {
+      try {
+        Bigquery.Jobs.Cancel request = service.jobs().cancel(projectId, jobId);
+        JobCancelResponse response = request.execute();
+        jobId = null;
+        logger.info("Query Execution cancelled");
+      }
+      catch (IOException ex) {
+        logger.error("Could not cancel the SQL execution");
+      }
+    }
+    else {
+      logger.info("Query Execution was already cancelled");
     }
   }
 
