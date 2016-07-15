@@ -220,6 +220,9 @@ public class NotebookServer extends WebSocketServlet implements
           case CHECKPOINT_NOTEBOOK:
             checkpointNotebook(conn, notebook, messagereceived);
             break;
+          case NOTE_REVISION:
+            getNoteRevision(conn, notebook, messagereceived);
+            break;
           case LIST_NOTEBOOK_JOBS:
             unicastNotebookJobInfo(conn, messagereceived);
             break;
@@ -1125,6 +1128,18 @@ public class NotebookServer extends WebSocketServlet implements
     String commitMessage = (String) fromMessage.get("commitMessage");
     AuthenticationInfo subject = new AuthenticationInfo(fromMessage.principal);
     notebook.checkpointNote(noteId, commitMessage, subject);
+  }
+
+  private void getNoteRevision(NotebookSocket conn, Notebook notebook, Message fromMessage)
+      throws IOException {
+    String noteId = (String) fromMessage.get("noteId");
+    String revisionId = (String) fromMessage.get("revisionId");
+    AuthenticationInfo subject = new AuthenticationInfo(fromMessage.principal);
+    Note revisionNote = notebook.getNoteRevision(noteId, revisionId, subject);
+    conn.send(serializeMessage(new Message(OP.NOTE_REVISION)
+        .put("noteId", noteId)
+        .put("revisionId", revisionId)
+        .put("data", revisionNote)));
   }
 
   /**

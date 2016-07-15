@@ -366,6 +366,10 @@ public class Notebook implements NoteEventListener {
     notebookRepo.checkpoint(noteId, checkpointMessage, subject);
   }
 
+  public Note getNoteRevision(String noteId, String revisionId, AuthenticationInfo subject) {
+    return notebookRepo.get(noteId, revisionId, subject);
+  }
+
   @SuppressWarnings("rawtypes")
   private Note loadNoteFromRepo(String id, AuthenticationInfo subject) {
     Note note = null;
