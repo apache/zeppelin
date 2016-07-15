@@ -338,7 +338,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
   /** update the current note */
   $scope.$on('setNoteContent', function(event, note) {
     if (note === undefined) {
-      $location.path('/');
+      $location.path('/#');
     }
 
     $scope.paragraphUrl = $routeParams.paragraphId;
