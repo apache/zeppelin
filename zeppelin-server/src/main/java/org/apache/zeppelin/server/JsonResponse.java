@@ -18,7 +18,6 @@
 package org.apache.zeppelin.server;
 
 import java.util.ArrayList;
-
 import javax.ws.rs.core.NewCookie;
 import javax.ws.rs.core.Response.ResponseBuilder;
 
@@ -93,8 +92,7 @@ public class JsonResponse<T> {
     return addCookie(new NewCookie(name, value));
   }
 
-  @Override
-  public String toString() {
+  @Override public String toString() {
     GsonBuilder gsonBuilder = new GsonBuilder();
     if (pretty) {
       gsonBuilder.setPrettyPrinting();

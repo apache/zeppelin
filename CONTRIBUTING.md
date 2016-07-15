@@ -96,7 +96,7 @@ For write access, `https://git-wip-us.apache.org/repos/asf/zeppelin.git`
 
 ### Integrated Development Environment (IDE)
 
-You are free to use whatever IDE you prefer, or your favorite command line editor.
+You are free to use whatever IDE you prefer, or your favorite command line editor. We strongly recommend to use formatter from _tools/formatter.
  
 ### Project Structure
 
