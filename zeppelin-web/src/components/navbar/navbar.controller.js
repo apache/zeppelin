@@ -75,7 +75,7 @@ angular.module('zeppelinWebApp')
   };
 
   $scope.search = function(searchTerm) {
-    $location.url(/search/ + searchTerm);
+    $location.path('/search/' + searchTerm);
   };
 
   function loadNotes() {

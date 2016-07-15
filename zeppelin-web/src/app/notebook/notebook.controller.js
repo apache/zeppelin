@@ -16,7 +16,7 @@
 'use strict';
 
 angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $route, $routeParams, $location,
-                                                                     $rootScope, $http, $window, websocketMsgSrv,
+                                                                     $rootScope, $http, websocketMsgSrv,
                                                                      baseUrlSrv, $timeout, SaveAsService) {
   $scope.note = null;
   $scope.showEditor = false;
@@ -140,7 +140,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
       callback: function(result) {
         if (result) {
           websocketMsgSrv.deleteNotebook(noteId);
-          $location.path('/#');
+          $location.path('/');
         }
       }
     });
@@ -161,7 +161,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
       callback: function(result) {
         if (result) {
           websocketMsgSrv.cloneNotebook(noteId);
-          $location.path('/#');
+          $location.path('/');
         }
       }
     });
@@ -749,7 +749,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
               label: 'Cancel',
               action: function(dialog) {
                 dialog.close();
-                $window.location.replace('/');
+                $location.path('/');
               }
             }
           ]
@@ -973,4 +973,3 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
   });
 
 });
-

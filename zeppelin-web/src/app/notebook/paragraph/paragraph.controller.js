@@ -14,7 +14,7 @@
  */
 'use strict';
 
-angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $rootScope, $route, $window, $element,
+angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $rootScope, $route, $window,
                                                                       $routeParams, $location, $timeout, $compile,
                                                                       $http, websocketMsgSrv, baseUrlSrv, ngToast,
                                                                       SaveAsService) {
@@ -2404,4 +2404,3 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
     }
   });
 });
-
