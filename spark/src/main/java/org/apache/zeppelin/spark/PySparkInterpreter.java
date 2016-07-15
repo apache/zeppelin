@@ -423,7 +423,11 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
     }
 
     synchronized (statementFinishedNotifier) {
-      while (statementOutput == null) {
+      long startTime = System.currentTimeMillis();
+      while (statementOutput == null
+        && pythonScriptInitialized == false
+        && pythonscriptRunning
+        && System.currentTimeMillis() - startTime < 10 * 1000) {
         try {
           statementFinishedNotifier.wait(1000);
         } catch (InterruptedException e) {
