@@ -28,7 +28,7 @@ limitations under the License.
            ng-blur="setTitle(); showTitleEditor = false"
            ng-enter="setTitle(); showTitleEditor = false"
            focus-if="showTitleEditor" />
-    <div ng-click="showTitleEditor = !asIframe && !viewOnly; oldTitle = paragraph.title;"
+    <div ng-click="showTitleEditor = !asIframe && !viewOnly  && !offlineView; oldTitle = paragraph.title;"
          ng-show="!showTitleEditor"
          ng-bind-html="paragraph.title || 'Untitled'">
     </div>
@@ -45,7 +45,7 @@ limitations under the License.
                      require : ['ace/ext/language_tools']
                    }"
            ng-model="paragraph.text"
-           ng-class="{'disable': paragraph.status == 'RUNNING' || paragraph.status == 'PENDING',
+           ng-class="{'disable': {{offlineView}} || paragraph.status == 'RUNNING' || paragraph.status == 'PENDING',
              'paragraph-text--dirty' : dirtyText !== originalText && dirtyText !== undefined}">
       </div>
     </div>

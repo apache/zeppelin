@@ -15,8 +15,8 @@ limitations under the License.
   <h3>
     <div style="float: left; width: auto; max-width: 40%">
       <input type="text" pu-elastic-input class="form-control2" placeholder="{{noteName(note)}}" style="min-width: 0px; max-width: 95%;"
-           ng-show="showEditor" ng-model="note.name" ng-blur="sendNewName();showEditor = false;" ng-enter="sendNewName();showEditor = false;" ng-escape="note.name = oldName; showEditor = false" focus-if="showEditor" />
-      <p class="form-control-static2" ng-click="showEditor = true; oldName = note.name" ng-show="!showEditor">{{noteName(note)}}</p>
+           ng-show="showEditor" ng-model="note.name" ng-blur="sendNewName();showEditor = false;" ng-enter="sendNewName();showEditor = false;" ng-escape="note.name = oldName; showEditor = false" focus-if="showEditor" ng-disabled="{{offlineView}}"/>
+      <p class="form-control-static2" ng-click="showEditor = !offlineView; oldName = note.name" ng-show="!showEditor">{{noteName(note)}}</p>
     </div>
     <div style="float: left; padding-bottom: 10px">
       <span class="labelBtn btn-group">
@@ -24,20 +24,23 @@ limitations under the License.
               class="btn btn-default btn-xs"
               ng-click="runNote()"
               ng-class="{'disabled':isNoteRunning()}"
-              tooltip-placement="bottom" tooltip="Run all paragraphs">
+              tooltip-placement="bottom" tooltip="Run all paragraphs"
+              ng-disabled="{{offlineView}}">
         <i class="icon-control-play"></i>
       </button>
       <button type="button"
               class="btn btn-default btn-xs"
               ng-click="toggleAllEditor()"
               ng-hide="viewOnly"
-              tooltip-placement="bottom" tooltip="Show/hide the code">
+              tooltip-placement="bottom" tooltip="Show/hide the code"
+              ng-disabled="{{offlineView}}">
         <i ng-class="editorToggled ?  'fa icon-size-fullscreen' :'fa icon-size-actual'"></i></button>
       <button type="button"
               class="btn btn-default btn-xs"
               ng-click="toggleAllTable()"
               ng-hide="viewOnly"
-              tooltip-placement="bottom" tooltip="Show/hide the output">
+              tooltip-placement="bottom" tooltip="Show/hide the output"
+              ng-disabled="{{offlineView}}">
         <i ng-class="tableToggled ? 'fa icon-notebook' : 'fa icon-book-open'"></i>
       </button>
       <button type="button"
@@ -45,7 +48,8 @@ limitations under the License.
               ng-click="clearAllParagraphOutput()"
               ng-hide="viewOnly"
               ng-class="{'disabled':isNoteRunning()}"
-              tooltip-placement="bottom" tooltip="Clear output">
+              tooltip-placement="bottom" tooltip="Clear output"
+              ng-disabled="{{offlineView}}">
         <i class="fa fa-eraser"></i>
       </button>
 
@@ -54,21 +58,23 @@ limitations under the License.
               ng-hide="viewOnly"
               tooltip-placement="bottom" tooltip="Clone the notebook"
               data-toggle="modal" data-target="#noteNameModal" data-clone="true"
-              >
+              ng-disabled="{{offlineView}}">
         <i class="fa fa-copy"></i>
       </button>
       <button type="button"
               class="btn btn-default btn-xs"
               ng-hide="viewOnly"
               ng-click="exportNotebook()"
-              tooltip-placement="bottom" tooltip="Export the notebook">
+              tooltip-placement="bottom" tooltip="Export the notebook"
+              ng-disabled="{{offlineView}}">
         <i class="fa fa-download"></i>
       </button>
       <button type="button"
               class="btn btn-default btn-xs dropdown-toggle"
               ng-hide="viewOnly"
               data-toggle="dropdown"
-              tooltip-placement="bottom" tooltip="Version control">
+              tooltip-placement="bottom" tooltip="Version control"
+              ng-disabled="{{offlineView}}">
         <i class="fa fa-file-code-o"></i>
       </button>
       <ul class="dropdown-menu" role="menu" style="width:250px">
@@ -100,7 +106,8 @@ limitations under the License.
                 class="btn btn-default btn-xs"
                 ng-click="removeNote(note.id)"
                 ng-hide="viewOnly"
-                tooltip-placement="bottom" tooltip="Remove the notebook">
+                tooltip-placement="bottom" tooltip="Remove the notebook"
+                ng-disabled="{{offlineView}}">
           <i class="icon-trash"></i>
         </button>
       </span>
@@ -111,7 +118,8 @@ limitations under the License.
              type="button"
              data-toggle="dropdown"
              ng-class="{ 'btn-info' : note.config.cron, 'btn-danger' : note.info.cron, 'btn-default' : !note.config.cron}"
-             tooltip-placement="bottom" tooltip="Run scheduler">
+             tooltip-placement="bottom" tooltip="Run scheduler"
+             ng-disabled="{{offlineView}}">
           <span class="fa fa-clock-o"></span> {{getCronOptionNameFromValue(note.config.cron)}}
         </div>
         <ul class="dropdown-menu" role="menu" style="width:300px">
@@ -157,20 +165,20 @@ limitations under the License.
     </div>
 
     <div class="pull-right" style="margin-top:15px; margin-right:15px; margin-left: 15px; margin-bottom: 13px; font-size:15px;">
-      <span class="setting-btn"
+      <span class="setting-btn {{offlineView ? 'disable' : ''}}"
             type="button"
             data-toggle="modal"
             data-target="#shortcutModal"
             tooltip-placement="bottom" tooltip="List of shortcut">
         <i class="fa fa-keyboard-o"></i>
       </span>
-      <span class="setting-btn"
+      <span class="setting-btn {{offlineView ? 'disable' : ''}}"
             type="button"
             ng-click="toggleSetting()"
             tooltip-placement="bottom" tooltip="Interpreter binding">
         <i class="fa fa-cog" ng-style="{color: showSetting ? '#3071A9' : 'black' }"></i>
       </span>
-      <span class="setting-btn"
+      <span class="setting-btn {{offlineView ? 'disable' : ''}}"
             type="button"
             ng-click="togglePermissions()"
             tooltip-placement="bottom" tooltip="Note permissions">
@@ -179,12 +187,16 @@ limitations under the License.
 
       <span class="btn-group">
         <button type="button" class="btn btn-default btn-xs dropdown-toggle"
-                data-toggle="dropdown">
+                data-toggle="dropdown" ng-disabled="{{offlineView}}">
           {{note.config.looknfeel}} <span class="caret"></span>
         </button>
         <ul class="dropdown-menu pull-right" role="menu">
           <li ng-repeat="looknfeel in looknfeelOption">
             <a style="cursor:pointer" ng-click="setLookAndFeel(looknfeel)">{{looknfeel}}</a>
+          </li>
+          <li class="divider"></li>
+          <li>
+            <a style="cursor:pointer" ng-href="{{offlineViewPath}}" target="_blank">offline view</a>
           </li>
         </ul>
       </span>

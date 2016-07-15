@@ -34,6 +34,7 @@ limitations under the License.
   <span class="{{paragraph.config.tableHide ? 'icon-notebook' : 'icon-book-open'}}" style="cursor:pointer;" tooltip-placement="top" tooltip="{{(paragraph.config.tableHide ? 'Show' : 'Hide') + ' output'}}"
         ng-click="toggleOutput()"></span>
   <span class="dropdown navbar-right">
+    <span ng-if="!offlineView">
     <span class="icon-settings" style="cursor:pointer"
           data-toggle="dropdown"
           type="button">
@@ -90,5 +91,6 @@ limitations under the License.
         <a ng-click="removeParagraph()" ng-hide="$last"><span class="fa fa-times"></span> Remove</a>
       </li>
     </ul>
+  </span>
   </span>
 </div>
