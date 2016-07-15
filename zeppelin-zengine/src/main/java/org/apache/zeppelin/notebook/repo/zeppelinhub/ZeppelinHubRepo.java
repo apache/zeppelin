@@ -196,7 +196,7 @@ public class ZeppelinHubRepo implements NotebookRepo {
   }
 
   @Override
-  public Note get(String noteId, Revision rev, AuthenticationInfo subject) throws IOException {
+  public Note get(String noteId, String revId, AuthenticationInfo subject) throws IOException {
     // Auto-generated method stub
     return null;
   }
