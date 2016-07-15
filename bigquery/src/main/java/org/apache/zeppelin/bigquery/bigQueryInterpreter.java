@@ -16,6 +16,7 @@
 
 package org.apache.zeppelin.bigquery;
 
+
 import static org.apache.commons.lang.StringUtils.containsIgnoreCase;
 
 import com.google.api.client.http.HttpTransport;
