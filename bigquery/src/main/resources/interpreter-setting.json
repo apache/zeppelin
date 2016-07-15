@@ -2,7 +2,7 @@
   {
     "group": "bigquery",
     "name": "sql",
-    "className": "org.apache.zeppelin.bigquery.bigQueryInterpreter",
+    "className": "org.apache.zeppelin.bigquery.BigQueryInterpreter",
     "properties": {
       "zeppelin.bigquery.project_id": {
         "envName": null,

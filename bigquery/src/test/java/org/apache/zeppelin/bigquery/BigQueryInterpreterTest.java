@@ -38,6 +38,8 @@ import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.google.cloud.bigquery.testing.RemoteBigQueryHelper;
+
 import com.google.gson.Gson;
 import com.google.gson.JsonIOException;
 import com.google.gson.JsonSyntaxException;
@@ -46,7 +48,7 @@ import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
-public class bigQueryInterpreterTest {
+public class BigQueryInterpreterTest {
 
   protected static class Constants {
     private String projectId;
@@ -70,7 +72,7 @@ public class bigQueryInterpreterTest {
   @SuppressWarnings("checkstyle:abbreviationaswordinname")
   protected static Constants CONSTANTS = null;
 
-  public bigQueryInterpreterTest()
+  public BigQueryInterpreterTest()
       throws JsonSyntaxException, JsonIOException, FileNotFoundException {
     if (CONSTANTS == null) {
       InputStream is = this.getClass().getResourceAsStream("/constants.json");
@@ -79,7 +81,7 @@ public class bigQueryInterpreterTest {
   }
 
   private InterpreterGroup intpGroup;
-  private bigQueryInterpreter bqInterpreter;
+  private BigQueryInterpreter bqInterpreter;
 
   private InterpreterContext context;
 
@@ -92,7 +94,7 @@ public class bigQueryInterpreterTest {
 
     intpGroup = new InterpreterGroup();
 
-    bqInterpreter = new bigQueryInterpreter(p);
+    bqInterpreter = new BigQueryInterpreter(p);
     bqInterpreter.setInterpreterGroup(intpGroup);
     bqInterpreter.open();
 

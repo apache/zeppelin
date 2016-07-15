@@ -1,18 +1,14 @@
----
-layout: page
-title: "BigQuery Interpreter"
-description: ""
-group: interpreter
----
+# Overview
+BigQuery interpreter for Apache Zeppelin
 
-# BigQuery Interpreter for Apache Zeppelin
+# Pre requisities
+You can follow the instructions at [Apache Zeppelin on Dataproc](https://github.com/GoogleCloudPlatform/dataproc-initialization-actions/blob/master/apache-zeppelin/README.MD) to bring up Zeppelin on Google dataproc. 
+You could also install and bring up Zeppelin on Google compute Engine.
 
-<div id="toc"></div>
+# Interpreter Configuration
 
-## Overview
-[BigQuery](https://cloud.google.com/bigquery/what-is-bigquery) is a highly scalable no-ops data warehouse in the Google Cloud Platform. Querying massive datasets can be time consuming and expensive without the right hardware and infrastructure. Google BigQuery solves this problem by enabling super-fast SQL queries against append-only tables using the processing power of Google's infrastructure. Simply move your data into BigQuery and let us handle the hard work. You can control access to both the project and your data based on your business needs, such as giving others the ability to view or query your data.  
+Configure the following properties during Interpreter creation.
 
-## Configuration
 <table class="table-configuration">
   <tr>
     <th>Name</th>
@@ -36,15 +32,17 @@ group: interpreter
   </tr>
 </table>
 
+# Connection
+The Interpreter opens a connection with the BigQuery Service using the supplied Google project ID and the compute environment variables.
 
-## BigQuery API
-Zeppelin is built against BigQuery API version v2-rev265-1.21.0 - [API Javadocs](https://developers.google.com/resources/api-libraries/documentation/bigquery/v2/java/latest/)
+# Google BigQuery API Javadoc
+[API Javadocs](https://developers.google.com/resources/api-libraries/documentation/bigquery/v2/java/latest/)
 
-## Enabling the BigQuery Interpreter
+# Enabling the BigQuery Interpreter
 
 In a notebook, to enable the **BigQuery** interpreter, click the **Gear** icon and select **bigquery**.
 
-## Using the BigQuery Interpreter
+# Using the BigQuery Interpreter
 
 In a paragraph, use `%bigquery.sql` to select the **BigQuery** interpreter and then input SQL statements against your datasets stored in BigQuery.
 You can use [BigQuery SQL Reference](https://cloud.google.com/bigquery/query-reference) to build your own SQL.
@@ -53,14 +51,14 @@ For Example, SQL to query for top 10 departure delays across airports using the 
 
 ```bash
 %bigquery.sql
-SELECT departure_airport,count(case when departure_delay>0 then 1 else 0 end) as no_of_delays 
-FROM [bigquery-samples:airline_ontime_data.flights] 
-group by departure_airport 
-order by 2 desc 
+SELECT departure_airport,count(case when departure_delay>0 then 1 else 0 end) as no_of_delays
+FROM [bigquery-samples:airline_ontime_data.flights]
+group by departure_airport
+order by 2 desc
 limit 10
 ```
 
-Another Example, SQL to query for most commonly used java packages from the github data hosted in BigQuery 
+Another Example, SQL to query for most commonly used java packages from the github data hosted in BigQuery
 
 ```bash
 %bigquery.sql
