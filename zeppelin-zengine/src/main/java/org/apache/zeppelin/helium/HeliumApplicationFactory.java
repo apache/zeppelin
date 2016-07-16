@@ -443,11 +443,13 @@ public class HeliumApplicationFactory implements ApplicationEventListener, Noteb
   public void onUnbindInterpreter(Note note, InterpreterSetting setting) {
     for (Paragraph p : note.getParagraphs()) {
       Interpreter currentInterpreter = p.getCurrentRepl();
-      List<InterpreterInfo> infos = setting.getInterpreterInfos();
-      for (InterpreterInfo info : infos) {
-        if (info.getClassName().equals(currentInterpreter.getClassName())) {
-          onParagraphRemove(p);
-          break;
+      if (currentInterpreter != null) {
+        List<InterpreterInfo> infos = setting.getInterpreterInfos();
+        for (InterpreterInfo info : infos) {
+          if (info.getClassName().equals(currentInterpreter.getClassName())) {
+            onParagraphRemove(p);
+            break;
+          }
         }
       }
     }
