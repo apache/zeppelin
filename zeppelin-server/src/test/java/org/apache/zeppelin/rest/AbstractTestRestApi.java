@@ -223,7 +223,7 @@ public abstract class AbstractTestRestApi {
   }
 
   private static boolean isActiveSparkHome(File dir) {
-    if (dir.getName().matches("spark-[0-9\\.]+-bin-hadoop[0-9\\.]+")) {
+    if (dir.getName().matches("spark-[0-9\\.]+[A-Za-z-]*-bin-hadoop[0-9\\.]+")) {
       File pidDir = new File(dir, "run");
       if (pidDir.isDirectory() && pidDir.listFiles().length > 0) {
         return true;
