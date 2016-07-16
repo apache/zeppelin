@@ -582,7 +582,7 @@ public class Notebook implements NoteEventListener {
       Map<String, Object> info = new HashMap<>();
 
       // set notebook ID
-      info.put("notebookId", note.id());
+      info.put("noteId", note.id());
 
       // set notebook Name
       String notebookName = note.getName();

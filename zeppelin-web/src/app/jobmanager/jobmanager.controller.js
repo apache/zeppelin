@@ -22,7 +22,7 @@ angular.module('zeppelinWebApp')
       $scope.$on('setNotebookJobs', function(event, responseData) {
         $scope.lastJobServerUnixTime = responseData.lastResponseUnixTime;
         $scope.jobInfomations = responseData.jobs;
-        $scope.jobInfomationsIndexs = $scope.jobInfomations ? _.indexBy($scope.jobInfomations, 'notebookId') : {};
+        $scope.jobInfomationsIndexs = $scope.jobInfomations ? _.indexBy($scope.jobInfomations, 'noteId') : {};
       });
 
       $scope.$on('setUpdateNotebookJobs', function(event, responseData) {
