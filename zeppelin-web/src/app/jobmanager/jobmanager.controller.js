@@ -31,22 +31,22 @@ angular.module('zeppelinWebApp')
         $scope.lastJobServerUnixTime = responseData.lastResponseUnixTime;
         var notes = responseData.jobs;
         notes.map(function(changedItem) {
-          if (indexStore[changedItem.notebookId] === undefined) {
+          if (indexStore[changedItem.noteId] === undefined) {
             var newItem = angular.copy(changedItem);
             jobInfomations.push(newItem);
-            indexStore[changedItem.notebookId] = newItem;
+            indexStore[changedItem.noteId] = newItem;
           } else {
-            var changeOriginTarget = indexStore[changedItem.notebookId];
+            var changeOriginTarget = indexStore[changedItem.noteId];
 
             if (changedItem.isRemoved !== undefined && changedItem.isRemoved === true) {
 
               // remove Item.
-              var removeIndex = _.findIndex(indexStore, changedItem.notebookId);
+              var removeIndex = _.findIndex(indexStore, changedItem.noteId);
               if (removeIndex > -1) {
                 indexStore.splice(removeIndex, 1);
               }
 
-              removeIndex = _.findIndex(jobInfomations, {'notebookId': changedItem.notebookId});
+              removeIndex = _.findIndex(jobInfomations, {'noteId': changedItem.noteId});
               if (removeIndex) {
                 jobInfomations.splice(removeIndex, 1);
               }
