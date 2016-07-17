@@ -30,7 +30,7 @@ The following components are provided under Apache License.
     (Apache 2.0) Apache Maven scm api (org.apache.maven.scm:maven-scm-api:jar:1.4 - https://maven.apache.org/scm/)
     (Apache 2.0) Apache Maven scm provider svnexe (org.apache.maven.scm:maven-scm-provider-svnexe:jar:1.4 - http://maven.apache.org/scm/maven-scm-providers/maven-scm-providers-svn/maven-scm-provider-svnexe/index.html/)
     (Apache 2.0) Apache Maven scm provider common (org.apache.maven.scm:maven-scm-provider-svn-commons:jar:1.4 - http://maven.apache.org/scm/maven-scm-providers/maven-scm-providers-svn/maven-scm-provider-svn-commons/)
-    (Apache 2.0) Apache Spark (org.apache.spark:spark:1.5.1) - http://spark.apache.org
+    (Apache 2.0) Apache Spark (http://spark.apache.org)
     (Apache 2.0) Apache Hadoop (http://hadoop.apache.org)
     (Apache 2.0) Apache Avro (org.apache.avro:avro:1.7.7 - http://avro.apache.org)
     (Apache 2.0) Apache Curator (org.apache.curator:curator:2.4.0 - http://curator.apache.org/)
@@ -44,14 +44,14 @@ The following components are provided under Apache License.
     (Apache 2.0) Apache Thrift (http://thrift.apache.org/)
     (Apache 2.0) Apache Lucene (https://lucene.apache.org/)
     (Apache 2.0) Apache Zookeeper (org.apache.zookeeper:zookeeper:jar:3.4.5 - http://zookeeper.apache.org/)
-    (Apache 2.0) Chill (com.twitter:chill-java:jar:0.5.0 - https://github.com/twitter/chill/)
+    (Apache 2.0) Chill (com.twitter:chill-java:jar:0.8.0 - https://github.com/twitter/chill/)
     (Apache 2.0) Codehaus Plexus (org.codehaus.plexus:plexus:jar:1.5.6 - https://codehaus-plexus.github.io/)
     (Apache 2.0) findbugs jsr305 (com.google.code.findbugs:jsr305:jar:1.3.9 - http://findbugs.sourceforge.net/)
     (Apache 2.0) Google Guava (com.google.guava:guava:15.0 - https://code.google.com/p/guava-libraries/)
     (Apache 2.0) Jackson (com.fasterxml.jackson.core:jackson-core:2.5.3 - https://github.com/FasterXML/jackson-core)
-    (Apache 2.0) Jackson (com.fasterxml.jackson.core:jackson-annotations:2.5.0 - https://github.com/FasterXML/jackson-core)
+    (Apache 2.0) Jackson (com.fasterxml.jackson.core:jackson-annotations:2.5.3 - https://github.com/FasterXML/jackson-core)
     (Apache 2.0) Jackson (com.fasterxml.jackson.core:jackson-databind:2.5.3 - https://github.com/FasterXML/jackson-core)
-    (Apache 2.0) javax.servlet (org.eclipse.jetty.orbit:javax.servlet:jar:3.0.0.v201112011016 - http://www.eclipse.org/jetty)
+    (Apache 2.0) javax.servlet (org.eclipse.jetty.orbit:javax.servlet:jar:3.1.0.v201112011016 - http://www.eclipse.org/jetty)
     (Apache 2.0) Joda-Time (joda-time:joda-time:2.8.1 - http://www.joda.org/joda-time/)
     (Apache 2.0) Jackson (org.codehaus.jackson:jackson-core-asl:1.9.13 - http://jackson.codehaus.org/)
     (Apache 2.0) Javassist (org.javassist:javassist:jar:3.18.1-GA:compile - http://jboss-javassist.github.io/javassist/)
@@ -62,9 +62,9 @@ The following components are provided under Apache License.
     (Apache 2.0) xml apis (xml-apis:xml-apis:jar:1.4.01 - http://xerces.apache.org/xml-commons/components/external)
     (Apache 2.0) java-xmlbuilder (com.jamesmurty.utils:java-xmlbuilder:jar:1.0 - https://github.com/jmurty/java-xmlbuilder)
     (Apache 2.0) compress-lzf (com.ning:compress-lzf:jar:1.0.3 - https://github.com/ning/compress) Copyright 2009-2010 Ning, Inc.
-    (Apache 2.0) Snappy-java (org.xerial.snappy:snappy-java:1.1.1.7 - https://github.com/xerial/snappy-java/)
+    (Apache 2.0) Snappy-java (org.xerial.snappy:snappy-java:1.1.2.4 - https://github.com/xerial/snappy-java/)
     (Apache 2.0) lz4-java (net.jpountz.lz4:lz4:jar:1.3.0 - https://github.com/jpountz/lz4-java)
-    (Apache 2.0) RoaringBitmap (org.roaringbitmap:RoaringBitmap:jar:0.4.5 - https://github.com/lemire/RoaringBitmap)
+    (Apache 2.0) RoaringBitmap (org.roaringbitmap:RoaringBitmap:jar:0.5.11 - https://github.com/lemire/RoaringBitmap)
     (Apache 2.0) json4s (org.json4s:json4s-ast_2.10:jar:3.2.10 - https://github.com/json4s/json4s)
     (Apache 2.0) HPPC Collections (com.carrotsearch:hppc:0.7.1 - http://labs.carrotsearch.com/hppc.html/hppc)
     (Apache 2.0) Jackson-dataformat-CBOR (com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:2.6.2 - http://wiki.fasterxml.com/JacksonForCbor)
@@ -73,7 +73,7 @@ The following components are provided under Apache License.
     (Apache 2.0) json-flattener (com.github.wnameless:json-flattener:0.1.6 - https://github.com/wnameless/json-flattener)
     (Apache 2.0) Spatial4J (com.spatial4j:spatial4j:0.4.1 - https://github.com/spatial4j/spatial4j)
     (Apache 2.0) T-Digest (com.tdunning:t-digest:3.0 - https://github.com/tdunning/t-digest)
-    (Apache 2.0) Netty (io.netty:netty:3.10.5.Final - http://netty.io/)
+    (Apache 2.0) Netty (io.netty:netty:3.8.0.Final - http://netty.io/)
     (Apache 2.0) Lucene Common Analyzers (org.apache.lucene:lucene-analyzers-common:5.3.1 - http://lucene.apache.org/lucene-parent/lucene-analyzers-common)
     (Apache 2.0) Lucene Memory (org.apache.lucene:lucene-backward-codecs:5.3.1 - http://lucene.apache.org/lucene-parent/lucene-backward-codecs)
     (Apache 2.0) Lucene Core (org.apache.lucene:lucene-core:5.3.1 - http://lucene.apache.org/lucene-parent/lucene-core)
@@ -93,13 +93,15 @@ The following components are provided under Apache License.
     (Apache 2.0) Shiro Core (org.apache.shiro:shiro-core:1.2.3 - https://shiro.apache.org)
     (Apache 2.0) Shiro Web (org.apache.shiro:shiro-web:1.2.3 - https://shiro.apache.org)
     (Apache 2.0) SnakeYAML (org.yaml:snakeyaml:1.15 - http://www.snakeyaml.org)
-    (Apache 2.0) Protocol Buffers (com.google.protobuf:protobuf-java:2.4.1 - https://github.com/google/protobuf/releases)
+    (Apache 2.0) Protocol Buffers (com.google.protobuf:protobuf-java:2.5.0 - https://github.com/google/protobuf/releases)
     (Apache 2.0) Alluxio Shell (org.alluxio:alluxio-shell:1.0.0 - http://alluxio.org)
     (Apache 2.0) Alluxio Servers (org.alluxio:alluxio-core-server:1.0.0 - http://alluxio.org)
     (Apache 2.0) Alluxio Minicluster (org.alluxio:alluxio-minicluster:1.0.0 - http://alluxio.org)
     (Apache 2.0) Alluxio Underfs Local (org.alluxio:alluxio-underfs-local:1.0.0 - http://alluxio.org)
     (Apache 2.0) Microsoft Azure Storage Library for Java (com.microsoft.azure:azure-storage:4.0.0 - https://github.com/Azure/azure-storage-java)
     (Apache 2.0) Roboto Font (https://github.com/google/roboto/)
+    (Apache 2.0) stream (com.clearspring.analytics:stream:2.7.0) - https://github.com/addthis/stream-lib/blob/v2.7.0/LICENSE.txt
+    (Apache 2.0) io.dropwizard.metrics:3.1.2 - https://github.com/dropwizard/metrics/blob/v3.1.2/LICENSE
 
 
 ========================================================================
@@ -141,10 +143,11 @@ The text of each license is also included at licenses/LICENSE-[project]-[version
 The following components are provided under the MIT License.
 
     (The MIT License) Objenesis (org.objenesis:objenesis:2.1 - https://github.com/easymock/objenesis) - Copyright (c) 2006-2015 the original author and authors
-    (The MIT License) JCL 1.1.1 implemented over SLF4J (org.slf4j:jcl-over-slf4j:1.7.5 - http://www.slf4j.org)
-    (The MIT License) JUL to SLF4J bridge (org.slf4j:jul-to-slf4j:1.7.5 - http://www.slf4j.org)
+    (The MIT License) JCL 1.1.1 implemented over SLF4J (org.slf4j:jcl-over-slf4j:1.7.16 - http://www.slf4j.org)
+    (The MIT License) JUL to SLF4J bridge (org.slf4j:jul-to-slf4j:1.7.16 - http://www.slf4j.org)
     (The MIT License) angular-resource (angular-resource - https://github.com/angular/angular.js/tree/master/src/ngResource)
     (The MIT License) minimal-json (com.eclipsesource.minimal-json:minimal-json:0.9.4 - https://github.com/ralfstx/minimal-json)
+    (The MIT License) pyrolite (net.razorvine:pyrolite:4.9) - https://github.com/irmen/Pyrolite/blob/v4.9/LICENSE
 
 ========================================================================
 BSD-style licenses
@@ -167,20 +170,31 @@ The text of each license is also included at licenses/LICENSE-[project]-[version
 The following components are provided under the BSD-style License.
 
     (New BSD License) JGit (org.eclipse.jgit:org.eclipse.jgit:jar:4.1.1.201511131810-r - https://eclipse.org/jgit/)
-    (New BSD License) Kryo (com.esotericsoftware.kryo:kryo:2.21 - http://code.google.com/p/kryo/)
-    (New BSD License) MinLog (com.esotericsoftware.minlog:minlog:1.2 - http://code.google.com/p/minlog/)
+    (New BSD License) Kryo (com.esotericsoftware.kryo:kryo:3.0.3 - http://code.google.com/p/kryo/)
+    (New BSD License) leveldbjni (org.fusesource.leveldbjni:leveldbjni-all:1.8) - https://github.com/fusesource/leveldbjni/blob/leveldbjni-1.8/license.txt
+    (New BSD License) MinLog (com.esotericsoftware.minlog:minlog:1.3 - http://code.google.com/p/minlog/)
     (New BSD License) ReflectASM (com.esotericsoftware.reflectasm:reflectasm:1.07 - http://code.google.com/p/reflectasm/)
-    (BSD-like) Scala Library (org.scala-lang:scala-library:2.10.4 - http://www.scala-lang.org/)
-    (BSD-like) Scalap (org.scala-lang:scalap:2.10.4 - http://www.scala-lang.org/)
-    (BSD-like) (The BSD License) jline (org.scala-lang:jline:2.10.4 - http://www.scala-lang.org/)
-    (BSD-like) Scala Actors library (org.scala-lang:scala-actors:2.10.4 - http://www.scala-lang.org/)
-    (BSD-like) Scala Compiler (org.scala-lang:scala-compiler:2.10.4 - http://www.scala-lang.org/)
-    (BSD-like) Scala Compiler (org.scala-lang:scala-reflect:2.10.4 - http://www.scala-lang.org/)
+    (BSD-like) Scala Library (org.scala-lang:scala-library:2.11.7 - http://www.scala-lang.org/)
+    (BSD-like) Scalap (org.scala-lang:scalap:2.11.7 - http://www.scala-lang.org/)
+    (BSD-like) (The BSD License) jline (org.scala-lang:jline:2.11.7 - http://www.scala-lang.org/)
+    (BSD-like) Scala Actors library (org.scala-lang:scala-actors:2.11.7 - http://www.scala-lang.org/)
+    (BSD-like) Scala Compiler (org.scala-lang:scala-compiler:2.11.7 - http://www.scala-lang.org/)
+    (BSD-like) Scala Compiler (org.scala-lang:scala-reflect:2.11.7 - http://www.scala-lang.org/)
     (BSD-like) ASM (asm:asm:jar:3.1 - http://asm.ow2.org/) - Copyright (c) 2000-2011 INRIA, France Telecom
     (New BSD License) Py4J (net.sf.py4j:py4j:0.9 - http://py4j.sourceforge.net/)
+    (New BSD License) Py4J (net.sf.py4j:py4j:0.10.1 - http://py4j.sourceforge.net/) - https://github.com/bartdag/py4j/blob/0.10.1/LICENSE.txt
     (New BSD License) Markdown4j (org.commonjava.googlecode.markdown4j:markdown4j:jar:2.2-cj-1.0 - https://code.google.com/p/markdown4j/)
-
-
+    (BSD 3 Clause) Paranamer (com.thoughtworks.paranamer:paranamer:jar:2.6) - https://github.com/paul-hammant/paranamer/blob/paranamer-parent-2.6/LICENSE.txt
+    (BSD 3 Clause) netlib core (com.github.fommil.netlib:core:1.1.2 - https://github.com/fommil/netlib-java/core)
+    (BSD 3 Clause) JPMML-Model (org.jpmml:pmml-model:1.2.7 - https://github.com/jpmml/jpmml-model)
+    (BSD License) AntLR Parser Generator (antlr:antlr:2.7.7 - http://www.antlr.org/)
+    (BSD License) ANTLR 4.5.2-1 (org.antlr:antlr4:4.5.2-1 - http://wwww.antlr.org/)
+    (BSD licence) ANTLR ST4 4.0.4 (org.antlr:ST4:4.0.4 - http://www.stringtemplate.org)
+    (BSD licence) ANTLR StringTemplate (org.antlr:stringtemplate:3.2.1 - http://www.stringtemplate.org)
+    (BSD-style) spire (org.spire-math:spire_2.11:0.7.1 - http://spire-math.org)
+    (BSD-style) spire-macros (org.spire-math:spire-macros_2.11:0.7.1 - http://spire-math.org)
+    (The BSD License) Fortran to Java ARPACK (net.sourceforge.f2j:arpack_combined_all:0.1 - http://f2j.sourceforge.net)
+    (The BSD License) xmlenc Library (xmlenc:xmlenc:0.52 - http://xmlenc.sourceforge.net)
 
 ========================================================================
 CDDL license
