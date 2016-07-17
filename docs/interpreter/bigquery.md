@@ -93,3 +93,6 @@ LIMIT
   40
 ```
 
+## Technical description
+
+For in-depth technical details on current implementation please refer to [bigquery/README.md](https://github.com/apache/zeppelin/blob/master/bigquery/README.md).
