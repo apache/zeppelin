@@ -98,6 +98,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
             "df <- createDataFrame(sqlContext, localDF)\n" +
             "count(df)"
         );
+        ps();
         note.run(p.getId());
         waitForFinish(p);
         System.err.println("sparkRTest=" + p.getResult().message());
