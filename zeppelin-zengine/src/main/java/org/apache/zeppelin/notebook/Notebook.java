@@ -366,7 +366,8 @@ public class Notebook implements NoteEventListener {
     notebookRepo.checkpoint(noteId, checkpointMessage, subject);
   }
 
-  public Note getNoteRevision(String noteId, String revisionId, AuthenticationInfo subject) {
+  public Note getNoteRevision(String noteId, String revisionId, AuthenticationInfo subject)
+      throws IOException {
     return notebookRepo.get(noteId, revisionId, subject);
   }
 
