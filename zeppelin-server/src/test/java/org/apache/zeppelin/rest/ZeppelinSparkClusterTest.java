@@ -89,6 +89,17 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
       int sparkVersion = getSparkVersionNumber(note);
 
       if (isSparkR() && sparkVersion >= 14) {   // sparkr supported from 1.4.0
+        // restart spark interpreter
+        List<InterpreterSetting> settings =
+          ZeppelinServer.notebook.getBindedInterpreterSettings(note.id());
+
+        for (InterpreterSetting setting : settings) {
+          if (setting.getName().equals("spark")) {
+            ZeppelinServer.notebook.getInterpreterFactory().restart(setting.getId());
+            break;
+          }
+        }
+
         // run markdown paragraph, again
         Paragraph p = note.addParagraph();
         Map config = p.getConfig();
@@ -98,7 +109,6 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
             "df <- createDataFrame(sqlContext, localDF)\n" +
             "count(df)"
         );
-        ps();
         note.run(p.getId());
         waitForFinish(p);
         System.err.println("sparkRTest=" + p.getResult().message());
