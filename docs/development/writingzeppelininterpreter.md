@@ -57,7 +57,7 @@ Here is an example of `interpreter-setting.json` on your own interpreter.
     "name": "your-name",
     "className": "your.own.interpreter.class",
     "properties": {
-      "propertiies1": {
+      "properties1": {
         "envName": null,
         "propertyName": "property.1.name",
         "defaultValue": "propertyDefaultValue",
