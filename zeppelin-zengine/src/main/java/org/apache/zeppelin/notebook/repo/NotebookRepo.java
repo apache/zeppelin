@@ -89,7 +89,7 @@ public interface NotebookRepo {
    * @return a Notebook
    * @throws IOException
    */
-  @ZeppelinApi public Note get(String noteId, String revId, AuthenticationInfo subject)
+  @ZeppelinApi public Note get(String noteId, Revision rev, AuthenticationInfo subject)
       throws IOException;
 
   /**

@@ -389,12 +389,12 @@ public class NotebookRepoSync implements NotebookRepo {
   }
 
   @Override
-  public Note get(String noteId, String revId, AuthenticationInfo subject) {
+  public Note get(String noteId, Revision rev, AuthenticationInfo subject) {
     Note revisionNote = null;
     try {
-      revisionNote = getRepo(0).get(noteId, revId, subject);
+      revisionNote = getRepo(0).get(noteId, rev, subject);
     } catch (IOException e) {
-      LOG.error("Failed to get revision {} of note {}", revId, noteId, e);
+      LOG.error("Failed to get revision {} of note {}", rev.id, noteId, e);
     }
     return revisionNote;
   }
