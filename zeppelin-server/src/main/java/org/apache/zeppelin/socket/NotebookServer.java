@@ -45,6 +45,7 @@ import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
 import org.apache.zeppelin.notebook.*;
+import org.apache.zeppelin.notebook.repo.NotebookRepo.Revision;
 import org.apache.zeppelin.notebook.socket.Message;
 import org.apache.zeppelin.notebook.socket.Message.OP;
 import org.apache.zeppelin.scheduler.Job;
@@ -1133,12 +1134,12 @@ public class NotebookServer extends WebSocketServlet implements
   private void getNoteRevision(NotebookSocket conn, Notebook notebook, Message fromMessage)
       throws IOException {
     String noteId = (String) fromMessage.get("noteId");
-    String revisionId = (String) fromMessage.get("revisionId");
+    Revision revision = (Revision) fromMessage.get("revision");
     AuthenticationInfo subject = new AuthenticationInfo(fromMessage.principal);
-    Note revisionNote = notebook.getNoteRevision(noteId, revisionId, subject);
+    Note revisionNote = notebook.getNoteRevision(noteId, revision, subject);
     conn.send(serializeMessage(new Message(OP.NOTE_REVISION)
         .put("noteId", noteId)
-        .put("revisionId", revisionId)
+        .put("revisionId", revision)
         .put("data", revisionNote)));
   }
 

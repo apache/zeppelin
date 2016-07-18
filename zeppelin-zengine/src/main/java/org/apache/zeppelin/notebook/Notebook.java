@@ -39,6 +39,7 @@ import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
+import org.apache.zeppelin.notebook.repo.NotebookRepo.Revision;
 import org.apache.zeppelin.notebook.repo.NotebookRepoSync;
 import org.apache.zeppelin.resource.ResourcePoolUtils;
 import org.apache.zeppelin.scheduler.Job;
@@ -366,9 +367,9 @@ public class Notebook implements NoteEventListener {
     notebookRepo.checkpoint(noteId, checkpointMessage, subject);
   }
 
-  public Note getNoteRevision(String noteId, String revisionId, AuthenticationInfo subject)
+  public Note getNoteRevision(String noteId, Revision revision, AuthenticationInfo subject)
       throws IOException {
-    return notebookRepo.get(noteId, revisionId, subject);
+    return notebookRepo.get(noteId, revision, subject);
   }
 
   @SuppressWarnings("rawtypes")
