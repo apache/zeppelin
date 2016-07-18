@@ -40,15 +40,15 @@ In 'Separate Interpreter(scoped / isolated) for each note' mode which you can se
 ## Make your own Interpreter
 
 Creating a new interpreter is quite simple. Just extend [org.apache.zeppelin.interpreter](https://github.com/apache/zeppelin/blob/master/zeppelin-interpreter/src/main/java/org/apache/zeppelin/interpreter/Interpreter.java) abstract class and implement some methods.
-You can include `org.apache.zeppelin:zeppelin-interpreter:[VERSION]` artifact in your build system. And you should your jars under your interpreter directory with specific directory name. Zeppelin server reads interpreter directories recursively and initializes interpreters including your own interpreter.
+You can include `org.apache.zeppelin:zeppelin-interpreter:[VERSION]` artifact in your build system. And you should put your jars under your interpreter directory with a specific directory name. Zeppelin server reads interpreter directories recursively and initializes interpreters including your own interpreter.
 
-There are three locations where you can store your interpreter group, name and other information. Zeppelin server tries to find the location below. Next, Zeppelin tries to find `interpareter-setting.json` in your interpreter jar. 
+There are three locations where you can store your interpreter group, name and other information. Zeppelin server tries to find the location below. Next, Zeppelin tries to find `interpreter-setting.json` in your interpreter jar. 
 
 ```
 {ZEPPELIN_INTERPRETER_DIR}/{YOUR_OWN_INTERPRETER_DIR}/interpreter-setting.json
 ```
 
-Here is an example of `interpareter-setting.json` on your own interpreter.
+Here is an example of `interpreter-setting.json` on your own interpreter.
 
 ```json
 [
@@ -57,7 +57,7 @@ Here is an example of `interpareter-setting.json` on your own interpreter.
     "name": "your-name",
     "className": "your.own.interpreter.class",
     "properties": {
-      "propertiies1": {
+      "properties1": {
         "envName": null,
         "propertyName": "property.1.name",
         "defaultValue": "propertyDefaultValue",
