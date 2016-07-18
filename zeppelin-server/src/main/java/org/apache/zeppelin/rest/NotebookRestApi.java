@@ -417,8 +417,8 @@ public class NotebookRestApi {
   @Path("{noteId}/paragraph/{paragraphId}/move/{newIndex}")
   @ZeppelinApi
   public Response moveParagraph(@PathParam("noteId") String noteId,
-                                @PathParam("paragraphId") String paragraphId,
-                                @PathParam("newIndex") String newIndex) throws IOException {
+      @PathParam("paragraphId") String paragraphId, @PathParam("newIndex") String newIndex) 
+      throws IOException {
     LOG.info("move paragraph {} {} {}", noteId, paragraphId, newIndex);
 
     Note note = notebook.getNote(noteId);
@@ -508,8 +508,8 @@ public class NotebookRestApi {
   @DELETE
   @Path("job/{noteId}")
   @ZeppelinApi
-  public Response stopNoteJobs(@PathParam("noteId") String noteId) throws
-      IOException, IllegalArgumentException {
+  public Response stopNoteJobs(@PathParam("noteId") String noteId) 
+	  throws IOException, IllegalArgumentException {
     LOG.info("stop notebook jobs {} ", noteId);
     Note note = notebook.getNote(noteId);
     if (note == null) {
@@ -631,8 +631,7 @@ public class NotebookRestApi {
       IOException, IllegalArgumentException {
     LOG.info("Register cron job note={} request cron msg={}", noteId, message);
 
-    CronRequest request = gson.fromJson(message,
-                          CronRequest.class);
+    CronRequest request = gson.fromJson(message, CronRequest.class);
     
     Note note = notebook.getNote(noteId);
     if (note == null) {
