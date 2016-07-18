@@ -71,15 +71,13 @@ limitations under the License.
             </div>
           </form>
         </li>
-        <li class="nav-component">
-          <i ng-if="navbar.connected" class="fa fa-circle server-connected"
-             tooltip="WebSocket Connected" tooltip-placement="bottom"></i>
-          <i ng-if="!navbar.connected" class="fa fa-circle server-disconnected"
-             tooltip="WebSocket Disconnected" tooltip-placement="bottom"></i>
-        </li>
-        <li>
+        <li style="margin-left: 10px;">
           <div class="dropdown">
-            <button ng-if="ticket" class="nav-btn dropdown-toggle" type="button" data-toggle="dropdown" style="margin:11px 5px 0 0;">
+            <i ng-if="navbar.connected" class="fa fa-circle server-connected"
+               tooltip="WebSocket Connected" tooltip-placement="bottom" style="margin-top: 7px; margin-right: 0px; vertical-align: top"></i>
+            <i ng-if="!navbar.connected" class="fa fa-circle server-disconnected"
+               tooltip="WebSocket Disconnected" tooltip-placement="bottom" style="margin-top: 7px; vertical-align: top"></i>
+            <button ng-if="ticket" class="nav-btn dropdown-toggle" type="button" data-toggle="dropdown" style="margin:11px 5px 0 0; padding-left: 0px;">
               <span class="username">{{ticket.principal}}</span>
               <span class="caret" style="margin-bottom: 8px"></span>
             </button>
@@ -94,6 +92,9 @@ limitations under the License.
               <li ng-if="ticket.principal && ticket.principal !== 'anonymous'"><a ng-click="logout()">Logout</a></li>
             </ul>
           </div>
+        </li>
+        <li>
+
         </li>
         <li class="nav-component" ng-if="!ticket">
           <button class="btn nav-login-btn" data-toggle="modal" data-target="#loginModal"
