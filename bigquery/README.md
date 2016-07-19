@@ -102,4 +102,4 @@ LIMIT
 
 # Sample Screenshot
 
-![screenshot from 2016-07-12 14 27 30](https://cloud.githubusercontent.com/assets/4242273/16785302/31b104e2-4842-11e6-87c0-b79763dd85c0.png)
+![Zeppelin BigQuery](https://cloud.githubusercontent.com/assets/10060731/16938817/b9213ea0-4db6-11e6-8c3b-8149a0bdf874.png)
