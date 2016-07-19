@@ -103,4 +103,36 @@ public class RemoteInterpreterProcessTest {
     assertEquals(1, rip.reference(intpGroup));
     assertEquals(true, rip.isRunning());
   }
+  
+  
+  @Test
+  public void testRemoteInterpreterWithMultipleInterpreterInGroup() throws TException, InterruptedException {
+    RemoteInterpreterServer server = new RemoteInterpreterServer(3679);
+    server.start();
+    long startTime = System.currentTimeMillis();
+    /*If RemoteInterpreterServer didn't start within 30 seconds than this test may fail
+     * which might be due to issue in RemoteInterpreterServer
+     */
+    while (System.currentTimeMillis() - startTime < 30 * 1000) {
+      if (server.isRunning()) {
+        break;
+      } else {
+        Thread.sleep(200);
+      }
+    }
+    Properties properties = new Properties();
+    properties.setProperty(Constants.ZEPPELIN_INTERPRETER_PORT, "3679");
+    properties.setProperty(Constants.ZEPPELIN_INTERPRETER_HOST, "localhost");
+    InterpreterGroup intpGroup = mock(InterpreterGroup.class);
+    when(intpGroup.getProperty()).thenReturn(properties);
+    when(intpGroup.containsKey(Constants.EXISTING_PROCESS)).thenReturn(true);
+    RemoteInterpreterProcess rip = new RemoteInterpreterProcess(INTERPRETER_SCRIPT, "nonexists",
+        "fakeRepo", new HashMap<String, String>(), 30 * 1000, null);
+    assertFalse(rip.isRunning());
+    assertEquals(0, rip.referenceCount());
+    assertEquals(1, rip.reference(intpGroup));
+    // Calling reference once again to depict multiple intrepreters in a group
+    assertEquals(2, rip.reference(intpGroup));
+    assertEquals(true, rip.isRunning());
+  }
 }
