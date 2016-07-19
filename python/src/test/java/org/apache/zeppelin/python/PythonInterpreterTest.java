@@ -187,7 +187,7 @@ public class PythonInterpreterTest {
       s.connect(sa, 10000);
       connected = true;
     } catch (IOException e) {
-      LOG.error("Can't open connection to " + sa, e);
+      //LOG.warn("Can't open connection to " + sa, e);
     }
     return connected;
   }

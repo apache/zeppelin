@@ -72,6 +72,8 @@ plt.close()
     print ('''<pre>z.show(plt,width='50px')
 z.show(plt,height='150px') </pre></div>''')
     print ('<h3>Pandas DataFrame</h3>')
+    print ('<div> You need to have Pandas module installed ')
+    print ('to use this functionality (pip install pandas) !</div><br/>')
     print """
 <div>The interpreter can visualize Pandas DataFrame
 with the function z.show()
@@ -81,6 +83,27 @@ df = pd.read_csv("bank.csv", sep=";")
 z.show(df)
 </pre></div>
 """
+    print ('<h3>SQL over Pandas DataFrame</h3>')
+    print ('<div> You need to have Pandas&Pandasql modules installed ')
+    print ('to use this functionality (pip install pandas pandasql) !</div><br/>')
+    print """
+<div>Python interpreter group includes %sql interpreter that can query
+Pandas DataFrames using SQL and visualize results using Zeppelin Table Display System
+
+<pre>
+%python
+import pandas as pd
+df = pd.read_csv("bank.csv", sep=";")
+</pre>
+<br />
+
+<pre>
+%python.sql
+%sql
+SELECT * from df LIMIT 5
+</pre></div>
+"""
+
 
 class PyZeppelinContext(object):
     """ If py4j is detected, these class will be override
@@ -109,6 +132,8 @@ class PyZeppelinContext(object):
             # `isinstance(p, DataFrame)` would req `import pandas.core.frame.DataFrame`
             # and so a dependency on pandas
             self.show_dataframe(p, **kwargs)
+        elif hasattr(p, '__call__'):
+            p() #error reporting
     
     def show_dataframe(self, df, **kwargs):
         """Pretty prints DF using Table Display System

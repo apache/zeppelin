@@ -14,7 +14,7 @@
 'use strict';
 
 angular.module('zeppelinWebApp').factory('websocketEvents',
-  function($rootScope, $websocket, $location, $window, baseUrlSrv) {
+  function($rootScope, $websocket, $location, baseUrlSrv) {
   var websocketCalls = {};
 
   websocketCalls.ws = $websocket(baseUrlSrv.getWebsocketUrl());
@@ -57,7 +57,7 @@ angular.module('zeppelinWebApp').factory('websocketEvents',
     if (op === 'NOTE') {
       $rootScope.$broadcast('setNoteContent', data.note);
     } else if (op === 'NEW_NOTE') {
-      $location.path('notebook/' + data.note.id);
+      $location.path('/notebook/' + data.note.id);
     } else if (op === 'NOTES_INFO') {
       $rootScope.$broadcast('setNoteMenu', data.notes);
     } else if (op === 'LIST_NOTEBOOK_JOBS') {
@@ -83,7 +83,7 @@ angular.module('zeppelinWebApp').factory('websocketEvents',
           label: 'Cancel',
           action: function(dialog) {
             dialog.close();
-            $window.location.replace('/');
+            $location.path('/');
           }
         }]
       });
