@@ -14,8 +14,7 @@
  */
 'use strict';
 
-angular.module('zeppelinWebApp').controller('CredentialCtrl', function($scope, $route, $routeParams, $location,
-                                                                       $rootScope, $http, baseUrlSrv, ngToast) {
+angular.module('zeppelinWebApp').controller('CredentialCtrl', function($scope, $rootScope, $http, baseUrlSrv, ngToast) {
   $scope._ = _;
 
   $scope.credentialInfo = [];
