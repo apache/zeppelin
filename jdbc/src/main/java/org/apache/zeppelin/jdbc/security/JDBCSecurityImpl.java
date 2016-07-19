@@ -25,6 +25,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.Properties;
 
+import org.apache.hadoop.security.UserGroupInformation.AuthenticationMethod;
 import static org.apache.hadoop.security.UserGroupInformation.AuthenticationMethod.KERBEROS;
 import static org.apache.hadoop.security.UserGroupInformation.AuthenticationMethod.SIMPLE;
 
@@ -39,17 +40,7 @@ public class JDBCSecurityImpl {
    * @param properties
    */
   public static void createSecureConfiguration(Properties properties) {
-    UserGroupInformation.AuthenticationMethod authType;
-    try {
-      authType = UserGroupInformation
-          .AuthenticationMethod.valueOf(properties.getProperty("zeppelin.jdbc.auth.type")
-              .trim().toUpperCase());
-    } catch (Exception e) {
-      LOGGER.error(String.format("Invalid auth.type detected with value %s, defaulting " +
-          "auth.type to SIMPLE", properties.getProperty("zeppelin.jdbc.auth.type").trim()));
-      authType = SIMPLE;
-    }
-
+    AuthenticationMethod authType = getAuthtype(properties);
 
     switch (authType) {
         case KERBEROS:
@@ -67,6 +58,19 @@ public class JDBCSecurityImpl {
                 "interpreter", e);
           }
     }
+  }
+
+  public static AuthenticationMethod getAuthtype(Properties properties) {
+    AuthenticationMethod authType;
+    try {
+      authType = AuthenticationMethod.valueOf(properties.getProperty("zeppelin.jdbc.auth.type")
+          .trim().toUpperCase());
+    } catch (Exception e) {
+      LOGGER.error(String.format("Invalid auth.type detected with value %s, defaulting " +
+          "auth.type to SIMPLE", properties.getProperty("zeppelin.jdbc.auth.type").trim()));
+      authType = SIMPLE;
+    }
+    return authType;
   }
 
 }
