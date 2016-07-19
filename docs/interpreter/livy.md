@@ -30,7 +30,7 @@ We added some common configurations for spark, and you can set any configuration
 This link contains all spark configurations: http://spark.apache.org/docs/latest/configuration.html#available-properties.
 And instead of starting property with `spark.` it should be replaced with `livy.spark.`.
 Example: `spark.master` to `livy.spark.master`
-
+  
 <table class="table-configuration">
   <tr>
     <th>Property</th>
@@ -102,8 +102,41 @@ Example: `spark.master` to `livy.spark.master`
     <td></td>
     <td>Upper bound for the number of executors.</td>
   </tr>
+    <tr>
+      <td>livy.spark.executor.extraClassPath</td>
+      <td></td>
+      <td>Adding extra libraries to the executors</td>
+    </tr>
+  <tr>
+      <td>livy.spark.driver.extraClassPath</td>
+      <td></td>
+      <td>Adding extra libraries to the driver</td>
+  </tr>
 </table>
 
+## Adding External libraries
+You should put the libraries manually on the livy server and then set the paths of the libraries to those properties `livy.spark.executor.extraClassPath` and `livy.spark.driver.extraClassPath`
+
+Example
+
+<table class="table-configuration">
+  <tr>
+    <th>Property</th>
+    <th>Default</th>
+    <th>Description</th>
+  </tr>
+  <tr>
+      <td>livy.spark.executor.extraClassPath</td>
+      <td>path/to/jar1.jar:path/to/jar2.jar</td>
+      <td>Adding extra libraries to the executors</td>
+    </tr>
+  <tr>
+      <td>livy.spark.driver.extraClassPath</td>
+      <td>path/to/jar1.jar:path/to/jar2.jar</td>
+      <td>Adding extra libraries to the driver</td>
+  <tr>
+  </table>
+  
 ## How to use
 Basically, you can use
 

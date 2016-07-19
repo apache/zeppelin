@@ -81,6 +81,16 @@
         "propertyName": "zeppelin.livy.keytab",
         "defaultValue": "",
         "description": "Kerberos keytab to authenticate livy"
+      },
+      "livy.spark.executor.extraClassPath": {
+        "propertyName": "livy.spark.executor.extraClassPath",
+        "defaultValue": "",
+        "description": "Adding extra libraries to the executors"
+      },
+      "livy.spark.driver.extraClassPath": {
+        "propertyName": "livy.spark.driver.extraClassPath",
+        "defaultValue": "",
+        "description": "Adding extra libraries to the driver"
       }
     }
   },
