@@ -127,7 +127,7 @@ module.exports = function(grunt) {
           '<%= yeoman.app %>/app/**/*.js',
           '<%= yeoman.app %>/components/**/*.js'
         ],
-        tasks: ['newer:jshint:all', 'newer:jscs:all'],
+        tasks: ['newer:eslint:all', 'newer:jscs:all'],
         options: {
           livereload: '<%= connect.options.livereload %>'
         }
@@ -140,7 +140,7 @@ module.exports = function(grunt) {
       },
       jsTest: {
         files: ['test/spec/{,*/}*.js'],
-        tasks: ['newer:jshint:test', 'newer:jscs:test', 'karma']
+        tasks: ['newer:eslint:test', 'newer:jscs:test', 'karma']
       },
       styles: {
         files: [
@@ -234,13 +234,7 @@ module.exports = function(grunt) {
       }
     },
 
-    // Make sure code styles are up to par and there are no obvious mistakes
-    jshint: {
-      options: {
-        jshintrc: '.jshintrc',
-        reporterOutput: '',
-        reporter: require('jshint-stylish')
-      },
+    eslint: {
       all: {
         src: [
           'Gruntfile.js',
@@ -249,9 +243,6 @@ module.exports = function(grunt) {
         ]
       },
       test: {
-        options: {
-          jshintrc: 'test/.jshintrc'
-        },
         src: ['test/spec/{,*/}*.js']
       }
     },
@@ -524,7 +515,7 @@ module.exports = function(grunt) {
 
   grunt.registerTask('build', [
     'jscs',
-    'jshint:all',
+    'eslint',
     'htmlhint',
     'clean:dist',
     'wiredep',

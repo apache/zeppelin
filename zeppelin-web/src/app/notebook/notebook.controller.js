@@ -17,7 +17,7 @@
 
 angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $route, $routeParams, $location,
                                                                      $rootScope, $http, websocketMsgSrv,
-                                                                     baseUrlSrv, $timeout, SaveAsService) {
+                                                                     baseUrlSrv, $timeout, saveAsService) {
   $scope.note = null;
   $scope.showEditor = false;
   $scope.editorToggled = false;
@@ -142,7 +142,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
   //Export notebook
   $scope.exportNotebook = function() {
     var jsonContent = JSON.stringify($scope.note);
-    SaveAsService.SaveAs(jsonContent, $scope.note.name, 'json');
+    saveAsService.saveAs(jsonContent, $scope.note.name, 'json');
   };
 
   //Clone note
