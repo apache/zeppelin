@@ -22,25 +22,23 @@
   <parent>
     <artifactId>zeppelin</artifactId>
     <groupId>org.apache.zeppelin</groupId>
-    <version>0.6.0-incubating-SNAPSHOT</version>
+    <version>0.7.0-SNAPSHOT</version>
     <relativePath>..</relativePath>
   </parent>
 
   <groupId>org.apache.zeppelin</groupId>
   <artifactId>zeppelin-spark</artifactId>
   <packaging>jar</packaging>
-  <version>0.6.0-incubating-SNAPSHOT</version>
+  <version>0.7.0-SNAPSHOT</version>
   <name>Zeppelin: Spark</name>
   <description>Zeppelin spark support</description>
-  <url>http://zeppelin.incubator.apache.org</url>
+  <url>http://zeppelin.apache.org</url>
 
   <properties>
     <jsoup.version>1.8.2</jsoup.version>
     <mockito.version>1.10.19</mockito.version>
     <powermock.version>1.6.4</powermock.version>
-    <spark.version>1.4.1</spark.version>
-    <scala.version>2.10.4</scala.version>
-    <scala.binary.version>2.10</scala.binary.version>
+    <spark.version>1.6.2</spark.version>
   </properties>
 
   <dependencies>
@@ -54,11 +52,11 @@
       <artifactId>slf4j-log4j12</artifactId>
     </dependency>
 
-    <dependency>
+    <!-- dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>zeppelin-display</artifactId>
       <version>${project.version}</version>
-    </dependency>
+    </dependency -->
 
     <dependency>
       <groupId>${project.groupId}</groupId>
@@ -67,9 +65,16 @@
     </dependency>
 
     <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>zeppelin-spark-dependencies</artifactId>
-      <version>${project.version}</version>
+      <groupId>org.apache.spark</groupId>
+      <artifactId>spark-repl_${scala.binary.version}</artifactId>
+      <version>${spark.version}</version>
+      <scope>provided</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.spark</groupId>
+      <artifactId>spark-hive_${scala.binary.version}</artifactId>
+      <version>${spark.version}</version>
       <scope>provided</scope>
     </dependency>
 
@@ -243,7 +248,7 @@
     <dependency>
       <groupId>org.scalatest</groupId>
       <artifactId>scalatest_${scala.binary.version}</artifactId>
-      <version>2.2.4</version>
+      <version>${scalatest.version}</version>
       <scope>test</scope>
     </dependency>
 
@@ -313,6 +318,7 @@
             <exclude>**/metastore_db/</exclude>
             <exclude>**/README.md</exclude>
             <exclude>**/dependency-reduced-pom.xml</exclude>
+            <exclude>**/interpreter-setting.json</exclude>
           </excludes>
         </configuration>
       </plugin>
@@ -404,6 +410,7 @@
       <plugin>
         <groupId>org.scala-tools</groupId>
         <artifactId>maven-scala-plugin</artifactId>
+        <version>2.15.2</version>
         <executions>
           <execution>
             <id>compile</id>
@@ -432,10 +439,22 @@
   </build>
 
   <profiles>
-
     <!-- to deactivate 'exclude-sparkr' automatically when 'spark' is activated -->
     <profile>
       <id>sparkr</id>
+      <build>
+        <resources>
+          <resource>
+            <directory>src/main/resources</directory>
+            <excludes>
+              <exclude>interpreter-setting.json</exclude>
+            </excludes>
+          </resource>
+          <resource>
+            <directory>src/main/sparkr-resources</directory>
+          </resource>
+        </resources>
+      </build>
     </profile>
 
     <profile>

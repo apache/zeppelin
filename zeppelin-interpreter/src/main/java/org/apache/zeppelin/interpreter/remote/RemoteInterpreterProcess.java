@@ -14,131 +14,72 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.zeppelin.interpreter.remote;
 
 import com.google.gson.Gson;
 import org.apache.commons.exec.*;
-import org.apache.commons.exec.environment.EnvironmentUtils;
 import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.apache.thrift.TException;
+import org.apache.zeppelin.helium.ApplicationEventListener;
+import org.apache.zeppelin.interpreter.Constants;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService.Client;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.Properties;
 
 /**
- *
+ * Abstract class for interpreter process
  */
-public class RemoteInterpreterProcess implements ExecuteResultHandler {
+public abstract class RemoteInterpreterProcess {
   private static final Logger logger = LoggerFactory.getLogger(RemoteInterpreterProcess.class);
-
   private final AtomicInteger referenceCount;
-  private DefaultExecutor executor;
   private ExecuteWatchdog watchdog;
-  boolean running = false;
-  private int port = -1;
-  private final String interpreterRunner;
-  private final String interpreterDir;
-  private final String localRepoDir;
 
   private GenericObjectPool<Client> clientPool;
-  private Map<String, String> env;
   private final RemoteInterpreterEventPoller remoteInterpreterEventPoller;
   private final InterpreterContextRunnerPool interpreterContextRunnerPool;
   private int connectTimeout;
+  String host = "localhost";
+  boolean isInterpreterAlreadyExecuting = false;
 
-  public RemoteInterpreterProcess(String intpRunner,
-      String intpDir,
-      String localRepoDir,
-      Map<String, String> env,
+  public RemoteInterpreterProcess(
       int connectTimeout,
-      RemoteInterpreterProcessListener listener) {
-    this(intpRunner,
-        intpDir,
-        localRepoDir,
-        env,
-        new RemoteInterpreterEventPoller(listener),
+      RemoteInterpreterProcessListener listener,
+      ApplicationEventListener appListener) {
+    this(new RemoteInterpreterEventPoller(listener, appListener),
         connectTimeout);
   }
 
-  RemoteInterpreterProcess(String intpRunner,
-      String intpDir,
-      String localRepoDir,
-      Map<String, String> env,
-      RemoteInterpreterEventPoller remoteInterpreterEventPoller,
-      int connectTimeout) {
-    this.interpreterRunner = intpRunner;
-    this.interpreterDir = intpDir;
-    this.localRepoDir = localRepoDir;
-    this.env = env;
+  RemoteInterpreterProcess(RemoteInterpreterEventPoller remoteInterpreterEventPoller,
+                           int connectTimeout) {
     this.interpreterContextRunnerPool = new InterpreterContextRunnerPool();
     referenceCount = new AtomicInteger(0);
     this.remoteInterpreterEventPoller = remoteInterpreterEventPoller;
     this.connectTimeout = connectTimeout;
   }
 
+  public abstract String getHost();
+  public abstract int getPort();
+  public abstract void start();
+  public abstract void stop();
+  public abstract boolean isRunning();
 
-  public int getPort() {
-    return port;
+  public int getConnectTimeout() {
+    return connectTimeout;
   }
 
   public int reference(InterpreterGroup interpreterGroup) {
     synchronized (referenceCount) {
-      if (executor == null) {
-        // start server process
-        try {
-          port = RemoteInterpreterUtils.findRandomAvailablePortOnAllLocalInterfaces();
-        } catch (IOException e1) {
-          throw new InterpreterException(e1);
-        }
+      if (!isRunning()) {
+        start();
+      }
 
-        CommandLine cmdLine = CommandLine.parse(interpreterRunner);
-        cmdLine.addArgument("-d", false);
-        cmdLine.addArgument(interpreterDir, false);
-        cmdLine.addArgument("-p", false);
-        cmdLine.addArgument(Integer.toString(port), false);
-        cmdLine.addArgument("-l", false);
-        cmdLine.addArgument(localRepoDir, false);
-
-        executor = new DefaultExecutor();
-
-        watchdog = new ExecuteWatchdog(ExecuteWatchdog.INFINITE_TIMEOUT);
-        executor.setWatchdog(watchdog);
-
-        running = true;
-        try {
-          Map procEnv = EnvironmentUtils.getProcEnvironment();
-          procEnv.putAll(env);
-
-          logger.info("Run interpreter process {}", cmdLine);
-          executor.execute(cmdLine, procEnv, this);
-        } catch (IOException e) {
-          running = false;
-          throw new InterpreterException(e);
-        }
-
-
-        long startTime = System.currentTimeMillis();
-        while (System.currentTimeMillis() - startTime < connectTimeout) {
-          if (RemoteInterpreterUtils.checkIfRemoteEndpointAccessible("localhost", port)) {
-            break;
-          } else {
-            try {
-              Thread.sleep(500);
-            } catch (InterruptedException e) {
-              logger.error("Exception in RemoteInterpreterProcess while synchronized reference " +
-                  "Thread.sleep", e);
-            }
-          }
-        }
-
-        clientPool = new GenericObjectPool<Client>(new ClientFactory("localhost", port));
+      if (clientPool == null) {
+        clientPool = new GenericObjectPool<Client>(new ClientFactory(getHost(), getPort()));
+        clientPool.setTestOnBorrow(true);
 
         remoteInterpreterEventPoller.setInterpreterGroup(interpreterGroup);
         remoteInterpreterEventPoller.setInterpreterProcess(this);
@@ -221,16 +162,6 @@ public class RemoteInterpreterProcess implements ExecuteResultHandler {
             break;
           }
         }
-
-        if (isRunning()) {
-          logger.info("kill interpreter process");
-          watchdog.destroyProcess();
-        }
-
-        executor = null;
-        watchdog = null;
-        running = false;
-        logger.info("Remote process terminated");
       }
       return r;
     }
@@ -240,23 +171,6 @@ public class RemoteInterpreterProcess implements ExecuteResultHandler {
     synchronized (referenceCount) {
       return referenceCount.get();
     }
-  }
-
-  @Override
-  public void onProcessComplete(int exitValue) {
-    logger.info("Interpreter process exited {}", exitValue);
-    running = false;
-
-  }
-
-  @Override
-  public void onProcessFailed(ExecuteException e) {
-    logger.info("Interpreter process failed {}", e);
-    running = false;
-  }
-
-  public boolean isRunning() {
-    return running;
   }
 
   public int getNumActiveClient() {

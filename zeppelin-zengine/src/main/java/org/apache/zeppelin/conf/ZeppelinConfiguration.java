@@ -71,7 +71,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
    *url = ZeppelinConfiguration.class.getResource(ZEPPELIN_SITE_XML);
    * @throws ConfigurationException
    */
-  public static ZeppelinConfiguration create() {
+  public static synchronized ZeppelinConfiguration create() {
     if (conf != null) {
       return conf;
     }
@@ -346,16 +346,40 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     return getString(ConfVars.ZEPPELIN_NOTEBOOK_S3_EMP);
   }
 
+  public String getInterpreterListPath() {
+    return getRelativeDir(String.format("%s/interpreter-list", getConfDir()));
+  }
+
   public String getInterpreterDir() {
     return getRelativeDir(ConfVars.ZEPPELIN_INTERPRETER_DIR);
+  }
+
+  public String getInterpreterJson() {
+    return getString(ConfVars.ZEPPELIN_INTERPRETER_JSON);
   }
 
   public String getInterpreterSettingPath() {
     return getRelativeDir(String.format("%s/interpreter.json", getConfDir()));
   }
 
+  public String getHeliumConfPath() {
+    return getRelativeDir(String.format("%s/helium.json", getConfDir()));
+  }
+
+  public String getHeliumDefaultLocalRegistryPath() {
+    return getRelativeDir(ConfVars.ZEPPELIN_HELIUM_LOCALREGISTRY_DEFAULT);
+  }
+
   public String getNotebookAuthorizationPath() {
     return getRelativeDir(String.format("%s/notebook-authorization.json", getConfDir()));
+  }
+
+  public Boolean credentialsPersist() {
+    return getBoolean(ConfVars.ZEPPELIN_CREDENTIALS_PERSIST);
+  }
+
+  public String getCredentialsPath() {
+    return getRelativeDir(String.format("%s/credentials.json", getConfDir()));
   }
 
   public String getShiroPath() {
@@ -403,6 +427,10 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     return getString(ConfVars.ZEPPELIN_WEBSOCKET_MAX_TEXT_MESSAGE_SIZE);
   }
 
+  public boolean getUseJdbcAlias() {
+    return getBoolean(ConfVars.ZEPPELIN_USE_JDBC_ALIAS);
+  }
+
   public Map<String, String> dumpConfigurations(ZeppelinConfiguration conf,
                                                 ConfigurationKeyPredicate predicate) {
     Map<String, String> configurations = new HashMap<>();
@@ -446,7 +474,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
    * Wrapper class.
    */
   public static enum ConfVars {
-    ZEPPELIN_HOME("zeppelin.home", "../"),
+    ZEPPELIN_HOME("zeppelin.home", "./"),
     ZEPPELIN_ADDR("zeppelin.server.addr", "0.0.0.0"),
     ZEPPELIN_PORT("zeppelin.server.port", 8080),
     ZEPPELIN_SERVER_CONTEXT_PATH("zeppelin.server.context.path", "/"),
@@ -459,7 +487,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_SSL_TRUSTSTORE_PATH("zeppelin.ssl.truststore.path", null),
     ZEPPELIN_SSL_TRUSTSTORE_TYPE("zeppelin.ssl.truststore.type", null),
     ZEPPELIN_SSL_TRUSTSTORE_PASSWORD("zeppelin.ssl.truststore.password", null),
-    ZEPPELIN_WAR("zeppelin.war", "../zeppelin-web/dist"),
+    ZEPPELIN_WAR("zeppelin.war", "zeppelin-web/dist"),
     ZEPPELIN_WAR_TEMPDIR("zeppelin.war.tempdir", "webapps"),
     ZEPPELIN_INTERPRETERS("zeppelin.interpreters", "org.apache.zeppelin.spark.SparkInterpreter,"
         + "org.apache.zeppelin.spark.PySparkInterpreter,"
@@ -475,13 +503,12 @@ public class ZeppelinConfiguration extends XMLConfiguration {
         + "org.apache.zeppelin.livy.LivySparkSQLInterpreter,"
         + "org.apache.zeppelin.livy.LivyPySparkInterpreter,"
         + "org.apache.zeppelin.livy.LivySparkRInterpreter,"
-        + "org.apache.zeppelin.hive.HiveInterpreter,"
         + "org.apache.zeppelin.alluxio.AlluxioInterpreter,"
         + "org.apache.zeppelin.file.HDFSFileInterpreter,"
-        + "org.apache.zeppelin.phoenix.PhoenixInterpreter,"
         + "org.apache.zeppelin.postgresql.PostgreSqlInterpreter,"
-        + "org.apache.zeppelin.tajo.TajoInterpreter,"
         + "org.apache.zeppelin.flink.FlinkInterpreter,"
+        + "org.apache.zeppelin.python.PythonInterpreter,"
+        + "org.apache.zeppelin.python.PythonPandasSqlInterpreter,"
         + "org.apache.zeppelin.ignite.IgniteInterpreter,"
         + "org.apache.zeppelin.ignite.IgniteSqlInterpreter,"
         + "org.apache.zeppelin.lens.LensInterpreter,"
@@ -492,10 +519,14 @@ public class ZeppelinConfiguration extends XMLConfiguration {
         + "org.apache.zeppelin.scalding.ScaldingInterpreter,"
         + "org.apache.zeppelin.jdbc.JDBCInterpreter,"
         + "org.apache.zeppelin.hbase.HbaseInterpreter"),
+    ZEPPELIN_INTERPRETER_JSON("zeppelin.interpreter.setting", "interpreter-setting.json"),
     ZEPPELIN_INTERPRETER_DIR("zeppelin.interpreter.dir", "interpreter"),
     ZEPPELIN_INTERPRETER_LOCALREPO("zeppelin.interpreter.localRepo", "local-repo"),
     ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT("zeppelin.interpreter.connect.timeout", 30000),
     ZEPPELIN_INTERPRETER_MAX_POOL_SIZE("zeppelin.interpreter.max.poolsize", 10),
+    ZEPPELIN_INTERPRETER_GROUP_ORDER("zeppelin.interpreter.group.order", "spark,md,angular,sh,"
+        + "livy,alluxio,file,psql,flink,python,ignite,lens,cassandra,geode,kylin,elasticsearch,"
+        + "scalding,jdbc,hbase"),
     ZEPPELIN_ENCODING("zeppelin.encoding", "UTF-8"),
     ZEPPELIN_NOTEBOOK_DIR("zeppelin.notebook.dir", "notebook"),
     // use specified notebook (id) as homescreen
@@ -518,11 +549,15 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_NOTEBOOK_AUTO_INTERPRETER_BINDING("zeppelin.notebook.autoInterpreterBinding", true),
     ZEPPELIN_CONF_DIR("zeppelin.conf.dir", "conf"),
     ZEPPELIN_DEP_LOCALREPO("zeppelin.dep.localrepo", "local-repo"),
+    ZEPPELIN_HELIUM_LOCALREGISTRY_DEFAULT("zeppelin.helium.localregistry.default", "helium"),
     // Allows a way to specify a ',' separated list of allowed origins for rest and websockets
     // i.e. http://localhost:8080
     ZEPPELIN_ALLOWED_ORIGINS("zeppelin.server.allowed.origins", "*"),
     ZEPPELIN_ANONYMOUS_ALLOWED("zeppelin.anonymous.allowed", true),
-    ZEPPELIN_WEBSOCKET_MAX_TEXT_MESSAGE_SIZE("zeppelin.websocket.max.text.message.size", "1024000");
+    ZEPPELIN_CREDENTIALS_PERSIST("zeppelin.credentials.persist", true),
+    ZEPPELIN_WEBSOCKET_MAX_TEXT_MESSAGE_SIZE("zeppelin.websocket.max.text.message.size", "1024000"),
+    ZEPPELIN_USE_JDBC_ALIAS("zeppelin.use.jdbc.alias", true);
+
 
     private String varName;
     @SuppressWarnings("rawtypes")

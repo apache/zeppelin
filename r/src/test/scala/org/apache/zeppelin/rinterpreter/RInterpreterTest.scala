@@ -70,10 +70,10 @@ class RInterpreterTest extends FlatSpec {
 
 
 
-  it should "have a functional completion function" taggedAs(RTest) in {
+/*  it should "have a functional completion function" taggedAs(RTest) in {
     val result = rint.hiddenCompletion("hi", 3)
     result should (contain ("hist"))
-  }
+  }*/
 
   it should "have a working progress meter" in {
     rint.getrContext.setProgress(50)

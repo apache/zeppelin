@@ -29,13 +29,12 @@ import org.apache.thrift.TException;
 import org.apache.thrift.server.TThreadPoolServer;
 import org.apache.thrift.transport.TServerSocket;
 import org.apache.thrift.transport.TTransportException;
+import org.apache.zeppelin.dep.DependencyResolver;
 import org.apache.zeppelin.display.*;
+import org.apache.zeppelin.helium.*;
 import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
-import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterContext;
-import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterEvent;
-import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterResult;
-import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService;
+import org.apache.zeppelin.interpreter.thrift.*;
 import org.apache.zeppelin.resource.*;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.Job.Status;
@@ -61,6 +60,8 @@ public class RemoteInterpreterServer
   InterpreterGroup interpreterGroup;
   AngularObjectRegistry angularObjectRegistry;
   DistributedResourcePool resourcePool;
+  private ApplicationLoader appLoader;
+
   Gson gson = new Gson();
 
   RemoteInterpreterService.Processor<RemoteInterpreterServer> processor;
@@ -69,6 +70,10 @@ public class RemoteInterpreterServer
   private TThreadPoolServer server;
 
   RemoteInterpreterEventClient eventClient = new RemoteInterpreterEventClient();
+  private DependencyResolver depLoader;
+
+  private final Map<String, RunningApplication> runningApplications =
+      Collections.synchronizedMap(new HashMap<String, RunningApplication>());
 
   public RemoteInterpreterServer(int port) throws TTransportException {
     this.port = port;
@@ -87,6 +92,7 @@ public class RemoteInterpreterServer
 
   @Override
   public void shutdown() throws TException {
+    eventClient.waitForEventQueueBecomesEmpty();
     if (interpreterGroup != null) {
       interpreterGroup.close();
       interpreterGroup.destroy();
@@ -137,14 +143,17 @@ public class RemoteInterpreterServer
 
   @Override
   public void createInterpreter(String interpreterGroupId, String noteId, String
-      className,
-                                Map<String, String> properties) throws TException {
+      className, Map<String, String> properties) throws TException {
     if (interpreterGroup == null) {
       interpreterGroup = new InterpreterGroup(interpreterGroupId);
       angularObjectRegistry = new AngularObjectRegistry(interpreterGroup.getId(), this);
       resourcePool = new DistributedResourcePool(interpreterGroup.getId(), eventClient);
       interpreterGroup.setAngularObjectRegistry(angularObjectRegistry);
       interpreterGroup.setResourcePool(resourcePool);
+
+      String localRepoPath = properties.get("zeppelin.interpreter.localRepo");
+      depLoader = new DependencyResolver(localRepoPath);
+      appLoader = new ApplicationLoader(resourcePool, depLoader);
     }
 
     try {
@@ -157,7 +166,6 @@ public class RemoteInterpreterServer
           replClass.getConstructor(new Class[] {Properties.class});
       Interpreter repl = constructor.newInstance(p);
 
-      ClassLoader cl = ClassLoader.getSystemClassLoader();
       repl.setClassloaderUrls(new URL[]{});
 
       synchronized (interpreterGroup) {
@@ -167,7 +175,7 @@ public class RemoteInterpreterServer
           interpreterGroup.put(noteId, interpreters);
         }
 
-        interpreters.add(new LazyOpenInterpreter(new ClassloaderInterpreter(repl, cl)));
+        interpreters.add(new LazyOpenInterpreter(repl));
       }
 
       logger.info("Instantiate interpreter {}", className);
@@ -178,6 +186,18 @@ public class RemoteInterpreterServer
       logger.error(e.toString(), e);
       throw new TException(e);
     }
+  }
+
+  protected InterpreterGroup getInterpreterGroup() {
+    return interpreterGroup;
+  }
+
+  protected ResourcePool getResourcePool() {
+    return resourcePool;
+  }
+
+  protected RemoteInterpreterEventClient getEventClient() {
+    return eventClient;
   }
 
   private void setSystemProperty(Properties properties) {
@@ -193,7 +213,7 @@ public class RemoteInterpreterServer
     }
   }
 
-  private Interpreter getInterpreter(String noteId, String className) throws TException {
+  protected Interpreter getInterpreter(String noteId, String className) throws TException {
     if (interpreterGroup == null) {
       throw new TException(
           new InterpreterException("Interpreter instance " + className + " not created"));
@@ -222,6 +242,24 @@ public class RemoteInterpreterServer
 
   @Override
   public void close(String noteId, String className) throws TException {
+    // unload all applications
+    for (String appId : runningApplications.keySet()) {
+      RunningApplication appInfo = runningApplications.get(appId);
+
+      // see NoteInterpreterLoader.SHARED_SESSION
+      if (appInfo.noteId.equals(noteId) || noteId.equals("shared_session")) {
+        try {
+          logger.info("Unload App {} ", appInfo.pkg.getName());
+          appInfo.app.unload();
+          // see ApplicationState.Status.UNLOADED
+          eventClient.onAppStatusUpdate(appInfo.noteId, appInfo.paragraphId, appId, "UNLOADED");
+        } catch (ApplicationException e) {
+          logger.error(e.getMessage(), e);
+        }
+      }
+    }
+
+    // close interpreters
     synchronized (interpreterGroup) {
       List<Interpreter> interpreters = interpreterGroup.get(noteId);
       if (interpreters != null) {
@@ -350,7 +388,6 @@ public class RemoteInterpreterServer
         context.out.flush();
         InterpreterResult.Type outputType = context.out.getType();
         byte[] interpreterOutput = context.out.toByteArray();
-        context.out.clear();
 
         if (interpreterOutput != null && interpreterOutput.length > 0) {
           message = new String(interpreterOutput);
@@ -367,11 +404,13 @@ public class RemoteInterpreterServer
         }
 
         // put result into resource pool
-        context.getResourcePool().put(
-            context.getNoteId(),
-            context.getParagraphId(),
-            WellKnownResourceName.ParagraphResult.toString(),
-            combinedResult);
+        if (combinedResult.type() == InterpreterResult.Type.TABLE) {
+          context.getResourcePool().put(
+              context.getNoteId(),
+              context.getParagraphId(),
+              WellKnownResourceName.ZeppelinTableResult.toString(),
+              combinedResult);
+        }
         return combinedResult;
       } finally {
         InterpreterContext.remove();
@@ -396,7 +435,7 @@ public class RemoteInterpreterServer
     if (job != null) {
       job.setStatus(Status.ABORT);
     } else {
-      intp.cancel(convert(interpreterContext));
+      intp.cancel(convert(interpreterContext, null));
     }
   }
 
@@ -405,7 +444,7 @@ public class RemoteInterpreterServer
                          RemoteInterpreterContext interpreterContext)
       throws TException {
     Interpreter intp = getInterpreter(noteId, className);
-    return intp.getProgress(convert(interpreterContext));
+    return intp.getProgress(convert(interpreterContext, null));
   }
 
 
@@ -416,13 +455,19 @@ public class RemoteInterpreterServer
   }
 
   @Override
-  public List<String> completion(String noteId, String className, String buf, int cursor)
+  public List<InterpreterCompletion> completion(String noteId,
+      String className, String buf, int cursor)
       throws TException {
     Interpreter intp = getInterpreter(noteId, className);
-    return intp.completion(buf, cursor);
+    List completion = intp.completion(buf, cursor);
+    return completion;
   }
 
   private InterpreterContext convert(RemoteInterpreterContext ric) {
+    return convert(ric, createInterpreterOutput(ric.getNoteId(), ric.getParagraphId()));
+  }
+
+  private InterpreterContext convert(RemoteInterpreterContext ric, InterpreterOutput output) {
     List<InterpreterContextRunner> contextRunners = new LinkedList<InterpreterContextRunner>();
     List<InterpreterContextRunner> runners = gson.fromJson(ric.getRunners(),
             new TypeToken<List<RemoteInterpreterContextRunner>>() {
@@ -443,11 +488,12 @@ public class RemoteInterpreterServer
         gson.fromJson(ric.getGui(), GUI.class),
         interpreterGroup.getAngularObjectRegistry(),
         interpreterGroup.getResourcePool(),
-        contextRunners, createInterpreterOutput(ric.getNoteId(), ric.getParagraphId()));
+        contextRunners, output);
   }
 
 
-  private InterpreterOutput createInterpreterOutput(final String noteId, final String paragraphId) {
+  protected InterpreterOutput createInterpreterOutput(final String noteId, final String
+      paragraphId) {
     return new InterpreterOutput(new InterpreterOutputListener() {
       @Override
       public void onAppend(InterpreterOutput out, byte[] line) {
@@ -662,9 +708,14 @@ public class RemoteInterpreterServer
   @Override
   public List<String> resourcePoolGetAll() throws TException {
     logger.debug("Request getAll from ZeppelinServer");
+    List<String> result = new LinkedList<String>();
+
+    if (resourcePool == null) {
+      return result;
+    }
 
     ResourceSet resourceSet = resourcePool.getAll(false);
-    List<String> result = new LinkedList<String>();
+
     Gson gson = new Gson();
 
     for (Resource r : resourceSet) {
@@ -710,4 +761,134 @@ public class RemoteInterpreterServer
       logger.info("Exception in RemoteInterpreterServer while angularRegistryPush, nolock", e);
     }
   }
+
+  protected InterpreterOutput createAppOutput(final String noteId,
+                                            final String paragraphId,
+                                            final String appId) {
+    return new InterpreterOutput(new InterpreterOutputListener() {
+      @Override
+      public void onAppend(InterpreterOutput out, byte[] line) {
+        eventClient.onAppOutputAppend(noteId, paragraphId, appId, new String(line));
+      }
+
+      @Override
+      public void onUpdate(InterpreterOutput out, byte[] output) {
+        eventClient.onAppOutputUpdate(noteId, paragraphId, appId, new String(output));
+      }
+    });
+  }
+
+  private ApplicationContext getApplicationContext(
+      HeliumPackage packageInfo, String noteId, String paragraphId, String applicationInstanceId) {
+    InterpreterOutput out = createAppOutput(noteId, paragraphId, applicationInstanceId);
+    return new ApplicationContext(
+        noteId,
+        paragraphId,
+        applicationInstanceId,
+        new HeliumAppAngularObjectRegistry(angularObjectRegistry, noteId, applicationInstanceId),
+        out);
+  }
+
+  @Override
+  public RemoteApplicationResult loadApplication(
+      String applicationInstanceId, String packageInfo, String noteId, String paragraphId)
+      throws TException {
+    if (runningApplications.containsKey(applicationInstanceId)) {
+      logger.warn("Application instance {} is already running");
+      return new RemoteApplicationResult(true, "");
+    }
+    HeliumPackage pkgInfo = gson.fromJson(packageInfo, HeliumPackage.class);
+    ApplicationContext context = getApplicationContext(
+        pkgInfo, noteId, paragraphId, applicationInstanceId);
+    try {
+      Application app = null;
+      logger.info(
+          "Loading application {}({}), artifact={}, className={} into note={}, paragraph={}",
+          pkgInfo.getName(),
+          applicationInstanceId,
+          pkgInfo.getArtifact(),
+          pkgInfo.getClassName(),
+          noteId,
+          paragraphId);
+      app = appLoader.load(pkgInfo, context);
+      runningApplications.put(
+          applicationInstanceId,
+          new RunningApplication(pkgInfo, app, noteId, paragraphId));
+      return new RemoteApplicationResult(true, "");
+    } catch (Exception e) {
+      logger.error(e.getMessage(), e);
+      return new RemoteApplicationResult(false, e.getMessage());
+    }
+  }
+
+  @Override
+  public RemoteApplicationResult unloadApplication(String applicationInstanceId)
+      throws TException {
+    RunningApplication runningApplication = runningApplications.remove(applicationInstanceId);
+    if (runningApplication != null) {
+      try {
+        logger.info("Unloading application {}", applicationInstanceId);
+        runningApplication.app.unload();
+      } catch (ApplicationException e) {
+        logger.error(e.getMessage(), e);
+        return new RemoteApplicationResult(false, e.getMessage());
+      }
+    }
+    return new RemoteApplicationResult(true, "");
+  }
+
+  @Override
+  public RemoteApplicationResult runApplication(String applicationInstanceId)
+      throws TException {
+    logger.info("run application {}", applicationInstanceId);
+
+    RunningApplication runningApp = runningApplications.get(applicationInstanceId);
+    if (runningApp == null) {
+      logger.error("Application instance {} not exists", applicationInstanceId);
+      return new RemoteApplicationResult(false, "Application instance does not exists");
+    } else {
+      ApplicationContext context = runningApp.app.context();
+      try {
+        context.out.clear();
+        context.out.setType(InterpreterResult.Type.ANGULAR);
+        ResourceSet resource = appLoader.findRequiredResourceSet(
+            runningApp.pkg.getResources(),
+            context.getNoteId(),
+            context.getParagraphId());
+        for (Resource res : resource) {
+          System.err.println("Resource " + res.get());
+        }
+        runningApp.app.run(resource);
+        String output = new String(context.out.toByteArray());
+        eventClient.onAppOutputUpdate(
+            context.getNoteId(),
+            context.getParagraphId(),
+            applicationInstanceId,
+            output);
+        return new RemoteApplicationResult(true, "");
+      } catch (ApplicationException | IOException e) {
+        return new RemoteApplicationResult(false, e.getMessage());
+      }
+    }
+
+
+
+  }
+
+  private static class RunningApplication {
+    public final Application app;
+    public final HeliumPackage pkg;
+    public final String noteId;
+    public final String paragraphId;
+
+    public RunningApplication(HeliumPackage pkg,
+                              Application app,
+                              String noteId,
+                              String paragraphId) {
+      this.app = app;
+      this.pkg = pkg;
+      this.noteId = noteId;
+      this.paragraphId = paragraphId;
+    }
+  };
 }

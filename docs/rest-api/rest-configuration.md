@@ -19,30 +19,28 @@ limitations under the License.
 -->
 {% include JB/setup %}
 
-## Zeppelin REST API
- Zeppelin provides several REST API's for interaction and remote activation of zeppelin functionality.
+# Apache Zeppelin Configuration REST API
 
- All REST API are available starting with the following endpoint ```http://[zeppelin-server]:[zeppelin-port]/api```
+<div id="toc"></div>
 
- Note that Zeppelin REST API receive or return JSON objects, it it recommended you install some JSON viewers such as 
- [JSONView](https://chrome.google.com/webstore/detail/jsonview/chklaanhfefbnpoihckbnefhakgolnmc)
+## Overview
+Apache Zeppelin provides several REST APIs for interaction and remote activation of zeppelin functionality.
+All REST APIs are available starting with the following endpoint `http://[zeppelin-server]:[zeppelin-port]/api`. 
+Note that Apache Zeppelin REST APIs receive or return JSON objects, it is recommended for you to install some JSON viewers such as [JSONView](https://chrome.google.com/webstore/detail/jsonview/chklaanhfefbnpoihckbnefhakgolnmc).
+
+If you work with Apache Zeppelin and find a need for an additional REST API, please [file an issue or send us an email](http://zeppelin.apache.org/community.html).
+nd a need for an additional REST API, please [file an issue or send us mail](../../community.html).
 
 
- If you work with zeppelin and find a need for an additional REST API please [file an issue or send us mail](../../community.html)
+## Configuration REST API list
 
- <br />
-### Configuration REST API list
-
+### List all key/value pair of configurations
   <table class="table-configuration">
     <col width="200">
     <tr>
-      <th>List configurations</th>
-      <th></th>
-    </tr>
-    <tr>
       <td>Description</td>
       <td>This ```GET``` method return all key/value pair of configurations on the server.<br/>
-      Note: For security reason, some pairs would not be shown.</td>
+       Note: For security reason, some pairs would not be shown.</td>
     </tr>
     <tr>
       <td>URL</td>
@@ -61,48 +59,43 @@ limitations under the License.
       </td>
       <td>
         <pre>
-{  
-   "status":"OK",
-   "message":"",
-   "body":{  
-      "zeppelin.war.tempdir":"webapps",
-      "zeppelin.notebook.homescreen.hide":"false",
-      "zeppelin.interpreter.remoterunner":"bin/interpreter.sh",
-      "zeppelin.notebook.s3.user":"user",
-      "zeppelin.server.port":"8089",
-      "zeppelin.dep.localrepo":"local-repo",
-      "zeppelin.ssl.truststore.type":"JKS",
-      "zeppelin.ssl.keystore.path":"keystore",
-      "zeppelin.notebook.s3.bucket":"zeppelin",
-      "zeppelin.server.addr":"0.0.0.0",
-      "zeppelin.ssl.client.auth":"false",
-      "zeppelin.server.context.path":"/",
-      "zeppelin.ssl.keystore.type":"JKS",
-      "zeppelin.ssl.truststore.path":"truststore",
-      "zeppelin.interpreters":"org.apache.zeppelin.spark.SparkInterpreter,org.apache.zeppelin.spark.PySparkInterpreter,org.apache.zeppelin.spark.SparkRInterpreter,org.apache.zeppelin.spark.SparkSqlInterpreter,org.apache.zeppelin.spark.DepInterpreter,org.apache.zeppelin.markdown.Markdown,org.apache.zeppelin.angular.AngularInterpreter,org.apache.zeppelin.shell.ShellInterpreter,org.apache.zeppelin.hive.HiveInterpreter,org.apache.zeppelin.tajo.TajoInterpreter,org.apache.zeppelin.flink.FlinkInterpreter,org.apache.zeppelin.lens.LensInterpreter,org.apache.zeppelin.ignite.IgniteInterpreter,org.apache.zeppelin.ignite.IgniteSqlInterpreter,org.apache.zeppelin.cassandra.CassandraInterpreter,org.apache.zeppelin.geode.GeodeOqlInterpreter,org.apache.zeppelin.postgresql.PostgreSqlInterpreter,org.apache.zeppelin.phoenix.PhoenixInterpreter,org.apache.zeppelin.kylin.KylinInterpreter,org.apache.zeppelin.elasticsearch.ElasticsearchInterpreter,org.apache.zeppelin.scalding.ScaldingInterpreter",
-      "zeppelin.ssl":"false",
-      "zeppelin.notebook.autoInterpreterBinding":"true",
-      "zeppelin.notebook.homescreen":"",
-      "zeppelin.notebook.storage":"org.apache.zeppelin.notebook.repo.VFSNotebookRepo",
-      "zeppelin.interpreter.connect.timeout":"30000",
-      "zeppelin.anonymous.allowed":"true",
-      "zeppelin.server.allowed.origins":"*",
-      "zeppelin.encoding":"UTF-8"
-   }
-}
-        </pre>
-      </td>
+{
+  "status": "OK",
+  "message": "",
+  "body": {
+    "zeppelin.war.tempdir": "webapps",
+    "zeppelin.notebook.homescreen.hide": "false",
+    "zeppelin.interpreter.remoterunner": "bin/interpreter.sh",
+    "zeppelin.notebook.s3.user": "user",
+    "zeppelin.server.port": "8089",
+    "zeppelin.dep.localrepo": "local-repo",
+    "zeppelin.ssl.truststore.type": "JKS",
+    "zeppelin.ssl.keystore.path": "keystore",
+    "zeppelin.notebook.s3.bucket": "zeppelin",
+    "zeppelin.server.addr": "0.0.0.0",
+    "zeppelin.ssl.client.auth": "false",
+    "zeppelin.server.context.path": "/",
+    "zeppelin.ssl.keystore.type": "JKS",
+    "zeppelin.ssl.truststore.path": "truststore",
+    "zeppelin.interpreters": "org.apache.zeppelin.spark.SparkInterpreter,org.apache.zeppelin.spark.PySparkInterpreter,org.apache.zeppelin.spark.SparkRInterpreter,org.apache.zeppelin.spark.SparkSqlInterpreter,org.apache.zeppelin.spark.DepInterpreter,org.apache.zeppelin.markdown.Markdown,org.apache.zeppelin.angular.AngularInterpreter,org.apache.zeppelin.shell.ShellInterpreter,org.apache.zeppelin.flink.FlinkInterpreter,org.apache.zeppelin.lens.LensInterpreter,org.apache.zeppelin.ignite.IgniteInterpreter,org.apache.zeppelin.ignite.IgniteSqlInterpreter,org.apache.zeppelin.cassandra.CassandraInterpreter,org.apache.zeppelin.geode.GeodeOqlInterpreter,org.apache.zeppelin.postgresql.PostgreSqlInterpreter,org.apache.zeppelin.kylin.KylinInterpreter,org.apache.zeppelin.elasticsearch.ElasticsearchInterpreter,org.apache.zeppelin.scalding.ScaldingInterpreter",
+    "zeppelin.ssl": "false",
+    "zeppelin.notebook.autoInterpreterBinding": "true",
+    "zeppelin.notebook.homescreen": "",
+    "zeppelin.notebook.storage": "org.apache.zeppelin.notebook.repo.VFSNotebookRepo",
+    "zeppelin.interpreter.connect.timeout": "30000",
+    "zeppelin.anonymous.allowed": "true",
+    "zeppelin.server.allowed.origins":"*",
+    "zeppelin.encoding": "UTF-8"
+  }
+}</pre></td>
     </tr>
   </table>
 
 <br/>
 
+### List all prefix matched key/value pair of configurations
   <table class="table-configuration">
     <col width="200">
-    <tr>
-      <th>List configurations (prefix match)</th>
-      <th></th>
-    </tr>
     <tr>
       <td>Description</td>
       <td>This ```GET``` method return all prefix matched key/value pair of configurations on the server.<br/>
@@ -123,21 +116,20 @@ limitations under the License.
     <tr>
       <td> sample JSON response
       </td>
-      <td>
-        <pre>
-{  
-   "status":"OK",
-   "message":"",
-   "body":{  
-      "zeppelin.ssl.keystore.type":"JKS",
-      "zeppelin.ssl.truststore.path":"truststore",
-      "zeppelin.ssl.truststore.type":"JKS",
-      "zeppelin.ssl.keystore.path":"keystore",
-      "zeppelin.ssl":"false",
-      "zeppelin.ssl.client.auth":"false"
-   }
-}
-        </pre>
+      <td><pre>
+{
+  "status": "OK",
+  "message": "",
+  "body": {
+    "zeppelin.ssl.keystore.type": "JKS",
+    "zeppelin.ssl.truststore.path": "truststore",
+    "zeppelin.ssl.truststore.type": "JKS",
+    "zeppelin.ssl.keystore.path": "keystore",
+    "zeppelin.ssl": "false",
+    "zeppelin.ssl.client.auth": "false"
+  }
+}</pre>
       </td>
     </tr>
   </table>
+  

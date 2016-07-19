@@ -22,14 +22,14 @@
   <parent>
     <artifactId>zeppelin</artifactId>
     <groupId>org.apache.zeppelin</groupId>
-    <version>0.6.0-incubating-SNAPSHOT</version>
+    <version>0.7.0-SNAPSHOT</version>
     <relativePath>..</relativePath>
   </parent>
 
   <groupId>org.apache.zeppelin</groupId>
   <artifactId>zeppelin-web</artifactId>
   <packaging>war</packaging>
-  <version>0.6.0-incubating-SNAPSHOT</version>
+  <version>0.7.0-SNAPSHOT</version>
   <name>Zeppelin: web Application</name>
 
   <!-- See https://github.com/eirslett/frontend-maven-plugin/issues/229 -->
@@ -59,6 +59,7 @@
             <exclude>.gitignore</exclude>
             <exclude>.bowerrc</exclude>
             <exclude>.editorconfig</exclude>
+            <exclude>.jscsrc</exclude>
             <exclude>.jshintrc</exclude>
             <exclude>.tmp/**</exclude>
             <exclude>**/.settings/*</exclude>
@@ -76,6 +77,9 @@
             <exclude>src/styles/font-awesome*</exclude>
             <exclude>src/fonts/Simple-Line*</exclude>
             <exclude>src/fonts/simple-line*</exclude>
+            <exclude>src/fonts/Patua-One*</exclude>
+            <exclude>src/fonts/Roboto*</exclude>
+            <exclude>src/fonts/Source-Code-Pro*</exclude>
             <exclude>bower.json</exclude>
             <exclude>package.json</exclude>
             <exclude>*.md</exclude>

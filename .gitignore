@@ -26,27 +26,32 @@ conf/truststore
 conf/interpreter.json
 conf/notebook-authorization.json
 conf/shiro.ini
+conf/credentials.json
 
 # other generated files
 spark/dependency-reduced-pom.xml
 reports
 
-#webapp
+# webapp
 zeppelin-web/node_modules
 zeppelin-web/dist
 zeppelin-web/.tmp
+zeppelin-web/src/fonts/Roboto*
+zeppelin-web/src/fonts/Source-Code-Pro*
+zeppelin-web/src/fonts/Patua-One*
 zeppelin-web/.sass-cache
 zeppelin-web/bower_components
 **nbproject/
 **node/
 
-#R
+# R
 /r/lib/
+.Rhistory
 
 # project level
 /logs/
 /run/
-/metastore_db/
+**/metastore_db/
 /*.log
 /jobs/
 /zan-repo/
@@ -79,7 +84,7 @@ Thumbs.db
 .project
 .settings/
 
-#intelliJ IDEA project files
+# intelliJ IDEA project files
 .idea/
 *.iml
 

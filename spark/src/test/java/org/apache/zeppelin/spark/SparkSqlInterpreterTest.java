@@ -24,6 +24,7 @@ import java.util.LinkedList;
 import java.util.Properties;
 
 import org.apache.zeppelin.display.AngularObjectRegistry;
+import org.apache.zeppelin.resource.LocalResourcePool;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.interpreter.*;
@@ -46,6 +47,10 @@ public class SparkSqlInterpreterTest {
   @Before
   public void setUp() throws Exception {
     Properties p = new Properties();
+    p.putAll(SparkInterpreterTest.getSparkTestProperties());
+    p.setProperty("zeppelin.spark.maxResult", "1000");
+    p.setProperty("zeppelin.spark.concurrentSQL", "false");
+    p.setProperty("zeppelin.spark.sql.stacktrace", "false");
 
     if (repl == null) {
 
@@ -73,7 +78,7 @@ public class SparkSqlInterpreterTest {
     context = new InterpreterContext("note", "id", "title", "text", new AuthenticationInfo(),
         new HashMap<String, Object>(), new GUI(),
         new AngularObjectRegistry(intpGroup.getId(), null),
-        null,
+        new LocalResourcePool("id"),
         new LinkedList<InterpreterContextRunner>(), new InterpreterOutput(new InterpreterOutputListener() {
       @Override
       public void onAppend(InterpreterOutput out, byte[] line) {

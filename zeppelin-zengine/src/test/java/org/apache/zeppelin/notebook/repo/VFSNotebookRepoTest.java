@@ -76,11 +76,11 @@ public class VFSNotebookRepoTest implements JobListenerFactory {
 
     this.schedulerFactory = new SchedulerFactory();
     depResolver = new DependencyResolver(mainZepDir.getAbsolutePath() + "/local-repo");
-    factory = new InterpreterFactory(conf, new InterpreterOption(false), null, null, depResolver);
+    factory = new InterpreterFactory(conf, new InterpreterOption(false), null, null, null, depResolver);
 
     SearchService search = mock(SearchService.class);
     notebookRepo = new VFSNotebookRepo(conf);
-    notebook = new Notebook(conf, notebookRepo, schedulerFactory, factory, this, search, null);
+    notebook = new Notebook(conf, notebookRepo, schedulerFactory, factory, this, search, null, null);
   }
 
   @After
@@ -93,7 +93,7 @@ public class VFSNotebookRepoTest implements JobListenerFactory {
   @Test
   public void testInvalidJsonFile() throws IOException {
     // given
-    int numNotes = notebookRepo.list().size();
+    int numNotes = notebookRepo.list(null).size();
 
     // when create invalid json file
     File testNoteDir = new File(mainNotebookDir, "test");
@@ -101,13 +101,13 @@ public class VFSNotebookRepoTest implements JobListenerFactory {
     FileUtils.writeStringToFile(new File(testNoteDir, "note.json"), "");
 
     // then
-    assertEquals(numNotes, notebookRepo.list().size());
+    assertEquals(numNotes, notebookRepo.list(null).size());
   }
 
   @Test
   public void testSaveNotebook() throws IOException, InterruptedException {
-    Note note = notebook.createNote();
-    note.getNoteReplLoader().setInterpreters(factory.getDefaultInterpreterSettingList());
+    Note note = notebook.createNote(null);
+    factory.setInterpreters(note.getId(), factory.getDefaultInterpreterSettingList());
 
     Paragraph p1 = note.addParagraph();
     Map<String, Object> config = p1.getConfig();
@@ -133,7 +133,7 @@ public class VFSNotebookRepoTest implements JobListenerFactory {
     }
 
     note.setName("SaveTest");
-    notebookRepo.save(note);
+    notebookRepo.save(note, null);
     assertEquals(note.getName(), "SaveTest");
   }
 
@@ -146,7 +146,7 @@ public class VFSNotebookRepoTest implements JobListenerFactory {
     @Override
     public void run() {
       try {
-        notebookRepo.save(note);
+        notebookRepo.save(note, null);
       } catch (IOException e) {
         LOG.error(e.toString(), e);
       }

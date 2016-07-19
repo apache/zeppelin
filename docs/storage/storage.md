@@ -17,21 +17,26 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-### Notebook Storage
+# Notebook storage options for Apache Zeppelin
 
-Zeppelin has a pluggable notebook storage mechanism controlled by `zeppelin.notebook.storage` configuration option with multiple implementations.
-There are few Notebook storage systems available for a use out of the box:
- - (default) all notes are saved in the notebook folder in your local File System - `VFSNotebookRepo`
- - use local file system and version it using local Git repository - `GitNotebookRepo`
- - storage using Amazon S3 service - `S3NotebookRepo`
- - storage using Azure service - `AzureNotebookRepo`
+<div id="toc"></div>
+
+## Overview
+
+Apache Zeppelin has a pluggable notebook storage mechanism controlled by `zeppelin.notebook.storage` configuration option with multiple implementations.
+There are few notebook storage systems available for a use out of the box:
+
+  * (default) all notes are saved in the notebook folder in your local File System - `VFSNotebookRepo`
+  * use local file system and version it using local Git repository - `GitNotebookRepo`
+  * storage using Amazon S3 service - `S3NotebookRepo`
+  * storage using Azure service - `AzureNotebookRepo`
 
 Multiple storage systems can be used at the same time by providing a comma-separated list of the class-names in the configuration.
 By default, only first two of them will be automatically kept in sync by Zeppelin.
 
 </br>
 
-#### Notebook Storage in local Git repository <a name="Git"></a>
+## Notebook Storage in local Git repository <a name="Git"></a>
 
 To enable versioning for all your local notebooks though a standard Git repository - uncomment the next property in `zeppelin-site.xml` in order to use GitNotebookRepo class:
 
@@ -45,7 +50,7 @@ To enable versioning for all your local notebooks though a standard Git reposito
 
 </br>
 
-#### Notebook Storage in S3  <a name="S3"></a>
+## Notebook Storage in S3 <a name="S3"></a>
 
 Notebooks may be stored in S3, and optionally encrypted.  The [``DefaultAWSCredentialsProviderChain``](https://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/auth/DefaultAWSCredentialsProviderChain.html) credentials provider is used for credentials and checks the following:
 
@@ -103,9 +108,9 @@ Comment out the next property to disable local notebook storage (the default):
 </property>
 ```
 
-#### Data Encryption in S3
+### Data Encryption in S3
 
-##### AWS KMS encryption keys
+#### AWS KMS encryption keys
 
 To use an [AWS KMS](https://aws.amazon.com/kms/) encryption key to encrypt notebooks, set the following environment variable in the file **zeppelin-env.sh**:
 
@@ -114,6 +119,7 @@ export ZEPPELIN_NOTEBOOK_S3_KMS_KEY_ID = kms-key-id
 ```
 
 Or using the following setting in **zeppelin-site.xml**:
+
 ```
 <property>
   <name>zeppelin.notebook.s3.kmsKeyID</name>
@@ -122,7 +128,7 @@ Or using the following setting in **zeppelin-site.xml**:
 </property>
 ```
 
-##### Custom Encryption Materials Provider class
+#### Custom Encryption Materials Provider class
 
 You may use a custom [``EncryptionMaterialsProvider``](https://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/services/s3/model/EncryptionMaterialsProvider.html) class as long as it is available in the classpath and able to initialize itself from system properties or another mechanism.  To use this, set the following environment variable in the file **zeppelin-env.sh**:
 
@@ -132,6 +138,7 @@ export ZEPPELIN_NOTEBOOK_S3_EMP = class-name
 ```
 
 Or using the following setting in **zeppelin-site.xml**:
+
 ```
 <property>
   <name>zeppelin.notebook.s3.encryptionMaterialsProvider</name>
@@ -140,11 +147,9 @@ Or using the following setting in **zeppelin-site.xml**:
 ```   
 
 </br>
-#### Notebook Storage  in Azure <a name="Azure"></a>
+## Notebook Storage  in Azure <a name="Azure"></a>
 
 Using `AzureNotebookRepo` you can connect your Zeppelin with your Azure account for notebook storage.
-
-</br>
 
 First of all, input your `AccountName`, `AccountKey`, and `Share Name` in the file **zeppelin-site.xml** by commenting out and completing the next properties:
 
@@ -203,7 +208,7 @@ Optionally, you can specify Azure folder structure name in the file **zeppelin-s
 ```
 
 </br>
-#### Notebook Storage in ZeppelinHub  <a name="ZeppelinHub"></a>
+## Storage in ZeppelinHub  <a name="ZeppelinHub"></a>
 
 ZeppelinHub storage layer allows out of the box connection of Zeppelin instance with your ZeppelinHub account. First of all, you need to either comment out the following  property in **zeppelin-site.xml**:
 

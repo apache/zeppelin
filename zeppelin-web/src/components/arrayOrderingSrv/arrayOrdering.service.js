@@ -22,8 +22,8 @@ angular.module('zeppelinWebApp').service('arrayOrderingSrv', function() {
   };
 
   this.getNoteName = function(note) {
-    if(note.name === undefined || note.name.trim() === '') {
-      return'Note ' + note.id;
+    if (note.name === undefined || note.name.trim() === '') {
+      return 'Note ' + note.id;
     } else {
       return note.name;
     }

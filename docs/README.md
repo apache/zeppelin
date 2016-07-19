@@ -31,9 +31,6 @@ See https://help.github.com/articles/using-jekyll-with-pages#installing-jekyll
 ## Bumping up version in a new release
 
    * `ZEPPELIN_VERSION` and `BASE_PATH` property in _config.yml
-   * `Zeppelin <small>([VERSION])</small>` in _includes/themes/zeppelin/_navigation.html
-should be updated
-
 
 ## Deploy to ASF svnpubsub infra (for committers only)
  1. generate static website in `./_site`
@@ -44,7 +41,7 @@ should be updated
 
  2. checkout ASF repo
     ```
-    svn co https://svn.apache.org/repos/asf/incubator/zeppelin asf-zeppelin
+    svn co https://svn.apache.org/repos/asf/zeppelin asf-zeppelin
     ```
  3. copy `zeppelin/docs/_site` to `asf-zeppelin/site/docs/[VERSION]`
  4. ```svn commit```

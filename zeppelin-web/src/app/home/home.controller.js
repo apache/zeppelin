@@ -13,7 +13,8 @@
  */
 'use strict';
 
-angular.module('zeppelinWebApp').controller('HomeCtrl', function($scope, notebookListDataFactory, websocketMsgSrv, $rootScope, arrayOrderingSrv, $http, baseUrlSrv) {
+angular.module('zeppelinWebApp').controller('HomeCtrl', function($scope, notebookListDataFactory, websocketMsgSrv,
+                                                                 $rootScope, arrayOrderingSrv) {
   var vm = this;
   vm.notes = notebookListDataFactory;
   vm.websocketMsgSrv = websocketMsgSrv;
@@ -28,22 +29,32 @@ angular.module('zeppelinWebApp').controller('HomeCtrl', function($scope, noteboo
 
   $scope.isReloading = false;
 
-  var getZeppelinVersion = function() {
-    $http.get(baseUrlSrv.getRestApiBase() +'/version').
-      success(function (data, status, headers, config) {
-        $scope.zeppelinVersion = data.body;
-      }).
-      error(function(data, status, headers, config) {
-        console.log('Error %o %o', status, data.message);
-      });
-  };
-
   var initHome = function() {
     websocketMsgSrv.getHomeNotebook();
-    getZeppelinVersion();
   };
 
   initHome();
+
+  $scope.reloadNotebookList = function() {
+    websocketMsgSrv.reloadAllNotesFromRepo();
+    $scope.isReloadingNotes = true;
+  };
+
+  $scope.toggleFolderNode = function(node) {
+    node.hidden = !node.hidden;
+  };
+
+  angular.element('#loginModal').on('hidden.bs.modal', function(e) {
+    $rootScope.$broadcast('initLoginValues');
+  });
+
+  /*
+  ** $scope.$on functions below
+  */
+
+  $scope.$on('setNoteMenu', function(event, notes) {
+    $scope.isReloadingNotes = false;
+  });
 
   $scope.$on('setNoteContent', function(event, note) {
     if (note) {
@@ -62,18 +73,5 @@ angular.module('zeppelinWebApp').controller('HomeCtrl', function($scope, noteboo
       vm.notebookHome = false;
     }
   });
-
-  $scope.$on('setNoteMenu', function(event, notes) {
-    $scope.isReloadingNotes = false;
-  });
-
-  $scope.reloadNotebookList = function() {
-    websocketMsgSrv.reloadAllNotesFromRepo();
-    $scope.isReloadingNotes = true;
-  };
-
-  $scope.toggleFolderNode = function(node) {
-    node.hidden = !node.hidden;
-  };
 
 });

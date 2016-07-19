@@ -13,7 +13,7 @@ limitations under the License.
 -->
 
   <div id="loginModal" class="modal fade" role="dialog"
-       tabindex='-1'>
+       tabindex="-1">
     <div class="modal-dialog">
 
       <!-- Modal content-->
@@ -30,14 +30,14 @@ limitations under the License.
             <label for="userName">User Name</label>
             <input placeholder="User Name" type="text" class="form-control" id="userName"
                    ng-keypress="loginParams.errorText = ''"
-                   ng-model="loginParams.userName">
+                   ng-model="loginParams.userName" />
           </div>
           <div class="form-group">
             <label for="password">Password</label>
             <input placeholder="Password" type="password" class="form-control" id="password"
                    ng-enter="login()"
                    ng-keypress="loginParams.errorText = ''"
-                   ng-model="loginParams.password">
+                   ng-model="loginParams.password" />
           </div>
 
         </div>

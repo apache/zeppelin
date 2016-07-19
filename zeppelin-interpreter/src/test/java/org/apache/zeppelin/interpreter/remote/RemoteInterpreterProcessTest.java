@@ -22,7 +22,11 @@ import static org.junit.Assert.assertFalse;
 import static org.mockito.Mockito.*;
 
 import java.util.HashMap;
+import java.util.Properties;
 
+import org.apache.thrift.TException;
+import org.apache.thrift.transport.TTransportException;
+import org.apache.zeppelin.interpreter.Constants;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService.Client;
 import org.junit.Test;
@@ -32,13 +36,14 @@ public class RemoteInterpreterProcessTest {
           System.getProperty("os.name").startsWith("Windows") ?
                   "../bin/interpreter.cmd" :
                   "../bin/interpreter.sh";
+  private static final int DUMMY_PORT=3678;
 
   @Test
   public void testStartStop() {
     InterpreterGroup intpGroup = new InterpreterGroup();
-    RemoteInterpreterProcess rip = new RemoteInterpreterProcess(
+    RemoteInterpreterManagedProcess rip = new RemoteInterpreterManagedProcess(
         INTERPRETER_SCRIPT, "nonexists", "fakeRepo", new HashMap<String, String>(),
-        10 * 1000, null);
+        10 * 1000, null, null);
     assertFalse(rip.isRunning());
     assertEquals(0, rip.referenceCount());
     assertEquals(1, rip.reference(intpGroup));
@@ -53,7 +58,7 @@ public class RemoteInterpreterProcessTest {
   @Test
   public void testClientFactory() throws Exception {
     InterpreterGroup intpGroup = new InterpreterGroup();
-    RemoteInterpreterProcess rip = new RemoteInterpreterProcess(
+    RemoteInterpreterManagedProcess rip = new RemoteInterpreterManagedProcess(
         INTERPRETER_SCRIPT, "nonexists", "fakeRepo", new HashMap<String, String>(),
         mock(RemoteInterpreterEventPoller.class), 10 * 1000);
     rip.reference(intpGroup);
@@ -69,5 +74,39 @@ public class RemoteInterpreterProcessTest {
     assertEquals(1, rip.getNumIdleClient());
 
     rip.dereference();
+  }
+
+  @Test
+  public void testStartStopRemoteInterpreter() throws TException, InterruptedException {
+    RemoteInterpreterServer server = new RemoteInterpreterServer(3678);
+    server.start();
+    boolean running = false;
+    long startTime = System.currentTimeMillis();
+    while (System.currentTimeMillis() - startTime < 10 * 1000) {
+      if (server.isRunning()) {
+        running = true;
+        break;
+      } else {
+        Thread.sleep(200);
+      }
+    }
+    Properties properties = new Properties();
+    properties.setProperty(Constants.ZEPPELIN_INTERPRETER_PORT, "3678");
+    properties.setProperty(Constants.ZEPPELIN_INTERPRETER_HOST, "localhost");
+    InterpreterGroup intpGroup = mock(InterpreterGroup.class);
+    when(intpGroup.getProperty()).thenReturn(properties);
+    when(intpGroup.containsKey(Constants.EXISTING_PROCESS)).thenReturn(true);
+
+    RemoteInterpreterProcess rip = new RemoteInterpreterManagedProcess(
+        INTERPRETER_SCRIPT,
+        "nonexists",
+        "fakeRepo",
+        new HashMap<String, String>(),
+        mock(RemoteInterpreterEventPoller.class)
+        , 10 * 1000);
+    assertFalse(rip.isRunning());
+    assertEquals(0, rip.referenceCount());
+    assertEquals(1, rip.reference(intpGroup));
+    assertEquals(true, rip.isRunning());
   }
 }

@@ -12,6 +12,10 @@
  * limitations under the License.
  */
 
+.notebookContent {
+  padding-top: 36px;
+}
+
 .paragraph-col {
   margin: 0;
   padding: 0;
@@ -23,7 +27,7 @@
 }
 
 .labelBtn {
-  padding: .2em .6em .3em;
+  padding: .8em .6em .3em;
   font-size: 75%;
   font-weight: bold;
   line-height: 1;
@@ -105,7 +109,6 @@
 }
 
 .form-control2 {
-  width: 100%;
   height: 40px;
   font-size: 29px;
   line-height: 1.2;
@@ -116,16 +119,22 @@
   -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
   box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
   padding: 7px 0;
-  margin: 2px 0 0 14px;
+  margin: 2px 20px 0 14px;
 }
 
 .form-control-static2 {
   padding-top: 7px;
+  margin-right: 15px;
   font-size: 29px;
   margin-left: 15px;
   padding-bottom: 7px;
   margin-bottom: 0;
   display: inline-block;
+  width: auto;
+  max-width: 97%;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
 }
 
 .noOverflow {
@@ -154,6 +163,20 @@
   border: 1px solid #E5E5E5;
 }
 
+.permissions .owners {
+    width:60px;
+    display: inline-block;
+}
+
+.permissions .readers {
+    width:60px;
+    display: inline-block;
+}
+
+.permissions .writers {
+    width:60px;
+    display: inline-block;
+}
 /*
   Note Setting Panel
 */
@@ -196,10 +219,31 @@
   border: 0;
 }
 
+.commit-container {
+  padding: 10px 20px 6px 20px;
+  font-weight: normal;
+  word-wrap: break-word;
+  white-space: initial;
+}
+
+/* overwrite bootstrap css for version control button */
+.btn-group > .btn + .dropdown-toggle {
+  padding-right: 5px;
+  padding-left: 5px;
+}
+
+.setting-btn {
+  position: relative;
+  top: 2px;
+  margin-right: 4px;
+  cursor: pointer;
+}
+
 .cron-preset-container {
   padding: 10px 20px 0 20px;
   font-weight: normal;
   word-wrap: break-word;
+  white-space: initial;
 }
 
 .cron-preset-container > div {
@@ -220,4 +264,53 @@
   color: #000;
   text-decoration: none;
   cursor: default;
+}
+
+.userlist {
+  width: 230px;
+  font-family: Georgia, Times, serif;
+  font-size: 15px;
+  position: absolute;
+  z-index: 9999;
+}
+
+.userlist ul {
+  list-style: none;
+}
+
+.userlist ul li {
+  box-shadow: 3px 3px 5px #888888;
+  display: list-item;
+  text-decoration: none;
+  color: #000000;
+  background-color: #FFFFFF;
+  line-height: 30px;
+  border-bottom-style: none;
+  border-bottom-width: 1px;
+  border-bottom:1px  #CCCCCC solid;
+  padding-left: 10px;
+  cursor: pointer;
+}
+
+.userlist ul li:first-child {
+  border-top-right-radius: 5px;
+  border-top-left-radius: 5px;
+}
+
+.userlist ul li:last-child {
+  border-bottom-right-radius: 5px;
+  border-bottom-left-radius: 5px;
+}
+
+.userlist ul li strong {
+  margin-right: 10px;
+}
+
+.userlist li:hover {
+  background-color: #E0E0E0;
+}
+
+.userlist li:active,
+.userlist li.active {
+  background-color: #428BCA;
 }

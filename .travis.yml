@@ -20,6 +20,7 @@ sudo: false
 cache:
   directories:
     - .spark-dist
+    - ${HOME}/.m2/repository/.cache/maven-download-plugin
 
 addons:
   apt:
@@ -32,9 +33,13 @@ addons:
 
 matrix:
   include:
-    # Test all modules
+    # Test all modules with scala 2.10
     - jdk: "oraclejdk7"
-      env: SPARK_VER="1.6.1" HADOOP_VER="2.3" PROFILE="-Pspark-1.6 -Pr -Phadoop-2.3 -Ppyspark -Psparkr -Pscalding" BUILD_FLAG="package -Pbuild-distr" TEST_FLAG="verify -Pusing-packaged-distr" TEST_PROJECTS=""
+      env: SPARK_VER="1.6.1" HADOOP_VER="2.3" PROFILE="-Pspark-1.6 -Pr -Phadoop-2.3 -Ppyspark -Psparkr -Pscalding -Pexamples" BUILD_FLAG="package -Dscala-2.10 -Pbuild-distr" TEST_FLAG="verify -Pusing-packaged-distr" TEST_PROJECTS=""
+
+    # Test all modules with scala 2.11
+    - jdk: "oraclejdk7"
+      env: SPARK_VER="1.6.1" HADOOP_VER="2.3" PROFILE="-Pspark-1.6 -Pr -Phadoop-2.3 -Ppyspark -Psparkr -Pscalding -Pexamples -Pscala-2.11" BUILD_FLAG="package -Dscala-2.11 -Pbuild-distr" TEST_FLAG="verify -Pusing-packaged-distr" TEST_PROJECTS=""
 
     # Test spark module for 1.5.2
     - jdk: "oraclejdk7"
@@ -58,16 +63,15 @@ matrix:
 
     # Test selenium with spark module for 1.6.1
     - jdk: "oraclejdk7"
-      env: TEST_SELENIUM="true" SPARK_VER="1.6.1" HADOOP_VER="2.3" PROFILE="-Pspark-1.6 -Phadoop-2.3 -Ppyspark" BUILD_FLAG="package -DskipTests" TEST_FLAG="verify" TEST_PROJECTS="-pl zeppelin-interpreter,zeppelin-zengine,zeppelin-server,zeppelin-display,spark-dependencies,spark -Dtest=org.apache.zeppelin.AbstractFunctionalSuite -DfailIfNoTests=false"
+      env: TEST_SELENIUM="true" SPARK_VER="1.6.1" HADOOP_VER="2.3" PROFILE="-Pspark-1.6 -Phadoop-2.3 -Ppyspark -Pexamples" BUILD_FLAG="package -DskipTests" TEST_FLAG="verify" TEST_PROJECTS="-pl zeppelin-interpreter,zeppelin-zengine,zeppelin-server,zeppelin-display,spark-dependencies,spark -Dtest=org.apache.zeppelin.AbstractFunctionalSuite -DfailIfNoTests=false"
 
 before_install:
-  - "ls -la .spark-dist"
+  - "ls -la .spark-dist ${HOME}/.m2/repository/.cache/maven-download-plugin"
   - mkdir -p ~/R
   - echo 'R_LIBS=~/R' > ~/.Renviron
   - R -e "install.packages('knitr', repos = 'http://cran.us.r-project.org', lib='~/R')"
   - export R_LIBS='~/R'
-  - "export DISPLAY=:99.0"
-  - "sh -e /etc/init.d/xvfb start"
+  - "/sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -ac -screen 0 1600x1024x16"
 
 install:
   - mvn $BUILD_FLAG $PROFILE -B
@@ -80,7 +84,6 @@ before_script:
 
 script:
   - mvn $TEST_FLAG $PROFILE -B $TEST_PROJECTS
-
 
 after_success:
   - echo "Travis exited with ${TRAVIS_TEST_RESULT}"
@@ -95,4 +98,3 @@ after_failure:
 
 after_script:
   - ./testing/stopSparkCluster.sh $SPARK_VER $HADOOP_VER
-

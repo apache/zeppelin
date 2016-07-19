@@ -19,6 +19,7 @@ package org.apache.zeppelin.integration;
 
 import org.apache.zeppelin.AbstractZeppelinIT;
 import org.apache.zeppelin.WebDriverManager;
+import org.apache.zeppelin.ZeppelinITUtils;
 import org.hamcrest.CoreMatchers;
 import org.junit.After;
 import org.junit.Before;
@@ -27,6 +28,8 @@ import org.junit.Test;
 import org.junit.rules.ErrorCollector;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
+import org.openqa.selenium.StaleElementReferenceException;
+import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebElement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -176,12 +179,12 @@ public class ZeppelinIT extends AbstractZeppelinIT {
       waitForText("BindingTest_1_",
           By.xpath(getParagraphXPath(1) + "//div[@id=\"angularTestButton\"]"));
 
-      driver.findElement(By.xpath("//*[@id='main']/div//h3/span/button[@tooltip='Remove the notebook']"))
+      driver.findElement(By.xpath(".//*[@id='main']//button[@ng-click='removeNote(note.id)']"))
           .sendKeys(Keys.ENTER);
-      sleep(1000, true);
+      ZeppelinITUtils.sleep(1000, true);
       driver.findElement(By.xpath("//div[@class='modal-dialog'][contains(.,'delete this notebook')]" +
           "//div[@class='modal-footer']//button[contains(.,'OK')]")).click();
-      sleep(100, true);
+      ZeppelinITUtils.sleep(100, true);
 
       LOG.info("testCreateNotebook Test executed");
     } catch (Exception e) {
@@ -196,19 +199,29 @@ public class ZeppelinIT extends AbstractZeppelinIT {
     }
     try {
       // navigate to interpreter page
-      WebElement interpreterLink = driver.findElement(By.xpath("//a[contains(.,'Interpreter')]"));
+      WebElement settingButton = driver.findElement(By.xpath("//button[@class='nav-btn dropdown-toggle ng-scope']"));
+      settingButton.click();
+      WebElement interpreterLink = driver.findElement(By.xpath("//a[@href='#/interpreter']"));
       interpreterLink.click();
 
       // add new dependency to spark interpreter
-      driver.findElement(By.xpath("//div[h3[text()[contains(.,'spark')]]]//button[contains(.,'edit')]")).sendKeys(Keys.ENTER);
+      driver.findElement(By.xpath("//div[@id='spark']//button[contains(.,'edit')]")).sendKeys(Keys.ENTER);
 
       WebElement depArtifact = pollingWait(By.xpath("//input[@ng-model='setting.depArtifact']"),
           MAX_BROWSER_TIMEOUT_SEC);
       String artifact = "org.apache.commons:commons-csv:1.1";
       depArtifact.sendKeys(artifact);
-      driver.findElement(By.xpath("//div[contains(@class,'box')][contains(.,'%spark')]//form//button[1]")).click();
-      driver.findElement(By.xpath("//div[@class='modal-dialog'][contains(.,'Do you want to update this interpreter and restart with new settings?')]" +
-          "//div[@class='modal-footer']//button[contains(.,'OK')]")).click();
+      driver.findElement(By.xpath("//div[@id='spark']//form//button[1]")).click();
+      clickAndWait(By.xpath("//div[@class='modal-dialog'][contains(.,'Do you want to update this interpreter and restart with new settings?')]" +
+          "//div[@class='modal-footer']//button[contains(.,'OK')]"));
+
+      try {
+        clickAndWait(By.xpath("//div[@class='modal-dialog'][contains(.,'Do you want to " +
+            "update this interpreter and restart with new settings?')]//" +
+            "div[@class='bootstrap-dialog-close-button']/button"));
+      } catch (TimeoutException | StaleElementReferenceException e) {
+        //Modal dialog got closed earlier than expected nothing to worry.
+      }
 
       driver.navigate().back();
       createNewNote();
@@ -232,15 +245,16 @@ public class ZeppelinIT extends AbstractZeppelinIT {
 
       //delete created notebook for cleanup.
       deleteTestNotebook(driver);
-      sleep(1000, false);
+      ZeppelinITUtils.sleep(1000, false);
 
       // reset dependency
+      settingButton.click();
       interpreterLink.click();
-      driver.findElement(By.xpath("//div[h3[text()[contains(.,'spark')]]]//button[contains(.,'edit')]")).sendKeys(Keys.ENTER);
+      driver.findElement(By.xpath("//div[@id='spark']//button[contains(.,'edit')]")).sendKeys(Keys.ENTER);
       WebElement testDepRemoveBtn = pollingWait(By.xpath("//tr[descendant::text()[contains(.,'" +
-          artifact + "')]]/td[3]/div"), MAX_IMPLICIT_WAIT);
-      testDepRemoveBtn.click();
-      driver.findElement(By.xpath("//div[contains(@class,'box')][contains(.,'%spark')]//form//button[1]")).click();
+          artifact + "')]]/td[3]/button"), MAX_IMPLICIT_WAIT);
+      testDepRemoveBtn.sendKeys(Keys.ENTER);
+      driver.findElement(By.xpath("//div[@id='spark']//form//button[1]")).click();
       driver.findElement(By.xpath("//div[@class='modal-dialog'][contains(.,'Do you want to update this interpreter and restart with new settings?')]" +
           "//div[@class='modal-footer']//button[contains(.,'OK')]")).click();
     } catch (Exception e) {
@@ -303,7 +317,7 @@ public class ZeppelinIT extends AbstractZeppelinIT {
 
       //delete created notebook for cleanup.
       deleteTestNotebook(driver);
-      sleep(1000, true);
+      ZeppelinITUtils.sleep(1000, true);
 
       LOG.info("testAngularRunParagraph Test executed");
     }  catch (Exception e) {

@@ -12,16 +12,16 @@ encoding: utf-8
 # Themes are encouraged to use these universal variables
 # so be sure to set them if your theme uses them.
 #
-title : Apache Zeppelin (incubating)
+title : Apache Zeppelin
 tagline: Simplify bigdata analytics
 author :
   name : The Apache Software Foundation
-  email : dev@zeppelin.incubator.apache.org
+  email : dev@zeppelin.apache.org
   github : apache
   twitter : ASF
   feedburner : feedname
 
-ZEPPELIN_VERSION : 0.6.0-incubating-SNAPSHOT
+ZEPPELIN_VERSION : 0.7.0-SNAPSHOT
 
 # The production_url is only used when full-domain names are needed
 # such as sitemap.txt
@@ -31,7 +31,7 @@ ZEPPELIN_VERSION : 0.6.0-incubating-SNAPSHOT
 # Else if you are pushing to username.github.io, replace with your username.
 # Finally if you are pushing to a GitHub project page, include the project name at the end.
 #
-production_url : http://zeppelin.incubator.apache.org
+production_url : http://zeppelin.apache.org
 # All Jekyll-Bootstrap specific configurations are namespaced into this hash
 #
 JB :
@@ -59,7 +59,7 @@ JB :
   #   - Only the following values are falsy: ["", null, false]
   #   - When setting BASE_PATH it must be a valid url.
   #     This means always setting the protocol (http|https) or prefixing with "/"
-  BASE_PATH : /docs/0.6.0-incubating-SNAPSHOT
+  BASE_PATH : /docs/0.7.0-SNAPSHOT
 
   # By default, the asset_path is automatically defined relative to BASE_PATH plus the enabled theme.
   # ex: [BASE_PATH]/assets/themes/[THEME-NAME]
@@ -108,7 +108,7 @@ JB :
         tracking_id : 'UA-45176241-2'
     google_universal :
         tracking_id : 'UA-45176241-5'
-        domain : 'zeppelin.incubator.apache.org'
+        domain : 'zeppelin.apache.org'
     getclicky :
       site_id :
     mixpanel :

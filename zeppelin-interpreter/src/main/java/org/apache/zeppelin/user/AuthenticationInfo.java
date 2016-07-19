@@ -24,8 +24,13 @@ package org.apache.zeppelin.user;
 public class AuthenticationInfo {
   String user;
   String ticket;
+  UserCredentials userCredentials;
 
   public AuthenticationInfo() {}
+
+  public AuthenticationInfo(String user) {
+    this.user = user;
+  }
 
   /***
    *
@@ -52,4 +57,13 @@ public class AuthenticationInfo {
   public void setTicket(String ticket) {
     this.ticket = ticket;
   }
+
+  public UserCredentials getUserCredentials() {
+    return userCredentials;
+  }
+
+  public void setUserCredentials(UserCredentials userCredentials) {
+    this.userCredentials = userCredentials;
+  }
+
 }

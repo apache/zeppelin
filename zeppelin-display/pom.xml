@@ -22,21 +22,16 @@
   <parent>
     <artifactId>zeppelin</artifactId>
     <groupId>org.apache.zeppelin</groupId>
-    <version>0.6.0-incubating-SNAPSHOT</version>
+    <version>0.7.0-SNAPSHOT</version>
     <relativePath>..</relativePath>
   </parent>
 
   <groupId>org.apache.zeppelin</groupId>
   <artifactId>zeppelin-display</artifactId>
   <packaging>jar</packaging>
-  <version>0.6.0-incubating-SNAPSHOT</version>
+  <version>0.7.0-SNAPSHOT</version>
   <name>Zeppelin: Display system apis</name>
-  <url>http://incubator.zeppelin.apache.org</url>
-
-  <properties>
-    <scala.version>2.10.4</scala.version>
-    <scala.binary.version>2.10</scala.binary.version>
-  </properties>
+  <url>http://zeppelin.apache.org</url>
 
   <dependencyManagement>
     <dependencies>
@@ -86,15 +81,33 @@
     <dependency>
       <groupId>org.scala-lang</groupId>
       <artifactId>scala-library</artifactId>
+      <version>${scala.version}</version>
     </dependency>
 
     <dependency>
       <groupId>org.scalatest</groupId>
-      <artifactId>scalatest_2.10</artifactId>
-      <version>2.1.1</version>
+      <artifactId>scalatest_${scala.binary.version}</artifactId>
+      <version>${scalatest.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
+
+  <profiles>
+    <profile>
+      <id>scala-2.11</id>
+      <activation>
+        <property><name>scala-2.11</name></property>
+      </activation>
+
+      <dependencies>
+        <dependency>
+          <groupId>org.scala-lang.modules</groupId>
+          <artifactId>scala-xml_${scala.binary.version}</artifactId>
+          <version>1.0.2</version>
+        </dependency>
+      </dependencies>
+    </profile>
+  </profiles>
 
   <build>
     <plugins>
@@ -129,15 +142,6 @@
         </executions>
         <configuration>
           <argLine>-Xmx2048m</argLine>
-        </configuration>
-      </plugin>
-
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-deploy-plugin</artifactId>
-        <version>2.7</version>
-        <configuration>
-          <skip>true</skip>
         </configuration>
       </plugin>
 

@@ -23,6 +23,10 @@ body {
   -ms-overflow-style: scrollbar;
 }
 
+.home {
+  margin-bottom: 0px !important;
+}
+
 .bodyAsIframe {
   background: white;
 }
@@ -99,10 +103,29 @@ a.navbar-brand:hover {
   color: #fff !important;
 }
 
+/* Css for the Notebook Dropdown */
+
+.expandable ul {
+  padding-left: 10px !important;
+}
+
+.expandable li {
+  list-style-type: none;
+}
+
+.dropdown-menu .notebook-list-item {
+  text-decoration: none;
+}
+
+.dropdown-menu .notebook-list-item:hover {
+  background: #f5f5f5;
+}
+
 /* bootstrap customization for scrollable dropdown menu */
-.dropdown-menu > .scrollbar-container > li > a {
+.dropdown-menu > .scrollbar-container > li > a,
+.dropdown-menu .notebook-list-item {
   display: block;
-  padding: 3px 20px;
+  padding: 1px 10px;
   clear: both;
   font-weight: normal;
   line-height: 1.42857143;
@@ -117,9 +140,9 @@ a.navbar-brand:hover {
   background: #f5f5f5;
 }
 
-.dropdown-menu > .scrollbar-container > .active > a,
-.dropdown-menu > .scrollbar-container > .active > a:hover,
-.dropdown-menu > .scrollbar-container > .active > a:focus {
+#notebook-list li.active > a,
+#notebook-list li.active > a:hover,
+#notebook-list li.active > a:focus {
   color: #fff;
   text-decoration: none;
   background: #428bca;
@@ -216,11 +239,13 @@ a.navbar-brand:hover {
 }
 
 @media (max-width: 767px) {
-  .navbar-inverse .navbar-nav .open .dropdown-menu > li > a {
+  .navbar-inverse .navbar-nav .open .dropdown-menu > li > a,
+  #notebook-list li a {
     color: #D3D3D3;
   }
 
-  .navbar-nav .open .dropdown-menu > .scrollbar-container > li > a {
+  .navbar-nav .open .dropdown-menu > .scrollbar-container > li > a,
+  #notebook-list li a {
     padding: 5px 15px 5px 25px;
     line-height: 20px;
   }
@@ -230,7 +255,8 @@ a.navbar-brand:hover {
   }
 
   .navbar-inverse .navbar-nav .open .dropdown-menu > .scrollbar-container > li > a:hover,
-  .navbar-inverse .navbar-nav .open .dropdown-menu > .scrollbar-container > li > a:focus {
+  .navbar-inverse .navbar-nav .open .dropdown-menu > .scrollbar-container > li > a:focus,
+  #notebook-list li a:hover {
     color: #fff;
     background: transparent;
   }
@@ -240,10 +266,6 @@ a.navbar-brand:hover {
   .navbar-inverse .navbar-nav .open .dropdown-menu > .scrollbar-container > .active > a:focus {
     color: #fff;
     background: #080808;
-  }
-
-  .server-status {
-    float: right;
   }
 
   .navbar-inverse .navbar-nav .open .dropdown-menu .divider {
@@ -267,24 +289,49 @@ a.navbar-brand:hover {
 }
 
 @media (min-width: 768px) {
-  #notebook-list {
-    max-height: 500px;
+  .dropdown-menu.navbar-dropdown-maxHeight {
+    max-height: calc(100vh - 60px);
+    overflow: auto;
   }
 }
 
-.server-status {
-  font-size: 12px;
+.nav-component {
   margin-top: 8px;
 }
 
+.nav-btn {
+  color: #fff;
+  background-color: transparent;
+  border-color: transparent;
+  font-size: 14px;
+}
+
+.nav-login-btn,
+.nav-login-btn:hover,
+.nav-login-btn:focus {
+  color: #fff;
+  background-color: #428bca;
+  border-color: #357ebd;
+}
+
+.username {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 120px;
+  display: inline-block;
+}
+
 .server-connected {
+  padding-top: 12px;
   color: #00CC00;
+  font-size: 12px !important;
 }
 
 .server-disconnected {
+  padding-top: 12px;
   color: rgba(240, 48, 0, 1);
   font-size: 12px !important;
-  font-weight: bold !important;
 }
 
 .box {
@@ -755,4 +802,26 @@ This part should be removed when new version of bootstrap handles this issue.
 
 .bootstrap-dialog.type-primary .modal-header {
   background: #3071a9;
+}
+
+.about{
+  height: 200px;
+  padding-top: 20px;
+  padding-left: 20px;
+}
+
+.about .logo {
+  width: 20%;
+  float: left;
+}
+
+.about .content{
+  float: left;
+  padding-left: 10px;
+  top: -30px;
+  position: relative;
+}
+
+.about .logo img{
+  width: 100%;
 }

@@ -25,6 +25,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import com.google.gson.annotations.SerializedName;
+import org.apache.zeppelin.annotation.ZeppelinApi;
+import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.slf4j.Logger;
@@ -35,9 +38,9 @@ import org.slf4j.LoggerFactory;
  * If you want to implement new Zeppelin interpreter, extend this class
  *
  * Please see,
- * https://zeppelin.incubator.apache.org/docs/latest/development/writingzeppelininterpreter.html
+ * https://zeppelin.apache.org/docs/latest/development/writingzeppelininterpreter.html
  *
- * open(), close(), interpreter() is three the most important method you need to implement.
+ * open(), close(), interpret() is three the most important method you need to implement.
  * cancel(), getProgress(), completion() is good to have
  * getFormType(), getScheduler() determine Zeppelin's behavior
  *
@@ -48,12 +51,14 @@ public abstract class Interpreter {
    * Opens interpreter. You may want to place your initialize routine here.
    * open() is called only once
    */
+  @ZeppelinApi
   public abstract void open();
 
   /**
    * Closes interpreter. You may want to free your resources up here.
    * close() is called only once
    */
+  @ZeppelinApi
   public abstract void close();
 
   /**
@@ -63,6 +68,7 @@ public abstract class Interpreter {
    * @param context
    * @return
    */
+  @ZeppelinApi
   public abstract InterpreterResult interpret(String st, InterpreterContext context);
 
   /**
@@ -70,15 +76,17 @@ public abstract class Interpreter {
    *
    * @param context
    */
+  @ZeppelinApi
   public abstract void cancel(InterpreterContext context);
 
   /**
    * Dynamic form handling
-   * see http://zeppelin.incubator.apache.org/docs/dynamicform.html
+   * see http://zeppelin.apache.org/docs/dynamicform.html
    *
    * @return FormType.SIMPLE enables simple pattern replacement (eg. Hello ${name=world}),
    *         FormType.NATIVE handles form in API
    */
+  @ZeppelinApi
   public abstract FormType getFormType();
 
   /**
@@ -87,6 +95,7 @@ public abstract class Interpreter {
    * @param context
    * @return number between 0-100
    */
+  @ZeppelinApi
   public abstract int getProgress(InterpreterContext context);
 
   /**
@@ -97,7 +106,10 @@ public abstract class Interpreter {
    * @param cursor cursor position in statements
    * @return list of possible completion. Return empty list if there're nothing to return.
    */
-  public abstract List<String> completion(String buf, int cursor);
+  @ZeppelinApi
+  public List<InterpreterCompletion> completion(String buf, int cursor) {
+    return null;
+  }
 
   /**
    * Interpreter can implements it's own scheduler by overriding this method.
@@ -113,6 +125,7 @@ public abstract class Interpreter {
    *         This method can be called multiple times and have to return the same instance.
    *         Can not return null.
    */
+  @ZeppelinApi
   public Scheduler getScheduler() {
     return SchedulerFactory.singleton().createOrGetFIFOScheduler("interpreter_" + this.hashCode());
   }
@@ -120,6 +133,7 @@ public abstract class Interpreter {
   /**
    * Called when interpreter is no longer used.
    */
+  @ZeppelinApi
   public void destroy() {
   }
 
@@ -128,7 +142,9 @@ public abstract class Interpreter {
   private URL [] classloaderUrls;
   protected Properties property;
 
+  @ZeppelinApi
   public Interpreter(Properties property) {
+    logger.debug("Properties: {}", property);
     this.property = property;
   }
 
@@ -136,17 +152,21 @@ public abstract class Interpreter {
     this.property = property;
   }
 
+  @ZeppelinApi
   public Properties getProperty() {
     Properties p = new Properties();
     p.putAll(property);
 
-    Map<String, InterpreterProperty> defaultProperties = Interpreter
-        .findRegisteredInterpreterByClassName(getClassName()).getProperties();
-    for (String k : defaultProperties.keySet()) {
-      if (!p.containsKey(k)) {
-        String value = defaultProperties.get(k).getDefaultValue();
-        if (value != null) {
-          p.put(k, defaultProperties.get(k).getDefaultValue());
+    RegisteredInterpreter registeredInterpreter = Interpreter.findRegisteredInterpreterByClassName(
+        getClassName());
+    if (null != registeredInterpreter) {
+      Map<String, InterpreterProperty> defaultProperties = registeredInterpreter.getProperties();
+      for (String k : defaultProperties.keySet()) {
+        if (!p.containsKey(k)) {
+          String value = defaultProperties.get(k).getValue();
+          if (value != null) {
+            p.put(k, defaultProperties.get(k).getValue());
+          }
         }
       }
     }
@@ -154,18 +174,11 @@ public abstract class Interpreter {
     return p;
   }
 
+  @ZeppelinApi
   public String getProperty(String key) {
-    if (property.containsKey(key)) {
-      return property.getProperty(key);
-    }
+    logger.debug("key: {}, value: {}", key, getProperty().getProperty(key));
 
-    Map<String, InterpreterProperty> defaultProperties = Interpreter
-        .findRegisteredInterpreterByClassName(getClassName()).getProperties();
-    if (defaultProperties.containsKey(key)) {
-      return defaultProperties.get(key).getDefaultValue();
-    }
-
-    return null;
+    return getProperty().getProperty(key);
   }
 
 
@@ -177,6 +190,7 @@ public abstract class Interpreter {
     this.interpreterGroup = interpreterGroup;
   }
 
+  @ZeppelinApi
   public InterpreterGroup getInterpreterGroup() {
     return this.interpreterGroup;
   }
@@ -189,6 +203,7 @@ public abstract class Interpreter {
     this.classloaderUrls = classloaderUrls;
   }
 
+  @ZeppelinApi
   public Interpreter getInterpreterInTheSameSessionByClassName(String className) {
     synchronized (interpreterGroup) {
       for (List<Interpreter> interpreters : interpreterGroup.values()) {
@@ -228,18 +243,28 @@ public abstract class Interpreter {
    * Represent registered interpreter class
    */
   public static class RegisteredInterpreter {
-    private String name;
+    //@SerializedName("interpreterGroup")
     private String group;
+    //@SerializedName("interpreterName")
+    private String name;
+    //@SerializedName("interpreterClassName")
     private String className;
+    private boolean defaultInterpreter;
     private Map<String, InterpreterProperty> properties;
     private String path;
 
     public RegisteredInterpreter(String name, String group, String className,
         Map<String, InterpreterProperty> properties) {
+      this(name, group, className, false, properties);
+    }
+
+    public RegisteredInterpreter(String name, String group, String className,
+        boolean defaultInterpreter, Map<String, InterpreterProperty> properties) {
       super();
       this.name = name;
       this.group = group;
       this.className = className;
+      this.defaultInterpreter = defaultInterpreter;
       this.properties = properties;
     }
 
@@ -255,6 +280,14 @@ public abstract class Interpreter {
       return className;
     }
 
+    public boolean isDefaultInterpreter() {
+      return defaultInterpreter;
+    }
+
+    public void setDefaultInterpreter(boolean defaultInterpreter) {
+      this.defaultInterpreter = defaultInterpreter;
+    }
+
     public Map<String, InterpreterProperty> getProperties() {
       return properties;
     }
@@ -265,6 +298,10 @@ public abstract class Interpreter {
 
     public String getPath() {
       return path;
+    }
+
+    public String getInterpreterKey() {
+      return getGroup() + "." + getName();
     }
 
   }
@@ -284,13 +321,35 @@ public abstract class Interpreter {
   }
 
   public static void register(String name, String group, String className) {
-    register(name, group, className, new HashMap<String, InterpreterProperty>());
+    register(name, group, className, false, new HashMap<String, InterpreterProperty>());
   }
 
   public static void register(String name, String group, String className,
       Map<String, InterpreterProperty> properties) {
-    registeredInterpreters.put(group + "." + name, new RegisteredInterpreter(
-        name, group, className, properties));
+    register(name, group, className, false, properties);
+  }
+
+  public static void register(String name, String group, String className,
+      boolean defaultInterpreter) {
+    register(name, group, className, defaultInterpreter,
+        new HashMap<String, InterpreterProperty>());
+  }
+
+  @Deprecated
+  public static void register(String name, String group, String className,
+      boolean defaultInterpreter, Map<String, InterpreterProperty> properties) {
+    logger.error("Static initialization is deprecated. You should change it to use " +
+                     "interpreter-setting.json in your jar or " +
+                     "interpreter/{interpreter}/interpreter-setting.json");
+    register(new RegisteredInterpreter(name, group, className, defaultInterpreter, properties));
+  }
+
+  public static void register(RegisteredInterpreter registeredInterpreter) {
+    // TODO(jongyoul): Error should occur when two same interpreter key with different settings
+    String interpreterKey = registeredInterpreter.getInterpreterKey();
+    if (!registeredInterpreters.containsKey(interpreterKey)) {
+      registeredInterpreters.put(interpreterKey, registeredInterpreter);
+    }
   }
 
   public static RegisteredInterpreter findRegisteredInterpreterByClassName(String className) {

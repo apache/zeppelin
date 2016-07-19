@@ -15,7 +15,7 @@
 'use strict';
 
 angular.module('zeppelinWebApp').controller('NotenameCtrl', function($scope, notebookListDataFactory,
-                                                             $rootScope, $routeParams, websocketMsgSrv) {
+                                                                      $routeParams, websocketMsgSrv) {
   var vm = this;
   vm.clone = false;
   vm.notes = notebookListDataFactory;
@@ -23,15 +23,15 @@ angular.module('zeppelinWebApp').controller('NotenameCtrl', function($scope, not
   $scope.note = {};
 
   vm.createNote = function() {
-      if (!vm.clone) {
-        vm.websocketMsgSrv.createNotebook($scope.note.notename);
-      } else {
-       var noteId = $routeParams.noteId;
-       vm.websocketMsgSrv.cloneNotebook(noteId, $scope.note.notename);
-      }
+    if (!vm.clone) {
+      vm.websocketMsgSrv.createNotebook($scope.note.notename);
+    } else {
+      var noteId = $routeParams.noteId;
+      vm.websocketMsgSrv.cloneNotebook(noteId, $scope.note.notename);
+    }
   };
 
-  vm.handleNameEnter = function(){
+  vm.handleNameEnter = function() {
     angular.element('#noteNameModal').modal('toggle');
     vm.createNote();
   };
@@ -42,9 +42,9 @@ angular.module('zeppelinWebApp').controller('NotenameCtrl', function($scope, not
     $scope.$apply();
   };
 
-  vm.newNoteName = function () {
+  vm.newNoteName = function() {
     var newCount = 1;
-    angular.forEach(vm.notes.list, function (noteName) {
+    angular.forEach(vm.notes.flatList, function(noteName) {
       noteName = noteName.name;
       if (noteName.match(/^Untitled Note [0-9]*$/)) {
         var lastCount = noteName.substr(14) * 1;

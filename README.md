@@ -1,11 +1,11 @@
 #Zeppelin
 
-**Documentation:** [User Guide](http://zeppelin.incubator.apache.org/docs/latest/index.html)<br/>
-**Mailing Lists:** [User and Dev mailing list](http://zeppelin.incubator.apache.org/community.html)<br/>
-**Continuous Integration:** [![Build Status](https://secure.travis-ci.org/apache/incubator-zeppelin.png?branch=master)](https://travis-ci.org/apache/incubator-zeppelin) <br/>
-**Contributing:** [Contribution Guide](https://github.com/apache/incubator-zeppelin/blob/master/CONTRIBUTING.md)<br/>
+**Documentation:** [User Guide](http://zeppelin.apache.org/docs/latest/index.html)<br/>
+**Mailing Lists:** [User and Dev mailing list](http://zeppelin.apache.org/community.html)<br/>
+**Continuous Integration:** [![Build Status](https://secure.travis-ci.org/apache/zeppelin.png?branch=master)](https://travis-ci.org/apache/zeppelin) <br/>
+**Contributing:** [Contribution Guide](https://github.com/apache/zeppelin/blob/master/CONTRIBUTING.md)<br/>
 **Issue Tracker:** [Jira](https://issues.apache.org/jira/browse/ZEPPELIN)<br/>
-**License:** [Apache 2.0](https://github.com/apache/incubator-zeppelin/blob/master/LICENSE)
+**License:** [Apache 2.0](https://github.com/apache/zeppelin/blob/master/LICENSE)
 
 
 **Zeppelin**, a web-based notebook that enables interactive data analytics. You can make beautiful data-driven, interactive and collaborative documents with SQL, Scala and more.
@@ -15,7 +15,7 @@ Core feature:
    * Built-in Apache Spark support
 
 
-To know more about Zeppelin, visit our web site [http://zeppelin.incubator.apache.org](http://zeppelin.incubator.apache.org)
+To know more about Zeppelin, visit our web site [http://zeppelin.apache.org](http://zeppelin.apache.org)
 
 ## Requirements
  * Git 
@@ -39,25 +39,46 @@ sudo apt-get install libfontconfig
 ```
 
 #### Proxy settings (optional)
-If you are behind a corporate Proxy with NTLM authentication you can use [Cntlm Authentication Proxy](http://cntlm.sourceforge.net/) .
-
-Before build start, run these commands from shell. 
+First of all, set your proxy configuration on Maven `settings.xml`.
 ```
-export http_proxy=http://localhost:3128
-export https_proxy=http://localhost:3128
-export HTTP_PROXY=http://localhost:3128
-export HTTPS_PROXY=http://localhost:3128
+<settings>
+  <proxies>
+    <proxy>
+      <id>proxy-http</id>
+      <active>true</active>
+      <protocol>http</protocol>
+      <host>localhost</host>
+      <port>3128</port>
+      <!-- <username>usr</username>
+      <password>pwd</password> -->
+      <nonProxyHosts>localhost|127.0.0.1</nonProxyHosts>
+    </proxy>
+    <proxy>
+      <id>proxy-https</id>
+      <active>true</active>
+      <protocol>https</protocol>
+      <host>localhost</host>
+      <port>3128</port>
+      <!-- <username>usr</username>
+      <password>pwd</password> -->
+      <nonProxyHosts>localhost|127.0.0.1</nonProxyHosts>
+    </proxy>
+  </proxies>
+</settings>
+```
+
+Then, run these commands from shell. 
+```
 npm config set proxy http://localhost:3128
 npm config set https-proxy http://localhost:3128
 npm config set registry "http://registry.npmjs.org/"
 npm config set strict-ssl false
-npm cache clean
 git config --global http.proxy http://localhost:3128
 git config --global https.proxy http://localhost:3128
 git config --global url."http://".insteadOf git://
 ```
 
-After build is complete, run these commands to cleanup.
+Cleanup: set `active false` in Maven `settings.xml` and run these commands.
 ```
 npm config rm proxy
 npm config rm https-proxy
@@ -67,9 +88,8 @@ git config --global --unset url."http://".insteadOf
 ```
 
 _Notes:_ 
- - If you are on Windows replace `export` with `set` to set env variables
- - Replace `localhost:3128` with standard pattern `http://user:pwd@host:port`
- - Git configuration is needed because Bower use it for fetching from GitHub
+ - If you are behind NTLM proxy you can use [Cntlm Authentication Proxy](http://cntlm.sourceforge.net/).
+ - Replace `localhost:3128` with the standard pattern `http://user:pwd@host:port`.
  
 #### Install maven
 ```
@@ -162,8 +182,7 @@ enable 3rd party vendor repository (cloudera)
 ##### `-Pmapr[version]` (optional)
 
 For the MapR Hadoop Distribution, these profiles will handle the Hadoop version. As MapR allows different versions of Spark to be installed, you should specify which version of Spark is installed on the cluster by adding a Spark profile (`-Pspark-1.2`, `-Pspark-1.3`, etc.) as needed.
-For Hive, check the hive/pom.xml and adjust the version installed as well. The correct Maven
-artifacts can be found for every version of MapR at http://doc.mapr.com
+The correct Maven artifacts can be found for every version of MapR at http://doc.mapr.com
 
 Available profiles are
 
@@ -174,6 +193,13 @@ Available profiles are
 -Pmapr50
 -Pmapr51
 ```
+
+#### -Pexamples (optional)
+
+Bulid examples under zeppelin-examples directory
+
+
+
 
 
 Here're some examples:
@@ -196,7 +222,7 @@ mvn clean package -Pspark-1.5 -Pmapr50 -DskipTests
 #### Ignite Interpreter
 
 ```sh
-mvn clean package -Dignite.version=1.1.0-incubating -DskipTests
+mvn clean package -Dignite.version=1.6.0 -DskipTests
 ```
 
 #### Scalding Interpreter
@@ -204,6 +230,7 @@ mvn clean package -Dignite.version=1.1.0-incubating -DskipTests
 ```sh
 mvn clean package -Pscalding -DskipTests
 ```
+
 
 ### Configure
 If you wish to configure Zeppelin option (like port number), configure the following files:
@@ -260,6 +287,14 @@ And browse [localhost:8080](localhost:8080) in your browser.
 
 For configuration details check __`./conf`__ subdirectory.
 
+### Building for Scala 2.11
+
+To produce a Zeppelin package compiled with Scala 2.11, use the -Pscala-2.11 profile:
+
+```
+mvn clean package -Pspark-1.6 -Phadoop-2.4 -Pyarn -Ppyspark -Pscala-2.11 -DskipTests clean install
+```
+
 ### Package
 To package the final distribution including the compressed archive, run:
 
@@ -288,4 +323,4 @@ mvn verify
 mvn verify -P using-packaged-distr
 ```
 
-[![Analytics](https://ga-beacon.appspot.com/UA-45176241-4/apache/incubator-zeppelin/README.md?pixel)](https://github.com/igrigorik/ga-beacon)
+[![Analytics](https://ga-beacon.appspot.com/UA-45176241-4/apache/zeppelin/README.md?pixel)](https://github.com/igrigorik/ga-beacon)

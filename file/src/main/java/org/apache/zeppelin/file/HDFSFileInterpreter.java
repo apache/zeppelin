@@ -26,6 +26,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterPropertyBuilder;
+import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 
 /**
  * HDFS implementation of File interpreter for Zeppelin.
@@ -259,21 +260,21 @@ public class HDFSFileInterpreter extends FileInterpreter {
 
 
   @Override
-  public List<String> completion(String buf, int cursor) {
+  public List<InterpreterCompletion> completion(String buf, int cursor) {
     logger.info("Completion request at position\t" + cursor + " in string " + buf);
-    final List<String> suggestions = new ArrayList<>();
+    final List<InterpreterCompletion> suggestions = new ArrayList<>();
     if (StringUtils.isEmpty(buf)) {
-      suggestions.add("ls");
-      suggestions.add("cd");
-      suggestions.add("pwd");
+      suggestions.add(new InterpreterCompletion("ls", "ls"));
+      suggestions.add(new InterpreterCompletion("cd", "cd"));
+      suggestions.add(new InterpreterCompletion("pwd", "pwd"));
       return suggestions;
     }
 
     //part of a command == no spaces
     if (buf.split(" ").length == 1){
-      if ("cd".contains(buf)) suggestions.add("cd");
-      if ("ls".contains(buf)) suggestions.add("ls");
-      if ("pwd".contains(buf)) suggestions.add("pwd");
+      if ("cd".contains(buf)) suggestions.add(new InterpreterCompletion("cd", "cd"));
+      if ("ls".contains(buf)) suggestions.add(new InterpreterCompletion("ls", "ls"));
+      if ("pwd".contains(buf)) suggestions.add(new InterpreterCompletion("pwd", "pwd"));
 
       return suggestions;
     }
@@ -310,7 +311,7 @@ public class HDFSFileInterpreter extends FileInterpreter {
                 String beforeLastPeriod = unfinished.substring(0, unfinished.lastIndexOf('.') + 1);
                 //beforeLastPeriod should be the start of fs.pathSuffix, so take the end of it.
                 String suggestedFinish = fs.pathSuffix.substring(beforeLastPeriod.length());
-                suggestions.add(suggestedFinish);
+                suggestions.add(new InterpreterCompletion(suggestedFinish, suggestedFinish));
               }
             }
             return suggestions;

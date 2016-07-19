@@ -17,6 +17,7 @@
 
 package org.apache.zeppelin.dep;
 
+import java.net.URL;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -25,6 +26,7 @@ import java.util.List;
 import org.sonatype.aether.RepositorySystem;
 import org.sonatype.aether.RepositorySystemSession;
 import org.sonatype.aether.repository.Authentication;
+import org.sonatype.aether.repository.Proxy;
 import org.sonatype.aether.repository.RemoteRepository;
 import org.sonatype.aether.repository.RepositoryPolicy;
 import org.sonatype.aether.resolution.ArtifactResult;
@@ -44,6 +46,16 @@ public abstract class AbstractDependencyResolver {
     repos.add(Booter.newLocalRepository());
   }
 
+  public void setProxy(URL proxyUrl, String proxyUser, String proxyPassword) {
+    Authentication auth = new Authentication(proxyUser, proxyPassword);
+    Proxy proxy = new Proxy(proxyUrl.getProtocol(), proxyUrl.getHost(), proxyUrl.getPort(), auth);
+    synchronized (repos) {
+      for (RemoteRepository repo : repos) {
+        repo.setProxy(proxy);
+      }
+    }
+  }
+
   public List<RemoteRepository> getRepos() {
     return this.repos;
   }
@@ -52,8 +64,8 @@ public abstract class AbstractDependencyResolver {
     synchronized (repos) {
       delRepo(id);
       RemoteRepository rr = new RemoteRepository(id, "default", url);
-      rr.setPolicy(true, new RepositoryPolicy(
-          snapshot,
+      rr.setPolicy(snapshot, new RepositoryPolicy(
+          true,
           RepositoryPolicy.UPDATE_POLICY_DAILY,
           RepositoryPolicy.CHECKSUM_POLICY_WARN));
       repos.add(rr);
@@ -64,8 +76,8 @@ public abstract class AbstractDependencyResolver {
     synchronized (repos) {
       delRepo(id);
       RemoteRepository rr = new RemoteRepository(id, "default", url);
-      rr.setPolicy(true, new RepositoryPolicy(
-          snapshot,
+      rr.setPolicy(snapshot, new RepositoryPolicy(
+          true,
           RepositoryPolicy.UPDATE_POLICY_DAILY,
           RepositoryPolicy.CHECKSUM_POLICY_WARN));
       rr.setAuthentication(auth);

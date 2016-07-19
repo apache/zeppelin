@@ -22,9 +22,7 @@ import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -36,9 +34,7 @@ import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.PutMethod;
 import org.apache.commons.httpclient.methods.RequestEntity;
-import org.apache.zeppelin.dep.Dependency;
-import org.apache.zeppelin.interpreter.InterpreterGroup;
-import org.apache.zeppelin.interpreter.InterpreterOption;
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.server.ZeppelinServer;
 import org.hamcrest.Description;
@@ -50,7 +46,6 @@ import org.slf4j.LoggerFactory;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
-import org.sonatype.aether.RepositoryException;
 
 public abstract class AbstractTestRestApi {
 
@@ -98,7 +93,33 @@ public abstract class AbstractTestRestApi {
 
   protected static void startUp() throws Exception {
     if (!wasRunning) {
+      System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_HOME.getVarName(), "../");
+      System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_WAR.getVarName(), "../zeppelin-web/dist");
       LOG.info("Staring test Zeppelin up...");
+
+
+      // exclude org.apache.zeppelin.rinterpreter.* for scala 2.11 test
+      ZeppelinConfiguration conf = ZeppelinConfiguration.create();
+      String interpreters = conf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETERS);
+      String interpretersCompatibleWithScala211Test = null;
+
+      for (String intp : interpreters.split(",")) {
+        if (intp.startsWith("org.apache.zeppelin.rinterpreter")) {
+          continue;
+        }
+
+        if (interpretersCompatibleWithScala211Test == null) {
+          interpretersCompatibleWithScala211Test = intp;
+        } else {
+          interpretersCompatibleWithScala211Test += "," + intp;
+        }
+      }
+
+      System.setProperty(
+          ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETERS.getVarName(),
+          interpretersCompatibleWithScala211Test);
+
+
       executor = Executors.newSingleThreadExecutor();
       executor.submit(server);
       long s = System.currentTimeMillis();
@@ -122,24 +143,25 @@ public abstract class AbstractTestRestApi {
         // assume first one is spark
         InterpreterSetting sparkIntpSetting = null;
         for(InterpreterSetting intpSetting : ZeppelinServer.notebook.getInterpreterFactory().get()) {
-          if (intpSetting.getGroup().equals("spark")) {
+          if (intpSetting.getName().equals("spark")) {
             sparkIntpSetting = intpSetting;
           }
         }
 
-        // set spark master
+        // set spark master and other properties
         sparkIntpSetting.getProperties().setProperty("master", "spark://" + getHostname() + ":7071");
+        sparkIntpSetting.getProperties().setProperty("spark.cores.max", "2");
 
         // set spark home for pyspark
         sparkIntpSetting.getProperties().setProperty("spark.home", getSparkHome());
         pySpark = true;
         sparkR = true;
-        ZeppelinServer.notebook.getInterpreterFactory().restart(sparkIntpSetting.id());
+        ZeppelinServer.notebook.getInterpreterFactory().restart(sparkIntpSetting.getId());
       } else {
         // assume first one is spark
         InterpreterSetting sparkIntpSetting = null;
         for(InterpreterSetting intpSetting : ZeppelinServer.notebook.getInterpreterFactory().get()) {
-          if (intpSetting.getGroup().equals("spark")) {
+          if (intpSetting.getName().equals("spark")) {
             sparkIntpSetting = intpSetting;
           }
         }
@@ -152,7 +174,7 @@ public abstract class AbstractTestRestApi {
           sparkR = true;
         }
 
-        ZeppelinServer.notebook.getInterpreterFactory().restart(sparkIntpSetting.id());
+        ZeppelinServer.notebook.getInterpreterFactory().restart(sparkIntpSetting.getId());
       }
     }
   }
@@ -237,6 +259,8 @@ public abstract class AbstractTestRestApi {
       }
 
       LOG.info("Test Zeppelin terminated.");
+
+      System.clearProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETERS.getVarName());
     }
   }
 
@@ -247,7 +271,7 @@ public abstract class AbstractTestRestApi {
       request = httpGet("/");
       isRunning = request.getStatusCode() == 200;
     } catch (IOException e) {
-      LOG.error("Exception in AbstractTestRestApi while checkIfServerIsRunning ", e);
+      LOG.error("AbstractTestRestApi.checkIfServerIsRunning() fails .. ZeppelinServer is not running");
       isRunning = false;
     } finally {
       if (request != null) {
@@ -369,18 +393,6 @@ public abstract class AbstractTestRestApi {
         description.appendText("got ").appendText(item);
       }
     };
-  }
-
-  //Create new Setting and return Setting ID
-  protected String createTempSetting(String tempName)
-      throws IOException, RepositoryException {
-    InterpreterSetting setting = ZeppelinServer.notebook.getInterpreterFactory()
-        .add(tempName,
-            "newGroup",
-            new LinkedList<Dependency>(),
-            new InterpreterOption(false),
-            new Properties());
-    return setting.id();
   }
 
   protected TypeSafeMatcher<? super JsonElement> hasRootElementNamed(final String memberName) {

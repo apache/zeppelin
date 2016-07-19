@@ -19,7 +19,6 @@ package org.apache.zeppelin.spark.dep;
 
 import static org.junit.Assert.assertEquals;
 
-import org.apache.zeppelin.spark.dep.SparkDependencyResolver;
 import org.junit.Test;
 
 public class SparkDependencyResolverTest {
