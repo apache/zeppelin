@@ -650,6 +650,21 @@ public class Note implements Serializable, ParagraphJobListener {
     return getInterpreterName(getLastReplName());
   }
 
+  public Interpreter getRepl(String name) {
+    return factory.getInterpreter(id(), name);
+  }
+
+  public Map<String, Object> getEditorSetting(String replName) {
+    Interpreter intp = getRepl(replName);
+    Map<String, Object> editor = new HashMap<>();
+    try {
+      editor = intp.findRegisteredInterpreterByClassName(intp.getClassName()).getEditor();
+    } catch (NullPointerException e) {
+      editor.put("language", "text");
+    }
+    return editor;
+  }
+
   @Override
   public void beforeStatusChange(Job job, Status before, Status after) {
     if (jobListenerFactory != null) {

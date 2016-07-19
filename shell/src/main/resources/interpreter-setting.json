@@ -10,6 +10,9 @@
         "defaultValue": "60000",
         "description": "Shell command time out in millisecs. Default = 60000"
       }
+    },
+    "editor": {
+      "language": "sh"
     }
   }
 ]

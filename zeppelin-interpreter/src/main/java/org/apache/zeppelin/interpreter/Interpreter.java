@@ -251,6 +251,7 @@ public abstract class Interpreter {
     private String className;
     private boolean defaultInterpreter;
     private Map<String, InterpreterProperty> properties;
+    private Map<String, Object> editor;
     private String path;
 
     public RegisteredInterpreter(String name, String group, String className,
@@ -266,6 +267,7 @@ public abstract class Interpreter {
       this.className = className;
       this.defaultInterpreter = defaultInterpreter;
       this.properties = properties;
+      this.editor = new HashMap<>();
     }
 
     public String getName() {
@@ -290,6 +292,10 @@ public abstract class Interpreter {
 
     public Map<String, InterpreterProperty> getProperties() {
       return properties;
+    }
+
+    public Map<String, Object> getEditor() {
+      return editor;
     }
 
     public void setPath(String path) {

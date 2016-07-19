@@ -16,6 +16,9 @@
         "defaultValue": "1000",
         "description": "Max number of dataframe rows to display."
       }
+    },
+    "editor": {
+      "language": "python"
     }
   },
   {
