@@ -109,11 +109,12 @@ public class RemoteInterpreterProcessTest {
   public void testRemoteInterpreterWithMultipleInterpreterInGroup() throws TException, InterruptedException {
     RemoteInterpreterServer server = new RemoteInterpreterServer(3679);
     server.start();
-    boolean running = false;
     long startTime = System.currentTimeMillis();
-    while (System.currentTimeMillis() - startTime < 10 * 1000) {
+    /*If RemoteInterpreterServer didn't start within 30 seconds than this test may fail
+     * which might be due to issue in RemoteInterpreterServer
+     */
+    while (System.currentTimeMillis() - startTime < 30 * 1000) {
       if (server.isRunning()) {
-        running = true;
         break;
       } else {
         Thread.sleep(200);
@@ -126,7 +127,7 @@ public class RemoteInterpreterProcessTest {
     when(intpGroup.getProperty()).thenReturn(properties);
     when(intpGroup.containsKey(Constants.EXISTING_PROCESS)).thenReturn(true);
     RemoteInterpreterProcess rip = new RemoteInterpreterProcess(INTERPRETER_SCRIPT, "nonexists",
-        "fakeRepo", new HashMap<String, String>(), 10 * 1000, null);
+        "fakeRepo", new HashMap<String, String>(), 30 * 1000, null);
     assertFalse(rip.isRunning());
     assertEquals(0, rip.referenceCount());
     assertEquals(1, rip.reference(intpGroup));
