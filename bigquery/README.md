@@ -7,11 +7,12 @@ You could also install and bring up Zeppelin on Google compute Engine.
 
 # Unit Tests
 BigQuery Unit tests are excluded as these tests depend on the BigQuery external service. This is because BigQuery does not have a local mock at this point.
+
 If you like to run these tests manually, please follow the following steps:
-1. [Create a new project](https://support.google.com/cloud/answer/6251787?hl=en)
-2. [Create a Google Compute Engine instance](https://cloud.google.com/compute/docs/instances/create-start-instance)
-3. Copy the project ID that you created and add it to the property "projectId" in `resources/constants.json`
-4. Run the command mvn <options> -Dbigquery.text.exclude='' test -pl bigquery -am
+* [Create a new project](https://support.google.com/cloud/answer/6251787?hl=en)
+* [Create a Google Compute Engine instance](https://cloud.google.com/compute/docs/instances/create-start-instance)
+* Copy the project ID that you created and add it to the property "projectId" in `resources/constants.json`
+* Run the command mvn <options> -Dbigquery.text.exclude='' test -pl bigquery -am
 
 
 # Interpreter Configuration
