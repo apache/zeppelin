@@ -243,6 +243,11 @@ module.exports = function(grunt) {
         ]
       },
       test: {
+        options: {
+          rules: {
+            'no-undef': 0
+          }
+        },
         src: ['test/spec/{,*/}*.js']
       }
     },
