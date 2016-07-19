@@ -35,6 +35,10 @@
   max-width: 150px;
 }
 
+.revisionDate {
+  font-size:80%;
+}
+
 .revisionName:hover,
 .revisionName:focus,
 .revisionName:active {
