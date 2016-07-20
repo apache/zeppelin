@@ -61,6 +61,7 @@
     <module>angular</module>
     <module>shell</module>
     <module>livy</module>
+    <module>beam</module>
     <module>hbase</module>
     <module>postgresql</module>
     <module>jdbc</module>

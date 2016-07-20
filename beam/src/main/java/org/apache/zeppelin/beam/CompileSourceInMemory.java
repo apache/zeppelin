@@ -8,8 +8,6 @@ import javax.tools.JavaFileObject;
 import javax.tools.SimpleJavaFileObject;
 import javax.tools.ToolProvider;
 
-import org.apache.log4j.Category;
-import org.apache.log4j.Priority;
 
 import com.thoughtworks.qdox.JavaProjectBuilder;
 import com.thoughtworks.qdox.model.JavaClass;
@@ -17,7 +15,6 @@ import com.thoughtworks.qdox.model.JavaSource;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringReader;
@@ -35,20 +32,20 @@ import java.util.List;
  */
 public class CompileSourceInMemory {
   public static String execute(String className, String code) throws Exception {
-    
+
     JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
     DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<JavaFileObject>();
 
     JavaProjectBuilder builder = new JavaProjectBuilder();
     JavaSource src = builder.addSource(new StringReader(code));
 
-//    List<String> imports = src.getImports();
-//    String importsString = "";
-//    
-//    for (int i = 0; i < imports.size(); i++) {
-//      importsString += "import " + imports.get(i) + ";\n";
-//    }
-    
+    // List<String> imports = src.getImports();
+    // String importsString = "";
+    //
+    // for (int i = 0; i < imports.size(); i++) {
+    // importsString += "import " + imports.get(i) + ";\n";
+    // }
+
     List<JavaClass> classes = src.getClasses();
     String classesSt = "";
     String classMain = "", classMainName = "";
@@ -80,10 +77,10 @@ public class CompileSourceInMemory {
     JavaFileObject file = new JavaSourceFromString(className, writer.toString());
 
     Iterable<? extends JavaFileObject> compilationUnits = Arrays.asList(file);
-    
+
     ByteArrayOutputStream baosOut = new ByteArrayOutputStream();
     ByteArrayOutputStream baosErr = new ByteArrayOutputStream();
-    
+
     PrintStream newOut = new PrintStream(baosOut);
     PrintStream newErr = new PrintStream(baosErr);
     // IMPORTANT: Save the old System.out!
@@ -92,7 +89,6 @@ public class CompileSourceInMemory {
     // Tell Java to use your special stream
     System.setOut(newOut);
     System.setErr(newErr);
-
 
     CompilationTask task = compiler.getTask(null, null, diagnostics, null, null, compilationUnits);
 
@@ -112,11 +108,10 @@ public class CompileSourceInMemory {
 
         System.out.flush();
         System.err.flush();
-        
+
         System.setOut(oldOut);
         System.setErr(oldErr);
 
-        
         classLoader.clearAssertionStatus();
 
         return baosOut.toString();

@@ -10,11 +10,11 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.UUID;
 
-import org.apache.beam.examples.MinimalWordCount;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterPropertyBuilder;
 import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 
 import com.google.gson.Gson;
 
@@ -30,10 +30,6 @@ public class BeamInterpreter extends Interpreter {
     super(property);
   }
 
-  static {
-    Interpreter.register("beam", "beam", BeamInterpreter.class.getName(),
-        new InterpreterPropertyBuilder().build());
-  }
 
   public static void main(String[] args) {
 
@@ -81,7 +77,7 @@ public class BeamInterpreter extends Interpreter {
   }
 
   @Override
-  public List<String> completion(String buf, int cursor) {
+  public List<InterpreterCompletion> completion(String buf, int cursor) {
     return null;
   }
 
