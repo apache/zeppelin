@@ -67,7 +67,7 @@ public class JDBCSecurityImpl {
           .trim().toUpperCase());
     } catch (Exception e) {
       LOGGER.error(String.format("Invalid auth.type detected with value %s, defaulting " +
-          "auth.type to SIMPLE", properties.getProperty("zeppelin.jdbc.auth.type").trim()));
+          "auth.type to SIMPLE", properties.getProperty("zeppelin.jdbc.auth.type")));
       authType = SIMPLE;
     }
     return authType;

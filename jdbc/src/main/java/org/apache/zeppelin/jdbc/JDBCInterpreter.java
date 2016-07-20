@@ -167,19 +167,11 @@ public class JDBCInterpreter extends Interpreter {
 
     logger.debug("propertiesMap: {}", propertiesMap);
 
-    Connection connection = null;
-    SqlCompleter sqlCompleter = null;
     if (!StringUtils.isAnyEmpty(property.getProperty("zeppelin.jdbc.auth.type"))) {
       JDBCSecurityImpl.createSecureConfiguration(property);
     }
     for (String propertyKey : propertiesMap.keySet()) {
-      try {
-//        connection = getConnection(propertyKey, null);
-        sqlCompleter = createSqlCompleter(connection);
-      } catch (Exception e) {
-        sqlCompleter = createSqlCompleter(null);
-      }
-      propertyKeySqlCompleterMap.put(propertyKey, sqlCompleter);
+      propertyKeySqlCompleterMap.put(propertyKey, createSqlCompleter(null));
     }
   }
 
@@ -266,6 +258,7 @@ public class JDBCInterpreter extends Interpreter {
       }
 
     }
+    propertyKeySqlCompleterMap.put(propertyKey, createSqlCompleter(connection));
     return connection;
   }
 
