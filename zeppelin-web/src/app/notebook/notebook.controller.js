@@ -190,6 +190,12 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
     $scope.noteRevisions = data.revisionList;
   });
 
+  // receive certain revision of note
+  $scope.$on('noteRevision', function(event, data) {
+    console.log('received note revision %o', data);
+    //TODO(xxx): render it
+  });
+
   $scope.runNote = function() {
     BootstrapDialog.confirm({
       closable: true,

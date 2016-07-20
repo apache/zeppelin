@@ -363,6 +363,11 @@ public class Notebook implements NoteEventListener {
     return notebookRepo.revisionHistory(noteId, subject);
   }
 
+  public Note getNoteRevision(String noteId, Revision revision, AuthenticationInfo subject)
+      throws IOException {
+    return notebookRepo.get(noteId, revision, subject);
+  }
+
   @SuppressWarnings("rawtypes")
   private Note loadNoteFromRepo(String id, AuthenticationInfo subject) {
     Note note = null;

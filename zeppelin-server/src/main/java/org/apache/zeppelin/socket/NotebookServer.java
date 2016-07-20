@@ -225,6 +225,9 @@ public class NotebookServer extends WebSocketServlet implements
           case LIST_REVISION_HISTORY:
             listRevisionHistory(conn, notebook, messagereceived);
             break;
+          case NOTE_REVISION:
+            getNoteRevision(conn, notebook, messagereceived);
+            break;
           case LIST_NOTEBOOK_JOBS:
             unicastNotebookJobInfo(conn, messagereceived);
             break;
@@ -1147,6 +1150,18 @@ public class NotebookServer extends WebSocketServlet implements
 
     conn.send(serializeMessage(new Message(OP.LIST_REVISION_HISTORY)
       .put("revisionList", revisions)));
+  }
+
+  private void getNoteRevision(NotebookSocket conn, Notebook notebook, Message fromMessage)
+      throws IOException {
+    String noteId = (String) fromMessage.get("noteId");
+    Revision revision = (Revision) fromMessage.get("revision");
+    AuthenticationInfo subject = new AuthenticationInfo(fromMessage.principal);
+    Note revisionNote = notebook.getNoteRevision(noteId, revision, subject);
+    conn.send(serializeMessage(new Message(OP.NOTE_REVISION)
+        .put("noteId", noteId)
+        .put("revisionId", revision)
+        .put("data", revisionNote)));
   }
 
   /**
