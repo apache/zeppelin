@@ -75,12 +75,12 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
       setTimeout(
         function() {
           var routeParams = currentRoute.params;
-          var $id = $('#' + routeParams.paragraph + '_container');
+          var $id = angular.element('#' + routeParams.paragraph + '_container');
 
           if ($id.length > 0) {
             // adjust for navbar
             var top = $id.offset().top - 103;
-            $('html, body').scrollTo({top: top, left: 0});
+            angular.element('html, body').scrollTo({top: top, left: 0});
           }
 
           // force notebook reload on user change
