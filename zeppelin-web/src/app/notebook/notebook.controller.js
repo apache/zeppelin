@@ -1,5 +1,3 @@
-/* jshint loopfunc: true */
-/* global $: false */
 /*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +15,7 @@
 
 angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $route, $routeParams, $location,
                                                                      $rootScope, $http, websocketMsgSrv,
-                                                                     baseUrlSrv, $timeout, SaveAsService) {
+                                                                     baseUrlSrv, $timeout, saveAsService) {
   $scope.note = null;
   $scope.showEditor = false;
   $scope.editorToggled = false;
@@ -77,12 +75,12 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
       setTimeout(
         function() {
           var routeParams = currentRoute.params;
-          var $id = $('#' + routeParams.paragraph + '_container');
+          var $id = angular.element('#' + routeParams.paragraph + '_container');
 
           if ($id.length > 0) {
             // adjust for navbar
             var top = $id.offset().top - 103;
-            $('html, body').scrollTo({top: top, left: 0});
+            angular.element('html, body').scrollTo({top: top, left: 0});
           }
 
           // force notebook reload on user change
@@ -142,7 +140,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
   //Export notebook
   $scope.exportNotebook = function() {
     var jsonContent = JSON.stringify($scope.note);
-    SaveAsService.SaveAs(jsonContent, $scope.note.name, 'json');
+    saveAsService.saveAs(jsonContent, $scope.note.name, 'json');
   };
 
   //Clone note
