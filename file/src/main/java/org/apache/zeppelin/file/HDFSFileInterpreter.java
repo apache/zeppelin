@@ -37,17 +37,6 @@ public class HDFSFileInterpreter extends FileInterpreter {
   static final String HDFS_USER = "hdfs.user";
   static final String HDFS_MAXLENGTH = "hdfs.maxlength";
 
-  static {
-    Interpreter.register(
-        "hdfs",
-        "file",
-        HDFSFileInterpreter.class.getName(),
-        new InterpreterPropertyBuilder()
-            .add(HDFS_URL, "http://localhost:50070/webhdfs/v1/", "The URL for WebHDFS")
-            .add(HDFS_USER, "hdfs", "The WebHDFS user")
-            .add(HDFS_MAXLENGTH, "1000", "Maximum number of lines of results fetched").build());
-  }
-
   Exception exceptionOnConnect = null;
   HDFSCommand cmd = null;
   Gson gson = null;
