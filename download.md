@@ -139,8 +139,7 @@ For developers, to get latest *0.7.0-SNAPSHOT* check [README](https://github.com
 ## Available interpreters
 
 Thanks to many Zeppelin contributors, we can provide much more interpreters in every releases.
-Basically Zeppelin is compatible with the specified version in each cells. 
-So please check the below table before you download.
+Please check the below table before you download Zeppelin package.
 
 > **Note :** Only Spark interpreter is included in Zeppelin 0.6.0 net-install package. You need to install the other interpreters with net-install script.
 
@@ -153,40 +152,27 @@ So please check the below table before you download.
     <th style="width:22%">0.6.0</th>
   </tr>
   <tr>
-    <td rowspan="3">Spark</td>
+    <td rowspan="2">Spark</td>
     <td>
-        Source package with build profile <br/>
+        Source package <br/>
         1.1.x, 1.2.x, 1.3.x 1.4.x
     </td>
-    <td>
-        Source package with build profile <br/>
+    <td rowspan="2">
         1.1.x, 1.2.x, 1.3.x 1.4.x, 1.5.x
     </td>
-    <td>
-        Source package with build profile <br/>
+    <td rowspan="2">
         1.1.x, 1.2.x, 1.3.x 1.4.x, 1.5.x, 1.6.x
     </td>
     <td>
-        Source package with build profile <br/>
         1.1.x, 1.2.x, 1.3.x 1.4.x, 1.5.x, 1.6.x
     </td>
   </tr>
   <tr>
-    <td rowspan="2">
-        default 1.4.0
-    </td>
-    <td rowspan="2">
-        default 1.4.1
-    </td>
-    <td rowspan="2">
-        default 1.4.1
-    </td>
     <td>
-        default 1.4.1
+      Binary package <br/>
+      1.3.1, 1.4.0
     </td>
-  </tr>
-  <tr>
-    <td>SparkR is available</td>
+    <td>SparkR is also available</td>
   </tr>
   <tr>
     <td>Angular</td>
@@ -210,53 +196,46 @@ So please check the below table before you download.
     <td>O</td>
   </tr>
   <tr>
-    <td>Kylin</td>
-    <td>N/A</td>
-    <td>O</td>
-    <td>O</td>
-    <td>O</td>
-  </tr>
-  <tr>
     <td>Flink</td>
-    <td>0.9.0-milestone-1</td>
-    <td>0.9.0</td>
-    <td>0.10.0</td>
-    <td>1.0.3</td>
+    <td>O</td>
+    <td>O</td>
+    <td>O</td>
+    <td>O</td>
   </tr>
   <tr>
     <td>Hive</td>
-    <td>hive 0.14.0 <br/> hadoop 2.6.0</td>
-    <td>hive 0.14.0 <br/> hadoop 2.6.0</td>
-    <td>hive 0.14.0 <br/> hadoop 2.6.0</td>
+    <td>O</td>
+    <td>O</td>
+    <td>O</td>
     <td>Merged into JDBC interpreter</td>
   </tr>
   <tr>
     <td>Tajo</td>
-    <td>0.10.0</td>
-    <td>0.10.0</td>
-    <td>0.11.0</td>
+    <td>O</td>
+    <td>O</td>
+    <td>O</td>
     <td>Merged into JDBC interpreter</td>
   </tr>
   <tr>
     <td>Cassandra</td>
     <td>N/A</td>
-    <td>2.1.7</td>
-    <td>2.1.7</td>
-    <td>3.0.1</td>
+    <td>O</td>
+    <td>O</td>
+    <td>O</td>
   </tr>
   <tr>
     <td>Geode</td>
     <td>N/A</td>
-    <td>1.0.0-incubating-SNAPSHOT</td>
-    <td>1.0.0-incubating-SNAPSHOT</td>
-    <td>1.0.0-incubating-SNAPSHOT</td>
+    <td>O</td>
+    <td>O</td>
+    <td>O</td>
   </tr>
   <tr>
     <td>Ignite</td>
     <td>N/A</td>
-    <td>1.4.0</td>
-    <td>1.5.0.final</td>
-    <td>1.5.0.final</td>
+    <td>O</td>
+    <td>O</td>
+    <td>O</td>
   </tr>
   <tr>
     <td>Kylin</td>
@@ -268,30 +247,30 @@ So please check the below table before you download.
   <tr>
     <td>Lens</td>
     <td>N/A</td>
-    <td>2.2.0-beta-incubating</td>
-    <td>2.2.0-beta-incubating</td>
-    <td>2.5.0-beta</td>
+    <td>O</td>
+    <td>O</td>
+    <td>O</td>
   </tr>
   <tr>
     <td>Phoenix</td>
     <td>N/A</td>
-    <td>4.4.0-HBase-1.0</td>
-    <td>4.4.0-HBase-1.0</td>
+    <td>O</td>
+    <td>O</td>
     <td>Merged into JDBC interpreter</td>
   </tr>
   <tr>
     <td>PostgreSQL</td>
     <td>N/A</td>
-    <td>9.4-1201-jdbc41</td>
-    <td>9.4-1201-jdbc41</td>
-    <td>9.4-1201-jdbc41</td>
+    <td>O</td>
+    <td>O</td>
+    <td>O</td>
   </tr>
   <tr>
     <td>Elasticsearch</td>
     <td>N/A</td>
     <td>N/A</td>
-    <td>2.1.0</td>
-    <td>2.3.3</td>
+    <td>O</td>
+    <td>O</td>
   </tr>
   <tr>
     <td>
@@ -300,31 +279,22 @@ So please check the below table before you download.
     </td>
     <td>N/A</td>
     <td>N/A</td>
-    <td>
-        scalding 0.15.1-RC13 <br/>
-        hadoop 2.3.0 <br/>
-    </td>
-    <td>
-        scalding 0.16.1-RC1 <br/> 
-        hadoop 2.6.0 <br/>
-    </td>
+    <td>O</td>
+    <td>O</td>
   </tr>
   <tr>
     <td>Alluxio</td>
     <td>N/A</td>
     <td>N/A</td>
     <td>N/A</td>
-    <td>1.0.0</td>
+    <td>O</td>
   </tr>
   <tr>
     <td>Hbase</td>
     <td>N/A</td>
     <td>N/A</td>
     <td>N/A</td>
-    <td>
-        hbase 1.0.0 <br/>
-        hadoop 2.3.0
-    </td>
+    <td>O</td>
   </tr>
   <tr>
     <td>HDFS</td>
@@ -338,7 +308,10 @@ So please check the below table before you download.
     <td>N/A</td>
     <td>N/A</td>
     <td>N/A</td>
-    <td>O</td>
+    <td>
+      Postgres, MySQL, MariaDB, Redshift, <br/>
+      Hive, Pheonix, Drill, Tajo are available
+    </td>
   </tr>
   <tr>
     <td>Livy</td>
@@ -352,7 +325,7 @@ So please check the below table before you download.
     <td>N/A</td>
     <td>N/A</td>
     <td>N/A</td>
-    <td>py4j 0.9.2</td>
+    <td>O</td>
   </tr>
 </table>
 
