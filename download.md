@@ -19,7 +19,7 @@ limitations under the License.
 -->
 {% include JB/setup %}
 
-### Download Apache Zeppelin
+# Download Apache Zeppelin
 
 The latest release of Apache Zeppelin is **0.6.1**.
 
@@ -48,19 +48,19 @@ The latest release of Apache Zeppelin is **0.6.1**.
     </blockquote>
 
 
-### Verify the integrity of the files
+## Verify the integrity of the files
 
 It is essential that you [verify](https://www.apache.org/info/verification.html) the integrity of the downloaded files using the PGP or MD5 signatures. This signature should be matched against the [KEYS](https://www.apache.org/dist/zeppelin/KEYS) file.
 
 
 
-### Build from source
+## Build from source
 
 For developers, to get latest *0.7.0-SNAPSHOT* check [README](https://github.com/apache/zeppelin/blob/master/README.md).
 
 
 
-### Old releases
+## Old releases
 
   - 0.6.0 released on Jul 2, 2016 ([release notes](./releases/zeppelin-release-0.6.0.html)) ([git tag](https://git-wip-us.apache.org/repos/asf?p=zeppelin.git;a=commit;h=fa2c0ff93cca49428df8792e7ee35d2b561669bd))
 
@@ -136,9 +136,225 @@ For developers, to get latest *0.7.0-SNAPSHOT* check [README](https://github.com
      [md5](http://archive.apache.org/dist/incubator/zeppelin/0.5.0-incubating/zeppelin-0.5.0-incubating-bin-spark-1.3.1_hadoop-2.3.tgz.md5),
      [sha](http://archive.apache.org/dist/incubator/zeppelin/0.5.0-incubating/zeppelin-0.5.0-incubating-bin-spark-1.3.1_hadoop-2.3.tgz.sha))
 
+## Available interpreters
 
+Thanks to many Zeppelin contributors, we can provide much more interpreters in every releases.
+Basically Zeppelin is compatible with the specified version in each cells. 
+So please check the below table before you download.
 
+> **Note :** Only Spark interpreter is included in Zeppelin 0.6.0 net-install package. You need to install the other interpreters with net-install script.
 
+<table class="table-configuration" style="text-align:center">
+  <tr>
+    <th style="width:12%">Zeppelin</th>
+    <th style="width:22%">0.5.0</th>
+    <th style="width:22%">0.5.5</th>
+    <th style="width:22%">0.5.6</th>
+    <th style="width:22%">0.6.0</th>
+  </tr>
+  <tr>
+    <td rowspan="3">Spark</td>
+    <td>
+        Source package with build profile <br/>
+        1.1.x, 1.2.x, 1.3.x 1.4.x
+    </td>
+    <td>
+        Source package with build profile <br/>
+        1.1.x, 1.2.x, 1.3.x 1.4.x, 1.5.x
+    </td>
+    <td>
+        Source package with build profile <br/>
+        1.1.x, 1.2.x, 1.3.x 1.4.x, 1.5.x, 1.6.x
+    </td>
+    <td>
+        Source package with build profile <br/>
+        1.1.x, 1.2.x, 1.3.x 1.4.x, 1.5.x, 1.6.x
+    </td>
+  </tr>
+  <tr>
+    <td rowspan="2">
+        default 1.4.0
+    </td>
+    <td rowspan="2">
+        default 1.4.1
+    </td>
+    <td rowspan="2">
+        default 1.4.1
+    </td>
+    <td>
+        default 1.4.1
+    </td>
+  </tr>
+  <tr>
+    <td>SparkR is available</td>
+  </tr>
+  <tr>
+    <td>Angular</td>
+    <td>O</td>
+    <td>O</td>
+    <td>O</td>
+    <td>O</td>
+  </tr>
+  <tr>
+    <td>Markdown</td>
+    <td>O</td>
+    <td>O</td>
+    <td>O</td>
+    <td>O</td>
+  </tr>
+  <tr>
+    <td>Shell</td>
+    <td>O</td>
+    <td>O</td>
+    <td>O</td>
+    <td>O</td>
+  </tr>
+  <tr>
+    <td>Kylin</td>
+    <td>N/A</td>
+    <td>O</td>
+    <td>O</td>
+    <td>O</td>
+  </tr>
+  <tr>
+    <td>Flink</td>
+    <td>0.9.0-milestone-1</td>
+    <td>0.9.0</td>
+    <td>0.10.0</td>
+    <td>1.0.3</td>
+  </tr>
+  <tr>
+    <td>Hive</td>
+    <td>hive 0.14.0 <br/> hadoop 2.6.0</td>
+    <td>hive 0.14.0 <br/> hadoop 2.6.0</td>
+    <td>hive 0.14.0 <br/> hadoop 2.6.0</td>
+    <td>Merged into JDBC interpreter</td>
+  </tr>
+  <tr>
+    <td>Tajo</td>
+    <td>0.10.0</td>
+    <td>0.10.0</td>
+    <td>0.11.0</td>
+    <td>Merged into JDBC interpreter</td>
+  </tr>
+  <tr>
+    <td>Cassandra</td>
+    <td>N/A</td>
+    <td>2.1.7</td>
+    <td>2.1.7</td>
+    <td>3.0.1</td>
+  </tr>
+  <tr>
+    <td>Geode</td>
+    <td>N/A</td>
+    <td>1.0.0-incubating-SNAPSHOT</td>
+    <td>1.0.0-incubating-SNAPSHOT</td>
+    <td>1.0.0-incubating-SNAPSHOT</td>
+  </tr>
+  <tr>
+    <td>Ignite</td>
+    <td>N/A</td>
+    <td>1.4.0</td>
+    <td>1.5.0.final</td>
+    <td>1.5.0.final</td>
+  </tr>
+  <tr>
+    <td>Kylin</td>
+    <td>N/A</td>
+    <td>O</td>
+    <td>O</td>
+    <td>O</td>
+  </tr>
+  <tr>
+    <td>Lens</td>
+    <td>N/A</td>
+    <td>2.2.0-beta-incubating</td>
+    <td>2.2.0-beta-incubating</td>
+    <td>2.5.0-beta</td>
+  </tr>
+  <tr>
+    <td>Phoenix</td>
+    <td>N/A</td>
+    <td>4.4.0-HBase-1.0</td>
+    <td>4.4.0-HBase-1.0</td>
+    <td>Merged into JDBC interpreter</td>
+  </tr>
+  <tr>
+    <td>PostgreSQL</td>
+    <td>N/A</td>
+    <td>9.4-1201-jdbc41</td>
+    <td>9.4-1201-jdbc41</td>
+    <td>9.4-1201-jdbc41</td>
+  </tr>
+  <tr>
+    <td>Elasticsearch</td>
+    <td>N/A</td>
+    <td>N/A</td>
+    <td>2.1.0</td>
+    <td>2.3.3</td>
+  </tr>
+  <tr>
+    <td>
+        Scalding <br/>
+        <span style="font-size:75%">Local mode only, not included in binary package</span>
+    </td>
+    <td>N/A</td>
+    <td>N/A</td>
+    <td>
+        scalding 0.15.1-RC13 <br/>
+        hadoop 2.3.0 <br/>
+    </td>
+    <td>
+        scalding 0.16.1-RC1 <br/> 
+        hadoop 2.6.0 <br/>
+    </td>
+  </tr>
+  <tr>
+    <td>Alluxio</td>
+    <td>N/A</td>
+    <td>N/A</td>
+    <td>N/A</td>
+    <td>1.0.0</td>
+  </tr>
+  <tr>
+    <td>Hbase</td>
+    <td>N/A</td>
+    <td>N/A</td>
+    <td>N/A</td>
+    <td>
+        hbase 1.0.0 <br/>
+        hadoop 2.3.0
+    </td>
+  </tr>
+  <tr>
+    <td>HDFS</td>
+    <td>N/A</td>
+    <td>N/A</td>
+    <td>N/A</td>
+    <td>O</td>
+  </tr>
+  <tr>
+    <td>JDBC</td>
+    <td>N/A</td>
+    <td>N/A</td>
+    <td>N/A</td>
+    <td>O</td>
+  </tr>
+  <tr>
+    <td>Livy</td>
+    <td>N/A</td>
+    <td>N/A</td>
+    <td>N/A</td>
+    <td>O</td>
+  </tr>
+  <tr>
+    <td>Python</td>
+    <td>N/A</td>
+    <td>N/A</td>
+    <td>N/A</td>
+    <td>py4j 0.9.2</td>
+  </tr>
+</table>
 
 
 <!--
