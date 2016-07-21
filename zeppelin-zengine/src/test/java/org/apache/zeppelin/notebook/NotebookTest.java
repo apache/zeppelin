@@ -532,7 +532,7 @@ public class NotebookTest implements JobListenerFactory{
     registry.add("o2", "object2", null, null);
 
     // restart interpreter
-    factory.restart(factory.getInterpreterSettings(note.getId()).get(0).id());
+    factory.restart(factory.getInterpreterSettings(note.getId()).get(0).getId());
     registry = factory.getInterpreterSettings(note.getId()).get(0).getInterpreterGroup("sharedProcess")
     .getAngularObjectRegistry();
 
@@ -608,7 +608,7 @@ public class NotebookTest implements JobListenerFactory{
 
     while (paragraphs.get(0).getStatus() != Status.FINISHED) Thread.yield();
 
-    factory.restart(factory.getInterpreterSettings(note.getId()).get(0).id());
+    factory.restart(factory.getInterpreterSettings(note.getId()).get(0).getId());
 
     boolean isAborted = false;
     for (Paragraph p : paragraphs) {
@@ -634,7 +634,7 @@ public class NotebookTest implements JobListenerFactory{
     // restart interpreter with per note session enabled
     for (InterpreterSetting setting : factory.getInterpreterSettings(note1.getId())) {
       setting.getOption().setPerNoteSession(true);
-      notebook.getInterpreterFactory().restart(setting.id());
+      notebook.getInterpreterFactory().restart(setting.getId());
     }
 
     note1.run(p1.getId());
@@ -679,7 +679,7 @@ public class NotebookTest implements JobListenerFactory{
     // restart interpreter with per note session enabled
     for (InterpreterSetting setting : notebook.getInterpreterFactory().getInterpreterSettings(note1.getId())) {
       setting.getOption().setPerNoteSession(true);
-      notebook.getInterpreterFactory().restart(setting.id());
+      notebook.getInterpreterFactory().restart(setting.getId());
     }
 
     // run per note session enabled
@@ -705,7 +705,7 @@ public class NotebookTest implements JobListenerFactory{
     // restart interpreter with per note session enabled
     for (InterpreterSetting setting : factory.getInterpreterSettings(note1.getId())) {
       setting.getOption().setPerNoteSession(true);
-      notebook.getInterpreterFactory().restart(setting.id());
+      notebook.getInterpreterFactory().restart(setting.getId());
     }
 
     note1.run(p1.getId());

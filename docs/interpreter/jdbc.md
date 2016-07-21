@@ -2,7 +2,7 @@
 layout: page
 title: "Generic JDBC Interpreter"
 description: "JDBC user guide"
-group: manual
+group: interpreter
 ---
 {% include JB/setup %}
 
@@ -21,7 +21,8 @@ This interpreter lets you create a JDBC connection to any data source, by now it
 * Redshift
 * Apache Hive
 * Apache Phoenix
-* Apache Drill (Details on using [Drill JDBC Driver](https://drill.apache.org/docs/using-the-jdbc-driverde* Apache Tajo
+* Apache Drill (Details on using [Drill JDBC Driver](https://drill.apache.org/docs/using-the-jdbc-driver))
+* Apache Tajo
 
 If someone else used another database please report how it works to improve functionality.
 
@@ -183,7 +184,19 @@ You can modify the interpreter configuration in the `Interpreter` section. The m
    <tr>
      <td>common.max_result</td>
      <td>Max number of SQL result to display to prevent the browser overload. This is  common properties for all connections</td>
-   </tr>      
+   </tr>
+   <tr>
+     <td>zeppelin.jdbc.auth.type</td>
+     <td>Types of authentications' methods supported are SIMPLE, and KERBEROS</td>
+   </tr>
+   <tr>
+     <td>zeppelin.jdbc.principal</td>
+     <td>The principal name to load from the keytab</td>
+   </tr>
+   <tr>
+     <td>zeppelin.jdbc.keytab.location</td>
+     <td>The path to the keytab file</td>
+   </tr>
  </table>
 
 To develop this functionality use this [method](http://docs.oracle.com/javase/7/docs/api/java/sql/DriverManager.html#getConnection%28java.lang.String,%20java.util.Properties%29). For example if a connection needs a schema parameter, it would have to add the property as follows:

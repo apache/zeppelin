@@ -124,7 +124,7 @@ The text of each license is also included at licenses/LICENSE-[project]-[version
     (The MIT License) angular-elastic v2.4.2 (https://github.com/monospaced/angular-elastic) - https://github.com/monospaced/angular-elastic/blob/v2.4.2/LICENCE.txt
     (The MIT License) angular-elastic-input v2.2.0 (https://github.com/jacek-pulit/angular-elastic-input) - https://github.com/jacek-pulit/angular-elastic-input/blob/v2.2.0/LICENSE
     (The MIT License) ng-focus-if v1.0.2 (https://github.com/hiebj/ng-focus-if) - https://github.com/hiebj/ng-focus-if/blob/v1.0.2/LICENSE
-    (The MIT License) angular-xeditable v0.1.8 (http://vitalets.github.io/angular-xeditable/) - https://github.com/vitalets/angular-xeditable/tree/0.1.8
+    (The MIT License) angular-xeditable v0.1.12 (http://vitalets.github.io/angular-xeditable/) - https://github.com/vitalets/angular-xeditable/tree/0.1.12
     (The MIT License) lodash v3.9.3 (https://lodash.com/) - https://github.com/lodash/lodash/blob/3.9.3/LICENSE.txt
     (The MIT License) angular-filter v0.5.4 (https://github.com/a8m/angular-filter) - https://github.com/a8m/angular-filter/blob/v0.5.4/license.md
     (The MIT License) ngToast v2.0.0 (http://tamerayd.in/ngToast/) - http://tameraydin.mit-license.org/
@@ -136,6 +136,7 @@ The text of each license is also included at licenses/LICENSE-[project]-[version
     (The MIT License) slf4j-log4j12 v1.7.10 (org.slf4j:slf4j-log4j12:jar:1.7.10 - http://www.slf4j.org) - http://www.slf4j.org/license.html
     (The MIT License) bcprov-jdk15on v1.51 (org.bouncycastle:bcprov-jdk15on:jar:1.51 - http://www.bouncycastle.org/java.html) - http://www.bouncycastle.org/licence.html
     (The MIT License) AnchorJS (https://github.com/bryanbraun/anchorjs) - https://github.com/bryanbraun/anchorjs/blob/master/README.md#license
+    (The MIT License) moment-duration-format v1.3.0 (https://github.com/jsmreese/moment-duration-format) - https://github.com/jsmreese/moment-duration-format/blob/master/LICENSE
 
 The following components are provided under the MIT License.
 
@@ -144,7 +145,6 @@ The following components are provided under the MIT License.
     (The MIT License) JUL to SLF4J bridge (org.slf4j:jul-to-slf4j:1.7.5 - http://www.slf4j.org)
     (The MIT License) angular-resource (angular-resource - https://github.com/angular/angular.js/tree/master/src/ngResource)
     (The MIT License) minimal-json (com.eclipsesource.minimal-json:minimal-json:0.9.4 - https://github.com/ralfstx/minimal-json)
-
 
 ========================================================================
 BSD-style licenses

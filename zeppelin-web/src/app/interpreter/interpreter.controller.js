@@ -15,7 +15,7 @@
 'use strict';
 
 angular.module('zeppelinWebApp').controller('InterpreterCtrl',
-  function($scope, $route, $routeParams, $location, $rootScope, $http, baseUrlSrv, ngToast) {
+  function($scope, $http, baseUrlSrv, ngToast) {
     var interpreterSettingsTmp = [];
     $scope.interpreterSettings = [];
     $scope.availableInterpreters = {};
@@ -27,6 +27,16 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl',
       $http.get(baseUrlSrv.getRestApiBase() + '/interpreter/setting').success(function(data, status, headers, config) {
         $scope.interpreterSettings = data.body;
       }).error(function(data, status, headers, config) {
+        if (status === 401) {
+          ngToast.danger({
+            content: 'You don\'t have permission on this page',
+            verticalPosition: 'bottom',
+            timeout: '3000'
+          });
+          setTimeout(function() {
+            window.location.replace('/');
+          }, 3000);
+        }
         console.log('Error %o %o', status, data.message);
       });
     };
@@ -184,15 +194,14 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl',
     };
 
     $scope.newInterpreterGroupChange = function() {
-      var el = _.pluck(_.filter($scope.availableInterpreters, {'group': $scope.newInterpreterSetting.group}),
+      var el = _.pluck(_.filter($scope.availableInterpreters, {'name': $scope.newInterpreterSetting.group}),
         'properties');
-
       var properties = {};
       for (var i = 0; i < el.length; i++) {
         var intpInfo = el[i];
         for (var key in intpInfo) {
           properties[key] = {
-            value: intpInfo[key].defaultValue,
+            value: intpInfo[key],
             description: intpInfo[key].description
           };
         }

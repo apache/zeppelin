@@ -40,48 +40,30 @@ angular.module('zeppelinWebApp')
     $scope.query.q = '';
   });
 
-  $scope.$on('setNoteMenu', function(event, notes) {
-    notebookListDataFactory.setNotes(notes);
-  });
-
-  $scope.$on('setConnectedStatus', function(event, param) {
-    vm.connected = param;
-  });
-
-  $scope.$on('loginSuccess', function(event, param) {
-    loadNotes();
-  });
-
   $scope.logout = function() {
     var logoutURL = baseUrlSrv.getRestApiBase() + '/login/logout';
-    var request = new XMLHttpRequest();
 
-    //force authcBasic (if configured) to logout by setting credentials as false:false
-    request.open('post', logoutURL, true, 'false', 'false');
-    request.onreadystatechange = function() {
-      if (request.readyState === 4) {
-        if (request.status === 401 || request.status === 405 || request.status === 500) {
-          $rootScope.userName = '';
-          $rootScope.ticket.principal = '';
-          $rootScope.ticket.ticket = '';
-          $rootScope.ticket.roles = '';
-          BootstrapDialog.show({
-            message: 'Logout Success'
-          });
-          setTimeout(function() {
-            window.location.replace('/');
-          }, 1000);
-        } else {
-          request.open('post', logoutURL, true, 'false', 'false');
-          request.send();
-        }
-      }
-    };
-    request.send();
+    //for firefox and safari
+    logoutURL = logoutURL.replace('//', '//false:false@');
+    $http.post(logoutURL).error(function() {
+      //force authcBasic (if configured) to logout
+      $http.post(logoutURL).error(function() {
+        $rootScope.userName = '';
+        $rootScope.ticket.principal = '';
+        $rootScope.ticket.ticket = '';
+        $rootScope.ticket.roles = '';
+        BootstrapDialog.show({
+          message: 'Logout Success'
+        });
+        setTimeout(function() {
+          window.location.replace('/');
+        }, 1000);
+      });
+    });
   };
 
   $scope.search = function(searchTerm) {
-    $location.url(/search/ + searchTerm);
+    $location.path('/search/' + searchTerm);
   };
 
   function loadNotes() {
@@ -113,5 +95,21 @@ angular.module('zeppelinWebApp')
 
   getZeppelinVersion();
   vm.loadNotes();
+
+  /*
+  ** $scope.$on functions below
+  */
+
+  $scope.$on('setNoteMenu', function(event, notes) {
+    notebookListDataFactory.setNotes(notes);
+  });
+
+  $scope.$on('setConnectedStatus', function(event, param) {
+    vm.connected = param;
+  });
+
+  $scope.$on('loginSuccess', function(event, param) {
+    loadNotes();
+  });
 
 });

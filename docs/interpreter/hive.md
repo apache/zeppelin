@@ -2,7 +2,7 @@
 layout: page
 title: "Hive Interpreter"
 description: ""
-group: manual
+group: interpreter
 ---
 {% include JB/setup %}
 

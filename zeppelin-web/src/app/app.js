@@ -98,7 +98,6 @@
     var baseUrlSrv = angular.injector(['zeppelinWebApp']).get('baseUrlSrv');
     // withCredentials when running locally via grunt
     $http.defaults.withCredentials = true;
-
     return $http.get(baseUrlSrv.getRestApiBase() + '/security/ticket').then(function(response) {
       zeppelinWebApp.run(function($rootScope) {
         $rootScope.ticket = angular.fromJson(response.data).body;
@@ -109,11 +108,17 @@
   }
 
   function bootstrapApplication() {
+    zeppelinWebApp.run(function($rootScope, $location) {
+      $rootScope.$on('$routeChangeStart', function(event, next, current) {
+        if (!$rootScope.ticket && next.$$route && !next.$$route.publicAccess) {
+          $location.path('/');
+        }
+      });
+    });
     angular.bootstrap(document, ['zeppelinWebApp']);
   }
 
   angular.element(document).ready(function() {
     auth().then(bootstrapApplication);
   });
-
 }());

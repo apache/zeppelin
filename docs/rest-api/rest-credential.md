@@ -19,14 +19,18 @@ limitations under the License.
 -->
 {% include JB/setup %}
 
-## Zeppelin REST API
- Zeppelin provides several REST APIs for interaction and remote activation of zeppelin functionality.
+# Apache Zeppelin Credential REST API
 
- All REST APIs are available starting with the following endpoint `http://[zeppelin-server]:[zeppelin-port]/api`. Note that zeppelin REST APIs receive or return JSON objects, it is recommended for you to install some JSON viewers such as [JSONView](https://chrome.google.com/webstore/detail/jsonview/chklaanhfefbnpoihckbnefhakgolnmc).
+<div id="toc"></div>
 
- If you work with Zeppelin and find a need for an additional REST API, please [file an issue or send us mail](http://zeppelin.apache.org/community.html).
+## Overview
+Apache Zeppelin provides several REST APIs for interaction and remote activation of zeppelin functionality.
+All REST APIs are available starting with the following endpoint `http://[zeppelin-server]:[zeppelin-port]/api`. 
+Note that Apache Zeppelin REST APIs receive or return JSON objects, it is recommended for you to install some JSON viewers such as [JSONView](https://chrome.google.com/webstore/detail/jsonview/chklaanhfefbnpoihckbnefhakgolnmc).
 
- <br />
+If you work with Apache Zeppelin and find a need for an additional REST API, please [file an issue or send us an email](http://zeppelin.apache.org/community.html).
+
+<br />
 ## Credential REST API List
 
 ### List Credential information
@@ -34,7 +38,7 @@ limitations under the License.
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```GET``` method returns all key/value pairs of credential information on the server.</td>
+      <td>This ```GET``` method returns all key/value pairs of the credential information on the server.</td>
     </tr>
     <tr>
       <td>URL</td>
@@ -78,7 +82,7 @@ limitations under the License.
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```PUT``` method creates an credential information with new properties.</td>
+      <td>This ```PUT``` method creates the credential information with new properties.</td>
     </tr>
     <tr>
       <td>URL</td>
@@ -124,7 +128,7 @@ limitations under the License.
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```DELETE``` method deletes credential information.</td>
+      <td>This ```DELETE``` method deletes the credential information.</td>
     </tr>
     <tr>
       <td>URL</td>
@@ -154,7 +158,7 @@ limitations under the License.
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```DELETE``` method deletes an given credential entity.</td>
+      <td>This ```DELETE``` method deletes a given credential entity.</td>
     </tr>
     <tr>
       <td>URL</td>

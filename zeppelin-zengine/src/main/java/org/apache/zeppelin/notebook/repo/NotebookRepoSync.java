@@ -310,41 +310,6 @@ public class NotebookRepoSync implements NotebookRepo {
     return latest;
   }
 
-  @SuppressWarnings("unused")
-  private void printParagraphs(Note note) {
-    LOG.info("Note name :  " + note.getName());
-    LOG.info("Note ID :  " + note.id());
-    for (Paragraph p : note.getParagraphs()) {
-      printParagraph(p);
-    }
-  }
-
-  private void printParagraph(Paragraph paragraph) {
-    LOG.info("Date created :  " + paragraph.getDateCreated());
-    LOG.info("Date started :  " + paragraph.getDateStarted());
-    LOG.info("Date finished :  " + paragraph.getDateFinished());
-    LOG.info("Paragraph ID : " + paragraph.getId());
-    LOG.info("Paragraph title : " + paragraph.getTitle());
-  }
-
-  @SuppressWarnings("unused")
-  private void printNoteInfos(List <NoteInfo> notes) {
-    LOG.info("The following is a list of note infos");
-    for (NoteInfo note : notes) {
-      printNoteInfo(note);
-    }
-  }
-
-  private void printNoteInfo(NoteInfo note) {
-    LOG.info("Note info of notebook with name : " + note.getName());
-    LOG.info("ID : " + note.getId());
-    Map<String, Object> configs = note.getConfig();
-    for (Map.Entry<String, Object> entry : configs.entrySet()) {
-      LOG.info("Config Key = " + entry.getKey() + "  , Value = " +
-        entry.getValue().toString() + "of class " + entry.getClass());
-    }
-  }
-
   @Override
   public void close() {
     LOG.info("Closing all notebook storages");
@@ -367,9 +332,9 @@ public class NotebookRepoSync implements NotebookRepo {
       try {
         allRepoCheckpoints.add(getRepo(i).checkpoint(noteId, checkpointMsg, subject));
       } catch (IOException e) {
-        LOG.warn("Couldn't checkpoint in {} storage with index {} for note {}", 
+        LOG.warn("Couldn't checkpoint in {} storage with index {} for note {}",
           getRepo(i).getClass().toString(), i, noteId);
-        errorMessage += "Error on storage class " + getRepo(i).getClass().toString() + 
+        errorMessage += "Error on storage class " + getRepo(i).getClass().toString() +
           " with index " + i + " : " + e.getMessage() + "\n";
         errorCount++;
       }
@@ -389,9 +354,14 @@ public class NotebookRepoSync implements NotebookRepo {
   }
 
   @Override
-  public Note get(String noteId, Revision rev, AuthenticationInfo subject) throws IOException {
-    // Auto-generated method stub
-    return null;
+  public Note get(String noteId, Revision rev, AuthenticationInfo subject) {
+    Note revisionNote = null;
+    try {
+      revisionNote = getRepo(0).get(noteId, rev, subject);
+    } catch (IOException e) {
+      LOG.error("Failed to get revision {} of note {}", rev.id, noteId, e);
+    }
+    return revisionNote;
   }
 
   @Override

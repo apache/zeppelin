@@ -92,7 +92,7 @@ public class ElasticsearchInterpreter extends Interpreter {
     + "  - index /ndex/type/id <json-formatted document>\n"
     + "    . the id can be omitted, elasticsearch will generate one";
 
-  private static final List<String> COMMANDS = Arrays.asList(
+  protected static final List<String> COMMANDS = Arrays.asList(
     "count", "delete", "get", "help", "index", "search");
 
   private static final Pattern FIELD_NAME_PATTERN = Pattern.compile("\\[\\\\\"(.+)\\\\\"\\](.*)");
@@ -102,19 +102,6 @@ public class ElasticsearchInterpreter extends Interpreter {
   public static final String ELASTICSEARCH_PORT = "elasticsearch.port";
   public static final String ELASTICSEARCH_CLUSTER_NAME = "elasticsearch.cluster.name";
   public static final String ELASTICSEARCH_RESULT_SIZE = "elasticsearch.result.size";
-
-  static {
-    Interpreter.register(
-      "elasticsearch",
-      "elasticsearch",
-      ElasticsearchInterpreter.class.getName(),
-        new InterpreterPropertyBuilder()
-          .add(ELASTICSEARCH_HOST, "localhost", "The host for Elasticsearch")
-          .add(ELASTICSEARCH_PORT, "9300", "The port for Elasticsearch")
-          .add(ELASTICSEARCH_CLUSTER_NAME, "elasticsearch", "The cluster name for Elasticsearch")
-          .add(ELASTICSEARCH_RESULT_SIZE, "10", "The size of the result set of a search query")
-          .build());
-  }
 
   private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
   private Client client;
@@ -128,7 +115,13 @@ public class ElasticsearchInterpreter extends Interpreter {
     this.host = getProperty(ELASTICSEARCH_HOST);
     this.port = Integer.parseInt(getProperty(ELASTICSEARCH_PORT));
     this.clusterName = getProperty(ELASTICSEARCH_CLUSTER_NAME);
-    this.resultSize = Integer.parseInt(getProperty(ELASTICSEARCH_RESULT_SIZE));
+    try {
+      this.resultSize = Integer.parseInt(getProperty(ELASTICSEARCH_RESULT_SIZE));
+    } catch (NumberFormatException e) {
+      this.resultSize = 10;
+      logger.error("Unable to parse " + ELASTICSEARCH_RESULT_SIZE + " : " +
+        property.get(ELASTICSEARCH_RESULT_SIZE), e);
+    }
   }
 
   @Override
@@ -248,17 +241,11 @@ public class ElasticsearchInterpreter extends Interpreter {
   public List<InterpreterCompletion> completion(String s, int i) {
     final List suggestions = new ArrayList<>();
 
-    if (StringUtils.isEmpty(s)) {
-      suggestions.addAll(COMMANDS);
-    }
-    else {
-      for (String cmd : COMMANDS) {
-        if (cmd.toLowerCase().contains(s)) {
-          suggestions.add(cmd);
-        }
+    for (String cmd : COMMANDS) {
+      if (cmd.toLowerCase().contains(s)) {
+        suggestions.add(new InterpreterCompletion(cmd, cmd));
       }
     }
-
     return suggestions;
   }
 

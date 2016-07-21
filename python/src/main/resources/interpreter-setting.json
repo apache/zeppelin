@@ -17,5 +17,11 @@
         "description": "Max number of dataframe rows to display."
       }
     }
+  },
+  {
+    "group": "python",
+    "name": "sql",
+    "className": "org.apache.zeppelin.python.PythonPandasSqlInterpreter",
+    "properties": { }
   }
 ]

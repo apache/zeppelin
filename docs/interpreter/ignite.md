@@ -2,7 +2,7 @@
 layout: page
 title: "Ignite Interpreter"
 description: "Ignite user guide"
-group: manual
+group: interpreter
 ---
 {% include JB/setup %}
 

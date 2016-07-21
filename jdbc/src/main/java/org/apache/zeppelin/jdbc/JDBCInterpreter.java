@@ -37,6 +37,7 @@ import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
+import org.apache.zeppelin.jdbc.security.JDBCSecurityImpl;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.slf4j.Logger;
@@ -171,6 +172,9 @@ public class JDBCInterpreter extends Interpreter {
 
     Connection connection = null;
     SqlCompleter sqlCompleter = null;
+    if (!StringUtils.isAnyEmpty(property.getProperty("zeppelin.jdbc.auth.type"))) {
+      JDBCSecurityImpl.createSecureConfiguration(property);
+    }
     for (String propertyKey : propertiesMap.keySet()) {
       try {
         connection = getConnection(propertyKey);
@@ -259,25 +263,35 @@ public class JDBCInterpreter extends Interpreter {
 
   @Override
   public void close() {
-
     try {
       for (List<Connection> connectionList : propertyKeyUnusedConnectionListMap.values()) {
         for (Connection c : connectionList) {
-          c.close();
+          try {
+            c.close();
+          } catch (Exception e) {
+            logger.error("Error while closing propertyKeyUnusedConnectionListMap connection...", e);
+          }
         }
       }
 
       for (Statement statement : paragraphIdStatementMap.values()) {
-        statement.close();
+        try {
+          statement.close();
+        } catch (Exception e) {
+          logger.error("Error while closing paragraphIdStatementMap statement...", e);
+        }
       }
       paragraphIdStatementMap.clear();
 
       for (Connection connection : paragraphIdConnectionMap.values()) {
-        connection.close();
+        try {
+          connection.close();
+        } catch (Exception e) {
+          logger.error("Error while closing paragraphIdConnectionMap connection...", e);
+        }
       }
       paragraphIdConnectionMap.clear();
-
-    } catch (SQLException e) {
+    } catch (Exception e) {
       logger.error("Error while closing...", e);
     }
   }

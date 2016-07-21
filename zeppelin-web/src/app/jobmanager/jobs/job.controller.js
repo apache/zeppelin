@@ -15,7 +15,7 @@
 'use strict';
 
 angular.module('zeppelinWebApp')
-  .controller('JobCtrl', function($scope, $rootScope, $http, baseUrlSrv) {
+  .controller('JobCtrl', function($scope) {
 
     $scope.init = function(jobInformation) {
       $scope.progressValue = 0;

@@ -1,4 +1,4 @@
-## Zeppelin documentation
+## Apache Zeppelin documentation
 
 This readme will walk you through building the Zeppelin documentation, which is included here with the Zeppelin source code.
 
@@ -6,14 +6,16 @@ This readme will walk you through building the Zeppelin documentation, which is 
 ## Build documentation
 See https://help.github.com/articles/using-jekyll-with-pages#installing-jekyll
 
-**tl;dr version:**
+**Requirements**
 
 ```
-    ruby --version >= 1.9.3
+    ruby --version >= 2.0.0
     gem install bundler
     # go to /docs under your Zeppelin source
     bundle install
 ```
+
+For the further information about requirements, please see [here](https://help.github.com/articles/setting-up-your-github-pages-site-locally-with-jekyll/#requirements). 
 
 *On OS X 10.9 you may need to do "xcode-select --install"*
 

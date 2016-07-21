@@ -45,6 +45,7 @@ import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
 import org.apache.zeppelin.notebook.*;
+import org.apache.zeppelin.notebook.repo.NotebookRepo.Revision;
 import org.apache.zeppelin.notebook.socket.Message;
 import org.apache.zeppelin.notebook.socket.Message.OP;
 import org.apache.zeppelin.scheduler.Job;
@@ -219,6 +220,9 @@ public class NotebookServer extends WebSocketServlet implements
             break;
           case CHECKPOINT_NOTEBOOK:
             checkpointNotebook(conn, notebook, messagereceived);
+            break;
+          case NOTE_REVISION:
+            getNoteRevision(conn, notebook, messagereceived);
             break;
           case LIST_NOTEBOOK_JOBS:
             unicastNotebookJobInfo(conn, messagereceived);
@@ -494,6 +498,8 @@ public class NotebookServer extends WebSocketServlet implements
       addConnectionToNote(note.id(), conn);
       conn.send(serializeMessage(new Message(OP.NOTE).put("note", note)));
       sendAllAngularObjects(note, conn);
+    } else {
+      conn.send(serializeMessage(new Message(OP.NOTE).put("note", null)));
     }
   }
 
@@ -1125,6 +1131,18 @@ public class NotebookServer extends WebSocketServlet implements
     String commitMessage = (String) fromMessage.get("commitMessage");
     AuthenticationInfo subject = new AuthenticationInfo(fromMessage.principal);
     notebook.checkpointNote(noteId, commitMessage, subject);
+  }
+
+  private void getNoteRevision(NotebookSocket conn, Notebook notebook, Message fromMessage)
+      throws IOException {
+    String noteId = (String) fromMessage.get("noteId");
+    Revision revision = (Revision) fromMessage.get("revision");
+    AuthenticationInfo subject = new AuthenticationInfo(fromMessage.principal);
+    Note revisionNote = notebook.getNoteRevision(noteId, revision, subject);
+    conn.send(serializeMessage(new Message(OP.NOTE_REVISION)
+        .put("noteId", noteId)
+        .put("revisionId", revision)
+        .put("data", revisionNote)));
   }
 
   /**
