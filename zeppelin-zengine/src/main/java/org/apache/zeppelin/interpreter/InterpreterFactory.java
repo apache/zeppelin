@@ -114,6 +114,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
   private AngularObjectRegistryListener angularObjectRegistryListener;
   private final RemoteInterpreterProcessListener remoteInterpreterProcessListener;
   private final ApplicationEventListener appEventListener;
+  private InterpreterAuthorization interpreterAuthorization;
 
   private DependencyResolver depResolver;
 
@@ -124,22 +125,25 @@ public class InterpreterFactory implements InterpreterGroupFactory {
   public InterpreterFactory(ZeppelinConfiguration conf,
       AngularObjectRegistryListener angularObjectRegistryListener,
       RemoteInterpreterProcessListener remoteInterpreterProcessListener,
-      ApplicationEventListener appEventListener, DependencyResolver depResolver)
+      ApplicationEventListener appEventListener, InterpreterAuthorization interpreterAuthorization,
+        DependencyResolver depResolver)
       throws InterpreterException, IOException, RepositoryException {
     this(conf, new InterpreterOption(true), angularObjectRegistryListener,
-        remoteInterpreterProcessListener, appEventListener, depResolver);
+        remoteInterpreterProcessListener, appEventListener, interpreterAuthorization, depResolver);
   }
 
 
   public InterpreterFactory(ZeppelinConfiguration conf, InterpreterOption defaultOption,
       AngularObjectRegistryListener angularObjectRegistryListener,
       RemoteInterpreterProcessListener remoteInterpreterProcessListener,
-      ApplicationEventListener appEventListener, DependencyResolver depResolver)
+      ApplicationEventListener appEventListener, InterpreterAuthorization interpreterAuthorization,
+        DependencyResolver depResolver)
       throws InterpreterException, IOException, RepositoryException {
     this.conf = conf;
     this.defaultOption = defaultOption;
     this.angularObjectRegistryListener = angularObjectRegistryListener;
     this.depResolver = depResolver;
+    this.interpreterAuthorization = interpreterAuthorization;
     this.interpreterRepositories = depResolver.getRepos();
     this.remoteInterpreterProcessListener = remoteInterpreterProcessListener;
     this.appEventListener = appEventListener;
@@ -695,6 +699,10 @@ public class InterpreterFactory implements InterpreterGroupFactory {
 
     File localRepoDir = new File(conf.getInterpreterLocalRepoPath() + "/" + id);
     FileUtils.deleteDirectory(localRepoDir);
+  }
+
+  public InterpreterAuthorization getInterpreterAuthorization() {
+    return this.interpreterAuthorization;
   }
 
   /**

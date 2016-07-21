@@ -29,6 +29,10 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
+import org.apache.shiro.realm.Realm;
+import org.apache.shiro.realm.jdbc.JdbcRealm;
+import org.apache.shiro.realm.ldap.JndiLdapRealm;
+import org.apache.shiro.realm.text.IniRealm;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.display.AngularObject;
@@ -39,6 +43,8 @@ import org.apache.zeppelin.helium.HeliumPackage;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
+import org.apache.zeppelin.rest.GetUserList;
+import org.apache.zeppelin.server.ActiveDirectoryGroupRealm;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.interpreter.InterpreterOutput;
 import org.apache.zeppelin.interpreter.InterpreterResult;
@@ -226,6 +232,12 @@ public class NotebookServer extends WebSocketServlet implements
           case LIST_UPDATE_NOTEBOOK_JOBS:
             unicastUpdateNotebookJobInfo(conn, messagereceived);
             break;
+          case GET_INTERPRETER_AUTH:
+            getInterpreterAuthList(conn, messagereceived);
+            break;
+          case UPDATE_INTERPRETER_AUTH:
+            updateInterpreterAuth(conn, messagereceived);
+            break;
           default:
             break;
       }
@@ -401,6 +413,72 @@ public class NotebookServer extends WebSocketServlet implements
 
     conn.send(serializeMessage(new Message(OP.LIST_UPDATE_NOTEBOOK_JOBS)
             .put("notebookRunningJobs", response)));
+  }
+
+  public void updateInterpreterAuth(NotebookSocket conn, Message fromMessage)
+      throws IOException {
+
+    LOG.info("------------> {}", SecurityUtils.getPrincipal());
+/*
+    LOG.info("--> updateInterpreterAuth {}, {}, {}, {}",
+      fromMessage, fromMessage.toString(), conn.toString(), notebook().getInterpreterFactory());
+
+    LOG.info("--> getInterpreterAuthorization {}, {}",
+      notebook().getInterpreterFactory().getInterpreterAuthorization(), fromMessage.principal);
+*/
+
+    if (fromMessage.principal.equals("admin")) {
+      LOG.info("Not admin.");
+      conn.send(serializeMessage(new Message(OP.GET_INTERPRETER_AUTH_LIST)
+        .put("interpreterAuth", null)));
+      //return;
+    }
+
+    notebook().getInterpreterFactory().
+      getInterpreterAuthorization().updateInterpreterAuthorization(fromMessage.data);
+
+/*
+// 여기서 는 user list 가 null이 됨.
+    List<String> usersList = new ArrayList<>();
+    try {
+      GetUserList getUserListObj = new GetUserList();
+      Collection realmsList = SecurityUtils.getRealmsList();
+      if (realmsList != null) {
+        for (Iterator<Realm> iterator = realmsList.iterator(); iterator.hasNext(); ) {
+          Realm realm = iterator.next();
+          String name = realm.getName();
+          if (name.equals("iniRealm")) {
+            usersList.addAll(getUserListObj.getUserList((IniRealm) realm));
+          } else if (name.equals("ldapRealm")) {
+            usersList.addAll(getUserListObj.getUserList((JndiLdapRealm) realm, ""));
+          } else if (name.equals("activeDirectoryRealm")) {
+            usersList.addAll(getUserListObj.getUserList((ActiveDirectoryGroupRealm) realm,
+              ""));
+          } else if (name.equals("jdbcRealm")) {
+            usersList.addAll(getUserListObj.getUserList((JdbcRealm) realm));
+          }
+        }
+      }
+    } catch (Exception e) {
+      LOG.error("Exception in retrieving Users from realms ", e);
+    }
+
+    for (String user: usersList) {
+      LOG.info("#### >>> {}", user);
+    }
+
+*/
+
+
+    conn.send(serializeMessage(new Message(OP.GET_INTERPRETER_AUTH_LIST)
+      .put("interpreterAuth", "---updateInterpreterAuth")));
+  }
+
+  public void getInterpreterAuthList(NotebookSocket conn, Message fromMessage)
+      throws IOException {
+    LOG.info("--> getInterpreterAuthList {}, {}", fromMessage, fromMessage.toString());
+    conn.send(serializeMessage(new Message(OP.GET_INTERPRETER_AUTH_LIST)
+      .put("interpreterAuth", "---getInterpreterAuthList")));
   }
 
   public List<Map<String, String>> generateNotebooksInfo(boolean needsReload,

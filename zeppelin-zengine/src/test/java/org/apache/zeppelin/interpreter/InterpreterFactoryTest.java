@@ -59,7 +59,7 @@ public class InterpreterFactoryTest {
     System.setProperty(ConfVars.ZEPPELIN_INTERPRETERS.getVarName(), "org.apache.zeppelin.interpreter.mock.MockInterpreter1,org.apache.zeppelin.interpreter.mock.MockInterpreter2");
     conf = new ZeppelinConfiguration();
     depResolver = new DependencyResolver(tmpDir.getAbsolutePath() + "/local-repo");
-    factory = new InterpreterFactory(conf, new InterpreterOption(false), null, null, null, depResolver);
+    factory = new InterpreterFactory(conf, new InterpreterOption(false), null, null, null, null, depResolver);
     context = new InterpreterContext("note", "id", "title", "text", null, null, null, null, null, null, null);
   }
 
@@ -130,13 +130,13 @@ public class InterpreterFactoryTest {
     factory.createNewSetting("new-mock1", "mock1", new LinkedList<Dependency>(), new InterpreterOption(false), new Properties());
     assertEquals(numInterpreters + 1, factory.get().size());
 
-    InterpreterFactory factory2 = new InterpreterFactory(conf, null, null, null, depResolver);
+    InterpreterFactory factory2 = new InterpreterFactory(conf, null, null, null, null, depResolver);
     assertEquals(numInterpreters + 1, factory2.get().size());
   }
 
   @Test
   public void testInterpreterAliases() throws IOException, RepositoryException {
-    factory = new InterpreterFactory(conf, null, null, null, depResolver);
+    factory = new InterpreterFactory(conf, null, null, null, null, depResolver);
     final InterpreterInfo info1 = new InterpreterInfo("className1", "name1", true);
     final InterpreterInfo info2 = new InterpreterInfo("className2", "name1", true);
     factory.add("group1", new ArrayList<InterpreterInfo>(){{

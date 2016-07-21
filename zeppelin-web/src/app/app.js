@@ -66,6 +66,10 @@
               templateUrl: 'app/jobmanager/jobmanager.html',
               controller: 'JobmanagerCtrl'
             })
+            .when('/interpreterauth', {
+              templateUrl: 'app/interpreterauth/interpreterauth.html',
+              controller: 'InterpreterAuthCtrl'
+            })
             .when('/interpreter', {
               templateUrl: 'app/interpreter/interpreter.html',
               controller: 'InterpreterCtrl'

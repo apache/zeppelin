@@ -148,4 +148,45 @@ public class SecurityRestApi {
     return new JsonResponse<>(Response.Status.OK, "", autoSuggestList).build();
   }
 
+
+  /**
+   * Get all userlist
+   * Returns list of all user from available realms
+   *
+   * @return 200 response
+   */
+  @GET
+  @Path("alluserlist")
+  public Response getAllUserList() {
+    List<String> usersList = new ArrayList<>();
+    try {
+      GetUserList getUserListObj = new GetUserList();
+      Collection realmsList = SecurityUtils.getRealmsList();
+      if (realmsList != null) {
+        for (Iterator<Realm> iterator = realmsList.iterator(); iterator.hasNext(); ) {
+          Realm realm = iterator.next();
+          String name = realm.getName();
+          if (name.equals("iniRealm")) {
+            usersList.addAll(getUserListObj.getUserList((IniRealm) realm));
+          } else if (name.equals("ldapRealm")) {
+            usersList.addAll(getUserListObj.getUserList((JndiLdapRealm) realm, ""));
+          } else if (name.equals("activeDirectoryRealm")) {
+            usersList.addAll(getUserListObj.getUserList((ActiveDirectoryGroupRealm) realm,
+              ""));
+          } else if (name.equals("jdbcRealm")) {
+            usersList.addAll(getUserListObj.getUserList((JdbcRealm) realm));
+          }
+        }
+      }
+    } catch (Exception e) {
+      LOG.error("Exception in retrieving Users from realms ", e);
+    }
+
+    for (String user : usersList) {
+      LOG.info("--> user : {}", user);
+    }
+
+    return new JsonResponse<>(Response.Status.OK, "", usersList).build();
+  }
+
 }

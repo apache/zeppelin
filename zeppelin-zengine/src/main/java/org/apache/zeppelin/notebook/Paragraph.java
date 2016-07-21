@@ -210,6 +210,9 @@ public class Paragraph extends Job implements Serializable, Cloneable {
   }
 
   public List<InterpreterCompletion> completion(String buffer, int cursor) {
+
+    logger.info("### user={}, intpfactory={}", user, factory);
+
     String replName = getRequiredReplName(buffer);
     if (replName != null && cursor > replName.length()) {
       cursor -= replName.length() + 1;

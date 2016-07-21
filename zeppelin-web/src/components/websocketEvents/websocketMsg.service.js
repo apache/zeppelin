@@ -57,6 +57,20 @@ angular.module('zeppelinWebApp').service('websocketMsgSrv', function($rootScope,
       websocketEvents.sendNewEvent({op: 'INSERT_PARAGRAPH', data: {index: newIndex}});
     },
 
+    updateInterpreterAuth: function(principal, authInfo) {
+      websocketEvents.sendNewEvent({
+        op: 'UPDATE_INTERPRETER_AUTH',
+        data: {
+          principal: principal,
+          authInfo: authInfo
+        }
+      });
+    },
+
+    getInterpreterAuthList: function() {
+      websocketEvents.sendNewEvent({op: 'GET_INTERPRETER_AUTH_LIST'});
+    },
+
     updateAngularObject: function(noteId, paragraphId, name, value, interpreterGroupId) {
       websocketEvents.sendNewEvent({
         op: 'ANGULAR_OBJECT_UPDATED',
