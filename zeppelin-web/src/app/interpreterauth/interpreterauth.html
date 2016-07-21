@@ -11,7 +11,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<div class="interpreterHead">
+<div class="interpreterHead" ng-init="init()">
   <div class="header">
     <div class="row">
       <div class="col-md-12">
@@ -36,30 +36,25 @@ limitations under the License.
 
 <div class="box width-full">
   <div class="row interpreter">
-    <div ng-show="_.isEmpty(credentialInfo) || valueform.$hidden"
-         class="col-md-12 gray40-message">
-      <em>Currently there is no credential information</em>
-    </div>
-
     <!-- div class="col-md-12" ng-show="!_.isEmpty(credentialInfo) || valueform.$visible"-->
     <div>
-      <table class="table table-striped" border="1">
-        <thead>
-        <tr>
-          <th></th>
-          <th ng-repeat="(intpIdx,intpName) in intpList">{{intpName}}</th>
-        </tr>
-        </thead>
-        <tr ng-repeat="(userIdx,userId) in userList">
-          <td>{{userId}}</td>
-          <td ng-repeat="(intpIdx,intpName) in intpList track by $index">
+        <table class="table table-striped" border="1">
+          <thead>
+          <tr>
+            <th></th>
+            <th ng-repeat="(intpIdx,intpName) in intpList">{{intpName}}</th>
+          </tr>
+          </thead>
+          <tr ng-repeat="(userIdx,userId) in userList">
+            <td>{{userId}}</td>
+            <td ng-repeat="(intpIdx,intpName) in intpList track by $index">
 
-            <input type="checkbox" ng-model="confirmed"
-                   ng-change="isChanged(userIdx,intpIdx)">
-          </td>
-        </tr>
-      </table>
-      <!-- input type="checkbox" data-checklist-model="user.roles" data-checklist-value="intpIdx" -->
+              <input type="checkbox" ng-model="confirmed"
+                     ng-change="isChanged(userIdx,intpIdx)">
+            </td>
+          </tr>
+        </table>
+        <!-- input type="checkbox" data-checklist-model="user.roles" data-checklist-value="intpIdx" -->
     </div>
   </div>
 </div>

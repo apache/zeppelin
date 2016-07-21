@@ -57,6 +57,7 @@ import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.server.ZeppelinServer;
 import org.apache.zeppelin.ticket.TicketContainer;
+import org.apache.zeppelin.user.UserCredentials;
 import org.apache.zeppelin.utils.SecurityUtils;
 import org.eclipse.jetty.websocket.servlet.WebSocketServlet;
 import org.eclipse.jetty.websocket.servlet.WebSocketServletFactory;
@@ -427,18 +428,33 @@ public class NotebookServer extends WebSocketServlet implements
       notebook().getInterpreterFactory().getInterpreterAuthorization(), fromMessage.principal);
 */
 
-    if (fromMessage.principal.equals("admin")) {
+
+/*
+
+    if (!fromMessage.principal.equals("admin")) {
       LOG.info("Not admin.");
       conn.send(serializeMessage(new Message(OP.GET_INTERPRETER_AUTH_LIST)
         .put("interpreterAuth", null)));
       //return;
     }
+*/
 
     notebook().getInterpreterFactory().
       getInterpreterAuthorization().updateInterpreterAuthorization(fromMessage.data);
 
 /*
+
+    Map<String, UserCredentials> credentialsMap =
+      ZeppelinServer.credentials.getUserCredentialsMap();
+    for (String key: credentialsMap.keySet()) {
+      LOG.info("--> key : {}, value: {}", key, credentialsMap.get(key).toString());
+    }
+*/
+/*
+
 // 여기서 는 user list 가 null이 됨.
+    LOG.info("#### notebook().getConf().getShiroPath()>>> {}", notebook().getConf().getShiroPath());
+    SecurityUtils.initSecurityManager(notebook().getConf().getShiroPath());
     List<String> usersList = new ArrayList<>();
     try {
       GetUserList getUserListObj = new GetUserList();
@@ -466,7 +482,6 @@ public class NotebookServer extends WebSocketServlet implements
     for (String user: usersList) {
       LOG.info("#### >>> {}", user);
     }
-
 */
 
 
@@ -477,8 +492,30 @@ public class NotebookServer extends WebSocketServlet implements
   public void getInterpreterAuthList(NotebookSocket conn, Message fromMessage)
       throws IOException {
     LOG.info("--> getInterpreterAuthList {}, {}", fromMessage, fromMessage.toString());
+
+
+/*
+
+    if (!fromMessage.principal.equals("admin")) {
+      LOG.info("Not admin.");
+      conn.send(serializeMessage(new Message(OP.GET_INTERPRETER_AUTH_LIST)
+        .put("interpreterAuth", null)));
+      //return;
+    }
+*/
+
+
+/*
+    String authList = notebook().getInterpreterFactory().
+      getInterpreterAuthorization().getInterpreterAuthorization(fromMessage.data);
+
+*/
+
+    Map<String, Set<String>> authList = notebook().getInterpreterFactory().
+      getInterpreterAuthorization().getInterpreterAuthorization(fromMessage.data);
+
     conn.send(serializeMessage(new Message(OP.GET_INTERPRETER_AUTH_LIST)
-      .put("interpreterAuth", "---getInterpreterAuthList")));
+      .put("authInfo", authList)));
   }
 
   public List<Map<String, String>> generateNotebooksInfo(boolean needsReload,

@@ -1,6 +1,11 @@
 {
   "authInfo": {
-    "intp1": [ "user1", "user2" ] , 
-    "intp2": [ "user1" ]  
+    "spark": [
+      "user1",
+      "user2"
+    ],
+    "jdbc": [
+      "user1"
+    ]
   }
 }

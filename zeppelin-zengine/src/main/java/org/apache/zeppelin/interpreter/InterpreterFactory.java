@@ -1190,6 +1190,10 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     return interpreterSettingsRef;
   }
 
+  public Set<String> getAvailableInterpreterNames() {
+    return interpreterSettingsRef.keySet();
+  }
+
   private URL[] recursiveBuildLibList(File path) throws MalformedURLException {
     URL[] urls = new URL[0];
     if (path == null || !path.exists()) {

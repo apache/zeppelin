@@ -16,8 +16,10 @@ public class InterpreterAuthorization {
   private static final Logger LOG = LoggerFactory.getLogger(InterpreterAuthorization.class);
 
   /*
-   * { "intp1": [ "user1", "user2" ] , "intp2": [ "user1" ] }
-   */
+   * [ {"intp1": [ "user1", "user2" ]} , {"intp2": [ "user1" ]}]
+   * { "spark": [ "user1", "user2" ] , "livy": [ "user1" ] }
+  */
+  //private List<Map<String, Set<String>>> authInfo = new LinkedList<>();
   private Map<String, Set<String>> authInfo = new HashMap<>();
   private ZeppelinConfiguration conf;
   private Gson gson;
@@ -85,6 +87,21 @@ public class InterpreterAuthorization {
     }
   }
 
+  //public List<Map<String, Set<String>>> getInterpreterAuthorization(Map<String, Object> data) {
+  public Map<String, Set<String>> getInterpreterAuthorization(Map<String, Object> data) {
+    return authInfo;
+/*
+
+    String jsonString;
+    synchronized (authInfo) {
+      InterpreterAuthorizationInfoSaving info = new InterpreterAuthorizationInfoSaving();
+      info.authInfo = authInfo;
+      jsonString = gson.toJson(info);
+    }
+    return jsonString;
+*/
+  }
+
   public void updateInterpreterAuthorization(Map<String, Object> data) {
     LOG.info("updateInterpreterAuthorization = {}", data.get("authInfo").toString());
     InterpreterAuthorizationInfoSaving info = gson.fromJson(data.get("authInfo").toString(),
@@ -92,10 +109,29 @@ public class InterpreterAuthorization {
     this.authInfo = info.authInfo;
 
     LOG.info("info = {}", info.authInfo);
+
+
+/*
+    for (Map<String, Set<String>> v : info.authInfo) {
+      for (String key : v.keySet()) {
+        LOG.info("---> {}", key);
+        //LOG.info("---> {}, {}", key, info.authInfo.get(key).toString());
+      }
+    }
+*/
+    for (String key : info.authInfo.keySet()) {
+      LOG.info("---> {}", key);
+      LOG.info("---> {}, {}", key, info.authInfo.get(key).toString());
+    }
+    saveToFile();
+
+/*
+
     for (String key : info.authInfo.keySet()) {
       LOG.info("---> {}", key);
       //LOG.info("---> {}, {}", key, info.authInfo.get(key).toString());
     }
+*/
   }
 /*
   public void updateInterpreterAuthorization(Map<String, Set<String>> entities) {

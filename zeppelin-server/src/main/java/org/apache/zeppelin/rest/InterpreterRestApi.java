@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -173,6 +174,17 @@ public class InterpreterRestApi {
   @ZeppelinApi
   public Response listInterpreter(String message) {
     Map<String, InterpreterSetting> m = interpreterFactory.getAvailableInterpreterSettings();
+    return new JsonResponse<>(Status.OK, "", m).build();
+  }
+
+  /**
+   * List all available interpreter group names
+   */
+  @GET
+  @Path("names")
+  @ZeppelinApi
+  public Response listInterpreterNames(String message) {
+    Set<String> m = interpreterFactory.getAvailableInterpreterNames();
     return new JsonResponse<>(Status.OK, "", m).build();
   }
 
