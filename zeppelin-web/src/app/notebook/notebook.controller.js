@@ -17,6 +17,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
                                                                      $rootScope, $http, websocketMsgSrv,
                                                                      baseUrlSrv, $timeout, saveAsService) {
   $scope.note = null;
+  $scope.moment = moment;
   $scope.showEditor = false;
   $scope.editorToggled = false;
   $scope.tableToggled = false;
@@ -52,6 +53,14 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
   var previousSelectedListWriters = [];
   var searchText = [];
   $scope.role = '';
+  $scope.noteRevisions = [];
+
+  $scope.$on('setConnectedStatus', function(event, param) {
+    if (connectedOnce && param) {
+      initNotebook();
+    }
+    connectedOnce = true;
+  });
 
   $scope.getCronOptionNameFromValue = function(value) {
     if (!value) {
@@ -69,6 +78,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
   /** Init the new controller */
   var initNotebook = function() {
     websocketMsgSrv.getNotebook($routeParams.noteId);
+    websocketMsgSrv.listRevisionHistory($routeParams.noteId);
 
     var currentRoute = $route.current;
     if (currentRoute) {
@@ -172,6 +182,11 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
     });
     document.getElementById('note.checkpoint.message').value = '';
   };
+
+  $scope.$on('listRevisionHistory', function(event, data) {
+    console.log('We got the revisions %o', data);
+    $scope.noteRevisions = data.revisionList;
+  });
 
   // receive certain revision of note
   $scope.$on('noteRevision', function(event, data) {

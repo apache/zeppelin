@@ -161,6 +161,15 @@ angular.module('zeppelinWebApp').service('websocketMsgSrv', function($rootScope,
       });
     },
 
+    listRevisionHistory: function(noteId) {
+      websocketEvents.sendNewEvent({
+        op: 'LIST_REVISION_HISTORY',
+        data: {
+          noteId: noteId
+        }
+      });
+    },
+
     getNoteRevision: function(noteId, revisionId) {
       websocketEvents.sendNewEvent({
         op: 'NOTE_REVISION',

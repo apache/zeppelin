@@ -6,7 +6,8 @@ describe('Controller: NotebookCtrl', function() {
   var scope;
 
   var websocketMsgSrvMock = {
-    getNotebook: function() {}
+    getNotebook: function() {},
+    listRevisionHistory: function() {}
   };
 
   var baseUrlSrvMock = {

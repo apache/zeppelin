@@ -45,6 +45,7 @@ import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
 import org.apache.zeppelin.notebook.*;
+import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.apache.zeppelin.notebook.repo.NotebookRepo.Revision;
 import org.apache.zeppelin.notebook.socket.Message;
 import org.apache.zeppelin.notebook.socket.Message.OP;
@@ -220,6 +221,9 @@ public class NotebookServer extends WebSocketServlet implements
             break;
           case CHECKPOINT_NOTEBOOK:
             checkpointNotebook(conn, notebook, messagereceived);
+            break;
+          case LIST_REVISION_HISTORY:
+            listRevisionHistory(conn, notebook, messagereceived);
             break;
           case NOTE_REVISION:
             getNoteRevision(conn, notebook, messagereceived);
@@ -1130,7 +1134,22 @@ public class NotebookServer extends WebSocketServlet implements
     String noteId = (String) fromMessage.get("noteId");
     String commitMessage = (String) fromMessage.get("commitMessage");
     AuthenticationInfo subject = new AuthenticationInfo(fromMessage.principal);
-    notebook.checkpointNote(noteId, commitMessage, subject);
+    Revision revision = notebook.checkpointNote(noteId, commitMessage, subject);
+    if (revision != null) {
+      List<NotebookRepo.Revision> revisions = notebook.listRevisionHistory(noteId, subject);
+      conn.send(serializeMessage(new Message(OP.LIST_REVISION_HISTORY)
+        .put("revisionList", revisions)));
+    }
+  }
+
+  private void listRevisionHistory(NotebookSocket conn, Notebook notebook,
+      Message fromMessage) throws IOException {
+    String noteId = (String) fromMessage.get("noteId");
+    AuthenticationInfo subject = new AuthenticationInfo(fromMessage.principal);
+    List<NotebookRepo.Revision> revisions = notebook.listRevisionHistory(noteId, subject);
+
+    conn.send(serializeMessage(new Message(OP.LIST_REVISION_HISTORY)
+      .put("revisionList", revisions)));
   }
 
   private void getNoteRevision(NotebookSocket conn, Notebook notebook, Message fromMessage)
