@@ -110,7 +110,10 @@ limitations under the License.
         </button>
         <ul class="dropdown-menu pull-right" aria-labelledby="revisionsDropdown">
           <li ng-repeat="revision in noteRevisions | orderBy:'time':true" class="revision">
-            <a style="cursor:pointer; line-height:120%"><strong>{{revision.message}}</strong> <br/>
+            <a style="cursor:pointer">
+              <span style="display: block;">
+                <strong>{{revision.message}}</strong>
+              </span>
               <span class="revisionDate">
                 <em>{{moment.unix(revision.time).format('MMMM Do YYYY, h:mm a')}}</em>
               </span>

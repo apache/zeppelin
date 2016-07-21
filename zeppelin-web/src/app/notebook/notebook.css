@@ -21,12 +21,15 @@
   margin-bottom: 0 !important;
 }
 
-.revision a  {
+.revision a {
+  padding: 2px 10px !important;
+}
+
+.revision a span {
   width: 100%;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  padding: 2px 10px !important;
 }
 
 .revisionName {
@@ -36,8 +39,9 @@
 }
 
 .revisionDate {
-  font-size:70%;
+  font-size: 8px;
   color: DarkGrey;
+  display: block;
 }
 
 .revisionName:hover,
