@@ -18,21 +18,15 @@ angular.module('zeppelinWebApp')
 .controller('NavCtrl', function($scope, $rootScope, $http, $routeParams,
     $location, notebookListDataFactory, baseUrlSrv, websocketMsgSrv, arrayOrderingSrv, searchService) {
 
+  var vm = this;
+  vm.arrayOrderingSrv = arrayOrderingSrv;
+  vm.connected = websocketMsgSrv.isConnected();
+  vm.notes = notebookListDataFactory;
+  vm.searchForm = searchService;
+  vm.websocketMsgSrv = websocketMsgSrv;
+
   $scope.query = {q: ''};
   /** Current list of notes (ids) */
-
-  $scope.showLoginWindow = function() {
-    setTimeout(function() {
-      angular.element('#userName').focus();
-    }, 500);
-  };
-
-  var vm = this;
-  vm.notes = notebookListDataFactory;
-  vm.connected = websocketMsgSrv.isConnected();
-  vm.websocketMsgSrv = websocketMsgSrv;
-  vm.arrayOrderingSrv = arrayOrderingSrv;
-  $scope.searchForm = searchService;
 
   angular.element('#notebook-list').perfectScrollbar({suppressScrollX: true});
 
@@ -40,7 +34,25 @@ angular.module('zeppelinWebApp')
     $scope.query.q = '';
   });
 
-  $scope.logout = function() {
+  function getZeppelinVersion() {
+    $http.get(baseUrlSrv.getRestApiBase() + '/version').success(
+      function(data, status, headers, config) {
+        $rootScope.zeppelinVersion = data.body;
+      }).error(
+      function(data, status, headers, config) {
+        console.log('Error %o %o', status, data.message);
+      });
+  }
+
+  function isActive(noteId) {
+    return ($routeParams.noteId === noteId);
+  }
+
+  function loadNotes() {
+    websocketMsgSrv.getNotebookList();
+  }
+
+  function logout() {
     var logoutURL = baseUrlSrv.getRestApiBase() + '/login/logout';
 
     //for firefox and safari
@@ -60,18 +72,16 @@ angular.module('zeppelinWebApp')
         }, 1000);
       });
     });
-  };
-
-  $scope.search = function(searchTerm) {
-    $location.path('/search/' + searchTerm);
-  };
-
-  function loadNotes() {
-    websocketMsgSrv.getNotebookList();
   }
 
-  function isActive(noteId) {
-    return ($routeParams.noteId === noteId);
+  function search(searchTerm) {
+    $location.path('/search/' + searchTerm);
+  }
+
+  function showLoginWindow() {
+    setTimeout(function() {
+      angular.element('#userName').focus();
+    }, 500);
   }
 
   $rootScope.noteName = function(note) {
@@ -80,18 +90,11 @@ angular.module('zeppelinWebApp')
     }
   };
 
-  function getZeppelinVersion() {
-    $http.get(baseUrlSrv.getRestApiBase() + '/version').success(
-      function(data, status, headers, config) {
-        $rootScope.zeppelinVersion = data.body;
-      }).error(
-      function(data, status, headers, config) {
-        console.log('Error %o %o', status, data.message);
-      });
-  }
-
   vm.loadNotes = loadNotes;
   vm.isActive = isActive;
+  vm.logout = logout;
+  vm.search = search;
+  vm.showLoginWindow = showLoginWindow;
 
   getZeppelinVersion();
   vm.loadNotes();
@@ -109,7 +112,7 @@ angular.module('zeppelinWebApp')
   });
 
   $scope.$on('loginSuccess', function(event, param) {
-    loadNotes();
+    vm.loadNotes();
   });
 
 });
