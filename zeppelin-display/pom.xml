@@ -27,7 +27,7 @@
   </parent>
 
   <groupId>org.apache.zeppelin</groupId>
-  <artifactId>zeppelin-display</artifactId>
+  <artifactId>zeppelin-display_2.10</artifactId>
   <packaging>jar</packaging>
   <version>0.6.1-SNAPSHOT</version>
   <name>Zeppelin: Display system apis</name>

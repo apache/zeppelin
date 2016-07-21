@@ -27,7 +27,7 @@
   </parent>
 
   <groupId>org.apache.zeppelin</groupId>
-  <artifactId>zeppelin-flink</artifactId>
+  <artifactId>zeppelin-flink_2.10</artifactId>
   <packaging>jar</packaging>
   <version>0.6.1-SNAPSHOT</version>
   <name>Zeppelin: Flink</name>

@@ -27,7 +27,7 @@
   </parent>
 
   <groupId>org.apache.zeppelin</groupId>
-  <artifactId>zeppelin-spark</artifactId>
+  <artifactId>zeppelin-spark_2.10</artifactId>
   <packaging>jar</packaging>
   <version>0.6.1-SNAPSHOT</version>
   <name>Zeppelin: Spark</name>
@@ -54,7 +54,7 @@
 
     <!-- dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>zeppelin-display</artifactId>
+      <artifactId>zeppelin-display_${scala.binary.version}</artifactId>
       <version>${project.version}</version>
     </dependency -->
 
