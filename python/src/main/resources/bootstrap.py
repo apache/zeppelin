@@ -74,7 +74,7 @@ z.show(plt,height='150px') </pre></div>''')
     print ('<h3>Pandas DataFrame</h3>')
     print ('<div> You need to have Pandas module installed ')
     print ('to use this functionality (pip install pandas) !</div><br/>')
-    print """
+    print ("""
 <div>The interpreter can visualize Pandas DataFrame
 with the function z.show()
 <pre>
@@ -82,11 +82,11 @@ import pandas as pd
 df = pd.read_csv("bank.csv", sep=";")
 z.show(df)
 </pre></div>
-"""
+""")
     print ('<h3>SQL over Pandas DataFrame</h3>')
     print ('<div> You need to have Pandas&Pandasql modules installed ')
     print ('to use this functionality (pip install pandas pandasql) !</div><br/>')
-    print """
+    print ("""
 <div>Python interpreter group includes %sql interpreter that can query
 Pandas DataFrames using SQL and visualize results using Zeppelin Table Display System
 
@@ -102,7 +102,7 @@ df = pd.read_csv("bank.csv", sep=";")
 %sql
 SELECT * from df LIMIT 5
 </pre></div>
-"""
+""")
 
 
 class PyZeppelinContext(object):
