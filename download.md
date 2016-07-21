@@ -146,33 +146,33 @@ Please check the below table before you download Zeppelin package.
 <table class="table-configuration" style="text-align:center">
   <tr>
     <th style="width:12%">Zeppelin</th>
-    <th style="width:22%">0.5.0</th>
-    <th style="width:22%">0.5.5</th>
+    <th style="width:22%">0.6.0 (latest)</th>
     <th style="width:22%">0.5.6</th>
-    <th style="width:22%">0.6.0</th>
+    <th style="width:22%">0.5.5</th>
+    <th style="width:22%">0.5.0</th>
   </tr>
   <tr>
     <td rowspan="2">Spark</td>
     <td>
-        Source package <br/>
-        1.1.x, 1.2.x, 1.3.x 1.4.x
+        1.1.x, 1.2.x, 1.3.x 1.4.x, 1.5.x, 1.6.x
+    </td>
+    <td rowspan="2">
+        1.1.x, 1.2.x, 1.3.x 1.4.x, 1.5.x, 1.6.x
     </td>
     <td rowspan="2">
         1.1.x, 1.2.x, 1.3.x 1.4.x, 1.5.x
     </td>
-    <td rowspan="2">
-        1.1.x, 1.2.x, 1.3.x 1.4.x, 1.5.x, 1.6.x
-    </td>
     <td>
-        1.1.x, 1.2.x, 1.3.x 1.4.x, 1.5.x, 1.6.x
+        Source package <br/>
+        1.1.x, 1.2.x, 1.3.x 1.4.x
     </td>
   </tr>
-  <tr>
+  <tr> 
+    <td>SparkR is also available</td>
     <td>
       Binary package <br/>
       1.3.1, 1.4.0
     </td>
-    <td>SparkR is also available</td>
   </tr>
   <tr>
     <td>Angular</td>
@@ -204,128 +204,131 @@ Please check the below table before you download Zeppelin package.
   </tr>
   <tr>
     <td>Hive</td>
-    <td>O</td>
-    <td>O</td>
-    <td>O</td>
     <td>Merged into JDBC interpreter</td>
+    <td>O</td>
+    <td>O</td>
+    <td>O</td>
   </tr>
   <tr>
     <td>Tajo</td>
-    <td>O</td>
-    <td>O</td>
-    <td>O</td>
     <td>Merged into JDBC interpreter</td>
+    <td>O</td>
+    <td>O</td>
+    <td>O</td>
   </tr>
   <tr>
     <td>Cassandra</td>
+    <td>O</td>
+    <td>O</td>
+    <td>O</td>
     <td>N/A</td>
-    <td>O</td>
-    <td>O</td>
-    <td>O</td>
   </tr>
   <tr>
-    <td>Geode</td>
+    <td>
+        Geode <br/>
+        <span style="font-size:75%">Local mode only, not included in binary package</span>
+    </td>
+    <td>O</td>
+    <td>O</td>
+    <td>O</td>
     <td>N/A</td>
-    <td>O</td>
-    <td>O</td>
-    <td>O</td>
   </tr>
   <tr>
     <td>Ignite</td>
+    <td>O</td>
+    <td>O</td>
+    <td>O</td>
     <td>N/A</td>
-    <td>O</td>
-    <td>O</td>
-    <td>O</td>
   </tr>
   <tr>
     <td>Kylin</td>
+    <td>O</td>
+    <td>O</td>
+    <td>O</td>
     <td>N/A</td>
-    <td>O</td>
-    <td>O</td>
-    <td>O</td>
   </tr>
   <tr>
     <td>Lens</td>
+    <td>O</td>
+    <td>O</td>
+    <td>O</td>
     <td>N/A</td>
-    <td>O</td>
-    <td>O</td>
-    <td>O</td>
   </tr>
   <tr>
     <td>Phoenix</td>
-    <td>N/A</td>
-    <td>O</td>
-    <td>O</td>
     <td>Merged into JDBC interpreter</td>
+    <td>O</td>
+    <td>O</td>
+    <td>N/A</td>
   </tr>
   <tr>
     <td>PostgreSQL</td>
+    <td>O</td>
+    <td>O</td>
+    <td>O</td>
     <td>N/A</td>
-    <td>O</td>
-    <td>O</td>
-    <td>O</td>
   </tr>
   <tr>
     <td>Elasticsearch</td>
-    <td>N/A</td>
-    <td>N/A</td>
     <td>O</td>
     <td>O</td>
+    <td>N/A</td>
+    <td>N/A</td>
   </tr>
   <tr>
     <td>
         Scalding <br/>
         <span style="font-size:75%">Local mode only, not included in binary package</span>
     </td>
-    <td>N/A</td>
-    <td>N/A</td>
     <td>O</td>
     <td>O</td>
+    <td>N/A</td>
+    <td>N/A</td>
   </tr>
   <tr>
     <td>Alluxio</td>
-    <td>N/A</td>
-    <td>N/A</td>
-    <td>N/A</td>
     <td>O</td>
+    <td>N/A</td>
+    <td>N/A</td>
+    <td>N/A</td>
   </tr>
   <tr>
     <td>Hbase</td>
-    <td>N/A</td>
-    <td>N/A</td>
-    <td>N/A</td>
     <td>O</td>
+    <td>N/A</td>
+    <td>N/A</td>
+    <td>N/A</td>
   </tr>
   <tr>
     <td>HDFS</td>
-    <td>N/A</td>
-    <td>N/A</td>
-    <td>N/A</td>
     <td>O</td>
+    <td>N/A</td>
+    <td>N/A</td>
+    <td>N/A</td>
   </tr>
   <tr>
     <td>JDBC</td>
-    <td>N/A</td>
-    <td>N/A</td>
-    <td>N/A</td>
     <td>
       Postgres, MySQL, MariaDB, Redshift, <br/>
       Hive, Pheonix, Drill, Tajo are available
     </td>
+    <td>N/A</td>
+    <td>N/A</td>
+    <td>N/A</td>
   </tr>
   <tr>
     <td>Livy</td>
-    <td>N/A</td>
-    <td>N/A</td>
-    <td>N/A</td>
     <td>O</td>
+    <td>N/A</td>
+    <td>N/A</td>
+    <td>N/A</td>
   </tr>
   <tr>
     <td>Python</td>
-    <td>N/A</td>
-    <td>N/A</td>
-    <td>N/A</td>
     <td>O</td>
+    <td>N/A</td>
+    <td>N/A</td>
+    <td>N/A</td>
   </tr>
 </table>
 
