@@ -258,7 +258,7 @@ public class SparkInterpreter extends Interpreter {
       jars = (String[]) Utils.invokeStaticMethod(SparkILoop.class, "getAddedJars");
     } else {
       jars = (String[]) Utils.invokeStaticMethod(
-              findClass("org.apache.spark.repl.Main"), "getAddedJars");
+              Utils.findClass("org.apache.spark.repl.Main"), "getAddedJars");
     }
 
     String classServerUri = null;
@@ -575,8 +575,8 @@ public class SparkInterpreter extends Interpreter {
         }
 
         completor = Utils.instantiateClass(
-            "SparkJLineCompletion",
-            new Class[]{findClass("org.apache.spark.repl.SparkIMain")},
+            "org.apache.spark.repl.SparkJLineCompletion",
+            new Class[]{Utils.findClass("org.apache.spark.repl.SparkIMain")},
             new Object[]{intp});
       }
 
@@ -1114,17 +1114,6 @@ public class SparkInterpreter extends Interpreter {
 
   public SparkVersion getSparkVersion() {
     return sparkVersion;
-  }
-
-
-
-  private Class findClass(String name) {
-    try {
-      return this.getClass().forName(name);
-    } catch (ClassNotFoundException e) {
-      logger.error(e.getMessage(), e);
-      return null;
-    }
   }
 
   private File createTempDir(String dir) {
