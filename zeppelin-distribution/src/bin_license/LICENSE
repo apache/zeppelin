@@ -111,6 +111,7 @@ The following components are provided under Apache License.
     (Apache 2.0) The core jetty server artifact (org.mortbay.jetty:jetty:6.1.26 - http://javadox.com/org.mortbay.jetty/jetty/6.1.26/overview-tree.html)
     (Apache 2.0) Utility classes for Jetty (org.mortbay.jetty:jetty-util:6.1.26 - http://javadox.com/org.mortbay.jetty/jetty/6.1.26/overview-tree.html)
     (Apache 2.0) Servlet API (org.mortbay.jetty:servlet-api:2.5-20081211 - https://en.wikipedia.org/wiki/Jetty_(web_server))
+    (Apache 2.0) Google HTTP Client Library for Java (com.google.http-client:google-http-client-jackson2:1.21.0 - https://github.com/google/google-http-java-client/tree/dev/google-http-client-jackson2)
 
 ========================================================================
 MIT licenses
