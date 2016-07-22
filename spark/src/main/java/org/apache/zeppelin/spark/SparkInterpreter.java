@@ -748,7 +748,7 @@ public class SparkInterpreter extends Interpreter {
       cursor = completionText.length();
     }
     if (Utils.isScala2_10()) {
-      ScalaCompleter c = (ScalaCompleter) Utils.invokeMethod(completor, "completor");
+      ScalaCompleter c = (ScalaCompleter) Utils.invokeMethod(completor, "completer");
       Candidates ret = c.complete(completionText, cursor);
 
       List<String> candidates = WrapAsJava$.MODULE$.seqAsJavaList(ret.candidates());
