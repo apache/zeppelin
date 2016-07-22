@@ -211,14 +211,14 @@ public class Paragraph extends Job implements Serializable, Cloneable {
   public List<InterpreterCompletion> getInterpreterCompletion() {
     List<InterpreterCompletion> completion = new LinkedList();
     for (InterpreterSetting intp: factory.getInterpreterSettings(note.getId())){
-      List<InterpreterSetting.InterpreterInfo> intInfo = intp.getInterpreterInfos();
+      List<InterpreterInfo> intInfo = intp.getInterpreterInfos();
       if (intInfo.size() > 1) {
-        for (InterpreterSetting.InterpreterInfo info : intInfo){
-          String name = intp.getGroup() + "." + info.getName();
+        for (InterpreterInfo info : intInfo){
+          String name = intp.getName() + "." + info.getName();
           completion.add(new InterpreterCompletion(name, name));
         }
       } else {
-        completion.add(new InterpreterCompletion(intp.getGroup(), intp.getGroup()));
+        completion.add(new InterpreterCompletion(intp.getName(), intp.getName()));
       }
     }
     return completion;
