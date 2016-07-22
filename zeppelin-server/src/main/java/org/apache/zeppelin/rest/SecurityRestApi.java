@@ -148,7 +148,6 @@ public class SecurityRestApi {
     return new JsonResponse<>(Response.Status.OK, "", autoSuggestList).build();
   }
 
-
   /**
    * Get all userlist
    * Returns list of all user from available realms
@@ -181,11 +180,6 @@ public class SecurityRestApi {
     } catch (Exception e) {
       LOG.error("Exception in retrieving Users from realms ", e);
     }
-
-    for (String user : usersList) {
-      LOG.info("--> user : {}", user);
-    }
-
     return new JsonResponse<>(Response.Status.OK, "", usersList).build();
   }
 

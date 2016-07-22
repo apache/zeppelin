@@ -24,33 +24,6 @@
   font-family: 'Roboto', sans-serif;
 }
 
-.interpreterHead textarea,
-.interpreter textarea {
-  width: 100%;
-  display: block;
-  height: 20px;
-  resize: none;
-  border: 1px solid #CCCCCC;
-  font-size: 12px;
-}
-
-.interpreter .interpreter-title {
-  font-size: 20px;
-  font-weight: bold;
-  color: #3071a9;
-  float: left;
-  margin-top: 0;
-}
-
-.interpreter ul {
-  margin: 0;
-  padding: 0;
-}
-
-.interpreter .interpreterInfo {
-  list-style-type: none;
-}
-
 .interpreter table tr .interpreterPropertyKey {
   padding : 5px 5px 5px 5px;
 }
@@ -83,4 +56,9 @@
 
 .empty-properties-message {
   color: #666;
+}
+
+.big-checkbox {
+  width: 10px;
+  height: 10px;
 }

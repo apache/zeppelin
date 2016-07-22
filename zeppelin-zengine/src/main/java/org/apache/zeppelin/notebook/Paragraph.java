@@ -279,10 +279,18 @@ public class Paragraph extends Job implements Serializable, Cloneable {
   protected Object jobRun() throws Throwable {
     String replName = getRequiredReplName();
     Interpreter repl = getRepl(replName);
-    logger.info("run paragraph {} using {} " + repl, getId(), replName);
+    logger.info("run paragraph {} using {} {}" + repl, getId(), replName);
+    logger.info("astro] intp name {}" + repl.getInterpreterGroup().toString());
     if (repl == null) {
       logger.error("Can not find interpreter name " + repl);
       throw new RuntimeException("Can not find interpreter for " + getRequiredReplName());
+    }
+
+    if (this.user != null &&
+      !factory.getInterpreterAuthorization().isValidated(authenticationInfo.getUser(), replName)) {
+      logger.error("{} has no authorization for {} ", authenticationInfo.getUser(), repl);
+      throw new RuntimeException(authenticationInfo.getUser() +
+        " has no authorization for " + getRequiredReplName());
     }
 
     String script = getScriptBody();

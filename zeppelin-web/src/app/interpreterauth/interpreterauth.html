@@ -22,12 +22,9 @@ limitations under the License.
     </div>
     <div class="row">
       <div class="col-md-12">
-        Manage your interpreter auth.
+        Manage your interpreter authorization.
         <span class="btn btn-primary" ng-click="updateInterpreterAuth()">
           Add
-        </span>
-        <span class="btn btn-primary" ng-click="getInterpreterAuth()">
-          GET
         </span>
       </div>
     </div>
@@ -36,38 +33,24 @@ limitations under the License.
 
 <div class="box width-full">
   <div class="row interpreter">
-    <!-- div class="col-md-12" ng-show="!_.isEmpty(credentialInfo) || valueform.$visible"-->
     <div>
-        <table class="table table-striped" border="1">
+        <table class="table table-bordered">
           <thead>
           <tr>
-            <th></th>
+            <th>#</th>
             <th ng-repeat="(intpIdx,intpName) in intpList">{{intpName}}</th>
           </tr>
           </thead>
 
+          <tbody>
           <tr ng-repeat="(userIdx,userId) in userList">
-            <td>{{userId}}</td>
+            <th scope="row">{{userId}}</th>
             <td ng-repeat="(intpIdx,intpName) in intpList">
-              <input type="checkbox" ng-model="checklist[intpIdx][userIdx]">
+               <input type="checkbox" ng-model="checkedlist[intpIdx][userIdx]"/>
             </td>
           </tr>
-<!--
-          <tr ng-repeat="(userIdx,userId) in userList">
-            <td>{{userId}}</td>
-            <td ng-repeat="(intpIdx,intpName) in intpList track by $index">
-              <input type="checkbox" ng-model="checklist[userIdx][intpIdx]">
-            </td>
-          </tr>
--->
+          </tbody>
         </table>
-
-
-      <!--
-                    <input type="checkbox" ng-model="checklist[userIdx][intpIdx]"
-                           ng-change="isChanged(userIdx,intpIdx)">
-      -->
-        <!-- input type="checkbox" data-checklist-model="user.roles" data-checklist-value="intpIdx" -->
     </div>
   </div>
 </div>

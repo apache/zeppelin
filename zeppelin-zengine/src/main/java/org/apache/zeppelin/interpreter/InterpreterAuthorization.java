@@ -16,10 +16,8 @@ public class InterpreterAuthorization {
   private static final Logger LOG = LoggerFactory.getLogger(InterpreterAuthorization.class);
 
   /*
-   * [ {"intp1": [ "user1", "user2" ]} , {"intp2": [ "user1" ]}]
    * { "spark": [ "user1", "user2" ] , "livy": [ "user1" ] }
   */
-  //private List<Map<String, Set<String>>> authInfo = new LinkedList<>();
   private Map<String, Set<String>> authInfo = new HashMap<>();
   private ZeppelinConfiguration conf;
   private Gson gson;
@@ -87,187 +85,33 @@ public class InterpreterAuthorization {
     }
   }
 
-  //public List<Map<String, Set<String>>> getInterpreterAuthorization(Map<String, Object> data) {
   public Map<String, Set<String>> getInterpreterAuthorization(Map<String, Object> data) {
-    return authInfo;
-/*
-
-    String jsonString;
-    synchronized (authInfo) {
-      InterpreterAuthorizationInfoSaving info = new InterpreterAuthorizationInfoSaving();
-      info.authInfo = authInfo;
-      jsonString = gson.toJson(info);
-    }
-    return jsonString;
-*/
+    return this.authInfo;
   }
 
-  public void updateInterpreterAuthorization(Map<String, Object> data) {
-    LOG.info("updateInterpreterAuthorization = {}", data.get("authInfo").toString());
-    InterpreterAuthorizationInfoSaving info = gson.fromJson(data.get("authInfo").toString(),
+  public Map<String, Set<String>> updateInterpreterAuthorization(Map<String, Object> data) {
+    LOG.info("updateInterpreterAuthorization = {}", data.toString());
+    InterpreterAuthorizationInfoSaving info = gson.fromJson(data.toString(),
       InterpreterAuthorizationInfoSaving.class);
+
     this.authInfo = info.authInfo;
-
-    LOG.info("info = {}", info.authInfo);
-
-
-/*
-    for (Map<String, Set<String>> v : info.authInfo) {
-      for (String key : v.keySet()) {
-        LOG.info("---> {}", key);
-        //LOG.info("---> {}, {}", key, info.authInfo.get(key).toString());
-      }
-    }
-*/
-    for (String key : info.authInfo.keySet()) {
-      LOG.info("---> {}", key);
-      LOG.info("---> {}, {}", key, info.authInfo.get(key).toString());
-    }
     saveToFile();
-
-/*
-
-    for (String key : info.authInfo.keySet()) {
-      LOG.info("---> {}", key);
-      //LOG.info("---> {}, {}", key, info.authInfo.get(key).toString());
-    }
-*/
+    return this.authInfo;
   }
-/*
-  public void updateInterpreterAuthorization(Map<String, Set<String>> entities) {
-    for (String key : entities.keySet()) {
-      LOG.info("key = {}", key );
-      for (String v : entities.get(key)) {
-        LOG.info("  value = {}", v );
+
+  public boolean isValidated(String user, String intp) {
+    boolean accessable = false;
+    for (String intpName: this.authInfo.keySet()) {
+      if (intp.trim().equals(intpName)) {
+        for (String userName : this.authInfo.get(intpName)) {
+          if (user.trim().equals(userName)) {
+            accessable = true;
+            break;
+          }
+        }
       }
     }
+    return accessable;
   }
-*/
-/*
-  private Set<String> validateUser(Set<String> users) {
-    Set<String> returnUser = new HashSet<>();
-    for (String user : users) {
-      if (!user.trim().isEmpty()) {
-        returnUser.add(user.trim());
-      }
-    }
-    return returnUser;
-  }
-
-
-  public void setOwners(String noteId, Set<String> entities) {
-    Map<String, Set<String>> noteAuthInfo = authInfo.get(noteId);
-    entities = validateUser(entities);
-    if (noteAuthInfo == null) {
-      noteAuthInfo = new LinkedHashMap();
-      noteAuthInfo.put("owners", new LinkedHashSet(entities));
-      noteAuthInfo.put("readers", new LinkedHashSet());
-      noteAuthInfo.put("writers", new LinkedHashSet());
-    } else {
-      noteAuthInfo.put("owners", new LinkedHashSet(entities));
-    }
-    authInfo.put(noteId, noteAuthInfo);
-    saveToFile();
-  }
-
-  public void setReaders(String noteId, Set<String> entities) {
-    Map<String, Set<String>> noteAuthInfo = authInfo.get(noteId);
-    entities = validateUser(entities);
-    if (noteAuthInfo == null) {
-      noteAuthInfo = new LinkedHashMap();
-      noteAuthInfo.put("owners", new LinkedHashSet());
-      noteAuthInfo.put("readers", new LinkedHashSet(entities));
-      noteAuthInfo.put("writers", new LinkedHashSet());
-    } else {
-      noteAuthInfo.put("readers", new LinkedHashSet(entities));
-    }
-    authInfo.put(noteId, noteAuthInfo);
-    saveToFile();
-  }
-
-  public void setWriters(String noteId, Set<String> entities) {
-    Map<String, Set<String>> noteAuthInfo = authInfo.get(noteId);
-    entities = validateUser(entities);
-    if (noteAuthInfo == null) {
-      noteAuthInfo = new LinkedHashMap();
-      noteAuthInfo.put("owners", new LinkedHashSet());
-      noteAuthInfo.put("readers", new LinkedHashSet());
-      noteAuthInfo.put("writers", new LinkedHashSet(entities));
-    } else {
-      noteAuthInfo.put("writers", new LinkedHashSet(entities));
-    }
-    authInfo.put(noteId, noteAuthInfo);
-    saveToFile();
-  }
-
-  public Set<String> getOwners(String noteId) {
-    Map<String, Set<String>> noteAuthInfo = authInfo.get(noteId);
-    Set<String> entities = null;
-    if (noteAuthInfo == null) {
-      entities = new HashSet<String>();
-    } else {
-      entities = noteAuthInfo.get("owners");
-      if (entities == null) {
-        entities = new HashSet<String>();
-      }
-    }
-    return entities;
-  }
-
-  public Set<String> getReaders(String noteId) {
-    Map<String, Set<String>> noteAuthInfo = authInfo.get(noteId);
-    Set<String> entities = null;
-    if (noteAuthInfo == null) {
-      entities = new HashSet<String>();
-    } else {
-      entities = noteAuthInfo.get("readers");
-      if (entities == null) {
-        entities = new HashSet<String>();
-      }
-    }
-    return entities;
-  }
-
-  public Set<String> getWriters(String noteId) {
-    Map<String, Set<String>> noteAuthInfo = authInfo.get(noteId);
-    Set<String> entities = null;
-    if (noteAuthInfo == null) {
-      entities = new HashSet<String>();
-    } else {
-      entities = noteAuthInfo.get("writers");
-      if (entities == null) {
-        entities = new HashSet<String>();
-      }
-    }
-    return entities;
-  }
-
-  public boolean isOwner(String noteId, Set<String> entities) {
-    return isMember(entities, getOwners(noteId));
-  }
-
-  public boolean isWriter(String noteId, Set<String> entities) {
-    return isMember(entities, getWriters(noteId)) || isMember(entities, getOwners(noteId));
-  }
-
-  public boolean isReader(String noteId, Set<String> entities) {
-    return isMember(entities, getReaders(noteId)) ||
-      isMember(entities, getOwners(noteId)) ||
-      isMember(entities, getWriters(noteId));
-  }
-*/
-
-  // return true if b is empty or if (a intersection b) is non-empty
-  private boolean isMember(Set<String> a, Set<String> b) {
-    Set<String> intersection = new HashSet<String>(b);
-    intersection.retainAll(a);
-    return (b.isEmpty() || (intersection.size() > 0));
-  }
-
-  public void removeNote(String noteId) {
-    authInfo.remove(noteId);
-    saveToFile();
-  }
-
 
 }
