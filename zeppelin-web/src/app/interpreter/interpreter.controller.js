@@ -14,7 +14,7 @@
 'use strict';
 
 angular.module('zeppelinWebApp').controller('InterpreterCtrl',
-  function($scope, $http, baseUrlSrv, ngToast) {
+  function($scope, $http, baseUrlSrv, ngToast, $timeout, $route) {
     var interpreterSettingsTmp = [];
     $scope.interpreterSettings = [];
     $scope.availableInterpreters = {};
@@ -25,6 +25,7 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl',
     var getInterpreterSettings = function() {
       $http.get(baseUrlSrv.getRestApiBase() + '/interpreter/setting').success(function(data, status, headers, config) {
         $scope.interpreterSettings = data.body;
+        checkDownloadingDependencies();
       }).error(function(data, status, headers, config) {
         if (status === 401) {
           ngToast.danger({
@@ -38,6 +39,23 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl',
         }
         console.log('Error %o %o', status, data.message);
       });
+    };
+
+    var checkDownloadingDependencies = function() {
+      var isDownloading = false;
+      for (var setting = 0; setting < $scope.interpreterSettings.length; setting++) {
+        if ($scope.interpreterSettings[setting].status === 'DOWNLOADING_DEPENDENCIES') {
+          isDownloading = true;
+          break;
+        }
+      }
+      if (isDownloading) {
+        $timeout(function() {
+          if ($route.current.$$route.originalPath === '/interpreter') {
+            getInterpreterSettings();
+          }
+        }, 2000);
+      }
     };
 
     var getAvailableInterpreters = function() {
@@ -149,6 +167,7 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl',
                 $scope.interpreterSettings[index] = data.body;
                 removeTMPSettings(index);
                 thisConfirm.close();
+                checkDownloadingDependencies();
               })
               .error(function(data, status, headers, config) {
                 console.log('Error %o %o', status, data.message);
@@ -270,6 +289,7 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl',
           $scope.resetNewInterpreterSetting();
           getInterpreterSettings();
           $scope.showAddNewSetting = false;
+          checkDownloadingDependencies();
         }).error(function(data, status, headers, config) {
         console.log('Error %o %o', status, data.message);
         ngToast.danger({content: data.message, verticalPosition: 'bottom'});
@@ -454,6 +474,13 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl',
       } else {
         return false;
       }
+    };
+
+    $scope.showErrorMessage = function(setting) {
+      BootstrapDialog.show({
+        title: 'Error downloading dependencies',
+        message: setting.errorReason
+      });
     };
 
     var init = function() {
