@@ -45,15 +45,28 @@ limitations under the License.
             <th ng-repeat="(intpIdx,intpName) in intpList">{{intpName}}</th>
           </tr>
           </thead>
+
+          <tr ng-repeat="(userIdx,userId) in userList">
+            <td>{{userId}}</td>
+            <td ng-repeat="(intpIdx,intpName) in intpList">
+              <input type="checkbox" ng-model="checklist[intpIdx][userIdx]">
+            </td>
+          </tr>
+<!--
           <tr ng-repeat="(userIdx,userId) in userList">
             <td>{{userId}}</td>
             <td ng-repeat="(intpIdx,intpName) in intpList track by $index">
-
-              <input type="checkbox" ng-model="confirmed"
-                     ng-change="isChanged(userIdx,intpIdx)">
+              <input type="checkbox" ng-model="checklist[userIdx][intpIdx]">
             </td>
           </tr>
+-->
         </table>
+
+
+      <!--
+                    <input type="checkbox" ng-model="checklist[userIdx][intpIdx]"
+                           ng-change="isChanged(userIdx,intpIdx)">
+      -->
         <!-- input type="checkbox" data-checklist-model="user.roles" data-checklist-value="intpIdx" -->
     </div>
   </div>

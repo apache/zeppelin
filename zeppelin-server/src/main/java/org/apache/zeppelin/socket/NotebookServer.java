@@ -483,8 +483,6 @@ public class NotebookServer extends WebSocketServlet implements
       LOG.info("#### >>> {}", user);
     }
 */
-
-
     conn.send(serializeMessage(new Message(OP.GET_INTERPRETER_AUTH_LIST)
       .put("interpreterAuth", "---updateInterpreterAuth")));
   }

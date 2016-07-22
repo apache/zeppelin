@@ -18,22 +18,21 @@ angular.module('zeppelinWebApp').controller('InterpreterAuthCtrl',
   $scope._ = _;
 
   $scope.authList = [];
-
   $scope.intpList = [];
   $scope.userList = [];
   $scope.checklist = [];
-
-  var isPaused = 0;
-
+/*
   $scope.isChanged = function(userIdx,intpIdx) {
-    console.log('isChanged user: ', userIdx, ', intp: ', intpIdx);
-    $scope.checklist[userIdx][intpIdx] ^= 1;
+    console.log('isChanged user: ', userIdx, ', intp: ', intpIdx,
+      ', ', $scope.checklist[userIdx][intpIdx]);
+
+    $scope.checklist[userIdx][intpIdx] = !$scope.checklist[userIdx][intpIdx];
     console.log('after=', $scope.checklist);
   };
+*/
 
   var getInterpreterList = function() { return $q(function(success, fail) {
 /*
-
     $http.get(baseUrlSrv.getRestApiBase() + '/interpreter/names').then(function
     (response) {
       $scope.intpList = angular.fromJson(response.data).body;
@@ -46,7 +45,6 @@ angular.module('zeppelinWebApp').controller('InterpreterAuthCtrl',
       .success(function(data, status, headers, config) {
         console.log('getInterpreterList %o', data);
         $scope.intpList = data.body;
-        isPaused+=1;
         success();
       })
       .error(function(err, status, headers, config) {
@@ -60,7 +58,6 @@ angular.module('zeppelinWebApp').controller('InterpreterAuthCtrl',
       .success(function(data, status, headers, config) {
         console.log('getUserList %o', data);
         $scope.userList = data.body;
-        isPaused+=1;
         success();
       })
       .error(function(err, status, headers, config) {
@@ -68,7 +65,6 @@ angular.module('zeppelinWebApp').controller('InterpreterAuthCtrl',
         fail();
       });
 /*
-
     // get all user list.
     $http.get(baseUrlSrv.getRestApiBase() + '/security/alluserlist').then(function
     (response) {
@@ -81,20 +77,60 @@ angular.module('zeppelinWebApp').controller('InterpreterAuthCtrl',
   })};
 
   $scope.init = function() {
-    console.log('init --------->');
     websocketMsgSrv.getInterpreterAuthList($rootScope.ticket.principal);
   };
 
   // request
   $scope.updateInterpreterAuth = function() {
     console.log('selected :', $scope.checklist);
+    console.log('authList :', $scope.authList.authInfo);
+
+    var tmp = [];
+    for (var i = 0; i < $scope.checklist.length; i++) {
+
+      for (var j = 0; j < $scope.checklist[i].length; j++) {
+        if ($scope.checklist[i][j] === true) {
+          console.log($scope.intpList[i], '(', i, ') use ', $scope.userList[j], '(', j, ')');
+
+          //$scope.authList.authInfo[$scope.intpList[i]].push($scope.userList[j]);
+
+          if (tmp[$scope.intpList[i]] === undefined) {
+            tmp[$scope.intpList[i]] = [];
+          }
+          tmp[$scope.intpList[i]].push($scope.userList[j]);
+        }
+      }
+    }
+    console.log('---- tmp :', tmp);
+    //console.log('---- authList :', $scope.authList.authInfo);
+/*
+
+    for (var i = 0; i < $scope.checklist.length; i++) {
+      for (var j = 0; j < $scope.checklist[i].length; j++) {
+        //console.log('i=', i, ', j=', j, "ret=", $scope.checklist[i][j]);
+        if ($scope.checklist[i][j] === true) {
+          console.log($scope.userList[i], ' use ', $scope.intpList[j]);
+
+          //$scope.authList.authInfo = $scope.intpList[j];
+          //tmp.intp = $scope.intpList[j];
+
+          $scope.authList.authInfo[$scope.intpList[j]].push($scope.userList[i]);
+
+          // var authList = { "authInfo": { "spark": [ "user1", "user2" ] , "livy": [ "user1" ] } };
+          //$scope.authList = [];
+        }
+      }
+    }
+    console.log('---- authList :', $scope.authList.authInfo);
+*/
+
 //      console.log('updateInterpreterAuth ===>', $rootScope.ticket.principal);
 //      websocketMsgSrv.updateInterpreterAuth($rootScope.ticket.principal, authList);
+
   };
 
   // request
   $scope.getInterpreterAuth = function() {
-    console.log('getInterpreterAuth --------->', $scope.checklist);
     websocketMsgSrv.getInterpreterAuthList($rootScope.ticket.principal);
   }
 
@@ -102,16 +138,23 @@ angular.module('zeppelinWebApp').controller('InterpreterAuthCtrl',
   $scope.$on('getInterpreterAuthList', function(event, data) {
     $scope.authList = data;
 
-    _promise( true ).then(
-      function (text) {
-        console.log('success-', text);
+    _promise(true).then(
+      function() {
         // make dimension.
+        for (var i = 0; i < $scope.intpList.length; i++) {
+          $scope.checklist[i] = [];
+          for (var j = 0; j < $scope.userList.length; j++) {
+            $scope.checklist[i][j] = isSelected($scope.intpList[i], $scope.userList[j]);
+          }
+        }
+/*
         for (var i = 0; i < $scope.userList.length; i++) {
           $scope.checklist[i] = [];
           for (var j = 0; j < $scope.intpList.length; j++) {
             $scope.checklist[i][j] = isSelected($scope.userList[i], $scope.intpList[j]);
           }
         }
+*/
         console.log('----- end ---------', $scope.checklist);
       }
     );
@@ -129,22 +172,36 @@ angular.module('zeppelinWebApp').controller('InterpreterAuthCtrl',
           }
         );
       },
-      function() {   // fail
+      function() {  // fail
         reject( Error("fail") );
       });
     });
   };
 
-  var isSelected = function(userName, intpName) {
-    var result = 0;
+  var isSelected = function(intpName, userName) {
+    var result = false;
     $.each($scope.authList.authInfo, function(intp, userList) {
-    if ( !_.isEmpty(_.where(userList, userName)) && intpName === intp) {
+    if (!_.isEmpty(_.where(userList, userName)) && intpName === intp) {
         console.log(userName + ' uses ' + intpName);
-        result = 1;
+        result = true;
       }
     });
-
-    console.log('result ==>', result);
+    //console.log('result ==>', result);
     return result;
   };
+/*
+
+  var isSelected = function(userName, intpName) {
+    var result = false;
+    $.each($scope.authList.authInfo, function(intp, userList) {
+    if (!_.isEmpty(_.where(userList, userName)) && intpName === intp) {
+        //console.log(userName + ' uses ' + intpName);
+        result = true;
+      }
+    });
+    //console.log('result ==>', result);
+    return result;
+  };
+*/
+
 });
