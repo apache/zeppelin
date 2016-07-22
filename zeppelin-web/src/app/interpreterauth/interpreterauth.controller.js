@@ -13,9 +13,8 @@
  * limitations under the License.
  */
 'use strict';
-
 angular.module('zeppelinWebApp').controller('InterpreterAuthCtrl',
-  function($scope, websocketMsgSrv, $rootScope, $http, baseUrlSrv, ngToast) {
+  function($scope, $q, websocketMsgSrv, $rootScope, $http, baseUrlSrv, ngToast) {
   $scope._ = _;
 
   $scope.authList = [];
@@ -32,128 +31,7 @@ angular.module('zeppelinWebApp').controller('InterpreterAuthCtrl',
     console.log('after=', $scope.checklist);
   };
 
-  $scope.init = function() {
-    console.log('init --------->');
-    websocketMsgSrv.getInterpreterAuthList($rootScope.ticket.principal);
-  };
-
-  // request
-  $scope.updateInterpreterAuth = function() {
-    console.log('selected :', $scope.checklist);
-
-//      console.log('updateInterpreterAuth ===>', $rootScope.ticket.principal);
-//      websocketMsgSrv.updateInterpreterAuth($rootScope.ticket.principal, authList);
-  };
-
-  // request
-  $scope.getInterpreterAuth = function() {
-    console.log('getInterpreterAuth --------->', $scope.checklist);
-    websocketMsgSrv.getInterpreterAuthList($rootScope.ticket.principal);
-  }
-
-  // receive
-  $scope.$on('getInterpreterAuthList', function(event, data) {
-/*
-    for(var attr in data.authInfo) {
-      console.log('-->', data.authInfo[attr]);
-      var d = data.authInfo[attr];
-      $.each(d, function(k, v) {
-          //display the key and value pair
-          console.log(k + ' is ' + v);
-      });
-    }
-*/
-
-/*
-    var authList = angular.toJson(data);
-    console.log('-->', authList);
-*/
-
-/*
-
-    var authList = { "authInfo": [
-                       {"intp1": [ "user1", "user2" ]} ,
-                       {"intp2": [ "user1" ]}
-                   ]};
-    for(var idx in data.authInfo) {
-      var authInfo = data.authInfo[idx];
-      $.each(authInfo, function(intpName, userList) {
-          //display the key and value pair
-          console.log(intpName + ' is ' + userList);
-      });
-    }
-*/
-
-/*
-    var authList = { "authInfo": { "spark": [ "user1", "user2" ] , "livy": [ "user1" ] } };
-    $scope.intpList = _.keys(_.pick(authList.authInfo, function(value) {
-      return value;
-    }));
-*/
-    $scope.authList = data;
-/*
-
-    $scope.intpList = _.keys(_.pick(data.authInfo, function(value) {
-      return value;
-    }));
-    console.log('name----->', $scope.intpList, ', len=', $scope.intpList.length);
-*/
-
-    getInterpreterList();
-    getUserList();
-
-    function waitForIt() {
-      console.log('isPaused = ', isPaused);
-      if (isPaused >= 2) {
-          setTimeout(function(){waitForIt()},100);
-      } else {
-          // go do that thing
-      };
-    }
-
-
-/*
-
-    // get all interpreter list.
-    getInterpreterList();
-    // get all user list.
-    getUserList();
-
-    ttt(function () { // <-- this will run once all the above animations are finished
-
-    });
-*/
-
-
-    // make dimension.
-    for (var i = 0; i < $scope.userList.length; i++) {
-      $scope.checklist[i] = [];
-      for (var j = 0; j < $scope.intpList.length; j++) {
-        $scope.checklist[i][j] = isSelected($scope.userList[i], $scope.intpList[j]);
-      }
-    }
-    console.log('----- end ---------', $scope.checklist);
-  });
-
-  var isSelected = function(userName, intpName) {
-    var result = 0;
-    $.each($scope.authList.authInfo, function(intp, userList) {
-    if ( !_.isEmpty(_.where(userList, userName)) && intpName === intp) {
-        console.log(userName + ' uses ' + intpName);
-        result = 1;
-      }
-    });
-
-    console.log('result ==>', result);
-
-    return result;
-  };
-
-  var ttt = function(callback) {
-    console.log('ttttttttttttt');
-  };
-
-  var getInterpreterList = function() {
+  var getInterpreterList = function() { return $q(function(success, fail) {
 /*
 
     $http.get(baseUrlSrv.getRestApiBase() + '/interpreter/names').then(function
@@ -164,27 +42,30 @@ angular.module('zeppelinWebApp').controller('InterpreterAuthCtrl',
       }
     });
 */
-
     $http.get(baseUrlSrv.getRestApiBase() + '/interpreter/names')
       .success(function(data, status, headers, config) {
         console.log('getInterpreterList %o', data);
         $scope.intpList = data.body;
         isPaused+=1;
+        success();
       })
       .error(function(err, status, headers, config) {
         console.log('Error %o', err);
+        fail();
       });
-  };
+  })};
 
-  var getUserList = function() {
+  var getUserList = function() { return $q(function(success, fail) {
     $http.get(baseUrlSrv.getRestApiBase() + '/security/alluserlist')
       .success(function(data, status, headers, config) {
         console.log('getUserList %o', data);
         $scope.userList = data.body;
         isPaused+=1;
+        success();
       })
       .error(function(err, status, headers, config) {
         console.log('Error %o', err);
+        fail();
       });
 /*
 
@@ -197,5 +78,73 @@ angular.module('zeppelinWebApp').controller('InterpreterAuthCtrl',
       }
     });
 */
+  })};
+
+  $scope.init = function() {
+    console.log('init --------->');
+    websocketMsgSrv.getInterpreterAuthList($rootScope.ticket.principal);
+  };
+
+  // request
+  $scope.updateInterpreterAuth = function() {
+    console.log('selected :', $scope.checklist);
+//      console.log('updateInterpreterAuth ===>', $rootScope.ticket.principal);
+//      websocketMsgSrv.updateInterpreterAuth($rootScope.ticket.principal, authList);
+  };
+
+  // request
+  $scope.getInterpreterAuth = function() {
+    console.log('getInterpreterAuth --------->', $scope.checklist);
+    websocketMsgSrv.getInterpreterAuthList($rootScope.ticket.principal);
+  }
+
+  // receive
+  $scope.$on('getInterpreterAuthList', function(event, data) {
+    $scope.authList = data;
+
+    _promise( true ).then(
+      function (text) {
+        console.log('success-', text);
+        // make dimension.
+        for (var i = 0; i < $scope.userList.length; i++) {
+          $scope.checklist[i] = [];
+          for (var j = 0; j < $scope.intpList.length; j++) {
+            $scope.checklist[i][j] = isSelected($scope.userList[i], $scope.intpList[j]);
+          }
+        }
+        console.log('----- end ---------', $scope.checklist);
+      }
+    );
+  });
+
+  var _promise = function(param) {
+    return $q(function(resolve, reject) {
+      getInterpreterList().then(function () {
+        getUserList().then(
+          function() {  // success
+            resolve("success");
+          },
+          function() {  // success
+            reject( Error("fail") );
+          }
+        );
+      },
+      function() {   // fail
+        reject( Error("fail") );
+      });
+    });
+  };
+
+  var isSelected = function(userName, intpName) {
+    var result = 0;
+    $.each($scope.authList.authInfo, function(intp, userList) {
+    if ( !_.isEmpty(_.where(userList, userName)) && intpName === intp) {
+        console.log(userName + ' uses ' + intpName);
+        result = 1;
+      }
+    });
+
+    console.log('result ==>', result);
+    return result;
   };
 });

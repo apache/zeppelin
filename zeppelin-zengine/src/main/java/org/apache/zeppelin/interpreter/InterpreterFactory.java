@@ -125,25 +125,23 @@ public class InterpreterFactory implements InterpreterGroupFactory {
   public InterpreterFactory(ZeppelinConfiguration conf,
       AngularObjectRegistryListener angularObjectRegistryListener,
       RemoteInterpreterProcessListener remoteInterpreterProcessListener,
-      ApplicationEventListener appEventListener, InterpreterAuthorization interpreterAuthorization,
-        DependencyResolver depResolver)
+      ApplicationEventListener appEventListener, DependencyResolver depResolver)
       throws InterpreterException, IOException, RepositoryException {
     this(conf, new InterpreterOption(true), angularObjectRegistryListener,
-        remoteInterpreterProcessListener, appEventListener, interpreterAuthorization, depResolver);
+        remoteInterpreterProcessListener, appEventListener, depResolver);
   }
 
 
   public InterpreterFactory(ZeppelinConfiguration conf, InterpreterOption defaultOption,
       AngularObjectRegistryListener angularObjectRegistryListener,
       RemoteInterpreterProcessListener remoteInterpreterProcessListener,
-      ApplicationEventListener appEventListener, InterpreterAuthorization interpreterAuthorization,
-        DependencyResolver depResolver)
+      ApplicationEventListener appEventListener, DependencyResolver depResolver)
       throws InterpreterException, IOException, RepositoryException {
     this.conf = conf;
     this.defaultOption = defaultOption;
     this.angularObjectRegistryListener = angularObjectRegistryListener;
     this.depResolver = depResolver;
-    this.interpreterAuthorization = interpreterAuthorization;
+    this.interpreterAuthorization = new InterpreterAuthorization(conf);
     this.interpreterRepositories = depResolver.getRepos();
     this.remoteInterpreterProcessListener = remoteInterpreterProcessListener;
     this.appEventListener = appEventListener;
