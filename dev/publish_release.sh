@@ -96,7 +96,19 @@ function publish_to_maven() {
     -Dmaven.repo.local=${tmp_repo} \
     ${PUBLISH_PROFILES} ${PROJECT_OPTIONS}"
   mvn clean install -Ppublish-distr -Dmaven.repo.local="${tmp_repo}" \
-    ${PUBLISH_PROFILES} ${PROJECT_OPTIONS}
+    ${PUBLISH_PROFILES} -Pscala-2.10 ${PROJECT_OPTIONS}
+  if [[ $? -ne 0 ]]; then
+    echo "Build failed."
+    exit 1
+  fi
+
+  ./dev/change-scala-version.sh 2.11
+
+  echo "mvn clean install -Ppublish-distr \
+    -Dmaven.repo.local=${tmp_repo} \
+    ${PUBLISH_PROFILES} ${PROJECT_OPTIONS}"
+  mvn clean install -Ppublish-distr -Dmaven.repo.local="${tmp_repo}" \
+    ${PUBLISH_PROFILES} -Pscala-2.11 ${PROJECT_OPTIONS}
   if [[ $? -ne 0 ]]; then
     echo "Build failed."
     exit 1
