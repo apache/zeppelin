@@ -69,7 +69,6 @@ public class ShellInterpreter extends Interpreter {
   public InterpreterResult interpret(String cmd, InterpreterContext contextInterpreter) {
     LOGGER.debug("Run shell command '" + cmd + "'");
     OutputStream outStream = new ByteArrayOutputStream();
-    OutputStream errStream = new ByteArrayOutputStream();
     
     CommandLine cmdLine = CommandLine.parse(shell);
     // the Windows CMD shell doesn't handle multiline statements,
@@ -82,7 +81,7 @@ public class ShellInterpreter extends Interpreter {
 
     try {
       DefaultExecutor executor = new DefaultExecutor();
-      executor.setStreamHandler(new PumpStreamHandler(outStream, errStream));
+      executor.setStreamHandler(new PumpStreamHandler(outStream, outStream));
       executor.setWatchdog(new ExecuteWatchdog(Long.valueOf(getProperty(TIMEOUT_PROPERTY))));
       executors.put(contextInterpreter.getParagraphId(), executor);
       int exitVal = executor.execute(cmdLine);
@@ -93,7 +92,7 @@ public class ShellInterpreter extends Interpreter {
       int exitValue = e.getExitValue();
       LOGGER.error("Can not run " + cmd, e);
       Code code = Code.ERROR;
-      String message = errStream.toString();
+      String message = outStream.toString();
       if (exitValue == 143) {
         code = Code.INCOMPLETE;
         message += "Paragraph received a SIGTERM.\n";
