@@ -1,0 +1,73 @@
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+.editorConfigurationHead {
+  margin: -10px -10px 20px;
+  padding: 10px 15px 5px 11px;
+  background: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+  border-bottom: 1px solid #E5E5E5;
+}
+
+.editorConfigurationHead .header {
+  font-family: 'Roboto', sans-serif;
+}
+
+.editorConfigurationHead .configuration-title {
+  font-size: 20px;
+  font-weight: bold;
+  color: #3071a9;
+  float: left;
+  margin-top: 0;
+}
+
+.editorConfigurationHead ul {
+  margin: 0;
+  padding: 0;
+}
+
+.editorConfigurationHead .configurationInfo {
+  list-style-type: none;
+}
+
+.editorConfigurationHead table {
+  table-layout: fixed;
+  word-break: break-all;
+}
+
+.editorConfigurationHead table tr .configurationPropertyKey {
+  padding : 5px 5px 5px 5px;
+}
+
+.editorConfigurationHead table tr .configurationPropertyValue {
+  padding : 5px 5px 5px 5px;
+  display: block;
+  max-height: 100px;
+  overflow-y: auto;
+}
+
+.editorConfigurationHead h5 {
+  font-weight: bold;
+}
+
+.editorTableNameColumn {
+  background-color: #eee;
+  padding-top: 15px !important;
+  padding-left: 15px !important;
+}
+
+.editorTableValueColumn {
+  padding-top: 15px !important;
+  padding-left: 15px !important;
+}

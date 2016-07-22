@@ -78,6 +78,10 @@
               templateUrl: 'app/configuration/configuration.html',
               controller: 'ConfigurationCtrl'
             })
+            .when('/configuration/editor', {
+              templateUrl: 'app/editor-configuration/editor.configuration.html',
+              controller: 'EditorConfigurationCtrl'
+            })
             .when('/search/:searchTerm', {
               templateUrl: 'app/search/result-list.html',
               controller: 'SearchResultCtrl'

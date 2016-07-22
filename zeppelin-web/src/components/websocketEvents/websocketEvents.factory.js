@@ -14,7 +14,7 @@
 'use strict';
 
 angular.module('zeppelinWebApp').factory('websocketEvents',
-  function($rootScope, $websocket, $location, baseUrlSrv) {
+  function($rootScope, $websocket, $location, $timeout, $window, baseUrlSrv, editorConfigSrv) {
   var websocketCalls = {};
 
   websocketCalls.ws = $websocket(baseUrlSrv.getWebsocketUrl());
@@ -109,6 +109,14 @@ angular.module('zeppelinWebApp').factory('websocketEvents',
       $rootScope.$broadcast('appLoad', data);
     } else if (op === 'APP_STATUS_CHANGE') {
       $rootScope.$broadcast('appStatusChange', data);
+    } else if (op === 'GET_USER_CODE_EDITOR_SETTING') {
+      editorConfigSrv.initConfig(data.editorSettings).then(function() {
+        $timeout(function() {
+          $rootScope.$broadcast('receiveEditorSettings');
+          $rootScope.$broadcast('updateEditorSettings');
+        }, 1000);
+      });
+      editorConfigSrv.setServerReceived(true);
     } else if (op === 'LIST_REVISION_HISTORY') {
       $rootScope.$broadcast('listRevisionHistory', data);
     } else if (op === 'NOTE_REVISION') {
