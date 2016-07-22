@@ -111,9 +111,9 @@ public class SparkInterpreter extends Interpreter {
   private SparkDependencyResolver dep;
 
   /**
-   * completor - org.apache.spark.repl.SparkJLineCompletion (scala 2.10)
+   * completer - org.apache.spark.repl.SparkJLineCompletion (scala 2.10)
    */
-  private Object completor;
+  private Object completer;
 
   private Map<String, Object> binder;
   private SparkVersion sparkVersion;
@@ -576,7 +576,7 @@ public class SparkInterpreter extends Interpreter {
           }
         }
 
-        completor = Utils.instantiateClass(
+        completer = Utils.instantiateClass(
             "org.apache.spark.repl.SparkJLineCompletion",
             new Class[]{Utils.findClass("org.apache.spark.repl.SparkIMain")},
             new Object[]{intp});
@@ -748,7 +748,7 @@ public class SparkInterpreter extends Interpreter {
       cursor = completionText.length();
     }
     if (Utils.isScala2_10()) {
-      ScalaCompleter c = (ScalaCompleter) Utils.invokeMethod(completor, "completer");
+      ScalaCompleter c = (ScalaCompleter) Utils.invokeMethod(completer, "completer");
       Candidates ret = c.complete(completionText, cursor);
 
       List<String> candidates = WrapAsJava$.MODULE$.seqAsJavaList(ret.candidates());
