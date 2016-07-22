@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
@@ -49,7 +50,7 @@ public class ShellInterpreter extends Interpreter {
   private static final String TIMEOUT_PROPERTY = "shell.command.timeout.millisecs";
   private final boolean isWindows = System.getProperty("os.name").startsWith("Windows");
   private final String shell = isWindows ? "cmd /c" : "bash -c";
-  private Map<String, DefaultExecutor> executors;
+  ConcurrentHashMap<String, DefaultExecutor> executors;
 
   public ShellInterpreter(Properties property) {
     super(property);
@@ -58,7 +59,7 @@ public class ShellInterpreter extends Interpreter {
   @Override
   public void open() {
     LOGGER.info("Command timeout property: {}", TIMEOUT_PROPERTY);
-    executors = new HashMap<String, DefaultExecutor>();
+    executors = new ConcurrentHashMap<String, DefaultExecutor>();
   }
 
   @Override
@@ -104,16 +105,16 @@ public class ShellInterpreter extends Interpreter {
     } catch (IOException e) {
       LOGGER.error("Can not run " + cmd, e);
       return new InterpreterResult(Code.ERROR, e.getMessage());
+    } finally {
+      executors.remove(contextInterpreter.getParagraphId());
     }
   }
 
   @Override
   public void cancel(InterpreterContext context) {
-    for (String paragraphId : executors.keySet()) {
-      if (paragraphId.equals(context.getParagraphId())) {
-        DefaultExecutor executor = executors.get(paragraphId);
-        executor.getWatchdog().destroyProcess();
-      }
+    DefaultExecutor executor = executors.remove(context.getParagraphId());
+    if (executor != null) {
+      executor.getWatchdog().destroyProcess();
     }
   }
 
