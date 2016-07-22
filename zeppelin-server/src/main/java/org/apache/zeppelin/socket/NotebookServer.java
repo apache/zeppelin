@@ -53,6 +53,8 @@ import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.server.ZeppelinServer;
 import org.apache.zeppelin.ticket.TicketContainer;
+import org.apache.zeppelin.util.CodeEditorWebSettings;
+import org.apache.zeppelin.util.CodeEditorWebSettings.EditorConfig;
 import org.apache.zeppelin.utils.SecurityUtils;
 import org.eclipse.jetty.websocket.servlet.WebSocketServlet;
 import org.eclipse.jetty.websocket.servlet.WebSocketServletFactory;
@@ -88,6 +90,7 @@ public class NotebookServer extends WebSocketServlet implements
   private Notebook notebook() {
     return ZeppelinServer.notebook;
   }
+  private CodeEditorWebSettings codeEditorWebSettings() { return ZeppelinServer.webEditorSetting; }
 
   @Override
   public void configure(WebSocketServletFactory factory) {
@@ -233,6 +236,12 @@ public class NotebookServer extends WebSocketServlet implements
             break;
           case LIST_UPDATE_NOTEBOOK_JOBS:
             unicastUpdateNotebookJobInfo(conn, messagereceived);
+            break;
+          case GET_USER_CODE_EDITOR_SETTING:
+            getUserCodeEditorSetting(conn, messagereceived);
+            break;
+          case SAVE_USER_CODE_EDITOR_SETTING:
+            saveUserCodeEditorSetting(conn, messagereceived);
             break;
           default:
             break;
@@ -741,6 +750,40 @@ public class NotebookServer extends WebSocketServlet implements
     List<InterpreterCompletion> candidates = note.completion(paragraphId, buffer, cursor);
     resp.put("completions", candidates);
     conn.send(serializeMessage(resp));
+  }
+
+  // clover
+  private void getUserCodeEditorSetting(NotebookSocket conn, Message fromMessage)
+      throws IOException  {
+    String userName = (String) fromMessage.get("principal");
+
+    if (userName == null) {
+      throw new IOException("principal is null");
+    }
+
+    List<EditorConfig> userEditorSetting = codeEditorWebSettings().getUserEditorConfig(userName);
+
+    if (userEditorSetting == null) {
+      LOG.info("does not exists [{}] user code editor settings", userName);
+      conn.send(serializeMessage(new Message(OP.GET_USER_CODE_EDITOR_SETTING)
+        .put("editorSettings", new LinkedList<>())));
+    } else  {
+      conn.send(serializeMessage(new Message(OP.GET_USER_CODE_EDITOR_SETTING)
+        .put("editorSettings", userEditorSetting)));
+    }
+  }
+
+  private void saveUserCodeEditorSetting(NotebookSocket conn, Message fromMessage)
+      throws IOException {
+    List<EditorConfig> userEditorSetting = fromMessage.getType("editorSettings");
+    String userName = (String) fromMessage.get("principal");
+    if (userName == null) {
+      throw new IOException("principal is null");
+    }
+    codeEditorWebSettings().setUserEditorConfig(userName, userEditorSetting);
+    codeEditorWebSettings().serialize();
+
+    conn.send(serializeMessage(new Message(OP.SAVE_USER_CODE_EDITOR_SETTING)));
   }
 
   /**

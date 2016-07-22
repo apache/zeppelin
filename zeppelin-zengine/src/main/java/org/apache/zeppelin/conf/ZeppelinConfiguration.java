@@ -362,6 +362,10 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     return getRelativeDir(String.format("%s/interpreter.json", getConfDir()));
   }
 
+  public String getUserCodeWebEditorSettingPath() {
+    return getRelativeDir(String.format("%s/code-editor.json", getConfDir()));
+  }
+
   public String getHeliumConfPath() {
     return getRelativeDir(String.format("%s/helium.json", getConfDir()));
   }

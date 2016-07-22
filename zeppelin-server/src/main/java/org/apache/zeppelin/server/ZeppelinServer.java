@@ -45,6 +45,7 @@ import org.apache.zeppelin.search.LuceneSearch;
 import org.apache.zeppelin.search.SearchService;
 import org.apache.zeppelin.socket.NotebookServer;
 import org.apache.zeppelin.user.Credentials;
+import org.apache.zeppelin.util.CodeEditorWebSettings;
 import org.apache.zeppelin.utils.SecurityUtils;
 import org.eclipse.jetty.http.HttpVersion;
 import org.eclipse.jetty.server.*;
@@ -70,6 +71,7 @@ public class ZeppelinServer extends Application {
   public static NotebookServer notebookWsServer;
   public static Helium helium;
   public static HeliumApplicationFactory heliumApplicationFactory;
+  public static CodeEditorWebSettings webEditorSetting;
 
   private SchedulerFactory schedulerFactory;
   private InterpreterFactory replFactory;
@@ -102,6 +104,10 @@ public class ZeppelinServer extends Application {
     heliumApplicationFactory.setNotebook(notebook);
     // to update fire websocket event on application event.
     heliumApplicationFactory.setApplicationEventListener(notebookWsServer);
+
+    webEditorSetting = new CodeEditorWebSettings(conf);
+    // user web editor settings
+    webEditorSetting.deserialize();
 
     notebook.addNotebookEventListener(heliumApplicationFactory);
   }
