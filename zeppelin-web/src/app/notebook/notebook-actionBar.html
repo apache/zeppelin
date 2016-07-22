@@ -109,6 +109,15 @@ limitations under the License.
           data-toggle="dropdown" id="revisionsDropdown">
           <span class="caret"></span>
         </button>
+        <span>
+          <button type="button" class="btn btn-default btn-xs"
+            ng-class="{'active' : noFilter()}"
+            ng-click="allParagraphFiltered(true)" tooltip-placement="bottom"
+            tooltip="click on graph to filter">
+            <i class="fa fa-filter"></i> {{filteredData}}
+          </button>
+        </span>
+
         <ul class="dropdown-menu pull-right" aria-labelledby="revisionsDropdown">
           <li ng-repeat="revision in noteRevisions | orderBy:'time':true" class="revision">
             <a style="cursor:pointer">
