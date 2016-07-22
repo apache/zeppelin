@@ -1,4 +1,3 @@
-/*jshint loopfunc: true, unused:false */
 /*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +16,7 @@
 angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $rootScope, $route, $window,
                                                                       $routeParams, $location, $timeout, $compile,
                                                                       $http, websocketMsgSrv, baseUrlSrv, ngToast,
-                                                                      SaveAsService) {
+                                                                      saveAsService) {
   var ANGULAR_FUNCTION_OBJECT_NAME_PREFIX = '_Z_ANGULAR_FUNC_';
   $scope.parentNote = null;
   $scope.paragraph = null;
@@ -774,10 +773,6 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
     bodyEl.scrollTo(scrollTargetPos, {axis: 'y', interrupt: true, duration: 100});
   };
 
-  var setEditorHeight = function(id, height) {
-    angular.element('#' + id).height(height.toString() + 'px');
-  };
-
   $scope.getEditorValue = function() {
     return $scope.editor.getValue();
   };
@@ -1101,12 +1096,12 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
       } catch (ignoreErr) {
       }
 
-      var chartEl = d3.select('#p' + $scope.paragraph.id + '_' + type + ' svg')
-      .attr('height', $scope.paragraph.config.graph.height)
-      .datum(d3g)
-      .transition()
-      .duration(animationDuration)
-      .call($scope.chart[type]);
+      d3.select('#p' + $scope.paragraph.id + '_' + type + ' svg')
+        .attr('height', $scope.paragraph.config.graph.height)
+        .datum(d3g)
+        .transition()
+        .duration(animationDuration)
+        .call($scope.chart[type]);
       d3.select('#p' + $scope.paragraph.id + '_' + type + ' svg').style.height = height + 'px';
       nv.utils.windowResize($scope.chart[type].update);
     };
@@ -1313,7 +1308,6 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
 
     for (var i = 0; i < data.rows.length; i++) {
       var row = data.rows[i];
-      var newRow = {};
       var s = schema;
       var p = rows;
 
@@ -1845,7 +1839,6 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
   };
 
   $scope.exportToDSV = function(delimiter) {
-    var data = $scope.paragraph.result;
     var dsv = '';
     for (var titleIndex in $scope.paragraph.result.columnNames) {
       dsv += $scope.paragraph.result.columnNames[titleIndex].name + delimiter;
@@ -1865,7 +1858,7 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
     } else if (delimiter === ',') {
       extension = 'csv';
     }
-    SaveAsService.SaveAs(dsv, 'data', extension);
+    saveAsService.saveAs(dsv, 'data', extension);
   };
 
   // Helium ---------------------------------------------
@@ -1877,7 +1870,6 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
   $scope.suggestion = {};
 
   $scope.switchApp = function(appId) {
-    var app = _.find($scope.apps, {id: appId});
     var config = $scope.paragraph.config;
     var settings = $scope.paragraph.settings;
 

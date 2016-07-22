@@ -46,6 +46,7 @@ import com.google.common.base.Joiner;
 public class GitNotebookRepoTest {
 
   private static final String TEST_NOTE_ID = "2A94M5J1Z";
+  private static final String TEST_NOTE_ID2 = "2A94M5J2Z";
 
   private File zeppelinDir;
   private String notebooksDir;
@@ -54,7 +55,7 @@ public class GitNotebookRepoTest {
 
   @Before
   public void setUp() throws Exception {
-    String zpath = System.getProperty("java.io.tmpdir")+"/ZeppelinTest_"+System.currentTimeMillis();
+    String zpath = System.getProperty("java.io.tmpdir") + "/ZeppelinTest_" + System.currentTimeMillis();
     zeppelinDir = new File(zpath);
     zeppelinDir.mkdirs();
     new File(zeppelinDir, "conf").mkdirs();
@@ -64,8 +65,11 @@ public class GitNotebookRepoTest {
     notebookDir.mkdirs();
 
     String testNoteDir = Joiner.on(File.separator).join(notebooksDir, TEST_NOTE_ID);
+    String testNoteDir2 = Joiner.on(File.separator).join(notebooksDir, TEST_NOTE_ID2);
     FileUtils.copyDirectory(new File(Joiner.on(File.separator).join("src", "test", "resources", TEST_NOTE_ID)),
-        new File(testNoteDir)
+        new File(testNoteDir));
+    FileUtils.copyDirectory(new File(Joiner.on(File.separator).join("src", "test", "resources", TEST_NOTE_ID2)),
+        new File(testNoteDir2)
     );
 
     System.setProperty(ConfVars.ZEPPELIN_HOME.getVarName(), zeppelinDir.getAbsolutePath());
@@ -106,7 +110,7 @@ public class GitNotebookRepoTest {
   }
 
   @Test
-  public void showNotebookHistory() throws GitAPIException, IOException {
+  public void showNotebookHistoryEmptyTest() throws GitAPIException, IOException {
     //given
     notebookRepo = new GitNotebookRepo(conf);
     assertThat(notebookRepo.list(null)).isNotEmpty();
@@ -120,7 +124,50 @@ public class GitNotebookRepoTest {
   }
 
   @Test
-  public void addCheckpoint() throws IOException {
+  public void showNotebookHistoryMultipleNotesTest() throws IOException {
+    //initial checks
+    notebookRepo = new GitNotebookRepo(conf);
+    assertThat(notebookRepo.list(null)).isNotEmpty();
+    assertThat(containsNote(notebookRepo.list(null), TEST_NOTE_ID)).isTrue();
+    assertThat(containsNote(notebookRepo.list(null), TEST_NOTE_ID2)).isTrue();
+    assertThat(notebookRepo.revisionHistory(TEST_NOTE_ID, null)).isEmpty();
+    assertThat(notebookRepo.revisionHistory(TEST_NOTE_ID2, null)).isEmpty();
+
+    //add commit to both notes
+    notebookRepo.checkpoint(TEST_NOTE_ID, "first commit, note1", null);
+    assertThat(notebookRepo.revisionHistory(TEST_NOTE_ID, null).size()).isEqualTo(1);
+    notebookRepo.checkpoint(TEST_NOTE_ID2, "first commit, note2", null);
+    assertThat(notebookRepo.revisionHistory(TEST_NOTE_ID2, null).size()).isEqualTo(1);
+
+    //modify, save and checkpoint first note
+    Note note = notebookRepo.get(TEST_NOTE_ID, null);
+    Paragraph p = note.addParagraph();
+    Map<String, Object> config = p.getConfig();
+    config.put("enabled", true);
+    p.setConfig(config);
+    p.setText("%md note1 test text");
+    notebookRepo.save(note, null);
+    assertThat(notebookRepo.checkpoint(TEST_NOTE_ID, "second commit, note1", null)).isNotNull();
+    assertThat(notebookRepo.revisionHistory(TEST_NOTE_ID, null).size()).isEqualTo(2);
+    assertThat(notebookRepo.revisionHistory(TEST_NOTE_ID2, null).size()).isEqualTo(1);
+    assertThat(notebookRepo.checkpoint(TEST_NOTE_ID2, "first commit, note2", null)).isNull();
+    assertThat(notebookRepo.revisionHistory(TEST_NOTE_ID2, null).size()).isEqualTo(1);
+
+    //modify, save and checkpoint second note
+    note = notebookRepo.get(TEST_NOTE_ID2, null);
+    p = note.addParagraph();
+    config = p.getConfig();
+    config.put("enabled", false);
+    p.setConfig(config);
+    p.setText("%md note2 test text");
+    notebookRepo.save(note, null);
+    assertThat(notebookRepo.checkpoint(TEST_NOTE_ID2, "second commit, note2", null)).isNotNull();
+    assertThat(notebookRepo.revisionHistory(TEST_NOTE_ID, null).size()).isEqualTo(2);
+    assertThat(notebookRepo.revisionHistory(TEST_NOTE_ID2, null).size()).isEqualTo(2);
+  }
+
+  @Test
+  public void addCheckpointTest() throws IOException {
     // initial checks
     notebookRepo = new GitNotebookRepo(conf);
     assertThat(notebookRepo.list(null)).isNotEmpty();

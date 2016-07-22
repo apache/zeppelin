@@ -3,11 +3,11 @@
 describe('Controller: NotebookCtrl', function() {
   beforeEach(module('zeppelinWebApp'));
 
-  var NotebookCtrl;
   var scope;
 
   var websocketMsgSrvMock = {
-    getNotebook: function() {}
+    getNotebook: function() {},
+    listRevisionHistory: function() {}
   };
 
   var baseUrlSrvMock = {
@@ -24,7 +24,7 @@ describe('Controller: NotebookCtrl', function() {
 
   beforeEach(inject(function($controller, $rootScope) {
     scope = $rootScope.$new();
-    NotebookCtrl = $controller('NotebookCtrl', {
+    $controller('NotebookCtrl', {
       $scope: scope,
       websocketMsgSrv: websocketMsgSrvMock,
       baseUrlSrv: baseUrlSrvMock

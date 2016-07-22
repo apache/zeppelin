@@ -25,6 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.Map;
 
 /**
@@ -59,6 +60,7 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
     this.env = env;
     this.interpreterDir = intpDir;
     this.localRepoDir = localRepoDir;
+
   }
 
   RemoteInterpreterManagedProcess(String intpRunner,
@@ -103,7 +105,7 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
     cmdLine.addArgument(localRepoDir, false);
 
     executor = new DefaultExecutor();
-
+    executor.setStreamHandler(new PumpStreamHandler(new ProcessLogOutputStream(logger)));
     watchdog = new ExecuteWatchdog(ExecuteWatchdog.INFINITE_TIMEOUT);
     executor.setWatchdog(watchdog);
 
@@ -162,5 +164,19 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
 
   public boolean isRunning() {
     return running;
+  }
+
+  private static class ProcessLogOutputStream extends LogOutputStream {
+
+    private Logger logger;
+
+    public ProcessLogOutputStream(Logger logger) {
+      this.logger = logger;
+    }
+
+    @Override
+    protected void processLine(String s, int i) {
+      this.logger.debug(s);
+    }
   }
 }

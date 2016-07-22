@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -354,14 +355,24 @@ public class NotebookRepoSync implements NotebookRepo {
   }
 
   @Override
-  public Note get(String noteId, Revision rev, AuthenticationInfo subject) throws IOException {
-    // Auto-generated method stub
-    return null;
+  public Note get(String noteId, Revision rev, AuthenticationInfo subject) {
+    Note revisionNote = null;
+    try {
+      revisionNote = getRepo(0).get(noteId, rev, subject);
+    } catch (IOException e) {
+      LOG.error("Failed to get revision {} of note {}", rev.id, noteId, e);
+    }
+    return revisionNote;
   }
 
   @Override
   public List<Revision> revisionHistory(String noteId, AuthenticationInfo subject) {
-    // Auto-generated method stub
-    return null;
+    List<Revision> revisions = Collections.emptyList();
+    try {
+      revisions = getRepo(0).revisionHistory(noteId, subject);
+    } catch (IOException e) {
+      LOG.error("Failed to list revision history", e);
+    }
+    return revisions;
   }
 }
