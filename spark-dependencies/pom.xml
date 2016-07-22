@@ -36,8 +36,16 @@
   <url>http://zeppelin.apache.org</url>
 
   <properties>
-    <spark.version>1.4.1</spark.version>
+    <!-- library version defined in this section brought from spark 1.4.1 and it's dependency.
+         Therefore changing only spark.version is not going to be enough when this module
+         support new version of spark to make the new version as default supported version.
 
+         Each profile (spark-2.0, spark-1.6, etc) will overrides necessary dependency version.
+         So we'll make one of those profile 'activateByDefault' to make it default supported version
+         instead of changing spark.version in this section.
+    -->
+
+    <spark.version>1.4.1</spark.version>
     <hadoop.version>2.3.0</hadoop.version>
     <yarn.version>${hadoop.version}</yarn.version>
     <avro.version>1.7.7</avro.version>
@@ -338,14 +346,6 @@
   </dependencies>
 
   <profiles>
-    <profile>
-      <id>scala-2.11</id>
-      <properties>
-        <spark.version>1.6.1</spark.version>
-        <spark.download.url>http://archive.apache.org/dist/spark/spark-${spark.version}/spark-${spark.version}.tgz</spark.download.url>
-      </properties>
-    </profile>
-
     <profile>
       <id>spark-1.1</id>
       <dependencies>
