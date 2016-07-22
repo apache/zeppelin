@@ -15,7 +15,7 @@
 'use strict';
 
 angular.module('zeppelinWebApp').controller('InterpreterCtrl',
-  function($scope, $http, baseUrlSrv, ngToast, $timeout) {
+  function($scope, $http, baseUrlSrv, ngToast, $timeout, $route) {
     var interpreterSettingsTmp = [];
     $scope.interpreterSettings = [];
     $scope.availableInterpreters = {};
@@ -52,7 +52,9 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl',
       }
       if (isDownloading) {
         $timeout(function() {
-          getInterpreterSettings();
+          if ($route.current.$$route.originalPath === '/interpreter') {
+            getInterpreterSettings();
+          }
         }, 2000);
       }
     };
