@@ -350,8 +350,8 @@ public class Note implements Serializable, ParagraphJobListener {
 
       if (index < 0 || index >= paragraphs.size()) {
         if (throwWhenIndexIsOutOfBound) {
-          throw new IndexOutOfBoundsException(
-              "paragraph size is " + paragraphs.size() + " , index is " + index);
+          throw new IndexOutOfBoundsException("paragraph size is " + paragraphs.size() +
+              " , index is " + index);
         } else {
           return;
         }

@@ -1133,13 +1133,17 @@ public class InterpreterFactory implements InterpreterGroupFactory {
   }
 
   private String getInterpreterInstanceKey(String user, String noteId, InterpreterSetting setting) {
+    String key;
     if (setting.getOption().isExistingProcess()) {
-      return Constants.EXISTING_PROCESS;
+      key = user + ":" + Constants.EXISTING_PROCESS;
     } else if (setting.getOption().isPerNoteSession() || setting.getOption().isPerNoteProcess()) {
-      return noteId;
+      key = user + ":" + noteId;
     } else {
-      return SHARED_SESSION;
+      key = user + ":" + SHARED_SESSION;
     }
+
+    logger.debug("Interpreter instance key: {}", key);
+    return key;
   }
 
   private List<Interpreter> createOrGetInterpreterList(String user, String noteId,

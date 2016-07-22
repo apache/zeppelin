@@ -26,6 +26,8 @@ import java.util.Map;
 import java.util.Properties;
 
 import com.google.gson.annotations.SerializedName;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.apache.zeppelin.dep.Dependency;
 
@@ -35,6 +37,7 @@ import static org.apache.zeppelin.notebook.utility.IdHashes.generateId;
  * Interpreter settings
  */
 public class InterpreterSetting {
+  private static final Logger logger = LoggerFactory.getLogger(InterpreterSetting.class);
   private static final String SHARED_PROCESS = "shared_process";
   private String id;
   private String name;
@@ -96,18 +99,22 @@ public class InterpreterSetting {
     return group;
   }
 
-  private String getInterpreterProcessKey(String noteId) {
+  private String getInterpreterProcessKey(String user, String noteId) {
+    String key;
     if (getOption().isExistingProcess) {
-      return Constants.EXISTING_PROCESS;
+      key = user + ":" + Constants.EXISTING_PROCESS;
     } else if (getOption().isPerNoteProcess()) {
-      return noteId;
+      key = user + ":" + noteId;
     } else {
-      return SHARED_PROCESS;
+      key = user + ":" + SHARED_PROCESS;
     }
+
+    logger.debug("getInterpreterProcessKey: {}", key);
+    return key;
   }
 
-  public InterpreterGroup getInterpreterGroup(String noteId) {
-    String key = getInterpreterProcessKey(noteId);
+  public InterpreterGroup getInterpreterGroup(String user, String noteId) {
+    String key = getInterpreterProcessKey(user, noteId);
     synchronized (interpreterGroupRef) {
       if (!interpreterGroupRef.containsKey(key)) {
         String interpreterGroupId = getId() + ":" + key;
@@ -126,10 +133,14 @@ public class InterpreterSetting {
   }
 
   void closeAndRemoveInterpreterGroup(String noteId) {
-    String key = getInterpreterProcessKey(noteId);
-    InterpreterGroup groupToRemove;
+    String key = getInterpreterProcessKey("", noteId);
+    InterpreterGroup groupToRemove = null;
     synchronized (interpreterGroupRef) {
-      groupToRemove = interpreterGroupRef.remove(key);
+      for(String intpKey: interpreterGroupRef.keySet()) {
+        if(intpKey.contains(key)) {
+          groupToRemove = interpreterGroupRef.remove(intpKey);
+        }
+      }
     }
 
     if (groupToRemove != null) {

@@ -134,7 +134,7 @@ public class NotebookServer extends WebSocketServlet implements
       if (LOG.isTraceEnabled()) {
         LOG.trace("RECEIVE MSG = " + messagereceived);
       }
-      
+
       String ticket = TicketContainer.instance.getTicket(messagereceived.principal);
       if (ticket != null && !ticket.equals(messagereceived.ticket)){
         /* not to pollute logs, log instead of exception */
@@ -1181,14 +1181,9 @@ public class NotebookServer extends WebSocketServlet implements
     String text = (String) fromMessage.get("paragraph");
     p.setText(text);
     p.setTitle((String) fromMessage.get("title"));
-    if (!fromMessage.principal.equals("anonymous")) {
-      AuthenticationInfo authenticationInfo = new AuthenticationInfo(fromMessage.principal,
-          fromMessage.ticket);
-      p.setAuthenticationInfo(authenticationInfo);
-
-    } else {
-      p.setAuthenticationInfo(new AuthenticationInfo());
-    }
+    AuthenticationInfo authenticationInfo =
+        new AuthenticationInfo(fromMessage.principal, fromMessage.ticket);
+    p.setAuthenticationInfo(authenticationInfo);
 
     Map<String, Object> params = (Map<String, Object>) fromMessage
        .get("params");
