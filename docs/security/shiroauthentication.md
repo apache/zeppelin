@@ -107,7 +107,7 @@ group1 = *
 
 ## Configure Realm (optional)
 Realms are responsible for authentication and authorization in Apache Zeppelin. By default, Apache Zeppelin uses [IniRealm](https://shiro.apache.org/static/latest/apidocs/org/apache/shiro/realm/text/IniRealm.html) (users and groups are configurable in `conf/shiro.ini` file under `[user]` and `[group]` section). You can also leverage Shiro Realms like [JndiLdapRealm](https://shiro.apache.org/static/latest/apidocs/org/apache/shiro/realm/ldap/JndiLdapRealm.html), [JdbcRealm](https://shiro.apache.org/static/latest/apidocs/org/apache/shiro/realm/jdbc/JdbcRealm.html) or create [our own](https://shiro.apache.org/static/latest/apidocs/org/apache/shiro/realm/AuthorizingRealm.html).
-To learn more about Apache Shiro Realm, please check [this documentation](http://shiro.apache.org/realm.html)
+To learn more about Apache Shiro Realm, please check [this documentation](http://shiro.apache.org/realm.html).
 
 We also provide community custom Realms.
 
@@ -118,7 +118,7 @@ TBD
 TBD
 
 ### ZeppelinHub
-[ZeppelinHub](https://www.zeppelinhub.com) is a service that synchronize your Apache Zeppelin notebooks and enables you to collaborate easely.
+[ZeppelinHub](https://www.zeppelinhub.com) is a service that synchronize your Apache Zeppelin notebooks and enables you to collaborate easily.
 
 To enable login with your ZeppelinHub credential, apply the following change in `conf/shiro.ini` under `[main]` section.
 
