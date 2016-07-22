@@ -27,11 +27,6 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
 
   var paragraphScope = $rootScope.$new(true, $rootScope);
 
-  if (editorConfigSrv.isServerReceived() === false) {
-    editorConfigSrv.setServerReceived(true);
-    websocketMsgSrv.getUserCodeEditorSetting();
-  }
-
   // to keep backward compatibility
   $scope.compiledScope = paragraphScope;
 
@@ -601,6 +596,11 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
       if ($scope.paragraphFocused) {
         $scope.editor.focus();
         $scope.goToLineEnd();
+      }
+
+      if (editorConfigSrv.isServerReceived() === false) {
+        editorConfigSrv.setServerReceived(true);
+        websocketMsgSrv.getUserCodeEditorSetting();
       }
 
       // set default editor config
