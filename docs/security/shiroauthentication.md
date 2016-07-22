@@ -148,5 +148,6 @@ Since Shiro provides **url-based security**, you can hide the information by com
 In this case, only who have `admin` role can see **Interpreter Setting**, **Credential** and **Configuration** information. 
 If you want to grant this permission to other users, you can change **roles[ ]** as you defined at `[users]` section.
 
-> **NOTE :** This documentation is originally from [SECURITY-README.md](https://github.com/apache/zeppelin/blob/master/SECURITY-README.md).
+<br/>
+> **NOTE :** All of the above configurations are defined in the `conf/shiro.ini` file. This documentation is originally from [SECURITY-README.md](https://github.com/apache/zeppelin/blob/master/SECURITY-README.md).
 
