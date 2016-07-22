@@ -383,7 +383,6 @@
         <property><name>!scala-2.11</name></property>
       </activation>
       <properties>
-        <spark.version>1.6.1</spark.version>
         <extra.source.dir>src/main/scala-2.10</extra.source.dir>
         <extra.testsource.dir>src/test/scala-2.10</extra.testsource.dir>
       </properties>
@@ -395,7 +394,6 @@
         <property><name>scala-2.11</name></property>
       </activation>
       <properties>
-        <spark.version>1.6.1</spark.version>
         <extra.source.dir>src/main/scala-2.11</extra.source.dir>
         <extra.testsource.dir>src/test/scala/scala-2.11</extra.testsource.dir>
       </properties>
