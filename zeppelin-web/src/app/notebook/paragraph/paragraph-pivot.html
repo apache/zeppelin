@@ -203,12 +203,12 @@ limitations under the License.
       <span class="columns lightBold">
         Pin contents
         <ul data-drop="true"
-            ng-model="paragraph.config.graph.map.pin"
+            ng-model="paragraph.config.graph.map.pinCols"
             jqyoui-droppable="{multiple:true, onDrop:'onGraphOptionChange()'}"
             class="list-unstyled">
-          <li ng-repeat="item in paragraph.config.graph.map.pin">
+          <li ng-repeat="col in paragraph.config.graph.map.pinCols">
             <div class="btn btn-primary btn-xs">
-              {{item.name}} <span class="fa fa-close" ng-click="removeMapOptionPinInfo($index)"></span>
+              {{col.name}} <span class="fa fa-close" ng-click="removeMapOptionPinInfo($index)"></span>
             </div>
           </li>
         </ul>

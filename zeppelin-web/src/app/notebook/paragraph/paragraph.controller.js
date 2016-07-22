@@ -93,6 +93,7 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
     $scope.parentNote = note;
     $scope.originalText = angular.copy(newParagraph.text);
     $scope.chart = {};
+    $scope.baseMapOption = ['Streets', 'Satellite', 'Hybrid', 'Topo', 'Gray', 'Oceans', 'Terrain'];
     $scope.colWidthOption = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
     $scope.paragraphFocused = false;
     if (newParagraph.focus) {
@@ -246,9 +247,15 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
     }
 
     if (!config.graph.map) {
-      config.graph.map = {
-        pin: []
-      };
+      config.graph.map = {};
+    }
+
+    if (!config.graph.map.baseMapType) {
+      config.graph.map.baseMapType = $scope.baseMapOption[0];
+    }
+
+    if (!config.graph.map.pinCols) {
+      config.graph.map.pinCols = [];
     }
 
     if (config.enabled === undefined) {
@@ -1160,7 +1167,7 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
         });
 
         // add user-selected pin info fields to popup
-        var pinInfoCols = $scope.paragraph.config.graph.map.pin;
+        var pinInfoCols = $scope.paragraph.config.graph.map.pinCols;
         for (var i = 0; i < pinInfoCols.length; ++i) {
           pinLayer.popupTemplate.content[0].fieldInfos.push({
             fieldName: pinInfoCols[i].name,
@@ -1175,7 +1182,7 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
       esriLoader.require(['esri/geometry/Point'], function(Point, FeatureLayer) {
         var latCol = $scope.paragraph.config.graph.map.lat;
         var lngCol = $scope.paragraph.config.graph.map.lng;
-        var pinInfoCols = $scope.paragraph.config.graph.map.pin;
+        var pinInfoCols = $scope.paragraph.config.graph.map.pinCols;
         var pins = [];
 
         // construct objects for pins
@@ -1238,7 +1245,7 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
         $scope.map = new MapView({
           container: mapdiv,
           map: new Map({
-            basemap: 'streets'
+            basemap: $scope.paragraph.config.graph.map.baseMapType.toLowerCase()
           }),
           center: [-75.7325985, 45.4041593],  // Apption (lng, lat)
           zoom: 14,
@@ -1296,6 +1303,13 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
       }
     };
     $timeout(retryRenderer);
+  };
+
+  $scope.setMapBaseMap = function(bm) {
+    $scope.paragraph.config.graph.map.baseMapType = bm;
+    if ($scope.map) {
+      $scope.map.map.basemap = bm.toLowerCase();
+    }
   };
 
   $scope.isGraphMode = function(graphName) {
@@ -1373,7 +1387,7 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
   };
 
   $scope.removeMapOptionPinInfo = function(idx) {
-    $scope.paragraph.config.graph.map.pin.splice(idx, 1);
+    $scope.paragraph.config.graph.map.pinCols.splice(idx, 1);
     clearUnknownColsFromGraphOption();
     $scope.setGraphMode($scope.paragraph.config.graph.mode, true, false);
   };
@@ -1420,7 +1434,7 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
               break;
             }
           }
-          if (!found && !(fields[f] instanceof Array)) {
+          if (!found && (fields[f] instanceof Object) && !(fields[f] instanceof Array)) {
             fields[f] = null;
           }
         }
@@ -1437,9 +1451,9 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
 
     removeUnknownFromFields($scope.paragraph.config.graph.scatter);
 
+    unique($scope.paragraph.config.graph.map.pinCols);
+    removeUnknown($scope.paragraph.config.graph.map.pinCols);
     removeUnknownFromFields($scope.paragraph.config.graph.map);
-    unique($scope.paragraph.config.graph.map.pin);
-    removeUnknown($scope.paragraph.config.graph.map.pin);
   };
 
   /* select default key and value if there're none selected */
