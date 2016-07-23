@@ -27,7 +27,7 @@
   <version>0.7.0-SNAPSHOT</version>
   <name>Zeppelin</name>
   <description>Zeppelin project</description>
-  <url>http://zeppelin.apache.org/</url>
+  <url>http://zeppelin.apache.org</url>
 
   <parent>
     <groupId>org.apache</groupId>
