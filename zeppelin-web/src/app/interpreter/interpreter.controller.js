@@ -555,11 +555,11 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl',
       });
     };
 
-    var isSelected = function(intpName, userName) {
+    var isSelected = function(intpName, userId) {
       var result = false;
       for (var intp in $scope.interpreterAuthList.authInfo) {
         var userList = $scope.interpreterAuthList.authInfo[intp];
-        if (!_.isEmpty(_.where(userList, userName)) && intpName === intp) {
+        if (!_.isEmpty(_.where(userList, userId)) && intpName === intp) {
           result = true;
         }
       }

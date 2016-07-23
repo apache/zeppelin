@@ -30,7 +30,7 @@ limitations under the License.
         <tr ng-repeat="(userIdx,userId) in userIds">
           <th scope="row">{{userId}}</th>
           <td ng-repeat="(intpIdx,intpName) in interpreterNames" class="text-center">
-             <input type="checkbox" ng-model="checkedlist[intpIdx][userIdx]"/>
+             <input type="checkbox" ng-model="interpreterAuthResults[intpIdx][userIdx]"/>
           </td>
         </tr>
         </tbody>
@@ -40,7 +40,6 @@ limitations under the License.
           <i class="fa fa-plus"></i>
           Update
         </button>
-
       </div>
     </div>
   </div>
