@@ -18,10 +18,7 @@
 package org.apache.zeppelin.rest;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
+import java.util.*;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -34,6 +31,7 @@ import javax.ws.rs.core.Response.Status;
 
 import com.google.gson.Gson;
 import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.zeppelin.interpreter.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sonatype.aether.RepositoryException;
@@ -41,9 +39,6 @@ import org.sonatype.aether.repository.RemoteRepository;
 
 import org.apache.zeppelin.annotation.ZeppelinApi;
 import org.apache.zeppelin.dep.Repository;
-import org.apache.zeppelin.interpreter.InterpreterException;
-import org.apache.zeppelin.interpreter.InterpreterFactory;
-import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.rest.message.NewInterpreterSettingRequest;
 import org.apache.zeppelin.rest.message.UpdateInterpreterSettingRequest;
 import org.apache.zeppelin.server.JsonResponse;
@@ -184,7 +179,11 @@ public class InterpreterRestApi {
   @Path("names")
   @ZeppelinApi
   public Response listInterpreterNames(String message) {
-    Set<String> m = interpreterFactory.getAvailableInterpreterNames();
+    //Set<String> m = interpreterFactory.getAvailableInterpreterNames();
+    List<String> m = new LinkedList<>();
+    for (InterpreterSetting intp: interpreterFactory.get()) {
+      m.add(intp.getName());
+    }
     return new JsonResponse<>(Status.OK, "", m).build();
   }
 

@@ -1,47 +1,35 @@
 {
   "authInfo": {
-    "alluxio": [
-      "admin",
-      "user1"
+    "md": [
+      "user2",
+      "user3"
     ],
     "angular": [
       "admin",
       "user1"
     ],
     "sh": [
-      "user1"
-    ],
-    "spark": [
       "admin",
+      "user1",
       "user2"
     ],
     "livy": [
       "admin"
+    ],
+    "file": [
+      "user2"
+    ],
+    "flink": [
+      "user1"
     ],
     "python": [
       "admin",
       "user1",
       "user2"
     ],
-    "md": [
-      "user2",
-      "user3"
-    ],
-    "kylin": [
-      "user2"
-    ],
-    "file": [
-      "user2"
-    ],
     "jdbc": [
       "user1",
       "user2"
-    ],
-    "flink": [
-      "user1"
-    ],
-    "elasticsearch": [
-      "admin"
     ]
   }
 }

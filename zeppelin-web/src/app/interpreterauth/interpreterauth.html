@@ -23,34 +23,37 @@ limitations under the License.
     <div class="row">
       <div class="col-md-12">
         Manage your interpreter authorization.
-        <span class="btn btn-primary" ng-click="updateInterpreterAuth()">
-          Add
-        </span>
       </div>
     </div>
   </div>
 </div>
-
 <div class="box width-full">
   <div class="row interpreter">
     <div>
-        <table class="table table-bordered">
-          <thead>
-          <tr>
-            <th>#</th>
-            <th ng-repeat="(intpIdx,intpName) in intpList">{{intpName}}</th>
-          </tr>
-          </thead>
+      <table class="table table-bordered">
+        <thead>
+        <tr>
+          <th>#</th>
+          <th ng-repeat="(intpIdx,intpName) in intpList" class="text-center">{{intpName}}</th>
+        </tr>
+        </thead>
 
-          <tbody>
-          <tr ng-repeat="(userIdx,userId) in userList">
-            <th scope="row">{{userId}}</th>
-            <td ng-repeat="(intpIdx,intpName) in intpList">
-               <input type="checkbox" ng-model="checkedlist[intpIdx][userIdx]"/>
-            </td>
-          </tr>
-          </tbody>
-        </table>
+        <tbody>
+        <tr ng-repeat="(userIdx,userId) in userList">
+          <th scope="row">{{userId}}</th>
+          <td ng-repeat="(intpIdx,intpName) in intpList" class="text-center">
+             <input type="checkbox" ng-model="checkedlist[intpIdx][userIdx]"/>
+          </td>
+        </tr>
+        </tbody>
+      </table>
+      <div class="pull-left" style="margin-top:10px;">
+        <button class="btn btn-default btn-sm"
+                ng-click="updateInterpreterAuth()">
+          <i class="fa fa-plus"></i>
+          Create
+        </button>
+      </div>
     </div>
   </div>
 </div>
