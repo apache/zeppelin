@@ -72,7 +72,7 @@ before_install:
   - R -e "install.packages('knitr', repos = 'http://cran.us.r-project.org', lib='~/R')"
   - export R_LIBS='~/R'
   - "/sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -ac -screen 0 1600x1024x16"
-  - ./dev/change-scala-version.sh $SCALA_VER
+  - ./dev/change_scala_version.sh $SCALA_VER
 
 install:
   - mvn $BUILD_FLAG $PROFILE -B
