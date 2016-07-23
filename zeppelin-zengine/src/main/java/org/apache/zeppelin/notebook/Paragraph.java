@@ -280,7 +280,6 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     String replName = getRequiredReplName();
     Interpreter repl = getRepl(replName);
     logger.info("run paragraph {} using {} " + repl, getId(), replName);
-    logger.info("astro] intp name {}" + repl.getInterpreterGroup().toString());
     if (repl == null) {
       logger.error("Can not find interpreter name " + repl);
       throw new RuntimeException("Can not find interpreter for " + getRequiredReplName());
