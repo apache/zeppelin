@@ -179,7 +179,6 @@ public class InterpreterRestApi {
   @Path("names")
   @ZeppelinApi
   public Response listInterpreterNames(String message) {
-    //Set<String> m = interpreterFactory.getAvailableInterpreterNames();
     List<String> m = new LinkedList<>();
     for (InterpreterSetting intp: interpreterFactory.get()) {
       m.add(intp.getName());

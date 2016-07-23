@@ -70,10 +70,6 @@
               templateUrl: 'app/interpreterauth/interpreterauth.html',
               controller: 'InterpreterAuthCtrl'
             })
-            .when('/interpreterauthsetting', {
-              templateUrl: 'app/interpreterauth/interpreterauthsetting.html',
-              controller: 'InterpreterAuthCtrl'
-            })
             .when('/interpreter', {
               templateUrl: 'app/interpreter/interpreter.html',
               controller: 'InterpreterCtrl'
