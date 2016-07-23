@@ -287,7 +287,8 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     }
 
     if (this.user != null &&
-      !factory.getInterpreterAuthorization().hasPermission(authenticationInfo.getUser(), replName)) {
+      !factory.getInterpreterAuthorization().
+        hasPermission(authenticationInfo.getUser(), replName)) {
       logger.error("{} has no permission for {} ", authenticationInfo.getUser(), repl);
       throw new RuntimeException(authenticationInfo.getUser() +
         " has no permission for " + getRequiredReplName());
