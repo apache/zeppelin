@@ -44,7 +44,7 @@ NC='\033[0m' # No Color
 RELEASE_VERSION="$1"
 GIT_TAG="$2"
 
-PUBLISH_PROFILES="-Pspark-1.6 -Phadoop-2.4 -Pyarn -Ppyspark -Psparkr -Pr"
+PUBLISH_PROFILES="-Pspark-2.0 -Phadoop-2.4 -Pyarn -Ppyspark -Psparkr -Pr"
 PROJECT_OPTIONS="-pl !zeppelin-distribution"
 NEXUS_STAGING="https://repository.apache.org/service/local/staging"
 NEXUS_PROFILE="153446d1ac37c4"
@@ -92,13 +92,27 @@ function publish_to_maven() {
 
   tmp_repo="$(mktemp -d /tmp/zeppelin-repo-XXXXX)"
 
+  # build with scala-2.10
   echo "mvn clean install -Ppublish-distr \
-    -Dmaven.repo.local=${tmp_repo} \
+    -Dmaven.repo.local=${tmp_repo} -Pscala-2.10 \
     ${PUBLISH_PROFILES} ${PROJECT_OPTIONS}"
-  mvn clean install -Ppublish-distr -Dmaven.repo.local="${tmp_repo}" \
+  mvn clean install -Ppublish-distr -Dmaven.repo.local="${tmp_repo}" -Pscala-2.10 \
     ${PUBLISH_PROFILES} ${PROJECT_OPTIONS}
   if [[ $? -ne 0 ]]; then
-    echo "Build failed."
+    echo "Build with scala 2.10 failed."
+    exit 1
+  fi
+
+  # build with scala-2.11
+  "${BASEDIR}/change_scala_version.sh" 2.11
+
+  echo "mvn clean install -Ppublish-distr \
+    -Dmaven.repo.local=${tmp_repo} -Pscala-2.11 \
+    ${PUBLISH_PROFILES} ${PROJECT_OPTIONS}"
+  mvn clean install -Ppublish-distr -Dmaven.repo.local="${tmp_repo}" -Pscala-2.11 \
+    ${PUBLISH_PROFILES} ${PROJECT_OPTIONS}
+  if [[ $? -ne 0 ]]; then
+    echo "Build with scala 2.11 failed."
     exit 1
   fi
 

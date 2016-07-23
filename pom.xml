@@ -425,7 +425,7 @@
               <exclude>.github/*</exclude>
               <exclude>.gitignore</exclude>
               <exclude>.repository/</exclude>
-  	          <exclude>.Rhistory</exclude>
+              <exclude>.Rhistory</exclude>
               <exclude>**/*.diff</exclude>
               <exclude>**/*.patch</exclude>
               <exclude>**/*.avsc</exclude>
