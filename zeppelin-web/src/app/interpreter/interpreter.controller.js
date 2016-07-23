@@ -461,7 +461,6 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl',
       }
     };
 
-
     var getInterpreterList = function() {
       return $q(function(success, fail) {
         $http.get(baseUrlSrv.getRestApiBase() + '/interpreter/names')
