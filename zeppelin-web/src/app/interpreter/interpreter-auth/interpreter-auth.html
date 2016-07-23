@@ -22,14 +22,14 @@ limitations under the License.
         <thead>
         <tr>
           <th>#</th>
-          <th ng-repeat="(intpIdx,intpName) in intpList" class="text-center">{{intpName}}</th>
+          <th ng-repeat="(intpIdx,intpName) in interpreterNames" class="text-center">{{intpName}}</th>
         </tr>
         </thead>
 
         <tbody>
-        <tr ng-repeat="(userIdx,userId) in userList">
+        <tr ng-repeat="(userIdx,userId) in userIds">
           <th scope="row">{{userId}}</th>
-          <td ng-repeat="(intpIdx,intpName) in intpList" class="text-center">
+          <td ng-repeat="(intpIdx,intpName) in interpreterNames" class="text-center">
              <input type="checkbox" ng-model="checkedlist[intpIdx][userIdx]"/>
           </td>
         </tr>

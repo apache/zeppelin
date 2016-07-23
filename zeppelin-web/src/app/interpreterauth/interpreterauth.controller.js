@@ -117,14 +117,6 @@ angular.module('zeppelinWebApp').controller('InterpreterAuthCtrl',
 
   var isSelected = function(intpName, userName) {
     var result = false;
-    /*
-    $.each($scope.authList.authInfo, function(intp, userList) {
-      if (!_.isEmpty(_.where(userList, userName)) && intpName === intp) {
-        console.log(userName + ' uses ' + intpName);
-        result = true;
-      }
-    });
-    */
     for (var intp in $scope.authList.authInfo) {
       var userList = $scope.authList.authInfo[intp];
       if (!_.isEmpty(_.where(userList, userName)) && intpName === intp) {
