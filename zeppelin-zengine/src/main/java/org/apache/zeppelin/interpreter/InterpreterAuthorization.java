@@ -99,19 +99,19 @@ public class InterpreterAuthorization {
     return this.authInfo;
   }
 
-  public boolean isValidated(String user, String intp) {
-    boolean accessable = false;
+  public boolean hasPermission(String user, String intp) {
+    boolean permission = false;
     for (String intpName: this.authInfo.keySet()) {
-      if (intp.trim().equals(intpName)) {
+      if (intp.trim().startsWith(intpName)) {
         for (String userName : this.authInfo.get(intpName)) {
           if (user.trim().equals(userName)) {
-            accessable = true;
+            permission = true;
             break;
           }
         }
       }
     }
-    return accessable;
+    return permission;
   }
 
 }
