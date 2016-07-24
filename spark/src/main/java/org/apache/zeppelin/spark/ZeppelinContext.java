@@ -163,8 +163,15 @@ public class ZeppelinContext {
   public void show(Object o, int maxResult) {
     Class cls = null;
     try {
-      cls = this.getClass().forName("org.apache.spark.sql.DataFrame");
+      cls = this.getClass().forName("org.apache.spark.sql.Dataset");
     } catch (ClassNotFoundException e) {
+    }
+
+    if (cls == null) {
+      try {
+        cls = this.getClass().forName("org.apache.spark.sql.DataFrame");
+      } catch (ClassNotFoundException e) {
+      }
     }
 
     if (cls == null) {
@@ -175,7 +182,7 @@ public class ZeppelinContext {
     }
 
     if (cls == null) {
-      throw new InterpreterException("Can not road DataFrame/SchemaRDD class");
+      throw new InterpreterException("Can not road Dataset/DataFrame/SchemaRDD class");
     }
 
 
