@@ -89,4 +89,13 @@ class Utils {
   static boolean isScala2_11() {
     return !isScala2_10();
   }
+
+  static boolean isSpark2() {
+    try {
+      Utils.class.forName("org.apache.spark.sql.SparkSession");
+      return true;
+    } catch (ClassNotFoundException e) {
+      return false;
+    }
+  }
 }

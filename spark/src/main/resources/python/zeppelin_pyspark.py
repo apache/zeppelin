@@ -29,7 +29,7 @@ from pyspark.broadcast import Broadcast
 from pyspark.serializers import MarshalSerializer, PickleSerializer
 
 # for back compatibility
-from pyspark.sql import SQLContext, HiveContext, SchemaRDD, Row
+from pyspark.sql import SQLContext, HiveContext, Row
 
 class Logger(object):
   def __init__(self):
@@ -107,6 +107,7 @@ class PyZeppelinContext(dict):
 class SparkVersion(object):
   SPARK_1_4_0 = 140
   SPARK_1_3_0 = 130
+  SPARK_2_0_0 = 200
 
   def __init__(self, versionNumber):
     self.version = versionNumber
@@ -116,6 +117,9 @@ class SparkVersion(object):
 
   def isImportAllPackageUnderSparkSql(self):
     return self.version >= self.SPARK_1_3_0
+
+  def isSpark2(self):
+    return self.version >= self.SPARK_2_0_0
 
 class PySparkCompletion:
   def __init__(self, interpreterObject):
@@ -175,6 +179,12 @@ sys.stderr = output
 client = GatewayClient(port=int(sys.argv[1]))
 sparkVersion = SparkVersion(int(sys.argv[2]))
 
+if sparkVersion.isSpark2():
+  from pyspark.sql import SparkSession
+else:
+  from pyspark.sql import SchemaRDD
+
+
 if sparkVersion.isAutoConvertEnabled():
   gateway = JavaGateway(client, auto_convert = True)
 else:
@@ -208,6 +218,9 @@ conf = SparkConf(_jvm = gateway.jvm, _jconf = jconf)
 sc = SparkContext(jsc=jsc, gateway=gateway, conf=conf)
 sqlc = SQLContext(sc, intp.getSQLContext())
 sqlContext = sqlc
+
+if sparkVersion.isSpark2():
+  spark = SparkSession(sc, intp.getSparkSession())
 
 completion = PySparkCompletion(intp)
 z = PyZeppelinContext(intp.getZeppelinContext())

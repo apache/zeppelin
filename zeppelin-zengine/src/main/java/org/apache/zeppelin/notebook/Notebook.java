@@ -353,9 +353,14 @@ public class Notebook implements NoteEventListener {
     }
   }
 
-  public void checkpointNote(String noteId, String checkpointMessage, AuthenticationInfo subject)
-      throws IOException {
-    notebookRepo.checkpoint(noteId, checkpointMessage, subject);
+  public Revision checkpointNote(String noteId, String checkpointMessage,
+      AuthenticationInfo subject) throws IOException {
+    return notebookRepo.checkpoint(noteId, checkpointMessage, subject);
+  }
+
+  public List<NotebookRepo.Revision> listRevisionHistory(String noteId,
+      AuthenticationInfo subject) {
+    return notebookRepo.revisionHistory(noteId, subject);
   }
 
   public Note getNoteRevision(String noteId, Revision revision, AuthenticationInfo subject)

@@ -1,5 +1,3 @@
-/* jshint loopfunc: true */
-/* global $: false */
 /*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +15,9 @@
 
 angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $route, $routeParams, $location,
                                                                      $rootScope, $http, websocketMsgSrv,
-                                                                     baseUrlSrv, $timeout, SaveAsService) {
+                                                                     baseUrlSrv, $timeout, saveAsService) {
   $scope.note = null;
+  $scope.moment = moment;
   $scope.showEditor = false;
   $scope.editorToggled = false;
   $scope.tableToggled = false;
@@ -54,6 +53,14 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
   var previousSelectedListWriters = [];
   var searchText = [];
   $scope.role = '';
+  $scope.noteRevisions = [];
+
+  $scope.$on('setConnectedStatus', function(event, param) {
+    if (connectedOnce && param) {
+      initNotebook();
+    }
+    connectedOnce = true;
+  });
 
   $scope.getCronOptionNameFromValue = function(value) {
     if (!value) {
@@ -71,18 +78,19 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
   /** Init the new controller */
   var initNotebook = function() {
     websocketMsgSrv.getNotebook($routeParams.noteId);
+    websocketMsgSrv.listRevisionHistory($routeParams.noteId);
 
     var currentRoute = $route.current;
     if (currentRoute) {
       setTimeout(
         function() {
           var routeParams = currentRoute.params;
-          var $id = $('#' + routeParams.paragraph + '_container');
+          var $id = angular.element('#' + routeParams.paragraph + '_container');
 
           if ($id.length > 0) {
             // adjust for navbar
             var top = $id.offset().top - 103;
-            $('html, body').scrollTo({top: top, left: 0});
+            angular.element('html, body').scrollTo({top: top, left: 0});
           }
 
           // force notebook reload on user change
@@ -142,7 +150,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
   //Export notebook
   $scope.exportNotebook = function() {
     var jsonContent = JSON.stringify($scope.note);
-    SaveAsService.SaveAs(jsonContent, $scope.note.name, 'json');
+    saveAsService.saveAs(jsonContent, $scope.note.name, 'json');
   };
 
   //Clone note
@@ -174,6 +182,11 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
     });
     document.getElementById('note.checkpoint.message').value = '';
   };
+
+  $scope.$on('listRevisionHistory', function(event, data) {
+    console.log('We got the revisions %o', data);
+    $scope.noteRevisions = data.revisionList;
+  });
 
   // receive certain revision of note
   $scope.$on('noteRevision', function(event, data) {

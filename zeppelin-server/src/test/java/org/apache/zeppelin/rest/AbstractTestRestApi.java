@@ -26,6 +26,9 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import org.apache.commons.exec.CommandLine;
+import org.apache.commons.exec.DefaultExecutor;
+import org.apache.commons.exec.PumpStreamHandler;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethodBase;
 import org.apache.commons.httpclient.methods.ByteArrayRequestEntity;
@@ -223,7 +226,7 @@ public abstract class AbstractTestRestApi {
   }
 
   private static boolean isActiveSparkHome(File dir) {
-    if (dir.getName().matches("spark-[0-9\\.]+-bin-hadoop[0-9\\.]+")) {
+    if (dir.getName().matches("spark-[0-9\\.]+[A-Za-z-]*-bin-hadoop[0-9\\.]+")) {
       File pidDir = new File(dir, "run");
       if (pidDir.isDirectory() && pidDir.listFiles().length > 0) {
         return true;
@@ -414,6 +417,22 @@ public abstract class AbstractTestRestApi {
       }
     };
   }
+
+
+  public static void ps() {
+    DefaultExecutor executor = new DefaultExecutor();
+    executor.setStreamHandler(new PumpStreamHandler(System.out, System.err));
+
+    CommandLine cmd = CommandLine.parse("ps");
+    cmd.addArgument("aux", false);
+
+    try {
+      executor.execute(cmd);
+    } catch (IOException e) {
+      LOG.error(e.getMessage(), e);
+    }
+  }
+
 
   /** Status code matcher */
   protected Matcher<? super HttpMethodBase> isForbiden() { return responsesWith(403); }
