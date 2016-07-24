@@ -374,6 +374,10 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     return getRelativeDir(String.format("%s/notebook-authorization.json", getConfDir()));
   }
 
+  public String getInterpreterAuthorizationPath() {
+    return getRelativeDir(String.format("%s/interpreter-authorization.json", getConfDir()));
+  }
+
   public Boolean credentialsPersist() {
     return getBoolean(ConfVars.ZEPPELIN_CREDENTIALS_PERSIST);
   }

@@ -285,6 +285,14 @@ public class Paragraph extends Job implements Serializable, Cloneable {
       throw new RuntimeException("Can not find interpreter for " + getRequiredReplName());
     }
 
+    if (this.user != null &&
+      !factory.getInterpreterAuthorization().
+        hasPermission(authenticationInfo.getUser(), replName)) {
+      logger.error("{} has no permission for {} ", authenticationInfo.getUser(), repl);
+      throw new RuntimeException(authenticationInfo.getUser() +
+        " has no permission for " + getRequiredReplName());
+    }
+
     String script = getScriptBody();
     // inject form
     if (repl.getFormType() == FormType.NATIVE) {

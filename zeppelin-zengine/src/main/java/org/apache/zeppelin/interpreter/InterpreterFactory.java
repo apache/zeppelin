@@ -114,6 +114,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
   private AngularObjectRegistryListener angularObjectRegistryListener;
   private final RemoteInterpreterProcessListener remoteInterpreterProcessListener;
   private final ApplicationEventListener appEventListener;
+  private InterpreterAuthorization interpreterAuthorization;
 
   private DependencyResolver depResolver;
 
@@ -140,6 +141,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     this.defaultOption = defaultOption;
     this.angularObjectRegistryListener = angularObjectRegistryListener;
     this.depResolver = depResolver;
+    this.interpreterAuthorization = new InterpreterAuthorization(conf);
     this.interpreterRepositories = depResolver.getRepos();
     this.remoteInterpreterProcessListener = remoteInterpreterProcessListener;
     this.appEventListener = appEventListener;
@@ -697,6 +699,10 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     FileUtils.deleteDirectory(localRepoDir);
   }
 
+  public InterpreterAuthorization getInterpreterAuthorization() {
+    return this.interpreterAuthorization;
+  }
+
   /**
    * Get interpreter settings
    *
@@ -1180,6 +1186,10 @@ public class InterpreterFactory implements InterpreterGroupFactory {
 
   public Map<String, InterpreterSetting> getAvailableInterpreterSettings() {
     return interpreterSettingsRef;
+  }
+
+  public Set<String> getAvailableInterpreterNames() {
+    return interpreterSettingsRef.keySet();
   }
 
   private URL[] recursiveBuildLibList(File path) throws MalformedURLException {

@@ -14,12 +14,17 @@
 'use strict';
 
 angular.module('zeppelinWebApp').controller('InterpreterCtrl',
-  function($scope, $http, baseUrlSrv, ngToast) {
+  function($scope, $http, baseUrlSrv, ngToast, $rootScope, $q, websocketMsgSrv) {
     var interpreterSettingsTmp = [];
     $scope.interpreterSettings = [];
     $scope.availableInterpreters = {};
     $scope.showAddNewSetting = false;
     $scope.showRepositoryInfo = false;
+    $scope.showInterpreterAuth = false;
+    $scope.interpreterAuthList = [];
+    $scope.interpreterNames = [];
+    $scope.userIds = [];
+    $scope.interpreterAuthResults = [];
     $scope._ = _;
 
     var getInterpreterSettings = function() {
@@ -454,6 +459,110 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl',
       } else {
         return false;
       }
+    };
+
+    var getInterpreterList = function() {
+      return $q(function(success, fail) {
+        $http.get(baseUrlSrv.getRestApiBase() + '/interpreter/names')
+        .success(function(data, status, headers, config) {
+          console.log('getInterpreterList %o', data);
+          $scope.interpreterNames = data.body;
+          success();
+        })
+        .error(function(err, status, headers, config) {
+          console.log('Error %o', err);
+          fail();
+        });
+      });
+    };
+
+    var getUserList = function() {
+      return $q(function(success, fail) {
+        $http.get(baseUrlSrv.getRestApiBase() + '/security/alluserlist')
+        .success(function(data, status, headers, config) {
+          console.log('getUserList %o', data);
+          $scope.userIds = data.body;
+          success();
+        })
+        .error(function(err, status, headers, config) {
+          console.log('Error %o', err);
+          fail();
+        });
+      });
+    };
+
+    $scope.init = function() {
+      websocketMsgSrv.getInterpreterAuthList($rootScope.ticket.principal);
+    };
+
+    // request
+    $scope.updateInterpreterAuth = function() {
+      var intpAuthObj = new Object();
+      for (var i = 0; i < $scope.interpreterAuthResults.length; i++) {
+
+        for (var j = 0; j < $scope.interpreterAuthResults[i].length; j++) {
+          if ($scope.interpreterAuthResults[i][j] === true) {
+            console.log($scope.interpreterNames[i], '(', i, ') use ', $scope.userIds[j], '(', j, ')');
+
+            if (intpAuthObj[$scope.interpreterNames[i]] === undefined) {
+              intpAuthObj[$scope.interpreterNames[i]] = new Array();
+            }
+            intpAuthObj[$scope.interpreterNames[i]].push($scope.userIds[j]);
+          }
+        }
+      }
+      websocketMsgSrv.updateInterpreterAuth($rootScope.ticket.principal, intpAuthObj);
+    };
+
+    // request
+    $scope.getInterpreterAuth = function() {
+      websocketMsgSrv.getInterpreterAuthList($rootScope.ticket.principal);
+    };
+
+    // receive
+    $scope.$on('getInterpreterAuthList', function(event, data) {
+      $scope.interpreterAuthList = data;
+
+      _promise(true).then(
+        function() {
+          // make dimension.
+          for (var i = 0; i < $scope.interpreterNames.length; i++) {
+            $scope.interpreterAuthResults[i] = [];
+            for (var j = 0; j < $scope.userIds.length; j++) {
+              $scope.interpreterAuthResults[i][j] = isSelected($scope.interpreterNames[i], $scope.userIds[j]);
+            }
+          }
+        }
+      );
+    });
+
+    var _promise = function(param) {
+      return $q(function(resolve, reject) {
+        getInterpreterList().then(function() {
+          getUserList().then(
+            function() {
+              resolve('success');
+            },
+            function() {
+              reject(Error('fail'));
+            }
+          );
+        },
+        function() {
+          reject(Error('fail'));
+        });
+      });
+    };
+
+    var isSelected = function(intpName, userId) {
+      var result = false;
+      for (var intp in $scope.interpreterAuthList.authInfo) {
+        var userList = $scope.interpreterAuthList.authInfo[intp];
+        if (!_.isEmpty(_.where(userList, userId)) && intpName === intp) {
+          result = true;
+        }
+      }
+      return result;
     };
 
     var init = function() {

@@ -127,8 +127,12 @@ public class Message {
     APP_STATUS_CHANGE,      // [s-c] on app status change
 
     LIST_NOTEBOOK_JOBS,     // [c-s] get notebook job management infomations
-    LIST_UPDATE_NOTEBOOK_JOBS // [c-s] get job management informations for until unixtime
+    LIST_UPDATE_NOTEBOOK_JOBS, // [c-s] get job management informations for until unixtime
                                // @param unixTime
+
+    GET_INTERPRETER_AUTH,    // [c-s] get interpreter auth
+    GET_INTERPRETER_AUTH_LIST, // [s-c] interpreter auth list
+    UPDATE_INTERPRETER_AUTH    // [c-s] add interpreter auth
   }
 
   public OP op;

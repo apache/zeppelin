@@ -87,6 +87,10 @@ angular.module('zeppelinWebApp').factory('websocketEvents',
           }
         }]
       });
+    } else if (op === 'UPDATE_INTERPRETER_AUTH') {
+      $rootScope.$broadcast('setInterpreterAuth', data);
+    } else if (op === 'GET_INTERPRETER_AUTH_LIST') {
+      $rootScope.$broadcast('getInterpreterAuthList', data);
     } else if (op === 'PARAGRAPH') {
       $rootScope.$broadcast('updateParagraph', data);
     } else if (op === 'PARAGRAPH_APPEND_OUTPUT') {

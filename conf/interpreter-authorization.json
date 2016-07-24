@@ -1,0 +1,50 @@
+{
+  "authInfo": {
+    "md": [
+      "user2",
+      "user3"
+    ],
+    "angular": [
+      "admin",
+      "user1",
+      "user3"
+    ],
+    "sh": [
+      "admin",
+      "user1",
+      "user2"
+    ],
+    "livy": [
+      "admin",
+      "user3"
+    ],
+    "file": [
+      "admin",
+      "user1",
+      "user2"
+    ],
+    "flink": [
+      "user1"
+    ],
+    "python": [
+      "admin",
+      "user1",
+      "user2"
+    ],
+    "jdbc": [
+      "user1",
+      "user2"
+    ],
+    "hbase": [
+      "admin",
+      "user1",
+      "user2",
+      "user3"
+    ],
+    "myspark": [
+      "admin",
+      "user2",
+      "user3"
+    ]
+  }
+}

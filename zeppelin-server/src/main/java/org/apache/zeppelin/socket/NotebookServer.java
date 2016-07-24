@@ -234,6 +234,12 @@ public class NotebookServer extends WebSocketServlet implements
           case LIST_UPDATE_NOTEBOOK_JOBS:
             unicastUpdateNotebookJobInfo(conn, messagereceived);
             break;
+          case GET_INTERPRETER_AUTH:
+            getInterpreterAuthList(conn, messagereceived);
+            break;
+          case UPDATE_INTERPRETER_AUTH:
+            updateInterpreterAuth(conn, messagereceived);
+            break;
           default:
             break;
       }
@@ -409,6 +415,44 @@ public class NotebookServer extends WebSocketServlet implements
 
     conn.send(serializeMessage(new Message(OP.LIST_UPDATE_NOTEBOOK_JOBS)
             .put("notebookRunningJobs", response)));
+  }
+
+  private boolean isAdmin(String user) {
+    if (!user.equals("admin")) {
+      LOG.error("There is no authorization for {}", user);
+      return false;
+    }
+    return true;
+  }
+
+  public void updateInterpreterAuth(NotebookSocket conn, Message fromMessage)
+      throws IOException {
+    if (!isAdmin(fromMessage.principal)) {
+      conn.send(serializeMessage(new Message(OP.GET_INTERPRETER_AUTH_LIST)
+        .put("interpreterAuth", null)));
+      return;
+    }
+
+    Map<String, Set<String>> authList = notebook().getInterpreterFactory().
+      getInterpreterAuthorization().updateInterpreterAuthorization(fromMessage.data);
+
+    conn.send(serializeMessage(new Message(OP.GET_INTERPRETER_AUTH_LIST)
+      .put("authInfo", authList)));
+  }
+
+  public void getInterpreterAuthList(NotebookSocket conn, Message fromMessage)
+      throws IOException {
+    if (!isAdmin(fromMessage.principal)) {
+      conn.send(serializeMessage(new Message(OP.GET_INTERPRETER_AUTH_LIST)
+        .put("interpreterAuth", null)));
+      return;
+    }
+
+    Map<String, Set<String>> authList = notebook().getInterpreterFactory().
+      getInterpreterAuthorization().getInterpreterAuthorization(fromMessage.data);
+
+    conn.send(serializeMessage(new Message(OP.GET_INTERPRETER_AUTH_LIST)
+      .put("authInfo", authList)));
   }
 
   public List<Map<String, String>> generateNotebooksInfo(boolean needsReload,
