@@ -1218,7 +1218,7 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
           .attr('class', 'tooltip')
           .style('opacity', 0);
 
-        var rect = svg.append('rect')
+        svg.append('rect')
           .attr('width', width)
           .attr('height', height)
           .style('fill', 'none')
@@ -1254,7 +1254,6 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
           .style('fill', function(d) { return color(d.group); });
 
         node.on('mouseover', function(d) {
-          console.log(d.group);
           var offsetX = d3.transform(container.attr('transform')).translate[0];
           var offsetY = d3.transform(container.attr('transform')).translate[1];
           var scale = d3.transform(container.attr('transform')).scale[0];
