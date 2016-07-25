@@ -56,6 +56,29 @@ module.exports = function (grunt) {
       }
     },
 
+    htmlhint: {
+      options: {
+        'tagname-lowercase': true,
+        'attr-lowercase': true,
+        'space-tab-mixed-disabled': 'space',
+        'tag-pair': true,
+        'tag-self-close': true,
+        'attr-no-duplication': true
+      },
+      src: ['src/**/*.html']
+    },
+
+    cacheBust: {
+      taskName: {
+        options: {
+          baseDir: '<%= yeoman.dist %>',
+          assets: ['scripts/**.js', 'styles/**.css'],
+          deleteOriginals: true
+        },
+        src: ['<%= yeoman.dist %>/index.html']
+      }
+    },
+
     'goog-webfont-dl': {
       patuaOne: {
         options: {
@@ -500,7 +523,8 @@ module.exports = function (grunt) {
     'cssmin',
     'uglify',
     'usemin',
-    'htmlmin'
+    'htmlmin',
+    'cacheBust'
   ]);
 
   grunt.registerTask('default', [
