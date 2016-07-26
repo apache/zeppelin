@@ -370,6 +370,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
       setting.setPath(interpreterSettingsRef.get(setting.getGroup()).getPath());
 
       setting.setInterpreterGroupFactory(this);
+      loadInterpreterDependencies(setting);
       interpreterSettings.put(k, setting);
     }
 
@@ -384,27 +385,50 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     }
   }
 
-  private void loadInterpreterDependencies(InterpreterSetting intSetting)
-      throws IOException, RepositoryException {
-    // dependencies to prevent library conflict
-    File localRepoDir = new File(conf.getInterpreterLocalRepoPath() + "/" + intSetting.getId());
-    if (localRepoDir.exists()) {
-      FileUtils.cleanDirectory(localRepoDir);
-    }
+  private void loadInterpreterDependencies(final InterpreterSetting setting) {
 
-    // load dependencies
-    List<Dependency> deps = intSetting.getDependencies();
-    if (deps != null) {
-      for (Dependency d : deps) {
-        File destDir = new File(conf.getRelativeDir(ConfVars.ZEPPELIN_DEP_LOCALREPO));
+    setting.setStatus(InterpreterSetting.Status.DOWNLOADING_DEPENDENCIES);
+    interpreterSettings.put(setting.getId(), setting);
+    synchronized (interpreterSettings) {
+      final Thread t = new Thread() {
+        public void run() {
+          try {
+            // dependencies to prevent library conflict
+            File localRepoDir = new File(conf.getInterpreterLocalRepoPath() + "/" +
+                setting.getId());
+            if (localRepoDir.exists()) {
+              FileUtils.cleanDirectory(localRepoDir);
+            }
 
-        if (d.getExclusions() != null) {
-          depResolver.load(d.getGroupArtifactVersion(), d.getExclusions(),
-              new File(destDir, intSetting.getId()));
-        } else {
-          depResolver.load(d.getGroupArtifactVersion(), new File(destDir, intSetting.getId()));
+            // load dependencies
+            List<Dependency> deps = setting.getDependencies();
+            if (deps != null) {
+              for (Dependency d : deps) {
+                File destDir = new File(conf.getRelativeDir(ConfVars.ZEPPELIN_DEP_LOCALREPO));
+
+                if (d.getExclusions() != null) {
+                  depResolver.load(d.getGroupArtifactVersion(), d.getExclusions(),
+                      new File(destDir, setting.getId()));
+                } else {
+                  depResolver.load(d.getGroupArtifactVersion(), new File(destDir, setting.getId()));
+                }
+              }
+            }
+
+            setting.setStatus(InterpreterSetting.Status.READY);
+          } catch (Exception e) {
+            logger.error(String.format("Error while downloading repos for interpreter group : %s," +
+                    " go to interpreter setting page click on edit and save it again to make " +
+                    "this interpreter work properly.",
+                setting.getGroup()), e);
+            setting.setErrorReason(e.getLocalizedMessage());
+            setting.setStatus(InterpreterSetting.Status.ERROR);
+          } finally {
+            interpreterSettings.put(setting.getId(), setting);
+          }
         }
-      }
+      };
+      t.start();
     }
   }
 
@@ -500,12 +524,9 @@ public class InterpreterFactory implements InterpreterGroupFactory {
    * @param group    InterpreterSetting reference name
    * @param properties
    * @return
-   * @throws InterpreterException
-   * @throws IOException
    */
   public InterpreterSetting add(String group, ArrayList<InterpreterInfo> interpreterInfos,
-      List<Dependency> dependencies, InterpreterOption option, Properties properties, String path)
-      throws InterpreterException, IOException, RepositoryException {
+      List<Dependency> dependencies, InterpreterOption option, Properties properties, String path) {
     Preconditions.checkNotNull(group, "name should not be null");
     Preconditions.checkNotNull(interpreterInfos, "interpreterInfos should not be null");
     Preconditions.checkNotNull(dependencies, "dependencies should not be null");
@@ -806,7 +827,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
    * @throws IOException
    */
   public void setPropertyAndRestart(String id, InterpreterOption option, Properties properties,
-      List<Dependency> dependencies) throws IOException, RepositoryException {
+      List<Dependency> dependencies) throws IOException {
     synchronized (interpreterSettings) {
       InterpreterSetting intpsetting = interpreterSettings.get(id);
       if (intpsetting != null) {

@@ -99,6 +99,26 @@ limitations under the License.
               <span ng-show="$parent.$first && $first">(default)</span>
             </span>
           </small>
+
+          <small ng-switch="setting.status">
+            <small ng-switch-when="READY">
+              <i style="color: green; margin-right: 3px;" class="fa fa-circle"
+                 tooltip="Ready">
+              </i>
+            </small>
+            <small ng-switch-when="ERROR">
+              <i style="color: red; cursor: pointer" class="fa fa-circle"
+                 ng-click="showErrorMessage(setting)"
+                 tooltip="Error downloading dependencies">
+              </i>
+            </small>
+            <small ng-switch-default>
+              <i style="color: blue" class="fa fa-spinner spinAnimation"
+                 tooltip="Dependencies are downloading">
+              </i>
+            </small>
+          </small>
+
         </h3>
         <span style="float:right">
           <button class="btn btn-default btn-xs"
