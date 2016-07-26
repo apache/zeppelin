@@ -84,7 +84,7 @@ limitations under the License.
 </div>
 
 <div class="box width-full"
-     ng-repeat="setting in interpreterSettings | orderBy: 'group' | filter: searchInterpreter">
+     ng-repeat="setting in interpreterSettings | orderBy: 'name' | filter: searchInterpreter">
   <div id="{{setting.name | lowercase}}">
     <div class="row interpreter">
       <div class="col-md-12">
@@ -93,12 +93,32 @@ limitations under the License.
             <span style="display:inline-block" ng-repeat="interpreter in setting.interpreterGroup"
                   title="{{interpreter.class}}">
               <span ng-show="!$first">, </span>
-              %<span ng-show="!$parent.$first || $first">{{setting.group}}</span
+              %<span ng-show="!$parent.$first || $first">{{setting.name}}</span
               ><span ng-show="(!$parent.$first || $first) && !$first">.</span
               ><span ng-show="!$first">{{interpreter.name}}</span>
               <span ng-show="$parent.$first && $first">(default)</span>
             </span>
           </small>
+
+          <small ng-switch="setting.status">
+            <small ng-switch-when="READY">
+              <i style="color: green; margin-right: 3px;" class="fa fa-circle"
+                 tooltip="Ready">
+              </i>
+            </small>
+            <small ng-switch-when="ERROR">
+              <i style="color: red; cursor: pointer" class="fa fa-circle"
+                 ng-click="showErrorMessage(setting)"
+                 tooltip="Error downloading dependencies">
+              </i>
+            </small>
+            <small ng-switch-default>
+              <i style="color: blue" class="fa fa-spinner spinAnimation"
+                 tooltip="Dependencies are downloading">
+              </i>
+            </small>
+          </small>
+
         </h3>
         <span style="float:right">
           <button class="btn btn-default btn-xs"

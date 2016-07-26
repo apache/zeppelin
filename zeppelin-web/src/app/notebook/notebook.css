@@ -12,6 +12,52 @@
  * limitations under the License.
  */
 
+.notebookContent {
+  padding-top: 36px;
+}
+
+.revision  {
+  max-width: 250px;
+  margin-bottom: 0 !important;
+}
+
+.revision a {
+  padding: 2px 10px !important;
+}
+
+.revision a span {
+  width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.revisionName {
+  cursor: default;
+  padding: 1px 10px !important;
+  max-width: 150px;
+}
+
+.revisionDate {
+  font-size: 8px;
+  color: DarkGrey;
+  display: block;
+}
+
+.revisionName:hover,
+.revisionName:focus,
+.revisionName:active {
+  background: transparent;
+  border-color: #ccc;
+}
+
+.caretSeparator {
+  height: 22px;
+  line-height: 9px;
+  width: 16px;
+  padding-left: 3px !important;
+}
+
 .paragraph-col {
   margin: 0;
   padding: 0;

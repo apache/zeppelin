@@ -27,14 +27,13 @@
   </parent>
 
   <groupId>org.apache.zeppelin</groupId>
-  <artifactId>zeppelin-scalding</artifactId>
+  <artifactId>zeppelin-scalding_2.10</artifactId>
   <packaging>jar</packaging>
   <version>0.7.0-SNAPSHOT</version>
   <name>Zeppelin: Scalding interpreter</name>
   <url>http://zeppelin.apache.org</url>
 
   <properties>
-    <scala.version>2.11.8</scala.version>
     <hadoop.version>2.6.0</hadoop.version>
     <scalding.version>0.16.1-RC1</scalding.version>
   </properties>
@@ -74,43 +73,43 @@
 
     <dependency>
       <groupId>com.twitter</groupId>
-      <artifactId>scalding-core_2.11</artifactId>
+      <artifactId>scalding-core_${scala.binary.version}</artifactId>
       <version>${scalding.version}</version>
     </dependency>
 
     <dependency>
       <groupId>com.twitter</groupId>
-      <artifactId>scalding-args_2.11</artifactId>
+      <artifactId>scalding-args_${scala.binary.version}</artifactId>
       <version>${scalding.version}</version>
     </dependency>
 
     <dependency>
       <groupId>com.twitter</groupId>
-      <artifactId>scalding-date_2.11</artifactId>
+      <artifactId>scalding-date_${scala.binary.version}</artifactId>
       <version>${scalding.version}</version>
     </dependency>
 
     <dependency>
       <groupId>com.twitter</groupId>
-      <artifactId>scalding-commons_2.11</artifactId>
+      <artifactId>scalding-commons_${scala.binary.version}</artifactId>
       <version>${scalding.version}</version>
     </dependency>
 
     <dependency>
       <groupId>com.twitter</groupId>
-      <artifactId>scalding-avro_2.11</artifactId>
+      <artifactId>scalding-avro_${scala.binary.version}</artifactId>
       <version>${scalding.version}</version>
     </dependency>
 
     <dependency>
       <groupId>com.twitter</groupId>
-      <artifactId>scalding-parquet_2.11</artifactId>
+      <artifactId>scalding-parquet_${scala.binary.version}</artifactId>
       <version>${scalding.version}</version>
     </dependency>
 
     <dependency>
       <groupId>com.twitter</groupId>
-      <artifactId>scalding-repl_2.11</artifactId>
+      <artifactId>scalding-repl_${scala.binary.version}</artifactId>
       <version>${scalding.version}</version>
     </dependency>
 
@@ -199,6 +198,7 @@
       <plugin>
         <groupId>org.scala-tools</groupId>
         <artifactId>maven-scala-plugin</artifactId>
+        <version>2.15.2</version>
         <executions>
           <execution>
             <id>compile</id>

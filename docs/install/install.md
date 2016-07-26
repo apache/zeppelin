@@ -93,8 +93,11 @@ mvn clean package -DskipTests [Options]
 Here are some examples with several options
 
 ```
-# basic build
-mvn clean package -Pspark-1.6 -Phadoop-2.4 -Pyarn -Ppyspark
+# build with spark-2.0, scala-2.11
+mvn clean package -Pspark-2.0 -Phadoop-2.4 -Pyarn -Ppyspark -Psparkr -Pscala-2.11
+
+# build with spark-1.6, scala-2.10
+mvn clean package -Pspark-1.6 -Phadoop-2.4 -Pyarn -Ppyspark -Psparkr
 
 # spark-cassandra integration
 mvn clean package -Pcassandra-spark-1.5 -Dhadoop.version=2.6.0 -Phadoop-2.6 -DskipTests

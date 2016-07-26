@@ -24,7 +24,6 @@ import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.user.Credentials;
 import org.apache.zeppelin.user.UserCredentials;
-import org.apache.zeppelin.user.UsernamePassword;
 import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.display.Input;
 import org.apache.zeppelin.interpreter.*;
@@ -50,6 +49,7 @@ import com.google.common.annotations.VisibleForTesting;
 public class Paragraph extends Job implements Serializable, Cloneable {
   private static final long serialVersionUID = -6328572073497992016L;
 
+  private static Logger logger = LoggerFactory.getLogger(Paragraph.class);
   private transient InterpreterFactory factory;
   private transient Note note;
   private transient AuthenticationInfo authenticationInfo;
@@ -208,11 +208,39 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     return getRepl(getRequiredReplName());
   }
 
+  public List<InterpreterCompletion> getInterpreterCompletion() {
+    List<InterpreterCompletion> completion = new LinkedList();
+    for (InterpreterSetting intp: factory.getInterpreterSettings(note.getId())){
+      List<InterpreterInfo> intInfo = intp.getInterpreterInfos();
+      if (intInfo.size() > 1) {
+        for (InterpreterInfo info : intInfo){
+          String name = intp.getName() + "." + info.getName();
+          completion.add(new InterpreterCompletion(name, name));
+        }
+      } else {
+        completion.add(new InterpreterCompletion(intp.getName(), intp.getName()));
+      }
+    }
+    return completion;
+  }
+
   public List<InterpreterCompletion> completion(String buffer, int cursor) {
+    String lines[] = buffer.split(System.getProperty("line.separator"));
+    if (lines.length > 0
+      && lines[0].startsWith("%")
+      && cursor <= lines[0].trim().length()) {
+
+      int idx = lines[0].indexOf(' ');
+      if (idx < 0 || (idx > 0 && cursor <= idx)) {
+        return getInterpreterCompletion();
+      }
+    }
+
     String replName = getRequiredReplName(buffer);
     if (replName != null && cursor > replName.length()) {
       cursor -= replName.length() + 1;
     }
+
     String body = getScriptBody(buffer);
     Interpreter repl = getRepl(replName);
     if (repl == null) {
@@ -251,9 +279,9 @@ public class Paragraph extends Job implements Serializable, Cloneable {
   protected Object jobRun() throws Throwable {
     String replName = getRequiredReplName();
     Interpreter repl = getRepl(replName);
-    logger().info("run paragraph {} using {} " + repl, getId(), replName);
+    logger.info("run paragraph {} using {} " + repl, getId(), replName);
     if (repl == null) {
-      logger().error("Can not find interpreter name " + repl);
+      logger.error("Can not find interpreter name " + repl);
       throw new RuntimeException("Can not find interpreter for " + getRequiredReplName());
     }
 
@@ -274,7 +302,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
       settings.setForms(inputs);
       script = Input.getSimpleQuery(settings.getParams(), scriptBody);
     }
-    logger().debug("RUN : " + script);
+    logger.debug("RUN : " + script);
     try {
       InterpreterContext context = getInterpreterContext();
       InterpreterContext.set(context);
@@ -357,7 +385,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
         try {
           message = new String(out.toByteArray());
         } catch (IOException e) {
-          logger().error(e.getMessage(), e);
+          logger.error(e.getMessage(), e);
           t = e;
         }
         setReturn(new InterpreterResult(Code.SUCCESS, out.getType(), message), t);
@@ -417,13 +445,6 @@ public class Paragraph extends Job implements Serializable, Cloneable {
       note.run(getParagraphId());
     }
   }
-
-
-  private Logger logger() {
-    Logger logger = LoggerFactory.getLogger(Paragraph.class);
-    return logger;
-  }
-
 
   public Map<String, Object> getConfig() {
     return config;

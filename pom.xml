@@ -17,7 +17,7 @@
   -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.maven-v4_0_0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
   <modelVersion>4.0.0</modelVersion>
 
@@ -79,11 +79,16 @@
   </modules>
 
   <properties>
+    <scala.version>2.10.5</scala.version>
+    <scala.binary.version>2.10</scala.binary.version>
+    <scalatest.version>2.2.4</scalatest.version>
+    <scalacheck.version>1.12.5</scalacheck.version>
+
     <slf4j.version>1.7.10</slf4j.version>
     <log4j.version>1.2.17</log4j.version>
     <libthrift.version>0.9.2</libthrift.version>
     <gson.version>2.2</gson.version>
-    <guava.version>19.0</guava.version>
+    <guava.version>15.0</guava.version>
     <jetty.version>9.2.15.v20160210</jetty.version>
 
     <PermGen>64m</PermGen>
@@ -93,7 +98,6 @@
   <dependencyManagement>
     <dependencies>
       <!-- Logging -->
-
       <dependency>
         <groupId>org.slf4j</groupId>
         <artifactId>slf4j-api</artifactId>
@@ -136,7 +140,6 @@
         <version>2.5</version>
       </dependency>
 
-
       <dependency>
         <groupId>com.google.code.gson</groupId>
         <artifactId>gson</artifactId>
@@ -155,13 +158,11 @@
         <version>1.5</version>
       </dependency>
 
-
       <dependency>
         <groupId>commons-io</groupId>
         <artifactId>commons-io</artifactId>
         <version>2.4</version>
       </dependency>
-
 
       <dependency>
         <groupId>commons-collections</groupId>
@@ -180,7 +181,6 @@
         <artifactId>guava</artifactId>
         <version>${guava.version}</version>
       </dependency>
-
 
       <dependency>
         <groupId>junit</groupId>
@@ -388,12 +388,25 @@
         </executions>
       </plugin>
 
-      <!--TODO(alex): make part of the build and reconcile conflicts <plugin>
-        <groupId>com.ning.maven.plugins</groupId> <artifactId>maven-duplicate-finder-plugin</artifactId>
-        <version>1.0.4</version> <executions> <execution> <id>default</id> <phase>verify</phase>
-        <goals> <goal>check</goal> </goals> </execution> </executions> <configuration>
-        <failBuildInCaseOfConflict>true</failBuildInCaseOfConflict> </configuration>
-        </plugin> -->
+      <!--TODO(alex): make part of the build and reconcile conflicts
+    <plugin> 
+      <groupId>com.ning.maven.plugins</groupId>
+      <artifactId>maven-duplicate-finder-plugin</artifactId>
+      <version>1.0.4</version>
+      <executions>
+        <execution>
+          <id>default</id>
+          <phase>verify</phase>
+          <goals>
+            <goal>check</goal> 
+          </goals> 
+       </execution> 
+      </executions> 
+      <configuration>
+        <failBuildInCaseOfConflict>true</failBuildInCaseOfConflict> 
+      </configuration>
+    </plugin>
+    -->
     </plugins>
 
     <pluginManagement>
@@ -412,7 +425,7 @@
               <exclude>.github/*</exclude>
               <exclude>.gitignore</exclude>
               <exclude>.repository/</exclude>
-  	      <exclude>.Rhistory</exclude>
+              <exclude>.Rhistory</exclude>
               <exclude>**/*.diff</exclude>
               <exclude>**/*.patch</exclude>
               <exclude>**/*.avsc</exclude>
@@ -636,6 +649,28 @@
 
   <profiles>
     <profile>
+      <id>scala-2.10</id>
+      <activation>
+        <property><name>!scala-2.11</name></property>
+      </activation>
+      <properties>
+        <scala.version>2.10.5</scala.version>
+        <scala.binary.version>2.10</scala.binary.version>
+      </properties>
+    </profile>
+
+    <profile>
+      <id>scala-2.11</id>
+      <activation>
+        <property><name>scala-2.11</name></property>
+      </activation>
+      <properties>
+        <scala.version>2.11.7</scala.version>
+        <scala.binary.version>2.11</scala.binary.version>
+      </properties>
+    </profile>
+
+    <profile>
       <id>vendor-repo</id>
       <repositories>
         <repository>
@@ -710,7 +745,6 @@
       <activation>
         <activeByDefault>false</activeByDefault>
       </activation>
-
       <build>
         <plugins>
           <plugin>
