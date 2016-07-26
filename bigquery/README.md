@@ -47,6 +47,9 @@ The Interpreter opens a connection with the BigQuery Service using the supplied 
 
 # Google BigQuery API Javadoc
 [API Javadocs](https://developers.google.com/resources/api-libraries/documentation/bigquery/v2/java/latest/)
+[Source] (http://central.maven.org/maven2/com/google/apis/google-api-services-bigquery/v2-rev265-1.21.0/google-api-services-bigquery-v2-rev265-1.21.0-sources.jar)
+
+We have used the curated veneer version of the Java APIs versus [Idiomatic Java client] (https://github.com/GoogleCloudPlatform/gcloud-java/tree/master/gcloud-java-bigquery) to build the interpreter. This is mainly for usability reasons.
 
 # Enabling the BigQuery Interpreter
 

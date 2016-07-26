@@ -101,13 +101,17 @@ The following components are provided under Apache License.
     (Apache 2.0) Alluxio Underfs Local (org.alluxio:alluxio-underfs-local:1.0.0 - http://alluxio.org)
     (Apache 2.0) Microsoft Azure Storage Library for Java (com.microsoft.azure:azure-storage:4.0.0 - https://github.com/Azure/azure-storage-java)
     (Apache 2.0) Roboto Font (https://github.com/google/roboto/)
-<<<<<<< HEAD
-    (Apache 2.0) stream (com.clearspring.analytics:stream:2.7.0) - https://github.com/addthis/stream-lib/blob/v2.7.0/LICENSE.txt
-    (Apache 2.0) io.dropwizard.metrics:3.1.2 - https://github.com/dropwizard/metrics/blob/v3.1.2/LICENSE
-=======
     (Apache 2.0) Google BigQuery API for Java (com.google.api.services.bigquery:v2-rev265-1.21.0 - https://cloud.google.com/bigquery/)
->>>>>>> Interpreter modification, License, doc changes
-
+    (Apache 2.0) Google APIs Client Library for Java (com.google.api-client:1.21.0 - https://github.com/google/google-api-java-client)
+    (Apache 2.0) The Guava project contains several of Google's core libraries that we rely on in our Java-based projects (com.google.guava:guava-jdk5:17.0 - https://github.com/google/guava)
+    (Apache 2.0) Google OAuth Client Library for Java (com.google.oauth-client:google-oauth-client:1.21.0 - https://github.com/google/google-oauth-java-client)
+    (Apache 2.0) Google HTTP Client Library for Java (com.google.http-client:google-http-client:1.21.0 - https://github.com/google/google-http-java-client/tree/dev/google-http-client)
+    (Apache 2.0) Google OAuth Jetty Client Library for Java (com.google.oauth-client:google-oauth-client-jetty:1.21.0 - https://github.com/google/google-oauth-java-client/tree/dev/google-oauth-client-jetty)
+    (Apache 2.0) Google OAuth Client Library for Java6 (com.google.oauth-client:google-oauth-client-java6:1.21.0 - https://github.com/google/google-oauth-java-client/tree/dev/google-oauth-client-java6)
+    (Apache 2.0) The core jetty server artifact (org.mortbay.jetty:jetty:6.1.26 - http://javadox.com/org.mortbay.jetty/jetty/6.1.26/overview-tree.html)
+    (Apache 2.0) Utility classes for Jetty (org.mortbay.jetty:jetty-util:6.1.26 - http://javadox.com/org.mortbay.jetty/jetty/6.1.26/overview-tree.html)
+    (Apache 2.0) Servlet API (org.mortbay.jetty:servlet-api:2.5-20081211 - https://en.wikipedia.org/wiki/Jetty_(web_server))
+    (Apache 2.0) Google HTTP Client Library for Java (com.google.http-client:google-http-client-jackson2:1.21.0 - https://github.com/google/google-http-java-client/tree/dev/google-http-client-jackson2)
 
 ========================================================================
 MIT licenses
