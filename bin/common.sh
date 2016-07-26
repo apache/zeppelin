@@ -74,10 +74,23 @@ function addEachJarInDirRecursive(){
   fi
 }
 
+function addEachJarInDirRecursiveForIntp(){
+  if [[ -d "${1}" ]]; then
+    for jar in $(find -L "${1}" -type f -name '*jar'); do
+      ZEPPELIN_INTP_CLASSPATH="$jar:$ZEPPELIN_INTP_CLASSPATH"
+    done
+  fi
+}
 
 function addJarInDir(){
   if [[ -d "${1}" ]]; then
     ZEPPELIN_CLASSPATH="${1}/*:${ZEPPELIN_CLASSPATH}"
+  fi
+}
+
+function addJarInDirForIntp() {
+  if [[ -d "${1}" ]]; then
+    ZEPPELIN_INTP_CLASSPATH="${1}/*:${ZEPPELIN_INTP_CLASSPATH}"
   fi
 }
 
