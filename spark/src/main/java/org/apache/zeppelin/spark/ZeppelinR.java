@@ -139,7 +139,7 @@ public class ZeppelinR implements ExecuteResultHandler {
     cmd.addArgument(libPath);
 
     executor = new DefaultExecutor();
-    outputStream = new SparkOutputStream();
+    outputStream = new SparkOutputStream(logger);
 
     input = new PipedOutputStream();
     PipedInputStream in = new PipedInputStream(input);
