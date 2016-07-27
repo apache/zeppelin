@@ -551,6 +551,9 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
         tokenSeparators: [',', ' '],
         ajax: {
           url: function(params) {
+            if (!params.term) {
+              return false;
+            }
             return baseUrlSrv.getRestApiBase() + '/security/userlist/' + params.term;
           },
           delay: 250,
@@ -593,7 +596,8 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
           cache: false
         },
         width: ' ',
-        tags: true
+        tags: true,
+        minimumInputLength: 3
       };
 
       angular.element('#selectOwners').select2(selectJson);

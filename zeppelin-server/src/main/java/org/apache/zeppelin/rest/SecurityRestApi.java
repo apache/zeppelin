@@ -21,7 +21,6 @@ package org.apache.zeppelin.rest;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.realm.Realm;
 import org.apache.shiro.realm.jdbc.JdbcRealm;
-import org.apache.shiro.realm.ldap.AbstractLdapRealm;
 import org.apache.shiro.realm.ldap.JndiLdapRealm;
 import org.apache.shiro.realm.text.IniRealm;
 import org.apache.zeppelin.annotation.ZeppelinApi;
@@ -30,7 +29,6 @@ import org.apache.zeppelin.server.ActiveDirectoryGroupRealm;
 import org.apache.zeppelin.server.JsonResponse;
 import org.apache.zeppelin.ticket.TicketContainer;
 import org.apache.zeppelin.utils.SecurityUtils;
-import org.eclipse.jetty.util.StringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -140,12 +138,10 @@ public class SecurityRestApi {
       }
     });
     int maxLength = 0;
-    for (int i = 0; i < usersList.size(); i++) {
-      String userLowerCase = usersList.get(i).toLowerCase();
-      String searchTextLowerCase = searchText.toLowerCase();
-      if (userLowerCase.indexOf(searchTextLowerCase) != -1) {
+    for (String user : usersList) {
+      if (StringUtils.containsIgnoreCase(user, searchText)) {
+        autoSuggestUserList.add(user);
         maxLength++;
-        autoSuggestUserList.add(usersList.get(i));
       }
       if (maxLength == 5) {
         break;
@@ -153,7 +149,7 @@ public class SecurityRestApi {
     }
 
     for (String role : rolesList) {
-      if (StringUtils.startsWithIgnoreCase(role, searchText)) {
+      if (StringUtils.containsIgnoreCase(role, searchText)) {
         autoSuggestRoleList.add(role);
       }
     }
