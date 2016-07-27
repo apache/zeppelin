@@ -18,6 +18,7 @@
 package org.apache.zeppelin.rest;
 
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.realm.Realm;
 import org.apache.shiro.realm.jdbc.JdbcRealm;
 import org.apache.shiro.realm.ldap.AbstractLdapRealm;
@@ -29,6 +30,7 @@ import org.apache.zeppelin.server.ActiveDirectoryGroupRealm;
 import org.apache.zeppelin.server.JsonResponse;
 import org.apache.zeppelin.ticket.TicketContainer;
 import org.apache.zeppelin.utils.SecurityUtils;
+import org.eclipse.jetty.util.StringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -98,6 +100,7 @@ public class SecurityRestApi {
   public Response getUserList(@PathParam("searchText") final String searchText) {
 
     List<String> usersList = new ArrayList<>();
+    List<String> rolesList = new ArrayList<>();
     try {
       GetUserList getUserListObj = new GetUserList();
       Collection realmsList = SecurityUtils.getRealmsList();
@@ -107,6 +110,7 @@ public class SecurityRestApi {
           String name = realm.getName();
           if (name.equals("iniRealm")) {
             usersList.addAll(getUserListObj.getUserList((IniRealm) realm));
+            rolesList.addAll(getUserListObj.getRolesList((IniRealm) realm));
           } else if (name.equals("ldapRealm")) {
             usersList.addAll(getUserListObj.getUserList((JndiLdapRealm) realm, searchText));
           } else if (name.equals("activeDirectoryRealm")) {
@@ -120,8 +124,10 @@ public class SecurityRestApi {
     } catch (Exception e) {
       LOG.error("Exception in retrieving Users from realms ", e);
     }
-    List<String> autoSuggestList = new ArrayList<>();
+    List<String> autoSuggestUserList = new ArrayList<>();
+    List<String> autoSuggestRoleList = new ArrayList<>();
     Collections.sort(usersList);
+    Collections.sort(rolesList);
     Collections.sort(usersList, new Comparator<String>() {
       @Override
       public int compare(String o1, String o2) {
@@ -139,13 +145,25 @@ public class SecurityRestApi {
       String searchTextLowerCase = searchText.toLowerCase();
       if (userLowerCase.indexOf(searchTextLowerCase) != -1) {
         maxLength++;
-        autoSuggestList.add(usersList.get(i));
+        autoSuggestUserList.add(usersList.get(i));
       }
       if (maxLength == 5) {
         break;
       }
     }
-    return new JsonResponse<>(Response.Status.OK, "", autoSuggestList).build();
+
+    for (String role : rolesList) {
+      if (StringUtils.startsWithIgnoreCase(role, searchText)) {
+        autoSuggestRoleList.add(role);
+      }
+    }
+
+    Map<String, List> returnListMap = new HashMap<>();
+    returnListMap.put("users", autoSuggestUserList);
+    returnListMap.put("roles", autoSuggestRoleList);
+
+
+    return new JsonResponse<>(Response.Status.OK, "", returnListMap).build();
   }
 
 }
