@@ -18,6 +18,7 @@
 package org.apache.zeppelin.spark;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -32,6 +33,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import com.google.common.base.Joiner;
 
+import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
 import org.apache.spark.SparkEnv;
@@ -485,6 +487,15 @@ public class SparkInterpreter extends Interpreter {
       conf.set("spark.yarn.isPython", "true");
     }
 
+    if (conf.contains("spark.yarn.keytab") && conf.contains("spark.yarn.principal")) {
+      try {
+        String keytab = conf.get("spark.yarn.keytab");
+        String principal = conf.get("spark.yarn.principal");
+        UserGroupInformation.loginUserFromKeytab(principal, keytab);
+      } catch (IOException e) {
+        throw new RuntimeException("Can not pass kerberos authentication", e);
+      }
+    }
     SparkContext sparkContext = new SparkContext(conf);
     return sparkContext;
   }
