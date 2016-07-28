@@ -143,7 +143,7 @@ public class ZeppelinR implements ExecuteResultHandler {
     cmd.addArgument(Integer.toString(sparkVersion.toNumber()));
 
     executor = new DefaultExecutor();
-    outputStream = new SparkOutputStream();
+    outputStream = new SparkOutputStream(logger);
 
     input = new PipedOutputStream();
     PipedInputStream in = new PipedInputStream(input);
