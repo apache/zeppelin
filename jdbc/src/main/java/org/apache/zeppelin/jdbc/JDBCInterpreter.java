@@ -495,7 +495,8 @@ public class JDBCInterpreter extends Interpreter {
   public Scheduler getScheduler() {
     String schedulerName = JDBCInterpreter.class.getName() + this.hashCode();
     return isConcurrentExecution() ?
-            SchedulerFactory.singleton().createOrGetParallelScheduler(schedulerName, 10)
+            SchedulerFactory.singleton().createOrGetParallelScheduler(schedulerName,
+                getMaxConcurrentConnection())
             : SchedulerFactory.singleton().createOrGetFIFOScheduler(schedulerName);
   }
 
