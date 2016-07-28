@@ -24,6 +24,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import com.google.gson.annotations.SerializedName;
 import org.slf4j.Logger;
@@ -54,13 +55,19 @@ public class InterpreterSetting {
 
   @Deprecated private transient InterpreterGroupFactory interpreterGroupFactory;
 
-  public InterpreterSetting() {
+  private final transient ReentrantReadWriteLock.ReadLock interpreterGroupReadLock;
+  private final transient ReentrantReadWriteLock.WriteLock interpreterGroupWriteLock;
 
+  public InterpreterSetting() {
+    ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+    interpreterGroupReadLock = lock.readLock();
+    interpreterGroupWriteLock = lock.writeLock();
   }
 
   public InterpreterSetting(String id, String name, String group,
       List<InterpreterInfo> interpreterInfos, Properties properties, List<Dependency> dependencies,
       InterpreterOption option, String path) {
+    this();
     this.id = id;
     this.name = name;
     this.group = group;
@@ -115,31 +122,41 @@ public class InterpreterSetting {
 
   public InterpreterGroup getInterpreterGroup(String user, String noteId) {
     String key = getInterpreterProcessKey(user, noteId);
-    synchronized (interpreterGroupRef) {
-      if (!interpreterGroupRef.containsKey(key)) {
-        String interpreterGroupId = getId() + ":" + key;
-        InterpreterGroup intpGroup =
-            interpreterGroupFactory.createInterpreterGroup(interpreterGroupId, getOption());
-        interpreterGroupRef.put(key, intpGroup);
-      }
+    if (!interpreterGroupRef.containsKey(key)) {
+      String interpreterGroupId = getId() + ":" + key;
+      InterpreterGroup intpGroup =
+          interpreterGroupFactory.createInterpreterGroup(interpreterGroupId, getOption());
+
+      interpreterGroupWriteLock.lock();
+      interpreterGroupRef.put(key, intpGroup);
+      interpreterGroupWriteLock.unlock();
+    }
+    try {
+      interpreterGroupReadLock.lock();
       return interpreterGroupRef.get(key);
+    } finally {
+      interpreterGroupReadLock.unlock();
     }
   }
 
   public Collection<InterpreterGroup> getAllInterpreterGroups() {
-    synchronized (interpreterGroupRef) {
+    try {
+      interpreterGroupReadLock.lock();
       return new LinkedList<>(interpreterGroupRef.values());
+    } finally {
+      interpreterGroupReadLock.unlock();
     }
   }
 
   void closeAndRemoveInterpreterGroup(String noteId) {
     String key = getInterpreterProcessKey("", noteId);
+
     InterpreterGroup groupToRemove = null;
-    synchronized (interpreterGroupRef) {
-      for(String intpKey: interpreterGroupRef.keySet()) {
-        if(intpKey.contains(key)) {
-          groupToRemove = interpreterGroupRef.remove(intpKey);
-        }
+    for (String intpKey : new HashSet<>(interpreterGroupRef.keySet())) {
+      if (intpKey.contains(key)) {
+        interpreterGroupWriteLock.lock();
+        groupToRemove = interpreterGroupRef.remove(intpKey);
+        interpreterGroupWriteLock.unlock();
       }
     }
 
@@ -150,11 +167,9 @@ public class InterpreterSetting {
   }
 
   void closeAndRmoveAllInterpreterGroups() {
-    synchronized (interpreterGroupRef) {
-      HashSet<String> groupsToRemove = new HashSet<>(interpreterGroupRef.keySet());
-      for (String key : groupsToRemove) {
-        closeAndRemoveInterpreterGroup(key);
-      }
+    HashSet<String> groupsToRemove = new HashSet<>(interpreterGroupRef.keySet());
+    for (String key : groupsToRemove) {
+      closeAndRemoveInterpreterGroup(key);
     }
   }
 

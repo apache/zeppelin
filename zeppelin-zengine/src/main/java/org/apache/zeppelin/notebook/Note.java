@@ -30,6 +30,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import com.google.common.base.Preconditions;
 import com.google.gson.Gson;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -286,8 +287,8 @@ public class Note implements Serializable, ParagraphJobListener {
    * @param paragraphId ID of paragraph
    * @return a paragraph that was deleted, or <code>null</code> otherwise
    */
-  public Paragraph removeParagraph(String paragraphId) {
-    removeAllAngularObjectInParagraph(paragraphId);
+  public Paragraph removeParagraph(String user, String paragraphId) {
+    removeAllAngularObjectInParagraph(user, paragraphId);
     ResourcePoolUtils.removeResourcesBelongsToParagraph(getId(), paragraphId);
     synchronized (paragraphs) {
       Iterator<Paragraph> i = paragraphs.iterator();
@@ -460,6 +461,9 @@ public class Note implements Serializable, ParagraphJobListener {
    */
   public void runAll() {
     String cronExecutingUser = (String) getConfig().get("cronExecutingUser");
+    if (null == cronExecutingUser) {
+      cronExecutingUser = "anonymous";
+    }
     synchronized (paragraphs) {
       for (Paragraph p : paragraphs) {
         if (!p.isEnabled()) {
@@ -482,7 +486,8 @@ public class Note implements Serializable, ParagraphJobListener {
     Paragraph p = getParagraph(paragraphId);
     p.setListener(jobListenerFactory.getParagraphJobListener(this));
     String requiredReplName = p.getRequiredReplName();
-    Interpreter intp = factory.getInterpreter(getId(), requiredReplName);
+    Interpreter intp = factory.getInterpreter(p.getUser(), getId(), requiredReplName);
+
     if (intp == null) {
       String intpExceptionMsg =
           p.getJobName() + "'s Interpreter " + requiredReplName + " not found";
@@ -526,7 +531,7 @@ public class Note implements Serializable, ParagraphJobListener {
     }
   }
 
-  private void snapshotAngularObjectRegistry() {
+  private void snapshotAngularObjectRegistry(String user) {
     angularObjects = new HashMap<>();
 
     List<InterpreterSetting> settings = factory.getInterpreterSettings(getId());
@@ -535,13 +540,13 @@ public class Note implements Serializable, ParagraphJobListener {
     }
 
     for (InterpreterSetting setting : settings) {
-      InterpreterGroup intpGroup = setting.getInterpreterGroup(id);
+      InterpreterGroup intpGroup = setting.getInterpreterGroup(user, id);
       AngularObjectRegistry registry = intpGroup.getAngularObjectRegistry();
       angularObjects.put(intpGroup.getId(), registry.getAllWithGlobal(id));
     }
   }
 
-  private void removeAllAngularObjectInParagraph(String paragraphId) {
+  private void removeAllAngularObjectInParagraph(String user, String paragraphId) {
     angularObjects = new HashMap<>();
 
     List<InterpreterSetting> settings = factory.getInterpreterSettings(getId());
@@ -550,7 +555,7 @@ public class Note implements Serializable, ParagraphJobListener {
     }
 
     for (InterpreterSetting setting : settings) {
-      InterpreterGroup intpGroup = setting.getInterpreterGroup(id);
+      InterpreterGroup intpGroup = setting.getInterpreterGroup(user, id);
       AngularObjectRegistry registry = intpGroup.getAngularObjectRegistry();
 
       if (registry instanceof RemoteAngularObjectRegistry) {
@@ -580,8 +585,9 @@ public class Note implements Serializable, ParagraphJobListener {
   }
 
   public void persist(AuthenticationInfo subject) throws IOException {
+    Preconditions.checkNotNull(subject, "AuthenticationInfo should not be null");
     stopDelayedPersistTimer();
-    snapshotAngularObjectRegistry();
+    snapshotAngularObjectRegistry(subject.getUser());
     index.updateIndexDoc(this);
     repo.save(this, subject);
   }
