@@ -21,7 +21,7 @@
   {
     "group": "python",
     "name": "sql",
-    "className": "org.apache.zeppelin.python.PythonPandasSqlInterpreter",
+    "className": "org.apache.zeppelin.python.PythonInterpreterPandasSql",
     "properties": { }
   }
 ]
