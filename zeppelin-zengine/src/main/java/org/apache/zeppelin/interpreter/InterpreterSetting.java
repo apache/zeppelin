@@ -206,6 +206,10 @@ public class InterpreterSetting {
     this.properties.putAll(p);
   }
 
+  void setProperties(Properties p) {
+    this.properties = p;
+  }
+
   void setGroup(String group) {
     this.group = group;
   }

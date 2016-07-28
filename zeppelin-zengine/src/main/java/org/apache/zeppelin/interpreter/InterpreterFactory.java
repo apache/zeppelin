@@ -505,7 +505,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     setting.setGroup(group);
     setting.appendDependencies(dependencies);
     setting.setInterpreterOption(option);
-    setting.updateProperties(p);
+    setting.setProperties(p);
     setting.setInterpreterGroupFactory(this);
     interpreterSettings.put(setting.getId(), setting);
     saveToFile();
@@ -837,7 +837,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
         intpsetting.closeAndRmoveAllInterpreterGroups();
 
         intpsetting.setOption(option);
-        intpsetting.updateProperties(properties);
+        intpsetting.setProperties(properties);
         intpsetting.setDependencies(dependencies);
 
         loadInterpreterDependencies(intpsetting);
