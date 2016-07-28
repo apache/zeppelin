@@ -133,7 +133,6 @@ Join to our [Mailing list](https://zeppelin.apache.org/community.html) and repor
   * [Publish your Paragraph](./manual/publish.html) results into your external website
   * [Customize Zeppelin Homepage](./manual/notebookashomepage.html) with one of your notebooks
 * More
-  * [Apache Zeppelin on Vagrant VM](./install/virtual_machine.html): a guide for installing Apache Zeppelin on Vagrant virtual machine
   * [Upgrade Apache Zeppelin Version](./install/upgrade.html): a manual procedure of upgrading Apache Zeppelin version
 
 ####Interpreter
@@ -168,6 +167,9 @@ Join to our [Mailing list](https://zeppelin.apache.org/community.html) and repor
   * [Shiro Authentication](./security/shiroauthentication.html)
   * [Notebook Authorization](./security/notebook_authorization.html)
   * [Data Source Authorization](./security/datasource_authorization.html)
+* Advanced
+  * [Apache Zeppelin on Vagrant VM](./install/virtual_machine.html)
+  * [Zeppelin on Spark Cluster Mode (Standalone via Docker)](./install/spark_cluster_mode.html#spark-standalone-mode)
 * Contribute
   * [Writing Zeppelin Interpreter](./development/writingzeppelininterpreter.html)
   * [Writing Zeppelin Application (Experimental)](./development/writingzeppelinapplication.html)
