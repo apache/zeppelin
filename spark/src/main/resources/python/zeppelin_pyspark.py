@@ -27,6 +27,7 @@ from pyspark.storagelevel import StorageLevel
 from pyspark.accumulators import Accumulator, AccumulatorParam
 from pyspark.broadcast import Broadcast
 from pyspark.serializers import MarshalSerializer, PickleSerializer
+import ast
 
 # for back compatibility
 from pyspark.sql import SQLContext, HiveContext, Row
@@ -244,16 +245,24 @@ while True :
       final_code.append(s)
 
     if final_code:
-      # use exec mode to compile the statements except the last statement
+      # use exec mode to compile the statements except the last statement,
+      # so that the last statement's evaluation will be printed to stdout
       sc.setJobGroup(jobGroup, "Zeppelin")
-      if len(final_code) >= 2:
-        compiledCode = compile("\n".join(final_code[:-1]), "<string>", "exec")
-        exec(compiledCode)
-      # use single mode to compile the last statement, so that the last statement's evaluation
-      # will be printed to stdout
-      compiledCode = compile("\n".join(final_code[-1:]), "<string>", "single")
-      exec(compiledCode)
+      code = compile('\n'.join(final_code), '<stdin>', 'exec', ast.PyCF_ONLY_AST, 1)
+      to_run_exec, to_run_single = code.body[:-1], code.body[-1:]
 
+      try:
+        for node in to_run_exec:
+          mod = ast.Module([node])
+          code = compile(mod, '<stdin>', 'exec')
+          exec(code)
+
+        for node in to_run_single:
+          mod = ast.Interactive([node])
+          code = compile(mod, '<stdin>', 'single')
+          exec(code)
+      except:
+        raise Execution(sys.exc_info())
 
     intp.setStatementsFinished("", False)
   except Py4JJavaError:
