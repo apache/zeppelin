@@ -39,6 +39,8 @@ import com.google.common.collect.Sets;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.scheduler.Job;
 import org.quartz.CronExpression;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -498,7 +500,23 @@ public class NotebookRestApi {
       return new JsonResponse<>(Status.NOT_FOUND, "note not found.").build();
     }
 
-    note.runAll();
+    for (Paragraph paragraph : note.getParagraphs()) {
+      note.setLastReplName(paragraph.getId());
+      try {
+        note.run(paragraph.getId());
+      } catch (Exception ex) {
+        LOG.error("Exception from run", ex);
+        if (paragraph != null) {
+          paragraph.setReturn(
+              new InterpreterResult(InterpreterResult.Code.ERROR, ex.getMessage()),
+              ex);
+          paragraph.setStatus(Job.Status.ERROR);
+        }
+        return new JsonResponse<>(Status.PRECONDITION_FAILED,
+            paragraph.getJobName() + " Not selected or Invalid Interpreter bind").build();
+      }
+    }
+
     return new JsonResponse<>(Status.OK).build();
   }
 
