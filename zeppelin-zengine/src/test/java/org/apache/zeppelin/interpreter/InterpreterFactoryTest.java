@@ -155,5 +155,10 @@ public class InterpreterFactoryTest {
     }});
 
     assertEquals("className1", factory.getInterpreter("note", "test-group1").getClassName());
+    
+    @Test
+    public void testIsBinding() throws Exception {
+      //TODO-minwoo
+    }
   }
 }
