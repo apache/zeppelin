@@ -256,7 +256,7 @@ public class RemoteInterpreterProcess implements ExecuteResultHandler {
           }
         }
 
-        if (isRunning()) {
+        if (isRunning() && !isInterpreterAlreadyExecuting) {
           logger.info("kill interpreter process");
           watchdog.destroyProcess();
         }
