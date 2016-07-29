@@ -75,7 +75,7 @@
 
   <dependencies>
     <dependency>
-      <artifactId>zeppelin-server_2.10</artifactId>
+      <artifactId>zeppelin-server</artifactId>
       <groupId>${project.groupId}</groupId>
       <version>${project.version}</version>
     </dependency>
