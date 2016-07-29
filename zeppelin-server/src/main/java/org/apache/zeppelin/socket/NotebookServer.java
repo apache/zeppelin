@@ -39,6 +39,7 @@ import org.apache.zeppelin.helium.HeliumPackage;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
+import org.apache.zeppelin.rest.message.InterpreterSettingListForNoteBind;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.interpreter.InterpreterOutput;
 import org.apache.zeppelin.interpreter.InterpreterResult;
@@ -234,6 +235,12 @@ public class NotebookServer extends WebSocketServlet implements
           case LIST_UPDATE_NOTEBOOK_JOBS:
             unicastUpdateNotebookJobInfo(conn, messagereceived);
             break;
+          case GET_INTERPRETER_BINDINGS:
+            getInterpreterBindings(conn, messagereceived);
+            break;
+          case SAVE_INTERPRETER_BINDINGS:
+            saveInterpreterBindings(conn, messagereceived);
+            break;
           default:
             break;
       }
@@ -409,6 +416,48 @@ public class NotebookServer extends WebSocketServlet implements
 
     conn.send(serializeMessage(new Message(OP.LIST_UPDATE_NOTEBOOK_JOBS)
             .put("notebookRunningJobs", response)));
+  }
+
+  public void saveInterpreterBindings(NotebookSocket conn, Message fromMessage) {
+    try {
+      List<String> settingIdList = gson.fromJson(String.valueOf(
+          fromMessage.data.get("selectedSettingIds")), new TypeToken<ArrayList<String>>() {
+          }.getType());
+      notebook().bindInterpretersToNote((String) fromMessage.data.get("noteID"), settingIdList);
+    } catch (Exception e) {
+      LOG.error("Error while saving interpreter bindings", e);
+    }
+  }
+
+  public void getInterpreterBindings(NotebookSocket conn, Message fromMessage)
+      throws IOException {
+    List<InterpreterSettingListForNoteBind> settingList = new LinkedList<>();
+
+    List<InterpreterSetting> selectedSettings =
+        notebook().getBindedInterpreterSettings((String) fromMessage.data.get("noteID"));
+    for (InterpreterSetting setting : selectedSettings) {
+      settingList.add(new InterpreterSettingListForNoteBind(setting.getId(), setting.getName(),
+          setting.getInterpreterInfos(), true));
+    }
+
+    List<InterpreterSetting> availableSettings = notebook().getInterpreterFactory().get();
+    for (InterpreterSetting setting : availableSettings) {
+      boolean selected = false;
+      for (InterpreterSetting selectedSetting : selectedSettings) {
+        if (selectedSetting.getId().equals(setting.getId())) {
+          selected = true;
+          break;
+        }
+      }
+
+      if (!selected) {
+        settingList.add(new InterpreterSettingListForNoteBind(setting.getId(), setting.getName(),
+            setting.getInterpreterInfos(), false));
+      }
+    }
+
+    conn.send(serializeMessage(new Message(OP.INTERPRETER_BINDINGS)
+        .put("interpreterBindings", settingList)));
   }
 
   public List<Map<String, String>> generateNotebooksInfo(boolean needsReload,
