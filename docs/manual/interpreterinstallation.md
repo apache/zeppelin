@@ -85,82 +85,97 @@ You can also find the below community managed interpreter list in `conf/interpre
   </tr>
   <tr>
     <td>alluxio</td>
-    <td>org.apache.zeppelin:zeppelin-alluxio:0.6.0</td>
+    <td>org.apache.zeppelin:zeppelin-alluxio:0.6.1</td>
     <td>Alluxio interpreter</td>
   </tr>
   <tr>
     <td>angular</td>
-    <td>org.apache.zeppelin:zeppelin-angular:0.6.0</td>
+    <td>org.apache.zeppelin:zeppelin-angular:0.6.1</td>
     <td>HTML and AngularJS view rendering</td>
   </tr>
   <tr>
-    <td>cassandra</td>
-    <td>org.apache.zeppelin:zeppelin-cassandra:0.6.0</td>
-    <td>Cassandra interpreter</td>
+    <td>cassandra_2.10</td>
+    <td>org.apache.zeppelin:zeppelin-cassandra_2.10:0.6.1</td>
+    <td>Cassandra interpreter built with Scala 2.10</td>
+  </tr>
+  <tr>
+    <td>cassandra_2.11</td>
+    <td>org.apache.zeppelin:zeppelin-cassandra_2.11:0.6.1</td>
+    <td>Cassandra interpreter built with Scala 2.11</td>
   </tr>
   <tr>
     <td>elasticsearch</td>
-    <td>org.apache.zeppelin:zeppelin-elasticsearch:0.6.0</td>
+    <td>org.apache.zeppelin:zeppelin-elasticsearch:0.6.1</td>
     <td>Elasticsearch interpreter</td>
   </tr>
   <tr>
     <td>file</td>
-    <td>org.apache.zeppelin:zeppelin-file:0.6.0</td>
+    <td>org.apache.zeppelin:zeppelin-file:0.6.1</td>
     <td>HDFS file interpreter</td>
   </tr>
   <tr>
-    <td>flink</td>
-    <td>org.apache.zeppelin:zeppelin-flink:0.6.0</td>
-    <td>Flink interpreter</td>
+    <td>flink_2.10</td>
+    <td>org.apache.zeppelin:zeppelin-flink_2.10:0.6.1</td>
+    <td>Flink interpreter built with Scala 2.10</td>
+  </tr>
+  <tr>
+    <td>flink_2.11</td>
+    <td>org.apache.zeppelin:zeppelin-flink_2.11:0.6.1</td>
+    <td>Flink interpreter built with Scala 2.11</td>
   </tr>
   <tr>
     <td>hbase</td>
-    <td>org.apache.zeppelin:zeppelin-hbase:0.6.0</td>
+    <td>org.apache.zeppelin:zeppelin-hbase:0.6.1</td>
     <td>Hbase interpreter</td>
   </tr>
   <tr>
-    <td>ignite</td>
-    <td>org.apache.zeppelin:zeppelin-ignite:0.6.0</td>
-    <td>Ignite interpreter</td>
+    <td>ignite_2.10</td>
+    <td>org.apache.zeppelin:zeppelin-ignite_2.10:0.6.1</td>
+    <td>Ignite interpreter built with Scala 2.10</td>
+  </tr>
+  <tr>
+    <td>ignite_2.11</td>
+    <td>org.apache.zeppelin:zeppelin-ignite_2.11:0.6.1</td>
+    <td>Ignite interpreter built with Scala 2.11</td>
   </tr>
   <tr>
     <td>jdbc</td>
-    <td>org.apache.zeppelin:zeppelin-jdbc:0.6.0</td>
+    <td>org.apache.zeppelin:zeppelin-jdbc:0.6.1</td>
     <td>Jdbc interpreter</td>
   </tr>
   <tr>
     <td>kylin</td>
-    <td>org.apache.zeppelin:zeppelin-kylin:0.6.0</td>
+    <td>org.apache.zeppelin:zeppelin-kylin:0.6.1</td>
     <td>Kylin interpreter</td>
   </tr>
   <tr>
     <td>lens</td>
-    <td>org.apache.zeppelin:zeppelin-lens:0.6.0</td>
+    <td>org.apache.zeppelin:zeppelin-lens:0.6.1</td>
     <td>Lens interpreter</td>
   </tr>
   <tr>
     <td>livy</td>
-    <td>org.apache.zeppelin:zeppelin-livy:0.6.0</td>
+    <td>org.apache.zeppelin:zeppelin-livy:0.6.1</td>
     <td>Livy interpreter</td>
   </tr>
   <tr>
     <td>md</td>
-    <td>org.apache.zeppelin:zeppelin-markdown:0.6.0</td>
+    <td>org.apache.zeppelin:zeppelin-markdown:0.6.1</td>
     <td>Markdown support</td>
   </tr>
   <tr>
     <td>postgresql</td>
-    <td>org.apache.zeppelin:zeppelin-postgresql:0.6.0</td>
+    <td>org.apache.zeppelin:zeppelin-postgresql:0.6.1</td>
     <td>Postgresql interpreter</td>
   </tr>
   <tr>
     <td>python</td>
-    <td>org.apache.zeppelin:zeppelin-python:0.6.0</td>
+    <td>org.apache.zeppelin:zeppelin-python:0.6.1</td>
     <td>Python interpreter</td>
   </tr>
   <tr>
     <td>shell</td>
-    <td>org.apache.zeppelin:zeppelin-shell:0.6.0</td>
+    <td>org.apache.zeppelin:zeppelin-shell:0.6.1</td>
     <td>Shell command</td>
   </tr>
 </table>
