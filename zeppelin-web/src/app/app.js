@@ -63,6 +63,10 @@
               templateUrl: 'app/notebook/notebook.html',
               controller: 'NotebookCtrl'
             })
+            .when('/notebook/:noteId/revision/:revisionId', {
+              templateUrl: 'app/notebook/notebook.html',
+              controller: 'NotebookCtrl'
+            })
             .when('/jobmanager', {
               templateUrl: 'app/jobmanager/jobmanager.html',
               controller: 'JobmanagerCtrl'

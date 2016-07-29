@@ -66,7 +66,11 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
 
   /** Init the new controller */
   var initNotebook = function() {
-    websocketMsgSrv.getNotebook($routeParams.noteId);
+    if ($routeParams.revisionId) {
+      websocketMsgSrv.getNoteRevision($routeParams.noteId, $routeParams.revisionId);
+    } else {
+      websocketMsgSrv.getNotebook($routeParams.noteId);
+    }
     websocketMsgSrv.listRevisionHistory($routeParams.noteId);
     var currentRoute = $route.current;
     if (currentRoute) {
