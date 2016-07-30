@@ -508,7 +508,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
         + "org.apache.zeppelin.postgresql.PostgreSqlInterpreter,"
         + "org.apache.zeppelin.flink.FlinkInterpreter,"
         + "org.apache.zeppelin.python.PythonInterpreter,"
-        + "org.apache.zeppelin.python.PythonPandasSqlInterpreter,"
+        + "org.apache.zeppelin.python.PythonInterpreterPandasSql,"
         + "org.apache.zeppelin.ignite.IgniteInterpreter,"
         + "org.apache.zeppelin.ignite.IgniteSqlInterpreter,"
         + "org.apache.zeppelin.lens.LensInterpreter,"

@@ -171,6 +171,8 @@ public abstract class AbstractTestRestApi {
 
         String sparkHome = getSparkHome();
         if (sparkHome != null) {
+          sparkIntpSetting.getProperties().setProperty("master", "spark://" + getHostname() + ":7071");
+          sparkIntpSetting.getProperties().setProperty("spark.cores.max", "2");
           // set spark home for pyspark
           sparkIntpSetting.getProperties().setProperty("spark.home", sparkHome);
           pySpark = true;
@@ -192,7 +194,7 @@ public abstract class AbstractTestRestApi {
   }
 
   private static String getSparkHome() {
-    String sparkHome = getSparkHomeRecursively(new File(System.getProperty("user.dir")));
+    String sparkHome = getSparkHomeRecursively(new File(System.getProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_HOME.getVarName())));
     System.out.println("SPARK HOME detected " + sparkHome);
     return sparkHome;
   }

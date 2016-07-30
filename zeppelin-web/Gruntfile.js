@@ -68,6 +68,17 @@ module.exports = function(grunt) {
       src: ['src/**/*.html']
     },
 
+    cacheBust: {
+      taskName: {
+        options: {
+          baseDir: '<%= yeoman.dist %>',
+          assets: ['scripts/**.js', 'styles/**.css'],
+          deleteOriginals: true
+        },
+        src: ['<%= yeoman.dist %>/index.html']
+      }
+    },
+
     'goog-webfont-dl': {
       patuaOne: {
         options: {
@@ -534,7 +545,8 @@ module.exports = function(grunt) {
     'cssmin',
     'uglify',
     'usemin',
-    'htmlmin'
+    'htmlmin',
+    'cacheBust'
   ]);
 
   grunt.registerTask('default', [
