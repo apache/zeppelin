@@ -4,6 +4,7 @@
     (Apache 2.0) JavaEWAH v0.7.9 (https://github.com/lemire/javaewah) - https://github.com/lemire/javaewah/blob/master/LICENSE-2.0.txt
 
 
+
 The following components are provided under Apache License.
 
 
@@ -73,7 +74,7 @@ The following components are provided under Apache License.
     (Apache 2.0) json-flattener (com.github.wnameless:json-flattener:0.1.6 - https://github.com/wnameless/json-flattener)
     (Apache 2.0) Spatial4J (com.spatial4j:spatial4j:0.4.1 - https://github.com/spatial4j/spatial4j)
     (Apache 2.0) T-Digest (com.tdunning:t-digest:3.0 - https://github.com/tdunning/t-digest)
-    (Apache 2.0) Netty (io.netty:netty:3.8.0.Final - http://netty.io/)
+    (Apache 2.0) Netty (io.netty:netty:3.10.5.Final - http://netty.io/)
     (Apache 2.0) Lucene Common Analyzers (org.apache.lucene:lucene-analyzers-common:5.3.1 - http://lucene.apache.org/lucene-parent/lucene-analyzers-common)
     (Apache 2.0) Lucene Memory (org.apache.lucene:lucene-backward-codecs:5.3.1 - http://lucene.apache.org/lucene-parent/lucene-backward-codecs)
     (Apache 2.0) Lucene Core (org.apache.lucene:lucene-core:5.3.1 - http://lucene.apache.org/lucene-parent/lucene-core)
@@ -102,7 +103,17 @@ The following components are provided under Apache License.
     (Apache 2.0) Roboto Font (https://github.com/google/roboto/)
     (Apache 2.0) stream (com.clearspring.analytics:stream:2.7.0) - https://github.com/addthis/stream-lib/blob/v2.7.0/LICENSE.txt
     (Apache 2.0) io.dropwizard.metrics:3.1.2 - https://github.com/dropwizard/metrics/blob/v3.1.2/LICENSE
-
+    (Apache 2.0) Google BigQuery API for Java (com.google.api.services.bigquery:v2-rev265-1.21.0 - https://cloud.google.com/bigquery/)
+    (Apache 2.0) Google APIs Client Library for Java (com.google.api-client:1.21.0 - https://github.com/google/google-api-java-client)
+    (Apache 2.0) The Guava project contains several of Google's core libraries that we rely on in our Java-based projects (com.google.guava:guava-jdk5:17.0 - https://github.com/google/guava)
+    (Apache 2.0) Google OAuth Client Library for Java (com.google.oauth-client:google-oauth-client:1.21.0 - https://github.com/google/google-oauth-java-client)
+    (Apache 2.0) Google HTTP Client Library for Java (com.google.http-client:google-http-client:1.21.0 - https://github.com/google/google-http-java-client/tree/dev/google-http-client)
+    (Apache 2.0) Google OAuth Jetty Client Library for Java (com.google.oauth-client:google-oauth-client-jetty:1.21.0 - https://github.com/google/google-oauth-java-client/tree/dev/google-oauth-client-jetty)
+    (Apache 2.0) Google OAuth Client Library for Java6 (com.google.oauth-client:google-oauth-client-java6:1.21.0 - https://github.com/google/google-oauth-java-client/tree/dev/google-oauth-client-java6)
+    (Apache 2.0) The core jetty server artifact (org.mortbay.jetty:jetty:6.1.26 - http://javadox.com/org.mortbay.jetty/jetty/6.1.26/overview-tree.html)
+    (Apache 2.0) Utility classes for Jetty (org.mortbay.jetty:jetty-util:6.1.26 - http://javadox.com/org.mortbay.jetty/jetty/6.1.26/overview-tree.html)
+    (Apache 2.0) Servlet API (org.mortbay.jetty:servlet-api:2.5-20081211 - https://en.wikipedia.org/wiki/Jetty_(web_server))
+    (Apache 2.0) Google HTTP Client Library for Java (com.google.http-client:google-http-client-jackson2:1.21.0 - https://github.com/google/google-http-java-client/tree/dev/google-http-client-jackson2)
 
 ========================================================================
 MIT licenses
@@ -171,7 +182,6 @@ The following components are provided under the BSD-style License.
 
     (New BSD License) JGit (org.eclipse.jgit:org.eclipse.jgit:jar:4.1.1.201511131810-r - https://eclipse.org/jgit/)
     (New BSD License) Kryo (com.esotericsoftware.kryo:kryo:3.0.3 - http://code.google.com/p/kryo/)
-    (New BSD License) leveldbjni (org.fusesource.leveldbjni:leveldbjni-all:1.8) - https://github.com/fusesource/leveldbjni/blob/leveldbjni-1.8/license.txt
     (New BSD License) MinLog (com.esotericsoftware.minlog:minlog:1.3 - http://code.google.com/p/minlog/)
     (New BSD License) ReflectASM (com.esotericsoftware.reflectasm:reflectasm:1.07 - http://code.google.com/p/reflectasm/)
     (BSD-like) Scala Library (org.scala-lang:scala-library:2.11.7 - http://www.scala-lang.org/)
