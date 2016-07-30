@@ -94,12 +94,7 @@ You can also find the below community managed interpreter list in `conf/interpre
     <td>HTML and AngularJS view rendering</td>
   </tr>
   <tr>
-    <td>cassandra_2.10</td>
-    <td>org.apache.zeppelin:zeppelin-cassandra_2.10:0.6.1</td>
-    <td>Cassandra interpreter built with Scala 2.10</td>
-  </tr>
-  <tr>
-    <td>cassandra_2.11</td>
+    <td>cassandra</td>
     <td>org.apache.zeppelin:zeppelin-cassandra_2.11:0.6.1</td>
     <td>Cassandra interpreter built with Scala 2.11</td>
   </tr>
@@ -114,12 +109,7 @@ You can also find the below community managed interpreter list in `conf/interpre
     <td>HDFS file interpreter</td>
   </tr>
   <tr>
-    <td>flink_2.10</td>
-    <td>org.apache.zeppelin:zeppelin-flink_2.10:0.6.1</td>
-    <td>Flink interpreter built with Scala 2.10</td>
-  </tr>
-  <tr>
-    <td>flink_2.11</td>
+    <td>flink</td>
     <td>org.apache.zeppelin:zeppelin-flink_2.11:0.6.1</td>
     <td>Flink interpreter built with Scala 2.11</td>
   </tr>
@@ -129,12 +119,7 @@ You can also find the below community managed interpreter list in `conf/interpre
     <td>Hbase interpreter</td>
   </tr>
   <tr>
-    <td>ignite_2.10</td>
-    <td>org.apache.zeppelin:zeppelin-ignite_2.10:0.6.1</td>
-    <td>Ignite interpreter built with Scala 2.10</td>
-  </tr>
-  <tr>
-    <td>ignite_2.11</td>
+    <td>ignite</td>
     <td>org.apache.zeppelin:zeppelin-ignite_2.11:0.6.1</td>
     <td>Ignite interpreter built with Scala 2.11</td>
   </tr>
