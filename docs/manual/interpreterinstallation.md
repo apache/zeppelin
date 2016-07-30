@@ -47,6 +47,43 @@ You can get full list of community managed interpreters by running
 ./bin/install-interpreter.sh --list
 ```
 
+#### Install interpreter built with Scala 2.10
+From version 0.6.1, Zeppelin support both Scala 2.10 and 2.11 for several interpreters as below:
+
+<table class="table-configuration">
+  <tr>
+    <th>Name</th>
+    <th>Maven Artifact for Scala 2.10</th>
+    <th>Maven Artifact for Scala 2.11</th>
+  </tr>
+  <tr>
+    <td>cassandra</td>
+    <td>org.apache.zeppelin:zeppelin-cassandra_2.10:0.6.1</td>
+    <td>org.apache.zeppelin:zeppelin-cassandra_2.11:0.6.1</td>
+  </tr>
+  <tr>
+    <td>flink</td>
+    <td>org.apache.zeppelin:zeppelin-flink_2.10:0.6.1</td>
+    <td>org.apache.zeppelin:zeppelin-flink_2.11:0.6.1</td>
+  </tr>
+  <tr>
+    <td>ignite</td>
+    <td>org.apache.zeppelin:zeppelin-ignite_2.10:0.6.1</td>
+    <td>org.apache.zeppelin:zeppelin-ignite_2.11:0.6.1</td>
+  </tr>
+  <tr>
+    <td>flink</td>
+    <td>org.apache.zeppelin:zeppelin-spark_2.10:0.6.1</td>
+    <td>org.apache.zeppelin:zeppelin-spark_2.11:0.6.1</td>
+  </tr>
+</table>
+
+If you install one of these interpreters only with `--name` option, installer will download interpreter built with Scala 2.11 by default. If you want to specify Scala version, you will need to add `--artifact` option. Here is the example of installing flink interpreter built with Scala 2.10.
+
+```
+./bin/install-interpreter.sh --name flink --artifact org.apache.zeppelin:zeppelin-flink_2.10:0.6.1
+```
+
 Once you have installed interpreters, you need to restart Zeppelin. And then [create interpreter setting](../manual/interpreters.html#what-is-zeppelin-interpreter) and [bind it with your notebook](../manual/interpreters.html#what-is-zeppelin-interpreter-setting).
 
 
@@ -95,7 +132,7 @@ You can also find the below community managed interpreter list in `conf/interpre
   </tr>
   <tr>
     <td>cassandra</td>
-    <td>org.apache.zeppelin:zeppelin-cassandra_2.11:0.6.1</td>
+    <td>org.apache.zeppelin:zeppelin-cassandra\_2.11:0.6.1</td>
     <td>Cassandra interpreter built with Scala 2.11</td>
   </tr>
   <tr>
@@ -110,7 +147,7 @@ You can also find the below community managed interpreter list in `conf/interpre
   </tr>
   <tr>
     <td>flink</td>
-    <td>org.apache.zeppelin:zeppelin-flink_2.11:0.6.1</td>
+    <td>org.apache.zeppelin:zeppelin-flink\_2.11:0.6.1</td>
     <td>Flink interpreter built with Scala 2.11</td>
   </tr>
   <tr>
@@ -120,7 +157,7 @@ You can also find the below community managed interpreter list in `conf/interpre
   </tr>
   <tr>
     <td>ignite</td>
-    <td>org.apache.zeppelin:zeppelin-ignite_2.11:0.6.1</td>
+    <td>org.apache.zeppelin:zeppelin-ignite\_2.11:0.6.1</td>
     <td>Ignite interpreter built with Scala 2.11</td>
   </tr>
   <tr>
