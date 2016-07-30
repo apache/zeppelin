@@ -245,7 +245,13 @@ public class BigQueryInterpreter extends Interpreter {
     String projId = getProperty(PROJECT_ID);
     long wTime = Long.parseLong(getProperty(WAIT_TIME));
     long maxRows = Long.parseLong(getProperty(MAX_ROWS));
-    Iterator<GetQueryResultsResponse> pages = run(sql, projId, wTime, maxRows);
+    Iterator<GetQueryResultsResponse> pages;
+    try {
+      pages = run(sql, projId, wTime, maxRows);
+    } catch ( IOException ex ) {
+      logger.error(ex.getMessage());
+      return new InterpreterResult(Code.ERROR, ex.getMessage());
+    }
     try {
       while (pages.hasNext()) {
         finalmessage.append(printRows(pages.next()));
@@ -258,7 +264,8 @@ public class BigQueryInterpreter extends Interpreter {
 
   //Function to run the SQL on bigQuery service
   public static Iterator<GetQueryResultsResponse> run(final String queryString, 
-    final String projId, final long wTime, final long maxRows) {
+    final String projId, final long wTime, final long maxRows) 
+      throws IOException {
     try {
       QueryResponse query = service.jobs().query(
           projId,
@@ -271,7 +278,7 @@ public class BigQueryInterpreter extends Interpreter {
           jobId);
       return getPages(getRequest);
     } catch (IOException ex) {
-      return null;
+      throw ex;
     }
   }
 
