@@ -37,7 +37,6 @@ import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.notebook.*;
-import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.apache.zeppelin.notebook.repo.NotebookRepo.Revision;
 import org.apache.zeppelin.notebook.socket.Message;
 import org.apache.zeppelin.notebook.socket.Message.OP;
@@ -1182,7 +1181,7 @@ public class NotebookServer extends WebSocketServlet implements
     AuthenticationInfo subject = new AuthenticationInfo(fromMessage.principal);
     Revision revision = notebook.checkpointNote(noteId, commitMessage, subject);
     if (revision != null) {
-      List<NotebookRepo.Revision> revisions = notebook.listRevisionHistory(noteId, subject);
+      List<Revision> revisions = notebook.listRevisionHistory(noteId, subject);
       conn.send(serializeMessage(new Message(OP.LIST_REVISION_HISTORY)
         .put("revisionList", revisions)));
     }
@@ -1192,7 +1191,7 @@ public class NotebookServer extends WebSocketServlet implements
       Message fromMessage) throws IOException {
     String noteId = (String) fromMessage.get("noteId");
     AuthenticationInfo subject = new AuthenticationInfo(fromMessage.principal);
-    List<NotebookRepo.Revision> revisions = notebook.listRevisionHistory(noteId, subject);
+    List<Revision> revisions = notebook.listRevisionHistory(noteId, subject);
 
     conn.send(serializeMessage(new Message(OP.LIST_REVISION_HISTORY)
       .put("revisionList", revisions)));

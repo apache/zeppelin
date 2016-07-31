@@ -358,7 +358,7 @@ public class Notebook implements NoteEventListener {
     return notebookRepo.checkpoint(noteId, checkpointMessage, subject);
   }
 
-  public List<NotebookRepo.Revision> listRevisionHistory(String noteId,
+  public List<Revision> listRevisionHistory(String noteId,
       AuthenticationInfo subject) {
     return notebookRepo.revisionHistory(noteId, subject);
   }
