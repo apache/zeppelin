@@ -32,8 +32,6 @@
     <packaging>jar</packaging>
     <version>0.6.1-SNAPSHOT</version>
     <name>Zeppelin: Kylin interpreter</name>
-    <url>http://zeppelin.apache.org</url>
-
 
     <dependencies>
         <dependency>
