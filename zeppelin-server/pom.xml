@@ -31,7 +31,6 @@
   <packaging>jar</packaging>
   <version>0.7.0-SNAPSHOT</version>
   <name>Zeppelin: Server</name>
-  <url>http://www.nflabs.com</url>
 
   <properties>
     <cxf.version>2.7.7</cxf.version>
