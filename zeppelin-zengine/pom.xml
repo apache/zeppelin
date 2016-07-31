@@ -33,7 +33,6 @@
   <version>0.7.0-SNAPSHOT</version>
   <name>Zeppelin: Zengine</name>
   <description>Zeppelin Zengine</description>
-  <url>http://zeppelin.apache.org</url>
 
   <dependencies>
     <dependency>
