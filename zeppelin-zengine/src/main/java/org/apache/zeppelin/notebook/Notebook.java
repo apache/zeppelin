@@ -363,9 +363,9 @@ public class Notebook implements NoteEventListener {
     return notebookRepo.revisionHistory(noteId, subject);
   }
 
-  public Note getNoteRevision(String noteId, Revision revision, AuthenticationInfo subject)
+  public Note getNoteRevision(String noteId, String revisionId, AuthenticationInfo subject)
       throws IOException {
-    return notebookRepo.get(noteId, revision, subject);
+    return notebookRepo.get(noteId, revisionId, subject);
   }
 
   @SuppressWarnings("rawtypes")

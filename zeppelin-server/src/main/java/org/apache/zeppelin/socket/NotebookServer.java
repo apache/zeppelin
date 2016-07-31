@@ -1201,12 +1201,12 @@ public class NotebookServer extends WebSocketServlet implements
   private void getNoteRevision(NotebookSocket conn, Notebook notebook, Message fromMessage)
       throws IOException {
     String noteId = (String) fromMessage.get("noteId");
-    Revision revision = (Revision) fromMessage.get("revision");
+    String revisionId = (String) fromMessage.get("revisionId");
     AuthenticationInfo subject = new AuthenticationInfo(fromMessage.principal);
-    Note revisionNote = notebook.getNoteRevision(noteId, revision, subject);
+    Note revisionNote = notebook.getNoteRevision(noteId, revisionId, subject);
     conn.send(serializeMessage(new Message(OP.NOTE_REVISION)
         .put("noteId", noteId)
-        .put("revisionId", revision)
+        .put("revisionId", revisionId)
         .put("data", revisionNote)));
   }
 
