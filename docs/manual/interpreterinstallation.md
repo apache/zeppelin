@@ -131,6 +131,11 @@ You can also find the below community managed interpreter list in `conf/interpre
     <td>HTML and AngularJS view rendering</td>
   </tr>
   <tr>
+    <td>bigquery</td>
+    <td>org.apache.zeppelin:zeppelin-bigquery:0.6.1</td>
+    <td>BigQuery interpreter</td>
+  </tr>
+  <tr>
     <td>cassandra</td>
     <td>org.apache.zeppelin:zeppelin-cassandra\_2.11:0.6.1</td>
     <td>Cassandra interpreter built with Scala 2.11</td>
