@@ -1,6 +1,5 @@
 package org.apache.zeppelin.beam;
 
-
 import java.io.File;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -23,16 +22,8 @@ import com.google.gson.Gson;
 */
 public class BeamInterpreter extends Interpreter {
 
-  private String host = "http://localhost:8001";
-  private InterpreterContext context;
-
   public BeamInterpreter(Properties property) {
     super(property);
-  }
-
-
-  public static void main(String[] args) {
-
   }
 
   @Override
@@ -42,16 +33,22 @@ public class BeamInterpreter extends Interpreter {
 
   @Override
   public void close() {
-
+    File dir = new File(".");
+    for (int i = 0; i < dir.list().length; i++) {
+      File f = dir.listFiles()[i];
+      System.out.println(f.getAbsolutePath());
+      if (f.getAbsolutePath().contains(".class"))
+        f.delete();
+    }
   }
 
   @Override
   public InterpreterResult interpret(String st, InterpreterContext context) {
 
-    String uuid = "C" + UUID.randomUUID().toString().replace("-", "");
+    String className = "C" + UUID.randomUUID().toString().replace("-", "");
 
     try {
-      String msg = CompileSourceInMemory.execute(uuid, st);
+      String msg = CompileSourceInMemory.execute(className, st);
       return new InterpreterResult(InterpreterResult.Code.SUCCESS, msg);
     } catch (Exception e) {
       e.printStackTrace();

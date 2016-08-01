@@ -4,6 +4,7 @@
 
 
 
+
 	<parent>
 		<artifactId>zeppelin</artifactId>
 		<groupId>org.apache.zeppelin</groupId>
@@ -15,22 +16,26 @@
 	<artifactId>zeppelin-beam</artifactId>
 	<version>0.7.0-SNAPSHOT</version>
 
-
-
+ <repositories>
+    <repository>
+      <id>apache-beam</id>
+      <url>https://repository.apache.org/content/repositories/snapshots/org/apache/beam/</url>
+    </repository>
+  </repositories>
 
 	<dependencies>
 		<!-- <dependency> <groupId>com.google.cloud.dataflow</groupId> <artifactId>google-cloud-dataflow-java-sdk-all</artifactId> 
 			<version>1.6.0</version> </dependency> <dependency> <groupId>org.apache.beam</groupId> 
-			<artifactId>beam-runners-parent</artifactId> <version>0.2.0-incubating-SNAPSHOT</version> 
+			<artifactId>beam-runners-parent</artifactId> <version>0.1.0-incubating</version> 
 			<type>pom</type> </dependency> <dependency> <groupId>org.apache.beam</groupId> 
-			<artifactId>beam-sdks-java-io-google-cloud-platform</artifactId> <version>0.2.0-incubating-SNAPSHOT</version> 
+			<artifactId>beam-sdks-java-io-google-cloud-platform</artifactId> <version>0.1.0-incubating</version> 
 			</dependency> <dependency> <groupId>org.apache.beam</groupId> <artifactId>beam-parent</artifactId> 
-			<version>0.2.0-incubating-SNAPSHOT</version> <type>pom</type> </dependency> 
+			<version>0.1.0-incubating</version> <type>pom</type> </dependency> 
 			<dependency> <groupId>org.apache.beam</groupId> <artifactId>beam-runners-google-cloud-dataflow-java</artifactId> 
 			<version>0.2.0-incubating</version> </dependency> <dependency> <groupId>org.apache.beam</groupId> 
 			<artifactId>beam-runners-core-java</artifactId> <version>0.2.0-incubating</version> 
 			</dependency> <dependency> <groupId>org.apache.beam</groupId> <artifactId>beam-sdks-java-core</artifactId> 
-			<version>0.2.0-incubating-SNAPSHOT</version> </dependency> -->
+			<version>0.1.0-incubating</version> </dependency> -->
 
 <!-- 
 <dependency>
@@ -187,14 +192,14 @@
 		<dependency>
 			<groupId>org.apache.beam</groupId>
 			<artifactId>beam-runners-parent</artifactId>
-			<version>0.2.0-incubating-SNAPSHOT</version>
+			<version>0.1.0-incubating</version>
 			<type>pom</type>
 		</dependency>
 		<!-- 
 		<dependency>
 			<groupId>org.apache.beam</groupId>
 			<artifactId>beam-examples-java</artifactId>
-			<version>0.2.0-incubating-SNAPSHOT</version>
+			<version>0.1.0-incubating</version>
 
 			<exclusions>
 				<exclusion>
@@ -207,7 +212,7 @@
 		<dependency>
 			<groupId>org.apache.beam</groupId>
 			<artifactId>beam-runners-core-java</artifactId>
-			<version>0.2.0-incubating-SNAPSHOT</version>
+			<version>0.1.0-incubating</version>
 			<exclusions>
 				<exclusion>
 					<artifactId>google-http-client-jackson2</artifactId>
@@ -218,13 +223,13 @@
 		<dependency>
 			<groupId>org.apache.beam</groupId>
 			<artifactId>beam-runners-direct-java</artifactId>
-			<version>0.2.0-incubating-SNAPSHOT</version>
+			<version>0.1.0-incubating</version>
 
 		</dependency>
 		<dependency>
 			<groupId>org.apache.beam</groupId>
 			<artifactId>beam-runners-flink_2.10</artifactId>
-			<version>0.2.0-incubating-SNAPSHOT</version>
+			<version>0.1.0-incubating</version>
 
 			<exclusions>
 				<exclusion>
@@ -241,7 +246,7 @@
 		<dependency>
 			<groupId>org.apache.beam</groupId>
 			<artifactId>beam-runners-flink_2.10-examples</artifactId>
-			<version>0.2.0-incubating-SNAPSHOT</version>
+			<version>0.1.0-incubating</version>
 
 			<exclusions>
 				<exclusion>
@@ -254,7 +259,7 @@
 		<dependency>
 			<groupId>org.apache.beam</groupId>
 			<artifactId>beam-runners-google-cloud-dataflow-java</artifactId>
-			<version>0.2.0-incubating-SNAPSHOT</version>
+			<version>0.1.0-incubating</version>
 
 			<exclusions>
 				<exclusion>
@@ -267,7 +272,7 @@
 		
 			<groupId>org.apache.beam</groupId>
 			<artifactId>beam-runners-spark</artifactId>
-			<version>0.2.0-incubating-SNAPSHOT</version>
+			<version>0.1.0-incubating</version>
 			<type>jar</type>
 		</dependency>
 		
@@ -289,14 +294,13 @@
 
 		-->
 	
-	<!--	
+		
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>zeppelin-interpreter</artifactId>
 			<version>${project.version}</version>
 			<scope>provided</scope>
 		</dependency>
--->
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-exec</artifactId>

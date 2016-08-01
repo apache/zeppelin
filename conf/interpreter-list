@@ -24,6 +24,7 @@ cassandra       org.apache.zeppelin:zeppelin-cassandra_2.11:0.6.1       Cassandr
 elasticsearch   org.apache.zeppelin:zeppelin-elasticsearch:0.6.1        Elasticsearch interpreter
 file            org.apache.zeppelin:zeppelin-file:0.6.1                 HDFS file interpreter
 flink           org.apache.zeppelin:zeppelin-flink_2.11:0.6.1           Flink interpreter built with Scala 2.11
+beam            org.apache.zeppelin:zeppelin-beam:0.6.1                 Beam interpreter
 hbase           org.apache.zeppelin:zeppelin-hbase:0.6.1                Hbase interpreter
 ignite          org.apache.zeppelin:zeppelin-ignite_2.11:0.6.1          Ignite interpreter built with Scala 2.11
 jdbc            org.apache.zeppelin:zeppelin-jdbc:0.6.1                 Jdbc interpreter

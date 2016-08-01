@@ -14,20 +14,17 @@ import com.thoughtworks.qdox.model.JavaClass;
 import com.thoughtworks.qdox.model.JavaSource;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.Arrays;
 import java.util.List;
 
 /**
- * @author admin
+ * @author Mahmoud
  *
  */
 public class CompileSourceInMemory {
@@ -39,31 +36,25 @@ public class CompileSourceInMemory {
     JavaProjectBuilder builder = new JavaProjectBuilder();
     JavaSource src = builder.addSource(new StringReader(code));
 
-    // List<String> imports = src.getImports();
-    // String importsString = "";
-    //
-    // for (int i = 0; i < imports.size(); i++) {
-    // importsString += "import " + imports.get(i) + ";\n";
-    // }
-
     List<JavaClass> classes = src.getClasses();
-    String classesSt = "";
-    String classMain = "", classMainName = "";
+    String classMainName = null;
     for (int i = 0; i < classes.size(); i++) {
       boolean hasMain = false;
       for (int j = 0; j < classes.get(i).getMethods().size(); j++) {
         if (classes.get(i).getMethods().get(j).getName().equals("main")) {
+          classMainName = classes.get(i).getName();
           hasMain = true;
           break;
         }
       }
-      if (hasMain == true) {
-        classMain = classes.get(i).getCodeBlock() + "\n";
-        classMainName = classes.get(i).getName();
-      } else
-        classesSt += classes.get(i).getCodeBlock() + "\n";
+      if (hasMain == true)
+        break;
 
     }
+
+    if (classMainName == null)
+      throw new Exception("There isn't any class containing Main method.");
+
     code = code.replace(classMainName, className);
 
     StringWriter writer = new StringWriter();
@@ -71,11 +62,11 @@ public class CompileSourceInMemory {
 
     out.println(code);
     out.close();
+    
 
-    System.out.println(writer.toString());
 
     JavaFileObject file = new JavaSourceFromString(className, writer.toString());
-
+   
     Iterable<? extends JavaFileObject> compilationUnits = Arrays.asList(file);
 
     ByteArrayOutputStream baosOut = new ByteArrayOutputStream();
@@ -100,11 +91,9 @@ public class CompileSourceInMemory {
     }
     if (success) {
       try {
-        URLClassLoader classLoader = URLClassLoader.newInstance(new URL[] { new File("").toURI()
-            .toURL() });
-        Class.forName(className, true, classLoader)
-            .getDeclaredMethod("main", new Class[] { String[].class })
-            .invoke(null, new Object[] { null });
+
+        Class.forName(className).getDeclaredMethod("main", new Class[] { String[].class })
+        .invoke(null, new Object[] { null });
 
         System.out.flush();
         System.err.flush();
@@ -112,8 +101,8 @@ public class CompileSourceInMemory {
         System.setOut(oldOut);
         System.setErr(oldErr);
 
-        classLoader.clearAssertionStatus();
 
+       
         return baosOut.toString();
       } catch (ClassNotFoundException e) {
         e.printStackTrace(newErr);
