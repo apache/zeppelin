@@ -153,4 +153,24 @@ public class PythonInterpreterPandasSqlTest {
     assertTrue(ret.message().length() > 0);
   }
 
+  @Test
+  public void showDataFrame() {
+    InterpreterResult ret;
+    ret = python.interpret("import pandas as pd", context);
+    ret = python.interpret("import numpy as np", context);
+
+    // given a Pandas DataFrame with non-text data
+    ret = python.interpret("d1 = {1 : [np.nan, 1, 2, 3], 'two' : [3., 4., 5., 6.7]}", context);
+    ret = python.interpret("df1 = pd.DataFrame(d1)", context);
+    assertEquals(ret.message(), InterpreterResult.Code.SUCCESS, ret.code());
+
+    // when
+    ret = python.interpret("z.show(df1)", context);
+
+    // then
+    assertEquals(ret.message(), InterpreterResult.Code.SUCCESS, ret.code());
+    assertEquals(ret.message(), Type.TABLE, ret.type());
+    assertTrue(ret.message().indexOf("nan") > 0);
+    assertTrue(ret.message().indexOf("6.7") > 0);
+  }
 }
