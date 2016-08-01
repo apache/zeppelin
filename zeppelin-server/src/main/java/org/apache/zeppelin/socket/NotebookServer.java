@@ -16,19 +16,10 @@
  */
 package org.apache.zeppelin.socket;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.net.UnknownHostException;
-import java.util.*;
-import java.util.concurrent.ConcurrentLinkedQueue;
-
-import javax.servlet.http.HttpServletRequest;
-
 import com.google.common.base.Strings;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
-
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.display.AngularObject;
@@ -37,14 +28,12 @@ import org.apache.zeppelin.display.AngularObjectRegistryListener;
 import org.apache.zeppelin.helium.ApplicationEventListener;
 import org.apache.zeppelin.helium.HeliumPackage;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
-import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
-import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
-import org.apache.zeppelin.rest.message.InterpreterSettingListForNoteBind;
-import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.interpreter.InterpreterOutput;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
+import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
+import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.notebook.*;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.apache.zeppelin.notebook.repo.NotebookRepo.Revision;
@@ -54,12 +43,22 @@ import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.server.ZeppelinServer;
 import org.apache.zeppelin.ticket.TicketContainer;
+import org.apache.zeppelin.types.InterpreterSettingsList;
+import org.apache.zeppelin.user.AuthenticationInfo;
+import org.apache.zeppelin.utils.InterpreterBindingUtils;
 import org.apache.zeppelin.utils.SecurityUtils;
 import org.eclipse.jetty.websocket.servlet.WebSocketServlet;
 import org.eclipse.jetty.websocket.servlet.WebSocketServletFactory;
 import org.quartz.SchedulerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.UnknownHostException;
+import java.util.*;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * Zeppelin websocket service.
@@ -431,30 +430,9 @@ public class NotebookServer extends WebSocketServlet implements
 
   public void getInterpreterBindings(NotebookSocket conn, Message fromMessage)
       throws IOException {
-    List<InterpreterSettingListForNoteBind> settingList = new LinkedList<>();
-
-    List<InterpreterSetting> selectedSettings =
-        notebook().getBindedInterpreterSettings((String) fromMessage.data.get("noteID"));
-    for (InterpreterSetting setting : selectedSettings) {
-      settingList.add(new InterpreterSettingListForNoteBind(setting.getId(), setting.getName(),
-          setting.getInterpreterInfos(), true));
-    }
-
-    List<InterpreterSetting> availableSettings = notebook().getInterpreterFactory().get();
-    for (InterpreterSetting setting : availableSettings) {
-      boolean selected = false;
-      for (InterpreterSetting selectedSetting : selectedSettings) {
-        if (selectedSetting.getId().equals(setting.getId())) {
-          selected = true;
-          break;
-        }
-      }
-
-      if (!selected) {
-        settingList.add(new InterpreterSettingListForNoteBind(setting.getId(), setting.getName(),
-            setting.getInterpreterInfos(), false));
-      }
-    }
+    String noteID = (String) fromMessage.data.get("noteID");
+    List<InterpreterSettingsList> settingList =
+        InterpreterBindingUtils.getInterpreterBindings(notebook(), noteID);
 
     conn.send(serializeMessage(new Message(OP.INTERPRETER_BINDINGS)
         .put("interpreterBindings", settingList)));
