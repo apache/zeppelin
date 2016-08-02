@@ -1233,10 +1233,7 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
       });
     };
 
-    var createMap = function() {
-      var mapdiv = angular.element('#p' + $scope.paragraph.id + '_map div')
-      .css('height', $scope.paragraph.config.graph.height).get(0);
-
+    var createMap = function(mapdiv) {
       // prevent zooming with the scroll wheel
       var disableZoom = function(e) {
         var evt = e || window.event;
@@ -1284,6 +1281,9 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
     };
 
     var renderMap = function() {
+      var mapdiv = angular.element('#p' + $scope.paragraph.id + '_map')
+      .css('height', $scope.paragraph.config.graph.height).children('div').get(0);
+
       // on chart type change, destroy map to force reinitialization.
       if ($scope.map && !refresh) {
         $scope.map.map.destroy();
@@ -1296,9 +1296,11 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
         if (!esriLoader.isLoaded()) {
           esriLoader.bootstrap({
             url: '//js.arcgis.com/4.0'
-          }).then(createMap);
+          }).then(function() {
+            createMap(mapdiv);
+          });
         } else {
-          createMap();
+          createMap(mapdiv);
         }
       } else {
         updateMapPins();

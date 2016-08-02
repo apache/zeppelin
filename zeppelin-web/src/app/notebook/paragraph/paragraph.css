@@ -354,7 +354,8 @@ table.dataTable.table-condensed .sorting_desc:after {
 
 }
 
-.tableDisplay .option .columns {
+.tableDisplay .option .columns,
+div.esri-view {
   height: 100%;
 }
 
