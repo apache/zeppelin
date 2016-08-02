@@ -84,6 +84,15 @@ If you install one of these interpreters only with `--name` option, installer wi
 ./bin/install-interpreter.sh --name flink --artifact org.apache.zeppelin:zeppelin-flink_2.10:0.6.1
 ```
 
+#### Install Spark interpreter built with Scala 2.10
+Spark distribution package has been built with Scala 2.10 until 1.6.2. If you have `SPARK_HOME` set pointing to Spark version ealier than 2.0.0, you need to download Spark interpreter packaged with Scala 2.10. To do so, use follow command:
+
+```
+rm -rf ./interpreter/spark
+./bin/install-interpreter.sh --name spark --artifact org.apache.zeppelin:zeppelin-spark_2.10:0.6.1
+```
+
+<br />
 Once you have installed interpreters, you need to restart Zeppelin. And then [create interpreter setting](../manual/interpreters.html#what-is-zeppelin-interpreter) and [bind it with your notebook](../manual/interpreters.html#what-is-zeppelin-interpreter-setting).
 
 
