@@ -19,7 +19,7 @@ limitations under the License.
         <h4>Create new interpreter</h4>
 
         <div class="form-group" style="width:200px">
-          <b>Name</b>
+          <b>Interpreter Name</b>
           <input id="newInterpreterSettingName" input pu-elastic-input
                  pu-elastic-input-minwidth="180px" ng-model="newInterpreterSetting.name" />
         </div>
@@ -29,8 +29,8 @@ limitations under the License.
              style="width:180px">
           <select class="form-control input-sm" ng-model="newInterpreterSetting.group"
                   ng-change="newInterpreterGroupChange()">
-            <option ng-repeat="availableInterpreter in availableInterpreters | unique: 'group'| orderBy: 'group'" value="{{availableInterpreter.group}}">
-              {{availableInterpreter.group}}
+            <option ng-repeat="availableInterpreter in availableInterpreters | unique: 'name'| orderBy: 'name'" value="{{availableInterpreter.name}}">
+              {{availableInterpreter.name}}
             </option>
           </select>
         </div>
@@ -69,11 +69,11 @@ limitations under the License.
           <span>Interpreter for note</span>
         </div>
         <br />
-        
+
         <div class="col-md-12" style="padding-left:0px">
           <div class="checkbox">
             <span class="input-group">
-              <label><input type="checkbox" style="width:0%;height:0%" ng-model="newInterpreterSetting.option.isExistingProcess"> </input> Connect to existing process </label>
+              <label><input type="checkbox" style="width:0%;height:0%" ng-model="newInterpreterSetting.option.isExistingProcess"/> Connect to existing process </label>
             </span>
           </div>
         </div>

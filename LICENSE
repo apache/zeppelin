@@ -235,7 +235,13 @@ The text of each license is also included at licenses/LICENSE-[project]-[version
     (The MIT License) jekyll-bootstrap 0.3.0 (https://github.com/plusjade/jekyll-bootstrap) - https://github.com/plusjade/jekyll-bootstrap
     (The MIT License) jekyll 1.3.0 (http://jekyllrb.com/) - https://github.com/jekyll/jekyll/blob/v1.3.0/LICENSE
 
-
+========================================================================
+MIT-style licenses
+========================================================================
+The following components are provided under the MIT-style license. See project link for details.
+The text of each license is also included at licenses/LICENSE-[project]-[version].txt.
+    
+    (MIT Style) jekyll-table-of-contents (https://github.com/ghiculescu/jekyll-table-of-contents) - https://github.com/ghiculescu/jekyll-table-of-contents/blob/master/LICENSE.txt
 
 ========================================================================
 Apache licenses
@@ -245,6 +251,7 @@ The following components are provided under the Apache License. See project link
 The text of each license is also included at licenses/LICENSE-[project]-[version].txt.
 
     (Apache 2.0) Bootstrap v3.0.2 (http://getbootstrap.com/) - https://github.com/twbs/bootstrap/blob/v3.0.2/LICENSE
+    (Apache 2.0) Software under ./bigquery/*  was developed at Google (http://www.google.com/). Licensed under the Apache v2.0 License.
 
 ========================================================================
 BSD 3-Clause licenses

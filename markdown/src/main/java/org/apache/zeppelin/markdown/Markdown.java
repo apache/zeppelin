@@ -26,6 +26,7 @@ import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.InterpreterUtils;
+import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.markdown4j.Markdown4jProcessor;
@@ -38,10 +39,6 @@ import org.slf4j.LoggerFactory;
 public class Markdown extends Interpreter {
   private Markdown4jProcessor md;
   static final Logger LOGGER = LoggerFactory.getLogger(Markdown.class);
-
-  static {
-    Interpreter.register("md", Markdown.class.getName());
-  }
 
   public Markdown(Properties property) {
     super(property);
@@ -87,7 +84,7 @@ public class Markdown extends Interpreter {
   }
 
   @Override
-  public List<String> completion(String buf, int cursor) {
+  public List<InterpreterCompletion> completion(String buf, int cursor) {
     return null;
   }
 }

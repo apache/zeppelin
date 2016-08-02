@@ -13,7 +13,8 @@
  */
 'use strict';
 
-angular.module('zeppelinWebApp').factory('websocketEvents', function($rootScope, $websocket, $location, baseUrlSrv) {
+angular.module('zeppelinWebApp').factory('websocketEvents',
+  function($rootScope, $websocket, $location, baseUrlSrv) {
   var websocketCalls = {};
 
   websocketCalls.ws = $websocket(baseUrlSrv.getWebsocketUrl());
@@ -22,7 +23,7 @@ angular.module('zeppelinWebApp').factory('websocketEvents', function($rootScope,
   websocketCalls.ws.onOpen(function() {
     console.log('Websocket created');
     $rootScope.$broadcast('setConnectedStatus', true);
-    setInterval(function(){
+    setInterval(function() {
       websocketCalls.sendNewEvent({op: 'PING'});
     }, 10000);
   });
@@ -56,28 +57,35 @@ angular.module('zeppelinWebApp').factory('websocketEvents', function($rootScope,
     if (op === 'NOTE') {
       $rootScope.$broadcast('setNoteContent', data.note);
     } else if (op === 'NEW_NOTE') {
-      $location.path('notebook/' + data.note.id);
+      $location.path('/notebook/' + data.note.id);
     } else if (op === 'NOTES_INFO') {
       $rootScope.$broadcast('setNoteMenu', data.notes);
+    } else if (op === 'LIST_NOTEBOOK_JOBS') {
+      $rootScope.$broadcast('setNotebookJobs', data.notebookJobs);
+    } else if (op === 'LIST_UPDATE_NOTEBOOK_JOBS') {
+      $rootScope.$broadcast('setUpdateNotebookJobs', data.notebookRunningJobs);
     } else if (op === 'AUTH_INFO') {
       BootstrapDialog.show({
-          closable: true,
-          title: 'Insufficient privileges', 
-          message: data.info.toString(),
-          buttons: [{
-              label: 'Login',
-              action: function(dialog) {
-                  dialog.close();
-                  angular.element('#loginModal').modal({
+        closable: false,
+        closeByBackdrop: false,
+        closeByKeyboard: false,
+        title: 'Insufficient privileges',
+        message: data.info.toString(),
+        buttons: [{
+          label: 'Login',
+          action: function(dialog) {
+            dialog.close();
+            angular.element('#loginModal').modal({
                     show: 'true'
                   });
-              }
-          }, {
-              label: 'Cancel',
-              action: function(dialog){
-                 dialog.close();
-              }
-          }]
+          }
+        }, {
+          label: 'Cancel',
+          action: function(dialog) {
+            dialog.close();
+            $location.path('/');
+          }
+        }]
       });
     } else if (op === 'PARAGRAPH') {
       $rootScope.$broadcast('updateParagraph', data);
@@ -93,6 +101,18 @@ angular.module('zeppelinWebApp').factory('websocketEvents', function($rootScope,
       $rootScope.$broadcast('angularObjectUpdate', data);
     } else if (op === 'ANGULAR_OBJECT_REMOVE') {
       $rootScope.$broadcast('angularObjectRemove', data);
+    } else if (op === 'APP_APPEND_OUTPUT') {
+      $rootScope.$broadcast('appendAppOutput', data);
+    } else if (op === 'APP_UPDATE_OUTPUT') {
+      $rootScope.$broadcast('updateAppOutput', data);
+    } else if (op === 'APP_LOAD') {
+      $rootScope.$broadcast('appLoad', data);
+    } else if (op === 'APP_STATUS_CHANGE') {
+      $rootScope.$broadcast('appStatusChange', data);
+    } else if (op === 'LIST_REVISION_HISTORY') {
+      $rootScope.$broadcast('listRevisionHistory', data);
+    } else if (op === 'NOTE_REVISION') {
+      $rootScope.$broadcast('noteRevision', data);
     }
   });
 

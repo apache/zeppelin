@@ -70,7 +70,8 @@ public class RemoteInterpreterOutputTestStream implements RemoteInterpreterProce
         "fakeRepo",
         env,
         10 * 1000,
-        this);
+        this,
+        null);
 
     intpGroup.get("note").add(intp);
     intp.setInterpreterGroup(intpGroup);

@@ -22,23 +22,20 @@
   <parent>
     <artifactId>zeppelin</artifactId>
     <groupId>org.apache.zeppelin</groupId>
-    <version>0.6.0-SNAPSHOT</version>
+    <version>0.7.0-SNAPSHOT</version>
     <relativePath>..</relativePath>
   </parent>
 
   <groupId>org.apache.zeppelin</groupId>
-  <artifactId>zeppelin-flink</artifactId>
+  <artifactId>zeppelin-flink_2.10</artifactId>
   <packaging>jar</packaging>
-  <version>0.6.0-SNAPSHOT</version>
+  <version>0.7.0-SNAPSHOT</version>
   <name>Zeppelin: Flink</name>
   <description>Zeppelin flink support</description>
-  <url>http://zeppelin.apache.org</url>
 
   <properties>
-    <flink.version>1.0.0</flink.version>
+    <flink.version>1.0.3</flink.version>
     <flink.akka.version>2.3.7</flink.akka.version>
-    <flink.scala.binary.version>2.10</flink.scala.binary.version>
-    <flink.scala.version>2.10.4</flink.scala.version>
     <scala.macros.version>2.0.1</scala.macros.version>
   </properties>
 
@@ -73,68 +70,71 @@
 
     <dependency>
       <groupId>org.apache.flink</groupId>
-      <artifactId>flink-clients_${flink.scala.binary.version}</artifactId>
+      <artifactId>flink-clients_${scala.binary.version}</artifactId>
       <version>${flink.version}</version>
     </dependency>
 
     <dependency>
       <groupId>org.apache.flink</groupId>
-      <artifactId>flink-runtime_${flink.scala.binary.version}</artifactId>
+      <artifactId>flink-runtime_${scala.binary.version}</artifactId>
       <version>${flink.version}</version>
     </dependency>
 
     <dependency>
       <groupId>org.apache.flink</groupId>
-      <artifactId>flink-scala_${flink.scala.binary.version}</artifactId>
+      <artifactId>flink-scala_${scala.binary.version}</artifactId>
       <version>${flink.version}</version>
     </dependency>
 
     <dependency>
       <groupId>org.apache.flink</groupId>
-      <artifactId>flink-scala-shell_${flink.scala.binary.version}</artifactId>
+      <artifactId>flink-scala-shell_${scala.binary.version}</artifactId>
       <version>${flink.version}</version>
     </dependency>
 
     <dependency>
       <groupId>com.typesafe.akka</groupId>
-      <artifactId>akka-actor_${flink.scala.binary.version}</artifactId>
+      <artifactId>akka-actor_${scala.binary.version}</artifactId>
       <version>${flink.akka.version}</version>
     </dependency>
 
     <dependency>
       <groupId>com.typesafe.akka</groupId>
-      <artifactId>akka-remote_${flink.scala.binary.version}</artifactId>
+      <artifactId>akka-remote_${scala.binary.version}</artifactId>
       <version>${flink.akka.version}</version>
     </dependency>
 
     <dependency>
       <groupId>com.typesafe.akka</groupId>
-      <artifactId>akka-slf4j_${flink.scala.binary.version}</artifactId>
+      <artifactId>akka-slf4j_${scala.binary.version}</artifactId>
       <version>${flink.akka.version}</version>
     </dependency>
 
     <dependency>
       <groupId>com.typesafe.akka</groupId>
-      <artifactId>akka-testkit_${flink.scala.binary.version}</artifactId>
+      <artifactId>akka-testkit_${scala.binary.version}</artifactId>
       <version>${flink.akka.version}</version>
     </dependency>
 
     <dependency>
       <groupId>org.scala-lang</groupId>
       <artifactId>scala-library</artifactId>
-      <version>${flink.scala.version}</version>
+      <version>${scala.version}</version>
+      <scope>provided</scope>
     </dependency>
 
     <dependency>
       <groupId>org.scala-lang</groupId>
       <artifactId>scala-compiler</artifactId>
-      <version>${flink.scala.version}</version>
+      <version>${scala.version}</version>
+      <scope>provided</scope>
     </dependency>
 
     <dependency>
       <groupId>org.scala-lang</groupId>
       <artifactId>scala-reflect</artifactId>
-      <version>${flink.scala.version}</version>
+      <version>${scala.version}</version>
+      <scope>provided</scope>
     </dependency>
 
     <dependency>
@@ -169,7 +169,7 @@
       <plugin>
 	<groupId>net.alchim31.maven</groupId>
 	<artifactId>scala-maven-plugin</artifactId>
-	<version>3.1.4</version>
+	<version>3.2.2</version>
 	<executions>
 	  <!-- Run scala compiler in the process-resources phase, so that dependencies on
 	       scala classes can be resolved later in the (Java) compile phase -->
@@ -199,7 +199,7 @@
 	  <compilerPlugins combine.children="append">
 	    <compilerPlugin>
 	      <groupId>org.scalamacros</groupId>
-	      <artifactId>paradise_${flink.scala.version}</artifactId>
+	      <artifactId>paradise_${scala.version}</artifactId>
 	      <version>${scala.macros.version}</version>
 	    </compilerPlugin>
 	  </compilerPlugins>
@@ -292,15 +292,6 @@
 	  <outputFile>${project.basedir}/target/scalastyle-output.xml</outputFile>
 	  <outputEncoding>UTF-8</outputEncoding>
 	</configuration>
-      </plugin>
-
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-deploy-plugin</artifactId>
-        <version>2.7</version>
-        <configuration>
-          <skip>true</skip>
-        </configuration>
       </plugin>
 
       <plugin>

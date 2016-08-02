@@ -26,6 +26,7 @@ import org.slf4j.LoggerFactory;
 import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Class defining credentials for data source authorization
@@ -44,6 +45,7 @@ public class Credentials {
       credentialsFile = new File(credentialsPath);
     }
     credentialsMap = new HashMap<>();
+
     if (credentialsPersist) {
       GsonBuilder builder = new GsonBuilder();
       builder.setPrettyPrinting();
@@ -62,6 +64,28 @@ public class Credentials {
 
   public void putUserCredentials(String username, UserCredentials uc) throws IOException {
     credentialsMap.put(username, uc);
+    saveCredentials();
+  }
+
+  public UserCredentials removeUserCredentials(String username) throws IOException {
+    UserCredentials uc;
+    uc = credentialsMap.remove(username);
+    saveCredentials();
+    return uc;
+  }
+
+  public boolean removeCredentialEntity(String username, String entity) throws IOException {
+    UserCredentials uc = credentialsMap.get(username);
+    if (uc != null && uc.existUsernamePassword(entity) == false) {
+      return false;
+    }
+
+    uc.removeUsernamePassword(entity);
+    saveCredentials();
+    return true;
+  }
+
+  public void saveCredentials() throws IOException {
     if (credentialsPersist) {
       saveToFile();
     }
@@ -118,5 +142,4 @@ public class Credentials {
       LOG.error("Error saving credentials file", e);
     }
   }
-
 }

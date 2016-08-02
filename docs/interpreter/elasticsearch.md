@@ -2,11 +2,15 @@
 layout: page
 title: "Elasticsearch Interpreter"
 description: ""
-group: manual
+group: interpreter
 ---
 {% include JB/setup %}
 
-## Elasticsearch Interpreter for Apache Zeppelin
+# Elasticsearch Interpreter for Apache Zeppelin
+
+<div id="toc"></div>
+
+## Overview
 [Elasticsearch](https://www.elastic.co/products/elasticsearch) is a highly scalable open-source full-text search and analytics engine. It allows you to store, search, and analyze big volumes of data quickly and in near real time. It is generally used as the underlying engine/technology that powers applications that have complex search features and requirements.
 
 ## Configuration

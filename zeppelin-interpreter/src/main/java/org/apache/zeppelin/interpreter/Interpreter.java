@@ -27,6 +27,7 @@ import java.util.Properties;
 
 import com.google.gson.annotations.SerializedName;
 import org.apache.zeppelin.annotation.ZeppelinApi;
+import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.slf4j.Logger;
@@ -39,7 +40,7 @@ import org.slf4j.LoggerFactory;
  * Please see,
  * https://zeppelin.apache.org/docs/latest/development/writingzeppelininterpreter.html
  *
- * open(), close(), interpreter() is three the most important method you need to implement.
+ * open(), close(), interpret() is three the most important method you need to implement.
  * cancel(), getProgress(), completion() is good to have
  * getFormType(), getScheduler() determine Zeppelin's behavior
  *
@@ -106,7 +107,9 @@ public abstract class Interpreter {
    * @return list of possible completion. Return empty list if there're nothing to return.
    */
   @ZeppelinApi
-  public abstract List<String> completion(String buf, int cursor);
+  public List<InterpreterCompletion> completion(String buf, int cursor) {
+    return null;
+  }
 
   /**
    * Interpreter can implements it's own scheduler by overriding this method.
@@ -246,15 +249,22 @@ public abstract class Interpreter {
     private String name;
     //@SerializedName("interpreterClassName")
     private String className;
+    private boolean defaultInterpreter;
     private Map<String, InterpreterProperty> properties;
     private String path;
 
     public RegisteredInterpreter(String name, String group, String className,
         Map<String, InterpreterProperty> properties) {
+      this(name, group, className, false, properties);
+    }
+
+    public RegisteredInterpreter(String name, String group, String className,
+        boolean defaultInterpreter, Map<String, InterpreterProperty> properties) {
       super();
       this.name = name;
       this.group = group;
       this.className = className;
+      this.defaultInterpreter = defaultInterpreter;
       this.properties = properties;
     }
 
@@ -268,6 +278,14 @@ public abstract class Interpreter {
 
     public String getClassName() {
       return className;
+    }
+
+    public boolean isDefaultInterpreter() {
+      return defaultInterpreter;
+    }
+
+    public void setDefaultInterpreter(boolean defaultInterpreter) {
+      this.defaultInterpreter = defaultInterpreter;
     }
 
     public Map<String, InterpreterProperty> getProperties() {
@@ -303,16 +321,27 @@ public abstract class Interpreter {
   }
 
   public static void register(String name, String group, String className) {
-    register(name, group, className, new HashMap<String, InterpreterProperty>());
+    register(name, group, className, false, new HashMap<String, InterpreterProperty>());
+  }
+
+  public static void register(String name, String group, String className,
+      Map<String, InterpreterProperty> properties) {
+    register(name, group, className, false, properties);
+  }
+
+  public static void register(String name, String group, String className,
+      boolean defaultInterpreter) {
+    register(name, group, className, defaultInterpreter,
+        new HashMap<String, InterpreterProperty>());
   }
 
   @Deprecated
   public static void register(String name, String group, String className,
-                              Map<String, InterpreterProperty> properties) {
+      boolean defaultInterpreter, Map<String, InterpreterProperty> properties) {
     logger.error("Static initialization is deprecated. You should change it to use " +
                      "interpreter-setting.json in your jar or " +
                      "interpreter/{interpreter}/interpreter-setting.json");
-    register(new RegisteredInterpreter(name, group, className, properties));
+    register(new RegisteredInterpreter(name, group, className, defaultInterpreter, properties));
   }
 
   public static void register(RegisteredInterpreter registeredInterpreter) {

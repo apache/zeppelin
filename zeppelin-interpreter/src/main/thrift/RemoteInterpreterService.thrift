@@ -48,12 +48,29 @@ enum RemoteInterpreterEventType {
   RESOURCE_GET = 7
   OUTPUT_APPEND = 8,
   OUTPUT_UPDATE = 9,
-  ANGULAR_REGISTRY_PUSH=10
+  ANGULAR_REGISTRY_PUSH = 10,
+  APP_STATUS_UPDATE = 11,
 }
 
 struct RemoteInterpreterEvent {
   1: RemoteInterpreterEventType type,
   2: string data      // json serialized data
+}
+
+struct RemoteApplicationResult {
+  1: bool success,
+  2: string msg
+}
+
+/*
+ * The below variables(name, value) will be connected to getCompletions in paragraph.controller.js
+ *
+ * name: which is shown in the suggestion list
+ * value: actual return value what you selected
+ */
+struct InterpreterCompletion {
+  1: string name,
+  2: string value
 }
 
 service RemoteInterpreterService {
@@ -65,7 +82,7 @@ service RemoteInterpreterService {
   void cancel(1: string noteId, 2: string className, 3: RemoteInterpreterContext interpreterContext);
   i32 getProgress(1: string noteId, 2: string className, 3: RemoteInterpreterContext interpreterContext);
   string getFormType(1: string noteId, 2: string className);
-  list<string> completion(1: string noteId, 2: string className, 3: string buf, 4: i32 cursor);
+  list<InterpreterCompletion> completion(1: string noteId, 2: string className, 3: string buf, 4: i32 cursor);
   void shutdown();
 
   string getStatus(1: string noteId, 2:string jobId);
@@ -88,4 +105,8 @@ service RemoteInterpreterService {
   void angularObjectAdd(1: string name, 2: string noteId, 3: string paragraphId, 4: string object);
   void angularObjectRemove(1: string name, 2: string noteId, 3: string paragraphId);
   void angularRegistryPush(1: string registry);
+
+  RemoteApplicationResult loadApplication(1: string applicationInstanceId, 2: string packageInfo, 3: string noteId, 4: string paragraphId);
+  RemoteApplicationResult unloadApplication(1: string applicationInstanceId);
+  RemoteApplicationResult runApplication(1: string applicationInstanceId);
 }

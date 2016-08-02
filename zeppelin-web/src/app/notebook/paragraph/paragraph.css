@@ -422,6 +422,23 @@ table.dataTable.table-condensed .sorting_desc:after {
   border-bottom: 2px solid #CCC;
 }
 
+.handsontable .columnSorting.ascending::after {
+  content: '\f160';
+  margin-left: 3px;
+  font-size: 12px;
+  font-family: FontAwesome;
+  line-height: 2;
+}
+
+.handsontable .columnSorting.descending::after {
+  content: '\f161';
+  margin-left: 3px;
+  font-size: 12px;
+  margin-left: 3px;
+  font-family: FontAwesome;
+  line-height: 2;
+}
+
 /*
   Pivot CSS
 */
@@ -449,10 +466,6 @@ table.dataTable.table-condensed .sorting_desc:after {
   font-weight: 500;
 }
 
-.dropdown-menu > li:first-child > a:hover {
-  background-color: transparent;
-}
-
 table.table-striped {
   border-top: 1px solid #ddd;
   margin-top: 20px;
@@ -464,10 +477,21 @@ table.table-striped {
   cursor: pointer;
 }
 
-
 .scroll-paragraph-up {
   bottom: 5px;
   cursor: pointer;
   position: absolute;
   right: 15px;
+}
+
+.appSuggestion {
+  width: 200px;
+  padding: 5px 10px 5px 10px;
+}
+
+/* DSV download toggle button */
+.caretBtn {
+  padding-right: 4px !important;
+  padding-left: 4px !important;
+  width: 20px;
 }

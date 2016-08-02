@@ -24,6 +24,7 @@ import java.util.LinkedList;
 import java.util.Properties;
 
 import org.apache.zeppelin.display.AngularObjectRegistry;
+import org.apache.zeppelin.resource.LocalResourcePool;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.interpreter.*;
@@ -77,7 +78,7 @@ public class SparkSqlInterpreterTest {
     context = new InterpreterContext("note", "id", "title", "text", new AuthenticationInfo(),
         new HashMap<String, Object>(), new GUI(),
         new AngularObjectRegistry(intpGroup.getId(), null),
-        null,
+        new LocalResourcePool("id"),
         new LinkedList<InterpreterContextRunner>(), new InterpreterOutput(new InterpreterOutputListener() {
       @Override
       public void onAppend(InterpreterOutput out, byte[] line) {
@@ -158,11 +159,13 @@ public class SparkSqlInterpreterTest {
     repl.interpret(
         "val raw = csv.map(_.split(\",\")).map(p => Row(p(0),toInt(p(1)),p(2)))",
         context);
-    repl.interpret("val people = z.sqlContext.applySchema(raw, schema)",
-        context);
     if (isDataFrameSupported()) {
+      repl.interpret("val people = z.sqlContext.createDataFrame(raw, schema)",
+          context);
       repl.interpret("people.toDF.registerTempTable(\"people\")", context);
     } else {
+      repl.interpret("val people = z.sqlContext.applySchema(raw, schema)",
+          context);
       repl.interpret("people.registerTempTable(\"people\")", context);
     }
 

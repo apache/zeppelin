@@ -2,12 +2,16 @@
 layout: page
 title: "Generic JDBC Interpreter"
 description: "JDBC user guide"
-group: manual
+group: interpreter
 ---
 {% include JB/setup %}
 
 
-## Generic JDBC  Interpreter for Apache Zeppelin
+# Generic JDBC  Interpreter for Apache Zeppelin
+
+<div id="toc"></div>
+
+## Overview
 
 This interpreter lets you create a JDBC connection to any data source, by now it has been tested with:
 
@@ -15,16 +19,16 @@ This interpreter lets you create a JDBC connection to any data source, by now it
 * MySql
 * MariaDB
 * Redshift
-* Hive
-* Apache Drill
-  * Details on using [Drill JDBC Driver](https://drill.apache.org/docs/using-the-jdbc-driver)
+* Apache Hive
+* Apache Phoenix
+* Apache Drill (Details on using [Drill JDBC Driver](https://drill.apache.org/docs/using-the-jdbc-driver))
 * Apache Tajo
 
 If someone else used another database please report how it works to improve functionality.
 
-### Create Interpreter
+## Create Interpreter
 
-When create a interpreter by default use PostgreSQL with the next properties:
+When you create a interpreter by default use PostgreSQL with the next properties:
 
 <table class="table-configuration">
   <tr>
@@ -55,7 +59,7 @@ When create a interpreter by default use PostgreSQL with the next properties:
 
 It is not necessary to add driver jar to the classpath for PostgreSQL as it is included in Zeppelin.
 
-#### Simple connection
+### Simple connection
 
 Prior to creating the interpreter it is necessary to add maven coordinate or path of the JDBC driver to the Zeppelin classpath. To do this you must edit dependencies artifact(ex. `mysql:mysql-connector-java:5.1.38`) in interpreter menu as shown:
 
@@ -94,7 +98,7 @@ To create the interpreter you need to specify connection parameters as shown in 
   </tr>      
 </table>
 
-#### Multiple connections
+### Multiple connections
 
 JDBC interpreter also allows connections to multiple data sources. It is necessary to set a prefix for each connection to reference it in the paragraph in the form of `%jdbc(prefix)`. Before you create the interpreter it is necessary to add each driver's maven coordinates or JDBC driver's jar file path to the Zeppelin classpath. To do this you must edit the dependencies of JDBC interpreter in interpreter menu as following:
 
@@ -150,10 +154,10 @@ You can add all the jars you need to make multiple connections into the same JDB
 </table>
 
 
-### Bind to Notebook
+## Bind to Notebook
 In the `Notebook` click on the `settings` icon at the top-right corner. Use select/deselect to specify the interpreters to be used in the `Notebook`.
 
-### More Properties
+## More Properties
 You can modify the interpreter configuration in the `Interpreter` section. The most common properties are as follows, but you can specify other properties that need to be connected.
 
  <table class="table-configuration">
@@ -180,7 +184,19 @@ You can modify the interpreter configuration in the `Interpreter` section. The m
    <tr>
      <td>common.max_result</td>
      <td>Max number of SQL result to display to prevent the browser overload. This is  common properties for all connections</td>
-   </tr>      
+   </tr>
+   <tr>
+     <td>zeppelin.jdbc.auth.type</td>
+     <td>Types of authentications' methods supported are SIMPLE, and KERBEROS</td>
+   </tr>
+   <tr>
+     <td>zeppelin.jdbc.principal</td>
+     <td>The principal name to load from the keytab</td>
+   </tr>
+   <tr>
+     <td>zeppelin.jdbc.keytab.location</td>
+     <td>The path to the keytab file</td>
+   </tr>
  </table>
 
 To develop this functionality use this [method](http://docs.oracle.com/javase/7/docs/api/java/sql/DriverManager.html#getConnection%28java.lang.String,%20java.util.Properties%29). For example if a connection needs a schema parameter, it would have to add the property as follows:
@@ -196,9 +212,11 @@ To develop this functionality use this [method](http://docs.oracle.com/javase/7/
   </tr>
 </table>
 
-### Examples
-#### Hive
-##### Properties
+## Examples
+
+### Hive
+
+#### Properties
  <table class="table-configuration">
    <tr>
      <th>Name</th>
@@ -221,7 +239,8 @@ To develop this functionality use this [method](http://docs.oracle.com/javase/7/
      <td>hive_password</td>
    </tr>
  </table>
-##### Dependencies
+
+#### Dependencies
  <table class="table-configuration">
    <tr>
      <th>Artifact</th>
@@ -236,8 +255,45 @@ To develop this functionality use this [method](http://docs.oracle.com/javase/7/
      <td></td>
    </tr>
  </table>
-#### Tajo
-##### Properties
+
+### Phoenix
+#### Properties
+ <table class="table-configuration">
+   <tr>
+     <th>Name</th>
+     <th>Value</th>
+   </tr>
+   <tr>
+     <td>phoenix.driver</td>
+     <td>org.apache.phoenix.jdbc.PhoenixDriver</td>
+   </tr>
+   <tr>
+     <td>phoenix.url</td>
+     <td>jdbc:phoenix:localhost:2181:/hbase-unsecure</td>
+   </tr>
+   <tr>
+     <td>phoenix.user</td>
+     <td>phoenix_user</td>
+   </tr>
+   <tr>
+     <td>phoenix.password</td>
+     <td>phoenix_password</td>
+   </tr>
+ </table>
+#### Dependencies
+ <table class="table-configuration">
+   <tr>
+     <th>Artifact</th>
+     <th>Excludes</th>
+   </tr>
+   <tr>
+     <td>org.apache.phoenix:phoenix-core:4.4.0-HBase-1.0</td>
+     <td></td>
+   </tr>
+ </table>
+
+### Tajo
+#### Properties
  <table class="table-configuration">
    <tr>
      <th>Name</th>
@@ -252,7 +308,8 @@ To develop this functionality use this [method](http://docs.oracle.com/javase/7/
      <td>jdbc:tajo://localhost:26002/default</td>
    </tr>
  </table>
-##### Dependencies
+
+#### Dependencies
  <table class="table-configuration">
    <tr>
      <th>Artifact</th>
@@ -264,9 +321,9 @@ To develop this functionality use this [method](http://docs.oracle.com/javase/7/
    </tr>
  </table>
  
-### How to use
+## How to use
 
-#### Reference in paragraph
+### Reference in paragraph
 
 Start the paragraphs with the `%jdbc`, this will use the `default` prefix for connection. If you want to use other connection you should specify the prefix of it as follows `%jdbc(prefix)`:
 
@@ -275,14 +332,16 @@ Start the paragraphs with the `%jdbc`, this will use the `default` prefix for co
 SELECT * FROM db_name;
 
 ```
+
 or
+
 ```sql
 %jdbc(prefix)
 SELECT * FROM db_name;
 
 ```
 
-#### Apply Zeppelin Dynamic Forms
+### Apply Zeppelin Dynamic Forms
 
 You can leverage [Zeppelin Dynamic Form](../manual/dynamicform.html) inside your queries. You can use both the `text input` and `select form` parametrization features
 
@@ -293,5 +352,5 @@ FROM demo.performers
 WHERE name='{{performer=Sheryl Crow|Doof|Fanfarlo|Los Paranoia}}'
 ```
 
-### Bugs & Contacts
+## Bugs & Reporting
 If you find a bug for this interpreter, please create a [JIRA]( https://issues.apache.org/jira/browse/ZEPPELIN-382?jql=project%20%3D%20ZEPPELIN) ticket.

@@ -2,12 +2,16 @@
 layout: page
 title: "Livy Interpreter"
 description: ""
-group: manual
+group: interpreter
 ---
 {% include JB/setup %}
 
-## Livy Interpreter for Apache Zeppelin
-Livy is an open source REST interface for interacting with Spark from anywhere. It supports executing snippets of code or programs in a Spark context that runs locally or in YARN.
+# Livy Interpreter for Apache Zeppelin
+
+<div id="toc"></div>
+
+## Overview
+[Livy](http://livy.io/) is an open source REST interface for interacting with Spark from anywhere. It supports executing snippets of code or programs in a Spark context that runs locally or in YARN.
 
 * Interactive Scala, Python and R shells
 * Batch submissions in Scala, Java, Python
@@ -16,13 +20,12 @@ Livy is an open source REST interface for interacting with Spark from anywhere. 
 * Does not require any code change to your programs
 
 ### Requirements
-
 Additional requirements for the Livy interpreter are:
 
  * Spark 1.3 or above.
  * Livy server.
 
-### Configuration
+## Configuration
 We added some common configurations for spark, and you can set any configuration you want.
 This link contains all spark configurations: http://spark.apache.org/docs/latest/configuration.html#available-properties.
 And instead of starting property with `spark.` it should be replaced with `livy.spark.`.
@@ -101,8 +104,6 @@ Example: `spark.master` to `livy.spark.master`
   </tr>
 </table>
 
-
-
 ## How to use
 Basically, you can use
 
@@ -136,7 +137,7 @@ hello("livy")
 When Zeppelin server is running with authentication enabled, then this interpreter utilizes Livy’s user impersonation feature i.e. sends extra parameter for creating and running a session ("proxyUser": "${loggedInUser}"). This is particularly useful when multi users are sharing a Notebook server.
 
 
-### Apply Zeppelin Dynamic Forms
+## Apply Zeppelin Dynamic Forms
 You can leverage [Zeppelin Dynamic Form]({{BASE_PATH}}/manual/dynamicform.html). You can use both the `text input` and `select form` parameterization features.
 
 ```
@@ -159,7 +160,7 @@ The session would have timed out, you may need to restart the interpreter.
 
 > Blacklisted configuration values in session config: spark.master
 
-edit `conf/spark-blacklist.conf` file in livy server and comment out `#spark.master` line.
+Edit `conf/spark-blacklist.conf` file in livy server and comment out `#spark.master` line.
 
-if you choose to work on livy in `apps/spark/java` directory in https://github.com/cloudera/hue ,
-copy `spark-user-configurable-options.template` to `spark-user-configurable-options.conf` file in livy server and comment out `#spark.master` 
+If you choose to work on livy in `apps/spark/java` directory in [https://github.com/cloudera/hue](https://github.com/cloudera/hue),
+copy `spark-user-configurable-options.template` to `spark-user-configurable-options.conf` file in livy server and comment out `#spark.master`. 

@@ -55,7 +55,7 @@ module.exports = function(config) {
       'bower_components/angular-xeditable/dist/js/xeditable.js',
       'bower_components/highlightjs/highlight.pack.js',
       'bower_components/lodash/lodash.js',
-      'bower_components/angular-filter/dist/angular-filter.min.js',
+      'bower_components/angular-filter/dist/angular-filter.js',
       'bower_components/ngtoast/dist/ngToast.js',
       'bower_components/ng-focus-if/focusIf.js',
       'bower_components/bootstrap3-dialog/dist/js/bootstrap-dialog.min.js',
@@ -63,6 +63,7 @@ module.exports = function(config) {
       'bower_components/moment/moment.js',
       'bower_components/pikaday/pikaday.js',
       'bower_components/handsontable/dist/handsontable.js',
+      'bower_components/moment-duration-format/lib/moment-duration-format.js',
       'bower_components/angular-mocks/angular-mocks.js',
       // endbower
       'src/app/app.js',

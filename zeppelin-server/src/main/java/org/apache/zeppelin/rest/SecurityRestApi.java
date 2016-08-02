@@ -20,12 +20,12 @@ package org.apache.zeppelin.rest;
 
 import org.apache.shiro.realm.Realm;
 import org.apache.shiro.realm.jdbc.JdbcRealm;
+import org.apache.shiro.realm.ldap.AbstractLdapRealm;
 import org.apache.shiro.realm.ldap.JndiLdapRealm;
 import org.apache.shiro.realm.text.IniRealm;
-import org.apache.shiro.util.ThreadContext;
-import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
 import org.apache.zeppelin.annotation.ZeppelinApi;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
+import org.apache.zeppelin.server.ActiveDirectoryGroupRealm;
 import org.apache.zeppelin.server.JsonResponse;
 import org.apache.zeppelin.ticket.TicketContainer;
 import org.apache.zeppelin.utils.SecurityUtils;
@@ -41,7 +41,6 @@ import java.util.*;
 
 /**
  * Zeppelin security rest api endpoint.
- *
  */
 @Path("/security")
 @Produces("application/json")
@@ -96,32 +95,44 @@ public class SecurityRestApi {
    */
   @GET
   @Path("userlist/{searchText}")
-  public Response getUserList(@PathParam("searchText") String searchText) {
+  public Response getUserList(@PathParam("searchText") final String searchText) {
 
     List<String> usersList = new ArrayList<>();
     try {
       GetUserList getUserListObj = new GetUserList();
-      DefaultWebSecurityManager defaultWebSecurityManager;
-      String key = ThreadContext.SECURITY_MANAGER_KEY;
-      defaultWebSecurityManager = (DefaultWebSecurityManager) ThreadContext.get(key);
-      Collection<Realm> realms = defaultWebSecurityManager.getRealms();
-      List realmsList = new ArrayList(realms);
-      for (int i = 0; i < realmsList.size(); i++) {
-        String name = ((Realm) realmsList.get(i)).getName();
-        if (name.equals("iniRealm")) {
-          usersList.addAll(getUserListObj.getUserList((IniRealm) realmsList.get(i)));
-        } else if (name.equals("ldapRealm")) {
-          usersList.addAll(getUserListObj.getUserList((JndiLdapRealm) realmsList.get(i)));
-        } else if (name.equals("jdbcRealm")) {
-          usersList.addAll(getUserListObj.getUserList((JdbcRealm) realmsList.get(i)));
+      Collection realmsList = SecurityUtils.getRealmsList();
+      if (realmsList != null) {
+        for (Iterator<Realm> iterator = realmsList.iterator(); iterator.hasNext(); ) {
+          Realm realm = iterator.next();
+          String name = realm.getName();
+          if (name.equals("iniRealm")) {
+            usersList.addAll(getUserListObj.getUserList((IniRealm) realm));
+          } else if (name.equals("ldapRealm")) {
+            usersList.addAll(getUserListObj.getUserList((JndiLdapRealm) realm, searchText));
+          } else if (name.equals("activeDirectoryRealm")) {
+            usersList.addAll(getUserListObj.getUserList((ActiveDirectoryGroupRealm) realm,
+                searchText));
+          } else if (name.equals("jdbcRealm")) {
+            usersList.addAll(getUserListObj.getUserList((JdbcRealm) realm));
+          }
         }
       }
-
     } catch (Exception e) {
       LOG.error("Exception in retrieving Users from realms ", e);
     }
     List<String> autoSuggestList = new ArrayList<>();
     Collections.sort(usersList);
+    Collections.sort(usersList, new Comparator<String>() {
+      @Override
+      public int compare(String o1, String o2) {
+        if (o1.matches(searchText + "(.*)") && o2.matches(searchText + "(.*)")) {
+          return 0;
+        } else if (o1.matches(searchText + "(.*)")) {
+          return -1;
+        }
+        return 0;
+      }
+    });
     int maxLength = 0;
     for (int i = 0; i < usersList.size(); i++) {
       String userLowerCase = usersList.get(i).toLowerCase();

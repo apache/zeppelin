@@ -22,6 +22,9 @@ import com.google.common.base.Function;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FileUtils;
 import org.openqa.selenium.*;
+import org.openqa.selenium.logging.LogEntries;
+import org.openqa.selenium.logging.LogEntry;
+import org.openqa.selenium.logging.LogType;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.FluentWait;
 import org.openqa.selenium.support.ui.Wait;
@@ -30,35 +33,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import static org.openqa.selenium.Keys.ENTER;
-import static org.openqa.selenium.Keys.SHIFT;
-
 abstract public class AbstractZeppelinIT {
-  protected WebDriver driver;
+  protected static WebDriver driver;
 
   protected final static Logger LOG = LoggerFactory.getLogger(AbstractZeppelinIT.class);
   protected static final long MAX_IMPLICIT_WAIT = 30;
   protected static final long MAX_BROWSER_TIMEOUT_SEC = 30;
   protected static final long MAX_PARAGRAPH_TIMEOUT_SEC = 60;
-
-  protected void sleep(long millis, boolean logOutput) {
-    if (logOutput) {
-      LOG.info("Starting sleeping for " + (millis / 1000) + " seconds...");
-      LOG.info("Caller: " + Thread.currentThread().getStackTrace()[2]);
-    }
-    try {
-      Thread.sleep(millis);
-    } catch (InterruptedException e) {
-      e.printStackTrace();
-    }
-    if (logOutput) {
-      LOG.info("Finished.");
-    }
-  }
 
   protected void setTextOfParagraph(int paragraphNo, String text) {
     String editorId = driver.findElement(By.xpath(getParagraphXPath(paragraphNo) + "//div[contains(@class, 'editor')]")).getAttribute("id");
@@ -75,7 +61,7 @@ abstract public class AbstractZeppelinIT {
 
 
   protected String getParagraphXPath(int paragraphNo) {
-    return "//div[@ng-controller=\"ParagraphCtrl\"][" + paragraphNo + "]";
+    return "(//div[@ng-controller=\"ParagraphCtrl\"])[" + paragraphNo + "]";
   }
 
   protected boolean waitForParagraph(final int paragraphNo, final String state) {
@@ -114,25 +100,17 @@ abstract public class AbstractZeppelinIT {
     });
   }
 
-  protected boolean endToEndTestEnabled() {
+  protected static boolean endToEndTestEnabled() {
     return null != System.getenv("TEST_SELENIUM");
   }
 
   protected void createNewNote() {
-    List<WebElement> notebookLinks = driver.findElements(By
-        .xpath("//div[contains(@class, \"col-md-4\")]/div/ul/li"));
-    List<String> notebookTitles = new LinkedList<String>();
-    for (WebElement el : notebookLinks) {
-      notebookTitles.add(el.getText());
-    }
-
-    WebElement createNoteLink = driver.findElement(By.xpath("//div[contains(@class, \"col-md-4\")]/div/h5/a[contains(.,'Create new note')]"));
-    createNoteLink.click();
+    clickAndWait(By.xpath("//div[contains(@class, \"col-md-4\")]/div/h5/a[contains(.,'Create new" +
+        " note')]"));
 
     WebDriverWait block = new WebDriverWait(driver, MAX_BROWSER_TIMEOUT_SEC);
-    WebElement modal = block.until(ExpectedConditions.visibilityOfElementLocated(By.id("noteNameModal")));
-    WebElement createNoteButton = modal.findElement(By.id("createNoteButton"));
-    createNoteButton.click();
+    block.until(ExpectedConditions.visibilityOfElementLocated(By.id("noteNameModal")));
+    clickAndWait(By.id("createNoteButton"));
 
     try {
       Thread.sleep(500); // wait for notebook list updated
@@ -141,16 +119,25 @@ abstract public class AbstractZeppelinIT {
   }
 
   protected void deleteTestNotebook(final WebDriver driver) {
-    driver.findElement(By.xpath("//*[@id='main']/div//h3/span/button[@tooltip='Remove the notebook']"))
+    driver.findElement(By.xpath(".//*[@id='main']//button[@ng-click='removeNote(note.id)']"))
         .sendKeys(Keys.ENTER);
-    sleep(1000, true);
+    ZeppelinITUtils.sleep(1000, true);
     driver.findElement(By.xpath("//div[@class='modal-dialog'][contains(.,'delete this notebook')]" +
         "//div[@class='modal-footer']//button[contains(.,'OK')]")).click();
-    sleep(100, true);
+    ZeppelinITUtils.sleep(100, true);
+  }
+
+  protected void clickAndWait(final By locator) {
+    pollingWait(locator, MAX_IMPLICIT_WAIT).click();
+    ZeppelinITUtils.sleep(1000, true);
   }
 
   protected void handleException(String message, Exception e) throws Exception {
     LOG.error(message, e);
+    LogEntries logEntries = driver.manage().logs().get(LogType.BROWSER);
+    for (LogEntry entry : logEntries) {
+      LOG.error(new Date(entry.getTimestamp()) + " " + entry.getLevel() + " " + entry.getMessage());
+    }
     File scrFile = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
     LOG.error("ScreenShot::\ndata:image/png;base64," + new String(Base64.encodeBase64(FileUtils.readFileToByteArray(scrFile))));
     throw e;

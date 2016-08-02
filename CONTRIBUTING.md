@@ -109,7 +109,6 @@ The top-level pom.xml describes the basic project structure. Currently Zeppelin 
     <module>markdown</module>
     <module>angular</module>
     <module>shell</module>
-    <module>hive</module>
     <module>flink</module>
     <module>ignite</module>
     <module>lens</module>
@@ -203,7 +202,7 @@ Zeppelin uses Travis for CI. In the project root there is .travis.yml that confi
 
 ```
 cd zeppelin-server
-HADOOP_HOME=YOUR_HADOOP_HOME JAVA_HOME=YOUR_JAVA_HOME mvn exec:java -Dexec.mainClass="com.nflabs.zeppelin.server.ZeppelinServer" -Dexec.args=""
+HADOOP_HOME=YOUR_HADOOP_HOME JAVA_HOME=YOUR_JAVA_HOME mvn exec:java -Dexec.mainClass="org.apache.zeppelin.server.ZeppelinServer" -Dexec.args=""
 ```
 
 or use daemon script
@@ -219,7 +218,7 @@ Server will be run on http://localhost:8080
 Zeppelin manages it's issues in Jira. [https://issues.apache.org/jira/browse/ZEPPELIN](https://issues.apache.org/jira/browse/ZEPPELIN)
 
 ## Where to Start
-You can find issues for [beginner](https://issues.apache.org/jira/browse/ZEPPELIN-924?jql=project%20%3D%20ZEPPELIN%20and%20status%20%3D%20Open%20and%20labels%20in%20\(beginner%2C%20newbie\))
+You can find issues for [beginner](https://issues.apache.org/jira/issues/?jql=(labels%20%3D%20newbie%20or%20labels%3D%20beginner)%20and%20project%3DZeppelin)
 
 ## Stay involved
 Everyone is welcome to join our mailing list:

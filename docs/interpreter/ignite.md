@@ -2,20 +2,22 @@
 layout: page
 title: "Ignite Interpreter"
 description: "Ignite user guide"
-group: manual
+group: interpreter
 ---
 {% include JB/setup %}
 
-## Ignite Interpreter for Apache Zeppelin
+# Ignite Interpreter for Apache Zeppelin
 
-### Overview
+<div id="toc"></div>
+
+## Overview
 [Apache Ignite](https://ignite.apache.org/) In-Memory Data Fabric is a high-performance, integrated and distributed in-memory platform for computing and transacting on large-scale data sets in real-time, orders of magnitude faster than possible with traditional disk-based or flash technologies.
 
 ![Apache Ignite](../assets/themes/zeppelin/img/docs-img/ignite-logo.png)
 
 You can use Zeppelin to retrieve distributed data from cache using Ignite SQL interpreter. Moreover, Ignite interpreter allows you to execute any Scala code in cases when SQL doesn't fit to your requirements. For example, you can populate data into your caches or execute distributed computations.
 
-### Installing and Running Ignite example
+## Installing and Running Ignite example
 In order to use Ignite interpreters, you may install Apache Ignite in some simple steps:
 
 1. Download Ignite [source release](https://ignite.apache.org/download.html#sources) or [binary release](https://ignite.apache.org/download.html#binaries) whatever you want. But you must download Ignite as the same version of Zeppelin's. If it is not, you can't use scala code on Zeppelin. You can find ignite version in Zeppelin at the pom.xml which is placed under `path/to/your-Zeppelin/ignite/pom.xml` ( Of course, in Zeppelin source release ). Please check `ignite.version` .<br>Currently, Zeppelin provides ignite only in Zeppelin source release. So, if you download Zeppelin binary release( `zeppelin-0.5.0-incubating-bin-spark-xxx-hadoop-xx` ), you can not use ignite interpreter on Zeppelin. We are planning to include ignite in a future binary release.
@@ -31,7 +33,7 @@ In order to use Ignite interpreters, you may install Apache Ignite in some simpl
 $ nohup java -jar </path/to/your Jar file name>
 ```
 
-### Configuring Ignite Interpreter
+## Configuring Ignite Interpreter
 At the "Interpreters" menu, you may edit Ignite interpreter or create new one. Zeppelin provides these properties for Ignite.
 
 <table class="table-configuration">
@@ -69,14 +71,14 @@ At the "Interpreters" menu, you may edit Ignite interpreter or create new one. Z
 
 ![Configuration of Ignite Interpreter](../assets/themes/zeppelin/img/docs-img/ignite-interpreter-setting.png)
 
-### Interpreter Binding for Zeppelin Notebook
+## How to use
 After configuring Ignite interpreter, create your own notebook. Then you can bind interpreters like below image.
 
 ![Binding Interpreters](../assets/themes/zeppelin/img/docs-img/ignite-interpreter-binding.png)
 
 For more interpreter binding information see [here](http://zeppelin.apache.org/docs/manual/interpreters.html).
 
-### How to use Ignite SQL interpreter
+### Ignite SQL interpreter
 In order to execute SQL query, use ` %ignite.ignitesql ` prefix. <br>
 Supposing you are running `org.apache.ignite.examples.streaming.wordcount.StreamWords`, then you can use "words" cache( Of course you have to specify this cache name to the Ignite interpreter setting section `ignite.jdbc.url` of Zeppelin ).
 For example, you can select top 10 words in the words cache using the following query

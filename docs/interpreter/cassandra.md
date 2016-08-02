@@ -2,11 +2,13 @@
 layout: page
 title: "Cassandra Interpreter"
 description: "Cassandra Interpreter"
-group: manual
+group: interpreter
 ---
 {% include JB/setup %}
 
-## Cassandra CQL Interpreter for Apache Zeppelin
+# Cassandra CQL Interpreter for Apache Zeppelin
+
+<div id="toc"></div>
 
 <table class="table-configuration">
   <tr>

@@ -19,10 +19,11 @@ package org.apache.zeppelin.notebook;
 
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
+import org.apache.zeppelin.helium.HeliumPackage;
+import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.user.Credentials;
 import org.apache.zeppelin.user.UserCredentials;
-import org.apache.zeppelin.user.UsernamePassword;
 import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.display.Input;
 import org.apache.zeppelin.interpreter.*;
@@ -48,9 +49,11 @@ import com.google.common.annotations.VisibleForTesting;
 public class Paragraph extends Job implements Serializable, Cloneable {
   private static final long serialVersionUID = -6328572073497992016L;
 
-  private transient NoteInterpreterLoader replLoader;
+  private static Logger logger = LoggerFactory.getLogger(Paragraph.class);
+  private transient InterpreterFactory factory;
   private transient Note note;
   private transient AuthenticationInfo authenticationInfo;
+  private transient String effectiveText;
 
   String title;
   String text;
@@ -58,6 +61,11 @@ public class Paragraph extends Job implements Serializable, Cloneable {
   Date dateUpdated;
   private Map<String, Object> config; // paragraph configs like isOpen, colWidth, etc
   public final GUI settings;          // form and parameter settings
+
+  /**
+   * Applicaiton states in this paragraph
+   */
+  private final List<ApplicationState> apps =  new LinkedList<ApplicationState>();
 
   @VisibleForTesting
   Paragraph() {
@@ -67,10 +75,10 @@ public class Paragraph extends Job implements Serializable, Cloneable {
   }
 
   public Paragraph(String paragraphId, Note note, JobListener listener,
-                   NoteInterpreterLoader replLoader) {
+                   InterpreterFactory factory) {
     super(paragraphId, generateId(), listener);
     this.note = note;
-    this.replLoader = replLoader;
+    this.factory = factory;
     title = null;
     text = null;
     authenticationInfo = null;
@@ -80,10 +88,10 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     config = new HashMap<String, Object>();
   }
 
-  public Paragraph(Note note, JobListener listener, NoteInterpreterLoader replLoader) {
+  public Paragraph(Note note, JobListener listener, InterpreterFactory factory) {
     super(generateId(), listener);
     this.note = note;
-    this.replLoader = replLoader;
+    this.factory = factory;
     title = null;
     text = null;
     authenticationInfo = null;
@@ -104,6 +112,14 @@ public class Paragraph extends Job implements Serializable, Cloneable {
   public void setText(String newText) {
     this.text = newText;
     this.dateUpdated = new Date();
+  }
+
+  public void setEffectiveText(String effectiveText) {
+    this.effectiveText = effectiveText;
+  }
+
+  public String getEffectiveText() {
+    return effectiveText;
   }
 
   public AuthenticationInfo getAuthenticationInfo() {
@@ -137,7 +153,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
   }
 
   public String getRequiredReplName() {
-    return getRequiredReplName(text);
+    return getRequiredReplName(null != effectiveText ? effectiveText : text);
   }
 
   public static String getRequiredReplName(String text) {
@@ -165,8 +181,8 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     }
   }
 
-  private String getScriptBody() {
-    return getScriptBody(text);
+  public String getScriptBody() {
+    return getScriptBody(null != effectiveText ? effectiveText : text);
   }
 
   public static String getScriptBody(String text) {
@@ -184,34 +200,59 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     return text.substring(magic.length() + 1).trim();
   }
 
-  public NoteInterpreterLoader getNoteReplLoader() {
-    return replLoader;
-  }
-
   public Interpreter getRepl(String name) {
-    return replLoader.get(name);
+    return factory.getInterpreter(note.getId(), name);
   }
 
   public Interpreter getCurrentRepl() {
     return getRepl(getRequiredReplName());
   }
 
-  public List<String> completion(String buffer, int cursor) {
+  public List<InterpreterCompletion> getInterpreterCompletion() {
+    List<InterpreterCompletion> completion = new LinkedList();
+    for (InterpreterSetting intp: factory.getInterpreterSettings(note.getId())){
+      List<InterpreterInfo> intInfo = intp.getInterpreterInfos();
+      if (intInfo.size() > 1) {
+        for (InterpreterInfo info : intInfo){
+          String name = intp.getName() + "." + info.getName();
+          completion.add(new InterpreterCompletion(name, name));
+        }
+      } else {
+        completion.add(new InterpreterCompletion(intp.getName(), intp.getName()));
+      }
+    }
+    return completion;
+  }
+
+  public List<InterpreterCompletion> completion(String buffer, int cursor) {
+    String lines[] = buffer.split(System.getProperty("line.separator"));
+    if (lines.length > 0
+      && lines[0].startsWith("%")
+      && cursor <= lines[0].trim().length()) {
+
+      int idx = lines[0].indexOf(' ');
+      if (idx < 0 || (idx > 0 && cursor <= idx)) {
+        return getInterpreterCompletion();
+      }
+    }
+
     String replName = getRequiredReplName(buffer);
-    if (replName != null) {
+    if (replName != null && cursor > replName.length()) {
       cursor -= replName.length() + 1;
     }
+
     String body = getScriptBody(buffer);
     Interpreter repl = getRepl(replName);
     if (repl == null) {
       return null;
     }
 
-    return repl.completion(body, cursor);
+    List completion = repl.completion(body, cursor);
+    return completion;
   }
 
-  public void setNoteReplLoader(NoteInterpreterLoader repls) {
-    this.replLoader = repls;
+  public void setInterpreterFactory(InterpreterFactory factory) {
+    this.factory = factory;
   }
 
   public InterpreterResult getResult() {
@@ -223,7 +264,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     String replName = getRequiredReplName();
     Interpreter repl = getRepl(replName);
     if (repl != null) {
-      return repl.getProgress(getInterpreterContext());
+      return repl.getProgress(getInterpreterContext(null));
     } else {
       return 0;
     }
@@ -238,9 +279,9 @@ public class Paragraph extends Job implements Serializable, Cloneable {
   protected Object jobRun() throws Throwable {
     String replName = getRequiredReplName();
     Interpreter repl = getRepl(replName);
-    logger().info("run paragraph {} using {} " + repl, getId(), replName);
+    logger.info("run paragraph {} using {} " + repl, getId(), replName);
     if (repl == null) {
-      logger().error("Can not find interpreter name " + repl);
+      logger.error("Can not find interpreter name " + repl);
       throw new RuntimeException("Can not find interpreter for " + getRequiredReplName());
     }
 
@@ -261,7 +302,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
       settings.setForms(inputs);
       script = Input.getSimpleQuery(settings.getParams(), scriptBody);
     }
-    logger().debug("RUN : " + script);
+    logger.debug("RUN : " + script);
     try {
       InterpreterContext context = getInterpreterContext();
       InterpreterContext.set(context);
@@ -276,7 +317,6 @@ public class Paragraph extends Job implements Serializable, Cloneable {
       context.out.flush();
       InterpreterResult.Type outputType = context.out.getType();
       byte[] interpreterOutput = context.out.toByteArray();
-      context.out.clear();
 
       if (interpreterOutput != null && interpreterOutput.length > 0) {
         message = new String(interpreterOutput);
@@ -295,6 +335,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
       }
     } finally {
       InterpreterContext.remove();
+      effectiveText = null;
     }
   }
 
@@ -315,17 +356,49 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     if (job != null) {
       job.setStatus(Status.ABORT);
     } else {
-      repl.cancel(getInterpreterContext());
+      repl.cancel(getInterpreterContext(null));
     }
     return true;
   }
 
   private InterpreterContext getInterpreterContext() {
+    final Paragraph self = this;
+
+    return getInterpreterContext(new InterpreterOutput(new InterpreterOutputListener() {
+      @Override
+      public void onAppend(InterpreterOutput out, byte[] line) {
+        updateParagraphResult(out);
+        ((ParagraphJobListener) getListener()).onOutputAppend(self, out, new String(line));
+      }
+
+      @Override
+      public void onUpdate(InterpreterOutput out, byte[] output) {
+        updateParagraphResult(out);
+        ((ParagraphJobListener) getListener()).onOutputUpdate(self, out,
+            new String(output));
+      }
+
+      private void updateParagraphResult(InterpreterOutput out) {
+        // update paragraph result
+        Throwable t = null;
+        String message = null;
+        try {
+          message = new String(out.toByteArray());
+        } catch (IOException e) {
+          logger.error(e.getMessage(), e);
+          t = e;
+        }
+        setReturn(new InterpreterResult(Code.SUCCESS, out.getType(), message), t);
+      }
+    }));
+  }
+
+  private InterpreterContext getInterpreterContext(InterpreterOutput output) {
     AngularObjectRegistry registry = null;
     ResourcePool resourcePool = null;
 
-    if (!getNoteReplLoader().getInterpreterSettings().isEmpty()) {
-      InterpreterSetting intpGroup = getNoteReplLoader().getInterpreterSettings().get(0);
+    if (!factory.getInterpreterSettings(note.getId()).isEmpty()) {
+      InterpreterSetting intpGroup = factory.getInterpreterSettings(note.getId()).get(0);
       registry = intpGroup.getInterpreterGroup(note.id()).getAngularObjectRegistry();
       resourcePool = intpGroup.getInterpreterGroup(note.id()).getResourcePool();
     }
@@ -355,33 +428,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
             registry,
             resourcePool,
             runners,
-            new InterpreterOutput(new InterpreterOutputListener() {
-              @Override
-              public void onAppend(InterpreterOutput out, byte[] line) {
-                updateParagraphResult(out);
-                ((ParagraphJobListener) getListener()).onOutputAppend(self, out, new String(line));
-              }
-
-              @Override
-              public void onUpdate(InterpreterOutput out, byte[] output) {
-                updateParagraphResult(out);
-                ((ParagraphJobListener) getListener()).onOutputUpdate(self, out,
-                        new String(output));
-              }
-
-              private void updateParagraphResult(InterpreterOutput out) {
-                // update paragraph result
-                Throwable t = null;
-                String message = null;
-                try {
-                  message = new String(out.toByteArray());
-                } catch (IOException e) {
-                  logger().error(e.getMessage(), e);
-                  t = e;
-                }
-                setReturn(new InterpreterResult(Code.SUCCESS, out.getType(), message), t);
-              }
-            }));
+            output);
     return interpreterContext;
   }
 
@@ -398,13 +445,6 @@ public class Paragraph extends Job implements Serializable, Cloneable {
       note.run(getParagraphId());
     }
   }
-
-
-  private Logger logger() {
-    Logger logger = LoggerFactory.getLogger(Paragraph.class);
-    return logger;
-  }
-
 
   public Map<String, Object> getConfig() {
     return config;
@@ -423,6 +463,44 @@ public class Paragraph extends Job implements Serializable, Cloneable {
   public Object clone() throws CloneNotSupportedException {
     Paragraph paraClone = (Paragraph) this.clone();
     return paraClone;
+  }
+
+  private String getApplicationId(HeliumPackage pkg) {
+    return "app_" + getNote().getId() + "-" + getId() + pkg.getName().replaceAll("\\.", "_");
+  }
+
+  public ApplicationState createOrGetApplicationState(HeliumPackage pkg) {
+    synchronized (apps) {
+      for (ApplicationState as : apps) {
+        if (as.equals(pkg)) {
+          return as;
+        }
+      }
+
+      String appId = getApplicationId(pkg);
+      ApplicationState appState = new ApplicationState(appId, pkg);
+      apps.add(appState);
+      return appState;
+    }
+  }
+
+
+  public ApplicationState getApplicationState(String appId) {
+    synchronized (apps) {
+      for (ApplicationState as : apps) {
+        if (as.getId().equals(appId)) {
+          return as;
+        }
+      }
+    }
+
+    return null;
+  }
+
+  public List<ApplicationState> getAllApplicationStates() {
+    synchronized (apps) {
+      return new LinkedList<ApplicationState>(apps);
+    }
   }
 
   String extractVariablesFromAngularRegistry(String scriptBody, Map<String, Input> inputs,

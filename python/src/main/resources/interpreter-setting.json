@@ -1,0 +1,27 @@
+[
+  {
+    "group": "python",
+    "name": "python",
+    "className": "org.apache.zeppelin.python.PythonInterpreter",
+    "properties": {
+      "zeppelin.python": {
+        "envName": null,
+        "propertyName": "zeppelin.python",
+        "defaultValue": "python",
+        "description": "Python directory. It is set to python by default.(assume python is in your $PATH)"
+      },
+      "zeppelin.python.maxResult": {
+        "envName": null,
+        "propertyName": "zeppelin.python.maxResult",
+        "defaultValue": "1000",
+        "description": "Max number of dataframe rows to display."
+      }
+    }
+  },
+  {
+    "group": "python",
+    "name": "sql",
+    "className": "org.apache.zeppelin.python.PythonInterpreterPandasSql",
+    "properties": { }
+  }
+]

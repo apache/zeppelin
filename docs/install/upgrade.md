@@ -19,12 +19,14 @@ limitations under the License.
 -->
 {% include JB/setup %}
 
-## Manual upgrade procedure for Zeppelin
+# Manual upgrade procedure for Zeppelin
+
+<div id="toc"></div>
 
 Basically, newer version of Zeppelin works with previous version notebook directory and configurations.
 So, copying `notebook` and `conf` directory should be enough.
 
-### Instructions
+## Instructions
 1. Stop Zeppelin
 
     ```
@@ -33,7 +35,7 @@ So, copying `notebook` and `conf` directory should be enough.
 
 1. Copy your `notebook` and `conf` directory into a backup directory
 
-1. Download newer version of Zeppelin and Install. See [Install page](./install.html)
+1. Download newer version of Zeppelin and Install. See [Install page](./install.html#installation).
 
 1. Copy backup `notebook` and `conf` directory into newer version of Zeppelin `notebook` and `conf` directory
 
