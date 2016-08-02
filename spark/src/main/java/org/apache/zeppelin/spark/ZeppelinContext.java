@@ -17,9 +17,7 @@
 
 package org.apache.zeppelin.spark;
 
-import static scala.collection.JavaConversions.asJavaCollection;
 import static scala.collection.JavaConversions.asJavaIterable;
-import static scala.collection.JavaConversions.collectionAsScalaIterable;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
