@@ -158,15 +158,9 @@ Available profiles are
 
 minor version can be adjusted by `-Dhadoop.version=x.x.x`
 
-##### `-Pscala-[version] (optional)`
+##### `-Dscala-2.11 (optional)`
 
-set scala version (default 2.10)
-Available profiles are
-
-```
--Pscala-2.10
--Pscala-2.11
-```
+build with Scala 2.11. If you don't define this property, Zeppelin will be built with Scala 2.10.
 
 ##### `-Pyarn` (optional)
 
@@ -217,7 +211,8 @@ Here're some examples:
 
 ```sh
 # build with spark-2.0, scala-2.11
-mvn clean package -Pspark-2.0 -Phadoop-2.4 -Pyarn -Ppyspark -Psparkr -Pscala-2.11
+./dev/change_scala_version.sh 2.11
+mvn clean package -Pspark-2.0 -Phadoop-2.4 -Pyarn -Ppyspark -Psparkr -Dscala-2.11
 
 # build with spark-1.6, scala-2.10
 mvn clean package -Pspark-1.6 -Phadoop-2.4 -Pyarn -Ppyspark -Psparkr
@@ -303,10 +298,11 @@ For configuration details check __`./conf`__ subdirectory.
 
 ### Building for Scala 2.11
 
-To produce a Zeppelin package compiled with Scala 2.11, use the -Pscala-2.11 profile:
+To produce a Zeppelin package compiled with Scala 2.11, use the -Dscala-2.11 profile:
 
 ```
-mvn clean package -Pspark-1.6 -Phadoop-2.4 -Pyarn -Ppyspark -Pscala-2.11 -DskipTests clean install
+./dev/change_scala_version.sh 2.11
+mvn clean package -Pspark-1.6 -Phadoop-2.4 -Pyarn -Ppyspark -Dscala-2.11 -DskipTests clean install
 ```
 
 ### Package

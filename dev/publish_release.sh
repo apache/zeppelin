@@ -94,9 +94,9 @@ function publish_to_maven() {
 
   # build with scala-2.10
   echo "mvn clean install -Ppublish-distr \
-    -Dmaven.repo.local=${tmp_repo} -Pscala-2.10 \
+    -Dmaven.repo.local=${tmp_repo} \
     ${PUBLISH_PROFILES} ${PROJECT_OPTIONS}"
-  mvn clean install -Ppublish-distr -Dmaven.repo.local="${tmp_repo}" -Pscala-2.10 \
+  mvn clean install -Ppublish-distr -Dmaven.repo.local="${tmp_repo}" \
     ${PUBLISH_PROFILES} ${PROJECT_OPTIONS}
   if [[ $? -ne 0 ]]; then
     echo "Build with scala 2.10 failed."
@@ -107,9 +107,9 @@ function publish_to_maven() {
   "${BASEDIR}/change_scala_version.sh" 2.11
 
   echo "mvn clean install -Ppublish-distr \
-    -Dmaven.repo.local=${tmp_repo} -Pscala-2.11 \
+    -Dmaven.repo.local=${tmp_repo} -Dscala-2.11 \
     ${PUBLISH_PROFILES} ${PROJECT_OPTIONS}"
-  mvn clean install -Ppublish-distr -Dmaven.repo.local="${tmp_repo}" -Pscala-2.11 \
+  mvn clean install -Ppublish-distr -Dmaven.repo.local="${tmp_repo}" -Dscala-2.11 \
     ${PUBLISH_PROFILES} ${PROJECT_OPTIONS}
   if [[ $? -ne 0 ]]; then
     echo "Build with scala 2.11 failed."

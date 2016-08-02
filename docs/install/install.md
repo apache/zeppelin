@@ -94,7 +94,8 @@ Here are some examples with several options
 
 ```
 # build with spark-2.0, scala-2.11
-mvn clean package -Pspark-2.0 -Phadoop-2.4 -Pyarn -Ppyspark -Psparkr -Pscala-2.11
+./dev/change_scala_version.sh 2.11
+mvn clean package -Pspark-2.0 -Phadoop-2.4 -Pyarn -Ppyspark -Psparkr -Dscala-2.11
 
 # build with spark-1.6, scala-2.10
 mvn clean package -Pspark-1.6 -Phadoop-2.4 -Pyarn -Ppyspark -Psparkr
