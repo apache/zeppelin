@@ -162,7 +162,7 @@ class PyZeppelinContext(object):
         #)
         body_buf.close(); header_buf.close()
     
-    def show_matplotlib(self, p, width="0", height="0", **kwargs):
+    def show_matplotlib(self, p, width="100%", height="100%", **kwargs):
         """Matplotlib show function
         """
         img = io.StringIO()
