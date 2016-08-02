@@ -436,7 +436,8 @@ public class NotebookServer extends WebSocketServlet implements
     String noteID = (String) fromMessage.data.get("noteID");
     List<InterpreterSettingsList> settingList =
         InterpreterBindingUtils.getInterpreterBindings(notebook(), noteID);
-    broadcastInterpreterBindings(noteID, settingList);
+    conn.send(serializeMessage(new Message(OP.INTERPRETER_BINDINGS)
+        .put("interpreterBindings", settingList)));
   }
 
   public List<Map<String, String>> generateNotebooksInfo(boolean needsReload,
