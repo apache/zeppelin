@@ -26,12 +26,32 @@ public class InterpreterOption {
   boolean remote;
   String host = null;
   int port = -1;
+
+  boolean perNote;
+  boolean perUser;
+
   boolean perNoteSession;
   boolean perNoteProcess;
   
   boolean isExistingProcess;
   boolean setPermission;
   List<String> users;
+
+  public boolean isPerNote() {
+    return perNote;
+  }
+
+  public void setPerNote(boolean perNote) {
+    this.perNote = perNote;
+  }
+
+  public boolean isPerUser() {
+    return perUser;
+  }
+
+  public void setPerUser(boolean perUser) {
+    this.perUser = perUser;
+  }
 
   public boolean isExistingProcess() {
     return isExistingProcess;

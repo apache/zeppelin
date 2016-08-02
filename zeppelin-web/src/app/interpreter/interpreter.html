@@ -141,9 +141,18 @@ limitations under the License.
         </span>
       </div>
     </div>
+
     <div class="row interpreter">
       <div class="col-md-12">
         <h5>Option</h5>
+        <span class="checkbox input-group">
+            <label><input type="checkbox" style="width:0%;height:0%" id="perNote" ng-model="setting.option.perNote" ng-disabled="!valueform.$visible"/>
+            perNote </label>
+        </span>
+        <span class="checkbox input-group">
+            <label><input type="checkbox" style="width:0%;height:0%" id="perUser" ng-model="setting.option.perUser" ng-disabled="!valueform.$visible"/>
+            perUser</label>
+        </span>
         <span class="btn-group">
           <button type="button" class="btn btn-default btn-xs dropdown-toggle"
                   data-toggle="dropdown"

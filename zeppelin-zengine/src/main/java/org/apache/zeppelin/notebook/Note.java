@@ -499,6 +499,7 @@ public class Note implements Serializable, ParagraphJobListener {
       throw intpException;
     }
     if (p.getConfig().get("enabled") == null || (Boolean) p.getConfig().get("enabled")) {
+      p.setAuthenticationInfo(p.getAuthenticationInfo());
       intp.getScheduler().submit(p);
     }
   }

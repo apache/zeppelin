@@ -96,10 +96,10 @@ public class NoteInterpreterLoaderTest {
   @Test
   public void testNoteSession() throws IOException {
     factory.setInterpreters("user", "noteA", factory.getDefaultInterpreterSettingList());
-    factory.getInterpreterSettings("noteA").get(0).getOption().setPerNoteSession(true);
+    factory.getInterpreterSettings("noteA").get(0).getOption().setSession(true);
 
     factory.setInterpreters("user", "noteB", factory.getDefaultInterpreterSettingList());
-    factory.getInterpreterSettings("noteB").get(0).getOption().setPerNoteSession(true);
+    factory.getInterpreterSettings("noteB").get(0).getOption().setSession(true);
 
     // interpreters are not created before accessing it
     assertNull(factory.getInterpreterSettings("noteA").get(0).getInterpreterGroup("user", "shared_process").get("noteA"));
@@ -129,10 +129,10 @@ public class NoteInterpreterLoaderTest {
   @Test
   public void testNotePerInterpreterProcess() throws IOException {
     factory.setInterpreters("user", "noteA", factory.getDefaultInterpreterSettingList());
-    factory.getInterpreterSettings("noteA").get(0).getOption().setPerNoteProcess(true);
+    factory.getInterpreterSettings("noteA").get(0).getOption().setProcess(true);
 
     factory.setInterpreters("user", "noteB", factory.getDefaultInterpreterSettingList());
-    factory.getInterpreterSettings("noteB").get(0).getOption().setPerNoteProcess(true);
+    factory.getInterpreterSettings("noteB").get(0).getOption().setProcess(true);
 
     // interpreters are not created before accessing it
     assertNull(factory.getInterpreterSettings("noteA").get(0).getInterpreterGroup("user", "noteA").get("noteA"));

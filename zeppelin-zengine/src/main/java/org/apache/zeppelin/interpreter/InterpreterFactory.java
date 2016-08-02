@@ -700,9 +700,9 @@ public class InterpreterFactory implements InterpreterGroupFactory {
 
   public void removeInterpretersForNote(InterpreterSetting interpreterSetting, String user,
       String noteId) {
-    if (interpreterSetting.getOption().isPerNoteProcess()) {
+    if (interpreterSetting.getOption().isProcess()) {
       interpreterSetting.closeAndRemoveInterpreterGroup(noteId);
-    } else if (interpreterSetting.getOption().isPerNoteSession()) {
+    } else if (interpreterSetting.getOption().isSession()) {
       InterpreterGroup interpreterGroup = interpreterSetting.getInterpreterGroup(user, noteId);
       String key = getInterpreterInstanceKey(user, noteId, interpreterSetting);
       interpreterGroup.close(key);
@@ -1134,13 +1134,14 @@ public class InterpreterFactory implements InterpreterGroupFactory {
   }
 
   private String getInterpreterInstanceKey(String user, String noteId, InterpreterSetting setting) {
+    InterpreterOption option = setting.getOption();
     String key;
-    if (setting.getOption().isExistingProcess()) {
-      key = user + ":" + Constants.EXISTING_PROCESS;
-    } else if (setting.getOption().isPerNoteSession() || setting.getOption().isPerNoteProcess()) {
-      key = user + ":" + noteId;
+    if (option.isExistingProcess()) {
+      key = Constants.EXISTING_PROCESS;
+    } else if (option.isSession() || option.isProcess()) {
+      key = (option.isPerUser() ? user : "") + ":" + (option.isPerNote() ? noteId : "");
     } else {
-      key = user + ":" + SHARED_SESSION;
+      key = SHARED_SESSION;
     }
 
     logger.debug("Interpreter instance key: {}", key);

@@ -107,13 +107,14 @@ public class InterpreterSetting {
   }
 
   private String getInterpreterProcessKey(String user, String noteId) {
+    InterpreterOption option = getOption();
     String key;
     if (getOption().isExistingProcess) {
-      key = user + ":" + Constants.EXISTING_PROCESS;
-    } else if (getOption().isPerNoteProcess()) {
-      key = user + ":" + noteId;
+      key = Constants.EXISTING_PROCESS;
+    } else if (getOption().isProcess()) {
+      key = (option.isPerUser() ? user : "") + ":" + (option.isPerNote() ? noteId : "");
     } else {
-      key = user + ":" + SHARED_PROCESS;
+      key = SHARED_PROCESS;
     }
 
     logger.debug("getInterpreterProcessKey: {}", key);
