@@ -1,7 +1,7 @@
 ---
 layout: page
-title: "Manual upgrade procedure for Zeppelin"
-description: ""
+title: "Manual Zeppelin version upgrade procedure"
+description: "Basically, newer version of Zeppelin works with previous version notebook directory and configurations. This document will guide you how to manually upgrade your Zeppelin version."
 group: install
 ---
 <!--

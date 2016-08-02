@@ -1,7 +1,7 @@
 ---
 layout: page
-title: "Data Source Authorization"
-description: "Data Source Authorization"
+title: "Data Source Authorization in Apache Zeppelin"
+description: "Data source authorization involves authenticating to the data source like a Mysql database and letting it determine user permissions. Apache Zeppelin allows users to use their own credentials to authenticate with Data Sources."
 group: security
 ---
 <!--
@@ -17,6 +17,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
+{% include JB/setup %}
+
 # Data Source Authorization in Apache Zeppelin
 
 <div id="toc"></div>

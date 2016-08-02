@@ -1,7 +1,7 @@
 ---
 layout: page
-title: "Install A Zeppelin ready Virtual Machine"
-description: ""
+title: "Apache Zeppelin on Vagrant Virtual Machine"
+description: "Apache Zeppelin distribution provides a script directory for vagrant virtual machine. This script creates a virtual machine that launches a repeatable, known set of core dependencies required for developing Zeppelin."
 group: install
 ---
 <!--
@@ -19,17 +19,17 @@ limitations under the License.
 -->
 {% include JB/setup %}
 
-# Vagrant Virtual Machine for Apache Zeppelin
+# Apache Zeppelin on Vagrant Virtual Machine
 
 <div id="toc"></div>
 
 ## Overview
 
-Apache Zeppelin distribution includes a scripts directory
+Apache Zeppelin distribution includes a script directory
 
  `scripts/vagrant/zeppelin-dev`
 
-This script creates a virtual machine that launches a repeatable, known set of core dependencies required for developing Zeppelin.  It can also be used to run an existing Zeppelin build if you don't plan to build from source.
+This script creates a virtual machine that launches a repeatable, known set of core dependencies required for developing Zeppelin. It can also be used to run an existing Zeppelin build if you don't plan to build from source.
 For PySpark users, this script includes several helpful [Python Libraries](#python-extras).
 For SparkR users, this script includes several helpful [R Libraries](#r-extras).
 

@@ -1,8 +1,8 @@
 ---
 layout: page
-title: Overview
-tagline: Less Development, More analysis!
-group: nav-right
+title: Apache Zeppelin Overview
+description: Less Development, More analysis! Apache Zeppelin notebook is the place for all your needs.
+group:
 ---
 <!--
 Licensed under the Apache License, Version 2.0 (the "License");

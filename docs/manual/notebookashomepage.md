@@ -1,7 +1,7 @@
 ---
 layout: page
-title: "Notebook as Homepage"
-description: ""
+title: "Customize Apache Zeppelin homepage"
+description: "Apache Zeppelin allows you to use one of the notebooks you create as your Zeppelin Homepage. With that you can brand your Zeppelin installation, adjust the instruction to your users needs and even translate to other languages."
 group: manual
 ---
 <!--

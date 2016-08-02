@@ -1,7 +1,7 @@
 ---
 layout: page
-title: "Credentials REST API"
-description: ""
+title: "Apache Zeppelin Credential REST API"
+description: "Apache Zeppelin provides several REST APIs for interaction and remote activation of zeppelin functionality. This page contains Apache Zeppelin Credential REST API information."
 group: rest-api
 ---
 <!--

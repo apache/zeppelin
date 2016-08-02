@@ -1,7 +1,7 @@
 ---
 layout: page
 title: "Authentication for NGINX"
-description: "Authentication for NGINX"
+description: "Authentication is company-specific. One possible option is HTTP Basic Authentication using NGINX."
 group: security
 ---
 <!--
@@ -17,6 +17,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
+{% include JB/setup %}
+
 # Authentication for NGINX
 
 <div id="toc"></div>

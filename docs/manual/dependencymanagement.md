@@ -1,7 +1,7 @@
 ---
 layout: page
-title: "Dependency Management"
-description: ""
+title: "Dependency Management for Interpreter"
+description: "You can include external libraries to interpreter by setting dependencies in interpreter menu."
 group: manual
 ---
 <!--

@@ -1,9 +1,22 @@
 ---
 layout: page
-title: "Elasticsearch Interpreter"
-description: ""
+title: "Elasticsearch Interpreter for Apache Zeppelin"
+description: "Elasticsearch is a highly scalable open-source full-text search and analytics engine. It allows you to store, search, and analyze big volumes of data quickly and in near real time. It is generally used as the underlying engine/technology that powers applications that have complex search features and requirements."
 group: interpreter
 ---
+<!--
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
 {% include JB/setup %}
 
 # Elasticsearch Interpreter for Apache Zeppelin

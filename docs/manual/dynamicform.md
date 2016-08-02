@@ -1,7 +1,7 @@
 ---
 layout: page
-title: "Dynamic Form"
-description: ""
+title: "Dynamic Form in Apache Zeppelin"
+description: "Apache Zeppelin dynamically creates input forms. Depending on language backend, there're two different ways to create dynamic form."
 group: manual
 ---
 <!--

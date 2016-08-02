@@ -1,9 +1,22 @@
 ---
 layout: page
-title: "HBase Shell Interpreter"
-description: ""
+title: "HBase Shell Interpreter for Apache Zeppelin"
+description: "HBase Shell is a JRuby IRB client for Apache HBase. This interpreter provides all capabilities of Apache HBase shell within Apache Zeppelin. The interpreter assumes that Apache HBase client software has been installed and it can connect to the Apache HBase cluster from the machine on where Apache Zeppelin is installed."
 group: interpreter
 ---
+<!--
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
 {% include JB/setup %}
 
 # HBase Shell Interpreter for Apache Zeppelin

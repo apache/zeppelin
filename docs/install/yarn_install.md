@@ -1,7 +1,7 @@
 ---
 layout: page
 title: "Install Zeppelin to connect with existing YARN cluster"
-description: ""
+description: "This page describes how to pre-configure a bare metal node, configure Zeppelin and connect it to existing YARN cluster running Hortonworks flavour of Hadoop."
 group: install
 ---
 <!--

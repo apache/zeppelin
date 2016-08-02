@@ -1,7 +1,7 @@
 ---
 layout: page
-title: "Interpreters"
-description: ""
+title: "Interpreters in Apache Zeppelin"
+description: "This document explains about the role of interpreters, interpreters group and interpreter settings in Apache Zeppelin. The concept of Zeppelin interpreter allows any language/data-processing-backend to be plugged into Zeppelin."
 group: manual
 ---
 <!--
