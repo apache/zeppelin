@@ -108,8 +108,8 @@ public class ZeppelinR implements ExecuteResultHandler {
    * @param rCmdPath R repl commandline path
    * @param libPath sparkr library path
    */
-  public ZeppelinR(String rCmdPath, String libPath,
-                   int sparkRBackendPort, SparkVersion sparkVersion) {
+  public ZeppelinR(String rCmdPath, String libPath, int sparkRBackendPort,
+      SparkVersion sparkVersion) {
     this.rCmdPath = rCmdPath;
     this.libPath = libPath;
     this.sparkVersion = sparkVersion;
