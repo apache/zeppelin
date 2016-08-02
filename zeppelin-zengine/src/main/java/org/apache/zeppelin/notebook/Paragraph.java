@@ -275,6 +275,20 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     return null;
   }
 
+  private boolean hasPermission(String user, String intpUsers) {
+    if (intpUsers.trim().equals("")) {
+      return true;
+    }
+
+    String[] userList = intpUsers.split(",");
+    for (String u: userList) {
+      if (user.trim().equals(u.trim())) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   @Override
   protected Object jobRun() throws Throwable {
     String replName = getRequiredReplName();
@@ -283,6 +297,21 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     if (repl == null) {
       logger.error("Can not find interpreter name " + repl);
       throw new RuntimeException("Can not find interpreter for " + getRequiredReplName());
+    }
+
+    if (this.user != null &&
+      !factory.getInterpreterSettings(note.getId()).isEmpty()) {
+
+      InterpreterSetting intpGroup = factory.getInterpreterSettings(note.getId()).get(0);
+      if (!hasPermission(authenticationInfo.getUser(), intpGroup.getOption().getUsers())) {
+        logger.error("{} has no permission for {} ", authenticationInfo.getUser(), repl);
+        return new InterpreterResult(Code.ERROR, authenticationInfo.getUser() +
+          " has no permission for " + getRequiredReplName());
+/*
+        throw new RuntimeException(authenticationInfo.getUser() +
+          " has no permission for " + getRequiredReplName());
+*/
+      }
     }
 
     String script = getScriptBody();

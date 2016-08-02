@@ -28,7 +28,8 @@ public class InterpreterOption {
   boolean perNoteProcess;
   
   boolean isExistingProcess;
-
+  boolean setPermission;
+  String users;
 
   public boolean isExistingProcess() {
     return isExistingProcess;
@@ -46,6 +47,20 @@ public class InterpreterOption {
     this.host = host;
   }
 
+  public boolean isSetPermission() {
+    return setPermission;
+  }
+
+  public void setUserPermission(boolean setPermission) {
+    this.setPermission = setPermission;
+  }
+
+  public void setUsers(String users) {
+    this.users = users;
+  }
+  public String getUsers() {
+    return users;
+  }
 
   public InterpreterOption() {
     remote = false;

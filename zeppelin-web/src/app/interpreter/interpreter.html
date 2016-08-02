@@ -192,6 +192,49 @@ limitations under the License.
       </div>
 
 
+      <div class="col-md-12">
+        <div class="checkbox">
+          <span class="input-group" style="line-height:30px;">
+            <label><input type="checkbox" style="width:18px !important" id="idShowPermission" ng-click="togglePermissions()" ng-model="setting.option.setPermission" ng-disabled="!valueform.$visible"/>
+            Set permission </label>
+          </span>
+        </div>
+      </div>
+
+      <div class="col-md-12">
+        <!-- permissions -->
+        <div ng-show="setting.option.setPermission" class="permissionsForm">
+          <div>
+            <p>
+              Enter comma separated interpreters in the fields. <br />
+              Empty field (*) implies anyone can run the interpreters.
+            </p>
+            <div>
+              <form class="form-inline">
+                <div class="form-group">
+                  <label for="User">Users</label>
+                  <input type="text" class="form-control"
+                         ng-model="setting.option.users"
+                         placeholder="search for users"
+                         class="input"
+                         ng-keydown="checkKeyDown($event, setting)"
+                         ng-keyup="checkKeyUp($event, setting)"
+                         ng-disabled="!valueform.$visible"/>
+                </div>
+                <div class="userlist" >
+                  <ul>
+                    <li ng-repeat="suggestion in suggestions"
+                        ng-class="{active : selectIndex === $index}"
+                        ng-click="assignValueAndHide($index, setting)">
+                      {{suggestion}}
+                    </li>
+                  </ul>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
 
       <div ng-show="_.isEmpty(setting.properties) && _.isEmpty(setting.dependencies) || valueform.$hidden" class="col-md-12 gray40-message">
         <em>Currently there are no properties and dependencies set for this interpreter</em>

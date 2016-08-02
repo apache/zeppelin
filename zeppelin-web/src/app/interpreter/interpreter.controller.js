@@ -22,6 +22,169 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl',
     $scope.showRepositoryInfo = false;
     $scope._ = _;
 
+    // auto complete related
+    $scope.suggestions = [];
+    $scope.selectIndex = -1;
+    var selectedUser = '';
+    var selectedUserIndex = 0;
+    var previousSelectedList = [];
+    var previousSelectedListUsers = [];
+    var previousSelectedListInterpreters = [];
+    var searchText = [];
+
+
+    function updatePreviousList() {
+      for (var i = 0; i < searchText.length; i++) {
+        previousSelectedList[i] = searchText[i];
+      }
+    }
+
+    function convertToString(setting) {
+       setting.option.users = searchText.join();
+    }
+
+    var checkIfSelected = function() {
+      if (($scope.suggestions.length === 0) &&
+        ($scope.selectIndex < 0 || $scope.selectIndex >= $scope.suggestions.length) ||
+        ($scope.suggestions.length !== 0 && ($scope.selectIndex < 0 || $scope.selectIndex >= $scope.suggestions.length))
+      ) {
+        searchText[selectedUserIndex] = selectedUser;
+        $scope.suggestions = [];
+        return true;
+      } else {
+        return false;
+      }
+    };
+
+    $scope.checkKeyDown = function(event, setting) {
+      if (event.keyCode === 40) {
+        event.preventDefault();
+        if ($scope.selectIndex + 1 !== $scope.suggestions.length) {
+          $scope.selectIndex++;
+        }
+      } else if (event.keyCode === 38) {
+        event.preventDefault();
+
+        if ($scope.selectIndex - 1 !== -1) {
+          $scope.selectIndex--;
+
+        }
+      } else if (event.keyCode === 13) {
+        event.preventDefault();
+        if (!checkIfSelected()) {
+          selectedUser = $scope.suggestions[$scope.selectIndex];
+          searchText[selectedUserIndex] = $scope.suggestions[$scope.selectIndex];
+          updatePreviousList();
+          convertToString(setting);
+          $scope.suggestions = [];
+        }
+      }
+
+    };
+
+    $scope.checkKeyUp = function(event, setting) {
+      if (event.keyCode !== 8 || event.keyCode !== 46) {
+        if (searchText[selectedUserIndex] === '') {
+          $scope.suggestions = [];
+        }
+      }
+      if (event.keyCode < 37 || event.keyCode > 40) { // arrow buttons.
+        $scope.search(setting.option.users, setting);
+      }
+    };
+
+    $scope.assignValueAndHide = function(index, setting) {
+      searchText[selectedUserIndex] = $scope.suggestions[index];
+      updatePreviousList();
+      convertToString(setting);
+      $scope.suggestions = [];
+    };
+
+    angular.element(document).click(function() {
+      angular.element('.userlist').hide();
+      angular.element('.ace_autocomplete').hide();
+    });
+
+
+    function getSuggestions(searchQuery) {
+      $scope.suggestions = [];
+      $http.get(baseUrlSrv.getRestApiBase() + '/security/userlist/' + searchQuery).then(function
+      (response) {
+        var userlist = angular.fromJson(response.data).body;
+
+        for (var k in userlist) {
+          $scope.suggestions.push(userlist[k]);
+        }
+      });
+    }
+
+    function updatePreviousList() {
+      for (var i = 0; i < searchText.length; i++) {
+        previousSelectedList[i] = searchText[i];
+      }
+    }
+
+    var getChangedIndex = function() {
+      if (previousSelectedList.length === 0) {
+        selectedUserIndex = searchText.length - 1;
+      } else {
+        for (var i = 0; i < searchText.length; i++) {
+          if (previousSelectedList[i] !== searchText[i]) {
+            selectedUserIndex = i;
+            previousSelectedList = [];
+            break;
+          }
+        }
+      }
+      updatePreviousList();
+    };
+
+    function convertToArray(setting) {
+      if (!setting.option.users) {
+        return;
+      } else if (typeof setting.option.users === 'string') {
+        searchText = setting.option.users.split(',');
+      }
+
+      for (var i = 0; i < searchText.length; i++) {
+        searchText[i] = searchText[i].trim();
+      }
+    }
+
+    $scope.openPermissions = function() {
+      $scope.showInterpreterAuth = true;
+    };
+
+    $scope.closePermissions = function() {
+        $scope.showInterpreterAuth = false;
+    };
+
+    $scope.togglePermissions = function() {
+      if ($scope.showInterpreterAuth) {
+        $scope.closePermissions();
+      } else {
+        $scope.openPermissions();
+      }
+    };
+
+    // function to find suggestion list on change
+    $scope.search = function(searchQuery, setting) {
+      angular.element('.userlist').show();
+      convertToArray(setting);
+
+      getChangedIndex();
+      $scope.selectIndex = -1;
+      $scope.suggestions = [];
+      selectedUser = searchText[selectedUserIndex];
+
+      if (selectedUser !== '') {
+        getSuggestions(selectedUser);
+      } else {
+        $scope.suggestions = [];
+      }
+    };
+
+
     var getInterpreterSettings = function() {
       $http.get(baseUrlSrv.getRestApiBase() + '/interpreter/setting').success(function(data, status, headers, config) {
         $scope.interpreterSettings = data.body;
@@ -147,6 +310,9 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl',
             }
             if (setting.option.isExistingProcess === undefined) {
               setting.option.isExistingProcess = false;
+            }
+            if (setting.option.setPermission === undefined) {
+              setting.option.setPermission = false;
             }
             if (setting.option.remote === undefined) {
               // remote always true for now
@@ -311,6 +477,7 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl',
         option: {
           remote: true,
           isExistingProcess: false,
+          setPermission: false,
           perNoteSession: false,
           perNoteProcess: false
 
