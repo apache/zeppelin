@@ -1237,6 +1237,20 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
       var mapdiv = angular.element('#p' + $scope.paragraph.id + '_map div')
       .css('height', $scope.paragraph.config.graph.height).get(0);
 
+      // prevent zooming with the scroll wheel
+      var disableZoom = function(e) {
+        var evt = e || window.event;
+        evt.cancelBubble = true;
+        evt.returnValue = false;
+        if (evt.stopPropagation) {
+          evt.stopPropagation();
+        }
+      };
+      var eName = window.WheelEvent ? 'wheel' :  // Modern browsers
+                  window.MouseWheelEvent ? 'mousewheel' :  // WebKit and IE
+                  'DOMMouseScroll';  // Old Firefox
+      mapdiv.addEventListener(eName, disableZoom, true);
+
       esriLoader.require(['esri/views/MapView',
                           'esri/Map',
                           'esri/renderers/SimpleRenderer',
@@ -1247,8 +1261,8 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
           map: new Map({
             basemap: $scope.paragraph.config.graph.map.baseMapType.toLowerCase()
           }),
-          center: [-75.7325985, 45.4041593],  // Apption (lng, lat)
-          zoom: 14,
+          center: [-106.3468, 56.1304],  // Canada (lng, lat)
+          zoom: 2,
           pinRenderer: new SimpleRenderer({
             symbol: new SimpleMarkerSymbol({
               'color': [255, 0, 0, 0.5],
