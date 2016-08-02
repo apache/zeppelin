@@ -1,3 +1,20 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.apache.zeppelin.notebook.repo.torrent;
 
 import com.frostwire.jlibtorrent.AddTorrentParams;
@@ -64,27 +81,30 @@ import static com.frostwire.jlibtorrent.alerts.AlertType.TORRENT_PAUSED;
 import static com.frostwire.jlibtorrent.alerts.AlertType.TORRENT_RESUMED;
 
 
+/**
+ * TorrentEngine Singleton
+ */
 public enum TorrentEngine {
   Instance;
 
   private static final int[] INNER_LISTENER_TYPES = new int[]{
-      TORRENT_ADDED.swig(),
-      PIECE_FINISHED.swig(),
-      PORTMAP.swig(),
-      PORTMAP_ERROR.swig(),
-      DHT_STATS.swig(),
-      LISTEN_SUCCEEDED.swig(),
-      LISTEN_FAILED.swig(),
-      EXTERNAL_IP.swig(),
-      METADATA_RECEIVED.swig(),
-      SAVE_RESUME_DATA.swig(),
-      SAVE_RESUME_DATA_FAILED.swig(),
-      STATE_CHANGED.swig(),
-      TORRENT_PAUSED.swig(),
-      TORRENT_RESUMED.swig(),
-      TORRENT_CHECKED.swig(),
-      TORRENT_FINISHED.swig(),
-      STORAGE_MOVED.swig(),
+          TORRENT_ADDED.swig(),
+          PIECE_FINISHED.swig(),
+          PORTMAP.swig(),
+          PORTMAP_ERROR.swig(),
+          DHT_STATS.swig(),
+          LISTEN_SUCCEEDED.swig(),
+          LISTEN_FAILED.swig(),
+          EXTERNAL_IP.swig(),
+          METADATA_RECEIVED.swig(),
+          SAVE_RESUME_DATA.swig(),
+          SAVE_RESUME_DATA_FAILED.swig(),
+          STATE_CHANGED.swig(),
+          TORRENT_PAUSED.swig(),
+          TORRENT_RESUMED.swig(),
+          TORRENT_CHECKED.swig(),
+          TORRENT_FINISHED.swig(),
+          STORAGE_MOVED.swig(),
   };
   private static final Logger log = LoggerFactory.getLogger(TorrentEngine.class);
   private InnerListener alertlistener;
@@ -489,7 +509,8 @@ public enum TorrentEngine {
     byte[] bencode = entry.bencode();
 
     Sha1Hash infoHash = alert.handle().getInfoHash();
-    File saveFile = new File(BittorrentNotebookRepo.resumeDataDir + "/" + infoHash.toString() + ".dat");
+    File saveFile = new File(BittorrentNotebookRepo.resumeDataDir + "/" + infoHash.toString()
+        + ".dat");
     try {
       FileUtils.writeByteArrayToFile(saveFile, bencode);
       log.info("resume data saved for " + infoHash.toHex());
@@ -541,69 +562,70 @@ public enum TorrentEngine {
       AlertType type = alert.type();
 
       switch (type) {
-        case TORRENT_ADDED:
-          TorrentAlert<?> torrentAlert = (TorrentAlert<?>) alert;
-          log.info("torrent added alerttt  " + torrentAlert.torrentName());
-          //torrentAlert.handle().setAutoManaged(true);
-          boolean autoManaged = torrentAlert.handle().getStatus().isAutoManaged();
-          log.info("torrent auto managed ? " + autoManaged);
-          fireDownloadAdded(torrentAlert);
-          //runNextRestoreDownloadTask();
-          break;
-        case TORRENT_FINISHED:
-          log.info("Torrent finished ");
-          fireDownloadComplete((TorrentAlert<?>) alert);
-          break;
-        case TORRENT_RESUMED:
-          log.info("Torrent resumed");
-        case PIECE_FINISHED:
-          doResumeData((TorrentAlert<?>) alert, true);
-          break;
-        case SAVE_RESUME_DATA:
-          saveResumedata((SaveResumeDataAlert) alert);
-          break;
-        case STATE_CHANGED:
-          StateChangedAlert stateChangedAlert = (StateChangedAlert) alert;
-          log.info("State change: " + stateChangedAlert.getPrevState() + " -> "
-              + stateChangedAlert.getState());
-          fireStateChanged(stateChangedAlert);
-          break;
-        case SAVE_RESUME_DATA_FAILED:
-          SaveResumeDataFailedAlert resumeDataFailed = (SaveResumeDataFailedAlert) alert;
-          log.error("resumeDataFailed = " + resumeDataFailed.getError() +
-              "\n" + resumeDataFailed.message());
-          break;
-        case PORTMAP:
-          firewalled = false;
-          break;
-        case PORTMAP_ERROR:
-          firewalled = true;
-          break;
-        case DHT_STATS:
-          totalDHTNodes = (int) session.getStats().dhtNodes();
-          break;
-        case LISTEN_SUCCEEDED:
-          onListenSucceeded((ListenSucceededAlert) alert);
-          break;
-        case LISTEN_FAILED:
-          onListenFailed((ListenFailedAlert) alert);
-          break;
-        case EXTERNAL_IP:
-          onExternalIpAlert((ExternalIpAlert) alert);
-          break;
-        case METADATA_RECEIVED:
-          saveMagnetData((MetadataReceivedAlert) alert);
-          fireMetadataReceived((MetadataReceivedAlert) alert);
-          break;
-        case TORRENT_PAUSED:
-          log.info("Torrent pause");
-          break;
-        case STORAGE_MOVED:
-          log.info("Storage moved");
-          break;
-        case TORRENT_CHECKED:
-          log.info("Torrent checked");
-          break;
+          case TORRENT_ADDED:
+            TorrentAlert<?> torrentAlert = (TorrentAlert<?>) alert;
+            log.info("torrent added alerttt  " + torrentAlert.torrentName());
+            //torrentAlert.handle().setAutoManaged(true);
+            boolean autoManaged = torrentAlert.handle().getStatus().isAutoManaged();
+            log.info("torrent auto managed ? " + autoManaged);
+            fireDownloadAdded(torrentAlert);
+            //runNextRestoreDownloadTask();
+            break;
+          case TORRENT_FINISHED:
+            log.info("Torrent finished ");
+            fireDownloadComplete((TorrentAlert<?>) alert);
+            break;
+          case TORRENT_RESUMED:
+            log.info("Torrent resumed");
+            break;
+          case PIECE_FINISHED:
+            doResumeData((TorrentAlert<?>) alert, true);
+            break;
+          case SAVE_RESUME_DATA:
+            saveResumedata((SaveResumeDataAlert) alert);
+            break;
+          case STATE_CHANGED:
+            StateChangedAlert stateChangedAlert = (StateChangedAlert) alert;
+            log.info("State change: " + stateChangedAlert.getPrevState() + " -> "
+                  + stateChangedAlert.getState());
+            fireStateChanged(stateChangedAlert);
+            break;
+          case SAVE_RESUME_DATA_FAILED:
+            SaveResumeDataFailedAlert resumeDataFailed = (SaveResumeDataFailedAlert) alert;
+            log.error("resumeDataFailed = " + resumeDataFailed.getError() +
+                  "\n" + resumeDataFailed.message());
+            break;
+          case PORTMAP:
+            firewalled = false;
+            break;
+          case PORTMAP_ERROR:
+            firewalled = true;
+            break;
+          case DHT_STATS:
+            totalDHTNodes = (int) session.getStats().dhtNodes();
+            break;
+          case LISTEN_SUCCEEDED:
+            onListenSucceeded((ListenSucceededAlert) alert);
+            break;
+          case LISTEN_FAILED:
+            onListenFailed((ListenFailedAlert) alert);
+            break;
+          case EXTERNAL_IP:
+            onExternalIpAlert((ExternalIpAlert) alert);
+            break;
+          case METADATA_RECEIVED:
+            saveMagnetData((MetadataReceivedAlert) alert);
+            fireMetadataReceived((MetadataReceivedAlert) alert);
+            break;
+          case TORRENT_PAUSED:
+            log.info("Torrent pause");
+            break;
+          case STORAGE_MOVED:
+            log.info("Storage moved");
+            break;
+          case TORRENT_CHECKED:
+            log.info("Torrent checked");
+            break;
       }
     }
   }

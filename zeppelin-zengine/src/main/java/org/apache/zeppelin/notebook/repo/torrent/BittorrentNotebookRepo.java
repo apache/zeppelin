@@ -1,3 +1,20 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.apache.zeppelin.notebook.repo.torrent;
 
 import com.frostwire.jlibtorrent.TorrentHandle;
@@ -21,6 +38,9 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 
+/**
+ * TO download note from magnet link and share a note
+ */
 public class BittorrentNotebookRepo extends VFSNotebookRepo implements TorrentEngineListener {
   private static final Logger LOG = LoggerFactory.getLogger(BittorrentNotebookRepo.class);
   static File torrentHomeDir;
@@ -48,6 +68,10 @@ public class BittorrentNotebookRepo extends VFSNotebookRepo implements TorrentEn
 
   private static void loadLibrary() throws IOException {
     String path = LIBTORRENT_OS_LIBRARY_PATH();
+    if (path == null) {
+      LOG.error("Unknown Operating system");
+      throw new IOException();
+    }
     InputStream is = BittorrentNotebookRepo.class.getResourceAsStream(path);
     File temp = File.createTempFile("libjlibtorrent", ".so");
     OutputStream os = new FileOutputStream(temp);
@@ -106,22 +130,22 @@ public class BittorrentNotebookRepo extends VFSNotebookRepo implements TorrentEn
       TorrentMessage torrentMessage = TorrentMessage.deserilize(message);
 
       switch (torrentMessage.op) {
-        case ADDED_TO_DOWNLOAD:
-          break;
-        case DOWNLOAD_COMPLETE:
-          break;
-        case LIST_DOWNLOAD:
-          break;
-        case DOWNLOAD:
-          downloadNote(torrentMessage);
-          break;
-        case METADATA_RECEIVED:
-          break;
-        case STATE_CHANGED:
-          break;
-        case SHARE_NOTE:
-          shareNote(torrentMessage);
-          break;
+          case ADDED_TO_DOWNLOAD:
+            break;
+          case DOWNLOAD_COMPLETE:
+            break;
+          case LIST_DOWNLOAD:
+            break;
+          case DOWNLOAD:
+            downloadNote(torrentMessage);
+            break;
+          case METADATA_RECEIVED:
+            break;
+          case STATE_CHANGED:
+            break;
+          case SHARE_NOTE:
+            shareNote(torrentMessage);
+            break;
       }
 
     } catch (Exception ex) {
