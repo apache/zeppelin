@@ -418,11 +418,14 @@ public class NotebookServer extends WebSocketServlet implements
   }
 
   public void saveInterpreterBindings(NotebookSocket conn, Message fromMessage) {
+    String noteId = (String) fromMessage.data.get("noteID");
     try {
       List<String> settingIdList = gson.fromJson(String.valueOf(
           fromMessage.data.get("selectedSettingIds")), new TypeToken<ArrayList<String>>() {
           }.getType());
-      notebook().bindInterpretersToNote((String) fromMessage.data.get("noteID"), settingIdList);
+      notebook().bindInterpretersToNote(noteId, settingIdList);
+      broadcastInterpreterBindings(noteId,
+          InterpreterBindingUtils.getInterpreterBindings(notebook(), noteId));
     } catch (Exception e) {
       LOG.error("Error while saving interpreter bindings", e);
     }
@@ -433,9 +436,7 @@ public class NotebookServer extends WebSocketServlet implements
     String noteID = (String) fromMessage.data.get("noteID");
     List<InterpreterSettingsList> settingList =
         InterpreterBindingUtils.getInterpreterBindings(notebook(), noteID);
-
-    conn.send(serializeMessage(new Message(OP.INTERPRETER_BINDINGS)
-        .put("interpreterBindings", settingList)));
+    broadcastInterpreterBindings(noteID, settingList);
   }
 
   public List<Map<String, String>> generateNotebooksInfo(boolean needsReload,
@@ -475,6 +476,12 @@ public class NotebookServer extends WebSocketServlet implements
 
   public void broadcastNote(Note note) {
     broadcast(note.id(), new Message(OP.NOTE).put("note", note));
+  }
+
+  public void broadcastInterpreterBindings(String noteId,
+                                           List settingList) {
+    broadcast(noteId, new Message(OP.INTERPRETER_BINDINGS)
+        .put("interpreterBindings", settingList));
   }
 
   public void broadcastNoteList(AuthenticationInfo subject) {

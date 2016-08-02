@@ -187,6 +187,7 @@ public class NotebookRestApi {
   public Response bind(@PathParam("noteId") String noteId) {
     List<InterpreterSettingsList> settingList =
         InterpreterBindingUtils.getInterpreterBindings(notebook, noteId);
+    notebookServer.broadcastInterpreterBindings(noteId, settingList);
     return new JsonResponse<>(Status.OK, "", settingList).build();
   }
 

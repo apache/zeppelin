@@ -449,7 +449,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
     }
   };
 
-  var getInterpreterBindings = function(callback) {
+  var getInterpreterBindings = function() {
     websocketMsgSrv.getInterpreterBindings($scope.note.id);
   };
 
@@ -967,7 +967,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
     }
     initializeLookAndFeel();
     //open interpreter binding setting when there're none selected
-    getInterpreterBindings(); //getInterpreterBindings(getInterpreterBindingsCallBack);
+    getInterpreterBindings();
   });
 
   $scope.$on('$destroy', function() {
