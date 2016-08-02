@@ -104,7 +104,7 @@ And vice versa:
 
 * The `knitr` environment is persistent. If you run a chunk from Zeppelin that changes a variable, then run the same chunk again, the variable has already been changed.  Use immutable variables.
 
-* (Note that `%spark.r` and `$r` are two different ways of calling the same interpreter, as are `%spark.knitr` and `%knitr`. By default, Zeppelin puts the R interpreters in the `%spark.` Interpreter Group.
+* (Note that `%spark.r` and `%r` are two different ways of calling the same interpreter, as are `%spark.knitr` and `%knitr`. By default, Zeppelin puts the R interpreters in the `%spark.` Interpreter Group.
 
 * Using the `%r` interpreter, if you return a data.frame, HTML, or an image, it will dominate the result. So if you execute three commands, and one is `hist()`, all you will see is the histogram, not the results of the other commands. This is a Zeppelin limitation.
 
