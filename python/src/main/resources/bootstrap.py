@@ -162,20 +162,13 @@ class PyZeppelinContext(object):
         #)
         body_buf.close(); header_buf.close()
     
-    def show_matplotlib(self, p, width="0", height="0", **kwargs):
+    def show_matplotlib(self, p, width="100%", height="100%", **kwargs):
         """Matplotlib show function
         """
         img = io.StringIO()
-        p.savefig(img, format='svg')
-        img.seek(0)
-        style = ""
-        if (width != "0"):
-            style += 'width:' + width
-        if (height != "0"):
-            if (len(style) != 0):
-                style += ","
-                style += 'height:' + height
-        print("%html <div style='" + style + "'>" + img.read() + "<div>")
+        p.savefig(img, format="svg")
+        html = "%html <div style='width:{width};height:{height}'>{image}<div>"
+        print(html.format(width=width, height=height, image=img.getvalue()))
         img.close()
 
 
