@@ -28,10 +28,7 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl',
     var selectedUser = '';
     var selectedUserIndex = 0;
     var previousSelectedList = [];
-    var previousSelectedListUsers = [];
-    var previousSelectedListInterpreters = [];
     var searchText = [];
-
 
     function updatePreviousList() {
       for (var i = 0; i < searchText.length; i++) {
@@ -40,7 +37,7 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl',
     }
 
     function convertToString(setting) {
-       setting.option.users = searchText.join();
+      setting.option.users = searchText.join();
     }
 
     var checkIfSelected = function() {
@@ -105,7 +102,6 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl',
       angular.element('.ace_autocomplete').hide();
     });
 
-
     function getSuggestions(searchQuery) {
       $scope.suggestions = [];
       $http.get(baseUrlSrv.getRestApiBase() + '/security/userlist/' + searchQuery).then(function
@@ -156,7 +152,7 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl',
     };
 
     $scope.closePermissions = function() {
-        $scope.showInterpreterAuth = false;
+      $scope.showInterpreterAuth = false;
     };
 
     $scope.togglePermissions = function() {
@@ -183,7 +179,6 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl',
         $scope.suggestions = [];
       }
     };
-
 
     var getInterpreterSettings = function() {
       $http.get(baseUrlSrv.getRestApiBase() + '/interpreter/setting').success(function(data, status, headers, config) {
