@@ -828,8 +828,6 @@ public class InterpreterFactory implements InterpreterGroupFactory {
       throws InterpreterException {
     logger.info("Create repl {} from {}", className, dirName);
 
-    updatePropertiesFromRegisteredInterpreter(property, className);
-
     ClassLoader oldcl = Thread.currentThread().getContextClassLoader();
     try {
 
@@ -892,31 +890,12 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     String localRepoPath = conf.getInterpreterLocalRepoPath() + "/" + interpreterSettingId;
     int maxPoolSize = conf.getInt(ConfVars.ZEPPELIN_INTERPRETER_MAX_POOL_SIZE);
 
-    updatePropertiesFromRegisteredInterpreter(property, className);
-
     LazyOpenInterpreter intp = new LazyOpenInterpreter(new RemoteInterpreter(
         property, noteId, className, conf.getInterpreterRemoteRunnerPath(),
         interpreterPath, localRepoPath, connectTimeout,
         maxPoolSize, remoteInterpreterProcessListener));
     return intp;
   }
-
-  private Properties updatePropertiesFromRegisteredInterpreter(Properties properties,
-                                                                  String className) {
-    RegisteredInterpreter registeredInterpreter = Interpreter.findRegisteredInterpreterByClassName(
-        className);
-    if (null != registeredInterpreter) {
-      Map<String, InterpreterProperty> defaultProperties = registeredInterpreter.getProperties();
-      for (String key : defaultProperties.keySet()) {
-        if (!properties.containsKey(key) && null != defaultProperties.get(key).getValue()) {
-          properties.setProperty(key, defaultProperties.get(key).getValue());
-        }
-      }
-    }
-
-    return properties;
-  }
-
 
   private URL[] recursiveBuildLibList(File path) throws MalformedURLException {
     URL[] urls = new URL[0];
