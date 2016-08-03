@@ -301,16 +301,18 @@ public class Paragraph extends Job implements Serializable, Cloneable {
 
     if (this.user != null &&
       !factory.getInterpreterSettings(note.getId()).isEmpty()) {
-
-      InterpreterSetting intpGroup = factory.getInterpreterSettings(note.getId()).get(0);
-      if (!hasPermission(authenticationInfo.getUser(), intpGroup.getOption().getUsers())) {
-        logger.error("{} has no permission for {} ", authenticationInfo.getUser(), repl);
-        return new InterpreterResult(Code.ERROR, authenticationInfo.getUser() +
-          " has no permission for " + getRequiredReplName());
+      for (InterpreterSetting intp: factory.getInterpreterSettings(note.getId())){
+        if (replName.startsWith(intp.getName()) &&
+          intp.getOption().isSetPermission() &&
+          !hasPermission(authenticationInfo.getUser(), intp.getOption().getUsers())) {
+          logger.error("{} has no permission for {} ", authenticationInfo.getUser(), repl);
+          return new InterpreterResult(Code.ERROR, authenticationInfo.getUser() +
+            " has no permission for " + getRequiredReplName());
 /*
         throw new RuntimeException(authenticationInfo.getUser() +
           " has no permission for " + getRequiredReplName());
 */
+        }
       }
     }
 
