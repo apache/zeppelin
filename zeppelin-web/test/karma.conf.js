@@ -64,6 +64,9 @@ module.exports = function(config) {
       'bower_components/pikaday/pikaday.js',
       'bower_components/handsontable/dist/handsontable.js',
       'bower_components/moment-duration-format/lib/moment-duration-format.js',
+      'bower_components/highcharts/highcharts.js',
+      'bower_components/highcharts/highcharts-more.js',
+      'bower_components/highcharts/modules/exporting.js',
       'bower_components/angular-mocks/angular-mocks.js',
       // endbower
       'src/app/app.js',

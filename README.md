@@ -5,8 +5,11 @@
 **Continuous Integration:** [![Build Status](https://secure.travis-ci.org/apache/zeppelin.png?branch=master)](https://travis-ci.org/apache/zeppelin) <br/>
 **Contributing:** [Contribution Guide](https://github.com/apache/zeppelin/blob/master/CONTRIBUTING.md)<br/>
 **Issue Tracker:** [Jira](https://issues.apache.org/jira/browse/ZEPPELIN)<br/>
-**License:** [Apache 2.0](https://github.com/apache/zeppelin/blob/master/LICENSE)
+**License:** [Apache 2.0](https://github.com/apache/zeppelin/blob/master/LICENSE) 
 
+> Zeppelin also bundle Highcharts. Highcharts has it's own [license](https://shop.highsoft.com/highcharts). 
+> 
+> Use Highcharts feature for commercial usage inside Zeppelin should have a valid license
 
 **Zeppelin**, a web-based notebook that enables interactive data analytics. You can make beautiful data-driven, interactive and collaborative documents with SQL, Scala and more.
 
