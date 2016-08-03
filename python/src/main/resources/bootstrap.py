@@ -112,18 +112,17 @@ class PyZeppelinContext(object):
     errorMsg = "You must install py4j Python module " \
                "(pip install py4j) to use Zeppelin dynamic forms features"
     
-    def __init__(self, zc):
-        self.z = zc
+    def __init__(self):
         self.max_result = 1000
     
     def input(self, name, defaultValue=""):
-        print (self.errorMsg)
+        print(self.errorMsg)
     
     def select(self, name, options, defaultValue=""):
-        print (self.errorMsg)
+        print(self.errorMsg)
     
     def checkbox(self, name, options, defaultChecked=[]):
-        print (self.errorMsg)
+        print(self.errorMsg)
     
     def show(self, p, **kwargs):
         if hasattr(p, '__name__') and p.__name__ == "matplotlib.pyplot":
@@ -172,4 +171,4 @@ class PyZeppelinContext(object):
         img.close()
 
 
-z = PyZeppelinContext("")
+z = PyZeppelinContext()
