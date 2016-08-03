@@ -116,8 +116,6 @@ The following components are provided under Apache License.
     (Apache 2.0) Google HTTP Client Library for Java (com.google.http-client:google-http-client-jackson2:1.21.0 - https://github.com/google/google-http-java-client/tree/dev/google-http-client-jackson2)
     (Apache 2.0) angular-esri-map (https://github.com/Esri/angular-esri-map)
 
->>>>>>> Add angular-esri-map to license document
-
 ========================================================================
 MIT licenses
 ========================================================================
