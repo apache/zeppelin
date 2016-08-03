@@ -42,6 +42,7 @@ import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.notebook.repo.revision.Revision;
+import org.apache.zeppelin.notebook.repo.revision.RevisionId;
 import org.apache.zeppelin.notebook.NotebookImportDeserializer;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.user.AuthenticationInfo;
@@ -275,7 +276,8 @@ public class VFSNotebookRepo implements NotebookRepo {
   }
 
   @Override
-  public Note get(String noteId, Revision rev, AuthenticationInfo subject) throws IOException {
+  public Note get(String noteId, RevisionId<?> revId, AuthenticationInfo subject)
+      throws IOException {
     // Auto-generated method stub
     return null;
   }

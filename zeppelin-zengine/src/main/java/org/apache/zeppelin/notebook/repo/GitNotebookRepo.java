@@ -111,14 +111,14 @@ public class GitNotebookRepo extends VFSNotebookRepo {
    * 4. apply stash on top and remove it
    */
   @Override
-  public synchronized Note get(String noteId, Revision rev, AuthenticationInfo subject)
+  public synchronized Note get(String noteId, RevisionId<?> revId, AuthenticationInfo subject)
       throws IOException {
     Note note = null;
     RevCommit stash = null;
-    Object revisionId = rev.getRevisionId().getId();
+    Object revisionId = revId.getId();
     if (!(revisionId instanceof String)) {
       LOG.warn("Failed to get revision {} of note {}: id of "
-          + "revision isn't string type", rev.getRevisionId().getId(), noteId);
+          + "revision isn't string type", revisionId, noteId);
       return note;
     }
     try {
@@ -146,7 +146,7 @@ public class GitNotebookRepo extends VFSNotebookRepo {
             stashes.size());
       }
     } catch (GitAPIException e) {
-      LOG.error("Failed to return note from revision \"{}\"", rev.getMessage(), e);
+      LOG.error("Failed to return note from revision \"{}\"", revisionId, e);
     }
     return note;
   }

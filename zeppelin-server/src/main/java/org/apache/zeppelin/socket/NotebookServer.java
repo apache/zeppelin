@@ -45,8 +45,8 @@ import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
 import org.apache.zeppelin.notebook.*;
-import org.apache.zeppelin.notebook.repo.NotebookRepo;
-import org.apache.zeppelin.notebook.repo.NotebookRepo.Revision;
+import org.apache.zeppelin.notebook.repo.revision.Revision;
+import org.apache.zeppelin.notebook.repo.revision.RevisionId;
 import org.apache.zeppelin.notebook.socket.Message;
 import org.apache.zeppelin.notebook.socket.Message.OP;
 import org.apache.zeppelin.scheduler.Job;
@@ -1136,7 +1136,7 @@ public class NotebookServer extends WebSocketServlet implements
     AuthenticationInfo subject = new AuthenticationInfo(fromMessage.principal);
     Revision revision = notebook.checkpointNote(noteId, commitMessage, subject);
     if (revision != null) {
-      List<NotebookRepo.Revision> revisions = notebook.listRevisionHistory(noteId, subject);
+      List<Revision> revisions = notebook.listRevisionHistory(noteId, subject);
       conn.send(serializeMessage(new Message(OP.LIST_REVISION_HISTORY)
         .put("revisionList", revisions)));
     }
@@ -1146,7 +1146,7 @@ public class NotebookServer extends WebSocketServlet implements
       Message fromMessage) throws IOException {
     String noteId = (String) fromMessage.get("noteId");
     AuthenticationInfo subject = new AuthenticationInfo(fromMessage.principal);
-    List<NotebookRepo.Revision> revisions = notebook.listRevisionHistory(noteId, subject);
+    List<Revision> revisions = notebook.listRevisionHistory(noteId, subject);
 
     conn.send(serializeMessage(new Message(OP.LIST_REVISION_HISTORY)
       .put("revisionList", revisions)));
@@ -1155,7 +1155,7 @@ public class NotebookServer extends WebSocketServlet implements
   private void getNoteRevision(NotebookSocket conn, Notebook notebook, Message fromMessage)
       throws IOException {
     String noteId = (String) fromMessage.get("noteId");
-    Revision revision = (Revision) fromMessage.get("revision");
+    RevisionId<?> revision = (RevisionId<?>) fromMessage.get("revisionId");
     AuthenticationInfo subject = new AuthenticationInfo(fromMessage.principal);
     Note revisionNote = notebook.getNoteRevision(noteId, revision, subject);
     conn.send(serializeMessage(new Message(OP.NOTE_REVISION)

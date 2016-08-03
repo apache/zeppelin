@@ -28,6 +28,7 @@ import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.apache.zeppelin.notebook.repo.revision.Revision;
+import org.apache.zeppelin.notebook.repo.revision.RevisionId;
 import org.apache.zeppelin.notebook.repo.zeppelinhub.rest.ZeppelinhubRestApiHandler;
 import org.apache.zeppelin.notebook.repo.zeppelinhub.websocket.Client;
 import org.apache.zeppelin.user.AuthenticationInfo;
@@ -197,7 +198,8 @@ public class ZeppelinHubRepo implements NotebookRepo {
   }
 
   @Override
-  public Note get(String noteId, Revision rev, AuthenticationInfo subject) throws IOException {
+  public Note get(String noteId, RevisionId<?> revId, AuthenticationInfo subject)
+      throws IOException {
     // Auto-generated method stub
     return null;
   }
