@@ -238,10 +238,7 @@ public class SparkInterpreter extends Interpreter {
    */
   private SQLContext getSQLContext_2() {
     if (sqlc == null) {
-      sqlc = (SQLContext) Utils.invokeMethod(sparkSession, "wrapped");
-      if (sqlc == null) {
-        sqlc = (SQLContext) Utils.invokeMethod(sparkSession, "sqlContext");
-      }
+      sqlc = (SQLContext) Utils.invokeMethod(sparkSession, "sqlContext");
     }
     return sqlc;
   }
