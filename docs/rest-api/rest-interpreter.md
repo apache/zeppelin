@@ -92,7 +92,7 @@ The role of registered interpreters, settings and interpreters group are describ
       "properties": {
         "zeppelin.spark.maxResult": {
           "defaultValue": "1000",
-          "description": "Max number of SparkSQL result to display."
+          "description": "Max number of Spark SQL result to display."
         }
       },
       "path": "/zeppelin/interpreter/spark"

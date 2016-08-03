@@ -28,7 +28,7 @@ Custom language backend can select which type of form creation it wants to use.
 
 ## Using form Templates
 
-This mode creates form using simple template language. It's simple and easy to use. For example Markdown, Shell, SparkSql language backend uses it.
+This mode creates form using simple template language. It's simple and easy to use. For example Markdown, Shell, Spark SQL language backend uses it.
 
 ### Text input form
 

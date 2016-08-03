@@ -62,7 +62,7 @@ For the further information about Apache Spark in Apache Zeppelin, please see [S
 <br />
 ## Data visualization
 
-Some basic charts are already included in Apache Zeppelin. Visualizations are not limited to SparkSQL query, any output from any language backend can be recognized and visualized.
+Some basic charts are already included in Apache Zeppelin. Visualizations are not limited to Spark SQL query, any output from any language backend can be recognized and visualized.
 
 <div class="row">
   <div class="col-md-6">
