@@ -64,6 +64,7 @@
     </spark.bin.download.url>
     <spark.dist.cache>${project.build.directory}/../../.spark-dist</spark.dist.cache>
     <py4j.version>0.8.2.1</py4j.version>
+    <zeppelin.highcharts.version>0.4</zeppelin.highcharts.version>
   </properties>
 
   <dependencyManagement>
@@ -341,7 +342,11 @@
         </exclusion>
       </exclusions>
     </dependency>
-
+    <dependency>
+      <groupId>com.knockdata</groupId>
+      <artifactId>zeppelin-highcharts</artifactId>
+      <version>${zeppelin.highcharts.version}</version>
+    </dependency>
   </dependencies>
 
   <profiles>
