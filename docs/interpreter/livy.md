@@ -103,19 +103,14 @@ Example: `spark.master` to `livy.spark.master`
     <td>Upper bound for the number of executors.</td>
   </tr>
     <tr>
-      <td>livy.spark.executor.extraClassPath</td>
+      <td>livy.spark.jars.packages</td>
       <td></td>
-      <td>Adding extra libraries to the executors</td>
+      <td>Adding extra libraries to livy interpreter</td>
     </tr>
-  <tr>
-      <td>livy.spark.driver.extraClassPath</td>
-      <td></td>
-      <td>Adding extra libraries to the driver</td>
-  </tr>
 </table>
 
 ## Adding External libraries
-You should put the libraries manually on the livy server and then set the paths of the libraries to those properties `livy.spark.executor.extraClassPath` and `livy.spark.driver.extraClassPath`
+You can load dynamic library to livy interpreter by set `livy.spark.jars.packages` property to comma-separated list of maven coordinates of jars to include on the driver and executor classpaths. The format for the coordinates should be groupId:artifactId:version. 
 
 Example
 
@@ -126,15 +121,10 @@ Example
     <th>Description</th>
   </tr>
   <tr>
-      <td>livy.spark.executor.extraClassPath</td>
-      <td>path/to/jar1.jar:path/to/jar2.jar</td>
-      <td>Adding extra libraries to the executors</td>
+      <td>livy.spark.jars.packages</td>
+      <td>io.spray:spray-json_2.10:1.3.1</td>
+      <td>Adding extra libraries to livy interpreter</td>
     </tr>
-  <tr>
-      <td>livy.spark.driver.extraClassPath</td>
-      <td>path/to/jar1.jar:path/to/jar2.jar</td>
-      <td>Adding extra libraries to the driver</td>
-  <tr>
   </table>
   
 ## How to use
