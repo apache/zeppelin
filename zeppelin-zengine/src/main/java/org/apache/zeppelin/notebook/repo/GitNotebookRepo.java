@@ -24,6 +24,8 @@ import java.util.List;
 
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.Note;
+import org.apache.zeppelin.notebook.repo.revision.Revision;
+import org.apache.zeppelin.notebook.repo.revision.RevisionId;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -90,7 +92,8 @@ public class GitNotebookRepo extends VFSNotebookRepo {
         DirCache added = git.add().addFilepattern(pattern).call();
         LOG.debug("{} changes are about to be commited", added.getEntryCount());
         RevCommit commit = git.commit().setMessage(commitMessage).call();
-        revision = new Revision(commit.getName(), commit.getShortMessage(), commit.getCommitTime());
+        RevisionId<String> revisionId = new RevisionId<String>(commit.getName());
+        revision = new Revision(revisionId, commit.getShortMessage(), commit.getCommitTime());
       } else {
         LOG.debug("No changes found {}", pattern);
       }
@@ -112,6 +115,12 @@ public class GitNotebookRepo extends VFSNotebookRepo {
       throws IOException {
     Note note = null;
     RevCommit stash = null;
+    Object revisionId = rev.getRevisionId().getId();
+    if (!(revisionId instanceof String)) {
+      LOG.warn("Failed to get revision {} of note {}: id of "
+          + "revision isn't string type", rev.getRevisionId().getId(), noteId);
+      return note;
+    }
     try {
       List<DiffEntry> gitDiff = git.diff().setPathFilter(PathFilter.create(noteId)).call();
       boolean modified = !gitDiff.isEmpty();
@@ -123,7 +132,7 @@ public class GitNotebookRepo extends VFSNotebookRepo {
       }
       ObjectId head = git.getRepository().resolve(Constants.HEAD);
       // checkout to target revision
-      git.checkout().setStartPoint(rev.id).addPath(noteId).call();
+      git.checkout().setStartPoint((String) revisionId).addPath(noteId).call();
       // get the note
       note = super.get(noteId, subject);
       // checkout back to head
@@ -137,7 +146,7 @@ public class GitNotebookRepo extends VFSNotebookRepo {
             stashes.size());
       }
     } catch (GitAPIException e) {
-      LOG.error("Failed to return note from revision \"{}\"", rev.message, e);
+      LOG.error("Failed to return note from revision \"{}\"", rev.getMessage(), e);
     }
     return note;
   }
@@ -149,7 +158,8 @@ public class GitNotebookRepo extends VFSNotebookRepo {
     try {
       Iterable<RevCommit> logs = git.log().addPath(noteId).call();
       for (RevCommit log: logs) {
-        history.add(new Revision(log.getName(), log.getShortMessage(), log.getCommitTime()));
+        RevisionId<String> revisionId = new RevisionId<String>(log.getName());
+        history.add(new Revision(revisionId, log.getShortMessage(), log.getCommitTime()));
         LOG.debug(" - ({},{},{})", log.getName(), log.getCommitTime(), log.getFullMessage());
       }
     } catch (NoHeadException e) {
