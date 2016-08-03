@@ -1,7 +1,7 @@
 ---
 layout: page
 title: "Apache Zeppelin Configuration REST API"
-description: "Apache Zeppelin provides several REST APIs for interaction and remote activation of zeppelin functionality. This page contains Apache Zeppelin Configuration REST API information."
+description: "This page contains Apache Zeppelin Configuration REST API information."
 group: rest-api
 ---
 <!--

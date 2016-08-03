@@ -1,7 +1,7 @@
 ---
 layout: page
-title: "Notebook Storage Options for Apache Zeppelin"
-description: Apache Zeppelin has a pluggable notebook storage mechanism controlled by zeppelin.notebook.storage configuration option with multiple implementations. Currently 4 options(Git, S3, Azure and ZeppelinHub) are available in Apache Zeppelin."
+title: "Notebook Storage for Apache Zeppelin"
+description: Apache Zeppelin has a pluggable notebook storage mechanism controlled by zeppelin.notebook.storage configuration option with multiple implementations."
 group: storage
 ---
 <!--

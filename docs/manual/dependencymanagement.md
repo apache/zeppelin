@@ -1,7 +1,7 @@
 ---
 layout: page
-title: "Dependency Management for Interpreter"
-description: "You can include external libraries to interpreter by setting dependencies in interpreter menu."
+title: "Dependency Management for Apache Interpreter"
+description: "Include external libraries to Apache Spark Interpreter by setting dependencies in interpreter menu."
 group: manual
 ---
 <!--

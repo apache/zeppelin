@@ -1,7 +1,7 @@
 ---
 layout: page
 title: "BigQuery Interpreter for Apache Zeppelin"
-description: "BigQuery is a highly scalable no-ops data warehouse in the Google Cloud Platform. Querying massive datasets can be time consuming and expensive without the right hardware and infrastructure. Google BigQuery solves this problem by enabling super-fast SQL queries against append-only tables using the processing power of Google's infrastructure. Simply move your data into BigQuery and let us handle the hard work. You can control access to both the project and your data based on your business needs, such as giving others the ability to view or query your data."
+description: "BigQuery is a highly scalable no-ops data warehouse in the Google Cloud Platform."
 group: interpreter
 ---
 <!--

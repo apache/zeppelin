@@ -1,7 +1,7 @@
 ---
 layout: page
 title: "Notebook Authorization in Apache Zeppelin"
-description: "This page will guide you how you can set the permission for Zeppelin notebooks. We assume that there is an Shiro authentication component that associates a user string and a set of group strings with every NotebookSocket."
+description: "This page will guide you how you can set the permission for Zeppelin notebooks. This document assumes that Apache Shiro authentication was set up."
 group: security
 ---
 <!--

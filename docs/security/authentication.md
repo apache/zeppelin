@@ -1,7 +1,7 @@
 ---
 layout: page
 title: "Authentication for NGINX"
-description: "Authentication is company-specific. One possible option is HTTP Basic Authentication using NGINX."
+description: "There are multiple way to enable authentication in Apache Zeppelin. this page describes HTTP basic auth using NGINX."
 group: security
 ---
 <!--
@@ -23,7 +23,7 @@ limitations under the License.
 
 <div id="toc"></div>
 
-Authentication is company-specific.
+There are multiple way to enable authentication in Apache Zeppelin. this page describes HTTP basic auth using NGINX.
 One option is to use [Basic Access Authentication](https://en.wikipedia.org/wiki/Basic_access_authentication).
 
 ## HTTP Basic Authentication using NGINX

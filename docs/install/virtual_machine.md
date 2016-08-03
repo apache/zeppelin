@@ -1,7 +1,7 @@
 ---
 layout: page
 title: "Apache Zeppelin on Vagrant Virtual Machine"
-description: "Apache Zeppelin distribution provides a script directory for vagrant virtual machine. This script creates a virtual machine that launches a repeatable, known set of core dependencies required for developing Zeppelin."
+description: "Apache Zeppelin provides a script for running a virtual machine for development through Vagrant. The script will create a virtual machine with core dependencies pre-installed, required for developing Apache Zeppelin."
 group: install
 ---
 <!--

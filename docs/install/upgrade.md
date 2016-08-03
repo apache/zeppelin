@@ -1,7 +1,7 @@
 ---
 layout: page
 title: "Manual Zeppelin version upgrade procedure"
-description: "Basically, newer version of Zeppelin works with previous version notebook directory and configurations. This document will guide you how to manually upgrade your Zeppelin version."
+description: "This document will guide you though a procedure of manual upgrade your Apache Zeppelin instance to a newer version. Apache Zeppelin keeps backward compatibility for the notebook file format."
 group: install
 ---
 <!--

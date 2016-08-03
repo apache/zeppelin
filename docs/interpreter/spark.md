@@ -1,6 +1,6 @@
 ---
 layout: page
-title: "Spark Interpreter for Apache Zeppelin"
+title: "Apache Spark Interpreter for Apache Zeppelin"
 description: "Apache Spark is a fast and general-purpose cluster computing system. It provides high-level APIs in Java, Scala, Python and R, and an optimized engine that supports general execution graphs."
 group: interpreter
 ---
