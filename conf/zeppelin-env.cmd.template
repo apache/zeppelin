@@ -62,7 +62,7 @@ REM
 REM set ZEPPELIN_SPARK_USEHIVECONTEXT  REM Use HiveContext instead of SQLContext if set true. true by default.
 REM set ZEPPELIN_SPARK_CONCURRENTSQL   REM Execute multiple SQL concurrently if set true. false by default.
 REM set ZEPPELIN_SPARK_IMPORTIMPLICIT  REM Import implicits, UDF collection, and sql if set true. true by default.
-REM set ZEPPELIN_SPARK_MAXRESULT       REM Max number of SparkSQL result to display. 1000 by default.
+REM set ZEPPELIN_SPARK_MAXRESULT       REM Max number of Spark SQL result to display. 1000 by default.
 
 REM ZeppelinHub connection configuration
 REM
