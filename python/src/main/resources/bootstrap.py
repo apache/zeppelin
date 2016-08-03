@@ -33,76 +33,78 @@ def intHandler(signum, frame):  # Set the signal handler
 
 signal.signal(signal.SIGINT, intHandler)
 
-
 def help():
-    print ('%html')
-    print ('<h2>Python Interpreter help</h2>')
-    print ('<h3>Python 2 & 3 compatibility</h3>')
-    print ('<p>The interpreter is compatible with Python 2 & 3.<br/>')
-    print ('To change Python version, ')
-    print ('change in the interpreter configuration the python to the ')
-    print ('desired version (example : python=/usr/bin/python3)</p>')
-    print ('<h3>Python modules</h3>')
-    print ('<p>The interpreter can use all modules already installed ')
-    print ('(with pip, easy_install, etc)</p>')
-    print ('<h3>Forms</h3>')
-    print ('You must install py4j in order to use '
-           'the form feature (pip install py4j)')
-    print ('<h4>Input form</h4>')
-    print ('<pre>print (z.input("f1","defaultValue"))</pre>')
-    print ('<h4>Selection form</h4>')
-    print ('<pre>print(z.select("f2", [("o1","1"), ("o2","2")],2))</pre>')
-    print ('<h4>Checkbox form</h4>')
-    print ('<pre> print("".join(z.checkbox("f3", [("o1","1"), '
-           '("o2","2")],["1"])))</pre>')
-    print ('<h3>Matplotlib graph</h3>')
-    print ('<div>The interpreter can display matplotlib graph with ')
-    print ('the function z.show()</div>')
-    print ('<div> You need to already have matplotlib module installed ')
-    print ('to use this functionality !</div><br/>')
-    print ('''<pre>import matplotlib.pyplot as plt
-plt.figure()
-(.. ..)
-z.show(plt)
-plt.close()
-</pre>''')
-    print ('<div><br/> z.show function can take optional parameters ')
-    print ('to adapt graph width and height</div>')
-    print ("<div><b>example </b>:")
-    print ('''<pre>z.show(plt,width='50px')
-z.show(plt,height='150px') </pre></div>''')
-    print ('<h3>Pandas DataFrame</h3>')
-    print ('<div> You need to have Pandas module installed ')
-    print ('to use this functionality (pip install pandas) !</div><br/>')
-    print ("""
-<div>The interpreter can visualize Pandas DataFrame
-with the function z.show()
-<pre>
-import pandas as pd
-df = pd.read_csv("bank.csv", sep=";")
-z.show(df)
-</pre></div>
-""")
-    print ('<h3>SQL over Pandas DataFrame</h3>')
-    print ('<div> You need to have Pandas&Pandasql modules installed ')
-    print ('to use this functionality (pip install pandas pandasql) !</div><br/>')
-    print ("""
-<div>Python interpreter group includes %sql interpreter that can query
-Pandas DataFrames using SQL and visualize results using Zeppelin Table Display System
+    print("""%html
+ <h2>Python Interpreter help</h2>
 
-<pre>
-%python
-import pandas as pd
-df = pd.read_csv("bank.csv", sep=";")
-</pre>
-<br />
+ <h3>Python 2 & 3 compatibility</h3>
+ <p>The interpreter is compatible with Python 2 & 3.<br/>
+ To change Python version,
+ change in the interpreter configuration the python to the
+ desired version (example : python=/usr/bin/python3)</p>
 
-<pre>
-%python.sql
-%sql
-SELECT * from df LIMIT 5
-</pre></div>
-""")
+ <h3>Python modules</h3>
+ <p>The interpreter can use all modules already installed
+ (with pip, easy_install, etc)</p>
+
+ <h3>Forms</h3>
+ You must install py4j in order to use
+ the form feature (pip install py4j)
+ <h4>Input form</h4>
+ <pre>print (z.input("f1","defaultValue"))</pre>
+ <h4>Selection form</h4>
+ <pre>print(z.select("f2", [("o1","1"), ("o2","2")],2))</pre>
+ <h4>Checkbox form</h4>
+ <pre> print("".join(z.checkbox("f3", [("o1","1"), ("o2","2")],["1"])))</pre>')
+
+ <h3>Matplotlib graph</h3>
+ <div>The interpreter can display matplotlib graph with
+ the function z.show()</div>
+ <div> You need to already have matplotlib module installed
+ to use this functionality !</div><br/>
+ <pre>import matplotlib.pyplot as plt
+ plt.figure()
+ (.. ..)
+ z.show(plt)
+ plt.close()
+ </pre>
+ <div><br/> z.show function can take optional parameters
+ to adapt graph width and height</div>
+ <div><b>example </b>:
+ <pre>z.show(plt,width='50px
+ z.show(plt,height='150px') </pre></div>
+
+ <h3>Pandas DataFrame</h3>
+ <div> You need to have Pandas module installed
+ to use this functionality (pip install pandas) !</div><br/>
+ <div>The interpreter can visualize Pandas DataFrame
+ with the function z.show()
+ <pre>
+ import pandas as pd
+ df = pd.read_csv("bank.csv", sep=";")
+ z.show(df)
+ </pre></div>
+
+ <h3>SQL over Pandas DataFrame</h3>
+ <div> You need to have Pandas&Pandasql modules installed
+ to use this functionality (pip install pandas pandasql) !</div><br/>
+
+ <div>Python interpreter group includes %sql interpreter that can query
+ Pandas DataFrames using SQL and visualize results using Zeppelin Table Display System
+
+ <pre>
+ %python
+ import pandas as pd
+ df = pd.read_csv("bank.csv", sep=";")
+ </pre>
+ <br />
+ <pre>
+ %python.sql
+ %sql
+ SELECT * from df LIMIT 5
+ </pre>
+ </div>
+    """)
 
 
 class PyZeppelinContext(object):
