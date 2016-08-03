@@ -1,7 +1,7 @@
 ---
 layout: page
-title: Apache Zeppelin Overview
-description: Less Development, More analysis! Apache Zeppelin notebook is the place for all your needs.
+title:
+description:
 group:
 ---
 <!--
