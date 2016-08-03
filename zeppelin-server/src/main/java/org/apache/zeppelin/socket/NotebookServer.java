@@ -16,19 +16,10 @@
  */
 package org.apache.zeppelin.socket;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.net.UnknownHostException;
-import java.util.*;
-import java.util.concurrent.ConcurrentLinkedQueue;
-
-import javax.servlet.http.HttpServletRequest;
-
 import com.google.common.base.Strings;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
-
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.display.AngularObject;
@@ -37,13 +28,12 @@ import org.apache.zeppelin.display.AngularObjectRegistryListener;
 import org.apache.zeppelin.helium.ApplicationEventListener;
 import org.apache.zeppelin.helium.HeliumPackage;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
-import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
-import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
-import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.interpreter.InterpreterOutput;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
+import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
+import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.notebook.*;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.apache.zeppelin.notebook.repo.NotebookRepo.Revision;
@@ -53,12 +43,22 @@ import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.server.ZeppelinServer;
 import org.apache.zeppelin.ticket.TicketContainer;
+import org.apache.zeppelin.types.InterpreterSettingsList;
+import org.apache.zeppelin.user.AuthenticationInfo;
+import org.apache.zeppelin.utils.InterpreterBindingUtils;
 import org.apache.zeppelin.utils.SecurityUtils;
 import org.eclipse.jetty.websocket.servlet.WebSocketServlet;
 import org.eclipse.jetty.websocket.servlet.WebSocketServletFactory;
 import org.quartz.SchedulerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.UnknownHostException;
+import java.util.*;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * Zeppelin websocket service.
@@ -233,6 +233,12 @@ public class NotebookServer extends WebSocketServlet implements
             break;
           case LIST_UPDATE_NOTEBOOK_JOBS:
             unicastUpdateNotebookJobInfo(conn, messagereceived);
+            break;
+          case GET_INTERPRETER_BINDINGS:
+            getInterpreterBindings(conn, messagereceived);
+            break;
+          case SAVE_INTERPRETER_BINDINGS:
+            saveInterpreterBindings(conn, messagereceived);
             break;
           default:
             break;
@@ -411,6 +417,29 @@ public class NotebookServer extends WebSocketServlet implements
             .put("notebookRunningJobs", response)));
   }
 
+  public void saveInterpreterBindings(NotebookSocket conn, Message fromMessage) {
+    String noteId = (String) fromMessage.data.get("noteID");
+    try {
+      List<String> settingIdList = gson.fromJson(String.valueOf(
+          fromMessage.data.get("selectedSettingIds")), new TypeToken<ArrayList<String>>() {
+          }.getType());
+      notebook().bindInterpretersToNote(noteId, settingIdList);
+      broadcastInterpreterBindings(noteId,
+          InterpreterBindingUtils.getInterpreterBindings(notebook(), noteId));
+    } catch (Exception e) {
+      LOG.error("Error while saving interpreter bindings", e);
+    }
+  }
+
+  public void getInterpreterBindings(NotebookSocket conn, Message fromMessage)
+      throws IOException {
+    String noteID = (String) fromMessage.data.get("noteID");
+    List<InterpreterSettingsList> settingList =
+        InterpreterBindingUtils.getInterpreterBindings(notebook(), noteID);
+    conn.send(serializeMessage(new Message(OP.INTERPRETER_BINDINGS)
+        .put("interpreterBindings", settingList)));
+  }
+
   public List<Map<String, String>> generateNotebooksInfo(boolean needsReload,
       AuthenticationInfo subject) {
 
@@ -448,6 +477,12 @@ public class NotebookServer extends WebSocketServlet implements
 
   public void broadcastNote(Note note) {
     broadcast(note.id(), new Message(OP.NOTE).put("note", note));
+  }
+
+  public void broadcastInterpreterBindings(String noteId,
+                                           List settingList) {
+    broadcast(noteId, new Message(OP.INTERPRETER_BINDINGS)
+        .put("interpreterBindings", settingList));
   }
 
   public void broadcastNoteList(AuthenticationInfo subject) {
