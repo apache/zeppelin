@@ -1,0 +1,353 @@
+<!--
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<div class="editorConfigurationHead">
+  <div class="header">
+    <div class="row">
+      <div class="col-md-12">
+        <h3 class="new_h3">
+          Editor Configurations
+        </h3>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-12">
+        You can change to Code Editor setting
+      </div>
+    </div>
+    <hr style="margin-top: 5px; margin-bottom: 3px;"/>
+    <div class="row" style="margin-bottom: 0px;">
+      <div class="col-md-12 text-right">
+        <span class="labelBtn btn-group" style="margin-left: 0px;">
+          <button type="button" class="btn btn-default dropdown-toggle"
+                  data-toggle="dropdown"
+                  style="text-align: right !important;">
+            <span class="text-right">
+              {{restoreEditorConfig.getModeName()}} Code Editor <span class="caret"></span>
+            </span>
+          </button>
+          <ul class="dropdown-menu pull-left" role="menu">
+            <li ng-repeat="codeEditorConfig in codeEditorConfigurations track by $index">
+              <a style="cursor:pointer" ng-click="userSelectConfigTarget($index)">
+                <span class="label label-primary">{{codeEditorConfig.getModeName()}}</span>
+                <span class="label label-success"><span style="color: black">{{codeEditorConfig.getLanguage()}}</span></span>
+              </a>
+            </li>
+          </ul>
+          <span style="margin-left: 5px;">
+            <div class="btn-group">
+              <button
+                class="btn btn-default"
+                ng-click="showCreateConfigurationDialog()"
+              >
+                Create
+              </button>
+              <button
+                ng-if="codeEditorConfigurations.length > 1"
+                class="btn btn-danger"
+                ng-click="showRemoveConfigurationDialog()"
+
+              >
+                Delete
+              </button>
+              <button
+                ng-if="codeEditorConfigurations.length <= 1"
+                class="btn btn-danger disabled"
+              >
+                Delete
+              </button>
+              <button
+                ng-if="isChangedConfigurationValue === true"
+                class="btn btn-primary"
+                ng-click="saveConfiguration()"
+              >
+                Save
+              </button>
+              <button
+                ng-if="isChangedConfigurationValue === false"
+                class="btn btn-primary disabled"
+              >
+                Save
+              </button>
+            </div>
+          </span>
+        </span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="box width-full">
+  <div class="row">
+    <div class="col-md-12">
+      <div class="row">
+        <div class="col-md-12">
+          <div class="panel panel-default">
+            <div class="panel-heading">
+              <h3 class="panel-title">Code Editor Settings</h3>
+            </div>
+
+            <!-- settings table -->
+            <table class="table">
+              <tbody>
+              <tr>
+                <td class="editorTableNameColumn col-md-3">
+                  <span>Editor Config Name</span>
+                </td>
+                <td class="col-md-9">
+                  <input
+                    type="text"
+                    class="form-control"
+                    ng-model="modifyTargetEditorSetting.modeName"
+                    placeholder=""
+                    ng-change="isChangedConfiguration(true)"
+                  />
+                </td>
+              </tr>
+              <tr>
+                <td class="editorTableNameColumn col-md-3">
+                  <span>Active Interpreter Tag Regex</span>
+                </td>
+                <td class="col-md-9">
+                  <input
+                    type="text"
+                    class="form-control"
+                    ng-model="modifyTargetEditorSetting.modeRegex"
+                    placeholder="%spark"
+                    ng-change="isChangedConfiguration(true)"
+                  />
+                </td>
+              </tr>
+              <tr>
+                <td class="editorTableNameColumn col-md-3">
+                  <span>Active Language Syntax</span>
+                </td>
+                <td class="col-md-9">
+                  <span class="labelBtn btn-group" style="margin: 0px; padding: 0px;">
+                    <button type="button" class="btn btn-default dropdown-toggle"
+                            data-toggle="dropdown"
+                            style="text-align: right !important; width: 100% !important;">
+                      <span class="text-right">
+                        {{modifyTargetEditorSetting.language}} <span class="caret"></span>
+                      </span>
+                    </button>
+                    <ul class="dropdown-menu pull-left" role="menu" style="margin-top: 0px;">
+                      <li ng-repeat="languageConfig in editorLanguageList track by $index">
+                        <a style="cursor:pointer" ng-click="changeLanguage(languageConfig.languageType)">
+                          <span>{{languageConfig.languageType}}</span>
+                        </a>
+                      </li>
+                    </ul>
+                  </span>
+                </td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row" ng-controller="ParagraphCtrl">
+    <div class="col-md-12">
+      <div class="panel panel-primary">
+        <div class="panel-heading">
+          <h3 class="panel-title">
+            <span class="label label-primary">Preview Editor</span>
+            &nbsp;
+            <span>
+              <span class="label label-info">{{userEditorConfig.getModeName()}}</span>
+              <span class="label label-success">{{userEditorConfig.getLanguage()}}</span>
+              <span class="label label-default">{{userEditorConfig.getModeRegex()}}</span>
+            </span>
+          </h3>
+        </div>
+        <div class="panel-body">
+          <!-- ui ace editor : preview -->
+          <div id="{{dumyParagraphInformation.paragraphs[0].id}}_paragraphColumn_main"
+               ng-init="init(dumyParagraphInformation.paragraphs[0], dumyParagraphInformation)"
+               class="paragraph-col">
+            <div id="{{paragraph.id}}_paragraphColumn"
+                 ng-class="{'paragraph-space box paragraph-margin': !asIframe, 'focused': paragraphFocused,
+                        'lastEmptyParagraph': !paragraph.text && !paragraph.result}">
+              <div id="{{paragraph.id}}_editor"
+                   style="opacity: 1; min-height: 200px;"
+                   class="editor"
+                   ui-ace="{
+                         onLoad : aceLoaded,
+                         onChange: aceChanged,
+                         require : ['ace/ext/language_tools']
+                       }"
+                   ng-model="dumyParagraphInformation.paragraphs.text"
+                   ng-class="{'disable': paragraph.status == 'RUNNING' || paragraph.status == 'PENDING',
+                 'paragraph-text--dirty' : dirtyText !== originalText && dirtyText !== undefined}">
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- code style settings -->
+  <div class="row">
+    <div class="col-md-12">
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h3 class="panel-title">Code Style Settings</h3>
+        </div>
+        <!-- settings table -->
+        <table class="table">
+          <tbody>
+          <tr>
+            <td class="editorTableNameColumn col-md-3">
+              <span>Indent Tab Size</span>
+            </td>
+            <td class="col-md-3">
+              <input type="number"
+                     class="form-control"
+                     ng-model="modifyTargetEditorSetting.setting.tabSize"
+                     ng-change="changeTabSize(modifyTargetEditorSetting.setting.tabSize)"
+                     placeholder="only number"
+                     min="1" max="8"
+              />
+            </td>
+            <td class="editorTableNameColumn col-md-3">
+              <span>Font Size</span>
+            </td>
+            <td class="col-md-3">
+              <input type="number"
+                     class="form-control"
+                     ng-model="modifyTargetEditorSetting.setting.fontSize"
+                     ng-change="changeFontSize(modifyTargetEditorSetting.setting.fontSize)"
+                     placeholder="only number"
+                     min="8" max="128"
+              />
+            </td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <!-- code editor ui settings -->
+  <div class="row">
+    <div class="col-md-12">
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h3 class="panel-title">Code Editor Usability Settings</h3>
+        </div>
+        <!-- settings table -->
+        <table class="table">
+          <tbody>
+          <tr>
+            <td class="editorTableNameColumn col-md-3">
+              <div style="padding-top: 8px;">
+                <span style="margin-top: 18px; !important;">Editor Theme</span>
+              </div>
+            </td>
+            <td class="col-md-3 editorTableValueColumn">
+              <span class="labelBtn btn-group" style="margin-bottom: 8px; padding: 0px;">
+                <button type="button" class="btn btn-default dropdown-toggle"
+                        data-toggle="dropdown"
+                        style="text-align: right !important; width: 100% !important;">
+                  <span class="text-right">
+                    {{modifyTargetEditorSetting.setting.theme}} <span class="caret"></span>
+                  </span>
+                </button>
+                <ul class="dropdown-menu pull-left" role="menu" style="margin-top: 0px;">
+                  <li ng-repeat="theme in editorThemeList track by $index">
+                    <a style="cursor:pointer" ng-click="changeTheme(theme)">
+                      <span>{{theme.themeValue}}</span>
+                    </a>
+                  </li>
+                </ul>
+              </span>
+            </td>
+            <td class="editorTableNameColumn col-md-3">
+              <div style="padding-top: 8px;">
+                <span>Show Line Number</span>
+              </div>
+            </td>
+            <td class="col-md-3 editorTableValueColumn">
+              <input
+                style="margin-top: 10px;"
+                type="checkbox"
+                ng-model="modifyTargetEditorSetting.setting.showLineNumber"
+                ng-change="changeShowLineNumber(modifyTargetEditorSetting.setting.showLineNumber)"
+              />
+            </td>
+          </tr>
+          <tr>
+            <td class="editorTableNameColumn col-md-3">
+              <div style="padding-bottom: 8px;">
+                <span>Highlight Active Line</span>
+              </div>
+            </td>
+            <td class="col-md-3 editorTableValueColumn">
+              <input
+                type="checkbox"
+                ng-model="modifyTargetEditorSetting.setting.activeLine"
+                ng-change="changeShowFocusLine(modifyTargetEditorSetting.setting.activeLine)"
+              />
+            </td>
+            <td class="editorTableNameColumn col-md-3">
+              <div style="padding-bottom: 8px;">
+                <span>Live Auto Completion</span>
+              </div>
+            </td>
+            <td class="col-md-3 editorTableValueColumn">
+              <input
+                type="checkbox"
+                ng-model="modifyTargetEditorSetting.setting.liveAutoCompletion"
+                ng-change="changeLiveAutoCompletion(modifyTargetEditorSetting.setting.liveAutoCompletion)"
+              />
+            </td>
+          </tr>
+          <tr>
+            <td class="editorTableNameColumn col-md-3">
+              <div style="padding-top: 8px; padding-bottom: 8px;">
+                <span>Show print margin</span>
+              </div>
+            </td>
+            <td class="col-md-3 editorTableValueColumn">
+              <input
+                style="margin-top: 10px;"
+                type="checkbox"
+                ng-model="modifyTargetEditorSetting.setting.showPrintMargin"
+                ng-change="changeShowPrintMargin(modifyTargetEditorSetting.setting.showPrintMargin)"
+              />
+            </td>
+            <td class="editorTableNameColumn col-md-3">
+              <div style="padding-top: 8px; padding-bottom: 8px;">
+                <span>Show print margin Column</span>
+              </div>
+            </td>
+            <td class="col-md-3 editorTableValueColumn">
+              <input
+                type="number"
+                class="form-control"
+                ng-model="modifyTargetEditorSetting.setting.showPrintMarginColumn"
+                ng-change="changeLiveAutoCompletion(modifyTargetEditorSetting.setting.showPrintMarginColumn)"
+                placeholder="only number"
+                min="1" max="65535"
+              />
+            </td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

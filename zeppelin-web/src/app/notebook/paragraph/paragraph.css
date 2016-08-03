@@ -263,16 +263,11 @@ table.dataTable.table-condensed .sorting_desc:after {
 .paragraph .editor {
   width: 100%;
   border-left: 4px solid #DDDDDD;
-  background: rgba(255, 255, 255, 0.0);
   margin: 7px 0 2px 0;
 }
 
 .paragraph-text--dirty {
   border-left: 4px solid #E67E22 !important;
-}
-
-.paragraph .ace_print-margin {
-  background: none !important;
 }
 
 .ace_marker-layer .ace_selection {

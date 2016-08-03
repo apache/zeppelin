@@ -196,6 +196,28 @@ angular.module('zeppelinWebApp').service('websocketMsgSrv', function($rootScope,
 
     unsubscribeJobManager: function() {
       websocketEvents.sendNewEvent({op: 'UNSUBSCRIBE_JOBMANAGER'});
+    },
+
+    getUserCodeEditorSetting: function() {
+      websocketEvents.sendNewEvent(
+        {
+          op: 'GET_USER_CODE_EDITOR_SETTING',
+          data: {principal: $rootScope.ticket.principal}
+        }
+        );
+    },
+
+    saveUserCodeEditorSetting: function(userEditorSettingData) {
+      console.log(userEditorSettingData);
+      websocketEvents.sendNewEvent(
+        {
+          op: 'SAVE_USER_CODE_EDITOR_SETTING',
+          data: {
+            principal: $rootScope.ticket.principal,
+            editorSettings: userEditorSettingData
+          }
+        }
+      );
     }
 
   };
