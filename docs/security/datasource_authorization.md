@@ -1,7 +1,7 @@
 ---
 layout: page
 title: "Data Source Authorization in Apache Zeppelin"
-description: "Apache Zeppelin supports protected data sources. In case of a MySql database, every user can set up his own credentials to access it."
+description: "Apache Zeppelin supports protected data sources. In case of a MySql database, every users can set up their own credentials to access it."
 group: security
 ---
 <!--
