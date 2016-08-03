@@ -31,7 +31,7 @@ public class InterpreterSettingsList {
   private List<InterpreterInfo> interpreters;
 
   public InterpreterSettingsList(String id, String name,
-                                 List<InterpreterInfo> interpreters, boolean selected) {
+      List<InterpreterInfo> interpreters, boolean selected) {
     this.id = id;
     this.name = name;
     this.interpreters = interpreters;
