@@ -41,6 +41,13 @@ jQuery(function() {
     display_search_results(results);
   });
 
+  $('html').bind('keypress', function(event){
+    // Since keyup() is operated at the above, disable 'Enter Key' press.   
+     if(event.keyCode == 13) {
+        return false;
+     }
+  });
+
   function display_search_results(results) {
     var $search_results = $("#search_results");
     var zeppelin_version = {{site.ZEPPELIN_VERSION | jsonify}};

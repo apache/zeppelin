@@ -28,8 +28,8 @@ limitations under the License.
   <div class="input-group" id="search-container">
     <input type="text" class="form-control" size="16px" name="q" placeholder="Search all pages" id="search_box">
     <span class="input-group-btn">
-      <button type="submit" class="btn btn-default">
-        <i class="glyphicon glyphicon-search"></i>
+      <button type="reset" class="btn btn-default">
+        <i class="glyphicon glyphicon-remove"></i>
       </button>
     </span>
   </div>
