@@ -523,10 +523,8 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
   $scope.aceChanged = function() {
     $scope.dirtyText = $scope.editor.getSession().getValue();
     $scope.startSaveTimer();
-    var cursorValue = $scope.editor.getCursorPosition();
-    if (cursorValue.row === 0 && cursorValue <= 30) {
-      $scope.setParagraphMode($scope.editor.getSession(), $scope.dirtyText, $scope.editor.getCursorPosition());
-    }
+    var setParagraphMode = $scope.setParagraphMode;
+    setParagraphMode($scope.editor.getSession(), $scope.dirtyText, $scope.editor.getCursorPosition());
   };
 
   $scope.aceLoaded = function(_editor) {
