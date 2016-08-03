@@ -21,7 +21,9 @@ limitations under the License.
 
 <div id="home-search" class="home">
 
-<span id="search"><p>Search Docs</p></span>
+<span id="search">
+  <p><i class="glyphicon glyphicon-search"></i> &nbsp;Search Docs</p>
+</span>
 <br/>
 
 <form role="search" action="{{BASE_PATH}}/search.html" id="site_search">
@@ -29,7 +31,7 @@ limitations under the License.
     <input type="text" class="form-control" size="16px" name="q" placeholder="Search all pages" id="search_box">
     <span class="input-group-btn">
       <button type="reset" class="btn btn-default">
-        <i class="glyphicon glyphicon-remove"></i>
+        <i class="glyphicon glyphicon-remove" style="color:#777"></i>
       </button>
     </span>
   </div>
