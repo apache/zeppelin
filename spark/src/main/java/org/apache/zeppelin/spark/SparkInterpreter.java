@@ -124,7 +124,7 @@ public class SparkInterpreter extends Interpreter {
 
   public SparkInterpreter(Properties property) {
     super(property);
-    out = new SparkOutputStream();
+    out = new SparkOutputStream(logger);
   }
 
   public SparkInterpreter(Properties property, SparkContext sc) {
