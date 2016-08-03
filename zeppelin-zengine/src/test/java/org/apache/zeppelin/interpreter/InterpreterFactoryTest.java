@@ -164,7 +164,7 @@ public class InterpreterFactoryTest {
 
     System.out.println(interpreters);
     assertTrue(interpreters.isEmpty());
-    assertFalse(factory.isBinding(notExistNoteId, "i1"));
+    assertFalse(factory.isBinded(notExistNoteId, "i1"));
   }
 
   @Test
@@ -177,7 +177,7 @@ public class InterpreterFactoryTest {
     assertFalse(interpreters.isEmpty());
 
     String groupId = factory.getInterpreterSettings(existNoteId).iterator().next().getGroup();
-    assertTrue(factory.isBinding(existNoteId, groupId));
-    assertFalse(factory.isBinding(existNoteId, "i1"));
+    assertTrue(factory.isBinded(existNoteId, groupId));
+    assertFalse(factory.isBinded(existNoteId, "i1"));
   }
 }

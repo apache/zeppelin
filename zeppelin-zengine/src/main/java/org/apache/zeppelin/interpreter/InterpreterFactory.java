@@ -1068,7 +1068,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     return getDefaultInterpreterSetting(getInterpreterSettings(noteId));
   }
   
-  public boolean isBinding(String noteId, String replName) {
+  public boolean isBinded(String noteId, String replName) {
     return getInterpreter(noteId, replName) != null;
   }
 
