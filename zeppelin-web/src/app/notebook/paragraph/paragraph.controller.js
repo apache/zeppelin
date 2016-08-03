@@ -1193,8 +1193,9 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
             var lat = row[latCol.index];
             var pin = {
               geometry: new Point({
-                x: lng,
-                y: lat
+                longitude: lng,
+                latitude: lat,
+                spatialReference: $scope.map.spatialReference
               }),
               attributes: {
                 _ObjectID: i,
@@ -1275,6 +1276,18 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
                       '16,7.416S19.584,9.021,19.584,11S17.979,14.584,16,14.584z'
             })
           })
+        });
+
+        $scope.map.on('click', function() {
+          // ArcGIS JS API 4.0 does not account for scrolling or position
+          // changes by default (this is a bug, to be fixed in the upcoming
+          // version 4.1; see https://geonet.esri.com/thread/177238#comment-609681).
+          // This results in a misaligned popup.
+
+          // Workaround: manually set popup position to match position of selected pin
+          if ($scope.map.popup.selectedFeature) {
+            $scope.map.popup.location = $scope.map.popup.selectedFeature.geometry;
+          }
         });
         $scope.map.then(updateMapPins);
       });
