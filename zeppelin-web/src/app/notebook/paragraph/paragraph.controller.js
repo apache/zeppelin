@@ -94,7 +94,6 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
     $scope.originalText = angular.copy(newParagraph.text);
     $scope.chart = {};
     $scope.colWidthOption = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
-    $scope.showTitleEditor = false;
     $scope.paragraphFocused = false;
     if (newParagraph.focus) {
       $scope.paragraphFocused = true;

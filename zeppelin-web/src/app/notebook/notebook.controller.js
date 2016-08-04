@@ -18,7 +18,6 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
                                                                      baseUrlSrv, $timeout, saveAsService) {
   $scope.note = null;
   $scope.moment = moment;
-  $scope.showEditor = false;
   $scope.editorToggled = false;
   $scope.tableToggled = false;
   $scope.viewOnly = false;
