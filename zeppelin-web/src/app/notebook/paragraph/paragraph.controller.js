@@ -1821,11 +1821,6 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
     $window.open(redirectToUrl);
   };
 
-  $scope.goToSingleParagraphId = function() {
-    var paragraphId = $scope.paragraph.id;
-    alert(paragraphId);
-  };
-
   $scope.showScrollDownIcon = function() {
     var doc = angular.element('#p' + $scope.paragraph.id + '_text');
     if (doc[0]) {
