@@ -25,8 +25,6 @@ try:
 except ImportError:
     import io as io
 
-sys.displayhook = lambda x: None
-
 def intHandler(signum, frame):  # Set the signal handler
     print ("Paragraph interrupted")
     raise KeyboardInterrupt()

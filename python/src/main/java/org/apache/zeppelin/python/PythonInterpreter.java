@@ -134,9 +134,9 @@ public class PythonInterpreter extends Interpreter {
 
     InterpreterResult result;
     if (pythonErrorIn(output)) {
-      result = new InterpreterResult(Code.ERROR, output.replaceAll(">>>", "").trim());
+      result = new InterpreterResult(Code.ERROR, output.replaceAll(">>> ", "").trim());
     } else {
-      result = new InterpreterResult(Code.SUCCESS, output.replaceAll(">>>", "")
+      result = new InterpreterResult(Code.SUCCESS, output.replaceAll(">>> ", "")
           .replaceAll("\\.\\.\\.", "").trim());
     }
     return result;
@@ -265,4 +265,5 @@ public class PythonInterpreter extends Interpreter {
   public int getMaxResult() {
     return maxResult;
   }
+  
 }
