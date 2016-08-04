@@ -59,6 +59,7 @@ import org.apache.zeppelin.server.JsonResponse;
 import org.apache.zeppelin.socket.NotebookServer;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.utils.SecurityUtils;
+import org.apache.zeppelin.utils.RequestUtils;
 
 /**
  * Rest api endpoint for the noteBook.
@@ -137,6 +138,11 @@ public class NotebookRestApi {
     HashSet readers = permMap.get("readers");
     HashSet owners = permMap.get("owners");
     HashSet writers = permMap.get("writers");
+
+    RequestUtils.removeEmptyUser(readers);
+    RequestUtils.removeEmptyUser(owners);
+    RequestUtils.removeEmptyUser(writers);
+
     // Set readers, if writers and owners is empty -> set to user requesting the change
     if (readers != null && !readers.isEmpty()) {
       if (writers.isEmpty()) {
