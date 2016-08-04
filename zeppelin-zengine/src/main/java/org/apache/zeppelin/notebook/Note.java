@@ -411,22 +411,38 @@ public class Note implements Serializable, ParagraphJobListener {
     List<Map<String, String>> paragraphsInfo = new LinkedList<>();
     synchronized (paragraphs) {
       for (Paragraph p : paragraphs) {
-        Map<String, String> info = new HashMap<>();
-        info.put("id", p.getId());
-        info.put("status", p.getStatus().toString());
-        if (p.getDateStarted() != null) {
-          info.put("started", p.getDateStarted().toString());
-        }
-        if (p.getDateFinished() != null) {
-          info.put("finished", p.getDateFinished().toString());
-        }
-        if (p.getStatus().isRunning()) {
-          info.put("progress", String.valueOf(p.progress()));
-        }
+        Map<String, String> info = populatePragraphInfo(p);
         paragraphsInfo.add(info);
       }
     }
     return paragraphsInfo;
+  }
+
+  public Map<String, String> generateSingleParagraphInfo(String paragraphId) {
+    synchronized (paragraphs) {
+      for (Paragraph p : paragraphs) {
+        if (p.getId().equals(paragraphId)) {
+          return populatePragraphInfo(p);
+        }
+      }
+      return new HashMap<>();
+    }
+  }
+  
+  private Map<String, String> populatePragraphInfo(Paragraph p) {
+    Map<String, String> info = new HashMap<>();
+    info.put("id", p.getId());
+    info.put("status", p.getStatus().toString());
+    if (p.getDateStarted() != null) {
+      info.put("started", p.getDateStarted().toString());
+    }
+    if (p.getDateFinished() != null) {
+      info.put("finished", p.getDateFinished().toString());
+    }
+    if (p.getStatus().isRunning()) {
+      info.put("progress", String.valueOf(p.progress()));
+    }
+    return info;
   }
 
   /**
