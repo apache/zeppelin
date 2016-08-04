@@ -72,7 +72,7 @@ matrix:
 
 before_install:
   - "ls -la .spark-dist ${HOME}/.m2/repository/.cache/maven-download-plugin"
-  - ls .node_modules && cp -r .node_modules zeppelin-web/node_modules || "node_modules are not cached"
+  - ls .node_modules && cp -r .node_modules zeppelin-web/node_modules || echo "node_modules are not cached"
   - mkdir -p ~/R
   - echo 'R_LIBS=~/R' > ~/.Renviron
   - R -e "install.packages('knitr', repos = 'http://cran.us.r-project.org', lib='~/R')"
