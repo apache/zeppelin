@@ -49,7 +49,7 @@ Adding new language-backend is really simple. Learn [how to create your own inte
 #### Apache Spark integration
 Especially, Apache Zeppelin provides built-in [Apache Spark](http://spark.apache.org/) integration. You don't need to build a separate module, plugin or library for it.
 
-<img class="img-responsive" src="./assets/themes/zeppelin/img/spark_logo.jpg" width="140px" />
+<img class="img-responsive" src="./assets/themes/zeppelin/img/spark_logo.png" width="140px" />
 
 Apache Zeppelin with Spark integration provides
 
