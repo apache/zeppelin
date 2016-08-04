@@ -83,6 +83,7 @@ public class RemoteInterpreterEventPoller extends Thread {
         }
         continue;
       }
+      AppendOutputRunner.startRunner(listener);
 
       try {
         client = interpreterProcess.getClient();
@@ -157,7 +158,7 @@ public class RemoteInterpreterEventPoller extends Thread {
           String appId = outputAppend.get("appId");
 
           if (appId == null) {
-            listener.onOutputAppend(noteId, paragraphId, outputToAppend);
+            AppendOutputRunner.appendBuffer(noteId, paragraphId, outputToAppend);
           } else {
             appListener.onOutputAppend(noteId, paragraphId, appId, outputToAppend);
           }
