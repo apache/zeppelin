@@ -374,6 +374,12 @@ You can configure Apache Zeppelin with both **environment variables** in `conf/z
     <td>Comma separated list of notebook storage</td>
   </tr>
   <tr>
+    <td>ZEPPELIN_NOTEBOOK_ONE_WAY_SYNC</td>
+    <td>zeppelin.notebook.one.way.sync</td>
+    <td>false</td>
+    <td>If there are multiple notebook storages, should we treat the first one as the only source of truth?</td>
+  </tr>
+  <tr>
     <td>ZEPPELIN_INTERPRETERS</td>
     <td>zeppelin.interpreters</td>
   <description></description>

@@ -84,6 +84,7 @@ public class NotebookRepoSyncTest implements JobListenerFactory {
     System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_DIR.getVarName(), mainNotebookDir.getAbsolutePath());
     System.setProperty(ConfVars.ZEPPELIN_INTERPRETERS.getVarName(), "org.apache.zeppelin.interpreter.mock.MockInterpreter1,org.apache.zeppelin.interpreter.mock.MockInterpreter2");
     System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_STORAGE.getVarName(), "org.apache.zeppelin.notebook.repo.VFSNotebookRepo,org.apache.zeppelin.notebook.repo.mock.VFSNotebookRepoMock");
+    System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_ONE_WAY_SYNC.getVarName(), "false");
     LOG.info("main Note dir : " + mainNotePath);
     LOG.info("secondary note dir : " + secNotePath);
     conf = ZeppelinConfiguration.create();
@@ -215,6 +216,54 @@ public class NotebookRepoSyncTest implements JobListenerFactory {
     assertEquals(1, notebookRepoSync.list(1, null).size());
 
     // After reloading notebooks repos should be synchronized
+    notebookSync.reloadAllNotes(null);
+    assertEquals(1, notebookRepoSync.list(0, null).size());
+    assertEquals(1, notebookRepoSync.list(1, null).size());
+  }
+
+  @Test
+  public void testOneWaySyncOnReloadedList() throws IOException, SchedulerException {
+    System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_DIR.getVarName(), mainNotebookDir.getAbsolutePath());
+    System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_ONE_WAY_SYNC.getVarName(), "true");
+    conf = ZeppelinConfiguration.create();
+    notebookRepoSync = new NotebookRepoSync(conf);
+    notebookSync = new Notebook(conf, notebookRepoSync, schedulerFactory, factory, this, search,
+            notebookAuthorization, credentials);
+
+    // check that both storage repos are empty
+    assertTrue(notebookRepoSync.getRepoCount() > 1);
+    assertEquals(0, notebookRepoSync.list(0, null).size());
+    assertEquals(0, notebookRepoSync.list(1, null).size());
+
+    File srcDir = new File("src/test/resources/2A94M5J1Z");
+    File destDir = new File(secNotebookDir + "/2A94M5J1Z");
+
+    // copy manually new notebook into secondary storage repo and check repos
+    try {
+      FileUtils.copyDirectory(srcDir, destDir);
+    } catch (IOException e) {
+      LOG.error(e.toString(), e);
+    }
+    assertEquals(0, notebookRepoSync.list(0, null).size());
+    assertEquals(1, notebookRepoSync.list(1, null).size());
+
+    // after reloading the notebook should be wiped from secondary storage
+    notebookSync.reloadAllNotes(null);
+    assertEquals(0, notebookRepoSync.list(0, null).size());
+    assertEquals(0, notebookRepoSync.list(1, null).size());
+
+    destDir = new File(mainNotebookDir + "/2A94M5J1Z");
+
+    // copy manually new notebook into primary storage repo and check repos
+    try {
+      FileUtils.copyDirectory(srcDir, destDir);
+    } catch (IOException e) {
+      LOG.error(e.toString(), e);
+    }
+    assertEquals(1, notebookRepoSync.list(0, null).size());
+    assertEquals(0, notebookRepoSync.list(1, null).size());
+
+    // after reloading notebooks repos should be synchronized
     notebookSync.reloadAllNotes(null);
     assertEquals(1, notebookRepoSync.list(0, null).size());
     assertEquals(1, notebookRepoSync.list(1, null).size());
