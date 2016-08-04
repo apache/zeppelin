@@ -85,7 +85,10 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl',
           $scope.suggestions = [];
         }
       }
-      if (event.keyCode < 37 || event.keyCode > 40) { // arrow buttons.
+      if (event.keyCode === 13) {
+        closeAutoComplete();
+      }
+      else if (event.keyCode < 37 || event.keyCode > 40) { // arrow buttons.
         $scope.search(setting.option.users, setting);
       }
     };
@@ -98,9 +101,13 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl',
     };
 
     angular.element(document).click(function() {
+      closeAutoComplete();
+    });
+
+    function closeAutoComplete() {
       angular.element('.userlist').hide();
       angular.element('.ace_autocomplete').hide();
-    });
+    };
 
     function getSuggestions(searchQuery) {
       $scope.suggestions = [];
