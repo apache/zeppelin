@@ -102,6 +102,7 @@ public class ElasticsearchInterpreter extends Interpreter {
   public static final String ELASTICSEARCH_PORT = "elasticsearch.port";
   public static final String ELASTICSEARCH_CLUSTER_NAME = "elasticsearch.cluster.name";
   public static final String ELASTICSEARCH_RESULT_SIZE = "elasticsearch.result.size";
+  private static final String INTERPRETER_NAME = "elasticsearch";
 
   private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
   private Client client;
@@ -243,7 +244,7 @@ public class ElasticsearchInterpreter extends Interpreter {
 
     for (String cmd : COMMANDS) {
       if (cmd.toLowerCase().contains(s)) {
-        suggestions.add(new InterpreterCompletion(cmd, cmd));
+        suggestions.add(new InterpreterCompletion(cmd, cmd, INTERPRETER_NAME));
       }
     }
     return suggestions;

@@ -70,7 +70,8 @@ struct RemoteApplicationResult {
  */
 struct InterpreterCompletion {
   1: string name,
-  2: string value
+  2: string value,
+  3: string meta
 }
 
 service RemoteInterpreterService {

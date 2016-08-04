@@ -36,6 +36,7 @@ public class HDFSFileInterpreter extends FileInterpreter {
   static final String HDFS_URL = "hdfs.url";
   static final String HDFS_USER = "hdfs.user";
   static final String HDFS_MAXLENGTH = "hdfs.maxlength";
+  private static final String INTERPRETER_NAME = "hdfs";
 
   Exception exceptionOnConnect = null;
   HDFSCommand cmd = null;
@@ -253,17 +254,23 @@ public class HDFSFileInterpreter extends FileInterpreter {
     logger.info("Completion request at position\t" + cursor + " in string " + buf);
     final List<InterpreterCompletion> suggestions = new ArrayList<>();
     if (StringUtils.isEmpty(buf)) {
-      suggestions.add(new InterpreterCompletion("ls", "ls"));
-      suggestions.add(new InterpreterCompletion("cd", "cd"));
-      suggestions.add(new InterpreterCompletion("pwd", "pwd"));
+      suggestions.add(new InterpreterCompletion("ls", "ls", INTERPRETER_NAME));
+      suggestions.add(new InterpreterCompletion("cd", "cd", INTERPRETER_NAME));
+      suggestions.add(new InterpreterCompletion("pwd", "pwd", INTERPRETER_NAME));
       return suggestions;
     }
 
     //part of a command == no spaces
     if (buf.split(" ").length == 1){
-      if ("cd".contains(buf)) suggestions.add(new InterpreterCompletion("cd", "cd"));
-      if ("ls".contains(buf)) suggestions.add(new InterpreterCompletion("ls", "ls"));
-      if ("pwd".contains(buf)) suggestions.add(new InterpreterCompletion("pwd", "pwd"));
+      if ("cd".contains(buf)) {
+        suggestions.add(new InterpreterCompletion("cd", "cd", INTERPRETER_NAME));
+      }
+      if ("ls".contains(buf)) {
+        suggestions.add(new InterpreterCompletion("ls", "ls", INTERPRETER_NAME));
+      }
+      if ("pwd".contains(buf)) {
+        suggestions.add(new InterpreterCompletion("pwd", "pwd", INTERPRETER_NAME));
+      }
 
       return suggestions;
     }
@@ -300,7 +307,8 @@ public class HDFSFileInterpreter extends FileInterpreter {
                 String beforeLastPeriod = unfinished.substring(0, unfinished.lastIndexOf('.') + 1);
                 //beforeLastPeriod should be the start of fs.pathSuffix, so take the end of it.
                 String suggestedFinish = fs.pathSuffix.substring(beforeLastPeriod.length());
-                suggestions.add(new InterpreterCompletion(suggestedFinish, suggestedFinish));
+                suggestions.add(
+                  new InterpreterCompletion(suggestedFinish, suggestedFinish, INTERPRETER_NAME));
               }
             }
             return suggestions;

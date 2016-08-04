@@ -607,6 +607,7 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
                 completions.push({
                   name: v.name,
                   value: v.value,
+                  meta: v.meta,
                   score: 300
                 });
               }

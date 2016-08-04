@@ -75,6 +75,7 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
   private ByteArrayOutputStream input;
   private String scriptPath;
   boolean pythonscriptRunning = false;
+  private static final String INTERPRETER_NAME = "pyspark";
 
   public PySparkInterpreter(Properties property) {
     super(property);
@@ -444,7 +445,7 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
     String[] completionList = gson.fromJson(completionResult.message(), String[].class);
     List<InterpreterCompletion> results = new LinkedList<>();
     for (String name: completionList) {
-      results.add(new InterpreterCompletion(name, name));
+      results.add(new InterpreterCompletion(name, name, INTERPRETER_NAME));
     }
     return results;
   }
