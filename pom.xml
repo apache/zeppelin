@@ -484,6 +484,7 @@
               <exclude>docs/Rakefile</exclude>
               <exclude>docs/rss.xml</exclude>
               <exclude>docs/sitemap.txt</exclude>
+              <exclude>docs/search_data.json</exclude>
               <exclude>**/dependency-reduced-pom.xml</exclude>
 
               <!-- bundled from anchor -->
