@@ -69,7 +69,7 @@ public class SecurityRestApiTest extends AbstractTestRestApi {
     get.addRequestHeader("Origin", "http://localhost");
     Map<String, Object> resp = gson.fromJson(get.getResponseBodyAsString(),
         new TypeToken<Map<String, Object>>(){}.getType());
-    List<String> userList = (List<String>)  resp.get("body");
+    List<String> userList = (List) ((Map) resp.get("body")).get("users");
     collector.checkThat("Search result size", userList.size(),
         CoreMatchers.equalTo(1));
     collector.checkThat("Search result contains admin", userList.contains("admin"),
@@ -80,7 +80,7 @@ public class SecurityRestApiTest extends AbstractTestRestApi {
     notUser.addRequestHeader("Origin", "http://localhost");
     Map<String, Object> notUserResp = gson.fromJson(notUser.getResponseBodyAsString(),
         new TypeToken<Map<String, Object>>(){}.getType());
-    List<String> emptyUserList = (List<String>)  notUserResp.get("body");
+    List<String> emptyUserList = (List) ((Map) notUserResp.get("body")).get("users");
     collector.checkThat("Search result size", emptyUserList.size(),
         CoreMatchers.equalTo(0));
 

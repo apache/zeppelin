@@ -67,6 +67,25 @@ public class GetUserList {
     return userList;
   }
 
+
+  /***
+   * Get user roles from shiro.ini
+   * @param r
+   * @return
+   */
+  public List<String> getRolesList(IniRealm r) {
+    List<String> roleList = new ArrayList<>();
+    Map getIniRoles = r.getIni().get("roles");
+    if (getIniRoles != null) {
+      Iterator it = getIniRoles.entrySet().iterator();
+      while (it.hasNext()) {
+        Map.Entry pair = (Map.Entry) it.next();
+        roleList.add(pair.getKey().toString().trim());
+      }
+    }
+    return roleList;
+  }
+
   /**
    * function to extract users from LDAP
    */

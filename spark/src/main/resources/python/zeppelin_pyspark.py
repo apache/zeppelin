@@ -27,19 +27,20 @@ from pyspark.storagelevel import StorageLevel
 from pyspark.accumulators import Accumulator, AccumulatorParam
 from pyspark.broadcast import Broadcast
 from pyspark.serializers import MarshalSerializer, PickleSerializer
+import ast
 
 # for back compatibility
 from pyspark.sql import SQLContext, HiveContext, Row
 
 class Logger(object):
   def __init__(self):
-    self.out = ""
+    pass
 
   def write(self, message):
     intp.appendOutput(message)
 
   def reset(self):
-    self.out = ""
+    pass
 
   def flush(self):
     pass
@@ -230,7 +231,7 @@ while True :
   try:
     stmts = req.statements().split("\n")
     jobGroup = req.jobGroup()
-    final_code = None
+    final_code = []
 
     for s in stmts:
       if s == None:
@@ -241,15 +242,27 @@ while True :
       if len(s_stripped) == 0 or s_stripped.startswith("#"):
         continue
 
-      if final_code:
-        final_code += "\n" + s
-      else:
-        final_code = s
+      final_code.append(s)
 
     if final_code:
-      compiledCode = compile(final_code, "<string>", "exec")
+      # use exec mode to compile the statements except the last statement,
+      # so that the last statement's evaluation will be printed to stdout
       sc.setJobGroup(jobGroup, "Zeppelin")
-      eval(compiledCode)
+      code = compile('\n'.join(final_code), '<stdin>', 'exec', ast.PyCF_ONLY_AST, 1)
+      to_run_exec, to_run_single = code.body[:-1], code.body[-1:]
+
+      try:
+        for node in to_run_exec:
+          mod = ast.Module([node])
+          code = compile(mod, '<stdin>', 'exec')
+          exec(code)
+
+        for node in to_run_single:
+          mod = ast.Interactive([node])
+          code = compile(mod, '<stdin>', 'single')
+          exec(code)
+      except:
+        raise Execution(sys.exc_info())
 
     intp.setStatementsFinished("", False)
   except Py4JJavaError:
