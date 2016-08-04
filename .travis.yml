@@ -21,6 +21,7 @@ cache:
   directories:
     - .spark-dist
     - ${HOME}/.m2/repository/.cache/maven-download-plugin
+    - .node_modules
 
 addons:
   apt:
@@ -71,6 +72,7 @@ matrix:
 
 before_install:
   - "ls -la .spark-dist ${HOME}/.m2/repository/.cache/maven-download-plugin"
+  - ls .node_modules && cp -r .node_modules zeppelin-web/node_modules || "node_modules are not cached"
   - mkdir -p ~/R
   - echo 'R_LIBS=~/R' > ~/.Renviron
   - R -e "install.packages('knitr', repos = 'http://cran.us.r-project.org', lib='~/R')"
@@ -91,6 +93,7 @@ script:
   - mvn $TEST_FLAG $PROFILE -B $TEST_PROJECTS
 
 after_success:
+  - rm -rf .node_modules; cp -r zeppelin-web/node_modules .node_modules
   - echo "Travis exited with ${TRAVIS_TEST_RESULT}"
 
 after_failure:
