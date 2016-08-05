@@ -679,35 +679,35 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
       // handle cursor moves
       $scope.editor.keyBinding.origOnCommandKey = $scope.editor.keyBinding.onCommandKey;
       $scope.editor.keyBinding.onCommandKey = function(e, hashId, keyCode) {
+        this.origOnCommandKey(e, hashId, keyCode);
         if ($scope.editor.completer && $scope.editor.completer.activated) { // if autocompleter is active
         } else {
-          // fix ace editor focus issue in chrome (textarea element goes to top: -1000px after focused by cursor move)
-          if (parseInt(angular.element('#' + $scope.paragraph.id + '_editor > textarea')
-              .css('top').replace('px', '')) < 0) {
-            var position = $scope.editor.getCursorPosition();
-            var cursorPos = $scope.editor.renderer.$cursorLayer.getPixelPosition(position, true);
-            angular.element('#' + $scope.paragraph.id + '_editor > textarea').css('top', cursorPos.top);
-          }
-          switch (keyCode) {
-            case 38:
+        // fix ace editor focus issue in chrome (textarea element goes to top: -1000px after focused by cursor move)
+        if (parseInt(angular.element('#' + $scope.paragraph.id + '_editor > textarea')
+            .css('top').replace('px', '')) < 0) {
+          var position = $scope.editor.getCursorPosition();
+          var cursorPos = $scope.editor.renderer.$cursorLayer.getPixelPosition(position, true);
+          angular.element('#' + $scope.paragraph.id + '_editor > textarea').css('top', cursorPos.top);
+        }
+        switch (keyCode) {
+          case 38:
+            keyBindingEditorFocusAction('moveFocusToPreviousParagraph', -1);
+            break;
+          case 80:
+            if (e.ctrlKey && !e.altKey) {
               keyBindingEditorFocusAction('moveFocusToPreviousParagraph', -1);
-              break;
-            case 80:
-              if (e.ctrlKey && !e.altKey) {
-                keyBindingEditorFocusAction('moveFocusToPreviousParagraph', -1);
-              }
-              break;
-            case 40:
+            }
+            break;
+          case 40:
+            keyBindingEditorFocusAction('moveFocusToNextParagraph', 1);
+            break;
+          case 78:
+            if (e.ctrlKey && !e.altKey) {
               keyBindingEditorFocusAction('moveFocusToNextParagraph', 1);
-              break;
-            case 78:
-              if (e.ctrlKey && !e.altKey) {
-                keyBindingEditorFocusAction('moveFocusToNextParagraph', 1);
-              }
-              break;
+            }
+            break;
           }
         }
-        this.origOnCommandKey(e, hashId, keyCode);
       };
     }
   };
