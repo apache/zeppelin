@@ -665,9 +665,10 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
       $scope.editor.commands.bindKey('ctrl-.', 'startAutocomplete');
       $scope.editor.commands.bindKey('ctrl-space', null);
 
-      $scope.keyBindingEditorFocusAction = function(moveTarget, scrollValue) {
+      var keyBindingEditorFocusAction = function(moveTarget, scrollValue) {
+        var numRows = $scope.editor.getSession().getLength();
         var currentRow = $scope.editor.getCursorPosition().row;
-        if (currentRow === 0) {
+        if (currentRow === 0 || (currentRow === numRows - 1)) {
           // move focus to previous paragraph
           $scope.$emit(moveTarget, $scope.paragraph.id);
         } else {
@@ -687,22 +688,21 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
             var cursorPos = $scope.editor.renderer.$cursorLayer.getPixelPosition(position, true);
             angular.element('#' + $scope.paragraph.id + '_editor > textarea').css('top', cursorPos.top);
           }
-
           switch (keyCode) {
             case 38:
-              $scope.keyBindingEditorFocusAction('moveFocusToPreviousParagraph', -1);
+              keyBindingEditorFocusAction('moveFocusToPreviousParagraph', -1);
               break;
             case 80:
               if (e.ctrlKey && !e.altKey) {
-                $scope.keyBindingEditorFocusAction('moveFocusToPreviousParagraph', -1);
+                keyBindingEditorFocusAction('moveFocusToPreviousParagraph', -1);
               }
               break;
             case 40:
-              $scope.keyBindingEditorFocusAction('moveFocusToNextParagraph', 1);
+              keyBindingEditorFocusAction('moveFocusToNextParagraph', 1);
               break;
             case 78:
               if (e.ctrlKey && !e.altKey) {
-                $scope.keyBindingEditorFocusAction('moveFocusToNextParagraph', 1);
+                keyBindingEditorFocusAction('moveFocusToNextParagraph', 1);
               }
               break;
           }
