@@ -626,7 +626,7 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
         $scope.paragraphFocused = value;
         if (isDigestPass === false || isDigestPass === undefined) {
           // Protect against error in case digest is already running
-          $timeout(function () {
+          $timeout(function() {
             // Apply changes since they come from 3rd party library
             $scope.$digest();
           });
