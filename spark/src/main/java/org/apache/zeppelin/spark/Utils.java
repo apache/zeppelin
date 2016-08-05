@@ -93,8 +93,10 @@ class Utils {
   static boolean isSpark2() {
     try {
       Utils.class.forName("org.apache.spark.sql.SparkSession");
+      logger.debug("isSpark2: true");
       return true;
     } catch (ClassNotFoundException e) {
+      logger.debug("isSpark2: false");
       return false;
     }
   }
