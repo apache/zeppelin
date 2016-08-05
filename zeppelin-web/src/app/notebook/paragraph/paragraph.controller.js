@@ -665,12 +665,14 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
       $scope.editor.commands.bindKey('ctrl-.', 'startAutocomplete');
       $scope.editor.commands.bindKey('ctrl-space', null);
 
-      var keyBindingEditorFocusAction = function(moveTarget, scrollValue) {
+      var keyBindingEditorFocusAction = function(scrollValue) {
         var numRows = $scope.editor.getSession().getLength();
         var currentRow = $scope.editor.getCursorPosition().row;
-        if (currentRow === 0 || (currentRow === numRows - 1)) {
+        if (currentRow === 0 && scrollValue <= 0) {
           // move focus to previous paragraph
-          $scope.$emit(moveTarget, $scope.paragraph.id);
+          $scope.$emit('moveFocusToPreviousParagraph', $scope.paragraph.id);
+        } else if (currentRow === numRows - 1 && scrollValue >= 0) {
+          $scope.$emit('moveFocusToNextParagraph', $scope.paragraph.id);
         } else {
           $scope.scrollToCursor($scope.paragraph.id, scrollValue);
         }
@@ -679,7 +681,6 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
       // handle cursor moves
       $scope.editor.keyBinding.origOnCommandKey = $scope.editor.keyBinding.onCommandKey;
       $scope.editor.keyBinding.onCommandKey = function(e, hashId, keyCode) {
-        this.origOnCommandKey(e, hashId, keyCode);
         if ($scope.editor.completer && $scope.editor.completer.activated) { // if autocompleter is active
         } else {
           // fix ace editor focus issue in chrome (textarea element goes to top: -1000px after focused by cursor move)
@@ -689,25 +690,30 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
             var cursorPos = $scope.editor.renderer.$cursorLayer.getPixelPosition(position, true);
             angular.element('#' + $scope.paragraph.id + '_editor > textarea').css('top', cursorPos.top);
           }
+
+          var ROW_UP = -1;
+          var ROW_DOWN = 1;
+
           switch (keyCode) {
             case 38:
-              keyBindingEditorFocusAction('moveFocusToPreviousParagraph', -1);
+              keyBindingEditorFocusAction(ROW_UP);
               break;
             case 80:
               if (e.ctrlKey && !e.altKey) {
-                keyBindingEditorFocusAction('moveFocusToPreviousParagraph', -1);
+                keyBindingEditorFocusAction(ROW_UP);
               }
               break;
             case 40:
-              keyBindingEditorFocusAction('moveFocusToNextParagraph', 1);
+              keyBindingEditorFocusAction(ROW_DOWN);
               break;
             case 78:
               if (e.ctrlKey && !e.altKey) {
-                keyBindingEditorFocusAction('moveFocusToNextParagraph', 1);
+                keyBindingEditorFocusAction(ROW_DOWN);
               }
               break;
           }
         }
+        this.origOnCommandKey(e, hashId, keyCode);
       };
     }
   };
