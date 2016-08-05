@@ -665,7 +665,7 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
       $scope.editor.commands.bindKey('ctrl-.', 'startAutocomplete');
       $scope.editor.commands.bindKey('ctrl-space', null);
 
-      $scope.keyBindingEditorFocusAction = function (moveTarget, scrollValue) {
+      $scope.keyBindingEditorFocusAction = function(moveTarget, scrollValue) {
         var currentRow = $scope.editor.getCursorPosition().row;
         if (currentRow === 0) {
           // move focus to previous paragraph
@@ -688,7 +688,7 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
             angular.element('#' + $scope.paragraph.id + '_editor > textarea').css('top', cursorPos.top);
           }
 
-          switch(keyCode) {
+          switch (keyCode) {
             case 38:
               $scope.keyBindingEditorFocusAction('moveFocusToPreviousParagraph', -1);
               break;
