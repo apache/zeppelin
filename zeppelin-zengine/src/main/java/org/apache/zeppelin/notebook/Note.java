@@ -17,8 +17,6 @@
 
 package org.apache.zeppelin.notebook;
 
-import static org.apache.commons.lang.StringUtils.*;
-
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashMap;
@@ -56,6 +54,8 @@ import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.search.SearchService;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.user.Credentials;
+
+import static org.apache.commons.lang.StringUtils.*;
 
 /**
  * Binded interpreters for a note
