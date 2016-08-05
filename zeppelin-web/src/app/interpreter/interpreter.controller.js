@@ -34,35 +34,35 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl',
       for (var i = 0; i < searchText.length; i++) {
         previousSelectedList[i] = searchText[i];
       }
-    }
+    };
 
-    function convertToString(setting) {
+    function assignToUsers(setting) {
       setting.option.users = searchText.join();
-    }
+    };
 
     var checkIfSelected = function() {
       if (($scope.suggestions.length === 0) &&
-        ($scope.selectIndex < 0 || $scope.selectIndex >= $scope.suggestions.length) ||
-        ($scope.suggestions.length !== 0 && ($scope.selectIndex < 0 || $scope.selectIndex >= $scope.suggestions.length))
+          ($scope.selectIndex < 0 || $scope.selectIndex >= $scope.suggestions.length) ||
+          ($scope.suggestions.length !== 0 &&
+          ($scope.selectIndex < 0 || $scope.selectIndex >= $scope.suggestions.length))
       ) {
         searchText[selectedUserIndex] = selectedUser;
         $scope.suggestions = [];
         return true;
-      } else {
-        return false;
       }
+      return false;
     };
 
     $scope.checkKeyDown = function(event, setting) {
       if (event.keyCode === 40) {
         event.preventDefault();
-        if ($scope.selectIndex + 1 !== $scope.suggestions.length) {
+        if ($scope.selectIndex < $scope.suggestions.length) {
           $scope.selectIndex++;
         }
       } else if (event.keyCode === 38) {
         event.preventDefault();
 
-        if ($scope.selectIndex - 1 !== -1) {
+        if ($scope.selectIndex > 0) {
           $scope.selectIndex--;
 
         }
@@ -72,7 +72,7 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl',
           selectedUser = $scope.suggestions[$scope.selectIndex];
           searchText[selectedUserIndex] = $scope.suggestions[$scope.selectIndex];
           updatePreviousList();
-          convertToString(setting);
+          assignToUsers(setting);
           $scope.suggestions = [];
         }
       }
@@ -87,8 +87,7 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl',
       }
       if (event.keyCode === 13) {
         closeAutoComplete();
-      }
-      else if (event.keyCode < 37 || event.keyCode > 40) { // arrow buttons.
+      } else if (event.keyCode < 37 || event.keyCode > 40) { // arrow buttons.
         $scope.search(setting.option.users, setting);
       }
     };
@@ -96,7 +95,7 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl',
     $scope.assignValueAndHide = function(index, setting) {
       searchText[selectedUserIndex] = $scope.suggestions[index];
       updatePreviousList();
-      convertToString(setting);
+      assignToUsers(setting);
       $scope.suggestions = [];
     };
 
@@ -119,13 +118,7 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl',
           $scope.suggestions.push(userlist[k]);
         }
       });
-    }
-
-    function updatePreviousList() {
-      for (var i = 0; i < searchText.length; i++) {
-        previousSelectedList[i] = searchText[i];
-      }
-    }
+    };
 
     var getChangedIndex = function() {
       if (previousSelectedList.length === 0) {
@@ -152,7 +145,7 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl',
       for (var i = 0; i < searchText.length; i++) {
         searchText[i] = searchText[i].trim();
       }
-    }
+    };
 
     $scope.openPermissions = function() {
       $scope.showInterpreterAuth = true;
