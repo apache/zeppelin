@@ -271,7 +271,8 @@ public class NotebookRepoSync implements NotebookRepo {
 
         if (sdate.compareTo(ddate) != 0) {
           if (sdate.after(ddate) || oneWaySync) {
-            /* source contains more up to date note - push */
+            /* if source contains more up to date note - push
+             * if oneWaySync is enabled, always push no matter who's newer */
             pushIDs.add(snote.getId());
             LOG.info("Modified note is added to push list : " + sdate);
           } else {
@@ -293,9 +294,11 @@ public class NotebookRepoSync implements NotebookRepo {
       if (dnote == null) {
         /* note exists in destination storage, and absent in source */
         if (oneWaySync) {
+          /* if oneWaySync is enabled, delete the note from destination */
           LOG.info("Extraneous note is added to delete dest list : " + note.getId());
           delDstIDs.add(note.getId());
         } else {
+          /* if oneWaySync is disabled, pull the note from destination */
           LOG.info("Missing note is added to pull list : " + note.getId());
           pullIDs.add(note.getId());
         }
