@@ -17,6 +17,8 @@
 
 package org.apache.zeppelin.notebook;
 
+import static org.apache.commons.lang.StringUtils.*;
+
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashMap;
@@ -30,7 +32,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 import com.google.gson.Gson;
-import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -76,7 +77,7 @@ public class Note implements Serializable, ParagraphJobListener {
   private String name = "";
   private String id;
 
-  private AtomicReference<String> lastReplName = new AtomicReference<>(StringUtils.EMPTY);
+  private AtomicReference<String> lastReplName = new AtomicReference<>(EMPTY);
   private transient ZeppelinConfiguration conf = ZeppelinConfiguration.create();
 
   private Map<String, List<AngularObject>> angularObjects = new HashMap<>();
@@ -122,7 +123,7 @@ public class Note implements Serializable, ParagraphJobListener {
 
   private String getDefaultInterpreterName() {
     InterpreterSetting setting = factory.getDefaultInterpreterSetting(getId());
-    return null != setting ? setting.getName() : StringUtils.EMPTY;
+    return null != setting ? setting.getName() : EMPTY;
   }
 
   void putDefaultReplName() {
@@ -275,8 +276,7 @@ public class Note implements Serializable, ParagraphJobListener {
    */
   private void addLastReplNameIfEmptyText(Paragraph p) {
     String replName = lastReplName.get();
-    if (StringUtils.isEmpty(p.getText()) && StringUtils.isNotEmpty(replName)
-        && isBinding(replName)) {
+    if (isEmpty(p.getText()) && isNotEmpty(replName) && isBinding(replName)) {
       p.setText(getInterpreterName(replName) + " ");
     }
   }
@@ -286,7 +286,7 @@ public class Note implements Serializable, ParagraphJobListener {
   }
 
   private String getInterpreterName(String replName) {
-    return StringUtils.isBlank(replName) ? StringUtils.EMPTY : "%" + replName;
+    return isBlank(replName) ? EMPTY : "%" + replName;
   }
 
   /**
@@ -574,7 +574,7 @@ public class Note implements Serializable, ParagraphJobListener {
   }
 
   private void setLastReplName(Paragraph lastParagraphStarted) {
-    if (StringUtils.isNotEmpty(lastParagraphStarted.getRequiredReplName())) {
+    if (isNotEmpty(lastParagraphStarted.getRequiredReplName())) {
       lastReplName.set(lastParagraphStarted.getRequiredReplName());
     }
   }
