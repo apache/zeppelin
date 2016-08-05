@@ -809,13 +809,15 @@ angular.module('zeppelinWebApp')
         enableLiveAutocompletion:false
       });
 
-      $scope.handleFocus = function(value) {
+      $scope.handleFocus = function(value, isDigestPass) {
         $scope.paragraphFocused = value;
-        // Protect against error in case digest is already running
-        $timeout(function() {
-          // Apply changes since they come from 3rd party library
-          $scope.$digest();
-        });
+        if (isDigestPass === false || isDigestPass === undefined) {
+          // Protect against error in case digest is already running
+          $timeout(function() {
+            // Apply changes since they come from 3rd party library
+            $scope.$digest();
+          });
+        }
       };
 
       $scope.editor.on('focus', function() {
@@ -1100,7 +1102,8 @@ angular.module('zeppelinWebApp')
       $scope.handleFocus(true);
     } else {
       $scope.editor.blur();
-      $scope.handleFocus(false);
+      var isDigestPass = true;      
+      $scope.handleFocus(false, isDigestPass);
     }
   });
 
