@@ -380,7 +380,7 @@
     <profile>
       <id>scala-2.10</id>
       <activation>
-        <property><name>!scala-2.11</name></property>
+        <activeByDefault>true</activeByDefault>
       </activation>
       <properties>
         <extra.source.dir>src/main/scala-2.10</extra.source.dir>
@@ -390,9 +390,6 @@
 
     <profile>
       <id>scala-2.11</id>
-      <activation>
-        <property><name>scala-2.11</name></property>
-      </activation>
       <properties>
         <extra.source.dir>src/main/scala-2.11</extra.source.dir>
         <extra.testsource.dir>src/test/scala/scala-2.11</extra.testsource.dir>

@@ -124,7 +124,7 @@ public class SparkInterpreter extends Interpreter {
 
   public SparkInterpreter(Properties property) {
     super(property);
-    out = new SparkOutputStream();
+    out = new SparkOutputStream(logger);
   }
 
   public SparkInterpreter(Properties property, SparkContext sc) {
@@ -329,6 +329,7 @@ public class SparkInterpreter extends Interpreter {
       }
     }
 
+    setupConfForPySpark(conf);
     Class SparkSession = Utils.findClass("org.apache.spark.sql.SparkSession");
     Object builder = Utils.invokeStaticMethod(SparkSession, "builder");
     Utils.invokeMethod(builder, "config", new Class[]{ SparkConf.class }, new Object[]{ conf });
@@ -442,8 +443,12 @@ public class SparkInterpreter extends Interpreter {
         conf.set(key, val);
       }
     }
+    setupConfForPySpark(conf);
+    SparkContext sparkContext = new SparkContext(conf);
+    return sparkContext;
+  }
 
-    //TODO(jongyoul): Move these codes into PySparkInterpreter.java
+  private void setupConfForPySpark(SparkConf conf) {
     String pysparkBasePath = getSystemDefault("SPARK_HOME", null, null);
     File pysparkPath;
     if (null == pysparkBasePath) {
@@ -456,7 +461,8 @@ public class SparkInterpreter extends Interpreter {
     }
 
     //Only one of py4j-0.9-src.zip and py4j-0.8.2.1-src.zip should exist
-    String[] pythonLibs = new String[]{"pyspark.zip", "py4j-0.9-src.zip", "py4j-0.8.2.1-src.zip"};
+    String[] pythonLibs = new String[]{"pyspark.zip", "py4j-0.9-src.zip", "py4j-0.8.2.1-src.zip",
+      "py4j-0.10.1-src.zip"};
     ArrayList<String> pythonLibUris = new ArrayList<>();
     for (String lib : pythonLibs) {
       File libFile = new File(pysparkPath, lib);
@@ -486,9 +492,6 @@ public class SparkInterpreter extends Interpreter {
     if (getProperty("master").equals("yarn-client")) {
       conf.set("spark.yarn.isPython", "true");
     }
-
-    SparkContext sparkContext = new SparkContext(conf);
-    return sparkContext;
   }
 
   static final String toString(Object o) {

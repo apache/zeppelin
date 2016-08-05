@@ -66,6 +66,7 @@ function make_binary_release() {
 
   cp -r "${WORKING_DIR}/zeppelin" "${WORKING_DIR}/zeppelin-${RELEASE_VERSION}-bin-${BIN_RELEASE_NAME}"
   cd "${WORKING_DIR}/zeppelin-${RELEASE_VERSION}-bin-${BIN_RELEASE_NAME}"
+  ./dev/change_scala_version.sh 2.11
   echo "mvn clean package -Pbuild-distr -DskipTests ${BUILD_FLAGS}"
   mvn clean package -Pbuild-distr -DskipTests ${BUILD_FLAGS}
   if [[ $? -ne 0 ]]; then
@@ -102,8 +103,8 @@ function make_binary_release() {
 
 git_clone
 make_source_package
-make_binary_release all "-Pspark-1.6 -Phadoop-2.4 -Pyarn -Ppyspark -Psparkr -Pr"
-make_binary_release netinst "-Pspark-1.6 -Phadoop-2.4 -Pyarn -Ppyspark -Psparkr -Pr -pl !alluxio,!angular,!cassandra,!elasticsearch,!file,!flink,!hbase,!ignite,!jdbc,!kylin,!lens,!livy,!markdown,!postgresql,!python,!shell"
+make_binary_release all "-Pspark-2.0 -Phadoop-2.4 -Pyarn -Ppyspark -Psparkr -Pr -Pscala-2.11"
+make_binary_release netinst "-Pspark-2.0 -Phadoop-2.4 -Pyarn -Ppyspark -Psparkr -Pr -Pscala-2.11 -pl !alluxio,!angular,!cassandra,!elasticsearch,!file,!flink,!hbase,!ignite,!jdbc,!kylin,!lens,!livy,!markdown,!postgresql,!python,!shell"
 
 # remove non release files and dirs
 rm -rf "${WORKING_DIR}/zeppelin"

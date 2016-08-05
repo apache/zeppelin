@@ -94,6 +94,7 @@ Here are some examples with several options
 
 ```
 # build with spark-2.0, scala-2.11
+./dev/change_scala_version.sh 2.11
 mvn clean package -Pspark-2.0 -Phadoop-2.4 -Pyarn -Ppyspark -Psparkr -Pscala-2.11
 
 # build with spark-1.6, scala-2.10
@@ -380,7 +381,10 @@ You can configure Apache Zeppelin with both **environment variables** in `conf/z
     <td>org.apache.zeppelin.spark.SparkInterpreter,<br />org.apache.zeppelin.spark.PySparkInterpreter,<br />org.apache.zeppelin.spark.SparkSqlInterpreter,<br />org.apache.zeppelin.spark.DepInterpreter,<br />org.apache.zeppelin.markdown.Markdown,<br />org.apache.zeppelin.shell.ShellInterpreter,<br />
     ...
     </td>
-    <td>Comma separated interpreter configurations [Class] <br /> The first interpreter will be a default value. <br /> It means only the first interpreter in this list can be available without <code>%interpreter_name</code> annotation in notebook paragraph. </td>
+    <td>
+      Comma separated interpreter configurations [Class] <br/>
+      <span style="font-style:italic">NOTE: This property is deprecated since Zeppelin-0.6.0 and will not be supported from Zeppelin-0.7.0</span>
+    </td>
   </tr>
   <tr>
     <td>ZEPPELIN_INTERPRETER_DIR</td>
