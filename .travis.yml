@@ -91,9 +91,9 @@ before_script:
 
 script:
   - mvn $TEST_FLAG $PROFILE -B $TEST_PROJECTS
+  - rm -rf .node_modules; cp -r zeppelin-web/node_modules .node_modules
 
 after_success:
-  - rm -rf .node_modules; cp -r zeppelin-web/node_modules .node_modules
   - echo "Travis exited with ${TRAVIS_TEST_RESULT}"
 
 after_failure:
