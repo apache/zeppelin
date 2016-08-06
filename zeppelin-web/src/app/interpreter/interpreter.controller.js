@@ -229,10 +229,7 @@ angular.module('zeppelinWebApp')
               // remote always true for now
               setting.option.remote = true;
             }
-
-            if (setting.option.setPermission === true) {
-              setting.option.users = angular.element('#' + setting.name + 'Users').val();
-            }
+            setting.option.users = angular.element('#' + setting.name + 'Users').val();
 
             var request = {
               option: angular.copy(setting.option),
@@ -358,14 +355,10 @@ angular.module('zeppelinWebApp')
       if (newSetting.depArtifact !== '' || newSetting.depArtifact) {
         $scope.addNewInterpreterDependency();
       }
-
       if (newSetting.option.setPermission === undefined) {
         newSetting.option.setPermission = false;
       }
-
-      if (newSetting.option.setPermission === true) {
-        newSetting.option.users = angular.element('#newInterpreterUsers').val();
-      }
+      newSetting.option.users = angular.element('#newInterpreterUsers').val();
 
       var request = angular.copy($scope.newInterpreterSetting);
 
