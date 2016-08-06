@@ -728,6 +728,11 @@ public class SparkInterpreter extends Interpreter {
             "org.apache.spark.repl.SparkJLineCompletion",
             new Class[]{Utils.findClass("org.apache.spark.repl.SparkIMain")},
             new Object[]{intp});
+      } else {
+        completer = Utils.instantiateClass(
+            "scala.tools.nsc.interpreter.PresentationCompilerCompleter",
+            new Class[]{ IMain.class },
+            new Object[]{ intp });
       }
 
       if (Utils.isSpark2()) {
@@ -914,22 +919,18 @@ public class SparkInterpreter extends Interpreter {
       completionText = "";
       cursor = completionText.length();
     }
-    if (Utils.isScala2_10()) {
-      ScalaCompleter c = (ScalaCompleter) Utils.invokeMethod(completer, "completer");
-      Candidates ret = c.complete(completionText, cursor);
 
-      List<String> candidates = WrapAsJava$.MODULE$.seqAsJavaList(ret.candidates());
-      List<InterpreterCompletion> completions = new LinkedList<InterpreterCompletion>();
+    ScalaCompleter c = (ScalaCompleter) Utils.invokeMethod(completer, "completer");
+    Candidates ret = c.complete(completionText, cursor);
 
-      for (String candidate : candidates) {
-        completions.add(new InterpreterCompletion(candidate, candidate));
-      }
+    List<String> candidates = WrapAsJava$.MODULE$.seqAsJavaList(ret.candidates());
+    List<InterpreterCompletion> completions = new LinkedList<InterpreterCompletion>();
 
-      return completions;
-    } else {
-      return new LinkedList<InterpreterCompletion>();
+    for (String candidate : candidates) {
+      completions.add(new InterpreterCompletion(candidate, candidate));
     }
 
+    return completions;
   }
 
   private String getCompletionTargetString(String text, int cursor) {
