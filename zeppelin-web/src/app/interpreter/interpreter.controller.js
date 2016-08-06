@@ -13,7 +13,24 @@
  */
 'use strict';
 
-angular.module('zeppelinWebApp').controller('InterpreterCtrl',
+angular.module('zeppelinWebApp')
+.directive('interpreterDirective', function ($timeout) {
+  return {
+    restrict: 'A',
+    link: function (scope, element, attr) {
+      if (scope.$last === true) {
+        $timeout(function () {
+          var id = attr['onFinishRender'] || 'ngRenderFinished';
+          scope.$emit(id);
+        });
+      }/* else if (scope.updatedSetting.updated === true) {
+          scope.$emit('intepreterUpdated', scope.updatedSetting);
+      }
+*/
+    }
+  }
+})
+.controller('InterpreterCtrl',
   function($scope, $http, baseUrlSrv, ngToast, $timeout, $route) {
     var interpreterSettingsTmp = [];
     $scope.interpreterSettings = [];
@@ -22,130 +39,7 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl',
     $scope.showRepositoryInfo = false;
     $scope._ = _;
 
-    // auto complete related
-    $scope.suggestions = [];
-    $scope.selectIndex = -1;
-    var selectedUser = '';
-    var selectedUserIndex = 0;
-    var previousSelectedList = [];
-    var searchText = [];
-
-    function updatePreviousList() {
-      for (var i = 0; i < searchText.length; i++) {
-        previousSelectedList[i] = searchText[i];
-      }
-    };
-
-    function assignToUsers(setting) {
-      setting.option.users = searchText.join();
-    };
-
-    var checkIfSelected = function() {
-      if (($scope.suggestions.length === 0) &&
-          ($scope.selectIndex < 0 || $scope.selectIndex >= $scope.suggestions.length) ||
-          ($scope.suggestions.length !== 0 &&
-          ($scope.selectIndex < 0 || $scope.selectIndex >= $scope.suggestions.length))
-      ) {
-        searchText[selectedUserIndex] = selectedUser;
-        $scope.suggestions = [];
-        return true;
-      }
-      return false;
-    };
-
-    $scope.checkKeyDown = function(event, setting) {
-      if (event.keyCode === 40) {
-        event.preventDefault();
-        if ($scope.selectIndex < $scope.suggestions.length) {
-          $scope.selectIndex++;
-        }
-      } else if (event.keyCode === 38) {
-        event.preventDefault();
-
-        if ($scope.selectIndex > 0) {
-          $scope.selectIndex--;
-
-        }
-      } else if (event.keyCode === 13) {
-        event.preventDefault();
-        if (!checkIfSelected()) {
-          selectedUser = $scope.suggestions[$scope.selectIndex];
-          searchText[selectedUserIndex] = $scope.suggestions[$scope.selectIndex];
-          updatePreviousList();
-          assignToUsers(setting);
-          $scope.suggestions = [];
-        }
-      }
-
-    };
-
-    $scope.checkKeyUp = function(event, setting) {
-      if (event.keyCode !== 8 || event.keyCode !== 46) {
-        if (searchText[selectedUserIndex] === '') {
-          $scope.suggestions = [];
-        }
-      }
-      if (event.keyCode === 13) {
-        closeAutoComplete();
-      } else if (event.keyCode < 37 || event.keyCode > 40) { // arrow buttons.
-        $scope.search(setting.option.users, setting);
-      }
-    };
-
-    $scope.assignValueAndHide = function(index, setting) {
-      searchText[selectedUserIndex] = $scope.suggestions[index];
-      updatePreviousList();
-      assignToUsers(setting);
-      $scope.suggestions = [];
-    };
-
-    angular.element(document).click(function() {
-      closeAutoComplete();
-    });
-
-    function closeAutoComplete() {
-      angular.element('.userlist').hide();
-      angular.element('.ace_autocomplete').hide();
-    };
-
-    function getSuggestions(searchQuery) {
-      $scope.suggestions = [];
-      $http.get(baseUrlSrv.getRestApiBase() + '/security/userlist/' + searchQuery).then(function
-      (response) {
-        var userlist = angular.fromJson(response.data).body;
-
-        for (var k in userlist) {
-          $scope.suggestions.push(userlist[k]);
-        }
-      });
-    };
-
-    var getChangedIndex = function() {
-      if (previousSelectedList.length === 0) {
-        selectedUserIndex = searchText.length - 1;
-      } else {
-        for (var i = 0; i < searchText.length; i++) {
-          if (previousSelectedList[i] !== searchText[i]) {
-            selectedUserIndex = i;
-            previousSelectedList = [];
-            break;
-          }
-        }
-      }
-      updatePreviousList();
-    };
-
-    function convertToArray(setting) {
-      if (!setting.option.users) {
-        return;
-      } else if (typeof setting.option.users === 'string') {
-        searchText = setting.option.users.split(',');
-      }
-
-      for (var i = 0; i < searchText.length; i++) {
-        searchText[i] = searchText[i].trim();
-      }
-    };
+    $scope.updatedSetting = {"updated" : false, "index" : 0};
 
     $scope.openPermissions = function() {
       $scope.showInterpreterAuth = true;
@@ -155,7 +49,7 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl',
       $scope.showInterpreterAuth = false;
     };
 
-    $scope.togglePermissions = function() {
+    $scope.togglePermissions = function(intpName) {
       if ($scope.showInterpreterAuth) {
         $scope.closePermissions();
       } else {
@@ -163,25 +57,52 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl',
       }
     };
 
-    // function to find suggestion list on change
-    $scope.search = function(searchQuery, setting) {
-      angular.element('.userlist').show();
-      convertToArray(setting);
+    $scope.$on('intepreterUpdated', function(event, data) {
+      console.log('interpreter updated! -->', $scope.interpreterSettings[data.index].name);
+      //angular.element('#' + $scope.interpreterSettings[data.index].name + '_users').select2({});
+    });
 
-      getChangedIndex();
-      $scope.selectIndex = -1;
-      $scope.suggestions = [];
-      selectedUser = searchText[selectedUserIndex];
-
-      if (selectedUser !== '') {
-        getSuggestions(selectedUser);
-      } else {
-        $scope.suggestions = [];
+    $scope.$on('ngRenderFinished', function(event, data) {
+      for (var setting = 0; setting < $scope.interpreterSettings.length; setting++) {
+        angular.element('#' + $scope.interpreterSettings[setting].name + '_users').select2({
+          tags: false,
+          multiple: true,
+          tokenSeparators: [',', ' '],
+          minimumInputLength: 2,
+          ajax: {
+            url: function(params) {
+              if (!params.term) {
+                return false;
+              }
+              return baseUrlSrv.getRestApiBase() + '/security/userlist/' + params.term;
+            },
+            delay: 250,
+            processResults: function(data, params) {
+              var users = [];
+              if (data.body.users.length !== 0) {
+                for (var i = 0; i < data.body.users.length; i++) {
+                  users.push({
+                    'id': data.body.users[i],
+                    'text': data.body.users[i]
+                  });
+                }
+              }
+              return {
+                results: users,
+                pagination: {
+                  more: false
+                }
+              };
+            },
+            cache: false
+          }
+        });
       }
-    };
+    });
 
     var getInterpreterSettings = function() {
-      $http.get(baseUrlSrv.getRestApiBase() + '/interpreter/setting').success(function(data, status, headers, config) {
+      $http.get(baseUrlSrv.getRestApiBase() + '/interpreter/setting')
+      .success(function(data, status, headers, config) {
         $scope.interpreterSettings = data.body;
         checkDownloadingDependencies();
       }).error(function(data, status, headers, config) {
@@ -313,6 +234,11 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl',
               // remote always true for now
               setting.option.remote = true;
             }
+
+            if (setting.option.setPermission === true) {
+              setting.option.users = angular.element('#' + setting.name + '_users').val();
+            }
+
             var request = {
               option: angular.copy(setting.option),
               properties: angular.copy(setting.properties),
@@ -329,6 +255,9 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl',
                 removeTMPSettings(index);
                 thisConfirm.close();
                 checkDownloadingDependencies();
+
+                $scope.updatedSetting.updated = true;
+                $scope.updatedSetting.index = index;
               })
               .error(function(data, status, headers, config) {
                 console.log('Error %o %o', status, data.message);
@@ -649,6 +578,7 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl',
     var init = function() {
       $scope.resetNewInterpreterSetting();
       $scope.resetNewRepositorySetting();
+
       getInterpreterSettings();
       getAvailableInterpreters();
       getRepositories();

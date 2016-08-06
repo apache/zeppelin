@@ -84,9 +84,10 @@ limitations under the License.
 </div>
 
 <div class="box width-full"
-     ng-repeat="setting in interpreterSettings | orderBy: 'name' | filter: searchInterpreter">
+     ng-repeat="setting in interpreterSettings | orderBy: 'name' | filter: searchInterpreter" interpreter-directive>
   <div id="{{setting.name | lowercase}}">
     <div class="row interpreter">
+
       <div class="col-md-12">
         <h3 class="interpreter-title">{{setting.name}}
           <small>
@@ -191,11 +192,10 @@ limitations under the License.
             pu-elastic-input-minwidth="180px" ng-model="setting.option.port"  ng-disabled="!valueform.$visible" />
       </div>
 
-
       <div class="col-md-12">
         <div class="checkbox">
           <span class="input-group" style="line-height:30px;">
-            <label><input type="checkbox" style="width:18px !important" id="idShowPermission" ng-click="togglePermissions()" ng-model="setting.option.setPermission" ng-disabled="!valueform.$visible"/>
+            <label><input type="checkbox" style="width:18px !important" id="idShowPermission" ng-click="togglePermissions(setting.name)" ng-model="setting.option.setPermission" ng-disabled="!valueform.$visible"/>
             Set permission </label>
           </span>
         </div>
@@ -210,26 +210,11 @@ limitations under the License.
               Empty field (*) implies anyone can run this interpreter.
             </p>
             <div>
-              <form class="form-inline">
-                <div class="form-group">
-                  <label for="User">Users</label>
-                  <input type="text" class="form-control"
-                         ng-model="setting.option.users"
-                         placeholder="search for users"
-                         ng-keydown="checkKeyDown($event, setting)"
-                         ng-keyup="checkKeyUp($event, setting)"
-                         ng-disabled="!valueform.$visible"/>
-                </div>
-                <div class="userlist" >
-                  <ul>
-                    <li ng-repeat="suggestion in suggestions"
-                        ng-class="{active : selectIndex === $index}"
-                        ng-click="assignValueAndHide($index, setting)">
-                      {{suggestion}}
-                    </li>
-                  </ul>
-                </div>
-              </form>
+
+            <span class="owners">Owners </span>
+            <select id="{{setting.name}}_users" class="form-control" multiple="multiple" ng-disabled="!valueform.$visible">
+              <option ng-repeat="user in setting.option.users" selected="selected">{{user}}</option>
+            </select>
             </div>
           </div>
         </div>

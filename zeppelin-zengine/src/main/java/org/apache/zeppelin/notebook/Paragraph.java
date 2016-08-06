@@ -275,13 +275,12 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     return null;
   }
 
-  private boolean hasPermission(String user, String intpUsers) {
-    if (intpUsers.trim().equals("")) {
+  private boolean hasPermission(String user, List<String> intpUsers) {
+    if (1 > intpUsers.size()) {
       return true;
     }
 
-    String[] userList = intpUsers.split(",");
-    for (String u: userList) {
+    for (String u: intpUsers) {
       if (user.trim().equals(u.trim())) {
         return true;
       }
@@ -302,6 +301,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     if (this.user != null &&
       !factory.getInterpreterSettings(note.getId()).isEmpty()) {
       for (InterpreterSetting intp: factory.getInterpreterSettings(note.getId())){
+
         if (replName.startsWith(intp.getName()) &&
           intp.getOption().isSetPermission() &&
           !hasPermission(authenticationInfo.getUser(), intp.getOption().getUsers())) {
@@ -309,8 +309,8 @@ public class Paragraph extends Job implements Serializable, Cloneable {
           return new InterpreterResult(Code.ERROR, authenticationInfo.getUser() +
             " has no permission for " + getRequiredReplName());
 /*
-        throw new RuntimeException(authenticationInfo.getUser() +
-          " has no permission for " + getRequiredReplName());
+          throw new RuntimeException(authenticationInfo.getUser() +
+            " has no permission for " + getRequiredReplName());
 */
         }
       }
