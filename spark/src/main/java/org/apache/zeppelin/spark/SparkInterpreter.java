@@ -723,12 +723,15 @@ public class SparkInterpreter extends Interpreter {
             logger.error(e.getMessage(), e);
           }
         }
+      }
 
+      if (Utils.findClass("org.apache.spark.repl.SparkJLineCompletion") != null) {
         completer = Utils.instantiateClass(
             "org.apache.spark.repl.SparkJLineCompletion",
             new Class[]{Utils.findClass("org.apache.spark.repl.SparkIMain")},
             new Object[]{intp});
-      } else {
+      } else if (
+          Utils.findClass("scala.tools.nsc.interpreter.PresentationCompilerCompleter") != null) {
         completer = Utils.instantiateClass(
             "scala.tools.nsc.interpreter.PresentationCompilerCompleter",
             new Class[]{ IMain.class },
@@ -911,6 +914,10 @@ public class SparkInterpreter extends Interpreter {
 
   @Override
   public List<InterpreterCompletion> completion(String buf, int cursor) {
+    if (completer == null) {
+      return new LinkedList<InterpreterCompletion>();
+    }
+
     if (buf.length() < cursor) {
       cursor = buf.length();
     }
