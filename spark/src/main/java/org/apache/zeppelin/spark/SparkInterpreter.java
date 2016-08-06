@@ -67,10 +67,8 @@ import scala.Enumeration.Value;
 import scala.collection.Iterator;
 import scala.collection.JavaConversions;
 import scala.collection.JavaConverters;
-import scala.collection.convert.WrapAsJava;
 import scala.collection.Seq;
 import scala.collection.convert.WrapAsJava$;
-import scala.collection.convert.WrapAsScala;
 import scala.collection.mutable.HashMap;
 import scala.collection.mutable.HashSet;
 import scala.reflect.io.AbstractFile;
@@ -114,7 +112,7 @@ public class SparkInterpreter extends Interpreter {
   /**
    * completer - org.apache.spark.repl.SparkJLineCompletion (scala 2.10)
    */
-  private Object completer;
+  private Object completer = null;
 
   private Map<String, Object> binder;
   private SparkVersion sparkVersion;
@@ -734,6 +732,12 @@ public class SparkInterpreter extends Interpreter {
           "scala.tools.nsc.interpreter.PresentationCompilerCompleter", true) != null) {
         completer = Utils.instantiateClass(
             "scala.tools.nsc.interpreter.PresentationCompilerCompleter",
+            new Class[]{ IMain.class },
+            new Object[]{ intp });
+      } else if (Utils.findClass(
+          "scala.tools.nsc.interpreter.JLineCompletion", true) != null) {
+        completer = Utils.instantiateClass(
+            "scala.tools.nsc.interpreter.JLineCompletion",
             new Class[]{ IMain.class },
             new Object[]{ intp });
       }
