@@ -926,6 +926,9 @@
 
     <profile>
       <id>yarn</id>
+      <properties>
+        <yarn.version>${hadoop.version}</yarn.version>
+      </properties>
       <dependencies>
         <dependency>
           <groupId>org.apache.spark</groupId>
