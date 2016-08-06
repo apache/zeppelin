@@ -64,7 +64,7 @@ jQuery(function() {
           $search_results.append(appendString);
         });
       } else {
-        $search_results.html('<p>No results found.</p>');
+        $search_results.html('<p>Your search did not match any documents.<br/>Make sure that all words are spelled correctly or try more general keywords.</p>');
       }
     });
   }
