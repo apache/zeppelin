@@ -17,6 +17,7 @@
 
 package org.apache.zeppelin.rinterpreter
 
+import java.io.{BufferedInputStream, File, FileInputStream}
 import java.nio.file.{Files, Paths}
 import java.util._
 
@@ -141,8 +142,11 @@ object RInterpreter {
   }
 
   def dataURI(file : String, mime : String) : String = {
-    val data: String = Source.fromFile(file).getLines().mkString("\n")
-    s"""data:${mime};base64,""" + StringUtils.newStringUtf8(Base64.encodeBase64(data.getBytes(), false))
+    val fp = new File(file)
+    val fdata = new Array[Byte](fp.length().toInt)
+    val fin = new BufferedInputStream(new FileInputStream(fp))
+    try { fin.read(fdata) } finally { fin.close() }
+    s"""data:${mime};base64,""" + StringUtils.newStringUtf8(Base64.encodeBase64(fdata, false))
   }
 
   // The purpose here is to deal with knitr producing HTML with script and css tags outside the <body>
