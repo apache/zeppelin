@@ -14,21 +14,18 @@
 'use strict';
 
 angular.module('zeppelinWebApp')
-.directive('interpreterDirective', function ($timeout) {
+.directive('interpreterDirective', function($timeout) {
   return {
     restrict: 'A',
-    link: function (scope, element, attr) {
+    link: function(scope, element, attr) {
       if (scope.$last === true) {
-        $timeout(function () {
-          var id = attr['onFinishRender'] || 'ngRenderFinished';
+        $timeout(function() {
+          var id = 'ngRenderFinished';
           scope.$emit(id);
         });
-      }/* else if (scope.updatedSetting.updated === true) {
-          scope.$emit('intepreterUpdated', scope.updatedSetting);
       }
-*/
     }
-  }
+  };
 })
 .controller('InterpreterCtrl',
   function($scope, $http, baseUrlSrv, ngToast, $timeout, $route) {
@@ -39,8 +36,6 @@ angular.module('zeppelinWebApp')
     $scope.showRepositoryInfo = false;
     $scope._ = _;
 
-    $scope.updatedSetting = {"updated" : false, "index" : 0};
-
     $scope.openPermissions = function() {
       $scope.showInterpreterAuth = true;
     };
@@ -49,7 +44,45 @@ angular.module('zeppelinWebApp')
       $scope.showInterpreterAuth = false;
     };
 
+    var getSelectJson = function() {
+      var selectJson = {
+        tags: false,
+        multiple: true,
+        tokenSeparators: [',', ' '],
+        minimumInputLength: 2,
+        ajax: {
+          url: function(params) {
+            if (!params.term) {
+              return false;
+            }
+            return baseUrlSrv.getRestApiBase() + '/security/userlist/' + params.term;
+          },
+          delay: 250,
+          processResults: function(data, params) {
+            var users = [];
+            if (data.body.users.length !== 0) {
+              for (var i = 0; i < data.body.users.length; i++) {
+                users.push({
+                  'id': data.body.users[i],
+                  'text': data.body.users[i]
+                });
+              }
+            }
+            return {
+              results: users,
+              pagination: {
+                more: false
+              }
+            };
+          },
+          cache: false
+        }
+      }
+      return selectJson;
+    };
+
     $scope.togglePermissions = function(intpName) {
+      angular.element('#' + intpName + 'Users').select2(getSelectJson());
       if ($scope.showInterpreterAuth) {
         $scope.closePermissions();
       } else {
@@ -57,46 +90,9 @@ angular.module('zeppelinWebApp')
       }
     };
 
-    $scope.$on('intepreterUpdated', function(event, data) {
-      console.log('interpreter updated! -->', $scope.interpreterSettings[data.index].name);
-      //angular.element('#' + $scope.interpreterSettings[data.index].name + '_users').select2({});
-    });
-
     $scope.$on('ngRenderFinished', function(event, data) {
       for (var setting = 0; setting < $scope.interpreterSettings.length; setting++) {
-        angular.element('#' + $scope.interpreterSettings[setting].name + '_users').select2({
-          tags: false,
-          multiple: true,
-          tokenSeparators: [',', ' '],
-          minimumInputLength: 2,
-          ajax: {
-            url: function(params) {
-              if (!params.term) {
-                return false;
-              }
-              return baseUrlSrv.getRestApiBase() + '/security/userlist/' + params.term;
-            },
-            delay: 250,
-            processResults: function(data, params) {
-              var users = [];
-              if (data.body.users.length !== 0) {
-                for (var i = 0; i < data.body.users.length; i++) {
-                  users.push({
-                    'id': data.body.users[i],
-                    'text': data.body.users[i]
-                  });
-                }
-              }
-              return {
-                results: users,
-                pagination: {
-                  more: false
-                }
-              };
-            },
-            cache: false
-          }
-        });
+        angular.element('#' + $scope.interpreterSettings[setting].name + 'Users').select2(getSelectJson());
       }
     });
 
@@ -193,7 +189,6 @@ angular.module('zeppelinWebApp')
         var setting = $scope.interpreterSettings[index];
         option = setting.option;
       }
-
       if (option.perNoteSession) {
         return 'scoped';
       } else if (option.perNoteProcess) {
@@ -236,7 +231,7 @@ angular.module('zeppelinWebApp')
             }
 
             if (setting.option.setPermission === true) {
-              setting.option.users = angular.element('#' + setting.name + '_users').val();
+              setting.option.users = angular.element('#' + setting.name + 'Users').val();
             }
 
             var request = {
@@ -255,9 +250,7 @@ angular.module('zeppelinWebApp')
                 removeTMPSettings(index);
                 thisConfirm.close();
                 checkDownloadingDependencies();
-
-                $scope.updatedSetting.updated = true;
-                $scope.updatedSetting.index = index;
+                $route.reload();
               })
               .error(function(data, status, headers, config) {
                 console.log('Error %o %o', status, data.message);
@@ -364,6 +357,14 @@ angular.module('zeppelinWebApp')
       }
       if (newSetting.depArtifact !== '' || newSetting.depArtifact) {
         $scope.addNewInterpreterDependency();
+      }
+
+      if (newSetting.option.setPermission === undefined) {
+        newSetting.option.setPermission = false;
+      }
+
+      if (newSetting.option.setPermission === true) {
+        newSetting.option.users = angular.element('#newInterpreterUsers').val();
       }
 
       var request = angular.copy($scope.newInterpreterSetting);
