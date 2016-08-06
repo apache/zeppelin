@@ -915,6 +915,7 @@ public class SparkInterpreter extends Interpreter {
   @Override
   public List<InterpreterCompletion> completion(String buf, int cursor) {
     if (completer == null) {
+      logger.warn("Can't find completer");
       return new LinkedList<InterpreterCompletion>();
     }
 
