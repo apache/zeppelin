@@ -17,19 +17,20 @@ limitations under the License.
 
   <div ng-if="paragraph.config.title"
        id="{{paragraph.id}}_title"
+       ng-controller="ElasticInputCtrl as input"
        class="title">
     <input type="text"
            pu-elastic-input
            style="min-width: 400px; max-width: 80%;"
            placeholder="Untitled"
            ng-model="paragraph.title"
-           ng-show="showTitleEditor"
-           ng-escape="showTitleEditor = false; paragraph.title = oldTitle;"
-           ng-blur="setTitle(); showTitleEditor = false"
-           ng-enter="setTitle(); showTitleEditor = false"
-           focus-if="showTitleEditor" />
-    <div ng-click="showTitleEditor = !asIframe && !viewOnly; oldTitle = paragraph.title;"
-         ng-show="!showTitleEditor"
+           ng-if="input.showEditor"
+           ng-escape="input.showEditor = false; paragraph.title = oldTitle;"
+           ng-blur="setTitle(); input.showEditor = false"
+           ng-enter="setTitle(); input.showEditor = false"
+           focus-if="input.showEditor" />
+    <div ng-click="input.showEditor = !asIframe && !viewOnly; oldTitle = paragraph.title;"
+         ng-show="!input.showEditor"
          ng-bind-html="paragraph.title || 'Untitled'">
     </div>
   </div>
@@ -41,7 +42,6 @@ limitations under the License.
            class="editor"
            ui-ace="{
                      onLoad : aceLoaded,
-                     onChange: aceChanged,
                      require : ['ace/ext/language_tools']
                    }"
            ng-model="paragraph.text"

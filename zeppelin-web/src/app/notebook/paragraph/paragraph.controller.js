@@ -94,7 +94,6 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
     $scope.originalText = angular.copy(newParagraph.text);
     $scope.chart = {};
     $scope.colWidthOption = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
-    $scope.showTitleEditor = false;
     $scope.paragraphFocused = false;
     if (newParagraph.focus) {
       $scope.paragraphFocused = true;
@@ -523,10 +522,7 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
   $scope.aceChanged = function() {
     $scope.dirtyText = $scope.editor.getSession().getValue();
     $scope.startSaveTimer();
-
-    $timeout(function() {
-      $scope.setParagraphMode($scope.editor.getSession(), $scope.dirtyText, $scope.editor.getCursorPosition());
-    });
+    $scope.setParagraphMode($scope.editor.getSession(), $scope.dirtyText, $scope.editor.getCursorPosition());
   };
 
   $scope.aceLoaded = function(_editor) {
@@ -535,6 +531,7 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
 
     _editor.$blockScrolling = Infinity;
     $scope.editor = _editor;
+    $scope.editor.on('input', $scope.aceChanged);
     if (_editor.container.id !== '{{paragraph.id}}_editor') {
       $scope.editor.renderer.setShowGutter($scope.paragraph.config.lineNumbers);
       $scope.editor.setShowFoldWidgets(false);
