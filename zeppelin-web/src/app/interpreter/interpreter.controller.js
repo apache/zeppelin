@@ -77,7 +77,7 @@ angular.module('zeppelinWebApp')
           },
           cache: false
         }
-      }
+      };
       return selectJson;
     };
 
