@@ -145,7 +145,11 @@ object RInterpreter {
     val fp = new File(file)
     val fdata = new Array[Byte](fp.length().toInt)
     val fin = new BufferedInputStream(new FileInputStream(fp))
-    try { fin.read(fdata) } finally { fin.close() }
+    try {
+      fin.read(fdata)
+    } finally {
+      fin.close()
+    }
     s"""data:${mime};base64,""" + StringUtils.newStringUtf8(Base64.encodeBase64(fdata, false))
   }
 
