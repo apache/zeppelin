@@ -725,13 +725,13 @@ public class SparkInterpreter extends Interpreter {
         }
       }
 
-      if (Utils.findClass("org.apache.spark.repl.SparkJLineCompletion") != null) {
+      if (Utils.findClass("org.apache.spark.repl.SparkJLineCompletion", true) != null) {
         completer = Utils.instantiateClass(
             "org.apache.spark.repl.SparkJLineCompletion",
             new Class[]{Utils.findClass("org.apache.spark.repl.SparkIMain")},
             new Object[]{intp});
-      } else if (
-          Utils.findClass("scala.tools.nsc.interpreter.PresentationCompilerCompleter") != null) {
+      } else if (Utils.findClass(
+          "scala.tools.nsc.interpreter.PresentationCompilerCompleter", true) != null) {
         completer = Utils.instantiateClass(
             "scala.tools.nsc.interpreter.PresentationCompilerCompleter",
             new Class[]{ IMain.class },
