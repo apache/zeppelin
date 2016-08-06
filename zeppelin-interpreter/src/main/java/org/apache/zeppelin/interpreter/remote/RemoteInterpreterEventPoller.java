@@ -72,6 +72,8 @@ public class RemoteInterpreterEventPoller extends Thread {
   @Override
   public void run() {
     Client client = null;
+    AppendOutputRunner.setListener(listener);
+    CheckAppendOutputRunner.startScheduler();
 
     while (!shutdown) {
       // wait and retry
@@ -83,7 +85,6 @@ public class RemoteInterpreterEventPoller extends Thread {
         }
         continue;
       }
-      AppendOutputRunner.startRunner(listener);
 
       try {
         client = interpreterProcess.getClient();

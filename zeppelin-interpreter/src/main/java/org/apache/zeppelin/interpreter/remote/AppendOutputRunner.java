@@ -26,7 +26,6 @@ public class AppendOutputRunner implements Runnable {
   private static final Long SAFE_PROCESSING_TIME = new Long(10);
   private static final Long SAFE_PROCESSING_STRING_SIZE = new Long(100000);
 
-  private static Thread thread = null;
   private static final BlockingQueue<AppendOutputBuffer> QUEUE =
       new LinkedBlockingQueue<AppendOutputBuffer>();
 
@@ -50,6 +49,7 @@ public class AppendOutputRunner implements Runnable {
         list.add(QUEUE.take());
       } catch (InterruptedException e) {
         logger.error("Wait for OutputBuffer queue interrupted: " + e.getMessage());
+        break;
       }
       Long processingStartTime = System.currentTimeMillis();
       QUEUE.drainTo(list);
@@ -97,20 +97,8 @@ public class AppendOutputRunner implements Runnable {
         Thread.sleep(BUFFER_TIME_MS);
       } catch (InterruptedException e) {
         logger.error("Append output thread interrupted: " + e.getMessage());
+        break;
       }
-    }
-  }
-
-  /* Initialize the thread if non-existent,
-   * or killed due to errors.
-   */
-  public static void startRunner(RemoteInterpreterProcessListener listener) {
-    AppendOutputRunner.listener = listener;
-    if (thread == null || !thread.isAlive()) {
-      logger.info("Starting a AppendOutputRunner thread to buffer"
-          + " and send paragraph append data");
-      thread = new Thread(new AppendOutputRunner());
-      thread.start();
     }
   }
 
@@ -118,10 +106,7 @@ public class AppendOutputRunner implements Runnable {
     QUEUE.offer(new AppendOutputBuffer(noteId, paragraphId, outputToAppend));
   }
 
-  /* The function is only used by
-   * unit-tests.
-   */
-  public static void stopRunnerForUnitTests() {
-    thread.interrupt();
+  public static void setListener(RemoteInterpreterProcessListener listener) {
+    AppendOutputRunner.listener = listener;
   }
 }
