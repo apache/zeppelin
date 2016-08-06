@@ -434,6 +434,39 @@
         </executions>
       </plugin>
 
+      <!-- exclude sparkr by default. sparkr is enabled by profile 'sparkr' -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <excludes>
+            <exclude>**/SparkRInterpreter.java</exclude>
+          </excludes>
+          <testExcludes>
+            <testExclude>**/SparkRInterpreterTest.java</testExclude>
+            <testExclude>**/ZeppelinRTest.java</testExclude>
+          </testExcludes>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.scala-tools</groupId>
+        <artifactId>maven-scala-plugin</artifactId>
+        <configuration>
+          <excludes>
+            <exclude>**/ZeppelinR.scala</exclude>
+            <exclude>**/SparkRBackend.scala</exclude>
+          </excludes>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <excludes>
+            <exclude>**/SparkRInterpreterTest.java</exclude>
+          </excludes>
+        </configuration>
+      </plugin>
     </plugins>
   </build>
 
@@ -891,7 +924,6 @@
       </repositories>
     </profile>
 
-
     <profile>
       <id>yarn</id>
       <dependencies>
@@ -909,7 +941,7 @@
       </dependencies>
     </profile>
     
-    <!-- to deactivate 'exclude-sparkr' automatically when 'spark' is activated -->
+    <!-- include sparkr in the build -->
     <profile>
       <id>sparkr</id>
       <build>
@@ -924,36 +956,21 @@
             <directory>src/main/sparkr-resources</directory>
           </resource>
         </resources>
-      </build>
-    </profile>
 
-    <profile>
-      <id>exclude-sparkr</id>
-      <activation>
-        <activeByDefault>true</activeByDefault>
-      </activation>
-      <build>
         <plugins>
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-compiler-plugin</artifactId>
             <configuration>
-              <excludes>
-                <exclude>**/SparkRInterpreter.java</exclude>
-              </excludes>
-              <testExcludes>
-                <testExclude>**/SparkRInterpreterTest.java</testExclude>
-                <testExclude>**/ZeppelinRTest.java</testExclude>
-              </testExcludes>
+              <excludes combine.self="override"></excludes>
+              <testExcludes combine.self="override"></testExcludes>
             </configuration>
           </plugin>
           <plugin>
             <groupId>org.scala-tools</groupId>
             <artifactId>maven-scala-plugin</artifactId>
             <configuration>
-              <excludes>
-                <exclude>**/ZeppelinR.scala</exclude>
-                <exclude>**/SparkRBackend.scala</exclude>
+              <excludes combine.self="override">
               </excludes>
             </configuration>
           </plugin>
@@ -961,8 +978,7 @@
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-surefire-plugin</artifactId>
             <configuration>
-              <excludes>
-                <exclude>**/SparkRInterpreterTest.java</exclude>
+              <excludes combine.self="override">
               </excludes>
             </configuration>
           </plugin>
