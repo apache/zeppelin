@@ -1,8 +1,8 @@
 ---
 layout: page
-title: "Please contribute"
-description: ""
-group: development
+title:
+description:
+group:
 ---
 <!--
 Licensed under the Apache License, Version 2.0 (the "License");
