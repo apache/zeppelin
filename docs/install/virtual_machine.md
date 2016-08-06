@@ -96,7 +96,7 @@ The virtual machine consists of:
  - Node.js 0.12.7
  - npm 2.11.3
  - ruby 1.9.3 + rake, make and bundler (only required if building jekyll documentation)
- - Maven 3.3.3
+ - Maven 3.3.9
  - Git
  - Unzip
  - libfontconfig to avoid phatomJs missing dependency issues

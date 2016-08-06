@@ -23,24 +23,24 @@
 
 
 - name: Call apache web service to find preferred maven download mirror
-  uri: url=http://www.apache.org/dyn/closer.cgi?path=maven/maven-3/3.3.3/binaries/apache-maven-3.3.3-bin.tar.gz&asjson=1 return_content=yes
+  uri: url=http://www.apache.org/dyn/closer.cgi?path=maven/maven-3/3.3.9/binaries/apache-maven-3.3.9-bin.tar.gz&asjson=1 return_content=yes
   register: webResponse
 
 #- debug: var=webResponse
 
 - name: download maven
   get_url: url="{{webResponse.json.preferred}}{{webResponse.json.path_info}}"
-           dest=/tmp/apache-maven-3.3.3-bin.tar.gz
+           dest=/tmp/apache-maven-3.3.9-bin.tar.gz
            mode=0440
            validate_certs=False
 
 - name: extract maven tgz
-  unarchive: src=/tmp/apache-maven-3.3.3-bin.tar.gz
+  unarchive: src=/tmp/apache-maven-3.3.9-bin.tar.gz
              dest=/usr/local/
              copy=no
-             creates=/usr/local/apache-maven-3.3.3
+             creates=/usr/local/apache-maven-3.3.9
 
 - name: create symlink to this maven version
-  file: src=/usr/local/apache-maven-3.3.3/bin/mvn
+  file: src=/usr/local/apache-maven-3.3.9/bin/mvn
         path=/usr/bin/mvn
         state=link
