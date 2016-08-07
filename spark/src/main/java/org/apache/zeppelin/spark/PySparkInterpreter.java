@@ -75,6 +75,7 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
   private ByteArrayOutputStream input;
   private String scriptPath;
   boolean pythonscriptRunning = false;
+  private static final int MAX_TIMEOUT_SEC = 10;
 
   public PySparkInterpreter(Properties property) {
     super(property);
@@ -316,7 +317,7 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
       long startTime = System.currentTimeMillis();
       while (pythonScriptInitialized == false
           && pythonscriptRunning
-          && System.currentTimeMillis() - startTime < 10 * 1000) {
+          && System.currentTimeMillis() - startTime < MAX_TIMEOUT_SEC * 1000) {
         try {
           pythonScriptInitializeNotifier.wait(1000);
         } catch (InterruptedException e) {
@@ -427,7 +428,7 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
       while (statementOutput == null
         && pythonScriptInitialized == false
         && pythonscriptRunning
-        && System.currentTimeMillis() - startTime < 10 * 1000) {
+        && System.currentTimeMillis() - startTime < MAX_TIMEOUT_SEC * 1000) {
         try {
           statementFinishedNotifier.wait(1000);
         } catch (InterruptedException e) {
