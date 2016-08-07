@@ -132,12 +132,10 @@ public class NotebookServer extends WebSocketServlet implements
       
       String ticket = TicketContainer.instance.getTicket(messagereceived.principal);
       if (ticket != null && !ticket.equals(messagereceived.ticket)){
-        if (messagereceived.op == OP.PING) {
-          /* not to pollute logs with exception trace */
-          LOG.info("Received PING with invalid ticket {}", messagereceived.ticket);
-          return;
-        }
-        throw new Exception("Invalid ticket " + messagereceived.ticket + " != " + ticket);
+        /* not to pollute logs, log in debug instead of exception */
+        LOG.debug("{} message: invalid ticket {} != {}", messagereceived.op,
+            messagereceived.ticket, ticket);
+        return;
       }
 
       ZeppelinConfiguration conf = ZeppelinConfiguration.create();
