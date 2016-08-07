@@ -25,7 +25,6 @@ import org.apache.commons.httpclient.methods.DeleteMethod;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.PutMethod;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Paragraph;
@@ -69,7 +68,7 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
     Map<String, Object> resp = gson.fromJson(get.getResponseBodyAsString(), new TypeToken<Map<String, Object>>() {
     }.getType());
     Map<String, Object> body = (Map<String, Object>) resp.get("body");
-    assertEquals(ZeppelinServer.notebook.getInterpreterFactory().getRegisteredInterpreterList().size(), body.size());
+    assertEquals(ZeppelinServer.notebook.getInterpreterFactory().getAvailableInterpreterSettings().size(), body.size());
     get.releaseConnection();
   }
 
@@ -162,7 +161,7 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
     for (InterpreterSetting setting : ZeppelinServer.notebook.getInterpreterFactory().getInterpreterSettings(note.getId())) {
       if (setting.getName().equals("md")) {
         // Call Restart Interpreter REST API
-        PutMethod put = httpPut("/interpreter/setting/restart/" + setting.id(), "");
+        PutMethod put = httpPut("/interpreter/setting/restart/" + setting.getId(), "");
         assertThat("test interpreter restart:", put, isAllowed());
         put.releaseConnection();
         break;

@@ -1,4 +1,3 @@
-/*jshint loopfunc: true, unused:false */
 /*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,10 +13,10 @@
  */
 'use strict';
 
-angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $rootScope, $route, $window, $element,
+angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $rootScope, $route, $window,
                                                                       $routeParams, $location, $timeout, $compile,
                                                                       $http, websocketMsgSrv, baseUrlSrv, ngToast,
-                                                                      SaveAsService) {
+                                                                      saveAsService) {
   var ANGULAR_FUNCTION_OBJECT_NAME_PREFIX = '_Z_ANGULAR_FUNC_';
   $scope.parentNote = null;
   $scope.paragraph = null;
@@ -95,7 +94,6 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
     $scope.originalText = angular.copy(newParagraph.text);
     $scope.chart = {};
     $scope.colWidthOption = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
-    $scope.showTitleEditor = false;
     $scope.paragraphFocused = false;
     if (newParagraph.focus) {
       $scope.paragraphFocused = true;
@@ -208,115 +206,6 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
     }
   };
 
-  $scope.$on('angularObjectUpdate', function(event, data) {
-    var noteId = $route.current.pathParams.noteId;
-    if (!data.noteId || data.noteId === noteId) {
-      var scope;
-      var registry;
-
-      if (!data.paragraphId || data.paragraphId === $scope.paragraph.id) {
-        scope = paragraphScope;
-        registry = angularObjectRegistry;
-      } else {
-        var app = _.find($scope.apps, {id: data.paragraphId});
-        if (app) {
-          scope = getAppScope(app);
-          registry = getAppRegistry(app);
-        } else {
-          // no matching app in this paragraph
-          return;
-        }
-      }
-      var varName = data.angularObject.name;
-
-      if (angular.equals(data.angularObject.object, scope[varName])) {
-        // return when update has no change
-        return;
-      }
-
-      if (!registry[varName]) {
-        registry[varName] = {
-          interpreterGroupId: data.interpreterGroupId,
-          noteId: data.noteId,
-          paragraphId: data.paragraphId
-        };
-      } else {
-        registry[varName].noteId = registry[varName].noteId || data.noteId;
-        registry[varName].paragraphId = registry[varName].paragraphId || data.paragraphId;
-      }
-
-      registry[varName].skipEmit = true;
-
-      if (!registry[varName].clearWatcher) {
-        registry[varName].clearWatcher = scope.$watch(varName, function(newValue, oldValue) {
-          console.log('angular object (paragraph) updated %o %o', varName, registry[varName]);
-          if (registry[varName].skipEmit) {
-            registry[varName].skipEmit = false;
-            return;
-          }
-          websocketMsgSrv.updateAngularObject(
-            registry[varName].noteId,
-            registry[varName].paragraphId,
-            varName,
-            newValue,
-            registry[varName].interpreterGroupId);
-        });
-      }
-      console.log('angular object (paragraph) created %o', varName);
-      scope[varName] = data.angularObject.object;
-
-      // create proxy for AngularFunction
-      if (varName.startsWith(ANGULAR_FUNCTION_OBJECT_NAME_PREFIX)) {
-        var funcName = varName.substring((ANGULAR_FUNCTION_OBJECT_NAME_PREFIX).length);
-        scope[funcName] = function() {
-          scope[varName] = arguments;
-          console.log('angular function (paragraph) invoked %o', arguments);
-        };
-
-        console.log('angular function (paragraph) created %o', scope[funcName]);
-      }
-    }
-  });
-
-  $scope.$on('angularObjectRemove', function(event, data) {
-    var noteId = $route.current.pathParams.noteId;
-    if (!data.noteId || data.noteId === noteId) {
-      var scope;
-      var registry;
-
-      if (!data.paragraphId || data.paragraphId === $scope.paragraph.id) {
-        scope = paragraphScope;
-        registry = angularObjectRegistry;
-      } else {
-        var app = _.find($scope.apps, {id: data.paragraphId});
-        if (app) {
-          scope = getAppScope(app);
-          registry = getAppRegistry(app);
-        } else {
-          // no matching app in this paragraph
-          return;
-        }
-      }
-
-      var varName = data.name;
-
-      // clear watcher
-      if (registry[varName]) {
-        registry[varName].clearWatcher();
-        registry[varName] = undefined;
-      }
-
-      // remove scope variable
-      scope[varName] = undefined;
-
-      // remove proxy for AngularFunction
-      if (varName.startsWith(ANGULAR_FUNCTION_OBJECT_NAME_PREFIX)) {
-        var funcName = varName.substring((ANGULAR_FUNCTION_OBJECT_NAME_PREFIX).length);
-        scope[funcName] = undefined;
-      }
-    }
-  });
-
   var initializeDefault = function() {
     var config = $scope.paragraph.config;
 
@@ -382,137 +271,6 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
   var isEmpty = function(object) {
     return !object;
   };
-
-  // TODO: this may have impact on performance when there are many paragraphs in a note.
-  $scope.$on('updateParagraph', function(event, data) {
-    if (data.paragraph.id === $scope.paragraph.id &&
-        (data.paragraph.dateCreated !== $scope.paragraph.dateCreated ||
-         data.paragraph.dateFinished !== $scope.paragraph.dateFinished ||
-         data.paragraph.dateStarted !== $scope.paragraph.dateStarted ||
-         data.paragraph.dateUpdated !== $scope.paragraph.dateUpdated ||
-         data.paragraph.status !== $scope.paragraph.status ||
-         data.paragraph.jobName !== $scope.paragraph.jobName ||
-         data.paragraph.title !== $scope.paragraph.title ||
-         isEmpty(data.paragraph.result) !== isEmpty($scope.paragraph.result) ||
-         data.paragraph.errorMessage !== $scope.paragraph.errorMessage ||
-         !angular.equals(data.paragraph.settings, $scope.paragraph.settings) ||
-         !angular.equals(data.paragraph.config, $scope.paragraph.config))
-       ) {
-
-      var oldType = $scope.getResultType();
-      var newType = $scope.getResultType(data.paragraph);
-      var oldGraphMode = $scope.getGraphMode();
-      var newGraphMode = $scope.getGraphMode(data.paragraph);
-      var oldActiveApp = _.get($scope.paragraph.config, 'helium.activeApp');
-      var newActiveApp = _.get(data.paragraph.config, 'helium.activeApp');
-
-      var statusChanged = (data.paragraph.status !== $scope.paragraph.status);
-
-      var resultRefreshed = (data.paragraph.dateFinished !== $scope.paragraph.dateFinished) ||
-        isEmpty(data.paragraph.result) !== isEmpty($scope.paragraph.result) ||
-        data.paragraph.status === 'ERROR' || (data.paragraph.status === 'FINISHED' && statusChanged) ||
-        (!newActiveApp && oldActiveApp !== newActiveApp);
-
-      //console.log("updateParagraph oldData %o, newData %o. type %o -> %o, mode %o -> %o", $scope.paragraph, data, oldType, newType, oldGraphMode, newGraphMode);
-
-      if ($scope.paragraph.text !== data.paragraph.text) {
-        if ($scope.dirtyText) {         // check if editor has local update
-          if ($scope.dirtyText === data.paragraph.text) {  // when local update is the same from remote, clear local update
-            $scope.paragraph.text = data.paragraph.text;
-            $scope.dirtyText = undefined;
-            $scope.originalText = angular.copy(data.paragraph.text);
-          } else { // if there're local update, keep it.
-            $scope.paragraph.text = $scope.dirtyText;
-          }
-        } else {
-          $scope.paragraph.text = data.paragraph.text;
-          $scope.originalText = angular.copy(data.paragraph.text);
-        }
-      }
-
-      /** push the rest */
-      $scope.paragraph.aborted = data.paragraph.aborted;
-      $scope.paragraph.user = data.paragraph.user;
-      $scope.paragraph.dateUpdated = data.paragraph.dateUpdated;
-      $scope.paragraph.dateCreated = data.paragraph.dateCreated;
-      $scope.paragraph.dateFinished = data.paragraph.dateFinished;
-      $scope.paragraph.dateStarted = data.paragraph.dateStarted;
-      $scope.paragraph.errorMessage = data.paragraph.errorMessage;
-      $scope.paragraph.jobName = data.paragraph.jobName;
-      $scope.paragraph.title = data.paragraph.title;
-      $scope.paragraph.lineNumbers = data.paragraph.lineNumbers;
-      $scope.paragraph.status = data.paragraph.status;
-      $scope.paragraph.result = data.paragraph.result;
-      $scope.paragraph.settings = data.paragraph.settings;
-
-      if (!$scope.asIframe) {
-        $scope.paragraph.config = data.paragraph.config;
-        initializeDefault();
-      } else {
-        data.paragraph.config.editorHide = true;
-        data.paragraph.config.tableHide = false;
-        $scope.paragraph.config = data.paragraph.config;
-      }
-
-      if (newType === 'TABLE') {
-        $scope.loadTableData($scope.paragraph.result);
-        if (oldType !== 'TABLE' || resultRefreshed) {
-          clearUnknownColsFromGraphOption();
-          selectDefaultColsForGraphOption();
-        }
-        /** User changed the chart type? */
-        if (oldGraphMode !== newGraphMode) {
-          $scope.setGraphMode(newGraphMode, false, false);
-        } else {
-          $scope.setGraphMode(newGraphMode, false, true);
-        }
-      } else if (newType === 'HTML' && resultRefreshed) {
-        $scope.renderHtml();
-      } else if (newType === 'ANGULAR' && resultRefreshed) {
-        $scope.renderAngular();
-      } else if (newType === 'TEXT' && resultRefreshed) {
-        $scope.renderText();
-      }
-
-      getApplicationStates();
-      getSuggestions();
-
-      if (newActiveApp && newActiveApp !== oldActiveApp) {
-        var app = _.find($scope.apps, {id: newActiveApp});
-        renderApp(app);
-      }
-
-      if (statusChanged || resultRefreshed) {
-        // when last paragraph runs, zeppelin automatically appends new paragraph.
-        // this broadcast will focus to the newly inserted paragraph
-        var paragraphs = angular.element('div[id$="_paragraphColumn_main"]');
-        if (paragraphs.length >= 2 && paragraphs[paragraphs.length - 2].id.startsWith($scope.paragraph.id)) {
-          // rendering output can took some time. So delay scrolling event firing for sometime.
-          setTimeout(function() {
-            $rootScope.$broadcast('scrollToCursor');
-          }, 500);
-        }
-      }
-    }
-
-  });
-
-  $scope.$on('appendParagraphOutput', function(event, data) {
-    if ($scope.paragraph.id === data.paragraphId) {
-      if ($scope.flushStreamingOutput) {
-        $scope.clearTextOutput();
-        $scope.flushStreamingOutput = false;
-      }
-      $scope.appendTextOutput(data.data);
-    }
-  });
-
-  $scope.$on('updateParagraphOutput', function(event, data) {
-    if ($scope.paragraph.id === data.paragraphId) {
-      $scope.clearTextOutput();
-      $scope.appendTextOutput(data.data);
-    }
-  });
 
   $scope.isRunning = function() {
     if ($scope.paragraph.status === 'RUNNING' || $scope.paragraph.status === 'PENDING') {
@@ -764,10 +522,7 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
   $scope.aceChanged = function() {
     $scope.dirtyText = $scope.editor.getSession().getValue();
     $scope.startSaveTimer();
-
-    $timeout(function() {
-      $scope.setParagraphMode($scope.editor.getSession(), $scope.dirtyText, $scope.editor.getCursorPosition());
-    });
+    $scope.setParagraphMode($scope.editor.getSession(), $scope.dirtyText, $scope.editor.getCursorPosition());
   };
 
   $scope.aceLoaded = function(_editor) {
@@ -776,6 +531,7 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
 
     _editor.$blockScrolling = Infinity;
     $scope.editor = _editor;
+    $scope.editor.on('input', $scope.aceChanged);
     if (_editor.container.id !== '{{paragraph.id}}_editor') {
       $scope.editor.renderer.setShowGutter($scope.paragraph.config.lineNumbers);
       $scope.editor.setShowFoldWidgets(false);
@@ -1014,10 +770,6 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
     bodyEl.scrollTo(scrollTargetPos, {axis: 'y', interrupt: true, duration: 100});
   };
 
-  var setEditorHeight = function(id, height) {
-    angular.element('#' + id).height(height.toString() + 'px');
-  };
-
   $scope.getEditorValue = function() {
     return $scope.editor.getValue();
   };
@@ -1036,8 +788,7 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
       return '';
     }
     var user = (pdata.user === undefined || pdata.user === null) ? 'anonymous' : pdata.user;
-    var desc = 'Took ' +
-      moment.duration(moment(pdata.dateFinished).diff(moment(pdata.dateStarted))).humanize() +
+    var desc = 'Took ' + moment.duration((timeMs / 1000), 'seconds').format('h [hrs] m [min] s [sec]') +
       '. Last updated by ' + user + ' at ' + moment(pdata.dateUpdated).format('MMMM DD YYYY, h:mm:ss A') + '.';
     if ($scope.isResultOutdated()) {
       desc += ' (outdated)';
@@ -1060,117 +811,6 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
   $scope.goToLineEnd = function() {
     $scope.editor.navigateLineEnd();
   };
-
-  $scope.$on('updateProgress', function(event, data) {
-    if (data.id === $scope.paragraph.id) {
-      $scope.currentProgress = data.progress;
-    }
-  });
-
-  $scope.$on('keyEvent', function(event, keyEvent) {
-    if ($scope.paragraphFocused) {
-
-      var paragraphId = $scope.paragraph.id;
-      var keyCode = keyEvent.keyCode;
-      var noShortcutDefined = false;
-      var editorHide = $scope.paragraph.config.editorHide;
-
-      if (editorHide && (keyCode === 38 || (keyCode === 80 && keyEvent.ctrlKey && !keyEvent.altKey))) { // up
-        // move focus to previous paragraph
-        $scope.$emit('moveFocusToPreviousParagraph', paragraphId);
-      } else if (editorHide && (keyCode === 40 || (keyCode === 78 && keyEvent.ctrlKey && !keyEvent.altKey))) { // down
-        // move focus to next paragraph
-        $scope.$emit('moveFocusToNextParagraph', paragraphId);
-      } else if (keyEvent.shiftKey && keyCode === 13) { // Shift + Enter
-        $scope.run();
-      } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 67) { // Ctrl + Alt + c
-        $scope.cancelParagraph();
-      } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 68) { // Ctrl + Alt + d
-        $scope.removeParagraph();
-      } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 75) { // Ctrl + Alt + k
-        $scope.moveUp();
-      } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 74) { // Ctrl + Alt + j
-        $scope.moveDown();
-      } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 65) { // Ctrl + Alt + a
-        $scope.insertNew('above');
-      } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 66) { // Ctrl + Alt + b
-        $scope.insertNew('below');
-      } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 79) { // Ctrl + Alt + o
-        $scope.toggleOutput();
-      } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 82) { // Ctrl + Alt + r
-        $scope.toggleEnableDisable();
-      } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 69) { // Ctrl + Alt + e
-        $scope.toggleEditor();
-      } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 77) { // Ctrl + Alt + m
-        if ($scope.paragraph.config.lineNumbers) {
-          $scope.hideLineNumbers();
-        } else {
-          $scope.showLineNumbers();
-        }
-      } else if (keyEvent.ctrlKey && keyEvent.shiftKey && keyCode === 189) { // Ctrl + Shift + -
-        $scope.changeColWidth(Math.max(1, $scope.paragraph.config.colWidth - 1));
-      } else if (keyEvent.ctrlKey && keyEvent.shiftKey && keyCode === 187) { // Ctrl + Shift + =
-        $scope.changeColWidth(Math.min(12, $scope.paragraph.config.colWidth + 1));
-      } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 84) { // Ctrl + Alt + t
-        if ($scope.paragraph.config.title) {
-          $scope.hideTitle();
-        } else {
-          $scope.showTitle();
-        }
-      } else {
-        noShortcutDefined = true;
-      }
-
-      if (!noShortcutDefined) {
-        keyEvent.preventDefault();
-      }
-    }
-  });
-
-  $scope.$on('focusParagraph', function(event, paragraphId, cursorPos, mouseEvent) {
-    if ($scope.paragraph.id === paragraphId) {
-      // focus editor
-      if (!$scope.paragraph.config.editorHide) {
-        if (!mouseEvent) {
-          $scope.editor.focus();
-          // move cursor to the first row (or the last row)
-          var row;
-          if (cursorPos >= 0) {
-            row = cursorPos;
-            $scope.editor.gotoLine(row, 0);
-          } else {
-            row = $scope.editor.session.getLength();
-            $scope.editor.gotoLine(row, 0);
-          }
-          $scope.scrollToCursor($scope.paragraph.id, 0);
-        }
-      }
-      $scope.handleFocus(true);
-    } else {
-      $scope.editor.blur();
-      $scope.handleFocus(false);
-    }
-  });
-
-  $scope.$on('runParagraph', function(event) {
-    $scope.runParagraph($scope.editor.getValue());
-  });
-
-  $scope.$on('openEditor', function(event) {
-    $scope.openEditor();
-  });
-
-  $scope.$on('closeEditor', function(event) {
-    $scope.closeEditor();
-  });
-
-  $scope.$on('openTable', function(event) {
-    $scope.openTable();
-  });
-
-  $scope.$on('closeTable', function(event) {
-    $scope.closeTable();
-  });
 
   $scope.getResultType = function(paragraph) {
     var pdata = (paragraph) ? paragraph : $scope.paragraph;
@@ -1283,49 +923,40 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
       var resultRows = data.rows;
       var columnNames = _.pluck(data.columnNames, 'name');
 
-      // on chart type change, destroy table to force reinitialization.
       if ($scope.hot) {
         $scope.hot.destroy();
-        $scope.hot = null;
       }
 
-      // create table if not exists.
-      if (!$scope.hot) {
-        $scope.hot = new Handsontable(container, {
-          rowHeaders: false,
-          stretchH: 'all',
-          sortIndicator: true,
-          columnSorting: true,
-          contextMenu: false,
-          manualColumnResize: true,
-          manualRowResize: true,
-          readOnly: true,
-          readOnlyCellClassName: '',  // don't apply any special class so we can retain current styling
-          fillHandle: false,
-          fragmentSelection: true,
-          disableVisualSelection: true,
-          cells: function(row, col, prop) {
-            var cellProperties = {};
-            cellProperties.renderer = function(instance, td, row, col, prop, value, cellProperties) {
-              if (!isNaN(value)) {
-                cellProperties.format = '0,0.[00000]';
-                td.style.textAlign = 'left';
-                Handsontable.renderers.NumericRenderer.apply(this, arguments);
-              } else if (value.length > '%html'.length && '%html ' === value.substring(0, '%html '.length)) {
-                td.innerHTML = value.substring('%html'.length);
-              } else {
-                Handsontable.renderers.TextRenderer.apply(this, arguments);
-              }
-            };
-            return cellProperties;
-          }
-        });
-      }
-
-      // load data into table.
-      $scope.hot.updateSettings({
+      $scope.hot = new Handsontable(container, {
         colHeaders: columnNames,
-        data: resultRows
+        data: resultRows,
+        rowHeaders: false,
+        stretchH: 'all',
+        sortIndicator: true,
+        columnSorting: true,
+        contextMenu: false,
+        manualColumnResize: true,
+        manualRowResize: true,
+        readOnly: true,
+        readOnlyCellClassName: '',  // don't apply any special class so we can retain current styling
+        fillHandle: false,
+        fragmentSelection: true,
+        disableVisualSelection: true,
+        cells: function(row, col, prop) {
+          var cellProperties = {};
+          cellProperties.renderer = function(instance, td, row, col, prop, value, cellProperties) {
+            if (!isNaN(value)) {
+              cellProperties.format = '0,0.[00000]';
+              td.style.textAlign = 'left';
+              Handsontable.renderers.NumericRenderer.apply(this, arguments);
+            } else if (value.length > '%html'.length && '%html ' === value.substring(0, '%html '.length)) {
+              td.innerHTML = value.substring('%html'.length);
+            } else {
+              Handsontable.renderers.TextRenderer.apply(this, arguments);
+            }
+          };
+          return cellProperties;
+        }
       });
     };
 
@@ -1462,12 +1093,12 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
       } catch (ignoreErr) {
       }
 
-      var chartEl = d3.select('#p' + $scope.paragraph.id + '_' + type + ' svg')
-      .attr('height', $scope.paragraph.config.graph.height)
-      .datum(d3g)
-      .transition()
-      .duration(animationDuration)
-      .call($scope.chart[type]);
+      d3.select('#p' + $scope.paragraph.id + '_' + type + ' svg')
+        .attr('height', $scope.paragraph.config.graph.height)
+        .datum(d3g)
+        .transition()
+        .duration(animationDuration)
+        .call($scope.chart[type]);
       d3.select('#p' + $scope.paragraph.id + '_' + type + ' svg').style.height = height + 'px';
       nv.utils.windowResize($scope.chart[type].update);
     };
@@ -1674,7 +1305,6 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
 
     for (var i = 0; i < data.rows.length; i++) {
       var row = data.rows[i];
-      var newRow = {};
       var s = schema;
       var p = rows;
 
@@ -2206,7 +1836,6 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
   };
 
   $scope.exportToDSV = function(delimiter) {
-    var data = $scope.paragraph.result;
     var dsv = '';
     for (var titleIndex in $scope.paragraph.result.columnNames) {
       dsv += $scope.paragraph.result.columnNames[titleIndex].name + delimiter;
@@ -2226,7 +1855,7 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
     } else if (delimiter === ',') {
       extension = 'csv';
     }
-    SaveAsService.SaveAs(dsv, 'data', extension);
+    saveAsService.saveAs(dsv, 'data', extension);
   };
 
   // Helium ---------------------------------------------
@@ -2238,7 +1867,6 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
   $scope.suggestion = {};
 
   $scope.switchApp = function(appId) {
-    var app = _.find($scope.apps, {id: appId});
     var config = $scope.paragraph.config;
     var settings = $scope.paragraph.settings;
 
@@ -2350,6 +1978,10 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
     $timeout(retryRenderer);
   };
 
+  /*
+  ** $scope.$on functions below
+  */
+
   $scope.$on('appendAppOutput', function(event, data) {
     if ($scope.paragraph.id === data.paragraphId) {
       var app = _.find($scope.apps, {id: data.appId});
@@ -2412,5 +2044,355 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
       }
     }
   });
-});
 
+  $scope.$on('angularObjectUpdate', function(event, data) {
+    var noteId = $route.current.pathParams.noteId;
+    if (!data.noteId || data.noteId === noteId) {
+      var scope;
+      var registry;
+
+      if (!data.paragraphId || data.paragraphId === $scope.paragraph.id) {
+        scope = paragraphScope;
+        registry = angularObjectRegistry;
+      } else {
+        var app = _.find($scope.apps, {id: data.paragraphId});
+        if (app) {
+          scope = getAppScope(app);
+          registry = getAppRegistry(app);
+        } else {
+          // no matching app in this paragraph
+          return;
+        }
+      }
+      var varName = data.angularObject.name;
+
+      if (angular.equals(data.angularObject.object, scope[varName])) {
+        // return when update has no change
+        return;
+      }
+
+      if (!registry[varName]) {
+        registry[varName] = {
+          interpreterGroupId: data.interpreterGroupId,
+          noteId: data.noteId,
+          paragraphId: data.paragraphId
+        };
+      } else {
+        registry[varName].noteId = registry[varName].noteId || data.noteId;
+        registry[varName].paragraphId = registry[varName].paragraphId || data.paragraphId;
+      }
+
+      registry[varName].skipEmit = true;
+
+      if (!registry[varName].clearWatcher) {
+        registry[varName].clearWatcher = scope.$watch(varName, function(newValue, oldValue) {
+          console.log('angular object (paragraph) updated %o %o', varName, registry[varName]);
+          if (registry[varName].skipEmit) {
+            registry[varName].skipEmit = false;
+            return;
+          }
+          websocketMsgSrv.updateAngularObject(
+            registry[varName].noteId,
+            registry[varName].paragraphId,
+            varName,
+            newValue,
+            registry[varName].interpreterGroupId);
+        });
+      }
+      console.log('angular object (paragraph) created %o', varName);
+      scope[varName] = data.angularObject.object;
+
+      // create proxy for AngularFunction
+      if (varName.startsWith(ANGULAR_FUNCTION_OBJECT_NAME_PREFIX)) {
+        var funcName = varName.substring((ANGULAR_FUNCTION_OBJECT_NAME_PREFIX).length);
+        scope[funcName] = function() {
+          scope[varName] = arguments;
+          console.log('angular function (paragraph) invoked %o', arguments);
+        };
+
+        console.log('angular function (paragraph) created %o', scope[funcName]);
+      }
+    }
+  });
+
+  $scope.$on('angularObjectRemove', function(event, data) {
+    var noteId = $route.current.pathParams.noteId;
+    if (!data.noteId || data.noteId === noteId) {
+      var scope;
+      var registry;
+
+      if (!data.paragraphId || data.paragraphId === $scope.paragraph.id) {
+        scope = paragraphScope;
+        registry = angularObjectRegistry;
+      } else {
+        var app = _.find($scope.apps, {id: data.paragraphId});
+        if (app) {
+          scope = getAppScope(app);
+          registry = getAppRegistry(app);
+        } else {
+          // no matching app in this paragraph
+          return;
+        }
+      }
+
+      var varName = data.name;
+
+      // clear watcher
+      if (registry[varName]) {
+        registry[varName].clearWatcher();
+        registry[varName] = undefined;
+      }
+
+      // remove scope variable
+      scope[varName] = undefined;
+
+      // remove proxy for AngularFunction
+      if (varName.startsWith(ANGULAR_FUNCTION_OBJECT_NAME_PREFIX)) {
+        var funcName = varName.substring((ANGULAR_FUNCTION_OBJECT_NAME_PREFIX).length);
+        scope[funcName] = undefined;
+      }
+    }
+  });
+
+  $scope.$on('updateParagraph', function(event, data) {
+    if (data.paragraph.id === $scope.paragraph.id &&
+        (data.paragraph.dateCreated !== $scope.paragraph.dateCreated ||
+         data.paragraph.dateFinished !== $scope.paragraph.dateFinished ||
+         data.paragraph.dateStarted !== $scope.paragraph.dateStarted ||
+         data.paragraph.dateUpdated !== $scope.paragraph.dateUpdated ||
+         data.paragraph.status !== $scope.paragraph.status ||
+         data.paragraph.jobName !== $scope.paragraph.jobName ||
+         data.paragraph.title !== $scope.paragraph.title ||
+         isEmpty(data.paragraph.result) !== isEmpty($scope.paragraph.result) ||
+         data.paragraph.errorMessage !== $scope.paragraph.errorMessage ||
+         !angular.equals(data.paragraph.settings, $scope.paragraph.settings) ||
+         !angular.equals(data.paragraph.config, $scope.paragraph.config))
+       ) {
+
+      var oldType = $scope.getResultType();
+      var newType = $scope.getResultType(data.paragraph);
+      var oldGraphMode = $scope.getGraphMode();
+      var newGraphMode = $scope.getGraphMode(data.paragraph);
+      var oldActiveApp = _.get($scope.paragraph.config, 'helium.activeApp');
+      var newActiveApp = _.get(data.paragraph.config, 'helium.activeApp');
+
+      var statusChanged = (data.paragraph.status !== $scope.paragraph.status);
+
+      var resultRefreshed = (data.paragraph.dateFinished !== $scope.paragraph.dateFinished) ||
+        isEmpty(data.paragraph.result) !== isEmpty($scope.paragraph.result) ||
+        data.paragraph.status === 'ERROR' || (data.paragraph.status === 'FINISHED' && statusChanged) ||
+        (!newActiveApp && oldActiveApp !== newActiveApp);
+
+      //console.log("updateParagraph oldData %o, newData %o. type %o -> %o, mode %o -> %o", $scope.paragraph, data, oldType, newType, oldGraphMode, newGraphMode);
+
+      if ($scope.paragraph.text !== data.paragraph.text) {
+        if ($scope.dirtyText) {         // check if editor has local update
+          if ($scope.dirtyText === data.paragraph.text) {  // when local update is the same from remote, clear local update
+            $scope.paragraph.text = data.paragraph.text;
+            $scope.dirtyText = undefined;
+            $scope.originalText = angular.copy(data.paragraph.text);
+          } else { // if there're local update, keep it.
+            $scope.paragraph.text = $scope.dirtyText;
+          }
+        } else {
+          $scope.paragraph.text = data.paragraph.text;
+          $scope.originalText = angular.copy(data.paragraph.text);
+        }
+      }
+
+      /** push the rest */
+      $scope.paragraph.aborted = data.paragraph.aborted;
+      $scope.paragraph.user = data.paragraph.user;
+      $scope.paragraph.dateUpdated = data.paragraph.dateUpdated;
+      $scope.paragraph.dateCreated = data.paragraph.dateCreated;
+      $scope.paragraph.dateFinished = data.paragraph.dateFinished;
+      $scope.paragraph.dateStarted = data.paragraph.dateStarted;
+      $scope.paragraph.errorMessage = data.paragraph.errorMessage;
+      $scope.paragraph.jobName = data.paragraph.jobName;
+      $scope.paragraph.title = data.paragraph.title;
+      $scope.paragraph.lineNumbers = data.paragraph.lineNumbers;
+      $scope.paragraph.status = data.paragraph.status;
+      $scope.paragraph.result = data.paragraph.result;
+      $scope.paragraph.settings = data.paragraph.settings;
+
+      if (!$scope.asIframe) {
+        $scope.paragraph.config = data.paragraph.config;
+        initializeDefault();
+      } else {
+        data.paragraph.config.editorHide = true;
+        data.paragraph.config.tableHide = false;
+        $scope.paragraph.config = data.paragraph.config;
+      }
+
+      if (newType === 'TABLE') {
+        $scope.loadTableData($scope.paragraph.result);
+        if (oldType !== 'TABLE' || resultRefreshed) {
+          clearUnknownColsFromGraphOption();
+          selectDefaultColsForGraphOption();
+        }
+        /** User changed the chart type? */
+        if (oldGraphMode !== newGraphMode) {
+          $scope.setGraphMode(newGraphMode, false, false);
+        } else {
+          $scope.setGraphMode(newGraphMode, false, true);
+        }
+      } else if (newType === 'HTML' && resultRefreshed) {
+        $scope.renderHtml();
+      } else if (newType === 'ANGULAR' && resultRefreshed) {
+        $scope.renderAngular();
+      } else if (newType === 'TEXT' && resultRefreshed) {
+        $scope.renderText();
+      }
+
+      getApplicationStates();
+      getSuggestions();
+
+      if (newActiveApp && newActiveApp !== oldActiveApp) {
+        var app = _.find($scope.apps, {id: newActiveApp});
+        renderApp(app);
+      }
+
+      if (statusChanged || resultRefreshed) {
+        // when last paragraph runs, zeppelin automatically appends new paragraph.
+        // this broadcast will focus to the newly inserted paragraph
+        var paragraphs = angular.element('div[id$="_paragraphColumn_main"]');
+        if (paragraphs.length >= 2 && paragraphs[paragraphs.length - 2].id.startsWith($scope.paragraph.id)) {
+          // rendering output can took some time. So delay scrolling event firing for sometime.
+          setTimeout(function() {
+            $rootScope.$broadcast('scrollToCursor');
+          }, 500);
+        }
+      }
+    }
+
+  });
+
+  $scope.$on('appendParagraphOutput', function(event, data) {
+    if ($scope.paragraph.id === data.paragraphId) {
+      if ($scope.flushStreamingOutput) {
+        $scope.clearTextOutput();
+        $scope.flushStreamingOutput = false;
+      }
+      $scope.appendTextOutput(data.data);
+    }
+  });
+
+  $scope.$on('updateParagraphOutput', function(event, data) {
+    if ($scope.paragraph.id === data.paragraphId) {
+      $scope.clearTextOutput();
+      $scope.appendTextOutput(data.data);
+    }
+  });
+
+  $scope.$on('updateProgress', function(event, data) {
+    if (data.id === $scope.paragraph.id) {
+      $scope.currentProgress = data.progress;
+    }
+  });
+
+  $scope.$on('keyEvent', function(event, keyEvent) {
+    if ($scope.paragraphFocused) {
+
+      var paragraphId = $scope.paragraph.id;
+      var keyCode = keyEvent.keyCode;
+      var noShortcutDefined = false;
+      var editorHide = $scope.paragraph.config.editorHide;
+
+      if (editorHide && (keyCode === 38 || (keyCode === 80 && keyEvent.ctrlKey && !keyEvent.altKey))) { // up
+        // move focus to previous paragraph
+        $scope.$emit('moveFocusToPreviousParagraph', paragraphId);
+      } else if (editorHide && (keyCode === 40 || (keyCode === 78 && keyEvent.ctrlKey && !keyEvent.altKey))) { // down
+        // move focus to next paragraph
+        $scope.$emit('moveFocusToNextParagraph', paragraphId);
+      } else if (keyEvent.shiftKey && keyCode === 13) { // Shift + Enter
+        $scope.run();
+      } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 67) { // Ctrl + Alt + c
+        $scope.cancelParagraph();
+      } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 68) { // Ctrl + Alt + d
+        $scope.removeParagraph();
+      } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 75) { // Ctrl + Alt + k
+        $scope.moveUp();
+      } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 74) { // Ctrl + Alt + j
+        $scope.moveDown();
+      } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 65) { // Ctrl + Alt + a
+        $scope.insertNew('above');
+      } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 66) { // Ctrl + Alt + b
+        $scope.insertNew('below');
+      } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 79) { // Ctrl + Alt + o
+        $scope.toggleOutput();
+      } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 82) { // Ctrl + Alt + r
+        $scope.toggleEnableDisable();
+      } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 69) { // Ctrl + Alt + e
+        $scope.toggleEditor();
+      } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 77) { // Ctrl + Alt + m
+        if ($scope.paragraph.config.lineNumbers) {
+          $scope.hideLineNumbers();
+        } else {
+          $scope.showLineNumbers();
+        }
+      } else if (keyEvent.ctrlKey && keyEvent.shiftKey && keyCode === 189) { // Ctrl + Shift + -
+        $scope.changeColWidth(Math.max(1, $scope.paragraph.config.colWidth - 1));
+      } else if (keyEvent.ctrlKey && keyEvent.shiftKey && keyCode === 187) { // Ctrl + Shift + =
+        $scope.changeColWidth(Math.min(12, $scope.paragraph.config.colWidth + 1));
+      } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 84) { // Ctrl + Alt + t
+        if ($scope.paragraph.config.title) {
+          $scope.hideTitle();
+        } else {
+          $scope.showTitle();
+        }
+      } else {
+        noShortcutDefined = true;
+      }
+
+      if (!noShortcutDefined) {
+        keyEvent.preventDefault();
+      }
+    }
+  });
+
+  $scope.$on('focusParagraph', function(event, paragraphId, cursorPos, mouseEvent) {
+    if ($scope.paragraph.id === paragraphId) {
+      // focus editor
+      if (!$scope.paragraph.config.editorHide) {
+        if (!mouseEvent) {
+          $scope.editor.focus();
+          // move cursor to the first row (or the last row)
+          var row;
+          if (cursorPos >= 0) {
+            row = cursorPos;
+            $scope.editor.gotoLine(row, 0);
+          } else {
+            row = $scope.editor.session.getLength();
+            $scope.editor.gotoLine(row, 0);
+          }
+          $scope.scrollToCursor($scope.paragraph.id, 0);
+        }
+      }
+      $scope.handleFocus(true);
+    } else {
+      $scope.editor.blur();
+      $scope.handleFocus(false);
+    }
+  });
+
+  $scope.$on('runParagraph', function(event) {
+    $scope.runParagraph($scope.editor.getValue());
+  });
+
+  $scope.$on('openEditor', function(event) {
+    $scope.openEditor();
+  });
+
+  $scope.$on('closeEditor', function(event) {
+    $scope.closeEditor();
+  });
+
+  $scope.$on('openTable', function(event) {
+    $scope.openTable();
+  });
+
+  $scope.$on('closeTable', function(event) {
+    $scope.closeTable();
+  });
+
+});

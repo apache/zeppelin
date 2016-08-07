@@ -1,4 +1,3 @@
-/* jshint loopfunc: true */
 /*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +13,7 @@
  */
 'use strict';
 
-angular.module('zeppelinWebApp').controller('CredentialCtrl', function($scope, $route, $routeParams, $location,
-                                                                       $rootScope, $http, baseUrlSrv, ngToast) {
+angular.module('zeppelinWebApp').controller('CredentialCtrl', function($scope, $rootScope, $http, baseUrlSrv, ngToast) {
   $scope._ = _;
 
   $scope.credentialInfo = [];

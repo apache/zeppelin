@@ -27,11 +27,10 @@
   </parent>
 
   <groupId>org.apache.zeppelin</groupId>
-  <artifactId>zeppelin-display</artifactId>
+  <artifactId>zeppelin-display_2.10</artifactId>
   <packaging>jar</packaging>
   <version>0.7.0-SNAPSHOT</version>
   <name>Zeppelin: Display system apis</name>
-  <url>http://zeppelin.apache.org</url>
 
   <dependencyManagement>
     <dependencies>
@@ -95,10 +94,6 @@
   <profiles>
     <profile>
       <id>scala-2.11</id>
-      <activation>
-        <property><name>scala-2.11</name></property>
-      </activation>
-
       <dependencies>
         <dependency>
           <groupId>org.scala-lang.modules</groupId>

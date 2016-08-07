@@ -15,7 +15,7 @@
 'use strict';
 
 angular.module('zeppelinWebApp').controller('NotenameCtrl', function($scope, notebookListDataFactory,
-                                                             $rootScope, $routeParams, websocketMsgSrv) {
+                                                                      $routeParams, websocketMsgSrv) {
   var vm = this;
   vm.clone = false;
   vm.notes = notebookListDataFactory;

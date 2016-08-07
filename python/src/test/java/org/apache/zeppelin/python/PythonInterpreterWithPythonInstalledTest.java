@@ -36,13 +36,13 @@ import org.junit.Test;
  *
  * or
  * <code>
- * mvn -Dpython.test.exclude='' test -pl python
+ * mvn -Dpython.test.exclude='' test -pl python -am
  * </code>
  */
 public class PythonInterpreterWithPythonInstalledTest {
 
   @Test
-  public void badSqlSyntaxFails() {
+  public void badPythonSyntaxFails() {
     //given
     PythonInterpreter realPython = new PythonInterpreter(
         PythonInterpreterTest.getPythonTestProperties());
@@ -55,6 +55,23 @@ public class PythonInterpreterWithPythonInstalledTest {
     assertNotNull("Interpreter returned 'null'", ret);
     //System.out.println("\nInterpreter response: \n" + ret.message());
     assertEquals(InterpreterResult.Code.ERROR, ret.code());
+    assertTrue(ret.message().length() > 0);
+  }
+
+  @Test
+  public void goodPythonSyntaxRuns() {
+    //given
+    PythonInterpreter realPython = new PythonInterpreter(
+        PythonInterpreterTest.getPythonTestProperties());
+    realPython.open();
+
+    //when
+    InterpreterResult ret = realPython.interpret("help()", null);
+
+    //then
+    assertNotNull("Interpreter returned 'null'", ret);
+    //System.out.println("\nInterpreter response: \n" + ret.message());
+    assertEquals(InterpreterResult.Code.SUCCESS, ret.code());
     assertTrue(ret.message().length() > 0);
   }
 

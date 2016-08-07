@@ -27,11 +27,10 @@
   </parent>
 
   <groupId>org.apache.zeppelin</groupId>
-  <artifactId>zeppelin-scalding</artifactId>
+  <artifactId>zeppelin-scalding_2.10</artifactId>
   <packaging>jar</packaging>
   <version>0.7.0-SNAPSHOT</version>
   <name>Zeppelin: Scalding interpreter</name>
-  <url>http://zeppelin.apache.org</url>
 
   <properties>
     <hadoop.version>2.6.0</hadoop.version>

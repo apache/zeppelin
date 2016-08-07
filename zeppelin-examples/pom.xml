@@ -32,7 +32,6 @@
   <version>0.7.0-SNAPSHOT</version>
   <name>Zeppelin: Examples</name>
   <description>Zeppelin examples</description>
-  <url>http://zeppelin.apache.org</url>
 
   <modules>
     <module>zeppelin-example-clock</module>
