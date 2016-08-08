@@ -20,6 +20,8 @@ import com.google.common.base.Strings;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
+
+import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.display.AngularObject;
@@ -132,9 +134,14 @@ public class NotebookServer extends WebSocketServlet implements
       
       String ticket = TicketContainer.instance.getTicket(messagereceived.principal);
       if (ticket != null && !ticket.equals(messagereceived.ticket)){
-        /* not to pollute logs, log in debug instead of exception */
-        LOG.debug("{} message: invalid ticket {} != {}", messagereceived.op,
-            messagereceived.ticket, ticket);
+        /* not to pollute logs, log instead of exception */
+        if (StringUtils.isEmpty(messagereceived.ticket)) {
+          LOG.debug("{} message: invalid ticket {} != {}", messagereceived.op,
+              messagereceived.ticket, ticket);
+        } else {
+          LOG.warn("{} message: invalid ticket {} != {}", messagereceived.op,
+              messagereceived.ticket, ticket);
+        }
         return;
       }
 
