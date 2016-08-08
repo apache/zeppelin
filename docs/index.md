@@ -49,7 +49,7 @@ Adding new language-backend is really simple. Learn [how to create your own inte
 #### Apache Spark integration
 Especially, Apache Zeppelin provides built-in [Apache Spark](http://spark.apache.org/) integration. You don't need to build a separate module, plugin or library for it.
 
-<img class="img-responsive" src="./assets/themes/zeppelin/img/spark_logo.jpg" width="140px" />
+<img class="img-responsive" src="./assets/themes/zeppelin/img/spark_logo.png" width="140px" />
 
 Apache Zeppelin with Spark integration provides
 
@@ -62,7 +62,7 @@ For the further information about Apache Spark in Apache Zeppelin, please see [S
 <br />
 ## Data visualization
 
-Some basic charts are already included in Apache Zeppelin. Visualizations are not limited to SparkSQL query, any output from any language backend can be recognized and visualized.
+Some basic charts are already included in Apache Zeppelin. Visualizations are not limited to Spark SQL query, any output from any language backend can be recognized and visualized.
 
 <div class="row">
   <div class="col-md-6">
@@ -133,7 +133,6 @@ Join to our [Mailing list](https://zeppelin.apache.org/community.html) and repor
   * [Publish your Paragraph](./manual/publish.html) results into your external website
   * [Customize Zeppelin Homepage](./manual/notebookashomepage.html) with one of your notebooks
 * More
-  * [Apache Zeppelin on Vagrant VM](./install/virtual_machine.html): a guide for installing Apache Zeppelin on Vagrant virtual machine
   * [Upgrade Apache Zeppelin Version](./install/upgrade.html): a manual procedure of upgrading Apache Zeppelin version
 
 ####Interpreter
@@ -168,6 +167,9 @@ Join to our [Mailing list](https://zeppelin.apache.org/community.html) and repor
   * [Shiro Authentication](./security/shiroauthentication.html)
   * [Notebook Authorization](./security/notebook_authorization.html)
   * [Data Source Authorization](./security/datasource_authorization.html)
+* Advanced
+  * [Apache Zeppelin on Vagrant VM](./install/virtual_machine.html)
+  * [Zeppelin on Spark Cluster Mode (Standalone via Docker)](./install/spark_cluster_mode.html#spark-standalone-mode)
 * Contribute
   * [Writing Zeppelin Interpreter](./development/writingzeppelininterpreter.html)
   * [Writing Zeppelin Application (Experimental)](./development/writingzeppelinapplication.html)

@@ -46,10 +46,6 @@ describe('Controller: NotebookCtrl', function() {
     });
   });
 
-  it('should set default value of "showEditor" to false', function() {
-    expect(scope.showEditor).toEqual(false);
-  });
-
   it('should set default value of "editorToggled" to false', function() {
     expect(scope.editorToggled).toEqual(false);
   });

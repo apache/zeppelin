@@ -79,7 +79,7 @@ You can also set other Spark properties which are not listed in the table. For a
   </tr>
   <tr>
     <td>spark.executor.memory </td>
-    <td>512m</td>
+    <td>1g</td>
     <td>Executor memory per worker instance. <br/> ex) 512m, 32g</td>
   </tr>
   <tr>
@@ -105,7 +105,7 @@ You can also set other Spark properties which are not listed in the table. For a
   <tr>
     <td>zeppelin.spark.maxResult</td>
     <td>1000</td>
-    <td>Max number of SparkSQL result to display.</td>
+    <td>Max number of Spark SQL result to display.</td>
   </tr>
   <tr>
     <td>zeppelin.spark.printREPLOutput</td>

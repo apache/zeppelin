@@ -18,6 +18,7 @@
 package org.apache.zeppelin.spark;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -32,6 +33,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import com.google.common.base.Joiner;
 
+import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
 import org.apache.spark.SparkEnv;
@@ -65,10 +67,8 @@ import scala.Enumeration.Value;
 import scala.collection.Iterator;
 import scala.collection.JavaConversions;
 import scala.collection.JavaConverters;
-import scala.collection.convert.WrapAsJava;
 import scala.collection.Seq;
 import scala.collection.convert.WrapAsJava$;
-import scala.collection.convert.WrapAsScala;
 import scala.collection.mutable.HashMap;
 import scala.collection.mutable.HashSet;
 import scala.reflect.io.AbstractFile;
@@ -112,7 +112,7 @@ public class SparkInterpreter extends Interpreter {
   /**
    * completer - org.apache.spark.repl.SparkJLineCompletion (scala 2.10)
    */
-  private Object completer;
+  private Object completer = null;
 
   private Map<String, Object> binder;
   private SparkVersion sparkVersion;
@@ -122,7 +122,7 @@ public class SparkInterpreter extends Interpreter {
 
   public SparkInterpreter(Properties property) {
     super(property);
-    out = new SparkOutputStream();
+    out = new SparkOutputStream(logger);
   }
 
   public SparkInterpreter(Properties property, SparkContext sc) {
@@ -236,10 +236,7 @@ public class SparkInterpreter extends Interpreter {
    */
   private SQLContext getSQLContext_2() {
     if (sqlc == null) {
-      sqlc = (SQLContext) Utils.invokeMethod(sparkSession, "wrapped");
-      if (sqlc == null) {
-        sqlc = (SQLContext) Utils.invokeMethod(sparkSession, "sqlContext");
-      }
+      sqlc = (SQLContext) Utils.invokeMethod(sparkSession, "sqlContext");
     }
     return sqlc;
   }
@@ -327,6 +324,7 @@ public class SparkInterpreter extends Interpreter {
       }
     }
 
+    setupConfForPySpark(conf);
     Class SparkSession = Utils.findClass("org.apache.spark.sql.SparkSession");
     Object builder = Utils.invokeStaticMethod(SparkSession, "builder");
     Utils.invokeMethod(builder, "config", new Class[]{ SparkConf.class }, new Object[]{ conf });
@@ -440,8 +438,12 @@ public class SparkInterpreter extends Interpreter {
         conf.set(key, val);
       }
     }
+    setupConfForPySpark(conf);
+    SparkContext sparkContext = new SparkContext(conf);
+    return sparkContext;
+  }
 
-    //TODO(jongyoul): Move these codes into PySparkInterpreter.java
+  private void setupConfForPySpark(SparkConf conf) {
     String pysparkBasePath = getSystemDefault("SPARK_HOME", null, null);
     File pysparkPath;
     if (null == pysparkBasePath) {
@@ -454,7 +456,8 @@ public class SparkInterpreter extends Interpreter {
     }
 
     //Only one of py4j-0.9-src.zip and py4j-0.8.2.1-src.zip should exist
-    String[] pythonLibs = new String[]{"pyspark.zip", "py4j-0.9-src.zip", "py4j-0.8.2.1-src.zip"};
+    String[] pythonLibs = new String[]{"pyspark.zip", "py4j-0.9-src.zip", "py4j-0.8.2.1-src.zip",
+      "py4j-0.10.1-src.zip"};
     ArrayList<String> pythonLibUris = new ArrayList<>();
     for (String lib : pythonLibs) {
       File libFile = new File(pysparkPath, lib);
@@ -484,9 +487,6 @@ public class SparkInterpreter extends Interpreter {
     if (getProperty("master").equals("yarn-client")) {
       conf.set("spark.yarn.isPython", "true");
     }
-
-    SparkContext sparkContext = new SparkContext(conf);
-    return sparkContext;
   }
 
   static final String toString(Object o) {
@@ -524,6 +524,21 @@ public class SparkInterpreter extends Interpreter {
 
   @Override
   public void open() {
+    // set properties and do login before creating any spark stuff for secured cluster
+    if (getProperty("master").equals("yarn-client")) {
+      System.setProperty("SPARK_YARN_MODE", "true");
+    }
+    if (getProperty().contains("spark.yarn.keytab") &&
+            getProperty().contains("spark.yarn.principal")) {
+      try {
+        String keytab = getProperty().getProperty("spark.yarn.keytab");
+        String principal = getProperty().getProperty("spark.yarn.principal");
+        UserGroupInformation.loginUserFromKeytab(principal, keytab);
+      } catch (IOException e) {
+        throw new RuntimeException("Can not pass kerberos authentication", e);
+      }
+    }
+
     conf = new SparkConf();
     URL[] urls = getClassloaderUrls();
 
@@ -703,11 +718,25 @@ public class SparkInterpreter extends Interpreter {
             logger.error(e.getMessage(), e);
           }
         }
+      }
 
+      if (Utils.findClass("org.apache.spark.repl.SparkJLineCompletion", true) != null) {
         completer = Utils.instantiateClass(
             "org.apache.spark.repl.SparkJLineCompletion",
             new Class[]{Utils.findClass("org.apache.spark.repl.SparkIMain")},
             new Object[]{intp});
+      } else if (Utils.findClass(
+          "scala.tools.nsc.interpreter.PresentationCompilerCompleter", true) != null) {
+        completer = Utils.instantiateClass(
+            "scala.tools.nsc.interpreter.PresentationCompilerCompleter",
+            new Class[]{ IMain.class },
+            new Object[]{ intp });
+      } else if (Utils.findClass(
+          "scala.tools.nsc.interpreter.JLineCompletion", true) != null) {
+        completer = Utils.instantiateClass(
+            "scala.tools.nsc.interpreter.JLineCompletion",
+            new Class[]{ IMain.class },
+            new Object[]{ intp });
       }
 
       if (Utils.isSpark2()) {
@@ -886,6 +915,11 @@ public class SparkInterpreter extends Interpreter {
 
   @Override
   public List<InterpreterCompletion> completion(String buf, int cursor) {
+    if (completer == null) {
+      logger.warn("Can't find completer");
+      return new LinkedList<InterpreterCompletion>();
+    }
+
     if (buf.length() < cursor) {
       cursor = buf.length();
     }
@@ -894,22 +928,18 @@ public class SparkInterpreter extends Interpreter {
       completionText = "";
       cursor = completionText.length();
     }
-    if (Utils.isScala2_10()) {
-      ScalaCompleter c = (ScalaCompleter) Utils.invokeMethod(completer, "completer");
-      Candidates ret = c.complete(completionText, cursor);
 
-      List<String> candidates = WrapAsJava$.MODULE$.seqAsJavaList(ret.candidates());
-      List<InterpreterCompletion> completions = new LinkedList<InterpreterCompletion>();
+    ScalaCompleter c = (ScalaCompleter) Utils.invokeMethod(completer, "completer");
+    Candidates ret = c.complete(completionText, cursor);
 
-      for (String candidate : candidates) {
-        completions.add(new InterpreterCompletion(candidate, candidate));
-      }
+    List<String> candidates = WrapAsJava$.MODULE$.seqAsJavaList(ret.candidates());
+    List<InterpreterCompletion> completions = new LinkedList<InterpreterCompletion>();
 
-      return completions;
-    } else {
-      return new LinkedList<InterpreterCompletion>();
+    for (String candidate : candidates) {
+      completions.add(new InterpreterCompletion(candidate, candidate));
     }
 
+    return completions;
   }
 
   private String getCompletionTargetString(String text, int cursor) {

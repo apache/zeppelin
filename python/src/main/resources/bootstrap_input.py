@@ -25,11 +25,11 @@ java_import(gateway.jvm, "org.apache.zeppelin.display.Input")
 class Py4jZeppelinContext(PyZeppelinContext):
     """A context impl that uses Py4j to communicate to JVM
     """
-    def __init__(self, zc):
-        super(Py4jZeppelinContext, self).__init__(zc)
+    def __init__(self, z):
+        self.z = z
         self.paramOption = gateway.jvm.org.apache.zeppelin.display.Input.ParamOption
         self.javaList = gateway.jvm.java.util.ArrayList
-        self.max_result = 1000 #TODO(bzz): read `zeppelin.python.maxResult` from JVM
+        self.max_result = self.z.getMaxResult()
     
     def input(self, name, defaultValue=""):
         return self.z.getGui().input(name, defaultValue)

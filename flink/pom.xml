@@ -32,7 +32,6 @@
   <version>0.7.0-SNAPSHOT</version>
   <name>Zeppelin: Flink</name>
   <description>Zeppelin flink support</description>
-  <url>http://zeppelin.apache.org</url>
 
   <properties>
     <flink.version>1.0.3</flink.version>

@@ -308,51 +308,7 @@
   cursor: default;
 }
 
-.userlist {
-  width: 230px;
-  font-family: Georgia, Times, serif;
-  font-size: 15px;
-  position: absolute;
-  z-index: 9999;
-}
-
-.userlist ul {
-  list-style: none;
-}
-
-.userlist ul li {
-  box-shadow: 3px 3px 5px #888888;
-  display: list-item;
-  text-decoration: none;
-  color: #000000;
-  background-color: #FFFFFF;
-  line-height: 30px;
-  border-bottom-style: none;
-  border-bottom-width: 1px;
-  border-bottom:1px  #CCCCCC solid;
-  padding-left: 10px;
-  cursor: pointer;
-}
-
-.userlist ul li:first-child {
-  border-top-right-radius: 5px;
-  border-top-left-radius: 5px;
-}
-
-.userlist ul li:last-child {
-  border-bottom-right-radius: 5px;
-  border-bottom-left-radius: 5px;
-}
-
-.userlist ul li strong {
-  margin-right: 10px;
-}
-
-.userlist li:hover {
-  background-color: #E0E0E0;
-}
-
-.userlist li:active,
-.userlist li.active {
-  background-color: #428BCA;
+.select2-container--default{
+  min-width: 150px;
+  max-width: 50%;
 }

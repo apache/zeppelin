@@ -30,7 +30,6 @@
   <packaging>jar</packaging>
   <version>0.7.0-SNAPSHOT</version>
   <name>Zeppelin: HBase interpreter</name>
-  <url>http://www.apache.org</url>
 
   <properties>
     <hbase.hbase.version>1.0.0</hbase.hbase.version>

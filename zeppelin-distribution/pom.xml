@@ -75,7 +75,7 @@
 
   <dependencies>
     <dependency>
-      <artifactId>zeppelin-server_2.10</artifactId>
+      <artifactId>zeppelin-server</artifactId>
       <groupId>${project.groupId}</groupId>
       <version>${project.version}</version>
     </dependency>
@@ -114,10 +114,6 @@
   <profiles>
     <profile>
       <id>scala-2.11</id>
-      <activation>
-        <property><name>scala-2.11</name></property>
-      </activation>
-
       <dependencyManagement>
         <dependencies>
           <dependency>

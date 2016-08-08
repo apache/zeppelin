@@ -18,6 +18,7 @@
 package org.apache.zeppelin.shell;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Properties;
 
@@ -54,6 +55,24 @@ public class ShellInterpreterTest {
       result = shell.interpret("ls", context);
     }
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    assertTrue(shell.executors.isEmpty());
+    // it should be fine to cancel a statement that has been completed.
+    shell.cancel(context);
+    assertTrue(shell.executors.isEmpty());
   }
-  
+
+  @Test
+  public void testInvalidCommand(){
+    shell.open();
+    InterpreterContext context = new InterpreterContext("","1","","",null,null,null,null,null,null,null);
+    InterpreterResult result = new InterpreterResult(Code.ERROR);
+    if (System.getProperty("os.name").startsWith("Windows")) {
+      result = shell.interpret("invalid_command\ndir",context);
+    } else {
+      result = shell.interpret("invalid_command\nls",context);
+    }
+    assertEquals(InterpreterResult.Code.SUCCESS,result.code());
+    assertTrue(result.message().contains("invalid_command"));
+  }
+
 }

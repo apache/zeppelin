@@ -27,11 +27,10 @@
   </parent>
 
   <groupId>org.apache.zeppelin</groupId>
-  <artifactId>zeppelin-server_2.10</artifactId>
+  <artifactId>zeppelin-server</artifactId>
   <packaging>jar</packaging>
   <version>0.7.0-SNAPSHOT</version>
   <name>Zeppelin: Server</name>
-  <url>http://www.nflabs.com</url>
 
   <properties>
     <cxf.version>2.7.7</cxf.version>
@@ -414,10 +413,6 @@
   <profiles>
     <profile>
       <id>scala-2.11</id>
-      <activation>
-        <property><name>scala-2.11</name></property>
-      </activation>
-
       <dependencyManagement>
         <dependencies>
           <dependency>

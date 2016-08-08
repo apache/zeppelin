@@ -94,7 +94,6 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
     $scope.originalText = angular.copy(newParagraph.text);
     $scope.chart = {};
     $scope.colWidthOption = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
-    $scope.showTitleEditor = false;
     $scope.paragraphFocused = false;
     if (newParagraph.focus) {
       $scope.paragraphFocused = true;
@@ -523,10 +522,7 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
   $scope.aceChanged = function() {
     $scope.dirtyText = $scope.editor.getSession().getValue();
     $scope.startSaveTimer();
-
-    $timeout(function() {
-      $scope.setParagraphMode($scope.editor.getSession(), $scope.dirtyText, $scope.editor.getCursorPosition());
-    });
+    $scope.setParagraphMode($scope.editor.getSession(), $scope.dirtyText, $scope.editor.getCursorPosition());
   };
 
   $scope.aceLoaded = function(_editor) {
@@ -535,6 +531,7 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
 
     _editor.$blockScrolling = Infinity;
     $scope.editor = _editor;
+    $scope.editor.on('input', $scope.aceChanged);
     if (_editor.container.id !== '{{paragraph.id}}_editor') {
       $scope.editor.renderer.setShowGutter($scope.paragraph.config.lineNumbers);
       $scope.editor.setShowFoldWidgets(false);
@@ -625,13 +622,15 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
         enableLiveAutocompletion: false
       });
 
-      $scope.handleFocus = function(value) {
+      $scope.handleFocus = function(value, isDigestPass) {
         $scope.paragraphFocused = value;
-        // Protect against error in case digest is already running
-        $timeout(function() {
-          // Apply changes since they come from 3rd party library
-          $scope.$digest();
-        });
+        if (isDigestPass === false || isDigestPass === undefined) {
+          // Protect against error in case digest is already running
+          $timeout(function() {
+            // Apply changes since they come from 3rd party library
+            $scope.$digest();
+          });
+        }
       };
 
       $scope.editor.on('focus', function() {
@@ -668,6 +667,19 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
       $scope.editor.commands.bindKey('ctrl-.', 'startAutocomplete');
       $scope.editor.commands.bindKey('ctrl-space', null);
 
+      var keyBindingEditorFocusAction = function(scrollValue) {
+        var numRows = $scope.editor.getSession().getLength();
+        var currentRow = $scope.editor.getCursorPosition().row;
+        if (currentRow === 0 && scrollValue <= 0) {
+          // move focus to previous paragraph
+          $scope.$emit('moveFocusToPreviousParagraph', $scope.paragraph.id);
+        } else if (currentRow === numRows - 1 && scrollValue >= 0) {
+          $scope.$emit('moveFocusToNextParagraph', $scope.paragraph.id);
+        } else {
+          $scope.scrollToCursor($scope.paragraph.id, scrollValue);
+        }
+      };
+
       // handle cursor moves
       $scope.editor.keyBinding.origOnCommandKey = $scope.editor.keyBinding.onCommandKey;
       $scope.editor.keyBinding.onCommandKey = function(e, hashId, keyCode) {
@@ -681,27 +693,26 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
             angular.element('#' + $scope.paragraph.id + '_editor > textarea').css('top', cursorPos.top);
           }
 
-          var numRows;
-          var currentRow;
+          var ROW_UP = -1;
+          var ROW_DOWN = 1;
 
-          if (keyCode === 38 || (keyCode === 80 && e.ctrlKey && !e.altKey)) {  // UP
-            numRows = $scope.editor.getSession().getLength();
-            currentRow = $scope.editor.getCursorPosition().row;
-            if (currentRow === 0) {
-              // move focus to previous paragraph
-              $scope.$emit('moveFocusToPreviousParagraph', $scope.paragraph.id);
-            } else {
-              $scope.scrollToCursor($scope.paragraph.id, -1);
-            }
-          } else if (keyCode === 40 || (keyCode === 78 && e.ctrlKey && !e.altKey)) {  // DOWN
-            numRows = $scope.editor.getSession().getLength();
-            currentRow = $scope.editor.getCursorPosition().row;
-            if (currentRow === numRows - 1) {
-              // move focus to next paragraph
-              $scope.$emit('moveFocusToNextParagraph', $scope.paragraph.id);
-            } else {
-              $scope.scrollToCursor($scope.paragraph.id, 1);
-            }
+          switch (keyCode) {
+            case 38:
+              keyBindingEditorFocusAction(ROW_UP);
+              break;
+            case 80:
+              if (e.ctrlKey && !e.altKey) {
+                keyBindingEditorFocusAction(ROW_UP);
+              }
+              break;
+            case 40:
+              keyBindingEditorFocusAction(ROW_DOWN);
+              break;
+            case 78:
+              if (e.ctrlKey && !e.altKey) {
+                keyBindingEditorFocusAction(ROW_DOWN);
+              }
+              break;
           }
         }
         this.origOnCommandKey(e, hashId, keyCode);
@@ -2374,7 +2385,8 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
       $scope.handleFocus(true);
     } else {
       $scope.editor.blur();
-      $scope.handleFocus(false);
+      var isDigestPass = true;
+      $scope.handleFocus(false, isDigestPass);
     }
   });
 

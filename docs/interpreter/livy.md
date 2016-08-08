@@ -50,7 +50,7 @@ Example: `spark.master` to `livy.spark.master`
   <tr>
     <td>zeppelin.livy.spark.maxResult</td>
     <td>1000</td>
-    <td>Max number of SparkSQL result to display.</td>
+    <td>Max number of Spark SQL result to display.</td>
   </tr>
     <tr>
     <td>livy.spark.driver.cores</td>
