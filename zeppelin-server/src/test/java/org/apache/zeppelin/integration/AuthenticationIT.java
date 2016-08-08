@@ -124,7 +124,7 @@ public class AuthenticationIT extends AbstractZeppelinIT {
         userName + "')]")).click();
     ZeppelinITUtils.sleep(500, false);
     driver.findElement(By.xpath("//div[contains(@class, 'navbar-collapse')]//li[contains(.,'" +
-        userName + "')]//a[@ng-click='logout()']")).click();
+        userName + "')]//a[@ng-click='navbar.logout()']")).click();
     ZeppelinITUtils.sleep(5000, false);
   }
 
