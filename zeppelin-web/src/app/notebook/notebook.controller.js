@@ -655,20 +655,19 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
           };
           $http.put(baseUrlSrv.getRestApiBase() + '/interpreter/setting/restart/' + interpeter.id, payload)
             .success(function(data, status, headers, config) {
-              var index = _.findIndex($scope.interpreterSettings, {'id': interpeter.id});
-              $scope.interpreterSettings[index] = data.body;
-            }).error(function(data, status, headers, config) {
-              console.log('Error %o %o', status, data.message);
-
-              BootstrapDialog.show({
-                title: 'Error restart interpreter.',
-                message: data.message
-              });
+            var index = _.findIndex($scope.interpreterSettings, {'id': interpeter.id});
+            $scope.interpreterSettings[index] = data.body;
+          }).error(function(data, status, headers, config) {
+            console.log('Error %o %o', status, data.message);
+            BootstrapDialog.show({
+              title: 'Error restart interpreter.',
+              message: data.message
+            });
           });
         }
       }
     });
-  }
+  };
 
   $scope.savePermissions = function() {
     convertPermissionsToArray();
