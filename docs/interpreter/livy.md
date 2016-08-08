@@ -117,7 +117,7 @@ Example
 <table class="table-configuration">
   <tr>
     <th>Property</th>
-    <th>Default</th>
+    <th>Example</th>
     <th>Description</th>
   </tr>
   <tr>
