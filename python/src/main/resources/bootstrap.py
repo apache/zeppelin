@@ -30,6 +30,8 @@ def intHandler(signum, frame):  # Set the signal handler
     raise KeyboardInterrupt()
 
 signal.signal(signal.SIGINT, intHandler)
+# set prompt as empty string so that java side don't need to remove the prompt.
+sys.ps1=""
 
 def help():
     print("""%html
