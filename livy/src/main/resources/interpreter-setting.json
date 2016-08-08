@@ -81,6 +81,11 @@
         "propertyName": "zeppelin.livy.keytab",
         "defaultValue": "",
         "description": "Kerberos keytab to authenticate livy"
+      },
+      "livy.spark.jars.packages": {
+        "propertyName": "livy.spark.jars.packages",
+        "defaultValue": "",
+        "description": "Adding extra libraries to livy interpreter"
       }
     }
   },
