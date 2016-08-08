@@ -38,8 +38,6 @@
     <mockito.version>1.10.19</mockito.version>
     <powermock.version>1.6.4</powermock.version>
     <spark.version>2.0.0</spark.version>
-    <hadoop.version>2.3.0</hadoop.version>
-    <yarn.version>${hadoop.version}</yarn.version>
   </properties>
 
   <dependencies>
@@ -83,13 +81,6 @@
       <groupId>org.apache.spark</groupId>
       <artifactId>spark-yarn_${scala.binary.version}</artifactId>
       <version>${spark.version}</version>
-      <scope>provided</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.hadoop</groupId>
-      <artifactId>hadoop-yarn-api</artifactId>
-      <version>${yarn.version}</version>
       <scope>provided</scope>
     </dependency>
 
