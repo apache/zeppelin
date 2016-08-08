@@ -138,6 +138,7 @@ public class NoteTest {
 
     Note note = new Note(repo, interpreterFactory, jobListenerFactory, index, credentials, noteEventListener);
     note.putDefaultReplName(); //set lastReplName
+    when(note.isBinding("spark")).thenReturn(true);
 
     Paragraph p = note.addParagraph();
 
@@ -153,6 +154,7 @@ public class NoteTest {
 
     Note note = new Note(repo, interpreterFactory, jobListenerFactory, index, credentials, noteEventListener);
     note.putDefaultReplName(); //set lastReplName
+    when(note.isBinding("spark")).thenReturn(true);
 
     Paragraph p = note.insertParagraph(note.getParagraphs().size());
 
