@@ -473,7 +473,8 @@ public class NotebookServer extends WebSocketServlet implements
       List<String> settingIdList = gson.fromJson(String.valueOf(
           fromMessage.data.get("selectedSettingIds")), new TypeToken<ArrayList<String>>() {
           }.getType());
-      notebook().bindInterpretersToNote(noteId, settingIdList);
+      AuthenticationInfo subject = new AuthenticationInfo(fromMessage.principal);
+      notebook().bindInterpretersToNote(subject.getUser(), noteId, settingIdList);
       broadcastInterpreterBindings(noteId,
           InterpreterBindingUtils.getInterpreterBindings(notebook(), noteId));
     } catch (Exception e) {
