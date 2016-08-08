@@ -7,7 +7,7 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/* This class is responsible for initializing
+/** This class is responsible for initializing
  * and ensuring that AppendOutputRunner is up
  * and running.
  */
