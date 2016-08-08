@@ -27,9 +27,9 @@ import java.util.List;
 
 /**
  * @author Mahmoud
- *
+ * 
  */
-public class CompileSourceInMemory {
+public class StaticRepl {
   public static String execute(String className, String code) throws Exception {
 
     JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
@@ -64,11 +64,9 @@ public class CompileSourceInMemory {
 
     out.println(code);
     out.close();
-    
-
 
     JavaFileObject file = new JavaSourceFromString(className, writer.toString());
-   
+
     Iterable<? extends JavaFileObject> compilationUnits = Arrays.asList(file);
 
     ByteArrayOutputStream baosOut = new ByteArrayOutputStream();
@@ -88,20 +86,21 @@ public class CompileSourceInMemory {
     boolean success = task.call();
     if (!success) {
       for (Diagnostic diagnostic : diagnostics.getDiagnostics()) {
-    	  if (diagnostic.getLineNumber() == -1) continue;
-        System.out.println("line "+ diagnostic.getLineNumber()+ " : " +diagnostic.getMessage(null));
+        if (diagnostic.getLineNumber() == -1)
+          continue;
+        System.out.println("line " + diagnostic.getLineNumber() + " : "
+            + diagnostic.getMessage(null));
       }
     }
     if (success) {
       try {
 
-    	  URLClassLoader classLoader = URLClassLoader.newInstance(new URL[] { new File("").toURI().toURL() });
-    	  //URLClassLoader classLoader = URLClassLoader.newInstance(new URL[] { new File("").toURI().toURL() });
-          Class.forName(className, true, classLoader).getDeclaredMethod("main", new Class[] { String[].class }).invoke(null, new Object[] { null });
+        URLClassLoader classLoader = URLClassLoader.newInstance(new URL[] { new File("").toURI()
+            .toURL() });
+        Class.forName(className, true, classLoader)
+            .getDeclaredMethod("main", new Class[] { String[].class })
+            .invoke(null, new Object[] { null });
 
-
-//        Class.forName(className).getDeclaredMethod("main", new Class[] { String[].class })
-//        .invoke(null, new Object[] { null });
 
         System.out.flush();
         System.err.flush();
@@ -109,8 +108,6 @@ public class CompileSourceInMemory {
         System.setOut(oldOut);
         System.setErr(oldErr);
 
-
-       
         return baosOut.toString();
       } catch (ClassNotFoundException e) {
         e.printStackTrace(newErr);
@@ -128,19 +125,19 @@ public class CompileSourceInMemory {
         e.printStackTrace(newErr);
         System.err.println("Invocation target: " + e);
         throw new Exception(baosErr.toString());
-      } finally{
-    	  System.out.flush();
-          System.err.flush();
-
-          System.setOut(oldOut);
-          System.setErr(oldErr);
-      }
-    } else {
-    	System.out.flush();
+      } finally {
+        System.out.flush();
         System.err.flush();
 
         System.setOut(oldOut);
         System.setErr(oldErr);
+      }
+    } else {
+      System.out.flush();
+      System.err.flush();
+
+      System.setOut(oldOut);
+      System.setErr(oldErr);
       throw new Exception(baosOut.toString());
     }
   }
