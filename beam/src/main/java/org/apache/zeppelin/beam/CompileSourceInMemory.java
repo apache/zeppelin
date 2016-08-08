@@ -8,18 +8,20 @@ import javax.tools.JavaFileObject;
 import javax.tools.SimpleJavaFileObject;
 import javax.tools.ToolProvider;
 
-
 import com.thoughtworks.qdox.JavaProjectBuilder;
 import com.thoughtworks.qdox.model.JavaClass;
 import com.thoughtworks.qdox.model.JavaSource;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.Arrays;
 import java.util.List;
 
@@ -86,14 +88,20 @@ public class CompileSourceInMemory {
     boolean success = task.call();
     if (!success) {
       for (Diagnostic diagnostic : diagnostics.getDiagnostics()) {
-        System.out.println(diagnostic.getMessage(null));
+    	  if (diagnostic.getLineNumber() == -1) continue;
+        System.out.println("line "+ diagnostic.getLineNumber()+ " : " +diagnostic.getMessage(null));
       }
     }
     if (success) {
       try {
 
-        Class.forName(className).getDeclaredMethod("main", new Class[] { String[].class })
-        .invoke(null, new Object[] { null });
+    	  URLClassLoader classLoader = URLClassLoader.newInstance(new URL[] { new File("").toURI().toURL() });
+    	  //URLClassLoader classLoader = URLClassLoader.newInstance(new URL[] { new File("").toURI().toURL() });
+          Class.forName(className, true, classLoader).getDeclaredMethod("main", new Class[] { String[].class }).invoke(null, new Object[] { null });
+
+
+//        Class.forName(className).getDeclaredMethod("main", new Class[] { String[].class })
+//        .invoke(null, new Object[] { null });
 
         System.out.flush();
         System.err.flush();
@@ -120,8 +128,19 @@ public class CompileSourceInMemory {
         e.printStackTrace(newErr);
         System.err.println("Invocation target: " + e);
         throw new Exception(baosErr.toString());
+      } finally{
+    	  System.out.flush();
+          System.err.flush();
+
+          System.setOut(oldOut);
+          System.setErr(oldErr);
       }
     } else {
+    	System.out.flush();
+        System.err.flush();
+
+        System.setOut(oldOut);
+        System.setErr(oldErr);
       throw new Exception(baosOut.toString());
     }
   }

@@ -36,7 +36,7 @@ public class BeamInterpreter extends Interpreter {
     File dir = new File(".");
     for (int i = 0; i < dir.list().length; i++) {
       File f = dir.listFiles()[i];
-      System.out.println(f.getAbsolutePath());
+//      System.out.println(f.getAbsolutePath());
       if (f.getAbsolutePath().contains(".class"))
         f.delete();
     }
@@ -51,7 +51,7 @@ public class BeamInterpreter extends Interpreter {
       String msg = CompileSourceInMemory.execute(className, st);
       return new InterpreterResult(InterpreterResult.Code.SUCCESS, msg);
     } catch (Exception e) {
-      e.printStackTrace();
+//      e.printStackTrace();
       return new InterpreterResult(InterpreterResult.Code.ERROR, e.getMessage());
 
     }

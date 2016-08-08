@@ -21,7 +21,11 @@
 	<dependencies>
 
 
-
+        <dependency>
+            <groupId>com.javax0</groupId>
+            <artifactId>jscc</artifactId>
+            <version>1.0.1</version>
+        </dependency>
 		<dependency>
 			<groupId>org.apache.spark</groupId>
 			<artifactId>spark-core_2.10</artifactId>
