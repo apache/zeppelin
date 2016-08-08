@@ -33,6 +33,7 @@ import javax.ws.rs.core.Response.Status;
 
 import com.google.gson.Gson;
 import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.zeppelin.rest.message.RestartInterpreterRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sonatype.aether.RepositoryException;
@@ -150,9 +151,22 @@ public class InterpreterRestApi {
   @PUT
   @Path("setting/restart/{settingId}")
   @ZeppelinApi
-  public Response restartSetting(@PathParam("settingId") String settingId) {
-    logger.info("Restart interpreterSetting {}", settingId);
+  public Response restartSetting(String message, @PathParam("settingId") String settingId) {
+    logger.info("Restart interpreterSetting {}, msg={}", settingId, message);
+
     try {
+      RestartInterpreterRequest request =
+        gson.fromJson(message, RestartInterpreterRequest.class);
+
+      InterpreterSetting setting = interpreterFactory.get(settingId);
+      if (setting != null && request.getType().trim().equals("self")) {
+        if ((setting.getOption().isPerNoteProcess() |
+          setting.getOption().isPerNoteSession()) == false) {
+          return new JsonResponse<>(Status.FORBIDDEN,
+            "Can't restart shared interpreter process.").build();
+        }
+      }
+
       interpreterFactory.restart(settingId);
     } catch (InterpreterException e) {
       logger.error("Exception in InterpreterRestApi while restartSetting ", e);

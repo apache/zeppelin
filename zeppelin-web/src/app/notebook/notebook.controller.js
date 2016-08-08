@@ -643,6 +643,33 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
     $scope.permissions.writers = angular.element('#selectWriters').val();
   }
 
+  $scope.restartInterpreter = function(interpeter) {
+    BootstrapDialog.confirm({
+      closable: true,
+      title: 'Restart ' + interpeter.name + ' interpreter',
+      message: 'Do you want to restart ' + interpeter.name + ' interpreter?',
+      callback: function(result) {
+        if (result) {
+          var payload  = {
+            'type': 'self'
+          };
+          $http.put(baseUrlSrv.getRestApiBase() + '/interpreter/setting/restart/' + interpeter.id, payload)
+            .success(function(data, status, headers, config) {
+              var index = _.findIndex($scope.interpreterSettings, {'id': interpeter.id});
+              $scope.interpreterSettings[index] = data.body;
+            }).error(function(data, status, headers, config) {
+              console.log('Error %o %o', status, data.message);
+
+              BootstrapDialog.show({
+                title: 'Error restart interpreter.',
+                message: data.message
+              });
+          });
+        }
+      }
+    });
+  }
+
   $scope.savePermissions = function() {
     convertPermissionsToArray();
     $http.put(baseUrlSrv.getRestApiBase() + '/notebook/' + $scope.note.id + '/permissions',
