@@ -1,6 +1,7 @@
 package org.apache.zeppelin.interpreter.remote;
 
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.atMost;
 import static org.mockito.Mockito.doAnswer;
@@ -176,6 +177,11 @@ public class AppendOutputRunnerTest {
     prepareInvocationCounts(listener);
     AppendOutputRunner.setListener(listener);
     CheckAppendOutputRunner.startRunnerForUnitTests();
-    while(numInvocations != numTimes);
+    long startTimeMs = System.currentTimeMillis();
+    while(numInvocations != numTimes) {
+      if (System.currentTimeMillis() - startTimeMs > 2000) {
+        fail("Buffered events were not sent for 2 seconds");
+      }
+    }
   }
 }
