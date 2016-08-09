@@ -13,8 +13,7 @@
  */
 'use strict';
 
-angular.module('zeppelinWebApp')
-.directive('interpreterDirective', function($timeout) {
+angular.module('zeppelinWebApp').directive('interpreterDirective', function($timeout) {
   return {
     restrict: 'A',
     link: function(scope, element, attr) {
@@ -26,4 +25,4 @@ angular.module('zeppelinWebApp')
       }
     }
   };
-})
+});
