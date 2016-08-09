@@ -308,10 +308,6 @@ public class Paragraph extends Job implements Serializable, Cloneable {
           logger.error("{} has no permission for {} ", authenticationInfo.getUser(), repl);
           return new InterpreterResult(Code.ERROR, authenticationInfo.getUser() +
             " has no permission for " + getRequiredReplName());
-/*
-          throw new RuntimeException(authenticationInfo.getUser() +
-            " has no permission for " + getRequiredReplName());
-*/
         }
       }
     }
