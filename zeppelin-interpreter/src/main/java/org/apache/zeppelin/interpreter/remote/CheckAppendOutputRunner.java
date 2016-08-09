@@ -86,6 +86,7 @@ public class CheckAppendOutputRunner implements Runnable {
       if (thread != null && thread.isAlive()) {
         thread.interrupt();
       }
+      SCHEDULED_SERVICE = null;
     }
   }
 }
