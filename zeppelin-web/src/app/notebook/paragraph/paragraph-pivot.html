@@ -154,7 +154,8 @@ limitations under the License.
         <ul data-drop="true"
             ng-model="paragraph.config.graph.scatter.size"
             jqyoui-droppable="{onDrop:'onGraphOptionChange()'}"
-            class="list-unstyled">
+            class="list-unstyled"
+            style="height:36px">
           <li ng-if="paragraph.config.graph.scatter.size">
             <div class="btn btn-xs" style="color:white" ng-class="{'btn-warning': isValidSizeOption(paragraph.config.graph.scatter, paragraph.result.rows)}">
               {{paragraph.config.graph.scatter.size.name}} <span class="fa fa-close" ng-click="removeScatterOptionSize($index)"></span>
