@@ -7,13 +7,19 @@ For that, start Zeppelin server normally, then use ``./grunt serve`` in _zeppeli
 
 This will launch a Zeppelin WebApplication on port **9000** that will update on code changes.
 
+## Debugging
+It is recommended to use your Web Browser's console (with deactivated cache) to debug.
+
+If you are using plugins such as **Batarang**, you will need to activate angular's debug system through your console
+by typing: `angular.reloadWithDebugInfo();`
+
 ## Technologies
 
 Zeppelin WebApplication is using **AngularJS** as main Framework, and **Grunt** and **Bower** as helpers.
 
 So you might want to get familiar with it.
 [Here is a good start](http://www.sitepoint.com/kickstart-your-angularjs-development-with-yeoman-grunt-and-bower/)
-(There is obviously plenty more ressources to learn)
+(There is obviously plenty more resources to learn)
 
 ## Coding style
 
