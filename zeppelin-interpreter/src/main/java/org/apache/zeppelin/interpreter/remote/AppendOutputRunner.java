@@ -126,4 +126,10 @@ public class AppendOutputRunner implements Runnable {
   public static void setListener(RemoteInterpreterProcessListener listener) {
     AppendOutputRunner.listener = listener;
   }
+
+  /* This function is only used by unit-tests*/
+  public static void emptyQueueForUnitTests() {
+    List<AppendOutputBuffer> list = new LinkedList<AppendOutputBuffer>();
+    QUEUE.drainTo(list);
+  }
 }

@@ -19,6 +19,7 @@ package org.apache.zeppelin.interpreter.remote;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
@@ -35,6 +36,7 @@ public class CheckAppendOutputRunner implements Runnable {
   private static Thread thread = null;
   private static final Boolean SYNCHRONIZER = false;
   private static ScheduledExecutorService SCHEDULED_SERVICE = null;
+  private static ScheduledFuture<?> futureObject = null;
 
   /* Can only be initialized locally.*/
   private CheckAppendOutputRunner()
@@ -56,7 +58,7 @@ public class CheckAppendOutputRunner implements Runnable {
     synchronized (SYNCHRONIZER) {
       if (SCHEDULED_SERVICE == null) {
         SCHEDULED_SERVICE = Executors.newSingleThreadScheduledExecutor();
-        SCHEDULED_SERVICE.scheduleWithFixedDelay(
+        futureObject = SCHEDULED_SERVICE.scheduleWithFixedDelay(
             new CheckAppendOutputRunner(), 0, 1, TimeUnit.SECONDS);
       }
     }
@@ -64,11 +66,26 @@ public class CheckAppendOutputRunner implements Runnable {
 
   /* These functions are only used by unit-tests. */
   public static void stopRunnerForUnitTests() {
-    thread.interrupt();
+    synchronized (SYNCHRONIZER) {
+      thread.interrupt();
+    }
   }
 
   public static void startRunnerForUnitTests() {
-    thread = new Thread(new AppendOutputRunner());
-    thread.start();
+    synchronized (SYNCHRONIZER) {
+      thread = new Thread(new AppendOutputRunner());
+      thread.start();
+    }
+  }
+
+  public static void stopSchedulerAndRunnerForUnitTests() {
+    synchronized (SYNCHRONIZER) {
+      if (futureObject != null) {
+        futureObject.cancel(false);
+      }
+      if (thread != null && thread.isAlive()) {
+        thread.interrupt();
+      }
+    }
   }
 }

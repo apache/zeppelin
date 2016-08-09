@@ -16,6 +16,7 @@ import org.apache.log4j.AppenderSkeleton;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.spi.LoggingEvent;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -29,6 +30,16 @@ public class AppendOutputRunnerTest {
    * run for-ever.
    */
   private volatile static int numInvocations = 0;
+
+  @BeforeClass
+  public static void beforeClass() {
+    CheckAppendOutputRunner.stopSchedulerAndRunnerForUnitTests();
+    AppendOutputRunner.emptyQueueForUnitTests();
+    try {
+      Thread.sleep(1000);
+    } catch (InterruptedException e)
+    {}
+  }
 
   @Test
   public void testSingleEvent() throws InterruptedException {
