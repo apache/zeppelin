@@ -13,21 +13,7 @@
  */
 'use strict';
 
-angular.module('zeppelinWebApp')
-.directive('interpreterDirective', function($timeout) {
-  return {
-    restrict: 'A',
-    link: function(scope, element, attr) {
-      if (scope.$last === true) {
-        $timeout(function() {
-          var id = 'ngRenderFinished';
-          scope.$emit(id);
-        });
-      }
-    }
-  };
-})
-.controller('InterpreterCtrl',
+angular.module('zeppelinWebApp').controller('InterpreterCtrl',
   function($scope, $http, baseUrlSrv, ngToast, $timeout, $route) {
     var interpreterSettingsTmp = [];
     $scope.interpreterSettings = [];
