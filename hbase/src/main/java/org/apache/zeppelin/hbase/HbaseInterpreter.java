@@ -63,18 +63,6 @@ public class HbaseInterpreter extends Interpreter {
 
   private StringWriter writer;
 
-  // static {
-  //   Interpreter.register("hbase", "hbase", HbaseInterpreter.class.getName(),
-  //       new InterpreterPropertyBuilder()
-  //           .add("hbase.home",
-  //             getSystemDefault("HBASE_HOME", "hbase.home", "/usr/lib/hbase/"),
-  //             "Installation directory of HBase")
-  //           .add("hbase.ruby.sources", "lib/ruby",
-  //               "Path to Ruby scripts relative to 'hbase.home'")
-  //           .add("zeppelin.hbase.test.mode", "false", "Disable checks for unit and manual tests")
-  //         .build());
-  // }
-
   public HbaseInterpreter(Properties property) {
     super(property);
   }
