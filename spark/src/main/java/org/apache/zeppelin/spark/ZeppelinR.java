@@ -141,6 +141,9 @@ public class ZeppelinR implements ExecuteResultHandler {
     cmd.addArgument(Integer.toString(port));
     cmd.addArgument(libPath);
     cmd.addArgument(Integer.toString(sparkVersion.toNumber()));
+    
+    // dump out the R command to facilitate manually running it, e.g. for fault diagnosis purposes
+    logger.debug(cmd)
 
     executor = new DefaultExecutor();
     outputStream = new SparkOutputStream(logger);
