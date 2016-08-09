@@ -1068,6 +1068,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     return getDefaultInterpreterSetting(getInterpreterSettings(noteId));
   }
 
+
   private InterpreterSetting getInterpreterSettingByGroup(List<InterpreterSetting> settings,
       String group) {
     Preconditions.checkNotNull(group, "group should be not null");
