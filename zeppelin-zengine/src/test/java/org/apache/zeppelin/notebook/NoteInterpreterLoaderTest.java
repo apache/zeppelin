@@ -97,13 +97,15 @@ public class NoteInterpreterLoaderTest {
   public void testNoteSession() throws IOException {
     factory.setInterpreters("user", "noteA", factory.getDefaultInterpreterSettingList());
     factory.getInterpreterSettings("noteA").get(0).getOption().setSession(true);
+    factory.getInterpreterSettings("noteA").get(0).getOption().setPerNote(true);
 
     factory.setInterpreters("user", "noteB", factory.getDefaultInterpreterSettingList());
     factory.getInterpreterSettings("noteB").get(0).getOption().setSession(true);
+    factory.getInterpreterSettings("noteB").get(0).getOption().setPerNote(true);
 
     // interpreters are not created before accessing it
-    assertNull(factory.getInterpreterSettings("noteA").get(0).getInterpreterGroup("user", "shared_process").get("noteA"));
-    assertNull(factory.getInterpreterSettings("noteB").get(0).getInterpreterGroup("user", "shared_process").get("noteB"));
+    assertNull(factory.getInterpreterSettings("noteA").get(0).getInterpreterGroup("user", "noteA").get(":noteA"));
+    assertNull(factory.getInterpreterSettings("noteB").get(0).getInterpreterGroup("user", "noteB").get(":noteB"));
 
     factory.getInterpreter("user", "noteA", null).open();
     factory.getInterpreter("user", "noteB", null).open();
@@ -113,16 +115,16 @@ public class NoteInterpreterLoaderTest {
         factory.getInterpreter("user", "noteB", null).getInterpreterGroup().getId()));
 
     // interpreters are created after accessing it
-    assertNotNull(factory.getInterpreterSettings("noteA").get(0).getInterpreterGroup("user", "shared_process").get("noteA"));
-    assertNotNull(factory.getInterpreterSettings("noteB").get(0).getInterpreterGroup("user", "shared_process").get("noteB"));
+    assertNotNull(factory.getInterpreterSettings("noteA").get(0).getInterpreterGroup("user", "noteA").get(":noteA"));
+    assertNotNull(factory.getInterpreterSettings("noteB").get(0).getInterpreterGroup("user", "noteB").get(":noteB"));
 
     // when
     factory.closeNote("user", "noteA");
     factory.closeNote("user", "noteB");
 
     // interpreters are destroyed after close
-    assertNull(factory.getInterpreterSettings("noteA").get(0).getInterpreterGroup("user", "shared_process").get("noteA"));
-    assertNull(factory.getInterpreterSettings("noteB").get(0).getInterpreterGroup("user", "shared_process").get("noteB"));
+    assertNull(factory.getInterpreterSettings("noteA").get(0).getInterpreterGroup("user", "shared_process").get(":noteA"));
+    assertNull(factory.getInterpreterSettings("noteB").get(0).getInterpreterGroup("user", "shared_process").get(":noteB"));
 
   }
 
@@ -130,13 +132,15 @@ public class NoteInterpreterLoaderTest {
   public void testNotePerInterpreterProcess() throws IOException {
     factory.setInterpreters("user", "noteA", factory.getDefaultInterpreterSettingList());
     factory.getInterpreterSettings("noteA").get(0).getOption().setProcess(true);
+    factory.getInterpreterSettings("noteA").get(0).getOption().setPerNote(true);
 
     factory.setInterpreters("user", "noteB", factory.getDefaultInterpreterSettingList());
     factory.getInterpreterSettings("noteB").get(0).getOption().setProcess(true);
+    factory.getInterpreterSettings("noteA").get(0).getOption().setPerNote(true);
 
     // interpreters are not created before accessing it
-    assertNull(factory.getInterpreterSettings("noteA").get(0).getInterpreterGroup("user", "noteA").get("noteA"));
-    assertNull(factory.getInterpreterSettings("noteB").get(0).getInterpreterGroup("user", "noteB").get("noteB"));
+    assertNull(factory.getInterpreterSettings("noteA").get(0).getInterpreterGroup("user", "noteA").get(":noteA"));
+    assertNull(factory.getInterpreterSettings("noteB").get(0).getInterpreterGroup("user", "noteB").get(":noteB"));
 
     factory.getInterpreter("user", "noteA", null).open();
     factory.getInterpreter("user", "noteB", null).open();
@@ -147,16 +151,16 @@ public class NoteInterpreterLoaderTest {
         factory.getInterpreter("user", "noteB", null).getInterpreterGroup().getId()));
 
     // interpreters are created after accessing it
-    assertNotNull(factory.getInterpreterSettings("noteA").get(0).getInterpreterGroup("user", "noteA").get("noteA"));
-    assertNotNull(factory.getInterpreterSettings("noteB").get(0).getInterpreterGroup("user", "noteB").get("noteB"));
+    assertNotNull(factory.getInterpreterSettings("noteA").get(0).getInterpreterGroup("user", "noteA").get(":noteA"));
+    assertNotNull(factory.getInterpreterSettings("noteB").get(0).getInterpreterGroup("user", "noteB").get(":noteB"));
 
     // when
     factory.closeNote("user", "noteA");
     factory.closeNote("user", "noteB");
 
     // interpreters are destroyed after close
-    assertNull(factory.getInterpreterSettings("noteA").get(0).getInterpreterGroup("user", "noteA").get("noteA"));
-    assertNull(factory.getInterpreterSettings("noteB").get(0).getInterpreterGroup("user", "noteB").get("noteB"));
+    assertNull(factory.getInterpreterSettings("noteA").get(0).getInterpreterGroup("user", "noteA").get(":noteA"));
+    assertNull(factory.getInterpreterSettings("noteB").get(0).getInterpreterGroup("user", "noteB").get(":noteB"));
   }
 
 

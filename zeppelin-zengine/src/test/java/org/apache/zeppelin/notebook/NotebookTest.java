@@ -116,6 +116,7 @@ public class NotebookTest implements JobListenerFactory{
     config.put("enabled", true);
     p1.setConfig(config);
     p1.setText("hello world");
+    p1.setAuthenticationInfo(anonymous);
     note.run(p1.getId());
     while(p1.isTerminated()==false || p1.getResult()==null) Thread.yield();
     assertEquals("repl1: hello world", p1.getResult().message());
@@ -124,6 +125,7 @@ public class NotebookTest implements JobListenerFactory{
     Paragraph p2 = note.addParagraph();
     p2.setConfig(config);
     p2.setText("%mock2 hello world");
+    p2.setAuthenticationInfo(anonymous);
     note.run(p2.getId());
     while(p2.isTerminated()==false || p2.getResult()==null) Thread.yield();
     assertEquals("repl2: hello world", p2.getResult().message());
@@ -235,6 +237,7 @@ public class NotebookTest implements JobListenerFactory{
     config.put("enabled", true);
     p1.setConfig(config);
     p1.setText("hello world");
+    p1.setAuthenticationInfo(anonymous);
     note.run(p1.getId());
 
     while(p1.isTerminated() == false || p1.getResult() == null) Thread.yield();
@@ -688,13 +691,15 @@ public class NotebookTest implements JobListenerFactory{
   @Test
   public void testPerSessionInterpreterCloseOnNoteRemoval() throws IOException {
     // create a notes
-    Note note1  = notebook.createNote(new AuthenticationInfo());
+    Note note1  = notebook.createNote(anonymous);
     Paragraph p1 = note1.addParagraph();
     p1.setText("getId");
+    p1.setAuthenticationInfo(anonymous);
 
     // restart interpreter with per note session enabled
     for (InterpreterSetting setting : factory.getInterpreterSettings(note1.getId())) {
       setting.getOption().setSession(true);
+      setting.getOption().setPerUser(true);
       notebook.getInterpreterFactory().restart(setting.getId());
     }
 
@@ -707,6 +712,7 @@ public class NotebookTest implements JobListenerFactory{
     note1 = notebook.createNote(anonymous);
     p1 = note1.addParagraph();
     p1.setText("getId");
+    p1.setAuthenticationInfo(anonymous);
 
     note1.run(p1.getId());
     while (p1.getStatus() != Status.FINISHED) Thread.yield();
@@ -725,7 +731,9 @@ public class NotebookTest implements JobListenerFactory{
     Paragraph p2 = note2.addParagraph();
 
     p1.setText("getId");
+    p1.setAuthenticationInfo(anonymous);
     p2.setText("getId");
+    p2.setAuthenticationInfo(anonymous);
 
     // run per note session disabled
     note1.run(p1.getId());
@@ -740,6 +748,7 @@ public class NotebookTest implements JobListenerFactory{
     // restart interpreter with per note session enabled
     for (InterpreterSetting setting : notebook.getInterpreterFactory().getInterpreterSettings(note1.getId())) {
       setting.getOption().setSession(true);
+      setting.getOption().setPerNote(true);
       notebook.getInterpreterFactory().restart(setting.getId());
     }
 

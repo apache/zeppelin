@@ -224,7 +224,10 @@ public class InterpreterFactoryTest {
       add(info1);
     }}, new ArrayList<Dependency>(), new InterpreterOption(true), new Properties(), "/path1");
 
-    final InterpreterSetting setting1 = factory.createNewSetting("test-group1", "group1", new ArrayList<Dependency>(), new InterpreterOption(true), new Properties());
+    InterpreterOption perUserInterpreterOption = new InterpreterOption(true);
+    perUserInterpreterOption.setSession(true);
+    perUserInterpreterOption.setPerUser(true);
+    final InterpreterSetting setting1 = factory.createNewSetting("test-group1", "group1", new ArrayList<Dependency>(), perUserInterpreterOption, new Properties());
 
     factory.setInterpreters("user1", "note", new ArrayList<String>() {{
       add(setting1.getId());

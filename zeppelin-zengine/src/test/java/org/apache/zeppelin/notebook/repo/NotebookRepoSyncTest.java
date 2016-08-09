@@ -42,6 +42,7 @@ import org.apache.zeppelin.scheduler.JobListener;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.apache.zeppelin.search.SearchService;
 import org.apache.zeppelin.search.LuceneSearch;
+import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.user.Credentials;
 import org.junit.After;
 import org.junit.Before;
@@ -65,6 +66,7 @@ public class NotebookRepoSyncTest implements JobListenerFactory {
   private SearchService search;
   private NotebookAuthorization notebookAuthorization;
   private Credentials credentials;
+  private AuthenticationInfo anonymous;
   private static final Logger LOG = LoggerFactory.getLogger(NotebookRepoSyncTest.class);
   
   @Before
@@ -103,6 +105,7 @@ public class NotebookRepoSyncTest implements JobListenerFactory {
     credentials = new Credentials(conf.credentialsPersist(), conf.getCredentialsPath());
     notebookSync = new Notebook(conf, notebookRepoSync, schedulerFactory, factory, this, search,
             notebookAuthorization, credentials);
+    anonymous = new AuthenticationInfo("anonymous");
   }
 
   @After
@@ -119,40 +122,40 @@ public class NotebookRepoSyncTest implements JobListenerFactory {
   public void testSyncOnCreate() throws IOException {
     /* check that both storage systems are empty */
     assertTrue(notebookRepoSync.getRepoCount() > 1);
-    assertEquals(0, notebookRepoSync.list(0, null).size());
-    assertEquals(0, notebookRepoSync.list(1, null).size());
+    assertEquals(0, notebookRepoSync.list(0, anonymous).size());
+    assertEquals(0, notebookRepoSync.list(1, anonymous).size());
     
     /* create note */
-    Note note = notebookSync.createNote(null);
+    Note note = notebookSync.createNote(anonymous);
 
     // check that automatically saved on both storages
-    assertEquals(1, notebookRepoSync.list(0, null).size());
-    assertEquals(1, notebookRepoSync.list(1, null).size());
-    assertEquals(notebookRepoSync.list(0, null).get(0).getId(),notebookRepoSync.list(1, null).get(0).getId());
-
-    notebookSync.removeNote(notebookRepoSync.list(0, null).get(0).getId(), null);
+    assertEquals(1, notebookRepoSync.list(0, anonymous).size());
+    assertEquals(1, notebookRepoSync.list(1, anonymous).size());
+    assertEquals(notebookRepoSync.list(0, anonymous).get(0).getId(),notebookRepoSync.list(1, anonymous).get(0).getId());
+    
+    notebookSync.removeNote(notebookRepoSync.list(0, null).get(0).getId(), anonymous);
   }
 
   @Test
   public void testSyncOnDelete() throws IOException {
     /* create note */
     assertTrue(notebookRepoSync.getRepoCount() > 1);
-    assertEquals(0, notebookRepoSync.list(0, null).size());
-    assertEquals(0, notebookRepoSync.list(1, null).size());
+    assertEquals(0, notebookRepoSync.list(0, anonymous).size());
+    assertEquals(0, notebookRepoSync.list(1, anonymous).size());
     
-    Note note = notebookSync.createNote(null);
+    Note note = notebookSync.createNote(anonymous);
 
     /* check that created in both storage systems */
-    assertEquals(1, notebookRepoSync.list(0, null).size());
-    assertEquals(1, notebookRepoSync.list(1, null).size());
-    assertEquals(notebookRepoSync.list(0, null).get(0).getId(),notebookRepoSync.list(1, null).get(0).getId());
+    assertEquals(1, notebookRepoSync.list(0, anonymous).size());
+    assertEquals(1, notebookRepoSync.list(1, anonymous).size());
+    assertEquals(notebookRepoSync.list(0, anonymous).get(0).getId(),notebookRepoSync.list(1, anonymous).get(0).getId());
     
     /* remove Note */
-    notebookSync.removeNote(notebookRepoSync.list(0, null).get(0).getId(), null);
+    notebookSync.removeNote(notebookRepoSync.list(0, anonymous).get(0).getId(), anonymous);
     
     /* check that deleted in both storages */
-    assertEquals(0, notebookRepoSync.list(0, null).size());
-    assertEquals(0, notebookRepoSync.list(1, null).size());
+    assertEquals(0, notebookRepoSync.list(0, anonymous).size());
+    assertEquals(0, notebookRepoSync.list(1, anonymous).size());
     
   }
   
@@ -160,7 +163,7 @@ public class NotebookRepoSyncTest implements JobListenerFactory {
   public void testSyncUpdateMain() throws IOException {
     
     /* create note */
-    Note note = notebookSync.createNote(null);
+    Note note = notebookSync.createNote(anonymous);
     Paragraph p1 = note.addParagraph();
     Map config = p1.getConfig();
     config.put("enabled", true);
@@ -172,38 +175,38 @@ public class NotebookRepoSyncTest implements JobListenerFactory {
     
     /* new paragraph not yet saved into storages */
     assertEquals(0, notebookRepoSync.get(0,
-        notebookRepoSync.list(0, null).get(0).getId(), null).getParagraphs().size());
+        notebookRepoSync.list(0, anonymous).get(0).getId(), anonymous).getParagraphs().size());
     assertEquals(0, notebookRepoSync.get(1,
-        notebookRepoSync.list(1, null).get(0).getId(), null).getParagraphs().size());
+        notebookRepoSync.list(1, anonymous).get(0).getId(), anonymous).getParagraphs().size());
     
     /* save to storage under index 0 (first storage) */ 
-    notebookRepoSync.save(0, note, null);
+    notebookRepoSync.save(0, note, anonymous);
     
     /* check paragraph saved to first storage */
     assertEquals(1, notebookRepoSync.get(0,
-        notebookRepoSync.list(0, null).get(0).getId(), null).getParagraphs().size());
+        notebookRepoSync.list(0, anonymous).get(0).getId(), anonymous).getParagraphs().size());
     /* check paragraph isn't saved to second storage */
     assertEquals(0, notebookRepoSync.get(1,
-        notebookRepoSync.list(1, null).get(0).getId(), null).getParagraphs().size());
+        notebookRepoSync.list(1, anonymous).get(0).getId(), anonymous).getParagraphs().size());
     /* apply sync */
     notebookRepoSync.sync(null);
     /* check whether added to second storage */
     assertEquals(1, notebookRepoSync.get(1,
-    notebookRepoSync.list(1, null).get(0).getId(), null).getParagraphs().size());
+    notebookRepoSync.list(1, anonymous).get(0).getId(), anonymous).getParagraphs().size());
     /* check whether same paragraph id */
     assertEquals(p1.getId(), notebookRepoSync.get(0,
-        notebookRepoSync.list(0, null).get(0).getId(), null).getLastParagraph().getId());
+        notebookRepoSync.list(0, anonymous).get(0).getId(), anonymous).getLastParagraph().getId());
     assertEquals(p1.getId(), notebookRepoSync.get(1,
-        notebookRepoSync.list(1, null).get(0).getId(), null).getLastParagraph().getId());
-    notebookRepoSync.remove(note.getId(), null);
+        notebookRepoSync.list(1, anonymous).get(0).getId(), anonymous).getLastParagraph().getId());
+    notebookRepoSync.remove(note.getId(), anonymous);
   }
 
   @Test
   public void testSyncOnReloadedList() throws IOException {
     /* check that both storage repos are empty */
     assertTrue(notebookRepoSync.getRepoCount() > 1);
-    assertEquals(0, notebookRepoSync.list(0, null).size());
-    assertEquals(0, notebookRepoSync.list(1, null).size());
+    assertEquals(0, notebookRepoSync.list(0, anonymous).size());
+    assertEquals(0, notebookRepoSync.list(1, anonymous).size());
 
     File srcDir = new File("src/test/resources/2A94M5J1Z");
     File destDir = new File(secNotebookDir + "/2A94M5J1Z");
@@ -214,13 +217,13 @@ public class NotebookRepoSyncTest implements JobListenerFactory {
     } catch (IOException e) {
       LOG.error(e.toString(), e);
     }
-    assertEquals(0, notebookRepoSync.list(0, null).size());
-    assertEquals(1, notebookRepoSync.list(1, null).size());
+    assertEquals(0, notebookRepoSync.list(0, anonymous).size());
+    assertEquals(1, notebookRepoSync.list(1, anonymous).size());
 
     // After reloading notebooks repos should be synchronized
-    notebookSync.reloadAllNotes(null);
-    assertEquals(1, notebookRepoSync.list(0, null).size());
-    assertEquals(1, notebookRepoSync.list(1, null).size());
+    notebookSync.reloadAllNotes(anonymous);
+    assertEquals(1, notebookRepoSync.list(0, anonymous).size());
+    assertEquals(1, notebookRepoSync.list(1, anonymous).size());
   }
 
   @Test
@@ -287,15 +290,15 @@ public class NotebookRepoSyncTest implements JobListenerFactory {
     GitNotebookRepo gitRepo = (GitNotebookRepo) vRepoSync.getRepo(0);
     
     // no notes
-    assertThat(vRepoSync.list(null).size()).isEqualTo(0);
+    assertThat(vRepoSync.list(anonymous).size()).isEqualTo(0);
     // create note
-    Note note = vNotebookSync.createNote(null);
-    assertThat(vRepoSync.list(null).size()).isEqualTo(1);
+    Note note = vNotebookSync.createNote(anonymous);
+    assertThat(vRepoSync.list(anonymous).size()).isEqualTo(1);
     
-    String noteId = vRepoSync.list(null).get(0).getId();
+    String noteId = vRepoSync.list(anonymous).get(0).getId();
     // first checkpoint
-    vRepoSync.checkpoint(noteId, "checkpoint message", null);
-    int vCount = gitRepo.revisionHistory(noteId, null).size();
+    vRepoSync.checkpoint(noteId, "checkpoint message", anonymous);
+    int vCount = gitRepo.revisionHistory(noteId, anonymous).size();
     assertThat(vCount).isEqualTo(1);
     
     Paragraph p = note.addParagraph();
@@ -305,10 +308,10 @@ public class NotebookRepoSyncTest implements JobListenerFactory {
     p.setText("%md checkpoint test");
     
     // save and checkpoint again
-    vRepoSync.save(note, null);
-    vRepoSync.checkpoint(noteId, "checkpoint message 2", null);
-    assertThat(gitRepo.revisionHistory(noteId, null).size()).isEqualTo(vCount + 1);
-    notebookRepoSync.remove(note.getId(), null);
+    vRepoSync.save(note, anonymous);
+    vRepoSync.checkpoint(noteId, "checkpoint message 2", anonymous);
+    assertThat(gitRepo.revisionHistory(noteId, anonymous).size()).isEqualTo(vCount + 1);
+    notebookRepoSync.remove(note.getId(), anonymous);
   }
   
   static void delete(File file){
