@@ -282,7 +282,7 @@ public class Note implements Serializable, ParagraphJobListener {
   }
 
   public boolean isBinding(String replName) {
-    return factory.isBinded(getId(), replName);
+    return factory.getInterpreter(this.getId(), replName) != null;
   }
 
   private String getInterpreterName(String replName) {

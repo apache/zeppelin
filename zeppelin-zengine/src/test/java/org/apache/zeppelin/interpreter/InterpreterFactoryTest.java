@@ -156,28 +156,4 @@ public class InterpreterFactoryTest {
 
     assertEquals("className1", factory.getInterpreter("note", "test-group1").getClassName());
   }
-
-  @Test
-  public void testIsBindingForNotExistNoteId() throws Exception {
-    String notExistNoteId = "notExistNoteId";
-    List<String> interpreters = factory.getInterpreters(notExistNoteId);
-
-    System.out.println(interpreters);
-    assertTrue(interpreters.isEmpty());
-    assertFalse(factory.isBinded(notExistNoteId, "i1"));
-  }
-
-  @Test
-  public void testIsBindingForExistNoteId() throws Exception {
-    String existNoteId = "existNoteId";
-    factory.setInterpreters(existNoteId, factory.getDefaultInterpreterSettingList());
-
-    List<String> interpreters = factory.getInterpreters(existNoteId);
-    System.out.println(interpreters);
-    assertFalse(interpreters.isEmpty());
-
-    String groupId = factory.getInterpreterSettings(existNoteId).iterator().next().getGroup();
-    assertTrue(factory.isBinded(existNoteId, groupId));
-    assertFalse(factory.isBinded(existNoteId, "i1"));
-  }
 }
