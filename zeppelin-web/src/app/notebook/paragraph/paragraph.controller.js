@@ -1295,7 +1295,8 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
 
     var renderMap = function() {
       var mapdiv = angular.element('#p' + $scope.paragraph.id + '_map')
-      .css('height', $scope.paragraph.config.graph.height).children('div').get(0);
+                          .css('height', $scope.paragraph.config.graph.height)
+                          .children('div').get(0);
 
       // on chart type change, destroy map to force reinitialization.
       if ($scope.map && !refresh) {
@@ -1505,27 +1506,21 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
     }
 
     /* try to find columns for the map logitude and latitude */
-    var i;
-    var col;
-    if (!$scope.paragraph.config.graph.map.lat) {
-      for (i = 0; i < $scope.paragraph.result.columnNames.length; ++i) {
-        col = $scope.paragraph.result.columnNames[i];
-        if (col.name.toUpperCase().indexOf('LAT') !== -1) {
-          $scope.paragraph.config.graph.map.lat = col;
-          break;
+    var findDefaultMapCol = function(settingName, keyword) {
+      var col;
+      if (!$scope.paragraph.config.graph.map[settingName]) {
+        for (var i = 0; i < $scope.paragraph.result.columnNames.length; ++i) {
+          col = $scope.paragraph.result.columnNames[i];
+          if (col.name.toUpperCase().indexOf(keyword) !== -1) {
+            $scope.paragraph.config.graph.map[settingName] = col;
+            break;
+          }
         }
       }
-    }
+    };
 
-    if (!$scope.paragraph.config.graph.map.lng) {
-      for (i = 0; i < $scope.paragraph.result.columnNames.length; ++i) {
-        col = $scope.paragraph.result.columnNames[i];
-        if (col.name.toUpperCase().indexOf('LONG') !== -1) {
-          $scope.paragraph.config.graph.map.lng = col;
-          break;
-        }
-      }
-    }
+    findDefaultMapCol('lat', 'LAT');
+    findDefaultMapCol('lng', 'LONG');
   };
 
   var pivot = function(data) {
