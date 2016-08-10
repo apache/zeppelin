@@ -55,6 +55,7 @@ import com.google.gson.reflect.TypeToken;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.NullArgumentException;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sonatype.aether.RepositoryException;
@@ -345,6 +346,8 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     InputStreamReader isr = new InputStreamReader(fis);
     BufferedReader bufferedReader = new BufferedReader(isr);
     StringBuilder sb = new StringBuilder();
+    InterpreterSetting interpreterSettingObject;
+    String depClassPath = StringUtils.EMPTY;
     String line;
     while ((line = bufferedReader.readLine()) != null) {
       sb.append(line);
@@ -365,9 +368,14 @@ public class InterpreterFactory implements InterpreterGroupFactory {
       setting.getOption().setRemote(true);
 
       // Update transient information from InterpreterSettingRef
-      // TODO(jl): Check if reference of setting is null
-
-      setting.setPath(interpreterSettingsRef.get(setting.getGroup()).getPath());
+      interpreterSettingObject = interpreterSettingsRef.get(setting.getGroup());
+      if (interpreterSettingObject == null) {
+        logger.info("can't get InterpreterSetting " +
+          "Information From loaded Interrpeter Setting Ref - {} ", setting.getGroup());
+        continue;
+      }
+      depClassPath = interpreterSettingObject.getPath();
+      setting.setPath(depClassPath);
 
       setting.setInterpreterGroupFactory(this);
       loadInterpreterDependencies(setting);
