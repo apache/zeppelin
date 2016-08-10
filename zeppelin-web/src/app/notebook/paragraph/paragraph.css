@@ -337,6 +337,10 @@ table.dataTable.table-condensed .sorting_desc:after {
   overflow: visible;
 }
 
+.esri-docked.esri-dock-to-bottom {
+  padding: 8px;
+}
+
 .tableDisplay .btn-group span {
   margin: 10px 0 0 10px;
   font-size: 12px;
