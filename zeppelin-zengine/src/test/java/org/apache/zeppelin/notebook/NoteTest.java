@@ -139,7 +139,7 @@ public class NoteTest {
 
     Note note = new Note(repo, interpreterFactory, jobListenerFactory, index, credentials, noteEventListener);
     note.putDefaultReplName(); //set lastReplName
-    when(note.isBinding("spark")).thenReturn(true);
+    when(interpreterFactory.getInterpreter(note.getId(), "spark")).thenReturn(new MockInterpreter2(null));
 
     Paragraph p = note.addParagraph();
 
@@ -155,7 +155,7 @@ public class NoteTest {
 
     Note note = new Note(repo, interpreterFactory, jobListenerFactory, index, credentials, noteEventListener);
     note.putDefaultReplName(); //set lastReplName
-    when(note.isBinding("spark")).thenReturn(true);
+    when(interpreterFactory.getInterpreter(note.getId(), "spark")).thenReturn(new MockInterpreter2(null));
 
     Paragraph p = note.insertParagraph(note.getParagraphs().size());
 
