@@ -371,7 +371,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
       interpreterSettingObject = interpreterSettingsRef.get(setting.getGroup());
       if (interpreterSettingObject == null) {
         logger.info("can't get InterpreterSetting " +
-          "Information From loaded Interrpeter Setting Ref - {} ", setting.getGroup());
+          "Information From loaded Interpreter Setting Ref - {} ", setting.getGroup());
         continue;
       }
       depClassPath = interpreterSettingObject.getPath();
