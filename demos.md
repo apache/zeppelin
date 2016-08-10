@@ -23,6 +23,6 @@ List of live demo on behalf of Apache Zeppelin by 3rd parties.
 
 <ul>
   <li>
-    <a href="./demo/demo-aws-emr.html">Live demo</a> powered by Apache Spark and Apache Zeppelin on Amazon EMR.
+    <a href="./demo/demo-aws-emr.html">Live demo</a> powered by Apache Spark and Apache Zeppelin on <a href="https://aws.amazon.com/" target="_blank">Amazon EMR</a>.
   </li>
 </ul>
