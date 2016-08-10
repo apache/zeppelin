@@ -292,9 +292,11 @@ object RContext {
         val portsFile = File.createTempFile("rscala-", "")
         val processInstance = processCmd.run(processIO)
         // Find rzeppelin
-        val libpath : String = if (Files.exists(Paths.get("R/lib"))) "R/lib"
+        val basePath : String = SparkInterpreter.getSystemDefault("ZEPPELIN_HOME", "zeppelin.home", "./")
+        val libpath : String = if (Files.exists(Paths.get(basePath + "R/lib"))) basePath + "R/lib"
+        else if (Files.exists(Paths.get("R/lib"))) "R/lib"
         else if (Files.exists(Paths.get("../R/lib"))) "../R/lib"
-        else throw new RuntimeException("Could not find rzeppelin - it must be in either R/lib or ../R/lib")
+        else throw new RuntimeException("Could not find rzeppelin - it should be in either $ZEPPELIN_HOME/R/lib, ./R/lib or ../R/lib")
         val snippet =
           s"""
 library(lib.loc="$libpath", rzeppelin)
@@ -318,4 +320,3 @@ q(save='no')"""
         context
   }
 }
-
