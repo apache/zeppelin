@@ -1,0 +1,31 @@
+syntax = "proto3";
+option java_package = "io.grpc.examples.routeguide";
+
+
+service PythonInterpreter {
+
+  // Blocking RPC to interpreter pice of code
+  //
+  //
+  rpc Interprete (CodeInterpreteRequest) returns (InterpetedResult);
+
+  rpc AutoComplete (CodeCompletionRequest) return (CodeSuggestions);
+  //rpc Progress ????
+
+  // Terminates this RPC Server python process
+  rpc Shutdown();
+
+  //TODO(bzz):
+  // log (stderr) streaming?
+  // result streaming? What is result in TensorFlow?
+}
+
+message CodeRequest {
+  string code = 1;
+}
+
+message InterpetedResult {
+  string result = 1;
+  //string output = 1;
+  //string status = 2; //should be enum
+}
