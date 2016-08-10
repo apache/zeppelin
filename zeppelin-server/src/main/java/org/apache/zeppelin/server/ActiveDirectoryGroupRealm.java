@@ -16,6 +16,10 @@
  */
 package org.apache.zeppelin.server;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.security.alias.CredentialProvider;
+import org.apache.hadoop.security.alias.CredentialProviderFactory;
 import org.apache.shiro.authc.AuthenticationInfo;
 import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.authc.SimpleAuthenticationInfo;
@@ -55,6 +59,13 @@ public class ActiveDirectoryGroupRealm extends AbstractLdapRealm {
 
   private static final String ROLE_NAMES_DELIMETER = ",";
 
+  String KEYSTORE_PASS = "activeDirectoryRealm.systemPassword";
+  private String hadoopSecurityCredentialPath;
+
+  public void setHadoopSecurityCredentialPath(String hadoopSecurityCredentialPath) {
+    this.hadoopSecurityCredentialPath = hadoopSecurityCredentialPath;
+  }
+
     /*--------------------------------------------
     |    I N S T A N C E   V A R I A B L E S    |
     ============================================*/
@@ -91,11 +102,34 @@ public class ActiveDirectoryGroupRealm extends AbstractLdapRealm {
       defaultFactory.setSearchBase(this.searchBase);
       defaultFactory.setUrl(this.url);
       defaultFactory.setSystemUsername(this.systemUsername);
-      defaultFactory.setSystemPassword(this.systemPassword);
+      defaultFactory.setSystemPassword(getSystemPassword());
       this.ldapContextFactory = defaultFactory;
     }
 
     return this.ldapContextFactory;
+  }
+
+  private String getSystemPassword() {
+    String password = "";
+    if (StringUtils.isEmpty(this.hadoopSecurityCredentialPath)) {
+      password = this.systemPassword;
+    } else {
+      try {
+        Configuration configuration = new Configuration();
+        configuration.set(CredentialProviderFactory.CREDENTIAL_PROVIDER_PATH,
+          this.hadoopSecurityCredentialPath);
+        CredentialProvider provider =
+          CredentialProviderFactory.getProviders(configuration).get(0);
+        CredentialProvider.CredentialEntry credEntry = provider.getCredentialEntry(
+            KEYSTORE_PASS);
+        if (credEntry != null) {
+          password = new String(credEntry.getCredential());
+        }
+      } catch (Exception e) {
+
+      }
+    }
+    return password;
   }
 
   /**
@@ -293,3 +327,4 @@ public class ActiveDirectoryGroupRealm extends AbstractLdapRealm {
   }
 
 }
+
