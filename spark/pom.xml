@@ -51,11 +51,11 @@
       <artifactId>slf4j-log4j12</artifactId>
     </dependency>
 
-    <!-- dependency>
+    <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>zeppelin-display_${scala.binary.version}</artifactId>
       <version>${project.version}</version>
-    </dependency -->
+    </dependency>
 
     <dependency>
       <groupId>${project.groupId}</groupId>
