@@ -1,7 +1,7 @@
 ---
 layout: page
-title: "Getting Started"
-description: ""
+title: "Quick Start"
+description: "This page will help you to get started and guide you through installation of Apache Zeppelin, running it in the command line and basic configuration options."
 group: install
 ---
 <!--

@@ -1,7 +1,7 @@
 ---
 layout: page
-title: "Dynamic Form"
-description: ""
+title: "Dynamic Form in Apache Zeppelin"
+description: "Apache Zeppelin dynamically creates input forms. Depending on language backend, there're two different ways to create dynamic form."
 group: manual
 ---
 <!--
@@ -28,7 +28,7 @@ Custom language backend can select which type of form creation it wants to use.
 
 ## Using form Templates
 
-This mode creates form using simple template language. It's simple and easy to use. For example Markdown, Shell, SparkSql language backend uses it.
+This mode creates form using simple template language. It's simple and easy to use. For example Markdown, Shell, Spark SQL language backend uses it.
 
 ### Text input form
 

@@ -1,9 +1,22 @@
 ---
 layout: page
-title: "Livy Interpreter"
-description: ""
+title: "Livy Interpreter for Apache Zeppelin"
+description: "Livy is an open source REST interface for interacting with Spark from anywhere. It supports executing snippets of code or programs in a Spark context that runs locally or in YARN."
 group: interpreter
 ---
+<!--
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
 {% include JB/setup %}
 
 # Livy Interpreter for Apache Zeppelin
@@ -50,7 +63,7 @@ Example: `spark.master` to `livy.spark.master`
   <tr>
     <td>zeppelin.livy.spark.maxResult</td>
     <td>1000</td>
-    <td>Max number of SparkSQL result to display.</td>
+    <td>Max number of Spark SQL result to display.</td>
   </tr>
     <tr>
     <td>livy.spark.driver.cores</td>

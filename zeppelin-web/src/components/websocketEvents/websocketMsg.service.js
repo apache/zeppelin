@@ -170,12 +170,12 @@ angular.module('zeppelinWebApp').service('websocketMsgSrv', function($rootScope,
       });
     },
 
-    getNoteRevision: function(noteId, revisionId) {
+    getNoteRevision: function(noteId, revision) {
       websocketEvents.sendNewEvent({
         op: 'NOTE_REVISION',
         data: {
           noteId: noteId,
-          revisionId: revisionId
+          revision: revision
         }
       });
     },
@@ -196,6 +196,15 @@ angular.module('zeppelinWebApp').service('websocketMsgSrv', function($rootScope,
 
     unsubscribeJobManager: function() {
       websocketEvents.sendNewEvent({op: 'UNSUBSCRIBE_JOBMANAGER'});
+    },
+
+    getInterpreterBindings: function(noteID) {
+      websocketEvents.sendNewEvent({op: 'GET_INTERPRETER_BINDINGS', data: {noteID: noteID}});
+    },
+
+    saveInterpreterBindings: function(noteID, selectedSettingIds) {
+      websocketEvents.sendNewEvent({op: 'SAVE_INTERPRETER_BINDINGS',
+        data: {noteID: noteID, selectedSettingIds: selectedSettingIds}});
     }
 
   };
