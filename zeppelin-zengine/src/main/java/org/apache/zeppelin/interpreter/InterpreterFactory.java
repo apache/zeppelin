@@ -370,7 +370,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
       // Update transient information from InterpreterSettingRef
       interpreterSettingObject = interpreterSettingsRef.get(setting.getGroup());
       if (interpreterSettingObject == null) {
-        logger.info("can't get InterpreterSetting " +
+        logger.warn("can't get InterpreterSetting " +
           "Information From loaded Interpreter Setting Ref - {} ", setting.getGroup());
         continue;
       }
