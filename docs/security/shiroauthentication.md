@@ -1,3 +1,4 @@
+
 ---
 layout: page
 title: "Apache Shiro Authentication for Apache Zeppelin"
@@ -112,10 +113,36 @@ To learn more about Apache Shiro Realm, please check [this documentation](http:/
 We also provide community custom Realms.
 
 ### Active Directory
-TBD
+
+```
+activeDirectoryRealm = org.apache.zeppelin.server.ActiveDirectoryGroupRealm
+activeDirectoryRealm.systemUsername = userNameA
+activeDirectoryRealm.systemPassword = passwordA
+activeDirectoryRealm.hadoopSecurityCredentialPath = jceks://file/user/zeppelin/conf/zeppelin.jceks
+activeDirectoryRealm.searchBase = CN=Users,DC=SOME_GROUP,DC=COMPANY,DC=COM
+activeDirectoryRealm.url = ldap://ldap.test.com:389
+activeDirectoryRealm.groupRolesMap = "CN=aGroupName,OU=groups,DC=SOME_GROUP,DC=COMPANY,DC=COM":"group1"
+activeDirectoryRealm.authorizationCachingEnabled = false
+```
+
+
+Also instead of specifying systemPassword in clear text in shiro.ini administrator can choose to specify the same in "hadoop credential".
+Create a keystore file using the hadoop credential commandline, for this the hadoop commons should be in the classpath
+`hadoop credential create activeDirectoryRealm.systempassword -provider jceks://file/user/zeppelin/conf/zeppelin.jceks`
+
+Change the following values in the Shiro.ini file, and uncomment the line:
+`activeDirectoryRealm.hadoopSecurityCredentialPath = jceks://file/user/zeppelin/conf/zeppelin.jceks`
 
 ### LDAP
-TBD
+
+```
+ldapRealm = org.apache.zeppelin.server.LdapGroupRealm
+# search base for ldap groups (only relevant for LdapGroupRealm):
+ldapRealm.contextFactory.environment[ldap.searchBase] = dc=COMPANY,dc=COM
+ldapRealm.contextFactory.url = ldap://ldap.test.com:389
+ldapRealm.userDnTemplate = uid={0},ou=Users,dc=COMPANY,dc=COM
+ldapRealm.contextFactory.authenticationMechanism = SIMPLE
+```
 
 ### ZeppelinHub
 [ZeppelinHub](https://www.zeppelinhub.com) is a service that synchronize your Apache Zeppelin notebooks and enables you to collaborate easily.
