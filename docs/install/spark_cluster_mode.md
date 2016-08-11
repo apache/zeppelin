@@ -72,8 +72,8 @@ ps -ef | grep spark
 ```
 
 
-## Spark on Yarn mode
-You can simply set up [Spark on Yarn](http://spark.apache.org/docs/latest/running-on-yarn.html) docker environment with below steps.
+## Spark on YARN mode
+You can simply set up [Spark on YARN](http://spark.apache.org/docs/latest/running-on-yarn.html) docker environment with below steps.
 
 > **Note :** Since Apache Zeppelin and Spark use same `8080` port for their web UI, you might need to change `zeppelin.server.port` in `conf/zeppelin-site.xml`.
 
@@ -111,9 +111,9 @@ docker run -it \
  spark_yarn bash;
 ```
 
-### 3. Verify running Spark on Yarn.
+### 3. Verify running Spark on YARN.
 
-You can simply verify the processes of Spark and Yarn is running well in Docker with below command.
+You can simply verify the processes of Spark and YARN is running well in Docker with below command.
 
 
 ```

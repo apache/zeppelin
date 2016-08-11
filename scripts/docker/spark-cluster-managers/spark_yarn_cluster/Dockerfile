@@ -13,10 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 FROM centos:centos6
-MAINTAINER hsshim@nflabs.com
 
-ENV SPARK_PROFILE 1.6
-ENV SPARK_VERSION 1.6.1
+ENV SPARK_PROFILE 2.0
+ENV SPARK_VERSION 2.0.0
 ENV HADOOP_PROFILE 2.3
 ENV HADOOP_VERSION 2.3.0
 
@@ -73,7 +72,6 @@ RUN rm  /usr/local/hadoop/lib/native/*
 RUN curl -Ls http://dl.bintray.com/sequenceiq/sequenceiq-bin/hadoop-native-64.tar|tar -x -C /usr/local/hadoop/lib/native/
 
 # install spark
-#RUN curl -s https://www.apache.org/dist/spark/spark-1.6.1/spark-1.6.1-bin-hadoop2.3.tgz | tar -xz -C /usr/local/
 RUN curl -s http://archive.apache.org/dist/spark/spark-$SPARK_VERSION/spark-$SPARK_VERSION-bin-hadoop$HADOOP_PROFILE.tgz | tar -xz -C /usr/local/
 RUN cd /usr/local && ln -s spark-$SPARK_VERSION-bin-hadoop$HADOOP_PROFILE spark
 ENV SPARK_HOME /usr/local/spark
