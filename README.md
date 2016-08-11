@@ -217,6 +217,7 @@ Here're some examples:
 
 ```sh
 # build with spark-2.0, scala-2.11
+./dev/change_scala_version.sh 2.11
 mvn clean package -Pspark-2.0 -Phadoop-2.4 -Pyarn -Ppyspark -Psparkr -Pscala-2.11
 
 # build with spark-1.6, scala-2.10
@@ -306,6 +307,7 @@ For configuration details check __`./conf`__ subdirectory.
 To produce a Zeppelin package compiled with Scala 2.11, use the -Pscala-2.11 profile:
 
 ```
+./dev/change_scala_version.sh 2.11
 mvn clean package -Pspark-1.6 -Phadoop-2.4 -Pyarn -Ppyspark -Pscala-2.11 -DskipTests clean install
 ```
 

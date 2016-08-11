@@ -7,7 +7,8 @@ describe('Controller: NotebookCtrl', function() {
 
   var websocketMsgSrvMock = {
     getNotebook: function() {},
-    listRevisionHistory: function() {}
+    listRevisionHistory: function() {},
+    getInterpreterBindings: function() {}
   };
 
   var baseUrlSrvMock = {
@@ -44,10 +45,6 @@ describe('Controller: NotebookCtrl', function() {
     it('check for scope functions to be defined : ' + fn, function() {
       expect(scope[fn]).toBeDefined();
     });
-  });
-
-  it('should set default value of "showEditor" to false', function() {
-    expect(scope.showEditor).toEqual(false);
   });
 
   it('should set default value of "editorToggled" to false', function() {

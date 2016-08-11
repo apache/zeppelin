@@ -100,13 +100,16 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
           }
         }
 
-        // run markdown paragraph, again
+        String sqlContextName = "sqlContext";
+        if (sparkVersion >= 20) {
+          sqlContextName = "spark";
+        }
         Paragraph p = note.addParagraph();
         Map config = p.getConfig();
         config.put("enabled", true);
         p.setConfig(config);
         p.setText("%r localDF <- data.frame(name=c(\"a\", \"b\", \"c\"), age=c(19, 23, 18))\n" +
-            "df <- createDataFrame(sqlContext, localDF)\n" +
+            "df <- createDataFrame(" + sqlContextName + ", localDF)\n" +
             "count(df)"
         );
         note.run(p.getId());

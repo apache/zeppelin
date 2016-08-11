@@ -18,7 +18,6 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
                                                                      baseUrlSrv, $timeout, saveAsService) {
   $scope.note = null;
   $scope.moment = moment;
-  $scope.showEditor = false;
   $scope.editorToggled = false;
   $scope.tableToggled = false;
   $scope.viewOnly = false;
@@ -43,16 +42,6 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
   var connectedOnce = false;
 
   // user auto complete related
-  $scope.suggestions = [];
-  $scope.selectIndex = -1;
-  var selectedUser = '';
-  var selectedUserIndex = 0;
-  var previousSelectedList = [];
-  var previousSelectedListOwners = [];
-  var previousSelectedListReaders = [];
-  var previousSelectedListWriters = [];
-  var searchText = [];
-  $scope.role = '';
   $scope.noteRevisions = [];
 
   $scope.$on('setConnectedStatus', function(event, param) {
@@ -449,23 +438,14 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
     }
   };
 
-  var getInterpreterBindings = function(callback) {
-    $http.get(baseUrlSrv.getRestApiBase() + '/notebook/interpreter/bind/' + $scope.note.id).
-    success(function(data, status, headers, config) {
-      $scope.interpreterBindings = data.body;
-      $scope.interpreterBindingsOrig = angular.copy($scope.interpreterBindings); // to check dirty
-      if (callback) {
-        callback();
-      }
-    }).
-    error(function(data, status, headers, config) {
-      if (status !== 0) {
-        console.log('Error %o %o', status, data.message);
-      }
-    });
+  var getInterpreterBindings = function() {
+    websocketMsgSrv.getInterpreterBindings($scope.note.id);
   };
 
-  var getInterpreterBindingsCallBack = function() {
+  $scope.$on('interpreterBindings', function(event, data) {
+    $scope.interpreterBindings = data.interpreterBindings;
+    $scope.interpreterBindingsOrig = angular.copy($scope.interpreterBindings); // to check dirty
+
     var selected = false;
     var key;
     var setting;
@@ -490,7 +470,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
       }
       $scope.showSetting = true;
     }
-  };
+  });
 
   $scope.interpreterSelectionListeners = {
     accept: function(sourceItemHandleScope, destSortableScope) {return true;},
@@ -530,16 +510,9 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
         selectedSettingIds.push(setting.id);
       }
     }
-
-    $http.put(baseUrlSrv.getRestApiBase() + '/notebook/interpreter/bind/' + $scope.note.id,
-              selectedSettingIds).
-    success(function(data, status, headers, config) {
-      console.log('Interpreter binding %o saved', selectedSettingIds);
-      $scope.showSetting = false;
-    }).
-    error(function(data, status, headers, config) {
-      console.log('Error %o %o', status, data.message);
-    });
+    websocketMsgSrv.saveInterpreterBindings($scope.note.id, selectedSettingIds);
+    console.log('Interpreter bindings %o saved', selectedSettingIds);
+    $scope.showSetting = false;
   };
 
   $scope.toggleSetting = function() {
@@ -556,6 +529,63 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
     success(function(data, status, headers, config) {
       $scope.permissions = data.body;
       $scope.permissionsOrig = angular.copy($scope.permissions); // to check dirty
+
+      var selectJson = {
+        tokenSeparators: [',', ' '],
+        ajax: {
+          url: function(params) {
+            if (!params.term) {
+              return false;
+            }
+            return baseUrlSrv.getRestApiBase() + '/security/userlist/' + params.term;
+          },
+          delay: 250,
+          processResults: function(data, params) {
+            var results = [];
+
+            if (data.body.users.length !== 0) {
+              var users = [];
+              for (var len = 0; len < data.body.users.length; len++) {
+                users.push({
+                  'id': data.body.users[len],
+                  'text': data.body.users[len]
+                });
+              }
+              results.push({
+                'text': 'Users :',
+                'children': users
+              });
+            }
+            if (data.body.roles.length !== 0) {
+              var roles = [];
+              for (var len = 0; len < data.body.roles.length; len++) {
+                roles.push({
+                  'id': data.body.roles[len],
+                  'text': data.body.roles[len]
+                });
+              }
+              results.push({
+                'text': 'Roles :',
+                'children': roles
+              });
+            }
+            return {
+              results: results,
+              pagination: {
+                more: false
+              }
+            };
+          },
+          cache: false
+        },
+        width: ' ',
+        tags: true,
+        minimumInputLength: 3
+      };
+
+      angular.element('#selectOwners').select2(selectJson);
+      angular.element('#selectReaders').select2(selectJson);
+      angular.element('#selectWriters').select2(selectJson);
       if (callback) {
         callback();
       }
@@ -592,15 +622,9 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
   };
 
   function convertPermissionsToArray() {
-    if (!angular.isArray($scope.permissions.owners)) {
-      $scope.permissions.owners = $scope.permissions.owners.split(',');
-    }
-    if (!angular.isArray($scope.permissions.readers)) {
-      $scope.permissions.readers = $scope.permissions.readers.split(',');
-    }
-    if (!angular.isArray($scope.permissions.writers)) {
-      $scope.permissions.writers = $scope.permissions.writers.split(',');
-    }
+    $scope.permissions.owners = angular.element('#selectOwners').val();
+    $scope.permissions.readers = angular.element('#selectReaders').val();
+    $scope.permissions.writers = angular.element('#selectWriters').val();
   }
 
   $scope.savePermissions = function() {
@@ -652,6 +676,9 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
   $scope.togglePermissions = function() {
     if ($scope.showPermissions) {
       $scope.closePermissions();
+      angular.element('#selectOwners').select2({});
+      angular.element('#selectReaders').select2({});
+      angular.element('#selectWriters').select2({});
     } else {
       $scope.openPermissions();
       $scope.closeSetting();
@@ -674,195 +701,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
     }
   };
 
-  function checkPreviousRole(role) {
-    var i = 0;
-    if (role !== $scope.role) {
-      if ($scope.role === 'owners') {
-        previousSelectedListOwners = [];
-        for (i = 0; i < previousSelectedList.length; i++) {
-          previousSelectedListOwners[i] = previousSelectedList[i];
-        }
-      }
-      if ($scope.role === 'readers') {
-        previousSelectedListReaders = [];
-        for (i = 0; i < previousSelectedList.length; i++) {
-          previousSelectedListReaders[i] = previousSelectedList[i];
-        }
-      }
-      if ($scope.role === 'writers') {
-        previousSelectedListWriters = [];
-        for (i = 0; i < previousSelectedList.length; i++) {
-          previousSelectedListWriters[i] = previousSelectedList[i];
-        }
-      }
-
-      $scope.role = role;
-      previousSelectedList = [];
-      if (role === 'owners') {
-        for (i = 0; i < previousSelectedListOwners.length; i++) {
-          previousSelectedList[i] = previousSelectedListOwners[i];
-        }
-      }
-      if (role === 'readers') {
-        for (i = 0; i < previousSelectedListReaders.length; i++) {
-          previousSelectedList[i] = previousSelectedListReaders[i];
-        }
-      }
-      if (role === 'writers') {
-        for (i = 0; i < previousSelectedListWriters.length; i++) {
-          previousSelectedList[i] = previousSelectedListWriters[i];
-        }
-      }
-    }
-  }
-
-  function convertToArray(role) {
-    if (!$scope.permissions) {
-      return;
-    } else if (role === 'owners' && typeof $scope.permissions.owners === 'string') {
-      searchText = $scope.permissions.owners.split(',');
-    } else if (role === 'readers' && typeof $scope.permissions.readers === 'string') {
-      searchText = $scope.permissions.readers.split(',');
-    } else if (role === 'writers' && typeof $scope.permissions.writers === 'string') {
-      searchText = $scope.permissions.writers.split(',');
-    }
-
-    for (var i = 0; i < searchText.length; i++) {
-      searchText[i] = searchText[i].trim();
-    }
-  }
-
-  function convertToString(role) {
-    if (role === 'owners') {
-      $scope.permissions.owners = searchText.join();
-    } else if (role === 'readers') {
-      $scope.permissions.readers = searchText.join();
-    } else if (role === 'writers') {
-      $scope.permissions.writers = searchText.join();
-    }
-  }
-
-  function getSuggestions(searchQuery) {
-    $scope.suggestions = [];
-    $http.get(baseUrlSrv.getRestApiBase() + '/security/userlist/' + searchQuery).then(function
-    (response) {
-      var userlist = angular.fromJson(response.data).body;
-      for (var k in userlist) {
-        $scope.suggestions.push(userlist[k]);
-      }
-    });
-  }
-
-  function updatePreviousList() {
-    for (var i = 0; i < searchText.length; i++) {
-      previousSelectedList[i] = searchText[i];
-    }
-  }
-
-  var getChangedIndex = function() {
-    if (previousSelectedList.length === 0) {
-      selectedUserIndex = searchText.length - 1;
-    } else {
-      for (var i = 0; i < searchText.length; i++) {
-        if (previousSelectedList[i] !== searchText[i]) {
-          selectedUserIndex = i;
-          previousSelectedList = [];
-          break;
-        }
-      }
-    }
-    updatePreviousList();
-  };
-
-  $scope.$watch('permissions.owners', _.debounce(function(readers) {
-    $scope.$apply(function() {
-      $scope.search('owners');
-    });
-  }, 350));
-
-  $scope.$watch('permissions.readers', _.debounce(function(readers) {
-    $scope.$apply(function() {
-      $scope.search('readers');
-    });
-  }, 350));
-
-  $scope.$watch('permissions.writers', _.debounce(function(readers) {
-    $scope.$apply(function() {
-      $scope.search('writers');
-    });
-  }, 350));
-
-  // function to find suggestion list on change
-  $scope.search = function(role) {
-    angular.element('.userlist').show();
-    convertToArray(role);
-    checkPreviousRole(role);
-    getChangedIndex();
-    $scope.selectIndex = -1;
-    $scope.suggestions = [];
-    selectedUser = searchText[selectedUserIndex];
-    if (selectedUser !== '') {
-      getSuggestions(selectedUser);
-    } else {
-      $scope.suggestions = [];
-    }
-  };
-
-  var checkIfSelected = function() {
-    if (($scope.suggestions.length === 0) &&
-      ($scope.selectIndex < 0 || $scope.selectIndex >= $scope.suggestions.length) ||
-      ($scope.suggestions.length !== 0 && ($scope.selectIndex < 0 || $scope.selectIndex >= $scope.suggestions.length))
-    ) {
-      searchText[selectedUserIndex] = selectedUser;
-      $scope.suggestions = [];
-      return true;
-    } else {
-      return false;
-    }
-  };
-
-  $scope.checkKeyDown = function(event, role) {
-    if (event.keyCode === 40) {
-      event.preventDefault();
-      if ($scope.selectIndex + 1 !== $scope.suggestions.length) {
-        $scope.selectIndex++;
-      }
-    } else if (event.keyCode === 38) {
-      event.preventDefault();
-
-      if ($scope.selectIndex - 1 !== -1) {
-        $scope.selectIndex--;
-
-      }
-    } else if (event.keyCode === 13) {
-      event.preventDefault();
-      if (!checkIfSelected()) {
-        selectedUser = $scope.suggestions[$scope.selectIndex];
-        searchText[selectedUserIndex] = $scope.suggestions[$scope.selectIndex];
-        updatePreviousList();
-        convertToString(role);
-        $scope.suggestions = [];
-      }
-    }
-  };
-
-  $scope.checkKeyUp = function(event) {
-    if (event.keyCode !== 8 || event.keyCode !== 46) {
-      if (searchText[selectedUserIndex] === '') {
-        $scope.suggestions = [];
-      }
-    }
-  };
-
-  $scope.assignValueAndHide = function(index, role) {
-    searchText[selectedUserIndex] = $scope.suggestions[index];
-    updatePreviousList();
-    convertToString(role);
-    $scope.suggestions = [];
-  };
-
   angular.element(document).click(function() {
-    angular.element('.userlist').hide();
     angular.element('.ace_autocomplete').hide();
   });
 
@@ -983,7 +822,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
     }
     initializeLookAndFeel();
     //open interpreter binding setting when there're none selected
-    getInterpreterBindings(getInterpreterBindingsCallBack);
+    getInterpreterBindings();
   });
 
   $scope.$on('$destroy', function() {

@@ -249,7 +249,8 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl',
 
     $scope.addNewInterpreterSetting = function() {
       //user input validation on interpreter creation
-      if (!$scope.newInterpreterSetting.name.trim() || !$scope.newInterpreterSetting.group) {
+      if (!$scope.newInterpreterSetting.name ||
+          !$scope.newInterpreterSetting.name.trim() || !$scope.newInterpreterSetting.group) {
         BootstrapDialog.alert({
           closable: true,
           title: 'Add interpreter',

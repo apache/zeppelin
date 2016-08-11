@@ -124,7 +124,7 @@ public class AuthenticationIT extends AbstractZeppelinIT {
         userName + "')]")).click();
     ZeppelinITUtils.sleep(500, false);
     driver.findElement(By.xpath("//div[contains(@class, 'navbar-collapse')]//li[contains(.,'" +
-        userName + "')]//a[@ng-click='logout()']")).click();
+        userName + "')]//a[@ng-click='navbar.logout()']")).click();
     ZeppelinITUtils.sleep(5000, false);
   }
 
@@ -161,12 +161,12 @@ public class AuthenticationIT extends AbstractZeppelinIT {
 
       pollingWait(By.xpath("//span[@tooltip='Note permissions']"),
           MAX_BROWSER_TIMEOUT_SEC).click();
-      pollingWait(By.xpath("//input[@ng-model='permissions.owners']"), MAX_BROWSER_TIMEOUT_SEC)
-          .sendKeys("finance");
-      pollingWait(By.xpath("//input[@ng-model='permissions.readers']"), MAX_BROWSER_TIMEOUT_SEC)
-          .sendKeys("finance");
-      pollingWait(By.xpath("//input[@ng-model='permissions.writers']"), MAX_BROWSER_TIMEOUT_SEC)
-          .sendKeys("finance");
+      pollingWait(By.xpath(".//*[@id='selectOwners']/following::span//input"),
+          MAX_BROWSER_TIMEOUT_SEC).sendKeys("finance ");
+      pollingWait(By.xpath(".//*[@id='selectReaders']/following::span//input"),
+          MAX_BROWSER_TIMEOUT_SEC).sendKeys("finance ");
+      pollingWait(By.xpath(".//*[@id='selectWriters']/following::span//input"),
+          MAX_BROWSER_TIMEOUT_SEC).sendKeys("finance ");
       pollingWait(By.xpath("//button[@ng-click='savePermissions()']"), MAX_BROWSER_TIMEOUT_SEC)
           .sendKeys(Keys.ENTER);
 
