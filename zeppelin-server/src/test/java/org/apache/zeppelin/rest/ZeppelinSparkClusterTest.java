@@ -386,7 +386,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
                     "from pyspark.sql import SQLContext\n" +
                     "print(" + sqlContextName + ".read.format('com.databricks.spark.csv')" +
                     ".load('"+ tmpFile.getAbsolutePath() +"').count())");
-            p0.setAuthenticationInfo(anonymous);
+            p1.setAuthenticationInfo(anonymous);
             note.run(p1.getId());
 
             waitForFinish(p1);
