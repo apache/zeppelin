@@ -254,6 +254,10 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
       config.graph.map.baseMapType = $scope.baseMapOption[0];
     }
 
+    if (!config.graph.map.isOnline) {
+      config.graph.map.isOnline = true;
+    }
+
     if (!config.graph.map.pinCols) {
       config.graph.map.pinCols = [];
     }
@@ -1293,6 +1297,19 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
       });
     };
 
+    var checkMapOnline = function(cb) {
+      // are we able to get a response from the ArcGIS servers?
+      var callback = function(res) {
+        var online = (res.status > 0);
+        $scope.paragraph.config.graph.map.isOnline = online;
+        cb(res.status > 0);
+      };
+      $http.head('//services.arcgisonline.com/arcgis/', {
+        timeout: 5000,
+        withCredentials: false
+      }).then(callback, callback);
+    };
+
     var renderMap = function() {
       var mapdiv = angular.element('#p' + $scope.paragraph.id + '_map')
                           .css('height', $scope.paragraph.config.graph.height)
@@ -1326,15 +1343,20 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
         }
       };
 
-      // create map if not exists.
-      if (!$scope.map) {
-        requireMapCSS();
-        requireMapJS(function() {
-          createMap(mapdiv);
-        });
-      } else {
-        updateMapPins();
-      }
+      checkMapOnline(function(online) {
+        // we need an internet connection to use the map
+        if (online) {
+          // create map if not exists.
+          if (!$scope.map) {
+            requireMapCSS();
+            requireMapJS(function() {
+              createMap(mapdiv);
+            });
+          } else {
+            updateMapPins();
+          }
+        }
+      });
     };
 
     var retryRenderer = function() {

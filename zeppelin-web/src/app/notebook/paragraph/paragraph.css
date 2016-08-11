@@ -345,6 +345,22 @@ table.dataTable.table-condensed .sorting_desc:after {
   max-height: 100%;
 }
 
+span.map-offline-text {
+  display: table;
+  width: 100%;
+  height: 100%;
+  text-align: center;
+}
+
+span.map-offline-text > span {
+  display: table-cell;
+  vertical-align: middle;
+  font-size: 18px;
+  font-weight: 700;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  color: #212121;
+}
+
 .tableDisplay .btn-group span {
   margin: 10px 0 0 10px;
   font-size: 12px;
