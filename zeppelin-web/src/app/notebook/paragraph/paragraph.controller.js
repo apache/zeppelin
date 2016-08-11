@@ -897,7 +897,7 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
     }
   };
 
-  $scope.defaults= {
+  $scope.defaults = {
     scrollWheelZoom: false
   };
 
@@ -912,11 +912,9 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
 
       if (!type || type === 'table') {
         setTable($scope.paragraph.result, refresh);
-      }
-      else if (type === 'mapChart') {
+      } else if (type === 'mapChart') {
         setMapChart(type, $scope.paragraph.result, refresh);
-      }
-      else {
+      } else {
         setD3Chart(type, $scope.paragraph.result, refresh);
       }
     }
@@ -999,10 +997,10 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
   };
 
   var setMapChart = function(type, data, refresh) {
-    var latArr = [],
-        lngArr = [],
-        newmarkers = {};
-        
+    var latArr = [];
+    var lngArr = [];
+    var newmarkers = {};
+
     if (!$scope.chart[type]) {
       var mapChartModel = function(d) {
         var key = d[1].replace('-', '_');
@@ -1024,7 +1022,7 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
         var rowMarker = mapChartModel(row);
         newmarkers = angular.extend(newmarkers, rowMarker);
       }
-    } 
+    }
 
     $scope.markers = newmarkers;
     var bounds = leafletBoundsHelpers.createBoundsFromArray([
@@ -1035,12 +1033,11 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
 
     // set map chart height
     var height = $scope.paragraph.config.graph.height;
-    angular.extend('#p'+$scope.paragraph.id+'_mapChart').height(height);
-
+    angular.extend('#p' + $scope.paragraph.id + '_mapChart').height(height);
     $scope.center = {};
   };
 
-  var groupedThousandsWith3DigitsFormatter = function(x){
+  var groupedThousandsWith3DigitsFormatter = function(x) {
     return d3.format(',')(d3.round(x, 3));
   };
 
