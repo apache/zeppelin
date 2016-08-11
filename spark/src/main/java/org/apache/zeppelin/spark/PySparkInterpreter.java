@@ -427,9 +427,12 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
       long startTime = System.currentTimeMillis();
       while (statementOutput == null
         && pythonScriptInitialized == false
-        && pythonscriptRunning
-        && System.currentTimeMillis() - startTime < MAX_TIMEOUT_SEC * 1000) {
+        && pythonscriptRunning) {
         try {
+          if (System.currentTimeMillis() - startTime < MAX_TIMEOUT_SEC * 1000) {
+            logger.error("pyspark completion didn't have response for 10sec.");
+            break;
+          }
           statementFinishedNotifier.wait(1000);
         } catch (InterruptedException e) {
           // not working
