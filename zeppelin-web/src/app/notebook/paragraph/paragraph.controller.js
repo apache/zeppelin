@@ -1302,7 +1302,7 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
       var callback = function(res) {
         var online = (res.status > 0);
         $scope.paragraph.config.graph.map.isOnline = online;
-        cb(res.status > 0);
+        cb(online);
       };
       $http.head('//services.arcgisonline.com/arcgis/', {
         timeout: 5000,
