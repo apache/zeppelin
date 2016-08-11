@@ -23,6 +23,8 @@ import java.net.HttpURLConnection;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import javax.ws.rs.core.UriBuilder;
+
+import org.apache.commons.codec.binary.Base64;
 import org.slf4j.Logger;
 
 /**
@@ -128,6 +130,12 @@ public class HDFSCommand {
     // Connect and get response string
     URL hdfsUrl = uri.toURL();
     HttpURLConnection con = (HttpURLConnection) hdfsUrl.openConnection();
+
+    if (hdfsUrl.getUserInfo() != null) {
+      String basicAuth = "Basic " + new String(new Base64()
+        .encode(hdfsUrl.getUserInfo().getBytes()));
+      con.setRequestProperty("Authorization", basicAuth);
+    }
 
     if (op.cmd == HttpType.GET) {
       con.setRequestMethod("GET");
