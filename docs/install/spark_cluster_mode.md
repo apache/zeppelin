@@ -1,7 +1,7 @@
 ---
 layout: page
 title: "Apache Zeppelin on Spark cluster mode"
-description: ""
+description: "This document will guide you how you can build and configure the environment on 3 types of Spark cluster manager with Apache Zeppelin using docker scripts."
 group: install
 ---
 <!--
@@ -73,7 +73,7 @@ ps -ef | grep spark
 
 
 ## Spark on Yarn mode
-You can simply set up [Spark on Yarn](http://spark.apache.org/docs/latest/running-on-yarn.html) environment with below steps using docker script.
+You can simply set up [Spark on Yarn](http://spark.apache.org/docs/latest/running-on-yarn.html) environment with below steps using Docker scripts.
 
 > **Note :** Since Apache Zeppelin and Spark use same `8080` port for their web UI, you might need to change `zeppelin.server.port` in `conf/zeppelin-site.xml`.
 
