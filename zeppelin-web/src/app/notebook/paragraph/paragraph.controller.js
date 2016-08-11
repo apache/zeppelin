@@ -1305,17 +1305,33 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
         $scope.map = null;
       }
 
-      // create map if not exists.
-      if (!$scope.map) {
+      var requireMapCSS = function() {
+        var url = '//js.arcgis.com/4.0/esri/css/main.css';
+        if (!angular.element('link[href="' + url + '"]').length) {
+          var link = document.createElement('link');
+          link.rel = 'stylesheet';
+          link.type = 'text/css';
+          link.href = url;
+          angular.element('head').append(link);
+        }
+      };
+
+      var requireMapJS = function(cb) {
         if (!esriLoader.isLoaded()) {
           esriLoader.bootstrap({
             url: '//js.arcgis.com/4.0'
-          }).then(function() {
-            createMap(mapdiv);
-          });
+          }).then(cb);
         } else {
-          createMap(mapdiv);
+          cb();
         }
+      };
+
+      // create map if not exists.
+      if (!$scope.map) {
+        requireMapCSS();
+        requireMapJS(function() {
+          createMap(mapdiv);
+        });
       } else {
         updateMapPins();
       }
