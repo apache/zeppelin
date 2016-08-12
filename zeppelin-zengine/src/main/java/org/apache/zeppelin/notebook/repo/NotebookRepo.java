@@ -23,6 +23,8 @@ import java.util.List;
 import org.apache.zeppelin.annotation.ZeppelinApi;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
+import org.apache.zeppelin.notebook.repo.revision.Revision;
+import org.apache.zeppelin.notebook.repo.revision.RevisionId;
 import org.apache.zeppelin.user.AuthenticationInfo;
 
 /**
@@ -89,7 +91,7 @@ public interface NotebookRepo {
    * @return a Notebook
    * @throws IOException
    */
-  @ZeppelinApi public Note get(String noteId, Revision rev, AuthenticationInfo subject)
+  @ZeppelinApi public Note get(String noteId, RevisionId<?> revId, AuthenticationInfo subject)
       throws IOException;
 
   /**
@@ -99,19 +101,5 @@ public interface NotebookRepo {
    * @return list of revisions
    */
   @ZeppelinApi public List<Revision> revisionHistory(String noteId, AuthenticationInfo subject);
-
-  /**
-   * Represents the 'Revision' a point in life of the notebook
-   */
-  static class Revision {
-    public Revision(String revId, String message, int time) {
-      this.id = revId;
-      this.message = message;
-      this.time = time;
-    }
-    public String id;
-    public String message;
-    public int time;
-  }
 
 }

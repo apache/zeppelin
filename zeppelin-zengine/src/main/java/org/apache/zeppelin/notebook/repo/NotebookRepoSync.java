@@ -32,6 +32,8 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.notebook.Paragraph;
+import org.apache.zeppelin.notebook.repo.revision.Revision;
+import org.apache.zeppelin.notebook.repo.revision.RevisionId;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -355,12 +357,12 @@ public class NotebookRepoSync implements NotebookRepo {
   }
 
   @Override
-  public Note get(String noteId, Revision rev, AuthenticationInfo subject) {
+  public Note get(String noteId, RevisionId<?> revId, AuthenticationInfo subject) {
     Note revisionNote = null;
     try {
-      revisionNote = getRepo(0).get(noteId, rev, subject);
+      revisionNote = getRepo(0).get(noteId, revId, subject);
     } catch (IOException e) {
-      LOG.error("Failed to get revision {} of note {}", rev.id, noteId, e);
+      LOG.error("Failed to get revision {} of note {}", revId.getId(), noteId, e);
     }
     return revisionNote;
   }
