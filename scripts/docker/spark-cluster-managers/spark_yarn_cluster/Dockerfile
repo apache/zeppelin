@@ -16,8 +16,8 @@ FROM centos:centos6
 
 ENV SPARK_PROFILE 2.0
 ENV SPARK_VERSION 2.0.0
-ENV HADOOP_PROFILE 2.3
-ENV HADOOP_VERSION 2.3.0
+ENV HADOOP_PROFILE 2.7
+ENV HADOOP_VERSION 2.7.0
 
 # Update the image with the latest packages
 RUN yum update -y; yum clean all
@@ -69,7 +69,7 @@ RUN chmod 777 /data/
 RUN $HADOOP_PREFIX/bin/hdfs namenode -format
 
 RUN rm  /usr/local/hadoop/lib/native/*
-RUN curl -Ls http://dl.bintray.com/sequenceiq/sequenceiq-bin/hadoop-native-64.tar|tar -x -C /usr/local/hadoop/lib/native/
+RUN curl -Ls http://dl.bintray.com/sequenceiq/sequenceiq-bin/hadoop-native-64-$HADOOP_VERSION.tar|tar -x -C /usr/local/hadoop/lib/native/
 
 # install spark
 RUN curl -s http://archive.apache.org/dist/spark/spark-$SPARK_VERSION/spark-$SPARK_VERSION-bin-hadoop$HADOOP_PROFILE.tgz | tar -xz -C /usr/local/
