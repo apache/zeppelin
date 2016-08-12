@@ -74,21 +74,21 @@ public class NoteInterpreterLoaderTest {
     factory.setInterpreters("note", factory.getDefaultInterpreterSettingList());
 
     // when there're no interpreter selection directive
-    assertEquals("org.apache.zeppelin.interpreter.mock.MockInterpreter1", factory.getInterpreter("note", null).getClassName());
-    assertEquals("org.apache.zeppelin.interpreter.mock.MockInterpreter1", factory.getInterpreter("note", "").getClassName());
-    assertEquals("org.apache.zeppelin.interpreter.mock.MockInterpreter1", factory.getInterpreter("note", " ").getClassName());
+    assertEquals("org.apache.zeppelin.interpreter.mock.MockInterpreter1", factory.getInterpreter("note", null, null).getClassName());
+    assertEquals("org.apache.zeppelin.interpreter.mock.MockInterpreter1", factory.getInterpreter("note", "", null).getClassName());
+    assertEquals("org.apache.zeppelin.interpreter.mock.MockInterpreter1", factory.getInterpreter("note", " ", null).getClassName());
 
     // when group name is omitted
-    assertEquals("org.apache.zeppelin.interpreter.mock.MockInterpreter11", factory.getInterpreter("note", "mock11").getClassName());
+    assertEquals("org.apache.zeppelin.interpreter.mock.MockInterpreter11", factory.getInterpreter("note", "mock11", null).getClassName());
 
     // when 'name' is ommitted
-    assertEquals("org.apache.zeppelin.interpreter.mock.MockInterpreter1", factory.getInterpreter("note", "group1").getClassName());
-    assertEquals("org.apache.zeppelin.interpreter.mock.MockInterpreter2", factory.getInterpreter("note", "group2").getClassName());
+    assertEquals("org.apache.zeppelin.interpreter.mock.MockInterpreter1", factory.getInterpreter("note", "group1", null).getClassName());
+    assertEquals("org.apache.zeppelin.interpreter.mock.MockInterpreter2", factory.getInterpreter("note", "group2", null).getClassName());
 
     // when nothing is ommitted
-    assertEquals("org.apache.zeppelin.interpreter.mock.MockInterpreter1", factory.getInterpreter("note", "group1.mock1").getClassName());
-    assertEquals("org.apache.zeppelin.interpreter.mock.MockInterpreter11", factory.getInterpreter("note", "group1.mock11").getClassName());
-    assertEquals("org.apache.zeppelin.interpreter.mock.MockInterpreter2", factory.getInterpreter("note", "group2.mock2").getClassName());
+    assertEquals("org.apache.zeppelin.interpreter.mock.MockInterpreter1", factory.getInterpreter("note", "group1.mock1", null).getClassName());
+    assertEquals("org.apache.zeppelin.interpreter.mock.MockInterpreter11", factory.getInterpreter("note", "group1.mock11", null).getClassName());
+    assertEquals("org.apache.zeppelin.interpreter.mock.MockInterpreter2", factory.getInterpreter("note", "group2.mock2", null).getClassName());
 
     factory.closeNote("note");
   }
@@ -105,12 +105,12 @@ public class NoteInterpreterLoaderTest {
     assertNull(factory.getInterpreterSettings("noteA").get(0).getInterpreterGroup("shared_process").get("noteA"));
     assertNull(factory.getInterpreterSettings("noteB").get(0).getInterpreterGroup("shared_process").get("noteB"));
 
-    factory.getInterpreter("noteA", null).open();
-    factory.getInterpreter("noteB", null).open();
+    factory.getInterpreter("noteA", null, null).open();
+    factory.getInterpreter("noteB", null, null).open();
 
     assertTrue(
-        factory.getInterpreter("noteA", null).getInterpreterGroup().getId().equals(
-        factory.getInterpreter("noteB", null).getInterpreterGroup().getId()));
+        factory.getInterpreter("noteA", null, null).getInterpreterGroup().getId().equals(
+        factory.getInterpreter("noteB", null, null).getInterpreterGroup().getId()));
 
     // interpreters are created after accessing it
     assertNotNull(factory.getInterpreterSettings("noteA").get(0).getInterpreterGroup("shared_process").get("noteA"));
@@ -138,13 +138,13 @@ public class NoteInterpreterLoaderTest {
     assertNull(factory.getInterpreterSettings("noteA").get(0).getInterpreterGroup("noteA").get("noteA"));
     assertNull(factory.getInterpreterSettings("noteB").get(0).getInterpreterGroup("noteB").get("noteB"));
 
-    factory.getInterpreter("noteA", null).open();
-    factory.getInterpreter("noteB", null).open();
+    factory.getInterpreter("noteA", null, null).open();
+    factory.getInterpreter("noteB", null, null).open();
 
     // per note interpreter process
     assertFalse(
-        factory.getInterpreter("noteA", null).getInterpreterGroup().getId().equals(
-        factory.getInterpreter("noteB", null).getInterpreterGroup().getId()));
+        factory.getInterpreter("noteA", null, null).getInterpreterGroup().getId().equals(
+        factory.getInterpreter("noteB", null, null).getInterpreterGroup().getId()));
 
     // interpreters are created after accessing it
     assertNotNull(factory.getInterpreterSettings("noteA").get(0).getInterpreterGroup("noteA").get("noteA"));

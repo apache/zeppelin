@@ -17,8 +17,6 @@
 
 package org.apache.zeppelin.notebook;
 
-import com.google.common.base.Optional;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
@@ -65,7 +63,7 @@ public class NoteTest {
 
   @Test
   public void runNormalTest() {
-    when(interpreterFactory.getInterpreter(anyString(), eq("spark"))).thenReturn(interpreter);
+    when(interpreterFactory.getInterpreter(anyString(), eq("spark"), null)).thenReturn(interpreter);
     when(interpreter.getScheduler()).thenReturn(scheduler);
 
     String pText = "%spark sc.version";
@@ -77,15 +75,15 @@ public class NoteTest {
 
     ArgumentCaptor<Paragraph> pCaptor = ArgumentCaptor.forClass(Paragraph.class);
     verify(scheduler, only()).submit(pCaptor.capture());
-    verify(interpreterFactory, only()).getInterpreter(anyString(), eq("spark"));
+    verify(interpreterFactory, only()).getInterpreter(anyString(), eq("spark"), null);
 
     assertEquals("Paragraph text", pText, pCaptor.getValue().getText());
   }
 
   @Test
   public void runJdbcTest() {
-    when(interpreterFactory.getInterpreter(anyString(), eq("mysql"))).thenReturn(null);
-    when(interpreterFactory.getInterpreter(anyString(), eq("jdbc"))).thenReturn(interpreter);
+    when(interpreterFactory.getInterpreter(anyString(), eq("mysql"), null)).thenReturn(null);
+    when(interpreterFactory.getInterpreter(anyString(), eq("jdbc"), null)).thenReturn(interpreter);
     when(interpreter.getScheduler()).thenReturn(scheduler);
 
     String pText = "%mysql show databases";
@@ -97,7 +95,7 @@ public class NoteTest {
 
     ArgumentCaptor<Paragraph> pCaptor = ArgumentCaptor.forClass(Paragraph.class);
     verify(scheduler, only()).submit(pCaptor.capture());
-    verify(interpreterFactory, times(2)).getInterpreter(anyString(), anyString());
+    verify(interpreterFactory, times(2)).getInterpreter(anyString(), anyString(), null);
 
     assertEquals("Change paragraph text", "%jdbc(mysql) show databases", pCaptor.getValue().getEffectiveText());
     assertEquals("Change paragraph text", pText, pCaptor.getValue().getText());

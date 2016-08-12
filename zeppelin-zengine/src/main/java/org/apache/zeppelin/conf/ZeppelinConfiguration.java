@@ -17,18 +17,18 @@
 
 package org.apache.zeppelin.conf;
 
-import java.net.URL;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.configuration.tree.ConfigurationNode;
 import org.apache.zeppelin.notebook.repo.VFSNotebookRepo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.net.URL;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Zeppelin configuration.
@@ -431,6 +431,14 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     return getBoolean(ConfVars.ZEPPELIN_USE_JDBC_ALIAS);
   }
 
+  public boolean getInterpreterRunasUser() {
+    return getBoolean(ConfVars.ZEPPELIN_INTERPRETER_RUNAS_USER);
+  }
+
+  public String getZeppelinInterpreterUser() {
+    return getString(ConfVars.ZEPPELIN_INTERPRETER_USER);
+  }
+
   public Map<String, String> dumpConfigurations(ZeppelinConfiguration conf,
                                                 ConfigurationKeyPredicate predicate) {
     Map<String, String> configurations = new HashMap<>();
@@ -557,7 +565,9 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_ANONYMOUS_ALLOWED("zeppelin.anonymous.allowed", true),
     ZEPPELIN_CREDENTIALS_PERSIST("zeppelin.credentials.persist", true),
     ZEPPELIN_WEBSOCKET_MAX_TEXT_MESSAGE_SIZE("zeppelin.websocket.max.text.message.size", "1024000"),
-    ZEPPELIN_USE_JDBC_ALIAS("zeppelin.use.jdbc.alias", true);
+    ZEPPELIN_USE_JDBC_ALIAS("zeppelin.use.jdbc.alias", true),
+    ZEPPELIN_INTERPRETER_RUNAS_USER("zeppelin.interpreter.runas.user", null),
+    ZEPPELIN_INTERPRETER_USER("zeppelin.interpreter.user", null);
 
 
     private String varName;

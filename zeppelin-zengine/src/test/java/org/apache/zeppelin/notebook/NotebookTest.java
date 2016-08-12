@@ -322,11 +322,11 @@ public class NotebookTest implements JobListenerFactory{
 
 
     MockInterpreter1 mock1 = ((MockInterpreter1) (((ClassloaderInterpreter)
-        ((LazyOpenInterpreter) factory.getInterpreter(note.getId(), "mock1")).getInnerInterpreter())
+        ((LazyOpenInterpreter) factory.getInterpreter(note.getId(), "mock1", null)).getInnerInterpreter())
         .getInnerInterpreter()));
 
     MockInterpreter2 mock2 = ((MockInterpreter2) (((ClassloaderInterpreter)
-        ((LazyOpenInterpreter) factory.getInterpreter(note.getId(), "mock2")).getInnerInterpreter())
+        ((LazyOpenInterpreter) factory.getInterpreter(note.getId(), "mock2", null)).getInnerInterpreter())
         .getInnerInterpreter()));
 
     // wait until interpreters are started

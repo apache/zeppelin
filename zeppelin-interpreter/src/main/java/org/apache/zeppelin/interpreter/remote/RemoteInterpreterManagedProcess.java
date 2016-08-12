@@ -102,6 +102,10 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
     cmdLine.addArgument("-p", false);
     cmdLine.addArgument(Integer.toString(port), false);
     cmdLine.addArgument("-l", false);
+
+
+    cmdLine.addArgument("-u", false);
+
     cmdLine.addArgument(localRepoDir, false);
 
     executor = new DefaultExecutor();
