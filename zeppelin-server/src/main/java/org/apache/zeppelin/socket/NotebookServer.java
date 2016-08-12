@@ -236,7 +236,7 @@ public class NotebookServer extends WebSocketServlet implements
             listRevisionHistory(conn, notebook, messagereceived);
             break;
           case NOTE_REVISION:
-            getNoteRevision(conn, notebook, messagereceived);
+            getNoteByRevision(conn, notebook, messagereceived);
             break;
           case LIST_NOTEBOOK_JOBS:
             unicastNotebookJobInfo(conn, messagereceived);
@@ -1197,7 +1197,7 @@ public class NotebookServer extends WebSocketServlet implements
       .put("revisionList", revisions)));
   }
 
-  private void getNoteRevision(NotebookSocket conn, Notebook notebook, Message fromMessage)
+  private void getNoteByRevision(NotebookSocket conn, Notebook notebook, Message fromMessage)
       throws IOException {
     String noteId = (String) fromMessage.get("noteId");
     String revisionId = (String) fromMessage.get("revisionId");

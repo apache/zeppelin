@@ -170,7 +170,7 @@ angular.module('zeppelinWebApp').service('websocketMsgSrv', function($rootScope,
       });
     },
 
-    getNoteRevision: function(noteId, revisionId) {
+    getNoteByRevision: function(noteId, revisionId) {
       websocketEvents.sendNewEvent({
         op: 'NOTE_REVISION',
         data: {
