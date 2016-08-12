@@ -486,6 +486,7 @@
               <exclude>docs/sitemap.txt</exclude>
               <exclude>docs/search_data.json</exclude>
               <exclude>**/dependency-reduced-pom.xml</exclude>
+              <exclude>docs/CONTRIBUTING.md</exclude>
 
               <!-- bundled from anchor -->
               <exclude>docs/assets/themes/zeppelin/js/anchor.min.js</exclude>
