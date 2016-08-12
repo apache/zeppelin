@@ -77,7 +77,7 @@ All documents are structured with headings. From these headings, you can automat
 ## Table of contents(TOC)
 
 ```
-\<div id="toc"></div>
+<div id="toc"></div>
 ```
 
 Add this line below  `# main title` in order to generate a **Table of Contents**. Headings until `### (Level-3 heading)` are included to TOC.
