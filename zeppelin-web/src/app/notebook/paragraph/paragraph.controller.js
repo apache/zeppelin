@@ -906,6 +906,10 @@ angular.module('zeppelinWebApp')
         this.origOnCommandKey(e, hashId, keyCode);
       };
     }
+
+    if($scope.isRunning()) {
+      $scope.editor.setReadOnly(true);
+    }
   };
 
   var autoAdjustEditorHeight = function(id) {
@@ -1080,6 +1084,17 @@ angular.module('zeppelinWebApp')
       }
     }
   });
+
+  $scope.$watch(function(scope) {
+                  return scope.paragraph.status;
+                },
+                function(newValue, oldValue) {
+                  var readOnly = false;
+                  if ($scope.isRunning()) {
+	                readOnly = true;
+                  }
+                  $scope.editor.setReadOnly(readOnly);
+	            });
 
   $scope.$on('focusParagraph', function(event, paragraphId, cursorPos, mouseEvent) {
     if ($scope.paragraph.id === paragraphId) {
