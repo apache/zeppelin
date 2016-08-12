@@ -267,6 +267,16 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
       $window.parent.postMessage(angular.toJson(message), '*');
     }
   });
+  $scope.$watch(function(scope) {
+      return scope.paragraph.status;
+    },
+    function(newValue, oldValue) {
+      var readOnly = false;
+      if ($scope.isRunning()) {
+        readOnly = true;
+      }
+      $scope.editor.setReadOnly(readOnly);
+    });
 
   var isEmpty = function(object) {
     return !object;
@@ -717,6 +727,9 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
         }
         this.origOnCommandKey(e, hashId, keyCode);
       };
+    }
+    if ($scope.isRunning()) {
+      $scope.editor.setReadOnly(true);
     }
   };
 
