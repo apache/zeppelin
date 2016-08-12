@@ -17,6 +17,10 @@
 
 package org.apache.zeppelin.python2;
 
+import io.grpc.ManagedChannel;
+import io.grpc.ManagedChannelBuilder;
+import io.grpc.StatusRuntimeException;
+
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.util.List;
@@ -27,6 +31,9 @@ import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
+import org.apache.zeppelin.python2.PythonInterpreterGrpc.PythonInterpreterBlockingStub;
+import org.apache.zeppelin.python2.PythonInterpreterOuterClass.CodeRequest;
+import org.apache.zeppelin.python2.PythonInterpreterOuterClass.InterpetedResult;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.slf4j.Logger;
@@ -34,6 +41,12 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Python interpreter for Zeppelin.
+ *
+ * Current implementation is thread-safe,
+ * but by design it can serve only 1 simultanius request at the time:
+ * it delegates everything to a single Python process.
+ *
+ * So it's intended to be used with FIFOScheduler only.
  */
 public class PythonInterpreter2 extends Interpreter {
   private static final Logger LOG = LoggerFactory.getLogger(PythonInterpreter2.class);
@@ -45,6 +58,8 @@ public class PythonInterpreter2 extends Interpreter {
 
   private int maxResult;
 
+  private PythonInterpreterBlockingStub blockingStub;
+
   public PythonInterpreter2(Properties property) {
     super(property);
   }
@@ -54,14 +69,25 @@ public class PythonInterpreter2 extends Interpreter {
     LOG.info("Starting Python interpreter .....");
     LOG.info("Python path is set to:" + property.getProperty(ZEPPELIN_PYTHON));
 
+    //TODO(bzz):
+    //%dep grpcio || %dep pip install grpcio
+
+    int serverPort = 9090;
     //pick open serverPort
     //start gRPC server ./interpreter.py on serverPort
-    //connect to it
+
+    /**connect to gRPC server on serverPort*/
+    ManagedChannelBuilder<?> channelBuilder = ManagedChannelBuilder
+        .forAddress("localhost", serverPort)
+        .usePlaintext(true);
+    ManagedChannel channel = channelBuilder.build();
+    blockingStub = PythonInterpreterGrpc.newBlockingStub(channel);
   }
 
   @Override
   public void close() {
     LOG.info("closing Python interpreter .....");
+    //TODO(bzz): blockingStub.shutdown();
 //    LOG.error("Can't close the interpreter", e);
   }
 
@@ -70,16 +96,7 @@ public class PythonInterpreter2 extends Interpreter {
     if (cmd == null || cmd.isEmpty()) {
       return new InterpreterResult(Code.SUCCESS, "");
     }
-
-    String output = sendCommandToPython(cmd);
-
-    InterpreterResult result;
-    if (pythonErrorIn(output)) {
-      result = new InterpreterResult(Code.ERROR, output);
-    } else {
-      result = new InterpreterResult(Code.SUCCESS, output);
-    }
-    return result;
+    return sendCommandToPython(cmd);
   }
 
   @Override
@@ -122,23 +139,39 @@ public class PythonInterpreter2 extends Interpreter {
 
   /**
    * Sends given text to Python interpreter
-   * 
+   *
    * @param cmd Python expression text
    * @return output
    */
-  String sendCommandToPython(String cmd) {
-    LOG.debug("Sending : \n" + (cmd.length() > 200 ? cmd.substring(0, 200) + "..." : cmd));
-    String output = "";
-//    output = ...(cmd);
-//    LOG.error("Error when sending commands to python process", e);
-    LOG.debug("Got : \n" + output);
-    return output;
+  InterpreterResult sendCommandToPython(String code) {
+    LOG.debug("Sending : \n" + (code.length() > 200 ? code.substring(0, 200) + "..." : code));
+    CodeRequest cmd = CodeRequest.newBuilder().setCode((code)).build();
+
+    InterpetedResult fromPythonProcess;
+    try {
+      fromPythonProcess = blockingStub.interprete(cmd);
+    } catch (StatusRuntimeException e) {
+      LOG.error("Error when sending commands to Python process", e);
+      return new InterpreterResult(Code.ERROR, "Failed to communicate to interpreter");
+    }
+    InterpreterResult result;
+    if (gotSuccess(fromPythonProcess)) {
+      result = new InterpreterResult(Code.SUCCESS, fromPythonProcess.getResult());
+    } else {
+      result = new InterpreterResult(Code.ERROR, fromPythonProcess.getResult());
+    }
+    LOG.debug("Got : \n" + result);
+    return result;
   }
 
-  public Boolean isPy4jInstalled() {
+  private static boolean gotSuccess(InterpetedResult result) {
+    return result != null; // && result.getStatus() is ...;
+  }
+
+  /*public Boolean isPy4jInstalled() {
     String output = sendCommandToPython("\n\nimport py4j\n");
     return !output.contains("ImportError");
-  }
+  }*/
 
   private static int findRandomOpenPortOnAllLocalInterfaces() {
     Integer port = -1;
