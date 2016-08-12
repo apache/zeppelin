@@ -56,7 +56,7 @@ describe('Controller: ParagraphCtrl', function() {
   });
 
   it('should set default value of "paragraphFocused" as false', function() {
-    expect(scope.paragraphFocused).toEqual(false);
+    expect(scope.paragraphFocused).toEqual(true);
   });
 
   it('should call loadTableData() and getGraphMode() should return "table" when the result type is "TABLE"',
