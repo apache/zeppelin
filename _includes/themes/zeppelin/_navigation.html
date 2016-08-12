@@ -13,11 +13,6 @@
           </a>
         </div>
         <nav class="navbar-collapse collapse" role="navigation">
-          <ul class="nav navbar-nav">
-            {% assign pages_list = site.pages %}
-            {% assign group = 'nav-left' %}
-            {% include JB/pages_list %}
-          </ul>
           <ul class="nav navbar-nav navbar-right">
             {% assign pages_list = site.pages %}
             {% assign group = 'nav-right' %}
@@ -33,13 +28,13 @@
                 <li><a href="/docs/0.5.5-incubating">0.5.5-incubating</a></li>
                 <li><a href="/docs/0.5.0-incubating">0.5.0-incubating</a></li>
                 <li role="separator" class="divider"></li>
-                <li><span><b>Snapshot</b>&nbsp;(development)<span></li>                
+                <li><span><b>Snapshot</b>&nbsp;(development)<span></li>
                 <li><a href="/docs/0.7.0-SNAPSHOT">0.7.0-SNAPSHOT</a></li>
               </ul>
             </li>
-            
+
             <li><a href="https://github.com/apache/incubator-zeppelin">GitHub</a></li>
-         
+
             <!-- Apache -->
             <li id="apache">
               <a href="#" data-toggle="dropdown" class="dropdown-toggle">Apache<b class="caret"></b></a>
@@ -48,8 +43,11 @@
                 <li><a href="http://www.apache.org/licenses/">Apache License</a></li>
                 <li><a href="http://www.apache.org/foundation/sponsorship.html">Sponsorship</a></li>
                 <li><a href="http://www.apache.org/foundation/thanks.html">Thanks</a></li>
-            </ul>
+              </ul>
             </li>
+            {% assign pages_list = site.pages %}
+            {% assign group = 'nav-left' %}
+            {% include JB/pages_list %}
           </ul>
         </nav><!--/.navbar-collapse -->
       </div>
