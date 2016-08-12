@@ -430,7 +430,7 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
         && pythonscriptRunning) {
         try {
           if (System.currentTimeMillis() - startTime < MAX_TIMEOUT_SEC * 1000) {
-            logger.error("pyspark completion didn't have response for 10sec.");
+            logger.error("pyspark completion didn't have response for {}sec.", MAX_TIMEOUT_SEC);
             break;
           }
           statementFinishedNotifier.wait(1000);
