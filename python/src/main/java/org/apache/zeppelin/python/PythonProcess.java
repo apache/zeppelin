@@ -21,12 +21,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.io.OutputStream;
 import java.lang.reflect.Field;
 
 /**
@@ -35,11 +34,11 @@ import java.lang.reflect.Field;
  */
 
 public class PythonProcess {
-
-  Logger logger = LoggerFactory.getLogger(PythonProcess.class);
+  private static final Logger logger = LoggerFactory.getLogger(PythonProcess.class);
+  private static final String STATEMENT_END = "*!?flush reader!?*";
   InputStream stdout;
   OutputStream stdin;
-  BufferedWriter writer;
+  PrintWriter writer;
   BufferedReader reader;
   Process process;
   private String binPath;
@@ -56,7 +55,7 @@ public class PythonProcess {
     process = builder.start();
     stdout = process.getInputStream();
     stdin = process.getOutputStream();
-    writer = new BufferedWriter(new OutputStreamWriter(stdin));
+    writer = new PrintWriter(stdin, true);
     reader = new BufferedReader(new InputStreamReader(stdout));
     try {
       pid = findPid();
@@ -92,25 +91,23 @@ public class PythonProcess {
   }
 
   public String sendAndGetResult(String cmd) throws IOException {
-
-    writer.write(cmd + "\n\n");
-    writer.write("print (\"*!?flush reader!?*\")\n\n");
-    writer.flush();
-
-    String output = "";
-    String line;
-    while (!(line = reader.readLine()).contains("*!?flush reader!?*")) {
+    writer.println(cmd);
+    writer.println();
+    writer.println("\"" + STATEMENT_END + "\"");
+    StringBuilder output = new StringBuilder();
+    String line = null;
+    while (!(line = reader.readLine()).contains(STATEMENT_END)) {
       logger.debug("Readed line from python shell : " + line);
       if (line.equals("...")) {
         logger.warn("Syntax error ! ");
-        output += "Syntax error ! ";
+        output.append("Syntax error ! ");
         break;
       }
 
-      output += "\r" + line + "\n";
+      output.append(line + "\n");
     }
 
-    return output;
+    return output.toString();
 
   }
 

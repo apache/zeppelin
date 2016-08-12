@@ -132,7 +132,7 @@ public class PythonInterpreterTest {
      */
 
     try {
-      when(mockPythonProcess.sendAndGetResult(eq("\n\nimport py4j\n"))).thenReturn(">>>");
+      when(mockPythonProcess.sendAndGetResult(eq("\n\nimport py4j\n"))).thenReturn("");
     } catch (IOException e) {
       e.printStackTrace();
     }
@@ -157,7 +157,7 @@ public class PythonInterpreterTest {
   public void testClose() {
 
     try {
-      when(mockPythonProcess.sendAndGetResult(eq("\n\nimport py4j\n"))).thenReturn(">>>");
+      when(mockPythonProcess.sendAndGetResult(eq("\n\nimport py4j\n"))).thenReturn("");
     } catch (IOException e) {
       e.printStackTrace();
     }
@@ -222,11 +222,11 @@ public class PythonInterpreterTest {
       String output = "";
 
       for (int i = 0; i < lines.length; i++) {
-        output += ">>>" + lines[i];
+        output += lines[i];
       }
       return output;
     } else {
-      return ">>>";
+      return "";
     }
   }
 

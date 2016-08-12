@@ -138,8 +138,10 @@ public class PythonInterpreter extends Interpreter {
       return new InterpreterResult(Code.SUCCESS, "");
     }
     String output = sendCommandToPython(cmd);
-    return new InterpreterResult(Code.SUCCESS, output.replaceAll(">>>", "")
-        .replaceAll("\\.\\.\\.", "").trim());
+
+    // TODO(zjffdu), we should not do string replacement operation in the result, as it is
+    // possible that the output contains the kind of pattern itself, e.g. print("...")
+    return new InterpreterResult(Code.SUCCESS, output.replaceAll("\\.\\.\\.", ""));
   }
 
   @Override
