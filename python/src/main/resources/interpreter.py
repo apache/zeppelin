@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-
+#
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -113,10 +113,11 @@ class PythonInterpreterServicer(python_interpreter_pb2.BetaPythonInterpreterServ
   def __init__(self):
     pass
 
-  def Interprete(self, code, context): #CodeRequest
-    #return InterpetedResult
-    return python_interpreter_pb2.InterpetedResult(result="")
-    pass
+  def Interprete(self, code_interprete_request, context): #CodeInterpreteRequest
+    print("Got \n```\n{}\n```\n to execute".format(code_interprete_request.code))
+    time.sleep(5)
+    print("Done!")
+    return python_interpreter_pb2.InterpetedResult(output="Done!", status="success")
 
 
 def main():

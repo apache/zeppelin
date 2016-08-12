@@ -31,9 +31,10 @@ import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
-import org.apache.zeppelin.python2.PythonInterpreterGrpc.PythonInterpreterBlockingStub;
-import org.apache.zeppelin.python2.PythonInterpreterOuterClass.CodeRequest;
-import org.apache.zeppelin.python2.PythonInterpreterOuterClass.InterpetedResult;
+import org.apache.zeppelin.python2.rpc.PythonInterpreterGrpc;
+import org.apache.zeppelin.python2.rpc.PythonInterpreterGrpc.PythonInterpreterBlockingStub;
+import org.apache.zeppelin.python2.rpc.PythonInterpreterOuterClass.CodeInterpreteRequest;
+import org.apache.zeppelin.python2.rpc.PythonInterpreterOuterClass.InterpetedResult;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.slf4j.Logger;
@@ -128,16 +129,6 @@ public class PythonInterpreter2 extends Interpreter {
   }
 
   /**
-   * Checks if there is a syntax error or an exception
-   *
-   * @param output Python interpreter output
-   * @return true if syntax error or exception has happened
-   */
-  private boolean pythonErrorIn(String output) {
-    return false;
-  }
-
-  /**
    * Sends given text to Python interpreter
    *
    * @param cmd Python expression text
@@ -145,7 +136,7 @@ public class PythonInterpreter2 extends Interpreter {
    */
   InterpreterResult sendCommandToPython(String code) {
     LOG.debug("Sending : \n" + (code.length() > 200 ? code.substring(0, 200) + "..." : code));
-    CodeRequest cmd = CodeRequest.newBuilder().setCode((code)).build();
+    CodeInterpreteRequest cmd = CodeInterpreteRequest.newBuilder().setCode((code)).build();
 
     InterpetedResult fromPythonProcess;
     try {
@@ -156,9 +147,9 @@ public class PythonInterpreter2 extends Interpreter {
     }
     InterpreterResult result;
     if (gotSuccess(fromPythonProcess)) {
-      result = new InterpreterResult(Code.SUCCESS, fromPythonProcess.getResult());
+      result = new InterpreterResult(Code.SUCCESS, fromPythonProcess.getOutput());
     } else {
-      result = new InterpreterResult(Code.ERROR, fromPythonProcess.getResult());
+      result = new InterpreterResult(Code.ERROR, fromPythonProcess.getOutput());
     }
     LOG.debug("Got : \n" + result);
     return result;
