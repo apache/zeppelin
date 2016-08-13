@@ -83,11 +83,11 @@ All documents are structured with headings. From these headings, you can automat
 Add this line below  `# main title` in order to generate a **Table of Contents**. Headings until `### (Level-3 heading)` are included to TOC.
 
 
-Default settings for TOC are definded in [here](https://github.com/apache/zeppelin/blob/master/docs/assets/themes/zeppelin/js/toc.js#L4).
+Default setting options for TOC are definded in [here](https://github.com/apache/zeppelin/blob/master/docs/assets/themes/zeppelin/js/toc.js#L4).
 
 
 ## Adding new pages
 If you're going to create new pages, there are some spots you need to add the location of the page.
 
  - **Dropdown menu in navbar**: add your docs location to [_navigation.html](https://github.com/apache/zeppelin/blob/master/docs/_includes/themes/zeppelin/_navigation.html)
- - **Main index**: add your docs below [What is the next?](http://zeppelin.apache.org/docs/0.7.0-SNAPSHOT/#what-is-the-next) section in [index.md](http://zeppelin.apache.org/docs/0.7.0-SNAPSHOT/#what-is-the-next) with short description. No need to do this if the page is for **Interpreters**.
+ - **Main index**: add your docs below [What is the next?](http://zeppelin.apache.org/docs/latest/#what-is-the-next) section in [index.md](https://github.com/apache/zeppelin/blob/master/docs/index.md) with short description. No need to do this if the page is for **Interpreters**.
