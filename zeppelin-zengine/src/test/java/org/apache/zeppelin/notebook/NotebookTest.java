@@ -42,6 +42,7 @@ import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.apache.zeppelin.search.SearchService;
+import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.user.Credentials;
 import org.junit.After;
 import org.junit.Before;
@@ -810,6 +811,26 @@ public class NotebookTest implements JobListenerFactory{
     assertEquals(note1.getName(), "/MyNote/sub");
 
     notebook.removeNote(note1.getId(), null);
+  }
+
+  @Test
+  public void testGetAllNotes() throws Exception {
+    Note note1 = notebook.createNote(null);
+    Note note2 = notebook.createNote(null);
+    assertEquals(2, notebook.getAllNotes(new AuthenticationInfo("anonymous")).size());
+
+    notebook.getNotebookAuthorization().setOwners(note1.getId(), Sets.newHashSet("user1"));
+    notebook.getNotebookAuthorization().setWriters(note1.getId(), Sets.newHashSet("user1"));
+    notebook.getNotebookAuthorization().setReaders(note1.getId(), Sets.newHashSet("user1"));
+    assertEquals(1, notebook.getAllNotes(new AuthenticationInfo("anonymous")).size());
+    assertEquals(2, notebook.getAllNotes(new AuthenticationInfo("user1")).size());
+
+    notebook.getNotebookAuthorization().setOwners(note2.getId(), Sets.newHashSet("user2"));
+    notebook.getNotebookAuthorization().setWriters(note2.getId(), Sets.newHashSet("user2"));
+    notebook.getNotebookAuthorization().setReaders(note2.getId(), Sets.newHashSet("user2"));
+    assertEquals(0, notebook.getAllNotes(new AuthenticationInfo("anonymous")).size());
+    assertEquals(1, notebook.getAllNotes(new AuthenticationInfo("user1")).size());
+    assertEquals(1, notebook.getAllNotes(new AuthenticationInfo("user2")).size());
   }
 
   private void delete(File file){
