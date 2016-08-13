@@ -1,4 +1,4 @@
-## Apache Zeppelin documentation
+# Apache Zeppelin documentation
 
 This README will walk you through building the documentation of Apache Zeppelin. The documentation is included here with Apache Zeppelin source code. The online documentation at [https://zeppelin.apache.org/docs/<ZEPPELIN_VERSION>](https://zeppelin.apache.org/docs/latest) is also generated from the files found in here. 
 

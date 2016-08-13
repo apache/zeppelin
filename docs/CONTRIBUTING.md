@@ -1,4 +1,4 @@
-# Contributing to Zeppelin Documentation
+# Contributing to Apache Zeppelin Documentation
 
 ## Folder Structure
 `docs/` folder is organized as below:
@@ -48,7 +48,8 @@ docs/
 Zeppelin documentation pages are written with [Markdown](http://daringfireball.net/projects/markdown/). It is possible to use [GitHub flavored syntax](https://help.github.com/categories/writing-on-github/) and intermix plain HTML.
 
 ## Front matter
-Every page contains [YAML front matter](https://jekyllrb.com/docs/frontmatter/) block in their header. Don't forget to wrap the front matter list with triple-dashed lines like below.
+Every page contains [YAML front matter](https://jekyllrb.com/docs/frontmatter/) block in their header. Don't forget to wrap the front matter list with triple-dashed lines(`---`) like below.
+The document page should start this triple-dashed lines. Or you will face 404 error, since Jekyll can't find the page.
 
 ```
 ---
@@ -65,13 +66,13 @@ group: quickstart
  - `group`: a category of the document page
 
 ## Headings
-All documents are structured with headings. From these headings, you can automatically generate a table of contents. There is simple rule for Zeppelin docs headings.
+All documents are structured with headings. From these headings, you can automatically generate a **Table of Contents**. There is a simple rule for Zeppelin docs headings.
 
 ```
-#    Level-1 heading <- used only for the main title of the page 
+#    Level-1 heading <- used only for the main title
 ##   Level-2 heading <- start with this
-###  Level-3 heading <- won't be converted in TOC from this level
-#### Level-4 heading
+###  Level-3 heading 
+#### Level-4 heading <- won't be converted in TOC from this level
 ```
 
 ## Table of contents(TOC)
@@ -90,4 +91,4 @@ Default setting options for TOC are definded in [here](https://github.com/apache
 If you're going to create new pages, there are some spots you need to add the location of the page.
 
  - **Dropdown menu in navbar**: add your docs location to [_navigation.html](https://github.com/apache/zeppelin/blob/master/docs/_includes/themes/zeppelin/_navigation.html)
- - **Main index**: add your docs below [What is the next?](http://zeppelin.apache.org/docs/latest/#what-is-the-next) section in [index.md](https://github.com/apache/zeppelin/blob/master/docs/index.md) with short description. No need to do this if the page is for **Interpreters**.
+ - **Main index**: add your docs below [What is the next?](http://zeppelin.apache.org/docs/latest/#what-is-the-next) section in [index.md](https://github.com/apache/zeppelin/blob/master/docs/index.md) with a short description. No need to do this if the page is for **Interpreters**.
