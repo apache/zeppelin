@@ -32,6 +32,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import com.google.common.base.Predicate;
+import com.google.common.collect.FluentIterable;
+import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.stream.JsonReader;
@@ -529,6 +532,35 @@ public class Notebook implements NoteEventListener {
         }
       });
       return noteList;
+    }
+  }
+
+  public List<Note> getAllNotes(AuthenticationInfo subject) {
+    final Set<String> entities = Sets.newHashSet();
+    if (subject != null) {
+      entities.add(subject.getUser());
+    }
+
+    synchronized (notes) {
+      return FluentIterable.from(notes.values()).filter(new Predicate<Note>() {
+        @Override
+        public boolean apply(Note input) {
+          return input != null && notebookAuthorization.isReader(input.getId(), entities);
+        }
+      }).toSortedList(new Comparator<Note>() {
+        @Override
+        public int compare(Note note1, Note note2) {
+          String name1 = note1.id();
+          if (note1.getName() != null) {
+            name1 = note1.getName();
+          }
+          String name2 = note2.id();
+          if (note2.getName() != null) {
+            name2 = note2.getName();
+          }
+          return name1.compareTo(name2);
+        }
+      });
     }
   }
 

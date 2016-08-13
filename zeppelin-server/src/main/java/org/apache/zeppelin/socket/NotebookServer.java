@@ -472,8 +472,7 @@ public class NotebookServer extends WebSocketServlet implements
         LOG.error("Fail to reload notes from repository", e);
       }
     }
-
-    List<Note> notes = notebook.getAllNotes();
+    List<Note> notes = notebook.getAllNotes(subject);
     List<Map<String, String>> notesInfo = new LinkedList<>();
     for (Note note : notes) {
       Map<String, String> info = new HashMap<>();
