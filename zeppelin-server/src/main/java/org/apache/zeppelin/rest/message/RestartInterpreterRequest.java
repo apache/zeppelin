@@ -21,13 +21,13 @@ package org.apache.zeppelin.rest.message;
  * RestartInterpreter rest api request message
  */
 public class RestartInterpreterRequest {
-  String type;
+  boolean checkIntpCondition;
 
   public RestartInterpreterRequest() {
 
   }
 
-  public String getType() {
-    return type;
+  public boolean getCheckIntpCondition() {
+    return checkIntpCondition;
   }
 }

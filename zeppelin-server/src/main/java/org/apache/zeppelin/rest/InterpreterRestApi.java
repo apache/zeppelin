@@ -155,19 +155,9 @@ public class InterpreterRestApi {
     logger.info("Restart interpreterSetting {}, msg={}", settingId, message);
 
     try {
-      RestartInterpreterRequest request =
-        gson.fromJson(message, RestartInterpreterRequest.class);
-
-      InterpreterSetting setting = interpreterFactory.get(settingId);
-      if (setting != null && request.getType().trim().equals("self")) {
-        if ((setting.getOption().isPerNoteProcess() |
-          setting.getOption().isPerNoteSession()) == false) {
-          return new JsonResponse<>(Status.FORBIDDEN,
-            "Can't restart shared interpreter process.").build();
-        }
-      }
-
-      interpreterFactory.restart(settingId);
+      RestartInterpreterRequest request = gson.fromJson(message, RestartInterpreterRequest.class);
+      boolean shouldBeCheckedIntpMode = request == null ? false : request.getCheckIntpCondition();
+      interpreterFactory.restart(settingId, shouldBeCheckedIntpMode);
     } catch (InterpreterException e) {
       logger.error("Exception in InterpreterRestApi while restartSetting ", e);
       return new JsonResponse<>(Status.NOT_FOUND, e.getMessage(), ExceptionUtils.getStackTrace(e))

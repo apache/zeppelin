@@ -651,7 +651,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
       callback: function(result) {
         if (result) {
           var payload  = {
-            'type': 'self'
+            'checkIntpCondition': 'true'
           };
           $http.put(baseUrlSrv.getRestApiBase() + '/interpreter/setting/restart/' + interpeter.id, payload)
             .success(function(data, status, headers, config) {
