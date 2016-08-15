@@ -298,17 +298,14 @@ public class Paragraph extends Job implements Serializable, Cloneable {
       throw new RuntimeException("Can not find interpreter for " + getRequiredReplName());
     }
 
-    if (this.user != null &&
-      !factory.getInterpreterSettings(note.getId()).isEmpty()) {
-      for (InterpreterSetting intp: factory.getInterpreterSettings(note.getId())){
-
-        if (replName.startsWith(intp.getName()) &&
-          intp.getOption().isSetPermission() &&
-          !hasPermission(authenticationInfo.getUser(), intp.getOption().getUsers())) {
-          logger.error("{} has no permission for {} ", authenticationInfo.getUser(), repl);
-          return new InterpreterResult(Code.ERROR, authenticationInfo.getUser() +
-            " has no permission for " + getRequiredReplName());
-        }
+    if (this.noteHasUser() && this.noteHasInterpreters()) {
+      InterpreterSetting intp = getInterpreterSettingById(repl.getInterpreterGroup().getId());
+      if (intp != null &&
+        interpreterHasUser(intp) &&
+        isUserAuthorizedToAccessInterpreter(intp.getOption()) == false) {
+        logger.error("{} has no permission for {} ", authenticationInfo.getUser(), repl);
+        return new InterpreterResult(Code.ERROR, authenticationInfo.getUser() +
+          " has no permission for " + getRequiredReplName());
       }
     }
 
@@ -364,6 +361,34 @@ public class Paragraph extends Job implements Serializable, Cloneable {
       InterpreterContext.remove();
       effectiveText = null;
     }
+  }
+
+  private boolean noteHasUser() {
+    return this.user != null;
+  }
+
+  private boolean noteHasInterpreters() {
+    return !factory.getInterpreterSettings(note.getId()).isEmpty();
+  }
+
+  private boolean interpreterHasUser(InterpreterSetting intp) {
+    return intp.getOption().isSetPermission() && intp.getOption().getUsers() != null;
+  }
+
+  private boolean isUserAuthorizedToAccessInterpreter(InterpreterOption intpOpt){
+    return intpOpt.isSetPermission() &&
+      hasPermission(authenticationInfo.getUser(), intpOpt.getUsers());
+  }
+
+  private InterpreterSetting getInterpreterSettingById(String id) {
+    InterpreterSetting setting = null;
+    for (InterpreterSetting i: factory.getInterpreterSettings(note.getId())) {
+      if (id.startsWith(i.getId())) {
+        setting = i;
+        break;
+      }
+    }
+    return setting;
   }
 
   @Override
