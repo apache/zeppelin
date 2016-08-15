@@ -65,4 +65,4 @@ Mina Lee, Prabhjyot Singh, Jeff Zhang, Lee moon soo, astroshim, CloverHearts, Ah
 
 The following people helped verifying this release:
 
-Ahyoung Ryu, Vinay Shukla, Andrey Gura, Jeff Zhang, Sachin Janani, moon soo Lee, Anthony Corbacho, Khalid Huseynov, Hyung Sung Shim, Sourav Mazumder, Prabhjyot Singh, Victor Manuel Garcia, Alexander Bezzubov, Felix Cheung, Mina Lee, Madhuka Udantha
+Ahyoung Ryu, Vinay Shukla, Andrey Gura, Jeff Zhang, Sachin Janani, moon soo Lee, Anthony Corbacho, Khalid Huseynov, Hyung Sung Shim, Sourav Mazumder, Prabhjyot Singh, Victor Manuel Garcia, Alexander Bezzubov, Felix Cheung, Mina Lee, Madhuka Udantha, Rohit Choudhary
