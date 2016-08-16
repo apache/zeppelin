@@ -11,6 +11,12 @@ body {
   letter-spacing: .2px;
 }
 
+.logopage_container {
+  display: inline-block;
+  vertical-align: middle;
+  margin: 10px 20px;
+}
+
 .jumbotron {
   background-color: #3071a9;
 }
@@ -21,7 +27,7 @@ body {
 }
 
 .jumbotron p {
-  font-size: 19px; 
+  font-size: 19px;
 }
 
 .jumbotron .btn {
@@ -267,7 +273,7 @@ a.anchor {
   position: absolute;
   top: 0;
   left: 0;
-  bottom: 0; 
+  bottom: 0;
 }
 
 /* <hn> */
