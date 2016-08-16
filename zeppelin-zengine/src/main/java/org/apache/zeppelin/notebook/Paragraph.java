@@ -372,11 +372,11 @@ public class Paragraph extends Job implements Serializable, Cloneable {
   }
 
   private boolean interpreterHasUser(InterpreterSetting intp) {
-    return intp.getOption().isSetPermission() && intp.getOption().getUsers() != null;
+    return intp.getOption().permissionIsSet() && intp.getOption().getUsers() != null;
   }
 
   private boolean isUserAuthorizedToAccessInterpreter(InterpreterOption intpOpt){
-    return intpOpt.isSetPermission() &&
+    return intpOpt.permissionIsSet() &&
       hasPermission(authenticationInfo.getUser(), intpOpt.getUsers());
   }
 

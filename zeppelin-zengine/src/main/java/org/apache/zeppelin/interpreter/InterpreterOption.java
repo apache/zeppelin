@@ -49,7 +49,7 @@ public class InterpreterOption {
     this.host = host;
   }
 
-  public boolean isSetPermission() {
+  public boolean permissionIsSet() {
     return setPermission;
   }
 
