@@ -50,12 +50,8 @@ public class AppendOutputRunnerTest {
 
   @BeforeClass
   public static void beforeClass() {
-    CheckAppendOutputRunner.stopSchedulerAndRunnerForUnitTests();
+    CheckAppendOutputRunner.stopSchedulerForUnitTests();
     AppendOutputRunner.emptyQueueForUnitTests();
-    try {
-      Thread.sleep(1000);
-    } catch (InterruptedException e)
-    {}
   }
 
   @Test
@@ -66,7 +62,7 @@ public class AppendOutputRunnerTest {
     loopForCompletingEvents(listener, 1);
     verify(listener, times(1)).onOutputAppend(any(String.class), any(String.class), any(String.class));
     verify(listener, times(1)).onOutputAppend("note", "para", "data\n");
-    CheckAppendOutputRunner.stopRunnerForUnitTests();
+    CheckAppendOutputRunner.stopSchedulerForUnitTests();
   }
 
   @Test
@@ -81,7 +77,7 @@ public class AppendOutputRunnerTest {
     loopForCompletingEvents(listener, 1);
     verify(listener, times(1)).onOutputAppend(any(String.class), any(String.class), any(String.class));
     verify(listener, times(1)).onOutputAppend(note1, para1, "data1\ndata2\ndata3\n");
-    CheckAppendOutputRunner.stopRunnerForUnitTests();
+    CheckAppendOutputRunner.stopSchedulerForUnitTests();
   }
 
   @Test
@@ -102,14 +98,14 @@ public class AppendOutputRunnerTest {
     verify(listener, times(1)).onOutputAppend(note1, para2, "data2\n");
     verify(listener, times(1)).onOutputAppend(note2, para1, "data3\n");
     verify(listener, times(1)).onOutputAppend(note2, para2, "data4\n");
-    CheckAppendOutputRunner.stopRunnerForUnitTests();
+    CheckAppendOutputRunner.stopSchedulerForUnitTests();
   }
 
   @Test
   public void testClubbedData() throws InterruptedException {
     RemoteInterpreterProcessListener listener = mock(RemoteInterpreterProcessListener.class);
     AppendOutputRunner.setListener(listener);
-    CheckAppendOutputRunner.startRunnerForUnitTests();
+    CheckAppendOutputRunner.startScheduler();
     Thread thread = new Thread(new BombardEvents());
     thread.start();
     thread.join();
@@ -121,7 +117,7 @@ public class AppendOutputRunnerTest {
      * the unit-test to a pessimistic 100 web-socket calls.
      */
     verify(listener, atMost(NUM_CLUBBED_EVENTS)).onOutputAppend(any(String.class), any(String.class), any(String.class));
-    CheckAppendOutputRunner.stopRunnerForUnitTests();
+    CheckAppendOutputRunner.stopSchedulerForUnitTests();
   }
 
   @Test
@@ -140,20 +136,24 @@ public class AppendOutputRunnerTest {
     RemoteInterpreterProcessListener listener = mock(RemoteInterpreterProcessListener.class);
     loopForCompletingEvents(listener, 1);
     List<LoggingEvent> log;
-    do {
-      log = appender.getLog();
-    } while(log.size() != 2);
-    LoggingEvent sizeWarnLogEntry = null;
 
-    for (LoggingEvent logEntry: log) {
-      if (Level.WARN.equals(logEntry.getLevel())) {
-        sizeWarnLogEntry = logEntry;
+    int warnLogCounter;
+    LoggingEvent sizeWarnLogEntry = null;
+    do {
+      warnLogCounter = 0;
+      log = appender.getLog();
+      for (LoggingEvent logEntry: log) {
+        if (Level.WARN.equals(logEntry.getLevel())) {
+          sizeWarnLogEntry = logEntry;
+          warnLogCounter += 1;
+        }
       }
-    }
+    } while(warnLogCounter != 2);
+
     String loggerString = "Processing size for buffered append-output is high: " +
         (data.length() * numEvents) + " characters.";
     assertTrue(loggerString.equals(sizeWarnLogEntry.getMessage()));
-    CheckAppendOutputRunner.stopRunnerForUnitTests();
+    CheckAppendOutputRunner.stopSchedulerForUnitTests();
   }
 
   private class BombardEvents implements Runnable {
@@ -204,7 +204,7 @@ public class AppendOutputRunnerTest {
     numInvocations = 0;
     prepareInvocationCounts(listener);
     AppendOutputRunner.setListener(listener);
-    CheckAppendOutputRunner.startRunnerForUnitTests();
+    CheckAppendOutputRunner.startScheduler();
     long startTimeMs = System.currentTimeMillis();
     while(numInvocations != numTimes) {
       if (System.currentTimeMillis() - startTimeMs > 2000) {

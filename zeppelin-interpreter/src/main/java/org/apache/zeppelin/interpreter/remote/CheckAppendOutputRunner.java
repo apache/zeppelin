@@ -29,62 +29,33 @@ import org.slf4j.LoggerFactory;
  * and ensuring that AppendOutputRunner is up
  * and running.
  */
-public class CheckAppendOutputRunner implements Runnable {
+public class CheckAppendOutputRunner {
 
   private static final Logger logger =
       LoggerFactory.getLogger(CheckAppendOutputRunner.class);
-  private static Thread thread = null;
   private static final Boolean SYNCHRONIZER = false;
   private static ScheduledExecutorService SCHEDULED_SERVICE = null;
   private static ScheduledFuture<?> futureObject = null;
-
-  /* Can only be initialized locally.*/
-  private CheckAppendOutputRunner()
-  {}
-
-  @Override
-  public void run() {
-    synchronized (SYNCHRONIZER) {
-      if (thread == null || !thread.isAlive()) {
-        logger.info("Starting a AppendOutputRunner thread to buffer"
-            + " and send paragraph append data.");
-        thread = new Thread(new AppendOutputRunner());
-        thread.start();
-      }
-    }
-  }
+  private static AppendOutputRunner runner = null;
 
   public static void startScheduler() {
     synchronized (SYNCHRONIZER) {
       if (SCHEDULED_SERVICE == null) {
+        runner = new AppendOutputRunner();
+        logger.info("Starting a AppendOutputRunner thread to buffer"
+            + " and send paragraph append data.");
         SCHEDULED_SERVICE = Executors.newSingleThreadScheduledExecutor();
         futureObject = SCHEDULED_SERVICE.scheduleWithFixedDelay(
-            new CheckAppendOutputRunner(), 0, 1, TimeUnit.SECONDS);
+            runner, 0, AppendOutputRunner.BUFFER_TIME_MS, TimeUnit.MILLISECONDS);
       }
     }
   }
 
-  /* These functions are only used by unit-tests. */
-  public static void stopRunnerForUnitTests() {
-    synchronized (SYNCHRONIZER) {
-      thread.interrupt();
-    }
-  }
-
-  public static void startRunnerForUnitTests() {
-    synchronized (SYNCHRONIZER) {
-      thread = new Thread(new AppendOutputRunner());
-      thread.start();
-    }
-  }
-
-  public static void stopSchedulerAndRunnerForUnitTests() {
+  /* This function is only used by unit-tests. */
+  public static void stopSchedulerForUnitTests() {
     synchronized (SYNCHRONIZER) {
       if (futureObject != null) {
-        futureObject.cancel(false);
-      }
-      if (thread != null && thread.isAlive()) {
-        thread.interrupt();
+        futureObject.cancel(true);
       }
       SCHEDULED_SERVICE = null;
     }
