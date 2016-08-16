@@ -98,7 +98,7 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
     String jsonRequest = "{\"name\":\"md2\",\"group\":\"md\",\"properties\":{\"propname\":\"propvalue\"}," +
         "\"interpreterGroup\":[{\"class\":\"org.apache.zeppelin.markdown.Markdown\",\"name\":\"md\"}]," +
         "\"dependencies\":[]," +
-        "\"option\": { \"remote\": true, \"perNoteSession\": false }}";
+        "\"option\": { \"remote\": true, \"session\": false }}";
     PostMethod post = httpPost("/interpreter/setting/", jsonRequest);
     LOG.info("testSettingCRUD create response\n" + post.getResponseBodyAsString());
     assertThat("test create method:", post, isCreated());
@@ -114,7 +114,7 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
     jsonRequest = "{\"name\":\"md2\",\"group\":\"md\",\"properties\":{\"propname\":\"Otherpropvalue\"}," +
         "\"interpreterGroup\":[{\"class\":\"org.apache.zeppelin.markdown.Markdown\",\"name\":\"md\"}]," +
         "\"dependencies\":[]," +
-        "\"option\": { \"remote\": true, \"perNoteSession\": false }}";
+        "\"option\": { \"remote\": true, \"session\": false }}";
     PutMethod put = httpPut("/interpreter/setting/" + newSettingId, jsonRequest);
     LOG.info("testSettingCRUD update response\n" + put.getResponseBodyAsString());
     assertThat("test update method:", put, isAllowed());

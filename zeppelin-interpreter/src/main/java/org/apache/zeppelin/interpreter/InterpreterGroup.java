@@ -33,7 +33,7 @@ import org.apache.zeppelin.scheduler.SchedulerFactory;
  * and InterpreterGroup will have reference to these all interpreters.
  *
  * Remember, list of interpreters are dedicated to a note.
- * (when InterpreterOption.perNoteSession==true)
+ * (when InterpreterOption.session==true)
  * So InterpreterGroup internally manages map of [noteId, list of interpreters]
  *
  * A InterpreterGroup runs on interpreter process.
