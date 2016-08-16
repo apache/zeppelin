@@ -1,4 +1,3 @@
-
 ---
 layout: page
 title: "Apache Shiro Authentication for Apache Zeppelin"
