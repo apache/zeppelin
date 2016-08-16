@@ -43,7 +43,7 @@ We added some common configurations for spark, and you can set any configuration
 This link contains all spark configurations: http://spark.apache.org/docs/latest/configuration.html#available-properties.
 And instead of starting property with `spark.` it should be replaced with `livy.spark.`.
 Example: `spark.master` to `livy.spark.master`
-
+  
 <table class="table-configuration">
   <tr>
     <th>Property</th>
@@ -115,8 +115,31 @@ Example: `spark.master` to `livy.spark.master`
     <td></td>
     <td>Upper bound for the number of executors.</td>
   </tr>
+    <tr>
+      <td>livy.spark.jars.packages</td>
+      <td></td>
+      <td>Adding extra libraries to livy interpreter</td>
+    </tr>
 </table>
 
+## Adding External libraries
+You can load dynamic library to livy interpreter by set `livy.spark.jars.packages` property to comma-separated list of maven coordinates of jars to include on the driver and executor classpaths. The format for the coordinates should be groupId:artifactId:version. 
+
+Example
+
+<table class="table-configuration">
+  <tr>
+    <th>Property</th>
+    <th>Example</th>
+    <th>Description</th>
+  </tr>
+  <tr>
+      <td>livy.spark.jars.packages</td>
+      <td>io.spray:spray-json_2.10:1.3.1</td>
+      <td>Adding extra libraries to livy interpreter</td>
+    </tr>
+  </table>
+  
 ## How to use
 Basically, you can use
 
