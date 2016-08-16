@@ -25,12 +25,6 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.NullArgumentException;
 import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.sonatype.aether.RepositoryException;
-import org.sonatype.aether.repository.Authentication;
-import org.sonatype.aether.repository.RemoteRepository;
-
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.dep.Dependency;
@@ -1103,7 +1097,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
   }
 
   private Interpreter getInterpreter(String noteId, InterpreterSetting setting, String name,
-                                     String userName) {
+      String userName) {
     Preconditions.checkNotNull(noteId, "noteId should be not null");
     Preconditions.checkNotNull(setting, "setting should be not null");
     Preconditions.checkNotNull(name, "name should be not null");
