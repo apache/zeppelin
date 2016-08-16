@@ -1,7 +1,7 @@
 ---
 layout: page
-title: "Notebook REST API"
-description: ""
+title: "Apache Zeppelin Notebook REST API"
+description: "This page contains Apache Zeppelin Notebook REST API information."
 group: rest-api
 ---
 <!--

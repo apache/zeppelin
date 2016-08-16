@@ -17,6 +17,8 @@
 
 package org.apache.zeppelin.interpreter;
 
+import java.util.List;
+
 /**
  *
  */
@@ -28,7 +30,8 @@ public class InterpreterOption {
   boolean perNoteProcess;
   
   boolean isExistingProcess;
-
+  boolean setPermission;
+  List<String> users;
 
   public boolean isExistingProcess() {
     return isExistingProcess;
@@ -46,6 +49,17 @@ public class InterpreterOption {
     this.host = host;
   }
 
+  public boolean permissionIsSet() {
+    return setPermission;
+  }
+
+  public void setUserPermission(boolean setPermission) {
+    this.setPermission = setPermission;
+  }
+
+  public List<String> getUsers() {
+    return users;
+  }
 
   public InterpreterOption() {
     remote = false;

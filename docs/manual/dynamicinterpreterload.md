@@ -1,7 +1,7 @@
 ---
 layout: page
-title: "Dynamic Interpreter Loading"
-description: ""
+title: "Dynamic Interpreter Loading using REST API"
+description: "Apache Zeppelin provides pluggable interpreter architecture which results in a wide and variety of the supported backend system. In this page, we will introduce dynamic interpreter loading using REST API."
 group: manual
 ---
 <!--
@@ -23,7 +23,7 @@ limitations under the License.
 
 <div id="toc"></div>
 
-Zeppelin provides pluggable interpreter architecture which results in a wide and variety of the supported backend system. In this section, we will introduce **Dynamic interpreter loading** using **REST API**. This concept actually comes from [Zeppelin Helium Proposal](https://cwiki.apache.org/confluence/display/ZEPPELIN/Helium+proposal).
+Apache Zeppelin provides pluggable interpreter architecture which results in a wide and variety of the supported backend system. In this section, we will introduce **Dynamic interpreter loading** using **REST API**. This concept actually comes from [Zeppelin Helium Proposal](https://cwiki.apache.org/confluence/display/ZEPPELIN/Helium+proposal).
 Before we start, if you are not familiar with the concept of **Zeppelin interpreter**, you can check out [Overview of Zeppelin interpreter](../manual/interpreters.html) first.
 
 ## Overview 
