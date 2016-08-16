@@ -1,8 +1,7 @@
 ---
 layout: page
-title: "More"
-description: ""
-group: nav-left
+title: "Assets"
+description: "Assets of Apache Zeppelin"
 ---
 <!--
 Licensed under the Apache License, Version 2.0 (the "License");
