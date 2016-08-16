@@ -27,7 +27,7 @@
   </parent>
 
   <groupId>org.apache.zeppelin</groupId>
-  <artifactId>zeppelin-spark_2.10</artifactId>
+  <artifactId>zeppelin-spark_2.11</artifactId>
   <packaging>jar</packaging>
   <version>0.7.0-SNAPSHOT</version>
   <name>Zeppelin: Spark</name>
@@ -941,6 +941,36 @@
           <artifactId>hadoop-yarn-api</artifactId>
           <version>${yarn.version}</version>
         </dependency>
+
+        <dependency>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-yarn-client</artifactId>
+          <version>${yarn.version}</version>
+        </dependency>
+
+        <dependency>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-yarn-common</artifactId>
+          <version>${yarn.version}</version>
+        </dependency>
+
+	<dependency>
+	  <groupId>org.apache.hadoop</groupId>
+	  <artifactId>hadoop-common</artifactId>
+          <version>${yarn.version}</version>
+	</dependency>
+
+	<dependency>
+	  <groupId>org.apache.hadoop</groupId>
+	  <artifactId>hadoop-hdfs</artifactId>
+          <version>${yarn.version}</version>
+	</dependency>
+
+	<dependency>
+	  <groupId>org.apache.hadoop</groupId>
+	  <artifactId>hadoop-client</artifactId>
+          <version>${yarn.version}</version>
+	</dependency>
       </dependencies>
     </profile>
     
