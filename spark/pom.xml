@@ -954,6 +954,18 @@
           <version>${yarn.version}</version>
         </dependency>
 
+        <dependency>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-yarn-server-common</artifactId>
+          <version>${yarn.version}</version>
+        </dependency>
+
+        <dependency>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-yarn-server-web-proxy</artifactId>
+          <version>${yarn.version}</version>
+        </dependency>
+
 	<dependency>
 	  <groupId>org.apache.hadoop</groupId>
 	  <artifactId>hadoop-common</artifactId>
