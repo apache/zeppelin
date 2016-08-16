@@ -24,6 +24,13 @@ import com.google.gson.reflect.TypeToken;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.NullArgumentException;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.sonatype.aether.RepositoryException;
+import org.sonatype.aether.repository.Authentication;
+import org.sonatype.aether.repository.RemoteRepository;
+
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.dep.Dependency;
@@ -326,6 +333,8 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     InputStreamReader isr = new InputStreamReader(fis);
     BufferedReader bufferedReader = new BufferedReader(isr);
     StringBuilder sb = new StringBuilder();
+    InterpreterSetting interpreterSettingObject;
+    String depClassPath = StringUtils.EMPTY;
     String line;
     while ((line = bufferedReader.readLine()) != null) {
       sb.append(line);
@@ -346,9 +355,14 @@ public class InterpreterFactory implements InterpreterGroupFactory {
       setting.getOption().setRemote(true);
 
       // Update transient information from InterpreterSettingRef
-      // TODO(jl): Check if reference of setting is null
-
-      setting.setPath(interpreterSettingsRef.get(setting.getGroup()).getPath());
+      interpreterSettingObject = interpreterSettingsRef.get(setting.getGroup());
+      if (interpreterSettingObject == null) {
+        logger.warn("can't get InterpreterSetting " +
+          "Information From loaded Interpreter Setting Ref - {} ", setting.getGroup());
+        continue;
+      }
+      depClassPath = interpreterSettingObject.getPath();
+      setting.setPath(depClassPath);
 
       setting.setInterpreterGroupFactory(this);
       loadInterpreterDependencies(setting);

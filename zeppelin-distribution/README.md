@@ -15,17 +15,19 @@
  limitations under the License.
 -->
 
-# Distribution archive of Zeppelin project #
+# Distribution archive of Apache Zeppelin
 
-Zeppelin is distributed as a single gzip archive with the following structure:
+Apache Zeppelin is distributed as a single gzip archive with the following structure:
 
 ```
-zeppelin
+Zeppelin
  ├── bin
  │   ├── zeppelin.sh
  │   └── seppelin-deamon.sh
- ├── lib
  ├── conf
+ ├── interpreter
+ ├── lib
+ ├── licenses
  ├── zan-repo
  │    ├── txt.wordcount
  │    ├── vis.bubble
@@ -33,12 +35,11 @@ zeppelin
  │    ├── ml.something
  │    └── ...
  ├── zeppelin-server-<verion>.jar
- ├── zeppelin-web-<verion>.war
- └── zeppelin-cli-<verion>.jar
+ └── zeppelin-web-<verion>.war
  
 ```
 
-We use maven-assembly-pugin to build it, see distribution.xml for details
+We use `maven-assembly-plugin` to build it, see `zeppelin-distribution/src/assemble/distribution.xml ` for details.
 
-**IMPORTANT:** _/lib_ subdirectory contains all transitive dependencies of the zeppelin-distribution module,
-automatically resolved by maven, except for explicitly excluded _server_, _web_ and _cli_ zeppelin sub-modules.
+>**IMPORTANT:** `_/lib_` subdirectory contains all transitive dependencies of the `zeppelin-distribution` module,
+automatically resolved by maven, except for explicitly excluded `_server_` and `_web_`  Zeppelin sub-modules.

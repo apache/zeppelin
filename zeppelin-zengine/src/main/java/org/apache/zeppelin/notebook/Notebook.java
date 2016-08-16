@@ -360,14 +360,14 @@ public class Notebook implements NoteEventListener {
     return notebookRepo.checkpoint(noteId, checkpointMessage, subject);
   }
 
-  public List<NotebookRepo.Revision> listRevisionHistory(String noteId,
+  public List<Revision> listRevisionHistory(String noteId,
       AuthenticationInfo subject) {
     return notebookRepo.revisionHistory(noteId, subject);
   }
 
-  public Note getNoteRevision(String noteId, Revision revision, AuthenticationInfo subject)
+  public Note getNoteByRevision(String noteId, String revisionId, AuthenticationInfo subject)
       throws IOException {
-    return notebookRepo.get(noteId, revision, subject);
+    return notebookRepo.get(noteId, revisionId, subject);
   }
 
   @SuppressWarnings("rawtypes")

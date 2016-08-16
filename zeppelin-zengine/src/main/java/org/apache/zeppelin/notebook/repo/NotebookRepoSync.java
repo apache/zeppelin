@@ -44,11 +44,13 @@ public class NotebookRepoSync implements NotebookRepo {
   private static final int maxRepoNum = 2;
   private static final String pushKey = "pushNoteIDs";
   private static final String pullKey = "pullNoteIDs";
+  private static final String delDstKey = "delDstNoteIDs";
 
   private static ZeppelinConfiguration config;
   private static final String defaultStorage = "org.apache.zeppelin.notebook.repo.VFSNotebookRepo";
 
   private List<NotebookRepo> repos = new ArrayList<NotebookRepo>();
+  private final boolean oneWaySync;
 
   /**
    * @param noteIndex
@@ -58,6 +60,7 @@ public class NotebookRepoSync implements NotebookRepo {
   @SuppressWarnings("static-access")
   public NotebookRepoSync(ZeppelinConfiguration conf) {
     config = conf;
+    oneWaySync = conf.getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_ONE_WAY_SYNC);
     String allStorageClassNames = conf.getString(ConfVars.ZEPPELIN_NOTEBOOK_STORAGE).trim();
     if (allStorageClassNames.isEmpty()) {
       allStorageClassNames = defaultStorage;
@@ -182,6 +185,8 @@ public class NotebookRepoSync implements NotebookRepo {
     Map<String, List<String>> noteIDs = notesCheckDiff(srcNotes, srcRepo, dstNotes, dstRepo);
     List<String> pushNoteIDs = noteIDs.get(pushKey);
     List<String> pullNoteIDs = noteIDs.get(pullKey);
+    List<String> delDstNoteIDs = noteIDs.get(delDstKey);
+
     if (!pushNoteIDs.isEmpty()) {
       LOG.info("Notes with the following IDs will be pushed");
       for (String id : pushNoteIDs) {
@@ -202,6 +207,16 @@ public class NotebookRepoSync implements NotebookRepo {
       LOG.info("Nothing to pull");
     }
 
+    if (!delDstNoteIDs.isEmpty()) {
+      LOG.info("Notes with the following IDs will be deleted from dest");
+      for (String id : delDstNoteIDs) {
+        LOG.info("ID : " + id);
+      }
+      deleteNotes(delDstNoteIDs, dstRepo);
+    } else {
+      LOG.info("Nothing to delete from dest");
+    }
+
     LOG.info("Sync ended");
   }
 
@@ -213,6 +228,12 @@ public class NotebookRepoSync implements NotebookRepo {
       NotebookRepo remoteRepo) throws IOException {
     for (String id : ids) {
       remoteRepo.save(localRepo.get(id, null), null);
+    }
+  }
+
+  private void deleteNotes(List<String> ids, NotebookRepo repo) throws IOException {
+    for (String id : ids) {
+      repo.remove(id, null);
     }
   }
 
@@ -237,6 +258,7 @@ public class NotebookRepoSync implements NotebookRepo {
       throws IOException {
     List <String> pushIDs = new ArrayList<String>();
     List <String> pullIDs = new ArrayList<String>();
+    List <String> delDstIDs = new ArrayList<String>();
 
     NoteInfo dnote;
     Date sdate, ddate;
@@ -246,14 +268,18 @@ public class NotebookRepoSync implements NotebookRepo {
         /* note exists in source and destination storage systems */
         sdate = lastModificationDate(sourceRepo.get(snote.getId(), null));
         ddate = lastModificationDate(destRepo.get(dnote.getId(), null));
-        if (sdate.after(ddate)) {
-          /* source contains more up to date note - push */
-          pushIDs.add(snote.getId());
-          LOG.info("Modified note is added to push list : " + sdate);
-        } else if (sdate.compareTo(ddate) != 0) {
-          /* destination contains more up to date note - pull */
-          LOG.info("Modified note is added to pull list : " + ddate);
-          pullIDs.add(snote.getId());
+
+        if (sdate.compareTo(ddate) != 0) {
+          if (sdate.after(ddate) || oneWaySync) {
+            /* if source contains more up to date note - push
+             * if oneWaySync is enabled, always push no matter who's newer */
+            pushIDs.add(snote.getId());
+            LOG.info("Modified note is added to push list : " + sdate);
+          } else {
+            /* destination contains more up to date note - pull */
+            LOG.info("Modified note is added to pull list : " + ddate);
+            pullIDs.add(snote.getId());
+          }
         }
       } else {
         /* note exists in source storage, and absent in destination
@@ -266,14 +292,23 @@ public class NotebookRepoSync implements NotebookRepo {
     for (NoteInfo note : destNotes) {
       dnote = containsID(sourceNotes, note.getId());
       if (dnote == null) {
-        /* note exists in destination storage, and absent in source - pull*/
-        pullIDs.add(note.getId());
+        /* note exists in destination storage, and absent in source */
+        if (oneWaySync) {
+          /* if oneWaySync is enabled, delete the note from destination */
+          LOG.info("Extraneous note is added to delete dest list : " + note.getId());
+          delDstIDs.add(note.getId());
+        } else {
+          /* if oneWaySync is disabled, pull the note from destination */
+          LOG.info("Missing note is added to pull list : " + note.getId());
+          pullIDs.add(note.getId());
+        }
       }
     }
 
     Map<String, List<String>> map = new HashMap<String, List<String>>();
     map.put(pushKey, pushIDs);
     map.put(pullKey, pullIDs);
+    map.put(delDstKey, delDstIDs);
     return map;
   }
 
@@ -355,12 +390,12 @@ public class NotebookRepoSync implements NotebookRepo {
   }
 
   @Override
-  public Note get(String noteId, Revision rev, AuthenticationInfo subject) {
+  public Note get(String noteId, String revId, AuthenticationInfo subject) {
     Note revisionNote = null;
     try {
-      revisionNote = getRepo(0).get(noteId, rev, subject);
+      revisionNote = getRepo(0).get(noteId, revId, subject);
     } catch (IOException e) {
-      LOG.error("Failed to get revision {} of note {}", rev.id, noteId, e);
+      LOG.error("Failed to get revision {} of note {}", revId, noteId, e);
     }
     return revisionNote;
   }
