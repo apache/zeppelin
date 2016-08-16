@@ -322,11 +322,11 @@ public class NotebookTest implements JobListenerFactory{
 
 
     MockInterpreter1 mock1 = ((MockInterpreter1) (((ClassloaderInterpreter)
-        ((LazyOpenInterpreter) factory.getInterpreter(note.getId(), "mock1", null)).getInnerInterpreter())
+        ((LazyOpenInterpreter) factory.getInterpreter(note.getId(), "mock1", "anonymous")).getInnerInterpreter())
         .getInnerInterpreter()));
 
     MockInterpreter2 mock2 = ((MockInterpreter2) (((ClassloaderInterpreter)
-        ((LazyOpenInterpreter) factory.getInterpreter(note.getId(), "mock2", null)).getInnerInterpreter())
+        ((LazyOpenInterpreter) factory.getInterpreter(note.getId(), "mock2", "anonymous")).getInnerInterpreter())
         .getInnerInterpreter()));
 
     // wait until interpreters are started
@@ -457,7 +457,7 @@ public class NotebookTest implements JobListenerFactory{
     factory.setInterpreters(note.getId(), factory.getDefaultInterpreterSettingList());
 
     AngularObjectRegistry registry = factory
-        .getInterpreterSettings(note.getId()).get(0).getInterpreterGroup("sharedProcess")
+        .getInterpreterSettings(note.getId()).get(0).getInterpreterGroup("sharedProcess", "anonymous")
         .getAngularObjectRegistry();
 
     Paragraph p1 = note.addParagraph();
@@ -490,7 +490,7 @@ public class NotebookTest implements JobListenerFactory{
     factory.setInterpreters(note.getId(), factory.getDefaultInterpreterSettingList());
 
     AngularObjectRegistry registry = factory
-        .getInterpreterSettings(note.getId()).get(0).getInterpreterGroup("sharedProcess")
+        .getInterpreterSettings(note.getId()).get(0).getInterpreterGroup("sharedProcess", "anonymous")
         .getAngularObjectRegistry();
 
     Paragraph p1 = note.addParagraph();
@@ -523,7 +523,7 @@ public class NotebookTest implements JobListenerFactory{
     factory.setInterpreters(note.getId(), factory.getDefaultInterpreterSettingList());
 
     AngularObjectRegistry registry = factory
-        .getInterpreterSettings(note.getId()).get(0).getInterpreterGroup("sharedProcess")
+        .getInterpreterSettings(note.getId()).get(0).getInterpreterGroup("sharedProcess", "anonymous")
         .getAngularObjectRegistry();
 
     // add local scope object
@@ -533,8 +533,8 @@ public class NotebookTest implements JobListenerFactory{
 
     // restart interpreter
     factory.restart(factory.getInterpreterSettings(note.getId()).get(0).getId());
-    registry = factory.getInterpreterSettings(note.getId()).get(0).getInterpreterGroup("sharedProcess")
-    .getAngularObjectRegistry();
+    registry = factory.getInterpreterSettings(note.getId()).get(0)
+        .getInterpreterGroup("sharedProcess", "anonymous").getAngularObjectRegistry();
 
     // local and global scope object should be removed
     assertNull(registry.get("o1", note.id(), null));

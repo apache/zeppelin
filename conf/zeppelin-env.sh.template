@@ -37,9 +37,6 @@
 # export ZEPPELIN_INTERPRETER_LOCALREPO         # Local repository for interpreter's additional dependency loading
 # export ZEPPELIN_NOTEBOOK_STORAGE 		# Refers to pluggable notebook storage class, can have two classes simultaneously with a sync between them (e.g. local and remote).
 
-# export ZEPPELIN_INTERPRETER_RUNAS_USER= # set this to true if user wants to run interpreter as different user, and if shiro authentication is enabled then it will run as end web user.
-# export ZEPPELIN_INTERPRETER_USER=      # user to be run as if shiro authentication is not enbaled and you want to run it as different user than the server.
-
 #### Spark interpreter configuration ####
 
 ## Use provided spark installation ##

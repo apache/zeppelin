@@ -431,14 +431,6 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     return getBoolean(ConfVars.ZEPPELIN_USE_JDBC_ALIAS);
   }
 
-  public boolean getInterpreterRunasUser() {
-    return getBoolean(ConfVars.ZEPPELIN_INTERPRETER_RUNAS_USER);
-  }
-
-  public String getZeppelinInterpreterUser() {
-    return getString(ConfVars.ZEPPELIN_INTERPRETER_USER);
-  }
-
   public Map<String, String> dumpConfigurations(ZeppelinConfiguration conf,
                                                 ConfigurationKeyPredicate predicate) {
     Map<String, String> configurations = new HashMap<>();
@@ -565,9 +557,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_ANONYMOUS_ALLOWED("zeppelin.anonymous.allowed", true),
     ZEPPELIN_CREDENTIALS_PERSIST("zeppelin.credentials.persist", true),
     ZEPPELIN_WEBSOCKET_MAX_TEXT_MESSAGE_SIZE("zeppelin.websocket.max.text.message.size", "1024000"),
-    ZEPPELIN_USE_JDBC_ALIAS("zeppelin.use.jdbc.alias", true),
-    ZEPPELIN_INTERPRETER_RUNAS_USER("zeppelin.interpreter.runas.user", null),
-    ZEPPELIN_INTERPRETER_USER("zeppelin.interpreter.user", null);
+    ZEPPELIN_USE_JDBC_ALIAS("zeppelin.use.jdbc.alias", true);
 
 
     private String varName;

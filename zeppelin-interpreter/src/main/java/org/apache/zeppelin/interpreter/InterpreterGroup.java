@@ -17,9 +17,6 @@
 
 package org.apache.zeppelin.interpreter;
 
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-
 import org.apache.log4j.Logger;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
@@ -27,15 +24,18 @@ import org.apache.zeppelin.resource.ResourcePool;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+
 /**
  * InterpreterGroup is list of interpreters in the same interpreter group.
  * For example spark, pyspark, sql interpreters are in the same 'spark' group
  * and InterpreterGroup will have reference to these all interpreters.
- *
+ * <p>
  * Remember, list of interpreters are dedicated to a note.
  * (when InterpreterOption.perNoteSession==true)
  * So InterpreterGroup internally manages map of [noteId, list of interpreters]
- *
+ * <p>
  * A InterpreterGroup runs on interpreter process.
  * And unit of interpreter instantiate, restart, bind, unbind.
  */
@@ -66,6 +66,7 @@ public class InterpreterGroup extends ConcurrentHashMap<String, List<Interpreter
 
   /**
    * Create InterpreterGroup with given id
+   *
    * @param id
    */
   public InterpreterGroup(String id) {
@@ -83,7 +84,7 @@ public class InterpreterGroup extends ConcurrentHashMap<String, List<Interpreter
 
   private static String generateId() {
     return "InterpreterGroup_" + System.currentTimeMillis() + "_"
-           + new Random().nextInt();
+        + new Random().nextInt();
   }
 
   public String getId() {
@@ -97,6 +98,7 @@ public class InterpreterGroup extends ConcurrentHashMap<String, List<Interpreter
 
   /**
    * Get combined property of all interpreters in this group
+   *
    * @return
    */
   public Properties getProperty() {
@@ -131,8 +133,6 @@ public class InterpreterGroup extends ConcurrentHashMap<String, List<Interpreter
     this.remoteInterpreterProcess = remoteInterpreterProcess;
   }
 
-
-
   /**
    * Close all interpreter instances in this group
    */
@@ -147,6 +147,7 @@ public class InterpreterGroup extends ConcurrentHashMap<String, List<Interpreter
 
   /**
    * Close all interpreter instances in this group for the note
+   *
    * @param noteId
    */
   public void close(String noteId) {
@@ -188,6 +189,7 @@ public class InterpreterGroup extends ConcurrentHashMap<String, List<Interpreter
 
   /**
    * Destroy all interpreter instances in this group for the note
+   *
    * @param noteId
    */
   public void destroy(String noteId) {
@@ -214,6 +216,7 @@ public class InterpreterGroup extends ConcurrentHashMap<String, List<Interpreter
         remoteInterpreterProcess.dereference();
       }
     }
+
 
     allInterpreterGroups.remove(id);
   }
@@ -244,7 +247,6 @@ public class InterpreterGroup extends ConcurrentHashMap<String, List<Interpreter
       }
     }
   }
-
 
 
   public void setResourcePool(ResourcePool resourcePool) {

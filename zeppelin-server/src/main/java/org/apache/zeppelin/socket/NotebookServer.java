@@ -20,7 +20,6 @@ import com.google.common.base.Strings;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
@@ -802,6 +801,7 @@ public class NotebookServer extends WebSocketServlet implements
     String paragraphId = (String) fromMessage.get("paragraphId");
     String interpreterGroupId = (String) fromMessage.get("interpreterGroupId");
     String varName = (String) fromMessage.get("name");
+    AuthenticationInfo subject = new AuthenticationInfo(fromMessage.principal);
     Object varValue = fromMessage.get("value");
     AngularObject ao = null;
     boolean global = false;
@@ -811,12 +811,13 @@ public class NotebookServer extends WebSocketServlet implements
       List<InterpreterSetting> settings = notebook.getInterpreterFactory()
           .getInterpreterSettings(note.getId());
       for (InterpreterSetting setting : settings) {
-        if (setting.getInterpreterGroup(note.id()) == null) {
+        if (setting.getInterpreterGroup(note.id(), subject.getUser()) == null) {
           continue;
         }
-        if (interpreterGroupId.equals(setting.getInterpreterGroup(note.id()).getId())) {
+        if (interpreterGroupId.equals(setting.getInterpreterGroup(note.id(),
+            subject.getUser()).getId())) {
           AngularObjectRegistry angularObjectRegistry = setting
-              .getInterpreterGroup(note.id()).getAngularObjectRegistry();
+              .getInterpreterGroup(note.id(), subject.getUser()).getAngularObjectRegistry();
 
           // first trying to get local registry
           ao = angularObjectRegistry.get(varName, noteId, paragraphId);
@@ -853,12 +854,13 @@ public class NotebookServer extends WebSocketServlet implements
         List<InterpreterSetting> settings = notebook.getInterpreterFactory()
             .getInterpreterSettings(note.getId());
         for (InterpreterSetting setting : settings) {
-          if (setting.getInterpreterGroup(n.id()) == null) {
+          if (setting.getInterpreterGroup(n.id(), subject.getUser()) == null) {
             continue;
           }
-          if (interpreterGroupId.equals(setting.getInterpreterGroup(n.id()).getId())) {
+          if (interpreterGroupId.equals(setting.getInterpreterGroup(n.id(), subject.getUser())
+              .getId())) {
             AngularObjectRegistry angularObjectRegistry = setting
-                .getInterpreterGroup(n.id()).getAngularObjectRegistry();
+                .getInterpreterGroup(n.id(), subject.getUser()).getAngularObjectRegistry();
             this.broadcastExcept(
                 n.id(),
                 new Message(OP.ANGULAR_OBJECT_UPDATE).put("angularObject", ao)
@@ -1385,14 +1387,14 @@ public class NotebookServer extends WebSocketServlet implements
     }
 
     for (InterpreterSetting intpSetting : settings) {
-      AngularObjectRegistry registry = intpSetting.getInterpreterGroup(note.id())
+      AngularObjectRegistry registry = intpSetting.getInterpreterGroup(note.id(), "anonymous")
           .getAngularObjectRegistry();
       List<AngularObject> objects = registry.getAllWithGlobal(note.id());
       for (AngularObject object : objects) {
         conn.send(serializeMessage(new Message(OP.ANGULAR_OBJECT_UPDATE)
             .put("angularObject", object)
             .put("interpreterGroupId",
-                intpSetting.getInterpreterGroup(note.id()).getId())
+                intpSetting.getInterpreterGroup(note.id(), "anonymous").getId())
             .put("noteId", note.id())
             .put("paragraphId", object.getParagraphId())
         ));
