@@ -1,7 +1,7 @@
 ---
 layout: page
-title: "Angular (frontend API)"
-description: "Angular (frontend API)"
+title: "Front-end Angular API in Apache Zeppelin"
+description: "In addition to the back-end API to handle Angular objects binding, Apache Zeppelin exposes a simple AngularJS z object on the front-end side to expose the same capabilities."
 group: display
 ---
 <!--

@@ -1,9 +1,22 @@
 ---
 layout: page
-title: "HDFS File System Interpreter"
-description: ""
+title: "HDFS File System Interpreter for Apache Zeppelin"
+description: "Hadoop File System is a distributed, fault tolerant file system part of the hadoop project and is often used as storage for distributed processing engines like Hadoop MapReduce and Apache Spark or underlying file systems like Alluxio."
 group: interpreter
 ---
+<!--
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
 {% include JB/setup %}
 
 # HDFS File System Interpreter for Apache Zeppelin

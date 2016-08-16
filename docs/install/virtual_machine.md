@@ -1,7 +1,7 @@
 ---
 layout: page
-title: "Install A Zeppelin ready Virtual Machine"
-description: ""
+title: "Apache Zeppelin on Vagrant Virtual Machine"
+description: "Apache Zeppelin provides a script for running a virtual machine for development through Vagrant. The script will create a virtual machine with core dependencies pre-installed, required for developing Apache Zeppelin."
 group: install
 ---
 <!--
@@ -19,17 +19,17 @@ limitations under the License.
 -->
 {% include JB/setup %}
 
-# Vagrant Virtual Machine for Apache Zeppelin
+# Apache Zeppelin on Vagrant Virtual Machine
 
 <div id="toc"></div>
 
 ## Overview
 
-Apache Zeppelin distribution includes a scripts directory
+Apache Zeppelin distribution includes a script directory
 
  `scripts/vagrant/zeppelin-dev`
 
-This script creates a virtual machine that launches a repeatable, known set of core dependencies required for developing Zeppelin.  It can also be used to run an existing Zeppelin build if you don't plan to build from source.
+This script creates a virtual machine that launches a repeatable, known set of core dependencies required for developing Zeppelin. It can also be used to run an existing Zeppelin build if you don't plan to build from source.
 For PySpark users, this script includes several helpful [Python Libraries](#python-extras).
 For SparkR users, this script includes several helpful [R Libraries](#r-extras).
 
@@ -88,7 +88,7 @@ By default, Vagrant will share your project directory (the directory with the Va
 Running the following commands in the guest machine should display these expected versions:
 
 `node --version` should report *v0.12.7*
-`mvn --version` should report *Apache Maven 3.3.3* and *Java version: 1.7.0_85*
+`mvn --version` should report *Apache Maven 3.3.9* and *Java version: 1.7.0_85*
 
 The virtual machine consists of:
 
@@ -96,7 +96,7 @@ The virtual machine consists of:
  - Node.js 0.12.7
  - npm 2.11.3
  - ruby 1.9.3 + rake, make and bundler (only required if building jekyll documentation)
- - Maven 3.3.3
+ - Maven 3.3.9
  - Git
  - Unzip
  - libfontconfig to avoid phatomJs missing dependency issues

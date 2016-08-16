@@ -1,7 +1,7 @@
 ---
 layout: page
-title: "Writing Zeppelin Interpreter"
-description: ""
+title: "Writing a New Interpreter"
+description: "Apache Zeppelin Interpreter is a language backend. Every Interpreters belongs to an InterpreterGroup. Interpreters in the same InterpreterGroup can reference each other."
 group: development
 ---
 <!--

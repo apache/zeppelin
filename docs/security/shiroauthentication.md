@@ -1,7 +1,7 @@
 ---
 layout: page
-title: "Shiro Security for Apache Zeppelin"
-description: ""
+title: "Apache Shiro Authentication for Apache Zeppelin"
+description: "Apache Shiro is a powerful and easy-to-use Java security framework that performs authentication, authorization, cryptography, and session management. This document explains step by step how Shiro can be used for Zeppelin notebook authentication."
 group: security
 ---
 <!--
@@ -19,7 +19,7 @@ limitations under the License.
 -->
 {% include JB/setup %}
 
-# Shiro authentication for Apache Zeppelin
+# Apache Shiro authentication for Apache Zeppelin
 
 <div id="toc"></div>
 

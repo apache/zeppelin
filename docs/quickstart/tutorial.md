@@ -1,7 +1,7 @@
 ---
 layout: page
-title: "Tutorial"
-description: "Tutorial is valid for Spark 1.3 and higher"
+title: "Apache Zeppelin Tutorial"
+description: "This tutorial page contains a short walk-through tutorial that uses Apache Spark backend. Please note that this tutorial is valid for Spark 1.3 and higher."
 group: quickstart
 ---
 <!--
@@ -17,6 +17,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
+{% include JB/setup %}
+
 # Zeppelin Tutorial
 
 <div id="toc"></div>

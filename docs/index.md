@@ -1,8 +1,8 @@
 ---
 layout: page
-title: Overview
-tagline: Less Development, More analysis!
-group: nav-right
+title:
+description:
+group:
 ---
 <!--
 Licensed under the Apache License, Version 2.0 (the "License");
