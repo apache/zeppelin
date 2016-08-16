@@ -72,8 +72,8 @@ public class RemoteInterpreterEventPoller extends Thread {
   @Override
   public void run() {
     Client client = null;
-    AppendOutputRunner.setListener(listener);
-    CheckAppendOutputRunner.startScheduler();
+    AppendOutputRunner runner = new AppendOutputRunner(listener);
+    CheckAppendOutputRunner.startScheduler(listener, runner);
 
     while (!shutdown) {
       // wait and retry
@@ -159,7 +159,7 @@ public class RemoteInterpreterEventPoller extends Thread {
           String appId = outputAppend.get("appId");
 
           if (appId == null) {
-            AppendOutputRunner.appendBuffer(noteId, paragraphId, outputToAppend);
+            runner.appendBuffer(noteId, paragraphId, outputToAppend);
           } else {
             appListener.onOutputAppend(noteId, paragraphId, appId, outputToAppend);
           }

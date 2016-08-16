@@ -25,39 +25,24 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** This class is responsible for initializing
- * and ensuring that AppendOutputRunner is up
- * and running.
+/** This class periodically calls AppendOutputRunner
+ *  to send append-output events.
  */
 public class CheckAppendOutputRunner {
 
   private static final Logger logger =
       LoggerFactory.getLogger(CheckAppendOutputRunner.class);
-  private static final Boolean SYNCHRONIZER = false;
-  private static ScheduledExecutorService SCHEDULED_SERVICE = null;
+  private static ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
   private static ScheduledFuture<?> futureObject = null;
-  private static AppendOutputRunner runner = null;
 
-  public static void startScheduler() {
-    synchronized (SYNCHRONIZER) {
-      if (SCHEDULED_SERVICE == null) {
-        runner = new AppendOutputRunner();
-        logger.info("Starting a AppendOutputRunner thread to buffer"
-            + " and send paragraph append data.");
-        SCHEDULED_SERVICE = Executors.newSingleThreadScheduledExecutor();
-        futureObject = SCHEDULED_SERVICE.scheduleWithFixedDelay(
-            runner, 0, AppendOutputRunner.BUFFER_TIME_MS, TimeUnit.MILLISECONDS);
-      }
+  public synchronized static void startScheduler(
+      RemoteInterpreterProcessListener listener, AppendOutputRunner runner) {
+    if (futureObject != null) {
+      futureObject.cancel(true);
     }
-  }
-
-  /* This function is only used by unit-tests. */
-  public static void stopSchedulerForUnitTests() {
-    synchronized (SYNCHRONIZER) {
-      if (futureObject != null) {
-        futureObject.cancel(true);
-      }
-      SCHEDULED_SERVICE = null;
+    logger.info("Starting a AppendOutputRunner thread to buffer"
+        + " and send paragraph append data.");
+    futureObject = service.scheduleWithFixedDelay(
+        runner, 0, AppendOutputRunner.BUFFER_TIME_MS, TimeUnit.MILLISECONDS);
     }
-  }
 }

@@ -37,14 +37,17 @@ public class AppendOutputRunner implements Runnable {
 
   private static final Logger logger =
       LoggerFactory.getLogger(AppendOutputRunner.class);
-  private static RemoteInterpreterProcessListener listener;
-
   public static final Long BUFFER_TIME_MS = new Long(100);
   private static final Long SAFE_PROCESSING_TIME = new Long(10);
   private static final Long SAFE_PROCESSING_STRING_SIZE = new Long(100000);
 
-  private static final BlockingQueue<AppendOutputBuffer> QUEUE =
+  private final BlockingQueue<AppendOutputBuffer> queue =
       new LinkedBlockingQueue<AppendOutputBuffer>();
+  private final RemoteInterpreterProcessListener listener;
+
+  public AppendOutputRunner(RemoteInterpreterProcessListener listener) {
+    this.listener = listener;
+  }
 
   @Override
   public void run() {
@@ -62,12 +65,12 @@ public class AppendOutputRunner implements Runnable {
      * cpu-cycles.
      */
     try {
-      list.add(QUEUE.take());
+      list.add(queue.take());
     } catch (InterruptedException e) {
       logger.error("Wait for OutputBuffer queue interrupted: " + e.getMessage());
     }
     Long processingStartTime = System.currentTimeMillis();
-    QUEUE.drainTo(list);
+    queue.drainTo(list);
 
     for (AppendOutputBuffer buffer: list) {
       String noteId = buffer.getNoteId();
@@ -110,17 +113,8 @@ public class AppendOutputRunner implements Runnable {
     }
   }
 
-  public static void appendBuffer(String noteId, String paragraphId, String outputToAppend) {
-    QUEUE.offer(new AppendOutputBuffer(noteId, paragraphId, outputToAppend));
+  public void appendBuffer(String noteId, String paragraphId, String outputToAppend) {
+    queue.offer(new AppendOutputBuffer(noteId, paragraphId, outputToAppend));
   }
 
-  public static void setListener(RemoteInterpreterProcessListener listener) {
-    AppendOutputRunner.listener = listener;
-  }
-
-  /* This function is only used by unit-tests*/
-  public static void emptyQueueForUnitTests() {
-    List<AppendOutputBuffer> list = new LinkedList<AppendOutputBuffer>();
-    QUEUE.drainTo(list);
-  }
 }

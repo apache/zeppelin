@@ -33,7 +33,6 @@ import org.apache.log4j.AppenderSkeleton;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.spi.LoggingEvent;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -48,21 +47,14 @@ public class AppendOutputRunnerTest {
    */
   private volatile static int numInvocations = 0;
 
-  @BeforeClass
-  public static void beforeClass() {
-    CheckAppendOutputRunner.stopSchedulerForUnitTests();
-    AppendOutputRunner.emptyQueueForUnitTests();
-  }
-
   @Test
   public void testSingleEvent() throws InterruptedException {
     RemoteInterpreterProcessListener listener = mock(RemoteInterpreterProcessListener.class);
-    AppendOutputRunner.appendBuffer("note", "para", "data\n");
+    String[][] buffer = {{"note", "para", "data\n"}};
 
-    loopForCompletingEvents(listener, 1);
+    loopForCompletingEvents(listener, 1, buffer);
     verify(listener, times(1)).onOutputAppend(any(String.class), any(String.class), any(String.class));
     verify(listener, times(1)).onOutputAppend("note", "para", "data\n");
-    CheckAppendOutputRunner.stopSchedulerForUnitTests();
   }
 
   @Test
@@ -70,14 +62,15 @@ public class AppendOutputRunnerTest {
     RemoteInterpreterProcessListener listener = mock(RemoteInterpreterProcessListener.class);
     String note1 = "note1";
     String para1 = "para1";
-    AppendOutputRunner.appendBuffer(note1, para1, "data1\n");
-    AppendOutputRunner.appendBuffer(note1, para1, "data2\n");
-    AppendOutputRunner.appendBuffer(note1, para1, "data3\n");
+    String[][] buffer = {
+        {note1, para1, "data1\n"},
+        {note1, para1, "data2\n"},
+        {note1, para1, "data3\n"}
+    };
 
-    loopForCompletingEvents(listener, 1);
+    loopForCompletingEvents(listener, 1, buffer);
     verify(listener, times(1)).onOutputAppend(any(String.class), any(String.class), any(String.class));
     verify(listener, times(1)).onOutputAppend(note1, para1, "data1\ndata2\ndata3\n");
-    CheckAppendOutputRunner.stopSchedulerForUnitTests();
   }
 
   @Test
@@ -87,26 +80,27 @@ public class AppendOutputRunnerTest {
     String note2 = "note2";
     String para1 = "para1";
     String para2 = "para2";
-    AppendOutputRunner.appendBuffer(note1, para1, "data1\n");
-    AppendOutputRunner.appendBuffer(note1, para2, "data2\n");
-    AppendOutputRunner.appendBuffer(note2, para1, "data3\n");
-    AppendOutputRunner.appendBuffer(note2, para2, "data4\n");
-    loopForCompletingEvents(listener, 4);
+    String[][] buffer = {
+        {note1, para1, "data1\n"},
+        {note1, para2, "data2\n"},
+        {note2, para1, "data3\n"},
+        {note2, para2, "data4\n"}
+    };
+    loopForCompletingEvents(listener, 4, buffer);
 
     verify(listener, times(4)).onOutputAppend(any(String.class), any(String.class), any(String.class));
     verify(listener, times(1)).onOutputAppend(note1, para1, "data1\n");
     verify(listener, times(1)).onOutputAppend(note1, para2, "data2\n");
     verify(listener, times(1)).onOutputAppend(note2, para1, "data3\n");
     verify(listener, times(1)).onOutputAppend(note2, para2, "data4\n");
-    CheckAppendOutputRunner.stopSchedulerForUnitTests();
   }
 
   @Test
   public void testClubbedData() throws InterruptedException {
     RemoteInterpreterProcessListener listener = mock(RemoteInterpreterProcessListener.class);
-    AppendOutputRunner.setListener(listener);
-    CheckAppendOutputRunner.startScheduler();
-    Thread thread = new Thread(new BombardEvents());
+    AppendOutputRunner runner = new AppendOutputRunner(listener);
+    CheckAppendOutputRunner.startScheduler(listener, runner);
+    Thread thread = new Thread(new BombardEvents(runner));
     thread.start();
     thread.join();
     Thread.sleep(1000);
@@ -117,15 +111,17 @@ public class AppendOutputRunnerTest {
      * the unit-test to a pessimistic 100 web-socket calls.
      */
     verify(listener, atMost(NUM_CLUBBED_EVENTS)).onOutputAppend(any(String.class), any(String.class), any(String.class));
-    CheckAppendOutputRunner.stopSchedulerForUnitTests();
   }
 
   @Test
   public void testWarnLoggerForLargeData() throws InterruptedException {
+    RemoteInterpreterProcessListener listener = mock(RemoteInterpreterProcessListener.class);
+    AppendOutputRunner runner = new AppendOutputRunner(listener);
     String data = "data\n";
     int numEvents = 100000;
+
     for (int i=0; i<numEvents; i++) {
-      AppendOutputRunner.appendBuffer("noteId", "paraId", data);
+      runner.appendBuffer("noteId", "paraId", data);
     }
 
     TestAppender appender = new TestAppender();
@@ -133,8 +129,7 @@ public class AppendOutputRunnerTest {
     logger.addAppender(appender);
     Logger.getLogger(RemoteInterpreterEventPoller.class);
 
-    RemoteInterpreterProcessListener listener = mock(RemoteInterpreterProcessListener.class);
-    loopForCompletingEvents(listener, 1);
+    runner.run();
     List<LoggingEvent> log;
 
     int warnLogCounter;
@@ -153,17 +148,22 @@ public class AppendOutputRunnerTest {
     String loggerString = "Processing size for buffered append-output is high: " +
         (data.length() * numEvents) + " characters.";
     assertTrue(loggerString.equals(sizeWarnLogEntry.getMessage()));
-    CheckAppendOutputRunner.stopSchedulerForUnitTests();
   }
 
   private class BombardEvents implements Runnable {
+
+    private final AppendOutputRunner runner;
+
+    private BombardEvents(AppendOutputRunner runner) {
+      this.runner = runner;
+    }
 
     @Override
     public void run() {
       String noteId = "noteId";
       String paraId = "paraId";
       for (int i=0; i<NUM_EVENTS; i++) {
-        AppendOutputRunner.appendBuffer(noteId, paraId, "data\n");
+        runner.appendBuffer(noteId, paraId, "data\n");
       }
     }
   }
@@ -200,11 +200,15 @@ public class AppendOutputRunnerTest {
     }).when(listener).onOutputAppend(any(String.class), any(String.class), any(String.class));
   }
 
-  private void loopForCompletingEvents(RemoteInterpreterProcessListener listener, int numTimes) {
+  private void loopForCompletingEvents(RemoteInterpreterProcessListener listener,
+      int numTimes, String[][] buffer) {
     numInvocations = 0;
     prepareInvocationCounts(listener);
-    AppendOutputRunner.setListener(listener);
-    CheckAppendOutputRunner.startScheduler();
+    AppendOutputRunner runner = new AppendOutputRunner(listener);
+    for (String[] bufferElement: buffer) {
+      runner.appendBuffer(bufferElement[0], bufferElement[1], bufferElement[2]);
+    }
+    CheckAppendOutputRunner.startScheduler(listener, runner);
     long startTimeMs = System.currentTimeMillis();
     while(numInvocations != numTimes) {
       if (System.currentTimeMillis() - startTimeMs > 2000) {
