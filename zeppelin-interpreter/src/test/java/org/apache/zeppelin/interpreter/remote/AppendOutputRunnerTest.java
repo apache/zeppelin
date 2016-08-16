@@ -28,11 +28,16 @@ import static org.mockito.Mockito.verify;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.AppenderSkeleton;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.spi.LoggingEvent;
+import org.junit.After;
 import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -41,11 +46,20 @@ public class AppendOutputRunnerTest {
 
   private static final int NUM_EVENTS = 10000;
   private static final int NUM_CLUBBED_EVENTS = 100;
+  private static final ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
+  private static ScheduledFuture<?> future = null;
   /* It is being accessed by multiple threads.
    * While loop for 'loopForBufferCompletion' could
    * run for-ever.
    */
   private volatile static int numInvocations = 0;
+
+  @After
+  public void afterEach() {
+    if (future != null) {
+      future.cancel(true);
+    }
+  }
 
   @Test
   public void testSingleEvent() throws InterruptedException {
@@ -99,7 +113,8 @@ public class AppendOutputRunnerTest {
   public void testClubbedData() throws InterruptedException {
     RemoteInterpreterProcessListener listener = mock(RemoteInterpreterProcessListener.class);
     AppendOutputRunner runner = new AppendOutputRunner(listener);
-    CheckAppendOutputRunner.startScheduler(listener, runner);
+    future = service.scheduleWithFixedDelay(runner, 0,
+        AppendOutputRunner.BUFFER_TIME_MS, TimeUnit.MILLISECONDS);
     Thread thread = new Thread(new BombardEvents(runner));
     thread.start();
     thread.join();
@@ -208,7 +223,8 @@ public class AppendOutputRunnerTest {
     for (String[] bufferElement: buffer) {
       runner.appendBuffer(bufferElement[0], bufferElement[1], bufferElement[2]);
     }
-    CheckAppendOutputRunner.startScheduler(listener, runner);
+    future = service.scheduleWithFixedDelay(runner, 0,
+        AppendOutputRunner.BUFFER_TIME_MS, TimeUnit.MILLISECONDS);
     long startTimeMs = System.currentTimeMillis();
     while(numInvocations != numTimes) {
       if (System.currentTimeMillis() - startTimeMs > 2000) {
