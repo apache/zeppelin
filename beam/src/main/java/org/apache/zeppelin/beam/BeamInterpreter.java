@@ -1,26 +1,41 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.apache.zeppelin.beam;
 
 import java.io.File;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.util.Date;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.UUID;
 
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
-import org.apache.zeppelin.interpreter.InterpreterPropertyBuilder;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
-
-import com.google.gson.Gson;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
+* Beam interpreter
 *
 */
 public class BeamInterpreter extends Interpreter {
+
+  Logger LOGGER = LoggerFactory.getLogger(BeamInterpreter.class);
 
   public BeamInterpreter(Properties property) {
     super(property);
@@ -34,6 +49,7 @@ public class BeamInterpreter extends Interpreter {
   @Override
   public void close() {
     File dir = new File(".");
+    // delete all .class files created while compilation process
     for (int i = 0; i < dir.list().length; i++) {
       File f = dir.listFiles()[i];
       if (f.getAbsolutePath().contains(".class"))
@@ -44,13 +60,14 @@ public class BeamInterpreter extends Interpreter {
   @Override
   public InterpreterResult interpret(String code, InterpreterContext context) {
 
-    String className = "C" + UUID.randomUUID().toString().replace("-", "");
+    // choosing new name to class containing Main method
+    String generatedClassName = "C" + UUID.randomUUID().toString().replace("-", "");
 
     try {
-      String msg = StaticRepl.execute(className, code);
-      return new InterpreterResult(InterpreterResult.Code.SUCCESS, msg);
+      String res = StaticRepl.execute(generatedClassName, code);
+      return new InterpreterResult(InterpreterResult.Code.SUCCESS, res);
     } catch (Exception e) {
-      // e.printStackTrace();
+      LOGGER.error("Exception in Interpreter while interpret", e);
       return new InterpreterResult(InterpreterResult.Code.ERROR, e.getMessage());
 
     }

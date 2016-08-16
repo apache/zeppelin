@@ -1,3 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ~ Licensed to the Apache Software Foundation (ASF) under one or more 
+	~ contributor license agreements. See the NOTICE file distributed with ~ 
+	this work for additional information regarding copyright ownership. ~ The 
+	ASF licenses this file to You under the Apache License, Version 2.0 ~ (the 
+	"License"); you may not use this file except in compliance with ~ the License. 
+	You may obtain a copy of the License at ~ ~ http://www.apache.org/licenses/LICENSE-2.0 
+	~ ~ Unless required by applicable law or agreed to in writing, software ~ 
+	distributed under the License is distributed on an "AS IS" BASIS, ~ WITHOUT 
+	WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. ~ See the 
+	License for the specific language governing permissions and ~ limitations 
+	under the License. -->
+
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
@@ -14,17 +27,22 @@
 
 	<groupId>org.apache.zeppelin</groupId>
 	<artifactId>zeppelin-beam</artifactId>
+	<packaging>jar</packaging>
 	<version>0.7.0-SNAPSHOT</version>
+	<name>Zeppelin: Beam interpreter</name>
 
-
+	<properties>
+		<beam.hadoop.version>2.3.0</beam.hadoop.version>
+		<beam.spark.version>1.4.1</beam.spark.version>
+		<beam.beam.version>0.1.0-incubating</beam.beam.version>
+	</properties>
 
 	<dependencies>
-
 
 		<dependency>
 			<groupId>org.apache.spark</groupId>
 			<artifactId>spark-core_2.10</artifactId>
-			<version>1.4.1</version>
+			<version>${beam.spark.version}</version>
 			<exclusions>
 				<exclusion>
 					<artifactId>slf4j-log4j12</artifactId>
@@ -48,16 +66,17 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
+
 		<dependency>
 			<groupId>org.apache.spark</groupId>
 			<artifactId>spark-streaming_2.10</artifactId>
-			<version>1.4.1</version>
+			<version>${beam.spark.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.apache.hadoop</groupId>
 			<artifactId>hadoop-mapreduce-client-core</artifactId>
-			<version>2.3.0</version>
+			<version>${beam.hadoop.version}</version>
 			<exclusions>
 				<exclusion>
 					<artifactId>slf4j-log4j12</artifactId>
@@ -69,7 +88,7 @@
 		<dependency>
 			<groupId>org.apache.hadoop</groupId>
 			<artifactId>hadoop-common</artifactId>
-			<version>2.3.0</version>
+			<version>${beam.hadoop.version}</version>
 			<exclusions>
 				<exclusion>
 					<artifactId>slf4j-log4j12</artifactId>
@@ -81,12 +100,13 @@
 		<dependency>
 			<groupId>org.apache.hadoop</groupId>
 			<artifactId>hadoop-hdfs</artifactId>
-			<version>2.3.0</version>
+			<version>${beam.hadoop.version}</version>
 		</dependency>
+
 		<dependency>
 			<groupId>org.apache.hadoop</groupId>
 			<artifactId>hadoop-client</artifactId>
-			<version>2.3.0</version>
+			<version>${beam.hadoop.version}</version>
 			<exclusions>
 				<exclusion>
 					<artifactId>slf4j-log4j12</artifactId>
@@ -94,20 +114,23 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
+
 		<dependency>
 			<groupId>org.apache.hadoop</groupId>
 			<artifactId>hadoop-annotations</artifactId>
-			<version>2.3.0</version>
+			<version>${beam.hadoop.version}</version>
 		</dependency>
+
 		<dependency>
 			<groupId>org.apache.hadoop</groupId>
 			<artifactId>hadoop-yarn-common</artifactId>
-			<version>2.3.0</version>
+			<version>${beam.hadoop.version}</version>
 		</dependency>
+
 		<dependency>
 			<groupId>org.apache.hadoop</groupId>
 			<artifactId>hadoop-mapreduce-client-common</artifactId>
-			<version>2.3.0</version>
+			<version>${beam.hadoop.version}</version>
 			<exclusions>
 				<exclusion>
 					<artifactId>slf4j-log4j12</artifactId>
@@ -115,12 +138,12 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
+
 		<dependency>
 			<groupId>org.apache.hadoop</groupId>
 			<artifactId>hadoop-core</artifactId>
 			<version>1.2.1</version>
 		</dependency>
-
 
 		<dependency>
 			<groupId>com.thoughtworks.qdox</groupId>
@@ -128,31 +151,17 @@
 			<version>2.0-M3</version>
 		</dependency>
 
-
-
-		<dependency>
-			<groupId>com.google.code.gson</groupId>
-			<artifactId>gson</artifactId>
-			<version>2.6.2</version>
-		</dependency>
-		<dependency>
-			<groupId>jline</groupId>
-			<artifactId>jline</artifactId>
-			<version>2.12</version>
-		</dependency>
-
-
 		<dependency>
 			<groupId>org.apache.beam</groupId>
 			<artifactId>beam-runners-parent</artifactId>
-			<version>0.1.0-incubating</version>
+			<version>${beam.beam.version}</version>
 			<type>pom</type>
 		</dependency>
 
 		<dependency>
 			<groupId>org.apache.beam</groupId>
 			<artifactId>beam-runners-core-java</artifactId>
-			<version>0.1.0-incubating</version>
+			<version>${beam.beam.version}</version>
 			<exclusions>
 				<exclusion>
 					<artifactId>google-http-client-jackson2</artifactId>
@@ -160,16 +169,17 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
+
 		<dependency>
 			<groupId>org.apache.beam</groupId>
 			<artifactId>beam-runners-direct-java</artifactId>
-			<version>0.1.0-incubating</version>
-
+			<version>${beam.beam.version}</version>
 		</dependency>
+
 		<dependency>
 			<groupId>org.apache.beam</groupId>
 			<artifactId>beam-runners-flink_2.10</artifactId>
-			<version>0.1.0-incubating</version>
+			<version>${beam.beam.version}</version>
 
 			<exclusions>
 				<exclusion>
@@ -183,10 +193,11 @@
 
 			</exclusions>
 		</dependency>
+
 		<dependency>
 			<groupId>org.apache.beam</groupId>
 			<artifactId>beam-runners-flink_2.10-examples</artifactId>
-			<version>0.1.0-incubating</version>
+			<version>${beam.beam.version}</version>
 
 			<exclusions>
 				<exclusion>
@@ -199,7 +210,7 @@
 		<dependency>
 			<groupId>org.apache.beam</groupId>
 			<artifactId>beam-runners-google-cloud-dataflow-java</artifactId>
-			<version>0.1.0-incubating</version>
+			<version>${beam.beam.version}</version>
 
 			<exclusions>
 				<exclusion>
@@ -208,16 +219,13 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
-		<dependency>
 
+		<dependency>
 			<groupId>org.apache.beam</groupId>
 			<artifactId>beam-runners-spark</artifactId>
-			<version>0.1.0-incubating</version>
+			<version>${beam.beam.version}</version>
 			<type>jar</type>
 		</dependency>
-
-
-
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
@@ -225,6 +233,7 @@
 			<version>${project.version}</version>
 			<scope>provided</scope>
 		</dependency>
+
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-exec</artifactId>
@@ -241,8 +250,6 @@
 
 	<build>
 		<plugins>
-
-
 
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>

@@ -1,3 +1,20 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.apache.zeppelin.beam;
 
 import javax.tools.Diagnostic;
@@ -7,6 +24,9 @@ import javax.tools.JavaCompiler.CompilationTask;
 import javax.tools.JavaFileObject;
 import javax.tools.SimpleJavaFileObject;
 import javax.tools.ToolProvider;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.thoughtworks.qdox.JavaProjectBuilder;
 import com.thoughtworks.qdox.model.JavaClass;
@@ -26,55 +46,60 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * @author Mahmoud
+ * StaticRepl for compling the java code in memory
  * 
  */
 public class StaticRepl {
-  public static String execute(String className, String code) throws Exception {
+  static Logger LOGGER = LoggerFactory.getLogger(StaticRepl.class);
+
+  public static String execute(String generatedClassName, String code) throws Exception {
 
     JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
     DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<JavaFileObject>();
 
+    // Java parasing
     JavaProjectBuilder builder = new JavaProjectBuilder();
     JavaSource src = builder.addSource(new StringReader(code));
 
+    // get all classes in code (paragraph)
     List<JavaClass> classes = src.getClasses();
-    String classMainName = null;
+    String mainClassName = null;
+
+    // Searching for class containing Main method
     for (int i = 0; i < classes.size(); i++) {
       boolean hasMain = false;
+
       for (int j = 0; j < classes.get(i).getMethods().size(); j++) {
+
         if (classes.get(i).getMethods().get(j).getName().equals("main")) {
-          classMainName = classes.get(i).getName();
+          mainClassName = classes.get(i).getName();
           hasMain = true;
           break;
         }
+
       }
       if (hasMain == true)
         break;
 
     }
 
-    if (classMainName == null)
+    // if there isn't Main method, will retuen error
+    if (mainClassName == null)
       throw new Exception("There isn't any class containing Main method.");
 
-    code = code.replace(classMainName, className);
+    // replace name of class containing Main method with generated name
+    code = code.replace(mainClassName, generatedClassName);
 
-    StringWriter writer = new StringWriter();
-    PrintWriter out = new PrintWriter(writer);
-
-    out.println(code);
-    out.close();
-
-    JavaFileObject file = new JavaSourceFromString(className, writer.toString());
-
+    JavaFileObject file = new JavaSourceFromString(generatedClassName, code.toString());
     Iterable<? extends JavaFileObject> compilationUnits = Arrays.asList(file);
 
     ByteArrayOutputStream baosOut = new ByteArrayOutputStream();
     ByteArrayOutputStream baosErr = new ByteArrayOutputStream();
 
+    // Creating new stream to get the output data
     PrintStream newOut = new PrintStream(baosOut);
     PrintStream newErr = new PrintStream(baosErr);
-    // IMPORTANT: Save the old System.out!
+    // Save the old System.out!
     PrintStream oldOut = System.out;
     PrintStream oldErr = System.err;
     // Tell Java to use your special stream
@@ -83,63 +108,74 @@ public class StaticRepl {
 
     CompilationTask task = compiler.getTask(null, null, diagnostics, null, null, compilationUnits);
 
+    // executing the compilation process
     boolean success = task.call();
+
+    // if success is false will get error
     if (!success) {
       for (Diagnostic diagnostic : diagnostics.getDiagnostics()) {
         if (diagnostic.getLineNumber() == -1)
           continue;
-        System.out.println("line " + diagnostic.getLineNumber() + " : "
+        System.err.println("line " + diagnostic.getLineNumber() + " : "
             + diagnostic.getMessage(null));
       }
-    }
-    if (success) {
-      try {
-
-        URLClassLoader classLoader = URLClassLoader.newInstance(new URL[] { new File("").toURI()
-            .toURL() });
-        Class.forName(className, true, classLoader)
-            .getDeclaredMethod("main", new Class[] { String[].class })
-            .invoke(null, new Object[] { null });
-
-
-        System.out.flush();
-        System.err.flush();
-
-        System.setOut(oldOut);
-        System.setErr(oldErr);
-
-        return baosOut.toString();
-      } catch (ClassNotFoundException e) {
-        e.printStackTrace(newErr);
-        System.err.println("Class not found: " + e);
-        throw new Exception(baosErr.toString());
-      } catch (NoSuchMethodException e) {
-        e.printStackTrace(newErr);
-        System.err.println("No such method: " + e);
-        throw new Exception(baosErr.toString());
-      } catch (IllegalAccessException e) {
-        e.printStackTrace(newErr);
-        System.err.println("Illegal access: " + e);
-        throw new Exception(baosErr.toString());
-      } catch (InvocationTargetException e) {
-        e.printStackTrace(newErr);
-        System.err.println("Invocation target: " + e);
-        throw new Exception(baosErr.toString());
-      } finally {
-        System.out.flush();
-        System.err.flush();
-
-        System.setOut(oldOut);
-        System.setErr(oldErr);
-      }
-    } else {
       System.out.flush();
       System.err.flush();
 
       System.setOut(oldOut);
       System.setErr(oldErr);
-      throw new Exception(baosOut.toString());
+      LOGGER.error("Exception in Interpreter while compilation", baosErr.toString());
+      throw new Exception(baosErr.toString());
+    } else {
+      try {
+
+        // creating new class loader
+        URLClassLoader classLoader = URLClassLoader.newInstance(new URL[] { new File("").toURI()
+            .toURL() });
+        // execute the Main method
+        Class.forName(generatedClassName, true, classLoader)
+            .getDeclaredMethod("main", new Class[] { String[].class })
+            .invoke(null, new Object[] { null });
+
+        System.out.flush();
+        System.err.flush();
+
+        // set the stream to old stream
+        System.setOut(oldOut);
+        System.setErr(oldErr);
+
+        return baosOut.toString();
+
+      } catch (ClassNotFoundException e) {
+        LOGGER.error("Exception in Interpreter while Class not found", e);
+        System.err.println("Class not found: " + e);
+        throw new Exception(baosErr.toString());
+        
+      } catch (NoSuchMethodException e) {
+        LOGGER.error("Exception in Interpreter while No such method", e);
+        System.err.println("No such method: " + e);
+        throw new Exception(baosErr.toString());
+        
+      } catch (IllegalAccessException e) {
+        LOGGER.error("Exception in Interpreter while Illegal access", e);
+        System.err.println("Illegal access: " + e);
+        throw new Exception(baosErr.toString());
+        
+      } catch (InvocationTargetException e) {
+        LOGGER.error("Exception in Interpreter while Invocation target", e);
+        System.err.println("Invocation target: " + e);
+        throw new Exception(baosErr.toString());
+        
+      } finally {
+
+        System.out.flush();
+        System.err.flush();
+
+        System.setOut(oldOut);
+        System.setErr(oldErr);
+      }
     }
+
   }
 
 }

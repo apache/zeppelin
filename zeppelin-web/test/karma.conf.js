@@ -55,7 +55,7 @@ module.exports = function(config) {
       'bower_components/angular-xeditable/dist/js/xeditable.js',
       'bower_components/highlightjs/highlight.pack.js',
       'bower_components/lodash/lodash.js',
-      'bower_components/angular-filter/dist/angular-filter.min.js',
+      'bower_components/angular-filter/dist/angular-filter.js',
       'bower_components/ngtoast/dist/ngToast.js',
       'bower_components/ng-focus-if/focusIf.js',
       'bower_components/bootstrap3-dialog/dist/js/bootstrap-dialog.min.js',
