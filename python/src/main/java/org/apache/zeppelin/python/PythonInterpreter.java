@@ -134,10 +134,11 @@ public class PythonInterpreter extends Interpreter {
 
     InterpreterResult result;
     if (pythonErrorIn(output)) {
-      result = new InterpreterResult(Code.ERROR, output.replaceAll(">>>", "").trim());
+      result = new InterpreterResult(Code.ERROR, output);
     } else {
-      result = new InterpreterResult(Code.SUCCESS, output.replaceAll(">>>", "")
-          .replaceAll("\\.\\.\\.", "").trim());
+      // TODO(zjffdu), we should not do string replacement operation in the result, as it is
+      // possible that the output contains the kind of pattern itself, e.g. print("...")
+      result = new InterpreterResult(Code.SUCCESS, output.replaceAll("\\.\\.\\.", ""));
     }
     return result;
   }
@@ -265,4 +266,5 @@ public class PythonInterpreter extends Interpreter {
   public int getMaxResult() {
     return maxResult;
   }
+  
 }

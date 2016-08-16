@@ -74,6 +74,14 @@
   overflow-y: auto;
 }
 
+.permissionsForm {
+  list-style-type: none;
+  background: #EFEFEF;
+  padding: 10px 10px 10px 10px;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.15);
+  border: 1px solid #E5E5E5;
+}
+
 .interpreterSettingAdd {
   margin : 5px 5px 5px 5px;
   padding : 10px 10px 10px 10px;
