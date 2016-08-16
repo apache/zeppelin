@@ -307,8 +307,7 @@ public class Notebook implements NoteEventListener {
 
     // remove from all interpreter instance's angular object registry
     for (InterpreterSetting settings : replFactory.get()) {
-      AngularObjectRegistry registry = settings.getInterpreterGroup(id,
-          note.getLastParagraph().getAuthenticationInfo().getUser())
+      AngularObjectRegistry registry = settings.getInterpreterGroup(id, subject.getUser())
           .getAngularObjectRegistry();
       if (registry instanceof RemoteAngularObjectRegistry) {
         // remove paragraph scope object

@@ -200,9 +200,11 @@ public class Paragraph extends Job implements Serializable, Cloneable {
   }
 
   public Interpreter getRepl(String name) {
-    return factory.getInterpreter(note.getId(), name,
-        getAuthenticationInfo().getUser() == null ? "anonymous" : getAuthenticationInfo().getUser()
-    );
+    String username = "anonymous";
+    if (getAuthenticationInfo() != null && getAuthenticationInfo().getUser() != null) {
+      username = getAuthenticationInfo().getUser();
+    }
+    return factory.getInterpreter(note.getId(), name, username);
   }
 
   public Interpreter getCurrentRepl() {
