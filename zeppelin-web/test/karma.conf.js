@@ -65,6 +65,8 @@ module.exports = function(config) {
       'bower_components/handsontable/dist/handsontable.js',
       'bower_components/moment-duration-format/lib/moment-duration-format.js',
       'bower_components/select2/dist/js/select2.js',
+      'bower_components/leaflet/dist/leaflet-src.js',
+      'bower_components/angular-leaflet-directive/dist/angular-leaflet-directive.js',
       'bower_components/angular-mocks/angular-mocks.js',
       // endbower
       'src/app/app.js',

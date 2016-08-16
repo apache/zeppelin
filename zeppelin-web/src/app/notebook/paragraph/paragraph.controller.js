@@ -16,7 +16,8 @@
 angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $rootScope, $route, $window,
                                                                       $routeParams, $location, $timeout, $compile,
                                                                       $http, websocketMsgSrv, baseUrlSrv, ngToast,
-                                                                      saveAsService) {
+                                                                      saveAsService, leafletBoundsHelpers) {
+
   var ANGULAR_FUNCTION_OBJECT_NAME_PREFIX = '_Z_ANGULAR_FUNC_';
   $scope.parentNote = null;
   $scope.paragraph = null;
@@ -896,6 +897,10 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
     }
   };
 
+  $scope.defaults = {
+    scrollWheelZoom: false
+  };
+
   $scope.setGraphMode = function(type, emit, refresh) {
     if (emit) {
       setNewMode(type);
@@ -907,6 +912,8 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
 
       if (!type || type === 'table') {
         setTable($scope.paragraph.result, refresh);
+      } else if (type === 'mapChart') {
+        setMapChart(type, $scope.paragraph.result, refresh);
       } else {
         setD3Chart(type, $scope.paragraph.result, refresh);
       }
@@ -987,6 +994,47 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
     };
     $timeout(retryRenderer);
 
+  };
+
+  var setMapChart = function(type, data, refresh) {
+    var latArr = [];
+    var lngArr = [];
+    var newmarkers = {};
+
+    if (!$scope.chart[type]) {
+      var mapChartModel = function(d) {
+        var key = d[1].replace('-', '_');
+        var obj = {};
+        latArr.push(Math.round(parseFloat(d[2])));
+        lngArr.push(Math.round(parseFloat(d[3])));
+        obj[key] = {
+          lat: parseFloat(d[2]),
+          lng: parseFloat(d[3]),
+          message: d[1],
+          focus: true,
+          draggable: false
+        };
+        return obj;
+      };
+
+      for (var i = 0; i < data.rows.length; i++) {
+        var row = data.rows[i];
+        var rowMarker = mapChartModel(row);
+        newmarkers = angular.extend(newmarkers, rowMarker);
+      }
+    }
+
+    $scope.markers = newmarkers;
+    var bounds = leafletBoundsHelpers.createBoundsFromArray([
+      [Math.max.apply(Math, latArr), Math.max.apply(Math, lngArr)],
+      [Math.min.apply(Math, latArr), Math.min.apply(Math, lngArr)]
+    ]);
+    $scope.bounds = bounds;
+
+    // set map chart height
+    var height = $scope.paragraph.config.graph.height;
+    angular.extend('#p' + $scope.paragraph.id + '_mapChart').height(height);
+    $scope.center = {};
   };
 
   var groupedThousandsWith3DigitsFormatter = function(x) {

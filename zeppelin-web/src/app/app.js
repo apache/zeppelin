@@ -33,8 +33,10 @@
           'xeditable',
           'ngToast',
           'focus-if',
-          'ngResource'
+          'ngResource',
+          'leaflet-directive'
       ])
+
         .filter('breakFilter', function() {
           return function(text) {
             if (!!text) {
