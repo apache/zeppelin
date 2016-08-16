@@ -138,21 +138,24 @@ For developers, to get latest *0.7.0-SNAPSHOT* check [README](https://github.com
 
 ## Available interpreters
 
-Thanks to many Zeppelin contributors, we can provide much more interpreters in every releases.
+Thanks to many Zeppelin contributors, we can provide much more interpreters in every release.
 Please check the below table before you download Zeppelin package.
 
-> **Note :** Only Spark interpreter is included in Zeppelin 0.6.0 net-install package. You need to install the other interpreters with net-install script.
+> **Note :** Only Spark interpreter is included in the netinst binary package by default. If you want to use the other interpreters, you need to install them using net-install script.
 
-<table class="table-configuration" style="text-align:center">
+<table class="table-configuration" style="text-align:center" id="comparing-version">
   <tr>
-    <th style="width:12%">Zeppelin</th>
-    <th style="width:22%">0.6.0 (latest)</th>
+    <th style="width:10%">Zeppelin</th>
+    <th style="width:22%">0.6.1 (latest)</th>
+    <th style="width:22%">0.6.0</th>
     <th style="width:22%">0.5.6</th>
     <th style="width:22%">0.5.5</th>
-    <th style="width:22%">0.5.0</th>
   </tr>
   <tr>
-    <td rowspan="2">Spark</td>
+    <td rowspan="2"><a href="http://spark.apache.org/" target="_blank">Spark</a></td>
+    <td>
+        1.1.x, 1.2.x, 1.3.x 1.4.x, 1.5.x, 1.6.x, <strong>2.0.0</strong>
+    </td>
     <td>
         1.1.x, 1.2.x, 1.3.x 1.4.x, 1.5.x, 1.6.x
     </td>
@@ -162,176 +165,194 @@ Please check the below table before you download Zeppelin package.
     <td rowspan="2">
         1.1.x, 1.2.x, 1.3.x 1.4.x, 1.5.x
     </td>
-    <td>
-        Source package <br/>
-        1.1.x, 1.2.x, 1.3.x 1.4.x
-    </td>
   </tr>
   <tr> 
+    <td>Support Scala 2.11</td>
     <td>SparkR is also available</td>
-    <td>
-      Binary package <br/>
-      1.3.1, 1.4.0
-    </td>
-  </tr>
-  <tr>
-    <td>Angular</td>
-    <td>O</td>
-    <td>O</td>
-    <td>O</td>
-    <td>O</td>
-  </tr>
-  <tr>
-    <td>Markdown</td>
-    <td>O</td>
-    <td>O</td>
-    <td>O</td>
-    <td>O</td>
-  </tr>
-  <tr>
-    <td>Shell</td>
-    <td>O</td>
-    <td>O</td>
-    <td>O</td>
-    <td>O</td>
-  </tr>
-  <tr>
-    <td>Flink</td>
-    <td>O</td>
-    <td>O</td>
-    <td>O</td>
-    <td>O</td>
-  </tr>
-  <tr>
-    <td>Hive</td>
-    <td>Merged into JDBC interpreter</td>
-    <td>O</td>
-    <td>O</td>
-    <td>O</td>
-  </tr>
-  <tr>
-    <td>Tajo</td>
-    <td>Merged into JDBC interpreter</td>
-    <td>O</td>
-    <td>O</td>
-    <td>O</td>
-  </tr>
-  <tr>
-    <td>Cassandra</td>
-    <td>O</td>
-    <td>O</td>
-    <td>O</td>
-    <td>N/A</td>
-  </tr>
-  <tr>
-    <td>
-        Geode <br/>
-        <span style="font-size:75%">Local mode only, not included in binary package</span>
-    </td>
-    <td>O</td>
-    <td>O</td>
-    <td>O</td>
-    <td>N/A</td>
-  </tr>
-  <tr>
-    <td>Ignite</td>
-    <td>O</td>
-    <td>O</td>
-    <td>O</td>
-    <td>N/A</td>
-  </tr>
-  <tr>
-    <td>Kylin</td>
-    <td>O</td>
-    <td>O</td>
-    <td>O</td>
-    <td>N/A</td>
-  </tr>
-  <tr>
-    <td>Lens</td>
-    <td>O</td>
-    <td>O</td>
-    <td>O</td>
-    <td>N/A</td>
-  </tr>
-  <tr>
-    <td>Phoenix</td>
-    <td>Merged into JDBC interpreter</td>
-    <td>O</td>
-    <td>O</td>
-    <td>N/A</td>
-  </tr>
-  <tr>
-    <td>PostgreSQL</td>
-    <td>O</td>
-    <td>O</td>
-    <td>O</td>
-    <td>N/A</td>
-  </tr>
-  <tr>
-    <td>Elasticsearch</td>
-    <td>O</td>
-    <td>O</td>
-    <td>N/A</td>
-    <td>N/A</td>
-  </tr>
-  <tr>
-    <td>
-        Scalding <br/>
-        <span style="font-size:75%">Local mode only, not included in binary package</span>
-    </td>
-    <td>O</td>
-    <td>O</td>
-    <td>N/A</td>
-    <td>N/A</td>
-  </tr>
-  <tr>
-    <td>Alluxio</td>
-    <td>O</td>
-    <td>N/A</td>
-    <td>N/A</td>
-    <td>N/A</td>
-  </tr>
-  <tr>
-    <td>Hbase</td>
-    <td>O</td>
-    <td>N/A</td>
-    <td>N/A</td>
-    <td>N/A</td>
-  </tr>
-  <tr>
-    <td>HDFS</td>
-    <td>O</td>
-    <td>N/A</td>
-    <td>N/A</td>
-    <td>N/A</td>
   </tr>
   <tr>
     <td>JDBC</td>
     <td>
-      Postgres, MySQL, MariaDB, Redshift, <br/>
-      Hive, Pheonix, Drill, Tajo are available
+      <a href="http://www.postgresql.org/" target="_blank">PostgreSQL</a>,
+      <a href="https://www.mysql.com/" target="_blank">MySQL</a>,
+      <a href="https://mariadb.org/" target="_blank">MariaDB</a>,
+      <a href="https://aws.amazon.com/documentation/redshift/" target="_blank">Redshift</a>,
+      <br/>
+      <a href="https://hive.apache.org/" target="_blank">Hive</a>,
+      <a href="https://phoenix.apache.org/" target="_blank">Phoenix</a>,
+      <a href="https://drill.apache.org/" target="_blank">Drill</a>,
+      <a href="http://tajo.apache.org/" target="_blank">Tajo</a> 
+      are available
+    </td>
+    <td>
+      <a href="http://www.postgresql.org/" target="_blank">PostgreSQL</a>,
+      <a href="https://www.mysql.com/" target="_blank">MySQL</a>,
+      <a href="https://mariadb.org/" target="_blank">MariaDB</a>,
+      <a href="https://aws.amazon.com/documentation/redshift/" target="_blank">Redshift</a>,
+      <br/>
+      <a href="https://hive.apache.org/" target="_blank">Hive</a>,
+      <a href="https://phoenix.apache.org/" target="_blank">Phoenix</a>,
+      <a href="https://drill.apache.org/" target="_blank">Drill</a>,
+      <a href="http://tajo.apache.org/" target="_blank">Tajo</a> 
+      are available
     </td>
     <td>N/A</td>
     <td>N/A</td>
-    <td>N/A</td>
   </tr>
   <tr>
-    <td>Livy</td>
+    <td><a href="https://cloud.google.com/bigquery/" target="_blank">BigQuery</a></td>
     <td>O</td>
     <td>N/A</td>
     <td>N/A</td>
     <td>N/A</td>
   </tr>
   <tr>
-    <td>Python</td>
+    <td><a href="https://www.python.org/" target="_blank">Python</a></td>
+    <td>O</td>
     <td>O</td>
     <td>N/A</td>
     <td>N/A</td>
+  </tr>
+  <tr>
+    <td><a href="http://livy.io/" target="_blank">Livy</a></td>
+    <td>O</td>
+    <td>O</td>
     <td>N/A</td>
+    <td>N/A</td>
+  </tr>
+  <tr>
+    <td><a href="https://hadoop.apache.org/docs/stable/hadoop-project-dist/hadoop-hdfs/HdfsUserGuide.html" target="_blank">HDFS</a></td>
+    <td>O</td>
+    <td>O</td>
+    <td>N/A</td>
+    <td>N/A</td>
+  </tr>
+  <tr>
+    <td><a href="http://www.alluxio.org/" target="_blank">Alluxio</a></td>
+    <td>O</td>
+    <td>O</td>
+    <td>N/A</td>
+    <td>N/A</td>
+  </tr>
+  <tr>
+    <td><a href="https://hbase.apache.org/" target="_blank">Hbase</a></td>
+    <td>O</td>
+    <td>O</td>
+    <td>N/A</td>
+    <td>N/A</td>
+  </tr>
+  <tr>
+    <td>
+        <a href="https://github.com/twitter/scalding" target="_blank">Scalding</a><br/>
+        <span style="font-size:75%">Local mode only, not included in binary package</span>
+    </td>
+    <td>O</td>
+    <td>O</td>
+    <td>O</td>
+    <td>N/A</td>
+  </tr>
+  <tr>
+    <td><a href="https://www.elastic.co/products/elasticsearch" target="_blank">Elasticsearch</a></td>
+    <td>O</td>
+    <td>O</td>
+    <td>O</td>
+    <td>N/A</td>
+  </tr>
+  <tr>
+    <td><a href="https://angularjs.org/" target="_blank">Angular</a></td>
+    <td>O</td>
+    <td>O</td>
+    <td>O</td>
+    <td>O</td>
+  </tr>
+  <tr>
+    <td><a href="https://daringfireball.net/projects/markdown/" target="_blank">Markdown</a></td>
+    <td>O</td>
+    <td>O</td>
+    <td>O</td>
+    <td>O</td>
+  </tr>
+  <tr>
+    <td><a href="https://commons.apache.org/" target="_blank">Shell</a></td>
+    <td>O</td>
+    <td>O</td>
+    <td>O</td>
+    <td>O</td>
+  </tr>
+  <tr>
+    <td><a href="https://flink.apache.org/" target="_blank">Flink</a></td>
+    <td>O</td>
+    <td>O</td>
+    <td>O</td>
+    <td>O</td>
+  </tr>
+  <tr>
+    <td><a href="https://hive.apache.org/" target="_blank">Hive</a></td>
+    <td>Merged into JDBC interpreter</td>
+    <td>Merged into JDBC interpreter</td>
+    <td>O</td>
+    <td>O</td>
+  </tr>
+  <tr>
+    <td><a href="http://tajo.apache.org/" target="_blank">Tajo</a></td>
+    <td>Merged into JDBC interpreter</td>
+    <td>Merged into JDBC interpreter</td>
+    <td>O</td>
+    <td>O</td>
+  </tr>
+  <tr>
+    <td><a href="http://cassandra.apache.org/" target="_blank">Cassandra</a></td>
+    <td>O</td>
+    <td>O</td>
+    <td>O</td>
+    <td>O</td>
+  </tr>
+  <tr>
+    <td>
+        <a href="http://geode.incubator.apache.org/" target="_blank">Geode</a><br/>
+        <span style="font-size:75%">Local mode only, not included in binary package</span>
+    </td>
+    <td>O</td>
+    <td>O</td>
+    <td>O</td>
+    <td>O</td>
+  </tr>
+  <tr>
+    <td><a href="https://ignite.apache.org/" target="_blank">Ignite</a></td>
+    <td>O</td>
+    <td>O</td>
+    <td>O</td>
+    <td>O</td>
+  </tr>
+  <tr>
+    <td><a href="http://kylin.apache.org/" target="_blank">Kylin</a></td>
+    <td>O</td>
+    <td>O</td>
+    <td>O</td>
+    <td>O</td>
+  </tr>
+  <tr>
+    <td><a href="https://lens.apache.org/" target="_blank">Lens</a></td>
+    <td>O</td>
+    <td>O</td>
+    <td>O</td>
+    <td>O</td>
+  </tr>
+  <tr>
+    <td><a href="https://phoenix.apache.org/" target="_blank">Phoenix</a></td>
+    <td>Merged into JDBC interpreter</td>
+    <td>Merged into JDBC interpreter</td>
+    <td>O</td>
+    <td>O</td>
+  </tr>
+  <tr>
+    <td><a href="http://www.postgresql.org/" target="_blank">PostgreSQL</a></td>
+    <td>O</td>
+    <td>O</td>
+    <td>O</td>
+    <td>O</td>
   </tr>
 </table>
-
 
 <!--
 -------------
