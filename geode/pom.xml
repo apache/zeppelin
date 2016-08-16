@@ -31,7 +31,6 @@
   <packaging>jar</packaging>
   <version>0.7.0-SNAPSHOT</version>
   <name>Zeppelin: Apache Geode interpreter</name>
-  <url>http://geode.incubator.apache.org/</url>
 
   <properties>
     <geode.version>1.0.0-incubating-SNAPSHOT</geode.version>

@@ -1,7 +1,7 @@
 ---
 layout: page
-title: "Basic Display System"
-description: ""
+title: "Basic Display System in Apache Zeppelin"
+description: "There are 3 basic display systems in Apache Zeppelin. By default, Zeppelin prints interpreter responce as a plain text using text display system. With %html directive, Zeppelin treats your output as HTML. You can also simply use %table display system to leverage Zeppelin's built in visualization."
 group: display
 ---
 <!--

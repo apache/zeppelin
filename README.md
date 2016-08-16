@@ -93,9 +93,9 @@ _Notes:_
  
 #### Install maven
 ```
-wget http://www.eu.apache.org/dist/maven/maven-3/3.3.3/binaries/apache-maven-3.3.3-bin.tar.gz
-sudo tar -zxf apache-maven-3.3.3-bin.tar.gz -C /usr/local/
-sudo ln -s /usr/local/apache-maven-3.3.3/bin/mvn /usr/local/bin/mvn
+wget http://www.eu.apache.org/dist/maven/maven-3/3.3.9/binaries/apache-maven-3.3.9-bin.tar.gz
+sudo tar -zxf apache-maven-3.3.9-bin.tar.gz -C /usr/local/
+sudo ln -s /usr/local/apache-maven-3.3.9/bin/mvn /usr/local/bin/mvn
 ```
 
 _Notes:_
@@ -124,6 +124,7 @@ Set spark major version
 Available profiles are
 
 ```
+-Pspark-2.0
 -Pspark-1.6
 -Pspark-1.5
 -Pspark-1.4
@@ -156,6 +157,16 @@ Available profiles are
 ```
 
 minor version can be adjusted by `-Dhadoop.version=x.x.x`
+
+##### `-Pscala-[version] (optional)`
+
+set scala version (default 2.10)
+Available profiles are
+
+```
+-Pscala-2.10
+-Pscala-2.11
+```
 
 ##### `-Pyarn` (optional)
 
@@ -199,14 +210,18 @@ Available profiles are
 Bulid examples under zeppelin-examples directory
 
 
-
+#### Example
 
 
 Here're some examples:
 
 ```sh
-# basic build
-mvn clean package -Pspark-1.6 -Phadoop-2.4 -Pyarn -Ppyspark
+# build with spark-2.0, scala-2.11
+./dev/change_scala_version.sh 2.11
+mvn clean package -Pspark-2.0 -Phadoop-2.4 -Pyarn -Ppyspark -Psparkr -Pscala-2.11
+
+# build with spark-1.6, scala-2.10
+mvn clean package -Pspark-1.6 -Phadoop-2.4 -Pyarn -Ppyspark -Psparkr
 
 # spark-cassandra integration
 mvn clean package -Pcassandra-spark-1.5 -Dhadoop.version=2.6.0 -Phadoop-2.6 -DskipTests
@@ -292,6 +307,7 @@ For configuration details check __`./conf`__ subdirectory.
 To produce a Zeppelin package compiled with Scala 2.11, use the -Pscala-2.11 profile:
 
 ```
+./dev/change_scala_version.sh 2.11
 mvn clean package -Pspark-1.6 -Phadoop-2.4 -Pyarn -Ppyspark -Pscala-2.11 -DskipTests clean install
 ```
 

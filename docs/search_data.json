@@ -1,0 +1,17 @@
+---
+layout: null
+---
+{
+  {% for page in site.pages %}{% if page.title != nil %}
+
+    "{{ page.url | slugify }}": {
+      "title": "{{ page.title | xml_escape }}",
+      "content"  : "{{page.content | strip_html | strip_newlines | escape | remove: "\"}}",
+      "url": " {{ page.url | xml_escape }}",
+      "group": "{{ page.group }}",
+      "excerpt": {{ page.description | strip_html | truncatewords: 40 | jsonify }}
+    }
+    {% unless forloop.last %},{% endunless %}
+    {% endif %}
+  {% endfor %}
+}

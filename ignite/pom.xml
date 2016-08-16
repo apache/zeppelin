@@ -26,14 +26,13 @@
     <relativePath>..</relativePath>
   </parent>
 
-  <artifactId>zeppelin-ignite</artifactId>
+  <artifactId>zeppelin-ignite_2.10</artifactId>
   <packaging>jar</packaging>
   <version>0.7.0-SNAPSHOT</version>
   <name>Zeppelin: Apache Ignite interpreter</name>
-  <url>http://zeppelin.apache.org</url>
 
   <properties>
-    <ignite.version>1.5.0.final</ignite.version>
+    <ignite.version>1.7.0</ignite.version>
   </properties>
 
   <dependencies>

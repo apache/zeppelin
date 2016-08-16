@@ -24,7 +24,6 @@ import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.user.Credentials;
 import org.apache.zeppelin.user.UserCredentials;
-import org.apache.zeppelin.user.UsernamePassword;
 import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.display.Input;
 import org.apache.zeppelin.interpreter.*;
@@ -209,11 +208,39 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     return getRepl(getRequiredReplName());
   }
 
+  public List<InterpreterCompletion> getInterpreterCompletion() {
+    List<InterpreterCompletion> completion = new LinkedList();
+    for (InterpreterSetting intp: factory.getInterpreterSettings(note.getId())){
+      List<InterpreterInfo> intInfo = intp.getInterpreterInfos();
+      if (intInfo.size() > 1) {
+        for (InterpreterInfo info : intInfo){
+          String name = intp.getName() + "." + info.getName();
+          completion.add(new InterpreterCompletion(name, name));
+        }
+      } else {
+        completion.add(new InterpreterCompletion(intp.getName(), intp.getName()));
+      }
+    }
+    return completion;
+  }
+
   public List<InterpreterCompletion> completion(String buffer, int cursor) {
+    String lines[] = buffer.split(System.getProperty("line.separator"));
+    if (lines.length > 0
+      && lines[0].startsWith("%")
+      && cursor <= lines[0].trim().length()) {
+
+      int idx = lines[0].indexOf(' ');
+      if (idx < 0 || (idx > 0 && cursor <= idx)) {
+        return getInterpreterCompletion();
+      }
+    }
+
     String replName = getRequiredReplName(buffer);
     if (replName != null && cursor > replName.length()) {
       cursor -= replName.length() + 1;
     }
+
     String body = getScriptBody(buffer);
     Interpreter repl = getRepl(replName);
     if (repl == null) {
@@ -248,6 +275,19 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     return null;
   }
 
+  private boolean hasPermission(String user, List<String> intpUsers) {
+    if (1 > intpUsers.size()) {
+      return true;
+    }
+
+    for (String u: intpUsers) {
+      if (user.trim().equals(u.trim())) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   @Override
   protected Object jobRun() throws Throwable {
     String replName = getRequiredReplName();
@@ -256,6 +296,17 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     if (repl == null) {
       logger.error("Can not find interpreter name " + repl);
       throw new RuntimeException("Can not find interpreter for " + getRequiredReplName());
+    }
+
+    if (this.noteHasUser() && this.noteHasInterpreters()) {
+      InterpreterSetting intp = getInterpreterSettingById(repl.getInterpreterGroup().getId());
+      if (intp != null &&
+        interpreterHasUser(intp) &&
+        isUserAuthorizedToAccessInterpreter(intp.getOption()) == false) {
+        logger.error("{} has no permission for {} ", authenticationInfo.getUser(), repl);
+        return new InterpreterResult(Code.ERROR, authenticationInfo.getUser() +
+          " has no permission for " + getRequiredReplName());
+      }
     }
 
     String script = getScriptBody();
@@ -310,6 +361,34 @@ public class Paragraph extends Job implements Serializable, Cloneable {
       InterpreterContext.remove();
       effectiveText = null;
     }
+  }
+
+  private boolean noteHasUser() {
+    return this.user != null;
+  }
+
+  private boolean noteHasInterpreters() {
+    return !factory.getInterpreterSettings(note.getId()).isEmpty();
+  }
+
+  private boolean interpreterHasUser(InterpreterSetting intp) {
+    return intp.getOption().permissionIsSet() && intp.getOption().getUsers() != null;
+  }
+
+  private boolean isUserAuthorizedToAccessInterpreter(InterpreterOption intpOpt){
+    return intpOpt.permissionIsSet() &&
+      hasPermission(authenticationInfo.getUser(), intpOpt.getUsers());
+  }
+
+  private InterpreterSetting getInterpreterSettingById(String id) {
+    InterpreterSetting setting = null;
+    for (InterpreterSetting i: factory.getInterpreterSettings(note.getId())) {
+      if (id.startsWith(i.getId())) {
+        setting = i;
+        break;
+      }
+    }
+    return setting;
   }
 
   @Override

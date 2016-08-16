@@ -1,7 +1,7 @@
 ---
 layout: page
-title: "Writing Zeppelin Interpreter"
-description: ""
+title: "Writing a New Interpreter"
+description: "Apache Zeppelin Interpreter is a language backend. Every Interpreters belongs to an InterpreterGroup. Interpreters in the same InterpreterGroup can reference each other."
 group: development
 ---
 <!--
@@ -156,7 +156,6 @@ println(a)
 
 ### 0.6.0 and later
 Inside of a notebook, `%[INTERPRETER_GROUP].[INTERPRETER_NAME]` directive will call your interpreter.
-Note that the first interpreter configuration in zeppelin.interpreters will be the default one.
 
 You can omit either [INTERPRETER\_GROUP] or [INTERPRETER\_NAME]. If you omit [INTERPRETER\_NAME], then first available interpreter will be selected in the [INTERPRETER\_GROUP].
 Likewise, if you skip [INTERPRETER\_GROUP], then [INTERPRETER\_NAME] will be chosen from default interpreter group.

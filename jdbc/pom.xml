@@ -31,7 +31,6 @@
   <packaging>jar</packaging>
   <version>0.7.0-SNAPSHOT</version>
   <name>Zeppelin: JDBC interpreter</name>
-  <url>http://www.apache.org</url>
   
   <properties>
     <postgresql.version>9.4-1201-jdbc41</postgresql.version>

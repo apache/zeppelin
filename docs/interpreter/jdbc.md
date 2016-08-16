@@ -1,13 +1,25 @@
 ---
 layout: page
-title: "Generic JDBC Interpreter"
-description: "JDBC user guide"
+title: "Generic JDBC Interpreter for Apache Zeppelin"
+description: "Generic JDBC Interpreter lets you create a JDBC connection to any data source. You can use Postgres, MySql, MariaDB, Redshift, Apache Hive, Apache Phoenix, Apache Drill and Apache Tajo using JDBC interpreter."
 group: interpreter
 ---
+<!--
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
 {% include JB/setup %}
 
-
-# Generic JDBC  Interpreter for Apache Zeppelin
+# Generic JDBC Interpreter for Apache Zeppelin
 
 <div id="toc"></div>
 
@@ -21,7 +33,8 @@ This interpreter lets you create a JDBC connection to any data source, by now it
 * Redshift
 * Apache Hive
 * Apache Phoenix
-* Apache Drill (Details on using [Drill JDBC Driver](https://drill.apache.org/docs/using-the-jdbc-driverde* Apache Tajo
+* Apache Drill (Details on using [Drill JDBC Driver](https://drill.apache.org/docs/using-the-jdbc-driver))
+* Apache Tajo
 
 If someone else used another database please report how it works to improve functionality.
 

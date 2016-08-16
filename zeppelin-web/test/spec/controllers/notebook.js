@@ -3,11 +3,12 @@
 describe('Controller: NotebookCtrl', function() {
   beforeEach(module('zeppelinWebApp'));
 
-  var NotebookCtrl;
   var scope;
 
   var websocketMsgSrvMock = {
-    getNotebook: function() {}
+    getNotebook: function() {},
+    listRevisionHistory: function() {},
+    getInterpreterBindings: function() {}
   };
 
   var baseUrlSrvMock = {
@@ -24,7 +25,7 @@ describe('Controller: NotebookCtrl', function() {
 
   beforeEach(inject(function($controller, $rootScope) {
     scope = $rootScope.$new();
-    NotebookCtrl = $controller('NotebookCtrl', {
+    $controller('NotebookCtrl', {
       $scope: scope,
       websocketMsgSrv: websocketMsgSrvMock,
       baseUrlSrv: baseUrlSrvMock
@@ -44,10 +45,6 @@ describe('Controller: NotebookCtrl', function() {
     it('check for scope functions to be defined : ' + fn, function() {
       expect(scope[fn]).toBeDefined();
     });
-  });
-
-  it('should set default value of "showEditor" to false', function() {
-    expect(scope.showEditor).toEqual(false);
   });
 
   it('should set default value of "editorToggled" to false', function() {

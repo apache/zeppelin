@@ -55,6 +55,7 @@ import com.google.gson.reflect.TypeToken;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.NullArgumentException;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sonatype.aether.RepositoryException;
@@ -345,6 +346,8 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     InputStreamReader isr = new InputStreamReader(fis);
     BufferedReader bufferedReader = new BufferedReader(isr);
     StringBuilder sb = new StringBuilder();
+    InterpreterSetting interpreterSettingObject;
+    String depClassPath = StringUtils.EMPTY;
     String line;
     while ((line = bufferedReader.readLine()) != null) {
       sb.append(line);
@@ -365,11 +368,17 @@ public class InterpreterFactory implements InterpreterGroupFactory {
       setting.getOption().setRemote(true);
 
       // Update transient information from InterpreterSettingRef
-      // TODO(jl): Check if reference of setting is null
-
-      setting.setPath(interpreterSettingsRef.get(setting.getGroup()).getPath());
+      interpreterSettingObject = interpreterSettingsRef.get(setting.getGroup());
+      if (interpreterSettingObject == null) {
+        logger.warn("can't get InterpreterSetting " +
+          "Information From loaded Interpreter Setting Ref - {} ", setting.getGroup());
+        continue;
+      }
+      depClassPath = interpreterSettingObject.getPath();
+      setting.setPath(depClassPath);
 
       setting.setInterpreterGroupFactory(this);
+      loadInterpreterDependencies(setting);
       interpreterSettings.put(k, setting);
     }
 
@@ -384,27 +393,50 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     }
   }
 
-  private void loadInterpreterDependencies(InterpreterSetting intSetting)
-      throws IOException, RepositoryException {
-    // dependencies to prevent library conflict
-    File localRepoDir = new File(conf.getInterpreterLocalRepoPath() + "/" + intSetting.getId());
-    if (localRepoDir.exists()) {
-      FileUtils.cleanDirectory(localRepoDir);
-    }
+  private void loadInterpreterDependencies(final InterpreterSetting setting) {
 
-    // load dependencies
-    List<Dependency> deps = intSetting.getDependencies();
-    if (deps != null) {
-      for (Dependency d : deps) {
-        File destDir = new File(conf.getRelativeDir(ConfVars.ZEPPELIN_DEP_LOCALREPO));
+    setting.setStatus(InterpreterSetting.Status.DOWNLOADING_DEPENDENCIES);
+    interpreterSettings.put(setting.getId(), setting);
+    synchronized (interpreterSettings) {
+      final Thread t = new Thread() {
+        public void run() {
+          try {
+            // dependencies to prevent library conflict
+            File localRepoDir = new File(conf.getInterpreterLocalRepoPath() + "/" +
+                setting.getId());
+            if (localRepoDir.exists()) {
+              FileUtils.cleanDirectory(localRepoDir);
+            }
 
-        if (d.getExclusions() != null) {
-          depResolver.load(d.getGroupArtifactVersion(), d.getExclusions(),
-              new File(destDir, intSetting.getId()));
-        } else {
-          depResolver.load(d.getGroupArtifactVersion(), new File(destDir, intSetting.getId()));
+            // load dependencies
+            List<Dependency> deps = setting.getDependencies();
+            if (deps != null) {
+              for (Dependency d : deps) {
+                File destDir = new File(conf.getRelativeDir(ConfVars.ZEPPELIN_DEP_LOCALREPO));
+
+                if (d.getExclusions() != null) {
+                  depResolver.load(d.getGroupArtifactVersion(), d.getExclusions(),
+                      new File(destDir, setting.getId()));
+                } else {
+                  depResolver.load(d.getGroupArtifactVersion(), new File(destDir, setting.getId()));
+                }
+              }
+            }
+
+            setting.setStatus(InterpreterSetting.Status.READY);
+          } catch (Exception e) {
+            logger.error(String.format("Error while downloading repos for interpreter group : %s," +
+                    " go to interpreter setting page click on edit and save it again to make " +
+                    "this interpreter work properly.",
+                setting.getGroup()), e);
+            setting.setErrorReason(e.getLocalizedMessage());
+            setting.setStatus(InterpreterSetting.Status.ERROR);
+          } finally {
+            interpreterSettings.put(setting.getId(), setting);
+          }
         }
-      }
+      };
+      t.start();
     }
   }
 
@@ -481,7 +513,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     setting.setGroup(group);
     setting.appendDependencies(dependencies);
     setting.setInterpreterOption(option);
-    setting.updateProperties(p);
+    setting.setProperties(p);
     setting.setInterpreterGroupFactory(this);
     interpreterSettings.put(setting.getId(), setting);
     saveToFile();
@@ -500,12 +532,9 @@ public class InterpreterFactory implements InterpreterGroupFactory {
    * @param group    InterpreterSetting reference name
    * @param properties
    * @return
-   * @throws InterpreterException
-   * @throws IOException
    */
   public InterpreterSetting add(String group, ArrayList<InterpreterInfo> interpreterInfos,
-      List<Dependency> dependencies, InterpreterOption option, Properties properties, String path)
-      throws InterpreterException, IOException, RepositoryException {
+      List<Dependency> dependencies, InterpreterOption option, Properties properties, String path) {
     Preconditions.checkNotNull(group, "name should not be null");
     Preconditions.checkNotNull(interpreterInfos, "interpreterInfos should not be null");
     Preconditions.checkNotNull(dependencies, "dependencies should not be null");
@@ -806,7 +835,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
    * @throws IOException
    */
   public void setPropertyAndRestart(String id, InterpreterOption option, Properties properties,
-      List<Dependency> dependencies) throws IOException, RepositoryException {
+      List<Dependency> dependencies) throws IOException {
     synchronized (interpreterSettings) {
       InterpreterSetting intpsetting = interpreterSettings.get(id);
       if (intpsetting != null) {
@@ -816,7 +845,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
         intpsetting.closeAndRmoveAllInterpreterGroups();
 
         intpsetting.setOption(option);
-        intpsetting.updateProperties(properties);
+        intpsetting.setProperties(properties);
         intpsetting.setDependencies(dependencies);
 
         loadInterpreterDependencies(intpsetting);
@@ -891,8 +920,6 @@ public class InterpreterFactory implements InterpreterGroupFactory {
       throws InterpreterException {
     logger.info("Create repl {} from {}", className, dirName);
 
-    updatePropertiesFromRegisteredInterpreter(property, className);
-
     ClassLoader oldcl = Thread.currentThread().getContextClassLoader();
     try {
 
@@ -963,9 +990,6 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     String localRepoPath = conf.getInterpreterLocalRepoPath() + "/" + interpreterSettingId;
     int maxPoolSize = conf.getInt(ConfVars.ZEPPELIN_INTERPRETER_MAX_POOL_SIZE);
 
-    updatePropertiesFromRegisteredInterpreter(property, className);
-
-
     RemoteInterpreter remoteInterpreter =
         new RemoteInterpreter(property, noteId, className, conf.getInterpreterRemoteRunnerPath(),
             interpreterPath, localRepoPath, connectTimeout, maxPoolSize,
@@ -973,22 +997,6 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     remoteInterpreter.setEnv(env);
 
     return new LazyOpenInterpreter(remoteInterpreter);
-  }
-
-  private Properties updatePropertiesFromRegisteredInterpreter(Properties properties,
-      String className) {
-    RegisteredInterpreter registeredInterpreter =
-        Interpreter.findRegisteredInterpreterByClassName(className);
-    if (null != registeredInterpreter) {
-      Map<String, InterpreterProperty> defaultProperties = registeredInterpreter.getProperties();
-      for (String key : defaultProperties.keySet()) {
-        if (!properties.containsKey(key) && null != defaultProperties.get(key).getValue()) {
-          properties.setProperty(key, defaultProperties.get(key).getValue());
-        }
-      }
-    }
-
-    return properties;
   }
 
   /**

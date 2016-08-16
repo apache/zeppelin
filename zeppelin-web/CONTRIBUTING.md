@@ -11,7 +11,7 @@ This will launch a Zeppelin WebApplication on port **9000** that will update on 
 
 Zeppelin WebApplication is using **AngularJS** as main Framework, and **Grunt** and **Bower** as helpers.
 
-So you might want to get familiar with it. 
+So you might want to get familiar with it.
 [Here is a good start](http://www.sitepoint.com/kickstart-your-angularjs-development-with-yeoman-grunt-and-bower/)
 (There is obviously plenty more ressources to learn)
 
@@ -21,7 +21,7 @@ So you might want to get familiar with it.
 * We use a 2 spaces indentation
 * We use single quotes
 
-But don't worry, JSHint will make you remember it for the most part.
+But don't worry, Eslint and Jscs will make you remember it for the most part.
 
 We try not to have **JQuery except in directives**, If you want to include a library,
 please search for its **angularJS** directive first.
@@ -119,7 +119,7 @@ The file index.html will automatically update with the new bower_component
 
 <br/>
 
-**Example**: `./bower install angular-nvd3` 
+**Example**: `./bower install angular-nvd3`
 
 You should find that line in the index.html file
 ```

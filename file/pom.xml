@@ -30,7 +30,6 @@
   <packaging>jar</packaging>
   <version>0.7.0-SNAPSHOT</version>
   <name>Zeppelin: File System Interpreters</name>
-  <url>http://www.apache.org</url>
 
   <dependencies>
     <dependency>

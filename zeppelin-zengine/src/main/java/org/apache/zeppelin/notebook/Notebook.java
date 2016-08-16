@@ -55,6 +55,7 @@ import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
+import org.apache.zeppelin.notebook.repo.NotebookRepo.Revision;
 import org.apache.zeppelin.notebook.repo.NotebookRepoSync;
 import org.apache.zeppelin.resource.ResourcePoolUtils;
 import org.apache.zeppelin.scheduler.Job;
@@ -352,9 +353,19 @@ public class Notebook implements NoteEventListener {
     }
   }
 
-  public void checkpointNote(String noteId, String checkpointMessage, AuthenticationInfo subject)
+  public Revision checkpointNote(String noteId, String checkpointMessage,
+      AuthenticationInfo subject) throws IOException {
+    return notebookRepo.checkpoint(noteId, checkpointMessage, subject);
+  }
+
+  public List<Revision> listRevisionHistory(String noteId,
+      AuthenticationInfo subject) {
+    return notebookRepo.revisionHistory(noteId, subject);
+  }
+
+  public Note getNoteByRevision(String noteId, String revisionId, AuthenticationInfo subject)
       throws IOException {
-    notebookRepo.checkpoint(noteId, checkpointMessage, subject);
+    return notebookRepo.get(noteId, revisionId, subject);
   }
 
   @SuppressWarnings("rawtypes")

@@ -13,10 +13,11 @@ limitations under the License.
 -->
 <div class="noteAction" ng-show="note.id && !paragraphUrl">
   <h3>
-    <div style="float: left; width: auto; max-width: 40%">
+    <div style="float: left; width: auto; max-width: 40%"
+      ng-controller="ElasticInputCtrl as input">
       <input type="text" pu-elastic-input class="form-control2" placeholder="{{noteName(note)}}" style="min-width: 0px; max-width: 95%;"
-           ng-if="showEditor" ng-model="note.name" ng-blur="sendNewName();showEditor = false;" ng-enter="sendNewName();showEditor = false;" ng-escape="note.name = oldName; showEditor = false" focus-if="showEditor" />
-      <p class="form-control-static2" ng-click="showEditor = true; oldName = note.name" ng-show="!showEditor">{{noteName(note)}}</p>
+           ng-if="input.showEditor" ng-model="note.name" ng-blur="sendNewName();input.showEditor = false;" ng-enter="sendNewName();input.showEditor = false;" ng-escape="note.name = oldName; input.showEditor = false" focus-if="input.showEditor" />
+      <p class="form-control-static2" ng-click="input.showEditor = true; oldName = note.name" ng-show="!input.showEditor">{{noteName(note)}}</p>
     </div>
     <div style="float: left; padding-bottom: 10px">
       <span class="labelBtn btn-group">
@@ -64,34 +65,63 @@ limitations under the License.
               tooltip-placement="bottom" tooltip="Export the notebook">
         <i class="fa fa-download"></i>
       </button>
-      <button type="button"
-              class="btn btn-default btn-xs dropdown-toggle"
-              ng-hide="viewOnly"
-              data-toggle="dropdown"
-              tooltip-placement="bottom" tooltip="Version control">
-        <i class="fa fa-file-code-o"></i>
-      </button>
-      <ul class="dropdown-menu" role="menu" style="width:250px">
-        <li>
-          <div class="commit-container">
-            <div>
-              <input type="text"
-                     dropdown-input
-                     placeholder="commit message"
-                     id="note.checkpoint.message"
-                     style="width: 145px;"
-                     ng-model="note.checkpoint.message"/>
-              <button type="button"
-                      class="btn btn-default btn-xs"
-                      ng-hide="viewOnly"
-                      ng-click="checkpointNotebook(note.checkpoint.message)"
-                      style="margin-left: 4px;"
-                      tooltip-placement="bottom" tooltip="Commit the notebook">Commit
-              </button>
+    </span>
+
+    <span class="labelBtn btn-group" role="group">
+      <div class="btn-group" role="group">
+        <button type="button"
+                class="btn btn-default btn-xs dropdown-toggle"
+                id="versionControlDropdown"
+                ng-hide="viewOnly"
+                data-toggle="dropdown"
+                tooltip-placement="bottom" tooltip="Version control">
+          <i class="fa fa-file-code-o"></i>
+        </button>
+        <ul class="dropdown-menu" style="width:250px"
+          aria-labelledby="versionControlDropdown">
+          <li>
+            <div class="commit-container">
+              <div>
+                <input type="text"
+                       dropdown-input
+                       placeholder="commit message"
+                       id="note.checkpoint.message"
+                       style="width: 145px;"
+                       ng-model="note.checkpoint.message"/>
+                <button type="button"
+                        class="btn btn-default btn-xs"
+                        ng-hide="viewOnly"
+                        ng-click="checkpointNotebook(note.checkpoint.message)"
+                        style="margin-left: 4px;"
+                        tooltip-placement="bottom" tooltip="Commit the notebook">Commit
+                </button>
+              </div>
             </div>
-          </div>
-        </li>
-      </ul>
+          </li>
+        </ul>
+      </div>
+      <div class="btn-group" role="group">
+        <button type="button" class="btn btn-default btn-xs revisionName">
+          Head
+        </button>
+        <button type="button" ng-if="noteRevisions.length > 0"
+          class="btn btn-default dropdown-toggle caretSeparator"
+          data-toggle="dropdown" id="revisionsDropdown">
+          <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu pull-right" aria-labelledby="revisionsDropdown">
+          <li ng-repeat="revision in noteRevisions | orderBy:'time':true" class="revision">
+            <a style="cursor:pointer">
+              <span style="display: block;">
+                <strong>{{revision.message}}</strong>
+              </span>
+              <span class="revisionDate">
+                <em>{{moment.unix(revision.time).format('MMMM Do YYYY, h:mm a')}}</em>
+              </span>
+            </a>
+          </li>
+        </ul>
+      </div>
     </span>
 
 <!-- put the delete action by itself for your protection -->

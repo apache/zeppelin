@@ -40,6 +40,8 @@ public class InterpreterSetting {
   private String name;
   private String group; // always be null in case of InterpreterSettingRef
   private Properties properties;
+  private Status status;
+  private String errorReason;
 
   @SerializedName("interpreterGroup") private List<InterpreterInfo> interpreterInfos;
   private final transient Map<String, InterpreterGroup> interpreterGroupRef = new HashMap<>();
@@ -64,6 +66,7 @@ public class InterpreterSetting {
     this.dependencies = dependencies;
     this.option = option;
     this.path = path;
+    this.status = Status.READY;
   }
 
   public InterpreterSetting(String name, String group, List<InterpreterInfo> interpreterInfos,
@@ -203,11 +206,40 @@ public class InterpreterSetting {
     this.properties.putAll(p);
   }
 
+  void setProperties(Properties p) {
+    this.properties = p;
+  }
+
   void setGroup(String group) {
     this.group = group;
   }
 
   void setName(String name) {
     this.name = name;
+  }
+
+  /***
+   * Interpreter status
+   */
+  public enum Status {
+    DOWNLOADING_DEPENDENCIES,
+    ERROR,
+    READY
+  }
+
+  public Status getStatus() {
+    return status;
+  }
+
+  public void setStatus(Status status) {
+    this.status = status;
+  }
+
+  public String getErrorReason() {
+    return errorReason;
+  }
+
+  public void setErrorReason(String errorReason) {
+    this.errorReason = errorReason;
   }
 }

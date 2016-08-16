@@ -1,7 +1,7 @@
 ---
 layout: page
-title: "Writing Zeppelin Application"
-description: ""
+title: "Writing a new Application(Experimental)"
+description: "Apache Zeppelin Application is a package that runs on Interpreter process and displays it's output inside of the notebook. Make your own Application in Apache Zeppelin is quite easy."
 group: development
 ---
 <!--

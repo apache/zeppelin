@@ -40,7 +40,7 @@ import com.google.gson.reflect.TypeToken;
  * ZeppelinHub repo class.
  */
 public class ZeppelinHubRepo implements NotebookRepo {
-  private static final Logger LOG = LoggerFactory.getLogger(ZeppelinhubRestApiHandler.class);
+  private static final Logger LOG = LoggerFactory.getLogger(ZeppelinHubRepo.class);
   private static final String DEFAULT_SERVER = "https://www.zeppelinhub.com";
   static final String ZEPPELIN_CONF_PROP_NAME_SERVER = "zeppelinhub.api.address";
   static final String ZEPPELIN_CONF_PROP_NAME_TOKEN = "zeppelinhub.api.token";
@@ -196,7 +196,7 @@ public class ZeppelinHubRepo implements NotebookRepo {
   }
 
   @Override
-  public Note get(String noteId, Revision rev, AuthenticationInfo subject) throws IOException {
+  public Note get(String noteId, String revId, AuthenticationInfo subject) throws IOException {
     // Auto-generated method stub
     return null;
   }

@@ -21,7 +21,7 @@ limitations under the License.
 <div class="row">
      <div class="col-md-3">
           <a href="assets/themes/zeppelin/img/screenshots/sparksql.png"><img class="thumbnail" src="assets/themes/zeppelin/img/screenshots/sparksql.png" /></a>
-          <center>SparkSQL with inline visualization</center>
+          <center>Spark SQL with inline visualization</center>
      </div>
      <div class="col-md-3">
           <a href="assets/themes/zeppelin/img/screenshots/spark.png"><img class="thumbnail" src="assets/themes/zeppelin/img/screenshots/spark.png" /></a>

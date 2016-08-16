@@ -179,7 +179,7 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
     cmd.addArgument(Integer.toString(port), false);
     cmd.addArgument(Integer.toString(getSparkInterpreter().getSparkVersion().toNumber()), false);
     executor = new DefaultExecutor();
-    outputStream = new SparkOutputStream();
+    outputStream = new SparkOutputStream(logger);
     PipedOutputStream ps = new PipedOutputStream();
     in = null;
     try {
@@ -525,6 +525,15 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
       return null;
     } else {
       return new JavaSparkContext(intp.getSparkContext());
+    }
+  }
+
+  public Object getSparkSession() {
+    SparkInterpreter intp = getSparkInterpreter();
+    if (intp == null) {
+      return null;
+    } else {
+      return intp.getSparkSession();
     }
   }
 

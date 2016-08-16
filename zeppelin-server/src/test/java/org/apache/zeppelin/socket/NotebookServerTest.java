@@ -1,7 +1,4 @@
-/**
- * Created by joelz on 8/6/15.
- *
- *
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -35,10 +32,12 @@ import org.apache.zeppelin.notebook.socket.Message.OP;
 import org.apache.zeppelin.rest.AbstractTestRestApi;
 import org.apache.zeppelin.server.ZeppelinServer;
 import org.junit.AfterClass;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import javax.servlet.http.HttpServletRequest;
+
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -51,12 +50,13 @@ import static org.mockito.Mockito.*;
 
 
 /**
- * BASIC Zeppelin rest api tests
+ * Basic REST API tests for notebookServer
  */
 public class NotebookServerTest extends AbstractTestRestApi {
   private static Notebook notebook;
   private static NotebookServer notebookServer;
   private static Gson gson;
+  private HttpServletRequest mockRequest;
 
   @BeforeClass
   public static void init() throws Exception {
@@ -71,19 +71,24 @@ public class NotebookServerTest extends AbstractTestRestApi {
     AbstractTestRestApi.shutDown();
   }
 
+  @Before
+  public void setUp() {
+    mockRequest = mock(HttpServletRequest.class);
+  }
+
   @Test
   public void checkOrigin() throws UnknownHostException {
     NotebookServer server = new NotebookServer();
     String origin = "http://" + InetAddress.getLocalHost().getHostName() + ":8080";
 
     assertTrue("Origin " + origin + " is not allowed. Please check your hostname.",
-          server.checkOrigin(new TestHttpServletRequest(), origin));
+          server.checkOrigin(mockRequest, origin));
   }
 
   @Test
   public void checkInvalidOrigin(){
     NotebookServer server = new NotebookServer();
-    assertFalse(server.checkOrigin(new TestHttpServletRequest(), "http://evillocalhost:8080"));
+    assertFalse(server.checkOrigin(mockRequest, "http://evillocalhost:8080"));
   }
 
   @Test
@@ -166,7 +171,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
   }
 
   @Test
-  public void should_bind_angular_object_to_remote_for_paragraphs() throws Exception {
+  public void bindAngularObjectToRemoteForParagraphs() throws Exception {
     //Given
     final String varName = "name";
     final String value = "DuyHai DOAN";
@@ -191,8 +196,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
 
     when(paragraph.getCurrentRepl().getInterpreterGroup()).thenReturn(mdGroup);
 
-
-    final AngularObject ao1 = AngularObjectBuilder.build(varName, value, "noteId", "paragraphId");
+    final AngularObject<String> ao1 = AngularObjectBuilder.build(varName, value, "noteId", "paragraphId");
 
     when(mdRegistry.addAndNotifyRemoteProcess(varName, value, "noteId", "paragraphId")).thenReturn(ao1);
 
@@ -217,7 +221,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
   }
 
   @Test
-  public void should_bind_angular_object_to_local_for_paragraphs() throws Exception {
+  public void bindAngularObjectToLocalForParagraphs() throws Exception {
     //Given
     final String varName = "name";
     final String value = "DuyHai DOAN";
@@ -241,7 +245,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
     when(paragraph.getCurrentRepl().getInterpreterGroup()).thenReturn(mdGroup);
 
 
-    final AngularObject ao1 = AngularObjectBuilder.build(varName, value, "noteId", "paragraphId");
+    final AngularObject<String> ao1 = AngularObjectBuilder.build(varName, value, "noteId", "paragraphId");
 
     when(mdRegistry.add(varName, value, "noteId", "paragraphId")).thenReturn(ao1);
 
@@ -264,7 +268,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
   }
 
   @Test
-  public void should_unbind_angular_object_from_remote_for_paragraphs() throws Exception {
+  public void unbindAngularObjectFromRemoteForParagraphs() throws Exception {
     //Given
     final String varName = "name";
     final String value = "val";
@@ -286,7 +290,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
 
     when(paragraph.getCurrentRepl().getInterpreterGroup()).thenReturn(mdGroup);
 
-    final AngularObject ao1 = AngularObjectBuilder.build(varName, value, "noteId", "paragraphId");
+    final AngularObject<String> ao1 = AngularObjectBuilder.build(varName, value, "noteId", "paragraphId");
     when(mdRegistry.removeAndNotifyRemoteProcess(varName, "noteId", "paragraphId")).thenReturn(ao1);
     NotebookSocket conn = mock(NotebookSocket.class);
     NotebookSocket otherConn = mock(NotebookSocket.class);
@@ -309,7 +313,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
   }
 
   @Test
-  public void should_unbind_angular_object_from_local_for_paragraphs() throws Exception {
+  public void unbindAngularObjectFromLocalForParagraphs() throws Exception {
     //Given
     final String varName = "name";
     final String value = "val";
@@ -331,8 +335,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
 
     when(paragraph.getCurrentRepl().getInterpreterGroup()).thenReturn(mdGroup);
 
-    final AngularObject ao1 = AngularObjectBuilder.build(varName, value, "noteId", "paragraphId");
-
+    final AngularObject<String> ao1 = AngularObjectBuilder.build(varName, value, "noteId", "paragraphId");
 
     when(mdRegistry.remove(varName, "noteId", "paragraphId")).thenReturn(ao1);
 
@@ -355,12 +358,9 @@ public class NotebookServerTest extends AbstractTestRestApi {
 
   private NotebookSocket createWebSocket() {
     NotebookSocket sock = mock(NotebookSocket.class);
-    when(sock.getRequest()).thenReturn(createHttpServletRequest());
+    when(sock.getRequest()).thenReturn(mockRequest);
     return sock;
   }
 
-  private HttpServletRequest createHttpServletRequest() {
-    return mock(HttpServletRequest.class);
-  }
 }
 

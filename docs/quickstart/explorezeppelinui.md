@@ -1,7 +1,7 @@
 ---
 layout: page
 title: "Explore Apache Zeppelin UI"
-description: "Description of Zeppelin UI Layout"
+description: "If you are new to Apache Zeppelin, this document will guide you about the basic components of Zeppelin one by one."
 group: quickstart
 ---
 <!--
@@ -17,6 +17,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
+{% include JB/setup %}
+
 # Explore Apache Zeppelin UI
 
 <div id="toc"></div>
