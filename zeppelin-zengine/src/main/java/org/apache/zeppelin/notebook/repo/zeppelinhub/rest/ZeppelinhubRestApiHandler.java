@@ -128,17 +128,17 @@ public class ZeppelinhubRestApiHandler {
       response = listener.get(30, TimeUnit.SECONDS);
     } catch (InterruptedException | TimeoutException | ExecutionException e) {
       LOG.error("Cannot perform Get request to ZeppelinHub", e);
-      throw new IOException("Cannot load note from ZeppelinHub", e);
+      throw new IOException("Cannot perform Get request to ZeppelinHub", e);
     }
 
     int code = response.getStatus();
     if (code == 200) {
-      try (InputStream responseContent = listener.getInputStream()) {
-        note = IOUtils.toString(responseContent, "UTF-8");
-      }
+      InputStream responseContent = listener.getInputStream();
+      note = IOUtils.toString(responseContent, "UTF-8");
+      responseContent.close();
     } else {
       LOG.error("ZeppelinHub Get {} returned with status {} ", zepelinhubUrl + argument, code);
-      throw new IOException("Cannot load note from ZeppelinHub");
+      throw new IOException("Cannot perform Get request to ZeppelinHub");
     }
     return note;
   }
