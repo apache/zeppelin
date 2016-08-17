@@ -72,6 +72,8 @@ addJarInDir "${ZEPPELIN_HOME}/zeppelin-web/target/lib"
 
 CLASSPATH+=":${ZEPPELIN_CLASSPATH}"
 
+downloadSparkBinary
+
 if [[ ! -d "${ZEPPELIN_LOG_DIR}" ]]; then
   echo "Log dir doesn't exist, create ${ZEPPELIN_LOG_DIR}"
   $(mkdir -p "${ZEPPELIN_LOG_DIR}")

@@ -177,6 +177,7 @@ function start() {
     fi
   fi
 
+  downloadSparkBinary
   initialize_default_directories
 
   echo "ZEPPELIN_CLASSPATH: ${ZEPPELIN_CLASSPATH_OVERRIDES}:${CLASSPATH}" >> "${ZEPPELIN_OUTFILE}"
