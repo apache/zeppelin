@@ -1,7 +1,7 @@
 ---
 layout: page
-title: "Angular (backend API)"
-description: "Angular (backend API)"
+title: "Back-end Angular API in Apache Zeppelin"
+description: "Apache Zeppelin provides a gateway between your interpreter and your compiled AngularJS view templates. You can not only update scope variables from your interpreter but also watch them in the interpreter, which is JVM process."
 group: display
 ---
 <!--

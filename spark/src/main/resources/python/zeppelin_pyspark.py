@@ -28,6 +28,7 @@ from pyspark.accumulators import Accumulator, AccumulatorParam
 from pyspark.broadcast import Broadcast
 from pyspark.serializers import MarshalSerializer, PickleSerializer
 import ast
+import traceback
 
 # for back compatibility
 from pyspark.sql import SQLContext, HiveContext, Row
@@ -262,7 +263,7 @@ while True :
           code = compile(mod, '<stdin>', 'single')
           exec(code)
       except:
-        raise Execution(sys.exc_info())
+        raise Exception(traceback.format_exc())
 
     intp.setStatementsFinished("", False)
   except Py4JJavaError:

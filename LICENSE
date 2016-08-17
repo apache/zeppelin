@@ -242,7 +242,8 @@ The following components are provided under the MIT-style license. See project l
 The text of each license is also included at licenses/LICENSE-[project]-[version].txt.
     
     (MIT Style) jekyll-table-of-contents (https://github.com/ghiculescu/jekyll-table-of-contents) - https://github.com/ghiculescu/jekyll-table-of-contents/blob/master/LICENSE.txt
-
+    (MIT Style) lunr.js (https://github.com/olivernn/lunr.js) - https://github.com/olivernn/lunr.js/blob/v0.7.1/LICENSE
+    
 ========================================================================
 Apache licenses
 ========================================================================

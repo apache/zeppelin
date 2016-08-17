@@ -115,7 +115,7 @@ public class PythonInterpreterTest {
    */
   @Test
   public void testPy4jInstalled() throws IOException, InterruptedException {
-    when(mockPythonProcess.sendAndGetResult(eq("\n\nimport py4j\n"))).thenReturn(">>>");
+    when(mockPythonProcess.sendAndGetResult(eq("\n\nimport py4j\n"))).thenReturn("");
 
     pythonInterpreter.open();
     Integer py4jPort = pythonInterpreter.getPy4jPort();
@@ -137,7 +137,7 @@ public class PythonInterpreterTest {
   @Test
   public void testClose() throws IOException, InterruptedException {
     //given: py4j is installed
-    when(mockPythonProcess.sendAndGetResult(eq("\n\nimport py4j\n"))).thenReturn(">>>");
+    when(mockPythonProcess.sendAndGetResult(eq("\n\nimport py4j\n"))).thenReturn("");
 
     pythonInterpreter.open();
     Integer py4jPort = pythonInterpreter.getPy4jPort();
@@ -210,11 +210,11 @@ public class PythonInterpreterTest {
       String output = "";
 
       for (int i = 0; i < lines.length; i++) {
-        output += ">>>" + lines[i];
+        output += lines[i];
       }
       return output;
     } else {
-      return ">>>";
+      return "";
     }
   }
 

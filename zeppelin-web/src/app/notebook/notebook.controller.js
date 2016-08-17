@@ -438,23 +438,14 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
     }
   };
 
-  var getInterpreterBindings = function(callback) {
-    $http.get(baseUrlSrv.getRestApiBase() + '/notebook/interpreter/bind/' + $scope.note.id).
-    success(function(data, status, headers, config) {
-      $scope.interpreterBindings = data.body;
-      $scope.interpreterBindingsOrig = angular.copy($scope.interpreterBindings); // to check dirty
-      if (callback) {
-        callback();
-      }
-    }).
-    error(function(data, status, headers, config) {
-      if (status !== 0) {
-        console.log('Error %o %o', status, data.message);
-      }
-    });
+  var getInterpreterBindings = function() {
+    websocketMsgSrv.getInterpreterBindings($scope.note.id);
   };
 
-  var getInterpreterBindingsCallBack = function() {
+  $scope.$on('interpreterBindings', function(event, data) {
+    $scope.interpreterBindings = data.interpreterBindings;
+    $scope.interpreterBindingsOrig = angular.copy($scope.interpreterBindings); // to check dirty
+
     var selected = false;
     var key;
     var setting;
@@ -479,7 +470,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
       }
       $scope.showSetting = true;
     }
-  };
+  });
 
   $scope.interpreterSelectionListeners = {
     accept: function(sourceItemHandleScope, destSortableScope) {return true;},
@@ -519,16 +510,9 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
         selectedSettingIds.push(setting.id);
       }
     }
-
-    $http.put(baseUrlSrv.getRestApiBase() + '/notebook/interpreter/bind/' + $scope.note.id,
-              selectedSettingIds).
-    success(function(data, status, headers, config) {
-      console.log('Interpreter binding %o saved', selectedSettingIds);
-      $scope.showSetting = false;
-    }).
-    error(function(data, status, headers, config) {
-      console.log('Error %o %o', status, data.message);
-    });
+    websocketMsgSrv.saveInterpreterBindings($scope.note.id, selectedSettingIds);
+    console.log('Interpreter bindings %o saved', selectedSettingIds);
+    $scope.showSetting = false;
   };
 
   $scope.toggleSetting = function() {
@@ -864,7 +848,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
     }
     initializeLookAndFeel();
     //open interpreter binding setting when there're none selected
-    getInterpreterBindings(getInterpreterBindingsCallBack);
+    getInterpreterBindings();
   });
 
   $scope.$on('$destroy', function() {

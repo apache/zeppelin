@@ -19,19 +19,20 @@
 # Remove interactive mode displayhook
 import sys
 import signal
+import base64
 
 try:
     import StringIO as io
 except ImportError:
     import io as io
 
-sys.displayhook = lambda x: None
-
 def intHandler(signum, frame):  # Set the signal handler
     print ("Paragraph interrupted")
     raise KeyboardInterrupt()
 
 signal.signal(signal.SIGINT, intHandler)
+# set prompt as empty string so that java side don't need to remove the prompt.
+sys.ps1=""
 
 def help():
     print("""%html
@@ -69,10 +70,10 @@ def help():
  plt.close()
  </pre>
  <div><br/> z.show function can take optional parameters
- to adapt graph width and height</div>
+ to adapt graph dimensions (width and height) and format (png or svg)</div>
  <div><b>example </b>:
  <pre>z.show(plt,width='50px
- z.show(plt,height='150px') </pre></div>
+ z.show(plt,height='150px', fmt='svg') </pre></div>
 
  <h3>Pandas DataFrame</h3>
  <div> You need to have Pandas module installed
@@ -163,13 +164,24 @@ class PyZeppelinContext(object):
         #)
         body_buf.close(); header_buf.close()
     
-    def show_matplotlib(self, p, width="100%", height="100%", **kwargs):
+    def show_matplotlib(self, p, width="100%", height="100%",
+                        fmt='png', **kwargs):
         """Matplotlib show function
         """
         img = io.StringIO()
-        p.savefig(img, format="svg")
-        html = "%html <div style='width:{width};height:{height}'>{image}<div>"
-        print(html.format(width=width, height=height, image=img.getvalue()))
+        if fmt == 'png':
+            p.savefig(img, format=fmt)
+            html = "%html <img src={img} width={width}, height={height}>"
+            img_str = "data:image/png;base64,"
+            img_str += base64.b64encode(img.getvalue().strip())
+        elif fmt == 'svg':
+            p.savefig(img, format=fmt)
+            html = "%html <div style='width:{width};height:{height}'>{img}<div>"
+            img_str = img.getvalue()
+        else:
+            raise ValueError("fmt must be 'png' or 'svg'")
+        
+        print(html.format(width=width, height=height, img=img_str))
         img.close()
 
 
