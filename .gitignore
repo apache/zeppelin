@@ -14,6 +14,7 @@
 spark/derby.log
 spark/metastore_db
 spark-1.*-bin-hadoop*
+spark-2.*-bin-hadoop*
 .spark-dist
 zeppelin-server/derby.log
 
