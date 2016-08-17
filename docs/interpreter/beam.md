@@ -26,12 +26,12 @@ limitations under the License.
 
 ## Overview
 [Apache Beam](http://beam.incubator.apache.org) is an open source unified platform for data processing pipelines. A pipeline can be build using one of the Beam SDKs.
-The execution of the pipeline is done by different Runners . Currently, Beam supports Apache Flink Runner, Apache Spark Runner, and Google Dataflow Runner.
+The execution of the pipeline is done by different Runners. Currently, Beam supports Apache Flink Runner, Apache Spark Runner, and Google Dataflow Runner.
 
 ## How to use
-Basically, you can write normal Beam java code where  you can determine the Runner. You should write the main method inside a  class becuase the interpreter invoke this main to execute the pipline. Unlike Zeppelin normal pattern, each paragraph is considered a separate job, there isn't any relation to any other paragraph.
+Basically, you can write normal Beam java code where you can determine the Runner. You should write the main method inside a class becuase the interpreter invoke this main to execute the pipline. Unlike Zeppelin normal pattern, each paragraph is considered a separate job, there isn't any relation to any other paragraph.
 
-The following is a demonstration of a  word count example
+The following is a demonstration of a word count example
 
 ```
 %beam

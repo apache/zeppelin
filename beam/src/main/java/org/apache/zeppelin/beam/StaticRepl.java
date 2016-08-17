@@ -84,8 +84,10 @@ public class StaticRepl {
     }
 
     // if there isn't Main method, will retuen error
-    if (mainClassName == null)
+    if (mainClassName == null) {
+      LOGGER.error("Exception for Main method", "There isn't any class containing Main method.");
       throw new Exception("There isn't any class containing Main method.");
+    }
 
     // replace name of class containing Main method with generated name
     code = code.replace(mainClassName, generatedClassName);
@@ -150,22 +152,22 @@ public class StaticRepl {
         LOGGER.error("Exception in Interpreter while Class not found", e);
         System.err.println("Class not found: " + e);
         throw new Exception(baosErr.toString());
-        
+
       } catch (NoSuchMethodException e) {
         LOGGER.error("Exception in Interpreter while No such method", e);
         System.err.println("No such method: " + e);
         throw new Exception(baosErr.toString());
-        
+
       } catch (IllegalAccessException e) {
         LOGGER.error("Exception in Interpreter while Illegal access", e);
         System.err.println("Illegal access: " + e);
         throw new Exception(baosErr.toString());
-        
+
       } catch (InvocationTargetException e) {
         LOGGER.error("Exception in Interpreter while Invocation target", e);
         System.err.println("Invocation target: " + e);
         throw new Exception(baosErr.toString());
-        
+
       } finally {
 
         System.out.flush();
