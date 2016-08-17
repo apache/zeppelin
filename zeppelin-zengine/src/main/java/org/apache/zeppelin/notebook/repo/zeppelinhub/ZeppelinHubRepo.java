@@ -198,7 +198,7 @@ public class ZeppelinHubRepo implements NotebookRepo {
     }
     String endpoint = Joiner.on("/").join(noteId, "checkpoint");
     String content = GSON.toJson(ImmutableMap.of("message", checkpointMsg));
-    String response = restApiClient.asyncPutWithResponseBody(noteId, content);
+    String response = restApiClient.asyncPutWithResponseBody(endpoint, content);
     
     return GSON.fromJson(response, Revision.class);
   }
