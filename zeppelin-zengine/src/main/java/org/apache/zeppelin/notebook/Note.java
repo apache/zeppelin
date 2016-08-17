@@ -445,11 +445,11 @@ public class Note implements Serializable, ParagraphJobListener {
         AuthenticationInfo authenticationInfo = new AuthenticationInfo();
         authenticationInfo.setUser(cronExecutingUser);
         p.setAuthenticationInfo(authenticationInfo);
-
-        p.setListener(jobListenerFactory.getParagraphJobListener(this));
-        Interpreter intp = factory.getInterpreter(getId(), p.getRequiredReplName());
-
-        intp.getScheduler().submit(p);
+        try {
+          run(p.getId());
+        } catch (InterpreterException intpException) {
+          throw intpException;
+        }
       }
     }
   }
@@ -472,7 +472,14 @@ public class Note implements Serializable, ParagraphJobListener {
         logger.debug("New paragraph: {}", pText);
         p.setEffectiveText(pText);
       } else {
-        throw new InterpreterException("Interpreter " + requiredReplName + " not found");
+        InterpreterException intpException;
+        intpException = new InterpreterException(
+          "Pargaraph " + p.getJobName() + "'s Interpreter " + requiredReplName + " not found");
+        p.setReturn(
+          new InterpreterResult(InterpreterResult.Code.ERROR, intpException.getMessage()),
+          intpException);
+        p.setStatus(Job.Status.ERROR);
+        throw intpException;
       }
     }
     if (p.getConfig().get("enabled") == null || (Boolean) p.getConfig().get("enabled")) {
