@@ -112,13 +112,8 @@ public class NotebookRestApi {
   @ZeppelinApi
   public Response putNotePermissions(@PathParam("noteId") String noteId, String req)
       throws IOException {
-    /**
-     * TODO(jl): Fixed the type of HashSet
-     * https://issues.apache.org/jira/browse/ZEPPELIN-1162
-     */
-    HashMap<String, HashSet> permMap =
-        gson.fromJson(req, new TypeToken<HashMap<String, HashSet>>() {
-        }.getType());
+    HashMap<String, HashSet> permMap = gson.fromJson(req,
+            new TypeToken<HashMap<String, HashSet>>(){}.getType());
     Note note = notebook.getNote(noteId);
     String principal = SecurityUtils.getPrincipal();
     HashSet<String> roles = SecurityUtils.getRoles();
@@ -201,10 +196,10 @@ public class NotebookRestApi {
   }
 
   @GET
-  @Path("{notebookId}")
+  @Path("{noteId}")
   @ZeppelinApi
-  public Response getNotebook(@PathParam("notebookId") String notebookId) throws IOException {
-    Note note = notebook.getNote(notebookId);
+  public Response getNotebook(@PathParam("noteId") String noteId) throws IOException {
+    Note note = notebook.getNote(noteId);
     if (note == null) {
       return new JsonResponse<>(Status.NOT_FOUND, "note not found.").build();
     }
@@ -287,15 +282,15 @@ public class NotebookRestApi {
    * @throws IOException
    */
   @DELETE
-  @Path("{notebookId}")
+  @Path("{noteId}")
   @ZeppelinApi
-  public Response deleteNote(@PathParam("notebookId") String notebookId) throws IOException {
-    LOG.info("Delete notebook {} ", notebookId);
+  public Response deleteNote(@PathParam("noteId") String noteId) throws IOException {
+    LOG.info("Delete notebook {} ", noteId);
     AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
-    if (!(notebookId.isEmpty())) {
-      Note note = notebook.getNote(notebookId);
+    if (!(noteId.isEmpty())) {
+      Note note = notebook.getNote(noteId);
       if (note != null) {
-        notebook.removeNote(notebookId, subject);
+        notebook.removeNote(noteId, subject);
       }
     }
 
@@ -311,15 +306,16 @@ public class NotebookRestApi {
    * @throws IOException, CloneNotSupportedException, IllegalArgumentException
    */
   @POST
-  @Path("{notebookId}")
+  @Path("{noteId}")
   @ZeppelinApi
-  public Response cloneNote(@PathParam("notebookId") String notebookId, String message)
-      throws IOException, CloneNotSupportedException, IllegalArgumentException {
-    LOG.info("clone notebook by JSON {}", message);
-    NewNotebookRequest request = gson.fromJson(message, NewNotebookRequest.class);
+  public Response cloneNote(@PathParam("noteId") String noteId, String message) throws
+      IOException, CloneNotSupportedException, IllegalArgumentException {
+    LOG.info("clone notebook by JSON {}" , message);
+    NewNotebookRequest request = gson.fromJson(message,
+        NewNotebookRequest.class);
     String newNoteName = request.getName();
     AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
-    Note newNote = notebook.cloneNote(notebookId, newNoteName, subject);
+    Note newNote = notebook.cloneNote(noteId, newNoteName, subject);
     notebookServer.broadcastNote(newNote);
     notebookServer.broadcastNoteList(subject);
     return new JsonResponse<>(Status.CREATED, "", newNote.getId()).build();
@@ -333,13 +329,13 @@ public class NotebookRestApi {
    * @throws IOException
    */
   @POST
-  @Path("{notebookId}/paragraph")
+  @Path("{noteId}/paragraph")
   @ZeppelinApi
-  public Response insertParagraph(@PathParam("notebookId") String notebookId, String message)
+  public Response insertParagraph(@PathParam("noteId") String noteId, String message)
       throws IOException {
-    LOG.info("insert paragraph {} {}", notebookId, message);
+    LOG.info("insert paragraph {} {}", noteId, message);
 
-    Note note = notebook.getNote(notebookId);
+    Note note = notebook.getNote(noteId);
     if (note == null) {
       return new JsonResponse<>(Status.NOT_FOUND, "note not found.").build();
     }
@@ -370,13 +366,13 @@ public class NotebookRestApi {
    * @throws IOException
    */
   @GET
-  @Path("{notebookId}/paragraph/{paragraphId}")
+  @Path("{noteId}/paragraph/{paragraphId}")
   @ZeppelinApi
-  public Response getParagraph(@PathParam("notebookId") String notebookId,
-      @PathParam("paragraphId") String paragraphId) throws IOException {
-    LOG.info("get paragraph {} {}", notebookId, paragraphId);
+  public Response getParagraph(@PathParam("noteId") String noteId,
+                               @PathParam("paragraphId") String paragraphId) throws IOException {
+    LOG.info("get paragraph {} {}", noteId, paragraphId);
 
-    Note note = notebook.getNote(notebookId);
+    Note note = notebook.getNote(noteId);
     if (note == null) {
       return new JsonResponse(Status.NOT_FOUND, "note not found.").build();
     }
@@ -397,14 +393,14 @@ public class NotebookRestApi {
    * @throws IOException
    */
   @POST
-  @Path("{notebookId}/paragraph/{paragraphId}/move/{newIndex}")
+  @Path("{noteId}/paragraph/{paragraphId}/move/{newIndex}")
   @ZeppelinApi
-  public Response moveParagraph(@PathParam("notebookId") String notebookId,
-      @PathParam("paragraphId") String paragraphId, @PathParam("newIndex") String newIndex)
+  public Response moveParagraph(@PathParam("noteId") String noteId,
+      @PathParam("paragraphId") String paragraphId, @PathParam("newIndex") String newIndex) 
       throws IOException {
-    LOG.info("move paragraph {} {} {}", notebookId, paragraphId, newIndex);
+    LOG.info("move paragraph {} {} {}", noteId, paragraphId, newIndex);
 
-    Note note = notebook.getNote(notebookId);
+    Note note = notebook.getNote(noteId);
     if (note == null) {
       return new JsonResponse(Status.NOT_FOUND, "note not found.").build();
     }
@@ -435,13 +431,13 @@ public class NotebookRestApi {
    * @throws IOException
    */
   @DELETE
-  @Path("{notebookId}/paragraph/{paragraphId}")
+  @Path("{noteId}/paragraph/{paragraphId}")
   @ZeppelinApi
-  public Response deleteParagraph(@PathParam("notebookId") String notebookId,
-      @PathParam("paragraphId") String paragraphId) throws IOException {
-    LOG.info("delete paragraph {} {}", notebookId, paragraphId);
+  public Response deleteParagraph(@PathParam("noteId") String noteId,
+                                  @PathParam("paragraphId") String paragraphId) throws IOException {
+    LOG.info("delete paragraph {} {}", noteId, paragraphId);
 
-    Note note = notebook.getNote(notebookId);
+    Note note = notebook.getNote(noteId);
     if (note == null) {
       return new JsonResponse(Status.NOT_FOUND, "note not found.").build();
     }
@@ -467,12 +463,12 @@ public class NotebookRestApi {
    * @throws IOException, IllegalArgumentException
    */
   @POST
-  @Path("job/{notebookId}")
+  @Path("job/{noteId}")
   @ZeppelinApi
-  public Response runNoteJobs(@PathParam("notebookId") String notebookId)
-      throws IOException, IllegalArgumentException {
-    LOG.info("run notebook jobs {} ", notebookId);
-    Note note = notebook.getNote(notebookId);
+  public Response runNoteJobs(@PathParam("noteId") String noteId) throws
+      IOException, IllegalArgumentException {
+    LOG.info("run notebook jobs {} ", noteId);
+    Note note = notebook.getNote(noteId);
     if (note == null) {
       return new JsonResponse<>(Status.NOT_FOUND, "note not found.").build();
     }
@@ -489,12 +485,12 @@ public class NotebookRestApi {
    * @throws IOException, IllegalArgumentException
    */
   @DELETE
-  @Path("job/{notebookId}")
+  @Path("job/{noteId}")
   @ZeppelinApi
-  public Response stopNoteJobs(@PathParam("notebookId") String notebookId)
-      throws IOException, IllegalArgumentException {
-    LOG.info("stop notebook jobs {} ", notebookId);
-    Note note = notebook.getNote(notebookId);
+  public Response stopNoteJobs(@PathParam("noteId") String noteId) 
+	  throws IOException, IllegalArgumentException {
+    LOG.info("stop notebook jobs {} ", noteId);
+    Note note = notebook.getNote(noteId);
     if (note == null) {
       return new JsonResponse<>(Status.NOT_FOUND, "note not found.").build();
     }
@@ -515,12 +511,12 @@ public class NotebookRestApi {
    * @throws IOException, IllegalArgumentException
    */
   @GET
-  @Path("job/{notebookId}")
+  @Path("job/{noteId}")
   @ZeppelinApi
-  public Response getNoteJobStatus(@PathParam("notebookId") String notebookId)
-      throws IOException, IllegalArgumentException {
+  public Response getNoteJobStatus(@PathParam("noteId") String noteId) throws
+      IOException, IllegalArgumentException {
     LOG.info("get notebook job status.");
-    Note note = notebook.getNote(notebookId);
+    Note note = notebook.getNote(noteId);
     if (note == null) {
       return new JsonResponse<>(Status.NOT_FOUND, "note not found.").build();
     }
@@ -537,14 +533,15 @@ public class NotebookRestApi {
    * @throws IOException, IllegalArgumentException
    */
   @POST
-  @Path("job/{notebookId}/{paragraphId}")
+  @Path("job/{noteId}/{paragraphId}")
   @ZeppelinApi
-  public Response runParagraph(@PathParam("notebookId") String notebookId,
-      @PathParam("paragraphId") String paragraphId, String message)
-      throws IOException, IllegalArgumentException {
-    LOG.info("run paragraph job {} {} {}", notebookId, paragraphId, message);
+  public Response runParagraph(@PathParam("noteId") String noteId, 
+                               @PathParam("paragraphId") String paragraphId,
+                               String message) throws
+                               IOException, IllegalArgumentException {
+    LOG.info("run paragraph job {} {} {}", noteId, paragraphId, message);
 
-    Note note = notebook.getNote(notebookId);
+    Note note = notebook.getNote(noteId);
     if (note == null) {
       return new JsonResponse<>(Status.NOT_FOUND, "note not found.").build();
     }
@@ -580,16 +577,13 @@ public class NotebookRestApi {
    * @throws IOException, IllegalArgumentException
    */
   @DELETE
-  @Path("job/{notebookId}/{paragraphId}")
+  @Path("job/{noteId}/{paragraphId}")
   @ZeppelinApi
-  public Response stopParagraph(@PathParam("notebookId") String notebookId,
-      @PathParam("paragraphId") String paragraphId) throws IOException, IllegalArgumentException {
-    /**
-     * TODO(jl): Fixed notebookId to noteId
-     * https://issues.apache.org/jira/browse/ZEPPELIN-1163
-     */
-    LOG.info("stop paragraph job {} ", notebookId);
-    Note note = notebook.getNote(notebookId);
+  public Response stopParagraph(@PathParam("noteId") String noteId, 
+                                @PathParam("paragraphId") String paragraphId) throws
+                                IOException, IllegalArgumentException {
+    LOG.info("stop paragraph job {} ", noteId);
+    Note note = notebook.getNote(noteId);
     if (note == null) {
       return new JsonResponse<>(Status.NOT_FOUND, "note not found.").build();
     }
@@ -610,16 +604,15 @@ public class NotebookRestApi {
    * @throws IOException, IllegalArgumentException
    */
   @POST
-  @Path("cron/{notebookId}")
+  @Path("cron/{noteId}")
   @ZeppelinApi
-  public Response registerCronJob(@PathParam("notebookId") String notebookId, String message)
-      throws IOException, IllegalArgumentException {
-    // TODO(jl): Fixed notebookId to noteId
-    LOG.info("Register cron job note={} request cron msg={}", notebookId, message);
+  public Response registerCronJob(@PathParam("noteId") String noteId, String message) throws
+      IOException, IllegalArgumentException {
+    LOG.info("Register cron job note={} request cron msg={}", noteId, message);
 
     CronRequest request = gson.fromJson(message, CronRequest.class);
-
-    Note note = notebook.getNote(notebookId);
+    
+    Note note = notebook.getNote(noteId);
     if (note == null) {
       return new JsonResponse<>(Status.NOT_FOUND, "note not found.").build();
     }
@@ -644,14 +637,13 @@ public class NotebookRestApi {
    * @throws IOException, IllegalArgumentException
    */
   @DELETE
-  @Path("cron/{notebookId}")
+  @Path("cron/{noteId}")
   @ZeppelinApi
-  public Response removeCronJob(@PathParam("notebookId") String notebookId)
-      throws IOException, IllegalArgumentException {
-    // TODO(jl): Fixed notebookId to noteId
-    LOG.info("Remove cron job note {}", notebookId);
+  public Response removeCronJob(@PathParam("noteId") String noteId) throws
+      IOException, IllegalArgumentException {
+    LOG.info("Remove cron job note {}", noteId);
 
-    Note note = notebook.getNote(notebookId);
+    Note note = notebook.getNote(noteId);
     if (note == null) {
       return new JsonResponse<>(Status.NOT_FOUND, "note not found.").build();
     }
@@ -672,14 +664,13 @@ public class NotebookRestApi {
    * @throws IOException, IllegalArgumentException
    */
   @GET
-  @Path("cron/{notebookId}")
+  @Path("cron/{noteId}")
   @ZeppelinApi
-  public Response getCronJob(@PathParam("notebookId") String notebookId)
-      throws IOException, IllegalArgumentException {
-    // TODO(jl): Fixed notebookId to noteId
-    LOG.info("Get cron job note {}", notebookId);
+  public Response getCronJob(@PathParam("noteId") String noteId) throws
+      IOException, IllegalArgumentException {
+    LOG.info("Get cron job note {}", noteId);
 
-    Note note = notebook.getNote(notebookId);
+    Note note = notebook.getNote(noteId);
     if (note == null) {
       return new JsonResponse<>(Status.NOT_FOUND, "note not found.").build();
     }

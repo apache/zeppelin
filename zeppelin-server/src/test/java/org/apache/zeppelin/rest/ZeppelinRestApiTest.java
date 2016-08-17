@@ -284,15 +284,15 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     return body;
   }
 
-  private void testDeleteNotebook(String notebookId) throws IOException {
+  private void testDeleteNotebook(String noteId) throws IOException {
 
-    DeleteMethod delete = httpDelete(("/notebook/" + notebookId));
+    DeleteMethod delete = httpDelete(("/notebook/" + noteId));
     LOG.info("testDeleteNotebook delete response\n" + delete.getResponseBodyAsString());
     assertThat("Test delete method:", delete, isAllowed());
     delete.releaseConnection();
     // make sure note is deleted
-    if (!notebookId.isEmpty()) {
-      Note deletedNote = ZeppelinServer.notebook.getNote(notebookId);
+    if (!noteId.isEmpty()) {
+      Note deletedNote = ZeppelinServer.notebook.getNote(noteId);
       assertNull("Deleted note should be null", deletedNote);
     }
   }
