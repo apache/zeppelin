@@ -99,7 +99,6 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
     if (newParagraph.focus) {
       $scope.paragraphFocused = true;
     }
-
     if (!$scope.paragraph.config) {
       $scope.paragraph.config = {};
     }
@@ -558,7 +557,7 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
       $scope.editor.setTheme('ace/theme/chrome');
       if ($scope.paragraphFocused) {
         $scope.editor.focus();
-        $scope.goToLineEnd();
+        $scope.goToEnd();
       }
 
       autoAdjustEditorHeight(_editor.container.id);
@@ -839,8 +838,8 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
     return false;
   };
 
-  $scope.goToLineEnd = function() {
-    $scope.editor.navigateLineEnd();
+  $scope.goToEnd = function() {
+    $scope.editor.navigateFileEnd();
   };
 
   $scope.getResultType = function(paragraph) {
