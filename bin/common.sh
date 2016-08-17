@@ -108,7 +108,6 @@ function getZeppelinVersion() {
 
 function downloadSparkBinary() {
   if [[ -z "${SPARK_HOME}" ]]; then
-    #echo "SPARK_HOME is not set. Download Spark binary.."
     . "${ZEPPELIN_HOME}/bin/download-spark.sh"
   fi
 }
