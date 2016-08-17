@@ -33,6 +33,7 @@ import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Joiner;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
@@ -197,8 +198,17 @@ public class ZeppelinHubRepo implements NotebookRepo {
 
   @Override
   public Note get(String noteId, String revId, AuthenticationInfo subject) throws IOException {
-    // Auto-generated method stub
-    return null;
+    if (StringUtils.isBlank(noteId) || StringUtils.isBlank(revId)) {
+      return EMPTY_NOTE;
+    }
+    String endpoint = Joiner.on("/").join(noteId, "checkpoint", revId);
+    String response = restApiClient.asyncGet(endpoint);
+    Note note = GSON.fromJson(response, Note.class);
+    if (note == null) {
+      return EMPTY_NOTE;
+    }
+    LOG.info("ZeppelinHub REST API get note {} revision {}", noteId, revId);
+    return note;
   }
 
   @Override
