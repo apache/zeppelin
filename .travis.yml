@@ -40,27 +40,27 @@ matrix:
 
     # Test all modules with spark 2.0.0 and scala 2.11
     - jdk: "oraclejdk7"
-      env: SCALA_VER="2.11" SPARK_VER="2.0.0" HADOOP_VER="2.3" PROFILE="-Pspark-2.0 -Phadoop-2.3 -Ppyspark -Psparkr -Pscalding -Pexamples -Pscala-2.11" BUILD_FLAG="package -Pbuild-distr -DskipRat" TEST_FLAG="verify -Pusing-packaged-distr -DskipRat" TEST_PROJECTS=""
+      env: SCALA_VER="2.11" SPARK_VER="2.0.0" HADOOP_VER="2.3" PROFILE="-Pspark-2.0 -Phadoop-2.3 -Psparkr -Pscalding -Pexamples -Pscala-2.11" BUILD_FLAG="package -Pbuild-distr -DskipRat" TEST_FLAG="verify -Pusing-packaged-distr -DskipRat" TEST_PROJECTS=""
 
     # Test all modules with scala 2.10
     - jdk: "oraclejdk7"
-      env: SCALA_VER="2.10" SPARK_VER="1.6.1" HADOOP_VER="2.3" PROFILE="-Pspark-1.6 -Pr -Phadoop-2.3 -Ppyspark -Psparkr -Pscalding -Pbeam -Pexamples -Pscala-2.10" BUILD_FLAG="package -Pbuild-distr -DskipRat" TEST_FLAG="verify -Pusing-packaged-distr -DskipRat" TEST_PROJECTS=""
+      env: SCALA_VER="2.10" SPARK_VER="1.6.1" HADOOP_VER="2.3" PROFILE="-Pspark-1.6 -Pr -Phadoop-2.3 -Psparkr -Pscalding -Pbeam -Pexamples -Pscala-2.10" BUILD_FLAG="package -Pbuild-distr -DskipRat" TEST_FLAG="verify -Pusing-packaged-distr -DskipRat" TEST_PROJECTS=""
 
     # Test all modules with scala 2.11
     - jdk: "oraclejdk7"
-      env: SCALA_VER="2.11" SPARK_VER="1.6.1" HADOOP_VER="2.3" PROFILE="-Pspark-1.6 -Pr -Phadoop-2.3 -Ppyspark -Psparkr -Pscalding -Pexamples -Pscala-2.11" BUILD_FLAG="package -Pbuild-distr -DskipRat" TEST_FLAG="verify -Pusing-packaged-distr -DskipRat" TEST_PROJECTS=""
+      env: SCALA_VER="2.11" SPARK_VER="1.6.1" HADOOP_VER="2.3" PROFILE="-Pspark-1.6 -Pr -Phadoop-2.3 -Psparkr -Pscalding -Pexamples -Pscala-2.11" BUILD_FLAG="package -Pbuild-distr -DskipRat" TEST_FLAG="verify -Pusing-packaged-distr -DskipRat" TEST_PROJECTS=""
 
     # Test spark module for 1.5.2
     - jdk: "oraclejdk7"
-      env: SCALA_VER="2.10" SPARK_VER="1.5.2" HADOOP_VER="2.3" PROFILE="-Pspark-1.5 -Pr -Phadoop-2.3 -Ppyspark -Psparkr" BUILD_FLAG="package -DskipTests -DskipRat" TEST_FLAG="verify -DskipRat" TEST_PROJECTS="-pl zeppelin-interpreter,zeppelin-zengine,zeppelin-server,zeppelin-display,spark-dependencies,spark,r -Dtest=org.apache.zeppelin.rest.*Test,org.apache.zeppelin.spark.* -DfailIfNoTests=false"
+      env: SCALA_VER="2.10" SPARK_VER="1.5.2" HADOOP_VER="2.3" PROFILE="-Pspark-1.5 -Pr -Phadoop-2.3" BUILD_FLAG="package -DskipTests -DskipRat" TEST_FLAG="verify -DskipRat" TEST_PROJECTS="-pl zeppelin-interpreter,zeppelin-zengine,zeppelin-server,zeppelin-display,spark,r -Dtest=org.apache.zeppelin.rest.*Test,org.apache.zeppelin.spark.* -DfailIfNoTests=false"
 
     # Test spark module for 1.4.1
     - jdk: "oraclejdk7"
-      env: SCALA_VER="2.10" SPARK_VER="1.4.1" HADOOP_VER="2.3" PROFILE="-Pspark-1.4 -Pr -Phadoop-2.3 -Ppyspark -Psparkr" BUILD_FLAG="package -DskipTests -DskipRat" TEST_FLAG="verify -DskipRat" TEST_PROJECTS="-pl zeppelin-interpreter,zeppelin-zengine,zeppelin-server,zeppelin-display,spark-dependencies,spark,r -Dtest=org.apache.zeppelin.rest.*Test,org.apache.zeppelin.spark.* -DfailIfNoTests=false"
+      env: SCALA_VER="2.10" SPARK_VER="1.4.1" HADOOP_VER="2.3" PROFILE="-Pspark-1.4 -Pr -Phadoop-2.3 -Psparkr" BUILD_FLAG="package -DskipTests -DskipRat" TEST_FLAG="verify -DskipRat" TEST_PROJECTS="-pl zeppelin-interpreter,zeppelin-zengine,zeppelin-server,zeppelin-display,spark,r -Dtest=org.apache.zeppelin.rest.*Test,org.apache.zeppelin.spark.* -DfailIfNoTests=false"
 
     # Test selenium with spark module for 1.6.1
     - jdk: "oraclejdk7"
-      env: TEST_SELENIUM="true" SCALA_VER="2.10" SPARK_VER="1.6.1" HADOOP_VER="2.3" PROFILE="-Pspark-1.6 -Phadoop-2.3 -Ppyspark -Pexamples" BUILD_FLAG="package -DskipTests -DskipRat" TEST_FLAG="verify -DskipRat" TEST_PROJECTS="-pl zeppelin-interpreter,zeppelin-zengine,zeppelin-server,zeppelin-display,spark-dependencies,spark -Dtest=org.apache.zeppelin.AbstractFunctionalSuite -DfailIfNoTests=false"
+      env: TEST_SELENIUM="true" SCALA_VER="2.10" SPARK_VER="1.6.1" HADOOP_VER="2.3" PROFILE="-Pspark-1.6 -Phadoop-2.3 -Pexamples" BUILD_FLAG="package -DskipTests -DskipRat" TEST_FLAG="verify -DskipRat" TEST_PROJECTS="-pl zeppelin-interpreter,zeppelin-zengine,zeppelin-server,zeppelin-display,spark -Dtest=org.apache.zeppelin.AbstractFunctionalSuite -DfailIfNoTests=false"
 
 before_install:
   - "ls -la .spark-dist ${HOME}/.m2/repository/.cache/maven-download-plugin"
@@ -95,4 +95,3 @@ after_failure:
   - cat zeppelin-distribution/target/zeppelin-*-SNAPSHOT/zeppelin-*-SNAPSHOT/logs/zeppelin*.out
   - cat zeppelin-web/npm-debug.log
   - cat spark-*/logs/*
-
