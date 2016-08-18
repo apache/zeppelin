@@ -49,10 +49,13 @@ import static org.junit.Assert.assertThat;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class NotebookRestApiTest extends AbstractTestRestApi {
   Gson gson = new Gson();
+  static AuthenticationInfo subject;
 
   @BeforeClass
   public static void init() throws Exception {
     AbstractTestRestApi.startUp();
+    subject = new AuthenticationInfo();
+    subject.setUser("anonymous");
   }
 
   @AfterClass
@@ -62,8 +65,6 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
 
   @Test
   public void testPermissions() throws IOException {
-    AuthenticationInfo subject = new AuthenticationInfo();
-    subject.setUser("anonymous");
     Note note1 = ZeppelinServer.notebook.createNote(subject);
     // Set only readers
     String jsonRequest = "{\"readers\":[\"admin-team\"],\"owners\":[]," +
@@ -123,6 +124,28 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
     //cleanup
     ZeppelinServer.notebook.removeNote(note1.getId(), subject);
     ZeppelinServer.notebook.removeNote(note2.getId(), subject);
+
+  }
+
+  @Test
+  public void testGetNoteParagraphJobStatus() throws IOException {
+    Note note1 = ZeppelinServer.notebook.createNote(subject);
+    note1.addParagraph();
+
+    String paragraphId = note1.getLastParagraph().getId();
+
+    GetMethod get = httpGet("/notebook/job/" + note1.getId() + "/" + paragraphId);
+    assertThat(get, isAllowed());
+    Map<String, Object> resp = gson.fromJson(get.getResponseBodyAsString(), new TypeToken<Map<String, Object>>() {
+    }.getType());
+    Map<String, Set<String>> paragraphStatus = (Map<String, Set<String>>) resp.get("body");
+
+    // Check id and status have proper value
+    assertEquals(paragraphStatus.get("id"), paragraphId);
+    assertEquals(paragraphStatus.get("status"), "READY");
+
+    //cleanup
+    ZeppelinServer.notebook.removeNote(note1.getId(), subject);
 
   }
 }

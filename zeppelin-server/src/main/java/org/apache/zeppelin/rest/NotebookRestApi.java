@@ -529,6 +529,35 @@ public class NotebookRestApi {
   }
 
   /**
+   * Get notebook paragraph job status REST API
+   *
+   * @param notebookId ID of Notebook
+   * @param paragraphId ID of Paragraph
+   * @return JSON with status.OK
+   * @throws IOException, IllegalArgumentException
+   */
+  @GET
+  @Path("job/{notebookId}/{paragraphId}")
+  @ZeppelinApi
+  public Response getNoteParagraphJobStatus(@PathParam("notebookId") String notebookId, 
+      @PathParam("paragraphId") String paragraphId)
+      throws IOException, IllegalArgumentException {
+    LOG.info("get notebook paragraph job status.");
+    Note note = notebook.getNote(notebookId);
+    if (note == null) {
+      return new JsonResponse<>(Status.NOT_FOUND, "note not found.").build();
+    }
+
+    Paragraph paragraph = note.getParagraph(paragraphId);
+    if (paragraph == null) {
+      return new JsonResponse<>(Status.NOT_FOUND, "paragraph not found.").build();
+    }
+
+    return new JsonResponse<>(Status.OK, null, note.generateSingleParagraphInfo(paragraphId)).
+      build();
+  }
+
+  /**
    * Run paragraph job REST API
    *
    * @param message - JSON with params if user wants to update dynamic form's value

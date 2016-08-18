@@ -79,6 +79,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
         config.put("enabled", true);
         p.setConfig(config);
         p.setText("%spark print(sc.parallelize(1 to 10).reduce(_ + _))");
+        p.setAuthenticationInfo(subject);
         note.run(p.getId());
         waitForFinish(p);
         assertEquals(Status.FINISHED, p.getStatus());
@@ -116,6 +117,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
             "df <- createDataFrame(" + sqlContextName + ", localDF)\n" +
             "count(df)"
         );
+        p.setAuthenticationInfo(subject);
         note.run(p.getId());
         waitForFinish(p);
         System.err.println("sparkRTest=" + p.getResult().message());
@@ -139,6 +141,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
             config.put("enabled", true);
             p.setConfig(config);
             p.setText("%pyspark print(sc.parallelize(range(1, 11)).reduce(lambda a, b: a + b))");
+            p.setAuthenticationInfo(subject);
 //            p.getRepl("org.apache.zeppelin.spark.SparkInterpreter").open();
             note.run(p.getId());
             waitForFinish(p);
@@ -170,6 +173,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
 
             p.setText("%pyspark\nfrom pyspark.sql.functions import *\n"
                     + "print(" + sqlContextName + ".range(0, 10).withColumn('uniform', rand(seed=10) * 3.14).count())");
+            p.setAuthenticationInfo(subject);
 //            p.getRepl("org.apache.zeppelin.spark.SparkInterpreter").open();
             note.run(p.getId());
             waitForFinish(p);
@@ -188,16 +192,19 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
         config0.put("enabled", true);
         p0.setConfig(config0);
         p0.setText("%spark z.run(1)");
+        p0.setAuthenticationInfo(subject);
         Paragraph p1 = note.addParagraph();
         Map config1 = p1.getConfig();
         config1.put("enabled", true);
         p1.setConfig(config1);
         p1.setText("%spark val a=10");
+        p1.setAuthenticationInfo(subject);
         Paragraph p2 = note.addParagraph();
         Map config2 = p2.getConfig();
         config2.put("enabled", true);
         p2.setConfig(config2);
         p2.setText("%spark print(a)");
+        p2.setAuthenticationInfo(subject);
 
         note.run(p0.getId());
         waitForFinish(p0);
@@ -235,6 +242,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
             config.put("enabled", true);
             p0.setConfig(config);
             p0.setText("%dep z.load(\"com.databricks:spark-csv_2.11:1.2.0\")");
+            p0.setAuthenticationInfo(subject);
             note.run(p0.getId());
             waitForFinish(p0);
             assertEquals(Status.FINISHED, p0.getStatus());
@@ -255,6 +263,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
                     "from pyspark.sql import SQLContext\n" +
                     "print(" + sqlContextName + ".read.format('com.databricks.spark.csv')" +
                     ".load('"+ tmpFile.getAbsolutePath() +"').count())");
+            p1.setAuthenticationInfo(subject);
             note.run(p1.getId());
 
             waitForFinish(p1);
