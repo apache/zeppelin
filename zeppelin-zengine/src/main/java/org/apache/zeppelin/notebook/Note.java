@@ -472,12 +472,16 @@ public class Note implements Serializable, ParagraphJobListener {
         logger.debug("New paragraph: {}", pText);
         p.setEffectiveText(pText);
       } else {
-        InterpreterException intpException;
-        intpException = new InterpreterException(
-          "Pargaraph " + p.getJobName() + "'s Interpreter " + requiredReplName + " not found");
-        p.setReturn(
-          new InterpreterResult(InterpreterResult.Code.ERROR, intpException.getMessage()),
-          intpException);
+        String intpExceptionMsg = String.format("%s",
+          p.getJobName()
+          + "'s Interpreter "
+          + requiredReplName + " not found"
+        );
+        InterpreterException intpException = new InterpreterException(intpExceptionMsg);
+        InterpreterResult intpResult = new InterpreterResult(
+          InterpreterResult.Code.ERROR, intpException.getMessage()
+        );
+        p.setReturn(intpResult, intpException);
         p.setStatus(Job.Status.ERROR);
         throw intpException;
       }
