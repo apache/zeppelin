@@ -170,7 +170,7 @@ public class ZeppelinhubRestApiHandler {
       data = IOUtils.toString(responseContent, "UTF-8");
       responseContent.close();
     } else {
-      LOG.error("ZeppelinHub " + method + " {} returned with status {} ", url, code);
+      LOG.error("ZeppelinHub {} {} returned with status {} ", method, url, code);
       throw new IOException("Cannot perform " + method + " request to ZeppelinHub");
     }
     return data;
