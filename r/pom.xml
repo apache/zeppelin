@@ -56,12 +56,6 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>zeppelin-spark-dependencies_${scala.binary.version}</artifactId>
-      <version>${project.version}</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>${project.groupId}</groupId>
       <artifactId>zeppelin-interpreter</artifactId>
       <version>${project.version}</version>
       <scope>provided</scope>
