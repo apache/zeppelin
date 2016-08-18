@@ -47,6 +47,11 @@ limitations under the License.
           ng-class="{'active': isGraphMode('scatterChart')}"
           ng-click="setGraphMode('scatterChart', true)"><i class="cf cf-scatter-chart"></i>
   </button>
+  <button type="button" class="btn btn-default btn-sm"
+          ng-if="paragraph.result.type == 'TABLE'"
+          ng-class="{'active': isGraphMode('map')}"
+          ng-click="setGraphMode('map', true)"><i class="fa fa-map-marker"></i>
+  </button>
 
   <button type="button"
           ng-if="paragraph.result.type != 'TABLE'"
