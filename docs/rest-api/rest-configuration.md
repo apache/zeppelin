@@ -1,7 +1,7 @@
 ---
 layout: page
-title: "Configuration REST API"
-description: ""
+title: "Apache Zeppelin Configuration REST API"
+description: "This page contains Apache Zeppelin Configuration REST API information."
 group: rest-api
 ---
 <!--

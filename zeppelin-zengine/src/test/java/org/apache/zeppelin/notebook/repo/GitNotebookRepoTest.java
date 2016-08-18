@@ -234,7 +234,7 @@ public class GitNotebookRepoTest {
     assertThat(paragraphCount_2).isEqualTo(paragraphCount_1 + 1);
 
     // get note from revision 1
-    Note noteRevision_1 = notebookRepo.get(TEST_NOTE_ID, revision_1, null);
+    Note noteRevision_1 = notebookRepo.get(TEST_NOTE_ID, revision_1.id, null);
     assertThat(noteRevision_1.getParagraphs().size()).isEqualTo(paragraphCount_1);
 
     // get current note
@@ -252,7 +252,7 @@ public class GitNotebookRepoTest {
     assertThat(paragraphCount_3).isEqualTo(paragraphCount_2 + 1);
 
     // get revision 1 again
-    noteRevision_1 = notebookRepo.get(TEST_NOTE_ID, revision_1, null);
+    noteRevision_1 = notebookRepo.get(TEST_NOTE_ID, revision_1.id, null);
     assertThat(noteRevision_1.getParagraphs().size()).isEqualTo(paragraphCount_1);
 
     // check that note is unchanged
@@ -287,7 +287,7 @@ public class GitNotebookRepoTest {
     int paragraphCount_2 = note.getParagraphs().size();
 
     // get note from revision 1
-    Note noteRevision_1 = notebookRepo.get(TEST_NOTE_ID, revision_1, null);
+    Note noteRevision_1 = notebookRepo.get(TEST_NOTE_ID, revision_1.id, null);
     assertThat(noteRevision_1.getParagraphs().size()).isEqualTo(paragraphCount_1);
 
     // get current note
@@ -296,7 +296,7 @@ public class GitNotebookRepoTest {
 
     // test for absent revision
     Revision absentRevision = new Revision("absentId", StringUtils.EMPTY, 0);
-    note = notebookRepo.get(TEST_NOTE_ID, absentRevision, null);
+    note = notebookRepo.get(TEST_NOTE_ID, absentRevision.id, null);
     assertThat(note).isNull();
   }
 

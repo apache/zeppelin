@@ -20,7 +20,6 @@ package org.apache.zeppelin.rest;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -39,18 +38,18 @@ import com.google.common.collect.Sets;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.zeppelin.utils.InterpreterBindingUtils;
 import org.quartz.CronExpression;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.apache.zeppelin.annotation.ZeppelinApi;
-import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.NotebookAuthorization;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.rest.message.CronRequest;
-import org.apache.zeppelin.rest.message.InterpreterSettingListForNoteBind;
+import org.apache.zeppelin.types.InterpreterSettingsList;
 import org.apache.zeppelin.rest.message.NewNotebookRequest;
 import org.apache.zeppelin.rest.message.NewParagraphRequest;
 import org.apache.zeppelin.rest.message.RunParagraphWithParametersRequest;
@@ -186,29 +185,9 @@ public class NotebookRestApi {
   @Path("interpreter/bind/{noteId}")
   @ZeppelinApi
   public Response bind(@PathParam("noteId") String noteId) {
-    List<InterpreterSettingListForNoteBind> settingList = new LinkedList<>();
-
-    List<InterpreterSetting> selectedSettings = notebook.getBindedInterpreterSettings(noteId);
-    for (InterpreterSetting setting : selectedSettings) {
-      settingList.add(new InterpreterSettingListForNoteBind(setting.getId(), setting.getName(),
-          setting.getInterpreterInfos(), true));
-    }
-
-    List<InterpreterSetting> availableSettings = notebook.getInterpreterFactory().get();
-    for (InterpreterSetting setting : availableSettings) {
-      boolean selected = false;
-      for (InterpreterSetting selectedSetting : selectedSettings) {
-        if (selectedSetting.getId().equals(setting.getId())) {
-          selected = true;
-          break;
-        }
-      }
-
-      if (!selected) {
-        settingList.add(new InterpreterSettingListForNoteBind(setting.getId(), setting.getName(),
-            setting.getInterpreterInfos(), false));
-      }
-    }
+    List<InterpreterSettingsList> settingList =
+        InterpreterBindingUtils.getInterpreterBindings(notebook, noteId);
+    notebookServer.broadcastInterpreterBindings(noteId, settingList);
     return new JsonResponse<>(Status.OK, "", settingList).build();
   }
 
@@ -547,6 +526,35 @@ public class NotebookRestApi {
     }
 
     return new JsonResponse<>(Status.OK, null, note.generateParagraphsInfo()).build();
+  }
+
+  /**
+   * Get notebook paragraph job status REST API
+   *
+   * @param notebookId ID of Notebook
+   * @param paragraphId ID of Paragraph
+   * @return JSON with status.OK
+   * @throws IOException, IllegalArgumentException
+   */
+  @GET
+  @Path("job/{notebookId}/{paragraphId}")
+  @ZeppelinApi
+  public Response getNoteParagraphJobStatus(@PathParam("notebookId") String notebookId, 
+      @PathParam("paragraphId") String paragraphId)
+      throws IOException, IllegalArgumentException {
+    LOG.info("get notebook paragraph job status.");
+    Note note = notebook.getNote(notebookId);
+    if (note == null) {
+      return new JsonResponse<>(Status.NOT_FOUND, "note not found.").build();
+    }
+
+    Paragraph paragraph = note.getParagraph(paragraphId);
+    if (paragraph == null) {
+      return new JsonResponse<>(Status.NOT_FOUND, "paragraph not found.").build();
+    }
+
+    return new JsonResponse<>(Status.OK, null, note.generateSingleParagraphInfo(paragraphId)).
+      build();
   }
 
   /**

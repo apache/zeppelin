@@ -55,6 +55,7 @@ import com.google.gson.reflect.TypeToken;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.NullArgumentException;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sonatype.aether.RepositoryException;
@@ -345,6 +346,8 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     InputStreamReader isr = new InputStreamReader(fis);
     BufferedReader bufferedReader = new BufferedReader(isr);
     StringBuilder sb = new StringBuilder();
+    InterpreterSetting interpreterSettingObject;
+    String depClassPath = StringUtils.EMPTY;
     String line;
     while ((line = bufferedReader.readLine()) != null) {
       sb.append(line);
@@ -365,9 +368,14 @@ public class InterpreterFactory implements InterpreterGroupFactory {
       setting.getOption().setRemote(true);
 
       // Update transient information from InterpreterSettingRef
-      // TODO(jl): Check if reference of setting is null
-
-      setting.setPath(interpreterSettingsRef.get(setting.getGroup()).getPath());
+      interpreterSettingObject = interpreterSettingsRef.get(setting.getGroup());
+      if (interpreterSettingObject == null) {
+        logger.warn("can't get InterpreterSetting " +
+          "Information From loaded Interpreter Setting Ref - {} ", setting.getGroup());
+        continue;
+      }
+      depClassPath = interpreterSettingObject.getPath();
+      setting.setPath(depClassPath);
 
       setting.setInterpreterGroupFactory(this);
       loadInterpreterDependencies(setting);
@@ -505,7 +513,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     setting.setGroup(group);
     setting.appendDependencies(dependencies);
     setting.setInterpreterOption(option);
-    setting.updateProperties(p);
+    setting.setProperties(p);
     setting.setInterpreterGroupFactory(this);
     interpreterSettings.put(setting.getId(), setting);
     saveToFile();
@@ -837,7 +845,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
         intpsetting.closeAndRmoveAllInterpreterGroups();
 
         intpsetting.setOption(option);
-        intpsetting.updateProperties(properties);
+        intpsetting.setProperties(properties);
         intpsetting.setDependencies(dependencies);
 
         loadInterpreterDependencies(intpsetting);
@@ -912,8 +920,6 @@ public class InterpreterFactory implements InterpreterGroupFactory {
       throws InterpreterException {
     logger.info("Create repl {} from {}", className, dirName);
 
-    updatePropertiesFromRegisteredInterpreter(property, className);
-
     ClassLoader oldcl = Thread.currentThread().getContextClassLoader();
     try {
 
@@ -984,9 +990,6 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     String localRepoPath = conf.getInterpreterLocalRepoPath() + "/" + interpreterSettingId;
     int maxPoolSize = conf.getInt(ConfVars.ZEPPELIN_INTERPRETER_MAX_POOL_SIZE);
 
-    updatePropertiesFromRegisteredInterpreter(property, className);
-
-
     RemoteInterpreter remoteInterpreter =
         new RemoteInterpreter(property, noteId, className, conf.getInterpreterRemoteRunnerPath(),
             interpreterPath, localRepoPath, connectTimeout, maxPoolSize,
@@ -994,22 +997,6 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     remoteInterpreter.setEnv(env);
 
     return new LazyOpenInterpreter(remoteInterpreter);
-  }
-
-  private Properties updatePropertiesFromRegisteredInterpreter(Properties properties,
-      String className) {
-    RegisteredInterpreter registeredInterpreter =
-        Interpreter.findRegisteredInterpreterByClassName(className);
-    if (null != registeredInterpreter) {
-      Map<String, InterpreterProperty> defaultProperties = registeredInterpreter.getProperties();
-      for (String key : defaultProperties.keySet()) {
-        if (!properties.containsKey(key) && null != defaultProperties.get(key).getValue()) {
-          properties.setProperty(key, defaultProperties.get(key).getValue());
-        }
-      }
-    }
-
-    return properties;
   }
 
   /**
