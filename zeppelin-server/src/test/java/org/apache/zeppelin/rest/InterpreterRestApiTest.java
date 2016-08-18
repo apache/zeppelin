@@ -147,6 +147,7 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
     Note note = ZeppelinServer.notebook.createNote(subject);
     note.addParagraph();
     Paragraph p = note.getLastParagraph();
+    p.setAuthenticationInfo(subject);
     Map config = p.getConfig();
     config.put("enabled", true);
 
@@ -175,6 +176,7 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
     p = note.addParagraph();
     p.setConfig(config);
     p.setText("%md markdown restarted");
+    p.setAuthenticationInfo(subject);
     note.run(p.getId());
     while (p.getStatus() != Status.FINISHED) {
       Thread.sleep(100);

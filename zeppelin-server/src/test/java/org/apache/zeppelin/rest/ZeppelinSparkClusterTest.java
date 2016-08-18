@@ -270,6 +270,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
     private int getSparkVersionNumber(Note note) {
         Paragraph p = note.addParagraph();
         note.setName("note");
+        p.setAuthenticationInfo(subject);
         Map config = p.getConfig();
         config.put("enabled", true);
         p.setConfig(config);

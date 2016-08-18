@@ -87,7 +87,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     paragraph.setConfig(config);
     String paragraphText = "%md This is my new paragraph in my new note";
     paragraph.setText(paragraphText);
-    note.persist(null);
+    note.persist(subject);
 
     String sourceNoteID = note.getId();
     GetMethod get = httpGet("/notebook/" + sourceNoteID);
@@ -215,7 +215,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     config.put("enabled", true);
     paragraph.setConfig(config);
     paragraph.setText("%md This is my new paragraph in my new note");
-    note.persist(null);
+    note.persist(subject);
     String sourceNoteID = note.getId();
     // Call export Notebook REST API
     GetMethod get = httpGet("/notebook/export/" + sourceNoteID);
@@ -248,7 +248,8 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     config.put("enabled", true);
     paragraph.setConfig(config);
     paragraph.setText("%md This is my new paragraph in my new note");
-    note.persist(null);
+    paragraph.setAuthenticationInfo(subject);
+    note.persist(subject);
     String sourceNoteID = note.getId();
     // get note content as JSON
     String oldJson = getNoteContent(sourceNoteID);
@@ -310,7 +311,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     config.put("enabled", true);
     paragraph.setConfig(config);
     paragraph.setText("%md This is my new paragraph in my new note");
-    note.persist(null);
+    note.persist(subject);
     String sourceNoteID = note.getId();
 
     String noteName = "clone Note Name";
@@ -361,7 +362,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     paragraph.setConfig(config);
     
     paragraph.setText("%md This is test paragraph.");
-    note.persist(null);
+    note.persist(subject);
     String noteID = note.getId();
 
     note.runAll();
@@ -416,7 +417,8 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     paragraph.setConfig(config);
 
     paragraph.setText("%sh sleep 1");
-    note.persist(null);
+    paragraph.setAuthenticationInfo(subject);
+    note.persist(subject);
     String noteID = note.getId();
 
     note.runAll();
@@ -469,7 +471,8 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     paragraph.setConfig(config);
 
     paragraph.setText("%spark\nval param = z.input(\"param\").toString\nprintln(param)");
-    note.persist(null);
+    paragraph.setAuthenticationInfo(subject);
+    note.persist(subject);
     String noteID = note.getId();
 
     note.runAll();
@@ -508,6 +511,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     note.setName("note for run test");
     Paragraph paragraph = note.addParagraph();
     paragraph.setText("%md This is test paragraph.");
+    paragraph.setAuthenticationInfo(subject);
     
     Map config = paragraph.getConfig();
     config.put("enabled", true);
@@ -557,8 +561,9 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     note.setName("note for run test");
     Paragraph paragraph = note.addParagraph();
     paragraph.setText("%spark\nval param = z.input(\"param\").toString\nprintln(param)");
+    paragraph.setAuthenticationInfo(subject);
 
-    note.persist(null);
+    note.persist(subject);
 
     GetMethod getNoteJobs = httpGet("/notebook/job/" + note.getId());
     assertThat("test notebook jobs run:", getNoteJobs, isAllowed());
@@ -619,7 +624,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     Paragraph p = note.addParagraph();
     p.setTitle("hello");
     p.setText("world");
-    note.persist(null);
+    note.persist(subject);
 
     GetMethod get = httpGet("/notebook/" + note.getId() + "/paragraph/" + p.getId());
     LOG.info("testGetParagraph response\n" + get.getResponseBodyAsString());
@@ -653,7 +658,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     p2.setTitle("title2");
     p2.setText("text2");
 
-    note.persist(null);
+    note.persist(subject);
 
     PostMethod post = httpPost("/notebook/" + note.getId() + "/paragraph/" + p2.getId() + "/move/" + 0, "");
     assertThat("Test post method: ", post, isAllowed());
@@ -681,7 +686,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     p.setTitle("title1");
     p.setText("text1");
 
-    note.persist(null);
+    note.persist(subject);
 
     DeleteMethod delete = httpDelete("/notebook/" + note.getId() + "/paragraph/" + p.getId());
     assertThat("Test delete method: ", delete, isAllowed());
