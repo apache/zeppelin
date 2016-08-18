@@ -20,11 +20,7 @@
 import sys
 import signal
 import base64
-
-try:
-    import StringIO as io
-except ImportError:
-    import io as io
+import io
 
 def intHandler(signum, frame):  # Set the signal handler
     print ("Paragraph interrupted")
@@ -117,6 +113,7 @@ class PyZeppelinContext(object):
     
     def __init__(self):
         self.max_result = 1000
+        self.py3 = bool(sys.version_info >= (3,))
     
     def input(self, name, defaultValue=""):
         print(self.errorMsg)
@@ -168,13 +165,23 @@ class PyZeppelinContext(object):
                         fmt='png', **kwargs):
         """Matplotlib show function
         """
-        img = io.StringIO()
         if fmt == 'png':
+            img = io.BytesIO()
             p.savefig(img, format=fmt)
             html = "%html <img src={img} width={width}, height={height}>"
-            img_str = "data:image/png;base64,"
+            img_str = b"data:image/png;base64,"
             img_str += base64.b64encode(img.getvalue().strip())
+            # Need to do this for python3 compatibility
+            if self.py3:
+                img_str = img_str.decode('ascii')
+                
         elif fmt == 'svg':
+            # Another python3 compatability check
+            if self.py3:
+                img = io.StringIO()
+            else:
+                img = io.BytesIO()
+                
             p.savefig(img, format=fmt)
             html = "%html <div style='width:{width};height:{height}'>{img}<div>"
             img_str = img.getvalue()
