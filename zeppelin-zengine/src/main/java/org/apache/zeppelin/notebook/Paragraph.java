@@ -80,7 +80,6 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     this.factory = factory;
     title = null;
     text = null;
-    authenticationInfo = null;
     user = null;
     dateUpdated = null;
     settings = new GUI();
@@ -93,7 +92,6 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     this.factory = factory;
     title = null;
     text = null;
-    authenticationInfo = null;
     dateUpdated = null;
     settings = new GUI();
     config = new HashMap<String, Object>();
@@ -468,7 +466,9 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     final Paragraph self = this;
 
     Credentials credentials = note.getCredentials();
-    if (authenticationInfo != null) {
+    if (authenticationInfo != null
+        && authenticationInfo.getUser() != null
+        && !authenticationInfo.getUser().equals("anonymous")) {
       UserCredentials userCredentials = credentials.getUserCredentials(
               authenticationInfo.getUser());
       authenticationInfo.setUserCredentials(userCredentials);

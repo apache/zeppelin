@@ -436,7 +436,8 @@ public class Note implements Serializable, ParagraphJobListener {
         p.setAuthenticationInfo(authenticationInfo);
 
         p.setListener(jobListenerFactory.getParagraphJobListener(this));
-        Interpreter intp = factory.getInterpreter(getId(), p.getRequiredReplName(), null);
+        Interpreter intp = factory.getInterpreter(getId(), p.getRequiredReplName(),
+            cronExecutingUser);
 
         intp.getScheduler().submit(p);
       }
@@ -452,9 +453,10 @@ public class Note implements Serializable, ParagraphJobListener {
     Paragraph p = getParagraph(paragraphId);
     p.setListener(jobListenerFactory.getParagraphJobListener(this));
     String requiredReplName = p.getRequiredReplName();
-    String user = getParagraph(paragraphId).getAuthenticationInfo().getUser();
-    if (user == null) {
-      user = "anonymous";
+    String user = "anonymous";
+    if (getParagraph(paragraphId).getAuthenticationInfo() != null
+        && getParagraph(paragraphId).getAuthenticationInfo().getUser() != null) {
+      user = getParagraph(paragraphId).getAuthenticationInfo().getUser();
     }
     Interpreter intp = factory.getInterpreter(getId(), requiredReplName, user);
 
