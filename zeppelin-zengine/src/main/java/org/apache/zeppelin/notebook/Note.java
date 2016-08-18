@@ -529,8 +529,11 @@ public class Note implements Serializable, ParagraphJobListener {
     }
 
     for (InterpreterSetting setting : settings) {
-      InterpreterGroup intpGroup = setting.getInterpreterGroup(id,
-          getParagraph(paragraphId).getAuthenticationInfo().getUser());
+      String user = null;
+      if (getParagraph(paragraphId).getAuthenticationInfo() != null) {
+        user = getParagraph(paragraphId).getAuthenticationInfo().getUser();
+      }
+      InterpreterGroup intpGroup = setting.getInterpreterGroup(id, user);
       AngularObjectRegistry registry = intpGroup.getAngularObjectRegistry();
 
       if (registry instanceof RemoteAngularObjectRegistry) {
