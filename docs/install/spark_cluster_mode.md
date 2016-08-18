@@ -116,7 +116,7 @@ docker run -it \
 You can simply verify the processes of Spark and YARN is running well in Docker with below command.
 
 ```
-ps -ef | grep spark
+ps -ef
 ```
 
 You can also check each application web UI for HDFS on `http://<hostname>:50070/`, YARN on `http://<hostname>:8088/cluster` and Spark on `http://<hostname>:8080/`.
