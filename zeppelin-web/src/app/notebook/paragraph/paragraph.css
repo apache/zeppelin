@@ -275,6 +275,10 @@ table.dataTable.table-condensed .sorting_desc:after {
   background: none !important;
 }
 
+.paragraph-disable {
+  opacity : 0.6!important;
+}
+
 .ace_marker-layer .ace_selection {
     z-index: 0 !important;
 }

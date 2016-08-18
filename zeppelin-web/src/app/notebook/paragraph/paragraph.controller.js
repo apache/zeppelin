@@ -95,6 +95,7 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
     $scope.chart = {};
     $scope.colWidthOption = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
     $scope.paragraphFocused = false;
+    $scope.editor.setReadOnly($scope.isRunning());
     if (newParagraph.focus) {
       $scope.paragraphFocused = true;
     }
@@ -267,16 +268,6 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
       $window.parent.postMessage(angular.toJson(message), '*');
     }
   });
-  $scope.$watch(function(scope) {
-      return scope.paragraph.status;
-    },
-    function(newValue, oldValue) {
-      var readOnly = false;
-      if ($scope.isRunning()) {
-        readOnly = true;
-      }
-      $scope.editor.setReadOnly(readOnly);
-    });
 
   var isEmpty = function(object) {
     return !object;
@@ -727,9 +718,6 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
         }
         this.origOnCommandKey(e, hashId, keyCode);
       };
-    }
-    if ($scope.isRunning()) {
-      $scope.editor.setReadOnly(true);
     }
   };
 
@@ -2241,6 +2229,7 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
       $scope.paragraph.status = data.paragraph.status;
       $scope.paragraph.result = data.paragraph.result;
       $scope.paragraph.settings = data.paragraph.settings;
+      $scope.editor.setReadOnly($scope.isRunning());
 
       if (!$scope.asIframe) {
         $scope.paragraph.config = data.paragraph.config;
