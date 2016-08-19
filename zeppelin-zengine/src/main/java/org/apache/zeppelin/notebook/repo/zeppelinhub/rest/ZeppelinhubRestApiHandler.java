@@ -145,8 +145,7 @@ public class ZeppelinhubRestApiHandler {
     return sendToZeppelinHub(method, url, StringUtils.EMPTY);
   }
   
-  private String sendToZeppelinHub(HttpMethod method, String url, String json)
-      throws IOException {
+  private String sendToZeppelinHub(HttpMethod method, String url, String json) throws IOException {
     InputStreamResponseListener listener = new InputStreamResponseListener();
     Response response;
     String data;
