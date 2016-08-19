@@ -545,7 +545,7 @@ public class NotebookServer extends WebSocketServlet implements
       }
       addConnectionToNote(note.id(), conn);
       conn.send(serializeMessage(new Message(OP.NOTE).put("note", note)));
-      sendAllAngularObjects(note, conn);
+      sendAllAngularObjects(note, conn, fromMessage.principal);
     } else {
       conn.send(serializeMessage(new Message(OP.NOTE).put("note", null)));
     }
@@ -569,7 +569,7 @@ public class NotebookServer extends WebSocketServlet implements
       }
       addConnectionToNote(note.id(), conn);
       conn.send(serializeMessage(new Message(OP.NOTE).put("note", note)));
-      sendAllAngularObjects(note, conn);
+      sendAllAngularObjects(note, conn, fromMessage.principal);
     } else {
       removeConnectionFromAllNote(conn);
       conn.send(serializeMessage(new Message(OP.NOTE).put("note", null)));
@@ -1378,7 +1378,7 @@ public class NotebookServer extends WebSocketServlet implements
     return new ParagraphListenerImpl(this, note);
   }
 
-  private void sendAllAngularObjects(Note note, NotebookSocket conn) throws IOException {
+  private void sendAllAngularObjects(Note note, NotebookSocket conn, String user) throws IOException {
     List<InterpreterSetting> settings =
         notebook().getInterpreterFactory().getInterpreterSettings(note.getId());
     if (settings == null || settings.size() == 0) {
@@ -1386,7 +1386,7 @@ public class NotebookServer extends WebSocketServlet implements
     }
 
     for (InterpreterSetting intpSetting : settings) {
-      AngularObjectRegistry registry = intpSetting.getInterpreterGroup(note.id(), "anonymous")
+      AngularObjectRegistry registry = intpSetting.getInterpreterGroup(note.id(), user)
           .getAngularObjectRegistry();
       List<AngularObject> objects = registry.getAllWithGlobal(note.id());
       for (AngularObject object : objects) {
