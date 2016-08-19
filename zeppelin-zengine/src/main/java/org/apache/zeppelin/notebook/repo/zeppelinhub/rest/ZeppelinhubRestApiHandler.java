@@ -160,15 +160,15 @@ public class ZeppelinhubRestApiHandler {
     try {
       response = listener.get(30, TimeUnit.SECONDS);
     } catch (InterruptedException | TimeoutException | ExecutionException e) {
-      LOG.error("Cannot perform " + method + " request to ZeppelinHub", e);
+      LOG.error("Cannot perform {} request to ZeppelinHub", method, e);
       throw new IOException("Cannot perform " + method + " request to ZeppelinHub", e);
     }
 
     int code = response.getStatus();
     if (code == 200) {
-      InputStream responseContent = listener.getInputStream();
-      data = IOUtils.toString(responseContent, "UTF-8");
-      responseContent.close();
+      try (InputStream responseContent = listener.getInputStream()) {
+        data = IOUtils.toString(responseContent, "UTF-8");
+      }
     } else {
       LOG.error("ZeppelinHub {} {} returned with status {} ", method, url, code);
       throw new IOException("Cannot perform " + method + " request to ZeppelinHub");
