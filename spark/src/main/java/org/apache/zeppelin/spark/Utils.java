@@ -89,6 +89,8 @@ class Utils {
       return true;
     } catch (ClassNotFoundException e) {
       return false;
+    } catch (IncompatibleClassChangeError e) {
+      return false;
     }
   }
 
