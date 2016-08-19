@@ -58,8 +58,11 @@ public class PythonInterpreter2 extends Interpreter {
   public static final String MAX_RESULT = "zeppelin.python.maxResult";
 
   private int maxResult;
+  private int serverPort = 9090;
+  private String serverHost =  "localhost";
 
   private PythonInterpreterBlockingStub blockingStub;
+
 
   public PythonInterpreter2(Properties property) {
     super(property);
@@ -72,14 +75,11 @@ public class PythonInterpreter2 extends Interpreter {
 
     //TODO(bzz):
     //%dep grpcio || %dep pip install grpcio
+    //this.serverPort = `pick open port`
+    //start `interpreter.py serverPort`
 
-    int serverPort = 9090;
-    //pick open serverPort
-    //start gRPC server ./interpreter.py on serverPort
-
-    /**connect to gRPC server on serverPort*/
     ManagedChannelBuilder<?> channelBuilder = ManagedChannelBuilder
-        .forAddress("localhost", serverPort)
+        .forAddress(this.serverHost, this.serverPort)
         .usePlaintext(true);
     ManagedChannel channel = channelBuilder.build();
     blockingStub = PythonInterpreterGrpc.newBlockingStub(channel);
@@ -143,7 +143,13 @@ public class PythonInterpreter2 extends Interpreter {
       fromPythonProcess = blockingStub.interprete(cmd);
     } catch (StatusRuntimeException e) {
       LOG.error("Error when sending commands to Python process", e);
-      return new InterpreterResult(Code.ERROR, "Failed to communicate to interpreter");
+      String errorMsg = e.getMessage()
+          .replace("UNKNOWN: Exception calling application:", "Exception in interpreter.py:");
+      if (e.getCause() instanceof java.net.ConnectException) {
+        errorMsg = "Failed to communicate to Python interpreter.py on " +
+            this.serverHost + ":" + this.serverPort;
+      }
+      return new InterpreterResult(Code.ERROR, errorMsg);
     }
     InterpreterResult result;
     if (gotSuccess(fromPythonProcess)) {

@@ -17,8 +17,12 @@
 
 """Python interpreter exposed though gRPC server"""
 
+import sys
 import time
 import argparse
+
+#TODO python3 compatibility! i.e `import io`
+from cStringIO import StringIO
 
 import python_interpreter_pb2
 
@@ -104,6 +108,11 @@ def _check_port_range(value):
         "{} is an invalid port number. Use 0-65536".format(value))
   return ival
 
+class InterpreterError(Exception):
+  def __init__(self, error_class, line_number, details):
+    self.error_class = error_class
+    self.line_number = line_number
+    self.details = details
 
 class PythonInterpreterServicer(python_interpreter_pb2.BetaPythonInterpreterServicer):
   """Implementing the servicer interface generated from our service definition 
@@ -113,11 +122,55 @@ class PythonInterpreterServicer(python_interpreter_pb2.BetaPythonInterpreterServ
   def __init__(self):
     pass
 
+  def do_exec(self, code):
+    """Executes give python string in same environment
+
+    Uses exec() to run the code. In order to report the
+    results\output, temroray replaces stdout.
+
+    Args:
+      code: string of Python code
+
+    Returns:
+        String that is stdout, a side-effecto for the executed code
+
+    Rises:
+        InterpreterError: an error with specific line number
+    """
+    #TODO python3 compatibility! i.e io.BytesIO()
+    redirected_output = sys.stdout = StringIO()
+    try:
+      old_stdout = sys.stdout
+      #compile()?
+      exec(code, globals(), locals())
+      #execfile()?
+      sys.stdout = old_stdout
+    except SyntaxError as err:
+      sys.stdout = old_stdout
+      error_class = err.__class__.__name__
+      details = err.args[0]
+      line_number = err.lineno
+    except Exception as err:
+      sys.stdout = old_stdout
+      error_class = err.__class__.__name__
+      details = err.args[0]
+      cl, exc, tb = sys.exc_info()
+      line_number = traceback.extract_tb(tb)[-1][1]
+    else:
+      return redirected_output
+    print("{} at line {}: {}".format(error_class, line_number, details))
+    raise InterpreterError(error_class, line_number, details)
+
   def Interprete(self, code_interprete_request, context): #CodeInterpreteRequest
-    print("Got \n```\n{}\n```\n to execute".format(code_interprete_request.code))
-    time.sleep(5)
-    print("Done!")
-    return python_interpreter_pb2.InterpetedResult(output="Done!", status="success")
+    print("Got \n```\n{}\n```\nto execute".format(code_interprete_request.code))
+    out = ""
+    try:
+      out = self.do_exec(code_interprete_request.code);
+    except InterpreterError as e:
+      out = "{} at line {}:\n{}".format(e.error_class, e.line_number, e.details)
+      return python_interpreter_pb2.InterpetedResult(output=out, status="fail")
+    print("Success!")
+    return python_interpreter_pb2.InterpetedResult(output=out, status="success")
 
 
 def main():
