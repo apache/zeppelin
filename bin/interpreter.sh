@@ -90,6 +90,8 @@ fi
 
 # set spark related env variables
 if [[ "${INTERPRETER_ID}" == "spark" ]]; then
+  addJarInDirForIntp "${INTERPRETER_DIR}/dep"
+  
   if [[ -n "${SPARK_HOME}" ]]; then
     export SPARK_SUBMIT="${SPARK_HOME}/bin/spark-submit"
     SPARK_APP_JAR="$(ls ${ZEPPELIN_HOME}/interpreter/spark/zeppelin-spark*.jar)"
@@ -111,8 +113,6 @@ if [[ "${INTERPRETER_ID}" == "spark" ]]; then
       addJarInDirForIntp "${HADOOP_HOME}"
       addJarInDirForIntp "${HADOOP_HOME}/lib"
     fi
-
-    addJarInDirForIntp "${INTERPRETER_DIR}/dep"
 
     pattern="${ZEPPELIN_HOME}/interpreter/spark/pyspark/py4j-*-src.zip"
     py4j=($pattern)
