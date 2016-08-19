@@ -239,6 +239,8 @@ public class Notebook implements NoteEventListener {
     Note newNote = createNote(subject);
     if (newNoteName != null) {
       newNote.setName(newNoteName);
+    } else {
+      newNote.setName("Note " + newNote.getId());
     }
     // Copy the interpreter bindings
     List<String> boundInterpreterSettingsIds = getBindedInterpreterSettingsIds(sourceNote.id());
