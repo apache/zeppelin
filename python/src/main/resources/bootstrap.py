@@ -20,7 +20,11 @@
 import sys
 import signal
 import base64
-import io
+from io import BytesIO
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
 
 def intHandler(signum, frame):  # Set the signal handler
     print ("Paragraph interrupted")
@@ -138,14 +142,14 @@ class PyZeppelinContext(object):
         """Pretty prints DF using Table Display System
         """
         limit = len(df) > self.max_result
-        header_buf = io.StringIO("")
+        header_buf = StringIO("")
         header_buf.write(str(df.columns[0]))
         for col in df.columns[1:]:
             header_buf.write("\t")
             header_buf.write(str(col))
         header_buf.write("\n")
         
-        body_buf = io.StringIO("")
+        body_buf = StringIO("")
         rows = df.head(self.max_result).values if limit else df.values
         for row in rows:
             body_buf.write(str(row[0]))
@@ -166,7 +170,7 @@ class PyZeppelinContext(object):
         """Matplotlib show function
         """
         if fmt == 'png':
-            img = io.BytesIO()
+            img = BytesIO()
             p.savefig(img, format=fmt)
             html = "%html <img src={img} width={width}, height={height}>"
             img_str = b"data:image/png;base64,"
@@ -176,12 +180,7 @@ class PyZeppelinContext(object):
                 img_str = img_str.decode('ascii')
                 
         elif fmt == 'svg':
-            # Another python3 compatability check
-            if self.py3:
-                img = io.StringIO()
-            else:
-                img = io.BytesIO()
-                
+            img = StringIO()
             p.savefig(img, format=fmt)
             html = "%html <div style='width:{width};height:{height}'>{img}<div>"
             img_str = img.getvalue()
