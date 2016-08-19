@@ -299,7 +299,9 @@ public class SparkInterpreter extends Interpreter {
     String execUri = System.getenv("SPARK_EXECUTOR_URI");
     conf.setAppName(getProperty("spark.app.name"));
 
-    conf.set("spark.repl.class.outputDir", outputDir.getAbsolutePath());
+    if (outputDir != null) {
+      conf.set("spark.repl.class.outputDir", outputDir.getAbsolutePath());
+    }
 
     if (execUri != null) {
       conf.set("spark.executor.uri", execUri);
