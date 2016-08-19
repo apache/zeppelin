@@ -219,7 +219,9 @@ The role of registered interpreters, settings and interpreters group are describ
   "dependencies": [
     {
       "groupArtifactVersion": "groupId:artifactId:version",
-      "exclusions": "groupId:artifactId"
+      "exclusions": [
+        "groupId:artifactId"
+      ]
     }
   ]
 }
@@ -249,7 +251,9 @@ The role of registered interpreters, settings and interpreters group are describ
     "dependencies": [
       {
         "groupArtifactVersion": "groupId:artifactId:version",
-        "exclusions": "groupId:artifactId"
+        "exclusions": [
+          "groupId:artifactId"
+        ]
       }
     ]
   }
@@ -298,7 +302,9 @@ The role of registered interpreters, settings and interpreters group are describ
   "dependencies": [
     {
       "groupArtifactVersion": "groupId:artifactId:version",
-      "exclusions": "groupId:artifactId"
+      "exclusions": [
+        "groupId:artifactId"
+      ]
     }
   ]
 }
@@ -328,7 +334,9 @@ The role of registered interpreters, settings and interpreters group are describ
     "dependencies": [
       {
         "groupArtifactVersion": "groupId:artifactId:version",
-        "exclusions": "groupId:artifactId"
+        "exclusions": [
+          "groupId:artifactId"
+        ]
       }
     ]
   }
