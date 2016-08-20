@@ -95,7 +95,6 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
     $scope.chart = {};
     $scope.colWidthOption = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
     $scope.paragraphFocused = false;
-    $scope.editor.setReadOnly($scope.isRunning());
     if (newParagraph.focus) {
       $scope.paragraphFocused = true;
     }
@@ -540,6 +539,7 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
       $scope.editor.setHighlightGutterLine(false);
       $scope.editor.getSession().setUseWrapMode(true);
       $scope.editor.setTheme('ace/theme/chrome');
+      $scope.editor.setReadOnly($scope.isRunning());
       if ($scope.paragraphFocused) {
         $scope.editor.focus();
         $scope.goToLineEnd();
