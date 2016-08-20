@@ -555,6 +555,7 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
       $scope.editor.setHighlightGutterLine(false);
       $scope.editor.getSession().setUseWrapMode(true);
       $scope.editor.setTheme('ace/theme/chrome');
+      $scope.editor.setReadOnly($scope.isRunning());
       if ($scope.paragraphFocused) {
         $scope.editor.focus();
         $scope.goToEnd();
@@ -2519,6 +2520,7 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
       $scope.paragraph.status = data.paragraph.status;
       $scope.paragraph.result = data.paragraph.result;
       $scope.paragraph.settings = data.paragraph.settings;
+      $scope.editor.setReadOnly($scope.isRunning());
 
       if (!$scope.asIframe) {
         $scope.paragraph.config = data.paragraph.config;
