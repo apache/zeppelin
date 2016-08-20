@@ -52,8 +52,7 @@ public class AppendOutputRunner implements Runnable {
   @Override
   public void run() {
 
-    Map<String, Map<String, StringBuilder> > noteMap =
-        new HashMap<String, Map<String, StringBuilder> >();
+    Map<String, Map<String, StringBuilder> > noteMap = new HashMap<>();
     List<AppendOutputBuffer> list = new LinkedList<AppendOutputBuffer>();
 
     /* "drainTo" method does not wait for any element
