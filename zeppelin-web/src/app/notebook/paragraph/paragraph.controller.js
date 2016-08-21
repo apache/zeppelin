@@ -1189,6 +1189,7 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
       }
 
       d3.select('#p' + $scope.paragraph.id + '_' + type + ' svg g').remove();
+      d3.select('#p' + $scope.paragraph.id + '_' + type + ' svg text').remove();
       d3.select('#p' + $scope.paragraph.id + '_' + type + ' div.tooltip').remove();
 
       if (forceLayoutData) {
@@ -1280,7 +1281,18 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
           node.attr('transform', function(d) { return 'translate(' + d.x + ',' + d.y + ')'; });
         });
       } else {
-        throw new Error('No data available');
+        // create 'No available data' svg message instead of graph when no data is available
+        var svg = d3.select('#p' + $scope.paragraph.id + '_' + type + ' svg')
+                  .attr('width', width)
+                  .attr('height', height)
+                  .append('text')
+                  .attr('x', width / 2)
+                  .attr('y', height / 2)
+                  .attr('text-anchor', 'middle')
+                  .attr('dominant-baseline', 'middle')
+                  .style('font-size', '18px')
+                  .style('font-weight', 'bold')
+                  .text('No available data (choose fields in settings)');
       }
     };
 
