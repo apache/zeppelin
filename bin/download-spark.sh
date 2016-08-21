@@ -36,14 +36,15 @@ function download_with_retry() {
   fi
 }
 
-SPARK_CACHE=".spark-dist"
+SPARK_CACHE="interpreter/spark"
 SPARK_ARCHIVE="spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}"
 
 mkdir -p "${SPARK_CACHE}"
 cd "${SPARK_CACHE}"
 if [[ ! -f "${SPARK_ARCHIVE}.tgz" ]]; then
   echo "There is no SPARK_HOME in your system."
-  echo "Download ${SPARK_ARCHIVE} from mirror before starting Zeppelin server..."
+  echo "Zeppelin server will be started after successful downloading ${SPARK_ARCHIVE}"
+  echo "Download from mirror before starting Zeppelin server..."
   MIRROR_INFO=$(curl -s "http://www.apache.org/dyn/closer.cgi/spark/spark-${SPARK_VERSION}/${SPARK_ARCHIVE}.tgz?asjson=1")
 
   PREFFERED=$(echo "${MIRROR_INFO}" | grep preferred | sed 's/[^"]*.preferred.: .\([^"]*\).*/\1/g')
@@ -61,7 +62,7 @@ else
     echo "Creating ${ZEPPELIN_ENV} from ${ZEPPELIN_ENV_TEMP}..."
     cp "${ZEPPELIN_ENV_TEMP}" "${ZEPPELIN_ENV}"
   fi
-  export SPARK_HOME="${ZEPPELIN_HOME}/.spark-dist/${SPARK_ARCHIVE}"
+  export SPARK_HOME="${ZEPPELIN_HOME}/${SPARK_CACHE}/${SPARK_ARCHIVE}"
 
   echo "SPARK_HOME is ${SPARK_HOME}"
 
