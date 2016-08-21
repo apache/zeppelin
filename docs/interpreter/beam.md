@@ -1,7 +1,7 @@
 ---
 layout: page
-title: "Beam Interpreter"
-description: ""
+title: Beam interpreter in Apache Zeppelin
+description: Apache Beam is an open source, unified programming model that you can use to create a data processing pipeline.
 group: interpreter
 ---
 <!--
@@ -29,11 +29,11 @@ limitations under the License.
 The execution of the pipeline is done by different Runners. Currently, Beam supports Apache Flink Runner, Apache Spark Runner, and Google Dataflow Runner.
 
 ## How to use
-Basically, you can write normal Beam java code where you can determine the Runner. You should write the main method inside a class becuase the interpreter invoke this main to execute the pipline. Unlike Zeppelin normal pattern, each paragraph is considered a separate job, there isn't any relation to any other paragraph.
+Basically, you can write normal Beam java code where you can determine the Runner. You should write the main method inside a class becuase the interpreter invoke this main to execute the pipeline. Unlike Zeppelin normal pattern, each paragraph is considered as a separate job, there isn't any relation to any other paragraph.
 
 The following is a demonstration of a word count example
 
-```
+```java
 %beam
 
 // imports are omitted to save space
@@ -74,9 +74,4 @@ public class MinimalWordCount {
 }
 
 ```
-
-## Contributors
-1- Mahmoud Fathy Elgamal (@mfelgamal)
-2- Fouad Ali Al-Sayadi (@FouadMA)
-
 
