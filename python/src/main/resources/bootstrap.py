@@ -20,11 +20,11 @@
 import sys
 import signal
 import base64
-
+from io import BytesIO
 try:
-    import StringIO as io
+    from StringIO import StringIO
 except ImportError:
-    import io as io
+    from io import StringIO
 
 def intHandler(signum, frame):  # Set the signal handler
     print ("Paragraph interrupted")
@@ -117,6 +117,7 @@ class PyZeppelinContext(object):
     
     def __init__(self):
         self.max_result = 1000
+        self.py3 = bool(sys.version_info >= (3,))
     
     def input(self, name, defaultValue=""):
         print(self.errorMsg)
@@ -141,14 +142,14 @@ class PyZeppelinContext(object):
         """Pretty prints DF using Table Display System
         """
         limit = len(df) > self.max_result
-        header_buf = io.StringIO("")
+        header_buf = StringIO("")
         header_buf.write(str(df.columns[0]))
         for col in df.columns[1:]:
             header_buf.write("\t")
             header_buf.write(str(col))
         header_buf.write("\n")
         
-        body_buf = io.StringIO("")
+        body_buf = StringIO("")
         rows = df.head(self.max_result).values if limit else df.values
         for row in rows:
             body_buf.write(str(row[0]))
@@ -168,13 +169,18 @@ class PyZeppelinContext(object):
                         fmt='png', **kwargs):
         """Matplotlib show function
         """
-        img = io.StringIO()
         if fmt == 'png':
+            img = BytesIO()
             p.savefig(img, format=fmt)
             html = "%html <img src={img} width={width}, height={height}>"
-            img_str = "data:image/png;base64,"
+            img_str = b"data:image/png;base64,"
             img_str += base64.b64encode(img.getvalue().strip())
+            # Need to do this for python3 compatibility
+            if self.py3:
+                img_str = img_str.decode('ascii')
+                
         elif fmt == 'svg':
+            img = StringIO()
             p.savefig(img, format=fmt)
             html = "%html <div style='width:{width};height:{height}'>{img}<div>"
             img_str = img.getvalue()

@@ -99,7 +99,6 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
     if (newParagraph.focus) {
       $scope.paragraphFocused = true;
     }
-
     if (!$scope.paragraph.config) {
       $scope.paragraph.config = {};
     }
@@ -558,7 +557,7 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
       $scope.editor.setTheme('ace/theme/chrome');
       if ($scope.paragraphFocused) {
         $scope.editor.focus();
-        $scope.goToLineEnd();
+        $scope.goToEnd();
       }
 
       autoAdjustEditorHeight(_editor.container.id);
@@ -839,8 +838,8 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
     return false;
   };
 
-  $scope.goToLineEnd = function() {
-    $scope.editor.navigateLineEnd();
+  $scope.goToEnd = function() {
+    $scope.editor.navigateFileEnd();
   };
 
   $scope.getResultType = function(paragraph) {
@@ -1053,7 +1052,7 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
       d3g = scatterData.d3g;
 
       $scope.chart[type].xAxis.tickFormat(function(d) {return xAxisTickFormat(d, xLabels);});
-      $scope.chart[type].yAxis.tickFormat(function(d) {return xAxisTickFormat(d, yLabels);});
+      $scope.chart[type].yAxis.tickFormat(function(d) {return yAxisTickFormat(d, yLabels);});
 
       // configure how the tooltip looks.
       $scope.chart[type].tooltipContent(function(key, x, y, graph, data) {
@@ -1095,7 +1094,11 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
         xLabels = pivotdata.xLabels;
         d3g = pivotdata.d3g;
         $scope.chart[type].xAxis.tickFormat(function(d) {return xAxisTickFormat(d, xLabels);});
-        $scope.chart[type].yAxis.tickFormat(function(d) {return yAxisTickFormat(d);});
+        if (type === 'stackedAreaChart') {
+          $scope.chart[type].yAxisTickFormat(function(d) {return yAxisTickFormat(d);});
+        } else {
+          $scope.chart[type].yAxis.tickFormat(function(d) {return yAxisTickFormat(d, xLabels);});
+        }
         $scope.chart[type].yAxis.axisLabelDistance(50);
         if ($scope.chart[type].useInteractiveGuideline) { // lineWithFocusChart hasn't got useInteractiveGuideline
           $scope.chart[type].useInteractiveGuideline(true); // for better UX and performance issue. (https://github.com/novus/nvd3/issues/691)
