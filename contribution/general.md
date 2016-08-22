@@ -1,7 +1,8 @@
 ---
-layout: page
-title: "Contribute"
+layout: sideMenu
+title: "General"
 description: ""
+menu: nav-contrib
 ---
 <!--
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,7 +17,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-{% include JB/setup %}
 
 # Contribution Guidelines
 
@@ -35,31 +35,29 @@ For those of you who are not familiar with Apache project, understanding [How it
 When creating a Pull Request, you will automatically get the template below.
 Filling it thoroughly can improve the speed of the review process.
 
-```
-### What is this PR for?
-A few sentences describing the overall goals of the pull request's commits.
-First time? Check out the contribution guidelines - https://zeppelin.apache.org/contribute.html
+    ### What is this PR for?
+    A few sentences describing the overall goals of the pull request's commits.
+    First time? Check out the contribution guidelines - https://zeppelin.apache.org/contribute.html
 
-### What type of PR is it?
-[Bug Fix | Improvement | Feature | Documentation | Hot Fix | Refactoring]
+    ### What type of PR is it?
+    [Bug Fix | Improvement | Feature | Documentation | Hot Fix | Refactoring]
 
-### Todos
-* [ ] - Task
+    ### Todos
+    * [ ] - Task
 
-### What is the Jira issue?
-* Open an issue on Jira https://issues.apache.org/jira/browse/ZEPPELIN/
-* Put link here, and add [ZEPPELIN-*Jira number*] in PR title, eg. [ZEPPELIN-533]
+    ### What is the Jira issue?
+    * Open an issue on Jira https://issues.apache.org/jira/browse/ZEPPELIN/
+    * Put link here, and add [ZEPPELIN-*Jira number*] in PR title, eg. [ZEPPELIN-533]
 
-### How should this be tested?
-Outline the steps to test the PR here.
+    ### How should this be tested?
+    Outline the steps to test the PR here.
 
-### Screenshots (if appropriate)
+    ### Screenshots (if appropriate)
 
-### Questions:
-* Does the licenses files need update?
-* Is there breaking changes for older versions?
-* Does this needs documentation?
-```
+    ### Questions:
+    * Does the licenses files need update?
+    * Is there breaking changes for older versions?
+    * Does this needs documentation?
 
 ## Testing a Pull Request
 You can also test and review a particular Pull Request. Here are two useful ways.
@@ -231,6 +229,5 @@ or use daemon script
 ```
 bin/zeppelin-daemon start
 ```
-
 
 Server will be run on http://localhost:8080

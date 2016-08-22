@@ -26,7 +26,7 @@ Don't hesitate to report new bugs and improvements ideas.
 
 We like to get code contributions through Pull Requests on our [Github Mirror](https://github.com/apache/zeppelin).
 
-But before starting, please read our [Contribution guidelines](/contribute.html), it will give
+But before starting, please read our [Contribution guidelines](/contribution/general.html), it will give
 you important information about our review process, and pointers on how to make a good code contribution.
 
 You can visit our [issue Tracker](https://issues.apache.org/jira/browse/ZEPPELIN) to find issues to resolve,

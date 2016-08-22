@@ -1,0 +1,10 @@
+<div class="row">
+  <div class="col-md-3">
+  {% assign pages_list = site.pages %}
+  {% assign group = page.menu %}
+  {% include JB/pages_list %}
+  </div>
+  <div class="col-md-9">
+    {{ content }}
+  </div>
+</div>
