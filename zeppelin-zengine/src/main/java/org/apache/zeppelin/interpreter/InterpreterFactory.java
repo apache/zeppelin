@@ -17,37 +17,6 @@
 
 package org.apache.zeppelin.interpreter;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Type;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.nio.file.DirectoryStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-
 import com.google.common.base.Preconditions;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -56,12 +25,6 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.NullArgumentException;
 import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.sonatype.aether.RepositoryException;
-import org.sonatype.aether.repository.Authentication;
-import org.sonatype.aether.repository.RemoteRepository;
-
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.dep.Dependency;
@@ -77,6 +40,24 @@ import org.apache.zeppelin.interpreter.remote.RemoteInterpreter;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.Job.Status;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.sonatype.aether.RepositoryException;
+import org.sonatype.aether.repository.Authentication;
+import org.sonatype.aether.repository.RemoteRepository;
+
+import java.io.*;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Type;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.*;
 
 /**
  * Manage interpreters.
@@ -622,7 +603,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     if (interpreterSetting.getOption().isPerNoteProcess()) {
       interpreterSetting.closeAndRemoveInterpreterGroup(noteId);
     } else if (interpreterSetting.getOption().isPerNoteSession()) {
-      InterpreterGroup interpreterGroup = interpreterSetting.getInterpreterGroup(noteId);
+      InterpreterGroup interpreterGroup = interpreterSetting.getInterpreterGroup(noteId, null);
 
       interpreterGroup.close(noteId);
       interpreterGroup.destroy(noteId);
@@ -636,10 +617,11 @@ public class InterpreterFactory implements InterpreterGroupFactory {
   }
 
   public void createInterpretersForNote(InterpreterSetting interpreterSetting, String noteId,
-      String key) {
-    InterpreterGroup interpreterGroup = interpreterSetting.getInterpreterGroup(noteId);
+      String key, String userName) {
+    InterpreterGroup interpreterGroup = interpreterSetting.getInterpreterGroup(noteId, userName);
     InterpreterOption option = interpreterSetting.getOption();
     Properties properties = interpreterSetting.getProperties();
+
     if (option.isExistingProcess) {
       properties.put(Constants.ZEPPELIN_INTERPRETER_HOST, option.getHost());
       properties.put(Constants.ZEPPELIN_INTERPRETER_PORT, option.getPort());
@@ -675,10 +657,11 @@ public class InterpreterFactory implements InterpreterGroupFactory {
         if (option.isConnectExistingProcess()) {
           interpreter =
               connectToRemoteRepl(noteId, info.getClassName(), option.getHost(), option.getPort(),
-                  properties);
+                  properties, userName);
         } else {
           interpreter = createRemoteRepl(path, key, info.getClassName(), properties,
-              interpreterSetting.getId());
+              interpreterSetting.getId(), userName,
+              interpreterSetting.getOption().isUserImpersonate());
         }
       } else {
         interpreter = createRepl(interpreterSetting.getPath(), info.getClassName(), properties);
@@ -706,7 +689,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     synchronized (interpreterSettings) {
       if (interpreterSettings.containsKey(id)) {
         InterpreterSetting intp = interpreterSettings.get(id);
-        intp.closeAndRmoveAllInterpreterGroups();
+        intp.closeAndRemoveAllInterpreterGroups();
 
         interpreterSettings.remove(id);
         for (List<String> settings : interpreterBindings.values()) {
@@ -842,7 +825,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
 
         stopJobAllInterpreter(intpsetting);
 
-        intpsetting.closeAndRmoveAllInterpreterGroups();
+        intpsetting.closeAndRemoveAllInterpreterGroups();
 
         intpsetting.setOption(option);
         intpsetting.setProperties(properties);
@@ -863,7 +846,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
 
         stopJobAllInterpreter(intpsetting);
 
-        intpsetting.closeAndRmoveAllInterpreterGroups();
+        intpsetting.closeAndRemoveAllInterpreterGroups();
 
       } else {
         throw new InterpreterException("Interpreter setting id " + id + " not found");
@@ -899,7 +882,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
       for (final InterpreterSetting intpsetting : intpsettings) {
         Thread t = new Thread() {
           public void run() {
-            intpsetting.closeAndRmoveAllInterpreterGroups();
+            intpsetting.closeAndRemoveAllInterpreterGroups();
           }
         };
         t.start();
@@ -975,25 +958,28 @@ public class InterpreterFactory implements InterpreterGroupFactory {
   }
 
   private Interpreter connectToRemoteRepl(String noteId, String className, String host, int port,
-      Properties property) {
+      Properties property, String userName) {
     int connectTimeout = conf.getInt(ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT);
     int maxPoolSize = conf.getInt(ConfVars.ZEPPELIN_INTERPRETER_MAX_POOL_SIZE);
     LazyOpenInterpreter intp = new LazyOpenInterpreter(
         new RemoteInterpreter(property, noteId, className, host, port, connectTimeout, maxPoolSize,
-            remoteInterpreterProcessListener, appEventListener));
+            remoteInterpreterProcessListener, appEventListener, userName,
+            getDefaultInterpreterSetting(noteId).getOption().isUserImpersonate()));
     return intp;
   }
 
-  private Interpreter createRemoteRepl(String interpreterPath, String noteId, String className,
-      Properties property, String interpreterSettingId) {
+  private Interpreter createRemoteRepl(String interpreterPath, String key, String className,
+      Properties property, String interpreterSettingId, String userName,
+      Boolean isUserImpersonate) {
     int connectTimeout = conf.getInt(ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT);
     String localRepoPath = conf.getInterpreterLocalRepoPath() + "/" + interpreterSettingId;
     int maxPoolSize = conf.getInt(ConfVars.ZEPPELIN_INTERPRETER_MAX_POOL_SIZE);
 
+
     RemoteInterpreter remoteInterpreter =
-        new RemoteInterpreter(property, noteId, className, conf.getInterpreterRemoteRunnerPath(),
+        new RemoteInterpreter(property, key, className, conf.getInterpreterRemoteRunnerPath(),
             interpreterPath, localRepoPath, connectTimeout, maxPoolSize,
-            remoteInterpreterProcessListener, appEventListener);
+            remoteInterpreterProcessListener, appEventListener, userName, isUserImpersonate);
     remoteInterpreter.setEnv(env);
 
     return new LazyOpenInterpreter(remoteInterpreter);
@@ -1044,24 +1030,32 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     }
   }
 
-  private String getInterpreterInstanceKey(String noteId, InterpreterSetting setting) {
+  private String getInterpreterInstanceKey(String noteId, InterpreterSetting setting,
+      String userName) {
+    String returnString;
     if (setting.getOption().isExistingProcess()) {
-      return Constants.EXISTING_PROCESS;
+      returnString = Constants.EXISTING_PROCESS;
     } else if (setting.getOption().isPerNoteSession() || setting.getOption().isPerNoteProcess()) {
-      return noteId;
+      returnString = noteId;
     } else {
-      return SHARED_SESSION;
+      returnString = SHARED_SESSION;
     }
+    if (setting.getOption().isUserImpersonate() && !userName.equals("anonymous")) {
+      returnString = returnString + userName;
+    }
+
+    return returnString;
   }
 
-  private List<Interpreter> createOrGetInterpreterList(String noteId, InterpreterSetting setting) {
-    InterpreterGroup interpreterGroup = setting.getInterpreterGroup(noteId);
+  private List<Interpreter> createOrGetInterpreterList(String noteId, InterpreterSetting setting,
+      String userName) {
+    InterpreterGroup interpreterGroup = setting.getInterpreterGroup(noteId, userName);
     synchronized (interpreterGroup) {
-      String key = getInterpreterInstanceKey(noteId, setting);
+      String key = getInterpreterInstanceKey(noteId, setting, userName);
       if (!interpreterGroup.containsKey(key)) {
-        createInterpretersForNote(setting, noteId, key);
+        createInterpretersForNote(setting, noteId, key, userName);
       }
-      return interpreterGroup.get(getInterpreterInstanceKey(noteId, setting));
+      return interpreterGroup.get(getInterpreterInstanceKey(noteId, setting, userName));
     }
   }
 
@@ -1102,14 +1096,15 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     return null;
   }
 
-  private Interpreter getInterpreter(String noteId, InterpreterSetting setting, String name) {
+  private Interpreter getInterpreter(String noteId, InterpreterSetting setting, String name,
+      String userName) {
     Preconditions.checkNotNull(noteId, "noteId should be not null");
     Preconditions.checkNotNull(setting, "setting should be not null");
     Preconditions.checkNotNull(name, "name should be not null");
 
     String className;
     if (null != (className = getInterpreterClassFromInterpreterSetting(setting, name))) {
-      List<Interpreter> interpreterGroup = createOrGetInterpreterList(noteId, setting);
+      List<Interpreter> interpreterGroup = createOrGetInterpreterList(noteId, setting, userName);
       for (Interpreter interpreter : interpreterGroup) {
         if (className.equals(interpreter.getClassName())) {
           return interpreter;
@@ -1119,7 +1114,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     return null;
   }
 
-  public Interpreter getInterpreter(String noteId, String replName) {
+  public Interpreter getInterpreter(String noteId, String replName, String userName) {
     List<InterpreterSetting> settings = getInterpreterSettings(noteId);
     InterpreterSetting setting;
     Interpreter interpreter;
@@ -1132,7 +1127,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
       // get default settings (first available)
       // TODO(jl): Fix it in case of returning null
       InterpreterSetting defaultSettings = getDefaultInterpreterSetting(settings);
-      return createOrGetInterpreterList(noteId, defaultSettings).get(0);
+      return createOrGetInterpreterList(noteId, defaultSettings, userName).get(0);
     }
 
     String[] replNameSplit = replName.split("\\.");
@@ -1145,7 +1140,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
       setting = getInterpreterSettingByGroup(settings, group);
 
       if (null != setting) {
-        interpreter = getInterpreter(noteId, setting, name);
+        interpreter = getInterpreter(noteId, setting, name, userName);
 
         if (null != interpreter) {
           return interpreter;
@@ -1160,7 +1155,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
       // TODO(jl): Handle with noteId to support defaultInterpreter per note.
       setting = getDefaultInterpreterSetting(settings);
 
-      interpreter = getInterpreter(noteId, setting, replName);
+      interpreter = getInterpreter(noteId, setting, replName, userName);
 
       if (null != interpreter) {
         return interpreter;
@@ -1171,7 +1166,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
       setting = getInterpreterSettingByGroup(settings, replName);
 
       if (null != setting) {
-        List<Interpreter> interpreters = createOrGetInterpreterList(noteId, setting);
+        List<Interpreter> interpreters = createOrGetInterpreterList(noteId, setting, userName);
         if (null != interpreters) {
           return interpreters.get(0);
         }
@@ -1180,7 +1175,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
 
     // dev interpreter
     if (DevInterpreter.isInterpreterName(replName)) {
-      return getDevInterpreter();
+      return getDevInterpreter(userName);
     }
 
     return null;
@@ -1233,7 +1228,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
   }
 
 
-  private Interpreter getDevInterpreter() {
+  private Interpreter getDevInterpreter(String userName) {
     if (devInterpreter == null) {
       InterpreterOption option = new InterpreterOption();
       option.setRemote(true);
@@ -1241,7 +1236,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
       InterpreterGroup interpreterGroup = createInterpreterGroup("dev", option);
 
       devInterpreter = connectToRemoteRepl("dev", DevInterpreter.class.getName(), "localhost",
-          ZeppelinDevServer.DEFAULT_TEST_INTERPRETER_PORT, new Properties());
+          ZeppelinDevServer.DEFAULT_TEST_INTERPRETER_PORT, new Properties(), userName);
 
       LinkedList<Interpreter> intpList = new LinkedList<>();
       intpList.add(devInterpreter);

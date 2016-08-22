@@ -81,8 +81,8 @@ public class InterpreterFactoryTest {
 
 //    mock1Setting = factory.createNewSetting("mock11", "mock1", new ArrayList<Dependency>(), new InterpreterOption(false), new Properties());
 
-    InterpreterGroup interpreterGroup = mock1Setting.getInterpreterGroup("sharedProcess");
-    factory.createInterpretersForNote(mock1Setting, "sharedProcess", "session");
+    InterpreterGroup interpreterGroup = mock1Setting.getInterpreterGroup("sharedProcess", "anonymous");
+    factory.createInterpretersForNote(mock1Setting, "sharedProcess", "session", "anonymous");
 
     // get interpreter
     assertNotNull("get Interpreter", interpreterGroup.get("session").get(0));
@@ -92,7 +92,7 @@ public class InterpreterFactoryTest {
 
     // restart interpreter
     factory.restart(mock1Setting.getId());
-    assertNull(mock1Setting.getInterpreterGroup("sharedProcess").get("session"));
+    assertNull(mock1Setting.getInterpreterGroup("sharedProcess", "anonymous").get("session"));
   }
 
   @Test
@@ -154,6 +154,6 @@ public class InterpreterFactoryTest {
       add(setting2.getId());
     }});
 
-    assertEquals("className1", factory.getInterpreter("note", "test-group1").getClassName());
+    assertEquals("className1", factory.getInterpreter("note", "test-group1", "anonymous").getClassName());
   }
 }

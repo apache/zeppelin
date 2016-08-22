@@ -85,7 +85,7 @@ public class ParagraphTest {
     assertEquals("Get right replName", "jdbc", p.getRequiredReplName());
     assertEquals("Get right scriptBody", "(h2) show databases", p.getScriptBody());
 
-    when(interpreterFactory.getInterpreter(anyString(), eq("jdbc"))).thenReturn(interpreter);
+    when(interpreterFactory.getInterpreter(anyString(), eq("jdbc"), anyString())).thenReturn(interpreter);
     when(interpreter.getFormType()).thenReturn(Interpreter.FormType.NATIVE);
     when(note.getId()).thenReturn("noteId");
 

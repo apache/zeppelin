@@ -27,6 +27,7 @@ import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NotebookAuthorization;
 import org.apache.zeppelin.notebook.NotebookAuthorizationInfoSaving;
 import org.apache.zeppelin.server.ZeppelinServer;
+import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
@@ -48,10 +49,13 @@ import static org.junit.Assert.assertThat;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class NotebookRestApiTest extends AbstractTestRestApi {
   Gson gson = new Gson();
+  static AuthenticationInfo subject;
 
   @BeforeClass
   public static void init() throws Exception {
     AbstractTestRestApi.startUp();
+    subject = new AuthenticationInfo();
+    subject.setUser("anonymous");
   }
 
   @AfterClass
@@ -61,7 +65,7 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
 
   @Test
   public void testPermissions() throws IOException {
-    Note note1 = ZeppelinServer.notebook.createNote(null);
+    Note note1 = ZeppelinServer.notebook.createNote(subject);
     // Set only readers
     String jsonRequest = "{\"readers\":[\"admin-team\"],\"owners\":[]," +
             "\"writers\":[]}";
@@ -84,7 +88,7 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
     get.releaseConnection();
 
 
-    Note note2 = ZeppelinServer.notebook.createNote(null);
+    Note note2 = ZeppelinServer.notebook.createNote(subject);
     // Set only writers
     jsonRequest = "{\"readers\":[],\"owners\":[]," +
             "\"writers\":[\"admin-team\"]}";
@@ -118,14 +122,14 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
     assertEquals(authInfo.get("owners"), Lists.newArrayList());
     get.releaseConnection();
     //cleanup
-    ZeppelinServer.notebook.removeNote(note1.getId(), null);
-    ZeppelinServer.notebook.removeNote(note2.getId(), null);
+    ZeppelinServer.notebook.removeNote(note1.getId(), subject);
+    ZeppelinServer.notebook.removeNote(note2.getId(), subject);
 
   }
 
   @Test
   public void testGetNoteParagraphJobStatus() throws IOException {
-    Note note1 = ZeppelinServer.notebook.createNote(null);
+    Note note1 = ZeppelinServer.notebook.createNote(subject);
     note1.addParagraph();
 
     String paragraphId = note1.getLastParagraph().getId();
@@ -141,7 +145,7 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
     assertEquals(paragraphStatus.get("status"), "READY");
 
     //cleanup
-    ZeppelinServer.notebook.removeNote(note1.getId(), null);
+    ZeppelinServer.notebook.removeNote(note1.getId(), subject);
 
   }
 }

@@ -211,6 +211,9 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl',
             if (setting.option.setPermission === undefined) {
               setting.option.setPermission = false;
             }
+            if (setting.option.isUserImpersonate === undefined) {
+              setting.option.isUserImpersonate = false;
+            }
             if (setting.option.remote === undefined) {
               // remote always true for now
               setting.option.remote = true;

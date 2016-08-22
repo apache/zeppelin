@@ -17,10 +17,8 @@
 
 package org.apache.zeppelin.rest;
 
-import java.io.IOException;
-import java.util.List;
-import java.util.Map;
-
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import org.apache.commons.httpclient.methods.DeleteMethod;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
@@ -30,14 +28,16 @@ import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.server.ZeppelinServer;
+import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
 
 import static org.junit.Assert.*;
 
@@ -47,10 +47,13 @@ import static org.junit.Assert.*;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class InterpreterRestApiTest extends AbstractTestRestApi {
   Gson gson = new Gson();
+  static AuthenticationInfo subject;
 
   @BeforeClass
   public static void init() throws Exception {
     AbstractTestRestApi.startUp();
+    subject = new AuthenticationInfo();
+    subject.setUser("anonymous");
   }
 
   @AfterClass
@@ -122,7 +125,7 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
   @Test
   public void testInterpreterAutoBinding() throws IOException {
     // create note
-    Note note = ZeppelinServer.notebook.createNote(null);
+    Note note = ZeppelinServer.notebook.createNote(subject);
 
     // check interpreter is binded
     GetMethod get = httpGet("/notebook/interpreter/bind/" + note.id());
@@ -135,15 +138,16 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
 
     get.releaseConnection();
     //cleanup
-    ZeppelinServer.notebook.removeNote(note.getId(), null);
+    ZeppelinServer.notebook.removeNote(note.getId(), subject);
   }
 
   @Test
   public void testInterpreterRestart() throws IOException, InterruptedException {
     // create new note
-    Note note = ZeppelinServer.notebook.createNote(null);
+    Note note = ZeppelinServer.notebook.createNote(subject);
     note.addParagraph();
     Paragraph p = note.getLastParagraph();
+    p.setAuthenticationInfo(subject);
     Map config = p.getConfig();
     config.put("enabled", true);
 
@@ -172,13 +176,14 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
     p = note.addParagraph();
     p.setConfig(config);
     p.setText("%md markdown restarted");
+    p.setAuthenticationInfo(subject);
     note.run(p.getId());
     while (p.getStatus() != Status.FINISHED) {
       Thread.sleep(100);
     }
     assertEquals("<p>markdown restarted</p>\n", p.getResult().message());
     //cleanup
-    ZeppelinServer.notebook.removeNote(note.getId(), null);
+    ZeppelinServer.notebook.removeNote(note.getId(), subject);
   }
 
   @Test

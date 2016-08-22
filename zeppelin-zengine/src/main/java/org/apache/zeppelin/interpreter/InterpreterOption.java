@@ -32,6 +32,7 @@ public class InterpreterOption {
   boolean isExistingProcess;
   boolean setPermission;
   List<String> users;
+  boolean isUserImpersonate;
 
   public boolean isExistingProcess() {
     return isExistingProcess;
@@ -39,6 +40,14 @@ public class InterpreterOption {
 
   public void setExistingProcess(boolean isExistingProcess) {
     this.isExistingProcess = isExistingProcess;
+  }
+
+  public boolean isUserImpersonate() {
+    return isUserImpersonate;
+  }
+
+  public void setUserImpersonate(boolean userImpersonate) {
+    isUserImpersonate = userImpersonate;
   }
 
   public void setPort(int port) {

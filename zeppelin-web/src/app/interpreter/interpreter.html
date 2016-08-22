@@ -138,6 +138,20 @@ limitations under the License.
     <div class="row interpreter">
       <div class="col-md-12">
         <h5>Option</h5>
+
+        <div ng-hide="ticket.principal=='anonymous'">
+          <div class="checkbox">
+          <span class="input-group" style="line-height:30px;">
+            <label>
+              <input type="checkbox" style="width:20px"
+                     ng-model="setting.option.isUserImpersonate"
+                          ng-disabled="!valueform.$visible" />
+            User Impersonate
+            </label>
+          </span>
+          </div>
+        </div>
+
         <span class="btn-group">
           <button type="button" class="btn btn-default btn-xs dropdown-toggle"
                   data-toggle="dropdown"

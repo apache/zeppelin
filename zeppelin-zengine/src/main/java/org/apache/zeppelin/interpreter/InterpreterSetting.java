@@ -17,17 +17,12 @@
 
 package org.apache.zeppelin.interpreter;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-
 import com.google.gson.annotations.SerializedName;
-
 import org.apache.zeppelin.dep.Dependency;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.*;
 
 import static org.apache.zeppelin.notebook.utility.IdHashes.generateId;
 
@@ -96,18 +91,25 @@ public class InterpreterSetting {
     return group;
   }
 
-  private String getInterpreterProcessKey(String noteId) {
+  private String getInterpreterProcessKey(String noteId, String userName) {
+    String returnString;
     if (getOption().isExistingProcess) {
-      return Constants.EXISTING_PROCESS;
+      returnString = Constants.EXISTING_PROCESS;
     } else if (getOption().isPerNoteProcess()) {
-      return noteId;
+      returnString = noteId;
     } else {
-      return SHARED_PROCESS;
+      returnString = SHARED_PROCESS;
     }
+
+    if (getOption().isUserImpersonate() && !userName.equals("anonymous")) {
+      returnString = returnString + userName;
+    }
+
+    return returnString;
   }
 
-  public InterpreterGroup getInterpreterGroup(String noteId) {
-    String key = getInterpreterProcessKey(noteId);
+  public InterpreterGroup getInterpreterGroup(String noteId, String userName) {
+    String key = getInterpreterProcessKey(noteId, userName);
     synchronized (interpreterGroupRef) {
       if (!interpreterGroupRef.containsKey(key)) {
         String interpreterGroupId = getId() + ":" + key;
@@ -126,10 +128,10 @@ public class InterpreterSetting {
   }
 
   void closeAndRemoveInterpreterGroup(String noteId) {
-    String key = getInterpreterProcessKey(noteId);
+//    String key = getInterpreterProcessKey(noteId, "");
     InterpreterGroup groupToRemove;
     synchronized (interpreterGroupRef) {
-      groupToRemove = interpreterGroupRef.remove(key);
+      groupToRemove = interpreterGroupRef.remove(noteId);
     }
 
     if (groupToRemove != null) {
@@ -138,7 +140,7 @@ public class InterpreterSetting {
     }
   }
 
-  void closeAndRmoveAllInterpreterGroups() {
+  void closeAndRemoveAllInterpreterGroups() {
     synchronized (interpreterGroupRef) {
       HashSet<String> groupsToRemove = new HashSet<>(interpreterGroupRef.keySet());
       for (String key : groupsToRemove) {

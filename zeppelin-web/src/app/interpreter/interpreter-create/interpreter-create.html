@@ -36,6 +36,18 @@ limitations under the License.
         </div>
 
         <b>Option</b>
+
+        <div ng-hide="ticket.principal=='anonymous'">
+          <div class="checkbox">
+          <span class="input-group" style="line-height:30px;">
+            <label>
+              <input type="checkbox" style="width:20px" ng-model="setting.option.isUserImpersonate"/>
+            User Impersonate
+            </label>
+          </span>
+          </div>
+        </div>
+
         <div>
           <span class="btn-group">
             <button type="button" class="btn btn-default btn-xs dropdown-toggle"

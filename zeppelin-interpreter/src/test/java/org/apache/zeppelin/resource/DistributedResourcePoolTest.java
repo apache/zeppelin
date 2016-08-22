@@ -70,8 +70,9 @@ public class DistributedResourcePoolTest {
         env,
         10 * 1000,
         null,
-        null
-    );
+        null,
+        "anonymous",
+        false);
 
     intpGroup1 = new InterpreterGroup("intpGroup1");
     intpGroup1.put("note", new LinkedList<Interpreter>());
@@ -88,8 +89,9 @@ public class DistributedResourcePoolTest {
         env,
         10 * 1000,
         null,
-        null
-    );
+        null,
+        "anonymous",
+        false);
 
     intpGroup2 = new InterpreterGroup("intpGroup2");
     intpGroup2.put("note", new LinkedList<Interpreter>());

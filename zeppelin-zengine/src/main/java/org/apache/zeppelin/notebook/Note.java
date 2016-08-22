@@ -17,34 +17,13 @@
 
 package org.apache.zeppelin.notebook;
 
-import java.io.IOException;
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
-
 import com.google.gson.Gson;
 import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.Input;
-import org.apache.zeppelin.interpreter.Interpreter;
-import org.apache.zeppelin.interpreter.InterpreterException;
-import org.apache.zeppelin.interpreter.InterpreterFactory;
-import org.apache.zeppelin.interpreter.InterpreterGroup;
-import org.apache.zeppelin.interpreter.InterpreterOutput;
-import org.apache.zeppelin.interpreter.InterpreterResult;
-import org.apache.zeppelin.interpreter.InterpreterSetting;
+import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
@@ -55,6 +34,16 @@ import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.search.SearchService;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.user.Credentials;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.io.Serializable;
+import java.util.*;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Binded interpreters for a note
@@ -463,7 +452,8 @@ public class Note implements Serializable, ParagraphJobListener {
         p.setAuthenticationInfo(authenticationInfo);
 
         p.setListener(jobListenerFactory.getParagraphJobListener(this));
-        Interpreter intp = factory.getInterpreter(getId(), p.getRequiredReplName());
+        Interpreter intp = factory.getInterpreter(getId(), p.getRequiredReplName(),
+            cronExecutingUser);
 
         intp.getScheduler().submit(p);
       }
@@ -479,11 +469,17 @@ public class Note implements Serializable, ParagraphJobListener {
     Paragraph p = getParagraph(paragraphId);
     p.setListener(jobListenerFactory.getParagraphJobListener(this));
     String requiredReplName = p.getRequiredReplName();
-    Interpreter intp = factory.getInterpreter(getId(), requiredReplName);
+    String user = "anonymous";
+    if (getParagraph(paragraphId).getAuthenticationInfo() != null
+        && getParagraph(paragraphId).getAuthenticationInfo().getUser() != null) {
+      user = getParagraph(paragraphId).getAuthenticationInfo().getUser();
+    }
+    Interpreter intp = factory.getInterpreter(getId(), requiredReplName, user);
 
     if (intp == null) {
       // TODO(jongyoul): Make "%jdbc" configurable from JdbcInterpreter
-      if (conf.getUseJdbcAlias() && null != (intp = factory.getInterpreter(getId(), "jdbc"))) {
+      if (conf.getUseJdbcAlias() && null != (intp = factory.getInterpreter(getId(), "jdbc",
+          user))) {
         String pText = p.getText().replaceFirst(requiredReplName, "jdbc(" + requiredReplName + ")");
         logger.debug("New paragraph: {}", pText);
         p.setEffectiveText(pText);
@@ -524,7 +520,7 @@ public class Note implements Serializable, ParagraphJobListener {
     }
   }
 
-  private void snapshotAngularObjectRegistry() {
+  private void snapshotAngularObjectRegistry(AuthenticationInfo subject) {
     angularObjects = new HashMap<>();
 
     List<InterpreterSetting> settings = factory.getInterpreterSettings(getId());
@@ -533,7 +529,8 @@ public class Note implements Serializable, ParagraphJobListener {
     }
 
     for (InterpreterSetting setting : settings) {
-      InterpreterGroup intpGroup = setting.getInterpreterGroup(id);
+      InterpreterGroup intpGroup = setting.getInterpreterGroup(id,
+          subject == null ? "" : subject.getUser());
       AngularObjectRegistry registry = intpGroup.getAngularObjectRegistry();
       angularObjects.put(intpGroup.getId(), registry.getAllWithGlobal(id));
     }
@@ -548,7 +545,11 @@ public class Note implements Serializable, ParagraphJobListener {
     }
 
     for (InterpreterSetting setting : settings) {
-      InterpreterGroup intpGroup = setting.getInterpreterGroup(id);
+      String user = null;
+      if (getParagraph(paragraphId).getAuthenticationInfo() != null) {
+        user = getParagraph(paragraphId).getAuthenticationInfo().getUser();
+      }
+      InterpreterGroup intpGroup = setting.getInterpreterGroup(id, user);
       AngularObjectRegistry registry = intpGroup.getAngularObjectRegistry();
 
       if (registry instanceof RemoteAngularObjectRegistry) {
@@ -579,7 +580,7 @@ public class Note implements Serializable, ParagraphJobListener {
 
   public void persist(AuthenticationInfo subject) throws IOException {
     stopDelayedPersistTimer();
-    snapshotAngularObjectRegistry();
+    snapshotAngularObjectRegistry(subject);
     index.updateIndexDoc(this);
     repo.save(this, subject);
   }
