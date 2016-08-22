@@ -36,6 +36,15 @@ So you might want to get familiar with it.
 [Here is a good start](http://www.sitepoint.com/kickstart-your-angularjs-development-with-yeoman-grunt-and-bower/)
 (There is obviously plenty more ressources to learn)
 
+## Good Practices
+
+On the side menu of this page, you will find documentation about some of the best practices we want to apply
+in this project.
+
+This is a great way for people to learn more about angularJS, and to keep the code clean and optimized.
+
+Please try to follow those __Good Practices Guides__ when making a PR or reviewing one.
+
 ## Coding style
 
 * We follow mainly the [Google Javascript Guide](https://google-styleguide.googlecode.com/svn/trunk/javascriptguide.xml)
