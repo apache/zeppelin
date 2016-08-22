@@ -856,9 +856,8 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     }
   }
 
-  private boolean isSharedInterpreter(InterpreterSetting setting) {
-    if (setting != null &&
-      setting.getOption().isPerNoteProcess() == false &&
+  private boolean interpreterIsShared(InterpreterSetting setting) {
+    if (setting.getOption().isPerNoteProcess() == false &&
       setting.getOption().isPerNoteSession() == false){
       return true;
     }
@@ -868,7 +867,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
   public void restart(String settingId, boolean shouldBeCheckedIntpMode) {
     InterpreterSetting setting = interpreterSettings.get(settingId);
 
-    if (shouldBeCheckedIntpMode && isSharedInterpreter(setting)) {
+    if (shouldBeCheckedIntpMode && interpreterIsShared(setting)) {
       throw new InterpreterException("Can't restart shared interpreter process.");
     }
     restart(settingId);
