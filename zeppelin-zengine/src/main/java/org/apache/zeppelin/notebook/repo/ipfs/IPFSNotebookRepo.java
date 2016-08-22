@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.zeppelin.notebook.repo;
+package org.apache.zeppelin.notebook.repo.ipfs;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -31,13 +31,10 @@ import org.apache.zeppelin.notebook.ApplicationState;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NotebookImportDeserializer;
 import org.apache.zeppelin.notebook.Paragraph;
+import org.apache.zeppelin.notebook.repo.NotebookRepo;
+import org.apache.zeppelin.notebook.repo.VFSNotebookRepo;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.user.AuthenticationInfo;
-import org.ipfs.api.Base58;
-import org.ipfs.api.IPFS;
-import org.ipfs.api.MerkleNode;
-import org.ipfs.api.Multihash;
-import org.ipfs.api.NamedStreamable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,12 +61,15 @@ import java.util.concurrent.TimeoutException;
  */
 public class IPFSNotebookRepo extends VFSNotebookRepo implements NotebookRepo {
   private static final String API_SERVER_PROPERTY_NAME = "zeppelin.notebook.ipfs.apiServer";
-  private static final String DEFAULT_API_SERVER = "/ip4/127.0.0.1/tcp/5001";
-  private static final Logger LOG = LoggerFactory.getLogger(NotebookRepoSync.class);
+  private static final String DEFAULT_API_SERVER = "http://localhost:5001/api/v0/";
+  private static final Logger LOG = LoggerFactory.getLogger(IPFSNotebookRepo.class);
+  Type simpleType = new TypeToken<Map<String, String>>() {
+  }.getType();
   private ExecutorService executorService = Executors.newCachedThreadPool();
-
   private Gson gson;
-  private IPFS ipfs;
+  private Type pinType = new TypeToken<Map<String, Object>>() {
+  }.getType();
+  private Ipfs ipfs;
   private FileObject ipfsNoteHashesJson;
   private String encoding;
   /*
@@ -87,16 +87,26 @@ public class IPFSNotebookRepo extends VFSNotebookRepo implements NotebookRepo {
         NotebookImportDeserializer()).create();
     String ipfsApiServer = conf.getString("IPFS_API_SERVER",
         API_SERVER_PROPERTY_NAME, DEFAULT_API_SERVER);
-    ipfs = new IPFS(ipfsApiServer);
+    ipfs = new Ipfs(ipfsApiServer);
+    String versionJson = ipfs.version();
+    if (versionJson == null) {
+      throw new IOException("Make sure the ipfs daemon is running on given url" + ipfsApiServer);
+    }
+    Map<String, String> data = gson.fromJson(versionJson, simpleType);
+    String version = data.get("Version");
+    if (!version.equals("0.4.2")) {
+      throw new IOException("Current api is not supported for " + version + " only for 0.4.2");
+    }
+
     // creates a ipfsnotehashes.json file in notebook dir if not exists
     init();
     // initialize noteHashes Map to load noteID and multihash  from file
     noteHashes = loadFromFile();
   }
 
-  /*
-   *  creates a ipfsnotehashes.json file in notebook directory.
-   *  This file will represent the noteHashes Map in Json format.
+  /**
+   * creates a ipfsnotehashes.json file in notebook directory. This file will represent the
+   * noteHashes Map in Json format.
    */
   private void init() throws IOException {
     FileObject file = getRootDir();
@@ -106,7 +116,9 @@ public class IPFSNotebookRepo extends VFSNotebookRepo implements NotebookRepo {
     }
   }
 
-  //Reads the ipfsNoteHashesJson file and converts the Json String to Map
+  /**
+   * Reads the ipfsNoteHashesJson file and converts the Json String to Map
+   */
   private Map<String, List<Revision>> loadFromFile() throws IOException {
     FileContent content = ipfsNoteHashesJson.getContent();
     InputStream ins = content.getInputStream();
@@ -123,19 +135,15 @@ public class IPFSNotebookRepo extends VFSNotebookRepo implements NotebookRepo {
   /**
    * Get's the note from peers.
    *
-   * @param url
-   * @param subject
    * @return Note
-   * @throws IOException
    */
   @Override
-  public Note getNoteFromUrl(String url, AuthenticationInfo subject) throws IOException {
+  public Note getNoteFromUrl(final String hash, AuthenticationInfo subject) throws IOException {
     //getNote is blocking hence using a timeout
-    final Multihash multihash = new Multihash(Base58.decode(url));
     Callable<Note> task = new Callable<Note>() {
       @Override
       public Note call() throws Exception {
-        return getNote(multihash);
+        return getNote(hash);
       }
     };
     Future<Note> noteFuture = executorService.submit(task);
@@ -157,13 +165,17 @@ public class IPFSNotebookRepo extends VFSNotebookRepo implements NotebookRepo {
     return note;
   }
 
-  /*
-     *  The call to ipfs.cat() can be blocking. If the file corresponding to hash
-     *  is not present in local ipfs storage it will try to get from peers which
-     *  can be time consuming.
-     */
-  private Note getNote(Multihash noteMultihash) throws IOException {
-    String noteJson = new String(ipfs.cat(noteMultihash));
+  /**
+   * The call to ipfs.cat() can be blocking. If the file corresponding to hash is not present in
+   * local ipfs storage it will try to get from peers which can be time consuming resulting in
+   * SocketTimeout Exception
+   */
+  private Note getNote(String noteMultihash) throws IOException {
+    String noteJson = ipfs.cat(noteMultihash);
+    if (noteJson == null) {
+      throw new IOException("Failed to retrieve Note with hash " + noteMultihash);
+    }
+
     Note note = gson.fromJson(noteJson, Note.class);
 
     for (Paragraph p : note.getParagraphs()) {
@@ -191,21 +203,30 @@ public class IPFSNotebookRepo extends VFSNotebookRepo implements NotebookRepo {
     out.close();
   }
 
-  /*
-   * remove method deletes the notebook from directory and also removes all its
-   * revisions from ipfs local storage.
-   * It also removes the noteID entry from noteHashesJSon file.
+  /**
+   * remove method deletes the notebook from directory and also removes all its revisions from ipfs
+   * local storage. It also removes the noteID entry from noteHashesJSon file.
    */
   @Override
   public synchronized void remove(String noteId, AuthenticationInfo subject) throws IOException {
     super.remove(noteId, subject);
     List<Revision> revisions = noteHashes.get(noteId);
     if (revisions != null) {
+      String pinJsonResponse = ipfs.pinLs();
+      if (pinJsonResponse == null) {
+        throw new IOException("Failed to retrieve pinned hashes");
+      }
+
+      Map<String, Object> data = gson.fromJson(pinJsonResponse, pinType);
+      Map<String, Object> pinnedObjects = (Map<String, Object>) data.get("Keys");
+
       for (Revision rev : revisions) {
-        Multihash revisionHash = new Multihash(Base58.decode(rev.id));
-        Map<Multihash, Object> allPinnedObjects = ipfs.pin.ls(IPFS.PinType.recursive);
-        if (allPinnedObjects.containsKey(revisionHash)) {
-          ipfs.pin.rm(revisionHash, true);
+        String revisionHash = rev.id;
+        if (pinnedObjects.containsKey(revisionHash)) {
+          boolean success = ipfs.pinRm(revisionHash);
+          if (!success) {
+            LOG.warn("Failed to remove " + revisionHash);
+          }
         }
       }
       noteHashes.remove(noteId);
@@ -213,7 +234,7 @@ public class IPFSNotebookRepo extends VFSNotebookRepo implements NotebookRepo {
     saveToFile();
   }
 
-  /*
+  /**
    * This method removes only a corresponding revision for a note
    */
   public void removeRevision(String noteID, Revision revision) throws IOException {
@@ -226,12 +247,12 @@ public class IPFSNotebookRepo extends VFSNotebookRepo implements NotebookRepo {
       LOG.error("invalid revision " + revision + " for note " + noteID);
       throw new IOException("invalid revision " + revision + " for note " + noteID);
     }
-    Multihash revisionHash = new Multihash(Base58.decode(revision.id));
-    Map<Multihash, Object> allPinnedObjects = ipfs.pin.ls(IPFS.PinType.recursive);
-    if (allPinnedObjects.containsKey(revisionHash)) {
-      ipfs.pin.rm(revisionHash, true);
+    boolean success = ipfs.pinRm(revision.id);
+    if (success) {
+      noteRevisions.remove(revision);
+    } else {
+      LOG.warn("Failed to remove revision " + revision);
     }
-    noteRevisions.remove(revision);
     saveToFile();
   }
 
@@ -245,16 +266,21 @@ public class IPFSNotebookRepo extends VFSNotebookRepo implements NotebookRepo {
       throws IOException {
     Note note = get(noteId, subject);
     String json = gson.toJson(note);
-    NamedStreamable.ByteArrayWrapper noteIpfs =
-        new NamedStreamable.ByteArrayWrapper("note.json", json
-            .getBytes(encoding));
-    MerkleNode addResult = ipfs.add(noteIpfs);
+    String addResult = ipfs.add(json);
+    if (addResult == null) {
+      throw new IOException("Failed to checkpoint note with ID " + noteId);
+    }
+    Type type = new TypeToken<Map<String, String>>() {
+    }.getType();
+    Map<String, String> data = gson.fromJson(addResult, type);
+    String hash = data.get("Hash");
+
     /*
      * The `time` param in Rev is in int(unix timestamp) seconds
      * System.currentTimeMillis() returns long milliseconds
      */
     int time = (int) (System.currentTimeMillis() / 1000L);
-    Revision revision = new Revision(addResult.hash.toBase58(), commitMessage, time);
+    Revision revision = new Revision(hash, commitMessage, time);
     List<Revision> noteVersions = noteHashes.get(noteId);
     if (noteVersions == null) {
       noteVersions = new ArrayList<>();
@@ -265,11 +291,12 @@ public class IPFSNotebookRepo extends VFSNotebookRepo implements NotebookRepo {
         noteVersions.add(revision);
       }
       /*
-      * revision already exists before. Should i change time ?
-      * */
+       * revision already exists before. Should i change time ?
+       *
+       * */
     }
     saveToFile();
-    LOG.info("Checkpoint for Note " + noteId + "  IpfsRevision is " + revision.toString());
+    LOG.info("Checkpoint for Note " + noteId + "  IpfsRevision is " + revision.id);
     return revision;
   }
 
@@ -278,19 +305,21 @@ public class IPFSNotebookRepo extends VFSNotebookRepo implements NotebookRepo {
     return new HashMap<>(noteHashes);
   }
 
-  // get a particular revision from ipfs
+  /**
+   * get a particular revision from ipfs
+   */
   @Override
   public Note get(String noteId, String revId, AuthenticationInfo subject) throws IOException {
     Note note = null;
-    String multihashBase58 = revId;
-    Multihash multihash = new Multihash(Base58.decode(multihashBase58));
+    String pinJsonResponse = ipfs.pinLs();
+    Map<String, Object> data = gson.fromJson(pinJsonResponse, pinType);
+    Map<String, Object> allPinnedObjects = (Map<String, Object>) data.get("Keys");
 
-    Map<Multihash, Object> allPinnedObjects = ipfs.pin.ls(IPFS.PinType.recursive);
-    if (allPinnedObjects.containsKey(multihash)) {
-      note = getNote(multihash);
+    if (allPinnedObjects.containsKey(revId)) {
+      note = getNote(revId);
     }
     if (note == null) {
-      LOG.info("revision " + multihash + " not present for note " +
+      LOG.warn("revision " + revId + " not present for note " +
           noteId + " in local ipfs storage");
     }
     return note;
@@ -305,6 +334,11 @@ public class IPFSNotebookRepo extends VFSNotebookRepo implements NotebookRepo {
   @Override
   public void close() {
     super.close();
+    try {
+      ipfs.getClient().close();
+    } catch (IOException e) {
+      LOG.info("Couldn't successfully close the ipfsClient");
+    }
     executorService.shutdown();
   }
 }

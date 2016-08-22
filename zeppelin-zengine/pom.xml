@@ -250,9 +250,9 @@
     </dependency>
 
     <dependency>
-      <groupId>org.ipfs</groupId>
-      <artifactId>api</artifactId>
-      <version>0.0.1-SNAPSHOT</version>
+      <groupId>org.apache.httpcomponents</groupId>
+      <artifactId>httpmime</artifactId>
+      <version>4.3.6</version>
     </dependency>
   </dependencies>
 

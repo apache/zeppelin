@@ -264,13 +264,13 @@ Make sure you enter the correct ipfs apiServer.
 ```
 <property>
         <name>zeppelin.notebook.storage</name>
-        <value>org.apache.zeppelin.notebook.repo.IPFSNotebookRepo</value>
+        <value>org.apache.zeppelin.notebook.repo.ipfs.IPFSNotebookRepo</value>
         <description>notebook persistence layer implementation</description>
     </property>
 
     <property>
         <name>zeppelin.notebook.ipfs.apiServer</name>
-        <value>/ip4/127.0.0.1/tcp/5001</value>
+        <value>http://localhost:5001/api/v0/</value>
         <description>ipfs api Server Multiaddress</description>
     </property>
 ```
