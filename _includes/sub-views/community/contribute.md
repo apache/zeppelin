@@ -12,7 +12,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-### How to contribute
+## How to contribute
 
 There is multiple ways you can contribute to the project.
 And help is always welcome!

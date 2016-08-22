@@ -12,7 +12,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-### Mailing list
+## Mailing list
 
 Get help using Apache Zeppelin or contribute to the project on our mailing lists:
 
