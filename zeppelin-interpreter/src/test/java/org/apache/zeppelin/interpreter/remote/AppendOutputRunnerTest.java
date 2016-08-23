@@ -184,7 +184,7 @@ public class AppendOutputRunnerTest {
   }
 
   private class TestAppender extends AppenderSkeleton {
-    private final List<LoggingEvent> log = new ArrayList<LoggingEvent>();
+    private final List<LoggingEvent> log = new ArrayList<>();
 
     @Override
     public boolean requiresLayout() {
@@ -201,7 +201,7 @@ public class AppendOutputRunnerTest {
     }
 
     public List<LoggingEvent> getLog() {
-        return new ArrayList<LoggingEvent>(log);
+        return new ArrayList<>(log);
     }
   }
 

@@ -41,8 +41,7 @@ public class AppendOutputRunner implements Runnable {
   private static final Long SAFE_PROCESSING_TIME = new Long(10);
   private static final Long SAFE_PROCESSING_STRING_SIZE = new Long(100000);
 
-  private final BlockingQueue<AppendOutputBuffer> queue =
-      new LinkedBlockingQueue<AppendOutputBuffer>();
+  private final BlockingQueue<AppendOutputBuffer> queue = new LinkedBlockingQueue<>();
   private final RemoteInterpreterProcessListener listener;
 
   public AppendOutputRunner(RemoteInterpreterProcessListener listener) {
@@ -53,7 +52,7 @@ public class AppendOutputRunner implements Runnable {
   public void run() {
 
     Map<String, Map<String, StringBuilder> > noteMap = new HashMap<>();
-    List<AppendOutputBuffer> list = new LinkedList<AppendOutputBuffer>();
+    List<AppendOutputBuffer> list = new LinkedList<>();
 
     /* "drainTo" method does not wait for any element
      * to be present in the queue, and thus this loop would
