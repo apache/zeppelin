@@ -38,6 +38,8 @@ import com.google.common.collect.Sets;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.utils.InterpreterBindingUtils;
 import org.quartz.CronExpression;
 import org.slf4j.Logger;
@@ -477,7 +479,14 @@ public class NotebookRestApi {
       return new JsonResponse<>(Status.NOT_FOUND, "note not found.").build();
     }
 
-    note.runAll();
+    try {
+      note.runAll();
+    } catch (Exception ex) {
+      LOG.error("Exception from run", ex);
+      return new JsonResponse<>(Status.PRECONDITION_FAILED,
+          ex.getMessage() + "- Not selected or Invalid Interpreter bind").build();
+    }
+
     return new JsonResponse<>(Status.OK).build();
   }
 
