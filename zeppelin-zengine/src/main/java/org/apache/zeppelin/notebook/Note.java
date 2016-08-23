@@ -461,11 +461,7 @@ public class Note implements Serializable, ParagraphJobListener {
         AuthenticationInfo authenticationInfo = new AuthenticationInfo();
         authenticationInfo.setUser(cronExecutingUser);
         p.setAuthenticationInfo(authenticationInfo);
-        try {
-          run(p.getId());
-        } catch (InterpreterException intpException) {
-          throw intpException;
-        }
+        run(p.getId());
       }
     }
   }
