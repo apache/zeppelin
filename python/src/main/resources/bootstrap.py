@@ -164,7 +164,7 @@ class PyZeppelinContext(object):
         #)
         body_buf.close(); header_buf.close()
     
-    def show_matplotlib(self, p, fmt="png", width="100%", height="100%", 
+    def show_matplotlib(self, p, fmt="png", width="auto", height="auto", 
                         **kwargs):
         """Matplotlib show function
         """
@@ -173,9 +173,10 @@ class PyZeppelinContext(object):
             p.savefig(img, format=fmt)
             img_str = b"data:image/png;base64,"
             img_str += base64.b64encode(img.getvalue().strip())
-            # Decoding img_str is necessary for Python 3 compability
+            img_tag = "<img src={img} style='width={width};height:{height}'>"
+            # Decoding is necessary for Python 3 compability
             img_str = img_str.decode("ascii")
-            img_str = "<img src={img}>".format(img=img_str)
+            img_str = img_tag.format(img=img_str, width=width, height=height)
         elif fmt == "svg":
             img = StringIO()
             p.savefig(img, format=fmt)
