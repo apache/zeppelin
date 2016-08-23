@@ -33,6 +33,8 @@ import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Joiner;
+import com.google.common.collect.ImmutableMap;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
@@ -191,20 +193,45 @@ public class ZeppelinHubRepo implements NotebookRepo {
   @Override
   public Revision checkpoint(String noteId, String checkpointMsg, AuthenticationInfo subject)
       throws IOException {
-    // Auto-generated method stub
-    return null;
+    if (StringUtils.isBlank(noteId)) {
+      return null;
+    }
+    String endpoint = Joiner.on("/").join(noteId, "checkpoint");
+    String content = GSON.toJson(ImmutableMap.of("message", checkpointMsg));
+    String response = restApiClient.asyncPutWithResponseBody(endpoint, content);
+    
+    return GSON.fromJson(response, Revision.class);
   }
 
   @Override
   public Note get(String noteId, Revision rev, AuthenticationInfo subject) throws IOException {
-    // Auto-generated method stub
-    return null;
+    if (StringUtils.isBlank(noteId) || rev == null) {
+      return EMPTY_NOTE;
+    }
+    String endpoint = Joiner.on("/").join(noteId, "checkpoint", rev.revId);
+    String response = restApiClient.asyncGet(endpoint);
+    Note note = GSON.fromJson(response, Note.class);
+    if (note == null) {
+      return EMPTY_NOTE;
+    }
+    LOG.info("ZeppelinHub REST API get note {} revision {}", noteId, rev.revId);
+    return note;
   }
 
   @Override
   public List<Revision> revisionHistory(String noteId, AuthenticationInfo subject) {
-    // Auto-generated method stub
-    return null;
+    if (StringUtils.isBlank(noteId)) {
+      return Collections.emptyList();
+    }
+    String endpoint = Joiner.on("/").join(noteId, "checkpoint");
+    List<Revision> history = Collections.emptyList();
+    try {
+      String response = restApiClient.asyncGet(endpoint);
+      history = GSON.fromJson(response, new TypeToken<List<Revision>>(){}.getType());
+    } catch (IOException e) {
+      LOG.error("Cannot get note history", e);
+    }
+    return history;
   }
 
 }

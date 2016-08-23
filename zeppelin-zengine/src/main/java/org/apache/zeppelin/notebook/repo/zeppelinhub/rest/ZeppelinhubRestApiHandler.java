@@ -25,9 +25,8 @@ import java.util.concurrent.TimeoutException;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.jetty.client.HttpClient;
+import org.eclipse.jetty.client.api.Request;
 import org.eclipse.jetty.client.api.Response;
-import org.eclipse.jetty.client.api.Result;
-import org.eclipse.jetty.client.util.BufferingResponseListener;
 import org.eclipse.jetty.client.util.InputStreamResponseListener;
 import org.eclipse.jetty.client.util.StringContentProvider;
 import org.eclipse.jetty.http.HttpMethod;
@@ -115,89 +114,66 @@ public class ZeppelinhubRestApiHandler {
   }
 
   public String asyncGet(String argument) throws IOException {
-    String note = StringUtils.EMPTY;
-
-    InputStreamResponseListener listener = new InputStreamResponseListener();
-    client.newRequest(zepelinhubUrl + argument)
-          .header(ZEPPELIN_TOKEN_HEADER, token)
-          .send(listener);
-
-    // Wait for the response headers to arrive
-    Response response;
-    try {
-      response = listener.get(30, TimeUnit.SECONDS);
-    } catch (InterruptedException | TimeoutException | ExecutionException e) {
-      LOG.error("Cannot perform Get request to ZeppelinHub", e);
-      throw new IOException("Cannot load note from ZeppelinHub", e);
-    }
-
-    int code = response.getStatus();
-    if (code == 200) {
-      try (InputStream responseContent = listener.getInputStream()) {
-        note = IOUtils.toString(responseContent, "UTF-8");
-      }
-    } else {
-      LOG.error("ZeppelinHub Get {} returned with status {} ", zepelinhubUrl + argument, code);
-      throw new IOException("Cannot load note from ZeppelinHub");
-    }
-    return note;
+    return sendToZeppelinHub(HttpMethod.GET, zepelinhubUrl + argument);
   }
-
+  
+  public String asyncPutWithResponseBody(String url, String json) throws IOException {
+    if (StringUtils.isBlank(url) || StringUtils.isBlank(json)) {
+      LOG.error("Empty note, cannot send it to zeppelinHub");
+      throw new IOException("Cannot send emtpy note to zeppelinHub");
+    }
+    return sendToZeppelinHub(HttpMethod.PUT, zepelinhubUrl + url, json);
+  }
+  
   public void asyncPut(String jsonNote) throws IOException {
     if (StringUtils.isBlank(jsonNote)) {
       LOG.error("Cannot save empty note/string to ZeppelinHub");
       return;
     }
-
-    client.newRequest(zepelinhubUrl).method(HttpMethod.PUT)
-        .header(ZEPPELIN_TOKEN_HEADER, token)
-        .content(new StringContentProvider(jsonNote, "UTF-8"), "application/json;charset=UTF-8")
-        .send(new BufferingResponseListener() {
-
-          @Override
-          public void onComplete(Result res) {
-            if (!res.isFailed() && res.getResponse().getStatus() == 200) {
-              LOG.info("Successfully saved note to ZeppelinHub with {}",
-                  res.getResponse().getStatus());
-            } else {
-              LOG.warn("Failed to save note to ZeppelinHub with HttpStatus {}",
-                  res.getResponse().getStatus());
-            }
-          }
-
-          @Override
-          public void onFailure(Response response, Throwable failure) {
-            LOG.error("Failed to save note to ZeppelinHub: {}", response.getReason(), failure);
-          }
-        });
+    sendToZeppelinHub(HttpMethod.PUT, zepelinhubUrl, jsonNote);
   }
 
-  public void asyncDel(String argument) {
+  public void asyncDel(String argument) throws IOException {
     if (StringUtils.isBlank(argument)) {
       LOG.error("Cannot delete empty note from ZeppelinHub");
       return;
     }
-    client.newRequest(zepelinhubUrl + argument)
-        .method(HttpMethod.DELETE)
-        .header(ZEPPELIN_TOKEN_HEADER, token)
-        .send(new BufferingResponseListener() {
+    sendToZeppelinHub(HttpMethod.DELETE, zepelinhubUrl + argument);
+  }
+  
+  private String sendToZeppelinHub(HttpMethod method, String url) throws IOException {
+    return sendToZeppelinHub(method, url, StringUtils.EMPTY);
+  }
+  
+  private String sendToZeppelinHub(HttpMethod method, String url, String json) throws IOException {
+    InputStreamResponseListener listener = new InputStreamResponseListener();
+    Response response;
+    String data;
 
-          @Override
-          public void onComplete(Result res) {
-            if (!res.isFailed() && res.getResponse().getStatus() == 200) {
-              LOG.info("Successfully removed note from ZeppelinHub with {}",
-                  res.getResponse().getStatus());
-            } else {
-              LOG.warn("Failed to remove note from ZeppelinHub with HttpStatus {}",
-                  res.getResponse().getStatus());
-            }
-          }
+    Request request = client.newRequest(url).method(method).header(ZEPPELIN_TOKEN_HEADER, token);
+    if ((method.equals(HttpMethod.PUT) || method.equals(HttpMethod.POST)) &&
+        !StringUtils.isBlank(json)) {
+      request.content(new StringContentProvider(json, "UTF-8"), "application/json;charset=UTF-8");
+    }
+    request.send(listener);
 
-          @Override
-          public void onFailure(Response response, Throwable failure) {
-            LOG.error("Failed to remove note from ZeppelinHub: {}", response.getReason(), failure);
-          }
-        });
+    try {
+      response = listener.get(30, TimeUnit.SECONDS);
+    } catch (InterruptedException | TimeoutException | ExecutionException e) {
+      LOG.error("Cannot perform {} request to ZeppelinHub", method, e);
+      throw new IOException("Cannot perform " + method + " request to ZeppelinHub", e);
+    }
+
+    int code = response.getStatus();
+    if (code == 200) {
+      try (InputStream responseContent = listener.getInputStream()) {
+        data = IOUtils.toString(responseContent, "UTF-8");
+      }
+    } else {
+      LOG.error("ZeppelinHub {} {} returned with status {} ", method, url, code);
+      throw new IOException("Cannot perform " + method + " request to ZeppelinHub");
+    }
+    return data;
   }
 
   public void close() {
