@@ -122,7 +122,7 @@ public class ZeppelinhubRestApiHandler {
       LOG.error("Empty note, cannot send it to zeppelinHub");
       throw new IOException("Cannot send emtpy note to zeppelinHub");
     }
-    return sendToZeppelinHub(HttpMethod.PUT, url, json);
+    return sendToZeppelinHub(HttpMethod.PUT, zepelinhubUrl + url, json);
   }
   
   public void asyncPut(String jsonNote) throws IOException {
@@ -151,7 +151,8 @@ public class ZeppelinhubRestApiHandler {
     String data;
 
     Request request = client.newRequest(url).method(method).header(ZEPPELIN_TOKEN_HEADER, token);
-    if (method.equals(HttpMethod.PUT) || method.equals(HttpMethod.POST)) {
+    if ((method.equals(HttpMethod.PUT) || method.equals(HttpMethod.POST)) &&
+        !StringUtils.isBlank(json)) {
       request.content(new StringContentProvider(json, "UTF-8"), "application/json;charset=UTF-8");
     }
     request.send(listener);
