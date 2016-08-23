@@ -131,10 +131,6 @@ public class Note implements Serializable, ParagraphJobListener {
     lastReplName.set(defaultInterpreterName);
   }
 
-  public String id() {
-    return id;
-  }
-
   public String getId() {
     return id;
   }
@@ -292,7 +288,7 @@ public class Note implements Serializable, ParagraphJobListener {
    */
   public Paragraph removeParagraph(String paragraphId) {
     removeAllAngularObjectInParagraph(paragraphId);
-    ResourcePoolUtils.removeResourcesBelongsToParagraph(id(), paragraphId);
+    ResourcePoolUtils.removeResourcesBelongsToParagraph(getId(), paragraphId);
     synchronized (paragraphs) {
       Iterator<Paragraph> i = paragraphs.iterator();
       while (i.hasNext()) {
@@ -609,7 +605,7 @@ public class Note implements Serializable, ParagraphJobListener {
   }
 
   void unpersist(AuthenticationInfo subject) throws IOException {
-    repo.remove(id(), subject);
+    repo.remove(getId(), subject);
   }
 
 
