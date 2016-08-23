@@ -26,7 +26,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.*;
 
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
@@ -167,7 +167,7 @@ public class JDBCInterpreter extends Interpreter {
 
     logger.debug("propertiesMap: {}", propertiesMap);
 
-    if (!StringUtils.isAnyEmpty(property.getProperty("zeppelin.jdbc.auth.type"))) {
+    if (!StringUtils.isEmpty(property.getProperty("zeppelin.jdbc.auth.type"))) {
       JDBCSecurityImpl.createSecureConfiguration(property);
     }
     for (String propertyKey : propertiesMap.keySet()) {

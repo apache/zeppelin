@@ -74,8 +74,7 @@
     <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-common</artifactId>
-      <version>2.7.2</version>
-      <scope>provided</scope>
+      <version>${hadoop.common.version}</version>
     </dependency>
 
     <dependency>
@@ -163,4 +162,66 @@
       </plugin>
     </plugins>
   </build>
+
+  <profiles>
+    <profile>
+      <id>hadoop-1</id>
+      <activation>
+        <activeByDefault>false</activeByDefault>
+      </activation>
+      <properties>
+        <hadoop.common.version>0.23.11</hadoop.common.version>
+      </properties>
+    </profile>
+
+    <profile>
+      <id>hadoop-2.2</id>
+      <activation>
+        <activeByDefault>false</activeByDefault>
+      </activation>
+      <properties>
+        <hadoop.common.version>2.2.0</hadoop.common.version>
+      </properties>
+    </profile>
+
+    <profile>
+      <id>hadoop-2.3</id>
+      <activation>
+        <activeByDefault>false</activeByDefault>
+      </activation>
+      <properties>
+        <hadoop.common.version>2.3.0</hadoop.common.version>
+      </properties>
+    </profile>
+
+    <profile>
+      <id>hadoop-2.4</id>
+      <activation>
+        <activeByDefault>false</activeByDefault>
+      </activation>
+      <properties>
+        <hadoop.common.version>2.4.1</hadoop.common.version>
+      </properties>
+    </profile>
+
+    <profile>
+      <id>hadoop-2.6</id>
+      <activation>
+        <activeByDefault>false</activeByDefault>
+      </activation>
+      <properties>
+        <hadoop.common.version>2.6.4</hadoop.common.version>
+      </properties>
+    </profile>
+
+    <profile>
+      <id>hadoop-2.7</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <properties>
+        <hadoop.common.version>2.7.2</hadoop.common.version>
+      </properties>
+    </profile>
+  </profiles>
 </project>
