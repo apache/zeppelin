@@ -1,6 +1,6 @@
 ---
 layout: sideMenu
-title: "#1 - Using IIFE"
+title: "Defining Components"
 description: ""
 group: nav-contrib-front
 menu: nav-contrib-front
@@ -19,4 +19,28 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-# Using IIFE
+# Defining Angular Components
+
+<br/>
+We should have only one Angular Component per file, and it should look like this:
+
+```
+(function() {
+  'use strict';
+
+  angular.module('zeppelinWebApp').controller('HomeCtrl', HomeCtrl);
+
+  HomeCtrl.$inject = ['$location'];
+
+  function HomeCtrl($location) {
+    ...
+  }
+
+})();
+```
+
+#### Explanations
+
+* The component function and the component's dependency injection is separated from the component definition
+* We apply an Immediately Invoked Function Expression (IIFE) to each component, You can learn more about it
+in this [nice post](https://github.com/johnpapa/angular-styleguide/tree/master/a1#iife) of John Papa.
