@@ -2575,7 +2575,16 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
   });
 
   $scope.$on('appendParagraphOutput', function(event, data) {
-    if ($scope.paragraph.id === data.paragraphId) {
+    /* It has been observed that append events
+     * can be errorneously called even if paragraph
+     * execution has ended, and in that case, no append
+     * should be made. Also, it was observed that between PENDING
+     * and RUNNING states, append-events can be called and we can't
+     * miss those, else during the length of paragraph run, few
+     * initial output line/s will be missing.
+     */
+    if ($scope.paragraph.id === data.paragraphId &&
+       ($scope.paragraph.status === 'RUNNING' || $scope.paragraph.status === 'PENDING')) {
       if ($scope.flushStreamingOutput) {
         $scope.clearTextOutput();
         $scope.flushStreamingOutput = false;
