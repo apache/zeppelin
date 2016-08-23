@@ -401,9 +401,7 @@ public class Note implements Serializable, JobListener {
         authenticationInfo.setUser(cronExecutingUser);
         p.setAuthenticationInfo(authenticationInfo);
         p.setNoteReplLoader(replLoader);
-        p.setListener(jobListenerFactory.getParagraphJobListener(this));
-        Interpreter intp = replLoader.get(p.getRequiredReplName());
-        intp.getScheduler().submit(p);
+        run(p.getId());
       }
     }
   }
@@ -426,7 +424,18 @@ public class Note implements Serializable, JobListener {
         logger.debug("New paragraph: {}", pText);
         p.setEffectiveText(pText);
       } else {
-        throw new InterpreterException("Interpreter " + requiredReplName + " not found");
+        String intpExceptionMsg = String.format("%s",
+          p.getJobName()
+          + "'s Interpreter "
+          + requiredReplName + " not found"
+        );
+        InterpreterException intpException = new InterpreterException(intpExceptionMsg);
+        InterpreterResult intpResult = new InterpreterResult(
+          InterpreterResult.Code.ERROR, intpException.getMessage()
+        );
+        p.setReturn(intpResult, intpException);
+        p.setStatus(Job.Status.ERROR);
+        throw intpException;
       }
     }
     if (p.getConfig().get("enabled") == null || (Boolean) p.getConfig().get("enabled")) {
