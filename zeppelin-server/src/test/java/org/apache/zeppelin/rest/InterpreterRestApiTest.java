@@ -120,6 +120,15 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
   }
 
   @Test
+  public void testSettingsCreateWithEmptyJson() throws IOException {
+    // Call Create Setting REST API
+    PostMethod post = httpPost("/interpreter/setting/", "");
+    LOG.info("testSettingCRUD create response\n" + post.getResponseBodyAsString());
+    assertThat("test create method:", post, isBadRequest());
+    post.releaseConnection();
+  }
+
+  @Test
   public void testInterpreterAutoBinding() throws IOException {
     // create note
     Note note = ZeppelinServer.notebook.createNote(null);
