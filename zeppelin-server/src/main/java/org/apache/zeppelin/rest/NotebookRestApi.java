@@ -663,7 +663,7 @@ public class NotebookRestApi {
     Map<String, Object> config = note.getConfig();
     config.put("cron", request.getCronString());
     note.setConfig(config);
-    notebook.refreshCron(note.id());
+    notebook.refreshCron(note.getId());
 
     return new JsonResponse<>(Status.OK).build();
   }
@@ -691,7 +691,7 @@ public class NotebookRestApi {
     Map<String, Object> config = note.getConfig();
     config.put("cron", null);
     note.setConfig(config);
-    notebook.refreshCron(note.id());
+    notebook.refreshCron(note.getId());
 
     return new JsonResponse<>(Status.OK).build();
   }

@@ -171,7 +171,7 @@ public class NotebookTest implements JobListenerFactory{
     notebook.reloadAllNotes(null);
     notes = notebook.getAllNotes();
     assertEquals(notes.size(), 2);
-    assertEquals(notes.get(1).id(), copiedNote.id());
+    assertEquals(notes.get(1).getId(), copiedNote.getId());
     assertEquals(notes.get(1).getName(), copiedNote.getName());
     assertEquals(notes.get(1).getParagraphs(), copiedNote.getParagraphs());
 
@@ -283,13 +283,13 @@ public class NotebookTest implements JobListenerFactory{
     config.put("enabled", true);
     config.put("cron", "* * * * * ?");
     note.setConfig(config);
-    notebook.refreshCron(note.id());
+    notebook.refreshCron(note.getId());
     Thread.sleep(1*1000);
 
     // remove cron scheduler.
     config.put("cron", null);
     note.setConfig(config);
-    notebook.refreshCron(note.id());
+    notebook.refreshCron(note.getId());
     Thread.sleep(1000);
     dateFinished = p.getDateFinished();
     assertNotNull(dateFinished);
@@ -318,7 +318,7 @@ public class NotebookTest implements JobListenerFactory{
     config.put("cron", "1/3 * * * * ?");
     config.put("releaseresource", true);
     note.setConfig(config);
-    notebook.refreshCron(note.id());
+    notebook.refreshCron(note.getId());
 
 
     MockInterpreter1 mock1 = ((MockInterpreter1) (((ClassloaderInterpreter)
@@ -342,7 +342,7 @@ public class NotebookTest implements JobListenerFactory{
     // remove cron scheduler.
     config.put("cron", null);
     note.setConfig(config);
-    notebook.refreshCron(note.id());
+    notebook.refreshCron(note.getId());
 
     // make sure all paragraph has been executed
     assertNotNull(p.getDateFinished());
@@ -455,7 +455,7 @@ public class NotebookTest implements JobListenerFactory{
     assertEquals(1, ResourcePoolUtils.getAllResources().size());
 
     // remove note
-    notebook.removeNote(note.id(), null);
+    notebook.removeNote(note.getId(), null);
     assertEquals(0, ResourcePoolUtils.getAllResources().size());
   }
 
@@ -473,20 +473,20 @@ public class NotebookTest implements JobListenerFactory{
     Paragraph p1 = note.addParagraph();
 
     // add paragraph scope object
-    registry.add("o1", "object1", note.id(), p1.getId());
+    registry.add("o1", "object1", note.getId(), p1.getId());
 
     // add notebook scope object
-    registry.add("o2", "object2", note.id(), null);
+    registry.add("o2", "object2", note.getId(), null);
 
     // add global scope object
     registry.add("o3", "object3", null, null);
 
     // remove notebook
-    notebook.removeNote(note.id(), null);
+    notebook.removeNote(note.getId(), null);
 
     // notebook scope or paragraph scope object should be removed
-    assertNull(registry.get("o1", note.id(), null));
-    assertNull(registry.get("o2", note.id(), p1.getId()));
+    assertNull(registry.get("o1", note.getId(), null));
+    assertNull(registry.get("o2", note.getId(), p1.getId()));
 
     // global object sould be remained
     assertNotNull(registry.get("o3", null, null));
@@ -506,10 +506,10 @@ public class NotebookTest implements JobListenerFactory{
     Paragraph p1 = note.addParagraph();
 
     // add paragraph scope object
-    registry.add("o1", "object1", note.id(), p1.getId());
+    registry.add("o1", "object1", note.getId(), p1.getId());
 
     // add notebook scope object
-    registry.add("o2", "object2", note.id(), null);
+    registry.add("o2", "object2", note.getId(), null);
 
     // add global scope object
     registry.add("o3", "object3", null, null);
@@ -518,10 +518,10 @@ public class NotebookTest implements JobListenerFactory{
     note.removeParagraph(p1.getId());
 
     // paragraph scope should be removed
-    assertNull(registry.get("o1", note.id(), null));
+    assertNull(registry.get("o1", note.getId(), null));
 
     // notebook scope and global object sould be remained
-    assertNotNull(registry.get("o2", note.id(), null));
+    assertNotNull(registry.get("o2", note.getId(), null));
     assertNotNull(registry.get("o3", null, null));
   }
 
@@ -537,7 +537,7 @@ public class NotebookTest implements JobListenerFactory{
         .getAngularObjectRegistry();
 
     // add local scope object
-    registry.add("o1", "object1", note.id(), null);
+    registry.add("o1", "object1", note.getId(), null);
     // add global scope object
     registry.add("o2", "object2", null, null);
 
@@ -547,9 +547,9 @@ public class NotebookTest implements JobListenerFactory{
     .getAngularObjectRegistry();
 
     // local and global scope object should be removed
-    assertNull(registry.get("o1", note.id(), null));
+    assertNull(registry.get("o1", note.getId(), null));
     assertNull(registry.get("o2", null, null));
-    notebook.removeNote(note.id(), null);
+    notebook.removeNote(note.getId(), null);
   }
 
   @Test
@@ -558,43 +558,43 @@ public class NotebookTest implements JobListenerFactory{
     Note note = notebook.createNote(null);
     NotebookAuthorization notebookAuthorization = notebook.getNotebookAuthorization();
     // empty owners, readers and writers means note is public
-    assertEquals(notebookAuthorization.isOwner(note.id(),
+    assertEquals(notebookAuthorization.isOwner(note.getId(),
             new HashSet<String>(Arrays.asList("user2"))), true);
-    assertEquals(notebookAuthorization.isReader(note.id(),
+    assertEquals(notebookAuthorization.isReader(note.getId(),
             new HashSet<String>(Arrays.asList("user2"))), true);
-    assertEquals(notebookAuthorization.isWriter(note.id(),
+    assertEquals(notebookAuthorization.isWriter(note.getId(),
             new HashSet<String>(Arrays.asList("user2"))), true);
 
-    notebookAuthorization.setOwners(note.id(),
+    notebookAuthorization.setOwners(note.getId(),
             new HashSet<String>(Arrays.asList("user1")));
-    notebookAuthorization.setReaders(note.id(),
+    notebookAuthorization.setReaders(note.getId(),
             new HashSet<String>(Arrays.asList("user1", "user2")));
-    notebookAuthorization.setWriters(note.id(),
+    notebookAuthorization.setWriters(note.getId(),
             new HashSet<String>(Arrays.asList("user1")));
 
-    assertEquals(notebookAuthorization.isOwner(note.id(),
+    assertEquals(notebookAuthorization.isOwner(note.getId(),
             new HashSet<String>(Arrays.asList("user2"))), false);
-    assertEquals(notebookAuthorization.isOwner(note.id(),
+    assertEquals(notebookAuthorization.isOwner(note.getId(),
             new HashSet<String>(Arrays.asList("user1"))), true);
 
-    assertEquals(notebookAuthorization.isReader(note.id(),
+    assertEquals(notebookAuthorization.isReader(note.getId(),
             new HashSet<String>(Arrays.asList("user3"))), false);
-    assertEquals(notebookAuthorization.isReader(note.id(),
+    assertEquals(notebookAuthorization.isReader(note.getId(),
             new HashSet<String>(Arrays.asList("user2"))), true);
 
-    assertEquals(notebookAuthorization.isWriter(note.id(),
+    assertEquals(notebookAuthorization.isWriter(note.getId(),
             new HashSet<String>(Arrays.asList("user2"))), false);
-    assertEquals(notebookAuthorization.isWriter(note.id(),
+    assertEquals(notebookAuthorization.isWriter(note.getId(),
             new HashSet<String>(Arrays.asList("user1"))), true);
 
     // Test clearing of permssions
-    notebookAuthorization.setReaders(note.id(), Sets.<String>newHashSet());
-    assertEquals(notebookAuthorization.isReader(note.id(),
+    notebookAuthorization.setReaders(note.getId(), Sets.<String>newHashSet());
+    assertEquals(notebookAuthorization.isReader(note.getId(),
             new HashSet<String>(Arrays.asList("user2"))), true);
-    assertEquals(notebookAuthorization.isReader(note.id(),
+    assertEquals(notebookAuthorization.isReader(note.getId(),
             new HashSet<String>(Arrays.asList("user3"))), true);
 
-    notebook.removeNote(note.id(), null);
+    notebook.removeNote(note.getId(), null);
   }
 
   @Test
@@ -787,8 +787,8 @@ public class NotebookTest implements JobListenerFactory{
     note1.removeParagraph(p1.getId());
     assertEquals(1, onParagraphRemove.get());
 
-    List<String> settings = notebook.getBindedInterpreterSettingsIds(note1.id());
-    notebook.bindInterpretersToNote(note1.id(), new LinkedList<String>());
+    List<String> settings = notebook.getBindedInterpreterSettingsIds(note1.getId());
+    notebook.bindInterpretersToNote(note1.getId(), new LinkedList<String>());
     assertEquals(settings.size(), unbindInterpreter.get());
 
     notebook.removeNote(note1.getId(), null);

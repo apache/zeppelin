@@ -151,10 +151,10 @@ public class Notebook implements NoteEventListener {
     Note note =
         new Note(notebookRepo, replFactory, jobListenerFactory, notebookIndex, credentials, this);
     synchronized (notes) {
-      notes.put(note.id(), note);
+      notes.put(note.getId(), note);
     }
     if (interpreterIds != null) {
-      bindInterpretersToNote(note.id(), interpreterIds);
+      bindInterpretersToNote(note.getId(), interpreterIds);
       note.putDefaultReplName();
     }
 
@@ -243,8 +243,8 @@ public class Notebook implements NoteEventListener {
       newNote.setName("Note " + newNote.getId());
     }
     // Copy the interpreter bindings
-    List<String> boundInterpreterSettingsIds = getBindedInterpreterSettingsIds(sourceNote.id());
-    bindInterpretersToNote(newNote.id(), boundInterpreterSettingsIds);
+    List<String> boundInterpreterSettingsIds = getBindedInterpreterSettingsIds(sourceNote.getId());
+    bindInterpretersToNote(newNote.getId(), boundInterpreterSettingsIds);
 
     List<Paragraph> paragraphs = sourceNote.getParagraphs();
     for (Paragraph p : paragraphs) {
@@ -421,15 +421,15 @@ public class Notebook implements NoteEventListener {
     note.setNoteEventListener(this);
 
     synchronized (notes) {
-      notes.put(note.id(), note);
-      refreshCron(note.id());
+      notes.put(note.getId(), note);
+      refreshCron(note.getId());
     }
 
     for (String name : angularObjectSnapshot.keySet()) {
       SnapshotAngularObject snapshot = angularObjectSnapshot.get(name);
       List<InterpreterSetting> settings = replFactory.get();
       for (InterpreterSetting setting : settings) {
-        InterpreterGroup intpGroup = setting.getInterpreterGroup(note.id());
+        InterpreterGroup intpGroup = setting.getInterpreterGroup(note.getId());
         if (intpGroup.getId().equals(snapshot.getIntpGroupId())) {
           AngularObjectRegistry registry = intpGroup.getAngularObjectRegistry();
           String noteId = snapshot.getAngularObject().getNoteId();
@@ -510,11 +510,11 @@ public class Notebook implements NoteEventListener {
       Collections.sort(noteList, new Comparator<Note>() {
         @Override
         public int compare(Note note1, Note note2) {
-          String name1 = note1.id();
+          String name1 = note1.getId();
           if (note1.getName() != null) {
             name1 = note1.getName();
           }
-          String name2 = note2.id();
+          String name2 = note2.getId();
           if (note2.getName() != null) {
             name2 = note2.getName();
           }
@@ -595,14 +595,14 @@ public class Notebook implements NoteEventListener {
       Map<String, Object> info = new HashMap<>();
 
       // set notebook ID
-      info.put("notebookId", note.id());
+      info.put("notebookId", note.getId());
 
       // set notebook Name
       String notebookName = note.getName();
       if (notebookName != null && !notebookName.equals("")) {
         info.put("notebookName", note.getName());
       } else {
-        info.put("notebookName", "Note " + note.id());
+        info.put("notebookName", "Note " + note.getId());
       }
 
       // set notebook type ( cron or normal )
