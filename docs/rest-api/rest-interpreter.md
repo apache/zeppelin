@@ -198,7 +198,10 @@ The role of registered interpreters, settings and interpreters group are describ
     </tr>
     <tr>
       <td>Fail code</td>
-      <td> 500 </td>
+      <td>
+          400 if the input json is empty <br/>
+          500 for any other errors
+      </td>
     </tr>
     <tr>
       <td>Sample JSON input</td>
@@ -219,7 +222,9 @@ The role of registered interpreters, settings and interpreters group are describ
   "dependencies": [
     {
       "groupArtifactVersion": "groupId:artifactId:version",
-      "exclusions": "groupId:artifactId"
+      "exclusions": [
+        "groupId:artifactId"
+      ]
     }
   ]
 }
@@ -249,7 +254,9 @@ The role of registered interpreters, settings and interpreters group are describ
     "dependencies": [
       {
         "groupArtifactVersion": "groupId:artifactId:version",
-        "exclusions": "groupId:artifactId"
+        "exclusions": [
+          "groupId:artifactId"
+        ]
       }
     ]
   }
@@ -298,7 +305,9 @@ The role of registered interpreters, settings and interpreters group are describ
   "dependencies": [
     {
       "groupArtifactVersion": "groupId:artifactId:version",
-      "exclusions": "groupId:artifactId"
+      "exclusions": [
+        "groupId:artifactId"
+      ]
     }
   ]
 }
@@ -328,7 +337,9 @@ The role of registered interpreters, settings and interpreters group are describ
     "dependencies": [
       {
         "groupArtifactVersion": "groupId:artifactId:version",
-        "exclusions": "groupId:artifactId"
+        "exclusions": [
+          "groupId:artifactId"
+        ]
       }
     ]
   }
