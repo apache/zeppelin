@@ -173,6 +173,31 @@ body {
   outline-width: 0;
 }
 
+/* SideMenu */
+
+.sideMenu li {
+  list-style: none;
+  border: 1px solid #c2c2c2;
+  border-bottom: none;
+  padding: 5px 10px;
+}
+
+.sideMenu li a {
+  text-decoration: none;
+  color: #3071a9;
+}
+
+.sideMenu li:first-of-type {
+  border-top-left-radius: 3px;
+  border-top-right-radius: 3px;
+}
+
+.sideMenu li:last-of-type {
+  border-bottom: 1px solid #c2c2c2;
+  border-bottom-left-radius: 3px;
+  border-bottom-right-radius: 3px;
+}
+
 /* CUSTOMIZE THE CAROUSEL
 -------------------------------------------------- */
 
