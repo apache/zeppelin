@@ -210,8 +210,8 @@ public class InterpreterFactoryTest {
       add(setting2.getId());
     }});
 
-    assertEquals("className1", factory.getInterpreter("note", "test-group1").getClassName());
-    assertEquals("className1", factory.getInterpreter("note", "group1").getClassName());
+    assertEquals("className1", factory.getInterpreter("user1", "note", "test-group1").getClassName());
+    assertEquals("className1", factory.getInterpreter("user1", "note", "group1").getClassName());
   }
 
   @Test

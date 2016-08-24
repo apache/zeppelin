@@ -105,6 +105,10 @@ public class Paragraph extends Job implements Serializable, Cloneable {
            + new Random(System.currentTimeMillis()).nextInt();
   }
 
+  public String getUser() {
+    return user;
+  }
+
   public String getText() {
     return text;
   }
@@ -193,7 +197,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
   }
 
   public Interpreter getRepl(String name) {
-    return factory.getInterpreter(note.getId(), name);
+    return factory.getInterpreter(user, note.getId(), name);
   }
 
   public Interpreter getCurrentRepl() {
