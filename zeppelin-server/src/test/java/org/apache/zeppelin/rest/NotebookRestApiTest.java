@@ -134,7 +134,7 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
 
   @Test
   public void testGetNoteParagraphJobStatus() throws IOException {
-    Note note1 = ZeppelinServer.notebook.createNote(null);
+    Note note1 = ZeppelinServer.notebook.createNote(anonymous);
     note1.addParagraph();
 
     String paragraphId = note1.getLastParagraph().getId();
@@ -150,7 +150,7 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
     assertEquals(paragraphStatus.get("status"), "READY");
 
     //cleanup
-    ZeppelinServer.notebook.removeNote(note1.getId(), null);
+    ZeppelinServer.notebook.removeNote(note1.getId(), anonymous);
 
   }
 
