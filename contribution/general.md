@@ -206,12 +206,29 @@ Each new File should have its own accompanying unit tests. Each new interpreter 
 
 Zeppelin has 3 types of tests:
 
-  1. Unit Tests: The unit tests run as part of each package's build. E.g. SparkInterpeter Module's unit test is SparkInterpreterTest
-  2. Integration Tests: The integration tests run after all modules are build. The integration tests launch an instance of Zeppelin server. ZeppelinRestApiTest is an example integration test.
-  3. GUI integration tests: These tests validate the Zeppelin UI elements. These tests require a running Zeppelin server and launches a web browser to validate Notebook UI elements like Notes and their execution. See ZeppelinIT as an example.
+* __Unit Tests:__ The unit tests run as part of each package's build. E.g. SparkInterpeter Module's unit test is SparkInterpreterTest
+* __Integration Tests:__ The integration tests run after all modules are build. The integration tests launch an instance of Zeppelin server. ZeppelinRestApiTest is an example integration test.
+* __GUI integration tests:__ These tests validate the Zeppelin UI elements. These tests require a running Zeppelin server and launches a web browser to validate Notebook UI elements like Notes and their execution. See ZeppelinIT as an example.
 
-Currently the GUI integration tests are not run in the Maven and are only run in the CI environment when the pull request is submitted to github. Make sure to watch the [CI results] (https://travis-ci.org/apache/zeppelin/pull_requests) for your pull request.
+Currently the __GUI integration tests__ are not run in the Maven and are only run in the CI environment when the pull request is submitted to github.
 
+Make sure to watch the [CI results] (https://travis-ci.org/apache/zeppelin/pull_requests) for your pull request.
+
+#### Running GUI integration tests locally
+
+##### All tests, just like the CI:
+
+```
+PATH=~/Applications/Firefox.app/Contents/MacOS/:$PATH CI="true" mvn verify -Pspark-1.6 -Phadoop-2.3 -Ppyspark -B -pl "zeppelin-interpreter,zeppelin-zengine,zeppelin-server,zeppelin-display,spark-dependencies,spark" -Dtest="org.apache.zeppelin.AbstractFunctionalSuite" -DfailIfNoTests=false
+```
+
+##### Next to a Running instance of Zeppelin
+
+This allows you to target a specific __GUI integration test__.
+
+```
+TEST_SELENIUM="true" mvn package -DfailIfNoTests=false -pl 'zeppelin-interpreter,zeppelin-zengine,zeppelin-server' -Dtest=ParagraphActionsIT
+```
 
 ## Continuous Integration
 
