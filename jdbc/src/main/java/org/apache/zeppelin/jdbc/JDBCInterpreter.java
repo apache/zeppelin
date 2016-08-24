@@ -214,49 +214,52 @@ public class JDBCInterpreter extends Interpreter {
       Class.forName(properties.getProperty(DRIVER_KEY));
       final String url = properties.getProperty(URL_KEY);
 
-      UserGroupInformation.AuthenticationMethod authType = JDBCSecurityImpl.getAuthtype(property);
-      switch (authType) {
-          case KERBEROS:
-            if (user == null) {
-              connection = DriverManager.getConnection(url, properties);
-            } else {
-              if ("hive".equalsIgnoreCase(propertyKey)) {
-                connection = DriverManager.getConnection(url + ";hive.server2.proxy.user=" + user,
-                    properties);
+      if (StringUtils.isEmpty(property.getProperty("zeppelin.jdbc.auth.type"))) {
+        connection = DriverManager.getConnection(url, properties);
+      } else {
+        UserGroupInformation.AuthenticationMethod authType = JDBCSecurityImpl.getAuthtype(property);
+        switch (authType) {
+            case KERBEROS:
+              if (user == null) {
+                connection = DriverManager.getConnection(url, properties);
               } else {
-                UserGroupInformation ugi = null;
-                try {
-                  ugi = UserGroupInformation.createProxyUser(user,
-                      UserGroupInformation.getCurrentUser());
-                } catch (Exception e) {
-                  logger.error("Error in createProxyUser", e);
-                  StringBuilder stringBuilder = new StringBuilder();
-                  stringBuilder.append(e.getMessage()).append("\n");
-                  stringBuilder.append(e.getCause());
-                  throw new InterpreterException(stringBuilder.toString());
-                }
-                try {
-                  connection = ugi.doAs(new PrivilegedExceptionAction<Connection>() {
-                    @Override
-                    public Connection run() throws Exception {
-                      return DriverManager.getConnection(url, properties);
-                    }
-                  });
-                } catch (Exception e) {
-                  logger.error("Error in doAs", e);
-                  StringBuilder stringBuilder = new StringBuilder();
-                  stringBuilder.append(e.getMessage()).append("\n");
-                  stringBuilder.append(e.getCause());
-                  throw new InterpreterException(stringBuilder.toString());
+                if ("hive".equalsIgnoreCase(propertyKey)) {
+                  connection = DriverManager.getConnection(url + ";hive.server2.proxy.user=" + user,
+                      properties);
+                } else {
+                  UserGroupInformation ugi = null;
+                  try {
+                    ugi = UserGroupInformation.createProxyUser(user,
+                        UserGroupInformation.getCurrentUser());
+                  } catch (Exception e) {
+                    logger.error("Error in createProxyUser", e);
+                    StringBuilder stringBuilder = new StringBuilder();
+                    stringBuilder.append(e.getMessage()).append("\n");
+                    stringBuilder.append(e.getCause());
+                    throw new InterpreterException(stringBuilder.toString());
+                  }
+                  try {
+                    connection = ugi.doAs(new PrivilegedExceptionAction<Connection>() {
+                      @Override
+                      public Connection run() throws Exception {
+                        return DriverManager.getConnection(url, properties);
+                      }
+                    });
+                  } catch (Exception e) {
+                    logger.error("Error in doAs", e);
+                    StringBuilder stringBuilder = new StringBuilder();
+                    stringBuilder.append(e.getMessage()).append("\n");
+                    stringBuilder.append(e.getCause());
+                    throw new InterpreterException(stringBuilder.toString());
+                  }
                 }
               }
-            }
-            break;
+              break;
 
-          default:
-            connection = DriverManager.getConnection(url, properties);
+            default:
+              connection = DriverManager.getConnection(url, properties);
+        }
       }
-
     }
     propertyKeySqlCompleterMap.put(propertyKey, createSqlCompleter(connection));
     return connection;
