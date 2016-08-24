@@ -87,6 +87,9 @@
         "defaultValue": "",
         "description": "Adding extra libraries to livy interpreter"
       }
+    },
+    "editor": {
+      "language": "scala"
     }
   },
   {
@@ -105,6 +108,9 @@
         "defaultValue": "false",
         "description": "Execute multiple SQL concurrently if set true."
       }
+    },
+    "editor": {
+      "language": "sql"
     }
   },
   {
@@ -112,6 +118,9 @@
     "name": "pyspark",
     "className": "org.apache.zeppelin.livy.LivyPySparkInterpreter",
     "properties": {
+    },
+    "editor": {
+      "language": "python"
     }
   },
   {
@@ -119,6 +128,9 @@
     "name": "sparkr",
     "className": "org.apache.zeppelin.livy.LivySparkRInterpreter",
     "properties": {
+    },
+    "editor": {
+      "language": "r"
     }
   }
 ]

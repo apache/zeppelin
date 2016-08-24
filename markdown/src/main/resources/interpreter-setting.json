@@ -10,6 +10,9 @@
         "defaultValue": "markdown4j",
         "description": "Markdown Parser Type. Available values: markdown4j, pegdown. Default = markdown4j"
       }
+    },
+    "editor": {
+      "language": "markdown"
     }
   }
 ]
