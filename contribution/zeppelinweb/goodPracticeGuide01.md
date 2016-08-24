@@ -41,6 +41,6 @@ We should have only one Angular Component per file, and it should look like this
 
 #### Explanations
 
-* The component function and the component's dependency injection is separated from the component definition
+* The component function and the component's dependency injection are separated from the component definition
 * We apply an Immediately Invoked Function Expression (IIFE) to each component, You can learn more about it
 in this [nice post](https://github.com/johnpapa/angular-styleguide/tree/master/a1#iife) of John Papa.
