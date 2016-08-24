@@ -69,6 +69,9 @@ Here is an example of `interpreter-setting.json` on your own interpreter.
         "defaultValue": "property2DefaultValue",
         "description": "Property 2 description"
       }, ...
+    },
+    "editor": {
+      "language": "your-syntax-highlight-language"
     }
   },
   {
@@ -96,15 +99,20 @@ some interpreter specific code...
 ```
 
 ## Programming Languages for Interpreter
-If the interpreter uses a specific programming language ( like Scala, Python, SQL ), it is generally recommended to add a syntax highlighting supported for that to the notebook paragraph editor.  
+If the interpreter uses a specific programming language (like Scala, Python, SQL), it is generally recommended to add a syntax highlighting supported for that to the notebook paragraph editor.  
 
 To check out the list of languages supported, see the `mode-*.js` files under `zeppelin-web/bower_components/ace-builds/src-noconflict` or from [github.com/ajaxorg/ace-builds](https://github.com/ajaxorg/ace-builds/tree/master/src-noconflict).  
 
 If you want to add a new set of syntax highlighting,  
 
 1. Add the `mode-*.js` file to <code>[zeppelin-web/bower.json](https://github.com/apache/zeppelin/blob/master/zeppelin-web/bower.json)</code> ( when built, <code>[zeppelin-web/src/index.html](https://github.com/apache/zeppelin/blob/master/zeppelin-web/src/index.html)</code> will be changed automatically. ).  
-2. Add to the list of `editorMode` in <code>[zeppelin-web/src/app/notebook/paragraph/paragraph.controller.js](https://github.com/apache/zeppelin/blob/master/zeppelin-web/src/app/notebook/paragraph/paragraph.controller.js)</code> - it follows the pattern 'ace/mode/x' where x is the name.  
-3. Add to the code that checks for `%` prefix and calls `session.setMode(editorMode.x)` in `setParagraphMode` located in <code>[zeppelin-web/src/app/notebook/paragraph/paragraph.controller.js](https://github.com/apache/zeppelin/blob/master/zeppelin-web/src/app/notebook/paragraph/paragraph.controller.js)</code>.  
+2. Add `editor` object to `interpreter-setting.json` file. If you want to set your language to java, add:
+
+  ```
+  "editor": {
+    "language": "java"
+  }
+  ```
 
 ## Install your interpreter binary
 
