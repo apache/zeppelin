@@ -98,7 +98,7 @@ When a Pull Request is submitted, it is being merged or rejected by following re
 
 ## Becoming a Committer
 
-The PPMC adds new committers from the active contributors, based on their contribution to Zeppelin. The qualifications for new committers include:
+The PMC adds new committers from the active contributors, based on their contribution to Zeppelin. The qualifications for new committers include:
 
 1. Sustained contributions: Committers should have a history of constant contributions to Zeppelin.
 2. Quality of contributions: Committers more than any other community member should submit simple, well-tested, and well-designed patches.
@@ -208,9 +208,10 @@ Zeppelin has 3 types of tests:
 
   1. Unit Tests: The unit tests run as part of each package's build. E.g. SparkInterpeter Module's unit test is SparkInterpreterTest
   2. Integration Tests: The integration tests run after all modules are build. The integration tests launch an instance of Zeppelin server. ZeppelinRestApiTest is an example integration test.
-  3. GUI integration tests: These tests validate the Zeppelin UI elements. These tests require a running Zeppelin server and launches a web browser to validate Notebook UI elements like Notes and their execution. See ZeppelinIT as an example.  
+  3. GUI integration tests: These tests validate the Zeppelin UI elements. These tests require a running Zeppelin server and launches a web browser to validate Notebook UI elements like Notes and their execution. See ZeppelinIT as an example.
 
 Currently the GUI integration tests are not run in the Maven and are only run in the CI environment when the pull request is submitted to github. Make sure to watch the [CI results] (https://travis-ci.org/apache/zeppelin/pull_requests) for your pull request.
+
 
 ## Continuous Integration
 

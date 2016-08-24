@@ -14,10 +14,10 @@ limitations under the License.
 
 ## How to contribute
 
-There is multiple ways you can contribute to the project.
+There are multiple ways you can contribute to the project.
 And help is always welcome!
 
-#### Issue Tracker
+### Issue Tracker
 
 Apache Zeppelin uses JIRA as an [Issue Tracker](https://issues.apache.org/jira/browse/ZEPPELIN).
 Don't hesitate to report new bugs and improvements ideas.
@@ -29,12 +29,12 @@ We like to get code contributions through Pull Requests on our [Github Mirror](h
 But before starting, please read our [Contribution guidelines](/contribution/general.html), it will give
 you important information about our review process, and pointers on how to make a good code contribution.
 
-You can visit our [issue Tracker](https://issues.apache.org/jira/browse/ZEPPELIN) to find issues to resolve,
+You can visit our [Issue Tracker](https://issues.apache.org/jira/browse/ZEPPELIN) to find issues to resolve,
 and if your are a newcomer and don't know where to get started, we have set some [beginner issues](https://issues.apache.org/jira/browse/ZEPPELIN-1245?jql=project%20%3D%20ZEPPELIN%20AND%20status%20%3D%20Open%20AND%20labels%20%3D%20beginner).
 
 #### Other contributions
 
-Not much of a coder? There is other ways to help out:
+Not much of a coder? There are other ways to help out:
 
 * Documentation and website improvements are always welcome
 * Helping each other by answering questions on the Mailing List
