@@ -286,6 +286,17 @@
       <groupId>org.apache.shiro</groupId>
       <artifactId>shiro-web</artifactId>
     </dependency>
+
+    <dependency>
+      <groupId>com.google.inject</groupId>
+      <artifactId>guice</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>com.netflix.governator</groupId>
+      <artifactId>governator</artifactId>
+    </dependency>
+
   </dependencies>
 
   <build>

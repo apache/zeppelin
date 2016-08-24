@@ -94,7 +94,9 @@
     <slf4j.version>1.7.10</slf4j.version>
     <log4j.version>1.2.17</log4j.version>
     <libthrift.version>0.9.2</libthrift.version>
+    <governator.version>1.14.2</governator.version>
     <gson.version>2.2</gson.version>
+    <guice.version>4.1.0</guice.version>
     <guava.version>15.0</guava.version>
     <jetty.version>9.2.15.v20160210</jetty.version>
 
@@ -193,14 +195,6 @@
         <version>${guava.version}</version>
       </dependency>
 
-
-      <dependency>
-        <groupId>junit</groupId>
-        <artifactId>junit</artifactId>
-        <version>4.11</version>
-        <scope>test</scope>
-      </dependency>
-
       <!-- Apache Shiro -->
       <dependency>
         <groupId>org.apache.shiro</groupId>
@@ -212,6 +206,26 @@
         <artifactId>shiro-web</artifactId>
         <version>1.2.3</version>
       </dependency>
+
+      <dependency>
+        <groupId>com.google.inject</groupId>
+        <artifactId>guice</artifactId>
+        <version>${guice.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>com.netflix.governator</groupId>
+        <artifactId>governator</artifactId>
+        <version>${governator.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>junit</groupId>
+        <artifactId>junit</artifactId>
+        <version>4.11</version>
+        <scope>test</scope>
+      </dependency>
+
     </dependencies>
   </dependencyManagement>
 

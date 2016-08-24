@@ -17,10 +17,13 @@
 
 package org.apache.zeppelin.server;
 
+import com.google.inject.Guice;
+import com.google.inject.Injector;
 import org.apache.cxf.jaxrs.servlet.CXFNonSpringJaxrsServlet;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.dep.DependencyResolver;
+import org.apache.zeppelin.inject.ZeppelinModule;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.NotebookAuthorization;
@@ -62,6 +65,7 @@ public class ZeppelinServer extends Application {
   public static Notebook notebook;
   public static Server jettyWebServer;
   public static NotebookServer notebookWsServer;
+  public static Injector injector;
 
   private SchedulerFactory schedulerFactory;
   private InterpreterFactory replFactory;
@@ -92,6 +96,8 @@ public class ZeppelinServer extends Application {
 
     ZeppelinConfiguration conf = ZeppelinConfiguration.create();
     conf.setProperty("args", args);
+
+    injector = Guice.createInjector(new ZeppelinModule(conf));
 
     jettyWebServer = setupJettyServer(conf);
 

@@ -251,6 +251,14 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     return getBooleanValue(propertyName, defaultValue);
   }
 
+  public Class<?> getClass(ConfVars c) {
+    try {
+      return Class.forName(c.getStringValue());
+    } catch (ClassNotFoundException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
   public boolean useSsl() {
     return getBoolean(ConfVars.ZEPPELIN_SSL);
   }
@@ -320,6 +328,10 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     } else {
       return password;
     }
+  }
+
+  public Class<?> getZeppelingApiWebFilterClassname() {
+    return getClass(ConfVars.ZEPPELIN_API_WEB_FILTER_CLASSNAME);
   }
 
   public String getNotebookDir() {
@@ -536,7 +548,8 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_ALLOWED_ORIGINS("zeppelin.server.allowed.origins", "*"),
     ZEPPELIN_ANONYMOUS_ALLOWED("zeppelin.anonymous.allowed", true),
     ZEPPELIN_CREDENTIALS_PERSIST("zeppelin.credentials.persist", true),
-    ZEPPELIN_WEBSOCKET_MAX_TEXT_MESSAGE_SIZE("zeppelin.websocket.max.text.message.size", "1024000");
+    ZEPPELIN_WEBSOCKET_MAX_TEXT_MESSAGE_SIZE("zeppelin.websocket.max.text.message.size", "1024000"),
+    ZEPPELIN_API_WEB_FILTER_CLASSNAME("zeppelin.aoi.web.filter", "local-repo");
 
 
     private String varName;
