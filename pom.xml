@@ -55,12 +55,12 @@
     <module>zeppelin-interpreter</module>
     <module>zeppelin-zengine</module>
     <module>zeppelin-display</module>
-    <!-- <module>spark-dependencies</module>
-    <module>spark</module> -->
+    <module>spark-dependencies</module>
+    <module>spark</module>
     <module>markdown</module>
     <module>angular</module>
     <module>shell</module>
-    <!-- <module>livy</module>
+    <module>livy</module>
     <module>hbase</module>
     <module>postgresql</module>
     <module>jdbc</module>
@@ -73,7 +73,7 @@
     <module>cassandra</module>
     <module>elasticsearch</module>
     <module>bigquery</module>
-    <module>alluxio</module> -->
+    <module>alluxio</module>
     <module>zeppelin-web</module>
     <module>zeppelin-server</module>
     <module>zeppelin-distribution</module>
