@@ -193,7 +193,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
   }
 
   public Interpreter getRepl(String name) {
-    return factory.getInterpreter(note.getId(), name);
+    return note.getRepl(name);
   }
 
   public Interpreter getCurrentRepl() {

@@ -76,6 +76,10 @@ public class Message {
     INSERT_PARAGRAPH, // [c-s] create new paragraph below current paragraph
                       // @param target index
 
+    EDITOR_SETTING,   // [c-s] ask paragraph editor setting
+                      // @param magic magic keyword written in paragraph
+                      // ex) spark.spark or spark
+
     COMPLETION,       // [c-s] ask completion candidates
                       // @param id
                       // @param buf current code
