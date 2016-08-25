@@ -1305,14 +1305,7 @@ public class NotebookServer extends WebSocketServlet implements
   public static class ParagraphListenerImpl implements ParagraphJobListener {
     private NotebookServer notebookServer;
     private Note note;
-    private Paragraph para;
      
-    public ParagraphListenerImpl(NotebookServer notebookServer, Note note, Paragraph p) {
-      this.notebookServer = notebookServer;
-      this.note = note;
-      this.para = p;
-    }
-
     public ParagraphListenerImpl(NotebookServer notebookServer, Note note) {
       this.notebookServer = notebookServer;
       this.note = note;
@@ -1347,8 +1340,8 @@ public class NotebookServer extends WebSocketServlet implements
           LOG.error(e.toString(), e);
         }
       }
-      if (para != null) {
-        notebookServer.broadcastParagraph(note, para);
+      if (job instanceof Paragraph) {
+        notebookServer.broadcastParagraph(note, (Paragraph) job);
       } else {
         notebookServer.broadcastNote(note);
       }  
@@ -1390,11 +1383,6 @@ public class NotebookServer extends WebSocketServlet implements
   @Override
   public ParagraphJobListener getParagraphJobListener(Note note) {
     return new ParagraphListenerImpl(this, note);
-  }
-
-  @Override
-  public ParagraphJobListener getParagraphJobListener(Note note, Paragraph para) {
-    return new ParagraphListenerImpl(this, note, para);
   }
 
   private void sendAllAngularObjects(Note note, NotebookSocket conn) throws IOException {

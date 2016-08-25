@@ -157,10 +157,4 @@ public class VFSNotebookRepoTest implements JobListenerFactory {
   public ParagraphJobListener getParagraphJobListener(Note note) {
     return null;
   }
-
-  @Override
-  public ParagraphJobListener getParagraphJobListener(Note note, Paragraph p) {
-    return null;
-  }
-
 }

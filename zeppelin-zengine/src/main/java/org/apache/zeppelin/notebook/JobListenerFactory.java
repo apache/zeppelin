@@ -22,5 +22,4 @@ package org.apache.zeppelin.notebook;
  */
 public interface JobListenerFactory {
   public ParagraphJobListener getParagraphJobListener(Note note);
-  public ParagraphJobListener getParagraphJobListener(Note note, Paragraph p);
 }

@@ -338,34 +338,4 @@ public class HeliumApplicationFactoryTest implements JobListenerFactory {
       }
     };
   }
-  
-  @Override
-  public ParagraphJobListener getParagraphJobListener(Note note, Paragraph para) {
-    return new ParagraphJobListener() {
-      @Override
-      public void onOutputAppend(Paragraph paragraph, InterpreterOutput out, String output) {
-      }
-
-      @Override
-      public void onOutputUpdate(Paragraph paragraph, InterpreterOutput out, String output) {
-
-      }
-
-      @Override
-      public void onProgressUpdate(Job job, int progress) {
-
-      }
-
-      @Override
-      public void beforeStatusChange(Job job, Job.Status before, Job.Status after) {
-
-      }
-
-      @Override
-      public void afterStatusChange(Job job, Job.Status before, Job.Status after) {
-
-      }
-    };
-  }
-
 }
