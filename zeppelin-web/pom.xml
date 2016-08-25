@@ -127,7 +127,7 @@
               <goal>grunt</goal>
             </goals>
             <configuration>
-              <arguments>build</arguments>
+              <arguments>build --force</arguments>
             </configuration>
           </execution>
 
@@ -138,7 +138,7 @@
             </goals>
             <phase>test</phase>
             <configuration>
-              <arguments>test</arguments>
+              <arguments>test --force</arguments>
             </configuration>
           </execution>
 

@@ -22,19 +22,17 @@ import com.google.inject.Injector;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.ExecutorService;
 
-import javax.net.ssl.SSLContext;
-import javax.servlet.DispatcherType;
+import javax.inject.Inject;
 import javax.ws.rs.core.Application;
 
 import org.apache.cxf.jaxrs.servlet.CXFNonSpringJaxrsServlet;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.dep.DependencyResolver;
+import org.apache.zeppelin.web.WebSecurity;
 import org.apache.zeppelin.inject.ZeppelinModule;
 import org.apache.zeppelin.helium.Helium;
 import org.apache.zeppelin.helium.HeliumApplicationFactory;
@@ -45,17 +43,14 @@ import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.apache.zeppelin.notebook.repo.NotebookRepoSync;
 import org.apache.zeppelin.rest.*;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
-import org.apache.zeppelin.search.LuceneSearch;
 import org.apache.zeppelin.search.SearchService;
 import org.apache.zeppelin.socket.NotebookServer;
 import org.apache.zeppelin.user.Credentials;
-import org.apache.zeppelin.utils.SecurityUtils;
 import org.eclipse.jetty.http.HttpVersion;
 import org.eclipse.jetty.server.*;
 import org.eclipse.jetty.server.handler.ContextHandlerCollection;
 import org.eclipse.jetty.server.session.SessionHandler;
 import org.eclipse.jetty.servlet.DefaultServlet;
-import org.eclipse.jetty.servlet.FilterHolder;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
@@ -75,17 +70,24 @@ public class ZeppelinServer extends Application {
   public static Helium helium;
   public static HeliumApplicationFactory heliumApplicationFactory;
   public static Injector injector;
+  @Inject
+  private static WebSecurity webSecurity;
 
   private SchedulerFactory schedulerFactory;
   private InterpreterFactory replFactory;
   private NotebookRepo notebookRepo;
-  private SearchService notebookIndex;
+
+  @Inject
+  private SearchService searchService;
+  @Inject
+  private ZeppelinConfiguration conf;
   private NotebookAuthorization notebookAuthorization;
   private Credentials credentials;
   private DependencyResolver depResolver;
 
   public ZeppelinServer() throws Exception {
-    ZeppelinConfiguration conf = ZeppelinConfiguration.create();
+
+    injector.injectMembers(this);
 
     this.depResolver = new DependencyResolver(
         conf.getString(ConfVars.ZEPPELIN_INTERPRETER_LOCALREPO));
@@ -96,12 +98,11 @@ public class ZeppelinServer extends Application {
     this.replFactory = new InterpreterFactory(conf, notebookWsServer,
         notebookWsServer, heliumApplicationFactory, depResolver);
     this.notebookRepo = new NotebookRepoSync(conf);
-    this.notebookIndex = new LuceneSearch();
     this.notebookAuthorization = new NotebookAuthorization(conf);
     this.credentials = new Credentials(conf.credentialsPersist(), conf.getCredentialsPath());
     notebook = new Notebook(conf,
         notebookRepo, schedulerFactory, replFactory, notebookWsServer,
-            notebookIndex, notebookAuthorization, credentials);
+            searchService, notebookAuthorization, credentials);
 
     // to update notebook from application event from remote process.
     heliumApplicationFactory.setNotebook(notebook);
@@ -260,14 +261,7 @@ public class ZeppelinServer extends Application {
     webapp.setSessionHandler(new SessionHandler());
     webapp.addServlet(cxfServletHolder, "/api/*");
 
-    webapp.setInitParameter("shiroConfigLocations",
-        new File(conf.getShiroPath()).toURI().toString());
-
-    SecurityUtils.initSecurityManager(conf.getShiroPath());
-    webapp.addFilter(org.apache.shiro.web.servlet.ShiroFilter.class, "/api/*",
-        EnumSet.allOf(DispatcherType.class));
-
-    webapp.addEventListener(new org.apache.shiro.web.env.EnvironmentLoaderListener());
+    webSecurity.addSecurityFilter(webapp);
 
   }
 
@@ -294,8 +288,7 @@ public class ZeppelinServer extends Application {
     webApp.addServlet(new ServletHolder(new DefaultServlet()), "/*");
     contexts.addHandler(webApp);
 
-    webApp.addFilter(new FilterHolder(CorsFilter.class), "/*",
-        EnumSet.allOf(DispatcherType.class));
+    webSecurity.addCorFilter(webApp);
 
     return webApp;
 
@@ -315,7 +308,7 @@ public class ZeppelinServer extends Application {
     ZeppelinRestApi root = new ZeppelinRestApi();
     singletons.add(root);
 
-    NotebookRestApi notebookApi = new NotebookRestApi(notebook, notebookWsServer, notebookIndex);
+    NotebookRestApi notebookApi = new NotebookRestApi(notebook, notebookWsServer, searchService);
     singletons.add(notebookApi);
 
     HeliumRestApi heliumApi = new HeliumRestApi(helium, heliumApplicationFactory, notebook);

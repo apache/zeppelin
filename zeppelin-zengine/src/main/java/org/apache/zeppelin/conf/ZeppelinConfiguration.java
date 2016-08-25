@@ -330,8 +330,12 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     }
   }
 
-  public Class<?> getZeppelingApiWebFilterClassname() {
-    return getClass(ConfVars.ZEPPELIN_API_WEB_FILTER_CLASSNAME);
+  public Class<?> getZeppelinWebSecurityClassname() {
+    return getClass(ConfVars.ZEPPELIN_WEB_SECURITY_CLASSNAME);
+  }
+
+  public Class<?> getZeppelinSearchServiceClassname() {
+    return getClass(ConfVars.ZEPPELIN_SEARCH_SERVICE_CLASSNAME);
   }
 
   public String getNotebookDir() {
@@ -571,7 +575,9 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_CREDENTIALS_PERSIST("zeppelin.credentials.persist", true),
     ZEPPELIN_WEBSOCKET_MAX_TEXT_MESSAGE_SIZE("zeppelin.websocket.max.text.message.size", "1024000"),
     ZEPPELIN_USE_JDBC_ALIAS("zeppelin.use.jdbc.alias", true),
-    ZEPPELIN_API_WEB_FILTER_CLASSNAME("zeppelin.api.web.filter", "local-repo");
+    ZEPPELIN_WEB_SECURITY_CLASSNAME("zeppelin.web.security.classname", "org.apache.zeppelin.web.DefaultWebSecurity"),
+    ZEPPELIN_SEARCH_SERVICE_CLASSNAME("zeppelin.search.service.classname", "org.apache.zeppelin.search.LuceneSearch")
+    ;
 
 
     private String varName;
