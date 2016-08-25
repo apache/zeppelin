@@ -214,13 +214,13 @@
         <artifactId>guice</artifactId>
         <version>${guice.version}</version>
       </dependency>
-
+<!--
       <dependency>
         <groupId>com.netflix.governator</groupId>
         <artifactId>governator</artifactId>
         <version>${governator.version}</version>
       </dependency>
-
+-->
       <dependency>
         <groupId>junit</groupId>
         <artifactId>junit</artifactId>
