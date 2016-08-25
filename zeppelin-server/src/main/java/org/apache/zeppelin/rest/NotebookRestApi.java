@@ -116,8 +116,8 @@ public class NotebookRestApi {
      * TODO(jl): Fixed the type of HashSet
      * https://issues.apache.org/jira/browse/ZEPPELIN-1162
      */
-    HashMap<String, HashSet> permMap =
-        gson.fromJson(req, new TypeToken<HashMap<String, HashSet>>() {
+    HashMap<String, HashSet<String>> permMap =
+        gson.fromJson(req, new TypeToken<HashMap<String, HashSet<String>>>() {
         }.getType());
     Note note = notebook.getNote(noteId);
     String principal = SecurityUtils.getPrincipal();
@@ -133,9 +133,9 @@ public class NotebookRestApi {
           ownerPermissionError(userAndRoles, notebookAuthorization.getOwners(noteId))).build();
     }
 
-    HashSet readers = permMap.get("readers");
-    HashSet owners = permMap.get("owners");
-    HashSet writers = permMap.get("writers");
+    HashSet<String> readers = permMap.get("readers");
+    HashSet<String> owners = permMap.get("owners");
+    HashSet<String> writers = permMap.get("writers");
     // Set readers, if writers and owners is empty -> set to user requesting the change
     if (readers != null && !readers.isEmpty()) {
       if (writers.isEmpty()) {
