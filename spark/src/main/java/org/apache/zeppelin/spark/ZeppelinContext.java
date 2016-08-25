@@ -31,7 +31,6 @@ import java.util.List;
 import org.apache.spark.SparkContext;
 import org.apache.spark.sql.SQLContext;
 import org.apache.spark.sql.catalyst.expressions.Attribute;
-import org.apache.spark.sql.hive.HiveContext;
 import org.apache.zeppelin.annotation.ZeppelinApi;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
@@ -70,7 +69,6 @@ public class ZeppelinContext {
 
   public SparkContext sc;
   public SQLContext sqlContext;
-  public HiveContext hiveContext;
   private GUI gui;
 
   @ZeppelinApi
@@ -165,8 +163,15 @@ public class ZeppelinContext {
   public void show(Object o, int maxResult) {
     Class cls = null;
     try {
-      cls = this.getClass().forName("org.apache.spark.sql.DataFrame");
+      cls = this.getClass().forName("org.apache.spark.sql.Dataset");
     } catch (ClassNotFoundException e) {
+    }
+
+    if (cls == null) {
+      try {
+        cls = this.getClass().forName("org.apache.spark.sql.DataFrame");
+      } catch (ClassNotFoundException e) {
+      }
     }
 
     if (cls == null) {
@@ -177,7 +182,7 @@ public class ZeppelinContext {
     }
 
     if (cls == null) {
-      throw new InterpreterException("Can not road DataFrame/SchemaRDD class");
+      throw new InterpreterException("Can not road Dataset/DataFrame/SchemaRDD class");
     }
 
 

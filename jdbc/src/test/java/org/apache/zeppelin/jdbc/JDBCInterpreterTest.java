@@ -15,6 +15,7 @@
 package org.apache.zeppelin.jdbc;
 
 import static java.lang.String.format;
+import static org.apache.zeppelin.interpreter.Interpreter.logger;
 import static org.junit.Assert.assertEquals;
 import static org.apache.zeppelin.jdbc.JDBCInterpreter.DEFAULT_KEY;
 import static org.apache.zeppelin.jdbc.JDBCInterpreter.DEFAULT_DRIVER;
@@ -22,16 +23,24 @@ import static org.apache.zeppelin.jdbc.JDBCInterpreter.DEFAULT_PASSWORD;
 import static org.apache.zeppelin.jdbc.JDBCInterpreter.DEFAULT_USER;
 import static org.apache.zeppelin.jdbc.JDBCInterpreter.DEFAULT_URL;
 import static org.apache.zeppelin.jdbc.JDBCInterpreter.COMMON_MAX_LINE;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.*;
+import java.util.List;
 import java.util.Properties;
 
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.jdbc.JDBCInterpreter;
+import org.apache.zeppelin.scheduler.FIFOScheduler;
+import org.apache.zeppelin.scheduler.ParallelScheduler;
+import org.apache.zeppelin.scheduler.Scheduler;
+import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -42,6 +51,7 @@ import com.mockrunner.jdbc.BasicJDBCTestCaseAdapter;
 public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
 
   static String jdbcConnection;
+  InterpreterContext interpreterContext;
 
   private static String getJdbcConnection() throws IOException {
     if(null == jdbcConnection) {
@@ -76,6 +86,8 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     PreparedStatement insertStatement = connection.prepareStatement("insert into test_table(id, name) values ('a', 'a_name'),('b', 'b_name'),('c', ?);");
     insertStatement.setString(1, null);
     insertStatement.execute();
+    interpreterContext = new InterpreterContext("", "1", "", "", new AuthenticationInfo(), null, null, null, null,
+        null, null);
   }
 
 
@@ -118,24 +130,24 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
 
     String sqlQuery = "(fake) select * from test_table";
 
-    InterpreterResult interpreterResult = t.interpret(sqlQuery, new InterpreterContext("", "1", "", "", null, null, null, null, null, null, null));
+    InterpreterResult interpreterResult = t.interpret(sqlQuery, interpreterContext);
 
     // if prefix not found return ERROR and Prefix not found.
     assertEquals(InterpreterResult.Code.ERROR, interpreterResult.code());
     assertEquals("Prefix not found.", interpreterResult.message());
   }
-  
+
   @Test
   public void testDefaultProperties() throws SQLException {
     JDBCInterpreter jdbcInterpreter = new JDBCInterpreter(getJDBCTestProperties());
-    
+
     assertEquals("org.postgresql.Driver", jdbcInterpreter.getProperty(DEFAULT_DRIVER));
     assertEquals("jdbc:postgresql://localhost:5432/", jdbcInterpreter.getProperty(DEFAULT_URL));
     assertEquals("gpadmin", jdbcInterpreter.getProperty(DEFAULT_USER));
     assertEquals("", jdbcInterpreter.getProperty(DEFAULT_PASSWORD));
     assertEquals("1000", jdbcInterpreter.getProperty(COMMON_MAX_LINE));
   }
-  
+
   @Test
   public void testSelectQuery() throws SQLException, IOException {
     Properties properties = new Properties();
@@ -150,7 +162,7 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
 
     String sqlQuery = "select * from test_table WHERE ID in ('a', 'b')";
 
-    InterpreterResult interpreterResult = t.interpret(sqlQuery, new InterpreterContext("", "1", "", "", null, null, null, null, null, null, null));
+    InterpreterResult interpreterResult = t.interpret(sqlQuery, interpreterContext);
 
     assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
     assertEquals(InterpreterResult.Type.TABLE, interpreterResult.type());
@@ -171,7 +183,7 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
 
     String sqlQuery = "select * from test_table WHERE ID = 'c'";
 
-    InterpreterResult interpreterResult = t.interpret(sqlQuery, new InterpreterContext("", "1", "", "", null, null, null, null, null, null, null));
+    InterpreterResult interpreterResult = t.interpret(sqlQuery, interpreterContext);
 
     assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
     assertEquals(InterpreterResult.Type.TABLE, interpreterResult.type());
@@ -194,10 +206,57 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
 
     String sqlQuery = "select * from test_table";
 
-    InterpreterResult interpreterResult = t.interpret(sqlQuery, new InterpreterContext("", "1", "", "", null, null, null, null, null, null, null));
+    InterpreterResult interpreterResult = t.interpret(sqlQuery, interpreterContext);
 
     assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
     assertEquals(InterpreterResult.Type.TABLE, interpreterResult.type());
     assertEquals("ID\tNAME\na\ta_name\n", interpreterResult.message());
   }
+
+  @Test
+  public void concurrentSettingTest() {
+    Properties properties = new Properties();
+    properties.setProperty("zeppelin.jdbc.concurrent.use", "true");
+    properties.setProperty("zeppelin.jdbc.concurrent.max_connection", "10");
+    JDBCInterpreter jdbcInterpreter = new JDBCInterpreter(properties);
+
+    assertTrue(jdbcInterpreter.isConcurrentExecution());
+    assertEquals(10, jdbcInterpreter.getMaxConcurrentConnection());
+
+    Scheduler scheduler = jdbcInterpreter.getScheduler();
+    assertTrue(scheduler instanceof ParallelScheduler);
+
+    properties.clear();
+    properties.setProperty("zeppelin.jdbc.concurrent.use", "false");
+    jdbcInterpreter = new JDBCInterpreter(properties);
+
+    assertFalse(jdbcInterpreter.isConcurrentExecution());
+
+    scheduler = jdbcInterpreter.getScheduler();
+    assertTrue(scheduler instanceof FIFOScheduler);
+  }
+
+  @Test
+  public void testAutoCompletion() throws SQLException, IOException {
+    Properties properties = new Properties();
+    properties.setProperty("common.max_count", "1000");
+    properties.setProperty("common.max_retry", "3");
+    properties.setProperty("default.driver", "org.h2.Driver");
+    properties.setProperty("default.url", getJdbcConnection());
+    properties.setProperty("default.user", "");
+    properties.setProperty("default.password", "");
+    JDBCInterpreter jdbcInterpreter = new JDBCInterpreter(properties);
+    jdbcInterpreter.open();
+
+    jdbcInterpreter.interpret("", interpreterContext);
+
+    List<InterpreterCompletion> completionList = jdbcInterpreter.completion("SEL", 0);
+    
+    InterpreterCompletion correctCompletionKeyword = new InterpreterCompletion("SELECT", "SELECT");
+
+    assertEquals(2, completionList.size());
+    assertEquals(true, completionList.contains(correctCompletionKeyword));
+    assertEquals(0, jdbcInterpreter.completion("SEL", 100).size());
+  }
+
 }

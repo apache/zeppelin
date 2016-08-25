@@ -1,22 +1,38 @@
 ---
 layout: page
-title: "Scalding Interpreter"
-description: ""
-group: manual
+title: "Scalding Interpreter for Apache Zeppelin"
+description: "Scalding is an open source Scala library for writing MapReduce jobs."
+group: interpreter
 ---
+<!--
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
 {% include JB/setup %}
 
-## Scalding Interpreter for Apache Zeppelin
+# Scalding Interpreter for Apache Zeppelin
+
+<div id="toc"></div>
+
 [Scalding](https://github.com/twitter/scalding) is an open source Scala library for writing MapReduce jobs.
 
-### Building the Scalding Interpreter
+## Building the Scalding Interpreter
 You have to first build the Scalding interpreter by enable the **scalding** profile as follows:
 
 ```
 mvn clean package -Pscalding -DskipTests
 ```
 
-### Enabling the Scalding Interpreter
+## Enabling the Scalding Interpreter
 In a notebook, to enable the **Scalding** interpreter, click on the **Gear** icon,select **Scalding**, and hit **Save**.
 
 <center>
@@ -27,7 +43,7 @@ In a notebook, to enable the **Scalding** interpreter, click on the **Gear** ico
 
 </center>
 
-### Configuring the Interpreter
+## Configuring the Interpreter
 
 Scalding interpreter runs in two modes:
 
@@ -65,9 +81,9 @@ For reducer estimation, you need to add something like:
 If you want to control the maximum number of open interpreters, you have to select "scoped" interpreter for note
 option and set max.open.instances argument.
 
-### Testing the Interpreter
+## Testing the Interpreter
 
-#### Local mode
+### Local mode
 
 In example, by using the [Alice in Wonderland](https://gist.github.com/johnynek/a47699caa62f4f38a3e2) tutorial, 
 we will count words (of course!), and plot a graph of the top 10 words in the book.
@@ -111,7 +127,7 @@ If you click on the icon for the pie chart, you should be able to see a chart li
 ![Scalding - Pie - Chart](../assets/themes/zeppelin/img/docs-img/scalding-pie.png)
 
 
-#### HDFS mode
+### HDFS mode
 
 **Test mode**
 
@@ -146,7 +162,7 @@ a.toList
 
 This command should create a map reduce job.
 
-### Future Work
+## Future Work
 * Better user feedback (hadoop url, progress updates)
 * Ability to cancel jobs
 * Ability to dynamically load jars without restarting the interpreter

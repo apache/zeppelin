@@ -21,27 +21,26 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.io.OutputStream;
 import java.lang.reflect.Field;
 
 /**
  * Object encapsulated interactive
  * Python process (REPL) used by python interpreter
  */
-
 public class PythonProcess {
-
-  Logger logger = LoggerFactory.getLogger(PythonProcess.class);
+  private static final Logger logger = LoggerFactory.getLogger(PythonProcess.class);
+  private static final String STATEMENT_END = "*!?flush reader!?*";
   InputStream stdout;
   OutputStream stdin;
-  BufferedWriter writer;
+  PrintWriter writer;
   BufferedReader reader;
   Process process;
+
   private String binPath;
   private long pid;
 
@@ -56,7 +55,7 @@ public class PythonProcess {
     process = builder.start();
     stdout = process.getInputStream();
     stdin = process.getOutputStream();
-    writer = new BufferedWriter(new OutputStreamWriter(stdin));
+    writer = new PrintWriter(stdin, true);
     reader = new BufferedReader(new InputStreamReader(stdout));
     try {
       pid = findPid();
@@ -64,22 +63,17 @@ public class PythonProcess {
       logger.warn("Can't find python pid process", e);
       pid = -1;
     }
-
-
   }
 
   public void close() throws IOException {
-
     process.destroy();
     reader.close();
     writer.close();
     stdin.close();
     stdout.close();
-
   }
 
   public void interrupt() throws IOException {
-
     if (pid > -1) {
       logger.info("Sending SIGINT signal to PID : " + pid);
       Runtime.getRuntime().exec("kill -SIGINT " + pid);
@@ -87,37 +81,28 @@ public class PythonProcess {
       logger.warn("Non UNIX/Linux system, close the interpreter");
       close();
     }
-
-
   }
 
   public String sendAndGetResult(String cmd) throws IOException {
-
-    writer.write(cmd + "\n\n");
-    writer.write("print (\"*!?flush reader!?*\")\n\n");
-    writer.flush();
-
-    String output = "";
-    String line;
-    while (!(line = reader.readLine()).contains("*!?flush reader!?*")) {
-      logger.debug("Readed line from python shell : " + line);
+    writer.println(cmd);
+    writer.println();
+    writer.println("\"" + STATEMENT_END + "\"");
+    StringBuilder output = new StringBuilder();
+    String line = null;
+    while (!(line = reader.readLine()).contains(STATEMENT_END)) {
+      logger.debug("Read line from python shell : " + line);
       if (line.equals("...")) {
         logger.warn("Syntax error ! ");
-        output += "Syntax error ! ";
+        output.append("Syntax error ! ");
         break;
       }
-
-      output += "\r" + line + "\n";
+      output.append(line + "\n");
     }
-
-    return output;
-
+    return output.toString();
   }
-
 
   private long findPid() throws NoSuchFieldException, IllegalAccessException {
     long pid = -1;
-
     if (process.getClass().getName().equals("java.lang.UNIXProcess")) {
       Field f = process.getClass().getDeclaredField("pid");
       f.setAccessible(true);
@@ -130,4 +115,5 @@ public class PythonProcess {
   public long getPid() {
     return pid;
   }
+
 }

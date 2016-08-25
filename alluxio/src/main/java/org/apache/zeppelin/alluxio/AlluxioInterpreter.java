@@ -28,6 +28,7 @@ import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterPropertyBuilder;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
+import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,15 +66,6 @@ public class AlluxioInterpreter extends Interpreter {
 
     alluxioMasterHostname = property.getProperty(ALLUXIO_MASTER_HOSTNAME);
     alluxioMasterPort = property.getProperty(ALLUXIO_MASTER_PORT);
-  }
-
-  static {
-    Interpreter.register("alluxio", "alluxio",
-        AlluxioInterpreter.class.getName(),
-        new InterpreterPropertyBuilder()
-                .add(ALLUXIO_MASTER_HOSTNAME, "localhost", "Alluxio master hostname")
-                .add(ALLUXIO_MASTER_PORT, "19998", "Alluxio master port")
-                .build());
   }
 
   @Override
@@ -115,14 +107,14 @@ public class AlluxioInterpreter extends Interpreter {
     System.setOut(ps);
     
     for (String command : commands) {
-      int commandResuld = 1;
+      int commandResult = 1;
       String[] args = splitAndRemoveEmpty(command, " ");
       if (args.length > 0 && args[0].equals("help")) {
         System.out.println(getCommandList());
       } else {
-        commandResuld = fs.run(args);
+        commandResult = fs.run(args);
       }
-      if (commandResuld != 0) {
+      if (commandResult != 0) {
         isSuccess = false;
         break;
       } else {
@@ -174,16 +166,17 @@ public class AlluxioInterpreter extends Interpreter {
   }
 
   @Override
-  public List<String> completion(String buf, int cursor) {
+  public List<InterpreterCompletion> completion(String buf, int cursor) {
     String[] words = splitAndRemoveEmpty(splitAndRemoveEmpty(buf, "\n"), " ");
     String lastWord = "";
     if (words.length > 0) {
       lastWord = words[ words.length - 1 ];
     }
-    ArrayList<String> voices = new ArrayList<String>();
+    
+    List<InterpreterCompletion>  voices = new LinkedList<>();
     for (String command : keywords) {
       if (command.startsWith(lastWord)) {
-        voices.add(command);
+        voices.add(new InterpreterCompletion(command, command));
       }
     }
     return voices;

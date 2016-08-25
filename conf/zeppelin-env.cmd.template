@@ -35,6 +35,7 @@ REM set ZEPPELIN_IDENT_STRING   		REM A string representing this instance of zep
 REM set ZEPPELIN_NICENESS       		REM The scheduling priority for daemons. Defaults to 0.
 REM set ZEPPELIN_INTERPRETER_LOCALREPO         REM Local repository for interpreter's additional dependency loading
 REM set ZEPPELIN_NOTEBOOK_STORAGE		REM Refers to pluggable notebook storage class, can have two classes simultaneously with a sync between them (e.g. local and remote).
+REM set ZEPPELIN_NOTEBOOK_ONE_WAY_SYNC		REM If there are multiple notebook storages, should we treat the first one as the only source of truth?
 
 
 REM Spark interpreter configuration
@@ -55,13 +56,14 @@ REM set HADOOP_CONF_DIR         		REM yarn-site.xml is located in configuration 
 REM Pyspark (supported with Spark 1.2.1 and above)
 REM To configure pyspark, you need to set spark distribution's path to 'spark.home' property in Interpreter setting screen in Zeppelin GUI
 REM set PYSPARK_PYTHON          		REM path to the python command. must be the same path on the driver(Zeppelin) and all workers.
-REM set PYTHONPATH  
+REM set PYTHONPATH
 
 REM Spark interpreter options
 REM
 REM set ZEPPELIN_SPARK_USEHIVECONTEXT  REM Use HiveContext instead of SQLContext if set true. true by default.
 REM set ZEPPELIN_SPARK_CONCURRENTSQL   REM Execute multiple SQL concurrently if set true. false by default.
-REM set ZEPPELIN_SPARK_MAXRESULT       REM Max number of SparkSQL result to display. 1000 by default.
+REM set ZEPPELIN_SPARK_IMPORTIMPLICIT  REM Import implicits, UDF collection, and sql if set true. true by default.
+REM set ZEPPELIN_SPARK_MAXRESULT       REM Max number of Spark SQL result to display. 1000 by default.
 
 REM ZeppelinHub connection configuration
 REM

@@ -1,7 +1,7 @@
 ---
 layout: page
-title: "Notebook REST API"
-description: ""
+title: "Apache Zeppelin Notebook REST API"
+description: "This page contains Apache Zeppelin Notebook REST API information."
 group: rest-api
 ---
 <!--
@@ -19,20 +19,23 @@ limitations under the License.
 -->
 {% include JB/setup %}
 
-## Zeppelin REST API
- Zeppelin provides several REST APIs for interaction and remote activation of zeppelin functionality.
+# Apache Zeppelin Notebook REST API
 
- All REST APIs are available starting with the following endpoint `http://[zeppelin-server]:[zeppelin-port]/api`. Note that zeppelin REST APIs receive or return JSON objects, it is recommended for you to install some JSON viewers such as [JSONView](https://chrome.google.com/webstore/detail/jsonview/chklaanhfefbnpoihckbnefhakgolnmc).
+<div id="toc"></div>
 
- If you work with Zeppelin and find a need for an additional REST API, please [file an issue or send us mail](../../community.html).
+## Overview
+Apache Zeppelin provides several REST APIs for interaction and remote activation of zeppelin functionality.
+All REST APIs are available starting with the following endpoint `http://[zeppelin-server]:[zeppelin-port]/api`. 
+Note that Apache Zeppelin REST APIs receive or return JSON objects, it is recommended for you to install some JSON viewers such as [JSONView](https://chrome.google.com/webstore/detail/jsonview/chklaanhfefbnpoihckbnefhakgolnmc).
 
-<br />
+If you work with Apache Zeppelin and find a need for an additional REST API, please [file an issue or send us an email](http://zeppelin.apache.org/community.html).
+
 
 ## Notebook REST API List
 
   Notebooks REST API supports the following operations: List, Create, Get, Delete, Clone, Run, Export, Import as detailed in the following tables.
 
-### List Notebooks
+### List of the notebooks
   <table class="table-configuration">
     <col width="200">
     <tr>
@@ -74,8 +77,7 @@ limitations under the License.
   </table>
 
 <br/>
-
-### Create Notebook
+### Create a new notebook
   <table class="table-configuration">
     <col width="200">
     <tr>
@@ -129,8 +131,7 @@ limitations under the License.
   </table>
 
 <br/>
-
-### Get Notebook
+### Get an existing notebook information
   <table class="table-configuration">
     <col width="200">
     <tr>
@@ -227,8 +228,7 @@ limitations under the License.
   </table>
 
 <br/>
-
-### Delete Notebook
+### Delete a notebook
   <table class="table-configuration">
     <col width="200">
     <tr>
@@ -255,8 +255,7 @@ limitations under the License.
   </table>
 
 <br/>
-
-### Clone Notebook
+### Clone a notebook
   <table class="table-configuration">
     <col width="200">
     <tr>
@@ -294,13 +293,12 @@ limitations under the License.
   </table>
 
 <br/>
-
-### Run Notebook Job
+### Run all paragraphs
   <table class="table-configuration">
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```POST``` method runs all paragraph in the given notebook id.
+      <td>This ```POST``` method runs all paragraphs in the given notebook id.
       </td>
     </tr>
     <tr>
@@ -322,13 +320,12 @@ limitations under the License.
   </table>
 
 <br/>
-
-### Stop Notebook Job
+### Stop all paragraphs
   <table class="table-configuration">
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```DELETE``` method stops all paragraph in the given notebook id.
+      <td>This ```DELETE``` method stops all paragraphs in the given notebook id.
       </td>
     </tr>
     <tr>
@@ -350,13 +347,12 @@ limitations under the License.
   </table>
 
 <br/>
-
-### Get Notebook Job
+### Get the status of all paragraphs
   <table class="table-configuration">
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```GET``` method gets all paragraph status by the given notebook id.
+      <td>This ```GET``` method gets the status of all paragraphs by the given notebook id.
           The body field of the returned JSON contains of the array that compose of the paragraph id, paragraph status, paragraph finish date, paragraph started date.
       </td>
     </tr>
@@ -397,8 +393,44 @@ limitations under the License.
   </table>
 
 <br/>
+### Get the status of a single paragraph
+  <table class="table-configuration">
+    <col width="200">
+    <tr>
+      <td>Description</td>
+      <td>This ```GET``` method gets the status of a single paragraph by the given notebook and paragraph id.
+          The body field of the returned JSON contains of the array that compose of the paragraph id, paragraph status, paragraph finish date, paragraph started date.
+      </td>
+    </tr>
+    <tr>
+      <td>URL</td>
+      <td>```http://[zeppelin-server]:[zeppelin-port]/api/notebook/job/[notebookId]/[paragraphId]```</td>
+    </tr>
+    <tr>
+      <td>Success code</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td> Fail code</td>
+      <td> 500 </td>
+    </tr>
+    <tr>
+      <td> sample JSON response </td>
+      <td><pre>
+{
+  "status": "OK",
+  "body": {
+      "id":"20151121-212654\_766735423",
+      "status":"FINISHED",
+      "finished":"Tue Nov 24 14:21:40 KST 2015",
+      "started":"Tue Nov 24 14:21:39 KST 2015"
+    }
+}</pre></td>
+    </tr>
+  </table>
 
-### Run Paragraph Job
+<br/>
+### Run a paragraph
   <table class="table-configuration">
     <col width="200">
     <tr>
@@ -436,8 +468,7 @@ limitations under the License.
   </table>
 
 <br/>
-
-### Stop Paragraph Job
+### Stop a paragraph
   <table class="table-configuration">
     <col width="200">
     <tr>
@@ -464,7 +495,6 @@ limitations under the License.
   </table>
 
 <br/>
-
 ### Add Cron Job
   <table class="table-configuration">
     <col width="200">
@@ -553,8 +583,7 @@ limitations under the License.
   </table>
 
 <br />
-
-### Full Text Search Through the Paragraphs in All Notebooks
+### Full text search through the paragraphs in all notebooks
   <table class="table-configuration">
     <col width="200">
     <tr>
@@ -592,8 +621,7 @@ limitations under the License.
   </table>
 
 <br/>
-
-### Create Paragraph
+### Create a new paragraph
   <table class="table-configuration">
     <col width="200">
     <tr>
@@ -643,8 +671,7 @@ limitations under the License.
   </table>
 
 <br/>
-
-### Get Paragraph
+### Get a paragraph information
   <table class="table-configuration">
     <col width="200">
     <tr>
@@ -712,8 +739,7 @@ limitations under the License.
   </table>
 
 <br/>
-
-### Move Paragraph
+### Move a paragraph to the specific index
   <table class="table-configuration">
     <col width="200">
     <tr>
@@ -741,8 +767,7 @@ limitations under the License.
 
 
 <br/>
-
-### Delete Paragraph
+### Delete a paragraph
   <table class="table-configuration">
     <col width="200">
     <tr>
@@ -769,8 +794,7 @@ limitations under the License.
   </table>
 
 <br />
-
-### Export Notebook
+### Export a notebook
   <table class="table-configuration">
     <col width="200">
     <tr>
@@ -820,8 +844,7 @@ limitations under the License.
   </table>
 
 <br />
-
-### Import Notebook
+### Import a notebook
   <table class="table-configuration">
     <col width="200">
     <tr>
@@ -879,3 +902,4 @@ limitations under the License.
     </tr>
     </tr>
   </table>
+  

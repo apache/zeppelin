@@ -1,19 +1,34 @@
 ---
 layout: page
-title: "Lens Interpreter"
-description: "Lens user guide"
-group: manual
+title: "Lens Interpreter for Apache Zeppelin"
+description: "Apache Lens provides an Unified Analytics interface. Lens aims to cut the Data Analytics silos by providing a single view of data across multiple tiered data stores and optimal execution environment for the analytical query. It seamlessly integrates Hadoop with traditional data warehouses to appear like one."
+group: interpreter
 ---
+<!--
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
 {% include JB/setup %}
 
-## Lens Interpreter for Apache Zeppelin
+# Lens Interpreter for Apache Zeppelin
 
-### Overview
+<div id="toc"></div>
+
+## Overview
 [Apache Lens](https://lens.apache.org/) provides an Unified Analytics interface. Lens aims to cut the Data Analytics silos by providing a single view of data across multiple tiered data stores and optimal execution environment for the analytical query. It seamlessly integrates Hadoop with traditional data warehouses to appear like one.
 
 ![Apache Lens](../assets/themes/zeppelin/img/docs-img/lens-logo.png)
 
-### Installing and Running Lens
+## Installing and Running Lens
 In order to use Lens interpreters, you may install Apache Lens in some simple steps:
 
 1. Download Lens for latest version from [the ASF](http://www.apache.org/dyn/closer.lua/lens/2.3-beta). Or the older release can be found [in the Archives](http://archive.apache.org/dist/lens/).
@@ -24,7 +39,7 @@ In order to use Lens interpreters, you may install Apache Lens in some simple st
 ./bin/lens-ctl start (or stop)
 ```
 
-### Configuring Lens Interpreter
+## Configuring Lens Interpreter
 At the "Interpreters" menu, you can edit Lens interpreter or create new one. Zeppelin provides these properties for Lens.
 
 <table class="table-configuration">
@@ -163,7 +178,7 @@ query execute cube select customer_city_name, product_details.description, produ
 
 These are just examples that provided in advance by Lens. If you want to explore whole tutorials of Lens, see the [tutorial video](https://cwiki.apache.org/confluence/display/LENS/2015/07/13/20+Minute+video+demo+of+Apache+Lens+through+examples).
 
-### Lens UI Service
+## Lens UI Service
 Lens also provides web UI service. Once the server starts up, you can open the service on http://serverhost:19999/index.html and browse. You may also check the structure that you made and use query easily here.
 
 ![Lens UI Service](../assets/themes/zeppelin/img/docs-img/lens-ui-service.png)

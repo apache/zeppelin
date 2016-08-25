@@ -1,21 +1,40 @@
 ---
 layout: page
-title: "HBase Shell Interpreter"
-description: ""
-group: manual
+title: "HBase Shell Interpreter for Apache Zeppelin"
+description: "HBase Shell is a JRuby IRB client for Apache HBase. This interpreter provides all capabilities of Apache HBase shell within Apache Zeppelin."
+group: interpreter
 ---
+<!--
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
 {% include JB/setup %}
 
-## HBase Shell Interpreter for Apache Zeppelin
+# HBase Shell Interpreter for Apache Zeppelin
+
+<div id="toc"></div>
+
+## Overview
 [HBase Shell](http://hbase.apache.org/book.html#shell) is a JRuby IRB client for Apache HBase. This interpreter provides all capabilities of Apache HBase shell within Apache Zeppelin. The interpreter assumes that Apache HBase client software has been installed and it can connect to the Apache HBase cluster from the machine on where Apache Zeppelin is installed.  
-To get start with HBase, please see [HBase Quickstart](https://hbase.apache.org/book.html#quickstart)
+To get start with HBase, please see [HBase Quickstart](https://hbase.apache.org/book.html#quickstart).
 
 ## HBase release supported
 By default, Zeppelin is built against HBase 1.0.x releases. To work with HBase 1.1.x releases, use the following build command:
+
 ```bash
 # HBase 1.1.4
 mvn clean package -DskipTests -Phadoop-2.6 -Dhadoop.version=2.6.0 -P build-distr -Dhbase.hbase.version=1.1.4 -Dhbase.hadoop.version=2.6.0
 ```
+
 To work with HBase 1.2.0+, use the following build command:
 
 ```bash
@@ -94,4 +113,4 @@ And then to put data into that table
 put 'test', 'row1', 'cf:a', 'value1'
 ```
 
-For more information on all commands available, refer to [HBase shell commands](https://learnhbase.wordpress.com/2013/03/02/hbase-shell-commands/)
+For more information on all commands available, refer to [HBase shell commands](https://learnhbase.wordpress.com/2013/03/02/hbase-shell-commands/).

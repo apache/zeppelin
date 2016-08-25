@@ -20,17 +20,24 @@ package org.apache.zeppelin.rest;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import org.apache.commons.httpclient.methods.GetMethod;
+import org.hamcrest.CoreMatchers;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ErrorCollector;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.*;
 
 public class SecurityRestApiTest extends AbstractTestRestApi {
   Gson gson = new Gson();
+
+  @Rule
+  public ErrorCollector collector = new ErrorCollector();
 
   @BeforeClass
   public static void init() throws Exception {
@@ -49,9 +56,35 @@ public class SecurityRestApiTest extends AbstractTestRestApi {
     Map<String, Object> resp = gson.fromJson(get.getResponseBodyAsString(),
         new TypeToken<Map<String, Object>>(){}.getType());
     Map<String, String> body = (Map<String, String>) resp.get("body");
-    assertEquals("anonymous", body.get("principal"));
-    assertEquals("anonymous", body.get("ticket"));
+    collector.checkThat("Paramater principal", body.get("principal"),
+        CoreMatchers.equalTo("anonymous"));
+    collector.checkThat("Paramater ticket", body.get("ticket"),
+        CoreMatchers.equalTo("anonymous"));
     get.releaseConnection();
+  }
+
+  @Test
+  public void testGetUserList() throws IOException {
+    GetMethod get = httpGet("/security/userlist/admi");
+    get.addRequestHeader("Origin", "http://localhost");
+    Map<String, Object> resp = gson.fromJson(get.getResponseBodyAsString(),
+        new TypeToken<Map<String, Object>>(){}.getType());
+    List<String> userList = (List) ((Map) resp.get("body")).get("users");
+    collector.checkThat("Search result size", userList.size(),
+        CoreMatchers.equalTo(1));
+    collector.checkThat("Search result contains admin", userList.contains("admin"),
+        CoreMatchers.equalTo(true));
+    get.releaseConnection();
+
+    GetMethod notUser = httpGet("/security/userlist/randomString");
+    notUser.addRequestHeader("Origin", "http://localhost");
+    Map<String, Object> notUserResp = gson.fromJson(notUser.getResponseBodyAsString(),
+        new TypeToken<Map<String, Object>>(){}.getType());
+    List<String> emptyUserList = (List) ((Map) notUserResp.get("body")).get("users");
+    collector.checkThat("Search result size", emptyUserList.size(),
+        CoreMatchers.equalTo(0));
+
+    notUser.releaseConnection();
   }
 
 }

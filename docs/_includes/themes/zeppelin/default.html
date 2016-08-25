@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <title>{{ page.title }}</title>
+    <title>Apache Zeppelin {{ site.ZEPPELIN_VERSION }} Documentation: {{ page.title }}</title>
     {% if page.description %}<meta name="description" content="{{ page.description }}">{% endif %}
     <meta name="author" content="{{ site.author.name }}">
 
@@ -33,6 +33,9 @@
     <script src="{{ ASSET_PATH }}/bootstrap/js/bootstrap.min.js"></script>
     <script src="{{ ASSET_PATH }}/js/docs.js"></script>
     <script src="{{ ASSET_PATH }}/js/anchor.min.js"></script>
+    <script src="{{ ASSET_PATH }}/js/toc.js"></script>
+    <script src="{{ ASSET_PATH }}/js/lunr.min.js"></script>
+    <script src="{{ ASSET_PATH }}/js/search.js"></script>    
 
     <!-- atom & rss feed -->
     <link href="{{ BASE_PATH }}{{ site.JB.atom_path }}" type="application/atom+xml" rel="alternate" title="Sitewide ATOM Feed">

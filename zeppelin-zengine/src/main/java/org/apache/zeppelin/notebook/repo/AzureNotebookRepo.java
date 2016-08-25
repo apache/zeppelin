@@ -27,13 +27,16 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
+import org.apache.zeppelin.notebook.NotebookImportDeserializer;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.scheduler.Job;
+import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.io.*;
 import java.net.URISyntaxException;
 import java.security.InvalidKeyException;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -70,7 +73,7 @@ public class AzureNotebookRepo implements NotebookRepo {
   }
 
   @Override
-  public List<NoteInfo> list() throws IOException {
+  public List<NoteInfo> list(AuthenticationInfo subject) throws IOException {
     List<NoteInfo> infos = new LinkedList<NoteInfo>();
     NoteInfo info = null;
 
@@ -120,7 +123,8 @@ public class AzureNotebookRepo implements NotebookRepo {
 
     GsonBuilder gsonBuilder = new GsonBuilder();
     gsonBuilder.setPrettyPrinting();
-    Gson gson = gsonBuilder.create();
+    Gson gson = gsonBuilder.registerTypeAdapter(Date.class, new NotebookImportDeserializer())
+        .create();
 
     Note note = gson.fromJson(json, Note.class);
 
@@ -134,12 +138,12 @@ public class AzureNotebookRepo implements NotebookRepo {
   }
 
   @Override
-  public Note get(String noteId) throws IOException {
+  public Note get(String noteId, AuthenticationInfo subject) throws IOException {
     return getNote(noteId);
   }
 
   @Override
-  public void save(Note note) throws IOException {
+  public void save(Note note, AuthenticationInfo subject) throws IOException {
     GsonBuilder gsonBuilder = new GsonBuilder();
     gsonBuilder.setPrettyPrinting();
     Gson gson = gsonBuilder.create();
@@ -186,7 +190,7 @@ public class AzureNotebookRepo implements NotebookRepo {
   }
 
   @Override
-  public void remove(String noteId) throws IOException {
+  public void remove(String noteId, AuthenticationInfo subject) throws IOException {
     try {
       CloudFileDirectory dir = rootDir.getDirectoryReference(noteId);
 
@@ -205,8 +209,22 @@ public class AzureNotebookRepo implements NotebookRepo {
   }
 
   @Override
-  public void checkpoint(String noteId, String checkPointName) throws IOException {
+  public Revision checkpoint(String noteId, String checkpointMsg, AuthenticationInfo subject)
+      throws IOException {
     // no-op
     LOG.info("Checkpoint feature isn't supported in {}", this.getClass().toString());
+    return null;
+  }
+
+  @Override
+  public Note get(String noteId, String revId, AuthenticationInfo subject) throws IOException {
+    // Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public List<Revision> revisionHistory(String noteId, AuthenticationInfo subject) {
+    // Auto-generated method stub
+    return null;
   }
 }

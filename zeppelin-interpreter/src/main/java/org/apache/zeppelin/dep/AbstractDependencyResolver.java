@@ -17,6 +17,7 @@
 
 package org.apache.zeppelin.dep;
 
+import java.net.URL;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -25,6 +26,7 @@ import java.util.List;
 import org.sonatype.aether.RepositorySystem;
 import org.sonatype.aether.RepositorySystemSession;
 import org.sonatype.aether.repository.Authentication;
+import org.sonatype.aether.repository.Proxy;
 import org.sonatype.aether.repository.RemoteRepository;
 import org.sonatype.aether.repository.RepositoryPolicy;
 import org.sonatype.aether.resolution.ArtifactResult;
@@ -42,6 +44,16 @@ public abstract class AbstractDependencyResolver {
     session = Booter.newRepositorySystemSession(system, localRepoPath);
     repos.add(Booter.newCentralRepository()); // add maven central
     repos.add(Booter.newLocalRepository());
+  }
+
+  public void setProxy(URL proxyUrl, String proxyUser, String proxyPassword) {
+    Authentication auth = new Authentication(proxyUser, proxyPassword);
+    Proxy proxy = new Proxy(proxyUrl.getProtocol(), proxyUrl.getHost(), proxyUrl.getPort(), auth);
+    synchronized (repos) {
+      for (RemoteRepository repo : repos) {
+        repo.setProxy(proxy);
+      }
+    }
   }
 
   public List<RemoteRepository> getRepos() {

@@ -1,7 +1,7 @@
 ---
 layout: page
 title: "Authentication for NGINX"
-description: "Authentication for NGINX"
+description: "There are multiple ways to enable authentication in Apache Zeppelin. This page describes HTTP basic auth using NGINX."
 group: security
 ---
 <!--
@@ -17,13 +17,16 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
+{% include JB/setup %}
+
 # Authentication for NGINX
 
-Authentication is company-specific.
+<div id="toc"></div>
 
-One option is to use [Basic Access Authentication](https://en.wikipedia.org/wiki/Basic_access_authentication)
+There are multiple ways to enable authentication in Apache Zeppelin. This page describes HTTP basic auth using NGINX.
+One option is to use [Basic Access Authentication](https://en.wikipedia.org/wiki/Basic_access_authentication).
 
-### HTTP Basic Authentication using NGINX
+## HTTP Basic Authentication using NGINX
 
 > **Quote from Wikipedia:** NGINX is a web server. It can act as a reverse proxy server for HTTP, HTTPS, SMTP, POP3, and IMAP protocols, as well as a load balancer and an HTTP cache.
 
@@ -39,7 +42,7 @@ This instruction based on Ubuntu 14.04 LTS but may work with other OS with few c
     ```
     $ apt-get install nginx
     ```
-    *Important: On pre 1.3.13 version of NGINX, Proxy for Websocket may not fully works. Please use latest version of NGINX. See: [NGINX documentation](https://www.nginx.com/blog/websocket-nginx/)*
+    > **NOTE :** On pre 1.3.13 version of NGINX, Proxy for Websocket may not fully works. Please use latest version of NGINX. See: [NGINX documentation](https://www.nginx.com/blog/websocket-nginx/).
 
 1. Setup init script in NGINX
 
@@ -119,10 +122,10 @@ This instruction based on Ubuntu 14.04 LTS but may work with other OS with few c
 1. More security consideration
 
 * Using HTTPS connection with Basic Authentication is highly recommended since basic auth without encryption may expose your important credential information over the network.
-* Using [Shiro Security feature built-into Zeppelin](https://github.com/apache/zeppelin/blob/master/SECURITY-README.md) is recommended if you prefer all-in-one solution for authentication but NGINX may provides ad-hoc solution for re-use authentication served by your system's NGINX server or in case of you need to separate authentication from zeppelin server.
+* Using [Shiro Security feature built-into Zeppelin](./shiroauthentication.html) is recommended if you prefer all-in-one solution for authentication but NGINX may provides ad-hoc solution for re-use authentication served by your system's NGINX server or in case of you need to separate authentication from zeppelin server.
 * It is recommended to isolate direct connection to Zeppelin server from public internet or external services to secure your zeppelin instance from unexpected attack or problems caused by public zone.
 
-### Another option
+## Another option
 
 Another option is to have an authentication server that can verify user credentials in an LDAP server.
 If an incoming request to the Zeppelin server does not have a cookie with user information encrypted with the authentication server public key, the user

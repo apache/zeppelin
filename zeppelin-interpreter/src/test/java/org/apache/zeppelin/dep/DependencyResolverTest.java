@@ -33,27 +33,20 @@ import org.sonatype.aether.RepositoryException;
 public class DependencyResolverTest {
   private static DependencyResolver resolver;
   private static String testPath;
-  private static String testCopyPath;
-  private static String home;
-  
+  private static File testCopyPath;
+  private static File tmpDir;
+
   @BeforeClass
   public static void setUp() throws Exception {
-    testPath = "test-repo";
-    testCopyPath = "test-copy-repo";
+    tmpDir = new File(System.getProperty("java.io.tmpdir")+"/ZeppelinLTest_"+System.currentTimeMillis());
+    testPath = tmpDir.getAbsolutePath() + "/test-repo";
+    testCopyPath = new File(tmpDir, "test-copy-repo");
     resolver = new DependencyResolver(testPath);
-    home = System.getenv("ZEPPELIN_HOME");
-    if (home == null) {
-      home = System.getProperty("zeppelin.home");
-    }
-    if (home == null) {
-      home = "..";
-    }
   }
   
   @AfterClass
   public static void tearDown() throws Exception {
-    FileUtils.deleteDirectory(new File(home + "/" + testPath));
-    FileUtils.deleteDirectory(new File(home + "/" + testCopyPath)); 
+    FileUtils.deleteDirectory(tmpDir);
   }
 
   @Rule
@@ -78,19 +71,19 @@ public class DependencyResolverTest {
   public void testLoad() throws Exception {
     // basic load
     resolver.load("com.databricks:spark-csv_2.10:1.3.0", testCopyPath);
-    assertEquals(new File(home + "/" + testCopyPath).list().length, 4);
-    FileUtils.cleanDirectory(new File(home + "/" + testCopyPath));
+    assertEquals(testCopyPath.list().length, 4);
+    FileUtils.cleanDirectory(testCopyPath);
 
     // load with exclusions parameter
     resolver.load("com.databricks:spark-csv_2.10:1.3.0",
         Collections.singletonList("org.scala-lang:scala-library"), testCopyPath);
-    assertEquals(new File(home + "/" + testCopyPath).list().length, 3);
-    FileUtils.cleanDirectory(new File(home + "/" + testCopyPath));
+    assertEquals(testCopyPath.list().length, 3);
+    FileUtils.cleanDirectory(testCopyPath);
 
     // load from added repository
     resolver.addRepo("sonatype", "https://oss.sonatype.org/content/repositories/agimatec-releases/", false);
     resolver.load("com.agimatec:agimatec-validation:0.9.3", testCopyPath);
-    assertEquals(new File(home + "/" + testCopyPath).list().length, 8);
+    assertEquals(testCopyPath.list().length, 8);
 
     // load invalid artifact
     resolver.delRepo("sonatype");

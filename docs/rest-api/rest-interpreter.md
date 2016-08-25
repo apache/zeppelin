@@ -1,7 +1,7 @@
 ---
 layout: page
-title: "Interpreter REST API"
-description: ""
+title: "Apache Zeppelin Interpreter REST API"
+description: "This page contains Apache Zeppelin Interpreter REST API information."
 group: rest-api
 ---
 <!--
@@ -19,19 +19,22 @@ limitations under the License.
 -->
 {% include JB/setup %}
 
-## Zeppelin REST API
- Zeppelin provides several REST APIs for interaction and remote activation of zeppelin functionality.
+# Apache Zeppelin Interpreter REST API
 
- All REST APIs are available starting with the following endpoint `http://[zeppelin-server]:[zeppelin-port]/api`. Note that zeppelin REST APIs receive or return JSON objects, it is recommended for you to install some JSON viewers such as [JSONView](https://chrome.google.com/webstore/detail/jsonview/chklaanhfefbnpoihckbnefhakgolnmc).
+<div id="toc"></div>
 
- If you work with Zeppelin and find a need for an additional REST API, please [file an issue or send us mail](http://zeppelin.apache.org/community.html).
+## Overview
+Apache Zeppelin provides several REST APIs for interaction and remote activation of zeppelin functionality.
+All REST APIs are available starting with the following endpoint `http://[zeppelin-server]:[zeppelin-port]/api`. 
+Note that Apache Zeppelin REST APIs receive or return JSON objects, it is recommended for you to install some JSON viewers such as [JSONView](https://chrome.google.com/webstore/detail/jsonview/chklaanhfefbnpoihckbnefhakgolnmc).
 
- <br />
+If you work with Apache Zeppelin and find a need for an additional REST API, please [file an issue or send us an email](http://zeppelin.apache.org/community.html).
+
 ## Interpreter REST API List
 
-  The role of registered interpreters, settings and interpreters group are described in [here](../manual/interpreters.html).
+The role of registered interpreters, settings and interpreters group are described in [here](../manual/interpreters.html).
 
-### List of Registered Interpreters
+### List of registered interpreters
 
   <table class="table-configuration">
     <col width="200">
@@ -72,7 +75,7 @@ limitations under the License.
       "className": "org.apache.zeppelin.spark.SparkInterpreter",
       "properties": {
         "spark.executor.memory": {
-          "defaultValue": "512m",
+          "defaultValue": "1g",
           "description": "Executor memory per worker instance. ex) 512m, 32g"
         },
         "spark.cores.max": {
@@ -89,7 +92,7 @@ limitations under the License.
       "properties": {
         "zeppelin.spark.maxResult": {
           "defaultValue": "1000",
-          "description": "Max number of SparkSQL result to display."
+          "description": "Max number of Spark SQL result to display."
         }
       },
       "path": "/zeppelin/interpreter/spark"
@@ -102,8 +105,8 @@ limitations under the License.
   </table>
 
 <br/>
+### List of registered interpreter settings
 
-### List of Interpreter Settings
   <table class="table-configuration">
     <col width="200">
     <tr>
@@ -151,7 +154,7 @@ limitations under the License.
       "group": "spark",
       "properties": {
         "spark.cores.max": "",
-        "spark.executor.memory": "512m",
+        "spark.executor.memory": "1g",
       },
       "interpreterGroup": [
         {
@@ -177,7 +180,7 @@ limitations under the License.
   </table>
 
 <br/>
-### Create an Interpreter Setting  
+### Create a new interpreter setting  
 
   <table class="table-configuration">
     <col width="200">
@@ -256,10 +259,8 @@ limitations under the License.
     </tr>
   </table>
 
-
 <br/>
-
-### Update an Interpreter Setting
+### Update an interpreter setting
   <table class="table-configuration">
     <col width="200">
     <tr>
@@ -337,9 +338,8 @@ limitations under the License.
     </tr>
   </table>
 
-
 <br/>
-### Delete an Interpreter Setting
+### Delete an interpreter setting
 
   <table class="table-configuration">
     <col width="200">
@@ -369,7 +369,7 @@ limitations under the License.
 
 
 <br/>
-### Restart an Interpreter
+### Restart an interpreter
 
   <table class="table-configuration">
     <col width="200">
@@ -398,7 +398,7 @@ limitations under the License.
   </table>
 
 <br/>
-### Add repository for dependency resolving
+### Add a new repository for dependency resolving
 
   <table class="table-configuration">
     <col width="200">
@@ -439,7 +439,7 @@ limitations under the License.
   </table>
 
 <br/>
-### Delete repository for dependency resolving
+### Delete a repository for dependency resolving
 
   <table class="table-configuration">
     <col width="200">
@@ -460,3 +460,4 @@ limitations under the License.
       <td> 500 </td>
     </tr>
   </table>
+  

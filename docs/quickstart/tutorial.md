@@ -1,7 +1,7 @@
 ---
 layout: page
-title: "Tutorial"
-description: "Tutorial is valid for Spark 1.3 and higher"
+title: "Apache Zeppelin Tutorial"
+description: "This tutorial page contains a short walk-through tutorial that uses Apache Spark backend. Please note that this tutorial is valid for Spark 1.3 and higher."
 group: quickstart
 ---
 <!--
@@ -17,16 +17,19 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-## Zeppelin Tutorial
+{% include JB/setup %}
+
+# Zeppelin Tutorial
+
+<div id="toc"></div>
 
 This tutorial walks you through some of the fundamental Zeppelin concepts. We will assume you have already installed Zeppelin. If not, please see [here](../install/install.html) first.
 
 Current main backend processing engine of Zeppelin is [Apache Spark](https://spark.apache.org). If you're new to this system, you might want to start by getting an idea of how it processes data to get the most out of Zeppelin.
 
-<br />
 ## Tutorial with Local File
 
-### 1. Data Refine
+### Data Refine
 
 Before you start Zeppelin tutorial, you will need to download [bank.zip](http://archive.ics.uci.edu/ml/machine-learning-databases/00222/bank.zip). 
 
@@ -52,7 +55,7 @@ val bank = bankText.map(s=>s.split(";")).filter(s=>s(0)!="\"age\"").map(
 bank.toDF().registerTempTable("bank")
 ```
 
-### 2. Data Retrieval
+### Data Retrieval
 
 Suppose we want to see age distribution from `bank`. To do this, run:
 
@@ -75,7 +78,7 @@ Now we want to see age distribution with certain marital status and add combo bo
 <br />
 ## Tutorial with Streaming Data 
 
-### 1. Data Refine
+### Data Refine
 
 Since this tutorial is based on Twitter's sample tweet stream, you must configure authentication with a Twitter account. To do this, take a look at [Twitter Credential Setup](https://databricks-training.s3.amazonaws.com/realtime-processing-with-spark-streaming.html#twitter-credential-setup). After you get API keys, you should fill out credential related values(`apiKey`, `apiSecret`, `accessToken`, `accessTokenSecret`) with your API keys on following script.
 
@@ -135,7 +138,7 @@ twt.print
 ssc.start()
 ```
 
-### 2. Data Retrieval
+### Data Retrieval
 
 For each following script, every time you click run button you will see different result since it is based on real-time data.
 

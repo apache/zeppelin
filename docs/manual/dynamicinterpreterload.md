@@ -1,7 +1,7 @@
 ---
 layout: page
-title: "Dynamic Interpreter Loading"
-description: ""
+title: "Dynamic Interpreter Loading using REST API"
+description: "Apache Zeppelin provides pluggable interpreter architecture which results in a wide and variety of the supported backend system. In this page, we will introduce dynamic interpreter loading using REST API."
 group: manual
 ---
 <!--
@@ -19,12 +19,13 @@ limitations under the License.
 -->
 {% include JB/setup %}
 
-## Dynamic Interpreter Loading using REST API
+# Dynamic Interpreter Loading using REST API
 
-Zeppelin provides pluggable interpreter architecture which results in a wide and variety of the supported backend system. In this section, we will introduce **Dynamic interpreter loading** using **REST API**. This concept actually comes from [Zeppelin Helium Proposal](https://cwiki.apache.org/confluence/display/ZEPPELIN/Helium+proposal).
+<div id="toc"></div>
+
+Apache Zeppelin provides pluggable interpreter architecture which results in a wide and variety of the supported backend system. In this section, we will introduce **Dynamic interpreter loading** using **REST API**. This concept actually comes from [Zeppelin Helium Proposal](https://cwiki.apache.org/confluence/display/ZEPPELIN/Helium+proposal).
 Before we start, if you are not familiar with the concept of **Zeppelin interpreter**, you can check out [Overview of Zeppelin interpreter](../manual/interpreters.html) first.
 
-<br/>
 ## Overview 
 In the past, Zeppelin was loading interpreter binaries from `/interpreter/[interpreter_name]` directory. They were configured by `zeppelin.interpreters` property in `conf/zeppelin-site.xml` or `ZEPPELIN_INTERPRETERS` env variables in `conf/zeppelin-env.sh`. They were loaded on Zeppelin server startup and stayed alive until the server was stopped.
 In order to simplify using 3rd party interpreters, we changed this way to **dynamically** load interpreters from **Maven Repository** using **REST API**. Hopefully, the picture below will help you to understand the process. 
@@ -32,7 +33,7 @@ In order to simplify using 3rd party interpreters, we changed this way to **dyna
 
 ## Load & Unload Interpreters Using REST API
 
-### 1. Load 
+### Load 
 You can **load** interpreters located in Maven repository using REST API, like this:
 
 ( Maybe, you are unfamiliar with `[interpreter_group_name]` or `[interpreter_name]`. If so, please checkout [Interpreters in Zeppelin](../manual/interpreter.html) again. )
@@ -69,21 +70,21 @@ http://127.0.0.1:8080/api/interpreter/load/md/markdown
 The meaning of each parameters is: 
 
   1. **Artifact**
-	- groupId: org.apache.zeppelin
-	- artifactId: zeppelin-markdown
-	- version: 0.6.0-SNAPSHOT
+  - groupId: org.apache.zeppelin
+  - artifactId: zeppelin-markdown
+  - version: 0.6.0-SNAPSHOT
 
   2. **Class Name**
-	- Package Name: org.apache.zeppelin
-	- Interpreter Class Name: markdown.Markdown
+  - Package Name: org.apache.zeppelin
+  - Interpreter Class Name: markdown.Markdown
 
   3. **Repository ( optional )**
-	- Url: http://dl.bintray.com/spark-packages/maven
-	- Snapshot: false
+  - Url: http://dl.bintray.com/spark-packages/maven
+  - Snapshot: false
 
 > <b>Please note: </b>The interpreters you downloaded need to be **reload**, when your Zeppelin server is down. 
 
-### 2. Unload
+### Unload
 If you want to **unload** the interpreters using REST API, 
 
 ```
@@ -95,7 +96,7 @@ In this case, the Restful method will be <code>**DELETE**</code>.
 ## What is the next step after Loading ?
  
 ### Q1. Where is the location of interpreters you downloaded ?
- 	
+  
 Actually, the answer about this question is in the above picture. Once the REST API is called, the `.jar` files of interpreters you get are saved under `ZEPPELIN_HOME/local-repo` first. Then, they will be copied to `ZEPPELIN_HOME/interpreter` directory. So, please checkout your `ZEPPELIN_HOME/interpreter`.
 
 ### Q2. Then, how can I use this interpreter ?

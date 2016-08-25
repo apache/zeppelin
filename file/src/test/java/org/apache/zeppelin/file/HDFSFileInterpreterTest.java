@@ -22,9 +22,13 @@ import com.google.gson.Gson;
 import junit.framework.TestCase;
 import static org.junit.Assert.*;
 import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.junit.Test;
 import org.slf4j.Logger;
+
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Properties;
 import java.lang.Override;
 import java.lang.String;
@@ -99,6 +103,17 @@ public class HDFSFileInterpreterTest extends TestCase {
 
       // we should be back to first result after all this navigation
       assertEquals(result1.message(), result11.message());
+
+      // auto completion test
+      List expectedResultOne = Arrays.asList(
+        new InterpreterCompletion("ls", "ls"));
+      List expectedResultTwo = Arrays.asList(
+        new InterpreterCompletion("pwd", "pwd"));
+      List<InterpreterCompletion> resultOne = t.completion("l", 0);
+      List<InterpreterCompletion> resultTwo = t.completion("p", 0);
+
+      assertEquals(expectedResultOne, resultOne);
+      assertEquals(expectedResultTwo, resultTwo);
 
       t.close();
     }

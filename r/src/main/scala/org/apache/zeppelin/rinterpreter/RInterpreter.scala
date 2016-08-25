@@ -95,12 +95,12 @@ abstract class RInterpreter(properties : Properties, startSpark : Boolean = true
   override def getScheduler : Scheduler = rContext.getScheduler
 
   // TODO:  completion is disabled because it could not be tested with current Zeppelin code
-  def completion(buf :String,cursor : Int) : List[String] = Array[String]("").toList
+  /*def completion(buf :String,cursor : Int) : List[String] = Array[String]("").toList
 
   private[rinterpreter] def hiddenCompletion(buf :String,cursor : Int) : List[String] =
     rContext.evalS1(s"""
        |rzeppelin:::.z.completion("$buf", $cursor)
-     """.stripMargin).toList
+     """.stripMargin).toList*/
 }
 
 object RInterpreter {
@@ -110,10 +110,10 @@ object RInterpreter {
 
   // These are the additional properties we need on top of the ones provided by the spark interpreters
   lazy val props: Map[String, InterpreterProperty] = new InterpreterPropertyBuilder()
-    .add("rhadoop.cmd",           SparkInterpreter.getSystemDefault("rhadoop.cmd", "HADOOP_CMD", ""), "Usually /usr/bin/hadoop")
-    .add("rhadooop.streamingjar", SparkInterpreter.getSystemDefault("rhadoop.cmd", "HADOOP_STREAMING", ""), "Usually /usr/lib/hadoop/contrib/streaming/hadoop-streaming-<version>.jar")
-    .add("rscala.debug",          SparkInterpreter.getSystemDefault("rscala.debug","RSCALA_DEBUG", "false"), "Whether to turn on rScala debugging") // TEST:  Implemented but not tested
-    .add("rscala.timeout",        SparkInterpreter.getSystemDefault("rscala.timeout","RSCALA_TIMEOUT", "60"), "Timeout for rScala") // TEST:  Implemented but not tested
+    .add("rhadoop.cmd",           SparkInterpreter.getSystemDefault("HADOOP_CMD", "rhadoop.cmd", ""), "Usually /usr/bin/hadoop")
+    .add("rhadooop.streamingjar", SparkInterpreter.getSystemDefault("HADOOP_STREAMING", "rhadooop.streamingjar", ""), "Usually /usr/lib/hadoop/contrib/streaming/hadoop-streaming-<version>.jar")
+    .add("rscala.debug",          SparkInterpreter.getSystemDefault("RSCALA_DEBUG", "rscala.debug","false"), "Whether to turn on rScala debugging") // TEST:  Implemented but not tested
+    .add("rscala.timeout",        SparkInterpreter.getSystemDefault("RSCALA_TIMEOUT", "rscala.timeout","60"), "Timeout for rScala") // TEST:  Implemented but not tested
     .build
 
   def getProps() = {

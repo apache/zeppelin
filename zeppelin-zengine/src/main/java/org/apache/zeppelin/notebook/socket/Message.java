@@ -111,10 +111,30 @@ public class Message {
     CONFIGURATIONS_INFO, // [s-c] all key/value pairs of configurations
                   // @param settings serialized Map<String, String> object
 
-    CHECKPOINT_NOTEBOOK     // [c-s] checkpoint notebook to storage repository
+    CHECKPOINT_NOTEBOOK,    // [c-s] checkpoint notebook to storage repository
                             // @param noteId
                             // @param checkpointName
 
+    LIST_REVISION_HISTORY,  // [c-s] list revision history of the notebook
+                            // @param noteId
+    NOTE_REVISION,          // [c-s] get certain revision of note
+                            // @param noteId
+                            // @param revisionId
+
+    APP_APPEND_OUTPUT,      // [s-c] append output
+    APP_UPDATE_OUTPUT,      // [s-c] update (replace) output
+    APP_LOAD,               // [s-c] on app load
+    APP_STATUS_CHANGE,      // [s-c] on app status change
+
+    LIST_NOTEBOOK_JOBS,     // [c-s] get notebook job management infomations
+    LIST_UPDATE_NOTEBOOK_JOBS, // [c-s] get job management informations for until unixtime
+                               // @param unixTime
+    GET_INTERPRETER_BINDINGS, // [c-s] get interpreter bindings
+                              // @param noteID
+    SAVE_INTERPRETER_BINDINGS, // [c-s] save interpreter bindings
+                               // @param noteID
+                               // @param selectedSettingIds
+    INTERPRETER_BINDINGS // [s-c] interpreter bindings
   }
 
   public OP op;

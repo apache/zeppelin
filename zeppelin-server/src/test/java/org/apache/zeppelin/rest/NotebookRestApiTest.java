@@ -61,7 +61,7 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
 
   @Test
   public void testPermissions() throws IOException {
-    Note note1 = ZeppelinServer.notebook.createNote();
+    Note note1 = ZeppelinServer.notebook.createNote(null);
     // Set only readers
     String jsonRequest = "{\"readers\":[\"admin-team\"],\"owners\":[]," +
             "\"writers\":[]}";
@@ -84,7 +84,7 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
     get.releaseConnection();
 
 
-    Note note2 = ZeppelinServer.notebook.createNote();
+    Note note2 = ZeppelinServer.notebook.createNote(null);
     // Set only writers
     jsonRequest = "{\"readers\":[],\"owners\":[]," +
             "\"writers\":[\"admin-team\"]}";
@@ -118,8 +118,30 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
     assertEquals(authInfo.get("owners"), Lists.newArrayList());
     get.releaseConnection();
     //cleanup
-    ZeppelinServer.notebook.removeNote(note1.getId());
-    ZeppelinServer.notebook.removeNote(note2.getId());
+    ZeppelinServer.notebook.removeNote(note1.getId(), null);
+    ZeppelinServer.notebook.removeNote(note2.getId(), null);
+
+  }
+
+  @Test
+  public void testGetNoteParagraphJobStatus() throws IOException {
+    Note note1 = ZeppelinServer.notebook.createNote(null);
+    note1.addParagraph();
+
+    String paragraphId = note1.getLastParagraph().getId();
+
+    GetMethod get = httpGet("/notebook/job/" + note1.getId() + "/" + paragraphId);
+    assertThat(get, isAllowed());
+    Map<String, Object> resp = gson.fromJson(get.getResponseBodyAsString(), new TypeToken<Map<String, Object>>() {
+    }.getType());
+    Map<String, Set<String>> paragraphStatus = (Map<String, Set<String>>) resp.get("body");
+
+    // Check id and status have proper value
+    assertEquals(paragraphStatus.get("id"), paragraphId);
+    assertEquals(paragraphStatus.get("status"), "READY");
+
+    //cleanup
+    ZeppelinServer.notebook.removeNote(note1.getId(), null);
 
   }
 }

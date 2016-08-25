@@ -1,7 +1,7 @@
 ---
 layout: page
-title: "Install A Zeppelin ready Virtual Machine"
-description: ""
+title: "Apache Zeppelin on Vagrant Virtual Machine"
+description: "Apache Zeppelin provides a script for running a virtual machine for development through Vagrant. The script will create a virtual machine with core dependencies pre-installed, required for developing Apache Zeppelin."
 group: install
 ---
 <!--
@@ -19,26 +19,29 @@ limitations under the License.
 -->
 {% include JB/setup %}
 
+# Apache Zeppelin on Vagrant Virtual Machine
 
-## Vagrant Virtual Machine for Apache Zeppelin
+<div id="toc"></div>
 
-Apache Zeppelin distribution includes a scripts directory
+## Overview
+
+Apache Zeppelin distribution includes a script directory
 
  `scripts/vagrant/zeppelin-dev`
 
-This script creates a virtual machine that launches a repeatable, known set of core dependencies required for developing Zeppelin.  It can also be used to run an existing Zeppelin build if you don't plan to build from source.
+This script creates a virtual machine that launches a repeatable, known set of core dependencies required for developing Zeppelin. It can also be used to run an existing Zeppelin build if you don't plan to build from source.
 For PySpark users, this script includes several helpful [Python Libraries](#python-extras).
 For SparkR users, this script includes several helpful [R Libraries](#r-extras).
 
-####Installing the required components to launch a virtual machine.
+### Prerequisites
 
 This script requires three applications, [Ansible](http://docs.ansible.com/ansible/intro_installation.html#latest-releases-via-pip "Ansible"), [Vagrant](http://www.vagrantup.com "Vagrant") and [Virtual Box](https://www.virtualbox.org/ "Virtual Box").  All of these applications are freely available as Open Source projects and extremely easy to set up on most operating systems.
 
-### Create a Zeppelin Ready VM in 4 Steps (5 on Windows)
+## Create a Zeppelin Ready VM
 
 If you are running Windows and don't yet have python installed, [install Python 2.7.x](https://www.python.org/downloads/release/python-2710/) first.
 
-1. Download and Install Vagrant:  [Vagrant Downloads](http://www.vagrantup.com/downloads)
+1. Download and Install Vagrant:  [Vagrant Downloads](http://www.vagrantup.com/downloads.html)
 2. Install Ansible:  [Ansible Python pip install](http://docs.ansible.com/ansible/intro_installation.html#latest-releases-via-pip)
 
     ```
@@ -60,9 +63,15 @@ curl -fsSL https://raw.githubusercontent.com/NFLabs/z-manager/master/zeppelin-in
 ```
 
 
-### Building Zeppelin
+## Building Zeppelin
 
-You can now `git clone git://git.apache.org/zeppelin.git` into a directory on your host machine, or directly in your virtual machine.
+You can now 
+
+```
+git clone git://git.apache.org/zeppelin.git
+```
+
+into a directory on your host machine, or directly in your virtual machine.
 
 Cloning Zeppelin into the `/scripts/vagrant/zeppelin-dev` directory from the host, will allow the directory to be shared between your host and the guest machine.
 
@@ -74,13 +83,12 @@ By default, Vagrant will share your project directory (the directory with the Va
 `cd /vagrant/zeppelin`
 
 
-### What's in this VM?
+## What's in this VM?
 
 Running the following commands in the guest machine should display these expected versions:
 
 `node --version` should report *v0.12.7*
-`mvn --version` should report *Apache Maven 3.3.3* and *Java version: 1.7.0_85*
-
+`mvn --version` should report *Apache Maven 3.3.9* and *Java version: 1.7.0_85*
 
 The virtual machine consists of:
 
@@ -88,7 +96,7 @@ The virtual machine consists of:
  - Node.js 0.12.7
  - npm 2.11.3
  - ruby 1.9.3 + rake, make and bundler (only required if building jekyll documentation)
- - Maven 3.3.3
+ - Maven 3.3.9
  - Git
  - Unzip
  - libfontconfig to avoid phatomJs missing dependency issues
@@ -96,7 +104,7 @@ The virtual machine consists of:
  - Python addons: pip, matplotlib, scipy, numpy, pandas
  - [R](https://www.r-project.org/) and R Packages required to run the R Interpreter and the related R tutorial notebook, including:  Knitr, devtools, repr, rCharts, ggplot2, googleVis, mplot, htmltools, base64enc, data.table
 
-### How to build & run Zeppelin
+## How to build & run Zeppelin
 
 This assumes you've already cloned the project either on the host machine in the zeppelin-dev directory (to be shared with the guest machine) or cloned directly into a directory while running inside the guest machine.  The following build steps will also include Python and R support via PySpark and SparkR:
 
@@ -111,7 +119,7 @@ On your host machine browse to `http://localhost:8080/`
 If you [turned off port forwarding](#tweaking-the-virtual-machine) in the `Vagrantfile` browse to `http://192.168.51.52:8080`
 
 
-### Tweaking the Virtual Machine
+## Tweaking the Virtual Machine
 
 If you plan to run this virtual machine along side other Vagrant images, you may wish to bind the virtual machine to a specific IP address, and not use port fowarding from your local host.
 
@@ -125,7 +133,7 @@ config.vm.network "private_network", ip: "192.168.51.52"
 `vagrant halt` followed by `vagrant up` will restart the guest machine bound to the IP address of `192.168.51.52`.
 This approach usually is typically required if running other virtual machines that discover each other directly by IP address, such as Spark Masters and Slaves as well as Cassandra Nodes, Elasticsearch Nodes, and other Spark data sources.  You may wish to launch nodes in virtual machines with IP addresses in a subnet that works for your local network, such as: 192.168.51.53, 192.168.51.54, 192.168.51.53, etc..
 
-
+## Extras
 ### Python Extras
 
 With Zeppelin running, **Numpy**, **SciPy**, **Pandas** and **Matplotlib** will be available.  Create a pyspark notebook, and try the below code.

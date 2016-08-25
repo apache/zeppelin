@@ -13,7 +13,7 @@
  */
 'use strict';
 
-angular.module('zeppelinWebApp').controller('MainCtrl', function($scope, $rootScope, $window) {
+angular.module('zeppelinWebApp').controller('MainCtrl', function($scope, $rootScope, $window, arrayOrderingSrv) {
   $scope.looknfeel = 'default';
 
   var init = function() {
@@ -41,7 +41,16 @@ angular.module('zeppelinWebApp').controller('MainCtrl', function($scope, $rootSc
     $rootScope.$broadcast('setLookAndFeel', 'default');
   });
 
+  $rootScope.noteName = function(note) {
+    if (!_.isEmpty(note)) {
+      return arrayOrderingSrv.getNoteName(note);
+    }
+  };
+
   BootstrapDialog.defaultOptions.onshown = function() {
     angular.element('#' + this.id).find('.btn:last').focus();
   };
+
+  // Remove BootstrapDialog animation
+  BootstrapDialog.configDefaultOptions({animate: false});
 });

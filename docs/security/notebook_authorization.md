@@ -1,7 +1,7 @@
 ---
 layout: page
-title: "Notebook Authorization"
-description: "Notebook Authorization"
+title: "Notebook Authorization in Apache Zeppelin"
+description: "This page will guide you how you can set the permission for Zeppelin notebooks. This document assumes that Apache Shiro authentication was set up."
 group: security
 ---
 <!--
@@ -17,8 +17,13 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
+{% include JB/setup %}
+
 # Zeppelin Notebook Authorization
 
+<div id="toc"></div>
+
+## Overview
 We assume that there is an **Shiro Authentication** component that associates a user string and a set of group strings with every NotebookSocket. 
 If you don't set the authentication components yet, please check [Shiro authentication for Apache Zeppelin](./shiroauthentication.html) first.
 
@@ -44,12 +49,12 @@ If someone who doesn't have **read** permission is trying to access the notebook
 ## How it works
 In this section, we will explain the detail about how the notebook authorization works in backend side.
 
-#### NotebookServer
+### NotebookServer
 The [NotebookServer](https://github.com/apache/zeppelin/blob/master/zeppelin-server/src/main/java/org/apache/zeppelin/socket/NotebookServer.java) classifies every notebook operations into three categories: **Read**, **Write**, **Manage**.
 Before executing a notebook operation, it checks if the user and the groups associated with the `NotebookSocket` have permissions. 
 For example, before executing a **Read** operation, it checks if the user and the groups have at least one entity that belongs to the **Reader** entities.
 
-#### Notebook REST API call
+### Notebook REST API call
 Zeppelin executes a [REST API call](https://github.com/apache/zeppelin/blob/master/zeppelin-server/src/main/java/org/apache/zeppelin/rest/NotebookRestApi.java) for the notebook permission information.
 In the backend side, Zeppelin gets the user information for the connection and allows the operation if the users and groups
 associated with the current user have at least one entity that belongs to owner entities for the notebook.

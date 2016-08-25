@@ -15,6 +15,7 @@
 package org.apache.zeppelin.hbase;
 
 import org.apache.zeppelin.interpreter.*;
+import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.jruby.embed.LocalContextScope;
@@ -53,22 +54,14 @@ import java.util.Properties;
  * zeppelin.hbase.test.mode: (Testing only) Disable checks for unit and manual tests. Default: false
  */
 public class HbaseInterpreter extends Interpreter {
+  public static final String HBASE_HOME = "hbase.home";
+  public static final String HBASE_RUBY_SRC = "hbase.ruby.sources";
+  public static final String HBASE_TEST_MODE = "zeppelin.hbase.test.mode";
+
   private Logger logger = LoggerFactory.getLogger(HbaseInterpreter.class);
   private ScriptingContainer scriptingContainer;
 
   private StringWriter writer;
-
-  static {
-    Interpreter.register("hbase", "hbase", HbaseInterpreter.class.getName(),
-        new InterpreterPropertyBuilder()
-            .add("hbase.home",
-              getSystemDefault("HBASE_HOME", "hbase.home", "/usr/lib/hbase/"),
-              "Installation directory of HBase")
-            .add("hbase.ruby.sources", "lib/ruby",
-                "Path to Ruby scripts relative to 'hbase.home'")
-            .add("zeppelin.hbase.test.mode", "false", "Disable checks for unit and manual tests")
-          .build());
-  }
 
   public HbaseInterpreter(Properties property) {
     super(property);
@@ -80,9 +73,9 @@ public class HbaseInterpreter extends Interpreter {
     this.writer = new StringWriter();
     scriptingContainer.setOutput(this.writer);
 
-    if (!Boolean.parseBoolean(getProperty("zeppelin.hbase.test.mode"))) {
-      String hbase_home = getProperty("hbase.home");
-      String ruby_src = getProperty("hbase.ruby.sources");
+    if (!Boolean.parseBoolean(getProperty(HBASE_TEST_MODE))) {
+      String hbase_home = getProperty(HBASE_HOME);
+      String ruby_src = getProperty(HBASE_RUBY_SRC);
       Path abs_ruby_src = Paths.get(hbase_home, ruby_src).toAbsolutePath();
 
       logger.info("Home:" + hbase_home);
@@ -97,7 +90,7 @@ public class HbaseInterpreter extends Interpreter {
       logger.info("Absolute Ruby Source:" + abs_ruby_src.toString());
       // hirb.rb:41 requires the following system property to be set.
       Properties sysProps = System.getProperties();
-      sysProps.setProperty("hbase.ruby.sources", abs_ruby_src.toString());
+      sysProps.setProperty(HBASE_RUBY_SRC, abs_ruby_src.toString());
 
       Path abs_hirb_path = Paths.get(hbase_home, "bin/hirb.rb");
       try {
@@ -152,7 +145,7 @@ public class HbaseInterpreter extends Interpreter {
   }
 
   @Override
-  public List<String> completion(String buf, int cursor) {
+  public List<InterpreterCompletion> completion(String buf, int cursor) {
     return null;
   }
 
