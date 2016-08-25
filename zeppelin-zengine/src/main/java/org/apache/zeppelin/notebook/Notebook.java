@@ -33,6 +33,7 @@ import java.util.concurrent.TimeUnit;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.stream.JsonReader;
+import org.apache.commons.codec.binary.StringUtils;
 import org.quartz.CronScheduleBuilder;
 import org.quartz.CronTrigger;
 import org.quartz.JobBuilder;
@@ -572,7 +573,78 @@ public class Notebook implements NoteEventListener {
     return lastRunningUnixTime;
   }
 
-  public List<Map<String, Object>> getJobListforNotebook(boolean needsReload,
+  public List<Map<String, Object>> getJobListforNotebookFromParagraphId(String paragraphID) {
+    String gotNoteId = null;
+    List<Note> notes = getAllNotes();
+    for (Note note : notes) {
+      Paragraph p = note.getParagraph(paragraphID);
+      if (p != null) {
+        gotNoteId = note.getId();
+      }
+    }
+    return getJobListforNotebookFromNotebookId(gotNoteId);
+  }
+
+  public List<Map<String, Object>> getJobListforNotebookFromNotebookId(String notebookID) {
+    final String CRON_TYPE_NOTEBOOK_KEYWORD = "cron";
+    long lastRunningUnixTime = 0;
+    boolean isNotebookRunning = false;
+    Note jobNote = getNote(notebookID);
+    List<Map<String, Object>> notesInfo = new LinkedList<>();
+    if (jobNote == null) {
+      return notesInfo;
+    }
+
+    Map<String, Object> info = new HashMap<>();
+
+    info.put("notebookId", jobNote.id());
+    String notebookName = jobNote.getName();
+    if (notebookName != null && !notebookName.equals("")) {
+      info.put("notebookName", jobNote.getName());
+    } else {
+      info.put("notebookName", "Note " + jobNote.id());
+    }
+    // set notebook type ( cron or normal )
+    if (jobNote.getConfig().containsKey(CRON_TYPE_NOTEBOOK_KEYWORD) && !jobNote.getConfig()
+            .get(CRON_TYPE_NOTEBOOK_KEYWORD).equals("")) {
+      info.put("notebookType", "cron");
+    } else {
+      info.put("notebookType", "normal");
+    }
+
+    // set paragraphs
+    List<Map<String, Object>> paragraphsInfo = new LinkedList<>();
+    for (Paragraph paragraph : jobNote.getParagraphs()) {
+      // check paragraph's status.
+      if (paragraph.getStatus().isRunning()) {
+        isNotebookRunning = true;
+      }
+
+      // get data for the job manager.
+      Map<String, Object> paragraphItem = getParagraphForJobManagerItem(paragraph);
+      lastRunningUnixTime = getUnixTimeLastRunParagraph(paragraph);
+
+      paragraphsInfo.add(paragraphItem);
+    }
+
+    // set interpreter bind type
+    String interpreterGroupName = null;
+    if (replFactory.getInterpreterSettings(jobNote.getId()) != null
+            && replFactory.getInterpreterSettings(jobNote.getId()).size() >= 1) {
+      interpreterGroupName = replFactory.getInterpreterSettings(jobNote.getId()).get(0).getName();
+    }
+
+    // notebook json object root information.
+    info.put("interpreter", interpreterGroupName);
+    info.put("isRunningJob", isNotebookRunning);
+    info.put("unixTimeLastRun", lastRunningUnixTime);
+    info.put("paragraphs", paragraphsInfo);
+    notesInfo.add(info);
+
+    return notesInfo;
+  };
+
+  public List<Map<String, Object>> getJobListforNotebookFromUnixTime(boolean needsReload,
       long lastUpdateServerUnixTime, AuthenticationInfo subject) {
     final String CRON_TYPE_NOTEBOOK_KEYWORD = "cron";
 
