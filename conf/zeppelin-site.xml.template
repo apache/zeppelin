@@ -184,7 +184,7 @@
 
 <property>
   <name>zeppelin.interpreter.group.order</name>
-  <value>"spark,md,angular,sh,livy,alluxio,file,psql,flink,python,ignite,lens,cassandra,geode,kylin,elasticsearch,scalding,jdbc,hbase</value>
+  <value>spark,md,angular,sh,livy,alluxio,file,psql,flink,python,ignite,lens,cassandra,geode,kylin,elasticsearch,scalding,jdbc,hbase</value>
   <description></description>
 </property>
 
