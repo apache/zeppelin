@@ -44,7 +44,7 @@ message CodeInterpreteRequest {
 
 message InterpetedResult {
   string output = 1;
-  string status = 2; //should be enum
+  string status = 2; //TODO(bzz) replace \w enum
 }
 
 message CodeCompletionRequest {

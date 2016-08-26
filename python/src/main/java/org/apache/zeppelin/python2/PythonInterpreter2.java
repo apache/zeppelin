@@ -88,7 +88,7 @@ public class PythonInterpreter2 extends Interpreter {
   @Override
   public void close() {
     LOG.info("closing Python interpreter .....");
-    //TODO(bzz): blockingStub.shutdown();
+    blockingStub.shutdown(null);
 //    LOG.error("Can't close the interpreter", e);
   }
 
@@ -162,7 +162,8 @@ public class PythonInterpreter2 extends Interpreter {
   }
 
   private static boolean gotSuccess(InterpetedResult result) {
-    return result != null; // && result.getStatus() is ...;
+    //TODO(bzz): replace string \w enum
+    return result != null && result.getStatus().toLowerCase().contains("success");
   }
 
   /*public Boolean isPy4jInstalled() {

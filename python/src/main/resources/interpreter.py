@@ -20,9 +20,10 @@
 import sys
 import time
 import argparse
+import traceback
 
-#TODO python3 compatibility! i.e `import io`
-from cStringIO import StringIO
+
+from cStringIO import StringIO #TODO python3 compatibility! i.e `import io`
 
 import python_interpreter_pb2
 
@@ -137,10 +138,10 @@ class PythonInterpreterServicer(python_interpreter_pb2.BetaPythonInterpreterServ
     Rises:
         InterpreterError: an error with specific line number
     """
+    old_stdout = sys.stdout
     #TODO python3 compatibility! i.e io.BytesIO()
     redirected_output = sys.stdout = StringIO()
     try:
-      old_stdout = sys.stdout
       #compile()?
       exec(code, globals(), locals())
       #execfile()?
@@ -170,8 +171,14 @@ class PythonInterpreterServicer(python_interpreter_pb2.BetaPythonInterpreterServ
       out = "{} at line {}:\n{}".format(e.error_class, e.line_number, e.details)
       return python_interpreter_pb2.InterpetedResult(output=out, status="fail")
     print("Success!")
-    return python_interpreter_pb2.InterpetedResult(output=out, status="success")
+    output = out.getvalue()
+    out.flush()
+    return python_interpreter_pb2.InterpetedResult(output=output, status="success")
 
+  def Shutdown(self, void, context):
+    print("Shuting down Python process")
+    #TODO(bzz): make main exit i.e \w signal.SIGINT
+    #return python_interpreter_pb2.Void()
 
 def main():
   parser = argparse.ArgumentParser(
