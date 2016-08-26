@@ -109,9 +109,13 @@
     var checkDownloadingDependencies = function() {
       var isDownloading = false;
       for (var setting = 0; setting < $scope.interpreterSettings.length; setting++) {
-        if ($scope.interpreterSettings[setting].status === 'DOWNLOADING_DEPENDENCIES') {
+        var setting = $scope.interpreterSettings[setting];
+        if (setting.status === 'DOWNLOADING_DEPENDENCIES') {
           isDownloading = true;
-          break;
+        } else if (setting.status === 'ERROR') {
+          ngToast.danger({content: 'Error setting properties for interpreter \'' +
+            setting.group + '.' + setting.name + '\': ' + setting.errorReason,
+            verticalPosition: 'top', dismissOnTimeout: false});
         }
       }
       if (isDownloading) {
@@ -236,7 +240,6 @@
                 $scope.interpreterSettings[index] = data.body;
                 removeTMPSettings(index);
                 thisConfirm.close();
-                checkDownloadingDependencies();
                 $route.reload();
               })
               .error(function(data, status, headers, config) {

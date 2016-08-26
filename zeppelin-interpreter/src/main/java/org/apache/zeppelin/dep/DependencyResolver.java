@@ -42,6 +42,7 @@ import org.sonatype.aether.util.artifact.DefaultArtifact;
 import org.sonatype.aether.util.artifact.JavaScopes;
 import org.sonatype.aether.util.filter.DependencyFilterUtils;
 import org.sonatype.aether.util.filter.PatternExclusionsDependencyFilter;
+import org.sonatype.aether.util.graph.DefaultDependencyNode;
 
 
 /**
@@ -164,7 +165,8 @@ public class DependencyResolver extends AbstractDependencyResolver {
         new PatternExclusionsDependencyFilter(excludes);
 
     CollectRequest collectRequest = new CollectRequest();
-    collectRequest.setRoot(new Dependency(artifact, JavaScopes.COMPILE));
+    final Dependency rootDependency = new Dependency(artifact, JavaScopes.COMPILE);
+    collectRequest.setRoot(rootDependency);
 
     synchronized (repos) {
       for (RemoteRepository repo : repos) {
@@ -173,6 +175,7 @@ public class DependencyResolver extends AbstractDependencyResolver {
     }
     DependencyRequest dependencyRequest = new DependencyRequest(collectRequest,
         DependencyFilterUtils.andFilter(exclusionFilter, classpathFilter));
+    dependencyRequest.setRoot(new DefaultDependencyNode(rootDependency));
     return system.resolveDependencies(session, dependencyRequest).getArtifactResults();
   }
 }

@@ -464,8 +464,8 @@ public class InterpreterFactory implements InterpreterGroupFactory {
           } catch (Exception e) {
             logger.error(String.format("Error while downloading repos for interpreter group : %s," +
                     " go to interpreter setting page click on edit and save it again to make " +
-                    "this interpreter work properly.",
-                setting.getGroup()), e);
+                    "this interpreter work properly. : %s",
+                setting.getGroup(), e.getLocalizedMessage()), e);
             setting.setErrorReason(e.getLocalizedMessage());
             setting.setStatus(InterpreterSetting.Status.ERROR);
           } finally {
