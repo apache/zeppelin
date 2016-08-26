@@ -16,7 +16,11 @@
  */
 
 package org.apache.zeppelin.dep;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
+
 import org.sonatype.aether.repository.Authentication;
+import org.sonatype.aether.repository.Proxy;
+
 /**
  *
  *
@@ -27,6 +31,11 @@ public class Repository {
   private String url;
   private String username = null;
   private String password = null;
+  private String proxyProtocol = "HTTP";
+  private String proxyHost = null;
+  private Integer proxyPort = null;
+  private String proxyLogin = null;
+  private String proxyPassword = null;
 
   public Repository(String id){
     this.id = id;
@@ -76,5 +85,17 @@ public class Repository {
       auth = new Authentication(this.username, this.password);
     }
     return auth;
+  }
+
+  public Proxy getProxy() {
+    if (isNotBlank(proxyHost) && proxyPort != null) {
+      if (isNotBlank(proxyLogin)) {
+        return new Proxy(proxyProtocol, proxyHost, proxyPort,
+                new Authentication(proxyLogin, proxyPassword));
+      } else {
+        return new Proxy(proxyProtocol, proxyHost, proxyPort, null);
+      }
+    }
+    return null;
   }
 }

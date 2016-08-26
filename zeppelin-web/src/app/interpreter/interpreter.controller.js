@@ -508,7 +508,12 @@
         url: '',
         snapshot: false,
         username: '',
-        password: ''
+        password: '',
+        proxyProtocol: 'HTTP',
+        proxyHost: '',
+        proxyPort: null,
+        proxyLogin: '',
+        proxyPassword: ''
       };
     };
 

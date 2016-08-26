@@ -202,7 +202,7 @@ public class InterpreterRestApi {
     try {
       Repository request = gson.fromJson(message, Repository.class);
       interpreterFactory.addRepository(request.getId(), request.getUrl(), request.isSnapshot(),
-          request.getAuthentication());
+        request.getAuthentication(), request.getProxy());
       logger.info("New repository {} added", request.getId());
     } catch (Exception e) {
       logger.error("Exception in InterpreterRestApi while adding repository ", e);
