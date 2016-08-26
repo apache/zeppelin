@@ -122,6 +122,28 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
     ZeppelinServer.notebook.removeNote(note2.getId(), null);
 
   }
+
+  @Test
+  public void testGetNoteParagraphJobStatus() throws IOException {
+    Note note1 = ZeppelinServer.notebook.createNote(null);
+    note1.addParagraph();
+
+    String paragraphId = note1.getLastParagraph().getId();
+
+    GetMethod get = httpGet("/notebook/job/" + note1.getId() + "/" + paragraphId);
+    assertThat(get, isAllowed());
+    Map<String, Object> resp = gson.fromJson(get.getResponseBodyAsString(), new TypeToken<Map<String, Object>>() {
+    }.getType());
+    Map<String, Set<String>> paragraphStatus = (Map<String, Set<String>>) resp.get("body");
+
+    // Check id and status have proper value
+    assertEquals(paragraphStatus.get("id"), paragraphId);
+    assertEquals(paragraphStatus.get("status"), "READY");
+
+    //cleanup
+    ZeppelinServer.notebook.removeNote(note1.getId(), null);
+
+  }
 }
 
 

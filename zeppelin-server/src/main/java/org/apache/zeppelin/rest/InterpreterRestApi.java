@@ -91,6 +91,9 @@ public class InterpreterRestApi {
     try {
       NewInterpreterSettingRequest request =
           gson.fromJson(message, NewInterpreterSettingRequest.class);
+      if (request == null) {
+        return new JsonResponse<>(Status.BAD_REQUEST).build();
+      }
       Properties p = new Properties();
       p.putAll(request.getProperties());
       InterpreterSetting interpreterSetting = interpreterFactory

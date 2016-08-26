@@ -116,8 +116,8 @@ public class NotebookRestApi {
      * TODO(jl): Fixed the type of HashSet
      * https://issues.apache.org/jira/browse/ZEPPELIN-1162
      */
-    HashMap<String, HashSet> permMap =
-        gson.fromJson(req, new TypeToken<HashMap<String, HashSet>>() {
+    HashMap<String, HashSet<String>> permMap =
+        gson.fromJson(req, new TypeToken<HashMap<String, HashSet<String>>>() {
         }.getType());
     Note note = notebook.getNote(noteId);
     String principal = SecurityUtils.getPrincipal();
@@ -133,9 +133,9 @@ public class NotebookRestApi {
           ownerPermissionError(userAndRoles, notebookAuthorization.getOwners(noteId))).build();
     }
 
-    HashSet readers = permMap.get("readers");
-    HashSet owners = permMap.get("owners");
-    HashSet writers = permMap.get("writers");
+    HashSet<String> readers = permMap.get("readers");
+    HashSet<String> owners = permMap.get("owners");
+    HashSet<String> writers = permMap.get("writers");
     // Set readers, if writers and owners is empty -> set to user requesting the change
     if (readers != null && !readers.isEmpty()) {
       if (writers.isEmpty()) {
@@ -526,6 +526,35 @@ public class NotebookRestApi {
     }
 
     return new JsonResponse<>(Status.OK, null, note.generateParagraphsInfo()).build();
+  }
+
+  /**
+   * Get notebook paragraph job status REST API
+   *
+   * @param notebookId ID of Notebook
+   * @param paragraphId ID of Paragraph
+   * @return JSON with status.OK
+   * @throws IOException, IllegalArgumentException
+   */
+  @GET
+  @Path("job/{notebookId}/{paragraphId}")
+  @ZeppelinApi
+  public Response getNoteParagraphJobStatus(@PathParam("notebookId") String notebookId, 
+      @PathParam("paragraphId") String paragraphId)
+      throws IOException, IllegalArgumentException {
+    LOG.info("get notebook paragraph job status.");
+    Note note = notebook.getNote(notebookId);
+    if (note == null) {
+      return new JsonResponse<>(Status.NOT_FOUND, "note not found.").build();
+    }
+
+    Paragraph paragraph = note.getParagraph(paragraphId);
+    if (paragraph == null) {
+      return new JsonResponse<>(Status.NOT_FOUND, "paragraph not found.").build();
+    }
+
+    return new JsonResponse<>(Status.OK, null, note.generateSingleParagraphInfo(paragraphId)).
+      build();
   }
 
   /**

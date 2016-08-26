@@ -68,7 +68,6 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
   var initNotebook = function() {
     websocketMsgSrv.getNotebook($routeParams.noteId);
     websocketMsgSrv.listRevisionHistory($routeParams.noteId);
-
     var currentRoute = $route.current;
     if (currentRoute) {
       setTimeout(
@@ -333,6 +332,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
     } else {
       $scope.viewOnly = $scope.note.config.looknfeel === 'report' ? true : false;
     }
+    $scope.note.paragraphs[0].focus = true;
     $rootScope.$broadcast('setLookAndFeel', $scope.note.config.looknfeel);
   };
 
