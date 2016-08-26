@@ -50,3 +50,5 @@ So, copying `notebook` and `conf` directory should be enough.
 ### Upgrading from Zeppelin 0.6 to 0.7
 
  - From 0.7, we don't use `ZEPPELIN_JAVA_OPTS` as default value of `ZEPPELIN_INTP_JAVA_OPTS` and also the same for `ZEPPELIN_MEM`/`ZEPPELIN_INTP_MEM`. If user want to configure the jvm opts of interpreter process, please set `ZEPPELIN_INTP_JAVA_OPTS` and `ZEPPELIN_INTP_MEM` explicitly.
+ 
+ - Mapping from `%jdbc(prefix)` to `%prefix` is no longer available. You can set multiple interpreters with same interpreter group.
