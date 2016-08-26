@@ -27,7 +27,7 @@ limitations under the License.
           ng-if="paragraph.result.type == 'TABLE'"
           ng-class="{'active': isGraphMode('multiBarChart')}"
           ng-click="setGraphMode('multiBarChart', true)"
-          tooltip="Multi Bar Chart" tooltip-placement="bottom"><i class="fa fa-bar-chart"></i>
+          tooltip="Bar Chart" tooltip-placement="bottom"><i class="fa fa-bar-chart"></i>
   </button>
   <button type="button" class="btn btn-default btn-sm"
           ng-if="paragraph.result.type == 'TABLE'"
@@ -39,13 +39,13 @@ limitations under the License.
           ng-if="paragraph.result.type == 'TABLE'"
           ng-class="{'active': isGraphMode('stackedAreaChart')}"
           ng-click="setGraphMode('stackedAreaChart', true)"
-          tooltip="Stacked Area Chart" tooltip-placement="bottom"><i class="fa fa-area-chart"></i>
+          tooltip="Area Chart" tooltip-placement="bottom"><i class="fa fa-area-chart"></i>
   </button>
   <button type="button" class="btn btn-default btn-sm"
           ng-if="paragraph.result.type == 'TABLE'"
           ng-class="{'active': isGraphMode('lineChart') || isGraphMode('lineWithFocusChart')}"
           ng-click="paragraph.config.graph.lineWithFocus ? setGraphMode('lineWithFocusChart', true) : setGraphMode('lineChart', true)"
-          tooltip="Line With Focus Chart" tooltip-placement="bottom"><i class="fa fa-line-chart"></i>
+          tooltip="Line Chart" tooltip-placement="bottom"><i class="fa fa-line-chart"></i>
   </button>
   <button type="button" class="btn btn-default btn-sm"
           ng-if="paragraph.result.type == 'TABLE'"
