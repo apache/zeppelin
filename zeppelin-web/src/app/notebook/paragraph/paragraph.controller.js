@@ -994,8 +994,8 @@ angular.module('zeppelinWebApp')
     }
     var user = (pdata.user === undefined || pdata.user === null) ? 'anonymous' : pdata.user;
     var desc = 'Took ' + moment.duration((timeMs / 1000), 'seconds').format('h [hrs] m [min] s [sec]') +
-      '. Last updated by ' + user + ' at ' + moment(pdata.dateUpdated).format('MMMM DD YYYY, h:mm:ss A') + '.';
-    if ($scope.isResultOutdated()){
+      '. Last updated by ' + user + ' at ' + moment(pdata.dateFinished).format('MMMM DD YYYY, h:mm:ss A') + '.';
+    if ($scope.isResultOutdated()) {
       desc += ' (outdated)';
     }
     return desc;
@@ -1102,7 +1102,7 @@ angular.module('zeppelinWebApp')
       $scope.handleFocus(true);
     } else {
       $scope.editor.blur();
-      var isDigestPass = true;      
+      var isDigestPass = true;
       $scope.handleFocus(false, isDigestPass);
     }
   });
