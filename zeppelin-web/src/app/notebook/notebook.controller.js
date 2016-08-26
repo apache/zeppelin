@@ -635,8 +635,9 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
       callback: function(result) {
         if (result) {
           var payload  = {
-            'checkIntpCondition': 'true'
+            'noteId' : $scope.note.id
           };
+
           $http.put(baseUrlSrv.getRestApiBase() + '/interpreter/setting/restart/' + interpeter.id, payload)
             .success(function(data, status, headers, config) {
             var index = _.findIndex($scope.interpreterSettings, {'id': interpeter.id});

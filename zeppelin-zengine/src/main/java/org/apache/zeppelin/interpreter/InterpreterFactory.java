@@ -853,20 +853,22 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     }
   }
 
-  private boolean interpreterIsShared(InterpreterSetting setting) {
-    if (setting.getOption().isPerNoteProcess() == false &&
-      setting.getOption().isPerNoteSession() == false){
-      return true;
-    }
-    return false;
+  private boolean noteIsExist(String noteId) {
+    return noteId == null ? false : true;
   }
 
-  public void restart(String settingId, boolean shouldBeCheckedIntpMode) {
+  public void restart(String settingId, String noteId) {
     InterpreterSetting setting = interpreterSettings.get(settingId);
-
-    if (shouldBeCheckedIntpMode && interpreterIsShared(setting)) {
-      throw new InterpreterException("Can't restart shared interpreter process.");
+    if (noteIsExist(noteId)) {
+      if (setting.getOption().isPerNoteProcess()) {
+        setting.closeAndRemoveInterpreterGroup(noteId);
+      } else if (setting.getOption().isPerNoteSession()) {
+        InterpreterGroup interpreterGroup = setting.getInterpreterGroup(noteId);
+        interpreterGroup.close(noteId);
+        interpreterGroup.destroy(noteId);
+      }
     }
+
     restart(settingId);
   }
 

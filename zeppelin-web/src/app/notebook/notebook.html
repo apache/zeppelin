@@ -34,11 +34,6 @@ limitations under the License.
         <div data-ng-repeat="item in interpreterBindings" as-sortable-item>
           <div>
             <div as-sortable-item-handle
-                 class="btn btn-warning"
-                 ng-click="restartInterpreter(item)">
-              <font style="font-size:16px">Restart</font>
-            </div>
-            <div as-sortable-item-handle
                  ng-click="item.selected = !item.selected"
                  class="btn"
                  ng-class="{'btn-info': item.selected, 'btn-default': !item.selected}">
@@ -53,6 +48,9 @@ limitations under the License.
                 </span>
               </small>
             </div>
+            <a ng-click="restartInterpreter(item)" ng-show="item.selected">
+              <span class="glyphicon glyphicon-refresh btn-md"></span>
+            </a>
           </div>
         </div>
       </div>

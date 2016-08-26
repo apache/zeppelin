@@ -159,8 +159,10 @@ public class InterpreterRestApi {
 
     try {
       RestartInterpreterRequest request = gson.fromJson(message, RestartInterpreterRequest.class);
-      boolean shouldBeCheckedIntpMode = request == null ? false : request.getCheckIntpCondition();
-      interpreterFactory.restart(settingId, shouldBeCheckedIntpMode);
+
+      String noteId = request == null ? null : request.getNoteId();
+      interpreterFactory.restart(settingId, noteId);
+
     } catch (InterpreterException e) {
       logger.error("Exception in InterpreterRestApi while restartSetting ", e);
       return new JsonResponse<>(Status.NOT_FOUND, e.getMessage(), ExceptionUtils.getStackTrace(e))

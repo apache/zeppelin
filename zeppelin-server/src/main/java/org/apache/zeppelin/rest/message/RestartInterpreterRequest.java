@@ -22,6 +22,7 @@ package org.apache.zeppelin.rest.message;
  */
 public class RestartInterpreterRequest {
   boolean checkIntpCondition;
+  String noteId;
 
   public RestartInterpreterRequest() {
 
@@ -29,5 +30,8 @@ public class RestartInterpreterRequest {
 
   public boolean getCheckIntpCondition() {
     return checkIntpCondition;
+  }
+  public String getNoteId() {
+    return noteId;
   }
 }
