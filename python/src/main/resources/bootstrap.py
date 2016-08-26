@@ -19,19 +19,20 @@
 # Remove interactive mode displayhook
 import sys
 import signal
-
+import base64
+from io import BytesIO
 try:
-    import StringIO as io
+    from StringIO import StringIO
 except ImportError:
-    import io as io
-
-sys.displayhook = lambda x: None
+    from io import StringIO
 
 def intHandler(signum, frame):  # Set the signal handler
     print ("Paragraph interrupted")
     raise KeyboardInterrupt()
 
 signal.signal(signal.SIGINT, intHandler)
+# set prompt as empty string so that java side don't need to remove the prompt.
+sys.ps1=""
 
 def help():
     print("""%html
@@ -69,10 +70,10 @@ def help():
  plt.close()
  </pre>
  <div><br/> z.show function can take optional parameters
- to adapt graph width and height</div>
+ to adapt graph dimensions (width and height) and format (png or svg)</div>
  <div><b>example </b>:
  <pre>z.show(plt,width='50px
- z.show(plt,height='150px') </pre></div>
+ z.show(plt,height='150px', fmt='svg') </pre></div>
 
  <h3>Pandas DataFrame</h3>
  <div> You need to have Pandas module installed
@@ -140,14 +141,14 @@ class PyZeppelinContext(object):
         """Pretty prints DF using Table Display System
         """
         limit = len(df) > self.max_result
-        header_buf = io.StringIO("")
+        header_buf = StringIO("")
         header_buf.write(str(df.columns[0]))
         for col in df.columns[1:]:
             header_buf.write("\t")
             header_buf.write(str(col))
         header_buf.write("\n")
         
-        body_buf = io.StringIO("")
+        body_buf = StringIO("")
         rows = df.head(self.max_result).values if limit else df.values
         for row in rows:
             body_buf.write(str(row[0]))
@@ -163,13 +164,28 @@ class PyZeppelinContext(object):
         #)
         body_buf.close(); header_buf.close()
     
-    def show_matplotlib(self, p, width="100%", height="100%", **kwargs):
+    def show_matplotlib(self, p, fmt="png", width="auto", height="auto", 
+                        **kwargs):
         """Matplotlib show function
         """
-        img = io.StringIO()
-        p.savefig(img, format="svg")
-        html = "%html <div style='width:{width};height:{height}'>{image}<div>"
-        print(html.format(width=width, height=height, image=img.getvalue()))
+        if fmt == "png":
+            img = BytesIO()
+            p.savefig(img, format=fmt)
+            img_str = b"data:image/png;base64,"
+            img_str += base64.b64encode(img.getvalue().strip())
+            img_tag = "<img src={img} style='width={width};height:{height}'>"
+            # Decoding is necessary for Python 3 compability
+            img_str = img_str.decode("ascii")
+            img_str = img_tag.format(img=img_str, width=width, height=height)
+        elif fmt == "svg":
+            img = StringIO()
+            p.savefig(img, format=fmt)
+            img_str = img.getvalue()
+        else:
+            raise ValueError("fmt must be 'png' or 'svg'")
+        
+        html = "%html <div style='width:{width};height:{height}'>{img}<div>"
+        print(html.format(width=width, height=height, img=img_str))
         img.close()
 
 

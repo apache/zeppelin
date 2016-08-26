@@ -1,7 +1,7 @@
 ---
 layout: page
-title: "Interpreter Installation"
-description: ""
+title: "Interpreter Installation in Netinst Binary Package"
+description: "Apache Zeppelin provides Interpreter Installation mechanism for whom downloaded Zeppelin netinst binary package, or just want to install another 3rd party interpreters."
 group: manual
 ---
 <!--

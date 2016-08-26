@@ -67,10 +67,8 @@ import scala.Enumeration.Value;
 import scala.collection.Iterator;
 import scala.collection.JavaConversions;
 import scala.collection.JavaConverters;
-import scala.collection.convert.WrapAsJava;
 import scala.collection.Seq;
 import scala.collection.convert.WrapAsJava$;
-import scala.collection.convert.WrapAsScala;
 import scala.collection.mutable.HashMap;
 import scala.collection.mutable.HashSet;
 import scala.reflect.io.AbstractFile;
@@ -114,7 +112,7 @@ public class SparkInterpreter extends Interpreter {
   /**
    * completer - org.apache.spark.repl.SparkJLineCompletion (scala 2.10)
    */
-  private Object completer;
+  private Object completer = null;
 
   private Map<String, Object> binder;
   private SparkVersion sparkVersion;
@@ -238,10 +236,7 @@ public class SparkInterpreter extends Interpreter {
    */
   private SQLContext getSQLContext_2() {
     if (sqlc == null) {
-      sqlc = (SQLContext) Utils.invokeMethod(sparkSession, "wrapped");
-      if (sqlc == null) {
-        sqlc = (SQLContext) Utils.invokeMethod(sparkSession, "sqlContext");
-      }
+      sqlc = (SQLContext) Utils.invokeMethod(sparkSession, "sqlContext");
     }
     return sqlc;
   }
@@ -533,8 +528,8 @@ public class SparkInterpreter extends Interpreter {
     if (getProperty("master").equals("yarn-client")) {
       System.setProperty("SPARK_YARN_MODE", "true");
     }
-    if (getProperty().contains("spark.yarn.keytab") &&
-            getProperty().contains("spark.yarn.principal")) {
+    if (getProperty().containsKey("spark.yarn.keytab") &&
+            getProperty().containsKey("spark.yarn.principal")) {
       try {
         String keytab = getProperty().getProperty("spark.yarn.keytab");
         String principal = getProperty().getProperty("spark.yarn.principal");
@@ -723,11 +718,25 @@ public class SparkInterpreter extends Interpreter {
             logger.error(e.getMessage(), e);
           }
         }
+      }
 
+      if (Utils.findClass("org.apache.spark.repl.SparkJLineCompletion", true) != null) {
         completer = Utils.instantiateClass(
             "org.apache.spark.repl.SparkJLineCompletion",
             new Class[]{Utils.findClass("org.apache.spark.repl.SparkIMain")},
             new Object[]{intp});
+      } else if (Utils.findClass(
+          "scala.tools.nsc.interpreter.PresentationCompilerCompleter", true) != null) {
+        completer = Utils.instantiateClass(
+            "scala.tools.nsc.interpreter.PresentationCompilerCompleter",
+            new Class[]{ IMain.class },
+            new Object[]{ intp });
+      } else if (Utils.findClass(
+          "scala.tools.nsc.interpreter.JLineCompletion", true) != null) {
+        completer = Utils.instantiateClass(
+            "scala.tools.nsc.interpreter.JLineCompletion",
+            new Class[]{ IMain.class },
+            new Object[]{ intp });
       }
 
       if (Utils.isSpark2()) {
@@ -906,6 +915,11 @@ public class SparkInterpreter extends Interpreter {
 
   @Override
   public List<InterpreterCompletion> completion(String buf, int cursor) {
+    if (completer == null) {
+      logger.warn("Can't find completer");
+      return new LinkedList<InterpreterCompletion>();
+    }
+
     if (buf.length() < cursor) {
       cursor = buf.length();
     }
@@ -914,22 +928,18 @@ public class SparkInterpreter extends Interpreter {
       completionText = "";
       cursor = completionText.length();
     }
-    if (Utils.isScala2_10()) {
-      ScalaCompleter c = (ScalaCompleter) Utils.invokeMethod(completer, "completer");
-      Candidates ret = c.complete(completionText, cursor);
 
-      List<String> candidates = WrapAsJava$.MODULE$.seqAsJavaList(ret.candidates());
-      List<InterpreterCompletion> completions = new LinkedList<InterpreterCompletion>();
+    ScalaCompleter c = (ScalaCompleter) Utils.invokeMethod(completer, "completer");
+    Candidates ret = c.complete(completionText, cursor);
 
-      for (String candidate : candidates) {
-        completions.add(new InterpreterCompletion(candidate, candidate));
-      }
+    List<String> candidates = WrapAsJava$.MODULE$.seqAsJavaList(ret.candidates());
+    List<InterpreterCompletion> completions = new LinkedList<InterpreterCompletion>();
 
-      return completions;
-    } else {
-      return new LinkedList<InterpreterCompletion>();
+    for (String candidate : candidates) {
+      completions.add(new InterpreterCompletion(candidate, candidate));
     }
 
+    return completions;
   }
 
   private String getCompletionTargetString(String text, int cursor) {

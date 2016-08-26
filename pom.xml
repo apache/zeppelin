@@ -465,6 +465,8 @@
               <!-- bundled from bootstrap -->
               <exclude>docs/assets/themes/zeppelin/bootstrap/**</exclude>
               <exclude>docs/assets/themes/zeppelin/css/style.css</exclude>
+              <exclude>docs/assets/themes/zeppelin/js/docs.js</exclude>
+              <exclude>docs/assets/themes/zeppelin/js/search.js</exclude>
               <exclude>docs/_includes/themes/zeppelin/_jumbotron.html</exclude>
               <exclude>docs/_includes/themes/zeppelin/_navigation.html</exclude>
 
@@ -482,13 +484,18 @@
               <exclude>docs/Rakefile</exclude>
               <exclude>docs/rss.xml</exclude>
               <exclude>docs/sitemap.txt</exclude>
+              <exclude>docs/search_data.json</exclude>
               <exclude>**/dependency-reduced-pom.xml</exclude>
+              <exclude>docs/CONTRIBUTING.md</exclude>
 
               <!-- bundled from anchor -->
               <exclude>docs/assets/themes/zeppelin/js/anchor.min.js</exclude>
 
               <!-- bundled from toc -->
               <exclude>docs/assets/themes/zeppelin/js/toc.js</exclude>
+
+              <!-- bundled from lunrjs -->
+              <exclude>docs/assets/themes/zeppelin/js/lunr.min.js</exclude>
 
               <!-- bundled from jekyll -->
               <exclude>docs/assets/themes/zeppelin/css/syntax.css</exclude>

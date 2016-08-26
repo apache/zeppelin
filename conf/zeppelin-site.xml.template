@@ -165,6 +165,12 @@
 </property>
 
 <property>
+  <name>zeppelin.notebook.one.way.sync</name>
+  <value>false</value>
+  <description>If there are multiple notebook storages, should we treat the first one as the only source of truth?</description>
+</property>
+
+<property>
   <name>zeppelin.interpreter.dir</name>
   <value>interpreter</value>
   <description>Interpreter implementation base directory</description>

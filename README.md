@@ -1,4 +1,4 @@
-#Zeppelin
+# Apache Zeppelin
 
 **Documentation:** [User Guide](http://zeppelin.apache.org/docs/latest/index.html)<br/>
 **Mailing Lists:** [User and Dev mailing list](http://zeppelin.apache.org/community.html)<br/>
@@ -93,9 +93,9 @@ _Notes:_
  
 #### Install maven
 ```
-wget http://www.eu.apache.org/dist/maven/maven-3/3.3.3/binaries/apache-maven-3.3.3-bin.tar.gz
-sudo tar -zxf apache-maven-3.3.3-bin.tar.gz -C /usr/local/
-sudo ln -s /usr/local/apache-maven-3.3.3/bin/mvn /usr/local/bin/mvn
+wget http://www.eu.apache.org/dist/maven/maven-3/3.3.9/binaries/apache-maven-3.3.9-bin.tar.gz
+sudo tar -zxf apache-maven-3.3.9-bin.tar.gz -C /usr/local/
+sudo ln -s /usr/local/apache-maven-3.3.9/bin/mvn /usr/local/bin/mvn
 ```
 
 _Notes:_

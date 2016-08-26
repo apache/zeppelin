@@ -1,7 +1,7 @@
 ---
 layout: page
-title: "Getting Started"
-description: ""
+title: "Quick Start"
+description: "This page will help you to get started and guide you through installation of Apache Zeppelin, running it in the command line and basic configuration options."
 group: install
 ---
 <!--
@@ -373,6 +373,12 @@ You can configure Apache Zeppelin with both **environment variables** in `conf/z
     <td>zeppelin.notebook.storage</td>
     <td>org.apache.zeppelin.notebook.repo.VFSNotebookRepo</td>
     <td>Comma separated list of notebook storage</td>
+  </tr>
+  <tr>
+    <td>ZEPPELIN_NOTEBOOK_ONE_WAY_SYNC</td>
+    <td>zeppelin.notebook.one.way.sync</td>
+    <td>false</td>
+    <td>If there are multiple notebook storages, should we treat the first one as the only source of truth?</td>
   </tr>
   <tr>
     <td>ZEPPELIN_INTERPRETERS</td>
