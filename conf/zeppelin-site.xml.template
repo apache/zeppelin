@@ -183,6 +183,12 @@
 </property>
 
 <property>
+  <name>zeppelin.interpreter.group.order</name>
+  <value>spark,md,angular,sh,livy,alluxio,file,psql,flink,python,ignite,lens,cassandra,geode,kylin,elasticsearch,scalding,jdbc,hbase,bigquery</value>
+  <description></description>
+</property>
+
+<property>
   <name>zeppelin.interpreter.connect.timeout</name>
   <value>30000</value>
   <description>Interpreter process connect timeout in msec.</description>
