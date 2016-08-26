@@ -853,23 +853,26 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     }
   }
 
-  private boolean noteIsExist(String noteId) {
+  private boolean noteIdIsExist(String noteId) {
     return noteId == null ? false : true;
   }
 
   public void restart(String settingId, String noteId) {
     InterpreterSetting setting = interpreterSettings.get(settingId);
-    if (noteIsExist(noteId)) {
+
+    if (noteIdIsExist(noteId)) {
       if (setting.getOption().isPerNoteProcess()) {
         setting.closeAndRemoveInterpreterGroup(noteId);
       } else if (setting.getOption().isPerNoteSession()) {
         InterpreterGroup interpreterGroup = setting.getInterpreterGroup(noteId);
         interpreterGroup.close(noteId);
         interpreterGroup.destroy(noteId);
+      } else {
+        restart(settingId);
       }
+    } else {
+      restart(settingId);
     }
-
-    restart(settingId);
   }
 
   public void restart(String id) {
