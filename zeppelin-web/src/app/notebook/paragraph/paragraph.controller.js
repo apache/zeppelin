@@ -950,6 +950,13 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
   };
 
   var setTable = function(data, refresh) {
+    data.rows.forEach(function(row, rowIndex, rowArray) {
+      row.forEach(function(ele, colIndex, colArray) {
+        if (!isNaN(ele)) {
+          colArray[colIndex] = ele.length === 0 ? ele : (Number(ele) === Number.NaN ? ele : Number(ele));
+        }
+      });
+    });
     var renderTable = function() {
       var height = $scope.paragraph.config.graph.height;
       var container = angular.element('#p' + $scope.paragraph.id + '_table').css('height', height).get(0);
