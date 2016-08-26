@@ -114,6 +114,7 @@ The following components are provided under Apache License.
     (Apache 2.0) Servlet API (org.mortbay.jetty:servlet-api:2.5-20081211 - https://en.wikipedia.org/wiki/Jetty_(web_server))
     (Apache 2.0) Google HTTP Client Library for Java (com.google.http-client:google-http-client-jackson2:1.21.0 - https://github.com/google/google-http-java-client/tree/dev/google-http-client-jackson2)
     (Apache 2.0) angular-esri-map (https://github.com/Esri/angular-esri-map)
+    (Apache 2.0) validation-api (javax.validation - http://beanvalidation.org/)
 
 ========================================================================
 MIT licenses
@@ -215,13 +216,10 @@ The following components are provided under the CDDL License.
     (CDDL 1.0) javax.activation (javax.activation:activation:jar:1.1.1 - http://java.sun.com/javase/technologies/desktop/javabeans/jaf/index.jsp)
     (CDDL 1.0) java.annotation (javax.annotation:javax.annotation-api:jar:1.2:compile - http://jcp.org/en/jsr/detail?id=250)
     (CDDL 1.1) jersey-core (org.glassfish.jersey.core:jersey-core:2.22.2 - https://jersey.java.net/)
+    (CDDL 1.0) javax.ws.rs-api (javax.ws.rs - https://jax-rs-spec.java.net/)
     (CDDL 1.1) jersey-client (org.glassfish.jersey.client:jersey-core:2.22.2 - https://jersey.java.net/)
     (CDDL 1.1) jersey-media (org.glassfish.jersey.media:jersey-core:2.22.2 - https://jersey.java.net/)
     (CDDL 1.1) hk2 (org.glassfish.hk2 - https://hk2.java.net/2.4.0-b34/)
-    (CDDL 2.0) javax.ws.rs-api (javax.ws.rs - https://jax-rs-spec.java.net/)
-    (CDDL 2.0) validation-api (javax.validation - http://beanvalidation.org/)
-    (CDDL 2.0) javax.annotation-api (javax.annotation - https://www.jcp.org/en/jsr/detail?id=250)
-
 
 
 ========================================================================
