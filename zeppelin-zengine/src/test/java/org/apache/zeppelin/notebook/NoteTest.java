@@ -83,27 +83,6 @@ public class NoteTest {
   }
 
   @Test
-  public void runJdbcTest() {
-    when(interpreterFactory.getInterpreter(anyString(), eq("mysql"))).thenReturn(null);
-    when(interpreterFactory.getInterpreter(anyString(), eq("jdbc"))).thenReturn(interpreter);
-    when(interpreter.getScheduler()).thenReturn(scheduler);
-
-    String pText = "%mysql show databases";
-
-    Note note = new Note(repo, interpreterFactory, jobListenerFactory, index, credentials, noteEventListener);
-    Paragraph p = note.addParagraph();
-    p.setText(pText);
-    note.run(p.getId());
-
-    ArgumentCaptor<Paragraph> pCaptor = ArgumentCaptor.forClass(Paragraph.class);
-    verify(scheduler, only()).submit(pCaptor.capture());
-    verify(interpreterFactory, times(2)).getInterpreter(anyString(), anyString());
-
-    assertEquals("Change paragraph text", "%jdbc(mysql) show databases", pCaptor.getValue().getEffectiveText());
-    assertEquals("Change paragraph text", pText, pCaptor.getValue().getText());
-  }
-
-  @Test
   public void putDefaultReplNameIfInterpreterSettingAbsent() {
     when(interpreterFactory.getDefaultInterpreterSetting(anyString()))
             .thenReturn(null);
