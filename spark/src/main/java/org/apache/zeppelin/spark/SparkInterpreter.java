@@ -594,7 +594,7 @@ public class SparkInterpreter extends Interpreter {
       argList.add("-Yrepl-class-based");
       argList.add("-Yrepl-outdir");
       argList.add(outputDir.getAbsolutePath());
-      if (conf.get("spark.jars") != null) {
+      if (conf.contains("spark.jars")) {
         String jars = StringUtils.join(conf.get("spark.jars").split(","), File.separator);
         argList.add("-classpath");
         argList.add(jars);
