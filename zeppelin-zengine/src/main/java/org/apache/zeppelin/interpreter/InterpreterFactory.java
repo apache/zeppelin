@@ -857,22 +857,19 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     return noteId == null ? false : true;
   }
 
+  private boolean isNotSharedInterpreter(InterpreterOption intpOption) {
+    return intpOption.isPerNoteSession() || intpOption.isConnectExistingProcess();
+  }
+
+
   public void restart(String settingId, String noteId) {
     InterpreterSetting setting = interpreterSettings.get(settingId);
 
-    if (noteIdIsExist(noteId)) {
-      if (setting.getOption().isPerNoteProcess()) {
-        setting.closeAndRemoveInterpreterGroup(noteId);
-      } else if (setting.getOption().isPerNoteSession()) {
-        InterpreterGroup interpreterGroup = setting.getInterpreterGroup(noteId);
-        interpreterGroup.close(noteId);
-        interpreterGroup.destroy(noteId);
-      } else {
-        restart(settingId);
-      }
-    } else {
-      restart(settingId);
+    if (noteIdIsExist(noteId) && isNotSharedInterpreter(setting.getOption())) {
+      removeInterpretersForNote(setting, noteId);
+      return;
     }
+    restart(settingId);
   }
 
   public void restart(String id) {

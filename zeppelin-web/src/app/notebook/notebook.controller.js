@@ -635,7 +635,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
       callback: function(result) {
         if (result) {
           var payload  = {
-            'noteId' : $scope.note.id
+            'noteId': $scope.note.id
           };
 
           $http.put(baseUrlSrv.getRestApiBase() + '/interpreter/setting/restart/' + interpeter.id, payload)
