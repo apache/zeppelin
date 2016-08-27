@@ -35,7 +35,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   name='python_interpreter.proto',
   package='',
   syntax='proto3',
-  serialized_pb=_b('\n\x18python_interpreter.proto\"%\n\x15\x43odeInterpreteRequest\x12\x0c\n\x04\x63ode\x18\x01 \x01(\t\"2\n\x10InterpetedResult\x12\x0e\n\x06output\x18\x01 \x01(\t\x12\x0e\n\x06status\x18\x02 \x01(\t\"(\n\x15\x43odeCompletionRequest\x12\x0f\n\x07\x63ontext\x18\x01 \x01(\t\"&\n\x0f\x43odeSuggestions\x12\x13\n\x0bsuggestions\x18\x01 \x03(\t\"%\n\x11ProgressIndicator\x12\x10\n\x08progress\x18\x01 \x01(\x05\"\x06\n\x04Void2\xc7\x01\n\x11PythonInterpreter\x12\x37\n\nInterprete\x12\x16.CodeInterpreteRequest\x1a\x11.InterpetedResult\x12\x38\n\x0c\x41utoComplete\x12\x16.CodeCompletionRequest\x1a\x10.CodeSuggestions\x12%\n\x08Progress\x12\x05.Void\x1a\x12.ProgressIndicator\x12\x18\n\x08Shutdown\x12\x05.Void\x1a\x05.VoidB!\n\x1forg.apache.zeppelin.python2.rpcb\x06proto3')
+  serialized_pb=_b('\n\x18python_interpreter.proto\"5\n\x15\x43odeInterpreteRequest\x12\x0c\n\x04\x63ode\x18\x01 \x01(\t\x12\x0e\n\x06noteId\x18\x02 \x01(\t\"2\n\x10InterpetedResult\x12\x0e\n\x06output\x18\x01 \x01(\t\x12\x0e\n\x06status\x18\x02 \x01(\t\"(\n\x15\x43odeCompletionRequest\x12\x0f\n\x07\x63ontext\x18\x01 \x01(\t\"&\n\x0f\x43odeSuggestions\x12\x13\n\x0bsuggestions\x18\x01 \x03(\t\"%\n\x11ProgressIndicator\x12\x10\n\x08progress\x18\x01 \x01(\x05\"\x06\n\x04Void2\xc7\x01\n\x11PythonInterpreter\x12\x37\n\nInterprete\x12\x16.CodeInterpreteRequest\x1a\x11.InterpetedResult\x12\x38\n\x0c\x41utoComplete\x12\x16.CodeCompletionRequest\x1a\x10.CodeSuggestions\x12%\n\x08Progress\x12\x05.Void\x1a\x12.ProgressIndicator\x12\x18\n\x08Shutdown\x12\x05.Void\x1a\x05.VoidB!\n\x1forg.apache.zeppelin.python2.rpcb\x06proto3')
 )
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
@@ -56,6 +56,13 @@ _CODEINTERPRETEREQUEST = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
+    _descriptor.FieldDescriptor(
+      name='noteId', full_name='CodeInterpreteRequest.noteId', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
   ],
   extensions=[
   ],
@@ -69,7 +76,7 @@ _CODEINTERPRETEREQUEST = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=28,
-  serialized_end=65,
+  serialized_end=81,
 )
 
 
@@ -106,8 +113,8 @@ _INTERPETEDRESULT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=67,
-  serialized_end=117,
+  serialized_start=83,
+  serialized_end=133,
 )
 
 
@@ -137,8 +144,8 @@ _CODECOMPLETIONREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=119,
-  serialized_end=159,
+  serialized_start=135,
+  serialized_end=175,
 )
 
 
@@ -168,8 +175,8 @@ _CODESUGGESTIONS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=161,
-  serialized_end=199,
+  serialized_start=177,
+  serialized_end=215,
 )
 
 
@@ -199,8 +206,8 @@ _PROGRESSINDICATOR = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=201,
-  serialized_end=238,
+  serialized_start=217,
+  serialized_end=254,
 )
 
 
@@ -223,8 +230,8 @@ _VOID = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=240,
-  serialized_end=246,
+  serialized_start=256,
+  serialized_end=262,
 )
 
 DESCRIPTOR.message_types_by_name['CodeInterpreteRequest'] = _CODEINTERPRETEREQUEST

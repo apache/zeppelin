@@ -28,6 +28,7 @@ from cStringIO import StringIO #TODO python3 compatibility! i.e `import io`
 import python_interpreter_pb2
 
 _ONE_DAY_IN_SECONDS = 60 * 60 * 24
+_NOTE_GLOBALS = "{}_globals"
 
 def help():
     print("""%html
@@ -123,7 +124,7 @@ class PythonInterpreterServicer(python_interpreter_pb2.BetaPythonInterpreterServ
   def __init__(self):
     pass
 
-  def do_exec(self, code):
+  def do_exec(self, code, note_id):
     """Executes give python string in same environment
 
     Uses exec() to run the code. In order to report the
@@ -133,7 +134,7 @@ class PythonInterpreterServicer(python_interpreter_pb2.BetaPythonInterpreterServ
       code: string of Python code
 
     Returns:
-        String that is stdout, a side-effecto for the executed code
+        String that is stdout, a side-effect for the executed code
 
     Rises:
         InterpreterError: an error with specific line number
@@ -142,8 +143,10 @@ class PythonInterpreterServicer(python_interpreter_pb2.BetaPythonInterpreterServ
     #TODO python3 compatibility! i.e io.BytesIO()
     redirected_output = sys.stdout = StringIO()
     try:
-      #compile()?
-      exec(code, globals(), locals())
+      #compile(code)?
+      gdict = _get_globals_or_default(note_id)
+      exec(code, gdict, gdict)
+      globals()[_NOTE_GLOBALS.format(note_id)] = gdict
       #execfile()?
       sys.stdout = old_stdout
     except SyntaxError as err:
@@ -162,11 +165,13 @@ class PythonInterpreterServicer(python_interpreter_pb2.BetaPythonInterpreterServ
     print("{} at line {}: {}".format(error_class, line_number, details))
     raise InterpreterError(error_class, line_number, details)
 
-  def Interprete(self, code_interprete_request, context): #CodeInterpreteRequest
-    print("Got \n```\n{}\n```\nto execute".format(code_interprete_request.code))
+  def Interprete(self, request, context): #CodeInterpreteRequest
+    print("Got \n```\n{}\n```\nfrom noteID '{}'".format(request.code, request.noteId))
     out = ""
     try:
-      out = self.do_exec(code_interprete_request.code);
+      #_debug_print_note_locals_globals("Before", request.noteId)
+      out = self.do_exec(request.code, request.noteId);
+      #_debug_print_note_locals_globals("After", request.noteId)
     except InterpreterError as e:
       out = "{} at line {}:\n{}".format(e.error_class, e.line_number, e.details)
       return python_interpreter_pb2.InterpetedResult(output=out, status="fail")
@@ -179,6 +184,14 @@ class PythonInterpreterServicer(python_interpreter_pb2.BetaPythonInterpreterServ
     print("Shuting down Python process")
     #TODO(bzz): make main exit i.e \w signal.SIGINT
     #return python_interpreter_pb2.Void()
+
+def _get_globals_or_default(note_id, default={}):
+  key = _NOTE_GLOBALS.format(note_id)
+  return globals()[key] if key in globals() else default
+
+def _debug_print_note_locals_globals(when, note_id):
+  print("{} globals() {}: {}".format(note_id, when, _get_globals_or_default(note_id)))
+
 
 def main():
   parser = argparse.ArgumentParser(

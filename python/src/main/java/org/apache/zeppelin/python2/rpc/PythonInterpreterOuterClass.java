@@ -38,6 +38,16 @@ public final class PythonInterpreterOuterClass {
      */
     com.google.protobuf.ByteString
         getCodeBytes();
+
+    /**
+     * <code>optional string noteId = 2;</code>
+     */
+    java.lang.String getNoteId();
+    /**
+     * <code>optional string noteId = 2;</code>
+     */
+    com.google.protobuf.ByteString
+        getNoteIdBytes();
   }
   /**
    * Protobuf type {@code CodeInterpreteRequest}
@@ -52,6 +62,7 @@ public final class PythonInterpreterOuterClass {
     }
     private CodeInterpreteRequest() {
       code_ = "";
+      noteId_ = "";
     }
 
     @java.lang.Override
@@ -82,6 +93,12 @@ public final class PythonInterpreterOuterClass {
               String s = input.readStringRequireUtf8();
 
               code_ = s;
+              break;
+            }
+            case 18: {
+              String s = input.readStringRequireUtf8();
+
+              noteId_ = s;
               break;
             }
           }
@@ -142,6 +159,40 @@ public final class PythonInterpreterOuterClass {
       }
     }
 
+    public static final int NOTEID_FIELD_NUMBER = 2;
+    private volatile java.lang.Object noteId_;
+    /**
+     * <code>optional string noteId = 2;</code>
+     */
+    public java.lang.String getNoteId() {
+      java.lang.Object ref = noteId_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        noteId_ = s;
+        return s;
+      }
+    }
+    /**
+     * <code>optional string noteId = 2;</code>
+     */
+    public com.google.protobuf.ByteString
+        getNoteIdBytes() {
+      java.lang.Object ref = noteId_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        noteId_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
@@ -157,6 +208,9 @@ public final class PythonInterpreterOuterClass {
       if (!getCodeBytes().isEmpty()) {
         com.google.protobuf.GeneratedMessage.writeString(output, 1, code_);
       }
+      if (!getNoteIdBytes().isEmpty()) {
+        com.google.protobuf.GeneratedMessage.writeString(output, 2, noteId_);
+      }
     }
 
     public int getSerializedSize() {
@@ -166,6 +220,9 @@ public final class PythonInterpreterOuterClass {
       size = 0;
       if (!getCodeBytes().isEmpty()) {
         size += com.google.protobuf.GeneratedMessage.computeStringSize(1, code_);
+      }
+      if (!getNoteIdBytes().isEmpty()) {
+        size += com.google.protobuf.GeneratedMessage.computeStringSize(2, noteId_);
       }
       memoizedSize = size;
       return size;
@@ -280,6 +337,8 @@ public final class PythonInterpreterOuterClass {
         super.clear();
         code_ = "";
 
+        noteId_ = "";
+
         return this;
       }
 
@@ -303,6 +362,7 @@ public final class PythonInterpreterOuterClass {
       public org.apache.zeppelin.python2.rpc.PythonInterpreterOuterClass.CodeInterpreteRequest buildPartial() {
         org.apache.zeppelin.python2.rpc.PythonInterpreterOuterClass.CodeInterpreteRequest result = new org.apache.zeppelin.python2.rpc.PythonInterpreterOuterClass.CodeInterpreteRequest(this);
         result.code_ = code_;
+        result.noteId_ = noteId_;
         onBuilt();
         return result;
       }
@@ -320,6 +380,10 @@ public final class PythonInterpreterOuterClass {
         if (other == org.apache.zeppelin.python2.rpc.PythonInterpreterOuterClass.CodeInterpreteRequest.getDefaultInstance()) return this;
         if (!other.getCode().isEmpty()) {
           code_ = other.code_;
+          onChanged();
+        }
+        if (!other.getNoteId().isEmpty()) {
+          noteId_ = other.noteId_;
           onChanged();
         }
         onChanged();
@@ -416,6 +480,75 @@ public final class PythonInterpreterOuterClass {
         onChanged();
         return this;
       }
+
+      private java.lang.Object noteId_ = "";
+      /**
+       * <code>optional string noteId = 2;</code>
+       */
+      public java.lang.String getNoteId() {
+        java.lang.Object ref = noteId_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          noteId_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string noteId = 2;</code>
+       */
+      public com.google.protobuf.ByteString
+          getNoteIdBytes() {
+        java.lang.Object ref = noteId_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          noteId_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string noteId = 2;</code>
+       */
+      public Builder setNoteId(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  
+        noteId_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string noteId = 2;</code>
+       */
+      public Builder clearNoteId() {
+        
+        noteId_ = getDefaultInstance().getNoteId();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string noteId = 2;</code>
+       */
+      public Builder setNoteIdBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  checkByteStringIsUtf8(value);
+        
+        noteId_ = value;
+        onChanged();
+        return this;
+      }
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return this;
@@ -492,7 +625,7 @@ public final class PythonInterpreterOuterClass {
      * <code>optional string status = 2;</code>
      *
      * <pre>
-     *should be enum
+     *TODO(bzz) replace &#92;w enum
      * </pre>
      */
     java.lang.String getStatus();
@@ -500,7 +633,7 @@ public final class PythonInterpreterOuterClass {
      * <code>optional string status = 2;</code>
      *
      * <pre>
-     *should be enum
+     *TODO(bzz) replace &#92;w enum
      * </pre>
      */
     com.google.protobuf.ByteString
@@ -622,7 +755,7 @@ public final class PythonInterpreterOuterClass {
      * <code>optional string status = 2;</code>
      *
      * <pre>
-     *should be enum
+     *TODO(bzz) replace &#92;w enum
      * </pre>
      */
     public java.lang.String getStatus() {
@@ -641,7 +774,7 @@ public final class PythonInterpreterOuterClass {
      * <code>optional string status = 2;</code>
      *
      * <pre>
-     *should be enum
+     *TODO(bzz) replace &#92;w enum
      * </pre>
      */
     public com.google.protobuf.ByteString
@@ -951,7 +1084,7 @@ public final class PythonInterpreterOuterClass {
        * <code>optional string status = 2;</code>
        *
        * <pre>
-       *should be enum
+       *TODO(bzz) replace &#92;w enum
        * </pre>
        */
       public java.lang.String getStatus() {
@@ -970,7 +1103,7 @@ public final class PythonInterpreterOuterClass {
        * <code>optional string status = 2;</code>
        *
        * <pre>
-       *should be enum
+       *TODO(bzz) replace &#92;w enum
        * </pre>
        */
       public com.google.protobuf.ByteString
@@ -990,7 +1123,7 @@ public final class PythonInterpreterOuterClass {
        * <code>optional string status = 2;</code>
        *
        * <pre>
-       *should be enum
+       *TODO(bzz) replace &#92;w enum
        * </pre>
        */
       public Builder setStatus(
@@ -1007,7 +1140,7 @@ public final class PythonInterpreterOuterClass {
        * <code>optional string status = 2;</code>
        *
        * <pre>
-       *should be enum
+       *TODO(bzz) replace &#92;w enum
        * </pre>
        */
       public Builder clearStatus() {
@@ -1020,7 +1153,7 @@ public final class PythonInterpreterOuterClass {
        * <code>optional string status = 2;</code>
        *
        * <pre>
-       *should be enum
+       *TODO(bzz) replace &#92;w enum
        * </pre>
        */
       public Builder setStatusBytes(
@@ -2771,19 +2904,19 @@ public final class PythonInterpreterOuterClass {
       descriptor;
   static {
     java.lang.String[] descriptorData = {
-      "\n\030python_interpreter.proto\"%\n\025CodeInterp" +
-      "reteRequest\022\014\n\004code\030\001 \001(\t\"2\n\020InterpetedR" +
-      "esult\022\016\n\006output\030\001 \001(\t\022\016\n\006status\030\002 \001(\t\"(\n" +
-      "\025CodeCompletionRequest\022\017\n\007context\030\001 \001(\t\"" +
-      "&\n\017CodeSuggestions\022\023\n\013suggestions\030\001 \003(\t\"" +
-      "%\n\021ProgressIndicator\022\020\n\010progress\030\001 \001(\005\"\006" +
-      "\n\004Void2\307\001\n\021PythonInterpreter\0227\n\nInterpre" +
-      "te\022\026.CodeInterpreteRequest\032\021.InterpetedR" +
-      "esult\0228\n\014AutoComplete\022\026.CodeCompletionRe" +
-      "quest\032\020.CodeSuggestions\022%\n\010Progress\022\005.Vo",
-      "id\032\022.ProgressIndicator\022\030\n\010Shutdown\022\005.Voi" +
-      "d\032\005.VoidB!\n\037org.apache.zeppelin.python2." +
-      "rpcb\006proto3"
+      "\n\030python_interpreter.proto\"5\n\025CodeInterp" +
+      "reteRequest\022\014\n\004code\030\001 \001(\t\022\016\n\006noteId\030\002 \001(" +
+      "\t\"2\n\020InterpetedResult\022\016\n\006output\030\001 \001(\t\022\016\n" +
+      "\006status\030\002 \001(\t\"(\n\025CodeCompletionRequest\022\017" +
+      "\n\007context\030\001 \001(\t\"&\n\017CodeSuggestions\022\023\n\013su" +
+      "ggestions\030\001 \003(\t\"%\n\021ProgressIndicator\022\020\n\010" +
+      "progress\030\001 \001(\005\"\006\n\004Void2\307\001\n\021PythonInterpr" +
+      "eter\0227\n\nInterprete\022\026.CodeInterpreteReque" +
+      "st\032\021.InterpetedResult\0228\n\014AutoComplete\022\026." +
+      "CodeCompletionRequest\032\020.CodeSuggestions\022",
+      "%\n\010Progress\022\005.Void\032\022.ProgressIndicator\022\030" +
+      "\n\010Shutdown\022\005.Void\032\005.VoidB!\n\037org.apache.z" +
+      "eppelin.python2.rpcb\006proto3"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -2802,7 +2935,7 @@ public final class PythonInterpreterOuterClass {
     internal_static_CodeInterpreteRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_CodeInterpreteRequest_descriptor,
-        new java.lang.String[] { "Code", });
+        new java.lang.String[] { "Code", "NoteId", });
     internal_static_InterpetedResult_descriptor =
       getDescriptor().getMessageTypes().get(1);
     internal_static_InterpetedResult_fieldAccessorTable = new

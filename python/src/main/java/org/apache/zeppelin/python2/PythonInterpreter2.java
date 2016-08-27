@@ -97,7 +97,8 @@ public class PythonInterpreter2 extends Interpreter {
     if (cmd == null || cmd.isEmpty()) {
       return new InterpreterResult(Code.SUCCESS, "");
     }
-    return sendCommandToPython(cmd);
+    String noteId = contextInterpreter.getNoteId();
+    return sendCommandToPython(cmd, noteId);
   }
 
   @Override
@@ -131,13 +132,16 @@ public class PythonInterpreter2 extends Interpreter {
   /**
    * Sends given text to Python interpreter
    *
+   * @param noteId id of the notebook, to separate contexts: variables, definitions, etc
    * @param cmd Python expression text
    * @return output
    */
-  InterpreterResult sendCommandToPython(String code) {
+  InterpreterResult sendCommandToPython(String code, String noteId) {
     LOG.debug("Sending : \n" + (code.length() > 200 ? code.substring(0, 200) + "..." : code));
-    CodeInterpreteRequest cmd = CodeInterpreteRequest.newBuilder().setCode((code)).build();
-
+    CodeInterpreteRequest cmd = CodeInterpreteRequest.newBuilder()
+        .setCode(code)
+        .setNoteId(noteId) //pass same 'noteId', for 'shared' interpreter context for all notes
+        .build();
     InterpetedResult fromPythonProcess;
     try {
       fromPythonProcess = blockingStub.interprete(cmd);

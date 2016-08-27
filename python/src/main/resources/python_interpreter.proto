@@ -40,6 +40,7 @@ service PythonInterpreter {
 
 message CodeInterpreteRequest {
   string code = 1;
+  string noteId = 2;
 }
 
 message InterpetedResult {
