@@ -48,6 +48,7 @@ import org.apache.spark.ui.jobs.JobProgressListener;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
+import org.apache.zeppelin.interpreter.InterpreterProperty;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.InterpreterUtils;
@@ -444,10 +445,11 @@ public class SparkInterpreter extends Interpreter {
   }
 
   private void setupConfForPySpark(SparkConf conf) {
-    String pysparkBasePath = getSystemDefault("SPARK_HOME", null, null);
+    String pysparkBasePath = new InterpreterProperty("SPARK_HOME", null, null, null).getValue();
     File pysparkPath;
     if (null == pysparkBasePath) {
-      pysparkBasePath = getSystemDefault("ZEPPELIN_HOME", "zeppelin.home", "../");
+      pysparkBasePath =
+              new InterpreterProperty("ZEPPELIN_HOME", "zeppelin.home", "../", null).getValue();
       pysparkPath = new File(pysparkBasePath,
           "interpreter" + File.separator + "spark" + File.separator + "pyspark");
     } else {
@@ -495,27 +497,6 @@ public class SparkInterpreter extends Interpreter {
 
   private boolean useSparkSubmit() {
     return null != System.getenv("SPARK_SUBMIT");
-  }
-
-  public static String getSystemDefault(
-      String envName,
-      String propertyName,
-      String defaultValue) {
-
-    if (envName != null && !envName.isEmpty()) {
-      String envValue = System.getenv().get(envName);
-      if (envValue != null) {
-        return envValue;
-      }
-    }
-
-    if (propertyName != null && !propertyName.isEmpty()) {
-      String propValue = System.getProperty(propertyName);
-      if (propValue != null) {
-        return propValue;
-      }
-    }
-    return defaultValue;
   }
 
   public boolean printREPLOutput() {
