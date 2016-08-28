@@ -33,6 +33,7 @@ import org.slf4j.LoggerFactory;
 import org.sonatype.aether.RepositoryException;
 import org.sonatype.aether.artifact.Artifact;
 import org.sonatype.aether.collection.CollectRequest;
+import org.sonatype.aether.collection.DependencyCollectionException;
 import org.sonatype.aether.graph.Dependency;
 import org.sonatype.aether.graph.DependencyFilter;
 import org.sonatype.aether.repository.RemoteRepository;
@@ -158,15 +159,14 @@ public class DependencyResolver extends AbstractDependencyResolver {
    */
   @Override
   public List<ArtifactResult> getArtifactsWithDep(String dependency,
-      Collection<String> excludes) throws RepositoryException {
+    Collection<String> excludes) throws RepositoryException {
     Artifact artifact = new DefaultArtifact(dependency);
     DependencyFilter classpathFilter = DependencyFilterUtils.classpathFilter(JavaScopes.COMPILE);
     PatternExclusionsDependencyFilter exclusionFilter =
-        new PatternExclusionsDependencyFilter(excludes);
+            new PatternExclusionsDependencyFilter(excludes);
 
     CollectRequest collectRequest = new CollectRequest();
-    final Dependency rootDependency = new Dependency(artifact, JavaScopes.COMPILE);
-    collectRequest.setRoot(rootDependency);
+    collectRequest.setRoot(new Dependency(artifact, JavaScopes.COMPILE));
 
     synchronized (repos) {
       for (RemoteRepository repo : repos) {
@@ -174,8 +174,11 @@ public class DependencyResolver extends AbstractDependencyResolver {
       }
     }
     DependencyRequest dependencyRequest = new DependencyRequest(collectRequest,
-        DependencyFilterUtils.andFilter(exclusionFilter, classpathFilter));
-    dependencyRequest.setRoot(new DefaultDependencyNode(rootDependency));
-    return system.resolveDependencies(session, dependencyRequest).getArtifactResults();
+            DependencyFilterUtils.andFilter(exclusionFilter, classpathFilter));
+    try {
+      return system.resolveDependencies(session, dependencyRequest).getArtifactResults();
+    } catch (NullPointerException ex) {
+      throw new RepositoryException(String.format("Cannot fetch dependencies for %s", dependency));
+    }
   }
 }
