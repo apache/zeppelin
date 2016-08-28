@@ -70,6 +70,14 @@ public class InterpreterProperty {
     this.description = description;
   }
 
+  public int hashCode() {
+    return this.toString().hashCode();
+  }
+
+  public boolean equals(Object o) {
+    return this.toString().equals(o.toString());
+  }
+
   public String getValue() {
     //TODO(jongyoul): Remove SparkInterpreter's getSystemDefault method
     if (envName != null && !envName.isEmpty()) {
@@ -90,7 +98,7 @@ public class InterpreterProperty {
 
   @Override
   public String toString() {
-    return String.format("{envName=%s, propertyName=%s, defaultValue=%s, description=%20s", envName,
-        propertyName, defaultValue, description);
+    return String.format("{envName=%s, propertyName=%s, defaultValue=%s, description=%20s}",
+            envName, propertyName, defaultValue, description);
   }
 }
