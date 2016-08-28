@@ -33,12 +33,9 @@ limitations under the License.
            as-sortable="interpreterSelectionListeners" data-ng-model="interpreterBindings">
         <div data-ng-repeat="item in interpreterBindings" as-sortable-item>
           <div>
-            <a class="btn btn-info btn-md"
-               ng-click="restartInterpreter(item)"
-               ng-show="item.selected"
-               tooltip="Restart">
+            <a ng-click="restartInterpreter(item)" ng-show="item.selected" tooltip="Restart">
               <span class="glyphicon glyphicon-refresh btn-md"></span>
-            </a>
+            </a>&nbsp
             <div as-sortable-item-handle
                  ng-click="item.selected = !item.selected"
                  class="btn"
