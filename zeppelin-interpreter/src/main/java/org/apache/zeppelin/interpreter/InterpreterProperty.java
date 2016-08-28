@@ -71,7 +71,6 @@ public class InterpreterProperty {
   }
 
   public String getValue() {
-    //TODO(jongyoul): Remove SparkInterpreter's getSystemDefault method
     if (envName != null && !envName.isEmpty()) {
       String envValue = System.getenv().get(envName);
       if (envValue != null) {
