@@ -280,7 +280,9 @@ public class RemoteInterpreterServer
   @Override
   public RemoteInterpreterResult interpret(String noteId, String className, String st,
       RemoteInterpreterContext interpreterContext) throws TException {
-    logger.debug("st: {}", st);
+    if (logger.isDebugEnabled()) {
+      logger.debug("st:\n{}", st);
+    }
     Interpreter intp = getInterpreter(noteId, className);
     InterpreterContext context = convert(interpreterContext);
 
