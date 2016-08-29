@@ -31,11 +31,13 @@
   <packaging>jar</packaging>
   <version>0.7.0-SNAPSHOT</version>
   <name>Zeppelin: Python interpreter</name>
-  <url>http://zeppelin.apache.org</url>
 
   <properties>
     <py4j.version>0.9.2</py4j.version>
-    <python.test.exclude>**/PythonInterpreterWithPythonInstalledTest.java</python.test.exclude>
+    <python.test.exclude>
+        **/PythonInterpreterWithPythonInstalledTest.java,
+        **/PythonInterpreterPandasSqlTest.java
+    </python.test.exclude>
   </properties>
 
   <dependencies>

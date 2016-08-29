@@ -4,7 +4,6 @@ describe('Controller: ParagraphCtrl', function() {
 
   beforeEach(module('zeppelinWebApp'));
 
-  var ParagraphCtrl;
   var scope;
   var websocketMsgSrvMock = {};
   var paragraphMock = {
@@ -22,7 +21,7 @@ describe('Controller: ParagraphCtrl', function() {
     scope = $rootScope.$new();
     $rootScope.notebookScope = $rootScope.$new(true, $rootScope);
 
-    ParagraphCtrl = $controller('ParagraphCtrl', {
+    $controller('ParagraphCtrl', {
       $scope: scope,
       websocketMsgSrv: websocketMsgSrvMock,
       $element: {},
@@ -40,7 +39,7 @@ describe('Controller: ParagraphCtrl', function() {
     'getResultType', 'loadTableData', 'setGraphMode', 'isGraphMode', 'onGraphOptionChange',
     'removeGraphOptionKeys', 'removeGraphOptionValues', 'removeGraphOptionGroups', 'setGraphOptionValueAggr',
     'removeScatterOptionXaxis', 'removeScatterOptionYaxis', 'removeScatterOptionGroup',
-    'removeScatterOptionSize'];
+    'removeScatterOptionSize', 'removeMapOptionLat', 'removeMapOptionLng', 'removeMapOptionPinInfo'];
 
   functions.forEach(function(fn) {
     it('check for scope functions to be defined : ' + fn, function() {

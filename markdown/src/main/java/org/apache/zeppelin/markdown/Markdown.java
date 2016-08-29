@@ -40,10 +40,6 @@ public class Markdown extends Interpreter {
   private Markdown4jProcessor md;
   static final Logger LOGGER = LoggerFactory.getLogger(Markdown.class);
 
-  static {
-    Interpreter.register("md", Markdown.class.getName());
-  }
-
   public Markdown(Properties property) {
     super(property);
   }

@@ -45,15 +45,15 @@ limitations under the License.
         <li class="nav-component" ng-if="ticket">
         <!--TODO(bzz): move to Typeahead https://angular-ui.github.io/bootstrap  -->
 
-          <form role="search" data-ng-model="searchForm"
+          <form role="search" data-ng-model="navbar.searchForm"
             style="display: inline-block; margin: 0px"
              class="navbar-form"
-             ng-submit="search(searchForm.searchTerm)">
+             ng-submit="navbar.search(navbar.searchForm.searchTerm)">
             <div class="input-group">
               <input
                 type="text"
                 style="min-width:200px;"
-                ng-model="searchForm.searchTerm"
+                ng-model="navbar.searchForm.searchTerm"
                 id="searchTermId"
                 ng-disabled="!navbar.connected"
                 class="form-control"
@@ -63,7 +63,7 @@ limitations under the License.
                 <button
                   type="submit"
                   class="btn btn-default"
-                  ng-disabled="!navbar.connected || !searchForm.searchTerm"
+                  ng-disabled="!navbar.connected || !navbar.searchForm.searchTerm"
                 >
                   <i class="glyphicon glyphicon-search"></i>
                 </button>
@@ -71,15 +71,13 @@ limitations under the License.
             </div>
           </form>
         </li>
-        <li class="nav-component">
-          <i ng-if="navbar.connected" class="fa fa-circle server-connected"
-             tooltip="WebSocket Connected" tooltip-placement="bottom"></i>
-          <i ng-if="!navbar.connected" class="fa fa-circle server-disconnected"
-             tooltip="WebSocket Disconnected" tooltip-placement="bottom"></i>
-        </li>
-        <li>
+        <li style="margin-left: 10px;">
           <div class="dropdown">
-            <button ng-if="ticket" class="nav-btn dropdown-toggle" type="button" data-toggle="dropdown" style="margin:11px 5px 0 0;">
+            <i ng-if="navbar.connected" class="fa fa-circle server-connected"
+               tooltip="WebSocket Connected" tooltip-placement="bottom" style="margin-top: 7px; margin-right: 0px; vertical-align: top"></i>
+            <i ng-if="!navbar.connected" class="fa fa-circle server-disconnected"
+               tooltip="WebSocket Disconnected" tooltip-placement="bottom" style="margin-top: 7px; vertical-align: top"></i>
+            <button ng-if="ticket" class="nav-btn dropdown-toggle" type="button" data-toggle="dropdown" style="margin:11px 5px 0 0; padding-left: 0px;">
               <span class="username">{{ticket.principal}}</span>
               <span class="caret" style="margin-bottom: 8px"></span>
             </button>
@@ -91,13 +89,13 @@ limitations under the License.
               <li><a href="#/credential">Credential</a></li>
               <li><a href="#/configuration">Configuration</a></li>
               <li ng-if="ticket.principal && ticket.principal !== 'anonymous'" role="separator" style="margin: 5px 0;" class="divider"></li>
-              <li ng-if="ticket.principal && ticket.principal !== 'anonymous'"><a ng-click="logout()">Logout</a></li>
+              <li ng-if="ticket.principal && ticket.principal !== 'anonymous'"><a ng-click="navbar.logout()">Logout</a></li>
             </ul>
           </div>
         </li>
         <li class="nav-component" ng-if="!ticket">
           <button class="btn nav-login-btn" data-toggle="modal" data-target="#loginModal"
-                  ng-click="showLoginWindow()">Login
+                  ng-click="navbar.showLoginWindow()">Login
           </button>
         </li>
       </ul>

@@ -21,6 +21,7 @@ import static org.apache.zeppelin.spark.ZeppelinRDisplay.render;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.spark.SparkContext;
 import org.apache.spark.SparkRBackend;
 import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
@@ -70,11 +71,16 @@ public class SparkRInterpreter extends Interpreter {
     int port = SparkRBackend.port();
 
     SparkInterpreter sparkInterpreter = getSparkInterpreter();
-    ZeppelinRContext.setSparkContext(sparkInterpreter.getSparkContext());
+    SparkContext sc = sparkInterpreter.getSparkContext();
+    SparkVersion sparkVersion = new SparkVersion(sc.version());
+    ZeppelinRContext.setSparkContext(sc);
+    if (Utils.isSpark2()) {
+      ZeppelinRContext.setSparkSession(sparkInterpreter.getSparkSession());
+    }
     ZeppelinRContext.setSqlContext(sparkInterpreter.getSQLContext());
     ZeppelinRContext.setZepplinContext(sparkInterpreter.getZeppelinContext());
 
-    zeppelinR = new ZeppelinR(rCmdPath, sparkRLibPath, port);
+    zeppelinR = new ZeppelinR(rCmdPath, sparkRLibPath, port, sparkVersion);
     try {
       zeppelinR.open();
     } catch (IOException e) {

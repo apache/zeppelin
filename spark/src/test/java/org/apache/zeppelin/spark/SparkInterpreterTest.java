@@ -22,14 +22,15 @@ import static org.junit.Assert.*;
 import java.io.File;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Properties;
 
-import org.apache.spark.HttpServer;
-import org.apache.spark.SecurityManager;
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
 import org.apache.zeppelin.display.AngularObjectRegistry;
+import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.resource.LocalResourcePool;
+import org.apache.zeppelin.resource.WellKnownResourceName;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.interpreter.*;
@@ -139,6 +140,7 @@ public class SparkInterpreterTest {
     assertEquals(InterpreterResult.Code.INCOMPLETE, incomplete.code());
     assertTrue(incomplete.message().length() > 0); // expecting some error
                                                    // message
+
     /*
      * assertEquals(1, repl.getValue("a")); assertEquals(2, repl.getValue("b"));
      * repl.interpret("val ver = sc.version");
@@ -175,6 +177,24 @@ public class SparkInterpreterTest {
   }
 
   @Test
+  public void testCreateDataFrame() {
+    repl.interpret("case class Person(name:String, age:Int)\n", context);
+    repl.interpret("val people = sc.parallelize(Seq(Person(\"moon\", 33), Person(\"jobs\", 51), Person(\"gates\", 51), Person(\"park\", 34)))\n", context);
+    repl.interpret("people.toDF.count", context);
+    assertEquals(new Long(4), context.getResourcePool().get(
+        context.getNoteId(),
+        context.getParagraphId(),
+        WellKnownResourceName.ZeppelinReplResult.toString()).get());
+  }
+
+  @Test
+  public void testZShow() {
+    repl.interpret("case class Person(name:String, age:Int)\n", context);
+    repl.interpret("val people = sc.parallelize(Seq(Person(\"moon\", 33), Person(\"jobs\", 51), Person(\"gates\", 51), Person(\"park\", 34)))\n", context);
+    assertEquals(Code.SUCCESS, repl.interpret("z.show(people.toDF)", context).code());
+  }
+
+  @Test
   public void testSparkSql(){
     repl.interpret("case class Person(name:String, age:Int)\n", context);
     repl.interpret("val people = sc.parallelize(Seq(Person(\"moon\", 33), Person(\"jobs\", 51), Person(\"gates\", 51), Person(\"park\", 34)))\n", context);
@@ -182,15 +202,15 @@ public class SparkInterpreterTest {
 
 
     if (getSparkVersionNumber() <= 11) { // spark 1.2 or later does not allow create multiple SparkContext in the same jvm by default.
-    // create new interpreter
-    Properties p = new Properties();
-    SparkInterpreter repl2 = new SparkInterpreter(p);
-    repl2.open();
+      // create new interpreter
+      Properties p = new Properties();
+      SparkInterpreter repl2 = new SparkInterpreter(p);
+      repl2.open();
 
-    repl.interpret("case class Man(name:String, age:Int)", context);
-    repl.interpret("val man = sc.parallelize(Seq(Man(\"moon\", 33), Man(\"jobs\", 51), Man(\"gates\", 51), Man(\"park\", 34)))", context);
-    assertEquals(Code.SUCCESS, repl.interpret("man.take(3)", context).code());
-    repl2.getSparkContext().stop();
+      repl.interpret("case class Man(name:String, age:Int)", context);
+      repl.interpret("val man = sc.parallelize(Seq(Man(\"moon\", 33), Man(\"jobs\", 51), Man(\"gates\", 51), Man(\"park\", 34)))", context);
+      assertEquals(Code.SUCCESS, repl.interpret("man.take(3)", context).code());
+      repl2.getSparkContext().stop();
     }
   }
 
@@ -260,5 +280,11 @@ public class SparkInterpreterTest {
     String ddl = "val df = Seq((1, true), (2, false)).toDF(\"num\", \"bool\")";
     assertEquals(Code.ERROR, repl2.interpret(ddl, context).code());
     repl2.close();
+  }
+
+  @Test
+  public void testCompletion() {
+    List<InterpreterCompletion> completions = repl.completion("sc.", "sc.".length());
+    assertTrue(completions.size() > 0);
   }
 }

@@ -48,8 +48,6 @@ import org.apache.spark.sql.SQLContext;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
-import org.apache.zeppelin.interpreter.InterpreterGroup;
-import org.apache.zeppelin.interpreter.InterpreterPropertyBuilder;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.LazyOpenInterpreter;
@@ -77,6 +75,7 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
   private ByteArrayOutputStream input;
   private String scriptPath;
   boolean pythonscriptRunning = false;
+  private static final int MAX_TIMEOUT_SEC = 10;
 
   public PySparkInterpreter(Properties property) {
     super(property);
@@ -181,7 +180,7 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
     cmd.addArgument(Integer.toString(port), false);
     cmd.addArgument(Integer.toString(getSparkInterpreter().getSparkVersion().toNumber()), false);
     executor = new DefaultExecutor();
-    outputStream = new SparkOutputStream();
+    outputStream = new SparkOutputStream(logger);
     PipedOutputStream ps = new PipedOutputStream();
     in = null;
     try {
@@ -318,7 +317,7 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
       long startTime = System.currentTimeMillis();
       while (pythonScriptInitialized == false
           && pythonscriptRunning
-          && System.currentTimeMillis() - startTime < 10 * 1000) {
+          && System.currentTimeMillis() - startTime < MAX_TIMEOUT_SEC * 1000) {
         try {
           pythonScriptInitializeNotifier.wait(1000);
         } catch (InterruptedException e) {
@@ -425,8 +424,15 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
     }
 
     synchronized (statementFinishedNotifier) {
-      while (statementOutput == null) {
+      long startTime = System.currentTimeMillis();
+      while (statementOutput == null
+        && pythonScriptInitialized == false
+        && pythonscriptRunning) {
         try {
+          if (System.currentTimeMillis() - startTime < MAX_TIMEOUT_SEC * 1000) {
+            logger.error("pyspark completion didn't have response for {}sec.", MAX_TIMEOUT_SEC);
+            break;
+          }
           statementFinishedNotifier.wait(1000);
         } catch (InterruptedException e) {
           // not working
@@ -527,6 +533,15 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
       return null;
     } else {
       return new JavaSparkContext(intp.getSparkContext());
+    }
+  }
+
+  public Object getSparkSession() {
+    SparkInterpreter intp = getSparkInterpreter();
+    if (intp == null) {
+      return null;
+    } else {
+      return intp.getSparkSession();
     }
   }
 

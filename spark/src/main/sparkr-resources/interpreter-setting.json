@@ -46,7 +46,7 @@
         "envName": "ZEPPELIN_SPARK_MAXRESULT",
         "propertyName": "zeppelin.spark.maxResult",
         "defaultValue": "1000",
-        "description": "Max number of SparkSQL result to display."
+        "description": "Max number of Spark SQL result to display."
       },
       "master": {
         "envName": "MASTER",
@@ -77,7 +77,7 @@
         "envName": "ZEPPELIN_SPARK_MAXRESULT",
         "propertyName": "zeppelin.spark.maxResult",
         "defaultValue": "1000",
-        "description": "Max number of SparkSQL result to display."
+        "description": "Max number of Spark SQL result to display."
       },
       "zeppelin.spark.importImplicit": {
         "envName": "ZEPPELIN_SPARK_IMPORTIMPLICIT",

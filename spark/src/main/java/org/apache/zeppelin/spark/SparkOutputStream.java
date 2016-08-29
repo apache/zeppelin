@@ -17,17 +17,20 @@
 package org.apache.zeppelin.spark;
 
 import org.apache.zeppelin.interpreter.InterpreterOutput;
+import org.slf4j.Logger;
 
 import java.io.IOException;
-import java.io.OutputStream;
 
 /**
  * InterpreterOutput can be attached / detached.
  */
-public class SparkOutputStream extends OutputStream {
+public class SparkOutputStream extends LogOutputStream {
+
+  public static Logger logger;
   InterpreterOutput interpreterOutput;
 
-  public SparkOutputStream() {
+  public SparkOutputStream(Logger logger) {
+    this.logger = logger;
   }
 
   public InterpreterOutput getInterpreterOutput() {
@@ -40,6 +43,7 @@ public class SparkOutputStream extends OutputStream {
 
   @Override
   public void write(int b) throws IOException {
+    super.write(b);
     if (interpreterOutput != null) {
       interpreterOutput.write(b);
     }
@@ -47,6 +51,7 @@ public class SparkOutputStream extends OutputStream {
 
   @Override
   public void write(byte [] b) throws IOException {
+    super.write(b);
     if (interpreterOutput != null) {
       interpreterOutput.write(b);
     }
@@ -54,13 +59,20 @@ public class SparkOutputStream extends OutputStream {
 
   @Override
   public void write(byte [] b, int offset, int len) throws IOException {
+    super.write(b, offset, len);
     if (interpreterOutput != null) {
       interpreterOutput.write(b, offset, len);
     }
   }
 
   @Override
+  protected void processLine(String s, int i) {
+    logger.debug("Interpreter output:" + s);
+  }
+
+  @Override
   public void close() throws IOException {
+    super.close();
     if (interpreterOutput != null) {
       interpreterOutput.close();
     }
@@ -68,6 +80,7 @@ public class SparkOutputStream extends OutputStream {
 
   @Override
   public void flush() throws IOException {
+    super.flush();
     if (interpreterOutput != null) {
       interpreterOutput.flush();
     }

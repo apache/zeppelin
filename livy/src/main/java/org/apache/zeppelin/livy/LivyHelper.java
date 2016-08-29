@@ -33,6 +33,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.kerberos.client.KerberosRestTemplate;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.nio.charset.Charset;
@@ -48,7 +49,6 @@ public class LivyHelper {
   Gson gson = new GsonBuilder().setPrettyPrinting().create();
   HashMap<String, Object> paragraphHttpMap = new HashMap<>();
   Properties property;
-  Integer MAX_NOS_RETRY = 60;
 
   LivyHelper(Properties property) {
     this.property = property;
@@ -83,9 +83,17 @@ public class LivyHelper {
           }.getType());
       Integer sessionId = ((Double) jsonMap.get("id")).intValue();
       if (!jsonMap.get("state").equals("idle")) {
-        Integer nosRetry = MAX_NOS_RETRY;
+        Integer retryCount = 60;
 
-        while (nosRetry >= 0) {
+        try {
+          retryCount = Integer.valueOf(
+              property.getProperty("zeppelin.livy.create.session.retries"));
+        } catch (Exception e) {
+          LOGGER.info("zeppelin.livy.create.session.retries property is not configured." +
+              " Using default retry count.");
+        }
+
+        while (retryCount >= 0) {
           LOGGER.error(String.format("sessionId:%s state is %s",
               jsonMap.get("id"), jsonMap.get("state")));
           Thread.sleep(1000);
@@ -108,10 +116,10 @@ public class LivyHelper {
             LOGGER.error(String.format("Cannot start  %s.\n%s", kind, logs));
             throw new Exception(String.format("Cannot start  %s.\n%s", kind, logs));
           }
-          nosRetry--;
+          retryCount--;
         }
-        if (nosRetry <= 0) {
-          LOGGER.error("Error getting session for user within 60Sec.");
+        if (retryCount <= 0) {
+          LOGGER.error("Error getting session for user within the configured number of retries.");
           throw new Exception(String.format("Cannot start  %s.", kind));
         }
       }
@@ -341,18 +349,26 @@ public class LivyHelper {
     RestTemplate restTemplate = getRestTemplate();
     HttpHeaders headers = new HttpHeaders();
     headers.add("Content-Type", "application/json");
+    headers.add("X-Requested-By", "zeppelin");
     ResponseEntity<String> response = null;
-    if (method.equals("POST")) {
-      HttpEntity<String> entity = new HttpEntity<String>(jsonData, headers);
-      response = restTemplate.exchange(targetURL, HttpMethod.POST, entity, String.class);
-      paragraphHttpMap.put(paragraphId, response);
-    } else if (method.equals("GET")) {
-      HttpEntity<String> entity = new HttpEntity<String>(headers);
-      response = restTemplate.exchange(targetURL, HttpMethod.GET, entity, String.class);
-      paragraphHttpMap.put(paragraphId, response);
-    } else if (method.equals("DELETE")) {
-      HttpEntity<String> entity = new HttpEntity<String>(headers);
-      response = restTemplate.exchange(targetURL, HttpMethod.DELETE, entity, String.class);
+    try {
+      if (method.equals("POST")) {
+        HttpEntity<String> entity = new HttpEntity<String>(jsonData, headers);
+
+        response = restTemplate.exchange(targetURL, HttpMethod.POST, entity, String.class);
+        paragraphHttpMap.put(paragraphId, response);
+      } else if (method.equals("GET")) {
+        HttpEntity<String> entity = new HttpEntity<String>(headers);
+        response = restTemplate.exchange(targetURL, HttpMethod.GET, entity, String.class);
+        paragraphHttpMap.put(paragraphId, response);
+      } else if (method.equals("DELETE")) {
+        HttpEntity<String> entity = new HttpEntity<String>(headers);
+        response = restTemplate.exchange(targetURL, HttpMethod.DELETE, entity, String.class);
+      }
+    } catch (HttpClientErrorException e) {
+      response = new ResponseEntity(e.getResponseBodyAsString(), e.getStatusCode());
+      LOGGER.error(String.format("Error with %s StatusCode: %s",
+          response.getStatusCode().value(), e.getResponseBodyAsString()));
     }
     if (response == null) {
       return null;

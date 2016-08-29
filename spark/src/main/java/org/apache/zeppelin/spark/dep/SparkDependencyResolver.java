@@ -29,7 +29,6 @@ import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.spark.SparkContext;
-import org.apache.spark.repl.SparkIMain;
 import org.apache.zeppelin.dep.AbstractDependencyResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,7 +59,7 @@ import scala.tools.nsc.util.MergedClassPath;
 public class SparkDependencyResolver extends AbstractDependencyResolver {
   Logger logger = LoggerFactory.getLogger(SparkDependencyResolver.class);
   private Global global;
-  private SparkIMain intp;
+  private ClassLoader runtimeClassLoader;
   private SparkContext sc;
 
   private final String[] exclusions = new String[] {"org.scala-lang:scala-library",
@@ -71,11 +70,14 @@ public class SparkDependencyResolver extends AbstractDependencyResolver {
                                                     "org.apache.zeppelin:zeppelin-spark",
                                                     "org.apache.zeppelin:zeppelin-server"};
 
-  public SparkDependencyResolver(SparkIMain intp, SparkContext sc, String localRepoPath,
-                            String additionalRemoteRepository) {
+  public SparkDependencyResolver(Global global,
+                                 ClassLoader runtimeClassLoader,
+                                 SparkContext sc,
+                                 String localRepoPath,
+                                 String additionalRemoteRepository) {
     super(localRepoPath);
-    this.intp = intp;
-    this.global = intp.global();
+    this.global = global;
+    this.runtimeClassLoader = runtimeClassLoader;
     this.sc = sc;
     addRepoFromProperty(additionalRemoteRepository);
   }
@@ -127,24 +129,22 @@ public class SparkDependencyResolver extends AbstractDependencyResolver {
   private void updateRuntimeClassPath_1_x(URL[] urls) throws SecurityException,
       IllegalAccessException, IllegalArgumentException,
       InvocationTargetException, NoSuchMethodException {
-    ClassLoader cl = intp.classLoader().getParent();
     Method addURL;
-    addURL = cl.getClass().getDeclaredMethod("addURL", new Class[] {URL.class});
+    addURL = runtimeClassLoader.getClass().getDeclaredMethod("addURL", new Class[] {URL.class});
     addURL.setAccessible(true);
     for (URL url : urls) {
-      addURL.invoke(cl, url);
+      addURL.invoke(runtimeClassLoader, url);
     }
   }
 
   private void updateRuntimeClassPath_2_x(URL[] urls) throws SecurityException,
       IllegalAccessException, IllegalArgumentException,
       InvocationTargetException, NoSuchMethodException {
-    ClassLoader cl = intp.classLoader().getParent();
     Method addURL;
-    addURL = cl.getClass().getDeclaredMethod("addNewUrl", new Class[] {URL.class});
+    addURL = runtimeClassLoader.getClass().getDeclaredMethod("addNewUrl", new Class[] {URL.class});
     addURL.setAccessible(true);
     for (URL url : urls) {
-      addURL.invoke(cl, url);
+      addURL.invoke(runtimeClassLoader, url);
     }
   }
 
@@ -209,7 +209,7 @@ public class SparkDependencyResolver extends AbstractDependencyResolver {
   private void loadFromFs(String artifact, boolean addSparkContext) throws Exception {
     File jarFile = new File(artifact);
 
-    intp.global().new Run();
+    global.new Run();
 
     if (sc.version().startsWith("1.1")) {
       updateRuntimeClassPath_1_x(new URL[] {jarFile.toURI().toURL()});
@@ -257,7 +257,7 @@ public class SparkDependencyResolver extends AbstractDependencyResolver {
           + artifactResult.getArtifact().getVersion());
     }
 
-    intp.global().new Run();
+    global.new Run();
     if (sc.version().startsWith("1.1")) {
       updateRuntimeClassPath_1_x(newClassPathList.toArray(new URL[0]));
     } else {

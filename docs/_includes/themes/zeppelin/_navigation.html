@@ -32,7 +32,6 @@
                 <li><a href="{{BASE_PATH}}/manual/notebookashomepage.html">Customize Zeppelin Homepage</a></li>
                 <li role="separator" class="divider"></li>
                 <li class="title"><span><b>More</b><span></li>
-                <li><a href="{{BASE_PATH}}/install/virtual_machine.html">Zeppelin on Vagrant VM</a></li>
                 <li><a href="{{BASE_PATH}}/install/upgrade.html">Upgrade Zeppelin Version</a></li>
               </ul>
             </li>
@@ -48,6 +47,7 @@
                 <li role="separator" class="divider"></li>
                 <li class="title"><span><b>Available Interpreters</b><span></li>
                 <li><a href="{{BASE_PATH}}/interpreter/alluxio.html">Alluxio</a></li>
+                <li><a href="{{BASE_PATH}}/interpreter/bigquery.html">BigQuery</a></li>
                 <li><a href="{{BASE_PATH}}/interpreter/cassandra.html">Cassandra</a></li>
                 <li><a href="{{BASE_PATH}}/interpreter/elasticsearch.html">Elasticsearch</a></li>
                 <li><a href="{{BASE_PATH}}/interpreter/flink.html">Flink</a></li>
@@ -64,7 +64,7 @@
                 <li><a href="{{BASE_PATH}}/interpreter/postgresql.html">Postgresql, HAWQ</a></li>
                 <li><a href="{{BASE_PATH}}/interpreter/r.html">R</a></li>
                 <li><a href="{{BASE_PATH}}/interpreter/scalding.html">Scalding</a></li>
-                <li><a href="{{BASE_PATH}}/pleasecontribute.html">Shell</a></li>
+                <li><a href="{{BASE_PATH}}/interpreter/shell.html">Shell</a></li>
                 <li><a href="{{BASE_PATH}}/interpreter/spark.html">Spark</a></li>
               </ul>
             </li>
@@ -100,7 +100,11 @@
                 <li><a href="{{BASE_PATH}}/security/authentication.html">Authentication for NGINX</a></li>
                 <li><a href="{{BASE_PATH}}/security/shiroauthentication.html">Shiro Authentication</a></li>
                 <li><a href="{{BASE_PATH}}/security/notebook_authorization.html">Notebook Authorization</a></li>
-                <li><a href="{{BASE_PATH}}/security/interpreter_authorization.html">Interpreter & Data Resource Authorization</a></li>
+                <li><a href="{{BASE_PATH}}/security/datasource_authorization.html">Data Source Authorization</a></li>
+                <li role="separator" class="divider"></li>
+                <li class="title"><span><b>Advanced</b><span></li>
+                <li><a href="{{BASE_PATH}}/install/virtual_machine.html">Zeppelin on Vagrant VM</a></li>
+                <li><a href="{{BASE_PATH}}/install/spark_cluster_mode.html#spark-standalone-mode">Zeppelin on Spark Cluster Mode (Standalone)</a></li>
                 <li role="separator" class="divider"></li>
                 <li class="title"><span><b>Contibute</b><span></li>
                 <li><a href="{{BASE_PATH}}/development/writingzeppelininterpreter.html">Writing Zeppelin Interpreter</a></li>
@@ -110,7 +114,14 @@
               </ul>
             </li>
           </ul>
+          <ul class="nav navbar-nav">
+            <li>
+              <a href="{{BASE_PATH}}/search.html" class="nav-search-link">
+                <span class="fa fa-search nav-search-icon"></span>
+              </a>
+            </li>
+          </ul>
         </nav><!--/.navbar-collapse -->
       </div>
     </div>
-    
+

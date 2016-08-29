@@ -17,7 +17,7 @@
   -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.maven-v4_0_0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
   <modelVersion>4.0.0</modelVersion>
 
@@ -27,7 +27,7 @@
   <version>0.7.0-SNAPSHOT</version>
   <name>Zeppelin</name>
   <description>Zeppelin project</description>
-  <url>http://zeppelin.apache.org/</url>
+  <url>http://zeppelin.apache.org</url>
 
   <parent>
     <groupId>org.apache</groupId>
@@ -72,6 +72,7 @@
     <module>lens</module>
     <module>cassandra</module>
     <module>elasticsearch</module>
+    <module>bigquery</module>
     <module>alluxio</module>
     <module>zeppelin-web</module>
     <module>zeppelin-server</module>
@@ -79,11 +80,16 @@
   </modules>
 
   <properties>
+    <scala.version>2.10.5</scala.version>
+    <scala.binary.version>2.10</scala.binary.version>
+    <scalatest.version>2.2.4</scalatest.version>
+    <scalacheck.version>1.12.5</scalacheck.version>
+
     <slf4j.version>1.7.10</slf4j.version>
     <log4j.version>1.2.17</log4j.version>
     <libthrift.version>0.9.2</libthrift.version>
     <gson.version>2.2</gson.version>
-    <guava.version>19.0</guava.version>
+    <guava.version>15.0</guava.version>
     <jetty.version>9.2.15.v20160210</jetty.version>
 
     <PermGen>64m</PermGen>
@@ -93,7 +99,6 @@
   <dependencyManagement>
     <dependencies>
       <!-- Logging -->
-
       <dependency>
         <groupId>org.slf4j</groupId>
         <artifactId>slf4j-api</artifactId>
@@ -136,7 +141,6 @@
         <version>2.5</version>
       </dependency>
 
-
       <dependency>
         <groupId>com.google.code.gson</groupId>
         <artifactId>gson</artifactId>
@@ -155,13 +159,11 @@
         <version>1.5</version>
       </dependency>
 
-
       <dependency>
         <groupId>commons-io</groupId>
         <artifactId>commons-io</artifactId>
         <version>2.4</version>
       </dependency>
-
 
       <dependency>
         <groupId>commons-collections</groupId>
@@ -180,7 +182,6 @@
         <artifactId>guava</artifactId>
         <version>${guava.version}</version>
       </dependency>
-
 
       <dependency>
         <groupId>junit</groupId>
@@ -341,18 +342,17 @@
       </plugin>
 
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-remote-resources-plugin</artifactId>
-        <version>1.4</version>
+        <version>1.5</version>
         <executions>
           <execution>
+            <id>process-remote-resources</id>
             <goals>
               <goal>process</goal>
             </goals>
             <configuration>
               <resourceBundles>
-                <!-- Will generate META-INF/DEPENDENCIES META-INF/LICENSE META-INF/NOTICE -->
-                <resourceBundle>org.apache.apache.resources:apache-jar-resource-bundle:1.5-SNAPSHOT</resourceBundle>
+                <resourceBundle>org.apache:apache-jar-resource-bundle:1.0</resourceBundle>
               </resourceBundles>
             </configuration>
           </execution>
@@ -388,12 +388,25 @@
         </executions>
       </plugin>
 
-      <!--TODO(alex): make part of the build and reconcile conflicts <plugin>
-        <groupId>com.ning.maven.plugins</groupId> <artifactId>maven-duplicate-finder-plugin</artifactId>
-        <version>1.0.4</version> <executions> <execution> <id>default</id> <phase>verify</phase>
-        <goals> <goal>check</goal> </goals> </execution> </executions> <configuration>
-        <failBuildInCaseOfConflict>true</failBuildInCaseOfConflict> </configuration>
-        </plugin> -->
+      <!--TODO(alex): make part of the build and reconcile conflicts
+    <plugin> 
+      <groupId>com.ning.maven.plugins</groupId>
+      <artifactId>maven-duplicate-finder-plugin</artifactId>
+      <version>1.0.4</version>
+      <executions>
+        <execution>
+          <id>default</id>
+          <phase>verify</phase>
+          <goals>
+            <goal>check</goal> 
+          </goals> 
+       </execution> 
+      </executions> 
+      <configuration>
+        <failBuildInCaseOfConflict>true</failBuildInCaseOfConflict> 
+      </configuration>
+    </plugin>
+    -->
     </plugins>
 
     <pluginManagement>
@@ -412,7 +425,7 @@
               <exclude>.github/*</exclude>
               <exclude>.gitignore</exclude>
               <exclude>.repository/</exclude>
-  	      <exclude>.Rhistory</exclude>
+              <exclude>.Rhistory</exclude>
               <exclude>**/*.diff</exclude>
               <exclude>**/*.patch</exclude>
               <exclude>**/*.avsc</exclude>
@@ -447,10 +460,13 @@
               <exclude>spark-*-bin*/**</exclude>
               <exclude>.spark-dist/**</exclude>
               <exclude>**/interpreter-setting.json</exclude>
+              <exclude>**/constants.json</exclude>
 
               <!-- bundled from bootstrap -->
               <exclude>docs/assets/themes/zeppelin/bootstrap/**</exclude>
               <exclude>docs/assets/themes/zeppelin/css/style.css</exclude>
+              <exclude>docs/assets/themes/zeppelin/js/docs.js</exclude>
+              <exclude>docs/assets/themes/zeppelin/js/search.js</exclude>
               <exclude>docs/_includes/themes/zeppelin/_jumbotron.html</exclude>
               <exclude>docs/_includes/themes/zeppelin/_navigation.html</exclude>
 
@@ -468,13 +484,18 @@
               <exclude>docs/Rakefile</exclude>
               <exclude>docs/rss.xml</exclude>
               <exclude>docs/sitemap.txt</exclude>
+              <exclude>docs/search_data.json</exclude>
               <exclude>**/dependency-reduced-pom.xml</exclude>
+              <exclude>docs/CONTRIBUTING.md</exclude>
 
               <!-- bundled from anchor -->
               <exclude>docs/assets/themes/zeppelin/js/anchor.min.js</exclude>
 
               <!-- bundled from toc -->
               <exclude>docs/assets/themes/zeppelin/js/toc.js</exclude>
+
+              <!-- bundled from lunrjs -->
+              <exclude>docs/assets/themes/zeppelin/js/lunr.min.js</exclude>
 
               <!-- bundled from jekyll -->
               <exclude>docs/assets/themes/zeppelin/css/syntax.css</exclude>
@@ -636,6 +657,25 @@
 
   <profiles>
     <profile>
+      <id>scala-2.10</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <properties>
+        <scala.version>2.10.5</scala.version>
+        <scala.binary.version>2.10</scala.binary.version>
+      </properties>
+    </profile>
+
+    <profile>
+      <id>scala-2.11</id>
+      <properties>
+        <scala.version>2.11.7</scala.version>
+        <scala.binary.version>2.11</scala.binary.version>
+      </properties>
+    </profile>
+
+    <profile>
       <id>vendor-repo</id>
       <repositories>
         <repository>
@@ -710,7 +750,6 @@
       <activation>
         <activeByDefault>false</activeByDefault>
       </activation>
-
       <build>
         <plugins>
           <plugin>

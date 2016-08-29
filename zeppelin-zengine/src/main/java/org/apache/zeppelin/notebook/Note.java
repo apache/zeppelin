@@ -19,19 +19,32 @@ package org.apache.zeppelin.notebook;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
+import com.google.gson.Gson;
 import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.Input;
-import org.apache.zeppelin.helium.HeliumApplicationFactory;
-import org.apache.zeppelin.interpreter.*;
+import org.apache.zeppelin.interpreter.Interpreter;
+import org.apache.zeppelin.interpreter.InterpreterException;
+import org.apache.zeppelin.interpreter.InterpreterFactory;
+import org.apache.zeppelin.interpreter.InterpreterGroup;
+import org.apache.zeppelin.interpreter.InterpreterOutput;
+import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
@@ -39,26 +52,21 @@ import org.apache.zeppelin.notebook.utility.IdHashes;
 import org.apache.zeppelin.resource.ResourcePoolUtils;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.Job.Status;
-import org.apache.zeppelin.scheduler.JobListener;
 import org.apache.zeppelin.search.SearchService;
-
-import com.google.common.base.Optional;
-import com.google.gson.Gson;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.user.Credentials;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Binded interpreters for a note
  */
 public class Note implements Serializable, ParagraphJobListener {
-  static Logger logger = LoggerFactory.getLogger(Note.class);
+  private static final Logger logger = LoggerFactory.getLogger(Note.class);
   private static final long serialVersionUID = 7920699076577612429L;
 
   // threadpool for delayed persist of note
   private static final ScheduledThreadPoolExecutor delayedPersistThreadPool =
-          new ScheduledThreadPoolExecutor(0);
+      new ScheduledThreadPoolExecutor(0);
+
   static {
     delayedPersistThreadPool.setRemoveOnCancelPolicy(true);
   }
@@ -71,8 +79,7 @@ public class Note implements Serializable, ParagraphJobListener {
   private AtomicReference<String> lastReplName = new AtomicReference<>(StringUtils.EMPTY);
   private transient ZeppelinConfiguration conf = ZeppelinConfiguration.create();
 
-  @SuppressWarnings("rawtypes")
-  Map<String, List<AngularObject>> angularObjects = new HashMap<>();
+  private Map<String, List<AngularObject>> angularObjects = new HashMap<>();
 
   private transient InterpreterFactory factory;
   private transient JobListenerFactory jobListenerFactory;
@@ -82,26 +89,24 @@ public class Note implements Serializable, ParagraphJobListener {
   private transient NoteEventListener noteEventListener;
   private transient Credentials credentials;
 
-  /**
+  /*
    * note configurations.
-   *
    * - looknfeel - cron
    */
   private Map<String, Object> config = new HashMap<>();
 
-  /**
+  /*
    * note information.
-   *
    * - cron : cron expression validity.
    */
   private Map<String, Object> info = new HashMap<>();
 
 
-  public Note() {}
+  public Note() {
+  }
 
-  public Note(NotebookRepo repo, InterpreterFactory factory,
-      JobListenerFactory jlFactory, SearchService noteIndex, Credentials credentials,
-      NoteEventListener noteEventListener) {
+  public Note(NotebookRepo repo, InterpreterFactory factory, JobListenerFactory jlFactory,
+      SearchService noteIndex, Credentials credentials, NoteEventListener noteEventListener) {
     this.repo = repo;
     this.factory = factory;
     this.jobListenerFactory = jlFactory;
@@ -112,12 +117,12 @@ public class Note implements Serializable, ParagraphJobListener {
   }
 
   private void generateId() {
-    id = IdHashes.encode(System.currentTimeMillis() + new Random().nextInt());
+    id = IdHashes.generateId();
   }
 
   private String getDefaultInterpreterName() {
     InterpreterSetting setting = factory.getDefaultInterpreterSetting(getId());
-    return null != setting ? setting.getGroup() : StringUtils.EMPTY;
+    return null != setting ? setting.getName() : StringUtils.EMPTY;
   }
 
   void putDefaultReplName() {
@@ -138,10 +143,10 @@ public class Note implements Serializable, ParagraphJobListener {
     return name;
   }
 
-  private String normalizeNoteName(String name){
+  private String normalizeNoteName(String name) {
     name = name.trim();
     name = name.replace("\\", "/");
-    while (name.indexOf("///") >= 0) {
+    while (name.contains("///")) {
       name = name.replaceAll("///", "/");
     }
     name = name.replaceAll("//", "/");
@@ -158,7 +163,7 @@ public class Note implements Serializable, ParagraphJobListener {
     this.name = name;
   }
 
-  public void setInterpreterFactory(InterpreterFactory factory) {
+  void setInterpreterFactory(InterpreterFactory factory) {
     this.factory = factory;
     synchronized (paragraphs) {
       for (Paragraph p : paragraphs) {
@@ -167,19 +172,11 @@ public class Note implements Serializable, ParagraphJobListener {
     }
   }
 
-  public JobListenerFactory getJobListenerFactory() {
-    return jobListenerFactory;
-  }
-
-  public void setJobListenerFactory(JobListenerFactory jobListenerFactory) {
+  void setJobListenerFactory(JobListenerFactory jobListenerFactory) {
     this.jobListenerFactory = jobListenerFactory;
   }
 
-  public NotebookRepo getNotebookRepo() {
-    return repo;
-  }
-
-  public void setNotebookRepo(NotebookRepo repo) {
+  void setNotebookRepo(NotebookRepo repo) {
     this.repo = repo;
   }
 
@@ -189,22 +186,20 @@ public class Note implements Serializable, ParagraphJobListener {
 
   public Credentials getCredentials() {
     return credentials;
-  };
+  }
 
   public void setCredentials(Credentials credentials) {
     this.credentials = credentials;
   }
 
 
-  @SuppressWarnings("rawtypes")
-  public Map<String, List<AngularObject>> getAngularObjects() {
+  Map<String, List<AngularObject>> getAngularObjects() {
     return angularObjects;
   }
 
   /**
    * Add paragraph last.
    */
-
   public Paragraph addParagraph() {
     Paragraph p = new Paragraph(this, this, factory);
     addLastReplNameIfEmptyText(p);
@@ -220,9 +215,9 @@ public class Note implements Serializable, ParagraphJobListener {
   /**
    * Clone paragraph and add it to note.
    *
-   * @param srcParagraph
+   * @param srcParagraph source paragraph
    */
-  public void addCloneParagraph(Paragraph srcParagraph) {
+  void addCloneParagraph(Paragraph srcParagraph) {
 
     // Keep paragraph original ID
     final Paragraph newParagraph = new Paragraph(srcParagraph.getId(), this, this, factory);
@@ -244,8 +239,8 @@ public class Note implements Serializable, ParagraphJobListener {
       newParagraph.setReturn(result, null);
     } catch (Exception e) {
       // 'result' part of Note consists of exception, instead of actual interpreter results
-      logger.warn("Paragraph " + srcParagraph.getId() + " has a result with exception. "
-              + e.getMessage());
+      logger.warn(
+          "Paragraph " + srcParagraph.getId() + " has a result with exception. " + e.getMessage());
     }
 
     synchronized (paragraphs) {
@@ -259,7 +254,7 @@ public class Note implements Serializable, ParagraphJobListener {
   /**
    * Insert paragraph in given index.
    *
-   * @param index
+   * @param index index of paragraphs
    */
   public Paragraph insertParagraph(int index) {
     Paragraph p = new Paragraph(this, this, factory);
@@ -292,7 +287,7 @@ public class Note implements Serializable, ParagraphJobListener {
   /**
    * Remove paragraph by id.
    *
-   * @param paragraphId
+   * @param paragraphId ID of paragraph
    * @return a paragraph that was deleted, or <code>null</code> otherwise
    */
   public Paragraph removeParagraph(String paragraphId) {
@@ -319,13 +314,12 @@ public class Note implements Serializable, ParagraphJobListener {
   /**
    * Clear paragraph output by id.
    *
-   * @param paragraphId
-   * @return
+   * @param paragraphId ID of paragraph
+   * @return Paragraph
    */
   public Paragraph clearParagraphOutput(String paragraphId) {
     synchronized (paragraphs) {
-      for (int i = 0; i < paragraphs.size(); i++) {
-        Paragraph p = paragraphs.get(i);
+      for (Paragraph p : paragraphs) {
         if (p.getId().equals(paragraphId)) {
           p.setReturn(null, null);
           return p;
@@ -338,8 +332,8 @@ public class Note implements Serializable, ParagraphJobListener {
   /**
    * Move paragraph into the new index (order from 0 ~ n-1).
    *
-   * @param paragraphId
-   * @param index new index
+   * @param paragraphId ID of paragraph
+   * @param index       new index
    */
   public void moveParagraph(String paragraphId, int index) {
     moveParagraph(paragraphId, index, false);
@@ -348,8 +342,8 @@ public class Note implements Serializable, ParagraphJobListener {
   /**
    * Move paragraph into the new index (order from 0 ~ n-1).
    *
-   * @param paragraphId
-   * @param index new index
+   * @param paragraphId                ID of paragraph
+   * @param index                      new index
    * @param throwWhenIndexIsOutOfBound whether throw IndexOutOfBoundException
    *                                   when index is out of bound
    */
@@ -413,26 +407,42 @@ public class Note implements Serializable, ParagraphJobListener {
     }
   }
 
-  public List<Map<String, String>> generateParagraphsInfo (){
+  public List<Map<String, String>> generateParagraphsInfo() {
     List<Map<String, String>> paragraphsInfo = new LinkedList<>();
     synchronized (paragraphs) {
       for (Paragraph p : paragraphs) {
-        Map<String, String> info = new HashMap<>();
-        info.put("id", p.getId());
-        info.put("status", p.getStatus().toString());
-        if (p.getDateStarted() != null) {
-          info.put("started", p.getDateStarted().toString());
-        }
-        if (p.getDateFinished() != null) {
-          info.put("finished", p.getDateFinished().toString());
-        }
-        if (p.getStatus().isRunning()) {
-          info.put("progress", String.valueOf(p.progress()));
-        }
+        Map<String, String> info = populatePragraphInfo(p);
         paragraphsInfo.add(info);
       }
     }
     return paragraphsInfo;
+  }
+
+  public Map<String, String> generateSingleParagraphInfo(String paragraphId) {
+    synchronized (paragraphs) {
+      for (Paragraph p : paragraphs) {
+        if (p.getId().equals(paragraphId)) {
+          return populatePragraphInfo(p);
+        }
+      }
+      return new HashMap<>();
+    }
+  }
+  
+  private Map<String, String> populatePragraphInfo(Paragraph p) {
+    Map<String, String> info = new HashMap<>();
+    info.put("id", p.getId());
+    info.put("status", p.getStatus().toString());
+    if (p.getDateStarted() != null) {
+      info.put("started", p.getDateStarted().toString());
+    }
+    if (p.getDateFinished() != null) {
+      info.put("finished", p.getDateFinished().toString());
+    }
+    if (p.getStatus().isRunning()) {
+      info.put("progress", String.valueOf(p.progress()));
+    }
+    return info;
   }
 
   /**
@@ -451,11 +461,7 @@ public class Note implements Serializable, ParagraphJobListener {
         AuthenticationInfo authenticationInfo = new AuthenticationInfo();
         authenticationInfo.setUser(cronExecutingUser);
         p.setAuthenticationInfo(authenticationInfo);
-
-        p.setListener(jobListenerFactory.getParagraphJobListener(this));
-        Interpreter intp = factory.getInterpreter(getId(), p.getRequiredReplName());
-
-        intp.getScheduler().submit(p);
+        run(p.getId());
       }
     }
   }
@@ -463,7 +469,7 @@ public class Note implements Serializable, ParagraphJobListener {
   /**
    * Run a single paragraph.
    *
-   * @param paragraphId
+   * @param paragraphId ID of paragraph
    */
   public void run(String paragraphId) {
     Paragraph p = getParagraph(paragraphId);
@@ -478,7 +484,18 @@ public class Note implements Serializable, ParagraphJobListener {
         logger.debug("New paragraph: {}", pText);
         p.setEffectiveText(pText);
       } else {
-        throw new InterpreterException("Interpreter " + requiredReplName + " not found");
+        String intpExceptionMsg = String.format("%s",
+          p.getJobName()
+          + "'s Interpreter "
+          + requiredReplName + " not found"
+        );
+        InterpreterException intpException = new InterpreterException(intpExceptionMsg);
+        InterpreterResult intpResult = new InterpreterResult(
+          InterpreterResult.Code.ERROR, intpException.getMessage()
+        );
+        p.setReturn(intpResult, intpException);
+        p.setStatus(Job.Status.ERROR);
+        throw intpException;
       }
     }
     if (p.getConfig().get("enabled") == null || (Boolean) p.getConfig().get("enabled")) {
@@ -488,9 +505,8 @@ public class Note implements Serializable, ParagraphJobListener {
 
   /**
    * Check whether all paragraphs belongs to this note has terminated
-   * @return
    */
-  public boolean isTerminated() {
+  boolean isTerminated() {
     synchronized (paragraphs) {
       for (Paragraph p : paragraphs) {
         if (!p.isTerminated()) {
@@ -505,14 +521,13 @@ public class Note implements Serializable, ParagraphJobListener {
   public List<InterpreterCompletion> completion(String paragraphId, String buffer, int cursor) {
     Paragraph p = getParagraph(paragraphId);
     p.setListener(jobListenerFactory.getParagraphJobListener(this));
-    List completion = p.completion(buffer, cursor);
 
-    return completion;
+    return p.completion(buffer, cursor);
   }
 
   public List<Paragraph> getParagraphs() {
     synchronized (paragraphs) {
-      return new LinkedList<Paragraph>(paragraphs);
+      return new LinkedList<>(paragraphs);
     }
   }
 
@@ -532,7 +547,7 @@ public class Note implements Serializable, ParagraphJobListener {
   }
 
   private void removeAllAngularObjectInParagraph(String paragraphId) {
-    angularObjects = new HashMap<String, List<AngularObject>>();
+    angularObjects = new HashMap<>();
 
     List<InterpreterSetting> settings = factory.getInterpreterSettings(getId());
     if (settings == null || settings.size() == 0) {
@@ -551,8 +566,8 @@ public class Note implements Serializable, ParagraphJobListener {
         List<ApplicationState> appStates = getParagraph(paragraphId).getAllApplicationStates();
         if (appStates != null) {
           for (ApplicationState app : appStates) {
-            ((RemoteAngularObjectRegistry) registry).removeAllAndNotifyRemoteProcess(
-                id, app.getId());
+            ((RemoteAngularObjectRegistry) registry)
+                .removeAllAndNotifyRemoteProcess(id, app.getId());
           }
         }
       } else {
@@ -588,13 +603,12 @@ public class Note implements Serializable, ParagraphJobListener {
 
   /**
    * Persist this note with maximum delay.
-   * @param maxDelaySec
    */
   public void persist(int maxDelaySec, AuthenticationInfo subject) {
     startDelayedPersistTimer(maxDelaySec, subject);
   }
 
-  public void unpersist(AuthenticationInfo subject) throws IOException {
+  void unpersist(AuthenticationInfo subject) throws IOException {
     repo.remove(id(), subject);
   }
 
@@ -651,7 +665,7 @@ public class Note implements Serializable, ParagraphJobListener {
     this.info = info;
   }
 
-  public String getLastReplName() {
+  String getLastReplName() {
     return lastReplName.get();
   }
 
@@ -714,13 +728,7 @@ public class Note implements Serializable, ParagraphJobListener {
     }
   }
 
-
-
-  public NoteEventListener getNoteEventListener() {
-    return noteEventListener;
-  }
-
-  public void setNoteEventListener(NoteEventListener noteEventListener) {
+  void setNoteEventListener(NoteEventListener noteEventListener) {
     this.noteEventListener = noteEventListener;
   }
 
