@@ -29,7 +29,8 @@ import org.apache.zeppelin.interpreter.InterpreterUtils;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
-import org.markdown4j.Markdown4jProcessor;
+import org.pegdown.Extensions;
+import org.pegdown.PegDownProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,7 +38,7 @@ import org.slf4j.LoggerFactory;
  * Markdown interpreter for Zeppelin.
  */
 public class Markdown extends Interpreter {
-  private Markdown4jProcessor md;
+  private PegDownProcessor md;
   static final Logger LOGGER = LoggerFactory.getLogger(Markdown.class);
 
   public Markdown(Properties property) {
@@ -46,7 +47,10 @@ public class Markdown extends Interpreter {
 
   @Override
   public void open() {
-    md = new Markdown4jProcessor();
+    md = new PegDownProcessor(
+        Extensions.ALL_WITH_OPTIONALS,
+        5000 /** max parsing timeout as millis */
+    );
   }
 
   @Override
@@ -56,8 +60,9 @@ public class Markdown extends Interpreter {
   public InterpreterResult interpret(String st, InterpreterContext interpreterContext) {
     String html;
     try {
-      html = md.process(st);
-    } catch (IOException | java.lang.RuntimeException e) {
+      html = md.markdownToHtml(st);
+      if (null == html) throw new RuntimeException("Cannot parse markdown");
+    } catch (java.lang.RuntimeException e) {
       LOGGER.error("Exception in Markdown while interpret ", e);
       return new InterpreterResult(Code.ERROR, InterpreterUtils.getMostRelevantMessage(e));
     }
