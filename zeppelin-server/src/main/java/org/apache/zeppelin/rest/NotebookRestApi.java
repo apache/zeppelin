@@ -38,6 +38,8 @@ import com.google.common.collect.Sets;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.utils.InterpreterBindingUtils;
 import org.quartz.CronExpression;
 import org.slf4j.Logger;
@@ -116,8 +118,8 @@ public class NotebookRestApi {
      * TODO(jl): Fixed the type of HashSet
      * https://issues.apache.org/jira/browse/ZEPPELIN-1162
      */
-    HashMap<String, HashSet> permMap =
-        gson.fromJson(req, new TypeToken<HashMap<String, HashSet>>() {
+    HashMap<String, HashSet<String>> permMap =
+        gson.fromJson(req, new TypeToken<HashMap<String, HashSet<String>>>() {
         }.getType());
     Note note = notebook.getNote(noteId);
     String principal = SecurityUtils.getPrincipal();
@@ -133,9 +135,9 @@ public class NotebookRestApi {
           ownerPermissionError(userAndRoles, notebookAuthorization.getOwners(noteId))).build();
     }
 
-    HashSet readers = permMap.get("readers");
-    HashSet owners = permMap.get("owners");
-    HashSet writers = permMap.get("writers");
+    HashSet<String> readers = permMap.get("readers");
+    HashSet<String> owners = permMap.get("owners");
+    HashSet<String> writers = permMap.get("writers");
     // Set readers, if writers and owners is empty -> set to user requesting the change
     if (readers != null && !readers.isEmpty()) {
       if (writers.isEmpty()) {
@@ -477,7 +479,14 @@ public class NotebookRestApi {
       return new JsonResponse<>(Status.NOT_FOUND, "note not found.").build();
     }
 
-    note.runAll();
+    try {
+      note.runAll();
+    } catch (Exception ex) {
+      LOG.error("Exception from run", ex);
+      return new JsonResponse<>(Status.PRECONDITION_FAILED,
+          ex.getMessage() + "- Not selected or Invalid Interpreter bind").build();
+    }
+
     return new JsonResponse<>(Status.OK).build();
   }
 

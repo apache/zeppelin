@@ -1868,7 +1868,7 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
       if (groups.length === 1 && values.length === 1) {
         for (d3gIndex = 0; d3gIndex < d3g.length; d3gIndex++) {
           colName = d3g[d3gIndex].key;
-          colName = colName.split('.')[0];
+          colName = colName.split('.').slice(0, -1).join('.');
           d3g[d3gIndex].key = colName;
         }
       }
@@ -2552,6 +2552,7 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
       $scope.paragraph.status = data.paragraph.status;
       $scope.paragraph.result = data.paragraph.result;
       $scope.paragraph.settings = data.paragraph.settings;
+      $scope.editor.setReadOnly($scope.isRunning());
 
       if (!$scope.asIframe) {
         $scope.paragraph.config = data.paragraph.config;
