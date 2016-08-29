@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 FROM centos:centos6
-MAINTAINER hsshim@nflabs.com
 
 ENV SPARK_PROFILE 1.6
 ENV SPARK_VERSION 1.6.2

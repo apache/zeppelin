@@ -411,22 +411,38 @@ public class Note implements Serializable, ParagraphJobListener {
     List<Map<String, String>> paragraphsInfo = new LinkedList<>();
     synchronized (paragraphs) {
       for (Paragraph p : paragraphs) {
-        Map<String, String> info = new HashMap<>();
-        info.put("id", p.getId());
-        info.put("status", p.getStatus().toString());
-        if (p.getDateStarted() != null) {
-          info.put("started", p.getDateStarted().toString());
-        }
-        if (p.getDateFinished() != null) {
-          info.put("finished", p.getDateFinished().toString());
-        }
-        if (p.getStatus().isRunning()) {
-          info.put("progress", String.valueOf(p.progress()));
-        }
+        Map<String, String> info = populatePragraphInfo(p);
         paragraphsInfo.add(info);
       }
     }
     return paragraphsInfo;
+  }
+
+  public Map<String, String> generateSingleParagraphInfo(String paragraphId) {
+    synchronized (paragraphs) {
+      for (Paragraph p : paragraphs) {
+        if (p.getId().equals(paragraphId)) {
+          return populatePragraphInfo(p);
+        }
+      }
+      return new HashMap<>();
+    }
+  }
+  
+  private Map<String, String> populatePragraphInfo(Paragraph p) {
+    Map<String, String> info = new HashMap<>();
+    info.put("id", p.getId());
+    info.put("status", p.getStatus().toString());
+    if (p.getDateStarted() != null) {
+      info.put("started", p.getDateStarted().toString());
+    }
+    if (p.getDateFinished() != null) {
+      info.put("finished", p.getDateFinished().toString());
+    }
+    if (p.getStatus().isRunning()) {
+      info.put("progress", String.valueOf(p.progress()));
+    }
+    return info;
   }
 
   /**
@@ -445,11 +461,7 @@ public class Note implements Serializable, ParagraphJobListener {
         AuthenticationInfo authenticationInfo = new AuthenticationInfo();
         authenticationInfo.setUser(cronExecutingUser);
         p.setAuthenticationInfo(authenticationInfo);
-
-        p.setListener(jobListenerFactory.getParagraphJobListener(this));
-        Interpreter intp = factory.getInterpreter(getId(), p.getRequiredReplName());
-
-        intp.getScheduler().submit(p);
+        run(p.getId());
       }
     }
   }
@@ -472,7 +484,18 @@ public class Note implements Serializable, ParagraphJobListener {
         logger.debug("New paragraph: {}", pText);
         p.setEffectiveText(pText);
       } else {
-        throw new InterpreterException("Interpreter " + requiredReplName + " not found");
+        String intpExceptionMsg = String.format("%s",
+          p.getJobName()
+          + "'s Interpreter "
+          + requiredReplName + " not found"
+        );
+        InterpreterException intpException = new InterpreterException(intpExceptionMsg);
+        InterpreterResult intpResult = new InterpreterResult(
+          InterpreterResult.Code.ERROR, intpException.getMessage()
+        );
+        p.setReturn(intpResult, intpException);
+        p.setStatus(Job.Status.ERROR);
+        throw intpException;
       }
     }
     if (p.getConfig().get("enabled") == null || (Boolean) p.getConfig().get("enabled")) {

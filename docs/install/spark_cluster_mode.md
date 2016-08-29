@@ -1,7 +1,7 @@
 ---
 layout: page
 title: "Apache Zeppelin on Spark cluster mode"
-description: ""
+description: "This document will guide you how you can build and configure the environment on 3 types of Spark cluster manager with Apache Zeppelin using docker scripts."
 group: install
 ---
 <!--
@@ -56,12 +56,12 @@ spark_standalone bash;
 ```
 
 ### 3. Configure Spark interpreter in Zeppelin
-Set Spark master as `spark://localhost:7077` in Zeppelin **Interpreters** setting page.
+Set Spark master as `spark://<hostname>:7077` in Zeppelin **Interpreters** setting page.
 
 <img src="../assets/themes/zeppelin/img/docs-img/standalone_conf.png" />
 
 ### 4. Run Zeppelin with Spark interpreter
-After running single paragraph with Spark interpreter in Zeppelin, browse `https://localhost:8080` and check whether Spark cluster is running well or not.
+After running single paragraph with Spark interpreter in Zeppelin, browse `https://<hostname>:8080` and check whether Spark cluster is running well or not.
 
 <img src="../assets/themes/zeppelin/img/docs-img/spark_ui.png" />
 
@@ -72,3 +72,71 @@ ps -ef | grep spark
 ```
 
 
+## Spark on YARN mode
+You can simply set up [Spark on YARN](http://spark.apache.org/docs/latest/running-on-yarn.html) docker environment with below steps.
+
+> **Note :** Since Apache Zeppelin and Spark use same `8080` port for their web UI, you might need to change `zeppelin.server.port` in `conf/zeppelin-site.xml`.
+
+### 1. Build Docker file
+You can find docker script files under `scripts/docker/spark-cluster-managers`.
+
+```
+cd $ZEPPELIN_HOME/scripts/docker/spark-cluster-managers/spark_yarn
+docker build -t "spark_yarn" .
+```
+
+### 2. Run docker
+
+```
+docker run -it \
+ -p 5000:5000 \
+ -p 9000:9000 \
+ -p 9001:9001 \
+ -p 8088:8088 \
+ -p 8042:8042 \
+ -p 8030:8030 \
+ -p 8031:8031 \
+ -p 8032:8032 \
+ -p 8033:8033 \
+ -p 8080:8080 \
+ -p 7077:7077 \
+ -p 8888:8888 \
+ -p 8081:8081 \
+ -p 50010:50010 \
+ -p 50075:50075 \
+ -p 50020:50020 \
+ -p 50070:50070 \
+ --name spark_yarn \
+ -h sparkmaster \
+ spark_yarn bash;
+```
+
+### 3. Verify running Spark on YARN.
+
+You can simply verify the processes of Spark and YARN is running well in Docker with below command.
+
+```
+ps -ef
+```
+
+You can also check each application web UI for HDFS on `http://<hostname>:50070/`, YARN on `http://<hostname>:8088/cluster` and Spark on `http://<hostname>:8080/`.
+
+### 4. Configure Spark interpreter in Zeppelin
+Set following configurations to `conf/zeppelin-env.sh`.
+
+```
+export MASTER=yarn-client
+export HADOOP_CONF_DIR=[your_hadoop_conf_path]
+export SPARK_HOME=[your_spark_home_path]
+```
+
+`HADOOP_CONF_DIR`(Hadoop configuration path) is defined in `/scripts/docker/spark-cluster-managers/spark_yarn_cluster/hdfs_conf`.
+
+Don't forget to set Spark `master` as `yarn-client` in Zeppelin **Interpreters** setting page like below.
+
+<img src="../assets/themes/zeppelin/img/docs-img/zeppelin_yarn_conf.png" />
+
+### 5. Run Zeppelin with Spark interpreter
+After running a single paragraph with Spark interpreter in Zeppelin, browse `http://<hostname>:8088/cluster/apps` and check Zeppelin application is running well or not.
+
+<img src="../assets/themes/zeppelin/img/docs-img/yarn_applications.png" />
