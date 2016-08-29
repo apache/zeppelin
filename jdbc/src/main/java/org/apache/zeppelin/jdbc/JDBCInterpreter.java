@@ -15,7 +15,8 @@
 package org.apache.zeppelin.jdbc;
 
 import static org.apache.commons.lang.StringUtils.containsIgnoreCase;
-
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.io.IOException;
 import java.security.PrivilegedExceptionAction;
 import java.sql.Connection;
@@ -418,11 +419,11 @@ public class JDBCInterpreter extends Interpreter {
 
     } catch (Exception e) {
       logger.error("Cannot run " + sql, e);
-      StringBuilder stringBuilder = new StringBuilder();
-      stringBuilder.append(e.getMessage()).append("\n");
-      stringBuilder.append(e.getClass().toString()).append("\n");
-      stringBuilder.append(StringUtils.join(e.getStackTrace(), "\n"));
-      return new InterpreterResult(Code.ERROR, stringBuilder.toString());
+      ByteArrayOutputStream baos = new ByteArrayOutputStream();
+      PrintStream ps = new PrintStream(baos);
+      e.printStackTrace(ps);
+      String errorMsg = new String(baos.toByteArray(), StandardCharsets.UTF_8);
+      return new InterpreterResult(Code.ERROR, errorMsg);
     }
   }
 
