@@ -1446,8 +1446,8 @@ public class NotebookServer extends WebSocketServlet implements
 
       try {
         notebookServer.broadcastUpdateNotebookJobInfo(System.currentTimeMillis() - 5000);
-      } catch (IOException ioe) {
-        LOG.error("can not broadcast for job manager {}", ioe.getMessage());
+      } catch (IOException e) {
+        LOG.error("can not broadcast for job manager {}", e);
       }
     }
 
