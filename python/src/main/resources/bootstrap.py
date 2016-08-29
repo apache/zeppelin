@@ -117,7 +117,6 @@ class PyZeppelinContext(object):
     
     def __init__(self):
         self.max_result = 1000
-        self.py3 = bool(sys.version_info >= (3,))
     
     def input(self, name, defaultValue=""):
         print(self.errorMsg)
@@ -165,28 +164,27 @@ class PyZeppelinContext(object):
         #)
         body_buf.close(); header_buf.close()
     
-    def show_matplotlib(self, p, width="100%", height="100%",
-                        fmt='png', **kwargs):
+    def show_matplotlib(self, p, fmt="png", width="auto", height="auto", 
+                        **kwargs):
         """Matplotlib show function
         """
-        if fmt == 'png':
+        if fmt == "png":
             img = BytesIO()
             p.savefig(img, format=fmt)
-            html = "%html <img src={img} width={width}, height={height}>"
             img_str = b"data:image/png;base64,"
             img_str += base64.b64encode(img.getvalue().strip())
-            # Need to do this for python3 compatibility
-            if self.py3:
-                img_str = img_str.decode('ascii')
-                
-        elif fmt == 'svg':
+            img_tag = "<img src={img} style='width={width};height:{height}'>"
+            # Decoding is necessary for Python 3 compability
+            img_str = img_str.decode("ascii")
+            img_str = img_tag.format(img=img_str, width=width, height=height)
+        elif fmt == "svg":
             img = StringIO()
             p.savefig(img, format=fmt)
-            html = "%html <div style='width:{width};height:{height}'>{img}<div>"
             img_str = img.getvalue()
         else:
             raise ValueError("fmt must be 'png' or 'svg'")
         
+        html = "%html <div style='width:{width};height:{height}'>{img}<div>"
         print(html.format(width=width, height=height, img=img_str))
         img.close()
 
