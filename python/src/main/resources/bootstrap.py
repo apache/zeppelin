@@ -142,17 +142,19 @@ class PyZeppelinContext(object):
         """
         limit = len(df) > self.max_result
         header_buf = StringIO("")
-        header_buf.write(str(df.columns[0]))
-        for col in df.columns[1:]:
+        idx_name = df.index.name if df.index.name is not None else ""
+        header_buf.write(idx_name)
+        for col in df.columns:
             header_buf.write("\t")
             header_buf.write(str(col))
         header_buf.write("\n")
         
         body_buf = StringIO("")
         rows = df.head(self.max_result).values if limit else df.values
-        for row in rows:
-            body_buf.write(str(row[0]))
-            for cell in row[1:]:
+        index = df.index.values
+        for idx, row in zip(index, rows):
+            body_buf.write("%html <strong>{}</strong>".format(str(idx)))
+            for cell in row:
                 body_buf.write("\t")
                 body_buf.write(str(cell))
             body_buf.write("\n")
