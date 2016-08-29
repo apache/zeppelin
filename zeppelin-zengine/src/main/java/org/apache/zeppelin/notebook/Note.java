@@ -374,8 +374,8 @@ public class Note implements Serializable, ParagraphJobListener {
 
       if (index < 0 || index >= paragraphs.size()) {
         if (throwWhenIndexIsOutOfBound) {
-          throw new IndexOutOfBoundsException("paragraph size is " + paragraphs.size() +
-              " , index is " + index);
+          throw new IndexOutOfBoundsException(
+              "paragraph size is " + paragraphs.size() + " , index is " + index);
         } else {
           return;
         }
@@ -448,7 +448,7 @@ public class Note implements Serializable, ParagraphJobListener {
       return new HashMap<>();
     }
   }
-  
+
   private Map<String, String> populatePragraphInfo(Paragraph p) {
     Map<String, String> info = new HashMap<>();
     info.put("id", p.getId());
@@ -496,27 +496,15 @@ public class Note implements Serializable, ParagraphJobListener {
     p.setListener(jobListenerFactory.getParagraphJobListener(this));
     String requiredReplName = p.getRequiredReplName();
     Interpreter intp = factory.getInterpreter(getId(), requiredReplName);
-
     if (intp == null) {
-      // TODO(jongyoul): Make "%jdbc" configurable from JdbcInterpreter
-      if (conf.getUseJdbcAlias() && null != (intp = factory.getInterpreter(getId(), "jdbc"))) {
-        String pText = p.getText().replaceFirst(requiredReplName, "jdbc(" + requiredReplName + ")");
-        logger.debug("New paragraph: {}", pText);
-        p.setEffectiveText(pText);
-      } else {
-        String intpExceptionMsg = format("%s",
-          p.getJobName()
-          + "'s Interpreter "
-          + requiredReplName + " not found"
-        );
-        InterpreterException intpException = new InterpreterException(intpExceptionMsg);
-        InterpreterResult intpResult = new InterpreterResult(
-          InterpreterResult.Code.ERROR, intpException.getMessage()
-        );
-        p.setReturn(intpResult, intpException);
-        p.setStatus(Job.Status.ERROR);
-        throw intpException;
-      }
+      String intpExceptionMsg =
+          p.getJobName() + "'s Interpreter " + requiredReplName + " not found";
+      InterpreterException intpException = new InterpreterException(intpExceptionMsg);
+      InterpreterResult intpResult =
+          new InterpreterResult(InterpreterResult.Code.ERROR, intpException.getMessage());
+      p.setReturn(intpResult, intpException);
+      p.setStatus(Job.Status.ERROR);
+      throw intpException;
     }
     if (p.getConfig().get("enabled") == null || (Boolean) p.getConfig().get("enabled")) {
       intp.getScheduler().submit(p);
