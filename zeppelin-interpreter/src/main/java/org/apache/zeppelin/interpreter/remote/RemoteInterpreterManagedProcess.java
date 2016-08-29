@@ -124,14 +124,20 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
 
     long startTime = System.currentTimeMillis();
     while (System.currentTimeMillis() - startTime < getConnectTimeout()) {
-      if (RemoteInterpreterUtils.checkIfRemoteEndpointAccessible("localhost", port)) {
-        break;
-      } else {
-        try {
-          Thread.sleep(500);
-        } catch (InterruptedException e) {
-          logger.error("Exception in RemoteInterpreterProcess while synchronized reference " +
-              "Thread.sleep", e);
+      try {
+        if (RemoteInterpreterUtils.checkIfRemoteEndpointAccessible("localhost", port)) {
+          break;
+        } else {
+          try {
+            Thread.sleep(500);
+          } catch (InterruptedException e) {
+            logger.error("Exception in RemoteInterpreterProcess while synchronized reference " +
+                    "Thread.sleep", e);
+          }
+        }
+      } catch (Exception e) {
+        if (logger.isDebugEnabled()) {
+          logger.debug("Remote interpreter not yet accessible at localhost:" + port);
         }
       }
     }
