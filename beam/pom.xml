@@ -29,7 +29,7 @@
   <properties>
     <beam.hadoop.version>2.3.0</beam.hadoop.version>
     <beam.spark.version>1.4.1</beam.spark.version>
-    <beam.beam.version>0.1.0-incubating</beam.beam.version>
+    <beam.beam.version>0.2.0-incubating</beam.beam.version>
   </properties>
   
   <dependencies>
@@ -191,6 +191,12 @@
         </exclusion>
       </exclusions>
     </dependency>
+ <dependency>
+    <groupId>javax.servlet</groupId>
+    <artifactId>javax.servlet-api</artifactId>
+    <version>3.1.0</version>
+</dependency>
+
   
     <dependency>
       <groupId>org.apache.beam</groupId>
