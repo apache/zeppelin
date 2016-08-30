@@ -175,17 +175,6 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
     document.getElementById('note.checkpoint.message').value = '';
   };
 
-  $scope.$on('listRevisionHistory', function(event, data) {
-    console.log('We got the revisions %o', data);
-    $scope.noteRevisions = data.revisionList;
-  });
-
-  // receive certain revision of note
-  $scope.$on('noteRevision', function(event, data) {
-    console.log('received note revision %o', data);
-    //TODO(xxx): render it
-  });
-
   $scope.runNote = function() {
     BootstrapDialog.confirm({
       closable: true,
@@ -712,6 +701,20 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
   /*
   ** $scope.$on functions below
   */
+
+  $scope.$on('listRevisionHistory', function(event, data) {
+    console.log('We got the revisions %o', data);
+    $scope.noteRevisions = data.revisionList;
+  });
+
+  $scope.$on('noteRevision', function(event, note) {
+    console.log('received note revision %o', note);
+    if (note) {
+      $scope.note = note;
+    } else {
+      $location.path('/');
+    }
+  });
 
   $scope.$on('setConnectedStatus', function(event, param) {
     if (connectedOnce && param) {
