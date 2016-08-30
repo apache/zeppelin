@@ -27,6 +27,7 @@ import java.util.Properties;
 
 import com.google.gson.annotations.SerializedName;
 
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.dep.Dependency;
 
 import static org.apache.zeppelin.notebook.utility.IdHashes.generateId;
@@ -48,6 +49,7 @@ public class InterpreterSetting {
   private List<Dependency> dependencies;
   private InterpreterOption option;
   private transient String path;
+  private transient ZeppelinConfiguration conf;
 
   @Deprecated private transient InterpreterGroupFactory interpreterGroupFactory;
 
@@ -57,7 +59,7 @@ public class InterpreterSetting {
 
   public InterpreterSetting(String id, String name, String group,
       List<InterpreterInfo> interpreterInfos, Properties properties, List<Dependency> dependencies,
-      InterpreterOption option, String path) {
+      InterpreterOption option, String path, ZeppelinConfiguration conf) {
     this.id = id;
     this.name = name;
     this.group = group;
@@ -67,11 +69,12 @@ public class InterpreterSetting {
     this.option = option;
     this.path = path;
     this.status = Status.READY;
+    this.conf = conf;
   }
 
   public InterpreterSetting(String name, String group, List<InterpreterInfo> interpreterInfos,
-      Properties properties, List<Dependency> dependencies, InterpreterOption option, String path) {
-    this(generateId(), name, group, interpreterInfos, properties, dependencies, option, path);
+      Properties properties, List<Dependency> dependencies, InterpreterOption option, String path, ZeppelinConfiguration conf) {
+    this(generateId(), name, group, interpreterInfos, properties, dependencies, option, path, conf);
   }
 
   /**
@@ -79,9 +82,9 @@ public class InterpreterSetting {
    *
    * @param o interpreterSetting from interpreterSettingRef
    */
-  public InterpreterSetting(InterpreterSetting o) {
+  public InterpreterSetting(InterpreterSetting o, ZeppelinConfiguration conf) {
     this(generateId(), o.getName(), o.getGroup(), o.getInterpreterInfos(), o.getProperties(),
-        o.getDependencies(), o.getOption(), o.getPath());
+        o.getDependencies(), o.getOption(), o.getPath(), conf);
   }
 
   public String getId() {
@@ -164,7 +167,7 @@ public class InterpreterSetting {
 
   public InterpreterOption getOption() {
     if (option == null) {
-      option = new InterpreterOption();
+      option = new InterpreterOption(conf.getInterpreterRemote());
     }
 
     return option;

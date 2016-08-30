@@ -205,6 +205,9 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl',
             if (!setting.option) {
               setting.option = {};
             }
+            if (setting.option.remote === undefined) {
+              setting.option.remote = true;
+            }
             if (setting.option.isExistingProcess === undefined) {
               setting.option.isExistingProcess = false;
             }

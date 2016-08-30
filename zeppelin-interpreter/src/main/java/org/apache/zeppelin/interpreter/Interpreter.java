@@ -254,11 +254,6 @@ public abstract class Interpreter {
     private String path;
 
     public RegisteredInterpreter(String name, String group, String className,
-        Map<String, InterpreterProperty> properties) {
-      this(name, group, className, false, properties);
-    }
-
-    public RegisteredInterpreter(String name, String group, String className,
         boolean defaultInterpreter, Map<String, InterpreterProperty> properties) {
       super();
       this.name = name;
