@@ -34,9 +34,7 @@ import org.pegdown.PegDownProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * Markdown interpreter for Zeppelin.
- */
+/** Markdown interpreter for Zeppelin. */
 public class Markdown extends Interpreter {
   private PegDownProcessor md;
   static final Logger LOGGER = LoggerFactory.getLogger(Markdown.class);
@@ -47,10 +45,7 @@ public class Markdown extends Interpreter {
 
   @Override
   public void open() {
-    md = new PegDownProcessor(
-        Extensions.ALL_WITH_OPTIONALS,
-        5000 /** max parsing timeout as millis */
-    );
+    md = new PegDownProcessor(Extensions.ALL_WITH_OPTIONALS, 5000);
   }
 
   @Override
@@ -84,8 +79,8 @@ public class Markdown extends Interpreter {
 
   @Override
   public Scheduler getScheduler() {
-    return SchedulerFactory.singleton().createOrGetParallelScheduler(
-        Markdown.class.getName() + this.hashCode(), 5);
+    return SchedulerFactory.singleton()
+        .createOrGetParallelScheduler(Markdown.class.getName() + this.hashCode(), 5);
   }
 
   @Override

@@ -29,103 +29,104 @@ import org.junit.Test;
 
 public class MarkdownTest {
 
-	Markdown md;
+  Markdown md;
 
-	@Before
-	public void setUp() throws Exception {
-		md = new Markdown(new Properties());
-		md.open();
-	}
+  @Before
+  public void setUp() throws Exception {
+    md = new Markdown(new Properties());
+    md.open();
+  }
 
-	@After
-	public void tearDown() throws Exception {
-	    md.close();
-	}
+  @After
+  public void tearDown() throws Exception {
+    md.close();
+  }
 
-	@Test
-	public void testStrikethrough() {
-		InterpreterResult result = md.interpret("This is ~~deleted~~ text", null);
-		assertEquals("<p>This is <del>deleted</del> text</p>", result.message());
-	}
+  @Test
+  public void testStrikethrough() {
+    InterpreterResult result = md.interpret("This is ~~deleted~~ text", null);
+    assertEquals("<p>This is <del>deleted</del> text</p>", result.message());
+  }
 
-	@Test
-	public void testItalics() {
-		InterpreterResult result = md.interpret("This is *italics* text", null);
-		assertEquals("<p>This is <em>italics</em> text</p>", result.message());
-	}
+  @Test
+  public void testItalics() {
+    InterpreterResult result = md.interpret("This is *italics* text", null);
+    assertEquals("<p>This is <em>italics</em> text</p>", result.message());
+  }
 
-	@Test
-	public void testStrongEmphasis() {
-		InterpreterResult result = md.interpret("This is **strong emphasis** text", null);
-		assertEquals("<p>This is <strong>strong emphasis</strong> text</p>", result.message());
-	}
+  @Test
+  public void testStrongEmphasis() {
+    InterpreterResult result = md.interpret("This is **strong emphasis** text", null);
+    assertEquals("<p>This is <strong>strong emphasis</strong> text</p>", result.message());
+  }
 
-	@Test
-	public void testSimpleTable() {
-		InterpreterResult result = md.interpret(
-			"Markdown | Less | Pretty\n" +
-			"--- | --- | ---\n" +
-			"*Still* | `renders` | **nicely**\n" +
-			"1 | 2 | 3", null);
+  @Test
+  public void testSimpleTable() {
+    InterpreterResult result =
+        md.interpret(
+            "Markdown | Less | Pretty\n"
+                + "--- | --- | ---\n"
+                + "*Still* | `renders` | **nicely**\n"
+                + "1 | 2 | 3",
+            null);
 
-		assertEquals(
-			"<table>\n" +
-				"  <thead>\n" +
-				"    <tr>\n" +
-				"      <th>Markdown </th>\n" +
-				"      <th>Less </th>\n" +
-				"      <th>Pretty</th>\n" +
-				"    </tr>\n" +
-				"  </thead>\n" +
-				"  <tbody>\n" +
-				"    <tr>\n" +
-				"      <td><em>Still</em> </td>\n" +
-				"      <td><code>renders</code> </td>\n" +
-				"      <td><strong>nicely</strong></td>\n" +
-				"    </tr>\n" +
-				"    <tr>\n" +
-				"      <td>1 </td>\n" +
-				"      <td>2 </td>\n" +
-				"      <td>3</td>\n" +
-				"    </tr>\n" +
-				"  </tbody>\n" +
-				"</table>",
-			result.message());
-	}
+    assertEquals(
+        "<table>\n"
+            + "  <thead>\n"
+            + "    <tr>\n"
+            + "      <th>Markdown </th>\n"
+            + "      <th>Less </th>\n"
+            + "      <th>Pretty</th>\n"
+            + "    </tr>\n"
+            + "  </thead>\n"
+            + "  <tbody>\n"
+            + "    <tr>\n"
+            + "      <td><em>Still</em> </td>\n"
+            + "      <td><code>renders</code> </td>\n"
+            + "      <td><strong>nicely</strong></td>\n"
+            + "    </tr>\n"
+            + "    <tr>\n"
+            + "      <td>1 </td>\n"
+            + "      <td>2 </td>\n"
+            + "      <td>3</td>\n"
+            + "    </tr>\n"
+            + "  </tbody>\n"
+            + "</table>",
+        result.message());
+  }
 
-	@Test
-	public void testAlignedTable() {
-		InterpreterResult result = md.interpret(
-			"| First Header | Second Header |         Third Header |\n" +
-			"| :----------- | :-----------: | -------------------: |\n" +
-			"| First row    |      Data     | Very long data entry |\n" +
-			"| Second row   |    **Cell**   |               *Cell* |",
-			null
-		);
+  @Test
+  public void testAlignedTable() {
+    InterpreterResult result =
+        md.interpret(
+            "| First Header | Second Header |         Third Header |\n"
+                + "| :----------- | :-----------: | -------------------: |\n"
+                + "| First row    |      Data     | Very long data entry |\n"
+                + "| Second row   |    **Cell**   |               *Cell* |",
+            null);
 
-		assertEquals(
-			"<table>\n" +
-				"  <thead>\n" +
-				"    <tr>\n" +
-				"      <th align=\"left\">First Header </th>\n" +
-				"      <th align=\"center\">Second Header </th>\n" +
-				"      <th align=\"right\">Third Header </th>\n" +
-				"    </tr>\n" +
-				"  </thead>\n" +
-				"  <tbody>\n" +
-				"    <tr>\n" +
-				"      <td align=\"left\">First row </td>\n" +
-				"      <td align=\"center\">Data </td>\n" +
-				"      <td align=\"right\">Very long data entry </td>\n" +
-				"    </tr>\n" +
-				"    <tr>\n" +
-				"      <td align=\"left\">Second row </td>\n" +
-				"      <td align=\"center\"><strong>Cell</strong> </td>\n" +
-				"      <td align=\"right\"><em>Cell</em> </td>\n" +
-				"    </tr>\n" +
-				"  </tbody>\n" +
-				"</table>",
-			result.message()
-		);
-	}
+    assertEquals(
+        "<table>\n"
+            + "  <thead>\n"
+            + "    <tr>\n"
+            + "      <th align=\"left\">First Header </th>\n"
+            + "      <th align=\"center\">Second Header </th>\n"
+            + "      <th align=\"right\">Third Header </th>\n"
+            + "    </tr>\n"
+            + "  </thead>\n"
+            + "  <tbody>\n"
+            + "    <tr>\n"
+            + "      <td align=\"left\">First row </td>\n"
+            + "      <td align=\"center\">Data </td>\n"
+            + "      <td align=\"right\">Very long data entry </td>\n"
+            + "    </tr>\n"
+            + "    <tr>\n"
+            + "      <td align=\"left\">Second row </td>\n"
+            + "      <td align=\"center\"><strong>Cell</strong> </td>\n"
+            + "      <td align=\"right\"><em>Cell</em> </td>\n"
+            + "    </tr>\n"
+            + "  </tbody>\n"
+            + "</table>",
+        result.message());
+  }
 }
