@@ -2,7 +2,9 @@
 layout: sideMenu
 title: "Web Application"
 description: ""
-group: nav-contrib
+group:
+- nav-contrib
+- nav-contrib-front
 menu: nav-contrib-front
 ---
 <!--
