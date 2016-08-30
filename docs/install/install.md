@@ -195,8 +195,8 @@ You can configure Apache Zeppelin with both **environment variables** in `conf/z
 
 <table class="table-configuration">
   <tr>
-    <th>zepplin-env.sh</th>
-    <th>zepplin-site.xml</th>
+    <th>zeppelin-env.sh</th>
+    <th>zeppelin-site.xml</th>
     <th>Default value</th>
     <th>Description</th>
   </tr>
