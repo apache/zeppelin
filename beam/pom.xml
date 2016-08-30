@@ -66,7 +66,7 @@
       <artifactId>spark-streaming_2.10</artifactId>
       <version>${beam.spark.version}</version>
     </dependency>
-  
+
     <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-mapreduce-client-core</artifactId>
@@ -132,13 +132,7 @@
         </exclusion>
       </exclusions>
     </dependency>
-  
-    <dependency>
-      <groupId>org.apache.hadoop</groupId>
-      <artifactId>hadoop-core</artifactId>
-      <version>1.2.1</version>
-    </dependency>
-  
+
     <dependency>
       <groupId>com.thoughtworks.qdox</groupId>
       <artifactId>qdox</artifactId>
