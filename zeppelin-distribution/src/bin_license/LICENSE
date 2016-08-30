@@ -115,6 +115,7 @@ The following components are provided under Apache License.
     (Apache 2.0) Servlet API (org.mortbay.jetty:servlet-api:2.5-20081211 - https://en.wikipedia.org/wiki/Jetty_(web_server))
     (Apache 2.0) Google HTTP Client Library for Java (com.google.http-client:google-http-client-jackson2:1.21.0 - https://github.com/google/google-http-java-client/tree/dev/google-http-client-jackson2)
     (Apache 2.0) angular-esri-map (https://github.com/Esri/angular-esri-map)
+    (Apache 2.0) pegdown (org.pegdown:pegdown:1.6.0 - https://github.com/sirthias/pegdown)
 
 ========================================================================
 MIT licenses
