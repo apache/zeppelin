@@ -865,6 +865,30 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
     }
   };
 
+  $scope.parseTableCell = function(cell) {
+    //here we try to automatically parse the data type for each
+    //cell in the table, i.e. string/number/date
+    // 1. is this a date?
+    var supportedDateFormats = ['MM-DD-YYYY', 'DD-MM-YYYY', 'MM/DD/YYYY',
+    'DD/MM/YYYY', 'YYYY-MM-DD', 'YYYY/MM/DD',
+    'YYYY-MM-DD HH:mm:ss', 'YYYY-MM-DD hh:mm:ss', 'YYYY-MM-DD HH:mm:ss.SSS',
+    'YYYY-MM-DD hh:mm:ss.SSS', 'YYYY-MM-DDTHH:mm:ss', 'YYYY-MM-DDThh:mm:ss',
+    'YYYY-MM-DDTHH:mm:ss.SSS', 'YYYY-MM-DDThh:mm:ss.SSS'];
+    for (var i = 0; i < supportedDateFormats.length; i++) {
+      var d = moment(cell, supportedDateFormats[i], true); // use strict parsing
+      if (d.isValid()) {
+        d.format(supportedDateFormats[i]);
+        return d;
+      }
+    }
+    // 2. is this a number (possibly)?
+    if (!isNaN(cell)) {
+      return cell.length === 0 ? cell : (Number(cell) === Number.NaN ? cell : Number(cell));
+    } else {
+      return cell;
+    }
+  };
+
   $scope.loadTableData = function(result) {
     if (!result) {
       return;
@@ -898,8 +922,9 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
           if (i === 0) {
             columnNames.push({name: col, index: j, aggr: 'sum'});
           } else {
-            cols.push(col);
-            cols2.push({key: (columnNames[i]) ? columnNames[i].name : undefined, value: col});
+            var parsedCol = $scope.parseTableCell(col);
+            cols.push(parsedCol);
+            cols2.push({key: (columnNames[i]) ? columnNames[i].name : undefined, value: parsedCol});
           }
         }
         if (i !== 0) {
@@ -950,13 +975,6 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
   };
 
   var setTable = function(data, refresh) {
-    data.rows.forEach(function(row, rowIndex, rowArray) {
-      row.forEach(function(ele, colIndex, colArray) {
-        if (!isNaN(ele)) {
-          colArray[colIndex] = ele.length === 0 ? ele : (Number(ele) === Number.NaN ? ele : Number(ele));
-        }
-      });
-    });
     var renderTable = function() {
       var height = $scope.paragraph.config.graph.height;
       var container = angular.element('#p' + $scope.paragraph.id + '_table').css('height', height).get(0);
@@ -985,7 +1003,9 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
         cells: function(row, col, prop) {
           var cellProperties = {};
           cellProperties.renderer = function(instance, td, row, col, prop, value, cellProperties) {
-            if (!isNaN(value)) {
+            if (value instanceof moment) {
+              td.innerHTML = value._i;
+            } else if (!isNaN(value)) {
               cellProperties.format = '0,0.[00000]';
               td.style.textAlign = 'left';
               Handsontable.renderers.NumericRenderer.apply(this, arguments);
