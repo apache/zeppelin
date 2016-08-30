@@ -43,9 +43,10 @@
             }
           };
         })
-        .config(function($httpProvider, $routeProvider, ngToastProvider) {
+        .config(function($httpProvider, $routeProvider, ngToastProvider, $compileProvider) {
           // withCredentials when running locally via grunt
           $httpProvider.defaults.withCredentials = true;
+          $compileProvider.debugInfoEnabled(false);
 
           $routeProvider
             .when('/', {
