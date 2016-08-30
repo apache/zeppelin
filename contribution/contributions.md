@@ -1,8 +1,9 @@
 ---
 layout: sideMenu
-title: "General"
+title: "Contributions"
 description: ""
 menu: nav-contrib
+group: nav-contrib
 ---
 <!--
 Licensed under the Apache License, Version 2.0 (the "License");

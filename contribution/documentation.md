@@ -2,6 +2,7 @@
 layout: sideMenu
 title: "Documentation"
 description: ""
+menu: nav-contrib
 group: nav-contrib
 ---
 <!--
@@ -37,7 +38,7 @@ bundle install
 
 For the further information about requirements, please see [here](https://help.github.com/articles/setting-up-your-github-pages-site-locally-with-jekyll/#requirements).
 
-On OS X 10.9, you may need to do 
+On OS X 10.9, you may need to do
 
 ```
 xcode-select --install
@@ -60,7 +61,7 @@ Using the above command, Jekyll will start a web server at `http://localhost:400
 
 ```
 docs/
- ├── _includes/themes/zeppelin 
+ ├── _includes/themes/zeppelin
  │   ├── _navigation.html
  │   └── default.html
  ├── _layouts
@@ -98,7 +99,7 @@ docs/
  - `_config.yml`: defines configuration options for docs website. See [jekyll/configuration](https://jekyllrb.com/docs/configuration/) for the other available config variables.
  - `index.md`: the main page of `http://zeppelin.apache.org/docs/<ZEPPELIN_VERSION>/`
 
- 
+
 ### Markdown
 Zeppelin documentation pages are written with [Markdown](http://daringfireball.net/projects/markdown/). It is possible to use [GitHub flavored syntax](https://help.github.com/categories/writing-on-github/) and intermix plain HTML.
 
@@ -126,7 +127,7 @@ All documents are structured with headings. From these headings, you can automat
 ```
 #    Level-1 heading <- used only for the main title
 ##   Level-2 heading <- start with this
-###  Level-3 heading 
+###  Level-3 heading
 #### Level-4 heading <- won't be converted in TOC from this level
 ```
 
@@ -156,7 +157,7 @@ If you're going to create new pages, there are some spots you need to add the lo
 
 ### Deploy to ASF svnpubsub infra
  1. generate static website in `./_site`
-    
+
     ```
     # go to /docs under Zeppelin source
     bundle exec jekyll build --safe
