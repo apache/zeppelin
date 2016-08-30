@@ -20,7 +20,7 @@ limitations under the License.
 
 # Contribution Guidelines
 
-**Zeppelin** is [Apache2 License](https://github.com/apache/zeppelin/blob/master/CONTRIBUTING.md) Software.
+**Apache Zeppelin** is an [Apache2 License](https://github.com/apache/zeppelin/blob/master/CONTRIBUTING.md) Software.
 Contributing to Zeppelin (Source code, Documents, Image, Website) means you agree to the Apache2 License.
 
 1. Make sure your issue is not already in the [Jira issue tracker](https://issues.apache.org/jira/browse/ZEPPELIN)
