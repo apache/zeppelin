@@ -25,7 +25,7 @@ jQuery(function() {
     this.field('group');
   });
 
-  window.data = $.getJSON('/search_data.json');
+  window.data = $.getJSON('search_data.json');
   window.data.then(function(loaded_data){
     $.each(loaded_data, function(index, value){
       window.idx.add(
