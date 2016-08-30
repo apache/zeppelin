@@ -124,13 +124,14 @@ public interface NotebookRepo {
 
     @Override
     public boolean equals(Object o) {
-      if (this == o) return true;
-      if (!(o instanceof Revision)) return false;
-
+      if (this == o) {
+        return true;
+      }
+      if (!(o instanceof Revision)) {
+        return false;
+      }
       Revision revision = (Revision) o;
-
       return id.equals(revision.id);
-
     }
 
     @Override

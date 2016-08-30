@@ -245,19 +245,6 @@ You can get more information on generating `token` and using authentication on t
 
 Using IpfsNotebookRepo you can use Ipfs to save Note revisions and retrieve a particular revision.
 
-**Installing ipfs**
-* Download and install [ipfs](https://ipfs.io/docs/install/) for your OS.
-* Enter the following commands
-    * `ipfs init`
-    *  `ipfs daemon`
-
-`ipfs daemon` will start the ipfs. In the output you will see the following.
->API server listening on /ip4/127.0.0.1/tcp/5001</br>
->Gateway (readonly) server listening on /ip4/127.0.0.1/tcp/8080
-
-You can edit the following ports with `ipfs config edit`.
-As zeppelin also uses 8080 by default you might want to chage the gateway server or run zeppelin on another port.
-
 Comment out the following in **zeppelin-site.xml**
 
 Make sure you enter the correct ipfs apiServer.

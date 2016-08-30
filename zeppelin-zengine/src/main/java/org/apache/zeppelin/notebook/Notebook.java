@@ -189,20 +189,25 @@ public class Notebook implements NoteEventListener {
    * @return note
    * @throws IOException
    */
-  public Note importNote(String url, AuthenticationInfo subject) throws IOException {
+  public Note importNoteFromBackend(String url, String noteName, AuthenticationInfo subject)
+      throws IOException {
     Note newNote = null;
     Note oldNote = notebookRepo.getNoteFromUrl(url, subject);
     if (oldNote != null) {
       try {
         newNote = createNote(subject);
-        newNote.setName(oldNote.getName());
+        if (noteName != null) {
+          newNote.setName(noteName);
+        } else {
+          newNote.setName(oldNote.getName());
+        }
         List<Paragraph> paragraphs = oldNote.getParagraphs();
         for (Paragraph p : paragraphs) {
           newNote.addCloneParagraph(p);
         }
         newNote.persist(subject);
       } catch (IOException e) {
-        logger.error(e.toString(), e);
+        logger.error("Importing note from " + url + " failed", e);
         throw e;
       }
     }

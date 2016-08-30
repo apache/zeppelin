@@ -170,7 +170,7 @@
   <name>zeppelin.notebook.ipfs.apiServer</name>
   <value>http://localhost:5001/api/v0/</value>
   <description>ipfs api Server Address</description>
-  </property>
+</property>
 -->
 
 <property>

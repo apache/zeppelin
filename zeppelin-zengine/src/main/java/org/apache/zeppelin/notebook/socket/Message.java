@@ -52,9 +52,12 @@ public class Message {
     IMPORT_NOTE,  // [c-s] import notebook
                   // @param object notebook
     IMPORT_NOTE_URL,  // [c-s] import notebook
-                      // @param hash ipfs hash
+                      // @param type ipfs for now
+                      // @param options hash or magnetlink or any future url
     IMPORT_NOTE_STATUS, //[s-c] notebook import through url failed
                         // @param status success or failure
+                        // @param type ipfs for now
+                        // @param options hash or magnetlink or any future url
     NOTE_UPDATE,
 
     RUN_PARAGRAPH, // [c-s] run paragraph

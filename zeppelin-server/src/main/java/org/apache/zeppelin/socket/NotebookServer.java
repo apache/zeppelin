@@ -735,19 +735,25 @@ public class NotebookServer extends WebSocketServlet implements
                                    Notebook notebook, Message fromMessage) throws IOException {
     Note note = null;
     if (fromMessage != null) {
-      String urlHash = (String) fromMessage.get("hash");
-      AuthenticationInfo subject = new AuthenticationInfo(fromMessage.principal);
-      note = notebook.importNote(urlHash, subject);
-      Message message = new Message(OP.IMPORT_NOTE_STATUS);
-      if (note != null) {
-        note.persist(subject);
-        message.put("importStatus", "success");
+      String type = (String) fromMessage.get("type");
+      if (type.equals("ipfs")) {
+        String name = (String) fromMessage.get("name");
+        Map<String, Object> options = ((Map<String, Object>) fromMessage.get("options"));
+        String urlHash = (String) options.get("hash");
+        AuthenticationInfo subject = new AuthenticationInfo(fromMessage.principal);
+        note = notebook.importNoteFromBackend(urlHash, name, subject);
+        Message message = new Message(OP.IMPORT_NOTE_STATUS);
+        message.put("type", "ipfs");
+        message.put("options", options);
+        if (note != null) {
+          note.persist(subject);
+          message.put("importStatus", "success");
+        } else {
+          message.put("importStatus", "failure");
+        }
+        conn.send(serializeMessage(message));
+        broadcastNoteList(subject);
       }
-      else {
-        message.put("importStatus", "failure");
-      }
-      conn.send(serializeMessage(message));
-      broadcastNoteList(subject);
     }
     return note;
   }

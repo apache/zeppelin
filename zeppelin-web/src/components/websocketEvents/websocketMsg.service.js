@@ -151,11 +151,15 @@ angular.module('zeppelinWebApp').service('websocketMsgSrv', function($rootScope,
       });
     },
 
-    importNoteFromIpfs: function(hashUrl) {
+    importNoteFromBackend: function(hashUrl, name, type) {
       websocketEvents.sendNewEvent({
         op: 'IMPORT_NOTE_URL',
         data: {
-          hash: hashUrl
+          type: type,
+          name: name,
+          options: {
+            hash: hashUrl
+          }
         }
       });
     },

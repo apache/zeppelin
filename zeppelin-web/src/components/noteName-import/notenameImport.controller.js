@@ -19,7 +19,7 @@ angular.module('zeppelinWebApp').controller('NoteImportCtrl', function($scope, $
   $scope.note = {};
   $scope.note.step1 = true;
   $scope.note.step2 = false;
-  $scope.note.urlType = 'normal';
+  $scope.note.isOtherUrl = false;
 
   vm.resetFlags = function() {
     $scope.note = {};
@@ -66,7 +66,7 @@ angular.module('zeppelinWebApp').controller('NoteImportCtrl', function($scope, $
   vm.importNote = function() {
     $scope.note.errorText = '';
     if ($scope.note.importUrl) {
-      if ($scope.note.urlType === 'normal') {
+      if (!$scope.note.isOtherUrl) {
         jQuery.getJSON($scope.note.importUrl, function(result) {
           vm.processImportJson(result);
         }).fail(function() {
@@ -74,7 +74,7 @@ angular.module('zeppelinWebApp').controller('NoteImportCtrl', function($scope, $
           $scope.$apply();
         });
       } else {
-        websocketMsgSrv.importNoteFromIpfs($scope.note.importUrl);
+        websocketMsgSrv.importNoteFromBackend($scope.note.importUrl, $scope.note.noteImportName, 'ipfs');
       }
     } else {
       $scope.note.errorText = 'Enter URL';
@@ -116,25 +116,21 @@ angular.module('zeppelinWebApp').controller('NoteImportCtrl', function($scope, $
     angular.element('#noteImportModal').modal('hide');
   });
 
-  $scope.$on('importNoteFail', function(event, data) {
-    vm.resetFlags();
-    angular.element('#noteImportModal').modal('hide');
-    var status = data.importStatus;
-    console.log('Data is %o', data);
-    if (status === 'success') {
-      ngToast.success({
-        content: 'Successfully imported Note',
+  $scope.$on('importNoteResult', function(event, data) {
+    if (data.type === 'ipfs') {
+      var ngToastConf = {
+        content: 'Failed to import Note with hash ' + data.options.hash,
         verticalPosition: 'bottom',
         horizontalPosition: 'center',
         timeout: '5000'
-      });
-    } else {
-      ngToast.danger({
-        content: 'Failed to import Note with hash',
-        verticalPosition: 'bottom',
-        horizontalPosition: 'center',
-        timeout: '5000'
-      });
+      };
+
+      if (data.importStatus === 'success') {
+        ngToastConf.content = 'Successfully imported Note with hash ' + data.options.hash,
+        ngToast.success(ngToastConf);
+      } else {
+        ngToast.danger(ngToastConf);
+      }
     }
   });
 

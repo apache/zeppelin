@@ -63,12 +63,8 @@ public class IPFSNotebookRepo extends VFSNotebookRepo implements NotebookRepo {
   private static final String API_SERVER_PROPERTY_NAME = "zeppelin.notebook.ipfs.apiServer";
   private static final String DEFAULT_API_SERVER = "http://localhost:5001/api/v0/";
   private static final Logger LOG = LoggerFactory.getLogger(IPFSNotebookRepo.class);
-  Type simpleType = new TypeToken<Map<String, String>>() {
-  }.getType();
   private ExecutorService executorService = Executors.newCachedThreadPool();
   private Gson gson;
-  private Type pinType = new TypeToken<Map<String, Object>>() {
-  }.getType();
   private Ipfs ipfs;
   private FileObject ipfsNoteHashesJson;
   private String encoding;
@@ -92,6 +88,8 @@ public class IPFSNotebookRepo extends VFSNotebookRepo implements NotebookRepo {
     if (versionJson == null) {
       throw new IOException("Make sure the ipfs daemon is running on given url" + ipfsApiServer);
     }
+    Type simpleType = new TypeToken<Map<String, String>>() {
+    }.getType();
     Map<String, String> data = gson.fromJson(versionJson, simpleType);
     String version = data.get("Version");
     if (!version.equals("0.4.2")) {
@@ -124,8 +122,9 @@ public class IPFSNotebookRepo extends VFSNotebookRepo implements NotebookRepo {
     InputStream ins = content.getInputStream();
     String json = IOUtils.toString(ins, encoding);
     ins.close();
-    if (json.isEmpty() || json == null)
+    if (json.isEmpty() || json == null) {
       return new HashMap<>();
+    }
     Type type = new TypeToken<Map<String, List<Revision>>>() {
     }.getType();
     Map<String, List<Revision>> map = gson.fromJson(json, type);
@@ -155,8 +154,9 @@ public class IPFSNotebookRepo extends VFSNotebookRepo implements NotebookRepo {
     } catch (ExecutionException e) {
       LOG.error("Failed to get note", e);
       Throwable cause = e.getCause();
-      if (cause instanceof IOException)
+      if (cause instanceof IOException) {
         throw (IOException) cause;
+      }
     } catch (TimeoutException e) {
       LOG.error("TimeOut reached", e);
     } finally {
@@ -216,7 +216,8 @@ public class IPFSNotebookRepo extends VFSNotebookRepo implements NotebookRepo {
       if (pinJsonResponse == null) {
         throw new IOException("Failed to retrieve pinned hashes");
       }
-
+      Type pinType = new TypeToken<Map<String, Object>>() {
+      }.getType();
       Map<String, Object> data = gson.fromJson(pinJsonResponse, pinType);
       Map<String, Object> pinnedObjects = (Map<String, Object>) data.get("Keys");
 
@@ -312,6 +313,8 @@ public class IPFSNotebookRepo extends VFSNotebookRepo implements NotebookRepo {
   public Note get(String noteId, String revId, AuthenticationInfo subject) throws IOException {
     Note note = null;
     String pinJsonResponse = ipfs.pinLs();
+    Type pinType = new TypeToken<Map<String, Object>>() {
+    }.getType();
     Map<String, Object> data = gson.fromJson(pinJsonResponse, pinType);
     Map<String, Object> allPinnedObjects = (Map<String, Object>) data.get("Keys");
 
@@ -337,7 +340,7 @@ public class IPFSNotebookRepo extends VFSNotebookRepo implements NotebookRepo {
     try {
       ipfs.getClient().close();
     } catch (IOException e) {
-      LOG.info("Couldn't successfully close the ipfsClient");
+      LOG.info("Couldn't successfully close the ipfsClient", e);
     }
     executorService.shutdown();
   }
