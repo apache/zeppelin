@@ -13,6 +13,7 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.notebook.repo.zeppelinhub.rest.ZeppelinhubRestApiHandler;
+import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -33,7 +34,7 @@ public class ZeppelinHubRepoTest {
     System.setProperty(ZeppelinHubRepo.ZEPPELIN_CONF_PROP_NAME_TOKEN, "AAA-BBB-CCC-00");
 
     ZeppelinConfiguration conf = new ZeppelinConfiguration();
-    repo = new ZeppelinHubRepo(conf);
+    repo = new ZeppelinHubRepo(conf, AuthenticationInfo.ANONYMOUS_AUTHENTICATION_INFO);
     repo.setZeppelinhubRestApiHandler(getMockedZeppelinHandler());
   }
 
@@ -54,25 +55,25 @@ public class ZeppelinHubRepoTest {
     System.setProperty(ZeppelinHubRepo.ZEPPELIN_CONF_PROP_NAME_SERVER, testAddr);
     
     ZeppelinConfiguration config = new ZeppelinConfiguration();
-    ZeppelinHubRepo repository = new ZeppelinHubRepo(config);
+    ZeppelinHubRepo repository = new ZeppelinHubRepo(config, AuthenticationInfo.ANONYMOUS_AUTHENTICATION_INFO);
     assertThat(repository.getZeppelinHubUrl(config)).isEqualTo("http://zeppelinhub.ltd");
 
     System.setProperty(ZeppelinHubRepo.ZEPPELIN_CONF_PROP_NAME_SERVER, "yolow");
 
     config = new ZeppelinConfiguration();
-    repository = new ZeppelinHubRepo(config);
+    repository = new ZeppelinHubRepo(config, AuthenticationInfo.ANONYMOUS_AUTHENTICATION_INFO);
     assertThat(repository.getZeppelinHubUrl(config)).isEqualTo("https://www.zeppelinhub.com");
     
     System.setProperty(ZeppelinHubRepo.ZEPPELIN_CONF_PROP_NAME_SERVER, "http://zeppelinhub.ltd:4242");
 
     config = new ZeppelinConfiguration();
-    repository = new ZeppelinHubRepo(config);
+    repository = new ZeppelinHubRepo(config, AuthenticationInfo.ANONYMOUS_AUTHENTICATION_INFO);
     assertThat(repository.getZeppelinHubUrl(config)).isEqualTo("http://zeppelinhub.ltd:4242");
     
     System.setProperty(ZeppelinHubRepo.ZEPPELIN_CONF_PROP_NAME_SERVER, "http://zeppelinhub.ltd:0");
 
     config = new ZeppelinConfiguration();
-    repository = new ZeppelinHubRepo(config);
+    repository = new ZeppelinHubRepo(config, AuthenticationInfo.ANONYMOUS_AUTHENTICATION_INFO);
     assertThat(repository.getZeppelinHubUrl(config)).isEqualTo("http://zeppelinhub.ltd");
   }
 
@@ -81,43 +82,43 @@ public class ZeppelinHubRepoTest {
     System.setProperty(ZeppelinHubRepo.ZEPPELIN_CONF_PROP_NAME_SERVER, testAddr);
 
     ZeppelinConfiguration config = new ZeppelinConfiguration();
-    ZeppelinHubRepo repository = new ZeppelinHubRepo(config);
+    ZeppelinHubRepo repository = new ZeppelinHubRepo(config, AuthenticationInfo.ANONYMOUS_AUTHENTICATION_INFO);
     assertThat(repository.getZeppelinhubWebsocketUri(config)).isEqualTo("ws://zeppelinhub.ltd:80/async");
 
     System.setProperty(ZeppelinHubRepo.ZEPPELIN_CONF_PROP_NAME_SERVER, "https://zeppelinhub.ltd");
 
     config = new ZeppelinConfiguration();
-    repository = new ZeppelinHubRepo(config);
+    repository = new ZeppelinHubRepo(config, AuthenticationInfo.ANONYMOUS_AUTHENTICATION_INFO);
     assertThat(repository.getZeppelinhubWebsocketUri(config)).isEqualTo("wss://zeppelinhub.ltd:443/async");
 
     System.setProperty(ZeppelinHubRepo.ZEPPELIN_CONF_PROP_NAME_SERVER, "yolow");
 
     config = new ZeppelinConfiguration();
-    repository = new ZeppelinHubRepo(config);
+    repository = new ZeppelinHubRepo(config, AuthenticationInfo.ANONYMOUS_AUTHENTICATION_INFO);
     assertThat(repository.getZeppelinhubWebsocketUri(config)).isEqualTo("wss://www.zeppelinhub.com:443/async");
 
     System.setProperty(ZeppelinHubRepo.ZEPPELIN_CONF_PROP_NAME_SERVER, "http://zeppelinhub.ltd:4242");
 
     config = new ZeppelinConfiguration();
-    repository = new ZeppelinHubRepo(config);
+    repository = new ZeppelinHubRepo(config, AuthenticationInfo.ANONYMOUS_AUTHENTICATION_INFO);
     assertThat(repository.getZeppelinhubWebsocketUri(config)).isEqualTo("ws://zeppelinhub.ltd:4242/async");
 
     System.setProperty(ZeppelinHubRepo.ZEPPELIN_CONF_PROP_NAME_SERVER, "https://www.zeppelinhub.com");
 
     config = new ZeppelinConfiguration();
-    repository = new ZeppelinHubRepo(config);
+    repository = new ZeppelinHubRepo(config, AuthenticationInfo.ANONYMOUS_AUTHENTICATION_INFO);
     assertThat(repository.getZeppelinhubWebsocketUri(config)).isEqualTo("wss://www.zeppelinhub.com:443/async");
 
     System.setProperty(ZeppelinHubRepo.ZEPPELIN_CONF_PROP_NAME_SERVER, "http://www.zeppelinhub.com");
 
     config = new ZeppelinConfiguration();
-    repository = new ZeppelinHubRepo(config);
+    repository = new ZeppelinHubRepo(config, AuthenticationInfo.ANONYMOUS_AUTHENTICATION_INFO);
     assertThat(repository.getZeppelinhubWebsocketUri(config)).isEqualTo("ws://www.zeppelinhub.com:80/async");
 
     System.setProperty(ZeppelinHubRepo.ZEPPELIN_CONF_PROP_NAME_SERVER, "https://www.zeppelinhub.com:4242");
 
     config = new ZeppelinConfiguration();
-    repository = new ZeppelinHubRepo(config);
+    repository = new ZeppelinHubRepo(config, AuthenticationInfo.ANONYMOUS_AUTHENTICATION_INFO);
     assertThat(repository.getZeppelinhubWebsocketUri(config)).isEqualTo("wss://www.zeppelinhub.com:4242/async");
   }
 

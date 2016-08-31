@@ -58,7 +58,7 @@ public class NotebookRepoSync implements NotebookRepo {
    * @throws - Exception
    */
   @SuppressWarnings("static-access")
-  public NotebookRepoSync(ZeppelinConfiguration conf) {
+  public NotebookRepoSync(ZeppelinConfiguration conf, AuthenticationInfo authenticationInfo) {
     config = conf;
     oneWaySync = conf.getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_ONE_WAY_SYNC);
     String allStorageClassNames = conf.getString(ConfVars.ZEPPELIN_NOTEBOOK_STORAGE).trim();
@@ -78,8 +78,8 @@ public class NotebookRepoSync implements NotebookRepo {
       try {
         notebookStorageClass = getClass().forName(storageClassNames[i].trim());
         Constructor<?> constructor = notebookStorageClass.getConstructor(
-                  ZeppelinConfiguration.class);
-        repos.add((NotebookRepo) constructor.newInstance(conf));
+                  ZeppelinConfiguration.class, AuthenticationInfo.class);
+        repos.add((NotebookRepo) constructor.newInstance(conf, authenticationInfo));
       } catch (ClassNotFoundException | NoSuchMethodException | SecurityException |
           InstantiationException | IllegalAccessException | IllegalArgumentException |
           InvocationTargetException e) {

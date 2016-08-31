@@ -73,7 +73,7 @@ public class Notebook implements NoteEventListener {
   @SuppressWarnings("unused") @Deprecated //TODO(bzz): remove unused
   private SchedulerFactory schedulerFactory;
 
-  private InterpreterFactory replFactory;
+  private InterpreterFactory interpreterFactory;
   /**
    * Keep the order.
    */
@@ -97,14 +97,14 @@ public class Notebook implements NoteEventListener {
    * @throws SchedulerException
    */
   public Notebook(ZeppelinConfiguration conf, NotebookRepo notebookRepo,
-      SchedulerFactory schedulerFactory, InterpreterFactory replFactory,
+      SchedulerFactory schedulerFactory, InterpreterFactory interpreterFactory,
       JobListenerFactory jobListenerFactory, SearchService notebookIndex,
       NotebookAuthorization notebookAuthorization, Credentials credentials)
       throws IOException, SchedulerException {
     this.conf = conf;
     this.notebookRepo = notebookRepo;
     this.schedulerFactory = schedulerFactory;
-    this.replFactory = replFactory;
+    this.interpreterFactory = interpreterFactory;
     this.jobListenerFactory = jobListenerFactory;
     this.notebookIndex = notebookIndex;
     this.notebookAuthorization = notebookAuthorization;
@@ -133,7 +133,7 @@ public class Notebook implements NoteEventListener {
   public Note createNote(AuthenticationInfo subject) throws IOException {
     Note note;
     if (conf.getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_AUTO_INTERPRETER_BINDING)) {
-      note = createNote(replFactory.getDefaultInterpreterSettingList(), subject);
+      note = createNote(interpreterFactory.getDefaultInterpreterSettingList(), subject);
     } else {
       note = createNote(null, subject);
     }
@@ -149,7 +149,7 @@ public class Notebook implements NoteEventListener {
   public Note createNote(List<String> interpreterIds, AuthenticationInfo subject)
       throws IOException {
     Note note =
-        new Note(notebookRepo, replFactory, jobListenerFactory, notebookIndex, credentials, this);
+        new Note(notebookRepo, interpreterFactory, jobListenerFactory, notebookIndex, credentials, this);
     synchronized (notes) {
       notes.put(note.id(), note);
     }
@@ -258,16 +258,16 @@ public class Notebook implements NoteEventListener {
       throws IOException {
     Note note = getNote(id);
     if (note != null) {
-      List<InterpreterSetting> currentBindings = replFactory.getInterpreterSettings(id);
+      List<InterpreterSetting> currentBindings = interpreterFactory.getInterpreterSettings(id);
       for (InterpreterSetting setting : currentBindings) {
         if (!interpreterSettingIds.contains(setting.getId())) {
           fireUnbindInterpreter(note, setting);
         }
       }
 
-      replFactory.setInterpreters(note.getId(), interpreterSettingIds);
+      interpreterFactory.setInterpreters(note.getId(), interpreterSettingIds);
       // comment out while note.getNoteReplLoader().setInterpreters(...) do the same
-      // replFactory.putNoteInterpreterSettingBinding(id, interpreterSettingIds);
+      // interpreterFactory.putNoteInterpreterSettingBinding(id, interpreterSettingIds);
     }
   }
 
@@ -283,7 +283,7 @@ public class Notebook implements NoteEventListener {
   public List<InterpreterSetting> getBindedInterpreterSettings(String id) {
     Note note = getNote(id);
     if (note != null) {
-      return replFactory.getInterpreterSettings(note.getId());
+      return interpreterFactory.getInterpreterSettings(note.getId());
     } else {
       return new LinkedList<>();
     }
@@ -301,12 +301,12 @@ public class Notebook implements NoteEventListener {
     synchronized (notes) {
       note = notes.remove(id);
     }
-    replFactory.removeNoteInterpreterSettingBinding(id);
+    interpreterFactory.removeNoteInterpreterSettingBinding(id);
     notebookIndex.deleteIndexDocs(note);
     notebookAuthorization.removeNote(id);
 
     // remove from all interpreter instance's angular object registry
-    for (InterpreterSetting settings : replFactory.get()) {
+    for (InterpreterSetting settings : interpreterFactory.get()) {
       AngularObjectRegistry registry = settings.getInterpreterGroup(id).getAngularObjectRegistry();
       if (registry instanceof RemoteAngularObjectRegistry) {
         // remove paragraph scope object
@@ -384,7 +384,7 @@ public class Notebook implements NoteEventListener {
     note.setIndex(this.notebookIndex);
     note.setCredentials(this.credentials);
 
-    note.setInterpreterFactory(replFactory);
+    note.setInterpreterFactory(interpreterFactory);
 
     note.setJobListenerFactory(jobListenerFactory);
     note.setNotebookRepo(notebookRepo);
@@ -425,7 +425,7 @@ public class Notebook implements NoteEventListener {
 
     for (String name : angularObjectSnapshot.keySet()) {
       SnapshotAngularObject snapshot = angularObjectSnapshot.get(name);
-      List<InterpreterSetting> settings = replFactory.get();
+      List<InterpreterSetting> settings = interpreterFactory.get();
       for (InterpreterSetting setting : settings) {
         InterpreterGroup intpGroup = setting.getInterpreterGroup(note.id());
         if (intpGroup.getId().equals(snapshot.getIntpGroupId())) {
@@ -633,9 +633,9 @@ public class Notebook implements NoteEventListener {
 
       // set interpreter bind type
       String interpreterGroupName = null;
-      if (replFactory.getInterpreterSettings(note.getId()) != null
-          && replFactory.getInterpreterSettings(note.getId()).size() >= 1) {
-        interpreterGroupName = replFactory.getInterpreterSettings(note.getId()).get(0).getName();
+      if (interpreterFactory.getInterpreterSettings(note.getId()) != null
+          && interpreterFactory.getInterpreterSettings(note.getId()).size() >= 1) {
+        interpreterGroupName = interpreterFactory.getInterpreterSettings(note.getId()).get(0).getName();
       }
 
       // not update and not running -> pass
@@ -749,11 +749,15 @@ public class Notebook implements NoteEventListener {
   }
 
   public InterpreterFactory getInterpreterFactory() {
-    return replFactory;
+    return interpreterFactory;
   }
 
   public NotebookAuthorization getNotebookAuthorization() {
     return notebookAuthorization;
+  }
+
+  public NotebookRepo getNotebookRepo() {
+    return this.notebookRepo;
   }
 
   public ZeppelinConfiguration getConf() {

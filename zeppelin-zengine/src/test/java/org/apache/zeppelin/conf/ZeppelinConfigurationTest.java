@@ -21,6 +21,7 @@ import junit.framework.Assert;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 
+import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -84,7 +85,7 @@ public class ZeppelinConfigurationTest {
     public void getNotebookDirTest() throws ConfigurationException {
 
         ZeppelinConfiguration conf  = new ZeppelinConfiguration(this.getClass().getResource("/zeppelin-site.xml"));
-        String notebookLocation = conf.getNotebookDir();
+        String notebookLocation = conf.getNotebookDir(AuthenticationInfo.ANONYMOUS_AUTHENTICATION_INFO);
         Assert.assertEquals("notebook", notebookLocation);
     }
 }

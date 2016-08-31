@@ -24,6 +24,7 @@ import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
 import org.apache.shiro.mgt.SecurityManager;
 import org.apache.shiro.config.IniSecurityManagerFactory;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
+import org.apache.zeppelin.user.AuthenticationInfo;
 
 import java.net.InetAddress;
 import java.net.URI;
@@ -60,7 +61,7 @@ public class SecurityUtils {
   }
 
   /**
-   * Return the authenticated user if any otherwise returns "anonymous"
+   * Return the authenticated user if any otherwise returns AuthenticationInfo.ANONYMOUS
    *
    * @return shiro principal
    */
@@ -71,7 +72,7 @@ public class SecurityUtils {
     if (subject.isAuthenticated()) {
       principal = subject.getPrincipal().toString();
     } else {
-      principal = "anonymous";
+      principal = AuthenticationInfo.ANONYMOUS;
     }
     return principal;
   }

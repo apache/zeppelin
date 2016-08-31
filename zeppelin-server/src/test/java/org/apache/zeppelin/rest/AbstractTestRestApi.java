@@ -40,6 +40,8 @@ import org.apache.commons.httpclient.methods.RequestEntity;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.server.ZeppelinServer;
+import org.apache.zeppelin.session.ZeppelinSessions;
+import org.apache.zeppelin.user.AuthenticationInfo;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeMatcher;
@@ -145,7 +147,7 @@ public abstract class AbstractTestRestApi {
       if ("true".equals(System.getenv("CI"))) {
         // assume first one is spark
         InterpreterSetting sparkIntpSetting = null;
-        for(InterpreterSetting intpSetting : ZeppelinServer.notebook.getInterpreterFactory().get()) {
+        for(InterpreterSetting intpSetting : ZeppelinSessions.notebook(AuthenticationInfo.ANONYMOUS).getInterpreterFactory().get()) {
           if (intpSetting.getName().equals("spark")) {
             sparkIntpSetting = intpSetting;
           }
@@ -159,11 +161,11 @@ public abstract class AbstractTestRestApi {
         sparkIntpSetting.getProperties().setProperty("spark.home", getSparkHome());
         pySpark = true;
         sparkR = true;
-        ZeppelinServer.notebook.getInterpreterFactory().restart(sparkIntpSetting.getId());
+        ZeppelinSessions.notebook(AuthenticationInfo.ANONYMOUS).getInterpreterFactory().restart(sparkIntpSetting.getId());
       } else {
         // assume first one is spark
         InterpreterSetting sparkIntpSetting = null;
-        for(InterpreterSetting intpSetting : ZeppelinServer.notebook.getInterpreterFactory().get()) {
+        for(InterpreterSetting intpSetting : ZeppelinSessions.notebook(AuthenticationInfo.ANONYMOUS).getInterpreterFactory().get()) {
           if (intpSetting.getName().equals("spark")) {
             sparkIntpSetting = intpSetting;
           }
@@ -179,7 +181,7 @@ public abstract class AbstractTestRestApi {
           sparkR = true;
         }
 
-        ZeppelinServer.notebook.getInterpreterFactory().restart(sparkIntpSetting.getId());
+        ZeppelinSessions.notebook(AuthenticationInfo.ANONYMOUS).getInterpreterFactory().restart(sparkIntpSetting.getId());
       }
     }
   }
@@ -240,10 +242,10 @@ public abstract class AbstractTestRestApi {
   protected static void shutDown() throws Exception {
     if (!wasRunning) {
       // restart interpreter to stop all interpreter processes
-      List<String> settingList = ZeppelinServer.notebook.getInterpreterFactory()
+      List<String> settingList = ZeppelinSessions.notebook(AuthenticationInfo.ANONYMOUS).getInterpreterFactory()
           .getDefaultInterpreterSettingList();
       for (String setting : settingList) {
-        ZeppelinServer.notebook.getInterpreterFactory().restart(setting);
+        ZeppelinSessions.notebook(AuthenticationInfo.ANONYMOUS).getInterpreterFactory().restart(setting);
       }
 
       LOG.info("Terminating test Zeppelin...");

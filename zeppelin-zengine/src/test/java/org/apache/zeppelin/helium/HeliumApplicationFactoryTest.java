@@ -27,6 +27,7 @@ import org.apache.zeppelin.notebook.repo.VFSNotebookRepo;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.apache.zeppelin.search.SearchService;
+import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -82,14 +83,14 @@ public class HeliumApplicationFactoryTest implements JobListenerFactory {
     heliumAppFactory = new HeliumApplicationFactory();
     depResolver = new DependencyResolver(tmpDir.getAbsolutePath() + "/local-repo");
     factory = new InterpreterFactory(conf,
-        new InterpreterOption(true), null, null, heliumAppFactory, depResolver);
+        new InterpreterOption(true), null, null, heliumAppFactory, depResolver, AuthenticationInfo.ANONYMOUS_AUTHENTICATION_INFO);
     HashMap<String, String> env = new HashMap<String, String>();
     env.put("ZEPPELIN_CLASSPATH", new File("./target/test-classes").getAbsolutePath());
     factory.setEnv(env);
 
     SearchService search = mock(SearchService.class);
-    notebookRepo = new VFSNotebookRepo(conf);
-    NotebookAuthorization notebookAuthorization = new NotebookAuthorization(conf);
+    notebookRepo = new VFSNotebookRepo(conf, AuthenticationInfo.ANONYMOUS_AUTHENTICATION_INFO);
+    NotebookAuthorization notebookAuthorization = new NotebookAuthorization(conf, AuthenticationInfo.ANONYMOUS_AUTHENTICATION_INFO);
     notebook = new Notebook(
         conf,
         notebookRepo,

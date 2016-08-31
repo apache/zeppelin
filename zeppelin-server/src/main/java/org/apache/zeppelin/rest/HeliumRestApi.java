@@ -25,6 +25,8 @@ import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.server.JsonResponse;
+import org.apache.zeppelin.session.ZeppelinSessions;
+import org.apache.zeppelin.utils.SecurityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,20 +41,9 @@ import javax.ws.rs.core.Response;
 public class HeliumRestApi {
   Logger logger = LoggerFactory.getLogger(HeliumRestApi.class);
 
-  private Helium helium;
-  private HeliumApplicationFactory applicationFactory;
-  private Notebook notebook;
   private Gson gson = new Gson();
 
   public HeliumRestApi() {
-  }
-
-  public HeliumRestApi(Helium helium,
-                       HeliumApplicationFactory heliumApplicationFactory,
-                       Notebook notebook) {
-    this.helium  = helium;
-    this.applicationFactory = heliumApplicationFactory;
-    this.notebook = notebook;
   }
 
   /**
@@ -62,14 +53,14 @@ public class HeliumRestApi {
   @GET
   @Path("all")
   public Response getAll() {
-    return new JsonResponse(Response.Status.OK, "", helium.getAllPackageInfo()).build();
+    return new JsonResponse(Response.Status.OK, "", helium().getAllPackageInfo()).build();
   }
 
   @GET
   @Path("suggest/{noteId}/{paragraphId}")
   public Response suggest(@PathParam("noteId") String noteId,
                           @PathParam("paragraphId") String paragraphId) {
-    Note note = notebook.getNote(noteId);
+    Note note = notebook().getNote(noteId);
     if (note == null) {
       return new JsonResponse(Response.Status.NOT_FOUND, "Note " + noteId + " not found").build();
     }
@@ -80,7 +71,7 @@ public class HeliumRestApi {
           .build();
     }
 
-    return new JsonResponse(Response.Status.OK, "", helium.suggestApp(paragraph)).build();
+    return new JsonResponse(Response.Status.OK, "", helium().suggestApp(paragraph)).build();
   }
 
   @POST
@@ -89,7 +80,7 @@ public class HeliumRestApi {
                           @PathParam("paragraphId") String paragraphId,
                           String heliumPackage) {
 
-    Note note = notebook.getNote(noteId);
+    Note note = notebook().getNote(noteId);
     if (note == null) {
       return new JsonResponse(Response.Status.NOT_FOUND, "Note " + noteId + " not found").build();
     }
@@ -101,8 +92,20 @@ public class HeliumRestApi {
     }
     HeliumPackage pkg = gson.fromJson(heliumPackage, HeliumPackage.class);
 
-    String appId = applicationFactory.loadAndRun(pkg, paragraph);
+    String appId = heliumApplicationFactory().loadAndRun(pkg, paragraph);
     return new JsonResponse(Response.Status.OK, "", appId).build();
+  }
+
+  private Notebook notebook() {
+    return ZeppelinSessions.notebook(SecurityUtils.getPrincipal());
+  }
+
+  private Helium helium() {
+    return ZeppelinSessions.helium(SecurityUtils.getPrincipal());
+  }
+
+  private HeliumApplicationFactory heliumApplicationFactory() {
+    return ZeppelinSessions.heliumApplicationFactory(SecurityUtils.getPrincipal());
   }
 
 }

@@ -20,6 +20,7 @@ package org.apache.zeppelin.rest;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.zeppelin.user.AuthenticationInfo;
 import org.hamcrest.CoreMatchers;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -57,9 +58,9 @@ public class SecurityRestApiTest extends AbstractTestRestApi {
         new TypeToken<Map<String, Object>>(){}.getType());
     Map<String, String> body = (Map<String, String>) resp.get("body");
     collector.checkThat("Paramater principal", body.get("principal"),
-        CoreMatchers.equalTo("anonymous"));
+        CoreMatchers.equalTo(AuthenticationInfo.ANONYMOUS));
     collector.checkThat("Paramater ticket", body.get("ticket"),
-        CoreMatchers.equalTo("anonymous"));
+        CoreMatchers.equalTo(AuthenticationInfo.ANONYMOUS));
     get.releaseConnection();
   }
 

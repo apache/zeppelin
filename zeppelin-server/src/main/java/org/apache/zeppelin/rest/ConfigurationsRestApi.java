@@ -21,6 +21,9 @@ import org.apache.zeppelin.annotation.ZeppelinApi;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.server.JsonResponse;
+import org.apache.zeppelin.server.ZeppelinServer;
+import org.apache.zeppelin.session.ZeppelinSessions;
+import org.apache.zeppelin.utils.SecurityUtils;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -37,19 +40,13 @@ import java.util.Map;
 @Produces("application/json")
 public class ConfigurationsRestApi {
 
-  private Notebook notebook;
-
   public ConfigurationsRestApi() {}
-
-  public ConfigurationsRestApi(Notebook notebook) {
-    this.notebook = notebook;
-  }
 
   @GET
   @Path("all")
   @ZeppelinApi
   public Response getAll() {
-    ZeppelinConfiguration conf = notebook.getConf();
+    ZeppelinConfiguration conf = ZeppelinServer.conf;
 
     Map<String, String> configurations = conf.dumpConfigurations(conf,
         new ZeppelinConfiguration.ConfigurationKeyPredicate() {
@@ -71,7 +68,7 @@ public class ConfigurationsRestApi {
   @Path("prefix/{prefix}")
   @ZeppelinApi
   public Response getByPrefix(@PathParam("prefix") final String prefix) {
-    ZeppelinConfiguration conf = notebook.getConf();
+    ZeppelinConfiguration conf = notebook().getConf();
 
     Map<String, String> configurations = conf.dumpConfigurations(conf,
         new ZeppelinConfiguration.ConfigurationKeyPredicate() {
@@ -88,6 +85,10 @@ public class ConfigurationsRestApi {
     );
 
     return new JsonResponse(Status.OK, "", configurations).build();
+  }
+
+  private Notebook notebook() {
+    return ZeppelinSessions.notebook(SecurityUtils.getPrincipal());
   }
 
 }

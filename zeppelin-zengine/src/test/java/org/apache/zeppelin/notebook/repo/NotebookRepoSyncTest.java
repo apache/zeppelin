@@ -42,6 +42,7 @@ import org.apache.zeppelin.scheduler.JobListener;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.apache.zeppelin.search.SearchService;
 import org.apache.zeppelin.search.LuceneSearch;
+import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.user.Credentials;
 import org.junit.After;
 import org.junit.Before;
@@ -95,11 +96,11 @@ public class NotebookRepoSyncTest implements JobListenerFactory {
     MockInterpreter2.register("mock2", "org.apache.zeppelin.interpreter.mock.MockInterpreter2");
 
     depResolver = new DependencyResolver(mainZepDir.getAbsolutePath() + "/local-repo");
-    factory = new InterpreterFactory(conf, new InterpreterOption(false), null, null, null, depResolver);
+    factory = new InterpreterFactory(conf, new InterpreterOption(false), null, null, null, depResolver, AuthenticationInfo.ANONYMOUS_AUTHENTICATION_INFO);
     
     search = mock(SearchService.class);
-    notebookRepoSync = new NotebookRepoSync(conf);
-    notebookAuthorization = new NotebookAuthorization(conf);
+    notebookRepoSync = new NotebookRepoSync(conf, AuthenticationInfo.ANONYMOUS_AUTHENTICATION_INFO);
+    notebookAuthorization = new NotebookAuthorization(conf, AuthenticationInfo.ANONYMOUS_AUTHENTICATION_INFO);
     credentials = new Credentials(conf.credentialsPersist(), conf.getCredentialsPath());
     notebookSync = new Notebook(conf, notebookRepoSync, schedulerFactory, factory, this, search,
             notebookAuthorization, credentials);
@@ -226,7 +227,7 @@ public class NotebookRepoSyncTest implements JobListenerFactory {
     System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_DIR.getVarName(), mainNotebookDir.getAbsolutePath());
     System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_ONE_WAY_SYNC.getVarName(), "true");
     conf = ZeppelinConfiguration.create();
-    notebookRepoSync = new NotebookRepoSync(conf);
+    notebookRepoSync = new NotebookRepoSync(conf, AuthenticationInfo.ANONYMOUS_AUTHENTICATION_INFO);
     notebookSync = new Notebook(conf, notebookRepoSync, schedulerFactory, factory, this, search,
             notebookAuthorization, credentials);
 
@@ -274,7 +275,7 @@ public class NotebookRepoSyncTest implements JobListenerFactory {
     System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_STORAGE.getVarName(), "org.apache.zeppelin.notebook.repo.GitNotebookRepo");
     ZeppelinConfiguration vConf = ZeppelinConfiguration.create();
 
-    NotebookRepoSync vRepoSync = new NotebookRepoSync(vConf);
+    NotebookRepoSync vRepoSync = new NotebookRepoSync(vConf, AuthenticationInfo.ANONYMOUS_AUTHENTICATION_INFO);
     Notebook vNotebookSync = new Notebook(vConf, vRepoSync, schedulerFactory, factory, this, search,
             notebookAuthorization, credentials);
 

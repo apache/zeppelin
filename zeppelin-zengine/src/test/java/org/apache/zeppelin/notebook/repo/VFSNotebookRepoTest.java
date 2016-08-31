@@ -36,6 +36,7 @@ import org.apache.zeppelin.scheduler.JobListener;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.apache.zeppelin.search.SearchService;
 import org.apache.zeppelin.search.LuceneSearch;
+import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -76,10 +77,10 @@ public class VFSNotebookRepoTest implements JobListenerFactory {
 
     this.schedulerFactory = new SchedulerFactory();
     depResolver = new DependencyResolver(mainZepDir.getAbsolutePath() + "/local-repo");
-    factory = new InterpreterFactory(conf, new InterpreterOption(false), null, null, null, depResolver);
+    factory = new InterpreterFactory(conf, new InterpreterOption(false), null, null, null, depResolver, AuthenticationInfo.ANONYMOUS_AUTHENTICATION_INFO);
 
     SearchService search = mock(SearchService.class);
-    notebookRepo = new VFSNotebookRepo(conf);
+    notebookRepo = new VFSNotebookRepo(conf, AuthenticationInfo.ANONYMOUS_AUTHENTICATION_INFO);
     notebook = new Notebook(conf, notebookRepo, schedulerFactory, factory, this, search, null, null);
   }
 

@@ -43,6 +43,7 @@ import org.apache.zeppelin.notebook.socket.Message.OP;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.server.ZeppelinServer;
+import org.apache.zeppelin.session.ZeppelinSessions;
 import org.apache.zeppelin.ticket.TicketContainer;
 import org.apache.zeppelin.types.InterpreterSettingsList;
 import org.apache.zeppelin.user.AuthenticationInfo;
@@ -86,8 +87,8 @@ public class NotebookServer extends WebSocketServlet implements
   final Map<String, List<NotebookSocket>> noteSocketMap = new HashMap<>();
   final Queue<NotebookSocket> connectedSockets = new ConcurrentLinkedQueue<>();
 
-  private Notebook notebook() {
-    return ZeppelinServer.notebook;
+  private Notebook notebook(String principal) {
+    return ZeppelinSessions.notebook(principal);
   }
 
   @Override
@@ -119,7 +120,6 @@ public class NotebookServer extends WebSocketServlet implements
 
   @Override
   public void onMessage(NotebookSocket conn, String msg) {
-    Notebook notebook = notebook();
     try {
       Message messagereceived = deserializeMessage(msg);
       LOG.debug("RECEIVE << " + messagereceived.op);
@@ -147,7 +147,7 @@ public class NotebookServer extends WebSocketServlet implements
       ZeppelinConfiguration conf = ZeppelinConfiguration.create();
       boolean allowAnonymous = conf.
           getBoolean(ZeppelinConfiguration.ConfVars.ZEPPELIN_ANONYMOUS_ALLOWED);
-      if (!allowAnonymous && messagereceived.principal.equals("anonymous")) {
+      if (!allowAnonymous && messagereceived.principal.equals(AuthenticationInfo.ANONYMOUS)) {
         throw new Exception("Anonymous access not allowed ");
       }
 
@@ -161,6 +161,8 @@ public class NotebookServer extends WebSocketServlet implements
         }
       }
       AuthenticationInfo subject = new AuthenticationInfo(messagereceived.principal);
+
+      Notebook notebook = notebook(messagereceived.principal);
 
       /** Lets be elegant here */
       switch (messagereceived.op) {
@@ -330,7 +332,7 @@ public class NotebookServer extends WebSocketServlet implements
 
   private void broadcastToNoteBindedInterpreter(String interpreterGroupId,
       Message m) {
-    Notebook notebook = notebook();
+    Notebook notebook = notebook(m.principal  );
     List<Note> notes = notebook.getAllNotes();
     for (Note note : notes) {
       List<String> ids = notebook.getInterpreterFactory().getInterpreters(note.getId());
@@ -400,7 +402,7 @@ public class NotebookServer extends WebSocketServlet implements
   public void unicastNotebookJobInfo(NotebookSocket conn, Message fromMessage) throws IOException {
 
     AuthenticationInfo subject = new AuthenticationInfo(fromMessage.principal);
-    List<Map<String, Object>> notebookJobs = notebook().getJobListforNotebook(false, 0, subject);
+    List<Map<String, Object>> notebookJobs = notebook(fromMessage.principal).getJobListforNotebook(false, 0, subject);
     Map<String, Object> response = new HashMap<>();
 
     response.put("lastResponseUnixTime", System.currentTimeMillis());
@@ -417,7 +419,7 @@ public class NotebookServer extends WebSocketServlet implements
 
     List<Map<String, Object>> notebookJobs;
     AuthenticationInfo subject = new AuthenticationInfo(fromMessage.principal);
-    notebookJobs = notebook().getJobListforNotebook(false, lastUpdateUnixTime, subject);
+    notebookJobs = notebook(fromMessage.principal).getJobListforNotebook(false, lastUpdateUnixTime, subject);
 
     Map<String, Object> response = new HashMap<>();
     response.put("lastResponseUnixTime", System.currentTimeMillis());
@@ -433,9 +435,9 @@ public class NotebookServer extends WebSocketServlet implements
       List<String> settingIdList = gson.fromJson(String.valueOf(
           fromMessage.data.get("selectedSettingIds")), new TypeToken<ArrayList<String>>() {
           }.getType());
-      notebook().bindInterpretersToNote(noteId, settingIdList);
+      notebook(fromMessage.principal).bindInterpretersToNote(noteId, settingIdList);
       broadcastInterpreterBindings(noteId,
-          InterpreterBindingUtils.getInterpreterBindings(notebook(), noteId));
+          InterpreterBindingUtils.getInterpreterBindings(notebook(fromMessage.principal), noteId));
     } catch (Exception e) {
       LOG.error("Error while saving interpreter bindings", e);
     }
@@ -445,7 +447,7 @@ public class NotebookServer extends WebSocketServlet implements
       throws IOException {
     String noteID = (String) fromMessage.data.get("noteID");
     List<InterpreterSettingsList> settingList =
-        InterpreterBindingUtils.getInterpreterBindings(notebook(), noteID);
+        InterpreterBindingUtils.getInterpreterBindings(notebook(fromMessage.principal), noteID);
     conn.send(serializeMessage(new Message(OP.INTERPRETER_BINDINGS)
         .put("interpreterBindings", settingList)));
   }
@@ -453,7 +455,7 @@ public class NotebookServer extends WebSocketServlet implements
   public List<Map<String, String>> generateNotebooksInfo(boolean needsReload,
       AuthenticationInfo subject) {
 
-    Notebook notebook = notebook();
+    Notebook notebook = notebook(subject.getUser());
 
     ZeppelinConfiguration conf = notebook.getConf();
     String homescreenNotebookId = conf.getString(ConfVars.ZEPPELIN_NOTEBOOK_HOMESCREEN);
@@ -1114,7 +1116,7 @@ public class NotebookServer extends WebSocketServlet implements
     String text = (String) fromMessage.get("paragraph");
     p.setText(text);
     p.setTitle((String) fromMessage.get("title"));
-    if (!fromMessage.principal.equals("anonymous")) {
+    if (!fromMessage.principal.equals(AuthenticationInfo.ANONYMOUS)) {
       AuthenticationInfo authenticationInfo = new AuthenticationInfo(fromMessage.principal,
           fromMessage.ticket);
       p.setAuthenticationInfo(authenticationInfo);
@@ -1378,7 +1380,7 @@ public class NotebookServer extends WebSocketServlet implements
 
   private void sendAllAngularObjects(Note note, NotebookSocket conn) throws IOException {
     List<InterpreterSetting> settings =
-        notebook().getInterpreterFactory().getInterpreterSettings(note.getId());
+        notebook(SecurityUtils.getPrincipal()).getInterpreterFactory().getInterpreterSettings(note.getId());
     if (settings == null || settings.size() == 0) {
       return;
     }
@@ -1406,7 +1408,7 @@ public class NotebookServer extends WebSocketServlet implements
 
   @Override
   public void onUpdate(String interpreterGroupId, AngularObject object) {
-    Notebook notebook = notebook();
+    Notebook notebook = notebook(SecurityUtils.getPrincipal());
     if (notebook == null) {
       return;
     }
@@ -1435,7 +1437,7 @@ public class NotebookServer extends WebSocketServlet implements
 
   @Override
   public void onRemove(String interpreterGroupId, String name, String noteId, String paragraphId) {
-    Notebook notebook = notebook();
+    Notebook notebook = notebook(SecurityUtils.getPrincipal());
     List<Note> notes = notebook.getAllNotes();
     for (Note note : notes) {
       if (noteId != null && !note.id().equals(noteId)) {
