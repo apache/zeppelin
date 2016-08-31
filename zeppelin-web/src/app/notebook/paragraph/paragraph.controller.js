@@ -870,7 +870,7 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
     //cell in the table, i.e. string/number/date
     // 1. is this a number (possibly)?
     if (!isNaN(cell)) {
-      return cell.length === 0 ? cell : (Number(cell) === Number.NaN ? cell : Number(cell));
+      return cell.length === 0 ? cell : ((Number(value) === Number.NaN || Number(value) > Number.MAX_SAFE_INTEGER || Number(value) < Number.MIN_SAFE_INTEGER) ? cell : Number(cell));
     }
     // 2. is this a date?
     var supportedDateFormats = ['MM-DD-YYYY', 'DD-MM-YYYY', 'MM/DD/YYYY',
