@@ -22,6 +22,7 @@ limitations under the License.
 # Contribution Guidelines
 
 **Apache Zeppelin** is an [Apache2 License](https://github.com/apache/zeppelin/blob/master/CONTRIBUTING.md) Software.
+
 Contributing to Zeppelin (Source code, Documents, Image, Website) means you agree to the Apache2 License.
 
 1. Make sure your issue is not already in the [Jira issue tracker](https://issues.apache.org/jira/browse/ZEPPELIN)
@@ -34,6 +35,7 @@ For those of you who are not familiar with Apache project, understanding [How it
 
 ## Creating a Pull Request
 When creating a Pull Request, you will automatically get the template below.
+
 Filling it thoroughly can improve the speed of the review process.
 
     ### What is this PR for?
@@ -88,18 +90,20 @@ Zeppelin follows [Fork & Pull] (https://github.com/sevntu-checkstyle/sevntu.chec
 
 ## The Review Process
 
-When a Pull Request is submitted, it is being merged or rejected by following review process.
+When a Pull Request is submitted, it is being merged or rejected by the  following review process.
 
-* Anybody can be a reviewer and may comment on the change and suggest modifications.
+* Anybody can be a reviewer and may comment on the change or suggest modifications.
 * Reviewer can indicate that a patch looks suitable for merging with a comment such as: "Looks good", "LGTM", "+1".
-* At least one indication of suitable for merging (e.g. "LGTM") from committer is required to be merged.
-* Pull request is open for 1 or 2 days for potential additional review, unless it's got enough indication of suitable for merging.
-* Committer can initiate lazy consensus ("Merge if there is no more discussion") and the code can be merged after certain time (normally 24 hours) when there is no review exists.
-* Contributor can ping reviewers (including committer) by commenting 'Ready to review' or suitable indication.
+* At least one indication of suitability (e.g. "LGTM") from a committer is required to be merged.
+* Pull request is open for 1 or 2 days for potential additional review, unless it's got enough indication of suitability.
+* A committer can then initiate lazy consensus ("Merge if there is no more discussion") after what the code can be merged after a certain time (normally 24 hours) if there is no more reviews.
+* Contributors can ping reviewers (including committers) by commenting 'Ready to review' or suitable indication.
 
 ## Becoming a Committer
 
-The PMC adds new committers from the active contributors, based on their contribution to Zeppelin. The qualifications for new committers include:
+The PMC adds new committers from the active contributors, based on their contribution to Zeppelin.
+
+The qualifications for new committers include:
 
 1. Sustained contributions: Committers should have a history of constant contributions to Zeppelin.
 2. Quality of contributions: Committers more than any other community member should submit simple, well-tested, and well-designed patches.
@@ -111,8 +115,7 @@ Here are some things you will need to build and test Zeppelin.
 
 ### Software Configuration Management (SCM)
 
-Zeppelin uses Git for its SCM system. `http://git.apache.org/zeppelin.git` you'll need git client installed in your development machine.
-For write access, `https://git-wip-us.apache.org/repos/asf/zeppelin.git`
+Zeppelin uses Git for its SCM system. so you'll need git client installed in your development machine.
 
 ### Integrated Development Environment (IDE)
 
@@ -147,7 +150,9 @@ Check style report location are in `${submodule}/target/site/checkstyle.html`
 Test coverage report location are in `${submodule}/target/site/cobertura/index.html`
 
 ## Getting the source code
-First of all, you need the Zeppelin source code. The official location for Zeppelin is [http://git.apache.org/zeppelin.git](http://git.apache.org/zeppelin.git).
+First of all, you need the Zeppelin source code.
+
+The official location for Zeppelin is [http://git.apache.org/zeppelin.git](http://git.apache.org/zeppelin.git).
 
 ### git access
 

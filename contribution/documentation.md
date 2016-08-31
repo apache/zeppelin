@@ -22,7 +22,9 @@ limitations under the License.
 # Contributing to Documentation
 
 ## Dev Mode
-Apache Zeppelin is using [Jekyll](https://jekyllrb.com/) which is a static site generator and [Github Pages](https://pages.github.com/) as a site publisher. For the more details, see [help.github.com/articles/about-github-pages-and-jekyll/](https://help.github.com/articles/about-github-pages-and-jekyll/).
+Apache Zeppelin is using [Jekyll](https://jekyllrb.com/) which is a static site generator and [Github Pages](https://pages.github.com/) as a site publisher.
+
+For the more details, see [help.github.com/articles/about-github-pages-and-jekyll/](https://help.github.com/articles/about-github-pages-and-jekyll/).
 
 ### Requirements
 
@@ -47,7 +49,8 @@ xcode-select --install
 ### Run the website locally
 
 If you don't want to encounter uglily rendered pages, run the documentation site in your local first.
-In `$ZEPPELIN_HOME/docs`,
+
+In `$ZEPPELIN_HOME/docs` folder, run
 
 ```
 bundle exec jekyll serve --watch
@@ -119,7 +122,13 @@ group: quickstart
  - `layout`: the default layout is `page` which is defined in `_layout/page.html`.
  - `title`: the title for the document. Please note that if it needs to include `Zeppelin`, it should be `Apache Zeppelin`, not `Zeppelin`.
  - `description`: a short description for the document. One or two sentences would be enough. This description also will be shown as an extract sentence when people search pages.
- - `group`: a category of the document page
+ - `group`: a category for the document page, more than on group can be applied by using this syntax:
+
+ ```
+ group:
+ - group1
+ - group2
+ ```
 
 ### Headings
 All documents are structured with headings. From these headings, you can automatically generate a **Table of Contents**. There is a simple rule for Zeppelin docs headings.
@@ -131,13 +140,15 @@ All documents are structured with headings. From these headings, you can automat
 #### Level-4 heading <- won't be converted in TOC from this level
 ```
 
-### Table of contents(TOC)
+### Table of contents (TOC)
 
 ```
 <div id="toc"></div>
 ```
 
-Add this line below  `# main title` in order to generate a **Table of Contents**. Headings until `### (Level-3 heading)` are included to TOC.
+Add this line below  `# main title` in order to generate a **Table of Contents**.
+
+Headings until `### (Level-3 heading)` are included to TOC.
 
 
 Default setting options for TOC are definded in [here](https://github.com/apache/zeppelin/blob/master/docs/assets/themes/zeppelin/js/toc.js#L4).
