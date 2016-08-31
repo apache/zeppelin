@@ -19,15 +19,11 @@ limitations under the License.
 -->
 {% include JB/setup %}
 
-
-### Mailing list
-
-Get help using Apache Zeppelin or contribute to the project on our mailing lists:
-
-* [users@zeppelin.apache.org](http://mail-archives.apache.org/mod_mbox/zeppelin-users/) is for usage questions, help, and announcements. [subscribe](mailto:users-subscribe@zeppelin.apache.org?subject=send this email to subscribe),     [unsubscribe](mailto:users-unsubscribe@zeppelin.apache.org?subject=send this email to unsubscribe), [archives](http://mail-archives.apache.org/mod_mbox/zeppelin-users/)
-* [dev@zeppelin.apache.org](http://mail-archives.apache.org/mod_mbox/zeppelin-dev/) is for people who want to contribute code to Zeppelin. [subscribe](mailto:dev-subscribe@zeppelin.apache.org?subject=send this email to subscribe), [unsubscribe](mailto:dev-unsubscribe@zeppelin.apache.org?subject=send this email to unsubscribe), [archives](http://mail-archives.apache.org/mod_mbox/zeppelin-dev/)
-* [commits@zeppelin.apache.org](http://mail-archives.apache.org/mod_mbox/zeppelin-commits/) is for commit messages and patches to Zeppelin. [subscribe](mailto:commits-subscribe@zeppelin.apache.org?subject=send this email to subscribe), [unsubscribe](mailto:commits-unsubscribe@zeppelin.apache.org?subject=send this email to unsubscribe), [archives](http://mail-archives.apache.org/mod_mbox/zeppelin-commits/)
-
-### Issue tracker
-
-  [https://issues.apache.org/jira/browse/ZEPPELIN](https://issues.apache.org/jira/browse/ZEPPELIN)
+<div class="row">
+  <div class="col-md-6">
+    {% markdown sub-views/community/contribute.md %}
+  </div>
+  <div class="col-md-6">
+    {% markdown sub-views/community/mailinglist.md %}
+  </div>
+</div>
