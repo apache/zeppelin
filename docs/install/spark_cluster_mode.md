@@ -147,6 +147,7 @@ After running a single paragraph with Spark interpreter in Zeppelin, browse `htt
 You can simply set up [Spark on Mesos](http://spark.apache.org/docs/latest/running-on-mesos.html) docker environment with below steps.
 
 
+### 1. Build Docker file
 
 ```
 cd $ZEPPELIN_HOME/scripts/docker/spark-cluster-managers/spark_mesos
@@ -175,10 +176,14 @@ spark_mesos bash;
 
 You can simply verify the processes of Spark and Mesos is running well in Docker with below command.
 
+```
+ps -ef
+```
 
 You can also check each application web UI for Mesos on `http://<hostname>:5050/cluster` and Spark on `http://<hostname>:8080/`.
 
 
+### 4. Configure Spark interpreter in Zeppelin
 
 ```
 export MASTER=mesos://127.0.1.1:5050
