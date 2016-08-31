@@ -17,7 +17,6 @@
 
 package org.apache.zeppelin.markdown;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Properties;
 
@@ -30,7 +29,9 @@ import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.pegdown.Extensions;
+import org.pegdown.LinkRenderer;
 import org.pegdown.PegDownProcessor;
+import org.pegdown.ast.RootNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,13 +55,24 @@ public class Markdown extends Interpreter {
   @Override
   public InterpreterResult interpret(String st, InterpreterContext interpreterContext) {
     String html;
+
     try {
-      html = md.markdownToHtml(st);
-      if (null == html) throw new RuntimeException("Cannot parse markdown");
+      String parsed = md.markdownToHtml(st);
+      if (null == parsed) throw new RuntimeException("Cannot parse markdown syntax string to HTML");
+
+      /** wrap with markdown class div to support markdown syntax using css */
+      html =
+          new StringBuilder()
+              .append("<div class=\"markdown\">\n")
+              .append(parsed)
+              .append("\n</div>")
+              .toString();
+
     } catch (java.lang.RuntimeException e) {
       LOGGER.error("Exception in Markdown while interpret ", e);
       return new InterpreterResult(Code.ERROR, InterpreterUtils.getMostRelevantMessage(e));
     }
+
     return new InterpreterResult(Code.SUCCESS, "%html " + html);
   }
 
