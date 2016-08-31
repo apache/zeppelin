@@ -90,6 +90,7 @@
           ngToastProvider.configure({
             dismissButton: true,
             dismissOnClick: false,
+            combineDuplications: true,
             timeout: 6000
           });
         });
