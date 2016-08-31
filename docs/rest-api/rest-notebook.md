@@ -298,7 +298,10 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```POST``` method runs all paragraphs in the given notebook id.
+      <td>
+      This ```POST``` method runs all paragraphs in the given notebook id. <br />
+      If you can not find Notebook id 404 returns.
+      If there is a problem with the interpreter returns a 412 error.
       </td>
     </tr>
     <tr>
@@ -311,11 +314,28 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
     </tr>
     <tr>
       <td> Fail code</td>
-      <td> 500 </td>
+      <td> 404 or 412</td>
     </tr>
     <tr>
       <td> sample JSON response </td>
       <td><pre>{"status": "OK"}</pre></td>
+    </tr>
+    <tr>
+       <td> sample JSON error response </td>
+       <td>
+         <pre>
+           {
+             "status": "NOT_FOUND",
+             "message": "note not found."
+           }
+         </pre><br />
+         <pre>
+           {
+             "status": "PRECONDITION_FAILED",
+             "message": "paragraph_1469771130099_-278315611 Not selected or Invalid Interpreter bind"
+           }
+         </pre>
+       </td>
     </tr>
   </table>
 
@@ -388,6 +408,43 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
       "started":"Tue Nov 24 14:21:40 KST 2015"
     }
   ]
+}</pre></td>
+    </tr>
+  </table>
+
+<br/>
+### Get the status of a single paragraph
+  <table class="table-configuration">
+    <col width="200">
+    <tr>
+      <td>Description</td>
+      <td>This ```GET``` method gets the status of a single paragraph by the given notebook and paragraph id.
+          The body field of the returned JSON contains of the array that compose of the paragraph id, paragraph status, paragraph finish date, paragraph started date.
+      </td>
+    </tr>
+    <tr>
+      <td>URL</td>
+      <td>```http://[zeppelin-server]:[zeppelin-port]/api/notebook/job/[notebookId]/[paragraphId]```</td>
+    </tr>
+    <tr>
+      <td>Success code</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td> Fail code</td>
+      <td> 500 </td>
+    </tr>
+    <tr>
+      <td> sample JSON response </td>
+      <td><pre>
+{
+  "status": "OK",
+  "body": {
+      "id":"20151121-212654\_766735423",
+      "status":"FINISHED",
+      "finished":"Tue Nov 24 14:21:40 KST 2015",
+      "started":"Tue Nov 24 14:21:39 KST 2015"
+    }
 }</pre></td>
     </tr>
   </table>
