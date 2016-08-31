@@ -868,7 +868,11 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
   $scope.parseTableCell = function(cell) {
     //here we try to automatically parse the data type for each
     //cell in the table, i.e. string/number/date
-    // 1. is this a date?
+    // 1. is this a number (possibly)?
+    if (!isNaN(cell)) {
+      return cell.length === 0 ? cell : (Number(cell) === Number.NaN ? cell : Number(cell));
+    }
+    // 2. is this a date?
     var supportedDateFormats = ['MM-DD-YYYY', 'DD-MM-YYYY', 'MM/DD/YYYY',
     'DD/MM/YYYY', 'YYYY-MM-DD', 'YYYY/MM/DD',
     'YYYY-MM-DD HH:mm:ss', 'YYYY-MM-DD hh:mm:ss', 'YYYY-MM-DD HH:mm:ss.SSS',
@@ -881,12 +885,7 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
         return d;
       }
     }
-    // 2. is this a number (possibly)?
-    if (!isNaN(cell)) {
-      return cell.length === 0 ? cell : (Number(cell) === Number.NaN ? cell : Number(cell));
-    } else {
-      return cell;
-    }
+    return cell;
   };
 
   $scope.loadTableData = function(result) {
