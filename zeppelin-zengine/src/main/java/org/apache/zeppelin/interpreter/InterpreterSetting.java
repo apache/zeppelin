@@ -49,7 +49,7 @@ public class InterpreterSetting {
   private List<Dependency> dependencies;
   private InterpreterOption option;
   private transient String path;
-  private transient ZeppelinConfiguration conf;
+  private transient ZeppelinConfiguration conf = ZeppelinConfiguration.create();
 
   @Deprecated private transient InterpreterGroupFactory interpreterGroupFactory;
 
@@ -59,7 +59,7 @@ public class InterpreterSetting {
 
   public InterpreterSetting(String id, String name, String group,
       List<InterpreterInfo> interpreterInfos, Properties properties, List<Dependency> dependencies,
-      InterpreterOption option, String path, ZeppelinConfiguration conf) {
+      InterpreterOption option, String path) {
     this.id = id;
     this.name = name;
     this.group = group;
@@ -69,12 +69,11 @@ public class InterpreterSetting {
     this.option = option;
     this.path = path;
     this.status = Status.READY;
-    this.conf = conf;
   }
 
   public InterpreterSetting(String name, String group, List<InterpreterInfo> interpreterInfos,
-      Properties properties, List<Dependency> dependencies, InterpreterOption option, String path, ZeppelinConfiguration conf) {
-    this(generateId(), name, group, interpreterInfos, properties, dependencies, option, path, conf);
+      Properties properties, List<Dependency> dependencies, InterpreterOption option, String path) {
+    this(generateId(), name, group, interpreterInfos, properties, dependencies, option, path);
   }
 
   /**
@@ -84,7 +83,7 @@ public class InterpreterSetting {
    */
   public InterpreterSetting(InterpreterSetting o, ZeppelinConfiguration conf) {
     this(generateId(), o.getName(), o.getGroup(), o.getInterpreterInfos(), o.getProperties(),
-        o.getDependencies(), o.getOption(), o.getPath(), conf);
+        o.getDependencies(), o.getOption(), o.getPath());
   }
 
   public String getId() {

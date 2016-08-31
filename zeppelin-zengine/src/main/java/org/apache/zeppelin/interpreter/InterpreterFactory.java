@@ -272,7 +272,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
   private InterpreterSetting createFromInterpreterSettingRef(InterpreterSetting o) {
     InterpreterSetting setting =
         new InterpreterSetting(o.getName(), o.getName(), o.getInterpreterInfos(), o.getProperties(),
-            o.getDependencies(), o.getOption(), o.getPath(), conf);
+            o.getDependencies(), o.getOption(), o.getPath());
     setting.setInterpreterGroupFactory(this);
     return setting;
   }
@@ -582,7 +582,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
       } else {
         interpreterSetting =
             new InterpreterSetting(group, null, interpreterInfos, properties, dependencies, option,
-                path, conf);
+                path);
         interpreterSettingsRef.put(group, interpreterSetting);
       }
     }
