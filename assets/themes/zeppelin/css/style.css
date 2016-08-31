@@ -587,6 +587,10 @@ and (max-width: 1024px) {
   .navbar-inverse .navbar-brand {
     font-size: 28px;
   }
+
+  .content {
+    padding: 2rem 4rem;
+  }
 }
 
 @media (max-width: 768px) {
@@ -603,6 +607,10 @@ and (max-width: 1024px) {
 
   .sideMenu {
     margin-bottom: 15px;
+  }
+
+  .content {
+    padding: 2rem 2rem;
   }
 }
 
