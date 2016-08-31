@@ -142,19 +142,6 @@ body {
   background: #3071a9;
 }
 
-@media (max-width: 768px) {
-  .navbar-collapse.in {
-    box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.4);
-  }
-
-  .bigFingerButton {
-    margin-top: 12px;
-    display: block;
-    margin-right: auto;
-    margin-left: auto;
-  }
-}
-
 .bigFingerButton {
   margin-right: 10px;
 }
@@ -233,15 +220,6 @@ body {
   margin-bottom: 0;
 }
 
-@media screen and (min-width: 768px) {
-  .carousel-indicators {
-    margin-bottom: -60px;
-  }
-  .carousel-caption {
-    padding-bottom: 60px;
-  }
-}
-
 /* screenshot img inside of doc */
 .screenshot {
   width: 800px;
@@ -260,27 +238,12 @@ body {
 /* Custom container */
 .content {
   word-wrap: break-word;
+  max-width: 1024px;
+  padding: 2rem 2rem;
+  margin: 0 auto;
 }
 .content :first-child {
   margin-top: 0;
-}
-
-@media screen and (min-width: 64em) {
-  .content {
-    max-width: 64em;
-    padding: 2rem 6rem;
-    margin: 0 auto;
-  }
-}
-@media screen and (min-width: 42em) and (max-width: 64em) {
-  .content {
-    padding: 2rem 4rem;
-  }
-}
-@media screen and (max-width: 42em) {
-  .content {
-    padding: 2rem 1rem;
-  }
 }
 
 /* <a> */
@@ -612,4 +575,42 @@ and (max-width: 1024px) {
 #docs .dropdown-menu li span {
   padding: 3px 10px 10px 10px;
   font-size: 13px;
+}
+
+/*
+** Media Queries CSS
+*/
+
+
+
+@media (max-width: 991px) {
+  .navbar-inverse .navbar-brand {
+    font-size: 28px;
+  }
+}
+
+@media (max-width: 768px) {
+  .navbar-collapse.in {
+    box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.4);
+  }
+
+  .bigFingerButton {
+    margin-top: 12px;
+    display: block;
+    margin-right: auto;
+    margin-left: auto;
+  }
+
+  .sideMenu {
+    margin-bottom: 15px;
+  }
+}
+
+@media screen and (min-width: 768px) {
+  .carousel-indicators {
+    margin-bottom: -60px;
+  }
+  .carousel-caption {
+    padding-bottom: 60px;
+  }
 }
