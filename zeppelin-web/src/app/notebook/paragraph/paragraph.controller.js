@@ -866,24 +866,16 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
   };
 
   $scope.parseTableCell = function(cell) {
-    //here we try to automatically parse the data type for each
-    //cell in the table, i.e. string/number/date
-    // 1. is this a number (possibly)?
     if (!isNaN(cell)) {
-      return cell.length === 0 ? cell : ((Number(value) === Number.NaN || Number(value) > Number.MAX_SAFE_INTEGER || Number(value) < Number.MIN_SAFE_INTEGER) ? cell : Number(cell));
-    }
-    // 2. is this a date?
-    var supportedDateFormats = ['MM-DD-YYYY', 'DD-MM-YYYY', 'MM/DD/YYYY',
-    'DD/MM/YYYY', 'YYYY-MM-DD', 'YYYY/MM/DD',
-    'YYYY-MM-DD HH:mm:ss', 'YYYY-MM-DD hh:mm:ss', 'YYYY-MM-DD HH:mm:ss.SSS',
-    'YYYY-MM-DD hh:mm:ss.SSS', 'YYYY-MM-DDTHH:mm:ss', 'YYYY-MM-DDThh:mm:ss',
-    'YYYY-MM-DDTHH:mm:ss.SSS', 'YYYY-MM-DDThh:mm:ss.SSS'];
-    for (var i = 0; i < supportedDateFormats.length; i++) {
-      var d = moment(cell, supportedDateFormats[i], true); // use strict parsing
-      if (d.isValid()) {
-        d.format(supportedDateFormats[i]);
-        return d;
+      if (cell.length === 0 || Number(cell) > Number.MAX_SAFE_INTEGER || Number(cell) < Number.MIN_SAFE_INTEGER) {
+        return cell;
+      } else {
+        return Number(cell);
       }
+    }
+    var d = moment(cell);
+    if (d.isValid()) {
+      return d;
     }
     return cell;
   };
