@@ -168,7 +168,8 @@ public class NotebookServer extends WebSocketServlet implements
             unicastNoteList(conn, subject);
             break;
           case RELOAD_NOTES_FROM_REPO:
-            broadcastReloadedNoteList(subject);
+            //broadcastReloadedNoteList(subject);
+            unicastNoteList(conn, subject);
             break;
           case GET_HOME_NOTE:
             sendHomeNote(conn, userAndRoles, notebook, messagereceived);
@@ -331,7 +332,9 @@ public class NotebookServer extends WebSocketServlet implements
   private void broadcastToNoteBindedInterpreter(String interpreterGroupId,
       Message m) {
     Notebook notebook = notebook();
-    List<Note> notes = notebook.getAllNotes();
+    //TODO(khalid): anonymous or specific user notes?
+    AuthenticationInfo subject = new AuthenticationInfo("anonymous");
+    List<Note> notes = notebook.getAllNotes(subject);
     for (Note note : notes) {
       List<String> ids = notebook.getInterpreterFactory().getInterpreters(note.getId());
       for (String id : ids) {
@@ -472,6 +475,7 @@ public class NotebookServer extends WebSocketServlet implements
         LOG.error("Fail to reload notes from repository", e);
       }
     }
+
     List<Note> notes = notebook.getAllNotes(subject);
     List<Map<String, String>> notesInfo = new LinkedList<>();
     for (Note note : notes) {
@@ -855,7 +859,9 @@ public class NotebookServer extends WebSocketServlet implements
 
     if (global) { // broadcast change to all web session that uses related
       // interpreter.
-      for (Note n : notebook.getAllNotes()) {
+      //TODO(khalid): anonymous or specific user notes?
+      AuthenticationInfo subject = new AuthenticationInfo("anonymous");
+      for (Note n : notebook.getAllNotes(subject)) {
         List<InterpreterSetting> settings = notebook.getInterpreterFactory()
             .getInterpreterSettings(note.getId());
         for (InterpreterSetting setting : settings) {
@@ -1533,7 +1539,9 @@ public class NotebookServer extends WebSocketServlet implements
       return;
     }
 
-    List<Note> notes = notebook.getAllNotes();
+    //TODO(khalid): anonymous or specific user notes?
+    AuthenticationInfo subject = new AuthenticationInfo("anonymous");
+    List<Note> notes = notebook.getAllNotes(subject );
     for (Note note : notes) {
       if (object.getNoteId() != null && !note.getId().equals(object.getNoteId())) {
         continue;
@@ -1558,7 +1566,9 @@ public class NotebookServer extends WebSocketServlet implements
   @Override
   public void onRemove(String interpreterGroupId, String name, String noteId, String paragraphId) {
     Notebook notebook = notebook();
-    List<Note> notes = notebook.getAllNotes();
+    //TODO(khalid): anonymous or specific user notes?
+    AuthenticationInfo subject = new AuthenticationInfo("anonymous");
+    List<Note> notes = notebook.getAllNotes(subject);
     for (Note note : notes) {
       if (noteId != null && !note.getId().equals(noteId)) {
         continue;

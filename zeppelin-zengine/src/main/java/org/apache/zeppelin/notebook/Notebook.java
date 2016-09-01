@@ -20,6 +20,7 @@ package org.apache.zeppelin.notebook;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -31,9 +32,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-
 import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -484,9 +485,72 @@ public class Notebook implements NoteEventListener {
     }
 
     List<NoteInfo> noteInfos = notebookRepo.list(subject);
+    noteInfos = getAuthorizedNoteInfos(noteInfos, subject);
+
     for (NoteInfo info : noteInfos) {
       loadNoteFromRepo(info.getId(), subject);
     }
+  }
+
+  private List<NoteInfo> getAuthorizedNoteInfos(List<NoteInfo> notes, AuthenticationInfo subject) {
+    Set<String> allIds = Sets.newHashSet();
+    if (subject == null) {
+      logger.warn("Subject for retrieving notes is null");
+      return notes;
+    }
+    if ("anonymous".equals(subject.getUser())) {
+      return notes;
+    }
+    for (NoteInfo note: notes) {
+      allIds.add(note.getId());
+    }
+    Set<String> filteredIds = applyAuthorizationFilter(allIds, subject.getUser());
+    List<NoteInfo> filteredNotes = Lists.newArrayList();
+    for (NoteInfo note: notes) {
+      if (filteredIds.contains(note.getId())){
+        filteredNotes.add(note);
+      }
+    }
+    return filteredNotes;
+  }
+
+  //TODO(khalid): to change from processing everytime to keeping in memory view of each user
+  public List<Note> getAuthorizedNotes(AuthenticationInfo subject) {
+    List<Note> allNotes = new ArrayList<>(notes.values());
+    Set<String> allIds = Sets.newHashSet();
+
+    if (subject == null) {
+      logger.warn("Subject for retrieving notes is null");
+      return allNotes;
+    }
+    if ("anonymous".equals(subject.getUser())) {
+      return allNotes;
+    }
+    for (Note note: allNotes) {
+      allIds.add(note.getId());
+    }
+    Set<String> filteredIds = applyAuthorizationFilter(allIds, subject.getUser());
+    List<Note> filteredNotes = Lists.newArrayList();
+    for (Note note: allNotes) {
+      if (filteredIds.contains(note.getId())){
+        filteredNotes.add(note);
+      }
+    }
+    return filteredNotes;
+  }
+
+  public Set<String> applyAuthorizationFilter(Set<String> ids, String user) {
+    logger.info("applying filter for {}", user);
+    Set<String> filteredIds = Sets.newHashSet();
+    Set<String> userEntity =  Sets.newHashSet((Arrays.asList(user)));
+    NotebookAuthorization auth = getNotebookAuthorization();
+    for (String id: ids) {
+      if (auth.isOwner(id, userEntity) || auth.isReader(id, userEntity)
+          || auth.isWriter(id, userEntity)) {
+        filteredIds.add(id);
+      }
+    }
+    return filteredIds;
   }
 
   private class SnapshotAngularObject {
@@ -514,9 +578,9 @@ public class Notebook implements NoteEventListener {
     }
   }
 
-  public List<Note> getAllNotes() {
+  public List<Note> getAllNotes(AuthenticationInfo subject) {
     synchronized (notes) {
-      List<Note> noteList = new ArrayList<>(notes.values());
+      List<Note> noteList = getAuthorizedNotes(subject);
       Collections.sort(noteList, new Comparator<Note>() {
         @Override
         public int compare(Note note1, Note note2) {
@@ -534,7 +598,7 @@ public class Notebook implements NoteEventListener {
       return noteList;
     }
   }
-
+/*
   public List<Note> getAllNotes(AuthenticationInfo subject) {
     final Set<String> entities = Sets.newHashSet();
     if (subject != null) {
@@ -563,7 +627,7 @@ public class Notebook implements NoteEventListener {
       });
     }
   }
-
+*/
   private Map<String, Object> getParagraphForJobManagerItem(Paragraph paragraph) {
     Map<String, Object> paragraphItem = new HashMap<>();
 
@@ -696,7 +760,7 @@ public class Notebook implements NoteEventListener {
       }
     }
 
-    List<Note> notes = getAllNotes();
+    List<Note> notes = getAllNotes(subject);
     List<Map<String, Object>> notesInfo = new LinkedList<>();
     for (Note note : notes) {
       boolean isNotebookRunning = false;
