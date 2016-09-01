@@ -19,6 +19,7 @@ export SPARK_MASTER_PORT=7077
 export SPARK_MASTER_WEBUI_PORT=8080
 export SPARK_WORKER_PORT=8888
 export SPARK_WORKER_WEBUI_PORT=8081
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$JAVA_HOME/jre/lib/amd64/server/
 
 # spark configuration
 cp $SPARK_HOME/conf/spark-env.sh.template $SPARK_HOME/conf/spark-env.sh

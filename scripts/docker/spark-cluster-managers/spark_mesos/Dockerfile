@@ -14,8 +14,8 @@
 # limitations under the License.
 FROM centos:centos6
 
-ENV SPARK_PROFILE 1.6
-ENV SPARK_VERSION 1.6.2
+ENV SPARK_PROFILE 2.0
+ENV SPARK_VERSION 2.0.0
 ENV HADOOP_PROFILE 2.3
 ENV HADOOP_VERSION 2.3.0
 
@@ -27,6 +27,9 @@ RUN yum install -y \
 wget \
 tar \
 curl \
+svn \
+cyrus-sasl-md5 \
+libevent2-devel \
 && \
 yum clean all
 
@@ -39,7 +42,7 @@ ENV JAVA_HOME /usr/lib/jvm/java
 ENV PATH $PATH:$JAVA_HOME/bin
 
 # install spark
-RUN curl -s http://apache.mirror.cdnetworks.com/spark/spark-$SPARK_VERSION/spark-$SPARK_VERSION-bin-hadoop$HADOOP_PROFILE.tgz | tar -xz -C /usr/local/
+RUN curl -s http://www.apache.org/dist/spark/spark-$SPARK_VERSION/spark-$SPARK_VERSION-bin-hadoop$HADOOP_PROFILE.tgz | tar -xz -C /usr/local/
 RUN cd /usr/local && ln -s spark-$SPARK_VERSION-bin-hadoop$HADOOP_PROFILE spark
 
 # update boot script
@@ -48,8 +51,8 @@ RUN chown root.root /etc/entrypoint.sh
 RUN chmod 700 /etc/entrypoint.sh
 
 # install mesos
-RUN rpm -Uvh http://repos.mesosphere.com/el/6/noarch/RPMS/mesosphere-el-repo-6-2.noarch.rpm
-RUN yum -y install mesos
+RUN wget http://repos.mesosphere.com/el/6/x86_64/RPMS/mesos-1.0.0-2.0.89.centos65.x86_64.rpm
+RUN rpm -Uvh mesos-1.0.0-2.0.89.centos65.x86_64.rpm
 
 #spark
 EXPOSE 8080 7077 7072 8081 8082
