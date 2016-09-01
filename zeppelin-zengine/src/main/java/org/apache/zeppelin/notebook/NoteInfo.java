@@ -36,7 +36,7 @@ public class NoteInfo {
   }
 
   public NoteInfo(Note note) {
-    id = note.id();
+    id = note.getId();
     name = note.getName();
     config = note.getConfig();
   }

@@ -195,10 +195,10 @@ You can configure Apache Zeppelin with both **environment variables** in `conf/z
 
 <table class="table-configuration">
   <tr>
-    <th>zepplin-env.sh</th>
-    <th>zepplin-site.xml</th>
+    <th>zeppelin-env.sh</th>
+    <th>zeppelin-site.xml</th>
     <th>Default value</th>
-    <th>Description</th>
+    <th class="col-md-4">Description</th>
   </tr>
   <tr>
     <td>ZEPPELIN_PORT</td>
@@ -354,7 +354,7 @@ You can configure Apache Zeppelin with both **environment variables** in `conf/z
     <td>ZEPPELIN_NOTEBOOK_AZURE_CONNECTION_STRING</td>
     <td>zeppelin.notebook.azure.connectionString</td>
     <td></td>
-    <td>The Azure storage account connection string<br />i.e. <code>DefaultEndpointsProtocol=https;AccountName=&lt;accountName&gt;;AccountKey=&lt;accountKey&gt;</code></td>
+    <td>The Azure storage account connection string<br />i.e. <br/><code>DefaultEndpointsProtocol=https;<br/>AccountName=&lt;accountName&gt;;<br/>AccountKey=&lt;accountKey&gt;</code></td>
   </tr>
   <tr>
     <td>ZEPPELIN_NOTEBOOK_AZURE_SHARE</td>

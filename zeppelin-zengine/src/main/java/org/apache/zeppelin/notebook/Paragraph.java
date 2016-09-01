@@ -451,13 +451,13 @@ public class Paragraph extends Job implements Serializable, Cloneable {
 
     if (!factory.getInterpreterSettings(note.getId()).isEmpty()) {
       InterpreterSetting intpGroup = factory.getInterpreterSettings(note.getId()).get(0);
-      registry = intpGroup.getInterpreterGroup(note.id()).getAngularObjectRegistry();
-      resourcePool = intpGroup.getInterpreterGroup(note.id()).getResourcePool();
+      registry = intpGroup.getInterpreterGroup(note.getId()).getAngularObjectRegistry();
+      resourcePool = intpGroup.getInterpreterGroup(note.getId()).getResourcePool();
     }
 
     List<InterpreterContextRunner> runners = new LinkedList<InterpreterContextRunner>();
     for (Paragraph p : note.getParagraphs()) {
-      runners.add(new ParagraphRunner(note, note.id(), p.getId()));
+      runners.add(new ParagraphRunner(note, note.getId(), p.getId()));
     }
 
     final Paragraph self = this;
@@ -470,7 +470,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     }
 
     InterpreterContext interpreterContext = new InterpreterContext(
-            note.id(),
+            note.getId(),
             getId(),
             this.getTitle(),
             this.getText(),
