@@ -44,9 +44,19 @@ public class Markdown extends Interpreter {
     super(property);
   }
 
+  /** wrap with markdown class div to styling DOM using css */
+  public static String wrapHtmlWithMarkdownClassDiv(String html) {
+    return new StringBuilder()
+        .append("<div class=\"markdown-body\">\n")
+        .append(html)
+        .append("\n</div>")
+        .toString();
+  }
+
   @Override
   public void open() {
-    md = new PegDownProcessor(Extensions.ALL_WITH_OPTIONALS, 5000);
+    int pegdownOptions = Extensions.ALL_WITH_OPTIONALS - Extensions.ANCHORLINKS;
+    md = new PegDownProcessor(pegdownOptions, 5000);
   }
 
   @Override
@@ -60,13 +70,7 @@ public class Markdown extends Interpreter {
       String parsed = md.markdownToHtml(st);
       if (null == parsed) throw new RuntimeException("Cannot parse markdown syntax string to HTML");
 
-      /** wrap with markdown class div to support markdown syntax using css */
-      html =
-          new StringBuilder()
-              .append("<div class=\"markdown-body\">\n")
-              .append(parsed)
-              .append("\n</div>")
-              .toString();
+      html = wrapHtmlWithMarkdownClassDiv(parsed);
 
     } catch (java.lang.RuntimeException e) {
       LOGGER.error("Exception in Markdown while interpret ", e);
