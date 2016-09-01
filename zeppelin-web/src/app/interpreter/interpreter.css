@@ -114,7 +114,7 @@
  * github flavored markdown style
  */
 
-.markdown {
+.markdown-body {
   -ms-text-size-adjust: 100%;
   -webkit-text-size-adjust: 100%;
   line-height: 1.5;
@@ -124,201 +124,201 @@
   word-wrap: break-word;
 }
 
-.markdown .pl-c {
+.markdown-body .pl-c {
   color: #969896;
 }
 
-.markdown .pl-c1,
-.markdown .pl-s .pl-v {
+.markdown-body .pl-c1,
+.markdown-body .pl-s .pl-v {
   color: #0086b3;
 }
 
-.markdown .pl-e,
-.markdown .pl-en {
+.markdown-body .pl-e,
+.markdown-body .pl-en {
   color: #795da3;
 }
 
-.markdown .pl-smi,
-.markdown .pl-s .pl-s1 {
+.markdown-body .pl-smi,
+.markdown-body .pl-s .pl-s1 {
   color: #333;
 }
 
-.markdown .pl-ent {
+.markdown-body .pl-ent {
   color: #63a35c;
 }
 
-.markdown .pl-k {
+.markdown-body .pl-k {
   color: #a71d5d;
 }
 
-.markdown .pl-s,
-.markdown .pl-pds,
-.markdown .pl-s .pl-pse .pl-s1,
-.markdown .pl-sr,
-.markdown .pl-sr .pl-cce,
-.markdown .pl-sr .pl-sre,
-.markdown .pl-sr .pl-sra {
+.markdown-body .pl-s,
+.markdown-body .pl-pds,
+.markdown-body .pl-s .pl-pse .pl-s1,
+.markdown-body .pl-sr,
+.markdown-body .pl-sr .pl-cce,
+.markdown-body .pl-sr .pl-sre,
+.markdown-body .pl-sr .pl-sra {
   color: #183691;
 }
 
-.markdown .pl-v {
+.markdown-body .pl-v {
   color: #ed6a43;
 }
 
-.markdown .pl-id {
+.markdown-body .pl-id {
   color: #b52a1d;
 }
 
-.markdown .pl-ii {
+.markdown-body .pl-ii {
   color: #f8f8f8;
   background-color: #b52a1d;
 }
 
-.markdown .pl-sr .pl-cce {
+.markdown-body .pl-sr .pl-cce {
   font-weight: bold;
   color: #63a35c;
 }
 
-.markdown .pl-ml {
+.markdown-body .pl-ml {
   color: #693a17;
 }
 
-.markdown .pl-mh,
-.markdown .pl-mh .pl-en,
-.markdown .pl-ms {
+.markdown-body .pl-mh,
+.markdown-body .pl-mh .pl-en,
+.markdown-body .pl-ms {
   font-weight: bold;
   color: #1d3e81;
 }
 
-.markdown .pl-mq {
+.markdown-body .pl-mq {
   color: #008080;
 }
 
-.markdown .pl-mi {
+.markdown-body .pl-mi {
   font-style: italic;
   color: #333;
 }
 
-.markdown .pl-mb {
+.markdown-body .pl-mb {
   font-weight: bold;
   color: #333;
 }
 
-.markdown .pl-md {
+.markdown-body .pl-md {
   color: #bd2c00;
   background-color: #ffecec;
 }
 
-.markdown .pl-mi1 {
+.markdown-body .pl-mi1 {
   color: #55a532;
   background-color: #eaffea;
 }
 
-.markdown .pl-mdr {
+.markdown-body .pl-mdr {
   font-weight: bold;
   color: #795da3;
 }
 
-.markdown .pl-mo {
+.markdown-body .pl-mo {
   color: #1d3e81;
 }
 
-.markdown .octicon {
+.markdown-body .octicon {
   display: inline-block;
   vertical-align: text-top;
   fill: currentColor;
 }
 
-.markdown a {
+.markdown-body a {
   background-color: transparent;
   -webkit-text-decoration-skip: objects;
 }
 
-.markdown a:active,
-.markdown a:hover {
+.markdown-body a:active,
+.markdown-body a:hover {
   outline-width: 0;
 }
 
-.markdown strong {
+.markdown-body strong {
   font-weight: inherit;
 }
 
-.markdown strong {
+.markdown-body strong {
   font-weight: bolder;
 }
 
-.markdown h1 {
+.markdown-body h1 {
   font-size: 2em;
   margin: 0.67em 0;
 }
 
-.markdown img {
+.markdown-body img {
   border-style: none;
 }
 
-.markdown svg:not(:root) {
+.markdown-body svg:not(:root) {
   overflow: hidden;
 }
 
-.markdown code,
-.markdown kbd,
-.markdown pre {
+.markdown-body code,
+.markdown-body kbd,
+.markdown-body pre {
   font-family: monospace, monospace;
   font-size: 1em;
 }
 
-.markdown hr {
+.markdown-body hr {
   box-sizing: content-box;
   height: 0;
   overflow: visible;
 }
 
-.markdown input {
+.markdown-body input {
   font: inherit;
   margin: 0;
 }
 
-.markdown input {
+.markdown-body input {
   overflow: visible;
 }
 
-.markdown button:-moz-focusring,
-.markdown [type="button"]:-moz-focusring,
-.markdown [type="reset"]:-moz-focusring,
-.markdown [type="submit"]:-moz-focusring {
+.markdown-body button:-moz-focusring,
+.markdown-body [type="button"]:-moz-focusring,
+.markdown-body [type="reset"]:-moz-focusring,
+.markdown-body [type="submit"]:-moz-focusring {
   outline: 1px dotted ButtonText;
 }
 
-.markdown [type="checkbox"] {
+.markdown-body [type="checkbox"] {
   box-sizing: border-box;
   padding: 0;
 }
 
-.markdown * {
+.markdown-body * {
   box-sizing: border-box;
 }
 
-.markdown input {
+.markdown-body input {
   font-family: inherit;
   font-size: inherit;
   line-height: inherit;
 }
 
-.markdown a {
+.markdown-body a {
   color: #4078c0;
   text-decoration: none;
 }
 
-.markdown a:hover,
-.markdown a:active {
+.markdown-body a:hover,
+.markdown-body a:active {
   text-decoration: underline;
 }
 
-.markdown strong {
+.markdown-body strong {
   font-weight: 600;
 }
 
-.markdown hr {
+.markdown-body hr {
   height: 0;
   margin: 15px 0;
   overflow: hidden;
@@ -327,170 +327,170 @@
   border-bottom: 1px solid #ddd;
 }
 
-.markdown hr::before {
+.markdown-body hr::before {
   display: table;
   content: "";
 }
 
-.markdown hr::after {
+.markdown-body hr::after {
   display: table;
   clear: both;
   content: "";
 }
 
-.markdown table {
+.markdown-body table {
   border-spacing: 0;
   border-collapse: collapse;
 }
 
-.markdown td,
-.markdown th {
+.markdown-body td,
+.markdown-body th {
   padding: 0;
 }
 
-.markdown h1,
-.markdown h2,
-.markdown h3,
-.markdown h4,
-.markdown h5,
-.markdown h6 {
+.markdown-body h1,
+.markdown-body h2,
+.markdown-body h3,
+.markdown-body h4,
+.markdown-body h5,
+.markdown-body h6 {
   margin-top: 0;
   margin-bottom: 0;
 }
 
-.markdown h1 {
+.markdown-body h1 {
   font-size: 32px;
   font-weight: 600;
 }
 
-.markdown h2 {
+.markdown-body h2 {
   font-size: 24px;
   font-weight: 600;
 }
 
-.markdown h3 {
+.markdown-body h3 {
   font-size: 20px;
   font-weight: 600;
 }
 
-.markdown h4 {
+.markdown-body h4 {
   font-size: 16px;
   font-weight: 600;
 }
 
-.markdown h5 {
+.markdown-body h5 {
   font-size: 14px;
   font-weight: 600;
 }
 
-.markdown h6 {
+.markdown-body h6 {
   font-size: 12px;
   font-weight: 600;
 }
 
-.markdown p {
+.markdown-body p {
   margin-top: 0;
   margin-bottom: 10px;
 }
 
-.markdown blockquote {
+.markdown-body blockquote {
   margin: 0;
 }
 
-.markdown ul,
-.markdown ol {
+.markdown-body ul,
+.markdown-body ol {
   padding-left: 0;
   margin-top: 0;
   margin-bottom: 0;
 }
 
-.markdown ol ol,
-.markdown ul ol {
+.markdown-body ol ol,
+.markdown-body ul ol {
   list-style-type: lower-roman;
 }
 
-.markdown ul ul ol,
-.markdown ul ol ol,
-.markdown ol ul ol,
-.markdown ol ol ol {
+.markdown-body ul ul ol,
+.markdown-body ul ol ol,
+.markdown-body ol ul ol,
+.markdown-body ol ol ol {
   list-style-type: lower-alpha;
 }
 
-.markdown dd {
+.markdown-body dd {
   margin-left: 0;
 }
 
-.markdown code {
+.markdown-body code {
   font-family: Consolas, "Liberation Mono", Menlo, Courier, monospace;
   font-size: 12px;
 }
 
-.markdown pre {
+.markdown-body pre {
   margin-top: 0;
   margin-bottom: 0;
   font: 12px Consolas, "Liberation Mono", Menlo, Courier, monospace;
 }
 
-.markdown .octicon {
+.markdown-body .octicon {
   vertical-align: text-bottom;
 }
 
-.markdown input {
+.markdown-body input {
   -webkit-font-feature-settings: "liga" 0;
   font-feature-settings: "liga" 0;
 }
 
-.markdown .form-select::-ms-expand {
+.markdown-body .form-select::-ms-expand {
   opacity: 0;
 }
 
-.markdown::before {
+.markdown-body::before {
   display: table;
   content: "";
 }
 
-.markdown::after {
+.markdown-body::after {
   display: table;
   clear: both;
   content: "";
 }
 
-.markdown>*:first-child {
+.markdown-body>*:first-child {
   margin-top: 0 !important;
 }
 
-.markdown>*:last-child {
+.markdown-body>*:last-child {
   margin-bottom: 0 !important;
 }
 
-.markdown a:not([href]) {
+.markdown-body a:not([href]) {
   color: inherit;
   text-decoration: none;
 }
 
-.markdown .anchor {
+.markdown-body .anchor {
   float: left;
   padding-right: 4px;
   margin-left: -20px;
   line-height: 1;
 }
 
-.markdown .anchor:focus {
+.markdown-body .anchor:focus {
   outline: none;
 }
 
-.markdown p,
-.markdown blockquote,
-.markdown ul,
-.markdown ol,
-.markdown dl,
-.markdown table,
-.markdown pre {
+.markdown-body p,
+.markdown-body blockquote,
+.markdown-body ul,
+.markdown-body ol,
+.markdown-body dl,
+.markdown-body table,
+.markdown-body pre {
   margin-top: 0;
   margin-bottom: 16px;
 }
 
-.markdown hr {
+.markdown-body hr {
   height: 0.25em;
   padding: 0;
   margin: 24px 0;
@@ -498,21 +498,21 @@
   border: 0;
 }
 
-.markdown blockquote {
+.markdown-body blockquote {
   padding: 0 1em;
   color: #777;
   border-left: 0.25em solid #ddd;
 }
 
-.markdown blockquote>:first-child {
+.markdown-body blockquote>:first-child {
   margin-top: 0;
 }
 
-.markdown blockquote>:last-child {
+.markdown-body blockquote>:last-child {
   margin-bottom: 0;
 }
 
-.markdown kbd {
+.markdown-body kbd {
   display: inline-block;
   padding: 3px 5px;
   font-size: 11px;
@@ -526,102 +526,102 @@
   box-shadow: inset 0 -1px 0 #bbb;
 }
 
-.markdown h1,
-.markdown h2,
-.markdown h3,
-.markdown h4,
-.markdown h5,
-.markdown h6 {
+.markdown-body h1,
+.markdown-body h2,
+.markdown-body h3,
+.markdown-body h4,
+.markdown-body h5,
+.markdown-body h6 {
   margin-top: 24px;
   margin-bottom: 16px;
   font-weight: 600;
   line-height: 1.25;
 }
 
-.markdown h1 .octicon-link,
-.markdown h2 .octicon-link,
-.markdown h3 .octicon-link,
-.markdown h4 .octicon-link,
-.markdown h5 .octicon-link,
-.markdown h6 .octicon-link {
+.markdown-body h1 .octicon-link,
+.markdown-body h2 .octicon-link,
+.markdown-body h3 .octicon-link,
+.markdown-body h4 .octicon-link,
+.markdown-body h5 .octicon-link,
+.markdown-body h6 .octicon-link {
   color: #000;
   vertical-align: middle;
   visibility: hidden;
 }
 
-.markdown h1:hover .anchor,
-.markdown h2:hover .anchor,
-.markdown h3:hover .anchor,
-.markdown h4:hover .anchor,
-.markdown h5:hover .anchor,
-.markdown h6:hover .anchor {
+.markdown-body h1:hover .anchor,
+.markdown-body h2:hover .anchor,
+.markdown-body h3:hover .anchor,
+.markdown-body h4:hover .anchor,
+.markdown-body h5:hover .anchor,
+.markdown-body h6:hover .anchor {
   text-decoration: none;
 }
 
-.markdown h1:hover .anchor .octicon-link,
-.markdown h2:hover .anchor .octicon-link,
-.markdown h3:hover .anchor .octicon-link,
-.markdown h4:hover .anchor .octicon-link,
-.markdown h5:hover .anchor .octicon-link,
-.markdown h6:hover .anchor .octicon-link {
+.markdown-body h1:hover .anchor .octicon-link,
+.markdown-body h2:hover .anchor .octicon-link,
+.markdown-body h3:hover .anchor .octicon-link,
+.markdown-body h4:hover .anchor .octicon-link,
+.markdown-body h5:hover .anchor .octicon-link,
+.markdown-body h6:hover .anchor .octicon-link {
   visibility: visible;
 }
 
-.markdown h1 {
+.markdown-body h1 {
   padding-bottom: 0.3em;
   font-size: 2em;
   border-bottom: 1px solid #eee;
 }
 
-.markdown h2 {
+.markdown-body h2 {
   padding-bottom: 0.3em;
   font-size: 1.5em;
   border-bottom: 1px solid #eee;
 }
 
-.markdown h3 {
+.markdown-body h3 {
   font-size: 1.25em;
 }
 
-.markdown h4 {
+.markdown-body h4 {
   font-size: 1em;
 }
 
-.markdown h5 {
+.markdown-body h5 {
   font-size: 0.875em;
 }
 
-.markdown h6 {
+.markdown-body h6 {
   font-size: 0.85em;
   color: #777;
 }
 
-.markdown ul,
-.markdown ol {
+.markdown-body ul,
+.markdown-body ol {
   padding-left: 2em;
 }
 
-.markdown ul ul,
-.markdown ul ol,
-.markdown ol ol,
-.markdown ol ul {
+.markdown-body ul ul,
+.markdown-body ul ol,
+.markdown-body ol ol,
+.markdown-body ol ul {
   margin-top: 0;
   margin-bottom: 0;
 }
 
-.markdown li>p {
+.markdown-body li>p {
   margin-top: 16px;
 }
 
-.markdown li+li {
+.markdown-body li+li {
   margin-top: 0.25em;
 }
 
-.markdown dl {
+.markdown-body dl {
   padding: 0;
 }
 
-.markdown dl dt {
+.markdown-body dl dt {
   padding: 0;
   margin-top: 16px;
   font-size: 1em;
@@ -629,12 +629,12 @@
   font-weight: bold;
 }
 
-.markdown dl dd {
+.markdown-body dl dd {
   padding: 0 16px;
   margin-bottom: 16px;
 }
 
-.markdown table {
+.markdown-body table {
   display: block;
   width: 100%;
   overflow: auto;
@@ -642,32 +642,32 @@
   word-break: keep-all;
 }
 
-.markdown table th {
+.markdown-body table th {
   font-weight: bold;
 }
 
-.markdown table th,
-.markdown table td {
+.markdown-body table th,
+.markdown-body table td {
   padding: 6px 13px;
   border: 1px solid #ddd;
 }
 
-.markdown table tr {
+.markdown-body table tr {
   background-color: #fff;
   border-top: 1px solid #ccc;
 }
 
-.markdown table tr:nth-child(2n) {
+.markdown-body table tr:nth-child(2n) {
   background-color: #f8f8f8;
 }
 
-.markdown img {
+.markdown-body img {
   max-width: 100%;
   box-sizing: content-box;
   background-color: #fff;
 }
 
-.markdown code {
+.markdown-body code {
   padding: 0;
   padding-top: 0.2em;
   padding-bottom: 0.2em;
@@ -677,17 +677,17 @@
   border-radius: 3px;
 }
 
-.markdown code::before,
-.markdown code::after {
+.markdown-body code::before,
+.markdown-body code::after {
   letter-spacing: -0.2em;
   content: "\00a0";
 }
 
-.markdown pre {
+.markdown-body pre {
   word-wrap: normal;
 }
 
-.markdown pre>code {
+.markdown-body pre>code {
   padding: 0;
   margin: 0;
   font-size: 100%;
@@ -697,17 +697,17 @@
   border: 0;
 }
 
-.markdown .highlight {
+.markdown-body .highlight {
   margin-bottom: 16px;
 }
 
-.markdown .highlight pre {
+.markdown-body .highlight pre {
   margin-bottom: 0;
   word-break: normal;
 }
 
-.markdown .highlight pre,
-.markdown pre {
+.markdown-body .highlight pre,
+.markdown-body pre {
   padding: 16px;
   overflow: auto;
   font-size: 85%;
@@ -716,7 +716,7 @@
   border-radius: 3px;
 }
 
-.markdown pre code {
+.markdown-body pre code {
   display: inline;
   max-width: auto;
   padding: 0;
@@ -728,45 +728,45 @@
   border: 0;
 }
 
-.markdown pre code::before,
-.markdown pre code::after {
+.markdown-body pre code::before,
+.markdown-body pre code::after {
   content: normal;
 }
 
-.markdown .pl-0 {
+.markdown-body .pl-0 {
   padding-left: 0 !important;
 }
 
-.markdown .pl-1 {
+.markdown-body .pl-1 {
   padding-left: 3px !important;
 }
 
-.markdown .pl-2 {
+.markdown-body .pl-2 {
   padding-left: 6px !important;
 }
 
-.markdown .pl-3 {
+.markdown-body .pl-3 {
   padding-left: 12px !important;
 }
 
-.markdown .pl-4 {
+.markdown-body .pl-4 {
   padding-left: 24px !important;
 }
 
-.markdown .pl-5 {
+.markdown-body .pl-5 {
   padding-left: 36px !important;
 }
 
-.markdown .pl-6 {
+.markdown-body .pl-6 {
   padding-left: 48px !important;
 }
 
-.markdown .full-commit .btn-outline:not(:disabled):hover {
+.markdown-body .full-commit .btn-outline:not(:disabled):hover {
   color: #4078c0;
   border: 1px solid #4078c0;
 }
 
-.markdown kbd {
+.markdown-body kbd {
   display: inline-block;
   padding: 3px 5px;
   font: 11px Consolas, "Liberation Mono", Menlo, Courier, monospace;
@@ -780,25 +780,25 @@
   box-shadow: inset 0 -1px 0 #bbb;
 }
 
-.markdown :checked+.radio-label {
+.markdown-body :checked+.radio-label {
   position: relative;
   z-index: 1;
   border-color: #4078c0;
 }
 
-.markdown .task-list-item {
+.markdown-body .task-list-item {
   list-style-type: none;
 }
 
-.markdown .task-list-item+.task-list-item {
+.markdown-body .task-list-item+.task-list-item {
   margin-top: 3px;
 }
 
-.markdown .task-list-item input {
+.markdown-body .task-list-item input {
   margin: 0 0.2em 0.25em -1.6em;
   vertical-align: middle;
 }
 
-.markdown hr {
+.markdown-body hr {
   border-bottom-color: #eee;
 }

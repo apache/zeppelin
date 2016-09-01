@@ -63,7 +63,7 @@ public class Markdown extends Interpreter {
       /** wrap with markdown class div to support markdown syntax using css */
       html =
           new StringBuilder()
-              .append("<div class=\"markdown\">\n")
+              .append("<div class=\"markdown-body\">\n")
               .append(parsed)
               .append("\n</div>")
               .toString();
