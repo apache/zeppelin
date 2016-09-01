@@ -865,6 +865,21 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
     }
   };
 
+  $scope.parseTableCell = function(cell) {
+    if (!isNaN(cell)) {
+      if (cell.length === 0 || Number(cell) > Number.MAX_SAFE_INTEGER || Number(cell) < Number.MIN_SAFE_INTEGER) {
+        return cell;
+      } else {
+        return Number(cell);
+      }
+    }
+    var d = moment(cell);
+    if (d.isValid()) {
+      return d;
+    }
+    return cell;
+  };
+
   $scope.loadTableData = function(result) {
     if (!result) {
       return;
@@ -898,8 +913,9 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
           if (i === 0) {
             columnNames.push({name: col, index: j, aggr: 'sum'});
           } else {
-            cols.push(col);
-            cols2.push({key: (columnNames[i]) ? columnNames[i].name : undefined, value: col});
+            var parsedCol = $scope.parseTableCell(col);
+            cols.push(parsedCol);
+            cols2.push({key: (columnNames[i]) ? columnNames[i].name : undefined, value: parsedCol});
           }
         }
         if (i !== 0) {
@@ -978,7 +994,9 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
         cells: function(row, col, prop) {
           var cellProperties = {};
           cellProperties.renderer = function(instance, td, row, col, prop, value, cellProperties) {
-            if (!isNaN(value)) {
+            if (value instanceof moment) {
+              td.innerHTML = value._i;
+            } else if (!isNaN(value)) {
               cellProperties.format = '0,0.[00000]';
               td.style.textAlign = 'left';
               Handsontable.renderers.NumericRenderer.apply(this, arguments);
