@@ -153,13 +153,14 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
   public void onProcessComplete(int exitValue) {
     logger.info("Interpreter process exited {}", exitValue);
     running = false;
-
+    RemoteInterpreterUtils.releasePort(port);
   }
 
   @Override
   public void onProcessFailed(ExecuteException e) {
     logger.info("Interpreter process failed {}", e);
     running = false;
+    RemoteInterpreterUtils.releasePort(port);
   }
 
   public boolean isRunning() {

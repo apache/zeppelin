@@ -24,18 +24,27 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  *
  */
 public class RemoteInterpreterUtils {
   static Logger LOGGER = LoggerFactory.getLogger(RemoteInterpreterUtils.class);
-  public static int findRandomAvailablePortOnAllLocalInterfaces() throws IOException {
+  private static Set<Integer> portsUsing = new HashSet();
+
+  public static synchronized int findRandomAvailablePortOnAllLocalInterfaces() throws IOException {
     int port;
     try (ServerSocket socket = new ServerSocket(0);) {
       port = socket.getLocalPort();
       socket.close();
+      if (portsUsing.contains(port)) {
+        LOGGER.warn("port {} is in using, try to find another port.", port);
+        return findRandomAvailablePortOnAllLocalInterfaces();
+      }
     }
+    portsUsing.add(port);
     return port;
   }
 
@@ -51,5 +60,9 @@ public class RemoteInterpreterUtils {
       LOGGER.debug(e.getMessage(), e);
       return false;
     }
+  }
+
+  public static void releasePort(int port) {
+    portsUsing.remove(port);
   }
 }
