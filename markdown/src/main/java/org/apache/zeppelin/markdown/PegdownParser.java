@@ -5,11 +5,11 @@ import org.pegdown.PegDownProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** Pegdown Markdown Parser. */
+/** Markdown Parser using pegdown processor. */
 public class PegdownParser implements MarkdownParser {
-  private PegDownProcessor processor;
-
   private final Logger logger = LoggerFactory.getLogger(PegdownParser.class);
+
+  private PegDownProcessor processor;
 
   public PegdownParser() {
     int pegdownOptions = Extensions.ALL_WITH_OPTIONALS - Extensions.ANCHORLINKS;
@@ -23,17 +23,19 @@ public class PegdownParser implements MarkdownParser {
 
     try {
       String parsed = processor.markdownToHtml(markdownText);
-      if (null == parsed) throw new RuntimeException("Cannot parse markdown syntax string to HTML");
+      if (null == parsed) {
+        throw new RuntimeException("Cannot parse markdown text to HTML using pegdown");
+      }
 
       html = wrapWithMarkdownClassDiv(parsed);
     } catch (RuntimeException e) {
-      logger.error("Failed to parsed markdown text", e);
+      logger.error("Cannot parse markdown text to HTML using pegdown", e);
     }
 
     return html;
   }
 
-  /** wrap with markdown class div to styling DOM using css */
+  /** wrap with markdown class div to styling DOM using css. */
   public static String wrapWithMarkdownClassDiv(String html) {
     return new StringBuilder()
         .append("<div class=\"markdown-body\">\n")

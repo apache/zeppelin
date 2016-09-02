@@ -22,6 +22,7 @@ import java.util.Properties;
 
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
+import org.apache.zeppelin.interpreter.InterpreterPropertyBuilder;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.InterpreterUtils;
@@ -33,17 +34,50 @@ import org.slf4j.LoggerFactory;
 
 /** MarkdownInterpreter interpreter for Zeppelin. */
 public class MarkdownInterpreter extends Interpreter {
-  private final Logger logger = LoggerFactory.getLogger(MarkdownInterpreter.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(MarkdownInterpreter.class);
 
   private MarkdownParser parser;
+
+  /** Markdown Parser Type. */
+  public enum MarkdownParserType {
+    PEGDOWN {
+      @Override
+      public String toString() {
+        return PARSER_TYPE_PEGDOWN;
+      }
+    },
+
+    MARKDOWN4j {
+      @Override
+      public String toString() {
+        return PARSER_TYPE_MARKDOWN4J;
+      }
+    }
+  }
+
+  public static final String MARKDOWN_PARSER_TYPE = "markdown.parser.type";
+  public static final String PARSER_TYPE_PEGDOWN = "pegdown";
+  public static final String PARSER_TYPE_MARKDOWN4J = "markdown4j";
 
   public MarkdownInterpreter(Properties property) {
     super(property);
   }
 
+  public static MarkdownParser createMarkdownParser(String parserType) {
+    LOGGER.debug("Creating " + parserType + " markdown interpreter");
+
+    if (MarkdownParserType.PEGDOWN.toString().equals(parserType)) {
+      return new PegdownParser();
+    } else {
+      /** default parser. */
+      return new Markdown4jParser();
+    }
+  }
+
   @Override
   public void open() {
-    parser = new PegdownParser();
+    String parserType = getProperty(MARKDOWN_PARSER_TYPE);
+    parser = createMarkdownParser(parserType);
   }
 
   @Override
@@ -56,7 +90,7 @@ public class MarkdownInterpreter extends Interpreter {
     try {
       html = parser.render(markdownText);
     } catch (Exception e) {
-      logger.error("Exception in MarkdownInterpreter while interpret ", e);
+      LOGGER.error("Exception in MarkdownInterpreter while interpret ", e);
       return new InterpreterResult(Code.ERROR, InterpreterUtils.getMostRelevantMessage(e));
     }
 

@@ -29,64 +29,65 @@ import org.junit.Test;
 
 public class PegdownParserTest {
 
-  MarkdownInterpreter pegdownInterpreter;
+  MarkdownInterpreter md;
 
   @Before
   public void setUp() throws Exception {
-    pegdownInterpreter = new MarkdownInterpreter(new Properties());
-    pegdownInterpreter.open();
+    Properties props = new Properties();
+    props.put(MarkdownInterpreter.MARKDOWN_PARSER_TYPE, MarkdownInterpreter.PARSER_TYPE_PEGDOWN);
+    md = new MarkdownInterpreter(props);
+    md.open();
   }
 
   @After
   public void tearDown() throws Exception {
-    pegdownInterpreter.close();
+    md.close();
   }
 
   @Test
   public void testHeader() {
-    InterpreterResult r1 = pegdownInterpreter.interpret("# H1", null);
+    InterpreterResult r1 = md.interpret("# H1", null);
     assertEquals(wrapWithMarkdownClassDiv("<h1>H1</h1>"), r1.message());
 
-    InterpreterResult r2 = pegdownInterpreter.interpret("## H2", null);
+    InterpreterResult r2 = md.interpret("## H2", null);
     assertEquals(wrapWithMarkdownClassDiv("<h2>H2</h2>"), r2.message());
 
-    InterpreterResult r3 = pegdownInterpreter.interpret("### H3", null);
+    InterpreterResult r3 = md.interpret("### H3", null);
     assertEquals(wrapWithMarkdownClassDiv("<h3>H3</h3>"), r3.message());
 
-    InterpreterResult r4 = pegdownInterpreter.interpret("#### H4", null);
+    InterpreterResult r4 = md.interpret("#### H4", null);
     assertEquals(wrapWithMarkdownClassDiv("<h4>H4</h4>"), r4.message());
 
-    InterpreterResult r5 = pegdownInterpreter.interpret("##### H5", null);
+    InterpreterResult r5 = md.interpret("##### H5", null);
     assertEquals(wrapWithMarkdownClassDiv("<h5>H5</h5>"), r5.message());
 
-    InterpreterResult r6 = pegdownInterpreter.interpret("###### H6", null);
+    InterpreterResult r6 = md.interpret("###### H6", null);
     assertEquals(wrapWithMarkdownClassDiv("<h6>H6</h6>"), r6.message());
 
-    InterpreterResult r7 = pegdownInterpreter.interpret("Alt-H1\n" + "======", null);
+    InterpreterResult r7 = md.interpret("Alt-H1\n" + "======", null);
     assertEquals(wrapWithMarkdownClassDiv("<h1>Alt-H1</h1>"), r7.message());
 
-    InterpreterResult r8 = pegdownInterpreter.interpret("Alt-H2\n" + "------", null);
+    InterpreterResult r8 = md.interpret("Alt-H2\n" + "------", null);
     assertEquals(wrapWithMarkdownClassDiv("<h2>Alt-H2</h2>"), r8.message());
   }
 
   @Test
   public void testStrikethrough() {
-    InterpreterResult result = pegdownInterpreter.interpret("This is ~~deleted~~ text", null);
+    InterpreterResult result = md.interpret("This is ~~deleted~~ text", null);
     assertEquals(
         wrapWithMarkdownClassDiv("<p>This is <del>deleted</del> text</p>"), result.message());
   }
 
   @Test
   public void testItalics() {
-    InterpreterResult result = pegdownInterpreter.interpret("This is *italics* text", null);
+    InterpreterResult result = md.interpret("This is *italics* text", null);
     assertEquals(
         wrapWithMarkdownClassDiv("<p>This is <em>italics</em> text</p>"), result.message());
   }
 
   @Test
   public void testStrongEmphasis() {
-    InterpreterResult result =
-        pegdownInterpreter.interpret("This is **strong emphasis** text", null);
+    InterpreterResult result = md.interpret("This is **strong emphasis** text", null);
     assertEquals(
         wrapWithMarkdownClassDiv("<p>This is <strong>strong emphasis</strong> text</p>"),
         result.message());
@@ -108,7 +109,7 @@ public class PegdownParserTest {
             .append("</ol>")
             .toString();
 
-    InterpreterResult result = pegdownInterpreter.interpret(input, null);
+    InterpreterResult result = md.interpret(input, null);
     assertEquals(wrapWithMarkdownClassDiv(expected), result.message());
   }
 
@@ -130,7 +131,7 @@ public class PegdownParserTest {
             .append("</ul>")
             .toString();
 
-    InterpreterResult result = pegdownInterpreter.interpret(input, null);
+    InterpreterResult result = md.interpret(input, null);
     assertEquals(wrapWithMarkdownClassDiv(expected), result.message());
   }
 
@@ -181,14 +182,13 @@ public class PegdownParserTest {
             .append("<p>Some text to show that the reference links can follow later.</p>")
             .toString();
 
-    InterpreterResult result = pegdownInterpreter.interpret(input, null);
+    InterpreterResult result = md.interpret(input, null);
     assertEquals(wrapWithMarkdownClassDiv(expected), result.message());
   }
 
   @Test
   public void testInlineCode() {
-    InterpreterResult result =
-        pegdownInterpreter.interpret("Inline `code` has `back-ticks around` it.", null);
+    InterpreterResult result = md.interpret("Inline `code` has `back-ticks around` it.", null);
     assertEquals(
         wrapWithMarkdownClassDiv(
             "<p>Inline <code>code</code> has <code>back-ticks around</code> it.</p>"),
@@ -198,7 +198,7 @@ public class PegdownParserTest {
   @Test
   public void testBlockQuotes() {
     InterpreterResult r1 =
-        pegdownInterpreter.interpret(
+        md.interpret(
             "> Blockquotes are very handy in email to emulate reply text.\n"
                 + "> This line is part of the same quote.",
             null);
@@ -210,7 +210,7 @@ public class PegdownParserTest {
         r1.message());
 
     InterpreterResult r2 =
-        pegdownInterpreter.interpret(
+        md.interpret(
             "> This is a very long line that will still be quoted properly when it wraps. Oh boy let's keep writing to make sure this is long enough to actually wrap for everyone. Oh, you can *put* **MarkdownInterpreter** into a blockquote. ",
             null);
     assertEquals(
@@ -256,7 +256,7 @@ public class PegdownParserTest {
             .append("</table>")
             .toString();
 
-    InterpreterResult result = pegdownInterpreter.interpret(input, null);
+    InterpreterResult result = md.interpret(input, null);
     assertEquals(wrapWithMarkdownClassDiv(expected), result.message());
   }
 
@@ -296,7 +296,7 @@ public class PegdownParserTest {
             .append("</table>")
             .toString();
 
-    InterpreterResult result = pegdownInterpreter.interpret(input, null);
+    InterpreterResult result = md.interpret(input, null);
     assertEquals(wrapWithMarkdownClassDiv(expected), result.message());
   }
 }
