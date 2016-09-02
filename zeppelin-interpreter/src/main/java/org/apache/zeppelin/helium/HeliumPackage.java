@@ -85,6 +85,10 @@ public class HeliumPackage {
     return artifact;
   }
 
+  public void setArtifact(String newArtifact) {
+    this.artifact = newArtifact;
+  }
+
   public String getClassName() {
     return className;
   }
