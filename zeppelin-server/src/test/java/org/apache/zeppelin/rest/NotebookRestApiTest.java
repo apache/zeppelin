@@ -150,7 +150,7 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
 
   @Test
   public void testCloneNotebook() throws IOException {
-    Note note1 = ZeppelinServer.notebook.createNote(null);
+    Note note1 = ZeppelinSessions.notebook(AuthenticationInfo.ANONYMOUS).createNote(null);
     PostMethod post = httpPost("/notebook/" + note1.getId(), "");
     LOG.info("testCloneNotebook response\n" + post.getResponseBodyAsString());
     assertThat(post, isCreated());
@@ -169,8 +169,8 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
     get.releaseConnection();
 
     //cleanup
-    ZeppelinServer.notebook.removeNote(note1.getId(), null);
-    ZeppelinServer.notebook.removeNote(clonedNotebookId, null);
+    ZeppelinSessions.notebook(AuthenticationInfo.ANONYMOUS).removeNote(note1.getId(), null);
+    ZeppelinSessions.notebook(AuthenticationInfo.ANONYMOUS).removeNote(clonedNotebookId, null);
 
   }
 }
