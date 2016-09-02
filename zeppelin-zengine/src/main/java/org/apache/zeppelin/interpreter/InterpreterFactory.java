@@ -299,7 +299,8 @@ public class InterpreterFactory implements InterpreterGroupFactory {
 
   }
 
-  private void registerInterpreterFromPath(URLClassLoader cl, Path interpreterDir, String interpreterJson)
+  private void registerInterpreterFromPath(URLClassLoader cl,
+      Path interpreterDir, String interpreterJson)
       throws IOException, RepositoryException {
 
     Path interpreterJsonPath = Paths.get(interpreterDir.toString(), interpreterJson);
@@ -324,12 +325,13 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     return gson.fromJson(new InputStreamReader(stream), registeredInterpreterListType);
   }
 
-  private void registerInterpreters(URLClassLoader cl, List<RegisteredInterpreter> registeredInterpreters,
-       Path interpreterDir) throws IOException, RepositoryException {
+  private void registerInterpreters(URLClassLoader cl,
+      List<RegisteredInterpreter> registeredInterpreters,
+      Path interpreterDir) throws IOException, RepositoryException {
 
-      cleanCl.put(interpreterDir.toFile().getAbsolutePath(), cl);
+    cleanCl.put(interpreterDir.toFile().getAbsolutePath(), cl);
 
-      for (RegisteredInterpreter registeredInterpreter : registeredInterpreters) {
+    for (RegisteredInterpreter registeredInterpreter : registeredInterpreters) {
       InterpreterInfo interpreterInfo =
           new InterpreterInfo(registeredInterpreter.getClassName(), registeredInterpreter.getName(),
               registeredInterpreter.isDefaultInterpreter());
@@ -342,7 +344,8 @@ public class InterpreterFactory implements InterpreterGroupFactory {
         }
       }
 
-      add(registeredInterpreter.getGroup(), interpreterInfo, properties, interpreterDir.toFile().getAbsolutePath());
+      add(registeredInterpreter.getGroup(),
+          interpreterInfo, properties, interpreterDir.toFile().getAbsolutePath());
     }
 
   }
