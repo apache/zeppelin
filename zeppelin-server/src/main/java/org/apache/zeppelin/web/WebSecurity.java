@@ -19,6 +19,10 @@ package org.apache.zeppelin.web;
 
 import org.eclipse.jetty.webapp.WebAppContext;
 
+/**
+ * Definition of the actions to be taken
+ * by Zeppelin to secure the Web channel.
+ */
 public interface WebSecurity {
 
   void addCorFilter(WebAppContext webApp);

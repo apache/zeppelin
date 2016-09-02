@@ -28,6 +28,10 @@ import javax.servlet.DispatcherType;
 import java.io.File;
 import java.util.EnumSet;
 
+/**
+ * Default implementation of the actions to be taken
+ * by Zeppelin to secure the Web channel.
+ */
 public class DefaultWebSecurity implements WebSecurity {
 
   @Inject

@@ -575,8 +575,10 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_CREDENTIALS_PERSIST("zeppelin.credentials.persist", true),
     ZEPPELIN_WEBSOCKET_MAX_TEXT_MESSAGE_SIZE("zeppelin.websocket.max.text.message.size", "1024000"),
     ZEPPELIN_USE_JDBC_ALIAS("zeppelin.use.jdbc.alias", true),
-    ZEPPELIN_WEB_SECURITY_CLASSNAME("zeppelin.web.security.classname", "org.apache.zeppelin.web.DefaultWebSecurity"),
-    ZEPPELIN_SEARCH_SERVICE_CLASSNAME("zeppelin.search.service.classname", "org.apache.zeppelin.search.LuceneSearch")
+    ZEPPELIN_WEB_SECURITY_CLASSNAME("zeppelin.web.security.classname",
+        "org.apache.zeppelin.web.DefaultWebSecurity"),
+    ZEPPELIN_SEARCH_SERVICE_CLASSNAME("zeppelin.search.service.classname",
+        "org.apache.zeppelin.search.LuceneSearch")
     ;
 
 

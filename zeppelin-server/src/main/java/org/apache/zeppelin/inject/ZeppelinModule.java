@@ -25,6 +25,9 @@ import org.apache.zeppelin.search.SearchService;
 import org.apache.zeppelin.server.ZeppelinServer;
 import org.apache.zeppelin.web.WebSecurity;
 
+/**
+ * Guice injection module.
+ */
 public class ZeppelinModule implements Module {
   private ZeppelinConfiguration conf;
 
@@ -35,9 +38,11 @@ public class ZeppelinModule implements Module {
   @Override
   public void configure(Binder binder) {
 
-    binder.bind(WebSecurity.class).to((Class<WebSecurity>) conf.getZeppelinWebSecurityClassname());
+    binder.bind(WebSecurity.class)
+        .to((Class<WebSecurity>) conf.getZeppelinWebSecurityClassname());
 
-    binder.bind(SearchService.class).to((Class<SearchService>) conf.getZeppelinSearchServiceClassname());
+    binder.bind(SearchService.class)
+        .to((Class<SearchService>) conf.getZeppelinSearchServiceClassname());
 
     binder.requestStaticInjection(ZeppelinServer.class);
 
