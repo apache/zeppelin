@@ -79,7 +79,7 @@ public class MarkdownInterpreter extends Interpreter {
   @Override
   public Scheduler getScheduler() {
     return SchedulerFactory.singleton()
-            .createOrGetParallelScheduler(MarkdownInterpreter.class.getName() + this.hashCode(), 5);
+        .createOrGetParallelScheduler(MarkdownInterpreter.class.getName() + this.hashCode(), 5);
   }
 
   @Override

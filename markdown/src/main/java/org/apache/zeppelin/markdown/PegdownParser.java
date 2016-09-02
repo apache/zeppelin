@@ -26,7 +26,6 @@ public class PegdownParser implements MarkdownParser {
       if (null == parsed) throw new RuntimeException("Cannot parse markdown syntax string to HTML");
 
       html = wrapWithMarkdownClassDiv(parsed);
-
     } catch (RuntimeException e) {
       logger.error("Failed to parsed markdown text", e);
     }
@@ -37,9 +36,9 @@ public class PegdownParser implements MarkdownParser {
   /** wrap with markdown class div to styling DOM using css */
   public static String wrapWithMarkdownClassDiv(String html) {
     return new StringBuilder()
-            .append("<div class=\"markdown-body\">\n")
-            .append(html)
-            .append("\n</div>")
-            .toString();
+        .append("<div class=\"markdown-body\">\n")
+        .append(html)
+        .append("\n</div>")
+        .toString();
   }
 }
