@@ -41,22 +41,22 @@ Spark Interpreter group, which consists of five interpreters.
     <td>Creates a SparkContext and provides a scala environment</td>
   </tr>
   <tr>
-    <td>%pyspark</td>
+    <td>%spark.pyspark</td>
     <td>PySparkInterpreter</td>
     <td>Provides a python environment</td>
   </tr>
   <tr>
-    <td>%r</td>
+    <td>%spark.r</td>
     <td>SparkRInterpreter</td>
     <td>Provides an R environment with SparkR support</td>
   </tr>
   <tr>
-    <td>%sql</td>
+    <td>%spark.sql</td>
     <td>SparkSQLInterpreter</td>
     <td>Provides a SQL environment</td>
   </tr>
   <tr>
-    <td>%dep</td>
+    <td>%spark.dep</td>
     <td>DepInterpreter</td>
     <td>Dependency loader</td>
   </tr>
@@ -170,8 +170,9 @@ That's it. Zeppelin will work with any version of Spark and any deployment type 
 
 > Note that without exporting `SPARK_HOME`, it's running in local mode with included version of Spark. The included version may vary depending on the build profile.
 
-## SparkContext, SQLContext, ZeppelinContext
+## SparkContext, SQLContext, SparkSession, ZeppelinContext
 SparkContext, SQLContext, ZeppelinContext are automatically created and exposed as variable names 'sc', 'sqlContext' and 'z', respectively, both in scala and python environments.
+Staring from 0.6.1 SparkSession is available as variable 'spark' when you are using Spark 2.x.
 
 > Note that scala / python environment shares the same SparkContext, SQLContext, ZeppelinContext instance.
 
@@ -190,29 +191,24 @@ Once `SPARK_HOME` is set in `conf/zeppelin-env.sh`, Zeppelin uses `spark-submit`
   <tr>
     <th>spark-defaults.conf</th>
     <th>SPARK_SUBMIT_OPTIONS</th>
-    <th>Applicable Interpreter</th>
     <th>Description</th>
   </tr>
   <tr>
     <td>spark.jars</td>
     <td>--jars</td>
-    <td>%spark</td>
     <td>Comma-separated list of local jars to include on the driver and executor classpaths.</td>
   </tr>
   <tr>
     <td>spark.jars.packages</td>
     <td>--packages</td>
-    <td>%spark</td>
     <td>Comma-separated list of maven coordinates of jars to include on the driver and executor classpaths. Will search the local maven repo, then maven central and any additional remote repositories given by --repositories. The format for the coordinates should be groupId:artifactId:version.</td>
   </tr>
   <tr>
     <td>spark.files</td>
     <td>--files</td>
-    <td>%pyspark</td>
     <td>Comma-separated list of files to be placed in the working directory of each executor.</td>
   </tr>
 </table>
-> Note that adding jar to pyspark is only availabe via `%dep` interpreter at the moment.
 
 Here are few examples:
 
@@ -226,11 +222,11 @@ Here are few examples:
     spark.jars.packages   com.databricks:spark-csv_2.10:1.2.0
     spark.files       /path/mylib1.py,/path/mylib2.egg,/path/mylib3.zip
 
-### 3. Dynamic Dependency Loading via %dep interpreter
-> Note: `%dep` interpreter is deprecated since v0.6.0.
-`%dep` interpreter load libraries to `%spark` and `%pyspark` but not to  `%spark.sql` interpreter so we recommend you to use first option instead.
+### 3. Dynamic Dependency Loading via %spark.dep interpreter
+> Note: `%spark.dep` interpreter is deprecated since v0.6.0.
+`%spark.dep` interpreter load libraries to `%spark` and `%spark.pyspark` but not to  `%spark.sql` interpreter so we recommend you to use first option instead.
 
-When your code requires external library, instead of doing download/copy/restart Zeppelin, you can easily do following jobs using `%dep` interpreter.
+When your code requires external library, instead of doing download/copy/restart Zeppelin, you can easily do following jobs using `%spark.dep` interpreter.
 
  * Load libraries recursively from Maven repository
  * Load libraries from local filesystem
@@ -238,12 +234,12 @@ When your code requires external library, instead of doing download/copy/restart
  * Automatically add libraries to SparkCluster (You can turn off)
 
 Dep interpreter leverages scala environment. So you can write any Scala code here.
-Note that `%dep` interpreter should be used before `%spark`, `%pyspark`, `%sql`.
+Note that `%spark.dep` interpreter should be used before `%spark`, `%spark.pyspark`, `%spark.sql`.
 
 Here's usages.
 
 ```scala
-%dep
+%spark.dep
 z.reset() // clean up previously added artifact and repository
 
 // add maven repository
@@ -298,7 +294,7 @@ z.put("objName", myObject)
 
 {% highlight python %}
 # Get object from python
-%pyspark
+%spark.pyspark
 myObject = z.get("objName")
 {% endhighlight %}
 
@@ -333,7 +329,7 @@ z.select("formName", "option1", Seq(("option1", "option1DisplayName"),
   <div data-lang="python" markdown="1">
 
 {% highlight python %}
-%pyspark
+%spark.pyspark
 # Create text input form
 z.input("formName")
 
@@ -355,7 +351,7 @@ z.select("formName", [("option1", "option1DisplayName"),
 In sql environment, you can create form in simple template.
 
 ```
-%sql
+%spark.sql
 select * from ${table=defaultTableName} where text like '%${search}%'
 ```
 
