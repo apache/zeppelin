@@ -104,7 +104,6 @@ public class JDBCInterpreter extends Interpreter {
   private final HashMap<String, Properties> propertiesMap;
   private final Map<String, Statement> paragraphIdStatementMap;
 
-  private final Map<String, ArrayList<Connection>> propertyKeyUnusedConnectionListMap;
   private final Map<String, Connection> paragraphIdConnectionMap;
 
   private final Map<String, SqlCompleter> propertyKeySqlCompleterMap;
@@ -121,7 +120,6 @@ public class JDBCInterpreter extends Interpreter {
   public JDBCInterpreter(Properties property) {
     super(property);
     propertiesMap = new HashMap<>();
-    propertyKeyUnusedConnectionListMap = new HashMap<>();
     paragraphIdStatementMap = new HashMap<>();
     paragraphIdConnectionMap = new HashMap<>();
     propertyKeySqlCompleterMap = new HashMap<>();
@@ -197,16 +195,6 @@ public class JDBCInterpreter extends Interpreter {
     Connection connection = null;
     if (propertyKey == null || propertiesMap.get(propertyKey) == null) {
       return null;
-    }
-    if (propertyKeyUnusedConnectionListMap.containsKey(propertyKey)) {
-      ArrayList<Connection> connectionList = propertyKeyUnusedConnectionListMap.get(propertyKey);
-      if (0 != connectionList.size()) {
-        connection = propertyKeyUnusedConnectionListMap.get(propertyKey).remove(0);
-        if (null != connection && connection.isClosed()) {
-          connection.close();
-          connection = null;
-        }
-      }
     }
     if (null == connection) {
       final Properties properties = propertiesMap.get(propertyKey);
@@ -304,16 +292,6 @@ public class JDBCInterpreter extends Interpreter {
   @Override
   public void close() {
     try {
-      for (List<Connection> connectionList : propertyKeyUnusedConnectionListMap.values()) {
-        for (Connection c : connectionList) {
-          try {
-            c.close();
-          } catch (Exception e) {
-            logger.error("Error while closing propertyKeyUnusedConnectionListMap connection...", e);
-          }
-        }
-      }
-
       for (Statement statement : paragraphIdStatementMap.values()) {
         try {
           statement.close();
