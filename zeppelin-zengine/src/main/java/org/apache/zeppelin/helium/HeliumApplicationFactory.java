@@ -125,7 +125,7 @@ public class HeliumApplicationFactory implements ApplicationEventListener, Noteb
           appStatusChange(paragraph, appState.getId(), ApplicationState.Status.LOADING);
 
           if (pkg != null && pkg.getArtifact().trim().charAt(0) != '/') {
-            String absolutAppPath = String.format("%s/%s", heliumLocalPath, pkg.getArtifact())ex;
+            String absolutAppPath = String.format("%s/%s", heliumLocalPath, pkg.getArtifact());
             pkg.setArtifact(absolutAppPath);
           }
 
