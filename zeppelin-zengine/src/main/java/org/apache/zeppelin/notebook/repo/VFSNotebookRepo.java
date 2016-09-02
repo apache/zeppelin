@@ -60,7 +60,8 @@ public class VFSNotebookRepo implements NotebookRepo {
   private URI filesystemRoot;
   private ZeppelinConfiguration conf;
 
-  public VFSNotebookRepo(ZeppelinConfiguration conf, AuthenticationInfo authenticationInfo) throws IOException {
+  public VFSNotebookRepo(ZeppelinConfiguration conf,
+      AuthenticationInfo authenticationInfo) throws IOException {
     this.conf = conf;
 
     try {

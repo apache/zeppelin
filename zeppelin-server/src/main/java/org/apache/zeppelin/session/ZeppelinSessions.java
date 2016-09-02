@@ -1,3 +1,19 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.apache.zeppelin.session;
 
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
@@ -21,6 +37,9 @@ import org.slf4j.LoggerFactory;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Maintain HTTP users state.
+ */
 public class ZeppelinSessions {
   private static final Logger LOGGER = LoggerFactory.getLogger(ZeppelinSessions.class);
 
@@ -68,28 +87,32 @@ public class ZeppelinSessions {
         component.depResolver = new DependencyResolver(
                 conf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_LOCALREPO));
 
-        component.helium = new Helium(conf.getHeliumConfPath(), conf.getHeliumDefaultLocalRegistryPath());
+        component.helium = new Helium(conf.getHeliumConfPath(),
+            conf.getHeliumDefaultLocalRegistryPath());
         component.heliumApplicationFactory = new HeliumApplicationFactory();
         component.schedulerFactory = new SchedulerFactory();
 
         component.interpreterFactory = new InterpreterFactory(conf, ZeppelinServer.notebookWsServer,
-                ZeppelinServer.notebookWsServer, component.heliumApplicationFactory, component.depResolver,
-                new AuthenticationInfo(principal));
+                ZeppelinServer.notebookWsServer, component.heliumApplicationFactory,
+                component.depResolver, new AuthenticationInfo(principal));
 
         component.notebookRepo = new NotebookRepoSync(conf, authenticationInfo);
         component.searchService = new LuceneSearch();
         component.notebookAuthorization = new NotebookAuthorization(conf, authenticationInfo);
-        component.credentials = new Credentials(conf.credentialsPersist(), conf.getCredentialsPath());
+        component.credentials = new Credentials(
+            conf.credentialsPersist(), conf.getCredentialsPath());
 
         component.notebook = new Notebook(conf,
-                component.notebookRepo, component.schedulerFactory, component.interpreterFactory, ZeppelinServer.notebookWsServer,
-                component.searchService, component.notebookAuthorization, component.credentials);
+            component.notebookRepo, component.schedulerFactory,
+            component.interpreterFactory, ZeppelinServer.notebookWsServer,
+            component.searchService, component.notebookAuthorization, component.credentials);
 
         // to update notebook from application event from remote process.
         component.heliumApplicationFactory.setNotebook(component.notebook);
 
         // to update fire websocket event on application event.
-        component.heliumApplicationFactory.setApplicationEventListener(ZeppelinServer.notebookWsServer);
+        component.heliumApplicationFactory
+            .setApplicationEventListener(ZeppelinServer.notebookWsServer);
 
         component.notebook.addNotebookEventListener(component.heliumApplicationFactory);
 
@@ -107,6 +130,9 @@ public class ZeppelinSessions {
 
   }
 
+  /**
+   * Container for Zeppelin server components.
+   */
   public static class Component {
     public SchedulerFactory schedulerFactory;
     public InterpreterFactory interpreterFactory;

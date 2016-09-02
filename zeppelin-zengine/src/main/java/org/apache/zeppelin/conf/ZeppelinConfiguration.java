@@ -324,7 +324,8 @@ public class ZeppelinConfiguration extends XMLConfiguration {
   }
 
   public String getNotebookDir(AuthenticationInfo authenticationInfo) {
-    return String.format(getString(ConfVars.ZEPPELIN_NOTEBOOK_DIR) + "/%s", authenticationInfo.getUser());
+    return String.format(getString(ConfVars.ZEPPELIN_NOTEBOOK_DIR)
+        + "/%s", authenticationInfo.getUser());
   }
 
   public String getUser() {
@@ -360,7 +361,8 @@ public class ZeppelinConfiguration extends XMLConfiguration {
   }
 
   public String getInterpreterSettingPath(AuthenticationInfo authenticationInfo) {
-    return getRelativeDir(String.format("%s/%s", getNotebookDir(authenticationInfo), getInterpeterSetting()));
+    return getRelativeDir(
+        String.format("%s/%s", getNotebookDir(authenticationInfo), getInterpeterSetting()));
   }
 
   public String getHeliumConfPath() {
@@ -372,7 +374,8 @@ public class ZeppelinConfiguration extends XMLConfiguration {
   }
 
   public String getNotebookAuthorizationPath(AuthenticationInfo authenticationInfo) {
-    return getRelativeDir(String.format("%s/notebook-authorization.json", getNotebookDir(authenticationInfo)));
+    return getRelativeDir(
+        String.format("%s/notebook-authorization.json", getNotebookDir(authenticationInfo)));
   }
 
   public Boolean credentialsPersist() {

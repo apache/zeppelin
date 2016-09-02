@@ -402,7 +402,8 @@ public class NotebookServer extends WebSocketServlet implements
   public void unicastNotebookJobInfo(NotebookSocket conn, Message fromMessage) throws IOException {
 
     AuthenticationInfo subject = new AuthenticationInfo(fromMessage.principal);
-    List<Map<String, Object>> notebookJobs = notebook(fromMessage.principal).getJobListforNotebook(false, 0, subject);
+    List<Map<String, Object>> notebookJobs = notebook(
+        fromMessage.principal).getJobListforNotebook(false, 0, subject);
     Map<String, Object> response = new HashMap<>();
 
     response.put("lastResponseUnixTime", System.currentTimeMillis());
@@ -419,7 +420,8 @@ public class NotebookServer extends WebSocketServlet implements
 
     List<Map<String, Object>> notebookJobs;
     AuthenticationInfo subject = new AuthenticationInfo(fromMessage.principal);
-    notebookJobs = notebook(fromMessage.principal).getJobListforNotebook(false, lastUpdateUnixTime, subject);
+    notebookJobs = notebook(fromMessage.principal)
+        .getJobListforNotebook(false, lastUpdateUnixTime, subject);
 
     Map<String, Object> response = new HashMap<>();
     response.put("lastResponseUnixTime", System.currentTimeMillis());
@@ -1378,9 +1380,11 @@ public class NotebookServer extends WebSocketServlet implements
     return new ParagraphListenerImpl(this, note);
   }
 
-  private void sendAllAngularObjects(Note note, NotebookSocket conn) throws IOException {
+  private void sendAllAngularObjects(Note note, NotebookSocket conn)
+      throws IOException {
     List<InterpreterSetting> settings =
-        notebook(SecurityUtils.getPrincipal()).getInterpreterFactory().getInterpreterSettings(note.getId());
+        notebook(SecurityUtils.getPrincipal()).getInterpreterFactory()
+            .getInterpreterSettings(note.getId());
     if (settings == null || settings.size() == 0) {
       return;
     }

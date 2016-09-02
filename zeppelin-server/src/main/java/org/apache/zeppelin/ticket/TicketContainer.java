@@ -54,7 +54,8 @@ public class TicketContainer {
    * @return true if ticket assigned to principal.
    */
   public boolean isValid(String principal, String ticket) {
-    if (AuthenticationInfo.ANONYMOUS.equals(principal) && AuthenticationInfo.ANONYMOUS.equals(ticket))
+    if (AuthenticationInfo.ANONYMOUS.equals(principal)
+        && AuthenticationInfo.ANONYMOUS.equals(ticket))
       return true;
     Entry entry = sessions.get(principal);
     return entry != null && entry.ticket.equals(ticket);

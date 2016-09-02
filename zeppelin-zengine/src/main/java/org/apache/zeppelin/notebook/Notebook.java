@@ -149,7 +149,8 @@ public class Notebook implements NoteEventListener {
   public Note createNote(List<String> interpreterIds, AuthenticationInfo subject)
       throws IOException {
     Note note =
-        new Note(notebookRepo, interpreterFactory, jobListenerFactory, notebookIndex, credentials, this);
+        new Note(notebookRepo, interpreterFactory,
+            jobListenerFactory, notebookIndex, credentials, this);
     synchronized (notes) {
       notes.put(note.id(), note);
     }
@@ -635,7 +636,8 @@ public class Notebook implements NoteEventListener {
       String interpreterGroupName = null;
       if (interpreterFactory.getInterpreterSettings(note.getId()) != null
           && interpreterFactory.getInterpreterSettings(note.getId()).size() >= 1) {
-        interpreterGroupName = interpreterFactory.getInterpreterSettings(note.getId()).get(0).getName();
+        interpreterGroupName = interpreterFactory
+            .getInterpreterSettings(note.getId()).get(0).getName();
       }
 
       // not update and not running -> pass
