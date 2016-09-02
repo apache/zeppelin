@@ -28,52 +28,35 @@ import org.apache.zeppelin.interpreter.InterpreterUtils;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
-import org.pegdown.Extensions;
-import org.pegdown.LinkRenderer;
-import org.pegdown.PegDownProcessor;
-import org.pegdown.ast.RootNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** Markdown interpreter for Zeppelin. */
-public class Markdown extends Interpreter {
-  private PegDownProcessor md;
-  static final Logger LOGGER = LoggerFactory.getLogger(Markdown.class);
+/** MarkdownInterpreter interpreter for Zeppelin. */
+public class MarkdownInterpreter extends Interpreter {
+  private final Logger logger = LoggerFactory.getLogger(MarkdownInterpreter.class);
 
-  public Markdown(Properties property) {
+  private MarkdownParser parser;
+
+  public MarkdownInterpreter(Properties property) {
     super(property);
-  }
-
-  /** wrap with markdown class div to styling DOM using css */
-  public static String wrapHtmlWithMarkdownClassDiv(String html) {
-    return new StringBuilder()
-        .append("<div class=\"markdown-body\">\n")
-        .append(html)
-        .append("\n</div>")
-        .toString();
   }
 
   @Override
   public void open() {
-    int pegdownOptions = Extensions.ALL_WITH_OPTIONALS - Extensions.ANCHORLINKS;
-    md = new PegDownProcessor(pegdownOptions, 5000);
+    parser = new PegdownParser();
   }
 
   @Override
   public void close() {}
 
   @Override
-  public InterpreterResult interpret(String st, InterpreterContext interpreterContext) {
+  public InterpreterResult interpret(String markdownText, InterpreterContext interpreterContext) {
     String html;
 
     try {
-      String parsed = md.markdownToHtml(st);
-      if (null == parsed) throw new RuntimeException("Cannot parse markdown syntax string to HTML");
-
-      html = wrapHtmlWithMarkdownClassDiv(parsed);
-
-    } catch (java.lang.RuntimeException e) {
-      LOGGER.error("Exception in Markdown while interpret ", e);
+      html = parser.render(markdownText);
+    } catch (Exception e) {
+      logger.error("Exception in MarkdownInterpreter while interpret ", e);
       return new InterpreterResult(Code.ERROR, InterpreterUtils.getMostRelevantMessage(e));
     }
 
@@ -96,7 +79,7 @@ public class Markdown extends Interpreter {
   @Override
   public Scheduler getScheduler() {
     return SchedulerFactory.singleton()
-        .createOrGetParallelScheduler(Markdown.class.getName() + this.hashCode(), 5);
+            .createOrGetParallelScheduler(MarkdownInterpreter.class.getName() + this.hashCode(), 5);
   }
 
   @Override
