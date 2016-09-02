@@ -81,7 +81,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
         waitForFinish(p);
         assertEquals(Status.FINISHED, p.getStatus());
         assertEquals("55", p.getResult().message());
-        ZeppelinSessions.notebook(AuthenticationInfo.ANONYMOUS).removeNote(note.id(), null);
+        ZeppelinSessions.notebook(AuthenticationInfo.ANONYMOUS).removeNote(note.getId(), null);
     }
 
     @Test
@@ -93,7 +93,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
       if (isSparkR() && sparkVersion >= 14) {   // sparkr supported from 1.4.0
         // restart spark interpreter
         List<InterpreterSetting> settings =
-          ZeppelinSessions.notebook(AuthenticationInfo.ANONYMOUS).getBindedInterpreterSettings(note.id());
+          ZeppelinSessions.notebook(AuthenticationInfo.ANONYMOUS).getBindedInterpreterSettings(note.getId());
 
         for (InterpreterSetting setting : settings) {
           if (setting.getName().equals("spark")) {
@@ -120,7 +120,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
         assertEquals(Status.FINISHED, p.getStatus());
         assertEquals("[1] 3", p.getResult().message());
       }
-      ZeppelinSessions.notebook(AuthenticationInfo.ANONYMOUS).removeNote(note.id(), null);
+      ZeppelinSessions.notebook(AuthenticationInfo.ANONYMOUS).removeNote(note.getId(), null);
     }
 
     @Test
@@ -143,7 +143,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
             assertEquals(Status.FINISHED, p.getStatus());
             assertEquals("55\n", p.getResult().message());
         }
-        ZeppelinSessions.notebook(AuthenticationInfo.ANONYMOUS).removeNote(note.id(), null);
+        ZeppelinSessions.notebook(AuthenticationInfo.ANONYMOUS).removeNote(note.getId(), null);
     }
 
     @Test
@@ -174,7 +174,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
             assertEquals(Status.FINISHED, p.getStatus());
             assertEquals("10\n", p.getResult().message());
         }
-        ZeppelinSessions.notebook(AuthenticationInfo.ANONYMOUS).removeNote(note.id(), null);
+        ZeppelinSessions.notebook(AuthenticationInfo.ANONYMOUS).removeNote(note.getId(), null);
     }
 
     @Test
@@ -206,7 +206,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
         assertEquals(Status.FINISHED, p2.getStatus());
         assertEquals("10", p2.getResult().message());
 
-        ZeppelinSessions.notebook(AuthenticationInfo.ANONYMOUS).removeNote(note.id(), null);
+        ZeppelinSessions.notebook(AuthenticationInfo.ANONYMOUS).removeNote(note.getId(), null);
     }
 
     @Test
@@ -218,7 +218,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
         if (isPyspark() && sparkVersionNumber >= 14) {
             // restart spark interpreter
             List<InterpreterSetting> settings =
-                    ZeppelinSessions.notebook(AuthenticationInfo.ANONYMOUS).getBindedInterpreterSettings(note.id());
+                    ZeppelinSessions.notebook(AuthenticationInfo.ANONYMOUS).getBindedInterpreterSettings(note.getId());
 
             for (InterpreterSetting setting : settings) {
                 if (setting.getName().equals("spark")) {
