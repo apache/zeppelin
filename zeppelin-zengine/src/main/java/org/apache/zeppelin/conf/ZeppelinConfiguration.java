@@ -280,10 +280,15 @@ public class ZeppelinConfiguration extends XMLConfiguration {
   }
 
   public String getKeyStorePath() {
-    return getRelativeDir(
-            String.format("%s/%s",
-                    getConfDir(),
-                    getString(ConfVars.ZEPPELIN_SSL_KEYSTORE_PATH)));
+    String path = getString(ConfVars.ZEPPELIN_SSL_KEYSTORE_PATH);
+    if (path != null && path.startsWith("/") || isWindowsPath(path)) {
+      return path;
+    } else {
+      return getRelativeDir(
+          String.format("%s/%s",
+              getConfDir(),
+              getString(path)));
+    }
   }
 
   public String getKeyStoreType() {
@@ -305,10 +310,13 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 
   public String getTrustStorePath() {
     String path = getString(ConfVars.ZEPPELIN_SSL_TRUSTSTORE_PATH);
-    if (path == null) {
-      return getKeyStorePath();
+    if (path != null && path.startsWith("/") || isWindowsPath(path)) {
+      return path;
     } else {
-      return getRelativeDir(path);
+      return getRelativeDir(
+          String.format("%s/%s",
+              getConfDir(),
+              getString(path)));
     }
   }
 
@@ -441,10 +449,6 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 
   public String getWebsocketMaxTextMessageSize() {
     return getString(ConfVars.ZEPPELIN_WEBSOCKET_MAX_TEXT_MESSAGE_SIZE);
-  }
-
-  public boolean getUseJdbcAlias() {
-    return getBoolean(ConfVars.ZEPPELIN_USE_JDBC_ALIAS);
   }
 
   public Map<String, String> dumpConfigurations(ZeppelinConfiguration conf,
@@ -580,7 +584,6 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_SEARCH_SERVICE_CLASSNAME("zeppelin.search.service.classname",
         "org.apache.zeppelin.search.LuceneSearch")
     ;
-
 
     private String varName;
     @SuppressWarnings("rawtypes")

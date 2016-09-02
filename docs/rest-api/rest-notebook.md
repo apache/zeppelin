@@ -298,7 +298,10 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```POST``` method runs all paragraphs in the given notebook id.
+      <td>
+      This ```POST``` method runs all paragraphs in the given notebook id. <br />
+      If you can not find Notebook id 404 returns.
+      If there is a problem with the interpreter returns a 412 error.
       </td>
     </tr>
     <tr>
@@ -311,11 +314,28 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
     </tr>
     <tr>
       <td> Fail code</td>
-      <td> 500 </td>
+      <td> 404 or 412</td>
     </tr>
     <tr>
       <td> sample JSON response </td>
       <td><pre>{"status": "OK"}</pre></td>
+    </tr>
+    <tr>
+       <td> sample JSON error response </td>
+       <td>
+         <pre>
+           {
+             "status": "NOT_FOUND",
+             "message": "note not found."
+           }
+         </pre><br />
+         <pre>
+           {
+             "status": "PRECONDITION_FAILED",
+             "message": "paragraph_1469771130099_-278315611 Not selected or Invalid Interpreter bind"
+           }
+         </pre>
+       </td>
     </tr>
   </table>
 
@@ -430,12 +450,12 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
   </table>
 
 <br/>
-### Run a paragraph
+### Run a paragraph asynchronously
   <table class="table-configuration">
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```POST``` method runs the paragraph by given notebook and paragraph id.
+      <td>This ```POST``` method runs the paragraph asynchronously by given notebook and paragraph id. This API always return SUCCESS even if the execution of the paragraph fails later because the API is asynchronous
       </td>
     </tr>
     <tr>
@@ -464,6 +484,56 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
     <tr>
       <td> sample JSON response </td>
       <td><pre>{"status": "OK"}</pre></td>
+    </tr>
+  </table>
+
+<br/>
+### Run a paragraph synchronously
+  <table class="table-configuration">
+    <col width="200">
+    <tr>
+      <td>Description</td>
+      <td> This ```POST``` method runs the paragraph synchronously by given notebook and paragraph id. This API can return SUCCESS or ERROR depending on the outcome of the paragraph execution
+      </td>
+    </tr>
+    <tr>
+      <td>URL</td>
+      <td>```http://[zeppelin-server]:[zeppelin-port]/api/notebook/job/[notebookId]/[paragraphId]```</td>
+    </tr>
+    <tr>
+      <td>Success code</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td> Fail code</td>
+      <td> 500 </td>
+    </tr>
+    <tr>
+      <td> sample JSON input (optional, only needed when if you want to update dynamic form's value) </td>
+      <td><pre>
+{
+  "name": "name of new notebook",
+  "params": {
+    "formLabel1": "value1",
+    "formLabel2": "value2"
+  }
+}</pre></td>
+    </tr>
+    <tr>
+      <td> sample JSON response </td>
+      <td><pre>{"status": "OK"}</pre></td>
+    </tr>    
+    <tr>
+      <td> sample JSON error </td>
+      <td><pre>
+{
+   "status": "INTERNAL\_SERVER\_ERROR",
+   "body": {
+       "code": "ERROR",
+       "type": "TEXT",
+       "msg": "bash: -c: line 0: unexpected EOF while looking for matching ``'\nbash: -c: line 1: syntax error: unexpected end of file\nExitValue: 2"
+   }
+}</pre></td>
     </tr>
   </table>
 
@@ -902,4 +972,3 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
     </tr>
     </tr>
   </table>
-  

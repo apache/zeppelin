@@ -820,7 +820,7 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
     }
     var user = (pdata.user === undefined || pdata.user === null) ? 'anonymous' : pdata.user;
     var desc = 'Took ' + moment.duration((timeMs / 1000), 'seconds').format('h [hrs] m [min] s [sec]') +
-      '. Last updated by ' + user + ' at ' + moment(pdata.dateUpdated).format('MMMM DD YYYY, h:mm:ss A') + '.';
+      '. Last updated by ' + user + ' at ' + moment(pdata.dateFinished).format('MMMM DD YYYY, h:mm:ss A') + '.';
     if ($scope.isResultOutdated()) {
       desc += ' (outdated)';
     }
@@ -1836,7 +1836,7 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
       if (groups.length === 1 && values.length === 1) {
         for (d3gIndex = 0; d3gIndex < d3g.length; d3gIndex++) {
           colName = d3g[d3gIndex].key;
-          colName = colName.split('.')[0];
+          colName = colName.split('.').slice(0, -1).join('.');
           d3g[d3gIndex].key = colName;
         }
       }
