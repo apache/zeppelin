@@ -190,6 +190,7 @@ function start() {
   wait_zeppelin_is_up_for_ci
   sleep 2
   check_if_process_is_alive
+  echo "ZEPPELIN_CLASSPATH: ${ZEPPELIN_CLASSPATH}" >> "${ZEPPELIN_LOGFILE}"
 }
 
 function stop() {
@@ -254,6 +255,7 @@ case "${1}" in
     start
     ;;
   restart)
+    echo "${ZEPPELIN_NAME} is restarted" >> "${ZEPPELIN_LOGFILE}"
     stop
     start
     ;;
