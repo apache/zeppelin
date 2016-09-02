@@ -1,7 +1,7 @@
 ---
 layout: page
 title: "Apache Zeppelin on Spark cluster mode"
-description: "This document will guide you how you can build and configure the environment on 3 types of Spark cluster manager with Apache Zeppelin using docker scripts."
+description: "This document will guide you how you can build and configure the environment on 3 types of Spark cluster manager(Standalone, Hadoop Yarn, Apache Mesos) with Apache Zeppelin using docker scripts."
 group: install
 ---
 <!--
@@ -113,7 +113,7 @@ docker run -it \
 
 ### 3. Verify running Spark on YARN.
 
-You can simply verify the processes of Spark and YARN is running well in Docker with below command.
+You can simply verify the processes of Spark and YARN are running well in Docker with below command.
 
 ```
 ps -ef
@@ -174,7 +174,7 @@ spark_mesos bash;
 
 ### 3. Verify running Spark on Mesos.
 
-You can simply verify the processes of Spark and Mesos is running well in Docker with below command.
+You can simply verify the processes of Spark and Mesos are running well in Docker with below command.
 
 ```
 ps -ef
@@ -194,7 +194,7 @@ export SPARK_HOME=[PATH OF SPARK HOME]
 
 Don't forget to set Spark `master` as `mesos://127.0.1.1:5050` in Zeppelin **Interpreters** setting page like below.
 
-<img src="../assets/themes/zeppelin/img/docs-img/zeppelin_mesos_interpreter.png" />
+<img src="../assets/themes/zeppelin/img/docs-img/zeppelin_mesos_conf.png" />
 
 
 ### 5. Run Zeppelin with Spark interpreter
