@@ -340,10 +340,14 @@ public abstract class Interpreter {
   }
 
   public static void register(RegisteredInterpreter registeredInterpreter) {
-    // TODO(jongyoul): Error should occur when two same interpreter key with different settings
     String interpreterKey = registeredInterpreter.getInterpreterKey();
     if (!registeredInterpreters.containsKey(interpreterKey)) {
       registeredInterpreters.put(interpreterKey, registeredInterpreter);
+    } else {
+      RegisteredInterpreter existInterpreter = registeredInterpreters.get(interpreterKey);
+      if (!existInterpreter.getProperties().equals(registeredInterpreter.getProperties())) {
+        logger.error("exist registeredInterpreter with the same key but has different settings.");
+      }
     }
   }
 

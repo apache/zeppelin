@@ -33,6 +33,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import com.google.common.base.Joiner;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
@@ -48,6 +49,7 @@ import org.apache.spark.ui.jobs.JobProgressListener;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
+import org.apache.zeppelin.interpreter.InterpreterProperty;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.InterpreterUtils;
@@ -300,7 +302,9 @@ public class SparkInterpreter extends Interpreter {
     String execUri = System.getenv("SPARK_EXECUTOR_URI");
     conf.setAppName(getProperty("spark.app.name"));
 
-    conf.set("spark.repl.class.outputDir", outputDir.getAbsolutePath());
+    if (outputDir != null) {
+      conf.set("spark.repl.class.outputDir", outputDir.getAbsolutePath());
+    }
 
     if (execUri != null) {
       conf.set("spark.executor.uri", execUri);
@@ -444,10 +448,11 @@ public class SparkInterpreter extends Interpreter {
   }
 
   private void setupConfForPySpark(SparkConf conf) {
-    String pysparkBasePath = getSystemDefault("SPARK_HOME", null, null);
+    String pysparkBasePath = new InterpreterProperty("SPARK_HOME", null, null, null).getValue();
     File pysparkPath;
     if (null == pysparkBasePath) {
-      pysparkBasePath = getSystemDefault("ZEPPELIN_HOME", "zeppelin.home", "../");
+      pysparkBasePath =
+              new InterpreterProperty("ZEPPELIN_HOME", "zeppelin.home", "../", null).getValue();
       pysparkPath = new File(pysparkBasePath,
           "interpreter" + File.separator + "spark" + File.separator + "pyspark");
     } else {
@@ -495,27 +500,6 @@ public class SparkInterpreter extends Interpreter {
 
   private boolean useSparkSubmit() {
     return null != System.getenv("SPARK_SUBMIT");
-  }
-
-  public static String getSystemDefault(
-      String envName,
-      String propertyName,
-      String defaultValue) {
-
-    if (envName != null && !envName.isEmpty()) {
-      String envValue = System.getenv().get(envName);
-      if (envValue != null) {
-        return envValue;
-      }
-    }
-
-    if (propertyName != null && !propertyName.isEmpty()) {
-      String propValue = System.getProperty(propertyName);
-      if (propValue != null) {
-        return propValue;
-      }
-    }
-    return defaultValue;
   }
 
   public boolean printREPLOutput() {
@@ -593,7 +577,11 @@ public class SparkInterpreter extends Interpreter {
       argList.add("-Yrepl-class-based");
       argList.add("-Yrepl-outdir");
       argList.add(outputDir.getAbsolutePath());
-
+      if (conf.contains("spark.jars")) {
+        String jars = StringUtils.join(conf.get("spark.jars").split(","), File.separator);
+        argList.add("-classpath");
+        argList.add(jars);
+      }
 
       scala.collection.immutable.List<String> list =
           JavaConversions.asScalaBuffer(argList).toList();

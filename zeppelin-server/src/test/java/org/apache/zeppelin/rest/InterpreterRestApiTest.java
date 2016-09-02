@@ -134,7 +134,7 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
     Note note = ZeppelinServer.notebook.createNote(null);
 
     // check interpreter is binded
-    GetMethod get = httpGet("/notebook/interpreter/bind/" + note.id());
+    GetMethod get = httpGet("/notebook/interpreter/bind/" + note.getId());
     assertThat(get, isAllowed());
     get.addRequestHeader("Origin", "http://localhost");
     Map<String, Object> resp = gson.fromJson(get.getResponseBodyAsString(), new TypeToken<Map<String, Object>>() {
