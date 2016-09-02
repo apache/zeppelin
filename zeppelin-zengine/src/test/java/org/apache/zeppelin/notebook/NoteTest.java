@@ -23,7 +23,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
-import org.apache.zeppelin.interpreter.mock.MockInterpreter2;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.search.SearchService;
@@ -118,7 +117,6 @@ public class NoteTest {
 
     Note note = new Note(repo, interpreterFactory, jobListenerFactory, index, credentials, noteEventListener);
     note.putDefaultReplName(); //set lastReplName
-    when(interpreterFactory.getInterpreter(note.getId(), "spark")).thenReturn(new MockInterpreter2(null));
 
     Paragraph p = note.addParagraph();
 
@@ -134,7 +132,6 @@ public class NoteTest {
 
     Note note = new Note(repo, interpreterFactory, jobListenerFactory, index, credentials, noteEventListener);
     note.putDefaultReplName(); //set lastReplName
-    when(interpreterFactory.getInterpreter(note.getId(), "spark")).thenReturn(new MockInterpreter2(null));
 
     Paragraph p = note.insertParagraph(note.getParagraphs().size());
 
@@ -152,21 +149,5 @@ public class NoteTest {
     note.setLastReplName(paragraphId);
 
     assertEquals("spark", note.getLastReplName());
-  }
-
-  @Test
-  public void isBindingTest() {
-    Note note = spy(new Note());
-    when(note.getId()).thenReturn("test1");
-    InterpreterFactory mockInterpreterFactory = mock(InterpreterFactory.class);
-    note.setInterpreterFactory(mockInterpreterFactory);
-
-    //when is not binding
-    assertFalse(note.isBinding("spark"));
-
-    //when is binding
-    when(mockInterpreterFactory.getInterpreter("test1", "spark")).
-        thenReturn(new MockInterpreter2(null));
-    assertTrue(note.isBinding("spark"));
   }
 }
