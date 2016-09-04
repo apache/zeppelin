@@ -33,7 +33,7 @@ public class ZeppelinRContext {
     ZeppelinRContext.sparkContext = sparkContext;
   }
 
-  public static void setZepplinContext(ZeppelinContext zeppelinContext) {
+  public static void setZeppelinContext(ZeppelinContext zeppelinContext) {
     ZeppelinRContext.zeppelinContext = zeppelinContext;
   }
 

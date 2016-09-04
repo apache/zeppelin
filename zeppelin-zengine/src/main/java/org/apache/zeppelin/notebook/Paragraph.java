@@ -53,7 +53,6 @@ public class Paragraph extends Job implements Serializable, Cloneable {
   private transient InterpreterFactory factory;
   private transient Note note;
   private transient AuthenticationInfo authenticationInfo;
-  private transient String effectiveText;
 
   String title;
   String text;
@@ -114,14 +113,6 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     this.dateUpdated = new Date();
   }
 
-  public void setEffectiveText(String effectiveText) {
-    this.effectiveText = effectiveText;
-  }
-
-  public String getEffectiveText() {
-    return effectiveText;
-  }
-
   public AuthenticationInfo getAuthenticationInfo() {
     return authenticationInfo;
   }
@@ -153,7 +144,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
   }
 
   public String getRequiredReplName() {
-    return getRequiredReplName(null != effectiveText ? effectiveText : text);
+    return getRequiredReplName(text);
   }
 
   public static String getRequiredReplName(String text) {
@@ -182,7 +173,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
   }
 
   public String getScriptBody() {
-    return getScriptBody(null != effectiveText ? effectiveText : text);
+    return getScriptBody(text);
   }
 
   public static String getScriptBody(String text) {
@@ -359,7 +350,6 @@ public class Paragraph extends Job implements Serializable, Cloneable {
       }
     } finally {
       InterpreterContext.remove();
-      effectiveText = null;
     }
   }
 
@@ -451,13 +441,13 @@ public class Paragraph extends Job implements Serializable, Cloneable {
 
     if (!factory.getInterpreterSettings(note.getId()).isEmpty()) {
       InterpreterSetting intpGroup = factory.getInterpreterSettings(note.getId()).get(0);
-      registry = intpGroup.getInterpreterGroup(note.id()).getAngularObjectRegistry();
-      resourcePool = intpGroup.getInterpreterGroup(note.id()).getResourcePool();
+      registry = intpGroup.getInterpreterGroup(note.getId()).getAngularObjectRegistry();
+      resourcePool = intpGroup.getInterpreterGroup(note.getId()).getResourcePool();
     }
 
     List<InterpreterContextRunner> runners = new LinkedList<InterpreterContextRunner>();
     for (Paragraph p : note.getParagraphs()) {
-      runners.add(new ParagraphRunner(note, note.id(), p.getId()));
+      runners.add(new ParagraphRunner(note, note.getId(), p.getId()));
     }
 
     final Paragraph self = this;
@@ -470,7 +460,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     }
 
     InterpreterContext interpreterContext = new InterpreterContext(
-            note.id(),
+            note.getId(),
             getId(),
             this.getTitle(),
             this.getText(),
