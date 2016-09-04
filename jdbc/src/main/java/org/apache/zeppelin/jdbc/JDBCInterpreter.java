@@ -18,15 +18,16 @@ import static org.apache.commons.lang.StringUtils.containsIgnoreCase;
 
 import java.io.IOException;
 import java.security.PrivilegedExceptionAction;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.*;
 
+import org.apache.commons.dbcp2.ConnectionFactory;
+import org.apache.commons.dbcp2.DriverManagerConnectionFactory;
+import org.apache.commons.dbcp2.PoolableConnectionFactory;
+import org.apache.commons.dbcp2.PoolingDriver;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.pool2.ObjectPool;
+import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
@@ -98,13 +99,15 @@ public class JDBCInterpreter extends Interpreter {
 
   static final String EMPTY_COLUMN_VALUE = "";
 
+
   private final String CONCURRENT_EXECUTION_KEY = "zeppelin.jdbc.concurrent.use";
   private final String CONCURRENT_EXECUTION_COUNT = "zeppelin.jdbc.concurrent.max_connection";
 
+  private final String DBCP_STRING = "jdbc:apache:commons:dbcp:";
+
   private final HashMap<String, Properties> propertiesMap;
   private final Map<String, Statement> paragraphIdStatementMap;
-
-  private final Map<String, Connection> paragraphIdConnectionMap;
+  private final Map<String, PoolingDriver> poolingDriverMap;
 
   private final Map<String, SqlCompleter> propertyKeySqlCompleterMap;
 
@@ -121,7 +124,7 @@ public class JDBCInterpreter extends Interpreter {
     super(property);
     propertiesMap = new HashMap<>();
     paragraphIdStatementMap = new HashMap<>();
-    paragraphIdConnectionMap = new HashMap<>();
+    poolingDriverMap = new HashMap<>();
     propertyKeySqlCompleterMap = new HashMap<>();
   }
 
@@ -190,6 +193,44 @@ public class JDBCInterpreter extends Interpreter {
     return completer;
   }
 
+  private void createConnectionPool(String url, String propertyKey, Properties properties) {
+    if (poolingDriverMap.containsKey(propertyKey)) {
+      return;
+    }
+
+    ConnectionFactory connectionFactory =
+      new DriverManagerConnectionFactory(url, properties);
+
+    PoolableConnectionFactory poolableConnectionFactory = new PoolableConnectionFactory(
+      connectionFactory, null);
+    ObjectPool connectionPool = new GenericObjectPool(poolableConnectionFactory);
+
+    poolableConnectionFactory.setPool(connectionPool);
+
+    try {
+      Class.forName(properties.getProperty(DRIVER_KEY));
+    } catch (ClassNotFoundException e) {
+      e.printStackTrace();
+    }
+
+    PoolingDriver driver = new PoolingDriver();
+    driver.registerPool(propertyKey, connectionPool);
+
+    poolingDriverMap.put(propertyKey, driver);
+  }
+
+  public void printDriverStats() throws Exception {
+    Iterator<String> it = poolingDriverMap.keySet().iterator();
+    while (it.hasNext()) {
+      String driverName = it.next();
+      PoolingDriver driver = (PoolingDriver) poolingDriverMap.get(driverName);
+      ObjectPool<? extends Connection> connectionPool = driver.getConnectionPool(driverName);
+
+      logger.info("NumActive: " + connectionPool.getNumActive());
+      logger.info("NumIdle: " + connectionPool.getNumIdle());
+    }
+  }
+
   public Connection getConnection(String propertyKey, String user)
       throws ClassNotFoundException, SQLException, InterpreterException {
     Connection connection = null;
@@ -199,18 +240,20 @@ public class JDBCInterpreter extends Interpreter {
     if (null == connection) {
       final Properties properties = propertiesMap.get(propertyKey);
       logger.info(properties.getProperty(DRIVER_KEY));
-      Class.forName(properties.getProperty(DRIVER_KEY));
+      //Class.forName(properties.getProperty(DRIVER_KEY));
       final String url = properties.getProperty(URL_KEY);
 
       UserGroupInformation.AuthenticationMethod authType = JDBCSecurityImpl.getAuthtype(property);
       switch (authType) {
           case KERBEROS:
             if (user == null) {
-              connection = DriverManager.getConnection(url, properties);
+              createConnectionPool(url, propertyKey, properties);
+              connection = DriverManager.getConnection(DBCP_STRING + propertyKey);
             } else {
               if ("hive".equalsIgnoreCase(propertyKey)) {
-                connection = DriverManager.getConnection(url + ";hive.server2.proxy.user=" + user,
-                    properties);
+                createConnectionPool(url + ";hive.server2.proxy.user=" + user,
+                  propertyKey, properties);
+                connection = DriverManager.getConnection(DBCP_STRING + propertyKey);
               } else {
                 UserGroupInformation ugi = null;
                 try {
@@ -223,11 +266,13 @@ public class JDBCInterpreter extends Interpreter {
                   stringBuilder.append(e.getCause());
                   throw new InterpreterException(stringBuilder.toString());
                 }
+
                 try {
+                  createConnectionPool(url, propertyKey, properties);
                   connection = ugi.doAs(new PrivilegedExceptionAction<Connection>() {
                     @Override
                     public Connection run() throws Exception {
-                      return DriverManager.getConnection(url, properties);
+                      return DriverManager.getConnection(url);
                     }
                   });
                 } catch (Exception e) {
@@ -242,51 +287,12 @@ public class JDBCInterpreter extends Interpreter {
             break;
 
           default:
-            connection = DriverManager.getConnection(url, properties);
+            createConnectionPool(url, propertyKey, properties);
+            connection = DriverManager.getConnection(DBCP_STRING + propertyKey);
       }
-
     }
     propertyKeySqlCompleterMap.put(propertyKey, createSqlCompleter(connection));
     return connection;
-  }
-
-  public Statement getStatement(String propertyKey, String paragraphId,
-                                InterpreterContext interpreterContext)
-      throws SQLException, ClassNotFoundException, InterpreterException {
-    Connection connection;
-
-    if (paragraphIdConnectionMap.containsKey(paragraphId +
-        interpreterContext.getAuthenticationInfo().getUser())) {
-      connection = paragraphIdConnectionMap.get(paragraphId +
-          interpreterContext.getAuthenticationInfo().getUser());
-    } else {
-      connection = getConnection(propertyKey, interpreterContext.getAuthenticationInfo().getUser());
-    }
-
-    if (connection == null) {
-      return null;
-    }
-
-    Statement statement = connection.createStatement();
-    if (isStatementClosed(statement)) {
-      connection = getConnection(propertyKey, interpreterContext.getAuthenticationInfo().getUser());
-      statement = connection.createStatement();
-    }
-    paragraphIdConnectionMap.put(paragraphId + interpreterContext.getAuthenticationInfo().getUser(),
-        connection);
-    paragraphIdStatementMap.put(paragraphId + interpreterContext.getAuthenticationInfo().getUser(),
-        statement);
-
-    return statement;
-  }
-
-  private boolean isStatementClosed(Statement statement) {
-    try {
-      return statement.isClosed();
-    } catch (Throwable t) {
-      logger.debug("{} doesn't support isClosed method", statement);
-      return false;
-    }
   }
 
   @Override
@@ -301,14 +307,12 @@ public class JDBCInterpreter extends Interpreter {
       }
       paragraphIdStatementMap.clear();
 
-      for (Connection connection : paragraphIdConnectionMap.values()) {
-        try {
-          connection.close();
-        } catch (Exception e) {
-          logger.error("Error while closing paragraphIdConnectionMap connection...", e);
-        }
+      Iterator<String> it = poolingDriverMap.keySet().iterator();
+      while (it.hasNext()) {
+        String driverName = it.next();
+        poolingDriverMap.get(driverName).closePool(driverName);
+        it.remove();
       }
-      paragraphIdConnectionMap.clear();
     } catch (Exception e) {
       logger.error("Error while closing...", e);
     }
@@ -318,14 +322,20 @@ public class JDBCInterpreter extends Interpreter {
       InterpreterContext interpreterContext) {
 
     String paragraphId = interpreterContext.getParagraphId();
+    Connection connection = null;
+    PreparedStatement statement = null;
+    ResultSet resultSet = null;
 
     try {
-
-      Statement statement = getStatement(propertyKey, paragraphId, interpreterContext);
-
+      connection = getConnection(propertyKey, interpreterContext.getAuthenticationInfo().getUser());
+      statement = connection.prepareStatement(sql);
       if (statement == null) {
         return new InterpreterResult(Code.ERROR, "Prefix not found.");
       }
+
+      paragraphIdStatementMap.put(paragraphId +
+        interpreterContext.getAuthenticationInfo().getUser(), statement);
+
       statement.setMaxRows(getMaxResult());
 
       StringBuilder msg = null;
@@ -338,70 +348,88 @@ public class JDBCInterpreter extends Interpreter {
         isTableType = true;
       }
 
-      ResultSet resultSet = null;
-      try {
+      boolean isResultSetAvailable = statement.execute();
 
-        boolean isResultSetAvailable = statement.execute(sql);
+      if (isResultSetAvailable) {
+        resultSet = statement.getResultSet();
 
-        if (isResultSetAvailable) {
-          resultSet = statement.getResultSet();
+        ResultSetMetaData meta = resultSet.getMetaData();
 
-          ResultSetMetaData md = resultSet.getMetaData();
+        logger.info("JDBC Total columns: " + meta.getColumnCount());
+        logger.info("JDBC Column Name of 1st column: " + meta.getColumnName(1));
+        logger.info("JDBC Column Type Name of 1st column: " + meta.getColumnTypeName(1));
 
-          for (int i = 1; i < md.getColumnCount() + 1; i++) {
-            if (i > 1) {
+        for (int i = 1; i < meta.getColumnCount() + 1; i++) {
+          if (i > 1) {
+            msg.append(TAB);
+          }
+          msg.append(replaceReservedChars(isTableType, meta.getColumnName(i)));
+        }
+        msg.append(NEWLINE);
+
+        int displayRowCount = 0;
+        while (resultSet.next() && displayRowCount < getMaxResult()) {
+          for (int i = 1; i <= meta.getColumnCount(); i++) {
+            Object resultObject = resultSet.getObject(i);
+            String resultValue;
+
+            if (resultObject == null) {
+              resultValue = "null";
+            } else {
+              resultValue = resultSet.getString(i);
+            }
+            msg.append(replaceReservedChars(isTableType, resultValue));
+            if (i != meta.getColumnCount()) {
               msg.append(TAB);
             }
-            msg.append(replaceReservedChars(isTableType, md.getColumnName(i)));
           }
           msg.append(NEWLINE);
-
-          int displayRowCount = 0;
-          while (resultSet.next() && displayRowCount < getMaxResult()) {
-            for (int i = 1; i < md.getColumnCount() + 1; i++) {
-              Object resultObject;
-              String resultValue;
-              resultObject = resultSet.getObject(i);
-              if (resultObject == null) {
-                resultValue = "null";
-              } else {
-                resultValue = resultSet.getString(i);
-              }
-              msg.append(replaceReservedChars(isTableType, resultValue));
-              if (i != md.getColumnCount()) {
-                msg.append(TAB);
-              }
-            }
-            msg.append(NEWLINE);
-            displayRowCount++;
-          }
-        } else {
-          // Response contains either an update count or there are no results.
-          int updateCount = statement.getUpdateCount();
-          msg.append(UPDATE_COUNT_HEADER).append(NEWLINE);
-          msg.append(updateCount).append(NEWLINE);
+          displayRowCount++;
         }
-      } finally {
-        try {
-          if (resultSet != null) {
-            resultSet.close();
-          }
-          statement.close();
-        } finally {
-          statement = null;
-        }
+      } else {
+        // Response contains either an update count or there are no results.
+        int updateCount = statement.getUpdateCount();
+        msg.append(UPDATE_COUNT_HEADER).append(NEWLINE);
+        msg.append(updateCount).append(NEWLINE);
       }
 
-      return new InterpreterResult(Code.SUCCESS, msg.toString());
+      try {
+        printDriverStats();
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
 
-    } catch (Exception e) {
+
+      return new InterpreterResult(Code.SUCCESS, msg.toString());
+    } catch (ClassNotFoundException e) {
+
+    } catch (SQLException e) {
       logger.error("Cannot run " + sql, e);
       StringBuilder stringBuilder = new StringBuilder();
       stringBuilder.append(e.getMessage()).append("\n");
       stringBuilder.append(e.getClass().toString()).append("\n");
       stringBuilder.append(StringUtils.join(e.getStackTrace(), "\n"));
       return new InterpreterResult(Code.ERROR, stringBuilder.toString());
+    } finally {
+
+      if (resultSet != null) {
+        try {
+          resultSet.close();
+        } catch (SQLException e) { /*ignored*/ }
+      }
+      if (statement != null) {
+        try {
+          statement.close();
+        } catch (SQLException e) { /*ignored*/ }
+      }
+      if (connection != null) {
+        try {
+          connection.close();
+        } catch (SQLException e) { /*ignored*/ }
+      }
     }
+
+    return new InterpreterResult(Code.SUCCESS, "");
   }
 
   /**
