@@ -780,7 +780,7 @@ public class NotebookRestApi {
 
     AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
     List<Map<String, Object>> notebookJobs = notebook
-      .getJobListforNotebookFromUnixTime(false, 0, subject);
+      .getJobListByUnixTime(false, 0, subject);
     Map<String, Object> response = new HashMap<>();
 
     response.put("lastResponseUnixTime", System.currentTimeMillis());
@@ -805,7 +805,7 @@ public class NotebookRestApi {
 
     List<Map<String, Object>> notebookJobs;
     AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
-    notebookJobs = notebook.getJobListforNotebookFromUnixTime(false, lastUpdateUnixTime, subject);
+    notebookJobs = notebook.getJobListByUnixTime(false, lastUpdateUnixTime, subject);
     Map<String, Object> response = new HashMap<>();
 
     response.put("lastResponseUnixTime", System.currentTimeMillis());

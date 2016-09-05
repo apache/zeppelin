@@ -401,7 +401,7 @@ public class NotebookServer extends WebSocketServlet implements
     addConnectionToNote(JOB_MANAGER_SERVICE.JOB_MANAGER_PAGE.getKey(), conn);
     AuthenticationInfo subject = new AuthenticationInfo(fromMessage.principal);
     List<Map<String, Object>> notebookJobs = notebook()
-      .getJobListforNotebookFromUnixTime(false, 0, subject);
+      .getJobListByUnixTime(false, 0, subject);
     Map<String, Object> response = new HashMap<>();
 
     response.put("lastResponseUnixTime", System.currentTimeMillis());
@@ -412,12 +412,17 @@ public class NotebookServer extends WebSocketServlet implements
   }
 
   public void broadcastUpdateNotebookJobInfo(long lastUpdateUnixTime) throws IOException {
-    List<Map<String, Object>> notebookJobs;
-    notebookJobs = notebook().getJobListforNotebookFromUnixTime(false, lastUpdateUnixTime, null);
+    List<Map<String, Object>> notebookJobs = new LinkedList<>();
+    Notebook notebookObject = notebook();
+    List<Map<String, Object>> jobNotes = null;
+    if (notebookObject != null) {
+      jobNotes = notebook().getJobListByUnixTime(false, lastUpdateUnixTime, null);
+      notebookJobs = jobNotes == null ? notebookJobs : jobNotes;
+    }
 
     Map<String, Object> response = new HashMap<>();
     response.put("lastResponseUnixTime", System.currentTimeMillis());
-    response.put("jobs", notebookJobs);
+    response.put("jobs", notebookJobs != null ? notebookJobs : new LinkedList<>());
 
     broadcast(JOB_MANAGER_SERVICE.JOB_MANAGER_PAGE.getKey(),
       new Message(OP.LIST_UPDATE_NOTEBOOK_JOBS).put("notebookRunningJobs", response));
@@ -1322,7 +1327,7 @@ public class NotebookServer extends WebSocketServlet implements
 
       List<Map<String, Object>> notesInfo = new LinkedList<>();
       Map<String, Object> info = new HashMap<>();
-      info.put("notebookId", note.id());
+      info.put("notebookId", note.getId());
       // set paragraphs
       List<Map<String, Object>> paragraphsInfo = new LinkedList<>();
 
@@ -1345,7 +1350,7 @@ public class NotebookServer extends WebSocketServlet implements
     @Override
     public void onParagraphCreate(Paragraph p) {
       Notebook notebook = notebookServer.notebook();
-      List<Map<String, Object>> notebookJobs = notebook.getJobListforNotebookFromParagraphId(
+      List<Map<String, Object>> notebookJobs = notebook.getJobListByParagraphId(
               p.getId()
       );
       Map<String, Object> response = new HashMap<>();
@@ -1359,7 +1364,7 @@ public class NotebookServer extends WebSocketServlet implements
     @Override
     public void onNoteCreate(Note note) {
       Notebook notebook = notebookServer.notebook();
-      List<Map<String, Object>> notebookJobs = notebook.getJobListforNotebookFromNotebookId(
+      List<Map<String, Object>> notebookJobs = notebook.getJobListBymNotebookId(
               note.getId()
       );
       Map<String, Object> response = new HashMap<>();
@@ -1373,7 +1378,7 @@ public class NotebookServer extends WebSocketServlet implements
     @Override
     public void onParagraphStatusChange(Paragraph p, Status status) {
       Notebook notebook = notebookServer.notebook();
-      List<Map<String, Object>> notebookJobs = notebook.getJobListforNotebookFromParagraphId(
+      List<Map<String, Object>> notebookJobs = notebook.getJobListByParagraphId(
         p.getId()
       );
 
@@ -1388,7 +1393,7 @@ public class NotebookServer extends WebSocketServlet implements
     @Override
     public void onUnbindInterpreter(Note note, InterpreterSetting setting) {
       Notebook notebook = notebookServer.notebook();
-      List<Map<String, Object>> notebookJobs = notebook.getJobListforNotebookFromNotebookId(
+      List<Map<String, Object>> notebookJobs = notebook.getJobListBymNotebookId(
               note.getId()
       );
       Map<String, Object> response = new HashMap<>();

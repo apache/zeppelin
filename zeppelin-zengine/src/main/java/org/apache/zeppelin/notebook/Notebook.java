@@ -575,7 +575,7 @@ public class Notebook implements NoteEventListener {
     return lastRunningUnixTime;
   }
 
-  public List<Map<String, Object>> getJobListforNotebookFromParagraphId(String paragraphID) {
+  public List<Map<String, Object>> getJobListByParagraphId(String paragraphID) {
     String gotNoteId = null;
     List<Note> notes = getAllNotes();
     for (Note note : notes) {
@@ -584,10 +584,10 @@ public class Notebook implements NoteEventListener {
         gotNoteId = note.getId();
       }
     }
-    return getJobListforNotebookFromNotebookId(gotNoteId);
+    return getJobListBymNotebookId(gotNoteId);
   }
 
-  public List<Map<String, Object>> getJobListforNotebookFromNotebookId(String notebookID) {
+  public List<Map<String, Object>> getJobListBymNotebookId(String notebookID) {
     final String CRON_TYPE_NOTEBOOK_KEYWORD = "cron";
     long lastRunningUnixTime = 0;
     boolean isNotebookRunning = false;
@@ -599,12 +599,12 @@ public class Notebook implements NoteEventListener {
 
     Map<String, Object> info = new HashMap<>();
 
-    info.put("notebookId", jobNote.id());
+    info.put("notebookId", jobNote.getId());
     String notebookName = jobNote.getName();
     if (notebookName != null && !notebookName.equals("")) {
       info.put("notebookName", jobNote.getName());
     } else {
-      info.put("notebookName", "Note " + jobNote.id());
+      info.put("notebookName", "Note " + jobNote.getId());
     }
     // set notebook type ( cron or normal )
     if (jobNote.getConfig().containsKey(CRON_TYPE_NOTEBOOK_KEYWORD) && !jobNote.getConfig()
@@ -646,7 +646,7 @@ public class Notebook implements NoteEventListener {
     return notesInfo;
   };
 
-  public List<Map<String, Object>> getJobListforNotebookFromUnixTime(boolean needsReload,
+  public List<Map<String, Object>> getJobListByUnixTime(boolean needsReload,
       long lastUpdateServerUnixTime, AuthenticationInfo subject) {
     final String CRON_TYPE_NOTEBOOK_KEYWORD = "cron";
 
