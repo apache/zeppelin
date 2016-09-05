@@ -25,11 +25,11 @@ limitations under the License.
 
 ## Overview
 [Markdown](http://daringfireball.net/projects/markdown/) is a plain text formatting syntax designed so that it can be converted to HTML.
-Apache Zeppelin uses [markdown4j](https://github.com/sirthias/pegdown) and [pegdown](https://github.com/sirthias/pegdown) as markdown engines.
+Apache Zeppelin uses [markdown4j](https://github.com/jdcasey/markdown4j) and [pegdown](https://github.com/sirthias/pegdown) as markdown parsers.
 
 In Zeppelin notebook, you can use ` %md ` in the beginning of a paragraph to invoke the Markdown interpreter and generate static html from Markdown plain text.
 
-In Zeppelin, Markdown interpreter is enabled by default and uses [markdown4j](https://github.com/sirthias/pegdown) engine.
+In Zeppelin, Markdown interpreter is enabled by default and uses the [markdown4j](https://github.com/jdcasey/markdown4j) parser.
 
 <img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/markdown-interpreter-setting.png" width="60%" />
 
@@ -53,12 +53,11 @@ The following example demonstrates the basic usage of Markdown in a Zeppelin not
 
 <img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/markdown-example.png" width="70%" />
 
-### Markdowj4 Parser
+### Markdown4j Parser
 
 `markdown4j` parser provides [YUML](http://yuml.me/) and [Websequence](https://www.websequencediagrams.com/) extensions 
 
 <img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/markdown-example-markdown4j-parser.png" width="70%" />
-
 
 ### Pegdown Parser
 
