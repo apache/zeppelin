@@ -691,6 +691,9 @@
 
     <profile>
       <id>rat</id>
+      <activation>
+        <property><name>!skipRat</name></property>
+      </activation>
       <build>
         <plugins>
         <plugin>
