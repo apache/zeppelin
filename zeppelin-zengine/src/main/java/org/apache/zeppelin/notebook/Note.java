@@ -17,6 +17,8 @@
 
 package org.apache.zeppelin.notebook;
 
+import static java.lang.String.format;
+
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashMap;
@@ -30,7 +32,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 import com.google.gson.Gson;
-import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,6 +57,11 @@ import org.apache.zeppelin.search.SearchService;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.user.Credentials;
 
+import static org.apache.commons.lang.StringUtils.EMPTY;
+import static org.apache.commons.lang.StringUtils.isEmpty;
+import static org.apache.commons.lang.StringUtils.isNotEmpty;
+import static org.apache.commons.lang.StringUtils.isBlank;
+
 /**
  * Binded interpreters for a note
  */
@@ -76,7 +82,7 @@ public class Note implements Serializable, ParagraphJobListener {
   private String name = "";
   private String id;
 
-  private AtomicReference<String> lastReplName = new AtomicReference<>(StringUtils.EMPTY);
+  private AtomicReference<String> lastReplName = new AtomicReference<>(EMPTY);
   private transient ZeppelinConfiguration conf = ZeppelinConfiguration.create();
 
   private Map<String, List<AngularObject>> angularObjects = new HashMap<>();
@@ -122,17 +128,13 @@ public class Note implements Serializable, ParagraphJobListener {
 
   private String getDefaultInterpreterName() {
     InterpreterSetting setting = factory.getDefaultInterpreterSetting(getId());
-    return null != setting ? setting.getName() : StringUtils.EMPTY;
+    return null != setting ? setting.getName() : EMPTY;
   }
 
   void putDefaultReplName() {
     String defaultInterpreterName = getDefaultInterpreterName();
     logger.info("defaultInterpreterName is '{}'", defaultInterpreterName);
     lastReplName.set(defaultInterpreterName);
-  }
-
-  public String id() {
-    return id;
   }
 
   public String getId() {
@@ -169,6 +171,28 @@ public class Note implements Serializable, ParagraphJobListener {
       for (Paragraph p : paragraphs) {
         p.setInterpreterFactory(factory);
       }
+    }
+  }
+
+  public void initializeJobListenerForParagraph(Paragraph paragraph) {
+    final Note paragraphNote = paragraph.getNote();
+    if (paragraphNote.getId().equals(this.getId())) {
+      throw new IllegalArgumentException(format("The paragraph %s from note %s " +
+              "does not belong to note %s", paragraph.getId(), paragraphNote.getId(),
+              this.getId()));
+    }
+
+    boolean foundParagraph = false;
+    for (Paragraph ownParagraph : paragraphs) {
+      if (paragraph.getId().equals(ownParagraph.getId())) {
+        paragraph.setListener(this.jobListenerFactory.getParagraphJobListener(this));
+        foundParagraph = true;
+      }
+    }
+
+    if (!foundParagraph) {
+      throw new IllegalArgumentException(format("Cannot find paragraph %s " +
+                      "from note %s", paragraph.getId(), paragraphNote.getId()));
     }
   }
 
@@ -275,13 +299,17 @@ public class Note implements Serializable, ParagraphJobListener {
    */
   private void addLastReplNameIfEmptyText(Paragraph p) {
     String replName = lastReplName.get();
-    if (StringUtils.isEmpty(p.getText()) && StringUtils.isNotEmpty(replName)) {
+    if (isEmpty(p.getText()) && isNotEmpty(replName) && isBinding(replName)) {
       p.setText(getInterpreterName(replName) + " ");
     }
   }
 
+  public boolean isBinding(String replName) {
+    return factory.getInterpreter(this.getId(), replName) != null;
+  }
+
   private String getInterpreterName(String replName) {
-    return StringUtils.isBlank(replName) ? StringUtils.EMPTY : "%" + replName;
+    return isBlank(replName) ? EMPTY : "%" + replName;
   }
 
   /**
@@ -292,7 +320,7 @@ public class Note implements Serializable, ParagraphJobListener {
    */
   public Paragraph removeParagraph(String paragraphId) {
     removeAllAngularObjectInParagraph(paragraphId);
-    ResourcePoolUtils.removeResourcesBelongsToParagraph(id(), paragraphId);
+    ResourcePoolUtils.removeResourcesBelongsToParagraph(getId(), paragraphId);
     synchronized (paragraphs) {
       Iterator<Paragraph> i = paragraphs.iterator();
       while (i.hasNext()) {
@@ -354,8 +382,8 @@ public class Note implements Serializable, ParagraphJobListener {
 
       if (index < 0 || index >= paragraphs.size()) {
         if (throwWhenIndexIsOutOfBound) {
-          throw new IndexOutOfBoundsException("paragraph size is " + paragraphs.size() +
-              " , index is " + index);
+          throw new IndexOutOfBoundsException(
+              "paragraph size is " + paragraphs.size() + " , index is " + index);
         } else {
           return;
         }
@@ -428,7 +456,7 @@ public class Note implements Serializable, ParagraphJobListener {
       return new HashMap<>();
     }
   }
-  
+
   private Map<String, String> populatePragraphInfo(Paragraph p) {
     Map<String, String> info = new HashMap<>();
     info.put("id", p.getId());
@@ -476,27 +504,15 @@ public class Note implements Serializable, ParagraphJobListener {
     p.setListener(jobListenerFactory.getParagraphJobListener(this));
     String requiredReplName = p.getRequiredReplName();
     Interpreter intp = factory.getInterpreter(getId(), requiredReplName);
-
     if (intp == null) {
-      // TODO(jongyoul): Make "%jdbc" configurable from JdbcInterpreter
-      if (conf.getUseJdbcAlias() && null != (intp = factory.getInterpreter(getId(), "jdbc"))) {
-        String pText = p.getText().replaceFirst(requiredReplName, "jdbc(" + requiredReplName + ")");
-        logger.debug("New paragraph: {}", pText);
-        p.setEffectiveText(pText);
-      } else {
-        String intpExceptionMsg = String.format("%s",
-          p.getJobName()
-          + "'s Interpreter "
-          + requiredReplName + " not found"
-        );
-        InterpreterException intpException = new InterpreterException(intpExceptionMsg);
-        InterpreterResult intpResult = new InterpreterResult(
-          InterpreterResult.Code.ERROR, intpException.getMessage()
-        );
-        p.setReturn(intpResult, intpException);
-        p.setStatus(Job.Status.ERROR);
-        throw intpException;
-      }
+      String intpExceptionMsg =
+          p.getJobName() + "'s Interpreter " + requiredReplName + " not found";
+      InterpreterException intpException = new InterpreterException(intpExceptionMsg);
+      InterpreterResult intpResult =
+          new InterpreterResult(InterpreterResult.Code.ERROR, intpException.getMessage());
+      p.setReturn(intpResult, intpException);
+      p.setStatus(Job.Status.ERROR);
+      throw intpException;
     }
     if (p.getConfig().get("enabled") == null || (Boolean) p.getConfig().get("enabled")) {
       intp.getScheduler().submit(p);
@@ -592,7 +608,7 @@ public class Note implements Serializable, ParagraphJobListener {
   }
 
   private void setLastReplName(Paragraph lastParagraphStarted) {
-    if (StringUtils.isNotEmpty(lastParagraphStarted.getRequiredReplName())) {
+    if (isNotEmpty(lastParagraphStarted.getRequiredReplName())) {
       lastReplName.set(lastParagraphStarted.getRequiredReplName());
     }
   }
@@ -609,7 +625,7 @@ public class Note implements Serializable, ParagraphJobListener {
   }
 
   void unpersist(AuthenticationInfo subject) throws IOException {
-    repo.remove(id(), subject);
+    repo.remove(getId(), subject);
   }
 
 
