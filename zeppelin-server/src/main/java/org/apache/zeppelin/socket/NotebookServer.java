@@ -162,7 +162,7 @@ public class NotebookServer extends WebSocketServlet implements
       }
       AuthenticationInfo subject = new AuthenticationInfo(messagereceived.principal);
 
-      Notebook notebook = notebook(messagereceived.principal);
+      Notebook notebook = notebook(messagereceived.runAs);
 
       /** Lets be elegant here */
       switch (messagereceived.op) {

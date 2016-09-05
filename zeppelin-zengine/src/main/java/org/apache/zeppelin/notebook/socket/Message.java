@@ -144,6 +144,7 @@ public class Message {
   public String ticket = AuthenticationInfo.ANONYMOUS;
   public String principal = AuthenticationInfo.ANONYMOUS;
   public String roles = "";
+  public String runAs = AuthenticationInfo.ANONYMOUS;
 
   public Message(OP op) {
     this.op = op;
