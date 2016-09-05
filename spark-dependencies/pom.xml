@@ -936,26 +936,6 @@
   <build>
     <plugins>
       <plugin>
-        <groupId>org.apache.rat</groupId>
-        <artifactId>apache-rat-plugin</artifactId>
-        <configuration>
-          <excludes>
-            <exclude>**/.idea/</exclude>
-            <exclude>**/*.iml</exclude>
-            <exclude>.gitignore</exclude>
-            <exclude>**/.settings/*</exclude>
-            <exclude>**/.classpath</exclude>
-            <exclude>**/.project</exclude>
-            <exclude>**/target/**</exclude>
-            <exclude>**/derby.log</exclude>
-            <exclude>**/metastore_db/</exclude>
-            <exclude>**/README.md</exclude>
-            <exclude>dependency-reduced-pom.xml</exclude>
-          </excludes>
-        </configuration>
-      </plugin>
-
-      <plugin>
         <artifactId>maven-enforcer-plugin</artifactId>
         <version>1.3.1</version>
         <executions>
