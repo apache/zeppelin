@@ -143,24 +143,6 @@
 
   <build>
     <plugins>
-      <plugin>
-        <groupId>org.apache.rat</groupId>
-        <artifactId>apache-rat-plugin</artifactId>
-        <configuration>
-          <excludes>
-            <exclude>**/.idea/</exclude>
-            <exclude>**/*.iml</exclude>
-            <exclude>.gitignore</exclude>
-            <exclude>**/.settings/*</exclude>
-            <exclude>**/.classpath</exclude>
-            <exclude>**/.project</exclude>
-            <exclude>**/target/**</exclude>
-            <exclude>**/README.md</exclude>
-            <exclude>**/interpreter-setting.json</exclude>
-            <exclude>dependency-reduced-pom.xml</exclude>
-          </excludes>
-        </configuration>
-      </plugin>
 
       <!-- Scala Compiler -->
       <plugin>
