@@ -282,27 +282,25 @@ public class JDBCInterpreter extends Interpreter {
     return connection;
   }
 
-  @Override
-  public void close() {
-    try {
-      for (Statement statement : paragraphIdStatementMap.values()) {
-        try {
-          statement.close();
-        } catch (Exception e) {
-          logger.error("Error while closing paragraphIdStatementMap statement...", e);
-        }
+  private void initStatementMap() {
+    for (Statement statement : paragraphIdStatementMap.values()) {
+      try {
+        statement.close();
+      } catch (Exception e) {
+        logger.error("Error while closing paragraphIdStatementMap statement...", e);
       }
-      paragraphIdStatementMap.clear();
-
-      Iterator<String> it = poolingDriverMap.keySet().iterator();
-      while (it.hasNext()) {
-        String driverName = it.next();
-        poolingDriverMap.get(driverName).closePool(driverName);
-        it.remove();
-      }
-    } catch (Exception e) {
-      logger.error("Error while closing...", e);
     }
+    paragraphIdStatementMap.clear();
+  }
+
+  private void initConnectionPoolMap() throws SQLException {
+    Iterator<String> it = poolingDriverMap.keySet().iterator();
+    while (it.hasNext()) {
+      String driverName = it.next();
+      poolingDriverMap.get(driverName).closePool(driverName);
+      it.remove();
+    }
+    poolingDriverMap.clear();
   }
 
   private void saveStatement(String key, Statement statement) throws SQLException {
@@ -312,6 +310,16 @@ public class JDBCInterpreter extends Interpreter {
 
   private void removeStatement(String key) {
     paragraphIdStatementMap.remove(key);
+  }
+
+  @Override
+  public void close() {
+    try {
+      initStatementMap();
+      initConnectionPoolMap();
+    } catch (Exception e) {
+      logger.error("Error while closing...", e);
+    }
   }
 
   private InterpreterResult executeSql(String propertyKey, String sql,
