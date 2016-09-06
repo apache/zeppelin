@@ -215,9 +215,6 @@ public class NotebookTest implements JobListenerFactory{
     AuthenticationInfo subject = new AuthenticationInfo("user1");
     Note note = notebook.createNote(subject);
 
-    Notebook notebook = new Notebook(
-        conf, notebookRepo, schedulerFactory,
-        new InterpreterFactory(conf, null, null, null, depResolver), this, null, notebookAuthorization, null);
     assertNotNull(notebook.getNotebookAuthorization().getOwners(note.getId()));
     assertEquals(1, notebook.getNotebookAuthorization().getOwners(note.getId()).size());
     Set<String> owners = new HashSet<>();
@@ -394,9 +391,6 @@ public class NotebookTest implements JobListenerFactory{
     // Verify import note with subject
     AuthenticationInfo subject = new AuthenticationInfo("user1");
     Note importedNote2 = notebook.importNote(exportedNoteJson, "Title2", subject);
-    Notebook notebook = new Notebook(
-        conf, notebookRepo, schedulerFactory,
-        new InterpreterFactory(conf, null, null, null, depResolver), this, null, notebookAuthorization, null);
     assertNotNull(notebook.getNotebookAuthorization().getOwners(importedNote2.getId()));
     assertEquals(1, notebook.getNotebookAuthorization().getOwners(importedNote2.getId()).size());
     Set<String> owners = new HashSet<>();
@@ -428,9 +422,6 @@ public class NotebookTest implements JobListenerFactory{
     // Verify clone note with subject
     AuthenticationInfo subject = new AuthenticationInfo("user1");
     Note cloneNote2 = notebook.cloneNote(note.getId(), "clone note2", subject);
-    Notebook notebook = new Notebook(
-        conf, notebookRepo, schedulerFactory,
-        new InterpreterFactory(conf, null, null, null, depResolver), this, null, notebookAuthorization, null);
     assertNotNull(notebook.getNotebookAuthorization().getOwners(cloneNote2.getId()));
     assertEquals(1, notebook.getNotebookAuthorization().getOwners(cloneNote2.getId()).size());
     Set<String> owners = new HashSet<>();
