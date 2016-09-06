@@ -452,7 +452,7 @@ public class NotebookTest implements JobListenerFactory{
     Note note = notebook.createNote(anonymous);
     factory.setInterpreters(anonymous.getUser(), note.getId(), factory.getDefaultInterpreterSettingList());
 
-    Note cloneNote = notebook.cloneNote(note.getId(), null, null);
+    Note cloneNote = notebook.cloneNote(note.getId(), null, anonymous);
     assertEquals(cloneNote.getName(), "Note " + cloneNote.getId());
     notebook.removeNote(note.getId(), null);
     notebook.removeNote(cloneNote.getId(), null);
