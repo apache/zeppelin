@@ -258,6 +258,12 @@ public class NotebookServer extends WebSocketServlet implements
       }
     } catch (Exception e) {
       LOG.error("Can't handle message", e);
+      try {
+        conn.send(serializeMessage(new Message(OP.ERROR_INFO).put("info",
+                "Oops! Something went wrong. Please check with your administrator.")));
+      } catch (IOException e1) {
+        LOG.error("Can't handle message", e);
+      }
     }
   }
 
