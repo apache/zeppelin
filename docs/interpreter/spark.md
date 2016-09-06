@@ -171,10 +171,10 @@ For the further information about Spark & Zeppelin version compatibility, please
 > Note that without exporting `SPARK_HOME`, it's running in local mode with included version of Spark. The included version may vary depending on the build profile.
 
 ## SparkContext, SQLContext, SparkSession, ZeppelinContext
-SparkContext, SQLContext and ZeppelinContext are automatically created and exposed as variable names `sc`, `sqlContext` and `z`, respectively, both in Scala and Python environments.
+SparkContext, SQLContext and ZeppelinContext are automatically created and exposed as variable names `sc`, `sqlContext` and `z`, respectively, in Scala, Python and R environments.
 Staring from 0.6.1 SparkSession is available as variable `spark` when you are using Spark 2.x.
 
-> Note that Scala / Python environment shares the same SparkContext, SQLContext and ZeppelinContext instance.
+> Note that Scala/Python/R environment shares the same SparkContext, SQLContext and ZeppelinContext instance.
 
 <a name="dependencyloading"> </a>
 
@@ -386,6 +386,6 @@ This is to make the server communicate with KDC.
         spark.yarn.principal
         spark.yarn.keytab
 
-  > **NOTE:** If you do not have a permission to the above spark-defaults.conf file, optionally, you can add the above lines to the Spark Interpreter setting through the Interpreter tab in the Zeppelin UI.
+  > **NOTE:** If you do not have permission to access for the above spark-defaults.conf file, optionally, you can add the above lines to the Spark Interpreter setting through the Interpreter tab in the Zeppelin UI.
 
 4. That's it. Play with Zeppelin!
