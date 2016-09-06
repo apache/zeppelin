@@ -792,6 +792,8 @@ public class NotebookRestApi {
   /**
    * Get updated notebook jobs for job manager
    *
+   * Return the `Note` change information within the post unix timestamp.
+   *
    * @return JSON with status.OK
    * @throws IOException, IllegalArgumentException
    */
