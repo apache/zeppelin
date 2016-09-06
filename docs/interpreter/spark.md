@@ -1,7 +1,7 @@
 ---
 layout: page
 title: "Apache Spark Interpreter for Apache Zeppelin"
-description: "Apache Spark is a fast and general-purpose cluster computing system. It provides high-level APIs in Java, Scala, Python and R, and an optimized engine that supports general execution graphs."
+description: "Apache Spark is a fast and general-purpose cluster computing system. It provides high-level APIs in Java, Scala, Python and R, and an optimized engine that supports general execution engine."
 group: interpreter
 ---
 <!--
@@ -26,7 +26,7 @@ limitations under the License.
 ## Overview
 [Apache Spark](http://spark.apache.org) is a fast and general-purpose cluster computing system.
 It provides high-level APIs in Java, Scala, Python and R, and an optimized engine that supports general execution graphs.
-Apache Spark is supported in Zeppelin with Spark interpreter group which consisted of below five interpreters.
+Apache Spark is supported in Zeppelin with Spark interpreter group which consists of below five interpreters.
 
 <table class="table-configuration">
   <tr>
