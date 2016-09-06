@@ -97,17 +97,24 @@ function addJarInDirForIntp() {
 ZEPPELIN_COMMANDLINE_MAIN=org.apache.zeppelin.utils.CommandLineUtils
 
 function getZeppelinVersion() {
-    if [[ -d "${ZEPPELIN_HOME}/zeppelin-server/target/classes" ]]; then
-      ZEPPELIN_CLASSPATH+=":${ZEPPELIN_HOME}/zeppelin-server/target/classes"
-    fi
-    addJarInDir "${ZEPPELIN_HOME}/zeppelin-server/target/lib"
-    CLASSPATH+=":${ZEPPELIN_CLASSPATH}"
-    $ZEPPELIN_RUNNER -cp $CLASSPATH $ZEPPELIN_COMMANDLINE_MAIN -v
-    exit 0
+  if [[ -d "${ZEPPELIN_HOME}/zeppelin-server/target/classes" ]]; then
+    ZEPPELIN_CLASSPATH+=":${ZEPPELIN_HOME}/zeppelin-server/target/classes"
+  fi
+  addJarInDir "${ZEPPELIN_HOME}/zeppelin-server/target/lib"
+  CLASSPATH+=":${ZEPPELIN_CLASSPATH}"
+  $ZEPPELIN_RUNNER -cp $CLASSPATH $ZEPPELIN_COMMANDLINE_MAIN -v
+  exit 0
 }
 
 function downloadSparkBinary() {
-  if [[ -z "${SPARK_HOME}" ]]; then
+  local SPARK_VERSION
+  local HADOOP_VERSION
+  local SPARK_ARCHIVE
+  SPARK_VERSION="2.0.0"
+  HADOOP_VERSION="2.7"
+  SPARK_ARCHIVE="spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}"
+
+  if [[ ! -d "interpreter/spark/${SPARK_ARCHIVE}" ]]; then
     . "${ZEPPELIN_HOME}/bin/download-spark.sh"
   fi
 }
