@@ -29,6 +29,12 @@ from pyspark.broadcast import Broadcast
 from pyspark.serializers import MarshalSerializer, PickleSerializer
 import ast
 import traceback
+import base64
+from io import BytesIO
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
 
 # for back compatibility
 from pyspark.sql import SQLContext, HiveContext, Row
@@ -50,6 +56,7 @@ class Logger(object):
 class PyZeppelinContext(dict):
   def __init__(self, zc):
     self.z = zc
+    self.max_result = 1000
 
   def show(self, obj):
     from pyspark.sql import DataFrame
@@ -57,6 +64,16 @@ class PyZeppelinContext(dict):
       print(gateway.jvm.org.apache.zeppelin.spark.ZeppelinContext.showDF(self.z, obj._jdf))
     else:
       print(str(obj))
+
+  def show_plot(self, p, **kwargs):
+    if hasattr(p, '__name__') and p.__name__ == "matplotlib.pyplot":
+        self.show_matplotlib(p, **kwargs)
+    elif type(p).__name__ == "DataFrame": # does not play well with sub-classes
+        # `isinstance(p, DataFrame)` would req `import pandas.core.frame.DataFrame`
+        # and so a dependency on pandas
+        self.show_dataframe(p, **kwargs)
+    elif hasattr(p, '__call__'):
+        p() #error reporting  
 
   # By implementing special methods it makes operating on it more Pythonic
   def __setitem__(self, key, item):
@@ -70,6 +87,57 @@ class PyZeppelinContext(dict):
 
   def __contains__(self, item):
     return self.z.containsKey(item)
+
+  def show_dataframe(self, df, **kwargs):
+    """Pretty prints DF using Table Display System
+    """
+    limit = len(df) > self.max_result
+    header_buf = StringIO("")
+    header_buf.write(str(df.columns[0]))
+    for col in df.columns[1:]:
+      header_buf.write("\t")
+      header_buf.write(str(col))
+    header_buf.write("\n")
+    
+    body_buf = StringIO("")
+    rows = df.head(self.max_result).values if limit else df.values
+    for row in rows:
+      body_buf.write(str(row[0]))
+      for cell in row[1:]:
+          body_buf.write("\t")
+          body_buf.write(str(cell))
+      body_buf.write("\n")
+    body_buf.seek(0); header_buf.seek(0)
+    #TODO(bzz): fix it, so it shows red notice, as in Spark
+    print("%table " + header_buf.read() + body_buf.read()) # +
+    #      ("\n<font color=red>Results are limited by {}.</font>" \
+    #          .format(self.max_result) if limit else "")
+    #)
+    body_buf.close(); header_buf.close()
+    
+    def show_matplotlib(self, p, fmt="png", width="auto", height="auto", 
+                        **kwargs):
+      """Matplotlib show function
+      """
+      if fmt == "png":
+        img = BytesIO()
+        p.savefig(img, format=fmt)
+        img_str = b"data:image/png;base64,"
+        img_str += base64.b64encode(img.getvalue().strip())
+        img_tag = "<img src={img} style='width={width};height:{height}'>"
+        # Decoding is necessary for Python 3 compability
+        img_str = img_str.decode("ascii")
+        img_str = img_tag.format(img=img_str, width=width, height=height)
+      elif fmt == "svg":
+        img = StringIO()
+        p.savefig(img, format=fmt)
+        img_str = img.getvalue()
+      else:
+        raise ValueError("fmt must be 'png' or 'svg'")
+      
+      html = "%html <div style='width:{width};height:{height}'>{img}<div>"
+      print(html.format(width=width, height=height, img=img_str))
+      img.close()
 
   def add(self, key, value):
     self.__setitem__(key, value)
