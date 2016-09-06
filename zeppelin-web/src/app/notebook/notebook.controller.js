@@ -628,9 +628,11 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
   }
 
   $scope.restartInterpreter = function(interpeter) {
-    BootstrapDialog.confirm({
-      closable: true,
-      title: 'Restart ' + interpeter.name + ' interpreter',
+    var thisConfirm = BootstrapDialog.confirm({
+      closable: false,
+      closeByBackdrop: false,
+      closeByKeyboard: false,
+      title: '',
       message: 'Do you want to restart ' + interpeter.name + ' interpreter?',
       callback: function(result) {
         if (result) {
@@ -638,17 +640,26 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
             'noteId': $scope.note.id
           };
 
+          thisConfirm.$modalFooter.find('button').addClass('disabled');
+          thisConfirm.$modalFooter.find('button:contains("OK")')
+            .html('<i class="fa fa-circle-o-notch fa-spin"></i> Saving Setting');
+
           $http.put(baseUrlSrv.getRestApiBase() + '/interpreter/setting/restart/' + interpeter.id, payload)
             .success(function(data, status, headers, config) {
             var index = _.findIndex($scope.interpreterSettings, {'id': interpeter.id});
             $scope.interpreterSettings[index] = data.body;
+            thisConfirm.close();
           }).error(function(data, status, headers, config) {
+            thisConfirm.close();
             console.log('Error %o %o', status, data.message);
             BootstrapDialog.show({
               title: 'Error restart interpreter.',
               message: data.message
             });
           });
+          return false;
+        } else {
+          form.$show();
         }
       }
     });
