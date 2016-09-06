@@ -846,19 +846,19 @@ public class NotebookRestApi {
   }
 
   private void handleParagraphParams(String message, Note note, Paragraph paragraph)
-    throws IOException {
-      // handle params if presented
-      if (!StringUtils.isEmpty(message)) {
-        RunParagraphWithParametersRequest request =
-                gson.fromJson(message, RunParagraphWithParametersRequest.class);
-        Map<String, Object> paramsForUpdating = request.getParams();
-        if (paramsForUpdating != null) {
-          paragraph.settings.getParams().putAll(paramsForUpdating);
-          AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
-          note.setLastReplName(paragraph.getId());
-          note.persist(subject);
-        }
+      throws IOException {
+    // handle params if presented
+    if (!StringUtils.isEmpty(message)) {
+      RunParagraphWithParametersRequest request =
+        gson.fromJson(message, RunParagraphWithParametersRequest.class);
+      Map<String, Object> paramsForUpdating = request.getParams();
+      if (paramsForUpdating != null) {
+        paragraph.settings.getParams().putAll(paramsForUpdating);
+        AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
+        note.setLastReplName(paragraph.getId());
+        note.persist(subject);
       }
+    }
   }
 
 }

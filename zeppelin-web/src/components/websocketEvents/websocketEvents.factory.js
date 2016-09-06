@@ -20,9 +20,9 @@ angular.module('zeppelinWebApp').factory('websocketEvents',
   websocketCalls.ws = $websocket(baseUrlSrv.getWebsocketUrl());
   websocketCalls.ws.reconnectIfNotNormalClose = true;
 
-  var getQueryString = function ( field, url ) {
+  var getQueryString = function(field, url) {
     var href = url ? url : window.location.href;
-    var reg = new RegExp( '[?&]' + field + '=([^&#]*)', 'i' );
+    var reg = new RegExp('[?&]' + field + '=([^&#]*)', 'i');
     var string = reg.exec(href);
     return string ? string[1] : null;
   };
@@ -41,7 +41,9 @@ angular.module('zeppelinWebApp').factory('websocketEvents',
       data.ticket = $rootScope.ticket.ticket;
       data.roles = $rootScope.ticket.roles;
       data.runAs = getQueryString('runAs');
-      if (!data.runAs) data.runAs = $rootScope.ticket.principal;
+      if (!data.runAs) {
+        data.runAs = $rootScope.ticket.principal;
+      }
     } else {
       data.principal = '';
       data.ticket = '';
