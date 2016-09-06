@@ -14,7 +14,7 @@
 'use strict';
 
 angular.module('zeppelinWebApp')
-  .controller('JobCtrl', function($scope) {
+  .controller('JobCtrl', function($scope, $http, baseUrlSrv) {
 
     $scope.init = function(jobInformation) {
       $scope.progressValue = 0;
@@ -35,4 +35,69 @@ angular.module('zeppelinWebApp')
       return isNaN(result) ? 0 : result;
     };
 
+    $scope.lastExecuteTime = function(unixtime) {
+      return moment.unix(unixtime / 1000).fromNow();
+    };
+
+    $scope.runNotebookJob = function(notebookId) {
+      BootstrapDialog.confirm({
+        closable: true,
+        title: '',
+        message: 'Run all paragraphs?',
+        callback: function(result) {
+          if (result === true) {
+            $http({
+              method: 'POST',
+              url: baseUrlSrv.getRestApiBase() + '/notebook/job/' + notebookId,
+              headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+              }
+            }).then(function successCallback(response) {
+              // success
+            }, function errorCallback(errorResponse) {
+              var errorText = 'SERVER ERROR';
+              if (errorResponse.data.message !== undefined) {
+                errorText = errorResponse.data.message;
+              }
+              BootstrapDialog.alert({
+                closable: true,
+                title: 'Execution Failure',
+                message: errorText
+              });
+            });
+          }
+        }
+      });
+    };
+
+    $scope.stopNotebookJob = function(notebookId) {
+      BootstrapDialog.confirm({
+        closable: true,
+        title: '',
+        message: 'Stop all paragraphs?',
+        callback: function(result) {
+          if (result === true) {
+            $http({
+              method: 'DELETE',
+              url: baseUrlSrv.getRestApiBase() + '/notebook/job/' + notebookId,
+              headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+              }
+            }).then(function successCallback(response) {
+              // success
+            }, function errorCallback(errorResponse) {
+              var errorText = 'SERVER ERROR';
+              if (errorResponse.data.message !== undefined) {
+                errorText = errorResponse.data.message;
+              }
+              BootstrapDialog.alert({
+                closable: true,
+                title: 'Stop Failure',
+                message: errorText
+              });
+            });
+          }
+        }
+      });
+    };
   });
