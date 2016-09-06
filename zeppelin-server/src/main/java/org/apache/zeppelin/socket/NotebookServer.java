@@ -410,6 +410,11 @@ public class NotebookServer extends WebSocketServlet implements
       .put("notebookJobs", response)));
   }
 
+  public void broadcastParagraph(Note note, Paragraph para) {
+    LOG.info("Broadcasting paragraph on run call instead of note.");
+    broadcast(note.id(), new Message(OP.PARAGRAPH).put("paragraph", para));
+  }
+
   public void unicastUpdateNotebookJobInfo(NotebookSocket conn, Message fromMessage)
       throws IOException {
     double lastUpdateUnixTimeRaw = (double) fromMessage.get("lastUpdateUnixTime");
@@ -1300,7 +1305,7 @@ public class NotebookServer extends WebSocketServlet implements
   public static class ParagraphListenerImpl implements ParagraphJobListener {
     private NotebookServer notebookServer;
     private Note note;
-
+     
     public ParagraphListenerImpl(NotebookServer notebookServer, Note note) {
       this.notebookServer = notebookServer;
       this.note = note;
@@ -1335,7 +1340,11 @@ public class NotebookServer extends WebSocketServlet implements
           LOG.error(e.toString(), e);
         }
       }
-      notebookServer.broadcastNote(note);
+      if (job instanceof Paragraph) {
+        notebookServer.broadcastParagraph(note, (Paragraph) job);
+      } else {
+        notebookServer.broadcastNote(note);
+      }  
     }
 
     /**
