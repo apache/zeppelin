@@ -449,7 +449,7 @@ public class NotebookTest implements JobListenerFactory{
   @Test
   public void testCloneNoteWithNoName() throws IOException, CloneNotSupportedException,
       InterruptedException {
-    Note note = notebook.createNote(null);
+    Note note = notebook.createNote(anonymous);
     factory.setInterpreters(anonymous.getUser(), note.getId(), factory.getDefaultInterpreterSettingList());
 
     Note cloneNote = notebook.cloneNote(note.getId(), null, null);
