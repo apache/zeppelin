@@ -24,10 +24,12 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import com.google.gson.Gson;
@@ -158,6 +160,11 @@ public class Notebook implements NoteEventListener {
       bindInterpretersToNote(note.getId(), interpreterIds);
     }
 
+    if (subject != null && !"anonymous".equals(subject.getUser())) {
+      Set<String> owners = new HashSet<String>();
+      owners.add(subject.getUser());
+      notebookAuthorization.setOwners(note.getId(), owners);
+    }
     notebookIndex.addIndexDoc(note);
     note.persist(subject);
     fireNoteCreateEvent(note);
