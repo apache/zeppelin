@@ -23,7 +23,7 @@ See https://help.github.com/articles/using-jekyll-with-pages#installing-jekyll
 ## Deploy to ASF svnpubsub infra (committers only)
  1. generate static website in `./_site`
     ```
-    bundle exec jekyll build
+    JEKYLL_ENV=production bundle exec jekyll build
     ```
 
  2. checkout ASF repo
