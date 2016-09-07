@@ -22,6 +22,7 @@ import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.PutMethod;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NotebookAuthorization;
@@ -142,6 +143,32 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
 
     //cleanup
     ZeppelinServer.notebook.removeNote(note1.getId(), null);
+
+  }
+
+  @Test
+  public void testCloneNotebook() throws IOException {
+    Note note1 = ZeppelinServer.notebook.createNote(null);
+    PostMethod post = httpPost("/notebook/" + note1.getId(), "");
+    LOG.info("testCloneNotebook response\n" + post.getResponseBodyAsString());
+    assertThat(post, isCreated());
+    Map<String, Object> resp = gson.fromJson(post.getResponseBodyAsString(), new TypeToken<Map<String, Object>>() {
+    }.getType());
+    String clonedNotebookId = (String) resp.get("body");
+    post.releaseConnection();
+
+    GetMethod get = httpGet("/notebook/" + clonedNotebookId);
+    assertThat(get, isAllowed());
+    Map<String, Object> resp2 = gson.fromJson(get.getResponseBodyAsString(), new TypeToken<Map<String, Object>>() {
+    }.getType());
+    Map<String, Object> resp2Body = (Map<String, Object>) resp2.get("body");
+
+    assertEquals((String)resp2Body.get("name"), "Note " + clonedNotebookId);
+    get.releaseConnection();
+
+    //cleanup
+    ZeppelinServer.notebook.removeNote(note1.getId(), null);
+    ZeppelinServer.notebook.removeNote(clonedNotebookId, null);
 
   }
 }
