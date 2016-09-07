@@ -2,10 +2,11 @@
   <!--
   - Dynamically set liquid variables for working with URLs/paths
   -->
+  {% include JB/is_production %}
   {% if site.JB.setup.provider == "custom" %}
     {% include custom/setup %}
   {% else %}
-    {% if site.safe and site.JB.BASE_PATH and site.JB.BASE_PATH != '' %}
+    {% if is_production and site.JB.BASE_PATH and site.JB.BASE_PATH != '' %}
       {% assign BASE_PATH = site.JB.BASE_PATH %}
       {% assign HOME_PATH = site.JB.BASE_PATH %}
     {% else %}

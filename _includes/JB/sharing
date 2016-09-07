@@ -1,4 +1,5 @@
-{% if site.safe and site.JB.sharing.provider and page.JB.sharing != false %}
+{% include JB/is_production %}
+{% if is_production and site.JB.sharing.provider and page.JB.sharing != false %}
 
 {% case site.JB.sharing.provider %}
 {% when "custom" %}
