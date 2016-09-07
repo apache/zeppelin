@@ -67,11 +67,11 @@ class PyZeppelinContext(dict):
 
   def show_plot(self, p, **kwargs):
     if hasattr(p, '__name__') and p.__name__ == "matplotlib.pyplot":
-        self.show_matplotlib(p, **kwargs)
+        show_matplotlib(p, **kwargs)
     elif type(p).__name__ == "DataFrame": # does not play well with sub-classes
         # `isinstance(p, DataFrame)` would req `import pandas.core.frame.DataFrame`
         # and so a dependency on pandas
-        self.show_dataframe(p, **kwargs)
+        show_dataframe(p, **kwargs)
     elif hasattr(p, '__call__'):
         p() #error reporting  
 
