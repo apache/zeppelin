@@ -12,7 +12,13 @@ See https://help.github.com/articles/using-jekyll-with-pages#installing-jekyll
     gem install bundler
     bundle install
 
+### Build FAQ
+
 *On OS X 10.9 you may need to do "xcode-select --install"*
+
+Gem *nokogiri* may confilict with `xz` if you have it installed. See https://github.com/sparklemotion/nokogiri/issues/1483
+The workaround is to uninstall `zx` before doing `bundle insall`.
+
 
 
 ## Run website
@@ -23,7 +29,7 @@ See https://help.github.com/articles/using-jekyll-with-pages#installing-jekyll
 ## Deploy to ASF svnpubsub infra (committers only)
  1. generate static website in `./_site`
     ```
-    bundle exec jekyll build --safe
+    JEKYLL_ENV=production bundle exec jekyll build
     ```
 
  2. checkout ASF repo
