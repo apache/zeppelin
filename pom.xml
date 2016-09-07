@@ -55,7 +55,6 @@
     <module>zeppelin-interpreter</module>
     <module>zeppelin-zengine</module>
     <module>zeppelin-display</module>
-    <module>spark-dependencies</module>
     <module>spark</module>
     <module>markdown</module>
     <module>angular</module>
