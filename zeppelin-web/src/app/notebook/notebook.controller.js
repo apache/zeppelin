@@ -658,8 +658,6 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
             });
           });
           return false;
-        } else {
-          form.$show();
         }
       }
     });
