@@ -21,8 +21,6 @@ bin=$(cd "${bin}">/dev/null; pwd)
 
 . "${bin}/common.sh"
 
-FWDIR="$(dirname "${BASH_SOURCE-$0}")"
-ZEPPELIN_HOME="$(cd "${FWDIR}/.."; pwd)"
 ZEPPELIN_ENV="conf/zeppelin-env.sh"
 ZEPPELIN_ENV_TEMP="conf/zeppelin-env.sh.template"
 ZEPPELIN_VERSION="$(getZeppelinVersion)"
