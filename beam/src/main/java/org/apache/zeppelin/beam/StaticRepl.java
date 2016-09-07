@@ -35,9 +35,7 @@ import com.thoughtworks.qdox.model.JavaSource;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.PrintStream;
-import java.io.PrintWriter;
 import java.io.StringReader;
-import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URL;
@@ -46,11 +44,12 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
+ * 
  * StaticRepl for compling the java code in memory
  * 
  */
 public class StaticRepl {
-  static Logger LOGGER = LoggerFactory.getLogger(StaticRepl.class);
+  static Logger logger = LoggerFactory.getLogger(StaticRepl.class);
 
   public static String execute(String generatedClassName, String code) throws Exception {
 
@@ -70,22 +69,21 @@ public class StaticRepl {
       boolean hasMain = false;
 
       for (int j = 0; j < classes.get(i).getMethods().size(); j++) {
-
         if (classes.get(i).getMethods().get(j).getName().equals("main")) {
           mainClassName = classes.get(i).getName();
           hasMain = true;
           break;
         }
-
       }
-      if (hasMain == true)
+      if (hasMain == true) {
         break;
+      }
 
     }
 
     // if there isn't Main method, will retuen error
     if (mainClassName == null) {
-      LOGGER.error("Exception for Main method", "There isn't any class containing Main method.");
+      logger.error("Exception for Main method", "There isn't any class containing Main method.");
       throw new Exception("There isn't any class containing Main method.");
     }
 
@@ -116,8 +114,9 @@ public class StaticRepl {
     // if success is false will get error
     if (!success) {
       for (Diagnostic diagnostic : diagnostics.getDiagnostics()) {
-        if (diagnostic.getLineNumber() == -1)
+        if (diagnostic.getLineNumber() == -1) {
           continue;
+        }
         System.err.println("line " + diagnostic.getLineNumber() + " : "
             + diagnostic.getMessage(null));
       }
@@ -126,7 +125,7 @@ public class StaticRepl {
 
       System.setOut(oldOut);
       System.setErr(oldErr);
-      LOGGER.error("Exception in Interpreter while compilation", baosErr.toString());
+      logger.error("Exception in Interpreter while compilation", baosErr.toString());
       throw new Exception(baosErr.toString());
     } else {
       try {
@@ -149,25 +148,25 @@ public class StaticRepl {
         return baosOut.toString();
 
       } catch (ClassNotFoundException e) {
-        LOGGER.error("Exception in Interpreter while Class not found", e);
+        logger.error("Exception in Interpreter while Class not found", e);
         System.err.println("Class not found: " + e);
         e.printStackTrace(newErr);
         throw new Exception(baosErr.toString());
 
       } catch (NoSuchMethodException e) {
-        LOGGER.error("Exception in Interpreter while No such method", e);
+        logger.error("Exception in Interpreter while No such method", e);
         System.err.println("No such method: " + e);
         e.printStackTrace(newErr);
         throw new Exception(baosErr.toString());
 
       } catch (IllegalAccessException e) {
-        LOGGER.error("Exception in Interpreter while Illegal access", e);
+        logger.error("Exception in Interpreter while Illegal access", e);
         System.err.println("Illegal access: " + e);
         e.printStackTrace(newErr);
         throw new Exception(baosErr.toString());
 
       } catch (InvocationTargetException e) {
-        LOGGER.error("Exception in Interpreter while Invocation target", e);      
+        logger.error("Exception in Interpreter while Invocation target", e);
         System.err.println("Invocation target: " + e);
         e.printStackTrace(newErr);
         throw new Exception(baosErr.toString());

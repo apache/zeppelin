@@ -18,6 +18,7 @@
 package org.apache.zeppelin.beam;
 
 import java.io.File;
+import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 import java.util.UUID;
@@ -30,12 +31,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
-* Beam interpreter
-*
-*/
+ * Beam interpreter
+ * 
+ */
 public class BeamInterpreter extends Interpreter {
 
-  Logger LOGGER = LoggerFactory.getLogger(BeamInterpreter.class);
+  Logger logger = LoggerFactory.getLogger(BeamInterpreter.class);
 
   public BeamInterpreter(Properties property) {
     super(property);
@@ -52,8 +53,9 @@ public class BeamInterpreter extends Interpreter {
     // delete all .class files created while compilation process
     for (int i = 0; i < dir.list().length; i++) {
       File f = dir.listFiles()[i];
-      if (f.getAbsolutePath().contains(".class"))
+      if (f.getAbsolutePath().contains(".class")) {
         f.delete();
+      }
     }
   }
 
@@ -67,7 +69,7 @@ public class BeamInterpreter extends Interpreter {
       String res = StaticRepl.execute(generatedClassName, code);
       return new InterpreterResult(InterpreterResult.Code.SUCCESS, res);
     } catch (Exception e) {
-      LOGGER.error("Exception in Interpreter while interpret", e);
+      logger.error("Exception in Interpreter while interpret", e);
       return new InterpreterResult(InterpreterResult.Code.ERROR, e.getMessage());
 
     }
@@ -91,7 +93,7 @@ public class BeamInterpreter extends Interpreter {
 
   @Override
   public List<InterpreterCompletion> completion(String buf, int cursor) {
-    return null;
+    return Collections.emptyList();
   }
 
 }
