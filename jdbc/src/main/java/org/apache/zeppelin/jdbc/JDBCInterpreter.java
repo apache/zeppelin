@@ -323,8 +323,7 @@ public class JDBCInterpreter extends Interpreter {
   }
 
   private InterpreterResult executeSql(String propertyKey, String sql,
-                                       InterpreterContext interpreterContext) {
-
+      InterpreterContext interpreterContext) {
     String paragraphId = interpreterContext.getParagraphId();
     Connection connection;
     Statement statement;
