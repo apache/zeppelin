@@ -19,90 +19,93 @@
 # Remove interactive mode displayhook
 import sys
 import signal
-
+import base64
+from io import BytesIO
 try:
-    import StringIO as io
+    from StringIO import StringIO
 except ImportError:
-    import io as io
-
-sys.displayhook = lambda x: None
+    from io import StringIO
 
 def intHandler(signum, frame):  # Set the signal handler
     print ("Paragraph interrupted")
     raise KeyboardInterrupt()
 
 signal.signal(signal.SIGINT, intHandler)
-
+# set prompt as empty string so that java side don't need to remove the prompt.
+sys.ps1=""
 
 def help():
-    print ('%html')
-    print ('<h2>Python Interpreter help</h2>')
-    print ('<h3>Python 2 & 3 compatibility</h3>')
-    print ('<p>The interpreter is compatible with Python 2 & 3.<br/>')
-    print ('To change Python version, ')
-    print ('change in the interpreter configuration the python to the ')
-    print ('desired version (example : python=/usr/bin/python3)</p>')
-    print ('<h3>Python modules</h3>')
-    print ('<p>The interpreter can use all modules already installed ')
-    print ('(with pip, easy_install, etc)</p>')
-    print ('<h3>Forms</h3>')
-    print ('You must install py4j in order to use '
-           'the form feature (pip install py4j)')
-    print ('<h4>Input form</h4>')
-    print ('<pre>print (z.input("f1","defaultValue"))</pre>')
-    print ('<h4>Selection form</h4>')
-    print ('<pre>print(z.select("f2", [("o1","1"), ("o2","2")],2))</pre>')
-    print ('<h4>Checkbox form</h4>')
-    print ('<pre> print("".join(z.checkbox("f3", [("o1","1"), '
-           '("o2","2")],["1"])))</pre>')
-    print ('<h3>Matplotlib graph</h3>')
-    print ('<div>The interpreter can display matplotlib graph with ')
-    print ('the function z.show()</div>')
-    print ('<div> You need to already have matplotlib module installed ')
-    print ('to use this functionality !</div><br/>')
-    print ('''<pre>import matplotlib.pyplot as plt
-plt.figure()
-(.. ..)
-z.show(plt)
-plt.close()
-</pre>''')
-    print ('<div><br/> z.show function can take optional parameters ')
-    print ('to adapt graph width and height</div>')
-    print ("<div><b>example </b>:")
-    print ('''<pre>z.show(plt,width='50px')
-z.show(plt,height='150px') </pre></div>''')
-    print ('<h3>Pandas DataFrame</h3>')
-    print ('<div> You need to have Pandas module installed ')
-    print ('to use this functionality (pip install pandas) !</div><br/>')
-    print ("""
-<div>The interpreter can visualize Pandas DataFrame
-with the function z.show()
-<pre>
-import pandas as pd
-df = pd.read_csv("bank.csv", sep=";")
-z.show(df)
-</pre></div>
-""")
-    print ('<h3>SQL over Pandas DataFrame</h3>')
-    print ('<div> You need to have Pandas&Pandasql modules installed ')
-    print ('to use this functionality (pip install pandas pandasql) !</div><br/>')
-    print ("""
-<div>Python interpreter group includes %sql interpreter that can query
-Pandas DataFrames using SQL and visualize results using Zeppelin Table Display System
+    print("""%html
+ <h2>Python Interpreter help</h2>
 
-<pre>
-%python
-import pandas as pd
-df = pd.read_csv("bank.csv", sep=";")
-</pre>
-<br />
+ <h3>Python 2 & 3 compatibility</h3>
+ <p>The interpreter is compatible with Python 2 & 3.<br/>
+ To change Python version,
+ change in the interpreter configuration the python to the
+ desired version (example : python=/usr/bin/python3)</p>
 
-<pre>
-%python.sql
-%sql
-SELECT * from df LIMIT 5
-</pre></div>
-""")
+ <h3>Python modules</h3>
+ <p>The interpreter can use all modules already installed
+ (with pip, easy_install, etc)</p>
+
+ <h3>Forms</h3>
+ You must install py4j in order to use
+ the form feature (pip install py4j)
+ <h4>Input form</h4>
+ <pre>print (z.input("f1","defaultValue"))</pre>
+ <h4>Selection form</h4>
+ <pre>print(z.select("f2", [("o1","1"), ("o2","2")],2))</pre>
+ <h4>Checkbox form</h4>
+ <pre> print("".join(z.checkbox("f3", [("o1","1"), ("o2","2")],["1"])))</pre>')
+
+ <h3>Matplotlib graph</h3>
+ <div>The interpreter can display matplotlib graph with
+ the function z.show()</div>
+ <div> You need to already have matplotlib module installed
+ to use this functionality !</div><br/>
+ <pre>import matplotlib.pyplot as plt
+ plt.figure()
+ (.. ..)
+ z.show(plt)
+ plt.close()
+ </pre>
+ <div><br/> z.show function can take optional parameters
+ to adapt graph dimensions (width and height) and format (png or svg)</div>
+ <div><b>example </b>:
+ <pre>z.show(plt,width='50px
+ z.show(plt,height='150px', fmt='svg') </pre></div>
+
+ <h3>Pandas DataFrame</h3>
+ <div> You need to have Pandas module installed
+ to use this functionality (pip install pandas) !</div><br/>
+ <div>The interpreter can visualize Pandas DataFrame
+ with the function z.show()
+ <pre>
+ import pandas as pd
+ df = pd.read_csv("bank.csv", sep=";")
+ z.show(df)
+ </pre></div>
+
+ <h3>SQL over Pandas DataFrame</h3>
+ <div> You need to have Pandas&Pandasql modules installed
+ to use this functionality (pip install pandas pandasql) !</div><br/>
+
+ <div>Python interpreter group includes %sql interpreter that can query
+ Pandas DataFrames using SQL and visualize results using Zeppelin Table Display System
+
+ <pre>
+ %python
+ import pandas as pd
+ df = pd.read_csv("bank.csv", sep=";")
+ </pre>
+ <br />
+ <pre>
+ %python.sql
+ %sql
+ SELECT * from df LIMIT 5
+ </pre>
+ </div>
+    """)
 
 
 class PyZeppelinContext(object):
@@ -112,18 +115,17 @@ class PyZeppelinContext(object):
     errorMsg = "You must install py4j Python module " \
                "(pip install py4j) to use Zeppelin dynamic forms features"
     
-    def __init__(self, zc):
-        self.z = zc
+    def __init__(self):
         self.max_result = 1000
     
     def input(self, name, defaultValue=""):
-        print (self.errorMsg)
+        print(self.errorMsg)
     
     def select(self, name, options, defaultValue=""):
-        print (self.errorMsg)
+        print(self.errorMsg)
     
     def checkbox(self, name, options, defaultChecked=[]):
-        print (self.errorMsg)
+        print(self.errorMsg)
     
     def show(self, p, **kwargs):
         if hasattr(p, '__name__') and p.__name__ == "matplotlib.pyplot":
@@ -139,20 +141,20 @@ class PyZeppelinContext(object):
         """Pretty prints DF using Table Display System
         """
         limit = len(df) > self.max_result
-        header_buf = io.StringIO("")
-        header_buf.write(df.columns[0])
+        header_buf = StringIO("")
+        header_buf.write(str(df.columns[0]))
         for col in df.columns[1:]:
             header_buf.write("\t")
-            header_buf.write(col)
+            header_buf.write(str(col))
         header_buf.write("\n")
         
-        body_buf = io.StringIO("")
+        body_buf = StringIO("")
         rows = df.head(self.max_result).values if limit else df.values
         for row in rows:
-            body_buf.write(row[0])
+            body_buf.write(str(row[0]))
             for cell in row[1:]:
                 body_buf.write("\t")
-                body_buf.write(cell)
+                body_buf.write(str(cell))
             body_buf.write("\n")
         body_buf.seek(0); header_buf.seek(0)
         #TODO(bzz): fix it, so it shows red notice, as in Spark
@@ -162,21 +164,29 @@ class PyZeppelinContext(object):
         #)
         body_buf.close(); header_buf.close()
     
-    def show_matplotlib(self, p, width="0", height="0", **kwargs):
+    def show_matplotlib(self, p, fmt="png", width="auto", height="auto", 
+                        **kwargs):
         """Matplotlib show function
         """
-        img = io.StringIO()
-        p.savefig(img, format='svg')
-        img.seek(0)
-        style = ""
-        if (width != "0"):
-            style += 'width:' + width
-        if (height != "0"):
-            if (len(style) != 0):
-                style += ","
-                style += 'height:' + height
-        print("%html <div style='" + style + "'>" + img.read() + "<div>")
+        if fmt == "png":
+            img = BytesIO()
+            p.savefig(img, format=fmt)
+            img_str = b"data:image/png;base64,"
+            img_str += base64.b64encode(img.getvalue().strip())
+            img_tag = "<img src={img} style='width={width};height:{height}'>"
+            # Decoding is necessary for Python 3 compability
+            img_str = img_str.decode("ascii")
+            img_str = img_tag.format(img=img_str, width=width, height=height)
+        elif fmt == "svg":
+            img = StringIO()
+            p.savefig(img, format=fmt)
+            img_str = img.getvalue()
+        else:
+            raise ValueError("fmt must be 'png' or 'svg'")
+        
+        html = "%html <div style='width:{width};height:{height}'>{img}<div>"
+        print(html.format(width=width, height=height, img=img_str))
         img.close()
 
 
-z = PyZeppelinContext("")
+z = PyZeppelinContext()

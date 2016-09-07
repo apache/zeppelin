@@ -226,7 +226,7 @@ public class VFSNotebookRepo implements NotebookRepo {
 
     FileObject rootDir = getRootDir();
 
-    FileObject noteDir = rootDir.resolveFile(note.id(), NameScope.CHILD);
+    FileObject noteDir = rootDir.resolveFile(note.getId(), NameScope.CHILD);
 
     if (!noteDir.exists()) {
       noteDir.createFolder();
@@ -274,7 +274,7 @@ public class VFSNotebookRepo implements NotebookRepo {
   }
 
   @Override
-  public Note get(String noteId, Revision rev, AuthenticationInfo subject) throws IOException {
+  public Note get(String noteId, String revId, AuthenticationInfo subject) throws IOException {
     // Auto-generated method stub
     return null;
   }

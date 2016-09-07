@@ -31,6 +31,13 @@ public class InterpreterPropertyBuilder {
     return this;
   }
 
+  public InterpreterPropertyBuilder add(String name, String envName, String propertyName,
+        String defaultValue, String description){
+    properties.put(name,
+            new InterpreterProperty(envName, propertyName, defaultValue, description));
+    return this;
+  }
+
   public Map<String, InterpreterProperty> build(){
     return properties;
   }

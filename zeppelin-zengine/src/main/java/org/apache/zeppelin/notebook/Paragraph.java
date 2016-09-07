@@ -53,7 +53,6 @@ public class Paragraph extends Job implements Serializable, Cloneable {
   private transient InterpreterFactory factory;
   private transient Note note;
   private transient AuthenticationInfo authenticationInfo;
-  private transient String effectiveText;
 
   String title;
   String text;
@@ -114,14 +113,6 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     this.dateUpdated = new Date();
   }
 
-  public void setEffectiveText(String effectiveText) {
-    this.effectiveText = effectiveText;
-  }
-
-  public String getEffectiveText() {
-    return effectiveText;
-  }
-
   public AuthenticationInfo getAuthenticationInfo() {
     return authenticationInfo;
   }
@@ -153,7 +144,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
   }
 
   public String getRequiredReplName() {
-    return getRequiredReplName(null != effectiveText ? effectiveText : text);
+    return getRequiredReplName(text);
   }
 
   public static String getRequiredReplName(String text) {
@@ -182,7 +173,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
   }
 
   public String getScriptBody() {
-    return getScriptBody(null != effectiveText ? effectiveText : text);
+    return getScriptBody(text);
   }
 
   public static String getScriptBody(String text) {
@@ -275,6 +266,19 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     return null;
   }
 
+  private boolean hasPermission(String user, List<String> intpUsers) {
+    if (1 > intpUsers.size()) {
+      return true;
+    }
+
+    for (String u: intpUsers) {
+      if (user.trim().equals(u.trim())) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   @Override
   protected Object jobRun() throws Throwable {
     String replName = getRequiredReplName();
@@ -283,6 +287,17 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     if (repl == null) {
       logger.error("Can not find interpreter name " + repl);
       throw new RuntimeException("Can not find interpreter for " + getRequiredReplName());
+    }
+
+    if (this.noteHasUser() && this.noteHasInterpreters()) {
+      InterpreterSetting intp = getInterpreterSettingById(repl.getInterpreterGroup().getId());
+      if (intp != null &&
+        interpreterHasUser(intp) &&
+        isUserAuthorizedToAccessInterpreter(intp.getOption()) == false) {
+        logger.error("{} has no permission for {} ", authenticationInfo.getUser(), repl);
+        return new InterpreterResult(Code.ERROR, authenticationInfo.getUser() +
+          " has no permission for " + getRequiredReplName());
+      }
     }
 
     String script = getScriptBody();
@@ -335,8 +350,35 @@ public class Paragraph extends Job implements Serializable, Cloneable {
       }
     } finally {
       InterpreterContext.remove();
-      effectiveText = null;
     }
+  }
+
+  private boolean noteHasUser() {
+    return this.user != null;
+  }
+
+  private boolean noteHasInterpreters() {
+    return !factory.getInterpreterSettings(note.getId()).isEmpty();
+  }
+
+  private boolean interpreterHasUser(InterpreterSetting intp) {
+    return intp.getOption().permissionIsSet() && intp.getOption().getUsers() != null;
+  }
+
+  private boolean isUserAuthorizedToAccessInterpreter(InterpreterOption intpOpt){
+    return intpOpt.permissionIsSet() &&
+      hasPermission(authenticationInfo.getUser(), intpOpt.getUsers());
+  }
+
+  private InterpreterSetting getInterpreterSettingById(String id) {
+    InterpreterSetting setting = null;
+    for (InterpreterSetting i: factory.getInterpreterSettings(note.getId())) {
+      if (id.startsWith(i.getId())) {
+        setting = i;
+        break;
+      }
+    }
+    return setting;
   }
 
   @Override
@@ -399,13 +441,13 @@ public class Paragraph extends Job implements Serializable, Cloneable {
 
     if (!factory.getInterpreterSettings(note.getId()).isEmpty()) {
       InterpreterSetting intpGroup = factory.getInterpreterSettings(note.getId()).get(0);
-      registry = intpGroup.getInterpreterGroup(note.id()).getAngularObjectRegistry();
-      resourcePool = intpGroup.getInterpreterGroup(note.id()).getResourcePool();
+      registry = intpGroup.getInterpreterGroup(note.getId()).getAngularObjectRegistry();
+      resourcePool = intpGroup.getInterpreterGroup(note.getId()).getResourcePool();
     }
 
     List<InterpreterContextRunner> runners = new LinkedList<InterpreterContextRunner>();
     for (Paragraph p : note.getParagraphs()) {
-      runners.add(new ParagraphRunner(note, note.id(), p.getId()));
+      runners.add(new ParagraphRunner(note, note.getId(), p.getId()));
     }
 
     final Paragraph self = this;
@@ -418,7 +460,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     }
 
     InterpreterContext interpreterContext = new InterpreterContext(
-            note.id(),
+            note.getId(),
             getId(),
             this.getTitle(),
             this.getText(),

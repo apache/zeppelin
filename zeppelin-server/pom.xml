@@ -35,6 +35,7 @@
   <properties>
     <cxf.version>2.7.7</cxf.version>
     <commons.httpclient.version>4.3.6</commons.httpclient.version>
+    <hadoop-common.version>2.6.0</hadoop-common.version>
   </properties>
 
   <dependencyManagement>
@@ -206,6 +207,61 @@
     </dependency>
 
     <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-common</artifactId>
+      <version>${hadoop-common.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>com.sun.jersey</groupId>
+          <artifactId>jersey-core</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.sun.jersey</groupId>
+          <artifactId>jersey-json</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.sun.jersey</groupId>
+          <artifactId>jersey-server</artifactId>
+        </exclusion>
+
+
+        <exclusion>
+          <groupId>javax.servlet</groupId>
+          <artifactId>servlet-api</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.apache.avro</groupId>
+          <artifactId>avro</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.apache.jackrabbit</groupId>
+          <artifactId>jackrabbit-webdav</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>io.netty</groupId>
+          <artifactId>netty</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>commons-httpclient</groupId>
+          <artifactId>commons-httpclient</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.apache.zookeeper</groupId>
+          <artifactId>zookeeper</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.eclipse.jgit</groupId>
+          <artifactId>org.eclipse.jgit</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.jcraft</groupId>
+          <artifactId>jsch</artifactId>
+        </exclusion>
+
+      </exclusions>
+    </dependency>
+
+    <dependency>
       <groupId>org.quartz-scheduler</groupId>
       <artifactId>quartz</artifactId>
       <version>2.2.1</version>
@@ -302,27 +358,6 @@
   <build>
     <plugins>
       <plugin>
-        <groupId>org.apache.rat</groupId>
-        <artifactId>apache-rat-plugin</artifactId>
-        <configuration>
-          <excludes>
-            <exclude>**/.idea/</exclude>
-            <exclude>**/*.iml</exclude>
-            <exclude>.git/</exclude>
-            <exclude>.gitignore</exclude>
-            <exclude>**/.settings/*</exclude>
-            <exclude>**/.classpath</exclude>
-            <exclude>**/.project</exclude>
-            <exclude>**/target/**</exclude>
-            <exclude>**/derby.log</exclude>
-            <exclude>**/metastore_db/</exclude>
-            <exclude>**/README.md</exclude>
-            <exclude>src/test/java/com/webautomation/*</exclude>
-          </excludes>
-        </configuration>
-      </plugin>
-
-      <plugin>
         <artifactId>maven-failsafe-plugin</artifactId>
         <version>2.16</version>
         <executions>
@@ -413,10 +448,6 @@
   <profiles>
     <profile>
       <id>scala-2.11</id>
-      <activation>
-        <property><name>scala-2.11</name></property>
-      </activation>
-
       <dependencyManagement>
         <dependencies>
           <dependency>

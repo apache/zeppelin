@@ -56,10 +56,16 @@ class Utils {
   }
 
   static Class findClass(String name) {
+    return findClass(name, false);
+  }
+
+  static Class findClass(String name, boolean silence) {
     try {
       return Utils.class.forName(name);
     } catch (ClassNotFoundException e) {
-      logger.error(e.getMessage(), e);
+      if (!silence) {
+        logger.error(e.getMessage(), e);
+      }
       return null;
     }
   }
@@ -82,6 +88,8 @@ class Utils {
       Utils.class.forName("org.apache.spark.repl.SparkIMain");
       return true;
     } catch (ClassNotFoundException e) {
+      return false;
+    } catch (IncompatibleClassChangeError e) {
       return false;
     }
   }

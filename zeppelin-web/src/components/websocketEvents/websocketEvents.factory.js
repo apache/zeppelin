@@ -113,6 +113,8 @@ angular.module('zeppelinWebApp').factory('websocketEvents',
       $rootScope.$broadcast('listRevisionHistory', data);
     } else if (op === 'NOTE_REVISION') {
       $rootScope.$broadcast('noteRevision', data);
+    } else if (op === 'INTERPRETER_BINDINGS') {
+      $rootScope.$broadcast('interpreterBindings', data);
     }
   });
 

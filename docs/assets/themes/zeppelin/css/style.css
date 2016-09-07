@@ -438,11 +438,10 @@ a.anchor {
 .content table {
   display: block;
   width: 100%;
-  overflow: auto;
   word-break: normal;
   word-break: keep-all;
   -webkit-overflow-scrolling: touch;
-  font-size: 90%;
+  font-size: 87%;
   margin-top: 16px;
   margin-bottom: 16px;
 }
@@ -567,6 +566,30 @@ a.anchorjs-link:hover { text-decoration: none; }
 
 #toc ul ul {
   margin-left: -18px;
+}
+
+/* Search Page */
+#search p {
+  font-size: 30px;
+  font-weight: bold;
+  color: black;
+}
+
+#search_results p {
+  font-size: 13px;
+  font-weight: 400;
+}
+
+#search_results a {
+  vertical-align: super;
+  font-size: 16px;
+  text-decoration: underline;
+}
+
+#search_results .link {
+  font-size: 13px;
+  color: #008000;
+  padding-bottom: 3px;
 }
 
 /* Custom, iPhone Retina */

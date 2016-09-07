@@ -20,8 +20,8 @@ REM set JAVA_HOME=
 REM set MASTER=                 		REM Spark master url. eg. spark://master_addr:7077. Leave empty if you want to use local mode.
 REM set ZEPPELIN_JAVA_OPTS      		REM Additional jvm options. for example, set ZEPPELIN_JAVA_OPTS="-Dspark.executor.memory=8g -Dspark.cores.max=16"
 REM set ZEPPELIN_MEM            		REM Zeppelin jvm mem options Default -Xmx1024m -XX:MaxPermSize=512m
-REM set ZEPPELIN_INTP_MEM       		REM zeppelin interpreter process jvm mem options. Default = ZEPPELIN_MEM
-REM set ZEPPELIN_INTP_JAVA_OPTS 		REM zeppelin interpreter process jvm options. Default = ZEPPELIN_JAVA_OPTS
+REM set ZEPPELIN_INTP_MEM       		REM zeppelin interpreter process jvm mem options.
+REM set ZEPPELIN_INTP_JAVA_OPTS 		REM zeppelin interpreter process jvm options.
 
 REM set ZEPPELIN_LOG_DIR        		REM Where log files are stored.  PWD by default.
 REM set ZEPPELIN_PID_DIR        		REM The pid files are stored. /tmp by default.
@@ -35,6 +35,7 @@ REM set ZEPPELIN_IDENT_STRING   		REM A string representing this instance of zep
 REM set ZEPPELIN_NICENESS       		REM The scheduling priority for daemons. Defaults to 0.
 REM set ZEPPELIN_INTERPRETER_LOCALREPO         REM Local repository for interpreter's additional dependency loading
 REM set ZEPPELIN_NOTEBOOK_STORAGE		REM Refers to pluggable notebook storage class, can have two classes simultaneously with a sync between them (e.g. local and remote).
+REM set ZEPPELIN_NOTEBOOK_ONE_WAY_SYNC		REM If there are multiple notebook storages, should we treat the first one as the only source of truth?
 
 
 REM Spark interpreter configuration
@@ -62,7 +63,7 @@ REM
 REM set ZEPPELIN_SPARK_USEHIVECONTEXT  REM Use HiveContext instead of SQLContext if set true. true by default.
 REM set ZEPPELIN_SPARK_CONCURRENTSQL   REM Execute multiple SQL concurrently if set true. false by default.
 REM set ZEPPELIN_SPARK_IMPORTIMPLICIT  REM Import implicits, UDF collection, and sql if set true. true by default.
-REM set ZEPPELIN_SPARK_MAXRESULT       REM Max number of SparkSQL result to display. 1000 by default.
+REM set ZEPPELIN_SPARK_MAXRESULT       REM Max number of Spark SQL result to display. 1000 by default.
 
 REM ZeppelinHub connection configuration
 REM

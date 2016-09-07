@@ -210,7 +210,7 @@ public class S3NotebookRepo implements NotebookRepo {
     gsonBuilder.setPrettyPrinting();
     Gson gson = gsonBuilder.create();
     String json = gson.toJson(note);
-    String key = user + "/" + "notebook" + "/" + note.id() + "/" + "note.json";
+    String key = user + "/" + "notebook" + "/" + note.getId() + "/" + "note.json";
 
     File file = File.createTempFile("note", "json");
     try {
@@ -260,7 +260,7 @@ public class S3NotebookRepo implements NotebookRepo {
   }
 
   @Override
-  public Note get(String noteId, Revision rev, AuthenticationInfo subject) throws IOException {
+  public Note get(String noteId, String revId, AuthenticationInfo subject) throws IOException {
     // Auto-generated method stub
     return null;
   }

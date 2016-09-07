@@ -1,7 +1,4 @@
-/**
- * Created by joelz on 8/6/15.
- *
- *
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,7 +16,6 @@
  */
 package org.apache.zeppelin.server;
 
-import org.apache.zeppelin.socket.TestHttpServletRequest;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
@@ -27,14 +23,16 @@ import org.mockito.stubbing.Answer;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 import java.io.IOException;
 
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.*;
 
 /**
- * BASIC Cors rest api tests
+ * Basic CORS REST API tests
  */
 public class CorsFilterTest {
 
@@ -42,11 +40,12 @@ public class CorsFilterTest {
     public static Integer count = 0;
 
     @Test
+    @SuppressWarnings("rawtypes")
     public void ValidCorsFilterTest() throws IOException, ServletException {
         CorsFilter filter = new CorsFilter();
         HttpServletResponse mockResponse = mock(HttpServletResponse.class);
         FilterChain mockedFilterChain = mock(FilterChain.class);
-        TestHttpServletRequest mockRequest = mock(TestHttpServletRequest.class);
+        HttpServletRequest mockRequest = mock(HttpServletRequest.class);
         when(mockRequest.getHeader("Origin")).thenReturn("http://localhost:8080");
         when(mockRequest.getMethod()).thenReturn("Empty");
         when(mockRequest.getServerName()).thenReturn("localhost");
@@ -66,11 +65,12 @@ public class CorsFilterTest {
     }
 
     @Test
+    @SuppressWarnings("rawtypes")
     public void InvalidCorsFilterTest() throws IOException, ServletException {
         CorsFilter filter = new CorsFilter();
         HttpServletResponse mockResponse = mock(HttpServletResponse.class);
         FilterChain mockedFilterChain = mock(FilterChain.class);
-        TestHttpServletRequest mockRequest = mock(TestHttpServletRequest.class);
+        HttpServletRequest mockRequest = mock(HttpServletRequest.class);
         when(mockRequest.getHeader("Origin")).thenReturn("http://evillocalhost:8080");
         when(mockRequest.getMethod()).thenReturn("Empty");
         when(mockRequest.getServerName()).thenReturn("evillocalhost");

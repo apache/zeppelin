@@ -16,7 +16,7 @@
 angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $rootScope, $route, $window,
                                                                       $routeParams, $location, $timeout, $compile,
                                                                       $http, websocketMsgSrv, baseUrlSrv, ngToast,
-                                                                      saveAsService) {
+                                                                      saveAsService, esriLoader) {
   var ANGULAR_FUNCTION_OBJECT_NAME_PREFIX = '_Z_ANGULAR_FUNC_';
   $scope.parentNote = null;
   $scope.paragraph = null;
@@ -93,13 +93,12 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
     $scope.parentNote = note;
     $scope.originalText = angular.copy(newParagraph.text);
     $scope.chart = {};
+    $scope.baseMapOption = ['Streets', 'Satellite', 'Hybrid', 'Topo', 'Gray', 'Oceans', 'Terrain'];
     $scope.colWidthOption = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
-    $scope.showTitleEditor = false;
     $scope.paragraphFocused = false;
     if (newParagraph.focus) {
       $scope.paragraphFocused = true;
     }
-
     if (!$scope.paragraph.config) {
       $scope.paragraph.config = {};
     }
@@ -244,6 +243,22 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
 
     if (!config.graph.scatter) {
       config.graph.scatter = {};
+    }
+
+    if (!config.graph.map) {
+      config.graph.map = {};
+    }
+
+    if (!config.graph.map.baseMapType) {
+      config.graph.map.baseMapType = $scope.baseMapOption[0];
+    }
+
+    if (!config.graph.map.isOnline) {
+      config.graph.map.isOnline = true;
+    }
+
+    if (!config.graph.map.pinCols) {
+      config.graph.map.pinCols = [];
     }
 
     if (config.enabled === undefined) {
@@ -523,10 +538,7 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
   $scope.aceChanged = function() {
     $scope.dirtyText = $scope.editor.getSession().getValue();
     $scope.startSaveTimer();
-
-    $timeout(function() {
-      $scope.setParagraphMode($scope.editor.getSession(), $scope.dirtyText, $scope.editor.getCursorPosition());
-    });
+    $scope.setParagraphMode($scope.editor.getSession(), $scope.dirtyText, $scope.editor.getCursorPosition());
   };
 
   $scope.aceLoaded = function(_editor) {
@@ -535,6 +547,7 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
 
     _editor.$blockScrolling = Infinity;
     $scope.editor = _editor;
+    $scope.editor.on('input', $scope.aceChanged);
     if (_editor.container.id !== '{{paragraph.id}}_editor') {
       $scope.editor.renderer.setShowGutter($scope.paragraph.config.lineNumbers);
       $scope.editor.setShowFoldWidgets(false);
@@ -542,9 +555,10 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
       $scope.editor.setHighlightGutterLine(false);
       $scope.editor.getSession().setUseWrapMode(true);
       $scope.editor.setTheme('ace/theme/chrome');
+      $scope.editor.setReadOnly($scope.isRunning());
       if ($scope.paragraphFocused) {
         $scope.editor.focus();
-        $scope.goToLineEnd();
+        $scope.goToEnd();
       }
 
       autoAdjustEditorHeight(_editor.container.id);
@@ -625,13 +639,15 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
         enableLiveAutocompletion: false
       });
 
-      $scope.handleFocus = function(value) {
+      $scope.handleFocus = function(value, isDigestPass) {
         $scope.paragraphFocused = value;
-        // Protect against error in case digest is already running
-        $timeout(function() {
-          // Apply changes since they come from 3rd party library
-          $scope.$digest();
-        });
+        if (isDigestPass === false || isDigestPass === undefined) {
+          // Protect against error in case digest is already running
+          $timeout(function() {
+            // Apply changes since they come from 3rd party library
+            $scope.$digest();
+          });
+        }
       };
 
       $scope.editor.on('focus', function() {
@@ -668,6 +684,19 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
       $scope.editor.commands.bindKey('ctrl-.', 'startAutocomplete');
       $scope.editor.commands.bindKey('ctrl-space', null);
 
+      var keyBindingEditorFocusAction = function(scrollValue) {
+        var numRows = $scope.editor.getSession().getLength();
+        var currentRow = $scope.editor.getCursorPosition().row;
+        if (currentRow === 0 && scrollValue <= 0) {
+          // move focus to previous paragraph
+          $scope.$emit('moveFocusToPreviousParagraph', $scope.paragraph.id);
+        } else if (currentRow === numRows - 1 && scrollValue >= 0) {
+          $scope.$emit('moveFocusToNextParagraph', $scope.paragraph.id);
+        } else {
+          $scope.scrollToCursor($scope.paragraph.id, scrollValue);
+        }
+      };
+
       // handle cursor moves
       $scope.editor.keyBinding.origOnCommandKey = $scope.editor.keyBinding.onCommandKey;
       $scope.editor.keyBinding.onCommandKey = function(e, hashId, keyCode) {
@@ -681,27 +710,26 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
             angular.element('#' + $scope.paragraph.id + '_editor > textarea').css('top', cursorPos.top);
           }
 
-          var numRows;
-          var currentRow;
+          var ROW_UP = -1;
+          var ROW_DOWN = 1;
 
-          if (keyCode === 38 || (keyCode === 80 && e.ctrlKey && !e.altKey)) {  // UP
-            numRows = $scope.editor.getSession().getLength();
-            currentRow = $scope.editor.getCursorPosition().row;
-            if (currentRow === 0) {
-              // move focus to previous paragraph
-              $scope.$emit('moveFocusToPreviousParagraph', $scope.paragraph.id);
-            } else {
-              $scope.scrollToCursor($scope.paragraph.id, -1);
-            }
-          } else if (keyCode === 40 || (keyCode === 78 && e.ctrlKey && !e.altKey)) {  // DOWN
-            numRows = $scope.editor.getSession().getLength();
-            currentRow = $scope.editor.getCursorPosition().row;
-            if (currentRow === numRows - 1) {
-              // move focus to next paragraph
-              $scope.$emit('moveFocusToNextParagraph', $scope.paragraph.id);
-            } else {
-              $scope.scrollToCursor($scope.paragraph.id, 1);
-            }
+          switch (keyCode) {
+            case 38:
+              keyBindingEditorFocusAction(ROW_UP);
+              break;
+            case 80:
+              if (e.ctrlKey && !e.altKey) {
+                keyBindingEditorFocusAction(ROW_UP);
+              }
+              break;
+            case 40:
+              keyBindingEditorFocusAction(ROW_DOWN);
+              break;
+            case 78:
+              if (e.ctrlKey && !e.altKey) {
+                keyBindingEditorFocusAction(ROW_DOWN);
+              }
+              break;
           }
         }
         this.origOnCommandKey(e, hashId, keyCode);
@@ -792,7 +820,7 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
     }
     var user = (pdata.user === undefined || pdata.user === null) ? 'anonymous' : pdata.user;
     var desc = 'Took ' + moment.duration((timeMs / 1000), 'seconds').format('h [hrs] m [min] s [sec]') +
-      '. Last updated by ' + user + ' at ' + moment(pdata.dateUpdated).format('MMMM DD YYYY, h:mm:ss A') + '.';
+      '. Last updated by ' + user + ' at ' + moment(pdata.dateFinished).format('MMMM DD YYYY, h:mm:ss A') + '.';
     if ($scope.isResultOutdated()) {
       desc += ' (outdated)';
     }
@@ -811,8 +839,8 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
     return false;
   };
 
-  $scope.goToLineEnd = function() {
-    $scope.editor.navigateLineEnd();
+  $scope.goToEnd = function() {
+    $scope.editor.navigateFileEnd();
   };
 
   $scope.getResultType = function(paragraph) {
@@ -835,6 +863,21 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
     } else {
       return 'table';
     }
+  };
+
+  $scope.parseTableCell = function(cell) {
+    if (!isNaN(cell)) {
+      if (cell.length === 0 || Number(cell) > Number.MAX_SAFE_INTEGER || Number(cell) < Number.MIN_SAFE_INTEGER) {
+        return cell;
+      } else {
+        return Number(cell);
+      }
+    }
+    var d = moment(cell);
+    if (d.isValid()) {
+      return d;
+    }
+    return cell;
   };
 
   $scope.loadTableData = function(result) {
@@ -870,8 +913,9 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
           if (i === 0) {
             columnNames.push({name: col, index: j, aggr: 'sum'});
           } else {
-            cols.push(col);
-            cols2.push({key: (columnNames[i]) ? columnNames[i].name : undefined, value: col});
+            var parsedCol = $scope.parseTableCell(col);
+            cols.push(parsedCol);
+            cols2.push({key: (columnNames[i]) ? columnNames[i].name : undefined, value: parsedCol});
           }
         }
         if (i !== 0) {
@@ -896,6 +940,8 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
 
       if (!type || type === 'table') {
         setTable($scope.paragraph.result, refresh);
+      } else if (type === 'map') {
+        setMap($scope.paragraph.result, refresh);
       } else {
         setD3Chart(type, $scope.paragraph.result, refresh);
       }
@@ -948,7 +994,9 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
         cells: function(row, col, prop) {
           var cellProperties = {};
           cellProperties.renderer = function(instance, td, row, col, prop, value, cellProperties) {
-            if (!isNaN(value)) {
+            if (value instanceof moment) {
+              td.innerHTML = value._i;
+            } else if (!isNaN(value)) {
               cellProperties.format = '0,0.[00000]';
               td.style.textAlign = 'left';
               Handsontable.renderers.NumericRenderer.apply(this, arguments);
@@ -999,7 +1047,7 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
   };
 
   var yAxisTickFormat = function(d) {
-    if (d >= Math.pow(10,6)) {
+    if (Math.abs(d) >= Math.pow(10,6)) {
       return customAbbrevFormatter(d);
     }
     return groupedThousandsWith3DigitsFormatter(d);
@@ -1023,7 +1071,7 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
       d3g = scatterData.d3g;
 
       $scope.chart[type].xAxis.tickFormat(function(d) {return xAxisTickFormat(d, xLabels);});
-      $scope.chart[type].yAxis.tickFormat(function(d) {return xAxisTickFormat(d, yLabels);});
+      $scope.chart[type].yAxis.tickFormat(function(d) {return yAxisTickFormat(d, yLabels);});
 
       // configure how the tooltip looks.
       $scope.chart[type].tooltipContent(function(key, x, y, graph, data) {
@@ -1065,7 +1113,11 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
         xLabels = pivotdata.xLabels;
         d3g = pivotdata.d3g;
         $scope.chart[type].xAxis.tickFormat(function(d) {return xAxisTickFormat(d, xLabels);});
-        $scope.chart[type].yAxis.tickFormat(function(d) {return yAxisTickFormat(d);});
+        if (type === 'stackedAreaChart') {
+          $scope.chart[type].yAxisTickFormat(function(d) {return yAxisTickFormat(d);});
+        } else {
+          $scope.chart[type].yAxis.tickFormat(function(d) {return yAxisTickFormat(d, xLabels);});
+        }
         $scope.chart[type].yAxis.axisLabelDistance(50);
         if ($scope.chart[type].useInteractiveGuideline) { // lineWithFocusChart hasn't got useInteractiveGuideline
           $scope.chart[type].useInteractiveGuideline(true); // for better UX and performance issue. (https://github.com/novus/nvd3/issues/691)
@@ -1118,6 +1170,236 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
       }
     };
     $timeout(retryRenderer);
+  };
+
+  var setMap = function(data, refresh) {
+    var createPinMapLayer = function(pins, cb) {
+      esriLoader.require(['esri/layers/FeatureLayer'], function(FeatureLayer) {
+        var pinLayer = new FeatureLayer({
+          id: 'pins',
+          spatialReference: $scope.map.spatialReference,
+          geometryType: 'point',
+          source: pins,
+          fields: [],
+          objectIdField: '_ObjectID',
+          renderer: $scope.map.pinRenderer,
+          popupTemplate: {
+            title: '[{_lng}, {_lat}]',
+            content: [{
+              type: 'fields',
+              fieldInfos: []
+            }]
+          }
+        });
+
+        // add user-selected pin info fields to popup
+        var pinInfoCols = $scope.paragraph.config.graph.map.pinCols;
+        for (var i = 0; i < pinInfoCols.length; ++i) {
+          pinLayer.popupTemplate.content[0].fieldInfos.push({
+            fieldName: pinInfoCols[i].name,
+            visible: true
+          });
+        }
+        cb(pinLayer);
+      });
+    };
+
+    var getMapPins = function(cb) {
+      esriLoader.require(['esri/geometry/Point'], function(Point, FeatureLayer) {
+        var latCol = $scope.paragraph.config.graph.map.lat;
+        var lngCol = $scope.paragraph.config.graph.map.lng;
+        var pinInfoCols = $scope.paragraph.config.graph.map.pinCols;
+        var pins = [];
+
+        // construct objects for pins
+        if (latCol && lngCol && data.rows) {
+          for (var i = 0; i < data.rows.length; ++i) {
+            var row = data.rows[i];
+            var lng = row[lngCol.index];
+            var lat = row[latCol.index];
+            var pin = {
+              geometry: new Point({
+                longitude: lng,
+                latitude: lat,
+                spatialReference: $scope.map.spatialReference
+              }),
+              attributes: {
+                _ObjectID: i,
+                _lng: lng,
+                _lat: lat
+              }
+            };
+
+            // add pin info from user-selected columns
+            for (var j = 0; j < pinInfoCols.length; ++j) {
+              var col = pinInfoCols[j];
+              pin.attributes[col.name] = row[col.index];
+            }
+            pins.push(pin);
+          }
+        }
+        cb(pins);
+      });
+    };
+
+    var updateMapPins = function() {
+      var pinLayer = $scope.map.map.findLayerById('pins');
+      $scope.map.popup.close();
+      if (pinLayer) {
+        $scope.map.map.remove(pinLayer);
+      }
+
+      // add pins to map as layer
+      getMapPins(function(pins) {
+        createPinMapLayer(pins, function(pinLayer) {
+          $scope.map.map.add(pinLayer);
+          if (pinLayer.source.length > 0) {
+            $scope.map.goTo(pinLayer.source);
+          }
+        });
+      });
+    };
+
+    var createMap = function(mapdiv) {
+      // prevent zooming with the scroll wheel
+      var disableZoom = function(e) {
+        var evt = e || window.event;
+        evt.cancelBubble = true;
+        evt.returnValue = false;
+        if (evt.stopPropagation) {
+          evt.stopPropagation();
+        }
+      };
+      var eName = window.WheelEvent ? 'wheel' :  // Modern browsers
+                  window.MouseWheelEvent ? 'mousewheel' :  // WebKit and IE
+                  'DOMMouseScroll';  // Old Firefox
+      mapdiv.addEventListener(eName, disableZoom, true);
+
+      esriLoader.require(['esri/views/MapView',
+                          'esri/Map',
+                          'esri/renderers/SimpleRenderer',
+                          'esri/symbols/SimpleMarkerSymbol'],
+                          function(MapView, Map, SimpleRenderer, SimpleMarkerSymbol) {
+        $scope.map = new MapView({
+          container: mapdiv,
+          map: new Map({
+            basemap: $scope.paragraph.config.graph.map.baseMapType.toLowerCase()
+          }),
+          center: [-106.3468, 56.1304],  // Canada (lng, lat)
+          zoom: 2,
+          pinRenderer: new SimpleRenderer({
+            symbol: new SimpleMarkerSymbol({
+              'color': [255, 0, 0, 0.5],
+              'size': 16.5,
+              'outline': {
+                'color': [0, 0, 0, 1],
+                'width': 1.125,
+              },
+              // map pin SVG path
+              'path': 'M16,3.5c-4.142,0-7.5,3.358-7.5,7.5c0,4.143,7.5,18.121,7.5,' +
+                      '18.121S23.5,15.143,23.5,11C23.5,6.858,20.143,3.5,16,3.5z ' +
+                      'M16,14.584c-1.979,0-3.584-1.604-3.584-3.584S14.021,7.416,' +
+                      '16,7.416S19.584,9.021,19.584,11S17.979,14.584,16,14.584z'
+            })
+          })
+        });
+
+        $scope.map.on('click', function() {
+          // ArcGIS JS API 4.0 does not account for scrolling or position
+          // changes by default (this is a bug, to be fixed in the upcoming
+          // version 4.1; see https://geonet.esri.com/thread/177238#comment-609681).
+          // This results in a misaligned popup.
+
+          // Workaround: manually set popup position to match position of selected pin
+          if ($scope.map.popup.selectedFeature) {
+            $scope.map.popup.location = $scope.map.popup.selectedFeature.geometry;
+          }
+        });
+        $scope.map.then(updateMapPins);
+      });
+    };
+
+    var checkMapOnline = function(cb) {
+      // are we able to get a response from the ArcGIS servers?
+      var callback = function(res) {
+        var online = (res.status > 0);
+        $scope.paragraph.config.graph.map.isOnline = online;
+        cb(online);
+      };
+      $http.head('//services.arcgisonline.com/arcgis/', {
+        timeout: 5000,
+        withCredentials: false
+      }).then(callback, callback);
+    };
+
+    var renderMap = function() {
+      var mapdiv = angular.element('#p' + $scope.paragraph.id + '_map')
+                          .css('height', $scope.paragraph.config.graph.height)
+                          .children('div').get(0);
+
+      // on chart type change, destroy map to force reinitialization.
+      if ($scope.map && !refresh) {
+        $scope.map.map.destroy();
+        $scope.map.pinRenderer = null;
+        $scope.map = null;
+      }
+
+      var requireMapCSS = function() {
+        var url = '//js.arcgis.com/4.0/esri/css/main.css';
+        if (!angular.element('link[href="' + url + '"]').length) {
+          var link = document.createElement('link');
+          link.rel = 'stylesheet';
+          link.type = 'text/css';
+          link.href = url;
+          angular.element('head').append(link);
+        }
+      };
+
+      var requireMapJS = function(cb) {
+        if (!esriLoader.isLoaded()) {
+          esriLoader.bootstrap({
+            url: '//js.arcgis.com/4.0'
+          }).then(cb);
+        } else {
+          cb();
+        }
+      };
+
+      checkMapOnline(function(online) {
+        // we need an internet connection to use the map
+        if (online) {
+          // create map if not exists.
+          if (!$scope.map) {
+            requireMapCSS();
+            requireMapJS(function() {
+              createMap(mapdiv);
+            });
+          } else {
+            updateMapPins();
+          }
+        }
+      });
+    };
+
+    var retryRenderer = function() {
+      if (angular.element('#p' + $scope.paragraph.id + '_map div').length) {
+        try {
+          renderMap();
+        } catch (err) {
+          console.log('Map drawing error %o', err);
+        }
+      } else {
+        $timeout(retryRenderer,10);
+      }
+    };
+    $timeout(retryRenderer);
+  };
+
+  $scope.setMapBaseMap = function(bm) {
+    $scope.paragraph.config.graph.map.baseMapType = bm;
+    if ($scope.map) {
+      $scope.map.map.basemap = bm.toLowerCase();
+    }
   };
 
   $scope.isGraphMode = function(graphName) {
@@ -1182,6 +1464,24 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
     $scope.setGraphMode($scope.paragraph.config.graph.mode, true, false);
   };
 
+  $scope.removeMapOptionLat = function(idx) {
+    $scope.paragraph.config.graph.map.lat = null;
+    clearUnknownColsFromGraphOption();
+    $scope.setGraphMode($scope.paragraph.config.graph.mode, true, false);
+  };
+
+  $scope.removeMapOptionLng = function(idx) {
+    $scope.paragraph.config.graph.map.lng = null;
+    clearUnknownColsFromGraphOption();
+    $scope.setGraphMode($scope.paragraph.config.graph.mode, true, false);
+  };
+
+  $scope.removeMapOptionPinInfo = function(idx) {
+    $scope.paragraph.config.graph.map.pinCols.splice(idx, 1);
+    clearUnknownColsFromGraphOption();
+    $scope.setGraphMode($scope.paragraph.config.graph.mode, true, false);
+  };
+
   /* Clear unknown columns from graph option */
   var clearUnknownColsFromGraphOption = function() {
     var unique = function(list) {
@@ -1212,7 +1512,7 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
       }
     };
 
-    var removeUnknownFromScatterSetting = function(fields) {
+    var removeUnknownFromFields = function(fields) {
       for (var f in fields) {
         if (fields[f]) {
           var found = false;
@@ -1224,7 +1524,7 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
               break;
             }
           }
-          if (!found) {
+          if (!found && (fields[f] instanceof Object) && !(fields[f] instanceof Array)) {
             fields[f] = null;
           }
         }
@@ -1239,7 +1539,11 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
     unique($scope.paragraph.config.graph.groups);
     removeUnknown($scope.paragraph.config.graph.groups);
 
-    removeUnknownFromScatterSetting($scope.paragraph.config.graph.scatter);
+    removeUnknownFromFields($scope.paragraph.config.graph.scatter);
+
+    unique($scope.paragraph.config.graph.map.pinCols);
+    removeUnknown($scope.paragraph.config.graph.map.pinCols);
+    removeUnknownFromFields($scope.paragraph.config.graph.map);
   };
 
   /* select default key and value if there're none selected */
@@ -1260,6 +1564,23 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
         $scope.paragraph.config.graph.scatter.xAxis = $scope.paragraph.result.columnNames[0];
       }
     }
+
+    /* try to find columns for the map logitude and latitude */
+    var findDefaultMapCol = function(settingName, keyword) {
+      var col;
+      if (!$scope.paragraph.config.graph.map[settingName]) {
+        for (var i = 0; i < $scope.paragraph.result.columnNames.length; ++i) {
+          col = $scope.paragraph.result.columnNames[i];
+          if (col.name.toUpperCase().indexOf(keyword) !== -1) {
+            $scope.paragraph.config.graph.map[settingName] = col;
+            break;
+          }
+        }
+      }
+    };
+
+    findDefaultMapCol('lat', 'LAT');
+    findDefaultMapCol('lng', 'LONG');
   };
 
   var pivot = function(data) {
@@ -1533,7 +1854,7 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
       if (groups.length === 1 && values.length === 1) {
         for (d3gIndex = 0; d3gIndex < d3g.length; d3gIndex++) {
           colName = d3g[d3gIndex].key;
-          colName = colName.split('.')[0];
+          colName = colName.split('.').slice(0, -1).join('.');
           d3g[d3gIndex].key = colName;
         }
       }
@@ -2217,6 +2538,7 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
       $scope.paragraph.status = data.paragraph.status;
       $scope.paragraph.result = data.paragraph.result;
       $scope.paragraph.settings = data.paragraph.settings;
+      $scope.editor.setReadOnly($scope.isRunning());
 
       if (!$scope.asIframe) {
         $scope.paragraph.config = data.paragraph.config;
@@ -2271,7 +2593,16 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
   });
 
   $scope.$on('appendParagraphOutput', function(event, data) {
-    if ($scope.paragraph.id === data.paragraphId) {
+    /* It has been observed that append events
+     * can be errorneously called even if paragraph
+     * execution has ended, and in that case, no append
+     * should be made. Also, it was observed that between PENDING
+     * and RUNNING states, append-events can be called and we can't
+     * miss those, else during the length of paragraph run, few
+     * initial output line/s will be missing.
+     */
+    if ($scope.paragraph.id === data.paragraphId &&
+       ($scope.paragraph.status === 'RUNNING' || $scope.paragraph.status === 'PENDING')) {
       if ($scope.flushStreamingOutput) {
         $scope.clearTextOutput();
         $scope.flushStreamingOutput = false;
@@ -2374,7 +2705,8 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
       $scope.handleFocus(true);
     } else {
       $scope.editor.blur();
-      $scope.handleFocus(false);
+      var isDigestPass = true;
+      $scope.handleFocus(false, isDigestPass);
     }
   });
 

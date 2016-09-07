@@ -79,7 +79,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
         waitForFinish(p);
         assertEquals(Status.FINISHED, p.getStatus());
         assertEquals("55", p.getResult().message());
-        ZeppelinServer.notebook.removeNote(note.id(), null);
+        ZeppelinServer.notebook.removeNote(note.getId(), null);
     }
 
     @Test
@@ -91,7 +91,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
       if (isSparkR() && sparkVersion >= 14) {   // sparkr supported from 1.4.0
         // restart spark interpreter
         List<InterpreterSetting> settings =
-          ZeppelinServer.notebook.getBindedInterpreterSettings(note.id());
+          ZeppelinServer.notebook.getBindedInterpreterSettings(note.getId());
 
         for (InterpreterSetting setting : settings) {
           if (setting.getName().equals("spark")) {
@@ -100,13 +100,16 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
           }
         }
 
-        // run markdown paragraph, again
+        String sqlContextName = "sqlContext";
+        if (sparkVersion >= 20) {
+          sqlContextName = "spark";
+        }
         Paragraph p = note.addParagraph();
         Map config = p.getConfig();
         config.put("enabled", true);
         p.setConfig(config);
         p.setText("%r localDF <- data.frame(name=c(\"a\", \"b\", \"c\"), age=c(19, 23, 18))\n" +
-            "df <- createDataFrame(sqlContext, localDF)\n" +
+            "df <- createDataFrame(" + sqlContextName + ", localDF)\n" +
             "count(df)"
         );
         note.run(p.getId());
@@ -115,7 +118,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
         assertEquals(Status.FINISHED, p.getStatus());
         assertEquals("[1] 3", p.getResult().message());
       }
-      ZeppelinServer.notebook.removeNote(note.id(), null);
+      ZeppelinServer.notebook.removeNote(note.getId(), null);
     }
 
     @Test
@@ -138,7 +141,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
             assertEquals(Status.FINISHED, p.getStatus());
             assertEquals("55\n", p.getResult().message());
         }
-        ZeppelinServer.notebook.removeNote(note.id(), null);
+        ZeppelinServer.notebook.removeNote(note.getId(), null);
     }
 
     @Test
@@ -169,7 +172,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
             assertEquals(Status.FINISHED, p.getStatus());
             assertEquals("10\n", p.getResult().message());
         }
-        ZeppelinServer.notebook.removeNote(note.id(), null);
+        ZeppelinServer.notebook.removeNote(note.getId(), null);
     }
 
     @Test
@@ -201,7 +204,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
         assertEquals(Status.FINISHED, p2.getStatus());
         assertEquals("10", p2.getResult().message());
 
-        ZeppelinServer.notebook.removeNote(note.id(), null);
+        ZeppelinServer.notebook.removeNote(note.getId(), null);
     }
 
     @Test
@@ -213,7 +216,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
         if (isPyspark() && sparkVersionNumber >= 14) {
             // restart spark interpreter
             List<InterpreterSetting> settings =
-                    ZeppelinServer.notebook.getBindedInterpreterSettings(note.id());
+                    ZeppelinServer.notebook.getBindedInterpreterSettings(note.getId());
 
             for (InterpreterSetting setting : settings) {
                 if (setting.getName().equals("spark")) {
