@@ -126,9 +126,6 @@ public class FlinkInterpreter extends Interpreter {
     imain.interpret("val senv = _binder.get(\"senv\").asInstanceOf["
             + senv.getClass().getName() + "]");
 
-  //  }
-
-
   }
 
   private boolean localMode() {
@@ -376,14 +373,5 @@ public class FlinkInterpreter extends Interpreter {
   static final String toString(Object o) {
     return (o instanceof String) ? (String) o : "";
   }
-
-  private boolean preV1_1() {
-    String flinkVersion = EnvironmentInformation.getVersion();
-    Integer majorVersion = Integer.parseInt(flinkVersion.split(".")[0]);
-    Integer minorVersion = Integer.parseInt(flinkVersion.split(".")[1]);
-    if (majorVersion == 1 && minorVersion > 0){
-      return false;
-    } else { return true; }
-
-  }
+  
 }
