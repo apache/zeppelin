@@ -24,8 +24,6 @@ import org.slf4j.LoggerFactory;
 
 /** Markdown Parser using pegdown processor. */
 public class PegdownParser implements MarkdownParser {
-  private final Logger logger = LoggerFactory.getLogger(PegdownParser.class);
-
   private PegDownProcessor processor;
 
   public PegdownParser() {
@@ -37,27 +35,22 @@ public class PegdownParser implements MarkdownParser {
   @Override
   public String render(String markdownText) {
     String html = "";
+    String parsed = processor.markdownToHtml(markdownText);
 
-    try {
-      String parsed = processor.markdownToHtml(markdownText);
-      if (null == parsed) {
-        throw new RuntimeException("Cannot parse markdown text to HTML using pegdown");
-      }
-
-      html = wrapWithMarkdownClassDiv(parsed);
-    } catch (RuntimeException e) {
-      logger.error("Cannot parse markdown text to HTML using pegdown", e);
+    if (null == parsed) {
+      throw new RuntimeException("Cannot parse markdown text to HTML using pegdown");
     }
 
+    html = wrapWithMarkdownClassDiv(parsed);
     return html;
   }
 
   /** wrap with markdown class div to styling DOM using css. */
   public static String wrapWithMarkdownClassDiv(String html) {
     return new StringBuilder()
-        .append("<div class=\"markdown-body\">\n")
-        .append(html)
-        .append("\n</div>")
-        .toString();
+      .append("<div class=\"markdown-body\">\n")
+      .append(html)
+      .append("\n</div>")
+      .toString();
   }
 }

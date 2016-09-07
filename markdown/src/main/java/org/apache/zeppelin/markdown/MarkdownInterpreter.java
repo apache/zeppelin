@@ -17,6 +17,7 @@
 
 package org.apache.zeppelin.markdown;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Properties;
 
@@ -89,7 +90,7 @@ public class MarkdownInterpreter extends Interpreter {
 
     try {
       html = parser.render(markdownText);
-    } catch (Exception e) {
+    } catch (RuntimeException e) {
       LOGGER.error("Exception in MarkdownInterpreter while interpret ", e);
       return new InterpreterResult(Code.ERROR, InterpreterUtils.getMostRelevantMessage(e));
     }
