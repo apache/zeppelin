@@ -171,7 +171,7 @@ If you're going to create new pages, there are some spots you need to add the lo
 
     ```
     # go to /docs under Zeppelin source
-    bundle exec jekyll build --safe
+    JEKYLL_ENV=production bundle exec jekyll build
     ```
 
  2. checkout ASF repo
