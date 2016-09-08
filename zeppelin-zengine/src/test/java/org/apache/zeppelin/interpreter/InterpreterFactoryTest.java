@@ -18,6 +18,7 @@
 package org.apache.zeppelin.interpreter;
 
 import java.io.*;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
@@ -78,6 +79,8 @@ public class InterpreterFactoryTest {
       }
     }
 
+//    mock1Setting = factory.createNewSetting("mock11", "mock1", new ArrayList<Dependency>(), new InterpreterOption(false), new Properties());
+
     InterpreterGroup interpreterGroup = mock1Setting.getInterpreterGroup("sharedProcess");
     factory.createInterpretersForNote(mock1Setting, "sharedProcess", "session");
 
@@ -88,7 +91,7 @@ public class InterpreterFactoryTest {
     assertNull(factory.get("unknown"));
 
     // restart interpreter
-    factory.restart(mock1Setting.id());
+    factory.restart(mock1Setting.getId());
     assertNull(mock1Setting.getInterpreterGroup("sharedProcess").get("session"));
   }
 
@@ -104,12 +107,12 @@ public class InterpreterFactoryTest {
     List<String> all = factory.getDefaultInterpreterSettingList();
     // add setting with null option & properties expected nullArgumentException.class
     try {
-      factory.add("a mock", "mock2", new LinkedList<Dependency>(), null, new Properties());
+      factory.add("mock2", new ArrayList<InterpreterInfo>(), new LinkedList<Dependency>(), new InterpreterOption(false), new Properties(), "");
     } catch(NullArgumentException e) {
       assertEquals("Test null option" , e.getMessage(),new NullArgumentException("option").getMessage());
     }
     try {
-      factory.add("a mock", "mock2", new LinkedList<Dependency>(), new InterpreterOption(false), null);
+      factory.add("mock2", new ArrayList<InterpreterInfo>(), new LinkedList<Dependency>(), new InterpreterOption(false), new Properties(), "");
     } catch (NullArgumentException e){
       assertEquals("Test null properties" , e.getMessage(),new NullArgumentException("properties").getMessage());
     }
@@ -124,10 +127,44 @@ public class InterpreterFactoryTest {
     // check if file saved
     assertTrue(new File(conf.getInterpreterSettingPath()).exists());
 
-    factory.add("newsetting", "mock1", new LinkedList<Dependency>(), new InterpreterOption(false), new Properties());
+    factory.createNewSetting("new-mock1", "mock1", new LinkedList<Dependency>(), new InterpreterOption(false), new Properties());
     assertEquals(numInterpreters + 1, factory.get().size());
 
     InterpreterFactory factory2 = new InterpreterFactory(conf, null, null, null, depResolver);
     assertEquals(numInterpreters + 1, factory2.get().size());
+  }
+
+  @Test
+  public void testInterpreterAliases() throws IOException, RepositoryException {
+    factory = new InterpreterFactory(conf, null, null, null, depResolver);
+    final InterpreterInfo info1 = new InterpreterInfo("className1", "name1", true);
+    final InterpreterInfo info2 = new InterpreterInfo("className2", "name1", true);
+    factory.add("group1", new ArrayList<InterpreterInfo>(){{
+      add(info1);
+    }}, new ArrayList<Dependency>(), new InterpreterOption(true), new Properties(), "/path1");
+    factory.add("group2", new ArrayList<InterpreterInfo>(){{
+      add(info2);
+    }}, new ArrayList<Dependency>(), new InterpreterOption(true), new Properties(), "/path2");
+
+    final InterpreterSetting setting1 = factory.createNewSetting("test-group1", "group1", new ArrayList<Dependency>(), new InterpreterOption(true), new Properties());
+    final InterpreterSetting setting2 = factory.createNewSetting("test-group2", "group1", new ArrayList<Dependency>(), new InterpreterOption(true), new Properties());
+
+    factory.setInterpreters("note", new ArrayList<String>() {{
+      add(setting1.getId());
+      add(setting2.getId());
+    }});
+
+    assertEquals("className1", factory.getInterpreter("note", "test-group1").getClassName());
+    assertEquals("className1", factory.getInterpreter("note", "group1").getClassName());
+  }
+
+  @Test
+  public void testInvalidInterpreterSettingName() {
+    try {
+      factory.createNewSetting("new.mock1", "mock1", new LinkedList<Dependency>(), new InterpreterOption(false), new Properties());
+      fail("expect fail because of invalid InterpreterSetting Name");
+    } catch (IOException e) {
+      assertEquals("'.' is invalid for InterpreterSetting name.", e.getMessage());
+    }
   }
 }

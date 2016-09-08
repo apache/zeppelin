@@ -6,6 +6,14 @@ Current interpreter implementation spawns new system python process through `Pro
 
 # Details
 
+ - **UnitTests**
+
+  To run full suit of tests, including ones that depend on real Python interpreter AND external libraries installed (like Pandas, Pandasql, etc) do
+
+  ```
+mvn -Dpython.test.exclude='' test -pl python -am
+  ```
+
  - **Py4j support**
 
   [Py4j](https://www.py4j.org/) enables Python programs to dynamically access Java objects in a JVM.
@@ -40,3 +48,5 @@ Current interpreter implementation spawns new system python process through `Pro
  * JavaBuilder can't send SIGINT signal to interrupt paragraph execution. Therefore interpreter directly  send a `kill SIGINT PID` to python process to interrupt execution. Python process catch SIGINT signal with some code defined in bootstrap.py
 
  * Matplotlib display feature is made with SVG export (in string) and then displays it with html code.
+
+ * `%python.sql` support for Pandas DataFrames is optional and provided using https://github.com/yhat/pandasql if user have one installed

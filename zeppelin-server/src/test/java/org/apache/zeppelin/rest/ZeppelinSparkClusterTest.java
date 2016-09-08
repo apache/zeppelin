@@ -20,16 +20,10 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.exec.CommandLine;
-import org.apache.commons.exec.DefaultExecutor;
-import org.apache.commons.exec.ExecuteWatchdog;
-import org.apache.commons.exec.PumpStreamHandler;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Paragraph;
@@ -85,7 +79,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
         waitForFinish(p);
         assertEquals(Status.FINISHED, p.getStatus());
         assertEquals("55", p.getResult().message());
-        ZeppelinServer.notebook.removeNote(note.id(), null);
+        ZeppelinServer.notebook.removeNote(note.getId(), null);
     }
 
     @Test
@@ -95,13 +89,27 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
       int sparkVersion = getSparkVersionNumber(note);
 
       if (isSparkR() && sparkVersion >= 14) {   // sparkr supported from 1.4.0
-        // run markdown paragraph, again
+        // restart spark interpreter
+        List<InterpreterSetting> settings =
+          ZeppelinServer.notebook.getBindedInterpreterSettings(note.getId());
+
+        for (InterpreterSetting setting : settings) {
+          if (setting.getName().equals("spark")) {
+            ZeppelinServer.notebook.getInterpreterFactory().restart(setting.getId());
+            break;
+          }
+        }
+
+        String sqlContextName = "sqlContext";
+        if (sparkVersion >= 20) {
+          sqlContextName = "spark";
+        }
         Paragraph p = note.addParagraph();
         Map config = p.getConfig();
         config.put("enabled", true);
         p.setConfig(config);
         p.setText("%r localDF <- data.frame(name=c(\"a\", \"b\", \"c\"), age=c(19, 23, 18))\n" +
-            "df <- createDataFrame(sqlContext, localDF)\n" +
+            "df <- createDataFrame(" + sqlContextName + ", localDF)\n" +
             "count(df)"
         );
         note.run(p.getId());
@@ -110,7 +118,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
         assertEquals(Status.FINISHED, p.getStatus());
         assertEquals("[1] 3", p.getResult().message());
       }
-      ZeppelinServer.notebook.removeNote(note.id(), null);
+      ZeppelinServer.notebook.removeNote(note.getId(), null);
     }
 
     @Test
@@ -133,7 +141,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
             assertEquals(Status.FINISHED, p.getStatus());
             assertEquals("55\n", p.getResult().message());
         }
-        ZeppelinServer.notebook.removeNote(note.id(), null);
+        ZeppelinServer.notebook.removeNote(note.getId(), null);
     }
 
     @Test
@@ -142,23 +150,29 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
         Note note = ZeppelinServer.notebook.createNote(null);
         note.setName("note");
 
-        int sparkVersion = getSparkVersionNumber(note);
+        int sparkVersionNumber = getSparkVersionNumber(note);
 
-        if (isPyspark() && sparkVersion >= 14) {   // auto_convert enabled from spark 1.4
+        if (isPyspark() && sparkVersionNumber >= 14) {   // auto_convert enabled from spark 1.4
             // run markdown paragraph, again
             Paragraph p = note.addParagraph();
             Map config = p.getConfig();
             config.put("enabled", true);
             p.setConfig(config);
+
+            String sqlContextName = "sqlContext";
+            if (sparkVersionNumber >= 20) {
+                sqlContextName = "spark";
+            }
+
             p.setText("%pyspark\nfrom pyspark.sql.functions import *\n"
-                    + "print(sqlContext.range(0, 10).withColumn('uniform', rand(seed=10) * 3.14).count())");
+                    + "print(" + sqlContextName + ".range(0, 10).withColumn('uniform', rand(seed=10) * 3.14).count())");
 //            p.getRepl("org.apache.zeppelin.spark.SparkInterpreter").open();
             note.run(p.getId());
             waitForFinish(p);
             assertEquals(Status.FINISHED, p.getStatus());
             assertEquals("10\n", p.getResult().message());
         }
-        ZeppelinServer.notebook.removeNote(note.id(), null);
+        ZeppelinServer.notebook.removeNote(note.getId(), null);
     }
 
     @Test
@@ -190,22 +204,23 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
         assertEquals(Status.FINISHED, p2.getStatus());
         assertEquals("10", p2.getResult().message());
 
-        ZeppelinServer.notebook.removeNote(note.id(), null);
+        ZeppelinServer.notebook.removeNote(note.getId(), null);
     }
 
     @Test
     public void pySparkDepLoaderTest() throws IOException {
         // create new note
         Note note = ZeppelinServer.notebook.createNote(null);
+        int sparkVersionNumber = getSparkVersionNumber(note);
 
-        if (isPyspark() && getSparkVersionNumber(note) >= 14) {
+        if (isPyspark() && sparkVersionNumber >= 14) {
             // restart spark interpreter
             List<InterpreterSetting> settings =
-                    ZeppelinServer.notebook.getBindedInterpreterSettings(note.id());
+                    ZeppelinServer.notebook.getBindedInterpreterSettings(note.getId());
 
             for (InterpreterSetting setting : settings) {
-                if (setting.getGroup().equals("spark")) {
-                    ZeppelinServer.notebook.getInterpreterFactory().restart(setting.id());
+                if (setting.getName().equals("spark")) {
+                    ZeppelinServer.notebook.getInterpreterFactory().restart(setting.getId());
                     break;
                 }
             }
@@ -227,9 +242,14 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
             // load data using libraries from dep loader
             Paragraph p1 = note.addParagraph();
             p1.setConfig(config);
+
+            String sqlContextName = "sqlContext";
+            if (sparkVersionNumber >= 20) {
+                sqlContextName = "spark";
+            }
             p1.setText("%pyspark\n" +
                     "from pyspark.sql import SQLContext\n" +
-                    "print(sqlContext.read.format('com.databricks.spark.csv')" +
+                    "print(" + sqlContextName + ".read.format('com.databricks.spark.csv')" +
                     ".load('"+ tmpFile.getAbsolutePath() +"').count())");
             note.run(p1.getId());
 

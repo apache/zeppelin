@@ -27,17 +27,22 @@ public class ZeppelinRContext {
   private static SparkContext sparkContext;
   private static SQLContext sqlContext;
   private static ZeppelinContext zeppelinContext;
+  private static Object sparkSession;
 
   public static void setSparkContext(SparkContext sparkContext) {
     ZeppelinRContext.sparkContext = sparkContext;
   }
 
-  public static void setZepplinContext(ZeppelinContext zeppelinContext) {
+  public static void setZeppelinContext(ZeppelinContext zeppelinContext) {
     ZeppelinRContext.zeppelinContext = zeppelinContext;
   }
 
   public static void setSqlContext(SQLContext sqlContext) {
     ZeppelinRContext.sqlContext = sqlContext;
+  }
+
+  public static void setSparkSession(Object sparkSession) {
+    ZeppelinRContext.sparkSession = sparkSession;
   }
 
   public static SparkContext getSparkContext() {
@@ -52,4 +57,7 @@ public class ZeppelinRContext {
     return zeppelinContext;
   }
 
+  public static Object getSparkSession() {
+    return sparkSession;
+  }
 }

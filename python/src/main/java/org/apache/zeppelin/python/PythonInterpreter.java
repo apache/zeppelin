@@ -134,10 +134,11 @@ public class PythonInterpreter extends Interpreter {
 
     InterpreterResult result;
     if (pythonErrorIn(output)) {
-      result = new InterpreterResult(Code.ERROR, output.replaceAll(">>>", "").trim());
+      result = new InterpreterResult(Code.ERROR, output);
     } else {
-      result = new InterpreterResult(Code.SUCCESS, output.replaceAll(">>>", "")
-          .replaceAll("\\.\\.\\.", "").trim());
+      // TODO(zjffdu), we should not do string replacement operation in the result, as it is
+      // possible that the output contains the kind of pattern itself, e.g. print("...")
+      result = new InterpreterResult(Code.SUCCESS, output.replaceAll("\\.\\.\\.", ""));
     }
     return result;
   }
@@ -149,8 +150,17 @@ public class PythonInterpreter extends Interpreter {
    * @return true if syntax error or exception has happened
    */
   private boolean pythonErrorIn(String output) {
-    Matcher errorMatcher = errorInLastLine.matcher(output);
-    return errorMatcher.find();
+    boolean isError = false;
+    String[] outputMultiline = output.split("\n");
+    Matcher errorMatcher;
+    for (String row : outputMultiline) {
+      errorMatcher = errorInLastLine.matcher(row);
+      if (errorMatcher.find() == true) {
+        isError = true;
+        break;
+      }
+    }
+    return isError;
   }
 
   @Override
@@ -204,15 +214,20 @@ public class PythonInterpreter extends Interpreter {
   }
 
 
-  private String sendCommandToPython(String cmd) {
+  /**
+   * Sends given text to Python interpreter, blocks and returns the output
+   * @param cmd Python expression text
+   * @return output
+   */
+  String sendCommandToPython(String cmd) {
     String output = "";
-    LOG.info("Sending : \n" + (cmd.length() > 200 ? cmd.substring(0, 200) + "..." : cmd));
+    LOG.debug("Sending : \n" + (cmd.length() > 200 ? cmd.substring(0, 200) + "..." : cmd));
     try {
       output = process.sendAndGetResult(cmd);
     } catch (IOException e) {
       LOG.error("Error when sending commands to python process", e);
     }
-    //logger.info("Got : \n" + output);
+    LOG.debug("Got : \n" + output);
     return output;
   }
 
@@ -243,11 +258,7 @@ public class PythonInterpreter extends Interpreter {
 
   public Boolean isPy4jInstalled() {
     String output = sendCommandToPython("\n\nimport py4j\n");
-    if (output.contains("ImportError")) {
-      return false;
-    } else {
-      return true;
-    }
+    return !output.contains("ImportError");
   }
 
   private int findRandomOpenPortOnAllLocalInterfaces() {
@@ -264,4 +275,5 @@ public class PythonInterpreter extends Interpreter {
   public int getMaxResult() {
     return maxResult;
   }
+  
 }

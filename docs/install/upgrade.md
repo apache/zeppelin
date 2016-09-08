@@ -1,7 +1,7 @@
 ---
 layout: page
-title: "Manual upgrade procedure for Zeppelin"
-description: ""
+title: "Manual Zeppelin version upgrade procedure"
+description: "This document will guide you through a procedure of manual upgrade your Apache Zeppelin instance to a newer version. Apache Zeppelin keeps backward compatibility for the notebook file format."
 group: install
 ---
 <!--
@@ -44,3 +44,10 @@ So, copying `notebook` and `conf` directory should be enough.
    ```
    bin/zeppelin-daemon.sh start
    ```
+
+## Migration Guide
+
+### Upgrading from Zeppelin 0.6 to 0.7
+
+ - From 0.7, we don't use `ZEPPELIN_JAVA_OPTS` as default value of `ZEPPELIN_INTP_JAVA_OPTS` and also the same for `ZEPPELIN_MEM`/`ZEPPELIN_INTP_MEM`. If user want to configure the jvm opts of interpreter process, please set `ZEPPELIN_INTP_JAVA_OPTS` and `ZEPPELIN_INTP_MEM` explicitly.
+ - Mapping from `%jdbc(prefix)` to `%prefix` is no longer available. Instead, you can use %[interpreter alias] with multiple interpreter setttings on GUI.

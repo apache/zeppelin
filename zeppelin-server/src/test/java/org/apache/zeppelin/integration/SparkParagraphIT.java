@@ -140,6 +140,25 @@ public class SparkParagraphIT extends AbstractZeppelinIT {
           paragraph1Result.getText().toString(), CoreMatchers.equalTo("test loop 0\ntest loop 1\ntest loop 2")
       );
 
+      // the last statement's evaluation result is printed
+      setTextOfParagraph(2, "%pyspark\\n" +
+              "sc.version\\n" +
+              "1+1");
+      runParagraph(2);
+      try {
+        waitForParagraph(2, "FINISHED");
+      } catch (TimeoutException e) {
+        waitForParagraph(2, "ERROR");
+        collector.checkThat("Paragraph from SparkParagraphIT of testPySpark status: ",
+                "ERROR", CoreMatchers.equalTo("FINISHED")
+        );
+      }
+      WebElement paragraph2Result = driver.findElement(By.xpath(
+              getParagraphXPath(2) + "//div[@class=\"tableDisplay\"]"));
+      collector.checkThat("Paragraph from SparkParagraphIT of testPySpark result: ",
+              paragraph2Result.getText().toString(), CoreMatchers.equalTo("2")
+      );
+
     } catch (Exception e) {
       handleException("Exception in SparkParagraphIT while testPySpark", e);
     }

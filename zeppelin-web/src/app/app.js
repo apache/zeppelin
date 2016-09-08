@@ -33,7 +33,8 @@
           'xeditable',
           'ngToast',
           'focus-if',
-          'ngResource'
+          'ngResource',
+          'esri.map'
       ])
         .filter('breakFilter', function() {
           return function(text) {
@@ -98,6 +99,13 @@
     var baseUrlSrv = angular.injector(['zeppelinWebApp']).get('baseUrlSrv');
     // withCredentials when running locally via grunt
     $http.defaults.withCredentials = true;
+    jQuery.ajaxSetup({
+      dataType: 'json',
+      xhrFields: {
+        withCredentials: true
+      },
+      crossDomain: true
+    });
     return $http.get(baseUrlSrv.getRestApiBase() + '/security/ticket').then(function(response) {
       zeppelinWebApp.run(function($rootScope) {
         $rootScope.ticket = angular.fromJson(response.data).body;

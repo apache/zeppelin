@@ -26,16 +26,13 @@
     <relativePath>..</relativePath>
   </parent>
 
-  <artifactId>zeppelin-ignite</artifactId>
+  <artifactId>zeppelin-ignite_2.10</artifactId>
   <packaging>jar</packaging>
   <version>0.7.0-SNAPSHOT</version>
   <name>Zeppelin: Apache Ignite interpreter</name>
-  <url>http://zeppelin.apache.org</url>
 
   <properties>
-    <ignite.version>1.6.0</ignite.version>
-    <ignite.scala.binary.version>2.10</ignite.scala.binary.version>
-    <ignite.scala.version>2.10.4</ignite.scala.version>
+    <ignite.version>1.7.0</ignite.version>
   </properties>
 
   <dependencies>
@@ -73,19 +70,19 @@
     <dependency>
       <groupId>org.scala-lang</groupId>
       <artifactId>scala-library</artifactId>
-      <version>${ignite.scala.version}</version>
+      <version>${scala.version}</version>
     </dependency>
 
     <dependency>
       <groupId>org.scala-lang</groupId>
       <artifactId>scala-compiler</artifactId>
-      <version>${ignite.scala.version}</version>
+      <version>${scala.version}</version>
     </dependency>
 
     <dependency>
       <groupId>org.scala-lang</groupId>
       <artifactId>scala-reflect</artifactId>
-      <version>${ignite.scala.version}</version>
+      <version>${scala.version}</version>
     </dependency>
 
     <dependency>
@@ -119,8 +116,8 @@
       </plugin>
 
       <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-dependency-plugin</artifactId>
-        <version>2.8</version>
         <executions>
           <execution>
             <id>copy-dependencies</id>

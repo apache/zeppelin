@@ -21,6 +21,7 @@ args <- commandArgs(trailingOnly = TRUE)
 hashCode <- as.integer(args[1])
 port <- as.integer(args[2])
 libPath <- args[3]
+version <- as.integer(args[4])
 rm(args)
 
 print(paste("Port ", toString(port)))
@@ -41,6 +42,10 @@ assign(".scStartTime", as.integer(Sys.time()), envir = SparkR:::.sparkREnv)
 # setup spark env
 assign(".sc", SparkR:::callJStatic("org.apache.zeppelin.spark.ZeppelinRContext", "getSparkContext"), envir = SparkR:::.sparkREnv)
 assign("sc", get(".sc", envir = SparkR:::.sparkREnv), envir=.GlobalEnv)
+if (version >= 200) {
+  assign(".sparkRsession", SparkR:::callJStatic("org.apache.zeppelin.spark.ZeppelinRContext", "getSparkSession"), envir = SparkR:::.sparkREnv)
+  assign("spark", get(".sparkRsession", envir = SparkR:::.sparkREnv), envir = .GlobalEnv)
+}
 assign(".sqlc", SparkR:::callJStatic("org.apache.zeppelin.spark.ZeppelinRContext", "getSqlContext"), envir = SparkR:::.sparkREnv)
 assign("sqlContext", get(".sqlc", envir = SparkR:::.sparkREnv), envir = .GlobalEnv)
 assign(".zeppelinContext", SparkR:::callJStatic("org.apache.zeppelin.spark.ZeppelinRContext", "getZeppelinContext"), envir = .GlobalEnv)

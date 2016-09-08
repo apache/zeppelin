@@ -275,6 +275,10 @@ table.dataTable.table-condensed .sorting_desc:after {
   background: none !important;
 }
 
+.paragraph-disable {
+  opacity : 0.6!important;
+}
+
 .ace_marker-layer .ace_selection {
     z-index: 0 !important;
 }
@@ -327,10 +331,39 @@ table.dataTable.table-condensed .sorting_desc:after {
 .tableDisplay div {
 }
 
-.tableDisplay img {
+.tableDisplay img:not(.esri-bitmap) {
   display: block;
   max-width: 100%;
   height: auto;
+}
+
+.esri-display-object > svg {
+  overflow: visible;
+}
+
+.esri-popup > .esri-docked.esri-dock-to-bottom {
+  padding: 8px;
+  margin-top: 0px;
+}
+
+.esri-popup-main {
+  max-height: 100%;
+}
+
+span.map-offline-text {
+  display: table;
+  width: 100%;
+  height: 100%;
+  text-align: center;
+}
+
+span.map-offline-text > span {
+  display: table-cell;
+  vertical-align: middle;
+  font-size: 18px;
+  font-weight: 700;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  color: #212121;
 }
 
 .tableDisplay .btn-group span {
@@ -350,7 +383,8 @@ table.dataTable.table-condensed .sorting_desc:after {
 
 }
 
-.tableDisplay .option .columns {
+.tableDisplay .option .columns,
+div.esri-view {
   height: 100%;
 }
 

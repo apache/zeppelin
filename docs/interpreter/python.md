@@ -1,9 +1,22 @@
 ---
 layout: page
-title: "Python Interpreter"
-description: "Python Interpreter"
+title: "Python 2 & 3 Interpreter for Apache Zeppelin"
+description: "Python is a programming language that lets you work quickly and integrate systems more effectively."
 group: interpreter
 ---
+<!--
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
 {% include JB/setup %}
 
 # Python 2 & 3 Interpreter for Apache Zeppelin
@@ -46,7 +59,7 @@ To access the help, type **help()**
 ## Python modules
 The interpreter can use all modules already installed (with pip, easy_install...)
 
-## Use Zeppelin Dynamic Forms
+## Using Zeppelin Dynamic Forms
 You can leverage [Zeppelin Dynamic Form]({{BASE_PATH}}/manual/dynamicform.html) inside your Python code.
 
 **Zeppelin Dynamic Form can only be used if py4j Python library is installed in your system. If not, you can install it with `pip install py4j`.**
@@ -65,6 +78,7 @@ print (z.select("f1",[("o1","1"),("o2","2")],"2"))
 print("".join(z.checkbox("f3", [("o1","1"), ("o2","2")],["1"])))
 ```
 
+
 ## Zeppelin features not fully supported by the Python Interpreter
 
 * Interrupt a paragraph execution (`cancel()` method) is currently only supported in Linux and MacOs. If interpreter runs in another operating system (for instance MS Windows) , interrupt a paragraph will close the whole interpreter. A JIRA ticket ([ZEPPELIN-893](https://issues.apache.org/jira/browse/ZEPPELIN-893)) is opened to implement this feature in a next release of the interpreter.
@@ -73,7 +87,7 @@ print("".join(z.checkbox("f3", [("o1","1"), ("o2","2")],["1"])))
 
 ## Matplotlib integration
  The python interpreter can display matplotlib graph with the function `z.show()`.
- You need to have matplotlib module installed and a XServer running to use this functionality !
+ You need to have matplotlib module installed and a XServer running to use this functionality!
  
  ```python
 %python
@@ -83,18 +97,18 @@ plt.figure()
 z.show(plt)
 plt.close()
 ```
-z.show function can take optional parameters to adapt graph width and height
+The `z.show()` function can take optional parameters to adapt graph dimensions (width and height) as well as output format (png or optionally svg).
 
  ```python
 %python
 z.show(plt, width='50px')
-z.show(plt, height='150px')
+z.show(plt, height='150px', fmt='svg')
 ```
 <img class="img-responsive" src="../assets/themes/zeppelin/img/docs-img/pythonMatplotlib.png" />
 
 
 ## Pandas integration
-[Zeppelin Display System]({{BASE_PATH}}/displaysystem/basicdisplaysystem.html#table) provides simple API to visualize data in Pandas DataFrames, same as in Matplotlib.
+Apache Zeppelin [Table Display System]({{BASE_PATH}}/displaysystem/basicdisplaysystem.html#table) provides built-in data visualization capabilities. Python interpreter leverages it to visualize Pandas DataFrames though similar `z.show()` API, same as with [Matplotlib integration](#matplotlib-integration).
 
 Example:
 
@@ -104,6 +118,34 @@ rates = pd.read_csv("bank.csv", sep=";")
 z.show(rates)
 ```
 
+## SQL over Pandas DataFrames
+
+There is a convenience `%python.sql` interpreter that matches Apache Spark experience in Zeppelin and enables usage of SQL language to query [Pandas DataFrames](http://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.html) and visualization of results though built-in [Table Display System]({{BASE_PATH}}/displaysystem/basicdisplaysystem.html#table).
+
+ **Pre-requests**
+
+  - Pandas `pip install pandas`
+  - PandaSQL `pip install -U pandasql`
+
+In case default binded interpreter is Python (first in the interpreter list, under the _Gear Icon_), you can just use it as `%sql` i.e
+
+ - first paragraph
+
+  ```python
+import pandas as pd
+rates = pd.read_csv("bank.csv", sep=";")
+  ```
+
+ - next paragraph
+
+  ```sql
+%sql
+SELECT * FROM rates WHERE age < 40
+  ```
+
+Otherwise it can be referred to as `%python.sql`
+
+
 ## Technical description
 
-For in-depth technical details on current implementation plese reffer [python/README.md](https://github.com/apache/zeppelin/blob/master/python/README.md).
+For in-depth technical details on current implementation please refer to [python/README.md](https://github.com/apache/zeppelin/blob/master/python/README.md).

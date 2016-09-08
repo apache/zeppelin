@@ -31,7 +31,6 @@
   <packaging>jar</packaging>
   <version>0.7.0-SNAPSHOT</version>
   <name>Zeppelin: Example application - Horizontal Bar chart</name>
-  <url>http://zeppelin.apache.org</url>
 
   <dependencies>
     <dependency>
@@ -105,16 +104,6 @@
             </configuration>
           </execution>
         </executions>
-      </plugin>
-
-      <plugin>
-        <groupId>org.apache.rat</groupId>
-        <artifactId>apache-rat-plugin</artifactId>
-        <configuration>
-          <excludes>
-            <exclude>**/horizontalbar_mockdata.txt</exclude>
-          </excludes>
-        </configuration>
       </plugin>
     </plugins>
   </build>

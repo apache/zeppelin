@@ -115,7 +115,7 @@ public class PythonInterpreterTest {
    */
   @Test
   public void testPy4jInstalled() throws IOException, InterruptedException {
-    when(mockPythonProcess.sendAndGetResult(eq("\n\nimport py4j\n"))).thenReturn(">>>");
+    when(mockPythonProcess.sendAndGetResult(eq("\n\nimport py4j\n"))).thenReturn("");
 
     pythonInterpreter.open();
     Integer py4jPort = pythonInterpreter.getPy4jPort();
@@ -137,7 +137,7 @@ public class PythonInterpreterTest {
   @Test
   public void testClose() throws IOException, InterruptedException {
     //given: py4j is installed
-    when(mockPythonProcess.sendAndGetResult(eq("\n\nimport py4j\n"))).thenReturn(">>>");
+    when(mockPythonProcess.sendAndGetResult(eq("\n\nimport py4j\n"))).thenReturn("");
 
     pythonInterpreter.open();
     Integer py4jPort = pythonInterpreter.getPy4jPort();
@@ -187,7 +187,7 @@ public class PythonInterpreterTest {
       s.connect(sa, 10000);
       connected = true;
     } catch (IOException e) {
-      LOG.error("Can't open connection to " + sa, e);
+      //LOG.warn("Can't open connection to " + sa, e);
     }
     return connected;
   }
@@ -210,12 +210,33 @@ public class PythonInterpreterTest {
       String output = "";
 
       for (int i = 0; i < lines.length; i++) {
-        output += ">>>" + lines[i];
+        output += lines[i];
       }
       return output;
     } else {
-      return ">>>";
+      return "";
     }
+  }
+
+  @Test
+  public void checkMultiRowErrorFails() {
+    PythonInterpreter pythonInterpreter = new PythonInterpreter(
+      PythonInterpreterTest.getPythonTestProperties()
+    );
+    pythonInterpreter.open();
+    String codeRaiseException = "raise Exception(\"test exception\")";
+    InterpreterResult ret = pythonInterpreter.interpret(codeRaiseException, null);
+
+    assertNotNull("Interpreter result for raise exception is Null", ret);
+
+    assertEquals(InterpreterResult.Code.ERROR, ret.code());
+    assertTrue(ret.message().length() > 0);
+
+    assertNotNull("Interpreter result for text is Null", ret);
+    String codePrintText = "print (\"Exception(\\\"test exception\\\")\")";
+    ret = pythonInterpreter.interpret(codePrintText, null);
+    assertEquals(InterpreterResult.Code.SUCCESS, ret.code());
+    assertTrue(ret.message().length() > 0);
   }
 
 }

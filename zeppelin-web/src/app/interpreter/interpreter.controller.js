@@ -1,4 +1,3 @@
-/* jshint loopfunc: true */
 /*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +14,7 @@
 'use strict';
 
 angular.module('zeppelinWebApp').controller('InterpreterCtrl',
-  function($scope, $route, $routeParams, $location, $rootScope, $http, baseUrlSrv, ngToast) {
+  function($scope, $http, baseUrlSrv, ngToast, $timeout, $route) {
     var interpreterSettingsTmp = [];
     $scope.interpreterSettings = [];
     $scope.availableInterpreters = {};
@@ -23,12 +22,101 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl',
     $scope.showRepositoryInfo = false;
     $scope._ = _;
 
+    $scope.openPermissions = function() {
+      $scope.showInterpreterAuth = true;
+    };
+
+    $scope.closePermissions = function() {
+      $scope.showInterpreterAuth = false;
+    };
+
+    var getSelectJson = function() {
+      var selectJson = {
+        tags: false,
+        multiple: true,
+        tokenSeparators: [',', ' '],
+        minimumInputLength: 2,
+        ajax: {
+          url: function(params) {
+            if (!params.term) {
+              return false;
+            }
+            return baseUrlSrv.getRestApiBase() + '/security/userlist/' + params.term;
+          },
+          delay: 250,
+          processResults: function(data, params) {
+            var users = [];
+            if (data.body.users.length !== 0) {
+              for (var i = 0; i < data.body.users.length; i++) {
+                users.push({
+                  'id': data.body.users[i],
+                  'text': data.body.users[i]
+                });
+              }
+            }
+            return {
+              results: users,
+              pagination: {
+                more: false
+              }
+            };
+          },
+          cache: false
+        }
+      };
+      return selectJson;
+    };
+
+    $scope.togglePermissions = function(intpName) {
+      angular.element('#' + intpName + 'Users').select2(getSelectJson());
+      if ($scope.showInterpreterAuth) {
+        $scope.closePermissions();
+      } else {
+        $scope.openPermissions();
+      }
+    };
+
+    $scope.$on('ngRenderFinished', function(event, data) {
+      for (var setting = 0; setting < $scope.interpreterSettings.length; setting++) {
+        angular.element('#' + $scope.interpreterSettings[setting].name + 'Users').select2(getSelectJson());
+      }
+    });
+
     var getInterpreterSettings = function() {
-      $http.get(baseUrlSrv.getRestApiBase() + '/interpreter/setting').success(function(data, status, headers, config) {
+      $http.get(baseUrlSrv.getRestApiBase() + '/interpreter/setting')
+      .success(function(data, status, headers, config) {
         $scope.interpreterSettings = data.body;
+        checkDownloadingDependencies();
       }).error(function(data, status, headers, config) {
+        if (status === 401) {
+          ngToast.danger({
+            content: 'You don\'t have permission on this page',
+            verticalPosition: 'bottom',
+            timeout: '3000'
+          });
+          setTimeout(function() {
+            window.location.replace('/');
+          }, 3000);
+        }
         console.log('Error %o %o', status, data.message);
       });
+    };
+
+    var checkDownloadingDependencies = function() {
+      var isDownloading = false;
+      for (var setting = 0; setting < $scope.interpreterSettings.length; setting++) {
+        if ($scope.interpreterSettings[setting].status === 'DOWNLOADING_DEPENDENCIES') {
+          isDownloading = true;
+          break;
+        }
+      }
+      if (isDownloading) {
+        $timeout(function() {
+          if ($route.current.$$route.originalPath === '/interpreter') {
+            getInterpreterSettings();
+          }
+        }, 2000);
+      }
     };
 
     var getAvailableInterpreters = function() {
@@ -87,7 +175,6 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl',
         var setting = $scope.interpreterSettings[index];
         option = setting.option;
       }
-
       if (option.perNoteSession) {
         return 'scoped';
       } else if (option.perNoteProcess) {
@@ -121,10 +208,15 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl',
             if (setting.option.isExistingProcess === undefined) {
               setting.option.isExistingProcess = false;
             }
+            if (setting.option.setPermission === undefined) {
+              setting.option.setPermission = false;
+            }
             if (setting.option.remote === undefined) {
               // remote always true for now
               setting.option.remote = true;
             }
+            setting.option.users = angular.element('#' + setting.name + 'Users').val();
+
             var request = {
               option: angular.copy(setting.option),
               properties: angular.copy(setting.properties),
@@ -140,6 +232,8 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl',
                 $scope.interpreterSettings[index] = data.body;
                 removeTMPSettings(index);
                 thisConfirm.close();
+                checkDownloadingDependencies();
+                $route.reload();
               })
               .error(function(data, status, headers, config) {
                 console.log('Error %o %o', status, data.message);
@@ -184,15 +278,14 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl',
     };
 
     $scope.newInterpreterGroupChange = function() {
-      var el = _.pluck(_.filter($scope.availableInterpreters, {'group': $scope.newInterpreterSetting.group}),
+      var el = _.pluck(_.filter($scope.availableInterpreters, {'name': $scope.newInterpreterSetting.group}),
         'properties');
-
       var properties = {};
       for (var i = 0; i < el.length; i++) {
         var intpInfo = el[i];
         for (var key in intpInfo) {
           properties[key] = {
-            value: intpInfo[key].defaultValue,
+            value: intpInfo[key],
             description: intpInfo[key].description
           };
         }
@@ -222,11 +315,21 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl',
 
     $scope.addNewInterpreterSetting = function() {
       //user input validation on interpreter creation
-      if (!$scope.newInterpreterSetting.name.trim() || !$scope.newInterpreterSetting.group) {
+      if (!$scope.newInterpreterSetting.name ||
+          !$scope.newInterpreterSetting.name.trim() || !$scope.newInterpreterSetting.group) {
         BootstrapDialog.alert({
           closable: true,
           title: 'Add interpreter',
           message: 'Please fill in interpreter name and choose a group'
+        });
+        return;
+      }
+
+      if ($scope.newInterpreterSetting.name.indexOf('.') >= 0) {
+        BootstrapDialog.alert({
+          closable: true,
+          title: 'Add interpreter',
+          message: '\'.\' is invalid for interpreter name'
         });
         return;
       }
@@ -247,6 +350,10 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl',
       if (newSetting.depArtifact !== '' || newSetting.depArtifact) {
         $scope.addNewInterpreterDependency();
       }
+      if (newSetting.option.setPermission === undefined) {
+        newSetting.option.setPermission = false;
+      }
+      newSetting.option.users = angular.element('#newInterpreterUsers').val();
 
       var request = angular.copy($scope.newInterpreterSetting);
 
@@ -262,6 +369,7 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl',
           $scope.resetNewInterpreterSetting();
           getInterpreterSettings();
           $scope.showAddNewSetting = false;
+          checkDownloadingDependencies();
         }).error(function(data, status, headers, config) {
         console.log('Error %o %o', status, data.message);
         ngToast.danger({content: data.message, verticalPosition: 'bottom'});
@@ -282,6 +390,7 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl',
         option: {
           remote: true,
           isExistingProcess: false,
+          setPermission: false,
           perNoteSession: false,
           perNoteProcess: false
 
@@ -448,9 +557,17 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl',
       }
     };
 
+    $scope.showErrorMessage = function(setting) {
+      BootstrapDialog.show({
+        title: 'Error downloading dependencies',
+        message: setting.errorReason
+      });
+    };
+
     var init = function() {
       $scope.resetNewInterpreterSetting();
       $scope.resetNewRepositorySetting();
+
       getInterpreterSettings();
       getAvailableInterpreters();
       getRepositories();

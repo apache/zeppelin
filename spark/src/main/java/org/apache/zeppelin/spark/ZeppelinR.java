@@ -36,6 +36,7 @@ import java.util.Map;
 public class ZeppelinR implements ExecuteResultHandler {
   Logger logger = LoggerFactory.getLogger(ZeppelinR.class);
   private final String rCmdPath;
+  private final SparkVersion sparkVersion;
   private DefaultExecutor executor;
   private SparkOutputStream outputStream;
   private PipedOutputStream input;
@@ -107,9 +108,11 @@ public class ZeppelinR implements ExecuteResultHandler {
    * @param rCmdPath R repl commandline path
    * @param libPath sparkr library path
    */
-  public ZeppelinR(String rCmdPath, String libPath, int sparkRBackendPort) {
+  public ZeppelinR(String rCmdPath, String libPath, int sparkRBackendPort,
+      SparkVersion sparkVersion) {
     this.rCmdPath = rCmdPath;
     this.libPath = libPath;
+    this.sparkVersion = sparkVersion;
     this.port = sparkRBackendPort;
     try {
       File scriptFile = File.createTempFile("zeppelin_sparkr-", ".R");
@@ -137,9 +140,10 @@ public class ZeppelinR implements ExecuteResultHandler {
     cmd.addArgument(Integer.toString(hashCode()));
     cmd.addArgument(Integer.toString(port));
     cmd.addArgument(libPath);
+    cmd.addArgument(Integer.toString(sparkVersion.toNumber()));
 
     executor = new DefaultExecutor();
-    outputStream = new SparkOutputStream();
+    outputStream = new SparkOutputStream(logger);
 
     input = new PipedOutputStream();
     PipedInputStream in = new PipedInputStream(input);

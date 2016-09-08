@@ -1,7 +1,7 @@
 ---
 layout: page
-title: "Shiro Security for Apache Zeppelin"
-description: ""
+title: "Apache Shiro Authentication for Apache Zeppelin"
+description: "Apache Shiro is a powerful and easy-to-use Java security framework that performs authentication, authorization, cryptography, and session management. This document explains step by step how Shiro can be used for Zeppelin notebook authentication."
 group: security
 ---
 <!--
@@ -19,7 +19,7 @@ limitations under the License.
 -->
 {% include JB/setup %}
 
-# Shiro authentication for Apache Zeppelin
+# Apache Shiro authentication for Apache Zeppelin
 
 <div id="toc"></div>
 
@@ -66,13 +66,17 @@ Finally, you can login using one of the below **username/password** combinations
 <center><img src="../assets/themes/zeppelin/img/docs-img/zeppelin-login.png"></center>
 
 ```
-admin = password1
-user1 = password2
-user2 = password3
-```
+[users]
 
-### 5. Groups and permissions (optional)
-In case you want to leverage user groups and permissions, use one of the following configuration for LDAP or AD under `[main]` segment in `shiro.ini`
+admin = password1, admin
+user1 = password2, role1, role2
+user2 = password3, role3
+user3 = password4, role2
+```
+You can set the roles for each users next to the password.
+
+## Groups and permissions (optional)
+In case you want to leverage user groups and permissions, use one of the following configuration for LDAP or AD under `[main]` segment in `shiro.ini`.
 
 ```
 activeDirectoryRealm = org.apache.zeppelin.server.ActiveDirectoryGroupRealm
@@ -101,6 +105,75 @@ finance = *
 group1 = *
 ```
 
-All of above configurations are defined in the `conf/shiro.ini` file.
+## Configure Realm (optional)
+Realms are responsible for authentication and authorization in Apache Zeppelin. By default, Apache Zeppelin uses [IniRealm](https://shiro.apache.org/static/latest/apidocs/org/apache/shiro/realm/text/IniRealm.html) (users and groups are configurable in `conf/shiro.ini` file under `[user]` and `[group]` section). You can also leverage Shiro Realms like [JndiLdapRealm](https://shiro.apache.org/static/latest/apidocs/org/apache/shiro/realm/ldap/JndiLdapRealm.html), [JdbcRealm](https://shiro.apache.org/static/latest/apidocs/org/apache/shiro/realm/jdbc/JdbcRealm.html) or create [our own](https://shiro.apache.org/static/latest/apidocs/org/apache/shiro/realm/AuthorizingRealm.html).
+To learn more about Apache Shiro Realm, please check [this documentation](http://shiro.apache.org/realm.html).
 
-> **NOTE :** This documentation is originally from [SECURITY-README.md](https://github.com/apache/zeppelin/blob/master/SECURITY-README.md).
+We also provide community custom Realms.
+
+### Active Directory
+
+```
+activeDirectoryRealm = org.apache.zeppelin.server.ActiveDirectoryGroupRealm
+activeDirectoryRealm.systemUsername = userNameA
+activeDirectoryRealm.systemPassword = passwordA
+activeDirectoryRealm.hadoopSecurityCredentialPath = jceks://file/user/zeppelin/conf/zeppelin.jceks
+activeDirectoryRealm.searchBase = CN=Users,DC=SOME_GROUP,DC=COMPANY,DC=COM
+activeDirectoryRealm.url = ldap://ldap.test.com:389
+activeDirectoryRealm.groupRolesMap = "CN=aGroupName,OU=groups,DC=SOME_GROUP,DC=COMPANY,DC=COM":"group1"
+activeDirectoryRealm.authorizationCachingEnabled = false
+```
+
+
+Also instead of specifying systemPassword in clear text in shiro.ini administrator can choose to specify the same in "hadoop credential".
+Create a keystore file using the hadoop credential commandline, for this the hadoop commons should be in the classpath
+`hadoop credential create activeDirectoryRealm.systempassword -provider jceks://file/user/zeppelin/conf/zeppelin.jceks`
+
+Change the following values in the Shiro.ini file, and uncomment the line:
+`activeDirectoryRealm.hadoopSecurityCredentialPath = jceks://file/user/zeppelin/conf/zeppelin.jceks`
+
+### LDAP
+
+```
+ldapRealm = org.apache.zeppelin.server.LdapGroupRealm
+# search base for ldap groups (only relevant for LdapGroupRealm):
+ldapRealm.contextFactory.environment[ldap.searchBase] = dc=COMPANY,dc=COM
+ldapRealm.contextFactory.url = ldap://ldap.test.com:389
+ldapRealm.userDnTemplate = uid={0},ou=Users,dc=COMPANY,dc=COM
+ldapRealm.contextFactory.authenticationMechanism = SIMPLE
+```
+
+### ZeppelinHub
+[ZeppelinHub](https://www.zeppelinhub.com) is a service that synchronize your Apache Zeppelin notebooks and enables you to collaborate easily.
+
+To enable login with your ZeppelinHub credential, apply the following change in `conf/shiro.ini` under `[main]` section.
+
+```
+### A sample for configuring ZeppelinHub Realm
+zeppelinHubRealm = org.apache.zeppelin.realm.ZeppelinHubRealm
+## Url of ZeppelinHub
+zeppelinHubRealm.zeppelinhubUrl = https://www.zeppelinhub.com
+securityManager.realms = $zeppelinHubRealm
+```
+
+> Note: ZeppelinHub is not releated to apache Zeppelin project.
+
+## Secure your Zeppelin information (optional)
+By default, anyone who defined in `[users]` can share **Interpreter Setting**, **Credential** and **Configuration** information in Apache Zeppelin. 
+Sometimes you might want to hide these information for your use case. 
+Since Shiro provides **url-based security**, you can hide the information by commenting or uncommenting these below lines in `conf/shiro.ini`.
+
+```
+[urls]
+
+/api/interpreter/** = authc, roles[admin]
+/api/configurations/** = authc, roles[admin]
+/api/credential/** = authc, roles[admin]
+```
+
+In this case, only who have `admin` role can see **Interpreter Setting**, **Credential** and **Configuration** information. 
+If you want to grant this permission to other users, you can change **roles[ ]** as you defined at `[users]` section.
+
+<br/>
+> **NOTE :** All of the above configurations are defined in the `conf/shiro.ini` file. This documentation is originally from [SECURITY-README.md](https://github.com/apache/zeppelin/blob/master/SECURITY-README.md).
+

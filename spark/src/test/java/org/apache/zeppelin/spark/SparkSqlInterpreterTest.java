@@ -159,11 +159,13 @@ public class SparkSqlInterpreterTest {
     repl.interpret(
         "val raw = csv.map(_.split(\",\")).map(p => Row(p(0),toInt(p(1)),p(2)))",
         context);
-    repl.interpret("val people = z.sqlContext.applySchema(raw, schema)",
-        context);
     if (isDataFrameSupported()) {
+      repl.interpret("val people = z.sqlContext.createDataFrame(raw, schema)",
+          context);
       repl.interpret("people.toDF.registerTempTable(\"people\")", context);
     } else {
+      repl.interpret("val people = z.sqlContext.applySchema(raw, schema)",
+          context);
       repl.interpret("people.registerTempTable(\"people\")", context);
     }
 

@@ -95,27 +95,20 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       ZeppelinITUtils.sleep(1000, false);
       waitForParagraph(1, "READY");
 
-      String oldIntpTag = driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'editor')]")).getText();
-
       collector.checkThat("Paragraph is created above",
           driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'editor')]")).getText(),
-          CoreMatchers.not(StringUtils.EMPTY));
+          CoreMatchers.equalTo(StringUtils.EMPTY));
       setTextOfParagraph(1, " this is above ");
-
 
       newPara = driver.findElement(By.xpath(getParagraphXPath(2) + "//div[contains(@class,'new-paragraph')][2]"));
       action.moveToElement(newPara).click().build().perform();
 
       waitForParagraph(3, "READY");
 
-      String lastIntpTag = driver.findElement(By.xpath(getParagraphXPath(3) + "//div[contains(@class, 'editor')]")).getText();
-
       collector.checkThat("Paragraph is created below",
           driver.findElement(By.xpath(getParagraphXPath(3) + "//div[contains(@class, 'editor')]")).getText(),
-          CoreMatchers.not(StringUtils.EMPTY));
+          CoreMatchers.equalTo(StringUtils.EMPTY));
       setTextOfParagraph(3, " this is below ");
-
-      collector.checkThat("Compare interpreter name tag", oldIntpTag, CoreMatchers.equalTo(lastIntpTag));
 
       collector.checkThat("The output field of paragraph1 contains",
           driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'editor')]")).getText(),
@@ -343,9 +336,12 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       String xpathToShowTitle = getParagraphXPath(1) + "//ul/li/a[@ng-click='showTitle()']";
       String xpathToHideTitle = getParagraphXPath(1) + "//ul/li/a[@ng-click='hideTitle()']";
 
-      collector.checkThat("Before Show Title : The title field contains",
-          driver.findElement(By.xpath(xpathToTitle)).getText(),
-          CoreMatchers.equalTo(""));
+      ZeppelinITUtils.turnOffImplicitWaits(driver);
+      Integer titleElems = driver.findElements(By.xpath(xpathToTitle)).size();
+      collector.checkThat("Before Show Title : The title doesn't exist",
+          titleElems,
+          CoreMatchers.equalTo(0));
+      ZeppelinITUtils.turnOnImplicitWaits(driver);
 
       clickAndWait(By.xpath(xpathToSettingIcon));
       collector.checkThat("Before Show Title : The title option in option panel of paragraph is labeled as  ",
@@ -363,9 +359,13 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
           CoreMatchers.equalTo("Hide title"));
 
       clickAndWait(By.xpath(xpathToHideTitle));
-      collector.checkThat("After Hide Title : The title field contains",
-          driver.findElement(By.xpath(xpathToTitle)).getText(),
-          CoreMatchers.equalTo(""));
+      ZeppelinITUtils.turnOffImplicitWaits(driver);
+      titleElems = driver.findElements(By.xpath(xpathToTitle)).size();
+      collector.checkThat("After Hide Title : The title field is hidden",
+          titleElems,
+          CoreMatchers.equalTo(0));
+      ZeppelinITUtils.turnOnImplicitWaits(driver);
+
       driver.findElement(By.xpath(xpathToSettingIcon)).click();
       driver.findElement(By.xpath(xpathToShowTitle)).click();
 
