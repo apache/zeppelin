@@ -116,7 +116,7 @@ function downloadSparkBinary() {
   SPARK_CACHE="local-spark"
   SPARK_ARCHIVE="spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}"
 
-  if [[ ! -d "${SPARK_ARCHIVE}/${SPARK_ARCHIVE}" ]]; then
+  if [[ ! -d "${SPARK_CACHE}/${SPARK_ARCHIVE}" ]]; then
     . "${ZEPPELIN_HOME}/bin/download-spark.sh"
   fi
 }
