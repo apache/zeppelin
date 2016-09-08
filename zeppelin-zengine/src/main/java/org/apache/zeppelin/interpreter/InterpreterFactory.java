@@ -890,11 +890,13 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     String localRepoPath = conf.getInterpreterLocalRepoPath() + "/" + interpreterSettingId;
     int maxPoolSize = conf.getInt(ConfVars.ZEPPELIN_INTERPRETER_MAX_POOL_SIZE);
 
-    LazyOpenInterpreter intp = new LazyOpenInterpreter(new RemoteInterpreter(
-        property, noteId, className, conf.getInterpreterRemoteRunnerPath(),
-        interpreterPath, localRepoPath, connectTimeout,
-        maxPoolSize, remoteInterpreterProcessListener));
-    return intp;
+    RemoteInterpreter remoteInterpreter =
+        new RemoteInterpreter(property, noteId, className, conf.getInterpreterRemoteRunnerPath(),
+            interpreterPath, localRepoPath, connectTimeout, maxPoolSize,
+            remoteInterpreterProcessListener);
+    remoteInterpreter.addEnv(env);
+
+    return new LazyOpenInterpreter(remoteInterpreter);
   }
 
   private URL[] recursiveBuildLibList(File path) throws MalformedURLException {
