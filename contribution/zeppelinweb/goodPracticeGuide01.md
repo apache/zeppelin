@@ -1,6 +1,6 @@
 ---
 layout: sideMenu
-title: "Defining Components"
+title: "1 - Defining Components"
 description: ""
 group: nav-contrib-front
 menu: nav-contrib-front
