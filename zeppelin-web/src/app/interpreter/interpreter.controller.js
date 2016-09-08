@@ -325,6 +325,15 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl',
         return;
       }
 
+      if ($scope.newInterpreterSetting.name.indexOf('.') >= 0) {
+        BootstrapDialog.alert({
+          closable: true,
+          title: 'Add interpreter',
+          message: '\'.\' is invalid for interpreter name'
+        });
+        return;
+      }
+
       if (_.findIndex($scope.interpreterSettings, {'name': $scope.newInterpreterSetting.name}) >= 0) {
         BootstrapDialog.alert({
           closable: true,

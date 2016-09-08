@@ -74,32 +74,6 @@ public class ParagraphTest {
   }
 
   @Test
-  public void effectiveTextTest() {
-    InterpreterFactory interpreterFactory = mock(InterpreterFactory.class);
-    Interpreter interpreter = mock(Interpreter.class);
-    Note note = mock(Note.class);
-
-    Paragraph p = new Paragraph("paragraph", note, null, interpreterFactory);
-    p.setText("%h2 show databases");
-    p.setEffectiveText("%jdbc(h2) show databases");
-    assertEquals("Get right replName", "jdbc", p.getRequiredReplName());
-    assertEquals("Get right scriptBody", "(h2) show databases", p.getScriptBody());
-
-    when(interpreterFactory.getInterpreter(anyString(), eq("jdbc"))).thenReturn(interpreter);
-    when(interpreter.getFormType()).thenReturn(Interpreter.FormType.NATIVE);
-    when(note.getId()).thenReturn("noteId");
-
-    try {
-      p.jobRun();
-    } catch (Throwable throwable) {
-      // Do nothing
-    }
-
-    assertEquals("Erase effective Text", "h2", p.getRequiredReplName());
-    assertEquals("Erase effective Text", "show databases", p.getScriptBody());
-  }
-
-  @Test
   public void should_extract_variable_from_angular_object_registry() throws Exception {
     //Given
     final String noteId = "noteId";

@@ -15,54 +15,34 @@
  * limitations under the License.
  */
 
-package org.apache.zeppelin.notebook;
-
-import java.util.HashMap;
-import java.util.Map;
+package org.apache.zeppelin.interpreter.remote;
 
 /**
- *
+ * This element stores the buffered
+ * append-data of paragraph's output.
  */
-public class NoteInfo {
-  String id;
-  String name;
-  private Map<String, Object> config = new HashMap<String, Object>();
+public class AppendOutputBuffer {
 
-  public NoteInfo(String id, String name, Map<String, Object> config) {
-    super();
-    this.id = id;
-    this.name = name;
-    this.config = config;
+  private String noteId;
+  private String paragraphId;
+  private String data;
+
+  public AppendOutputBuffer(String noteId, String paragraphId, String data) {
+    this.noteId = noteId;
+    this.paragraphId = paragraphId;
+    this.data = data;
   }
 
-  public NoteInfo(Note note) {
-    id = note.getId();
-    name = note.getName();
-    config = note.getConfig();
+  public String getNoteId() {
+    return noteId;
   }
 
-  public String getId() {
-    return id;
+  public String getParagraphId() {
+    return paragraphId;
   }
 
-  public void setId(String id) {
-    this.id = id;
-  }
-
-  public String getName() {
-    return name;
-  }
-
-  public void setName(String name) {
-    this.name = name;
-  }
-
-  public Map<String, Object> getConfig() {
-    return config;
-  }
-
-  public void setConfig(Map<String, Object> config) {
-    this.config = config;
+  public String getData() {
+    return data;
   }
 
 }
