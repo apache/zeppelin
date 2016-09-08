@@ -166,8 +166,8 @@ public class InterpreterFactoryTest {
   @Test
   public void testInterpreterAliases() throws IOException, RepositoryException {
     factory = new InterpreterFactory(conf, null, null, null, depResolver);
-    final InterpreterInfo info1 = new InterpreterInfo("className1", "name1", true);
-    final InterpreterInfo info2 = new InterpreterInfo("className2", "name1", true);
+    final InterpreterInfo info1 = new InterpreterInfo("className1", "name1", true, null);
+    final InterpreterInfo info2 = new InterpreterInfo("className2", "name1", true, null);
     factory.add("group1", new ArrayList<InterpreterInfo>(){{
       add(info1);
     }}, new ArrayList<Dependency>(), new InterpreterOption(true), new Properties(), "/path1");
