@@ -1,7 +1,7 @@
 ---
 layout: page
-title: "Screenshots"
-description: ""
+title:
+description:
 ---
 <!--
 Licensed under the Apache License, Version 2.0 (the "License");

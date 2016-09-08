@@ -272,10 +272,15 @@ public class ZeppelinConfiguration extends XMLConfiguration {
   }
 
   public String getKeyStorePath() {
-    return getRelativeDir(
-            String.format("%s/%s",
-                    getConfDir(),
-                    getString(ConfVars.ZEPPELIN_SSL_KEYSTORE_PATH)));
+    String path = getString(ConfVars.ZEPPELIN_SSL_KEYSTORE_PATH);
+    if (path != null && path.startsWith("/") || isWindowsPath(path)) {
+      return path;
+    } else {
+      return getRelativeDir(
+          String.format("%s/%s",
+              getConfDir(),
+              getString(path)));
+    }
   }
 
   public String getKeyStoreType() {
@@ -297,10 +302,13 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 
   public String getTrustStorePath() {
     String path = getString(ConfVars.ZEPPELIN_SSL_TRUSTSTORE_PATH);
-    if (path == null) {
-      return getKeyStorePath();
+    if (path != null && path.startsWith("/") || isWindowsPath(path)) {
+      return path;
     } else {
-      return getRelativeDir(path);
+      return getRelativeDir(
+          String.format("%s/%s",
+              getConfDir(),
+              getString(path)));
     }
   }
 
