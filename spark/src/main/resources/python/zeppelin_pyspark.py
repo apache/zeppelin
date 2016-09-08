@@ -58,22 +58,20 @@ class PyZeppelinContext(dict):
     self.z = zc
     self.max_result = 1000
 
-  def show(self, obj):
+  def show(self, obj,**kwargs):
     from pyspark.sql import DataFrame
     if isinstance(obj, DataFrame):
-      print(gateway.jvm.org.apache.zeppelin.spark.ZeppelinContext.showDF(self.z, obj._jdf))
+      print(gateway.jvm.org.apache.zeppelin.spark.ZeppelinContext.showDF(self.z, obj._jdf))    
+    elif hasattr(obj, '__name__') and obj.__name__ == "matplotlib.pyplot":
+      self.show_matplotlib(obj, **kwargs)
+    elif type(obj).__name__ == "DataFrame": # does not play well with sub-classes
+      # `isinstance(p, DataFrame)` would req `import pandas.core.frame.DataFrame`
+      # and so a dependency on pandas
+      self.show_dataframe(obj, **kwargs)
+    elif hasattr(obj, '__call__'):
+      obj() #error reporting
     else:
-      print(str(obj))
-
-  def show_plot(self, p, **kwargs):
-    if hasattr(p, '__name__') and p.__name__ == "matplotlib.pyplot":
-        self.show_matplotlib(p, **kwargs)
-    elif type(p).__name__ == "DataFrame": # does not play well with sub-classes
-        # `isinstance(p, DataFrame)` would req `import pandas.core.frame.DataFrame`
-        # and so a dependency on pandas
-        self.show_dataframe(p, **kwargs)
-    elif hasattr(p, '__call__'):
-        p() #error reporting  
+      print(str(obj))  
 
   # By implementing special methods it makes operating on it more Pythonic
   def __setitem__(self, key, item):
