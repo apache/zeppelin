@@ -56,8 +56,7 @@ function unzip_spark_bin() {
 
 function check_zeppelin_env() {
   if [[ ! -f "${ZEPPELIN_ENV}" ]]; then
-    echo "${ZEPPELIN_ENV} doesn't exist."
-    echo "Creating ${ZEPPELIN_ENV} from ${ZEPPELIN_ENV_TEMP}..."
+    echo -e "\n${ZEPPELIN_ENV} doesn't exist\nCreating ${ZEPPELIN_ENV} from ${ZEPPELIN_ENV_TEMP}..."
     cp "${ZEPPELIN_HOME}/${ZEPPELIN_ENV_TEMP}" "${ZEPPELIN_HOME}/${ZEPPELIN_ENV}"
   fi
 }
@@ -82,40 +81,52 @@ function create_local_spark_dir() {
 }
 
 function save_local_spark() {
-  create_local_spark_dir
-  cd "${SPARK_CACHE}"
+  local answer
+
   echo "There is no local Spark binary in ${ZEPPELIN_HOME}/${SPARK_CACHE}"
 
   while true; do
-    read -p "Do you want to download a latest version of Spark binary? (Y/N): " -t 20 answer
-    case $answer in
-      [Yy]* )
-        printf "\nZeppelin server will be started after successful downloading ${SPARK_ARCHIVE}\n"
-        printf "Download ${SPARK_ARCHIVE}.tgz from mirror before starting Zeppelin server...\n\n"
-        MIRROR_INFO=$(curl -s "http://www.apache.org/dyn/closer.cgi/spark/spark-${SPARK_VERSION}/${SPARK_ARCHIVE}.tgz?asjson=1")
+    if [[ "${CI}" == "true" ]]; then
+      break
+    else
+      read -p "Do you want to download a latest version of Spark binary? (Y/N): " answer
 
-        PREFFERED=$(echo "${MIRROR_INFO}" | grep preferred | sed 's/[^"]*.preferred.: .\([^"]*\).*/\1/g')
-        PATHINFO=$(echo "${MIRROR_INFO}" | grep path_info | sed 's/[^"]*.path_info.: .\([^"]*\).*/\1/g')
+      case "${answer}" in
+        [Yy]* )
+          create_local_spark_dir
+          cd "${SPARK_CACHE}"
 
-        download_with_retry "${PREFFERED}${PATHINFO}"
-        unzip_spark_bin
-        break
-        ;;
-      [Nn]* )
-        echo -e "Your answer is saved under ${SPARK_CACHE}/${SPARK_ARCHIVE}/${ANSWER_FILE} \n"
-        mkdir -p "${SPARK_ARCHIVE}"
-        cd "${SPARK_ARCHIVE}"
-        echo -e "Please note that you answered 'No' when we asked whether you want to download local Spark binary under ZEPPELIN_HOME/${SPARK_CACHE}/ or not.
-        \nIf you want to use Spark interpreter in Apache Zeppelin, you need to set your own SPARK_HOME.
-        \nSee http://zeppelin.apache.org/docs/${ZEPPELIN_VERSION}/interpreter/spark.html#configuration for the further details about Spark configuration in Zeppelin.
-        " > "${ANSWER_FILE}"
-        break
-        ;;
-      * )
-        echo -e "\nDidn't get any answer in 20 seconds. Please re-start Zeppelin."
-        exit 0;
-        ;;
-    esac
+          printf "\nZeppelin server will be started after successful downloading ${SPARK_ARCHIVE}\n"
+          printf "Download ${SPARK_ARCHIVE}.tgz from mirror before starting Zeppelin server...\n\n"
+
+          MIRROR_INFO=$(curl -s "http://www.apache.org/dyn/closer.cgi/spark/spark-${SPARK_VERSION}/${SPARK_ARCHIVE}.tgz?asjson=1")
+          PREFFERED=$(echo "${MIRROR_INFO}" | grep preferred | sed 's/[^"]*.preferred.: .\([^"]*\).*/\1/g')
+          PATHINFO=$(echo "${MIRROR_INFO}" | grep path_info | sed 's/[^"]*.path_info.: .\([^"]*\).*/\1/g')
+
+          download_with_retry "${PREFFERED}${PATHINFO}"
+          unzip_spark_bin
+          break
+          ;;
+        [Nn]* )
+          create_local_spark_dir
+          cd "${SPARK_CACHE}"
+
+          echo -e "\nYour answer is saved under ${SPARK_CACHE}/${SPARK_ARCHIVE}/${ANSWER_FILE}"
+          echo -e "Zeppelin will be started without downloading local Spark binary\n"
+
+          mkdir -p "${SPARK_ARCHIVE}"
+
+          echo -e "Please note that you answered 'No' when we asked whether you want to download local Spark binary under ZEPPELIN_HOME/${SPARK_CACHE}/ or not.
+          \nIf you want to use Spark interpreter in Apache Zeppelin, you need to set your own SPARK_HOME.
+          \nSee http://zeppelin.apache.org/docs/${ZEPPELIN_VERSION}/interpreter/spark.html#configuration for the further details about Spark configuration in Zeppelin.
+          " > "${SPARK_ARCHIVE}/${ANSWER_FILE}"
+          break
+          ;;
+        * )
+          echo -e "\nInvalid response"
+          ;;
+      esac
+    fi
   done
 }
 
