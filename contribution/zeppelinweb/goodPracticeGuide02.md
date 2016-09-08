@@ -1,6 +1,6 @@
 ---
 layout: sideMenu
-title: "2 - Event dispatching"
+title: "2 - Event Dispatching"
 description: ""
 group: nav-contrib-front
 menu: nav-contrib-front
@@ -19,7 +19,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-# Event dispatching in the Angular Source Code
+# Event Dispatching in Angular
 
 <br/>
 AngularJS provides an Event dispatching system allow the communication between controllers or services and controllers.
