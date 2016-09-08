@@ -28,7 +28,7 @@ ZEPPELIN_VERSION="$(getZeppelinVersion)"
 SPARK_VERSION="2.0.0"
 HADOOP_VERSION="2.7"
 
-SPARK_CACHE="interpreter/spark"
+SPARK_CACHE="local-spark"
 SPARK_ARCHIVE="spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}"
 ANSWER_FILE="README.txt"
 
@@ -75,7 +75,14 @@ function set_spark_home() {
   rm "${ZEPPELIN_HOME}/conf/zeppelin-env.sh.bak"
 }
 
+function create_local_spark_dir() {
+  if [[ ! -d "${SPARK_CACHE}" ]]; then
+    mkdir -p "${SPARK_CACHE}"
+  fi
+}
+
 function save_local_spark() {
+  create_local_spark_dir
   cd "${SPARK_CACHE}"
   echo "There is no local Spark binary in ${ZEPPELIN_HOME}/${SPARK_CACHE}"
 

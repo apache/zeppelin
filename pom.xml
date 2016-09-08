@@ -746,6 +746,7 @@
               <exclude>**/run/**</exclude>
               <exclude>**/interpreter/**</exclude>
               <exclude>**/local-repo/**</exclude>
+              <exclude>**/local-spark/**</exclude>
               <exclude>**/null/**</exclude>
               <exclude>**/notebook/**</exclude>
               <exclude>_tools/site/css/*</exclude>
