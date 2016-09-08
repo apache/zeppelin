@@ -67,11 +67,11 @@ class PyZeppelinContext(dict):
 
   def show_plot(self, p, **kwargs):
     if hasattr(p, '__name__') and p.__name__ == "matplotlib.pyplot":
-        show_matplotlib(p, **kwargs)
+        self.show_matplotlib(p, **kwargs)
     elif type(p).__name__ == "DataFrame": # does not play well with sub-classes
         # `isinstance(p, DataFrame)` would req `import pandas.core.frame.DataFrame`
         # and so a dependency on pandas
-        show_dataframe(p, **kwargs)
+        self.show_dataframe(p, **kwargs)
     elif hasattr(p, '__call__'):
         p() #error reporting  
 
@@ -115,29 +115,29 @@ class PyZeppelinContext(dict):
     #)
     body_buf.close(); header_buf.close()
     
-    def show_matplotlib(self, p, fmt="png", width="auto", height="auto", 
-                        **kwargs):
-      """Matplotlib show function
-      """
-      if fmt == "png":
-        img = BytesIO()
-        p.savefig(img, format=fmt)
-        img_str = b"data:image/png;base64,"
-        img_str += base64.b64encode(img.getvalue().strip())
-        img_tag = "<img src={img} style='width={width};height:{height}'>"
-        # Decoding is necessary for Python 3 compability
-        img_str = img_str.decode("ascii")
-        img_str = img_tag.format(img=img_str, width=width, height=height)
-      elif fmt == "svg":
-        img = StringIO()
-        p.savefig(img, format=fmt)
-        img_str = img.getvalue()
-      else:
-        raise ValueError("fmt must be 'png' or 'svg'")
-      
-      html = "%html <div style='width:{width};height:{height}'>{img}<div>"
-      print(html.format(width=width, height=height, img=img_str))
-      img.close()
+  def show_matplotlib(self, p, fmt="png", width="auto", height="auto", 
+                      **kwargs):
+    """Matplotlib show function
+    """
+    if fmt == "png":
+      img = BytesIO()
+      p.savefig(img, format=fmt)
+      img_str = b"data:image/png;base64,"
+      img_str += base64.b64encode(img.getvalue().strip())
+      img_tag = "<img src={img} style='width={width};height:{height}'>"
+      # Decoding is necessary for Python 3 compability
+      img_str = img_str.decode("ascii")
+      img_str = img_tag.format(img=img_str, width=width, height=height)
+    elif fmt == "svg":
+      img = StringIO()
+      p.savefig(img, format=fmt)
+      img_str = img.getvalue()
+    else:
+      raise ValueError("fmt must be 'png' or 'svg'")
+    
+    html = "%html <div style='width:{width};height:{height}'>{img}<div>"
+    print(html.format(width=width, height=height, img=img_str))
+    img.close()
 
   def add(self, key, value):
     self.__setitem__(key, value)
