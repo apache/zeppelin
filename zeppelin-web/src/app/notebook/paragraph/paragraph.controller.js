@@ -22,6 +22,7 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
   $scope.paragraph = null;
   $scope.originalText = '';
   $scope.editor = null;
+  $scope.magic = null;
 
   var paragraphScope = $rootScope.$new(true, $rootScope);
 
@@ -702,7 +703,7 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
     }
   };
 
-  var getEditorSetting = function(interpreterName) {
+  var getAndSetEditorSetting = function(session, interpreterName) {
     var deferred = $q.defer();
     websocketMsgSrv.getEditorSetting(interpreterName);
     $timeout(
@@ -710,7 +711,14 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
         deferred.resolve(data);
       }
     ), 1000);
-    return deferred.promise;
+
+    deferred.promise.then(function(editorSetting) {
+      if (!_.isEmpty(editorSetting.editor)) {
+        var mode = 'ace/mode/' + editorSetting.editor.language;
+        $scope.paragraph.config.editorMode = mode;
+        session.setMode(mode);
+      }
+    });
   };
 
   var setParagraphMode = function(session, paragraphText, pos) {
@@ -724,24 +732,19 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
       } else {
         var magic;
         // set editor mode to default interpreter syntax if paragraph text doesn't start with '%'
-        if (!paragraphText.startsWith('%')) {
-          magic = $scope.$parent.interpreterBindings[0].group;
+        // TODO(mina): dig into the cause what makes interpreterBindings has no element
+        if (!paragraphText.startsWith('%') && ((typeof pos !== 'undefined') && pos.row === 0 && pos.column === 1) ||
+            (typeof pos === 'undefined') && $scope.$parent.interpreterBindings.length !== 0) {
+          magic = $scope.$parent.interpreterBindings[0].name;
+          getAndSetEditorSetting(session, magic);
         } else {
           var replNameRegexp = /%(.+?)\s/g;
           var match = replNameRegexp.exec(paragraphText);
-          if (match) {
-            magic = match[1];
+          if (match && $scope.magic !== match[1]) {
+            magic = match[1].trim();
+            $scope.magic = magic;
+            getAndSetEditorSetting(session, magic);
           }
-        }
-        if (magic) {
-          var promise = getEditorSetting(magic);
-          promise.then(function(editorSetting) {
-            if (!_.isEmpty(editorSetting.editor)) {
-              var mode = 'ace/mode/' + editorSetting.editor.language;
-              $scope.paragraph.config.editorMode = mode;
-              session.setMode(mode);
-            }
-          });
         }
       }
     }
