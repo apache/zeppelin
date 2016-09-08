@@ -87,7 +87,7 @@ function save_local_spark() {
   echo "There is no local Spark binary in ${ZEPPELIN_HOME}/${SPARK_CACHE}"
 
   while true; do
-    read -p "Do you want to download a latest version of Spark binary? (Y/N): " answer
+    read -p "Do you want to download a latest version of Spark binary? (Y/N): " -t 20 answer
     case $answer in
       [Yy]* )
         printf "\nZeppelin server will be started after successful downloading ${SPARK_ARCHIVE}\n"
@@ -112,7 +112,8 @@ function save_local_spark() {
         break
         ;;
       * )
-        echo "Invalid response. Please re-enter (Y/N):"
+        echo -e "\nDidn't get any answer in 20 seconds. Please re-start Zeppelin."
+        exit 0;
         ;;
     esac
   done
