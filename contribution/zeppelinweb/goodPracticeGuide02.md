@@ -62,5 +62,5 @@ Now, there are a few things to know about using it from `$rootScope`:
 
 Using `$broadcast` might not seem optimum if we consider the description we have above.
 
-However it is optimized to only go through branches that have a matching event binding.
+However, it is optimized to only go through branches that have a matching event binding.
 (cf. [this post](http://www.bennadel.com/blog/2724-scope-broadcast-is-surprisingly-efficient-in-angularjs.htm))
