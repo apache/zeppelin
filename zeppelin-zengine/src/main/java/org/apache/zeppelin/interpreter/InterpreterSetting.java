@@ -81,7 +81,7 @@ public class InterpreterSetting {
    *
    * @param o interpreterSetting from interpreterSettingRef
    */
-  public InterpreterSetting(InterpreterSetting o, ZeppelinConfiguration conf) {
+  public InterpreterSetting(InterpreterSetting o) {
     this(generateId(), o.getName(), o.getGroup(), o.getInterpreterInfos(), o.getProperties(),
         o.getDependencies(), o.getOption(), o.getPath());
   }
