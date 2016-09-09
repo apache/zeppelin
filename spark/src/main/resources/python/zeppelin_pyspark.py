@@ -30,6 +30,13 @@ from pyspark.serializers import MarshalSerializer, PickleSerializer
 import ast
 import traceback
 
+import base64
+from io import BytesIO
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
+
 # for back compatibility
 from pyspark.sql import SQLContext, HiveContext, Row
 
@@ -51,12 +58,42 @@ class PyZeppelinContext(dict):
   def __init__(self, zc):
     self.z = zc
 
-  def show(self, obj):
-    from pyspark.sql import DataFrame
-    if isinstance(obj, DataFrame):
-      print(gateway.jvm.org.apache.zeppelin.spark.ZeppelinContext.showDF(self.z, obj._jdf))
-    else:
-      print(str(obj))
+
+  def show(self, p, **kwargs):
+     from pyspark.sql import DataFrame
+
+     if hasattr(p, '__name__') and p.__name__ == "matplotlib.pyplot":
+        self.show_matplotlib(p, **kwargs)
+     elif isinstance(p, DataFrame):
+        print(gateway.jvm.org.apache.zeppelin.spark.ZeppelinContext.showDF(self.z, obj._jdf))
+     elif hasattr(p, '__call__'):
+        p() #error reporting
+     else:
+        print(str(obj))
+
+  def show_matplotlib(self, p, fmt="png", width="auto", height="auto",
+                        **kwargs):
+     """Matplotlib show function
+     """
+     if fmt == "png":
+        img = BytesIO()
+        p.savefig(img, format=fmt)
+        img_str = b"data:image/png;base64,"
+        img_str += base64.b64encode(img.getvalue().strip())
+        img_tag = "<img src={img} style='width={width};height:{height}'>"
+        # Decoding is necessary for Python 3 compability
+        img_str = img_str.decode("ascii")
+        img_str = img_tag.format(img=img_str, width=width, height=height)
+     elif fmt == "svg":
+        img = StringIO()
+        p.savefig(img, format=fmt)
+        img_str = img.getvalue()
+     else:
+        raise ValueError("fmt must be 'png' or 'svg'")
+
+     html = "%html <div style='width:{width};height:{height}'>{img}<div>"
+     print(html.format(width=width, height=height, img=img_str))
+     img.close()
 
   # By implementing special methods it makes operating on it more Pythonic
   def __setitem__(self, key, item):
