@@ -176,7 +176,7 @@ public class HeliumApplicationFactoryTest implements JobListenerFactory {
         new String[][]{});
 
     Note note1 = notebook.createNote(null);
-    factory.setInterpreters(note1.id(), factory.getDefaultInterpreterSettingList());
+    factory.setInterpreters(note1.getId(), factory.getDefaultInterpreterSettingList());
 
     Paragraph p1 = note1.addParagraph();
 
@@ -214,7 +214,7 @@ public class HeliumApplicationFactoryTest implements JobListenerFactory {
         new String[][]{});
 
     Note note1 = notebook.createNote(null);
-    notebook.bindInterpretersToNote(note1.id(), factory.getDefaultInterpreterSettingList());
+    notebook.bindInterpretersToNote(note1.getId(), factory.getDefaultInterpreterSettingList());
 
     Paragraph p1 = note1.addParagraph();
 
@@ -231,7 +231,7 @@ public class HeliumApplicationFactoryTest implements JobListenerFactory {
     }
 
     // when unbind interpreter
-    notebook.bindInterpretersToNote(note1.id(), new LinkedList<String>());
+    notebook.bindInterpretersToNote(note1.getId(), new LinkedList<String>());
 
     // then
     assertEquals(ApplicationState.Status.UNLOADED, app.getStatus());
@@ -255,7 +255,7 @@ public class HeliumApplicationFactoryTest implements JobListenerFactory {
 
     // Unbind all interpreter from note
     // NullPointerException shouldn't occur here
-    notebook.bindInterpretersToNote(note1.id(), new LinkedList<String>());
+    notebook.bindInterpretersToNote(note1.getId(), new LinkedList<String>());
 
     // remove note
     notebook.removeNote(note1.getId(), null);
@@ -273,9 +273,9 @@ public class HeliumApplicationFactoryTest implements JobListenerFactory {
         new String[][]{});
 
     Note note1 = notebook.createNote(null);
-    notebook.bindInterpretersToNote(note1.id(), factory.getDefaultInterpreterSettingList());
+    notebook.bindInterpretersToNote(note1.getId(), factory.getDefaultInterpreterSettingList());
     String mock1IntpSettingId = null;
-    for (InterpreterSetting setting : notebook.getBindedInterpreterSettings(note1.id())) {
+    for (InterpreterSetting setting : notebook.getBindedInterpreterSettings(note1.getId())) {
       if (setting.getName().equals("mock1")) {
         mock1IntpSettingId = setting.getId();
         break;

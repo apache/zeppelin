@@ -17,6 +17,7 @@
 
 package org.apache.zeppelin.rinterpreter
 
+import java.io.{BufferedInputStream, File, FileInputStream}
 import java.nio.file.{Files, Paths}
 import java.util._
 
@@ -110,10 +111,10 @@ object RInterpreter {
 
   // These are the additional properties we need on top of the ones provided by the spark interpreters
   lazy val props: Map[String, InterpreterProperty] = new InterpreterPropertyBuilder()
-    .add("rhadoop.cmd",           SparkInterpreter.getSystemDefault("HADOOP_CMD", "rhadoop.cmd", ""), "Usually /usr/bin/hadoop")
-    .add("rhadooop.streamingjar", SparkInterpreter.getSystemDefault("HADOOP_STREAMING", "rhadooop.streamingjar", ""), "Usually /usr/lib/hadoop/contrib/streaming/hadoop-streaming-<version>.jar")
-    .add("rscala.debug",          SparkInterpreter.getSystemDefault("RSCALA_DEBUG", "rscala.debug","false"), "Whether to turn on rScala debugging") // TEST:  Implemented but not tested
-    .add("rscala.timeout",        SparkInterpreter.getSystemDefault("RSCALA_TIMEOUT", "rscala.timeout","60"), "Timeout for rScala") // TEST:  Implemented but not tested
+    .add("rhadoop.cmd",          "HADOOP_CMD", "rhadoop.cmd", "", "Usually /usr/bin/hadoop")
+    .add("rhadooop.streamingjar", "HADOOP_STREAMING", "rhadooop.streamingjar", "", "Usually /usr/lib/hadoop/contrib/streaming/hadoop-streaming-<version>.jar")
+    .add("rscala.debug",          "RSCALA_DEBUG", "rscala.debug","false", "Whether to turn on rScala debugging") // TEST:  Implemented but not tested
+    .add("rscala.timeout",        "RSCALA_TIMEOUT", "rscala.timeout","60", "Timeout for rScala") // TEST:  Implemented but not tested
     .build
 
   def getProps() = {
@@ -141,8 +142,15 @@ object RInterpreter {
   }
 
   def dataURI(file : String, mime : String) : String = {
-    val data: String = Source.fromFile(file).getLines().mkString("\n")
-    s"""data:${mime};base64,""" + StringUtils.newStringUtf8(Base64.encodeBase64(data.getBytes(), false))
+    val fp = new File(file)
+    val fdata = new Array[Byte](fp.length().toInt)
+    val fin = new BufferedInputStream(new FileInputStream(fp))
+    try {
+      fin.read(fdata)
+    } finally {
+      fin.close()
+    }
+    s"""data:${mime};base64,""" + StringUtils.newStringUtf8(Base64.encodeBase64(fdata, false))
   }
 
   // The purpose here is to deal with knitr producing HTML with script and css tags outside the <body>
