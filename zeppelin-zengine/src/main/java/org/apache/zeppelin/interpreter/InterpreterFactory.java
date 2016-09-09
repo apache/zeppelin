@@ -1017,15 +1017,16 @@ public class InterpreterFactory implements InterpreterGroupFactory {
   public List<InterpreterSetting> getInterpreterSettings(String noteId) {
     List<String> interpreterSettingIds = getNoteInterpreterSettingBinding(noteId);
     LinkedList<InterpreterSetting> settings = new LinkedList<>();
-    synchronized (interpreterSettingIds) {
-      for (String id : interpreterSettingIds) {
-        InterpreterSetting setting = get(id);
-        if (setting == null) {
-          // interpreter setting is removed from factory. remove id from here, too
-          interpreterSettingIds.remove(id);
-        } else {
-          settings.add(setting);
-        }
+
+    Iterator<String> iter = interpreterSettingIds.iterator();
+    while (iter.hasNext()) {
+      String id = iter.next();
+      InterpreterSetting setting = get(id);
+      if (setting == null) {
+        // interpreter setting is removed from factory. remove id from here, too
+        iter.remove();
+      } else {
+        settings.add(setting);
       }
     }
     return settings;
