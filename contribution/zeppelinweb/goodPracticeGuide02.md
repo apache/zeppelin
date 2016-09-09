@@ -22,7 +22,7 @@ limitations under the License.
 # Event Dispatching in Angular
 
 <br/>
-AngularJS provides an Event dispatching system allow the communication between controllers or services and controllers.
+AngularJS provides an Event dispatching system allowing the communication between controllers or services and controllers.
 
 `$broadcast` dispatches the event downwards through the child scopes
 
@@ -44,9 +44,9 @@ $scope.$on('eventToCatch', function);
 $rootScope.$on('eventToCatch', function);
 ```
 
-Now, there is a few things to know about using it from `$rootScope`:
+Now, there are a few things to know about using it from `$rootScope`:
 
-* Both `$rootScope.$emit` and `$rootScope.$broadcast` go through child scopes since `$rootScope` do not have a parent
+* Both `$rootScope.$emit` and `$rootScope.$broadcast` go through child scopes since `$rootScope` doesn't have a parent
 * `$rootScope.$emit` can only be received by `$rootScope.$on`
 * `$rootScope.$broadcast` can be received by `$rootScope.$on` and `$scope.$on`
 * `$rootScope.$on` listener needs to be removed by hand (Memory leak if forgotten)
@@ -60,7 +60,7 @@ Now, there is a few things to know about using it from `$rootScope`:
 
 #### Performances
 
-Using `$broadcast` might seem not optimum if we consider the description we have above.
+Using `$broadcast` might not seem optimum if we consider the description we have above.
 
 However it is optimized to only go through branches that have a matching event binding.
 (cf. [this post](http://www.bennadel.com/blog/2724-scope-broadcast-is-surprisingly-efficient-in-angularjs.htm))
