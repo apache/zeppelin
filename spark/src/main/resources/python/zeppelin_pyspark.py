@@ -30,6 +30,7 @@ from pyspark.serializers import MarshalSerializer, PickleSerializer
 import ast
 import traceback
 import base64
+import pandas.core.frame.DataFrame
 from io import BytesIO
 try:
     from StringIO import StringIO
@@ -61,13 +62,11 @@ class PyZeppelinContext(dict):
   def show(self, obj,**kwargs):
     from pyspark.sql import DataFrame
     if isinstance(obj, DataFrame):
+      #pandas object module dependency if dataframe is a pandas module
+      print "pandas object module"
       print(gateway.jvm.org.apache.zeppelin.spark.ZeppelinContext.showDF(self.z, obj._jdf))    
     elif hasattr(obj, '__name__') and obj.__name__ == "matplotlib.pyplot":
-      self.show_matplotlib(obj, **kwargs)
-    elif type(obj).__name__ == "DataFrame": # does not play well with sub-classes
-      # `isinstance(p, DataFrame)` would req `import pandas.core.frame.DataFrame`
-      # and so a dependency on pandas
-      self.show_dataframe(obj, **kwargs)
+      self.show_matplotlib(obj, **kwargs)    
     elif hasattr(obj, '__call__'):
       obj() #error reporting
     else:
