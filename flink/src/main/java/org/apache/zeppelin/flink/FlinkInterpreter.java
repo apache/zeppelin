@@ -332,8 +332,6 @@ public class FlinkInterpreter extends Interpreter {
     }
   }
 
-
-
   @Override
   public void cancel(InterpreterContext context) {
   }
