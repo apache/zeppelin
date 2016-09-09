@@ -140,6 +140,26 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
             waitForFinish(p);
             assertEquals(Status.FINISHED, p.getStatus());
             assertEquals("55\n", p.getResult().message());
+
+            // run sqlContext test
+            p.setText("%pyspark from pyspark.sql import Row\n" +
+                    "df=sqlContext.createDataFrame([Row(name='Alice', age=20)])\n" +
+                    "df.count()");
+            note.run(p.getId());
+            waitForFinish(p);
+            assertEquals(Status.FINISHED, p.getStatus());
+            assertEquals("1\n", p.getResult().message());
+
+            if (sparkVersion >= 20) {
+                // run SparkSession test
+                p.setText("%pyspark from pyspark.sql import Row\n" +
+                        "df=sqlContext.createDataFrame([Row(name='Alice', age=20)])\n" +
+                        "df.count()");
+                note.run(p.getId());
+                waitForFinish(p);
+                assertEquals(Status.FINISHED, p.getStatus());
+                assertEquals("1\n", p.getResult().message());
+            }
         }
         ZeppelinServer.notebook.removeNote(note.getId(), null);
     }

@@ -171,7 +171,12 @@ public abstract class AbstractTestRestApi {
 
         String sparkHome = getSparkHome();
         if (sparkHome != null) {
-          sparkIntpSetting.getProperties().setProperty("master", "spark://" + getHostname() + ":7071");
+          if (System.getenv("SPARK_MASTER") != null) {
+            sparkIntpSetting.getProperties().setProperty("master", System.getenv("SPARK_MASTER"));
+          } else {
+            sparkIntpSetting.getProperties()
+                    .setProperty("master", "spark://" + getHostname() + ":7071");
+          }
           sparkIntpSetting.getProperties().setProperty("spark.cores.max", "2");
           // set spark home for pyspark
           sparkIntpSetting.getProperties().setProperty("spark.home", sparkHome);
