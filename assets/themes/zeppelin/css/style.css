@@ -517,6 +517,8 @@ a.anchor {
   background: #286090;
 }
 
+a.anchorjs-link:hover { text-decoration: none; }
+
 /* Custom, iPhone Retina */
 @media only screen and (max-width: 480px) {
   .jumbotron h1 {
