@@ -108,10 +108,11 @@
 
     var checkDownloadingDependencies = function() {
       var isDownloading = false;
-      for (var setting = 0; setting < $scope.interpreterSettings.length; setting++) {
-        var setting = $scope.interpreterSettings[setting];
+      for (var index = 0; index < $scope.interpreterSettings.length; index++) {
+        var setting = $scope.interpreterSettings[index];
         if (setting.status === 'DOWNLOADING_DEPENDENCIES') {
           isDownloading = true;
+          break;
         } else if (setting.status === 'ERROR') {
           ngToast.danger({content: 'Error setting properties for interpreter \'' +
             setting.group + '.' + setting.name + '\': ' + setting.errorReason,
