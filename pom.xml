@@ -61,7 +61,6 @@
     <module>angular</module>
     <module>shell</module>
     <module>livy</module>
-    <module>beam</module>
     <module>hbase</module>
     <module>postgresql</module>
     <module>jdbc</module>
@@ -580,6 +579,13 @@
       </modules>
     </profile>
 
+    <profile>
+      <id>beam</id>
+      <modules>
+        <module>beam</module>
+      </modules>
+    </profile>
+    
     <profile>
       <id>examples</id>
       <modules>
