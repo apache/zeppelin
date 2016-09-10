@@ -328,7 +328,7 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl',
         return;
       }
 
-      if (!$scope.newInterpreterSetting.name.indexOf('.') >= 0) {
+      if ($scope.newInterpreterSetting.name.indexOf('.') >= 0) {
         BootstrapDialog.alert({
           closable: true,
           title: 'Add interpreter',
