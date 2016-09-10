@@ -151,7 +151,7 @@ select * from my_table;
 You can also run multiple queries up to 10 by default. Changing these settings is not implemented yet.
 
 ### Apply Zeppelin Dynamic Forms
-You can leverage [Zeppelin Dynamic Form]({{BASE_PATH}}/manual/dynamicform.html) inside your queries. You can use both the `text input` and `select form` parameterization features.
+You can leverage [Zeppelin Dynamic Form](../manual/dynamicform.html) inside your queries. You can use both the `text input` and `select form` parameterization features.
 
 ```sql
 %hive

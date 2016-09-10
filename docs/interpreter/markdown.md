@@ -30,9 +30,9 @@ In Zeppelin notebook, you can use ` %md ` in the beginning of a paragraph to inv
 
 In Zeppelin, Markdown interpreter is enabled by default.
 
-<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/markdown-interpreter-setting.png" width="60%" />
+<img src="../assets/themes/zeppelin/img/docs-img/markdown-interpreter-setting.png" width="60%" />
 
 ## Example
 The following example demonstrates the basic usage of Markdown in a Zeppelin notebook.
 
-<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/markdown-example.png" width="70%" />
+<img src="../assets/themes/zeppelin/img/docs-img/markdown-example.png" width="70%" />

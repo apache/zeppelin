@@ -108,7 +108,7 @@ z.show(plt, height='150px', fmt='svg')
 
 
 ## Pandas integration
-Apache Zeppelin [Table Display System]({{BASE_PATH}}/displaysystem/basicdisplaysystem.html#table) provides built-in data visualization capabilities. Python interpreter leverages it to visualize Pandas DataFrames though similar `z.show()` API, same as with [Matplotlib integration](#matplotlib-integration).
+Apache Zeppelin [Table Display System](../displaysystem/basicdisplaysystem.html#table) provides built-in data visualization capabilities. Python interpreter leverages it to visualize Pandas DataFrames though similar `z.show()` API, same as with [Matplotlib integration](#matplotlib-integration).
 
 Example:
 
@@ -120,7 +120,7 @@ z.show(rates)
 
 ## SQL over Pandas DataFrames
 
-There is a convenience `%python.sql` interpreter that matches Apache Spark experience in Zeppelin and enables usage of SQL language to query [Pandas DataFrames](http://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.html) and visualization of results though built-in [Table Display System]({{BASE_PATH}}/displaysystem/basicdisplaysystem.html#table).
+There is a convenience `%python.sql` interpreter that matches Apache Spark experience in Zeppelin and enables usage of SQL language to query [Pandas DataFrames](http://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.html) and visualization of results though built-in [Table Display System](../displaysystem/basicdisplaysystem.html#table).
 
  **Pre-requests**
 
