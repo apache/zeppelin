@@ -966,6 +966,85 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
   };
 
   var setTable = function(data, refresh) {
+    function addButtonMenuEvent(button, menu) {
+      Handsontable.Dom.addEvent(button, 'click', function(event) {
+        var changeTypeMenu;
+        var position;
+        var removeMenu;
+
+        document.body.appendChild(menu);
+
+        event.preventDefault();
+        event.stopImmediatePropagation();
+
+        changeTypeMenu = document.querySelectorAll('.changeTypeMenu');
+
+        for (var i = 0, len = changeTypeMenu.length; i < len; i++) {
+          changeTypeMenu[i].style.display = 'none';
+        }
+        menu.style.display = 'block';
+        position = button.getBoundingClientRect();
+
+        menu.style.top = (position.top + (window.scrollY || window.pageYOffset)) + 2 + 'px';
+        menu.style.left = (position.left) + 'px';
+
+        removeMenu = function(event) {
+          if (menu.parentNode) {
+            menu.parentNode.removeChild(menu);
+          }
+          if (!(event.target.nodeName === 'LI' && event.target.parentNode.className.indexOf('changeTypeMenu') !== -1)) {
+            $scope.curSelectCol = -1; // set this variable to not affect other renderTable event!
+          }
+        };
+        Handsontable.Dom.removeEvent(document, 'click', removeMenu);
+        Handsontable.Dom.addEvent(document, 'click', removeMenu);
+      });
+    }
+
+    function buildMenu(activeCellType) {
+      var menu = document.createElement('UL');
+      var types = ['text', 'numeric'];
+      var item;
+
+      menu.className = 'changeTypeMenu';
+
+      for (var i = 0, len = types.length; i < len; i++) {
+        item = document.createElement('LI');
+        if ('innerText' in item) {
+          item.innerText = types[i];
+        } else {
+          item.textContent = types[i];
+        }
+
+        item.data = {'colType': types[i]};
+
+        if (activeCellType === types[i]) {
+          item.className = 'active';
+        }
+        menu.appendChild(item);
+      }
+
+      return menu;
+    }
+
+    function buildButton() {
+      var button = document.createElement('BUTTON');
+
+      button.innerHTML = '\u25BC';
+      button.className = 'changeType';
+
+      return button;
+    }
+
+    function setColumnType(i, type, instance) {
+      $scope.isChangingColType = true;
+      $scope.curSelectCol = i;
+      $scope.columnFormat[i] = type;
+      instance.validateCells(function() {
+        instance.render();
+      });
+    }
+
     var renderTable = function() {
       var height = $scope.paragraph.config.graph.height;
       var container = angular.element('#p' + $scope.paragraph.id + '_table').css('height', height).get(0);
@@ -975,7 +1054,9 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
       if ($scope.hot) {
         $scope.hot.destroy();
       }
-
+      if (!$scope.columnFormat) {
+        $scope.columnFormat = Array.apply(null, Array(data.columnNames.length)).map(function() { return 'text'; });
+      }
       $scope.hot = new Handsontable(container, {
         colHeaders: columnNames,
         data: resultRows,
@@ -1000,6 +1081,22 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
               cellProperties.format = '0,0.[00000]';
               td.style.textAlign = 'left';
               Handsontable.renderers.NumericRenderer.apply(this, arguments);
+
+            // if (!isNaN(value)) {
+            //   if (typeof $scope.isChangingColType !== 'undefined') {
+            //     if ($scope.columnFormat[col] === 'numeric') {
+            //       cellProperties.format = '0,0.[00000]';
+            //       td.style.textAlign = 'left';
+            //       Handsontable.renderers.NumericRenderer.apply(this, arguments);
+            //     } else {
+            //       Handsontable.renderers.TextRenderer.apply(this, arguments);
+            //     }
+            //   } else {
+            //     cellProperties.format = '0,0.[00000]';
+            //     td.style.textAlign = 'left';
+            //     Handsontable.renderers.NumericRenderer.apply(this, arguments);
+            //     $scope.columnFormat[col] = 'numeric';
+            //   }
             } else if (value.length > '%html'.length && '%html ' === value.substring(0, '%html '.length)) {
               td.innerHTML = value.substring('%html'.length);
             } else {
@@ -1007,6 +1104,27 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
             }
           };
           return cellProperties;
+        },
+        afterRender: function(isForced) {
+          $scope.isChangingColType = false;
+        },
+        afterGetColHeader: function(col, TH) {
+          var instance = this;
+          var menu = buildMenu($scope.columnFormat[col]);
+          var button = buildButton();
+
+          addButtonMenuEvent(button, menu);
+
+          Handsontable.Dom.addEvent(menu, 'click', function(event) {
+            if (event.target.nodeName === 'LI') {
+              setColumnType(col, event.target.data.colType, instance);
+            }
+          });
+          if (TH.firstChild.lastChild.nodeName === 'BUTTON') {
+            TH.firstChild.removeChild(TH.firstChild.lastChild);
+          }
+          TH.firstChild.appendChild(button);
+          TH.style['white-space'] = 'normal';
         }
       });
     };
