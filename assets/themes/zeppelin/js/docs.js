@@ -18,8 +18,10 @@
 /* Custom JavaScript code in the MarkDown docs */
 
 function maybeScrollToHash() {
-  if (window.location.hash && $(window.location.hash).length) {
-    var newTop = $(window.location.hash).offset().top - 57;
+  var hash = window.location.hash
+  
+  if (hash && $(hash).length) {
+    var newTop = $(hash).offset().top - 57;
     $(window).scrollTop(newTop);
   }
 }
