@@ -17,6 +17,13 @@
 
 /* Custom JavaScript code in the MarkDown docs */
 
+function maybeScrollToHash() {
+  if (window.location.hash && $(window.location.hash).length) {
+    var newTop = $(window.location.hash).offset().top - 57;
+    $(window).scrollTop(newTop);
+  }
+}
+
 $(function() {
   // Display anchor links when hovering over headers. For documentation of the
   // configuration options, see the AnchorJS documentation.
@@ -24,4 +31,8 @@ $(function() {
     placement: 'left'
   };
   anchors.add();
+
+  $(window).bind('hashchange', function() {
+    maybeScrollToHash();
+  });
 });
