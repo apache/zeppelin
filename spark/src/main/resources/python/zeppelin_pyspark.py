@@ -80,34 +80,7 @@ class PyZeppelinContext(dict):
     self.z.remove(key)
 
   def __contains__(self, item):
-    return self.z.containsKey(item)
-
-  def show_dataframe(self, df, **kwargs):
-    """Pretty prints DF using Table Display System
-    """
-    limit = len(df) > self.max_result
-    header_buf = StringIO("")
-    header_buf.write(str(df.columns[0]))
-    for col in df.columns[1:]:
-      header_buf.write("\t")
-      header_buf.write(str(col))
-    header_buf.write("\n")
-    
-    body_buf = StringIO("")
-    rows = df.head(self.max_result).values if limit else df.values
-    for row in rows:
-      body_buf.write(str(row[0]))
-      for cell in row[1:]:
-          body_buf.write("\t")
-          body_buf.write(str(cell))
-      body_buf.write("\n")
-    body_buf.seek(0); header_buf.seek(0)
-    #TODO(bzz): fix it, so it shows red notice, as in Spark
-    print("%table " + header_buf.read() + body_buf.read()) # +
-    #      ("\n<font color=red>Results are limited by {}.</font>" \
-    #          .format(self.max_result) if limit else "")
-    #)
-    body_buf.close(); header_buf.close()
+    return self.z.containsKey(item)  
     
   def show_matplotlib(self, p, fmt="png", width="auto", height="auto", 
                       **kwargs):
