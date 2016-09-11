@@ -3,7 +3,7 @@
 **Documentation:** [User Guide](http://zeppelin.apache.org/docs/latest/index.html)<br/>
 **Mailing Lists:** [User and Dev mailing list](http://zeppelin.apache.org/community.html)<br/>
 **Continuous Integration:** [![Build Status](https://secure.travis-ci.org/apache/zeppelin.png?branch=master)](https://travis-ci.org/apache/zeppelin) <br/>
-**Contributing:** [Contribution Guide](https://github.com/apache/zeppelin/blob/master/CONTRIBUTING.md)<br/>
+**Contributing:** [Contribution Guide](https://zeppelin.apache.org/contribution/contributions.html)<br/>
 **Issue Tracker:** [Jira](https://issues.apache.org/jira/browse/ZEPPELIN)<br/>
 **License:** [Apache 2.0](https://github.com/apache/zeppelin/blob/master/LICENSE)
 
@@ -18,7 +18,7 @@ Core feature:
 To know more about Zeppelin, visit our web site [http://zeppelin.apache.org](http://zeppelin.apache.org)
 
 ## Requirements
- * Git 
+ * Git
  * Java 1.7
  * Tested on Mac OSX, Ubuntu 14.X, CentOS 6.X, Windows 7 Pro SP1
  * Maven (if you want to build from the source code)
@@ -67,7 +67,7 @@ First of all, set your proxy configuration on Maven `settings.xml`.
 </settings>
 ```
 
-Then, run these commands from shell. 
+Then, run these commands from shell.
 ```
 npm config set proxy http://localhost:3128
 npm config set https-proxy http://localhost:3128
@@ -87,10 +87,10 @@ git config --global --unset https.proxy
 git config --global --unset url."http://".insteadOf
 ```
 
-_Notes:_ 
+_Notes:_
  - If you are behind NTLM proxy you can use [Cntlm Authentication Proxy](http://cntlm.sourceforge.net/).
  - Replace `localhost:3128` with the standard pattern `http://user:pwd@host:port`.
- 
+
 #### Install maven
 ```
 wget http://www.eu.apache.org/dist/maven/maven-3/3.3.9/binaries/apache-maven-3.3.9-bin.tar.gz
