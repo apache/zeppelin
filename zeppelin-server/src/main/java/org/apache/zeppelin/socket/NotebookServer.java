@@ -241,8 +241,8 @@ public class NotebookServer extends WebSocketServlet implements
           case LIST_NOTEBOOK_JOBS:
             unicastNotebookJobInfo(conn, messagereceived);
             break;
-          case LIST_UPDATE_NOTEBOOK_JOBS:
-            unicastUpdateNotebookJobInfo(conn, messagereceived);
+          case UNSUBSCRIBE_UPDATE_NOTEBOOK_JOBS:
+            unsubscribeNotebookJobInfo(conn);
             break;
           case GET_INTERPRETER_BINDINGS:
             getInterpreterBindings(conn, messagereceived);
@@ -398,9 +398,10 @@ public class NotebookServer extends WebSocketServlet implements
   }
 
   public void unicastNotebookJobInfo(NotebookSocket conn, Message fromMessage) throws IOException {
-
+    addConnectionToNote(JOB_MANAGER_SERVICE.JOB_MANAGER_PAGE.getKey(), conn);
     AuthenticationInfo subject = new AuthenticationInfo(fromMessage.principal);
-    List<Map<String, Object>> notebookJobs = notebook().getJobListforNotebook(false, 0, subject);
+    List<Map<String, Object>> notebookJobs = notebook()
+      .getJobListByUnixTime(false, 0, subject);
     Map<String, Object> response = new HashMap<>();
 
     response.put("lastResponseUnixTime", System.currentTimeMillis());
@@ -410,21 +411,25 @@ public class NotebookServer extends WebSocketServlet implements
       .put("notebookJobs", response)));
   }
 
-  public void unicastUpdateNotebookJobInfo(NotebookSocket conn, Message fromMessage)
-      throws IOException {
-    double lastUpdateUnixTimeRaw = (double) fromMessage.get("lastUpdateUnixTime");
-    long lastUpdateUnixTime = new Double(lastUpdateUnixTimeRaw).longValue();
-
-    List<Map<String, Object>> notebookJobs;
-    AuthenticationInfo subject = new AuthenticationInfo(fromMessage.principal);
-    notebookJobs = notebook().getJobListforNotebook(false, lastUpdateUnixTime, subject);
+  public void broadcastUpdateNotebookJobInfo(long lastUpdateUnixTime) throws IOException {
+    List<Map<String, Object>> notebookJobs = new LinkedList<>();
+    Notebook notebookObject = notebook();
+    List<Map<String, Object>> jobNotes = null;
+    if (notebookObject != null) {
+      jobNotes = notebook().getJobListByUnixTime(false, lastUpdateUnixTime, null);
+      notebookJobs = jobNotes == null ? notebookJobs : jobNotes;
+    }
 
     Map<String, Object> response = new HashMap<>();
     response.put("lastResponseUnixTime", System.currentTimeMillis());
-    response.put("jobs", notebookJobs);
+    response.put("jobs", notebookJobs != null ? notebookJobs : new LinkedList<>());
 
-    conn.send(serializeMessage(new Message(OP.LIST_UPDATE_NOTEBOOK_JOBS)
-            .put("notebookRunningJobs", response)));
+    broadcast(JOB_MANAGER_SERVICE.JOB_MANAGER_PAGE.getKey(),
+      new Message(OP.LIST_UPDATE_NOTEBOOK_JOBS).put("notebookRunningJobs", response));
+  }
+
+  public void unsubscribeNotebookJobInfo(NotebookSocket conn) {
+    removeConnectionFromNote(JOB_MANAGER_SERVICE.JOB_MANAGER_PAGE.getKey(), conn);
   }
 
   public void saveInterpreterBindings(NotebookSocket conn, Message fromMessage) {
@@ -1292,6 +1297,113 @@ public class NotebookServer extends WebSocketServlet implements
   }
 
   /**
+   * Notebook Information Change event
+   */
+  public static class NotebookInformationListener implements NotebookEventListener {
+    private NotebookServer notebookServer;
+
+    public NotebookInformationListener(NotebookServer notebookServer) {
+      this.notebookServer = notebookServer;
+    }
+
+    @Override
+    public void onParagraphRemove(Paragraph p) {
+      try {
+        notebookServer.broadcastUpdateNotebookJobInfo(System.currentTimeMillis() - 5000);
+      } catch (IOException ioe) {
+        LOG.error("can not broadcast for job manager {}", ioe.getMessage());
+      }
+    }
+
+    @Override
+    public void onNoteRemove(Note note) {
+      try {
+        notebookServer.broadcastUpdateNotebookJobInfo(System.currentTimeMillis() - 5000);
+      } catch (IOException ioe) {
+        LOG.error("can not broadcast for job manager {}", ioe.getMessage());
+      }
+
+      List<Map<String, Object>> notesInfo = new LinkedList<>();
+      Map<String, Object> info = new HashMap<>();
+      info.put("notebookId", note.getId());
+      // set paragraphs
+      List<Map<String, Object>> paragraphsInfo = new LinkedList<>();
+
+      // notebook json object root information.
+      info.put("isRunningJob", false);
+      info.put("unixTimeLastRun", 0);
+      info.put("isRemoved", true);
+      info.put("paragraphs", paragraphsInfo);
+      notesInfo.add(info);
+
+      Map<String, Object> response = new HashMap<>();
+      response.put("lastResponseUnixTime", System.currentTimeMillis());
+      response.put("jobs", notesInfo);
+
+      notebookServer.broadcast(JOB_MANAGER_SERVICE.JOB_MANAGER_PAGE.getKey(),
+        new Message(OP.LIST_UPDATE_NOTEBOOK_JOBS).put("notebookRunningJobs", response));
+
+    }
+
+    @Override
+    public void onParagraphCreate(Paragraph p) {
+      Notebook notebook = notebookServer.notebook();
+      List<Map<String, Object>> notebookJobs = notebook.getJobListByParagraphId(
+              p.getId()
+      );
+      Map<String, Object> response = new HashMap<>();
+      response.put("lastResponseUnixTime", System.currentTimeMillis());
+      response.put("jobs", notebookJobs);
+
+      notebookServer.broadcast(JOB_MANAGER_SERVICE.JOB_MANAGER_PAGE.getKey(),
+              new Message(OP.LIST_UPDATE_NOTEBOOK_JOBS).put("notebookRunningJobs", response));
+    }
+
+    @Override
+    public void onNoteCreate(Note note) {
+      Notebook notebook = notebookServer.notebook();
+      List<Map<String, Object>> notebookJobs = notebook.getJobListBymNotebookId(
+              note.getId()
+      );
+      Map<String, Object> response = new HashMap<>();
+      response.put("lastResponseUnixTime", System.currentTimeMillis());
+      response.put("jobs", notebookJobs);
+
+      notebookServer.broadcast(JOB_MANAGER_SERVICE.JOB_MANAGER_PAGE.getKey(),
+              new Message(OP.LIST_UPDATE_NOTEBOOK_JOBS).put("notebookRunningJobs", response));
+    }
+
+    @Override
+    public void onParagraphStatusChange(Paragraph p, Status status) {
+      Notebook notebook = notebookServer.notebook();
+      List<Map<String, Object>> notebookJobs = notebook.getJobListByParagraphId(
+        p.getId()
+      );
+
+      Map<String, Object> response = new HashMap<>();
+      response.put("lastResponseUnixTime", System.currentTimeMillis());
+      response.put("jobs", notebookJobs);
+
+      notebookServer.broadcast(JOB_MANAGER_SERVICE.JOB_MANAGER_PAGE.getKey(),
+              new Message(OP.LIST_UPDATE_NOTEBOOK_JOBS).put("notebookRunningJobs", response));
+    }
+
+    @Override
+    public void onUnbindInterpreter(Note note, InterpreterSetting setting) {
+      Notebook notebook = notebookServer.notebook();
+      List<Map<String, Object>> notebookJobs = notebook.getJobListBymNotebookId(
+              note.getId()
+      );
+      Map<String, Object> response = new HashMap<>();
+      response.put("lastResponseUnixTime", System.currentTimeMillis());
+      response.put("jobs", notebookJobs);
+
+      notebookServer.broadcast(JOB_MANAGER_SERVICE.JOB_MANAGER_PAGE.getKey(),
+              new Message(OP.LIST_UPDATE_NOTEBOOK_JOBS).put("notebookRunningJobs", response));
+    }
+  }
+
+  /**
    * Need description here.
    *
    */
@@ -1334,6 +1446,12 @@ public class NotebookServer extends WebSocketServlet implements
         }
       }
       notebookServer.broadcastNote(note);
+
+      try {
+        notebookServer.broadcastUpdateNotebookJobInfo(System.currentTimeMillis() - 5000);
+      } catch (IOException e) {
+        LOG.error("can not broadcast for job manager {}", e);
+      }
     }
 
     /**
@@ -1372,6 +1490,10 @@ public class NotebookServer extends WebSocketServlet implements
   @Override
   public ParagraphJobListener getParagraphJobListener(Note note) {
     return new ParagraphListenerImpl(this, note);
+  }
+
+  public NotebookEventListener getNotebookInformationListener() {
+    return new NotebookInformationListener(this);
   }
 
   private void sendAllAngularObjects(Note note, NotebookSocket conn) throws IOException {

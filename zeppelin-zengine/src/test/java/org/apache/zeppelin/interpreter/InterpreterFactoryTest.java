@@ -21,6 +21,8 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 import java.util.Properties;
 
 import org.apache.commons.io.FileUtils;
@@ -31,6 +33,7 @@ import org.apache.zeppelin.dep.Dependency;
 import org.apache.zeppelin.dep.DependencyResolver;
 import org.apache.zeppelin.interpreter.mock.MockInterpreter1;
 import org.apache.zeppelin.interpreter.mock.MockInterpreter2;
+import org.apache.zeppelin.interpreter.remote.RemoteInterpreter;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -52,7 +55,10 @@ public class InterpreterFactoryTest {
     tmpDir.mkdirs();
     new File(tmpDir, "conf").mkdirs();
 
-    MockInterpreter1.register("mock1", "org.apache.zeppelin.interpreter.mock.MockInterpreter1");
+    Map<String, InterpreterProperty> propertiesMockInterpreter1 = new HashMap<String, InterpreterProperty>();
+    propertiesMockInterpreter1.put("PROPERTY_1", new InterpreterProperty("PROPERTY_1", "", "VALUE_1", "desc"));
+    propertiesMockInterpreter1.put("property_2", new InterpreterProperty("", "property_2", "value_2", "desc"));
+    MockInterpreter1.register("mock1", "mock1", "org.apache.zeppelin.interpreter.mock.MockInterpreter1", propertiesMockInterpreter1);
     MockInterpreter2.register("mock2", "org.apache.zeppelin.interpreter.mock.MockInterpreter2");
 
     System.setProperty(ConfVars.ZEPPELIN_HOME.getVarName(), tmpDir.getAbsolutePath());
@@ -93,6 +99,29 @@ public class InterpreterFactoryTest {
     // restart interpreter
     factory.restart(mock1Setting.getId());
     assertNull(mock1Setting.getInterpreterGroup("sharedProcess").get("session"));
+  }
+
+  @Test
+  public void testRemoteRepl() throws Exception {
+    factory = new InterpreterFactory(conf, new InterpreterOption(true), null, null, null, depResolver);
+    List<InterpreterSetting> all = factory.get();
+    InterpreterSetting mock1Setting = null;
+    for (InterpreterSetting setting : all) {
+      if (setting.getName().equals("mock1")) {
+        mock1Setting = setting;
+        break;
+      }
+    }
+    InterpreterGroup interpreterGroup = mock1Setting.getInterpreterGroup("sharedProcess");
+    factory.createInterpretersForNote(mock1Setting, "sharedProcess", "session");
+    // get interpreter
+    assertNotNull("get Interpreter", interpreterGroup.get("session").get(0));
+    assertTrue(interpreterGroup.get("session").get(0) instanceof LazyOpenInterpreter);
+    LazyOpenInterpreter lazyInterpreter = (LazyOpenInterpreter)(interpreterGroup.get("session").get(0));
+    assertTrue(lazyInterpreter.getInnerInterpreter() instanceof RemoteInterpreter);
+    RemoteInterpreter remoteInterpreter = (RemoteInterpreter) lazyInterpreter.getInnerInterpreter();
+    assertEquals("VALUE_1", remoteInterpreter.getEnv().get("PROPERTY_1"));
+    assertEquals("value_2", remoteInterpreter.getProperty("property_2"));
   }
 
   @Test
