@@ -631,9 +631,9 @@ public class Notebook implements NoteEventListener {
 
     // set interpreter bind type
     String interpreterGroupName = null;
-    if (replFactory.getInterpreterSettings(jobNote.getId()) != null
-            && replFactory.getInterpreterSettings(jobNote.getId()).size() >= 1) {
-      interpreterGroupName = replFactory.getInterpreterSettings(jobNote.getId()).get(0).getName();
+    if (interpreterFactory.getInterpreterSettings(jobNote.getId()) != null
+            && interpreterFactory.getInterpreterSettings(jobNote.getId()).size() >= 1) {
+      interpreterGroupName = interpreterFactory.getInterpreterSettings(jobNote.getId()).get(0).getName();
     }
 
     // notebook json object root information.
