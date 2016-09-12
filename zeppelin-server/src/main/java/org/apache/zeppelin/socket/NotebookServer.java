@@ -22,6 +22,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.vfs2.FileSystemException;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.display.AngularObject;
@@ -258,12 +259,6 @@ public class NotebookServer extends WebSocketServlet implements
       }
     } catch (Exception e) {
       LOG.error("Can't handle message", e);
-      try {
-        conn.send(serializeMessage(new Message(OP.ERROR_INFO).put("info",
-                "Oops! Something went wrong. Please check with your administrator.")));
-      } catch (IOException e1) {
-        LOG.error("Can't handle message", e);
-      }
     }
   }
 
@@ -1153,7 +1148,16 @@ public class NotebookServer extends WebSocketServlet implements
     }
 
     AuthenticationInfo subject = new AuthenticationInfo(fromMessage.principal);
-    note.persist(subject);
+
+    try {
+      note.persist(subject);
+    } catch (FileSystemException ex) {
+      LOG.error("Exception from run", ex);
+      conn.send(serializeMessage(new Message(OP.ERROR_INFO).put("info",
+                "Oops! There is something wrong with the notebook file system. "
+                + "Please check the logs for more details.")));
+    }
+
     try {
       note.run(paragraphId);
     } catch (Exception ex) {
