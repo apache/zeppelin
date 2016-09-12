@@ -1036,13 +1036,19 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
       return button;
     }
 
-    function numericValidator(value, callback) {
+    function isNumeric(value) {
       if (!isNaN(value)) {
-        if (value.length !== 0 && Number(value) <= Number.MAX_SAFE_INTEGER && Number(value) >= Number.MIN_SAFE_INTEGER) {
-          return callback(true);
+        if (value.length !== 0) {
+          if (Number(value) <= Number.MAX_SAFE_INTEGER && Number(value) >= Number.MIN_SAFE_INTEGER) {
+            return true;
+          }
         }
       }
-      return callback(false);
+      return false;
+    }
+
+    function numericValidator(value, callback) {
+      return callback(isNumeric(value));
     }
 
     function dateValidator(value, callback) {
@@ -1106,7 +1112,7 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
         cells: function(row, col, prop) {
           var cellProperties = {};
           cellProperties.renderer = function(instance, td, row, col, prop, value, cellProperties) {
-            if (!isNaN(value)) {
+            if ($scope.columns[col].type === 'numeric' && isNumeric(value)) {
               cellProperties.format = '0,0.[00000]';
               td.style.textAlign = 'left';
               Handsontable.renderers.NumericRenderer.apply(this, arguments);
