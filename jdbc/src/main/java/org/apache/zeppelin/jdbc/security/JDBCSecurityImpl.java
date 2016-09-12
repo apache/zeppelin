@@ -18,7 +18,6 @@ package org.apache.zeppelin.jdbc.security;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.security.UserGroupInformation;
-import org.apache.zeppelin.jdbc.SqlCompleter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

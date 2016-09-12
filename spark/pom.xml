@@ -302,27 +302,6 @@
   <build>
     <plugins>
       <plugin>
-        <groupId>org.apache.rat</groupId>
-        <artifactId>apache-rat-plugin</artifactId>
-        <configuration>
-          <excludes>
-            <exclude>**/.idea/</exclude>
-            <exclude>**/*.iml</exclude>
-            <exclude>.gitignore</exclude>
-            <exclude>**/.settings/*</exclude>
-            <exclude>**/.classpath</exclude>
-            <exclude>**/.project</exclude>
-            <exclude>**/target/**</exclude>
-            <exclude>**/derby.log</exclude>
-            <exclude>**/metastore_db/</exclude>
-            <exclude>**/README.md</exclude>
-            <exclude>**/dependency-reduced-pom.xml</exclude>
-            <exclude>**/interpreter-setting.json</exclude>
-          </excludes>
-        </configuration>
-      </plugin>
-
-      <plugin>
         <artifactId>maven-enforcer-plugin</artifactId>
         <version>1.3.1</version>
         <executions>
@@ -483,53 +462,12 @@
     </profile>
 
     <profile>
-      <id>cassandra-spark-1.1</id>
-      <dependencies>
-        <dependency>
-          <groupId>com.datastax.spark</groupId>
-          <artifactId>spark-cassandra-connector_${scala.binary.version}</artifactId>
-          <version>1.1.1</version>
-          <exclusions>
-            <exclusion>
-              <groupId>org.joda</groupId>
-              <artifactId>joda-convert</artifactId>
-            </exclusion>
-          </exclusions>
-        </dependency>
-      </dependencies>
-      <properties>
-        <spark.version>1.1.1</spark.version>
-        <akka.version>2.2.3-shaded-protobuf</akka.version>
-      </properties>
-    </profile>
-
-    <profile>
       <id>spark-1.2</id>
       <dependencies>
       </dependencies>
       <properties>
         <spark.version>1.2.1</spark.version>
       </properties>
-    </profile>
-
-    <profile>
-      <id>cassandra-spark-1.2</id>
-      <properties>
-        <spark.version>1.2.1</spark.version>
-      </properties>
-      <dependencies>
-        <dependency>
-          <groupId>com.datastax.spark</groupId>
-          <artifactId>spark-cassandra-connector_${scala.binary.version}</artifactId>
-          <version>1.2.1</version>
-          <exclusions>
-            <exclusion>
-              <groupId>org.joda</groupId>
-              <artifactId>joda-convert</artifactId>
-            </exclusion>
-          </exclusions>
-        </dependency>
-      </dependencies>
     </profile>
 
     <profile>
@@ -545,54 +483,12 @@
     </profile>
 
     <profile>
-      <id>cassandra-spark-1.3</id>
-      <properties>
-        <spark.version>1.3.0</spark.version>
-      </properties>
-
-      <dependencies>
-        <dependency>
-          <groupId>com.datastax.spark</groupId>
-          <artifactId>spark-cassandra-connector_${scala.binary.version}</artifactId>
-          <version>1.3.1</version>
-          <exclusions>
-            <exclusion>
-              <groupId>org.joda</groupId>
-              <artifactId>joda-convert</artifactId>
-            </exclusion>
-          </exclusions>
-        </dependency>
-      </dependencies>
-    </profile>
-
-    <profile>
       <id>spark-1.4</id>
       <properties>
         <spark.version>1.4.1</spark.version>
       </properties>
 
       <dependencies>
-      </dependencies>
-    </profile>
-
-    <profile>
-      <id>cassandra-spark-1.4</id>
-      <properties>
-        <spark.version>1.4.1</spark.version>
-      </properties>
-
-      <dependencies>
-        <dependency>
-          <groupId>com.datastax.spark</groupId>
-          <artifactId>spark-cassandra-connector_${scala.binary.version}</artifactId>
-          <version>1.4.0</version>
-          <exclusions>
-            <exclusion>
-              <groupId>org.joda</groupId>
-              <artifactId>joda-convert</artifactId>
-            </exclusion>
-          </exclusions>
-        </dependency>
       </dependencies>
     </profile>
 
@@ -604,34 +500,6 @@
         <akka.version>2.3.11</akka.version>
         <protobuf.version>2.5.0</protobuf.version>
       </properties>
-
-      <dependencies>
-      </dependencies>
-    </profile>
-
-    <profile>
-      <id>cassandra-spark-1.5</id>
-      <properties>
-        <spark.version>1.5.1</spark.version>
-        <akka.group>com.typesafe.akka</akka.group>
-        <akka.version>2.3.11</akka.version>
-        <protobuf.version>2.5.0</protobuf.version>
-        <guava.version>16.0.1</guava.version>
-      </properties>
-
-      <dependencies>
-        <dependency>
-          <groupId>com.datastax.spark</groupId>
-          <artifactId>spark-cassandra-connector_${scala.binary.version}</artifactId>
-          <version>1.5.0</version>
-          <exclusions>
-            <exclusion>
-              <groupId>org.joda</groupId>
-              <artifactId>joda-convert</artifactId>
-            </exclusion>
-          </exclusions>
-        </dependency>
-      </dependencies>
     </profile>
 
     <profile>
@@ -732,218 +600,6 @@
       </properties>
     </profile>
 
-    <profile>
-      <id>mapr3</id>
-      <activation>
-        <activeByDefault>false</activeByDefault>
-      </activation>
-      <properties>
-        <hadoop.version>1.0.3-mapr-3.0.3</hadoop.version>
-        <yarn.version>2.3.0-mapr-4.0.0-FCS</yarn.version>
-        <jets3t.version>0.7.1</jets3t.version>
-      </properties>
-      <repositories>
-        <repository>
-          <id>mapr-releases</id>
-          <url>http://repository.mapr.com/maven/</url>
-          <snapshots>
-            <enabled>false</enabled>
-          </snapshots>
-          <releases>
-            <enabled>true</enabled>
-          </releases>
-        </repository>
-      </repositories>
-    </profile>
-
-    <profile>
-      <id>mapr40</id>
-      <activation>
-        <activeByDefault>false</activeByDefault>
-      </activation>
-      <properties>
-        <hadoop.version>2.4.1-mapr-1503</hadoop.version>
-        <yarn.version>2.4.1-mapr-1503</yarn.version>
-        <jets3t.version>0.9.3</jets3t.version>
-      </properties>
-      <dependencies>
-        <dependency>
-          <groupId>org.apache.curator</groupId>
-          <artifactId>curator-recipes</artifactId>
-          <version>2.4.0</version>
-          <exclusions>
-            <exclusion>
-              <groupId>org.apache.zookeeper</groupId>
-              <artifactId>zookeeper</artifactId>
-            </exclusion>
-          </exclusions>
-        </dependency>
-        <dependency>
-          <groupId>org.apache.zookeeper</groupId>
-          <artifactId>zookeeper</artifactId>
-          <version>3.4.5-mapr-1503</version>
-        </dependency>
-      </dependencies>
-      <repositories>
-        <repository>
-          <id>mapr-releases</id>
-          <url>http://repository.mapr.com/maven/</url>
-          <snapshots>
-            <enabled>false</enabled>
-          </snapshots>
-          <releases>
-            <enabled>true</enabled>
-          </releases>
-        </repository>
-      </repositories>
-    </profile>
-
-    <profile>
-      <id>mapr41</id>
-      <activation>
-        <activeByDefault>false</activeByDefault>
-      </activation>
-      <properties>
-        <hadoop.version>2.5.1-mapr-1503</hadoop.version>
-        <yarn.version>2.5.1-mapr-1503</yarn.version>
-        <jets3t.version>0.7.1</jets3t.version>
-      </properties>
-      <dependencies>
-        <dependency>
-          <groupId>org.apache.curator</groupId>
-          <artifactId>curator-recipes</artifactId>
-          <version>2.4.0</version>
-          <exclusions>
-            <exclusion>
-              <groupId>org.apache.zookeeper</groupId>
-              <artifactId>zookeeper</artifactId>
-            </exclusion>
-          </exclusions>
-        </dependency>
-        <dependency>
-          <groupId>org.apache.zookeeper</groupId>
-          <artifactId>zookeeper</artifactId>
-          <version>3.4.5-mapr-1503</version>
-        </dependency>
-      </dependencies>
-      <repositories>
-        <repository>
-          <id>mapr-releases</id>
-          <url>http://repository.mapr.com/maven/</url>
-          <snapshots>
-            <enabled>false</enabled>
-          </snapshots>
-          <releases>
-            <enabled>true</enabled>
-          </releases>
-        </repository>
-      </repositories>
-    </profile>
-
-    <profile>
-      <id>mapr50</id>
-      <activation>
-        <activeByDefault>false</activeByDefault>
-      </activation>
-      <properties>
-        <hadoop.version>2.7.0-mapr-1506</hadoop.version>
-        <yarn.version>2.7.0-mapr-1506</yarn.version>
-        <jets3t.version>0.9.3</jets3t.version>
-      </properties>
-      <dependencies>
-        <dependency>
-          <groupId>org.apache.curator</groupId>
-          <artifactId>curator-recipes</artifactId>
-          <version>2.4.0</version>
-          <exclusions>
-            <exclusion>
-              <groupId>org.apache.zookeeper</groupId>
-              <artifactId>zookeeper</artifactId>
-            </exclusion>
-          </exclusions>
-        </dependency>
-        <dependency>
-          <groupId>org.apache.zookeeper</groupId>
-          <artifactId>zookeeper</artifactId>
-          <version>3.4.5-mapr-1503</version>
-        </dependency>
-      </dependencies>
-      <repositories>
-        <repository>
-          <id>mapr-releases</id>
-          <url>http://repository.mapr.com/maven/</url>
-          <snapshots>
-            <enabled>false</enabled>
-          </snapshots>
-          <releases>
-            <enabled>true</enabled>
-          </releases>
-        </repository>
-      </repositories>
-    </profile>
-
-    <profile>
-      <id>mapr51</id>
-      <activation>
-        <activeByDefault>false</activeByDefault>
-      </activation>
-      <properties>
-        <hadoop.version>2.7.0-mapr-1602</hadoop.version>
-        <yarn.version>2.7.0-mapr-1602</yarn.version>
-        <jets3t.version>0.9.3</jets3t.version>
-      </properties>
-      <dependencies>
-        <dependency>
-          <groupId>org.apache.curator</groupId>
-          <artifactId>curator-recipes</artifactId>
-          <version>2.4.0</version>
-          <exclusions>
-            <exclusion>
-              <groupId>org.apache.zookeeper</groupId>
-              <artifactId>zookeeper</artifactId>
-            </exclusion>
-          </exclusions>
-        </dependency>
-        <dependency>
-          <groupId>org.apache.zookeeper</groupId>
-          <artifactId>zookeeper</artifactId>
-          <version>3.4.5-mapr-1503</version>
-        </dependency>
-      </dependencies>
-      <repositories>
-        <repository>
-          <id>mapr-releases</id>
-          <url>http://repository.mapr.com/maven/</url>
-          <snapshots>
-            <enabled>false</enabled>
-          </snapshots>
-          <releases>
-            <enabled>true</enabled>
-          </releases>
-        </repository>
-      </repositories>
-    </profile>
-
-    <profile>
-      <id>yarn</id>
-      <properties>
-        <yarn.version>${hadoop.version}</yarn.version>
-      </properties>
-      <dependencies>
-        <dependency>
-          <groupId>org.apache.spark</groupId>
-          <artifactId>spark-yarn_${scala.binary.version}</artifactId>
-          <version>${spark.version}</version>
-        </dependency>
-
-        <dependency>
-          <groupId>org.apache.hadoop</groupId>
-          <artifactId>hadoop-yarn-api</artifactId>
-          <version>${yarn.version}</version>
-        </dependency>
-      </dependencies>
-    </profile>
-    
     <!-- include sparkr in the build -->
     <profile>
       <id>sparkr</id>

@@ -33,6 +33,7 @@ import java.util.concurrent.TimeUnit;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.stream.JsonReader;
+import org.apache.commons.codec.binary.StringUtils;
 import org.quartz.CronScheduleBuilder;
 import org.quartz.CronTrigger;
 import org.quartz.JobBuilder;
@@ -151,11 +152,10 @@ public class Notebook implements NoteEventListener {
     Note note =
         new Note(notebookRepo, replFactory, jobListenerFactory, notebookIndex, credentials, this);
     synchronized (notes) {
-      notes.put(note.id(), note);
+      notes.put(note.getId(), note);
     }
     if (interpreterIds != null) {
-      bindInterpretersToNote(note.id(), interpreterIds);
-      note.putDefaultReplName();
+      bindInterpretersToNote(note.getId(), interpreterIds);
     }
 
     notebookIndex.addIndexDoc(note);
@@ -239,10 +239,12 @@ public class Notebook implements NoteEventListener {
     Note newNote = createNote(subject);
     if (newNoteName != null) {
       newNote.setName(newNoteName);
+    } else {
+      newNote.setName("Note " + newNote.getId());
     }
     // Copy the interpreter bindings
-    List<String> boundInterpreterSettingsIds = getBindedInterpreterSettingsIds(sourceNote.id());
-    bindInterpretersToNote(newNote.id(), boundInterpreterSettingsIds);
+    List<String> boundInterpreterSettingsIds = getBindedInterpreterSettingsIds(sourceNote.getId());
+    bindInterpretersToNote(newNote.getId(), boundInterpreterSettingsIds);
 
     List<Paragraph> paragraphs = sourceNote.getParagraphs();
     for (Paragraph p : paragraphs) {
@@ -419,15 +421,15 @@ public class Notebook implements NoteEventListener {
     note.setNoteEventListener(this);
 
     synchronized (notes) {
-      notes.put(note.id(), note);
-      refreshCron(note.id());
+      notes.put(note.getId(), note);
+      refreshCron(note.getId());
     }
 
     for (String name : angularObjectSnapshot.keySet()) {
       SnapshotAngularObject snapshot = angularObjectSnapshot.get(name);
       List<InterpreterSetting> settings = replFactory.get();
       for (InterpreterSetting setting : settings) {
-        InterpreterGroup intpGroup = setting.getInterpreterGroup(note.id());
+        InterpreterGroup intpGroup = setting.getInterpreterGroup(note.getId());
         if (intpGroup.getId().equals(snapshot.getIntpGroupId())) {
           AngularObjectRegistry registry = intpGroup.getAngularObjectRegistry();
           String noteId = snapshot.getAngularObject().getNoteId();
@@ -508,11 +510,11 @@ public class Notebook implements NoteEventListener {
       Collections.sort(noteList, new Comparator<Note>() {
         @Override
         public int compare(Note note1, Note note2) {
-          String name1 = note1.id();
+          String name1 = note1.getId();
           if (note1.getName() != null) {
             name1 = note1.getName();
           }
-          String name2 = note2.id();
+          String name2 = note2.getId();
           if (note2.getName() != null) {
             name2 = note2.getName();
           }
@@ -572,7 +574,78 @@ public class Notebook implements NoteEventListener {
     return lastRunningUnixTime;
   }
 
-  public List<Map<String, Object>> getJobListforNotebook(boolean needsReload,
+  public List<Map<String, Object>> getJobListByParagraphId(String paragraphID) {
+    String gotNoteId = null;
+    List<Note> notes = getAllNotes();
+    for (Note note : notes) {
+      Paragraph p = note.getParagraph(paragraphID);
+      if (p != null) {
+        gotNoteId = note.getId();
+      }
+    }
+    return getJobListBymNotebookId(gotNoteId);
+  }
+
+  public List<Map<String, Object>> getJobListBymNotebookId(String notebookID) {
+    final String CRON_TYPE_NOTEBOOK_KEYWORD = "cron";
+    long lastRunningUnixTime = 0;
+    boolean isNotebookRunning = false;
+    Note jobNote = getNote(notebookID);
+    List<Map<String, Object>> notesInfo = new LinkedList<>();
+    if (jobNote == null) {
+      return notesInfo;
+    }
+
+    Map<String, Object> info = new HashMap<>();
+
+    info.put("notebookId", jobNote.getId());
+    String notebookName = jobNote.getName();
+    if (notebookName != null && !notebookName.equals("")) {
+      info.put("notebookName", jobNote.getName());
+    } else {
+      info.put("notebookName", "Note " + jobNote.getId());
+    }
+    // set notebook type ( cron or normal )
+    if (jobNote.getConfig().containsKey(CRON_TYPE_NOTEBOOK_KEYWORD) && !jobNote.getConfig()
+            .get(CRON_TYPE_NOTEBOOK_KEYWORD).equals("")) {
+      info.put("notebookType", "cron");
+    } else {
+      info.put("notebookType", "normal");
+    }
+
+    // set paragraphs
+    List<Map<String, Object>> paragraphsInfo = new LinkedList<>();
+    for (Paragraph paragraph : jobNote.getParagraphs()) {
+      // check paragraph's status.
+      if (paragraph.getStatus().isRunning()) {
+        isNotebookRunning = true;
+      }
+
+      // get data for the job manager.
+      Map<String, Object> paragraphItem = getParagraphForJobManagerItem(paragraph);
+      lastRunningUnixTime = getUnixTimeLastRunParagraph(paragraph);
+
+      paragraphsInfo.add(paragraphItem);
+    }
+
+    // set interpreter bind type
+    String interpreterGroupName = null;
+    if (replFactory.getInterpreterSettings(jobNote.getId()) != null
+            && replFactory.getInterpreterSettings(jobNote.getId()).size() >= 1) {
+      interpreterGroupName = replFactory.getInterpreterSettings(jobNote.getId()).get(0).getName();
+    }
+
+    // notebook json object root information.
+    info.put("interpreter", interpreterGroupName);
+    info.put("isRunningJob", isNotebookRunning);
+    info.put("unixTimeLastRun", lastRunningUnixTime);
+    info.put("paragraphs", paragraphsInfo);
+    notesInfo.add(info);
+
+    return notesInfo;
+  };
+
+  public List<Map<String, Object>> getJobListByUnixTime(boolean needsReload,
       long lastUpdateServerUnixTime, AuthenticationInfo subject) {
     final String CRON_TYPE_NOTEBOOK_KEYWORD = "cron";
 
@@ -593,14 +666,14 @@ public class Notebook implements NoteEventListener {
       Map<String, Object> info = new HashMap<>();
 
       // set notebook ID
-      info.put("notebookId", note.id());
+      info.put("notebookId", note.getId());
 
       // set notebook Name
       String notebookName = note.getName();
       if (notebookName != null && !notebookName.equals("")) {
         info.put("notebookName", note.getName());
       } else {
-        info.put("notebookName", "Note " + note.id());
+        info.put("notebookName", "Note " + note.getId());
       }
 
       // set notebook type ( cron or normal )

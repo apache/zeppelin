@@ -295,7 +295,9 @@ public class RemoteInterpreter extends Interpreter {
 
   @Override
   public InterpreterResult interpret(String st, InterpreterContext context) {
-    logger.debug("st: {}", st);
+    if (logger.isDebugEnabled()) {
+      logger.debug("st:\n{}", st);
+    }
     FormType form = getFormType();
     RemoteInterpreterProcess interpreterProcess = getInterpreterProcess();
     Client client = null;
@@ -524,5 +526,12 @@ public class RemoteInterpreter extends Interpreter {
 
   public void setEnv(Map<String, String> env) {
     this.env = env;
+  }
+
+  public void addEnv(Map<String, String> env) {
+    if (this.env == null) {
+      this.env = new HashMap<>();
+    }
+    this.env.putAll(env);
   }
 }
