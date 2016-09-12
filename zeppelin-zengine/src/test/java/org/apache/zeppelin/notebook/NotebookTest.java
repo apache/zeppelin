@@ -83,6 +83,8 @@ public class NotebookTest implements JobListenerFactory{
         "org.apache.zeppelin.interpreter.mock.MockInterpreter1," +
         "org.apache.zeppelin.interpreter.mock.MockInterpreter2," +
         "org.apache.zeppelin.interpreter.mock.MockInterpreter11");
+    System.setProperty(ConfVars.ZEPPELIN_INTERPRETER_GROUP_ORDER.getVarName(),
+        "mock1,mock2,mock11,dev");
 
     conf = ZeppelinConfiguration.create();
 
@@ -92,7 +94,7 @@ public class NotebookTest implements JobListenerFactory{
     MockInterpreter2.register("mock2", "org.apache.zeppelin.interpreter.mock.MockInterpreter2");
 
     depResolver = new DependencyResolver(tmpDir.getAbsolutePath() + "/local-repo");
-    factory = new InterpreterFactory(conf, new InterpreterOption(true), null, null, null, depResolver);
+    factory = new InterpreterFactory(conf, new InterpreterOption(false), null, null, null, depResolver);
 
     SearchService search = mock(SearchService.class);
     notebookRepo = new VFSNotebookRepo(conf);
@@ -113,7 +115,7 @@ public class NotebookTest implements JobListenerFactory{
     Note note = notebook.createNote(null);
     factory.setInterpreters(note.getId(), factory.getDefaultInterpreterSettingList());
 
-    // run with defatul repl
+    // run with default repl
     Paragraph p1 = note.addParagraph();
     Map config = p1.getConfig();
     config.put("enabled", true);
@@ -301,7 +303,7 @@ public class NotebookTest implements JobListenerFactory{
     config.put("cron", "* * * * * ?");
     note.setConfig(config);
     notebook.refreshCron(note.getId());
-    Thread.sleep(1*1000);
+    Thread.sleep(1 * 1000);
 
     // remove cron scheduler.
     config.put("cron", null);
@@ -310,7 +312,7 @@ public class NotebookTest implements JobListenerFactory{
     Thread.sleep(1000);
     dateFinished = p.getDateFinished();
     assertNotNull(dateFinished);
-    Thread.sleep(1*1000);
+    Thread.sleep(1 * 1000);
     assertEquals(dateFinished, p.getDateFinished());
   }
 
@@ -608,26 +610,26 @@ public class NotebookTest implements JobListenerFactory{
             new HashSet<String>(Arrays.asList("user1")));
 
     assertEquals(notebookAuthorization.isOwner(note.getId(),
-            new HashSet<String>(Arrays.asList("user2"))), false);
+        new HashSet<String>(Arrays.asList("user2"))), false);
     assertEquals(notebookAuthorization.isOwner(note.getId(),
             new HashSet<String>(Arrays.asList("user1"))), true);
 
     assertEquals(notebookAuthorization.isReader(note.getId(),
-            new HashSet<String>(Arrays.asList("user3"))), false);
+        new HashSet<String>(Arrays.asList("user3"))), false);
     assertEquals(notebookAuthorization.isReader(note.getId(),
-            new HashSet<String>(Arrays.asList("user2"))), true);
+        new HashSet<String>(Arrays.asList("user2"))), true);
 
     assertEquals(notebookAuthorization.isWriter(note.getId(),
-            new HashSet<String>(Arrays.asList("user2"))), false);
+        new HashSet<String>(Arrays.asList("user2"))), false);
     assertEquals(notebookAuthorization.isWriter(note.getId(),
             new HashSet<String>(Arrays.asList("user1"))), true);
 
     // Test clearing of permssions
     notebookAuthorization.setReaders(note.getId(), Sets.<String>newHashSet());
     assertEquals(notebookAuthorization.isReader(note.getId(),
-            new HashSet<String>(Arrays.asList("user2"))), true);
+        new HashSet<String>(Arrays.asList("user2"))), true);
     assertEquals(notebookAuthorization.isReader(note.getId(),
-            new HashSet<String>(Arrays.asList("user3"))), true);
+        new HashSet<String>(Arrays.asList("user3"))), true);
 
     notebook.removeNote(note.getId(), null);
   }
