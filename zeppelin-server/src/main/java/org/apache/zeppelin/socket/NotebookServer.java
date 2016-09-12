@@ -1323,7 +1323,7 @@ public class NotebookServer extends WebSocketServlet implements
     public void onNoteRemove(Note note) {
       try {
         notebookServer.broadcastUpdateNotebookJobInfo(System.currentTimeMillis() - 5000,
-                note.getLastParagraph().getAuthenticationInfo().getUser());
+                SecurityUtils.getPrincipal());
       } catch (IOException ioe) {
         LOG.error("can not broadcast for job manager {}", ioe.getMessage());
       }
@@ -1366,7 +1366,7 @@ public class NotebookServer extends WebSocketServlet implements
 
     @Override
     public void onNoteCreate(Note note) {
-      Notebook notebook = notebookServer.notebook(note.getLastParagraph().getAuthenticationInfo().getUser());
+      Notebook notebook = notebookServer.notebook(SecurityUtils.getPrincipal());
       List<Map<String, Object>> notebookJobs = notebook.getJobListBymNotebookId(
               note.getId()
       );
@@ -1395,7 +1395,7 @@ public class NotebookServer extends WebSocketServlet implements
 
     @Override
     public void onUnbindInterpreter(Note note, InterpreterSetting setting) {
-      Notebook notebook = notebookServer.notebook(note.getLastParagraph().getAuthenticationInfo().getUser());
+      Notebook notebook = notebookServer.notebook(SecurityUtils.getPrincipal());
       List<Map<String, Object>> notebookJobs = notebook.getJobListBymNotebookId(
               note.getId()
       );
@@ -1453,8 +1453,10 @@ public class NotebookServer extends WebSocketServlet implements
       notebookServer.broadcastNote(note);
 
       try {
+        System.out.println(SecurityUtils.getPrincipal());
+
         notebookServer.broadcastUpdateNotebookJobInfo(System.currentTimeMillis() - 5000,
-                note.getLastParagraph().getAuthenticationInfo().getUser());
+                SecurityUtils.getPrincipal());
       } catch (IOException e) {
         LOG.error("can not broadcast for job manager {}", e);
       }
