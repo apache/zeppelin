@@ -89,7 +89,8 @@ public class NotebookRepoSync implements NotebookRepo {
     }
     if (getRepoCount() > 1) {
       try {
-        sync(0, 1);
+        AuthenticationInfo subject = new AuthenticationInfo("anonymous");
+        sync(0, 1, subject);
       } catch (IOException e) {
         LOG.warn("Failed to sync with secondary storage on start {}", e);
       }
@@ -171,12 +172,12 @@ public class NotebookRepoSync implements NotebookRepo {
    *
    * @throws IOException
    */
-  void sync(int sourceRepoIndex, int destRepoIndex) throws IOException {
+  void sync(int sourceRepoIndex, int destRepoIndex, AuthenticationInfo subject) throws IOException {
     LOG.info("Sync started");
     NotebookRepo srcRepo = getRepo(sourceRepoIndex);
     NotebookRepo dstRepo = getRepo(destRepoIndex);
-    List <NoteInfo> srcNotes = srcRepo.list(null);
-    List <NoteInfo> dstNotes = dstRepo.list(null);
+    List <NoteInfo> srcNotes = srcRepo.list(subject);
+    List <NoteInfo> dstNotes = dstRepo.list(subject);
 
     Map<String, List<String>> noteIDs = notesCheckDiff(srcNotes, srcRepo, dstNotes, dstRepo);
     List<String> pushNoteIDs = noteIDs.get(pushKey);
@@ -186,7 +187,7 @@ public class NotebookRepoSync implements NotebookRepo {
       for (String id : pushNoteIDs) {
         LOG.info("ID : " + id);
       }
-      pushNotes(pushNoteIDs, srcRepo, dstRepo);
+      pushNotes(subject, pushNoteIDs, srcRepo, dstRepo);
     } else {
       LOG.info("Nothing to push");
     }
@@ -196,7 +197,7 @@ public class NotebookRepoSync implements NotebookRepo {
       for (String id : pullNoteIDs) {
         LOG.info("ID : " + id);
       }
-      pushNotes(pullNoteIDs, dstRepo, srcRepo);
+      pushNotes(subject, pullNoteIDs, dstRepo, srcRepo);
     } else {
       LOG.info("Nothing to pull");
     }
@@ -204,14 +205,14 @@ public class NotebookRepoSync implements NotebookRepo {
     LOG.info("Sync ended");
   }
 
-  public void sync() throws IOException {
-    sync(0, 1);
+  public void sync(AuthenticationInfo subject) throws IOException {
+    sync(0, 1, subject);
   }
 
-  private void pushNotes(List<String> ids, NotebookRepo localRepo,
+  private void pushNotes(AuthenticationInfo subject, List<String> ids, NotebookRepo localRepo,
       NotebookRepo remoteRepo) throws IOException {
     for (String id : ids) {
-      remoteRepo.save(localRepo.get(id, null), null);
+      remoteRepo.save(localRepo.get(id, subject), subject);
     }
   }
 
