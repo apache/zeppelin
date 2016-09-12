@@ -332,8 +332,10 @@ public class ZeppelinConfiguration extends XMLConfiguration {
   }
 
   public String getNotebookDir(AuthenticationInfo authenticationInfo) {
-    return String.format(getString(ConfVars.ZEPPELIN_NOTEBOOK_DIR)
-        + "/%s", authenticationInfo.getUser());
+    return (isNotebookPeruserNotes()) ?
+       String.format(getString(ConfVars.ZEPPELIN_NOTEBOOK_DIR)
+              + "/%s", authenticationInfo.getUser()) :
+       String.format(getString(ConfVars.ZEPPELIN_NOTEBOOK_DIR));
   }
 
   public String getUser() {
@@ -369,8 +371,10 @@ public class ZeppelinConfiguration extends XMLConfiguration {
   }
 
   public String getInterpreterSettingPath(AuthenticationInfo authenticationInfo) {
-    return getRelativeDir(
-        String.format("%s/%s", getNotebookDir(authenticationInfo), getInterpeterSetting()));
+    return (isNotebookPeruserNotes()) ?
+            getRelativeDir(
+                    String.format("%s/%s", getNotebookDir(authenticationInfo), getInterpeterSetting())) :
+            getRelativeDir(String.format("%s/interpreter.json", getConfDir()));
   }
 
   public String getHeliumConfPath() {
@@ -382,8 +386,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
   }
 
   public String getNotebookAuthorizationPath(AuthenticationInfo authenticationInfo) {
-    return getRelativeDir(
-        String.format("%s/notebook-authorization.json", getNotebookDir(authenticationInfo)));
+    return getRelativeDir(String.format("%s/notebook-authorization.json", getConfDir()));
   }
 
   public Boolean credentialsPersist() {
@@ -437,6 +440,14 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 
   public String getWebsocketMaxTextMessageSize() {
     return getString(ConfVars.ZEPPELIN_WEBSOCKET_MAX_TEXT_MESSAGE_SIZE);
+  }
+
+  public boolean isNotebookPeruserNotes() {
+    return getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_PERUSER_NOTES);
+  }
+
+  public boolean isInterpreterPeruserFactories() {
+    return getBoolean(ConfVars.ZEPPELIN_INTERPRETER_PERUSER_FACTORIES);
   }
 
   public Map<String, String> dumpConfigurations(ZeppelinConfiguration conf,
@@ -565,7 +576,10 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_ALLOWED_ORIGINS("zeppelin.server.allowed.origins", "*"),
     ZEPPELIN_ANONYMOUS_ALLOWED("zeppelin.anonymous.allowed", true),
     ZEPPELIN_CREDENTIALS_PERSIST("zeppelin.credentials.persist", true),
-    ZEPPELIN_WEBSOCKET_MAX_TEXT_MESSAGE_SIZE("zeppelin.websocket.max.text.message.size", "1024000");
+    ZEPPELIN_WEBSOCKET_MAX_TEXT_MESSAGE_SIZE("zeppelin.websocket.max.text.message.size", "1024000"),
+    ZEPPELIN_NOTEBOOK_PERUSER_NOTES("zeppelin.notebook.peruser.notes", false),
+    ZEPPELIN_INTERPRETER_PERUSER_FACTORIES("zeppelin.interpreter.peruser.factories", false)
+    ;
 
     private String varName;
     @SuppressWarnings("rawtypes")

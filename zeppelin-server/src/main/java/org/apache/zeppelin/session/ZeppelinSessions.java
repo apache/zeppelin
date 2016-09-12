@@ -38,14 +38,18 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Maintain HTTP users state.
+ * Maintain HTTP user session states.
  */
 public class ZeppelinSessions {
   private static final Logger LOGGER = LoggerFactory.getLogger(ZeppelinSessions.class);
 
-  public static final String ZEPPELIN_AUTH_USER_KEY = "ZEPPELIN_AUTH_USER_KEY";
+  public static final String ZEPPELIN_AUTH_USER_KEY = "_authUser";
+  public static final String INTERPRETER_SHARED_FACTORIES_KEY = "_sharedFactories";
 
-  public static Map<String, Component> components = new HashMap<String, Component>();
+  private static final ZeppelinConfiguration conf = ZeppelinServer.conf;
+  private static NotebookAuthorization notebookAuthorization = new NotebookAuthorization(conf, null);
+
+  public static Map<String, Component> components = new HashMap();
 
   public static Notebook notebook(String principal) {
     return component(principal).notebook;
@@ -73,7 +77,11 @@ public class ZeppelinSessions {
 
   private static Component component(String principal) {
 
-    Component component = components.get(principal);
+    String componentKey = conf.isInterpreterPeruserFactories() ?
+            principal :
+            INTERPRETER_SHARED_FACTORIES_KEY;
+
+    Component component = components.get(componentKey);
 
     if (component == null) {
 
@@ -82,7 +90,6 @@ public class ZeppelinSessions {
         AuthenticationInfo authenticationInfo = new AuthenticationInfo(principal);
 
         component = new Component();
-        ZeppelinConfiguration conf = ZeppelinServer.conf;
 
         component.depResolver = new DependencyResolver(
                 conf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_LOCALREPO));
@@ -92,13 +99,14 @@ public class ZeppelinSessions {
         component.heliumApplicationFactory = new HeliumApplicationFactory();
         component.schedulerFactory = new SchedulerFactory();
 
-        component.interpreterFactory = new InterpreterFactory(conf, ZeppelinServer.notebookWsServer,
+        component.interpreterFactory = new InterpreterFactory(conf,
+                ZeppelinServer.notebookWsServer,
                 ZeppelinServer.notebookWsServer, component.heliumApplicationFactory,
-                component.depResolver, new AuthenticationInfo(principal));
+                component.depResolver, authenticationInfo);
 
         component.notebookRepo = new NotebookRepoSync(conf, authenticationInfo);
         component.searchService = new LuceneSearch();
-        component.notebookAuthorization = new NotebookAuthorization(conf, authenticationInfo);
+        component.notebookAuthorization = notebookAuthorization;
         component.credentials = new Credentials(
             conf.credentialsPersist(), conf.getCredentialsPath());
 
@@ -116,7 +124,7 @@ public class ZeppelinSessions {
 
         component.notebook.addNotebookEventListener(component.heliumApplicationFactory);
 
-        components.put(principal, component);
+        components.put(componentKey, component);
 
       }
       catch (Exception e) {

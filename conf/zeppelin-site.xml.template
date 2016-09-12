@@ -50,6 +50,12 @@
 </property>
 
 <property>
+  <name>zeppelin.notebook.peruser.notes</name>
+  <value>false</value>
+  <description>Set this to true to have separated user spaces (e.g. one folder per user)</description>
+</property>
+
+<property>
   <name>zeppelin.notebook.homescreen</name>
   <value></value>
   <description>id of notebook to be displayed in homescreen. ex) 2A94M5J1Z Empty value displays default home screen</description>
@@ -174,6 +180,12 @@
   <name>zeppelin.interpreter.dir</name>
   <value>interpreter</value>
   <description>Interpreter implementation base directory</description>
+</property>
+
+<property>
+  <name>zeppelin.interpreter.peruser.factories</name>
+  <value>false</value>
+  <description>Set to true to have separated interperter factory per user</description>
 </property>
 
 <property>

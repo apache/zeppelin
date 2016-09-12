@@ -41,6 +41,10 @@ public class NotebookAuthorization {
   private Gson gson;
   private String filePath;
 
+  public NotebookAuthorization(ZeppelinConfiguration conf) {
+    this(conf, null);
+  }
+
   public NotebookAuthorization(ZeppelinConfiguration conf, AuthenticationInfo authenticationInfo) {
     this.conf = conf;
     filePath = conf.getNotebookAuthorizationPath(authenticationInfo);
