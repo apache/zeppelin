@@ -95,6 +95,9 @@
   <profiles>
     <profile>
       <id>scala-2.11</id>
+      <activation>
+        <property><name>scala-2.11</name></property>
+      </activation>
       <dependencies>
         <dependency>
           <groupId>org.scala-lang.modules</groupId>
@@ -108,24 +111,6 @@
 
   <build>
     <plugins>
-      <plugin>
-        <groupId>org.apache.rat</groupId>
-        <artifactId>apache-rat-plugin</artifactId>
-        <configuration>
-          <excludes>
-            <exclude>**/.idea/</exclude>
-            <exclude>**/*.iml</exclude>
-            <exclude>.git/</exclude>
-            <exclude>.gitignore</exclude>
-            <exclude>**/.settings/*</exclude>
-            <exclude>**/.classpath</exclude>
-            <exclude>**/.project</exclude>
-            <exclude>**/target/**</exclude>
-            <exclude>**/README.md</exclude>
-          </excludes>
-        </configuration>
-      </plugin>
-
       <plugin>
         <artifactId>maven-failsafe-plugin</artifactId>
         <version>2.16</version>

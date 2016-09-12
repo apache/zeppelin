@@ -61,4 +61,4 @@ also try to add proxy info  to npm install command:
 and retry to build again.
 
 ## Contribute on Zeppelin Web
-If you wish to help us and contribute to Zeppelin WebApplication, please look at [Zeppelin WebApplication's contribution guideline](CONTRIBUTING.md).
+If you wish to help us and contribute to Zeppelin WebApplication, please look at the overall project [contribution guidelines](https://zeppelin.apache.org/contribution/contributions.html) and the more focused [Zeppelin WebApplication's documentation](https://zeppelin.apache.org/contribution/webapplication.html).

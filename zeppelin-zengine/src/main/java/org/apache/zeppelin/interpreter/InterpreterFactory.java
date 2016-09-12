@@ -506,6 +506,9 @@ public class InterpreterFactory implements InterpreterGroupFactory {
 
   public InterpreterSetting createNewSetting(String name, String group,
       List<Dependency> dependencies, InterpreterOption option, Properties p) throws IOException {
+    if (name.indexOf(".") >= 0) {
+      throw new IOException("'.' is invalid for InterpreterSetting name.");
+    }
     InterpreterSetting setting = createFromInterpreterSettingRef(group);
     setting.setName(name);
     setting.setGroup(group);
@@ -991,7 +994,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
         new RemoteInterpreter(property, noteId, className, conf.getInterpreterRemoteRunnerPath(),
             interpreterPath, localRepoPath, connectTimeout, maxPoolSize,
             remoteInterpreterProcessListener, appEventListener);
-    remoteInterpreter.setEnv(env);
+    remoteInterpreter.addEnv(env);
 
     return new LazyOpenInterpreter(remoteInterpreter);
   }

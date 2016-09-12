@@ -15,7 +15,8 @@
 package org.apache.zeppelin.jdbc;
 
 import static org.apache.commons.lang.StringUtils.containsIgnoreCase;
-
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.io.IOException;
 import java.security.PrivilegedExceptionAction;
 import java.sql.*;
@@ -168,7 +169,7 @@ public class JDBCInterpreter extends Interpreter {
 
     logger.debug("propertiesMap: {}", propertiesMap);
 
-    if (!StringUtils.isAnyEmpty(property.getProperty("zeppelin.jdbc.auth.type"))) {
+    if (!StringUtils.isEmpty(property.getProperty("zeppelin.jdbc.auth.type"))) {
       JDBCSecurityImpl.createSecureConfiguration(property);
     }
     for (String propertyKey : propertiesMap.keySet()) {
@@ -233,49 +234,53 @@ public class JDBCInterpreter extends Interpreter {
       Class.forName(properties.getProperty(DRIVER_KEY));
       final String url = properties.getProperty(URL_KEY);
 
-      UserGroupInformation.AuthenticationMethod authType = JDBCSecurityImpl.getAuthtype(property);
-      switch (authType) {
-          case KERBEROS:
-            if (user == null) {
-              connection = getConnectionFromPool(url, propertyKey, properties);
-            } else {
-              if ("hive".equalsIgnoreCase(propertyKey)) {
-                connection = getConnectionFromPool(url + ";hive.server2.proxy.user=" + user,
-                  propertyKey, properties);
+      if (StringUtils.isEmpty(property.getProperty("zeppelin.jdbc.auth.type"))) {
+        connection = DriverManager.getConnection(url, properties);
+      } else {
+        UserGroupInformation.AuthenticationMethod authType = JDBCSecurityImpl.getAuthtype(property);
+        switch (authType) {
+            case KERBEROS:
+              if (user == null) {
+                connection = getConnectionFromPool(url, propertyKey, properties);
               } else {
-                UserGroupInformation ugi = null;
-                try {
-                  ugi = UserGroupInformation.createProxyUser(user,
+                if ("hive".equalsIgnoreCase(propertyKey)) {
+                  connection = getConnectionFromPool(url + ";hive.server2.proxy.user=" + user,
+                    propertyKey, properties);
+                } else {
+                  UserGroupInformation ugi = null;
+                  try {
+                    ugi = UserGroupInformation.createProxyUser(user,
                       UserGroupInformation.getCurrentUser());
-                } catch (Exception e) {
-                  logger.error("Error in createProxyUser", e);
-                  StringBuilder stringBuilder = new StringBuilder();
-                  stringBuilder.append(e.getMessage()).append("\n");
-                  stringBuilder.append(e.getCause());
-                  throw new InterpreterException(stringBuilder.toString());
-                }
+                  } catch (Exception e) {
+                    logger.error("Error in createProxyUser", e);
+                    StringBuilder stringBuilder = new StringBuilder();
+                    stringBuilder.append(e.getMessage()).append("\n");
+                    stringBuilder.append(e.getCause());
+                    throw new InterpreterException(stringBuilder.toString());
+                  }
 
-                final String poolKey = propertyKey;
-                try {
-                  connection = ugi.doAs(new PrivilegedExceptionAction<Connection>() {
-                    @Override
-                    public Connection run() throws Exception {
-                      return getConnectionFromPool(url, poolKey, properties);
-                    }
-                  });
-                } catch (Exception e) {
-                  logger.error("Error in doAs", e);
-                  StringBuilder stringBuilder = new StringBuilder();
-                  stringBuilder.append(e.getMessage()).append("\n");
-                  stringBuilder.append(e.getCause());
-                  throw new InterpreterException(stringBuilder.toString());
+                  final String poolKey = propertyKey;
+                  try {
+                    connection = ugi.doAs(new PrivilegedExceptionAction<Connection>() {
+                      @Override
+                      public Connection run() throws Exception {
+                        return getConnectionFromPool(url, poolKey, properties);
+                      }
+                    });
+                  } catch (Exception e) {
+                    logger.error("Error in doAs", e);
+                    StringBuilder stringBuilder = new StringBuilder();
+                    stringBuilder.append(e.getMessage()).append("\n");
+                    stringBuilder.append(e.getCause());
+                    throw new InterpreterException(stringBuilder.toString());
+                  }
                 }
               }
-            }
-            break;
+              break;
 
-          default:
-            connection = getConnectionFromPool(url, propertyKey, properties);
+            default:
+              connection = getConnectionFromPool(url, propertyKey, properties);
+        }
       }
     }
     propertyKeySqlCompleterMap.put(propertyKey, createSqlCompleter(connection));
@@ -413,11 +418,11 @@ public class JDBCInterpreter extends Interpreter {
 
     } catch (Exception e) {
       logger.error("Cannot run " + sql, e);
-      StringBuilder stringBuilder = new StringBuilder();
-      stringBuilder.append(e.getMessage()).append("\n");
-      stringBuilder.append(e.getClass().toString()).append("\n");
-      stringBuilder.append(StringUtils.join(e.getStackTrace(), "\n"));
-      return new InterpreterResult(Code.ERROR, stringBuilder.toString());
+      ByteArrayOutputStream baos = new ByteArrayOutputStream();
+      PrintStream ps = new PrintStream(baos);
+      e.printStackTrace(ps);
+      String errorMsg = new String(baos.toByteArray(), StandardCharsets.UTF_8);
+      return new InterpreterResult(Code.ERROR, errorMsg);
     }
   }
 

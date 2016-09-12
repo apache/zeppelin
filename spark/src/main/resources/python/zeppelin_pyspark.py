@@ -107,9 +107,9 @@ class PyZeppelinContext(dict):
 
 
 class SparkVersion(object):
-  SPARK_1_4_0 = 140
-  SPARK_1_3_0 = 130
-  SPARK_2_0_0 = 200
+  SPARK_1_4_0 = 10400
+  SPARK_1_3_0 = 10300
+  SPARK_2_0_0 = 20000
 
   def __init__(self, versionNumber):
     self.version = versionNumber
