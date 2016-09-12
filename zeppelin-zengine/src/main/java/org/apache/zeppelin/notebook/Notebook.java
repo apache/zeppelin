@@ -476,7 +476,7 @@ public class Notebook implements NoteEventListener {
     if (notebookRepo instanceof NotebookRepoSync) {
       NotebookRepoSync mainRepo = (NotebookRepoSync) notebookRepo;
       if (mainRepo.getRepoCount() > 1) {
-        mainRepo.sync();
+        mainRepo.sync(subject);
       }
     }
 
