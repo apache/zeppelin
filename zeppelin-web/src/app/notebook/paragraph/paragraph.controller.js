@@ -913,9 +913,9 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
           if (i === 0) {
             columnNames.push({name: col, index: j, aggr: 'sum'});
           } else {
-            var parsedCol = $scope.parseTableCell(col);
-            cols.push(parsedCol);
-            cols2.push({key: (columnNames[i]) ? columnNames[i].name : undefined, value: parsedCol});
+            //var parsedCol = $scope.parseTableCell(col);
+            cols.push(col);
+            cols2.push({key: (columnNames[i]) ? columnNames[i].name : undefined, value: col});
           }
         }
         if (i !== 0) {
@@ -1003,7 +1003,7 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
 
     function buildMenu(activeCellType) {
       var menu = document.createElement('UL');
-      var types = ['text', 'numeric'];
+      var types = ['text', 'numeric', 'date'];
       var item;
 
       menu.className = 'changeTypeMenu';
@@ -1036,10 +1036,36 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
       return button;
     }
 
+    function numericValidator(value, callback) {
+      if (!isNaN(value)) {
+        if (value.length !== 0 && Number(value) <= Number.MAX_SAFE_INTEGER && Number(value) >= Number.MIN_SAFE_INTEGER) {
+          return callback(true);
+        }
+      }
+      return callback(false);
+    }
+
+    function dateValidator(value, callback) {
+      var d = moment(value);
+      if (d.isValid()) {
+        return callback(true);
+      } else {
+        return callback(false);
+      }
+    }
+
     function setColumnType(i, type, instance) {
-      $scope.isChangingColType = true;
+      $scope.colTypeFlag[i] = true;
       $scope.curSelectCol = i;
-      $scope.columnFormat[i] = type;
+      $scope.columns[i].type = type;
+      if ($scope.columns[i].type === 'numeric') {
+        $scope.columns[i].validator = numericValidator;
+      } else if ($scope.columns[i].type === 'date') {
+        $scope.columns[i].validator = dateValidator;
+      } else {
+        $scope.columns[i].validator = null;
+      }
+      instance.updateSettings({columns: $scope.columns});
       instance.validateCells(function() {
         instance.render();
       });
@@ -1054,8 +1080,13 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
       if ($scope.hot) {
         $scope.hot.destroy();
       }
-      if (!$scope.columnFormat) {
-        $scope.columnFormat = Array.apply(null, Array(data.columnNames.length)).map(function() { return 'text'; });
+      if (!$scope.columns) {
+        $scope.columns = Array.apply(null, Array(data.columnNames.length)).map(function() {
+          return {type: 'text'};
+        });
+      }
+      if (!$scope.colTypeFlag) {
+        $scope.colTypeFlag = Array.apply(null, Array(data.columnNames.length)).map(function() { return null; });
       }
       $scope.hot = new Handsontable(container, {
         colHeaders: columnNames,
@@ -1075,28 +1106,10 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
         cells: function(row, col, prop) {
           var cellProperties = {};
           cellProperties.renderer = function(instance, td, row, col, prop, value, cellProperties) {
-            if (value instanceof moment) {
-              td.innerHTML = value._i;
-            } else if (!isNaN(value)) {
+            if (!isNaN(value)) {
               cellProperties.format = '0,0.[00000]';
               td.style.textAlign = 'left';
               Handsontable.renderers.NumericRenderer.apply(this, arguments);
-
-            // if (!isNaN(value)) {
-            //   if (typeof $scope.isChangingColType !== 'undefined') {
-            //     if ($scope.columnFormat[col] === 'numeric') {
-            //       cellProperties.format = '0,0.[00000]';
-            //       td.style.textAlign = 'left';
-            //       Handsontable.renderers.NumericRenderer.apply(this, arguments);
-            //     } else {
-            //       Handsontable.renderers.TextRenderer.apply(this, arguments);
-            //     }
-            //   } else {
-            //     cellProperties.format = '0,0.[00000]';
-            //     td.style.textAlign = 'left';
-            //     Handsontable.renderers.NumericRenderer.apply(this, arguments);
-            //     $scope.columnFormat[col] = 'numeric';
-            //   }
             } else if (value.length > '%html'.length && '%html ' === value.substring(0, '%html '.length)) {
               td.innerHTML = value.substring('%html'.length);
             } else {
@@ -1106,11 +1119,13 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
           return cellProperties;
         },
         afterRender: function(isForced) {
-          $scope.isChangingColType = false;
+          if ($scope.colTypeFlag[$scope.curSelectCol]) {
+            $scope.colTypeFlag[$scope.curSelectCol] = false;
+          }
         },
         afterGetColHeader: function(col, TH) {
           var instance = this;
-          var menu = buildMenu($scope.columnFormat[col]);
+          var menu = buildMenu($scope.columns[col].type);
           var button = buildButton();
 
           addButtonMenuEvent(button, menu);
