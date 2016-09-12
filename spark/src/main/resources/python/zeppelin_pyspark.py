@@ -60,14 +60,14 @@ class PyZeppelinContext(dict):
 
   def show(self, obj,**kwargs):
     from pyspark.sql import DataFrame
-    if isinstance(obj, DataFrame) and type(p).__name__ == "DataFrame":   
+    if isinstance(obj, DataFrame) and type(obj).__name__ == "DataFrame":
       print(gateway.jvm.org.apache.zeppelin.spark.ZeppelinContext.showDF(self.z, obj._jdf))    
     elif hasattr(obj, '__name__') and obj.__name__ == "matplotlib.pyplot":
       self.show_matplotlib(obj, **kwargs)    
     elif hasattr(obj, '__call__'):
       obj() #error reporting
     else:
-      print(str(obj))  
+      print(str(obj))
 
   # By implementing special methods it makes operating on it more Pythonic
   def __setitem__(self, key, item):
