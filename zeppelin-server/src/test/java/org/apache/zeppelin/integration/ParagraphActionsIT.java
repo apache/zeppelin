@@ -95,27 +95,20 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       ZeppelinITUtils.sleep(1000, false);
       waitForParagraph(1, "READY");
 
-      String oldIntpTag = driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'editor')]")).getText();
-
       collector.checkThat("Paragraph is created above",
           driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'editor')]")).getText(),
-          CoreMatchers.not(StringUtils.EMPTY));
+          CoreMatchers.equalTo(StringUtils.EMPTY));
       setTextOfParagraph(1, " this is above ");
-
 
       newPara = driver.findElement(By.xpath(getParagraphXPath(2) + "//div[contains(@class,'new-paragraph')][2]"));
       action.moveToElement(newPara).click().build().perform();
 
       waitForParagraph(3, "READY");
 
-      String lastIntpTag = driver.findElement(By.xpath(getParagraphXPath(3) + "//div[contains(@class, 'editor')]")).getText();
-
       collector.checkThat("Paragraph is created below",
           driver.findElement(By.xpath(getParagraphXPath(3) + "//div[contains(@class, 'editor')]")).getText(),
-          CoreMatchers.not(StringUtils.EMPTY));
+          CoreMatchers.equalTo(StringUtils.EMPTY));
       setTextOfParagraph(3, " this is below ");
-
-      collector.checkThat("Compare interpreter name tag", oldIntpTag, CoreMatchers.equalTo(lastIntpTag));
 
       collector.checkThat("The output field of paragraph1 contains",
           driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'editor')]")).getText(),

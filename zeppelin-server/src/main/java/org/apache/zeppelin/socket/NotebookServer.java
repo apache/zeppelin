@@ -1134,10 +1134,8 @@ public class NotebookServer extends WebSocketServlet implements
        .get("config");
     p.setConfig(config);
     // if it's the last paragraph, let's add a new one
-    boolean isTheLastParagraph = note.getLastParagraph().getId()
-        .equals(p.getId());
-    note.setLastReplName(paragraphId);
-    if (!(text.equals(note.getLastInterpreterName() + " ") || Strings.isNullOrEmpty(text)) &&
+    boolean isTheLastParagraph = note.isLastParagraph(p.getId());
+    if (!(text.trim().equals(p.getMagic()) || Strings.isNullOrEmpty(text)) &&
         isTheLastParagraph) {
       note.addParagraph();
     }

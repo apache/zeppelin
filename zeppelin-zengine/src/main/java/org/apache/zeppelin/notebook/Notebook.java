@@ -156,7 +156,6 @@ public class Notebook implements NoteEventListener {
     }
     if (interpreterIds != null) {
       bindInterpretersToNote(note.getId(), interpreterIds);
-      note.putDefaultReplName();
     }
 
     notebookIndex.addIndexDoc(note);
