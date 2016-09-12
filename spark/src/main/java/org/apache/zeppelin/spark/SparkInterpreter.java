@@ -329,6 +329,7 @@ public class SparkInterpreter extends Interpreter {
     }
 
     setupConfForPySpark(conf);
+    setupConfForSparkR(conf);
     Class SparkSession = Utils.findClass("org.apache.spark.sql.SparkSession");
     Object builder = Utils.invokeStaticMethod(SparkSession, "builder");
     Utils.invokeMethod(builder, "config", new Class[]{ SparkConf.class }, new Object[]{ conf });
@@ -443,6 +444,7 @@ public class SparkInterpreter extends Interpreter {
       }
     }
     setupConfForPySpark(conf);
+    setupConfForSparkR(conf);
     SparkContext sparkContext = new SparkContext(conf);
     return sparkContext;
   }
@@ -491,6 +493,35 @@ public class SparkInterpreter extends Interpreter {
     // when spark version is greater than or equal to 1.5.0
     if (getProperty("master").equals("yarn-client")) {
       conf.set("spark.yarn.isPython", "true");
+    }
+  }
+
+  private void setupConfForSparkR(SparkConf conf) {
+    String sparkRBasePath = new InterpreterProperty("SPARK_HOME", null, null, null).getValue();
+    File sparkRPath;
+    if (null == sparkRBasePath) {
+      sparkRBasePath =
+              new InterpreterProperty("ZEPPELIN_HOME", "zeppelin.home", "../", null).getValue();
+      sparkRPath = new File(sparkRBasePath,
+              "interpreter" + File.separator + "spark" + File.separator + "R");
+    } else {
+      sparkRPath = new File(sparkRBasePath, "R" + File.separator + "lib");
+    }
+
+    sparkRPath = new File(sparkRPath, "sparkr.zip");
+    if (sparkRPath.exists() && sparkRPath.isFile()) {
+      String archives = null;
+      if (conf.contains("spark.yarn.dist.archives")) {
+        archives = conf.get("spark.yarn.dist.archives");
+      }
+      if (archives != null) {
+        archives = archives + "," + sparkRPath + "#sparkr";
+      } else {
+        archives = sparkRPath + "#sparkr";
+      }
+      conf.set("spark.yarn.dist.archives", archives);
+    } else {
+      logger.warn("sparkr.zip is not found, sparkr may not work.");
     }
   }
 
