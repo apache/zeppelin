@@ -775,7 +775,8 @@ public class NotebookRestApi {
     LOG.info("Get notebook jobs for job manager");
 
     AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
-    List<Map<String, Object>> notebookJobs = notebook().getJobListforNotebook(false, 0, subject);
+    List<Map<String, Object>> notebookJobs = notebook()
+      .getJobListByUnixTime(false, 0, subject);
     Map<String, Object> response = new HashMap<>();
 
     response.put("lastResponseUnixTime", System.currentTimeMillis());
@@ -786,6 +787,8 @@ public class NotebookRestApi {
 
   /**
    * Get updated notebook jobs for job manager
+   *
+   * Return the `Note` change information within the post unix timestamp.
    *
    * @return JSON with status.OK
    * @throws IOException, IllegalArgumentException
@@ -800,7 +803,7 @@ public class NotebookRestApi {
 
     List<Map<String, Object>> notebookJobs;
     AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
-    notebookJobs = notebook().getJobListforNotebook(false, lastUpdateUnixTime, subject);
+    notebookJobs = notebook().getJobListByUnixTime(false, lastUpdateUnixTime, subject);
     Map<String, Object> response = new HashMap<>();
 
     response.put("lastResponseUnixTime", System.currentTimeMillis());
