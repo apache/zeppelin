@@ -62,7 +62,7 @@ Apache Spark is supported in Zeppelin with Spark interpreter group which consist
 </table>
 
 ## Configuration
-There are two Spark mode to use Spark interpreter in Zeppelin. One is [Local Spark mode](#local-spark-mode) and the other is [system provided Spark mode](#system-provided-spark-mode).
+There are two Spark mode to use Spark interpreter in Zeppelin. One is [local Spark mode](#local-spark-mode) and the other is [system provided Spark mode](#system-provided-spark-mode).
 After you start Zeppelin server for the first time, you will be asked whether you want to download a latest version of Spark binary under Zeppelin or not. 
 
 ```
