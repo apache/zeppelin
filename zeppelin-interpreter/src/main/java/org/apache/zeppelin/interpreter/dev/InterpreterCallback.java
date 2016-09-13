@@ -14,24 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+ 
 package org.apache.zeppelin.interpreter;
 
-import static org.junit.Assert.*;
-
-import org.junit.Test;
-
-public class InterpreterContextTest {
-
-  @Test
-  public void testThreadLocal() {
-    assertNull(InterpreterContext.get());
-
-    InterpreterContext.set(new InterpreterContext(null, null, null, null, null, null, null, null, null, null, null, null));
-    assertNotNull(InterpreterContext.get());
-
-    InterpreterContext.remove();
-    assertNull(InterpreterContext.get());
-  }
-
+/**
+ * The InterpreterCallback interface makes it possible to bind the execution of
+ * code into the interpreter repl conditionally to events.
+ */
+public interface InterpreterCallback {
+  //Binds the callback cmd to the given event
+  public void registerCallback(String event, String cmd);
+   
+  // Unbinds the callback cmd from the given event
+  public void unregisterCallback(String event);
+   
+  // Retrieves the callback code (cmd) for the given event
+  public String getCallback(String event);
 }

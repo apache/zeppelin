@@ -55,6 +55,7 @@ public class InterpreterContext {
   private final Map<String, Object> config;
   private GUI gui;
   private AngularObjectRegistry angularObjectRegistry;
+  private InterpreterCallbackRegistry callbackRegistry;
   private ResourcePool resourcePool;
   private List<InterpreterContextRunner> runners;
 
@@ -66,6 +67,7 @@ public class InterpreterContext {
                             Map<String, Object> config,
                             GUI gui,
                             AngularObjectRegistry angularObjectRegistry,
+                            InterpreterCallbackRegistry callbackRegistry,
                             ResourcePool resourcePool,
                             List<InterpreterContextRunner> runners,
                             InterpreterOutput out
@@ -78,6 +80,7 @@ public class InterpreterContext {
     this.config = config;
     this.gui = gui;
     this.angularObjectRegistry = angularObjectRegistry;
+    this.callbackRegistry = callbackRegistry;
     this.resourcePool = resourcePool;
     this.runners = runners;
     this.out = out;
@@ -114,6 +117,10 @@ public class InterpreterContext {
 
   public AngularObjectRegistry getAngularObjectRegistry() {
     return angularObjectRegistry;
+  }
+
+  public InterpreterCallbackRegistry getInterpreterCallbackRegistry() {
+    return callbackRegistry;
   }
 
   public ResourcePool getResourcePool() {

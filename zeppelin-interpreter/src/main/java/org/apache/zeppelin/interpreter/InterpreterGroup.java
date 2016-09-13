@@ -45,6 +45,7 @@ public class InterpreterGroup extends ConcurrentHashMap<String, List<Interpreter
   Logger LOGGER = Logger.getLogger(InterpreterGroup.class);
 
   AngularObjectRegistry angularObjectRegistry;
+  InterpreterCallbackRegistry callbackRegistry;
   RemoteInterpreterProcess remoteInterpreterProcess;    // attached remote interpreter process
   ResourcePool resourcePool;
   boolean angularRegistryPushed = false;
@@ -71,6 +72,7 @@ public class InterpreterGroup extends ConcurrentHashMap<String, List<Interpreter
   public InterpreterGroup(String id) {
     this.id = id;
     allInterpreterGroups.put(id, this);
+    callbackRegistry = new InterpreterCallbackRegistry(id);
   }
 
   /**
@@ -117,6 +119,10 @@ public class InterpreterGroup extends ConcurrentHashMap<String, List<Interpreter
 
   public AngularObjectRegistry getAngularObjectRegistry() {
     return angularObjectRegistry;
+  }
+  
+  public InterpreterCallbackRegistry getInterpreterCallbackRegistry() {
+    return callbackRegistry;
   }
 
   public void setAngularObjectRegistry(AngularObjectRegistry angularObjectRegistry) {

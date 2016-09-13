@@ -494,6 +494,7 @@ public class RemoteInterpreterServer
             new TypeToken<Map<String, Object>>() {}.getType()),
         gson.fromJson(ric.getGui(), GUI.class),
         interpreterGroup.getAngularObjectRegistry(),
+        interpreterGroup.getInterpreterCallbackRegistry(),
         interpreterGroup.getResourcePool(),
         contextRunners, output);
   }
