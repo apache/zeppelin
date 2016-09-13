@@ -52,6 +52,10 @@ public class LivyOutputStream extends OutputStream {
     }
   }
 
+  public void write(String text) throws IOException {
+    write(text.getBytes("UTF-8"));
+  }
+
   @Override
   public void write(byte[] b, int offset, int len) throws IOException {
     if (interpreterOutput != null) {

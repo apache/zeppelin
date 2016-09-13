@@ -38,11 +38,16 @@ public class LivySparkInterpreter extends Interpreter {
   private LivyOutputStream out;
 
   protected static Map<String, Integer> userSessionMap;
+  protected static Map<Integer, String> sessionId2AppIdMap;
+  protected static Map<Integer, String> sessionId2WebUIMap;
+
   private LivyHelper livyHelper;
 
   public LivySparkInterpreter(Properties property) {
     super(property);
     userSessionMap = new HashMap<>();
+    sessionId2AppIdMap = new HashMap<>();
+    sessionId2WebUIMap = new HashMap<>();
     livyHelper = new LivyHelper(property);
     out = new LivyOutputStream();
   }
@@ -67,28 +72,59 @@ public class LivySparkInterpreter extends Interpreter {
   @Override
   public InterpreterResult interpret(String line, InterpreterContext interpreterContext) {
     try {
+      Integer sessionId = null;
       if (userSessionMap.get(interpreterContext.getAuthenticationInfo().getUser()) == null) {
         try {
-          userSessionMap.put(
-              interpreterContext.getAuthenticationInfo().getUser(),
-              livyHelper.createSession(
-                  interpreterContext,
-                  "spark")
-          );
+          sessionId = livyHelper.createSession(interpreterContext, "spark");
+          userSessionMap.put(interpreterContext.getAuthenticationInfo().getUser(), sessionId);
+          String appId = extractStatementResult(
+                  livyHelper.interpret("sc.applicationId", interpreterContext, userSessionMap)
+                  .message());
+          livyHelper.interpret(
+                  "val webui=sc.getClass.getMethod(\"ui\").invoke(sc).asInstanceOf[Some[_]].get",
+                  interpreterContext, userSessionMap);
+          String webUI = extractStatementResult(
+                  livyHelper.interpret(
+                          "webui.getClass.getMethod(\"appUIAddress\").invoke(webui)",
+                          interpreterContext, userSessionMap).message());
+          sessionId2AppIdMap.put(sessionId, appId);
+          sessionId2WebUIMap.put(sessionId, webUI);
+          LOGGER.info("Create livy session with sessionId: {}, appId: {}, webUI: {}",
+                  sessionId, appId, webUI);
         } catch (Exception e) {
           LOGGER.error("Exception in LivySparkInterpreter while interpret ", e);
           return new InterpreterResult(InterpreterResult.Code.ERROR, e.getMessage());
         }
+      } else {
+        sessionId = userSessionMap.get(interpreterContext.getAuthenticationInfo().getUser());
       }
       if (line == null || line.trim().length() == 0) {
         return new InterpreterResult(InterpreterResult.Code.SUCCESS, "");
       }
 
-      return livyHelper.interpretInput(line, interpreterContext, userSessionMap, out);
+      return livyHelper.interpretInput(line, interpreterContext, userSessionMap, out,
+              sessionId2AppIdMap.get(sessionId), sessionId2WebUIMap.get(sessionId));
     } catch (Exception e) {
       LOGGER.error("Exception in LivySparkInterpreter while interpret ", e);
       return new InterpreterResult(InterpreterResult.Code.ERROR,
           InterpreterUtils.getMostRelevantMessage(e));
+    }
+  }
+
+  /**
+   * Extract the eval result of spark shell, e.g. extract application_1473129941656_0048
+   * from following:
+   * res0: String = application_1473129941656_0048
+   * @param result
+   * @return
+   */
+  private static String extractStatementResult(String result) {
+    int pos = -1;
+    if ((pos = result.indexOf("=")) >= 0) {
+      return result.substring(pos + 1).trim();
+    } else {
+      throw new RuntimeException("No result can be extracted from '" + result + "', " +
+              "something must be wrong");
     }
   }
 
