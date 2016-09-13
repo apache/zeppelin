@@ -1,7 +1,7 @@
 ---
 layout: page
 title: "Apache Spark Interpreter for Apache Zeppelin"
-description: "Apache Spark is a fast and general-purpose cluster computing system. It provides high-level APIs in Java, Scala, Python and R, and an optimized engine that supports general execution graphs."
+description: "Apache Spark is a fast and general-purpose cluster computing system. It provides high-level APIs in Java, Scala, Python and R, and an optimized engine that supports general execution engine."
 group: interpreter
 ---
 <!--
@@ -25,9 +25,8 @@ limitations under the License.
 
 ## Overview
 [Apache Spark](http://spark.apache.org) is a fast and general-purpose cluster computing system.
-It provides high-level APIs in Java, Scala, Python and R, and an optimized engine that supports general execution graphs
-Apache Spark is supported in Zeppelin with
-Spark Interpreter group, which consists of five interpreters.
+It provides high-level APIs in Java, Scala, Python and R, and an optimized engine that supports general execution graphs.
+Apache Spark is supported in Zeppelin with Spark interpreter group which consists of below five interpreters.
 
 <table class="table-configuration">
   <tr>
@@ -38,12 +37,12 @@ Spark Interpreter group, which consists of five interpreters.
   <tr>
     <td>%spark</td>
     <td>SparkInterpreter</td>
-    <td>Creates a SparkContext and provides a scala environment</td>
+    <td>Creates a SparkContext and provides a Scala environment</td>
   </tr>
   <tr>
     <td>%spark.pyspark</td>
     <td>PySparkInterpreter</td>
-    <td>Provides a python environment</td>
+    <td>Provides a Python environment</td>
   </tr>
   <tr>
     <td>%spark.r</td>
@@ -139,53 +138,55 @@ You can also set other Spark properties which are not listed in the table. For a
 Without any configuration, Spark interpreter works out of box in local mode. But if you want to connect to your Spark cluster, you'll need to follow below two simple steps.
 
 ### 1. Export SPARK_HOME
-In **conf/zeppelin-env.sh**, export `SPARK_HOME` environment variable with your Spark installation path.
+In `conf/zeppelin-env.sh`, export `SPARK_HOME` environment variable with your Spark installation path.
 
-for example
+For example,
 
 ```bash
 export SPARK_HOME=/usr/lib/spark
 ```
 
-You can optionally export HADOOP\_CONF\_DIR and SPARK\_SUBMIT\_OPTIONS
+You can optionally export `HADOOP_CONF_DIR` and `SPARK_SUBMIT_OPTIONS`
 
 ```bash
 export HADOOP_CONF_DIR=/usr/lib/hadoop
 export SPARK_SUBMIT_OPTIONS="--packages com.databricks:spark-csv_2.10:1.2.0"
 ```
 
-For Windows, ensure you have `winutils.exe` in `%HADOOP_HOME%\bin`. For more details please see [Problems running Hadoop on Windows](https://wiki.apache.org/hadoop/WindowsProblems)
+For Windows, ensure you have `winutils.exe` in `%HADOOP_HOME%\bin`. Please see [Problems running Hadoop on Windows](https://wiki.apache.org/hadoop/WindowsProblems) for the details.
 
 ### 2. Set master in Interpreter menu
 After start Zeppelin, go to **Interpreter** menu and edit **master** property in your Spark interpreter setting. The value may vary depending on your Spark cluster deployment type.
 
-for example,
+For example,
 
  * **local[*]** in local mode
  * **spark://master:7077** in standalone cluster
  * **yarn-client** in Yarn client mode
  * **mesos://host:5050** in Mesos cluster
 
-That's it. Zeppelin will work with any version of Spark and any deployment type without rebuilding Zeppelin in this way. (Zeppelin 0.5.6-incubating release works up to Spark 1.6.1 )
+That's it. Zeppelin will work with any version of Spark and any deployment type without rebuilding Zeppelin in this way. 
+For the further information about Spark & Zeppelin version compatibility, please refer to "Available Interpreters" section in [Zeppelin download page](https://zeppelin.apache.org/download.html).
 
 > Note that without exporting `SPARK_HOME`, it's running in local mode with included version of Spark. The included version may vary depending on the build profile.
 
 ## SparkContext, SQLContext, SparkSession, ZeppelinContext
-SparkContext, SQLContext, ZeppelinContext are automatically created and exposed as variable names 'sc', 'sqlContext' and 'z', respectively, both in scala and python environments.
-Staring from 0.6.1 SparkSession is available as variable 'spark' when you are using Spark 2.x.
+SparkContext, SQLContext and ZeppelinContext are automatically created and exposed as variable names `sc`, `sqlContext` and `z`, respectively, in Scala, Python and R environments.
+Staring from 0.6.1 SparkSession is available as variable `spark` when you are using Spark 2.x.
 
-> Note that scala / python environment shares the same SparkContext, SQLContext, ZeppelinContext instance.
+> Note that Scala/Python/R environment shares the same SparkContext, SQLContext and ZeppelinContext instance.
 
 <a name="dependencyloading"> </a>
 
 ## Dependency Management
-There are two ways to load external library in spark interpreter. First is using Interpreter setting menu and second is loading Spark properties.
+There are two ways to load external libraries in Spark interpreter. First is using interpreter setting menu and second is loading Spark properties.
 
 ### 1. Setting Dependencies via Interpreter Setting
 Please see [Dependency Management](../manual/dependencymanagement.html) for the details.
 
 ### 2. Loading Spark Properties
-Once `SPARK_HOME` is set in `conf/zeppelin-env.sh`, Zeppelin uses `spark-submit` as spark interpreter runner. `spark-submit` supports two ways to load configurations. The first is command line options such as --master and Zeppelin can pass these options to `spark-submit` by exporting `SPARK_SUBMIT_OPTIONS` in conf/zeppelin-env.sh. Second is reading configuration options from `SPARK_HOME/conf/spark-defaults.conf`. Spark properites that user can set to distribute libraries are:
+Once `SPARK_HOME` is set in `conf/zeppelin-env.sh`, Zeppelin uses `spark-submit` as spark interpreter runner. `spark-submit` supports two ways to load configurations. 
+The first is command line options such as --master and Zeppelin can pass these options to `spark-submit` by exporting `SPARK_SUBMIT_OPTIONS` in `conf/zeppelin-env.sh`. Second is reading configuration options from `SPARK_HOME/conf/spark-defaults.conf`. Spark properties that user can set to distribute libraries are:
 
 <table class="table-configuration">
   <tr>
@@ -201,7 +202,7 @@ Once `SPARK_HOME` is set in `conf/zeppelin-env.sh`, Zeppelin uses `spark-submit`
   <tr>
     <td>spark.jars.packages</td>
     <td>--packages</td>
-    <td>Comma-separated list of maven coordinates of jars to include on the driver and executor classpaths. Will search the local maven repo, then maven central and any additional remote repositories given by --repositories. The format for the coordinates should be groupId:artifactId:version.</td>
+    <td>Comma-separated list of maven coordinates of jars to include on the driver and executor classpaths. Will search the local maven repo, then maven central and any additional remote repositories given by --repositories. The format for the coordinates should be <code>groupId:artifactId:version</code>.</td>
   </tr>
   <tr>
     <td>spark.files</td>
@@ -212,28 +213,32 @@ Once `SPARK_HOME` is set in `conf/zeppelin-env.sh`, Zeppelin uses `spark-submit`
 
 Here are few examples:
 
-* SPARK\_SUBMIT\_OPTIONS in conf/zeppelin-env.sh
+* `SPARK_SUBMIT_OPTIONS` in `conf/zeppelin-env.sh`
 
+  ```bash
     export SPARK_SUBMIT_OPTIONS="--packages com.databricks:spark-csv_2.10:1.2.0 --jars /path/mylib1.jar,/path/mylib2.jar --files /path/mylib1.py,/path/mylib2.zip,/path/mylib3.egg"
+  ```
+    
+* `SPARK_HOME/conf/spark-defaults.conf`
 
-* SPARK_HOME/conf/spark-defaults.conf
-
+  ```
     spark.jars        /path/mylib1.jar,/path/mylib2.jar
     spark.jars.packages   com.databricks:spark-csv_2.10:1.2.0
     spark.files       /path/mylib1.py,/path/mylib2.egg,/path/mylib3.zip
+  ```
 
 ### 3. Dynamic Dependency Loading via %spark.dep interpreter
 > Note: `%spark.dep` interpreter is deprecated since v0.6.0.
-`%spark.dep` interpreter load libraries to `%spark` and `%spark.pyspark` but not to  `%spark.sql` interpreter so we recommend you to use first option instead.
+`%spark.dep` interpreter loads libraries to `%spark` and `%spark.pyspark` but not to  `%spark.sql` interpreter. So we recommend you to use the first option instead.
 
 When your code requires external library, instead of doing download/copy/restart Zeppelin, you can easily do following jobs using `%spark.dep` interpreter.
 
- * Load libraries recursively from Maven repository
+ * Load libraries recursively from maven repository
  * Load libraries from local filesystem
  * Add additional maven repository
  * Automatically add libraries to SparkCluster (You can turn off)
 
-Dep interpreter leverages scala environment. So you can write any Scala code here.
+Dep interpreter leverages Scala environment. So you can write any Scala code here.
 Note that `%spark.dep` interpreter should be used before `%spark`, `%spark.pyspark`, `%spark.sql`.
 
 Here's usages.
@@ -273,11 +278,11 @@ z.load("groupId:artifactId:version").local()
 ```
 
 ## ZeppelinContext
-Zeppelin automatically injects ZeppelinContext as variable 'z' in your scala/python environment. ZeppelinContext provides some additional functions and utility.
+Zeppelin automatically injects `ZeppelinContext` as variable `z` in your Scala/Python environment. `ZeppelinContext` provides some additional functions and utilities.
 
 ### Object Exchange
-ZeppelinContext extends map and it's shared between scala, python environment.
-So you can put some object from scala and read it from python, vise versa.
+`ZeppelinContext` extends map and it's shared between Scala and Python environment.
+So you can put some objects from Scala and read it from Python, vice versa.
 
 <div class="codetabs">
   <div data-lang="scala" markdown="1">
@@ -303,8 +308,8 @@ myObject = z.get("objName")
 
 ### Form Creation
 
-ZeppelinContext provides functions for creating forms.
-In scala and python environments, you can create forms programmatically.
+`ZeppelinContext` provides functions for creating forms.
+In Scala and Python environments, you can create forms programmatically.
 <div class="codetabs">
   <div data-lang="scala" markdown="1">
 
@@ -350,7 +355,7 @@ z.select("formName", [("option1", "option1DisplayName"),
 
 In sql environment, you can create form in simple template.
 
-```
+```sql
 %spark.sql
 select * from ${table=defaultTableName} where text like '%${search}%'
 ```
@@ -360,7 +365,7 @@ To learn more about dynamic form, checkout [Dynamic Form](../manual/dynamicform.
 
 ## Interpreter setting option
 
-Interpreter setting can choose one of 'shared', 'scoped', 'isolated' option. Spark interpreter creates separate scala compiler per each notebook but share a single SparkContext in 'scoped' mode (experimental). It creates separate SparkContext per each notebook in 'isolated' mode.
+You can choose one of `shared`, `scoped` and `isolated` options wheh you configure Spark interpreter. Spark interpreter creates separated Scala compiler per each notebook but share a single SparkContext in `scoped` mode (experimental). It creates separated SparkContext per each notebook in `isolated` mode.
 
 
 ## Setting up Zeppelin with Kerberos
@@ -373,14 +378,14 @@ Logical setup with Zeppelin, Kerberos Key Distribution Center (KDC), and Spark o
 1. On the server that Zeppelin is installed, install Kerberos client modules and configuration, krb5.conf.
 This is to make the server communicate with KDC.
 
-2. Set SPARK\_HOME in `[ZEPPELIN\_HOME]/conf/zeppelin-env.sh` to use spark-submit
-(Additionally, you might have to set `export HADOOP\_CONF\_DIR=/etc/hadoop/conf`)
+2. Set `SPARK_HOME` in `[ZEPPELIN_HOME]/conf/zeppelin-env.sh` to use spark-submit
+(Additionally, you might have to set `export HADOOP_CONF_DIR=/etc/hadoop/conf`)
 
-3. Add the two properties below to spark configuration (`[SPARK_HOME]/conf/spark-defaults.conf`):
+3. Add the two properties below to Spark configuration (`[SPARK_HOME]/conf/spark-defaults.conf`):
 
         spark.yarn.principal
         spark.yarn.keytab
 
-  > **NOTE:** If you do not have access to the above spark-defaults.conf file, optionally, you may add the lines to the Spark Interpreter through the Interpreter tab in the Zeppelin UI.
+  > **NOTE:** If you do not have permission to access for the above spark-defaults.conf file, optionally, you can add the above lines to the Spark Interpreter setting through the Interpreter tab in the Zeppelin UI.
 
 4. That's it. Play with Zeppelin!
