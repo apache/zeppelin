@@ -32,7 +32,6 @@ import org.apache.thrift.transport.TTransportException;
 import org.apache.zeppelin.display.*;
 import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
-import org.apache.zeppelin.interpreter.dev.ZeppelinDevServer;
 import org.apache.zeppelin.interpreter.thrift.*;
 import org.apache.zeppelin.resource.*;
 import org.apache.zeppelin.scheduler.Job;
@@ -125,11 +124,7 @@ public class RemoteInterpreterServer
 
   public static void main(String[] args)
       throws TTransportException, InterruptedException {
-
-    int port = ZeppelinDevServer.DEFAULT_TEST_INTERPRETER_PORT;
-    if (args.length > 0) {
-      port = Integer.parseInt(args[0]);
-    }
+    int port = Integer.parseInt(args[0]);
     RemoteInterpreterServer remoteInterpreterServer = new RemoteInterpreterServer(port);
     remoteInterpreterServer.start();
     remoteInterpreterServer.join();
