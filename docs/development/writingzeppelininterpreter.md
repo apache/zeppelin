@@ -48,7 +48,7 @@ There are three locations where you can store your interpreter group, name and o
 {ZEPPELIN_INTERPRETER_DIR}/{YOUR_OWN_INTERPRETER_DIR}/interpreter-setting.json
 ```
 
-Here is an example of `interpreter-setting.json` on your own interpreter.
+Here is an example of `interpreter-setting.json` on your own interpreter. Note that if you don't specify editor object, your interpreter will use plain text mode for syntax highlighting.
 
 ```json
 [
@@ -84,8 +84,8 @@ Finally, Zeppelin uses static initialization with the following:
 
 ```
 static {
-    Interpreter.register("MyInterpreterName", MyClassName.class.getName());
-  }
+  Interpreter.register("MyInterpreterName", MyClassName.class.getName());
+}
 ```
 
 **Static initialization is deprecated and will be supported until 0.6.0.**
@@ -106,11 +106,11 @@ To check out the list of languages supported, see the `mode-*.js` files under `z
 If you want to add a new set of syntax highlighting,  
 
 1. Add the `mode-*.js` file to <code>[zeppelin-web/bower.json](https://github.com/apache/zeppelin/blob/master/zeppelin-web/bower.json)</code> ( when built, <code>[zeppelin-web/src/index.html](https://github.com/apache/zeppelin/blob/master/zeppelin-web/src/index.html)</code> will be changed automatically. ).  
-2. Add `editor` object to `interpreter-setting.json` file. If you want to set your language to java, add:
+2. Add `editor` object to `interpreter-setting.json` file. If you want to set your language to `java` for example, add:
 
   ```
   "editor": {
-    "language": "java"
+      "language": "java"
   }
   ```
 
