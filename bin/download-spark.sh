@@ -22,7 +22,7 @@ bin=$(cd "${bin}">/dev/null; pwd)
 . "${bin}/common.sh"
 
 ZEPPELIN_ENV="conf/zeppelin-env.sh"
-ZEPPELIN_ENV_TEMP="conf/zeppelin-env.sh.template"
+ZEPPELIN_ENV_TEMP="${ZEPPELIN_ENV}.template"
 ZEPPELIN_VERSION="$(getZeppelinVersion)"
 
 SPARK_VERSION="2.0.0"
@@ -39,7 +39,7 @@ function download_with_retry() {
   local url="$1"
   curl -O --retry 3 --retry-delay 1 "${url}"
   if [[ "$?" -ne 0 ]]; then
-      echo "3 download attempts for ${url} failed"
+      echo -e "3 download attempts for ${url} failed.\nPlease restart Zeppelin if you want to download local Spark again."
   fi
 }
 
@@ -68,10 +68,8 @@ function set_spark_home() {
   echo -e "SPARK_HOME is ${SPARK_HOME}\n"
 
   # get SPARK_HOME line number in conf/zeppelin-env.sh and substitute to real SPARK_HOME
-  line_num=$(grep -n "export SPARK_HOME" "${ZEPPELIN_HOME}/conf/zeppelin-env.sh" | cut -d: -f 1)
-  # save to zeppelin-env.sh.bak temporarily, then remove .bak file
-  sed -i .bak "${line_num}s|.*|export SPARK_HOME=\"${SPARK_HOME}\"|g" "${ZEPPELIN_HOME}/conf/zeppelin-env.sh"
-  rm "${ZEPPELIN_HOME}/conf/zeppelin-env.sh.bak"
+  line_num=$(grep -n "export SPARK_HOME" "${ZEPPELIN_HOME}/${ZEPPELIN_ENV}" | cut -d: -f 1)
+  sed -i "${line_num}s|.*|export SPARK_HOME=\"${SPARK_HOME}\"|g" "${ZEPPELIN_HOME}/${ZEPPELIN_ENV}"
 }
 
 function create_local_spark_dir() {
