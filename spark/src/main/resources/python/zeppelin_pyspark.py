@@ -77,7 +77,7 @@ class PyZeppelinContext(dict):
     """
     if fmt == "png":
       img = BytesIO()
-    p.savefig(img, format=fmt)
+      p.savefig(img, format=fmt)
       img_str = b"data:image/png;base64,"
       img_str += base64.b64encode(img.getvalue().strip())
       img_tag = "<img src={img} style='width={width};height:{height}'>"
