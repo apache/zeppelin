@@ -19,13 +19,13 @@ package org.apache.zeppelin.interpreter.remote;
 
 import org.apache.commons.exec.*;
 import org.apache.commons.exec.environment.EnvironmentUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.helium.ApplicationEventListener;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.io.OutputStream;
 import java.util.Map;
 
 /**
@@ -101,6 +101,10 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
     cmdLine.addArgument(interpreterDir, false);
     cmdLine.addArgument("-p", false);
     cmdLine.addArgument(Integer.toString(port), false);
+    if (!StringUtils.isAnyEmpty(env.get("spark.home"))) {
+      cmdLine.addArgument("-s", false);
+      cmdLine.addArgument(env.get("spark.home"), false);
+    }
     cmdLine.addArgument("-l", false);
     cmdLine.addArgument(localRepoDir, false);
 

@@ -17,14 +17,15 @@
 
 package org.apache.zeppelin.interpreter.remote;
 
-import java.util.*;
-
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.thrift.TException;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.GUI;
-import org.apache.zeppelin.helium.ApplicationEventListener;
 import org.apache.zeppelin.display.Input;
+import org.apache.zeppelin.helium.ApplicationEventListener;
 import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.InterpreterResult.Type;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
@@ -36,8 +37,7 @@ import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
+import java.util.*;
 
 /**
  * Proxy for Interpreter instance that runs on separate process
@@ -185,6 +185,9 @@ public class RemoteInterpreter extends Interpreter {
               port);
         } else {
           // create new remote process
+          if (!StringUtils.isAnyEmpty(property.getProperty("spark.home"))) {
+            env.put("spark.home", property.getProperty("spark.home"));
+          }
           remoteProcess = new RemoteInterpreterManagedProcess(
               interpreterRunner, interpreterPath, localRepoPath, env, connectTimeout,
               remoteInterpreterProcessListener, applicationEventListener);

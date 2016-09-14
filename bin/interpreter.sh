@@ -23,7 +23,7 @@ function usage() {
     echo "usage) $0 -p <port> -d <interpreter dir to load> -l <local interpreter repo dir to load>"
 }
 
-while getopts "hp:d:l:v" o; do
+while getopts "hp:d:l:s:v" o; do
     case ${o} in
         h)
             usage
@@ -41,6 +41,9 @@ while getopts "hp:d:l:v" o; do
         v)
             . "${bin}/common.sh"
             getZeppelinVersion
+            ;;
+        s)
+            SPARK_HOME_OPT=${OPTARG}
             ;;
         esac
 done
@@ -90,6 +93,9 @@ fi
 
 # set spark related env variables
 if [[ "${INTERPRETER_ID}" == "spark" ]]; then
+  if [[ -n "${SPARK_HOME_OPT}" ]]; then
+    export SPARK_HOME=${SPARK_HOME_OPT}
+  fi
   if [[ -n "${SPARK_HOME}" ]]; then
     export SPARK_SUBMIT="${SPARK_HOME}/bin/spark-submit"
     SPARK_APP_JAR="$(ls ${ZEPPELIN_HOME}/interpreter/spark/zeppelin-spark*.jar)"
