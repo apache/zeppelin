@@ -672,7 +672,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     Interpreter interpreter;
     for (InterpreterInfo info : interpreterInfos) {
       if (option.isRemote()) {
-        if (option.isConnectExistingProcess()) {
+        if (option.isExistingProcess()) {
           interpreter =
               connectToRemoteRepl(noteId, info.getClassName(), option.getHost(), option.getPort(),
                   properties);
