@@ -59,15 +59,15 @@ class PyZeppelinContext(dict):
     self.z = zc
 
 
-  def show(self, p, **kwargs):
+  def show(self, obj, **kwargs):
     from pyspark.sql import DataFrame
 
-    if isinstance(p, DataFrame):
+    if isinstance(obj, DataFrame):
       print(gateway.jvm.org.apache.zeppelin.spark.ZeppelinContext.showDF(self.z, obj._jdf))
-    elif hasattr(p, '__name__') and p.__name__ == "matplotlib.pyplot":
-      self.show_matplotlib(p, **kwargs)
-    elif hasattr(p, '__call__'):
-      p() #error reporting
+    elif hasattr(obj, '__name__') and obj.__name__ == "matplotlib.pyplot":
+      self.show_matplotlib(obj, **kwargs)
+    elif hasattr(obj, '__call__'):
+      obj() #error reporting
     else:
       print(str(obj))
 
