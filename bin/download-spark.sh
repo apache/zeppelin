@@ -35,11 +35,15 @@ ANSWER_FILE="README.txt"
 # Download Spark binary package from the given URL.
 # Ties 3 times with 1s delay
 # Arguments: url - source URL
+
+trap "download_with_retry; rm -r ${ZEPPELIN_HOME}/${SPARK_CACHE}; exit 1" SIGTERM SIGINT SIGQUIT
+
 function download_with_retry() {
   local url="$1"
   curl -O --retry 3 --retry-delay 1 "${url}"
-  if [[ "$?" -ne 0 ]]; then
-      echo -e "3 download attempts for ${url} failed.\nPlease restart Zeppelin if you want to download local Spark again."
+
+  if [[ "$?" -ne 0 || -z "${url}" ]]; then
+    echo -e "\nStop downloading with unexpected error.\nPlease restart Zeppelin if you want to download local Spark again."
   fi
 }
 
@@ -121,7 +125,7 @@ function save_local_spark() {
 
           mkdir -p "${SPARK_ARCHIVE}"
 
-          echo -e "Please note that you answered 'No' when we asked whether you want to download local Spark binary under ZEPPELIN_HOME/${SPARK_CACHE}/ or not.
+          echo -e "Please note that you answered 'No' when we asked whether you want to download local Spark binary under ${ZEPPELIN_HOME}/${SPARK_CACHE}/ or not.
           \nIf you want to use Spark interpreter in Apache Zeppelin, you need to set your own SPARK_HOME.
           \nSee http://zeppelin.apache.org/docs/${ZEPPELIN_VERSION}/interpreter/spark.html#configuration for the further details about Spark configuration in Zeppelin.
           " > "${SPARK_ARCHIVE}/${ANSWER_FILE}"
