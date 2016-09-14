@@ -42,7 +42,7 @@ function download_with_retry() {
   local url="$1"
   curl -O --retry 3 --retry-delay 1 "${url}"
 
-  if [[ "$?" -ne 0 || -z "${url}" ]]; then
+  if [[ "$?" -ne 0 ]]; then
     echo -e "\nStop downloading with unexpected error.\nPlease restart Zeppelin if you want to download local Spark again."
   fi
 }
