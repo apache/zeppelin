@@ -69,7 +69,14 @@ function set_spark_home() {
 
   # get SPARK_HOME line number in conf/zeppelin-env.sh and substitute to real SPARK_HOME
   line_num=$(grep -n "export SPARK_HOME" "${ZEPPELIN_HOME}/${ZEPPELIN_ENV}" | cut -d: -f 1)
-  sed -i "${line_num}s|.*|export SPARK_HOME=\"${SPARK_HOME}\"|g" "${ZEPPELIN_HOME}/${ZEPPELIN_ENV}"
+
+  # sed command with -i option fails on OSX, but works on Linux
+  # '-ie' will resolve this issue but create useless 'zeppelin-env.she' file
+  sed -ie "${line_num}s|.*|export SPARK_HOME=\"${SPARK_HOME}\"|g" "${ZEPPELIN_HOME}/${ZEPPELIN_ENV}"
+
+  if [ -f "${ZEPPELIN_HOME}/${ZEPPELIN_ENV}e" ]; then
+    rm "${ZEPPELIN_HOME}/${ZEPPELIN_ENV}e"
+  fi
 }
 
 function create_local_spark_dir() {
