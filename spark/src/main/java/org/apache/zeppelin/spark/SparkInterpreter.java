@@ -118,7 +118,7 @@ public class SparkInterpreter extends Interpreter {
 
   private Map<String, Object> binder;
   private SparkVersion sparkVersion;
-  private File outputDir;          // class outputdir for scala 2.11
+  private static File outputDir;          // class outputdir for scala 2.11
   private Object classServer;      // classserver for scala 2.11
 
 
@@ -603,8 +603,11 @@ public class SparkInterpreter extends Interpreter {
         sparkReplClassDir = System.getProperty("java.io.tmpdir");
       }
 
-      outputDir = createTempDir(sparkReplClassDir);
-
+      synchronized (sharedInterpreterLock) {
+        if (outputDir == null) {
+          outputDir = createTempDir(sparkReplClassDir);
+        }
+      }
       argList.add("-Yrepl-class-based");
       argList.add("-Yrepl-outdir");
       argList.add(outputDir.getAbsolutePath());
@@ -1307,7 +1310,12 @@ public class SparkInterpreter extends Interpreter {
     logger.info("Close interpreter");
 
     if (numReferenceOfSparkContext.decrementAndGet() == 0) {
-      sc.stop();
+      if (sparkSession != null) {
+        Utils.invokeMethod(sparkSession, "stop");
+      } else if (sc != null){
+        sc.stop();
+      }
+      sparkSession = null;
       sc = null;
       if (classServer != null) {
         Utils.invokeMethod(classServer, "stop");
