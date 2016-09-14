@@ -135,11 +135,38 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
             config.put("enabled", true);
             p.setConfig(config);
             p.setText("%pyspark print(sc.parallelize(range(1, 11)).reduce(lambda a, b: a + b))");
-//            p.getRepl("org.apache.zeppelin.spark.SparkInterpreter").open();
             note.run(p.getId());
             waitForFinish(p);
             assertEquals(Status.FINISHED, p.getStatus());
             assertEquals("55\n", p.getResult().message());
+            if (sparkVersion >= 13) {
+                // run sqlContext test
+                p = note.addParagraph();
+                config = p.getConfig();
+                config.put("enabled", true);
+                p.setConfig(config);
+                p.setText("%pyspark from pyspark.sql import Row\n" +
+                        "df=sqlContext.createDataFrame([Row(id=1, age=20)])\n" +
+                        "df.collect()");
+                note.run(p.getId());
+                waitForFinish(p);
+                assertEquals(Status.FINISHED, p.getStatus());
+                assertEquals("[Row(age=20, id=1)]\n", p.getResult().message());
+            }
+            if (sparkVersion >= 20) {
+                // run SparkSession test
+                p = note.addParagraph();
+                config = p.getConfig();
+                config.put("enabled", true);
+                p.setConfig(config);
+                p.setText("%pyspark from pyspark.sql import Row\n" +
+                        "df=sqlContext.createDataFrame([Row(id=1, age=20)])\n" +
+                        "df.collect()");
+                note.run(p.getId());
+                waitForFinish(p);
+                assertEquals(Status.FINISHED, p.getStatus());
+                assertEquals("[Row(age=20, id=1)]\n", p.getResult().message());
+            }
         }
         ZeppelinServer.notebook.removeNote(note.id(), null);
     }
@@ -166,7 +193,6 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
 
             p.setText("%pyspark\nfrom pyspark.sql.functions import *\n"
                     + "print(" + sqlContextName + ".range(0, 10).withColumn('uniform', rand(seed=10) * 3.14).count())");
-//            p.getRepl("org.apache.zeppelin.spark.SparkInterpreter").open();
             note.run(p.getId());
             waitForFinish(p);
             assertEquals(Status.FINISHED, p.getStatus());
@@ -257,6 +283,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
             assertEquals(Status.FINISHED, p1.getStatus());
             assertEquals("2\n", p1.getResult().message());
         }
+        ZeppelinServer.notebook.removeNote(note.getId(), null);
     }
 
     /**
@@ -270,7 +297,6 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
         config.put("enabled", true);
         p.setConfig(config);
         p.setText("%spark print(sc.version)");
-//        p.getRepl("org.apache.zeppelin.spark.SparkInterpreter").open();
         note.run(p.getId());
         waitForFinish(p);
         assertEquals(Status.FINISHED, p.getStatus());
