@@ -19,39 +19,10 @@ limitations under the License.
 
   <button type="button" class="btn btn-default btn-sm"
           ng-if="paragraph.result.type == 'TABLE'"
-          ng-class="{'active': isGraphMode('table')}"
-          ng-click="setGraphMode('table', true)"
-          tooltip="Table" tooltip-placement="bottom"><i class="fa fa-table"></i>
-  </button>
-  <button type="button" class="btn btn-default btn-sm"
-          ng-if="paragraph.result.type == 'TABLE'"
-          ng-class="{'active': isGraphMode('multiBarChart')}"
-          ng-click="setGraphMode('multiBarChart', true)"
-          tooltip="Bar Chart" tooltip-placement="bottom"><i class="fa fa-bar-chart"></i>
-  </button>
-  <button type="button" class="btn btn-default btn-sm"
-          ng-if="paragraph.result.type == 'TABLE'"
-          ng-class="{'active': isGraphMode('pieChart')}"
-          ng-click="setGraphMode('pieChart', true)"
-          tooltip="Pie Chart" tooltip-placement="bottom"><i class="fa fa-pie-chart"></i>
-  </button>
-  <button type="button" class="btn btn-default btn-sm"
-          ng-if="paragraph.result.type == 'TABLE'"
-          ng-class="{'active': isGraphMode('stackedAreaChart')}"
-          ng-click="setGraphMode('stackedAreaChart', true)"
-          tooltip="Area Chart" tooltip-placement="bottom"><i class="fa fa-area-chart"></i>
-  </button>
-  <button type="button" class="btn btn-default btn-sm"
-          ng-if="paragraph.result.type == 'TABLE'"
-          ng-class="{'active': isGraphMode('lineChart') || isGraphMode('lineWithFocusChart')}"
-          ng-click="paragraph.config.graph.lineWithFocus ? setGraphMode('lineWithFocusChart', true) : setGraphMode('lineChart', true)"
-          tooltip="Line Chart" tooltip-placement="bottom"><i class="fa fa-line-chart"></i>
-  </button>
-  <button type="button" class="btn btn-default btn-sm"
-          ng-if="paragraph.result.type == 'TABLE'"
-          ng-class="{'active': isGraphMode('scatterChart')}"
-          ng-click="setGraphMode('scatterChart', true)"
-          tooltip="Scatter Chart" tooltip-placement="bottom"><i class="cf cf-scatter-chart"></i>
+          ng-repeat="viz in builtInTableDataVisualizationList track by $index"
+          ng-class="{'active' : isGraphMode(viz.id)}"
+          ng-click="setGraphMode(viz.id, true)"
+          tooltip="{{viz.name}}" tooltip-placement="bottom"><i ng-class="viz.icon"></i>
   </button>
 
   <button type="button"

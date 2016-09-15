@@ -14,12 +14,12 @@ limitations under the License.
 <div id="p{{paragraph.id}}_graph"
      class="graphContainer"
      ng-class="{'noOverflow': getGraphMode()=='table'}"
-     ng-if="getResultType()=='TABLE'"
+     ng-show="getResultType()=='TABLE'"
      >
 
-  <div ng-if="getGraphMode()=='table'"
-       id="p{{paragraph.id}}_table"
-       class="table">
+  <div ng-repeat="viz in builtInTableDataVisualizationList track by $index"
+       id="p{{paragraph.id}}_{{viz.id}}"
+       ng-show="getGraphMode()==viz.id">
   </div>
 
   <div ng-if="getGraphMode()=='multiBarChart'"

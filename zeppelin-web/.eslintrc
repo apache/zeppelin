@@ -16,7 +16,8 @@
     "d3": false,
     "BootstrapDialog": false,
     "Handsontable": false,
-    "moment": false
+    "moment": false,
+    "zeppelin" : false
   },
   "rules": {
     "no-bitwise": 2,

@@ -113,11 +113,69 @@
       if (!$scope.paragraph.config) {
         $scope.paragraph.config = {};
       }
+    };
+
+    var angularObjectRegistry = {};
+
+    /**
+     * Built-in visualizations
+     */
+    $scope.builtInTableDataVisualizationList = [
+      {
+        id: 'table',   // paragraph.config.graph.mode
+        name: 'Table', // human readable name. tooltip
+        icon: 'fa fa-table'
+      },
+      {
+        id: 'multiBarChart',
+        name: 'Bar Chart',
+        icon: 'fa fa-bar-chart'
+      }
+    ];
+
+    /**
+     * Holds class actual runtime instance and related infos of built-in visualizations
+     */
+    var builtInVisualizations = {
+      'table': {
+        class: zeppelin.TableVisualization,
+        transformation: undefined,
+        instance: undefined   // created from setGraphMode()
+      },
+      'multiBarChart': {
+        class: zeppelin.BarchartVisualization,
+        transformation: zeppelin.Pivot,
+        instance: undefined
+      }
+    };    
+
+    /**
+     * TableData instance
+     */
+    var tableData;
+
+    // Controller init
+    $scope.init = function(newParagraph, note) {
+      $scope.paragraph = newParagraph;
+      $scope.parentNote = note;
+      $scope.originalText = angular.copy(newParagraph.text);
+      $scope.chart = {};
+      $scope.baseMapOption = ['Streets', 'Satellite', 'Hybrid', 'Topo', 'Gray', 'Oceans', 'Terrain'];
+      $scope.colWidthOption = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+      $scope.paragraphFocused = false;
+      if (newParagraph.focus) {
+        $scope.paragraphFocused = true;
+      }
+      if (!$scope.paragraph.config) {
+        $scope.paragraph.config = {};
+      }
 
       initializeDefault();
 
       if ($scope.getResultType() === 'TABLE') {
-        $scope.loadTableData($scope.paragraph.result);
+        var TableData = zeppelin.TableData;
+        tableData = new TableData();
+        tableData.loadParagraphResult($scope.paragraph.result);        
         $scope.setGraphMode($scope.getGraphMode(), false, false);
       } else if ($scope.getResultType() === 'HTML') {
         $scope.renderHtml();
@@ -933,55 +991,6 @@
       return cell;
     };
 
-    $scope.loadTableData = function(result) {
-      if (!result) {
-        return;
-      }
-      if (result.type === 'TABLE') {
-        var columnNames = [];
-        var rows = [];
-        var array = [];
-        var textRows = result.msg.split('\n');
-        result.comment = '';
-        var comment = false;
-
-        for (var i = 0; i < textRows.length; i++) {
-          var textRow = textRows[i];
-          if (comment) {
-            result.comment += textRow;
-            continue;
-          }
-
-          if (textRow === '') {
-            if (rows.length > 0) {
-              comment = true;
-            }
-            continue;
-          }
-          var textCols = textRow.split('\t');
-          var cols = [];
-          var cols2 = [];
-          for (var j = 0; j < textCols.length; j++) {
-            var col = textCols[j];
-            if (i === 0) {
-              columnNames.push({name: col, index: j, aggr: 'sum'});
-            } else {
-              var parsedCol = $scope.parseTableCell(col);
-              cols.push(parsedCol);
-              cols2.push({key: (columnNames[i]) ? columnNames[i].name : undefined, value: parsedCol});
-            }
-          }
-          if (i !== 0) {
-            rows.push(cols);
-            array.push(cols2);
-          }
-        }
-        result.msgTable = array;
-        result.columnNames = columnNames;
-        result.rows = rows;
-      }
-    };
-
     $scope.setGraphMode = function(type, emit, refresh) {
       if (emit) {
         setNewMode(type);
@@ -989,10 +998,47 @@
         clearUnknownColsFromGraphOption();
         // set graph height
         var height = $scope.paragraph.config.graph.height;
-        angular.element('#p' + $scope.paragraph.id + '_graph').height(height);
+        var graphContainerEl = angular.element('#p' + $scope.paragraph.id + '_graph');
+        graphContainerEl.height(height);
+
+        var data = $scope.paragraph.result;
+
+        if (!type) {
+          type = 'table';
+        }
+
+        var builtInViz = builtInVisualizations[type];
+        if (builtInViz) {
+          if (!builtInViz.instance) { // not instantiated yet
+            // render when targetEl is available
+            var retryRenderer = function() {
+              var targetEl = angular.element('#p' + $scope.paragraph.id + '_' + type);
+
+              if (targetEl.length) {
+                try {
+                  // set height
+                  targetEl.height(height);
+
+                  // instantiate visualization
+                  var Visualization = builtInViz.class;
+                  builtInViz.instance = new Visualization(targetEl);
+                  builtInViz.instance.render(tableData);
+                } catch (err) {
+                  console.log('Graph drawing error %o', err);
+                }
+              } else {
+                $timeout(retryRenderer, 10);
+              }
+            };
+            $timeout(retryRenderer);
+          } else {
+            builtInViz.instance.targetEl.height(height);
+            builtInViz.instance.render(tableData);
+          }
+        }
 
         if (!type || type === 'table') {
-          setTable($scope.paragraph.result, refresh);
+          //setTable($scope.paragraph.result, refresh);
         } else {
           setD3Chart(type, $scope.paragraph.result, refresh);
         }
@@ -1014,67 +1060,6 @@
 
     var commitParagraph = function(title, text, config, params) {
       websocketMsgSrv.commitParagraph($scope.paragraph.id, title, text, config, params);
-    };
-
-    var setTable = function(data, refresh) {
-      var renderTable = function() {
-        var height = $scope.paragraph.config.graph.height;
-        var container = angular.element('#p' + $scope.paragraph.id + '_table').css('height', height).get(0);
-        var resultRows = data.rows;
-        var columnNames = _.pluck(data.columnNames, 'name');
-
-        if ($scope.hot) {
-          $scope.hot.destroy();
-        }
-
-        $scope.hot = new Handsontable(container, {
-          colHeaders: columnNames,
-          data: resultRows,
-          rowHeaders: false,
-          stretchH: 'all',
-          sortIndicator: true,
-          columnSorting: true,
-          contextMenu: false,
-          manualColumnResize: true,
-          manualRowResize: true,
-          readOnly: true,
-          readOnlyCellClassName: '',  // don't apply any special class so we can retain current styling
-          fillHandle: false,
-          fragmentSelection: true,
-          disableVisualSelection: true,
-          cells: function(row, col, prop) {
-            var cellProperties = {};
-            cellProperties.renderer = function(instance, td, row, col, prop, value, cellProperties) {
-              if (value instanceof moment) {
-                td.innerHTML = value._i;
-              } else if (!isNaN(value)) {
-                cellProperties.format = '0,0.[00000]';
-                td.style.textAlign = 'left';
-                Handsontable.renderers.NumericRenderer.apply(this, arguments);
-              } else if (value.length > '%html'.length && '%html ' === value.substring(0, '%html '.length)) {
-                td.innerHTML = value.substring('%html'.length);
-              } else {
-                Handsontable.renderers.TextRenderer.apply(this, arguments);
-              }
-            };
-            return cellProperties;
-          }
-        });
-      };
-
-      var retryRenderer = function() {
-        if (angular.element('#p' + $scope.paragraph.id + '_table').length) {
-          try {
-            renderTable();
-          } catch (err) {
-            console.log('Chart drawing error %o', err);
-          }
-        } else {
-          $timeout(retryRenderer,10);
-        }
-      };
-      $timeout(retryRenderer);
-
     };
 
     var groupedThousandsWith3DigitsFormatter = function(x) {
@@ -1301,9 +1286,9 @@
         for (var i = 0; i < list.length; i++) {
           // remove non existing column
           var found = false;
-          for (var j = 0; j < $scope.paragraph.result.columnNames.length; j++) {
+          for (var j = 0; j < tableData.columnNames.length; j++) {
             var a = list[i];
-            var b = $scope.paragraph.result.columnNames[j];
+            var b = tableData.columnNames[j];
             if (a.index === b.index && a.name === b.name) {
               found = true;
               break;
@@ -1319,9 +1304,9 @@
         for (var f in fields) {
           if (fields[f]) {
             var found = false;
-            for (var i = 0; i < $scope.paragraph.result.columnNames.length; i++) {
+            for (var i = 0; i < tableData.columnNames.length; i++) {
               var a = fields[f];
-              var b = $scope.paragraph.result.columnNames[i];
+              var b = tableData.columnNames[i];
               if (a.index === b.index && a.name === b.name) {
                 found = true;
                 break;
@@ -2336,8 +2321,10 @@
         }
 
         if (newType === 'TABLE') {
-          $scope.loadTableData($scope.paragraph.result);
           if (oldType !== 'TABLE' || resultRefreshed) {
+            var TableData = new zeppelin.TableData;
+            tableData = new TableData();
+            tableData.loadParagraphResult($scope.paragraph.result);            
             clearUnknownColsFromGraphOption();
             selectDefaultColsForGraphOption();
           }
