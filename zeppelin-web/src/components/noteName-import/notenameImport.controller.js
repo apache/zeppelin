@@ -110,4 +110,11 @@ angular.module('zeppelinWebApp').controller('NoteImportCtrl', function($scope, $
     vm.resetFlags();
     angular.element('#noteImportModal').modal('hide');
   });
+  
+  $scope.$on('checkCloseEventCode', function(scope, event) {
+	  $scope.note.errorText = '';
+	  if(event.code === 1009 || event.code === 1006){
+		  $scope.note.errorText = 'File size limit Exceeded!';
+	  }
+  });
 });

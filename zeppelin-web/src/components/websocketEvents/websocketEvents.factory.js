@@ -143,6 +143,7 @@ angular.module('zeppelinWebApp').factory('websocketEvents',
   websocketCalls.ws.onClose(function(event) {
     console.log('close message: ', event);
     $rootScope.$broadcast('setConnectedStatus', false);
+    $rootScope.$broadcast('checkCloseEventCode', event);
   });
 
   return websocketCalls;
