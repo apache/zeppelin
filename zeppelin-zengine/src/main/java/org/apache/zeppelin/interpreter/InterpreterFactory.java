@@ -672,7 +672,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     Interpreter interpreter;
     for (InterpreterInfo info : interpreterInfos) {
       if (option.isRemote()) {
-        if (option.isConnectExistingProcess()) {
+        if (option.isExistingProcess()) {
           interpreter =
               connectToRemoteRepl(noteId, info.getClassName(), option.getHost(), option.getPort(),
                   properties);
@@ -1013,7 +1013,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
         new RemoteInterpreter(property, noteId, className, conf.getInterpreterRemoteRunnerPath(),
             interpreterPath, localRepoPath, connectTimeout, maxPoolSize,
             remoteInterpreterProcessListener, appEventListener);
-    remoteInterpreter.setEnv(env);
+    remoteInterpreter.addEnv(env);
 
     return new LazyOpenInterpreter(remoteInterpreter);
   }

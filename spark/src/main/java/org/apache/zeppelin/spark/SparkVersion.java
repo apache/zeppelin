@@ -52,13 +52,19 @@ public class SparkVersion {
       if (pos > 0) {
         numberPart = versionString.substring(0, pos);
       }
-      version = Integer.parseInt(numberPart.replaceAll("\\.", ""));
+
+      String versions[] = numberPart.split("\\.");
+      int major = Integer.parseInt(versions[0]);
+      int minor = Integer.parseInt(versions[1]);
+      int patch = Integer.parseInt(versions[2]);
+      // version is always 5 digits. (e.g. 2.0.0 -> 20000, 1.6.2 -> 10602)
+      version = Integer.parseInt(String.format("%d%02d%02d", major, minor, patch));
     } catch (Exception e) {
       logger.error("Can not recognize Spark version " + versionString +
           ". Assume it's a future release", e);
 
       // assume it is future release
-      version = 999;
+      version = 99999;
     }
   }
 

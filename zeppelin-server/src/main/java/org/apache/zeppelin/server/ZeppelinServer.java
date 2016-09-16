@@ -104,6 +104,7 @@ public class ZeppelinServer extends Application {
     heliumApplicationFactory.setApplicationEventListener(notebookWsServer);
 
     notebook.addNotebookEventListener(heliumApplicationFactory);
+    notebook.addNotebookEventListener(notebookWsServer.getNotebookInformationListener());
   }
 
   public static void main(String[] args) throws InterruptedException {
