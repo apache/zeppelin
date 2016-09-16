@@ -861,7 +861,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
   }
 
   private boolean isNotSharedInterpreter(InterpreterOption intpOption) {
-    return intpOption.isPerNoteSession() || intpOption.isConnectExistingProcess();
+    return intpOption.isPerNoteSession() || intpOption.isExistingProcess();
   }
 
 
