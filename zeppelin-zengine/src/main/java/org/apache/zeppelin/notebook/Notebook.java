@@ -485,47 +485,24 @@ public class Notebook implements NoteEventListener {
     }
 
     List<NoteInfo> noteInfos = notebookRepo.list(subject);
-    noteInfos = getAuthorizedNoteInfos(noteInfos, subject);
+    noteInfos = filterByUser(noteInfos, subject);
 
     for (NoteInfo info : noteInfos) {
       loadNoteFromRepo(info.getId(), subject);
     }
   }
-
-  private List<NoteInfo> getAuthorizedNoteInfos(List<NoteInfo> notes, AuthenticationInfo subject) {
-    Set<String> allIds = Sets.newHashSet();
-    if (subject == null) {
-      logger.warn("Subject for retrieving notes is null");
-      return notes;
+  
+  private List<NoteInfo> filterByUser(List<NoteInfo> notes, AuthenticationInfo subject) {
+    final Set<String> entities = Sets.newHashSet();
+    if (subject != null) {
+      entities.add(subject.getUser());
     }
-    if ("anonymous".equals(subject.getUser())) {
-      return notes;
-    }
-    for (NoteInfo note: notes) {
-      allIds.add(note.getId());
-    }
-    Set<String> filteredIds = applyAuthorizationFilter(allIds, subject.getUser());
-    List<NoteInfo> filteredNotes = Lists.newArrayList();
-    for (NoteInfo note: notes) {
-      if (filteredIds.contains(note.getId())){
-        filteredNotes.add(note);
+    return FluentIterable.from(notes).filter(new Predicate<NoteInfo>() {
+      @Override
+      public boolean apply(NoteInfo input) {
+        return input != null && notebookAuthorization.isReader(input.getId(), entities);
       }
-    }
-    return filteredNotes;
-  }
-
-  public Set<String> applyAuthorizationFilter(Set<String> ids, String user) {
-    logger.info("applying filter for {}", user);
-    Set<String> filteredIds = Sets.newHashSet();
-    Set<String> userEntity =  Sets.newHashSet((Arrays.asList(user)));
-    NotebookAuthorization auth = getNotebookAuthorization();
-    for (String id: ids) {
-      if (auth.isOwner(id, userEntity) || auth.isReader(id, userEntity)
-          || auth.isWriter(id, userEntity)) {
-        filteredIds.add(id);
-      }
-    }
-    return filteredIds;
+    }).toList();
   }
 
   private class SnapshotAngularObject {
