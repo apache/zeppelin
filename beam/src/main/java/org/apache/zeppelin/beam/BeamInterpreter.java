@@ -53,7 +53,7 @@ public class BeamInterpreter extends Interpreter {
     // delete all .class files created while compilation process
     for (int i = 0; i < dir.list().length; i++) {
       File f = dir.listFiles()[i];
-      if (f.getAbsolutePath().contains(".class")) {
+      if (f.getAbsolutePath().endsWith(".class")) {
         f.delete();
       }
     }

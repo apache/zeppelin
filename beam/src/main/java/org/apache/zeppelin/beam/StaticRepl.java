@@ -147,27 +147,10 @@ public class StaticRepl {
 
         return baosOut.toString();
 
-      } catch (ClassNotFoundException e) {
-        logger.error("Exception in Interpreter while Class not found", e);
-        System.err.println("Class not found: " + e);
-        e.printStackTrace(newErr);
-        throw new Exception(baosErr.toString());
-
-      } catch (NoSuchMethodException e) {
-        logger.error("Exception in Interpreter while No such method", e);
-        System.err.println("No such method: " + e);
-        e.printStackTrace(newErr);
-        throw new Exception(baosErr.toString());
-
-      } catch (IllegalAccessException e) {
-        logger.error("Exception in Interpreter while Illegal access", e);
-        System.err.println("Illegal access: " + e);
-        e.printStackTrace(newErr);
-        throw new Exception(baosErr.toString());
-
-      } catch (InvocationTargetException e) {
-        logger.error("Exception in Interpreter while Invocation target", e);
-        System.err.println("Invocation target: " + e);
+      } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException
+          | InvocationTargetException e) {
+        logger.error("Exception in Interpreter while execution", e);
+        System.err.println(e);
         e.printStackTrace(newErr);
         throw new Exception(baosErr.toString());
 

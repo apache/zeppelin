@@ -34,11 +34,17 @@
   
   <properties>
     <beam.hadoop.version>2.3.0</beam.hadoop.version>
-    <beam.spark.version>1.4.1</beam.spark.version>
+    <beam.spark.version>1.6.1</beam.spark.version>
     <beam.beam.version>0.2.0-incubating</beam.beam.version>
   </properties>
   
   <dependencies>
+    <dependency>
+      <groupId>io.netty</groupId>
+      <artifactId>netty-all</artifactId>
+      <version>4.1.1.Final</version>
+    </dependency>
+    
     <dependency>
       <groupId>org.apache.spark</groupId>
       <artifactId>spark-core_2.10</artifactId>
