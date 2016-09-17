@@ -274,7 +274,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       collector.checkThat("Before Run Output field contains ",
           driver.findElement(By.xpath(xpathToOutputField)).getText(),
           CoreMatchers.equalTo(""));
-      driver.findElement(By.xpath(getParagraphXPath(1) + "//span[@ng-click='runParagraph(getEditorValue())']")).click();
+      driver.findElement(By.xpath(getParagraphXPath(1) + "//span[@ng-click='runParagraphAndMoveFocusToNext(getEditorValue())']")).click();
       waitForParagraph(1, "FINISHED");
       collector.checkThat("After Run Output field contains  ",
           driver.findElement(By.xpath(xpathToOutputField)).getText(),

@@ -374,13 +374,14 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
     var numOldParagraphs = oldParagraphIds.length;
 
     var paragraphToBeFocused;
-    var focusedParagraph;
-    for (var i = 0; i < $scope.note.paragraphs.length; i++) {
-      var paragraphId = $scope.note.paragraphs[i].id;
-      if (angular.element('#' + paragraphId + '_paragraphColumn_main').scope().paragraphFocused) {
-        focusedParagraph = paragraphId;
-        break;
-      }
+    var focusedParagraph = $scope.note.config.focusedParagraphId;
+    if ($scope.note.config.previousFocusedParagraphId) {
+      angular.element('#' + $scope.note.config.previousFocusedParagraphId + '_paragraphColumn_main')
+        .scope().paragraphFocused = false;
+    }
+    if (angular.element('#' + focusedParagraph + '_paragraphColumn_main').scope()) {
+      angular.element('#' + focusedParagraph + '_paragraphColumn_main').scope().paragraphFocused = true;
+      angular.element('#' + focusedParagraph + '_paragraphColumn_main').scope().editor.focus();
     }
 
     /** add a new paragraph */
