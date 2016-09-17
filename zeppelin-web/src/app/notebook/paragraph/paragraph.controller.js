@@ -16,12 +16,14 @@
 angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $rootScope, $route, $window,
                                                                       $routeParams, $location, $timeout, $compile,
                                                                       $http, websocketMsgSrv, baseUrlSrv, ngToast,
-                                                                      saveAsService, esriLoader) {
+                                                                      saveAsService, esriLoader, editorConfigSrv) {
   var ANGULAR_FUNCTION_OBJECT_NAME_PREFIX = '_Z_ANGULAR_FUNC_';
   $scope.parentNote = null;
   $scope.paragraph = null;
   $scope.originalText = '';
   $scope.editor = null;
+  $scope.defaultEditorConfig = editorConfigSrv.getDefaultEditorSetting();
+  $scope.userEditorConfig = $scope.defaultEditorConfig;
 
   var paragraphScope = $rootScope.$new(true, $rootScope);
 
@@ -78,13 +80,67 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
 
   var angularObjectRegistry = {};
 
-  var editorModes = {
-    'ace/mode/python': /^%(\w*\.)?(pyspark|python)\s*$/,
-    'ace/mode/scala': /^%(\w*\.)?spark\s*$/,
-    'ace/mode/r': /^%(\w*\.)?(r|sparkr|knitr)\s*$/,
-    'ace/mode/sql': /^%(\w*\.)?\wql/,
-    'ace/mode/markdown': /^%md/,
-    'ace/mode/sh': /^%sh/
+  $rootScope.$on('updateEditorSettings', function() {
+    console.log('change to paragraph editor theme', $scope.defaultEditorConfig);
+    $scope.defaultEditorConfig = editorConfigSrv.getDefaultEditorSetting();
+    $scope.userEditorConfig = $scope.defaultEditorConfig;
+    $scope.setParagraphMode(
+      $scope.editor.getSession(),
+      $scope.paragraph.text,
+      {row: 0, column: 0}
+    );
+  });
+
+  $scope.setEditorConfig = function(newValue, oldValue) {
+    if (newValue === undefined && oldValue === undefined) {
+      if ($scope.editor !== null) {
+        $scope.editor.renderer.setShowGutter(false);
+        $scope.editor.setHighlightGutterLine(false);
+        $scope.editor.getSession().setMode('ace/mode/scala');
+        $scope.editor.setHighlightActiveLine(false);
+        $scope.editor.getSession().setTabSize(4);
+        $scope.editor.setTheme('ace/theme/chrome');
+        $scope.editor.setShowFoldWidgets(true);
+        $scope.editor.setOptions({
+          enableBasicAutocompletion: true,
+          enableSnippets: false,
+          enableLiveAutocompletion: false,
+          fontSize: 12
+        });
+
+        $scope.editor.setShowPrintMargin(false);
+        $scope.editor.setPrintMarginColumn(false);
+      }
+      $scope.paragraph.config.editorMode = 'ace/mode/scala';
+      return;
+    }
+
+    var targetEditorConfig = newValue !== undefined ? newValue : oldValue;
+    var isShowLineNumberValue = $scope.paragraph.config.lineNumbers;
+
+    // show line number option precious order (paragraph setting > user theme)
+    if (isShowLineNumberValue === undefined) {
+      isShowLineNumberValue = targetEditorConfig.isShowNumberLine();
+    }
+
+    $scope.editor.renderer.setShowGutter(isShowLineNumberValue);
+    $scope.editor.setHighlightGutterLine(isShowLineNumberValue);
+    $scope.editor.getSession().setMode(targetEditorConfig.getMode());
+    $scope.editor.setHighlightActiveLine(targetEditorConfig.isActiveLine());
+    $scope.editor.getSession().setTabSize(targetEditorConfig.getTabSize());
+    $scope.editor.setTheme(targetEditorConfig.getTheme());
+    $scope.editor.setShowFoldWidgets(true);
+    $scope.editor.setOptions({
+      enableBasicAutocompletion: true,
+      enableSnippets: false,
+      enableLiveAutocompletion: targetEditorConfig.isLiveAutoCompletion(),
+      fontSize: targetEditorConfig.getFontSizeHtmlFormat()
+    });
+    $scope.editor.setShowPrintMargin(targetEditorConfig.isShowPrintMargin());
+    $scope.editor.setPrintMarginColumn(targetEditorConfig.getShowPrintMarginColumn());
+    $scope.paragraph.config.editorMode = targetEditorConfig.getMode();
+
+    $scope.userEditorConfig = targetEditorConfig;
   };
 
   // Controller init
@@ -549,18 +605,13 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
     $scope.editor = _editor;
     $scope.editor.on('input', $scope.aceChanged);
     if (_editor.container.id !== '{{paragraph.id}}_editor') {
-      $scope.editor.renderer.setShowGutter($scope.paragraph.config.lineNumbers);
-      $scope.editor.setShowFoldWidgets(false);
-      $scope.editor.setHighlightActiveLine(false);
-      $scope.editor.setHighlightGutterLine(false);
-      $scope.editor.getSession().setUseWrapMode(true);
-      $scope.editor.setTheme('ace/theme/chrome');
-      $scope.editor.setReadOnly($scope.isRunning());
       if ($scope.paragraphFocused) {
         $scope.editor.focus();
         $scope.goToEnd();
       }
 
+      // set default editor config
+      $scope.setEditorConfig($scope.userEditorConfig, null);
       autoAdjustEditorHeight(_editor.container.id);
       angular.element(window).resize(function() {
         autoAdjustEditorHeight(_editor.container.id);
@@ -583,23 +634,10 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
           if ((typeof pos === 'undefined') && $scope.paragraph.config.editorMode) {
             session.setMode($scope.paragraph.config.editorMode);
           } else {
-            // Defaults to spark mode
-            var newMode = 'ace/mode/scala';
             // Test first against current mode
-            var oldMode = session.getMode().$id;
-            if (!editorModes[oldMode] || !editorModes[oldMode].test(paragraphText)) {
-              for (var key in editorModes) {
-                if (key !== oldMode) {
-                  if (editorModes[key].test(paragraphText)) {
-                    $scope.paragraph.config.editorMode = key;
-                    session.setMode(key);
-                    return true;
-                  }
-                }
-              }
-              $scope.paragraph.config.editorMode = newMode;
-              session.setMode(newMode);
-            }
+            var tempEditorConfig = editorConfigSrv.findGetEditorConfigFromInterpreterTag(paragraphText);
+            $scope.setEditorConfig(tempEditorConfig, $scope.userEditorConfig);
+            return true;
           }
         }
       };
@@ -633,12 +671,6 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
       langTools.setCompleters([remoteCompleter, langTools.keyWordCompleter, langTools.snippetCompleter,
         langTools.textCompleter]);
 
-      $scope.editor.setOptions({
-        enableBasicAutocompletion: true,
-        enableSnippets: false,
-        enableLiveAutocompletion: false
-      });
-
       $scope.handleFocus = function(value, isDigestPass) {
         $scope.paragraphFocused = value;
         if (isDigestPass === false || isDigestPass === undefined) {
@@ -662,7 +694,7 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
         autoAdjustEditorHeight(_editor.container.id);
       });
 
-      $scope.setParagraphMode($scope.editor.getSession(), $scope.editor.getSession().getValue());
+      $scope.setParagraphMode($scope.editor.getSession(), $scope.editor.getSession().getValue(), {row: 0, column: 0});
 
       // autocomplete on '.'
       /*
