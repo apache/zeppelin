@@ -135,15 +135,12 @@ public class NotebookTest implements JobListenerFactory{
     File destDir = new File(notebookDir.getAbsolutePath() + "/2A94M5J1Z");
     FileUtils.copyDirectory(srcDir, destDir);
 
-    //TODO(khalid): anonymous or specific user notes?
-    AuthenticationInfo subject = new AuthenticationInfo("anonymous");
-
     // when load
     notebook.reloadAllNotes(null);
-    assertEquals(1, notebook.getAllNotes(subject).size());
+    assertEquals(1, notebook.getAllNotes().size());
 
     // then interpreter factory should be injected into all the paragraphs
-    Note note = notebook.getAllNotes(subject).get(0);
+    Note note = notebook.getAllNotes().get(0);
     assertNull(note.getParagraphs().get(0).getRepl(null));
   }
 
@@ -166,17 +163,14 @@ public class NotebookTest implements JobListenerFactory{
       logger.error(e.toString(), e);
     }
 
-    //TODO(khalid): anonymous or specific user notes?
-    AuthenticationInfo subject = new AuthenticationInfo("anonymous");
-
     // doesn't have copied notebook in memory before reloading
-    List<Note> notes = notebook.getAllNotes(subject);
+    List<Note> notes = notebook.getAllNotes();
     assertEquals(notes.size(), 0);
 
     // load copied notebook on memory when reloadAllNotes() is called
     Note copiedNote = notebookRepo.get("2A94M5J1Z", null);
     notebook.reloadAllNotes(null);
-    notes = notebook.getAllNotes(subject);
+    notes = notebook.getAllNotes();
     assertEquals(notes.size(), 2);
     assertEquals(notes.get(1).getId(), copiedNote.getId());
     assertEquals(notes.get(1).getName(), copiedNote.getName());
@@ -189,12 +183,12 @@ public class NotebookTest implements JobListenerFactory{
     }
 
     // keep notebook in memory before reloading
-    notes = notebook.getAllNotes(subject);
+    notes = notebook.getAllNotes();
     assertEquals(notes.size(), 2);
 
     // delete notebook from notebook list when reloadAllNotes() is called
     notebook.reloadAllNotes(null);
-    notes = notebook.getAllNotes(subject);
+    notes = notebook.getAllNotes();
     assertEquals(notes.size(), 0);
   }
 
@@ -211,7 +205,7 @@ public class NotebookTest implements JobListenerFactory{
     logger.info("Loaded {} notes", notes1.size());
 
     Note note = notebook.createNote(user1);
-    setNotePermissions(note.id(), user1.getUser(), true, true, true);
+    setNotePermissions(note.getId(), user1.getUser(), true, true, true);
     notebook.reloadAllNotes(user1);
     notes1 = notebook.getAllNotes(user1);
     notebook.reloadAllNotes(user2);
@@ -250,9 +244,8 @@ public class NotebookTest implements JobListenerFactory{
     Notebook notebook2 = new Notebook(
         conf, notebookRepo, schedulerFactory,
         new InterpreterFactory(conf, null, null, null, depResolver), this, null, null, null);
-    //TODO(khalid): anonymous or specific user notes?
-    AuthenticationInfo subject = new AuthenticationInfo("anonymous");
-    assertEquals(1, notebook2.getAllNotes(subject).size());
+
+    assertEquals(1, notebook2.getAllNotes().size());
   }
 
   @Test

@@ -578,6 +578,27 @@ public class Notebook implements NoteEventListener {
     }
   }
 
+  public List<Note> getAllNotes() {
+    synchronized (notes) {
+      List<Note> noteList = new ArrayList<>(notes.values());
+      Collections.sort(noteList, new Comparator<Note>() {
+        @Override
+        public int compare(Note note1, Note note2) {
+          String name1 = note1.getId();
+          if (note1.getName() != null) {
+            name1 = note1.getName();
+          }
+          String name2 = note2.getId();
+          if (note2.getName() != null) {
+            name2 = note2.getName();
+          }
+          return name1.compareTo(name2);
+        }
+      });
+      return noteList;
+    }
+  }
+  
   public List<Note> getAllNotes(AuthenticationInfo subject) {
     synchronized (notes) {
       List<Note> noteList = getAuthorizedNotes(subject);
@@ -760,7 +781,7 @@ public class Notebook implements NoteEventListener {
       }
     }
 
-    List<Note> notes = getAllNotes(subject);
+    List<Note> notes = getAllNotes();
     List<Map<String, Object>> notesInfo = new LinkedList<>();
     for (Note note : notes) {
       boolean isNotebookRunning = false;
