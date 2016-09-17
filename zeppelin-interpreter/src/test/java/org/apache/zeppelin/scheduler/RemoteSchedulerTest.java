@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.apache.zeppelin.display.AngularObjectRegistry;
+import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.interpreter.Interpreter;
@@ -288,6 +289,72 @@ public class RemoteSchedulerTest implements RemoteInterpreterProcessListener {
 
     intpA.close();
     schedulerSvc.removeScheduler("test");
+  }
+
+  @Test
+  public void testIncomplete() throws Exception {
+    Properties p = new Properties();
+    final InterpreterGroup intpGroup = new InterpreterGroup();
+    Map<String, String> env = new HashMap<String, String>();
+    env.put("ZEPPELIN_CLASSPATH", new File("./target/test-classes").getAbsolutePath());
+
+    final RemoteInterpreter intpA =
+        new RemoteInterpreter(p, "note", MockInterpreterA.class.getName(),
+            new File(INTERPRETER_SCRIPT).getAbsolutePath(), "fake", "fakeRepo", env, 10 * 1000,
+            this, null);
+
+    intpGroup.put("note", new LinkedList<Interpreter>());
+    intpGroup.get("note").add(intpA);
+    intpA.setInterpreterGroup(intpGroup);
+
+    intpA.open();
+
+    Scheduler scheduler =
+        schedulerSvc.createOrGetRemoteScheduler("test", "note", intpA.getInterpreterProcess(), 10);
+
+    Job job3 = new Job("jobId3", "jobName3", null, 200) {
+      InterpreterContext context =
+          new InterpreterContext("note", "jobId3", "title", "text", new AuthenticationInfo(),
+              new HashMap<String, Object>(), new GUI(),
+              new AngularObjectRegistry(intpGroup.getId(), null), new LocalResourcePool("pool1"),
+              new LinkedList<InterpreterContextRunner>(), null);
+
+      @Override
+      public int progress() {
+        return 0;
+      }
+
+      @Override
+      public Map<String, Object> info() {
+        return null;
+      }
+
+      @Override
+      protected Object jobRun() throws Throwable {
+        intpA.interpret("1000", context);
+        return "1000";
+      }
+
+      @Override
+      protected boolean jobAbort() {
+        return false;
+      }
+
+      @Override
+      public Object getReturn() {
+        return new InterpreterResult(InterpreterResult.Code.INCOMPLETE);
+      }
+    };
+
+    scheduler.submit(job3);
+
+    int cycles = 0;
+    while (!job3.isTerminated() && cycles < MAX_WAIT_CYCLES) {
+      Thread.sleep(TICK_WAIT);
+      cycles++;
+    }
+
+    assertEquals(Status.ERROR, job3.getStatus());
   }
 
   @Override
