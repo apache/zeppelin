@@ -514,31 +514,6 @@ public class Notebook implements NoteEventListener {
     return filteredNotes;
   }
 
-  //TODO(khalid): to change from processing everytime to keeping in memory view of each user
-  public List<Note> getAuthorizedNotes(AuthenticationInfo subject) {
-    List<Note> allNotes = new ArrayList<>(notes.values());
-    Set<String> allIds = Sets.newHashSet();
-
-    if (subject == null) {
-      logger.warn("Subject for retrieving notes is null");
-      return allNotes;
-    }
-    if ("anonymous".equals(subject.getUser())) {
-      return allNotes;
-    }
-    for (Note note: allNotes) {
-      allIds.add(note.getId());
-    }
-    Set<String> filteredIds = applyAuthorizationFilter(allIds, subject.getUser());
-    List<Note> filteredNotes = Lists.newArrayList();
-    for (Note note: allNotes) {
-      if (filteredIds.contains(note.getId())){
-        filteredNotes.add(note);
-      }
-    }
-    return filteredNotes;
-  }
-
   public Set<String> applyAuthorizationFilter(Set<String> ids, String user) {
     logger.info("applying filter for {}", user);
     Set<String> filteredIds = Sets.newHashSet();
@@ -600,27 +575,6 @@ public class Notebook implements NoteEventListener {
   }
   
   public List<Note> getAllNotes(AuthenticationInfo subject) {
-    synchronized (notes) {
-      List<Note> noteList = getAuthorizedNotes(subject);
-      Collections.sort(noteList, new Comparator<Note>() {
-        @Override
-        public int compare(Note note1, Note note2) {
-          String name1 = note1.getId();
-          if (note1.getName() != null) {
-            name1 = note1.getName();
-          }
-          String name2 = note2.getId();
-          if (note2.getName() != null) {
-            name2 = note2.getName();
-          }
-          return name1.compareTo(name2);
-        }
-      });
-      return noteList;
-    }
-  }
-/*
-  public List<Note> getAllNotes(AuthenticationInfo subject) {
     final Set<String> entities = Sets.newHashSet();
     if (subject != null) {
       entities.add(subject.getUser());
@@ -648,7 +602,7 @@ public class Notebook implements NoteEventListener {
       });
     }
   }
-*/
+
   private Map<String, Object> getParagraphForJobManagerItem(Paragraph paragraph) {
     Map<String, Object> paragraphItem = new HashMap<>();
 
