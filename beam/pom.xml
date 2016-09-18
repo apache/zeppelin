@@ -34,7 +34,7 @@
   
   <properties>
     <beam.hadoop.version>2.3.0</beam.hadoop.version>
-    <beam.spark.version>1.6.1</beam.spark.version>
+    <beam.spark.version>1.6.2</beam.spark.version>
     <beam.beam.version>0.2.0-incubating</beam.beam.version>
   </properties>
   

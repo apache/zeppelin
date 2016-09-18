@@ -69,7 +69,8 @@ public class StaticRepl {
       boolean hasMain = false;
 
       for (int j = 0; j < classes.get(i).getMethods().size(); j++) {
-        if (classes.get(i).getMethods().get(j).getName().equals("main")) {
+        if (classes.get(i).getMethods().get(j).getName().equals("main") && classes.get(i)
+            .getMethods().get(j).getModifiers().toString().contains("static")) {          
           mainClassName = classes.get(i).getName();
           hasMain = true;
           break;
@@ -83,8 +84,9 @@ public class StaticRepl {
 
     // if there isn't Main method, will retuen error
     if (mainClassName == null) {
-      logger.error("Exception for Main method", "There isn't any class containing Main method.");
-      throw new Exception("There isn't any class containing Main method.");
+      logger.error("Exception for Main method", "There isn't any class "
+          + "containing static main method.");
+      throw new Exception("There isn't any class containing static main method.");
     }
 
     // replace name of class containing Main method with generated name
@@ -152,7 +154,7 @@ public class StaticRepl {
         logger.error("Exception in Interpreter while execution", e);
         System.err.println(e);
         e.printStackTrace(newErr);
-        throw new Exception(baosErr.toString());
+        throw new Exception(baosErr.toString(), e);
 
       } finally {
 
