@@ -124,7 +124,7 @@ limitations under the License.
           </small>
 
         </h3>
-        <span style="float:right">
+        <span style="float:right" ng-show="!valueform.$visible" >
           <button class="btn btn-default btn-xs"
                   ng-click="valueform.$show();
                   copyOriginInterpreterSettingProperties(setting.id)">
@@ -134,7 +134,7 @@ limitations under the License.
             <span class="fa fa-refresh"></span> restart</button>
           <button class="btn btn-default btn-xs"
                   ng-click="removeInterpreterSetting(setting.id)">
-            <span class="fa fa-remove"></span> remove</button>
+            <span class="fa fa-trash"></span> remove</button>
         </span>
       </div>
     </div>
@@ -229,12 +229,12 @@ limitations under the License.
           </div>
         </div>
       </div>
+    </div>
 
-      <div ng-show="_.isEmpty(setting.properties) && _.isEmpty(setting.dependencies) || valueform.$hidden" class="col-md-12 gray40-message">
+    <div class="row interpreter" style="margin-top:20px !important">
+      <div ng-show="_.isEmpty(setting.properties) && _.isEmpty(setting.dependencies) && !valueform.$visible" class="col-md-12 gray40-message">
         <em>Currently there are no properties and dependencies set for this interpreter</em>
       </div>
-    </div>
-    <div class="row interpreter">
       <div class="col-md-12" ng-show="!_.isEmpty(setting.properties) || valueform.$visible">
         <h5>Properties</h5>
         <table class="table table-striped">
@@ -299,7 +299,7 @@ limitations under the License.
             <td>
               <textarea ng-if="valueform.$visible" ng-model="dep.exclusions"
                         placeholder="(Optional) comma separated groupId:artifactId list"
-                        form="valueform"
+                        e-form="valueform"
                         e-msd-elastic
                         ng-list="">
               </textarea>
