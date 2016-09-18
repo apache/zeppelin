@@ -33,6 +33,12 @@ public class InterpreterOption {
   boolean setPermission;
   List<String> users;
 
+  private InterpreterOption() {}
+
+  public InterpreterOption(boolean remote) {
+    this.remote = remote;
+  }
+
   public boolean isExistingProcess() {
     return isExistingProcess;
   }
@@ -59,14 +65,6 @@ public class InterpreterOption {
 
   public List<String> getUsers() {
     return users;
-  }
-
-  public InterpreterOption() {
-    remote = false;
-  }
-
-  public InterpreterOption(boolean remote) {
-    this.remote = remote;
   }
 
   public boolean isRemote() {

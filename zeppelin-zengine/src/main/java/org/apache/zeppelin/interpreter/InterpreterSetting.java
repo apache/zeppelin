@@ -27,6 +27,7 @@ import java.util.Properties;
 
 import com.google.gson.annotations.SerializedName;
 
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.dep.Dependency;
 
 import static org.apache.zeppelin.notebook.utility.IdHashes.generateId;
@@ -48,6 +49,7 @@ public class InterpreterSetting {
   private List<Dependency> dependencies;
   private InterpreterOption option;
   private transient String path;
+  private transient ZeppelinConfiguration conf = ZeppelinConfiguration.create();
 
   @Deprecated private transient InterpreterGroupFactory interpreterGroupFactory;
 
@@ -164,7 +166,7 @@ public class InterpreterSetting {
 
   public InterpreterOption getOption() {
     if (option == null) {
-      option = new InterpreterOption();
+      option = new InterpreterOption(conf.getInterpreterRemote());
     }
 
     return option;

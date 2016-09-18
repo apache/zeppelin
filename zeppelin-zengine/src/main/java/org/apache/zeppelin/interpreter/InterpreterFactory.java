@@ -49,6 +49,7 @@ import java.util.Properties;
 import java.util.Set;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
@@ -157,10 +158,12 @@ public class InterpreterFactory implements InterpreterGroupFactory {
   }
 
   private void init() throws InterpreterException, IOException, RepositoryException {
+
     String interpreterJson = conf.getInterpreterJson();
     ClassLoader cl = Thread.currentThread().getContextClassLoader();
 
     Path interpretersDir = Paths.get(conf.getInterpreterDir());
+
     if (Files.exists(interpretersDir)) {
       for (Path interpreterDir : Files
           .newDirectoryStream(interpretersDir, new DirectoryStream.Filter<Path>() {
@@ -169,18 +172,22 @@ public class InterpreterFactory implements InterpreterGroupFactory {
               return Files.exists(entry) && Files.isDirectory(entry);
             }
           })) {
+
         String interpreterDirString = interpreterDir.toString();
 
-        registerInterpreterFromPath(interpreterDirString, interpreterJson);
+        URL[] urls = recursiveBuildLibList(new File(interpreterDirString));
+        URLClassLoader urlClassLoader = new URLClassLoader(urls, cl);
 
-        registerInterpreterFromResource(cl, interpreterDirString, interpreterJson);
+        registerInterpreterFromPath(urlClassLoader, interpreterDir, interpreterJson);
+
+        registerInterpreterFromResource(urlClassLoader, interpreterDir, interpreterJson);
 
         /*
          * TODO(jongyoul)
          * - Remove these codes below because of legacy code
          * - Support ThreadInterpreter
-         */
-        URLClassLoader ccl = new URLClassLoader(recursiveBuildLibList(interpreterDir.toFile()), cl);
+        URL[] urls = recursiveBuildLibList(interpreterDir.toFile());
+        URLClassLoader ccl = new URLClassLoader(urls, cl);
         for (String className : interpreterClassList) {
           try {
             // Load classes
@@ -192,13 +199,14 @@ public class InterpreterFactory implements InterpreterGroupFactory {
                 Interpreter.registeredInterpreters.get(interpreterKey)
                     .setPath(interpreterDirString);
                 logger.info("Interpreter " + interpreterKey + " found. class=" + className);
-                cleanCl.put(interpreterDirString, ccl);
               }
             }
+          cleanCl.put(interpreterDirString, ccl);
           } catch (Throwable t) {
             // nothing to do
           }
         }
+         */
       }
     }
 
@@ -277,31 +285,33 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     return properties;
   }
 
-  private void registerInterpreterFromResource(ClassLoader cl, String interpreterDir,
+  private void registerInterpreterFromResource(URLClassLoader cl, Path interpreterDir,
       String interpreterJson) throws IOException, RepositoryException {
-    URL[] urls = recursiveBuildLibList(new File(interpreterDir));
-    ClassLoader tempClassLoader = new URLClassLoader(urls, cl);
 
-    InputStream inputStream = tempClassLoader.getResourceAsStream(interpreterJson);
+    InputStream inputStream = cl.getResourceAsStream(interpreterJson);
 
     if (null != inputStream) {
       logger.debug("Reading {} from resources in {}", interpreterJson, interpreterDir);
       List<RegisteredInterpreter> registeredInterpreterList =
           getInterpreterListFromJson(inputStream);
-      registerInterpreters(registeredInterpreterList, interpreterDir);
+      registerInterpreters(cl, registeredInterpreterList, interpreterDir);
     }
+
   }
 
-  private void registerInterpreterFromPath(String interpreterDir, String interpreterJson)
+  private void registerInterpreterFromPath(URLClassLoader cl,
+      Path interpreterDir, String interpreterJson)
       throws IOException, RepositoryException {
 
-    Path interpreterJsonPath = Paths.get(interpreterDir, interpreterJson);
+    Path interpreterJsonPath = Paths.get(interpreterDir.toString(), interpreterJson);
+
     if (Files.exists(interpreterJsonPath)) {
       logger.debug("Reading {}", interpreterJsonPath);
       List<RegisteredInterpreter> registeredInterpreterList =
           getInterpreterListFromJson(interpreterJsonPath);
-      registerInterpreters(registeredInterpreterList, interpreterDir);
+      registerInterpreters(cl, registeredInterpreterList, interpreterDir);
     }
+
   }
 
   private List<RegisteredInterpreter> getInterpreterListFromJson(Path filename)
@@ -315,8 +325,11 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     return gson.fromJson(new InputStreamReader(stream), registeredInterpreterListType);
   }
 
-  private void registerInterpreters(List<RegisteredInterpreter> registeredInterpreters,
-      String absolutePath) throws IOException, RepositoryException {
+  private void registerInterpreters(URLClassLoader cl,
+      List<RegisteredInterpreter> registeredInterpreters,
+      Path interpreterDir) throws IOException, RepositoryException {
+
+    cleanCl.put(interpreterDir.toFile().getAbsolutePath(), cl);
 
     for (RegisteredInterpreter registeredInterpreter : registeredInterpreters) {
       InterpreterInfo interpreterInfo =
@@ -331,7 +344,8 @@ public class InterpreterFactory implements InterpreterGroupFactory {
         }
       }
 
-      add(registeredInterpreter.getGroup(), interpreterInfo, properties, absolutePath);
+      add(registeredInterpreter.getGroup(),
+          interpreterInfo, properties, interpreterDir.toFile().getAbsolutePath());
     }
 
   }
@@ -360,12 +374,6 @@ public class InterpreterFactory implements InterpreterGroupFactory {
 
     for (String k : info.interpreterSettings.keySet()) {
       InterpreterSetting setting = info.interpreterSettings.get(k);
-
-      // Always use separate interpreter process
-      // While we decided to turn this feature on always (without providing
-      // enable/disable option on GUI).
-      // previously created setting should turn this feature on here.
-      setting.getOption().setRemote(true);
 
       // Update transient information from InterpreterSettingRef
       interpreterSettingObject = interpreterSettingsRef.get(setting.getGroup());
@@ -918,9 +926,11 @@ public class InterpreterFactory implements InterpreterGroupFactory {
 
   private Interpreter createRepl(String dirName, String className, Properties property)
       throws InterpreterException {
+
     logger.info("Create repl {} from {}", className, dirName);
 
     ClassLoader oldcl = Thread.currentThread().getContextClassLoader();
+
     try {
 
       URLClassLoader ccl = cleanCl.get(dirName);
@@ -929,32 +939,17 @@ public class InterpreterFactory implements InterpreterGroupFactory {
         ccl = URLClassLoader.newInstance(new URL[] {}, oldcl);
       }
 
-      boolean separateCL = true;
-      try { // check if server's classloader has driver already.
-        Class cls = this.getClass().forName(className);
-        if (cls != null) {
-          separateCL = false;
-        }
-      } catch (Exception e) {
-        logger.error("exception checking server classloader driver", e);
-      }
+      Thread.currentThread().setContextClassLoader(ccl);
 
-      URLClassLoader cl;
-
-      if (separateCL == true) {
-        cl = URLClassLoader.newInstance(new URL[] {}, ccl);
-      } else {
-        cl = ccl;
-      }
-      Thread.currentThread().setContextClassLoader(cl);
-
-      Class<Interpreter> replClass = (Class<Interpreter>) cl.loadClass(className);
+      Class<Interpreter> replClass = (Class<Interpreter>) ccl.loadClass(className);
       Constructor<Interpreter> constructor =
           replClass.getConstructor(new Class[] {Properties.class});
       Interpreter repl = constructor.newInstance(property);
       repl.setClassloaderUrls(ccl.getURLs());
-      LazyOpenInterpreter intp = new LazyOpenInterpreter(new ClassloaderInterpreter(repl, cl));
+      LazyOpenInterpreter intp = new LazyOpenInterpreter(new ClassloaderInterpreter(repl, ccl));
+
       return intp;
+
     } catch (SecurityException e) {
       throw new InterpreterException(e);
     } catch (NoSuchMethodException e) {
@@ -1018,14 +1013,18 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     List<String> interpreterSettingIds = getNoteInterpreterSettingBinding(noteId);
     LinkedList<InterpreterSetting> settings = new LinkedList<>();
     synchronized (interpreterSettingIds) {
+      List<String> idsToBeRemoved = Lists.newArrayList();
       for (String id : interpreterSettingIds) {
         InterpreterSetting setting = get(id);
         if (setting == null) {
           // interpreter setting is removed from factory. remove id from here, too
-          interpreterSettingIds.remove(id);
+          idsToBeRemoved.add(id);
         } else {
           settings.add(setting);
         }
+      }
+      for (String id: idsToBeRemoved) {
+        interpreterSettingIds.remove(id);
       }
     }
     return settings;
@@ -1245,8 +1244,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
 
   private Interpreter getDevInterpreter() {
     if (devInterpreter == null) {
-      InterpreterOption option = new InterpreterOption();
-      option.setRemote(true);
+      InterpreterOption option = new InterpreterOption(conf.getInterpreterRemote());
 
       InterpreterGroup interpreterGroup = createInterpreterGroup("dev", option);
 

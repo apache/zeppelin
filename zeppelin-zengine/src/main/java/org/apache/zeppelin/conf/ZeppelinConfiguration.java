@@ -394,6 +394,10 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     return getRelativeDir(String.format("%s/shiro.ini", getConfDir()));
   }
 
+  public boolean getInterpreterRemote() {
+    return getBoolean(ConfVars.ZEPPELIN_INTERPRETER_REMOTE);
+  }
+
   public String getInterpreterRemoteRunnerPath() {
     return getRelativeDir(ConfVars.ZEPPELIN_INTERPRETER_REMOTE_RUNNER);
   }
@@ -548,6 +552,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_NOTEBOOK_AZURE_USER("zeppelin.notebook.azure.user", "user"),
     ZEPPELIN_NOTEBOOK_STORAGE("zeppelin.notebook.storage", VFSNotebookRepo.class.getName()),
     ZEPPELIN_NOTEBOOK_ONE_WAY_SYNC("zeppelin.notebook.one.way.sync", false),
+    ZEPPELIN_INTERPRETER_REMOTE("zeppelin.interpreter.remote", true),
     ZEPPELIN_INTERPRETER_REMOTE_RUNNER("zeppelin.interpreter.remoterunner",
         System.getProperty("os.name")
                 .startsWith("Windows") ? "bin/interpreter.cmd" : "bin/interpreter.sh"),

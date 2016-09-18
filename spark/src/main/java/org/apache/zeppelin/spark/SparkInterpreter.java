@@ -123,7 +123,7 @@ public class SparkInterpreter extends Interpreter {
 
 
   public SparkInterpreter(Properties property) {
-    super(property);
+   super(property);
     out = new SparkOutputStream(logger);
   }
 

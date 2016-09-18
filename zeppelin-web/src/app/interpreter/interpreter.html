@@ -178,10 +178,18 @@ limitations under the License.
       <div class="col-md-12">
         <div class="checkbox remove-margin-top-bottom">
           <span class="input-group" style="line-height:30px;">
-            <label>
-              <input type="checkbox" style="width:20px" id="isExistingProcess" ng-model="setting.option.isExistingProcess" ng-disabled="!valueform.$visible"/>
-              Connect to existing process
-            </label>
+            <label><input type="checkbox" style="width:20px" id="isRemote" ng-model="setting.option.remote" ng-disabled="!valueform.$visible"/>
+              Remote Interpreter </label>
+          </span>
+        </div>
+      </div>
+
+      <br />
+      <div class="col-md-12">
+        <div class="checkbox">
+          <span class="input-group" style="line-height:30px;">
+            <label><input type="checkbox" style="width:20px" id="isExistingProcess" ng-model="setting.option.isExistingProcess" ng-disabled="!valueform.$visible"/>
+              Connect to existing process </label>
           </span>
         </div>
       </div>
