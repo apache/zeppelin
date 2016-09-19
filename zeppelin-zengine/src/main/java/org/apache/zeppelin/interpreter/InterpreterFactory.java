@@ -744,17 +744,21 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     synchronized (interpreterSettings) {
       InterpreterSetting intpsetting = interpreterSettings.get(id);
       if (intpsetting != null) {
+        try {
+          stopJobAllInterpreter(intpsetting);
 
-        stopJobAllInterpreter(intpsetting);
+          intpsetting.closeAndRmoveAllInterpreterGroups();
+          intpsetting.setOption(option);
+          intpsetting.setProperties(properties);
+          intpsetting.setDependencies(dependencies);
+          loadInterpreterDependencies(intpsetting);
 
-        intpsetting.closeAndRmoveAllInterpreterGroups();
-
-        intpsetting.setOption(option);
-        intpsetting.setProperties(properties);
-        intpsetting.setDependencies(dependencies);
-
-        loadInterpreterDependencies(intpsetting);
-        saveToFile();
+          saveToFile();
+        } catch (Exception e) {
+          throw e;
+        } finally {
+          loadFromFile();
+        }
       } else {
         throw new InterpreterException("Interpreter setting id " + id
             + " not found");
