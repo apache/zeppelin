@@ -275,7 +275,7 @@ To develop this functionality use this [method](http://docs.oracle.com/javase/7/
 
  The thin client has fewer dependencies and connects through a [Phoenix Query Server](http://phoenix.apache.org/server.html) instance.
 
- Use the appropriate phoenix.driver and phoenix.url for your connection type. Include only the dependency for your connection type.
+ Use the appropriate phoenix.driver and phoenix.url for your connection type.
 
 #### Properties:
  <table class="table-configuration">
@@ -316,6 +316,9 @@ To develop this functionality use this [method](http://docs.oracle.com/javase/7/
    </tr>
  </table>
 #### Dependencies:
+ 
+ Include the dependency for your connection type (it should be only *one* of the following).
+ 
  <table class="table-configuration">
    <tr>
      <th>Artifact</th>
