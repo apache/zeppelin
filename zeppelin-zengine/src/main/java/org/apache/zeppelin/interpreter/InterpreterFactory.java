@@ -171,32 +171,42 @@ public class InterpreterFactory implements InterpreterGroupFactory {
           })) {
         String interpreterDirString = interpreterDir.toString();
 
-        registerInterpreterFromPath(interpreterDirString, interpreterJson);
-
-        registerInterpreterFromResource(cl, interpreterDirString, interpreterJson);
-
-        /*
-         * TODO(jongyoul)
-         * - Remove these codes below because of legacy code
-         * - Support ThreadInterpreter
+        /**
+         * Register interpreter by the following ordering
+         * 1. Register it from path {ZEPPELIN_HOME}/interpreter/{interpreter_name}/
+         *    interpreter-setting.json
+         * 2. Register it from interpreter-setting.json in classpath
+         *    {ZEPPELIN_HOME}/interpreter/{interpreter_name}
+         * 3. Register it by Interpreter.register
          */
-        URLClassLoader ccl = new URLClassLoader(recursiveBuildLibList(interpreterDir.toFile()), cl);
-        for (String className : interpreterClassList) {
-          try {
-            // Load classes
-            Class.forName(className, true, ccl);
-            Set<String> interpreterKeys = Interpreter.registeredInterpreters.keySet();
-            for (String interpreterKey : interpreterKeys) {
-              if (className
-                  .equals(Interpreter.registeredInterpreters.get(interpreterKey).getClassName())) {
-                Interpreter.registeredInterpreters.get(interpreterKey)
-                    .setPath(interpreterDirString);
-                logger.info("Interpreter " + interpreterKey + " found. class=" + className);
-                cleanCl.put(interpreterDirString, ccl);
+        if (!registerInterpreterFromPath(interpreterDirString, interpreterJson)) {
+          if (!registerInterpreterFromResource(cl, interpreterDirString, interpreterJson)) {
+            /*
+             * TODO(jongyoul)
+             * - Remove these codes below because of legacy code
+             * - Support ThreadInterpreter
+            */
+            URLClassLoader ccl = new URLClassLoader(
+                    recursiveBuildLibList(interpreterDir.toFile()), cl);
+            for (String className : interpreterClassList) {
+              try {
+                // Load classes
+                Class.forName(className, true, ccl);
+                Set<String> interpreterKeys = Interpreter.registeredInterpreters.keySet();
+                for (String interpreterKey : interpreterKeys) {
+                  if (className
+                          .equals(Interpreter.registeredInterpreters.get(interpreterKey)
+                                  .getClassName())) {
+                    Interpreter.registeredInterpreters.get(interpreterKey)
+                            .setPath(interpreterDirString);
+                    logger.info("Interpreter " + interpreterKey + " found. class=" + className);
+                    cleanCl.put(interpreterDirString, ccl);
+                  }
+                }
+              } catch (Throwable t) {
+                // nothing to do
               }
             }
-          } catch (Throwable t) {
-            // nothing to do
           }
         }
       }
@@ -277,7 +287,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     return properties;
   }
 
-  private void registerInterpreterFromResource(ClassLoader cl, String interpreterDir,
+  private boolean registerInterpreterFromResource(ClassLoader cl, String interpreterDir,
       String interpreterJson) throws IOException, RepositoryException {
     URL[] urls = recursiveBuildLibList(new File(interpreterDir));
     ClassLoader tempClassLoader = new URLClassLoader(urls, cl);
@@ -289,10 +299,12 @@ public class InterpreterFactory implements InterpreterGroupFactory {
       List<RegisteredInterpreter> registeredInterpreterList =
           getInterpreterListFromJson(inputStream);
       registerInterpreters(registeredInterpreterList, interpreterDir);
+      return true;
     }
+    return false;
   }
 
-  private void registerInterpreterFromPath(String interpreterDir, String interpreterJson)
+  private boolean registerInterpreterFromPath(String interpreterDir, String interpreterJson)
       throws IOException, RepositoryException {
 
     Path interpreterJsonPath = Paths.get(interpreterDir, interpreterJson);
@@ -301,7 +313,9 @@ public class InterpreterFactory implements InterpreterGroupFactory {
       List<RegisteredInterpreter> registeredInterpreterList =
           getInterpreterListFromJson(interpreterJsonPath);
       registerInterpreters(registeredInterpreterList, interpreterDir);
+      return true;
     }
+    return false;
   }
 
   private List<RegisteredInterpreter> getInterpreterListFromJson(Path filename)
