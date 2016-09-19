@@ -31,17 +31,22 @@ import java.util.*;
  */
 public class NotebookAuthorization {
   private static final Logger LOG = LoggerFactory.getLogger(NotebookAuthorization.class);
-
+  private static NotebookAuthorization instance = null;
   /*
    * { "note1": { "owners": ["u1"], "readers": ["u1", "u2"], "writers": ["u1"] },  "note2": ... } }
    */
-  private Map<String, Map<String, Set<String>>> authInfo = new HashMap<>();
-  private ZeppelinConfiguration conf;
-  private Gson gson;
-  private String filePath;
+  private static Map<String, Map<String, Set<String>>> authInfo = new HashMap<>();
+  private static ZeppelinConfiguration conf;
+  private static Gson gson;
+  private static String filePath;
 
-  public NotebookAuthorization(ZeppelinConfiguration conf) {
-    this.conf = conf;
+  private NotebookAuthorization() {}
+
+  public static NotebookAuthorization init(ZeppelinConfiguration config) {
+    if (instance == null) {
+      instance = new NotebookAuthorization();
+    }
+    conf = config;
     filePath = conf.getNotebookAuthorizationPath();
     GsonBuilder builder = new GsonBuilder();
     builder.setPrettyPrinting();
@@ -51,9 +56,19 @@ public class NotebookAuthorization {
     } catch (IOException e) {
       LOG.error("Error loading NotebookAuthorization", e);
     }
+    return instance;
   }
 
-  private void loadFromFile() throws IOException {
+  public static NotebookAuthorization getInstance() {
+    if (instance == null) {
+      LOG.warn("Notebook authorization module was called without initialization,"
+          + " initializing with default configuration");
+      init(ZeppelinConfiguration.create());
+    }
+    return instance;
+  }
+
+  private static void loadFromFile() throws IOException {
     File settingFile = new File(filePath);
     LOG.info(settingFile.getAbsolutePath());
     if (!settingFile.exists()) {
@@ -74,7 +89,7 @@ public class NotebookAuthorization {
     String json = sb.toString();
     NotebookAuthorizationInfoSaving info = gson.fromJson(json,
             NotebookAuthorizationInfoSaving.class);
-    this.authInfo = info.authInfo;
+    authInfo = info.authInfo;
   }
 
   private void saveToFile() {
