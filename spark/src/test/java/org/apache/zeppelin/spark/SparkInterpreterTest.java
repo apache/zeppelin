@@ -97,7 +97,7 @@ public class SparkInterpreterTest {
         new HashMap<String, Object>(),
         new GUI(),
         new AngularObjectRegistry(intpGroup.getId(), null),
-        new InterpreterCallbackRegistry(intpGroup.getId()),
+        new InterpreterCallbackRegistry(intpGroup.getId(), null),
         new LocalResourcePool("id"),
         new LinkedList<InterpreterContextRunner>(),
         new InterpreterOutput(new InterpreterOutputListener() {

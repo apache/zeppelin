@@ -37,6 +37,7 @@ import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.AngularObjectWatcher;
 import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.display.Input.ParamOption;
+import org.apache.zeppelin.interpreter.InterpreterCallbackRegistry;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterContextRunner;
 import org.apache.zeppelin.interpreter.InterpreterException;
@@ -695,6 +696,71 @@ public class ZeppelinContext {
     registry.remove(name, noteId, null);
   }
 
+  /**
+   * General function to register callback event
+   * @param replName Name of the interpreter
+   * @param event The type of event to hook to (pre_exec, post_exec)
+   * @param cmd The code to be executed by the interpreter on given event
+   */
+  @ZeppelinApi
+  public void registerCallback(String replName, String event, String cmd) {
+    InterpreterCallbackRegistry callbacks = interpreterContext.getInterpreterCallbackRegistry();
+    String noteId = interpreterContext.getNoteId();
+    callbacks.register(noteId, replName, event, cmd);
+  }
+  
+  /**
+   * registerCallback() wrapper for the spark (scala) interpreter
+   * @param event The type of event to hook to (pre_exec, post_exec)
+   * @param cmd The code to be executed by the interpreter on given event
+   */
+  @ZeppelinApi
+  public void registerCallback(String event, String cmd) {
+    registerCallback("spark", event, cmd);
+  }
+  
+  /**
+   * Get the callback code
+   * @param replName Name of the interpreter
+   * @param event The type of event to hook to (pre_exec, post_exec)
+   */
+  @ZeppelinApi
+  public String getCallback(String replName, String event) {
+    InterpreterCallbackRegistry callbacks = interpreterContext.getInterpreterCallbackRegistry();
+    String noteId = interpreterContext.getNoteId();
+    return callbacks.get(noteId, replName, event);
+  }
+  
+  /**
+   * getCallback() wrapper for the spark (scala) interpreter
+   * @param event The type of event to hook to (pre_exec, post_exec)
+   * @param cmd The code to be executed by the interpreter on given event
+   */
+  @ZeppelinApi
+  public String getCallback(String event) {
+    return getCallback("spark", event);
+  }
+    
+  /**
+   * Unbind code from given callback event
+   * @param replName Name of the interpreter
+   * @param event The type of event to hook to (pre_exec, post_exec)
+   */
+  @ZeppelinApi
+  public void unregisterCallback(String replName, String event) {
+    InterpreterCallbackRegistry callbacks = interpreterContext.getInterpreterCallbackRegistry();
+    String noteId = interpreterContext.getNoteId();
+    callbacks.unregister(noteId, replName, event);
+  }
+  
+  /**
+   * Unbind code from given callback event
+   * @param event The type of event to hook to (pre_exec, post_exec)
+   */
+  @ZeppelinApi
+  public void unregisterCallback(String event) {
+    unregisterCallback("spark", event);
+  }
 
   /**
    * Add object into resource pool

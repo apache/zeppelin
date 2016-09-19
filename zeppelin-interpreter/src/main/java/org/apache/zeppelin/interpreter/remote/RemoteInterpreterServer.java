@@ -55,11 +55,13 @@ import com.google.gson.reflect.TypeToken;
  */
 public class RemoteInterpreterServer
   extends Thread
-  implements RemoteInterpreterService.Iface, AngularObjectRegistryListener {
+  implements RemoteInterpreterService.Iface, AngularObjectRegistryListener,
+    InterpreterCallbackRegistryListener {
   Logger logger = LoggerFactory.getLogger(RemoteInterpreterServer.class);
 
   InterpreterGroup interpreterGroup;
   AngularObjectRegistry angularObjectRegistry;
+  InterpreterCallbackRegistry callbackRegistry;
   DistributedResourcePool resourcePool;
   private ApplicationLoader appLoader;
 
@@ -152,7 +154,9 @@ public class RemoteInterpreterServer
     if (interpreterGroup == null) {
       interpreterGroup = new InterpreterGroup(interpreterGroupId);
       angularObjectRegistry = new AngularObjectRegistry(interpreterGroup.getId(), this);
+      callbackRegistry = new InterpreterCallbackRegistry(interpreterGroup.getId(), this);
       resourcePool = new DistributedResourcePool(interpreterGroup.getId(), eventClient);
+      interpreterGroup.setInterpreterCallbackRegistry(callbackRegistry);
       interpreterGroup.setAngularObjectRegistry(angularObjectRegistry);
       interpreterGroup.setResourcePool(resourcePool);
 
@@ -588,6 +592,17 @@ public class RemoteInterpreterServer
     eventClient.angularObjectRemove(name, noteId, paragraphId);
   }
 
+  @Override
+  public void onRegister(String interpreterGroupId, String noteId, String replName,
+                         String event, String cmd) {
+    eventClient.registerCallback(noteId, replName, event, cmd);
+  }
+  
+  @Override
+  public void onUnregister(String interpreterGroupId, String noteId, String replName,
+                           String event) {
+    eventClient.unregisterCallback(noteId, replName, event);
+  }
 
   /**
    * Poll event from RemoteInterpreterEventPoller

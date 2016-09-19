@@ -23,6 +23,7 @@ import org.apache.thrift.TException;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.helium.ApplicationEventListener;
+import org.apache.zeppelin.interpreter.InterpreterCallbackRegistry;
 import org.apache.zeppelin.interpreter.InterpreterContextRunner;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterEvent;
@@ -35,6 +36,7 @@ import org.apache.zeppelin.resource.ResourceSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.Type;
 import java.nio.ByteBuffer;
 import java.util.LinkedList;
 import java.util.List;
@@ -115,8 +117,11 @@ public class RemoteInterpreterEventPoller extends Thread {
       }
 
       Gson gson = new Gson();
+      Type mapType = new TypeToken<Map<String, String>>() {}.getType();
 
       AngularObjectRegistry angularObjectRegistry = interpreterGroup.getAngularObjectRegistry();
+      InterpreterCallbackRegistry callbackRegistry =
+        interpreterGroup.getInterpreterCallbackRegistry();
 
       try {
         if (event.getType() == RemoteInterpreterEventType.NO_OP) {
@@ -141,6 +146,17 @@ public class RemoteInterpreterEventPoller extends Thread {
           AngularObject angularObject = gson.fromJson(event.getData(), AngularObject.class);
           angularObjectRegistry.remove(angularObject.getName(), angularObject.getNoteId(),
                   angularObject.getParagraphId());
+        } else if (event.getType() == RemoteInterpreterEventType.REGISTER_CALLBACK) {
+          Map<String, String> callbackInfo = gson.fromJson(event.getData(), mapType);
+          callbackRegistry.register(callbackInfo.get("noteId"),
+                                    callbackInfo.get("replName"),
+                                    callbackInfo.get("eventName"),
+                                    callbackInfo.get("cmd"));
+        } else if (event.getType() == RemoteInterpreterEventType.UNREGISTER_CALLBACK) {
+          Map<String, String> callbackInfo = gson.fromJson(event.getData(), mapType);
+          callbackRegistry.unregister(callbackInfo.get("noteId"),
+                                      callbackInfo.get("replName"),
+                                      callbackInfo.get("eventName"));
         } else if (event.getType() == RemoteInterpreterEventType.RUN_INTERPRETER_CONTEXT_RUNNER) {
           InterpreterContextRunner runnerFromRemote = gson.fromJson(
               event.getData(), RemoteInterpreterContextRunner.class);

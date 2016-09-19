@@ -98,6 +98,24 @@ class PyZeppelinContext(dict):
 
     checkedIterables = self.z.checkbox(name, defaultCheckedIterables, optionIterables)
     return gateway.jvm.scala.collection.JavaConversions.asJavaCollection(checkedIterables)
+  
+  def registerCallback(self, event, cmd):
+      self.z.registerCallback("pyspark", event, cmd)
+
+  def registerCallbackToRepl(self, replName, event, cmd):
+      self.z.registerCallback(replName, event, cmd)
+
+  def unregisterCallback(self, event):
+      self.z.unregisterCallback("pyspark", event)
+
+  def unregisterCallbackFromRepl(self, replName, event):
+      self.z.unregisterCallback(replName, event)
+      
+  def getCallback(self, event):
+      return self.z.getCallback("pyspark", event)
+
+  def getCallbackForRepl(self, replName, event):
+      return self.z.getCallback(replName, event)
 
   def __tupleToScalaTuple2(self, tuple):
     if (len(tuple) == 2):

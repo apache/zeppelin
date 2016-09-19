@@ -33,6 +33,7 @@ public class InterpreterCallbackRegistry {
   // Execute the callback code AFTER main paragraph code execution
   public static final String POST_EXEC = "post_exec";
   
+  private InterpreterCallbackRegistryListener listener;
   private String interpreterId;
   private Map<String, Map<String, Map<String, String>>> registry =
     new HashMap<String, Map<String, Map<String, String>>>();
@@ -41,9 +42,19 @@ public class InterpreterCallbackRegistry {
    * CallbackRegistry constructor.
    *
    * @param interpreterId The Id of the InterpreterGroup instance to bind to
+   * @param listener InterpreterCallbackRegistryListener instance to use for broadcasting
    */
-  public InterpreterCallbackRegistry(final String interpreterId) {
+  public InterpreterCallbackRegistry(final String interpreterId,
+    final InterpreterCallbackRegistryListener listener) {
     this.interpreterId = interpreterId;
+    this.listener = listener;
+  }
+  
+  /**
+   * Get the interpreterGroup id this instance is bound to
+   */
+  public String getInterpreterId() {
+    return interpreterId;
   }
   
   /**
@@ -82,10 +93,18 @@ public class InterpreterCallbackRegistry {
    * @param event Callback event (see constants defined in this class)
    * @param cmd Code to be executed by the interpreter
    */
-  public void register(String noteId, String replName, String event, String cmd) {
+  public void register(String noteId, String replName,
+                       String event, String cmd) throws IllegalArgumentException {
     synchronized (registry) {
       addRepl(noteId, replName);
+      if (!event.equals(POST_EXEC) && !event.equals(PRE_EXEC)) {
+        throw new IllegalArgumentException("Must be " + POST_EXEC +
+                                           " or " + PRE_EXEC);
+      }
       registry.get(noteId).get(replName).put(event, cmd);
+      if (listener != null) {
+        listener.onRegister(interpreterId, noteId, replName, event, cmd);
+      }
     }
   }
   
@@ -100,6 +119,9 @@ public class InterpreterCallbackRegistry {
     synchronized (registry) {
       addRepl(noteId, replName);
       registry.get(noteId).get(replName).remove(event);
+      if (listener != null) {
+        listener.onUnregister(interpreterId, noteId, replName, event);
+      }
     }
   }
   

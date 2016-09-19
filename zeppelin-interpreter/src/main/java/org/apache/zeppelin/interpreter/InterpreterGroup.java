@@ -72,7 +72,6 @@ public class InterpreterGroup extends ConcurrentHashMap<String, List<Interpreter
   public InterpreterGroup(String id) {
     this.id = id;
     allInterpreterGroups.put(id, this);
-    callbackRegistry = new InterpreterCallbackRegistry(id);
   }
 
   /**
@@ -121,12 +120,16 @@ public class InterpreterGroup extends ConcurrentHashMap<String, List<Interpreter
     return angularObjectRegistry;
   }
   
+  public void setAngularObjectRegistry(AngularObjectRegistry angularObjectRegistry) {
+    this.angularObjectRegistry = angularObjectRegistry;
+  }
+  
   public InterpreterCallbackRegistry getInterpreterCallbackRegistry() {
     return callbackRegistry;
   }
-
-  public void setAngularObjectRegistry(AngularObjectRegistry angularObjectRegistry) {
-    this.angularObjectRegistry = angularObjectRegistry;
+  
+  public void setInterpreterCallbackRegistry(InterpreterCallbackRegistry callbackRegistry) {
+    this.callbackRegistry = callbackRegistry;
   }
 
   public RemoteInterpreterProcess getRemoteInterpreterProcess() {

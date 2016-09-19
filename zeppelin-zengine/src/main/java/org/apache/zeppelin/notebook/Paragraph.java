@@ -301,38 +301,35 @@ public class Paragraph extends Job implements Serializable, Cloneable {
       }
     }
 
+    // Get text input from paragraph
+    String script = getScriptBody();
+    
+    // Process pre/post-execute callback hooks
+    final InterpreterCallbackRegistry callbacks = repl.getInterpreterGroup()
+            .getInterpreterCallbackRegistry();
+    script = processInterpreterCallbacks(callbacks, replName, script);
+    
+    // inject form
+    if (repl.getFormType() == FormType.NATIVE) {
+      settings.clear();
+    } else if (repl.getFormType() == FormType.SIMPLE) {
+      String scriptBody = getScriptBody();
+      scriptBody = processInterpreterCallbacks(callbacks, replName, scriptBody);
+      
+      // inputs will be built from script body
+      Map<String, Input> inputs = Input.extractSimpleQueryParam(scriptBody);
+      final AngularObjectRegistry angularRegistry = repl.getInterpreterGroup()
+              .getAngularObjectRegistry();
+
+      scriptBody = extractVariablesFromAngularRegistry(scriptBody, inputs, angularRegistry);
+
+      settings.setForms(inputs);
+      script = Input.getSimpleQuery(settings.getParams(), scriptBody);
+    }
+    logger.debug("RUN : " + script);
     try {
       InterpreterContext context = getInterpreterContext();
       InterpreterContext.set(context);
-      
-      // Get text input from paragraph
-      String script = getScriptBody();
-
-      // Process callbacks
-      InterpreterCallbackRegistry callbacks = context.getInterpreterCallbackRegistry();
-      script = processInterpreterCallbacks(callbacks, replName, script);
-
-      // inject form
-      if (repl.getFormType() == FormType.NATIVE) {
-        settings.clear();
-      } else if (repl.getFormType() == FormType.SIMPLE) {
-        String scriptBody = getScriptBody();
-        scriptBody = processInterpreterCallbacks(callbacks, replName, scriptBody);
-        
-        // inputs will be built from script body
-        Map<String, Input> inputs = Input.extractSimpleQueryParam(scriptBody);
-
-        final AngularObjectRegistry angularRegistry = repl.getInterpreterGroup()
-                .getAngularObjectRegistry();
-
-        scriptBody = extractVariablesFromAngularRegistry(scriptBody, inputs, angularRegistry);
-
-        settings.setForms(inputs);
-        script = Input.getSimpleQuery(settings.getParams(), scriptBody);
-      }
-      
-      // Run the script code through interpreter REPL
-      logger.debug("RUN : " + script);
       InterpreterResult ret = repl.interpret(script, context);
 
       if (Code.KEEP_PREVIOUS_RESULT == ret.code()) {

@@ -50,6 +50,8 @@ enum RemoteInterpreterEventType {
   OUTPUT_UPDATE = 9,
   ANGULAR_REGISTRY_PUSH = 10,
   APP_STATUS_UPDATE = 11,
+  REGISTER_CALLBACK = 12,
+  UNREGISTER_CALLBACK = 13,
 }
 
 struct RemoteInterpreterEvent {

@@ -639,6 +639,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     if (option == null)
       throw new NullArgumentException("option");
 
+    InterpreterCallbackRegistry callbackRegistry = new InterpreterCallbackRegistry(id, null);
     AngularObjectRegistry angularObjectRegistry;
 
     InterpreterGroup interpreterGroup = new InterpreterGroup(id);
@@ -652,6 +653,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     }
 
     interpreterGroup.setAngularObjectRegistry(angularObjectRegistry);
+    interpreterGroup.setInterpreterCallbackRegistry(callbackRegistry);
     return interpreterGroup;
   }
 
