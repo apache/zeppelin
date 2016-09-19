@@ -462,19 +462,4 @@ public class RemoteInterpreter extends Interpreter {
       client.angularRegistryPush(gson.toJson(registry, registryType));
     }
   }
-
-  public Map<String, String> getEnv() {
-    return env;
-  }
-
-  public void setEnv(Map<String, String> env) {
-    this.env = env;
-  }
-
-  public void addEnv(Map<String, String> env) {
-    if (this.env == null) {
-      this.env = new HashMap<>();
-    }
-    this.env.putAll(env);
-  }
 }
