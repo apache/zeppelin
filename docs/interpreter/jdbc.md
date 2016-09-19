@@ -269,7 +269,6 @@ To develop this functionality use this [method](http://docs.oracle.com/javase/7/
  </table>
 
 ### Phoenix
-#### Properties:
  Phoenix supports 'thick' and 'thin' connection types:
 
  The thick client is faster, but must connect directly to ZooKeeper and HBase RegionServers.
@@ -278,6 +277,7 @@ To develop this functionality use this [method](http://docs.oracle.com/javase/7/
 
  Use the appropriate phoenix.driver and phoenix.url for your connection type. Include only the dependency for your connection type.
 
+#### Properties:
  <table class="table-configuration">
    <tr>
      <th>Name</th>
