@@ -291,7 +291,7 @@ To develop this functionality use this [method](http://docs.oracle.com/javase/7/
    </tr>
    <tr>
      <td>phoenix.driver</td>
-     <td>org.apache.calcite.avatica.remote.Driver</td>
+     <td>org.apache.phoenix.queryserver.client.Driver</td>
      <td>'Thin Client', connects via Phoenix Query Server</td>
    </tr>
    <tr>
@@ -330,7 +330,12 @@ To develop this functionality use this [method](http://docs.oracle.com/javase/7/
    <tr>
      <td>org.apache.phoenix:phoenix-server-client:4.7.0-HBase-1.1</td>
      <td></td>
-     <td>'Thin Client', connects via Phoenix Query Server</td>
+     <td>'Thin Client' for Phoenix 4.7, connects via Phoenix Query Server</td>
+   </tr>
+   <tr>
+     <td>org.apache.phoenix:phoenix-queryserver-client:4.8.0-HBase-1.2</td>
+     <td></td>
+     <td>'Thin Client' for Phoenix 4.8+, connects via Phoenix Query Server</td>
    </tr>
  </table>
 
