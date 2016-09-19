@@ -35,8 +35,8 @@ limitations under the License.
           </select>
         </div>
 
-        <b>Option</b>
         <div>
+          <h5>Option</h5>
           <span class="btn-group">
             <button type="button" class="btn btn-default btn-xs dropdown-toggle"
                     data-toggle="dropdown">
@@ -127,81 +127,85 @@ limitations under the License.
           </div>
         </div>
 
-        <b>Properties</b>
-        <table class="table table-striped properties">
-          <tr>
-            <th>name</th>
-            <th>value</th>
-            <th>description</th>
-            <th>action</th>
-          </tr>
-          <tr ng-repeat="(key, value) in newInterpreterSetting.properties">
-            <td>{{key}}</td>
-            <td><textarea msd-elastic ng-model="value.value"></textarea></td>
-            <td>{{value.description}}</td>
-            <td>
-              <button class="btn btn-default btn-sm fa fa-remove" ng-click="removeInterpreterProperty(key)">
-              </button>
-            </td>
-          </tr>
+        <div>
+          <h5>Properties</h5>
+          <table class="table table-striped properties">
+            <tr>
+              <th>name</th>
+              <th>value</th>
+              <th>description</th>
+              <th>action</th>
+            </tr>
+            <tr ng-repeat="(key, value) in newInterpreterSetting.properties">
+              <td>{{key}}</td>
+              <td><textarea msd-elastic ng-model="value.value"></textarea></td>
+              <td>{{value.description}}</td>
+              <td>
+                <button class="btn btn-default btn-sm fa fa-remove" ng-click="removeInterpreterProperty(key)">
+                </button>
+              </td>
+            </tr>
 
-          <tr>
-            <td>
-              <input pu-elastic-input pu-elastic-input-minwidth="180px"
-                     ng-model="newInterpreterSetting.propertyKey" />
-            </td>
-            <td><textarea msd-elastic ng-model="newInterpreterSetting.propertyValue"></textarea></td>
-            <td></td>
-            <td>
-              <button class="btn btn-default btn-sm fa fa-plus" ng-click="addNewInterpreterProperty()">
-              </button>
-            </td>
-          </tr>
-        </table>
+            <tr>
+              <td>
+                <input pu-elastic-input pu-elastic-input-minwidth="180px"
+                       ng-model="newInterpreterSetting.propertyKey" />
+              </td>
+              <td><textarea msd-elastic ng-model="newInterpreterSetting.propertyValue"></textarea></td>
+              <td></td>
+              <td>
+                <button class="btn btn-default btn-sm fa fa-plus" ng-click="addNewInterpreterProperty()">
+                </button>
+              </td>
+            </tr>
+          </table>
+        </div>
 
-        <b>Dependencies</b>
-        <table class="table table-striped properties">
-          <tr>
-            <th>artifact</th>
-            <th>exclude</th>
-            <th>action</th>
-          </tr>
+        <div>
+          <h5>Dependencies</h5>
+          <table class="table table-striped properties">
+            <tr>
+              <th>artifact</th>
+              <th>exclude</th>
+              <th>action</th>
+            </tr>
 
-          <tr ng-repeat="dep in newInterpreterSetting.dependencies">
-            <td>
-              <input ng-model="dep.groupArtifactVersion" style="width:100%" />
-            </td>
-            <td>
-              <textarea msd-elastic ng-model="dep.exclusions"
-                        ng-list
-                        placeholder="(Optional) comma separated groupId:artifactId list">
-              </textarea>
-            </td>
-            <td>
-              <button class="btn btn-default btn-sm fa fa-remove"
-                   ng-click="removeInterpreterDependency(dep.groupArtifactVersion)">
-              </button>
-            </td>
-          </tr>
+            <tr ng-repeat="dep in newInterpreterSetting.dependencies">
+              <td>
+                <input ng-model="dep.groupArtifactVersion" style="width:100%" />
+              </td>
+              <td>
+                <textarea msd-elastic ng-model="dep.exclusions"
+                          ng-list
+                          placeholder="(Optional) comma separated groupId:artifactId list">
+                </textarea>
+              </td>
+              <td>
+                <button class="btn btn-default btn-sm fa fa-remove"
+                     ng-click="removeInterpreterDependency(dep.groupArtifactVersion)">
+                </button>
+              </td>
+            </tr>
 
-          <tr>
-            <td>
-              <input ng-model="newInterpreterSetting.depArtifact"
-                     placeholder="groupId:artifactId:version or local file path"
-                     style="width: 100%" />
-            </td>
-            <td>
-              <textarea msd-elastic ng-model="newInterpreterSetting.depExclude"
-                        ng-list
-                        placeholder="(Optional) comma separated groupId:artifactId list">
-              </textarea>
-            </td>
-            <td>
-              <button class="btn btn-default btn-sm fa fa-plus" ng-click="addNewInterpreterDependency()">
-              </button>
-            </td>
-          </tr>
-        </table>
+            <tr>
+              <td>
+                <input ng-model="newInterpreterSetting.depArtifact"
+                       placeholder="groupId:artifactId:version or local file path"
+                       style="width: 100%" />
+              </td>
+              <td>
+                <textarea msd-elastic ng-model="newInterpreterSetting.depExclude"
+                          ng-list
+                          placeholder="(Optional) comma separated groupId:artifactId list">
+                </textarea>
+              </td>
+              <td>
+                <button class="btn btn-default btn-sm fa fa-plus" ng-click="addNewInterpreterDependency()">
+                </button>
+              </td>
+            </tr>
+          </table>
+        </div>
 
         <span class="btn btn-primary" ng-click="addNewInterpreterSetting()">
           Save
