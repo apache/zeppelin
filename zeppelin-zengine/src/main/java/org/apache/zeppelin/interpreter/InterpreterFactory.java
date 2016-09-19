@@ -50,6 +50,7 @@ import java.util.Set;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
@@ -1283,6 +1284,35 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     this.env = env;
   }
 
+  public Map<String, Object> getEditorSetting(String noteId, String replName) {
+    Interpreter intp = getInterpreter(noteId, replName);
+    Map<String, Object> editor = Maps.newHashMap(
+        ImmutableMap.<String, Object>builder()
+            .put("language", "text").build());
+    String defaultSettingName = getDefaultInterpreterSetting(noteId).getName();
+    String group = StringUtils.EMPTY;
+    try {
+      List<InterpreterSetting> intpSettings = getInterpreterSettings(noteId);
+      for (InterpreterSetting intpSetting : intpSettings) {
+        String[] replNameSplit = replName.split("\\.");
+        if (replNameSplit.length == 2) {
+          group = replNameSplit[0];
+        }
+        // when replName is 'name' of interpreter
+        if (defaultSettingName.equals(intpSetting.getName())) {
+          editor = getEditorFromSettingByClassName(intpSetting, intp.getClassName());
+        }
+        // when replName is 'alias name' of interpreter or 'group' of interpreter
+        if (replName.equals(intpSetting.getName()) || group.equals(intpSetting.getName())) {
+          editor = getEditorFromSettingByClassName(intpSetting, intp.getClassName());
+          break;
+        }
+      }
+    } catch (NullPointerException e) {
+      logger.warn("Couldn't get interpreter editor language");
+    }
+    return editor;
+  }
 
   private Interpreter getDevInterpreter() {
     if (devInterpreter == null) {

@@ -251,7 +251,7 @@ public class NotebookServer extends WebSocketServlet implements
             saveInterpreterBindings(conn, messagereceived);
             break;
           case EDITOR_SETTING:
-            getEditorSetting(conn, notebook, messagereceived);
+            getEditorSetting(conn, messagereceived);
             break;
           default:
             break;
@@ -1581,13 +1581,12 @@ public class NotebookServer extends WebSocketServlet implements
     }
   }
 
-  private void getEditorSetting(NotebookSocket conn, Notebook notebook, Message fromMessage)
+  private void getEditorSetting(NotebookSocket conn, Message fromMessage)
       throws IOException {
     String replName = (String) fromMessage.get("magic");
     String noteId = getOpenNoteId(conn);
-    Note note = notebook.getNote(noteId);
     Message resp = new Message(OP.EDITOR_SETTING);
-    resp.put("editor", note.getEditorSetting(replName));
+    resp.put("editor", notebook().getInterpreterFactory().getEditorSetting(noteId, replName));
     conn.send(serializeMessage(resp));
     return;
   }

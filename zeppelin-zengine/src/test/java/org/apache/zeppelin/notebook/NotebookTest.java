@@ -74,17 +74,11 @@ public class NotebookTest implements JobListenerFactory{
     new File(tmpDir, "conf").mkdirs();
     notebookDir = new File(tmpDir + "/notebook");
     notebookDir.mkdirs();
-    FileUtils.copyDirectory(new File("src/test/resources/interpreter"), new File(tmpDir, "interpreter"));
 
     System.setProperty(ConfVars.ZEPPELIN_CONF_DIR.getVarName(), tmpDir.toString() + "/conf");
     System.setProperty(ConfVars.ZEPPELIN_HOME.getVarName(), tmpDir.getAbsolutePath());
     System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_DIR.getVarName(), notebookDir.getAbsolutePath());
-    System.setProperty(ConfVars.ZEPPELIN_INTERPRETERS.getVarName(),
-        "org.apache.zeppelin.interpreter.mock.MockInterpreter1," +
-        "org.apache.zeppelin.interpreter.mock.MockInterpreter2," +
-        "org.apache.zeppelin.interpreter.mock.MockInterpreter11");
-    System.setProperty(ConfVars.ZEPPELIN_INTERPRETER_GROUP_ORDER.getVarName(),
-        "mock1,mock2,mock11,dev");
+    System.setProperty(ConfVars.ZEPPELIN_INTERPRETERS.getVarName(), "org.apache.zeppelin.interpreter.mock.MockInterpreter1,org.apache.zeppelin.interpreter.mock.MockInterpreter2");
 
     conf = ZeppelinConfiguration.create();
 
@@ -238,7 +232,7 @@ public class NotebookTest implements JobListenerFactory{
     p1.setText("hello world");
     note.run(p1.getId());
 
-    while(p1.isTerminated()==false || p1.getResult()==null) Thread.yield();
+    while(p1.isTerminated() == false || p1.getResult() == null) Thread.yield();
     assertEquals("repl1: hello world", p1.getResult().message());
 
     // clear paragraph output/result
@@ -273,7 +267,7 @@ public class NotebookTest implements JobListenerFactory{
     note.runAll();
 
     // wait for finish
-    while(p3.isTerminated()==false) {
+    while(p3.isTerminated() == false) {
       Thread.yield();
     }
 
@@ -285,7 +279,7 @@ public class NotebookTest implements JobListenerFactory{
   }
 
   @Test
-  public void testSchedule() throws InterruptedException, IOException{
+  public void testSchedule() throws InterruptedException, IOException {
     // create a note and a paragraph
     Note note = notebook.createNote(null);
     factory.setInterpreters(note.getId(), factory.getDefaultInterpreterSettingList());
@@ -482,8 +476,8 @@ public class NotebookTest implements JobListenerFactory{
     p2.setText("%mock2 world");
 
     note.runAll();
-    while(p1.isTerminated()==false || p1.getResult()==null) Thread.yield();
-    while(p2.isTerminated()==false || p2.getResult()==null) Thread.yield();
+    while (p1.isTerminated() == false || p1.getResult() == null) Thread.yield();
+    while (p2.isTerminated() == false || p2.getResult() == null) Thread.yield();
 
     assertEquals(2, ResourcePoolUtils.getAllResources().size());
 
@@ -622,7 +616,7 @@ public class NotebookTest implements JobListenerFactory{
     assertEquals(notebookAuthorization.isWriter(note.getId(),
         new HashSet<String>(Arrays.asList("user2"))), false);
     assertEquals(notebookAuthorization.isWriter(note.getId(),
-            new HashSet<String>(Arrays.asList("user1"))), true);
+        new HashSet<String>(Arrays.asList("user1"))), true);
 
     // Test clearing of permssions
     notebookAuthorization.setReaders(note.getId(), Sets.<String>newHashSet());
@@ -890,30 +884,6 @@ public class NotebookTest implements JobListenerFactory{
       }
       file.delete();
     }
-  }
-
-  @Test
-  public void getEditorSetting() throws IOException, RepositoryException, SchedulerException {
-    List<String> intpIds = new ArrayList<>();
-    for(InterpreterSetting intpSetting: factory.get()) {
-      if (intpSetting.getName().startsWith("mock1")) {
-        intpIds.add(intpSetting.getId());
-      }
-    }
-    Note note = notebook.createNote(intpIds, null);
-
-    // get editor setting from interpreter-setting.json
-    Map<String, Object> editor = note.getEditorSetting("mock11");
-    assertEquals("java", editor.get("language"));
-
-    // when interpreter is not loaded via interpreter-setting.json
-    // or editor setting doesn't exit
-    editor = note.getEditorSetting("mock1");
-    assertEquals(null, editor.get("language"));
-
-    // when interpreter is not bound to note
-    editor = note.getEditorSetting("mock2");
-    assertEquals("text", editor.get("language"));
   }
 
   @Override

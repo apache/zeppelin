@@ -30,8 +30,6 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -650,40 +648,6 @@ public class Note implements Serializable, ParagraphJobListener {
 
   public void setInfo(Map<String, Object> info) {
     this.info = info;
-  }
-
-  public Interpreter getRepl(String name) {
-    return factory.getInterpreter(getId(), name);
-  }
-
-  public Map<String, Object> getEditorSetting(String replName) {
-    Interpreter intp = getRepl(replName);
-    Map<String, Object> editor = Maps.newHashMap(
-        ImmutableMap.<String, Object>builder()
-            .put("language", "text").build());
-    String defaultSettingName = factory.getDefaultInterpreterSetting(this.getId()).getName();
-    String group = StringUtils.EMPTY;
-    try {
-      List<InterpreterSetting> intpSettings = factory.getInterpreterSettings(this.getId());
-      for (InterpreterSetting intpSetting : intpSettings) {
-        String[] replNameSplit = replName.split("\\.");
-        if (replNameSplit.length == 2) {
-          group = replNameSplit[0];
-        }
-        // when replName is 'name' of interpreter
-        if (defaultSettingName.equals(intpSetting.getName())) {
-          editor = factory.getEditorFromSettingByClassName(intpSetting, intp.getClassName());
-        }
-        // when replName is 'alias name' of interpreter or 'group' of interpreter
-        if (replName.equals(intpSetting.getName()) || group.equals(intpSetting.getName())) {
-          editor = factory.getEditorFromSettingByClassName(intpSetting, intp.getClassName());
-          break;
-        }
-      }
-    } catch (NullPointerException e) {
-      logger.warn("Couldn't get interpreter editor language");
-    }
-    return editor;
   }
 
   @Override
