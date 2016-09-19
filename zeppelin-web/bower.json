@@ -24,7 +24,7 @@
     "angular-elastic": "~2.4.2",
     "angular-elastic-input": "~2.2.0",
     "angular-xeditable": "0.1.12",
-    "highlightjs": "^9.2.0",
+    "highlightjs": "^9.4.0",
     "lodash": "~3.9.3",
     "angular-filter": "~0.5.4",
     "ngtoast": "~2.0.0",
@@ -62,7 +62,7 @@
         "highlight.pack.js",
         "styles/github.css"
       ],
-      "version": "8.4.0",
+      "version": "9.4.0",
       "name": "highlightjs"
     }
   }

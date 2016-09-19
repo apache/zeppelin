@@ -75,6 +75,7 @@ public class NotebookTest implements JobListenerFactory{
     notebookDir = new File(tmpDir + "/notebook");
     notebookDir.mkdirs();
 
+    System.setProperty(ConfVars.ZEPPELIN_CONF_DIR.getVarName(), tmpDir.toString() + "/conf");
     System.setProperty(ConfVars.ZEPPELIN_HOME.getVarName(), tmpDir.getAbsolutePath());
     System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_DIR.getVarName(), notebookDir.getAbsolutePath());
     System.setProperty(ConfVars.ZEPPELIN_INTERPRETERS.getVarName(), "org.apache.zeppelin.interpreter.mock.MockInterpreter1,org.apache.zeppelin.interpreter.mock.MockInterpreter2");
@@ -95,8 +96,7 @@ public class NotebookTest implements JobListenerFactory{
     credentials = new Credentials(conf.credentialsPersist(), conf.getCredentialsPath());
 
     notebook = new Notebook(conf, notebookRepo, schedulerFactory, factory, this, search,
-            notebookAuthorization, credentials);
-
+        notebookAuthorization, credentials);
   }
 
   @After
@@ -109,7 +109,7 @@ public class NotebookTest implements JobListenerFactory{
     Note note = notebook.createNote(null);
     factory.setInterpreters(note.getId(), factory.getDefaultInterpreterSettingList());
 
-    // run with defatul repl
+    // run with default repl
     Paragraph p1 = note.addParagraph();
     Map config = p1.getConfig();
     config.put("enabled", true);
@@ -232,7 +232,7 @@ public class NotebookTest implements JobListenerFactory{
     p1.setText("hello world");
     note.run(p1.getId());
 
-    while(p1.isTerminated()==false || p1.getResult()==null) Thread.yield();
+    while(p1.isTerminated() == false || p1.getResult() == null) Thread.yield();
     assertEquals("repl1: hello world", p1.getResult().message());
 
     // clear paragraph output/result
@@ -267,7 +267,7 @@ public class NotebookTest implements JobListenerFactory{
     note.runAll();
 
     // wait for finish
-    while(p3.isTerminated()==false) {
+    while(p3.isTerminated() == false) {
       Thread.yield();
     }
 
@@ -279,7 +279,7 @@ public class NotebookTest implements JobListenerFactory{
   }
 
   @Test
-  public void testSchedule() throws InterruptedException, IOException{
+  public void testSchedule() throws InterruptedException, IOException {
     // create a note and a paragraph
     Note note = notebook.createNote(null);
     factory.setInterpreters(note.getId(), factory.getDefaultInterpreterSettingList());
@@ -297,7 +297,7 @@ public class NotebookTest implements JobListenerFactory{
     config.put("cron", "* * * * * ?");
     note.setConfig(config);
     notebook.refreshCron(note.getId());
-    Thread.sleep(1*1000);
+    Thread.sleep(1 * 1000);
 
     // remove cron scheduler.
     config.put("cron", null);
@@ -306,7 +306,7 @@ public class NotebookTest implements JobListenerFactory{
     Thread.sleep(1000);
     dateFinished = p.getDateFinished();
     assertNotNull(dateFinished);
-    Thread.sleep(1*1000);
+    Thread.sleep(1 * 1000);
     assertEquals(dateFinished, p.getDateFinished());
   }
 
@@ -476,8 +476,8 @@ public class NotebookTest implements JobListenerFactory{
     p2.setText("%mock2 world");
 
     note.runAll();
-    while(p1.isTerminated()==false || p1.getResult()==null) Thread.yield();
-    while(p2.isTerminated()==false || p2.getResult()==null) Thread.yield();
+    while (p1.isTerminated() == false || p1.getResult() == null) Thread.yield();
+    while (p2.isTerminated() == false || p2.getResult() == null) Thread.yield();
 
     assertEquals(2, ResourcePoolUtils.getAllResources().size());
 
@@ -604,26 +604,26 @@ public class NotebookTest implements JobListenerFactory{
             new HashSet<String>(Arrays.asList("user1")));
 
     assertEquals(notebookAuthorization.isOwner(note.getId(),
-            new HashSet<String>(Arrays.asList("user2"))), false);
+        new HashSet<String>(Arrays.asList("user2"))), false);
     assertEquals(notebookAuthorization.isOwner(note.getId(),
             new HashSet<String>(Arrays.asList("user1"))), true);
 
     assertEquals(notebookAuthorization.isReader(note.getId(),
-            new HashSet<String>(Arrays.asList("user3"))), false);
+        new HashSet<String>(Arrays.asList("user3"))), false);
     assertEquals(notebookAuthorization.isReader(note.getId(),
-            new HashSet<String>(Arrays.asList("user2"))), true);
+        new HashSet<String>(Arrays.asList("user2"))), true);
 
     assertEquals(notebookAuthorization.isWriter(note.getId(),
-            new HashSet<String>(Arrays.asList("user2"))), false);
+        new HashSet<String>(Arrays.asList("user2"))), false);
     assertEquals(notebookAuthorization.isWriter(note.getId(),
-            new HashSet<String>(Arrays.asList("user1"))), true);
+        new HashSet<String>(Arrays.asList("user1"))), true);
 
     // Test clearing of permssions
     notebookAuthorization.setReaders(note.getId(), Sets.<String>newHashSet());
     assertEquals(notebookAuthorization.isReader(note.getId(),
-            new HashSet<String>(Arrays.asList("user2"))), true);
+        new HashSet<String>(Arrays.asList("user2"))), true);
     assertEquals(notebookAuthorization.isReader(note.getId(),
-            new HashSet<String>(Arrays.asList("user3"))), true);
+        new HashSet<String>(Arrays.asList("user3"))), true);
 
     notebook.removeNote(note.getId(), null);
   }

@@ -180,6 +180,15 @@ angular.module('zeppelinWebApp').service('websocketMsgSrv', function($rootScope,
       });
     },
 
+    getEditorSetting: function(replName) {
+      websocketEvents.sendNewEvent({
+        op: 'EDITOR_SETTING',
+        data: {
+          magic: replName
+        }
+      });
+    },
+
     isConnected: function() {
       return websocketEvents.isConnected();
     },

@@ -76,8 +76,8 @@ angular.module('zeppelinWebApp').factory('websocketEvents',
           action: function(dialog) {
             dialog.close();
             angular.element('#loginModal').modal({
-                    show: 'true'
-                  });
+              show: 'true'
+            });
           }
         }, {
           label: 'Cancel',
@@ -97,6 +97,8 @@ angular.module('zeppelinWebApp').factory('websocketEvents',
       $rootScope.$broadcast('updateProgress', data);
     } else if (op === 'COMPLETION_LIST') {
       $rootScope.$broadcast('completionList', data);
+    } else if (op === 'EDITOR_SETTING') {
+      $rootScope.$broadcast('editorSetting', data);
     } else if (op === 'ANGULAR_OBJECT_UPDATE') {
       $rootScope.$broadcast('angularObjectUpdate', data);
     } else if (op === 'ANGULAR_OBJECT_REMOVE') {
