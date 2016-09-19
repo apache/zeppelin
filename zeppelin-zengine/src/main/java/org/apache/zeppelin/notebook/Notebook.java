@@ -482,24 +482,11 @@ public class Notebook implements NoteEventListener {
     }
 
     List<NoteInfo> noteInfos = notebookRepo.list(subject);
-    noteInfos = filterByUser(noteInfos, subject);
+    noteInfos = notebookAuthorization.filterByUser(noteInfos, subject);
 
     for (NoteInfo info : noteInfos) {
       loadNoteFromRepo(info.getId(), subject);
     }
-  }
-  
-  private List<NoteInfo> filterByUser(List<NoteInfo> notes, AuthenticationInfo subject) {
-    final Set<String> entities = Sets.newHashSet();
-    if (subject != null) {
-      entities.add(subject.getUser());
-    }
-    return FluentIterable.from(notes).filter(new Predicate<NoteInfo>() {
-      @Override
-      public boolean apply(NoteInfo input) {
-        return input != null && notebookAuthorization.isReader(input.getId(), entities);
-      }
-    }).toList();
   }
 
   private class SnapshotAngularObject {

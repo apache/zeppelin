@@ -17,9 +17,13 @@
 
 package org.apache.zeppelin.notebook;
 
+import com.google.common.base.Predicate;
+import com.google.common.collect.FluentIterable;
+import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
+import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -240,4 +244,16 @@ public class NotebookAuthorization {
     saveToFile();
   }
 
+  public List<NoteInfo> filterByUser(List<NoteInfo> notes, AuthenticationInfo subject) {
+    final Set<String> entities = Sets.newHashSet();
+    if (subject != null) {
+      entities.add(subject.getUser());
+    }
+    return FluentIterable.from(notes).filter(new Predicate<NoteInfo>() {
+      @Override
+      public boolean apply(NoteInfo input) {
+        return input != null && isReader(input.getId(), entities);
+      }
+    }).toList();
+  }
 }
