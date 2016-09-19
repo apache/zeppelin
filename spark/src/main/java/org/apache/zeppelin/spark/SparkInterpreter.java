@@ -493,13 +493,12 @@ public class SparkInterpreter extends Interpreter {
   }
 
   private void setupConfForSparkR(SparkConf conf) {
-    String sparkRBasePath = new InterpreterProperty("SPARK_HOME", null, null, null).getValue();
+    String sparkRBasePath = getSystemDefault("SPARK_HOME", null, null);
     File sparkRPath;
     if (null == sparkRBasePath) {
-      sparkRBasePath =
-              new InterpreterProperty("ZEPPELIN_HOME", "zeppelin.home", "../", null).getValue();
+      sparkRBasePath = getSystemDefault("ZEPPELIN_HOME", "zeppelin.home", "../");
       sparkRPath = new File(sparkRBasePath,
-              "interpreter" + File.separator + "spark" + File.separator + "R");
+          "interpreter" + File.separator + "spark" + File.separator + "R");
     } else {
       sparkRPath = new File(sparkRBasePath, "R" + File.separator + "lib");
     }
