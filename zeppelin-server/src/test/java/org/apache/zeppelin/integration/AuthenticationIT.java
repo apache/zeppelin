@@ -36,6 +36,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.util.List;
 
 
@@ -176,8 +177,16 @@ public class AuthenticationIT extends AbstractZeppelinIT {
       authenticationIT.logoutUser("finance1");
 
       authenticationIT.authenticationUser("hr1", "hr1");
-      pollingWait(By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + noteId + "')]"),
-          MAX_BROWSER_TIMEOUT_SEC).click();
+      try {
+        WebElement element = pollingWait(By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + noteId + "')]"),
+            MAX_BROWSER_TIMEOUT_SEC);
+        collector.checkThat("Check is user has permission to view this notebook link", false,
+            CoreMatchers.equalTo(element.isDisplayed()));
+      } catch (Exception e) {
+        //This should have failed, nothing to worry.
+      }
+
+      driver.get(new URI(driver.getCurrentUrl()).resolve("/#/notebook/" + noteId).toString());
 
       List<WebElement> privilegesModal = driver.findElements(
           By.xpath("//div[@class='modal-content']//div[@class='bootstrap-dialog-header']" +
@@ -190,8 +199,16 @@ public class AuthenticationIT extends AbstractZeppelinIT {
       authenticationIT.logoutUser("hr1");
 
       authenticationIT.authenticationUser("finance2", "finance2");
-      pollingWait(By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + noteId + "')]"),
-          MAX_BROWSER_TIMEOUT_SEC).click();
+      try {
+        WebElement element = pollingWait(By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + noteId + "')]"),
+            MAX_BROWSER_TIMEOUT_SEC);
+        collector.checkThat("Check is user has permission to view this notebook link", false,
+            CoreMatchers.equalTo(element.isDisplayed()));
+      } catch (Exception e) {
+        //This should have failed, nothing to worry.
+      }
+
+      driver.get(new URI(driver.getCurrentUrl()).resolve("/#/notebook/" + noteId).toString());
 
       privilegesModal = driver.findElements(
           By.xpath("//div[@class='modal-content']//div[@class='bootstrap-dialog-header']" +
