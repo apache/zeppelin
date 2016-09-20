@@ -269,13 +269,13 @@ To develop this functionality use this [method](http://docs.oracle.com/javase/7/
  </table>
 
 ### Phoenix
- Phoenix supports 'thick' and 'thin' connection types:
 
- The thick client is faster, but must connect directly to ZooKeeper and HBase RegionServers.
+ Phoenix supports `thick` and `thin` connection types:
 
- The thin client has fewer dependencies and connects through a [Phoenix Query Server](http://phoenix.apache.org/server.html) instance.
+ - Thick client is faster, but must connect directly to ZooKeeper and HBase RegionServers.
+ - Thin client has fewer dependencies and connects through a [Phoenix Query Server](http://phoenix.apache.org/server.html) instance.
 
- Use the appropriate phoenix.driver and phoenix.url for your connection type.
+Use the appropriate `phoenix.driver` and `phoenix.url` for your connection type.
 
 #### Properties:
  <table class="table-configuration">
