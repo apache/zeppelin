@@ -32,8 +32,34 @@ limitations under the License.
   </div>
 
   <div class="row">
+    <div class="col-md-6 text-left">
+      <div class="form-inline">
+        <span class="labelBtn btn-group" style="margin-left: 0px;">
+          <button type="button" class="btn btn-default btn-xs dropdown-toggle"
+                 data-toggle="dropdown"
+                 style="width:100px; text-align: right !important;">
+           <span class="text-right">
+             {{filterValueToName(filterConfig.filterValueInterpreter)}}<span class="caret"></span>
+           </span>
+          </button>
+          <ul class="dropdown-menu pull-left" role="menu">
+           <li ng-repeat="interpreterOption in activeInterpreters">
+             <a style="cursor:pointer" ng-click="setFilterValue(interpreterOption.value)">
+               {{filterValueToName(interpreterOption.value)}}
+             </a>
+           </li>
+          </ul>
+          <input
+           class="job-note-name-query form-control btn-xs"
+           style="margin-left: 5px;"
+           placeholder="&#xf002 Filter"
+           type="text" ng-model="filterConfig.filterValueNotebookName"
+           ng-keyup="doFilterInputTyping($event, jobInfomations, filterConfig, isLoadingFilter)"/>
+        </span>
+      </div>
+    </div>
     <div
-      class="col-md-12 text-right"
+      class="col-md-6 text-right"
       style="padding-top: 6px;">
       <span
         ng-repeat="jobStatus in ['READY', 'FINISHED', 'ABORT', 'ERROR','PENDING','RUNNING']"
@@ -99,8 +125,17 @@ limitations under the License.
 <div>
   <div class="note-jump"></div>
   <div
-    ng-if="jobInfomations.length > 0"
-    ng-repeat="notebookJob in jobInfomations"
+    ng-if="isLoadingFilter === true"
+    class="paragraph-col">
+    <div
+      class="job-space box job-margin text-center">
+      <i style="color: blue" class="fa fa-spinner spinAnimation">
+      </i>&nbsp;Loading...
+    </div>
+  </div>
+  <div
+    ng-if="JobInfomationsByFilter.length > 0"
+    ng-repeat="notebookJob in JobInfomationsByFilter"
     class="paragraph-col">
     <div ng-include src="'app/jobmanager/jobs/job.html'"
          class="job-space box job-margin"
@@ -108,7 +143,7 @@ limitations under the License.
     </div>
   </div>
   <div
-    ng-if="jobInfomations.length <= 0"
+    ng-if="isLoadingFilter === false && JobInfomationsByFilter.length <= 0"
     class="paragraph-col">
     <div
       class="job-space box job-margin text-center">
