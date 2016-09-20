@@ -698,12 +698,12 @@ public class ZeppelinContext {
 
   /**
    * General function to register callback event
-   * @param replName Name of the interpreter
    * @param event The type of event to hook to (pre_exec, post_exec)
    * @param cmd The code to be executed by the interpreter on given event
+   * @param replName Name of the interpreter
    */
   @ZeppelinApi
-  public void registerCallback(String replName, String event, String cmd) {
+  public void registerCallback(String event, String cmd, String replName) {
     InterpreterCallbackRegistry callbacks = interpreterContext.getInterpreterCallbackRegistry();
     String noteId = interpreterContext.getNoteId();
     callbacks.register(noteId, replName, event, cmd);
@@ -716,16 +716,16 @@ public class ZeppelinContext {
    */
   @ZeppelinApi
   public void registerCallback(String event, String cmd) {
-    registerCallback("spark", event, cmd);
+    registerCallback(event, cmd, "spark");
   }
   
   /**
    * Get the callback code
-   * @param replName Name of the interpreter
    * @param event The type of event to hook to (pre_exec, post_exec)
+   * @param replName Name of the interpreter
    */
   @ZeppelinApi
-  public String getCallback(String replName, String event) {
+  public String getCallback(String event, String replName) {
     InterpreterCallbackRegistry callbacks = interpreterContext.getInterpreterCallbackRegistry();
     String noteId = interpreterContext.getNoteId();
     return callbacks.get(noteId, replName, event);
@@ -738,16 +738,16 @@ public class ZeppelinContext {
    */
   @ZeppelinApi
   public String getCallback(String event) {
-    return getCallback("spark", event);
+    return getCallback(event, "spark");
   }
     
   /**
    * Unbind code from given callback event
-   * @param replName Name of the interpreter
    * @param event The type of event to hook to (pre_exec, post_exec)
+   * @param replName Name of the interpreter
    */
   @ZeppelinApi
-  public void unregisterCallback(String replName, String event) {
+  public void unregisterCallback(String event, String replName) {
     InterpreterCallbackRegistry callbacks = interpreterContext.getInterpreterCallbackRegistry();
     String noteId = interpreterContext.getNoteId();
     callbacks.unregister(noteId, replName, event);
@@ -759,7 +759,7 @@ public class ZeppelinContext {
    */
   @ZeppelinApi
   public void unregisterCallback(String event) {
-    unregisterCallback("spark", event);
+    unregisterCallback(event, "spark");
   }
 
   /**
