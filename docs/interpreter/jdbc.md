@@ -245,38 +245,76 @@ To develop this functionality use this [method](http://docs.oracle.com/javase/7/
  </table>
 
 ### Phoenix
-#### Properties
+
+ Phoenix supports `thick` and `thin` connection types:
+
+ - Thick client is faster, but must connect directly to ZooKeeper and HBase RegionServers.
+ - Thin client has fewer dependencies and connects through a [Phoenix Query Server](http://phoenix.apache.org/server.html) instance.
+
+Use the appropriate `phoenix.driver` and `phoenix.url` for your connection type.
+
+#### Properties:
  <table class="table-configuration">
    <tr>
      <th>Name</th>
      <th>Value</th>
+     <th>Description</th>
    </tr>
    <tr>
      <td>phoenix.driver</td>
      <td>org.apache.phoenix.jdbc.PhoenixDriver</td>
+     <td>'Thick Client', connects directly to Phoenix</td>
+   </tr>
+   <tr>
+     <td>phoenix.driver</td>
+     <td>org.apache.phoenix.queryserver.client.Driver</td>
+     <td>'Thin Client', connects via Phoenix Query Server</td>
    </tr>
    <tr>
      <td>phoenix.url</td>
      <td>jdbc:phoenix:localhost:2181:/hbase-unsecure</td>
+     <td>'Thick Client', connects directly to Phoenix</td>
+   </tr>
+   <tr>
+     <td>phoenix.url</td>
+     <td>jdbc:phoenix:thin:url=http://localhost:8765;serialization=PROTOBUF</td>
+     <td>'Thin Client', connects via Phoenix Query Server</td>
    </tr>
    <tr>
      <td>phoenix.user</td>
      <td>phoenix_user</td>
+     <td></td>
    </tr>
    <tr>
      <td>phoenix.password</td>
      <td>phoenix_password</td>
+     <td></td>
    </tr>
  </table>
-#### Dependencies
+#### Dependencies:
+ 
+ Include the dependency for your connection type (it should be only *one* of the following).
+ 
  <table class="table-configuration">
    <tr>
      <th>Artifact</th>
      <th>Excludes</th>
+     <th>Description</th>
    </tr>
    <tr>
      <td>org.apache.phoenix:phoenix-core:4.4.0-HBase-1.0</td>
      <td></td>
+     <td>'Thick Client', connects directly to Phoenix</td>
+   </tr>
+   <tr>
+     <td>org.apache.phoenix:phoenix-server-client:4.7.0-HBase-1.1</td>
+     <td></td>
+     <td>'Thin Client' for Phoenix 4.7, connects via Phoenix Query Server</td>
+   </tr>
+   <tr>
+     <td>org.apache.phoenix:phoenix-queryserver-client:4.8.0-HBase-1.2</td>
+     <td></td>
+     <td>'Thin Client' for Phoenix 4.8+, connects via Phoenix Query Server</td>
    </tr>
  </table>
 
