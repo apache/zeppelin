@@ -70,7 +70,7 @@ public class StaticRepl {
 
       for (int j = 0; j < classes.get(i).getMethods().size(); j++) {
         if (classes.get(i).getMethods().get(j).getName().equals("main") && classes.get(i)
-            .getMethods().get(j).getModifiers().toString().contains("static")) {          
+            .getMethods().get(j).isStatic()) {          
           mainClassName = classes.get(i).getName();
           hasMain = true;
           break;
