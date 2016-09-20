@@ -35,9 +35,6 @@ ANSWER_FILE="README.txt"
 # Download Spark binary package from the given URL.
 # Ties 3 times with 1s delay
 # Arguments: url - source URL
-
-trap "download_with_retry; rm -r ${ZEPPELIN_HOME}/${SPARK_CACHE}; exit 1" SIGTERM SIGINT SIGQUIT
-
 function download_with_retry() {
   local url="$1"
   curl -O --retry 3 --retry-delay 1 "${url}"
@@ -51,36 +48,10 @@ function unzip_spark_bin() {
   if ! tar zxf "${SPARK_ARCHIVE}.tgz" ; then
     echo "Unable to extract ${SPARK_ARCHIVE}.tgz" >&2
     rm -rf "${SPARK_ARCHIVE}"
-  else
-    set_spark_home
   fi
 
   rm -f "${SPARK_ARCHIVE}.tgz"
-}
-
-function check_zeppelin_env() {
-  if [[ ! -f "${ZEPPELIN_ENV}" ]]; then
-    echo -e "\n${ZEPPELIN_ENV} doesn't exist\nCreating ${ZEPPELIN_ENV} from ${ZEPPELIN_ENV_TEMP}..."
-    cp "${ZEPPELIN_HOME}/${ZEPPELIN_ENV_TEMP}" "${ZEPPELIN_HOME}/${ZEPPELIN_ENV}"
-  fi
-}
-
-function set_spark_home() {
-  local line_num
-  check_zeppelin_env
-  export SPARK_HOME="${ZEPPELIN_HOME}/${SPARK_CACHE}/${SPARK_ARCHIVE}"
-  echo -e "SPARK_HOME is ${SPARK_HOME}\n"
-
-  # get SPARK_HOME line number in conf/zeppelin-env.sh and substitute to real SPARK_HOME
-  line_num=$(grep -n "export SPARK_HOME" "${ZEPPELIN_HOME}/${ZEPPELIN_ENV}" | cut -d: -f 1)
-
-  # sed command with -i option fails on OSX, but works on Linux
-  # '-ie' will resolve this issue but create useless 'zeppelin-env.she' file
-  sed -ie "${line_num}s|.*|export SPARK_HOME=\"${SPARK_HOME}\"|g" "${ZEPPELIN_HOME}/${ZEPPELIN_ENV}"
-
-  if [ -f "${ZEPPELIN_HOME}/${ZEPPELIN_ENV}e" ]; then
-    rm "${ZEPPELIN_HOME}/${ZEPPELIN_ENV}e"
-  fi
+  echo -e "\n${SPARK_ARCHIVE} is successfully downloaded and saved under ${ZEPPELIN_HOME}/${SPARK_CACHE}\n"
 }
 
 function create_local_spark_dir() {
@@ -89,11 +60,18 @@ function create_local_spark_dir() {
   fi
 }
 
+function check_local_spark_dir() {
+  if [[ -d "${ZEPPELIN_HOME}/${SPARK_CACHE}" ]]; then
+    rm -r "${ZEPPELIN_HOME}/${SPARK_CACHE}"
+  fi
+}
+
 function save_local_spark() {
   local answer
 
-  echo "There is no local Spark binary in ${ZEPPELIN_HOME}/${SPARK_CACHE}"
+  echo -e "For using Spark interpreter in local mode(without external Spark installation), Spark binary needs to be downloaded."
 
+  trap "echo -e '\n\nForced termination by user. Please restart Zeppelin again.'; check_local_spark_dir; exit 1" SIGTERM SIGINT SIGQUIT
   while true; do
     if [[ "${CI}" == "true" ]]; then
       break

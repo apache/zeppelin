@@ -20,7 +20,7 @@ bin=$(dirname "${BASH_SOURCE-$0}")
 bin=$(cd "${bin}">/dev/null; pwd)
 
 function usage() {
-    echo "usage) $0 -p <port> -d <interpreter dir to load> -l <local interpreter repo dir to load>"
+  echo "usage) $0 -p <port> -d <interpreter dir to load> -l <local interpreter repo dir to load>"
 }
 
 while getopts "hp:d:l:v:u:" o; do
@@ -55,8 +55,8 @@ done
 
 
 if [ -z "${PORT}" ] || [ -z "${INTERPRETER_DIR}" ]; then
-    usage
-    exit 1
+  usage
+  exit 1
 fi
 
 . "${bin}/common.sh"
@@ -98,17 +98,18 @@ fi
 
 # set spark related env variables
 if [[ "${INTERPRETER_ID}" == "spark" ]]; then
+  SPARK_APP_JAR="$(ls ${ZEPPELIN_HOME}/interpreter/spark/zeppelin-spark*.jar)"
+  # This will eventually passes SPARK_APP_JAR to classpath of SparkIMain
+  ZEPPELIN_INTP_CLASSPATH+=":${SPARK_APP_JAR}"
+
   if [[ -n "${SPARK_HOME}" ]]; then
     export SPARK_SUBMIT="${SPARK_HOME}/bin/spark-submit"
-    SPARK_APP_JAR="$(ls ${ZEPPELIN_HOME}/interpreter/spark/zeppelin-spark*.jar)"
-    # This will eventually passes SPARK_APP_JAR to classpath of SparkIMain
-    ZEPPELIN_INTP_CLASSPATH+=":${SPARK_APP_JAR}"
 
-    pattern="$SPARK_HOME/python/lib/py4j-*-src.zip"
+    pattern="${SPARK_HOME}/python/lib/py4j-*-src.zip"
     py4j=($pattern)
     # pick the first match py4j zip - there should only be one
-    export PYTHONPATH="$SPARK_HOME/python/:$PYTHONPATH"
-    export PYTHONPATH="${py4j[0]}:$PYTHONPATH"
+    export PYTHONPATH="${SPARK_HOME}/python/:${PYTHONPATH}"
+    export PYTHONPATH="${py4j[0]}:${PYTHONPATH}"
   else
     # add Hadoop jars into classpath
     if [[ -n "${HADOOP_HOME}" ]]; then
@@ -120,12 +121,13 @@ if [[ "${INTERPRETER_ID}" == "spark" ]]; then
       addJarInDirForIntp "${HADOOP_HOME}/lib"
     fi
 
-    addJarInDirForIntp "${INTERPRETER_DIR}/dep"
+    # If there is not SPARK_HOME in the system, Zeppelin will use local Spark binary for Spark interpreter
+    export SPARK_SUBMIT="${ZEPPELIN_HOME}/${SPARK_CACHE}/${SPARK_ARCHIVE}/bin/spark-submit"
 
-    pattern="${ZEPPELIN_HOME}/interpreter/spark/pyspark/py4j-*-src.zip"
+    pattern="${ZEPPELIN_HOME}/${SPARK_CACHE}/${SPARK_ARCHIVE}/python/lib/py4j-*-src.zip"
     py4j=($pattern)
     # pick the first match py4j zip - there should only be one
-    PYSPARKPATH="${ZEPPELIN_HOME}/interpreter/spark/pyspark/pyspark.zip:${py4j[0]}"
+    PYSPARKPATH="${ZEPPELIN_HOME}/${SPARK_CACHE}/${SPARK_ARCHIVE}/python/lib/pyspark.zip:${py4j[0]}"
 
     if [[ -z "${PYTHONPATH}" ]]; then
       export PYTHONPATH="${PYSPARKPATH}"
@@ -146,8 +148,6 @@ if [[ "${INTERPRETER_ID}" == "spark" ]]; then
     if [[ -n "${HADOOP_CONF_DIR}" ]] && [[ -d "${HADOOP_CONF_DIR}" ]]; then
       ZEPPELIN_INTP_CLASSPATH+=":${HADOOP_CONF_DIR}"
     fi
-
-    export SPARK_CLASSPATH+=":${ZEPPELIN_INTP_CLASSPATH}"
   fi
 elif [[ "${INTERPRETER_ID}" == "hbase" ]]; then
   if [[ -n "${HBASE_CONF_DIR}" ]]; then
@@ -186,9 +186,9 @@ addJarInDirForIntp "${LOCAL_INTERPRETER_REPO}"
 CLASSPATH+=":${ZEPPELIN_INTP_CLASSPATH}"
 
 if [[ -n "${SPARK_SUBMIT}" ]]; then
-    ${ZEPPELIN_IMPERSONATE_RUN_CMD} `${SPARK_SUBMIT} --class ${ZEPPELIN_SERVER} --driver-class-path "${ZEPPELIN_INTP_CLASSPATH_OVERRIDES}:${CLASSPATH}" --driver-java-options "${JAVA_INTP_OPTS}" ${SPARK_SUBMIT_OPTIONS} ${SPARK_APP_JAR} ${PORT} &`
+  ${ZEPPELIN_IMPERSONATE_RUN_CMD} `${SPARK_SUBMIT} --class ${ZEPPELIN_SERVER} --driver-class-path "${ZEPPELIN_INTP_CLASSPATH_OVERRIDES}:${CLASSPATH}" --driver-java-options "${JAVA_INTP_OPTS}" ${SPARK_SUBMIT_OPTIONS} ${SPARK_APP_JAR} ${PORT} &`
 else
-    ${ZEPPELIN_IMPERSONATE_RUN_CMD} ${ZEPPELIN_RUNNER} ${JAVA_INTP_OPTS} ${ZEPPELIN_INTP_MEM} -cp ${ZEPPELIN_INTP_CLASSPATH_OVERRIDES}:${CLASSPATH} ${ZEPPELIN_SERVER} ${PORT} &
+  ${ZEPPELIN_IMPERSONATE_RUN_CMD} ${ZEPPELIN_RUNNER} ${JAVA_INTP_OPTS} ${ZEPPELIN_INTP_MEM} -cp ${ZEPPELIN_INTP_CLASSPATH_OVERRIDES}:${CLASSPATH} ${ZEPPELIN_SERVER} ${PORT} &
 fi
 
 pid=$!
