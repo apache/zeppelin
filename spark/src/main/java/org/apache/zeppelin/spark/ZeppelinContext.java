@@ -24,6 +24,7 @@ import static scala.collection.JavaConversions.collectionAsScalaIterable;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -55,6 +56,7 @@ public class ZeppelinContext {
   private SparkDependencyResolver dep;
   private InterpreterContext interpreterContext;
   private int maxResult;
+  private List<Class> supportedClasses;
 
   public ZeppelinContext(SparkContext sc, SQLContext sql,
       InterpreterContext interpreterContext,
@@ -65,6 +67,25 @@ public class ZeppelinContext {
     this.interpreterContext = interpreterContext;
     this.dep = dep;
     this.maxResult = maxResult;
+    this.supportedClasses = new ArrayList<>();
+    try {
+      supportedClasses.add(this.getClass().forName("org.apache.spark.sql.Dataset"));
+    } catch (ClassNotFoundException e) {
+    }
+
+    try {
+      supportedClasses.add(this.getClass().forName("org.apache.spark.sql.DataFrame"));
+    } catch (ClassNotFoundException e) {
+    }
+
+    try {
+      supportedClasses.add(this.getClass().forName("org.apache.spark.sql.SchemaRDD"));
+    } catch (ClassNotFoundException e) {
+    }
+
+    if (supportedClasses.isEmpty()) {
+      throw new InterpreterException("Can not road Dataset/DataFrame/SchemaRDD class");
+    }
   }
 
   public SparkContext sc;
@@ -161,33 +182,8 @@ public class ZeppelinContext {
 
   @ZeppelinApi
   public void show(Object o, int maxResult) {
-    Class cls = null;
     try {
-      cls = this.getClass().forName("org.apache.spark.sql.Dataset");
-    } catch (ClassNotFoundException e) {
-    }
-
-    if (cls == null) {
-      try {
-        cls = this.getClass().forName("org.apache.spark.sql.DataFrame");
-      } catch (ClassNotFoundException e) {
-      }
-    }
-
-    if (cls == null) {
-      try {
-        cls = this.getClass().forName("org.apache.spark.sql.SchemaRDD");
-      } catch (ClassNotFoundException e) {
-      }
-    }
-
-    if (cls == null) {
-      throw new InterpreterException("Can not road Dataset/DataFrame/SchemaRDD class");
-    }
-
-
-    try {
-      if (cls.isInstance(o)) {
+      if (supportedClasses.contains(o.getClass())) {
         interpreterContext.out.write(showDF(sc, interpreterContext, o, maxResult));
       } else {
         interpreterContext.out.write(o.toString());
