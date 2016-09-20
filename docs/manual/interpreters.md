@@ -82,3 +82,47 @@ interpreter.start()
 The above code will start interpreter thread inside your process. Once the interpreter is started you can configure zeppelin to connect to RemoteInterpreter by checking **Connect to existing process** checkbox and then provide **Host** and **Port** on which interpreter porocess is listening as shown in the image below:
 
 <img src="../assets/themes/zeppelin/img/screenshots/existing_interpreter.png" width="450px">
+
+## (Experimental) Interpreter Execution Callbacks
+
+Zeppelin allows for users to specify additional code to be executed by an interpreter at pre and post-paragraph code execution. This is primarily useful if you need to run the same set of code for all of the paragraphs within your notebook at specific times. Currently, this feature is only available for the spark and pyspark interpreters. To specify your "callback" code, you may use '`z.registerCallback()`. For example, enter the following into one paragraph:
+
+```python
+%pyspark
+z.registerCallback("post_exec", "print 'This code should be executed before the parapgraph code!'")
+z.registerCallback("pre_exec", "print 'This code should be executed after the paragraph code!'")
+```
+
+These calls will not take into effect until the next time you run a paragraph. In another paragraph, enter
+```python
+%pyspark
+print "This code should be entered into the paragraph by the user!"
+```
+
+The output should be:
+```
+This code should be executed before the paragraph code!
+This code should be entered into the paragraph by the user!
+This code should be executed after the paragraph code!
+```
+
+If you ever need to know the callback code, use `z.getCallback()`:
+```python
+%pyspark
+print z.getCallback("post_exec")
+```
+```
+print 'This code should be executed after the paragraph code!'
+```
+Any call to `z.registerCallback()` will automatically overwrite what was previously registered. To completely unregister a callback event, use `z.unregisterCallback(eventCode)`. Currently only `"post_exec"` and `"pre_exec"` are valid event codes for the Zeppelin Callback Registry system.
+
+Finally, the callback registry is internally shared by other interpreters in the same group. This would allow for callback code for one interpreter REPL to be set by another as follows:
+
+```scala
+%spark
+z.unregisterCallback("post_exec", "pyspark")
+```
+The API is identical for both the spark (scala) and pyspark (python) implementations.
+
+### Caveats
+Calls to `z.registerCallback("pre_exec", ...)` should be made with care. If there are errors in your specified callback code, this will cause the interpreter REPL to become unable to execute any code pass the pre-execute stage making it impossible for direct calls to `z.unregisterCallback()` to take into effect. Current workarounds include calling `z.unregisterCallback()` from a different interpreter REPL in the same interpreter group (see above) or manually restarting the interpreter group in the UI. 
