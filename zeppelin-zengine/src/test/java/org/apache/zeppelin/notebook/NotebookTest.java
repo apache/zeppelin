@@ -193,43 +193,6 @@ public class NotebookTest implements JobListenerFactory{
   }
 
   @Test
-  public void testReloadAuthorizedNotes() throws IOException {
-    AuthenticationInfo user1 = new AuthenticationInfo("user1");
-    AuthenticationInfo user2 = new AuthenticationInfo("user2");
-    notebook.reloadAllNotes(user1);
-    List<Note> notes1 = notebook.getAllNotes(user1);
-    notebook.reloadAllNotes(user2);
-    List<Note> notes2 = notebook.getAllNotes(user2);
-    assertEquals(notes1.size(), 0);
-    assertEquals(notes2.size(), 0);
-    logger.info("Loaded {} notes", notes1.size());
-
-    Note note = notebook.createNote(user1);
-    setNotePermissions(note.getId(), user1.getUser(), true, true, true);
-    notebook.reloadAllNotes(user1);
-    notes1 = notebook.getAllNotes(user1);
-    notebook.reloadAllNotes(user2);
-    notes2 = notebook.getAllNotes(user2);
-    assertEquals(notes1.size(), 1);
-    assertEquals(notes2.size(), 0);
-  }
-
-  //fails if all failed, otherwise true
-  private boolean setNotePermissions(String noteId, String user, boolean isOwner, boolean isReader, boolean isWriter) {
-    NotebookAuthorization notebookAuthorization = notebook.getNotebookAuthorization();
-    Set<String> owners = notebookAuthorization.getOwners(noteId);
-    Set<String> readers = notebookAuthorization.getReaders(noteId);
-    Set<String> writers = notebookAuthorization.getWriters(noteId);
-    boolean ownerSet = isOwner ? owners.add(user) : owners.remove(user);
-    boolean readerSet = isReader ? readers.add(user) : readers.remove(user);  
-    boolean writerSet = isWriter ? writers.add(user) : writers.remove(user);
-    notebookAuthorization.setOwners(noteId, owners);
-    notebookAuthorization.setReaders(noteId, readers);
-    notebookAuthorization.setWriters(noteId, writers);
-    return ownerSet || readerSet || writerSet;
-  }
-
-  @Test
   public void testPersist() throws IOException, SchedulerException, RepositoryException {
     Note note = notebook.createNote(null);
 
@@ -626,7 +589,7 @@ public class NotebookTest implements JobListenerFactory{
     // create a note and a paragraph
     Note note = notebook.createNote(null);
     NotebookAuthorization notebookAuthorization = notebook.getNotebookAuthorization();
-    // empty owners, readers and writers means note is public
+    // empty owners, readers or writers means note is public
     assertEquals(notebookAuthorization.isOwner(note.getId(),
             new HashSet<String>(Arrays.asList("user2"))), true);
     assertEquals(notebookAuthorization.isReader(note.getId(),
@@ -909,6 +872,39 @@ public class NotebookTest implements JobListenerFactory{
     assertEquals(0, notebook.getAllNotes(new AuthenticationInfo("anonymous")).size());
     assertEquals(1, notebook.getAllNotes(new AuthenticationInfo("user1")).size());
     assertEquals(1, notebook.getAllNotes(new AuthenticationInfo("user2")).size());
+  }
+
+
+  @Test
+  public void testGetAllNotesWithDifferentPermissions() throws IOException {
+    AuthenticationInfo user1 = new AuthenticationInfo("user1");
+    AuthenticationInfo user2 = new AuthenticationInfo("user2");
+    List<Note> notes1 = notebook.getAllNotes(user1);
+    List<Note> notes2 = notebook.getAllNotes(user2);
+    assertEquals(notes1.size(), 0);
+    assertEquals(notes2.size(), 0);
+
+    //creates note and sets user1 owner
+    Note note = notebook.createNote(user1);
+
+    // note is public since readers and writers empty
+    notes1 = notebook.getAllNotes(user1);
+    notes2 = notebook.getAllNotes(user2);
+    assertEquals(notes1.size(), 1);
+    assertEquals(notes2.size(), 1);
+    
+    notebook.getNotebookAuthorization().setReaders(note.getId(), Sets.newHashSet("user1"));
+    //note is public since writers empty
+    notes1 = notebook.getAllNotes(user1);
+    notes2 = notebook.getAllNotes(user2);
+    assertEquals(notes1.size(), 1);
+    assertEquals(notes2.size(), 1);
+    
+    notebook.getNotebookAuthorization().setWriters(note.getId(), Sets.newHashSet("user1"));
+    notes1 = notebook.getAllNotes(user1);
+    notes2 = notebook.getAllNotes(user2);
+    assertEquals(notes1.size(), 1);
+    assertEquals(notes2.size(), 0);
   }
 
   private void delete(File file){
