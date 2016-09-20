@@ -161,6 +161,8 @@ function upstart() {
   # where the service manager starts and stops the process
   initialize_default_directories
 
+  echo "ZEPPELIN_CLASSPATH: ${ZEPPELIN_CLASSPATH_OVERRIDES}:${CLASSPATH}" >> "${ZEPPELIN_OUTFILE}"
+
   $ZEPPELIN_RUNNER $JAVA_OPTS -cp $ZEPPELIN_CLASSPATH_OVERRIDES:$CLASSPATH $ZEPPELIN_MAIN >> "${ZEPPELIN_OUTFILE}"
 }
 
@@ -177,6 +179,8 @@ function start() {
 
   initialize_default_directories
 
+  echo "ZEPPELIN_CLASSPATH: ${ZEPPELIN_CLASSPATH_OVERRIDES}:${CLASSPATH}" >> "${ZEPPELIN_OUTFILE}"
+
   nohup nice -n $ZEPPELIN_NICENESS $ZEPPELIN_RUNNER $JAVA_OPTS -cp $ZEPPELIN_CLASSPATH_OVERRIDES:$CLASSPATH $ZEPPELIN_MAIN >> "${ZEPPELIN_OUTFILE}" 2>&1 < /dev/null &
   pid=$!
   if [[ -z "${pid}" ]]; then
@@ -190,7 +194,6 @@ function start() {
   wait_zeppelin_is_up_for_ci
   sleep 2
   check_if_process_is_alive
-  echo "ZEPPELIN_CLASSPATH: ${ZEPPELIN_CLASSPATH}" >> "${ZEPPELIN_LOGFILE}"
 }
 
 function stop() {
@@ -255,7 +258,7 @@ case "${1}" in
     start
     ;;
   restart)
-    echo "${ZEPPELIN_NAME} is restarted" >> "${ZEPPELIN_LOGFILE}"
+    echo "${ZEPPELIN_NAME} is restarting" >> "${ZEPPELIN_OUTFILE}"
     stop
     start
     ;;
