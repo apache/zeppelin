@@ -580,6 +580,13 @@
     </profile>
 
     <profile>
+      <id>beam</id>
+      <modules>
+        <module>beam</module>
+      </modules>
+    </profile>
+    
+    <profile>
       <id>examples</id>
       <modules>
         <module>zeppelin-examples</module>
