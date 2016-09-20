@@ -210,7 +210,7 @@ public class S3NotebookRepo implements NotebookRepo {
     gsonBuilder.setPrettyPrinting();
     Gson gson = gsonBuilder.create();
     String json = gson.toJson(note);
-    String key = user + "/" + "notebook" + "/" + note.id() + "/" + "note.json";
+    String key = user + "/" + "notebook" + "/" + note.getId() + "/" + "note.json";
 
     File file = File.createTempFile("note", "json");
     try {

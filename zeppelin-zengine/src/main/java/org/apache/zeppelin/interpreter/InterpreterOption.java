@@ -85,10 +85,6 @@ public class InterpreterOption {
     this.perNoteSession = perNoteSession;
   }
 
-  public boolean isConnectExistingProcess() {
-    return (host != null && port != -1);
-  }
-
   public String getHost() {
     return host;
   }

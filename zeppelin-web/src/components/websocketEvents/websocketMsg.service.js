@@ -195,7 +195,7 @@ angular.module('zeppelinWebApp').service('websocketMsgSrv', function($rootScope,
     },
 
     unsubscribeJobManager: function() {
-      websocketEvents.sendNewEvent({op: 'UNSUBSCRIBE_JOBMANAGER'});
+      websocketEvents.sendNewEvent({op: 'UNSUBSCRIBE_UPDATE_NOTEBOOK_JOBS'});
     },
 
     getInterpreterBindings: function(noteID) {

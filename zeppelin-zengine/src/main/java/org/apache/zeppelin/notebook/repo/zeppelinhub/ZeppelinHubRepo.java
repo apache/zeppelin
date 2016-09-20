@@ -176,7 +176,7 @@ public class ZeppelinHubRepo implements NotebookRepo {
     }
     String notebook = GSON.toJson(note);
     restApiClient.asyncPut(notebook);
-    LOG.info("ZeppelinHub REST API saving note {} ", note.id()); 
+    LOG.info("ZeppelinHub REST API saving note {} ", note.getId()); 
   }
 
   @Override

@@ -338,17 +338,21 @@ public abstract class Interpreter {
   @Deprecated
   public static void register(String name, String group, String className,
       boolean defaultInterpreter, Map<String, InterpreterProperty> properties) {
-    logger.error("Static initialization is deprecated. You should change it to use " +
-                     "interpreter-setting.json in your jar or " +
-                     "interpreter/{interpreter}/interpreter-setting.json");
+    logger.warn("Static initialization is deprecated for interpreter {}, You should change it " +
+                     "to use interpreter-setting.json in your jar or " +
+                     "interpreter/{interpreter}/interpreter-setting.json", name);
     register(new RegisteredInterpreter(name, group, className, defaultInterpreter, properties));
   }
 
   public static void register(RegisteredInterpreter registeredInterpreter) {
-    // TODO(jongyoul): Error should occur when two same interpreter key with different settings
     String interpreterKey = registeredInterpreter.getInterpreterKey();
     if (!registeredInterpreters.containsKey(interpreterKey)) {
       registeredInterpreters.put(interpreterKey, registeredInterpreter);
+    } else {
+      RegisteredInterpreter existInterpreter = registeredInterpreters.get(interpreterKey);
+      if (!existInterpreter.getProperties().equals(registeredInterpreter.getProperties())) {
+        logger.error("exist registeredInterpreter with the same key but has different settings.");
+      }
     }
   }
 

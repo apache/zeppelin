@@ -42,7 +42,7 @@ In 'Separate Interpreter(scoped / isolated) for each note' mode which you can se
 Creating a new interpreter is quite simple. Just extend [org.apache.zeppelin.interpreter](https://github.com/apache/zeppelin/blob/master/zeppelin-interpreter/src/main/java/org/apache/zeppelin/interpreter/Interpreter.java) abstract class and implement some methods.
 You can include `org.apache.zeppelin:zeppelin-interpreter:[VERSION]` artifact in your build system. And you should put your jars under your interpreter directory with a specific directory name. Zeppelin server reads interpreter directories recursively and initializes interpreters including your own interpreter.
 
-There are three locations where you can store your interpreter group, name and other information. Zeppelin server tries to find the location below. Next, Zeppelin tries to find `interpreter-setting.json` in your interpreter jar. 
+There are three locations where you can store your interpreter group, name and other information. Zeppelin server tries to find the location below. Next, Zeppelin tries to find `interpreter-setting.json` in your interpreter jar.
 
 ```
 {ZEPPELIN_INTERPRETER_DIR}/{YOUR_OWN_INTERPRETER_DIR}/interpreter-setting.json
@@ -73,7 +73,7 @@ Here is an example of `interpreter-setting.json` on your own interpreter.
   },
   {
     ...
-  } 
+  }
 ]
 ```
 
@@ -207,7 +207,7 @@ Checkout some interpreters released with Zeppelin by default.
 
 We welcome contribution to a new interpreter. Please follow these few steps:
 
- - First, check out the general contribution guide [here](https://github.com/apache/zeppelin/blob/master/CONTRIBUTING.md).
+ - First, check out the general contribution guide [here](https://zeppelin.apache.org/contribution/contributions.html).
  - Follow the steps in [Make your own Interpreter](#make-your-own-interpreter) section above.
  - Add your interpreter as in the [Configure your interpreter](#configure-your-interpreter) section above; also add it to the example template [zeppelin-site.xml.template](https://github.com/apache/zeppelin/blob/master/conf/zeppelin-site.xml.template).
  - Add tests! They are run by [Travis](https://travis-ci.org/apache/zeppelin) for all changes and it is important that they are self-contained.
@@ -215,4 +215,3 @@ We welcome contribution to a new interpreter. Please follow these few steps:
  - Add documentation on how to use your interpreter under `docs/interpreter/`. Follow the Markdown style as this [example](https://github.com/apache/zeppelin/blob/master/docs/interpreter/elasticsearch.md). Make sure you list config settings and provide working examples on using your interpreter in code boxes in Markdown. Link to images as appropriate (images should go to `docs/assets/themes/zeppelin/img/docs-img/`). And add a link to your documentation in the navigation menu (`docs/_includes/themes/zeppelin/_navigation.html`).
  - Most importantly, ensure licenses of the transitive closure of all dependencies are list in [license file](https://github.com/apache/zeppelin/blob/master/zeppelin-distribution/src/bin_license/LICENSE).
  - Commit your changes and open a [Pull Request](https://github.com/apache/zeppelin/pulls) on the project [Mirror on GitHub](https://github.com/apache/zeppelin); check to make sure Travis CI build is passing.
- 

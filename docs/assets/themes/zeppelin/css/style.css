@@ -438,11 +438,10 @@ a.anchor {
 .content table {
   display: block;
   width: 100%;
-  overflow: auto;
   word-break: normal;
   word-break: keep-all;
   -webkit-overflow-scrolling: touch;
-  font-size: 90%;
+  font-size: 87%;
   margin-top: 16px;
   margin-bottom: 16px;
 }

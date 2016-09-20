@@ -224,7 +224,7 @@ public class GitNotebookRepoTest {
     Map<String, Object> config = p1.getConfig();
     config.put("enabled", true);
     p1.setConfig(config);
-    p1.setText("%md checkpoint test text");
+    p1.setText("checkpoint test text");
     notebookRepo.save(note, null);
 
     // second checkpoint
@@ -245,7 +245,7 @@ public class GitNotebookRepoTest {
     Paragraph p2 = note.addParagraph();
     config.put("enabled", false);
     p2.setConfig(config);
-    p2.setText("%md get revision when modified note test text");
+    p2.setText("get revision when modified note test text");
     notebookRepo.save(note, null);
     note = notebookRepo.get(TEST_NOTE_ID, null);
     int paragraphCount_3 = note.getParagraphs().size();
@@ -282,7 +282,7 @@ public class GitNotebookRepoTest {
     Map<String, Object> config = p1.getConfig();
     config.put("enabled", true);
     p1.setConfig(config);
-    p1.setText("%md get revision when modified note test text");
+    p1.setText("get revision when modified note test text");
     notebookRepo.save(note, null);
     int paragraphCount_2 = note.getParagraphs().size();
 

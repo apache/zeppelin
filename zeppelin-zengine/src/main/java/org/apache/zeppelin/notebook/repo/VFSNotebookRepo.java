@@ -226,7 +226,7 @@ public class VFSNotebookRepo implements NotebookRepo {
 
     FileObject rootDir = getRootDir();
 
-    FileObject noteDir = rootDir.resolveFile(note.id(), NameScope.CHILD);
+    FileObject noteDir = rootDir.resolveFile(note.getId(), NameScope.CHILD);
 
     if (!noteDir.exists()) {
       noteDir.createFolder();

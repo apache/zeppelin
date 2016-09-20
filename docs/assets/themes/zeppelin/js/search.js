@@ -25,7 +25,7 @@ jQuery(function() {
     this.field('group');
   });
 
-  window.data = $.getJSON('/search_data.json');
+  window.data = $.getJSON('search_data.json');
   window.data.then(function(loaded_data){
     $.each(loaded_data, function(index, value){
       window.idx.add(
@@ -51,6 +51,8 @@ jQuery(function() {
   function display_search_results(results) {
     var $search_results = $("#search_results");
     var zeppelin_version = {{site.ZEPPELIN_VERSION | jsonify}};
+    var base_url = {{site.JB.BASE_PATH | jsonify}};
+    var prod_url = {{site.production_url | jsonify}};
 
     window.data.then(function(loaded_data) {
       if (results.length) {
@@ -59,7 +61,7 @@ jQuery(function() {
 
         results.forEach(function(result) {
           var item = loaded_data[result.ref];
-          var appendString = '<a href="'+item.url+'">'+item.title+'</a><div class="link">'+'https://zeppelin.apache.org/docs/'+zeppelin_version+item.url+'</div><p>'+item.excerpt+'</p><br/>';
+          var appendString = '<a href="'+base_url+item.url.trim()+'">'+item.title+'</a><div class="link">'+prod_url+base_url+item.url.trim()+'</div><p>'+item.excerpt+'</p><br/>';
 
           $search_results.append(appendString);
         });

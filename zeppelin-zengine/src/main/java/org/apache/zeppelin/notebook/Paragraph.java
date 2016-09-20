@@ -17,6 +17,7 @@
 
 package org.apache.zeppelin.notebook;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.helium.HeliumPackage;
@@ -53,7 +54,6 @@ public class Paragraph extends Job implements Serializable, Cloneable {
   private transient InterpreterFactory factory;
   private transient Note note;
   private transient AuthenticationInfo authenticationInfo;
-  private transient String effectiveText;
 
   String title;
   String text;
@@ -114,14 +114,6 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     this.dateUpdated = new Date();
   }
 
-  public void setEffectiveText(String effectiveText) {
-    this.effectiveText = effectiveText;
-  }
-
-  public String getEffectiveText() {
-    return effectiveText;
-  }
-
   public AuthenticationInfo getAuthenticationInfo() {
     return authenticationInfo;
   }
@@ -153,7 +145,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
   }
 
   public String getRequiredReplName() {
-    return getRequiredReplName(null != effectiveText ? effectiveText : text);
+    return getRequiredReplName(text);
   }
 
   public static String getRequiredReplName(String text) {
@@ -182,7 +174,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
   }
 
   public String getScriptBody() {
-    return getScriptBody(null != effectiveText ? effectiveText : text);
+    return getScriptBody(text);
   }
 
   public static String getScriptBody(String text) {
@@ -359,7 +351,6 @@ public class Paragraph extends Job implements Serializable, Cloneable {
       }
     } finally {
       InterpreterContext.remove();
-      effectiveText = null;
     }
   }
 
@@ -451,13 +442,13 @@ public class Paragraph extends Job implements Serializable, Cloneable {
 
     if (!factory.getInterpreterSettings(note.getId()).isEmpty()) {
       InterpreterSetting intpGroup = factory.getInterpreterSettings(note.getId()).get(0);
-      registry = intpGroup.getInterpreterGroup(note.id()).getAngularObjectRegistry();
-      resourcePool = intpGroup.getInterpreterGroup(note.id()).getResourcePool();
+      registry = intpGroup.getInterpreterGroup(note.getId()).getAngularObjectRegistry();
+      resourcePool = intpGroup.getInterpreterGroup(note.getId()).getResourcePool();
     }
 
     List<InterpreterContextRunner> runners = new LinkedList<InterpreterContextRunner>();
     for (Paragraph p : note.getParagraphs()) {
-      runners.add(new ParagraphRunner(note, note.id(), p.getId()));
+      runners.add(new ParagraphRunner(note, note.getId(), p.getId()));
     }
 
     final Paragraph self = this;
@@ -465,22 +456,22 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     Credentials credentials = note.getCredentials();
     if (authenticationInfo != null) {
       UserCredentials userCredentials = credentials.getUserCredentials(
-              authenticationInfo.getUser());
+          authenticationInfo.getUser());
       authenticationInfo.setUserCredentials(userCredentials);
     }
 
     InterpreterContext interpreterContext = new InterpreterContext(
-            note.id(),
-            getId(),
-            this.getTitle(),
-            this.getText(),
-            this.getAuthenticationInfo(),
-            this.getConfig(),
-            this.settings,
-            registry,
-            resourcePool,
-            runners,
-            output);
+        note.getId(),
+        getId(),
+        this.getTitle(),
+        this.getText(),
+        this.getAuthenticationInfo(),
+        this.getConfig(),
+        this.settings,
+        registry,
+        resourcePool,
+        runners,
+        output);
     return interpreterContext;
   }
 
@@ -574,5 +565,23 @@ public class Paragraph extends Job implements Serializable, Cloneable {
       }
     }
     return scriptBody;
+  }
+
+  public String getMagic() {
+    String magic = StringUtils.EMPTY;
+    String text = getText();
+    if (text != null && text.startsWith("%")) {
+      magic = text.split("\\s+")[0];
+      if (isValidInterpreter(magic.substring(1))) {
+        return magic;
+      } else {
+        return StringUtils.EMPTY;
+      }
+    }
+    return magic;
+  }
+
+  private boolean isValidInterpreter(String replName) {
+    return factory.getInterpreter(note.getId(), replName) != null;
   }
 }

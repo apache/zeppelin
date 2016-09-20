@@ -319,7 +319,10 @@ public class NotebookRestApi {
       throws IOException, CloneNotSupportedException, IllegalArgumentException {
     LOG.info("clone notebook by JSON {}", message);
     NewNotebookRequest request = gson.fromJson(message, NewNotebookRequest.class);
-    String newNoteName = request.getName();
+    String newNoteName = null;
+    if (request != null) {
+      newNoteName = request.getName();
+    }
     AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
     Note newNote = notebook.cloneNote(notebookId, newNoteName, subject);
     notebookServer.broadcastNote(newNote);
@@ -567,7 +570,7 @@ public class NotebookRestApi {
   }
 
   /**
-   * Run paragraph job REST API
+   * Run asynchronously paragraph job REST API
    *
    * @param message - JSON with params if user wants to update dynamic form's value
    *                null, empty string, empty json if user doesn't want to update
@@ -580,7 +583,7 @@ public class NotebookRestApi {
   public Response runParagraph(@PathParam("notebookId") String notebookId,
       @PathParam("paragraphId") String paragraphId, String message)
       throws IOException, IllegalArgumentException {
-    LOG.info("run paragraph job {} {} {}", notebookId, paragraphId, message);
+    LOG.info("run paragraph job asynchronously {} {} {}", notebookId, paragraphId, message);
 
     Note note = notebook.getNote(notebookId);
     if (note == null) {
@@ -593,20 +596,58 @@ public class NotebookRestApi {
     }
 
     // handle params if presented
-    if (!StringUtils.isEmpty(message)) {
-      RunParagraphWithParametersRequest request =
-          gson.fromJson(message, RunParagraphWithParametersRequest.class);
-      Map<String, Object> paramsForUpdating = request.getParams();
-      if (paramsForUpdating != null) {
-        paragraph.settings.getParams().putAll(paramsForUpdating);
-        AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
-        note.setLastReplName(paragraph.getId());
-        note.persist(subject);
-      }
-    }
+    handleParagraphParams(message, note, paragraph);
 
     note.run(paragraph.getId());
     return new JsonResponse<>(Status.OK).build();
+  }
+
+/**
+   * Run synchronously a paragraph REST API
+   *
+   * @param noteId - noteId
+   * @param paragraphId - paragraphId
+   * @param message - JSON with params if user wants to update dynamic form's value
+   *                null, empty string, empty json if user doesn't want to update
+   *
+   * @return JSON with status.OK
+   * @throws IOException, IllegalArgumentException
+   */
+  @POST
+  @Path("run/{notebookId}/{paragraphId}")
+  @ZeppelinApi
+  public Response runParagraphSynchronously(@PathParam("notebookId") String noteId,
+                                            @PathParam("paragraphId") String paragraphId,
+                                            String message) throws
+                                            IOException, IllegalArgumentException {
+    LOG.info("run paragraph synchronously {} {} {}", noteId, paragraphId, message);
+
+    Note note = notebook.getNote(noteId);
+    if (note == null) {
+      return new JsonResponse<>(Status.NOT_FOUND, "note not found.").build();
+    }
+
+    Paragraph paragraph = note.getParagraph(paragraphId);
+    if (paragraph == null) {
+      return new JsonResponse<>(Status.NOT_FOUND, "paragraph not found.").build();
+    }
+
+    // handle params if presented
+    handleParagraphParams(message, note, paragraph);
+
+    if (paragraph.getListener() == null) {
+      note.initializeJobListenerForParagraph(paragraph);
+    }
+
+    paragraph.run();
+
+    final InterpreterResult result = paragraph.getResult();
+
+    if (result.code() == InterpreterResult.Code.SUCCESS) {
+      return new JsonResponse<>(Status.OK, result).build();
+    } else {
+      return new JsonResponse<>(Status.INTERNAL_SERVER_ERROR, result).build();
+    }
   }
 
   /**
@@ -669,7 +710,7 @@ public class NotebookRestApi {
     Map<String, Object> config = note.getConfig();
     config.put("cron", request.getCronString());
     note.setConfig(config);
-    notebook.refreshCron(note.id());
+    notebook.refreshCron(note.getId());
 
     return new JsonResponse<>(Status.OK).build();
   }
@@ -697,7 +738,7 @@ public class NotebookRestApi {
     Map<String, Object> config = note.getConfig();
     config.put("cron", null);
     note.setConfig(config);
-    notebook.refreshCron(note.id());
+    notebook.refreshCron(note.getId());
 
     return new JsonResponse<>(Status.OK).build();
   }
@@ -738,7 +779,8 @@ public class NotebookRestApi {
     LOG.info("Get notebook jobs for job manager");
 
     AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
-    List<Map<String, Object>> notebookJobs = notebook.getJobListforNotebook(false, 0, subject);
+    List<Map<String, Object>> notebookJobs = notebook
+      .getJobListByUnixTime(false, 0, subject);
     Map<String, Object> response = new HashMap<>();
 
     response.put("lastResponseUnixTime", System.currentTimeMillis());
@@ -749,6 +791,8 @@ public class NotebookRestApi {
 
   /**
    * Get updated notebook jobs for job manager
+   *
+   * Return the `Note` change information within the post unix timestamp.
    *
    * @return JSON with status.OK
    * @throws IOException, IllegalArgumentException
@@ -763,7 +807,7 @@ public class NotebookRestApi {
 
     List<Map<String, Object>> notebookJobs;
     AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
-    notebookJobs = notebook.getJobListforNotebook(false, lastUpdateUnixTime, subject);
+    notebookJobs = notebook.getJobListByUnixTime(false, lastUpdateUnixTime, subject);
     Map<String, Object> response = new HashMap<>();
 
     response.put("lastResponseUnixTime", System.currentTimeMillis());
@@ -798,6 +842,22 @@ public class NotebookRestApi {
     }
     LOG.info("{} notebooks found", notebooksFound.size());
     return new JsonResponse<>(Status.OK, notebooksFound).build();
+  }
+
+
+  private void handleParagraphParams(String message, Note note, Paragraph paragraph)
+      throws IOException {
+    // handle params if presented
+    if (!StringUtils.isEmpty(message)) {
+      RunParagraphWithParametersRequest request =
+              gson.fromJson(message, RunParagraphWithParametersRequest.class);
+      Map<String, Object> paramsForUpdating = request.getParams();
+      if (paramsForUpdating != null) {
+        paragraph.settings.getParams().putAll(paramsForUpdating);
+        AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
+        note.persist(subject);
+      }
+    }
   }
 
 }

@@ -49,6 +49,7 @@ import org.apache.spark.ui.jobs.JobProgressListener;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
+import org.apache.zeppelin.interpreter.InterpreterProperty;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.InterpreterUtils;
@@ -328,6 +329,7 @@ public class SparkInterpreter extends Interpreter {
     }
 
     setupConfForPySpark(conf);
+    setupConfForSparkR(conf);
     Class SparkSession = Utils.findClass("org.apache.spark.sql.SparkSession");
     Object builder = Utils.invokeStaticMethod(SparkSession, "builder");
     Utils.invokeMethod(builder, "config", new Class[]{ SparkConf.class }, new Object[]{ conf });
@@ -442,15 +444,17 @@ public class SparkInterpreter extends Interpreter {
       }
     }
     setupConfForPySpark(conf);
+    setupConfForSparkR(conf);
     SparkContext sparkContext = new SparkContext(conf);
     return sparkContext;
   }
 
   private void setupConfForPySpark(SparkConf conf) {
-    String pysparkBasePath = getSystemDefault("SPARK_HOME", null, null);
+    String pysparkBasePath = new InterpreterProperty("SPARK_HOME", null, null, null).getValue();
     File pysparkPath;
     if (null == pysparkBasePath) {
-      pysparkBasePath = getSystemDefault("ZEPPELIN_HOME", "zeppelin.home", "../");
+      pysparkBasePath =
+              new InterpreterProperty("ZEPPELIN_HOME", "zeppelin.home", "../", null).getValue();
       pysparkPath = new File(pysparkBasePath,
           "interpreter" + File.separator + "spark" + File.separator + "pyspark");
     } else {
@@ -492,33 +496,41 @@ public class SparkInterpreter extends Interpreter {
     }
   }
 
+  private void setupConfForSparkR(SparkConf conf) {
+    String sparkRBasePath = new InterpreterProperty("SPARK_HOME", null, null, null).getValue();
+    File sparkRPath;
+    if (null == sparkRBasePath) {
+      sparkRBasePath =
+              new InterpreterProperty("ZEPPELIN_HOME", "zeppelin.home", "../", null).getValue();
+      sparkRPath = new File(sparkRBasePath,
+              "interpreter" + File.separator + "spark" + File.separator + "R");
+    } else {
+      sparkRPath = new File(sparkRBasePath, "R" + File.separator + "lib");
+    }
+
+    sparkRPath = new File(sparkRPath, "sparkr.zip");
+    if (sparkRPath.exists() && sparkRPath.isFile()) {
+      String archives = null;
+      if (conf.contains("spark.yarn.dist.archives")) {
+        archives = conf.get("spark.yarn.dist.archives");
+      }
+      if (archives != null) {
+        archives = archives + "," + sparkRPath + "#sparkr";
+      } else {
+        archives = sparkRPath + "#sparkr";
+      }
+      conf.set("spark.yarn.dist.archives", archives);
+    } else {
+      logger.warn("sparkr.zip is not found, sparkr may not work.");
+    }
+  }
+
   static final String toString(Object o) {
     return (o instanceof String) ? (String) o : "";
   }
 
   private boolean useSparkSubmit() {
     return null != System.getenv("SPARK_SUBMIT");
-  }
-
-  public static String getSystemDefault(
-      String envName,
-      String propertyName,
-      String defaultValue) {
-
-    if (envName != null && !envName.isEmpty()) {
-      String envValue = System.getenv().get(envName);
-      if (envValue != null) {
-        return envValue;
-      }
-    }
-
-    if (propertyName != null && !propertyName.isEmpty()) {
-      String propValue = System.getProperty(propertyName);
-      if (propValue != null) {
-        return propValue;
-      }
-    }
-    return defaultValue;
   }
 
   public boolean printREPLOutput() {

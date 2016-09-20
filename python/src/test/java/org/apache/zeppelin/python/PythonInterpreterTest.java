@@ -218,4 +218,25 @@ public class PythonInterpreterTest {
     }
   }
 
+  @Test
+  public void checkMultiRowErrorFails() {
+    PythonInterpreter pythonInterpreter = new PythonInterpreter(
+      PythonInterpreterTest.getPythonTestProperties()
+    );
+    pythonInterpreter.open();
+    String codeRaiseException = "raise Exception(\"test exception\")";
+    InterpreterResult ret = pythonInterpreter.interpret(codeRaiseException, null);
+
+    assertNotNull("Interpreter result for raise exception is Null", ret);
+
+    assertEquals(InterpreterResult.Code.ERROR, ret.code());
+    assertTrue(ret.message().length() > 0);
+
+    assertNotNull("Interpreter result for text is Null", ret);
+    String codePrintText = "print (\"Exception(\\\"test exception\\\")\")";
+    ret = pythonInterpreter.interpret(codePrintText, null);
+    assertEquals(InterpreterResult.Code.SUCCESS, ret.code());
+    assertTrue(ret.message().length() > 0);
+  }
+
 }

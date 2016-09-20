@@ -150,8 +150,17 @@ public class PythonInterpreter extends Interpreter {
    * @return true if syntax error or exception has happened
    */
   private boolean pythonErrorIn(String output) {
-    Matcher errorMatcher = errorInLastLine.matcher(output);
-    return errorMatcher.find();
+    boolean isError = false;
+    String[] outputMultiline = output.split("\n");
+    Matcher errorMatcher;
+    for (String row : outputMultiline) {
+      errorMatcher = errorInLastLine.matcher(row);
+      if (errorMatcher.find() == true) {
+        isError = true;
+        break;
+      }
+    }
+    return isError;
   }
 
   @Override

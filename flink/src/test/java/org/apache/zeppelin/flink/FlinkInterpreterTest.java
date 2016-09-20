@@ -81,7 +81,7 @@ public class FlinkInterpreterTest {
 
   @Test
   public void testWordCount() {
-    flink.interpret("val text = env.fromElements(\"To be or not to be\")", context);
+    flink.interpret("val text = benv.fromElements(\"To be or not to be\")", context);
     flink.interpret("val counts = text.flatMap { _.toLowerCase.split(\" \") }.map { (_, 1) }.groupBy(0).sum(1)", context);
     InterpreterResult result = flink.interpret("counts.print()", context);
     assertEquals(Code.SUCCESS, result.code());
