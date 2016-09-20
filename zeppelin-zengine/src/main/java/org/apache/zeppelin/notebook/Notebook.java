@@ -482,7 +482,6 @@ public class Notebook implements NoteEventListener {
     }
 
     List<NoteInfo> noteInfos = notebookRepo.list(subject);
-    noteInfos = notebookAuthorization.filterByUser(noteInfos, subject);
 
     for (NoteInfo info : noteInfos) {
       loadNoteFromRepo(info.getId(), subject);
