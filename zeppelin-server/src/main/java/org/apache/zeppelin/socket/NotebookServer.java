@@ -472,8 +472,7 @@ public class NotebookServer extends WebSocketServlet implements
         LOG.error("Fail to reload notes from repository", e);
       }
     }
-
-    List<Note> notes = notebook.getAllNotes();
+    List<Note> notes = notebook.getAllNotes(subject);
     List<Map<String, String>> notesInfo = new LinkedList<>();
     for (Note note : notes) {
       Map<String, String> info = new HashMap<>();
@@ -724,7 +723,10 @@ public class NotebookServer extends WebSocketServlet implements
     if (fromMessage != null) {
       String noteName = (String) ((Map) fromMessage.get("notebook")).get("name");
       String noteJson = gson.toJson(fromMessage.get("notebook"));
-      AuthenticationInfo subject = new AuthenticationInfo(fromMessage.principal);
+      AuthenticationInfo subject = null;
+      if (fromMessage.principal != null) {
+        subject = new AuthenticationInfo(fromMessage.principal);
+      }
       note = notebook.importNote(noteJson, noteName, subject);
       note.persist(subject);
       broadcastNote(note);

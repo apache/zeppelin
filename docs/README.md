@@ -1,6 +1,6 @@
 # Apache Zeppelin documentation
 
-This README will walk you through building the documentation of Apache Zeppelin. The documentation is included here with Apache Zeppelin source code. The online documentation at [https://zeppelin.apache.org/docs/<ZEPPELIN_VERSION>](https://zeppelin.apache.org/docs/latest) is also generated from the files found in here.
+This README will walk you through building the documentation of Apache Zeppelin. The documentation is included here with Apache Zeppelin source code. The online documentation at [https://zeppelin.apache.org/docs/<ZEPPELIN_VERSION>](https://zeppelin.apache.org/docs/latest/) is also generated from the files found in here.
 
 ## Build documentation
 Zeppelin is using [Jekyll](https://jekyllrb.com/) which is a static site generator and [Github Pages](https://pages.github.com/) as a site publisher. For the more details, see [help.github.com/articles/about-github-pages-and-jekyll/](https://help.github.com/articles/about-github-pages-and-jekyll/).
