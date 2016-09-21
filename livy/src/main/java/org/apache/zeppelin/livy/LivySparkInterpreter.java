@@ -19,6 +19,7 @@ package org.apache.zeppelin.livy;
 
 import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
+import org.apache.zeppelin.livy.LivyHelper.LivyNoSessionException;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.slf4j.Logger;
@@ -110,6 +111,11 @@ public class LivySparkInterpreter extends Interpreter {
 
       return livyHelper.interpretInput(line, interpreterContext, userSessionMap, out,
               sessionId2AppIdMap.get(sessionId), sessionId2WebUIMap.get(sessionId), displayAppInfo);
+
+    } catch (LivyNoSessionException e) {
+      userSessionMap.remove(interpreterContext.getAuthenticationInfo().getUser());
+      return interpret(line, interpreterContext);
+
     } catch (Exception e) {
       LOGGER.error("Exception in LivySparkInterpreter while interpret ", e);
       return new InterpreterResult(InterpreterResult.Code.ERROR,
