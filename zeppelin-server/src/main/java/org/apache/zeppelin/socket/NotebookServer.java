@@ -531,6 +531,9 @@ public class NotebookServer extends WebSocketServlet implements
   }
 
   public void broadcastNoteList(AuthenticationInfo subject) {
+    if (subject == null) {
+      subject = new AuthenticationInfo(StringUtils.EMPTY);
+    }
     //send first to requesting user
     List<Map<String, String>> notesInfo = generateNotebooksInfo(false, subject);
     multicastToUser(subject.getUser(), new Message(OP.NOTES_INFO).put("notes", notesInfo));
@@ -550,6 +553,9 @@ public class NotebookServer extends WebSocketServlet implements
   }
 
   public void broadcastReloadedNoteList(AuthenticationInfo subject) {
+    if (subject == null) {
+      subject = new AuthenticationInfo(StringUtils.EMPTY);
+    }
     //reload and reply first to requesting user
     List<Map<String, String>> notesInfo = generateNotebooksInfo(true, subject);
     multicastToUser(subject.getUser(), new Message(OP.NOTES_INFO).put("notes", notesInfo));
