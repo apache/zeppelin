@@ -243,6 +243,30 @@
       <scope>test</scope>
     </dependency>
 
+    <dependency>
+      <groupId>com.frostwire</groupId>
+      <artifactId>jlibtorrent</artifactId>
+      <version>1.1.0.35</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.frostwire</groupId>
+      <artifactId>jlibtorrent-linux</artifactId>
+      <version>1.1.0.35</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.frostwire</groupId>
+      <artifactId>jlibtorrent-macosx</artifactId>
+      <version>1.1.0.35</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.frostwire</groupId>
+      <artifactId>jlibtorrent-windows</artifactId>
+      <version>1.1.0.35</version>
+    </dependency>
+
   </dependencies>
 
   <build>

@@ -151,6 +151,7 @@ The text of each license is also included at licenses/LICENSE-[project]-[version
     (The MIT License) bcprov-jdk15on v1.51 (org.bouncycastle:bcprov-jdk15on:jar:1.51 - http://www.bouncycastle.org/java.html) - http://www.bouncycastle.org/licence.html
     (The MIT License) AnchorJS (https://github.com/bryanbraun/anchorjs) - https://github.com/bryanbraun/anchorjs/blob/master/README.md#license
     (The MIT License) moment-duration-format v1.3.0 (https://github.com/jsmreese/moment-duration-format) - https://github.com/jsmreese/moment-duration-format/blob/master/LICENSE
+    (The MIT License) frostwire-jlibtorrent v1.1.0.35 (https://github.com/frostwire/frostwire-jlibtorrent) - https://github.com/frostwire/frostwire-jlibtorrent/blob/master/LICENSE.md
 
 The following components are provided under the MIT License.
 
