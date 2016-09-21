@@ -22,6 +22,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.socket.Message;
 import org.apache.zeppelin.notebook.socket.Message.OP;
+import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,8 +35,8 @@ import com.google.gson.reflect.TypeToken;
  */
 public class Authentication implements Runnable {
   private static final Logger LOG = LoggerFactory.getLogger(Authentication.class);
-  private String principal = "anonymous";
-  private String ticket = "anonymous";
+  private String principal = AuthenticationInfo.ANONYMOUS;
+  private String ticket = AuthenticationInfo.ANONYMOUS;
   private String roles = StringUtils.EMPTY;
 
   private final HttpClient client;

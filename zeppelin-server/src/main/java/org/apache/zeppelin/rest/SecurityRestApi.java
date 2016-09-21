@@ -28,6 +28,7 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.server.ActiveDirectoryGroupRealm;
 import org.apache.zeppelin.server.JsonResponse;
 import org.apache.zeppelin.ticket.TicketContainer;
+import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.utils.SecurityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -72,8 +73,8 @@ public class SecurityRestApi {
     JsonResponse response;
     // ticket set to anonymous for anonymous user. Simplify testing.
     String ticket;
-    if ("anonymous".equals(principal))
-      ticket = "anonymous";
+    if (AuthenticationInfo.ANONYMOUS.equals(principal))
+      ticket = AuthenticationInfo.ANONYMOUS;
     else
       ticket = TicketContainer.instance.getTicket(principal);
 

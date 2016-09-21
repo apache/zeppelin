@@ -20,6 +20,8 @@ package org.apache.zeppelin.rest;
 import com.google.common.base.Strings;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import org.apache.zeppelin.notebook.Notebook;
+import org.apache.zeppelin.session.ZeppelinSessions;
 import org.apache.zeppelin.user.Credentials;
 import org.apache.zeppelin.user.UserCredentials;
 import org.apache.zeppelin.user.UsernamePassword;
@@ -44,17 +46,13 @@ import java.util.Map;
 @Produces("application/json")
 public class CredentialRestApi {
   Logger logger = LoggerFactory.getLogger(CredentialRestApi.class);
-  private Credentials credentials;
+
   private Gson gson = new Gson();
 
   @Context
   private HttpServletRequest servReq;
 
   public CredentialRestApi() {
-  }
-
-  public CredentialRestApi(Credentials credentials) {
-    this.credentials = credentials;
   }
 
   /**
@@ -78,9 +76,9 @@ public class CredentialRestApi {
 
     String user = SecurityUtils.getPrincipal();
     logger.info("Update credentials for user {} entity {}", user, entity);
-    UserCredentials uc = credentials.getUserCredentials(user);
+    UserCredentials uc = credentials().getUserCredentials(user);
     uc.putUsernamePassword(entity, new UsernamePassword(username, password));
-    credentials.putUserCredentials(user, uc);
+    credentials().putUserCredentials(user, uc);
     return new JsonResponse(Status.OK).build();
   }
 
@@ -95,7 +93,7 @@ public class CredentialRestApi {
       IOException, IllegalArgumentException {
     String user = SecurityUtils.getPrincipal();
     logger.info("getCredentials credentials for user {} ", user);
-    UserCredentials uc = credentials.getUserCredentials(user);
+    UserCredentials uc = credentials().getUserCredentials(user);
     return new JsonResponse(Status.OK, uc).build();
   }
 
@@ -110,7 +108,7 @@ public class CredentialRestApi {
       IOException, IllegalArgumentException {
     String user = SecurityUtils.getPrincipal();
     logger.info("removeCredentials credentials for user {} ", user);
-    UserCredentials uc = credentials.removeUserCredentials(user);
+    UserCredentials uc = credentials().removeUserCredentials(user);
     if (uc == null) {
       return new JsonResponse(Status.NOT_FOUND).build();
     }
@@ -129,9 +127,14 @@ public class CredentialRestApi {
           IOException, IllegalArgumentException {
     String user = SecurityUtils.getPrincipal();
     logger.info("removeCredentialEntity for user {} entity {}", user, entity);
-    if (credentials.removeCredentialEntity(user, entity) == false) {
+    if (credentials().removeCredentialEntity(user, entity) == false) {
       return new JsonResponse(Status.NOT_FOUND).build();
     }
     return new JsonResponse(Status.OK).build();
   }
+
+  private Credentials credentials() {
+    return ZeppelinSessions.credentials(SecurityUtils.getPrincipal());
+  }
+
 }

@@ -82,7 +82,8 @@ public class S3NotebookRepo implements NotebookRepo {
   private final String user;
   private final ZeppelinConfiguration conf;
 
-  public S3NotebookRepo(ZeppelinConfiguration conf) throws IOException {
+  public S3NotebookRepo(ZeppelinConfiguration conf,
+      AuthenticationInfo authenticationInfo) throws IOException {
     this.conf = conf;
     bucketName = conf.getBucketName();
     user = conf.getUser();

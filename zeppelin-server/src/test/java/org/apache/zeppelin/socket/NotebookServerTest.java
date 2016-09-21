@@ -31,6 +31,8 @@ import org.apache.zeppelin.notebook.socket.Message;
 import org.apache.zeppelin.notebook.socket.Message.OP;
 import org.apache.zeppelin.rest.AbstractTestRestApi;
 import org.apache.zeppelin.server.ZeppelinServer;
+import org.apache.zeppelin.session.ZeppelinSessions;
+import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -62,7 +64,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
   public static void init() throws Exception {
     AbstractTestRestApi.startUp();
     gson = new Gson();
-    notebook = ZeppelinServer.notebook;
+    notebook = ZeppelinSessions.notebook(AuthenticationInfo.ANONYMOUS);
     notebookServer = ZeppelinServer.notebookWsServer;
   }
 

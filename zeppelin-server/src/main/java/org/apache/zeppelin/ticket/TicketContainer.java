@@ -17,6 +17,8 @@
 
 package org.apache.zeppelin.ticket;
 
+import org.apache.zeppelin.user.AuthenticationInfo;
+
 import java.util.Calendar;
 import java.util.Map;
 import java.util.UUID;
@@ -52,7 +54,8 @@ public class TicketContainer {
    * @return true if ticket assigned to principal.
    */
   public boolean isValid(String principal, String ticket) {
-    if ("anonymous".equals(principal) && "anonymous".equals(ticket))
+    if (AuthenticationInfo.ANONYMOUS.equals(principal)
+        && AuthenticationInfo.ANONYMOUS.equals(ticket))
       return true;
     Entry entry = sessions.get(principal);
     return entry != null && entry.ticket.equals(ticket);
@@ -60,7 +63,7 @@ public class TicketContainer {
 
   /**
    * get or create ticket for Websocket authentication assigned to authenticated shiro user
-   * For unathenticated user (anonymous), always return ticket value "anonymous"
+   * For unathenticated user (anonymous), always return ticket value AuthenticationInfo.ANONYMOUS
    * @param principal
    * @return
    */
@@ -68,8 +71,8 @@ public class TicketContainer {
     Entry entry = sessions.get(principal);
     String ticket;
     if (entry == null) {
-      if (principal.equals("anonymous"))
-        ticket = "anonymous";
+      if (principal.equals(AuthenticationInfo.ANONYMOUS))
+        ticket = AuthenticationInfo.ANONYMOUS;
       else
         ticket = UUID.randomUUID().toString();
     } else {

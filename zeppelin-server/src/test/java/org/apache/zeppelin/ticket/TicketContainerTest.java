@@ -17,6 +17,7 @@
 
 package org.apache.zeppelin.ticket;
 
+import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -35,7 +36,7 @@ public class TicketContainerTest {
 
   @Test
   public void isValidAnonymous() throws UnknownHostException {
-    boolean ok = container.isValid("anonymous", "anonymous");
+    boolean ok = container.isValid(AuthenticationInfo.ANONYMOUS, AuthenticationInfo.ANONYMOUS);
     assertTrue(ok);
   }
 

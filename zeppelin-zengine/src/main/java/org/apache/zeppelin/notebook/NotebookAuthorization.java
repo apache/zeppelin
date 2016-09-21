@@ -20,6 +20,7 @@ package org.apache.zeppelin.notebook;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
+import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,8 +42,12 @@ public class NotebookAuthorization {
   private String filePath;
 
   public NotebookAuthorization(ZeppelinConfiguration conf) {
+    this(conf, null);
+  }
+
+  public NotebookAuthorization(ZeppelinConfiguration conf, AuthenticationInfo authenticationInfo) {
     this.conf = conf;
-    filePath = conf.getNotebookAuthorizationPath();
+    filePath = conf.getNotebookAuthorizationPath(authenticationInfo);
     GsonBuilder builder = new GsonBuilder();
     builder.setPrettyPrinting();
     gson = builder.create();

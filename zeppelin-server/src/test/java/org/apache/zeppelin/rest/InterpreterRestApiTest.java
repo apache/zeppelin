@@ -30,6 +30,8 @@ import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.server.ZeppelinServer;
+import org.apache.zeppelin.session.ZeppelinSessions;
+import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
@@ -68,7 +70,7 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
     Map<String, Object> resp = gson.fromJson(get.getResponseBodyAsString(), new TypeToken<Map<String, Object>>() {
     }.getType());
     Map<String, Object> body = (Map<String, Object>) resp.get("body");
-    assertEquals(ZeppelinServer.notebook.getInterpreterFactory().getAvailableInterpreterSettings().size(), body.size());
+    assertEquals(ZeppelinSessions.notebook(AuthenticationInfo.ANONYMOUS).getInterpreterFactory().getAvailableInterpreterSettings().size(), body.size());
     get.releaseConnection();
   }
 
@@ -131,7 +133,7 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
   @Test
   public void testInterpreterAutoBinding() throws IOException {
     // create note
-    Note note = ZeppelinServer.notebook.createNote(null);
+    Note note = ZeppelinSessions.notebook(AuthenticationInfo.ANONYMOUS).createNote(null);
 
     // check interpreter is binded
     GetMethod get = httpGet("/notebook/interpreter/bind/" + note.getId());
@@ -144,13 +146,13 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
 
     get.releaseConnection();
     //cleanup
-    ZeppelinServer.notebook.removeNote(note.getId(), null);
+    ZeppelinSessions.notebook(AuthenticationInfo.ANONYMOUS).removeNote(note.getId(), null);
   }
 
   @Test
   public void testInterpreterRestart() throws IOException, InterruptedException {
     // create new note
-    Note note = ZeppelinServer.notebook.createNote(null);
+    Note note = ZeppelinSessions.notebook(AuthenticationInfo.ANONYMOUS).createNote(null);
     note.addParagraph();
     Paragraph p = note.getLastParagraph();
     Map config = p.getConfig();
@@ -167,7 +169,7 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
 
 
     // restart interpreter
-    for (InterpreterSetting setting : ZeppelinServer.notebook.getInterpreterFactory().getInterpreterSettings(note.getId())) {
+    for (InterpreterSetting setting : ZeppelinSessions.notebook(AuthenticationInfo.ANONYMOUS).getInterpreterFactory().getInterpreterSettings(note.getId())) {
       if (setting.getName().equals("md")) {
         // Call Restart Interpreter REST API
         PutMethod put = httpPut("/interpreter/setting/restart/" + setting.getId(), "");
@@ -187,7 +189,7 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
     }
     assertEquals("<p>markdown restarted</p>\n", p.getResult().message());
     //cleanup
-    ZeppelinServer.notebook.removeNote(note.getId(), null);
+    ZeppelinSessions.notebook(AuthenticationInfo.ANONYMOUS).removeNote(note.getId(), null);
   }
 
   @Test

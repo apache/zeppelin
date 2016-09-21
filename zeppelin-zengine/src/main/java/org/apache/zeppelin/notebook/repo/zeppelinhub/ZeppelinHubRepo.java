@@ -54,7 +54,7 @@ public class ZeppelinHubRepo implements NotebookRepo {
   private String token;
   private ZeppelinhubRestApiHandler restApiClient;
 
-  public ZeppelinHubRepo(ZeppelinConfiguration conf) {
+  public ZeppelinHubRepo(ZeppelinConfiguration conf, AuthenticationInfo authenticationInfo) {
     String zeppelinHubUrl = getZeppelinHubUrl(conf);
     LOG.info("Initializing ZeppelinHub integration module");
     token = conf.getString("ZEPPELINHUB_API_TOKEN", ZEPPELIN_CONF_PROP_NAME_TOKEN, "");

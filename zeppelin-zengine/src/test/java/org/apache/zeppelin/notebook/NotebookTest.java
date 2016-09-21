@@ -87,11 +87,11 @@ public class NotebookTest implements JobListenerFactory{
     MockInterpreter2.register("mock2", "org.apache.zeppelin.interpreter.mock.MockInterpreter2");
 
     depResolver = new DependencyResolver(tmpDir.getAbsolutePath() + "/local-repo");
-    factory = new InterpreterFactory(conf, new InterpreterOption(false), null, null, null, depResolver);
+    factory = new InterpreterFactory(conf, new InterpreterOption(false), null, null, null, depResolver, AuthenticationInfo.ANONYMOUS_AUTHENTICATION_INFO);
 
     SearchService search = mock(SearchService.class);
-    notebookRepo = new VFSNotebookRepo(conf);
-    notebookAuthorization = new NotebookAuthorization(conf);
+    notebookRepo = new VFSNotebookRepo(conf, AuthenticationInfo.ANONYMOUS_AUTHENTICATION_INFO);
+    notebookAuthorization = new NotebookAuthorization(conf, AuthenticationInfo.ANONYMOUS_AUTHENTICATION_INFO);
     credentials = new Credentials(conf.credentialsPersist(), conf.getCredentialsPath());
 
     notebook = new Notebook(conf, notebookRepo, schedulerFactory, factory, this, search,
@@ -206,7 +206,7 @@ public class NotebookTest implements JobListenerFactory{
 
     Notebook notebook2 = new Notebook(
         conf, notebookRepo, schedulerFactory,
-        new InterpreterFactory(conf, null, null, null, depResolver), this, null, null, null);
+        new InterpreterFactory(conf, null, null, null, depResolver, AuthenticationInfo.ANONYMOUS_AUTHENTICATION_INFO), this, null, null, null);
     assertEquals(1, notebook2.getAllNotes().size());
   }
 

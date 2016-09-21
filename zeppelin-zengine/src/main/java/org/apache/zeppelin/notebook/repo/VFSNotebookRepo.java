@@ -60,14 +60,15 @@ public class VFSNotebookRepo implements NotebookRepo {
   private URI filesystemRoot;
   private ZeppelinConfiguration conf;
 
-  public VFSNotebookRepo(ZeppelinConfiguration conf) throws IOException {
+  public VFSNotebookRepo(ZeppelinConfiguration conf,
+      AuthenticationInfo authenticationInfo) throws IOException {
     this.conf = conf;
 
     try {
-      if (conf.isWindowsPath(conf.getNotebookDir())) {
-        filesystemRoot = new File(conf.getNotebookDir()).toURI();
+      if (conf.isWindowsPath(conf.getNotebookDir(authenticationInfo))) {
+        filesystemRoot = new File(conf.getNotebookDir(authenticationInfo)).toURI();
       } else {
-        filesystemRoot = new URI(conf.getNotebookDir());
+        filesystemRoot = new URI(conf.getNotebookDir(authenticationInfo));
       }
     } catch (URISyntaxException e1) {
       throw new IOException(e1);

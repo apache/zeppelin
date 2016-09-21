@@ -29,6 +29,8 @@ import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.server.ZeppelinServer;
+import org.apache.zeppelin.session.ZeppelinSessions;
+import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -67,7 +69,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
     @Test
     public void basicRDDTransformationAndActionTest() throws IOException {
         // create new note
-        Note note = ZeppelinServer.notebook.createNote(null);
+        Note note = ZeppelinSessions.notebook(AuthenticationInfo.ANONYMOUS).createNote(null);
 
         // run markdown paragraph, again
         Paragraph p = note.addParagraph();
@@ -79,23 +81,23 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
         waitForFinish(p);
         assertEquals(Status.FINISHED, p.getStatus());
         assertEquals("55", p.getResult().message());
-        ZeppelinServer.notebook.removeNote(note.getId(), null);
+        ZeppelinSessions.notebook(AuthenticationInfo.ANONYMOUS).removeNote(note.getId(), null);
     }
 
     @Test
     public void sparkRTest() throws IOException {
       // create new note
-      Note note = ZeppelinServer.notebook.createNote(null);
+      Note note = ZeppelinSessions.notebook(AuthenticationInfo.ANONYMOUS).createNote(null);
       int sparkVersion = getSparkVersionNumber(note);
 
       if (isSparkR() && sparkVersion >= 14) {   // sparkr supported from 1.4.0
         // restart spark interpreter
         List<InterpreterSetting> settings =
-          ZeppelinServer.notebook.getBindedInterpreterSettings(note.getId());
+          ZeppelinSessions.notebook(AuthenticationInfo.ANONYMOUS).getBindedInterpreterSettings(note.getId());
 
         for (InterpreterSetting setting : settings) {
           if (setting.getName().equals("spark")) {
-            ZeppelinServer.notebook.getInterpreterFactory().restart(setting.getId());
+            ZeppelinSessions.notebook(AuthenticationInfo.ANONYMOUS).getInterpreterFactory().restart(setting.getId());
             break;
           }
         }
@@ -118,13 +120,13 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
         assertEquals(Status.FINISHED, p.getStatus());
         assertEquals("[1] 3", p.getResult().message());
       }
-      ZeppelinServer.notebook.removeNote(note.getId(), null);
+      ZeppelinSessions.notebook(AuthenticationInfo.ANONYMOUS).removeNote(note.getId(), null);
     }
 
     @Test
     public void pySparkTest() throws IOException {
         // create new note
-        Note note = ZeppelinServer.notebook.createNote(null);
+        Note note = ZeppelinSessions.notebook(AuthenticationInfo.ANONYMOUS).createNote(null);
         note.setName("note");
         int sparkVersion = getSparkVersionNumber(note);
 
@@ -141,13 +143,13 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
             assertEquals(Status.FINISHED, p.getStatus());
             assertEquals("55\n", p.getResult().message());
         }
-        ZeppelinServer.notebook.removeNote(note.getId(), null);
+        ZeppelinSessions.notebook(AuthenticationInfo.ANONYMOUS).removeNote(note.getId(), null);
     }
 
     @Test
     public void pySparkAutoConvertOptionTest() throws IOException {
         // create new note
-        Note note = ZeppelinServer.notebook.createNote(null);
+        Note note = ZeppelinSessions.notebook(AuthenticationInfo.ANONYMOUS).createNote(null);
         note.setName("note");
 
         int sparkVersionNumber = getSparkVersionNumber(note);
@@ -172,13 +174,13 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
             assertEquals(Status.FINISHED, p.getStatus());
             assertEquals("10\n", p.getResult().message());
         }
-        ZeppelinServer.notebook.removeNote(note.getId(), null);
+        ZeppelinSessions.notebook(AuthenticationInfo.ANONYMOUS).removeNote(note.getId(), null);
     }
 
     @Test
     public void zRunTest() throws IOException {
         // create new note
-        Note note = ZeppelinServer.notebook.createNote(null);
+        Note note = ZeppelinSessions.notebook(AuthenticationInfo.ANONYMOUS).createNote(null);
         Paragraph p0 = note.addParagraph();
         Map config0 = p0.getConfig();
         config0.put("enabled", true);
@@ -204,23 +206,23 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
         assertEquals(Status.FINISHED, p2.getStatus());
         assertEquals("10", p2.getResult().message());
 
-        ZeppelinServer.notebook.removeNote(note.getId(), null);
+        ZeppelinSessions.notebook(AuthenticationInfo.ANONYMOUS).removeNote(note.getId(), null);
     }
 
     @Test
     public void pySparkDepLoaderTest() throws IOException {
         // create new note
-        Note note = ZeppelinServer.notebook.createNote(null);
+        Note note = ZeppelinSessions.notebook(AuthenticationInfo.ANONYMOUS).createNote(null);
         int sparkVersionNumber = getSparkVersionNumber(note);
 
         if (isPyspark() && sparkVersionNumber >= 14) {
             // restart spark interpreter
             List<InterpreterSetting> settings =
-                    ZeppelinServer.notebook.getBindedInterpreterSettings(note.getId());
+                    ZeppelinSessions.notebook(AuthenticationInfo.ANONYMOUS).getBindedInterpreterSettings(note.getId());
 
             for (InterpreterSetting setting : settings) {
                 if (setting.getName().equals("spark")) {
-                    ZeppelinServer.notebook.getInterpreterFactory().restart(setting.getId());
+                    ZeppelinSessions.notebook(AuthenticationInfo.ANONYMOUS).getInterpreterFactory().restart(setting.getId());
                     break;
                 }
             }

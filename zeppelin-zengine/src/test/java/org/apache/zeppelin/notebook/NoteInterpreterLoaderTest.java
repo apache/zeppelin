@@ -30,6 +30,7 @@ import org.apache.zeppelin.interpreter.InterpreterOption;
 import org.apache.zeppelin.interpreter.mock.MockInterpreter1;
 import org.apache.zeppelin.interpreter.mock.MockInterpreter11;
 import org.apache.zeppelin.interpreter.mock.MockInterpreter2;
+import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -60,7 +61,7 @@ public class NoteInterpreterLoaderTest {
     MockInterpreter2.register("mock2", "group2", "org.apache.zeppelin.interpreter.mock.MockInterpreter2");
 
     depResolver = new DependencyResolver(tmpDir.getAbsolutePath() + "/local-repo");
-    factory = new InterpreterFactory(conf, new InterpreterOption(false), null, null, null, depResolver);
+    factory = new InterpreterFactory(conf, new InterpreterOption(false), null, null, null, depResolver, AuthenticationInfo.ANONYMOUS_AUTHENTICATION_INFO);
   }
 
   @After

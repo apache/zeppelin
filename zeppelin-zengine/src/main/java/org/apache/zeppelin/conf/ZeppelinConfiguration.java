@@ -27,6 +27,7 @@ import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.configuration.tree.ConfigurationNode;
 import org.apache.zeppelin.notebook.repo.VFSNotebookRepo;
+import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -330,8 +331,11 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     }
   }
 
-  public String getNotebookDir() {
-    return getString(ConfVars.ZEPPELIN_NOTEBOOK_DIR);
+  public String getNotebookDir(AuthenticationInfo authenticationInfo) {
+    return (isNotebookPeruserNotes()) ?
+       String.format(getString(ConfVars.ZEPPELIN_NOTEBOOK_DIR)
+              + "/%s", authenticationInfo.getUser()) :
+       String.format(getString(ConfVars.ZEPPELIN_NOTEBOOK_DIR));
   }
 
   public String getUser() {
@@ -362,12 +366,15 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     return getRelativeDir(ConfVars.ZEPPELIN_INTERPRETER_DIR);
   }
 
-  public String getInterpreterJson() {
-    return getString(ConfVars.ZEPPELIN_INTERPRETER_JSON);
+  public String getInterpeterSetting() {
+    return getString(ConfVars.ZEPPELIN_INTERPRETER_SETTING);
   }
 
-  public String getInterpreterSettingPath() {
-    return getRelativeDir(String.format("%s/interpreter.json", getConfDir()));
+  public String getInterpreterSettingPath(AuthenticationInfo authenticationInfo) {
+    return (isNotebookPeruserNotes()) ?
+            getRelativeDir(
+                    String.format("%s/%s", getNotebookDir(authenticationInfo), getInterpeterSetting())) :
+            getRelativeDir(String.format("%s/interpreter.json", getConfDir()));
   }
 
   public String getHeliumConfPath() {
@@ -378,7 +385,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     return getRelativeDir(ConfVars.ZEPPELIN_HELIUM_LOCALREGISTRY_DEFAULT);
   }
 
-  public String getNotebookAuthorizationPath() {
+  public String getNotebookAuthorizationPath(AuthenticationInfo authenticationInfo) {
     return getRelativeDir(String.format("%s/notebook-authorization.json", getConfDir()));
   }
 
@@ -433,6 +440,14 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 
   public String getWebsocketMaxTextMessageSize() {
     return getString(ConfVars.ZEPPELIN_WEBSOCKET_MAX_TEXT_MESSAGE_SIZE);
+  }
+
+  public boolean isNotebookPeruserNotes() {
+    return getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_PERUSER_NOTES);
+  }
+
+  public boolean isInterpreterPeruserFactories() {
+    return getBoolean(ConfVars.ZEPPELIN_INTERPRETER_PERUSER_FACTORIES);
   }
 
   public Map<String, String> dumpConfigurations(ZeppelinConfiguration conf,
@@ -524,7 +539,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
         + "org.apache.zeppelin.jdbc.JDBCInterpreter,"
         + "org.apache.zeppelin.hbase.HbaseInterpreter,"
         + "org.apache.zeppelin.bigquery.BigQueryInterpreter"),
-    ZEPPELIN_INTERPRETER_JSON("zeppelin.interpreter.setting", "interpreter-setting.json"),
+    ZEPPELIN_INTERPRETER_SETTING("zeppelin.interpreter.setting", "interpreter-setting.json"),
     ZEPPELIN_INTERPRETER_DIR("zeppelin.interpreter.dir", "interpreter"),
     ZEPPELIN_INTERPRETER_LOCALREPO("zeppelin.interpreter.localRepo", "local-repo"),
     ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT("zeppelin.interpreter.connect.timeout", 30000),
@@ -561,7 +576,10 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_ALLOWED_ORIGINS("zeppelin.server.allowed.origins", "*"),
     ZEPPELIN_ANONYMOUS_ALLOWED("zeppelin.anonymous.allowed", true),
     ZEPPELIN_CREDENTIALS_PERSIST("zeppelin.credentials.persist", true),
-    ZEPPELIN_WEBSOCKET_MAX_TEXT_MESSAGE_SIZE("zeppelin.websocket.max.text.message.size", "1024000");
+    ZEPPELIN_WEBSOCKET_MAX_TEXT_MESSAGE_SIZE("zeppelin.websocket.max.text.message.size", "1024000"),
+    ZEPPELIN_NOTEBOOK_PERUSER_NOTES("zeppelin.notebook.peruser.notes", false),
+    ZEPPELIN_INTERPRETER_PERUSER_FACTORIES("zeppelin.interpreter.peruser.factories", false)
+    ;
 
     private String varName;
     @SuppressWarnings("rawtypes")

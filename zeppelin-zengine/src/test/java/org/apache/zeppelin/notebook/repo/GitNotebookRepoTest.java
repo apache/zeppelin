@@ -34,6 +34,7 @@ import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.notebook.repo.NotebookRepo.Revision;
+import org.apache.zeppelin.user.AuthenticationInfo;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.diff.DiffEntry;
@@ -95,7 +96,7 @@ public class GitNotebookRepoTest {
     assertThat(dotGit.exists()).isEqualTo(false);
 
     //when
-    notebookRepo = new GitNotebookRepo(conf);
+    notebookRepo = new GitNotebookRepo(conf, AuthenticationInfo.ANONYMOUS_AUTHENTICATION_INFO);
 
     //then
     Git git = notebookRepo.getGit();
@@ -112,7 +113,7 @@ public class GitNotebookRepoTest {
   @Test
   public void showNotebookHistoryEmptyTest() throws GitAPIException, IOException {
     //given
-    notebookRepo = new GitNotebookRepo(conf);
+    notebookRepo = new GitNotebookRepo(conf, AuthenticationInfo.ANONYMOUS_AUTHENTICATION_INFO);
     assertThat(notebookRepo.list(null)).isNotEmpty();
 
     //when
@@ -126,7 +127,7 @@ public class GitNotebookRepoTest {
   @Test
   public void showNotebookHistoryMultipleNotesTest() throws IOException {
     //initial checks
-    notebookRepo = new GitNotebookRepo(conf);
+    notebookRepo = new GitNotebookRepo(conf, AuthenticationInfo.ANONYMOUS_AUTHENTICATION_INFO);
     assertThat(notebookRepo.list(null)).isNotEmpty();
     assertThat(containsNote(notebookRepo.list(null), TEST_NOTE_ID)).isTrue();
     assertThat(containsNote(notebookRepo.list(null), TEST_NOTE_ID2)).isTrue();
@@ -169,7 +170,7 @@ public class GitNotebookRepoTest {
   @Test
   public void addCheckpointTest() throws IOException {
     // initial checks
-    notebookRepo = new GitNotebookRepo(conf);
+    notebookRepo = new GitNotebookRepo(conf, AuthenticationInfo.ANONYMOUS_AUTHENTICATION_INFO);
     assertThat(notebookRepo.list(null)).isNotEmpty();
     assertThat(containsNote(notebookRepo.list(null), TEST_NOTE_ID)).isTrue();
     assertThat(notebookRepo.revisionHistory(TEST_NOTE_ID, null)).isEmpty();
@@ -208,7 +209,7 @@ public class GitNotebookRepoTest {
   @Test
   public void getRevisionTest() throws IOException {
     // initial checks
-    notebookRepo = new GitNotebookRepo(conf);
+    notebookRepo = new GitNotebookRepo(conf, AuthenticationInfo.ANONYMOUS_AUTHENTICATION_INFO);
     assertThat(notebookRepo.list(null)).isNotEmpty();
     assertThat(containsNote(notebookRepo.list(null), TEST_NOTE_ID)).isTrue();
     assertThat(notebookRepo.revisionHistory(TEST_NOTE_ID, null)).isEmpty();
@@ -263,7 +264,7 @@ public class GitNotebookRepoTest {
   @Test
   public void getRevisionFailTest() throws IOException {
     // initial checks
-    notebookRepo = new GitNotebookRepo(conf);
+    notebookRepo = new GitNotebookRepo(conf, AuthenticationInfo.ANONYMOUS_AUTHENTICATION_INFO);
     assertThat(notebookRepo.list(null)).isNotEmpty();
     assertThat(containsNote(notebookRepo.list(null), TEST_NOTE_ID)).isTrue();
     assertThat(notebookRepo.revisionHistory(TEST_NOTE_ID, null)).isEmpty();

@@ -56,6 +56,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.NullArgumentException;
 import org.apache.commons.lang.StringUtils;
+import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sonatype.aether.RepositoryException;
@@ -105,6 +106,8 @@ public class InterpreterFactory implements InterpreterGroupFactory {
    */
   private final Map<String, InterpreterSetting> interpreterSettings = new HashMap<>();
 
+  private AuthenticationInfo authenticationInfo;
+
   private Map<String, List<String>> interpreterBindings = new HashMap<>();
   private List<RemoteRepository> interpreterRepositories;
 
@@ -125,17 +128,19 @@ public class InterpreterFactory implements InterpreterGroupFactory {
   public InterpreterFactory(ZeppelinConfiguration conf,
       AngularObjectRegistryListener angularObjectRegistryListener,
       RemoteInterpreterProcessListener remoteInterpreterProcessListener,
-      ApplicationEventListener appEventListener, DependencyResolver depResolver)
+      ApplicationEventListener appEventListener, DependencyResolver depResolver,
+      AuthenticationInfo authenticationInfo)
       throws InterpreterException, IOException, RepositoryException {
     this(conf, new InterpreterOption(true), angularObjectRegistryListener,
-        remoteInterpreterProcessListener, appEventListener, depResolver);
+        remoteInterpreterProcessListener, appEventListener, depResolver, authenticationInfo);
   }
 
 
   public InterpreterFactory(ZeppelinConfiguration conf, InterpreterOption defaultOption,
       AngularObjectRegistryListener angularObjectRegistryListener,
       RemoteInterpreterProcessListener remoteInterpreterProcessListener,
-      ApplicationEventListener appEventListener, DependencyResolver depResolver)
+      ApplicationEventListener appEventListener, DependencyResolver depResolver,
+      AuthenticationInfo authenticationInfo)
       throws InterpreterException, IOException, RepositoryException {
     this.conf = conf;
     this.defaultOption = defaultOption;
@@ -144,6 +149,8 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     this.interpreterRepositories = depResolver.getRepos();
     this.remoteInterpreterProcessListener = remoteInterpreterProcessListener;
     this.appEventListener = appEventListener;
+    this.authenticationInfo = authenticationInfo;
+
     String replsConf = conf.getString(ConfVars.ZEPPELIN_INTERPRETERS);
     interpreterClassList = replsConf.split(",");
     String groupOrder = conf.getString(ConfVars.ZEPPELIN_INTERPRETER_GROUP_ORDER);
@@ -157,7 +164,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
   }
 
   private void init() throws InterpreterException, IOException, RepositoryException {
-    String interpreterJson = conf.getInterpreterJson();
+    String interpreterJson = conf.getInterpeterSetting();
     ClassLoader cl = Thread.currentThread().getContextClassLoader();
 
     Path interpretersDir = Paths.get(conf.getInterpreterDir());
@@ -233,7 +240,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
       logger.info("InterpreterSettingRef name {}", setting.getName());
     }
 
-    loadFromFile();
+    loadSettingsFromFile();
 
     // if no interpreter settings are loaded, create default set
     if (0 == interpreterSettings.size()) {
@@ -254,7 +261,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
         interpreterSettings.put(setting.getId(), setting);
       }
 
-      saveToFile();
+      saveSettingsToFile();
     }
 
 
@@ -350,8 +357,8 @@ public class InterpreterFactory implements InterpreterGroupFactory {
 
   }
 
-  private void loadFromFile() throws IOException {
-    File settingFile = new File(conf.getInterpreterSettingPath());
+  private void loadSettingsFromFile() throws IOException {
+    File settingFile = new File(conf.getInterpreterSettingPath(authenticationInfo));
     if (!settingFile.exists()) {
       // nothing to read
       return;
@@ -454,7 +461,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     }
   }
 
-  private void saveToFile() throws IOException {
+  private void saveSettingsToFile() throws IOException {
     String jsonString;
 
     synchronized (interpreterSettings) {
@@ -466,8 +473,9 @@ public class InterpreterFactory implements InterpreterGroupFactory {
       jsonString = gson.toJson(info);
     }
 
-    File settingFile = new File(conf.getInterpreterSettingPath());
+    File settingFile = new File(conf.getInterpreterSettingPath(authenticationInfo));
     if (!settingFile.exists()) {
+      settingFile.getParentFile().mkdirs();
       settingFile.createNewFile();
     }
 
@@ -531,7 +539,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     setting.setProperties(p);
     setting.setInterpreterGroupFactory(this);
     interpreterSettings.put(setting.getId(), setting);
-    saveToFile();
+    saveSettingsToFile();
     return setting;
   }
 
@@ -732,7 +740,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
             }
           }
         }
-        saveToFile();
+        saveSettingsToFile();
       }
     }
 
@@ -809,7 +817,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
         }
       }
       interpreterBindings.put(noteId, settingList);
-      saveToFile();
+      saveSettingsToFile();
 
       for (String settingId : unBindedSettings) {
         InterpreterSetting setting = get(settingId);
@@ -863,7 +871,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
         intpsetting.setDependencies(dependencies);
 
         loadInterpreterDependencies(intpsetting);
-        saveToFile();
+        saveSettingsToFile();
       } else {
         throw new InterpreterException("Interpreter setting id " + id + " not found");
       }
@@ -1241,12 +1249,12 @@ public class InterpreterFactory implements InterpreterGroupFactory {
   public void addRepository(String id, String url, boolean snapshot, Authentication auth)
       throws IOException {
     depResolver.addRepo(id, url, snapshot, auth);
-    saveToFile();
+    saveSettingsToFile();
   }
 
   public void removeRepository(String id) throws IOException {
     depResolver.delRepo(id);
-    saveToFile();
+    saveSettingsToFile();
   }
 
   public Map<String, String> getEnv() {

@@ -57,8 +57,9 @@ public class GitNotebookRepo extends VFSNotebookRepo {
   private String localPath;
   private Git git;
 
-  public GitNotebookRepo(ZeppelinConfiguration conf) throws IOException {
-    super(conf);
+  public GitNotebookRepo(ZeppelinConfiguration conf,
+      AuthenticationInfo authenticationInfo) throws IOException {
+    super(conf, authenticationInfo);
     localPath = getRootDir().getName().getPath();
     LOG.info("Opening a git repo at '{}'", localPath);
     Repository localRepo = new FileRepository(Joiner.on(File.separator).join(localPath, ".git"));

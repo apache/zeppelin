@@ -17,6 +17,8 @@
 
 package org.apache.zeppelin.notebook.socket;
 
+import org.apache.zeppelin.user.AuthenticationInfo;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -139,9 +141,10 @@ public class Message {
 
   public OP op;
   public Map<String, Object> data = new HashMap<String, Object>();
-  public String ticket = "anonymous";
-  public String principal = "anonymous";
+  public String ticket = AuthenticationInfo.ANONYMOUS;
+  public String principal = AuthenticationInfo.ANONYMOUS;
   public String roles = "";
+  public String runAs = AuthenticationInfo.ANONYMOUS;
 
   public Message(OP op) {
     this.op = op;

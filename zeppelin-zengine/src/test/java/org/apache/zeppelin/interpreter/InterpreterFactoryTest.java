@@ -33,6 +33,7 @@ import org.apache.zeppelin.dep.Dependency;
 import org.apache.zeppelin.dep.DependencyResolver;
 import org.apache.zeppelin.interpreter.mock.MockInterpreter1;
 import org.apache.zeppelin.interpreter.mock.MockInterpreter2;
+import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreter;
 import org.junit.After;
 import org.junit.Before;
@@ -65,7 +66,7 @@ public class InterpreterFactoryTest {
     System.setProperty(ConfVars.ZEPPELIN_INTERPRETERS.getVarName(), "org.apache.zeppelin.interpreter.mock.MockInterpreter1,org.apache.zeppelin.interpreter.mock.MockInterpreter2");
     conf = new ZeppelinConfiguration();
     depResolver = new DependencyResolver(tmpDir.getAbsolutePath() + "/local-repo");
-    factory = new InterpreterFactory(conf, new InterpreterOption(false), null, null, null, depResolver);
+    factory = new InterpreterFactory(conf, new InterpreterOption(false), null, null, null, depResolver, AuthenticationInfo.ANONYMOUS_AUTHENTICATION_INFO);
     context = new InterpreterContext("note", "id", "title", "text", null, null, null, null, null, null, null);
   }
 
@@ -103,7 +104,7 @@ public class InterpreterFactoryTest {
 
   @Test
   public void testRemoteRepl() throws Exception {
-    factory = new InterpreterFactory(conf, new InterpreterOption(true), null, null, null, depResolver);
+    factory = new InterpreterFactory(conf, new InterpreterOption(true), null, null, null, depResolver, AuthenticationInfo.ANONYMOUS_AUTHENTICATION_INFO);
     List<InterpreterSetting> all = factory.get();
     InterpreterSetting mock1Setting = null;
     for (InterpreterSetting setting : all) {
@@ -154,18 +155,18 @@ public class InterpreterFactoryTest {
     int numInterpreters = factory.get().size();
 
     // check if file saved
-    assertTrue(new File(conf.getInterpreterSettingPath()).exists());
+    assertTrue(new File(conf.getInterpreterSettingPath(AuthenticationInfo.ANONYMOUS_AUTHENTICATION_INFO)).exists());
 
     factory.createNewSetting("new-mock1", "mock1", new LinkedList<Dependency>(), new InterpreterOption(false), new Properties());
     assertEquals(numInterpreters + 1, factory.get().size());
 
-    InterpreterFactory factory2 = new InterpreterFactory(conf, null, null, null, depResolver);
+    InterpreterFactory factory2 = new InterpreterFactory(conf, null, null, null, depResolver, AuthenticationInfo.ANONYMOUS_AUTHENTICATION_INFO);
     assertEquals(numInterpreters + 1, factory2.get().size());
   }
 
   @Test
   public void testInterpreterAliases() throws IOException, RepositoryException {
-    factory = new InterpreterFactory(conf, null, null, null, depResolver);
+    factory = new InterpreterFactory(conf, null, null, null, depResolver, AuthenticationInfo.ANONYMOUS_AUTHENTICATION_INFO);
     final InterpreterInfo info1 = new InterpreterInfo("className1", "name1", true);
     final InterpreterInfo info2 = new InterpreterInfo("className2", "name1", true);
     factory.add("group1", new ArrayList<InterpreterInfo>(){{
