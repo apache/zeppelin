@@ -53,7 +53,7 @@ public class SparkRInterpreter extends Interpreter {
     String rCmdPath = getProperty("zeppelin.R.cmd");
     String sparkRLibPath;
 
-    // See bin/download-spark.sh for the below env variables
+    // SPARK_CACHE and SPARK_ARCHIVE are defined in bin/common.sh 
     String sparkchachePath = System.getenv("SPARK_CACHE");
     String sparkArchivePath = System.getenv("SPARK_ARCHIVE");
 
