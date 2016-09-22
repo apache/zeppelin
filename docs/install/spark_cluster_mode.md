@@ -204,8 +204,7 @@ After running a single paragraph with Spark interpreter in Zeppelin, browse `htt
 
 
 ## Zeppelin on CDH
-Cloudera officially provide docker container [here](https://www.cloudera.com/documentation/enterprise/5-6-x/topics/quickstart_docker_container.html)
-So we can easily build CDH docker environment following the [link](https://www.cloudera.com/documentation/enterprise/5-6-x/topics/quickstart_docker_container.html).
+Cloudera officially provide docker container so we can easily build CDH docker environment following the [link](https://www.cloudera.com/documentation/enterprise/5-6-x/topics/quickstart_docker_container.html).
 
 
 ### 1. Run docker
@@ -243,20 +242,8 @@ docker run -it \
 
 ### 2. Verify running CDH.
 
-You can check each application web UI on following URLs.
-```
-# HADOOP
-http://localhost:50070/dfshealth.html#tab-overview
+You can see each application web UI for HDFS on `http://<hostname>:50070/`, YARN on `http://<hostname>:8088/cluster`.
 
-# HIVE
-http://localhost:10002/hiveserver2.jsp
-
-# YARN Application
-http://localhost:8088/cluster
-
-# Spark history server
-http://localhost:18088
-```
 
 ### 3. Configure Spark interpreter in Zeppelin
 Set following configurations to `conf/zeppelin-env.sh`.
