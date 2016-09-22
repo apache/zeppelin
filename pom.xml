@@ -426,6 +426,9 @@
             <encoding>UTF-8</encoding>
             <inputEncoding>UTF-8</inputEncoding>
             <outputEncoding>UTF-8</outputEncoding>
+            <systemPropertyVariables>
+              <java.io.tmpdir>${project.build.directory}/tmp</java.io.tmpdir>
+            </systemPropertyVariables>
           </configuration>
           <!-- <excludes> <exclude>**/itest/**</exclude> </excludes> <executions>
             <execution> <id>surefire-itest</id> <phase>integration-test</phase> <goals>

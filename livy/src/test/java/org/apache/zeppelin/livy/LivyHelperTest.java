@@ -70,7 +70,7 @@ public class LivyHelperTest {
         .executeHTTP(
             livyHelper.property.getProperty("zeppelin.livy.url") + "/sessions",
             "POST",
-            "{\"kind\": \"spark\", \"proxyUser\": \"null\"}",
+            "{\"kind\": \"spark\", \"conf\": {}, \"proxyUser\": null}",
             null
         );
 
