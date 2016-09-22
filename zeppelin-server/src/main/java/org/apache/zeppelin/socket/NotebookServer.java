@@ -1156,6 +1156,8 @@ public class NotebookServer extends WebSocketServlet implements
       conn.send(serializeMessage(new Message(OP.ERROR_INFO).put("info",
                 "Oops! There is something wrong with the notebook file system. "
                 + "Please check the logs for more details.")));
+      // don't run the paragraph when there is error on persisting the note information
+      return;
     }
 
     try {
