@@ -30,7 +30,7 @@ limitations under the License.
                    ng-model="note.noteImportName" />
           </div>
           <div class="form-group">             
-            <label for="fileSizeLimit">JSON file size cannot exceed 1MB</label>
+            <label for="fileSizeLimit">JSON file size cannot exceed {{config.maxLimit}} bytes</label>
           </div>
 
           <div class="form-group" ng-show="note.errorText">

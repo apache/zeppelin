@@ -214,6 +214,10 @@ angular.module('zeppelinWebApp').service('websocketMsgSrv', function($rootScope,
     saveInterpreterBindings: function(noteID, selectedSettingIds) {
       websocketEvents.sendNewEvent({op: 'SAVE_INTERPRETER_BINDINGS',
         data: {noteID: noteID, selectedSettingIds: selectedSettingIds}});
+    },
+
+    listConfigurations: function() {
+      websocketEvents.sendNewEvent({op: 'LIST_CONFIGURATIONS'});
     }
 
   };

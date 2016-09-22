@@ -19,6 +19,13 @@ angular.module('zeppelinWebApp').controller('NoteImportCtrl', function($scope, $
   $scope.note = {};
   $scope.note.step1 = true;
   $scope.note.step2 = false;
+  $scope.config = {};
+  $scope.config.maxLimit = '';
+
+  websocketMsgSrv.listConfigurations();
+  $scope.$on('configurationsInfo', function(scope, event) {
+    $scope.config.maxLimit = event.configurations['zeppelin.websocket.max.text.message.size'];
+  });
 
   vm.resetFlags = function() {
     $scope.note = {};
