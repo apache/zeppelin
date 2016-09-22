@@ -206,6 +206,12 @@ public class ZeppelinContext {
     sc.setJobGroup(jobGroup, "Zeppelin", false);
 
     try {
+      // convert it to DataFrame if it is Dataset, as we will iterate all the records
+      // and assume it is type Row.
+      if (df.getClass().getCanonicalName().equals("org.apache.spark.sql.Dataset")) {
+        Method convertToDFMethod = df.getClass().getMethod("toDF");
+        df = convertToDFMethod.invoke(df);
+      }
       take = df.getClass().getMethod("take", int.class);
       rows = (Object[]) take.invoke(df, maxResult + 1);
     } catch (NoSuchMethodException | SecurityException | IllegalAccessException
