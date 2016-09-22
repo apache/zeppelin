@@ -139,7 +139,8 @@ public class Message {
     SAVE_INTERPRETER_BINDINGS,    // [c-s] save interpreter bindings
                                   // @param noteID
                                   // @param selectedSettingIds
-    INTERPRETER_BINDINGS          // [s-c] interpreter bindings
+    INTERPRETER_BINDINGS,         // [s-c] interpreter bindings
+    ERROR_INFO                    // [s-c] error information to be sent
   }
 
   public OP op;

@@ -117,6 +117,21 @@ angular.module('zeppelinWebApp').factory('websocketEvents',
       $rootScope.$broadcast('noteRevision', data);
     } else if (op === 'INTERPRETER_BINDINGS') {
       $rootScope.$broadcast('interpreterBindings', data);
+    } else if (op === 'ERROR_INFO') {
+      BootstrapDialog.show({
+        closable: false,
+        closeByBackdrop: false,
+        closeByKeyboard: false,
+        title: 'Details',
+        message: data.info.toString(),
+        buttons: [{
+            // close all the dialogs when there are error on running all paragraphs
+            label: 'Close',
+            action: function() {
+              BootstrapDialog.closeAll();
+            }
+          }]
+      });
     }
   });
 
