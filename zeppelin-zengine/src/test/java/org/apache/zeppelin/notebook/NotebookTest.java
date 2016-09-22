@@ -42,6 +42,7 @@ import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.apache.zeppelin.search.SearchService;
+import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.user.Credentials;
 import org.junit.After;
 import org.junit.Before;
@@ -210,6 +211,18 @@ public class NotebookTest implements JobListenerFactory{
   }
 
   @Test
+  public void testCreateNoteWithSubject() throws IOException, SchedulerException, RepositoryException {
+    AuthenticationInfo subject = new AuthenticationInfo("user1");
+    Note note = notebook.createNote(subject);
+
+    assertNotNull(notebook.getNotebookAuthorization().getOwners(note.getId()));
+    assertEquals(1, notebook.getNotebookAuthorization().getOwners(note.getId()).size());
+    Set<String> owners = new HashSet<>();
+    owners.add("user1");
+    assertEquals(owners, notebook.getNotebookAuthorization().getOwners(note.getId()));
+  }
+
+  @Test
   public void testClearParagraphOutput() throws IOException, SchedulerException{
     Note note = notebook.createNote(null);
     Paragraph p1 = note.addParagraph();
@@ -351,7 +364,7 @@ public class NotebookTest implements JobListenerFactory{
 
   @Test
   public void testExportAndImportNote() throws IOException, CloneNotSupportedException,
-          InterruptedException {
+          InterruptedException, InterpreterException, SchedulerException, RepositoryException {
     Note note = notebook.createNote(null);
     factory.setInterpreters(note.getId(), factory.getDefaultInterpreterSettingList());
 
@@ -374,11 +387,20 @@ public class NotebookTest implements JobListenerFactory{
     assertEquals(p.getId(), p2.getId());
     assertEquals(p.text, p2.text);
     assertEquals(p.getResult().message(), p2.getResult().message());
+
+    // Verify import note with subject
+    AuthenticationInfo subject = new AuthenticationInfo("user1");
+    Note importedNote2 = notebook.importNote(exportedNoteJson, "Title2", subject);
+    assertNotNull(notebook.getNotebookAuthorization().getOwners(importedNote2.getId()));
+    assertEquals(1, notebook.getNotebookAuthorization().getOwners(importedNote2.getId()).size());
+    Set<String> owners = new HashSet<>();
+    owners.add("user1");
+    assertEquals(owners, notebook.getNotebookAuthorization().getOwners(importedNote2.getId()));
   }
 
   @Test
   public void testCloneNote() throws IOException, CloneNotSupportedException,
-      InterruptedException {
+      InterruptedException, InterpreterException, SchedulerException, RepositoryException {
     Note note = notebook.createNote(null);
     factory.setInterpreters(note.getId(), factory.getDefaultInterpreterSettingList());
 
@@ -396,6 +418,15 @@ public class NotebookTest implements JobListenerFactory{
     assertEquals(cp.getId(), p.getId());
     assertEquals(cp.text, p.text);
     assertEquals(cp.getResult().message(), p.getResult().message());
+
+    // Verify clone note with subject
+    AuthenticationInfo subject = new AuthenticationInfo("user1");
+    Note cloneNote2 = notebook.cloneNote(note.getId(), "clone note2", subject);
+    assertNotNull(notebook.getNotebookAuthorization().getOwners(cloneNote2.getId()));
+    assertEquals(1, notebook.getNotebookAuthorization().getOwners(cloneNote2.getId()).size());
+    Set<String> owners = new HashSet<>();
+    owners.add("user1");
+    assertEquals(owners, notebook.getNotebookAuthorization().getOwners(cloneNote2.getId()));
   }
 
   @Test
@@ -820,6 +851,26 @@ public class NotebookTest implements JobListenerFactory{
     assertEquals(note1.getName(), "/MyNote/sub");
 
     notebook.removeNote(note1.getId(), null);
+  }
+
+  @Test
+  public void testGetAllNotes() throws Exception {
+    Note note1 = notebook.createNote(null);
+    Note note2 = notebook.createNote(null);
+    assertEquals(2, notebook.getAllNotes(new AuthenticationInfo("anonymous")).size());
+
+    notebook.getNotebookAuthorization().setOwners(note1.getId(), Sets.newHashSet("user1"));
+    notebook.getNotebookAuthorization().setWriters(note1.getId(), Sets.newHashSet("user1"));
+    notebook.getNotebookAuthorization().setReaders(note1.getId(), Sets.newHashSet("user1"));
+    assertEquals(1, notebook.getAllNotes(new AuthenticationInfo("anonymous")).size());
+    assertEquals(2, notebook.getAllNotes(new AuthenticationInfo("user1")).size());
+
+    notebook.getNotebookAuthorization().setOwners(note2.getId(), Sets.newHashSet("user2"));
+    notebook.getNotebookAuthorization().setWriters(note2.getId(), Sets.newHashSet("user2"));
+    notebook.getNotebookAuthorization().setReaders(note2.getId(), Sets.newHashSet("user2"));
+    assertEquals(0, notebook.getAllNotes(new AuthenticationInfo("anonymous")).size());
+    assertEquals(1, notebook.getAllNotes(new AuthenticationInfo("user1")).size());
+    assertEquals(1, notebook.getAllNotes(new AuthenticationInfo("user2")).size());
   }
 
   private void delete(File file){
