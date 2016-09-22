@@ -103,7 +103,7 @@ public class NoteTest {
 
   @Test
   public void insertParagraphWithLastReplNameTest() {
-    when(interpreterFactory.getInterpreter(anyString(), eq("spark"))).thenReturn(interpreter);
+    when(interpreterFactory.getInterpreter(anyString(), anyString(), eq("spark"))).thenReturn(interpreter);
 
     Note note = new Note(repo, interpreterFactory, jobListenerFactory, index, credentials, noteEventListener);
     Paragraph p1 = note.addParagraph();
@@ -115,7 +115,7 @@ public class NoteTest {
 
   @Test
   public void insertParagraphWithInvalidReplNameTest() {
-    when(interpreterFactory.getInterpreter(anyString(), eq("invalid"))).thenReturn(null);
+    when(interpreterFactory.getInterpreter(anyString(), anyString(), eq("invalid"))).thenReturn(null);
 
     Note note = new Note(repo, interpreterFactory, jobListenerFactory, index, credentials, noteEventListener);
     Paragraph p1 = note.addParagraph();

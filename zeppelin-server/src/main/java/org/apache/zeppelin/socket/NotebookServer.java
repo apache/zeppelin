@@ -788,6 +788,8 @@ public class NotebookServer extends WebSocketServlet implements
       AuthenticationInfo subject = null;
       if (fromMessage.principal != null) {
         subject = new AuthenticationInfo(fromMessage.principal);
+      } else {
+        subject = new AuthenticationInfo("anonymous");
       }
       note = notebook.importNote(noteJson, noteName, subject);
       note.persist(subject);

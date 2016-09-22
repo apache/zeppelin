@@ -141,8 +141,8 @@ public class InterpreterFactoryTest {
         break;
       }
     }
-    InterpreterGroup interpreterGroup = mock1Setting.getInterpreterGroup("sharedProcess");
-    factory.createInterpretersForNote(mock1Setting, "sharedProcess", "session");
+    InterpreterGroup interpreterGroup = mock1Setting.getInterpreterGroup("user", "sharedProcess");
+    factory.createInterpretersForNote(mock1Setting, "user", "sharedProcess", "session");
     // get interpreter
     assertNotNull("get Interpreter", interpreterGroup.get("session").get(0));
     assertTrue(interpreterGroup.get("session").get(0) instanceof LazyOpenInterpreter);

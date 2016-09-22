@@ -586,6 +586,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
   }
 
   private boolean isValidInterpreter(String replName) {
-    return factory.getInterpreter(note.getId(), replName) != null;
+    return factory.getInterpreter("",
+        note.getId(), replName) != null;
   }
 }
