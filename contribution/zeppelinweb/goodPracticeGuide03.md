@@ -22,9 +22,7 @@ limitations under the License.
 # How to Write a Controller
 
 <br/>
-Our main rule regarding writing a controller, is to use the `Controller as vm` style.
-
-However we also have a few other style guidelines.
+Our main rule regarding writing a controller, is to use the `Controller as vm` style, however, we also have a few other style guidelines.
 
 You can see below a full example of what the controller would look like.
 
@@ -108,7 +106,7 @@ Now let's see how we can use it inside our `.html` view in normal situations.
 </div>
 ```
 
-#### Using the controller in a a page
+#### Using the controller in a page
 
 In the case where your controller will be used on a view directly linked to a route
 
@@ -124,7 +122,7 @@ The definition of the controller will take place in the `$routeProvider` section
 })
 ```
 
-leaving the `.html` view without any `ng-controller` property.
+Which will leave the `.html` view without any `ng-controller` property.
 
 ```
 <div>
