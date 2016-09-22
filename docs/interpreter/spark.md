@@ -67,7 +67,7 @@ After you start Zeppelin server for the first time, you will be asked whether yo
 
 ```
 $ ./bin/zeppelin-daemon.sh start
-There is no local Spark binary in /ZEPPELIN_HOME/local-spark
+For using Spark interpreter in local mode(without external Spark installation), Spark binary needs to be downloaded.
 Do you want to download a latest version of Spark binary? (Y/N):
 ```
 
@@ -79,7 +79,6 @@ Of course you can use external Spark as well. If so, enter "N" to the above ques
 
 ### Local Spark mode
 Nothing needs to be more configured. You can use Spark interpreter right after starting Zeppelin.
-`SPARK_HOME` will be set automatically as `ZEPPELIN_HOME/local-spark/spark-x.x.x-hadoop.x.x` and exported in `conf/zeppelin-env.sh`.
 
 ### System provided Spark mode
 If you want to connect to your Spark cluster, you'll need to follow below two simple steps.
