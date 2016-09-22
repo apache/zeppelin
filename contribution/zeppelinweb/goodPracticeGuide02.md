@@ -56,6 +56,7 @@ Now, there are a few things to know about using it from `$rootScope`:
 
 * Usage of event dispatching should be limited if possible
 * We only use `$rootScope.$broadcast` and `$scope.$on` for event dispatching/catching
+* We are grouping all the `$scope.$on` functions at the end of the compponent using it (controller or service)
 
 
 #### Performances
