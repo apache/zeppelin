@@ -123,12 +123,6 @@ public class LivyHelper {
     }
   }
 
-  protected void initializeSpark(final InterpreterContext context,
-                                 final Map<String, Integer> userSessionMap) throws Exception {
-    interpret("val sqlContext = new org.apache.spark.sql.SQLContext(sc)\n" +
-        "import sqlContext.implicits._", context, userSessionMap);
-  }
-
   public InterpreterResult interpretInput(String stringLines,
                                           final InterpreterContext context,
                                           final Map<String, Integer> userSessionMap,

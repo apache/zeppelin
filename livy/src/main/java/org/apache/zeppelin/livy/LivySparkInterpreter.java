@@ -104,7 +104,6 @@ public class LivySparkInterpreter extends Interpreter {
                   interpreterContext,
                   "spark")
           );
-          livyHelper.initializeSpark(interpreterContext, userSessionMap);
         } catch (Exception e) {
           LOGGER.error("Exception in LivySparkInterpreter while interpret ", e);
           return new InterpreterResult(InterpreterResult.Code.ERROR, e.getMessage());
