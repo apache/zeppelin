@@ -285,4 +285,10 @@ public class VFSNotebookRepo implements NotebookRepo {
     return null;
   }
 
+  @Override
+  public Note getNoteFromUrl(String url, AuthenticationInfo subject) throws IOException {
+    // Auto-generated method stub
+    return null;
+  }
+
 }

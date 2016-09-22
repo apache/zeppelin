@@ -270,4 +270,10 @@ public class S3NotebookRepo implements NotebookRepo {
     // Auto-generated method stub
     return null;
   }
+
+  @Override
+  public Note getNoteFromUrl(String url, AuthenticationInfo subject) throws IOException {
+    // Auto-generated method stub
+    return null;
+  }
 }

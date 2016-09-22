@@ -60,6 +60,8 @@ angular.module('zeppelinWebApp').factory('websocketEvents',
       $location.path('/notebook/' + data.note.id);
     } else if (op === 'NOTES_INFO') {
       $rootScope.$broadcast('setNoteMenu', data.notes);
+    } else if (op === 'IMPORT_NOTE_STATUS') {
+      $rootScope.$broadcast('importNoteResult', data);
     } else if (op === 'LIST_NOTEBOOK_JOBS') {
       $rootScope.$broadcast('setNotebookJobs', data.notebookJobs);
     } else if (op === 'LIST_UPDATE_NOTEBOOK_JOBS') {

@@ -14,11 +14,12 @@
 
 'use strict';
 
-angular.module('zeppelinWebApp').controller('NoteImportCtrl', function($scope, $timeout, websocketMsgSrv) {
+angular.module('zeppelinWebApp').controller('NoteImportCtrl', function($scope, $timeout, ngToast, websocketMsgSrv) {
   var vm = this;
   $scope.note = {};
   $scope.note.step1 = true;
   $scope.note.step2 = false;
+  $scope.note.isOtherUrl = false;
 
   vm.resetFlags = function() {
     $scope.note = {};
@@ -65,12 +66,16 @@ angular.module('zeppelinWebApp').controller('NoteImportCtrl', function($scope, $
   vm.importNote = function() {
     $scope.note.errorText = '';
     if ($scope.note.importUrl) {
-      jQuery.getJSON($scope.note.importUrl, function(result) {
-        vm.processImportJson(result);
-      }).fail(function() {
-        $scope.note.errorText = 'Unable to Fetch URL';
-        $scope.$apply();
-      });
+      if (!$scope.note.isOtherUrl) {
+        jQuery.getJSON($scope.note.importUrl, function(result) {
+          vm.processImportJson(result);
+        }).fail(function() {
+          $scope.note.errorText = 'Unable to Fetch URL';
+          $scope.$apply();
+        });
+      } else {
+        websocketMsgSrv.importNoteFromBackend($scope.note.importUrl, $scope.note.noteImportName, 'ipfs');
+      }
     } else {
       $scope.note.errorText = 'Enter URL';
       $scope.$apply();
@@ -110,4 +115,23 @@ angular.module('zeppelinWebApp').controller('NoteImportCtrl', function($scope, $
     vm.resetFlags();
     angular.element('#noteImportModal').modal('hide');
   });
+
+  $scope.$on('importNoteResult', function(event, data) {
+    if (data.type === 'ipfs') {
+      var ngToastConf = {
+        content: 'Failed to import Note with hash ' + data.options.hash,
+        verticalPosition: 'bottom',
+        horizontalPosition: 'center',
+        timeout: '5000'
+      };
+
+      if (data.importStatus === 'success') {
+        ngToastConf.content = 'Successfully imported Note with hash ' + data.options.hash,
+        ngToast.success(ngToastConf);
+      } else {
+        ngToast.danger(ngToastConf);
+      }
+    }
+  });
+
 });

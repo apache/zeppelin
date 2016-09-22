@@ -239,3 +239,38 @@ export ZEPPELINHUB_API_ADDRESS = address of ZeppelinHub service (e.g. https://ww
 ```
 
 You can get more information on generating `token` and using authentication on the corresponding [help page](http://help.zeppelinhub.com/zeppelin_integration/#add-a-new-zeppelin-instance-and-generate-a-token).
+
+</br>
+## Storage in IPFS  <a name="IPFS"></a>
+
+Using IpfsNotebookRepo you can use Ipfs to save Note revisions and retrieve a particular revision.
+
+Comment out the following in **zeppelin-site.xml**
+
+Make sure you enter the correct ipfs apiServer.
+```
+<property>
+        <name>zeppelin.notebook.storage</name>
+        <value>org.apache.zeppelin.notebook.repo.ipfs.IPFSNotebookRepo</value>
+        <description>notebook persistence layer implementation</description>
+    </property>
+
+    <property>
+        <name>zeppelin.notebook.ipfs.apiServer</name>
+        <value>http://localhost:5001/api/v0/</value>
+        <description>ipfs api Server Multiaddress</description>
+    </property>
+```
+and comment
+
+```
+<property>
+  <name>zeppelin.notebook.storage</name>
+  <value>org.apache.zeppelin.notebook.repo.VFSNotebookRepo</value>
+  <description>notebook persistence layer implementation</description>
+</property>
+```
+In the `notebook` directory is a file `ipfsnotehashes.json` which contains the ipfs hash for each
+ note revision which is commited, it is saved in your local '.ipfs' directory. You can share
+ these ipfs hash with others. Notebook can also be imported by entering this hash.
+

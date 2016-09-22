@@ -412,4 +412,15 @@ public class NotebookRepoSync implements NotebookRepo {
     }
     return revisions;
   }
+
+  @Override
+  public Note getNoteFromUrl(String url, AuthenticationInfo subject) {
+    Note newNote = null;
+    try {
+      newNote = getRepo(0).getNoteFromUrl(url, subject);
+    } catch (IOException e) {
+      LOG.error("Failed to download note with given url", e);
+    }
+    return newNote;
+  }
 }

@@ -101,6 +101,15 @@ public interface NotebookRepo {
   @ZeppelinApi public List<Revision> revisionHistory(String noteId, AuthenticationInfo subject);
 
   /**
+   * Download a note from a given URL or Hash
+   * @param url
+   * @param subject
+   * @return note in JSON String
+   */
+  @ZeppelinApi public Note getNoteFromUrl(String url, AuthenticationInfo subject)
+      throws IOException;
+
+  /**
    * Represents the 'Revision' a point in life of the notebook
    */
   static class Revision {
@@ -112,6 +121,23 @@ public interface NotebookRepo {
     public String id;
     public String message;
     public int time;
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) {
+        return true;
+      }
+      if (!(o instanceof Revision)) {
+        return false;
+      }
+      Revision revision = (Revision) o;
+      return id.equals(revision.id);
+    }
+
+    @Override
+    public int hashCode() {
+      return id.hashCode();
+    }
   }
 
 }

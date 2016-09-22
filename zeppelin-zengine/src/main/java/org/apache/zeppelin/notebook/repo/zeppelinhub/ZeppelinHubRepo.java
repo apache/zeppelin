@@ -234,4 +234,10 @@ public class ZeppelinHubRepo implements NotebookRepo {
     return history;
   }
 
+  @Override
+  public Note getNoteFromUrl(String url, AuthenticationInfo subject) throws IOException{
+    // Auto-generated method stub
+    return null;
+  }
+
 }
