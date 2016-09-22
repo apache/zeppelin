@@ -2,7 +2,14 @@
   {
     "group": "md",
     "name": "md",
-    "className": "org.apache.zeppelin.markdown.Markdown",
-    "properties": null
+    "className": "org.apache.zeppelin.markdown.MarkdownInterpreter",
+    "properties": {
+      "markdown.parser.type": {
+        "envName": "MARKDOWN_PARSER_TYPE",
+        "propertyName": "markdown.parser.type",
+        "defaultValue": "markdown4j",
+        "description": "Markdown Parser Type. Available values: markdown4j, pegdown. Default = markdown4j"
+      }
+    }
   }
 ]

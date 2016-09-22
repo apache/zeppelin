@@ -229,7 +229,7 @@ public class JDBCInterpreter extends Interpreter {
       return null;
     }
     if (null == connection) {
-      final Properties properties = propertiesMap.get(propertyKey);
+      final Properties properties = (Properties) propertiesMap.get(propertyKey).clone();
       logger.info(properties.getProperty(DRIVER_KEY));
       Class.forName(properties.getProperty(DRIVER_KEY));
       final String url = properties.getProperty(URL_KEY);
