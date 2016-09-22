@@ -202,3 +202,78 @@ After running a single paragraph with Spark interpreter in Zeppelin, browse `htt
 
 <img src="../assets/themes/zeppelin/img/docs-img/mesos_frameworks.png" />
 
+
+## Zeppelin on CDH
+Cloudera officially provide docker container [here](https://www.cloudera.com/documentation/enterprise/5-6-x/topics/quickstart_docker_container.html)
+So we can easily build CDH docker environment following the [link](https://www.cloudera.com/documentation/enterprise/5-6-x/topics/quickstart_docker_container.html).
+
+
+### 1. Run docker
+
+```
+docker run -it \
+ -p 80:80 \
+ -p 4040:4040 \
+ -p 8020:8020 \
+ -p 8022:8022 \
+ -p 8030:8030 \
+ -p 8032:8032 \
+ -p 8033:8033 \
+ -p 8040:8040 \
+ -p 8042:8042 \
+ -p 8088:8088 \
+ -p 8480:8480 \
+ -p 8485:8485 \
+ -p 8888:8888 \
+ -p 9083:9083 \
+ -p 10020:10020 \
+ -p 10033:10033 \
+ -p 18088:18088 \
+ -p 19888:19888 \
+ -p 25000:25000 \
+ -p 25010:25010 \
+ -p 25020:25020 \
+ -p 50010:50010 \
+ -p 50020:50020 \
+ -p 50070:50070 \
+ -p 50075:50075 \
+ -h quickstart.cloudera --privileged=true \
+ agitated_payne_backup /usr/bin/docker-quickstart;
+```
+
+### 2. Verify running CDH.
+
+You can check each application web UI on following URLs.
+```
+# HADOOP
+http://localhost:50070/dfshealth.html#tab-overview
+
+# HIVE
+http://localhost:10002/hiveserver2.jsp
+
+# YARN Application
+http://localhost:8088/cluster
+
+# Spark history server
+http://localhost:18088
+```
+
+### 3. Configure Spark interpreter in Zeppelin
+Set following configurations to `conf/zeppelin-env.sh`.
+
+```
+export MASTER=yarn-client
+export HADOOP_CONF_DIR=[your_hadoop_conf_path]
+export SPARK_HOME=[your_spark_home_path]
+```
+
+`HADOOP_CONF_DIR`(Hadoop configuration path) is defined in `/scripts/docker/spark-cluster-managers/cdh/hdfs_conf`.
+
+Don't forget to set Spark `master` as `yarn-client` in Zeppelin **Interpreters** setting page like below.
+
+<img src="../assets/themes/zeppelin/img/docs-img/zeppelin_yarn_conf.png" />
+
+### 4. Run Zeppelin with Spark interpreter
+After running a single paragraph with Spark interpreter in Zeppelin, browse `http://<hostname>:8088/cluster/apps` and check Zeppelin application is running well or not.
+
+<img src="../assets/themes/zeppelin/img/docs-img/cdh_yarn_applications.png" />

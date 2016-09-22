@@ -172,6 +172,7 @@ Join to our [Mailing list](https://zeppelin.apache.org/community.html) and repor
   * [Zeppelin on Spark Cluster Mode (Standalone via Docker)](./install/spark_cluster_mode.html#spark-standalone-mode)
   * [Zeppelin on Spark Cluster Mode (YARN via Docker)](./install/spark_cluster_mode.html#spark-on-yarn-mode)
   * [Zeppelin on Spark Cluster Mode (Mesos via Docker)](./install/spark_cluster_mode.html#spark-on-mesos-mode)
+  * [Zeppelin on CDH (via Docker)](./install/spark_cluster_mode.html#zeppelin-on-cdh)
 * Contribute
   * [Writing Zeppelin Interpreter](./development/writingzeppelininterpreter.html)
   * [Writing Zeppelin Application (Experimental)](./development/writingzeppelinapplication.html)
