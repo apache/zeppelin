@@ -992,9 +992,6 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
           if (menu.parentNode) {
             menu.parentNode.removeChild(menu);
           }
-          if (!(event.target.nodeName === 'LI' && event.target.parentNode.className.indexOf('changeTypeMenu') !== -1)) {
-            $scope.curSelectCol = -1; // set this variable to not affect other renderTable event!
-          }
         };
         Handsontable.Dom.removeEvent(document, 'click', removeMenu);
         Handsontable.Dom.addEvent(document, 'click', removeMenu);
@@ -1060,21 +1057,23 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
       }
     }
 
-    function setColumnType(i, type, instance) {
-      $scope.colTypeFlag[i] = true;
-      $scope.curSelectCol = i;
-      $scope.columns[i].type = type;
-      if ($scope.columns[i].type === 'numeric') {
-        $scope.columns[i].validator = numericValidator;
-      } else if ($scope.columns[i].type === 'date') {
-        $scope.columns[i].validator = dateValidator;
-      } else {
-        $scope.columns[i].validator = null;
+    function setColumnValidator() {
+      for (var i = 0; i < $scope.columns.length; ++i) {
+        if ($scope.columns[i].type === 'numeric') {
+          $scope.columns[i].validator = numericValidator;
+        } else if ($scope.columns[i].type === 'date') {
+          $scope.columns[i].validator = dateValidator;
+        } else {
+          $scope.columns[i].validator = null;
+        }
       }
+    }
+
+    function setColumnType(i, type, instance) {
+      $scope.columns[i].type = type;
+      setColumnValidator();
       instance.updateSettings({columns: $scope.columns});
-      instance.validateCells(function() {
-        instance.render();
-      });
+      instance.validateCells(null);
     }
 
     var renderTable = function() {
@@ -1091,15 +1090,13 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
           return {type: 'text'};
         });
       }
-      if (!$scope.colTypeFlag) {
-        $scope.colTypeFlag = Array.apply(null, Array(data.columnNames.length)).map(function() { return null; });
-      }
       $scope.hot = new Handsontable(container, {
         colHeaders: columnNames,
         data: resultRows,
         rowHeaders: false,
         stretchH: 'all',
         sortIndicator: true,
+        columns: $scope.columns,
         columnSorting: true,
         contextMenu: false,
         manualColumnResize: true,
@@ -1124,11 +1121,6 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
           };
           return cellProperties;
         },
-        afterRender: function(isForced) {
-          if ($scope.colTypeFlag[$scope.curSelectCol]) {
-            $scope.colTypeFlag[$scope.curSelectCol] = false;
-          }
-        },
         afterGetColHeader: function(col, TH) {
           var instance = this;
           var menu = buildMenu($scope.columns[col].type);
@@ -1148,6 +1140,7 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
           TH.style['white-space'] = 'normal';
         }
       });
+      $scope.hot.validateCells(null);
     };
 
     var retryRenderer = function() {
