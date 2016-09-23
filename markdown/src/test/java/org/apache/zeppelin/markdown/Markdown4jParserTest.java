@@ -28,13 +28,13 @@ import static org.junit.Assert.assertEquals;
 
 public class Markdown4jParserTest {
 
-  MarkdownInterpreter md;
+  Markdown md;
 
   @Before
   public void setUp() throws Exception {
     Properties props = new Properties();
-    props.put(MarkdownInterpreter.MARKDOWN_PARSER_TYPE, MarkdownInterpreter.PARSER_TYPE_MARKDOWN4J);
-    md = new MarkdownInterpreter(props);
+    props.put(Markdown.MARKDOWN_PARSER_TYPE, Markdown.PARSER_TYPE_MARKDOWN4J);
+    md = new Markdown(props);
     md.open();
   }
 
