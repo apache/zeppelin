@@ -24,15 +24,21 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import com.google.common.base.Predicate;
+import com.google.common.collect.FluentIterable;
+import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.stream.JsonReader;
+import org.apache.commons.codec.binary.StringUtils;
 import org.quartz.CronScheduleBuilder;
 import org.quartz.CronTrigger;
 import org.quartz.JobBuilder;
@@ -155,9 +161,13 @@ public class Notebook implements NoteEventListener {
     }
     if (interpreterIds != null) {
       bindInterpretersToNote(note.getId(), interpreterIds);
-      note.putDefaultReplName();
     }
 
+    if (subject != null && !"anonymous".equals(subject.getUser())) {
+      Set<String> owners = new HashSet<String>();
+      owners.add(subject.getUser());
+      notebookAuthorization.setOwners(note.getId(), owners);
+    }
     notebookIndex.addIndexDoc(note);
     note.persist(subject);
     fireNoteCreateEvent(note);
@@ -469,7 +479,7 @@ public class Notebook implements NoteEventListener {
     if (notebookRepo instanceof NotebookRepoSync) {
       NotebookRepoSync mainRepo = (NotebookRepoSync) notebookRepo;
       if (mainRepo.getRepoCount() > 1) {
-        mainRepo.sync();
+        mainRepo.sync(subject);
       }
     }
 
@@ -525,6 +535,35 @@ public class Notebook implements NoteEventListener {
     }
   }
 
+  public List<Note> getAllNotes(AuthenticationInfo subject) {
+    final Set<String> entities = Sets.newHashSet();
+    if (subject != null) {
+      entities.add(subject.getUser());
+    }
+
+    synchronized (notes) {
+      return FluentIterable.from(notes.values()).filter(new Predicate<Note>() {
+        @Override
+        public boolean apply(Note input) {
+          return input != null && notebookAuthorization.isReader(input.getId(), entities);
+        }
+      }).toSortedList(new Comparator<Note>() {
+        @Override
+        public int compare(Note note1, Note note2) {
+          String name1 = note1.getId();
+          if (note1.getName() != null) {
+            name1 = note1.getName();
+          }
+          String name2 = note2.getId();
+          if (note2.getName() != null) {
+            name2 = note2.getName();
+          }
+          return name1.compareTo(name2);
+        }
+      });
+    }
+  }
+
   private Map<String, Object> getParagraphForJobManagerItem(Paragraph paragraph) {
     Map<String, Object> paragraphItem = new HashMap<>();
 
@@ -574,7 +613,78 @@ public class Notebook implements NoteEventListener {
     return lastRunningUnixTime;
   }
 
-  public List<Map<String, Object>> getJobListforNotebook(boolean needsReload,
+  public List<Map<String, Object>> getJobListByParagraphId(String paragraphID) {
+    String gotNoteId = null;
+    List<Note> notes = getAllNotes();
+    for (Note note : notes) {
+      Paragraph p = note.getParagraph(paragraphID);
+      if (p != null) {
+        gotNoteId = note.getId();
+      }
+    }
+    return getJobListBymNotebookId(gotNoteId);
+  }
+
+  public List<Map<String, Object>> getJobListBymNotebookId(String notebookID) {
+    final String CRON_TYPE_NOTEBOOK_KEYWORD = "cron";
+    long lastRunningUnixTime = 0;
+    boolean isNotebookRunning = false;
+    Note jobNote = getNote(notebookID);
+    List<Map<String, Object>> notesInfo = new LinkedList<>();
+    if (jobNote == null) {
+      return notesInfo;
+    }
+
+    Map<String, Object> info = new HashMap<>();
+
+    info.put("notebookId", jobNote.getId());
+    String notebookName = jobNote.getName();
+    if (notebookName != null && !notebookName.equals("")) {
+      info.put("notebookName", jobNote.getName());
+    } else {
+      info.put("notebookName", "Note " + jobNote.getId());
+    }
+    // set notebook type ( cron or normal )
+    if (jobNote.getConfig().containsKey(CRON_TYPE_NOTEBOOK_KEYWORD) && !jobNote.getConfig()
+            .get(CRON_TYPE_NOTEBOOK_KEYWORD).equals("")) {
+      info.put("notebookType", "cron");
+    } else {
+      info.put("notebookType", "normal");
+    }
+
+    // set paragraphs
+    List<Map<String, Object>> paragraphsInfo = new LinkedList<>();
+    for (Paragraph paragraph : jobNote.getParagraphs()) {
+      // check paragraph's status.
+      if (paragraph.getStatus().isRunning()) {
+        isNotebookRunning = true;
+      }
+
+      // get data for the job manager.
+      Map<String, Object> paragraphItem = getParagraphForJobManagerItem(paragraph);
+      lastRunningUnixTime = getUnixTimeLastRunParagraph(paragraph);
+
+      paragraphsInfo.add(paragraphItem);
+    }
+
+    // set interpreter bind type
+    String interpreterGroupName = null;
+    if (replFactory.getInterpreterSettings(jobNote.getId()) != null
+            && replFactory.getInterpreterSettings(jobNote.getId()).size() >= 1) {
+      interpreterGroupName = replFactory.getInterpreterSettings(jobNote.getId()).get(0).getName();
+    }
+
+    // notebook json object root information.
+    info.put("interpreter", interpreterGroupName);
+    info.put("isRunningJob", isNotebookRunning);
+    info.put("unixTimeLastRun", lastRunningUnixTime);
+    info.put("paragraphs", paragraphsInfo);
+    notesInfo.add(info);
+
+    return notesInfo;
+  };
+
+  public List<Map<String, Object>> getJobListByUnixTime(boolean needsReload,
       long lastUpdateServerUnixTime, AuthenticationInfo subject) {
     final String CRON_TYPE_NOTEBOOK_KEYWORD = "cron";
 

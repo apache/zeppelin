@@ -154,7 +154,7 @@ public abstract class AbstractTestRestApi {
         // set spark master and other properties
         sparkIntpSetting.getProperties().setProperty("master", "spark://" + getHostname() + ":7071");
         sparkIntpSetting.getProperties().setProperty("spark.cores.max", "2");
-
+        sparkIntpSetting.getProperties().setProperty("zeppelin.spark.useHiveContext", "false");
         // set spark home for pyspark
         sparkIntpSetting.getProperties().setProperty("spark.home", getSparkHome());
         pySpark = true;
@@ -171,10 +171,16 @@ public abstract class AbstractTestRestApi {
 
         String sparkHome = getSparkHome();
         if (sparkHome != null) {
-          sparkIntpSetting.getProperties().setProperty("master", "spark://" + getHostname() + ":7071");
+          if (System.getenv("SPARK_MASTER") != null) {
+            sparkIntpSetting.getProperties().setProperty("master", System.getenv("SPARK_MASTER"));
+          } else {
+            sparkIntpSetting.getProperties()
+                    .setProperty("master", "spark://" + getHostname() + ":7071");
+          }
           sparkIntpSetting.getProperties().setProperty("spark.cores.max", "2");
           // set spark home for pyspark
           sparkIntpSetting.getProperties().setProperty("spark.home", sparkHome);
+          sparkIntpSetting.getProperties().setProperty("zeppelin.spark.useHiveContext", "false");
           pySpark = true;
           sparkR = true;
         }
@@ -194,7 +200,11 @@ public abstract class AbstractTestRestApi {
   }
 
   private static String getSparkHome() {
-    String sparkHome = getSparkHomeRecursively(new File(System.getProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_HOME.getVarName())));
+    String sparkHome = System.getenv("SPARK_HOME");
+    if (sparkHome != null) {
+      return sparkHome;
+    }
+    sparkHome = getSparkHomeRecursively(new File(System.getProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_HOME.getVarName())));
     System.out.println("SPARK HOME detected " + sparkHome);
     return sparkHome;
   }

@@ -109,3 +109,8 @@
   color: #000;
   opacity: .5;
 }
+
+.remove-margin-top-bottom {
+  margin-top: 0px !important;
+  margin-bottom: 0px !important;
+}

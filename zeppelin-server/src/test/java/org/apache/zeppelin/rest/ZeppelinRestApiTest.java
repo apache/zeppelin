@@ -146,8 +146,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     assertEquals("compare note name", expectedNoteName, newNoteName);
     assertEquals("initial paragraph check failed", 3, newNote.getParagraphs().size());
     for (Paragraph p : newNote.getParagraphs()) {
-      if (StringUtils.isEmpty(p.getText()) ||
-              p.getText().trim().equals(newNote.getLastInterpreterName())) {
+      if (StringUtils.isEmpty(p.getText())) {
         continue;
       }
       assertTrue("paragraph title check failed", p.getTitle().startsWith("title"));

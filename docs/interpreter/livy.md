@@ -174,7 +174,7 @@ When Zeppelin server is running with authentication enabled, then this interpret
 
 
 ## Apply Zeppelin Dynamic Forms
-You can leverage [Zeppelin Dynamic Form]({{BASE_PATH}}/manual/dynamicform.html). You can use both the `text input` and `select form` parameterization features.
+You can leverage [Zeppelin Dynamic Form](../manual/dynamicform.html). You can use both the `text input` and `select form` parameterization features.
 
 ```
 %livy.pyspark

@@ -38,13 +38,17 @@ limitations under the License.
       </div>
     </div>
 
-    <div class="input-group col-md-4" style="margin-top: 10px">
-      <input type="text" ng-model="searchInterpreter" class="form-control ng-pristine ng-untouched ng-valid ng-empty" placeholder="Search interpreters"/>
-      <span class="input-group-btn">
-        <button type="submit" class="btn btn-default" ng-disabled="!navbar.connected">
-          <i class="glyphicon glyphicon-search"></i>
-        </button>
-      </span>
+    <div class="row">
+      <div class="col-md-4">
+        <div class="input-group" style="margin-top: 10px">
+          <input type="text" ng-model="searchInterpreter" class="form-control ng-pristine ng-untouched ng-valid ng-empty" placeholder="Search interpreters"/>
+          <span class="input-group-btn">
+            <button type="submit" class="btn btn-default" ng-disabled="!navbar.connected">
+              <i class="glyphicon glyphicon-search"></i>
+            </button>
+          </span>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -93,10 +97,9 @@ limitations under the License.
           <small>
             <span style="display:inline-block" ng-repeat="interpreter in setting.interpreterGroup"
                   title="{{interpreter.class}}">
-              <span ng-show="!$first">, </span>
-              %<span ng-show="!$parent.$first || $first">{{setting.name}}</span
-              ><span ng-show="(!$parent.$first || $first) && !$first">.</span
-              ><span ng-show="!$first">{{interpreter.name}}</span>
+              <span ng-show="!$first">, </span>%<span ng-show="!$parent.$first || $first">{{setting.name}}</span>
+              <span ng-show="(!$parent.$first || $first) && !$first">.</span>
+              <span ng-show="!$first">{{interpreter.name}}</span>
               <span ng-show="$parent.$first && $first">(default)</span>
             </span>
           </small>
@@ -121,7 +124,7 @@ limitations under the License.
           </small>
 
         </h3>
-        <span style="float:right">
+        <span style="float:right" ng-show="!valueform.$visible" >
           <button class="btn btn-default btn-xs"
                   ng-click="valueform.$show();
                   copyOriginInterpreterSettingProperties(setting.id)">
@@ -131,7 +134,7 @@ limitations under the License.
             <span class="fa fa-refresh"></span> restart</button>
           <button class="btn btn-default btn-xs"
                   ng-click="removeInterpreterSetting(setting.id)">
-            <span class="fa fa-remove"></span> remove</button>
+            <span class="fa fa-trash"></span> remove</button>
         </span>
       </div>
     </div>
@@ -170,37 +173,44 @@ limitations under the License.
         </span>
         <span>Interpreter for note</span>
       </div>
-
-      <br />
+    </div>
+    <div class="row interpreter" style="margin-top: 5px;">
       <div class="col-md-12">
-        <div class="checkbox">
+        <div class="checkbox remove-margin-top-bottom">
           <span class="input-group" style="line-height:30px;">
-            <label><input type="checkbox" style="width:20px" id="isExistingProcess" ng-model="setting.option.isExistingProcess" ng-disabled="!valueform.$visible"/>
-            Connect to existing process </label>
+            <label>
+              <input type="checkbox" style="width:20px" id="isExistingProcess" ng-model="setting.option.isExistingProcess" ng-disabled="!valueform.$visible"/>
+              Connect to existing process
+            </label>
           </span>
         </div>
       </div>
-
-      <div class="col-md-12" ng-show="setting.option.isExistingProcess">
+    </div>
+    <div class="row interpreter" ng-if="setting.option.isExistingProcess">
+      <div class="col-md-12">
         <b>Host</b>
           <input id="newInterpreterSettingHost" input pu-elastic-input
             pu-elastic-input-minwidth="180px" ng-model="setting.option.host" ng-disabled="!valueform.$visible"  />
       </div>
-      <div class="col-md-12" ng-show="setting.option.isExistingProcess">
+      <div class="col-md-12">
          <b>Port</b>
          <input id="newInterpreterSettingPort" input pu-elastic-input
             pu-elastic-input-minwidth="180px" ng-model="setting.option.port"  ng-disabled="!valueform.$visible" />
       </div>
-
+    </div>
+    <div class="row interpreter">
       <div class="col-md-12">
-        <div class="checkbox">
+        <div class="checkbox remove-margin-top-bottom">
           <span class="input-group" style="line-height:30px;">
-            <label><input type="checkbox" style="width:18px !important" id="idShowPermission" ng-click="togglePermissions(setting.name)" ng-model="setting.option.setPermission" ng-disabled="!valueform.$visible"/>
-            Set permission </label>
+            <label>
+              <input type="checkbox" style="width:20px !important" id="idShowPermission" ng-click="togglePermissions(setting.name)" ng-model="setting.option.setPermission" ng-disabled="!valueform.$visible"/>
+               Set permission
+            </label>
           </span>
         </div>
       </div>
-
+    </div>
+    <div class="row interpreter">
       <div class="col-md-12">
         <!-- permissions -->
         <div ng-show="setting.option.setPermission" class="permissionsForm">
@@ -219,8 +229,10 @@ limitations under the License.
           </div>
         </div>
       </div>
+    </div>
 
-      <div ng-show="_.isEmpty(setting.properties) && _.isEmpty(setting.dependencies) || valueform.$hidden" class="col-md-12 gray40-message">
+    <div class="row interpreter" style="margin-top:20px !important">
+      <div ng-show="_.isEmpty(setting.properties) && _.isEmpty(setting.dependencies) && !valueform.$visible" class="col-md-12 gray40-message">
         <em>Currently there are no properties and dependencies set for this interpreter</em>
       </div>
       <div class="col-md-12" ng-show="!_.isEmpty(setting.properties) || valueform.$visible">
@@ -228,9 +240,9 @@ limitations under the License.
         <table class="table table-striped">
           <thead>
             <tr>
-              <th style="width:30%">name</th>
-              <th>value</th>
-              <th ng-if="valueform.$visible">action</th>
+              <th style="width:40%">name</th>
+              <th style="width:40%">value</th>
+              <th style="width:20%" ng-if="valueform.$visible">action</th>
             </tr>
           </thead>
           <tr ng-repeat="key in setting.properties | sortByKey" >
@@ -263,7 +275,8 @@ limitations under the License.
           </tr>
         </table>
       </div>
-
+    </div>
+    <div class="row interpreter">
       <div class="col-md-12" ng-show="!_.isEmpty(setting.dependencies) || valueform.$visible">
         <h5>Dependencies</h5>
         <p class="gray40-message" style="font-size:12px" ng-show="valueform.$visible">
@@ -272,8 +285,8 @@ limitations under the License.
           <thead>
             <tr>
               <th style="width:40%">artifact</th>
-              <th>exclude</th>
-              <th ng-if="valueform.$visible">action</th>
+              <th style="width:40%">exclude</th>
+              <th style="width:20%" ng-if="valueform.$visible">action</th>
             </tr>
           </thead>
           <tr ng-repeat="dep in setting.dependencies">

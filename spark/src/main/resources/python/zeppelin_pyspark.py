@@ -107,9 +107,9 @@ class PyZeppelinContext(dict):
 
 
 class SparkVersion(object):
-  SPARK_1_4_0 = 140
-  SPARK_1_3_0 = 130
-  SPARK_2_0_0 = 200
+  SPARK_1_4_0 = 10400
+  SPARK_1_3_0 = 10300
+  SPARK_2_0_0 = 20000
 
   def __init__(self, versionNumber):
     self.version = versionNumber
@@ -218,7 +218,10 @@ java_import(gateway.jvm, "scala.Tuple2")
 jconf = intp.getSparkConf()
 conf = SparkConf(_jvm = gateway.jvm, _jconf = jconf)
 sc = SparkContext(jsc=jsc, gateway=gateway, conf=conf)
-sqlc = SQLContext(sc, intp.getSQLContext())
+if sparkVersion.isSpark2():
+  sqlc = SQLContext(sparkContext=sc, jsqlContext=intp.getSQLContext())
+else:
+  sqlc = SQLContext(sparkContext=sc, sqlContext=intp.getSQLContext())
 sqlContext = sqlc
 
 if sparkVersion.isSpark2():

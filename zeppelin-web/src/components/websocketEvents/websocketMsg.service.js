@@ -180,6 +180,15 @@ angular.module('zeppelinWebApp').service('websocketMsgSrv', function($rootScope,
       });
     },
 
+    getEditorSetting: function(replName) {
+      websocketEvents.sendNewEvent({
+        op: 'EDITOR_SETTING',
+        data: {
+          magic: replName
+        }
+      });
+    },
+
     isConnected: function() {
       return websocketEvents.isConnected();
     },
@@ -195,7 +204,7 @@ angular.module('zeppelinWebApp').service('websocketMsgSrv', function($rootScope,
     },
 
     unsubscribeJobManager: function() {
-      websocketEvents.sendNewEvent({op: 'UNSUBSCRIBE_JOBMANAGER'});
+      websocketEvents.sendNewEvent({op: 'UNSUBSCRIBE_UPDATE_NOTEBOOK_JOBS'});
     },
 
     getInterpreterBindings: function(noteID) {

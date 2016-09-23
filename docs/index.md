@@ -115,7 +115,7 @@ If you want to learn more about this feature, please visit [this page](./manual/
 
 <img class="img-responsive" style="margin:0 auto; padding: 15px;" src="./assets/themes/zeppelin/img/asf_logo.png" width="250px"/>
 
-Apache Zeppelin is Apache2 Licensed software. Please check out the [source repository](http://git.apache.org/zeppelin.git) and [how to contribute](./development/howtocontribute.html).
+Apache Zeppelin is Apache2 Licensed software. Please check out the [source repository](http://git.apache.org/zeppelin.git) and [how to contribute](https://zeppelin.apache.org/contribution/contributions.html).
 Apache Zeppelin has a very active development community.
 Join to our [Mailing list](https://zeppelin.apache.org/community.html) and report issues on [Jira Issue tracker](https://issues.apache.org/jira/browse/ZEPPELIN).
 
@@ -178,8 +178,7 @@ Join to our [Mailing list](https://zeppelin.apache.org/community.html) and repor
   * [How to contribute (code)](./development/howtocontribute.html)
   * [How to contribute (documentation website)](./development/howtocontributewebsite.html)
 
-#### External Resources 
+#### External Resources
   * [Mailing List](https://zeppelin.apache.org/community.html)
   * [Apache Zeppelin Wiki](https://cwiki.apache.org/confluence/display/ZEPPELIN/Zeppelin+Home)
   * [StackOverflow tag `apache-zeppelin`](http://stackoverflow.com/questions/tagged/apache-zeppelin)
-

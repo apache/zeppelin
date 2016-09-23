@@ -17,6 +17,7 @@
 
 package org.apache.zeppelin.notebook;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.helium.HeliumPackage;
@@ -455,22 +456,22 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     Credentials credentials = note.getCredentials();
     if (authenticationInfo != null) {
       UserCredentials userCredentials = credentials.getUserCredentials(
-              authenticationInfo.getUser());
+          authenticationInfo.getUser());
       authenticationInfo.setUserCredentials(userCredentials);
     }
 
     InterpreterContext interpreterContext = new InterpreterContext(
-            note.getId(),
-            getId(),
-            this.getTitle(),
-            this.getText(),
-            this.getAuthenticationInfo(),
-            this.getConfig(),
-            this.settings,
-            registry,
-            resourcePool,
-            runners,
-            output);
+        note.getId(),
+        getId(),
+        this.getTitle(),
+        this.getText(),
+        this.getAuthenticationInfo(),
+        this.getConfig(),
+        this.settings,
+        registry,
+        resourcePool,
+        runners,
+        output);
     return interpreterContext;
   }
 
@@ -564,5 +565,23 @@ public class Paragraph extends Job implements Serializable, Cloneable {
       }
     }
     return scriptBody;
+  }
+
+  public String getMagic() {
+    String magic = StringUtils.EMPTY;
+    String text = getText();
+    if (text != null && text.startsWith("%")) {
+      magic = text.split("\\s+")[0];
+      if (isValidInterpreter(magic.substring(1))) {
+        return magic;
+      } else {
+        return StringUtils.EMPTY;
+      }
+    }
+    return magic;
+  }
+
+  private boolean isValidInterpreter(String replName) {
+    return factory.getInterpreter(note.getId(), replName) != null;
   }
 }

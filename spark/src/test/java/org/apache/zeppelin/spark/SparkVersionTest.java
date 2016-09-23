@@ -24,7 +24,7 @@ public class SparkVersionTest {
 
   @Test
   public void testUnknownSparkVersion() {
-    assertEquals(999, SparkVersion.fromVersionString("DEV-10.10").toNumber());
+    assertEquals(99999, SparkVersion.fromVersionString("DEV-10.10").toNumber());
   }
 
   @Test
@@ -33,6 +33,8 @@ public class SparkVersionTest {
     assertFalse(SparkVersion.fromVersionString("1.5.9").isUnsupportedVersion());
     assertTrue(SparkVersion.fromVersionString("0.9.0").isUnsupportedVersion());
     assertTrue(SparkVersion.UNSUPPORTED_FUTURE_VERSION.isUnsupportedVersion());
+    // should support spark2 version of HDP 2.5
+    assertFalse(SparkVersion.fromVersionString("2.0.0.2.5.0.0-1245").isUnsupportedVersion());
   }
 
   @Test
@@ -40,6 +42,9 @@ public class SparkVersionTest {
     // test equals
     assertEquals(SparkVersion.SPARK_1_2_0, SparkVersion.fromVersionString("1.2.0"));
     assertEquals(SparkVersion.SPARK_1_5_0, SparkVersion.fromVersionString("1.5.0-SNAPSHOT"));
+    assertEquals(SparkVersion.SPARK_1_5_0, SparkVersion.fromVersionString("1.5.0-SNAPSHOT"));
+    // test spark2 version of HDP 2.5
+    assertEquals(SparkVersion.SPARK_2_0_0, SparkVersion.fromVersionString("2.0.0.2.5.0.0-1245"));
 
     // test newer than
     assertFalse(SparkVersion.SPARK_1_2_0.newerThan(SparkVersion.SPARK_1_2_0));
@@ -60,7 +65,7 @@ public class SparkVersionTest {
     assertTrue(SparkVersion.SPARK_1_2_0.olderThanEquals(SparkVersion.SPARK_1_3_0));
 
     // conversion
-    assertEquals(120, SparkVersion.SPARK_1_2_0.toNumber());
+    assertEquals(10200, SparkVersion.SPARK_1_2_0.toNumber());
     assertEquals("1.2.0", SparkVersion.SPARK_1_2_0.toString());
   }
 }
