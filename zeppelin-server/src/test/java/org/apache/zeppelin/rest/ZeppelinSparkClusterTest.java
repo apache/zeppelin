@@ -220,6 +220,18 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
                 assertEquals(InterpreterResult.Type.TABLE, p.getResult().type());
                 // TODO (zjffdu), one more \n is appended, need to investigate why.
                 assertEquals("age\tid\n20\t1\n\n", p.getResult().message());
+
+                // test udf
+                p = note.addParagraph();
+                config = p.getConfig();
+                config.put("enabled", true);
+                p.setConfig(config);
+                p.setText("%pyspark sqlContext.udf.register(\"f1\", lambda x: len(x))\n" +
+                       "sqlContext.sql(\"select f1(\\\"abc\\\") as len\").collect()");
+                note.run(p.getId());
+                waitForFinish(p);
+                assertEquals(Status.FINISHED, p.getStatus());
+                assertEquals("[Row(len=u'3')]\n", p.getResult().message());
             }
             if (sparkVersion >= 20) {
                 // run SparkSession test
@@ -234,6 +246,19 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
                 waitForFinish(p);
                 assertEquals(Status.FINISHED, p.getStatus());
                 assertEquals("[Row(age=20, id=1)]\n", p.getResult().message());
+
+                // test udf
+                p = note.addParagraph();
+                config = p.getConfig();
+                config.put("enabled", true);
+                p.setConfig(config);
+                // use SQLContext to register UDF but use this UDF through SparkSession
+                p.setText("%pyspark sqlContext.udf.register(\"f1\", lambda x: len(x))\n" +
+                        "spark.sql(\"select f1(\\\"abc\\\") as len\").collect()");
+                note.run(p.getId());
+                waitForFinish(p);
+                assertEquals(Status.FINISHED, p.getStatus());
+                assertEquals("[Row(len=u'3')]\n", p.getResult().message());
             }
         }
         ZeppelinServer.notebook.removeNote(note.id(), null);
