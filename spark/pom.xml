@@ -53,6 +53,12 @@
 
     <dependency>
       <groupId>${project.groupId}</groupId>
+      <artifactId>zeppelin-zengine</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>${project.groupId}</groupId>
       <artifactId>zeppelin-display_${scala.binary.version}</artifactId>
       <version>${project.version}</version>
     </dependency>
