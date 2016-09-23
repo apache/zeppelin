@@ -104,6 +104,21 @@ public class DependencyResolver extends AbstractDependencyResolver {
     return libs;
   }
 
+  public synchronized void copyLocalDependency(String srcPath, File destPath)
+      throws IOException {
+    if (StringUtils.isBlank(srcPath)) {
+      return;
+    }
+
+    File srcFile = new File(srcPath);
+    File destFile = new File(destPath, srcFile.getName());
+
+    if (!destFile.exists() || !FileUtils.contentEquals(srcFile, destFile)) {
+      FileUtils.copyFile(srcFile, destFile);
+      logger.info("copy {} to {}", srcFile.getAbsolutePath(), destPath);
+    }
+  }
+
   private List<File> loadFromMvn(String artifact, Collection<String> excludes)
       throws RepositoryException {
     Collection<String> allExclusions = new LinkedList<String>();
