@@ -254,11 +254,11 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
                 p.setConfig(config);
                 // use SQLContext to register UDF but use this UDF through SparkSession
                 p.setText("%pyspark sqlContext.udf.register(\"f1\", lambda x: len(x))\n" +
-                        "spark.sql(\"select f1(\\\"abc\\\")\").collect()");
+                        "spark.sql(\"select f1(\\\"abc\\\") as len\").collect()");
                 note.run(p.getId());
                 waitForFinish(p);
                 assertEquals(Status.FINISHED, p.getStatus());
-                assertEquals("[Row(f1(abc)=u'3')]\n", p.getResult().message());
+                assertEquals("[Row(len=u'3')]\n", p.getResult().message());
             }
         }
         ZeppelinServer.notebook.removeNote(note.getId(), null);
