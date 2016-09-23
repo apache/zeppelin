@@ -49,16 +49,16 @@ public class NotebookAuthorization {
   public static NotebookAuthorization init(ZeppelinConfiguration config) {
     if (instance == null) {
       instance = new NotebookAuthorization();
-    }
-    conf = config;
-    filePath = conf.getNotebookAuthorizationPath();
-    GsonBuilder builder = new GsonBuilder();
-    builder.setPrettyPrinting();
-    gson = builder.create();
-    try {
-      loadFromFile();
-    } catch (IOException e) {
-      LOG.error("Error loading NotebookAuthorization", e);
+      conf = config;
+      filePath = conf.getNotebookAuthorizationPath();
+      GsonBuilder builder = new GsonBuilder();
+      builder.setPrettyPrinting();
+      gson = builder.create();
+      try {
+        loadFromFile();
+      } catch (IOException e) {
+        LOG.error("Error loading NotebookAuthorization", e);
+      }
     }
     return instance;
   }
