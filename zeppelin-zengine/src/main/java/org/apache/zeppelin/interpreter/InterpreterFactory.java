@@ -366,6 +366,29 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     }
   }
 
+  /**
+   * Overwrite dependency jar under local-repo/{interpreterId}
+   * if jar file in original path is changed
+   */
+  private void copyDependenciesFromLocalPath(final InterpreterSetting setting) {
+    List<Dependency> deps = setting.getDependencies();
+    if (deps != null) {
+      for (Dependency d : deps) {
+        File destDir = new File(conf.getRelativeDir(ConfVars.ZEPPELIN_DEP_LOCALREPO));
+
+        int numSplits = d.getGroupArtifactVersion().split(":").length;
+        if (!(numSplits >= 3 && numSplits <= 6)) {
+          try {
+            depResolver.copyLocalDependency(d.getGroupArtifactVersion(),
+                new File(destDir, setting.id()));
+          } catch (IOException e) {
+            logger.error("Failed to copy {} to {}", d.getGroupArtifactVersion(), destDir);
+          }
+        }
+      }
+    }
+  }
+
   private void saveToFile() throws IOException {
     String jsonString;
 
@@ -769,6 +792,9 @@ public class InterpreterFactory implements InterpreterGroupFactory {
   public void restart(String id) {
     synchronized (interpreterSettings) {
       InterpreterSetting intpsetting = interpreterSettings.get(id);
+      // Check if dependency in specified path is changed
+      // If it did, overwrite old dependency jar with new one
+      copyDependenciesFromLocalPath(intpsetting);
       if (intpsetting != null) {
 
         stopJobAllInterpreter(intpsetting);
