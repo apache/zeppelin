@@ -61,7 +61,7 @@ angular.module('zeppelinWebApp').controller('NotenameCtrl', function($scope, not
     var copyCount = 1;
     var newCloneName = '';
     var lastIndex = vm.sourceNoteName.lastIndexOf(' ');
-    var endsWithNumber = vm.sourceNoteName.match('^Copy of.+?\\d$');
+    var endsWithNumber = !!vm.sourceNoteName.match('^.+?\\s\\d$');
     var noteNamePrefix = endsWithNumber ? vm.sourceNoteName.substr(0, lastIndex) : vm.sourceNoteName;
     var regexp = new RegExp('^' + noteNamePrefix + ' .+');
 
@@ -78,7 +78,7 @@ angular.module('zeppelinWebApp').controller('NotenameCtrl', function($scope, not
     });
 
     if (!newCloneName) {
-      newCloneName = 'Copy of ' + vm.sourceNoteName;
+      newCloneName = vm.sourceNoteName;
     }
     return newCloneName + ' ' + copyCount;
   };
