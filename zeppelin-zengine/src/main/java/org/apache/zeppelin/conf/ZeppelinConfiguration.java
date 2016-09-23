@@ -534,9 +534,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
         + "scalding,jdbc,hbase,bigquery"),
     ZEPPELIN_ENCODING("zeppelin.encoding", "UTF-8"),
     ZEPPELIN_NOTEBOOK_DIR("zeppelin.notebook.dir", "notebook"),
-    // use specified notebook (id) as homescreen
     ZEPPELIN_NOTEBOOK_HOMESCREEN("zeppelin.notebook.homescreen", null),
-    // whether homescreen notebook will be hidden from notebook list or not
     ZEPPELIN_NOTEBOOK_HOMESCREEN_HIDE("zeppelin.notebook.homescreen.hide", false),
     ZEPPELIN_NOTEBOOK_S3_BUCKET("zeppelin.notebook.s3.bucket", "zeppelin"),
     ZEPPELIN_NOTEBOOK_S3_ENDPOINT("zeppelin.notebook.s3.endpoint", "s3.amazonaws.com"),
@@ -551,13 +549,10 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_INTERPRETER_REMOTE_RUNNER("zeppelin.interpreter.remoterunner",
         System.getProperty("os.name")
                 .startsWith("Windows") ? "bin/interpreter.cmd" : "bin/interpreter.sh"),
-    // Decide when new note is created, interpreter settings will be binded automatically or not.
     ZEPPELIN_NOTEBOOK_AUTO_INTERPRETER_BINDING("zeppelin.notebook.autoInterpreterBinding", true),
     ZEPPELIN_CONF_DIR("zeppelin.conf.dir", "conf"),
     ZEPPELIN_DEP_LOCALREPO("zeppelin.dep.localrepo", "local-repo"),
     ZEPPELIN_HELIUM_LOCALREGISTRY_DEFAULT("zeppelin.helium.localregistry.default", "helium"),
-    // Allows a way to specify a ',' separated list of allowed origins for rest and websockets
-    // i.e. http://localhost:8080
     ZEPPELIN_ALLOWED_ORIGINS("zeppelin.server.allowed.origins", "*"),
     ZEPPELIN_ANONYMOUS_ALLOWED("zeppelin.anonymous.allowed", true),
     ZEPPELIN_CREDENTIALS_PERSIST("zeppelin.credentials.persist", true),

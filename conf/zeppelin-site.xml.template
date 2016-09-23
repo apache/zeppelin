@@ -38,6 +38,12 @@
 </property>
 
 <property>
+  <name>zeppelin.war</name>
+  <value>zeppelin-web/dist</value>
+  <description>The location of zeppelin war directory.</description>
+</property>
+
+<property>
   <name>zeppelin.war.tempdir</name>
   <value>webapps</value>
   <description>Location of jetty temporary directory</description>
@@ -50,6 +56,12 @@
 </property>
 
 <property>
+  <name>zeppelin.interpreter.max.poolsize</name>
+  <value>10</value>
+  <description>Set max interpreter pool size</description>
+</property>
+
+<property>
   <name>zeppelin.notebook.homescreen</name>
   <value></value>
   <description>id of notebook to be displayed in homescreen. ex) 2A94M5J1Z Empty value displays default home screen</description>
@@ -59,6 +71,18 @@
   <name>zeppelin.notebook.homescreen.hide</name>
   <value>false</value>
   <description>hide homescreen notebook from list when this value set to true</description>
+</property>
+
+<property>
+  <name>zeppelin.conf.dir</name>
+  <value>conf</value>
+  <description>Zeppelin conf directory</description>
+</property>
+
+<property>
+  <name>zeppelin.notebook.autoInterpreterBinding</name>
+  <value>true</value>
+  <description>Automatically bind interpreter settings for new notes</description>
 </property>
 
 
@@ -171,6 +195,12 @@
 </property>
 
 <property>
+  <name>zeppelin.interpreter.setting</name>
+  <value>interpreter-setting.json</value>
+  <description>Interpreter setting json file name</description>
+</property>
+
+<property>
   <name>zeppelin.interpreter.dir</name>
   <value>interpreter</value>
   <description>Interpreter implementation base directory</description>
@@ -180,6 +210,30 @@
   <name>zeppelin.interpreter.localRepo</name>
   <value>local-repo</value>
   <description>Local repository for interpreter's additional dependency loading</description>
+</property>
+
+<property>
+  <name>zeppelin.credentials.persist</name>
+  <value>true</value>
+  <description>Persist credentials to authenticate data sources</description>
+</property>
+
+<property>
+  <name>zeppelin.anonymous.allowed</name>
+  <value>true</value>
+  <description>Allow anonymous access</description>
+</property>
+
+<property>
+  <name>zeppelin.server.allowed.origins</name>
+  <value>*</value>
+  <description>Enables a way to specify a ',' separated list of allowed origins for rest and websockets</description>
+</property>
+
+<property>
+  <name>zeppelin.helium.localregistry.default</name>
+  <value>helium</value>
+  <description>Helium local registry path</description>
 </property>
 
 <property>
@@ -197,7 +251,7 @@
 <property>
   <name>zeppelin.interpreter.connect.timeout</name>
   <value>30000</value>
-  <description>Interpreter process connect timeout in msec.</description>
+  <description>Interpreter process connect timeout in milliseconds</description>
 </property>
 
 
