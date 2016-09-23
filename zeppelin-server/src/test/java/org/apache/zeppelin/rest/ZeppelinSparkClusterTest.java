@@ -212,6 +212,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
                 p.setText("%pyspark from pyspark.sql import Row\n" +
                         "df=sqlContext.createDataFrame([Row(id=1, age=20)])\n" +
                         "df.collect()");
+                p.setAuthenticationInfo(anonymous);
                 note.run(p.getId());
                 waitForFinish(p);
                 assertEquals(Status.FINISHED, p.getStatus());
@@ -253,6 +254,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
                 p.setText("%pyspark from pyspark.sql import Row\n" +
                         "df=sqlContext.createDataFrame([Row(id=1, age=20)])\n" +
                         "df.collect()");
+                p.setAuthenticationInfo(anonymous);
                 note.run(p.getId());
                 waitForFinish(p);
                 assertEquals(Status.FINISHED, p.getStatus());
