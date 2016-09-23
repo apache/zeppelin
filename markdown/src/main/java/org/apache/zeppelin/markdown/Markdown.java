@@ -34,8 +34,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /** MarkdownInterpreter interpreter for Zeppelin. */
-public class MarkdownInterpreter extends Interpreter {
-  private static final Logger LOGGER = LoggerFactory.getLogger(MarkdownInterpreter.class);
+public class Markdown extends Interpreter {
+  private static final Logger LOGGER = LoggerFactory.getLogger(Markdown.class);
 
   private MarkdownParser parser;
 
@@ -60,7 +60,7 @@ public class MarkdownInterpreter extends Interpreter {
   public static final String PARSER_TYPE_PEGDOWN = "pegdown";
   public static final String PARSER_TYPE_MARKDOWN4J = "markdown4j";
 
-  public MarkdownInterpreter(Properties property) {
+  public Markdown(Properties property) {
     super(property);
   }
 
@@ -114,7 +114,7 @@ public class MarkdownInterpreter extends Interpreter {
   @Override
   public Scheduler getScheduler() {
     return SchedulerFactory.singleton()
-        .createOrGetParallelScheduler(MarkdownInterpreter.class.getName() + this.hashCode(), 5);
+        .createOrGetParallelScheduler(Markdown.class.getName() + this.hashCode(), 5);
   }
 
   @Override
