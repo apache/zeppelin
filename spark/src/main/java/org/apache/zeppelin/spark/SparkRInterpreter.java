@@ -54,17 +54,17 @@ public class SparkRInterpreter extends Interpreter {
     String sparkRLibPath;
 
     // SPARK_CACHE and SPARK_ARCHIVE are defined in bin/common.sh 
-    String sparkchachePath = System.getenv("SPARK_CACHE");
+    String sparkCachePath = System.getenv("SPARK_CACHE");
     String sparkArchivePath = System.getenv("SPARK_ARCHIVE");
 
     if (System.getenv("SPARK_HOME") != null) {
       sparkRLibPath = System.getenv("SPARK_HOME") + "/R/lib";
     } else {
       sparkRLibPath = System.getenv("ZEPPELIN_HOME")
-        + sparkchachePath + sparkArchivePath + "/R/lib";
+        + sparkCachePath + sparkArchivePath + "/R/lib";
       // workaround to make sparkr work without SPARK_HOME
       System.setProperty("spark.test.home", System.getenv("ZEPPELIN_HOME")
-        + sparkchachePath + sparkArchivePath + "/R/lib");
+        + sparkCachePath + sparkArchivePath + "/R/lib");
     }
 
     synchronized (SparkRBackend.backend()) {
