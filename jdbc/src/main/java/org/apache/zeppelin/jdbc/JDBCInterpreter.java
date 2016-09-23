@@ -219,6 +219,7 @@ public class JDBCInterpreter extends Interpreter {
     if (!isConnectionInPool(propertyKey)) {
       createConnectionPool(url, propertyKey, properties);
     }
+
     return DriverManager.getConnection(DBCP_STRING + propertyKey);
   }
 
@@ -336,6 +337,10 @@ public class JDBCInterpreter extends Interpreter {
 
     try {
       connection = getConnection(propertyKey, interpreterContext.getAuthenticationInfo().getUser());
+      if (connection == null) {
+        return new InterpreterResult(Code.ERROR, "Prefix not found.");
+      }
+
       statement = connection.createStatement();
       if (statement == null) {
         return new InterpreterResult(Code.ERROR, "Prefix not found.");
@@ -448,7 +453,6 @@ public class JDBCInterpreter extends Interpreter {
     cmd = cmd.trim();
 
     logger.info("PropertyKey: {}, SQL command: '{}'", propertyKey, cmd);
-
     return executeSql(propertyKey, cmd, contextInterpreter);
   }
 
