@@ -30,7 +30,7 @@ if [[ $# -ne 2 ]]; then
   usage
 fi
 
-for var in GPG_PASSPHRASE ASF_USERID ASF_PASSWORD; do
+for var in GPG_PASSPHRASE ASF_USERID ASF_PASSWORD DOCKER_USERNAME DOCKER_PASSWORD DOCKER_EMAIL; do
   if [[ -z "${!var}" ]]; then
     echo "You need ${var} variable set"
     exit 1
@@ -65,6 +65,12 @@ function curl_error() {
     cleanup
     exit 1
   fi
+}
+
+function publish_to_dockerhub() {
+  # publish image
+  docker login --username="${DOCKER_USERNAME}" --password="${DOCKER_PASSWORD}" --email="${DOCKER_EMAIL}"
+  docker push ${DOCKER_USERNAME}/zeppelin-release:"${RELEASE_VERSION}"
 }
 
 function publish_to_maven() {
@@ -153,5 +159,6 @@ function publish_to_maven() {
 }
 
 git_clone
+publish_to_dockerhub
 publish_to_maven
 cleanup
