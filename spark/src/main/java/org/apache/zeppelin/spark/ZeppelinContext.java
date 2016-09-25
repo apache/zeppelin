@@ -32,6 +32,7 @@ import org.apache.spark.SparkContext;
 import org.apache.spark.sql.SQLContext;
 import org.apache.spark.sql.catalyst.expressions.Attribute;
 import org.apache.zeppelin.annotation.ZeppelinApi;
+import org.apache.zeppelin.annotation.Experimental;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.AngularObjectWatcher;
@@ -703,7 +704,7 @@ public class ZeppelinContext {
    * @param cmd The code to be executed by the interpreter on given event
    * @param replName Name of the interpreter
    */
-  @ZeppelinApi
+  @Experimental
   public void registerCallback(String event, String cmd, String replName) {
     InterpreterCallbackRegistry callbacks = interpreterContext.getInterpreterCallbackRegistry();
     String noteId = interpreterContext.getNoteId();
@@ -715,7 +716,7 @@ public class ZeppelinContext {
    * @param event The type of event to hook to (pre_exec, post_exec)
    * @param cmd The code to be executed by the interpreter on given event
    */
-  @ZeppelinApi
+  @Experimental
   public void registerCallback(String event, String cmd) {
     String replName = Paragraph.getRequiredReplName(interpreterContext.getParagraphText());
     registerCallback(event, cmd, replName);
@@ -726,7 +727,7 @@ public class ZeppelinContext {
    * @param event The type of event to hook to (pre_exec, post_exec)
    * @param replName Name of the interpreter
    */
-  @ZeppelinApi
+  @Experimental
   public String getCallback(String event, String replName) {
     InterpreterCallbackRegistry callbacks = interpreterContext.getInterpreterCallbackRegistry();
     String noteId = interpreterContext.getNoteId();
@@ -738,7 +739,7 @@ public class ZeppelinContext {
    * @param event The type of event to hook to (pre_exec, post_exec)
    * @param cmd The code to be executed by the interpreter on given event
    */
-  @ZeppelinApi
+  @Experimental
   public String getCallback(String event) {
     String replName = Paragraph.getRequiredReplName(interpreterContext.getParagraphText());
     return getCallback(event, replName);
@@ -749,7 +750,7 @@ public class ZeppelinContext {
    * @param event The type of event to hook to (pre_exec, post_exec)
    * @param replName Name of the interpreter
    */
-  @ZeppelinApi
+  @Experimental
   public void unregisterCallback(String event, String replName) {
     InterpreterCallbackRegistry callbacks = interpreterContext.getInterpreterCallbackRegistry();
     String noteId = interpreterContext.getNoteId();
@@ -760,7 +761,7 @@ public class ZeppelinContext {
    * Unbind code from given callback event
    * @param event The type of event to hook to (pre_exec, post_exec)
    */
-  @ZeppelinApi
+  @Experimental
   public void unregisterCallback(String event) {
     String replName = Paragraph.getRequiredReplName(interpreterContext.getParagraphText());
     unregisterCallback(event, replName);
