@@ -45,6 +45,7 @@ Apache Zeppelin officially supports and is tested on the following environments:
 </table>
 
 To install Apache Zeppelin, you have two options:
+
 * You can [download pre-built binary packages](#downloading-binary-package) from the archive. This is usually easier than building from source, and you can download the latest stable version (or older versions, if necessary).
 * You can also [build from source](#building-from-source). This gives you a development version of Zeppelin, which is more unstable but has new features.
 
