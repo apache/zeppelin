@@ -65,6 +65,13 @@ limitations under the License.
               tooltip-placement="bottom" tooltip="Export the notebook">
         <i class="fa fa-download"></i>
       </button>
+      <button type="button"
+              class="btn btn-default btn-xs"
+              ng-hide="viewOnly"
+              ng-click="saveNote()"
+              tooltip-placement="bottom" tooltip="Save the notebook">
+        <i class="fa fa-floppy-o"></i>
+      </button>
     </span>
 
     <span class="labelBtn btn-group" role="group">
