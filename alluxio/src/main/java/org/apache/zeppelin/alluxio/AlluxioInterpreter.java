@@ -44,6 +44,7 @@ public class AlluxioInterpreter extends Interpreter {
 
   protected static final String ALLUXIO_MASTER_HOSTNAME = "alluxio.master.hostname";
   protected static final String ALLUXIO_MASTER_PORT = "alluxio.master.port";
+  private static final String INTERPRETER_NAME = "alluxio";
 
   private AlluxioShell fs;
 
@@ -176,7 +177,7 @@ public class AlluxioInterpreter extends Interpreter {
     List<InterpreterCompletion>  voices = new LinkedList<>();
     for (String command : keywords) {
       if (command.startsWith(lastWord)) {
-        voices.add(new InterpreterCompletion(command, command));
+        voices.add(new InterpreterCompletion(command, command, INTERPRETER_NAME));
       }
     }
     return voices;

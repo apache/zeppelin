@@ -82,6 +82,8 @@ public class DepInterpreter extends Interpreter {
   private SparkILoop interpreter;
   static final Logger LOGGER = LoggerFactory.getLogger(DepInterpreter.class);
 
+  private static final String INTERPRETER_NAME = "dep";
+
   public DepInterpreter(Properties property) {
     super(property);
   }
@@ -293,7 +295,7 @@ public class DepInterpreter extends Interpreter {
       List<InterpreterCompletion> completions = new LinkedList<InterpreterCompletion>();
 
       for (String candidate : candidates) {
-        completions.add(new InterpreterCompletion(candidate, candidate));
+        completions.add(new InterpreterCompletion(candidate, candidate, INTERPRETER_NAME));
       }
 
       return completions;

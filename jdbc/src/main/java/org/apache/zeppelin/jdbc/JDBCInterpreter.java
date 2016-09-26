@@ -72,6 +72,7 @@ public class JDBCInterpreter extends Interpreter {
 
   private Logger logger = LoggerFactory.getLogger(JDBCInterpreter.class);
 
+  private static final String INTERPRETER_NAME = "jdbc";
   static final String COMMON_KEY = "common";
   static final String MAX_LINE_KEY = "max_count";
   static final String MAX_LINE_DEFAULT = "1000";
@@ -113,7 +114,7 @@ public class JDBCInterpreter extends Interpreter {
   private static final Function<CharSequence, InterpreterCompletion> sequenceToStringTransformer =
       new Function<CharSequence, InterpreterCompletion>() {
         public InterpreterCompletion apply(CharSequence seq) {
-          return new InterpreterCompletion(seq.toString(), seq.toString());
+          return new InterpreterCompletion(seq.toString(), seq.toString(), INTERPRETER_NAME);
         }
       };
 

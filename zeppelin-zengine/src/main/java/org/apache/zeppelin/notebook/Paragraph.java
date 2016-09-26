@@ -207,10 +207,10 @@ public class Paragraph extends Job implements Serializable, Cloneable {
       if (intInfo.size() > 1) {
         for (InterpreterInfo info : intInfo){
           String name = intp.getName() + "." + info.getName();
-          completion.add(new InterpreterCompletion(name, name));
+          completion.add(new InterpreterCompletion(name, name, "interpreter"));
         }
       } else {
-        completion.add(new InterpreterCompletion(intp.getName(), intp.getName()));
+        completion.add(new InterpreterCompletion(intp.getName(), intp.getName(), "interpreter"));
       }
     }
     return completion;

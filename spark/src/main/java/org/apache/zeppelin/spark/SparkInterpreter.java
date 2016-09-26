@@ -110,6 +110,7 @@ public class SparkInterpreter extends Interpreter {
 
   private SparkOutputStream out;
   private SparkDependencyResolver dep;
+  private static final String INTERPRETER_NAME = "spark";
 
   /**
    * completer - org.apache.spark.repl.SparkJLineCompletion (scala 2.10)
@@ -958,7 +959,7 @@ public class SparkInterpreter extends Interpreter {
     List<InterpreterCompletion> completions = new LinkedList<InterpreterCompletion>();
 
     for (String candidate : candidates) {
-      completions.add(new InterpreterCompletion(candidate, candidate));
+      completions.add(new InterpreterCompletion(candidate, candidate, INTERPRETER_NAME));
     }
 
     return completions;

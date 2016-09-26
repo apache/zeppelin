@@ -212,8 +212,8 @@ public class ElasticsearchInterpreterTest {
 
   @Test
   public void testCompletion() {
-    List expectedResultOne = Arrays.asList(new InterpreterCompletion("count", "count"));
-    List expectedResultTwo = Arrays.asList(new InterpreterCompletion("help", "help"));
+    List expectedResultOne = Arrays.asList(new InterpreterCompletion("count", "count", "elasticsearch"));
+    List expectedResultTwo = Arrays.asList(new InterpreterCompletion("help", "help", "elasticsearch"));
 
     List<InterpreterCompletion> resultOne = interpreter.completion("co", 0);
     List<InterpreterCompletion> resultTwo = interpreter.completion("he", 0);

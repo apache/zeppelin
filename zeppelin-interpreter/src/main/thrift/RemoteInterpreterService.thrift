@@ -63,14 +63,16 @@ struct RemoteApplicationResult {
 }
 
 /*
- * The below variables(name, value) will be connected to getCompletions in paragraph.controller.js
+ * The below variables(name, value, meta) will be connected to getCompletions in paragraph.controller.js
  *
  * name: which is shown in the suggestion list
  * value: actual return value what you selected
+ * meta: meta value of suggestion list
  */
 struct InterpreterCompletion {
   1: string name,
-  2: string value
+  2: string value,
+  3: string meta
 }
 
 service RemoteInterpreterService {

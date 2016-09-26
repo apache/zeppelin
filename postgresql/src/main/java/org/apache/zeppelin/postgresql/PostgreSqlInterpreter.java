@@ -72,6 +72,7 @@ public class PostgreSqlInterpreter extends Interpreter {
 
   private Logger logger = LoggerFactory.getLogger(PostgreSqlInterpreter.class);
 
+  private static final String INTERPRETER_NAME = "postgresql";
   private static final char WhITESPACE = ' ';
   private static final char NEWLINE = '\n';
   private static final char TAB = '\t';
@@ -117,7 +118,7 @@ public class PostgreSqlInterpreter extends Interpreter {
   private static final Function<CharSequence, InterpreterCompletion> sequenceToStringTransformer =
       new Function<CharSequence, InterpreterCompletion>() {
         public InterpreterCompletion apply(CharSequence seq) {
-          return new InterpreterCompletion(seq.toString(), seq.toString());
+          return new InterpreterCompletion(seq.toString(), seq.toString(), INTERPRETER_NAME);
         }
       };
 

@@ -106,9 +106,9 @@ public class HDFSFileInterpreterTest extends TestCase {
 
       // auto completion test
       List expectedResultOne = Arrays.asList(
-        new InterpreterCompletion("ls", "ls"));
+        new InterpreterCompletion("ls", "ls", "hdfs"));
       List expectedResultTwo = Arrays.asList(
-        new InterpreterCompletion("pwd", "pwd"));
+        new InterpreterCompletion("pwd", "pwd", "hdfs"));
       List<InterpreterCompletion> resultOne = t.completion("l", 0);
       List<InterpreterCompletion> resultTwo = t.completion("p", 0);
 
