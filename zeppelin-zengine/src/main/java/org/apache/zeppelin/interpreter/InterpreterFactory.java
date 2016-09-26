@@ -1338,8 +1338,8 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     this.env = env;
   }
 
-  public Map<String, Object> getEditorSetting(String noteId, String replName) {
-    Interpreter intp = getInterpreter(noteId, replName);
+  public Map<String, Object> getEditorSetting(String user, String noteId, String replName) {
+    Interpreter intp = getInterpreter(user, noteId, replName);
     Map<String, Object> editor = Maps.newHashMap(
         ImmutableMap.<String, Object>builder()
             .put("language", "text").build());

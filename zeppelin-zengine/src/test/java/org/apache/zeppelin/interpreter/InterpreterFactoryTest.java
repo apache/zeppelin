@@ -219,7 +219,7 @@ public class InterpreterFactoryTest {
   @Test
   public void testMultiUser() throws IOException, RepositoryException {
     factory = new InterpreterFactory(conf, null, null, null, depResolver);
-    final InterpreterInfo info1 = new InterpreterInfo("className1", "name1", true);
+    final InterpreterInfo info1 = new InterpreterInfo("className1", "name1", true, null);
     factory.add("group1", new ArrayList<InterpreterInfo>(){{
       add(info1);
     }}, new ArrayList<Dependency>(), new InterpreterOption(true), new Properties(), "/path1");
@@ -260,19 +260,19 @@ public class InterpreterFactoryTest {
         intpIds.add(intpSetting.getId());
       }
     }
-    Note note = notebook.createNote(intpIds, null);
+    Note note = notebook.createNote(intpIds, new AuthenticationInfo("anonymous"));
 
     // get editor setting from interpreter-setting.json
-    Map<String, Object> editor = factory.getEditorSetting(note.getId(), "mock11");
+    Map<String, Object> editor = factory.getEditorSetting("user1", note.getId(), "mock11");
     assertEquals("java", editor.get("language"));
 
     // when interpreter is not loaded via interpreter-setting.json
     // or editor setting doesn't exit
-    editor = factory.getEditorSetting(note.getId(), "mock1");
+    editor = factory.getEditorSetting("user1", note.getId(), "mock1");
     assertEquals(null, editor.get("language"));
 
     // when interpreter is not bound to note
-    editor = factory.getEditorSetting(note.getId(), "mock2");
+    editor = factory.getEditorSetting("user1", note.getId(), "mock2");
     assertEquals("text", editor.get("language"));
   }
 }

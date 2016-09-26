@@ -1655,9 +1655,10 @@ public class NotebookServer extends WebSocketServlet implements
     String paragraphId = (String) fromMessage.get("paragraphId");
     String replName = (String) fromMessage.get("magic");
     String noteId = getOpenNoteId(conn);
+    String user = SecurityUtils.getPrincipal();
     Message resp = new Message(OP.EDITOR_SETTING);
     resp.put("paragraphId", paragraphId);
-    resp.put("editor", notebook().getInterpreterFactory().getEditorSetting(noteId, replName));
+    resp.put("editor", notebook().getInterpreterFactory().getEditorSetting(user, noteId, replName));
     conn.send(serializeMessage(resp));
     return;
   }
