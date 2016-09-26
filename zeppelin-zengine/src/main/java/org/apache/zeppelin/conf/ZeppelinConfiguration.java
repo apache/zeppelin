@@ -27,6 +27,7 @@ import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.configuration.tree.ConfigurationNode;
 import org.apache.zeppelin.notebook.repo.VFSNotebookRepo;
+import org.apache.zeppelin.util.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -102,6 +103,11 @@ public class ZeppelinConfiguration extends XMLConfiguration {
         conf = new ZeppelinConfiguration();
       }
     }
+    
+    LOG.info("Server Host: " + conf.getServerAddress());
+    LOG.info("Server Port: " + conf.getServerPort());
+    LOG.info("Context Path: " + conf.getServerContextPath());
+    LOG.info("Zeppelin Version: " + Util.getVersion());
 
     return conf;
   }

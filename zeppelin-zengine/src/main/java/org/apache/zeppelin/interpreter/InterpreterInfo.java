@@ -19,6 +19,8 @@ package org.apache.zeppelin.interpreter;
 
 import com.google.gson.annotations.SerializedName;
 
+import java.util.Map;
+
 /**
  * Information of interpreters in this interpreter setting.
  * this will be serialized for conf/interpreter.json and REST api response.
@@ -27,11 +29,14 @@ public class InterpreterInfo {
   private String name;
   @SerializedName("class") private String className;
   private boolean defaultInterpreter = false;
+  private Map<String, Object> editor;
 
-  InterpreterInfo(String className, String name, boolean defaultInterpreter) {
+  InterpreterInfo(String className, String name, boolean defaultInterpreter,
+      Map<String, Object> editor) {
     this.className = className;
     this.name = name;
     this.defaultInterpreter = defaultInterpreter;
+    this.editor = editor;
   }
 
   public String getName() {
@@ -48,6 +53,14 @@ public class InterpreterInfo {
 
   boolean isDefaultInterpreter() {
     return defaultInterpreter;
+  }
+
+  public Map<String, Object> getEditor() {
+    return editor;
+  }
+
+  public void setEditor(Map<String, Object> editor) {
+    this.editor = editor;
   }
 
   @Override
