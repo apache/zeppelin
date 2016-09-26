@@ -79,7 +79,8 @@ public class LivySparkSQLInterpreter extends Interpreter {
               line.replaceAll("\"", "\\\\\"")
                   .replaceAll("\\n", " ")
               + "\").show(" +
-              property.get("zeppelin.livy.spark.sql.maxResult") + ")",
+              property.get("zeppelin.livy.spark.sql.maxResult") + "," +
+              property.get("zeppelin.livy.spark.sql.truncateResult") + ")",
           interpreterContext, userSessionMap);
 
       if (res.code() == InterpreterResult.Code.SUCCESS) {
