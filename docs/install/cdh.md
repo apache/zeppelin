@@ -21,9 +21,13 @@ limitations under the License.
 
 # Apache Zeppelin on CDH
 
-Cloudera officially provide docker container so we can easily build CDH docker environment following the [link](http://www.cloudera.com/documentation/enterprise/latest/topics/quickstart_docker_container.html).
+<div id="toc"></div>
 
-### 1. Importing the Cloudera QuickStart Docker Image
+### 1. Import Cloudera QuickStart Docker image
+
+>[Cloudera](http://www.cloudera.com/) has officially provided CDH Docker Hub in their own container. Please check [this guide page](http://www.cloudera.com/documentation/enterprise/latest/topics/quickstart_docker_container.html#cloudera_docker_container) for more information.
+
+You can import the Docker image by pulling it from Cloudera Docker Hub.
 
 ```
 docker pull cloudera/quickstart:latest
@@ -63,9 +67,9 @@ docker run -it \
  agitated_payne_backup /usr/bin/docker-quickstart;
 ```
 
-### 3. Verify running CDH.
+### 3. Verify running CDH
 
-You can see each application web UI for HDFS on `http://<hostname>:50070/`, YARN on `http://<hostname>:8088/cluster`.
+To verify the application is running well, check the web UI for HDFS on `http://<hostname>:50070/` and YARN on `http://<hostname>:8088/cluster`.
 
 
 ### 4. Configure Spark interpreter in Zeppelin
@@ -85,11 +89,12 @@ Don't forget to set Spark `master` as `yarn-client` in Zeppelin **Interpreters**
 
 ### 5. Run Zeppelin with Spark interpreter
 After running a single paragraph with Spark interpreter in Zeppelin,
+
 <img src="../assets/themes/zeppelin/img/docs-img/zeppelin_with_cdh.png" />
 
+<br/>
 
+browse `http://<hostname>:8088/cluster/apps` to check Zeppelin application is running well or not.
 
-
-You can browse `http://<hostname>:8088/cluster/apps` for Zeppelin application is running well or not.
 <img src="../assets/themes/zeppelin/img/docs-img/cdh_yarn_applications.png" />
 
