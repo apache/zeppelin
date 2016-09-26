@@ -1479,7 +1479,7 @@ public class NotebookServer extends WebSocketServlet implements
           return p.getAuthenticationInfo();
         }
       }
-      return new AuthenticationInfo("anonymous");
+      return AuthenticationInfo.ANONYMOUS;
     }
 
     /**
