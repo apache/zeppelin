@@ -185,7 +185,7 @@ public class NotebookRepoSyncTest implements JobListenerFactory {
     assertEquals(0, notebookRepoSync.get(1,
         notebookRepoSync.list(1, null).get(0).getId(), null).getParagraphs().size());
     /* apply sync */
-    notebookRepoSync.sync();
+    notebookRepoSync.sync(null);
     /* check whether added to second storage */
     assertEquals(1, notebookRepoSync.get(1,
     notebookRepoSync.list(1, null).get(0).getId(), null).getParagraphs().size());

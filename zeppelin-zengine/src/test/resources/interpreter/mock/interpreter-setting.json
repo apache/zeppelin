@@ -1,0 +1,12 @@
+[
+  {
+    "group": "mock11",
+    "name": "mock11",
+    "className": "org.apache.zeppelin.interpreter.mock.MockInterpreter11",
+    "properties": {
+    },
+    "editor": {
+      "language": "java"
+    }
+  }
+]

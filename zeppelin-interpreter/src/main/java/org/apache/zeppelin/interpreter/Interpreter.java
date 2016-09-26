@@ -251,6 +251,7 @@ public abstract class Interpreter {
     private String className;
     private boolean defaultInterpreter;
     private Map<String, InterpreterProperty> properties;
+    private Map<String, Object> editor;
     private String path;
 
     public RegisteredInterpreter(String name, String group, String className,
@@ -266,6 +267,7 @@ public abstract class Interpreter {
       this.className = className;
       this.defaultInterpreter = defaultInterpreter;
       this.properties = properties;
+      this.editor = new HashMap<>();
     }
 
     public String getName() {
@@ -290,6 +292,10 @@ public abstract class Interpreter {
 
     public Map<String, InterpreterProperty> getProperties() {
       return properties;
+    }
+
+    public Map<String, Object> getEditor() {
+      return editor;
     }
 
     public void setPath(String path) {
@@ -338,9 +344,9 @@ public abstract class Interpreter {
   @Deprecated
   public static void register(String name, String group, String className,
       boolean defaultInterpreter, Map<String, InterpreterProperty> properties) {
-    logger.error("Static initialization is deprecated. You should change it to use " +
-                     "interpreter-setting.json in your jar or " +
-                     "interpreter/{interpreter}/interpreter-setting.json");
+    logger.warn("Static initialization is deprecated for interpreter {}, You should change it " +
+                     "to use interpreter-setting.json in your jar or " +
+                     "interpreter/{interpreter}/interpreter-setting.json", name);
     register(new RegisteredInterpreter(name, group, className, defaultInterpreter, properties));
   }
 

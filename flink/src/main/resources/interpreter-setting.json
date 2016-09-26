@@ -16,6 +16,9 @@
         "defaultValue": "6123",
         "description": "port of running JobManager."
       }
+    },
+    "editor": {
+      "language": "scala"
     }
   }
 ]
