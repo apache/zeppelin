@@ -819,6 +819,9 @@
               <!--The following files are mechanical-->
               <exclude>r/R/rzeppelin/DESCRIPTION</exclude>
               <exclude>r/R/rzeppelin/NAMESPACE</exclude>
+
+              <!-- skip livy artifact-->
+              <exclude>livy/local-maven-repo/**</exclude>
             </excludes>
           </configuration>
 
