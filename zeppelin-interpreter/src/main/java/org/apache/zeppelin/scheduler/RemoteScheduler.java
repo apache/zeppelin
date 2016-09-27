@@ -145,10 +145,15 @@ public class RemoteScheduler implements Scheduler {
     if (terminate) {
       throw new RuntimeException("Scheduler already terminated");
     }
-    job.setStatus(Status.PENDING);
 
     synchronized (queue) {
-      queue.add(job);
+      if (queue.indexOf(job) >= 0 || running.indexOf(job) >= 0) {
+        logger.info("Trying to submit job that already exists in queue: " + job.getId());
+      } else {
+        job.setStatus(Status.PENDING);
+        job.aborted = false;
+        queue.add(job);
+      }            
       queue.notify();
     }
   }

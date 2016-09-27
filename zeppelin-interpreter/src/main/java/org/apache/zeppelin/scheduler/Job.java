@@ -20,6 +20,7 @@ package org.apache.zeppelin.scheduler;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Map;
+import java.util.List;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.slf4j.Logger;
@@ -257,5 +258,22 @@ public abstract class Job {
 
   public void setResult(Object result) {
     this.result = result;
+  }
+
+  public Job findSimilarJob(List<Job> queue) {
+    for (int i = 0; i < queue.size(); i++) {
+      Job j = queue.get(i);
+      if (j.getId().equals(this.getId())) {
+        return j;
+      }
+    }
+    return null;
+  }
+
+  public boolean isSimilarJob(Job j) {
+    if (j == null) {
+      return false;
+    }
+    return j.getId().equals(this.getId()); 
   }
 }

@@ -22,6 +22,8 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.slf4j.Logger;
@@ -31,6 +33,7 @@ import org.slf4j.LoggerFactory;
  * FIFOScheduler runs submitted job sequentially
  */
 public class FIFOScheduler implements Scheduler {
+  Logger logger = LoggerFactory.getLogger(FIFOScheduler.class);
   List<Job> queue = new LinkedList<Job>();
   private ExecutorService executor;
   private SchedulerListener listener;
@@ -78,9 +81,14 @@ public class FIFOScheduler implements Scheduler {
 
   @Override
   public void submit(Job job) {
-    job.setStatus(Status.PENDING);
     synchronized (queue) {
-      queue.add(job);
+      if (job.findSimilarJob(queue) != null || job.isSimilarJob(runningJob)) {
+        logger.info("Trying to submit job that already exists in queue: " + job.getId());
+      } else {
+        job.setStatus(Status.PENDING);
+        queue.add(job);
+        logger.info("Success to submit job : " + job.getId());
+      }            
       queue.notify();
     }
   }
