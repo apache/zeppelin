@@ -16,6 +16,7 @@
 
 angular.module('zeppelinWebApp').controller('NoteImportCtrl', function($scope, $timeout, websocketMsgSrv) {
   var vm = this;
+  vm.error = false;
   $scope.note = {};
   $scope.note.step1 = true;
   $scope.note.step2 = false;
@@ -60,6 +61,11 @@ angular.module('zeppelinWebApp').controller('NoteImportCtrl', function($scope, $
       $scope.note.step1 = true;
     }, 400);
     $scope.note.step2 = false;
+  };
+
+  vm.preVisible = function() {
+    vm.error = false;
+    $scope.$apply();
   };
 
   vm.importNote = function() {
@@ -109,5 +115,10 @@ angular.module('zeppelinWebApp').controller('NoteImportCtrl', function($scope, $
   $scope.$on('setNoteMenu', function(event, notes) {
     vm.resetFlags();
     angular.element('#noteImportModal').modal('hide');
+  });
+  $scope.$on('importErrorDialog', function(event, data) {
+    console.log('testing');
+    vm.resetFlags();
+    vm.error = true;
   });
 });

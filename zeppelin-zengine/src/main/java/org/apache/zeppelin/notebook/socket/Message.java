@@ -140,7 +140,9 @@ public class Message {
                                   // @param noteID
                                   // @param selectedSettingIds
     INTERPRETER_BINDINGS,         // [s-c] interpreter bindings
-    ERROR_INFO                    // [s-c] error information to be sent
+    ERROR_INFO,                   // [s-c] error information to be sent
+    ERROR_DIALOG,
+    IMPORT_ERROR_DIALOG
   }
 
   public OP op;
