@@ -135,7 +135,7 @@ public class Notebook implements NoteEventListener {
    * Create new note.
    *
    * @throws IOException
- * @throws DuplicateNameException 
+   * @throws DuplicateNameException 
    */
   public Note createNote(AuthenticationInfo subject, String noteName) throws IOException
     , DuplicateNameException {
@@ -248,7 +248,7 @@ public class Notebook implements NoteEventListener {
    * @param newNoteName  - the name of the new note
    * @return noteId
    * @throws IOException, CloneNotSupportedException, IllegalArgumentException
- * @throws DuplicateNameException 
+   * @throws DuplicateNameException 
    */
   public Note cloneNote(String sourceNoteID, String newNoteName, AuthenticationInfo subject)
       throws IOException, CloneNotSupportedException, IllegalArgumentException,

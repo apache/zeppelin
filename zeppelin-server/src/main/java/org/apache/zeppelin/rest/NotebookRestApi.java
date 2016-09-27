@@ -236,7 +236,7 @@ public class NotebookRestApi {
    * @param req - notebook Json
    * @return JSON with new note ID
    * @throws IOException
- * @throws DuplicateNameException 
+   * @throws DuplicateNameException 
    */
   @POST
   @Path("import")
@@ -259,7 +259,7 @@ public class NotebookRestApi {
    * @param message - JSON with new note name
    * @return JSON with new note ID
    * @throws IOException
- * @throws DuplicateNameException 
+   * @throws DuplicateNameException 
    */
   @POST
   @Path("/")
