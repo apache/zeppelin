@@ -51,7 +51,7 @@ import static org.junit.Assert.*;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class ZeppelinRestApiTest extends AbstractTestRestApi {
   Gson gson = new Gson();
-  private final String NOTE_NAME = "Note";
+  private final String EMPTY_STRING = "";
 
   @BeforeClass
   public static void init() throws Exception {
@@ -79,7 +79,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
   public void testGetNotebookInfo() throws IOException, DuplicateNameException {
     LOG.info("testGetNotebookInfo");
     // Create note to get info
-    Note note = ZeppelinServer.notebook.createNote(null, NOTE_NAME);
+    Note note = ZeppelinServer.notebook.createNote(null, EMPTY_STRING);
     assertNotNull("can't create new note", note);
     note.setName("note");
     Paragraph paragraph = note.addParagraph();
@@ -191,7 +191,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
   public void testDeleteNote() throws IOException, DuplicateNameException {
     LOG.info("testDeleteNote");
     //Create note and get ID
-    Note note = ZeppelinServer.notebook.createNote(null, NOTE_NAME);
+    Note note = ZeppelinServer.notebook.createNote(null, EMPTY_STRING);
     String noteId = note.getId();
     testDeleteNotebook(noteId);
   }
@@ -207,7 +207,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
   @Test
   public void testExportNotebook() throws IOException, DuplicateNameException {
     LOG.info("testExportNotebook");
-    Note note = ZeppelinServer.notebook.createNote(null, NOTE_NAME);
+    Note note = ZeppelinServer.notebook.createNote(null, EMPTY_STRING);
     assertNotNull("can't create new note", note);
     note.setName("source note for export");
     Paragraph paragraph = note.addParagraph();
@@ -240,7 +240,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     String noteName = "source note for import";
     LOG.info("testImortNotebook");
     // create test notebook
-    Note note = ZeppelinServer.notebook.createNote(null, NOTE_NAME);
+    Note note = ZeppelinServer.notebook.createNote(null, EMPTY_STRING);
     assertNotNull("can't create new note", note);
     note.setName(noteName);
     Paragraph paragraph = note.addParagraph();
@@ -303,7 +303,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
       IllegalArgumentException, DuplicateNameException {
     LOG.info("testCloneNotebook");
     // Create note to clone
-    Note note = ZeppelinServer.notebook.createNote(null, NOTE_NAME);
+    Note note = ZeppelinServer.notebook.createNote(null, EMPTY_STRING);
     assertNotNull("can't create new note", note);
     note.setName("source note for clone");
     Paragraph paragraph = note.addParagraph();
@@ -352,7 +352,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
   public void testNoteJobs() throws IOException, InterruptedException, DuplicateNameException {
     LOG.info("testNoteJobs");
     // Create note to run test.
-    Note note = ZeppelinServer.notebook.createNote(null, NOTE_NAME);
+    Note note = ZeppelinServer.notebook.createNote(null, EMPTY_STRING);
     assertNotNull("can't create new note", note);
     note.setName("note for run test");
     Paragraph paragraph = note.addParagraph();
@@ -408,7 +408,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
       DuplicateNameException {
     LOG.info("testGetNotebookJob");
     // Create note to run test.
-    Note note = ZeppelinServer.notebook.createNote(null, NOTE_NAME);
+    Note note = ZeppelinServer.notebook.createNote(null, EMPTY_STRING);
     assertNotNull("can't create new note", note);
     note.setName("note for run test");
     Paragraph paragraph = note.addParagraph();
@@ -462,7 +462,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
       DuplicateNameException {
     LOG.info("testRunParagraphWithParams");
     // Create note to run test.
-    Note note = ZeppelinServer.notebook.createNote(null, NOTE_NAME);
+    Note note = ZeppelinServer.notebook.createNote(null, EMPTY_STRING);
     assertNotNull("can't create new note", note);
     note.setName("note for run test");
     Paragraph paragraph = note.addParagraph();
@@ -506,7 +506,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
   @Test
   public void testCronJobs() throws InterruptedException, IOException, DuplicateNameException{
     // create a note and a paragraph
-    Note note = ZeppelinServer.notebook.createNote(null, NOTE_NAME);
+    Note note = ZeppelinServer.notebook.createNote(null, EMPTY_STRING);
 
     note.setName("note for run test");
     Paragraph paragraph = note.addParagraph();
@@ -555,7 +555,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
 
   @Test
   public void testRegressionZEPPELIN_527() throws IOException, DuplicateNameException {
-    Note note = ZeppelinServer.notebook.createNote(null, NOTE_NAME);
+    Note note = ZeppelinServer.notebook.createNote(null, EMPTY_STRING);
 
     note.setName("note for run test");
     Paragraph paragraph = note.addParagraph();
@@ -577,7 +577,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
 
   @Test
   public void testInsertParagraph() throws IOException, DuplicateNameException {
-    Note note = ZeppelinServer.notebook.createNote(null, NOTE_NAME);
+    Note note = ZeppelinServer.notebook.createNote(null, EMPTY_STRING);
 
     String jsonRequest = "{\"title\": \"title1\", \"text\": \"text1\"}";
     PostMethod post = httpPost("/notebook/" + note.getId() + "/paragraph", jsonRequest);
@@ -617,7 +617,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
 
   @Test
   public void testGetParagraph() throws IOException, DuplicateNameException {
-    Note note = ZeppelinServer.notebook.createNote(null, NOTE_NAME);
+    Note note = ZeppelinServer.notebook.createNote(null, EMPTY_STRING);
 
     Paragraph p = note.addParagraph();
     p.setTitle("hello");
@@ -646,7 +646,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
 
   @Test
   public void testMoveParagraph() throws IOException, DuplicateNameException {
-    Note note = ZeppelinServer.notebook.createNote(null, NOTE_NAME);
+    Note note = ZeppelinServer.notebook.createNote(null, EMPTY_STRING);
 
     Paragraph p = note.addParagraph();
     p.setTitle("title1");
@@ -678,7 +678,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
 
   @Test
   public void testDeleteParagraph() throws IOException, DuplicateNameException {
-    Note note = ZeppelinServer.notebook.createNote(null, NOTE_NAME);
+    Note note = ZeppelinServer.notebook.createNote(null, EMPTY_STRING);
 
     Paragraph p = note.addParagraph();
     p.setTitle("title1");
@@ -710,12 +710,12 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     String username = body.get("principal");
     getSecurityTicket.releaseConnection();
 
-    Note note1 = ZeppelinServer.notebook.createNote(null, NOTE_NAME);
+    Note note1 = ZeppelinServer.notebook.createNote(null, EMPTY_STRING);
     String jsonRequest = "{\"title\": \"title1\", \"text\": \"ThisIsToTestSearchMethodWithPermissions 1\"}";
     PostMethod postNotebookText = httpPost("/notebook/" + note1.getId() + "/paragraph", jsonRequest);
     postNotebookText.releaseConnection();
 
-    Note note2 = ZeppelinServer.notebook.createNote(null, NOTE_NAME);
+    Note note2 = ZeppelinServer.notebook.createNote(null, EMPTY_STRING);
     jsonRequest = "{\"title\": \"title1\", \"text\": \"ThisIsToTestSearchMethodWithPermissions 2\"}";
     postNotebookText = httpPost("/notebook/" + note2.getId() + "/paragraph", jsonRequest);
     postNotebookText.releaseConnection();
@@ -763,7 +763,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
 
   @Test
   public void testTitleSearch() throws IOException, DuplicateNameException {
-    Note note = ZeppelinServer.notebook.createNote(null, NOTE_NAME);
+    Note note = ZeppelinServer.notebook.createNote(null, EMPTY_STRING);
     String jsonRequest = "{\"title\": \"testTitleSearchOfParagraph\", \"text\": \"ThisIsToTestSearchMethodWithTitle \"}";
     PostMethod postNotebookText = httpPost("/notebook/" + note.getId() + "/paragraph", jsonRequest);
     postNotebookText.releaseConnection();

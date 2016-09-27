@@ -247,8 +247,8 @@ public class NotebookRestApi {
     try {
       newNote = notebook.importNote(req, null, subject);
     } catch (DuplicateNameException e) {
-      return new JsonResponse<>(Status.NOT_ACCEPTABLE, "Notebook"
-              + " already exists with same name").build();
+      return new JsonResponse<>(Status.NOT_ACCEPTABLE, 
+          "Notebook already exists with same name").build();
     }
     return new JsonResponse<>(Status.CREATED, "", newNote.getId()).build();
   }

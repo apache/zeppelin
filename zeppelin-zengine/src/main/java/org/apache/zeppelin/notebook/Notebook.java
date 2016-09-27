@@ -142,9 +142,11 @@ public class Notebook implements NoteEventListener {
     Note note;
     List<Note> notes;
     notes = getAllNotes();
-    for (Note entry : notes) {
-      if (entry.getName().equals(noteName)){
-        throw new DuplicateNameException();
+    if (noteName != null && !noteName.isEmpty()) {
+      for (Note entry : notes) {
+        if (entry.getName().equals(noteName)){
+          throw new DuplicateNameException();
+        }
       }
     }
     if (conf.getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_AUTO_INTERPRETER_BINDING)) {
@@ -152,7 +154,7 @@ public class Notebook implements NoteEventListener {
     } else {
       note = createNote(null, subject);
     }
-    if (noteName == null) {
+    if (noteName == null || noteName.trim().isEmpty()) {
       noteName = "Note " + note.getId();
     }
     note.setName(noteName);
