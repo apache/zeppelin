@@ -218,11 +218,12 @@ java_import(gateway.jvm, "scala.Tuple2")
 jconf = intp.getSparkConf()
 conf = SparkConf(_jvm = gateway.jvm, _jconf = jconf)
 sc = SparkContext(jsc=jsc, gateway=gateway, conf=conf)
-sqlc = SQLContext(sc, intp.getSQLContext())
-sqlContext = sqlc
-
 if sparkVersion.isSpark2():
   spark = SparkSession(sc, intp.getSparkSession())
+  sqlc = spark._wrapped
+else:
+  sqlc = SQLContext(sparkContext=sc, sqlContext=intp.getSQLContext())
+sqlContext = sqlc
 
 completion = PySparkCompletion(intp)
 z = PyZeppelinContext(intp.getZeppelinContext())

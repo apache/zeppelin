@@ -15,13 +15,14 @@
 
 angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $rootScope, $route, $window,
                                                                       $routeParams, $location, $timeout, $compile,
-                                                                      $http, websocketMsgSrv, baseUrlSrv, ngToast,
+                                                                      $http, $q, websocketMsgSrv, baseUrlSrv, ngToast,
                                                                       saveAsService, esriLoader) {
   var ANGULAR_FUNCTION_OBJECT_NAME_PREFIX = '_Z_ANGULAR_FUNC_';
   $scope.parentNote = null;
   $scope.paragraph = null;
   $scope.originalText = '';
   $scope.editor = null;
+  $scope.magic = null;
 
   var paragraphScope = $rootScope.$new(true, $rootScope);
 
@@ -77,15 +78,6 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
   };
 
   var angularObjectRegistry = {};
-
-  var editorModes = {
-    'ace/mode/python': /^%(\w*\.)?(pyspark|python)\s*$/,
-    'ace/mode/scala': /^%(\w*\.)?spark\s*$/,
-    'ace/mode/r': /^%(\w*\.)?(r|sparkr|knitr)\s*$/,
-    'ace/mode/sql': /^%(\w*\.)?\wql/,
-    'ace/mode/markdown': /^%md/,
-    'ace/mode/sh': /^%sh/
-  };
 
   // Controller init
   $scope.init = function(newParagraph, note) {
@@ -538,7 +530,7 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
   $scope.aceChanged = function() {
     $scope.dirtyText = $scope.editor.getSession().getValue();
     $scope.startSaveTimer();
-    $scope.setParagraphMode($scope.editor.getSession(), $scope.dirtyText, $scope.editor.getCursorPosition());
+    setParagraphMode($scope.editor.getSession(), $scope.dirtyText, $scope.editor.getCursorPosition());
   };
 
   $scope.aceLoaded = function(_editor) {
@@ -576,37 +568,11 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
         // not applying emacs key binding while the binding override Ctrl-v. default behavior of paste text on windows.
       }
 
-      $scope.setParagraphMode = function(session, paragraphText, pos) {
-        // Evaluate the mode only if the first 30 characters of the paragraph have been modified or the the position is undefined.
-        if ((typeof pos === 'undefined') || (pos.row === 0 && pos.column < 30)) {
-          // If paragraph loading, use config value if exists
-          if ((typeof pos === 'undefined') && $scope.paragraph.config.editorMode) {
-            session.setMode($scope.paragraph.config.editorMode);
-          } else {
-            // Defaults to spark mode
-            var newMode = 'ace/mode/scala';
-            // Test first against current mode
-            var oldMode = session.getMode().$id;
-            if (!editorModes[oldMode] || !editorModes[oldMode].test(paragraphText)) {
-              for (var key in editorModes) {
-                if (key !== oldMode) {
-                  if (editorModes[key].test(paragraphText)) {
-                    $scope.paragraph.config.editorMode = key;
-                    session.setMode(key);
-                    return true;
-                  }
-                }
-              }
-              $scope.paragraph.config.editorMode = newMode;
-              session.setMode(newMode);
-            }
-          }
-        }
-      };
-
       var remoteCompleter = {
         getCompletions: function(editor, session, pos, prefix, callback) {
-          if (!$scope.editor.isFocused()) { return;}
+          if (!$scope.editor.isFocused()) {
+            return;
+          }
 
           pos = session.getTextRange(new Range(0, 0, pos.row, pos.column)).length;
           var buf = session.getValue();
@@ -662,7 +628,7 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
         autoAdjustEditorHeight(_editor.container.id);
       });
 
-      $scope.setParagraphMode($scope.editor.getSession(), $scope.editor.getSession().getValue());
+      setParagraphMode($scope.editor.getSession(), $scope.editor.getSession().getValue());
 
       // autocomplete on '.'
       /*
@@ -734,6 +700,53 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
         }
         this.origOnCommandKey(e, hashId, keyCode);
       };
+    }
+  };
+
+  var getAndSetEditorSetting = function(session, interpreterName) {
+    var deferred = $q.defer();
+    websocketMsgSrv.getEditorSetting(interpreterName);
+    $timeout(
+      $scope.$on('editorSetting', function(event, data) {
+        deferred.resolve(data);
+      }
+    ), 1000);
+
+    deferred.promise.then(function(editorSetting) {
+      if (!_.isEmpty(editorSetting.editor)) {
+        var mode = 'ace/mode/' + editorSetting.editor.language;
+        $scope.paragraph.config.editorMode = mode;
+        session.setMode(mode);
+      }
+    });
+  };
+
+  var setParagraphMode = function(session, paragraphText, pos) {
+    // Evaluate the mode only if the the position is undefined
+    // or the first 30 characters of the paragraph have been modified
+    // or cursor position is at beginning of second line.(in case user hit enter after typing %magic)
+    if ((typeof pos === 'undefined') || (pos.row === 0 && pos.column < 30) || (pos.row === 1 && pos.column === 0)) {
+      // If paragraph loading, use config value if exists
+      if ((typeof pos === 'undefined') && $scope.paragraph.config.editorMode) {
+        session.setMode($scope.paragraph.config.editorMode);
+      } else {
+        var magic;
+        // set editor mode to default interpreter syntax if paragraph text doesn't start with '%'
+        // TODO(mina): dig into the cause what makes interpreterBindings has no element
+        if (!paragraphText.startsWith('%') && ((typeof pos !== 'undefined') && pos.row === 0 && pos.column === 1) ||
+            (typeof pos === 'undefined') && $scope.$parent.interpreterBindings.length !== 0) {
+          magic = $scope.$parent.interpreterBindings[0].name;
+          getAndSetEditorSetting(session, magic);
+        } else {
+          var replNameRegexp = /%(.+?)\s/g;
+          var match = replNameRegexp.exec(paragraphText);
+          if (match && $scope.magic !== match[1]) {
+            magic = match[1].trim();
+            $scope.magic = magic;
+            getAndSetEditorSetting(session, magic);
+          }
+        }
+      }
     }
   };
 
@@ -2259,7 +2272,6 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
     var noteId = $route.current.pathParams.noteId;
     $http.get(baseUrlSrv.getRestApiBase() + '/helium/suggest/' + noteId + '/' + $scope.paragraph.id)
       .success(function(data, status, headers, config) {
-        console.log('Suggested apps %o', data);
         $scope.suggestion = data.body;
       })
       .error(function(err, status, headers, config) {

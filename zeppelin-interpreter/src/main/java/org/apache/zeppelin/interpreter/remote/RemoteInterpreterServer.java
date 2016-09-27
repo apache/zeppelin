@@ -504,11 +504,13 @@ public class RemoteInterpreterServer
     return new InterpreterOutput(new InterpreterOutputListener() {
       @Override
       public void onAppend(InterpreterOutput out, byte[] line) {
+        logger.debug("Output Append:" + new String(line));
         eventClient.onInterpreterOutputAppend(noteId, paragraphId, new String(line));
       }
 
       @Override
       public void onUpdate(InterpreterOutput out, byte[] output) {
+        logger.debug("Output Update:" + new String(output));
         eventClient.onInterpreterOutputUpdate(noteId, paragraphId, new String(output));
       }
     });
