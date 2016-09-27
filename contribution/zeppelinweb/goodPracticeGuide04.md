@@ -36,7 +36,7 @@ Instead of:
 
 ```
 <div>
-  {{home.myValue}}
+{{ "{{home.myValue"}}}}
 </div>
 ```
 
