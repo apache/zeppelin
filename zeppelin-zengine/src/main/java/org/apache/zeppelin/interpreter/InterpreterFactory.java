@@ -197,10 +197,10 @@ public class InterpreterFactory implements InterpreterGroupFactory {
                 Set<String> interpreterKeys = Interpreter.registeredInterpreters.keySet();
                 for (String interpreterKey : interpreterKeys) {
                   if (className
-                          .equals(Interpreter.registeredInterpreters.get(interpreterKey)
-                                  .getClassName())) {
+                      .equals(Interpreter.registeredInterpreters.get(interpreterKey)
+                          .getClassName())) {
                     Interpreter.registeredInterpreters.get(interpreterKey)
-                            .setPath(interpreterDirString);
+                        .setPath(interpreterDirString);
                     logger.info("Interpreter " + interpreterKey + " found. class=" + className);
                     cleanCl.put(interpreterDirString, ccl);
                   }
@@ -431,7 +431,6 @@ public class InterpreterFactory implements InterpreterGroupFactory {
   }
 
   private void loadInterpreterDependencies(final InterpreterSetting setting) {
-
     setting.setStatus(InterpreterSetting.Status.DOWNLOADING_DEPENDENCIES);
     interpreterSettings.put(setting.getId(), setting);
     synchronized (interpreterSettings) {
@@ -463,6 +462,46 @@ public class InterpreterFactory implements InterpreterGroupFactory {
             setting.setStatus(InterpreterSetting.Status.READY);
           } catch (Exception e) {
             logger.error(String.format("Error while downloading repos for interpreter group : %s," +
+                    " go to interpreter setting page click on edit and save it again to make " +
+                    "this interpreter work properly.",
+                setting.getGroup()), e);
+            setting.setErrorReason(e.getLocalizedMessage());
+            setting.setStatus(InterpreterSetting.Status.ERROR);
+          } finally {
+            interpreterSettings.put(setting.getId(), setting);
+          }
+        }
+      };
+      t.start();
+    }
+  }
+
+  /**
+   * Overwrite dependency jar under local-repo/{interpreterId}
+   * if jar file in original path is changed
+   */
+  private void copyDependenciesFromLocalPath(final InterpreterSetting setting) {
+    setting.setStatus(InterpreterSetting.Status.DOWNLOADING_DEPENDENCIES);
+    interpreterSettings.put(setting.getId(), setting);
+    synchronized (interpreterSettings) {
+      final Thread t = new Thread() {
+        public void run() {
+          try {
+            List<Dependency> deps = setting.getDependencies();
+            if (deps != null) {
+              for (Dependency d : deps) {
+                File destDir = new File(conf.getRelativeDir(ConfVars.ZEPPELIN_DEP_LOCALREPO));
+
+                int numSplits = d.getGroupArtifactVersion().split(":").length;
+                if (!(numSplits >= 3 && numSplits <= 6)) {
+                  depResolver.copyLocalDependency(d.getGroupArtifactVersion(),
+                      new File(destDir, setting.getId()));
+                }
+              }
+            }
+            setting.setStatus(InterpreterSetting.Status.READY);
+          } catch (Exception e) {
+            logger.error(String.format("Error while copying deps for interpreter group : %s," +
                     " go to interpreter setting page click on edit and save it again to make " +
                     "this interpreter work properly.",
                 setting.getGroup()), e);
@@ -900,6 +939,9 @@ public class InterpreterFactory implements InterpreterGroupFactory {
   public void restart(String id) {
     synchronized (interpreterSettings) {
       InterpreterSetting intpsetting = interpreterSettings.get(id);
+      // Check if dependency in specified path is changed
+      // If it did, overwrite old dependency jar with new one
+      copyDependenciesFromLocalPath(intpsetting);
       if (intpsetting != null) {
 
         stopJobAllInterpreter(intpsetting);
