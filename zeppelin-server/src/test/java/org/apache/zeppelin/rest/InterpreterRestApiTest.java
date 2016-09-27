@@ -219,7 +219,6 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
     }
 
     String jsonRequest = "{\"noteId\":\"" + note.getId() + "\"}";
-    LOG.info("=========>{}", jsonRequest);
 
     // Restart isolated mode of Interpreter for note.
     mdIntpSetting.getOption().setPerNoteProcess(true);
