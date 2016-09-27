@@ -162,6 +162,7 @@ public class NotebookRestApi {
     AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
     note.persist(subject);
     notebookServer.broadcastNote(note);
+    notebookServer.broadcastNoteList(subject);
     return new JsonResponse<>(Status.OK).build();
   }
 
