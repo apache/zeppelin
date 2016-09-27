@@ -317,7 +317,7 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
       long startTime = System.currentTimeMillis();
       while (pythonScriptInitialized == false
           && pythonscriptRunning
-          && System.currentTimeMillis() - startTime < MAX_TIMEOUT_SEC * 1000) {
+          && System.currentTimeMillis() - startTime > MAX_TIMEOUT_SEC * 1000) {
         try {
           pythonScriptInitializeNotifier.wait(1000);
         } catch (InterruptedException e) {
@@ -426,10 +426,9 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
     synchronized (statementFinishedNotifier) {
       long startTime = System.currentTimeMillis();
       while (statementOutput == null
-        && pythonScriptInitialized == false
         && pythonscriptRunning) {
         try {
-          if (System.currentTimeMillis() - startTime < MAX_TIMEOUT_SEC * 1000) {
+          if (System.currentTimeMillis() - startTime > MAX_TIMEOUT_SEC * 1000) {
             logger.error("pyspark completion didn't have response for {}sec.", MAX_TIMEOUT_SEC);
             break;
           }
