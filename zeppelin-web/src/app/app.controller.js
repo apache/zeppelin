@@ -11,46 +11,53 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-'use strict';
+ (function() {
+  'use strict';
 
-angular.module('zeppelinWebApp').controller('MainCtrl', function($scope, $rootScope, $window, arrayOrderingSrv) {
-  $scope.looknfeel = 'default';
+  angular.module('zeppelinWebApp').controller('MainCtrl', MainCtrl);
 
-  var init = function() {
-    $scope.asIframe = (($window.location.href.indexOf('asIframe') > -1) ? true : false);
-  };
+  MainCtrl.$inject = ['$scope', '$rootScope', '$window', 'arrayOrderingSrv'];
 
-  init();
+  function MainCtrl($scope, $rootScope, $window, arrayOrderingSrv) {
+    $scope.looknfeel = 'default';
 
-  $rootScope.$on('setIframe', function(event, data) {
-    if (!event.defaultPrevented) {
-      $scope.asIframe = data;
-      event.preventDefault();
-    }
-  });
+    var init = function() {
+      $scope.asIframe = (($window.location.href.indexOf('asIframe') > -1) ? true : false);
+    };
 
-  $rootScope.$on('setLookAndFeel', function(event, data) {
-    if (!event.defaultPrevented && data && data !== '' && data !== $scope.looknfeel) {
-      $scope.looknfeel = data;
-      event.preventDefault();
-    }
-  });
+    init();
 
-  // Set The lookAndFeel to default on every page
-  $rootScope.$on('$routeChangeStart', function(event, next, current) {
-    $rootScope.$broadcast('setLookAndFeel', 'default');
-  });
+    $rootScope.$on('setIframe', function(event, data) {
+      if (!event.defaultPrevented) {
+        $scope.asIframe = data;
+        event.preventDefault();
+      }
+    });
 
-  $rootScope.noteName = function(note) {
-    if (!_.isEmpty(note)) {
-      return arrayOrderingSrv.getNoteName(note);
-    }
-  };
+    $rootScope.$on('setLookAndFeel', function(event, data) {
+      if (!event.defaultPrevented && data && data !== '' && data !== $scope.looknfeel) {
+        $scope.looknfeel = data;
+        event.preventDefault();
+      }
+    });
 
-  BootstrapDialog.defaultOptions.onshown = function() {
-    angular.element('#' + this.id).find('.btn:last').focus();
-  };
+    // Set The lookAndFeel to default on every page
+    $rootScope.$on('$routeChangeStart', function(event, next, current) {
+      $rootScope.$broadcast('setLookAndFeel', 'default');
+    });
 
-  // Remove BootstrapDialog animation
-  BootstrapDialog.configDefaultOptions({animate: false});
-});
+    $rootScope.noteName = function(note) {
+      if (!_.isEmpty(note)) {
+        return arrayOrderingSrv.getNoteName(note);
+      }
+    };
+
+    BootstrapDialog.defaultOptions.onshown = function() {
+      angular.element('#' + this.id).find('.btn:last').focus();
+    };
+
+    // Remove BootstrapDialog animation
+    BootstrapDialog.configDefaultOptions({animate: false});
+  }
+
+})();
