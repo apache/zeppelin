@@ -18,6 +18,7 @@ angular.module('zeppelinWebApp').controller('NotenameCtrl', function($scope, not
                                                                       $routeParams, websocketMsgSrv) {
   var vm = this;
   vm.clone = false;
+  vm.error = false;
   vm.notes = notebookListDataFactory;
   vm.websocketMsgSrv = websocketMsgSrv;
   $scope.note = {};
@@ -37,6 +38,7 @@ angular.module('zeppelinWebApp').controller('NotenameCtrl', function($scope, not
   };
 
   vm.preVisible = function(clone) {
+    vm.error = false;
     $scope.note.notename = vm.newNoteName();
     vm.clone = clone;
     $scope.$apply();
@@ -55,5 +57,10 @@ angular.module('zeppelinWebApp').controller('NotenameCtrl', function($scope, not
     });
     return 'Untitled Note ' + newCount;
   };
+
+  $scope.$on('errorDialog', function(event, data) {
+    console.log('test');
+    vm.error = true;
+  });
 
 });

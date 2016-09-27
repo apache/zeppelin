@@ -32,30 +32,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import com.google.common.base.Predicate;
-import com.google.common.collect.FluentIterable;
-import com.google.common.collect.Sets;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.stream.JsonReader;
-import org.apache.commons.codec.binary.StringUtils;
-import org.quartz.CronScheduleBuilder;
-import org.quartz.CronTrigger;
-import org.quartz.JobBuilder;
-import org.quartz.JobDetail;
-import org.quartz.JobExecutionContext;
-import org.quartz.JobExecutionException;
-import org.quartz.JobKey;
-import org.quartz.SchedulerException;
-import org.quartz.TriggerBuilder;
-import org.quartz.impl.StdSchedulerFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
+import org.apache.zeppelin.exception.DuplicateNameException;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
@@ -69,6 +50,25 @@ import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.apache.zeppelin.search.SearchService;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.user.Credentials;
+import org.quartz.CronScheduleBuilder;
+import org.quartz.CronTrigger;
+import org.quartz.JobBuilder;
+import org.quartz.JobDetail;
+import org.quartz.JobExecutionContext;
+import org.quartz.JobExecutionException;
+import org.quartz.JobKey;
+import org.quartz.SchedulerException;
+import org.quartz.TriggerBuilder;
+import org.quartz.impl.StdSchedulerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Predicate;
+import com.google.common.collect.FluentIterable;
+import com.google.common.collect.Sets;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.stream.JsonReader;
 
 /**
  * Collection of Notes.
@@ -135,14 +135,27 @@ public class Notebook implements NoteEventListener {
    * Create new note.
    *
    * @throws IOException
+ * @throws DuplicateNameException 
    */
-  public Note createNote(AuthenticationInfo subject) throws IOException {
+  public Note createNote(AuthenticationInfo subject, String noteName) throws IOException
+    , DuplicateNameException {
     Note note;
+    List<Note> notes;
+    notes = getAllNotes();
+    for (Note entry : notes) {
+      if (entry.getName().equals(noteName)){
+        throw new DuplicateNameException();
+      }
+    }
     if (conf.getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_AUTO_INTERPRETER_BINDING)) {
       note = createNote(replFactory.getDefaultInterpreterSettingList(), subject);
     } else {
       note = createNote(null, subject);
     }
+    if (noteName == null) {
+      noteName = "Note " + note.getId();
+    }
+    note.setName(noteName);
     notebookIndex.addIndexDoc(note);
     return note;
   }
@@ -199,9 +212,10 @@ public class Notebook implements NoteEventListener {
    * @param noteName   - the name of the new note
    * @return notebook ID
    * @throws IOException
+   * @throws DuplicateNameException 
    */
   public Note importNote(String sourceJson, String noteName, AuthenticationInfo subject)
-      throws IOException {
+      throws IOException, DuplicateNameException {
     GsonBuilder gsonBuilder = new GsonBuilder();
     gsonBuilder.setPrettyPrinting();
 
@@ -212,11 +226,7 @@ public class Notebook implements NoteEventListener {
     Note newNote;
     try {
       Note oldNote = gson.fromJson(reader, Note.class);
-      newNote = createNote(subject);
-      if (noteName != null)
-        newNote.setName(noteName);
-      else
-        newNote.setName(oldNote.getName());
+      newNote = createNote(subject, noteName);
       List<Paragraph> paragraphs = oldNote.getParagraphs();
       for (Paragraph p : paragraphs) {
         newNote.addCloneParagraph(p);
@@ -238,20 +248,17 @@ public class Notebook implements NoteEventListener {
    * @param newNoteName  - the name of the new note
    * @return noteId
    * @throws IOException, CloneNotSupportedException, IllegalArgumentException
+ * @throws DuplicateNameException 
    */
   public Note cloneNote(String sourceNoteID, String newNoteName, AuthenticationInfo subject)
-      throws IOException, CloneNotSupportedException, IllegalArgumentException {
+      throws IOException, CloneNotSupportedException, IllegalArgumentException,
+      DuplicateNameException {
 
     Note sourceNote = getNote(sourceNoteID);
     if (sourceNote == null) {
       throw new IllegalArgumentException(sourceNoteID + "not found");
     }
-    Note newNote = createNote(subject);
-    if (newNoteName != null) {
-      newNote.setName(newNoteName);
-    } else {
-      newNote.setName("Note " + newNote.getId());
-    }
+    Note newNote = createNote(subject, newNoteName);
     // Copy the interpreter bindings
     List<String> boundInterpreterSettingsIds = getBindedInterpreterSettingsIds(sourceNote.getId());
     bindInterpretersToNote(newNote.getId(), boundInterpreterSettingsIds);

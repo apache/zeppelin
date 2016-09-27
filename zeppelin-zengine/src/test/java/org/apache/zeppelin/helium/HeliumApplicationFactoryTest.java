@@ -19,6 +19,7 @@ package org.apache.zeppelin.helium;
 import org.apache.commons.io.FileUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.dep.DependencyResolver;
+import org.apache.zeppelin.exception.DuplicateNameException;
 import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.mock.MockInterpreter1;
 import org.apache.zeppelin.interpreter.mock.MockInterpreter2;
@@ -50,6 +51,7 @@ public class HeliumApplicationFactoryTest implements JobListenerFactory {
   private VFSNotebookRepo notebookRepo;
   private Notebook notebook;
   private HeliumApplicationFactory heliumAppFactory;
+  private final String NOTE_NAME = "Note";
 
   @Before
   public void setUp() throws Exception {
@@ -122,7 +124,7 @@ public class HeliumApplicationFactoryTest implements JobListenerFactory {
 
   @Test
   public void testLoadRunUnloadApplication()
-      throws IOException, ApplicationException, InterruptedException {
+      throws IOException, ApplicationException, InterruptedException, DuplicateNameException {
     // given
     HeliumPackage pkg1 = new HeliumPackage(HeliumPackage.Type.APPLICATION,
         "name1",
@@ -131,7 +133,7 @@ public class HeliumApplicationFactoryTest implements JobListenerFactory {
         HeliumTestApplication.class.getName(),
         new String[][]{});
 
-    Note note1 = notebook.createNote(null);
+    Note note1 = notebook.createNote(null, NOTE_NAME);
     factory.setInterpreters(note1.getId(),factory.getDefaultInterpreterSettingList());
 
     Paragraph p1 = note1.addParagraph();
@@ -166,7 +168,7 @@ public class HeliumApplicationFactoryTest implements JobListenerFactory {
   }
 
   @Test
-  public void testUnloadOnParagraphRemove() throws IOException {
+  public void testUnloadOnParagraphRemove() throws IOException, DuplicateNameException {
     // given
     HeliumPackage pkg1 = new HeliumPackage(HeliumPackage.Type.APPLICATION,
         "name1",
@@ -175,7 +177,7 @@ public class HeliumApplicationFactoryTest implements JobListenerFactory {
         HeliumTestApplication.class.getName(),
         new String[][]{});
 
-    Note note1 = notebook.createNote(null);
+    Note note1 = notebook.createNote(null, NOTE_NAME);
     factory.setInterpreters(note1.getId(), factory.getDefaultInterpreterSettingList());
 
     Paragraph p1 = note1.addParagraph();
@@ -204,7 +206,7 @@ public class HeliumApplicationFactoryTest implements JobListenerFactory {
 
 
   @Test
-  public void testUnloadOnInterpreterUnbind() throws IOException {
+  public void testUnloadOnInterpreterUnbind() throws IOException, DuplicateNameException {
     // given
     HeliumPackage pkg1 = new HeliumPackage(HeliumPackage.Type.APPLICATION,
         "name1",
@@ -213,7 +215,7 @@ public class HeliumApplicationFactoryTest implements JobListenerFactory {
         HeliumTestApplication.class.getName(),
         new String[][]{});
 
-    Note note1 = notebook.createNote(null);
+    Note note1 = notebook.createNote(null, NOTE_NAME);
     notebook.bindInterpretersToNote(note1.getId(), factory.getDefaultInterpreterSettingList());
 
     Paragraph p1 = note1.addParagraph();
@@ -241,9 +243,10 @@ public class HeliumApplicationFactoryTest implements JobListenerFactory {
   }
 
   @Test
-  public void testInterpreterUnbindOfNullReplParagraph() throws IOException {
+  public void testInterpreterUnbindOfNullReplParagraph() throws IOException, 
+      DuplicateNameException {
     // create note
-    Note note1 = notebook.createNote(null);
+    Note note1 = notebook.createNote(null, NOTE_NAME);
 
     // add paragraph with invalid magic
     Paragraph p1 = note1.addParagraph();
@@ -263,7 +266,7 @@ public class HeliumApplicationFactoryTest implements JobListenerFactory {
 
 
   @Test
-  public void testUnloadOnInterpreterRestart() throws IOException {
+  public void testUnloadOnInterpreterRestart() throws IOException, DuplicateNameException {
     // given
     HeliumPackage pkg1 = new HeliumPackage(HeliumPackage.Type.APPLICATION,
         "name1",
@@ -272,7 +275,7 @@ public class HeliumApplicationFactoryTest implements JobListenerFactory {
         HeliumTestApplication.class.getName(),
         new String[][]{});
 
-    Note note1 = notebook.createNote(null);
+    Note note1 = notebook.createNote(null, NOTE_NAME);
     notebook.bindInterpretersToNote(note1.getId(), factory.getDefaultInterpreterSettingList());
     String mock1IntpSettingId = null;
     for (InterpreterSetting setting : notebook.getBindedInterpreterSettings(note1.getId())) {
