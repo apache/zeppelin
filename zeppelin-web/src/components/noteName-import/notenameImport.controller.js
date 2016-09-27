@@ -44,6 +44,12 @@ angular.module('zeppelinWebApp').controller('NoteImportCtrl', function($scope, $
     var file = $scope.note.importFile;
     var reader = new FileReader();
 
+    if (file.size > $scope.config.maxLimit) {
+      $scope.note.errorText = 'File size limit Exceeded!';
+      $scope.$apply();
+      return;
+    }
+
     reader.onloadend = function() {
       vm.processImportJson(reader.result);
     };
@@ -118,10 +124,4 @@ angular.module('zeppelinWebApp').controller('NoteImportCtrl', function($scope, $
     angular.element('#noteImportModal').modal('hide');
   });
 
-  $scope.$on('checkCloseEventCode', function(scope, event) {
-    $scope.note.errorText = '';
-    if (event.code === 1009 || event.code === 1006) {
-      $scope.note.errorText = 'File size limit Exceeded!';
-    }
-  });
 });
