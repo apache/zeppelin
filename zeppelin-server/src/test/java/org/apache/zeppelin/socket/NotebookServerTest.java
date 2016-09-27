@@ -95,7 +95,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
   @Test
   public void testMakeSureNoAngularObjectBroadcastToWebsocketWhoFireTheEvent() throws IOException, DuplicateNameException {
     // create a notebook
-    Note note1 = notebook.createNote(null, "Note");
+    Note note1 = notebook.createNote(null, "");
 
     // get reference to interpreterGroup
     InterpreterGroup interpreterGroup = null;

@@ -48,7 +48,7 @@ import static org.junit.Assert.*;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class InterpreterRestApiTest extends AbstractTestRestApi {
   Gson gson = new Gson();
-  private final String NOTE_NAME = "Note";
+  private final String EMPTY_STRING = "";
 
   @BeforeClass
   public static void init() throws Exception {
@@ -133,7 +133,7 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
   @Test
   public void testInterpreterAutoBinding() throws IOException, DuplicateNameException {
     // create note
-    Note note = ZeppelinServer.notebook.createNote(null, NOTE_NAME);
+    Note note = ZeppelinServer.notebook.createNote(null, EMPTY_STRING);
 
     // check interpreter is binded
     GetMethod get = httpGet("/notebook/interpreter/bind/" + note.getId());
@@ -152,7 +152,7 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
   @Test
   public void testInterpreterRestart() throws IOException, InterruptedException, DuplicateNameException {
     // create new note
-    Note note = ZeppelinServer.notebook.createNote(null, NOTE_NAME);
+    Note note = ZeppelinServer.notebook.createNote(null, EMPTY_STRING);
     note.addParagraph();
     Paragraph p = note.getLastParagraph();
     Map config = p.getConfig();

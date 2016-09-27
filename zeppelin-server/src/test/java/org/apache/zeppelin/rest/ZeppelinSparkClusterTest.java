@@ -44,7 +44,7 @@ import com.google.gson.Gson;
  */
 public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
     Gson gson = new Gson();
-    private final String NOTE_NAME = "Note";
+    private final String EMPTY_STRING = "";
 
     @BeforeClass
     public static void init() throws Exception {
@@ -71,7 +71,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
     @Test
     public void basicRDDTransformationAndActionTest() throws IOException, DuplicateNameException {
         // create new note
-        Note note = ZeppelinServer.notebook.createNote(null, NOTE_NAME);
+        Note note = ZeppelinServer.notebook.createNote(null, EMPTY_STRING);
 
         // run markdown paragraph, again
         Paragraph p = note.addParagraph();
@@ -83,13 +83,13 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
         waitForFinish(p);
         assertEquals(Status.FINISHED, p.getStatus());
         assertEquals("55", p.getResult().message());
-        ZeppelinServer.notebook.removeNote(note.getId(), null);
+        ZeppelinServer.notebook.removeNote(EMPTY_STRING, null);
     }
 
     @Test
     public void sparkSQLTest() throws IOException, DuplicateNameException {
         // create new note
-        Note note = ZeppelinServer.notebook.createNote(null, NOTE_NAME);
+        Note note = ZeppelinServer.notebook.createNote(null, EMPTY_STRING);
         int sparkVersion = getSparkVersionNumber(note);
         // DataFrame API is available from spark 1.3
         if (sparkVersion >= 13) {
@@ -140,7 +140,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
     @Test
     public void sparkRTest() throws IOException, DuplicateNameException {
       // create new note
-      Note note = ZeppelinServer.notebook.createNote(null, NOTE_NAME);
+      Note note = ZeppelinServer.notebook.createNote(null, EMPTY_STRING);
       int sparkVersion = getSparkVersionNumber(note);
 
       if (isSparkR() && sparkVersion >= 14) {   // sparkr supported from 1.4.0
@@ -179,7 +179,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
     @Test
     public void pySparkTest() throws IOException, DuplicateNameException {
         // create new note
-        Note note = ZeppelinServer.notebook.createNote(null, NOTE_NAME);
+        Note note = ZeppelinServer.notebook.createNote(null, EMPTY_STRING);
         note.setName("note");
         int sparkVersion = getSparkVersionNumber(note);
 
@@ -269,7 +269,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
     @Test
     public void pySparkAutoConvertOptionTest() throws IOException, DuplicateNameException {
         // create new note
-        Note note = ZeppelinServer.notebook.createNote(null, NOTE_NAME);
+        Note note = ZeppelinServer.notebook.createNote(null, EMPTY_STRING);
         note.setName("note");
 
         int sparkVersionNumber = getSparkVersionNumber(note);
@@ -299,7 +299,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
     @Test
     public void zRunTest() throws IOException, DuplicateNameException {
         // create new note
-        Note note = ZeppelinServer.notebook.createNote(null, NOTE_NAME);
+        Note note = ZeppelinServer.notebook.createNote(null, EMPTY_STRING);
         Paragraph p0 = note.addParagraph();
         Map config0 = p0.getConfig();
         config0.put("enabled", true);
@@ -331,7 +331,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
     @Test
     public void pySparkDepLoaderTest() throws IOException, DuplicateNameException {
         // create new note
-        Note note = ZeppelinServer.notebook.createNote(null, NOTE_NAME);
+        Note note = ZeppelinServer.notebook.createNote(null, EMPTY_STRING);
         int sparkVersionNumber = getSparkVersionNumber(note);
 
         if (isPyspark() && sparkVersionNumber >= 14) {
