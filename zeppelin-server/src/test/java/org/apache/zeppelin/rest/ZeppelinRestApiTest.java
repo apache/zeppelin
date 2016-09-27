@@ -32,6 +32,7 @@ import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.server.ZeppelinServer;
+import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
@@ -341,7 +342,9 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     Map<String, Object> resp = gson.fromJson(get.getResponseBodyAsString(), new TypeToken<Map<String, Object>>() {
     }.getType());
     List<Map<String, String>> body = (List<Map<String, String>>) resp.get("body");
-    assertEquals("List notebooks are equal", ZeppelinServer.notebook.getAllNotes().size(), body.size());
+    //TODO(khalid): anonymous or specific user notes?
+    AuthenticationInfo subject = new AuthenticationInfo("anonymous");
+    assertEquals("List notebooks are equal", ZeppelinServer.notebook.getAllNotes(subject).size(), body.size());
     get.releaseConnection();
   }
 

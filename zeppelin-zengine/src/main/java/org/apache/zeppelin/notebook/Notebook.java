@@ -31,14 +31,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-
 import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.stream.JsonReader;
-import org.apache.commons.codec.binary.StringUtils;
 import org.quartz.CronScheduleBuilder;
 import org.quartz.CronTrigger;
 import org.quartz.JobBuilder;
@@ -484,6 +482,7 @@ public class Notebook implements NoteEventListener {
     }
 
     List<NoteInfo> noteInfos = notebookRepo.list(subject);
+
     for (NoteInfo info : noteInfos) {
       loadNoteFromRepo(info.getId(), subject);
     }
@@ -534,7 +533,7 @@ public class Notebook implements NoteEventListener {
       return noteList;
     }
   }
-
+  
   public List<Note> getAllNotes(AuthenticationInfo subject) {
     final Set<String> entities = Sets.newHashSet();
     if (subject != null) {

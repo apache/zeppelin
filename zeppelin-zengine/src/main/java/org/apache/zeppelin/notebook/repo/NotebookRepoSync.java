@@ -31,6 +31,7 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
+import org.apache.zeppelin.notebook.NotebookAuthorization;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
@@ -178,9 +179,11 @@ public class NotebookRepoSync implements NotebookRepo {
    */
   void sync(int sourceRepoIndex, int destRepoIndex, AuthenticationInfo subject) throws IOException {
     LOG.info("Sync started");
+    NotebookAuthorization auth = NotebookAuthorization.getInstance();
     NotebookRepo srcRepo = getRepo(sourceRepoIndex);
     NotebookRepo dstRepo = getRepo(destRepoIndex);
-    List <NoteInfo> srcNotes = srcRepo.list(subject);
+    List <NoteInfo> allSrcNotes = srcRepo.list(subject);
+    List <NoteInfo> srcNotes = auth.filterByUser(allSrcNotes, subject);
     List <NoteInfo> dstNotes = dstRepo.list(subject);
 
     Map<String, List<String>> noteIDs = notesCheckDiff(srcNotes, srcRepo, dstNotes, dstRepo);
