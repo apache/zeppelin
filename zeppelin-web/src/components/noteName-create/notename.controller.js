@@ -59,7 +59,6 @@ angular.module('zeppelinWebApp').controller('NotenameCtrl', function($scope, not
   };
 
   $scope.$on('errorDialog', function(event, data) {
-    console.log('test');
     vm.error = true;
   });
 

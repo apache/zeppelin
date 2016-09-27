@@ -124,10 +124,10 @@ public class NotebookServer extends WebSocketServlet implements
     Notebook notebook = notebook();
     try {
       Message messagereceived = deserializeMessage(msg);
-      LOG.info("RECEIVE << " + messagereceived.op);
-      LOG.info("RECEIVE PRINCIPAL << " + messagereceived.principal);
-      LOG.info("RECEIVE TICKET << " + messagereceived.ticket);
-      LOG.info("RECEIVE ROLES << " + messagereceived.roles);
+      LOG.debug("RECEIVE << " + messagereceived.op);
+      LOG.debug("RECEIVE PRINCIPAL << " + messagereceived.principal);
+      LOG.debug("RECEIVE TICKET << " + messagereceived.ticket);
+      LOG.debug("RECEIVE ROLES << " + messagereceived.roles);
 
       if (LOG.isTraceEnabled()) {
         LOG.trace("RECEIVE MSG = " + messagereceived);

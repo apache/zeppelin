@@ -117,7 +117,6 @@ angular.module('zeppelinWebApp').controller('NoteImportCtrl', function($scope, $
     angular.element('#noteImportModal').modal('hide');
   });
   $scope.$on('importErrorDialog', function(event, data) {
-    console.log('testing');
     vm.resetFlags();
     vm.error = true;
   });
