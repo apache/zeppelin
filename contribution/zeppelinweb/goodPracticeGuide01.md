@@ -25,8 +25,8 @@ limitations under the License.
 We should have only one Angular Component per file, and it should look like this:
 
 ```
+'use strict';
 (function() {
-  'use strict';
 
   angular.module('zeppelinWebApp').controller('HomeCtrl', HomeCtrl);
 

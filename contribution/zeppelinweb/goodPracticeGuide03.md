@@ -102,7 +102,7 @@ Now let's see how we can use it inside our `.html` view in normal situations.
 
 ```
 <div ng-controller="myNewController as newCtrl">
-  <div ng-click="newCtrl.myControllerPublicFunction">{{ newCtrl.publicVariable }}</div>
+  <div ng-click="newCtrl.myControllerPublicFunction">{{ "{{newCtrl.publicVariable"}}}}</div>
 </div>
 ```
 
@@ -126,7 +126,7 @@ Which will leave the `.html` view without any `ng-controller` property.
 
 ```
 <div>
-  <div ng-click="newCtrl.myControllerPublicFunction">{{ newCtrl.publicVariable }}</div>
+  <div ng-click="newCtrl.myControllerPublicFunction">{{ "{{newCtrl.publicVariable"}}}}</div>
 </div>
 ```
 
