@@ -96,7 +96,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
     @Test
     public void sparkSQLTest() throws IOException {
         // create new note
-        Note note = ZeppelinServer.notebook.createNote(null);
+        Note note = ZeppelinServer.notebook.createNote(anonymous);
         int sparkVersion = getSparkVersionNumber(note);
         // DataFrame API is available from spark 1.3
         if (sparkVersion >= 13) {
@@ -140,7 +140,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
                 assertEquals(InterpreterResult.Type.TABLE, p.getResult().type());
                 assertEquals("_1\t_2\nhello\t20\n", p.getResult().message());
             }
-            ZeppelinServer.notebook.removeNote(note.getId(), null);
+            ZeppelinServer.notebook.removeNote(note.getId(), anonymous);
         }
     }
 
@@ -226,6 +226,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
                 p.setText("%pyspark from pyspark.sql import Row\n" +
                         "df=sqlContext.createDataFrame([Row(id=1, age=20)])\n" +
                         "z.show(df)");
+                p.setAuthenticationInfo(anonymous);
                 note.run(p.getId());
                 waitForFinish(p);
                 assertEquals(Status.FINISHED, p.getStatus());
