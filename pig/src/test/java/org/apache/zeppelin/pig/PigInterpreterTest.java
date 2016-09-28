@@ -6,120 +6,150 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+
 package org.apache.zeppelin.pig;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-
-import java.util.Arrays;
-import java.util.Properties;
-import java.io.PrintWriter;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.io.IOException;
-import java.io.StringWriter;
-import org.apache.commons.io.FileUtils;
-import static org.apache.zeppelin.pig.PigInterpreter.*;
+import org.apache.commons.io.IOUtils;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
-import static org.junit.Assert.*;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import org.apache.zeppelin.interpreter.InterpreterResult.Type;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
+
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.Properties;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class PigInterpreterTest {
 
-  private static PigInterpreter pig;
-  private static InterpreterContext context;
-  private static final String PASSWD_FILE = "/tmp/tmp_zeppelin_dummypasswd";
-  private static final String USERS_FILE = "/tmp/tmp_zeppelin_dummyusers";
+  private PigInterpreter pigInterpreter;
+  private InterpreterContext context;
 
-  @BeforeClass
-  public static void setUp() {
+  @Before
+  public void setUp() {
     Properties properties = new Properties();
-    properties.put(PIG_START_EXE, DEFAULT_START_EXE);
-    properties.put(PIG_START_ARGS, DEFAULT_START_ARGS);
-    properties.put(PIG_TIMEOUT_MS, DEFAULT_TIMEOUT_MS);
- 
-    pig = new PigInterpreter(properties);
-    pig.open();
-
-    context = new InterpreterContext(null, null, null, null, null, null, null, null);
+    properties.put("zeppelin.pig.execType", "local");
+    pigInterpreter = new PigInterpreter(properties);
+    pigInterpreter.open();
+    context = new InterpreterContext(null, "paragraph_id", null, null, null, null, null, null, null,
+            null, null);
   }
 
-  @AfterClass
-  public static void tearDown() {
-    pig.close();
-    pig.destroy();
-    try {
-      org.apache.commons.io.FileUtils.forceDelete(new File(PASSWD_FILE));
-      org.apache.commons.io.FileUtils.forceDelete(new File(USERS_FILE));
-    } catch (IOException e) {
-       StringWriter sw = new StringWriter();
-       e.printStackTrace(new PrintWriter(sw));
-       fail("Unable to cleanup temp pig files:\n" + sw.toString());
-    }
+  @After
+  public void tearDown() {
+    pigInterpreter.close();
   }
 
- /**
-  * Extract users from a dummy passwd file
-  * https://pig.apache.org/docs/r0.10.0/start.html#run
-  */
   @Test
-  public void testExtractUsers() {
-    PrintWriter out = null;
-    StringWriter sw = new StringWriter();
+  public void testBasics() throws IOException {
+    String content = "1\tandy\n"
+            + "2\tpeter\n";
+    File tmpFile = File.createTempFile("zeppelin", "test");
+    FileWriter writer = new FileWriter(tmpFile);
+    IOUtils.write(content, writer);
+    writer.close();
 
-    try {
-      out = new PrintWriter(new File(PASSWD_FILE));
-      out.println("user1:pass1");
-      out.println("user2:pass2");
-      out.println("user3:pass3");
-      out.println("user4:pass4");
-      out.flush();
-    } catch (FileNotFoundException e) {
-       e.printStackTrace(new PrintWriter(sw));
-       fail("Unable to write to "+PASSWD_FILE+":\n" + sw.toString());
-    } finally {
-      if (out != null){
-        out.close();
-      }
-    }
+    // simple pig script using dump
+    String pigscript = "a = load '" + tmpFile.getAbsolutePath() + "';"
+            + "dump a;";
+    InterpreterResult result = pigInterpreter.interpret(pigscript, context);
+    assertEquals(Type.TEXT, result.type());
+    assertEquals(Code.SUCCESS, result.code());
+    assertTrue(result.message().contains("(1,andy)\n(2,peter)"));
 
-    try {
-      FileUtils.deleteDirectory(new File(USERS_FILE));
-    } catch (IOException e) {
-        e.printStackTrace(new PrintWriter(sw));
-        fail("Unable to delete: "+USERS_FILE+". Error: " + sw.toString());
-    }
-    String pigScript = "A = load 'file://"+PASSWD_FILE+"' using PigStorage(':');";
-    pigScript += "B = foreach A generate $0 as id;";
-    pigScript += "store B into 'file://"+USERS_FILE+"';";
+    // describe
+    pigscript = "a = load '" + tmpFile.getAbsolutePath() + "' as (id: int, name: bytearray);"
+            + "describe a;";
+    result = pigInterpreter.interpret(pigscript, context);
+    assertEquals(Type.TEXT, result.type());
+    assertEquals(Code.SUCCESS, result.code());
+    assertTrue(result.message().contains("a: {id: int,name: bytearray}"));
 
-    InterpreterResult result = pig.interpret(pigScript, context);
+    // syntax error (compilation error)
+    pigscript = "a = loa '" + tmpFile.getAbsolutePath() + "';"
+            + "describe a;";
+    result = pigInterpreter.interpret(pigscript, context);
+    assertEquals(Type.TEXT, result.type());
+    assertEquals(Code.ERROR, result.code());
+    assertTrue(result.message().contains("Syntax error, unexpected symbol at or near 'a'"));
 
-    String readusers = null;
-    try {
-      readusers = new String(Files.readAllBytes(Paths.get(USERS_FILE+"/part-m-00000")));
-    } catch (IOException e) {
-        e.printStackTrace(new PrintWriter(sw));
-        fail("Unable read output of pig job from: "+USERS_FILE+"/part-m-00000. Error:\n" + sw.toString());
-    }
-    assertEquals(readusers, "user1\nuser2\nuser3\nuser4\n");
-
+    // execution error
+    pigscript = "a = load 'invalid_path';"
+            + "dump a;";
+    result = pigInterpreter.interpret(pigscript, context);
+    assertEquals(Type.TEXT, result.type());
+    assertEquals(Code.ERROR, result.code());
+    assertTrue(result.message().contains("Input path does not exist"));
   }
 
 
+  @Test
+  public void testIncludeJobStats() throws IOException {
+    Properties properties = new Properties();
+    properties.put("zeppelin.pig.execType", "local");
+    properties.put("zeppelin.pig.includeJobStats", "true");
+    pigInterpreter = new PigInterpreter(properties);
+    pigInterpreter.open();
+
+    String content = "1\tandy\n"
+            + "2\tpeter\n";
+    File tmpFile = File.createTempFile("zeppelin", "test");
+    FileWriter writer = new FileWriter(tmpFile);
+    IOUtils.write(content, writer);
+    writer.close();
+
+    // simple pig script using dump
+    String pigscript = "a = load '" + tmpFile.getAbsolutePath() + "';"
+            + "dump a;";
+    InterpreterResult result = pigInterpreter.interpret(pigscript, context);
+    assertEquals(Type.TEXT, result.type());
+    assertEquals(Code.SUCCESS, result.code());
+    assertTrue(result.message().contains("Counters:"));
+    assertTrue(result.message().contains("(1,andy)\n(2,peter)"));
+
+    // describe
+    pigscript = "a = load '" + tmpFile.getAbsolutePath() + "' as (id: int, name: bytearray);"
+            + "describe a;";
+    result = pigInterpreter.interpret(pigscript, context);
+    assertEquals(Type.TEXT, result.type());
+    assertEquals(Code.SUCCESS, result.code());
+    // no job is launched, so no jobStats
+    assertTrue(!result.message().contains("Counters:"));
+    assertTrue(result.message().contains("a: {id: int,name: bytearray}"));
+
+    // syntax error (compilation error)
+    pigscript = "a = loa '" + tmpFile.getAbsolutePath() + "';"
+            + "describe a;";
+    result = pigInterpreter.interpret(pigscript, context);
+    assertEquals(Type.TEXT, result.type());
+    assertEquals(Code.ERROR, result.code());
+    // no job is launched, so no jobStats
+    assertTrue(!result.message().contains("Counters:"));
+    assertTrue(result.message().contains("Syntax error, unexpected symbol at or near 'a'"));
+
+    // execution error
+    pigscript = "a = load 'invalid_path';"
+            + "dump a;";
+    result = pigInterpreter.interpret(pigscript, context);
+    assertEquals(Type.TEXT, result.type());
+    assertEquals(Code.ERROR, result.code());
+    assertTrue(result.message().contains("Counters:"));
+    assertTrue(result.message().contains("Input path does not exist"));
+  }
 }

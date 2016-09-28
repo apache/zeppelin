@@ -17,139 +17,120 @@
 
 package org.apache.zeppelin.pig;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.util.List;
-import java.util.Properties;
-import java.util.Arrays;
-import org.apache.commons.exec.CommandLine;
-import org.apache.commons.exec.DefaultExecutor;
-import org.apache.commons.exec.ExecuteException;
-import org.apache.commons.exec.ExecuteWatchdog;
-import org.apache.commons.exec.PumpStreamHandler;
-import org.apache.zeppelin.interpreter.Interpreter;
+import org.apache.commons.io.output.ByteArrayOutputStream;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.pig.PigServer;
+import org.apache.pig.impl.logicalLayer.FrontendException;
+import org.apache.pig.tools.pigstats.*;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
-import org.apache.zeppelin.interpreter.InterpreterPropertyBuilder;
-import org.apache.zeppelin.scheduler.Scheduler;
-import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.util.*;
+
 /**
  * Pig interpreter for Zeppelin.
- * Closely follows code for shell interpreter
  */
-public class PigInterpreter extends Interpreter {
-  Logger logger = LoggerFactory.getLogger(PigInterpreter.class);
+public class PigInterpreter extends BasePigInterpreter {
+  private static Logger LOGGER = LoggerFactory.getLogger(PigInterpreter.class);
 
-  private static final String NEWLINE = "\n";
-
-  //Executable name used to start grunt shell 
-  public static final String PIG_START_EXE = "pig.executable";
-  public static final String DEFAULT_START_EXE = "pig";
-
-  //Arguments to start pig with. More details available via 'pig -help'
-  public static final String PIG_START_ARGS = "pig.start.args";
-  public static final String DEFAULT_START_ARGS = "-useHCatalog -exectype local";
-
-  //How long to wait before timing out (ms)
-  public static final String PIG_TIMEOUT_MS = "pig.timeout.ms";
-  public static final String DEFAULT_TIMEOUT_MS = "600000";
-
-  DefaultExecutor executor = null;
-  static {
-    Interpreter.register(
-      "pig",
-      "pig",
-      PigInterpreter.class.getName(),
-      new InterpreterPropertyBuilder()
-        .add(PIG_START_EXE, DEFAULT_START_EXE, "Pig executable used to start grunt shell")
-        .add(PIG_START_ARGS, DEFAULT_START_ARGS, "Starting arguments")
-        .add(PIG_TIMEOUT_MS, DEFAULT_TIMEOUT_MS, "Timeout (ms)")
-        .build()
-    );
-  }
+  private PigServer pigServer;
+  private boolean includeJobStats = false;
 
   public PigInterpreter(Properties property) {
     super(property);
   }
 
   @Override
-  public void open() {}
+  public void open() {
+    String execType = getProperty("zeppelin.pig.execType");
+    if (execType == null) {
+      execType = "mapreduce";
+    }
+    String includeJobStats = getProperty("zeppelin.pig.includeJobStats");
+    if (includeJobStats != null) {
+      this.includeJobStats = Boolean.parseBoolean(includeJobStats);
+    }
+    try {
+      pigServer = new PigServer(execType);
+    } catch (IOException e) {
+      throw new RuntimeException("Fail to launch PigServer", e);
+    }
+  }
 
   @Override
-  public void close() {}
+  public void close() {
+    pigServer = null;
+  }
 
 
   @Override
   public InterpreterResult interpret(String cmd, InterpreterContext contextInterpreter) {
-    // use commandline to store string corresponding to pig shell command
-    // start with pig exectable name (or full path if provided)...
-    CommandLine cmdLine = CommandLine.parse(getProperty(PIG_START_EXE).trim());
-
-    // ...add any CLI arguments specified by user in interpreter settings
-    String startArgs = getProperty(PIG_START_ARGS).trim();
-    if (startArgs.length() > 0){
-      logger.info("Start arguments passed to pig: " + startArgs);
-      List<String> argList = Arrays.asList(startArgs.split("\\s+"));
-      for (String arg : argList) {
-        cmdLine.addArgument(arg, false);
+    // remember the origial stdout, because we will redirect stdout to capture
+    // the pig dump output.
+    PrintStream originalStdOut = System.out;
+    ByteArrayOutputStream bytesOutput = new ByteArrayOutputStream();
+    File tmpFile = null;
+    try {
+      tmpFile = PigUtils.createTempPigScript(cmd);
+      System.setOut(new PrintStream(bytesOutput));
+      // each thread should its own ScriptState & PigStats
+      ScriptState.start(pigServer.getPigContext().getExecutionEngine().instantiateScriptState());
+      // reset PigStats, otherwise you may get the PigStats of last job in the same thread
+      // because PigStats is ThreadLocal variable
+      PigStats.start(pigServer.getPigContext().getExecutionEngine().instantiatePigStats());
+      PigScriptListener scriptListener = new PigScriptListener();
+      ScriptState.get().registerListener(scriptListener);
+      listenerMap.put(contextInterpreter.getParagraphId(), scriptListener);
+      pigServer.registerScript(tmpFile.getAbsolutePath());
+    } catch (IOException e) {
+      if (e instanceof FrontendException) {
+        FrontendException fe = (FrontendException) e;
+        if (!fe.getMessage().contains("Backend error :")) {
+          // If the error message contains "Backend error :", that means the exception is from
+          // backend.
+          return new InterpreterResult(Code.ERROR, ExceptionUtils.getStackTrace(e));
+        }
+      }
+      PigStats stats = PigStats.get();
+      if (stats != null) {
+        String errorMsg = PigUtils.extactJobStats(stats);
+        if (errorMsg != null) {
+          LOGGER.debug("Error Message:" + errorMsg);
+          return new InterpreterResult(Code.ERROR, errorMsg);
+        }
+      }
+      return new InterpreterResult(Code.ERROR, ExceptionUtils.getStackTrace(e));
+    } finally {
+      System.setOut(originalStdOut);
+      listenerMap.remove(contextInterpreter.getParagraphId());
+      if (tmpFile != null) {
+        tmpFile.delete();
       }
     }
-    // ...finally add contents of pig cell after the -e flag 
-    logger.info("Run pig command '" + cmd + "'");
-    long start = System.currentTimeMillis();
-    cmdLine.addArgument("-e", false);
-    cmdLine.addArgument(cmd, false);
-
-    // execute command and return success/failure based on its exit value
-    executor = new DefaultExecutor();
-    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-    executor.setStreamHandler(new PumpStreamHandler(outputStream));
-
-    int commandTimeOut = Integer.parseInt(getProperty(PIG_TIMEOUT_MS));
-    executor.setWatchdog(new ExecuteWatchdog(commandTimeOut));
-    try {
-      int exitValue = executor.execute(cmdLine);
-      return new InterpreterResult(InterpreterResult.Code.SUCCESS, outputStream.toString());
-    } catch (ExecuteException e) {
-      logger.error("Can not run " + cmd, e);
-      return new InterpreterResult(Code.ERROR, e.getMessage() + NEWLINE + outputStream.toString());
-    } catch (IOException e) {
-      logger.error("Can not run " + cmd, e);
-      return new InterpreterResult(Code.ERROR, e.getMessage() + NEWLINE + outputStream.toString());
+    StringBuilder outputBuilder = new StringBuilder();
+    PigStats stats = PigStats.get();
+    if (stats != null && includeJobStats) {
+      String jobStats = PigUtils.extactJobStats(stats);
+      if (jobStats != null) {
+        outputBuilder.append(jobStats);
+      }
     }
-  }
-
-  @Override
-  public void cancel(InterpreterContext context) {
-    if (executor != null) {
-      executor.getWatchdog().destroyProcess();
+    if (!outputBuilder.toString().isEmpty() || !bytesOutput.toString().isEmpty()) {
+      outputBuilder.append("------------- Pig Output --------------\n");
     }
-  }
-  
-
-  @Override
-  public FormType getFormType() {
-    return FormType.SIMPLE;
+    outputBuilder.append(bytesOutput.toString());
+    return new InterpreterResult(Code.SUCCESS, outputBuilder.toString());
   }
 
-  @Override
-  public int getProgress(InterpreterContext context) {
-    return 0;
-  }
 
-  @Override
-  public Scheduler getScheduler() {
-    return SchedulerFactory.singleton().createOrGetFIFOScheduler(
-        PigInterpreter.class.getName() + this.hashCode());
-  }
-
-  @Override
-  public List<String> completion(String buf, int cursor) {
-    return null;
+  public PigServer getPigServer() {
+    return pigServer;
   }
 
 }
