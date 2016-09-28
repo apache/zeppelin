@@ -262,7 +262,8 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
 
     assertNotNull("Did not get back a notebook id in body", importId);
     Note newNote = ZeppelinServer.notebook.getNote(importId);
-    assertEquals("Compare note names", noteName, newNote.getName());
+    //Imported notebook should not have same name as existing note 
+    assertNotEquals("Compare note names", noteName, newNote.getName());
     assertEquals("Compare paragraphs count", note.getParagraphs().size(), newNote.getParagraphs()
         .size());
     // cleanup

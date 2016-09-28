@@ -463,6 +463,6 @@ public abstract class AbstractTestRestApi {
     return responsesWith(405);
   }
   
-  protected Matcher<? super HttpMethodBase> isNotAcceptable() { return responsesWith(404); }
+  protected Matcher<? super HttpMethodBase> isNotAcceptable() { return responsesWith(406); }
 
 }
