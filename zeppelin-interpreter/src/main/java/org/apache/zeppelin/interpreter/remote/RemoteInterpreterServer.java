@@ -33,6 +33,8 @@ import org.apache.zeppelin.dep.DependencyResolver;
 import org.apache.zeppelin.display.*;
 import org.apache.zeppelin.helium.*;
 import org.apache.zeppelin.interpreter.*;
+import org.apache.zeppelin.interpreter.InterpreterHookRegistry.HookType;
+import org.apache.zeppelin.interpreter.InterpreterHookListener;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.dev.ZeppelinDevServer;
 import org.apache.zeppelin.interpreter.thrift.*;
@@ -60,6 +62,7 @@ public class RemoteInterpreterServer
 
   InterpreterGroup interpreterGroup;
   AngularObjectRegistry angularObjectRegistry;
+  InterpreterHookRegistry hookRegistry;
   DistributedResourcePool resourcePool;
   private ApplicationLoader appLoader;
 
@@ -152,7 +155,9 @@ public class RemoteInterpreterServer
     if (interpreterGroup == null) {
       interpreterGroup = new InterpreterGroup(interpreterGroupId);
       angularObjectRegistry = new AngularObjectRegistry(interpreterGroup.getId(), this);
+      hookRegistry = new InterpreterHookRegistry(interpreterGroup.getId());
       resourcePool = new DistributedResourcePool(interpreterGroup.getId(), eventClient);
+      interpreterGroup.setInterpreterHookRegistry(hookRegistry);
       interpreterGroup.setAngularObjectRegistry(angularObjectRegistry);
       interpreterGroup.setResourcePool(resourcePool);
 
@@ -383,10 +388,53 @@ public class RemoteInterpreterServer
       return infos;
     }
 
+    private void processInterpreterHooks(final String noteId) {
+      InterpreterHookListener hookListener = new InterpreterHookListener() {
+        @Override
+        public void onPreExecute(String script) {
+          String cmdDev = interpreter.getHook(noteId, HookType.PRE_EXEC_DEV);
+          String cmdUser = interpreter.getHook(noteId, HookType.PRE_EXEC);
+          
+          // User defined hook should be executed before dev hook
+          List<String> cmds = Arrays.asList(cmdDev, cmdUser);
+          for (String cmd : cmds) {
+            if (cmd != null) {
+              script = cmd + '\n' + script;
+            }
+          }
+          
+          InterpretJob.this.script = script;
+        }
+        
+        @Override
+        public void onPostExecute(String script) {
+          String cmdDev = interpreter.getHook(noteId, HookType.POST_EXEC_DEV);
+          String cmdUser = interpreter.getHook(noteId, HookType.POST_EXEC);
+          
+          // User defined hook should be executed after dev hook
+          List<String> cmds = Arrays.asList(cmdUser, cmdDev);
+          for (String cmd : cmds) {
+            if (cmd != null) {
+              script += '\n' + cmd;
+            }
+          }
+          
+          InterpretJob.this.script = script;
+        }
+      };
+      hookListener.onPreExecute(script);
+      hookListener.onPostExecute(script);
+    }
+
     @Override
     protected Object jobRun() throws Throwable {
       try {
         InterpreterContext.set(context);
+        
+        // Add hooks to script from registry.
+        // Global scope first, followed by notebook scope
+        processInterpreterHooks(null);
+        processInterpreterHooks(context.getNoteId());
         InterpreterResult result = interpreter.interpret(script, context);
 
         // data from context.out is prepended to InterpreterResult if both defined
