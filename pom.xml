@@ -75,6 +75,7 @@
     <module>elasticsearch</module>
     <module>bigquery</module>
     <module>alluxio</module>
+    <module>scio</module>
     <module>zeppelin-web</module>
     <module>zeppelin-server</module>
     <module>zeppelin-distribution</module>
@@ -589,7 +590,14 @@
         <module>beam</module>
       </modules>
     </profile>
-    
+
+     <profile>
+      <id>scio</id>
+      <modules>
+        <module>scio</module>
+      </modules>
+    </profile>
+
     <profile>
       <id>examples</id>
       <modules>

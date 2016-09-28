@@ -1,0 +1,19 @@
+[
+  {
+    "group": "scio",
+    "name": "scio",
+    "className": "org.apache.zeppelin.scio.ScioInterpreter",
+    "defaultInterpreter": true,
+    "properties": {
+      "args": {
+        "envName": null,
+        "propertyName": null,
+        "defaultValue": "--runner=InProcessPipelineRunner",
+        "description": "Scio commandline args"
+      }
+    },
+    "editor": {
+      "language": "scala"
+    }
+  }
+]
