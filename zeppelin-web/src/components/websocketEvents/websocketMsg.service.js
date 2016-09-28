@@ -180,10 +180,11 @@ angular.module('zeppelinWebApp').service('websocketMsgSrv', function($rootScope,
       });
     },
 
-    getEditorSetting: function(replName) {
+    getEditorSetting: function(orderId, replName) {
       websocketEvents.sendNewEvent({
         op: 'EDITOR_SETTING',
         data: {
+          orderId: orderId,
           magic: replName
         }
       });

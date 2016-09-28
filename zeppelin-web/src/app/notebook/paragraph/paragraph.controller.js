@@ -705,13 +705,15 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
 
   var getAndSetEditorSetting = function(session, interpreterName) {
     var deferred = $q.defer();
-    websocketMsgSrv.getEditorSetting(interpreterName);
+    websocketMsgSrv.getEditorSetting($scope.paragraph.id, interpreterName);
     $timeout(
       $scope.$on('editorSetting', function(event, data) {
-        deferred.resolve(data);
+        if ($scope.paragraph.id === data.orderId) {
+          deferred.resolve(data);
+        }
       }
     ), 1000);
-
+    
     deferred.promise.then(function(editorSetting) {
       if (!_.isEmpty(editorSetting.editor)) {
         var mode = 'ace/mode/' + editorSetting.editor.language;
