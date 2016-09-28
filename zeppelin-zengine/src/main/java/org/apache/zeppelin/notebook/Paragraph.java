@@ -301,15 +301,23 @@ public class Paragraph extends Job implements Serializable, Cloneable {
       }
     }
 
+    // Get text input from paragraph
     String script = getScriptBody();
+    
+    // Process pre/post-execute callback hooks
+    final InterpreterCallbackRegistry callbacks = repl.getInterpreterGroup()
+            .getInterpreterCallbackRegistry();
+    script = processInterpreterCallbacks(callbacks, replName, script);
+    
     // inject form
     if (repl.getFormType() == FormType.NATIVE) {
       settings.clear();
     } else if (repl.getFormType() == FormType.SIMPLE) {
       String scriptBody = getScriptBody();
-      Map<String, Input> inputs = Input.extractSimpleQueryParam(scriptBody); // inputs will be built
-                                                                             // from script body
-
+      scriptBody = processInterpreterCallbacks(callbacks, replName, scriptBody);
+      
+      // inputs will be built from script body
+      Map<String, Input> inputs = Input.extractSimpleQueryParam(scriptBody);
       final AngularObjectRegistry angularRegistry = repl.getInterpreterGroup()
               .getAngularObjectRegistry();
 
@@ -403,6 +411,39 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     }
     return true;
   }
+  
+  private String processInterpreterCallbacks(final InterpreterCallbackRegistry callbacks,
+                                             final String replName,
+                                             String script) {
+    if (callbacks == null) {
+      return script;
+    }
+
+    InterpreterCallbackListener callbackListener = new InterpreterCallbackListener() {
+      @Override
+      public String onPreExecute(String script) {
+        String cmd = callbacks.get(note.getId(), replName, InterpreterCallbackRegistry.PRE_EXEC);
+        if (cmd != null) {
+          script = cmd + '\n' + script;
+        }
+        
+        return script;
+      }
+      
+      @Override
+      public String onPostExecute(String script) {
+        String cmd = callbacks.get(note.getId(), replName, InterpreterCallbackRegistry.POST_EXEC);
+        if (cmd != null) {
+          script += '\n' + cmd;
+        }
+        
+        return script;
+      }
+    };
+    script = callbackListener.onPreExecute(script);
+    script = callbackListener.onPostExecute(script);
+    return script;
+  }
 
   private InterpreterContext getInterpreterContext() {
     final Paragraph self = this;
@@ -438,11 +479,13 @@ public class Paragraph extends Job implements Serializable, Cloneable {
 
   private InterpreterContext getInterpreterContext(InterpreterOutput output) {
     AngularObjectRegistry registry = null;
+    InterpreterCallbackRegistry callbacks = null;
     ResourcePool resourcePool = null;
 
     if (!factory.getInterpreterSettings(note.getId()).isEmpty()) {
       InterpreterSetting intpGroup = factory.getInterpreterSettings(note.getId()).get(0);
       registry = intpGroup.getInterpreterGroup(note.getId()).getAngularObjectRegistry();
+      callbacks = intpGroup.getInterpreterGroup(note.getId()).getInterpreterCallbackRegistry();
       resourcePool = intpGroup.getInterpreterGroup(note.getId()).getResourcePool();
     }
 
@@ -469,6 +512,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
         this.getConfig(),
         this.settings,
         registry,
+        callbacks,
         resourcePool,
         runners,
         output);

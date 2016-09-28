@@ -80,7 +80,7 @@ public class PythonInterpreterPandasSqlTest {
 
     context = new InterpreterContext("note", "id", "title", "text", new AuthenticationInfo(),
         new HashMap<String, Object>(), new GUI(),
-        new AngularObjectRegistry(intpGroup.getId(), null), null,
+        new AngularObjectRegistry(intpGroup.getId(), null), null, null,
         new LinkedList<InterpreterContextRunner>(), new InterpreterOutput(
             new InterpreterOutputListener() {
               @Override public void onAppend(InterpreterOutput out, byte[] line) {}

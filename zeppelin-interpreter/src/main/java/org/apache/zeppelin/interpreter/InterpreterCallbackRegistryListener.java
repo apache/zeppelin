@@ -17,21 +17,13 @@
 
 package org.apache.zeppelin.interpreter;
 
-import static org.junit.Assert.*;
-
-import org.junit.Test;
-
-public class InterpreterContextTest {
-
-  @Test
-  public void testThreadLocal() {
-    assertNull(InterpreterContext.get());
-
-    InterpreterContext.set(new InterpreterContext(null, null, null, null, null, null, null, null, null, null, null, null));
-    assertNotNull(InterpreterContext.get());
-
-    InterpreterContext.remove();
-    assertNull(InterpreterContext.get());
-  }
-
+/**
+ * This interface is used to broadcast changes in the callback registry
+ * from a remote interpreter process to the Zeppelin Engine.
+ */
+public interface InterpreterCallbackRegistryListener {
+  public void onRegister(String interpreterGroupId, String noteId, String replName,
+                         String event, String cmd);
+  public void onUnregister(String interpreterGroupId, String noteId, String replName,
+                           String event);
 }

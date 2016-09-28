@@ -17,6 +17,7 @@
 package org.apache.zeppelin.interpreter.remote;
 
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.interpreter.InterpreterContextRunner;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterEvent;
@@ -26,6 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -88,6 +90,34 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector {
         RemoteInterpreterEventType.ANGULAR_OBJECT_REMOVE, gson.toJson(removeObject)));
   }
 
+  /**
+   * notify callback registration
+   */
+  public void registerCallback(String noteId, String replName, String eventName, String cmd) {
+    Map<String, String> callbackInfo = new HashMap<String, String>();
+    callbackInfo.put("noteId", noteId);
+    callbackInfo.put("replName", replName);
+    callbackInfo.put("eventName", eventName);
+    callbackInfo.put("cmd", cmd);
+    Type mapType = new TypeToken<Map<String, String>>() {}.getType();
+
+    sendEvent(new RemoteInterpreterEvent(
+        RemoteInterpreterEventType.REGISTER_CALLBACK, gson.toJson(callbackInfo, mapType)));
+  }
+  
+  /**
+   * notify callback unregistration
+   */
+  public void unregisterCallback(String noteId, String replName, String eventName) {
+    Map<String, String> callbackInfo = new HashMap<String, String>();
+    callbackInfo.put("noteId", noteId);
+    callbackInfo.put("replName", replName);
+    callbackInfo.put("eventName", eventName);
+    Type mapType = new TypeToken<Map<String, String>>() {}.getType();
+
+    sendEvent(new RemoteInterpreterEvent(
+        RemoteInterpreterEventType.UNREGISTER_CALLBACK, gson.toJson(callbackInfo, mapType)));
+  }
 
   /**
    * Get all resources except for specific resourcePool

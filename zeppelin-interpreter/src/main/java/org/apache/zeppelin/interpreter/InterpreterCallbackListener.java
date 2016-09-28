@@ -17,21 +17,10 @@
 
 package org.apache.zeppelin.interpreter;
 
-import static org.junit.Assert.*;
-
-import org.junit.Test;
-
-public class InterpreterContextTest {
-
-  @Test
-  public void testThreadLocal() {
-    assertNull(InterpreterContext.get());
-
-    InterpreterContext.set(new InterpreterContext(null, null, null, null, null, null, null, null, null, null, null, null));
-    assertNotNull(InterpreterContext.get());
-
-    InterpreterContext.remove();
-    assertNull(InterpreterContext.get());
-  }
-
+/**
+ * An interface for processing custom callback code into the interpreter.
+ */
+public interface InterpreterCallbackListener {
+  public String onPreExecute(String script);
+  public String onPostExecute(String script);
 }

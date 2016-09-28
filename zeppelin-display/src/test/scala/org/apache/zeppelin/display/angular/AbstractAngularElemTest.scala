@@ -36,7 +36,7 @@ trait AbstractAngularElemTest
     val context = new InterpreterContext("note", "paragraph", "title", "text",
       new AuthenticationInfo(), new util.HashMap[String, Object](), new GUI(),
       new AngularObjectRegistry(intpGroup.getId(), null),
-      null,
+      null, null,
       new util.LinkedList[InterpreterContextRunner](),
       new InterpreterOutput(new InterpreterOutputListener() {
         override def onAppend(out: InterpreterOutput, line: Array[Byte]): Unit = {

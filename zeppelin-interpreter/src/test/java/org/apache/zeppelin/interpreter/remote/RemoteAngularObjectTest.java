@@ -90,6 +90,7 @@ public class RemoteAngularObjectTest implements AngularObjectRegistryListener {
         new HashMap<String, Object>(),
         new GUI(),
         new AngularObjectRegistry(intpGroup.getId(), null),
+        new InterpreterCallbackRegistry(intpGroup.getId(), null),
         new LocalResourcePool("pool1"),
         new LinkedList<InterpreterContextRunner>(), null);
 
@@ -174,7 +175,7 @@ public class RemoteAngularObjectTest implements AngularObjectRegistryListener {
     // create object
     localRegistry.addAndNotifyRemoteProcess("n1", "v1", "note", null);
     
-    // get from remote registry 
+    // get from remote registry
     ret = intp.interpret("get", context);
     Thread.sleep(500); // waitFor eventpoller pool event
     result = ret.message().split(" ");

@@ -80,16 +80,16 @@ class PyZeppelinContext(dict):
   def get(self, key):
     return self.__getitem__(key)
 
-  def input(self, name, defaultValue = ""):
+  def input(self, name, defaultValue=""):
     return self.z.input(name, defaultValue)
 
-  def select(self, name, options, defaultValue = ""):
+  def select(self, name, options, defaultValue=""):
     # auto_convert to ArrayList doesn't match the method signature on JVM side
     tuples = list(map(lambda items: self.__tupleToScalaTuple2(items), options))
     iterables = gateway.jvm.scala.collection.JavaConversions.collectionAsScalaIterable(tuples)
     return self.z.select(name, defaultValue, iterables)
 
-  def checkbox(self, name, options, defaultChecked = None):
+  def checkbox(self, name, options, defaultChecked=None):
     if defaultChecked is None:
       defaultChecked = list(map(lambda items: items[0], options))
     optionTuples = list(map(lambda items: self.__tupleToScalaTuple2(items), options))
@@ -98,6 +98,23 @@ class PyZeppelinContext(dict):
 
     checkedIterables = self.z.checkbox(name, defaultCheckedIterables, optionIterables)
     return gateway.jvm.scala.collection.JavaConversions.asJavaCollection(checkedIterables)
+
+  def registerCallback(self, event, cmd, replName=None):
+      if replName is None:
+          self.z.registerCallback(event, cmd)
+      else:
+          self.z.registerCallback(event, cmd, replName)
+
+  def unregisterCallback(self, event, replName=None):
+      if replName is None:
+          self.z.unregisterCallback(event)
+      else:
+          self.z.unregisterCallback(event, replName)
+
+  def getCallback(self, event, replName=None):
+      if replName is None:
+          return self.z.getCallback(event)
+      return self.z.getCallback(event, replName)
 
   def __tupleToScalaTuple2(self, tuple):
     if (len(tuple) == 2):

@@ -32,7 +32,7 @@ with BeforeAndAfter with BeforeAndAfterEach with Eventually with Matchers {
     val context = new InterpreterContext("note", "id", "title", "text", new AuthenticationInfo(),
       new java.util.HashMap[String, Object](), new GUI(), new AngularObjectRegistry(
         intpGroup.getId(), null),
-      null,
+      null, null,
       new java.util.LinkedList[InterpreterContextRunner](),
       new InterpreterOutput(new InterpreterOutputListener() {
         override def onAppend(out: InterpreterOutput, line: Array[Byte]): Unit = {

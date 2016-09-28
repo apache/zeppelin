@@ -88,7 +88,7 @@ public class RemoteInterpreterOutputTestStream implements RemoteInterpreterProce
         new HashMap<String, Object>(),
         new GUI(),
         new AngularObjectRegistry(intpGroup.getId(), null),
-        null,
+        null, null,
         new LinkedList<InterpreterContextRunner>(), null);
   }
 

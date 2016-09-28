@@ -32,6 +32,7 @@ import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.interpreter.Interpreter;
+import org.apache.zeppelin.interpreter.InterpreterCallbackRegistry;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterContextRunner;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
@@ -116,6 +117,7 @@ public class RemoteSchedulerTest implements RemoteInterpreterProcessListener {
             new HashMap<String, Object>(),
             new GUI(),
             new AngularObjectRegistry(intpGroup.getId(), null),
+            new InterpreterCallbackRegistry(intpGroup.getId(), null),
             new LocalResourcePool("pool1"),
             new LinkedList<InterpreterContextRunner>(), null));
         return "1000";
@@ -192,6 +194,7 @@ public class RemoteSchedulerTest implements RemoteInterpreterProcessListener {
           new HashMap<String, Object>(),
           new GUI(),
           new AngularObjectRegistry(intpGroup.getId(), null),
+          new InterpreterCallbackRegistry(intpGroup.getId(), null),
           new LocalResourcePool("pool1"),
           new LinkedList<InterpreterContextRunner>(), null);
 
@@ -230,6 +233,7 @@ public class RemoteSchedulerTest implements RemoteInterpreterProcessListener {
           new HashMap<String, Object>(),
           new GUI(),
           new AngularObjectRegistry(intpGroup.getId(), null),
+          new InterpreterCallbackRegistry(intpGroup.getId(), null),
           new LocalResourcePool("pool1"),
           new LinkedList<InterpreterContextRunner>(), null);
 

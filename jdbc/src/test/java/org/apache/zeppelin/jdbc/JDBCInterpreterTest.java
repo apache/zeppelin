@@ -87,7 +87,7 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     insertStatement.setString(1, null);
     insertStatement.execute();
     interpreterContext = new InterpreterContext("", "1", "", "", new AuthenticationInfo(), null, null, null, null,
-        null, null);
+        null, null, null);
   }
 
 

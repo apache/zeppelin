@@ -33,14 +33,17 @@ import org.apache.spark.SparkContext;
 import org.apache.spark.sql.SQLContext;
 import org.apache.spark.sql.catalyst.expressions.Attribute;
 import org.apache.zeppelin.annotation.ZeppelinApi;
+import org.apache.zeppelin.annotation.Experimental;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.AngularObjectWatcher;
 import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.display.Input.ParamOption;
+import org.apache.zeppelin.interpreter.InterpreterCallbackRegistry;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterContextRunner;
 import org.apache.zeppelin.interpreter.InterpreterException;
+import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.spark.dep.SparkDependencyResolver;
 import org.apache.zeppelin.resource.Resource;
 import org.apache.zeppelin.resource.ResourcePool;
@@ -697,6 +700,74 @@ public class ZeppelinContext {
     registry.remove(name, noteId, null);
   }
 
+  /**
+   * General function to register callback event
+   * @param event The type of event to hook to (pre_exec, post_exec)
+   * @param cmd The code to be executed by the interpreter on given event
+   * @param replName Name of the interpreter
+   */
+  @Experimental
+  public void registerCallback(String event, String cmd, String replName) {
+    InterpreterCallbackRegistry callbacks = interpreterContext.getInterpreterCallbackRegistry();
+    String noteId = interpreterContext.getNoteId();
+    callbacks.register(noteId, replName, event, cmd);
+  }
+
+  /**
+   * registerCallback() wrapper for the spark (scala) interpreter
+   * @param event The type of event to hook to (pre_exec, post_exec)
+   * @param cmd The code to be executed by the interpreter on given event
+   */
+  @Experimental
+  public void registerCallback(String event, String cmd) {
+    String replName = Paragraph.getRequiredReplName(interpreterContext.getParagraphText());
+    registerCallback(event, cmd, replName);
+  }
+
+  /**
+   * Get the callback code
+   * @param event The type of event to hook to (pre_exec, post_exec)
+   * @param replName Name of the interpreter
+   */
+  @Experimental
+  public String getCallback(String event, String replName) {
+    InterpreterCallbackRegistry callbacks = interpreterContext.getInterpreterCallbackRegistry();
+    String noteId = interpreterContext.getNoteId();
+    return callbacks.get(noteId, replName, event);
+  }
+
+  /**
+   * getCallback() wrapper for the spark (scala) interpreter
+   * @param event The type of event to hook to (pre_exec, post_exec)
+   * @param cmd The code to be executed by the interpreter on given event
+   */
+  @Experimental
+  public String getCallback(String event) {
+    String replName = Paragraph.getRequiredReplName(interpreterContext.getParagraphText());
+    return getCallback(event, replName);
+  }
+
+  /**
+   * Unbind code from given callback event
+   * @param event The type of event to hook to (pre_exec, post_exec)
+   * @param replName Name of the interpreter
+   */
+  @Experimental
+  public void unregisterCallback(String event, String replName) {
+    InterpreterCallbackRegistry callbacks = interpreterContext.getInterpreterCallbackRegistry();
+    String noteId = interpreterContext.getNoteId();
+    callbacks.unregister(noteId, replName, event);
+  }
+
+  /**
+   * Unbind code from given callback event
+   * @param event The type of event to hook to (pre_exec, post_exec)
+   */
+  @Experimental
+  public void unregisterCallback(String event) {
+    String replName = Paragraph.getRequiredReplName(interpreterContext.getParagraphText());
+    unregisterCallback(event, replName);
+  }
 
   /**
    * Add object into resource pool

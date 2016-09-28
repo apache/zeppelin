@@ -140,6 +140,7 @@ public abstract class Interpreter {
   public static Logger logger = LoggerFactory.getLogger(Interpreter.class);
   private InterpreterGroup interpreterGroup;
   private URL [] classloaderUrls;
+  protected Map<String, String> callbackRegistry = new HashMap<String, String>();
   protected Properties property;
 
   @ZeppelinApi
@@ -370,4 +371,5 @@ public abstract class Interpreter {
     }
     return null;
   }
+  
 }
