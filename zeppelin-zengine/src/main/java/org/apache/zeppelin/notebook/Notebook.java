@@ -137,28 +137,29 @@ public class Notebook implements NoteEventListener {
    * @throws IOException
    * @throws DuplicateNameException 
    */
-  public Note createNote(AuthenticationInfo subject, String noteName) throws IOException
-    , DuplicateNameException {
+  public Note createNote(AuthenticationInfo subject, String noteName) throws IOException,
+      DuplicateNameException {
     Note note;
     List<Note> notes;
-    notes = getAllNotes();
-    if (noteName != null && !noteName.isEmpty()) {
-      for (Note entry : notes) {
-        if (entry.getName().equals(noteName)){
-          throw new DuplicateNameException();
-        }
+    try {
+      notes = getAllNotes();
+      if (noteName != null && !noteName.isEmpty()) {
+        checkNoteName(notes, noteName);
       }
+      if (conf.getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_AUTO_INTERPRETER_BINDING)) {
+        note = createNote(replFactory.getDefaultInterpreterSettingList(), subject);
+      } else {
+        note = createNote(null, subject);
+      }
+      if (noteName == null || noteName.trim().isEmpty()) {
+        noteName = "Note " + note.getId();
+        checkNoteName(notes, noteName);
+      }
+      note.setName(noteName);
+      notebookIndex.addIndexDoc(note);
+    } catch (DuplicateNameException dne) {
+      throw new DuplicateNameException();
     }
-    if (conf.getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_AUTO_INTERPRETER_BINDING)) {
-      note = createNote(replFactory.getDefaultInterpreterSettingList(), subject);
-    } else {
-      note = createNote(null, subject);
-    }
-    if (noteName == null || noteName.trim().isEmpty()) {
-      noteName = "Note " + note.getId();
-    }
-    note.setName(noteName);
-    notebookIndex.addIndexDoc(note);
     return note;
   }
 
@@ -228,6 +229,9 @@ public class Notebook implements NoteEventListener {
     Note newNote;
     try {
       Note oldNote = gson.fromJson(reader, Note.class);
+      if(noteName == null || noteName.isEmpty()) {
+        noteName = oldNote.getName();
+      }
       newNote = createNote(subject, noteName);
       List<Paragraph> paragraphs = oldNote.getParagraphs();
       for (Paragraph p : paragraphs) {
@@ -857,6 +861,14 @@ public class Notebook implements NoteEventListener {
       } catch (SchedulerException e) {
         logger.error("Error", e);
         info.put("cron", "Scheduler Exception");
+      }
+    }
+  }
+  
+  private void checkNoteName(List<Note> notes, String noteName) throws DuplicateNameException {
+    for (Note entry : notes) {
+      if (entry.getName().equals(noteName)){
+        throw new DuplicateNameException();
       }
     }
   }

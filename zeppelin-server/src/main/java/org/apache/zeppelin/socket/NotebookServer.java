@@ -738,7 +738,10 @@ public class NotebookServer extends WebSocketServlet implements
       if (fromMessage != null) {
         String noteName = (String) ((Map) fromMessage.get("notebook")).get("name");
         String noteJson = gson.toJson(fromMessage.get("notebook"));
-        AuthenticationInfo subject = new AuthenticationInfo(fromMessage.principal);
+        AuthenticationInfo subject = null;
+        if (fromMessage.principal != null) {
+          subject = new AuthenticationInfo(fromMessage.principal);
+        }
         note = notebook.importNote(noteJson, noteName, subject);
         note.persist(subject);
         broadcastNote(note);

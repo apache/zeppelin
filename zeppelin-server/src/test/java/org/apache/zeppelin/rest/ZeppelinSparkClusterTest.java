@@ -83,7 +83,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
         waitForFinish(p);
         assertEquals(Status.FINISHED, p.getStatus());
         assertEquals("55", p.getResult().message());
-        ZeppelinServer.notebook.removeNote(EMPTY_STRING, null);
+        ZeppelinServer.notebook.removeNote(note.getId(), null);
     }
 
     @Test

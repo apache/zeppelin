@@ -283,7 +283,6 @@ public class NotebookRestApi {
       }
       note.addParagraph(); // add one paragraph to the last
 
-      note.setName(noteName);
       note.persist(subject);
       notebookServer.broadcastNote(note);
       notebookServer.broadcastNoteList(subject);
