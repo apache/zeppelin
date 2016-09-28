@@ -12,9 +12,13 @@
  * limitations under the License.
  */
 'use strict';
+(function() {
 
-angular.module('zeppelinWebApp').controller('InterpreterCtrl',
-  function($scope, $http, baseUrlSrv, ngToast, $timeout, $route) {
+  angular.module('zeppelinWebApp').controller('InterpreterCtrl', InterpreterCtrl);
+
+  InterpreterCtrl.$inject = ['$scope', '$http', 'baseUrlSrv', 'ngToast', '$timeout', '$route'];
+
+  function InterpreterCtrl($scope, $http, baseUrlSrv, ngToast, $timeout, $route) {
     var interpreterSettingsTmp = [];
     $scope.interpreterSettings = [];
     $scope.availableInterpreters = {};
@@ -574,4 +578,6 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl',
     };
 
     init();
-  });
+  }
+
+})();

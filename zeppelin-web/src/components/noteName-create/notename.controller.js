@@ -11,76 +11,85 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 'use strict';
+(function() {
 
-angular.module('zeppelinWebApp').controller('NotenameCtrl', function($scope, notebookListDataFactory,
-                                                                      $routeParams, websocketMsgSrv) {
-  var vm = this;
-  vm.clone = false;
-  vm.notes = notebookListDataFactory;
-  vm.websocketMsgSrv = websocketMsgSrv;
-  $scope.note = {};
+  angular.module('zeppelinWebApp').controller('NotenameCtrl', NotenameCtrl);
 
-  vm.createNote = function() {
-    if (!vm.clone) {
-      vm.websocketMsgSrv.createNotebook($scope.note.notename);
-    } else {
-      var noteId = $routeParams.noteId;
-      vm.websocketMsgSrv.cloneNotebook(noteId, $scope.note.notename);
-    }
-  };
+  NotenameCtrl.$inject = [
+    '$scope',
+    'notebookListDataFactory',
+    '$routeParams',
+    'websocketMsgSrv'
+  ];
 
-  vm.handleNameEnter = function() {
-    angular.element('#noteNameModal').modal('toggle');
-    vm.createNote();
-  };
+  function NotenameCtrl($scope, notebookListDataFactory, $routeParams, websocketMsgSrv) {
+    var vm = this;
+    vm.clone = false;
+    vm.notes = notebookListDataFactory;
+    vm.websocketMsgSrv = websocketMsgSrv;
+    $scope.note = {};
 
-  vm.preVisible = function(clone, sourceNoteName) {
-    vm.clone = clone;
-    vm.sourceNoteName = sourceNoteName;
-    $scope.note.notename = vm.clone ? vm.cloneNoteName() : vm.newNoteName();
-    $scope.$apply();
-  };
-
-  vm.newNoteName = function() {
-    var newCount = 1;
-    angular.forEach(vm.notes.flatList, function(noteName) {
-      noteName = noteName.name;
-      if (noteName.match(/^Untitled Note [0-9]*$/)) {
-        var lastCount = noteName.substr(14) * 1;
-        if (newCount <= lastCount) {
-          newCount = lastCount + 1;
-        }
+    vm.createNote = function() {
+      if (!vm.clone) {
+        vm.websocketMsgSrv.createNotebook($scope.note.notename);
+      } else {
+        var noteId = $routeParams.noteId;
+        vm.websocketMsgSrv.cloneNotebook(noteId, $scope.note.notename);
       }
-    });
-    return 'Untitled Note ' + newCount;
-  };
+    };
 
-  vm.cloneNoteName = function() {
-    var copyCount = 1;
-    var newCloneName = '';
-    var lastIndex = vm.sourceNoteName.lastIndexOf(' ');
-    var endsWithNumber = !!vm.sourceNoteName.match('^.+?\\s\\d$');
-    var noteNamePrefix = endsWithNumber ? vm.sourceNoteName.substr(0, lastIndex) : vm.sourceNoteName;
-    var regexp = new RegExp('^' + noteNamePrefix + ' .+');
+    vm.handleNameEnter = function() {
+      angular.element('#noteNameModal').modal('toggle');
+      vm.createNote();
+    };
 
-    angular.forEach(vm.notes.flatList, function(noteName) {
-      noteName = noteName.name;
-      if (noteName.match(regexp)) {
-        var lastCopyCount = noteName.substr(lastIndex).trim();
-        newCloneName = noteNamePrefix;
-        lastCopyCount = parseInt(lastCopyCount);
-        if (copyCount <= lastCopyCount) {
-          copyCount = lastCopyCount + 1;
+    vm.preVisible = function(clone, sourceNoteName) {
+      vm.clone = clone;
+      vm.sourceNoteName = sourceNoteName;
+      $scope.note.notename = vm.clone ? vm.cloneNoteName() : vm.newNoteName();
+      $scope.$apply();
+    };
+
+    vm.newNoteName = function() {
+      var newCount = 1;
+      angular.forEach(vm.notes.flatList, function(noteName) {
+        noteName = noteName.name;
+        if (noteName.match(/^Untitled Note [0-9]*$/)) {
+          var lastCount = noteName.substr(14) * 1;
+          if (newCount <= lastCount) {
+            newCount = lastCount + 1;
+          }
         }
+      });
+      return 'Untitled Note ' + newCount;
+    };
+
+    vm.cloneNoteName = function() {
+      var copyCount = 1;
+      var newCloneName = '';
+      var lastIndex = vm.sourceNoteName.lastIndexOf(' ');
+      var endsWithNumber = !!vm.sourceNoteName.match('^.+?\\s\\d$');
+      var noteNamePrefix = endsWithNumber ? vm.sourceNoteName.substr(0, lastIndex) : vm.sourceNoteName;
+      var regexp = new RegExp('^' + noteNamePrefix + ' .+');
+
+      angular.forEach(vm.notes.flatList, function(noteName) {
+        noteName = noteName.name;
+        if (noteName.match(regexp)) {
+          var lastCopyCount = noteName.substr(lastIndex).trim();
+          newCloneName = noteNamePrefix;
+          lastCopyCount = parseInt(lastCopyCount);
+          if (copyCount <= lastCopyCount) {
+            copyCount = lastCopyCount + 1;
+          }
+        }
+      });
+
+      if (!newCloneName) {
+        newCloneName = vm.sourceNoteName;
       }
-    });
+      return newCloneName + ' ' + copyCount;
+    };
+  }
 
-    if (!newCloneName) {
-      newCloneName = vm.sourceNoteName;
-    }
-    return newCloneName + ' ' + copyCount;
-  };
-
-});
+})();
