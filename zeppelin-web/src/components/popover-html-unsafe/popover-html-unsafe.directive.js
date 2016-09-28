@@ -12,17 +12,14 @@
  * limitations under the License.
  */
 'use strict';
+(function() {
 
-angular.module('zeppelinWebApp')
-  .directive('popoverHtmlUnsafePopup', function() {
-    return {
-      restrict: 'EA',
-      replace: true,
-      scope: {title: '@', content: '@', placement: '@', animation: '&', isOpen: '&'},
-      templateUrl: 'components/popover-html-unsafe/popover-html-unsafe-popup.html'
-    };
-  })
+  angular.module('zeppelinWebApp').directive('popoverHtmlUnsafe', popoverHtmlUnsafe);
 
-  .directive('popoverHtmlUnsafe', ['$tooltip', function($tooltip) {
+  popoverHtmlUnsafe.$inject = ['$tooltip'];
+
+  function popoverHtmlUnsafe($tooltip) {
     return $tooltip('popoverHtmlUnsafe', 'popover', 'click');
-  }]);
+  }
+
+})();
