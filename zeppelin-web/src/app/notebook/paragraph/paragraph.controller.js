@@ -713,7 +713,6 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
         }
       }
     ), 1000);
-    
     deferred.promise.then(function(editorSetting) {
       if (!_.isEmpty(editorSetting.editor)) {
         var mode = 'ace/mode/' + editorSetting.editor.language;
