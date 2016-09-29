@@ -49,6 +49,8 @@ import java.util.Properties;
 import java.util.Set;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
@@ -195,10 +197,10 @@ public class InterpreterFactory implements InterpreterGroupFactory {
                 Set<String> interpreterKeys = Interpreter.registeredInterpreters.keySet();
                 for (String interpreterKey : interpreterKeys) {
                   if (className
-                          .equals(Interpreter.registeredInterpreters.get(interpreterKey)
-                                  .getClassName())) {
+                      .equals(Interpreter.registeredInterpreters.get(interpreterKey)
+                          .getClassName())) {
                     Interpreter.registeredInterpreters.get(interpreterKey)
-                            .setPath(interpreterDirString);
+                        .setPath(interpreterDirString);
                     logger.info("Interpreter " + interpreterKey + " found. class=" + className);
                     cleanCl.put(interpreterDirString, ccl);
                   }
@@ -223,7 +225,8 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     InterpreterInfo interpreterInfo;
     for (RegisteredInterpreter r : Interpreter.registeredInterpreters.values()) {
       interpreterInfo =
-          new InterpreterInfo(r.getClassName(), r.getName(), r.isDefaultInterpreter());
+          new InterpreterInfo(r.getClassName(), r.getName(), r.isDefaultInterpreter(),
+              r.getEditor());
       add(r.getGroup(), interpreterInfo, convertInterpreterProperties(r.getProperties()),
           r.getPath());
     }
@@ -335,7 +338,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     for (RegisteredInterpreter registeredInterpreter : registeredInterpreters) {
       InterpreterInfo interpreterInfo =
           new InterpreterInfo(registeredInterpreter.getClassName(), registeredInterpreter.getName(),
-              registeredInterpreter.isDefaultInterpreter());
+              registeredInterpreter.isDefaultInterpreter(), registeredInterpreter.getEditor());
       Properties properties = new Properties();
       Map<String, InterpreterProperty> p = registeredInterpreter.getProperties();
 
@@ -370,10 +373,11 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     fis.close();
 
     String json = sb.toString();
-    InterpreterInfoSaving info = gson.fromJson(json, InterpreterInfoSaving.class);
+    InterpreterInfoSaving infoSaving = gson.fromJson(json, InterpreterInfoSaving.class);
 
-    for (String k : info.interpreterSettings.keySet()) {
-      InterpreterSetting setting = info.interpreterSettings.get(k);
+    for (String k : infoSaving.interpreterSettings.keySet()) {
+      InterpreterSetting setting = infoSaving.interpreterSettings.get(k);
+      List<InterpreterInfo> infos = setting.getInterpreterInfos();
 
       // Always use separate interpreter process
       // While we decided to turn this feature on always (without providing
@@ -391,15 +395,23 @@ public class InterpreterFactory implements InterpreterGroupFactory {
       depClassPath = interpreterSettingObject.getPath();
       setting.setPath(depClassPath);
 
+      for (InterpreterInfo info : infos) {
+        if (info.getEditor() == null) {
+          Map<String, Object> editor = getEditorFromSettingByClassName(interpreterSettingObject,
+              info.getClassName());
+          info.setEditor(editor);
+        }
+      }
+
       setting.setInterpreterGroupFactory(this);
       loadInterpreterDependencies(setting);
       interpreterSettings.put(k, setting);
     }
 
-    this.interpreterBindings = info.interpreterBindings;
+    this.interpreterBindings = infoSaving.interpreterBindings;
 
-    if (info.interpreterRepositories != null) {
-      for (RemoteRepository repo : info.interpreterRepositories) {
+    if (infoSaving.interpreterRepositories != null) {
+      for (RemoteRepository repo : infoSaving.interpreterRepositories) {
         if (!depResolver.getRepos().contains(repo)) {
           this.interpreterRepositories.add(repo);
         }
@@ -407,8 +419,18 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     }
   }
 
-  private void loadInterpreterDependencies(final InterpreterSetting setting) {
+  public Map<String, Object> getEditorFromSettingByClassName(InterpreterSetting intpSetting,
+      String className) {
+    List<InterpreterInfo> intpInfos = intpSetting.getInterpreterInfos();
+    for (InterpreterInfo intpInfo : intpInfos) {
+      if (className.equals(intpInfo.getClassName())) {
+        return intpInfo.getEditor();
+      }
+    }
+    return ImmutableMap.of("language", (Object) "text");
+  }
 
+  private void loadInterpreterDependencies(final InterpreterSetting setting) {
     setting.setStatus(InterpreterSetting.Status.DOWNLOADING_DEPENDENCIES);
     interpreterSettings.put(setting.getId(), setting);
     synchronized (interpreterSettings) {
@@ -440,6 +462,46 @@ public class InterpreterFactory implements InterpreterGroupFactory {
             setting.setStatus(InterpreterSetting.Status.READY);
           } catch (Exception e) {
             logger.error(String.format("Error while downloading repos for interpreter group : %s," +
+                    " go to interpreter setting page click on edit and save it again to make " +
+                    "this interpreter work properly.",
+                setting.getGroup()), e);
+            setting.setErrorReason(e.getLocalizedMessage());
+            setting.setStatus(InterpreterSetting.Status.ERROR);
+          } finally {
+            interpreterSettings.put(setting.getId(), setting);
+          }
+        }
+      };
+      t.start();
+    }
+  }
+
+  /**
+   * Overwrite dependency jar under local-repo/{interpreterId}
+   * if jar file in original path is changed
+   */
+  private void copyDependenciesFromLocalPath(final InterpreterSetting setting) {
+    setting.setStatus(InterpreterSetting.Status.DOWNLOADING_DEPENDENCIES);
+    interpreterSettings.put(setting.getId(), setting);
+    synchronized (interpreterSettings) {
+      final Thread t = new Thread() {
+        public void run() {
+          try {
+            List<Dependency> deps = setting.getDependencies();
+            if (deps != null) {
+              for (Dependency d : deps) {
+                File destDir = new File(conf.getRelativeDir(ConfVars.ZEPPELIN_DEP_LOCALREPO));
+
+                int numSplits = d.getGroupArtifactVersion().split(":").length;
+                if (!(numSplits >= 3 && numSplits <= 6)) {
+                  depResolver.copyLocalDependency(d.getGroupArtifactVersion(),
+                      new File(destDir, setting.getId()));
+                }
+              }
+            }
+            setting.setStatus(InterpreterSetting.Status.READY);
+          } catch (Exception e) {
+            logger.error(String.format("Error while copying deps for interpreter group : %s," +
                     " go to interpreter setting page click on edit and save it again to make " +
                     "this interpreter work properly.",
                 setting.getGroup()), e);
@@ -853,17 +915,21 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     synchronized (interpreterSettings) {
       InterpreterSetting intpsetting = interpreterSettings.get(id);
       if (intpsetting != null) {
+        try {
+          stopJobAllInterpreter(intpsetting);
 
-        stopJobAllInterpreter(intpsetting);
+          intpsetting.closeAndRmoveAllInterpreterGroups();
+          intpsetting.setOption(option);
+          intpsetting.setProperties(properties);
+          intpsetting.setDependencies(dependencies);
+          loadInterpreterDependencies(intpsetting);
 
-        intpsetting.closeAndRmoveAllInterpreterGroups();
-
-        intpsetting.setOption(option);
-        intpsetting.setProperties(properties);
-        intpsetting.setDependencies(dependencies);
-
-        loadInterpreterDependencies(intpsetting);
-        saveToFile();
+          saveToFile();
+        } catch (Exception e) {
+          throw e;
+        } finally {
+          loadFromFile();
+        }
       } else {
         throw new InterpreterException("Interpreter setting id " + id + " not found");
       }
@@ -873,6 +939,9 @@ public class InterpreterFactory implements InterpreterGroupFactory {
   public void restart(String id) {
     synchronized (interpreterSettings) {
       InterpreterSetting intpsetting = interpreterSettings.get(id);
+      // Check if dependency in specified path is changed
+      // If it did, overwrite old dependency jar with new one
+      copyDependenciesFromLocalPath(intpsetting);
       if (intpsetting != null) {
 
         stopJobAllInterpreter(intpsetting);
@@ -1257,6 +1326,35 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     this.env = env;
   }
 
+  public Map<String, Object> getEditorSetting(String noteId, String replName) {
+    Interpreter intp = getInterpreter(noteId, replName);
+    Map<String, Object> editor = Maps.newHashMap(
+        ImmutableMap.<String, Object>builder()
+            .put("language", "text").build());
+    String defaultSettingName = getDefaultInterpreterSetting(noteId).getName();
+    String group = StringUtils.EMPTY;
+    try {
+      List<InterpreterSetting> intpSettings = getInterpreterSettings(noteId);
+      for (InterpreterSetting intpSetting : intpSettings) {
+        String[] replNameSplit = replName.split("\\.");
+        if (replNameSplit.length == 2) {
+          group = replNameSplit[0];
+        }
+        // when replName is 'name' of interpreter
+        if (defaultSettingName.equals(intpSetting.getName())) {
+          editor = getEditorFromSettingByClassName(intpSetting, intp.getClassName());
+        }
+        // when replName is 'alias name' of interpreter or 'group' of interpreter
+        if (replName.equals(intpSetting.getName()) || group.equals(intpSetting.getName())) {
+          editor = getEditorFromSettingByClassName(intpSetting, intp.getClassName());
+          break;
+        }
+      }
+    } catch (NullPointerException e) {
+      logger.warn("Couldn't get interpreter editor language");
+    }
+    return editor;
+  }
 
   private Interpreter getDevInterpreter() {
     if (devInterpreter == null) {

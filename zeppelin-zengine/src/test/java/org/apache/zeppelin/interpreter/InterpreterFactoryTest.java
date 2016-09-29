@@ -34,12 +34,22 @@ import org.apache.zeppelin.dep.DependencyResolver;
 import org.apache.zeppelin.interpreter.mock.MockInterpreter1;
 import org.apache.zeppelin.interpreter.mock.MockInterpreter2;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreter;
+import org.apache.zeppelin.notebook.JobListenerFactory;
+import org.apache.zeppelin.notebook.Note;
+import org.apache.zeppelin.notebook.Notebook;
+import org.apache.zeppelin.notebook.repo.NotebookRepo;
+import org.apache.zeppelin.notebook.repo.VFSNotebookRepo;
+import org.apache.zeppelin.scheduler.SchedulerFactory;
+import org.apache.zeppelin.search.SearchService;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.quartz.SchedulerException;
 import org.sonatype.aether.RepositoryException;
 
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.mock;
+import org.mockito.Mock;
 
 public class InterpreterFactoryTest {
 
@@ -47,13 +57,19 @@ public class InterpreterFactoryTest {
   private File tmpDir;
   private ZeppelinConfiguration conf;
   private InterpreterContext context;
+  private Notebook notebook;
+  private NotebookRepo notebookRepo;
   private DependencyResolver depResolver;
+  private SchedulerFactory schedulerFactory;
+  @Mock
+  private JobListenerFactory jobListenerFactory;
 
   @Before
   public void setUp() throws Exception {
     tmpDir = new File(System.getProperty("java.io.tmpdir")+"/ZeppelinLTest_"+System.currentTimeMillis());
     tmpDir.mkdirs();
     new File(tmpDir, "conf").mkdirs();
+    FileUtils.copyDirectory(new File("src/test/resources/interpreter"), new File(tmpDir, "interpreter"));
 
     Map<String, InterpreterProperty> propertiesMockInterpreter1 = new HashMap<String, InterpreterProperty>();
     propertiesMockInterpreter1.put("PROPERTY_1", new InterpreterProperty("PROPERTY_1", "", "VALUE_1", "desc"));
@@ -62,11 +78,22 @@ public class InterpreterFactoryTest {
     MockInterpreter2.register("mock2", "org.apache.zeppelin.interpreter.mock.MockInterpreter2");
 
     System.setProperty(ConfVars.ZEPPELIN_HOME.getVarName(), tmpDir.getAbsolutePath());
-    System.setProperty(ConfVars.ZEPPELIN_INTERPRETERS.getVarName(), "org.apache.zeppelin.interpreter.mock.MockInterpreter1,org.apache.zeppelin.interpreter.mock.MockInterpreter2");
+    System.setProperty(ConfVars.ZEPPELIN_INTERPRETERS.getVarName(),
+        "org.apache.zeppelin.interpreter.mock.MockInterpreter1," +
+        "org.apache.zeppelin.interpreter.mock.MockInterpreter2," +
+        "org.apache.zeppelin.interpreter.mock.MockInterpreter11");
+    System.setProperty(ConfVars.ZEPPELIN_INTERPRETER_GROUP_ORDER.getVarName(),
+        "mock1,mock2,mock11,dev");
     conf = new ZeppelinConfiguration();
+    schedulerFactory = new SchedulerFactory();
     depResolver = new DependencyResolver(tmpDir.getAbsolutePath() + "/local-repo");
     factory = new InterpreterFactory(conf, new InterpreterOption(false), null, null, null, depResolver);
     context = new InterpreterContext("note", "id", "title", "text", null, null, null, null, null, null, null);
+
+    SearchService search = mock(SearchService.class);
+    notebookRepo = new VFSNotebookRepo(conf);
+    notebook = new Notebook(conf, notebookRepo, schedulerFactory, factory, jobListenerFactory, search,
+        null, null);
   }
 
   @After
@@ -128,7 +155,7 @@ public class InterpreterFactoryTest {
   public void testFactoryDefaultList() throws IOException, RepositoryException {
     // get default settings
     List<String> all = factory.getDefaultInterpreterSettingList();
-    assertTrue(factory.getRegisteredInterpreterList().size() >= all.size());
+    assertTrue(factory.get().size() >= all.size());
   }
 
   @Test
@@ -166,8 +193,8 @@ public class InterpreterFactoryTest {
   @Test
   public void testInterpreterAliases() throws IOException, RepositoryException {
     factory = new InterpreterFactory(conf, null, null, null, depResolver);
-    final InterpreterInfo info1 = new InterpreterInfo("className1", "name1", true);
-    final InterpreterInfo info2 = new InterpreterInfo("className2", "name1", true);
+    final InterpreterInfo info1 = new InterpreterInfo("className1", "name1", true, null);
+    final InterpreterInfo info2 = new InterpreterInfo("className2", "name1", true, null);
     factory.add("group1", new ArrayList<InterpreterInfo>(){{
       add(info1);
     }}, new ArrayList<Dependency>(), new InterpreterOption(true), new Properties(), "/path1");
@@ -195,5 +222,30 @@ public class InterpreterFactoryTest {
     } catch (IOException e) {
       assertEquals("'.' is invalid for InterpreterSetting name.", e.getMessage());
     }
+  }
+
+
+  @Test
+  public void getEditorSetting() throws IOException, RepositoryException, SchedulerException {
+    List<String> intpIds = new ArrayList<>();
+    for(InterpreterSetting intpSetting: factory.get()) {
+      if (intpSetting.getName().startsWith("mock1")) {
+        intpIds.add(intpSetting.getId());
+      }
+    }
+    Note note = notebook.createNote(intpIds, null);
+
+    // get editor setting from interpreter-setting.json
+    Map<String, Object> editor = factory.getEditorSetting(note.getId(), "mock11");
+    assertEquals("java", editor.get("language"));
+
+    // when interpreter is not loaded via interpreter-setting.json
+    // or editor setting doesn't exit
+    editor = factory.getEditorSetting(note.getId(), "mock1");
+    assertEquals(null, editor.get("language"));
+
+    // when interpreter is not bound to note
+    editor = factory.getEditorSetting(note.getId(), "mock2");
+    assertEquals("text", editor.get("language"));
   }
 }

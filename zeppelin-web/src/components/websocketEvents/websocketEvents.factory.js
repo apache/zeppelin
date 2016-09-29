@@ -76,8 +76,8 @@ angular.module('zeppelinWebApp').factory('websocketEvents',
           action: function(dialog) {
             dialog.close();
             angular.element('#loginModal').modal({
-                    show: 'true'
-                  });
+              show: 'true'
+            });
           }
         }, {
           label: 'Cancel',
@@ -97,6 +97,8 @@ angular.module('zeppelinWebApp').factory('websocketEvents',
       $rootScope.$broadcast('updateProgress', data);
     } else if (op === 'COMPLETION_LIST') {
       $rootScope.$broadcast('completionList', data);
+    } else if (op === 'EDITOR_SETTING') {
+      $rootScope.$broadcast('editorSetting', data);
     } else if (op === 'ANGULAR_OBJECT_UPDATE') {
       $rootScope.$broadcast('angularObjectUpdate', data);
     } else if (op === 'ANGULAR_OBJECT_REMOVE') {
@@ -115,6 +117,21 @@ angular.module('zeppelinWebApp').factory('websocketEvents',
       $rootScope.$broadcast('noteRevision', data);
     } else if (op === 'INTERPRETER_BINDINGS') {
       $rootScope.$broadcast('interpreterBindings', data);
+    } else if (op === 'ERROR_INFO') {
+      BootstrapDialog.show({
+        closable: false,
+        closeByBackdrop: false,
+        closeByKeyboard: false,
+        title: 'Details',
+        message: data.info.toString(),
+        buttons: [{
+            // close all the dialogs when there are error on running all paragraphs
+            label: 'Close',
+            action: function() {
+              BootstrapDialog.closeAll();
+            }
+          }]
+      });
     }
   });
 
