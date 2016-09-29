@@ -17,8 +17,10 @@
 
 package org.apache.zeppelin
 
-import com.spotify.scio.values.SCollection
 import com.spotify.scio._
+import com.spotify.scio.values.SCollection
+import org.apache.avro.Schema
+import org.apache.avro.generic.GenericRecord
 
 import scala.reflect.ClassTag
 
@@ -111,6 +113,33 @@ package object scio {
         val header = fieldNames.mkString("\t")
         val firstStr = first.productIterator.mkString("\t")
         val content = it.take(maxResults).map(_.productIterator.mkString("\t")).mkString("\n")
+        println(s"""%table $header\n$firstStr\n$content""")
+        notifIfTruncated(it)
+      }
+    }
+  }
+
+  // TODO: scala 2.11
+  // implicit class ZeppelinAvroSCollection[T: ClassTag](val self: SCollection[T])(implicit ev: T <:< GenericRecord) extends AnyVal {
+  implicit class ZeppelinAvroSCollection[T: ClassTag](val self: SCollection[T])
+                                                     (implicit ev: T <:< GenericRecord) {
+    /** Convenience method to close the current [[com.spotify.scio.ScioContext]]
+     * and display elements from Avro like SCollection */
+    def closeAndDisplay(schema: Schema = null): Unit = {
+      val it = materialize(self).waitForResult().value
+
+      if (it.isEmpty) {
+        println(SCollectionEmptyMsg)
+      } else {
+        val first = it.next()
+        import collection.JavaConverters._
+        val fieldNames = first.getSchema.getFields.iterator.asScala.map(_.name()).toArray
+
+        val header = fieldNames.mkString("\t")
+        val firstStr = fieldNames.map(first.get(_)).mkString("\t")
+        val content = it.take(maxResults)
+                        .map(r => fieldNames.map(r.get(_)).mkString("\t"))
+                        .mkString("\n")
         println(s"""%table $header\n$firstStr\n$content""")
         notifIfTruncated(it)
       }
