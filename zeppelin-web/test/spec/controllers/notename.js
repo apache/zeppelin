@@ -7,11 +7,8 @@ describe('Controller: NotenameCtrl', function() {
   var ctrl;
   var notebookList;
 
-  beforeEach(inject(function($injector) {
+  beforeEach(inject(function($injector, $rootScope, $controller) {
     notebookList = $injector.get('notebookListDataFactory');
-  }));
-
-  beforeEach(inject(function($rootScope, $controller) {
     scope = $rootScope.$new();
     ctrl = $controller('NotenameCtrl', {
       $scope: scope,
