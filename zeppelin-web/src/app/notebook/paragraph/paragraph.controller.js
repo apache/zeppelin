@@ -708,7 +708,7 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
     websocketMsgSrv.getEditorSetting($scope.paragraph.id, interpreterName);
     $timeout(
       $scope.$on('editorSetting', function(event, data) {
-        if ($scope.paragraph.id === data.orderId) {
+        if ($scope.paragraph.id === data.paragraphId) {
           deferred.resolve(data);
         }
       }
