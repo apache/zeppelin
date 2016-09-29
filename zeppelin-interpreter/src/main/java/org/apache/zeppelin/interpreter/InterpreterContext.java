@@ -124,4 +124,28 @@ public class InterpreterContext {
     return runners;
   }
 
+  public String getRequiredReplName() {
+    if (paragraphText == null) {
+      return null;
+    }
+
+    // get script head
+    int scriptHeadIndex = 0;
+    for (int i = 0; i < paragraphText.length(); i++) {
+      char ch = paragraphText.charAt(i);
+      if (Character.isWhitespace(ch) || ch == '(') {
+        scriptHeadIndex = i;
+        break;
+      }
+    }
+    if (scriptHeadIndex == 0) {
+      return null;
+    }
+    String head = paragraphText.substring(0, scriptHeadIndex);
+    if (head.startsWith("%")) {
+      return head.substring(1);
+    } else {
+      return null;
+    }
+  }
 }

@@ -27,7 +27,7 @@ public interface InterpreterHookListener {
   public void onPreExecute(String script);
   
   /**
-   * Prepends pre-execute hook code to the script that will be interpreted
+   * Appends post-execute hook code to the script that will be interpreted
    */
   public void onPostExecute(String script);
 }
