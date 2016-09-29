@@ -19,12 +19,13 @@ angular.module('zeppelinWebApp').controller('NoteImportCtrl', function($scope, $
   $scope.note = {};
   $scope.note.step1 = true;
   $scope.note.step2 = false;
-  $scope.config = {};
-  $scope.config.maxLimit = '';
+  $scope.maxLimit = '';
+  var limit = 0;
 
   websocketMsgSrv.listConfigurations();
   $scope.$on('configurationsInfo', function(scope, event) {
-    $scope.config.maxLimit = event.configurations['zeppelin.websocket.max.text.message.size'];
+    limit = event.configurations['zeppelin.websocket.max.text.message.size'];
+    $scope.maxLimit = Math.round(limit / 1048576);
   });
 
   vm.resetFlags = function() {
@@ -44,7 +45,7 @@ angular.module('zeppelinWebApp').controller('NoteImportCtrl', function($scope, $
     var file = $scope.note.importFile;
     var reader = new FileReader();
 
-    if (file.size > $scope.config.maxLimit) {
+    if (file.size > limit) {
       $scope.note.errorText = 'File size limit Exceeded!';
       $scope.$apply();
       return;
