@@ -2175,7 +2175,7 @@ angular.module('zeppelinWebApp')
         var stringValue =  (row[index].value).toString();
         if (stringValue.contains(delimiter)) {
           dsvRow += '"' + stringValue + '"' + delimiter;
-        } else {
+          } else {
           dsvRow += row[index].value + delimiter;
         }
       }
