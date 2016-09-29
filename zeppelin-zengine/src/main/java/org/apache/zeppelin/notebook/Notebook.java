@@ -229,7 +229,7 @@ public class Notebook implements NoteEventListener {
     Note newNote;
     try {
       Note oldNote = gson.fromJson(reader, Note.class);
-      if(noteName == null || noteName.isEmpty()) {
+      if (noteName == null || noteName.isEmpty()) {
         noteName = oldNote.getName();
       }
       newNote = createNote(subject, noteName);
