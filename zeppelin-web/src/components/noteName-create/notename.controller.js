@@ -36,9 +36,10 @@ angular.module('zeppelinWebApp').controller('NotenameCtrl', function($scope, not
     vm.createNote();
   };
 
-  vm.preVisible = function(clone) {
-    $scope.note.notename = vm.newNoteName();
+  vm.preVisible = function(clone, sourceNoteName) {
     vm.clone = clone;
+    vm.sourceNoteName = sourceNoteName;
+    $scope.note.notename = vm.clone ? vm.cloneNoteName() : vm.newNoteName();
     $scope.$apply();
   };
 
@@ -54,6 +55,32 @@ angular.module('zeppelinWebApp').controller('NotenameCtrl', function($scope, not
       }
     });
     return 'Untitled Note ' + newCount;
+  };
+
+  vm.cloneNoteName = function() {
+    var copyCount = 1;
+    var newCloneName = '';
+    var lastIndex = vm.sourceNoteName.lastIndexOf(' ');
+    var endsWithNumber = !!vm.sourceNoteName.match('^.+?\\s\\d$');
+    var noteNamePrefix = endsWithNumber ? vm.sourceNoteName.substr(0, lastIndex) : vm.sourceNoteName;
+    var regexp = new RegExp('^' + noteNamePrefix + ' .+');
+
+    angular.forEach(vm.notes.flatList, function(noteName) {
+      noteName = noteName.name;
+      if (noteName.match(regexp)) {
+        var lastCopyCount = noteName.substr(lastIndex).trim();
+        newCloneName = noteNamePrefix;
+        lastCopyCount = parseInt(lastCopyCount);
+        if (copyCount <= lastCopyCount) {
+          copyCount = lastCopyCount + 1;
+        }
+      }
+    });
+
+    if (!newCloneName) {
+      newCloneName = vm.sourceNoteName;
+    }
+    return newCloneName + ' ' + copyCount;
   };
 
 });

@@ -21,17 +21,18 @@ angular.module('zeppelinWebApp').directive('modalvisible', function() {
       postVisibleCallback: '&postvisiblecallback',
       targetinput: '@targetinput'
     },
-    link: function(scope, elem, attrs) {
+    link: function(scope, element, attrs) {
       // Add some listeners
       var previsibleMethod = scope.preVisibleCallback;
       var postVisibleMethod = scope.postVisibleCallback;
-      elem.on('show.bs.modal',function(e) {
-        var relatedTgt = angular.element(e.relatedTarget);
-        var clone = relatedTgt.data('clone');
+      element.on('show.bs.modal',function(e) {
+        var relatedTarget = angular.element(e.relatedTarget);
+        var clone = relatedTarget.data('clone');
+        var sourceNoteName = relatedTarget.data('source-note-name');
         var cloneNote = clone ? true : false;
-        previsibleMethod()(cloneNote);
+        previsibleMethod()(cloneNote, sourceNoteName);
       });
-      elem.on('shown.bs.modal', function(e) {
+      element.on('shown.bs.modal', function(e) {
         if (scope.targetinput) {
           angular.element(e.target).find('input#' + scope.targetinput).select();
         }
