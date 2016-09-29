@@ -254,21 +254,9 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     String oldJson = getNoteContent(sourceNoteID);
     // call notebook post
     PostMethod importPost = httpPost("/notebook/import/", oldJson);
-    assertThat(importPost, isCreated());
-    resp =
-        gson.fromJson(importPost.getResponseBodyAsString(),
-            new TypeToken<Map<String, Object>>() {}.getType());
-    String importId = (String) resp.get("body");
-
-    assertNotNull("Did not get back a notebook id in body", importId);
-    Note newNote = ZeppelinServer.notebook.getNote(importId);
-    //Imported notebook should not have same name as existing note 
-    assertNotEquals("Compare note names", noteName, newNote.getName());
-    assertEquals("Compare paragraphs count", note.getParagraphs().size(), newNote.getParagraphs()
-        .size());
+    assertThat(importPost, isNotAcceptable());
     // cleanup
     ZeppelinServer.notebook.removeNote(note.getId(), null);
-    ZeppelinServer.notebook.removeNote(newNote.getId(), null);
     importPost.releaseConnection();
   }
 
