@@ -55,6 +55,7 @@ import org.apache.zeppelin.interpreter.LazyOpenInterpreter;
 import org.apache.zeppelin.interpreter.WrappedInterpreter;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
+import org.apache.zeppelin.interpreter.util.InterpreterOutputStream;
 import org.apache.zeppelin.spark.dep.SparkDependencyContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,7 +72,7 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
   private GatewayServer gatewayServer;
   private DefaultExecutor executor;
   private int port;
-  private SparkOutputStream outputStream;
+  private InterpreterOutputStream outputStream;
   private BufferedWriter ins;
   private PipedInputStream in;
   private ByteArrayOutputStream input;
@@ -196,7 +197,7 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
     cmd.addArgument(Integer.toString(port), false);
     cmd.addArgument(Integer.toString(getSparkInterpreter().getSparkVersion().toNumber()), false);
     executor = new DefaultExecutor();
-    outputStream = new SparkOutputStream(logger);
+    outputStream = new InterpreterOutputStream(logger);
     PipedOutputStream ps = new PipedOutputStream();
     in = null;
     try {

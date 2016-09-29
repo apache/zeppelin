@@ -15,12 +15,11 @@
  * limitations under the License.
  */
 
-package org.apache.zeppelin.spark;
+package org.apache.zeppelin.interpreter.util;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-
 
 /**
  * Minor modification of LogOutputStream of apache commons exec.
