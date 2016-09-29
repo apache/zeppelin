@@ -125,13 +125,15 @@ angular.module('zeppelinWebApp').factory('websocketEvents',
         title: 'Details',
         message: data.info.toString(),
         buttons: [{
-            // close all the dialogs when there are error on running all paragraphs
-            label: 'Close',
-            action: function() {
-              BootstrapDialog.closeAll();
-            }
-          }]
+          // close all the dialogs when there are error on running all paragraphs
+          label: 'Close',
+          action: function() {
+            BootstrapDialog.closeAll();
+          }
+        }]
       });
+    } else if (op === 'CONFIGURATIONS_INFO') {
+      $rootScope.$broadcast('configurationsInfo', data);
     }
   });
 

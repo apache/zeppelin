@@ -29,6 +29,9 @@ limitations under the License.
             <input placeholder="Note name" type="text" class="form-control" id="noteImportName"
                    ng-model="note.noteImportName" />
           </div>
+          <div class="form-group">
+            <label for="fileSizeLimit">JSON file size cannot exceed {{maxLimit}} MB</label>
+          </div>
 
           <div class="form-group" ng-show="note.errorText">
             <div class="alert alert-danger">{{note.errorText}}</div>

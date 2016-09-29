@@ -19,6 +19,14 @@ angular.module('zeppelinWebApp').controller('NoteImportCtrl', function($scope, $
   $scope.note = {};
   $scope.note.step1 = true;
   $scope.note.step2 = false;
+  $scope.maxLimit = '';
+  var limit = 0;
+
+  websocketMsgSrv.listConfigurations();
+  $scope.$on('configurationsInfo', function(scope, event) {
+    limit = event.configurations['zeppelin.websocket.max.text.message.size'];
+    $scope.maxLimit = Math.round(limit / 1048576);
+  });
 
   vm.resetFlags = function() {
     $scope.note = {};
@@ -36,6 +44,12 @@ angular.module('zeppelinWebApp').controller('NoteImportCtrl', function($scope, $
     $scope.note.importFile = element.files[0];
     var file = $scope.note.importFile;
     var reader = new FileReader();
+
+    if (file.size > limit) {
+      $scope.note.errorText = 'File size limit Exceeded!';
+      $scope.$apply();
+      return;
+    }
 
     reader.onloadend = function() {
       vm.processImportJson(reader.result);
@@ -110,4 +124,5 @@ angular.module('zeppelinWebApp').controller('NoteImportCtrl', function($scope, $
     vm.resetFlags();
     angular.element('#noteImportModal').modal('hide');
   });
+
 });
