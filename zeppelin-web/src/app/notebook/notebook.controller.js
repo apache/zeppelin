@@ -15,7 +15,7 @@
 
 angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $route, $routeParams, $location,
                                                                      $rootScope, $http, websocketMsgSrv,
-                                                                     baseUrlSrv, $timeout, saveAsService) {
+                                                                     baseUrlSrv, $timeout, saveAsService, ngToast) {
   $scope.note = null;
   $scope.moment = moment;
   $scope.editorToggled = false;
@@ -41,8 +41,8 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
 
   var connectedOnce = false;
 
-  // user auto complete related
   $scope.noteRevisions = [];
+  $scope.currentRevision = 'Head';
 
   $scope.$on('setConnectedStatus', function(event, param) {
     if (connectedOnce && param) {
@@ -66,7 +66,11 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
 
   /** Init the new controller */
   var initNotebook = function() {
-    websocketMsgSrv.getNotebook($routeParams.noteId);
+    if ($routeParams.revisionId) {
+      websocketMsgSrv.getNoteByRevision($routeParams.noteId, $routeParams.revisionId);
+    } else {
+      websocketMsgSrv.getNotebook($routeParams.noteId);
+    }
     websocketMsgSrv.listRevisionHistory($routeParams.noteId);
     var currentRoute = $route.current;
     if (currentRoute) {
@@ -170,17 +174,6 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
     });
     document.getElementById('note.checkpoint.message').value = '';
   };
-
-  $scope.$on('listRevisionHistory', function(event, data) {
-    console.log('We got the revisions %o', data);
-    $scope.noteRevisions = data.revisionList;
-  });
-
-  // receive certain revision of note
-  $scope.$on('noteRevision', function(event, data) {
-    console.log('received note revision %o', data);
-    //TODO(xxx): render it
-  });
 
   $scope.runNote = function() {
     BootstrapDialog.confirm({
@@ -685,6 +678,19 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
     }
   };
 
+  $scope.visitRevision = function(revision) {
+    if (revision.id) {
+      if (revision.id === 'Head') {
+        $location.path('/notebook/' + $routeParams.noteId);
+      } else {
+        $location.path('/notebook/' + $routeParams.noteId + '/revision/' + revision.id);
+      }
+    } else {
+      ngToast.danger({content: 'There is a problem with this Revision',
+        verticalPosition: 'top', dismissOnTimeout: false});
+    }
+  };
+
   var isSettingDirty = function() {
     if (angular.equals($scope.interpreterBindings, $scope.interpreterBindingsOrig)) {
       return false;
@@ -708,6 +714,30 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
   /*
   ** $scope.$on functions below
   */
+
+  $scope.$on('listRevisionHistory', function(event, data) {
+    console.log('We got the revisions %o', data);
+    $scope.noteRevisions = data.revisionList;
+    $scope.noteRevisions.splice(0, 0, {
+      id: 'Head',
+      message: 'Head'
+    });
+    if ($routeParams.revisionId) {
+      var index = _.findIndex($scope.noteRevisions, {'id': $routeParams.revisionId});
+      if (index > -1) {
+        $scope.currentRevision = $scope.noteRevisions[index].message;
+      }
+    }
+  });
+
+  $scope.$on('noteRevision', function(event, note) {
+    console.log('received note revision %o', note);
+    if (note) {
+      $scope.note = note;
+    } else {
+      $location.path('/');
+    }
+  });
 
   $scope.$on('setConnectedStatus', function(event, param) {
     if (connectedOnce && param) {
