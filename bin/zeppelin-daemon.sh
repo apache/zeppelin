@@ -93,6 +93,8 @@ function initialize_default_directories() {
     echo "Pid dir doesn't exist, create ${ZEPPELIN_PID_DIR}"
     $(mkdir -p "${ZEPPELIN_PID_DIR}")
   fi
+
+  echo "Browse localhost:8080 in your browser"
 }
 
 function wait_for_zeppelin_to_die() {

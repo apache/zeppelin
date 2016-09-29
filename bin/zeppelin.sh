@@ -16,7 +16,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# Run Zeppelin 
+# Run Zeppelin
 #
 
 USAGE="Usage: bin/zeppelin.sh [--config <conf-dir>]"
@@ -46,7 +46,7 @@ fi
 HOSTNAME=$(hostname)
 ZEPPELIN_LOGFILE="${ZEPPELIN_LOG_DIR}/zeppelin-${ZEPPELIN_IDENT_STRING}-${HOSTNAME}.log"
 LOG="${ZEPPELIN_LOG_DIR}/zeppelin-cli-${ZEPPELIN_IDENT_STRING}-${HOSTNAME}.out"
-  
+
 ZEPPELIN_SERVER=org.apache.zeppelin.server.ZeppelinServer
 JAVA_OPTS+=" -Dzeppelin.log.file=${ZEPPELIN_LOGFILE}"
 
@@ -87,4 +87,5 @@ if [[ ! -d "${ZEPPELIN_NOTEBOOK_DIR}" ]]; then
   $(mkdir -p "${ZEPPELIN_NOTEBOOK_DIR}")
 fi
 
+echo "Browse localhost:8080 in your browser"
 exec $ZEPPELIN_RUNNER $JAVA_OPTS -cp $ZEPPELIN_CLASSPATH_OVERRIDES:$CLASSPATH $ZEPPELIN_SERVER "$@"
