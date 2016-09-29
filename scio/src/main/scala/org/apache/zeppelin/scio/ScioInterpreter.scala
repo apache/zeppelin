@@ -43,7 +43,7 @@ class ScioInterpreter(property: Properties) extends Interpreter(property) {
   val innerOut = new InterpreterOutputStream(logger)
 
   override def open(): Unit = {
-    val args: List[String] = Option(getProperty("argz"))
+    val argz: List[String] = Option(getProperty("argz"))
       .getOrElse(s"--runner=${classOf[InProcessPipelineRunner].getSimpleName}")
       .split(" ")
       .map(_.trim)
@@ -92,7 +92,7 @@ class ScioInterpreter(property: Properties) extends Interpreter(property) {
       null,
       Thread.currentThread.getContextClassLoader)
 
-    val (dfArgs, _) = parseAndPartitionArgs(args)
+    val (dfArgs, _) = parseAndPartitionArgs(argz)
 
     REPL = new ScioILoop(scioClassLoader, dfArgs, None, new JPrintWriter(innerOut))
     scioClassLoader.setRepl(REPL)
@@ -107,7 +107,8 @@ class ScioInterpreter(property: Properties) extends Interpreter(property) {
 
     REPL.settings_=(settings)
     REPL.createInterpreter()
-    REPL.interpret(s"""val argz = Array("${args.mkString("\", \"")}")""")
+    REPL.interpret(s"""val argz = Array("${argz.mkString("\", \"")}")""")
+    REPL.interpret("import org.apache.zeppelin.scio._")
   }
 
   private def parseAndPartitionArgs(args: List[String]): (List[String], List[String]) = {
