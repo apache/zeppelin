@@ -87,5 +87,6 @@ if [[ ! -d "${ZEPPELIN_NOTEBOOK_DIR}" ]]; then
   $(mkdir -p "${ZEPPELIN_NOTEBOOK_DIR}")
 fi
 
-echo "Browse localhost:8080 in your browser"
+IP_ADDR="$(ifconfig en0 | grep inet | grep -v inet6 | cut -d ' ' -f2)"
+echo -e "Browse $IP_ADDR:8080 in your browser.\nIf you are testing on your local computer, use localhost:8080"
 exec $ZEPPELIN_RUNNER $JAVA_OPTS -cp $ZEPPELIN_CLASSPATH_OVERRIDES:$CLASSPATH $ZEPPELIN_SERVER "$@"
