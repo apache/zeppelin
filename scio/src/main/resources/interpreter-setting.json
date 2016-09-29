@@ -5,11 +5,11 @@
     "className": "org.apache.zeppelin.scio.ScioInterpreter",
     "defaultInterpreter": true,
     "properties": {
-      "args": {
+      "argz": {
         "envName": null,
         "propertyName": null,
         "defaultValue": "--runner=InProcessPipelineRunner",
-        "description": "Scio commandline args"
+        "description": "Scio interpreter wide arguments"
       }
     },
     "editor": {
