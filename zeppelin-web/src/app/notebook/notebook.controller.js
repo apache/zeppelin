@@ -680,7 +680,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
 
   $scope.visitRevision = function(revision) {
     if (revision.id) {
-      if (revision.id === "Head") {
+      if (revision.id === 'Head') {
         $location.path('/notebook/' + $routeParams.noteId);
       } else {
         $location.path('/notebook/' + $routeParams.noteId + '/revision/' + revision.id);
@@ -719,8 +719,8 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
     console.log('We got the revisions %o', data);
     $scope.noteRevisions = data.revisionList;
     $scope.noteRevisions.splice(0, 0, {
-      id: "Head",
-      message: "Head"
+      id: 'Head',
+      message: 'Head'
     });
     if ($routeParams.revisionId) {
       var index = _.findIndex($scope.noteRevisions, {'id': $routeParams.revisionId});
