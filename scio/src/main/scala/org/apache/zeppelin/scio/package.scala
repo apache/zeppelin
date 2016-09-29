@@ -24,7 +24,7 @@ import scala.reflect.ClassTag
 
 package object scio {
   private val SCollectionEmptyMsg = "\n%html <font color=red>Result SCollection is empty!</font>\n"
-  private val maxResults = 1000
+  private val maxResults = Integer.getInteger("zeppelin.scio.maxResult", 1000)
 
   private def materialize[T: ClassTag](self: SCollection[T]) = {
     val f = self.materialize
@@ -34,7 +34,7 @@ package object scio {
 
   private def notifIfTruncated(it: Iterator[_]): Unit = {
     if(it.hasNext)
-      println("\n<font color=red>Results are limited to " + maxResults + ".</font>\n")
+      println("\n<font color=red>Results are limited to " + maxResults + " rows.</font>\n")
   }
 
   // TODO: scala 2.11
