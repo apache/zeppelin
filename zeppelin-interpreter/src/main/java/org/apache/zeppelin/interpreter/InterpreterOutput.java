@@ -214,7 +214,7 @@ public class InterpreterOutput extends OutputStream {
   }
 
   private boolean typeShouldBeDetected() {
-    return (outList.size() > 0) ? false : true;
+    return getType() == InterpreterResult.Type.TABLE ? false : true;
   }
 
   public void flush() throws IOException {
