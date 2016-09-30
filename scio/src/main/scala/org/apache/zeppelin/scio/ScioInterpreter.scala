@@ -166,7 +166,7 @@ class ScioInterpreter(property: Properties) extends Interpreter(property) {
         }
         case Error => {
           logger.error(s"Error executing `$code` in $paragraphId")
-          new InterpreterResult(InterpreterResult.Code.ERROR)
+          new InterpreterResult(InterpreterResult.Code.ERROR, "Interpreter error")
         }
         case Incomplete => {
           logger.warn(s"Code `$code` not complete in $paragraphId")

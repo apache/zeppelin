@@ -37,6 +37,24 @@ public class ScioInterpreterTest {
   private static InterpreterGroup intpGroup;
   private InterpreterContext context;
 
+  private final String newline = "\n";
+
+  private InterpreterContext getNewContext() {
+    return new InterpreterContext("note", "id", "title", "text",
+        new AuthenticationInfo(),
+        new HashMap<String, Object>(),
+        new GUI(),
+        new AngularObjectRegistry(intpGroup.getId(), null),
+        new LocalResourcePool("id"),
+        new LinkedList<InterpreterContextRunner>(),
+        new InterpreterOutput(new InterpreterOutputListener() {
+          @Override
+          public void onAppend(InterpreterOutput out, byte[] line) {}
+          @Override
+          public void onUpdate(InterpreterOutput out, byte[] output) {}
+        }));
+  }
+
   @Before
   public void setUp() throws Exception {
     if (repl == null) {
@@ -48,34 +66,20 @@ public class ScioInterpreterTest {
       repl.open();
     }
 
-    context = new InterpreterContext("note", "id", "title", "text",
-        new AuthenticationInfo(),
-        new HashMap<String, Object>(),
-        new GUI(),
-        new AngularObjectRegistry(intpGroup.getId(), null),
-        new LocalResourcePool("id"),
-        new LinkedList<InterpreterContextRunner>(),
-        new InterpreterOutput(new InterpreterOutputListener() {
-          @Override
-          public void onAppend(InterpreterOutput out, byte[] line) {
-          }
-
-          @Override
-          public void onUpdate(InterpreterOutput out, byte[] output) {
-          }
-        }));
+    context = getNewContext();
   }
 
   @Test
   public void testBasicSuccess() {
     assertEquals(InterpreterResult.Code.SUCCESS,
-        repl.interpret("val a = 1\nval b = 2", context).code());
+        repl.interpret("val a = 1" + newline + "val b = 2", context).code());
   }
 
   @Test
   public void testBasicSyntaxError() {
-    assertEquals(InterpreterResult.Code.ERROR,
-        repl.interpret("val a:Int = 'ds'", context).code());
+    InterpreterResult error = repl.interpret("val a:Int = 'ds'", context);
+    assertEquals(InterpreterResult.Code.ERROR, error.code());
+    assertTrue(error.message().length() > 0);
   }
 
   @Test
@@ -88,6 +92,27 @@ public class ScioInterpreterTest {
   @Test
   public void testBasicPipeline() {
     assertEquals(InterpreterResult.Code.SUCCESS,
-        repl.interpret("sc.parallelize(1 to 10).closeAndCollect().toList", context).code());
+        repl.interpret("val (sc, _) = ContextAndArgs(argz)" + newline
+            + "sc.parallelize(1 to 10).closeAndCollect().toList", context).code());
   }
+
+  @Test
+  public void testBasicMultiStepPipeline() {
+    final StringBuilder code = new StringBuilder();
+    code.append("val (sc, _) = ContextAndArgs(argz)").append(newline)
+        .append("val numbers = sc.parallelize(1 to 10)").append(newline)
+        .append("val results = numbers.closeAndCollect().toList").append(newline)
+        .append("println(results)");
+    assertEquals(InterpreterResult.Code.SUCCESS,
+        repl.interpret(code.toString(), context).code());
+  }
+
+  @Test
+  public void testException() {
+    InterpreterResult exception = repl.interpret("val (sc, _) = ContextAndArgs(argz)" + newline
+        + "throw new Exception(\"test\")", context);
+    assertEquals(InterpreterResult.Code.ERROR, exception.code());
+    assertTrue(exception.message().length() > 0);
+  }
+
 }
