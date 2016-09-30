@@ -944,6 +944,7 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
 
   $scope.setGraphMode = function(type, emit, refresh) {
     if (emit) {
+      $scope.loadTableData($scope.paragraph.result);
       setNewMode(type);
     } else {
       clearUnknownColsFromGraphOption();
@@ -1066,6 +1067,38 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
     return groupedThousandsWith3DigitsFormatter(d);
   };
 
+  /**
+   * Function that allow to filter chart
+   */
+  $scope.setFilter = function(type, emit, refresh, columnName, filteredValue) {
+    //reload is necessary the second time the user applies a filter
+    $scope.loadTableData($scope.paragraph.result);
+    var columnNameFinded = _.find($scope.paragraph.result.columnNames, function(o) {return o.name === columnName;});
+    //if the column name doesn't exist on the paragraph then return
+    if (columnNameFinded === undefined) {
+      return;
+    }
+    var result = $scope.paragraph.result;
+    var filteredMsgTable = [];
+    var filteredRows = [];
+    var k = 0;
+    for (var i = 0; i < result.msgTable.length; i++) {
+      for (var j = 0; j < result.msgTable[i].length; j++) {
+        if (result.msgTable[i][j].value === filteredValue) {
+          filteredMsgTable[k] = result.msgTable[i];
+          filteredRows[k] = result.rows[i];
+          k++;
+          break; //for the first time we filter one value
+        }
+      }
+    }
+    //if the paragraph doesn't contain the filter value but have the column name, "no data available"
+    //will be print at screen
+    result.msgTable = filteredMsgTable;
+    result.rows = filteredRows;
+    $scope.setGraphMode(type, emit, refresh);
+  };
+
   var setD3Chart = function(type, data, refresh) {
     if (!$scope.chart[type]) {
       var chart = nv.models[type]();
@@ -1075,6 +1108,7 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
     var d3g = [];
     var xLabels;
     var yLabels;
+    var index; //index of filtered value
 
     if (type === 'scatterChart') {
       var scatterData = setScatterChart(data, refresh);
@@ -1085,7 +1119,10 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
 
       $scope.chart[type].xAxis.tickFormat(function(d) {return xAxisTickFormat(d, xLabels);});
       $scope.chart[type].yAxis.tickFormat(function(d) {return yAxisTickFormat(d, yLabels);});
-
+      $scope.chart[type].scatter.dispatch.on('elementClick', function(d) {
+        index = d.point.x;
+        $scope.allParagraphFiltered(false, false, $scope.paragraph.config.graph.scatter.xAxis.name, xLabels[index]);
+      });
       // configure how the tooltip looks.
       $scope.chart[type].tooltipContent(function(key, x, y, graph, data) {
         var tooltipContent = '<h3>' + key + '</h3>';
@@ -1107,6 +1144,9 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
 
         $scope.chart[type].x(function(d) { return d.label;})
           .y(function(d) { return d.value;});
+        $scope.chart[type].pie.dispatch.on('elementClick', function(d) {
+          $scope.allParagraphFiltered(false,  false, $scope.paragraph.config.graph.keys[0].name, d.label);
+        });
 
         if (d.length > 0) {
           for (var i = 0; i < d[0].values.length ; i++) {
@@ -1121,6 +1161,10 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
         d3g = pivotDataToD3ChartFormat(p, true, false, type).d3g;
         $scope.chart[type].yAxis.axisLabelDistance(50);
         $scope.chart[type].yAxis.tickFormat(function(d) {return yAxisTickFormat(d);});
+        //filter when clicked on graph
+        $scope.chart[type].multibar.dispatch.on('elementClick', function(d) {
+          $scope.allParagraphFiltered(false,  false, $scope.paragraph.config.graph.keys[0].name, d.point.x);
+        });
       } else if (type === 'lineChart' || type === 'stackedAreaChart' || type === 'lineWithFocusChart') {
         var pivotdata = pivotDataToD3ChartFormat(p, false, true);
         xLabels = pivotdata.xLabels;
@@ -1139,6 +1183,17 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
           $scope.chart[type].forceY([0]); // force y-axis minimum to 0 for line chart.
         } else {
           $scope.chart[type].forceY([]);
+        }
+        if (type === 'lineChart') {
+          $scope.chart[type].lines.dispatch.on('elementClick', function(d) {
+            index = d[0].pointIndex;
+            $scope.allParagraphFiltered(false,  false, $scope.paragraph.config.graph.keys[0].name,  xLabels[index]);
+          });
+        }
+        if (type === 'stackedAreaChart') {
+          $scope.chart[type].stacked.scatter.dispatch.on('elementClick', function(d) {
+            $scope.allParagraphFiltered(false, false, $scope.paragraph.config.graph.keys[0].name, xLabels[0]);
+          });
         }
       }
     }

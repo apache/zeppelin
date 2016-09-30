@@ -171,6 +171,9 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
     document.getElementById('note.checkpoint.message').value = '';
   };
 
+  //contains the data filtered with value
+  $scope.filteredData = '';
+
   $scope.$on('listRevisionHistory', function(event, data) {
     console.log('We got the revisions %o', data);
     $scope.noteRevisions = data.revisionList;
@@ -192,9 +195,41 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
           _.forEach($scope.note.paragraphs, function(n, key) {
             angular.element('#' + n.id + '_paragraphColumn_main').scope().runParagraph(n.text);
           });
+
+          $scope.filteredData = '';
         }
       }
     });
+  };
+
+  $scope.allParagraphFiltered = function(emit, refresh, columnName, nameOfFilteredData) {
+    _.forEach($scope.note.paragraphs, function(n, key) {
+      //default: the last paragraph have no data
+      if (n.result === undefined || n.result.type === 'TEXT') {
+        return;
+      }
+      var graphMode = angular.element('#' + n.id + '_paragraphColumn_main').scope().getGraphMode();
+      //remove filter by clicking the button filter
+      if (nameOfFilteredData === undefined) {
+        angular.element('#' + n.id + '_paragraphColumn_main').scope().setGraphMode(graphMode, true);
+      } else {
+        //console.log(n.config.graph.keys[0].name);
+        angular.element('#' + n.id + '_paragraphColumn_main').scope().setFilter(graphMode, emit, refresh, columnName,
+          nameOfFilteredData);
+      }
+    });
+    if (nameOfFilteredData !== undefined) {
+      $scope.filteredData = columnName + ': ' +  nameOfFilteredData;
+    } else {
+      $scope.filteredData = '';
+    }
+  };
+
+  $scope.noFilter = function() {
+    if ($scope.filteredData === '' || $scope.filteredData === undefined) {
+      return false;
+    }
+    return true;
   };
 
   $scope.saveNote = function() {
