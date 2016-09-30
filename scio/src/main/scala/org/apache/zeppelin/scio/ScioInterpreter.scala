@@ -195,9 +195,4 @@ class ScioInterpreter(property: Properties) extends Interpreter(property) {
     42
   }
 
-  override def completion(buf: String, cursor: Int): util.List[InterpreterCompletion] = {
-    //TODO: implement, delegate?
-    super.completion(buf, cursor)
-  }
-
 }
