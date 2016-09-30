@@ -284,7 +284,7 @@ build-target/bin/start-cluster.sh
 
 In a browser, navigate to http://`yourip`:8082 to see the Flink Web-UI.  Click on 'Task Managers' in the left navigation bar. Ensure there is at least one Task Manager present.
 
-<center>![alt text](../../assets/themes/zeppelin/img/screenshots/flink-webui.png "The Flink Web-UI")</center>
+<center>![alt text](../assets/themes/zeppelin/img/screenshots/flink-webui.png "The Flink Web-UI")</center>
 
 
 If no task managers are present, restart the Flink cluster with the following commands:
@@ -362,7 +362,7 @@ spark/sbin/start-master.sh --webui-port 8082
 
 Open a browser and navigate to http://`yourip`:8082 to ensure the Spark master is running.
 
-<center>![alt text](../../assets/themes/zeppelin/img/screenshots/spark-master-webui1.png "It should look like this...")</center>
+<center>![alt text](../assets/themes/zeppelin/img/screenshots/spark-master-webui1.png "It should look like this...")</center>
 
 Toward the top of the page there will be a *URL*: spark://`yourhost`:7077.  Note this URL, the Spark Master URI, it will be needed in subsequent steps.
 
