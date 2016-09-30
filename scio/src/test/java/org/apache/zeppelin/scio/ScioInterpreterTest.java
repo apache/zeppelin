@@ -24,8 +24,6 @@ import org.apache.zeppelin.resource.LocalResourcePool;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.Before;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -39,18 +37,12 @@ public class ScioInterpreterTest {
   private static InterpreterGroup intpGroup;
   private InterpreterContext context;
 
-  private static Properties getScioTestProperties() {
-    Properties p = new Properties();
-    //TODO: do we need some properties here?
-    return p;
-  }
-
   @Before
   public void setUp() throws Exception {
     if (repl == null) {
       intpGroup = new InterpreterGroup();
       intpGroup.put("note", new LinkedList<Interpreter>());
-      repl = new ScioInterpreter(getScioTestProperties());
+      repl = new ScioInterpreter(new Properties());
       repl.setInterpreterGroup(intpGroup);
       intpGroup.get("note").add(repl);
       repl.open();
@@ -75,13 +67,19 @@ public class ScioInterpreterTest {
   }
 
   @Test
-  public void testBasicIntp() {
+  public void testBasicSuccess() {
     assertEquals(InterpreterResult.Code.SUCCESS,
         repl.interpret("val a = 1\nval b = 2", context).code());
+  }
 
+  @Test
+  public void testBasicSyntaxError() {
     assertEquals(InterpreterResult.Code.ERROR,
         repl.interpret("val a:Int = 'ds'", context).code());
+  }
 
+  @Test
+  public void testBasicIncomplete() {
     InterpreterResult incomplete = repl.interpret("val a = \"\"\"", context);
     assertEquals(InterpreterResult.Code.INCOMPLETE, incomplete.code());
     assertTrue(incomplete.message().length() > 0);
