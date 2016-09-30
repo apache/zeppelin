@@ -15,7 +15,7 @@
         "envName": "ZEPPELIN_SCIO_MAXRESULT",
         "propertyName": "zeppelin.scio.maxResult",
         "defaultValue": "1000",
-        "description": "Max number of SCollection result to display."
+        "description": "Max number of SCollection results to display."
       }
     },
     "editor": {
