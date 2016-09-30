@@ -449,6 +449,10 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
 
     Gson gson = new Gson();
     String[] completionList = gson.fromJson(completionResult.message(), String[].class);
+    if (completionList == null) {
+      return new LinkedList<>();
+    }
+
     List<InterpreterCompletion> results = new LinkedList<>();
     for (String name: completionList) {
       results.add(new InterpreterCompletion(name, name));
