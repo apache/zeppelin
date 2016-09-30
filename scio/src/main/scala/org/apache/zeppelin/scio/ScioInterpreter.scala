@@ -19,14 +19,13 @@ package org.apache.zeppelin.scio
 
 import java.beans.Introspector
 import java.io.PrintStream
-import java.util
+import java.net.URL
 import java.util.Properties
 
 import com.google.cloud.dataflow.sdk.options.{PipelineOptions, PipelineOptionsFactory}
 import com.google.cloud.dataflow.sdk.runners.inprocess.InProcessPipelineRunner
 import com.spotify.scio.repl.{ScioILoop, ScioReplClassLoader}
 import org.apache.zeppelin.interpreter.Interpreter.FormType
-import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion
 import org.apache.zeppelin.interpreter.util.InterpreterOutputStream
 import org.apache.zeppelin.interpreter.{Interpreter, InterpreterContext, InterpreterResult}
 import org.slf4j.LoggerFactory
@@ -70,11 +69,8 @@ class ScioInterpreter(property: Properties) extends Interpreter(property) {
 
     val settings = new Settings()
 
-    // For scala 2.10 - usejavacp
-    if (scala.util.Properties.versionString.contains("2.10.")) {
-      settings.classpath.append(System.getProperty("java.class.path"))
-      settings.usejavacp.value = true
-    }
+    settings.classpath.append(System.getProperty("java.class.path"))
+    settings.usejavacp.value = true
 
     def classLoaderURLs(cl: ClassLoader): Array[java.net.URL] = cl match {
       case null => Array()
@@ -90,22 +86,24 @@ class ScioInterpreter(property: Properties) extends Interpreter(property) {
     // itself to -Xplugin. If shell is started from sbt or classpath, paradise jar has to be in
     // classpath, we find it and add it to -Xplugin.
 
-    // Repl assembly includes paradise's scalac-plugin.xml - required for BigQuery macro
-    // There should be no harm if we keep this for sbt launch.
     val thisJar = this.getClass.getProtectionDomain.getCodeSource.getLocation.getPath
     // In some cases this may be `target/classes`
     if(thisJar.endsWith(".jar")) settings.plugin.appendToValue(thisJar)
 
-    ClassPath.split(settings.classpath.value)
+    ClassPath
+      .split(settings.classpath.value)
       .find(File(_).name.startsWith("paradise_"))
       .foreach(settings.plugin.appendToValue)
 
     // Force the repl to be synchronous, so all cmds are executed in the same thread
     settings.Yreplsync.value = true
 
+    val jars = ClassPath.split(settings.classpath.value)
+      .flatMap(ClassPath.specToURL)
+      .toArray
+
     val scioClassLoader = new ScioReplClassLoader(
-      ClassPath.toURLs(settings.classpath.value).toArray ++
-        classLoaderURLs(Thread.currentThread().getContextClassLoader),
+      jars ++ classLoaderURLs(Thread.currentThread().getContextClassLoader),
       null,
       Thread.currentThread.getContextClassLoader)
 
