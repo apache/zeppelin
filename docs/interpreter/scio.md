@@ -73,7 +73,7 @@ Please refer to [Scio wiki](https://github.com/spotify/scio/wiki) for more compl
 
 ### Progress
 
-There can be only one paragraph running at a time. There is no notion of overall progress - the progress indicator will state `42`, which is just a magic number.
+There can be only one paragraph running at a time. There is no notion of overall progress, thus progress bar will be `0`.
 
 ### SCollection display helpers
 

@@ -192,7 +192,7 @@ class ScioInterpreter(property: Properties) extends Interpreter(property) {
 
   override def getProgress(context: InterpreterContext): Int = {
     // not implemented
-    42
+    0
   }
 
 }
