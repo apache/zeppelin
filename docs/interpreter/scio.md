@@ -34,7 +34,7 @@ Scio is a Scala DSL for [Google Cloud Dataflow](https://github.com/GoogleCloudPl
     <th>Description</th>
   </tr>
   <tr>
-    <td>argz</td>
+    <td>zeppelin.scio.argz</td>
     <td>--runner=InProcessPipelineRunner</td>
     <td>Scio Pipeline runner</td>
   </tr>

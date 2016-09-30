@@ -5,9 +5,9 @@
     "className": "org.apache.zeppelin.scio.ScioInterpreter",
     "defaultInterpreter": true,
     "properties": {
-      "argz": {
-        "envName": null,
-        "propertyName": null,
+      "zeppelin.scio.argz": {
+        "envName": "ZEPPELIN_SCIO_ARGZ",
+        "propertyName": "zeppelin.scio.argz",
         "defaultValue": "--runner=InProcessPipelineRunner",
         "description": "Scio interpreter wide arguments"
       },
