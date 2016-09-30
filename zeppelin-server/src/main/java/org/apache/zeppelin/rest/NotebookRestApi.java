@@ -46,6 +46,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.apache.zeppelin.annotation.ZeppelinApi;
+import org.apache.zeppelin.exception.DuplicateNameException;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.NotebookAuthorization;
@@ -235,13 +236,20 @@ public class NotebookRestApi {
    * @param req - notebook Json
    * @return JSON with new note ID
    * @throws IOException
+   * @throws DuplicateNameException 
    */
   @POST
   @Path("import")
   @ZeppelinApi
   public Response importNotebook(String req) throws IOException {
     AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
-    Note newNote = notebook.importNote(req, null, subject);
+    Note newNote;
+    try {
+      newNote = notebook.importNote(req, null, subject);
+    } catch (DuplicateNameException e) {
+      return new JsonResponse<>(Status.NOT_ACCEPTABLE, 
+          "Notebook already exists with same name").build();
+    }
     return new JsonResponse<>(Status.CREATED, "", newNote.getId()).build();
   }
 
@@ -251,33 +259,37 @@ public class NotebookRestApi {
    * @param message - JSON with new note name
    * @return JSON with new note ID
    * @throws IOException
+   * @throws DuplicateNameException 
    */
   @POST
   @Path("/")
   @ZeppelinApi
   public Response createNote(String message) throws IOException {
     LOG.info("Create new notebook by JSON {}", message);
-    NewNotebookRequest request = gson.fromJson(message, NewNotebookRequest.class);
-    AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
-    Note note = notebook.createNote(subject);
-    List<NewParagraphRequest> initialParagraphs = request.getParagraphs();
-    if (initialParagraphs != null) {
-      for (NewParagraphRequest paragraphRequest : initialParagraphs) {
-        Paragraph p = note.addParagraph();
-        p.setTitle(paragraphRequest.getTitle());
-        p.setText(paragraphRequest.getText());
+    String noteName = null;
+    Note note;
+    try {
+      NewNotebookRequest request = gson.fromJson(message, NewNotebookRequest.class);
+      noteName = request.getName();
+      AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
+      note = notebook.createNote(subject, noteName);
+      List<NewParagraphRequest> initialParagraphs = request.getParagraphs();
+      if (initialParagraphs != null) {
+        for (NewParagraphRequest paragraphRequest : initialParagraphs) {
+          Paragraph p = note.addParagraph();
+          p.setTitle(paragraphRequest.getTitle());
+          p.setText(paragraphRequest.getText());
+        }
       }
-    }
-    note.addParagraph(); // add one paragraph to the last
-    String noteName = request.getName();
-    if (noteName.isEmpty()) {
-      noteName = "Note " + note.getId();
-    }
+      note.addParagraph(); // add one paragraph to the last
 
-    note.setName(noteName);
-    note.persist(subject);
-    notebookServer.broadcastNote(note);
-    notebookServer.broadcastNoteList(subject);
+      note.persist(subject);
+      notebookServer.broadcastNote(note);
+      notebookServer.broadcastNoteList(subject);
+    } catch (DuplicateNameException e) {
+      return new JsonResponse<>(Status.NOT_ACCEPTABLE, "Notebook with name " + noteName +
+              "already exists").build();
+    }
     return new JsonResponse<>(Status.CREATED, "", note.getId()).build();
   }
 
@@ -311,6 +323,7 @@ public class NotebookRestApi {
    * @param notebookId ID of Notebook
    * @return JSON with status.CREATED
    * @throws IOException, CloneNotSupportedException, IllegalArgumentException
+   * @throws DuplicateNameException 
    */
   @POST
   @Path("{notebookId}")
@@ -318,15 +331,21 @@ public class NotebookRestApi {
   public Response cloneNote(@PathParam("notebookId") String notebookId, String message)
       throws IOException, CloneNotSupportedException, IllegalArgumentException {
     LOG.info("clone notebook by JSON {}", message);
-    NewNotebookRequest request = gson.fromJson(message, NewNotebookRequest.class);
     String newNoteName = null;
-    if (request != null) {
-      newNoteName = request.getName();
+    Note newNote;
+    try {
+      NewNotebookRequest request = gson.fromJson(message, NewNotebookRequest.class);
+      if (request != null) {
+        newNoteName = request.getName();
+      }
+      AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
+      newNote = notebook.cloneNote(notebookId, newNoteName, subject);
+      notebookServer.broadcastNote(newNote);
+      notebookServer.broadcastNoteList(subject);
+    } catch (DuplicateNameException e) {
+      return new JsonResponse<>(Status.NOT_ACCEPTABLE, "Note with name " + newNoteName +
+              "already exists").build();
     }
-    AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
-    Note newNote = notebook.cloneNote(notebookId, newNoteName, subject);
-    notebookServer.broadcastNote(newNote);
-    notebookServer.broadcastNoteList(subject);
     return new JsonResponse<>(Status.CREATED, "", newNote.getId()).build();
   }
 

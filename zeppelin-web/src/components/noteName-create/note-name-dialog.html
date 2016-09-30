@@ -29,11 +29,12 @@ limitations under the License.
               id="noteName" ng-model="note.notename" ng-enter="notenamectrl.handleNameEnter()"/>
           </div>
           Use '/' to create folders. Example: /NoteDirA/Notebook1
+          <div class="text-danger" ng-show="notenamectrl.error">Please provide a unique Notebook name</div>
         </div>
         <div class="modal-footer">
           <button type="button" id="createNoteButton"
                   class="btn btn-default"
-                  data-dismiss="modal" ng-click="notenamectrl.createNote()">
+                  ng-click="notenamectrl.createNote()">
             <span ng-show="!notenamectrl.clone">Create Note</span>
             <span ng-show="notenamectrl.clone">Clone Note</span>
           </button>

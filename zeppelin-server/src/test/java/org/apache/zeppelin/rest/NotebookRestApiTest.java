@@ -24,6 +24,7 @@ import com.google.gson.reflect.TypeToken;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.PutMethod;
+import org.apache.zeppelin.exception.DuplicateNameException;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NotebookAuthorization;
 import org.apache.zeppelin.notebook.NotebookAuthorizationInfoSaving;
@@ -49,6 +50,7 @@ import static org.junit.Assert.assertThat;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class NotebookRestApiTest extends AbstractTestRestApi {
   Gson gson = new Gson();
+  private final String EMPTY_STRING = "";
 
   @BeforeClass
   public static void init() throws Exception {
@@ -61,8 +63,8 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
   }
 
   @Test
-  public void testPermissions() throws IOException {
-    Note note1 = ZeppelinServer.notebook.createNote(null);
+  public void testPermissions() throws IOException, DuplicateNameException {
+    Note note1 = ZeppelinServer.notebook.createNote(null, EMPTY_STRING);
     // Set only readers
     String jsonRequest = "{\"readers\":[\"admin-team\"],\"owners\":[]," +
             "\"writers\":[]}";
@@ -85,7 +87,7 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
     get.releaseConnection();
 
 
-    Note note2 = ZeppelinServer.notebook.createNote(null);
+    Note note2 = ZeppelinServer.notebook.createNote(null, EMPTY_STRING);
     // Set only writers
     jsonRequest = "{\"readers\":[],\"owners\":[]," +
             "\"writers\":[\"admin-team\"]}";
@@ -125,8 +127,8 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
   }
 
   @Test
-  public void testGetNoteParagraphJobStatus() throws IOException {
-    Note note1 = ZeppelinServer.notebook.createNote(null);
+  public void testGetNoteParagraphJobStatus() throws IOException, DuplicateNameException {
+    Note note1 = ZeppelinServer.notebook.createNote(null, EMPTY_STRING);
     note1.addParagraph();
 
     String paragraphId = note1.getLastParagraph().getId();
@@ -147,8 +149,8 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
   }
 
   @Test
-  public void testCloneNotebook() throws IOException {
-    Note note1 = ZeppelinServer.notebook.createNote(null);
+  public void testCloneNotebook() throws IOException, DuplicateNameException {
+    Note note1 = ZeppelinServer.notebook.createNote(null, EMPTY_STRING);
     PostMethod post = httpPost("/notebook/" + note1.getId(), "");
     LOG.info("testCloneNotebook response\n" + post.getResponseBodyAsString());
     assertThat(post, isCreated());
@@ -170,6 +172,33 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
     ZeppelinServer.notebook.removeNote(note1.getId(), null);
     ZeppelinServer.notebook.removeNote(clonedNotebookId, null);
 
+  }
+  
+  @Test
+  public void testCloneNotebookWithSameName() throws IOException, DuplicateNameException {
+    String noteName = "Test_Note";
+    String jsonRequest = "{\"name\":\"" + noteName + "\"}";
+    Note note1 = ZeppelinServer.notebook.createNote(null, noteName);
+    PostMethod post = httpPost("/notebook/" + note1.getId(), jsonRequest);
+    LOG.info("testCloneNotebookWithSameName response\n" + post.getResponseBodyAsString());
+    assertThat(post, isNotAcceptable());
+
+    //cleanup
+    ZeppelinServer.notebook.removeNote(note1.getId(), null);
+  }
+  
+  @Test
+  public void testCreateNotebookWithSameName() throws IOException, DuplicateNameException {
+    String noteName = "Test_Note";
+    Note note1 = ZeppelinServer.notebook.createNote(null, noteName);
+    String jsonRequest = "{\"name\":\"" + noteName + "\"}";
+    PostMethod post = httpPost("/notebook/", jsonRequest);
+    LOG.info("testCloneNotebookWithSameName response\n" + post.getResponseBodyAsString());
+    assertThat(post, isNotAcceptable());
+    post.releaseConnection();
+
+    //cleanup
+    ZeppelinServer.notebook.removeNote(note1.getId(), null);
   }
 }
 

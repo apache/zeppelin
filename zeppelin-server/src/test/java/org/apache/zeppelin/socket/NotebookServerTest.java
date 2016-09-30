@@ -21,6 +21,7 @@ import com.google.gson.Gson;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectBuilder;
 import org.apache.zeppelin.display.AngularObjectRegistry;
+import org.apache.zeppelin.exception.DuplicateNameException;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
@@ -92,9 +93,9 @@ public class NotebookServerTest extends AbstractTestRestApi {
   }
 
   @Test
-  public void testMakeSureNoAngularObjectBroadcastToWebsocketWhoFireTheEvent() throws IOException {
+  public void testMakeSureNoAngularObjectBroadcastToWebsocketWhoFireTheEvent() throws IOException, DuplicateNameException {
     // create a notebook
-    Note note1 = notebook.createNote(null);
+    Note note1 = notebook.createNote(null, "");
 
     // get reference to interpreterGroup
     InterpreterGroup interpreterGroup = null;
@@ -148,7 +149,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
   }
 
   @Test
-  public void testImportNotebook() throws IOException {
+  public void testImportNotebook() throws IOException, DuplicateNameException {
     String msg = "{\"op\":\"IMPORT_NOTE\",\"data\":" +
         "{\"notebook\":{\"paragraphs\": [{\"text\": \"Test " +
         "paragraphs import\",\"config\":{},\"settings\":{}}]," +

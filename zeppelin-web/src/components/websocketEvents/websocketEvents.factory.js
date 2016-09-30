@@ -57,6 +57,7 @@ angular.module('zeppelinWebApp').factory('websocketEvents',
     if (op === 'NOTE') {
       $rootScope.$broadcast('setNoteContent', data.note);
     } else if (op === 'NEW_NOTE') {
+      angular.element('#noteNameModal').modal('hide');
       $location.path('/notebook/' + data.note.id);
     } else if (op === 'NOTES_INFO') {
       $rootScope.$broadcast('setNoteMenu', data.notes);
@@ -132,6 +133,10 @@ angular.module('zeppelinWebApp').factory('websocketEvents',
             }
           }]
       });
+    } else if (op === 'ERROR_DIALOG') {
+      $rootScope.$broadcast('errorDialog', data);
+    } else if (op === 'IMPORT_ERROR_DIALOG') {
+      $rootScope.$broadcast('importErrorDialog', data);
     }
   });
 
