@@ -16,9 +16,10 @@
 
   angular.module('zeppelinWebApp').controller('JobmanagerCtrl', JobmanagerCtrl);
 
-  JobmanagerCtrl.$inject = ['$scope', 'websocketMsgSrv', '$interval'];
+  JobmanagerCtrl.$inject = ['$scope', 'websocketMsgSrv', '$interval', 'ngToast'];
 
-  function JobmanagerCtrl($scope, websocketMsgSrv, $interval) {
+  function JobmanagerCtrl($scope, websocketMsgSrv, $interval, ngToast) {
+    ngToast.dismiss();
     $scope.filterValueToName = function(filterValue) {
       var index = _.findIndex($scope.ACTIVE_INTERPRETERS, {value: filterValue});
 

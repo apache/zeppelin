@@ -72,7 +72,7 @@ public abstract class AbstractDependencyResolver {
     }
   }
 
-  public void addRepo(String id, String url, boolean snapshot, Authentication auth) {
+  public void addRepo(String id, String url, boolean snapshot, Authentication auth, Proxy proxy) {
     synchronized (repos) {
       delRepo(id);
       RemoteRepository rr = new RemoteRepository(id, "default", url);
@@ -81,6 +81,7 @@ public abstract class AbstractDependencyResolver {
           RepositoryPolicy.UPDATE_POLICY_DAILY,
           RepositoryPolicy.CHECKSUM_POLICY_WARN));
       rr.setAuthentication(auth);
+      rr.setProxy(proxy);
       repos.add(rr);
     }
   }

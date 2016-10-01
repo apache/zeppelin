@@ -35,7 +35,6 @@ import com.google.gson.Gson;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.sonatype.aether.RepositoryException;
 import org.sonatype.aether.repository.RemoteRepository;
 
 import org.apache.zeppelin.annotation.ZeppelinApi;
@@ -73,9 +72,7 @@ public class InterpreterRestApi {
   @Path("setting")
   @ZeppelinApi
   public Response listSettings() {
-    List<InterpreterSetting> interpreterSettings;
-    interpreterSettings = interpreterFactory.get();
-    return new JsonResponse<>(Status.OK, "", interpreterSettings).build();
+    return new JsonResponse<>(Status.OK, "", interpreterFactory.get()).build();
   }
 
   /**
@@ -202,7 +199,7 @@ public class InterpreterRestApi {
     try {
       Repository request = gson.fromJson(message, Repository.class);
       interpreterFactory.addRepository(request.getId(), request.getUrl(), request.isSnapshot(),
-          request.getAuthentication());
+        request.getAuthentication(), request.getProxy());
       logger.info("New repository {} added", request.getId());
     } catch (Exception e) {
       logger.error("Exception in InterpreterRestApi while adding repository ", e);
