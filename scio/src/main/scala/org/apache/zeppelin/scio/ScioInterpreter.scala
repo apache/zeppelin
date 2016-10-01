@@ -18,8 +18,7 @@
 package org.apache.zeppelin.scio
 
 import java.beans.Introspector
-import java.io.PrintStream
-import java.net.URL
+import java.io.PrintStream}
 import java.util.Properties
 
 import com.google.cloud.dataflow.sdk.options.{PipelineOptions, PipelineOptionsFactory}
@@ -31,7 +30,7 @@ import org.apache.zeppelin.interpreter.{Interpreter, InterpreterContext, Interpr
 import org.slf4j.LoggerFactory
 
 import scala.reflect.io.File
-import scala.tools.nsc.Settings
+import scala.tools.nsc.GenericRunnerCommand
 import scala.tools.nsc.interpreter.JPrintWriter
 import scala.tools.nsc.util.ClassPath
 
@@ -67,7 +66,10 @@ class ScioInterpreter(property: Properties) extends Interpreter(property) {
       .map(_.trim)
       .toList
 
-    val settings = new Settings()
+    // Process command line arguments into a settings object, and use that to start the REPL.
+    // We ignore params we don't care about - hence error function is empty
+    val command = new GenericRunnerCommand(argz, _ => ())
+    val settings = command.settings
 
     settings.classpath.append(System.getProperty("java.class.path"))
     settings.usejavacp.value = true
