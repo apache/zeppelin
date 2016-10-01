@@ -118,7 +118,7 @@ class ScioInterpreter(property: Properties) extends Interpreter(property) {
     settings.embeddedDefaults(scioClassLoader)
 
     // No need for bigquery dumps
-    sys.props("bigquery.plugin.disable.dump") = "true"
+    sys.props("bigquery.plugin.disable.dump") = true.toString
 
     REPL.settings_=(settings)
     REPL.createInterpreter()
