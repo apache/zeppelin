@@ -18,7 +18,7 @@
 package org.apache.zeppelin.scio
 
 import java.beans.Introspector
-import java.io.PrintStream}
+import java.io.PrintStream
 import java.util.Properties
 
 import com.google.cloud.dataflow.sdk.options.{PipelineOptions, PipelineOptionsFactory}
@@ -125,7 +125,8 @@ class ScioInterpreter(property: Properties) extends Interpreter(property) {
     REPL.settings_=(settings)
     REPL.createInterpreter()
     REPL.interpret(s"""val argz = Array("${argz.mkString("\", \"")}")""")
-    REPL.interpret("import org.apache.zeppelin.scio._")
+    REPL.interpret("import org.apache.zeppelin.scio.DisplaySCollectionImplicits._")
+    REPL.interpret("import org.apache.zeppelin.scio.DisplayTapImplicits._")
   }
 
   private def parseAndPartitionArgs(args: List[String]): (List[String], List[String]) = {
