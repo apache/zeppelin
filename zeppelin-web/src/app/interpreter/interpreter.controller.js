@@ -25,6 +25,7 @@
     $scope.showAddNewSetting = false;
     $scope.showRepositoryInfo = false;
     $scope._ = _;
+    ngToast.dismiss();
 
     $scope.openPermissions = function() {
       $scope.showInterpreterAuth = true;
@@ -112,13 +113,15 @@
         var setting = $scope.interpreterSettings[index];
         if (setting.status === 'DOWNLOADING_DEPENDENCIES') {
           isDownloading = true;
-          break;
-        } else if (setting.status === 'ERROR') {
+        }
+
+        if (setting.status === 'ERROR' || setting.errorReason) {
           ngToast.danger({content: 'Error setting properties for interpreter \'' +
             setting.group + '.' + setting.name + '\': ' + setting.errorReason,
             verticalPosition: 'top', dismissOnTimeout: false});
         }
       }
+
       if (isDownloading) {
         $timeout(function() {
           if ($route.current.$$route.originalPath === '/interpreter') {

@@ -433,6 +433,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
 
   private void loadInterpreterDependencies(final InterpreterSetting setting) {
     setting.setStatus(InterpreterSetting.Status.DOWNLOADING_DEPENDENCIES);
+    setting.setErrorReason(null);
     interpreterSettings.put(setting.getId(), setting);
     synchronized (interpreterSettings) {
       final Thread t = new Thread() {
@@ -461,6 +462,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
             }
 
             setting.setStatus(InterpreterSetting.Status.READY);
+            setting.setErrorReason(null);
           } catch (Exception e) {
             logger.error(String.format("Error while downloading repos for interpreter group : %s," +
                     " go to interpreter setting page click on edit and save it again to make " +
