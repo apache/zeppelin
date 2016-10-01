@@ -528,3 +528,45 @@ table.table-striped {
   padding-left: 4px !important;
   width: 20px;
 }
+
+/*
+  Force Layout CSS
+*/
+
+.node {
+        stroke: #999;
+        stroke-width: 1.5px;
+    }
+
+.link {
+    stroke: #999;
+    stroke-opacity: .6;
+}
+
+.forceLayout div.tooltip {
+    position: absolute;
+    text-align: center;
+    width: auto;
+    padding: 4px 6px 4px 6px;
+    font: 12px sans-serif;
+    background: rgba(0, 0, 0, 0.75);
+    color: white;
+    border: 0px;
+    border-radius: 4px;
+    pointer-events: none;
+}
+
+.forceLayout div.tooltip:before {
+    border-top: 7px solid transparent;
+    border-bottom: 7px solid transparent;
+    border-right: 6px solid rgba(0, 0, 0, 0.75);
+    content: "";
+    position: absolute;
+    z-index: 99;
+    left: -6px;
+    top: 11px;
+}
+
+.forceLayout .tooltip-text {
+    color: orangered;
+}

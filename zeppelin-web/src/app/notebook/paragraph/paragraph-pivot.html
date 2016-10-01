@@ -32,7 +32,7 @@ limitations under the License.
     </ul>
   </div>
 
-  <div class="row" ng-if="getGraphMode()!='scatterChart' && getGraphMode()!='map'">
+  <div class="row" ng-if="getGraphMode()!='scatterChart' && getGraphMode()!='map' && getGraphMode()!='forceLayout'">
     <div class="col-md-4">
       <span class="columns lightBold">
         Keys
@@ -207,6 +207,73 @@ limitations under the License.
           <li ng-repeat="col in paragraph.config.graph.map.pinCols">
             <div class="btn btn-primary btn-xs">
               {{col.name}} <span class="fa fa-close" ng-click="removeMapOptionPinInfo($index)"></span>
+            </div>
+          </li>
+        </ul>
+      </span>
+    </div>
+  </div>
+
+  <div class="row" ng-if="getGraphMode()=='forceLayout'">
+    <div class="col-md-3">
+      <span class="columns lightBold">
+        Source
+        <ul data-drop="true"
+            ng-model="paragraph.config.graph.forceLayout.source"
+            jqyoui-droppable="{onDrop:'onGraphOptionChange()'}"
+            class="list-unstyled"
+            style="height:36px">
+          <li ng-if="paragraph.config.graph.forceLayout.source">
+            <div class="btn btn-primary btn-xs">
+              {{paragraph.config.graph.forceLayout.source.name}} <span class="fa fa-close" ng-click="removeForceLayoutOptionSource($index)"></span>
+            </div>
+          </li>
+        </ul>
+      </span>
+    </div>
+    <div class="col-md-3">
+      <span class="columns lightBold">
+        Source Group
+        <ul data-drop="true"
+            ng-model="paragraph.config.graph.forceLayout.sourceGroup"
+            jqyoui-droppable="{onDrop:'onGraphOptionChange()'}"
+            class="list-unstyled"
+            style="height:36px">
+          <li ng-if="paragraph.config.graph.forceLayout.sourceGroup">
+            <div class="btn btn-success btn-xs">
+              {{paragraph.config.graph.forceLayout.sourceGroup.name}} <span class="fa fa-close" ng-click="removeForceLayoutOptionSourceGroup($index)"></span>
+            </div>
+          </li>
+        </ul>
+      </span>
+    </div>
+    <div class="col-md-3">
+      <span class="columns lightBold">
+        Destination
+        <ul data-drop="true"
+            ng-model="paragraph.config.graph.forceLayout.dest"
+            jqyoui-droppable="{onDrop:'onGraphOptionChange()'}"
+            class="list-unstyled"
+            style="height:36px">
+          <li ng-if="paragraph.config.graph.forceLayout.dest">
+            <div class="btn btn-info btn-xs">
+              {{paragraph.config.graph.forceLayout.dest.name}} <span class="fa fa-close" ng-click="removeForceLayoutOptionDest($index)"></span>
+            </div>
+          </li>
+        </ul>
+      </span>
+    </div>
+    <div class="col-md-3">
+      <span class="columns lightBold">
+        Destination Group
+        <ul data-drop="true"
+            ng-model="paragraph.config.graph.forceLayout.destGroup"
+            jqyoui-droppable="{onDrop:'onGraphOptionChange()'}"
+            class="list-unstyled"
+            style="height:36px">
+          <li ng-if="paragraph.config.graph.forceLayout.destGroup">
+            <div class="btn btn-warning btn-xs">
+              {{paragraph.config.graph.forceLayout.destGroup.name}} <span class="fa fa-close" ng-click="removeForceLayoutOptionDestGroup($index)"></span>
             </div>
           </li>
         </ul>

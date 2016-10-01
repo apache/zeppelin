@@ -59,4 +59,11 @@ limitations under the License.
       <span>Maps require internet connectivity.</span>
     </span>
   </div>
+
+  <div ng-if="getGraphMode()=='forceLayout'"
+       id="p{{paragraph.id}}_forceLayout"
+       class="forceLayout">
+    <svg></svg>
+  </div>
+
 </div>
