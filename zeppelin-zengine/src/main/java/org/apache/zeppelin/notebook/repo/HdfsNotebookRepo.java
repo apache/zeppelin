@@ -117,15 +117,6 @@ public class HdfsNotebookRepo implements NotebookRepo {
       if (p.getStatus() == Status.PENDING || p.getStatus() == Status.RUNNING) {
         p.setStatus(Status.ABORT);
       }
-
-      List<ApplicationState> appStates = p.getAllApplicationStates();
-      if (appStates != null) {
-        for (ApplicationState app : appStates) {
-          if (app.getStatus() != ApplicationState.Status.ERROR) {
-            app.setStatus(ApplicationState.Status.UNLOADED);
-          }
-        }
-      }
     }
 
     return note;
@@ -199,8 +190,7 @@ public class HdfsNotebookRepo implements NotebookRepo {
   }
 
   @Override
-  public Note get(String noteId, String revId, AuthenticationInfo subject) throws IOException {
-    // Auto-generated method stub
+  public Note get(String noteId, Revision rev, AuthenticationInfo subject) throws IOException {
     return null;
   }
 
