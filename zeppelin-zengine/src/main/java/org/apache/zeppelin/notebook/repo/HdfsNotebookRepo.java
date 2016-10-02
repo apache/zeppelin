@@ -47,14 +47,16 @@ public class HdfsNotebookRepo implements NotebookRepo {
   private Logger logger = LoggerFactory.getLogger(HdfsNotebookRepo.class);
   private HdfsUtils hdfsUtils;
   private ZeppelinConfiguration conf;
+  private Path rootDir;
 
 
   public HdfsNotebookRepo(ZeppelinConfiguration conf) throws IOException {
     this.conf = conf;
     String hadoopConfDir = conf.getString("HADOOP_CONF_DIR");
     try {
+      rootDir = new Path(conf.getNotebookDir());
       hdfsUtils = new HdfsUtils(conf.getNotebookDir(), hadoopConfDir);
-      hdfsUtils.mkdirs(hdfsUtils.getRootPath());
+      hdfsUtils.mkdirs(rootDir);
     } catch (URISyntaxException e) {
       throw new IOException(e);
     }
@@ -62,7 +64,7 @@ public class HdfsNotebookRepo implements NotebookRepo {
 
   @Override
   public List<NoteInfo> list(AuthenticationInfo subject) throws IOException {
-    Path[] children = hdfsUtils.listFiles(hdfsUtils.getRootPath());
+    Path[] children = hdfsUtils.listFiles(rootDir);
     List<NoteInfo> infos = new LinkedList<NoteInfo>();
     for (Path child : children) {
       String fileName = child.getName();
@@ -130,12 +132,11 @@ public class HdfsNotebookRepo implements NotebookRepo {
 
   @Override
   public Note get(String noteId, AuthenticationInfo subject) throws IOException {
-    Path path = new Path(hdfsUtils.getRootPath(), noteId);
+    Path path = new Path(rootDir, noteId);
     return getNote(path);
   }
 
   protected Path getRootDir() throws IOException {
-    Path rootDir = hdfsUtils.getRootPath();
     if (!hdfsUtils.exists(rootDir)) {
       throw new IOException("Root path does not exists");
     }
@@ -153,7 +154,6 @@ public class HdfsNotebookRepo implements NotebookRepo {
     Gson gson = gsonBuilder.create();
     String json = gson.toJson(note);
 
-    Path rootDir = hdfsUtils.getRootPath();
     Path noteDir = new Path(rootDir, note.getId());
 
     if (!hdfsUtils.exists(noteDir)) {
@@ -169,7 +169,6 @@ public class HdfsNotebookRepo implements NotebookRepo {
 
   @Override
   public void remove(String noteId, AuthenticationInfo subject) throws IOException {
-    Path rootDir = hdfsUtils.getRootPath();
     Path noteDir = new Path(rootDir, noteId);
 
     if (!hdfsUtils.exists(noteDir)) {

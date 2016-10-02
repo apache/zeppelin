@@ -31,47 +31,29 @@ import java.util.List;
  */
 public class HdfsUtils {
   protected String dataPath;
-  protected String hdfsUrl;
-  protected URI hdfsFullUrl;
-  protected String scheme;
 
   /**
    * @param dataPath Full hdfs path (including scheme) to notes root dir
    * @throws URISyntaxException
    */
   public HdfsUtils(String dataPath, String hadoopConfDir) throws URISyntaxException {
-    if (hadoopConfDir != null && !hadoopConfDir.equals("")) {
-      conf.addResource(hadoopConfDir + "/core-site.xml");
-      conf.addResource(hadoopConfDir + "/hdfs-site.xml");
+    if (hadoopConfDir == null) {
+      throw new URISyntaxException(hadoopConfDir, "hadoopConfDir connaot be null");
     }
-    hdfsFullUrl = new URI(dataPath);
+    if (hadoopConfDir.equals("")) {
+      throw new URISyntaxException(hadoopConfDir, "hadoopConfDir connaot be empty");
+    }
+    final Path coreSite = new Path(hadoopConfDir, "core-site.xml");
+    conf.addResource(coreSite);
+    final Path hdfsSite = new Path(hadoopConfDir, "hdfs-site.xml");
+    conf.addResource(hdfsSite);
+
     this.dataPath = dataPath;
-    if (!isValidUrl())
-      throw new URISyntaxException(dataPath, "Invalid URL. Should start with hdfs:// or file://");
-    scheme = hdfsFullUrl.getScheme();
-    hdfsUrl = getHdfsRoot();
   }
 
-
-  /**
-   * @return Path only without scheme
-   */
-  public Path getRootPath() {
-    return new Path(hdfsFullUrl.getPath());
-  }
-
-  public String getHdfsRoot() {
-    String auth = hdfsFullUrl.getAuthority() == null ? "" : hdfsFullUrl.getAuthority();
-    return scheme + "://" + auth + "/";
-  }
 
   protected Configuration conf = new Configuration();
 
-
-  private boolean isValidUrl() {
-    return hdfsFullUrl != null && (hdfsFullUrl.toString().startsWith("hdfs://") ||
-        hdfsFullUrl.toString().startsWith("file:"));
-  }
 
   /**
    * @param directory Folder to list files
@@ -81,15 +63,13 @@ public class HdfsUtils {
   public Path[] listFiles(Path directory) throws IOException {
     FileSystem fs = null;
     try {
-      fs = FileSystem.newInstance(new URI(hdfsUrl), conf);
+      fs = FileSystem.get(conf);
       FileStatus[] statuses = fs.listStatus(directory);
       List<Path> paths = new LinkedList<>();
       for (FileStatus status : statuses) {
         paths.add(status.getPath());
       }
       return paths.toArray(new Path[0]);
-    } catch (URISyntaxException e) {
-      throw new IOException(e);
     } finally {
       if (fs != null)
         fs.close();
@@ -103,10 +83,8 @@ public class HdfsUtils {
   public void delete(Path path) throws IOException {
     FileSystem fs = null;
     try {
-      fs = FileSystem.newInstance(new URI(hdfsUrl), conf);
+      fs = FileSystem.get(conf);
       fs.delete(path, true);
-    } catch (URISyntaxException e) {
-      throw new IOException(e);
     } finally {
       if (fs != null)
         fs.close();
@@ -120,10 +98,8 @@ public class HdfsUtils {
   public void mkdirs(Path path) throws IOException {
     FileSystem fs = null;
     try {
-      fs = FileSystem.newInstance(new URI(hdfsUrl), conf);
+      fs = FileSystem.get(conf);
       fs.mkdirs(path);
-    } catch (URISyntaxException e) {
-      throw new IOException(e);
     } finally {
       if (fs != null)
         fs.close();
@@ -139,11 +115,9 @@ public class HdfsUtils {
     FileSystem fs = null;
     FSDataOutputStream fout = null;
     try {
-      fs = FileSystem.newInstance(new URI(hdfsUrl), conf);
+      fs = FileSystem.get(conf);
       fout = fs.create(path, true);
       fout.write(content);
-    } catch (URISyntaxException e) {
-      throw new IOException(e);
     } finally {
       if (fout != null)
         fout.close();
@@ -160,10 +134,8 @@ public class HdfsUtils {
   public void rename(Path oldPath, Path newPath) throws IOException {
     FileSystem fs = null;
     try {
-      fs = FileSystem.newInstance(new URI(hdfsUrl), conf);
+      fs = FileSystem.get(conf);
       fs.rename(oldPath, newPath);
-    } catch (URISyntaxException e) {
-      throw new IOException(e);
     } finally {
       if (fs != null)
         fs.close();
@@ -178,10 +150,8 @@ public class HdfsUtils {
   public boolean exists(Path path) throws IOException {
     FileSystem fs = null;
     try {
-      fs = FileSystem.newInstance(new URI(hdfsUrl), conf);
+      fs = FileSystem.get(conf);
       return fs.exists(path);
-    } catch (URISyntaxException e) {
-      throw new IOException(e);
     } finally {
       if (fs != null)
         fs.close();
@@ -196,10 +166,8 @@ public class HdfsUtils {
   public boolean isDirectory(Path path) throws IOException {
     FileSystem fs = null;
     try {
-      fs = FileSystem.newInstance(new URI(hdfsUrl), conf);
+      fs = FileSystem.get(conf);
       return fs.isDirectory(path);
-    } catch (URISyntaxException e) {
-      throw new IOException(e);
     } finally {
       if (fs != null)
         fs.close();
@@ -216,14 +184,12 @@ public class HdfsUtils {
     BufferedReader br = null;
     FSDataInputStream in = null;
     try {
-      fs = FileSystem.newInstance(new URI(hdfsUrl), conf);
+      fs = FileSystem.get(conf);
       long fileLen = fs.getFileStatus(path).getLen();
       byte[] toRead = new byte[(int) fileLen];
       in = fs.open(path);
       in.readFully(0, toRead);
       return toRead;
-    } catch (URISyntaxException e) {
-      throw new IOException(e);
     } finally {
       if (in != null)
         in.close();

@@ -225,7 +225,7 @@ To enable your notebooks to be stored on HDFS - uncomment the next property in `
 and replace the notebook directory property below by an HDFS location as follows :
 <property>
   <name>zeppelin.notebook.dir</name>
-  <value>hdfs://localhost:9000/tmp/notebook</value>
+  <value>/tmp/notebook</value>
   <description>path or URI for notebook persist</description>
 </property>
 
