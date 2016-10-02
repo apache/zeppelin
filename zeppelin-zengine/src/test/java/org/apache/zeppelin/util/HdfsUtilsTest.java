@@ -46,8 +46,7 @@ public class HdfsUtilsTest {
   @Test
   public void rootPath() {
     try {
-      HdfsUtils hdfsUtils = new HdfsUtils("/", "/usr/local/Cellar/hadoop/2.7.2/libexec/etc/hadoop");
-//      HdfsUtils hdfsUtils = new HdfsUtils("hdfs://localhost:9000/");
+      HdfsUtils hdfsUtils = new HdfsUtils("/", null);
       hdfsUtils.mkdirs(new Path("/tmp/coucou"));
       Path[] paths = hdfsUtils.listFiles(new Path("/tmp"));
       for (Path path : paths) {

@@ -37,16 +37,12 @@ public class HdfsUtils {
    * @throws URISyntaxException
    */
   public HdfsUtils(String dataPath, String hadoopConfDir) throws URISyntaxException {
-    if (hadoopConfDir == null) {
-      throw new URISyntaxException(hadoopConfDir, "hadoopConfDir connaot be null");
+    if (hadoopConfDir != null && !hadoopConfDir.equals("")) {
+      final Path coreSite = new Path(hadoopConfDir, "core-site.xml");
+      conf.addResource(coreSite);
+      final Path hdfsSite = new Path(hadoopConfDir, "hdfs-site.xml");
+      conf.addResource(hdfsSite);
     }
-    if (hadoopConfDir.equals("")) {
-      throw new URISyntaxException(hadoopConfDir, "hadoopConfDir connaot be empty");
-    }
-    final Path coreSite = new Path(hadoopConfDir, "core-site.xml");
-    conf.addResource(coreSite);
-    final Path hdfsSite = new Path(hadoopConfDir, "hdfs-site.xml");
-    conf.addResource(hdfsSite);
 
     this.dataPath = dataPath;
   }
