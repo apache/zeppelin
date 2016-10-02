@@ -431,8 +431,6 @@
           <version>0.11</version>
           <configuration>
             <excludes>
-              <exclude>**/.Ulysses-favorites.plist</exclude>
-              <exclude>**/.Ulysses-Group.plist</exclude>
               <exclude>**/*.keywords</exclude>
               <exclude>reports/**</exclude>
               <exclude>**/.idea/</exclude>
