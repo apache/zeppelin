@@ -91,6 +91,7 @@
     <gson.version>2.2</gson.version>
     <guava.version>15.0</guava.version>
     <jetty.version>9.2.15.v20160210</jetty.version>
+    <hadoop.version>2.6.0</hadoop.version>
 
     <PermGen>64m</PermGen>
     <MaxPermGen>512m</MaxPermGen>
@@ -206,6 +207,19 @@
         <artifactId>shiro-config-core</artifactId>
         <version>1.2.3</version>
       </dependency>
+
+      <dependency>
+        <groupId>org.apache.hadoop</groupId>
+        <artifactId>hadoop-common</artifactId>
+        <version>${hadoop.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.apache.hadoop</groupId>
+        <artifactId>hadoop-hdfs</artifactId>
+        <version>${hadoop.version}</version>
+      </dependency>
+
     </dependencies>
   </dependencyManagement>
 
@@ -417,6 +431,8 @@
           <version>0.11</version>
           <configuration>
             <excludes>
+              <exclude>**/.Ulysses-favorites.plist</exclude>
+              <exclude>**/.Ulysses-Group.plist</exclude>
               <exclude>**/*.keywords</exclude>
               <exclude>reports/**</exclude>
               <exclude>**/.idea/</exclude>
