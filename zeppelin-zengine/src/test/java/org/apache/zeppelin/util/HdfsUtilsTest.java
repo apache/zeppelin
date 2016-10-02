@@ -46,7 +46,7 @@ public class HdfsUtilsTest {
   @Test
   public void rootPath() {
     try {
-      HdfsUtils hdfsUtils = new HdfsUtils("file:/");
+      HdfsUtils hdfsUtils = new HdfsUtils("file:/", null);
 //      HdfsUtils hdfsUtils = new HdfsUtils("hdfs://localhost:9000/");
       System.out.println(hdfsUtils.getRootPath());
       System.out.println(hdfsUtils.getHdfsRoot());

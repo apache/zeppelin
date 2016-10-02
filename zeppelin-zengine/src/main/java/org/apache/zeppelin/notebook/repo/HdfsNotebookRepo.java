@@ -51,8 +51,9 @@ public class HdfsNotebookRepo implements NotebookRepo {
 
   public HdfsNotebookRepo(ZeppelinConfiguration conf) throws IOException {
     this.conf = conf;
+    String hadoopConfDir = conf.getString("HADOOP_CONF_DIR");
     try {
-      hdfsUtils = new HdfsUtils(conf.getNotebookDir());
+      hdfsUtils = new HdfsUtils(conf.getNotebookDir(), hadoopConfDir);
       hdfsUtils.mkdirs(hdfsUtils.getRootPath());
     } catch (URISyntaxException e) {
       throw new IOException(e);

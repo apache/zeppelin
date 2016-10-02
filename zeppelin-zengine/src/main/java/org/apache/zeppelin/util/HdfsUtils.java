@@ -39,7 +39,11 @@ public class HdfsUtils {
    * @param dataPath Full hdfs path (including scheme) to notes root dir
    * @throws URISyntaxException
    */
-  public HdfsUtils(String dataPath) throws URISyntaxException {
+  public HdfsUtils(String dataPath, String hadoopConfDir) throws URISyntaxException {
+    if (hadoopConfDir != null && !hadoopConfDir.equals("")) {
+      conf.addResource(hadoopConfDir + "/core-site.xml");
+      conf.addResource(hadoopConfDir + "/hdfs-site.xml");
+    }
     hdfsFullUrl = new URI(dataPath);
     this.dataPath = dataPath;
     if (!isValidUrl())
@@ -128,7 +132,7 @@ public class HdfsUtils {
 
   /**
    * @param content data to write
-   * @param path absolute path without scheme
+   * @param path    absolute path without scheme
    * @throws IOException
    */
   public void writeFile(byte[] content, Path path) throws IOException {
