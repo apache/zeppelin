@@ -1134,18 +1134,16 @@ public class NotebookServer extends WebSocketServlet implements
       p.setAuthenticationInfo(new AuthenticationInfo());
     }
 
-    Map<String, Object> params = (Map<String, Object>) fromMessage
-       .get("params");
+    Map<String, Object> params = (Map<String, Object>) fromMessage.get("params");
     p.settings.setParams(params);
-    Map<String, Object> config = (Map<String, Object>) fromMessage
-       .get("config");
+    Map<String, Object> config = (Map<String, Object>) fromMessage.get("config");
     p.setConfig(config);
-    // if it's the last paragraph, let's add a new one
-    boolean isTheLastParagraph = note.isLastParagraph(p.getId());
-    if (!(text.trim().equals(p.getMagic()) || Strings.isNullOrEmpty(text)) &&
-        isTheLastParagraph) {
-      note.addParagraph();
+    Map<String, Object> requestParam = (Map<String, Object>) fromMessage.get("requestParam");
+    Paragraph newParagraph = null;
+    if (isAddNewParagraph(note, p, requestParam)) {
+      newParagraph = note.addParagraph();
     }
+    setFocusedParagraphId(note, paragraphId, requestParam, newParagraph);
 
     AuthenticationInfo subject = new AuthenticationInfo(fromMessage.principal);
 
@@ -1172,6 +1170,56 @@ public class NotebookServer extends WebSocketServlet implements
         broadcast(note.getId(), new Message(OP.PARAGRAPH).put("paragraph", p));
       }
     }
+  }
+
+  /**
+   * set focused paragraph id
+   *
+   * @param note         note
+   * @param paragraphId  current paragraph id
+   * @param requestParam request parameter
+   * @param newParagraph it is a new one (when new one is added)
+   */
+  void setFocusedParagraphId(Note note, String paragraphId, Map<String, Object> requestParam,
+      Paragraph newParagraph) {
+    //if note has new one, the new one is focused
+    if (newParagraph != null) {
+      note.getConfig().put("focusedParagraphId", newParagraph.getId());
+      return;
+    }
+    //if user want to move focus to next, I figure next paragraph id out.
+    if (requestParam.containsKey("moveFocusToNextParagraph") && (boolean) requestParam
+        .get("moveFocusToNextParagraph")) {
+      Iterator<Paragraph> noteParagraphs = note.getParagraphs().iterator();
+      while (noteParagraphs.hasNext()) {
+        if (paragraphId.equals(noteParagraphs.next().getId())) {
+          note.getConfig().put("focusedParagraphId", noteParagraphs.next().getId());
+          note.getConfig().put("previousFocusedParagraphId", paragraphId);
+          return;
+        }
+      }
+    }
+    //set current paragraph id
+    note.getConfig().put("focusedParagraphId", paragraphId);
+  }
+
+  /**
+   * checking add new paragraph
+   *
+   * @param note         note
+   * @param p            Paragraph
+   * @param requestParam request parameter
+   * @return if return is {@code true}, add new paragraph
+   */
+  boolean isAddNewParagraph(Note note, Paragraph p, Map<String, Object> requestParam) {
+    return
+        //if user want to move next
+        requestParam.containsKey("moveFocusToNextParagraph") && (boolean) requestParam
+            .get("moveFocusToNextParagraph")
+            //if text in paragraph is empty
+            && (!(p.getText().trim().equals(p.getMagic())) || Strings.isNullOrEmpty(p.getText()))
+            //if is last paragraph
+            && note.isLastParagraph(p.getId());
   }
 
   private void sendAllConfigurations(NotebookSocket conn, HashSet<String> userAndRoles,

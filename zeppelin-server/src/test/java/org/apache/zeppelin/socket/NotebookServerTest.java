@@ -16,6 +16,8 @@
  */
 package org.apache.zeppelin.socket;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 
 import org.apache.zeppelin.display.AngularObject;
@@ -35,6 +37,7 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -43,6 +46,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 
 import static java.util.Arrays.asList;
 import static org.junit.Assert.*;
@@ -362,5 +366,110 @@ public class NotebookServerTest extends AbstractTestRestApi {
     return sock;
   }
 
+  @Test
+  public void setFocusedParagraphId() throws Exception {
+    NotebookServer notebookServer = new NotebookServer();
+    Note note = Mockito.mock(Note.class);
+    String paragraphId = "testId";
+
+    //when config empty
+    Map<String, Object> requestParam = Maps.newHashMap();
+    Map<String, Object> noteConfig = Maps.newHashMap();
+    when(note.getConfig()).thenReturn(noteConfig);
+    notebookServer.setFocusedParagraphId(note, paragraphId, requestParam, null);
+
+    assertTrue(note.getConfig().containsKey("focusedParagraphId"));
+    assertFalse(note.getConfig().containsKey("previousFocusedParagraphId"));
+    assertEquals(note.getConfig().get("focusedParagraphId"), paragraphId);
+
+    //create mock Paragraph
+    Paragraph p1 = Mockito.mock(Paragraph.class);
+    when(p1.getId()).thenReturn("p1");
+    Paragraph p2 = Mockito.mock(Paragraph.class);
+    when(p2.getId()).thenReturn("testId");
+    Paragraph p3 = Mockito.mock(Paragraph.class);
+    when(p3.getId()).thenReturn("p3");
+
+    when(note.getParagraphs()).thenReturn(Lists.newArrayList(p1, p2, p3));
+
+    //when moveFocusToNextParagraph is true
+    requestParam.put("moveFocusToNextParagraph", true);
+    noteConfig = Maps.newHashMap();
+    when(note.getConfig()).thenReturn(noteConfig);
+    notebookServer.setFocusedParagraphId(note, paragraphId, requestParam, null);
+
+    assertTrue(note.getConfig().containsKey("focusedParagraphId"));
+    assertTrue(note.getConfig().containsKey("previousFocusedParagraphId"));
+    assertEquals(note.getConfig().get("focusedParagraphId"), "p3");
+    assertEquals(note.getConfig().get("previousFocusedParagraphId"), "testId");
+
+    //when moveFocusToNextParagraph is false
+    requestParam.put("moveFocusToNextParagraph", false);
+    noteConfig = Maps.newHashMap();
+    Mockito.when(note.getConfig()).thenReturn(noteConfig);
+    notebookServer.setFocusedParagraphId(note, paragraphId, requestParam, null);
+
+    assertTrue(note.getConfig().containsKey("focusedParagraphId"));
+    assertFalse(note.getConfig().containsKey("previousFocusedParagraphId"));
+    assertEquals(note.getConfig().get("focusedParagraphId"), paragraphId);
+
+    //when add new paragraph
+    Paragraph newParagraph = Mockito.mock(Paragraph.class);
+    Mockito.when(newParagraph.getId()).thenReturn("newtestId");
+    noteConfig = Maps.newHashMap();
+    Mockito.when(note.getConfig()).thenReturn(noteConfig);
+    notebookServer.setFocusedParagraphId(note, paragraphId, requestParam, newParagraph);
+
+    assertTrue(note.getConfig().containsKey("focusedParagraphId"));
+    assertFalse(note.getConfig().containsKey("previousFocusedParagraphId"));
+    assertEquals(note.getConfig().get("focusedParagraphId"), "newtestId");
+  }
+
+  @Test
+  public void isAddNewParagraph() throws Exception {
+    Note note = Mockito.mock(Note.class);
+    Paragraph lastParagraph = Mockito.mock(Paragraph.class);
+    when(note.getLastParagraph()).thenReturn(lastParagraph);
+    when(lastParagraph.getId()).thenReturn("lastParagraph");
+
+    Paragraph p = Mockito.mock(Paragraph.class);
+    when(p.getText()).thenReturn("%md");
+    when(p.getId()).thenReturn("lastParagraph");
+    when(p.getMagic()).thenReturn("");
+    when(note.isLastParagraph(p.getId())).thenReturn(true);
+
+    NotebookServer notebookServer = new NotebookServer();
+    //always last paragraph
+    //when config empty
+    Map<String, Object> config = Maps.newHashMap();
+    assertFalse(notebookServer.isAddNewParagraph(note, p, config));
+
+    //when move next.
+    config = Maps.newHashMap();
+    config.put("moveFocusToNextParagraph", true);
+    assertTrue(notebookServer.isAddNewParagraph(note, p, config));
+
+    //It is not key event.
+    config = Maps.newHashMap();
+    config.put("moveFocusToNextParagraph", false);
+    assertFalse(notebookServer.isAddNewParagraph(note, p, config));
+
+    //not last paragraph
+    when(p.getId()).thenReturn("testP");
+
+    //when config empty
+    config = Maps.newHashMap();
+    assertFalse(notebookServer.isAddNewParagraph(note, p, config));
+
+    //when move next.
+    config = Maps.newHashMap();
+    config.put("moveFocusToNextParagraph", true);
+    assertFalse(notebookServer.isAddNewParagraph(note, p, config));
+
+    //It is not key event.
+    config = Maps.newHashMap();
+    config.put("moveFocusToNextParagraph", false);
+    assertFalse(notebookServer.isAddNewParagraph(note, p, config));
+  }
 }
 

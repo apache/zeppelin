@@ -38,7 +38,7 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
         if (filtered.length === 1) {
           var paragraph = filtered[0];
           websocketMsgSrv.runParagraph(paragraph.id, paragraph.title, paragraph.text,
-              paragraph.config, paragraph.settings.params);
+              paragraph.config, paragraph.settings.params, paragraph.requestParam);
         } else {
           ngToast.danger({content: 'Cannot find a paragraph with id \'' + paragraphId + '\'',
             verticalPosition: 'top', dismissOnTimeout: false});
@@ -199,6 +199,8 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
   };
 
   var initializeDefault = function() {
+    $scope.paragraph.requestParam = {};
+
     var config = $scope.paragraph.config;
 
     if (!config.colWidth) {
@@ -295,9 +297,15 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
 
   $scope.runParagraph = function(data) {
     websocketMsgSrv.runParagraph($scope.paragraph.id, $scope.paragraph.title,
-                                 data, $scope.paragraph.config, $scope.paragraph.settings.params);
+                                 data, $scope.paragraph.config, $scope.paragraph.settings.params,
+                                 $scope.paragraph.requestParam);
     $scope.originalText = angular.copy(data);
     $scope.dirtyText = undefined;
+  };
+
+  $scope.runParagraphAndMoveFocusToNext = function(data) {
+    $scope.paragraph.requestParam.moveFocusToNextParagraph = true;
+    $scope.runParagraph(data);
   };
 
   $scope.saveParagraph = function() {
@@ -2656,7 +2664,10 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
       } else if (editorHide && (keyCode === 40 || (keyCode === 78 && keyEvent.ctrlKey && !keyEvent.altKey))) { // down
         // move focus to next paragraph
         $scope.$emit('moveFocusToNextParagraph', paragraphId);
+      } else if (keyEvent.ctrlKey && keyCode === 13) { // Ctrl + Enter
+        $scope.run();
       } else if (keyEvent.shiftKey && keyCode === 13) { // Shift + Enter
+        $scope.paragraph.requestParam.moveFocusToNextParagraph = true;
         $scope.run();
       } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 67) { // Ctrl + Alt + c
         $scope.cancelParagraph();

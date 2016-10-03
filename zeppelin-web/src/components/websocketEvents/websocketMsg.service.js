@@ -97,7 +97,7 @@ angular.module('zeppelinWebApp').service('websocketMsgSrv', function($rootScope,
       websocketEvents.sendNewEvent({op: 'CANCEL_PARAGRAPH', data: {id: paragraphId}});
     },
 
-    runParagraph: function(paragraphId, paragraphTitle, paragraphData, paragraphConfig, paragraphParams) {
+    runParagraph: function(paragraphId, paragraphTitle, paragraphData, paragraphConfig, paragraphParams, requestParam) {
       websocketEvents.sendNewEvent({
         op: 'RUN_PARAGRAPH',
         data: {
@@ -105,7 +105,8 @@ angular.module('zeppelinWebApp').service('websocketMsgSrv', function($rootScope,
           title: paragraphTitle,
           paragraph: paragraphData,
           config: paragraphConfig,
-          params: paragraphParams
+          params: paragraphParams,
+          requestParam: requestParam
         }
       });
     },
