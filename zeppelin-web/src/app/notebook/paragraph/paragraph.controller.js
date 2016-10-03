@@ -2182,7 +2182,12 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
       var row = $scope.paragraph.result.msgTable[r];
       var dsvRow = '';
       for (var index in row) {
-        dsvRow += row[index].value + delimiter;
+        var stringValue =  (row[index].value).toString();
+        if (stringValue.contains(delimiter)) {
+          dsvRow += '"' + stringValue + '"' + delimiter;
+        } else {
+          dsvRow += row[index].value + delimiter;
+        }
       }
       dsv += dsvRow.substring(0, dsvRow.length - 1) + '\n';
     }
