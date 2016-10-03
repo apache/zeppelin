@@ -19,6 +19,9 @@ package org.apache.zeppelin.util;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.*;
+import org.apache.zeppelin.notebook.repo.HdfsNotebookRepo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.net.URI;
@@ -31,17 +34,21 @@ import java.util.List;
  */
 public class HdfsUtils {
   protected String dataPath;
+  private Logger logger = LoggerFactory.getLogger(HdfsUtils.class);
 
   /**
    * @param dataPath Full hdfs path (including scheme) to notes root dir
    * @throws URISyntaxException
    */
   public HdfsUtils(String dataPath, String hadoopConfDir) throws URISyntaxException {
+    logger.info("hadoopConfDir:" + hadoopConfDir);
     if (hadoopConfDir != null && !hadoopConfDir.equals("")) {
       final Path coreSite = new Path(hadoopConfDir, "core-site.xml");
       conf.addResource(coreSite);
       final Path hdfsSite = new Path(hadoopConfDir, "hdfs-site.xml");
       conf.addResource(hdfsSite);
+      logger.info("fs.defaultFS:" + conf.get("fs.defaultFS"));
+
     }
 
     this.dataPath = dataPath;
