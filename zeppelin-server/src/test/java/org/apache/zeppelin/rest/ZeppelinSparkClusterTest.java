@@ -107,6 +107,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
             p.setConfig(config);
             p.setText("%spark val df=sqlContext.createDataFrame(Seq((\"hello\",20)))\n" +
                     "df.collect()");
+            p.setAuthenticationInfo(anonymous);
             note.run(p.getId());
             waitForFinish(p);
             assertEquals(Status.FINISHED, p.getStatus());
@@ -120,6 +121,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
             p.setConfig(config);
             p.setText("%spark val df=sqlContext.createDataFrame(Seq((\"hello\",20)))\n" +
                     "z.show(df)");
+            p.setAuthenticationInfo(anonymous);
             note.run(p.getId());
             waitForFinish(p);
             assertEquals(Status.FINISHED, p.getStatus());
@@ -134,6 +136,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
                 p.setConfig(config);
                 p.setText("%spark val ds=spark.createDataset(Seq((\"hello\",20)))\n" +
                         "z.show(ds)");
+                p.setAuthenticationInfo(anonymous);
                 note.run(p.getId());
                 waitForFinish(p);
                 assertEquals(Status.FINISHED, p.getStatus());
@@ -241,6 +244,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
                 p.setConfig(config);
                 p.setText("%pyspark sqlContext.udf.register(\"f1\", lambda x: len(x))\n" +
                        "sqlContext.sql(\"select f1(\\\"abc\\\") as len\").collect()");
+                p.setAuthenticationInfo(anonymous);
                 note.run(p.getId());
                 waitForFinish(p);
                 assertEquals(Status.FINISHED, p.getStatus());
@@ -269,6 +273,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
                 // use SQLContext to register UDF but use this UDF through SparkSession
                 p.setText("%pyspark sqlContext.udf.register(\"f1\", lambda x: len(x))\n" +
                         "spark.sql(\"select f1(\\\"abc\\\") as len\").collect()");
+                p.setAuthenticationInfo(anonymous);
                 note.run(p.getId());
                 waitForFinish(p);
                 assertEquals(Status.FINISHED, p.getStatus());
