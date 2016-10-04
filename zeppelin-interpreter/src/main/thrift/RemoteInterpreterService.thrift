@@ -73,6 +73,12 @@ struct InterpreterCompletion {
   2: string value
 }
 
+struct InterpreterProgressInfo {
+  1: string name,
+  2: string desc,
+  3: string url
+}
+
 service RemoteInterpreterService {
   void createInterpreter(1: string intpGroupId, 2: string noteId, 3: string className, 4: map<string, string> properties);
 
@@ -81,6 +87,7 @@ service RemoteInterpreterService {
   RemoteInterpreterResult interpret(1: string noteId, 2: string className, 3: string st, 4: RemoteInterpreterContext interpreterContext);
   void cancel(1: string noteId, 2: string className, 3: RemoteInterpreterContext interpreterContext);
   i32 getProgress(1: string noteId, 2: string className, 3: RemoteInterpreterContext interpreterContext);
+  list<InterpreterProgressInfo> getProgressInfo(1: string noteId, 2: string className, 3: RemoteInterpreterContext interpreterContext);
   string getFormType(1: string noteId, 2: string className);
   list<InterpreterCompletion> completion(1: string noteId, 2: string className, 3: string buf, 4: i32 cursor);
   void shutdown();
