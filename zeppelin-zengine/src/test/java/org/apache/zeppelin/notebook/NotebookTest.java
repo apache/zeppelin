@@ -696,7 +696,7 @@ public class NotebookTest implements JobListenerFactory{
   }
 
   @Test
-  public void testPerSessionInterpreter() throws IOException {
+  public void testInterpreterForNote() throws IOException {
     // create two notes
     Note note1  = notebook.createNote(null);
     Paragraph p1 = note1.addParagraph();
@@ -707,7 +707,7 @@ public class NotebookTest implements JobListenerFactory{
     p1.setText("getId");
     p2.setText("getId");
 
-    // run per note session disabled
+    // run per note session disabled (shared mode)
     note1.run(p1.getId());
     note2.run(p2.getId());
 
@@ -717,13 +717,31 @@ public class NotebookTest implements JobListenerFactory{
     assertEquals(p1.getResult().message(), p2.getResult().message());
 
 
-    // restart interpreter with per note session enabled
+    // restart interpreter with scoped(per note session) mode enabled
     for (InterpreterSetting setting : notebook.getInterpreterFactory().getInterpreterSettings(note1.getId())) {
       setting.getOption().setPerNoteSession(true);
+      setting.getOption().setPerNoteProcess(false);
       notebook.getInterpreterFactory().restart(setting.getId());
     }
 
     // run per note session enabled
+    note1.run(p1.getId());
+    note2.run(p2.getId());
+
+    while (p1.getStatus() != Status.FINISHED) Thread.yield();
+    while (p2.getStatus() != Status.FINISHED) Thread.yield();
+
+    assertNotEquals(p1.getResult().message(), p2.getResult().message());
+
+
+    // restart interpreter with isolated(per note process) mode enabled
+    for (InterpreterSetting setting : notebook.getInterpreterFactory().getInterpreterSettings(note1.getId())) {
+      setting.getOption().setPerNoteSession(false);
+      setting.getOption().setPerNoteProcess(true);
+      notebook.getInterpreterFactory().restart(setting.getId());
+    }
+
+    // run per note process enabled
     note1.run(p1.getId());
     note2.run(p2.getId());
 
