@@ -72,6 +72,16 @@
       <groupId>org.apache.lens</groupId>
       <artifactId>lens-client</artifactId>
       <version>${lens.version}</version>
+      <exclusions>
+      	<exclusion>
+      		<groupId>ch.qos.logback</groupId>
+      		<artifactId>logback-classic</artifactId>
+      	</exclusion>
+      	<exclusion>
+      		<groupId>ch.qos.logback</groupId>
+      		<artifactId>logback-core</artifactId>
+      	</exclusion>
+    </exclusions>
     </dependency>
 
     <dependency>
