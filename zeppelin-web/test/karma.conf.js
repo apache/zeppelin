@@ -69,14 +69,15 @@ module.exports = function(config) {
       // endbower
       'src/app/app.js',
       'src/app/app.controller.js',
-      'src/app/visualization/visualization.js',
       'src/app/**/*.js',
       'src/components/**/*.js',
       'test/spec/**/*.js'
     ],
 
     // list of files / patterns to exclude
-    exclude: [],
+    exclude: [
+      'src/app/visualization/builtins/*.js'
+    ],
 
     // web server port
     port: 9002,

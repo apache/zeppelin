@@ -99,24 +99,6 @@
 
     var angularObjectRegistry = {};
 
-    // Controller init
-    $scope.init = function(newParagraph, note) {
-      $scope.paragraph = newParagraph;
-      $scope.parentNote = note;
-      $scope.originalText = angular.copy(newParagraph.text);
-      $scope.chart = {};
-      $scope.colWidthOption = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
-      $scope.paragraphFocused = false;
-      if (newParagraph.focus) {
-        $scope.paragraphFocused = true;
-      }
-      if (!$scope.paragraph.config) {
-        $scope.paragraph.config = {};
-      }
-    };
-
-    var angularObjectRegistry = {};
-
     /**
      * Built-in visualizations
      */

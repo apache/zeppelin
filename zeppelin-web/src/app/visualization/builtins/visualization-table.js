@@ -23,13 +23,13 @@ zeppelin.TableVisualization = function(targetEl) {
   targetEl.addClass('table');
 };
 
-zeppelin.TableVisualization.prototype = Object.create(zeppelin.Visualization);
+zeppelin.TableVisualization.prototype = Object.create(zeppelin.Visualization.prototype);
 
 zeppelin.TableVisualization.prototype.render = function(tableData) {
   var height = this.targetEl.height();
   var container = this.targetEl.css('height', height).get(0);
   var resultRows = tableData.rows;
-  var columnNames = _.pluck(tableData.columnNames, 'name');
+  var columnNames = _.pluck(tableData.columns, 'name');
 
   if (this.hot) {
     this.hot.destroy();

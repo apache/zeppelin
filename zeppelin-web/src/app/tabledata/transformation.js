@@ -19,33 +19,12 @@ var zeppelin = zeppelin || {};
 /**
  * Base class for visualization
  */
-zeppelin.Visualization = function(targetEl) {
-  this.targetEl = targetEl;
+zeppelin.Transformation = function() {
 };
 
 /**
- * Method will be invoked
+ * Method will be invoked when tableData or config changes
  */
-zeppelin.Visualization.prototype.render = function(tableData) {
+zeppelin.Transformation.prototype.transform = function(tableData, config) {
   // override this
-};
-
-/**
- * Invoked when container is resized
- */
-zeppelin.Visualization.prototype.onResize = function() {
-  // override this
-};
-
-/**
- * method will be invoked when visualization need to be destroyed.
- * Don't need to destroy this.targetEl.
- */
-zeppelin.Visualization.prototype.destroy = function() {
-  // override this
-};
-
-zeppelin.Visualization.prototype.setHeight = function(height) {
-  this.targetEl.height(height);
-  this.onResize();
 };
