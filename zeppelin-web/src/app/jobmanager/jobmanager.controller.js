@@ -15,36 +15,38 @@
 (function() {
 
   angular.module('zeppelinWebApp')
-    .filter('jobManager', function() {
-      function filterContext(jobItems, filterConfig) {
-        var filterValueInterpreter = filterConfig.filterValueInterpreter;
-        var filterValueNotebookName = filterConfig.filterValueNotebookName;
-
-        var filterItems = jobItems;
-
-        if (filterValueInterpreter === undefined) {
-          filterItems = _.filter(filterItems, function(jobItem) {
-            return jobItem.interpreter === undefined ? true : false;
-          });
-        } else if (filterValueInterpreter !== '*') {
-          filterItems = _.where(filterItems, {interpreter: filterValueInterpreter});
-        }
-
-        if (filterValueNotebookName !== '') {
-          filterItems = _.filter(filterItems, function(jobItem) {
-            var lowerFilterValue = filterValueNotebookName.toLocaleLowerCase();
-            var lowerNotebookName = jobItem.notebookName.toLocaleLowerCase();
-            return lowerNotebookName.match(new RegExp('.*' + lowerFilterValue + '.*'));
-          });
-        }
-
-        return filterItems;
-      }
-      return filterContext;
-    })
+    .filter('jobManager', jobManagerFilter)
     .controller('JobmanagerCtrl', JobmanagerCtrl);
 
   JobmanagerCtrl.$inject = ['$scope', 'websocketMsgSrv', '$interval', '$q', '$timeout', 'jobManagerFilter'];
+
+  function jobManagerFilter() {
+    function filterContext(jobItems, filterConfig) {
+      var filterValueInterpreter = filterConfig.filterValueInterpreter;
+      var filterValueNotebookName = filterConfig.filterValueNotebookName;
+
+      var filterItems = jobItems;
+
+      if (filterValueInterpreter === undefined) {
+        filterItems = _.filter(filterItems, function(jobItem) {
+          return jobItem.interpreter === undefined ? true : false;
+        });
+      } else if (filterValueInterpreter !== '*') {
+        filterItems = _.where(filterItems, {interpreter: filterValueInterpreter});
+      }
+
+      if (filterValueNotebookName !== '') {
+        filterItems = _.filter(filterItems, function(jobItem) {
+          var lowerFilterValue = filterValueNotebookName.toLocaleLowerCase();
+          var lowerNotebookName = jobItem.notebookName.toLocaleLowerCase();
+          return lowerNotebookName.match(new RegExp('.*' + lowerFilterValue + '.*'));
+        });
+      }
+
+      return filterItems;
+    }
+    return filterContext;
+  }
 
   function JobmanagerCtrl($scope, websocketMsgSrv, $interval, $q, $timeout, jobManagerFilter) {
 
