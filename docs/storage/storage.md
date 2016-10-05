@@ -229,6 +229,7 @@ and replace the notebook directory property below by an HDFS location as follows
   <description>path or URI for notebook persist</description>
 </property>
 
+in the file conf/zeppelin-env.sh define both env variables HADOOP_HOME and HADOOP_CONF_DIR.
 
 </br>
 

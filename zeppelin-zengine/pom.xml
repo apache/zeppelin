@@ -150,6 +150,7 @@
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-common</artifactId>
       <version>${hadoop.hdfs.version}</version>
+      <scope>provided</scope>
       <exclusions>
         <exclusion>
           <groupId>com.sun.jersey</groupId>
@@ -195,13 +196,13 @@
           <groupId>com.jcraft</groupId>
           <artifactId>jsch</artifactId>
         </exclusion>
-
       </exclusions>
     </dependency>
 
     <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-hdfs</artifactId>
+      <scope>provided</scope>
       <exclusions>
         <exclusion>
           <groupId>xml-apis</groupId>
