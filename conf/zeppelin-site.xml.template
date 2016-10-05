@@ -32,6 +32,12 @@
 </property>
 
 <property>
+  <name>zeppelin.server.ssl.port</name>
+  <value>8443</value>
+  <description>Server ssl port. (used when ssl property is set to true)</description>
+</property>
+
+<property>
   <name>zeppelin.server.context.path</name>
   <value>/</value>
   <description>Context Path of the Web Application</description>
