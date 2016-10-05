@@ -16,7 +16,7 @@
 # PYTHON 2 / 3 compatibility :
 # bootstrap.py must be runnable with Python 2 or 3
 
-# Remove interactive mode displayhook
+import os
 import sys
 import signal
 import base64
@@ -117,6 +117,7 @@ class PyZeppelinContext(object):
     
     def __init__(self):
         self.max_result = 1000
+        self._displayhook = lambda *args: None
     
     def input(self, name, defaultValue=""):
         print(self.errorMsg)
@@ -164,7 +165,7 @@ class PyZeppelinContext(object):
         #)
         body_buf.close(); header_buf.close()
     
-    def show_matplotlib(self, p, fmt="png", width="auto", height="auto", 
+    def show_matplotlib(self, p, fmt="png", width="auto", height="auto",
                         **kwargs):
         """Matplotlib show function
         """
@@ -187,6 +188,37 @@ class PyZeppelinContext(object):
         html = "%html <div style='width:{width};height:{height}'>{img}<div>"
         print(html.format(width=width, height=height, img=img_str))
         img.close()
+    
+    def configure_mpl(self, **kwargs):
+        import mpl_config
+        mpl_config.configure(**kwargs)
+    
+    def _setup_matplotlib(self):
+        # If we don't have matplotlib installed don't bother continuing
+        try:
+            import matplotlib
+        except ImportError:
+            pass
+        # Make sure custom backends are available in the PYTHONPATH
+        cwd = os.getcwd()
+        mpl_path = os.path.join(cwd, 'lib', 'python')
+        if mpl_path not in sys.path:
+            sys.path.append(mpl_path)
+        
+        # Finally check if backend exists, and if so configure as appropriate
+        try:
+            matplotlib.use('module://backend_zinline')
+            import backend_zinline
+      
+            # Everything looks good so make config assuming that we are using
+            # an inline backend
+            self._displayhook = backend_zinline.displayhook
+            self.configure_mpl(width=600, height=400, dpi=72,
+                               fontsize=10, interactive=True, format='png')
+        except ImportError:
+            # Fall back to Agg if no custom backend installed
+            matplotlib.use('Agg')
 
 
 z = PyZeppelinContext()
+z._setup_matplotlib()

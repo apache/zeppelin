@@ -15,7 +15,7 @@
 # limitations under the License.
 #
 
-import sys, getopt, traceback, json, re
+import os, sys, getopt, traceback, json, re
 
 from py4j.java_gateway import java_import, JavaGateway, GatewayClient
 from py4j.protocol import Py4JJavaError
@@ -50,6 +50,7 @@ class Logger(object):
 class PyZeppelinContext(dict):
   def __init__(self, zc):
     self.z = zc
+    self._displayhook = lambda *args: None
 
   def show(self, obj):
     from pyspark.sql import DataFrame
@@ -115,6 +116,38 @@ class PyZeppelinContext(dict):
     if replName is None:
       return self.z.getHook(event)
     return self.z.getHook(event, replName)
+
+  def _setup_matplotlib(self):
+    # If we don't have matplotlib installed don't bother continuing
+    try:
+      import matplotlib
+    except ImportError:
+      return
+    
+    # Make sure custom backends are available in the PYTHONPATH
+    cwd = os.getcwd()
+    mpl_path = os.path.join(cwd, 'lib', 'python')
+    if mpl_path not in sys.path:
+      sys.path.append(mpl_path)
+    
+    # Finally check if backend exists, and if so configure as appropriate
+    try:
+      matplotlib.use('module://backend_zinline')
+      import backend_zinline
+      
+      # Everything looks good so make config assuming that we are using
+      # an inline backend
+      self._displayhook = backend_zinline.displayhook
+      self.configure_mpl(width=600, height=400, dpi=72,
+                         fontsize=10, interactive=True, format='png')
+    except ImportError:
+      # Fall back to Agg if no custom backend installed
+      matplotlib.use('Agg')
+      return
+
+  def configure_mpl(self, **kwargs):
+    import mpl_config
+    mpl_config.configure(**kwargs)
 
   def __tupleToScalaTuple2(self, tuple):
     if (len(tuple) == 2):
@@ -244,6 +277,7 @@ sqlContext = sqlc
 
 completion = PySparkCompletion(intp)
 z = PyZeppelinContext(intp.getZeppelinContext())
+z._setup_matplotlib()
 
 while True :
   req = intp.getStatements()
