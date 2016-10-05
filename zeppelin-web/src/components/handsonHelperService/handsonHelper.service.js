@@ -175,10 +175,17 @@
       _setColumnValidator(columns);
       instance.updateSettings({columns: columns});
       instance.validateCells(null);
+      if (_isColumnSorted(instance, col)) {
+        instance.sort(col, instance.sortOrder);
+      }
+    }
+
+    function _isColumnSorted(instance, col) {
+      return instance.sortingEnabled && instance.sortColumn === col;
     }
 
     function _setColumnValidator(columns) {
-      for (var i = 0; i < columns.length; ++i) {
+      for (var i = 0; i < columns.length; i++) {
         if (columns[i].type === 'numeric') {
           columns[i].validator = _numericValidator;
         } else if (columns[i].type === 'date') {
