@@ -51,6 +51,17 @@ ZEPPELIN_SERVER=org.apache.zeppelin.server.ZeppelinServer
 JAVA_OPTS+=" -Dzeppelin.log.file=${ZEPPELIN_LOGFILE}"
 
 # construct classpath
+
+# Add Hadoop Jar first so that they don't hide zeppelin libs.
+if [[ -n "${HADOOP_HOME}" ]]; then
+  # Apache
+  addEachJarInDirRecursive "${HADOOP_HOME}/share"
+
+  # CDH
+  addJarInDir "${HADOOP_HOME}"
+  addJarInDir "${HADOOP_HOME}/lib"
+fi
+
 if [[ -d "${ZEPPELIN_HOME}/zeppelin-interpreter/target/classes" ]]; then
   ZEPPELIN_CLASSPATH+=":${ZEPPELIN_HOME}/zeppelin-interpreter/target/classes"
 fi
@@ -70,14 +81,6 @@ addJarInDir "${ZEPPELIN_HOME}/zeppelin-zengine/target/lib"
 addJarInDir "${ZEPPELIN_HOME}/zeppelin-server/target/lib"
 addJarInDir "${ZEPPELIN_HOME}/zeppelin-web/target/lib"
 
-if [[ -n "${HADOOP_HOME}" ]]; then
-  # Apache
-  addEachJarInDirRecursive "${HADOOP_HOME}/share"
-
-  # CDH
-  addJarInDir "${HADOOP_HOME}"
-  addJarInDir "${HADOOP_HOME}/lib"
-fi
 
 CLASSPATH+=":${ZEPPELIN_CLASSPATH}"
 
