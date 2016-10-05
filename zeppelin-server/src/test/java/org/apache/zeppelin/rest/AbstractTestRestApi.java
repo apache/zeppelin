@@ -152,7 +152,7 @@ public abstract class AbstractTestRestApi {
         }
 
         // set spark master and other properties
-        sparkIntpSetting.getProperties().setProperty("master", "spark://" + getHostname() + ":7071");
+        sparkIntpSetting.getProperties().setProperty("master", "local[2]");
         sparkIntpSetting.getProperties().setProperty("spark.cores.max", "2");
         sparkIntpSetting.getProperties().setProperty("zeppelin.spark.useHiveContext", "false");
         // set spark home for pyspark
@@ -175,7 +175,7 @@ public abstract class AbstractTestRestApi {
             sparkIntpSetting.getProperties().setProperty("master", System.getenv("SPARK_MASTER"));
           } else {
             sparkIntpSetting.getProperties()
-                    .setProperty("master", "spark://" + getHostname() + ":7071");
+                    .setProperty("master", "local[2]");
           }
           sparkIntpSetting.getProperties().setProperty("spark.cores.max", "2");
           // set spark home for pyspark
