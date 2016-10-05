@@ -16,7 +16,8 @@
 angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $rootScope, $route, $window,
                                                                       $routeParams, $location, $timeout, $compile,
                                                                       $http, websocketMsgSrv, baseUrlSrv, ngToast,
-                                                                      saveAsService, esriLoader) {
+                                                                      saveAsService, esriLoader, handsonHelperService,
+                                                                      dataTypeService) {
   var ANGULAR_FUNCTION_OBJECT_NAME_PREFIX = '_Z_ANGULAR_FUNC_';
   $scope.parentNote = null;
   $scope.paragraph = null;
@@ -966,115 +967,6 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
   };
 
   var setTable = function(data, refresh) {
-    function addButtonMenuEvent(button, menu) {
-      Handsontable.Dom.addEvent(button, 'click', function(event) {
-        var changeTypeMenu;
-        var position;
-        var removeMenu;
-
-        document.body.appendChild(menu);
-
-        event.preventDefault();
-        event.stopImmediatePropagation();
-
-        changeTypeMenu = document.querySelectorAll('.changeTypeMenu');
-
-        for (var i = 0, len = changeTypeMenu.length; i < len; i++) {
-          changeTypeMenu[i].style.display = 'none';
-        }
-        menu.style.display = 'block';
-        position = button.getBoundingClientRect();
-
-        menu.style.top = (position.top + (window.scrollY || window.pageYOffset)) + 2 + 'px';
-        menu.style.left = (position.left) + 'px';
-
-        removeMenu = function(event) {
-          if (menu.parentNode) {
-            menu.parentNode.removeChild(menu);
-          }
-        };
-        Handsontable.Dom.removeEvent(document, 'click', removeMenu);
-        Handsontable.Dom.addEvent(document, 'click', removeMenu);
-      });
-    }
-
-    function buildMenu(activeCellType) {
-      var menu = document.createElement('UL');
-      var types = ['text', 'numeric', 'date'];
-      var item;
-
-      menu.className = 'changeTypeMenu';
-
-      for (var i = 0, len = types.length; i < len; i++) {
-        item = document.createElement('LI');
-        if ('innerText' in item) {
-          item.innerText = types[i];
-        } else {
-          item.textContent = types[i];
-        }
-
-        item.data = {'colType': types[i]};
-
-        if (activeCellType === types[i]) {
-          item.className = 'active';
-        }
-        menu.appendChild(item);
-      }
-
-      return menu;
-    }
-
-    function buildButton() {
-      var button = document.createElement('BUTTON');
-
-      button.innerHTML = '\u25BC';
-      button.className = 'changeType';
-
-      return button;
-    }
-
-    function isNumeric(value) {
-      if (!isNaN(value)) {
-        if (value.length !== 0) {
-          if (Number(value) <= Number.MAX_SAFE_INTEGER && Number(value) >= Number.MIN_SAFE_INTEGER) {
-            return true;
-          }
-        }
-      }
-      return false;
-    }
-
-    function numericValidator(value, callback) {
-      return callback(isNumeric(value));
-    }
-
-    function dateValidator(value, callback) {
-      var d = moment(value);
-      if (d.isValid()) {
-        return callback(true);
-      } else {
-        return callback(false);
-      }
-    }
-
-    function setColumnValidator() {
-      for (var i = 0; i < $scope.columns.length; ++i) {
-        if ($scope.columns[i].type === 'numeric') {
-          $scope.columns[i].validator = numericValidator;
-        } else if ($scope.columns[i].type === 'date') {
-          $scope.columns[i].validator = dateValidator;
-        } else {
-          $scope.columns[i].validator = null;
-        }
-      }
-    }
-
-    function setColumnType(i, type, instance) {
-      $scope.columns[i].type = type;
-      setColumnValidator();
-      instance.updateSettings({columns: $scope.columns});
-      instance.validateCells(null);
-    }
 
     var renderTable = function() {
       var height = $scope.paragraph.config.graph.height;
@@ -1090,56 +982,8 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
           return {type: 'text'};
         });
       }
-      $scope.hot = new Handsontable(container, {
-        colHeaders: columnNames,
-        data: resultRows,
-        rowHeaders: false,
-        stretchH: 'all',
-        sortIndicator: true,
-        columns: $scope.columns,
-        columnSorting: true,
-        contextMenu: false,
-        manualColumnResize: true,
-        manualRowResize: true,
-        readOnly: true,
-        readOnlyCellClassName: '',  // don't apply any special class so we can retain current styling
-        fillHandle: false,
-        fragmentSelection: true,
-        disableVisualSelection: true,
-        cells: function(row, col, prop) {
-          var cellProperties = {};
-          cellProperties.renderer = function(instance, td, row, col, prop, value, cellProperties) {
-            if ($scope.columns[col].type === 'numeric' && isNumeric(value)) {
-              cellProperties.format = '0,0.[00000]';
-              td.style.textAlign = 'left';
-              Handsontable.renderers.NumericRenderer.apply(this, arguments);
-            } else if (value.length > '%html'.length && '%html ' === value.substring(0, '%html '.length)) {
-              td.innerHTML = value.substring('%html'.length);
-            } else {
-              Handsontable.renderers.TextRenderer.apply(this, arguments);
-            }
-          };
-          return cellProperties;
-        },
-        afterGetColHeader: function(col, TH) {
-          var instance = this;
-          var menu = buildMenu($scope.columns[col].type);
-          var button = buildButton();
-
-          addButtonMenuEvent(button, menu);
-
-          Handsontable.Dom.addEvent(menu, 'click', function(event) {
-            if (event.target.nodeName === 'LI') {
-              setColumnType(col, event.target.data.colType, instance);
-            }
-          });
-          if (TH.firstChild.lastChild.nodeName === 'BUTTON') {
-            TH.firstChild.removeChild(TH.firstChild.lastChild);
-          }
-          TH.firstChild.appendChild(button);
-          TH.style['white-space'] = 'normal';
-        }
-      });
+      $scope.hot = new Handsontable(container, handsonHelperService.getHandsonTableConfig(
+        $scope.columns, columnNames, resultRows));
       $scope.hot.validateCells(null);
     };
 
