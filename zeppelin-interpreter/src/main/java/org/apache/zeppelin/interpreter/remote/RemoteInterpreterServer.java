@@ -431,6 +431,14 @@ public class RemoteInterpreterServer
       try {
         InterpreterContext.set(context);
         
+        // Open the interpreter instance prior to calling interpret().
+        // This is necessary because the earliest we can register a hook
+        // is from within the open() method.
+        LazyOpenInterpreter lazy = (LazyOpenInterpreter) interpreter;
+        if (!lazy.isOpen()) {
+          lazy.open();
+        }
+        
         // Add hooks to script from registry.
         // Global scope first, followed by notebook scope
         processInterpreterHooks(null);
