@@ -206,6 +206,15 @@ You can configure Apache Zeppelin with either **environment variables** in `conf
     <th class="col-md-4">Description</th>
   </tr>
   <tr>
+    <th colspan="4"><u>General</u></th>
+  </tr>
+  <tr>
+    <td>ZEPPELIN_ADDR</td>
+    <td>zeppelin.server.addr</td>
+    <td>0.0.0.0</td>
+    <td>Zeppelin server address</td>
+  </tr>
+  <tr>
     <td>ZEPPELIN_PORT</td>
     <td>zeppelin.server.port</td>
     <td>8080</td>
@@ -235,17 +244,97 @@ You can configure Apache Zeppelin with either **environment variables** in `conf
     <td>*</td>
     <td>Enables a way to specify a ',' separated list of allowed origins for REST and websockets. <br /> i.e. http://localhost:8080 </td>
   </tr>
-    <tr>
-    <td>N/A</td>
-    <td>zeppelin.anonymous.allowed</td>
-    <td>true</td>
-    <td>The anonymous user is allowed by default.</td>
-  </tr>
   <tr>
     <td>ZEPPELIN_SERVER_CONTEXT_PATH</td>
     <td>zeppelin.server.context.path</td>
     <td>/</td>
     <td>Context path of the web application</td>
+  </tr>
+  <tr>
+    <td>ZEPPELIN_INTERPRETERS</td>
+    <td>zeppelin.interpreters</td>
+    <td>org.apache.zeppelin.spark.SparkInterpreter,<br />org.apache.zeppelin.spark.PySparkInterpreter,<br />org.apache.zeppelin.spark.SparkSqlInterpreter,<br />org.apache.zeppelin.spark.DepInterpreter,<br />org.apache.zeppelin.markdown.Markdown,<br />org.apache.zeppelin.shell.ShellInterpreter,<br />
+    ...
+    </td>
+    <td>
+      Comma separated interpreter configurations [Class] <br/>
+      <span style="font-style:italic">NOTE: This property is deprecated since Zeppelin-0.6.0 and will not be supported from Zeppelin-0.7.0</span>
+    </td>
+  </tr>
+  <tr>
+    <td>ZEPPELIN_NOTEBOOK_HOMESCREEN</td>
+    <td>zeppelin.notebook.homescreen</td>
+    <td></td>
+    <td>A notebook id displayed in Apache Zeppelin homescreen <br />i.e. 2A94M5J1Z</td>
+  </tr>
+  <tr>
+    <td>ZEPPELIN_NOTEBOOK_HOMESCREEN_HIDE</td>
+    <td>zeppelin.notebook.homescreen.hide</td>
+    <td>false</td>
+    <td>This value can be "true" when to hide the notebook id set by <code>ZEPPELIN_NOTEBOOK_HOMESCREEN</code> on the Apache Zeppelin homescreen. <br />For the further information, please read <a href="../manual/notebookashomepage.html">Customize your Zeppelin homepage</a>.</td>
+  </tr>
+  <tr>
+    <td>ZEPPELIN_WAR</td>
+    <td>zeppelin.war</td>
+    <td>zeppelin-web/dist</td>
+    <td>The location of zeppelin war directory</td>
+  </tr>
+  <tr>
+    <td>ZEPPELIN_CONF_DIR</td>
+    <td>zeppelin.conf.dir</td>
+    <td>conf</td>
+    <td>Zeppelin conf directory</td>
+  </tr>
+  <tr>
+    <td>ZEPPELIN_NOTEBOOK_AUTO_INTERPRETER_BINDING</td>
+    <td>zeppelin.notebook.autoInterpreterBinding</td>
+    <td>true</td>
+    <td>Automatically bind interpreter settings for new notes</td>
+  </tr>
+  <tr>
+    <td>ZEPPELIN_DEP_LOCALREPO</td>
+    <td>zeppelin.dep.localrepo</td>
+    <td>local-repo</td>
+    <td>Local repository for interpreter's additional dependency loading</td>
+  </tr>
+  <tr>
+    <td>ZEPPELIN_INTERPRETER_LOCALREPO</td>
+    <td>zeppelin.interpreter.localRepo</td>
+    <td>local-repo</td>
+    <td>Local repository for interpreter's additional dependency loading</td>
+  </tr>
+  <tr>
+    <td>ZEPPELIN_INTERPRETER_JSON</td>
+    <td>zeppelin.interpreter.setting</td>
+    <td>interpreter-setting.json</td>
+    <td>Interpreter setting json file name</td>
+  </tr>
+  <tr>
+    <td>ZEPPELIN_INTERPRETER_DIR</td>
+    <td>zeppelin.interpreter.dir</td>
+    <td>interpreter</td>
+    <td>>Interpreter implementation base directory</td>
+  </tr>
+  <tr>
+    <td>ZEPPELIN_WAR_TEMPDIR</td>
+    <td>zeppelin.war.tempdir</td>
+    <td>webapps</td>
+    <td>A location of jetty temporary directory</td>
+  </tr>
+  <tr>
+    <td>ZEPPELIN_WEBSOCKET_MAX_TEXT_MESSAGE_SIZE</td>
+    <td>zeppelin.websocket.max.text.message.size</td>
+    <td>1024000</td>
+    <td>Size in characters of the maximum text message to be received by websocket.</td>
+  </tr>
+  <tr>
+    <td>ZEPPELIN_HELIUM_LOCALREGISTRY_DEFAULT</td>
+    <td>zeppelin.helium.localregistry.default</td>
+    <td>helium</td>
+    <td>Helium local registry path</td>
+  </tr>
+  <tr>
+  <th colspan="4"><u>Security</u></th>
   </tr>
   <tr>
     <td>ZEPPELIN_SSL</td>
@@ -302,22 +391,18 @@ You can configure Apache Zeppelin with either **environment variables** in `conf
     <td></td>
   </tr>
   <tr>
-    <td>ZEPPELIN_NOTEBOOK_HOMESCREEN</td>
-    <td>zeppelin.notebook.homescreen</td>
-    <td></td>
-    <td>Display notebook IDs on the Apache Zeppelin homescreen <br />i.e. 2A94M5J1Z</td>
+    <td>ZEPPELIN_CREDENTIALS_PERSIST</td>
+    <td>zeppelin.credentials.persist</td>
+    <td>true</td>
+    <td>Persist credentials to authenticate data sources</td>
   </tr>
   <tr>
-    <td>ZEPPELIN_NOTEBOOK_HOMESCREEN_HIDE</td>
-    <td>zeppelin.notebook.homescreen.hide</td>
-    <td>false</td>
-    <td>Hide the notebook ID set by <code>ZEPPELIN_NOTEBOOK_HOMESCREEN</code> on the Apache Zeppelin homescreen. <br />For the further information, please read <a href="../manual/notebookashomepage.html">Customize your Zeppelin homepage</a>.</td>
+    <td>ZEPPELIN_ANONYMOUS_ALLOWED</td>
+    <td>zeppelin.anonymous.allowed</td>
+    <td>true</td>
+    <td>Allow anonymous access</td>
   </tr>
-  <tr>
-    <td>ZEPPELIN_WAR_TEMPDIR</td>
-    <td>zeppelin.war.tempdir</td>
-    <td>webapps</td>
-    <td>Location of the jetty temporary directory</td>
+    <th colspan="4"><u>Storage</u></th>
   </tr>
   <tr>
     <td>ZEPPELIN_NOTEBOOK_DIR</td>
@@ -384,29 +469,5 @@ You can configure Apache Zeppelin with either **environment variables** in `conf
     <td>zeppelin.notebook.one.way.sync</td>
     <td>false</td>
     <td>If there are multiple notebook storage locations, should we treat the first one as the only source of truth?</td>
-  </tr>
-  <tr>
-    <td>ZEPPELIN_INTERPRETERS</td>
-    <td>zeppelin.interpreters</td>
-  <description></description>
-    <td>org.apache.zeppelin.spark.SparkInterpreter,<br />org.apache.zeppelin.spark.PySparkInterpreter,<br />org.apache.zeppelin.spark.SparkSqlInterpreter,<br />org.apache.zeppelin.spark.DepInterpreter,<br />org.apache.zeppelin.markdown.Markdown,<br />org.apache.zeppelin.shell.ShellInterpreter,<br />
-    ...
-    </td>
-    <td>
-      Comma separated interpreter configurations [Class] <br/>
-      <span style="font-style:italic">NOTE: This property is deprecated since Zeppelin-0.6.0 and will not be supported from Zeppelin-0.7.0 on.</span>
-    </td>
-  </tr>
-  <tr>
-    <td>ZEPPELIN_INTERPRETER_DIR</td>
-    <td>zeppelin.interpreter.dir</td>
-    <td>interpreter</td>
-    <td>Interpreter directory</td>
-  </tr>
-  <tr>
-    <td>ZEPPELIN_WEBSOCKET_MAX_TEXT_MESSAGE_SIZE</td>
-    <td>zeppelin.websocket.max.text.message.size</td>
-    <td>1024000</td>
-    <td>Size (in characters) of the maximum text message that can be received by websocket.</td>
   </tr>
 </table>

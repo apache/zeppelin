@@ -17,53 +17,83 @@
 #
 
 # export JAVA_HOME=
-# export MASTER=                 		# Spark master url. eg. spark://master_addr:7077. Leave empty if you want to use local mode.
-# export ZEPPELIN_JAVA_OPTS      		# Additional jvm options. for example, export ZEPPELIN_JAVA_OPTS="-Dspark.executor.memory=8g -Dspark.cores.max=16"
-# export ZEPPELIN_MEM            		# Zeppelin jvm mem options Default -Xmx1024m -XX:MaxPermSize=512m
-# export ZEPPELIN_INTP_MEM       		# zeppelin interpreter process jvm mem options.
-# export ZEPPELIN_INTP_JAVA_OPTS 		# zeppelin interpreter process jvm options.
+# export MASTER=                                        # Spark master url. eg. spark://master_addr:7077. Leave empty if you want to use local mode.
+# export ZEPPELIN_JAVA_OPTS                             # Additional jvm options. for example, export ZEPPELIN_JAVA_OPTS="-Dspark.executor.memory=8g -Dspark.cores.max=16"
+# export ZEPPELIN_MEM                                   # Zeppelin jvm mem options Default -Xmx1024m -XX:MaxPermSize=512m
+# export ZEPPELIN_INTP_MEM                              # zeppelin interpreter process jvm mem options.
+# export ZEPPELIN_INTP_JAVA_OPTS                        # zeppelin interpreter process jvm options.
 
-# export ZEPPELIN_LOG_DIR        		# Where log files are stored.  PWD by default.
-# export ZEPPELIN_PID_DIR        		# The pid files are stored. ${ZEPPELIN_HOME}/run by default.
-# export ZEPPELIN_WAR_TEMPDIR    		# The location of jetty temporary directory.
-# export ZEPPELIN_NOTEBOOK_DIR   		# Where notebook saved
-# export ZEPPELIN_NOTEBOOK_HOMESCREEN		# Id of notebook to be displayed in homescreen. ex) 2A94M5J1Z
-# export ZEPPELIN_NOTEBOOK_HOMESCREEN_HIDE	# hide homescreen notebook from list when this value set to "true". default "false"
-# export ZEPPELIN_NOTEBOOK_S3_BUCKET        # Bucket where notebook saved
-# export ZEPPELIN_NOTEBOOK_S3_ENDPOINT      # Endpoint of the bucket
-# export ZEPPELIN_NOTEBOOK_S3_USER          # User in bucket where notebook saved. For example bucket/user/notebook/2A94M5J1Z/note.json
-# export ZEPPELIN_IDENT_STRING   		# A string representing this instance of zeppelin. $USER by default.
-# export ZEPPELIN_NICENESS       		# The scheduling priority for daemons. Defaults to 0.
-# export ZEPPELIN_INTERPRETER_LOCALREPO         # Local repository for interpreter's additional dependency loading
-# export ZEPPELIN_NOTEBOOK_STORAGE 		# Refers to pluggable notebook storage class, can have two classes simultaneously with a sync between them (e.g. local and remote).
-# export ZEPPELIN_NOTEBOOK_ONE_WAY_SYNC	# If there are multiple notebook storages, should we treat the first one as the only source of truth?
+# export ZEPPELIN_LOG_DIR                               # Where log files are stored.  PWD by default.
+# export ZEPPELIN_PID_DIR                               # The pid files are stored. ${ZEPPELIN_HOME}/run by default.
+# export ZEPPELIN_WAR                                   # The location of zeppelin war directory.
+# export ZEPPELIN_WAR_TEMPDIR                           # The location of jetty temporary directory.
+# export ZEPPELIN_ADDR                                  # Server address
+# export ZEPPELIN_PORT                                  # Server port
+# export ZEPPELIN_SERVER_CONTEXT_PATH                   # Context Path of the Web Application
+# export ZEPPELIN_SSL                                   # Should SSL be used by the servers?
+# export ZEPPELIN_SSL_CLIENT_AUTH                       # Should client authentication be used for SSL connections?
+# export ZEPPELIN_SSL_KEYSTORE_PATH                     # Path to keystore relative to Zeppelin configuration directory
+# export ZEPPELIN_SSL_KEYSTORE_TYPE                     # The format of the given keystore (e.g. JKS or PKCS12)
+# export ZEPPELIN_SSL_KEYSTORE_PASSWORD                 # Keystore password. Can be obfuscated by the Jetty Password tool
+# export ZEPPELIN_SSL_KEY_MANAGER_PASSWORD              # Key Manager password. Defaults to keystore password. Can be obfuscated.
+# export ZEPPELIN_SSL_TRUSTSTORE_PATH                   # Path to truststore relative to Zeppelin configuration directory. Defaults to the keystore path
+# export ZEPPELIN_SSL_TRUSTSTORE_TYPE                   # The format of the given truststore (e.g. JKS or PKCS12). Defaults to the same type as the keystore type
+# export ZEPPELIN_SSL_TRUSTSTORE_PASSWORD               # Truststore password. Can be obfuscated by the Jetty Password tool. Defaults to the keystore password
+# export ZEPPELIN_NOTEBOOK_DIR                          # Where notebook saved
+# export ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT           # Interpreter process connect timeout in milliseconds
+# export ZEPPELIN_INTERPRETER_MAX_POOL_SIZE             # Set max interpreter pool size
+# export ZEPPELIN_NOTEBOOK_HOMESCREEN                   # Id of notebook to be displayed in homescreen. ex) 2A94M5J1Z
+# export ZEPPELIN_NOTEBOOK_HOMESCREEN_HIDE              # hide homescreen notebook from list when this value set to "true". default "false"
+# export ZEPPELIN_NOTEBOOK_S3_BUCKET                    # Bucket where notebook saved
+# export ZEPPELIN_NOTEBOOK_S3_ENDPOINT                  # Endpoint of the bucket
+# export ZEPPELIN_NOTEBOOK_S3_USER                      # User in bucket where notebook saved. For example bucket/user/notebook/2A94M5J1Z/note.json
+# export ZEPPELIN_IDENT_STRING                          # A string representing this instance of zeppelin. $USER by default.
+# export ZEPPELIN_NICENESS                              # The scheduling priority for daemons. Defaults to 0.
+# export ZEPPELIN_INTERPRETERS                          # Comma separated interpreter configurations. First interpreter become a default
+# export ZEPPELIN_INTERPRETER_JSON                      # Interpreter setting json file name
+# export ZEPPELIN_INTERPRETER_DIR                       # Interpreter implementation base directory
+# export ZEPPELIN_INTERPRETER_LOCALREPO                 # Local repository for interpreter's additional dependency loading
+# export ZEPPELIN_NOTEBOOK_S3_EMP                       # Custom encryption materials provider used to encrypt notebook data in S3
+# export ZEPPELIN_NOTEBOOK_S3_KMS_KEY_ID                # AWS KMS key ID used to encrypt notebook data in S3
+# export ZEPPELIN_NOTEBOOK_AZURE_CONNECTION_STRING      # Azure account credentials (E.g. DefaultEndpointsProtocol=https;AccountName=<accountName>;AccountKey=<accountKey>)
+# export ZEPPELIN_NOTEBOOK_AZURE_SHARE                  #share name for notebook storage
+# export ZEPPELIN_NOTEBOOK_AZURE_USER                   # Optional user name for Azure folder structure
+# export ZEPPELIN_NOTEBOOK_STORAGE                      # Refers to pluggable notebook storage class, can have two classes simultaneously with a sync between them (e.g. local and remote).
+# export ZEPPELIN_NOTEBOOK_ONE_WAY_SYNC                 # If there are multiple notebook storages, should we treat the first one as the only source of truth?
+# export ZEPPELIN_CREDENTIALS_PERSIST                   # Persist credentials to authenticate data sources
+# export ZEPPELIN_ANONYMOUS_ALLOWED                     # Allow anonymous access
+# export ZEPPELIN_ALLOWED_ORIGINS                       # Enables a way to specify a ',' separated list of allowed origins for rest and websockets.
+# export ZEPPELIN_HELIUM_LOCALREGISTRY_DEFAULT          # Helium local registry path
+# export ZEPPELIN_DEP_LOCALREPO                         # Local repository for interpreter's additional dependency loading
+# export ZEPPELIN_CONF_DIR                              # Zeppelin conf directory
+# export ZEPPELIN_NOTEBOOK_AUTO_INTERPRETER_BINDING     # Automatically bind interpreter settings for new notes
 
 #### Spark interpreter configuration ####
 
 ## Use provided spark installation ##
 ## defining SPARK_HOME makes Zeppelin run spark interpreter process using spark-submit
 ##
-# export SPARK_HOME                             # (required) When it is defined, load it instead of Zeppelin embedded Spark libraries
-# export SPARK_SUBMIT_OPTIONS                   # (optional) extra options to pass to spark submit. eg) "--driver-memory 512M --executor-memory 1G".
-# export SPARK_APP_NAME                         # (optional) The name of spark application.
+# export SPARK_HOME                                     # (required) When it is defined, load it instead of Zeppelin embedded Spark libraries
+# export SPARK_SUBMIT_OPTIONS                           # (optional) extra options to pass to spark submit. eg) "--driver-memory 512M --executor-memory 1G".
+# export SPARK_APP_NAME                                 # (optional) The name of spark application.
 
 ## Use embedded spark binaries ##
 ## without SPARK_HOME defined, Zeppelin still able to run spark interpreter process using embedded spark binaries.
 ## however, it is not encouraged when you can define SPARK_HOME
 ##
 # Options read in YARN client mode
-# export HADOOP_CONF_DIR         		# yarn-site.xml is located in configuration directory in HADOOP_CONF_DIR.
+# export HADOOP_CONF_DIR                                # yarn-site.xml is located in configuration directory in HADOOP_CONF_DIR.
 # Pyspark (supported with Spark 1.2.1 and above)
 # To configure pyspark, you need to set spark distribution's path to 'spark.home' property in Interpreter setting screen in Zeppelin GUI
-# export PYSPARK_PYTHON          		# path to the python command. must be the same path on the driver(Zeppelin) and all workers.
+# export PYSPARK_PYTHON                                 # path to the python command. must be the same path on the driver(Zeppelin) and all workers.
 # export PYTHONPATH
 
 ## Spark interpreter options ##
 ##
-# export ZEPPELIN_SPARK_USEHIVECONTEXT  # Use HiveContext instead of SQLContext if set true. true by default.
-# export ZEPPELIN_SPARK_CONCURRENTSQL   # Execute multiple SQL concurrently if set true. false by default.
-# export ZEPPELIN_SPARK_IMPORTIMPLICIT  # Import implicits, UDF collection, and sql if set true. true by default.
-# export ZEPPELIN_SPARK_MAXRESULT       # Max number of Spark SQL result to display. 1000 by default.
+# export ZEPPELIN_SPARK_USEHIVECONTEXT                  # Use HiveContext instead of SQLContext if set true. true by default.
+# export ZEPPELIN_SPARK_CONCURRENTSQL                   # Execute multiple SQL concurrently if set true. false by default.
+# export ZEPPELIN_SPARK_IMPORTIMPLICIT                  # Import implicits, UDF collection, and sql if set true. true by default.
+# export ZEPPELIN_SPARK_MAXRESULT                       # Max number of Spark SQL result to display. 1000 by default.
 # export ZEPPELIN_WEBSOCKET_MAX_TEXT_MESSAGE_SIZE       # Size in characters of the maximum text message to be received by websocket. Defaults to 1024000
 
 
@@ -71,10 +101,10 @@
 
 ## To connect to HBase running on a cluster, either HBASE_HOME or HBASE_CONF_DIR must be set
 
-# export HBASE_HOME=                    # (require) Under which HBase scripts and configuration should be
-# export HBASE_CONF_DIR=                # (optional) Alternatively, configuration directory can be set to point to the directory that has hbase-site.xml
+# export HBASE_HOME=                                    # (require) Under which HBase scripts and configuration should be
+# export HBASE_CONF_DIR=                                # (optional) Alternatively, configuration directory can be set to point to the directory that has hbase-site.xml
 
 #### ZeppelinHub connection configuration ####
-# export ZEPPELINHUB_API_ADDRESS		# Refers to the address of the ZeppelinHub service in use
-# export ZEPPELINHUB_API_TOKEN			# Refers to the Zeppelin instance token of the user
-# export ZEPPELINHUB_USER_KEY			# Optional, when using Zeppelin with authentication.
+# export ZEPPELINHUB_API_ADDRESS                        # Refers to the address of the ZeppelinHub service in use
+# export ZEPPELINHUB_API_TOKEN                          # Refers to the Zeppelin instance token of the user
+# export ZEPPELINHUB_USER_KEY                           # Optional, when using Zeppelin with authentication.
