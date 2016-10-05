@@ -381,6 +381,7 @@ public class SparkInterpreter extends Interpreter {
     }
 
     String classServerUri = null;
+    String replClassOutputDirectory = null;
 
     try { // in case of spark 1.1x, spark 1.2x
       Method classServer = intp.getClass().getMethod("classServer");
@@ -404,6 +405,16 @@ public class SparkInterpreter extends Interpreter {
       }
     }
 
+    if (classServerUri == null) {
+      try { // for RcpEnv
+        Method getClassOutputDirectory = intp.getClass().getMethod("getClassOutputDirectory");
+        File classOutputDirectory = (File) getClassOutputDirectory.invoke(intp);
+        replClassOutputDirectory = classOutputDirectory.getAbsolutePath();
+      } catch (NoSuchMethodException | SecurityException | IllegalAccessException
+              | IllegalArgumentException | InvocationTargetException e) {
+        // continue
+      }
+    }
 
     if (Utils.isScala2_11()) {
       classServer = createHttpServer(outputDir);
@@ -416,6 +427,10 @@ public class SparkInterpreter extends Interpreter {
 
     if (classServerUri != null) {
       conf.set("spark.repl.class.uri", classServerUri);
+    }
+
+    if (replClassOutputDirectory != null) {
+      conf.set("spark.repl.class.outputDir", replClassOutputDirectory);
     }
 
     if (jars.length > 0) {
