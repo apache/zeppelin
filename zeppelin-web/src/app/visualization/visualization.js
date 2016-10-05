@@ -19,12 +19,20 @@ var zeppelin = zeppelin || {};
 /**
  * Base class for visualization
  */
-zeppelin.Visualization = function(targetEl) {
+zeppelin.Visualization = function(targetEl, config) {
   this.targetEl = targetEl;
+  this.config = config;
 };
 
 /**
- * Method will be invoked
+ * get transformation
+ */
+zeppelin.Visualization.prototype.getTransformation = function() {
+  // override this
+};
+
+/**
+ * Method will be invoked when data or configuration changed
  */
 zeppelin.Visualization.prototype.render = function(tableData) {
   // override this

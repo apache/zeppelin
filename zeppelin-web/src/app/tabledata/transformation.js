@@ -19,12 +19,17 @@ var zeppelin = zeppelin || {};
 /**
  * Base class for visualization
  */
-zeppelin.Transformation = function() {
+zeppelin.Transformation = function(config) {
+  this.config = config;
 };
 
 /**
  * Method will be invoked when tableData or config changes
  */
-zeppelin.Transformation.prototype.transform = function(tableData, config) {
+zeppelin.Transformation.prototype.transform = function(tableData) {
   // override this
+};
+
+zeppelin.Transformation.prototype.setConfig = function(config) {
+  this.config = config;
 };

@@ -111,25 +111,24 @@
       {
         id: 'multiBarChart',
         name: 'Bar Chart',
-        icon: 'fa fa-bar-chart'
+        icon: 'fa fa-bar-chart',
+        transformation: 'pivot'
       }
     ];
 
     /**
-     * Holds class actual runtime instance and related infos of built-in visualizations
+     * Holds class and actual runtime instance and related infos of built-in visualizations
      */
     var builtInVisualizations = {
       'table': {
         class: zeppelin.TableVisualization,
-        transformation: undefined,
         instance: undefined   // created from setGraphMode()
       },
       'multiBarChart': {
         class: zeppelin.BarchartVisualization,
-        transformation: zeppelin.Pivot,
         instance: undefined
       }
-    };    
+    };
 
     /**
      * TableData instance
@@ -157,7 +156,7 @@
       if ($scope.getResultType() === 'TABLE') {
         var TableData = zeppelin.TableData;
         tableData = new TableData();
-        tableData.loadParagraphResult($scope.paragraph.result);        
+        tableData.loadParagraphResult($scope.paragraph.result);
         $scope.setGraphMode($scope.getGraphMode(), false, false);
       } else if ($scope.getResultType() === 'HTML') {
         $scope.renderHtml();
@@ -983,8 +982,6 @@
         var graphContainerEl = angular.element('#p' + $scope.paragraph.id + '_graph');
         graphContainerEl.height(height);
 
-        var data = $scope.paragraph.result;
-
         if (!type) {
           type = 'table';
         }
@@ -1003,7 +1000,7 @@
 
                   // instantiate visualization
                   var Visualization = builtInViz.class;
-                  builtInViz.instance = new Visualization(targetEl);
+                  builtInViz.instance = new Visualization(targetEl, $scope.paragraph.config.graph);
                   builtInViz.instance.render(tableData);
                 } catch (err) {
                   console.log('Graph drawing error %o', err);
@@ -1013,7 +1010,7 @@
               }
             };
             $timeout(retryRenderer);
-          } else {
+          } else if (refresh) {
             builtInViz.instance.targetEl.height(height);
             builtInViz.instance.render(tableData);
           }
@@ -1021,8 +1018,8 @@
 
         if (!type || type === 'table') {
           //setTable($scope.paragraph.result, refresh);
-        } else {
-          setD3Chart(type, $scope.paragraph.result, refresh);
+        } else if (type === 'nomore') {
+          setD3Chart(type, tableData, refresh);
         }
       }
     };
@@ -1268,9 +1265,9 @@
         for (var i = 0; i < list.length; i++) {
           // remove non existing column
           var found = false;
-          for (var j = 0; j < tableData.columnNames.length; j++) {
+          for (var j = 0; j < tableData.columns.length; j++) {
             var a = list[i];
-            var b = tableData.columnNames[j];
+            var b = tableData.columns[j];
             if (a.index === b.index && a.name === b.name) {
               found = true;
               break;
@@ -1286,9 +1283,9 @@
         for (var f in fields) {
           if (fields[f]) {
             var found = false;
-            for (var i = 0; i < tableData.columnNames.length; i++) {
+            for (var i = 0; i < tableData.columns.length; i++) {
               var a = fields[f];
-              var b = tableData.columnNames[i];
+              var b = tableData.columns[i];
               if (a.index === b.index && a.name === b.name) {
                 found = true;
                 break;
@@ -1314,20 +1311,20 @@
 
     /* select default key and value if there're none selected */
     var selectDefaultColsForGraphOption = function() {
-      if ($scope.paragraph.config.graph.keys.length === 0 && $scope.paragraph.result.columnNames.length > 0) {
-        $scope.paragraph.config.graph.keys.push($scope.paragraph.result.columnNames[0]);
+      if ($scope.paragraph.config.graph.keys.length === 0 && tableData.columns.length > 0) {
+        $scope.paragraph.config.graph.keys.push(tableData.columns[0]);
       }
 
-      if ($scope.paragraph.config.graph.values.length === 0 && $scope.paragraph.result.columnNames.length > 1) {
-        $scope.paragraph.config.graph.values.push($scope.paragraph.result.columnNames[1]);
+      if ($scope.paragraph.config.graph.values.length === 0 && tableData.columns.length > 1) {
+        $scope.paragraph.config.graph.values.push(tableData.columns[1]);
       }
 
       if (!$scope.paragraph.config.graph.scatter.xAxis && !$scope.paragraph.config.graph.scatter.yAxis) {
-        if ($scope.paragraph.result.columnNames.length > 1) {
-          $scope.paragraph.config.graph.scatter.xAxis = $scope.paragraph.result.columnNames[0];
-          $scope.paragraph.config.graph.scatter.yAxis = $scope.paragraph.result.columnNames[1];
-        } else if ($scope.paragraph.result.columnNames.length === 1) {
-          $scope.paragraph.config.graph.scatter.xAxis = $scope.paragraph.result.columnNames[0];
+        if (tableData.columns.length > 1) {
+          $scope.paragraph.config.graph.scatter.xAxis = tableData.columns[0];
+          $scope.paragraph.config.graph.scatter.yAxis = tableData.columns[1];
+        } else if (tableData.columns.length === 1) {
+          $scope.paragraph.config.graph.scatter.xAxis = tableData.columns[0];
         }
       }
     };
@@ -1910,8 +1907,8 @@
 
     $scope.exportToDSV = function(delimiter) {
       var dsv = '';
-      for (var titleIndex in $scope.paragraph.result.columnNames) {
-        dsv += $scope.paragraph.result.columnNames[titleIndex].name + delimiter;
+      for (var titleIndex in tableData.columns) {
+        dsv += tableData.columns[titleIndex].name + delimiter;
       }
       dsv = dsv.substring(0, dsv.length - 1) + '\n';
       for (var r in $scope.paragraph.result.msgTable) {
@@ -2304,9 +2301,9 @@
 
         if (newType === 'TABLE') {
           if (oldType !== 'TABLE' || resultRefreshed) {
-            var TableData = new zeppelin.TableData;
+            var TableData = zeppelin.TableData;
             tableData = new TableData();
-            tableData.loadParagraphResult($scope.paragraph.result);            
+            tableData.loadParagraphResult($scope.paragraph.result);
             clearUnknownColsFromGraphOption();
             selectDefaultColsForGraphOption();
           }
