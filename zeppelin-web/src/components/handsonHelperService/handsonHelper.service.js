@@ -159,11 +159,7 @@
 
     function _dateValidator(value, callback) {
       var d = moment(value);
-      if (d.isValid()) {
-        return callback(true);
-      } else {
-        return callback(false);
-      }
+      return callback(d.isValid() ? true : false);
     }
 
     function _numericValidator(value, callback) {
@@ -172,7 +168,7 @@
 
     function _setColumnType(columns, type, instance, col) {
       columns[col].type = type;
-      _setColumnValidator(columns);
+      _setColumnValidator(columns, col);
       instance.updateSettings({columns: columns});
       instance.validateCells(null);
       if (_isColumnSorted(instance, col)) {
@@ -184,15 +180,13 @@
       return instance.sortingEnabled && instance.sortColumn === col;
     }
 
-    function _setColumnValidator(columns) {
-      for (var i = 0; i < columns.length; i++) {
-        if (columns[i].type === 'numeric') {
-          columns[i].validator = _numericValidator;
-        } else if (columns[i].type === 'date') {
-          columns[i].validator = _dateValidator;
-        } else {
-          columns[i].validator = null;
-        }
+    function _setColumnValidator(columns, col) {
+      if (columns[col].type === 'numeric') {
+        columns[col].validator = _numericValidator;
+      } else if (columns[col].type === 'date') {
+        columns[col].validator = _dateValidator;
+      } else {
+        columns[col].validator = null;
       }
     }
 
