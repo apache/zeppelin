@@ -36,7 +36,7 @@ Scio is a Scala DSL for [Google Cloud Dataflow](https://github.com/GoogleCloudPl
   <tr>
     <td>zeppelin.scio.argz</td>
     <td>--runner=InProcessPipelineRunner</td>
-    <td>Scio Pipeline runner</td>
+    <td>Scio interpreter wide arguments</td>
   </tr>
   <tr>
     <td>zeppelin.scio.maxResult</td>
@@ -52,7 +52,7 @@ In a notebook, to enable the **Scio** interpreter, click the **Gear** icon and s
 
 ## Using the Scio Interpreter
 
-In a paragraph, use `%scio` to select the **Scio** interpreter. You can use it much the same way as vanilla Scala REPL and [Scio REPL](https://github.com/spotify/scio/wiki/Scio-REPL). Context is shared among all *Scio* paragraphs. There is special variable **argz** which holds arguments from Scio interpreter settings. The easiest way to proceed is to create a context via standard `ContextAndArgs`.
+In a paragraph, use `%scio` to select the **Scio** interpreter. You can use it much the same way as vanilla Scala REPL and [Scio REPL](https://github.com/spotify/scio/wiki/Scio-REPL). Context is shared among all *Scio* paragraphs. There is a special variable **argz** which holds arguments from Scio interpreter settings. The easiest way to proceed is to create a context via standard `ContextAndArgs`.
 
 ```scala
 %scio
@@ -80,12 +80,11 @@ There can be only one paragraph running at a time. There is no notion of overall
 Scio interpreter comes with display helpers to ease working with Zeppelin notebooks. Simply use `closeAndDisplay()` on `SCollection` to close context and display the results. The number of results is limited by `zeppelin.scio.maxResult` (by default 1000).
 
 Supported `SCollection` types:
+
  * Scio's typed BigQuery
- * Scala's case classes
- * Scala's tuples
+ * Scala's Products (case classes, tuples)
  * Google BigQuery's TableRow
  * Apache Avro
- * All Scala's `Product` like data
  * All Scala's `AnyVal`
 
 #### BigQuery example:
