@@ -70,6 +70,15 @@ addJarInDir "${ZEPPELIN_HOME}/zeppelin-zengine/target/lib"
 addJarInDir "${ZEPPELIN_HOME}/zeppelin-server/target/lib"
 addJarInDir "${ZEPPELIN_HOME}/zeppelin-web/target/lib"
 
+if [[ -n "${HADOOP_HOME}" ]]; then
+  # Apache
+  addEachJarInDirRecursive "${HADOOP_HOME}/share"
+
+  # CDH
+  addJarInDir "${HADOOP_HOME}"
+  addJarInDir "${HADOOP_HOME}/lib"
+fi
+
 CLASSPATH+=":${ZEPPELIN_CLASSPATH}"
 
 if [[ ! -d "${ZEPPELIN_LOG_DIR}" ]]; then
