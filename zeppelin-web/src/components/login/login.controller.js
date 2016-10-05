@@ -11,11 +11,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 'use strict';
+(function() {
 
-angular.module('zeppelinWebApp').controller('LoginCtrl',
-  function($scope, $rootScope, $http, $httpParamSerializer, baseUrlSrv) {
+  angular.module('zeppelinWebApp').controller('LoginCtrl', LoginCtrl);
+
+  LoginCtrl.$inject = ['$scope', '$rootScope', '$http', '$httpParamSerializer', 'baseUrlSrv'];
+
+  function LoginCtrl($scope, $rootScope, $http, $httpParamSerializer, baseUrlSrv) {
     $scope.loginParams = {};
     $scope.login = function() {
 
@@ -55,4 +58,5 @@ angular.module('zeppelinWebApp').controller('LoginCtrl',
       initValues();
     });
   }
-);
+
+})();
