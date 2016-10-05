@@ -89,9 +89,9 @@ install:
 
 before_script:
   - travis_retry ./testing/downloadSpark.sh $SPARK_VER $HADOOP_VER
-  - ./testing/startSparkCluster.sh $SPARK_VER $HADOOP_VER
   - echo "export SPARK_HOME=`pwd`/spark-$SPARK_VER-bin-hadoop$HADOOP_VER" > conf/zeppelin-env.sh
   - tail conf/zeppelin-env.sh
+  #- ./testing/startSparkCluster.sh $SPARK_VER $HADOOP_VER
 
 script:
   - mvn $TEST_FLAG $PROFILE -B $TEST_PROJECTS
@@ -110,5 +110,5 @@ after_failure:
   - cat spark-*/logs/*
 
 after_script:
-  - ./testing/stopSparkCluster.sh $SPARK_VER $HADOOP_VER
+  #- ./testing/stopSparkCluster.sh $SPARK_VER $HADOOP_VER
 
