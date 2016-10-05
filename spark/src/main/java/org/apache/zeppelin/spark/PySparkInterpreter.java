@@ -53,6 +53,7 @@ import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.LazyOpenInterpreter;
 import org.apache.zeppelin.interpreter.WrappedInterpreter;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
+import org.apache.zeppelin.interpreter.thrift.InterpreterProgressInfo;
 import org.apache.zeppelin.spark.dep.SparkDependencyContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -400,6 +401,11 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
     return sparkInterpreter.getProgress(context);
   }
 
+  @Override
+  public List<InterpreterProgressInfo> getProgressInfo(InterpreterContext context) {
+    SparkInterpreter sparkInterpreter = getSparkInterpreter();
+    return sparkInterpreter.getProgressInfo(context);
+  }
 
   @Override
   public List<InterpreterCompletion> completion(String buf, int cursor) {

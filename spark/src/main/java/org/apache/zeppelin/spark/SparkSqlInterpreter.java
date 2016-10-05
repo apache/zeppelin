@@ -33,6 +33,7 @@ import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.LazyOpenInterpreter;
 import org.apache.zeppelin.interpreter.WrappedInterpreter;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
+import org.apache.zeppelin.interpreter.thrift.InterpreterProgressInfo;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.slf4j.Logger;
@@ -149,6 +150,12 @@ public class SparkSqlInterpreter extends Interpreter {
   public int getProgress(InterpreterContext context) {
     SparkInterpreter sparkInterpreter = getSparkInterpreter();
     return sparkInterpreter.getProgress(context);
+  }
+
+  @Override
+  public List<InterpreterProgressInfo> getProgressInfo(InterpreterContext context) {
+    SparkInterpreter sparkInterpreter = getSparkInterpreter();
+    return sparkInterpreter.getProgressInfo(context);
   }
 
   @Override

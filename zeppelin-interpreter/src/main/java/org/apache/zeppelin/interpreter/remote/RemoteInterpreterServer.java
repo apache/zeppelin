@@ -376,6 +376,11 @@ public class RemoteInterpreterServer
     }
 
     @Override
+    public List<InterpreterProgressInfo> progressInfo() {
+      return new ArrayList<>();
+    }
+
+    @Override
     public Map<String, Object> info() {
       if (infos == null) {
         infos = new HashMap<>();
@@ -452,6 +457,14 @@ public class RemoteInterpreterServer
       throws TException {
     Interpreter intp = getInterpreter(noteId, className);
     return intp.getProgress(convert(interpreterContext, null));
+  }
+
+  @Override
+  public List<InterpreterProgressInfo> getProgressInfo(String noteId, String className,
+      RemoteInterpreterContext interpreterContext)
+      throws TException {
+    Interpreter intp = getInterpreter(noteId, className);
+    return intp.getProgressInfo(convert(interpreterContext));
   }
 
 

@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Properties;
 
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
+import org.apache.zeppelin.interpreter.thrift.InterpreterProgressInfo;
 import org.apache.zeppelin.scheduler.Scheduler;
 
 /**
@@ -109,6 +110,12 @@ public class LazyOpenInterpreter
   public int getProgress(InterpreterContext context) {
     open();
     return intp.getProgress(context);
+  }
+
+  @Override
+  public List<InterpreterProgressInfo> getProgressInfo(InterpreterContext context) {
+    open();
+    return intp.getProgressInfo(context);
   }
 
   @Override

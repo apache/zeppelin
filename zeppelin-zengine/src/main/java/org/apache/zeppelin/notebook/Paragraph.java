@@ -22,6 +22,7 @@ import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.helium.HeliumPackage;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
+import org.apache.zeppelin.interpreter.thrift.InterpreterProgressInfo;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.user.Credentials;
 import org.apache.zeppelin.user.UserCredentials;
@@ -259,6 +260,17 @@ public class Paragraph extends Job implements Serializable, Cloneable {
       return repl.getProgress(getInterpreterContext(null));
     } else {
       return 0;
+    }
+  }
+
+  @Override
+  public List<InterpreterProgressInfo> progressInfo() {
+    String replName = getRequiredReplName();
+    Interpreter repl = getRepl(replName);
+    if (repl != null) {
+      return repl.getProgressInfo(getInterpreterContext());
+    } else {
+      return new ArrayList<>();
     }
   }
 

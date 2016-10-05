@@ -27,6 +27,7 @@ import org.apache.zeppelin.interpreter.InterpreterPropertyBuilder;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
+import org.apache.zeppelin.interpreter.thrift.InterpreterProgressInfo;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 
@@ -84,6 +85,11 @@ public class MockInterpreterA extends Interpreter {
   @Override
   public int getProgress(InterpreterContext context) {
     return 0;
+  }
+
+  @Override
+  public List<InterpreterProgressInfo> getProgressInfo(InterpreterContext context) {
+    return null;
   }
 
   @Override

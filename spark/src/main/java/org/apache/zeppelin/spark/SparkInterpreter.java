@@ -57,6 +57,7 @@ import org.apache.zeppelin.interpreter.WrappedInterpreter;
 import org.apache.zeppelin.resource.ResourcePool;
 import org.apache.zeppelin.resource.WellKnownResourceName;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
+import org.apache.zeppelin.interpreter.thrift.InterpreterProgressInfo;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.apache.zeppelin.spark.dep.SparkDependencyContext;
@@ -1293,6 +1294,12 @@ public class SparkInterpreter extends Interpreter {
       }
     }
     return new int[] {numTasks, completedTasks};
+  }
+
+  @Override
+  public List<InterpreterProgressInfo> getProgressInfo(InterpreterContext context) {
+    List<InterpreterProgressInfo> list = new ArrayList<InterpreterProgressInfo>();
+    return list;
   }
 
   private Code getResultCode(scala.tools.nsc.interpreter.Results.Result r) {

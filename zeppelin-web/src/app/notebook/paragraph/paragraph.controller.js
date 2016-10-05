@@ -843,6 +843,10 @@
       return ($scope.currentProgress) ? $scope.currentProgress : 0;
     };
 
+    $scope.getProgressInfo = function() {
+      return ($scope.currentProgressInfo) ? $scope.currentProgressInfo : 0;
+    };
+
     $scope.getExecutionTime = function() {
       var pdata = $scope.paragraph;
       var timeMs = Date.parse(pdata.dateFinished) - Date.parse(pdata.dateStarted);
@@ -2659,6 +2663,7 @@
     $scope.$on('updateProgress', function(event, data) {
       if (data.id === $scope.paragraph.id) {
         $scope.currentProgress = data.progress;
+        $scope.currentProgressInfo = data.info;
       }
     });
 
