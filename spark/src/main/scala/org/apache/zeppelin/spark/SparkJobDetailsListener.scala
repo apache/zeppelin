@@ -96,5 +96,6 @@ class SparkJobDetailsListener(private val uiAddress: String) extends SparkFireho
     case jobStart: SparkListenerJobStart =>
       val jobGroup = jobStart.properties.get("spark.jobGroup.id").asInstanceOf[String]
       addJob(jobGroup, jobStart)
+    case other => // do nothing
   }
 }
