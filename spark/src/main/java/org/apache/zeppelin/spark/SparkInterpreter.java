@@ -49,6 +49,7 @@ import org.apache.spark.ui.jobs.JobProgressListener;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
+import org.apache.zeppelin.interpreter.InterpreterHookRegistry;
 import org.apache.zeppelin.interpreter.InterpreterProperty;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
@@ -101,6 +102,7 @@ public class SparkInterpreter extends Interpreter {
   private SparkConf conf;
   private static SparkContext sc;
   private static SQLContext sqlc;
+  private static InterpreterHookRegistry hooks;
   private static SparkEnv env;
   private static Object sparkSession;    // spark 2.x
   private static JobProgressListener sparkListener;
@@ -813,8 +815,10 @@ public class SparkInterpreter extends Interpreter {
       sqlc = getSQLContext();
 
       dep = getDependencyResolver();
+      
+      hooks = getInterpreterGroup().getInterpreterHookRegistry();
 
-      z = new ZeppelinContext(sc, sqlc, null, dep,
+      z = new ZeppelinContext(sc, sqlc, null, dep, hooks,
               Integer.parseInt(getProperty("zeppelin.spark.maxResult")));
 
       interpret("@transient val _binder = new java.util.HashMap[String, Object]()");
