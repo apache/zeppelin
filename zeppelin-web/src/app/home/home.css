@@ -807,23 +807,17 @@ This part should be removed when new version of bootstrap handles this issue.
 /* About Zeppelin */
 .about {
   height: 200px;
-  padding: 36px;
+  padding: 25px;
 }
 
 .about .logo {
-  width: 35%;
-  top: 50%;
-  float: left;
-}
-
-.about .logo img {
-  width: 82%;
   padding-top: 30px;
+}
+.about .logo img {
+  width: 95%;
 }
 
 .about .content {
-  position: relative;
-  float: left;
   text-align: center;
 }
 
@@ -832,19 +826,4 @@ This part should be removed when new version of bootstrap handles this issue.
   color: #3071A9;
   font-size: 30px;
   margin: 0 auto;
-}
-
-@media (max-width: 767px) {
-  .about {
-    height: 170px;
-    padding: 20px;
-  }
-
-  .about .logo {
-    display: none;
-  }
-
-  .about .content {
-    float: none;
-  }
 }
