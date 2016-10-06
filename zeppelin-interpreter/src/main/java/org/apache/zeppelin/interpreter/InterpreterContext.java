@@ -57,6 +57,7 @@ public class InterpreterContext {
   private AngularObjectRegistry angularObjectRegistry;
   private ResourcePool resourcePool;
   private List<InterpreterContextRunner> runners;
+  private String className;
 
   public InterpreterContext(String noteId,
                             String paragraphId,
@@ -124,28 +125,11 @@ public class InterpreterContext {
     return runners;
   }
 
-  public String getRequiredReplName() {
-    if (paragraphText == null) {
-      return null;
-    }
-
-    // get script head
-    int scriptHeadIndex = 0;
-    for (int i = 0; i < paragraphText.length(); i++) {
-      char ch = paragraphText.charAt(i);
-      if (Character.isWhitespace(ch) || ch == '(') {
-        scriptHeadIndex = i;
-        break;
-      }
-    }
-    if (scriptHeadIndex == 0) {
-      return null;
-    }
-    String head = paragraphText.substring(0, scriptHeadIndex);
-    if (head.startsWith("%")) {
-      return head.substring(1);
-    } else {
-      return null;
-    }
+  public String getClassName() {
+    return className;
+  }
+  
+  public void setClassName(String className) {
+    this.className = className;
   }
 }

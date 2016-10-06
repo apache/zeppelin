@@ -716,10 +716,16 @@ public class ZeppelinContext {
   }
 
   /**
-   * Get the interpreter class name from repl name entered in paragraph
-   * @param replName
+   * Get the interpreter class name from name entered in paragraph
+   * @param replName if replName is a valid className, return that instead.
    */
   public String getClassNameFromReplName(String replName) {
+    for (String name : interpreterClassMap.values()) {
+      if (replName.equals(name)) {
+        return replName;
+      }
+    }
+    
     if (replName.contains("spark.")) {
       replName = replName.replace("spark.", "");
     }
@@ -746,8 +752,8 @@ public class ZeppelinContext {
    */
   @Experimental
   public void registerHook(String event, String cmd) {
-    String replName = interpreterContext.getRequiredReplName();
-    registerHook(event, cmd, replName);
+    String className = interpreterContext.getClassName();
+    registerHook(event, cmd, className);
   }
 
   /**
@@ -768,8 +774,8 @@ public class ZeppelinContext {
    */
   @Experimental
   public String getHook(String event) {
-    String replName = interpreterContext.getRequiredReplName();
-    return getHook(event, replName);
+    String className = interpreterContext.getClassName();
+    return getHook(event, className);
   }
 
   /**
@@ -790,8 +796,8 @@ public class ZeppelinContext {
    */
   @Experimental
   public void unregisterHook(String event) {
-    String replName = interpreterContext.getRequiredReplName();
-    unregisterHook(event, replName);
+    String className = interpreterContext.getClassName();
+    unregisterHook(event, className);
   }
 
   /**

@@ -295,6 +295,7 @@ public class RemoteInterpreterServer
     }
     Interpreter intp = getInterpreter(noteId, className);
     InterpreterContext context = convert(interpreterContext);
+    context.setClassName(intp.getClassName());
 
     Scheduler scheduler = intp.getScheduler();
     InterpretJobListener jobListener = new InterpretJobListener();
