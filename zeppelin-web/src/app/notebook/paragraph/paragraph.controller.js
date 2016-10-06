@@ -31,12 +31,15 @@
     'baseUrlSrv',
     'ngToast',
     'saveAsService',
-    'esriLoader'
+    'esriLoader',
+    'handsonHelperService',
+    'dataTypeService'
   ];
 
   function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $location,
                          $timeout, $compile, $http, $q, websocketMsgSrv,
-                         baseUrlSrv, ngToast, saveAsService, esriLoader) {
+                         baseUrlSrv, ngToast, saveAsService, esriLoader,
+                         handsonHelperService, dataTypeService) {
     var ANGULAR_FUNCTION_OBJECT_NAME_PREFIX = '_Z_ANGULAR_FUNC_';
     $scope.parentNote = null;
     $scope.paragraph = null;
@@ -899,21 +902,6 @@
       }
     };
 
-    $scope.parseTableCell = function(cell) {
-      if (!isNaN(cell)) {
-        if (cell.length === 0 || Number(cell) > Number.MAX_SAFE_INTEGER || Number(cell) < Number.MIN_SAFE_INTEGER) {
-          return cell;
-        } else {
-          return Number(cell);
-        }
-      }
-      var d = moment(cell);
-      if (d.isValid()) {
-        return d;
-      }
-      return cell;
-    };
-
     $scope.loadTableData = function(result) {
       if (!result) {
         return;
@@ -947,9 +935,8 @@
             if (i === 0) {
               columnNames.push({name: col, index: j, aggr: 'sum'});
             } else {
-              var parsedCol = $scope.parseTableCell(col);
-              cols.push(parsedCol);
-              cols2.push({key: (columnNames[i]) ? columnNames[i].name : undefined, value: parsedCol});
+              cols.push(col);
+              cols2.push({key: (columnNames[i]) ? columnNames[i].name : undefined, value: col});
             }
           }
           if (i !== 0) {
@@ -1009,40 +996,14 @@
         if ($scope.hot) {
           $scope.hot.destroy();
         }
-
-        $scope.hot = new Handsontable(container, {
-          colHeaders: columnNames,
-          data: resultRows,
-          rowHeaders: false,
-          stretchH: 'all',
-          sortIndicator: true,
-          columnSorting: true,
-          contextMenu: false,
-          manualColumnResize: true,
-          manualRowResize: true,
-          readOnly: true,
-          readOnlyCellClassName: '',  // don't apply any special class so we can retain current styling
-          fillHandle: false,
-          fragmentSelection: true,
-          disableVisualSelection: true,
-          cells: function(row, col, prop) {
-            var cellProperties = {};
-            cellProperties.renderer = function(instance, td, row, col, prop, value, cellProperties) {
-              if (value instanceof moment) {
-                td.innerHTML = value._i;
-              } else if (!isNaN(value)) {
-                cellProperties.format = '0,0.[00000]';
-                td.style.textAlign = 'left';
-                Handsontable.renderers.NumericRenderer.apply(this, arguments);
-              } else if (value.length > '%html'.length && '%html ' === value.substring(0, '%html '.length)) {
-                td.innerHTML = value.substring('%html'.length);
-              } else {
-                Handsontable.renderers.TextRenderer.apply(this, arguments);
-              }
-            };
-            return cellProperties;
-          }
-        });
+        if (!$scope.columns) {
+          $scope.columns = Array.apply(null, Array(data.columnNames.length)).map(function() {
+            return {type: 'text'};
+          });
+        }
+        $scope.hot = new Handsontable(container, handsonHelperService.getHandsonTableConfig(
+          $scope.columns, columnNames, resultRows));
+        $scope.hot.validateCells(null);
       };
 
       var retryRenderer = function() {
