@@ -21,7 +21,8 @@ import java.util.concurrent.ConcurrentHashMap
 
 import scala.collection.mutable.HashMap
 
-import org.apache.spark.scheduler.SparkListenerJobStart
+import org.apache.spark.SparkFirehoseListener
+import org.apache.spark.scheduler.{SparkListenerEvent, SparkListenerJobStart}
 
 /**
  * Spark listener job keeps information for started Spark job.
@@ -60,7 +61,7 @@ private[zeppelin] class SparkListenerJob(jobStart: SparkListenerJobStart, uiAddr
  * Class to keep information about progress for each job group (paragraph id).
  *
  */
-class SparkJobDetails(private val uiAddress: String) {
+class SparkJobDetailsListener(private val uiAddress: String) extends SparkFirehoseListener {
   // table contains map of jobs for job group, each job map has job id as key
   private val table = new ConcurrentHashMap[String, HashMap[Int, SparkListenerJob]]()
 
@@ -89,5 +90,11 @@ class SparkJobDetails(private val uiAddress: String) {
   def getJobs(jobGroup: String): Array[SparkListenerJob] = {
     val jobs = table.get(jobGroup)
     if (jobs == null) Array.empty else jobs.values.toArray.sortBy(_.getJobId())
+  }
+
+  override def onEvent(event: SparkListenerEvent): Unit = event match {
+    case jobStart: SparkListenerJobStart =>
+      val jobGroup = jobStart.properties.get("spark.jobGroup.id").asInstanceOf[String]
+      addJob(jobGroup, jobStart)
   }
 }
