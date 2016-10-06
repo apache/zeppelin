@@ -74,7 +74,7 @@ First, click `+ Create` button at the top-right corner in the interpreter settin
 
 <img src="../assets/themes/zeppelin/img/docs-img/click_create_button.png" width="600px"/>
 
-Fill `Interpreter name` field with whatever you want to use as the interpreter alias(e.g. mysql, mysql2, hive, redshift, and etc..). Please note that this interpreter name will be used as `%interpreter_name` to call this interpreter in the paragraph. 
+Fill `Interpreter name` field with whatever you want to use as the alias(e.g. mysql, mysql2, hive, redshift, and etc..). Please note that this alias will be used as `%interpreter_name` to call the interpreter in the paragraph. 
 Then select `jdbc` as an `Interpreter group`. 
 
 <img src="../assets/themes/zeppelin/img/docs-img/select_name_and_group.png" width="200px"/>
@@ -153,7 +153,7 @@ There are more JDBC interpreter properties you can specify like below.
   </tr>
 </table>
 
-Use this [method](http://docs.oracle.com/javase/7/docs/api/java/sql/DriverManager.html#getConnection%28java.lang.String,%20java.util.Properties%29) to develop this functionality .
+You can also add more properties by using this [method](http://docs.oracle.com/javase/7/docs/api/java/sql/DriverManager.html#getConnection%28java.lang.String,%20java.util.Properties%29).
 For example, if a connection needs a schema parameter, it would have to add the property as follows:
 
 <table class="table-configuration">
@@ -162,7 +162,7 @@ For example, if a connection needs a schema parameter, it would have to add the 
     <th>value</th>
   </tr>
   <tr>
-    <td>{prefix}.schema</td>
+    <td>default.schema</td>
     <td>schema_name</td>
   </tr>
 </table>
