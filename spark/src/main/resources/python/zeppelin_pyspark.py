@@ -138,12 +138,13 @@ class PyZeppelinContext(dict):
       # Everything looks good so make config assuming that we are using
       # an inline backend
       self._displayhook = backend_zinline.displayhook
-      self.configure_mpl(width=600, height=400, dpi=72,
-                         fontsize=10, interactive=True, format='png')
+      self.configure_mpl(width=600, height=400, dpi=72, fontsize=10,
+                         interactive=True, format='png', context=self.z)
     except ImportError:
       # Fall back to Agg if no custom backend installed
       matplotlib.use('Agg')
-      return
+      warnings.warn("Unable to load inline matplotlib backend, "
+                    "falling back to Agg")
 
   def configure_mpl(self, **kwargs):
     import mpl_config

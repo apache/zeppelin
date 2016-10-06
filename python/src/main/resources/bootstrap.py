@@ -20,6 +20,7 @@ import os
 import sys
 import signal
 import base64
+import warnings
 from io import BytesIO
 try:
     from StringIO import StringIO
@@ -218,6 +219,8 @@ class PyZeppelinContext(object):
         except ImportError:
             # Fall back to Agg if no custom backend installed
             matplotlib.use('Agg')
+            warnings.warn("Unable to load inline matplotlib backend, "
+                          "falling back to Agg")
 
 
 z = PyZeppelinContext()

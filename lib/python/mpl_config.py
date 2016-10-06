@@ -23,15 +23,16 @@ def configure(**kwargs):
     Generic configure function.
     Usage: configure(prop1='foo', prop2='bar', ...)
     Currently supported zeppelin-specific properties are:
+        interactive - If true show all figures without explicit call to show()
+                      via a post-execute hook.
+        angular - If true, bind figures to angular display system.
         close - If true, close all figures once shown.
         width, height - Default width / height of the figure in pixels.
         fontsize - Font size.
         dpi - dpi of the figure.
         fmt - Figure format
         supported_formats - Supported Figure formats ()
-        interactive - If true show all figures without explicit call to show()
-                      via a post-execute hook.
-
+        context - ZeppelinContext instance (requires PY4J)
     """
     _config.update(**kwargs)
         
@@ -85,7 +86,9 @@ def _init_config():
     _config['fontsize'] = fontsize
     _config['close'] = True
     _config['interactive'] = matplotlib.is_interactive()
+    _config['angular'] = False
     _config['supported_formats'] = ['png', 'jpg', 'svg']
+    _config['context'] = None
 
 
 _config = {}
