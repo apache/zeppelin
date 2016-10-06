@@ -49,7 +49,7 @@ import com.google.common.collect.Sets.SetView;
 
 /**
  * JDBC interpreter for Zeppelin. This interpreter can also be used for accessing HAWQ,
- * GreenplumDB, MariaDB, MySQL, Postgres and Redshit.
+ * GreenplumDB, MariaDB, MySQL, Postgres and Redshift.
  *
  * <ul>
  * <li>{@code default.url} - JDBC URL to connect to.</li>
