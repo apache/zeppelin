@@ -813,6 +813,7 @@ This part should be removed when new version of bootstrap handles this issue.
 .about .logo {
   padding-top: 30px;
 }
+
 .about .logo img {
   width: 95%;
 }
