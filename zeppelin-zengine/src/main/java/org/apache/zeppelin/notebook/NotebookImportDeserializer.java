@@ -35,7 +35,8 @@ import java.util.Locale;
 public class NotebookImportDeserializer implements JsonDeserializer<Date> {
   private static final String[] DATE_FORMATS = new String[] {
     "yyyy-MM-dd'T'HH:mm:ssZ",
-    "MMM d, yyyy h:mm:ss a"
+    "MMM d, yyyy h:mm:ss a",
+    "MMM dd, yyyy HH:mm:ss"
   };
 
   @Override
