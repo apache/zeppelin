@@ -282,7 +282,6 @@ def zdisplay(fig, **kwargs):
         height = '{}px'.format(mpl_config.get('height'))
     else:
         # Express the image as bytes
-        fig_id = fig.canvas.manager.num
         src = fig.canvas.manager.angular_bind(**kwargs)
         img = "<img src={src} style='width={width};height:{height}'>"
         img = img.format(src=src, width=width, height=height)
