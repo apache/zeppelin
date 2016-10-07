@@ -32,6 +32,7 @@ import org.slf4j.LoggerFactory;
 import java.util.Properties;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 public class LivyIntegrationTest {
@@ -117,6 +118,53 @@ public class LivyIntegrationTest {
     assertEquals(InterpreterResult.Type.TABLE, result.type());
     // TODO (zjffdu), \t at the end of each line is not necessary, it is a bug of LivySparkSQLInterpreter
     assertEquals("_1\t_2\t\nhello\t20\t\n", result.message());
+
+    // single line comment
+    outputListener.reset();
+    String singleLineComment = "// my comment";
+    result = sparkInterpreter.interpret(singleLineComment, context);
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    assertEquals(InterpreterResult.Type.TEXT, result.type());
+    assertNull(result.message());
+
+    // multiple line comment
+    outputListener.reset();
+    String multipleLineComment = "/* multiple \n" + "line \n" + "comment */";
+    result = sparkInterpreter.interpret(multipleLineComment, context);
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    assertEquals(InterpreterResult.Type.TEXT, result.type());
+    assertNull(result.message());
+
+    // multi-line string
+    outputListener.reset();
+    String multiLineString = "val str = \"\"\"multiple\n" +
+            "line\"\"\"\n" +
+            "println(str)";
+    result = sparkInterpreter.interpret(multiLineString, context);
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    assertEquals(InterpreterResult.Type.TEXT, result.type());
+    assertNull(result.message());
+    assertTrue(outputListener.getOutputAppended().contains("multiple\nline"));
+
+    // case class
+    outputListener.reset();
+    String caseClassCode = "case class Person(id:Int, \n" +
+            "name:String)\n" +
+            "val p=Person(1, \"name_a\")";
+    result = sparkInterpreter.interpret(caseClassCode, context);
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    assertEquals(InterpreterResult.Type.TEXT, result.type());
+    assertNull(result.message());
+    assertTrue(outputListener.getOutputAppended().contains("defined class Person"));
+
+    // object class
+    outputListener.reset();
+    String objectClassCode = "object Person {}";
+    result = sparkInterpreter.interpret(objectClassCode, context);
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    assertEquals(InterpreterResult.Type.TEXT, result.type());
+    assertNull(result.message());
+    assertTrue(outputListener.getOutputAppended().contains("defined module Person"));
   }
 
   @Test

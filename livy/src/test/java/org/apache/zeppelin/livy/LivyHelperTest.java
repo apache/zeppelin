@@ -28,6 +28,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Answers;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Properties;
@@ -63,7 +64,7 @@ public class LivyHelperTest {
     livyHelper.property = properties;
     livyHelper.paragraphHttpMap = new HashMap<>();
     livyHelper.gson = new GsonBuilder().setPrettyPrinting().create();
-
+    livyHelper.LOGGER = LoggerFactory.getLogger(LivyHelper.class);
 
     doReturn("{\"id\":1,\"state\":\"idle\",\"kind\":\"spark\",\"proxyUser\":\"null\",\"log\":[]}")
         .when(livyHelper)
@@ -80,7 +81,7 @@ public class LivyHelperTest {
         .executeHTTP(
             livyHelper.property.getProperty("zeppelin.livy.url") + "/sessions/1/statements",
             "POST",
-            "{\"code\": \"print(1)\" }",
+            "{\"code\": \"print(1)\"}",
             null
         );
 
