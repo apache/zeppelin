@@ -55,15 +55,16 @@ import scala.tools.nsc.util.ClassPath
 
 class ScioInterpreter(property: Properties) extends Interpreter(property) {
   private val logger = LoggerFactory.getLogger(classOf[ScioInterpreter])
-  private var REPL: ScioILoop = null
+  private var REPL: ScioILoop = _
 
   val innerOut = new InterpreterOutputStream(logger)
 
   override def open(): Unit = {
-    val argz: List[String] = Option(getProperty("zeppelin.scio.argz"))
+    val argz = Option(getProperty("zeppelin.scio.argz"))
       .getOrElse(s"--runner=${classOf[InProcessPipelineRunner].getSimpleName}")
       .split(" ")
       .map(_.trim)
+      .filter(_.nonEmpty)
       .toList
 
     // Process command line arguments into a settings object, and use that to start the REPL.
@@ -127,6 +128,7 @@ class ScioInterpreter(property: Properties) extends Interpreter(property) {
     REPL.interpret(s"""val argz = Array("${argz.mkString("\", \"")}")""")
     REPL.interpret("import org.apache.zeppelin.scio.DisplaySCollectionImplicits._")
     REPL.interpret("import org.apache.zeppelin.scio.DisplayTapImplicits._")
+    REPL.interpret("import org.apache.zeppelin.scio.ContextAndArgs")
   }
 
   private def parseAndPartitionArgs(args: List[String]): (List[String], List[String]) = {

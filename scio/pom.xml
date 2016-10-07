@@ -53,7 +53,6 @@
       <groupId>com.spotify</groupId>
       <artifactId>scio-repl_${scala.binary.version}</artifactId>
       <version>${scio.version}</version>
-      <description>REPL dependency brings other Scio dependencies</description>
     </dependency>
 
     <dependency>
