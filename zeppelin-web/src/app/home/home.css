@@ -804,24 +804,27 @@ This part should be removed when new version of bootstrap handles this issue.
   background: #3071a9;
 }
 
-.about{
+/* About Zeppelin */
+.about {
   height: 200px;
-  padding-top: 20px;
-  padding-left: 20px;
+  padding: 25px;
 }
 
 .about .logo {
-  width: 20%;
-  float: left;
+  padding-top: 30px;
 }
 
-.about .content{
-  float: left;
-  padding-left: 10px;
-  top: -30px;
-  position: relative;
+.about .logo img {
+  width: 95%;
 }
 
-.about .logo img{
-  width: 100%;
+.about .content {
+  text-align: center;
+}
+
+.about .content h3 {
+  font-family: 'Patua One';
+  color: #3071A9;
+  font-size: 30px;
+  margin: 0 auto;
 }

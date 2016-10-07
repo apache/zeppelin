@@ -12,78 +12,82 @@
  * limitations under the License.
  */
 'use strict';
+(function() {
 
-angular.module('zeppelinWebApp')
-  .controller('JobmanagerCtrl',
-    function($scope, websocketMsgSrv, $interval) {
+  angular.module('zeppelinWebApp').controller('JobmanagerCtrl', JobmanagerCtrl);
 
-      $scope.filterValueToName = function(filterValue) {
-        var index = _.findIndex($scope.ACTIVE_INTERPRETERS, {value: filterValue});
+  JobmanagerCtrl.$inject = ['$scope', 'websocketMsgSrv', '$interval'];
 
-        if ($scope.ACTIVE_INTERPRETERS[index].name !== undefined) {
-          return $scope.ACTIVE_INTERPRETERS[index].name;
-        } else {
-          return 'undefined';
-        }
-      };
+  function JobmanagerCtrl($scope, websocketMsgSrv, $interval) {
+    $scope.filterValueToName = function(filterValue) {
+      var index = _.findIndex($scope.ACTIVE_INTERPRETERS, {value: filterValue});
 
-      $scope.init = function() {
-        $scope.jobInfomations = [];
-        $scope.JobInfomationsByFilter = $scope.jobInfomations;
+      if ($scope.ACTIVE_INTERPRETERS[index].name !== undefined) {
+        return $scope.ACTIVE_INTERPRETERS[index].name;
+      } else {
+        return 'undefined';
+      }
+    };
 
-        websocketMsgSrv.getNotebookJobsList();
+    $scope.init = function() {
+      $scope.jobInfomations = [];
+      $scope.JobInfomationsByFilter = $scope.jobInfomations;
 
-        $scope.$on('$destroy', function() {
-          websocketMsgSrv.unsubscribeJobManager();
-        });
-      };
+      websocketMsgSrv.getNotebookJobsList();
 
-      /*
-      ** $scope.$on functions below
-      */
-
-      $scope.$on('setNotebookJobs', function(event, responseData) {
-        $scope.lastJobServerUnixTime = responseData.lastResponseUnixTime;
-        $scope.jobInfomations = responseData.jobs;
-        $scope.jobInfomationsIndexs = $scope.jobInfomations ? _.indexBy($scope.jobInfomations, 'notebookId') : {};
+      $scope.$on('$destroy', function() {
+        websocketMsgSrv.unsubscribeJobManager();
       });
+    };
 
-      $scope.$on('setUpdateNotebookJobs', function(event, responseData) {
-        var jobInfomations = $scope.jobInfomations;
-        var indexStore = $scope.jobInfomationsIndexs;
-        $scope.lastJobServerUnixTime = responseData.lastResponseUnixTime;
-        var notes = responseData.jobs;
-        notes.map(function(changedItem) {
-          if (indexStore[changedItem.notebookId] === undefined) {
-            var newItem = angular.copy(changedItem);
-            jobInfomations.push(newItem);
-            indexStore[changedItem.notebookId] = newItem;
-          } else {
-            var changeOriginTarget = indexStore[changedItem.notebookId];
+    /*
+    ** $scope.$on functions below
+    */
 
-            if (changedItem.isRemoved !== undefined && changedItem.isRemoved === true) {
+    $scope.$on('setNotebookJobs', function(event, responseData) {
+      $scope.lastJobServerUnixTime = responseData.lastResponseUnixTime;
+      $scope.jobInfomations = responseData.jobs;
+      $scope.jobInfomationsIndexs = $scope.jobInfomations ? _.indexBy($scope.jobInfomations, 'notebookId') : {};
+    });
 
-              // remove Item.
-              var removeIndex = _.findIndex(indexStore, changedItem.notebookId);
-              if (removeIndex > -1) {
-                indexStore.splice(removeIndex, 1);
-              }
+    $scope.$on('setUpdateNotebookJobs', function(event, responseData) {
+      var jobInfomations = $scope.jobInfomations;
+      var indexStore = $scope.jobInfomationsIndexs;
+      $scope.lastJobServerUnixTime = responseData.lastResponseUnixTime;
+      var notes = responseData.jobs;
+      notes.map(function(changedItem) {
+        if (indexStore[changedItem.notebookId] === undefined) {
+          var newItem = angular.copy(changedItem);
+          jobInfomations.push(newItem);
+          indexStore[changedItem.notebookId] = newItem;
+        } else {
+          var changeOriginTarget = indexStore[changedItem.notebookId];
 
-              removeIndex = _.findIndex(jobInfomations, {'notebookId': changedItem.notebookId});
-              if (removeIndex) {
-                jobInfomations.splice(removeIndex, 1);
-              }
+          if (changedItem.isRemoved !== undefined && changedItem.isRemoved === true) {
 
-            } else {
-              // change value for item.
-              changeOriginTarget.isRunningJob = changedItem.isRunningJob;
-              changeOriginTarget.notebookName = changedItem.notebookName;
-              changeOriginTarget.notebookType = changedItem.notebookType;
-              changeOriginTarget.interpreter = changedItem.interpreter;
-              changeOriginTarget.unixTimeLastRun = changedItem.unixTimeLastRun;
-              changeOriginTarget.paragraphs = changedItem.paragraphs;
+            // remove Item.
+            var removeIndex = _.findIndex(indexStore, changedItem.notebookId);
+            if (removeIndex > -1) {
+              indexStore.splice(removeIndex, 1);
             }
+
+            removeIndex = _.findIndex(jobInfomations, {'notebookId': changedItem.notebookId});
+            if (removeIndex) {
+              jobInfomations.splice(removeIndex, 1);
+            }
+
+          } else {
+            // change value for item.
+            changeOriginTarget.isRunningJob = changedItem.isRunningJob;
+            changeOriginTarget.notebookName = changedItem.notebookName;
+            changeOriginTarget.notebookType = changedItem.notebookType;
+            changeOriginTarget.interpreter = changedItem.interpreter;
+            changeOriginTarget.unixTimeLastRun = changedItem.unixTimeLastRun;
+            changeOriginTarget.paragraphs = changedItem.paragraphs;
           }
-        });
+        }
       });
     });
+  }
+
+})();

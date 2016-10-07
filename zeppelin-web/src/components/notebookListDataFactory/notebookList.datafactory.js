@@ -12,54 +12,58 @@
  * limitations under the License.
  */
 'use strict';
+(function() {
 
-angular.module('zeppelinWebApp').factory('notebookListDataFactory', function() {
+  angular.module('zeppelinWebApp').factory('notebookListDataFactory', notebookListDataFactory);
 
-  var notes = {
-    root: {children: []},
-    flatList: [],
+  function notebookListDataFactory() {
+    var notes = {
+      root: {children: []},
+      flatList: [],
 
-    setNotes: function(notesList) {
-      // a flat list to boost searching
-      notes.flatList = angular.copy(notesList);
+      setNotes: function(notesList) {
+        // a flat list to boost searching
+        notes.flatList = angular.copy(notesList);
 
-      // construct the folder-based tree
-      notes.root = {children: []};
-      _.reduce(notesList, function(root, note) {
-        var noteName = note.name || note.id;
-        var nodes = noteName.match(/([^\/][^\/]*)/g);
+        // construct the folder-based tree
+        notes.root = {children: []};
+        _.reduce(notesList, function(root, note) {
+          var noteName = note.name || note.id;
+          var nodes = noteName.match(/([^\/][^\/]*)/g);
 
-        // recursively add nodes
-        addNode(root, nodes, note.id);
+          // recursively add nodes
+          addNode(root, nodes, note.id);
 
-        return root;
-      }, notes.root);
-    }
-  };
-
-  var addNode = function(curDir, nodes, noteId) {
-    if (nodes.length === 1) {  // the leaf
-      curDir.children.push({
-        name: nodes[0],
-        id: noteId
-      });
-    } else {  // a folder node
-      var node = nodes.shift();
-      var dir = _.find(curDir.children,
-        function(c) {return c.name === node && c.children !== undefined;});
-      if (dir !== undefined) { // found an existing dir
-        addNode(dir, nodes, noteId);
-      } else {
-        var newDir = {
-          name: node,
-          hidden: true,
-          children: []
-        };
-        curDir.children.push(newDir);
-        addNode(newDir, nodes, noteId);
+          return root;
+        }, notes.root);
       }
-    }
-  };
+    };
 
-  return notes;
-});
+    var addNode = function(curDir, nodes, noteId) {
+      if (nodes.length === 1) {  // the leaf
+        curDir.children.push({
+          name: nodes[0],
+          id: noteId
+        });
+      } else {  // a folder node
+        var node = nodes.shift();
+        var dir = _.find(curDir.children,
+          function(c) {return c.name === node && c.children !== undefined;});
+        if (dir !== undefined) { // found an existing dir
+          addNode(dir, nodes, noteId);
+        } else {
+          var newDir = {
+            name: node,
+            hidden: true,
+            children: []
+          };
+          curDir.children.push(newDir);
+          addNode(newDir, nodes, noteId);
+        }
+      }
+    };
+
+    return notes;
+  }
+
+})();

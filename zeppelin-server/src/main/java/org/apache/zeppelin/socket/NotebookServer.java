@@ -1595,9 +1595,11 @@ public class NotebookServer extends WebSocketServlet implements
 
   private void getEditorSetting(NotebookSocket conn, Message fromMessage)
       throws IOException {
+    String paragraphId = (String) fromMessage.get("paragraphId");
     String replName = (String) fromMessage.get("magic");
     String noteId = getOpenNoteId(conn);
     Message resp = new Message(OP.EDITOR_SETTING);
+    resp.put("paragraphId", paragraphId);
     resp.put("editor", notebook().getInterpreterFactory().getEditorSetting(noteId, replName));
     conn.send(serializeMessage(resp));
     return;

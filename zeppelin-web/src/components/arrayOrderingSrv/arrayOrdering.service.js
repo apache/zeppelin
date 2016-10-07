@@ -12,21 +12,24 @@
  * limitations under the License.
  */
 'use strict';
+(function() {
 
-angular.module('zeppelinWebApp').service('arrayOrderingSrv', function() {
+  angular.module('zeppelinWebApp').service('arrayOrderingSrv', arrayOrderingSrv);
 
-  var arrayOrderingSrv = this;
+  function arrayOrderingSrv() {
+    var arrayOrderingSrv = this;
 
-  this.notebookListOrdering = function(note) {
-    return arrayOrderingSrv.getNoteName(note);
-  };
+    this.notebookListOrdering = function(note) {
+      return arrayOrderingSrv.getNoteName(note);
+    };
 
-  this.getNoteName = function(note) {
-    if (note.name === undefined || note.name.trim() === '') {
-      return 'Note ' + note.id;
-    } else {
-      return note.name;
-    }
-  };
+    this.getNoteName = function(note) {
+      if (note.name === undefined || note.name.trim() === '') {
+        return 'Note ' + note.id;
+      } else {
+        return note.name;
+      }
+    };
+  }
 
-});
+})();

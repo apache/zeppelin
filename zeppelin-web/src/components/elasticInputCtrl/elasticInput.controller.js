@@ -12,9 +12,13 @@
  * limitations under the License.
  */
 'use strict';
+(function() {
 
-angular.module('zeppelinWebApp')
-.controller('ElasticInputCtrl', function() {
-  var vm = this;
-  vm.showEditor = false;
-});
+  angular.module('zeppelinWebApp').controller('ElasticInputCtrl', ElasticInputCtrl);
+
+  function ElasticInputCtrl() {
+    var vm = this;
+    vm.showEditor = false;
+  }
+
+})();

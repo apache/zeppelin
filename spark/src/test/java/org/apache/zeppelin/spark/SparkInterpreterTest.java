@@ -178,20 +178,29 @@ public class SparkInterpreterTest {
 
   @Test
   public void testCreateDataFrame() {
-    repl.interpret("case class Person(name:String, age:Int)\n", context);
-    repl.interpret("val people = sc.parallelize(Seq(Person(\"moon\", 33), Person(\"jobs\", 51), Person(\"gates\", 51), Person(\"park\", 34)))\n", context);
-    repl.interpret("people.toDF.count", context);
-    assertEquals(new Long(4), context.getResourcePool().get(
-        context.getNoteId(),
-        context.getParagraphId(),
-        WellKnownResourceName.ZeppelinReplResult.toString()).get());
+    if (getSparkVersionNumber() >= 13) {
+      repl.interpret("case class Person(name:String, age:Int)\n", context);
+      repl.interpret("val people = sc.parallelize(Seq(Person(\"moon\", 33), Person(\"jobs\", 51), Person(\"gates\", 51), Person(\"park\", 34)))\n", context);
+      repl.interpret("people.toDF.count", context);
+      assertEquals(new Long(4), context.getResourcePool().get(
+          context.getNoteId(),
+          context.getParagraphId(),
+          WellKnownResourceName.ZeppelinReplResult.toString()).get());
+    }
   }
 
   @Test
   public void testZShow() {
+    String code = "";
     repl.interpret("case class Person(name:String, age:Int)\n", context);
     repl.interpret("val people = sc.parallelize(Seq(Person(\"moon\", 33), Person(\"jobs\", 51), Person(\"gates\", 51), Person(\"park\", 34)))\n", context);
-    assertEquals(Code.SUCCESS, repl.interpret("z.show(people.toDF)", context).code());
+    if (getSparkVersionNumber() < 13) {
+      repl.interpret("people.registerTempTable(\"people\")", context);
+      code = "z.show(sqlc.sql(\"select * from people\"))";
+    } else {
+      code = "z.show(people.toDF)";
+    }
+      assertEquals(Code.SUCCESS, repl.interpret(code, context).code());
   }
 
   @Test
@@ -203,14 +212,15 @@ public class SparkInterpreterTest {
 
     if (getSparkVersionNumber() <= 11) { // spark 1.2 or later does not allow create multiple SparkContext in the same jvm by default.
       // create new interpreter
-      Properties p = new Properties();
-      SparkInterpreter repl2 = new SparkInterpreter(p);
+      SparkInterpreter repl2 = new SparkInterpreter(getSparkTestProperties());
+      repl2.setInterpreterGroup(intpGroup);
+      intpGroup.get("note").add(repl2);
       repl2.open();
 
-      repl.interpret("case class Man(name:String, age:Int)", context);
-      repl.interpret("val man = sc.parallelize(Seq(Man(\"moon\", 33), Man(\"jobs\", 51), Man(\"gates\", 51), Man(\"park\", 34)))", context);
-      assertEquals(Code.SUCCESS, repl.interpret("man.take(3)", context).code());
-      repl2.getSparkContext().stop();
+      repl2.interpret("case class Man(name:String, age:Int)", context);
+      repl2.interpret("val man = sc.parallelize(Seq(Man(\"moon\", 33), Man(\"jobs\", 51), Man(\"gates\", 51), Man(\"park\", 34)))", context);
+      assertEquals(Code.SUCCESS, repl2.interpret("man.take(3)", context).code());
+      repl2.close();
     }
   }
 
@@ -253,33 +263,37 @@ public class SparkInterpreterTest {
 
   @Test
   public void testEnableImplicitImport() {
-    // Set option of importing implicits to "true", and initialize new Spark repl
-    Properties p = getSparkTestProperties();
-    p.setProperty("zeppelin.spark.importImplicit", "true");
-    SparkInterpreter repl2 = new SparkInterpreter(p);
-    repl2.setInterpreterGroup(intpGroup);
-    intpGroup.get("note").add(repl2);
+    if (getSparkVersionNumber() >= 13) {
+      // Set option of importing implicits to "true", and initialize new Spark repl
+      Properties p = getSparkTestProperties();
+      p.setProperty("zeppelin.spark.importImplicit", "true");
+      SparkInterpreter repl2 = new SparkInterpreter(p);
+      repl2.setInterpreterGroup(intpGroup);
+      intpGroup.get("note").add(repl2);
 
-    repl2.open();
-    String ddl = "val df = Seq((1, true), (2, false)).toDF(\"num\", \"bool\")";
-    assertEquals(Code.SUCCESS, repl2.interpret(ddl, context).code());
-    repl2.close();
+      repl2.open();
+      String ddl = "val df = Seq((1, true), (2, false)).toDF(\"num\", \"bool\")";
+      assertEquals(Code.SUCCESS, repl2.interpret(ddl, context).code());
+      repl2.close();
+    }
   }
 
   @Test
   public void testDisableImplicitImport() {
-    // Set option of importing implicits to "false", and initialize new Spark repl
-    // this test should return error status when creating DataFrame from sequence
-    Properties p = getSparkTestProperties();
-    p.setProperty("zeppelin.spark.importImplicit", "false");
-    SparkInterpreter repl2 = new SparkInterpreter(p);
-    repl2.setInterpreterGroup(intpGroup);
-    intpGroup.get("note").add(repl2);
+    if (getSparkVersionNumber() >= 13) {
+      // Set option of importing implicits to "false", and initialize new Spark repl
+      // this test should return error status when creating DataFrame from sequence
+      Properties p = getSparkTestProperties();
+      p.setProperty("zeppelin.spark.importImplicit", "false");
+      SparkInterpreter repl2 = new SparkInterpreter(p);
+      repl2.setInterpreterGroup(intpGroup);
+      intpGroup.get("note").add(repl2);
 
-    repl2.open();
-    String ddl = "val df = Seq((1, true), (2, false)).toDF(\"num\", \"bool\")";
-    assertEquals(Code.ERROR, repl2.interpret(ddl, context).code());
-    repl2.close();
+      repl2.open();
+      String ddl = "val df = Seq((1, true), (2, false)).toDF(\"num\", \"bool\")";
+      assertEquals(Code.ERROR, repl2.interpret(ddl, context).code());
+      repl2.close();
+    }
   }
 
   @Test

@@ -12,10 +12,15 @@
  * limitations under the License.
  */
 'use strict';
+(function() {
 
-angular.module('zeppelinWebApp').filter('sortByKey', function() {
-  return function(properties) {
-    var sortedKeys = properties ? Object.keys(properties) : [];
-    return sortedKeys.sort();
-  };
-});
+  angular.module('zeppelinWebApp').filter('sortByKey', sortByKey);
+
+  function sortByKey() {
+    return function(properties) {
+      var sortedKeys = properties ? Object.keys(properties) : [];
+      return sortedKeys.sort();
+    };
+  }
+
+})();

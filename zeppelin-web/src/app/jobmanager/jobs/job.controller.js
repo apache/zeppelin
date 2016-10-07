@@ -12,10 +12,13 @@
  * limitations under the License.
  */
 'use strict';
+(function() {
 
-angular.module('zeppelinWebApp')
-  .controller('JobCtrl', function($scope) {
+  angular.module('zeppelinWebApp').controller('JobCtrl', JobCtrl);
 
+  JobCtrl.$inject = ['$scope'];
+
+  function JobCtrl($scope) {
     $scope.init = function(jobInformation) {
       $scope.progressValue = 0;
     };
@@ -34,5 +37,6 @@ angular.module('zeppelinWebApp')
       var result = Math.ceil(runningJobCount / totalCount * 100);
       return isNaN(result) ? 0 : result;
     };
+  }
 
-  });
+})();
