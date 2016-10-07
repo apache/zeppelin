@@ -34,7 +34,7 @@
   <description>Zeppelin Scio support</description>
 
   <properties>
-    <scio.version>0.2.3</scio.version>
+    <scio.version>0.2.4</scio.version>
   </properties>
 
   <dependencies>
