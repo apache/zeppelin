@@ -75,6 +75,7 @@
     <module>elasticsearch</module>
     <module>bigquery</module>
     <module>alluxio</module>
+    <module>redis</module>
     <module>zeppelin-web</module>
     <module>zeppelin-server</module>
     <module>zeppelin-distribution</module>
