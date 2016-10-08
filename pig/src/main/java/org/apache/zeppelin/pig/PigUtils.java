@@ -267,6 +267,7 @@ public class PigUtils {
       }
       return jobIds;
     } catch (Exception e) {
+      LOGGER.error("Can not extract jobIds from SimpelPigStats", e);
       throw new RuntimeException("Can not extract jobIds from SimpelPigStats", e);
     }
   }
@@ -279,11 +280,12 @@ public class PigUtils {
       Map<String, TezDAGStats> tezDAGStatsMap =
               (Map<String, TezDAGStats>) tezDAGStatsMapField.get(stat);
       for (TezDAGStats dagStats : tezDAGStatsMap.values()) {
-        LOGGER.info("Tez JobId:" + dagStats.getJobId());
+        LOGGER.debug("Tez JobId:" + dagStats.getJobId());
         jobIds.add(dagStats.getJobId());
       }
       return jobIds;
     } catch (Exception e) {
+      LOGGER.error("Can not extract jobIds from TezPigScriptStats", e);
       throw new RuntimeException("Can not extract jobIds from TezPigScriptStats", e);
     }
   }

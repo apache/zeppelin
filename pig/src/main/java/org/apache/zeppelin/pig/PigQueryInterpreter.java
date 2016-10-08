@@ -126,6 +126,7 @@ public class PigQueryInterpreter extends BasePigInterpreter {
       if (e instanceof FrontendException) {
         FrontendException fe = (FrontendException) e;
         if (!fe.getMessage().contains("Backend error :")) {
+          LOGGER.error("Fail to run pig script.", e);
           return new InterpreterResult(Code.ERROR, ExceptionUtils.getStackTrace(e));
         }
       }

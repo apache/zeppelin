@@ -74,6 +74,8 @@ dump c;
 
 **pig.query**
 ```
+%pig.query
+
 b = foreach raw_data generate Category;
 c = group b by Category;
 foreach c generate group as category, COUNT($1) as count;

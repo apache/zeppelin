@@ -94,6 +94,7 @@ public class PigInterpreter extends BasePigInterpreter {
         if (!fe.getMessage().contains("Backend error :")) {
           // If the error message contains "Backend error :", that means the exception is from
           // backend.
+          LOGGER.error("Fail to run pig script.", e);
           return new InterpreterResult(Code.ERROR, ExceptionUtils.getStackTrace(e));
         }
       }
@@ -101,7 +102,7 @@ public class PigInterpreter extends BasePigInterpreter {
       if (stats != null) {
         String errorMsg = PigUtils.extactJobStats(stats);
         if (errorMsg != null) {
-          LOGGER.debug("Error Message:" + errorMsg);
+          LOGGER.error("Fail to run pig script, " + errorMsg);
           return new InterpreterResult(Code.ERROR, errorMsg);
         }
       }
