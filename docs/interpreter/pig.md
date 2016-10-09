@@ -17,7 +17,7 @@ group: manual
 ## Supported interpreter type
   - `%pig.script` (default)
     
-    All the pig script can run in the type of interpreter, and display type if plain text.
+    All the pig script can run in this type of interpreter, and display type is plain text.
   
   - `%pig.query`
  
@@ -57,12 +57,12 @@ At the Interpreters menu, you have to create a new Pig interpreter. Pig interpre
     <tr>
         <td>zeppelin.pig.execType</td>
         <td>mapreduce</td>
-        <td>Execution mode for pig runtime. Local | mapreduce | tez </td>
+        <td>Execution mode for pig runtime. local | mapreduce | tez </td>
     </tr>
     <tr>
         <td>zeppelin.pig.includeJobStats</td>
         <td>false</td>
-        <td>whether display jobStats info in <code>%pig</code></td>
+        <td>whether display jobStats info in <code>%pig.script</code></td>
     </tr>
     <tr>
         <td>zeppelin.pig.maxResult</td>
