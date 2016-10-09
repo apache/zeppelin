@@ -15,26 +15,27 @@
 'use strict';
 
 /**
- * Visualize data in bar char
+ * Visualize data in area chart
  */
-zeppelin.BarchartVisualization = function(targetEl, config) {
+zeppelin.AreachartVisualization = function(targetEl, config) {
   zeppelin.Nvd3ChartVisualization.call(this, targetEl, config);
 
   var PivotTransformation = zeppelin.PivotTransformation;
   this.pivot = new PivotTransformation(config);
+  this.xLables = [];
 };
 
-zeppelin.BarchartVisualization.prototype = Object.create(zeppelin.Nvd3ChartVisualization.prototype);
+zeppelin.AreachartVisualization.prototype = Object.create(zeppelin.Nvd3ChartVisualization.prototype);
 
-zeppelin.BarchartVisualization.prototype.type = function() {
-  return 'multiBarChart';
+zeppelin.AreachartVisualization.prototype.type = function() {
+  return 'stackedAreaChart';
 };
 
-zeppelin.BarchartVisualization.prototype.getTransformation = function() {
+zeppelin.AreachartVisualization.prototype.getTransformation = function() {
   return this.pivot;
 };
 
-zeppelin.BarchartVisualization.prototype.render = function(tableData) {
+zeppelin.AreachartVisualization.prototype.render = function(tableData) {
   var pivot = this.pivot.transform(tableData);
   var d3Data = this.d3DataFromPivot(
     pivot.schema,
@@ -42,23 +43,26 @@ zeppelin.BarchartVisualization.prototype.render = function(tableData) {
     pivot.keys,
     pivot.groups,
     pivot.values,
-    true,
     false,
-    true);
+    true,
+    false);
 
+  this.xLabels = d3Data.xLabels;
   zeppelin.Nvd3ChartVisualization.prototype.render.call(this, d3Data);
 };
 
 /**
  * Set new config
  */
-zeppelin.BarchartVisualization.prototype.setConfig = function(config) {
+zeppelin.AreachartVisualization.prototype.setConfig = function(config) {
   zeppelin.Nvd3ChartVisualization.prototype.setConfig.call(this, config);
   this.pivot.setConfig(config);
 };
 
-zeppelin.BarchartVisualization.prototype.configureChart = function(chart) {
+zeppelin.AreachartVisualization.prototype.configureChart = function(chart) {
   var self = this;
-  chart.yAxis.axisLabelDistance(50);
+  chart.xAxis.tickFormat(function(d) {return self.xAxisTickFormat(d, self.xLabels);});
   chart.yAxis.tickFormat(function(d) {return self.yAxisTickFormat(d);});
+  chart.yAxis.axisLabelDistance(50);
+  chart.useInteractiveGuideline(true); // for better UX and performance issue. (https://github.com/novus/nvd3/issues/691)
 };

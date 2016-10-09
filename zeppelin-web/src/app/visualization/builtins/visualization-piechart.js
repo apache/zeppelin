@@ -15,7 +15,7 @@
 'use strict';
 
 /**
- * Visualize data in table format
+ * Visualize data in pie chart
  */
 zeppelin.PiechartVisualization = function(targetEl, config) {
   zeppelin.Nvd3ChartVisualization.call(this, targetEl, config);

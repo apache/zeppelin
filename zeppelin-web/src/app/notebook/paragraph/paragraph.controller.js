@@ -119,6 +119,12 @@
         name: 'Pie Chart',
         icon: 'fa fa-pie-chart',
         transformation: 'pivot'
+      },
+      {
+        id: 'areaChart',
+        name: 'Area Chart',
+        icon: 'fa fa-area-chart',
+        transformation: 'pivot'
       }
     ];
 
@@ -136,6 +142,10 @@
       },
       'pieChart': {
         class: zeppelin.PiechartVisualization,
+        instance: undefined
+      },
+      'areaChart': {
+        class: zeppelin.AreachartVisualization,
         instance: undefined
       }
     };
