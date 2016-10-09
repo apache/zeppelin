@@ -27,13 +27,11 @@ limitations under the License.
 
 Apache Zeppelin Application is a package that runs on Interpreter process and displays it's output inside of the notebook. While application runs on Interpreter process, it's able to access resources provided by Interpreter through ResourcePool. Output is always rendered by AngularDisplaySystem. Therefore application provides all the possiblities of making interactive graphical application that uses data and processing power of any Interpreter.
 
-
 ## Make your own Application
 
 Writing Application means extending `org.apache.zeppelin.helium.Application`. You can use your favorite IDE and language while Java class files are packaged into jar. `Application` class looks like
 
 ```java
-
 /**
  * Constructor. Invoked when application is loaded
  */
@@ -52,9 +50,7 @@ public abstract void run(ResourceSet args);
 public abstract void unload();
 ```
 
-
 You can check example applications under [./zeppelin-examples](https://github.com/apache/incubator-zeppelin/tree/master/zeppelin-examples) directory.
-
 
 ## Development mode
 
@@ -63,7 +59,6 @@ In the development mode, you can run your Application in your IDE as a normal ja
 `org.apache.zeppelin.interpreter.dev.ZeppelinApplicationDevServer` can run Zeppelin Application in development mode.
 
 ```java
-
 // entry point for development mode
 public static void main(String[] args) throws Exception {
 
@@ -82,9 +77,7 @@ public static void main(String[] args) throws Exception {
 }
 ```
 
-
 In the Zeppelin notebook, run `%dev run` will connect to application running in development mode.
-
 
 ## Package file
 
@@ -103,7 +96,6 @@ Json file contains the following information
   ],
   icon : "<i class="icon"></i>"
 }
-
 ```
 
 #### name
@@ -173,7 +165,6 @@ resources: [
    ...
 ]
 ```
-
 
 #### icon
 

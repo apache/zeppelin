@@ -75,7 +75,6 @@ Now we want to see age distribution with certain marital status and add combo bo
 %sql select age, count(1) from bank where marital="${marital=single,single|divorced|married}" group by age order by age
 ```
 
-<br />
 ## Tutorial with Streaming Data 
 
 ### Data Refine

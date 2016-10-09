@@ -50,20 +50,18 @@ limitations under the License.
   </tr>
 </table>
 
-<br/>
 This interpreter connects to HDFS using the HTTP WebHDFS interface.
 It supports the basic shell file commands applied to HDFS, it currently only supports browsing.
 
-* You can use <i>ls [PATH]</i> and <i>ls -l [PATH]</i> to list a directory. If the path is missing, then the current directory is listed.  <i>ls </i> supports a <i>-h</i> flag for human readable file sizes.
-* You can use <i>cd [PATH]</i> to change your current directory by giving a relative or an absolute path.
-* You can invoke <i>pwd</i> to see your current directory.
+* You can use `ls [PATH]` and `ls -l [PATH]` to list a directory. If the path is missing, then the current directory is listed. `ls` supports a `-h` flag for human readable file sizes.
+* You can use `cd [PATH]` to change your current directory by giving a relative or an absolute path.
+* You can invoke `pwd` to see your current directory.
 
 > **Tip :** Use ( Ctrl + . ) for autocompletion.
 
 ## Create Interpreter
 
 In a notebook, to enable the **HDFS** interpreter, click the **Gear** icon and select **HDFS**.
-
 
 ## WebHDFS REST API
 You can confirm that you're able to access the WebHDFS API by running a curl command against the WebHDFS end point provided to the interpreter.
@@ -73,4 +71,3 @@ Here is an example:
 ```bash
 $> curl "http://localhost:50070/webhdfs/v1/?op=LISTSTATUS"
 ```
-

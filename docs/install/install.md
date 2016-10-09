@@ -79,13 +79,13 @@ If you want to build from source, you must first install the following dependenc
 If you haven't installed Git and Maven yet, check the [Before Build](https://github.com/apache/zeppelin/blob/master/README.md#before-build) section and follow the step by step instructions from there.
 
 
-####1. Clone the Apache Zeppelin repository
+#### 1. Clone the Apache Zeppelin repository
 
 ```
 git clone https://github.com/apache/zeppelin.git
 ```
 
-####2. Build source with options 
+#### 2. Build source with options 
 Each interpreter requires different build options. For more information about build options, please see the [Build](https://github.com/apache/zeppelin#build) section.
 
 ```
@@ -115,6 +115,7 @@ mvn clean package -Pspark-1.5 -Pmapr50 -DskipTests
 For further information about building from source, please see [README.md](https://github.com/apache/zeppelin/blob/master/README.md) in the Zeppelin repository.
 
 ## Starting Apache Zeppelin from the Command Line
+
 #### Starting Apache Zeppelin
 
 On all platforms except for Windows:

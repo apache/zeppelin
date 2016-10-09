@@ -39,7 +39,7 @@ limitations under the License.
 
 This interpreter supports the [Geode](http://geode.incubator.apache.org/) [Object Query Language (OQL)](http://geode-docs.cfapps.io/docs/developing/querying_basics/oql_compared_to_sql.html).  With the OQL-based querying language:
 
-[<img align="right" src="http://img.youtube.com/vi/zvzzA9GXu3Q/3.jpg" alt="zeppelin-view" hspace="10" width="200"></img>](https://www.youtube.com/watch?v=zvzzA9GXu3Q)
+[<img align="right" src="http://img.youtube.com/vi/zvzzA9GXu3Q/3.jpg" alt="zeppelin-view" hspace="10" width="200"/>](https://www.youtube.com/watch?v=zvzzA9GXu3Q)
 
 * You can query on any arbitrary object
 * You can navigate object collections
@@ -198,7 +198,7 @@ http://<geode server hostname>phd1.localdomain:8484/gemfire-api/v1/
 
 > To enable Geode REST API with JSON support add the following properties to geode.server.properties.file and restart:
 
-```
+```properties
 http-service-port=8484
 start-dev-rest-api=true
 ```

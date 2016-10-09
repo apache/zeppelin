@@ -287,21 +287,21 @@ So you can put some objects from Scala and read it from Python, vice versa.
 <div class="codetabs">
   <div data-lang="scala" markdown="1">
 
-{% highlight scala %}
+```scala
 // Put object from scala
 %spark
 val myObject = ...
 z.put("objName", myObject)
-{% endhighlight %}
+```
 
   </div>
   <div data-lang="python" markdown="1">
 
-{% highlight python %}
+```python
 # Get object from python
 %spark.pyspark
 myObject = z.get("objName")
-{% endhighlight %}
+```
 
   </div>
 </div>
@@ -313,7 +313,7 @@ In Scala and Python environments, you can create forms programmatically.
 <div class="codetabs">
   <div data-lang="scala" markdown="1">
 
-{% highlight scala %}
+```scala
 %spark
 /* Create text input form */
 z.input("formName")
@@ -328,12 +328,12 @@ z.select("formName", Seq(("option1", "option1DisplayName"),
 /* Create select form with default value*/
 z.select("formName", "option1", Seq(("option1", "option1DisplayName"),
                                     ("option2", "option2DisplayName")))
-{% endhighlight %}
+```
 
   </div>
   <div data-lang="python" markdown="1">
 
-{% highlight python %}
+```python
 %spark.pyspark
 # Create text input form
 z.input("formName")
@@ -348,7 +348,7 @@ z.select("formName", [("option1", "option1DisplayName"),
 # Create select form with default value
 z.select("formName", [("option1", "option1DisplayName"),
                       ("option2", "option2DisplayName")], "option1")
-{% endhighlight %}
+```
 
   </div>
 </div>

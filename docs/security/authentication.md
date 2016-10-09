@@ -35,91 +35,94 @@ Here are instructions how to accomplish the setup NGINX as a front-end authentic
 
 This instruction based on Ubuntu 14.04 LTS but may work with other OS with few configuration changes.
 
-1. Install NGINX server on your server instance
+### 1. Install NGINX server on your server instance
+    
+You can install NGINX server with same box where zeppelin installed or separate box where it is dedicated to serve as proxy server.
 
-    You can install NGINX server with same box where zeppelin installed or separate box where it is dedicated to serve as proxy server.
+```bash
+$ apt-get install nginx
+```
 
-    ```
-    $ apt-get install nginx
-    ```
-    > **NOTE :** On pre 1.3.13 version of NGINX, Proxy for Websocket may not fully works. Please use latest version of NGINX. See: [NGINX documentation](https://www.nginx.com/blog/websocket-nginx/).
+> **NOTE:** On pre 1.3.13 version of NGINX, Proxy for Websocket may not fully works. Please use latest version of NGINX. See: [NGINX documentation](https://www.nginx.com/blog/websocket-nginx/).
 
-1. Setup init script in NGINX
+### 2. Setup init script in NGINX
 
-    In most cases, NGINX configuration located under `/etc/nginx/sites-available`. Create your own configuration or add your existing configuration at `/etc/nginx/sites-available`.
+In most cases, NGINX configuration located under `/etc/nginx/sites-available`. Create your own configuration or add your existing configuration at `/etc/nginx/sites-available`.
 
-    ```
-    $ cd /etc/nginx/sites-available
-    $ touch my-zeppelin-auth-setting
-    ```
+```bash
+$ cd /etc/nginx/sites-available
+$ touch my-zeppelin-auth-setting
+```
 
-    Now add this script into `my-zeppelin-auth-setting` file. You can comment out `optional` lines If you want serve Zeppelin under regular HTTP 80 Port.
+Now add this script into `my-zeppelin-auth-setting` file. You can comment out `optional` lines If you want serve Zeppelin under regular HTTP 80 Port.
 
-    ```
-    upstream zeppelin {
-        server [YOUR-ZEPPELIN-SERVER-IP]:[YOUR-ZEPPELIN-SERVER-PORT];   # For security, It is highly recommended to make this address/port as non-public accessible
+```nginx
+upstream zeppelin {
+    # For security, It is highly recommended to make this endpoint non-public.
+    server [YOUR-ZEPPELIN-SERVER-IP]:[YOUR-ZEPPELIN-SERVER-PORT];  
+}
+
+server {
+    listen [YOUR-ZEPPELIN-WEB-SERVER-PORT];
+    listen 443 ssl;   # optional, to serve HTTPS connection
+    server_name [YOUR-ZEPPELIN-SERVER-HOST]; # for example: zeppelin.mycompany.com
+
+    ssl_certificate [PATH-TO-YOUR-CERT-FILE]; # optional, for HTTPS
+    ssl_certificate_key [PATH-TO-YOUR-CERT-KEY-FILE]; # optional, for HTTPS
+
+    if ($ssl_protocol = "") {
+        rewrite ^ https://$host$request_uri? permanent; # optional, for forcing HTTPS
     }
 
-    # Zeppelin Website
-    server {
-        listen [YOUR-ZEPPELIN-WEB-SERVER-PORT];
-        listen 443 ssl;                                      # optional, to serve HTTPS connection
-        server_name [YOUR-ZEPPELIN-SERVER-HOST];             # for example: zeppelin.mycompany.com
-
-        ssl_certificate [PATH-TO-YOUR-CERT-FILE];            # optional, to serve HTTPS connection
-        ssl_certificate_key [PATH-TO-YOUR-CERT-KEY-FILE];    # optional, to serve HTTPS connection
-
-        if ($ssl_protocol = "") {
-            rewrite ^ https://$host$request_uri? permanent;  # optional, to force use of HTTPS
-        }
-
-        location / {    # For regular websever support
-            proxy_pass http://zeppelin;
-            proxy_set_header X-Real-IP $remote_addr;
-            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header Host $http_host;
-            proxy_set_header X-NginX-Proxy true;
-            proxy_redirect off;
-            auth_basic "Restricted";
-            auth_basic_user_file /etc/nginx/.htpasswd;
-        }
-
-        location /ws {  # For websocket support
-            proxy_pass http://zeppelin;
-            proxy_http_version 1.1;
-            proxy_set_header Upgrade websocket;
-            proxy_set_header Connection upgrade;
-            proxy_read_timeout 86400;
-        }
+    location / {    # For regular websever support
+        proxy_pass http://zeppelin;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header Host $http_host;
+        proxy_set_header X-NginX-Proxy true;
+        proxy_redirect off;
+        auth_basic "Restricted";
+        auth_basic_user_file /etc/nginx/.htpasswd;
     }
-    ```
 
-    Then make a symbolic link to this file from `/etc/nginx/sites-enabled/` to enable configuration above when NGINX reloads.
+    location /ws {  # For websocket support
+        proxy_pass http://zeppelin;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade websocket;
+        proxy_set_header Connection upgrade;
+        proxy_read_timeout 86400;
+    }
+}
+```
 
-    ```
-    $ ln -s /etc/nginx/sites-enabled/my-zeppelin-auth-setting /etc/nginx/sites-available/my-zeppelin-auth-setting
-    ```
+Then make a symbolic link to this file from `/etc/nginx/sites-enabled/` to enable configuration above when NGINX reloads.
 
-1. Setup user credential into `.htpasswd` file and restart server
+```bash
+$ ln -s /etc/nginx/sites-enabled/my-zeppelin-auth-setting /etc/nginx/sites-available/my-zeppelin-auth-setting
+```
 
-    Now you need to setup `.htpasswd` file to serve list of authenticated user credentials for NGINX server.
+### 3. Setup user credential into `.htpasswd` file and restart server
 
-    ```
-    $ cd /etc/nginx
-    $ htpasswd -c htpasswd [YOUR-ID]
-    $ NEW passwd: [YOUR-PASSWORD]
-    $ RE-type new passwd: [YOUR-PASSWORD-AGAIN]
-    ```
-    Or you can use your own apache `.htpasswd` files in other location for setting up property: `auth_basic_user_file`
+Now you need to setup `.htpasswd` file to serve list of authenticated user credentials for NGINX server.
 
-    Restart NGINX server.
+```bash
+$ cd /etc/nginx
+$ htpasswd -c htpasswd [YOUR-ID]
+$ NEW passwd: [YOUR-PASSWORD]
+$ RE-type new passwd: [YOUR-PASSWORD-AGAIN]
+```
 
-    ```
-    $ service nginx restart
-    ```
-    Then check HTTP Basic Authentication works in browser. If you can see regular basic auth popup and then able to login with credential you entered into `.htpasswd` you are good to go.
+Or you can use your own apache `.htpasswd` files in other location for setting up property: `auth_basic_user_file`
 
-1. More security consideration
+Restart NGINX server.
+    
+```bash
+$ service nginx restart
+```
+
+Then check HTTP Basic Authentication works in browser. If you can see regular basic auth popup and then able to login with credential you entered into `.htpasswd` you are good to go.
+
+### More security consideration
 
 * Using HTTPS connection with Basic Authentication is highly recommended since basic auth without encryption may expose your important credential information over the network.
 * Using [Shiro Security feature built-into Zeppelin](./shiroauthentication.html) is recommended if you prefer all-in-one solution for authentication but NGINX may provides ad-hoc solution for re-use authentication served by your system's NGINX server or in case of you need to separate authentication from zeppelin server.

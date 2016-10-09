@@ -150,7 +150,7 @@ Basically, you can use
 
 **spark**
 
-```
+```scala
 %livy.spark
 sc.version
 ```
@@ -158,7 +158,7 @@ sc.version
 
 **pyspark**
 
-```
+```python
 %livy.pyspark
 print "1"
 ```
@@ -181,7 +181,7 @@ When Zeppelin server is running with authentication enabled, then this interpret
 ## Apply Zeppelin Dynamic Forms
 You can leverage [Zeppelin Dynamic Form](../manual/dynamicform.html). You can use both the `text input` and `select form` parameterization features.
 
-```
+```python
 %livy.pyspark
 print "${group_by=product_id,product_id|product_name|customer_id|store_id}"
 ```

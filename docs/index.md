@@ -38,6 +38,7 @@ limitations under the License.
 </div>
 
 <br />
+
 ## Multiple Language Backend
 [Apache Zeppelin interpreter](./manual/interpreters.html) concept allows any language/data-processing-backend to be plugged into Zeppelin.
 Currently Apache Zeppelin supports many interpreters such as Apache Spark, Python, JDBC, Markdown and Shell.
@@ -60,6 +61,7 @@ Apache Zeppelin with Spark integration provides
 For the further information about Apache Spark in Apache Zeppelin, please see [Spark interpreter for Apache Zeppelin](./interpreter/spark.html).
 
 <br />
+
 ## Data visualization
 
 Some basic charts are already included in Apache Zeppelin. Visualizations are not limited to Spark SQL query, any output from any language backend can be recognized and visualized.
@@ -86,6 +88,7 @@ Apache Zeppelin aggregates values and displays them in pivot chart with simple d
 Learn more about [display systems](#display-system) in Apache Zeppelin.
 
 <br />
+
 ## Dynamic forms
 
 Apache Zeppelin can dynamically create some input forms in your notebook.
@@ -97,6 +100,7 @@ Apache Zeppelin can dynamically create some input forms in your notebook.
 Learn more about [Dynamic Forms](./manual/dynamicform.html).
 
 <br />
+
 ## Collaborate by sharing your Notebook & Paragraph
 Your notebook URL can be shared among collaborators. Then Apache Zeppelin will broadcast any changes in realtime, just like the collaboration in Google docs.
 
@@ -111,6 +115,7 @@ You can easily embed it as an iframe inside of your website in this way.
 If you want to learn more about this feature, please visit [this page](./manual/publish.html).
 
 <br />
+
 ## 100% Opensource
 
 <img class="img-responsive" style="margin:0 auto; padding: 15px;" src="./assets/themes/zeppelin/img/asf_logo.png" width="250px"/>
@@ -121,7 +126,7 @@ Join to our [Mailing list](https://zeppelin.apache.org/community.html) and repor
 
 ## What is the next ?
 
-####Quick Start
+#### Quick Start
 
 * Getting Started
   * [Quick Start](./install/install.html) for basic instructions on installing Apache Zeppelin
@@ -135,7 +140,7 @@ Join to our [Mailing list](https://zeppelin.apache.org/community.html) and repor
 * More
   * [Upgrade Apache Zeppelin Version](./install/upgrade.html): a manual procedure of upgrading Apache Zeppelin version
 
-####Interpreter
+#### Interpreter
 
 * [Interpreters in Apache Zeppelin](./manual/interpreters.html): what is interpreter group? how can you set interpreters in Apache Zeppelin?
 * Usage
@@ -143,14 +148,14 @@ Join to our [Mailing list](https://zeppelin.apache.org/community.html) and repor
   * [Interpreter Dependency Management](./manual/dependencymanagement.html) when you include external libraries to interpreter
 * Available Interpreters: currently, about 20 interpreters are available in Apache Zeppelin.
 
-####Display System
+#### Display System
 
 * Basic Display System: [Text](./displaysystem/basicdisplaysystem.html#text), [HTML](./displaysystem/basicdisplaysystem.html#html), [Table](./displaysystem/basicdisplaysystem.html#table) is available
 * Angular API: a description about avilable backend and frontend AngularJS API with examples
   * [Angular (backend API)](./displaysystem/back-end-angular.html)
   * [Angular (frontend API)](./displaysystem/front-end-angular.html)
 
-####More
+#### More
 
 * Notebook Storage: a guide about saving notebooks to external storage
   * [Git Storage](./storage/storage.html#notebook-storage-in-local-git-repository)

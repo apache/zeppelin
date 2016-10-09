@@ -29,14 +29,13 @@ limitations under the License.
 
 You can import the Docker image by pulling it from Cloudera Docker Hub.
 
-```
+```bash
 docker pull cloudera/quickstart:latest
 ```
 
-
 ### 2. Run docker
 
-```
+```bash
 docker run -it \
  -p 80:80 \
  -p 4040:4040 \
@@ -71,11 +70,10 @@ docker run -it \
 
 To verify the application is running well, check the web UI for HDFS on `http://<hostname>:50070/` and YARN on `http://<hostname>:8088/cluster`.
 
-
 ### 4. Configure Spark interpreter in Zeppelin
 Set following configurations to `conf/zeppelin-env.sh`.
 
-```
+```bash
 export MASTER=yarn-client
 export HADOOP_CONF_DIR=[your_hadoop_conf_path]
 export SPARK_HOME=[your_spark_home_path]

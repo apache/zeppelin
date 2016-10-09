@@ -39,12 +39,10 @@ limitations under the License.
 ## Enabling Cassandra Interpreter
 
 In a notebook, to enable the **Cassandra** interpreter, click on the **Gear** icon and select **Cassandra**
+ 
+![Interpreter Binding](../assets/themes/zeppelin/img/docs-img/cassandra-InterpreterBinding.png)
 
- <center>
- ![Interpreter Binding](../assets/themes/zeppelin/img/docs-img/cassandra-InterpreterBinding.png)
-
- ![Interpreter Selection](../assets/themes/zeppelin/img/docs-img/cassandra-InterpreterSelection.png)
- </center>
+![Interpreter Selection](../assets/themes/zeppelin/img/docs-img/cassandra-InterpreterSelection.png) 
 
 ## Using the Cassandra Interpreter
 
@@ -52,9 +50,7 @@ In a paragraph, use **_%cassandra_** to select the **Cassandra** interpreter and
 
 To access the interactive help, type **HELP;**
 
- <center>
-   ![Interactive Help](../assets/themes/zeppelin/img/docs-img/cassandra-InteractiveHelp.png)
- </center>
+![Interactive Help](../assets/themes/zeppelin/img/docs-img/cassandra-InteractiveHelp.png)
 
 ## Interpreter Commands
 
@@ -100,7 +96,6 @@ The **Cassandra** interpreter accepts the following commands
 This interpreter is compatible with any CQL statement supported by Cassandra. Ex:
 
 ```sql
-
 INSERT INTO users(login,name) VALUES('jdoe','John DOE');
 SELECT * FROM users WHERE login='jdoe';
 ```
@@ -120,7 +115,6 @@ Each statement should be separated by a semi-colon ( **;** ) except the special 
 Multi-line statements as well as multiple statements on the same line are also supported as long as they are separated by a semi-colon. Ex:
 
 ```sql
-
 USE spark_demo;
 
 SELECT * FROM albums_by_country LIMIT 1; SELECT * FROM countries LIMIT 1;
@@ -133,7 +127,6 @@ WHERE login='jlennon';
 Batch statements are supported and can span multiple lines, as well as DDL(CREATE/ALTER/DROP) statements:
 
 ```sql
-
 BEGIN BATCH
     INSERT INTO users(login,name) VALUES('jdoe','John DOE');
     INSERT INTO users_preferences(login,account_type) VALUES('jdoe','BASIC');
@@ -148,7 +141,6 @@ CREATE TABLE IF NOT EXISTS test(
 CQL statements are <strong>case-insensitive</strong> (except for column names and values). This means that the following statements are equivalent and valid:
 
 ```sql
-
 INSERT INTO users(login,name) VALUES('jdoe','John DOE');
 Insert into users(login,name) vAlues('hsue','Helen SUE');
 ```
@@ -205,7 +197,6 @@ The complete list of all CQL statements and versions can be found below:
 It is possible to add comments between statements. Single line comments start with the **hash sign** (#) or **double slashes** (//). Multi-line comments are enclosed between /** and **/. Ex:
 
 ```sql
-
 #Single line comment style 1
 INSERT INTO users(login,name) VALUES('jdoe','John DOE');
 
@@ -311,9 +302,7 @@ To make schema discovery easier and more interactive, the following commands are
 The schema objects (cluster, keyspace, table, type, function and aggregate) are displayed in a tabular format.
 There is a drop-down menu on the top left corner to expand objects details. On the top right menu is shown the Icon legend.
 
-<center>
-  ![Describe Schema](../assets/themes/zeppelin/img/docs-img/cassandra-DescribeSchema.png)
-</center>
+![Describe Schema](../assets/themes/zeppelin/img/docs-img/cassandra-DescribeSchema.png)
 
 ## Runtime Parameters
 
@@ -402,7 +391,6 @@ Some parameters only accept restricted values:
 Some examples:
 
 ```sql
-
 CREATE TABLE IF NOT EXISTS spark_demo.ts(
     key int PRIMARY KEY,
     value text

@@ -45,20 +45,20 @@ Assuming the minimal install, there are several programs that we will need to in
 
 For git, openssh-server, and OpenJDK 7 we will be using the apt package manager.
 
-##### git
+#### git
 From the command prompt:
 
 ```
 sudo apt-get install git
 ```
 
-##### openssh-server
+#### openssh-server
 
 ```
 sudo apt-get install openssh-server
 ```
 
-##### OpenJDK 7
+#### OpenJDK 7
 
 ```
 sudo apt-get install openjdk-7-jdk openjdk-7-jre-lib
@@ -71,7 +71,7 @@ sudo apt-get update
 sudo apt-get install openjdk-7-jdk openjdk-7-jre-lib
 ```
 
-##### Maven 3.1+
+#### Maven 3.1+
 Zeppelin requires maven version 3.x.  The version available in the repositories at the time of writing is 2.x, so maven must be installed manually.
 
 Purge any existing versions of maven.
@@ -154,7 +154,7 @@ Open a web-browser on a machine connected to the same network as the host (or in
 
 See the [Zeppelin tutorial](../tutorial/tutorial.md) for basic Zeppelin usage. It is also advised that you take a moment to check out the tutorial notebook that is included with each Zeppelin install, and to familiarize yourself with basic notebook functionality.
 
-##### Flink Test
+#### Flink Test
 Create a new notebook named "Flink Test" and copy and paste the following code.
 
 
@@ -196,7 +196,7 @@ counts.collect().foreach(println(_))  // execute the script and print each eleme
 
 Run the code to make sure the built-in Zeppelin Flink interpreter is working properly.
 
-##### Spark Test
+#### Spark Test
 Create a new notebook named "Spark Test" and copy and paste the following code.
 
 ```scala
@@ -243,9 +243,9 @@ bin/zeppelin-daemon.sh stop
 
 ### Installing Clusters
 
-##### Flink Cluster
+#### Flink Cluster
 
-###### Download Binaries
+##### Download Binaries
 
 Building from source is recommended  where possible, for simplicity in this tutorial we will download Flink and Spark Binaries.
 
@@ -264,7 +264,7 @@ Start the Flink Cluster.
 flink-1.0.3/bin/start-cluster.sh
 ```
 
-###### Building From source
+##### Building From source
 
 If you wish to build Flink from source, the following will be instructive.  Note that if you have downloaded and used the binary version this should be skipped.  The changing nature of build tools and versions across platforms makes this section somewhat precarious.  For example, Java8 and Maven 3.0.3 are recommended for building Flink, which are not recommended for Zeppelin at the time of writing.  If the user wishes to attempt to build from source, this section will provide some reference.  If errors are encountered, please contact the Apache Flink community.
 
@@ -286,7 +286,7 @@ Start the Flink Cluster in stand-alone mode
 build-target/bin/start-cluster.sh
 ```
 
-###### Ensure the cluster is up
+##### Ensure the cluster is up
 
 In a browser, navigate to http://`yourip`:8082 to see the Flink Web-UI.  Click on 'Task Managers' in the left navigation bar. Ensure there is at least one Task Manager present.
 
@@ -368,7 +368,7 @@ spark/sbin/start-master.sh --webui-port 8082
 
 Open a browser and navigate to http://`yourip`:8082 to ensure the Spark master is running.
 
-<center>![alt text](../assets/themes/zeppelin/img/screenshots/spark-master-webui1.png "It should look like this...")</center>
+![alt text](../assets/themes/zeppelin/img/screenshots/spark-master-webui1.png "It should look like this...")
 
 Toward the top of the page there will be a *URL*: spark://`yourhost`:7077.  Note this URL, the Spark Master URI, it will be needed in subsequent steps.
 

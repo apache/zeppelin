@@ -112,13 +112,14 @@ If you want to add a new set of syntax highlighting,
 1. Add the `mode-*.js` file to <code>[zeppelin-web/bower.json](https://github.com/apache/zeppelin/blob/master/zeppelin-web/bower.json)</code> (when built, <code>[zeppelin-web/src/index.html](https://github.com/apache/zeppelin/blob/master/zeppelin-web/src/index.html)</code> will be changed automatically).
 2. Add `language` field to `editor` object. Note that if you don't specify language field, your interpreter will use plain text mode for syntax highlighting. Let's say you want to set your language to `java`, then add:
 
-  ```
-  "editor": {
-      "language": "java"
-  }
-  ```
+```
+"editor": {
+  "language": "java"
+}
+```
 
 ### Edit on double click
+
 If your interpreter uses mark-up language such as markdown or HTML, set `editOnDblClick` to `true` so that text editor opens on pargraph double click and closes on paragraph run. Otherwise set it to `false`.
 
 ```
@@ -126,6 +127,7 @@ If your interpreter uses mark-up language such as markdown or HTML, set `editOnD
   "editOnDblClick": false
 }
 ```
+
 ## Install your interpreter binary
 
 Once you have built your interpreter, you can place it under the interpreter directory with all its dependencies.
@@ -138,23 +140,23 @@ Once you have built your interpreter, you can place it under the interpreter dir
 
 To configure your interpreter you need to follow these steps:
 
-1. Add your interpreter class name to the zeppelin.interpreters property in `conf/zeppelin-site.xml`.
+##### 1. Add your interpreter class name to the zeppelin.interpreters property in `conf/zeppelin-site.xml`.
 
   Property value is comma separated [INTERPRETER\_CLASS\_NAME].
   For example,
-
-  ```
-  <property>
+  
+```xml
+<property>
     <name>zeppelin.interpreters</name>
     <value>org.apache.zeppelin.spark.SparkInterpreter,org.apache.zeppelin.spark.PySparkInterpreter,org.apache.zeppelin.spark.SparkSqlInterpreter,org.apache.zeppelin.spark.DepInterpreter,org.apache.zeppelin.markdown.Markdown,org.apache.zeppelin.shell.ShellInterpreter,org.apache.zeppelin.hive.HiveInterpreter,com.me.MyNewInterpreter</value>
-  </property>
-  ```
+</property>
+```
 
-2. Add your interpreter to the [default configuration](https://github.com/apache/zeppelin/blob/master/zeppelin-zengine/src/main/java/org/apache/zeppelin/conf/ZeppelinConfiguration.java#L397) which is used when there is no `zeppelin-site.xml`.
+##### 2. Add your interpreter to the [default configuration](https://github.com/apache/zeppelin/blob/master/zeppelin-zengine/src/main/java/org/apache/zeppelin/conf/ZeppelinConfiguration.java#L397) which is used when there is no `zeppelin-site.xml`.
 
-3. Start Zeppelin by running `./bin/zeppelin-daemon.sh start`.
+##### 3. Start Zeppelin by running `./bin/zeppelin-daemon.sh start`.
 
-4. In the interpreter page, click the `+Create` button and configure your interpreter properties.
+##### 4. In the interpreter page, click the `+Create` button and configure your interpreter properties.
 Now you are done and ready to use your interpreter.
 
 > **Note :** Interpreters released with zeppelin have a [default configuration](https://github.com/apache/zeppelin/blob/master/zeppelin-zengine/src/main/java/org/apache/zeppelin/conf/ZeppelinConfiguration.java#L397) which is used when there is no `conf/zeppelin-site.xml`.

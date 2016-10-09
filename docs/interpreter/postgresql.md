@@ -66,7 +66,7 @@ Postgresql Interpreter will be deprecated and merged into JDBC Interpreter. You 
 
 ## Overview
 
-[<img align="right" src="http://img.youtube.com/vi/wqXXQhJ5Uk8/0.jpg" alt="zeppelin-view" hspace="10" width="250"></img>](https://www.youtube.com/watch?v=wqXXQhJ5Uk8)
+[<img align="right" src="http://img.youtube.com/vi/wqXXQhJ5Uk8/0.jpg" alt="zeppelin-view" hspace="10" width="250"/>](https://www.youtube.com/watch?v=wqXXQhJ5Uk8)
 
 This interpreter seamlessly supports the following SQL data processing engines:
 
