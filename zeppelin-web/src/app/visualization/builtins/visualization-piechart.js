@@ -17,24 +17,24 @@
 /**
  * Visualize data in table format
  */
-zeppelin.BarchartVisualization = function(targetEl, config) {
+zeppelin.PiechartVisualization = function(targetEl, config) {
   zeppelin.Nvd3ChartVisualization.call(this, targetEl, config);
 
   var PivotTransformation = zeppelin.PivotTransformation;
   this.pivot = new PivotTransformation(config);
 };
 
-zeppelin.BarchartVisualization.prototype = Object.create(zeppelin.Nvd3ChartVisualization.prototype);
+zeppelin.PiechartVisualization.prototype = Object.create(zeppelin.Nvd3ChartVisualization.prototype);
 
-zeppelin.BarchartVisualization.prototype.type = function() {
-  return 'multiBarChart';
+zeppelin.PiechartVisualization.prototype.type = function() {
+  return 'pieChart';
 };
 
-zeppelin.BarchartVisualization.prototype.getTransformation = function() {
+zeppelin.PiechartVisualization.prototype.getTransformation = function() {
   return this.pivot;
 };
 
-zeppelin.BarchartVisualization.prototype.render = function(tableData) {
+zeppelin.PiechartVisualization.prototype.render = function(tableData) {
   var pivot = this.pivot.transform(tableData);
   var d3Data = this.d3DataFromPivot(
     pivot.schema,
@@ -44,21 +44,30 @@ zeppelin.BarchartVisualization.prototype.render = function(tableData) {
     pivot.values,
     true,
     false,
-    true);
+    false);
 
-  zeppelin.Nvd3ChartVisualization.prototype.render.call(this, d3Data);
+  var d = d3Data.d3g;
+  var d3g = [];
+  if (d.length > 0) {
+    for (var i = 0; i < d[0].values.length ; i++) {
+      var e = d[0].values[i];
+      d3g.push({
+        label: e.x,
+        value: e.y
+      });
+    }
+  }
+  zeppelin.Nvd3ChartVisualization.prototype.render.call(this, {d3g: d3g});
 };
 
 /**
  * Set new config
  */
-zeppelin.BarchartVisualization.prototype.setConfig = function(config) {
+zeppelin.PiechartVisualization.prototype.setConfig = function(config) {
   zeppelin.Nvd3ChartVisualization.prototype.setConfig.call(this, config);
   this.pivot.setConfig(config);
 };
 
-zeppelin.BarchartVisualization.prototype.configureChart = function(chart) {
-  var self = this;
-  chart.yAxis.axisLabelDistance(50);
-  chart.yAxis.tickFormat(function(d) {return self.yAxisTickFormat(d);});
+zeppelin.PiechartVisualization.prototype.configureChart = function(chart) {
+  chart.x(function(d) { return d.label;}).y(function(d) { return d.value;});
 };

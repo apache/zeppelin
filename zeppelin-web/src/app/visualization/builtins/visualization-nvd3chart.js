@@ -233,7 +233,6 @@ zeppelin.Nvd3ChartVisualization.prototype.d3DataFromPivot = function(
         d3g[d3gIndex].key = colName;
       }
     }
-
   }
 
   return {

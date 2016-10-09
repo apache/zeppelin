@@ -113,6 +113,12 @@
         name: 'Bar Chart',
         icon: 'fa fa-bar-chart',
         transformation: 'pivot'
+      },
+      {
+        id: 'pieChart',
+        name: 'Pie Chart',
+        icon: 'fa fa-pie-chart',
+        transformation: 'pivot'
       }
     ];
 
@@ -126,6 +132,10 @@
       },
       'multiBarChart': {
         class: zeppelin.BarchartVisualization,
+        instance: undefined
+      },
+      'pieChart': {
+        class: zeppelin.PiechartVisualization,
         instance: undefined
       }
     };
