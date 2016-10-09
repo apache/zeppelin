@@ -1,6 +1,6 @@
 ---
 layout: page
-title: "Pig Interpreter"
+title: "Pig Interpreter for Apache Zeppelin"
 description: "Apache Pig is a platform for analyzing large data sets that consists of a high-level language for expressing data analysis programs, coupled with infrastructure for evaluating these programs."
 group: manual
 ---
