@@ -166,7 +166,7 @@ public class PythonInterpreterPandasSqlTest {
     assertEquals(ret.message(), InterpreterResult.Code.SUCCESS, ret.code());
 
     // when
-    ret = python.interpret("z.show(df1)", context);
+    ret = python.interpret("z.show(df1, show_index=True)", context);
 
     // then
     assertEquals(ret.message(), InterpreterResult.Code.SUCCESS, ret.code());

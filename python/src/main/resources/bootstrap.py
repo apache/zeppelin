@@ -137,14 +137,16 @@ class PyZeppelinContext(object):
         elif hasattr(p, '__call__'):
             p() #error reporting
     
-    def show_dataframe(self, df, **kwargs):
+    def show_dataframe(self, df, show_index=False, **kwargs):
         """Pretty prints DF using Table Display System
         """
         limit = len(df) > self.max_result
         header_buf = StringIO("")
-        idx_name = df.index.name if df.index.name is not None else ""
-        header_buf.write(idx_name)
-        for col in df.columns:
+        if show_index:
+            idx_name = str(df.index.name) if df.index.name is not None else ""
+            header_buf.write(idx_name + "\t")
+        header_buf.write(str(df.columns[0]))
+        for col in df.columns[1:]:
             header_buf.write("\t")
             header_buf.write(str(col))
         header_buf.write("\n")
@@ -153,8 +155,11 @@ class PyZeppelinContext(object):
         rows = df.head(self.max_result).values if limit else df.values
         index = df.index.values
         for idx, row in zip(index, rows):
-            body_buf.write("%html <strong>{}</strong>".format(str(idx)))
-            for cell in row:
+            if show_index:
+                body_buf.write("%html <strong>{}</strong>".format(idx))
+                body_buf.write("\t")
+            body_buf.write(str(row[0]))
+            for cell in row[1:]:
                 body_buf.write("\t")
                 body_buf.write(str(cell))
             body_buf.write("\n")
