@@ -131,6 +131,11 @@
         name: 'Line Chart',
         icon: 'fa fa-line-chart',
         transformation: 'pivot'
+      },
+      {
+        id: 'scatterChart',
+        name: 'Scatter Chart',
+        icon: 'cf cf-scatter-chart'
       }
     ];
 
@@ -156,6 +161,10 @@
       },
       'lineChart': {
         class: zeppelin.LinechartVisualization,
+        instance: undefined
+      },
+      'scatterChart': {
+        class: zeppelin.ScatterchartVisualization,
         instance: undefined
       }
     };
@@ -1129,7 +1138,7 @@
       var xLabels;
       var yLabels;
 
-      if (type === 'scatterChart') {
+      if (type === 'scatterChartxxx') {
         var scatterData = setScatterChart(data, refresh);
 
         xLabels = scatterData.xLabels;
@@ -1861,39 +1870,13 @@
       }
     };
 
-    $scope.isValidSizeOption = function(options, rows) {
-      var xValues = [];
-      var yValues = [];
-
-      for (var i = 0; i < rows.length; i++) {
-        var row = rows[i];
-        var size = row[options.size.index];
-
-        //check if the field is numeric
-        if (isNaN(parseFloat(size)) || !isFinite(size)) {
-          return false;
-        }
-
-        if (options.xAxis) {
-          var x = row[options.xAxis.index];
-          xValues[i] = x;
-        }
-        if (options.yAxis) {
-          var y = row[options.yAxis.index];
-          yValues[i] = y;
-        }
-      }
-
-      //check if all existing fields are discrete
-      var isAllDiscrete = ((options.xAxis && options.yAxis && isDiscrete(xValues) && isDiscrete(yValues)) ||
-                           (!options.xAxis && isDiscrete(yValues)) ||
-                           (!options.yAxis && isDiscrete(xValues)));
-
-      if (isAllDiscrete) {
+    $scope.isValidSizeOption = function(options) {
+      var builtInViz = builtInVisualizations.scatterChart;
+      if (builtInViz && builtInViz.instance) {
+        return builtInViz.instance.isValidSizeOption(options);
+      } else {
         return false;
       }
-
-      return true;
     };
 
     $scope.resizeParagraph = function(width, height) {
