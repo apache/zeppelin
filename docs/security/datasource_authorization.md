@@ -57,5 +57,5 @@ You have to store the password information for users.
 
 ## Please note
 As a first step of data source authentication feature, [ZEPPELIN-828](https://issues.apache.org/jira/browse/ZEPPELIN-828) was proposed and implemented in Pull Request [#860](https://github.com/apache/zeppelin/pull/860).
-Currently, only customized 3rd party interpreters can use this feature. We are planning to apply this mechanism to [the community interpreters](../manual/interpreterinstallation.html#available-community-managed-interpreters) in the near future. 
+Currently, only customized 3rd party interpreters can use this feature. We are planning to apply this mechanism to [the community managed interpreters](../manual/interpreterinstallation.html#available-community-managed-interpreters) in the near future. 
 Please keep track [ZEPPELIN-1070](https://issues.apache.org/jira/browse/ZEPPELIN-1070). 
