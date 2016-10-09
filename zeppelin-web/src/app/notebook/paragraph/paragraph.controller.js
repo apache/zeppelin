@@ -121,9 +121,15 @@
         transformation: 'pivot'
       },
       {
-        id: 'areaChart',
+        id: 'stackedAreaChart',
         name: 'Area Chart',
         icon: 'fa fa-area-chart',
+        transformation: 'pivot'
+      },
+      {
+        id: 'lineChart',
+        name: 'Line Chart',
+        icon: 'fa fa-line-chart',
         transformation: 'pivot'
       }
     ];
@@ -144,8 +150,12 @@
         class: zeppelin.PiechartVisualization,
         instance: undefined
       },
-      'areaChart': {
+      'stackedAreaChart': {
         class: zeppelin.AreachartVisualization,
+        instance: undefined
+      },
+      'lineChart': {
+        class: zeppelin.LinechartVisualization,
         instance: undefined
       }
     };
@@ -578,22 +588,6 @@
       var newParams = angular.copy($scope.paragraph.settings.params);
 
       commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
-    };
-
-    $scope.toggleLineWithFocus = function() {
-      var mode = $scope.getGraphMode();
-
-      if (mode === 'lineWithFocusChart') {
-        $scope.setGraphMode('lineChart', true);
-        return true;
-      }
-
-      if (mode === 'lineChart') {
-        $scope.setGraphMode('lineWithFocusChart', true);
-        return true;
-      }
-
-      return false;
     };
 
     $scope.loadForm = function(formulaire, params) {

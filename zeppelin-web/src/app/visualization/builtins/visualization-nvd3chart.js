@@ -32,7 +32,6 @@ zeppelin.Nvd3ChartVisualization.prototype.render = function(data) {
     this.chart = nv.models[type]();
   }
 
-  console.log('render nvd3 chart');
   this.configureChart(this.chart);
 
   var animationDuration = 300;
@@ -239,4 +238,15 @@ zeppelin.Nvd3ChartVisualization.prototype.d3DataFromPivot = function(
     xLabels: rowIndexValue,
     d3g: d3g
   };
+};
+
+/**
+ * method will be invoked when visualization need to be destroyed.
+ * Don't need to destroy this.targetEl.
+ */
+zeppelin.Visualization.prototype.destroy = function() {
+  if (this.chart) {
+    d3.selectAll('#' + this.targetEl[0].id + ' svg > *').remove();
+    this.chart = undefined;
+  }
 };

@@ -15,9 +15,9 @@
 'use strict';
 
 /**
- * Visualize data in area chart
+ * Visualize data in line chart
  */
-zeppelin.AreachartVisualization = function(targetEl, config) {
+zeppelin.LinechartVisualization = function(targetEl, config) {
   zeppelin.Nvd3ChartVisualization.call(this, targetEl, config);
 
   var PivotTransformation = zeppelin.PivotTransformation;
@@ -25,17 +25,22 @@ zeppelin.AreachartVisualization = function(targetEl, config) {
   this.xLables = [];
 };
 
-zeppelin.AreachartVisualization.prototype = Object.create(zeppelin.Nvd3ChartVisualization.prototype);
+zeppelin.LinechartVisualization.prototype = Object.create(zeppelin.Nvd3ChartVisualization.prototype);
 
-zeppelin.AreachartVisualization.prototype.type = function() {
-  return 'stackedAreaChart';
+zeppelin.LinechartVisualization.prototype.type = function() {
+  if (this.config.lineWithFocus) {
+    return 'lineWithFocusChart';
+  } else {
+    return 'lineChart';
+  }
 };
 
-zeppelin.AreachartVisualization.prototype.getTransformation = function() {
+zeppelin.LinechartVisualization.prototype.getTransformation = function() {
   return this.pivot;
 };
 
-zeppelin.AreachartVisualization.prototype.render = function(tableData) {
+zeppelin.LinechartVisualization.prototype.render = function(tableData) {
+  this.tableData = tableData;
   var pivot = this.pivot.transform(tableData);
   var d3Data = this.d3DataFromPivot(
     pivot.schema,
@@ -54,15 +59,28 @@ zeppelin.AreachartVisualization.prototype.render = function(tableData) {
 /**
  * Set new config
  */
-zeppelin.AreachartVisualization.prototype.setConfig = function(config) {
+zeppelin.LinechartVisualization.prototype.setConfig = function(config) {
   zeppelin.Nvd3ChartVisualization.prototype.setConfig.call(this, config);
   this.pivot.setConfig(config);
+
+  // change mode
+  if (this.currentMode !== config.lineWithFocus) {
+    zeppelin.Nvd3ChartVisualization.prototype.destroy.call(this);
+    this.currentMode = config.lineWithFocus;
+  }
 };
 
-zeppelin.AreachartVisualization.prototype.configureChart = function(chart) {
+zeppelin.LinechartVisualization.prototype.configureChart = function(chart) {
   var self = this;
   chart.xAxis.tickFormat(function(d) {return self.xAxisTickFormat(d, self.xLabels);});
-  chart.yAxisTickFormat(function(d) {return self.yAxisTickFormat(d);});
+  chart.yAxis.tickFormat(function(d) {return self.yAxisTickFormat(d, self.xLabels);});
   chart.yAxis.axisLabelDistance(50);
-  chart.useInteractiveGuideline(true); // for better UX and performance issue. (https://github.com/novus/nvd3/issues/691)
+  if (chart.useInteractiveGuideline) {   // lineWithFocusChart hasn't got useInteractiveGuideline
+    chart.useInteractiveGuideline(true); // for better UX and performance issue. (https://github.com/novus/nvd3/issues/691)
+  }
+  if (this.config.forceY) {
+    chart.forceY([0]); // force y-axis minimum to 0 for line chart.
+  } else {
+    chart.forceY([]);
+  }
 };
