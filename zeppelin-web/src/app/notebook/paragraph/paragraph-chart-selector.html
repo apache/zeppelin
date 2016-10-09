@@ -21,7 +21,7 @@ limitations under the License.
           ng-if="paragraph.result.type == 'TABLE'"
           ng-repeat="viz in builtInTableDataVisualizationList track by $index"
           ng-class="{'active' : isGraphMode(viz.id)}"
-          ng-click="setGraphMode(viz.id, true)"
+          ng-click="setGraphMode(viz.id, true, false)"
           tooltip="{{viz.name}}" tooltip-placement="bottom"><i ng-class="viz.icon"></i>
   </button>
 

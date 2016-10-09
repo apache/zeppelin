@@ -39,10 +39,10 @@ zeppelin.Visualization.prototype.render = function(tableData) {
 };
 
 /**
- * Invoked when container is resized
+ * Set new config
  */
-zeppelin.Visualization.prototype.onResize = function() {
-  // override this
+zeppelin.Visualization.prototype.setConfig = function(config) {
+  this.config = config;
 };
 
 /**
@@ -51,9 +51,4 @@ zeppelin.Visualization.prototype.onResize = function() {
  */
 zeppelin.Visualization.prototype.destroy = function() {
   // override this
-};
-
-zeppelin.Visualization.prototype.setHeight = function(height) {
-  this.targetEl.height(height);
-  this.onResize();
 };

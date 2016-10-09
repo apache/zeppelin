@@ -49,6 +49,14 @@ zeppelin.BarchartVisualization.prototype.render = function(tableData) {
   zeppelin.Nvd3ChartVisualization.prototype.render.call(this, d3Data);
 };
 
+/**
+ * Set new config
+ */
+zeppelin.BarchartVisualization.prototype.setConfig = function(config) {
+  zeppelin.Nvd3ChartVisualization.prototype.setConfig.call(this, config);
+  this.pivot.setConfig(config);
+};
+
 zeppelin.BarchartVisualization.prototype.configureChart = function(chart) {
   // override this to configure chart
   var self = this;

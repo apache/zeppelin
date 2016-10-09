@@ -20,11 +20,11 @@ limitations under the License.
   All fields:
   <div class="allFields row">
     <ul class="noDot">
-      <li class="liVertical" ng-repeat="col in paragraph.result.columnNames">
+      <li class="liVertical" ng-repeat="col in tableDataColumns">
         <div class="btn btn-default btn-xs"
              data-drag="true"
              data-jqyoui-options="{revert: 'invalid', helper: 'clone'}"
-             ng-model="paragraph.result.columnNames"
+             ng-model="tableDataColumns"
              jqyoui-draggable="{index: {{$index}}, placeholder: 'keep'}">
            {{col.name | limitTo: 30}}{{col.name.length > 30 ? '...' : ''}}
         </div>

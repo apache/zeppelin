@@ -19,7 +19,7 @@
  */
 zeppelin.Nvd3ChartVisualization = function(targetEl, config) {
   zeppelin.Visualization.call(this, targetEl, config);
-  this.targetEl.append("<svg></svg>");
+  this.targetEl.append('<svg></svg>');
 };
 
 zeppelin.Nvd3ChartVisualization.prototype = Object.create(zeppelin.Visualization.prototype);
@@ -32,6 +32,7 @@ zeppelin.Nvd3ChartVisualization.prototype.render = function(data) {
     this.chart = nv.models[type]();
   }
 
+  console.log('render nvd3 chart');
   this.configureChart(this.chart);
 
   var animationDuration = 300;
@@ -54,14 +55,7 @@ zeppelin.Nvd3ChartVisualization.prototype.render = function(data) {
     .duration(animationDuration)
     .call(this.chart);
   d3.select('#' + this.targetEl[0].id + ' svg').style.height = height + 'px';
-  this.chart.update();
   nv.utils.windowResize(this.chart.update);
-};
-
-zeppelin.Nvd3ChartVisualization.prototype.onResize = function() {
-  if (this.chart) {
-    this.chart.update();
-  }
 };
 
 zeppelin.Nvd3ChartVisualization.prototype.type = function() {

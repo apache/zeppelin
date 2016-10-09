@@ -29,6 +29,7 @@ zeppelin.PivotTransformation.prototype = Object.create(zeppelin.Transformation.p
  * Method will be invoked when tableData or config changes
  */
 zeppelin.PivotTransformation.prototype.transform = function(tableData) {
+  console.log('pivot config %o', this.config);
   return this.pivot(
     tableData,
     this.config.keys,
@@ -153,7 +154,7 @@ zeppelin.PivotTransformation.prototype.pivot = function(data, keys, groups, valu
     }
   }
 
-  console.log('schema=%o, rows=%o', schema, rows);
+  //console.log('schema=%o, rows=%o', schema, rows);
   return {
     keys: keys,
     groups: groups,

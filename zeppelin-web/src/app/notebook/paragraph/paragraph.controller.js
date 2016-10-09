@@ -135,6 +135,9 @@
      */
     var tableData;
 
+    // available columns in tabledata
+    $scope.tableDataColumns = [];
+
     // Controller init
     $scope.init = function(newParagraph, note) {
       $scope.paragraph = newParagraph;
@@ -157,6 +160,7 @@
         var TableData = zeppelin.TableData;
         tableData = new TableData();
         tableData.loadParagraphResult($scope.paragraph.result);
+        $scope.tableDataColumns = tableData.columns;
         $scope.setGraphMode($scope.getGraphMode(), false, false);
       } else if ($scope.getResultType() === 'HTML') {
         $scope.renderHtml();
@@ -1011,8 +1015,17 @@
             };
             $timeout(retryRenderer);
           } else if (refresh) {
-            builtInViz.instance.targetEl.height(height);
+            // when graph options or data are changed
+            builtInViz.instance.setConfig($scope.paragraph.config.graph);
             builtInViz.instance.render(tableData);
+          } else {
+            /* Following line is required to handle the case
+             *  1. select a chart type
+             *  2. resize browser window
+             *  3. select another chart
+             * The chart selected on step 3 will be displayed in incorrect size
+             */
+            $timeout(function() {emitWindowResizeEvent();}, 1);
           }
         }
 
@@ -1021,6 +1034,29 @@
         } else if (type === 'nomore') {
           setD3Chart(type, tableData, refresh);
         }
+      }
+    };
+
+    var emitWindowResizeEvent = function() {
+      var eventName = 'resize';
+      var el = window;
+      var event;
+      if (document.createEvent) {
+        event = document.createEvent('HTMLEvents');
+        event.initEvent(eventName,true,true);
+      } else if (document.createEventObject) { // IE < 9
+        event = document.createEventObject();
+        event.eventType = eventName;
+      }
+      event.eventName = eventName;
+      if (el.dispatchEvent) {
+        el.dispatchEvent(event);
+      } else if (el.fireEvent && el['on' + eventName]) {  // IE < 9
+        el.fireEvent('on' + event.eventType,event);
+      } else if (el[eventName]) {
+        el[eventName]();
+      } else if (el['on' + eventName]) {
+        el['on' + eventName]();
       }
     };
 
@@ -2304,6 +2340,7 @@
             var TableData = zeppelin.TableData;
             tableData = new TableData();
             tableData.loadParagraphResult($scope.paragraph.result);
+            $scope.tableDataColumns = tableData.columns;
             clearUnknownColsFromGraphOption();
             selectDefaultColsForGraphOption();
           }
