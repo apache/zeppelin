@@ -1436,11 +1436,9 @@ public class NotebookServer extends WebSocketServlet implements
 
     private void sendProgressInfo(Job job) {
       LOG.debug("Progress={}, info={}", job.progress(), job.progressInfo());
-      notebookServer.broadcast(
-        note.getId(),
-        new Message(OP.PROGRESS).put("id", job.getId()).
-          put("progress", job.progress()).
-          put("info", job.progressInfo()));
+      notebookServer.broadcast(note.getId(), new Message(OP.PROGRESS).put("id", job.getId()).
+        put("progress", job.progress()).
+        put("info", job.progressInfo()));
     }
 
     @Override
@@ -1462,8 +1460,6 @@ public class NotebookServer extends WebSocketServlet implements
 
       if (job.isTerminated()) {
         LOG.info("Job {} is finished", job.getId());
-        // send final progress report, necessary jobs completed faster than progress update
-        sendProgressInfo(job);
         try {
           //TODO(khalid): may change interface for JobListener and pass subject from interpreter
           note.persist(null);
@@ -1472,6 +1468,8 @@ public class NotebookServer extends WebSocketServlet implements
         }
       }
       notebookServer.broadcastNote(note);
+      // send final progress information about job (when job execution time < time between updates)
+      sendProgressInfo(job);
 
       try {
         notebookServer.broadcastUpdateNotebookJobInfo(System.currentTimeMillis() - 5000);
