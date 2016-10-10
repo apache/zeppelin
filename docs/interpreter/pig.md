@@ -66,7 +66,7 @@ At the Interpreters menu, you have to create a new Pig interpreter. Pig interpre
     </tr>
     <tr>
         <td>zeppelin.pig.maxResult</td>
-        <td>20</td>
+        <td>1000</td>
         <td>max row number displayed in <code>%pig.query</code></td>
     </tr>
 </table>  
