@@ -136,15 +136,13 @@ public class LivyHelper {
                                           final Map<String, Integer> userSessionMap,
                                           LivyOutputStream out,
                                           String appId,
-                                          String webUI) {
+                                          String webUI,
+                                          boolean displayAppInfo) {
     try {
       out.setInterpreterOutput(context.out);
       context.out.clear();
-      out.write("%angular ");
       String incomplete = "";
       boolean inComment = false;
-      out.write("<pre><code>");
-
       String[] lines = stringLines.split("\n");
       String[] linesToRun = new String[lines.length + 1];
       for (int i = 0; i < lines.length; i++) {
@@ -152,6 +150,7 @@ public class LivyHelper {
       }
       linesToRun[lines.length] = "print(\"\")";
       Code r = null;
+      StringBuilder outputBuilder = new StringBuilder();
       for (int l = 0; l < linesToRun.length; l++) {
         String s = linesToRun[l];
         // check if next line starts with "." (but not ".." or "./") it is treated as an invocation
@@ -200,19 +199,26 @@ public class LivyHelper {
         } else if (r == Code.INCOMPLETE) {
           incomplete += s + "\n";
         } else {
-          out.write((res.message() + "\n"));
+          outputBuilder.append(res.message() + "\n");
           incomplete = "";
         }
       }
 
-      out.write("</code></pre>");
-      out.write("<hr/>");
-      out.write("Spark Application Id:" + appId + "<br/>");
-      out.write("Spark WebUI: <a href=" + webUI + ">" + webUI + "</a>");
       if (r == Code.INCOMPLETE) {
         out.setInterpreterOutput(null);
         return new InterpreterResult(r, "Incomplete expression");
       } else {
+        if (displayAppInfo) {
+          out.write("%angular ");
+          out.write("<pre><code>");
+          out.write(outputBuilder.toString());
+          out.write("</code></pre>");
+          out.write("<hr/>");
+          out.write("Spark Application Id:" + appId + "<br/>");
+          out.write("Spark WebUI: <a href=" + webUI + ">" + webUI + "</a>");
+        } else {
+          out.write(outputBuilder.toString());
+        }
         out.setInterpreterOutput(null);
         return new InterpreterResult(Code.SUCCESS);
       }

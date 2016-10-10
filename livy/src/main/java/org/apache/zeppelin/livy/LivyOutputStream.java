@@ -17,6 +17,8 @@
 package org.apache.zeppelin.livy;
 
 import org.apache.zeppelin.interpreter.InterpreterOutput;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -25,6 +27,8 @@ import java.io.OutputStream;
  * InterpreterOutput can be attached / detached.
  */
 public class LivyOutputStream extends OutputStream {
+
+  private static Logger LOGGER = LoggerFactory.getLogger(LivyOutputStream.class);
   InterpreterOutput interpreterOutput;
 
   public LivyOutputStream() {
@@ -53,6 +57,7 @@ public class LivyOutputStream extends OutputStream {
   }
 
   public void write(String text) throws IOException {
+    LOGGER.debug("livy output:" + text);
     write(text.getBytes("UTF-8"));
   }
 

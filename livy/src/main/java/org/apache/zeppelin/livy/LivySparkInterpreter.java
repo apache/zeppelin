@@ -42,6 +42,7 @@ public class LivySparkInterpreter extends Interpreter {
   protected static Map<Integer, String> sessionId2WebUIMap;
 
   private LivyHelper livyHelper;
+  private boolean displayAppInfo;
 
   public LivySparkInterpreter(Properties property) {
     super(property);
@@ -50,6 +51,7 @@ public class LivySparkInterpreter extends Interpreter {
     sessionId2WebUIMap = new HashMap<>();
     livyHelper = new LivyHelper(property);
     out = new LivyOutputStream();
+    this.displayAppInfo = Boolean.parseBoolean(getProperty("zeppelin.livy.displayAppInfo"));
   }
 
   protected static Map<String, Integer> getUserSessionMap() {
@@ -77,20 +79,24 @@ public class LivySparkInterpreter extends Interpreter {
         try {
           sessionId = livyHelper.createSession(interpreterContext, "spark");
           userSessionMap.put(interpreterContext.getAuthenticationInfo().getUser(), sessionId);
-          String appId = extractStatementResult(
-                  livyHelper.interpret("sc.applicationId", interpreterContext, userSessionMap)
-                  .message());
-          livyHelper.interpret(
-                  "val webui=sc.getClass.getMethod(\"ui\").invoke(sc).asInstanceOf[Some[_]].get",
-                  interpreterContext, userSessionMap);
-          String webUI = extractStatementResult(
-                  livyHelper.interpret(
-                          "webui.getClass.getMethod(\"appUIAddress\").invoke(webui)",
-                          interpreterContext, userSessionMap).message());
-          sessionId2AppIdMap.put(sessionId, appId);
-          sessionId2WebUIMap.put(sessionId, webUI);
-          LOGGER.info("Create livy session with sessionId: {}, appId: {}, webUI: {}",
-                  sessionId, appId, webUI);
+          if (displayAppInfo) {
+            String appId = extractStatementResult(
+                    livyHelper.interpret("sc.applicationId", interpreterContext, userSessionMap)
+                            .message());
+            livyHelper.interpret(
+                    "val webui=sc.getClass.getMethod(\"ui\").invoke(sc).asInstanceOf[Some[_]].get",
+                    interpreterContext, userSessionMap);
+            String webUI = extractStatementResult(
+                    livyHelper.interpret(
+                            "webui.getClass.getMethod(\"appUIAddress\").invoke(webui)",
+                            interpreterContext, userSessionMap).message());
+            sessionId2AppIdMap.put(sessionId, appId);
+            sessionId2WebUIMap.put(sessionId, webUI);
+            LOGGER.info("Create livy session with sessionId: {}, appId: {}, webUI: {}",
+                    sessionId, appId, webUI);
+          } else {
+            LOGGER.info("Create livy session with sessionId: {}", sessionId);
+          }
         } catch (Exception e) {
           LOGGER.error("Exception in LivySparkInterpreter while interpret ", e);
           return new InterpreterResult(InterpreterResult.Code.ERROR, e.getMessage());
@@ -103,7 +109,7 @@ public class LivySparkInterpreter extends Interpreter {
       }
 
       return livyHelper.interpretInput(line, interpreterContext, userSessionMap, out,
-              sessionId2AppIdMap.get(sessionId), sessionId2WebUIMap.get(sessionId));
+              sessionId2AppIdMap.get(sessionId), sessionId2WebUIMap.get(sessionId), displayAppInfo);
     } catch (Exception e) {
       LOGGER.error("Exception in LivySparkInterpreter while interpret ", e);
       return new InterpreterResult(InterpreterResult.Code.ERROR,
