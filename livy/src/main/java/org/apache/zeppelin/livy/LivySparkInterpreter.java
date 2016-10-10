@@ -28,7 +28,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Livy Spark interpreter for Zeppelin.
@@ -37,23 +36,15 @@ public class LivySparkInterpreter extends Interpreter {
 
   Logger LOGGER = LoggerFactory.getLogger(LivySparkInterpreter.class);
   private LivyOutputStream out;
-
-  protected static Map<String, Integer> userSessionMap = 
-        new ConcurrentHashMap<>();
+  private LivySparkSessionMap lsmap;
   private LivyHelper livyHelper;
+  private String type = "spark";
 
   public LivySparkInterpreter(Properties property) {
     super(property);
-    livyHelper = new LivyHelper(property);
+    lsmap = LivySparkSessionMap.getInstance();
+    livyHelper = new LivyHelper(property, type);
     out = new LivyOutputStream();
-  }
-
-  protected static Map<String, Integer> getUserSessionMap() {
-    return userSessionMap;
-  }
-
-  public void setUserSessionMap(Map<String, Integer> userSessionMapIn) {
-    userSessionMap = userSessionMapIn;
   }
 
   @Override
@@ -62,15 +53,15 @@ public class LivySparkInterpreter extends Interpreter {
 
   @Override
   public void close() {
-    livyHelper.closeSession(userSessionMap);
+    livyHelper.closeSession(lsmap.getSparkUserSessionMap());
   }
 
   @Override
   public InterpreterResult interpret(String line, InterpreterContext interpreterContext) {
     try {
-      if (userSessionMap.get(interpreterContext.getAuthenticationInfo().getUser()) == null) {
+      if (lsmap.getSparkUserSession(interpreterContext.getAuthenticationInfo().getUser()) == null) {
         try {
-          userSessionMap.put(
+          lsmap.setSparkUserSessionMap(
               interpreterContext.getAuthenticationInfo().getUser(),
               livyHelper.createSession(
                   interpreterContext,
@@ -85,7 +76,7 @@ public class LivySparkInterpreter extends Interpreter {
         return new InterpreterResult(InterpreterResult.Code.SUCCESS, "");
       }
 
-      return livyHelper.interpretInput(line, interpreterContext, userSessionMap, out);
+      return livyHelper.interpretInput(line, interpreterContext, out);
     } catch (Exception e) {
       LOGGER.error("Exception in LivySparkInterpreter while interpret ", e);
       return new InterpreterResult(InterpreterResult.Code.ERROR,
