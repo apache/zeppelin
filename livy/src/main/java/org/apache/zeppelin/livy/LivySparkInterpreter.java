@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Livy Spark interpreter for Zeppelin.
@@ -37,12 +38,12 @@ public class LivySparkInterpreter extends Interpreter {
   Logger LOGGER = LoggerFactory.getLogger(LivySparkInterpreter.class);
   private LivyOutputStream out;
 
-  protected static Map<String, Integer> userSessionMap;
+  protected static Map<String, Integer> userSessionMap = 
+        new ConcurrentHashMap<>();
   private LivyHelper livyHelper;
 
   public LivySparkInterpreter(Properties property) {
     super(property);
-    userSessionMap = new HashMap<>();
     livyHelper = new LivyHelper(property);
     out = new LivyOutputStream();
   }
@@ -51,8 +52,8 @@ public class LivySparkInterpreter extends Interpreter {
     return userSessionMap;
   }
 
-  public void setUserSessionMap(Map<String, Integer> userSessionMap) {
-    this.userSessionMap = userSessionMap;
+  public void setUserSessionMap(Map<String, Integer> userSessionMapIn) {
+    userSessionMap = userSessionMapIn;
   }
 
   @Override

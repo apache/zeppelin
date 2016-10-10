@@ -36,13 +36,13 @@ public class LivySparkSQLInterpreter extends Interpreter {
 
   Logger LOGGER = LoggerFactory.getLogger(LivySparkSQLInterpreter.class);
 
-  protected Map<String, Integer> userSessionMap;
+  //protected Map<String, Integer> userSessionMap;
   private LivyHelper livyHelper;
 
   public LivySparkSQLInterpreter(Properties property) {
     super(property);
     livyHelper = new LivyHelper(property);
-    userSessionMap = LivySparkInterpreter.getUserSessionMap();
+    //userSessionMap = LivySparkInterpreter.getUserSessionMap();
   }
 
   @Override
@@ -51,15 +51,16 @@ public class LivySparkSQLInterpreter extends Interpreter {
 
   @Override
   public void close() {
-    livyHelper.closeSession(userSessionMap);
+    livyHelper.closeSession(LivySparkInterpreter.userSessionMap);
   }
 
   @Override
   public InterpreterResult interpret(String line, InterpreterContext interpreterContext) {
     try {
-      if (userSessionMap.get(interpreterContext.getAuthenticationInfo().getUser()) == null) {
+      if (LivySparkInterpreter.userSessionMap.get(interpreterContext
+            .getAuthenticationInfo().getUser()) == null) {
         try {
-          userSessionMap.put(
+          LivySparkInterpreter.userSessionMap.put(
               interpreterContext.getAuthenticationInfo().getUser(),
               livyHelper.createSession(
                   interpreterContext,
@@ -80,7 +81,7 @@ public class LivySparkSQLInterpreter extends Interpreter {
                   .replaceAll("\\n", " ")
               + "\").show(" +
               property.get("zeppelin.livy.spark.sql.maxResult") + ")",
-          interpreterContext, userSessionMap);
+          interpreterContext, LivySparkInterpreter.userSessionMap);
 
       if (res.code() == InterpreterResult.Code.SUCCESS) {
         StringBuilder resMsg = new StringBuilder();
