@@ -68,6 +68,7 @@ When your code requires external library, instead of doing download/copy/restart
       <li> If you need to resolve dependencies from other than central maven repository or
   	   local ~/.m2 repository, hit <i class="fa fa-plus"></i> icon next to repository lists. </li>
       <li> Fill out the form and click 'Add' button, then you will be able to see that new repository is added. </li>
+      <li> Optionally, if you are behind a corporate firewall, you can specify also all proxy settings so that Zeppelin can download the dependencies using the given credentials</li>
     </ol>
   </div>
 </div>

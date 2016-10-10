@@ -20,6 +20,7 @@
 
   function CredentialCtrl($scope, $rootScope, $http, baseUrlSrv, ngToast) {
     $scope._ = _;
+    ngToast.dismiss();
 
     $scope.credentialInfo = [];
     $scope.showAddNewCredentialInfo = false;

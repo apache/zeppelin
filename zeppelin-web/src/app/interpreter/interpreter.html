@@ -65,7 +65,9 @@ limitations under the License.
              popover-html-unsafe="<label>URL: </label>
                {{repo.url}}<br>
                <label>Username: </label>
-               {{repo.authentication.username}}">
+               {{repo.authentication.username}}<br>
+               <label>Proxy host: </label>
+               {{repo.proxy.host}}">
             <span class="fa fa-database"></span>
             {{repo.id}}&nbsp;
             <span ng-if="!isDefaultRepository(repo.id)" class="fa fa-close blackOpc"

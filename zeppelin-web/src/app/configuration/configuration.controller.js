@@ -21,6 +21,7 @@
   function ConfigurationCtrl($scope, $rootScope, $http, baseUrlSrv, ngToast) {
     $scope.configrations = [];
     $scope._ = _;
+    ngToast.dismiss();
 
     var getConfigurations = function() {
       $http.get(baseUrlSrv.getRestApiBase() + '/configurations/all').
