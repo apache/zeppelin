@@ -17,7 +17,7 @@ limitations under the License.
     <a class="viewProgressInfo" href="" ng-click="show = !show" ng-init="show = false">View progress info</a>
     <div class="text" ng-if="show == true" ng-repeat="(key, obj) in getProgressInfo()">
       <span>{{obj.name}} </span>
-      <a href="{{obj.url}}" target="_blank">View</a>
+      <a ng-if="obj != null && obj.url != null && obj.url.length > 0" href="{{obj.url}}" target="_blank">View</a>
       <div style="margin-left: 10px">{{obj.desc.trim()}}</div>
     </div>
   </div>

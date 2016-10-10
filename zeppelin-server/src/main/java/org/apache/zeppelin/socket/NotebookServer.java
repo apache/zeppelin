@@ -1468,13 +1468,16 @@ public class NotebookServer extends WebSocketServlet implements
         }
       }
       notebookServer.broadcastNote(note);
-      // send final progress information about job (when job execution time < time between updates)
-      sendProgressInfo(job);
 
       try {
         notebookServer.broadcastUpdateNotebookJobInfo(System.currentTimeMillis() - 5000);
       } catch (IOException e) {
         LOG.error("can not broadcast for job manager {}", e);
+      }
+
+      // send final progress information (when job execution time < time between updates)
+      if (job.isTerminated() && (after == Status.ERROR || after == Status.FINISHED)) {
+        sendProgressInfo(job);
       }
     }
 
