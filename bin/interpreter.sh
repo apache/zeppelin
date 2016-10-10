@@ -164,9 +164,13 @@ elif [[ "${INTERPRETER_ID}" == "pig" ]]; then
   fi
   
   # autodetect TEZ_CONF_DIR
-  TEZ_CONF_DIR = ${TEZ_CONF_DIR:=/etc/tez/conf}
-  echo "TEZ_CONF_DIR:${TEZ_CONF_DIR}"
-  ZEPPELIN_INTP_CLASSPATH+=":${TEZ_CONF_DIR}"
+  if [[ -n "${TEZ_CONF_DIR}" ]]; then
+    ZEPPELIN_INTP_CLASSPATH+=":${TEZ_CONF_DIR}"
+  elif [[ -d "/etc/tez/conf" ]]; then
+    ZEPPELIN_INTP_CLASSPATH+=":/etc/tez/conf"
+  else
+    echo "TEZ_CONF_DIR is not set, configuration might not be loaded"
+  fi
 fi
 
 addJarInDirForIntp "${LOCAL_INTERPRETER_REPO}"

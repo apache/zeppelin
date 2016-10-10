@@ -65,6 +65,7 @@ public class PigQueryInterpreter extends BasePigInterpreter {
 
   @Override
   public InterpreterResult interpret(String st, InterpreterContext context) {
+    // '-' is invalid for pig alias
     String alias = "paragraph_" + context.getParagraphId().replace("-", "_");
     String[] lines = st.split("\n");
     List<String> queries = new ArrayList<String>();
@@ -126,7 +127,7 @@ public class PigQueryInterpreter extends BasePigInterpreter {
       if (e instanceof FrontendException) {
         FrontendException fe = (FrontendException) e;
         if (!fe.getMessage().contains("Backend error :")) {
-          LOGGER.error("Fail to run pig script.", e);
+          LOGGER.error("Fail to run pig query.", e);
           return new InterpreterResult(Code.ERROR, ExceptionUtils.getStackTrace(e));
         }
       }
@@ -137,6 +138,7 @@ public class PigQueryInterpreter extends BasePigInterpreter {
           return new InterpreterResult(Code.ERROR, errorMsg);
         }
       }
+      LOGGER.error("Fail to run pig query.", e);
       return new InterpreterResult(Code.ERROR, ExceptionUtils.getStackTrace(e));
     } finally {
       listenerMap.remove(context.getParagraphId());

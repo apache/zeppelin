@@ -59,7 +59,8 @@ public class PigInterpreter extends BasePigInterpreter {
     try {
       pigServer = new PigServer(execType);
     } catch (IOException e) {
-      throw new RuntimeException("Fail to launch PigServer", e);
+      LOGGER.error("Fail to initialize PigServer", e);
+      throw new RuntimeException("Fail to initialize PigServer", e);
     }
   }
 
@@ -106,6 +107,7 @@ public class PigInterpreter extends BasePigInterpreter {
           return new InterpreterResult(Code.ERROR, errorMsg);
         }
       }
+      LOGGER.error("Fail to run pig script.", e);
       return new InterpreterResult(Code.ERROR, ExceptionUtils.getStackTrace(e));
     } finally {
       System.setOut(originalStdOut);
@@ -121,9 +123,6 @@ public class PigInterpreter extends BasePigInterpreter {
       if (jobStats != null) {
         outputBuilder.append(jobStats);
       }
-    }
-    if (!outputBuilder.toString().isEmpty() || !bytesOutput.toString().isEmpty()) {
-      outputBuilder.append("------------- Pig Output --------------\n");
     }
     outputBuilder.append(bytesOutput.toString());
     return new InterpreterResult(Code.SUCCESS, outputBuilder.toString());
