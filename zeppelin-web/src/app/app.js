@@ -33,8 +33,7 @@
           'xeditable',
           'ngToast',
           'focus-if',
-          'ngResource',
-          'esri.map'
+          'ngResource'
       ])
         .filter('breakFilter', function() {
           return function(text) {

@@ -32,7 +32,7 @@ limitations under the License.
     </ul>
   </div>
 
-  <div class="row" ng-if="getGraphMode()!='scatterChart' && getGraphMode()!='map'">
+  <div class="row" ng-if="getGraphMode()!='scatterChart'">
     <div class="col-md-4">
       <span class="columns lightBold">
         Keys
@@ -159,54 +159,6 @@ limitations under the License.
           <li ng-if="paragraph.config.graph.scatter.size">
             <div class="btn btn-xs" style="color:white" ng-class="{'btn-warning': isValidSizeOption(paragraph.config.graph.scatter, paragraph.result.rows)}">
               {{paragraph.config.graph.scatter.size.name}} <span class="fa fa-close" ng-click="removeScatterOptionSize($index)"></span>
-            </div>
-          </li>
-        </ul>
-      </span>
-    </div>
-  </div>
-
-  <div class="row" ng-if="getGraphMode()=='map'">
-    <div class="col-md-4">
-      <span class="columns lightBold">
-        Latitude
-        <ul data-drop="true"
-            ng-model="paragraph.config.graph.map.lat"
-            jqyoui-droppable="{onDrop:'onGraphOptionChange()'}"
-            class="list-unstyled">
-          <li ng-if="paragraph.config.graph.map.lat">
-            <div class="btn btn-primary btn-xs">
-              {{paragraph.config.graph.map.lat.name}} <span class="fa fa-close" ng-click="removeMapOptionLat($index)"></span>
-            </div>
-          </li>
-        </ul>
-      </span>
-    </div>
-    <div class="col-md-4">
-      <span class="columns lightBold">
-        Longitude
-        <ul data-drop="true"
-            ng-model="paragraph.config.graph.map.lng"
-            jqyoui-droppable="{onDrop:'onGraphOptionChange()'}"
-            class="list-unstyled">
-          <li ng-if="paragraph.config.graph.map.lng">
-            <div class="btn btn-primary btn-xs">
-              {{paragraph.config.graph.map.lng.name}} <span class="fa fa-close" ng-click="removeMapOptionLng($index)"></span>
-            </div>
-          </li>
-        </ul>
-      </span>
-    </div>
-    <div class="col-md-4">
-      <span class="columns lightBold">
-        Pin contents
-        <ul data-drop="true"
-            ng-model="paragraph.config.graph.map.pinCols"
-            jqyoui-droppable="{multiple:true, onDrop:'onGraphOptionChange()'}"
-            class="list-unstyled">
-          <li ng-repeat="col in paragraph.config.graph.map.pinCols">
-            <div class="btn btn-primary btn-xs">
-              {{col.name}} <span class="fa fa-close" ng-click="removeMapOptionPinInfo($index)"></span>
             </div>
           </li>
         </ul>
