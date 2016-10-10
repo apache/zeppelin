@@ -22,13 +22,13 @@
   <parent>
     <artifactId>zeppelin</artifactId>
     <groupId>org.apache.zeppelin</groupId>
-    <version>0.6.2</version>
+    <version>0.6.3-SNAPSHOT</version>
     <relativePath>..</relativePath>
   </parent>
 
   <artifactId>zeppelin-ignite_2.10</artifactId>
   <packaging>jar</packaging>
-  <version>0.6.2</version>
+  <version>0.6.3-SNAPSHOT</version>
   <name>Zeppelin: Apache Ignite interpreter</name>
 
   <properties>
