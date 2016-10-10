@@ -20,7 +20,7 @@ limitations under the License.
   <button type="button" class="btn btn-default btn-sm"
           ng-if="paragraph.result.type == 'TABLE'"
           ng-class="{'active': isGraphMode('table')}"
-          ng-click="setGraphMode('table', true)" 
+          ng-click="setGraphMode('table', true)"
           tooltip="Table" tooltip-placement="bottom"><i class="fa fa-table"></i>
   </button>
   <button type="button" class="btn btn-default btn-sm"
@@ -52,12 +52,6 @@ limitations under the License.
           ng-class="{'active': isGraphMode('scatterChart')}"
           ng-click="setGraphMode('scatterChart', true)"
           tooltip="Scatter Chart" tooltip-placement="bottom"><i class="cf cf-scatter-chart"></i>
-  </button>
-  <button type="button" class="btn btn-default btn-sm"
-          ng-if="paragraph.result.type == 'TABLE'"
-          ng-class="{'active': isGraphMode('map')}"
-          ng-click="setGraphMode('map', true)"
-          tooltip="Map" tooltip-placement="bottom"><i class="fa fa-map-marker"></i>
   </button>
 
   <button type="button"
