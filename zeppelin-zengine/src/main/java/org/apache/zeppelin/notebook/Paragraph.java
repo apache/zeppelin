@@ -289,9 +289,13 @@ public class Paragraph extends Job implements Serializable, Cloneable {
       logger.error("Can not find interpreter name " + repl);
       throw new RuntimeException("Can not find interpreter for " + getRequiredReplName());
     }
-
+    InterpreterSetting intp = getInterpreterSettingById(repl.getInterpreterGroup().getId());
+    while (intp.getStatus().equals(
+      org.apache.zeppelin.interpreter.InterpreterSetting.Status.DOWNLOADING_DEPENDENCIES)) {
+      Thread.sleep(200);
+      intp = getInterpreterSettingById(repl.getInterpreterGroup().getId());
+    }
     if (this.noteHasUser() && this.noteHasInterpreters()) {
-      InterpreterSetting intp = getInterpreterSettingById(repl.getInterpreterGroup().getId());
       if (intp != null &&
         interpreterHasUser(intp) &&
         isUserAuthorizedToAccessInterpreter(intp.getOption()) == false) {
