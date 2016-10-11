@@ -70,7 +70,6 @@ addJarInDir "${ZEPPELIN_HOME}/zeppelin-zengine/target/lib"
 addJarInDir "${ZEPPELIN_HOME}/zeppelin-server/target/lib"
 addJarInDir "${ZEPPELIN_HOME}/zeppelin-web/target/lib"
 
-
 CLASSPATH+=":${ZEPPELIN_CLASSPATH}"
 
 if [[ ! -d "${ZEPPELIN_LOG_DIR}" ]]; then
