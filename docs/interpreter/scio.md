@@ -52,7 +52,7 @@ In a notebook, to enable the **Scio** interpreter, click the **Gear** icon and s
 
 ## Using the Scio Interpreter
 
-In a paragraph, use `%scio` to select the **Scio** interpreter. You can use it much the same way as vanilla Scala REPL and [Scio REPL](https://github.com/spotify/scio/wiki/Scio-REPL). State (like variables, imports etc) is shared among all *Scio* paragraphs. There is a special variable **argz** which holds arguments from Scio interpreter settings. The easiest way to proceed is to create a Scio context via standard `ContextAndArgs`.
+In a paragraph, use `%scio` to select the **Scio** interpreter. You can use it much the same way as vanilla Scala REPL and [Scio REPL](https://github.com/spotify/scio/wiki/Scio-REPL). State (like variables, imports, execution etc) is shared among all *Scio* paragraphs. There is a special variable **argz** which holds arguments from Scio interpreter settings. The easiest way to proceed is to create a Scio context via standard `ContextAndArgs`.
 
 ```scala
 %scio
@@ -102,6 +102,8 @@ There are different helper methods for different objects. You can easily display
 ##### `Tap` helper
 
 `Tap` has `display` Zeppelin helper method for types listed above. Use it to pull and display results.
+
+### Examples
 
 #### BigQuery example:
 
