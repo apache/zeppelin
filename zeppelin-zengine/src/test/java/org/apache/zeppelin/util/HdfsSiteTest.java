@@ -23,11 +23,10 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 
-public class HdfsUtilsTest {
+public class HdfsSiteTest {
 
   @BeforeClass
   public static void beforeStartUp() {
@@ -46,30 +45,27 @@ public class HdfsUtilsTest {
   @Test
   public void rootPath() {
     try {
-      HdfsUtils hdfsUtils = new HdfsUtils("/", null);
-      hdfsUtils.mkdirs(new Path("/tmp/coucou"));
-      Path[] paths = hdfsUtils.listFiles(new Path("/tmp"));
+      HdfsSite hdfsSite = new HdfsSite(null);
+      hdfsSite.mkdirs(new Path("/tmp/coucou"));
+      Path[] paths = hdfsSite.listFiles(new Path("/tmp"));
       for (Path path : paths) {
         System.out.println(path);
       }
-      hdfsUtils.delete(new Path("/tmp/coucou"));
-      paths = hdfsUtils.listFiles(new Path("/tmp"));
+      hdfsSite.delete(new Path("/tmp/coucou"));
+      paths = hdfsSite.listFiles(new Path("/tmp"));
       for (Path path : paths) {
         System.out.println(path);
       }
-      hdfsUtils.writeFile("This is mmy file contànt".getBytes("UTF-8"), new Path("/tmp/coucou.txt"));
-      hdfsUtils.rename(new Path("/tmp/coucou.txt"), new Path("/tmp/coucou2.txt"));
-      String read = new String(hdfsUtils.readFile(new Path("/tmp/coucou2.txt")), "UTF-8");
+      hdfsSite.writeFile("This is mmy file content".getBytes("UTF-8"), new Path("/tmp/coucou.txt"));
+      hdfsSite.rename(new Path("/tmp/coucou.txt"), new Path("/tmp/coucou2.txt"));
+      String read = new String(hdfsSite.readFile(new Path("/tmp/coucou2.txt")), "UTF-8");
       System.out.println(read);
-      System.out.println(""+hdfsUtils.exists(new Path("/tmp/coucou2.txt")));
-      hdfsUtils.delete(new Path("/tmp/coucou2.txt"));
+      System.out.println(""+ hdfsSite.exists(new Path("/tmp/coucou2.txt")));
+      hdfsSite.delete(new Path("/tmp/coucou2.txt"));
 
 
 
-    } catch (URISyntaxException e) {
-      e.printStackTrace();
-      assert(false);
-    } catch (IOException e) {
+    } catch (URISyntaxException | IOException e) {
       e.printStackTrace();
       assert(false);
     }
