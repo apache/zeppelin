@@ -596,6 +596,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     setting.setProperties(p);
     setting.setInterpreterGroupFactory(this);
     interpreterSettings.put(setting.getId(), setting);
+    loadInterpreterDependencies(setting);
     saveToFile();
     return setting;
   }
