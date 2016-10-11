@@ -170,7 +170,7 @@ Please check the below table before you download Zeppelin package.
   </tr>
   <tr>
     <td>
-      <h6><a href="https://daringfireball.net/projects/markdown/" target="_blank">Markdown</a></h6>
+      <h6><a href="https://code.google.com/archive/p/markdown4j/" target="_blank">Markdown</a></h6>
     </td>
     <td>O</td>
     <td>O</td>
