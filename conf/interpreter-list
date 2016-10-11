@@ -25,7 +25,6 @@ cassandra       org.apache.zeppelin:zeppelin-cassandra_2.11:0.6.1       Cassandr
 elasticsearch   org.apache.zeppelin:zeppelin-elasticsearch:0.6.1        Elasticsearch interpreter
 file            org.apache.zeppelin:zeppelin-file:0.6.1                 HDFS file interpreter
 flink           org.apache.zeppelin:zeppelin-flink_2.11:0.6.1           Flink interpreter built with Scala 2.11
-pig             org.apache.zeppelin:zeppelin-pig:0.6.1                  Pig interpreter
 hbase           org.apache.zeppelin:zeppelin-hbase:0.6.1                Hbase interpreter
 ignite          org.apache.zeppelin:zeppelin-ignite_2.11:0.6.1          Ignite interpreter built with Scala 2.11
 jdbc            org.apache.zeppelin:zeppelin-jdbc:0.6.1                 Jdbc interpreter
@@ -33,6 +32,7 @@ kylin           org.apache.zeppelin:zeppelin-kylin:0.6.1                Kylin in
 lens            org.apache.zeppelin:zeppelin-lens:0.6.1                 Lens interpreter
 livy            org.apache.zeppelin:zeppelin-livy:0.6.1                 Livy interpreter
 md              org.apache.zeppelin:zeppelin-markdown:0.6.1             Markdown support
+pig             org.apache.zeppelin:zeppelin-pig:0.6.1                  Pig interpreter
 postgresql      org.apache.zeppelin:zeppelin-postgresql:0.6.1           Postgresql interpreter
 python          org.apache.zeppelin:zeppelin-python:0.6.1               Python interpreter
 shell           org.apache.zeppelin:zeppelin-shell:0.6.1                Shell command
