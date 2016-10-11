@@ -33,6 +33,7 @@ import org.slf4j.LoggerFactory;
 import org.sonatype.aether.RepositoryException;
 import org.sonatype.aether.artifact.Artifact;
 import org.sonatype.aether.collection.CollectRequest;
+import org.sonatype.aether.collection.DependencyCollectionException;
 import org.sonatype.aether.graph.Dependency;
 import org.sonatype.aether.graph.DependencyFilter;
 import org.sonatype.aether.repository.RemoteRepository;
@@ -42,6 +43,7 @@ import org.sonatype.aether.util.artifact.DefaultArtifact;
 import org.sonatype.aether.util.artifact.JavaScopes;
 import org.sonatype.aether.util.filter.DependencyFilterUtils;
 import org.sonatype.aether.util.filter.PatternExclusionsDependencyFilter;
+import org.sonatype.aether.util.graph.DefaultDependencyNode;
 
 
 /**
@@ -157,11 +159,11 @@ public class DependencyResolver extends AbstractDependencyResolver {
    */
   @Override
   public List<ArtifactResult> getArtifactsWithDep(String dependency,
-      Collection<String> excludes) throws RepositoryException {
+    Collection<String> excludes) throws RepositoryException {
     Artifact artifact = new DefaultArtifact(dependency);
     DependencyFilter classpathFilter = DependencyFilterUtils.classpathFilter(JavaScopes.COMPILE);
     PatternExclusionsDependencyFilter exclusionFilter =
-        new PatternExclusionsDependencyFilter(excludes);
+            new PatternExclusionsDependencyFilter(excludes);
 
     CollectRequest collectRequest = new CollectRequest();
     collectRequest.setRoot(new Dependency(artifact, JavaScopes.COMPILE));
@@ -172,7 +174,11 @@ public class DependencyResolver extends AbstractDependencyResolver {
       }
     }
     DependencyRequest dependencyRequest = new DependencyRequest(collectRequest,
-        DependencyFilterUtils.andFilter(exclusionFilter, classpathFilter));
-    return system.resolveDependencies(session, dependencyRequest).getArtifactResults();
+            DependencyFilterUtils.andFilter(exclusionFilter, classpathFilter));
+    try {
+      return system.resolveDependencies(session, dependencyRequest).getArtifactResults();
+    } catch (NullPointerException ex) {
+      throw new RepositoryException(String.format("Cannot fetch dependencies for %s", dependency));
+    }
   }
 }

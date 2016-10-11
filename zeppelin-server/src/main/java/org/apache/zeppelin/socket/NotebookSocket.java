@@ -65,7 +65,7 @@ public class NotebookSocket extends WebSocketAdapter {
     return protocol;
   }
 
-  public void send(String serializeMessage) throws IOException {
+  public synchronized void send(String serializeMessage) throws IOException {
     connection.getRemote().sendString(serializeMessage);
   }
 
