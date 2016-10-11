@@ -12,11 +12,13 @@
  * limitations under the License.
  */
 'use strict';
+(function() {
 
-angular
-  .module('zeppelinWebApp')
-  .controller('SearchResultCtrl', function($scope, $routeParams, searchService) {
+  angular.module('zeppelinWebApp').controller('SearchResultCtrl', SearchResultCtrl);
 
+  SearchResultCtrl.$inject = ['$scope', '$routeParams', 'searchService'];
+
+  function SearchResultCtrl($scope, $routeParams, searchService) {
     $scope.isResult = true ;
     $scope.searchTerm = $routeParams.searchTerm;
     var results = searchService.search({'q': $routeParams.searchTerm}).query();
@@ -152,4 +154,6 @@ angular
 
       };
     };
-  });
+  }
+
+})();

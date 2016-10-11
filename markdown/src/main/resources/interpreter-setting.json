@@ -2,7 +2,7 @@
   {
     "group": "md",
     "name": "md",
-    "className": "org.apache.zeppelin.markdown.MarkdownInterpreter",
+    "className": "org.apache.zeppelin.markdown.Markdown",
     "properties": {
       "markdown.parser.type": {
         "envName": "MARKDOWN_PARSER_TYPE",

@@ -22,6 +22,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.vfs2.FileSystemException;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.display.AngularObject;
@@ -1147,7 +1148,18 @@ public class NotebookServer extends WebSocketServlet implements
     }
 
     AuthenticationInfo subject = new AuthenticationInfo(fromMessage.principal);
-    note.persist(subject);
+
+    try {
+      note.persist(subject);
+    } catch (FileSystemException ex) {
+      LOG.error("Exception from run", ex);
+      conn.send(serializeMessage(new Message(OP.ERROR_INFO).put("info",
+                "Oops! There is something wrong with the notebook file system. "
+                + "Please check the logs for more details.")));
+      // don't run the paragraph when there is error on persisting the note information
+      return;
+    }
+
     try {
       note.run(paragraphId);
     } catch (Exception ex) {
@@ -1583,9 +1595,11 @@ public class NotebookServer extends WebSocketServlet implements
 
   private void getEditorSetting(NotebookSocket conn, Message fromMessage)
       throws IOException {
+    String paragraphId = (String) fromMessage.get("paragraphId");
     String replName = (String) fromMessage.get("magic");
     String noteId = getOpenNoteId(conn);
     Message resp = new Message(OP.EDITOR_SETTING);
+    resp.put("paragraphId", paragraphId);
     resp.put("editor", notebook().getInterpreterFactory().getEditorSetting(noteId, replName));
     conn.send(serializeMessage(resp));
     return;

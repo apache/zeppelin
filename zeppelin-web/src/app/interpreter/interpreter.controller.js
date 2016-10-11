@@ -12,15 +12,20 @@
  * limitations under the License.
  */
 'use strict';
+(function() {
 
-angular.module('zeppelinWebApp').controller('InterpreterCtrl',
-  function($scope, $http, baseUrlSrv, ngToast, $timeout, $route) {
+  angular.module('zeppelinWebApp').controller('InterpreterCtrl', InterpreterCtrl);
+
+  InterpreterCtrl.$inject = ['$scope', '$http', 'baseUrlSrv', 'ngToast', '$timeout', '$route'];
+
+  function InterpreterCtrl($scope, $http, baseUrlSrv, ngToast, $timeout, $route) {
     var interpreterSettingsTmp = [];
     $scope.interpreterSettings = [];
     $scope.availableInterpreters = {};
     $scope.showAddNewSetting = false;
     $scope.showRepositoryInfo = false;
     $scope._ = _;
+    ngToast.dismiss();
 
     $scope.openPermissions = function() {
       $scope.showInterpreterAuth = true;
@@ -104,12 +109,19 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl',
 
     var checkDownloadingDependencies = function() {
       var isDownloading = false;
-      for (var setting = 0; setting < $scope.interpreterSettings.length; setting++) {
-        if ($scope.interpreterSettings[setting].status === 'DOWNLOADING_DEPENDENCIES') {
+      for (var index = 0; index < $scope.interpreterSettings.length; index++) {
+        var setting = $scope.interpreterSettings[index];
+        if (setting.status === 'DOWNLOADING_DEPENDENCIES') {
           isDownloading = true;
-          break;
+        }
+
+        if (setting.status === 'ERROR' || setting.errorReason) {
+          ngToast.danger({content: 'Error setting properties for interpreter \'' +
+            setting.group + '.' + setting.name + '\': ' + setting.errorReason,
+            verticalPosition: 'top', dismissOnTimeout: false});
         }
       }
+
       if (isDownloading) {
         $timeout(function() {
           if ($route.current.$$route.originalPath === '/interpreter') {
@@ -232,7 +244,6 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl',
                 $scope.interpreterSettings[index] = data.body;
                 removeTMPSettings(index);
                 thisConfirm.close();
-                checkDownloadingDependencies();
                 $route.reload();
               })
               .error(function(data, status, headers, config) {
@@ -504,7 +515,12 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl',
         url: '',
         snapshot: false,
         username: '',
-        password: ''
+        password: '',
+        proxyProtocol: 'HTTP',
+        proxyHost: '',
+        proxyPort: null,
+        proxyLogin: '',
+        proxyPassword: ''
       };
     };
 
@@ -574,4 +590,6 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl',
     };
 
     init();
-  });
+  }
+
+})();

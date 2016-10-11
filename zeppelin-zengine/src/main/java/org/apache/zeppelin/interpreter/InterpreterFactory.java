@@ -62,6 +62,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sonatype.aether.RepositoryException;
 import org.sonatype.aether.repository.Authentication;
+import org.sonatype.aether.repository.Proxy;
 import org.sonatype.aether.repository.RemoteRepository;
 
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
@@ -432,6 +433,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
 
   private void loadInterpreterDependencies(final InterpreterSetting setting) {
     setting.setStatus(InterpreterSetting.Status.DOWNLOADING_DEPENDENCIES);
+    setting.setErrorReason(null);
     interpreterSettings.put(setting.getId(), setting);
     synchronized (interpreterSettings) {
       final Thread t = new Thread() {
@@ -460,11 +462,12 @@ public class InterpreterFactory implements InterpreterGroupFactory {
             }
 
             setting.setStatus(InterpreterSetting.Status.READY);
+            setting.setErrorReason(null);
           } catch (Exception e) {
             logger.error(String.format("Error while downloading repos for interpreter group : %s," +
                     " go to interpreter setting page click on edit and save it again to make " +
-                    "this interpreter work properly.",
-                setting.getGroup()), e);
+                    "this interpreter work properly. : %s",
+                setting.getGroup(), e.getLocalizedMessage()), e);
             setting.setErrorReason(e.getLocalizedMessage());
             setting.setStatus(InterpreterSetting.Status.ERROR);
           } finally {
@@ -1326,9 +1329,9 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     return this.interpreterRepositories;
   }
 
-  public void addRepository(String id, String url, boolean snapshot, Authentication auth)
-      throws IOException {
-    depResolver.addRepo(id, url, snapshot, auth);
+  public void addRepository(String id, String url, boolean snapshot, Authentication auth,
+      Proxy proxy) throws IOException {
+    depResolver.addRepo(id, url, snapshot, auth, proxy);
     saveToFile();
   }
 
