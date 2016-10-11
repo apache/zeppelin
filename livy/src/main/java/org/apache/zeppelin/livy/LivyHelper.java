@@ -20,6 +20,7 @@ package org.apache.zeppelin.livy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import org.apache.zeppelin.interpreter.InterpreterContext;
@@ -133,21 +134,23 @@ public class LivyHelper {
   public InterpreterResult interpretInput(String stringLines,
                                           final InterpreterContext context,
                                           final Map<String, Integer> userSessionMap,
-                                          LivyOutputStream out) {
+                                          LivyOutputStream out,
+                                          String appId,
+                                          String webUI,
+                                          boolean displayAppInfo) {
     try {
+      out.setInterpreterOutput(context.out);
+      context.out.clear();
+      String incomplete = "";
+      boolean inComment = false;
       String[] lines = stringLines.split("\n");
       String[] linesToRun = new String[lines.length + 1];
       for (int i = 0; i < lines.length; i++) {
         linesToRun[i] = lines[i];
       }
       linesToRun[lines.length] = "print(\"\")";
-
-      out.setInterpreterOutput(context.out);
-      context.out.clear();
       Code r = null;
-      String incomplete = "";
-      boolean inComment = false;
-
+      StringBuilder outputBuilder = new StringBuilder();
       for (int l = 0; l < linesToRun.length; l++) {
         String s = linesToRun[l];
         // check if next line starts with "." (but not ".." or "./") it is treated as an invocation
@@ -196,7 +199,7 @@ public class LivyHelper {
         } else if (r == Code.INCOMPLETE) {
           incomplete += s + "\n";
         } else {
-          out.write((res.message() + "\n").getBytes(Charset.forName("UTF-8")));
+          outputBuilder.append(res.message() + "\n");
           incomplete = "";
         }
       }
@@ -205,10 +208,20 @@ public class LivyHelper {
         out.setInterpreterOutput(null);
         return new InterpreterResult(r, "Incomplete expression");
       } else {
+        if (displayAppInfo) {
+          out.write("%angular ");
+          out.write("<pre><code>");
+          out.write(outputBuilder.toString());
+          out.write("</code></pre>");
+          out.write("<hr/>");
+          out.write("Spark Application Id:" + appId + "<br/>");
+          out.write("Spark WebUI: <a href=" + webUI + ">" + webUI + "</a>");
+        } else {
+          out.write(outputBuilder.toString());
+        }
         out.setInterpreterOutput(null);
         return new InterpreterResult(Code.SUCCESS);
       }
-
     } catch (Exception e) {
       LOGGER.error("error in interpretInput", e);
       return new InterpreterResult(Code.ERROR, e.getMessage());
@@ -219,16 +232,6 @@ public class LivyHelper {
                                      final InterpreterContext context,
                                      final Map<String, Integer> userSessionMap)
       throws Exception {
-    stringLines = stringLines
-        //for "\n" present in string
-        .replaceAll("\\\\n", "\\\\\\\\n")
-        //for new line present in string
-        .replaceAll("\\n", "\\\\n")
-        // for \" present in string
-        .replaceAll("\\\\\"", "\\\\\\\\\"")
-        // for " present in string
-        .replaceAll("\"", "\\\\\"");
-
     if (stringLines.trim().equals("")) {
       return new InterpreterResult(Code.SUCCESS, "");
     }
@@ -295,7 +298,7 @@ public class LivyHelper {
             + userSessionMap.get(context.getAuthenticationInfo().getUser())
             + "/statements",
         "POST",
-        "{\"code\": \"" + lines + "\" }",
+        "{\"code\": \"" + StringEscapeUtils.escapeJson(lines) + "\"}",
         context.getParagraphId());
     if (json.matches("^(\")?Session (\'[0-9]\' )?not found(.?\"?)$")) {
       throw new Exception("Exception: Session not found, Livy server would have restarted, " +
@@ -340,6 +343,7 @@ public class LivyHelper {
 
   protected String executeHTTP(String targetURL, String method, String jsonData, String paragraphId)
       throws Exception {
+    LOGGER.debug("Call rest api in {}, method: {}, jsonData: {}", targetURL, method, jsonData);
     RestTemplate restTemplate = getRestTemplate();
     HttpHeaders headers = new HttpHeaders();
     headers.add("Content-Type", "application/json");
