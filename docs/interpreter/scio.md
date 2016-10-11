@@ -52,7 +52,7 @@ In a notebook, to enable the **Scio** interpreter, click the **Gear** icon and s
 
 ## Using the Scio Interpreter
 
-In a paragraph, use `%scio` to select the **Scio** interpreter. You can use it much the same way as vanilla Scala REPL and [Scio REPL](https://github.com/spotify/scio/wiki/Scio-REPL). Context is shared among all *Scio* paragraphs. There is a special variable **argz** which holds arguments from Scio interpreter settings. The easiest way to proceed is to create a context via standard `ContextAndArgs`.
+In a paragraph, use `%scio` to select the **Scio** interpreter. You can use it much the same way as vanilla Scala REPL and [Scio REPL](https://github.com/spotify/scio/wiki/Scio-REPL). State (like variables, imports etc) is shared among all *Scio* paragraphs. There is a special variable **argz** which holds arguments from Scio interpreter settings. The easiest way to proceed is to create a Scio context via standard `ContextAndArgs`.
 
 ```scala
 %scio
@@ -69,7 +69,7 @@ val (sc, args) = ContextAndArgs(argz)
 sc.parallelize(Seq("foo", "foo", "bar")).countByValue.closeAndDisplay()
 ```
 
-Please refer to [Scio wiki](https://github.com/spotify/scio/wiki) for more complex examples.
+If you close Scio context, go ahead an create a new one using `ContextAndArgs`. Please refer to [Scio wiki](https://github.com/spotify/scio/wiki) for more complex examples. You can close Scio context much the same way as in Scio REPL, and use Zeppelin display helpers to synchronously close and display results - read more below.
 
 ### Progress
 
@@ -86,6 +86,22 @@ Supported `SCollection` types:
  * Google BigQuery's TableRow
  * Apache Avro
  * All Scala's `AnyVal`
+
+#### Helper methods
+
+There are different helper methods for different objects. You can easily display results from `SCollection`, `Future[Tap]` and `Tap`.
+
+##### `SCollection` helper
+
+`SCollection` has `closeAndDisplay` Zeppelin helper method for types listed above. Use it to synchronously close Scio context, once available pull and display results.
+
+##### `Future[Tap]` helper
+
+`Future[Tap]` has `waitAndDisplay` Zeppelin helper method for types listed above. Use it synchronously wait for results, once available pull and display results.
+
+##### `Tap` helper
+
+`Tap` has `display` Zeppelin helper method for types listed above. Use it to pull and display results.
 
 #### BigQuery example:
 
