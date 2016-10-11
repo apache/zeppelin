@@ -20,13 +20,50 @@
 
   function NotebookReposCtrl($http, baseUrlSrv, ngToast) {
     var vm = this;
-    vm.notebookRepos = [];
+    vm.notebookRepos = [
+      {
+        name: 'Classic Repo',
+        settings: [
+          {
+            name: 'defaulty',
+            type: 'input',
+            value: [],
+            selected: 'Totooo'
+          }
+        ]
+      },
+      {
+        name: 'Empty Repo',
+        settings: []
+      },
+      {
+        name: 'ZeppelinHub',
+        settings: [
+          {
+            name: 'instance',
+            type: 'dropdown',
+            value: [
+              {
+                name: 'instance1',
+                value: 'id1'
+              },
+              {
+                name: 'instanceKikoo',
+                value: 'id2'
+              }
+            ],
+            selected: 'id2'
+          }
+        ]
+      }
+    ];
 
     _init();
 
     // Private functions
 
     function _getInterpreterSettings() {
+      /*
       $http.get(baseUrlSrv.getRestApiBase() + '/interpreter/setting')
       .success(function(data, status, headers, config) {
         vm.notebookRepos = data.body;
@@ -42,7 +79,7 @@
           }, 3000);
         }
         console.log('Error %o %o', status, data.message);
-      });
+      });*/
     }
 
     function _init() {

@@ -72,7 +72,8 @@
             })
             .when('/notebookRepos', {
               templateUrl: 'app/notebookRepos/notebookRepos.html',
-              controller: 'NotebookReposCtrl'
+              controller: 'NotebookReposCtrl',
+              controllerAs: 'repo'
             })
             .when('/credential', {
               templateUrl: 'app/credential/credential.html',
