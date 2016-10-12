@@ -35,10 +35,9 @@ limitations under the License.
 
       <div class="col-md-12">
         <h3 class="interpreter-title">{{repo.name}}</h3>
-        <span style="float:right">
+        <span style="float:right" ng-show="repo.settings.length > 0">
           <button class="btn btn-default btn-xs"
-                  ng-click="valueform.$show();
-                  copyOriginInterpreterSettingProperties(setting.id)">
+                  ng-click="valueform.$show();">
             <span class="fa fa-pencil"></span> edit</button>
         </span>
       </div>
@@ -46,18 +45,27 @@ limitations under the License.
     <div class="row interpreter">
       <div class="col-md-12" ng-show="repo.settings.length > 0">
         <h5>Settings</h5>
-        <div ng-repeat="setting in repo.settings">
-          <span ng-bind="setting.name" style='text-transform: capitalize;'></span>:
-          <span class="btn-group">
-            <form style="display:inline; margin-left:5px;" ng-show="setting.type === 'dropdown'">
-              <select ng-model="setting.selected"
-                      class="selectpicker"
-                      ng-options="item.value as item.name for item in setting.value"></select>
-            </form>
-            <input id="newInterpreterSettingName" input pu-elastic-input
-                   ng-show="setting.type === 'input'" pu-elastic-input-minwidth="180px" ng-model="setting.selected" />
-          </span>
-        </div>
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th style="width:40%">name</th>
+              <th style="width:60%">value</th>
+            </tr>
+          </thead>
+          <tr ng-repeat="setting in repo.settings" >
+            <td ng-bind="setting.name"></td>
+            <td>
+              <span class="btn-group">
+                <select ng-model="setting.selected" ng-show="setting.type === 'dropdown'"
+                        class="selectpicker" ng-disabled="!valueform.$visible"
+                        ng-options="item.value as item.name for item in setting.value"></select>
+                <span ng-show="setting.type === 'input'" editable-textarea="setting.selectied" e-form="valueform" e-msd-elastic>
+                  {{setting.selected | breakFilter}}
+                </span>
+              </span>
+            </td>
+          </tr>
+        </table>
       </div>
     </div>
     <div class="row interpreter">
