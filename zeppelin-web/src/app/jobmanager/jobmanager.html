@@ -59,6 +59,68 @@ limitations under the License.
         </span>
       </div>
     </div>
+    <div
+      class="col-md-6 text-right"
+      style="padding-top: 6px;">
+      <span
+        ng-repeat="jobStatus in ['READY', 'FINISHED', 'ABORT', 'ERROR','PENDING','RUNNING']"
+        ng-switch="jobStatus">
+        <span
+          ng-switch-when="FINISHED">
+          <i style="color: green; margin-right: 3px;" class="fa fa-circle"
+             ng-click=""
+             tooltip="FINISHED">
+          </i>
+          {{jobStatus}}
+        </span>
+        <span
+          ng-switch-when="RUNNING"
+          style="margin-right: 3px;">
+          <i style="color: blue" class="fa fa-spinner"
+             ng-click=""
+             tooltip="RUNNING">
+          </i>
+          {{jobStatus}}
+        </span>
+        <span
+          ng-switch-when="READY"
+          style="margin-right: 3px;">
+          <i style="color: green" class="fa fa-circle-o"
+             ng-click=""
+             tooltip="READY">
+          </i>
+          {{jobStatus}}
+        </span>
+        <span
+          ng-switch-when="PENDING"
+          style="margin-right: 3px;">
+          <i style="color: gray" class="fa fa-circle"
+             ng-click=""
+             tooltip="PENDING"
+          >
+          </i>
+          {{jobStatus}}
+        </span>
+        <span
+          ng-switch-when="ABORT"
+          style="margin-right: 3px;">
+          <i style="color: orange" class="fa fa-circle"
+             ng-click=""
+             tooltip="ABORT">
+          </i>
+          {{jobStatus}}
+        </span>
+        <span
+          ng-switch-when="ERROR"
+          style="margin-right: 3px;">
+          <i style="color: red" class="fa fa-circle"
+             ng-click=""
+             tooltip="ERROR">
+          </i>
+          {{jobStatus}}
+        </span>
+      </span>
+    </div>
   </div>
 </div>
 <div>
