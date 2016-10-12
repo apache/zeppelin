@@ -22,13 +22,13 @@
   <parent>
     <artifactId>zeppelin</artifactId>
     <groupId>org.apache.zeppelin</groupId>
-    <version>0.6.3-SNAPSHOT</version>
+    <version>0.6.2</version>
   </parent>
 
   <groupId>org.apache.zeppelin</groupId>
   <artifactId>zeppelin-file</artifactId>
   <packaging>jar</packaging>
-  <version>0.6.3-SNAPSHOT</version>
+  <version>0.6.2</version>
   <name>Zeppelin: File System Interpreters</name>
 
   <dependencies>
