@@ -21,10 +21,12 @@
     'notebookListDataFactory',
     'websocketMsgSrv',
     '$rootScope',
-    'arrayOrderingSrv'
+    'arrayOrderingSrv',
+    'ngToast'
   ];
 
-  function HomeCtrl($scope, notebookListDataFactory, websocketMsgSrv, $rootScope, arrayOrderingSrv) {
+  function HomeCtrl($scope, notebookListDataFactory, websocketMsgSrv, $rootScope, arrayOrderingSrv, ngToast) {
+    ngToast.dismiss();
     var vm = this;
     vm.notes = notebookListDataFactory;
     vm.websocketMsgSrv = websocketMsgSrv;

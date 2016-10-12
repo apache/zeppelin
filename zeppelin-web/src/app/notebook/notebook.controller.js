@@ -26,11 +26,16 @@
     'websocketMsgSrv',
     'baseUrlSrv',
     '$timeout',
-    'saveAsService'
+    'saveAsService',
+    'ngToast'
   ];
 
   function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
-                        $http, websocketMsgSrv, baseUrlSrv, $timeout, saveAsService) {
+                        $http, websocketMsgSrv, baseUrlSrv, $timeout, saveAsService,
+                        ngToast) {
+
+    ngToast.dismiss();
+
     $scope.note = null;
     $scope.moment = moment;
     $scope.editorToggled = false;

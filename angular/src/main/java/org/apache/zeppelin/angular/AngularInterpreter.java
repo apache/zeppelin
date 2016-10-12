@@ -34,9 +34,6 @@ import org.apache.zeppelin.scheduler.SchedulerFactory;
  *
  */
 public class AngularInterpreter extends Interpreter {
-  static {
-    Interpreter.register("angular", AngularInterpreter.class.getName());
-  }
 
   public AngularInterpreter(Properties property) {
     super(property);

@@ -261,6 +261,10 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     return getBoolean(ConfVars.ZEPPELIN_SSL);
   }
 
+  public int getServerSslPort() {
+    return getInt(ConfVars.ZEPPELIN_SSL_PORT);
+  }
+
   public boolean useClientAuth() {
     return getBoolean(ConfVars.ZEPPELIN_SSL_CLIENT_AUTH);
   }
@@ -489,6 +493,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_PORT("zeppelin.server.port", 8080),
     ZEPPELIN_SERVER_CONTEXT_PATH("zeppelin.server.context.path", "/"),
     ZEPPELIN_SSL("zeppelin.ssl", false),
+    ZEPPELIN_SSL_PORT("zeppelin.server.ssl.port", 8443),
     ZEPPELIN_SSL_CLIENT_AUTH("zeppelin.ssl.client.auth", false),
     ZEPPELIN_SSL_KEYSTORE_PATH("zeppelin.ssl.keystore.path", "keystore"),
     ZEPPELIN_SSL_KEYSTORE_TYPE("zeppelin.ssl.keystore.type", "JKS"),

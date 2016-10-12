@@ -212,6 +212,12 @@ You can configure Apache Zeppelin with either **environment variables** in `conf
     <td>Zeppelin server port</td>
   </tr>
   <tr>
+    <td>ZEPPELIN_SSL_PORT</td>
+    <td>zeppelin.server.ssl.port</td>
+    <td>8443</td>
+    <td>Zeppelin Server ssl port (used when ssl environment/property is set to true)</td>
+  </tr>
+  <tr>
     <td>ZEPPELIN_MEM</td>
     <td>N/A</td>
     <td>-Xmx1024m -XX:MaxPermSize=512m</td>
