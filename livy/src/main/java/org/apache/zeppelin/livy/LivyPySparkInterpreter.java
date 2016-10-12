@@ -37,13 +37,15 @@ public class LivyPySparkInterpreter extends Interpreter {
 
   Logger LOGGER = LoggerFactory.getLogger(LivyPySparkInterpreter.class);
 
-  protected Map<String, Integer> userSessionMap;
+  private LivyPySparkSessionMap lsmap;
   protected LivyHelper livyHelper;
+  private String type = "pyspark";
+
 
   public LivyPySparkInterpreter(Properties property) {
     super(property);
-    userSessionMap = new HashMap<>();
-    livyHelper = new LivyHelper(property);
+    lsmap = LivyPySparkSessionMap.getInstance();
+    livyHelper = new LivyHelper(property, type);
   }
 
   @Override
@@ -52,15 +54,15 @@ public class LivyPySparkInterpreter extends Interpreter {
 
   @Override
   public void close() {
-    livyHelper.closeSession(userSessionMap);
+    livyHelper.closeSession(lsmap.getSparkUserSessionMap());
   }
 
   @Override
   public InterpreterResult interpret(String line, InterpreterContext interpreterContext) {
     try {
-      if (userSessionMap.get(interpreterContext.getAuthenticationInfo().getUser()) == null) {
+      if (lsmap.getSparkUserSession(interpreterContext.getAuthenticationInfo().getUser()) == null) {
         try {
-          userSessionMap.put(
+          lsmap.setSparkUserSessionMap(
               interpreterContext.getAuthenticationInfo().getUser(),
               livyHelper.createSession(
                   interpreterContext,
@@ -76,7 +78,7 @@ public class LivyPySparkInterpreter extends Interpreter {
         return new InterpreterResult(InterpreterResult.Code.SUCCESS, "");
       }
 
-      return livyHelper.interpret(line, interpreterContext, userSessionMap);
+      return livyHelper.interpret(line, interpreterContext);
     } catch (Exception e) {
       LOGGER.error("Exception in LivyPySparkInterpreter while interpret ", e);
       return new InterpreterResult(InterpreterResult.Code.ERROR,

@@ -49,9 +49,14 @@ public class LivyHelper {
   Gson gson = new GsonBuilder().setPrettyPrinting().create();
   HashMap<String, Object> paragraphHttpMap = new HashMap<>();
   Properties property;
+  String type;
+  String SPARK = "spark";
+  String SPARKR = "sparkr";
+  String PYSPARK = "pyspark";
 
-  LivyHelper(Properties property) {
+  LivyHelper(Properties property, String type) {
     this.property = property;
+    this.type = type;
   }
 
   public Integer createSession(InterpreterContext context, String kind) throws Exception {
@@ -132,7 +137,6 @@ public class LivyHelper {
 
   public InterpreterResult interpretInput(String stringLines,
                                           final InterpreterContext context,
-                                          final Map<String, Integer> userSessionMap,
                                           LivyOutputStream out) {
     try {
       String[] lines = stringLines.split("\n");
@@ -182,7 +186,7 @@ public class LivyHelper {
 
         InterpreterResult res;
         try {
-          res = interpret(incomplete + s, context, userSessionMap);
+          res = interpret(incomplete + s, context);
         } catch (Exception e) {
           LOGGER.error("Interpreter exception", e);
           return new InterpreterResult(Code.ERROR, InterpreterUtils.getMostRelevantMessage(e));
@@ -216,8 +220,7 @@ public class LivyHelper {
   }
 
   public InterpreterResult interpret(String stringLines,
-                                     final InterpreterContext context,
-                                     final Map<String, Integer> userSessionMap)
+                                     final InterpreterContext context)
       throws Exception {
     stringLines = stringLines
         //for "\n" present in string
@@ -232,7 +235,7 @@ public class LivyHelper {
     if (stringLines.trim().equals("")) {
       return new InterpreterResult(Code.SUCCESS, "");
     }
-    Map jsonMap = executeCommand(stringLines, context, userSessionMap);
+    Map jsonMap = executeCommand(stringLines, context);
     Integer id = ((Double) jsonMap.get("id")).intValue();
     InterpreterResult res = getResultFromMap(jsonMap);
     if (res != null) {
@@ -244,7 +247,7 @@ public class LivyHelper {
       if (paragraphHttpMap.get(context.getParagraphId()) == null) {
         return new InterpreterResult(Code.INCOMPLETE, "");
       }
-      jsonMap = getStatusById(context, userSessionMap, id);
+      jsonMap = getStatusById(context, id);
       InterpreterResult interpreterResult = getResultFromMap(jsonMap);
       if (interpreterResult != null) {
         return interpreterResult;
@@ -289,10 +292,10 @@ public class LivyHelper {
     return null;
   }
 
-  private Map executeCommand(String lines, InterpreterContext context,
-                             Map<String, Integer> userSessionMap) throws Exception {
+  private Map executeCommand(String lines, InterpreterContext context
+  ) throws Exception {
     String json = executeHTTP(property.get("zeppelin.livy.url") + "/sessions/"
-            + userSessionMap.get(context.getAuthenticationInfo().getUser())
+            + getUserSessionId(context)
             + "/statements",
         "POST",
         "{\"code\": \"" + lines + "\" }",
@@ -311,11 +314,29 @@ public class LivyHelper {
       throw e;
     }
   }
+  
+  private Integer getUserSessionId(InterpreterContext context) {
+    Integer sessionId = null;
+    if (this.type.equalsIgnoreCase(SPARK)){
+      sessionId = LivySparkSessionMap.getInstance().getSparkUserSession(context
+            .getAuthenticationInfo().getUser());
+    }
+    if (this.type.equalsIgnoreCase(SPARKR)){
+      sessionId = LivySparkRSessionMap.getInstance().getSparkUserSession(context
+            .getAuthenticationInfo().getUser());
+    }
+    if (this.type.equalsIgnoreCase(PYSPARK)){
+      sessionId = LivyPySparkSessionMap.getInstance().getSparkUserSession(context
+            .getAuthenticationInfo().getUser());
+    }
+    return sessionId;
+  }
 
   private Map getStatusById(InterpreterContext context,
-                            Map<String, Integer> userSessionMap, Integer id) throws Exception {
+                            Integer id) throws Exception {
+
     String json = executeHTTP(property.getProperty("zeppelin.livy.url") + "/sessions/"
-            + userSessionMap.get(context.getAuthenticationInfo().getUser())
+            + getUserSessionId(context)
             + "/statements/" + id,
         "GET", null, context.getParagraphId());
     try {
