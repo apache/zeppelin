@@ -28,12 +28,16 @@ import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.InterpreterUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.NestedRuntimeException;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.kerberos.client.KerberosRestTemplate;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.client.RestTemplate;
 
 import java.nio.charset.Charset;
@@ -294,15 +298,24 @@ public class LivyHelper {
 
   private Map executeCommand(String lines, InterpreterContext context
   ) throws Exception {
+    boolean clearSession = false;
     String json = executeHTTP(property.get("zeppelin.livy.url") + "/sessions/"
             + getUserSessionId(context)
             + "/statements",
         "POST",
         "{\"code\": \"" + lines + "\" }",
         context.getParagraphId());
-    if (json.matches("^(\")?Session (\'[0-9]\' )?not found(.?\"?)$")) {
+    if (json != null) {
+      if (json.matches("^(\")?Session (\'[0-9]\' )?not found(.?\"?)$")) {
+        clearSession = true;
+      }
+    } else {
+      clearSession = true;
+    }
+    if (clearSession) {
+      removeSessionId(context);
       throw new Exception("Exception: Session not found, Livy server would have restarted, " +
-          "or lost session.");
+            "or lost session.");
     }
     try {
       Map jsonMap = gson.fromJson(json,
@@ -330,6 +343,29 @@ public class LivyHelper {
             .getAuthenticationInfo().getUser());
     }
     return sessionId;
+  }
+  
+  private void removeSessionId(InterpreterContext context) {
+    Integer sessionId = null;
+    if (this.type.equalsIgnoreCase(SPARK)){
+      sessionId = LivySparkSessionMap.getInstance().getSparkUserSession(context
+            .getAuthenticationInfo().getUser());
+      LivySparkSessionMap.getInstance().deleteSparkUserSessionMap(context
+            .getAuthenticationInfo().getUser());
+    }
+    if (this.type.equalsIgnoreCase(SPARKR)){
+      sessionId = LivySparkRSessionMap.getInstance().getSparkUserSession(context
+            .getAuthenticationInfo().getUser());
+      LivySparkRSessionMap.getInstance().deleteSparkUserSessionMap(context
+            .getAuthenticationInfo().getUser());
+    }
+    if (this.type.equalsIgnoreCase(PYSPARK)){
+      sessionId = LivyPySparkSessionMap.getInstance().getSparkUserSession(context
+            .getAuthenticationInfo().getUser());
+      LivyPySparkSessionMap.getInstance().deleteSparkUserSessionMap(context
+            .getAuthenticationInfo().getUser());
+    }
+    LOGGER.info(String.format("Removing Session from userSessionMap: %s", sessionId));
   }
 
   private Map getStatusById(InterpreterContext context,
@@ -380,10 +416,15 @@ public class LivyHelper {
         HttpEntity<String> entity = new HttpEntity<String>(headers);
         response = restTemplate.exchange(targetURL, HttpMethod.DELETE, entity, String.class);
       }
-    } catch (HttpClientErrorException e) {
-      response = new ResponseEntity(e.getResponseBodyAsString(), e.getStatusCode());
-      LOGGER.error(String.format("Error with %s StatusCode: %s",
-          response.getStatusCode().value(), e.getResponseBodyAsString()));
+    } catch (NestedRuntimeException e) {
+      // This needs to be a nestedException if not it cannot handle it due to HttpClientException being nested
+      if (e.getRootCause() instanceof HttpClientErrorException) {
+        HttpClientErrorException hce = (HttpClientErrorException) e.getRootCause();
+        response = new ResponseEntity(hce.getResponseBodyAsString(), 
+              HttpStatus.valueOf(hce.getRawStatusCode()));
+        LOGGER.error(String.format("Error with %s StatusCode: %s",
+             response.getStatusCode().value(), hce.getResponseBodyAsString()));
+      }
     }
     if (response == null) {
       return null;
