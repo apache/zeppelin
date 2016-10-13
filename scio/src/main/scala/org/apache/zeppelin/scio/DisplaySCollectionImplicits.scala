@@ -44,8 +44,7 @@ object DisplaySCollectionImplicits {
     /** Convenience method to close the current [[com.spotify.scio.ScioContext]]
      * and display elements from SCollection. */
     def closeAndDisplay(printer: (T) => String = (e: T) => e.toString): Unit = {
-      val it = materialize(self).waitForResult().value
-      DisplayHelpers.displayAnyVal(it, printer)
+      DisplayTapImplicits.ZeppelinTap(materialize(self).waitForResult()).display(printer)
     }
   }
 
@@ -56,8 +55,7 @@ object DisplaySCollectionImplicits {
     /** Convenience method to close the current [[com.spotify.scio.ScioContext]]
      * and display elements from SCollection. */
     def closeAndDisplay(printer: (T) => String = (e: T) => e.toString): Unit = {
-      val it = materialize(self).waitForResult().value
-      DisplayHelpers.displayString(it, printer)
+      DisplayTapImplicits.ZeppelinStringTap(materialize(self).waitForResult()).display(printer)
     }
   }
 
@@ -67,8 +65,7 @@ object DisplaySCollectionImplicits {
     /** Convenience method to close the current [[com.spotify.scio.ScioContext]]
      * and display elements from KV SCollection. */
     def closeAndDisplay(): Unit = {
-      val it = materialize(self).waitForResult().value
-      DisplayHelpers.displayKV(it)
+      DisplayTapImplicits.ZeppelinKVTap(materialize(self).waitForResult()).display()
     }
   }
 
@@ -79,8 +76,7 @@ object DisplaySCollectionImplicits {
     /** Convenience method to close the current [[com.spotify.scio.ScioContext]]
      * and display elements from Product like SCollection */
     def closeAndDisplay(): Unit = {
-      val it = materialize(self).waitForResult().value
-      DisplayHelpers.displayProduct(it)
+      DisplayTapImplicits.ZeppelinProductTap(materialize(self).waitForResult()).display()
     }
   }
 
@@ -91,8 +87,7 @@ object DisplaySCollectionImplicits {
     /** Convenience method to close the current [[com.spotify.scio.ScioContext]]
      * and display elements from Avro like SCollection */
     def closeAndDisplay(schema: Schema = null): Unit = {
-      val it = materialize(self).waitForResult().value
-      DisplayHelpers.displayAvro(it, schema)
+      DisplayTapImplicits.ZeppelinAvroTap(materialize(self).waitForResult()).display(schema)
     }
   }
 
@@ -103,8 +98,7 @@ object DisplaySCollectionImplicits {
     /** Convenience method to close the current [[com.spotify.scio.ScioContext]]
      * and display elements from TableRow like SCollection */
     def closeAndDisplay(schema: TableSchema): Unit = {
-      val it = materialize(self).waitForResult().value
-      DisplayHelpers.displayBQTableRow(it, schema)
+      DisplayTapImplicits.ZeppelinBQTableTap(materialize(self).waitForResult()).display(schema)
     }
   }
 
