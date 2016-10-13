@@ -259,6 +259,9 @@ public class NotebookServer extends WebSocketServlet implements
           case EDITOR_SETTING:
             getEditorSetting(conn, messagereceived);
             break;
+          case GET_INTERPRETER_SETTINGS:
+            getInterpreterSettings(conn, subject);
+            break;
           default:
             break;
       }
@@ -700,11 +703,27 @@ public class NotebookServer extends WebSocketServlet implements
                           Notebook notebook, Message message)
       throws IOException {
     AuthenticationInfo subject = new AuthenticationInfo(message.principal);
-    Note note = notebook.createNote(subject);
+    Note note = null;
+
+    String defaultInterpreterId = (String) message.get("defaultInterpreterId");
+    if (!StringUtils.isEmpty(defaultInterpreterId)) {
+      List<String> interpreterSettingIds = new LinkedList<>();
+      interpreterSettingIds.add(defaultInterpreterId);
+      for (String interpreterSettingId : notebook.getInterpreterFactory().
+              getDefaultInterpreterSettingList()) {
+        if (!interpreterSettingId.equals(defaultInterpreterId)) {
+          interpreterSettingIds.add(interpreterSettingId);
+        }
+      }
+      note = notebook.createNote(interpreterSettingIds, subject);
+    } else {
+      note = notebook.createNote(subject);
+    }
+
     note.addParagraph(); // it's an empty note. so add one paragraph
     if (message != null) {
       String noteName = (String) message.get("name");
-      if (noteName == null || noteName.isEmpty()){
+      if (StringUtils.isEmpty(noteName)){
         noteName = "Note " + note.getId();
       }
       note.setName(noteName);
@@ -1662,5 +1681,13 @@ public class NotebookServer extends WebSocketServlet implements
     conn.send(serializeMessage(resp));
     return;
   }
+
+  private void getInterpreterSettings(NotebookSocket conn, AuthenticationInfo subject) 
+      throws IOException {
+    List<InterpreterSetting> availableSettings = notebook().getInterpreterFactory().get();
+    conn.send(serializeMessage(new Message(OP.INTERPRETER_SETTINGS)
+            .put("interpreterSettings", availableSettings)));
+  }
+
 }
 

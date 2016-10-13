@@ -29,10 +29,15 @@
     vm.notes = noteListDataFactory;
     vm.websocketMsgSrv = websocketMsgSrv;
     $scope.note = {};
+    $scope.interpreterSettings = {};
 
     vm.createNote = function() {
       if (!vm.clone) {
-        vm.websocketMsgSrv.createNote($scope.note.notename);
+        var defaultInterpreterId = '';
+        if ($scope.note.defaultInterpreter !== undefined && $scope.note.defaultInterpreter !== '') {
+          defaultInterpreterId = $scope.note.defaultInterpreter.id;
+        }
+        vm.websocketMsgSrv.createNotebook($scope.note.notename, defaultInterpreterId);
       } else {
         var noteId = $routeParams.noteId;
         vm.websocketMsgSrv.cloneNote(noteId, $scope.note.notename);
@@ -90,6 +95,22 @@
       }
       return newCloneName + ' ' + copyCount;
     };
+
+    vm.getInterpreterSettings = function() {
+      vm.websocketMsgSrv.getInterpreterSettings();
+    };
+
+    $scope.$on('interpreterSettings', function(event, data) {
+      $scope.interpreterSettings = data.interpreterSettings;
+    });
+
+    var init = function() {
+      if (!vm.clone) {
+        vm.getInterpreterSettings();
+      }
+    };
+
+    init();
   }
 
 })();
