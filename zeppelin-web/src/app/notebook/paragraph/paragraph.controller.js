@@ -1070,6 +1070,7 @@
     var setD3Chart = function(type, data, refresh) {
       if (!$scope.chart[type]) {
         var chart = nv.models[type]();
+        chart._options.noData = 'Invalid Data, check graph settings';
         $scope.chart[type] = chart;
       }
 
@@ -1086,7 +1087,6 @@
 
         $scope.chart[type].xAxis.tickFormat(function(d) {return xAxisTickFormat(d, xLabels);});
         $scope.chart[type].yAxis.tickFormat(function(d) {return yAxisTickFormat(d, yLabels);});
-
         // configure how the tooltip looks.
         $scope.chart[type].tooltipContent(function(key, x, y, graph, data) {
           var tooltipContent = '<h3>' + key + '</h3>';
