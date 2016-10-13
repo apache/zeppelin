@@ -41,7 +41,7 @@ public class HdfsSite {
    */
   public HdfsSite(String hadoopConfDir) throws URISyntaxException {
     logger.info("hadoopConfDir:" + hadoopConfDir);
-    if (StringUtils.isBlank(hadoopConfDir)) {
+    if (!StringUtils.isBlank(hadoopConfDir)) {
       final Path coreSite = new Path(hadoopConfDir, "core-site.xml");
       conf.addResource(coreSite);
       final Path hdfsSite = new Path(hadoopConfDir, "hdfs-site.xml");
