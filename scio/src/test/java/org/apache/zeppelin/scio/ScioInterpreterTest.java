@@ -79,14 +79,14 @@ public class ScioInterpreterTest {
   public void testBasicSyntaxError() {
     InterpreterResult error = repl.interpret("val a:Int = 'ds'", context);
     assertEquals(InterpreterResult.Code.ERROR, error.code());
-    assertTrue(error.message().length() > 0);
+    assertEquals("Interpreter error", error.message());
   }
 
   @Test
   public void testBasicIncomplete() {
     InterpreterResult incomplete = repl.interpret("val a = \"\"\"", context);
     assertEquals(InterpreterResult.Code.INCOMPLETE, incomplete.code());
-    assertTrue(incomplete.message().length() > 0);
+    assertEquals("Incomplete expression", incomplete.message());
   }
 
   @Test
