@@ -13,13 +13,15 @@ limitations under the License.
 -->
 
   <div id="noteImportModal" class="modal fade" role="dialog"
-       tabindex='-1'>
+       tabindex="-1" data-backdrop="static" data-keyboard="false">
     <div class="modal-dialog">
 
       <!-- Modal content-->
       <div class="modal-content" id="NoteImportCtrl" ng-init="NoteImportInit">
         <div class="modal-header">
-          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <!-- close button -->
+          <button type="button" class="close" data-dismiss="modal" ng-click="noteimportctrl.resetFlags()">&times;</button>
+
           <h4 class="modal-title">Import new note</h4>
         </div>
         <div class="modal-body">
