@@ -289,15 +289,19 @@
     };
 
     $scope.newInterpreterGroupChange = function() {
+      console.log('clover ', $scope.availableInterpreters);
       var el = _.pluck(_.filter($scope.availableInterpreters, {'name': $scope.newInterpreterSetting.group}),
         'properties');
       var properties = {};
       for (var i = 0; i < el.length; i++) {
         var intpInfo = el[i];
         for (var key in intpInfo) {
+          if (/.*(-description)$/.test(key)) {
+            continue;
+          }
           properties[key] = {
             value: intpInfo[key],
-            description: intpInfo[key].description
+            description: intpInfo[key + '-description']
           };
         }
       }
