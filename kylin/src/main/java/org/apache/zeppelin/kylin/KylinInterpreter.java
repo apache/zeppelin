@@ -56,24 +56,6 @@ public class KylinInterpreter extends Interpreter {
   static final Pattern KYLIN_TABLE_FORMAT_REGEX_LABEL = Pattern.compile("\"label\":\"(.*?)\"");
   static final Pattern KYLIN_TABLE_FORMAT_REGEX = Pattern.compile("\"results\":\\[\\[\"(.*?)\"]]");
 
-  static {
-    Interpreter.register(
-        "kylin",
-        "kylin",
-        KylinInterpreter.class.getName(),
-        new InterpreterPropertyBuilder()
-            .add(KYLIN_USERNAME, "ADMIN", "username for kylin user")
-            .add(KYLIN_PASSWORD, "KYLIN", "password for kylin user")
-            .add(KYLIN_QUERY_API_URL, "http://<host>:<port>/kylin/api/query", "Kylin API.")
-            .add(KYLIN_QUERY_PROJECT, "default", "kylin project name")
-            .add(KYLIN_QUERY_OFFSET, "0", "kylin query offset")
-            .add(KYLIN_QUERY_LIMIT, "5000", "kylin query limit")
-            .add(KYLIN_QUERY_ACCEPT_PARTIAL, "true", "The kylin query partial flag").build());
-  }
-
-
-
-
   public KylinInterpreter(Properties property) {
     super(property);
   }
