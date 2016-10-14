@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
 
 
 /**
@@ -37,12 +38,12 @@ public class LivyPySparkInterpreter extends Interpreter {
 
   Logger LOGGER = LoggerFactory.getLogger(LivyPySparkInterpreter.class);
 
-  protected Map<String, Integer> userSessionMap;
+  protected ConcurrentHashMap<String, Integer> userSessionMap;
   protected LivyHelper livyHelper;
 
   public LivyPySparkInterpreter(Properties property) {
     super(property);
-    userSessionMap = new HashMap<>();
+    userSessionMap = new ConcurrentHashMap<>();
     livyHelper = new LivyHelper(property);
   }
 

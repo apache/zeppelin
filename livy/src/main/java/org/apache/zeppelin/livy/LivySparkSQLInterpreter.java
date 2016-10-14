@@ -27,6 +27,7 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
 
 
 /**
@@ -36,7 +37,7 @@ public class LivySparkSQLInterpreter extends Interpreter {
 
   Logger LOGGER = LoggerFactory.getLogger(LivySparkSQLInterpreter.class);
 
-  protected Map<String, Integer> userSessionMap;
+  protected ConcurrentHashMap<String, Integer> userSessionMap;
   private LivyHelper livyHelper;
 
   public LivySparkSQLInterpreter(Properties property) {
@@ -57,17 +58,19 @@ public class LivySparkSQLInterpreter extends Interpreter {
   @Override
   public InterpreterResult interpret(String line, InterpreterContext interpreterContext) {
     try {
-      if (userSessionMap.get(interpreterContext.getAuthenticationInfo().getUser()) == null) {
-        try {
-          userSessionMap.put(
-              interpreterContext.getAuthenticationInfo().getUser(),
-              livyHelper.createSession(
-                  interpreterContext,
-                  "spark")
-          );
-        } catch (Exception e) {
-          LOGGER.error("Exception in LivySparkSQLInterpreter while interpret ", e);
-          return new InterpreterResult(InterpreterResult.Code.ERROR, e.getMessage());
+      synchronized (userSessionMap) {
+        if (userSessionMap.get(interpreterContext.getAuthenticationInfo().getUser()) == null) {
+          try {
+            userSessionMap.put(
+                    interpreterContext.getAuthenticationInfo().getUser(),
+                    livyHelper.createSession(
+                            interpreterContext,
+                            "spark")
+            );
+          } catch (Exception e) {
+            LOGGER.error("Exception in LivySparkSQLInterpreter while interpret ", e);
+            return new InterpreterResult(InterpreterResult.Code.ERROR, e.getMessage());
+          }
         }
       }
 
