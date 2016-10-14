@@ -135,6 +135,7 @@ public class VFSNotebookRepoTest implements JobListenerFactory {
     note.setName("SaveTest");
     notebookRepo.save(note, null);
     assertEquals(note.getName(), "SaveTest");
+    notebookRepo.remove(note.getId(), null);
   }
 
   class NotebookWriter implements Runnable {

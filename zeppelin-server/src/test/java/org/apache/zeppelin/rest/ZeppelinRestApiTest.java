@@ -104,6 +104,8 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
 
     assertTrue(paragraphs.size() > 0);
     assertEquals(paragraphText, paragraphs.get(0).get("text"));
+    //
+    ZeppelinServer.notebook.removeNote(sourceNoteID, null);
   }
 
   @Test
