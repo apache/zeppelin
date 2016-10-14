@@ -25,63 +25,136 @@ limitations under the License.
 
 ## Overview
 
-This interpreter lets you create a JDBC connection to any data source, by now it has been tested with:
+JDBC interpreter lets you create a JDBC connection to any data sources seamlessly. By now, it has been tested with:
 
-* Postgres
-* MySql
-* MariaDB
-* Redshift
-* Apache Hive
-* Apache Phoenix
-* Apache Drill (Details on using [Drill JDBC Driver](https://drill.apache.org/docs/using-the-jdbc-driver))
-* Apache Tajo
+<div class="row" style="margin: 30px auto;">
+  <div class="col-md-6">
+    <img src="../assets/themes/zeppelin/img/docs-img/tested_databases.png" width="300px"/>
+  </div>
+  <div class="col-md-6">
+    <li style="padding-bottom: 5px; list-style: circle">
+      <a href="http://www.postgresql.org/" target="_blank">Postgresql</a> -
+      <a href="https://jdbc.postgresql.org/" target="_blank">JDBC Driver</a>
+    </li>
+    <li style="padding-bottom: 5px; list-style: circle">
+      <a href="https://www.mysql.com/" target="_blank">Mysql</a> -
+      <a href="https://dev.mysql.com/downloads/connector/j/" target="_blank">JDBC Driver</a>
+    </li>
+    <li style="padding-bottom: 5px; list-style: circle">
+      <a href="https://mariadb.org/" target="_blank">MariaDB</a> -
+      <a href="https://mariadb.com/kb/en/mariadb/about-mariadb-connector-j/" target="_blank">JDBC Driver</a>
+    </li>
+    <li style="padding-bottom: 5px; list-style: circle">
+      <a href="https://aws.amazon.com/documentation/redshift/" target="_blank">Redshift</a> -
+      <a href="https://docs.aws.amazon.com/redshift/latest/mgmt/configure-jdbc-connection.html" target="_blank">JDBC Driver</a>
+    </li>
+    <li style="padding-bottom: 5px; list-style: circle">
+      <a href="https://hive.apache.org/" target="_blank">Apache Hive</a> - 
+      <a href="https://cwiki.apache.org/confluence/display/Hive/HiveClient#HiveClient-JDBC" target="_blank">JDBC Driver</a>
+    </li>
+    <li style="padding-bottom: 5px; list-style: circle">
+      <a href="https://phoenix.apache.org/" target="_blank">Apache Phoenix</a> itself is a JDBC driver
+    </li>
+    <li style="padding-bottom: 5px; list-style: circle">
+      <a href="https://drill.apache.org/" target="_blank">Apache Drill</a> - 
+      <a href="https://drill.apache.org/docs/using-the-jdbc-driver" target="_blank">JDBC Driver</a>
+    </li>
+    <li style="padding-bottom: 5px; list-style: circle">
+      <a href="http://tajo.apache.org/" target="_blank">Apache Tajo</a> - 
+      <a href="https://tajo.apache.org/docs/current/jdbc_driver.html" target="_blank">JDBC Driver</a>
+    </li>
+  </div>
+</div>
 
-If someone else used another database please report how it works to improve functionality.
+If you are using other databases not in the above list, please feel free to share your use case. It would be helpful to improve the functionality of JDBC interpreter.
 
-## Create Interpreter
+## Create a new JDBC Interpreter
 
-When you create a interpreter by default use PostgreSQL with the next properties:
+First, click `+ Create` button at the top-right corner in the interpreter setting page.
+
+<img src="../assets/themes/zeppelin/img/docs-img/click_create_button.png" width="600px"/>
+
+Fill `Interpreter name` field with whatever you want to use as the alias(e.g. mysql, mysql2, hive, redshift, and etc..). Please note that this alias will be used as `%interpreter_name` to call the interpreter in the paragraph. 
+Then select `jdbc` as an `Interpreter group`. 
+
+<img src="../assets/themes/zeppelin/img/docs-img/select_name_and_group.png" width="200px"/>
+
+The default driver of JDBC interpreter is set as `PostgreSQL`. It means Zeppelin includes `PostgreSQL` driver jar in itself.
+So you don't need to add any dependencies(e.g. the artifact name or path for `PostgreSQL` driver jar) for `PostgreSQL` connection.
+The JDBC interpreter properties are defined by default like below.
 
 <table class="table-configuration">
   <tr>
-    <th>name</th>
-    <th>value</th>
+    <th>Name</th>
+    <th>Default Value</th>
+    <th>Description</th>
   </tr>
   <tr>
     <td>common.max_count</td>
     <td>1000</td>
+    <td>The maximun number of SQL result to display</td>
   </tr>
   <tr>
     <td>default.driver</td>
     <td>org.postgresql.Driver</td>
+    <td>JDBC Driver Name</td>
   </tr>
   <tr>
     <td>default.password</td>
-    <td>********</td>
+    <td></td>
+    <td>The JDBC user password</td>
   </tr>
   <tr>
     <td>default.url</td>
     <td>jdbc:postgresql://localhost:5432/</td>
+    <td>The URL for JDBC</td>
   </tr>
   <tr>
     <td>default.user</td>
     <td>gpadmin</td>
-  </tr>      
+    <td>The JDBC user name</td>
+  </tr>
 </table>
 
-It is not necessary to add driver jar to the classpath for PostgreSQL as it is included in Zeppelin.
+If you want to connect other databases such as `Mysql`, `Redshift` and `Hive`, you need to edit the property values. 
+The below example is for `Mysql` connection.
 
-### Simple connection
+<img src="../assets/themes/zeppelin/img/docs-img/edit_properties.png" width="600px" />
 
-Prior to creating the interpreter it is necessary to add maven coordinate or path of the JDBC driver to the Zeppelin classpath. To do this you must edit dependencies artifact(ex. `mysql:mysql-connector-java:5.1.38`) in interpreter menu as shown:
+The last step is **Dependency Setting**. Since Zeppelin only includes `PostgreSQL` driver jar by default, you need to add each driver's maven coordinates or JDBC driver's jar file path for the other databases.
 
-<div class="row">
-  <div class="col-md-11">
-    <img src="../assets/themes/zeppelin/img/docs-img/jdbc-simple-connection-setting.png" />
-  </div>
-</div>
+<img src="../assets/themes/zeppelin/img/docs-img/edit_dependencies.png" width="600px" />
 
-To create the interpreter you need to specify connection parameters as shown in the table.
+That's it. You can find more JDBC connection setting examples([Mysql](#mysql), [Apache Hive](#apache-hive), [Apache Phoenix](#apache-phoenix), and [Apache Tajo](#apache-tajo)) in [this section](#examples).
+
+## More properties
+There are more JDBC interpreter properties you can specify like below.
+
+<table class="table-configuration">
+  <tr>
+    <th>Property Name</th>
+    <th>Description</th>
+  </tr>
+  <tr>
+    <td>common.max_result</td>
+    <td>Max number of SQL result to display to prevent the browser overload. This is  common properties for all connections</td>
+  </tr>
+  <tr>
+    <td>zeppelin.jdbc.auth.type</td>
+    <td>Types of authentications' methods supported are <code>SIMPLE</code>, and <code>KERBEROS</code></td>
+  </tr>
+  <tr>
+    <td>zeppelin.jdbc.principal</td>
+    <td>The principal name to load from the keytab</td>
+  </tr>
+  <tr>
+    <td>zeppelin.jdbc.keytab.location</td>
+    <td>The path to the keytab file</td>
+  </tr>
+</table>
+
+You can also add more properties by using this [method](http://docs.oracle.com/javase/7/docs/api/java/sql/DriverManager.html#getConnection%28java.lang.String,%20java.util.Properties%29).
+For example, if a connection needs a schema parameter, it would have to add the property as follows:
 
 <table class="table-configuration">
   <tr>
@@ -89,55 +162,62 @@ To create the interpreter you need to specify connection parameters as shown in 
     <th>value</th>
   </tr>
   <tr>
-    <td>common.max_count</td>
-    <td>1000</td>
+    <td>default.schema</td>
+    <td>schema_name</td>
   </tr>
-  <tr>
-    <td>default.driver</td>
-    <td>driver name</td>
-  </tr>
-  <tr>
-    <td>default.password</td>
-    <td>********</td>
-  </tr>
-  <tr>
-    <td>default.url</td>
-    <td>jdbc url</td>
-  </tr>
-  <tr>
-    <td>default.user</td>
-    <td>user name</td>
-  </tr>      
 </table>
 
-### Multiple connections
+## Binding JDBC interpter to notebook
+To bind the interpreters created in the interpreter setting page, click the gear icon at the top-right corner.
 
-JDBC interpreter also allows connections to multiple data sources. It is necessary to set a prefix for each connection to reference it in the paragraph in the form of `%jdbc(prefix)`. Before you create the interpreter it is necessary to add each driver's maven coordinates or JDBC driver's jar file path to the Zeppelin classpath. To do this you must edit the dependencies of JDBC interpreter in interpreter menu as following:
+<img src="../assets/themes/zeppelin/img/docs-img/click_interpreter_binding_button.png" width="600px" />
 
-<div class="row">
-  <div class="col-md-11">
-    <img src="../assets/themes/zeppelin/img/docs-img/jdbc-multi-connection-setting.png" />
-  </div>
-</div>
+Select(blue) or deselect(white) the interpreter buttons depending on your use cases. 
+If you need to use more than one interpreter in the notebook, activate several buttons.
+Don't forget to click `Save` button, or you will face `Interpreter *** is not found` error.
 
-You can add all the jars you need to make multiple connections into the same JDBC interpreter. To create the interpreter you must specify the parameters. For example we will create two connections to MySQL and Redshift, the respective prefixes are `default` and `redshift`:
+<img src="../assets/themes/zeppelin/img/docs-img/jdbc_interpreter_binding.png" width="550px" />
 
+## How to use
+### Run the paragraph with JDBC interpreter
+To test whether your databases and Zeppelin are successfully connected or not, type `%jdbc_interpreter_name`(e.g. `%mysql`) at the top of the paragraph and run `show databases`.
+
+```sql
+%jdbc_interpreter_name
+show databases
+```
+If the paragraph is `FINISHED` without any errors, a new paragraph will be automatically added after the previous one with `%jdbc_interpreter_name`.
+So you don't need to type this prefix in every paragraphs' header.
+
+<img src="../assets/themes/zeppelin/img/docs-img/run_paragraph_with_jdbc.png" width="600px" />
+
+### Apply Zeppelin Dynamic Forms
+
+You can leverage [Zeppelin Dynamic Form](../manual/dynamicform.html) inside your queries. You can use both the `text input` and `select form` parametrization features.
+
+```sql
+%jdbc_interpreter_name
+SELECT name, country, performer
+FROM demo.performers
+WHERE name='{{"{{performer=Sheryl Crow|Doof|Fanfarlo|Los Paranoia"}}}}'
+```
+
+## Examples
+Here are some examples you can refer to. Including the below connectors, you can connect every databases as long as it can be configured with it's JDBC driver.
+
+### Mysql
+
+<img src="../assets/themes/zeppelin/img/docs-img/mysql_setting.png" width="600px" />
+
+##### Properties
 <table class="table-configuration">
   <tr>
-    <th>name</th>
-    <th>value</th>
-  </tr>
-  <tr>
-    <td>common.max_count</td>
-    <td>1000</td>
+    <th>Name</th>
+    <th>Value</th>
   </tr>
   <tr>
     <td>default.driver</td>
     <td>com.mysql.jdbc.Driver</td>
-  </tr>
-  <tr>
-    <td>default.password</td>
-    <td>********</td>
   </tr>
   <tr>
     <td>default.url</td>
@@ -145,262 +225,200 @@ You can add all the jars you need to make multiple connections into the same JDB
   </tr>
   <tr>
     <td>default.user</td>
-    <td>mysql-user</td>
+    <td>mysql_user</td>
   </tr>
   <tr>
-    <td>redshift.driver</td>
-    <td>com.amazon.redshift.jdbc4.Driver</td>
+    <td>default.password</td>
+    <td>mysql_password</td>
   </tr>
-  <tr>
-    <td>redshift.password</td>
-    <td>********</td>
-  </tr>
-  <tr>
-    <td>redshift.url</td>
-    <td>jdbc:redshift://examplecluster.abc123xyz789.us-west-2.redshift.amazonaws.com:5439</td>
-  </tr>
-  <tr>
-    <td>redshift.user</td>
-    <td>redshift-user</td>
-  </tr>      
 </table>
 
-
-## Bind to Notebook
-In the `Notebook` click on the `settings` icon at the top-right corner. Use select/deselect to specify the interpreters to be used in the `Notebook`.
-
-## More Properties
-You can modify the interpreter configuration in the `Interpreter` section. The most common properties are as follows, but you can specify other properties that need to be connected.
-
- <table class="table-configuration">
-   <tr>
-     <th>Property Name</th>
-     <th>Description</th>
-   </tr>
-   <tr>
-     <td>{prefix}.url</td>
-     <td>JDBC URL to connect, the URL must include the name of the database </td>
-   </tr>
-   <tr>
-     <td>{prefix}.user</td>
-     <td>JDBC user name</td>
-   </tr>
-   <tr>
-     <td>{prefix}.password</td>
-     <td>JDBC password</td>
-   </tr>
-   <tr>
-     <td>{prefix}.driver</td>
-     <td>JDBC driver name.</td>
-   </tr>
-   <tr>
-     <td>common.max_result</td>
-     <td>Max number of SQL result to display to prevent the browser overload. This is  common properties for all connections</td>
-   </tr>
-   <tr>
-     <td>zeppelin.jdbc.auth.type</td>
-     <td>Types of authentications' methods supported are SIMPLE, and KERBEROS</td>
-   </tr>
-   <tr>
-     <td>zeppelin.jdbc.principal</td>
-     <td>The principal name to load from the keytab</td>
-   </tr>
-   <tr>
-     <td>zeppelin.jdbc.keytab.location</td>
-     <td>The path to the keytab file</td>
-   </tr>
- </table>
-
-To develop this functionality use this [method](http://docs.oracle.com/javase/7/docs/api/java/sql/DriverManager.html#getConnection%28java.lang.String,%20java.util.Properties%29). For example if a connection needs a schema parameter, it would have to add the property as follows:
-
+##### Dependencies
 <table class="table-configuration">
   <tr>
-    <th>name</th>
-    <th>value</th>
+    <th>Artifact</th>
+    <th>Excludes</th>
   </tr>
   <tr>
-    <td>{prefix}.schema</td>
-    <td>schema_name</td>
+    <td>mysql:mysql-connector-java:5.1.38</td>
+    <td></td>
   </tr>
 </table>
 
-## Examples
+### Apache Hive 
 
-### Hive
+<img src="../assets/themes/zeppelin/img/docs-img/hive_setting.png" width="600px" />
 
-#### Properties
- <table class="table-configuration">
-   <tr>
-     <th>Name</th>
-     <th>Value</th>
-   </tr>
-   <tr>
-     <td>hive.driver</td>
-     <td>org.apache.hive.jdbc.HiveDriver</td>
-   </tr>
-   <tr>
-     <td>hive.url</td>
-     <td>jdbc:hive2://localhost:10000</td>
-   </tr>
-   <tr>
-     <td>hive.user</td>
-     <td>hive_user</td>
-   </tr>
-   <tr>
-     <td>hive.password</td>
-     <td>hive_password</td>
-   </tr>
- </table>
+##### Properties
+<table class="table-configuration">
+  <tr>
+    <th>Name</th>
+    <th>Value</th>
+  </tr>
+  <tr>
+    <td>default.driver</td>
+    <td>org.apache.hive.jdbc.HiveDriver</td>
+  </tr>
+  <tr>
+    <td>default.url</td>
+    <td>jdbc:hive2://localhost:10000</td>
+  </tr>
+  <tr>
+    <td>default.user</td>
+    <td>hive_user</td>
+  </tr>
+  <tr>
+    <td>default.password</td>
+    <td>hive_password</td>
+  </tr>
+</table>
 
-#### Dependencies
- <table class="table-configuration">
-   <tr>
-     <th>Artifact</th>
-     <th>Excludes</th>
-   </tr>
-   <tr>
-     <td>org.apache.hive:hive-jdbc:0.14.0</td>
-     <td></td>
-   </tr>
-   <tr>
-     <td>org.apache.hadoop:hadoop-common:2.6.0</td>
-     <td></td>
-   </tr>
- </table>
+##### Dependencies
+<table class="table-configuration">
+  <tr>
+    <th>Artifact</th>
+    <th>Excludes</th>
+  </tr>
+  <tr>
+    <td>org.apache.hive:hive-jdbc:0.14.0</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>org.apache.hadoop:hadoop-common:2.6.0</td>
+    <td></td>
+  </tr>
+</table>
 
-### Phoenix
+### Apache Phoenix
 
- Phoenix supports `thick` and `thin` connection types:
+Phoenix supports `thick` and `thin` connection types:
 
- - Thick client is faster, but must connect directly to ZooKeeper and HBase RegionServers.
- - Thin client has fewer dependencies and connects through a [Phoenix Query Server](http://phoenix.apache.org/server.html) instance.
+  - [Thick client](#thick-client-connection) is faster, but must connect directly to ZooKeeper and HBase RegionServers.
+  - [Thin client](#thin-client-connection) has fewer dependencies and connects through a [Phoenix Query Server](http://phoenix.apache.org/server.html) instance.
 
-Use the appropriate `phoenix.driver` and `phoenix.url` for your connection type.
+Use the appropriate `default.driver`, `default.url`, and the dependency artifact for your connection type.
 
-#### Properties:
- <table class="table-configuration">
-   <tr>
-     <th>Name</th>
-     <th>Value</th>
-     <th>Description</th>
-   </tr>
-   <tr>
-     <td>phoenix.driver</td>
-     <td>org.apache.phoenix.jdbc.PhoenixDriver</td>
-     <td>'Thick Client', connects directly to Phoenix</td>
-   </tr>
-   <tr>
-     <td>phoenix.driver</td>
-     <td>org.apache.phoenix.queryserver.client.Driver</td>
-     <td>'Thin Client', connects via Phoenix Query Server</td>
-   </tr>
-   <tr>
-     <td>phoenix.url</td>
-     <td>jdbc:phoenix:localhost:2181:/hbase-unsecure</td>
-     <td>'Thick Client', connects directly to Phoenix</td>
-   </tr>
-   <tr>
-     <td>phoenix.url</td>
-     <td>jdbc:phoenix:thin:url=http://localhost:8765;serialization=PROTOBUF</td>
-     <td>'Thin Client', connects via Phoenix Query Server</td>
-   </tr>
-   <tr>
-     <td>phoenix.user</td>
-     <td>phoenix_user</td>
-     <td></td>
-   </tr>
-   <tr>
-     <td>phoenix.password</td>
-     <td>phoenix_password</td>
-     <td></td>
-   </tr>
- </table>
-#### Dependencies:
+#### Thick client connection
+
+<img src="../assets/themes/zeppelin/img/docs-img/phoenix_thick_setting.png" width="600px" />
+
+##### Properties
+<table class="table-configuration">
+  <tr>
+    <th>Name</th>
+    <th>Value</th>
+  </tr>
+  <tr>
+    <td>default.driver</td>
+    <td>org.apache.phoenix.jdbc.PhoenixDriver</td>
+  </tr>
+  <tr>
+    <td>default.url</td>
+    <td>jdbc:phoenix:localhost:2181:/hbase-unsecure</td>
+  </tr>
+  <tr>
+    <td>default.user</td>
+    <td>phoenix_user</td>
+  </tr>
+  <tr>
+    <td>default.password</td>
+    <td>phoenix_password</td>
+  </tr>
+</table>
+
+##### Dependencies
+<table class="table-configuration">
+  <tr>
+    <th>Artifact</th>
+    <th>Excludes</th>
+  </tr>
+  <tr>
+    <td>org.apache.phoenix:phoenix-core:4.4.0-HBase-1.0</td>
+    <td></td>
+  </tr>
+</table>
+
+#### Thin client connection
+
+<img src="../assets/themes/zeppelin/img/docs-img/phoenix_thin_setting.png" width="600px" />
+
+##### Properties
+<table class="table-configuration">
+  <tr>
+    <th>Name</th>
+    <th>Value</th>
+  </tr>
+  <tr>
+    <td>default.driver</td>
+    <td>org.apache.phoenix.queryserver.client.Driver</td>
+  </tr>
+  <tr>
+    <td>default.url</td>
+    <td>jdbc:phoenix:thin:url=http://localhost:8765;serialization=PROTOBUF</td>
+  </tr>
+  <tr>
+    <td>default.user</td>
+    <td>phoenix_user</td>
+  </tr>
+  <tr>
+    <td>default.password</td>
+    <td>phoenix_password</td>
+  </tr>
+</table>
+
+##### Dependencies
  
- Include the dependency for your connection type (it should be only *one* of the following).
+Before Adding one of the below dependencies, check the Phoenix version first.
  
- <table class="table-configuration">
-   <tr>
-     <th>Artifact</th>
-     <th>Excludes</th>
-     <th>Description</th>
-   </tr>
-   <tr>
-     <td>org.apache.phoenix:phoenix-core:4.4.0-HBase-1.0</td>
-     <td></td>
-     <td>'Thick Client', connects directly to Phoenix</td>
-   </tr>
-   <tr>
-     <td>org.apache.phoenix:phoenix-server-client:4.7.0-HBase-1.1</td>
-     <td></td>
-     <td>'Thin Client' for Phoenix 4.7, connects via Phoenix Query Server</td>
-   </tr>
-   <tr>
-     <td>org.apache.phoenix:phoenix-queryserver-client:4.8.0-HBase-1.2</td>
-     <td></td>
-     <td>'Thin Client' for Phoenix 4.8+, connects via Phoenix Query Server</td>
-   </tr>
- </table>
+<table class="table-configuration">
+  <tr>
+    <th>Artifact</th>
+    <th>Excludes</th>
+    <th>Description</th>
+  </tr>
+  <tr>
+    <td>org.apache.phoenix:phoenix-server-client:4.7.0-HBase-1.1</td>
+    <td></td>
+    <td>For Phoenix <code>4.7</code></td>
+  </tr>
+  <tr>
+    <td>org.apache.phoenix:phoenix-queryserver-client:4.8.0-HBase-1.2</td>
+    <td></td>
+    <td>For Phoenix <code>4.8+</code></td>
+  </tr>
+</table>
 
-### Tajo
-#### Properties
- <table class="table-configuration">
-   <tr>
-     <th>Name</th>
-     <th>Value</th>
-   </tr>
-   <tr>
-     <td>tajo.driver</td>
-     <td>org.apache.tajo.jdbc.TajoDriver</td>
-   </tr>
-   <tr>
-     <td>tajo.url</td>
-     <td>jdbc:tajo://localhost:26002/default</td>
-   </tr>
- </table>
+### Apache Tajo
 
-#### Dependencies
- <table class="table-configuration">
-   <tr>
-     <th>Artifact</th>
-     <th>Excludes</th>
-   </tr>
-   <tr>
-     <td>org.apache.tajo:tajo-jdbc:0.11.0</td>
-     <td></td>
-   </tr>
- </table>
- 
-## How to use
+<img src="../assets/themes/zeppelin/img/docs-img/tajo_setting.png" width="600px" />
 
-### Reference in paragraph
+##### Properties
+<table class="table-configuration">
+  <tr>
+    <th>Name</th>
+    <th>Value</th>
+  </tr>
+  <tr>
+    <td>default.driver</td>
+    <td>org.apache.tajo.jdbc.TajoDriver</td>
+  </tr>
+  <tr>
+    <td>default.url</td>
+    <td>jdbc:tajo://localhost:26002/default</td>
+  </tr>
+</table>
 
-Start the paragraphs with the `%jdbc`, this will use the `default` prefix for connection. If you want to use other connection you should specify the prefix of it as follows `%jdbc(prefix)`:
+##### Dependencies
+<table class="table-configuration">
+  <tr>
+    <th>Artifact</th>
+    <th>Excludes</th>
+  </tr>
+  <tr>
+    <td>org.apache.tajo:tajo-jdbc:0.11.0</td>
+    <td></td>
+  </tr>
+</table>
 
-```sql
-%jdbc
-SELECT * FROM db_name;
-
-```
-
-or
-
-```sql
-%jdbc(prefix)
-SELECT * FROM db_name;
-
-```
-
-### Apply Zeppelin Dynamic Forms
-
-You can leverage [Zeppelin Dynamic Form](../manual/dynamicform.html) inside your queries. You can use both the `text input` and `select form` parametrization features
-
-```sql
-%jdbc(prefix)
-SELECT name, country, performer
-FROM demo.performers
-WHERE name='{{performer=Sheryl Crow|Doof|Fanfarlo|Los Paranoia}}'
-```
-
-## Bugs & Reporting
-If you find a bug for this interpreter, please create a [JIRA]( https://issues.apache.org/jira/browse/ZEPPELIN-382?jql=project%20%3D%20ZEPPELIN) ticket.
+## Bug reporting
+If you find a bug using JDBC interpreter, please create a [JIRA](https://issues.apache.org/jira/browse/ZEPPELIN) ticket.

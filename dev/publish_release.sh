@@ -44,7 +44,7 @@ NC='\033[0m' # No Color
 RELEASE_VERSION="$1"
 GIT_TAG="$2"
 
-PUBLISH_PROFILES="-Pbuild-distr -Pspark-2.0 -Phadoop-2.4 -Pyarn -Ppyspark -Psparkr -Pr"
+PUBLISH_PROFILES="-Ppublish-distr -Pspark-2.0 -Phadoop-2.4 -Pyarn -Ppyspark -Psparkr -Pr"
 PROJECT_OPTIONS="-pl !zeppelin-distribution"
 NEXUS_STAGING="https://repository.apache.org/service/local/staging"
 NEXUS_PROFILE="153446d1ac37c4"
