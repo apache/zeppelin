@@ -35,6 +35,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.kerberos.client.KerberosRestTemplate;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.core.NestedRuntimeException;
 import org.springframework.web.client.RestTemplate;
 
 import java.nio.charset.Charset;
@@ -363,10 +364,14 @@ public class LivyHelper {
         HttpEntity<String> entity = new HttpEntity<String>(headers);
         response = restTemplate.exchange(targetURL, HttpMethod.DELETE, entity, String.class);
       }
-    } catch (HttpClientErrorException e) {
-      response = new ResponseEntity(e.getResponseBodyAsString(), e.getStatusCode());
-      LOGGER.error(String.format("Error with %s StatusCode: %s",
-          response.getStatusCode().value(), e.getResponseBodyAsString()));
+    } catch (NestedRuntimeException e) {
+      // NestedRuntimeException due to HttpClientException being nested
+      if (e.getRootCause() instanceof HttpClientErrorException) { 
+        HttpClientErrorException hce = (HttpClientErrorException) e.getRootCause(); 
+        response = new ResponseEntity(hce.getResponseBodyAsString(), hce.getStatusCode()); 
+        LOGGER.error(String.format("Error with %s StatusCode: %s", 
+              response.getStatusCode().value(), hce.getResponseBodyAsString())); 
+      }
     }
     if (response == null) {
       return null;
