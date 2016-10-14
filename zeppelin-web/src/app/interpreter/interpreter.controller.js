@@ -295,9 +295,12 @@
       for (var i = 0; i < el.length; i++) {
         var intpInfo = el[i];
         for (var key in intpInfo) {
+          if (/.*(-description)$/.test(key)) {
+              continue;
+          }
           properties[key] = {
             value: intpInfo[key],
-            description: intpInfo[key].description
+            description: intpInfo[key + '-description']
           };
         }
       }
