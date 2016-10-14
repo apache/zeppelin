@@ -11,6 +11,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
+
 <div class="configurationHead">
   <div class="header">
     <div class="row">
@@ -40,11 +41,11 @@ limitations under the License.
             <th>value</th>
           </tr>
           </thead>
-          <tr ng-repeat="(key, value) in configurations" >
+          <tr ng-repeat="key in configurations | sortByKey" >
             <td>{{key}}</td>
             <td>
               <div class="hiding_overflow">
-                {{value}}
+                {{configurations[key]}}
               </div>
             </td>
           </tr>
