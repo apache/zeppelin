@@ -292,7 +292,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     InterpreterSetting intp = getInterpreterSettingById(repl.getInterpreterGroup().getId());
     while (intp.getStatus().equals(
       org.apache.zeppelin.interpreter.InterpreterSetting.Status.DOWNLOADING_DEPENDENCIES)) {
-      Thread.sleep(200);	
+      Thread.sleep(200);
       intp = getInterpreterSettingById(repl.getInterpreterGroup().getId());
     }
     if (this.noteHasUser() && this.noteHasInterpreters()) {
