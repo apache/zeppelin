@@ -552,6 +552,12 @@ a.anchor {
   background: #286090;
 }
 
+@media only screen and (max-width: 768px) {
+	.navbar-fixed-top > .container {
+		width: 800px;
+	}
+}
+
 a.anchorjs-link:hover { text-decoration: none; }
 
 /* Table of Contents(TOC) */
