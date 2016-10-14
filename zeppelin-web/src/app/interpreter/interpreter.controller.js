@@ -291,14 +291,15 @@
     $scope.newInterpreterGroupChange = function() {
       var el = _.pluck(_.filter($scope.availableInterpreters, {'name': $scope.newInterpreterSetting.group}),
         'properties');
-      var properties = {};
-      for (var i = 0; i < el.length; i++) {
-        var intpInfo = el[i];
-        for (var key in intpInfo) {
-          properties[key] = {
-            value: intpInfo[key],
-            description: intpInfo[key].description
-          };
+         var properties = {};
+         for (var i = 0; i < el.length; i++) {
+           if (/.*(-description)$/.test(key)) {
+             continue;
+           }
+           properties[key] = {
+             value: intpInfo[key],
+             description: intpInfo[key + '-description']
+         };
         }
       }
 
