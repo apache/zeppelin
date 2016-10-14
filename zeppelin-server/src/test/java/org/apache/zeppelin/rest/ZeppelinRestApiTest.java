@@ -107,18 +107,18 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
   }
 
   @Test
-  public void testNotebookCreateWithName() throws IOException {
+  public void testNoteCreateWithName() throws IOException {
     String noteName = "Test note name";
-    testNotebookCreate(noteName);
+    testNoteCreate(noteName);
   }
 
   @Test
-  public void testNotebookCreateNoName() throws IOException {
-    testNotebookCreate("");
+  public void testNoteCreateNoName() throws IOException {
+    testNoteCreate("");
   }
 
   @Test
-  public void testNotebookCreateWithParagraphs() throws IOException {
+  public void testNoteCreateWithParagraphs() throws IOException {
     // Call Create Notebook REST API
     String noteName = "test";
     String jsonRequest = "{\"name\":\"" + noteName + "\", \"paragraphs\": [" +
@@ -126,22 +126,22 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
         "{\"title\": \"title2\", \"text\": \"text2\"}" +
         "]}";
     PostMethod post = httpPost("/notebook/", jsonRequest);
-    LOG.info("testNotebookCreate \n" + post.getResponseBodyAsString());
-    assertThat("test notebook create method:", post, isCreated());
+    LOG.info("testNoteCreate \n" + post.getResponseBodyAsString());
+    assertThat("test note create method:", post, isCreated());
 
     Map<String, Object> resp = gson.fromJson(post.getResponseBodyAsString(), new TypeToken<Map<String, Object>>() {
     }.getType());
 
-    String newNotebookId =  (String) resp.get("body");
-    LOG.info("newNotebookId:=" + newNotebookId);
-    Note newNote = ZeppelinServer.notebook.getNote(newNotebookId);
+    String newNoteId =  (String) resp.get("body");
+    LOG.info("newNoteId:=" + newNoteId);
+    Note newNote = ZeppelinServer.notebook.getNote(newNoteId);
     assertNotNull("Can not find new note by id", newNote);
     // This is partial test as newNote is in memory but is not persistent
     String newNoteName = newNote.getName();
     LOG.info("new note name is: " + newNoteName);
     String expectedNoteName = noteName;
     if (noteName.isEmpty()) {
-      expectedNoteName = "Note " + newNotebookId;
+      expectedNoteName = "Note " + newNoteId;
     }
     assertEquals("compare note name", expectedNoteName, newNoteName);
     assertEquals("initial paragraph check failed", 3, newNote.getParagraphs().size());
@@ -153,34 +153,34 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
       assertTrue("paragraph text check failed", p.getText().startsWith("text"));
     }
     // cleanup
-    ZeppelinServer.notebook.removeNote(newNotebookId, null);
+    ZeppelinServer.notebook.removeNote(newNoteId, null);
     post.releaseConnection();
   }
 
-  private void testNotebookCreate(String noteName) throws IOException {
+  private void testNoteCreate(String noteName) throws IOException {
     // Call Create Notebook REST API
     String jsonRequest = "{\"name\":\"" + noteName + "\"}";
     PostMethod post = httpPost("/notebook/", jsonRequest);
-    LOG.info("testNotebookCreate \n" + post.getResponseBodyAsString());
+    LOG.info("testNoteCreate \n" + post.getResponseBodyAsString());
     assertThat("test notebook create method:", post, isCreated());
 
     Map<String, Object> resp = gson.fromJson(post.getResponseBodyAsString(), new TypeToken<Map<String, Object>>() {
     }.getType());
 
-    String newNotebookId =  (String) resp.get("body");
-    LOG.info("newNotebookId:=" + newNotebookId);
-    Note newNote = ZeppelinServer.notebook.getNote(newNotebookId);
+    String newNoteId =  (String) resp.get("body");
+    LOG.info("newNoteId:=" + newNoteId);
+    Note newNote = ZeppelinServer.notebook.getNote(newNoteId);
     assertNotNull("Can not find new note by id", newNote);
     // This is partial test as newNote is in memory but is not persistent
     String newNoteName = newNote.getName();
     LOG.info("new note name is: " + newNoteName);
     String expectedNoteName = noteName;
     if (noteName.isEmpty()) {
-      expectedNoteName = "Note " + newNotebookId;
+      expectedNoteName = "Note " + newNoteId;
     }
     assertEquals("compare note name", expectedNoteName, newNoteName);
     // cleanup
-    ZeppelinServer.notebook.removeNote(newNotebookId, null);
+    ZeppelinServer.notebook.removeNote(newNoteId, null);
     post.releaseConnection();
 
   }
@@ -191,20 +191,20 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     //Create note and get ID
     Note note = ZeppelinServer.notebook.createNote(null);
     String noteId = note.getId();
-    testDeleteNotebook(noteId);
+    testDeleteNote(noteId);
   }
 
   @Test
   public void testDeleteNoteBadId() throws IOException {
     LOG.info("testDeleteNoteBadId");
-    testDeleteNotebook("2AZFXEX97");
-    testDeleteNotebook("bad_ID");
+    testDeleteNote("2AZFXEX97");
+    testDeleteNote("bad_ID");
   }
 
 
   @Test
-  public void testExportNotebook() throws IOException {
-    LOG.info("testExportNotebook");
+  public void testexportNote() throws IOException {
+    LOG.info("testexportNote");
     Note note = ZeppelinServer.notebook.createNote(null);
     assertNotNull("can't create new note", note);
     note.setName("source note for export");
@@ -283,22 +283,22 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     return body;
   }
 
-  private void testDeleteNotebook(String notebookId) throws IOException {
+  private void testDeleteNote(String noteId) throws IOException {
 
-    DeleteMethod delete = httpDelete(("/notebook/" + notebookId));
-    LOG.info("testDeleteNotebook delete response\n" + delete.getResponseBodyAsString());
+    DeleteMethod delete = httpDelete(("/notebook/" + noteId));
+    LOG.info("testDeleteNote delete response\n" + delete.getResponseBodyAsString());
     assertThat("Test delete method:", delete, isAllowed());
     delete.releaseConnection();
     // make sure note is deleted
-    if (!notebookId.isEmpty()) {
-      Note deletedNote = ZeppelinServer.notebook.getNote(notebookId);
+    if (!noteId.isEmpty()) {
+      Note deletedNote = ZeppelinServer.notebook.getNote(noteId);
       assertNull("Deleted note should be null", deletedNote);
     }
   }
 
   @Test
-  public void testCloneNotebook() throws IOException, CloneNotSupportedException, IllegalArgumentException {
-    LOG.info("testCloneNotebook");
+  public void testCloneNote() throws IOException, CloneNotSupportedException, IllegalArgumentException {
+    LOG.info("testCloneNote");
     // Create note to clone
     Note note = ZeppelinServer.notebook.createNote(null);
     assertNotNull("can't create new note", note);
@@ -321,9 +321,9 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     Map<String, Object> resp = gson.fromJson(post.getResponseBodyAsString(), new TypeToken<Map<String, Object>>() {
     }.getType());
 
-    String newNotebookId =  (String) resp.get("body");
-    LOG.info("newNotebookId:=" + newNotebookId);
-    Note newNote = ZeppelinServer.notebook.getNote(newNotebookId);
+    String newNoteId =  (String) resp.get("body");
+    LOG.info("newNoteId:=" + newNoteId);
+    Note newNote = ZeppelinServer.notebook.getNote(newNoteId);
     assertNotNull("Can not find new note by id", newNote);
     assertEquals("Compare note names", noteName, newNote.getName());
     assertEquals("Compare paragraphs count", note.getParagraphs().size(), newNote.getParagraphs().size());

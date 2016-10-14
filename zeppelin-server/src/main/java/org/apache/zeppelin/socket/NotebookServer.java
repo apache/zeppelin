@@ -459,13 +459,13 @@ public class NotebookServer extends WebSocketServlet implements
         .put("interpreterBindings", settingList)));
   }
 
-  public List<Map<String, String>> generateNotebooksInfo(boolean needsReload,
-      AuthenticationInfo subject) {
+  public List<Map<String, String>> generateNotesInfo(boolean needsReload,
+                                                     AuthenticationInfo subject) {
 
     Notebook notebook = notebook();
 
     ZeppelinConfiguration conf = notebook.getConf();
-    String homescreenNotebookId = conf.getString(ConfVars.ZEPPELIN_NOTEBOOK_HOMESCREEN);
+    String homescreenNoteId = conf.getString(ConfVars.ZEPPELIN_NOTEBOOK_HOMESCREEN);
     boolean hideHomeScreenNotebookFromList = conf
             .getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_HOMESCREEN_HIDE);
 
@@ -481,7 +481,7 @@ public class NotebookServer extends WebSocketServlet implements
     for (Note note : notes) {
       Map<String, String> info = new HashMap<>();
 
-      if (hideHomeScreenNotebookFromList && note.getId().equals(homescreenNotebookId)) {
+      if (hideHomeScreenNotebookFromList && note.getId().equals(homescreenNoteId)) {
         continue;
       }
 
@@ -504,17 +504,17 @@ public class NotebookServer extends WebSocketServlet implements
   }
 
   public void broadcastNoteList(AuthenticationInfo subject) {
-    List<Map<String, String>> notesInfo = generateNotebooksInfo(false, subject);
+    List<Map<String, String>> notesInfo = generateNotesInfo(false, subject);
     broadcastAll(new Message(OP.NOTES_INFO).put("notes", notesInfo));
   }
 
   public void unicastNoteList(NotebookSocket conn, AuthenticationInfo subject) {
-    List<Map<String, String>> notesInfo = generateNotebooksInfo(false, subject);
+    List<Map<String, String>> notesInfo = generateNotesInfo(false, subject);
     unicast(new Message(OP.NOTES_INFO).put("notes", notesInfo), conn);
   }
 
   public void broadcastReloadedNoteList(AuthenticationInfo subject) {
-    List<Map<String, String>> notesInfo = generateNotebooksInfo(true, subject);
+    List<Map<String, String>> notesInfo = generateNotesInfo(true, subject);
     broadcastAll(new Message(OP.NOTES_INFO).put("notes", notesInfo));
   }
 
@@ -1342,7 +1342,7 @@ public class NotebookServer extends WebSocketServlet implements
 
       List<Map<String, Object>> notesInfo = new LinkedList<>();
       Map<String, Object> info = new HashMap<>();
-      info.put("notebookId", note.getId());
+      info.put("noteId", note.getId());
       // set paragraphs
       List<Map<String, Object>> paragraphsInfo = new LinkedList<>();
 
@@ -1379,7 +1379,7 @@ public class NotebookServer extends WebSocketServlet implements
     @Override
     public void onNoteCreate(Note note) {
       Notebook notebook = notebookServer.notebook();
-      List<Map<String, Object>> notebookJobs = notebook.getJobListBymNotebookId(
+      List<Map<String, Object>> notebookJobs = notebook.getJobListByNoteId(
               note.getId()
       );
       Map<String, Object> response = new HashMap<>();
@@ -1408,7 +1408,7 @@ public class NotebookServer extends WebSocketServlet implements
     @Override
     public void onUnbindInterpreter(Note note, InterpreterSetting setting) {
       Notebook notebook = notebookServer.notebook();
-      List<Map<String, Object>> notebookJobs = notebook.getJobListBymNotebookId(
+      List<Map<String, Object>> notebookJobs = notebook.getJobListByNoteId(
               note.getId()
       );
       Map<String, Object> response = new HashMap<>();

@@ -23,14 +23,14 @@ import java.util.Map;
 import org.apache.zeppelin.interpreter.InterpreterOption;
 
 /**
- *  NewNotebookRequest rest api request message
+ *  NewNoteRequest rest api request message
  *
  */
-public class NewNotebookRequest {
+public class NewNoteRequest {
   String name;
   List<NewParagraphRequest> paragraphs;
 
-  public NewNotebookRequest (){
+  public NewNoteRequest (){
 
   }
 

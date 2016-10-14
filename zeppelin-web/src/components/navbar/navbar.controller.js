@@ -22,7 +22,7 @@
     '$http',
     '$routeParams',
     '$location',
-    'notebookListDataFactory',
+    'noteListDataFactory',
     'baseUrlSrv',
     'websocketMsgSrv',
     'arrayOrderingSrv',
@@ -30,14 +30,14 @@
   ];
 
   function NavCtrl($scope, $rootScope, $http, $routeParams, $location,
-                   notebookListDataFactory, baseUrlSrv, websocketMsgSrv,
+                   noteListDataFactory, baseUrlSrv, websocketMsgSrv,
                    arrayOrderingSrv, searchService) {
     var vm = this;
     vm.arrayOrderingSrv = arrayOrderingSrv;
     vm.connected = websocketMsgSrv.isConnected();
     vm.isActive = isActive;
     vm.logout = logout;
-    vm.notes = notebookListDataFactory;
+    vm.notes = noteListDataFactory;
     vm.search = search;
     vm.searchForm = searchService;
     vm.showLoginWindow = showLoginWindow;
@@ -72,7 +72,7 @@
     }
 
     function loadNotes() {
-      websocketMsgSrv.getNotebookList();
+      websocketMsgSrv.getNoteList();
     }
 
     function logout() {
@@ -112,7 +112,7 @@
     */
 
     $scope.$on('setNoteMenu', function(event, notes) {
-      notebookListDataFactory.setNotes(notes);
+      noteListDataFactory.setNotes(notes);
     });
 
     $scope.$on('setConnectedStatus', function(event, param) {

@@ -147,28 +147,28 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
   }
 
   @Test
-  public void testCloneNotebook() throws IOException {
+  public void testCloneNote() throws IOException {
     Note note1 = ZeppelinServer.notebook.createNote(null);
     PostMethod post = httpPost("/notebook/" + note1.getId(), "");
-    LOG.info("testCloneNotebook response\n" + post.getResponseBodyAsString());
+    LOG.info("testCloneNote response\n" + post.getResponseBodyAsString());
     assertThat(post, isCreated());
     Map<String, Object> resp = gson.fromJson(post.getResponseBodyAsString(), new TypeToken<Map<String, Object>>() {
     }.getType());
-    String clonedNotebookId = (String) resp.get("body");
+    String clonedNoteId = (String) resp.get("body");
     post.releaseConnection();
 
-    GetMethod get = httpGet("/notebook/" + clonedNotebookId);
+    GetMethod get = httpGet("/notebook/" + clonedNoteId);
     assertThat(get, isAllowed());
     Map<String, Object> resp2 = gson.fromJson(get.getResponseBodyAsString(), new TypeToken<Map<String, Object>>() {
     }.getType());
     Map<String, Object> resp2Body = (Map<String, Object>) resp2.get("body");
 
-    assertEquals((String)resp2Body.get("name"), "Note " + clonedNotebookId);
+    assertEquals((String)resp2Body.get("name"), "Note " + clonedNoteId);
     get.releaseConnection();
 
     //cleanup
     ZeppelinServer.notebook.removeNote(note1.getId(), null);
-    ZeppelinServer.notebook.removeNote(clonedNotebookId, null);
+    ZeppelinServer.notebook.removeNote(clonedNoteId, null);
 
   }
 }

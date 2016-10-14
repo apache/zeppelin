@@ -32,8 +32,8 @@ limitations under the License.
             <li class="divider"></li>
             <div id="notebook-list" class="scrollbar-container">
               <li class="filter-names" ng-include="'components/filterNoteNames/filter-note-names.html'"></li>
-              <li ng-repeat="note in navbar.notes.root.children | filter:query.q | orderBy:navbar.arrayOrderingSrv.notebookListOrdering track by $index"
-                  ng-class="{'active' : navbar.isActive(note.id)}" ng-include="'components/navbar/navbar-notebookList-elem.html'">
+              <li ng-repeat="note in navbar.notes.root.children | filter:query.q | orderBy:navbar.arrayOrderingSrv.noteListOrdering track by $index"
+                  ng-class="{'active' : navbar.isActive(note.id)}" ng-include="'components/navbar/navbar-noteList-elem.html'">
               </li>
             </div>
           </ul>
@@ -57,7 +57,7 @@ limitations under the License.
                 id="searchTermId"
                 ng-disabled="!navbar.connected"
                 class="form-control"
-                placeholder="Search your Notebooks"
+                placeholder="Search your Notes"
               />
               <span class="input-group-btn">
                 <button

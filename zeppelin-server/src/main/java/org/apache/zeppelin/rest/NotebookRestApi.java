@@ -51,7 +51,7 @@ import org.apache.zeppelin.notebook.NotebookAuthorization;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.rest.message.CronRequest;
 import org.apache.zeppelin.types.InterpreterSettingsList;
-import org.apache.zeppelin.rest.message.NewNotebookRequest;
+import org.apache.zeppelin.rest.message.NewNoteRequest;
 import org.apache.zeppelin.rest.message.NewParagraphRequest;
 import org.apache.zeppelin.rest.message.RunParagraphWithParametersRequest;
 import org.apache.zeppelin.search.SearchService;
@@ -195,16 +195,16 @@ public class NotebookRestApi {
   @GET
   @Path("/")
   @ZeppelinApi
-  public Response getNotebookList() throws IOException {
+  public Response getNoteList() throws IOException {
     AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
-    List<Map<String, String>> notesInfo = notebookServer.generateNotebooksInfo(false, subject);
+    List<Map<String, String>> notesInfo = notebookServer.generateNotesInfo(false, subject);
     return new JsonResponse<>(Status.OK, "", notesInfo).build();
   }
 
   @GET
   @Path("{noteId}")
   @ZeppelinApi
-  public Response getNotebook(@PathParam("noteId") String noteId) throws IOException {
+  public Response getNote(@PathParam("noteId") String noteId) throws IOException {
     Note note = notebook.getNote(noteId);
     if (note == null) {
       return new JsonResponse<>(Status.NOT_FOUND, "note not found.").build();
@@ -223,7 +223,7 @@ public class NotebookRestApi {
   @GET
   @Path("export/{id}")
   @ZeppelinApi
-  public Response exportNoteBook(@PathParam("id") String noteId) throws IOException {
+  public Response exportNote(@PathParam("id") String noteId) throws IOException {
     String exportJson = notebook.exportNote(noteId);
     return new JsonResponse<>(Status.OK, "", exportJson).build();
   }
@@ -256,7 +256,7 @@ public class NotebookRestApi {
   @ZeppelinApi
   public Response createNote(String message) throws IOException {
     LOG.info("Create new notebook by JSON {}", message);
-    NewNotebookRequest request = gson.fromJson(message, NewNotebookRequest.class);
+    NewNoteRequest request = gson.fromJson(message, NewNoteRequest.class);
     AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
     Note note = notebook.createNote(subject);
     List<NewParagraphRequest> initialParagraphs = request.getParagraphs();
@@ -283,7 +283,7 @@ public class NotebookRestApi {
   /**
    * Delete note REST API
    *
-   * @param noteId ID of Notebook
+   * @param noteId ID of Note
    * @return JSON with status.OK
    * @throws IOException
    */
@@ -291,7 +291,7 @@ public class NotebookRestApi {
   @Path("{noteId}")
   @ZeppelinApi
   public Response deleteNote(@PathParam("noteId") String noteId) throws IOException {
-    LOG.info("Delete notebook {} ", noteId);
+    LOG.info("Delete note {} ", noteId);
     AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
     if (!(noteId.isEmpty())) {
       Note note = notebook.getNote(noteId);
@@ -317,7 +317,7 @@ public class NotebookRestApi {
   public Response cloneNote(@PathParam("noteId") String noteId, String message)
       throws IOException, CloneNotSupportedException, IllegalArgumentException {
     LOG.info("clone notebook by JSON {}", message);
-    NewNotebookRequest request = gson.fromJson(message, NewNotebookRequest.class);
+    NewNoteRequest request = gson.fromJson(message, NewNoteRequest.class);
     String newNoteName = null;
     if (request != null) {
       newNoteName = request.getName();

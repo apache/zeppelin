@@ -38,7 +38,6 @@ import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.stream.JsonReader;
-import org.apache.commons.codec.binary.StringUtils;
 import org.quartz.CronScheduleBuilder;
 import org.quartz.CronTrigger;
 import org.quartz.JobBuilder;
@@ -622,14 +621,14 @@ public class Notebook implements NoteEventListener {
         gotNoteId = note.getId();
       }
     }
-    return getJobListBymNotebookId(gotNoteId);
+    return getJobListByNoteId(gotNoteId);
   }
 
-  public List<Map<String, Object>> getJobListBymNotebookId(String notebookID) {
+  public List<Map<String, Object>> getJobListByNoteId(String noteID) {
     final String CRON_TYPE_NOTEBOOK_KEYWORD = "cron";
     long lastRunningUnixTime = 0;
     boolean isNotebookRunning = false;
-    Note jobNote = getNote(notebookID);
+    Note jobNote = getNote(noteID);
     List<Map<String, Object>> notesInfo = new LinkedList<>();
     if (jobNote == null) {
       return notesInfo;
@@ -637,19 +636,19 @@ public class Notebook implements NoteEventListener {
 
     Map<String, Object> info = new HashMap<>();
 
-    info.put("notebookId", jobNote.getId());
-    String notebookName = jobNote.getName();
-    if (notebookName != null && !notebookName.equals("")) {
-      info.put("notebookName", jobNote.getName());
+    info.put("noteId", jobNote.getId());
+    String noteName = jobNote.getName();
+    if (noteName != null && !noteName.equals("")) {
+      info.put("noteName", jobNote.getName());
     } else {
-      info.put("notebookName", "Note " + jobNote.getId());
+      info.put("noteName", "Note " + jobNote.getId());
     }
     // set notebook type ( cron or normal )
     if (jobNote.getConfig().containsKey(CRON_TYPE_NOTEBOOK_KEYWORD) && !jobNote.getConfig()
             .get(CRON_TYPE_NOTEBOOK_KEYWORD).equals("")) {
-      info.put("notebookType", "cron");
+      info.put("noteType", "cron");
     } else {
-      info.put("notebookType", "normal");
+      info.put("noteType", "normal");
     }
 
     // set paragraphs
@@ -699,28 +698,28 @@ public class Notebook implements NoteEventListener {
     List<Note> notes = getAllNotes();
     List<Map<String, Object>> notesInfo = new LinkedList<>();
     for (Note note : notes) {
-      boolean isNotebookRunning = false;
-      boolean isUpdateNotebook = false;
+      boolean isNoteRunning = false;
+      boolean isUpdateNote = false;
       long lastRunningUnixTime = 0;
       Map<String, Object> info = new HashMap<>();
 
       // set notebook ID
-      info.put("notebookId", note.getId());
+      info.put("noteId", note.getId());
 
       // set notebook Name
-      String notebookName = note.getName();
-      if (notebookName != null && !notebookName.equals("")) {
-        info.put("notebookName", note.getName());
+      String noteName = note.getName();
+      if (noteName != null && !noteName.equals("")) {
+        info.put("noteName", note.getName());
       } else {
-        info.put("notebookName", "Note " + note.getId());
+        info.put("noteName", "Note " + note.getId());
       }
 
       // set notebook type ( cron or normal )
       if (note.getConfig().containsKey(CRON_TYPE_NOTEBOOK_KEYWORD) && !note.getConfig()
           .get(CRON_TYPE_NOTEBOOK_KEYWORD).equals("")) {
-        info.put("notebookType", "cron");
+        info.put("noteType", "cron");
       } else {
-        info.put("notebookType", "normal");
+        info.put("noteType", "normal");
       }
 
       // set paragraphs
@@ -728,17 +727,17 @@ public class Notebook implements NoteEventListener {
       for (Paragraph paragraph : note.getParagraphs()) {
         // check paragraph's status.
         if (paragraph.getStatus().isRunning()) {
-          isNotebookRunning = true;
-          isUpdateNotebook = true;
+          isNoteRunning = true;
+          isUpdateNote = true;
         }
 
         // get data for the job manager.
         Map<String, Object> paragraphItem = getParagraphForJobManagerItem(paragraph);
         lastRunningUnixTime = getUnixTimeLastRunParagraph(paragraph);
 
-        // is update notebook for last server update time.
+        // is update note for last server update time.
         if (lastRunningUnixTime > lastUpdateServerUnixTime) {
-          isUpdateNotebook = true;
+          isUpdateNote = true;
         }
         paragraphsInfo.add(paragraphItem);
       }
@@ -751,13 +750,13 @@ public class Notebook implements NoteEventListener {
       }
 
       // not update and not running -> pass
-      if (!isUpdateNotebook && !isNotebookRunning) {
+      if (!isUpdateNote && !isNoteRunning) {
         continue;
       }
 
-      // notebook json object root information.
+      // note json object root information.
       info.put("interpreter", interpreterGroupName);
-      info.put("isRunningJob", isNotebookRunning);
+      info.put("isRunningJob", isNoteRunning);
       info.put("unixTimeLastRun", lastRunningUnixTime);
       info.put("paragraphs", paragraphsInfo);
       notesInfo.add(info);

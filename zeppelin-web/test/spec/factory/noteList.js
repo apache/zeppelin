@@ -1,14 +1,14 @@
 'use strict';
 
-describe('Factory: NotebookList', function() {
+describe('Factory: NoteList', function() {
 
-  var notebookList;
+  var noteList;
 
   beforeEach(function() {
     module('zeppelinWebApp');
 
     inject(function($injector) {
-      notebookList = $injector.get('notebookListDataFactory');
+      noteList = $injector.get('noteListDataFactory');
     });
   });
 
@@ -16,7 +16,7 @@ describe('Factory: NotebookList', function() {
     var notesList = [
       {name: 'A', id: '000001'},
       {name: 'B', id: '000002'},
-      {id: '000003'},                     // notebook without name
+      {id: '000003'},                     // note without name
       {name: '/C/CA', id: '000004'},
       {name: '/C/CB', id: '000005'},
       {name: '/C/CB/CBA', id: '000006'},  // same name with a dir
@@ -24,9 +24,9 @@ describe('Factory: NotebookList', function() {
       {name: 'C///CB//CBB', id: '000008'},
       {name: 'D/D[A/DA]B', id: '000009'}   // check if '[' and ']' considered as folder seperator
     ];
-    notebookList.setNotes(notesList);
+    noteList.setNotes(notesList);
 
-    var flatList = notebookList.flatList;
+    var flatList = noteList.flatList;
     expect(flatList.length).toBe(9);
     expect(flatList[0].name).toBe('A');
     expect(flatList[0].id).toBe('000001');
@@ -39,7 +39,7 @@ describe('Factory: NotebookList', function() {
     expect(flatList[7].name).toBe('C///CB//CBB');
     expect(flatList[8].name).toBe('D/D[A/DA]B');
 
-    var folderList = notebookList.root.children;
+    var folderList = noteList.root.children;
     expect(folderList.length).toBe(5);
     expect(folderList[0].name).toBe('A');
     expect(folderList[0].id).toBe('000001');

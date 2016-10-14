@@ -47,7 +47,7 @@ limitations under the License.
           <h4>Notebook
             <i ng-class="isReloadingNotes ? 'fa fa-refresh fa-spin' : 'fa fa-refresh'"
               ng-style="!isReloadingNotes && {'cursor': 'pointer'}" style="font-size: 13px;"
-              ng-click="reloadNotebookList();"
+              ng-click="reloadNoteList();"
               tooltip-placement="bottom" tooltip="Reload notes from storage">
             </i>
           </h4>
@@ -59,15 +59,15 @@ limitations under the License.
               <i style="font-size: 15px;" class="icon-notebook"></i> Create new note</a></h5>
             <ul id="notebook-names">
               <li class="filter-names" ng-include="'components/filterNoteNames/filter-note-names.html'"></li>
-              <li ng-repeat="note in home.notes.list | filter:query.q | orderBy:home.arrayOrderingSrv.notebookListOrdering track by $index">
+              <li ng-repeat="note in home.notes.list | filter:query.q | orderBy:home.arrayOrderingSrv.noteListOrdering track by $index">
                 <i style="font-size: 10px;" class="icon-doc"></i>
                 <a style="text-decoration: none;" href="#/notebook/{{note.id}}">{{noteName(note)}}</a>
               </li>
               <div ng-if="!query || query.name === ''">
-                <li ng-repeat="node in home.notes.root.children | orderBy:home.arrayOrderingSrv.notebookListOrdering track by $index" ng-include="'notebook_folder_renderer.html'" />
+                <li ng-repeat="node in home.notes.root.children | orderBy:home.arrayOrderingSrv.noteListOrdering track by $index" ng-include="'notebook_folder_renderer.html'" />
               </div>
               <div ng-if="query && query.name !== ''">
-                <li ng-repeat="note in home.notes.flatList | filter:query.q | orderBy:home.arrayOrderingSrv.notebookListOrdering track by $index">
+                <li ng-repeat="note in home.notes.flatList | filter:query.q | orderBy:home.arrayOrderingSrv.noteListOrdering track by $index">
                   <i style="font-size: 10px;" class="icon-doc"></i>
                   <a style="text-decoration: none;" href="#/notebook/{{note.id}}">{{noteName(note)}}</a>
                 </li>
