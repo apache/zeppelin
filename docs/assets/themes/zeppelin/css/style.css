@@ -552,12 +552,6 @@ a.anchor {
   background: #286090;
 }
 
-@media only screen and (min-width: 768px) {
-	.navbar-fixed-top > .container {
-		width: 800px;
-	}
-}
-
 a.anchorjs-link:hover { text-decoration: none; }
 
 /* Table of Contents(TOC) */
@@ -624,6 +618,10 @@ and (max-width: 1024px) {
 
   .navbar-collapse.collapse {
     padding-right: 0;
+  }
+
+  .navbar-fixed-top > .container {
+    width: 800px;
   }
 }
 
