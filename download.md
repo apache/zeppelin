@@ -21,30 +21,30 @@ limitations under the License.
 
 # Download Apache Zeppelin
 
-The latest release of Apache Zeppelin is **0.6.1**.
+The latest release of Apache Zeppelin is **0.6.2**.
 
-  - 0.6.1 released on Aug 15, 2016 ([release notes](./releases/zeppelin-release-0.6.1.html)) ([git tag](https://git-wip-us.apache.org/repos/asf?p=zeppelin.git;a=commit;h=c928f9a46ecacebc868d6dc10a95c02f9018a18e))
+  - 0.6.2 released on Oct 15, 2016 ([release notes](./releases/zeppelin-release-0.6.2.html)) ([git tag](https://git-wip-us.apache.org/repos/asf?p=zeppelin.git;a=commit;h=091086de9400dd1c02ca02acf4180b1bf1e9ede7))
 
     * Source:
-    <a style="cursor:pointer" onclick="ga('send', 'event', 'download', 'zeppelin-src', '0.6.1'); window.location.href='http://www.apache.org/dyn/closer.cgi/zeppelin/zeppelin-0.6.1/zeppelin-0.6.1.tgz'">zeppelin-0.6.1.tgz</a>
-    ([pgp](https://www.apache.org/dist/zeppelin/zeppelin-0.6.1/zeppelin-0.6.1.tgz.asc),
-     [md5](https://www.apache.org/dist/zeppelin/zeppelin-0.6.1/zeppelin-0.6.1.tgz.md5),
-     [sha](https://www.apache.org/dist/zeppelin/zeppelin-0.6.1/zeppelin-0.6.1.tgz.sha512))
+    <a style="cursor:pointer" onclick="ga('send', 'event', 'download', 'zeppelin-src', '0.6.2'); window.location.href='http://www.apache.org/dyn/closer.cgi/zeppelin/zeppelin-0.6.2/zeppelin-0.6.2.tgz'">zeppelin-0.6.2.tgz</a>
+    ([pgp](https://www.apache.org/dist/zeppelin/zeppelin-0.6.2/zeppelin-0.6.2.tgz.asc),
+     [md5](https://www.apache.org/dist/zeppelin/zeppelin-0.6.2/zeppelin-0.6.2.tgz.md5),
+     [sha](https://www.apache.org/dist/zeppelin/zeppelin-0.6.2/zeppelin-0.6.2.tgz.sha512))
 
     * Binary package with all interpreters:
-    <a style="cursor:pointer" onclick="ga('send', 'event', 'download', 'zeppelin-bin-all', '0.6.1'); window.location.href='http://www.apache.org/dyn/closer.cgi/zeppelin/zeppelin-0.6.1/zeppelin-0.6.1-bin-all.tgz'">zeppelin-0.6.1-bin-all.tgz</a>
-    ([pgp](https://www.apache.org/dist/zeppelin/zeppelin-0.6.1/zeppelin-0.6.1-bin-all.tgz.asc),
-     [md5](https://www.apache.org/dist/zeppelin/zeppelin-0.6.1/zeppelin-0.6.1-bin-all.tgz.md5),
-     [sha](https://www.apache.org/dist/zeppelin/zeppelin-0.6.1/zeppelin-0.6.1-bin-all.tgz.sha512))
+    <a style="cursor:pointer" onclick="ga('send', 'event', 'download', 'zeppelin-bin-all', '0.6.2'); window.location.href='http://www.apache.org/dyn/closer.cgi/zeppelin/zeppelin-0.6.2/zeppelin-0.6.2-bin-all.tgz'">zeppelin-0.6.2-bin-all.tgz</a>
+    ([pgp](https://www.apache.org/dist/zeppelin/zeppelin-0.6.2/zeppelin-0.6.2-bin-all.tgz.asc),
+     [md5](https://www.apache.org/dist/zeppelin/zeppelin-0.6.2/zeppelin-0.6.2-bin-all.tgz.md5),
+     [sha](https://www.apache.org/dist/zeppelin/zeppelin-0.6.2/zeppelin-0.6.2-bin-all.tgz.sha512))
 
-    * Binary package with Spark interpreter and interpreter net-install script ([interpreter installation guide](../../docs/0.6.1/manual/interpreterinstallation.html)):
-    <a style="cursor:pointer" onclick="ga('send', 'event', 'download', 'zeppelin-bin-netinst', '0.6.1'); window.location.href='http://www.apache.org/dyn/closer.cgi/zeppelin/zeppelin-0.6.1/zeppelin-0.6.1-bin-netinst.tgz'">zeppelin-0.6.1-bin-netinst.tgz</a>
-    ([pgp](https://www.apache.org/dist/zeppelin/zeppelin-0.6.1/zeppelin-0.6.1-bin-netinst.tgz.asc),
-     [md5](https://www.apache.org/dist/zeppelin/zeppelin-0.6.1/zeppelin-0.6.1-bin-netinst.tgz.md5),
-     [sha](https://www.apache.org/dist/zeppelin/zeppelin-0.6.1/zeppelin-0.6.1-bin-netinst.tgz.sha512))
+    * Binary package with Spark interpreter and interpreter net-install script ([interpreter installation guide](../../docs/0.6.2/manual/interpreterinstallation.html)):
+    <a style="cursor:pointer" onclick="ga('send', 'event', 'download', 'zeppelin-bin-netinst', '0.6.2'); window.location.href='http://www.apache.org/dyn/closer.cgi/zeppelin/zeppelin-0.6.2/zeppelin-0.6.2-bin-netinst.tgz'">zeppelin-0.6.2-bin-netinst.tgz</a>
+    ([pgp](https://www.apache.org/dist/zeppelin/zeppelin-0.6.2/zeppelin-0.6.2-bin-netinst.tgz.asc),
+     [md5](https://www.apache.org/dist/zeppelin/zeppelin-0.6.2/zeppelin-0.6.2-bin-netinst.tgz.md5),
+     [sha](https://www.apache.org/dist/zeppelin/zeppelin-0.6.2/zeppelin-0.6.2-bin-netinst.tgz.sha512))
 
     <blockquote style="margin-top: 10px;">
-      <p><strong>Note</strong>: Starting version 0.6.1, Zeppelin is built with Scala 2.11 by default. If you want to build Zeppelin with Scala 2.10 or install interpreter built with Scala 2.10, please see <a href='../../docs/0.6.1/install/install.html#2-build-source-with-options' target='_blank'>install</a> or <a href='../../docs/0.6.1/manual/interpreterinstallation.html#install-interpreter-built-with-scala-210' target='_blank'>interpreter installation</a>.</p>
+      <p><strong>Note</strong>: Starting version 0.6.1, Zeppelin is built with Scala 2.11 by default. If you want to build Zeppelin with Scala 2.10 or install interpreter built with Scala 2.10, please see <a href='../../docs/0.6.2/install/install.html#2-build-source-with-options' target='_blank'>install</a> or <a href='../../docs/0.6.2/manual/interpreterinstallation.html#install-interpreter-built-with-scala-210' target='_blank'>interpreter installation</a>.</p>
     </blockquote>
 
 
@@ -61,6 +61,28 @@ For developers, to get latest *0.7.0-SNAPSHOT* check [README](https://github.com
 
 
 ## Old releases
+
+  - 0.6.1 released on Aug 15, 2016 ([release notes](./releases/zeppelin-release-0.6.1.html)) ([git tag](https://git-wip-us.apache.org/repos/asf?p=zeppelin.git;a=commit;h=c928f9a46ecacebc868d6dc10a95c02f9018a18e))
+
+    * Source:
+    <a style="cursor:pointer" onclick="ga('send', 'event', 'download', 'zeppelin-src', '0.6.1'); window.location.href='http://archive.apache.org/dist/zeppelin/zeppelin-0.6.1/zeppelin-0.6.1.tgz'">zeppelin-0.6.1.tgz</a>
+    ([pgp](https://archive.apache.org/dist/zeppelin/zeppelin-0.6.1/zeppelin-0.6.1.tgz.asc),
+     [md5](https://archive.apache.org/dist/zeppelin/zeppelin-0.6.1/zeppelin-0.6.1.tgz.md5),
+     [sha](https://archive.apache.org/dist/zeppelin/zeppelin-0.6.1/zeppelin-0.6.1.tgz.sha512))
+
+    * Binary package with all interpreters:
+    <a style="cursor:pointer" onclick="ga('send', 'event', 'download', 'zeppelin-bin-all', '0.6.1'); window.location.href='http://archive.apache.org/dist/zeppelin/zeppelin-0.6.1/zeppelin-0.6.1-bin-all.tgz'">zeppelin-0.6.1-bin-all.tgz</a>
+    ([pgp](https://archive.apache.org/dist/zeppelin/zeppelin-0.6.1/zeppelin-0.6.1-bin-all.tgz.asc),
+     [md5](https://archive.apache.org/dist/zeppelin/zeppelin-0.6.1/zeppelin-0.6.1-bin-all.tgz.md5),
+     [sha](https://archive.apache.org/dist/zeppelin/zeppelin-0.6.1/zeppelin-0.6.1-bin-all.tgz.sha512))
+
+    * Binary package with Spark interpreter and interpreter net-install script ([interpreter installation guide](../../docs/0.6.1/manual/interpreterinstallation.html)):
+    <a style="cursor:pointer" onclick="ga('send', 'event', 'download', 'zeppelin-bin-netinst', '0.6.1'); window.location.href='http://archive.apache.org/dist/zeppelin/zeppelin-0.6.1/zeppelin-0.6.1-bin-netinst.tgz'">zeppelin-0.6.1-bin-netinst.tgz</a>
+    ([pgp](https://archive.apache.org/dist/zeppelin/zeppelin-0.6.1/zeppelin-0.6.1-bin-netinst.tgz.asc),
+     [md5](https://archive.apache.org/dist/zeppelin/zeppelin-0.6.1/zeppelin-0.6.1-bin-netinst.tgz.md5),
+     [sha](https://archive.apache.org/dist/zeppelin/zeppelin-0.6.1/zeppelin-0.6.1-bin-netinst.tgz.sha512))
+
+<p />
 
   - 0.6.0 released on Jul 2, 2016 ([release notes](./releases/zeppelin-release-0.6.0.html)) ([git tag](https://git-wip-us.apache.org/repos/asf?p=zeppelin.git;a=commit;h=fa2c0ff93cca49428df8792e7ee35d2b561669bd))
 
