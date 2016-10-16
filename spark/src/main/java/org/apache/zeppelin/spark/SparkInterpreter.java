@@ -481,7 +481,7 @@ public class SparkInterpreter extends Interpreter {
 
     //Only one of py4j-0.9-src.zip and py4j-0.8.2.1-src.zip should exist
     String[] pythonLibs = new String[]{"pyspark.zip", "py4j-0.9-src.zip", "py4j-0.8.2.1-src.zip",
-      "py4j-0.10.1-src.zip"};
+      "py4j-0.10.1-src.zip", "py4j-0.10.3-src.zip"};
     ArrayList<String> pythonLibUris = new ArrayList<>();
     for (String lib : pythonLibs) {
       File libFile = new File(pysparkPath, lib);
