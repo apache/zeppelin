@@ -296,7 +296,7 @@ public class RemoteInterpreter extends Interpreter {
   @Override
   public InterpreterResult interpret(String st, InterpreterContext context) {
     if (logger.isDebugEnabled()) {
-      logger.debug("st:\n{}", st);
+      logger.debug("st:\n{},\nuser:{}", st, context.getAuthenticationInfo().getUser());
     }
 
     FormType form = getFormType();

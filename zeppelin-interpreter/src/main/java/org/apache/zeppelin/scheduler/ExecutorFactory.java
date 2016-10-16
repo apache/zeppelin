@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 
 /**
  *
@@ -53,10 +54,18 @@ public class ExecutorFactory {
     return createOrGet(name, 100);
   }
 
-  public ExecutorService createOrGet(String name, int numThread) {
+  public ExecutorService createOrGet(final String name, int numThread) {
     synchronized (executor) {
       if (!executor.containsKey(name)) {
-        executor.put(name, Executors.newScheduledThreadPool(numThread));
+        executor.put(name, Executors.newScheduledThreadPool(numThread, new ThreadFactory(){
+          int i = 0;
+          @Override
+          public Thread newThread(Runnable r) {
+            Thread thread = new Thread(r);
+            thread.setName(name + "-" + i++);
+            return thread;
+          }
+        }));
       }
       return executor.get(name);
     }

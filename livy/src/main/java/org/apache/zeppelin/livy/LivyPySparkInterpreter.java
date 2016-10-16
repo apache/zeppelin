@@ -101,8 +101,8 @@ public class LivyPySparkInterpreter extends Interpreter {
 
   @Override
   public Scheduler getScheduler() {
-    return SchedulerFactory.singleton().createOrGetFIFOScheduler(
-        LivyPySparkInterpreter.class.getName() + this.hashCode());
+    return SchedulerFactory.singleton().createOrGetFIFOPerUserScheduler(
+        LivySparkInterpreter.class.getName());
   }
 
   @Override

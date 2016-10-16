@@ -111,7 +111,7 @@ public class ParallelScheduler implements Scheduler {
           try {
             queue.wait(500);
           } catch (InterruptedException e) {
-            LOGGER.error("Exception in MockInterpreterAngular while interpret queue.wait", e);
+            LOGGER.error("Exception in ParallelScheduler while interpret queue.wait", e);
           }
           continue;
         }

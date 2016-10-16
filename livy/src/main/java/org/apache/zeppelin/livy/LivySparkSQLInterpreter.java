@@ -146,7 +146,7 @@ public class LivySparkSQLInterpreter extends Interpreter {
     if (concurrentSQL()) {
       int maxConcurrency = 10;
       return SchedulerFactory.singleton().createOrGetParallelScheduler(
-          LivySparkInterpreter.class.getName() + this.hashCode(), maxConcurrency);
+              LivySparkSQLInterpreter.class.getName() + this.hashCode(), maxConcurrency);
     } else {
       Interpreter intp =
           getInterpreterInTheSameSessionByClassName(LivySparkInterpreter.class.getName());

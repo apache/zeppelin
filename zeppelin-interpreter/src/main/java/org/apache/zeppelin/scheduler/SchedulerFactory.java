@@ -84,6 +84,17 @@ public class SchedulerFactory implements SchedulerListener {
     }
   }
 
+  public Scheduler createOrGetFIFOPerUserScheduler(String name) {
+    synchronized (schedulers) {
+      if (schedulers.containsKey(name) == false) {
+        Scheduler s = new FIFOPerUserScheduler(name, executor, this);
+        schedulers.put(name, s);
+        executor.execute(s);
+      }
+      return schedulers.get(name);
+    }
+  }
+
   public Scheduler createOrGetRemoteScheduler(
       String name,
       String noteId,

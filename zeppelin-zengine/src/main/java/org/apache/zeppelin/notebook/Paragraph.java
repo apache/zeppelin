@@ -69,7 +69,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
 
   @VisibleForTesting
   Paragraph() {
-    super(generateId(), null);
+    super(generateId(), null, null);
     config = new HashMap<>();
     settings = new GUI();
   }
@@ -105,10 +105,6 @@ public class Paragraph extends Job implements Serializable, Cloneable {
            + new Random(System.currentTimeMillis()).nextInt();
   }
 
-  public String getUser() {
-    return user;
-  }
-
   public String getText() {
     return text;
   }
@@ -125,6 +121,11 @@ public class Paragraph extends Job implements Serializable, Cloneable {
   public void setAuthenticationInfo(AuthenticationInfo authenticationInfo) {
     this.authenticationInfo = authenticationInfo;
     this.user = authenticationInfo.getUser();
+  }
+
+  @Override
+  public String getUser() {
+    return user;
   }
 
   public String getTitle() {
@@ -330,7 +331,6 @@ public class Paragraph extends Job implements Serializable, Cloneable {
       InterpreterContext context = getInterpreterContext();
       InterpreterContext.set(context);
       InterpreterResult ret = repl.interpret(script, context);
-
       if (Code.KEEP_PREVIOUS_RESULT == ret.code()) {
         return getReturn();
       }

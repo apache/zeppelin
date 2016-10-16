@@ -32,12 +32,13 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * RemoteScheduler runs in ZeppelinServer and proxies Scheduler running on RemoteInterpreter
  */
 public class RemoteScheduler implements Scheduler {
-  Logger logger = LoggerFactory.getLogger(RemoteScheduler.class);
+  private static Logger logger = LoggerFactory.getLogger(RemoteScheduler.class);
 
   List<Job> queue = new LinkedList<Job>();
   List<Job> running = new LinkedList<Job>();
@@ -89,6 +90,7 @@ public class RemoteScheduler implements Scheduler {
         synchronized (queue) {
           try {
             queue.wait(500);
+            logger.debug("wait to be submitted to remote, job:" + job.getUser());
           } catch (InterruptedException e) {
             logger.error("Exception in RemoteScheduler while jobRunner.isJobSubmittedInRemote " +
                 "queue.wait", e);
@@ -265,6 +267,7 @@ public class RemoteScheduler implements Scheduler {
           // not found this job in the remote schedulers.
           // maybe not submitted, maybe already finished
           //Status status = getLastStatus();
+          logger.warn("job {} is not found in remote interpreter", job.getId());
           listener.afterStatusChange(job, null, null);
           return job.getStatus();
         }
@@ -291,7 +294,7 @@ public class RemoteScheduler implements Scheduler {
     private Scheduler scheduler;
     private Job job;
     private boolean jobExecuted;
-    boolean jobSubmittedRemotely;
+    private volatile boolean jobSubmittedRemotely;
 
     public JobRunner(Scheduler scheduler, Job job) {
       this.scheduler = scheduler;
@@ -327,7 +330,6 @@ public class RemoteScheduler implements Scheduler {
         listener.jobStarted(scheduler, job);
       }
       job.run();
-
       jobExecuted = true;
       jobSubmittedRemotely = true;
 
