@@ -77,7 +77,7 @@ limitations under the License.
     </div>
     <span style="float:right" ng-show="valueform.$visible">
       <form editable-form name="valueform"
-            onbeforesave="noterepo.saveNotebookRepo(repo, $data)"
+            onbeforesave="noterepo.saveNotebookRepo(valueform, repo, $data)"
             ng-show="valueform.$visible">
         <button type="submit" class="btn btn-primary btn-xs">
           <span class="fa fa-check"></span> Save
