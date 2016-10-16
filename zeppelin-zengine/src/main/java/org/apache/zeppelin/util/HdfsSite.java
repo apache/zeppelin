@@ -29,7 +29,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- * Utility class to create / move / delete / write to / read from HDFS filessytem
+ * Class to create / move / delete / write to / read from HDFS filessytem
  */
 public class HdfsSite {
   private static Logger logger = LoggerFactory.getLogger(HdfsSite.class);
