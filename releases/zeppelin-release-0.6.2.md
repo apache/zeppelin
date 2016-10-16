@@ -30,6 +30,7 @@ The community put significant effort into improving Apache Zeppelin since the la
 We encourage to [download](../../download.html) the latest release. Feedback through the [mailing lists](../../community.html) is very welcome.
 
 ### Improvements
+   * Spark interpreter binary is compatibile with Spark 1.6/Scala 2.10 and Spark 2.0/Scala 2.11 without rebuild
    * Note storage aware of user on sync
    * Provide shiro password encryption fucntion using hadoop commons Credential apis and jceks
    * Add new Shiro Realm for ZeppelinHub
@@ -37,7 +38,6 @@ We encourage to [download](../../download.html) the latest release. Feedback thr
 
 ### Fixes
    * Adding dependency via SPARK\_SUBMIT\_OPTIONS doesn't work with Spark 2.0.0
-   * Fix Spark interpreter binary compatibility issue between 2.10 and 2.11
    * Environment variable in interpreter setting doesn't take effect 
    * Fix UDF with Spark 2.0.0 
    * z.show() doesn't work
