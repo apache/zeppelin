@@ -31,7 +31,7 @@ Please check the below table before you download Zeppelin package.
 <table class="table-configuration" style="text-align:center" id="comparing-version">
   <tr>
     <th style="width:10%">Zeppelin</th>
-    <th style="width:22%">0.6.1 (latest)</th>
+    <th style="width:22%">0.6.2 - 0.6.1</th>
     <th style="width:22%">0.6.0</th>
     <th style="width:22%">0.5.6</th>
     <th style="width:22%">0.5.5</th>
