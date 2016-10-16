@@ -21,8 +21,28 @@
   function NotebookReposCtrl($http, baseUrlSrv, ngToast) {
     var vm = this;
     vm.notebookRepos = [];
+    vm.showDropdownSelected = showDropdownSelected;
+    vm.saveNotebookRepo = saveNotebookRepo;
 
     _init();
+
+    // Public functions
+
+    function saveNotebookRepo(repo, data) {
+      return $http.post(baseUrlSrv.getRestApiBase() + '/notebook-repositories', {
+        'name': repo.className,
+        'settings': data
+      });
+    }
+
+    function showDropdownSelected(setting) {
+      var index = _.findIndex(setting.value, {'value': setting.selected});
+      if (index < 0) {
+        return 'No value';
+      } else {
+        return setting.value[index].name;
+      }
+    }
 
     // Private functions
 

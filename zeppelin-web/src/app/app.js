@@ -73,7 +73,7 @@
             .when('/notebookRepos', {
               templateUrl: 'app/notebookRepos/notebookRepos.html',
               controller: 'NotebookReposCtrl',
-              controllerAs: 'repo'
+              controllerAs: 'noterepo'
             })
             .when('/credential', {
               templateUrl: 'app/credential/credential.html',

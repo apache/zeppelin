@@ -29,7 +29,7 @@ limitations under the License.
 </div>
 
 <div class="box width-full"
-     ng-repeat="repo in repo.notebookRepos | orderBy: 'name'">
+     ng-repeat="repo in noterepo.notebookRepos | orderBy: 'name'">
   <div id="{{repo.name | lowercase}}">
     <div class="row interpreter">
 
@@ -56,11 +56,18 @@ limitations under the License.
             <td ng-bind="setting.name"></td>
             <td>
               <span class="btn-group">
-                <select ng-model="setting.selected" ng-show="setting.type === 'dropdown'"
-                        class="selectpicker" ng-disabled="!valueform.$visible"
-                        ng-options="item.value as item.name for item in setting.value"></select>
-                <span ng-show="setting.type === 'input'" editable-textarea="setting.selectied" e-form="valueform" e-msd-elastic>
-                  {{setting.selected | breakFilter}}
+                <span ng-show="setting.type === 'DROPDOWN'">
+                  <span editable-select="setting.selected"
+                          e-name="{{setting.name}}"
+                          e-ng-options="s.value as s.name for s in setting.value"
+                          class="selectpicker" ng-disabled="!valueform.$visible" e-form="valueform">
+                          {{noterepo.showDropdownSelected(setting)}}
+                  </span>
+                </span>
+                <span ng-show="setting.type === 'INPUT'">
+                  <span editable-textarea="setting.selected" e-name="{{setting.name}}" e-form="valueform" e-msd-elastic>
+                    {{setting.selected | breakFilter}}
+                  </span>
                 </span>
               </span>
             </td>
@@ -68,6 +75,20 @@ limitations under the License.
         </table>
       </div>
     </div>
+    <span style="float:right" ng-show="valueform.$visible">
+      <form editable-form name="valueform"
+            onbeforesave="noterepo.saveNotebookRepo(repo, $data)"
+            ng-show="valueform.$visible">
+        <button type="submit" class="btn btn-primary btn-xs">
+          <span class="fa fa-check"></span> Save
+        </button>
+        <button type="button" class="btn btn-default btn-xs"
+                ng-disabled="valueform.$waiting"
+                ng-click="valueform.$cancel();">
+          <span class="fa fa-remove"></span> Cancel
+        </button>
+      </form>
+    </span>
     <div class="row interpreter">
       <div ng-show="repo.settings.length === 0 || valueform.$hidden" class="col-md-12 gray40-message">
         <em>Currently there are no settings for this Notebook Repository</em>
