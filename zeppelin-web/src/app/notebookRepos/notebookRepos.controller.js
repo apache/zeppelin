@@ -46,9 +46,10 @@
           verticalPosition: 'bottom',
           timeout: '3000'
         });
+        valueform.$show();
       });
 
-      return false;
+      return 'manual';
     }
 
     function showDropdownSelected(setting) {
