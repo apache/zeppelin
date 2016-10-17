@@ -68,7 +68,7 @@ public class PythonInterpreter extends Interpreter {
 
   @Override
   public void open() {
-    LOG.info("Starting Python interpreter .....");
+    LOG.info("Starting Python interpreter ---->");
     LOG.info("Python path is set to:" + property.getProperty(ZEPPELIN_PYTHON));
 
     maxResult = Integer.valueOf(getProperty(MAX_RESULT));
@@ -111,7 +111,7 @@ public class PythonInterpreter extends Interpreter {
 
   @Override
   public void close() {
-    LOG.info("closing Python interpreter .....");
+    LOG.info("closing Python interpreter <----");
     try {
       if (process != null) {
         process.close();
@@ -134,11 +134,9 @@ public class PythonInterpreter extends Interpreter {
 
     InterpreterResult result;
     if (pythonErrorIn(output)) {
-      result = new InterpreterResult(Code.ERROR, output);
+      result = new InterpreterResult(Code.ERROR, output.replaceAll("\\.\\.\\.", ""));
     } else {
-      // TODO(zjffdu), we should not do string replacement operation in the result, as it is
-      // possible that the output contains the kind of pattern itself, e.g. print("...")
-      result = new InterpreterResult(Code.SUCCESS, output.replaceAll("\\.\\.\\.", ""));
+      result = new InterpreterResult(Code.SUCCESS, output);
     }
     return result;
   }
