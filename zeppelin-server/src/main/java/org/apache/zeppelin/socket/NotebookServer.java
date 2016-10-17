@@ -1571,7 +1571,8 @@ public class NotebookServer extends WebSocketServlet implements
     return new NotebookInformationListener(this);
   }
 
-  private void sendAllAngularObjects(Note note, String user, NotebookSocket conn) throws IOException {
+  private void sendAllAngularObjects(Note note, String user, NotebookSocket conn)
+      throws IOException {
     List<InterpreterSetting> settings =
         notebook().getInterpreterFactory().getInterpreterSettings(note.getId());
     if (settings == null || settings.size() == 0) {
@@ -1579,17 +1580,15 @@ public class NotebookServer extends WebSocketServlet implements
     }
 
     for (InterpreterSetting intpSetting : settings) {
-      AngularObjectRegistry registry = intpSetting.getInterpreterGroup(user, note.getId())
-          .getAngularObjectRegistry();
+      AngularObjectRegistry registry =
+          intpSetting.getInterpreterGroup(user, note.getId()).getAngularObjectRegistry();
       List<AngularObject> objects = registry.getAllWithGlobal(note.getId());
       for (AngularObject object : objects) {
-        conn.send(serializeMessage(new Message(OP.ANGULAR_OBJECT_UPDATE)
-            .put("angularObject", object)
-            .put("interpreterGroupId",
-                intpSetting.getInterpreterGroup(user, note.getId()).getId())
-            .put("noteId", note.getId())
-            .put("paragraphId", object.getParagraphId())
-        ));
+        conn.send(serializeMessage(
+            new Message(OP.ANGULAR_OBJECT_UPDATE).put("angularObject", object)
+                .put("interpreterGroupId",
+                    intpSetting.getInterpreterGroup(user, note.getId()).getId())
+                .put("noteId", note.getId()).put("paragraphId", object.getParagraphId())));
       }
     }
   }
