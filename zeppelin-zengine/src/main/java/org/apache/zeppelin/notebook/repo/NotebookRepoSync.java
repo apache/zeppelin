@@ -226,9 +226,13 @@ public class NotebookRepoSync implements NotebookRepo {
   }
 
   private void pushNotes(AuthenticationInfo subject, List<String> ids, NotebookRepo localRepo,
-      NotebookRepo remoteRepo) throws IOException {
+      NotebookRepo remoteRepo) {
     for (String id : ids) {
-      remoteRepo.save(localRepo.get(id, subject), subject);
+      try {
+        remoteRepo.save(localRepo.get(id, subject), subject);
+      } catch (IOException e) {
+        LOG.error("Failed to push note to storage, moving onto next one", e);
+      }
     }
   }
 
