@@ -54,7 +54,6 @@ import org.eclipse.jetty.websocket.servlet.WebSocketServletFactory;
 import org.quartz.SchedulerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import scala.xml.PrettyPrinter;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
@@ -602,6 +601,8 @@ public class NotebookServer extends WebSocketServlet implements
       return;
     }
 
+    String user = fromMessage.principal;
+
     Note note = notebook.getNote(noteId);
     NotebookAuthorization notebookAuthorization = notebook.getNotebookAuthorization();
     if (note != null) {
@@ -612,7 +613,7 @@ public class NotebookServer extends WebSocketServlet implements
       }
       addConnectionToNote(note.getId(), conn);
       conn.send(serializeMessage(new Message(OP.NOTE).put("note", note)));
-      sendAllAngularObjects(note, conn);
+      sendAllAngularObjects(note, user, conn);
     } else {
       conn.send(serializeMessage(new Message(OP.NOTE).put("note", null)));
     }
@@ -621,6 +622,7 @@ public class NotebookServer extends WebSocketServlet implements
   private void sendHomeNote(NotebookSocket conn, HashSet<String> userAndRoles,
                             Notebook notebook, Message fromMessage) throws IOException {
     String noteId = notebook.getConf().getString(ConfVars.ZEPPELIN_NOTEBOOK_HOMESCREEN);
+    String user = fromMessage.principal;
 
     Note note = null;
     if (noteId != null) {
@@ -636,7 +638,7 @@ public class NotebookServer extends WebSocketServlet implements
       }
       addConnectionToNote(note.getId(), conn);
       conn.send(serializeMessage(new Message(OP.NOTE).put("note", note)));
-      sendAllAngularObjects(note, conn);
+      sendAllAngularObjects(note, user, conn);
     } else {
       removeConnectionFromAllNote(conn);
       conn.send(serializeMessage(new Message(OP.NOTE).put("note", null)));
@@ -808,7 +810,7 @@ public class NotebookServer extends WebSocketServlet implements
     String noteId = getOpenNoteId(conn);
     final Note note = notebook.getNote(noteId);
     NotebookAuthorization notebookAuthorization = notebook.getNotebookAuthorization();
-    AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
+    AuthenticationInfo subject = new AuthenticationInfo(fromMessage.principal);
     if (!notebookAuthorization.isWriter(noteId, userAndRoles)) {
       permissionError(conn, "write", fromMessage.principal,
           userAndRoles, notebookAuthorization.getWriters(noteId));
@@ -873,7 +875,7 @@ public class NotebookServer extends WebSocketServlet implements
     String interpreterGroupId = (String) fromMessage.get("interpreterGroupId");
     String varName = (String) fromMessage.get("name");
     Object varValue = fromMessage.get("value");
-    String user = SecurityUtils.getPrincipal();
+    String user = fromMessage.principal;
     AngularObject ao = null;
     boolean global = false;
     // propagate change to (Remote) AngularObjectRegistry
@@ -1115,7 +1117,7 @@ public class NotebookServer extends WebSocketServlet implements
     String noteId = getOpenNoteId(conn);
     final Note note = notebook.getNote(noteId);
     NotebookAuthorization notebookAuthorization = notebook.getNotebookAuthorization();
-    AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
+    AuthenticationInfo subject = new AuthenticationInfo(fromMessage.principal);
     if (!notebookAuthorization.isWriter(noteId, userAndRoles)) {
       permissionError(conn, "write", fromMessage.principal,
           userAndRoles, notebookAuthorization.getWriters(noteId));
@@ -1134,7 +1136,7 @@ public class NotebookServer extends WebSocketServlet implements
     String noteId = getOpenNoteId(conn);
     final Note note = notebook.getNote(noteId);
     NotebookAuthorization notebookAuthorization = notebook.getNotebookAuthorization();
-    AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
+    AuthenticationInfo subject = new AuthenticationInfo(fromMessage.principal);
     if (!notebookAuthorization.isWriter(noteId, userAndRoles)) {
       permissionError(conn, "write", fromMessage.principal,
           userAndRoles, notebookAuthorization.getWriters(noteId));
@@ -1569,8 +1571,7 @@ public class NotebookServer extends WebSocketServlet implements
     return new NotebookInformationListener(this);
   }
 
-  private void sendAllAngularObjects(Note note, NotebookSocket conn) throws IOException {
-    String user = SecurityUtils.getPrincipal();
+  private void sendAllAngularObjects(Note note, String user, NotebookSocket conn) throws IOException {
     List<InterpreterSetting> settings =
         notebook().getInterpreterFactory().getInterpreterSettings(note.getId());
     if (settings == null || settings.size() == 0) {
@@ -1655,7 +1656,7 @@ public class NotebookServer extends WebSocketServlet implements
     String paragraphId = (String) fromMessage.get("paragraphId");
     String replName = (String) fromMessage.get("magic");
     String noteId = getOpenNoteId(conn);
-    String user = SecurityUtils.getPrincipal();
+    String user = fromMessage.principal;
     Message resp = new Message(OP.EDITOR_SETTING);
     resp.put("paragraphId", paragraphId);
     resp.put("editor", notebook().getInterpreterFactory().getEditorSetting(user, noteId, replName));
