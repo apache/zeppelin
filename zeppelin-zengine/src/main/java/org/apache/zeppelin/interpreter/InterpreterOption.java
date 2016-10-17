@@ -113,14 +113,14 @@ public class InterpreterOption {
   }
 
   public InterpreterOption() {
-    this.perNote = null;
-    this.perUser = null;
+    this.perNote = SCOPED;
+    this.perUser = SCOPED;
     remote = false;
   }
 
   public InterpreterOption(boolean remote) {
-    this.perNote = null;
-    this.perUser = null;
+    this.perNote = SCOPED;
+    this.perUser = SCOPED;
     this.remote = remote;
   }
 
