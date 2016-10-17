@@ -216,9 +216,9 @@
         option = setting.option;
       }
 
-      if (option.perNote == 'scoped') {
+      if (option.perNote === 'scoped') {
         return 'scoped';
-      } else if (option.perNote == 'isolated') {
+      } else if (option.perNote === 'isolated') {
         return 'isolated';
       } else {
         return 'shared';
@@ -235,9 +235,9 @@
         option = setting.option;
       }
 
-      if (option.perUser == 'scoped') {
+      if (option.perUser === 'scoped') {
         return 'scoped';
-      } else if (option.perUser == 'isolated') {
+      } else if (option.perUser === 'isolated') {
         return 'isolated';
       } else {
         return 'shared';
