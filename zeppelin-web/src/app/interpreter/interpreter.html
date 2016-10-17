@@ -145,45 +145,72 @@ limitations under the License.
     <div class="row interpreter">
       <div class="col-md-12">
         <h5>Option</h5>
-        <span class="checkbox input-group">
-            <label><input type="checkbox" style="width:0%;height:0%" id="perNote" ng-model="setting.option.perNote" ng-disabled="!valueform.$visible"/>
-            perNote </label>
-        </span>
-        <span class="checkbox input-group">
-            <label><input type="checkbox" style="width:0%;height:0%" id="perUser" ng-model="setting.option.perUser" ng-disabled="!valueform.$visible"/>
-            perUser</label>
-        </span>
-        <span class="btn-group">
-          <button type="button" class="btn btn-default btn-xs dropdown-toggle"
-                  data-toggle="dropdown"
-                  ng-disabled="!valueform.$visible">
-            {{getSessionOption(setting.id)}} <span class="caret"></span>
-          </button>
-          <ul class="dropdown-menu" role="menu">
-            <li>
-              <a style="cursor:pointer"
-                 tooltip="Single interpreter instance are shared across notes"
-                 ng-click="setSessionOption(setting.id, 'shared')">
-                shared
-              </a>
-            </li>
-            <li>
-              <a style="cursor:pointer"
-                 tooltip="Separate Interpreter instance for each note"
-                 ng-click="setSessionOption(setting.id, 'scoped')">
-                scoped
-              </a>
-            </li>
-            <li>
-              <a style="cursor:pointer"
-                 tooltip="Separate Interpreter process for each note"
-                 ng-click="setSessionOption(setting.id, 'isolated')">
-                isolated
-              </a>
-            </li>
-          </ul>
-        </span>
-        <span>Interpreter for note</span>
+        <div class="row interpreter" style="margin-top: 5px;">
+          <div class="col-md-12">
+            The interpreter will be instantiated
+            <span class="btn-group">
+              <button type="button" class="btn btn-default btn-xs dropdown-toggle"
+                      data-toggle="dropdown"
+                      ng-disabled="!valueform.$visible">
+                {{getInterpreterRunningOption(setting.id).value}} <span class="caret"></span>
+              </button>
+              <ul class="dropdown-menu" role="menu">
+                <li>
+                  <a style="cursor:pointer"
+                     ng-click="setInterpreterRunningOption(setting.id, false, false)">
+                    Globally
+                  </a>
+                </li>
+                <li>
+                  <a style="cursor:pointer"
+                     ng-click="setInterpreterRunningOption(setting.id, true, false)">
+                    Per Note
+                  </a>
+                </li>
+                <li ng-if="ticket.ticket !== 'anonymous' && ticket.roles.length !== 0">
+                  <a style="cursor:pointer"
+                     ng-click="setInterpreterRunningOption(setting.id, false, true)">
+                    Per User
+                  </a>
+                </li>
+              </ul>
+            </span>
+            in
+            <span class="btn-group">
+              <button type="button" class="btn btn-default btn-xs dropdown-toggle"
+                      data-toggle="dropdown"
+                      ng-disabled="!valueform.$visible
+                                   || getInterpreterRunningOption(setting.id).value === 'Globally'">
+                {{getSessionOption(setting.id)}} <span class="caret"></span>
+              </button>
+              <ul class="dropdown-menu" role="menu">
+                <li
+                  ng-if="getInterpreterRunningOption(setting.id).value === 'Globally'">
+                  <a style="cursor:pointer"
+                     tooltip="Single interpreter instance are shared across notes"
+                     ng-click="setSessionOption(setting.id, 'shared')">
+                    shared
+                  </a>
+                </li>
+                <li>
+                  <a style="cursor:pointer"
+                     tooltip="Separate Interpreter instance for each note"
+                     ng-click="setSessionOption(setting.id, 'scoped')">
+                    scoped
+                  </a>
+                </li>
+                <li>
+                  <a style="cursor:pointer"
+                     tooltip="Separate Interpreter process for each note"
+                     ng-click="setSessionOption(setting.id, 'isolated')">
+                    isolated
+                  </a>
+                </li>
+              </ul>
+            </span>
+            process.
+          </div>
+        </div>
       </div>
     </div>
     <div class="row interpreter" style="margin-top: 5px;">

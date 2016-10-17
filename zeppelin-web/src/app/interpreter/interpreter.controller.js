@@ -16,9 +16,9 @@
 
   angular.module('zeppelinWebApp').controller('InterpreterCtrl', InterpreterCtrl);
 
-  InterpreterCtrl.$inject = ['$scope', '$http', 'baseUrlSrv', 'ngToast', '$timeout', '$route'];
+  InterpreterCtrl.$inject = ['$rootScope', '$scope', '$http', 'baseUrlSrv', 'ngToast', '$timeout', '$route'];
 
-  function InterpreterCtrl($scope, $http, baseUrlSrv, ngToast, $timeout, $route) {
+  function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeout, $route) {
     var interpreterSettingsTmp = [];
     $scope.interpreterSettings = [];
     $scope.availableInterpreters = {};
@@ -194,6 +194,59 @@
       } else {
         return 'shared';
       }
+    };
+
+    $scope.getInterpreterRunningOption = function(settingId) {
+      var option;
+      if (settingId === undefined) {
+        option = $scope.newInterpreterSetting.option;
+      } else {
+        var index = _.findIndex($scope.interpreterSettings, {'id': settingId});
+        var setting = $scope.interpreterSettings[index];
+        option = setting.option;
+      }
+
+      var isPerNote = option.perNote;
+      var isPerUser = option.perUser;
+
+      if (isPerNote === true && isPerUser === false) {
+        if (option.session === false && option.process === false) {
+          option.session = true;
+        }
+
+        return {value: 'Per Note', isPerNote: isPerNote, isPerUser: isPerUser};
+      } else if (isPerNote !== undefined && isPerUser === true) {
+        if (option.session === false && option.process === false) {
+          option.session = true;
+        }
+        console.log('clover ', $rootScope.ticket);
+        if ($rootScope.ticket.ticket === 'anonymous' && $rootScope.ticket.roles === '[]') {
+          option.perNote = true;
+          option.perUser = false;
+          return {value: 'Per Note', isPerNote: isPerNote, isPerUser: isPerUser};
+        }
+        return {value: 'Per User', isPerNote: isPerNote, isPerUser: isPerUser};
+
+      } else {
+        // fixed shared on Globally
+        option.session = false;
+        option.process = false;
+
+        return {value: 'Globally', isPerNote: isPerNote, isPerUser: isPerUser};
+      }
+    };
+
+    $scope.setInterpreterRunningOption = function (settingId, isPerNoteMode, isPerUserMode) {
+      var option;
+      if (settingId === undefined) {
+        option = $scope.newInterpreterSetting.option;
+      } else {
+        var index = _.findIndex($scope.interpreterSettings, {'id': settingId});
+        var setting = $scope.interpreterSettings[index];
+        option = setting.option;
+      }
+      option.perNote = isPerNoteMode;
+      option.perUser = isPerUserMode;
     };
 
     $scope.updateInterpreterSetting = function(form, settingId) {
