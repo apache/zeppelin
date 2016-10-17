@@ -696,10 +696,11 @@ public class NotebookTest implements JobListenerFactory{
     p1.setText("getId");
     p1.setAuthenticationInfo(anonymous);
 
-    // restart interpreter with per note session enabled
+    // restart interpreter with per user session enabled
     for (InterpreterSetting setting : factory.getInterpreterSettings(note1.getId())) {
       setting.getOption().setSession(true);
-      setting.getOption().setPerUser(true);
+      setting.getOption().setPerNote(setting.getOption().SCOPED);
+      setting.getOption().setPerUser("");
       notebook.getInterpreterFactory().restart(setting.getId());
     }
 
@@ -748,7 +749,8 @@ public class NotebookTest implements JobListenerFactory{
     // restart interpreter with per note session enabled
     for (InterpreterSetting setting : notebook.getInterpreterFactory().getInterpreterSettings(note1.getId())) {
       setting.getOption().setSession(true);
-      setting.getOption().setPerNote(true);
+      setting.getOption().setPerNote(setting.getOption().SCOPED);
+      setting.getOption().setPerUser(setting.getOption().SCOPED);
       notebook.getInterpreterFactory().restart(setting.getId());
     }
 

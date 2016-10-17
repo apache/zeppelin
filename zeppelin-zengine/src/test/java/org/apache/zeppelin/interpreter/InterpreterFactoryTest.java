@@ -226,7 +226,7 @@ public class InterpreterFactoryTest {
 
     InterpreterOption perUserInterpreterOption = new InterpreterOption(true);
     perUserInterpreterOption.setSession(true);
-    perUserInterpreterOption.setPerUser(true);
+    perUserInterpreterOption.setPerUser(perUserInterpreterOption.ISOLATED);
     final InterpreterSetting setting1 = factory.createNewSetting("test-group1", "group1", new ArrayList<Dependency>(), perUserInterpreterOption, new Properties());
 
     factory.setInterpreters("user1", "note", new ArrayList<String>() {{

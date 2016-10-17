@@ -95,13 +95,16 @@ public class NoteInterpreterLoaderTest {
 
   @Test
   public void testNoteSession() throws IOException {
+    InterpreterOption dumyInterpreterOption = new InterpreterOption();
     factory.setInterpreters("user", "noteA", factory.getDefaultInterpreterSettingList());
     factory.getInterpreterSettings("noteA").get(0).getOption().setSession(true);
-    factory.getInterpreterSettings("noteA").get(0).getOption().setPerNote(true);
+    factory.getInterpreterSettings("noteA").get(0).getOption().setPerNote(dumyInterpreterOption.SCOPED);
+    factory.getInterpreterSettings("noteA").get(0).getOption().setPerUser("");
 
     factory.setInterpreters("user", "noteB", factory.getDefaultInterpreterSettingList());
     factory.getInterpreterSettings("noteB").get(0).getOption().setSession(true);
-    factory.getInterpreterSettings("noteB").get(0).getOption().setPerNote(true);
+    factory.getInterpreterSettings("noteB").get(0).getOption().setPerNote(dumyInterpreterOption.SCOPED);
+    factory.getInterpreterSettings("noteB").get(0).getOption().setPerUser("");
 
     // interpreters are not created before accessing it
     assertNull(factory.getInterpreterSettings("noteA").get(0).getInterpreterGroup("user", "noteA").get(":noteA"));
@@ -130,13 +133,16 @@ public class NoteInterpreterLoaderTest {
 
   @Test
   public void testNotePerInterpreterProcess() throws IOException {
+    InterpreterOption dumyInterpreterOption = new InterpreterOption();
     factory.setInterpreters("user", "noteA", factory.getDefaultInterpreterSettingList());
     factory.getInterpreterSettings("noteA").get(0).getOption().setProcess(true);
-    factory.getInterpreterSettings("noteA").get(0).getOption().setPerNote(true);
+    factory.getInterpreterSettings("noteA").get(0).getOption().setPerNote(dumyInterpreterOption.SCOPED);
+    factory.getInterpreterSettings("noteA").get(0).getOption().setPerUser("");
 
     factory.setInterpreters("user", "noteB", factory.getDefaultInterpreterSettingList());
     factory.getInterpreterSettings("noteB").get(0).getOption().setProcess(true);
-    factory.getInterpreterSettings("noteA").get(0).getOption().setPerNote(true);
+    factory.getInterpreterSettings("noteB").get(0).getOption().setPerNote(dumyInterpreterOption.SCOPED);
+    factory.getInterpreterSettings("noteB").get(0).getOption().setPerUser("");
 
     // interpreters are not created before accessing it
     assertNull(factory.getInterpreterSettings("noteA").get(0).getInterpreterGroup("user", "noteA").get(":noteA"));

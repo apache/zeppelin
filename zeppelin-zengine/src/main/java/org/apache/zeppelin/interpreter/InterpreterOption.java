@@ -23,12 +23,16 @@ import java.util.List;
  *
  */
 public class InterpreterOption {
+  public final transient String SHARED = "shared";
+  public final transient String SCOPED = "scoped";
+  public final transient String ISOLATED = "isolated";
+
   boolean remote;
   String host = null;
   int port = -1;
 
-  boolean perNote;
-  boolean perUser;
+  String perNote;
+  String perUser;
 
   boolean session;
   boolean process;
@@ -37,19 +41,46 @@ public class InterpreterOption {
   boolean setPermission;
   List<String> users;
 
-  public boolean isPerNote() {
-    return perNote;
+  public boolean isGlobally() {
+    if (perNote != null && perNote.equals(SHARED)
+        && perUser != null && perUser.equals(SHARED)) {
+      return true;
+    }
+    return false;
   }
 
-  public void setPerNote(boolean perNote) {
+  public boolean isPerNote() {
+    if (isGlobally() == true) {
+      return false;
+    }
+
+    if (perNote != null && !perNote.equals("")) {
+      return true;
+    }
+
+    return false;
+  }
+
+  public void setPerNote(String perNote) {
     this.perNote = perNote;
   }
 
   public boolean isPerUser() {
-    return perUser;
+    if (isGlobally() == true) {
+      return false;
+    }
+
+    if (isPerNote() == true) {
+      return false;
+    }
+
+    if (perUser != null && !perUser.equals("")) {
+      return true;
+    }
+    return false;
   }
 
-  public void setPerUser(boolean perUser) {
+  public void setPerUser(String perUser) {
     this.perUser = perUser;
   }
 
@@ -82,10 +113,14 @@ public class InterpreterOption {
   }
 
   public InterpreterOption() {
+    this.perNote = null;
+    this.perUser = null;
     remote = false;
   }
 
   public InterpreterOption(boolean remote) {
+    this.perNote = null;
+    this.perUser = null;
     this.remote = remote;
   }
 
