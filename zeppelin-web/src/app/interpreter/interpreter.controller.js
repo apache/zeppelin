@@ -156,7 +156,7 @@
       interpreterSettingsTmp[index] = angular.copy($scope.interpreterSettings[index]);
     };
 
-    $scope.setSessionOption = function(settingId, sessionOption) {
+    $scope.setPerNoteOption = function(settingId, sessionOption) {
       var option;
       if (settingId === undefined) {
         option = $scope.newInterpreterSetting.option;
@@ -167,18 +167,21 @@
       }
 
       if (sessionOption === 'isolated') {
+        option.perNote = sessionOption;
         option.session = false;
         option.process = true;
       } else if (sessionOption === 'scoped') {
+        option.perNote = sessionOption;
         option.session = true;
         option.process = false;
       } else {
+        option.perNote = 'shared';
         option.session = false;
         option.process = false;
       }
     };
 
-    $scope.getSessionOption = function(settingId) {
+    $scope.setPerUserOption = function(settingId, sessionOption) {
       var option;
       if (settingId === undefined) {
         option = $scope.newInterpreterSetting.option;
@@ -187,9 +190,54 @@
         var setting = $scope.interpreterSettings[index];
         option = setting.option;
       }
-      if (option.session) {
+
+      if (sessionOption === 'isolated') {
+        option.perUser = sessionOption;
+        option.session = false;
+        option.process = true;
+      } else if (sessionOption === 'scoped') {
+        option.perUser = sessionOption;
+        option.session = true;
+        option.process = false;
+      } else {
+        option.perUser = 'shared';
+        option.session = false;
+        option.process = false;
+      }
+    };
+
+    $scope.getPerNoteOption = function(settingId) {
+      var option;
+      if (settingId === undefined) {
+        option = $scope.newInterpreterSetting.option;
+      } else {
+        var index = _.findIndex($scope.interpreterSettings, {'id': settingId});
+        var setting = $scope.interpreterSettings[index];
+        option = setting.option;
+      }
+
+      if (option.perNote == 'scoped') {
         return 'scoped';
-      } else if (option.process) {
+      } else if (option.perNote == 'isolated') {
+        return 'isolated';
+      } else {
+        return 'shared';
+      }
+    };
+
+    $scope.getPerUserOption = function(settingId) {
+      var option;
+      if (settingId === undefined) {
+        option = $scope.newInterpreterSetting.option;
+      } else {
+        var index = _.findIndex($scope.interpreterSettings, {'id': settingId});
+        var setting = $scope.interpreterSettings[index];
+        option = setting.option;
+      }
+
+      if (option.perUser == 'scoped') {
+        return 'scoped';
+      } else if (option.perUser == 'isolated') {
         return 'isolated';
       } else {
         return 'shared';
@@ -197,6 +245,12 @@
     };
 
     $scope.getInterpreterRunningOption = function(settingId) {
+      var sharedModeName = 'shared';
+
+      var globallyModeName = 'Globally';
+      var perNoteModeName = 'Per Note';
+      var perUserModeName = 'Per User';
+
       var option;
       if (settingId === undefined) {
         option = $scope.newInterpreterSetting.option;
@@ -206,37 +260,33 @@
         option = setting.option;
       }
 
-      var isPerNote = option.perNote;
-      var isPerUser = option.perUser;
+      var perNote = option.perNote;
+      var perUser = option.perUser;
 
-      if (isPerNote === true && isPerUser === false) {
-        if (option.session === false && option.process === false) {
-          option.session = true;
-        }
-
-        return {value: 'Per Note', isPerNote: isPerNote, isPerUser: isPerUser};
-      } else if (isPerNote !== undefined && isPerUser === true) {
-        if (option.session === false && option.process === false) {
-          option.session = true;
-        }
-        console.log('clover ', $rootScope.ticket);
-        if ($rootScope.ticket.ticket === 'anonymous' && $rootScope.ticket.roles === '[]') {
-          option.perNote = true;
-          option.perUser = false;
-          return {value: 'Per Note', isPerNote: isPerNote, isPerUser: isPerUser};
-        }
-        return {value: 'Per User', isPerNote: isPerNote, isPerUser: isPerUser};
-
-      } else {
-        // fixed shared on Globally
-        option.session = false;
-        option.process = false;
-
-        return {value: 'Globally', isPerNote: isPerNote, isPerUser: isPerUser};
+      // Globally == shared_perNote + shared_perUser
+      if (perNote === sharedModeName && perUser === sharedModeName) {
+        return globallyModeName;
       }
+
+      if ($rootScope.ticket.ticket === 'anonymous' && $rootScope.ticket.roles === '[]') {
+        if (perNote !== undefined && typeof perNote === 'string' && perNote !== '') {
+          return perNoteModeName;
+        }
+      } else if ($rootScope.ticket.ticket !== 'anonymous') {
+        if (perNote !== undefined && typeof perNote === 'string' && perNote !== '') {
+          if (perUser !== undefined && typeof perUser === 'string' && perUser !== '') {
+            return perUserModeName;
+          }
+          return perNoteModeName;
+        }
+      }
+
+      option.perNote = sharedModeName;
+      option.perUser = sharedModeName;
+      return globallyModeName;
     };
 
-    $scope.setInterpreterRunningOption = function (settingId, isPerNoteMode, isPerUserMode) {
+    $scope.setInterpreterRunningOption = function(settingId, isPerNoteMode, isPerUserMode) {
       var option;
       if (settingId === undefined) {
         option = $scope.newInterpreterSetting.option;
