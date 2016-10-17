@@ -48,7 +48,11 @@ private[zeppelin] class SparkListenerJob(jobStart: SparkListenerJobStart, uiAddr
   def getJobName(): String = s"Job $jobId"
 
   def getJobDescription(): String = {
-    s"Stages ${stageIds.sortWith(_ < _).mkString("[", ", ", "]")}"
+    if (stageIds.isEmpty) {
+      "No stages information available"
+    } else {
+      s"Stages ${stageIds.sortWith(_ < _).mkString("[", ", ", "]")}"
+    }
   }
 
   override def toString(): String = {
@@ -64,6 +68,8 @@ private[zeppelin] class SparkListenerJob(jobStart: SparkListenerJobStart, uiAddr
 class SparkJobDetailsListener(private val uiAddress: String) extends SparkFirehoseListener {
   // table contains map of jobs for job group, each job map has job id as key
   private val table = new ConcurrentHashMap[String, HashMap[Int, SparkListenerJob]]()
+
+  def getTable() = new ConcurrentHashMap[String, HashMap[Int, SparkListenerJob]](table)
 
   def addJob(jobGroup: String, jobStart: SparkListenerJobStart): Unit = {
     val listenerJob = new SparkListenerJob(jobStart, uiAddress)
@@ -93,9 +99,11 @@ class SparkJobDetailsListener(private val uiAddress: String) extends SparkFireho
   }
 
   override def onEvent(event: SparkListenerEvent): Unit = event match {
-    case jobStart: SparkListenerJobStart =>
-      val jobGroup = jobStart.properties.get("spark.jobGroup.id").asInstanceOf[String]
-      addJob(jobGroup, jobStart)
+    case jobStart: SparkListenerJobStart if jobStart.properties != null =>
+      val jobGroup = jobStart.properties.get("spark.jobGroup.id")
+      if (jobGroup != null && jobGroup.isInstanceOf[String]) {
+        addJob(jobGroup.asInstanceOf[String], jobStart)
+      }
     case other => // do nothing
   }
 }
