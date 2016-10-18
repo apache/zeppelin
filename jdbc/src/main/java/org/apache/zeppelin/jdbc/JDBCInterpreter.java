@@ -343,6 +343,15 @@ public class JDBCInterpreter extends Interpreter {
     return null;
   }
 
+  public void setAccountOfCredential(String propertyKey, InterpreterContext interpreterContext) {
+    UsernamePassword usernamePassword = getUsernamePassword(interpreterContext,
+      interpreterContext.getReplGroupName());
+    if (usernamePassword != null && notExistAccountInProperty()) {
+      propertiesMap.get(propertyKey).setProperty("user", usernamePassword.getUsername());
+      propertiesMap.get(propertyKey).setProperty("password", usernamePassword.getPassword());
+    }
+  }
+
   private InterpreterResult executeSql(String propertyKey, String sql,
       InterpreterContext interpreterContext) {
     String paragraphId = interpreterContext.getParagraphId();
@@ -351,25 +360,7 @@ public class JDBCInterpreter extends Interpreter {
     ResultSet resultSet = null;
 
     try {
-/*
-      logger.info("login user : {}", interpreterContext.getAuthenticationInfo().getUser());
-      for (String key : propertiesMap.keySet()){
-        logger.info( String.format("키 : %s, 값 : %s", key, propertiesMap.get(key)) );
-      }
-      for (Object key : property.keySet()){
-        logger.info( String.format("%s ---------> %s", key, property.get(key)) );
-      }
-*/
-      UsernamePassword usernamePassword = getUsernamePassword(interpreterContext,
-        interpreterContext.getReplGroupName());
-      if (usernamePassword != null && notExistAccountInProperty()) {
-        logger.info("key:{}, credential set user --> {}, {}", propertyKey,
-          usernamePassword.getUsername(), usernamePassword.getPassword());
-
-        propertiesMap.get(propertyKey).setProperty("user", usernamePassword.getUsername());
-        propertiesMap.get(propertyKey).setProperty("password", usernamePassword.getPassword());
-      }
-
+      setAccountOfCredential(propertyKey, interpreterContext);
       connection = getConnection(propertyKey, interpreterContext.getAuthenticationInfo().getUser());
       if (connection == null) {
         return new InterpreterResult(Code.ERROR, "Prefix not found.");

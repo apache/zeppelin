@@ -16,20 +16,20 @@ package org.apache.zeppelin.jdbc;
 
 import static java.lang.String.format;
 import static org.apache.zeppelin.interpreter.Interpreter.logger;
-import static org.junit.Assert.assertEquals;
+import static org.apache.zeppelin.interpreter.Interpreter.register;
 import static org.apache.zeppelin.jdbc.JDBCInterpreter.DEFAULT_KEY;
 import static org.apache.zeppelin.jdbc.JDBCInterpreter.DEFAULT_DRIVER;
 import static org.apache.zeppelin.jdbc.JDBCInterpreter.DEFAULT_PASSWORD;
 import static org.apache.zeppelin.jdbc.JDBCInterpreter.DEFAULT_USER;
 import static org.apache.zeppelin.jdbc.JDBCInterpreter.DEFAULT_URL;
 import static org.apache.zeppelin.jdbc.JDBCInterpreter.COMMON_MAX_LINE;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.*;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 
@@ -41,6 +41,9 @@ import org.apache.zeppelin.scheduler.FIFOScheduler;
 import org.apache.zeppelin.scheduler.ParallelScheduler;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.user.AuthenticationInfo;
+import org.apache.zeppelin.user.Credentials;
+import org.apache.zeppelin.user.UserCredentials;
+import org.apache.zeppelin.user.UsernamePassword;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -75,7 +78,6 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
   
   @Before
   public void setUp() throws Exception {
-
     Class.forName("org.h2.Driver");
     Connection connection = DriverManager.getConnection(getJdbcConnection());
     Statement statement = connection.createStatement();
@@ -251,7 +253,7 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     jdbcInterpreter.interpret("", interpreterContext);
 
     List<InterpreterCompletion> completionList = jdbcInterpreter.completion("SEL", 0);
-    
+
     InterpreterCompletion correctCompletionKeyword = new InterpreterCompletion("SELECT", "SELECT");
 
     assertEquals(2, completionList.size());
@@ -259,4 +261,86 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     assertEquals(0, jdbcInterpreter.completion("SEL", 100).size());
   }
 
-}
+  @Test
+  public void testCredential() throws SQLException, IOException {
+    String replName1 = "jdbc1";
+    String replName2 = "jdbc2";
+
+    // create an user credential with replName1(entity name).
+    UserCredentials userCredentials = new UserCredentials();
+    UsernamePassword up = new UsernamePassword("user2", "pass2");
+    userCredentials.putUsernamePassword(replName1, up);
+    AuthenticationInfo authInfo = new AuthenticationInfo();
+    authInfo.setUserCredentials(userCredentials);
+    assertEquals(up.getUsername(), "user2");
+    assertEquals(up.getPassword(), "pass2");
+
+    /**
+     *  Verify that the user and password in the JDBC Interpreter properties are the same with the argument properties
+     *  if replName is same.
+     */
+    Properties properties = new Properties();
+    properties.setProperty("common.max_count", "1000");
+    properties.setProperty("common.max_retry", "3");
+    properties.setProperty("default.driver", "org.h2.Driver");
+    properties.setProperty("default.url", getJdbcConnection());
+    properties.setProperty("default.user", "user1");
+    properties.setProperty("default.password", "pass1");
+    JDBCInterpreter jdbcInterpreter1 = new JDBCInterpreter(properties);
+    jdbcInterpreter1.open();
+
+    InterpreterContext itCtx1 = new InterpreterContext("", "1", replName1, "", "", authInfo, null, null, null, null,
+      null, null);
+
+    jdbcInterpreter1.setAccountOfCredential("default", itCtx1);
+
+    assertEquals(properties.getProperty("default.user"),
+      jdbcInterpreter1.getPropertiesMap().get("default").getProperty("user"));
+    assertEquals(properties.getProperty("default.password"),
+      jdbcInterpreter1.getPropertiesMap().get("default").getProperty("password"));
+    jdbcInterpreter1.close();
+
+    /**
+     *  Verify if setting user and password of JDBC Interpreter properties as UserCredentials when replName is same.
+     */
+    // check if getting account information from Credential.
+    Properties properties2 = new Properties();
+    properties2.setProperty("common.max_count", "1000");
+    properties2.setProperty("common.max_retry", "3");
+    properties2.setProperty("default.driver", "org.h2.Driver");
+    properties2.setProperty("default.url", getJdbcConnection());
+    JDBCInterpreter jdbcInterpreter2 = new JDBCInterpreter(properties2);
+    jdbcInterpreter2.open();
+
+    InterpreterContext itCtx2 = new InterpreterContext("", "1", replName1, "", "", authInfo, null, null, null, null,
+      null, null);
+    jdbcInterpreter2.setAccountOfCredential("default", itCtx2);
+
+    assertEquals(up.getUsername(),
+      jdbcInterpreter2.getPropertiesMap().get("default").getProperty("user"));
+    assertEquals(up.getPassword(),
+      jdbcInterpreter2.getPropertiesMap().get("default").getProperty("password"));
+    jdbcInterpreter2.close();
+
+
+    /**
+     *  Verify if not setting user and password of the JDBC Interpreter properties when replName is different.
+     */
+    // check if getting account information from Credential.
+    Properties properties3 = new Properties();
+    properties3.setProperty("common.max_count", "1000");
+    properties3.setProperty("common.max_retry", "3");
+    properties3.setProperty("default.driver", "org.h2.Driver");
+    properties3.setProperty("default.url", getJdbcConnection());
+    JDBCInterpreter jdbcInterpreter3 = new JDBCInterpreter(properties3);
+    jdbcInterpreter3.open();
+
+    InterpreterContext itCtx3 = new InterpreterContext("", "1", replName2, "", "", authInfo, null, null, null, null,
+      null, null);
+    jdbcInterpreter3.setAccountOfCredential("default", itCtx3);
+
+    assertNull(jdbcInterpreter3.getPropertiesMap().get("default").getProperty("user"));
+    assertNull(jdbcInterpreter3.getPropertiesMap().get("default").getProperty("password"));
+    jdbcInterpreter3.close();
+  }
+ }
