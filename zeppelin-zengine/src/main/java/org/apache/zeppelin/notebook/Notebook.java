@@ -87,7 +87,7 @@ public class Notebook implements NoteEventListener {
   private org.quartz.Scheduler quartzSched;
   private JobListenerFactory jobListenerFactory;
   private NotebookRepo notebookRepo;
-  private SearchService notebookIndex;
+  private SearchService noteSearchService;
   private NotebookAuthorization notebookAuthorization;
   private final List<NotebookEventListener> notebookEventListeners =
       Collections.synchronizedList(new LinkedList<NotebookEventListener>());
@@ -96,13 +96,13 @@ public class Notebook implements NoteEventListener {
   /**
    * Main constructor \w manual Dependency Injection
    *
-   * @param notebookIndex         - (nullable) for indexing all notebooks on creating.
+   * @param noteSearchService         - (nullable) for indexing all notebooks on creating.
    * @throws IOException
    * @throws SchedulerException
    */
   public Notebook(ZeppelinConfiguration conf, NotebookRepo notebookRepo,
       SchedulerFactory schedulerFactory, InterpreterFactory replFactory,
-      JobListenerFactory jobListenerFactory, SearchService notebookIndex,
+      JobListenerFactory jobListenerFactory, SearchService noteSearchService,
       NotebookAuthorization notebookAuthorization, Credentials credentials)
       throws IOException, SchedulerException {
     this.conf = conf;
@@ -110,7 +110,7 @@ public class Notebook implements NoteEventListener {
     this.schedulerFactory = schedulerFactory;
     this.replFactory = replFactory;
     this.jobListenerFactory = jobListenerFactory;
-    this.notebookIndex = notebookIndex;
+    this.noteSearchService = noteSearchService;
     this.notebookAuthorization = notebookAuthorization;
     this.credentials = credentials;
     quertzSchedFact = new org.quartz.impl.StdSchedulerFactory();
@@ -119,10 +119,10 @@ public class Notebook implements NoteEventListener {
     CronJob.notebook = this;
 
     loadAllNotes();
-    if (this.notebookIndex != null) {
+    if (this.noteSearchService != null) {
       long start = System.nanoTime();
       logger.info("Notebook indexing started...");
-      notebookIndex.addIndexDocs(notes.values());
+      noteSearchService.addIndexDocs(notes.values());
       logger.info("Notebook indexing finished: {} indexed in {}s", notes.size(),
           TimeUnit.NANOSECONDS.toSeconds(start - System.nanoTime()));
     }
@@ -141,7 +141,7 @@ public class Notebook implements NoteEventListener {
     } else {
       note = createNote(null, subject);
     }
-    notebookIndex.addIndexDoc(note);
+    noteSearchService.addIndexDoc(note);
     return note;
   }
 
@@ -153,7 +153,8 @@ public class Notebook implements NoteEventListener {
   public Note createNote(List<String> interpreterIds, AuthenticationInfo subject)
       throws IOException {
     Note note =
-        new Note(notebookRepo, replFactory, jobListenerFactory, notebookIndex, credentials, this);
+        new Note(notebookRepo, replFactory, jobListenerFactory,
+                noteSearchService, credentials, this);
     synchronized (notes) {
       notes.put(note.getId(), note);
     }
@@ -166,7 +167,7 @@ public class Notebook implements NoteEventListener {
       owners.add(subject.getUser());
       notebookAuthorization.setOwners(note.getId(), owners);
     }
-    notebookIndex.addIndexDoc(note);
+    noteSearchService.addIndexDoc(note);
     note.persist(subject);
     fireNoteCreateEvent(note);
     return note;
@@ -259,7 +260,7 @@ public class Notebook implements NoteEventListener {
       newNote.addCloneParagraph(p);
     }
 
-    notebookIndex.addIndexDoc(newNote);
+    noteSearchService.addIndexDoc(newNote);
     newNote.persist(subject);
     return newNote;
   }
@@ -312,7 +313,7 @@ public class Notebook implements NoteEventListener {
       note = notes.remove(id);
     }
     replFactory.removeNoteInterpreterSettingBinding(id);
-    notebookIndex.deleteIndexDocs(note);
+    noteSearchService.deleteIndexDocs(note);
     notebookAuthorization.removeNote(id);
 
     // remove from all interpreter instance's angular object registry
@@ -391,7 +392,7 @@ public class Notebook implements NoteEventListener {
     }
 
     //Manually inject ALL dependencies, as DI constructor was NOT used
-    note.setIndex(this.notebookIndex);
+    note.setIndex(this.noteSearchService);
     note.setCredentials(this.credentials);
 
     note.setInterpreterFactory(replFactory);
@@ -873,7 +874,7 @@ public class Notebook implements NoteEventListener {
 
   public void close() {
     this.notebookRepo.close();
-    this.notebookIndex.close();
+    this.noteSearchService.close();
   }
 
   public void addNotebookEventListener(NotebookEventListener listener) {
