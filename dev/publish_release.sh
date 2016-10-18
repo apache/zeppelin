@@ -68,9 +68,11 @@ function curl_error() {
 }
 
 function publish_to_dockerhub() {
-  # publish image
+  # publish images
   docker login --username="${DOCKER_USERNAME}" --password="${DOCKER_PASSWORD}" --email="${DOCKER_EMAIL}"
+  docker push ${DOCKER_USERNAME}/zeppelin-base:latest
   docker push ${DOCKER_USERNAME}/zeppelin-release:"${RELEASE_VERSION}"
+  
 }
 
 function publish_to_maven() {

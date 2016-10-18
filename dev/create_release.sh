@@ -43,7 +43,12 @@ done
 RELEASE_VERSION="$1"
 GIT_TAG="$2"
 
+function build_docker_base() {
+  # build base image
+  docker build -t ${DOCKER_USERNAME}/zeppelin-base:latest "${WORKING_DIR}/zeppelin/scripts/docker/zeppelin-base"
+}
 function build_docker_image() {
+  # build release image
   echo "FROM ${DOCKER_USERNAME}/zeppelin-base:latest
   RUN mkdir /usr/local/zeppelin/
   ADD zeppelin-${RELEASE_VERSION}-bin-${BIN_RELEASE_NAME} /usr/local/zeppelin/" > "Dockerfile"
@@ -117,6 +122,7 @@ function make_binary_release() {
 
 git_clone
 make_source_package
+build_docker_base
 make_binary_release all "-Pspark-2.0 -Phadoop-2.4 -Pyarn -Ppyspark -Psparkr -Pr -Pscala-2.11"
 make_binary_release netinst "-Pspark-2.0 -Phadoop-2.4 -Pyarn -Ppyspark -Psparkr -Pr -Pscala-2.11 -pl !alluxio,!angular,!cassandra,!elasticsearch,!file,!flink,!hbase,!ignite,!jdbc,!kylin,!lens,!livy,!markdown,!postgresql,!python,!shell,!bigquery"
 
