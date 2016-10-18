@@ -232,17 +232,17 @@ public class Notebook implements NoteEventListener {
   /**
    * Clone existing note.
    *
-   * @param sourceNoteID - the note ID to clone
+   * @param sourceNoteId - the note ID to clone
    * @param newNoteName  - the name of the new note
    * @return noteId
    * @throws IOException, CloneNotSupportedException, IllegalArgumentException
    */
-  public Note cloneNote(String sourceNoteID, String newNoteName, AuthenticationInfo subject)
+  public Note cloneNote(String sourceNoteId, String newNoteName, AuthenticationInfo subject)
       throws IOException, CloneNotSupportedException, IllegalArgumentException {
 
-    Note sourceNote = getNote(sourceNoteID);
+    Note sourceNote = getNote(sourceNoteId);
     if (sourceNote == null) {
-      throw new IllegalArgumentException(sourceNoteID + "not found");
+      throw new IllegalArgumentException(sourceNoteId + "not found");
     }
     Note newNote = createNote(subject);
     if (newNoteName != null) {
@@ -612,11 +612,11 @@ public class Notebook implements NoteEventListener {
     return lastRunningUnixTime;
   }
 
-  public List<Map<String, Object>> getJobListByParagraphId(String paragraphID) {
+  public List<Map<String, Object>> getJobListByParagraphId(String paragraphId) {
     String gotNoteId = null;
     List<Note> notes = getAllNotes();
     for (Note note : notes) {
-      Paragraph p = note.getParagraph(paragraphID);
+      Paragraph p = note.getParagraph(paragraphId);
       if (p != null) {
         gotNoteId = note.getId();
       }
@@ -624,11 +624,11 @@ public class Notebook implements NoteEventListener {
     return getJobListByNoteId(gotNoteId);
   }
 
-  public List<Map<String, Object>> getJobListByNoteId(String noteID) {
+  public List<Map<String, Object>> getJobListByNoteId(String noteId) {
     final String CRON_TYPE_NOTEBOOK_KEYWORD = "cron";
     long lastRunningUnixTime = 0;
-    boolean isNotebookRunning = false;
-    Note jobNote = getNote(noteID);
+    boolean isNoteRunning = false;
+    Note jobNote = getNote(noteId);
     List<Map<String, Object>> notesInfo = new LinkedList<>();
     if (jobNote == null) {
       return notesInfo;
@@ -656,7 +656,7 @@ public class Notebook implements NoteEventListener {
     for (Paragraph paragraph : jobNote.getParagraphs()) {
       // check paragraph's status.
       if (paragraph.getStatus().isRunning()) {
-        isNotebookRunning = true;
+        isNoteRunning = true;
       }
 
       // get data for the job manager.
@@ -675,7 +675,7 @@ public class Notebook implements NoteEventListener {
 
     // notebook json object root information.
     info.put("interpreter", interpreterGroupName);
-    info.put("isRunningJob", isNotebookRunning);
+    info.put("isRunningJob", isNoteRunning);
     info.put("unixTimeLastRun", lastRunningUnixTime);
     info.put("paragraphs", paragraphsInfo);
     notesInfo.add(info);

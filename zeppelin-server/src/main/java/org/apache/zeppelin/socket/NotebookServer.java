@@ -467,7 +467,7 @@ public class NotebookServer extends WebSocketServlet implements
   }
 
   public void saveInterpreterBindings(NotebookSocket conn, Message fromMessage) {
-    String noteId = (String) fromMessage.data.get("noteID");
+    String noteId = (String) fromMessage.data.get("noteId");
     try {
       List<String> settingIdList = gson.fromJson(String.valueOf(
           fromMessage.data.get("selectedSettingIds")), new TypeToken<ArrayList<String>>() {
@@ -482,9 +482,9 @@ public class NotebookServer extends WebSocketServlet implements
 
   public void getInterpreterBindings(NotebookSocket conn, Message fromMessage)
       throws IOException {
-    String noteID = (String) fromMessage.data.get("noteID");
+    String noteId = (String) fromMessage.data.get("noteId");
     List<InterpreterSettingsList> settingList =
-        InterpreterBindingUtils.getInterpreterBindings(notebook(), noteID);
+        InterpreterBindingUtils.getInterpreterBindings(notebook(), noteId);
     conn.send(serializeMessage(new Message(OP.INTERPRETER_BINDINGS)
         .put("interpreterBindings", settingList)));
   }

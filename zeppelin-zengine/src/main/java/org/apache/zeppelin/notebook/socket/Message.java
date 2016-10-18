@@ -135,9 +135,9 @@ public class Message {
     UNSUBSCRIBE_UPDATE_NOTEBOOK_JOBS, // [c-s] unsubscribe job information for job management
                                   // @param unixTime
     GET_INTERPRETER_BINDINGS,     // [c-s] get interpreter bindings
-                                  // @param noteID
+                                  // @param noteId
     SAVE_INTERPRETER_BINDINGS,    // [c-s] save interpreter bindings
-                                  // @param noteID
+                                  // @param noteId
                                   // @param selectedSettingIds
     INTERPRETER_BINDINGS,         // [s-c] interpreter bindings
     ERROR_INFO                    // [s-c] error information to be sent

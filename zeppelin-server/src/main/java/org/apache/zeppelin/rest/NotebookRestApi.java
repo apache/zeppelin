@@ -70,7 +70,7 @@ public class NotebookRestApi {
   Gson gson = new Gson();
   private Notebook notebook;
   private NotebookServer notebookServer;
-  private SearchService noteIndex;
+  private SearchService noteSearchService;
   private NotebookAuthorization notebookAuthorization;
 
   public NotebookRestApi() {
@@ -79,7 +79,7 @@ public class NotebookRestApi {
   public NotebookRestApi(Notebook notebook, NotebookServer notebookServer, SearchService search) {
     this.notebook = notebook;
     this.notebookServer = notebookServer;
-    this.noteIndex = search;
+    this.noteSearchService = search;
     this.notebookAuthorization = notebook.getNotebookAuthorization();
   }
 
@@ -505,7 +505,7 @@ public class NotebookRestApi {
   @ZeppelinApi
   public Response stopNoteJobs(@PathParam("noteId") String noteId)
       throws IOException, IllegalArgumentException {
-    LOG.info("stop notebook jobs {} ", noteId);
+    LOG.info("stop note jobs {} ", noteId);
     Note note = notebook.getNote(noteId);
     if (note == null) {
       return new JsonResponse<>(Status.NOT_FOUND, "note not found.").build();
@@ -554,7 +554,7 @@ public class NotebookRestApi {
   public Response getNoteParagraphJobStatus(@PathParam("noteId") String noteId, 
       @PathParam("paragraphId") String paragraphId)
       throws IOException, IllegalArgumentException {
-    LOG.info("get notebook paragraph job status.");
+    LOG.info("get note paragraph job status.");
     Note note = notebook.getNote(noteId);
     if (note == null) {
       return new JsonResponse<>(Status.NOT_FOUND, "note not found.").build();
@@ -829,7 +829,7 @@ public class NotebookRestApi {
     HashSet<String> userAndRoles = new HashSet<>();
     userAndRoles.add(principal);
     userAndRoles.addAll(roles);
-    List<Map<String, String>> notes = noteIndex.query(queryTerm);
+    List<Map<String, String>> notes = noteSearchService.query(queryTerm);
     for (int i = 0; i < notes.size(); i++) {
       String[] Id = notes.get(i).get("id").split("/", 2);
       String noteId = Id[0];

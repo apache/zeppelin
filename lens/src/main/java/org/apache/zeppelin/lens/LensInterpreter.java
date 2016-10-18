@@ -76,7 +76,7 @@ public class LensInterpreter extends Interpreter {
 
   private static Pattern s_queryExecutePattern = Pattern.compile(".*query\\s+execute\\s+(.*)");
   private static Map<String, ExecutionDetail> s_paraToQH = 
-    new ConcurrentHashMap<String, ExecutionDetail> (); //tracks paragraphID -> Lens QueryHandle
+    new ConcurrentHashMap<String, ExecutionDetail> (); //tracks paragraphId -> Lens QueryHandle
   private static Map<LensClient, Boolean> s_clientMap =
     new ConcurrentHashMap<LensClient, Boolean>();
 

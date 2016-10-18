@@ -415,7 +415,7 @@ public class NotebookTest implements JobListenerFactory{
     Paragraph cp = cloneNote.paragraphs.get(0);
     assertEquals(cp.getStatus(), Status.READY);
 
-    // Keep same ParagraphID
+    // Keep same ParagraphId
     assertEquals(cp.getId(), p.getId());
     assertEquals(cp.text, p.text);
     assertEquals(cp.getResult().message(), p.getResult().message());
@@ -458,7 +458,7 @@ public class NotebookTest implements JobListenerFactory{
     Note cloneNote = notebook.cloneNote(note.getId(), "clone note with Exception result", null);
     Paragraph cp = cloneNote.paragraphs.get(0);
 
-    // Keep same ParagraphID
+    // Keep same ParagraphId
     assertEquals(cp.getId(), p.getId());
     assertEquals(cp.text, p.text);
     assertNull(cp.getResult());

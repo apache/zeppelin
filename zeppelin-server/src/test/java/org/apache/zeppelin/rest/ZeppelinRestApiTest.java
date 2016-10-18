@@ -89,8 +89,8 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     paragraph.setText(paragraphText);
     note.persist(null);
 
-    String sourceNoteID = note.getId();
-    GetMethod get = httpGet("/notebook/" + sourceNoteID);
+    String sourceNoteId = note.getId();
+    GetMethod get = httpGet("/notebook/" + sourceNoteId);
     LOG.info("testGetNotebookInfo \n" + get.getResponseBodyAsString());
     assertThat("test notebook get method:", get, isAllowed());
 
@@ -215,9 +215,9 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     paragraph.setConfig(config);
     paragraph.setText("%md This is my new paragraph in my new note");
     note.persist(null);
-    String sourceNoteID = note.getId();
+    String sourceNoteId = note.getId();
     // Call export Notebook REST API
-    GetMethod get = httpGet("/notebook/export/" + sourceNoteID);
+    GetMethod get = httpGet("/notebook/export/" + sourceNoteId);
     LOG.info("testNotebookExport \n" + get.getResponseBodyAsString());
     assertThat("test notebook export method:", get, isAllowed());
 
@@ -228,7 +228,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     String exportJSON = (String) resp.get("body");
     assertNotNull("Can not find new notejson", exportJSON);
     LOG.info("export JSON:=" + exportJSON);
-    ZeppelinServer.notebook.removeNote(sourceNoteID, null);
+    ZeppelinServer.notebook.removeNote(sourceNoteId, null);
     get.releaseConnection();
 
   }
@@ -248,9 +248,9 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     paragraph.setConfig(config);
     paragraph.setText("%md This is my new paragraph in my new note");
     note.persist(null);
-    String sourceNoteID = note.getId();
+    String sourceNoteId = note.getId();
     // get note content as JSON
-    String oldJson = getNoteContent(sourceNoteID);
+    String oldJson = getNoteContent(sourceNoteId);
     // call notebook post
     PostMethod importPost = httpPost("/notebook/import/", oldJson);
     assertThat(importPost, isCreated());
@@ -310,12 +310,12 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     paragraph.setConfig(config);
     paragraph.setText("%md This is my new paragraph in my new note");
     note.persist(null);
-    String sourceNoteID = note.getId();
+    String sourceNoteId = note.getId();
 
     String noteName = "clone Note Name";
     // Call Clone Notebook REST API
     String jsonRequest = "{\"name\":\"" + noteName + "\"}";
-    PostMethod post = httpPost("/notebook/" + sourceNoteID, jsonRequest);
+    PostMethod post = httpPost("/notebook/" + sourceNoteId, jsonRequest);
     LOG.info("testNotebookClone \n" + post.getResponseBodyAsString());
     assertThat("test notebook clone method:", post, isCreated());
 
@@ -363,7 +363,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     
     paragraph.setText("%md This is test paragraph.");
     note.persist(null);
-    String noteID = note.getId();
+    String noteId = note.getId();
 
     note.runAll();
     // wait until job is finished or timeout.
@@ -377,24 +377,24 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     }
     
     // Call Run Notebook Jobs REST API
-    PostMethod postNoteJobs = httpPost("/notebook/job/" + noteID, "");
+    PostMethod postNoteJobs = httpPost("/notebook/job/" + noteId, "");
     assertThat("test notebook jobs run:", postNoteJobs, isAllowed());
     postNoteJobs.releaseConnection();
 
     // Call Stop Notebook Jobs REST API
-    DeleteMethod deleteNoteJobs = httpDelete("/notebook/job/" + noteID);
+    DeleteMethod deleteNoteJobs = httpDelete("/notebook/job/" + noteId);
     assertThat("test notebook stop:", deleteNoteJobs, isAllowed());
     deleteNoteJobs.releaseConnection();    
     Thread.sleep(1000);
     
     // Call Run paragraph REST API
-    PostMethod postParagraph = httpPost("/notebook/job/" + noteID + "/" + paragraph.getId(), "");
+    PostMethod postParagraph = httpPost("/notebook/job/" + noteId + "/" + paragraph.getId(), "");
     assertThat("test paragraph run:", postParagraph, isAllowed());
     postParagraph.releaseConnection();    
     Thread.sleep(1000);
     
     // Call Stop paragraph REST API
-    DeleteMethod deleteParagraph = httpDelete("/notebook/job/" + noteID + "/" + paragraph.getId());
+    DeleteMethod deleteParagraph = httpDelete("/notebook/job/" + noteId + "/" + paragraph.getId());
     assertThat("test paragraph stop:", deleteParagraph, isAllowed());
     deleteParagraph.releaseConnection();    
     Thread.sleep(1000);
@@ -418,7 +418,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
 
     paragraph.setText("%sh sleep 1");
     note.persist(null);
-    String noteID = note.getId();
+    String noteId = note.getId();
 
     note.runAll();
 
@@ -428,7 +428,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     }
 
     // assume that status of the paragraph is running
-    GetMethod get = httpGet("/notebook/job/" + noteID);
+    GetMethod get = httpGet("/notebook/job/" + noteId);
     assertThat("test get notebook job: ", get, isAllowed());
     String responseBody = get.getResponseBodyAsString();
     get.releaseConnection();
@@ -471,7 +471,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
 
     paragraph.setText("%spark\nval param = z.input(\"param\").toString\nprintln(param)");
     note.persist(null);
-    String noteID = note.getId();
+    String noteId = note.getId();
 
     note.runAll();
     // wait until job is finished or timeout.
@@ -485,13 +485,13 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     }
 
     // Call Run paragraph REST API
-    PostMethod postParagraph = httpPost("/notebook/job/" + noteID + "/" + paragraph.getId(),
+    PostMethod postParagraph = httpPost("/notebook/job/" + noteId + "/" + paragraph.getId(),
         "{\"params\": {\"param\": \"hello\", \"param2\": \"world\"}}");
     assertThat("test paragraph run:", postParagraph, isAllowed());
     postParagraph.releaseConnection();
     Thread.sleep(1000);
 
-    Note retrNote = ZeppelinServer.notebook.getNote(noteID);
+    Note retrNote = ZeppelinServer.notebook.getNote(noteId);
     Paragraph retrParagraph = retrNote.getParagraph(paragraph.getId());
     Map<String, Object> params = retrParagraph.settings.getParams();
     assertEquals("hello", params.get("param"));

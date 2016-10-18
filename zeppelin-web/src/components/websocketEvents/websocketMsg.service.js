@@ -212,13 +212,13 @@
         websocketEvents.sendNewEvent({op: 'UNSUBSCRIBE_UPDATE_NOTEBOOK_JOBS'});
       },
 
-      getInterpreterBindings: function(noteID) {
-        websocketEvents.sendNewEvent({op: 'GET_INTERPRETER_BINDINGS', data: {noteID: noteID}});
+      getInterpreterBindings: function(noteId) {
+        websocketEvents.sendNewEvent({op: 'GET_INTERPRETER_BINDINGS', data: {noteId: noteId}});
       },
 
-      saveInterpreterBindings: function(noteID, selectedSettingIds) {
+      saveInterpreterBindings: function(noteId, selectedSettingIds) {
         websocketEvents.sendNewEvent({op: 'SAVE_INTERPRETER_BINDINGS',
-          data: {noteID: noteID, selectedSettingIds: selectedSettingIds}});
+          data: {noteId: noteId, selectedSettingIds: selectedSettingIds}});
       },
 
       listConfigurations: function() {
