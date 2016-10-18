@@ -262,7 +262,7 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
   }
 
   @Test
-  public void testCredential() throws SQLException, IOException {
+  public void testMultiTenant() throws SQLException, IOException {
     String replName1 = "jdbc1";
     String replName2 = "jdbc2";
 
