@@ -219,7 +219,7 @@ public class Notebook implements NoteEventListener {
    * @param noteName   - the name of the new note
    * @return note ID
    * @throws IOException
-   * @throws DuplicateNameException 
+   * @throws DuplicateNameException
    */
   public Note importNote(String sourceJson, String noteName, AuthenticationInfo subject)
       throws IOException, DuplicateNameException {

@@ -296,7 +296,7 @@ public class NotebookRestApi {
    * @param req - note Json
    * @return JSON with new note ID
    * @throws IOException
-   * @throws DuplicateNameException 
+   * @throws DuplicateNameException
    */
   @POST
   @Path("import")
@@ -307,7 +307,7 @@ public class NotebookRestApi {
     try {
       newNote = notebook.importNote(req, null, subject);
     } catch (DuplicateNameException e) {
-      return new JsonResponse<>(Status.NOT_ACCEPTABLE, 
+      return new JsonResponse<>(Status.NOT_ACCEPTABLE,
         "Notebook already exists with same name").build();
     }
     return new JsonResponse<>(Status.CREATED, "", newNote.getId()).build();
@@ -384,7 +384,7 @@ public class NotebookRestApi {
    * @param noteId ID of Note
    * @return JSON with status.CREATED
    * @throws IOException, CloneNotSupportedException, IllegalArgumentException
-   * @throws DuplicateNameException 
+   * @throws DuplicateNameException
    */
   @POST
   @Path("{noteId}")

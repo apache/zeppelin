@@ -820,7 +820,7 @@ public class NotebookServer extends WebSocketServlet implements
       conn.send(serializeMessage(new Message(OP.NEW_NOTE).put("note", newNote)));
       broadcastNoteList(subject, userAndRoles);
     } catch (DuplicateNameException dne) {
-      conn.send(serializeMessage(new Message(OP.ERROR_DIALOG).put("info", 
+      conn.send(serializeMessage(new Message(OP.ERROR_DIALOG).put("info",
         "Please provide a unique notebook name")));
     }
   }
