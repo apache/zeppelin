@@ -712,39 +712,49 @@ public class NotebookServer extends WebSocketServlet implements
 
     return cronUpdated;
   }
+
   private void createNote(NotebookSocket conn, HashSet<String> userAndRoles,
                           Notebook notebook, Message message)
       throws IOException {
     AuthenticationInfo subject = new AuthenticationInfo(message.principal);
-    Note note = null;
 
-    String defaultInterpreterId = (String) message.get("defaultInterpreterId");
-    if (!StringUtils.isEmpty(defaultInterpreterId)) {
-      List<String> interpreterSettingIds = new LinkedList<>();
-      interpreterSettingIds.add(defaultInterpreterId);
-      for (String interpreterSettingId : notebook.getInterpreterFactory().
-              getDefaultInterpreterSettingList()) {
-        if (!interpreterSettingId.equals(defaultInterpreterId)) {
-          interpreterSettingIds.add(interpreterSettingId);
+    try {
+      Note note = null;
+
+      String defaultInterpreterId = (String) message.get("defaultInterpreterId");
+      if (!StringUtils.isEmpty(defaultInterpreterId)) {
+        List<String> interpreterSettingIds = new LinkedList<>();
+        interpreterSettingIds.add(defaultInterpreterId);
+        for (String interpreterSettingId : notebook.getInterpreterFactory().
+                getDefaultInterpreterSettingList()) {
+          if (!interpreterSettingId.equals(defaultInterpreterId)) {
+            interpreterSettingIds.add(interpreterSettingId);
+          }
         }
+        note = notebook.createNote(interpreterSettingIds, subject);
+      } else {
+        note = notebook.createNote(subject);
       }
-      note = notebook.createNote(interpreterSettingIds, subject);
-    } else {
-      note = notebook.createNote(subject);
-    }
 
-    note.addParagraph(); // it's an empty note. so add one paragraph
-    if (message != null) {
-      String noteName = (String) message.get("name");
-      if (StringUtils.isEmpty(noteName)){
-        noteName = "Note " + note.getId();
+      note.addParagraph(); // it's an empty note. so add one paragraph
+      if (message != null) {
+        String noteName = (String) message.get("name");
+        if (StringUtils.isEmpty(noteName)) {
+          noteName = "Note " + note.getId();
+        }
+        note.setName(noteName);
       }
-      note.setName(noteName);
-    }
 
-    note.persist(subject);
-    addConnectionToNote(note.getId(), (NotebookSocket) conn);
-    conn.send(serializeMessage(new Message(OP.NEW_NOTE).put("note", note)));
+      note.persist(subject);
+      addConnectionToNote(note.getId(), (NotebookSocket) conn);
+      conn.send(serializeMessage(new Message(OP.NEW_NOTE).put("note", note)));
+    } catch (FileSystemException e) {
+      LOG.error("Exception from createNote", e);
+      conn.send(serializeMessage(new Message(OP.ERROR_INFO).put("info",
+                "Oops! There is something wrong with the notebook file system. "
+                + "Please check the logs for more details.")));
+      return;
+    }
     broadcastNoteList(subject, userAndRoles);
   }
 
