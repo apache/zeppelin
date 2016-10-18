@@ -78,7 +78,7 @@ public class PythonInterpreterPandasSqlTest {
 
     intpGroup.put("note", Arrays.asList(python, sql));
 
-    context = new InterpreterContext("note", "id", "title", "text", new AuthenticationInfo(),
+    context = new InterpreterContext("note", "id", null, "title", "text", new AuthenticationInfo(),
         new HashMap<String, Object>(), new GUI(),
         new AngularObjectRegistry(intpGroup.getId(), null), null,
         new LinkedList<InterpreterContextRunner>(), new InterpreterOutput(

@@ -39,6 +39,8 @@ import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.jdbc.security.JDBCSecurityImpl;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
+import org.apache.zeppelin.user.UserCredentials;
+import org.apache.zeppelin.user.UsernamePassword;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -195,8 +197,7 @@ public class JDBCInterpreter extends Interpreter {
   }
 
   private boolean isConnectionInPool(String driverName) {
-    if (poolingDriverMap.containsKey(driverName)) return true;
-    return false;
+    return poolingDriverMap.containsKey(driverName) ? true : false;
   }
 
   private void createConnectionPool(String url, String propertyKey, Properties properties) {
@@ -219,7 +220,6 @@ public class JDBCInterpreter extends Interpreter {
     if (!isConnectionInPool(propertyKey)) {
       createConnectionPool(url, propertyKey, properties);
     }
-
     return DriverManager.getConnection(DBCP_STRING + propertyKey);
   }
 
@@ -229,6 +229,7 @@ public class JDBCInterpreter extends Interpreter {
     if (propertyKey == null || propertiesMap.get(propertyKey) == null) {
       return null;
     }
+
     if (null == connection) {
       final Properties properties = (Properties) propertiesMap.get(propertyKey).clone();
       logger.info(properties.getProperty(DRIVER_KEY));
@@ -236,7 +237,7 @@ public class JDBCInterpreter extends Interpreter {
       final String url = properties.getProperty(URL_KEY);
 
       if (StringUtils.isEmpty(property.getProperty("zeppelin.jdbc.auth.type"))) {
-        connection = DriverManager.getConnection(url, properties);
+        connection = getConnectionFromPool(url, propertyKey, properties);
       } else {
         UserGroupInformation.AuthenticationMethod authType = JDBCSecurityImpl.getAuthtype(property);
         switch (authType) {
@@ -328,6 +329,20 @@ public class JDBCInterpreter extends Interpreter {
     }
   }
 
+  private boolean notExistAccountInProperty() {
+    return property.containsKey("default.user") && property.containsKey("default.password")
+      ? false : true;
+  }
+
+  private UsernamePassword getUsernamePassword(InterpreterContext interpreterContext,
+      String replName) {
+    UserCredentials uc = interpreterContext.getAuthenticationInfo().getUserCredentials();
+    if (uc != null) {
+      return uc.existUsernamePassword(replName) ? uc.getUsernamePassword(replName) : null;
+    }
+    return null;
+  }
+
   private InterpreterResult executeSql(String propertyKey, String sql,
       InterpreterContext interpreterContext) {
     String paragraphId = interpreterContext.getParagraphId();
@@ -336,6 +351,25 @@ public class JDBCInterpreter extends Interpreter {
     ResultSet resultSet = null;
 
     try {
+/*
+      logger.info("login user : {}", interpreterContext.getAuthenticationInfo().getUser());
+      for (String key : propertiesMap.keySet()){
+        logger.info( String.format("키 : %s, 값 : %s", key, propertiesMap.get(key)) );
+      }
+      for (Object key : property.keySet()){
+        logger.info( String.format("%s ---------> %s", key, property.get(key)) );
+      }
+*/
+      UsernamePassword usernamePassword = getUsernamePassword(interpreterContext,
+        interpreterContext.getReplGroupName());
+      if (usernamePassword != null && notExistAccountInProperty()) {
+        logger.info("key:{}, credential set user --> {}, {}", propertyKey,
+          usernamePassword.getUsername(), usernamePassword.getPassword());
+
+        propertiesMap.get(propertyKey).setProperty("user", usernamePassword.getUsername());
+        propertiesMap.get(propertyKey).setProperty("password", usernamePassword.getPassword());
+      }
+
       connection = getConnection(propertyKey, interpreterContext.getAuthenticationInfo().getUser());
       if (connection == null) {
         return new InterpreterResult(Code.ERROR, "Prefix not found.");

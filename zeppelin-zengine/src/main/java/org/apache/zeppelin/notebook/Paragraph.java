@@ -55,6 +55,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
   private transient Note note;
   private transient AuthenticationInfo authenticationInfo;
 
+  String replGrouName;
   String title;
   String text;
   String user;
@@ -80,6 +81,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     this.note = note;
     this.factory = factory;
     title = null;
+    replGrouName = null;
     text = null;
     authenticationInfo = null;
     user = null;
@@ -93,6 +95,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     this.note = note;
     this.factory = factory;
     title = null;
+    replGrouName = null;
     text = null;
     authenticationInfo = null;
     dateUpdated = null;
@@ -285,6 +288,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     String replName = getRequiredReplName();
     Interpreter repl = getRepl(replName);
     logger.info("run paragraph {} using {} " + repl, getId(), replName);
+    this.replGrouName = replName;
     if (repl == null) {
       logger.error("Can not find interpreter name " + repl);
       throw new RuntimeException("Can not find interpreter for " + getRequiredReplName());
@@ -463,6 +467,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     InterpreterContext interpreterContext = new InterpreterContext(
         note.getId(),
         getId(),
+        this.replGrouName,
         this.getTitle(),
         this.getText(),
         this.getAuthenticationInfo(),

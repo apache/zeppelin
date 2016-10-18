@@ -144,6 +144,7 @@ public class RemoteInterpreterTest {
         new InterpreterContext(
             "note",
             "id",
+            null,
             "title",
             "text",
             new AuthenticationInfo(),
@@ -180,6 +181,7 @@ public class RemoteInterpreterTest {
         new InterpreterContext(
             "noteId",
             "id",
+            null,
             "title",
             "text",
             new AuthenticationInfo(),
@@ -236,6 +238,7 @@ public class RemoteInterpreterTest {
         new InterpreterContext(
             "note",
             "id",
+            null,
             "title",
             "text",
             new AuthenticationInfo(),
@@ -250,6 +253,7 @@ public class RemoteInterpreterTest {
         new InterpreterContext(
             "note",
             "id",
+            null,
             "title",
             "text",
             new AuthenticationInfo(),
@@ -304,6 +308,7 @@ public class RemoteInterpreterTest {
             new InterpreterContext(
                 "note",
                 "jobA",
+                null,
                 "title",
                 "text",
                 new AuthenticationInfo(),
@@ -340,6 +345,7 @@ public class RemoteInterpreterTest {
             new InterpreterContext(
                 "note",
                 "jobB",
+                null,
                 "title",
                 "text",
                 new AuthenticationInfo(),
@@ -406,6 +412,7 @@ public class RemoteInterpreterTest {
           InterpreterResult ret = intpA.interpret(getJobName(), new InterpreterContext(
               "note",
               jobId,
+              null,
               "title",
               "text",
               new AuthenticationInfo(),
@@ -486,6 +493,7 @@ public class RemoteInterpreterTest {
           InterpreterResult ret = intpA.interpret(stmt, new InterpreterContext(
               "note",
               jobId,
+              null,
               "title",
               "text",
               new AuthenticationInfo(),
@@ -588,6 +596,7 @@ public class RemoteInterpreterTest {
             new InterpreterContext(
                 "note",
                 "jobA",
+                null,
                 "title",
                 "text",
                 new AuthenticationInfo(),
@@ -744,6 +753,7 @@ public class RemoteInterpreterTest {
     InterpreterContext context = new InterpreterContext(
         "noteId",
         "id",
+        null,
         "title",
         "text",
         new AuthenticationInfo(),

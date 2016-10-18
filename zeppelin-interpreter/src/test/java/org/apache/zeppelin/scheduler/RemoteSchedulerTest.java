@@ -110,6 +110,7 @@ public class RemoteSchedulerTest implements RemoteInterpreterProcessListener {
         intpA.interpret("1000", new InterpreterContext(
             "note",
             "jobId",
+            null,
             "title",
             "text",
             new AuthenticationInfo(),
@@ -186,6 +187,7 @@ public class RemoteSchedulerTest implements RemoteInterpreterProcessListener {
       InterpreterContext context = new InterpreterContext(
           "note",
           "jobId1",
+          null,
           "title",
           "text",
           new AuthenticationInfo(),
@@ -224,6 +226,7 @@ public class RemoteSchedulerTest implements RemoteInterpreterProcessListener {
       InterpreterContext context = new InterpreterContext(
           "note",
           "jobId2",
+          null,
           "title",
           "text",
           new AuthenticationInfo(),
