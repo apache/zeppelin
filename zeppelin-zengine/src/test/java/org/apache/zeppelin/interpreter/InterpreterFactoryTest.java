@@ -89,7 +89,7 @@ public class InterpreterFactoryTest {
     conf = new ZeppelinConfiguration();
     schedulerFactory = new SchedulerFactory();
     depResolver = new DependencyResolver(tmpDir.getAbsolutePath() + "/local-repo");
-    factory = new InterpreterFactory(conf, new InterpreterOption(false), null, null, null, depResolver);
+    factory = new InterpreterFactory(conf, new InterpreterOption(false), null, null, null, depResolver, false);
     context = new InterpreterContext("note", "id", "title", "text", null, null, null, null, null, null, null);
 
     SearchService search = mock(SearchService.class);
@@ -132,7 +132,7 @@ public class InterpreterFactoryTest {
 
   @Test
   public void testRemoteRepl() throws Exception {
-    factory = new InterpreterFactory(conf, new InterpreterOption(true), null, null, null, depResolver);
+    factory = new InterpreterFactory(conf, new InterpreterOption(true), null, null, null, depResolver, false);
     List<InterpreterSetting> all = factory.get();
     InterpreterSetting mock1Setting = null;
     for (InterpreterSetting setting : all) {
@@ -188,13 +188,13 @@ public class InterpreterFactoryTest {
     factory.createNewSetting("new-mock1", "mock1", new LinkedList<Dependency>(), new InterpreterOption(false), new Properties());
     assertEquals(numInterpreters + 1, factory.get().size());
 
-    InterpreterFactory factory2 = new InterpreterFactory(conf, null, null, null, depResolver);
+    InterpreterFactory factory2 = new InterpreterFactory(conf, null, null, null, depResolver, false);
     assertEquals(numInterpreters + 1, factory2.get().size());
   }
 
   @Test
   public void testInterpreterAliases() throws IOException, RepositoryException {
-    factory = new InterpreterFactory(conf, null, null, null, depResolver);
+    factory = new InterpreterFactory(conf, null, null, null, depResolver, false);
     final InterpreterInfo info1 = new InterpreterInfo("className1", "name1", true, null);
     final InterpreterInfo info2 = new InterpreterInfo("className2", "name1", true, null);
     factory.add("group1", new ArrayList<InterpreterInfo>(){{
@@ -218,15 +218,13 @@ public class InterpreterFactoryTest {
 
   @Test
   public void testMultiUser() throws IOException, RepositoryException {
-    factory = new InterpreterFactory(conf, null, null, null, depResolver);
+    factory = new InterpreterFactory(conf, null, null, null, depResolver, true);
     final InterpreterInfo info1 = new InterpreterInfo("className1", "name1", true, null);
     factory.add("group1", new ArrayList<InterpreterInfo>(){{
       add(info1);
     }}, new ArrayList<Dependency>(), new InterpreterOption(true), new Properties(), "/path1");
 
-    InterpreterOption perUserInterpreterOption = new InterpreterOption(true);
-    perUserInterpreterOption.setSession(true);
-    perUserInterpreterOption.setPerUser(perUserInterpreterOption.ISOLATED);
+    InterpreterOption perUserInterpreterOption = new InterpreterOption(true, InterpreterOption.ISOLATED, InterpreterOption.SHARED);
     final InterpreterSetting setting1 = factory.createNewSetting("test-group1", "group1", new ArrayList<Dependency>(), perUserInterpreterOption, new Properties());
 
     factory.setInterpreters("user1", "note", new ArrayList<String>() {{

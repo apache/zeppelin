@@ -89,7 +89,7 @@ public class NotebookTest implements JobListenerFactory{
     MockInterpreter2.register("mock2", "org.apache.zeppelin.interpreter.mock.MockInterpreter2");
 
     depResolver = new DependencyResolver(tmpDir.getAbsolutePath() + "/local-repo");
-    factory = new InterpreterFactory(conf, new InterpreterOption(false), null, null, null, depResolver);
+    factory = new InterpreterFactory(conf, new InterpreterOption(false), null, null, null, depResolver, false);
 
     SearchService search = mock(SearchService.class);
     notebookRepo = new VFSNotebookRepo(conf);
@@ -210,7 +210,7 @@ public class NotebookTest implements JobListenerFactory{
 
     Notebook notebook2 = new Notebook(
         conf, notebookRepo, schedulerFactory,
-        new InterpreterFactory(conf, null, null, null, depResolver), this, null, null, null);
+        new InterpreterFactory(conf, null, null, null, depResolver, false), this, null, null, null);
 
     assertEquals(1, notebook2.getAllNotes().size());
     notebook.removeNote(note.getId(), null);
@@ -698,9 +698,7 @@ public class NotebookTest implements JobListenerFactory{
 
     // restart interpreter with per user session enabled
     for (InterpreterSetting setting : factory.getInterpreterSettings(note1.getId())) {
-      setting.getOption().setSession(true);
       setting.getOption().setPerNote(setting.getOption().SCOPED);
-      setting.getOption().setPerUser("");
       notebook.getInterpreterFactory().restart(setting.getId());
     }
 
@@ -748,9 +746,7 @@ public class NotebookTest implements JobListenerFactory{
 
     // restart interpreter with per note session enabled
     for (InterpreterSetting setting : notebook.getInterpreterFactory().getInterpreterSettings(note1.getId())) {
-      setting.getOption().setSession(true);
-      setting.getOption().setPerNote(setting.getOption().SCOPED);
-      setting.getOption().setPerUser(setting.getOption().SCOPED);
+      setting.getOption().setPerNote(InterpreterOption.SCOPED);
       notebook.getInterpreterFactory().restart(setting.getId());
     }
 
@@ -777,7 +773,7 @@ public class NotebookTest implements JobListenerFactory{
 
     // restart interpreter with per note session enabled
     for (InterpreterSetting setting : factory.getInterpreterSettings(note1.getId())) {
-      setting.getOption().setSession(true);
+      setting.getOption().setPerNote(InterpreterOption.SCOPED);
       notebook.getInterpreterFactory().restart(setting.getId());
     }
 

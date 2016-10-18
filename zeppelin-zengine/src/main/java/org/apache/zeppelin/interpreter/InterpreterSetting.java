@@ -112,7 +112,7 @@ public class InterpreterSetting {
     if (getOption().isExistingProcess) {
       key = Constants.EXISTING_PROCESS;
     } else if (getOption().isProcess()) {
-      key = (option.isPerUser() ? user : "") + ":" + (option.isPerNote() ? noteId : "");
+      key = (option.perUserIsolated() ? user : "") + ":" + (option.perNoteIsolated() ? noteId : "");
     } else {
       key = SHARED_PROCESS;
     }

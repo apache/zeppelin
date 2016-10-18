@@ -60,7 +60,7 @@ public class NoteInterpreterLoaderTest {
     MockInterpreter2.register("mock2", "group2", "org.apache.zeppelin.interpreter.mock.MockInterpreter2");
 
     depResolver = new DependencyResolver(tmpDir.getAbsolutePath() + "/local-repo");
-    factory = new InterpreterFactory(conf, new InterpreterOption(false), null, null, null, depResolver);
+    factory = new InterpreterFactory(conf, new InterpreterOption(false), null, null, null, depResolver, false);
   }
 
   @After
@@ -95,20 +95,15 @@ public class NoteInterpreterLoaderTest {
 
   @Test
   public void testNoteSession() throws IOException {
-    InterpreterOption dumyInterpreterOption = new InterpreterOption();
     factory.setInterpreters("user", "noteA", factory.getDefaultInterpreterSettingList());
-    factory.getInterpreterSettings("noteA").get(0).getOption().setSession(true);
-    factory.getInterpreterSettings("noteA").get(0).getOption().setPerNote(dumyInterpreterOption.SCOPED);
-    factory.getInterpreterSettings("noteA").get(0).getOption().setPerUser("");
+    factory.getInterpreterSettings("noteA").get(0).getOption().setPerNote(InterpreterOption.SCOPED);
 
     factory.setInterpreters("user", "noteB", factory.getDefaultInterpreterSettingList());
-    factory.getInterpreterSettings("noteB").get(0).getOption().setSession(true);
-    factory.getInterpreterSettings("noteB").get(0).getOption().setPerNote(dumyInterpreterOption.SCOPED);
-    factory.getInterpreterSettings("noteB").get(0).getOption().setPerUser("");
+    factory.getInterpreterSettings("noteB").get(0).getOption().setPerNote(InterpreterOption.SCOPED);
 
     // interpreters are not created before accessing it
-    assertNull(factory.getInterpreterSettings("noteA").get(0).getInterpreterGroup("user", "noteA").get(":noteA"));
-    assertNull(factory.getInterpreterSettings("noteB").get(0).getInterpreterGroup("user", "noteB").get(":noteB"));
+    assertNull(factory.getInterpreterSettings("noteA").get(0).getInterpreterGroup("user", "noteA").get("noteA"));
+    assertNull(factory.getInterpreterSettings("noteB").get(0).getInterpreterGroup("user", "noteB").get("noteB"));
 
     factory.getInterpreter("user", "noteA", null).open();
     factory.getInterpreter("user", "noteB", null).open();
@@ -118,35 +113,30 @@ public class NoteInterpreterLoaderTest {
         factory.getInterpreter("user", "noteB", null).getInterpreterGroup().getId()));
 
     // interpreters are created after accessing it
-    assertNotNull(factory.getInterpreterSettings("noteA").get(0).getInterpreterGroup("user", "noteA").get(":noteA"));
-    assertNotNull(factory.getInterpreterSettings("noteB").get(0).getInterpreterGroup("user", "noteB").get(":noteB"));
+    assertNotNull(factory.getInterpreterSettings("noteA").get(0).getInterpreterGroup("user", "noteA").get("noteA"));
+    assertNotNull(factory.getInterpreterSettings("noteB").get(0).getInterpreterGroup("user", "noteB").get("noteB"));
 
     // when
     factory.closeNote("user", "noteA");
     factory.closeNote("user", "noteB");
 
     // interpreters are destroyed after close
-    assertNull(factory.getInterpreterSettings("noteA").get(0).getInterpreterGroup("user", "shared_process").get(":noteA"));
-    assertNull(factory.getInterpreterSettings("noteB").get(0).getInterpreterGroup("user", "shared_process").get(":noteB"));
+    assertNull(factory.getInterpreterSettings("noteA").get(0).getInterpreterGroup("user", "shared_process").get("noteA"));
+    assertNull(factory.getInterpreterSettings("noteB").get(0).getInterpreterGroup("user", "shared_process").get("noteB"));
 
   }
 
   @Test
   public void testNotePerInterpreterProcess() throws IOException {
-    InterpreterOption dumyInterpreterOption = new InterpreterOption();
     factory.setInterpreters("user", "noteA", factory.getDefaultInterpreterSettingList());
-    factory.getInterpreterSettings("noteA").get(0).getOption().setProcess(true);
-    factory.getInterpreterSettings("noteA").get(0).getOption().setPerNote(dumyInterpreterOption.SCOPED);
-    factory.getInterpreterSettings("noteA").get(0).getOption().setPerUser("");
+    factory.getInterpreterSettings("noteA").get(0).getOption().setPerNote(InterpreterOption.ISOLATED);
 
     factory.setInterpreters("user", "noteB", factory.getDefaultInterpreterSettingList());
-    factory.getInterpreterSettings("noteB").get(0).getOption().setProcess(true);
-    factory.getInterpreterSettings("noteB").get(0).getOption().setPerNote(dumyInterpreterOption.SCOPED);
-    factory.getInterpreterSettings("noteB").get(0).getOption().setPerUser("");
+    factory.getInterpreterSettings("noteB").get(0).getOption().setPerNote(InterpreterOption.ISOLATED);
 
     // interpreters are not created before accessing it
-    assertNull(factory.getInterpreterSettings("noteA").get(0).getInterpreterGroup("user", "noteA").get(":noteA"));
-    assertNull(factory.getInterpreterSettings("noteB").get(0).getInterpreterGroup("user", "noteB").get(":noteB"));
+    assertNull(factory.getInterpreterSettings("noteA").get(0).getInterpreterGroup("user", "noteA").get("noteA"));
+    assertNull(factory.getInterpreterSettings("noteB").get(0).getInterpreterGroup("user", "noteB").get("noteB"));
 
     factory.getInterpreter("user", "noteA", null).open();
     factory.getInterpreter("user", "noteB", null).open();
@@ -157,16 +147,16 @@ public class NoteInterpreterLoaderTest {
         factory.getInterpreter("user", "noteB", null).getInterpreterGroup().getId()));
 
     // interpreters are created after accessing it
-    assertNotNull(factory.getInterpreterSettings("noteA").get(0).getInterpreterGroup("user", "noteA").get(":noteA"));
-    assertNotNull(factory.getInterpreterSettings("noteB").get(0).getInterpreterGroup("user", "noteB").get(":noteB"));
+    assertNotNull(factory.getInterpreterSettings("noteA").get(0).getInterpreterGroup("user", "noteA").get("noteA"));
+    assertNotNull(factory.getInterpreterSettings("noteB").get(0).getInterpreterGroup("user", "noteB").get("noteB"));
 
     // when
     factory.closeNote("user", "noteA");
     factory.closeNote("user", "noteB");
 
     // interpreters are destroyed after close
-    assertNull(factory.getInterpreterSettings("noteA").get(0).getInterpreterGroup("user", "noteA").get(":noteA"));
-    assertNull(factory.getInterpreterSettings("noteB").get(0).getInterpreterGroup("user", "noteB").get(":noteB"));
+    assertNull(factory.getInterpreterSettings("noteA").get(0).getInterpreterGroup("user", "noteA").get("noteA"));
+    assertNull(factory.getInterpreterSettings("noteB").get(0).getInterpreterGroup("user", "noteB").get("noteB"));
   }
 
 

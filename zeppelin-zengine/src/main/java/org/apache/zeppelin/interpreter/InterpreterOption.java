@@ -17,15 +17,17 @@
 
 package org.apache.zeppelin.interpreter;
 
+import com.google.common.base.Preconditions;
+
 import java.util.List;
 
 /**
  *
  */
 public class InterpreterOption {
-  public final transient String SHARED = "shared";
-  public final transient String SCOPED = "scoped";
-  public final transient String ISOLATED = "isolated";
+  public static final transient String SHARED = "shared";
+  public static final transient String SCOPED = "scoped";
+  public static final transient String ISOLATED = "isolated";
 
   boolean remote;
   String host = null;
@@ -34,55 +36,9 @@ public class InterpreterOption {
   String perNote;
   String perUser;
 
-  boolean session;
-  boolean process;
-  
   boolean isExistingProcess;
   boolean setPermission;
   List<String> users;
-
-  public boolean isGlobally() {
-    if (perNote != null && perNote.equals(SHARED)
-        && perUser != null && perUser.equals(SHARED)) {
-      return true;
-    }
-    return false;
-  }
-
-  public boolean isPerNote() {
-    if (isGlobally() == true) {
-      return false;
-    }
-
-    if (perNote != null && !perNote.equals("")) {
-      return true;
-    }
-
-    return false;
-  }
-
-  public void setPerNote(String perNote) {
-    this.perNote = perNote;
-  }
-
-  public boolean isPerUser() {
-    if (isGlobally() == true) {
-      return false;
-    }
-
-    if (isPerNote() == true) {
-      return false;
-    }
-
-    if (perUser != null && !perUser.equals("")) {
-      return true;
-    }
-    return false;
-  }
-
-  public void setPerUser(String perUser) {
-    this.perUser = perUser;
-  }
 
   public boolean isExistingProcess() {
     return isExistingProcess;
@@ -113,15 +69,21 @@ public class InterpreterOption {
   }
 
   public InterpreterOption() {
-    this.perNote = SCOPED;
-    this.perUser = SCOPED;
-    remote = false;
+    this(false);
   }
 
   public InterpreterOption(boolean remote) {
-    this.perNote = SCOPED;
-    this.perUser = SCOPED;
+    this(remote, SHARED, SHARED);
+  }
+
+  public InterpreterOption(boolean remote, String perUser, String perNote) {
+    Preconditions.checkNotNull(remote);
+    Preconditions.checkNotNull(perUser);
+    Preconditions.checkNotNull(perNote);
+
     this.remote = remote;
+    this.perUser = perUser;
+    this.perNote = perNote;
   }
 
   public boolean isRemote() {
@@ -132,14 +94,6 @@ public class InterpreterOption {
     this.remote = remote;
   }
 
-  public boolean isSession() {
-    return session;
-  }
-
-  public void setSession(boolean session) {
-    this.session = session;
-  }
-
   public String getHost() {
     return host;
   }
@@ -148,11 +102,44 @@ public class InterpreterOption {
     return port;
   }
 
-  public boolean isProcess() {
-    return process;
+
+  public boolean perUserShared() {
+    return SHARED.equals(perUser);
   }
 
-  public void setProcess(boolean process) {
-    this.process = process;
+  public boolean perUserScoped() {
+    return SCOPED.equals(perUser);
+  }
+
+  public boolean perUserIsolated() {
+    return ISOLATED.equals(perUser);
+  }
+
+  public boolean perNoteShared() {
+    return SHARED.equals(perNote);
+  }
+
+  public boolean perNoteScoped() {
+    return SCOPED.equals(perNote);
+  }
+
+  public boolean perNoteIsolated() {
+    return ISOLATED.equals(perNote);
+  }
+
+  public boolean isProcess() {
+    return perUserIsolated() || perNoteIsolated();
+  }
+
+  public boolean isSession() {
+    return perUserScoped() || perNoteScoped();
+  }
+
+  public void setPerNote(String perNote) {
+    this.perNote = perNote;
+  }
+
+  public void setPerUser(String perUser) {
+    this.perUser = perUser;
   }
 }

@@ -121,6 +121,8 @@ public class InterpreterFactory implements InterpreterGroupFactory {
 
   private DependencyResolver depResolver;
 
+  private boolean shiroEnabled;
+
   private Map<String, String> env = new HashMap<>();
 
   private Interpreter devInterpreter;
@@ -128,18 +130,18 @@ public class InterpreterFactory implements InterpreterGroupFactory {
   public InterpreterFactory(ZeppelinConfiguration conf,
       AngularObjectRegistryListener angularObjectRegistryListener,
       RemoteInterpreterProcessListener remoteInterpreterProcessListener,
-      ApplicationEventListener appEventListener, DependencyResolver depResolver)
-      throws InterpreterException, IOException, RepositoryException {
+      ApplicationEventListener appEventListener, DependencyResolver depResolver,
+      boolean shiroEnabled) throws InterpreterException, IOException, RepositoryException {
     this(conf, new InterpreterOption(true), angularObjectRegistryListener,
-        remoteInterpreterProcessListener, appEventListener, depResolver);
+        remoteInterpreterProcessListener, appEventListener, depResolver, shiroEnabled);
   }
 
 
   public InterpreterFactory(ZeppelinConfiguration conf, InterpreterOption defaultOption,
       AngularObjectRegistryListener angularObjectRegistryListener,
       RemoteInterpreterProcessListener remoteInterpreterProcessListener,
-      ApplicationEventListener appEventListener, DependencyResolver depResolver)
-      throws InterpreterException, IOException, RepositoryException {
+      ApplicationEventListener appEventListener, DependencyResolver depResolver,
+      boolean shiroEnabled) throws InterpreterException, IOException, RepositoryException {
     this.conf = conf;
     this.defaultOption = defaultOption;
     this.angularObjectRegistryListener = angularObjectRegistryListener;
@@ -147,6 +149,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     this.interpreterRepositories = depResolver.getRepos();
     this.remoteInterpreterProcessListener = remoteInterpreterProcessListener;
     this.appEventListener = appEventListener;
+    this.shiroEnabled = shiroEnabled;
     String replsConf = conf.getString(ConfVars.ZEPPELIN_INTERPRETERS);
     interpreterClassList = replsConf.split(",");
     String groupOrder = conf.getString(ConfVars.ZEPPELIN_INTERPRETER_GROUP_ORDER);
@@ -700,9 +703,10 @@ public class InterpreterFactory implements InterpreterGroupFactory {
 
   public void removeInterpretersForNote(InterpreterSetting interpreterSetting, String user,
       String noteId) {
-    if (interpreterSetting.getOption().isProcess()) {
+    InterpreterOption option = interpreterSetting.getOption();
+    if (option.isProcess()) {
       interpreterSetting.closeAndRemoveInterpreterGroup(noteId);
-    } else if (interpreterSetting.getOption().isSession()) {
+    } else if (option.isSession()) {
       InterpreterGroup interpreterGroup = interpreterSetting.getInterpreterGroup(user, noteId);
       String key = getInterpreterInstanceKey(user, noteId, interpreterSetting);
       interpreterGroup.close(key);
@@ -1138,8 +1142,12 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     String key;
     if (option.isExistingProcess()) {
       key = Constants.EXISTING_PROCESS;
-    } else if (option.isSession() || option.isProcess()) {
-      key = (option.isPerUser() ? user : "") + ":" + (option.isPerNote() ? noteId : "");
+    } else if (!(shiroEnabled && option.perUserShared()) || !option.perNoteShared()) {
+      if (shiroEnabled) {
+        key = (!option.perUserShared() ? user : "") + ":" + (!option.perNoteShared() ? noteId : "");
+      } else {
+        key = (!option.perNoteShared() ? noteId : "");
+      }
     } else {
       key = SHARED_SESSION;
     }
