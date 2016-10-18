@@ -546,7 +546,7 @@ public class NotebookServer extends WebSocketServlet implements
       if (subject.getUser() == user) {
         continue;
       }
-      notesInfo = generateNotebooksInfo(false, new AuthenticationInfo(user));
+      notesInfo = generateNotesInfo(false, new AuthenticationInfo(user));
       multicastToUser(user, new Message(OP.NOTES_INFO).put("notes", notesInfo));
     }
   }
@@ -569,7 +569,7 @@ public class NotebookServer extends WebSocketServlet implements
         continue;
       }
       //reloaded already above; parameter - false
-      notesInfo = generateNotebooksInfo(false, new AuthenticationInfo(user));
+      notesInfo = generateNotesInfo(false, new AuthenticationInfo(user));
       multicastToUser(user, new Message(OP.NOTES_INFO).put("notes", notesInfo));
     }
   }
