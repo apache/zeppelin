@@ -39,7 +39,7 @@ describe('Controller: ParagraphCtrl', function() {
     'getResultType', 'loadTableData', 'setGraphMode', 'isGraphMode', 'onGraphOptionChange',
     'removeGraphOptionKeys', 'removeGraphOptionValues', 'removeGraphOptionGroups', 'setGraphOptionValueAggr',
     'removeScatterOptionXaxis', 'removeScatterOptionYaxis', 'removeScatterOptionGroup',
-    'removeScatterOptionSize', 'removeMapOptionLat', 'removeMapOptionLng', 'removeMapOptionPinInfo'];
+    'removeScatterOptionSize'];
 
   functions.forEach(function(fn) {
     it('check for scope functions to be defined : ' + fn, function() {

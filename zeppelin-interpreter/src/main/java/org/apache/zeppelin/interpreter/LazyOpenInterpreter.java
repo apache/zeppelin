@@ -147,4 +147,34 @@ public class LazyOpenInterpreter
   public void setClassloaderUrls(URL [] urls) {
     intp.setClassloaderUrls(urls);
   }
+  
+  @Override
+  public void registerHook(String noteId, String event, String cmd) {
+    intp.registerHook(noteId, event, cmd);
+  }
+
+  @Override
+  public void registerHook(String event, String cmd) {
+    intp.registerHook(event, cmd);
+  }
+
+  @Override
+  public String getHook(String noteId, String event) {
+    return intp.getHook(noteId, event);
+  }
+
+  @Override
+  public String getHook(String event) {
+    return intp.getHook(event);
+  }
+
+  @Override
+  public void unregisterHook(String noteId, String event) {
+    intp.unregisterHook(noteId, event);
+  }
+
+  @Override
+  public void unregisterHook(String event) {
+    intp.unregisterHook(event);
+  }
 }

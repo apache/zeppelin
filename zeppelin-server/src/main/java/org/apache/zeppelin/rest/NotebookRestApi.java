@@ -161,6 +161,7 @@ public class NotebookRestApi {
     AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
     note.persist(subject);
     notebookServer.broadcastNote(note);
+    notebookServer.broadcastNoteList(subject);
     return new JsonResponse<>(Status.OK).build();
   }
 
@@ -307,7 +308,7 @@ public class NotebookRestApi {
   /**
    * Clone note REST API
    *
-   * @param noteId ID of Notebook
+   * @param noteId ID of Note
    * @return JSON with status.CREATED
    * @throws IOException, CloneNotSupportedException, IllegalArgumentException
    */
@@ -369,7 +370,7 @@ public class NotebookRestApi {
   /**
    * Get paragraph REST API
    *
-   * @param noteId ID of Notebook
+   * @param noteId ID of Note
    * @return JSON with information of the paragraph
    * @throws IOException
    */
@@ -434,7 +435,7 @@ public class NotebookRestApi {
   /**
    * Delete paragraph REST API
    *
-   * @param noteId ID of Notebook
+   * @param noteId ID of Note
    * @return JSON with status.OK
    * @throws IOException
    */
@@ -464,9 +465,9 @@ public class NotebookRestApi {
   }
 
   /**
-   * Run notebook jobs REST API
+   * Run note jobs REST API
    *
-   * @param noteId ID of Notebook
+   * @param noteId ID of Note
    * @return JSON with status.OK
    * @throws IOException, IllegalArgumentException
    */
@@ -493,9 +494,9 @@ public class NotebookRestApi {
   }
 
   /**
-   * Stop(delete) notebook jobs REST API
+   * Stop(delete) note jobs REST API
    *
-   * @param noteId ID of Notebook
+   * @param noteId ID of Note
    * @return JSON with status.OK
    * @throws IOException, IllegalArgumentException
    */
@@ -521,7 +522,7 @@ public class NotebookRestApi {
   /**
    * Get notebook job status REST API
    *
-   * @param noteId ID of Notebook
+   * @param noteId ID of Note
    * @return JSON with status.OK
    * @throws IOException, IllegalArgumentException
    */
@@ -542,7 +543,7 @@ public class NotebookRestApi {
   /**
    * Get notebook paragraph job status REST API
    *
-   * @param noteId ID of Notebook
+   * @param noteId ID of Note
    * @param paragraphId ID of Paragraph
    * @return JSON with status.OK
    * @throws IOException, IllegalArgumentException
@@ -652,7 +653,7 @@ public class NotebookRestApi {
   /**
    * Stop(delete) paragraph job REST API
    *
-   * @param noteId  ID of Notebook
+   * @param noteId  ID of Note
    * @param paragraphId ID of Paragraph
    * @return JSON with status.OK
    * @throws IOException, IllegalArgumentException
@@ -717,7 +718,7 @@ public class NotebookRestApi {
   /**
    * Remove cron job REST API
    *
-   * @param noteId ID of Notebook
+   * @param noteId ID of Note
    * @return JSON with status.OK
    * @throws IOException, IllegalArgumentException
    */
@@ -745,7 +746,7 @@ public class NotebookRestApi {
   /**
    * Get cron job REST API
    *
-   * @param noteId ID of Notebook
+   * @param noteId ID of Note
    * @return JSON with status.OK
    * @throws IOException, IllegalArgumentException
    */

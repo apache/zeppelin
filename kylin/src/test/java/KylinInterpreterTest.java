@@ -20,8 +20,7 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.message.AbstractHttpMessage;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.kylin.KylinInterpreter;
-import org.junit.After;
-import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
@@ -33,19 +32,23 @@ import java.util.Properties;
 
 import static org.junit.Assert.assertEquals;
 
-
 public class KylinInterpreterTest {
-  @Before
-  public void setUp() throws Exception {
-  }
+  static final Properties kylinProperties = new Properties();
 
-  @After
-  public void tearDown() throws Exception {
+  @BeforeClass
+  public static void setUpClass() {
+    kylinProperties.put("kylin.api.url", "http://localhost:7070/kylin/api/query");
+    kylinProperties.put("kylin.api.user", "ADMIN");
+    kylinProperties.put("kylin.api.password", "KYLIN");
+    kylinProperties.put("kylin.query.project", "default");
+    kylinProperties.put("kylin.query.offset", "0");
+    kylinProperties.put("kylin.query.limit", "5000");
+    kylinProperties.put("kylin.query.ispartial", "true");
   }
 
   @Test
   public void test(){
-    KylinInterpreter t = new MockKylinInterpreter(new Properties());
+    KylinInterpreter t = new MockKylinInterpreter(kylinProperties);
     InterpreterResult result = t.interpret(
         "select a.date,sum(b.measure) as measure from kylin_fact_table a " +
             "inner join kylin_lookup_table b on a.date=b.date group by a.date", null);

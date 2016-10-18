@@ -31,7 +31,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-
 import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Sets;
@@ -483,6 +482,7 @@ public class Notebook implements NoteEventListener {
     }
 
     List<NoteInfo> noteInfos = notebookRepo.list(subject);
+
     for (NoteInfo info : noteInfos) {
       loadNoteFromRepo(info.getId(), subject);
     }
@@ -533,7 +533,7 @@ public class Notebook implements NoteEventListener {
       return noteList;
     }
   }
-
+  
   public List<Note> getAllNotes(AuthenticationInfo subject) {
     final Set<String> entities = Sets.newHashSet();
     if (subject != null) {
@@ -643,7 +643,7 @@ public class Notebook implements NoteEventListener {
     } else {
       info.put("noteName", "Note " + jobNote.getId());
     }
-    // set notebook type ( cron or normal )
+    // set note type ( cron or normal )
     if (jobNote.getConfig().containsKey(CRON_TYPE_NOTEBOOK_KEYWORD) && !jobNote.getConfig()
             .get(CRON_TYPE_NOTEBOOK_KEYWORD).equals("")) {
       info.put("noteType", "cron");
@@ -703,10 +703,10 @@ public class Notebook implements NoteEventListener {
       long lastRunningUnixTime = 0;
       Map<String, Object> info = new HashMap<>();
 
-      // set notebook ID
+      // set note ID
       info.put("noteId", note.getId());
 
-      // set notebook Name
+      // set note Name
       String noteName = note.getName();
       if (noteName != null && !noteName.equals("")) {
         info.put("noteName", note.getName());
@@ -714,7 +714,7 @@ public class Notebook implements NoteEventListener {
         info.put("noteName", "Note " + note.getId());
       }
 
-      // set notebook type ( cron or normal )
+      // set note type ( cron or normal )
       if (note.getConfig().containsKey(CRON_TYPE_NOTEBOOK_KEYWORD) && !note.getConfig()
           .get(CRON_TYPE_NOTEBOOK_KEYWORD).equals("")) {
         info.put("noteType", "cron");

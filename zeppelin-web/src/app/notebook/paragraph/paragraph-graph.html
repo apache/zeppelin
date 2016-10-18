@@ -51,12 +51,4 @@ limitations under the License.
        id="p{{paragraph.id}}_scatterChart">
     <svg></svg>
   </div>
-
-  <div ng-if="getGraphMode()=='map'" id="p{{paragraph.id}}_map"
-       ng-switch="paragraph.config.graph.map.isOnline">
-    <div ng-switch-when="true"></div>
-    <span class="map-offline-text" ng-switch-default>
-      <span>Maps require internet connectivity.</span>
-    </span>
-  </div>
 </div>
