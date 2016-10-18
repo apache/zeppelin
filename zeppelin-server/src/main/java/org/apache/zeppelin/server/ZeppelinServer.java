@@ -89,7 +89,7 @@ public class ZeppelinServer extends Application {
     this.heliumApplicationFactory = new HeliumApplicationFactory();
     this.schedulerFactory = new SchedulerFactory();
     this.replFactory = new InterpreterFactory(conf, notebookWsServer,
-        notebookWsServer, heliumApplicationFactory, depResolver);
+        notebookWsServer, heliumApplicationFactory, depResolver, SecurityUtils.isAuthenticated());
     this.notebookRepo = new NotebookRepoSync(conf);
     this.notebookIndex = new LuceneSearch();
     this.notebookAuthorization = NotebookAuthorization.init(conf);

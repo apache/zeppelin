@@ -160,6 +160,8 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     gson = builder.create();
 
     init();
+
+    logger.info("shiroEnabled: {}", shiroEnabled);
   }
 
   private void init() throws InterpreterException, IOException, RepositoryException {
