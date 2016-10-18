@@ -129,7 +129,8 @@ public class NotebookRepoSyncTest implements JobListenerFactory {
     assertEquals(1, notebookRepoSync.list(0, null).size());
     assertEquals(1, notebookRepoSync.list(1, null).size());
     assertEquals(notebookRepoSync.list(0, null).get(0).getId(),notebookRepoSync.list(1, null).get(0).getId());
-    
+
+    notebookSync.removeNote(notebookRepoSync.list(0, null).get(0).getId(), null);
   }
 
   @Test
@@ -194,6 +195,7 @@ public class NotebookRepoSyncTest implements JobListenerFactory {
         notebookRepoSync.list(0, null).get(0).getId(), null).getLastParagraph().getId());
     assertEquals(p1.getId(), notebookRepoSync.get(1,
         notebookRepoSync.list(1, null).get(0).getId(), null).getLastParagraph().getId());
+    notebookRepoSync.remove(note.getId(), null);
   }
 
   @Test
@@ -306,6 +308,7 @@ public class NotebookRepoSyncTest implements JobListenerFactory {
     vRepoSync.save(note, null);
     vRepoSync.checkpoint(noteId, "checkpoint message 2", null);
     assertThat(gitRepo.revisionHistory(noteId, null).size()).isEqualTo(vCount + 1);
+    notebookRepoSync.remove(note.getId(), null);
   }
   
   static void delete(File file){

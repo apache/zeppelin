@@ -126,6 +126,7 @@ public class NotebookTest implements JobListenerFactory{
     note.run(p2.getId());
     while(p2.isTerminated()==false || p2.getResult()==null) Thread.yield();
     assertEquals("repl2: hello world", p2.getResult().message());
+    notebook.removeNote(note.getId(), null);
   }
 
   @Test
@@ -209,6 +210,7 @@ public class NotebookTest implements JobListenerFactory{
         new InterpreterFactory(conf, null, null, null, depResolver), this, null, null, null);
 
     assertEquals(1, notebook2.getAllNotes().size());
+    notebook.removeNote(note.getId(), null);
   }
 
   @Test
@@ -221,6 +223,7 @@ public class NotebookTest implements JobListenerFactory{
     Set<String> owners = new HashSet<>();
     owners.add("user1");
     assertEquals(owners, notebook.getNotebookAuthorization().getOwners(note.getId()));
+    notebook.removeNote(note.getId(), null);
   }
 
   @Test
@@ -239,6 +242,7 @@ public class NotebookTest implements JobListenerFactory{
     // clear paragraph output/result
     note.clearParagraphOutput(p1.getId());
     assertNull(p1.getResult());
+    notebook.removeNote(note.getId(), null);
   }
 
   @Test
@@ -309,6 +313,7 @@ public class NotebookTest implements JobListenerFactory{
     assertNotNull(dateFinished);
     Thread.sleep(1 * 1000);
     assertEquals(dateFinished, p.getDateFinished());
+    notebook.removeNote(note.getId(), null);
   }
 
   @Test
@@ -361,6 +366,7 @@ public class NotebookTest implements JobListenerFactory{
     // make sure all paragraph has been executed
     assertNotNull(p.getDateFinished());
     assertNotNull(p2.getDateFinished());
+    notebook.removeNote(note.getId(), null);
   }
 
   @Test
@@ -397,6 +403,9 @@ public class NotebookTest implements JobListenerFactory{
     Set<String> owners = new HashSet<>();
     owners.add("user1");
     assertEquals(owners, notebook.getNotebookAuthorization().getOwners(importedNote2.getId()));
+    notebook.removeNote(note.getId(), null);
+    notebook.removeNote(importedNote.getId(), null);
+    notebook.removeNote(importedNote2.getId(), null);
   }
 
   @Test
@@ -428,6 +437,9 @@ public class NotebookTest implements JobListenerFactory{
     Set<String> owners = new HashSet<>();
     owners.add("user1");
     assertEquals(owners, notebook.getNotebookAuthorization().getOwners(cloneNote2.getId()));
+    notebook.removeNote(note.getId(), null);
+    notebook.removeNote(cloneNote.getId(), null);
+    notebook.removeNote(cloneNote2.getId(), null);
   }
 
   @Test
@@ -438,6 +450,8 @@ public class NotebookTest implements JobListenerFactory{
 
     Note cloneNote = notebook.cloneNote(note.getId(), null, null);
     assertEquals(cloneNote.getName(), "Note " + cloneNote.getId());
+    notebook.removeNote(note.getId(), null);
+    notebook.removeNote(cloneNote.getId(), null);
   }
 
   @Test
@@ -462,6 +476,8 @@ public class NotebookTest implements JobListenerFactory{
     assertEquals(cp.getId(), p.getId());
     assertEquals(cp.text, p.text);
     assertNull(cp.getResult());
+    notebook.removeNote(note.getId(), null);
+    notebook.removeNote(cloneNote.getId(), null);
   }
 
   @Test
@@ -555,6 +571,7 @@ public class NotebookTest implements JobListenerFactory{
     // notebook scope and global object sould be remained
     assertNotNull(registry.get("o2", note.getId(), null));
     assertNotNull(registry.get("o3", null, null));
+    notebook.removeNote(note.getId(), null);
   }
 
   @Test
@@ -664,6 +681,7 @@ public class NotebookTest implements JobListenerFactory{
     }
 
     assertTrue(isAborted);
+    notebook.removeNote(note.getId(), null);
   }
 
   @Test
@@ -872,6 +890,8 @@ public class NotebookTest implements JobListenerFactory{
     assertEquals(0, notebook.getAllNotes(new AuthenticationInfo("anonymous")).size());
     assertEquals(1, notebook.getAllNotes(new AuthenticationInfo("user1")).size());
     assertEquals(1, notebook.getAllNotes(new AuthenticationInfo("user2")).size());
+    notebook.removeNote(note1.getId(), null);
+    notebook.removeNote(note2.getId(), null);
   }
 
 
