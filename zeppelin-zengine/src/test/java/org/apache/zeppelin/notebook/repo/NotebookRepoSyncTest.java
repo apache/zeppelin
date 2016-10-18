@@ -32,6 +32,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.dep.DependencyResolver;
+import org.apache.zeppelin.exception.DuplicateNameException;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
 import org.apache.zeppelin.interpreter.InterpreterOption;
 import org.apache.zeppelin.interpreter.InterpreterOutput;
@@ -69,6 +70,7 @@ public class NotebookRepoSyncTest implements JobListenerFactory {
   private NotebookAuthorization notebookAuthorization;
   private Credentials credentials;
   private AuthenticationInfo anonymous;
+  private final String NOTE_NAME = "Note";
   private static final Logger LOG = LoggerFactory.getLogger(NotebookRepoSyncTest.class);
   
   @Before
@@ -121,14 +123,14 @@ public class NotebookRepoSyncTest implements JobListenerFactory {
   }
   
   @Test
-  public void testSyncOnCreate() throws IOException {
+  public void testSyncOnCreate() throws IOException, DuplicateNameException {
     /* check that both storage systems are empty */
     assertTrue(notebookRepoSync.getRepoCount() > 1);
     assertEquals(0, notebookRepoSync.list(0, anonymous).size());
     assertEquals(0, notebookRepoSync.list(1, anonymous).size());
     
     /* create note */
-    Note note = notebookSync.createNote(anonymous);
+    Note note = notebookSync.createNote(anonymous, NOTE_NAME);
 
     // check that automatically saved on both storages
     assertEquals(1, notebookRepoSync.list(0, anonymous).size());
@@ -139,13 +141,13 @@ public class NotebookRepoSyncTest implements JobListenerFactory {
   }
 
   @Test
-  public void testSyncOnDelete() throws IOException {
+  public void testSyncOnDelete() throws IOException, DuplicateNameException {
     /* create note */
     assertTrue(notebookRepoSync.getRepoCount() > 1);
     assertEquals(0, notebookRepoSync.list(0, anonymous).size());
     assertEquals(0, notebookRepoSync.list(1, anonymous).size());
     
-    Note note = notebookSync.createNote(anonymous);
+    Note note = notebookSync.createNote(anonymous, NOTE_NAME);
 
     /* check that created in both storage systems */
     assertEquals(1, notebookRepoSync.list(0, anonymous).size());
@@ -162,10 +164,10 @@ public class NotebookRepoSyncTest implements JobListenerFactory {
   }
   
   @Test
-  public void testSyncUpdateMain() throws IOException {
+  public void testSyncUpdateMain() throws IOException, DuplicateNameException {
     
     /* create note */
-    Note note = notebookSync.createNote(anonymous);
+    Note note = notebookSync.createNote(anonymous, NOTE_NAME);
     Paragraph p1 = note.addParagraph();
     Map config = p1.getConfig();
     config.put("enabled", true);
@@ -277,7 +279,8 @@ public class NotebookRepoSyncTest implements JobListenerFactory {
   }
 
   @Test
-  public void testCheckpointOneStorage() throws IOException, SchedulerException {
+  public void testCheckpointOneStorage() throws IOException, SchedulerException, 
+      DuplicateNameException {
     System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_STORAGE.getVarName(), "org.apache.zeppelin.notebook.repo.GitNotebookRepo");
     ZeppelinConfiguration vConf = ZeppelinConfiguration.create();
 
@@ -294,8 +297,8 @@ public class NotebookRepoSyncTest implements JobListenerFactory {
     // no notes
     assertThat(vRepoSync.list(anonymous).size()).isEqualTo(0);
     // create note
-    Note note = vNotebookSync.createNote(anonymous);
-    assertThat(vRepoSync.list(anonymous).size()).isEqualTo(1);
+    Note note = vNotebookSync.createNote(anonymous, NOTE_NAME);
+    assertThat(vRepoSync.list(null).size()).isEqualTo(1);
     
     String noteId = vRepoSync.list(anonymous).get(0).getId();
     // first checkpoint
@@ -317,10 +320,10 @@ public class NotebookRepoSyncTest implements JobListenerFactory {
   }
   
   @Test
-  public void testSyncWithAcl() throws IOException {
+  public void testSyncWithAcl() throws IOException, DuplicateNameException {
     /* scenario 1 - note exists with acl on main storage */
     AuthenticationInfo user1 = new AuthenticationInfo("user1");
-    Note note = notebookSync.createNote(user1);
+    Note note = notebookSync.createNote(user1, "");
     assertEquals(0, note.getParagraphs().size());
     
     // saved on both storages

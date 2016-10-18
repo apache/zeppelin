@@ -20,6 +20,7 @@
 
   function NoteImportCtrl($scope, $timeout, websocketMsgSrv) {
     var vm = this;
+    vm.error = false;
     $scope.note = {};
     $scope.note.step1 = true;
     $scope.note.step2 = false;
@@ -80,6 +81,11 @@
       $scope.note.step2 = false;
     };
 
+    vm.preVisible = function() {
+      vm.error = false;
+      $scope.$apply();
+    };
+
     vm.importNote = function() {
       $scope.note.errorText = '';
       if ($scope.note.importUrl) {
@@ -127,6 +133,11 @@
     $scope.$on('setNoteMenu', function(event, notes) {
       vm.resetFlags();
       angular.element('#noteImportModal').modal('hide');
+    });
+
+    $scope.$on('importErrorDialog', function(event, data) {
+      vm.resetFlags();
+      vm.error = true;
     });
   }
 

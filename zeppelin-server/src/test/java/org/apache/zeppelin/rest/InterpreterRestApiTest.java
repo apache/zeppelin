@@ -17,6 +17,10 @@
 
 package org.apache.zeppelin.rest;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -26,6 +30,7 @@ import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.PutMethod;
 import org.apache.zeppelin.interpreter.InterpreterOption;
+import org.apache.zeppelin.exception.DuplicateNameException;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Paragraph;
@@ -42,8 +47,6 @@ import org.junit.runners.MethodSorters;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
-import static org.junit.Assert.*;
-
 /**
  * Zeppelin interpreter rest api tests
  */
@@ -51,6 +54,7 @@ import static org.junit.Assert.*;
 public class InterpreterRestApiTest extends AbstractTestRestApi {
   Gson gson = new Gson();
   AuthenticationInfo anonymous;
+  private final String EMPTY_STRING = "";
 
   @BeforeClass
   public static void init() throws Exception {
@@ -138,9 +142,9 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
   }
 
   @Test
-  public void testInterpreterAutoBinding() throws IOException {
+  public void testInterpreterAutoBinding() throws IOException, DuplicateNameException {
     // create note
-    Note note = ZeppelinServer.notebook.createNote(anonymous);
+    Note note = ZeppelinServer.notebook.createNote(anonymous, EMPTY_STRING);
 
     // check interpreter is binded
     GetMethod get = httpGet("/notebook/interpreter/bind/" + note.getId());
@@ -157,9 +161,10 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
   }
 
   @Test
-  public void testInterpreterRestart() throws IOException, InterruptedException {
+  public void testInterpreterRestart() throws IOException, InterruptedException, 
+    DuplicateNameException {
     // create new note
-    Note note = ZeppelinServer.notebook.createNote(anonymous);
+    Note note = ZeppelinServer.notebook.createNote(anonymous, EMPTY_STRING);
     note.addParagraph();
     Paragraph p = note.getLastParagraph();
     Map config = p.getConfig();
@@ -202,9 +207,10 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
   }
 
   @Test
-  public void testRestartInterpreterPerNote() throws IOException, InterruptedException {
+  public void testRestartInterpreterPerNote() throws IOException, InterruptedException, 
+      DuplicateNameException {
     // create new note
-    Note note = ZeppelinServer.notebook.createNote(anonymous);
+    Note note = ZeppelinServer.notebook.createNote(anonymous, EMPTY_STRING);
     note.addParagraph();
     Paragraph p = note.getLastParagraph();
     Map config = p.getConfig();

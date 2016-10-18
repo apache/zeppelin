@@ -27,6 +27,7 @@
     var vm = this;
     vm.clone = false;
     vm.notes = noteListDataFactory;
+    vm.error = false;
     vm.websocketMsgSrv = websocketMsgSrv;
     $scope.note = {};
     $scope.interpreterSettings = {};
@@ -53,6 +54,7 @@
 
     vm.preVisible = function(clone, sourceNoteName) {
       vm.clone = clone;
+      vm.error = false;
       vm.sourceNoteName = sourceNoteName;
       $scope.note.notename = vm.clone ? vm.cloneNoteName() : vm.newNoteName();
       $scope.$apply();
@@ -113,6 +115,9 @@
     };
 
     init();
+    $scope.$on('errorDialog', function(event, data) {
+      vm.error = true;
+    });
   }
 
 })();

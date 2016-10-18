@@ -143,7 +143,9 @@ public class Message {
     INTERPRETER_BINDINGS,         // [s-c] interpreter bindings
     GET_INTERPRETER_SETTINGS,     // [c-s] get interpreter settings
     INTERPRETER_SETTINGS,         // [s-c] interpreter settings
-    ERROR_INFO                    // [s-c] error information to be sent
+    ERROR_INFO,                   // [s-c] error information to be sent
+    ERROR_DIALOG,                 // [s-c] error information to be sent for dialog box
+    IMPORT_ERROR_DIALOG           // [s-c] error information to be sent for import Note
   }
 
   public OP op;

@@ -29,6 +29,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.dep.DependencyResolver;
+import org.apache.zeppelin.exception.DuplicateNameException;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
 import org.apache.zeppelin.interpreter.InterpreterOption;
 import org.apache.zeppelin.interpreter.mock.MockInterpreter1;
@@ -56,6 +57,7 @@ public class VFSNotebookRepoTest implements JobListenerFactory {
   private NotebookRepo notebookRepo;
   private InterpreterFactory factory;
   private DependencyResolver depResolver;
+  private final String NOTE_NAME = "Note";
 
   private File mainZepDir;
   private File mainNotebookDir;
@@ -111,9 +113,9 @@ public class VFSNotebookRepoTest implements JobListenerFactory {
   }
 
   @Test
-  public void testSaveNotebook() throws IOException, InterruptedException {
+  public void testSaveNotebook() throws IOException, InterruptedException, DuplicateNameException {
     AuthenticationInfo anonymous = new AuthenticationInfo("anonymous");
-    Note note = notebook.createNote(anonymous);
+    Note note = notebook.createNote(anonymous, NOTE_NAME);
     factory.setInterpreters("user", note.getId(), factory.getDefaultInterpreterSettingList());
 
     Paragraph p1 = note.addParagraph();
