@@ -1472,14 +1472,12 @@ public class NotebookServer extends WebSocketServlet implements
     }
 
     private AuthenticationInfo getJobSubject(Job job) {
-      //may need to go through all paragraphs
-      //TODO(khalid): find possibly a faster way
-      for (Paragraph p: note.getParagraphs()) {
-        if (p.getJobName() == job.getJobName()) {
-          return p.getAuthenticationInfo();
-        }
+      AuthenticationInfo authInfo = AuthenticationInfo.ANONYMOUS;
+      if (job instanceof Paragraph) {
+        Paragraph p = (Paragraph) job;
+        authInfo = p.getAuthenticationInfo();
       }
-      return AuthenticationInfo.ANONYMOUS;
+      return authInfo; 
     }
 
     /**
