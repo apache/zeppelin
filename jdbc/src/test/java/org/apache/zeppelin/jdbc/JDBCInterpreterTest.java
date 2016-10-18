@@ -303,7 +303,6 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     /**
      *  Verify if setting user and password of JDBC Interpreter properties as UserCredentials when replName is same.
      */
-    // check if getting account information from Credential.
     Properties properties2 = new Properties();
     properties2.setProperty("common.max_count", "1000");
     properties2.setProperty("common.max_retry", "3");
@@ -326,7 +325,6 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     /**
      *  Verify if not setting user and password of the JDBC Interpreter properties when replName is different.
      */
-    // check if getting account information from Credential.
     Properties properties3 = new Properties();
     properties3.setProperty("common.max_count", "1000");
     properties3.setProperty("common.max_retry", "3");
