@@ -249,18 +249,20 @@ public class NotebookRepoSync implements NotebookRepo {
   }
 
   private void makePrivate(String noteId, AuthenticationInfo subject) {
-    if (subject != null && !"anonymous".equals(subject.getUser())) {
-      NotebookAuthorization notebookAuthorization = NotebookAuthorization.getInstance();
-      Set<String> users = notebookAuthorization.getOwners(noteId);
-      users.add(subject.getUser());
-      notebookAuthorization.setOwners(noteId, users);
-      users = notebookAuthorization.getReaders(noteId);
-      users.add(subject.getUser());
-      notebookAuthorization.setReaders(noteId, users);
-      users = notebookAuthorization.getWriters(noteId);
-      users.add(subject.getUser());
-      notebookAuthorization.setWriters(noteId, users);
+    if (AuthenticationInfo.isAnonymous(subject)) {
+      LOG.info("User is anonymous, permissions are not set for pulled notes");
+      return;
     }
+    NotebookAuthorization notebookAuthorization = NotebookAuthorization.getInstance();
+    Set<String> users = notebookAuthorization.getOwners(noteId);
+    users.add(subject.getUser());
+    notebookAuthorization.setOwners(noteId, users);
+    users = notebookAuthorization.getReaders(noteId);
+    users.add(subject.getUser());
+    notebookAuthorization.setReaders(noteId, users);
+    users = notebookAuthorization.getWriters(noteId);
+    users.add(subject.getUser());
+    notebookAuthorization.setWriters(noteId, users);
   }
 
   private void deleteNotes(AuthenticationInfo subject, List<String> ids, NotebookRepo repo)
