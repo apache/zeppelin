@@ -186,7 +186,7 @@ public class SparkParagraphIT extends AbstractZeppelinIT {
       WebElement paragraph1Result = driver.findElement(By.xpath(
           getParagraphXPath(1) + "//div[@class=\"tableDisplay\"]/div/div/div/div/div/div[1]"));
       collector.checkThat("Paragraph from SparkParagraphIT of testSqlSpark result: ",
-          paragraph1Result.getText().toString(), CoreMatchers.equalTo("age\nâ–¼\njob\nâ–¼\nmarital\nâ–¼\neducation\nâ–¼\nbalance\nâ–¼\n" +
+          paragraph1Result.getText().toString(), CoreMatchers.equalTo("age\nÃ¢â€“Â¼\njob\nÃ¢â€“Â¼\nmarital\nÃ¢â€“Â¼\neducation\nÃ¢â€“Â¼\nbalance\nÃ¢â€“Â¼\n"+
           "30 unemployed married primary 1787"));
     } catch (Exception e) {
       handleException("Exception in SparkParagraphIT while testSqlSpark", e);
