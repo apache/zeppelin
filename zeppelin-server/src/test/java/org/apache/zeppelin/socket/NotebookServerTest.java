@@ -31,6 +31,7 @@ import org.apache.zeppelin.notebook.socket.Message;
 import org.apache.zeppelin.notebook.socket.Message.OP;
 import org.apache.zeppelin.rest.AbstractTestRestApi;
 import org.apache.zeppelin.server.ZeppelinServer;
+import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -57,6 +58,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
   private static NotebookServer notebookServer;
   private static Gson gson;
   private HttpServletRequest mockRequest;
+  private AuthenticationInfo anonymous;
 
   @BeforeClass
   public static void init() throws Exception {
@@ -74,6 +76,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
   @Before
   public void setUp() {
     mockRequest = mock(HttpServletRequest.class);
+    anonymous = new AuthenticationInfo("anonymous");
   }
 
   @Test
@@ -94,14 +97,14 @@ public class NotebookServerTest extends AbstractTestRestApi {
   @Test
   public void testMakeSureNoAngularObjectBroadcastToWebsocketWhoFireTheEvent() throws IOException {
     // create a notebook
-    Note note1 = notebook.createNote(null);
+    Note note1 = notebook.createNote(anonymous);
 
     // get reference to interpreterGroup
     InterpreterGroup interpreterGroup = null;
     List<InterpreterSetting> settings = notebook.getInterpreterFactory().getInterpreterSettings(note1.getId());
     for (InterpreterSetting setting : settings) {
       if (setting.getName().equals("md")) {
-        interpreterGroup = setting.getInterpreterGroup("sharedProcess");
+        interpreterGroup = setting.getInterpreterGroup("anonymous", "sharedProcess");
         break;
       }
     }
@@ -109,6 +112,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
     // start interpreter process
     Paragraph p1 = note1.addParagraph();
     p1.setText("%md start remote interpreter process");
+    p1.setAuthenticationInfo(anonymous);
     note1.run(p1.getId());
 
     // add angularObject
@@ -144,7 +148,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
     verify(sock1, times(0)).send(anyString());
     verify(sock2, times(1)).send(anyString());
 
-    notebook.removeNote(note1.getId(), null);
+    notebook.removeNote(note1.getId(), anonymous);
   }
 
   @Test
@@ -167,7 +171,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
     assertNotEquals(null, notebook.getNote(note.getId()));
     assertEquals("Test Zeppelin notebook import", notebook.getNote(note.getId()).getName());
     assertEquals("Test paragraphs import", notebook.getNote(note.getId()).getParagraphs().get(0).getText());
-    notebook.removeNote(note.getId(), null);
+    notebook.removeNote(note.getId(), anonymous);
   }
 
   @Test

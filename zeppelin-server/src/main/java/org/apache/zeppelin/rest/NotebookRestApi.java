@@ -177,7 +177,7 @@ public class NotebookRestApi {
   public Response bind(@PathParam("noteId") String noteId, String req) throws IOException {
     List<String> settingIdList = gson.fromJson(req, new TypeToken<List<String>>() {
     }.getType());
-    notebook.bindInterpretersToNote(noteId, settingIdList);
+    notebook.bindInterpretersToNote(SecurityUtils.getPrincipal(), noteId, settingIdList);
     return new JsonResponse<>(Status.OK).build();
   }
 
@@ -458,7 +458,7 @@ public class NotebookRestApi {
     }
 
     AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
-    note.removeParagraph(paragraphId);
+    note.removeParagraph(SecurityUtils.getPrincipal(), paragraphId);
     note.persist(subject);
     notebookServer.broadcastNote(note);
 
@@ -598,6 +598,11 @@ public class NotebookRestApi {
 
     // handle params if presented
     handleParagraphParams(message, note, paragraph);
+
+    AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
+
+    paragraph.setAuthenticationInfo(subject);
+    note.persist(subject);
 
     note.run(paragraph.getId());
     return new JsonResponse<>(Status.OK).build();

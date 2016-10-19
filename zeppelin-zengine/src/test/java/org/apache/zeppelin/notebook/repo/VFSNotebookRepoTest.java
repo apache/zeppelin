@@ -32,10 +32,12 @@ import org.apache.zeppelin.interpreter.InterpreterFactory;
 import org.apache.zeppelin.interpreter.InterpreterOption;
 import org.apache.zeppelin.interpreter.mock.MockInterpreter1;
 import org.apache.zeppelin.notebook.*;
+import org.apache.zeppelin.notebook.repo.zeppelinhub.security.Authentication;
 import org.apache.zeppelin.scheduler.JobListener;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.apache.zeppelin.search.SearchService;
 import org.apache.zeppelin.search.LuceneSearch;
+import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -76,7 +78,7 @@ public class VFSNotebookRepoTest implements JobListenerFactory {
 
     this.schedulerFactory = new SchedulerFactory();
     depResolver = new DependencyResolver(mainZepDir.getAbsolutePath() + "/local-repo");
-    factory = new InterpreterFactory(conf, new InterpreterOption(false), null, null, null, depResolver);
+    factory = new InterpreterFactory(conf, new InterpreterOption(false), null, null, null, depResolver, false);
 
     SearchService search = mock(SearchService.class);
     notebookRepo = new VFSNotebookRepo(conf);
@@ -106,14 +108,16 @@ public class VFSNotebookRepoTest implements JobListenerFactory {
 
   @Test
   public void testSaveNotebook() throws IOException, InterruptedException {
-    Note note = notebook.createNote(null);
-    factory.setInterpreters(note.getId(), factory.getDefaultInterpreterSettingList());
+    AuthenticationInfo anonymous = new AuthenticationInfo("anonymous");
+    Note note = notebook.createNote(anonymous);
+    factory.setInterpreters("user", note.getId(), factory.getDefaultInterpreterSettingList());
 
     Paragraph p1 = note.addParagraph();
     Map<String, Object> config = p1.getConfig();
     config.put("enabled", true);
     p1.setConfig(config);
     p1.setText("%mock1 hello world");
+    p1.setAuthenticationInfo(anonymous);
 
     note.run(p1.getId());
     int timeout = 1;
