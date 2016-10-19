@@ -48,7 +48,7 @@ public class InterpreterContext {
   }
 
   private final String noteId;
-  private final String replGroupName;
+  private final String replName;
   private final String paragraphTitle;
   private final String paragraphId;
   private final String paragraphText;
@@ -61,7 +61,7 @@ public class InterpreterContext {
 
   public InterpreterContext(String noteId,
                             String paragraphId,
-                            String replGroupName,
+                            String replName,
                             String paragraphTitle,
                             String paragraphText,
                             AuthenticationInfo authenticationInfo,
@@ -74,7 +74,7 @@ public class InterpreterContext {
                             ) {
     this.noteId = noteId;
     this.paragraphId = paragraphId;
-    this.replGroupName = replGroupName;
+    this.replName = replName;
     this.paragraphTitle = paragraphTitle;
     this.paragraphText = paragraphText;
     this.authenticationInfo = authenticationInfo;
@@ -91,8 +91,8 @@ public class InterpreterContext {
     return noteId;
   }
 
-  public String getReplGroupName() {
-    return replGroupName;
+  public String getReplName() {
+    return replName;
   }
 
   public String getParagraphId() {

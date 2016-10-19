@@ -345,7 +345,7 @@ public class JDBCInterpreter extends Interpreter {
 
   public void setAccountOfCredential(String propertyKey, InterpreterContext interpreterContext) {
     UsernamePassword usernamePassword = getUsernamePassword(interpreterContext,
-      interpreterContext.getReplGroupName());
+      interpreterContext.getReplName());
     if (usernamePassword != null && notExistAccountInProperty()) {
       propertiesMap.get(propertyKey).setProperty("user", usernamePassword.getUsername());
       propertiesMap.get(propertyKey).setProperty("password", usernamePassword.getPassword());
