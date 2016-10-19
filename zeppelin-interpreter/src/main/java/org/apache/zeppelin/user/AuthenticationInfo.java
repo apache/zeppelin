@@ -22,6 +22,9 @@ package org.apache.zeppelin.user;
  *
  */
 public class AuthenticationInfo {
+  public static final AuthenticationInfo ANONYMOUS = new AuthenticationInfo("anonymous",
+      "anonymous");
+
   String user;
   String ticket;
   UserCredentials userCredentials;

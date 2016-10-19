@@ -1181,6 +1181,7 @@ public class NotebookServer extends WebSocketServlet implements
     String text = (String) fromMessage.get("paragraph");
     p.setText(text);
     p.setTitle((String) fromMessage.get("title"));
+
     if (!fromMessage.principal.equals("anonymous")) {
       AuthenticationInfo authenticationInfo = new AuthenticationInfo(fromMessage.principal,
           fromMessage.ticket);
@@ -1203,10 +1204,8 @@ public class NotebookServer extends WebSocketServlet implements
       note.addParagraph();
     }
 
-    AuthenticationInfo subject = new AuthenticationInfo(fromMessage.principal);
-
     try {
-      note.persist(subject);
+      note.persist(p.getAuthenticationInfo());
     } catch (FileSystemException ex) {
       LOG.error("Exception from run", ex);
       conn.send(serializeMessage(new Message(OP.ERROR_INFO).put("info",
@@ -1215,6 +1214,7 @@ public class NotebookServer extends WebSocketServlet implements
       // don't run the paragraph when there is error on persisting the note information
       return;
     }
+
 
     try {
       note.run(paragraphId);
@@ -1512,8 +1512,8 @@ public class NotebookServer extends WebSocketServlet implements
       if (job.isTerminated()) {
         LOG.info("Job {} is finished", job.getId());
         try {
-          //TODO(khalid): may change interface for JobListener and pass subject from interpreter
-          note.persist(null);
+          AuthenticationInfo subject = getJobSubject(job);
+          note.persist(subject);
         } catch (IOException e) {
           LOG.error(e.toString(), e);
         }
@@ -1525,6 +1525,15 @@ public class NotebookServer extends WebSocketServlet implements
       } catch (IOException e) {
         LOG.error("can not broadcast for job manager {}", e);
       }
+    }
+
+    private AuthenticationInfo getJobSubject(Job job) {
+      AuthenticationInfo authInfo = AuthenticationInfo.ANONYMOUS;
+      if (job instanceof Paragraph) {
+        Paragraph p = (Paragraph) job;
+        authInfo = p.getAuthenticationInfo();
+      }
+      return authInfo; 
     }
 
     /**
