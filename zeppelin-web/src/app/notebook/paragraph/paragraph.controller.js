@@ -705,7 +705,7 @@
       }
     };
 
-    var getAndSetEditorSetting = function(session, interpreterName) {
+    var getEditorSetting = function(interpreterName) {
       var deferred = $q.defer();
       websocketMsgSrv.getEditorSetting($scope.paragraph.id, interpreterName);
       $timeout(
@@ -715,13 +715,14 @@
           }
         }
       ), 1000);
-      deferred.promise.then(function(editorSetting) {
-        if (!_.isEmpty(editorSetting.editor)) {
-          var mode = 'ace/mode/' + editorSetting.editor.language;
-          $scope.paragraph.config.editorMode = mode;
-          session.setMode(mode);
-        }
-      });
+      return deferred.promise;
+    };
+
+    var setEditorLanguage = function(session, language) {
+      var mode = 'ace/mode/';
+      mode += language;
+      $scope.paragraph.config.editorMode = mode;
+      session.setMode(mode);
     };
 
     var setParagraphMode = function(session, paragraphText, pos) {
@@ -739,14 +740,22 @@
           if (!paragraphText.startsWith('%') && ((typeof pos !== 'undefined') && pos.row === 0 && pos.column === 1) ||
               (typeof pos === 'undefined') && $scope.$parent.interpreterBindings.length !== 0) {
             magic = $scope.$parent.interpreterBindings[0].name;
-            getAndSetEditorSetting(session, magic);
+            getEditorSetting(magic)
+              .then(function(editorSetting) {
+                if (!_.isEmpty(editorSetting.editor)) {
+                  setEditorLanguage(session, editorSetting.editor.language);
+                }
+              });
           } else {
             var replNameRegexp = /%(.+?)\s/g;
             var match = replNameRegexp.exec(paragraphText);
             if (match && $scope.magic !== match[1]) {
               magic = match[1].trim();
               $scope.magic = magic;
-              getAndSetEditorSetting(session, magic);
+              getEditorSetting(magic)
+                .then(function(editorSetting) {
+                  setEditorLanguage(session, editorSetting.editor.language);
+                });
             }
           }
         }
