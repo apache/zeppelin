@@ -21,7 +21,7 @@ namespace java org.apache.zeppelin.interpreter.thrift
 struct RemoteInterpreterContext {
   1: string noteId,
   2: string paragraphId,
-  3: string replGroupName,
+  3: string replName,
   4: string paragraphTitle,
   5: string paragraphText,
   6: string authenticationInfo,
