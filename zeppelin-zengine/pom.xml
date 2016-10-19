@@ -155,6 +155,7 @@
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-common</artifactId>
       <version>${hadoop.version}</version>
+      <scope>provided</scope>
       <exclusions>
         <exclusion>
           <groupId>com.sun.jersey</groupId>
@@ -207,6 +208,7 @@
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-hdfs</artifactId>
       <version>${hadoop.version}</version>
+      <scope>provided</scope>
       <exclusions>
         <exclusion>
           <groupId>xml-apis</groupId>
