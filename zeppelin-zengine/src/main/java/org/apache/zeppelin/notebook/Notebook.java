@@ -196,7 +196,7 @@ public class Notebook implements NoteEventListener {
    *
    * @param sourceJson - the note JSON to import
    * @param noteName   - the name of the new note
-   * @return notebook ID
+   * @return note ID
    * @throws IOException
    */
   public Note importNote(String sourceJson, String noteName, AuthenticationInfo subject)

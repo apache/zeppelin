@@ -145,7 +145,7 @@
       BootstrapDialog.confirm({
         closable: true,
         title: '',
-        message: 'Do you want to delete this notebook?',
+        message: 'Do you want to delete this note?',
         callback: function(result) {
           if (result) {
             websocketMsgSrv.deleteNote(noteId);
@@ -166,7 +166,7 @@
       BootstrapDialog.confirm({
         closable: true,
         title: '',
-        message: 'Do you want to clone this notebook?',
+        message: 'Do you want to clone this note?',
         callback: function(result) {
           if (result) {
             websocketMsgSrv.cloneNote(noteId);

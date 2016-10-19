@@ -83,7 +83,7 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
     <tr>
       <td>Description</td>
       <td>This ```POST``` method creates a new notebook using the given name or default name if none given.
-          The body field of the returned JSON contains the new notebook id.
+          The body field of the returned JSON contains the new note id.
       </td>
     </tr>
     <tr>
@@ -233,7 +233,7 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```DELETE``` method deletes a notebook by the given notebook id.
+      <td>This ```DELETE``` method deletes a notebook by the given note id.
       </td>
     </tr>
     <tr>
@@ -262,7 +262,7 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
       <td>Description</td>
       <td>This ```POST``` method clones a notebook by the given id and create a new notebook using the given name
           or default name if none given.
-          The body field of the returned JSON contains the new notebook id.
+          The body field of the returned JSON contains the new note id.
       </td>
     </tr>
     <tr>
@@ -299,8 +299,8 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
     <tr>
       <td>Description</td>
       <td>
-      This ```POST``` method runs all paragraphs in the given notebook id. <br />
-      If you can not find Notebook id 404 returns.
+      This ```POST``` method runs all paragraphs in the given note id. <br />
+      If you can not find Note id 404 returns.
       If there is a problem with the interpreter returns a 412 error.
       </td>
     </tr>
@@ -345,7 +345,7 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```DELETE``` method stops all paragraphs in the given notebook id.
+      <td>This ```DELETE``` method stops all paragraphs in the given note id.
       </td>
     </tr>
     <tr>
@@ -372,7 +372,7 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```GET``` method gets the status of all paragraphs by the given notebook id.
+      <td>This ```GET``` method gets the status of all paragraphs by the given note id.
           The body field of the returned JSON contains of the array that compose of the paragraph id, paragraph status, paragraph finish date, paragraph started date.
       </td>
     </tr>
@@ -570,7 +570,7 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```POST``` method adds cron job by the given notebook id.
+      <td>This ```POST``` method adds cron job by the given note id.
       </td>
     </tr>
     <tr>
@@ -602,7 +602,7 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```DELETE``` method removes cron job by the given notebook id.
+      <td>This ```DELETE``` method removes cron job by the given note id.
       </td>
     </tr>
     <tr>
@@ -630,7 +630,7 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```GET``` method gets cron job expression of given notebook id.
+      <td>This ```GET``` method gets cron job expression of given note id.
           The body field of the returned JSON contains the cron expression.
       </td>
     </tr>

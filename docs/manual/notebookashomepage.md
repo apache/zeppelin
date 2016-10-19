@@ -31,7 +31,7 @@ With that you can brand your Zeppelin installation, adjust the instruction to yo
 The process for creating your homepage is very simple as shown below:
 
 1. Create a notebook using Zeppelin
-2. Set the notebook id in the config file
+2. Set the note id in the config file
 3. Restart Zeppelin
 
 ### Create a notebook using Zeppelin
@@ -43,13 +43,13 @@ Angular ([backend API](../displaysystem/back-end-angular.html), [frontend API](.
 Run (shift+Enter) the notebook and see the output. Optionally, change the notebook view to report to hide
 the code sections.
 
-### Set the notebook id in the config file
-To set the notebook id in the config file, you should copy it from the last word in the notebook url.
+### Set the note id in the config file
+To set the note id in the config file, you should copy it from the last word in the notebook url.
 For example,
 
 <img src="/assets/themes/zeppelin/img/screenshots/homepage_notebook_id.png" width="400px" />
 
-Set the notebook id to the ```ZEPPELIN_NOTEBOOK_HOMESCREEN``` environment variable
+Set the note id to the ```ZEPPELIN_NOTEBOOK_HOMESCREEN``` environment variable
 or ```zeppelin.notebook.homescreen``` property.
 
 You can also set the ```ZEPPELIN_NOTEBOOK_HOMESCREEN_HIDE``` environment variable
