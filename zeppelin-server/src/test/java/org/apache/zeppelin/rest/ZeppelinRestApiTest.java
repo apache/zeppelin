@@ -113,7 +113,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     assertTrue(paragraphs.size() > 0);
     assertEquals(paragraphText, paragraphs.get(0).get("text"));
     //
-    ZeppelinServer.notebook.removeNote(sourceNoteID, null);
+    ZeppelinServer.notebook.removeNote(sourceNoteID, anonymous);
   }
 
   @Test
@@ -426,6 +426,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     paragraph.setConfig(config);
 
     paragraph.setText("%sh sleep 1");
+    paragraph.setAuthenticationInfo(anonymous);
     note.persist(anonymous);
     String noteID = note.getId();
 
@@ -511,7 +512,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
   }
 
   @Test
-  public void testCronJobs() throws InterruptedException, IOException{
+  public void testJobs() throws InterruptedException, IOException{
     // create a note and a paragraph
     Note note = ZeppelinServer.notebook.createNote(anonymous);
 

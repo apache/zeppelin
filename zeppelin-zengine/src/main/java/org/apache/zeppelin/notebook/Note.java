@@ -438,6 +438,8 @@ public class Note implements Serializable, ParagraphJobListener {
     }
     if (p.getStatus().isRunning()) {
       info.put("progress", String.valueOf(p.progress()));
+    } else {
+      info.put("progress", String.valueOf(100));
     }
     return info;
   }
