@@ -1144,11 +1144,10 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     String key;
     if (option.isExistingProcess()) {
       key = Constants.EXISTING_PROCESS;
-    } else if (!(shiroEnabled && option.perUserShared()) || !option.perNoteShared()) {
-      if (shiroEnabled) {
-        key = (!option.perUserShared() ? user : "") + ":" + (!option.perNoteShared() ? noteId : "");
-      } else {
-        key = (!option.perNoteShared() ? noteId : "");
+    } else if (!option.perNoteShared()) {
+      key = noteId;
+      if (shiroEnabled && !option.perUserShared()) {
+        key = user + ":" + key;
       }
     } else {
       key = SHARED_SESSION;
