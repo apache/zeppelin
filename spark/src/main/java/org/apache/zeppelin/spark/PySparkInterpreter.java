@@ -45,13 +45,8 @@ import org.apache.commons.exec.environment.EnvironmentUtils;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.sql.SQLContext;
-import org.apache.zeppelin.interpreter.Interpreter;
-import org.apache.zeppelin.interpreter.InterpreterContext;
-import org.apache.zeppelin.interpreter.InterpreterException;
-import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
-import org.apache.zeppelin.interpreter.LazyOpenInterpreter;
-import org.apache.zeppelin.interpreter.WrappedInterpreter;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.spark.dep.SparkDependencyContext;
 import org.slf4j.Logger;
@@ -165,6 +160,49 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
     }
   }
 
+  private Map setupPySparkEnv() throws IOException{
+    Map env = EnvironmentUtils.getProcEnvironment();
+
+    String pysparkBasePath = new InterpreterProperty("SPARK_HOME", null, null, null).getValue();
+    File pysparkPath;
+    if (null == pysparkBasePath) {
+      pysparkBasePath =
+        new InterpreterProperty("ZEPPELIN_HOME", "zeppelin.home", "../", null).getValue();
+      pysparkPath = new File(pysparkBasePath,
+        "interpreter" + File.separator + "spark" + File.separator + "pyspark");
+    } else {
+      pysparkPath = new File(pysparkBasePath,
+        "python" + File.separator + "lib");
+    }
+
+    String pythonPath = (String) env.get("PYTHONPATH");
+/*
+    if (pythonPath == null) {
+      pythonPath = "";
+    } else {
+      pythonPath += ":";
+    }
+*/
+    //Only one of py4j-0.9-src.zip and py4j-0.8.2.1-src.zip should exist
+    String[] pythonLibs = new String[]{"pyspark.zip", "py4j-0.9-src.zip", "py4j-0.8.2.1-src.zip",
+      "py4j-0.10.1-src.zip"};
+    //ArrayList<String> pythonLibUris = new ArrayList<>();
+    for (String lib : pythonLibs) {
+      File libFile = new File(pysparkPath, lib);
+      if (libFile.exists()) {
+        if (pythonPath == null) {
+          pythonPath = "";
+        } else {
+          pythonPath += ":";
+        }
+        pythonPath += libFile.getAbsolutePath();
+        //pythonLibUris.add(libFile.toURI().toString());
+      }
+    }
+    env.put("PYTHONPATH", pythonPath);
+    return env;
+  }
+
   private void createGatewayServerAndStartScript() {
     // create python script
     createPythonScript();
@@ -198,8 +236,8 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
 
 
     try {
-      Map env = EnvironmentUtils.getProcEnvironment();
-
+      //Map env = EnvironmentUtils.getProcEnvironment();
+      Map env = setupPySparkEnv();
       executor.execute(cmd, env, this);
       pythonscriptRunning = true;
     } catch (IOException e) {
