@@ -30,7 +30,7 @@
     "ngtoast": "~2.0.0",
     "ng-focus-if": "~1.0.2",
     "bootstrap3-dialog": "bootstrap-dialog#~1.34.7",
-    "handsontable": "~0.24.2",
+    "handsontable": "~0.28.4",
     "moment-duration-format": "^1.3.0",
     "select2": "^4.0.3",
     "angular-esri-map": "~2.0.0",
