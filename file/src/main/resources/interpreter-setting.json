@@ -22,6 +22,9 @@
         "defaultValue": "1000",
         "description": "Maximum number of lines of results fetched"
       }
+    },
+    "editor": {
+      "editOnDblClick": false
     }
   }
 ]
