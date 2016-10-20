@@ -62,6 +62,7 @@
     <module>shell</module>
     <module>livy</module>
     <module>hbase</module>
+    <module>pig</module>
     <module>postgresql</module>
     <module>jdbc</module>
     <module>file</module>
@@ -580,6 +581,13 @@
     </profile>
 
     <profile>
+      <id>beam</id>
+      <modules>
+        <module>beam</module>
+      </modules>
+    </profile>
+    
+    <profile>
       <id>examples</id>
       <modules>
         <module>zeppelin-examples</module>
@@ -746,6 +754,7 @@
               <exclude>.spark-dist/**</exclude>
               <exclude>**/interpreter-setting.json</exclude>
               <exclude>**/constants.json</exclude>
+              <exclude>scripts/**</exclude>
 
               <!-- bundled from bootstrap -->
               <exclude>docs/assets/themes/zeppelin/bootstrap/**</exclude>

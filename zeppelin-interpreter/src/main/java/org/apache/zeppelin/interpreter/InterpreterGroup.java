@@ -33,7 +33,7 @@ import org.apache.zeppelin.scheduler.SchedulerFactory;
  * and InterpreterGroup will have reference to these all interpreters.
  *
  * Remember, list of interpreters are dedicated to a note.
- * (when InterpreterOption.perNoteSession==true)
+ * (when InterpreterOption.session==true)
  * So InterpreterGroup internally manages map of [noteId, list of interpreters]
  *
  * A InterpreterGroup runs on interpreter process.
@@ -45,6 +45,7 @@ public class InterpreterGroup extends ConcurrentHashMap<String, List<Interpreter
   Logger LOGGER = Logger.getLogger(InterpreterGroup.class);
 
   AngularObjectRegistry angularObjectRegistry;
+  InterpreterHookRegistry hookRegistry;
   RemoteInterpreterProcess remoteInterpreterProcess;    // attached remote interpreter process
   ResourcePool resourcePool;
   boolean angularRegistryPushed = false;
@@ -118,9 +119,17 @@ public class InterpreterGroup extends ConcurrentHashMap<String, List<Interpreter
   public AngularObjectRegistry getAngularObjectRegistry() {
     return angularObjectRegistry;
   }
-
+  
   public void setAngularObjectRegistry(AngularObjectRegistry angularObjectRegistry) {
     this.angularObjectRegistry = angularObjectRegistry;
+  }
+  
+  public InterpreterHookRegistry getInterpreterHookRegistry() {
+    return hookRegistry;
+  }
+  
+  public void setInterpreterHookRegistry(InterpreterHookRegistry hookRegistry) {
+    this.hookRegistry = hookRegistry;
   }
 
   public RemoteInterpreterProcess getRemoteInterpreterProcess() {
@@ -194,6 +203,14 @@ public class InterpreterGroup extends ConcurrentHashMap<String, List<Interpreter
     LOGGER.info("Destroy interpreter group " + getId() + " for note " + noteId);
     List<Interpreter> intpForNote = this.get(noteId);
     destroy(intpForNote);
+
+    if (remoteInterpreterProcess != null) {
+      remoteInterpreterProcess.dereference();
+      if (remoteInterpreterProcess.referenceCount() <= 0) {
+        remoteInterpreterProcess = null;
+        allInterpreterGroups.remove(id);
+      }
+    }
   }
 
 
@@ -213,6 +230,7 @@ public class InterpreterGroup extends ConcurrentHashMap<String, List<Interpreter
       while (remoteInterpreterProcess.referenceCount() > 0) {
         remoteInterpreterProcess.dereference();
       }
+      remoteInterpreterProcess = null;
     }
 
     allInterpreterGroups.remove(id);

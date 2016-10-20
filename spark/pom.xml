@@ -37,7 +37,7 @@
     <jsoup.version>1.8.2</jsoup.version>
     <mockito.version>1.10.19</mockito.version>
     <powermock.version>1.6.4</powermock.version>
-    <spark.version>2.0.0</spark.version>
+    <spark.version>2.0.1</spark.version>
   </properties>
 
   <dependencies>
@@ -519,9 +519,9 @@
         <activeByDefault>true</activeByDefault>
       </activation>
       <properties>
-        <spark.version>2.0.0</spark.version>
+        <spark.version>2.0.1</spark.version>
         <protobuf.version>2.5.0</protobuf.version>
-        <py4j.version>0.10.1</py4j.version>
+        <py4j.version>0.10.3</py4j.version>
         <scala.version>2.11.8</scala.version>
       </properties>
     </profile>

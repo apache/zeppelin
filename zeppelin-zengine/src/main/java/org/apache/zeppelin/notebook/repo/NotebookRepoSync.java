@@ -31,6 +31,7 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
+import org.apache.zeppelin.notebook.NotebookAuthorization;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
@@ -178,12 +179,15 @@ public class NotebookRepoSync implements NotebookRepo {
    */
   void sync(int sourceRepoIndex, int destRepoIndex, AuthenticationInfo subject) throws IOException {
     LOG.info("Sync started");
+    NotebookAuthorization auth = NotebookAuthorization.getInstance();
     NotebookRepo srcRepo = getRepo(sourceRepoIndex);
     NotebookRepo dstRepo = getRepo(destRepoIndex);
-    List <NoteInfo> srcNotes = srcRepo.list(subject);
+    List <NoteInfo> allSrcNotes = srcRepo.list(subject);
+    List <NoteInfo> srcNotes = auth.filterByUser(allSrcNotes, subject);
     List <NoteInfo> dstNotes = dstRepo.list(subject);
 
-    Map<String, List<String>> noteIDs = notesCheckDiff(srcNotes, srcRepo, dstNotes, dstRepo);
+    Map<String, List<String>> noteIDs = notesCheckDiff(srcNotes, srcRepo, dstNotes, dstRepo,
+        subject);
     List<String> pushNoteIDs = noteIDs.get(pushKey);
     List<String> pullNoteIDs = noteIDs.get(pullKey);
     List<String> delDstNoteIDs = noteIDs.get(delDstKey);
@@ -226,9 +230,13 @@ public class NotebookRepoSync implements NotebookRepo {
   }
 
   private void pushNotes(AuthenticationInfo subject, List<String> ids, NotebookRepo localRepo,
-      NotebookRepo remoteRepo) throws IOException {
+      NotebookRepo remoteRepo) {
     for (String id : ids) {
-      remoteRepo.save(localRepo.get(id, subject), subject);
+      try {
+        remoteRepo.save(localRepo.get(id, subject), subject);
+      } catch (IOException e) {
+        LOG.error("Failed to push note to storage, moving onto next one", e);
+      }
     }
   }
 
@@ -256,7 +264,8 @@ public class NotebookRepoSync implements NotebookRepo {
   }
 
   private Map<String, List<String>> notesCheckDiff(List<NoteInfo> sourceNotes,
-      NotebookRepo sourceRepo, List<NoteInfo> destNotes, NotebookRepo destRepo)
+      NotebookRepo sourceRepo, List<NoteInfo> destNotes, NotebookRepo destRepo,
+      AuthenticationInfo subject)
       throws IOException {
     List <String> pushIDs = new ArrayList<String>();
     List <String> pullIDs = new ArrayList<String>();
@@ -268,8 +277,8 @@ public class NotebookRepoSync implements NotebookRepo {
       dnote = containsID(destNotes, snote.getId());
       if (dnote != null) {
         /* note exists in source and destination storage systems */
-        sdate = lastModificationDate(sourceRepo.get(snote.getId(), null));
-        ddate = lastModificationDate(destRepo.get(dnote.getId(), null));
+        sdate = lastModificationDate(sourceRepo.get(snote.getId(), subject));
+        ddate = lastModificationDate(destRepo.get(dnote.getId(), subject));
 
         if (sdate.compareTo(ddate) != 0) {
           if (sdate.after(ddate) || oneWaySync) {

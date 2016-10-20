@@ -20,6 +20,7 @@ import java.io.IOException;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.lang.StringUtils;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.WebSocketAdapter;
 
@@ -32,12 +33,14 @@ public class NotebookSocket extends WebSocketAdapter {
   private NotebookSocketListener listener;
   private HttpServletRequest request;
   private String protocol;
+  private String user;
 
   public NotebookSocket(HttpServletRequest req, String protocol,
       NotebookSocketListener listener) {
     this.listener = listener;
     this.request = req;
     this.protocol = protocol;
+    this.user = StringUtils.EMPTY;
   }
 
   @Override
@@ -65,8 +68,15 @@ public class NotebookSocket extends WebSocketAdapter {
     return protocol;
   }
 
-  public void send(String serializeMessage) throws IOException {
+  public synchronized void send(String serializeMessage) throws IOException {
     connection.getRemote().sendString(serializeMessage);
   }
 
+  public String getUser() {
+    return user;
+  }
+
+  public void setUser(String user) {
+    this.user = user;
+  }
 }

@@ -80,16 +80,16 @@ class PyZeppelinContext(dict):
   def get(self, key):
     return self.__getitem__(key)
 
-  def input(self, name, defaultValue = ""):
+  def input(self, name, defaultValue=""):
     return self.z.input(name, defaultValue)
 
-  def select(self, name, options, defaultValue = ""):
+  def select(self, name, options, defaultValue=""):
     # auto_convert to ArrayList doesn't match the method signature on JVM side
     tuples = list(map(lambda items: self.__tupleToScalaTuple2(items), options))
     iterables = gateway.jvm.scala.collection.JavaConversions.collectionAsScalaIterable(tuples)
     return self.z.select(name, defaultValue, iterables)
 
-  def checkbox(self, name, options, defaultChecked = None):
+  def checkbox(self, name, options, defaultChecked=None):
     if defaultChecked is None:
       defaultChecked = list(map(lambda items: items[0], options))
     optionTuples = list(map(lambda items: self.__tupleToScalaTuple2(items), options))
@@ -98,6 +98,23 @@ class PyZeppelinContext(dict):
 
     checkedIterables = self.z.checkbox(name, defaultCheckedIterables, optionIterables)
     return gateway.jvm.scala.collection.JavaConversions.asJavaCollection(checkedIterables)
+
+  def registerHook(self, event, cmd, replName=None):
+    if replName is None:
+      self.z.registerHook(event, cmd)
+    else:
+      self.z.registerHook(event, cmd, replName)
+
+  def unregisterHook(self, event, replName=None):
+    if replName is None:
+      self.z.unregisterHook(event)
+    else:
+      self.z.unregisterHook(event, replName)
+
+  def getHook(self, event, replName=None):
+    if replName is None:
+      return self.z.getHook(event)
+    return self.z.getHook(event, replName)
 
   def __tupleToScalaTuple2(self, tuple):
     if (len(tuple) == 2):
@@ -219,13 +236,11 @@ jconf = intp.getSparkConf()
 conf = SparkConf(_jvm = gateway.jvm, _jconf = jconf)
 sc = SparkContext(jsc=jsc, gateway=gateway, conf=conf)
 if sparkVersion.isSpark2():
-  sqlc = SQLContext(sparkContext=sc, jsqlContext=intp.getSQLContext())
+  spark = SparkSession(sc, intp.getSparkSession())
+  sqlc = spark._wrapped
 else:
   sqlc = SQLContext(sparkContext=sc, sqlContext=intp.getSQLContext())
 sqlContext = sqlc
-
-if sparkVersion.isSpark2():
-  spark = SparkSession(sc, intp.getSparkSession())
 
 completion = PySparkCompletion(intp)
 z = PyZeppelinContext(intp.getZeppelinContext())
