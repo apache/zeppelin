@@ -940,6 +940,25 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     }
   }
 
+  private boolean noteIdIsExist(String noteId) {
+    return noteId == null ? false : true;
+  }
+
+  private boolean isNotSharedInterpreter(InterpreterOption intpOption) {
+    return intpOption.isPerNoteSession() || intpOption.isExistingProcess();
+  }
+
+
+  public void restart(String settingId, String noteId) {
+    InterpreterSetting setting = interpreterSettings.get(settingId);
+
+    if (noteIdIsExist(noteId) && isNotSharedInterpreter(setting.getOption())) {
+      removeInterpretersForNote(setting, noteId);
+      return;
+    }
+    restart(settingId);
+  }
+
   public void restart(String id) {
     synchronized (interpreterSettings) {
       InterpreterSetting intpsetting = interpreterSettings.get(id);

@@ -25,6 +25,7 @@ import org.apache.commons.httpclient.methods.DeleteMethod;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.PutMethod;
+import org.apache.zeppelin.interpreter.InterpreterOption;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Paragraph;
@@ -187,6 +188,59 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
     }
     assertEquals("<p>markdown restarted</p>\n", p.getResult().message());
     //cleanup
+    ZeppelinServer.notebook.removeNote(note.getId(), null);
+  }
+
+  @Test
+  public void testRestartInterpreterPerNote() throws IOException, InterruptedException {
+    // create new note
+    Note note = ZeppelinServer.notebook.createNote(null);
+    note.addParagraph();
+    Paragraph p = note.getLastParagraph();
+    Map config = p.getConfig();
+    config.put("enabled", true);
+
+    // run markdown paragraph.
+    p.setConfig(config);
+    p.setText("%md markdown");
+    note.run(p.getId());
+    while (p.getStatus() != Status.FINISHED) {
+      Thread.sleep(100);
+    }
+    assertEquals("<p>markdown</p>\n", p.getResult().message());
+
+    // get md interpreter
+    InterpreterSetting mdIntpSetting = null;
+    for (InterpreterSetting setting : ZeppelinServer.notebook.getInterpreterFactory().getInterpreterSettings(note.getId())) {
+      if (setting.getName().equals("md")) {
+        mdIntpSetting = setting;
+        break;
+      }
+    }
+
+    String jsonRequest = "{\"noteId\":\"" + note.getId() + "\"}";
+
+    // Restart isolated mode of Interpreter for note.
+    mdIntpSetting.getOption().setPerNoteProcess(true);
+    mdIntpSetting.getOption().setPerNoteSession(false);
+    PutMethod put = httpPut("/interpreter/setting/restart/" + mdIntpSetting.getId(), jsonRequest);
+    assertThat("isolated interpreter restart:", put, isAllowed());
+    put.releaseConnection();
+
+    // Restart scoped mode of Interpreter for note.
+    mdIntpSetting.getOption().setPerNoteSession(true);
+    mdIntpSetting.getOption().setPerNoteProcess(false);
+    put = httpPut("/interpreter/setting/restart/" + mdIntpSetting.getId(), jsonRequest);
+    assertThat("scoped interpreter restart:", put, isAllowed());
+    put.releaseConnection();
+
+    // Restart shared mode of Interpreter for note.
+    mdIntpSetting.getOption().setPerNoteProcess(false);
+    mdIntpSetting.getOption().setPerNoteSession(false);
+    put = httpPut("/interpreter/setting/restart/" + mdIntpSetting.getId(), jsonRequest);
+    assertThat("shared interpreter restart:", put, isAllowed());
+    put.releaseConnection();
+
     ZeppelinServer.notebook.removeNote(note.getId(), null);
   }
 

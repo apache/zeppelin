@@ -660,6 +660,69 @@
               message: 'Owners : ' + $scope.permissions.owners + '\n\n' + 'Readers : ' +
               $scope.permissions.readers + '\n\n' + 'Writers  : ' + $scope.permissions.writers
             });
+<<<<<<< HEAD
+          }
+        }
+      });
+    } else {
+      $scope.showPermissions = false;
+    }
+  };
+
+  function convertPermissionsToArray() {
+    $scope.permissions.owners = angular.element('#selectOwners').val();
+    $scope.permissions.readers = angular.element('#selectReaders').val();
+    $scope.permissions.writers = angular.element('#selectWriters').val();
+  }
+
+  $scope.restartInterpreter = function(interpeter) {
+    var thisConfirm = BootstrapDialog.confirm({
+      closable: false,
+      closeByBackdrop: false,
+      closeByKeyboard: false,
+      title: '',
+      message: 'Do you want to restart ' + interpeter.name + ' interpreter?',
+      callback: function(result) {
+        if (result) {
+          var payload  = {
+            'noteId': $scope.note.id
+          };
+
+          thisConfirm.$modalFooter.find('button').addClass('disabled');
+          thisConfirm.$modalFooter.find('button:contains("OK")')
+            .html('<i class="fa fa-circle-o-notch fa-spin"></i> Saving Setting');
+
+          $http.put(baseUrlSrv.getRestApiBase() + '/interpreter/setting/restart/' + interpeter.id, payload)
+            .success(function(data, status, headers, config) {
+            var index = _.findIndex($scope.interpreterSettings, {'id': interpeter.id});
+            $scope.interpreterSettings[index] = data.body;
+            thisConfirm.close();
+          }).error(function(data, status, headers, config) {
+            thisConfirm.close();
+            console.log('Error %o %o', status, data.message);
+            BootstrapDialog.show({
+              title: 'Error restart interpreter.',
+              message: data.message
+            });
+          });
+          return false;
+        }
+      }
+    });
+  };
+
+  $scope.savePermissions = function() {
+    convertPermissionsToArray();
+    $http.put(baseUrlSrv.getRestApiBase() + '/notebook/' + $scope.note.id + '/permissions',
+      $scope.permissions, {withCredentials: true}).
+      success(function(data, status, headers, config) {
+        getPermissions(function() {
+          console.log('Note permissions %o saved', $scope.permissions);
+          BootstrapDialog.alert({
+            closable: true,
+            title: 'Permissions Saved Successfully!!!',
+            message: 'Owners : ' + $scope.permissions.owners + '\n\n' + 'Readers : ' +
+            $scope.permissions.readers + '\n\n' + 'Writers  : ' + $scope.permissions.writers
             $scope.showPermissions = false;
           });
         }).
