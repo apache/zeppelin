@@ -183,7 +183,7 @@ Congratulation on your successful Apache Zeppelin installation! Here are two nex
  * If you need more configuration setting for Apache Zeppelin, jump to the next section: [Apache Zeppelin Configuration](#apache-zeppelin-configuration).
  
 #### If you need more information about Spark or JDBC interpreter setting
- * Apache Zeppelin provides deep integration with [Apache Spark](http://spark.apache.org/). For the further informtation, see [Spark Interpreter for Apache Zeppelin](../interpreter/spark.html). 
+ * Apache Zeppelin provides deep integration with [Apache Spark](http://spark.apache.org/). For the further information, see [Spark Interpreter for Apache Zeppelin](../interpreter/spark.html). 
  * Also, you can use generic JDBC connections in Apache Zeppelin. Go to [Generic JDBC Interpreter for Apache Zeppelin](../interpreter/jdbc.html).
  
 #### If you are in multi-user environment
