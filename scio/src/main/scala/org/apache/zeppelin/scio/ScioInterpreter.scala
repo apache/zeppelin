@@ -45,7 +45,7 @@ import scala.tools.nsc.util.ClassPath
  * <p>
  * How to use: <br/>
  * {@code
- *  %scio
+ *  $beam.scio
  *  val (sc, args) = ContextAndArgs(argz)
  *  sc.parallelize(Seq("foo", "foo", "bar")).countByValue.closeAndDisplay()
  * }

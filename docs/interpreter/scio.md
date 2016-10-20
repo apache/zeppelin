@@ -48,14 +48,14 @@ Scio is a Scala DSL for [Google Cloud Dataflow](https://github.com/GoogleCloudPl
 
 ## Enabling the Scio Interpreter
 
-In a notebook, to enable the **Scio** interpreter, click the **Gear** icon and select **scio**.
+In a notebook, to enable the **Scio** interpreter, click the **Gear** icon and select **beam** (**beam.scio**).
 
 ## Using the Scio Interpreter
 
-In a paragraph, use `%scio` to select the **Scio** interpreter. You can use it much the same way as vanilla Scala REPL and [Scio REPL](https://github.com/spotify/scio/wiki/Scio-REPL). State (like variables, imports, execution etc) is shared among all *Scio* paragraphs. There is a special variable **argz** which holds arguments from Scio interpreter settings. The easiest way to proceed is to create a Scio context via standard `ContextAndArgs`.
+In a paragraph, use `$beam.scio` to select the **Scio** interpreter. You can use it much the same way as vanilla Scala REPL and [Scio REPL](https://github.com/spotify/scio/wiki/Scio-REPL). State (like variables, imports, execution etc) is shared among all *Scio* paragraphs. There is a special variable **argz** which holds arguments from Scio interpreter settings. The easiest way to proceed is to create a Scio context via standard `ContextAndArgs`.
 
 ```scala
-%scio
+$beam.scio
 val (sc, args) = ContextAndArgs(argz)
 ```
 
@@ -64,7 +64,7 @@ Use `sc` context the way you would in regular pipeline/REPL.
 Example:
 
 ```scala
-%scio
+$beam.scio
 val (sc, args) = ContextAndArgs(argz)
 sc.parallelize(Seq("foo", "foo", "bar")).countByValue.closeAndDisplay()
 ```
@@ -108,7 +108,7 @@ There are different helper methods for different objects. You can easily display
 #### BigQuery example:
 
 ```scala
-%scio
+$beam.scio
 @BigQueryType.fromQuery("""|SELECT departure_airport,count(case when departure_delay>0 then 1 else 0 end) as no_of_delays
                            |FROM [bigquery-samples:airline_ontime_data.flights]
                            |group by departure_airport
@@ -122,7 +122,7 @@ sc.bigQuerySelect(Flights.query).closeAndDisplay(Flights.schema)
 #### BigQuery typed example:
 
 ```scala
-%scio
+$beam.scio
 @BigQueryType.fromQuery("""|SELECT departure_airport,count(case when departure_delay>0 then 1 else 0 end) as no_of_delays
                            |FROM [bigquery-samples:airline_ontime_data.flights]
                            |group by departure_airport
@@ -136,7 +136,7 @@ sc.typedBigQuery[Flights]().flatMap(_.no_of_delays).mean.closeAndDisplay()
 #### Avro example:
 
 ```scala
-%scio
+$beam.scio
 import com.spotify.data.ExampleAvro
 
 val (sc, args) = ContextAndArgs(argz)
@@ -146,7 +146,7 @@ sc.avroFile[ExampleAvro]("gs://<bucket>/tmp/my.avro").take(10).closeAndDisplay()
 #### Avro example with a view schema:
 
 ```scala
-%scio
+$beam.scio
 import com.spotify.data.ExampleAvro
 import org.apache.avro.Schema
 
