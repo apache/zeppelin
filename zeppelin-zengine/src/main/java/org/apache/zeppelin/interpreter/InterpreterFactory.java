@@ -1351,7 +1351,8 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     Interpreter intp = getInterpreter(user, noteId, replName);
     Map<String, Object> editor = Maps.newHashMap(
         ImmutableMap.<String, Object>builder()
-            .put("language", "text").build());
+            .put("language", "text")
+            .put("editOnDblClick", "false").build());
     String defaultSettingName = getDefaultInterpreterSetting(noteId).getName();
     String group = StringUtils.EMPTY;
     try {
