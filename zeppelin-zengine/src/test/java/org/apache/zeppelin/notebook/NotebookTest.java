@@ -885,20 +885,20 @@ public class NotebookTest implements JobListenerFactory{
   public void testGetAllNotes() throws Exception {
     Note note1 = notebook.createNote(anonymous);
     Note note2 = notebook.createNote(anonymous);
-    assertEquals(2, notebook.getAllNotes(anonymous).size());
+    assertEquals(2, notebook.getAllNotes(Sets.newHashSet("anonymous")).size());
 
     notebook.getNotebookAuthorization().setOwners(note1.getId(), Sets.newHashSet("user1"));
     notebook.getNotebookAuthorization().setWriters(note1.getId(), Sets.newHashSet("user1"));
     notebook.getNotebookAuthorization().setReaders(note1.getId(), Sets.newHashSet("user1"));
-    assertEquals(1, notebook.getAllNotes(anonymous).size());
-    assertEquals(2, notebook.getAllNotes(new AuthenticationInfo("user1")).size());
+    assertEquals(1, notebook.getAllNotes(Sets.newHashSet("anonymous")).size());
+    assertEquals(2, notebook.getAllNotes(Sets.newHashSet("user1")).size());
 
     notebook.getNotebookAuthorization().setOwners(note2.getId(), Sets.newHashSet("user2"));
     notebook.getNotebookAuthorization().setWriters(note2.getId(), Sets.newHashSet("user2"));
     notebook.getNotebookAuthorization().setReaders(note2.getId(), Sets.newHashSet("user2"));
-    assertEquals(0, notebook.getAllNotes(anonymous).size());
-    assertEquals(1, notebook.getAllNotes(new AuthenticationInfo("user1")).size());
-    assertEquals(1, notebook.getAllNotes(new AuthenticationInfo("user2")).size());
+    assertEquals(0, notebook.getAllNotes(Sets.newHashSet("anonymous")).size());
+    assertEquals(1, notebook.getAllNotes(Sets.newHashSet("user1")).size());
+    assertEquals(1, notebook.getAllNotes(Sets.newHashSet("user2")).size());
     notebook.removeNote(note1.getId(), anonymous);
     notebook.removeNote(note2.getId(), anonymous);
   }
@@ -906,15 +906,15 @@ public class NotebookTest implements JobListenerFactory{
 
   @Test
   public void testGetAllNotesWithDifferentPermissions() throws IOException {
-    AuthenticationInfo user1 = new AuthenticationInfo("user1");
-    AuthenticationInfo user2 = new AuthenticationInfo("user2");
+    HashSet<String> user1 = Sets.newHashSet("user1");
+    HashSet<String> user2 = Sets.newHashSet("user1");
     List<Note> notes1 = notebook.getAllNotes(user1);
     List<Note> notes2 = notebook.getAllNotes(user2);
     assertEquals(notes1.size(), 0);
     assertEquals(notes2.size(), 0);
 
     //creates note and sets user1 owner
-    Note note = notebook.createNote(user1);
+    Note note = notebook.createNote(new AuthenticationInfo("user1"));
 
     // note is public since readers and writers empty
     notes1 = notebook.getAllNotes(user1);
@@ -933,7 +933,7 @@ public class NotebookTest implements JobListenerFactory{
     notes1 = notebook.getAllNotes(user1);
     notes2 = notebook.getAllNotes(user2);
     assertEquals(notes1.size(), 1);
-    assertEquals(notes2.size(), 0);
+    assertEquals(notes2.size(), 1);
   }
 
   private void delete(File file){

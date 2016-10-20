@@ -20,7 +20,6 @@ import com.google.common.base.Strings;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.vfs2.FileSystemException;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
@@ -172,10 +171,10 @@ public class NotebookServer extends WebSocketServlet implements
       /** Lets be elegant here */
       switch (messagereceived.op) {
           case LIST_NOTES:
-            unicastNoteList(conn, subject);
+            unicastNoteList(conn, subject, userAndRoles);
             break;
           case RELOAD_NOTES_FROM_REPO:
-            broadcastReloadedNoteList(subject);
+            broadcastReloadedNoteList(subject, userAndRoles);
             break;
           case GET_HOME_NOTE:
             sendHomeNote(conn, userAndRoles, notebook, messagereceived);
@@ -491,7 +490,7 @@ public class NotebookServer extends WebSocketServlet implements
   }
 
   public List<Map<String, String>> generateNotebooksInfo(boolean needsReload,
-      AuthenticationInfo subject) {
+      AuthenticationInfo subject, HashSet<String> userAndRoles) {
 
     Notebook notebook = notebook();
 
@@ -508,7 +507,7 @@ public class NotebookServer extends WebSocketServlet implements
       }
     }
 
-    List<Note> notes = notebook.getAllNotes(subject);
+    List<Note> notes = notebook.getAllNotes(userAndRoles);
     List<Map<String, String>> notesInfo = new LinkedList<>();
     for (Note note : notes) {
       Map<String, String> info = new HashMap<>();
@@ -535,34 +534,35 @@ public class NotebookServer extends WebSocketServlet implements
         .put("interpreterBindings", settingList));
   }
 
-  public void broadcastNoteList(AuthenticationInfo subject) {
+  public void broadcastNoteList(AuthenticationInfo subject, HashSet userAndRoles) {
     if (subject == null) {
       subject = new AuthenticationInfo(StringUtils.EMPTY);
     }
     //send first to requesting user
-    List<Map<String, String>> notesInfo = generateNotebooksInfo(false, subject);
+    List<Map<String, String>> notesInfo = generateNotebooksInfo(false, subject, userAndRoles);
     multicastToUser(subject.getUser(), new Message(OP.NOTES_INFO).put("notes", notesInfo));
     //to others afterwards
     for (String user: userConnectedSockets.keySet()) {
       if (subject.getUser() == user) {
         continue;
       }
-      notesInfo = generateNotebooksInfo(false, new AuthenticationInfo(user));
+      notesInfo = generateNotebooksInfo(false, new AuthenticationInfo(user), userAndRoles);
       multicastToUser(user, new Message(OP.NOTES_INFO).put("notes", notesInfo));
     }
   }
 
-  public void unicastNoteList(NotebookSocket conn, AuthenticationInfo subject) {
-    List<Map<String, String>> notesInfo = generateNotebooksInfo(false, subject);
+  public void unicastNoteList(NotebookSocket conn, AuthenticationInfo subject,
+      HashSet<String> userAndRoles) {
+    List<Map<String, String>> notesInfo = generateNotebooksInfo(false, subject, userAndRoles);
     unicast(new Message(OP.NOTES_INFO).put("notes", notesInfo), conn);
   }
 
-  public void broadcastReloadedNoteList(AuthenticationInfo subject) {
+  public void broadcastReloadedNoteList(AuthenticationInfo subject, HashSet userAndRoles) {
     if (subject == null) {
       subject = new AuthenticationInfo(StringUtils.EMPTY);
     }
     //reload and reply first to requesting user
-    List<Map<String, String>> notesInfo = generateNotebooksInfo(true, subject);
+    List<Map<String, String>> notesInfo = generateNotebooksInfo(true, subject, userAndRoles);
     multicastToUser(subject.getUser(), new Message(OP.NOTES_INFO).put("notes", notesInfo));
     //to others afterwards
     for (String user: userConnectedSockets.keySet()) {
@@ -570,7 +570,7 @@ public class NotebookServer extends WebSocketServlet implements
         continue;
       }
       //reloaded already above; parameter - false
-      notesInfo = generateNotebooksInfo(false, new AuthenticationInfo(user));
+      notesInfo = generateNotebooksInfo(false, new AuthenticationInfo(user), userAndRoles);
       multicastToUser(user, new Message(OP.NOTES_INFO).put("notes", notesInfo));
     }
   }
@@ -678,7 +678,7 @@ public class NotebookServer extends WebSocketServlet implements
       AuthenticationInfo subject = new AuthenticationInfo(fromMessage.principal);
       note.persist(subject);
       broadcastNote(note);
-      broadcastNoteList(subject);
+      broadcastNoteList(subject, userAndRoles);
     }
   }
 
@@ -713,7 +713,7 @@ public class NotebookServer extends WebSocketServlet implements
     note.persist(subject);
     addConnectionToNote(note.getId(), (NotebookSocket) conn);
     conn.send(serializeMessage(new Message(OP.NEW_NOTE).put("note", note)));
-    broadcastNoteList(subject);
+    broadcastNoteList(subject, userAndRoles);
   }
 
   private void removeNote(NotebookSocket conn, HashSet<String> userAndRoles,
@@ -735,7 +735,7 @@ public class NotebookServer extends WebSocketServlet implements
     AuthenticationInfo subject = new AuthenticationInfo(fromMessage.principal);
     notebook.removeNote(noteId, subject);
     removeNote(noteId);
-    broadcastNoteList(subject);
+    broadcastNoteList(subject, userAndRoles);
   }
 
   private void updateParagraph(NotebookSocket conn, HashSet<String> userAndRoles,
@@ -777,7 +777,7 @@ public class NotebookServer extends WebSocketServlet implements
     AuthenticationInfo subject = new AuthenticationInfo(fromMessage.principal);
     addConnectionToNote(newNote.getId(), (NotebookSocket) conn);
     conn.send(serializeMessage(new Message(OP.NEW_NOTE).put("note", newNote)));
-    broadcastNoteList(subject);
+    broadcastNoteList(subject, userAndRoles);
   }
 
   protected Note importNote(NotebookSocket conn, HashSet<String> userAndRoles,
@@ -796,7 +796,7 @@ public class NotebookServer extends WebSocketServlet implements
       note = notebook.importNote(noteJson, noteName, subject);
       note.persist(subject);
       broadcastNote(note);
-      broadcastNoteList(subject);
+      broadcastNoteList(subject, userAndRoles);
     }
     return note;
   }

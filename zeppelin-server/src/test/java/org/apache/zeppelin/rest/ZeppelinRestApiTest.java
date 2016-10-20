@@ -19,9 +19,11 @@ package org.apache.zeppelin.rest;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
+import com.google.common.collect.Sets;
 import org.apache.commons.httpclient.methods.DeleteMethod;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
@@ -352,8 +354,8 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     }.getType());
     List<Map<String, String>> body = (List<Map<String, String>>) resp.get("body");
     //TODO(khalid): anonymous or specific user notes?
-    AuthenticationInfo subject = new AuthenticationInfo("anonymous");
-    assertEquals("List notebooks are equal", ZeppelinServer.notebook.getAllNotes(subject).size(), body.size());
+    HashSet<String> anonymous = Sets.newHashSet("anonymous");
+    assertEquals("List notebooks are equal", ZeppelinServer.notebook.getAllNotes(anonymous).size(), body.size());
     get.releaseConnection();
   }
 

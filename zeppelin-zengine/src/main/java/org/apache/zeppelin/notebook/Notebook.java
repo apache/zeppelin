@@ -540,10 +540,10 @@ public class Notebook implements NoteEventListener {
     }
   }
 
-  public List<Note> getAllNotes(AuthenticationInfo subject) {
+  public List<Note> getAllNotes(HashSet<String> userAndRoles) {
     final Set<String> entities = Sets.newHashSet();
-    if (subject != null) {
-      entities.add(subject.getUser());
+    if (userAndRoles != null) {
+      entities.addAll(userAndRoles);
     }
 
     synchronized (notes) {
