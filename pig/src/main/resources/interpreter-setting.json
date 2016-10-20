@@ -42,5 +42,15 @@
     "editor": {
       "language": "pig"
     }
+  },
+  {
+    "group": "pig",
+    "name": "udf",
+    "className": "org.apache.zeppelin.pig.PigUDFInterpreter",
+    "properties": {
+    },
+    "editor": {
+      "language": "java"
+    }
   }
 ]
