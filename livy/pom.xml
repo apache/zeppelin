@@ -41,15 +41,7 @@
         <assertj.version>1.7.0</assertj.version>
         <mockito.version>1.9.5</mockito.version>
         <livy.version>0.2.0</livy.version>
-        <test.redirectToFile>false</test.redirectToFile>
     </properties>
-
-    <repositories>
-        <repository>
-            <id>local-maven-repo</id>
-            <url>file://${project.basedir}/local-maven-repo</url>
-        </repository>
-    </repositories>
 
     <dependencies>
         <dependency>
@@ -151,13 +143,21 @@
                 </exclusion>
             </exclusions>
         </dependency>
-        <dependency>
-            <groupId>org.scala-lang</groupId>
-            <artifactId>scala-reflect</artifactId>
-            <version>2.10.5</version>
-            <scope>compile</scope>
-        </dependency>
     </dependencies>
+
+    <repositories>
+        <repository>
+            <id>ossrh</id>
+            <name>ossrh repository</name>
+            <url>https://oss.sonatype.org/content/repositories/releases/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
 
     <build>
         <plugins>
