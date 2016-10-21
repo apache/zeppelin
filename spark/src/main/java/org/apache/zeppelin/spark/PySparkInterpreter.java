@@ -160,7 +160,7 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
     }
   }
 
-  public Map setupPySparkEnv() throws IOException{
+  private Map setupPySparkEnv() throws IOException{
     Map env = EnvironmentUtils.getProcEnvironment();
     if (!env.containsKey("PYTHONPATH")) {
       SparkConf conf = getSparkConf();
