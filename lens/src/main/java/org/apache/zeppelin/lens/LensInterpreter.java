@@ -88,7 +88,7 @@ public class LensInterpreter extends Interpreter {
   private LensClient m_lensClient;
   
 
-  static {
+  /*static {
     Interpreter.register(
       "lens",
       "lens",
@@ -102,7 +102,7 @@ public class LensInterpreter extends Interpreter {
         .add(LENS_CLIENT_DBNAME, "default", "The database schema name")
         .add(LENS_PERSIST_RESULTSET, "false", "Apache Lens to persist result in HDFS?")
         .add(LENS_SESSION_CLUSTER_USER, "default", "Hadoop cluster username").build());
-  }
+  }*/
 
   public LensInterpreter(Properties property) {
     super(property);
