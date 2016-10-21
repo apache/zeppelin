@@ -16,9 +16,6 @@
         "defaultValue": "false",
         "description": "flag to include job stats in output"
       }
-    },
-    "editor": {
-      "language": "pig"
     }
   },
   {
@@ -38,9 +35,6 @@
         "defaultValue": "1000",
         "description": "max row number for %pig.query"
       }
-    },
-    "editor": {
-      "language": "pig"
     }
   },
   {

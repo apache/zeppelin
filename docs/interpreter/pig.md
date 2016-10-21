@@ -103,6 +103,8 @@ Data is shared between `%pig` and `%pig.query`, so that you can do some common w
 ##### pig.udf
 
 ```
+%pig.udf
+
 import org.apache.pig.data.Tuple;
 import org.apache.pig.EvalFunc;
 import java.io.IOException;

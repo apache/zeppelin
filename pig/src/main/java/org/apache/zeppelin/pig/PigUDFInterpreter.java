@@ -74,6 +74,10 @@ public class PigUDFInterpreter extends Interpreter {
         }
       }
       this.udfBuildClasspath = classPathBuilder.toString();
+      LOGGER.debug("udfBuildClass:" + udfBuildClasspath);
+    } else {
+      LOGGER.error("localRepo is missing or doesn't exist, " +
+          "zeppelin.interpreter.localRepo=" + localRepo);
     }
   }
 
@@ -92,7 +96,8 @@ public class PigUDFInterpreter extends Interpreter {
       return new InterpreterResult(InterpreterResult.Code.SUCCESS, "Build successfully");
     } catch (Exception e) {
       LOGGER.error("Fail to compile/build udf", e);
-      return new InterpreterResult(InterpreterResult.Code.ERROR, e.getMessage());
+      return new InterpreterResult(InterpreterResult.Code.ERROR,
+          InterpreterUtils.getMostRelevantMessage(e));
     }
   }
 
