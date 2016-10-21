@@ -45,7 +45,7 @@ GIT_TAG="$2"
 
 function build_docker_base() {
   # build base image
-  docker build -t ${DOCKER_USERNAME}/zeppelin-base:latest "${WORKING_DIR}/zeppelin/scripts/docker/zeppelin-base"
+  docker build -t ${DOCKER_USERNAME}/zeppelin-base:latest "${BASEDIR}/../scripts/docker/zeppelin-base"
 }
 function build_docker_image() {
   # build release image
