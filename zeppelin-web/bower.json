@@ -49,6 +49,7 @@
         "src-noconflict/mode-markdown.js",
         "src-noconflict/mode-sh.js",
         "src-noconflict/mode-r.js",
+        "src-noconflict/mode-java.js",
         "src-noconflict/keybinding-emacs.js",
         "src-noconflict/ext-language_tools.js",
         "src-noconflict/theme-chrome.js"
