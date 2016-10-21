@@ -52,7 +52,6 @@ public class PigUDFInterpreterTest {
     properties.put("zeppelin.pig.execType", "local");
     properties.put("zeppelin.pig.maxResult", "20");
     properties.put("zeppelin.interpreter.localRepo", System.getProperty("zeppelin.pig.localRepo"));
-    System.out.println("localRepo**********************" + System.getProperty("zeppelin.pig.localRepo"));
     pigInterpreter = new PigInterpreter(properties);
     udfInterpreter = new PigUDFInterpreter(properties);
     context = new InterpreterContext(null, "paragraph_id", null, null, null, null, null, null, null,
