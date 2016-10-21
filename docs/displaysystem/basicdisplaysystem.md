@@ -25,7 +25,7 @@ limitations under the License.
 
 ## Text
 
-By default, Apache Zeppelin prints interpreter responce as a plain text using `text` display system.
+By default, Apache Zeppelin prints interpreter response as a plain text using `text` display system.
 
 <img src="/assets/themes/zeppelin/img/screenshots/display_text.png" />
 
