@@ -187,9 +187,9 @@ Congratulations, you have successfully installed Apache Zeppelin! Here are two n
  * After getting familiar with the Apache Zeppelin UI, have fun with a short walk-through [Tutorial](../quickstart/tutorial.html) that uses the Apache Spark backend.
  * If you need more configuration for Apache Zeppelin, jump to the next section: [Apache Zeppelin Configuration](#apache-zeppelin-configuration).
  
-#### If you need more information about Spark or JDBC interpreter setting
- * Apache Zeppelin provides deep integration with [Apache Spark](http://spark.apache.org/). For the further information, see [Spark Interpreter for Apache Zeppelin](../interpreter/spark.html). 
- * Also, you can use generic JDBC connections in Apache Zeppelin. Go to [Generic JDBC Interpreter for Apache Zeppelin](../interpreter/jdbc.html).
+#### If you need more information about Spark or JDBC interpreter settings...
+ * Apache Zeppelin provides deep integration with [Apache Spark](http://spark.apache.org/). For more information, see [Spark Interpreter for Apache Zeppelin](../interpreter/spark.html).
+ * You can also use generic JDBC connections in Apache Zeppelin. Go to [Generic JDBC Interpreter for Apache Zeppelin](../interpreter/jdbc.html).
  
 #### If you are in a multi-user environment...
  * You can set permissions for your notebooks and secure data resource in a multi-user environment. Go to **More** -> **Security** section.
