@@ -250,61 +250,61 @@ limitations under the License.
             &nbsp;
           </div>
         </div>
-        <div class="row interpreter" style="margin-top: 6px;">
-          <div class="col-md-6">
-            <span ng-if="getInterpreterRunningOption(setting.id) === 'Per User' && ticket.ticket !== 'anonymous' && ticket.roles !== '[]'">
-              <span ng-if="getPerNoteOption(setting.id) !== 'shared'">
-                <span class="hidden-xs" style="padding-left: 190px;">And </span>
-                <span class="visible-xs" style="padding-left: 0px;">And </span>
-                <span class="btn-group">
-                  <button type="button" class="btn btn-default btn-xs dropdown-toggle"
-                          data-toggle="dropdown"
-                          ng-disabled="true">
-                    <span>
-                      Per Note
-                    </span>
-                    <span class="caret"></span>
-                  </button>
-                </span>
-                in
-                <span class="btn-group">
-                  <button type="button" class="btn btn-default btn-xs dropdown-toggle"
-                          data-toggle="dropdown"
-                          ng-disabled="!valueform.$visible">
-                    <span>
-                      {{getPerNoteOption(setting.id)}}
-                    </span>
-                    <span class="caret"></span>
-                  </button>
-                  <ul class="dropdown-menu" role="menu">
-                    <li>
-                      <a style="cursor:pointer"
-                         tooltip="Separate Interpreter instance for each note"
-                         ng-click="setPerNoteOption(setting.id, 'scoped')">
-                        scoped per note
-                      </a>
-                    </li>
-                    <li>
-                      <a style="cursor:pointer"
-                         tooltip="Separate Interpreter process for each note"
-                         ng-click="setPerNoteOption(setting.id, 'isolated')">
-                        isolated per note
-                      </a>
-                    </li>
-                  </ul>
-                </span>
-                process.
-                <button type="button" class="btn btn-default btn-xs"
-                        ng-disabled="!valueform.$visible"
-                        ng-click="setPerNoteOption(setting.id, 'shared')"
-                        data-toggle="dropdown">
-                  <i class="fa fa-minus"></i>
+        <div class="row interpreter"
+             style="margin-top: 6px;"
+             ng-if="getInterpreterRunningOption(setting.id) === 'Per User'
+                    && ticket.ticket !== 'anonymous'
+                    && ticket.roles !== '[]'
+                    && getPerNoteOption(setting.id) !== 'shared'">
+          <div class="col-md-12">
+            <span>
+              <span class="hidden-xs" style="padding-left: 190px;">And </span>
+              <span class="visible-xs" style="padding-left: 0px;">And </span>
+              <span class="btn-group">
+                <button type="button" class="btn btn-default btn-xs dropdown-toggle"
+                        data-toggle="dropdown"
+                        ng-disabled="true">
+                  <span>
+                    Per Note
+                  </span>
+                  <span class="caret"></span>
                 </button>
               </span>
+              in
+              <span class="btn-group">
+                <button type="button" class="btn btn-default btn-xs dropdown-toggle"
+                        data-toggle="dropdown"
+                        ng-disabled="!valueform.$visible">
+                  <span>
+                    {{getPerNoteOption(setting.id)}}
+                  </span>
+                  <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu" role="menu">
+                  <li>
+                    <a style="cursor:pointer"
+                       tooltip="Separate Interpreter instance for each note"
+                       ng-click="setPerNoteOption(setting.id, 'scoped')">
+                      scoped per note
+                    </a>
+                  </li>
+                  <li>
+                    <a style="cursor:pointer"
+                       tooltip="Separate Interpreter process for each note"
+                       ng-click="setPerNoteOption(setting.id, 'isolated')">
+                      isolated per note
+                    </a>
+                  </li>
+                </ul>
+              </span>
+              process.
+              <button type="button" class="btn btn-default btn-xs"
+                      ng-disabled="!valueform.$visible"
+                      ng-click="setPerNoteOption(setting.id, 'shared')"
+                      data-toggle="dropdown">
+                <i class="fa fa-minus"></i>
+              </button>
             </span>
-          </div>
-          <div class="col-md-6">
-            &nbsp;
           </div>
         </div>
       </div>
