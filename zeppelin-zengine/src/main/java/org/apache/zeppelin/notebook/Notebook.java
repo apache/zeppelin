@@ -31,6 +31,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+
+import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Sets;
@@ -135,6 +137,7 @@ public class Notebook implements NoteEventListener {
    * @throws IOException
    */
   public Note createNote(AuthenticationInfo subject) throws IOException {
+    Preconditions.checkNotNull(subject, "AuthenticationInfo should not be null");
     Note note;
     if (conf.getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_AUTO_INTERPRETER_BINDING)) {
       note = createNote(replFactory.getDefaultInterpreterSettingList(), subject);
@@ -158,7 +161,7 @@ public class Notebook implements NoteEventListener {
       notes.put(note.getId(), note);
     }
     if (interpreterIds != null) {
-      bindInterpretersToNote(note.getId(), interpreterIds);
+      bindInterpretersToNote(subject.getUser(), note.getId(), interpreterIds);
     }
 
     if (subject != null && !"anonymous".equals(subject.getUser())) {
@@ -252,7 +255,7 @@ public class Notebook implements NoteEventListener {
     }
     // Copy the interpreter bindings
     List<String> boundInterpreterSettingsIds = getBindedInterpreterSettingsIds(sourceNote.getId());
-    bindInterpretersToNote(newNote.getId(), boundInterpreterSettingsIds);
+    bindInterpretersToNote(subject.getUser(), newNote.getId(), boundInterpreterSettingsIds);
 
     List<Paragraph> paragraphs = sourceNote.getParagraphs();
     for (Paragraph p : paragraphs) {
@@ -264,7 +267,7 @@ public class Notebook implements NoteEventListener {
     return newNote;
   }
 
-  public void bindInterpretersToNote(String id, List<String> interpreterSettingIds)
+  public void bindInterpretersToNote(String user, String id, List<String> interpreterSettingIds)
       throws IOException {
     Note note = getNote(id);
     if (note != null) {
@@ -275,7 +278,7 @@ public class Notebook implements NoteEventListener {
         }
       }
 
-      replFactory.setInterpreters(note.getId(), interpreterSettingIds);
+      replFactory.setInterpreters(user, note.getId(), interpreterSettingIds);
       // comment out while note.getNoteReplLoader().setInterpreters(...) do the same
       // replFactory.putNoteInterpreterSettingBinding(id, interpreterSettingIds);
     }
@@ -306,18 +309,21 @@ public class Notebook implements NoteEventListener {
   }
 
   public void removeNote(String id, AuthenticationInfo subject) {
+    Preconditions.checkNotNull(subject, "AuthenticationInfo should not be null");
+
     Note note;
 
     synchronized (notes) {
       note = notes.remove(id);
     }
-    replFactory.removeNoteInterpreterSettingBinding(id);
+    replFactory.removeNoteInterpreterSettingBinding(subject.getUser(), id);
     notebookIndex.deleteIndexDocs(note);
     notebookAuthorization.removeNote(id);
 
     // remove from all interpreter instance's angular object registry
     for (InterpreterSetting settings : replFactory.get()) {
-      AngularObjectRegistry registry = settings.getInterpreterGroup(id).getAngularObjectRegistry();
+      AngularObjectRegistry registry =
+          settings.getInterpreterGroup(subject.getUser(), id).getAngularObjectRegistry();
       if (registry instanceof RemoteAngularObjectRegistry) {
         // remove paragraph scope object
         for (Paragraph p : note.getParagraphs()) {
@@ -437,7 +443,7 @@ public class Notebook implements NoteEventListener {
       SnapshotAngularObject snapshot = angularObjectSnapshot.get(name);
       List<InterpreterSetting> settings = replFactory.get();
       for (InterpreterSetting setting : settings) {
-        InterpreterGroup intpGroup = setting.getInterpreterGroup(note.getId());
+        InterpreterGroup intpGroup = setting.getInterpreterGroup(subject.getUser(), note.getId());
         if (intpGroup.getId().equals(snapshot.getIntpGroupId())) {
           AngularObjectRegistry registry = intpGroup.getAngularObjectRegistry();
           String noteId = snapshot.getAngularObject().getNoteId();
@@ -533,11 +539,11 @@ public class Notebook implements NoteEventListener {
       return noteList;
     }
   }
-  
-  public List<Note> getAllNotes(AuthenticationInfo subject) {
+
+  public List<Note> getAllNotes(HashSet<String> userAndRoles) {
     final Set<String> entities = Sets.newHashSet();
-    if (subject != null) {
-      entities.add(subject.getUser());
+    if (userAndRoles != null) {
+      entities.addAll(userAndRoles);
     }
 
     synchronized (notes) {
