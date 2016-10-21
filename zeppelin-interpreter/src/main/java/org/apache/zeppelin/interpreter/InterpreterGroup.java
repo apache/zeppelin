@@ -33,7 +33,7 @@ import org.apache.zeppelin.scheduler.SchedulerFactory;
  * and InterpreterGroup will have reference to these all interpreters.
  *
  * Remember, list of interpreters are dedicated to a note.
- * (when InterpreterOption.perNoteSession==true)
+ * (when InterpreterOption.session==true)
  * So InterpreterGroup internally manages map of [noteId, list of interpreters]
  *
  * A InterpreterGroup runs on interpreter process.
@@ -203,6 +203,14 @@ public class InterpreterGroup extends ConcurrentHashMap<String, List<Interpreter
     LOGGER.info("Destroy interpreter group " + getId() + " for note " + noteId);
     List<Interpreter> intpForNote = this.get(noteId);
     destroy(intpForNote);
+
+    if (remoteInterpreterProcess != null) {
+      remoteInterpreterProcess.dereference();
+      if (remoteInterpreterProcess.referenceCount() <= 0) {
+        remoteInterpreterProcess = null;
+        allInterpreterGroups.remove(id);
+      }
+    }
   }
 
 
@@ -222,6 +230,7 @@ public class InterpreterGroup extends ConcurrentHashMap<String, List<Interpreter
       while (remoteInterpreterProcess.referenceCount() > 0) {
         remoteInterpreterProcess.dereference();
       }
+      remoteInterpreterProcess = null;
     }
 
     allInterpreterGroups.remove(id);

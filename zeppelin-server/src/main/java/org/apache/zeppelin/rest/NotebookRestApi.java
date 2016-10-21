@@ -39,7 +39,6 @@ import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.interpreter.InterpreterResult;
-import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.utils.InterpreterBindingUtils;
 import org.quartz.CronExpression;
 import org.slf4j.Logger;
@@ -162,7 +161,7 @@ public class NotebookRestApi {
     AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
     note.persist(subject);
     notebookServer.broadcastNote(note);
-    notebookServer.broadcastNoteList(subject);
+    notebookServer.broadcastNoteList(subject, userAndRoles);
     return new JsonResponse<>(Status.OK).build();
   }
 
@@ -177,7 +176,7 @@ public class NotebookRestApi {
   public Response bind(@PathParam("noteId") String noteId, String req) throws IOException {
     List<String> settingIdList = gson.fromJson(req, new TypeToken<List<String>>() {
     }.getType());
-    notebook.bindInterpretersToNote(noteId, settingIdList);
+    notebook.bindInterpretersToNote(SecurityUtils.getPrincipal(), noteId, settingIdList);
     return new JsonResponse<>(Status.OK).build();
   }
 
@@ -199,7 +198,8 @@ public class NotebookRestApi {
   @ZeppelinApi
   public Response getNotebookList() throws IOException {
     AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
-    List<Map<String, String>> notesInfo = notebookServer.generateNotebooksInfo(false, subject);
+    List<Map<String, String>> notesInfo = notebookServer.generateNotebooksInfo(false, subject,
+        SecurityUtils.getRoles());
     return new JsonResponse<>(Status.OK, "", notesInfo).build();
   }
 
@@ -278,7 +278,7 @@ public class NotebookRestApi {
     note.setName(noteName);
     note.persist(subject);
     notebookServer.broadcastNote(note);
-    notebookServer.broadcastNoteList(subject);
+    notebookServer.broadcastNoteList(subject, SecurityUtils.getRoles());
     return new JsonResponse<>(Status.CREATED, "", note.getId()).build();
   }
 
@@ -302,7 +302,7 @@ public class NotebookRestApi {
       }
     }
 
-    notebookServer.broadcastNoteList(subject);
+    notebookServer.broadcastNoteList(subject, SecurityUtils.getRoles());
     return new JsonResponse<>(Status.OK, "").build();
   }
 
@@ -327,7 +327,7 @@ public class NotebookRestApi {
     AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
     Note newNote = notebook.cloneNote(notebookId, newNoteName, subject);
     notebookServer.broadcastNote(newNote);
-    notebookServer.broadcastNoteList(subject);
+    notebookServer.broadcastNoteList(subject, SecurityUtils.getRoles());
     return new JsonResponse<>(Status.CREATED, "", newNote.getId()).build();
   }
 
@@ -458,7 +458,7 @@ public class NotebookRestApi {
     }
 
     AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
-    note.removeParagraph(paragraphId);
+    note.removeParagraph(SecurityUtils.getPrincipal(), paragraphId);
     note.persist(subject);
     notebookServer.broadcastNote(note);
 
@@ -598,6 +598,11 @@ public class NotebookRestApi {
 
     // handle params if presented
     handleParagraphParams(message, note, paragraph);
+
+    AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
+
+    paragraph.setAuthenticationInfo(subject);
+    note.persist(subject);
 
     note.run(paragraph.getId());
     return new JsonResponse<>(Status.OK).build();

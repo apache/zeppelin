@@ -121,6 +121,8 @@ public class InterpreterFactory implements InterpreterGroupFactory {
 
   private DependencyResolver depResolver;
 
+  private boolean shiroEnabled;
+
   private Map<String, String> env = new HashMap<>();
 
   private Interpreter devInterpreter;
@@ -128,18 +130,18 @@ public class InterpreterFactory implements InterpreterGroupFactory {
   public InterpreterFactory(ZeppelinConfiguration conf,
       AngularObjectRegistryListener angularObjectRegistryListener,
       RemoteInterpreterProcessListener remoteInterpreterProcessListener,
-      ApplicationEventListener appEventListener, DependencyResolver depResolver)
-      throws InterpreterException, IOException, RepositoryException {
+      ApplicationEventListener appEventListener, DependencyResolver depResolver,
+      boolean shiroEnabled) throws InterpreterException, IOException, RepositoryException {
     this(conf, new InterpreterOption(true), angularObjectRegistryListener,
-        remoteInterpreterProcessListener, appEventListener, depResolver);
+        remoteInterpreterProcessListener, appEventListener, depResolver, shiroEnabled);
   }
 
 
   public InterpreterFactory(ZeppelinConfiguration conf, InterpreterOption defaultOption,
       AngularObjectRegistryListener angularObjectRegistryListener,
       RemoteInterpreterProcessListener remoteInterpreterProcessListener,
-      ApplicationEventListener appEventListener, DependencyResolver depResolver)
-      throws InterpreterException, IOException, RepositoryException {
+      ApplicationEventListener appEventListener, DependencyResolver depResolver,
+      boolean shiroEnabled) throws InterpreterException, IOException, RepositoryException {
     this.conf = conf;
     this.defaultOption = defaultOption;
     this.angularObjectRegistryListener = angularObjectRegistryListener;
@@ -147,6 +149,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     this.interpreterRepositories = depResolver.getRepos();
     this.remoteInterpreterProcessListener = remoteInterpreterProcessListener;
     this.appEventListener = appEventListener;
+    this.shiroEnabled = shiroEnabled;
     String replsConf = conf.getString(ConfVars.ZEPPELIN_INTERPRETERS);
     interpreterClassList = replsConf.split(",");
     String groupOrder = conf.getString(ConfVars.ZEPPELIN_INTERPRETER_GROUP_ORDER);
@@ -157,6 +160,8 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     gson = builder.create();
 
     init();
+
+    logger.info("shiroEnabled: {}", shiroEnabled);
   }
 
   private void init() throws InterpreterException, IOException, RepositoryException {
@@ -698,16 +703,18 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     return interpreterGroup;
   }
 
-  public void removeInterpretersForNote(InterpreterSetting interpreterSetting, String noteId) {
-    if (interpreterSetting.getOption().isPerNoteProcess()) {
+  public void removeInterpretersForNote(InterpreterSetting interpreterSetting, String user,
+      String noteId) {
+    InterpreterOption option = interpreterSetting.getOption();
+    if (option.isProcess()) {
       interpreterSetting.closeAndRemoveInterpreterGroup(noteId);
-    } else if (interpreterSetting.getOption().isPerNoteSession()) {
-      InterpreterGroup interpreterGroup = interpreterSetting.getInterpreterGroup(noteId);
-
-      interpreterGroup.close(noteId);
-      interpreterGroup.destroy(noteId);
+    } else if (option.isSession()) {
+      InterpreterGroup interpreterGroup = interpreterSetting.getInterpreterGroup(user, noteId);
+      String key = getInterpreterInstanceKey(user, noteId, interpreterSetting);
+      interpreterGroup.close(key);
+      interpreterGroup.destroy(key);
       synchronized (interpreterGroup) {
-        interpreterGroup.remove(noteId);
+        interpreterGroup.remove(key);
         interpreterGroup.notifyAll(); // notify createInterpreterForNote()
       }
       logger.info("Interpreter instance {} for note {} is removed", interpreterSetting.getName(),
@@ -715,9 +722,9 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     }
   }
 
-  public void createInterpretersForNote(InterpreterSetting interpreterSetting, String noteId,
-      String key) {
-    InterpreterGroup interpreterGroup = interpreterSetting.getInterpreterGroup(noteId);
+  public void createInterpretersForNote(InterpreterSetting interpreterSetting, String user,
+      String noteId, String key) {
+    InterpreterGroup interpreterGroup = interpreterSetting.getInterpreterGroup(user, noteId);
     InterpreterOption option = interpreterSetting.getOption();
     Properties properties = interpreterSetting.getProperties();
     if (option.isExistingProcess) {
@@ -861,8 +868,8 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     }
   }
 
-  private void putNoteInterpreterSettingBinding(String noteId, List<String> settingList)
-      throws IOException {
+  private void putNoteInterpreterSettingBinding(String user, String noteId,
+      List<String> settingList) throws IOException {
     List<String> unBindedSettings = new LinkedList<>();
 
     synchronized (interpreterSettings) {
@@ -879,18 +886,18 @@ public class InterpreterFactory implements InterpreterGroupFactory {
 
       for (String settingId : unBindedSettings) {
         InterpreterSetting setting = get(settingId);
-        removeInterpretersForNote(setting, noteId);
+        removeInterpretersForNote(setting, user, noteId);
       }
     }
   }
 
-  public void removeNoteInterpreterSettingBinding(String noteId) {
+  public void removeNoteInterpreterSettingBinding(String user, String noteId) {
     synchronized (interpreterSettings) {
       List<String> settingIds = (interpreterBindings.containsKey(noteId) ?
           interpreterBindings.remove(noteId) :
           Collections.<String>emptyList());
       for (String settingId : settingIds) {
-        this.removeInterpretersForNote(get(settingId), noteId);
+        this.removeInterpretersForNote(get(settingId), user, noteId);
       }
     }
   }
@@ -1093,8 +1100,8 @@ public class InterpreterFactory implements InterpreterGroupFactory {
    * @param ids    InterpreterSetting id list
    * @throws IOException
    */
-  public void setInterpreters(String noteId, List<String> ids) throws IOException {
-    putNoteInterpreterSettingBinding(noteId, ids);
+  public void setInterpreters(String user, String noteId, List<String> ids) throws IOException {
+    putNoteInterpreterSettingBinding(user, noteId, ids);
   }
 
   public List<String> getInterpreters(String noteId) {
@@ -1119,7 +1126,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     return settings;
   }
 
-  public void closeNote(String noteId) {
+  public void closeNote(String user, String noteId) {
     // close interpreters in this note session
     List<InterpreterSetting> settings = getInterpreterSettings(noteId);
     if (settings == null || settings.size() == 0) {
@@ -1128,28 +1135,37 @@ public class InterpreterFactory implements InterpreterGroupFactory {
 
     logger.info("closeNote: {}", noteId);
     for (InterpreterSetting setting : settings) {
-      removeInterpretersForNote(setting, noteId);
+      removeInterpretersForNote(setting, user, noteId);
     }
   }
 
-  private String getInterpreterInstanceKey(String noteId, InterpreterSetting setting) {
-    if (setting.getOption().isExistingProcess()) {
-      return Constants.EXISTING_PROCESS;
-    } else if (setting.getOption().isPerNoteSession() || setting.getOption().isPerNoteProcess()) {
-      return noteId;
-    } else {
-      return SHARED_SESSION;
-    }
-  }
-
-  private List<Interpreter> createOrGetInterpreterList(String noteId, InterpreterSetting setting) {
-    InterpreterGroup interpreterGroup = setting.getInterpreterGroup(noteId);
-    synchronized (interpreterGroup) {
-      String key = getInterpreterInstanceKey(noteId, setting);
-      if (!interpreterGroup.containsKey(key)) {
-        createInterpretersForNote(setting, noteId, key);
+  private String getInterpreterInstanceKey(String user, String noteId, InterpreterSetting setting) {
+    InterpreterOption option = setting.getOption();
+    String key;
+    if (option.isExistingProcess()) {
+      key = Constants.EXISTING_PROCESS;
+    } else if (!option.perNoteShared()) {
+      key = noteId;
+      if (shiroEnabled && !option.perUserShared()) {
+        key = user + ":" + key;
       }
-      return interpreterGroup.get(getInterpreterInstanceKey(noteId, setting));
+    } else {
+      key = SHARED_SESSION;
+    }
+
+    logger.debug("Interpreter instance key: {}", key);
+    return key;
+  }
+
+  private List<Interpreter> createOrGetInterpreterList(String user, String noteId,
+      InterpreterSetting setting) {
+    InterpreterGroup interpreterGroup = setting.getInterpreterGroup(user, noteId);
+    synchronized (interpreterGroup) {
+      String key = getInterpreterInstanceKey(user, noteId, setting);
+      if (!interpreterGroup.containsKey(key)) {
+        createInterpretersForNote(setting, user, noteId, key);
+      }
+      return interpreterGroup.get(getInterpreterInstanceKey(user, noteId, setting));
     }
   }
 
@@ -1190,14 +1206,15 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     return null;
   }
 
-  private Interpreter getInterpreter(String noteId, InterpreterSetting setting, String name) {
+  private Interpreter getInterpreter(String user, String noteId, InterpreterSetting setting,
+      String name) {
     Preconditions.checkNotNull(noteId, "noteId should be not null");
     Preconditions.checkNotNull(setting, "setting should be not null");
     Preconditions.checkNotNull(name, "name should be not null");
 
     String className;
     if (null != (className = getInterpreterClassFromInterpreterSetting(setting, name))) {
-      List<Interpreter> interpreterGroup = createOrGetInterpreterList(noteId, setting);
+      List<Interpreter> interpreterGroup = createOrGetInterpreterList(user, noteId, setting);
       for (Interpreter interpreter : interpreterGroup) {
         if (className.equals(interpreter.getClassName())) {
           return interpreter;
@@ -1207,7 +1224,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     return null;
   }
 
-  public Interpreter getInterpreter(String noteId, String replName) {
+  public Interpreter getInterpreter(String user, String noteId, String replName) {
     List<InterpreterSetting> settings = getInterpreterSettings(noteId);
     InterpreterSetting setting;
     Interpreter interpreter;
@@ -1220,7 +1237,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
       // get default settings (first available)
       // TODO(jl): Fix it in case of returning null
       InterpreterSetting defaultSettings = getDefaultInterpreterSetting(settings);
-      return createOrGetInterpreterList(noteId, defaultSettings).get(0);
+      return createOrGetInterpreterList(user, noteId, defaultSettings).get(0);
     }
 
     String[] replNameSplit = replName.split("\\.");
@@ -1233,7 +1250,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
       setting = getInterpreterSettingByGroup(settings, group);
 
       if (null != setting) {
-        interpreter = getInterpreter(noteId, setting, name);
+        interpreter = getInterpreter(user, noteId, setting, name);
 
         if (null != interpreter) {
           return interpreter;
@@ -1248,7 +1265,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
       // TODO(jl): Handle with noteId to support defaultInterpreter per note.
       setting = getDefaultInterpreterSetting(settings);
 
-      interpreter = getInterpreter(noteId, setting, replName);
+      interpreter = getInterpreter(user, noteId, setting, replName);
 
       if (null != interpreter) {
         return interpreter;
@@ -1259,7 +1276,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
       setting = getInterpreterSettingByGroup(settings, replName);
 
       if (null != setting) {
-        List<Interpreter> interpreters = createOrGetInterpreterList(noteId, setting);
+        List<Interpreter> interpreters = createOrGetInterpreterList(user, noteId, setting);
         if (null != interpreters) {
           return interpreters.get(0);
         }
@@ -1268,7 +1285,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
       // Support the legacy way to use it
       for (InterpreterSetting s : settings) {
         if (s.getGroup().equals(replName)) {
-          List<Interpreter> interpreters = createOrGetInterpreterList(noteId, s);
+          List<Interpreter> interpreters = createOrGetInterpreterList(user, noteId, s);
           if (null != interpreters) {
             return interpreters.get(0);
           }
@@ -1330,8 +1347,8 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     this.env = env;
   }
 
-  public Map<String, Object> getEditorSetting(String noteId, String replName) {
-    Interpreter intp = getInterpreter(noteId, replName);
+  public Map<String, Object> getEditorSetting(String user, String noteId, String replName) {
+    Interpreter intp = getInterpreter(user, noteId, replName);
     Map<String, Object> editor = Maps.newHashMap(
         ImmutableMap.<String, Object>builder()
             .put("language", "text").build());

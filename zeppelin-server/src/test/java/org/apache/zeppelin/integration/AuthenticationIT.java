@@ -202,7 +202,7 @@ public class AuthenticationIT extends AbstractZeppelinIT {
       try {
         WebElement element = pollingWait(By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + noteId + "')]"),
             MAX_BROWSER_TIMEOUT_SEC);
-        collector.checkThat("Check is user has permission to view this notebook link", false,
+        collector.checkThat("Check is user has permission to view this notebook link", true,
             CoreMatchers.equalTo(element.isDisplayed()));
       } catch (Exception e) {
         //This should have failed, nothing to worry.
