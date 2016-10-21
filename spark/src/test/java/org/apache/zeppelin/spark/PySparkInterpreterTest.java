@@ -16,8 +16,11 @@
  */
 
 package org.apache.zeppelin.spark;
+import org.apache.zeppelin.display.AngularObjectRegistry;
+import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.interpreter.*;
-import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
+import org.apache.zeppelin.resource.LocalResourcePool;
+import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
@@ -33,16 +36,11 @@ import static org.junit.Assert.*;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class PySparkInterpreterTest {
   public static LazyOpenInterpreter sparkInterpreter;
-  //public static SparkInterpreter sparkInterpreter;
   public static PySparkInterpreter pySparkInterpreter;
   public static InterpreterGroup intpGroup;
   private File tmpDir;
   public static Logger LOGGER = LoggerFactory.getLogger(PySparkInterpreterTest.class);
-
-  private static final String INTERPRETER_SCRIPT =
-    System.getProperty("os.name").startsWith("Windows") ?
-      "../bin/interpreter.cmd" :
-      "../bin/interpreter.sh";
+  private InterpreterContext context;
 
   public static Properties getPySparkTestProperties() {
     Properties p = new Properties();
@@ -52,8 +50,6 @@ public class PySparkInterpreterTest {
     p.setProperty("zeppelin.spark.maxResult", "1000");
     p.setProperty("zeppelin.spark.importImplicit", "true");
     p.setProperty("zeppelin.pyspark.python", "python");
-    //p.setProperty("zeppelin.interpreter.localRepo", "/home/nflabs/zeppelin/local-repo");
-
     return p;
   }
 
@@ -61,53 +57,42 @@ public class PySparkInterpreterTest {
   public void setUp() throws Exception {
     tmpDir = new File(System.getProperty("java.io.tmpdir") + "/ZeppelinLTest_" + System.currentTimeMillis());
     System.setProperty("zeppelin.dep.localrepo", tmpDir.getAbsolutePath() + "/local-repo");
-    //System.setProperty("zeppelin.interpreter.localrepo", tmpDir.getAbsolutePath() + "/local-repo");
     tmpDir.mkdirs();
-
-
-//    String s = System.getProperty("PATH");
-    //System.setProperty("PYTHONPATH", "/home/nflabs/zeppelin/spark-dependencies/target/spark-dist/spark-2.0.0/python:/home/nflabs/zeppelin/spark-dependencies/target/spark-dist/spark-2.0.0/python/lib/py4j-0.10.1-src.zip");
-/*
-    //System.setProperty("PATH", "/home/nflabs/zeppelin/spark-dependencies/target/spark-dist/spark-2.0.0/python/lib/py4j-0.10.1-src.zip");
-    s = System.getProperty("PATH");
-*/
 
     intpGroup = new InterpreterGroup();
     intpGroup.put("note", new LinkedList<Interpreter>());
 
-//    SparkConf conf = sparkInterpreter.getSparkContext().getConf();
-//    String zip = conf.get("spark.files");
-/*
-
-    pysparkBasePath =
-      new InterpreterProperty("ZEPPELIN_HOME", "zeppelin.home", "../", null).getValue();
-    pysparkPath = new File(pysparkBasePath,
-      "interpreter" + File.separator + "spark" + File.separator + "pyspark");
-*/
-
-
-    /*
-    RemoteInterpreter remoteInterpreter = createPysparkInterpreter(getPySparkTestProperties(), "note");
-    intpGroup.get("note").add(remoteInterpreter);
-    remoteInterpreter.setInterpreterGroup(intpGroup);
-    remoteInterpreter.open();
-*/
-
     if (sparkInterpreter == null) {
       sparkInterpreter = new LazyOpenInterpreter(new SparkInterpreter(getPySparkTestProperties()));
-      //sparkInterpreter = new SparkInterpreter(getPySparkTestProperties());
       intpGroup.get("note").add(sparkInterpreter);
       sparkInterpreter.setInterpreterGroup(intpGroup);
-      //sparkInterpreter.open();
     }
 
     if (pySparkInterpreter == null) {
-      //pySparkInterpreter = new LazyOpenInterpreter(new PySparkInterpreter(getPySparkTestProperties()));
       pySparkInterpreter = new PySparkInterpreter(getPySparkTestProperties());
       intpGroup.get("note").add(pySparkInterpreter);
       pySparkInterpreter.setInterpreterGroup(intpGroup);
       pySparkInterpreter.open();
     }
+
+    context = new InterpreterContext("note", "id", "title", "text",
+      new AuthenticationInfo(),
+      new HashMap<String, Object>(),
+      new GUI(),
+      new AngularObjectRegistry(intpGroup.getId(), null),
+      new LocalResourcePool("id"),
+      new LinkedList<InterpreterContextRunner>(),
+      new InterpreterOutput(new InterpreterOutputListener() {
+        @Override
+        public void onAppend(InterpreterOutput out, byte[] line) {
+
+        }
+
+        @Override
+        public void onUpdate(InterpreterOutput out, byte[] output) {
+
+        }
+      }));
   }
 
   @After
@@ -129,10 +114,9 @@ public class PySparkInterpreterTest {
   }
 
   @Test
-  public void testPySparkCompletion() {
-    //pySparkInterpreter.interpret("int(\"123\")", context).code();
-    //List<InterpreterCompletion> completions = pySparkInterpreter.completion("sc.", "sc.".length());
-    List<InterpreterCompletion> completions = pySparkInterpreter.completion("sc.", "sc.".length());
-    assertTrue(completions.size() > 0);
+  public void testBasicIntp() {
+    assertEquals(InterpreterResult.Code.SUCCESS,
+      pySparkInterpreter.interpret("a = 1\n", context).code());
   }
+
 }
