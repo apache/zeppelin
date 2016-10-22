@@ -58,9 +58,9 @@ public class GeodeOqlInterpreterTest {
   public void testOpenCommandIndempotency() {
 
     Properties properties = new Properties();
-    properties.put(LOCATOR_HOST, DEFAULT_HOST);
-    properties.put(LOCATOR_PORT, DEFAULT_PORT);
-    properties.put(MAX_RESULT, DEFAULT_MAX_RESULT);
+    properties.put("geode.locator.host", "localhost");
+    properties.put("geode.locator.port", "10334");
+    properties.put("geode.max.result", "1000");
 
     GeodeOqlInterpreter spyGeodeOqlInterpreter = spy(new GeodeOqlInterpreter(properties));
 
