@@ -30,8 +30,7 @@ import org.apache.zeppelin.resource.ResourcePool;
  * Interpreter context
  */
 public class InterpreterContext {
-  private static final ThreadLocal<InterpreterContext> threadIC =
-      new ThreadLocal<InterpreterContext>();
+  private static final ThreadLocal<InterpreterContext> threadIC = new ThreadLocal<>();
 
   public final InterpreterOutput out;
 

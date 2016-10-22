@@ -102,7 +102,7 @@ public class InputTest {
 		// test form substitution without new forms
 		String script = "INPUT=${input_form=}SELECTED=${select_form(Selection Form)=,s_op1|s_op2|s_op3}\n" +
 				"CHECKED=${checkbox:checkbox_form=c_op1|c_op2,c_op1|c_op2|c_op3}";
-		Map<String, Object> params = new HashMap<String, Object>();
+		Map<String, Object> params = new HashMap<>();
 		params.put("input_form", "some_input");
 		params.put("select_form", "s_op2");
 		params.put("checkbox_form", new String[]{"c_op1", "c_op3"});

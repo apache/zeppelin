@@ -39,7 +39,7 @@ public class SqlCompleterTest extends BasicJDBCTestCaseAdapter {
 
   private Logger logger = LoggerFactory.getLogger(SqlCompleterTest.class);
 
-  private final static Set<String> EMPTY = new HashSet<String>();
+  private final static Set<String> EMPTY = new HashSet<>();
 
   private CompleterTester tester;
 
@@ -157,7 +157,7 @@ public class SqlCompleterTest extends BasicJDBCTestCaseAdapter {
 
     private void expectedCompletions(String buffer, int cursor, Set<String> expected) {
 
-      ArrayList<CharSequence> candidates = new ArrayList<CharSequence>();
+      ArrayList<CharSequence> candidates = new ArrayList<>();
 
       completer.complete(buffer, cursor, candidates);
 

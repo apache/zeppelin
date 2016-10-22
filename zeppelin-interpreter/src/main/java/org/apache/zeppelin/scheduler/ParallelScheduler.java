@@ -31,8 +31,8 @@ import org.slf4j.LoggerFactory;
  * Parallel scheduler runs submitted job concurrently.
  */
 public class ParallelScheduler implements Scheduler {
-  List<Job> queue = new LinkedList<Job>();
-  List<Job> running = new LinkedList<Job>();
+  List<Job> queue = new LinkedList<>();
+  List<Job> running = new LinkedList<>();
   private ExecutorService executor;
   private SchedulerListener listener;
   boolean terminate = false;
@@ -56,7 +56,7 @@ public class ParallelScheduler implements Scheduler {
 
   @Override
   public Collection<Job> getJobsWaiting() {
-    List<Job> ret = new LinkedList<Job>();
+    List<Job> ret = new LinkedList<>();
     synchronized (queue) {
       for (Job job : queue) {
         ret.add(job);
@@ -82,7 +82,7 @@ public class ParallelScheduler implements Scheduler {
 
   @Override
   public Collection<Job> getJobsRunning() {
-    List<Job> ret = new LinkedList<Job>();
+    List<Job> ret = new LinkedList<>();
     synchronized (queue) {
       for (Job job : running) {
         ret.add(job);

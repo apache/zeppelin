@@ -50,7 +50,7 @@ public class NotebookRepoSync implements NotebookRepo {
   private static ZeppelinConfiguration config;
   private static final String defaultStorage = "org.apache.zeppelin.notebook.repo.VFSNotebookRepo";
 
-  private List<NotebookRepo> repos = new ArrayList<NotebookRepo>();
+  private List<NotebookRepo> repos = new ArrayList<>();
   private final boolean oneWaySync;
 
   /**
@@ -267,9 +267,9 @@ public class NotebookRepoSync implements NotebookRepo {
       NotebookRepo sourceRepo, List<NoteInfo> destNotes, NotebookRepo destRepo,
       AuthenticationInfo subject)
       throws IOException {
-    List <String> pushIDs = new ArrayList<String>();
-    List <String> pullIDs = new ArrayList<String>();
-    List <String> delDstIDs = new ArrayList<String>();
+    List <String> pushIDs = new ArrayList<>();
+    List <String> pullIDs = new ArrayList<>();
+    List <String> delDstIDs = new ArrayList<>();
 
     NoteInfo dnote;
     Date sdate, ddate;
@@ -316,7 +316,7 @@ public class NotebookRepoSync implements NotebookRepo {
       }
     }
 
-    Map<String, List<String>> map = new HashMap<String, List<String>>();
+    Map<String, List<String>> map = new HashMap<>();
     map.put(pushKey, pushIDs);
     map.put(pullKey, pullIDs);
     map.put(delDstKey, delDstIDs);
@@ -373,7 +373,7 @@ public class NotebookRepoSync implements NotebookRepo {
     int repoBound = Math.min(repoCount, getMaxRepoNum());
     int errorCount = 0;
     String errorMessage = "";
-    List<Revision> allRepoCheckpoints = new ArrayList<Revision>();
+    List<Revision> allRepoCheckpoints = new ArrayList<>();
     Revision rev = null;
     for (int i = 0; i < repoBound; i++) {
       try {

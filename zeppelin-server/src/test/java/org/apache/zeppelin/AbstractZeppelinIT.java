@@ -88,7 +88,7 @@ abstract public class AbstractZeppelinIT {
   }
 
   protected WebElement pollingWait(final By locator, final long timeWait) {
-    Wait<WebDriver> wait = new FluentWait<WebDriver>(driver)
+    Wait<WebDriver> wait = new FluentWait<>(driver)
         .withTimeout(timeWait, TimeUnit.SECONDS)
         .pollingEvery(1, TimeUnit.SECONDS)
         .ignoring(NoSuchElementException.class);

@@ -30,7 +30,7 @@ import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 
 public class MockInterpreter11 extends Interpreter{
-  Map<String, Object> vars = new HashMap<String, Object>();
+  Map<String, Object> vars = new HashMap<>();
 
   public MockInterpreter11(Properties property) {
     super(property);

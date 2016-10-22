@@ -74,7 +74,7 @@ public class AzureNotebookRepo implements NotebookRepo {
 
   @Override
   public List<NoteInfo> list(AuthenticationInfo subject) throws IOException {
-    List<NoteInfo> infos = new LinkedList<NoteInfo>();
+    List<NoteInfo> infos = new LinkedList<>();
     NoteInfo info = null;
 
     for (ListFileItem item : rootDir.listFilesAndDirectories()) {

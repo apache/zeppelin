@@ -211,7 +211,7 @@ public class RemoteInterpreterEventPoller extends Thread {
     boolean broken = false;
     try {
       client = interpreterProcess.getClient();
-      List<String> resourceList = new LinkedList<String>();
+      List<String> resourceList = new LinkedList<>();
       Gson gson = new Gson();
       for (Resource r : resourceSet) {
         resourceList.add(gson.toJson(r));

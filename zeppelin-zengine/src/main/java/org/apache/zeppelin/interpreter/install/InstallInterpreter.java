@@ -56,7 +56,7 @@ public class InstallInterpreter {
     this.interpreterListFile = interpreterListFile;
     this.interpreterBaseDir = interpreterBaseDir;
     this.localRepoDir = localRepoDir;
-    availableInterpreters = new LinkedList<AvailableInterpreterInfo>();
+    availableInterpreters = new LinkedList<>();
     readAvailableInterpreters();
   }
 

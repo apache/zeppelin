@@ -115,7 +115,7 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
 
     // load libraries from Dependency Interpreter
     URL [] urls = new URL[0];
-    List<URL> urlList = new LinkedList<URL>();
+    List<URL> urlList = new LinkedList<>();
 
     if (depInterpreter != null) {
       SparkDependencyContext depc = depInterpreter.getDependencyContext();

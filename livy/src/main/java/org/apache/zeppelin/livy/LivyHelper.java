@@ -57,7 +57,7 @@ public class LivyHelper {
 
   public Integer createSession(InterpreterContext context, String kind) throws Exception {
     try {
-      Map<String, String> conf = new HashMap<String, String>();
+      Map<String, String> conf = new HashMap<>();
 
       Iterator<Entry<Object, Object>> it = property.entrySet().iterator();
       while (it.hasNext()) {
@@ -351,16 +351,16 @@ public class LivyHelper {
     ResponseEntity<String> response = null;
     try {
       if (method.equals("POST")) {
-        HttpEntity<String> entity = new HttpEntity<String>(jsonData, headers);
+        HttpEntity<String> entity = new HttpEntity<>(jsonData, headers);
 
         response = restTemplate.exchange(targetURL, HttpMethod.POST, entity, String.class);
         paragraphHttpMap.put(paragraphId, response);
       } else if (method.equals("GET")) {
-        HttpEntity<String> entity = new HttpEntity<String>(headers);
+        HttpEntity<String> entity = new HttpEntity<>(headers);
         response = restTemplate.exchange(targetURL, HttpMethod.GET, entity, String.class);
         paragraphHttpMap.put(paragraphId, response);
       } else if (method.equals("DELETE")) {
-        HttpEntity<String> entity = new HttpEntity<String>(headers);
+        HttpEntity<String> entity = new HttpEntity<>(headers);
         response = restTemplate.exchange(targetURL, HttpMethod.DELETE, entity, String.class);
       }
     } catch (HttpClientErrorException e) {

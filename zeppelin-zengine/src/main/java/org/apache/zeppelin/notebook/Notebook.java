@@ -165,7 +165,7 @@ public class Notebook implements NoteEventListener {
     }
 
     if (subject != null && !"anonymous".equals(subject.getUser())) {
-      Set<String> owners = new HashSet<String>();
+      Set<String> owners = new HashSet<>();
       owners.add(subject.getUser());
       notebookAuthorization.setOwners(note.getId(), owners);
     }

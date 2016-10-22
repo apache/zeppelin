@@ -25,8 +25,7 @@ import java.util.List;
  * Suggested apps
  */
 public class HeliumPackageSuggestion {
-  private final List<HeliumPackageSearchResult> available =
-      new LinkedList<HeliumPackageSearchResult>();
+  private final List<HeliumPackageSearchResult> available = new LinkedList<>();
 
   /*
    * possible future improvement

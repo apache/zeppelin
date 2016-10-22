@@ -43,9 +43,9 @@ import java.util.Map;
  */
 public class RemoteInterpreterEventClient implements ResourcePoolConnector {
   private final Logger logger = LoggerFactory.getLogger(RemoteInterpreterEvent.class);
-  private final List<RemoteInterpreterEvent> eventQueue = new LinkedList<RemoteInterpreterEvent>();
-  private final List<ResourceSet> getAllResourceResponse = new LinkedList<ResourceSet>();
-  private final Map<ResourceId, Object> getResourceResponse = new HashMap<ResourceId, Object>();
+  private final List<RemoteInterpreterEvent> eventQueue = new LinkedList<>();
+  private final List<ResourceSet> getAllResourceResponse = new LinkedList<>();
+  private final Map<ResourceId, Object> getResourceResponse = new HashMap<>();
   private final Gson gson = new Gson();
 
   /**
@@ -79,7 +79,7 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector {
    * notify angularObject removal
    */
   public void angularObjectRemove(String name, String noteId, String paragraphId) {
-    Map<String, String> removeObject = new HashMap<String, String>();
+    Map<String, String> removeObject = new HashMap<>();
     removeObject.put("name", name);
     removeObject.put("noteId", noteId);
     removeObject.put("paragraphId", paragraphId);
@@ -213,7 +213,7 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector {
   }
 
   public void onInterpreterOutputAppend(String noteId, String paragraphId, String output) {
-    Map<String, String> appendOutput = new HashMap<String, String>();
+    Map<String, String> appendOutput = new HashMap<>();
     appendOutput.put("noteId", noteId);
     appendOutput.put("paragraphId", paragraphId);
     appendOutput.put("data", output);
@@ -224,7 +224,7 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector {
   }
 
   public void onInterpreterOutputUpdate(String noteId, String paragraphId, String output) {
-    Map<String, String> appendOutput = new HashMap<String, String>();
+    Map<String, String> appendOutput = new HashMap<>();
     appendOutput.put("noteId", noteId);
     appendOutput.put("paragraphId", paragraphId);
     appendOutput.put("data", output);
@@ -243,7 +243,7 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector {
   }
 
   public void onAppOutputAppend(String noteId, String paragraphId, String appId, String output) {
-    Map<String, String> appendOutput = new HashMap<String, String>();
+    Map<String, String> appendOutput = new HashMap<>();
     appendOutput.put("noteId", noteId);
     appendOutput.put("paragraphId", paragraphId);
     appendOutput.put("appId", appId);
@@ -256,7 +256,7 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector {
 
 
   public void onAppOutputUpdate(String noteId, String paragraphId, String appId, String output) {
-    Map<String, String> appendOutput = new HashMap<String, String>();
+    Map<String, String> appendOutput = new HashMap<>();
     appendOutput.put("noteId", noteId);
     appendOutput.put("paragraphId", paragraphId);
     appendOutput.put("appId", appId);
@@ -268,7 +268,7 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector {
   }
 
   public void onAppStatusUpdate(String noteId, String paragraphId, String appId, String status) {
-    Map<String, String> appendOutput = new HashMap<String, String>();
+    Map<String, String> appendOutput = new HashMap<>();
     appendOutput.put("noteId", noteId);
     appendOutput.put("paragraphId", paragraphId);
     appendOutput.put("appId", appId);
