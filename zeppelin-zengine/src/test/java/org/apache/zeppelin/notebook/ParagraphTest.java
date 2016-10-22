@@ -71,6 +71,9 @@ public class ParagraphTest {
 
     text = "%md ###Hello";
     assertEquals("md", Paragraph.getRequiredReplName(text));
+
+    text = "%md";
+    assertEquals("md", Paragraph.getRequiredReplName(text));
   }
 
   @Test
