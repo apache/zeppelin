@@ -111,4 +111,14 @@ public class ParagraphTest {
     verify(registry).get("age", noteId, null);
     assertEquals(actual, expected);
   }
+
+  @Test
+  public void testTrimText() {
+    final Note note = mock(Note.class);
+    final Paragraph paragraph = new Paragraph(note, null, null);
+    paragraph.setText("\n %spark println()");
+    assertEquals("%spark println()", paragraph.getText());
+    assertEquals("spark", paragraph.getRequiredReplName());
+    assertEquals("println()", paragraph.getScriptBody());
+  }
 }

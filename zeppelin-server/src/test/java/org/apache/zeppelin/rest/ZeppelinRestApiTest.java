@@ -479,7 +479,8 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     config.put("enabled", true);
     paragraph.setConfig(config);
 
-    paragraph.setText("%spark\nval param = z.input(\"param\").toString\nprintln(param)");
+    // add whitespace in the beginning to verify ZEPPELIN-1547
+    paragraph.setText("\n %spark\nval param = z.input(\"param\").toString\nprintln(param)");
     note.persist(anonymous);
     String noteID = note.getId();
 

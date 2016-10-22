@@ -114,7 +114,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
   }
 
   public void setText(String newText) {
-    this.text = newText;
+    this.text = newText.trim();
     this.dateUpdated = new Date();
   }
 

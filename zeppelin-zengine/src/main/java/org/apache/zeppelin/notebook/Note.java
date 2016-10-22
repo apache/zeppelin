@@ -242,7 +242,7 @@ public class Note implements Serializable, ParagraphJobListener {
     newParagraph.setConfig(config);
     newParagraph.settings.setParams(param);
     newParagraph.settings.setForms(form);
-    newParagraph.setText(srcParagraph.getText());
+    newParagraph.setText(srcParagraph.getText().trim());
     newParagraph.setTitle(srcParagraph.getTitle());
 
     try {
