@@ -204,7 +204,7 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
   @Test
   public void testRestartInterpreterPerNote() throws IOException, InterruptedException {
     // create new note
-    Note note = ZeppelinServer.notebook.createNote(null);
+    Note note = ZeppelinServer.notebook.createNote(anonymous);
     note.addParagraph();
     Paragraph p = note.getLastParagraph();
     Map config = p.getConfig();
@@ -213,6 +213,7 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
     // run markdown paragraph.
     p.setConfig(config);
     p.setText("%md markdown");
+    p.setAuthenticationInfo(anonymous);
     note.run(p.getId());
     while (p.getStatus() != Status.FINISHED) {
       Thread.sleep(100);
@@ -248,7 +249,7 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
     assertThat("shared interpreter restart:", put, isAllowed());
     put.releaseConnection();
 
-    ZeppelinServer.notebook.removeNote(note.getId(), null);
+    ZeppelinServer.notebook.removeNote(note.getId(), anonymous);
   }
 
   @Test
