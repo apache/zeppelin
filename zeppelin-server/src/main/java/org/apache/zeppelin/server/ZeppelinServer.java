@@ -73,8 +73,13 @@ public class ZeppelinServer extends Application {
 
   private SchedulerFactory schedulerFactory;
   private InterpreterFactory replFactory;
+<<<<<<< HEAD
   private NotebookRepo notebookRepo;
   private SearchService noteSearchService;
+=======
+  private NotebookRepoSync notebookRepo;
+  private SearchService notebookIndex;
+>>>>>>> Update zeppelin server and add NotebookRepo rest api to the singleton
   private NotebookAuthorization notebookAuthorization;
   private Credentials credentials;
   private DependencyResolver depResolver;
@@ -307,6 +312,9 @@ public class ZeppelinServer extends Application {
     NotebookRestApi notebookApi
       = new NotebookRestApi(notebook, notebookWsServer, noteSearchService);
     singletons.add(notebookApi);
+
+    NotebookRepoRestApi notebookRepoApi = new NotebookRepoRestApi(notebookRepo, notebookWsServer);
+    singletons.add(notebookRepoApi);
 
     HeliumRestApi heliumApi = new HeliumRestApi(helium, heliumApplicationFactory, notebook);
     singletons.add(heliumApi);
