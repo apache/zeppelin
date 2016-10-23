@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.HashSet;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.httpclient.HttpClient;
@@ -150,8 +151,11 @@ public class ZeppelinHubRealm extends AuthorizingRealm {
       throw new AuthenticationException("Cannot login to ZeppelinHub");
     }
     
-    ZeppelinServer.notebookWsServer
-        .broadcastReloadedNoteList(new org.apache.zeppelin.user.AuthenticationInfo(account.login));
+    /* TODO(khalid): add proper roles and add listener */
+    HashSet<String> userAndRoles = new HashSet<String>();
+    userAndRoles.add(account.login);
+    ZeppelinServer.notebookWsServer.broadcastReloadedNoteList(
+        new org.apache.zeppelin.user.AuthenticationInfo(account.login), userAndRoles);
 
     return account;
   }
