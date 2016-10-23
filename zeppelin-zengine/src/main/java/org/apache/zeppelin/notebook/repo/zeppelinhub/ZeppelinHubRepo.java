@@ -21,12 +21,14 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
+import org.apache.zeppelin.notebook.repo.NotebookRepoSettings;
 import org.apache.zeppelin.notebook.repo.zeppelinhub.rest.ZeppelinhubRestApiHandler;
 import org.apache.zeppelin.notebook.repo.zeppelinhub.websocket.Client;
 import org.apache.zeppelin.user.AuthenticationInfo;
@@ -232,6 +234,17 @@ public class ZeppelinHubRepo implements NotebookRepo {
       LOG.error("Cannot get note history", e);
     }
     return history;
+  }
+
+  @Override
+  public List<NotebookRepoSettings> getSettings(AuthenticationInfo subject) {
+    LOG.warn("Method not implemented");
+    return Collections.emptyList();
+  }
+
+  @Override
+  public void updateSettings(Map<String, String> settings, AuthenticationInfo subject) {
+    LOG.warn("Method not implemented");
   }
 
 }
