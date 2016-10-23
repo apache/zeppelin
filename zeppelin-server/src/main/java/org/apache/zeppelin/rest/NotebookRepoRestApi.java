@@ -90,7 +90,7 @@ public class NotebookRepoRestApi {
             return new JsonResponse<>(Status.NOT_FOUND, "", Collections.emptyMap()).build();
         }
         AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
-        NotebookRepoSettingsRequest newSettings = null;
+        NotebookRepoSettingsRequest newSettings = NotebookRepoSettingsRequest.EMPTY;
         try {
             newSettings = gson.fromJson(payload, NotebookRepoSettingsRequest.class);
         } catch (JsonSyntaxException e) {
@@ -99,7 +99,7 @@ public class NotebookRepoRestApi {
                     ImmutableMap.of("error", "Invalid payload structure")).build();
         }
 
-        if (newSettings == null) {
+        if (NotebookRepoSettingsRequest.isEmpty(newSettings)) {
             LOG.error("Invalid property");
             return new JsonResponse<>(Status.NOT_ACCEPTABLE, "",
                     ImmutableMap.of("error", "Invalid payload")).build();
