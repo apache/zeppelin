@@ -39,7 +39,6 @@
     <hadoop.version>2.6.0</hadoop.version>
   </properties>
 
-
   <dependencies>
     <dependency>
       <groupId>${project.groupId}</groupId>
