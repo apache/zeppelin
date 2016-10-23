@@ -318,7 +318,7 @@ public class Notebook implements NoteEventListener {
       note = notes.remove(id);
     }
     
-	noteSearchService.deleteIndexDocs(note);
+    noteSearchService.deleteIndexDocs(note);
     replFactory.removeNoteInterpreterSettingBinding(subject.getUser(), id);
     notebookAuthorization.removeNote(id);
 
