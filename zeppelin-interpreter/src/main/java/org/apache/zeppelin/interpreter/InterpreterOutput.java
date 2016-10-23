@@ -213,11 +213,17 @@ public class InterpreterOutput extends OutputStream {
     return out.toByteArray();
   }
 
+  private boolean typeShouldBeDetected() {
+    return getType() == InterpreterResult.Type.TABLE ? false : true;
+  }
+
   public void flush() throws IOException {
     synchronized (outList) {
       buffer.flush();
       byte[] bytes = buffer.toByteArray();
-      bytes = detectTypeFromLine(bytes);
+      if (typeShouldBeDetected()) {
+        bytes = detectTypeFromLine(bytes);
+      }
       if (bytes != null) {
         outList.add(bytes);
         if (type == InterpreterResult.Type.TEXT) {
