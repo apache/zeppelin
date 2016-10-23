@@ -30,8 +30,10 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.vfs2.FileContent;
 import org.apache.commons.vfs2.FileObject;
+import org.apache.commons.vfs2.FileSystemException;
 import org.apache.commons.vfs2.FileSystemManager;
 import org.apache.commons.vfs2.FileType;
 import org.apache.commons.vfs2.NameScope;
@@ -49,6 +51,9 @@ import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -56,7 +61,7 @@ import com.google.gson.GsonBuilder;
 *
 */
 public class VFSNotebookRepo implements NotebookRepo {
-  Logger logger = LoggerFactory.getLogger(VFSNotebookRepo.class);
+  private final static Logger LOG = LoggerFactory.getLogger(VFSNotebookRepo.class);
 
   private FileSystemManager fsManager;
   private URI filesystemRoot;
@@ -64,12 +69,15 @@ public class VFSNotebookRepo implements NotebookRepo {
 
   public VFSNotebookRepo(ZeppelinConfiguration conf) throws IOException {
     this.conf = conf;
+    setNotebookDirectory(conf.getNotebookDir());
+  }
 
+  private void setNotebookDirectory(String notebookDirPath) throws IOException {
     try {
-      if (conf.isWindowsPath(conf.getNotebookDir())) {
-        filesystemRoot = new File(conf.getNotebookDir()).toURI();
+      if (conf.isWindowsPath(notebookDirPath)) {
+        filesystemRoot = new File(notebookDirPath).toURI();
       } else {
-        filesystemRoot = new URI(conf.getNotebookDir());
+        filesystemRoot = new URI(notebookDirPath);
       }
     } catch (URISyntaxException e1) {
       throw new IOException(e1);
@@ -78,7 +86,7 @@ public class VFSNotebookRepo implements NotebookRepo {
     if (filesystemRoot.getScheme() == null) { // it is local path
       try {
         this.filesystemRoot = new URI(new File(
-            conf.getRelativeDir(filesystemRoot.getPath())).getAbsolutePath());
+                conf.getRelativeDir(filesystemRoot.getPath())).getAbsolutePath());
       } catch (URISyntaxException e) {
         throw new IOException(e);
       }
@@ -87,9 +95,13 @@ public class VFSNotebookRepo implements NotebookRepo {
     fsManager = VFS.getManager();
     FileObject file = fsManager.resolveFile(filesystemRoot.getPath());
     if (!file.exists()) {
-      logger.info("Notebook dir doesn't exist, create.");
+      LOG.info("Notebook dir doesn't exist, create on is {}.", file.getName());
       file.createFolder();
     }
+  }
+
+  private String getNotebookDirPath() {
+    return filesystemRoot.getPath().toString();
   }
 
   private String getPath(String path) {
@@ -143,7 +155,7 @@ public class VFSNotebookRepo implements NotebookRepo {
           infos.add(info);
         }
       } catch (Exception e) {
-        logger.error("Can't read note " + f.getName().toString(), e);
+        LOG.error("Can't read note " + f.getName().toString(), e);
       }
     }
 
@@ -289,13 +301,39 @@ public class VFSNotebookRepo implements NotebookRepo {
 
   @Override
   public List<NotebookRepoSettings> getSettings(AuthenticationInfo subject) {
-    logger.warn("Method not implemented");
-    return Collections.emptyList();
+    NotebookRepoSettings repoSetting = NotebookRepoSettings.newInstance();
+    List<NotebookRepoSettings> settings = Lists.newArrayList();
+
+    repoSetting.name = "Notebook Path";
+    repoSetting.type = NotebookRepoSettings.Type.INPUT;
+    repoSetting.value = Collections.emptyList();
+    repoSetting.selected = getNotebookDirPath();
+
+    settings.add(repoSetting);
+    return settings;
   }
 
   @Override
   public void updateSettings(Map<String, String> settings, AuthenticationInfo subject) {
-    logger.warn("Method not implemented");
+    if (settings == null || settings.isEmpty()) {
+      LOG.error("Cannot update {} with empty settings", this.getClass().getName());
+      return;
+    }
+    String newNotebookDirectotyPath = StringUtils.EMPTY;
+    if (settings.containsKey("Notebook Path")) {
+      newNotebookDirectotyPath = settings.get("Notebook Path");
+    }
+
+    if (StringUtils.isBlank(newNotebookDirectotyPath)) {
+      LOG.error("Notebook path is invalid");
+      return;
+    }
+    LOG.warn("{} will change notebook dir from {} to {}", getNotebookDirPath(), newNotebookDirectotyPath);
+    try {
+      setNotebookDirectory(newNotebookDirectotyPath);
+    } catch (IOException e) {
+      LOG.error("Cannot update notebook directory", e);
+    }
   }
 
 }
