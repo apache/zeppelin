@@ -17,7 +17,10 @@
 FROM alpine:3.3
 MAINTAINER Apache Software Foundation <dev@zeppelin.apache.org>
 
-RUN apk add --update bash curl openjdk7-jre wget ca-certificates openssl && rm -rf /var/cache/apk/*
+RUN apk add --update bash curl openjdk7-jre wget ca-certificates java-cacerts openssl \
+   && rm /usr/lib/jvm/java-1.7-openjdk/jre/lib/security/cacerts \
+   && ln -s /etc/ssl/certs/java/cacerts /usr/lib/jvm/java-1.7-openjdk/jre/lib/security/cacerts \
+   && rm -rf /var/cache/apk/*
 
 RUN wget -O /usr/local/bin/dumb-init https://github.com/Yelp/dumb-init/releases/download/v1.1.3/dumb-init_1.1.3_amd64
 RUN chmod +x /usr/local/bin/dumb-init
