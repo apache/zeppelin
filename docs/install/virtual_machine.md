@@ -75,7 +75,7 @@ into a directory on your host machine, or directly in your virtual machine.
 
 Cloning Zeppelin into the `/scripts/vagrant/zeppelin-dev` directory from the host, will allow the directory to be shared between your host and the guest machine.
 
-Cloning the project again may seem counter intuitive, since this script likley originated from the project repository.  Consider copying just the vagrant/zeppelin-dev script from the Zeppelin project as a stand alone directory, then once again clone the specific branch you wish to build.
+Cloning the project again may seem counter intuitive, since this script likely originated from the project repository.  Consider copying just the vagrant/zeppelin-dev script from the Zeppelin project as a stand alone directory, then once again clone the specific branch you wish to build.
 
 Synced folders enable Vagrant to sync a folder on the host machine to the guest machine, allowing you to continue working on your project's files on your host machine, but use the resources in the guest machine to compile or run your project. _[(1) Synced Folder Description from Vagrant Up](https://docs.vagrantup.com/v2/synced-folders/index.html)_
 

@@ -30,7 +30,9 @@ import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.server.ZeppelinServer;
+import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.AfterClass;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
@@ -47,6 +49,7 @@ import static org.junit.Assert.*;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class InterpreterRestApiTest extends AbstractTestRestApi {
   Gson gson = new Gson();
+  AuthenticationInfo anonymous;
 
   @BeforeClass
   public static void init() throws Exception {
@@ -56,6 +59,11 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
   @AfterClass
   public static void destroy() throws Exception {
     AbstractTestRestApi.shutDown();
+  }
+
+  @Before
+  public void setUp() {
+    anonymous = new AuthenticationInfo("anonymous");
   }
 
   @Test
@@ -90,7 +98,7 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
     String jsonRequest = "{\"name\":\"md2\",\"group\":\"md\",\"properties\":{\"propname\":\"propvalue\"}," +
         "\"interpreterGroup\":[{\"class\":\"org.apache.zeppelin.markdown.Markdown\",\"name\":\"md\"}]," +
         "\"dependencies\":[]," +
-        "\"option\": { \"remote\": true, \"perNoteSession\": false }}";
+        "\"option\": { \"remote\": true, \"session\": false }}";
     PostMethod post = httpPost("/interpreter/setting/", jsonRequest);
     LOG.info("testSettingCRUD create response\n" + post.getResponseBodyAsString());
     assertThat("test create method:", post, isCreated());
@@ -106,7 +114,7 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
     jsonRequest = "{\"name\":\"md2\",\"group\":\"md\",\"properties\":{\"propname\":\"Otherpropvalue\"}," +
         "\"interpreterGroup\":[{\"class\":\"org.apache.zeppelin.markdown.Markdown\",\"name\":\"md\"}]," +
         "\"dependencies\":[]," +
-        "\"option\": { \"remote\": true, \"perNoteSession\": false }}";
+        "\"option\": { \"remote\": true, \"session\": false }}";
     PutMethod put = httpPut("/interpreter/setting/" + newSettingId, jsonRequest);
     LOG.info("testSettingCRUD update response\n" + put.getResponseBodyAsString());
     assertThat("test update method:", put, isAllowed());
@@ -131,7 +139,7 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
   @Test
   public void testInterpreterAutoBinding() throws IOException {
     // create note
-    Note note = ZeppelinServer.notebook.createNote(null);
+    Note note = ZeppelinServer.notebook.createNote(anonymous);
 
     // check interpreter is binded
     GetMethod get = httpGet("/notebook/interpreter/bind/" + note.getId());
@@ -144,13 +152,13 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
 
     get.releaseConnection();
     //cleanup
-    ZeppelinServer.notebook.removeNote(note.getId(), null);
+    ZeppelinServer.notebook.removeNote(note.getId(), anonymous);
   }
 
   @Test
   public void testInterpreterRestart() throws IOException, InterruptedException {
     // create new note
-    Note note = ZeppelinServer.notebook.createNote(null);
+    Note note = ZeppelinServer.notebook.createNote(anonymous);
     note.addParagraph();
     Paragraph p = note.getLastParagraph();
     Map config = p.getConfig();
@@ -159,6 +167,7 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
     // run markdown paragraph
     p.setConfig(config);
     p.setText("%md markdown");
+    p.setAuthenticationInfo(anonymous);
     note.run(p.getId());
     while (p.getStatus() != Status.FINISHED) {
       Thread.sleep(100);
@@ -181,13 +190,14 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
     p = note.addParagraph();
     p.setConfig(config);
     p.setText("%md markdown restarted");
+    p.setAuthenticationInfo(anonymous);
     note.run(p.getId());
     while (p.getStatus() != Status.FINISHED) {
       Thread.sleep(100);
     }
     assertEquals("<p>markdown restarted</p>\n", p.getResult().message());
     //cleanup
-    ZeppelinServer.notebook.removeNote(note.getId(), null);
+    ZeppelinServer.notebook.removeNote(note.getId(), anonymous);
   }
 
   @Test

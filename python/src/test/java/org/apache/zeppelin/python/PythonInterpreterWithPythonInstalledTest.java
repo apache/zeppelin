@@ -56,6 +56,8 @@ public class PythonInterpreterWithPythonInstalledTest {
     //System.out.println("\nInterpreter response: \n" + ret.message());
     assertEquals(InterpreterResult.Code.ERROR, ret.code());
     assertTrue(ret.message().length() > 0);
+
+    realPython.close();
   }
 
   @Test
@@ -73,6 +75,36 @@ public class PythonInterpreterWithPythonInstalledTest {
     //System.out.println("\nInterpreter response: \n" + ret.message());
     assertEquals(InterpreterResult.Code.SUCCESS, ret.code());
     assertTrue(ret.message().length() > 0);
+
+    realPython.close();
+  }
+
+  @Test
+  public void testZeppelin1555() {
+    //given
+    PythonInterpreter realPython = new PythonInterpreter(
+            PythonInterpreterTest.getPythonTestProperties());
+    realPython.open();
+
+    //when
+    InterpreterResult ret1 = realPython.interpret("print \"...\"", null);
+
+    //then
+    //System.out.println("\nInterpreter response: \n" + ret.message());
+    assertEquals(InterpreterResult.Code.SUCCESS, ret1.code());
+    assertEquals("...\n", ret1.message());
+
+
+    InterpreterResult ret2 = realPython.interpret("for i in range(5):", null);
+    //then
+    //System.out.println("\nInterpreterResultterpreter response: \n" + ret2.message());
+    assertEquals(InterpreterResult.Code.ERROR, ret2.code());
+    assertEquals("   File \"<stdin>\", line 2\n" +
+            "    \n" +
+            "    ^\n" +
+            "IndentationError: expected an indented block\n", ret2.message());
+
+    realPython.close();
   }
 
 }

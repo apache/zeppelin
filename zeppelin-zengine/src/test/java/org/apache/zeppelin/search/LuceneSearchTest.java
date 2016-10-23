@@ -29,6 +29,7 @@ import org.apache.zeppelin.interpreter.InterpreterFactory;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
+import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -40,7 +41,9 @@ public class LuceneSearchTest {
 
   private static NotebookRepo notebookRepoMock;
   private static InterpreterFactory interpreterFactory;
+  
   private SearchService noteSearchService;
+  private AuthenticationInfo anonymous;
 
   @BeforeClass
   public static void beforeStartUp() {
@@ -54,6 +57,7 @@ public class LuceneSearchTest {
   @Before
   public void startUp() {
     noteSearchService = new LuceneSearch();
+    anonymous = new AuthenticationInfo("anonymous");
   }
 
   @After
@@ -202,7 +206,7 @@ public class LuceneSearchTest {
     //when
     Paragraph p1 = note1.getLastParagraph();
     p1.setText("no no no");
-    note1.persist(null);
+    note1.persist(anonymous);
 
     //then
     assertThat(resultForQuery("Notebook1").size()).isEqualTo(1);
@@ -226,7 +230,7 @@ public class LuceneSearchTest {
 
     //when
     note1.setName("NotebookN");
-    note1.persist(null);
+    note1.persist(anonymous);
 
     //then
     assertThat(resultForQuery("Notebook1")).isEmpty();

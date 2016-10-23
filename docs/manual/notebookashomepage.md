@@ -59,17 +59,17 @@ or ```zeppelin.notebook.homescreen.hide``` property to hide the new notebook fro
 Restart your Zeppelin server
 
 ```
-./bin/zeppelin-deamon stop
-./bin/zeppelin-deamon start
+./bin/zeppelin-daemon stop
+./bin/zeppelin-daemon start
 ```
 That's it! Open your browser and navigate to Apache Zeppelin and see your customized homepage.
 
 <br />
-## Show notebooks list in your custom homepage
-If you want to display the list of notebooks on your custom Apache Zeppelin homepage all
+## Show notes list in your custom homepage
+If you want to display the list of notes on your custom Apache Zeppelin homepage all
 you need to do is use our %angular support.
 
-Add the following code to a paragraph in you home page and run it... walla! you have your notebooks list.
+Add the following code to a paragraph in you home page and run it... Voila! You have your notes list.
 
 ```javascript
 println(
