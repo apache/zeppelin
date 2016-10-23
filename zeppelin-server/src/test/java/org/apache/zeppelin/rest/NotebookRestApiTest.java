@@ -176,7 +176,7 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
 
     //cleanup
     ZeppelinServer.notebook.removeNote(note1.getId(), anonymous);
-    ZeppelinServer.notebook.removeNote(clonedNotebookId, anonymous);
+    ZeppelinServer.notebook.removeNote(clonedNoteId, anonymous);
 
   }
 }
