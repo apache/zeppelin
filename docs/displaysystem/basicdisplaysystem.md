@@ -41,7 +41,7 @@ With `%html` directive, Zeppelin treats your output as HTML
 
 ## Table
 
-If you have data that row seperated by '\n' (newline) and column separated by '\t' (tab) with first row as header row, for example
+If you have data that row separated by '\n' (newline) and column separated by '\t' (tab) with first row as header row, for example
 
 <img src="/assets/themes/zeppelin/img/screenshots/display_table.png" />
 
