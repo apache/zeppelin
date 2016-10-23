@@ -149,9 +149,9 @@ public class ZeppelinHubRealm extends AuthorizingRealm {
       LOG.error("Cannot deserialize ZeppelinHub response to User instance", e);
       throw new AuthenticationException("Cannot login to ZeppelinHub");
     }
-   
-    ZeppelinServer.notebookWsServer.broadcastReloadedNoteList(
-        new org.apache.zeppelin.user.AuthenticationInfo(account.login));
+    
+    ZeppelinServer.notebookWsServer
+        .broadcastReloadedNoteList(new org.apache.zeppelin.user.AuthenticationInfo(account.login));
 
     return account;
   }
