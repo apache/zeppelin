@@ -444,4 +444,24 @@ public class NotebookRepoSync implements NotebookRepo {
     }
     return revisions;
   }
+
+  @Override
+  public List<NotebookRepoSettings> getSettings(AuthenticationInfo subject) {
+    List<NotebookRepoSettings> repoSettings = Collections.emptyList();
+    try {
+      repoSettings =  getRepo(0).getSettings(subject);
+    } catch (IOException e) {
+      LOG.error("Cannot get notebook repo settings", e);
+    }
+    return repoSettings;
+  }
+
+  @Override
+  public void updateSettings(Map<String, String> settings, AuthenticationInfo subject) {
+    try {
+      getRepo(0).updateSettings(settings, subject);
+    } catch (IOException e) {
+      LOG.error("Cannot update notebook repo settings", e);
+    }
+  }
 }

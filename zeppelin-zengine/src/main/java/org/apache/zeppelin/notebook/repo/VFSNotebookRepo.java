@@ -23,9 +23,11 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.vfs2.FileContent;
@@ -283,6 +285,17 @@ public class VFSNotebookRepo implements NotebookRepo {
   public List<Revision> revisionHistory(String noteId, AuthenticationInfo subject) {
     // Auto-generated method stub
     return null;
+  }
+
+  @Override
+  public List<NotebookRepoSettings> getSettings(AuthenticationInfo subject) {
+    logger.warn("Method not implemented");
+    return Collections.emptyList();
+  }
+
+  @Override
+  public void updateSettings(Map<String, String> settings, AuthenticationInfo subject) {
+    logger.warn("Method not implemented");
   }
 
 }

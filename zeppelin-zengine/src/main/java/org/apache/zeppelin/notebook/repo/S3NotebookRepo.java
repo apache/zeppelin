@@ -23,9 +23,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import com.amazonaws.auth.AWSCredentialsProvider;
 import com.amazonaws.services.s3.AmazonS3EncryptionClient;
@@ -269,5 +271,16 @@ public class S3NotebookRepo implements NotebookRepo {
   public List<Revision> revisionHistory(String noteId, AuthenticationInfo subject) {
     // Auto-generated method stub
     return null;
+  }
+
+  @Override
+  public List<NotebookRepoSettings> getSettings(AuthenticationInfo subject) {
+    LOG.warn("Method not implemented");
+    return Collections.emptyList();
+  }
+
+  @Override
+  public void updateSettings(Map<String, String> settings, AuthenticationInfo subject) {
+    LOG.warn("Method not implemented");
   }
 }

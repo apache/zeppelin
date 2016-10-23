@@ -36,9 +36,11 @@ import org.slf4j.LoggerFactory;
 import java.io.*;
 import java.net.URISyntaxException;
 import java.security.InvalidKeyException;
+import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Azure storage backend for notebooks
@@ -226,5 +228,16 @@ public class AzureNotebookRepo implements NotebookRepo {
   public List<Revision> revisionHistory(String noteId, AuthenticationInfo subject) {
     // Auto-generated method stub
     return null;
+  }
+
+  @Override
+  public List<NotebookRepoSettings> getSettings(AuthenticationInfo subject) {
+    LOG.warn("Method not implemented");
+    return Collections.emptyList();
+  }
+
+  @Override
+  public void updateSettings(Map<String, String> settings, AuthenticationInfo subject) {
+    LOG.warn("Method not implemented");
   }
 }
