@@ -48,7 +48,7 @@ When you are ready, just make a pull-request.
 
 ## Alternative way
 
-You can directly edit `.md` files in `/docs/` directory at the web interface of github and make pull-request immediatly.
+You can directly edit `.md` files in `/docs/` directory at the web interface of github and make pull-request immediately.
 
 ## Stay involved
 Contributors should join the Zeppelin mailing lists.
