@@ -24,8 +24,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
@@ -91,14 +93,6 @@ public class NotebookRepoSync implements NotebookRepo {
     if (getRepoCount() == 0) {
       LOG.info("No storages could be initialized, using default {} storage", defaultStorage);
       initializeDefaultStorage(conf);
-    }
-    if (getRepoCount() > 1) {
-      try {
-        AuthenticationInfo subject = new AuthenticationInfo("anonymous");
-        sync(0, 1, subject);
-      } catch (IOException e) {
-        LOG.warn("Failed to sync with secondary storage on start {}", e);
-      }
     }
   }
 
@@ -172,6 +166,10 @@ public class NotebookRepoSync implements NotebookRepo {
     /* TODO(khalid): handle case when removing from secondary storage fails */
   }
 
+  void remove(int repoIndex, String noteId, AuthenticationInfo subject) throws IOException {
+    getRepo(repoIndex).remove(noteId, subject);
+  }
+
   /**
    * Copies new/updated notes from source to destination storage
    *
@@ -197,7 +195,7 @@ public class NotebookRepoSync implements NotebookRepo {
       for (String id : pushNoteIDs) {
         LOG.info("ID : " + id);
       }
-      pushNotes(subject, pushNoteIDs, srcRepo, dstRepo);
+      pushNotes(subject, pushNoteIDs, srcRepo, dstRepo, false);
     } else {
       LOG.info("Nothing to push");
     }
@@ -207,7 +205,7 @@ public class NotebookRepoSync implements NotebookRepo {
       for (String id : pullNoteIDs) {
         LOG.info("ID : " + id);
       }
-      pushNotes(subject, pullNoteIDs, dstRepo, srcRepo);
+      pushNotes(subject, pullNoteIDs, dstRepo, srcRepo, true);
     } else {
       LOG.info("Nothing to pull");
     }
@@ -230,14 +228,41 @@ public class NotebookRepoSync implements NotebookRepo {
   }
 
   private void pushNotes(AuthenticationInfo subject, List<String> ids, NotebookRepo localRepo,
-      NotebookRepo remoteRepo) {
+      NotebookRepo remoteRepo, boolean setPermissions) {
     for (String id : ids) {
       try {
         remoteRepo.save(localRepo.get(id, subject), subject);
+        if (setPermissions && emptyNoteAcl(id)) {
+          makePrivate(id, subject);
+        }
       } catch (IOException e) {
         LOG.error("Failed to push note to storage, moving onto next one", e);
       }
     }
+  }
+
+  private boolean emptyNoteAcl(String noteId) {
+    NotebookAuthorization notebookAuthorization = NotebookAuthorization.getInstance();
+    return notebookAuthorization.getOwners(noteId).isEmpty()
+        && notebookAuthorization.getReaders(noteId).isEmpty()
+        && notebookAuthorization.getWriters(noteId).isEmpty();
+  }
+
+  private void makePrivate(String noteId, AuthenticationInfo subject) {
+    if (AuthenticationInfo.isAnonymous(subject)) {
+      LOG.info("User is anonymous, permissions are not set for pulled notes");
+      return;
+    }
+    NotebookAuthorization notebookAuthorization = NotebookAuthorization.getInstance();
+    Set<String> users = notebookAuthorization.getOwners(noteId);
+    users.add(subject.getUser());
+    notebookAuthorization.setOwners(noteId, users);
+    users = notebookAuthorization.getReaders(noteId);
+    users.add(subject.getUser());
+    notebookAuthorization.setReaders(noteId, users);
+    users = notebookAuthorization.getWriters(noteId);
+    users.add(subject.getUser());
+    notebookAuthorization.setWriters(noteId, users);
   }
 
   private void deleteNotes(AuthenticationInfo subject, List<String> ids, NotebookRepo repo)
