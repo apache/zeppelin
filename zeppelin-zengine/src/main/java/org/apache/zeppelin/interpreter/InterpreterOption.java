@@ -39,6 +39,7 @@ public class InterpreterOption {
   boolean isExistingProcess;
   boolean setPermission;
   List<String> users;
+  boolean isUserImpersonate;
 
   public boolean isExistingProcess() {
     return isExistingProcess;
@@ -66,6 +67,14 @@ public class InterpreterOption {
 
   public List<String> getUsers() {
     return users;
+  }
+
+  public boolean isUserImpersonate() {
+    return isUserImpersonate;
+  }
+
+  public void setUserImpersonate(boolean userImpersonate) {
+    isUserImpersonate = userImpersonate;
   }
 
   public InterpreterOption() {
