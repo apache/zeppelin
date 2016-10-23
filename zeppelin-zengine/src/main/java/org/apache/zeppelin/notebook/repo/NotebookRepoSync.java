@@ -17,6 +17,8 @@
 
 package org.apache.zeppelin.notebook.repo;
 
+import com.google.common.collect.Lists;
+
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -107,6 +109,39 @@ public class NotebookRepoSync implements NotebookRepo {
         InvocationTargetException e) {
       LOG.warn("Failed to initialize {} notebook storage class {}", defaultStorage, e);
     }
+  }
+
+  public List<NotebookRepoWithSettings> getNotebookRepos(AuthenticationInfo subject) {
+    List<NotebookRepoWithSettings> reposSetting = Lists.newArrayList();
+
+    NotebookRepoWithSettings repoWithSettings;
+    for (NotebookRepo repo : repos) {
+      repoWithSettings = NotebookRepoWithSettings
+                           .builder(repo.getClass().getSimpleName())
+                           .className(repo.getClass().getName())
+                           .settings(repo.getSettings(subject))
+                           .build();
+      reposSetting.add(repoWithSettings);
+    }
+
+    return reposSetting;
+  }
+
+  public NotebookRepoWithSettings updateNotebookRepo(String name, Map<String, String> settings,
+                                                     AuthenticationInfo subject) {
+    NotebookRepoWithSettings updatedSettings = NotebookRepoWithSettings.EMPTY;
+    for (NotebookRepo repo : repos) {
+      if (repo.getClass().getName().equals(name)) {
+        repo.updateSettings(settings, subject);
+        updatedSettings = NotebookRepoWithSettings
+                            .builder(repo.getClass().getSimpleName())
+                            .className(repo.getClass().getName())
+                            .settings(repo.getSettings(subject))
+                            .build();
+        break;
+      }
+    }
+    return updatedSettings;
   }
 
   /**
