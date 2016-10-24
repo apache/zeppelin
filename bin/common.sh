@@ -115,6 +115,8 @@ SPARK_ARCHIVE="spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}"
 function downloadSparkBinary() {
   if [[ ! -d "${SPARK_CACHE}/${SPARK_ARCHIVE}" ]]; then
     . "${ZEPPELIN_HOME}/bin/download-spark.sh"
+  else
+    echo -e "${SPARK_ARCHIVE} already exists under local-spark."
   fi
 }
 
