@@ -107,8 +107,8 @@ public class NotebookRepoRestApi {
     NotebookRepoWithSettings updatedSettings =
         noteRepos.updateNotebookRepo(newSettings.name, newSettings.settings, subject);
     if (!updatedSettings.isEmpty()) {
-      //TODO(anthony): need to uncomment bellow once #1537 is merged.
-      // notebookWsServer.broadcastReloadedNoteList(subject);
+      LOG.info("Broadcasting note list to user {}", subject.getUser());
+      notebookWsServer.broadcastReloadedNoteList(subject, null);
     }
     return new JsonResponse<>(Status.OK, "", updatedSettings).build();
   }
