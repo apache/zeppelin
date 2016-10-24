@@ -34,7 +34,7 @@
       $scope.jobInfomations = [];
       $scope.JobInfomationsByFilter = $scope.jobInfomations;
 
-      websocketMsgSrv.getNotebookJobsList();
+      websocketMsgSrv.getNoteJobsList();
 
       $scope.$on('$destroy', function() {
         websocketMsgSrv.unsubscribeJobManager();
@@ -45,13 +45,13 @@
     ** $scope.$on functions below
     */
 
-    $scope.$on('setNotebookJobs', function(event, responseData) {
+    $scope.$on('setNoteJobs', function(event, responseData) {
       $scope.lastJobServerUnixTime = responseData.lastResponseUnixTime;
       $scope.jobInfomations = responseData.jobs;
       $scope.jobInfomationsIndexs = $scope.jobInfomations ? _.indexBy($scope.jobInfomations, 'noteId') : {};
     });
 
-    $scope.$on('setUpdateNotebookJobs', function(event, responseData) {
+    $scope.$on('setUpdateNoteJobs', function(event, responseData) {
       var jobInfomations = $scope.jobInfomations;
       var indexStore = $scope.jobInfomationsIndexs;
       $scope.lastJobServerUnixTime = responseData.lastResponseUnixTime;

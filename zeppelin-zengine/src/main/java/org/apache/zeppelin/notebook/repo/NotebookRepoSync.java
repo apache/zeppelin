@@ -54,9 +54,7 @@ public class NotebookRepoSync implements NotebookRepo {
   private final boolean oneWaySync;
 
   /**
-   * @param noteIndex
-   * @param (conf)
-   * @throws - Exception
+   * @param conf
    */
   @SuppressWarnings("static-access")
   public NotebookRepoSync(ZeppelinConfiguration conf) {
@@ -70,7 +68,7 @@ public class NotebookRepoSync implements NotebookRepo {
     String[] storageClassNames = allStorageClassNames.split(",");
     if (storageClassNames.length > getMaxRepoNum()) {
       LOG.warn("Unsupported number {} of storage classes in ZEPPELIN_NOTEBOOK_STORAGE : {}\n" +
-        "first {} will be used", storageClassNames.length, allStorageClassNames, getMaxRepoNum());
+          "first {} will be used", storageClassNames.length, allStorageClassNames, getMaxRepoNum());
     }
 
     for (int i = 0; i < Math.min(storageClassNames.length, getMaxRepoNum()); i++) {
@@ -79,7 +77,7 @@ public class NotebookRepoSync implements NotebookRepo {
       try {
         notebookStorageClass = getClass().forName(storageClassNames[i].trim());
         Constructor<?> constructor = notebookStorageClass.getConstructor(
-                  ZeppelinConfiguration.class);
+            ZeppelinConfiguration.class);
         repos.add((NotebookRepo) constructor.newInstance(conf));
       } catch (ClassNotFoundException | NoSuchMethodException | SecurityException |
           InstantiationException | IllegalAccessException | IllegalArgumentException |
@@ -89,7 +87,7 @@ public class NotebookRepoSync implements NotebookRepo {
     }
     // couldn't initialize any storage, use default
     if (getRepoCount() == 0) {
-      LOG.info("No storages could be initialized, using default {} storage", defaultStorage);
+      LOG.info("No storage could be initialized, using default {} storage", defaultStorage);
       initializeDefaultStorage(conf);
     }
     if (getRepoCount() > 1) {

@@ -112,7 +112,7 @@
         } else {
           result.name = $scope.note.noteImportName;
         }
-        websocketMsgSrv.importNotebook(result);
+        websocketMsgSrv.importNote(result);
         //angular.element('#noteImportModal').modal('hide');
       } else {
         $scope.note.errorText = 'Invalid JSON';

@@ -57,7 +57,7 @@
     }
 
     function initController() {
-      $scope.isDrawNavbarNotebookList = false;
+      $scope.isDrawNavbarNoteList = false;
       angular.element('#notebook-list').perfectScrollbar({suppressScrollX: true});
 
       angular.element(document).click(function() {
@@ -129,11 +129,11 @@
     */
     angular.element(document).ready(function() {
       angular.element('.notebook-list-dropdown').on('show.bs.dropdown', function() {
-        $scope.isDrawNavbarNotebookList = true;
+        $scope.isDrawNavbarNoteList = true;
       });
 
       angular.element('.notebook-list-dropdown').on('hide.bs.dropdown', function() {
-        $scope.isDrawNavbarNotebookList = false;
+        $scope.isDrawNavbarNoteList = false;
       });
     });
   }

@@ -177,14 +177,14 @@
     };
 
     // checkpoint/commit notebook
-    $scope.checkpointNotebook = function(commitMessage) {
+    $scope.checkpointNote = function(commitMessage) {
       BootstrapDialog.confirm({
         closable: true,
         title: '',
-        message: 'Commit notebook to current repository?',
+        message: 'Commit note to current repository?',
         callback: function(result) {
           if (result) {
-            websocketMsgSrv.checkpointNotebook($routeParams.noteId, commitMessage);
+            websocketMsgSrv.checkpointNote($routeParams.noteId, commitMessage);
           }
         }
       });
