@@ -146,18 +146,18 @@
         });
       },
 
-      importNotebook: function(notebook) {
+      importNote: function(note) {
         websocketEvents.sendNewEvent({
           op: 'IMPORT_NOTE',
           data: {
-            notebook: notebook
+            note: note
           }
         });
       },
 
-      checkpointNotebook: function(noteId, commitMessage) {
+      checkpointNote: function(noteId, commitMessage) {
         websocketEvents.sendNewEvent({
-          op: 'CHECKPOINT_NOTEBOOK',
+          op: 'CHECKPOINT_NOTE',
           data: {
             noteId: noteId,
             commitMessage: commitMessage
@@ -198,18 +198,18 @@
         return websocketEvents.isConnected();
       },
 
-      getNotebookJobsList: function() {
-        websocketEvents.sendNewEvent({op: 'LIST_NOTEBOOK_JOBS'});
+      getNoteJobsList: function() {
+        websocketEvents.sendNewEvent({op: 'LIST_NOTE_JOBS'});
       },
 
-      getUpdateNotebookJobsList: function(lastUpdateServerUnixTime) {
+      getUpdateNoteJobsList: function(lastUpdateServerUnixTime) {
         websocketEvents.sendNewEvent(
-          {op: 'LIST_UPDATE_NOTEBOOK_JOBS', data: {lastUpdateUnixTime: lastUpdateServerUnixTime * 1}}
+          {op: 'LIST_UPDATE_NOTE_JOBS', data: {lastUpdateUnixTime: lastUpdateServerUnixTime * 1}}
         );
       },
 
       unsubscribeJobManager: function() {
-        websocketEvents.sendNewEvent({op: 'UNSUBSCRIBE_UPDATE_NOTEBOOK_JOBS'});
+        websocketEvents.sendNewEvent({op: 'UNSUBSCRIBE_UPDATE_NOTE_JOBS'});
       },
 
       getInterpreterBindings: function(noteId) {

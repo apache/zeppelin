@@ -235,8 +235,8 @@ public class NotebookServer extends WebSocketServlet implements
           case LIST_CONFIGURATIONS:
             sendAllConfigurations(conn, userAndRoles, notebook);
             break;
-          case CHECKPOINT_NOTEBOOK:
-            checkpointNotebook(conn, notebook, messagereceived);
+          case CHECKPOINT_NOTE:
+            checkpointNote(conn, notebook, messagereceived);
             break;
           case LIST_REVISION_HISTORY:
             listRevisionHistory(conn, notebook, messagereceived);
@@ -244,11 +244,11 @@ public class NotebookServer extends WebSocketServlet implements
           case NOTE_REVISION:
             getNoteByRevision(conn, notebook, messagereceived);
             break;
-          case LIST_NOTEBOOK_JOBS:
-            unicastNotebookJobInfo(conn, messagereceived);
+          case LIST_NOTE_JOBS:
+            unicastNoteJobInfo(conn, messagereceived);
             break;
-          case UNSUBSCRIBE_UPDATE_NOTEBOOK_JOBS:
-            unsubscribeNotebookJobInfo(conn);
+          case UNSUBSCRIBE_UPDATE_NOTE_JOBS:
+            unsubscribeNoteJobInfo(conn);
             break;
           case GET_INTERPRETER_BINDINGS:
             getInterpreterBindings(conn, messagereceived);
@@ -430,38 +430,38 @@ public class NotebookServer extends WebSocketServlet implements
     }
   }
 
-  public void unicastNotebookJobInfo(NotebookSocket conn, Message fromMessage) throws IOException {
+  public void unicastNoteJobInfo(NotebookSocket conn, Message fromMessage) throws IOException {
     addConnectionToNote(JOB_MANAGER_SERVICE.JOB_MANAGER_PAGE.getKey(), conn);
     AuthenticationInfo subject = new AuthenticationInfo(fromMessage.principal);
-    List<Map<String, Object>> notebookJobs = notebook()
+    List<Map<String, Object>> noteJobs = notebook()
       .getJobListByUnixTime(false, 0, subject);
     Map<String, Object> response = new HashMap<>();
 
     response.put("lastResponseUnixTime", System.currentTimeMillis());
-    response.put("jobs", notebookJobs);
+    response.put("jobs", noteJobs);
 
-    conn.send(serializeMessage(new Message(OP.LIST_NOTEBOOK_JOBS)
-      .put("notebookJobs", response)));
+    conn.send(serializeMessage(new Message(OP.LIST_NOTE_JOBS)
+      .put("noteJobs", response)));
   }
 
-  public void broadcastUpdateNotebookJobInfo(long lastUpdateUnixTime) throws IOException {
-    List<Map<String, Object>> notebookJobs = new LinkedList<>();
+  public void broadcastUpdateNoteJobInfo(long lastUpdateUnixTime) throws IOException {
+    List<Map<String, Object>> noteJobs = new LinkedList<>();
     Notebook notebookObject = notebook();
     List<Map<String, Object>> jobNotes = null;
     if (notebookObject != null) {
       jobNotes = notebook().getJobListByUnixTime(false, lastUpdateUnixTime, null);
-      notebookJobs = jobNotes == null ? notebookJobs : jobNotes;
+      noteJobs = jobNotes == null ? noteJobs : jobNotes;
     }
 
     Map<String, Object> response = new HashMap<>();
     response.put("lastResponseUnixTime", System.currentTimeMillis());
-    response.put("jobs", notebookJobs != null ? notebookJobs : new LinkedList<>());
+    response.put("jobs", noteJobs != null ? noteJobs : new LinkedList<>());
 
     broadcast(JOB_MANAGER_SERVICE.JOB_MANAGER_PAGE.getKey(),
-      new Message(OP.LIST_UPDATE_NOTEBOOK_JOBS).put("notebookRunningJobs", response));
+      new Message(OP.LIST_UPDATE_NOTE_JOBS).put("noteRunningJobs", response));
   }
 
-  public void unsubscribeNotebookJobInfo(NotebookSocket conn) {
+  public void unsubscribeNoteJobInfo(NotebookSocket conn) {
     removeConnectionFromNote(JOB_MANAGER_SERVICE.JOB_MANAGER_PAGE.getKey(), conn);
   }
 
@@ -785,8 +785,8 @@ public class NotebookServer extends WebSocketServlet implements
       throws IOException {
     Note note = null;
     if (fromMessage != null) {
-      String noteName = (String) ((Map) fromMessage.get("notebook")).get("name");
-      String noteJson = gson.toJson(fromMessage.get("notebook"));
+      String noteName = (String) ((Map) fromMessage.get("note")).get("name");
+      String noteJson = gson.toJson(fromMessage.get("note"));
       AuthenticationInfo subject = null;
       if (fromMessage.principal != null) {
         subject = new AuthenticationInfo(fromMessage.principal);
@@ -1096,12 +1096,12 @@ public class NotebookServer extends WebSocketServlet implements
     final AngularObject removed = registry.remove(varName, noteId, paragraphId);
     if (removed != null) {
       this.broadcastExcept(
-              noteId,
-              new Message(OP.ANGULAR_OBJECT_REMOVE).put("angularObject", removed)
-                      .put("interpreterGroupId", interpreterGroupId)
-                      .put("noteId", noteId)
-                      .put("paragraphId", paragraphId),
-              conn);
+          noteId,
+          new Message(OP.ANGULAR_OBJECT_REMOVE).put("angularObject", removed)
+              .put("interpreterGroupId", interpreterGroupId)
+              .put("noteId", noteId)
+              .put("paragraphId", paragraphId),
+          conn);
     }
   }
 
@@ -1132,7 +1132,7 @@ public class NotebookServer extends WebSocketServlet implements
   private void insertParagraph(NotebookSocket conn, HashSet<String> userAndRoles,
                                Notebook notebook, Message fromMessage) throws IOException {
     final int index = (int) Double.parseDouble(fromMessage.get("index")
-            .toString());
+        .toString());
     String noteId = getOpenNoteId(conn);
     final Note note = notebook.getNote(noteId);
     NotebookAuthorization notebookAuthorization = notebook.getNotebookAuthorization();
@@ -1252,7 +1252,7 @@ public class NotebookServer extends WebSocketServlet implements
         .put("configurations", configurations)));
   }
 
-  private void checkpointNotebook(NotebookSocket conn, Notebook notebook,
+  private void checkpointNote(NotebookSocket conn, Notebook notebook,
       Message fromMessage) throws IOException {
     String noteId = (String) fromMessage.get("noteId");
     String commitMessage = (String) fromMessage.get("commitMessage");
@@ -1384,7 +1384,7 @@ public class NotebookServer extends WebSocketServlet implements
     @Override
     public void onParagraphRemove(Paragraph p) {
       try {
-        notebookServer.broadcastUpdateNotebookJobInfo(System.currentTimeMillis() - 5000);
+        notebookServer.broadcastUpdateNoteJobInfo(System.currentTimeMillis() - 5000);
       } catch (IOException ioe) {
         LOG.error("can not broadcast for job manager {}", ioe.getMessage());
       }
@@ -1393,7 +1393,7 @@ public class NotebookServer extends WebSocketServlet implements
     @Override
     public void onNoteRemove(Note note) {
       try {
-        notebookServer.broadcastUpdateNotebookJobInfo(System.currentTimeMillis() - 5000);
+        notebookServer.broadcastUpdateNoteJobInfo(System.currentTimeMillis() - 5000);
       } catch (IOException ioe) {
         LOG.error("can not broadcast for job manager {}", ioe.getMessage());
       }
@@ -1416,7 +1416,7 @@ public class NotebookServer extends WebSocketServlet implements
       response.put("jobs", notesInfo);
 
       notebookServer.broadcast(JOB_MANAGER_SERVICE.JOB_MANAGER_PAGE.getKey(),
-        new Message(OP.LIST_UPDATE_NOTEBOOK_JOBS).put("notebookRunningJobs", response));
+          new Message(OP.LIST_UPDATE_NOTE_JOBS).put("noteRunningJobs", response));
 
     }
 
@@ -1424,35 +1424,35 @@ public class NotebookServer extends WebSocketServlet implements
     public void onParagraphCreate(Paragraph p) {
       Notebook notebook = notebookServer.notebook();
       List<Map<String, Object>> notebookJobs = notebook.getJobListByParagraphId(
-              p.getId()
+          p.getId()
       );
       Map<String, Object> response = new HashMap<>();
       response.put("lastResponseUnixTime", System.currentTimeMillis());
       response.put("jobs", notebookJobs);
 
       notebookServer.broadcast(JOB_MANAGER_SERVICE.JOB_MANAGER_PAGE.getKey(),
-              new Message(OP.LIST_UPDATE_NOTEBOOK_JOBS).put("notebookRunningJobs", response));
+          new Message(OP.LIST_UPDATE_NOTE_JOBS).put("noteRunningJobs", response));
     }
 
     @Override
     public void onNoteCreate(Note note) {
       Notebook notebook = notebookServer.notebook();
       List<Map<String, Object>> notebookJobs = notebook.getJobListByNoteId(
-              note.getId()
+          note.getId()
       );
       Map<String, Object> response = new HashMap<>();
       response.put("lastResponseUnixTime", System.currentTimeMillis());
       response.put("jobs", notebookJobs);
 
       notebookServer.broadcast(JOB_MANAGER_SERVICE.JOB_MANAGER_PAGE.getKey(),
-              new Message(OP.LIST_UPDATE_NOTEBOOK_JOBS).put("notebookRunningJobs", response));
+          new Message(OP.LIST_UPDATE_NOTE_JOBS).put("noteRunningJobs", response));
     }
 
     @Override
     public void onParagraphStatusChange(Paragraph p, Status status) {
       Notebook notebook = notebookServer.notebook();
       List<Map<String, Object>> notebookJobs = notebook.getJobListByParagraphId(
-        p.getId()
+          p.getId()
       );
 
       Map<String, Object> response = new HashMap<>();
@@ -1460,21 +1460,21 @@ public class NotebookServer extends WebSocketServlet implements
       response.put("jobs", notebookJobs);
 
       notebookServer.broadcast(JOB_MANAGER_SERVICE.JOB_MANAGER_PAGE.getKey(),
-              new Message(OP.LIST_UPDATE_NOTEBOOK_JOBS).put("notebookRunningJobs", response));
+          new Message(OP.LIST_UPDATE_NOTE_JOBS).put("noteRunningJobs", response));
     }
 
     @Override
     public void onUnbindInterpreter(Note note, InterpreterSetting setting) {
       Notebook notebook = notebookServer.notebook();
       List<Map<String, Object>> notebookJobs = notebook.getJobListByNoteId(
-              note.getId()
+          note.getId()
       );
       Map<String, Object> response = new HashMap<>();
       response.put("lastResponseUnixTime", System.currentTimeMillis());
       response.put("jobs", notebookJobs);
 
       notebookServer.broadcast(JOB_MANAGER_SERVICE.JOB_MANAGER_PAGE.getKey(),
-              new Message(OP.LIST_UPDATE_NOTEBOOK_JOBS).put("notebookRunningJobs", response));
+          new Message(OP.LIST_UPDATE_NOTE_JOBS).put("noteRunningJobs", response));
     }
   }
 
@@ -1523,7 +1523,7 @@ public class NotebookServer extends WebSocketServlet implements
       notebookServer.broadcastNote(note);
 
       try {
-        notebookServer.broadcastUpdateNotebookJobInfo(System.currentTimeMillis() - 5000);
+        notebookServer.broadcastUpdateNoteJobInfo(System.currentTimeMillis() - 5000);
       } catch (IOException e) {
         LOG.error("can not broadcast for job manager {}", e);
       }
@@ -1538,9 +1538,9 @@ public class NotebookServer extends WebSocketServlet implements
     @Override
     public void onOutputAppend(Paragraph paragraph, InterpreterOutput out, String output) {
       Message msg = new Message(OP.PARAGRAPH_APPEND_OUTPUT)
-              .put("noteId", paragraph.getNote().getId())
-              .put("paragraphId", paragraph.getId())
-              .put("data", output);
+          .put("noteId", paragraph.getNote().getId())
+          .put("paragraphId", paragraph.getId())
+          .put("data", output);
 
       notebookServer.broadcast(paragraph.getNote().getId(), msg);
     }
@@ -1554,9 +1554,9 @@ public class NotebookServer extends WebSocketServlet implements
     @Override
     public void onOutputUpdate(Paragraph paragraph, InterpreterOutput out, String output) {
       Message msg = new Message(OP.PARAGRAPH_UPDATE_OUTPUT)
-              .put("noteId", paragraph.getNote().getId())
-              .put("paragraphId", paragraph.getId())
-              .put("data", output);
+          .put("noteId", paragraph.getNote().getId())
+          .put("paragraphId", paragraph.getId())
+          .put("data", output);
 
       notebookServer.broadcast(paragraph.getNote().getId(), msg);
     }

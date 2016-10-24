@@ -35,13 +35,13 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
 
   Notebooks REST API supports the following operations: List, Create, Get, Delete, Clone, Run, Export, Import as detailed in the following tables.
 
-### List of the notebooks
+### List of the notes
   <table class="table-configuration">
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```GET``` method lists the available notebooks on your server.
-          Notebook JSON contains the ```name``` and ```id``` of all notebooks.
+      <td>This ```GET``` method lists the available notes on your server.
+          Notebook JSON contains the ```name``` and ```id``` of all notes.
       </td>
     </tr>
     <tr>
@@ -77,12 +77,12 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
   </table>
 
 <br/>
-### Create a new notebook
+### Create a new note
   <table class="table-configuration">
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```POST``` method creates a new notebook using the given name or default name if none given.
+      <td>This ```POST``` method creates a new note using the given name or default name if none given.
           The body field of the returned JSON contains the new note id.
       </td>
     </tr>
@@ -100,13 +100,13 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
     </tr>
     <tr>
       <td> sample JSON input (without paragraphs) </td>
-      <td><pre>{"name": "name of new notebook"}</pre></td>
+      <td><pre>{"name": "name of new note"}</pre></td>
     </tr>
     <tr>
       <td> sample JSON input (with initial paragraphs) </td>
       <td><pre>
 {
-  "name": "name of new notebook",
+  "name": "name of new note",
   "paragraphs": [
     {
       "title": "paragraph title1",
@@ -131,13 +131,13 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
   </table>
 
 <br/>
-### Get an existing notebook information
+### Get an existing note information
   <table class="table-configuration">
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```GET``` method retrieves an existing notebook's information using the given id.
-          The body field of the returned JSON contain information about paragraphs in the notebook.
+      <td>This ```GET``` method retrieves an existing note's information using the given id.
+          The body field of the returned JSON contain information about paragraphs in the note.
       </td>
     </tr>
     <tr>
@@ -228,12 +228,12 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
   </table>
 
 <br/>
-### Delete a notebook
+### Delete a note
   <table class="table-configuration">
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```DELETE``` method deletes a notebook by the given note id.
+      <td>This ```DELETE``` method deletes a note by the given note id.
       </td>
     </tr>
     <tr>
@@ -255,12 +255,12 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
   </table>
 
 <br/>
-### Clone a notebook
+### Clone a note
   <table class="table-configuration">
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```POST``` method clones a notebook by the given id and create a new notebook using the given name
+      <td>This ```POST``` method clones a note by the given id and create a new note using the given name
           or default name if none given.
           The body field of the returned JSON contains the new note id.
       </td>
@@ -279,7 +279,7 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
     </tr>
     <tr>
       <td> sample JSON input </td>
-      <td><pre>{"name": "name of new notebook"}</pre></td>
+      <td><pre>{"name": "name of new note"}</pre></td>
     </tr>
     <tr>
       <td> sample JSON response </td>
@@ -418,7 +418,7 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```GET``` method gets the status of a single paragraph by the given notebook and paragraph id.
+      <td>This ```GET``` method gets the status of a single paragraph by the given note and paragraph id.
           The body field of the returned JSON contains of the array that compose of the paragraph id, paragraph status, paragraph finish date, paragraph started date.
       </td>
     </tr>
@@ -455,7 +455,7 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```POST``` method runs the paragraph asynchronously by given notebook and paragraph id. This API always return SUCCESS even if the execution of the paragraph fails later because the API is asynchronous
+      <td>This ```POST``` method runs the paragraph asynchronously by given note and paragraph id. This API always return SUCCESS even if the execution of the paragraph fails later because the API is asynchronous
       </td>
     </tr>
     <tr>
@@ -474,7 +474,7 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
       <td> sample JSON input (optional, only needed when if you want to update dynamic form's value) </td>
       <td><pre>
 {
-  "name": "name of new notebook",
+  "name": "name of new note",
   "params": {
     "formLabel1": "value1",
     "formLabel2": "value2"
@@ -493,7 +493,7 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
     <col width="200">
     <tr>
       <td>Description</td>
-      <td> This ```POST``` method runs the paragraph synchronously by given notebook and paragraph id. This API can return SUCCESS or ERROR depending on the outcome of the paragraph execution
+      <td> This ```POST``` method runs the paragraph synchronously by given note and paragraph id. This API can return SUCCESS or ERROR depending on the outcome of the paragraph execution
       </td>
     </tr>
     <tr>
@@ -512,7 +512,7 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
       <td> sample JSON input (optional, only needed when if you want to update dynamic form's value) </td>
       <td><pre>
 {
-  "name": "name of new notebook",
+  "name": "name of new note",
   "params": {
     "formLabel1": "value1",
     "formLabel2": "value2"
@@ -543,7 +543,7 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```DELETE``` method stops the paragraph by given notebook and paragraph id.
+      <td>This ```DELETE``` method stops the paragraph by given note and paragraph id.
       </td>
     </tr>
     <tr>
@@ -587,7 +587,7 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
     </tr>
     <tr>
       <td> sample JSON input </td>
-      <td><pre>{"cron": "cron expression of notebook"}</pre></td>
+      <td><pre>{"cron": "cron expression of note"}</pre></td>
     </tr>
     <tr>
       <td> sample JSON response </td>
@@ -653,7 +653,7 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
   </table>
 
 <br />
-### Full text search through the paragraphs in all notebooks
+### Full text search through the paragraphs in all notes
   <table class="table-configuration">
     <col width="200">
     <tr>
@@ -681,7 +681,7 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
   "body": [
     {
       "id": "<noteId>/paragraph/<paragraphId>",
-      "name":"Notebook Name", 
+      "name":"Note Name", 
       "snippet":"",
       "text":""
     }
@@ -814,7 +814,7 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```POST``` method moves a paragraph to the specific index (order) from the notebook.
+      <td>This ```POST``` method moves a paragraph to the specific index (order) from the note.
       </td>
     </tr>
     <tr>
@@ -842,7 +842,7 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```DELETE``` method deletes a paragraph by the given notebook and paragraph id.
+      <td>This ```DELETE``` method deletes a paragraph by the given note and paragraph id.
       </td>
     </tr>
     <tr>
@@ -864,12 +864,12 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
   </table>
 
 <br />
-### Export a notebook
+### Export a note
   <table class="table-configuration">
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```GET``` method exports a notebook by the given id and gernerates a JSON
+      <td>This ```GET``` method exports a note by the given id and gernerates a JSON
       </td>
     </tr>
     <tr>
@@ -914,12 +914,12 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
   </table>
 
 <br />
-### Import a notebook
+### Import a note
   <table class="table-configuration">
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```POST``` method imports a notebook from the notebook JSON input
+      <td>This ```POST``` method imports a note from the note JSON input
       </td>
     </tr>
     <tr>

@@ -30,7 +30,7 @@ limitations under the License.
           <ul class="dropdown-menu navbar-dropdown-maxHeight" role="menu">
             <li><a href="" data-toggle="modal" data-target="#noteNameModal"><i class="fa fa-plus"></i> Create new note</a></li>
             <li class="divider"></li>
-            <div id="notebook-list" class="scrollbar-container" ng-if="isDrawNavbarNotebookList">
+            <div id="notebook-list" class="scrollbar-container" ng-if="isDrawNavbarNoteList">
               <li class="filter-names" ng-include="'components/filterNoteNames/filter-note-names.html'"></li>
               <li ng-repeat="note in navbar.notes.root.children | filter:query.q | orderBy:navbar.arrayOrderingSrv.noteListOrdering track by $index"
                   ng-class="{'active' : navbar.isActive(note.id)}" ng-include="'components/navbar/navbar-noteList-elem.html'">

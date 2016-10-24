@@ -317,9 +317,8 @@ public class Notebook implements NoteEventListener {
     synchronized (notes) {
       note = notes.remove(id);
     }
-    
-    noteSearchService.deleteIndexDocs(note);
     replFactory.removeNoteInterpreterSettingBinding(subject.getUser(), id);
+    noteSearchService.deleteIndexDocs(note);
     notebookAuthorization.removeNote(id);
 
     // remove from all interpreter instance's angular object registry
@@ -340,7 +339,7 @@ public class Notebook implements NoteEventListener {
             }
           }
         }
-        // remove notebook scope object
+        // remove note scope object
         ((RemoteAngularObjectRegistry) registry).removeAllAndNotifyRemoteProcess(id, null);
       } else {
         // remove paragraph scope object
@@ -355,7 +354,7 @@ public class Notebook implements NoteEventListener {
             }
           }
         }
-        // remove notebook scope object
+        // remove note scope object
         registry.removeAll(id, null);
       }
     }
@@ -473,7 +472,7 @@ public class Notebook implements NoteEventListener {
 
   /**
    * Reload all notes from repository after clearing `notes`
-   * to reflect the changes of added/deleted/modified notebooks on file system level.
+   * to reflect the changes of added/deleted/modified notes on file system level.
    *
    * @throws IOException
    */
@@ -633,7 +632,7 @@ public class Notebook implements NoteEventListener {
   }
 
   public List<Map<String, Object>> getJobListByNoteId(String noteId) {
-    final String CRON_TYPE_NOTEBOOK_KEYWORD = "cron";
+    final String CRON_TYPE_NOTE_KEYWORD = "cron";
     long lastRunningUnixTime = 0;
     boolean isNoteRunning = false;
     Note jobNote = getNote(noteId);
@@ -652,8 +651,8 @@ public class Notebook implements NoteEventListener {
       info.put("noteName", "Note " + jobNote.getId());
     }
     // set note type ( cron or normal )
-    if (jobNote.getConfig().containsKey(CRON_TYPE_NOTEBOOK_KEYWORD) && !jobNote.getConfig()
-            .get(CRON_TYPE_NOTEBOOK_KEYWORD).equals("")) {
+    if (jobNote.getConfig().containsKey(CRON_TYPE_NOTE_KEYWORD) && !jobNote.getConfig()
+            .get(CRON_TYPE_NOTE_KEYWORD).equals("")) {
       info.put("noteType", "cron");
     } else {
       info.put("noteType", "normal");
@@ -681,7 +680,7 @@ public class Notebook implements NoteEventListener {
       interpreterGroupName = replFactory.getInterpreterSettings(jobNote.getId()).get(0).getName();
     }
 
-    // notebook json object root information.
+    // note json object root information.
     info.put("interpreter", interpreterGroupName);
     info.put("isRunningJob", isNoteRunning);
     info.put("unixTimeLastRun", lastRunningUnixTime);
@@ -693,7 +692,7 @@ public class Notebook implements NoteEventListener {
 
   public List<Map<String, Object>> getJobListByUnixTime(boolean needsReload,
       long lastUpdateServerUnixTime, AuthenticationInfo subject) {
-    final String CRON_TYPE_NOTEBOOK_KEYWORD = "cron";
+    final String CRON_TYPE_NOTE_KEYWORD = "cron";
 
     if (needsReload) {
       try {
@@ -723,8 +722,8 @@ public class Notebook implements NoteEventListener {
       }
 
       // set note type ( cron or normal )
-      if (note.getConfig().containsKey(CRON_TYPE_NOTEBOOK_KEYWORD) && !note.getConfig()
-          .get(CRON_TYPE_NOTEBOOK_KEYWORD).equals("")) {
+      if (note.getConfig().containsKey(CRON_TYPE_NOTE_KEYWORD) && !note.getConfig()
+          .get(CRON_TYPE_NOTE_KEYWORD).equals("")) {
         info.put("noteType", "cron");
       } else {
         info.put("noteType", "normal");
