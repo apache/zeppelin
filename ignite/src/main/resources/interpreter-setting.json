@@ -1,0 +1,34 @@
+[
+  {
+    "group": "ignite",
+    "name": "ignite",
+    "className": "org.apache.zeppelin.ignite.IgniteInterpreter",
+    "properties": {
+      "ignite.addresses": {
+        "envName": null,
+        "propertyName": "ignite.addresses",
+        "defaultValue": "127.0.0.1:47500..47509,Coma separated list of addresses",
+        "description": "(e.g. 127.0.0.1:47500 or 127.0.0.1:47500..47509)"
+      },
+      "ignite.clientMode": {
+        "envName": null,
+        "propertyName": "ignite.clientMode",
+        "defaultValue": "true",
+        "description": "Client mode. true or false"
+      },
+      "ignite.config.url": {
+        "envName": null,
+        "propertyName": "ignite.config.url",
+        "defaultValue": "",
+        "description": "Configuration URL. Overrides all other settings."
+      },
+       "ignite.peerClassLoadingEnabled": {
+        "envName": null,
+        "propertyName": "ignite.peerClassLoadingEnabled",
+        "defaultValue": "true",
+        "description": "Peer class loading enabled. true or false"
+      }
+    }
+    
+  }
+]
