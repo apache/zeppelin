@@ -237,8 +237,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
       interpreterInfo =
           new InterpreterInfo(r.getClassName(), r.getName(), r.isDefaultInterpreter(),
               r.getEditor());
-      add(r.getGroup(), interpreterInfo, convertInterpreterProperties(r.getProperties()),
-          r.getPath());
+      add(r.getGroup(), interpreterInfo, r.getProperties(), r.getPath());
     }
 
     for (String settingId : interpreterSettingsRef.keySet()) {
@@ -286,7 +285,8 @@ public class InterpreterFactory implements InterpreterGroupFactory {
 
   private InterpreterSetting createFromInterpreterSettingRef(InterpreterSetting o) {
     InterpreterSetting setting =
-        new InterpreterSetting(o.getName(), o.getName(), o.getInterpreterInfos(), o.getProperties(),
+        new InterpreterSetting(o.getName(), o.getName(), o.getInterpreterInfos(),
+            convertInterpreterProperties((Map <String, InterpreterProperty>)o.getProperties()),
             o.getDependencies(), o.getOption(), o.getPath());
     setting.setInterpreterGroupFactory(this);
     return setting;
@@ -349,16 +349,9 @@ public class InterpreterFactory implements InterpreterGroupFactory {
       InterpreterInfo interpreterInfo =
           new InterpreterInfo(registeredInterpreter.getClassName(), registeredInterpreter.getName(),
               registeredInterpreter.isDefaultInterpreter(), registeredInterpreter.getEditor());
-      Properties properties = new Properties();
-      Map<String, InterpreterProperty> p = registeredInterpreter.getProperties();
 
-      if (null != p) {
-        for (String key : p.keySet()) {
-          properties.setProperty(key, p.get(key).getValue());
-        }
-      }
-
-      add(registeredInterpreter.getGroup(), interpreterInfo, properties, absolutePath);
+      add(registeredInterpreter.getGroup(), interpreterInfo, registeredInterpreter.getProperties(),
+          absolutePath);
     }
 
   }
@@ -615,11 +608,11 @@ public class InterpreterFactory implements InterpreterGroupFactory {
   }
 
   private InterpreterSetting add(String group, InterpreterInfo interpreterInfo,
-      Properties properties, String path)
+      Map<String, InterpreterProperty> interpreterProperties, String path)
       throws InterpreterException, IOException, RepositoryException {
     ArrayList<InterpreterInfo> infos = new ArrayList<>();
     infos.add(interpreterInfo);
-    return add(group, infos, new ArrayList<Dependency>(), defaultOption, properties, path);
+    return add(group, infos, new ArrayList<Dependency>(), defaultOption, interpreterProperties, path);
   }
 
   /**
@@ -627,12 +620,13 @@ public class InterpreterFactory implements InterpreterGroupFactory {
    * @return
    */
   public InterpreterSetting add(String group, ArrayList<InterpreterInfo> interpreterInfos,
-      List<Dependency> dependencies, InterpreterOption option, Properties properties, String path) {
+      List<Dependency> dependencies, InterpreterOption option,
+      Map<String, InterpreterProperty> interpreterProperties, String path) {
     Preconditions.checkNotNull(group, "name should not be null");
     Preconditions.checkNotNull(interpreterInfos, "interpreterInfos should not be null");
     Preconditions.checkNotNull(dependencies, "dependencies should not be null");
     Preconditions.checkNotNull(option, "option should not be null");
-    Preconditions.checkNotNull(properties, "properties should not be null");
+    Preconditions.checkNotNull(interpreterProperties, "properties should not be null");
 
     InterpreterSetting interpreterSetting;
 
@@ -663,16 +657,17 @@ public class InterpreterFactory implements InterpreterGroupFactory {
         }
 
         // Append properties
-        Properties interpreterProperties = interpreterSetting.getProperties();
-        for (String key : properties.stringPropertyNames()) {
-          if (!interpreterProperties.containsKey(key)) {
-            interpreterProperties.setProperty(key, properties.getProperty(key));
+        Map<String, InterpreterProperty> properties =
+            (Map<String, InterpreterProperty>) interpreterSetting.getProperties();
+        for (String key : interpreterProperties.keySet()) {
+          if (!properties.containsKey(key)) {
+            properties.put(key, interpreterProperties.get(key));
           }
         }
 
       } else {
         interpreterSetting =
-            new InterpreterSetting(group, null, interpreterInfos, properties, dependencies, option,
+            new InterpreterSetting(group, null, interpreterInfos, interpreterProperties, dependencies, option,
                 path);
         interpreterSettingsRef.put(group, interpreterSetting);
       }
@@ -734,7 +729,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
       String noteId, String key) {
     InterpreterGroup interpreterGroup = interpreterSetting.getInterpreterGroup(user, noteId);
     InterpreterOption option = interpreterSetting.getOption();
-    Properties properties = interpreterSetting.getProperties();
+    Properties properties = (Properties) interpreterSetting.getProperties();
     if (option.isExistingProcess) {
       properties.put(Constants.ZEPPELIN_INTERPRETER_HOST, option.getHost());
       properties.put(Constants.ZEPPELIN_INTERPRETER_PORT, option.getPort());
@@ -932,16 +927,16 @@ public class InterpreterFactory implements InterpreterGroupFactory {
   public void setPropertyAndRestart(String id, InterpreterOption option, Properties properties,
       List<Dependency> dependencies) throws IOException {
     synchronized (interpreterSettings) {
-      InterpreterSetting intpsetting = interpreterSettings.get(id);
-      if (intpsetting != null) {
+      InterpreterSetting intpSetting = interpreterSettings.get(id);
+      if (intpSetting != null) {
         try {
-          stopJobAllInterpreter(intpsetting);
+          stopJobAllInterpreter(intpSetting);
 
-          intpsetting.closeAndRmoveAllInterpreterGroups();
-          intpsetting.setOption(option);
-          intpsetting.setProperties(properties);
-          intpsetting.setDependencies(dependencies);
-          loadInterpreterDependencies(intpsetting);
+          intpSetting.closeAndRmoveAllInterpreterGroups();
+          intpSetting.setOption(option);
+          intpSetting.setProperties(properties);
+          intpSetting.setDependencies(dependencies);
+          loadInterpreterDependencies(intpSetting);
 
           saveToFile();
         } catch (Exception e) {
@@ -960,12 +955,11 @@ public class InterpreterFactory implements InterpreterGroupFactory {
   }
 
   public void restart(String settingId, String noteId) {
-    InterpreterSetting intpsetting = interpreterSettings.get(settingId);
-    Preconditions.checkNotNull(intpsetting);
+    InterpreterSetting intpSetting = interpreterSettings.get(settingId);
+    Preconditions.checkNotNull(intpSetting);
 
-    if (noteIdIsExist(noteId) &&
-      intpsetting.getOption().isProcess()) {
-      intpsetting.closeAndRemoveInterpreterGroup(noteId);
+    if (noteIdIsExist(noteId) && intpSetting.getOption().isProcess()) {
+      intpSetting.closeAndRemoveInterpreterGroup(noteId);
       return;
     }
     restart(settingId);
@@ -973,15 +967,15 @@ public class InterpreterFactory implements InterpreterGroupFactory {
 
   public void restart(String id) {
     synchronized (interpreterSettings) {
-      InterpreterSetting intpsetting = interpreterSettings.get(id);
+      InterpreterSetting intpSetting = interpreterSettings.get(id);
       // Check if dependency in specified path is changed
       // If it did, overwrite old dependency jar with new one
-      if (intpsetting != null) {
-        copyDependenciesFromLocalPath(intpsetting);
+      if (intpSetting != null) {
+        copyDependenciesFromLocalPath(intpSetting);
 
-        stopJobAllInterpreter(intpsetting);
+        stopJobAllInterpreter(intpSetting);
 
-        intpsetting.closeAndRmoveAllInterpreterGroups();
+        intpSetting.closeAndRmoveAllInterpreterGroups();
 
       } else {
         throw new InterpreterException("Interpreter setting id " + id + " not found");
@@ -989,9 +983,9 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     }
   }
 
-  private void stopJobAllInterpreter(InterpreterSetting intpsetting) {
-    if (intpsetting != null) {
-      for (InterpreterGroup intpGroup : intpsetting.getAllInterpreterGroups()) {
+  private void stopJobAllInterpreter(InterpreterSetting intpSetting) {
+    if (intpSetting != null) {
+      for (InterpreterGroup intpGroup : intpSetting.getAllInterpreterGroups()) {
         for (List<Interpreter> interpreters : intpGroup.values()) {
           for (Interpreter intp : interpreters) {
             for (Job job : intp.getScheduler().getJobsRunning()) {
@@ -1013,11 +1007,11 @@ public class InterpreterFactory implements InterpreterGroupFactory {
   public void close() {
     List<Thread> closeThreads = new LinkedList<>();
     synchronized (interpreterSettings) {
-      Collection<InterpreterSetting> intpsettings = interpreterSettings.values();
-      for (final InterpreterSetting intpsetting : intpsettings) {
+      Collection<InterpreterSetting> intpSettings = interpreterSettings.values();
+      for (final InterpreterSetting intpSetting : intpSettings) {
         Thread t = new Thread() {
           public void run() {
-            intpsetting.closeAndRmoveAllInterpreterGroups();
+            intpSetting.closeAndRmoveAllInterpreterGroups();
           }
         };
         t.start();
