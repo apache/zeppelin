@@ -113,10 +113,6 @@ public class NotebookRestApi {
   @ZeppelinApi
   public Response putNotePermissions(@PathParam("noteId") String noteId, String req)
       throws IOException {
-    /**
-     * TODO(jl): Fixed the type of HashSet
-     * https://issues.apache.org/jira/browse/ZEPPELIN-1162
-     */
     HashMap<String, HashSet<String>> permMap =
         gson.fromJson(req, new TypeToken<HashMap<String, HashSet<String>>>() {
         }.getType());
