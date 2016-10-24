@@ -16,34 +16,34 @@
  */
 package org.apache.zeppelin.rest.message;
 
-import org.apache.commons.lang.StringUtils;
-
 import java.util.Collections;
 import java.util.Map;
+
+import org.apache.commons.lang.StringUtils;
 
 /**
  * Represent payload of a notebook repo settings.
  */
 public class NotebookRepoSettingsRequest {
 
-    public static final NotebookRepoSettingsRequest EMPTY = new NotebookRepoSettingsRequest();
+  public static final NotebookRepoSettingsRequest EMPTY = new NotebookRepoSettingsRequest();
 
-    public String name;
-    public Map<String, String> settings;
+  public String name;
+  public Map<String, String> settings;
 
-    public NotebookRepoSettingsRequest() {
-        name = StringUtils.EMPTY;
-        settings = Collections.emptyMap();
+  public NotebookRepoSettingsRequest() {
+    name = StringUtils.EMPTY;
+    settings = Collections.emptyMap();
+  }
+
+  public boolean isEmpty() {
+    return this == EMPTY;
+  }
+
+  public static boolean isEmpty(NotebookRepoSettingsRequest repoSetting) {
+    if (repoSetting == null) {
+      return true;
     }
-
-    public boolean isEmpty() {
-        return this == EMPTY;
-    }
-
-    public static boolean isEmpty(NotebookRepoSettingsRequest repoSetting) {
-        if (repoSetting == null) {
-            return true;
-        }
-        return repoSetting.isEmpty();
-    }
+    return repoSetting.isEmpty();
+  }
 }
