@@ -953,8 +953,9 @@ public class InterpreterFactory implements InterpreterGroupFactory {
 
   public void restart(String settingId, String noteId) {
     InterpreterSetting intpsetting = interpreterSettings.get(settingId);
-    if (intpsetting != null &&
-      noteIdIsExist(noteId) &&
+    Preconditions.checkNotNull(intpsetting);
+    
+    if (noteIdIsExist(noteId) &&
       intpsetting.getOption().isProcess()) {
       intpsetting.closeAndRemoveInterpreterGroup(noteId);
       return;
