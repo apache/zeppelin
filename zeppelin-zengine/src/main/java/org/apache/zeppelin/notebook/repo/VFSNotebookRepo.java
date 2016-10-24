@@ -326,7 +326,7 @@ public class VFSNotebookRepo implements NotebookRepo {
       return;
     }
     LOG.warn("{} will change notebook dir from {} to {}",
-        getNotebookDirPath(), newNotebookDirectotyPath);
+        subject.getUser(), getNotebookDirPath(), newNotebookDirectotyPath);
     try {
       setNotebookDirectory(newNotebookDirectotyPath);
     } catch (IOException e) {
