@@ -23,6 +23,7 @@ import java.lang.ref.WeakReference;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.List;
+import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -140,47 +141,41 @@ public abstract class AbstractTestRestApi {
       LOG.info("Test Zeppelin stared.");
 
 
+      // assume first one is spark
+      InterpreterSetting sparkIntpSetting = null;
+      for(InterpreterSetting intpSetting : ZeppelinServer.notebook.getInterpreterFactory().get()) {
+        if (intpSetting.getName().equals("spark")) {
+          sparkIntpSetting = intpSetting;
+        }
+      }
+
+      Properties sparkProperties = (Properties) sparkIntpSetting.getProperties();
       // ci environment runs spark cluster for testing
       // so configure zeppelin use spark cluster
       if ("true".equals(System.getenv("CI"))) {
-        // assume first one is spark
-        InterpreterSetting sparkIntpSetting = null;
-        for(InterpreterSetting intpSetting : ZeppelinServer.notebook.getInterpreterFactory().get()) {
-          if (intpSetting.getName().equals("spark")) {
-            sparkIntpSetting = intpSetting;
-          }
-        }
-
         // set spark master and other properties
-        sparkIntpSetting.getProperties().setProperty("master", "local[2]");
-        sparkIntpSetting.getProperties().setProperty("spark.cores.max", "2");
-        sparkIntpSetting.getProperties().setProperty("zeppelin.spark.useHiveContext", "false");
+        sparkProperties.setProperty("master", "local[2]");
+        sparkProperties.setProperty("spark.cores.max", "2");
+        sparkProperties.setProperty("zeppelin.spark.useHiveContext", "false");
         // set spark home for pyspark
-        sparkIntpSetting.getProperties().setProperty("spark.home", getSparkHome());
+        sparkProperties.setProperty("spark.home", getSparkHome());
+
+        sparkIntpSetting.setProperties(sparkProperties);
         pySpark = true;
         sparkR = true;
         ZeppelinServer.notebook.getInterpreterFactory().restart(sparkIntpSetting.getId());
       } else {
-        // assume first one is spark
-        InterpreterSetting sparkIntpSetting = null;
-        for(InterpreterSetting intpSetting : ZeppelinServer.notebook.getInterpreterFactory().get()) {
-          if (intpSetting.getName().equals("spark")) {
-            sparkIntpSetting = intpSetting;
-          }
-        }
-
         String sparkHome = getSparkHome();
         if (sparkHome != null) {
           if (System.getenv("SPARK_MASTER") != null) {
-            sparkIntpSetting.getProperties().setProperty("master", System.getenv("SPARK_MASTER"));
+            sparkProperties.setProperty("master", System.getenv("SPARK_MASTER"));
           } else {
-            sparkIntpSetting.getProperties()
-                    .setProperty("master", "local[2]");
+            sparkProperties.setProperty("master", "local[2]");
           }
-          sparkIntpSetting.getProperties().setProperty("spark.cores.max", "2");
+          sparkProperties.setProperty("spark.cores.max", "2");
           // set spark home for pyspark
-          sparkIntpSetting.getProperties().setProperty("spark.home", sparkHome);
-          sparkIntpSetting.getProperties().setProperty("zeppelin.spark.useHiveContext", "false");
+          sparkProperties.setProperty("spark.home", sparkHome);
+          sparkProperties.setProperty("zeppelin.spark.useHiveContext", "false");
           pySpark = true;
           sparkR = true;
         }
