@@ -342,7 +342,8 @@ public class RemoteScheduler implements Scheduler {
       Status lastStatus = jobStatusPoller.getStatus();
       Object jobResult = job.getReturn();
       if (jobResult != null && jobResult instanceof InterpreterResult) {
-        if (((InterpreterResult) jobResult).code() == Code.ERROR) {
+        Code resultCode = ((InterpreterResult) jobResult).code();
+        if (resultCode == Code.ERROR || resultCode == Code.INCOMPLETE) {
           lastStatus = Status.ERROR;
         }
       }
@@ -380,7 +381,8 @@ public class RemoteScheduler implements Scheduler {
           } else if (job.getException() != null) {
             job.setStatus(Status.ERROR);
           } else if (jobResult != null && jobResult instanceof InterpreterResult
-              && ((InterpreterResult) jobResult).code() == Code.ERROR) {
+              && (((InterpreterResult) jobResult).code() == Code.ERROR
+              || ((InterpreterResult) jobResult).code() == Code.INCOMPLETE)) {
             job.setStatus(Status.ERROR);
           } else {
             job.setStatus(Status.FINISHED);
