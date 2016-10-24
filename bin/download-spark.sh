@@ -35,7 +35,7 @@ function download_with_retry() {
   curl -O --retry 3 --retry-delay 1 "${url}"
 
   if [[ "$?" -ne 0 ]]; then
-    echo -e "\nStop downloading with unexpected error.\nPlease restart Zeppelin if you want to download local Spark again."
+    echo -e "\nStop downloading with unexpected error."
   fi
 }
 
@@ -62,54 +62,19 @@ function check_local_spark_dir() {
 }
 
 function save_local_spark() {
-  local answer
+  # echo -e "For using Spark interpreter in local mode(without external Spark installation), Spark binary needs to be downloaded."
+  trap "echo -e '\n\nForced termination by user.'; check_local_spark_dir; exit 1" SIGTERM SIGINT SIGQUIT
+  create_local_spark_dir
+  cd "${SPARK_CACHE}"
 
-  echo -e "For using Spark interpreter in local mode(without external Spark installation), Spark binary needs to be downloaded."
+  printf "Download ${SPARK_ARCHIVE}.tgz from mirror ...\n\n"
 
-  trap "echo -e '\n\nForced termination by user. Please restart Zeppelin again.'; check_local_spark_dir; exit 1" SIGTERM SIGINT SIGQUIT
-  while true; do
-    if [[ "${CI}" == "true" ]]; then
-      break
-    else
-      read -p "Do you want to download a latest version of Spark binary? (Y/N): " answer
+  MIRROR_INFO=$(curl -s "http://www.apache.org/dyn/closer.cgi/spark/spark-${SPARK_VERSION}/${SPARK_ARCHIVE}.tgz?asjson=1")
+  PREFFERED=$(echo "${MIRROR_INFO}" | grep preferred | sed 's/[^"]*.preferred.: .\([^"]*\).*/\1/g')
+  PATHINFO=$(echo "${MIRROR_INFO}" | grep path_info | sed 's/[^"]*.path_info.: .\([^"]*\).*/\1/g')
 
-      case "${answer}" in
-        [Yy]* )
-          create_local_spark_dir
-          cd "${SPARK_CACHE}"
-
-          printf "\nZeppelin server will be started after successful downloading ${SPARK_ARCHIVE}\n"
-          printf "Download ${SPARK_ARCHIVE}.tgz from mirror before starting Zeppelin server...\n\n"
-
-          MIRROR_INFO=$(curl -s "http://www.apache.org/dyn/closer.cgi/spark/spark-${SPARK_VERSION}/${SPARK_ARCHIVE}.tgz?asjson=1")
-          PREFFERED=$(echo "${MIRROR_INFO}" | grep preferred | sed 's/[^"]*.preferred.: .\([^"]*\).*/\1/g')
-          PATHINFO=$(echo "${MIRROR_INFO}" | grep path_info | sed 's/[^"]*.path_info.: .\([^"]*\).*/\1/g')
-
-          download_with_retry "${PREFFERED}${PATHINFO}"
-          unzip_spark_bin
-          break
-          ;;
-        [Nn]* )
-          create_local_spark_dir
-          cd "${SPARK_CACHE}"
-
-          echo -e "\nYour answer is saved under ${SPARK_CACHE}/${SPARK_ARCHIVE}/${ANSWER_FILE}"
-          echo -e "Zeppelin will be started without downloading local Spark binary\n"
-
-          mkdir -p "${SPARK_ARCHIVE}"
-
-          echo -e "Please note that you answered 'No' when we asked whether you want to download local Spark binary under ${ZEPPELIN_HOME}/${SPARK_CACHE}/ or not.
-          \nIf you want to use Spark interpreter in Apache Zeppelin, you need to set your own SPARK_HOME.
-          \nSee http://zeppelin.apache.org/docs/${ZEPPELIN_VERSION}/interpreter/spark.html#configuration for the further details about Spark configuration in Zeppelin.
-          " > "${SPARK_ARCHIVE}/${ANSWER_FILE}"
-          break
-          ;;
-        * )
-          echo -e "\nInvalid response"
-          ;;
-      esac
-    fi
-  done
+  download_with_retry "${PREFFERED}${PATHINFO}"
+  unzip_spark_bin
 }
 
 save_local_spark

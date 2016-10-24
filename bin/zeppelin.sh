@@ -43,6 +43,10 @@ if [ "$1" == "--version" ] || [ "$1" == "-v" ]; then
     getZeppelinVersion
 fi
 
+if [ "$1" == "get-spark" ]; then
+    downloadSparkBinary
+fi
+
 HOSTNAME=$(hostname)
 ZEPPELIN_LOGFILE="${ZEPPELIN_LOG_DIR}/zeppelin-${ZEPPELIN_IDENT_STRING}-${HOSTNAME}.log"
 LOG="${ZEPPELIN_LOG_DIR}/zeppelin-cli-${ZEPPELIN_IDENT_STRING}-${HOSTNAME}.out"
@@ -71,8 +75,6 @@ addJarInDir "${ZEPPELIN_HOME}/zeppelin-server/target/lib"
 addJarInDir "${ZEPPELIN_HOME}/zeppelin-web/target/lib"
 
 CLASSPATH+=":${ZEPPELIN_CLASSPATH}"
-
-downloadSparkBinary
 
 if [[ ! -d "${ZEPPELIN_LOG_DIR}" ]]; then
   echo "Log dir doesn't exist, create ${ZEPPELIN_LOG_DIR}"
