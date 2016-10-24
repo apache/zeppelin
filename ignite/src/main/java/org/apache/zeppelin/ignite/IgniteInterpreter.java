@@ -76,22 +76,6 @@ public class IgniteInterpreter extends Interpreter {
 
   static final String IGNITE_CFG_URL = "ignite.config.url";
 
-  static {
-    Interpreter.register(
-            "ignite",
-            "ignite",
-            IgniteInterpreter.class.getName(),
-            true,
-            new InterpreterPropertyBuilder()
-                    .add(IGNITE_ADDRESSES, "127.0.0.1:47500..47509",
-                            "Coma separated list of addresses "
-                                    + "(e.g. 127.0.0.1:47500 or 127.0.0.1:47500..47509)")
-                    .add(IGNITE_CLIENT_MODE, "true", "Client mode. true or false")
-                    .add(IGNITE_CFG_URL, "", "Configuration URL. Overrides all other settings.")
-                    .add(IGNITE_PEER_CLASS_LOADING_ENABLED, "true",
-                            "Peer class loading enabled. true or false")
-                    .build());
-  }
 
   private Logger logger = LoggerFactory.getLogger(IgniteInterpreter.class);
   private Ignite ignite;
