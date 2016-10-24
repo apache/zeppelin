@@ -19,11 +19,11 @@ limitations under the License.
           Interpreters
         </h3>
         <div class="pull-right" style="margin-top:10px;">
-          <span style="cursor:pointer;margin-right:4px;"
-                ng-click="showRepositoryInfo = !showRepositoryInfo"
-                tooltip-placement="bottom" tooltip="Repository information">
-            <i class="fa fa-cog" ng-style="{color: showRepositoryInfo ? '#3071A9' : 'black' }"></i>
-          </span>
+          <button class="btn btn-default btn-sm"
+                  ng-click="showRepositoryInfo = !showRepositoryInfo">
+            <i class="fa fa-database" ng-style="{color: showRepositoryInfo ? '#3071A9' : 'black' }"></i>
+            Repository
+          </button>
           <button class="btn btn-default btn-sm"
                   ng-click="showAddNewSetting = !showAddNewSetting">
             <i class="fa fa-plus"></i>
