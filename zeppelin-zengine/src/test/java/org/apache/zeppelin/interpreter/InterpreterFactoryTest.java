@@ -18,6 +18,8 @@
 package org.apache.zeppelin.interpreter;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -26,6 +28,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Properties;
 
+import com.google.gson.Gson;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.NullArgumentException;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
@@ -34,7 +37,6 @@ import org.apache.zeppelin.dep.Dependency;
 import org.apache.zeppelin.dep.DependencyResolver;
 import org.apache.zeppelin.interpreter.mock.MockInterpreter1;
 import org.apache.zeppelin.interpreter.mock.MockInterpreter2;
-import org.apache.zeppelin.notebook.repo.zeppelinhub.security.Authentication;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreter;
 import org.apache.zeppelin.notebook.JobListenerFactory;
@@ -194,11 +196,42 @@ public class InterpreterFactoryTest {
   }
 
   @Test
+  public void testInterpreterSettingPropertyClass() throws IOException, RepositoryException {
+    // check if default interpreter reference's property type is map
+    Map<String, InterpreterSetting> interpreterSettingRefs = factory.getAvailableInterpreterSettings();
+    InterpreterSetting intpSetting = interpreterSettingRefs.get("mock1");
+    Map<String, InterpreterProperty> intpProperties =
+        (Map<String, InterpreterProperty>) intpSetting.getProperties();
+    assertTrue(intpProperties instanceof Map);
+
+    // check if interpreter instance is saved as Properties in conf/interpreter.json file
+    Properties properties = new Properties();
+    properties.put("key1", "value1");
+    properties.put("key2", "value2");
+
+    factory.createNewSetting("newMock", "mock1", new LinkedList<Dependency>(), new InterpreterOption(false), properties);
+
+    String confFilePath = conf.getInterpreterSettingPath();
+    byte[] encoded = Files.readAllBytes(Paths.get(confFilePath));
+    String json = new String(encoded, "UTF-8");
+
+    Gson gson = new Gson();
+    InterpreterInfoSaving infoSaving = gson.fromJson(json, InterpreterInfoSaving.class);
+    Map<String, InterpreterSetting> interpreterSettings = infoSaving.interpreterSettings;
+    for (String key : interpreterSettings.keySet()) {
+      InterpreterSetting setting = interpreterSettings.get(key);
+      if (setting.getName().equals("newMock")) {
+        assertEquals(setting.getProperties().toString(), properties.toString());
+      }
+    }
+  }
+
+  @Test
   public void testInterpreterAliases() throws IOException, RepositoryException {
     factory = new InterpreterFactory(conf, null, null, null, depResolver, false);
     final InterpreterInfo info1 = new InterpreterInfo("className1", "name1", true, null);
     final InterpreterInfo info2 = new InterpreterInfo("className2", "name1", true, null);
-    factory.add("group1", new ArrayList<InterpreterInfo>(){{
+    factory.add("group1", new ArrayList<InterpreterInfo>() {{
       add(info1);
     }}, new ArrayList<Dependency>(), new InterpreterOption(true), Collections.EMPTY_MAP, "/path1");
     factory.add("group2", new ArrayList<InterpreterInfo>(){{

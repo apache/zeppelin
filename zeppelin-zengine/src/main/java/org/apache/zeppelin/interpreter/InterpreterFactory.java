@@ -53,6 +53,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.internal.StringMap;
 import com.google.gson.reflect.TypeToken;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.ArrayUtils;
@@ -286,7 +287,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
   private InterpreterSetting createFromInterpreterSettingRef(InterpreterSetting o) {
     InterpreterSetting setting =
         new InterpreterSetting(o.getName(), o.getName(), o.getInterpreterInfos(),
-            convertInterpreterProperties((Map <String, InterpreterProperty>) o.getProperties()),
+            convertInterpreterProperties((Map<String, InterpreterProperty>) o.getProperties()),
             o.getDependencies(), o.getOption(), o.getPath());
     setting.setInterpreterGroupFactory(this);
     return setting;
@@ -381,6 +382,14 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     for (String k : infoSaving.interpreterSettings.keySet()) {
       InterpreterSetting setting = infoSaving.interpreterSettings.get(k);
       List<InterpreterInfo> infos = setting.getInterpreterInfos();
+
+      // Convert json StringMap to Properties
+      StringMap<String> p = (StringMap<String>) setting.getProperties();
+      Properties properties = new Properties();
+      for (String key : p.keySet()) {
+        properties.put(key, p.get(key));
+      }
+      setting.setProperties(properties);
 
       // Always use separate interpreter process
       // While we decided to turn this feature on always (without providing
