@@ -33,7 +33,6 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.vfs2.FileContent;
 import org.apache.commons.vfs2.FileObject;
-import org.apache.commons.vfs2.FileSystemException;
 import org.apache.commons.vfs2.FileSystemManager;
 import org.apache.commons.vfs2.FileType;
 import org.apache.commons.vfs2.NameScope;
@@ -44,15 +43,13 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.notebook.ApplicationState;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
-import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.notebook.NotebookImportDeserializer;
+import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -61,7 +58,7 @@ import com.google.gson.GsonBuilder;
 *
 */
 public class VFSNotebookRepo implements NotebookRepo {
-  private final static Logger LOG = LoggerFactory.getLogger(VFSNotebookRepo.class);
+  private static final Logger LOG = LoggerFactory.getLogger(VFSNotebookRepo.class);
 
   private FileSystemManager fsManager;
   private URI filesystemRoot;
@@ -328,7 +325,8 @@ public class VFSNotebookRepo implements NotebookRepo {
       LOG.error("Notebook path is invalid");
       return;
     }
-    LOG.warn("{} will change notebook dir from {} to {}", getNotebookDirPath(), newNotebookDirectotyPath);
+    LOG.warn("{} will change notebook dir from {} to {}",
+        getNotebookDirPath(), newNotebookDirectotyPath);
     try {
       setNotebookDirectory(newNotebookDirectotyPath);
     } catch (IOException e) {

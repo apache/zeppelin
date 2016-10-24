@@ -20,25 +20,25 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Notebook repo settings.
- * This represent a structure of a notebook repo settings that will mostly used in the frontend.
+ * Notebook repo settings. This represent a structure of a notebook repo settings that will mostly
+ * used in the frontend.
  *
  */
 public class NotebookRepoSettings {
 
-    /**
-     * Type of value, It can be text or list.
-     */
-    public enum Type {
-        INPUT, DROPDOWN
-    }
+  /**
+   * Type of value, It can be text or list.
+   */
+  public enum Type {
+    INPUT, DROPDOWN
+  }
 
-    public static NotebookRepoSettings newInstance() {
-        return new NotebookRepoSettings();
-    }
+  public static NotebookRepoSettings newInstance() {
+    return new NotebookRepoSettings();
+  }
 
-    public Type type;
-    public List<Map<String, String>> value;
-    public String selected;
-    public String name;
+  public Type type;
+  public List<Map<String, String>> value;
+  public String selected;
+  public String name;
 }

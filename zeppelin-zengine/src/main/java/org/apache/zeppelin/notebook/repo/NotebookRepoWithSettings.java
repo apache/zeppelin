@@ -22,59 +22,58 @@ import java.util.List;
 import org.apache.commons.lang.StringUtils;
 
 /**
- * Representation of a notebook repo with settings.
- * This is mostly a Wrapper around notebook repo information plus settings.
+ * Representation of a notebook repo with settings. This is mostly a Wrapper around notebook repo
+ * information plus settings.
  */
 public class NotebookRepoWithSettings {
 
-    public static final NotebookRepoWithSettings EMPTY = NotebookRepoWithSettings
-            .builder(StringUtils.EMPTY)
-            .build();
+  public static final NotebookRepoWithSettings EMPTY =
+      NotebookRepoWithSettings.builder(StringUtils.EMPTY).build();
 
-    public String name;
-    public String className;
-    public List<NotebookRepoSettings> settings;
+  public String name;
+  public String className;
+  public List<NotebookRepoSettings> settings;
 
-    private NotebookRepoWithSettings() {}
+  private NotebookRepoWithSettings() {}
 
-    public static Builder builder(String name) {
-        return new Builder(name);
+  public static Builder builder(String name) {
+    return new Builder(name);
+  }
+
+  private NotebookRepoWithSettings(Builder builder) {
+    name = builder.name;
+    className = builder.className;
+    settings = builder.settings;
+  }
+
+  public boolean isEmpty() {
+    return this.equals(EMPTY);
+  }
+
+  /**
+   * Simple builder :).
+   */
+  public static class Builder {
+    private final String name;
+    private String className = StringUtils.EMPTY;
+    private List<NotebookRepoSettings> settings = Collections.emptyList();
+
+    public Builder(String name) {
+      this.name = name;
     }
 
-    private NotebookRepoWithSettings(Builder builder) {
-        name = builder.name;
-        className = builder.className;
-        settings = builder.settings;
+    public NotebookRepoWithSettings build() {
+      return new NotebookRepoWithSettings(this);
     }
 
-    public boolean isEmpty() {
-        return this.equals(EMPTY);
+    public Builder className(String className) {
+      this.className = className;
+      return this;
     }
 
-    /**
-     * Simple builder :).
-     */
-    public static class Builder {
-        private final String name;
-        private String className = StringUtils.EMPTY;
-        private List<NotebookRepoSettings> settings = Collections.emptyList();
-
-        public Builder(String name) {
-            this.name = name;
-        }
-
-        public NotebookRepoWithSettings build() {
-            return new NotebookRepoWithSettings(this);
-        }
-
-        public Builder className(String className) {
-            this.className = className;
-            return this;
-        }
-
-        public Builder settings(List<NotebookRepoSettings> settings) {
-            this.settings = settings;
-            return this;
-        }
+    public Builder settings(List<NotebookRepoSettings> settings) {
+      this.settings = settings;
+      return this;
     }
+  }
 }
