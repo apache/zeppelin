@@ -32,7 +32,7 @@ public class NotebookRepoWithSettings {
 
   public String name;
   public String className;
-  public List<NotebookRepoSettings> settings;
+  public List<NotebookRepoSettingsInfo> settings;
 
   private NotebookRepoWithSettings() {}
 
@@ -56,7 +56,7 @@ public class NotebookRepoWithSettings {
   public static class Builder {
     private final String name;
     private String className = StringUtils.EMPTY;
-    private List<NotebookRepoSettings> settings = Collections.emptyList();
+    private List<NotebookRepoSettingsInfo> settings = Collections.emptyList();
 
     public Builder(String name) {
       this.name = name;
@@ -71,7 +71,7 @@ public class NotebookRepoWithSettings {
       return this;
     }
 
-    public Builder settings(List<NotebookRepoSettings> settings) {
+    public Builder settings(List<NotebookRepoSettingsInfo> settings) {
       this.settings = settings;
       return this;
     }

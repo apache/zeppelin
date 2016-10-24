@@ -107,7 +107,7 @@ public interface NotebookRepo {
    * @param subject
    * @return
    */
-  @ZeppelinApi public List<NotebookRepoSettings> getSettings(AuthenticationInfo subject);
+  @ZeppelinApi public List<NotebookRepoSettingsInfo> getSettings(AuthenticationInfo subject);
 
   /**
    * update notebook repo settings.

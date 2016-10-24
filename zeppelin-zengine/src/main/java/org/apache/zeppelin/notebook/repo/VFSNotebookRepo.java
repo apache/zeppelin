@@ -297,12 +297,12 @@ public class VFSNotebookRepo implements NotebookRepo {
   }
 
   @Override
-  public List<NotebookRepoSettings> getSettings(AuthenticationInfo subject) {
-    NotebookRepoSettings repoSetting = NotebookRepoSettings.newInstance();
-    List<NotebookRepoSettings> settings = Lists.newArrayList();
+  public List<NotebookRepoSettingsInfo> getSettings(AuthenticationInfo subject) {
+    NotebookRepoSettingsInfo repoSetting = NotebookRepoSettingsInfo.newInstance();
+    List<NotebookRepoSettingsInfo> settings = Lists.newArrayList();
 
     repoSetting.name = "Notebook Path";
-    repoSetting.type = NotebookRepoSettings.Type.INPUT;
+    repoSetting.type = NotebookRepoSettingsInfo.Type.INPUT;
     repoSetting.value = Collections.emptyList();
     repoSetting.selected = getNotebookDirPath();
 

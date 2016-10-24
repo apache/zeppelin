@@ -17,8 +17,6 @@
 
 package org.apache.zeppelin.notebook.repo;
 
-import com.google.common.collect.Lists;
-
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -26,7 +24,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -40,6 +37,8 @@ import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.Lists;
 
 /**
  * Notebook repository sync with remote storage
@@ -481,8 +480,8 @@ public class NotebookRepoSync implements NotebookRepo {
   }
 
   @Override
-  public List<NotebookRepoSettings> getSettings(AuthenticationInfo subject) {
-    List<NotebookRepoSettings> repoSettings = Collections.emptyList();
+  public List<NotebookRepoSettingsInfo> getSettings(AuthenticationInfo subject) {
+    List<NotebookRepoSettingsInfo> repoSettings = Collections.emptyList();
     try {
       repoSettings =  getRepo(0).getSettings(subject);
     } catch (IOException e) {

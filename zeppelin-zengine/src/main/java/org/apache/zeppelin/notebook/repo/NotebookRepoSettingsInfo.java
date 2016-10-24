@@ -24,7 +24,7 @@ import java.util.Map;
  * used in the frontend.
  *
  */
-public class NotebookRepoSettings {
+public class NotebookRepoSettingsInfo {
 
   /**
    * Type of value, It can be text or list.
@@ -33,8 +33,8 @@ public class NotebookRepoSettings {
     INPUT, DROPDOWN
   }
 
-  public static NotebookRepoSettings newInstance() {
-    return new NotebookRepoSettings();
+  public static NotebookRepoSettingsInfo newInstance() {
+    return new NotebookRepoSettingsInfo();
   }
 
   public Type type;
