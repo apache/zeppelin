@@ -286,7 +286,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
   private InterpreterSetting createFromInterpreterSettingRef(InterpreterSetting o) {
     InterpreterSetting setting =
         new InterpreterSetting(o.getName(), o.getName(), o.getInterpreterInfos(),
-            convertInterpreterProperties((Map <String, InterpreterProperty>)o.getProperties()),
+            convertInterpreterProperties((Map <String, InterpreterProperty>) o.getProperties()),
             o.getDependencies(), o.getOption(), o.getPath());
     setting.setInterpreterGroupFactory(this);
     return setting;
@@ -612,7 +612,8 @@ public class InterpreterFactory implements InterpreterGroupFactory {
       throws InterpreterException, IOException, RepositoryException {
     ArrayList<InterpreterInfo> infos = new ArrayList<>();
     infos.add(interpreterInfo);
-    return add(group, infos, new ArrayList<Dependency>(), defaultOption, interpreterProperties, path);
+    return add(group, infos, new ArrayList<Dependency>(), defaultOption,
+        interpreterProperties, path);
   }
 
   /**
@@ -667,8 +668,8 @@ public class InterpreterFactory implements InterpreterGroupFactory {
 
       } else {
         interpreterSetting =
-            new InterpreterSetting(group, null, interpreterInfos, interpreterProperties, dependencies, option,
-                path);
+            new InterpreterSetting(group, null, interpreterInfos, interpreterProperties,
+                dependencies, option, path);
         interpreterSettingsRef.put(group, interpreterSetting);
       }
     }
