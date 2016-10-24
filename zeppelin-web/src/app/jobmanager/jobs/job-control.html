@@ -12,16 +12,16 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<div id="{{notebookJob.notebookId}}_control" class="control">
+<div id="{{notebookJob.noteId}}_control" class="control">
   <span>
     {{lastExecuteTime(notebookJob.unixTimeLastRun)}}
   </span>
   <span>
     <span ng-if="notebookJob.isRunningJob === true">
-      Notebook is RUNNING
+      Note is RUNNING
     </span>
     <span ng-if="notebookJob.isRunningJob === false">
-      Notebook is READY
+      Note is READY
     </span>
   </span>
 

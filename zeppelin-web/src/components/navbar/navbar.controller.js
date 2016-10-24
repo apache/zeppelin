@@ -22,7 +22,7 @@
     '$http',
     '$routeParams',
     '$location',
-    'notebookListDataFactory',
+    'noteListDataFactory',
     'baseUrlSrv',
     'websocketMsgSrv',
     'arrayOrderingSrv',
@@ -30,14 +30,14 @@
   ];
 
   function NavCtrl($scope, $rootScope, $http, $routeParams, $location,
-                   notebookListDataFactory, baseUrlSrv, websocketMsgSrv,
+                   noteListDataFactory, baseUrlSrv, websocketMsgSrv,
                    arrayOrderingSrv, searchService) {
     var vm = this;
     vm.arrayOrderingSrv = arrayOrderingSrv;
     vm.connected = websocketMsgSrv.isConnected();
     vm.isActive = isActive;
     vm.logout = logout;
-    vm.notes = notebookListDataFactory;
+    vm.notes = noteListDataFactory;
     vm.search = search;
     vm.searchForm = searchService;
     vm.showLoginWindow = showLoginWindow;
@@ -57,7 +57,7 @@
     }
 
     function initController() {
-      $scope.isDrawNavbarNotebookList = false;
+      $scope.isDrawNavbarNoteList = false;
       angular.element('#notebook-list').perfectScrollbar({suppressScrollX: true});
 
       angular.element(document).click(function() {
@@ -73,7 +73,7 @@
     }
 
     function loadNotes() {
-      websocketMsgSrv.getNotebookList();
+      websocketMsgSrv.getNoteList();
     }
 
     function logout() {
@@ -113,7 +113,7 @@
     */
 
     $scope.$on('setNoteMenu', function(event, notes) {
-      notebookListDataFactory.setNotes(notes);
+      noteListDataFactory.setNotes(notes);
     });
 
     $scope.$on('setConnectedStatus', function(event, param) {
@@ -129,11 +129,11 @@
     */
     angular.element(document).ready(function() {
       angular.element('.notebook-list-dropdown').on('show.bs.dropdown', function() {
-        $scope.isDrawNavbarNotebookList = true;
+        $scope.isDrawNavbarNoteList = true;
       });
 
       angular.element('.notebook-list-dropdown').on('hide.bs.dropdown', function() {
-        $scope.isDrawNavbarNotebookList = false;
+        $scope.isDrawNavbarNoteList = false;
       });
     });
   }

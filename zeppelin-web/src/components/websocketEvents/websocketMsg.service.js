@@ -21,23 +21,23 @@
   function websocketMsgSrv($rootScope, websocketEvents) {
     return {
 
-      getHomeNotebook: function() {
+      getHomeNote: function() {
         websocketEvents.sendNewEvent({op: 'GET_HOME_NOTE'});
       },
 
-      createNotebook: function(noteName) {
+      createNote: function(noteName) {
         websocketEvents.sendNewEvent({op: 'NEW_NOTE',data: {name: noteName}});
       },
 
-      deleteNotebook: function(noteId) {
+      deleteNote: function(noteId) {
         websocketEvents.sendNewEvent({op: 'DEL_NOTE', data: {id: noteId}});
       },
 
-      cloneNotebook: function(noteIdToClone, newNoteName) {
+      cloneNote: function(noteIdToClone, newNoteName) {
         websocketEvents.sendNewEvent({op: 'CLONE_NOTE', data: {id: noteIdToClone, name: newNoteName}});
       },
 
-      getNotebookList: function() {
+      getNoteList: function() {
         websocketEvents.sendNewEvent({op: 'LIST_NOTES'});
       },
 
@@ -45,11 +45,11 @@
         websocketEvents.sendNewEvent({op: 'RELOAD_NOTES_FROM_REPO'});
       },
 
-      getNotebook: function(noteId) {
+      getNote: function(noteId) {
         websocketEvents.sendNewEvent({op: 'GET_NOTE', data: {id: noteId}});
       },
 
-      updateNotebook: function(noteId, noteName, noteConfig) {
+      updateNote: function(noteId, noteName, noteConfig) {
         websocketEvents.sendNewEvent({op: 'NOTE_UPDATE', data: {id: noteId, name: noteName, config: noteConfig}});
       },
 
@@ -146,18 +146,18 @@
         });
       },
 
-      importNotebook: function(notebook) {
+      importNote: function(note) {
         websocketEvents.sendNewEvent({
           op: 'IMPORT_NOTE',
           data: {
-            notebook: notebook
+            note: note
           }
         });
       },
 
-      checkpointNotebook: function(noteId, commitMessage) {
+      checkpointNote: function(noteId, commitMessage) {
         websocketEvents.sendNewEvent({
-          op: 'CHECKPOINT_NOTEBOOK',
+          op: 'CHECKPOINT_NOTE',
           data: {
             noteId: noteId,
             commitMessage: commitMessage
@@ -198,27 +198,27 @@
         return websocketEvents.isConnected();
       },
 
-      getNotebookJobsList: function() {
-        websocketEvents.sendNewEvent({op: 'LIST_NOTEBOOK_JOBS'});
+      getNoteJobsList: function() {
+        websocketEvents.sendNewEvent({op: 'LIST_NOTE_JOBS'});
       },
 
-      getUpdateNotebookJobsList: function(lastUpdateServerUnixTime) {
+      getUpdateNoteJobsList: function(lastUpdateServerUnixTime) {
         websocketEvents.sendNewEvent(
-          {op: 'LIST_UPDATE_NOTEBOOK_JOBS', data: {lastUpdateUnixTime: lastUpdateServerUnixTime * 1}}
+          {op: 'LIST_UPDATE_NOTE_JOBS', data: {lastUpdateUnixTime: lastUpdateServerUnixTime * 1}}
         );
       },
 
       unsubscribeJobManager: function() {
-        websocketEvents.sendNewEvent({op: 'UNSUBSCRIBE_UPDATE_NOTEBOOK_JOBS'});
+        websocketEvents.sendNewEvent({op: 'UNSUBSCRIBE_UPDATE_NOTE_JOBS'});
       },
 
-      getInterpreterBindings: function(noteID) {
-        websocketEvents.sendNewEvent({op: 'GET_INTERPRETER_BINDINGS', data: {noteID: noteID}});
+      getInterpreterBindings: function(noteId) {
+        websocketEvents.sendNewEvent({op: 'GET_INTERPRETER_BINDINGS', data: {noteId: noteId}});
       },
 
-      saveInterpreterBindings: function(noteID, selectedSettingIds) {
+      saveInterpreterBindings: function(noteId, selectedSettingIds) {
         websocketEvents.sendNewEvent({op: 'SAVE_INTERPRETER_BINDINGS',
-          data: {noteID: noteID, selectedSettingIds: selectedSettingIds}});
+          data: {noteId: noteId, selectedSettingIds: selectedSettingIds}});
       },
 
       listConfigurations: function() {

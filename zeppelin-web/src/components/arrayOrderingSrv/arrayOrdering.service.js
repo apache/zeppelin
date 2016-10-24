@@ -19,7 +19,7 @@
   function arrayOrderingSrv() {
     var arrayOrderingSrv = this;
 
-    this.notebookListOrdering = function(note) {
+    this.noteListOrdering = function(note) {
       return arrayOrderingSrv.getNoteName(note);
     };
 
