@@ -193,7 +193,7 @@ public class NotebookRepoSync implements NotebookRepo {
       for (String id : pushNoteIds) {
         LOG.info("ID : " + id);
       }
-      pushNotes(subject, pushNoteIDs, srcRepo, dstRepo, false);
+      pushNotes(subject, pushNoteIds, srcRepo, dstRepo, false);
     } else {
       LOG.info("Nothing to push");
     }
@@ -203,7 +203,7 @@ public class NotebookRepoSync implements NotebookRepo {
       for (String id : pullNoteIds) {
         LOG.info("ID : " + id);
       }
-      pushNotes(subject, pullNoteIDs, dstRepo, srcRepo, true);
+      pushNotes(subject, pullNoteIds, dstRepo, srcRepo, true);
     } else {
       LOG.info("Nothing to pull");
     }
