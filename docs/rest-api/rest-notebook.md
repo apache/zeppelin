@@ -498,7 +498,7 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
     </tr>
     <tr>
       <td>URL</td>
-      <td>```http://[zeppelin-server]:[zeppelin-port]/api/notebook/job/[notebookId]/[paragraphId]```</td>
+      <td>```http://[zeppelin-server]:[zeppelin-port]/api/notebook/run/[notebookId]/[paragraphId]```</td>
     </tr>
     <tr>
       <td>Success code</td>
