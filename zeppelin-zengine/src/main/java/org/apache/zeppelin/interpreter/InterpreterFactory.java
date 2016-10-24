@@ -127,6 +127,10 @@ public class InterpreterFactory implements InterpreterGroupFactory {
 
   private Interpreter devInterpreter;
 
+  private static final Map<String, Object> DEFAULT_EDITOR = ImmutableMap.of(
+      "language", (Object) "text",
+      "editOnDblClick", false);
+
   public InterpreterFactory(ZeppelinConfiguration conf,
       AngularObjectRegistryListener angularObjectRegistryListener,
       RemoteInterpreterProcessListener remoteInterpreterProcessListener,
@@ -429,11 +433,15 @@ public class InterpreterFactory implements InterpreterGroupFactory {
       String className) {
     List<InterpreterInfo> intpInfos = intpSetting.getInterpreterInfos();
     for (InterpreterInfo intpInfo : intpInfos) {
+
       if (className.equals(intpInfo.getClassName())) {
+        if (intpInfo.getEditor() == null) {
+          break;
+        }
         return intpInfo.getEditor();
       }
     }
-    return ImmutableMap.of("language", (Object) "text");
+    return DEFAULT_EDITOR;
   }
 
   private void loadInterpreterDependencies(final InterpreterSetting setting) {
@@ -1349,10 +1357,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
 
   public Map<String, Object> getEditorSetting(String user, String noteId, String replName) {
     Interpreter intp = getInterpreter(user, noteId, replName);
-    Map<String, Object> editor = Maps.newHashMap(
-        ImmutableMap.<String, Object>builder()
-            .put("language", "text")
-            .put("editOnDblClick", false).build());
+    Map<String, Object> editor = DEFAULT_EDITOR;
     String defaultSettingName = getDefaultInterpreterSetting(noteId).getName();
     String group = StringUtils.EMPTY;
     try {
@@ -1373,7 +1378,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
         }
       }
     } catch (NullPointerException e) {
-      logger.warn("Couldn't get interpreter editor language");
+      logger.warn("Couldn't get interpreter editor setting");
     }
     return editor;
   }
