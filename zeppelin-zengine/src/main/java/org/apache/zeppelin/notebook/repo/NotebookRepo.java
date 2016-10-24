@@ -39,7 +39,7 @@ public interface NotebookRepo {
 
   /**
    * Get the notebook with the given id.
-   * @param noteId is notebook id.
+   * @param noteId is note id.
    * @param subject contains user information.
    * @return
    * @throws IOException

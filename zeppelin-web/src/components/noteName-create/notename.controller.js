@@ -18,24 +18,24 @@
 
   NotenameCtrl.$inject = [
     '$scope',
-    'notebookListDataFactory',
+    'noteListDataFactory',
     '$routeParams',
     'websocketMsgSrv'
   ];
 
-  function NotenameCtrl($scope, notebookListDataFactory, $routeParams, websocketMsgSrv) {
+  function NotenameCtrl($scope, noteListDataFactory, $routeParams, websocketMsgSrv) {
     var vm = this;
     vm.clone = false;
-    vm.notes = notebookListDataFactory;
+    vm.notes = noteListDataFactory;
     vm.websocketMsgSrv = websocketMsgSrv;
     $scope.note = {};
 
     vm.createNote = function() {
       if (!vm.clone) {
-        vm.websocketMsgSrv.createNotebook($scope.note.notename);
+        vm.websocketMsgSrv.createNote($scope.note.notename);
       } else {
         var noteId = $routeParams.noteId;
-        vm.websocketMsgSrv.cloneNotebook(noteId, $scope.note.notename);
+        vm.websocketMsgSrv.cloneNote(noteId, $scope.note.notename);
       }
     };
 

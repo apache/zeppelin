@@ -6,7 +6,7 @@ describe('Controller: NotebookCtrl', function() {
   var scope;
 
   var websocketMsgSrvMock = {
-    getNotebook: function() {},
+    getNote: function() {},
     listRevisionHistory: function() {},
     getInterpreterBindings: function() {}
   };
@@ -19,7 +19,7 @@ describe('Controller: NotebookCtrl', function() {
 
   var noteMock = {
     id: 1,
-    name: 'my notebook',
+    name: 'my note',
     config: {},
   };
 

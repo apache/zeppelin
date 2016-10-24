@@ -45,9 +45,9 @@ import org.slf4j.LoggerFactory;
 public class NotebookRepoSync implements NotebookRepo {
   private static final Logger LOG = LoggerFactory.getLogger(NotebookRepoSync.class);
   private static final int maxRepoNum = 2;
-  private static final String pushKey = "pushNoteIDs";
-  private static final String pullKey = "pullNoteIDs";
-  private static final String delDstKey = "delDstNoteIDs";
+  private static final String pushKey = "pushNoteIds";
+  private static final String pullKey = "pullNoteIds";
+  private static final String delDstKey = "delDstNoteIds";
 
   private static ZeppelinConfiguration config;
   private static final String defaultStorage = "org.apache.zeppelin.notebook.repo.VFSNotebookRepo";
@@ -56,9 +56,7 @@ public class NotebookRepoSync implements NotebookRepo {
   private final boolean oneWaySync;
 
   /**
-   * @param noteIndex
-   * @param (conf)
-   * @throws - Exception
+   * @param conf
    */
   @SuppressWarnings("static-access")
   public NotebookRepoSync(ZeppelinConfiguration conf) {
@@ -72,7 +70,7 @@ public class NotebookRepoSync implements NotebookRepo {
     String[] storageClassNames = allStorageClassNames.split(",");
     if (storageClassNames.length > getMaxRepoNum()) {
       LOG.warn("Unsupported number {} of storage classes in ZEPPELIN_NOTEBOOK_STORAGE : {}\n" +
-        "first {} will be used", storageClassNames.length, allStorageClassNames, getMaxRepoNum());
+          "first {} will be used", storageClassNames.length, allStorageClassNames, getMaxRepoNum());
     }
 
     for (int i = 0; i < Math.min(storageClassNames.length, getMaxRepoNum()); i++) {
@@ -81,7 +79,7 @@ public class NotebookRepoSync implements NotebookRepo {
       try {
         notebookStorageClass = getClass().forName(storageClassNames[i].trim());
         Constructor<?> constructor = notebookStorageClass.getConstructor(
-                  ZeppelinConfiguration.class);
+            ZeppelinConfiguration.class);
         repos.add((NotebookRepo) constructor.newInstance(conf));
       } catch (ClassNotFoundException | NoSuchMethodException | SecurityException |
           InstantiationException | IllegalAccessException | IllegalArgumentException |
@@ -91,7 +89,7 @@ public class NotebookRepoSync implements NotebookRepo {
     }
     // couldn't initialize any storage, use default
     if (getRepoCount() == 0) {
-      LOG.info("No storages could be initialized, using default {} storage", defaultStorage);
+      LOG.info("No storage could be initialized, using default {} storage", defaultStorage);
       initializeDefaultStorage(conf);
     }
   }
@@ -184,38 +182,38 @@ public class NotebookRepoSync implements NotebookRepo {
     List <NoteInfo> srcNotes = auth.filterByUser(allSrcNotes, subject);
     List <NoteInfo> dstNotes = dstRepo.list(subject);
 
-    Map<String, List<String>> noteIDs = notesCheckDiff(srcNotes, srcRepo, dstNotes, dstRepo,
+    Map<String, List<String>> noteIds = notesCheckDiff(srcNotes, srcRepo, dstNotes, dstRepo,
         subject);
-    List<String> pushNoteIDs = noteIDs.get(pushKey);
-    List<String> pullNoteIDs = noteIDs.get(pullKey);
-    List<String> delDstNoteIDs = noteIDs.get(delDstKey);
+    List<String> pushNoteIds = noteIds.get(pushKey);
+    List<String> pullNoteIds = noteIds.get(pullKey);
+    List<String> delDstNoteIds = noteIds.get(delDstKey);
 
-    if (!pushNoteIDs.isEmpty()) {
+    if (!pushNoteIds.isEmpty()) {
       LOG.info("Notes with the following IDs will be pushed");
-      for (String id : pushNoteIDs) {
+      for (String id : pushNoteIds) {
         LOG.info("ID : " + id);
       }
-      pushNotes(subject, pushNoteIDs, srcRepo, dstRepo, false);
+      pushNotes(subject, pushNoteIds, srcRepo, dstRepo, false);
     } else {
       LOG.info("Nothing to push");
     }
 
-    if (!pullNoteIDs.isEmpty()) {
+    if (!pullNoteIds.isEmpty()) {
       LOG.info("Notes with the following IDs will be pulled");
-      for (String id : pullNoteIDs) {
+      for (String id : pullNoteIds) {
         LOG.info("ID : " + id);
       }
-      pushNotes(subject, pullNoteIDs, dstRepo, srcRepo, true);
+      pushNotes(subject, pullNoteIds, dstRepo, srcRepo, true);
     } else {
       LOG.info("Nothing to pull");
     }
 
-    if (!delDstNoteIDs.isEmpty()) {
+    if (!delDstNoteIds.isEmpty()) {
       LOG.info("Notes with the following IDs will be deleted from dest");
-      for (String id : delDstNoteIDs) {
+      for (String id : delDstNoteIds) {
         LOG.info("ID : " + id);
       }
-      deleteNotes(subject, delDstNoteIDs, dstRepo);
+      deleteNotes(subject, delDstNoteIds, dstRepo);
     } else {
       LOG.info("Nothing to delete from dest");
     }

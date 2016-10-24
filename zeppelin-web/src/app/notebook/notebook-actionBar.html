@@ -53,7 +53,7 @@ limitations under the License.
       <button type="button"
               class="btn btn-default btn-xs"
               ng-hide="viewOnly"
-              tooltip-placement="bottom" tooltip="Clone the notebook" data-source-note-name="{{note.name}}"
+              tooltip-placement="bottom" tooltip="Clone this note" data-source-note-name="{{note.name}}"
               data-toggle="modal" data-target="#noteNameModal" data-clone="true"
               >
         <i class="fa fa-copy"></i>
@@ -61,8 +61,8 @@ limitations under the License.
       <button type="button"
               class="btn btn-default btn-xs"
               ng-hide="viewOnly"
-              ng-click="exportNotebook()"
-              tooltip-placement="bottom" tooltip="Export the notebook">
+              ng-click="exportNote()"
+              tooltip-placement="bottom" tooltip="Export this note">
         <i class="fa fa-download"></i>
       </button>
     </span>
@@ -91,9 +91,9 @@ limitations under the License.
                 <button type="button"
                         class="btn btn-default btn-xs"
                         ng-hide="viewOnly"
-                        ng-click="checkpointNotebook(note.checkpoint.message)"
+                        ng-click="checkpointNote(note.checkpoint.message)"
                         style="margin-left: 4px;"
-                        tooltip-placement="bottom" tooltip="Commit the notebook">Commit
+                        tooltip-placement="bottom" tooltip="Commit this note">Commit
                 </button>
               </div>
             </div>
@@ -130,7 +130,7 @@ limitations under the License.
                 class="btn btn-default btn-xs"
                 ng-click="removeNote(note.id)"
                 ng-hide="viewOnly"
-                tooltip-placement="bottom" tooltip="Remove the notebook">
+                tooltip-placement="bottom" tooltip="Remove this note">
           <i class="icon-trash"></i>
         </button>
       </span>

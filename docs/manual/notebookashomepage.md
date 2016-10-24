@@ -1,7 +1,7 @@
 ---
 layout: page
 title: "Customize Apache Zeppelin homepage"
-description: "Apache Zeppelin allows you to use one of the notebooks you create as your Zeppelin Homepage. With that you can brand your Zeppelin installation, adjust the instruction to your users needs and even translate to other languages."
+description: "Apache Zeppelin allows you to use one of the notes you create as your Zeppelin Homepage. With that you can brand your Zeppelin installation, adjust the instruction to your users needs and even translate to other languages."
 group: manual
 ---
 <!--
@@ -23,37 +23,37 @@ limitations under the License.
 
 <div id="toc"></div>
 
-Apache Zeppelin allows you to use one of the notebooks you create as your Zeppelin Homepage.
+Apache Zeppelin allows you to use one of the notes you create as your Zeppelin Homepage.
 With that you can brand your Zeppelin installation, adjust the instruction to your users needs and even translate to other languages.
 
-## How to set a notebook as your Zeppelin homepage
+## How to set a note as your Zeppelin homepage
 
 The process for creating your homepage is very simple as shown below:
 
-1. Create a notebook using Zeppelin
-2. Set the notebook id in the config file
+1. Create a note using Zeppelin
+2. Set the note id in the config file
 3. Restart Zeppelin
 
-### Create a notebook using Zeppelin
-Create a new notebook using Zeppelin,
+### Create a note using Zeppelin
+Create a new note using Zeppelin,
 you can use ```%md``` interpreter for markdown content or any other interpreter you like.
 You can also use the display system to generate [text](../displaysystem/basicdisplaysystem.html#text), [html](../displaysystem/basicdisplaysystem.html#html), [table](../displaysystem/basicdisplaysystem.html#table) or
 Angular ([backend API](../displaysystem/back-end-angular.html), [frontend API](../displaysystem/front-end-angular.html)).
 
-Run (shift+Enter) the notebook and see the output. Optionally, change the notebook view to report to hide
+Run (shift+Enter) the note and see the output. Optionally, change the note view to report to hide
 the code sections.
 
-### Set the notebook id in the config file
-To set the notebook id in the config file, you should copy it from the last word in the notebook url.
+### Set the note id in the config file
+To set the note id in the config file, you should copy it from the last word in the note url.
 For example,
 
 <img src="/assets/themes/zeppelin/img/screenshots/homepage_notebook_id.png" width="400px" />
 
-Set the notebook id to the ```ZEPPELIN_NOTEBOOK_HOMESCREEN``` environment variable
+Set the note id to the ```ZEPPELIN_NOTEBOOK_HOMESCREEN``` environment variable
 or ```zeppelin.notebook.homescreen``` property.
 
 You can also set the ```ZEPPELIN_NOTEBOOK_HOMESCREEN_HIDE``` environment variable
-or ```zeppelin.notebook.homescreen.hide``` property to hide the new notebook from the notebook list.
+or ```zeppelin.notebook.homescreen.hide``` property to hide the new note from the note list.
 
 ### Restart Zeppelin
 Restart your Zeppelin server
@@ -89,7 +89,7 @@ println(
 """)
 ```
 
-After running the notebook you will see output similar to this one:
+After running the note you will see output similar to this one:
 <img src="/assets/themes/zeppelin/img/screenshots/homepage_notebook_list.png" />
 
 The main trick here relays in linking the ```<div>``` to the controller:
@@ -99,4 +99,4 @@ The main trick here relays in linking the ```<div>``` to the controller:
 ```
 
 Once we have ```home``` as our controller variable in our ```<div></div>``` 
-we can use ```home.notes.list``` to get access to the notebook list.
+we can use ```home.notes.list``` to get access to the note list.
