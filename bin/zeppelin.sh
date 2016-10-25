@@ -87,6 +87,20 @@ if [[ ! -d "${ZEPPELIN_NOTEBOOK_DIR}" ]]; then
   $(mkdir -p "${ZEPPELIN_NOTEBOOK_DIR}")
 fi
 
+PORT_NUMBER="8080"
+ZEPPELIN_SITE="conf/zeppelin-site.xml"
+if [ -e "${ZEPPELIN_SITE}" ]; then
+  PORT_NUMBER="$(xmllint --xpath 'string(//configuration/property[@name="zeppelin.server.port"]/value)' conf/zeppelin-site.xml)"
+fi
+
+PORT_LINE="$(cat conf/zeppelin-env.sh | grep ZEPPELIN_PORT | xargs)"
+
+if [[ ! ${#PORT_LINE} -lt 0 ]]; then
+  if [[ $PORT_LINE != \#* ]]; then
+    PORT_NUMBER="$(cat conf/zeppelin-env.sh | grep ZEPPELIN_PORT | cut -d '=' -f2)"
+  fi
+fi
+  
 IP_ADDR="$(ifconfig en0 | grep inet | grep -v inet6 | cut -d ' ' -f2)"
-echo -e "Browse $IP_ADDR:8080 in your browser.\nIf you are testing on your local computer, use localhost:8080"
+echo -e "Browse $IP_ADDR:$PORT_NUMBER in your browser.\nIf you are testing on your local computer, use localhost:$PORT_NUMBER"
 exec $ZEPPELIN_RUNNER $JAVA_OPTS -cp $ZEPPELIN_CLASSPATH_OVERRIDES:$CLASSPATH $ZEPPELIN_SERVER "$@"
