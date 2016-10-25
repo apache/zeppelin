@@ -955,13 +955,29 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     }
   }
 
+  private boolean noteIdIsExist(String noteId) {
+    return noteId == null ? false : true;
+  }
+
+  public void restart(String settingId, String noteId) {
+    InterpreterSetting intpsetting = interpreterSettings.get(settingId);
+    Preconditions.checkNotNull(intpsetting);
+
+    if (noteIdIsExist(noteId) &&
+      intpsetting.getOption().isProcess()) {
+      intpsetting.closeAndRemoveInterpreterGroup(noteId);
+      return;
+    }
+    restart(settingId);
+  }
+
   public void restart(String id) {
     synchronized (interpreterSettings) {
       InterpreterSetting intpsetting = interpreterSettings.get(id);
       // Check if dependency in specified path is changed
       // If it did, overwrite old dependency jar with new one
-      copyDependenciesFromLocalPath(intpsetting);
       if (intpsetting != null) {
+        copyDependenciesFromLocalPath(intpsetting);
 
         stopJobAllInterpreter(intpsetting);
 

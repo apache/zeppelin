@@ -763,6 +763,66 @@ public class NotebookTest implements JobListenerFactory{
     notebook.removeNote(note2.getId(), anonymous);
   }
 
+
+  @Test
+  public void testPerNoteSessionInterpreter() throws IOException {
+    // create two notes
+    Note note1  = notebook.createNote(anonymous);
+    Paragraph p1 = note1.addParagraph();
+
+    Note note2  = notebook.createNote(anonymous);
+    Paragraph p2 = note2.addParagraph();
+
+    p1.setText("getId");
+    p1.setAuthenticationInfo(anonymous);
+    p2.setText("getId");
+    p2.setAuthenticationInfo(anonymous);
+
+    // shared mode.
+    note1.run(p1.getId());
+    note2.run(p2.getId());
+
+    while (p1.getStatus() != Status.FINISHED) Thread.yield();
+    while (p2.getStatus() != Status.FINISHED) Thread.yield();
+
+    assertEquals(p1.getResult().message(), p2.getResult().message());
+
+    // restart interpreter with scoped mode enabled
+    for (InterpreterSetting setting : notebook.getInterpreterFactory().getInterpreterSettings(note1.getId())) {
+      setting.getOption().setPerNote(InterpreterOption.SCOPED);
+      notebook.getInterpreterFactory().restart(setting.getId(), note1.getId());
+      notebook.getInterpreterFactory().restart(setting.getId(), note2.getId());
+    }
+
+    // run per note session enabled
+    note1.run(p1.getId());
+    note2.run(p2.getId());
+
+    while (p1.getStatus() != Status.FINISHED) Thread.yield();
+    while (p2.getStatus() != Status.FINISHED) Thread.yield();
+
+    assertNotEquals(p1.getResult().message(), p2.getResult().message());
+
+    // restart interpreter with isolated mode enabled
+    for (InterpreterSetting setting : notebook.getInterpreterFactory().getInterpreterSettings(note1.getId())) {
+      setting.getOption().setPerNote(InterpreterOption.ISOLATED);
+      notebook.getInterpreterFactory().restart(setting.getId(), note1.getId());
+      notebook.getInterpreterFactory().restart(setting.getId(), note2.getId());
+    }
+
+    // run per note process enabled
+    note1.run(p1.getId());
+    note2.run(p2.getId());
+
+    while (p1.getStatus() != Status.FINISHED) Thread.yield();
+    while (p2.getStatus() != Status.FINISHED) Thread.yield();
+
+    assertNotEquals(p1.getResult().message(), p2.getResult().message());
+
+    notebook.removeNote(note1.getId(), anonymous);
+    notebook.removeNote(note2.getId(), anonymous);
+  }
+
   @Test
   public void testPerSessionInterpreterCloseOnUnbindInterpreterSetting() throws IOException {
     // create a notes
