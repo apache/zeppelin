@@ -30,14 +30,16 @@
     vm.websocketMsgSrv = websocketMsgSrv;
     $scope.note = {};
     $scope.interpreterSettings = {};
+    $scope.note.defaultInterpreter = null;
 
     vm.createNote = function() {
       if (!vm.clone) {
         var defaultInterpreterId = '';
-        if ($scope.note.defaultInterpreter !== undefined && $scope.note.defaultInterpreter !== '') {
+        if ($scope.note.defaultInterpreter !== null) {
           defaultInterpreterId = $scope.note.defaultInterpreter.id;
         }
         vm.websocketMsgSrv.createNotebook($scope.note.notename, defaultInterpreterId);
+        $scope.note.defaultInterpreter = null;
       } else {
         var noteId = $routeParams.noteId;
         vm.websocketMsgSrv.cloneNote(noteId, $scope.note.notename);
