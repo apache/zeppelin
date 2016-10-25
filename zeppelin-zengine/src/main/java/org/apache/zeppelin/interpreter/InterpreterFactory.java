@@ -947,13 +947,16 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     }
   }
 
-  public void restart(String settingId, String noteId) {
-    Preconditions.checkNotNull(noteId);
+  private boolean noteIdIsExist(String noteId) {
+    return noteId == null ? false : true;
+  }
 
+  public void restart(String settingId, String noteId) {
     InterpreterSetting intpsetting = interpreterSettings.get(settingId);
     Preconditions.checkNotNull(intpsetting);
 
-    if (intpsetting.getOption().isProcess()) {
+    if (noteIdIsExist(noteId) &&
+      intpsetting.getOption().isProcess()) {
       intpsetting.closeAndRemoveInterpreterGroup(noteId);
       return;
     }
