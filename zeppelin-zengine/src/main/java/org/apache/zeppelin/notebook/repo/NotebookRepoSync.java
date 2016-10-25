@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -38,6 +37,8 @@ import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.Lists;
 
 /**
  * Notebook repository sync with remote storage
@@ -107,6 +108,39 @@ public class NotebookRepoSync implements NotebookRepo {
         InvocationTargetException e) {
       LOG.warn("Failed to initialize {} notebook storage class {}", defaultStorage, e);
     }
+  }
+
+  public List<NotebookRepoWithSettings> getNotebookRepos(AuthenticationInfo subject) {
+    List<NotebookRepoWithSettings> reposSetting = Lists.newArrayList();
+
+    NotebookRepoWithSettings repoWithSettings;
+    for (NotebookRepo repo : repos) {
+      repoWithSettings = NotebookRepoWithSettings
+                           .builder(repo.getClass().getSimpleName())
+                           .className(repo.getClass().getName())
+                           .settings(repo.getSettings(subject))
+                           .build();
+      reposSetting.add(repoWithSettings);
+    }
+
+    return reposSetting;
+  }
+
+  public NotebookRepoWithSettings updateNotebookRepo(String name, Map<String, String> settings,
+                                                     AuthenticationInfo subject) {
+    NotebookRepoWithSettings updatedSettings = NotebookRepoWithSettings.EMPTY;
+    for (NotebookRepo repo : repos) {
+      if (repo.getClass().getName().equals(name)) {
+        repo.updateSettings(settings, subject);
+        updatedSettings = NotebookRepoWithSettings
+                            .builder(repo.getClass().getSimpleName())
+                            .className(repo.getClass().getName())
+                            .settings(repo.getSettings(subject))
+                            .build();
+        break;
+      }
+    }
+    return updatedSettings;
   }
 
   /**
@@ -443,5 +477,25 @@ public class NotebookRepoSync implements NotebookRepo {
       LOG.error("Failed to list revision history", e);
     }
     return revisions;
+  }
+
+  @Override
+  public List<NotebookRepoSettingsInfo> getSettings(AuthenticationInfo subject) {
+    List<NotebookRepoSettingsInfo> repoSettings = Collections.emptyList();
+    try {
+      repoSettings =  getRepo(0).getSettings(subject);
+    } catch (IOException e) {
+      LOG.error("Cannot get notebook repo settings", e);
+    }
+    return repoSettings;
+  }
+
+  @Override
+  public void updateSettings(Map<String, String> settings, AuthenticationInfo subject) {
+    try {
+      getRepo(0).updateSettings(settings, subject);
+    } catch (IOException e) {
+      LOG.error("Cannot update notebook repo settings", e);
+    }
   }
 }
