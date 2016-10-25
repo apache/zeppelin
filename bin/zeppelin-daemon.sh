@@ -96,15 +96,18 @@ function initialize_default_directories() {
 
   PORT_NUMBER="8080"
   ZEPPELIN_SITE="conf/zeppelin-site.xml"
+  ZEPPELIN_ENV="conf/zeppelin-env.sh"
   if [ -e "${ZEPPELIN_SITE}" ]; then
     PORT_NUMBER="$(xmllint --xpath 'string(//configuration/property[@name="zeppelin.server.port"]/value)' conf/zeppelin-site.xml)"
   fi
 
-  PORT_LINE="$(cat conf/zeppelin-env.sh | grep ZEPPELIN_PORT | xargs)"
 
-  if [[ ! ${#PORT_LINE} -lt 0 ]]; then
-    if [[ $PORT_LINE != \#* ]]; then
-      PORT_NUMBER="$(cat conf/zeppelin-env.sh | grep ZEPPELIN_PORT | cut -d '=' -f2)"
+  if [ -e "${ZEPPELIN_ENV}" ]; then
+    PORT_LINE="$(cat conf/zeppelin-env.sh | grep ZEPPELIN_PORT | xargs)"
+    if [[ ! ${#PORT_LINE} -lt 0 ]]; then
+      if [[ $PORT_LINE != \#* ]]; then
+        PORT_NUMBER="$(cat conf/zeppelin-env.sh | grep ZEPPELIN_PORT | cut -d '=' -f2)"
+      fi
     fi
   fi
   
