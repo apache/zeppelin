@@ -26,5 +26,24 @@
     "name": "sql",
     "className": "org.apache.zeppelin.python.PythonInterpreterPandasSql",
     "properties": { }
+  },
+  {
+    "group": "python2",
+    "name": "python2",
+    "className": "org.apache.zeppelin.python2.PythonInterpreter2",
+    "properties": {
+      "zeppelin.python": {
+        "envName": null,
+        "propertyName": "zeppelin.python2",
+        "defaultValue": "python",
+        "description": "Python directory. It is set to python by default.(assume python is in your $PATH)"
+      },
+      "zeppelin.python2.maxResult": {
+        "envName": null,
+        "propertyName": "zeppelin.python.maxResult",
+        "defaultValue": "1000",
+        "description": "Max number of dataframe rows to display."
+      }
+    }
   }
 ]

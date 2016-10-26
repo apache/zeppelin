@@ -112,3 +112,6 @@ tramp
 
 # tmp files
 /tmp/
+
+# Python
+*.pyc
