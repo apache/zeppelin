@@ -115,6 +115,15 @@
 
       initializeDefault();
 
+      // clover test
+      $scope.paragraph.restfulObject = { hello: 'world'};
+      $scope.restfulOptions={
+        'mode': 'form',
+        'history': false,
+        'theme': 'ace/theme/chrome',
+        'search': false
+      };
+
       if ($scope.getResultType() === 'TABLE') {
         $scope.loadTableData($scope.paragraph.result);
         $scope.setGraphMode($scope.getGraphMode(), false, false);

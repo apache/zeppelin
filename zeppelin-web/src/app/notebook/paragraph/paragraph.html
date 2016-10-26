@@ -37,6 +37,14 @@ limitations under the License.
 
   <div>
     <div ng-show="!paragraph.config.editorHide && !viewOnly" style="margin-bottom:3px;">
+      <div>
+        <div
+          restful-editor
+          style="height: 400px; margin-top: 30px;"
+          type="text"
+          model="paragraph.restfulObject"
+          options="restfulOptions" />
+      </div>
       <div id="{{paragraph.id}}_editor"
            class="editor"
            ui-ace="{
