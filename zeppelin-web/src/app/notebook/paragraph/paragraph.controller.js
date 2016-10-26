@@ -25,6 +25,7 @@
     '$location',
     '$timeout',
     '$compile',
+    '$interpolate',
     '$http',
     '$q',
     'websocketMsgSrv',
@@ -34,7 +35,7 @@
   ];
 
   function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $location,
-                         $timeout, $compile, $http, $q, websocketMsgSrv,
+                         $timeout, $compile, $interpolate, $http, $q, websocketMsgSrv,
                          baseUrlSrv, ngToast, saveAsService) {
     var ANGULAR_FUNCTION_OBJECT_NAME_PREFIX = '_Z_ANGULAR_FUNC_';
     $scope.parentNote = null;
@@ -223,16 +224,23 @@
     };
 
     var setNetwork = function(result, refresh) {
+      var getContainerHeight = function(networkId) {
+        var footerHeight = angular.element('#' + networkId + '_footer').height() || 40;
+        var headerHeight = angular.element('#' + networkId + '_header').height() || 40;
+        var height = $scope.paragraph.config.graph.height || 400;
+        return height - footerHeight - headerHeight - 10;
+      };
       var retryRenderer = function() {
         var networkId = 'p' + $scope.paragraph.id + '_network';
         var height = $scope.paragraph.config.graph.height || 400;
-        if (angular.element('#' + networkId + '_container').length) {
+        if (angular.element('#' + networkId).length) {
           try {
-            angular.element('#' + networkId).height(height - 50);
-            angular.element('#' + networkId + '_container').height(height);
+            angular.element('#' + networkId).height(height);
+            angular.element('#' + networkId + '_container').height(getContainerHeight(networkId));
             //destroy sigmajs to force reinitialization.
             var Sigma = $window.sigma;
             if ($scope.sigma) {
+              $scope.sigma.unbind('clickNode');
               Sigma.plugins.dragNodes($scope.sigma, $scope.sigma.renderers[0]).unbind('drop');
               $scope.sigma.graph.clear();
               $scope.sigma.kill();
@@ -259,7 +267,7 @@
             }
             $scope.sigma = new Sigma({
               renderer: {
-                container: networkId,
+                container: networkId + '_container',
                 type: 'canvas'
               },
               graph: result.graph,
@@ -281,6 +289,18 @@
                 y: event.data.node.y
               };
               $scope.setGraphMode('network', true, false);
+            });
+            $scope.sigma.bind('clickNode', function(event) {
+              var html = [$interpolate(['<li><b>graph_id:</b>&nbsp;{{id}}</li>',
+                                      '<li><b>graph_label:</b>&nbsp;{{defaultLabel}}</li>'].join(''))(event.data.node)];
+              html = html.concat(_.map(event.data.node.data, function(v, k) {
+                return $interpolate('<li><b>{{field}}:</b>&nbsp;{{value}}</li>')({field: k, value: v});
+              }));
+              angular.element('#' + networkId + '_footer')
+                .find('.list-inline')
+                .empty()
+                .append(html.join(''));
+              angular.element('#' + networkId + '_container').height(getContainerHeight(networkId));
             });
           } catch (err) {
             console.log('Network rendering error %o', err);
