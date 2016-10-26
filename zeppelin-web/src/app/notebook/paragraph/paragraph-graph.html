@@ -14,7 +14,7 @@ limitations under the License.
 <div id="p{{paragraph.id}}_graph"
      class="graphContainer"
      ng-class="{'noOverflow': getGraphMode()=='table'}"
-     ng-if="getResultType()=='TABLE'"
+     ng-if="getResultType()=='TABLE' || getResultType()=='NETWORK'"
      >
 
   <div ng-if="getGraphMode()=='table'"
@@ -50,5 +50,30 @@ limitations under the License.
   <div ng-if="getGraphMode()=='scatterChart'"
        id="p{{paragraph.id}}_scatterChart">
     <svg></svg>
+  </div>
+  
+  <div id="p{{paragraph.id}}_network_container"
+     ng-class="{'noOverflow': getGraphMode()=='network'}"
+     ng-if="getGraphMode()=='network'">
+    <div id="p{{paragraph.id}}_network_header">
+      <ul style="list-style-type: none">
+        <li>Nodes <span class="badge">{{paragraph.result.graph.nodes.length}}</span>: 
+          <span ng-repeat="(labelName, labelColor) in paragraph.result.graph.labels"
+              style="background-color: {{labelColor}} !important;" class="label label-default network-badge">
+            {{labelName}}
+          </span>
+        </li>
+        <li>Relationships <span class="badge">{{paragraph.result.graph.edges.length}}</span>:
+          <span ng-repeat="type in paragraph.result.graph.types"
+              class="label label-default network-badge">
+            {{type}}
+          </span>
+        </li>
+      </ul>
+    </div>
+    <div id="p{{paragraph.id}}_network">
+    </div>
+    <div id="p{{paragraph.id}}_network">
+    </div>
   </div>
 </div>

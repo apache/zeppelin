@@ -65,6 +65,10 @@ module.exports = function(config) {
       'bower_components/handsontable/dist/handsontable.js',
       'bower_components/moment-duration-format/lib/moment-duration-format.js',
       'bower_components/select2/dist/js/select2.js',
+      'bower_components/sigma.js/build/sigma.min.js',
+      'bower_components/sigma.js/build/plugins/sigma.renderers.edgeLabels.min.js',
+      'bower_components/sigma.js/build/plugins/sigma.plugins.dragNodes.min.js',
+      'bower_components/sigma.js/build/plugins/sigma.renderers.parallelEdges.min.js',
       'bower_components/angular-mocks/angular-mocks.js',
       // endbower
       'src/app/app.js',

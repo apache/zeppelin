@@ -124,6 +124,9 @@
         $scope.renderAngular();
       } else if ($scope.getResultType() === 'TEXT') {
         $scope.renderText();
+      } else if ($scope.getResultType() === 'NETWORK') {
+        $scope.loadNetworkData($scope.paragraph.result);
+        $scope.setGraphMode($scope.getGraphMode(), false, false);
       }
 
       getApplicationStates();
@@ -134,6 +137,81 @@
         var app = _.find($scope.apps, {id: activeApp});
         renderApp(app);
       }
+    };
+
+    var setNetwork = function(result, refresh) {
+      var retryRenderer = function() {
+        var networkId = 'p' + $scope.paragraph.id + '_network';
+        var height = $scope.paragraph.config.graph.height || 400;
+        if (angular.element('#' + networkId + '_container').length) {
+          try {
+            angular.element('#' + networkId).height(height - 50);
+            angular.element('#' + networkId + '_container').height(height);
+            //destroy sigmajs to force reinitialization.
+            var Sigma = $window.sigma;
+            if ($scope.sigma) {
+              Sigma.plugins.dragNodes($scope.sigma, $scope.sigma.renderers[0]).unbind('drop');
+              $scope.sigma.graph.clear();
+              $scope.sigma.kill();
+              $scope.sigma = null;
+            }
+            result.graph.nodes
+              .forEach(function(node) {
+                var selected = $scope.paragraph.config.graph.network.properties[node.defaultLabel].selected;
+                node.label = (selected in node ? node[selected] : node.data[selected]) + '';
+              });
+            var nodeIds = Object.keys($scope.paragraph.config.graph.network.nodes)
+               .map(function(id) {
+                 return +id;
+               });
+            if (nodeIds.length) {
+              result.graph.nodes
+                .filter(function(node) {
+                  return nodeIds.indexOf(node.id) !== -1;
+                })
+                .forEach(function(node) {
+                  node.x = $scope.paragraph.config.graph.network.nodes[node.id].x;
+                  node.y = $scope.paragraph.config.graph.network.nodes[node.id].y;
+                });
+            }
+            $scope.sigma = new Sigma({
+              renderer: {
+                container: networkId,
+                type: 'canvas'
+              },
+              graph: result.graph,
+              settings: {//see https://github.com/jacomyal/sigma.js/wiki/Settings#rescale-settings
+                minNodeSize: 0,
+                maxNodeSize: 0,
+                minEdgeSize: 0,
+                maxEdgeSize: 0
+              }
+            });
+            if ($scope.asIframe) {
+              return;
+            }
+            var dragListener = Sigma.plugins.dragNodes($scope.sigma, $scope.sigma.renderers[0]);
+            dragListener.bind('drop', function(event) {
+              var nodeId = event.data.node.id;
+              $scope.paragraph.config.graph.network.nodes[nodeId] = {
+                x: event.data.node.x,
+                y: event.data.node.y
+              };
+              $scope.setGraphMode('network', true, false);
+            });
+          } catch (err) {
+            console.log('Network rendering error %o', err);
+          }
+        } else {
+          $timeout(retryRenderer, 10);
+        }
+      };
+      $timeout(retryRenderer);
+    };
+
+    $scope.setNetworkLabel = function(label, value) {
+      $scope.paragraph.config.graph.network.properties[label].selected = value;
+      $scope.setGraphMode('network', true, false);
     };
 
     $scope.renderHtml = function() {
@@ -253,6 +331,18 @@
 
       if (!config.graph.scatter) {
         config.graph.scatter = {};
+      }
+
+      if (!config.graph.network) {
+        config.graph.network = {};
+      }
+
+      if (!config.graph.network.nodes) {
+        config.graph.network.nodes = {};
+      }
+
+      if (!config.graph.network.properties) {
+        config.graph.network.properties = {};
       }
 
       if (config.enabled === undefined) {
@@ -896,6 +986,48 @@
       return cell;
     };
 
+    $scope.loadNetworkData = function(result) {
+      if (!result || result.type !== 'NETWORK') {
+        return;
+      }
+      result.graph = JSON.parse(result.msg.trim() || '{}');
+      var entities = result.graph.nodes.concat(result.graph.edges);
+      var baseColumnNames = [{name: 'id', index: 0, aggr: 'sum'},
+                         {name: 'label', index: 1, aggr: 'sum'}];
+      var internalFieldsToJump = ['count', 'type', 'size',
+                                  'data', 'x', 'y', 'color', 'defaultLabel',
+                                  'labels'];
+      var baseCols = _.map(baseColumnNames, function(col) { return col.name; });
+      var rows = [];
+      var array = [];
+      var keys = _.map(entities, function(elem) { return Object.keys(elem.data); });
+      keys = _.flatten(keys);
+      keys = _.uniq(keys).filter(function(key) {
+        return baseCols.indexOf(key) === -1;
+      });
+      var columnNames = baseColumnNames.concat(_.map(keys, function(elem, i) {
+        return {name: elem, index: i + baseColumnNames.length, aggr: 'sum'};
+      }));
+      for (var i = 0; i < entities.length; i++) {
+        var entity = entities[i];
+        var col = [];
+        var col2 = [];
+        for (var j = 0; j < columnNames.length; j++) {
+          var name = columnNames[j].name;
+          var value = name in entity && internalFieldsToJump.indexOf(name) === -1 ?
+              entity[name] : entity.data[name];
+          var parsedValue = $scope.parseTableCell(value === undefined ? '' : value);
+          col.push(parsedValue);
+          col2.push({key: name, value: parsedValue});
+        }
+        rows.push(col);
+        array.push(col2);
+      }
+      result.msgTable = array;
+      result.columnNames = columnNames;
+      result.rows = rows;
+    };
+
     $scope.loadTableData = function(result) {
       if (!result) {
         return;
@@ -956,6 +1088,8 @@
 
         if (!type || type === 'table') {
           setTable($scope.paragraph.result, refresh);
+        } else if (type === 'network') {
+          setNetwork($scope.paragraph.result, refresh);
         } else {
           setD3Chart(type, $scope.paragraph.result, refresh);
         }
@@ -1188,7 +1322,9 @@
 
     $scope.isGraphMode = function(graphName) {
       var activeAppId = _.get($scope.paragraph.config, 'helium.activeApp');
-      if ($scope.getResultType() === 'TABLE' && $scope.getGraphMode() === graphName && !activeAppId) {
+      var resultType = $scope.getResultType();
+      if ((resultType === 'TABLE' || resultType === 'NETWORK') &&
+          $scope.getGraphMode() === graphName && !activeAppId) {
         return true;
       } else {
         return false;
@@ -1326,6 +1462,22 @@
           $scope.paragraph.config.graph.scatter.xAxis = $scope.paragraph.result.columnNames[0];
         }
       }
+    };
+
+    var setDefaultNetworkOption = function() {
+      $scope.paragraph.config.graph.network.nodes = {};
+      var baseCols = ['id', 'label'];
+      var properties = {};
+      $scope.paragraph.result.graph.nodes.forEach(function(node) {
+        var hasKey = node.label in properties;
+        var keys = _.uniq(Object.keys(node.data || {})
+                .concat(hasKey ? properties[node.label].keys : baseCols));
+        if (!hasKey) {
+          properties[node.label] = {selected: 'label'};
+        }
+        properties[node.label].keys = keys;
+      });
+      $scope.paragraph.config.graph.network.properties = properties;
     };
 
     var pivot = function(data) {
@@ -2298,11 +2450,18 @@
           $scope.paragraph.config = data.paragraph.config;
         }
 
-        if (newType === 'TABLE') {
-          $scope.loadTableData($scope.paragraph.result);
-          if (oldType !== 'TABLE' || resultRefreshed) {
+        if (newType === 'TABLE' || newType === 'NETWORK') {
+          if (newType === 'TABLE') {
+            $scope.loadTableData($scope.paragraph.result);
+          } else {
+            $scope.loadNetworkData($scope.paragraph.result);
+          }
+          if ((oldType !== 'TABLE' && oldType !== 'NETWORK') || resultRefreshed) {
             clearUnknownColsFromGraphOption();
             selectDefaultColsForGraphOption();
+          }
+          if (newType === 'NETWORK' && resultRefreshed) {
+            setDefaultNetworkOption();
           }
           /** User changed the chart type? */
           if (oldGraphMode !== newGraphMode) {
