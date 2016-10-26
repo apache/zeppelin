@@ -763,7 +763,7 @@
       // or the first 30 characters of the paragraph have been modified
       // or cursor position is at beginning of second line.(in case user hit enter after typing %magic)
       if ((typeof pos === 'undefined') || (pos.row === 0 && pos.column < 30) ||
-          (pos.row === 1 && pos.column === 0) || pastePercentSign) {
+          (pos.row === 1 && pos.column === 0) || pastePercentSign || $scope.paragraphFocused) {
         // If paragraph loading, use config value if exists
         if ((typeof pos === 'undefined') && $scope.paragraph.config.editorMode) {
           session.setMode($scope.paragraph.config.editorMode);

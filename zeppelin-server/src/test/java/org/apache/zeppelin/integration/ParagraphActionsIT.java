@@ -461,6 +461,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       waitForParagraph(1, "FINISHED");
 
       action.doubleClick(driver.findElement(By.xpath(getParagraphXPath(1)))).perform();
+      ZeppelinITUtils.sleep(1000, false);
       collector.checkThat("Markdown editor is shown after double click ",
           driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@ng-show, 'paragraph.config.editorHide')]")).isDisplayed(),
           CoreMatchers.equalTo(true));
