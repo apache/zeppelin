@@ -386,7 +386,6 @@ public class NotebookServerTest extends AbstractTestRestApi {
 
     // expect the events are broadcasted properly
     verify(sock1, times(2)).send(anyString());
-    verify(sock2, times(1)).send(anyString());
 
     Note createdNote = null;
     for (Note note : notebook.getAllNotes()) {
@@ -400,7 +399,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
       assertEquals(notebook.getInterpreterFactory().getDefaultInterpreterSetting(
               createdNote.getId()).getId(), defaultInterpreterId);
     }
-    notebook.removeNote(createdNote.getId(), null);
+    notebook.removeNote(createdNote.getId(), anonymous);
   }
 
   private NotebookSocket createWebSocket() {
