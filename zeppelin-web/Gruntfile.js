@@ -80,6 +80,24 @@ module.exports = function(grunt) {
       }
     },
 
+    //shell is used to build component that doesn't exists in bower
+    shell: {
+      buildSigma: {
+        command: function() {
+          var component = {
+            path: 'sigma.js',
+            pathToCheck: 'build'
+          };
+          var path = 'bower_components/' + component.path;
+          if (grunt.file.exists(path + '/' + component.pathToCheck)) {
+            var exists = 'echo ' + component.path + ' component exists';
+            return exists;
+          }
+          return 'cd bower_components/' + component.path + ' && npm install && npm run build';
+        }
+      }
+    },
+
     htmlhint: {
       options: {
         'tagname-lowercase': true,
@@ -585,6 +603,7 @@ module.exports = function(grunt) {
 
     grunt.task.run([
       'clean:server',
+      'shell',
       'wiredep',
       'concurrent:server',
       'postcss',
@@ -602,6 +621,7 @@ module.exports = function(grunt) {
   grunt.registerTask('test', [
     'clean:server',
     'babel',
+    'shell',
     'wiredep',
     'concurrent:test',
     'postcss',
@@ -615,6 +635,7 @@ module.exports = function(grunt) {
     'eslint',
     'htmlhint',
     'clean:dist',
+    'shell',
     'wiredep',
     'useminPrepare',
     'concurrent:dist',

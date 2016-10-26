@@ -547,3 +547,7 @@ table.table-striped {
 .changeTypeMenu li:hover {
   background: #eee;
 }
+
+.network-badge {
+  margin: 0.2em;
+}

@@ -12,7 +12,8 @@
   },
   "dependencies": {
     "grunt-angular-templates": "^0.5.7",
-    "grunt-dom-munger": "^3.4.0"
+    "grunt-dom-munger": "^3.4.0",
+    "grunt-shell": "^1.3.1"
   },
   "devDependencies": {
     "autoprefixer": "^6.1.0",
