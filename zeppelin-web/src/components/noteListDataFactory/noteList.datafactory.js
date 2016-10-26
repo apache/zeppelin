@@ -14,9 +14,9 @@
 'use strict';
 (function() {
 
-  angular.module('zeppelinWebApp').factory('notebookListDataFactory', notebookListDataFactory);
+  angular.module('zeppelinWebApp').factory('noteListDataFactory', noteListDataFactory);
 
-  function notebookListDataFactory() {
+  function noteListDataFactory() {
     var notes = {
       root: {children: []},
       flatList: [],

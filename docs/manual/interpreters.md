@@ -79,7 +79,7 @@ interpreter.start()
 
 ```
 
-The above code will start interpreter thread inside your process. Once the interpreter is started you can configure zeppelin to connect to RemoteInterpreter by checking **Connect to existing process** checkbox and then provide **Host** and **Port** on which interpreter porocess is listening as shown in the image below:
+The above code will start interpreter thread inside your process. Once the interpreter is started you can configure zeppelin to connect to RemoteInterpreter by checking **Connect to existing process** checkbox and then provide **Host** and **Port** on which interpreter process is listening as shown in the image below:
 
 <img src="../assets/themes/zeppelin/img/screenshots/existing_interpreter.png" width="450px">
 

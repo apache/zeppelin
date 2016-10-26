@@ -34,7 +34,7 @@
       $scope.jobInfomations = [];
       $scope.JobInfomationsByFilter = $scope.jobInfomations;
 
-      websocketMsgSrv.getNotebookJobsList();
+      websocketMsgSrv.getNoteJobsList();
 
       $scope.$on('$destroy', function() {
         websocketMsgSrv.unsubscribeJobManager();
@@ -45,34 +45,34 @@
     ** $scope.$on functions below
     */
 
-    $scope.$on('setNotebookJobs', function(event, responseData) {
+    $scope.$on('setNoteJobs', function(event, responseData) {
       $scope.lastJobServerUnixTime = responseData.lastResponseUnixTime;
       $scope.jobInfomations = responseData.jobs;
-      $scope.jobInfomationsIndexs = $scope.jobInfomations ? _.indexBy($scope.jobInfomations, 'notebookId') : {};
+      $scope.jobInfomationsIndexs = $scope.jobInfomations ? _.indexBy($scope.jobInfomations, 'noteId') : {};
     });
 
-    $scope.$on('setUpdateNotebookJobs', function(event, responseData) {
+    $scope.$on('setUpdateNoteJobs', function(event, responseData) {
       var jobInfomations = $scope.jobInfomations;
       var indexStore = $scope.jobInfomationsIndexs;
       $scope.lastJobServerUnixTime = responseData.lastResponseUnixTime;
       var notes = responseData.jobs;
       notes.map(function(changedItem) {
-        if (indexStore[changedItem.notebookId] === undefined) {
+        if (indexStore[changedItem.noteId] === undefined) {
           var newItem = angular.copy(changedItem);
           jobInfomations.push(newItem);
-          indexStore[changedItem.notebookId] = newItem;
+          indexStore[changedItem.noteId] = newItem;
         } else {
-          var changeOriginTarget = indexStore[changedItem.notebookId];
+          var changeOriginTarget = indexStore[changedItem.noteId];
 
           if (changedItem.isRemoved !== undefined && changedItem.isRemoved === true) {
 
             // remove Item.
-            var removeIndex = _.findIndex(indexStore, changedItem.notebookId);
+            var removeIndex = _.findIndex(indexStore, changedItem.noteId);
             if (removeIndex > -1) {
               indexStore.splice(removeIndex, 1);
             }
 
-            removeIndex = _.findIndex(jobInfomations, {'notebookId': changedItem.notebookId});
+            removeIndex = _.findIndex(jobInfomations, {'noteId': changedItem.noteId});
             if (removeIndex) {
               jobInfomations.splice(removeIndex, 1);
             }
@@ -80,8 +80,8 @@
           } else {
             // change value for item.
             changeOriginTarget.isRunningJob = changedItem.isRunningJob;
-            changeOriginTarget.notebookName = changedItem.notebookName;
-            changeOriginTarget.notebookType = changedItem.notebookType;
+            changeOriginTarget.noteName = changedItem.noteName;
+            changeOriginTarget.noteType = changedItem.noteType;
             changeOriginTarget.interpreter = changedItem.interpreter;
             changeOriginTarget.unixTimeLastRun = changedItem.unixTimeLastRun;
             changeOriginTarget.paragraphs = changedItem.paragraphs;
