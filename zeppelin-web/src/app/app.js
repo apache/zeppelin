@@ -34,7 +34,8 @@
           'ngToast',
           'focus-if',
           'ngResource',
-          'restful-editor'
+          'restful-editor',
+          'angucomplete-alt'
       ])
         .filter('breakFilter', function() {
           return function(text) {

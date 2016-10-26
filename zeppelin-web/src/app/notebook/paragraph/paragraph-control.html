@@ -33,6 +33,9 @@ limitations under the License.
         ng-click="toggleEditor()"></span>
   <span class="{{paragraph.config.tableHide ? 'icon-notebook' : 'icon-book-open'}}" style="cursor:pointer;" tooltip-placement="top" tooltip="{{(paragraph.config.tableHide ? 'Show' : 'Hide') + ' output'}}"
         ng-click="toggleOutput()"></span>
+  <span class="{{paragraph.config.isCodeEditorMode ? 'fa fa-code' : 'fa fa-list'}}" style="cursor:pointer;"
+        tooltip-placement="top" tooltip="{{paragraph.config.isCodeEditorMode ? 'RESTful Editor Mode' : 'Code Editor Mode'}}"
+        ng-click="toggleQeuryEditorMode()"></span>
   <span class="dropdown navbar-right">
     <span class="icon-settings" style="cursor:pointer"
           data-toggle="dropdown"
