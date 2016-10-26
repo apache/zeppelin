@@ -7,7 +7,7 @@
       "ignite.addresses": {
         "envName": null,
         "propertyName": "ignite.addresses",
-        "defaultValue": "127.0.0.1:47500..47509,Coma separated list of addresses",
+        "defaultValue": "127.0.0.1:47500..47509,Comma separated list of addresses",
         "description": "(e.g. 127.0.0.1:47500 or 127.0.0.1:47500..47509)"
       },
       "ignite.clientMode": {
