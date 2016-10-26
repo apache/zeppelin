@@ -37,7 +37,33 @@ limitations under the License.
 
   <div>
     <div ng-show="!paragraph.config.editorHide && !viewOnly" style="margin-bottom:3px;">
-      <div id="{{paragraph.id}}_editor"
+      <div ng-if="paragraph.config.isCodeEditorMode === false">
+        <div style="margin-top: 24px;"></div>
+        <angucomplete-alt
+          id="{{paragraph.id}}_restful_input"
+          input-changed="setRestfulObject"
+          placeholder="Input Method and uri for RESTful API (e.g GET /)"
+          pause="300"
+          selected-object="selectedRestfulApiObject"
+          local-data="restfulInformation.interpreters[0].restful"
+          local-search="restfulApiSearch"
+          title-field="method,' ',uri"
+          description-field="apiDescription"
+          minlength="1"
+          input-class="form-control form-control-small"
+          match-class="searchMatch">
+        </angucomplete-alt>
+        <div style="margin-bottom: 10px;"></div>
+        <div
+          restful-editor
+          type="text"
+          model="paragraph.restfulObject"
+          options="restfulOptions" >
+        </div>
+      </div>
+      <div
+           ng-if="paragraph.config.isCodeEditorMode === true || paragraph.config.isCodeEditorMode === undefined"
+           id="{{paragraph.id}}_editor"
            class="editor"
            ui-ace="{
                      onLoad : aceLoaded,
