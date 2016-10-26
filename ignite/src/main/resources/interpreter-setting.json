@@ -22,7 +22,7 @@
         "defaultValue": "",
         "description": "Configuration URL. Overrides all other settings."
       },
-       "ignite.peerClassLoadingEnabled": {
+      "ignite.peerClassLoadingEnabled": {
         "envName": null,
         "propertyName": "ignite.peerClassLoadingEnabled",
         "defaultValue": "true",
