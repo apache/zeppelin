@@ -147,6 +147,15 @@
         var height = $scope.paragraph.config.graph.height || 400;
         return height - footerHeight - headerHeight - 10;
       };
+      var renderFooter = function(type, entity) {
+        var obj = {id: entity.id, label: entity.defaultLabel || entity.label, type: type};
+        var html = [$interpolate(['<li><b>{{type}}_id:</b>&nbsp;{{id}}</li>',
+                                '<li><b>{{type}}_type:</b>&nbsp;{{label}}</li>'].join(''))(obj)];
+        html = html.concat(_.map(entity.data, function(v, k) {
+          return $interpolate('<li><b>{{field}}:</b>&nbsp;{{value}}</li>')({field: k, value: v});
+        }));
+        return html.join('');
+      };
       var retryRenderer = function() {
         var networkId = 'p' + $scope.paragraph.id + '_network';
         var height = $scope.paragraph.config.graph.height || 400;
@@ -192,7 +201,9 @@
                 minNodeSize: 0,
                 maxNodeSize: 0,
                 minEdgeSize: 0,
-                maxEdgeSize: 0
+                maxEdgeSize: 0,
+                enableEdgeHovering: true,
+                edgeHoverExtremities: true
               }
             });
             if ($scope.asIframe) {
@@ -208,15 +219,19 @@
               $scope.setGraphMode('network', true, false);
             });
             $scope.sigma.bind('clickNode', function(event) {
-              var html = [$interpolate(['<li><b>graph_id:</b>&nbsp;{{id}}</li>',
-                                      '<li><b>graph_label:</b>&nbsp;{{defaultLabel}}</li>'].join(''))(event.data.node)];
-              html = html.concat(_.map(event.data.node.data, function(v, k) {
-                return $interpolate('<li><b>{{field}}:</b>&nbsp;{{value}}</li>')({field: k, value: v});
-              }));
+              console.log('clickNode %o', event);
               angular.element('#' + networkId + '_footer')
                 .find('.list-inline')
                 .empty()
-                .append(html.join(''));
+                .append(renderFooter('node', event.data.node));
+              angular.element('#' + networkId + '_container').height(getContainerHeight(networkId));
+            });
+            $scope.sigma.bind('clickEdge', function(event) {
+              console.log('clickEdge %o', event);
+              angular.element('#' + networkId + '_footer')
+                .find('.list-inline')
+                .empty()
+                .append(renderFooter('edge', event.data.edge));
               angular.element('#' + networkId + '_container').height(getContainerHeight(networkId));
             });
           } catch (err) {
