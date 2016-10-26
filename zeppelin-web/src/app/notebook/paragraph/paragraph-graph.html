@@ -52,7 +52,7 @@ limitations under the License.
     <svg></svg>
   </div>
   
-  <div id="p{{paragraph.id}}_network_container"
+  <div id="p{{paragraph.id}}_network"
      ng-class="{'noOverflow': getGraphMode()=='network'}"
      ng-if="getGraphMode()=='network'">
     <div id="p{{paragraph.id}}_network_header">
@@ -71,9 +71,11 @@ limitations under the License.
         </li>
       </ul>
     </div>
-    <div id="p{{paragraph.id}}_network">
+    <div id="p{{paragraph.id}}_network_container">
     </div>
-    <div id="p{{paragraph.id}}_network">
+    <div id="p{{paragraph.id}}_network_footer">
+      <ul class="list-inline">
+      </ul>
     </div>
   </div>
 </div>
