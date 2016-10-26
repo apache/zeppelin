@@ -26,7 +26,17 @@ limitations under the License.
           <div class="form-group">
             <label for="noteName">Note Name</label> <input
               placeholder="Note name" type="text" class="form-control"
-              id="noteName" ng-model="note.notename" ng-enter="notenamectrl.handleNameEnter()"/>
+              id="noteName" ng-model="note.notename" ng-enter="notenamectrl.handleNameEnter()"/><br/>
+            <div ng-show="!notenamectrl.clone">
+              <label for="defaultInterpreter">Default Interpreter </label>
+              <select ng-model="note.defaultInterpreter"
+                      class="selectpicker"
+                      name="defaultInterpreter"
+                      id="defaultInterpreter"
+                      ng-options="option.name for option in interpreterSettings">
+                <option value="">--Select--</option>
+              </select>
+            </div>
           </div>
           Use '/' to create folders. Example: /NoteDirA/Notebook1
         </div>

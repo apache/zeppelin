@@ -25,8 +25,14 @@
         websocketEvents.sendNewEvent({op: 'GET_HOME_NOTE'});
       },
 
-      createNote: function(noteName) {
-        websocketEvents.sendNewEvent({op: 'NEW_NOTE',data: {name: noteName}});
+      createNotebook: function(noteName, defaultInterpreterId) {
+        websocketEvents.sendNewEvent({
+          op: 'NEW_NOTE',
+          data: {
+            name: noteName,
+            defaultInterpreterId: defaultInterpreterId
+          }
+        });
       },
 
       deleteNote: function(noteId) {
@@ -223,6 +229,10 @@
 
       listConfigurations: function() {
         websocketEvents.sendNewEvent({op: 'LIST_CONFIGURATIONS'});
+      },
+
+      getInterpreterSettings: function() {
+        websocketEvents.sendNewEvent({op: 'GET_INTERPRETER_SETTINGS'});
       }
 
     };
