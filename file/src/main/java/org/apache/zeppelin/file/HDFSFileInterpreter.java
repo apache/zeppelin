@@ -18,9 +18,6 @@
 
 package org.apache.zeppelin.file;
 
-import java.text.SimpleDateFormat;
-import java.util.*;
-
 import com.google.gson.Gson;
 import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.interpreter.Interpreter;
@@ -28,14 +25,20 @@ import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterPropertyBuilder;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Properties;
+
 /**
  * HDFS implementation of File interpreter for Zeppelin.
  *
  */
 public class HDFSFileInterpreter extends FileInterpreter {
-  static final String HDFS_URL = "hdfs.url";
-  static final String HDFS_USER = "hdfs.user";
-  static final String HDFS_MAXLENGTH = "hdfs.maxlength";
+  public static final String HDFS_URL = "hdfs.url";
+  public static final String HDFS_USER = "hdfs.user";
+  public static final String HDFS_MAXLENGTH = "hdfs.maxlength";
 
   Exception exceptionOnConnect = null;
   HDFSCommand cmd = null;
