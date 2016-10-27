@@ -17,8 +17,10 @@
 
 package org.apache.zeppelin.notebook;
 
+import org.apache.zeppelin.helium.HeliumPackage;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
+import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.search.SearchService;
@@ -123,6 +125,25 @@ public class NoteTest {
     Paragraph p2 = note.insertParagraph(note.getParagraphs().size());
 
     assertNull(p2.getText());
+  }
+
+  @Test
+  public void clearAllParagraphOutputTest() {
+    when(interpreterFactory.getInterpreter(anyString(), anyString(), eq("md"))).thenReturn(interpreter);
+    when(interpreter.getScheduler()).thenReturn(scheduler);
+
+    Note note = new Note(repo, interpreterFactory, jobListenerFactory, index, credentials, noteEventListener);
+    Paragraph p1 = note.addParagraph();
+    InterpreterResult result = new InterpreterResult(InterpreterResult.Code.SUCCESS, InterpreterResult.Type.TEXT, "result");
+    p1.setResult(result);
+
+    Paragraph p2 = note.addParagraph();
+    p2.setReturn(result, new Throwable());
+
+    note.clearAllParagraphOutput();
+
+    assertNull(p1.getReturn());
+    assertNull(p2.getReturn());
   }
 
 }
