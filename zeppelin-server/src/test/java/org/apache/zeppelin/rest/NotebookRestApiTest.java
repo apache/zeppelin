@@ -18,15 +18,14 @@
 package org.apache.zeppelin.rest;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.PutMethod;
+import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.notebook.Note;
-import org.apache.zeppelin.notebook.NotebookAuthorization;
-import org.apache.zeppelin.notebook.NotebookAuthorizationInfoSaving;
+import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.server.ZeppelinServer;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.AfterClass;
@@ -37,12 +36,12 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 
 /**
@@ -178,6 +177,43 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
     ZeppelinServer.notebook.removeNote(note1.getId(), anonymous);
     ZeppelinServer.notebook.removeNote(clonedNoteId, anonymous);
 
+  }
+
+  @Test
+  public void testClearAllParagraphOutput() throws IOException {
+    // Create note and set result explicitly
+    Note note = ZeppelinServer.notebook.createNote(anonymous);
+    Paragraph p1 = note.addParagraph();
+    InterpreterResult result = new InterpreterResult(InterpreterResult.Code.SUCCESS, InterpreterResult.Type.TEXT, "result");
+    p1.setResult(result);
+
+    Paragraph p2 = note.addParagraph();
+    p2.setReturn(result, new Throwable());
+
+    // clear paragraph result
+    PostMethod post = httpPost("/notebook/" + note.getId() + "/clear", "");
+    LOG.info("test clear paragraph output response\n" + post.getResponseBodyAsString());
+    assertThat(post, isAllowed());
+    post.releaseConnection();
+
+    // check if paragraph results are cleared
+    GetMethod get = httpGet("/notebook/" + note.getId() + "/paragraph/" + p1.getId());
+    assertThat(get, isAllowed());
+    Map<String, Object> resp1 = gson.fromJson(get.getResponseBodyAsString(), new TypeToken<Map<String, Object>>() {
+    }.getType());
+    Map<String, Object> resp1Body = (Map<String, Object>) resp1.get("body");
+    assertNull(resp1Body.get("result"));
+
+    get = httpGet("/notebook/" + note.getId() + "/paragraph/" + p2.getId());
+    assertThat(get, isAllowed());
+    Map<String, Object> resp2 = gson.fromJson(get.getResponseBodyAsString(), new TypeToken<Map<String, Object>>() {
+    }.getType());
+    Map<String, Object> resp2Body = (Map<String, Object>) resp2.get("body");
+    assertNull(resp2Body.get("result"));
+    get.releaseConnection();
+
+    //cleanup
+    ZeppelinServer.notebook.removeNote(note.getId(), anonymous);
   }
 }
 

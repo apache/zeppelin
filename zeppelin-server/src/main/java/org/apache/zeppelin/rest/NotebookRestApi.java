@@ -462,6 +462,30 @@ public class NotebookRestApi {
   }
 
   /**
+   * Clear result of all paragraphs REST API
+   *
+   * @param noteId ID of Note
+   * @return JSON with status.ok
+   */
+  @POST
+  @Path("{noteId}/clear")
+  @ZeppelinApi
+  public Response clearAllParagraphOutput(@PathParam("noteId") String noteId)
+      throws IOException {
+    LOG.info("clear all paragraph output of note {}", noteId);
+
+    if (!noteId.isEmpty()) {
+      Note note = notebook.getNote(noteId);
+      if (note == null) {
+        return new JsonResponse(Status.NOT_FOUND, "note not found.").build();
+      }
+      note.clearAllParagraphOutput();
+    }
+
+    return new JsonResponse(Status.OK, "").build();
+  }
+
+  /**
    * Run note jobs REST API
    *
    * @param noteId ID of Note
