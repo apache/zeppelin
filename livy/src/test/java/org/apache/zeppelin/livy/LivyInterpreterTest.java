@@ -19,6 +19,7 @@ package org.apache.zeppelin.livy;
 
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.user.AuthenticationInfo;
 import org.hamcrest.CoreMatchers;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -33,6 +34,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import java.util.HashMap;
 import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.doReturn;
@@ -56,10 +58,12 @@ public class LivyInterpreterTest {
   @Before
   public void prepareContext() throws Exception {
     interpreter = new LivyPySparkInterpreter(new Properties());
-    interpreter.userSessionMap = new HashMap<>();
-    interpreter.userSessionMap.put(null, 0);
+    interpreter.userSessionMap = new ConcurrentHashMap<>();
+    interpreter.userSessionMap.put("anonymous", 1);
     interpreter.livyHelper = Mockito.mock(LivyHelper.class);
     interpreter.open();
+    AuthenticationInfo authInfo = new AuthenticationInfo("anonymous");
+    doReturn(authInfo).when(interpreterContext).getAuthenticationInfo();
 
     doReturn(new InterpreterResult(InterpreterResult.Code.SUCCESS)).when(interpreter.livyHelper)
         .interpret("print \"x is 1.\"", interpreterContext, interpreter.userSessionMap);

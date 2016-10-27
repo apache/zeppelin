@@ -19,6 +19,7 @@ package org.apache.zeppelin.livy;
 import com.google.gson.GsonBuilder;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.user.AuthenticationInfo;
 import org.hamcrest.CoreMatchers;
 import org.junit.Before;
 import org.junit.Rule;
@@ -32,6 +33,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static org.mockito.Mockito.doReturn;
 
@@ -56,15 +58,16 @@ public class LivyHelperTest {
 
   @Before
   public void prepareContext() throws Exception {
-    interpreter.userSessionMap = new HashMap<>();
-    interpreter.userSessionMap.put(null, 1);
-
+    interpreter.userSessionMap = new ConcurrentHashMap<>();
+    interpreter.userSessionMap.put("anonymous", 1);
     Properties properties = new Properties();
     properties.setProperty("zeppelin.livy.url", "http://localhost:8998");
     livyHelper.property = properties;
     livyHelper.paragraphHttpMap = new HashMap<>();
     livyHelper.gson = new GsonBuilder().setPrettyPrinting().create();
     livyHelper.LOGGER = LoggerFactory.getLogger(LivyHelper.class);
+    AuthenticationInfo authInfo = new AuthenticationInfo("anonymous");
+    doReturn(authInfo).when(interpreterContext).getAuthenticationInfo();
 
     doReturn("{\"id\":1,\"state\":\"idle\",\"kind\":\"spark\",\"proxyUser\":\"null\",\"log\":[]}")
         .when(livyHelper)

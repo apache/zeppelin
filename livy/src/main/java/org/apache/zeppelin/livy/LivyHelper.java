@@ -69,13 +69,14 @@ public class LivyHelper {
 
       String confData = gson.toJson(conf);
       String user = context.getAuthenticationInfo().getUser();
-
+      LOGGER.debug("Try to create session for user:" + user);
       String json = executeHTTP(property.getProperty("zeppelin.livy.url") + "/sessions", "POST",
           "{" +
               "\"kind\": \"" + kind + "\", " +
               "\"conf\": " + confData + ", " +
-              "\"proxyUser\": " + (StringUtils.isEmpty(user) ? null : "\"" + user + "\"") +
-              "}",
+              "\"proxyUser\": " + (context.getAuthenticationInfo().isAnonymous() ? null : "\"" +
+              user + "\"") +
+          "}",
           context.getParagraphId()
       );
 
@@ -129,6 +130,12 @@ public class LivyHelper {
       LOGGER.error("Error getting session for user", e);
       throw e;
     }
+  }
+
+  protected void initializeSpark(final InterpreterContext context,
+                                 final Map<String, Integer> userSessionMap) throws Exception {
+    interpret("val sqlContext = new org.apache.spark.sql.SQLContext(sc)\n" +
+        "import sqlContext.implicits._", context, userSessionMap);
   }
 
   public InterpreterResult interpretInput(String stringLines,

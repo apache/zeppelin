@@ -35,7 +35,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class LivySparkInterpreter extends Interpreter {
 
-  Logger LOGGER = LoggerFactory.getLogger(LivySparkInterpreter.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(LivySparkInterpreter.class);
   private LivyOutputStream out;
 
   protected static ConcurrentHashMap<String, Integer> userSessionMap = new ConcurrentHashMap();

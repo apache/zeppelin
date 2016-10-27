@@ -77,8 +77,13 @@ public class LivySparkSQLInterpreter extends Interpreter {
       if (line == null || line.trim().length() == 0) {
         return new InterpreterResult(InterpreterResult.Code.SUCCESS, "");
       }
-
-      InterpreterResult res = livyHelper.interpret("sqlContext.sql(\"" +
+      // check sqlContext
+      InterpreterResult res = livyHelper.interpret("sqlContext", interpreterContext,
+          userSessionMap);
+      if (res.code() == InterpreterResult.Code.ERROR) {
+        livyHelper.initializeSpark(interpreterContext, userSessionMap);
+      }
+      res = livyHelper.interpret("sqlContext.sql(\"" +
               line.replaceAll("\"", "\\\\\"")
                   .replaceAll("\\n", " ")
               + "\").show(" +
