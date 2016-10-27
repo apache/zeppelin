@@ -30,5 +30,18 @@
       }
     }
     
+  },
+  { 
+    "group": "ignite",
+    "name": "ignitesql",
+    "className": "org.apache.zeppelin.ignite.IgniteSqlInterpreter",
+    "properties": {
+      "ignite.jdbc.url": {
+        "envName": null,
+        "propertyName": "ignite.jdbc.url",
+        "defaultValue": "jdbc:ignite:cfg://default-ignite-jdbc.xml",
+        "description": "Ignite JDBC connection URL."
+        }
+    }   
   }
 ]
