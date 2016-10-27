@@ -122,6 +122,10 @@
         websocketEvents.sendNewEvent({op: 'PARAGRAPH_CLEAR_OUTPUT', data: {id: paragraphId}});
       },
 
+      clearAllParagraphOutput: function(noteId) {
+        websocketEvents.sendNewEvent({op: 'PARAGRAPH_CLEAR_ALL_OUTPUT', data: {id: noteId}});
+      },
+
       completion: function(paragraphId, buf, cursor) {
         websocketEvents.sendNewEvent({
           op: 'COMPLETION',
