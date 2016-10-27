@@ -16,9 +16,6 @@
         "defaultValue": "false",
         "description": "flag to include job stats in output"
       }
-    },
-    "editor": {
-      "language": "pig"
     }
   },
   {
@@ -38,9 +35,16 @@
         "defaultValue": "1000",
         "description": "max row number for %pig.query"
       }
+    }
+  },
+  {
+    "group": "pig",
+    "name": "udf",
+    "className": "org.apache.zeppelin.pig.PigUDFInterpreter",
+    "properties": {
     },
     "editor": {
-      "language": "pig"
+      "language": "java"
     }
   }
 ]

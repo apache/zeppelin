@@ -115,6 +115,12 @@
         </dependency>
 
         <dependency>
+            <groupId>com.thoughtworks.qdox</groupId>
+            <artifactId>qdox</artifactId>
+            <version>2.0-M3</version>
+        </dependency>
+
+        <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <scope>test</scope>
@@ -133,6 +139,16 @@
                         <phase>none</phase>
                     </execution>
                 </executions>
+            </plugin>
+
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.17</version>
+                <configuration>
+                    <systemPropertyVariables>
+                        <zeppelin.pig.localRepo>${basedir}/src/test/resources</zeppelin.pig.localRepo>
+                    </systemPropertyVariables>
+                </configuration>
             </plugin>
 
             <plugin>

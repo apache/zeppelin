@@ -23,6 +23,10 @@ group: manual
  
     Almost the same as `%pig.script`. The only difference is that you don't need to add alias in the last statement. And the display type is table.   
 
+  - '%pig.udf'
+  
+    Java editor for writing pig udf, these java udf will be compiled and built into jars which will be register to pig automatically.
+    
 ## Supported runtime mode
   - Local
   - MapReduce
@@ -95,3 +99,22 @@ foreach c generate group as category, COUNT($1) as count;
 ```
 
 Data is shared between `%pig` and `%pig.query`, so that you can do some common work in `%pig`, and do different kinds of query based on the data of `%pig`.
+
+##### pig.udf
+
+```
+%pig.udf
+
+import org.apache.pig.data.Tuple;
+import org.apache.pig.EvalFunc;
+import java.io.IOException;
+
+class UDF1 extends EvalFunc<String> {
+  public String exec(Tuple input) throws IOException {
+    return "1";
+  }
+}
+```
+
+If your udf depends on other third party libraries, you need to specify these libraries in pig's dependency in interpreter setting page. These dependencies will be
+registered to pig automatically.
