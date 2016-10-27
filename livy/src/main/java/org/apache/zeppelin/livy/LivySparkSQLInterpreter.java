@@ -34,7 +34,7 @@ import java.util.Properties;
  */
 public class LivySparkSQLInterpreter extends Interpreter {
 
-  Logger LOGGER = LoggerFactory.getLogger(LivySparkSQLInterpreter.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(LivySparkSQLInterpreter.class);
 
   protected Map<String, Integer> userSessionMap;
   private LivyHelper livyHelper;
@@ -57,6 +57,10 @@ public class LivySparkSQLInterpreter extends Interpreter {
   @Override
   public InterpreterResult interpret(String line, InterpreterContext interpreterContext) {
     try {
+      LOGGER.info("***********sessionMap size:" + userSessionMap.size());
+      for (Map.Entry entry : userSessionMap.entrySet()) {
+        LOGGER.info("Session {}, user:{}", entry.getValue(), entry.getKey());
+      }
       if (userSessionMap.get(interpreterContext.getAuthenticationInfo().getUser()) == null) {
         try {
           userSessionMap.put(
