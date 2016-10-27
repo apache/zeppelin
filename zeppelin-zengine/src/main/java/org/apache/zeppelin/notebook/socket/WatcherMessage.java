@@ -23,9 +23,9 @@ import com.google.gson.Gson;
  */
 public class WatcherMessage {
 
-  private String message;
-  private String noteId;
-  private String subject;
+  public String message;
+  public String noteId;
+  public String subject;
   
   private static final Gson gson = new Gson();
   
