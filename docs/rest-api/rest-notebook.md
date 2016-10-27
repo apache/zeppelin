@@ -493,7 +493,7 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
     <col width="200">
     <tr>
       <td>Description</td>
-      <td> This ```POST``` method runs the paragraph synchronously by given note and paragraph id. This API can return SUCCESS or ERROR depending on the outcome of the paragraph execution
+      <td>This ```POST``` method runs the paragraph synchronously by given note and paragraph id. This API can return SUCCESS or ERROR depending on the outcome of the paragraph execution
       </td>
     </tr>
     <tr>
@@ -969,6 +969,34 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
   "message": "",
   "body": "2AZPHY918"
 }</pre></td>
+    </tr>
+    </tr>
+  </table>
+
+<br />
+### Clear all paragraph result
+  <table class="table-configuration">
+    <col width="200">
+    <tr>
+      <td>Description</td>
+      <td>This ```POST``` method clear all paragraph results from note of given id.
+      </td>
+    </tr>
+    <tr>
+      <td>URL</td>
+      <td>```http://[zeppelin-server]:[zeppelin-port]/api/notebook/[noteId]/clear```</td>
+    </tr>
+    <tr>
+      <td>Success code</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td> Fail code</td>
+      <td> 500 </td>
+    </tr>
+    <tr>
+      <td>sample JSON response</td>
+      <td><pre>{"status": "OK"}</pre></td>
     </tr>
     </tr>
   </table>
