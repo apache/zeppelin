@@ -17,18 +17,33 @@
 
 package org.apache.zeppelin.notebook;
 
-import com.google.common.base.Predicate;
-import com.google.common.collect.FluentIterable;
-import com.google.common.collect.Sets;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
-import java.util.*;
+import com.google.common.base.Predicate;
+import com.google.common.collect.FluentIterable;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 /**
  * Contains authorization information for notes
@@ -237,6 +252,26 @@ public class NotebookAuthorization {
     Set<String> intersection = new HashSet<>(b);
     intersection.retainAll(a);
     return (b.isEmpty() || (intersection.size() > 0));
+  }
+  
+  public boolean isUserOwnerOrWriter(String user, String noteId) {
+    if (StringUtils.isBlank(user)) {
+      LOG.error("Cannot check user permission with blank login");
+      return false;
+    }
+    Set<String> users = ImmutableSet.of(user);
+    return isUserOwnerOrWriter(users, noteId); 
+  }
+  
+  public boolean isUserOwnerOrWriter(Set<String> users, String noteId) {
+    if (conf.isAnonymousAllowed()) {
+      LOG.debug("Zeppelin runs in anonymous mode");
+      return true;
+    }
+    if (users == null) {
+      return false;
+    }
+    return isWriter(noteId, users);
   }
 
   public void removeNote(String noteId) {
