@@ -32,7 +32,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
@@ -40,7 +39,6 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -253,25 +251,16 @@ public class NotebookAuthorization {
     intersection.retainAll(a);
     return (b.isEmpty() || (intersection.size() > 0));
   }
-  
-  public boolean isUserOwnerOrWriter(String user, String noteId) {
-    if (StringUtils.isBlank(user)) {
-      LOG.error("Cannot check user permission with blank login");
-      return false;
-    }
-    Set<String> users = ImmutableSet.of(user);
-    return isUserOwnerOrWriter(users, noteId); 
-  }
-  
-  public boolean isUserOwnerOrWriter(Set<String> users, String noteId) {
+
+  public boolean isUserOwnerOrWriter(Set<String> userAndRoles, String noteId) {
     if (conf.isAnonymousAllowed()) {
       LOG.debug("Zeppelin runs in anonymous mode");
       return true;
     }
-    if (users == null) {
+    if (userAndRoles == null) {
       return false;
     }
-    return isWriter(noteId, users);
+    return isWriter(noteId, userAndRoles);
   }
 
   public void removeNote(String noteId) {
