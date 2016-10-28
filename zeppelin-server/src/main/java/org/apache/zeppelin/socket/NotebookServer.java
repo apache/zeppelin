@@ -86,8 +86,7 @@ public class NotebookServer extends WebSocketServlet implements
   Gson gson = new GsonBuilder().setDateFormat("yyyy-MM-dd'T'HH:mm:ssZ").create();
   final Map<String, List<NotebookSocket>> noteSocketMap = new HashMap<>();
   final Queue<NotebookSocket> connectedSockets = new ConcurrentLinkedQueue<>();
-  final Map<String, Queue<NotebookSocket>> userConnectedSockets = 
-    new ConcurrentHashMap<String, Queue<NotebookSocket>>();
+  final Map<String, Queue<NotebookSocket>> userConnectedSockets = new ConcurrentHashMap<>();
 
   private Notebook notebook() {
     return ZeppelinServer.notebook;
@@ -154,7 +153,7 @@ public class NotebookServer extends WebSocketServlet implements
         throw new Exception("Anonymous access not allowed ");
       }
 
-      HashSet<String> userAndRoles = new HashSet<String>();
+      HashSet<String> userAndRoles = new HashSet<>();
       userAndRoles.add(messagereceived.principal);
       if (!messagereceived.roles.equals("")) {
         HashSet<String> roles = gson.fromJson(messagereceived.roles,

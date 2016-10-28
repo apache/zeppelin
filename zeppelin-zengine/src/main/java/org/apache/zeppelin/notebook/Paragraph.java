@@ -65,7 +65,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
   /**
    * Applicaiton states in this paragraph
    */
-  private final List<ApplicationState> apps =  new LinkedList<ApplicationState>();
+  private final List<ApplicationState> apps =  new LinkedList<>();
 
   @VisibleForTesting
   Paragraph() {
@@ -85,7 +85,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     user = null;
     dateUpdated = null;
     settings = new GUI();
-    config = new HashMap<String, Object>();
+    config = new HashMap<>();
   }
 
   public Paragraph(Note note, JobListener listener, InterpreterFactory factory) {
@@ -97,7 +97,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     authenticationInfo = null;
     dateUpdated = null;
     settings = new GUI();
-    config = new HashMap<String, Object>();
+    config = new HashMap<>();
   }
 
   private static String generateId() {
@@ -453,7 +453,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
       resourcePool = intpGroup.getInterpreterGroup(getUser(), note.getId()).getResourcePool();
     }
 
-    List<InterpreterContextRunner> runners = new LinkedList<InterpreterContextRunner>();
+    List<InterpreterContextRunner> runners = new LinkedList<>();
     for (Paragraph p : note.getParagraphs()) {
       runners.add(new ParagraphRunner(note, note.getId(), p.getId()));
     }
@@ -549,7 +549,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
 
   public List<ApplicationState> getAllApplicationStates() {
     synchronized (apps) {
-      return new LinkedList<ApplicationState>(apps);
+      return new LinkedList<>(apps);
     }
   }
 

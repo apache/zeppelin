@@ -340,7 +340,7 @@ public abstract class AbstractTestRestApi {
 
       @Override
       public boolean matchesSafely(HttpMethodBase httpMethodBase) {
-        method = (method == null) ? new WeakReference<HttpMethodBase>(httpMethodBase) : method;
+        method = (method == null) ? new WeakReference<>(httpMethodBase) : method;
         return httpMethodBase.getStatusCode() == expectedStatusCode;
       }
 

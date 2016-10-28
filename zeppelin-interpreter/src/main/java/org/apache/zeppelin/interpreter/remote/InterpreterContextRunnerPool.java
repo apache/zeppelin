@@ -35,7 +35,7 @@ public class InterpreterContextRunnerPool {
   private Map<String, List<InterpreterContextRunner>> interpreterContextRunners;
 
   public InterpreterContextRunnerPool() {
-    interpreterContextRunners = new HashMap<String, List<InterpreterContextRunner>>();
+    interpreterContextRunners = new HashMap<>();
 
   }
 

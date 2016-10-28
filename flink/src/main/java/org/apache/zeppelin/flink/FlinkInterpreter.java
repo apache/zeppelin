@@ -175,7 +175,7 @@ public class FlinkInterpreter extends Interpreter {
 
     pathSettings.v_$eq(classpath);
     settings.scala$tools$nsc$settings$ScalaSettings$_setter_$classpath_$eq(pathSettings);
-    settings.explicitParentLoader_$eq(new Some<ClassLoader>(Thread.currentThread()
+    settings.explicitParentLoader_$eq(new Some<>(Thread.currentThread()
         .getContextClassLoader()));
     BooleanSetting b = (BooleanSetting) settings.usejavacp();
     b.v_$eq(true);
@@ -197,7 +197,7 @@ public class FlinkInterpreter extends Interpreter {
   }
 
   private List<File> classPath(ClassLoader cl) {
-    List<File> paths = new LinkedList<File>();
+    List<File> paths = new LinkedList<>();
     if (cl == null) {
       return paths;
     }
@@ -217,7 +217,7 @@ public class FlinkInterpreter extends Interpreter {
   public Object getLastObject() {
     Object obj = imain.lastRequest().lineRep().call(
         "$result",
-        JavaConversions.asScalaBuffer(new LinkedList<Object>()));
+        JavaConversions.asScalaBuffer(new LinkedList<>()));
     return obj;
   }
 
