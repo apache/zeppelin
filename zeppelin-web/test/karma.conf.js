@@ -69,6 +69,7 @@ module.exports = function(config) {
       // endbower
       'src/app/app.js',
       'src/app/app.controller.js',
+      'src/app/tabledata/transformation.js',
       'src/app/**/*.js',
       'src/components/**/*.js',
       'test/spec/**/*.js'
