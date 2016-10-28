@@ -321,6 +321,7 @@ public class LivyHelper {
             + userSessionMap.get(context.getAuthenticationInfo().getUser())
             + "/statements/" + id,
         "GET", null, context.getParagraphId());
+    LOGGER.debug("statement {} response: {}", id, json);
     try {
       Map jsonMap = gson.fromJson(json,
           new TypeToken<Map>() {

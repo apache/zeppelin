@@ -91,11 +91,6 @@ public class PythonProcess {
     String line = null;
     while (!(line = reader.readLine()).contains(STATEMENT_END)) {
       logger.debug("Read line from python shell : " + line);
-      if (line.equals("...")) {
-        logger.warn("Syntax error ! ");
-        output.append("Syntax error ! ");
-        break;
-      }
       output.append(line + "\n");
     }
     return output.toString();

@@ -14,31 +14,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package org.apache.zeppelin.rest.message;
+package org.apache.zeppelin.notebook.repo;
 
 import java.util.List;
 import java.util.Map;
 
-import org.apache.zeppelin.interpreter.InterpreterOption;
-
 /**
- *  NewNotebookRequest rest api request message
+ * Notebook repo settings. This represent a structure of a notebook repo settings that will mostly
+ * used in the frontend.
  *
  */
-public class NewNotebookRequest {
-  String name;
-  List<NewParagraphRequest> paragraphs;
+public class NotebookRepoSettingsInfo {
 
-  public NewNotebookRequest (){
-
+  /**
+   * Type of value, It can be text or list.
+   */
+  public enum Type {
+    INPUT, DROPDOWN
   }
 
-  public String getName() {
-    return name;
+  public static NotebookRepoSettingsInfo newInstance() {
+    return new NotebookRepoSettingsInfo();
   }
 
-  public List<NewParagraphRequest> getParagraphs() {
-    return paragraphs;
-  }
+  public Type type;
+  public List<Map<String, String>> value;
+  public String selected;
+  public String name;
 }
