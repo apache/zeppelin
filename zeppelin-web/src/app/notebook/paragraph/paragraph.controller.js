@@ -420,23 +420,18 @@
     };
 
     var openEditorAndCloseTable = function() {
-      console.log('open editor and close output');
-
-      var newParams = angular.copy($scope.paragraph.settings.params);
-      var newConfig = angular.copy($scope.paragraph.config);
-      newConfig.editorHide = false;
-      newConfig.tableHide = true;
-
-      commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
+      manageEditorAndTableState(false, true);
     };
 
     var closeEditorAndOpenTable = function() {
-      console.log('close editor and open output');
+      manageEditorAndTableState(true, false);
+    };
 
+    var manageEditorAndTableState = function(showEditor, showTable) {
       var newParams = angular.copy($scope.paragraph.settings.params);
       var newConfig = angular.copy($scope.paragraph.config);
-      newConfig.editorHide = true;
-      newConfig.tableHide = false;
+      newConfig.editorHide = showEditor;
+      newConfig.tableHide = showTable;
 
       commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
     };
