@@ -55,7 +55,7 @@ Stable binary packages are available on the [Apache Zeppelin Download Page](http
 
 If you downloaded the default package, just unpack it in a directory of your choice and you're ready to go. If you downloaded the *net-install* package, you should manually [install additional interpreters](../manual/interpreterinstallation.html) first. You can also install everything by running `./bin/install-interpreter.sh --all`.
 
-After unpacking, jump to the [Starting Apache Zeppelin with Command Line](#starting-apache-zeppelin-with-command-line).
+After unpacking, jump to the [Starting Apache Zeppelin from Command Line](#starting-apache-zeppelin-from-the-command-line).
 
 ### Building from Source
 
@@ -178,7 +178,7 @@ chdir /usr/share/zeppelin
 exec bin/zeppelin-daemon.sh upstart
 ```
 
-## Next Steps:
+## Next Steps
 
 Congratulations, you have successfully installed Apache Zeppelin! Here are two next steps you might find useful:
 
