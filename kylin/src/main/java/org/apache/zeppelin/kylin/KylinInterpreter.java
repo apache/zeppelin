@@ -122,8 +122,6 @@ public class KylinInterpreter extends Interpreter {
     StringEntity entity = new StringEntity(query, "UTF-8");
     entity.setContentType("application/json; charset=UTF-8");
 
-    logger.info("post url:" + getProperty(KYLIN_QUERY_API_URL));
-
     if (httpMethod.toLowerCase().equals("get")) {
       HttpGet getRequest = new HttpGet(httpUri);
       HttpClient httpClient = HttpClientBuilder.create().build();
