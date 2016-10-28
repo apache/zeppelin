@@ -792,7 +792,7 @@ public class NotebookServer extends WebSocketServlet implements
     }
     Note note = notebook.getNote(noteId);
     NotebookAuthorization notebookAuthorization = notebook.getNotebookAuthorization();
-    if (!notebookAuthorization.isOwner(noteId, userAndRoles)) {
+    if (!notebookAuthorization.isWriter(noteId, userAndRoles)) {
       permissionError(conn, "clear output", fromMessage.principal,
           userAndRoles, notebookAuthorization.getOwners(noteId));
       return;
