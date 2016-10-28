@@ -12,8 +12,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<div id="{{notebookJob.notebookId}}_runControl" class="runControl">
-  <div id="{{notebookJob.notebookId}}_progress" class="progress" ng-if="notebookJob.isRunningJob === true">
+<div id="{{notebookJob.noteId}}_runControl" class="runControl">
+  <div id="{{notebookJob.noteId}}_progress" class="progress" ng-if="notebookJob.isRunningJob === true">
       <div ng-if="getProgress()>0 && getProgress()<100 && notebookJob.isRunningJob === true"
         class="progress-bar" role="progressbar" ng-style="{width:getProgress()+'%'}"></div>
       <div ng-if="(getProgress()<=0 || getProgress()>=100) && (notebookJob.isRunningJob === true)"

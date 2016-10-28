@@ -86,7 +86,7 @@
 
     /** Init the new controller */
     var initNotebook = function() {
-      websocketMsgSrv.getNotebook($routeParams.noteId);
+      websocketMsgSrv.getNote($routeParams.noteId);
       websocketMsgSrv.listRevisionHistory($routeParams.noteId);
       var currentRoute = $route.current;
       if (currentRoute) {
@@ -145,10 +145,10 @@
       BootstrapDialog.confirm({
         closable: true,
         title: '',
-        message: 'Do you want to delete this notebook?',
+        message: 'Do you want to delete this note?',
         callback: function(result) {
           if (result) {
-            websocketMsgSrv.deleteNotebook(noteId);
+            websocketMsgSrv.deleteNote(noteId);
             $location.path('/');
           }
         }
@@ -156,7 +156,7 @@
     };
 
     //Export notebook
-    $scope.exportNotebook = function() {
+    $scope.exportNote = function() {
       var jsonContent = JSON.stringify($scope.note);
       saveAsService.saveAs(jsonContent, $scope.note.name, 'json');
     };
@@ -166,10 +166,10 @@
       BootstrapDialog.confirm({
         closable: true,
         title: '',
-        message: 'Do you want to clone this notebook?',
+        message: 'Do you want to clone this note?',
         callback: function(result) {
           if (result) {
-            websocketMsgSrv.cloneNotebook(noteId);
+            websocketMsgSrv.cloneNote(noteId);
             $location.path('/');
           }
         }
@@ -177,14 +177,14 @@
     };
 
     // checkpoint/commit notebook
-    $scope.checkpointNotebook = function(commitMessage) {
+    $scope.checkpointNote = function(commitMessage) {
       BootstrapDialog.confirm({
         closable: true,
         title: '',
-        message: 'Commit notebook to current repository?',
+        message: 'Commit note to current repository?',
         callback: function(result) {
           if (result) {
-            websocketMsgSrv.checkpointNotebook($routeParams.noteId, commitMessage);
+            websocketMsgSrv.checkpointNote($routeParams.noteId, commitMessage);
           }
         }
       });
@@ -336,13 +336,13 @@
       if (config) {
         $scope.note.config = config;
       }
-      websocketMsgSrv.updateNotebook($scope.note.id, $scope.note.name, $scope.note.config);
+      websocketMsgSrv.updateNote($scope.note.id, $scope.note.name, $scope.note.config);
     };
 
     /** Update the note name */
     $scope.sendNewName = function() {
       if ($scope.note.name) {
-        websocketMsgSrv.updateNotebook($scope.note.id, $scope.note.name, $scope.note.config);
+        websocketMsgSrv.updateNote($scope.note.id, $scope.note.name, $scope.note.config);
       }
     };
 

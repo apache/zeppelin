@@ -70,6 +70,11 @@
               templateUrl: 'app/interpreter/interpreter.html',
               controller: 'InterpreterCtrl'
             })
+            .when('/notebookRepos', {
+              templateUrl: 'app/notebookRepos/notebookRepos.html',
+              controller: 'NotebookReposCtrl',
+              controllerAs: 'noterepo'
+            })
             .when('/credential', {
               templateUrl: 'app/credential/credential.html',
               controller: 'CredentialCtrl'

@@ -154,7 +154,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
   @Test
   public void testImportNotebook() throws IOException {
     String msg = "{\"op\":\"IMPORT_NOTE\",\"data\":" +
-        "{\"notebook\":{\"paragraphs\": [{\"text\": \"Test " +
+        "{\"note\":{\"paragraphs\": [{\"text\": \"Test " +
         "paragraphs import\",\"config\":{},\"settings\":{}}]," +
         "\"name\": \"Test Zeppelin notebook import\",\"config\": " +
         "{}}}}";
