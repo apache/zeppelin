@@ -312,6 +312,7 @@
 
       $scope.setRestfulObject = function(userInputApiString) {
         console.log('clover keyssss', arguments);
+        $scope.paragraph.restfulHttpCommand = userInputApiString;
         var keys = userInputApiString.split(' ');
         var informationArray = $scope.restfulInformation.interpreters[0].restful;
         console.log('clover got keys ', keys, informationArray);
@@ -513,6 +514,7 @@
 
       if ($scope.paragraph.config.isCodeEditorMode === false) {
         console.log('clover - generate restful http hb');
+        data = '%kylin\n' + $scope.paragraph.restfulHttpCommand + '\n' + JSON.stringify($scope.paragraph.restfulObject);
       }
 
       websocketMsgSrv.runParagraph($scope.paragraph.id, $scope.paragraph.title,

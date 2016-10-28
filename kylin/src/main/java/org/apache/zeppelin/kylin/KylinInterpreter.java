@@ -21,7 +21,9 @@ package org.apache.zeppelin.kylin;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpPut;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.zeppelin.interpreter.Interpreter;
@@ -99,35 +101,51 @@ public class KylinInterpreter extends Interpreter {
     return null;
   }
 
-  public HttpResponse prepareRequest(String sql) throws IOException {
-    String KYLIN_PROJECT = getProperty(KYLIN_QUERY_PROJECT);
-    logger.info("project:" + KYLIN_PROJECT);
-    logger.info("sql:" + sql);
-    logger.info("acceptPartial:" + getProperty(KYLIN_QUERY_ACCEPT_PARTIAL));
-    logger.info("limit:" + getProperty(KYLIN_QUERY_LIMIT));
-    logger.info("offset:" + getProperty(KYLIN_QUERY_OFFSET));
-    byte[] encodeBytes = Base64.encodeBase64(new String(getProperty(KYLIN_USERNAME)
-        + ":" + getProperty(KYLIN_PASSWORD)).getBytes("UTF-8"));
+  public HttpResponse prepareRequest(String restApiQuery) throws IOException {
+    String[] restApiQStrings = restApiQuery.split("\n");
+    String requestURI = restApiQStrings[0];
+    String httpMethod = requestURI.split(" ")[0];
+    String httpUri = requestURI.split(" ")[1];
+    String query = "";
+    for (int idx = 1; idx < restApiQStrings.length; idx++) {
+      query += restApiQStrings[idx] + "\n";
+    }
 
-    String postContent = new String("{\"project\":" + "\"" + KYLIN_PROJECT + "\""
-        + "," + "\"sql\":" + "\"" + sql + "\""
-        + "," + "\"acceptPartial\":" + "\"" + getProperty(KYLIN_QUERY_ACCEPT_PARTIAL) + "\""
-        + "," + "\"offset\":" + "\"" + getProperty(KYLIN_QUERY_OFFSET) + "\""
-        + "," + "\"limit\":" + "\"" + getProperty(KYLIN_QUERY_LIMIT) + "\"" + "}");
-    logger.info("post:" + postContent);
-    postContent = postContent.replaceAll("[\u0000-\u001f]", " ");
-    StringEntity entity = new StringEntity(postContent, "UTF-8");
+    byte[] encodeBytes = Base64.encodeBase64(new String(getProperty(KYLIN_USERNAME)
+            + ":" + getProperty(KYLIN_PASSWORD)).getBytes("UTF-8"));
+
+    requestURI = requestURI.replaceAll("[\u0000-\u001f]", " ");
+    query = query.replaceAll("[\u0000-\u001f]", " ");
+
+    logger.info("REST API URI : " + requestURI);
+    logger.info("REST API QUERY : " + query);
+    StringEntity entity = new StringEntity(query, "UTF-8");
     entity.setContentType("application/json; charset=UTF-8");
 
     logger.info("post url:" + getProperty(KYLIN_QUERY_API_URL));
 
-    HttpPost postRequest = new HttpPost(getProperty(KYLIN_QUERY_API_URL));
-    postRequest.setEntity(entity);
-    postRequest.addHeader("Authorization", "Basic " + new String(encodeBytes));
-    postRequest.addHeader("Accept-Encoding", "UTF-8");
-
-    HttpClient httpClient = HttpClientBuilder.create().build();
-    return httpClient.execute(postRequest);
+    if (httpMethod.toLowerCase().equals("get")) {
+      HttpGet getRequest = new HttpGet(httpUri);
+      HttpClient httpClient = HttpClientBuilder.create().build();
+      getRequest.addHeader("Authorization", "Basic " + new String(encodeBytes));
+      getRequest.addHeader("Accept-Encoding", "UTF-8");
+      return httpClient.execute(getRequest);
+    } else if (httpMethod.toLowerCase().equals("put")) {
+      HttpPut putRequest = new HttpPut(httpUri);
+      putRequest.setEntity(entity);
+      putRequest.addHeader("Authorization", "Basic " + new String(encodeBytes));
+      putRequest.addHeader("Accept-Encoding", "UTF-8");
+      HttpClient httpClient = HttpClientBuilder.create().build();
+      return httpClient.execute(putRequest);
+    } else {
+     // post
+      HttpPost postRequest = new HttpPost(httpUri);
+      postRequest.setEntity(entity);
+      postRequest.addHeader("Authorization", "Basic " + new String(encodeBytes));
+      postRequest.addHeader("Accept-Encoding", "UTF-8");
+      HttpClient httpClient = HttpClientBuilder.create().build();
+      return httpClient.execute(postRequest);
+    }
   }
 
   private InterpreterResult executeQuery(String sql) throws IOException {
