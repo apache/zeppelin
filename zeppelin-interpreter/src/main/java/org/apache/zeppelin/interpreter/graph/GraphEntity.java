@@ -15,13 +15,12 @@
  * limitations under the License.
  */
 
-package org.apache.zeppelin.graph.model;
+package org.apache.zeppelin.interpreter.graph;
 
 import java.util.Map;
 
 /**
- * 
- * @author a.santurbano
+ * The base network entity
  *
  */
 public abstract class GraphEntity {

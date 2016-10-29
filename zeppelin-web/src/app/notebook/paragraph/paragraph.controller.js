@@ -147,14 +147,21 @@
         var height = $scope.paragraph.config.graph.height || 400;
         return height - footerHeight - headerHeight - 10;
       };
-      var renderFooter = function(type, entity) {
+      var renderFooterOnClick = function(event) {
+        var type = 'node' in event.data ? 'node' : 'edge';
+        var entity = event.data[type];
+        var networkId = event.data.renderer.container.id.replace('_container', '');
         var obj = {id: entity.id, label: entity.defaultLabel || entity.label, type: type};
         var html = [$interpolate(['<li><b>{{type}}_id:</b>&nbsp;{{id}}</li>',
                                 '<li><b>{{type}}_type:</b>&nbsp;{{label}}</li>'].join(''))(obj)];
         html = html.concat(_.map(entity.data, function(v, k) {
           return $interpolate('<li><b>{{field}}:</b>&nbsp;{{value}}</li>')({field: k, value: v});
         }));
-        return html.join('');
+        angular.element('#' + networkId + '_footer')
+          .find('.list-inline')
+          .empty()
+          .append(html.join(''));
+        angular.element('#' + networkId + '_container').height(getContainerHeight(networkId));
       };
       var retryRenderer = function() {
         var networkId = 'p' + $scope.paragraph.id + '_network';
@@ -167,6 +174,7 @@
             var Sigma = $window.sigma;
             if ($scope.sigma) {
               $scope.sigma.unbind('clickNode');
+              $scope.sigma.unbind('edgeNode');
               Sigma.plugins.dragNodes($scope.sigma, $scope.sigma.renderers[0]).unbind('drop');
               $scope.sigma.graph.clear();
               $scope.sigma.kill();
@@ -197,15 +205,15 @@
                 type: 'canvas'
               },
               graph: result.graph,
-              settings: {//see https://github.com/jacomyal/sigma.js/wiki/Settings#rescale-settings
+              settings: {
                 minNodeSize: 0,
                 maxNodeSize: 0,
                 minEdgeSize: 0,
-                maxEdgeSize: 0,
-                enableEdgeHovering: true,
-                edgeHoverExtremities: true
+                maxEdgeSize: 0
               }
             });
+            $scope.sigma.bind('clickNode', renderFooterOnClick);
+            $scope.sigma.bind('clickEdge', renderFooterOnClick);
             if ($scope.asIframe) {
               return;
             }
@@ -218,22 +226,29 @@
               };
               $scope.setGraphMode('network', true, false);
             });
-            $scope.sigma.bind('clickNode', function(event) {
-              console.log('clickNode %o', event);
-              angular.element('#' + networkId + '_footer')
-                .find('.list-inline')
-                .empty()
-                .append(renderFooter('node', event.data.node));
-              angular.element('#' + networkId + '_container').height(getContainerHeight(networkId));
-            });
-            $scope.sigma.bind('clickEdge', function(event) {
-              console.log('clickEdge %o', event);
-              angular.element('#' + networkId + '_footer')
-                .find('.list-inline')
-                .empty()
-                .append(renderFooter('edge', event.data.edge));
-              angular.element('#' + networkId + '_container').height(getContainerHeight(networkId));
-            });
+            var nooverlapConf = {
+              nodeMargin: 0.5,
+              scaleNodes: 1.05,
+              gridSize: 75,
+              easing: 'quadraticInOut',
+              duration: 0
+            };
+            if (!nodeIds.length) {
+              var overlapListener = $scope.sigma.configNoverlap(nooverlapConf);
+              overlapListener.bind('stop', function(event) {
+                console.log(event);
+                $scope.sigma.graph.nodes()
+                  .forEach(function(node) {
+                    $scope.paragraph.config.graph.network.nodes[node.id] = {
+                      x: node.x,
+                      y: node.y
+                    };
+                  });
+                overlapListener.unbind('stop');
+              });
+              $scope.sigma.startNoverlap();
+              //on nooverlap stop i get each node position and overwrite the configuration
+            }
           } catch (err) {
             console.log('Network rendering error %o', err);
           }

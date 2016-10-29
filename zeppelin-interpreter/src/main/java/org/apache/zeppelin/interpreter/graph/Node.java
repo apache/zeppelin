@@ -15,14 +15,13 @@
  * limitations under the License.
  */
 
-package org.apache.zeppelin.graph.model;
+package org.apache.zeppelin.interpreter.graph;
 
 import java.util.Map;
 import java.util.Set;
 
 /**
- * 
- * @author a.santurbano
+ * The Zeppelin Node Entity
  *
  */
 public class Node extends GraphEntity {
