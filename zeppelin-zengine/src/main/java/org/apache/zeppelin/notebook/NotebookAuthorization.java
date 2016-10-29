@@ -252,15 +252,37 @@ public class NotebookAuthorization {
     return (b.isEmpty() || (intersection.size() > 0));
   }
 
-  public boolean isUserOwnerOrWriter(Set<String> userAndRoles, String noteId) {
+  public boolean isOwner(Set<String> userAndRoles, String noteId) {
     if (conf.isAnonymousAllowed()) {
-      LOG.debug("Zeppelin runs in anonymous mode");
+      LOG.debug("Zeppelin runs in anonymous mode, everybody is owner");
+      return true;
+    }
+    if (userAndRoles == null) {
+      return false;
+    }
+    return isOwner(noteId, userAndRoles);
+  }
+  
+  public boolean hasWriteAuthorization(Set<String> userAndRoles, String noteId) {
+    if (conf.isAnonymousAllowed()) {
+      LOG.debug("Zeppelin runs in anonymous mode, everybody is writer");
       return true;
     }
     if (userAndRoles == null) {
       return false;
     }
     return isWriter(noteId, userAndRoles);
+  }
+  
+  public boolean hasReadAuthorization(Set<String> userAndRoles, String noteId) {
+    if (conf.isAnonymousAllowed()) {
+      LOG.debug("Zeppelin runs in anonymous mode, everybody can read");
+      return true;
+    }
+    if (userAndRoles == null) {
+      return false;
+    }
+    return isReader(noteId, userAndRoles);
   }
 
   public void removeNote(String noteId) {

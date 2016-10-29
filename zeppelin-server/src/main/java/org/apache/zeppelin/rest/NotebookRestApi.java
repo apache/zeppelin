@@ -42,6 +42,7 @@ import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.NotebookAuthorization;
 import org.apache.zeppelin.notebook.Paragraph;
+import org.apache.zeppelin.rest.exception.NotFoundException;
 import org.apache.zeppelin.rest.exception.UnauthorizedException;
 import org.apache.zeppelin.rest.message.CronRequest;
 import org.apache.zeppelin.rest.message.NewNoteRequest;
@@ -54,7 +55,6 @@ import org.apache.zeppelin.types.InterpreterSettingsList;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.utils.InterpreterBindingUtils;
 import org.apache.zeppelin.utils.SecurityUtils;
-import org.openqa.selenium.NotFoundException;
 import org.quartz.CronExpression;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -93,7 +93,7 @@ public class NotebookRestApi {
   @Path("{noteId}/permissions")
   @ZeppelinApi
   public Response getNotePermissions(@PathParam("noteId") String noteId) {
-    checkIfUserIsMember(noteId,
+    checkIfUserCanRead(noteId,
         "Insufficient privileges you cannot get the list of permissions for this note");
     HashMap<String, Set<String>> permissionsMap = new HashMap<>();
     permissionsMap.put("owners", notebookAuthorization.getOwners(noteId));
@@ -115,20 +115,39 @@ public class NotebookRestApi {
    * Since we only have security on notebook level, from now we keep this logic in this class.
    * In the future we might want to generalize this for the rest of the api enmdpoints.
    */
-  private void checkIfUserIsOwnerOrWriter(String noteId, String errorMsg) {
+  
+  /**
+   * Check if the current user own the given note.
+   */
+  private void checkIfUserIsOwner(String noteId, String errorMsg) {
     Set<String> userAndRoles = Sets.newHashSet();
     userAndRoles.add(SecurityUtils.getPrincipal());
     userAndRoles.addAll(SecurityUtils.getRoles());
-    if (!notebookAuthorization.isUserOwnerOrWriter(userAndRoles, noteId)) {
+    if (!notebookAuthorization.hasReadAuthorization(userAndRoles, noteId)) {
       throw new UnauthorizedException(errorMsg);
     }
   }
   
-  private void checkIfUserIsMember(String noteId, String errorMsg) {
+  /**
+   * Check if the current user is either Owner or Writer for the given note.
+   */
+  private void checkIfUserCanWrite(String noteId, String errorMsg) {
     Set<String> userAndRoles = Sets.newHashSet();
     userAndRoles.add(SecurityUtils.getPrincipal());
     userAndRoles.addAll(SecurityUtils.getRoles());
-    if (!notebookAuthorization.isUserOwnerOrWriter(userAndRoles, noteId)) {
+    if (!notebookAuthorization.hasWriteAuthorization(userAndRoles, noteId)) {
+      throw new UnauthorizedException(errorMsg);
+    }
+  }
+  
+  /**
+   * Check if the current user can access (at least he have to be reader) the given note.
+   */
+  private void checkIfUserCanRead(String noteId, String errorMsg) {
+    Set<String> userAndRoles = Sets.newHashSet();
+    userAndRoles.add(SecurityUtils.getPrincipal());
+    userAndRoles.addAll(SecurityUtils.getRoles());
+    if (!notebookAuthorization.hasReadAuthorization(userAndRoles, noteId)) {
       throw new UnauthorizedException(errorMsg);
     }
   }
@@ -159,7 +178,7 @@ public class NotebookRestApi {
     userAndRoles.add(principal);
     userAndRoles.addAll(roles);
     
-    checkIfUserIsOwnerOrWriter(noteId,
+    checkIfUserCanWrite(noteId,
         ownerPermissionError(userAndRoles, notebookAuthorization.getOwners(noteId)));
     
     HashMap<String, HashSet<String>> permMap =
@@ -172,7 +191,7 @@ public class NotebookRestApi {
     HashSet<String> readers = permMap.get("readers");
     HashSet<String> owners = permMap.get("owners");
     HashSet<String> writers = permMap.get("writers");
-    // Set readers, if writers and owners is empty -> set to user requesting the change
+    // Set readers, if writers and owners if empty -> set to user requesting the change
     if (readers != null && !readers.isEmpty()) {
       if (writers.isEmpty()) {
         writers = Sets.newHashSet(SecurityUtils.getPrincipal());
@@ -209,7 +228,7 @@ public class NotebookRestApi {
   @Path("interpreter/bind/{noteId}")
   @ZeppelinApi
   public Response bind(@PathParam("noteId") String noteId, String req) throws IOException {
-    checkIfUserIsOwnerOrWriter(noteId,
+    checkIfUserCanWrite(noteId,
         "Insufficient privileges you cannot bind any interpreters to this note");
 
     List<String> settingIdList = gson.fromJson(req, new TypeToken<List<String>>() {
@@ -225,6 +244,8 @@ public class NotebookRestApi {
   @Path("interpreter/bind/{noteId}")
   @ZeppelinApi
   public Response bind(@PathParam("noteId") String noteId) {
+    checkIfUserCanRead(noteId, "Insufficient privileges you cannot get any interpreters settings");
+
     List<InterpreterSettingsList> settingList =
         InterpreterBindingUtils.getInterpreterBindings(notebook, noteId);
     notebookServer.broadcastInterpreterBindings(noteId, settingList);
@@ -247,8 +268,8 @@ public class NotebookRestApi {
   public Response getNote(@PathParam("noteId") String noteId) throws IOException {
     Note note = notebook.getNote(noteId);
     checkIfNoteIsNotNull(note);
-    checkIfUserIsMember(noteId,
-        "Insufficient privileges you cannot get this note");
+    checkIfUserCanRead(noteId, "Insufficient privileges you cannot get this note");
+
     return new JsonResponse<>(Status.OK, "", note).build();
   }
 
@@ -263,8 +284,7 @@ public class NotebookRestApi {
   @Path("export/{noteId}")
   @ZeppelinApi
   public Response exportNote(@PathParam("noteId") String noteId) throws IOException {
-    checkIfUserIsMember(noteId,
-        "Insufficient privileges you cannot export this note");
+    checkIfUserCanRead(noteId, "Insufficient privileges you cannot export this note");
     String exportJson = notebook.exportNote(noteId);
     return new JsonResponse<>(Status.OK, "", exportJson).build();
   }
@@ -333,8 +353,8 @@ public class NotebookRestApi {
   @ZeppelinApi
   public Response deleteNote(@PathParam("noteId") String noteId) throws IOException {
     LOG.info("Delete note {} ", noteId);
+    checkIfUserIsOwner(noteId, "Insufficient privileges you cannot delete this note");
     AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
-    checkIfUserIsOwnerOrWriter(noteId, "Insufficient privileges you cannot remove this note");
     if (!(noteId.isEmpty())) {
       Note note = notebook.getNote(noteId);
       if (note != null) {
@@ -359,7 +379,7 @@ public class NotebookRestApi {
   public Response cloneNote(@PathParam("noteId") String noteId, String message)
       throws IOException, CloneNotSupportedException, IllegalArgumentException {
     LOG.info("clone note by JSON {}", message);
-    checkIfUserIsOwnerOrWriter(noteId, "Insufficient privileges you cannot clone this note");
+    checkIfUserCanWrite(noteId, "Insufficient privileges you cannot clone this note");
     NewNoteRequest request = gson.fromJson(message, NewNoteRequest.class);
     String newNoteName = null;
     if (request != null) {
@@ -388,8 +408,7 @@ public class NotebookRestApi {
 
     Note note = notebook.getNote(noteId);
     checkIfNoteIsNotNull(note);
-    checkIfUserIsOwnerOrWriter(noteId,
-        "Insufficient privileges you cannot add paragraph to this note");
+    checkIfUserCanWrite(noteId, "Insufficient privileges you cannot add paragraph to this note");
 
     NewParagraphRequest request = gson.fromJson(message, NewParagraphRequest.class);
 
@@ -425,7 +444,7 @@ public class NotebookRestApi {
 
     Note note = notebook.getNote(noteId);
     checkIfNoteIsNotNull(note);
-    checkIfUserIsMember(noteId, "Insufficient privileges you cannot get this paragraph");
+    checkIfUserCanRead(noteId, "Insufficient privileges you cannot get this paragraph");
     Paragraph p = note.getParagraph(paragraphId);
     checkIfParagraphIsNotNull(p);
 
@@ -449,7 +468,7 @@ public class NotebookRestApi {
 
     Note note = notebook.getNote(noteId);
     checkIfNoteIsNotNull(note);
-    checkIfUserIsOwnerOrWriter(noteId, "Insufficient privileges you cannot move paragraph");
+    checkIfUserCanWrite(noteId, "Insufficient privileges you cannot move paragraph");
 
     Paragraph p = note.getParagraph(paragraphId);
     checkIfParagraphIsNotNull(p);
@@ -483,7 +502,7 @@ public class NotebookRestApi {
 
     Note note = notebook.getNote(noteId);
     checkIfNoteIsNotNull(note);
-    checkIfUserIsOwnerOrWriter(noteId,
+    checkIfUserIsOwner(noteId,
         "Insufficient privileges you cannot remove paragraph from this note");
 
     Paragraph p = note.getParagraph(paragraphId);
@@ -512,7 +531,7 @@ public class NotebookRestApi {
     LOG.info("run note jobs {} ", noteId);
     Note note = notebook.getNote(noteId);
     checkIfNoteIsNotNull(note);
-    checkIfUserIsOwnerOrWriter(noteId, "Insufficient privileges you cannot run job for this note");
+    checkIfUserCanWrite(noteId, "Insufficient privileges you cannot run job for this note");
 
     try {
       note.runAll();
@@ -540,8 +559,7 @@ public class NotebookRestApi {
     LOG.info("stop note jobs {} ", noteId);
     Note note = notebook.getNote(noteId);
     checkIfNoteIsNotNull(note);
-    checkIfUserIsOwnerOrWriter(noteId,
-        "Insufficient privileges you cannot stop this job for this note");
+    checkIfUserCanWrite(noteId, "Insufficient privileges you cannot stop this job for this note");
 
     for (Paragraph p : note.getParagraphs()) {
       if (!p.isTerminated()) {
@@ -566,7 +584,7 @@ public class NotebookRestApi {
     LOG.info("get note job status.");
     Note note = notebook.getNote(noteId);
     checkIfNoteIsNotNull(note);
-    checkIfUserIsMember(noteId, "Insufficient privileges you cannot get job status");
+    checkIfUserCanRead(noteId, "Insufficient privileges you cannot get job status");
 
     return new JsonResponse<>(Status.OK, null, note.generateParagraphsInfo()).build();
   }
@@ -588,7 +606,7 @@ public class NotebookRestApi {
     LOG.info("get note paragraph job status.");
     Note note = notebook.getNote(noteId);
     checkIfNoteIsNotNull(note);
-    checkIfUserIsMember(noteId, "Insufficient privileges you cannot get job status");
+    checkIfUserCanRead(noteId, "Insufficient privileges you cannot get job status");
 
     Paragraph paragraph = note.getParagraph(paragraphId);
     checkIfParagraphIsNotNull(paragraph);
@@ -615,7 +633,7 @@ public class NotebookRestApi {
 
     Note note = notebook.getNote(noteId);
     checkIfNoteIsNotNull(note);
-    checkIfUserIsOwnerOrWriter(noteId, "Insufficient privileges you cannot run job for this note");
+    checkIfUserCanWrite(noteId, "Insufficient privileges you cannot run job for this note");
     Paragraph paragraph = note.getParagraph(paragraphId);
     checkIfParagraphIsNotNull(paragraph);
 
@@ -653,7 +671,7 @@ public class NotebookRestApi {
 
     Note note = notebook.getNote(noteId);
     checkIfNoteIsNotNull(note);
-    checkIfUserIsOwnerOrWriter(noteId, "Insufficient privileges you cannot run paragraph");
+    checkIfUserCanWrite(noteId, "Insufficient privileges you cannot run paragraph");
     Paragraph paragraph = note.getParagraph(paragraphId);
     checkIfParagraphIsNotNull(paragraph);
 
@@ -691,7 +709,7 @@ public class NotebookRestApi {
     LOG.info("stop paragraph job {} ", noteId);
     Note note = notebook.getNote(noteId);
     checkIfNoteIsNotNull(note);
-    checkIfUserIsOwnerOrWriter(noteId, "Insufficient privileges you cannot stop paragraph");
+    checkIfUserCanWrite(noteId, "Insufficient privileges you cannot stop paragraph");
     Paragraph p = note.getParagraph(paragraphId);
     checkIfParagraphIsNotNull(p);
     p.abort();
@@ -716,8 +734,7 @@ public class NotebookRestApi {
 
     Note note = notebook.getNote(noteId);
     checkIfNoteIsNotNull(note);
-    checkIfUserIsOwnerOrWriter(noteId,
-        "Insufficient privileges you cannot set a cron job for this note");
+    checkIfUserCanWrite(noteId, "Insufficient privileges you cannot set a cron job for this note");
 
     if (!CronExpression.isValidExpression(request.getCronString())) {
       return new JsonResponse<>(Status.BAD_REQUEST, "wrong cron expressions.").build();
@@ -747,7 +764,7 @@ public class NotebookRestApi {
 
     Note note = notebook.getNote(noteId);
     checkIfNoteIsNotNull(note);
-    checkIfUserIsOwnerOrWriter(noteId,
+    checkIfUserIsOwner(noteId,
         "Insufficient privileges you cannot remove this cron job from this note");
 
     Map<String, Object> config = note.getConfig();
@@ -774,7 +791,7 @@ public class NotebookRestApi {
 
     Note note = notebook.getNote(noteId);
     checkIfNoteIsNotNull(note);
-    checkIfUserIsMember(noteId, "Insufficient privileges you cannot get cron information");
+    checkIfUserCanRead(noteId, "Insufficient privileges you cannot get cron information");
 
     return new JsonResponse<>(Status.OK, note.getConfig().get("cron")).build();
   }
