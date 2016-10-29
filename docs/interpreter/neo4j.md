@@ -86,10 +86,10 @@ The default visualization show the query result as a table. In the tabular resul
 If the query result has almost a node the **Network** button will be enabled so you can switch to the graph visualization
 ![Network button on chart bar](../assets/themes/zeppelin/img/docs-img/zeppelin-switch-chart-network.png)
 
-![Simple cypher query network visualization](../assets/themes/zeppelin/img/docs-img/neo4j-newtwork-result.png)
+![Simple cypher query network visualization](../assets/themes/zeppelin/img/docs-img/neo4j-network-result.png)
 
 Leveraging the **settings** button you can customize your graph visualization, a list of nodes will be displayed and by click on each one you can set the property which will be used as node label.
-![Simple cypher query network visualization](../assets/themes/zeppelin/img/docs-img/zeppelin-network-display-customization)
+![Simple cypher query network visualization](../assets/themes/zeppelin/img/docs-img/zeppelin-network-display-customization.png)
 
 ### Apply Zeppelin Dynamic Forms
 You can leverage [Zeppelin Dynamic Form](../manual/dynamicform.html) inside your queries. You can use both the `text input` and `select form` parameterization features.
