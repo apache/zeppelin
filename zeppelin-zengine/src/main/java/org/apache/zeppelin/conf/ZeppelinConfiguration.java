@@ -17,6 +17,7 @@
 
 package org.apache.zeppelin.conf;
 
+import java.io.File;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -401,7 +402,9 @@ public class ZeppelinConfiguration extends XMLConfiguration {
   }
 
   public String getShiroPath() {
-    return getRelativeDir(String.format("%s/shiro.ini", getConfDir()));
+    String shiroPath =  getRelativeDir(String.format("%s/shiro.ini", getConfDir()));
+    return new File(shiroPath).exists() ? shiroPath
+        : getRelativeDir(String.format("%s/shiro.ini.template", getConfDir()));
   }
 
   public String getInterpreterRemoteRunnerPath() {
