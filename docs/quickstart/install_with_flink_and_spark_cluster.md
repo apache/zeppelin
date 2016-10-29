@@ -18,6 +18,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
+{% include JB/setup %}
+
+# Install with flink and spark cluster
+
+<div id="toc"></div>
+
 This tutorial is extremely entry-level. It assumes no prior knowledge of Linux, git, or other tools. If you carefully type what I tell you when I tell you, you should be able to get Zeppelin running.
 
 ## Installing Zeppelin with Flink and Spark in cluster mode

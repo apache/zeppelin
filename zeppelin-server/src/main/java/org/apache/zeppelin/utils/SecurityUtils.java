@@ -119,4 +119,10 @@ public class SecurityUtils {
     return roles;
   }
 
+  /**
+   * Checked if shiro enabled or not
+   */
+  public static boolean isAuthenticated() {
+    return org.apache.shiro.SecurityUtils.getSubject().isAuthenticated();
+  }
 }

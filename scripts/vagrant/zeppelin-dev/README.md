@@ -140,7 +140,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import StringIO
 
-# clear out any previous plots on this notebook
+# clear out any previous plots on this note
 plt.clf()
 
 def show(p):

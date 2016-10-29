@@ -180,7 +180,7 @@ public class AuthenticationIT extends AbstractZeppelinIT {
       try {
         WebElement element = pollingWait(By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + noteId + "')]"),
             MAX_BROWSER_TIMEOUT_SEC);
-        collector.checkThat("Check is user has permission to view this notebook link", false,
+        collector.checkThat("Check is user has permission to view this note link", false,
             CoreMatchers.equalTo(element.isDisplayed()));
       } catch (Exception e) {
         //This should have failed, nothing to worry.
@@ -191,7 +191,7 @@ public class AuthenticationIT extends AbstractZeppelinIT {
       List<WebElement> privilegesModal = driver.findElements(
           By.xpath("//div[@class='modal-content']//div[@class='bootstrap-dialog-header']" +
               "//div[contains(.,'Insufficient privileges')]"));
-      collector.checkThat("Check is user has permission to view this notebook", 1,
+      collector.checkThat("Check is user has permission to view this note", 1,
           CoreMatchers.equalTo(privilegesModal.size()));
       driver.findElement(
           By.xpath("//div[@class='modal-content'][contains(.,'Insufficient privileges')]" +
@@ -202,7 +202,7 @@ public class AuthenticationIT extends AbstractZeppelinIT {
       try {
         WebElement element = pollingWait(By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + noteId + "')]"),
             MAX_BROWSER_TIMEOUT_SEC);
-        collector.checkThat("Check is user has permission to view this notebook link", false,
+        collector.checkThat("Check is user has permission to view this note link", true,
             CoreMatchers.equalTo(element.isDisplayed()));
       } catch (Exception e) {
         //This should have failed, nothing to worry.
@@ -213,7 +213,7 @@ public class AuthenticationIT extends AbstractZeppelinIT {
       privilegesModal = driver.findElements(
           By.xpath("//div[@class='modal-content']//div[@class='bootstrap-dialog-header']" +
               "//div[contains(.,'Insufficient privileges')]"));
-      collector.checkThat("Check is user has permission to view this notebook", 0,
+      collector.checkThat("Check is user has permission to view this note", 0,
           CoreMatchers.equalTo(privilegesModal.size()));
       deleteTestNotebook(driver);
       authenticationIT.logoutUser("finance2");

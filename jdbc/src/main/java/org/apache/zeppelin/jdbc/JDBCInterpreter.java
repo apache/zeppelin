@@ -75,6 +75,7 @@ public class JDBCInterpreter extends Interpreter {
 
   private Logger logger = LoggerFactory.getLogger(JDBCInterpreter.class);
 
+  static final String INTERPRETER_NAME = "jdbc";
   static final String COMMON_KEY = "common";
   static final String MAX_LINE_KEY = "max_count";
   static final String MAX_LINE_DEFAULT = "1000";
@@ -343,9 +344,17 @@ public class JDBCInterpreter extends Interpreter {
     return null;
   }
 
+  private String getEntityName(String replName) {
+    StringBuffer entityName = new StringBuffer();
+    entityName.append(INTERPRETER_NAME);
+    entityName.append(".");
+    entityName.append(replName);
+    return entityName.toString();
+  }
+
   public void setAccountOfCredential(String propertyKey, InterpreterContext interpreterContext) {
     UsernamePassword usernamePassword = getUsernamePassword(interpreterContext,
-      interpreterContext.getReplName());
+      getEntityName(interpreterContext.getReplName()));
     if (usernamePassword != null && notExistAccountInProperty()) {
       propertiesMap.get(propertyKey).setProperty("user", usernamePassword.getUsername());
       propertiesMap.get(propertyKey).setProperty("password", usernamePassword.getPassword());
@@ -452,6 +461,14 @@ public class JDBCInterpreter extends Interpreter {
       PrintStream ps = new PrintStream(baos);
       e.printStackTrace(ps);
       String errorMsg = new String(baos.toByteArray(), StandardCharsets.UTF_8);
+
+      try {
+        PoolingDriver driver = poolingDriverMap.remove(propertyKey);
+        driver.closePool(propertyKey);
+      } catch (SQLException e1) {
+        e1.printStackTrace();
+      }
+
       return new InterpreterResult(Code.ERROR, errorMsg);
     }
   }

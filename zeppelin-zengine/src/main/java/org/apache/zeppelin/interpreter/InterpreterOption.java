@@ -17,18 +17,25 @@
 
 package org.apache.zeppelin.interpreter;
 
+import com.google.common.base.Preconditions;
+
 import java.util.List;
 
 /**
  *
  */
 public class InterpreterOption {
+  public static final transient String SHARED = "shared";
+  public static final transient String SCOPED = "scoped";
+  public static final transient String ISOLATED = "isolated";
+
   boolean remote;
   String host = null;
   int port = -1;
-  boolean perNoteSession;
-  boolean perNoteProcess;
-  
+
+  String perNote;
+  String perUser;
+
   boolean isExistingProcess;
   boolean setPermission;
   List<String> users;
@@ -62,11 +69,21 @@ public class InterpreterOption {
   }
 
   public InterpreterOption() {
-    remote = false;
+    this(false);
   }
 
   public InterpreterOption(boolean remote) {
+    this(remote, SHARED, SHARED);
+  }
+
+  public InterpreterOption(boolean remote, String perUser, String perNote) {
+    Preconditions.checkNotNull(remote);
+    Preconditions.checkNotNull(perUser);
+    Preconditions.checkNotNull(perNote);
+
     this.remote = remote;
+    this.perUser = perUser;
+    this.perNote = perNote;
   }
 
   public boolean isRemote() {
@@ -77,14 +94,6 @@ public class InterpreterOption {
     this.remote = remote;
   }
 
-  public boolean isPerNoteSession() {
-    return perNoteSession;
-  }
-
-  public void setPerNoteSession(boolean perNoteSession) {
-    this.perNoteSession = perNoteSession;
-  }
-
   public String getHost() {
     return host;
   }
@@ -93,11 +102,44 @@ public class InterpreterOption {
     return port;
   }
 
-  public boolean isPerNoteProcess() {
-    return perNoteProcess;
+
+  public boolean perUserShared() {
+    return SHARED.equals(perUser);
   }
 
-  public void setPerNoteProcess(boolean perNoteProcess) {
-    this.perNoteProcess = perNoteProcess;
+  public boolean perUserScoped() {
+    return SCOPED.equals(perUser);
+  }
+
+  public boolean perUserIsolated() {
+    return ISOLATED.equals(perUser);
+  }
+
+  public boolean perNoteShared() {
+    return SHARED.equals(perNote);
+  }
+
+  public boolean perNoteScoped() {
+    return SCOPED.equals(perNote);
+  }
+
+  public boolean perNoteIsolated() {
+    return ISOLATED.equals(perNote);
+  }
+
+  public boolean isProcess() {
+    return perUserIsolated() || perNoteIsolated();
+  }
+
+  public boolean isSession() {
+    return perUserScoped() || perNoteScoped();
+  }
+
+  public void setPerNote(String perNote) {
+    this.perNote = perNote;
+  }
+
+  public void setPerUser(String perUser) {
+    this.perUser = perUser;
   }
 }

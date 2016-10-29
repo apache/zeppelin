@@ -298,6 +298,7 @@ public class RemoteInterpreter extends Interpreter {
     if (logger.isDebugEnabled()) {
       logger.debug("st:\n{}", st);
     }
+
     FormType form = getFormType();
     RemoteInterpreterProcess interpreterProcess = getInterpreterProcess();
     Client client = null;
