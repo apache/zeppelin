@@ -15,13 +15,12 @@
  * limitations under the License.
  */
 
-package org.apache.zeppelin.graph.model;
+package org.apache.zeppelin.interpreter.graph;
 
 import java.util.Map;
 
 /**
- * 
- * @author a.santurbano
+ * The Zeppelin Relationship entity
  *
  */
 public class Relationship extends GraphEntity {
@@ -35,8 +34,7 @@ public class Relationship extends GraphEntity {
   private int count;
   
   /**
-   * 
-   * @author a.santurbano
+   * The relationship shape type
    *
    */
   public enum Type{arrow, curvedArrow}

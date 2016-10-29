@@ -15,11 +15,10 @@
  * limitations under the License.
  */
 
-package org.apache.zeppelin.graph.utils;
+package org.apache.zeppelin.interpreter.graph;
 
 /**
- * 
- * @author a.santurbano
+ * An utiliy class for networks
  *
  */
 public class GraphUtils {

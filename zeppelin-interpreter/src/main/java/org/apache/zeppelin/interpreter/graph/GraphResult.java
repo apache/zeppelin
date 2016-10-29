@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.zeppelin.graph.model;
+package org.apache.zeppelin.interpreter.graph;
 
 import java.util.Collection;
 import java.util.Map;
@@ -23,19 +23,16 @@ import java.util.Set;
 
 import org.apache.zeppelin.interpreter.InterpreterResult;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
+
 /**
- * 
- * @author a.santurbano
+ * The intepreter result template for Networks
  *
  */
 public class GraphResult extends InterpreterResult {
-  private static final long serialVersionUID = -7269726748696145519L;
 
   /**
-   * 
-   * @author a.santurbano
+   * The Graph structure parsed from the front-end
    *
    */
   public static class Graph {
@@ -92,10 +89,10 @@ public class GraphResult extends InterpreterResult {
 
   }
   
-  private static final ObjectMapper jsonMapper = new ObjectMapper();
+  private static final Gson gson = new Gson();
 
-  public GraphResult(Code code, Graph response) throws JsonProcessingException {
-    super(code, Type.NETWORK, jsonMapper.writeValueAsString(response));
+  public GraphResult(Code code, Graph graphObject) {
+    super(code, Type.NETWORK, gson.toJson(graphObject));
   }
 
 }
