@@ -48,7 +48,8 @@
       }
     },
     "editor": {
-      "language": "sql"
+      "language": "sql",
+      "editOnDblClick": false
     }
   }
 ]

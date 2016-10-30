@@ -41,8 +41,9 @@
     $scope.paragraph = null;
     $scope.originalText = '';
     $scope.editor = null;
-    $scope.magic = null;
 
+    var editorSetting = {};
+    var pastePercentSign = false;
     var paragraphScope = $rootScope.$new(true, $rootScope);
 
     // to keep backward compatibility
@@ -300,6 +301,10 @@
                                    data, $scope.paragraph.config, $scope.paragraph.settings.params);
       $scope.originalText = angular.copy(data);
       $scope.dirtyText = undefined;
+
+      if (editorSetting.editOnDblClick) {
+        closeEditorAndOpenTable();
+      }
     };
 
     $scope.saveParagraph = function() {
@@ -410,6 +415,23 @@
       var newParams = angular.copy($scope.paragraph.settings.params);
       var newConfig = angular.copy($scope.paragraph.config);
       newConfig.tableHide = false;
+
+      commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
+    };
+
+    var openEditorAndCloseTable = function() {
+      manageEditorAndTableState(false, true);
+    };
+
+    var closeEditorAndOpenTable = function() {
+      manageEditorAndTableState(true, false);
+    };
+
+    var manageEditorAndTableState = function(showEditor, showTable) {
+      var newParams = angular.copy($scope.paragraph.settings.params);
+      var newConfig = angular.copy($scope.paragraph.config);
+      newConfig.editorHide = showEditor;
+      newConfig.tableHide = showTable;
 
       commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
     };
@@ -626,6 +648,12 @@
           $scope.handleFocus(false);
         });
 
+        $scope.editor.on('paste', function(e) {
+          if (e.text.startsWith('%')) {
+            pastePercentSign = true;
+          }
+        });
+
         $scope.editor.getSession().on('change', function(e, editSession) {
           autoAdjustEditorHeight(_editor.container.id);
         });
@@ -705,7 +733,7 @@
       }
     };
 
-    var getAndSetEditorSetting = function(session, interpreterName) {
+    var getEditorSetting = function(interpreterName) {
       var deferred = $q.defer();
       websocketMsgSrv.getEditorSetting($scope.paragraph.id, interpreterName);
       $timeout(
@@ -715,42 +743,51 @@
           }
         }
       ), 1000);
-      deferred.promise.then(function(editorSetting) {
-        if (!_.isEmpty(editorSetting.editor)) {
-          var mode = 'ace/mode/' + editorSetting.editor.language;
-          $scope.paragraph.config.editorMode = mode;
-          session.setMode(mode);
-        }
-      });
+      return deferred.promise;
+    };
+
+    var setEditorLanguage = function(session, language) {
+      var mode = 'ace/mode/';
+      mode += language;
+      $scope.paragraph.config.editorMode = mode;
+      session.setMode(mode);
     };
 
     var setParagraphMode = function(session, paragraphText, pos) {
       // Evaluate the mode only if the the position is undefined
       // or the first 30 characters of the paragraph have been modified
       // or cursor position is at beginning of second line.(in case user hit enter after typing %magic)
-      if ((typeof pos === 'undefined') || (pos.row === 0 && pos.column < 30) || (pos.row === 1 && pos.column === 0)) {
+      if ((typeof pos === 'undefined') || (pos.row === 0 && pos.column < 30) ||
+          (pos.row === 1 && pos.column === 0) || pastePercentSign || $scope.paragraphFocused) {
         // If paragraph loading, use config value if exists
         if ((typeof pos === 'undefined') && $scope.paragraph.config.editorMode) {
           session.setMode($scope.paragraph.config.editorMode);
         } else {
-          var magic;
-          // set editor mode to default interpreter syntax if paragraph text doesn't start with '%'
-          // TODO(mina): dig into the cause what makes interpreterBindings has no element
-          if (!paragraphText.startsWith('%') && ((typeof pos !== 'undefined') && pos.row === 0 && pos.column === 1) ||
-              (typeof pos === 'undefined') && $scope.$parent.interpreterBindings.length !== 0) {
-            magic = $scope.$parent.interpreterBindings[0].name;
-            getAndSetEditorSetting(session, magic);
-          } else {
-            var replNameRegexp = /%(.+?)\s/g;
-            var match = replNameRegexp.exec(paragraphText);
-            if (match && $scope.magic !== match[1]) {
-              magic = match[1].trim();
-              $scope.magic = magic;
-              getAndSetEditorSetting(session, magic);
-            }
+          var magic = getInterpreterName(paragraphText);
+          if (editorSetting.magic !== magic) {
+            editorSetting.magic = magic;
+            getEditorSetting(magic)
+              .then(function(setting) {
+                setEditorLanguage(session, setting.editor.language);
+                _.merge(editorSetting, setting.editor);
+              });
           }
         }
       }
+      pastePercentSign = false;
+    };
+
+    var getInterpreterName = function(paragraphText) {
+      var intpNameRegexp = /%(.+?)\s/g;
+      var match = intpNameRegexp.exec(paragraphText);
+      if (match) {
+        return match[1].trim();
+      // get default interpreter name if paragraph text doesn't start with '%'
+      // TODO(mina): dig into the cause what makes interpreterBindings to have no element
+      } else if ($scope.$parent.interpreterBindings.length !== 0) {
+        return $scope.$parent.interpreterBindings[0].name;
+      }
+      return '';
     };
 
     var autoAdjustEditorHeight = function(id) {
@@ -1070,6 +1107,7 @@
     var setD3Chart = function(type, data, refresh) {
       if (!$scope.chart[type]) {
         var chart = nv.models[type]();
+        chart._options.noData = 'Invalid Data, check graph settings';
         $scope.chart[type] = chart;
       }
 
@@ -1086,7 +1124,6 @@
 
         $scope.chart[type].xAxis.tickFormat(function(d) {return xAxisTickFormat(d, xLabels);});
         $scope.chart[type].yAxis.tickFormat(function(d) {return yAxisTickFormat(d, yLabels);});
-
         // configure how the tooltip looks.
         $scope.chart[type].tooltipContent(function(key, x, y, graph, data) {
           var tooltipContent = '<h3>' + key + '</h3>';
@@ -2456,6 +2493,23 @@
         $scope.editor.blur();
         var isDigestPass = true;
         $scope.handleFocus(false, isDigestPass);
+      }
+    });
+
+    $scope.$on('doubleClickParagraph', function(event, paragraphId) {
+      if ($scope.paragraph.id === paragraphId && editorSetting.editOnDblClick) {
+        var deferred = $q.defer();
+        openEditorAndCloseTable();
+        $timeout(
+          $scope.$on('updateParagraph', function(event, data) {
+            deferred.resolve(data);
+          }
+        ), 1000);
+
+        deferred.promise.then(function(data) {
+          $scope.editor.focus();
+          $scope.goToEnd();
+        });
       }
     });
 

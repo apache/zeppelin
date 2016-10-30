@@ -139,6 +139,10 @@
     // register mouseevent handler for focus paragraph
     document.addEventListener('keydown', $scope.keyboardShortcut);
 
+    $scope.paragraphOnDoubleClick = function(paragraphId) {
+      $scope.$broadcast('doubleClickParagraph', paragraphId);
+    };
+
     /** Remove the note and go back tot he main page */
     /** TODO(anthony): In the nearly future, go back to the main page and telle to the dude that the note have been remove */
     $scope.removeNote = function(noteId) {

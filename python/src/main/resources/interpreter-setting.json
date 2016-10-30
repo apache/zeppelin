@@ -18,13 +18,19 @@
       }
     },
     "editor": {
-      "language": "python"
+      "language": "python",
+      "editOnDblClick": false
     }
   },
   {
     "group": "python",
     "name": "sql",
     "className": "org.apache.zeppelin.python.PythonInterpreterPandasSql",
-    "properties": { }
+    "properties": {
+    },
+    "editor":{
+      "language": "sql",
+      "editOnDblClick": false
+    }
   }
 ]
