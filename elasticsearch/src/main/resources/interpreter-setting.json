@@ -28,6 +28,9 @@
         "defaultValue": "10",
         "description": "The size of the result set of a search query"
       }
+    },
+    "editor": {
+      "editOnDblClick": false
     }
   }
 ]

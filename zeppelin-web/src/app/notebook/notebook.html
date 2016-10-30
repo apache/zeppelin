@@ -113,7 +113,8 @@ limitations under the License.
          ng-include src="'app/notebook/paragraph/paragraph.html'"
          ng-class="{'paragraph-space box paragraph-margin': !asIframe, 'focused': paragraphFocused,
                     'lastEmptyParagraph': !paragraph.text && !paragraph.result}"
-         ng-hide="currentParagraph.config.tableHide && viewOnly">
+         ng-hide="currentParagraph.config.tableHide && viewOnly"
+         ng-dblclick="paragraphOnDoubleClick(currentParagraph.id);">
     </div>
     <div class="new-paragraph" ng-click="insertNew('below');" ng-hide="!$last || viewOnly || asIframe ">
       <h4 class="plus-sign">&#43;</h4>
