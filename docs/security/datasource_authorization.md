@@ -37,7 +37,9 @@ You can add new credentials in the dropdown menu for your data source which can 
 
 <img class="img-responsive" src="../assets/themes/zeppelin/img/docs-img/credential_tab.png" width="180px"/>
 
-**Entity** can be the key that distinguishes each credential sets. Type **Username & Password** for your own credentials. ex) user & password of Mysql 
+**Entity** can be the key that distinguishes each credential sets.(We suggest that the convention of the **Entity** is `[InterpreterName].[Alias]`.)
+
+Type **Username & Password** for your own credentials. ex) user & password of Mysql
 
 <img class="img-responsive" src="../assets/themes/zeppelin/img/docs-img/add_credential.png" />
 

@@ -116,7 +116,11 @@ The JDBC interpreter properties are defined by default like below.
   </tr>
 </table>
 
-If you want to connect other databases such as `Mysql`, `Redshift` and `Hive`, you need to edit the property values. 
+If you want to connect other databases such as `Mysql`, `Redshift` and `Hive`, you need to edit the property values.
+You can also use [Credential](../security/datasource_authorization.html) for JDBC authentication.
+If you does not define the `default.user` and `default.password` for connecting a database in the interpreter properties,
+the JDBC interpreter are going to get the account information from [Credential](../security/datasource_authorization.html).
+
 The below example is for `Mysql` connection.
 
 <img src="../assets/themes/zeppelin/img/docs-img/edit_properties.png" width="600px" />
