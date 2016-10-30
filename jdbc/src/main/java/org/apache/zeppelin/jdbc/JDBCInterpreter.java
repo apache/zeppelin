@@ -198,7 +198,7 @@ public class JDBCInterpreter extends Interpreter {
   }
 
   private boolean isConnectionInPool(String driverName) {
-    return poolingDriverMap.containsKey(driverName) ? true : false;
+    return poolingDriverMap.containsKey(driverName);
   }
 
   private void createConnectionPool(String url, String propertyKey, Properties properties) {
@@ -330,9 +330,8 @@ public class JDBCInterpreter extends Interpreter {
     }
   }
 
-  private boolean notExistAccountInProperty() {
-    return property.containsKey("default.user") && property.containsKey("default.password")
-      ? false : true;
+  private boolean existAccountInProperty() {
+    return property.containsKey("default.user") && property.containsKey("default.password");
   }
 
   private UsernamePassword getUsernamePassword(InterpreterContext interpreterContext,
@@ -355,7 +354,7 @@ public class JDBCInterpreter extends Interpreter {
   public void setAccountOfCredential(String propertyKey, InterpreterContext interpreterContext) {
     UsernamePassword usernamePassword = getUsernamePassword(interpreterContext,
       getEntityName(interpreterContext.getReplName()));
-    if (usernamePassword != null && notExistAccountInProperty()) {
+    if (usernamePassword != null && !existAccountInProperty()) {
       propertiesMap.get(propertyKey).setProperty("user", usernamePassword.getUsername());
       propertiesMap.get(propertyKey).setProperty("password", usernamePassword.getPassword());
     }
