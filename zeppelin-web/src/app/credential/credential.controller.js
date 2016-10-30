@@ -97,7 +97,7 @@
         }
         angular.element('#entityname').autocomplete({
           source: $scope.availableInterpreters,
-          select: function (event, selected){
+          select: function(event, selected) {
             $scope.entity = selected.item.value;
             return false;
           }

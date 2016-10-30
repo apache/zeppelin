@@ -83,7 +83,7 @@ public class LivyIntegrationTest {
     AuthenticationInfo authInfo = new AuthenticationInfo("user1");
     MyInterpreterOutputListener outputListener = new MyInterpreterOutputListener();
     InterpreterOutput output = new InterpreterOutput(outputListener);
-    InterpreterContext context = new InterpreterContext("noteId", "paragraphId", "title",
+    InterpreterContext context = new InterpreterContext("noteId", "paragraphId", null, "title",
         "text", authInfo, null, null, null, null, null, output);
     sparkInterpreter.open();
     InterpreterResult result = sparkInterpreter.interpret("sc.version", context);
@@ -177,7 +177,7 @@ public class LivyIntegrationTest {
     AuthenticationInfo authInfo = new AuthenticationInfo("user1");
     MyInterpreterOutputListener outputListener = new MyInterpreterOutputListener();
     InterpreterOutput output = new InterpreterOutput(outputListener);
-    InterpreterContext context = new InterpreterContext("noteId", "paragraphId", "title",
+    InterpreterContext context = new InterpreterContext("noteId", "paragraphId", null, "title",
             "text", authInfo, null, null, null, null, null, output);
     pysparkInterpreter.open();
     InterpreterResult result = pysparkInterpreter.interpret("sc.version", context);
