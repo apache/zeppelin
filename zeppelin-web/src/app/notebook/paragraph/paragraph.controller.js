@@ -31,14 +31,13 @@
     'baseUrlSrv',
     'ngToast',
     'saveAsService',
-    'esriLoader',
     'handsonHelperService',
     'dataTypeService'
   ];
 
   function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $location,
                          $timeout, $compile, $http, $q, websocketMsgSrv,
-                         baseUrlSrv, ngToast, saveAsService, esriLoader,
+                         baseUrlSrv, ngToast, saveAsService,
                          handsonHelperService, dataTypeService) {
     var ANGULAR_FUNCTION_OBJECT_NAME_PREFIX = '_Z_ANGULAR_FUNC_';
     $scope.parentNote = null;
