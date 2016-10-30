@@ -76,6 +76,8 @@ public class JDBCInterpreter extends Interpreter {
   private Logger logger = LoggerFactory.getLogger(JDBCInterpreter.class);
 
   static final String INTERPRETER_NAME = "jdbc";
+  static final String JDBC_DEFAULT_USER_KEY = "default.user";
+  static final String JDBC_DEFAULT_PASSWORD_KEY = "default.password";
   static final String COMMON_KEY = "common";
   static final String MAX_LINE_KEY = "max_count";
   static final String MAX_LINE_DEFAULT = "1000";
@@ -330,15 +332,11 @@ public class JDBCInterpreter extends Interpreter {
     }
   }
 
-  private boolean existAccountInProperty() {
-    return property.containsKey("default.user") && property.containsKey("default.password");
-  }
-
   private UsernamePassword getUsernamePassword(InterpreterContext interpreterContext,
       String replName) {
     UserCredentials uc = interpreterContext.getAuthenticationInfo().getUserCredentials();
     if (uc != null) {
-      return uc.existUsernamePassword(replName) ? uc.getUsernamePassword(replName) : null;
+      return uc.getUsernamePassword(replName);
     }
     return null;
   }
@@ -349,6 +347,11 @@ public class JDBCInterpreter extends Interpreter {
     entityName.append(".");
     entityName.append(replName);
     return entityName.toString();
+  }
+
+  private boolean existAccountInProperty() {
+    return property.containsKey(JDBC_DEFAULT_USER_KEY) &&
+      property.containsKey(JDBC_DEFAULT_PASSWORD_KEY);
   }
 
   public void setAccountOfCredential(String propertyKey, InterpreterContext interpreterContext) {

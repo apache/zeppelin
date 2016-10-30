@@ -265,11 +265,12 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
   public void testMultiTenant() throws SQLException, IOException {
     String replName1 = "jdbc1";
     String replName2 = "jdbc2";
+    String entityName = "jdbc.jdbc1";
 
     // create an user credential with replName1(entity name).
     UserCredentials userCredentials = new UserCredentials();
     UsernamePassword up = new UsernamePassword("user2", "pass2");
-    userCredentials.putUsernamePassword(replName1, up);
+    userCredentials.putUsernamePassword(entityName, up);
     AuthenticationInfo authInfo = new AuthenticationInfo();
     authInfo.setUserCredentials(userCredentials);
     assertEquals(up.getUsername(), "user2");
