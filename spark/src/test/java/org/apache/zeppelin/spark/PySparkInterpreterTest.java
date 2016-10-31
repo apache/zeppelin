@@ -29,13 +29,15 @@ import org.junit.runners.MethodSorters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.io.File;
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.Properties;
 
 import static org.junit.Assert.*;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class PySparkInterpreterTest {
-  public static LazyOpenInterpreter sparkInterpreter;
+  public static SparkInterpreter sparkInterpreter;
   public static PySparkInterpreter pySparkInterpreter;
   public static InterpreterGroup intpGroup;
   private File tmpDir;
@@ -53,6 +55,20 @@ public class PySparkInterpreterTest {
     return p;
   }
 
+  /**
+   * Get spark version number as a numerical value.
+   * eg. 1.1.x => 11, 1.2.x => 12, 1.3.x => 13 ...
+   */
+  public static int getSparkVersionNumber() {
+    if (sparkInterpreter == null) {
+      return 0;
+    }
+
+    String[] split = sparkInterpreter.getSparkContext().version().split("\\.");
+    int version = Integer.parseInt(split[0]) * 10 + Integer.parseInt(split[1]);
+    return version;
+  }
+
   @Before
   public void setUp() throws Exception {
     tmpDir = new File(System.getProperty("java.io.tmpdir") + "/ZeppelinLTest_" + System.currentTimeMillis());
@@ -63,7 +79,7 @@ public class PySparkInterpreterTest {
     intpGroup.put("note", new LinkedList<Interpreter>());
 
     if (sparkInterpreter == null) {
-      sparkInterpreter = new LazyOpenInterpreter(new SparkInterpreter(getPySparkTestProperties()));
+      sparkInterpreter = new SparkInterpreter(getPySparkTestProperties());
       intpGroup.get("note").add(sparkInterpreter);
       sparkInterpreter.setInterpreterGroup(intpGroup);
     }
@@ -115,8 +131,10 @@ public class PySparkInterpreterTest {
 
   @Test
   public void testBasicIntp() {
-    assertEquals(InterpreterResult.Code.SUCCESS,
-      pySparkInterpreter.interpret("a = 1\n", context).code());
+    if (getSparkVersionNumber() > 11) {
+      assertEquals(InterpreterResult.Code.SUCCESS,
+        pySparkInterpreter.interpret("a = 1\n", context).code());
+    }
   }
 
 }
