@@ -85,7 +85,7 @@ This instruction based on Ubuntu 14.04 LTS but may work with other OS with few c
         }
 
         location /ws {  # For websocket support
-            proxy_pass http://zeppelin;
+            proxy_pass http://zeppelin/ws;
             proxy_http_version 1.1;
             proxy_set_header Upgrade websocket;
             proxy_set_header Connection upgrade;
