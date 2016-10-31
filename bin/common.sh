@@ -107,7 +107,7 @@ function getZeppelinVersion() {
 }
 
 
-SPARK_VERSION="2.0.0"
+SPARK_VERSION="2.0.1"
 HADOOP_VERSION="2.7"
 SPARK_CACHE="local-spark"
 SPARK_ARCHIVE="spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}"
