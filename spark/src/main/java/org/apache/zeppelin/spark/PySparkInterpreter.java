@@ -391,7 +391,7 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
       return new InterpreterResult(Code.ERROR, errorMessage);
     }
     String jobGroup = Utils.buildJobGroupId(context);
-    ZeppelinContext __zeppelin__ = sparkInterpreter.getZeppelinContext();
+    SparkZeppelinContext __zeppelin__ = sparkInterpreter.getZeppelinContext();
     __zeppelin__.setInterpreterContext(context);
     __zeppelin__.setGui(context.getGui());
     pythonInterpretRequest = new PythonInterpretRequest(st, jobGroup);
@@ -576,7 +576,7 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
     return spark;
   }
 
-  public ZeppelinContext getZeppelinContext() {
+  public SparkZeppelinContext getZeppelinContext() {
     SparkInterpreter sparkIntp = getSparkInterpreter();
     if (sparkIntp != null) {
       return getSparkInterpreter().getZeppelinContext();
