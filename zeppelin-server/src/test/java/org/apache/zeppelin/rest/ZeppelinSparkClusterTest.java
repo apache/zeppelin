@@ -341,6 +341,10 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
         waitForFinish(p0);
         assertEquals(Status.FINISHED, p0.getStatus());
 
+        note.run(p1.getId());
+        waitForFinish(p1);
+        assertEquals(Status.FINISHED, p1.getStatus());
+
         note.run(p2.getId());
         waitForFinish(p2);
         assertEquals(Status.FINISHED, p2.getStatus());
