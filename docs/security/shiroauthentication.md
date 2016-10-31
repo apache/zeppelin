@@ -33,7 +33,7 @@ You can setup **Zeppelin notebook authentication** in some simple steps.
 
 ### 1. Enable Shiro
 By default in `conf`, you will find `shiro.ini.template`, this file is used as an example and it is strongly recommended
-to create a `shiro.ini` file instead by doing the following command line `copy conf/shiro.ini.template conf/shiro.ini`.
+to create a `shiro.ini` file by doing the following command line `copy conf/shiro.ini.template conf/shiro.ini`.
 
 ### 2. Secure the HTTP channel
 To secure the HTTP channel, you have to change both **anon** and **authc** settings in `conf/shiro.ini`. In here, **anon** means "the access is anonymous" and **authc** means "formed auth security".
