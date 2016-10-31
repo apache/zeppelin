@@ -32,7 +32,7 @@ When you connect to Apache Zeppelin, you will be asked to enter your credentials
 You can setup **Zeppelin notebook authentication** in some simple steps.
 
 ### 1. Enable Shiro
-By default in `conf`, you will find `shiro.ini.template`, this file is used as an example it is strongly recommended
+By default in `conf`, you will find `shiro.ini.template`, this file is used as an example and it is strongly recommended
 to create a `shiro.ini` file instead by doing the following command line `copy conf/shiro.ini.template conf/shiro.ini`.
 
 ### 2. Secure the HTTP channel
