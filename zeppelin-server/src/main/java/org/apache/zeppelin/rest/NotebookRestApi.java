@@ -123,7 +123,7 @@ public class NotebookRestApi {
     Set<String> userAndRoles = Sets.newHashSet();
     userAndRoles.add(SecurityUtils.getPrincipal());
     userAndRoles.addAll(SecurityUtils.getRoles());
-    if (!notebookAuthorization.hasReadAuthorization(userAndRoles, noteId)) {
+    if (!notebookAuthorization.isOwner(userAndRoles, noteId)) {
       throw new UnauthorizedException(errorMsg);
     }
   }
@@ -191,7 +191,7 @@ public class NotebookRestApi {
     HashSet<String> readers = permMap.get("readers");
     HashSet<String> owners = permMap.get("owners");
     HashSet<String> writers = permMap.get("writers");
-    // Set readers, if writers and owners if empty -> set to user requesting the change
+    // Set readers, if writers and owners is empty -> set to user requesting the change
     if (readers != null && !readers.isEmpty()) {
       if (writers.isEmpty()) {
         writers = Sets.newHashSet(SecurityUtils.getPrincipal());
