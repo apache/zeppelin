@@ -82,6 +82,7 @@ public class PySparkInterpreterTest {
       sparkInterpreter = new SparkInterpreter(getPySparkTestProperties());
       intpGroup.get("note").add(sparkInterpreter);
       sparkInterpreter.setInterpreterGroup(intpGroup);
+      sparkInterpreter.open();
     }
 
     if (pySparkInterpreter == null) {
