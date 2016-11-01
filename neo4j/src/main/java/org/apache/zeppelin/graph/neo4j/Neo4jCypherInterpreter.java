@@ -61,8 +61,6 @@ import org.neo4j.driver.v1.types.Relationship;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-
 /**
  * Neo4j interpreter for Zeppelin.
  */
@@ -242,7 +240,7 @@ public class Neo4jCypherInterpreter extends Interpreter {
   }
 
   private InterpreterResult renderGraph(Set<Node> nodes,
-      Set<Relationship> relationships) throws JsonProcessingException {
+      Set<Relationship> relationships) {
     logger.info("Executing renderGraph method");
     List<org.apache.zeppelin.interpreter.graph.Node> nodesList = new ArrayList<>();
     List<org.apache.zeppelin.interpreter.graph.Relationship> relsList = new ArrayList<>();
