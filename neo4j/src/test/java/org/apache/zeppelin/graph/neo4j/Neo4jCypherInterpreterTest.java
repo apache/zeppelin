@@ -18,7 +18,6 @@ package org.apache.zeppelin.graph.neo4j;
 
 import static org.junit.Assert.assertEquals;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Properties;
@@ -43,8 +42,6 @@ import org.junit.runners.MethodSorters;
 import org.neo4j.harness.ServerControls;
 import org.neo4j.harness.TestServerBuilders;
 
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.google.gson.Gson;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
@@ -114,7 +111,7 @@ public class Neo4jCypherInterpreterTest {
   }
 
   @Test
-  public void testRenderNetwork() throws JsonParseException, JsonMappingException, IOException {
+  public void testRenderNetwork() {
     interpreter.open();
     InterpreterResult result = interpreter.interpret("MATCH (n)-[r:KNOWS]-(m) RETURN n, r, m LIMIT 1", context);
     GraphResult.Graph graph = gson.fromJson(result.message(), GraphResult.Graph.class);
