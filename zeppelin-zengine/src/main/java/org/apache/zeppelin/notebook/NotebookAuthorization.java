@@ -276,7 +276,7 @@ public class NotebookAuthorization {
   
   public boolean hasReadAuthorization(Set<String> userAndRoles, String noteId) {
     if (conf.isAnonymousAllowed()) {
-      LOG.debug("Zeppelin runs in anonymous mode, everybody can read");
+      LOG.debug("Zeppelin runs in anonymous mode, everybody is reader");
       return true;
     }
     if (userAndRoles == null) {
