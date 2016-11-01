@@ -48,6 +48,7 @@ import org.apache.spark.sql.SQLContext;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
+import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterHookRegistry.HookType;
 import org.apache.zeppelin.interpreter.LazyOpenInterpreter;
@@ -113,7 +114,10 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
   @Override
   public void open() {
     // Add matplotlib display hook
-    registerHook(HookType.POST_EXEC_DEV, "z._displayhook()");
+    InterpreterGroup intpGroup = getInterpreterGroup();
+    if (intpGroup != null && intpGroup.getInterpreterHookRegistry() != null) {
+      registerHook(HookType.POST_EXEC_DEV, "z._displayhook()");
+    }
     DepInterpreter depInterpreter = getDepInterpreter();
 
     // load libraries from Dependency Interpreter

@@ -33,6 +33,7 @@ import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.InterpreterHookRegistry.HookType;
+import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.Scheduler;
@@ -70,7 +71,10 @@ public class PythonInterpreter extends Interpreter {
   @Override
   public void open() {
     // Add matplotlib display hook
-    registerHook(HookType.POST_EXEC_DEV, "z._displayhook()");
+    InterpreterGroup intpGroup = getInterpreterGroup();
+    if (intpGroup != null && intpGroup.getInterpreterHookRegistry() != null) {
+      registerHook(HookType.POST_EXEC_DEV, "z._displayhook()");
+    }
     
     LOG.info("Starting Python interpreter ---->");
     LOG.info("Python path is set to:" + property.getProperty(ZEPPELIN_PYTHON));
