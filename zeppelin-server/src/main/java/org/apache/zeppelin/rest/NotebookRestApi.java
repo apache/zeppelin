@@ -178,7 +178,7 @@ public class NotebookRestApi {
     userAndRoles.add(principal);
     userAndRoles.addAll(roles);
     
-    checkIfUserCanWrite(noteId,
+    checkIfUserIsOwner(noteId,
         ownerPermissionError(userAndRoles, notebookAuthorization.getOwners(noteId)));
     
     HashMap<String, HashSet<String>> permMap =
@@ -502,7 +502,7 @@ public class NotebookRestApi {
 
     Note note = notebook.getNote(noteId);
     checkIfNoteIsNotNull(note);
-    checkIfUserIsOwner(noteId,
+    checkIfUserCanRead(noteId,
         "Insufficient privileges you cannot remove paragraph from this note");
 
     Paragraph p = note.getParagraph(paragraphId);
