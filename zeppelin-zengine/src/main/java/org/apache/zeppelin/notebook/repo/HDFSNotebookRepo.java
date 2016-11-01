@@ -55,7 +55,7 @@ public class HDFSNotebookRepo extends VFSNotebookRepo implements NotebookRepo {
     this.fsManager = VFS.getManager();
     this.hdfsUrl = conf.getString(HDFS_URL, HDFS_URL, "http://localhost:50070/webhdfs/v1/");
     this.hdfsMaxLength = conf.getInt(HDFS_URL, HDFS_MAXLENGTH, 100000);
-    this.hdfsNotebookDir = conf.getString(HDFS_URL, HDFS_NOTEBOOK_DIR, "/tmp").replaceAll("/$", "");
+    this.hdfsNotebookDir = removeProtocol(conf.getString(HDFS_URL, HDFS_NOTEBOOK_DIR, "/tmp"));
     this.hdfsUser = System.getenv("HADOOP_USER_NAME");
     if (this.hdfsUser == null)
       this.hdfsUser = System.getenv("LOGNAME");
@@ -68,13 +68,24 @@ public class HDFSNotebookRepo extends VFSNotebookRepo implements NotebookRepo {
     }
   }
 
+  public String removeProtocol(String hdfsUrl) {
+    String newUrl = hdfsUrl.replaceAll("/$", "");
+    if (newUrl.startsWith("hdfs://")) {
+      return "/" + newUrl.replaceAll("^hdfs://", "").split("/", 2)[1];
+    }
+    else
+      return newUrl;
+  }
+
   private boolean checkWebHDFS() {
     boolean ret = true;
 
     OneFileStatus fileStatus;
     Gson gson = new Gson();
     try {
-      String notebookStatus = this.hdfsCmd.runCommand(this.hdfsCmd.getFileStatus, "/", null);
+      Arg user = this.hdfsCmd.new Arg("user.name", this.hdfsUser);
+      Arg[] args = {user};
+      String notebookStatus = this.hdfsCmd.runCommand(this.hdfsCmd.getFileStatus, "/", args);
       fileStatus = gson.fromJson(notebookStatus, OneFileStatus.class);
       long modificationTime = fileStatus.modificationTime;
     } catch (Exception e) {
@@ -92,7 +103,9 @@ public class HDFSNotebookRepo extends VFSNotebookRepo implements NotebookRepo {
     String hdfsDirStatus = null;
 
     try {
-      hdfsDirStatus = this.hdfsCmd.runCommand(this.hdfsCmd.listStatus, this.hdfsNotebookDir, null);
+      Arg user = this.hdfsCmd.new Arg("user.name", this.hdfsUser);
+      Arg[] args = {user};
+      hdfsDirStatus = this.hdfsCmd.runCommand(this.hdfsCmd.listStatus, this.hdfsNotebookDir, args);
 
       if (hdfsDirStatus != null) {
         AllFileStatus allFiles = gson.fromJson(hdfsDirStatus, AllFileStatus.class);
@@ -120,7 +133,9 @@ public class HDFSNotebookRepo extends VFSNotebookRepo implements NotebookRepo {
     Gson gson = new Gson();
     String notebook = this.hdfsNotebookDir + "/" + noteId + "/" + NOTE_JSON;
     try {
-      String notebookStatus = this.hdfsCmd.runCommand(this.hdfsCmd.getFileStatus, notebook, null);
+      Arg user = this.hdfsCmd.new Arg("user.name", this.hdfsUser);
+      Arg[] args = {user};
+      String notebookStatus = this.hdfsCmd.runCommand(this.hdfsCmd.getFileStatus, notebook, args);
       fileStatus = gson.fromJson(notebookStatus, OneFileStatus.class);
     } catch (Exception e) {
       logger.warn("Warning: ", e);

@@ -194,6 +194,8 @@ public class HDFSCommand {
         FileInputStream fi = new FileInputStream(file);
 
         con.setRequestMethod("PUT");
+        con.setRequestProperty("Content-Type", "application/octet-stream");
+        con.setRequestProperty("Transfer-Encoding", "chunked");
         con.setDoOutput(true);
 
         DataOutputStream outputStream = new DataOutputStream(con.getOutputStream());
@@ -232,15 +234,18 @@ public class HDFSCommand {
   private String getReceivedResponse(HttpURLConnection con,
                                      HttpType type, URL url) throws IOException {
     int responseCode = con.getResponseCode();
-    logger.debug("Sending '{}' request to URL : {}", type.toString(), url);
-    logger.debug("Response Code : " + responseCode);
-    logger.debug("response message: " + con.getResponseMessage());
 
     BufferedReader in;
     if (responseCode == 200 || responseCode == 201 || responseCode == 307) {
+      logger.debug("Sending '{}' request to URL : {}", type.toString(), url);
+      logger.debug("Response Code : " + responseCode);
+      logger.debug("response message: " + con.getResponseMessage());
       in = new BufferedReader(new InputStreamReader(con.getInputStream()));
     }
     else {
+      logger.info("Sending '{}' request to URL : {}", type.toString(), url);
+      logger.info("Response Code : " + responseCode);
+      logger.info("response message: " + con.getResponseMessage());
       in = new BufferedReader(new InputStreamReader(con.getErrorStream()));
     }
     String inputLine;
