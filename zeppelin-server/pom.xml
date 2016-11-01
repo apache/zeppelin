@@ -33,7 +33,7 @@
   <name>Zeppelin: Server</name>
 
   <properties>
-    <cxf.version>2.7.7</cxf.version>
+    <cxf.version>2.7.8</cxf.version>
     <commons.httpclient.version>4.3.6</commons.httpclient.version>
     <hadoop-common.version>2.6.0</hadoop-common.version>
   </properties>
