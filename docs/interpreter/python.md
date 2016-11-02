@@ -86,9 +86,18 @@ print("".join(z.checkbox("f3", [("o1","1"), ("o2","2")],["1"])))
 * Code-completion is currently not implemented.
 
 ## Matplotlib integration
- The python interpreter can display matplotlib graph with the function `z.show()`.
- You need to have matplotlib module installed and a XServer running to use this functionality!
  
+
+ The python interpreter can display matplotlib figures inline automatically using the `pyplot` module:
+ 
+  ```python
+%python
+import matplotlib.pyplot as plt
+plt.plot([1, 2, 3])
+```
+This is the recommended method for using matplotlib from within a Zeppelin notebook. More details can be found in the included "Zeppelin Tutorial: Python - matplotlib basic" tutorial notebook. If Zeppelin cannot find the matplotlib backend files (which should usually be found in `$ZEPPELIN_HOME/lib/python`) in your `PYTHONPATH`, then the backend will automatically be set to agg, and the (otherwise deprecated) instructions below can be used for more limited inline plotting.
+
+If you are unable to load the inline backend, use `z.show(plt)`:
  ```python
 %python
 import matplotlib.pyplot as plt
