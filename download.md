@@ -45,7 +45,6 @@ The latest release of Apache Zeppelin is **0.6.2**.
 
     <blockquote style="margin-top: 10px;">
       <p><strong>Note</strong>: From Zeppelin version 0.6.2, Spark interpreter in binary package is compatible with Spark 2.0 & Scala 2.11 and Spark 1.6(or previous) & Scala 2.10. You can use even different version of Spark at the same time if you set different SPARK_HOME in interpreter setting page.</p>
-      <p>Starting version 0.6.1, Zeppelin is built with Scala 2.11 by default. If you want to build Zeppelin with Scala 2.10 or install interpreter built with Scala 2.10(other than Spark interpreter), please see <a href='../../docs/0.6.2/install/install.html#2-build-source-with-options' target='_blank'>install</a> or <a href='../../docs/0.6.2/manual/interpreterinstallation.html#install-interpreter-built-with-scala-210' target='_blank'>interpreter installation</a>.</p>
     </blockquote>
 
 
@@ -83,6 +82,9 @@ For developers, to get latest *0.7.0-SNAPSHOT* check [README](https://github.com
      [md5](https://archive.apache.org/dist/zeppelin/zeppelin-0.6.1/zeppelin-0.6.1-bin-netinst.tgz.md5),
      [sha](https://archive.apache.org/dist/zeppelin/zeppelin-0.6.1/zeppelin-0.6.1-bin-netinst.tgz.sha512))
 
+    <blockquote style="margin-top: 10px;">
+      <p><strong>Note</strong>Zeppelin-0.6.1 is built with Scala 2.11 by default. If you want to build Zeppelin with Scala 2.10 or install interpreter built with Scala 2.10(other than Spark interpreter), please see <a href='../../docs/0.6.1/install/install.html#2-build-source-with-options' target='_blank'>install</a> or <a href='../../docs/0.6.1/manual/interpreterinstallation.html#install-interpreter-built-with-scala-210' target='_blank'>interpreter installation</a>.</p>
+    </blockquote>
 <p />
 
   - 0.6.0 released on Jul 2, 2016 ([release notes](./releases/zeppelin-release-0.6.0.html)) ([git tag](https://git-wip-us.apache.org/repos/asf?p=zeppelin.git;a=commit;h=fa2c0ff93cca49428df8792e7ee35d2b561669bd))
