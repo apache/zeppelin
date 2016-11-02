@@ -141,6 +141,9 @@
     };
 
     var setNetwork = function(result, refresh) {
+      if (!result.graph || !result.graph.nodes || !result.graph.nodes.length) {
+        return;
+      }
       var getContainerHeight = function(networkId) {
         var footerHeight = angular.element('#' + networkId + '_footer').height() || 40;
         var headerHeight = angular.element('#' + networkId + '_header').height() || 40;

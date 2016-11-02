@@ -54,7 +54,7 @@ limitations under the License.
   
   <div id="p{{paragraph.id}}_network"
      ng-class="{'noOverflow': getGraphMode()=='network'}"
-     ng-if="getGraphMode()=='network'">
+     ng-if="getGraphMode()=='network' && paragraph.result.graph.nodes.length > 0">
     <div id="p{{paragraph.id}}_network_header">
       <ul style="list-style-type: none">
         <li>Nodes <span class="badge">{{paragraph.result.graph.nodes.length}}</span>: 
