@@ -19,11 +19,14 @@ package org.apache.zeppelin.scheduler;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import org.apache.zeppelin.interpreter.thrift.InterpreterProgressInfo;
 
 
 /**
@@ -228,6 +231,8 @@ public abstract class Job {
   }
 
   public abstract int progress();
+
+  public abstract List<InterpreterProgressInfo> progressInfo();
 
   public abstract Map<String, Object> info();
 

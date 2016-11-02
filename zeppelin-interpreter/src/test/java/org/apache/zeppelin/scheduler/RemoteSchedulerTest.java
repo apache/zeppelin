@@ -23,10 +23,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.user.AuthenticationInfo;
@@ -38,6 +35,7 @@ import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreter;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
 import org.apache.zeppelin.interpreter.remote.mock.MockInterpreterA;
+import org.apache.zeppelin.interpreter.thrift.InterpreterProgressInfo;
 import org.apache.zeppelin.resource.LocalResourcePool;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.junit.After;
@@ -98,6 +96,11 @@ public class RemoteSchedulerTest implements RemoteInterpreterProcessListener {
       @Override
       public int progress() {
         return 0;
+      }
+
+      @Override
+      public List<InterpreterProgressInfo> progressInfo() {
+        return null;
       }
 
       @Override
@@ -201,6 +204,11 @@ public class RemoteSchedulerTest implements RemoteInterpreterProcessListener {
       }
 
       @Override
+      public List<InterpreterProgressInfo> progressInfo() {
+        return null;
+      }
+
+      @Override
       public Map<String, Object> info() {
         return null;
       }
@@ -236,6 +244,11 @@ public class RemoteSchedulerTest implements RemoteInterpreterProcessListener {
       @Override
       public int progress() {
         return 0;
+      }
+
+      @Override
+      public List<InterpreterProgressInfo> progressInfo() {
+        return null;
       }
 
       @Override

@@ -32,7 +32,7 @@ class DisplayFunctionsTest extends FlatSpec with BeforeAndAfter with BeforeAndAf
   var testRDDTuples: RDD[(String,String,Int)]  = null
   var testRDDPersons: RDD[Person]  = null
   var stream: ByteArrayOutputStream = null
-  
+
   before {
     val sparkConf: SparkConf = new SparkConf(true)
       .setAppName("test-DisplayFunctions")
@@ -169,5 +169,3 @@ class DisplayFunctionsTest extends FlatSpec with BeforeAndAfter with BeforeAndAf
 
 
 }
-
-

@@ -18,6 +18,7 @@ package org.apache.zeppelin.interpreter.remote.mock;
 
 import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
+import org.apache.zeppelin.interpreter.thrift.InterpreterProgressInfo;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 
@@ -76,6 +77,11 @@ public class MockInterpreterEnv extends Interpreter {
   }
 
   @Override
+  public List<InterpreterProgressInfo> getProgressInfo(InterpreterContext context) {
+    return null;
+  }
+
+  @Override
   public List<InterpreterCompletion> completion(String buf, int cursor) {
     return null;
   }
@@ -85,4 +91,3 @@ public class MockInterpreterEnv extends Interpreter {
     return SchedulerFactory.singleton().createOrGetFIFOScheduler("interpreter_" + this.hashCode());
   }
 }
-

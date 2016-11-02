@@ -36,6 +36,7 @@ import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
+import org.apache.zeppelin.interpreter.thrift.InterpreterProgressInfo;
 import org.apache.zeppelin.notebook.*;
 import org.apache.zeppelin.notebook.repo.NotebookRepo.Revision;
 import org.apache.zeppelin.notebook.socket.Message;
@@ -1509,12 +1510,16 @@ public class NotebookServer extends WebSocketServlet implements
       this.note = note;
     }
 
+    private void sendProgressInfo(Job job) {
+      LOG.debug("Progress={}, info={}", job.progress(), job.progressInfo());
+      notebookServer.broadcast(note.getId(), new Message(OP.PROGRESS).put("id", job.getId()).
+        put("progress", job.progress()).
+        put("info", job.progressInfo()));
+    }
+
     @Override
     public void onProgressUpdate(Job job, int progress) {
-      notebookServer.broadcast(
-          note.getId(),
-          new Message(OP.PROGRESS).put("id", job.getId()).put("progress",
-              job.progress()));
+      sendProgressInfo(job);
     }
 
     @Override
@@ -1544,6 +1549,11 @@ public class NotebookServer extends WebSocketServlet implements
         notebookServer.broadcastUpdateNoteJobInfo(System.currentTimeMillis() - 5000);
       } catch (IOException e) {
         LOG.error("can not broadcast for job manager {}", e);
+      }
+
+      // send final progress information (when job execution time < time between updates)
+      if (job.isTerminated() && (after == Status.ERROR || after == Status.FINISHED)) {
+        sendProgressInfo(job);
       }
     }
 
@@ -1689,4 +1699,3 @@ public class NotebookServer extends WebSocketServlet implements
   }
 
 }
-

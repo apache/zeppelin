@@ -58,6 +58,7 @@ import org.apache.zeppelin.interpreter.WrappedInterpreter;
 import org.apache.zeppelin.resource.ResourcePool;
 import org.apache.zeppelin.resource.WellKnownResourceName;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
+import org.apache.zeppelin.interpreter.thrift.InterpreterProgressInfo;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.apache.zeppelin.spark.dep.SparkDependencyContext;
@@ -105,6 +106,8 @@ public class SparkInterpreter extends Interpreter {
   private static InterpreterHookRegistry hooks;
   private static SparkEnv env;
   private static Object sparkSession;    // spark 2.x
+  private static String appUIAddress;
+  private static SparkJobDetailsListener jobDetailsListener;
   private static JobProgressListener sparkListener;
   private static AbstractFile classOutputDir;
   private static Integer sharedInterpreterLock = new Integer(0);
@@ -134,6 +137,8 @@ public class SparkInterpreter extends Interpreter {
 
     this.sc = sc;
     env = SparkEnv.get();
+    setSparkUIAddress(this.sc);
+    jobDetailsListener = new SparkJobDetailsListener(appUIAddress);
     sparkListener = setupListeners(this.sc);
   }
 
@@ -142,6 +147,8 @@ public class SparkInterpreter extends Interpreter {
       if (sc == null) {
         sc = createSparkContext();
         env = SparkEnv.get();
+        setSparkUIAddress(this.sc);
+        jobDetailsListener = new SparkJobDetailsListener(appUIAddress);
         sparkListener = setupListeners(sc);
       }
       return sc;
@@ -182,6 +189,11 @@ public class SparkInterpreter extends Interpreter {
 
       if (addListenerMethod != null) {
         addListenerMethod.invoke(listenerBus, pl);
+        if (jobDetailsListener != null) {
+          addListenerMethod.invoke(listenerBus, jobDetailsListener);
+        } else {
+          logger.warn("Could not attach job details listener as null");
+        }
       } else {
         return null;
       }
@@ -191,6 +203,16 @@ public class SparkInterpreter extends Interpreter {
       return null;
     }
     return pl;
+  }
+
+  private void setSparkUIAddress(SparkContext sc) {
+    appUIAddress = null;
+    if (sc == null || sc.ui().isEmpty()) {
+      logger.info("Could not extract Spark UI address from Spark context {}", sc);
+    } else {
+      appUIAddress = sc.ui().get().appUIAddress();
+      logger.info("Spark UI is available on {}", appUIAddress);
+    }
   }
 
   private boolean useHiveContext() {
@@ -1095,7 +1117,9 @@ public class SparkInterpreter extends Interpreter {
   public InterpreterResult interpret(String[] lines, InterpreterContext context) {
     synchronized (this) {
       z.setGui(context.getGui());
-      sc.setJobGroup(getJobGroup(context), "Zeppelin", false);
+      String jobGroup = getJobGroup(context);
+      sc.setJobGroup(jobGroup, "Zeppelin", false);
+      jobDetailsListener.reset(jobGroup);
       InterpreterResult r = interpretInput(lines, context);
       sc.clearJobGroup();
       return r;
@@ -1334,6 +1358,17 @@ public class SparkInterpreter extends Interpreter {
     return new int[] {numTasks, completedTasks};
   }
 
+  @Override
+  public List<InterpreterProgressInfo> getProgressInfo(InterpreterContext context) {
+    List<InterpreterProgressInfo> list = new ArrayList<InterpreterProgressInfo>();
+    String jobGroup = getJobGroup(context);
+    for (SparkListenerJob job: jobDetailsListener.getJobs(jobGroup)) {
+      list.add(new InterpreterProgressInfo(
+        job.getJobName(), job.getJobDescription(), job.getJobUIAddress()));
+    }
+    return list;
+  }
+
   private Code getResultCode(scala.tools.nsc.interpreter.Results.Result r) {
     if (r instanceof scala.tools.nsc.interpreter.Results.Success$) {
       return Code.SUCCESS;
@@ -1356,6 +1391,11 @@ public class SparkInterpreter extends Interpreter {
       }
       sparkSession = null;
       sc = null;
+      appUIAddress = null;
+      if (jobDetailsListener != null) {
+        jobDetailsListener.reset();
+        jobDetailsListener = null;
+      }
       if (classServer != null) {
         Utils.invokeMethod(classServer, "stop");
         classServer = null;

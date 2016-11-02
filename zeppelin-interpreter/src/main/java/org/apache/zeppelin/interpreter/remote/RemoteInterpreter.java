@@ -28,6 +28,7 @@ import org.apache.zeppelin.display.Input;
 import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.InterpreterResult.Type;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
+import org.apache.zeppelin.interpreter.thrift.InterpreterProgressInfo;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterContext;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterResult;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService.Client;
@@ -426,6 +427,27 @@ public class RemoteInterpreter extends Interpreter {
     boolean broken = false;
     try {
       return client.getProgress(noteId, className, convert(context));
+    } catch (TException e) {
+      broken = true;
+      throw new InterpreterException(e);
+    } finally {
+      interpreterProcess.releaseClient(client, broken);
+    }
+  }
+
+  @Override
+  public List<InterpreterProgressInfo> getProgressInfo(InterpreterContext context) {
+    RemoteInterpreterProcess interpreterProcess = getInterpreterProcess();
+    Client client = null;
+    try {
+      client = interpreterProcess.getClient();
+    } catch (Exception e1) {
+      throw new InterpreterException(e1);
+    }
+
+    boolean broken = false;
+    try {
+      return client.getProgressInfo(noteId, className, convert(context));
     } catch (TException e) {
       broken = true;
       throw new InterpreterException(e);
