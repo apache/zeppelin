@@ -102,8 +102,6 @@ public class Neo4jCypherInterpreter extends Interpreter {
   @Override
   public void open() {
     getDriver();
-    getLabels();
-    getTypes();
   }
 
   @Override
@@ -111,28 +109,31 @@ public class Neo4jCypherInterpreter extends Interpreter {
     getDriver().close();
   }
   
-  public Map<String, String> getLabels() {
-    if (labels == null) {
+  public Map<String, String> getLabels(boolean refresh) {
+    if (labels == null || refresh) {
+      Map<String, String> old = labels == null ?
+          new LinkedHashMap<String, String>() : new LinkedHashMap<>(labels);
       labels = new LinkedHashMap<>();
       try (Session session = getDriver().session()) {
         StatementResult result = session.run("CALL db.labels()");
         Set<String> colors = new HashSet<>();
         while (result.hasNext()) {
           Record record = result.next();
-          String color = null;
-          do {
+          String label = record.get("label").asString();
+          String color = old.get(label);
+          while (color == null || colors.contains(color)) {
             color = GraphUtils.getRandomColor();
-          } while(colors.contains(color));
+          }
           colors.add(color);
-          labels.put(record.get("label").asString(), color);
+          labels.put(label, color);
         }
       }
     }
     return labels;
   }
   
-  private Set<String> getTypes() {
-    if (types == null) {
+  private Set<String> getTypes(boolean refresh) {
+    if (types == null || refresh) {
       types = new HashSet<>();
       try (Session session = getDriver().session()) {
         StatementResult result = session.run("CALL db.relationshipTypes()");
@@ -261,11 +262,12 @@ public class Neo4jCypherInterpreter extends Interpreter {
       relCount.put(keyStartEnd, ++count);
       relsList.add(Neo4jConversionUtils.toZeppelinRelationship(rel, type, count));
     }
+    Map<String, String> labels = getLabels(true);
     for (Node node : nodes) {
-      nodesList.add(Neo4jConversionUtils.toZeppelinNode(node, getLabels()));
+      nodesList.add(Neo4jConversionUtils.toZeppelinNode(node, labels));
     }
     return new GraphResult(Code.SUCCESS,
-        new GraphResult.Graph(nodesList, relsList, getLabels(), getTypes()));
+        new GraphResult.Graph(nodesList, relsList, labels, getTypes(true)));
   }
 
   @Override
