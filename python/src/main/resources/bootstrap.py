@@ -201,8 +201,8 @@ class PyZeppelinContext(object):
         except ImportError:
             pass
         # Make sure custom backends are available in the PYTHONPATH
-        cwd = os.getcwd()
-        mpl_path = os.path.join(cwd, 'lib', 'python')
+        rootdir = os.environ.get('ZEPPELIN_HOME', os.getcwd())
+        mpl_path = os.path.join(rootdir, 'lib', 'python')
         if mpl_path not in sys.path:
             sys.path.append(mpl_path)
         

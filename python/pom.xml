@@ -37,6 +37,7 @@
     <python.test.exclude>
         **/PythonInterpreterWithPythonInstalledTest.java,
         **/PythonInterpreterPandasSqlTest.java
+        **/PythonInterpreterMatplotlibTest.java
     </python.test.exclude>
   </properties>
 
