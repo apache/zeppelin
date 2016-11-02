@@ -128,9 +128,6 @@ Available profiles are
 -Pspark-1.6
 -Pspark-1.5
 -Pspark-1.4
--Pspark-1.3
--Pspark-1.2
--Pspark-1.1
 -Pcassandra-spark-1.5
 -Pcassandra-spark-1.4
 -Pcassandra-spark-1.3
@@ -192,7 +189,7 @@ enable 3rd party vendor repository (cloudera)
 
 ##### `-Pmapr[version]` (optional)
 
-For the MapR Hadoop Distribution, these profiles will handle the Hadoop version. As MapR allows different versions of Spark to be installed, you should specify which version of Spark is installed on the cluster by adding a Spark profile (`-Pspark-1.2`, `-Pspark-1.3`, etc.) as needed.
+For the MapR Hadoop Distribution, these profiles will handle the Hadoop version. As MapR allows different versions of Spark to be installed, you should specify which version of Spark is installed on the cluster by adding a Spark profile (`-Pspark-1.6`, `-Pspark-2.0`, etc.) as needed.
 The correct Maven artifacts can be found for every version of MapR at http://doc.mapr.com
 
 Available profiles are
