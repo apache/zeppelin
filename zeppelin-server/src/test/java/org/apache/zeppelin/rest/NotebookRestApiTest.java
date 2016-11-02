@@ -191,10 +191,10 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
     p2.setReturn(result, new Throwable());
 
     // clear paragraph result
-    PostMethod post = httpPost("/notebook/" + note.getId() + "/clear", "");
-    LOG.info("test clear paragraph output response\n" + post.getResponseBodyAsString());
-    assertThat(post, isAllowed());
-    post.releaseConnection();
+    PutMethod put = httpPut("/notebook/" + note.getId() + "/clear", "");
+    LOG.info("test clear paragraph output response\n" + put.getResponseBodyAsString());
+    assertThat(put, isAllowed());
+    put.releaseConnection();
 
     // check if paragraph results are cleared
     GetMethod get = httpGet("/notebook/" + note.getId() + "/paragraph/" + p1.getId());

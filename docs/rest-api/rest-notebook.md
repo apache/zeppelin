@@ -979,7 +979,7 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```POST``` method clear all paragraph results from note of given id.
+      <td>This ```PUT``` method clear all paragraph results from note of given id.
       </td>
     </tr>
     <tr>

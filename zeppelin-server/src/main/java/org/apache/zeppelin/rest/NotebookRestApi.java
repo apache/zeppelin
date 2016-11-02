@@ -467,7 +467,7 @@ public class NotebookRestApi {
    * @param noteId ID of Note
    * @return JSON with status.ok
    */
-  @POST
+  @PUT
   @Path("{noteId}/clear")
   @ZeppelinApi
   public Response clearAllParagraphOutput(@PathParam("noteId") String noteId)
