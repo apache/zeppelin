@@ -59,15 +59,15 @@
           <groupId>io.netty</groupId>
         </exclusion>
         <exclusion>
-          <artifactId>akka-actor_2.10</artifactId>
+          <artifactId>akka-actor_2.11</artifactId>
           <groupId>org.spark-project.akka</groupId>
         </exclusion>
         <exclusion>
-          <artifactId>akka-remote_2.10</artifactId>
+          <artifactId>akka-remote_2.11</artifactId>
           <groupId>org.spark-project.akka</groupId>
         </exclusion>
         <exclusion>
-          <artifactId>akka-slf4j_2.10</artifactId>
+          <artifactId>akka-slf4j_2.11</artifactId>
           <groupId>org.spark-project.akka</groupId>
         </exclusion>
       </exclusions>
@@ -75,7 +75,7 @@
   
     <dependency>
       <groupId>org.apache.spark</groupId>
-      <artifactId>spark-streaming_2.10</artifactId>
+      <artifactId>spark-streaming_2.11</artifactId>
       <version>${beam.spark.version}</version>
     </dependency>
 
@@ -178,7 +178,7 @@
   
     <dependency>
       <groupId>org.apache.beam</groupId>
-      <artifactId>beam-runners-flink_2.10</artifactId>
+      <artifactId>beam-runners-flink_2.11</artifactId>
       <version>${beam.beam.version}</version>
       <exclusions>
         <exclusion>
@@ -194,7 +194,7 @@
   
     <dependency>
       <groupId>org.apache.beam</groupId>
-      <artifactId>beam-runners-flink_2.10-examples</artifactId>
+      <artifactId>beam-runners-flink_2.11-examples</artifactId>
       <version>${beam.beam.version}</version>
       <exclusions>
         <exclusion>

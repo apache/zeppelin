@@ -28,7 +28,7 @@
   </parent>
 
   <groupId>org.apache.zeppelin</groupId>
-  <artifactId>zeppelin-spark-dependencies_2.10</artifactId>
+  <artifactId>zeppelin-spark-dependencies_2.11</artifactId>
   <packaging>jar</packaging>
   <version>0.7.0-SNAPSHOT</version>
   <name>Zeppelin: Spark dependencies</name>

@@ -2,7 +2,8 @@
   "paragraphs": [
     {
       "text": "%md\n\n### Pre-requests\nnumpy, matplotlib are installed \n\n### os x\nmake sure locale is set, to avoid `ValueError: unknown locale: UTF-8`\n\n### virtualenv\nIn case you want to use virtualenv:\n - configure python interpreter property -\u003e `absolute/path/to/venv/bin/python`\n - see *Working with Matplotlib in Virtual environments* in the [Matplotlib FAQ](http://matplotlib.org/faq/virtualenv_faq.html)",
-      "dateUpdated": "Jun 22, 2016 5:31:34 AM",
+      "user": "anonymous",
+      "dateUpdated": "Oct 31, 2016 4:36:43 PM",
       "config": {
         "colWidth": 12.0,
         "graph": {
@@ -27,19 +28,21 @@
       "jobName": "paragraph_1465894017761_505669129",
       "id": "20160614-174657_1772993700",
       "result": {
-        "code": "SUCCESS",
-        "type": "HTML",
-        "msg": "\u003ch3\u003ePre-requests\u003c/h3\u003e\n\u003cp\u003enumpy, matplotlib are installed\u003c/p\u003e\n\u003ch3\u003eos x\u003c/h3\u003e\n\u003cp\u003emake sure locale is set, to avoid \u003ccode\u003eValueError: unknown locale: UTF-8\u003c/code\u003e\u003c/p\u003e\n\u003ch3\u003evirtualenv\u003c/h3\u003e\n\u003cp\u003eIn case you want to use virtualenv:\u003c/p\u003e\n\u003cul\u003e\n\u003cli\u003econfigure python interpreter property -\u003e \u003ccode\u003eabsolute/path/to/venv/bin/python\u003c/code\u003e\u003c/li\u003e\n\u003cli\u003esee \u003cem\u003eWorking with Matplotlib in Virtual environments\u003c/em\u003e in the \u003ca href\u003d\"http://matplotlib.org/faq/virtualenv_faq.html\"\u003eMatplotlib FAQ\u003c/a\u003e\u003c/li\u003e\n\u003c/ul\u003e\n"
+        "code": "ERROR",
+        "type": "TEXT",
+        "msg": "paragraph_1465894017761_505669129\u0027s Interpreter md not found"
       },
       "dateCreated": "Jun 14, 2016 5:46:57 AM",
       "dateStarted": "Jun 22, 2016 5:31:34 AM",
       "dateFinished": "Jun 22, 2016 5:31:34 AM",
-      "status": "FINISHED",
+      "status": "ERROR",
+      "errorMessage": "",
       "progressUpdateIntervalMs": 500
     },
     {
       "text": "%python\nimport numpy as np\nimport matplotlib.pyplot as plt",
-      "dateUpdated": "Jun 22, 2016 5:31:34 AM",
+      "user": "anonymous",
+      "dateUpdated": "Oct 31, 2016 4:36:37 PM",
       "config": {
         "colWidth": 12.0,
         "graph": {
@@ -62,19 +65,21 @@
       "jobName": "paragraph_1466090491493_2078041104",
       "id": "20160617-002131_1552178409",
       "result": {
-        "code": "SUCCESS",
+        "code": "ERROR",
         "type": "TEXT",
-        "msg": ""
+        "msg": "paragraph_1466090491493_2078041104\u0027s Interpreter python not found"
       },
       "dateCreated": "Jun 17, 2016 12:21:31 PM",
       "dateStarted": "Jun 22, 2016 5:31:34 AM",
       "dateFinished": "Jun 22, 2016 5:31:35 AM",
-      "status": "FINISHED",
+      "status": "ERROR",
+      "errorMessage": "",
       "progressUpdateIntervalMs": 500
     },
     {
       "text": "%python\ndef f(x):\n  return np.cos(1/x)\n\nx \u003d np.linspace(-2, 2, 1000)",
-      "dateUpdated": "Jun 22, 2016 5:31:34 AM",
+      "user": "anonymous",
+      "dateUpdated": "Oct 31, 2016 4:36:26 PM",
       "config": {
         "colWidth": 12.0,
         "graph": {
@@ -99,19 +104,21 @@
       "jobName": "paragraph_1465893861414_-1641861313",
       "id": "20160614-174421_274483707",
       "result": {
-        "code": "SUCCESS",
+        "code": "ERROR",
         "type": "TEXT",
-        "msg": ""
+        "msg": "paragraph_1465893861414_-1641861313\u0027s Interpreter python not found"
       },
       "dateCreated": "Jun 14, 2016 5:44:21 AM",
       "dateStarted": "Jun 22, 2016 5:31:35 AM",
       "dateFinished": "Jun 22, 2016 5:31:35 AM",
-      "status": "FINISHED",
+      "status": "ERROR",
+      "errorMessage": "",
       "progressUpdateIntervalMs": 500
     },
     {
       "text": "%python\n\nplt.figure()\nplt.plot(x, f(x), lw\u003d2)\nz.show(plt, width\u003d\u0027500px\u0027)\nplt.close()",
-      "dateUpdated": "Jun 22, 2016 5:31:34 AM",
+      "user": "anonymous",
+      "dateUpdated": "Oct 31, 2016 4:36:26 PM",
       "config": {
         "colWidth": 12.0,
         "graph": {
@@ -136,19 +143,21 @@
       "jobName": "paragraph_1466088587936_-914466845",
       "id": "20160616-234947_579056637",
       "result": {
-        "code": "SUCCESS",
-        "type": "HTML",
-        "msg": "\u003cdiv style\u003d\u0027width:500px\u0027\u003e\u003c?xml version\u003d\"1.0\" encoding\u003d\"utf-8\" standalone\u003d\"no\"?\u003e\n\r\u003c!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\"\n\r  \"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd\"\u003e\n\r\u003c!-- Created with matplotlib (http://matplotlib.org/) --\u003e\n\r\u003csvg height\u003d\"432pt\" version\u003d\"1.1\" viewBox\u003d\"0 0 576 432\" width\u003d\"576pt\" xmlns\u003d\"http://www.w3.org/2000/svg\" xmlns:xlink\u003d\"http://www.w3.org/1999/xlink\"\u003e\n\r \u003cdefs\u003e\n\r  \u003cstyle type\u003d\"text/css\"\u003e\n\r*{stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:100000;}\n\r  \u003c/style\u003e\n\r \u003c/defs\u003e\n\r \u003cg id\u003d\"figure_1\"\u003e\n\r  \u003cg id\u003d\"patch_1\"\u003e\n\r   \u003cpath d\u003d\"M 0 432 \n\rL 576 432 \n\rL 576 0 \n\rL 0 0 \n\rz\n\r\" style\u003d\"fill:#ffffff;\"/\u003e\n\r  \u003c/g\u003e\n\r  \u003cg id\u003d\"axes_1\"\u003e\n\r   \u003cg id\u003d\"patch_2\"\u003e\n\r    \u003cpath d\u003d\"M 72 388.8 \n\rL 518.4 388.8 \n\rL 518.4 43.2 \n\rL 72 43.2 \n\rz\n\r\" style\u003d\"fill:#ffffff;\"/\u003e\n\r   \u003c/g\u003e\n\r   \u003cg id\u003d\"line2d_1\"\u003e\n\r    \u003cpath clip-path\u003d\"url(#p8d9001317b)\" d\u003d\"M 72 64.353733 \n\rL 81.383784 66.208006 \n\rL 89.873874 68.102082 \n\rL 97.917117 70.118515 \n\rL 105.513514 72.253983 \n\rL 112.663063 74.501874 \n\rL 119.365766 76.851708 \n\rL 125.621622 79.288583 \n\rL 131.430631 81.792703 \n\rL 136.792793 84.33905 \n\rL 142.154955 87.14138 \n\rL 147.07027 89.964621 \n\rL 151.538739 92.769201 \n\rL 156.007207 95.828137 \n\rL 160.475676 99.172274 \n\rL 164.497297 102.455067 \n\rL 168.518919 106.027174 \n\rL 172.540541 109.922371 \n\rL 176.115315 113.687089 \n\rL 179.69009 117.76831 \n\rL 183.264865 122.200833 \n\rL 186.83964 127.024032 \n\rL 189.967568 131.599727 \n\rL 193.095495 136.542179 \n\rL 196.223423 141.888876 \n\rL 199.351351 147.681647 \n\rL 202.479279 153.967119 \n\rL 205.607207 160.797174 \n\rL 208.735135 168.229361 \n\rL 211.863063 176.327214 \n\rL 214.544144 183.850661 \n\rL 217.225225 191.961516 \n\rL 219.906306 200.70986 \n\rL 222.587387 210.147822 \n\rL 225.268468 220.328242 \n\rL 227.94955 231.302469 \n\rL 230.630631 243.116823 \n\rL 233.758559 258.00883 \n\rL 236.886486 274.114509 \n\rL 240.014414 291.390828 \n\rL 243.589189 312.360386 \n\rL 252.079279 362.998329 \n\rL 253.866667 372.223666 \n\rL 255.207207 378.258931 \n\rL 256.547748 383.242279 \n\rL 257.441441 385.820429 \n\rL 258.335135 387.672064 \n\rL 258.781982 388.285652 \n\rL 259.228829 388.667872 \n\rL 259.675676 388.799999 \n\rL 260.122523 388.66222 \n\rL 260.569369 388.233607 \n\rL 261.016216 387.4921 \n\rL 261.463063 386.414495 \n\rL 261.90991 384.976449 \n\rL 262.803604 380.916087 \n\rL 263.697297 375.09463 \n\rL 264.590991 367.280889 \n\rL 265.484685 357.233455 \n\rL 266.378378 344.70846 \n\rL 267.272072 329.471815 \n\rL 268.165766 311.317715 \n\rL 269.506306 278.31162 \n\rL 270.846847 238.369968 \n\rL 272.634234 176.074757 \n\rL 275.315315 80.644271 \n\rL 276.209009 57.296088 \n\rL 276.655856 49.237132 \n\rL 277.102703 44.371691 \n\rL 277.54955 43.335468 \n\rL 277.996396 46.77714 \n\rL 278.443243 55.323403 \n\rL 278.89009 69.528308 \n\rL 279.336937 89.803055 \n\rL 280.230631 148.906277 \n\rL 281.124324 228.877168 \n\rL 282.464865 352.338838 \n\rL 282.911712 378.736731 \n\rL 283.358559 388.799995 \n\rL 283.805405 377.147391 \n\rL 284.252252 340.163226 \n\rL 284.699099 278.151058 \n\rL 286.03964 55.748432 \n\rL 286.486486 48.207233 \n\rL 286.933333 113.197709 \n\rL 287.827027 361.331139 \n\rL 288.273874 374.824982 \n\rL 289.167568 53.650098 \n\rL 289.614414 142.342594 \n\rL 290.061261 382.365259 \n\rL 290.508108 177.65454 \n\rL 290.954955 146.476843 \n\rL 291.401802 293.143963 \n\rL 291.848649 269.253145 \n\rL 292.295495 86.540778 \n\rL 292.742342 191.202268 \n\rL 293.189189 129.82011 \n\rL 293.636036 323.483468 \n\rL 294.082883 76.471144 \n\rL 294.52973 388.798319 \n\rL 295.87027 388.798319 \n\rL 296.317117 76.471144 \n\rL 296.763964 323.483468 \n\rL 297.210811 129.82011 \n\rL 297.657658 191.202268 \n\rL 298.104505 86.540778 \n\rL 298.551351 269.253145 \n\rL 298.998198 293.143963 \n\rL 299.445045 146.476843 \n\rL 299.891892 177.65454 \n\rL 300.338739 382.365259 \n\rL 300.785586 142.342594 \n\rL 301.232432 53.650098 \n\rL 302.126126 374.824982 \n\rL 302.572973 361.331139 \n\rL 303.466667 113.197709 \n\rL 303.913514 48.207233 \n\rL 304.36036 55.748432 \n\rL 304.807207 115.49803 \n\rL 305.700901 278.151058 \n\rL 306.147748 340.163226 \n\rL 306.594595 377.147391 \n\rL 307.041441 388.799995 \n\rL 307.488288 378.736731 \n\rL 307.935135 352.338838 \n\rL 308.828829 272.73672 \n\rL 310.169369 148.906277 \n\rL 311.063063 89.803055 \n\rL 311.50991 69.528308 \n\rL 311.956757 55.323403 \n\rL 312.403604 46.77714 \n\rL 312.85045 43.335468 \n\rL 313.297297 44.371691 \n\rL 313.744144 49.237132 \n\rL 314.190991 57.296088 \n\rL 315.084685 80.644271 \n\rL 316.425225 126.342632 \n\rL 319.553153 238.369968 \n\rL 320.893694 278.31162 \n\rL 322.234234 311.317715 \n\rL 323.574775 337.442889 \n\rL 324.468468 351.295694 \n\rL 325.362162 362.551685 \n\rL 326.255856 371.451716 \n\rL 327.14955 378.239639 \n\rL 328.043243 383.152497 \n\rL 328.936937 386.414495 \n\rL 329.383784 387.4921 \n\rL 329.830631 388.233607 \n\rL 330.277477 388.66222 \n\rL 330.724324 388.799999 \n\rL 331.171171 388.667872 \n\rL 331.618018 388.285652 \n\rL 332.064865 387.672064 \n\rL 332.958559 385.820429 \n\rL 333.852252 383.242279 \n\rL 334.745946 380.051849 \n\rL 336.086486 374.334557 \n\rL 337.873874 365.40576 \n\rL 340.108108 352.878733 \n\rL 344.12973 328.640229 \n\rL 349.491892 296.523995 \n\rL 353.066667 276.51302 \n\rL 356.194595 260.235459 \n\rL 359.322523 245.170296 \n\rL 362.45045 231.302469 \n\rL 365.578378 218.577728 \n\rL 368.259459 208.524692 \n\rL 370.940541 199.205338 \n\rL 374.068468 189.18959 \n\rL 377.196396 180.018538 \n\rL 380.324324 171.614438 \n\rL 383.452252 163.905101 \n\rL 386.58018 156.82438 \n\rL 389.708108 150.31219 \n\rL 392.836036 144.314267 \n\rL 395.963964 138.781787 \n\rL 399.091892 133.67092 \n\rL 402.21982 128.942374 \n\rL 405.794595 123.961476 \n\rL 409.369369 119.387329 \n\rL 412.944144 115.178681 \n\rL 416.518919 111.299086 \n\rL 420.540541 107.287874 \n\rL 424.562162 103.612047 \n\rL 428.583784 100.2363 \n\rL 432.605405 97.129692 \n\rL 437.073874 93.96062 \n\rL 441.542342 91.057732 \n\rL 446.457658 88.138219 \n\rL 451.372973 85.473707 \n\rL 456.735135 82.824584 \n\rL 462.097297 80.413522 \n\rL 467.906306 78.038628 \n\rL 474.162162 75.72371 \n\rL 480.864865 73.487761 \n\rL 488.014414 71.345238 \n\rL 495.610811 69.306473 \n\rL 503.654054 67.378168 \n\rL 512.590991 65.474102 \n\rL 518.4 64.353733 \n\rL 518.4 64.353733 \n\r\" style\u003d\"fill:none;stroke:#0000ff;stroke-linecap:square;stroke-width:2.0;\"/\u003e\n\r   \u003c/g\u003e\n\r   \u003cg id\u003d\"patch_3\"\u003e\n\r    \u003cpath d\u003d\"M 72 43.2 \n\rL 518.4 43.2 \n\r\" style\u003d\"fill:none;stroke:#000000;stroke-linecap:square;stroke-linejoin:miter;\"/\u003e\n\r   \u003c/g\u003e\n\r   \u003cg id\u003d\"patch_4\"\u003e\n\r    \u003cpath d\u003d\"M 518.4 388.8 \n\rL 518.4 43.2 \n\r\" style\u003d\"fill:none;stroke:#000000;stroke-linecap:square;stroke-linejoin:miter;\"/\u003e\n\r   \u003c/g\u003e\n\r   \u003cg id\u003d\"patch_5\"\u003e\n\r    \u003cpath d\u003d\"M 72 388.8 \n\rL 518.4 388.8 \n\r\" style\u003d\"fill:none;stroke:#000000;stroke-linecap:square;stroke-linejoin:miter;\"/\u003e\n\r   \u003c/g\u003e\n\r   \u003cg id\u003d\"patch_6\"\u003e\n\r    \u003cpath d\u003d\"M 72 388.8 \n\rL 72 43.2 \n\r\" style\u003d\"fill:none;stroke:#000000;stroke-linecap:square;stroke-linejoin:miter;\"/\u003e\n\r   \u003c/g\u003e\n\r   \u003cg id\u003d\"matplotlib.axis_1\"\u003e\n\r    \u003cg id\u003d\"xtick_1\"\u003e\n\r     \u003cg id\u003d\"line2d_2\"\u003e\n\r      \u003cdefs\u003e\n\r       \u003cpath d\u003d\"M 0 0 \n\rL 0 -4 \n\r\" id\u003d\"m1b33711152\" style\u003d\"stroke:#000000;stroke-width:0.5;\"/\u003e\n\r      \u003c/defs\u003e\n\r      \u003cg\u003e\n\r       \u003cuse style\u003d\"stroke:#000000;stroke-width:0.5;\" x\u003d\"72.0\" xlink:href\u003d\"#m1b33711152\" y\u003d\"388.8\"/\u003e\n\r      \u003c/g\u003e\n\r     \u003c/g\u003e\n\r     \u003cg id\u003d\"line2d_3\"\u003e\n\r      \u003cdefs\u003e\n\r       \u003cpath d\u003d\"M 0 0 \n\rL 0 4 \n\r\" id\u003d\"m5ced6e031b\" style\u003d\"stroke:#000000;stroke-width:0.5;\"/\u003e\n\r      \u003c/defs\u003e\n\r      \u003cg\u003e\n\r       \u003cuse style\u003d\"stroke:#000000;stroke-width:0.5;\" x\u003d\"72.0\" xlink:href\u003d\"#m5ced6e031b\" y\u003d\"43.2\"/\u003e\n\r      \u003c/g\u003e\n\r     \u003c/g\u003e\n\r     \u003cg id\u003d\"text_1\"\u003e\n\r      \u003c!-- −2.0 --\u003e\n\r      \u003cdefs\u003e\n\r       \u003cpath d\u003d\"M 10.59375 35.5 \n\rL 73.1875 35.5 \n\rL 73.1875 27.203125 \n\rL 10.59375 27.203125 \n\rz\n\r\" id\u003d\"BitstreamVeraSans-Roman-2212\"/\u003e\n\r       \u003cpath d\u003d\"M 19.1875 8.296875 \n\rL 53.609375 8.296875 \n\rL 53.609375 0 \n\rL 7.328125 0 \n\rL 7.328125 8.296875 \n\rQ 12.9375 14.109375 22.625 23.890625 \n\rQ 32.328125 33.6875 34.8125 36.53125 \n\rQ 39.546875 41.84375 41.421875 45.53125 \n\rQ 43.3125 49.21875 43.3125 52.78125 \n\rQ 43.3125 58.59375 39.234375 62.25 \n\rQ 35.15625 65.921875 28.609375 65.921875 \n\rQ 23.96875 65.921875 18.8125 64.3125 \n\rQ 13.671875 62.703125 7.8125 59.421875 \n\rL 7.8125 69.390625 \n\rQ 13.765625 71.78125 18.9375 73 \n\rQ 24.125 74.21875 28.421875 74.21875 \n\rQ 39.75 74.21875 46.484375 68.546875 \n\rQ 53.21875 62.890625 53.21875 53.421875 \n\rQ 53.21875 48.921875 51.53125 44.890625 \n\rQ 49.859375 40.875 45.40625 35.40625 \n\rQ 44.1875 33.984375 37.640625 27.21875 \n\rQ 31.109375 20.453125 19.1875 8.296875 \n\r\" id\u003d\"BitstreamVeraSans-Roman-32\"/\u003e\n\r       \u003cpath d\u003d\"M 31.78125 66.40625 \n\rQ 24.171875 66.40625 20.328125 58.90625 \n\rQ 16.5 51.421875 16.5 36.375 \n\rQ 16.5 21.390625 20.328125 13.890625 \n\rQ 24.171875 6.390625 31.78125 6.390625 \n\rQ 39.453125 6.390625 43.28125 13.890625 \n\rQ 47.125 21.390625 47.125 36.375 \n\rQ 47.125 51.421875 43.28125 58.90625 \n\rQ 39.453125 66.40625 31.78125 66.40625 \n\rM 31.78125 74.21875 \n\rQ 44.046875 74.21875 50.515625 64.515625 \n\rQ 56.984375 54.828125 56.984375 36.375 \n\rQ 56.984375 17.96875 50.515625 8.265625 \n\rQ 44.046875 -1.421875 31.78125 -1.421875 \n\rQ 19.53125 -1.421875 13.0625 8.265625 \n\rQ 6.59375 17.96875 6.59375 36.375 \n\rQ 6.59375 54.828125 13.0625 64.515625 \n\rQ 19.53125 74.21875 31.78125 74.21875 \n\r\" id\u003d\"BitstreamVeraSans-Roman-30\"/\u003e\n\r       \u003cpath d\u003d\"M 10.6875 12.40625 \n\rL 21 12.40625 \n\rL 21 0 \n\rL 10.6875 0 \n\rz\n\r\" id\u003d\"BitstreamVeraSans-Roman-2e\"/\u003e\n\r      \u003c/defs\u003e\n\r      \u003cg transform\u003d\"translate(57.4303125 401.918125)scale(0.12 -0.12)\"\u003e\n\r       \u003cuse xlink:href\u003d\"#BitstreamVeraSans-Roman-2212\"/\u003e\n\r       \u003cuse x\u003d\"83.7890625\" xlink:href\u003d\"#BitstreamVeraSans-Roman-32\"/\u003e\n\r       \u003cuse x\u003d\"147.412109375\" xlink:href\u003d\"#BitstreamVeraSans-Roman-2e\"/\u003e\n\r       \u003cuse x\u003d\"179.19921875\" xlink:href\u003d\"#BitstreamVeraSans-Roman-30\"/\u003e\n\r      \u003c/g\u003e\n\r     \u003c/g\u003e\n\r    \u003c/g\u003e\n\r    \u003cg id\u003d\"xtick_2\"\u003e\n\r     \u003cg id\u003d\"line2d_4\"\u003e\n\r      \u003cg\u003e\n\r       \u003cuse style\u003d\"stroke:#000000;stroke-width:0.5;\" x\u003d\"127.8\" xlink:href\u003d\"#m1b33711152\" y\u003d\"388.8\"/\u003e\n\r      \u003c/g\u003e\n\r     \u003c/g\u003e\n\r     \u003cg id\u003d\"line2d_5\"\u003e\n\r      \u003cg\u003e\n\r       \u003cuse style\u003d\"stroke:#000000;stroke-width:0.5;\" x\u003d\"127.8\" xlink:href\u003d\"#m5ced6e031b\" y\u003d\"43.2\"/\u003e\n\r      \u003c/g\u003e\n\r     \u003c/g\u003e\n\r     \u003cg id\u003d\"text_2\"\u003e\n\r      \u003c!-- −1.5 --\u003e\n\r      \u003cdefs\u003e\n\r       \u003cpath d\u003d\"M 12.40625 8.296875 \n\rL 28.515625 8.296875 \n\rL 28.515625 63.921875 \n\rL 10.984375 60.40625 \n\rL 10.984375 69.390625 \n\rL 28.421875 72.90625 \n\rL 38.28125 72.90625 \n\rL 38.28125 8.296875 \n\rL 54.390625 8.296875 \n\rL 54.390625 0 \n\rL 12.40625 0 \n\rz\n\r\" id\u003d\"BitstreamVeraSans-Roman-31\"/\u003e\n\r       \u003cpath d\u003d\"M 10.796875 72.90625 \n\rL 49.515625 72.90625 \n\rL 49.515625 64.59375 \n\rL 19.828125 64.59375 \n\rL 19.828125 46.734375 \n\rQ 21.96875 47.46875 24.109375 47.828125 \n\rQ 26.265625 48.1875 28.421875 48.1875 \n\rQ 40.625 48.1875 47.75 41.5 \n\rQ 54.890625 34.8125 54.890625 23.390625 \n\rQ 54.890625 11.625 47.5625 5.09375 \n\rQ 40.234375 -1.421875 26.90625 -1.421875 \n\rQ 22.3125 -1.421875 17.546875 -0.640625 \n\rQ 12.796875 0.140625 7.71875 1.703125 \n\rL 7.71875 11.625 \n\rQ 12.109375 9.234375 16.796875 8.0625 \n\rQ 21.484375 6.890625 26.703125 6.890625 \n\rQ 35.15625 6.890625 40.078125 11.328125 \n\rQ 45.015625 15.765625 45.015625 23.390625 \n\rQ 45.015625 31 40.078125 35.4375 \n\rQ 35.15625 39.890625 26.703125 39.890625 \n\rQ 22.75 39.890625 18.8125 39.015625 \n\rQ 14.890625 38.140625 10.796875 36.28125 \n\rz\n\r\" id\u003d\"BitstreamVeraSans-Roman-35\"/\u003e\n\r      \u003c/defs\u003e\n\r      \u003cg transform\u003d\"translate(113.2303125 401.918125)scale(0.12 -0.12)\"\u003e\n\r       \u003cuse xlink:href\u003d\"#BitstreamVeraSans-Roman-2212\"/\u003e\n\r       \u003cuse x\u003d\"83.7890625\" xlink:href\u003d\"#BitstreamVeraSans-Roman-31\"/\u003e\n\r       \u003cuse x\u003d\"147.412109375\" xlink:href\u003d\"#BitstreamVeraSans-Roman-2e\"/\u003e\n\r       \u003cuse x\u003d\"179.19921875\" xlink:href\u003d\"#BitstreamVeraSans-Roman-35\"/\u003e\n\r      \u003c/g\u003e\n\r     \u003c/g\u003e\n\r    \u003c/g\u003e\n\r    \u003cg id\u003d\"xtick_3\"\u003e\n\r     \u003cg id\u003d\"line2d_6\"\u003e\n\r      \u003cg\u003e\n\r       \u003cuse style\u003d\"stroke:#000000;stroke-width:0.5;\" x\u003d\"183.6\" xlink:href\u003d\"#m1b33711152\" y\u003d\"388.8\"/\u003e\n\r      \u003c/g\u003e\n\r     \u003c/g\u003e\n\r     \u003cg id\u003d\"line2d_7\"\u003e\n\r      \u003cg\u003e\n\r       \u003cuse style\u003d\"stroke:#000000;stroke-width:0.5;\" x\u003d\"183.6\" xlink:href\u003d\"#m5ced6e031b\" y\u003d\"43.2\"/\u003e\n\r      \u003c/g\u003e\n\r     \u003c/g\u003e\n\r     \u003cg id\u003d\"text_3\"\u003e\n\r      \u003c!-- −1.0 --\u003e\n\r      \u003cg transform\u003d\"translate(169.0303125 401.918125)scale(0.12 -0.12)\"\u003e\n\r       \u003cuse xlink:href\u003d\"#BitstreamVeraSans-Roman-2212\"/\u003e\n\r       \u003cuse x\u003d\"83.7890625\" xlink:href\u003d\"#BitstreamVeraSans-Roman-31\"/\u003e\n\r       \u003cuse x\u003d\"147.412109375\" xlink:href\u003d\"#BitstreamVeraSans-Roman-2e\"/\u003e\n\r       \u003cuse x\u003d\"179.19921875\" xlink:href\u003d\"#BitstreamVeraSans-Roman-30\"/\u003e\n\r      \u003c/g\u003e\n\r     \u003c/g\u003e\n\r    \u003c/g\u003e\n\r    \u003cg id\u003d\"xtick_4\"\u003e\n\r     \u003cg id\u003d\"line2d_8\"\u003e\n\r      \u003cg\u003e\n\r       \u003cuse style\u003d\"stroke:#000000;stroke-width:0.5;\" x\u003d\"239.4\" xlink:href\u003d\"#m1b33711152\" y\u003d\"388.8\"/\u003e\n\r      \u003c/g\u003e\n\r     \u003c/g\u003e\n\r     \u003cg id\u003d\"line2d_9\"\u003e\n\r      \u003cg\u003e\n\r       \u003cuse style\u003d\"stroke:#000000;stroke-width:0.5;\" x\u003d\"239.4\" xlink:href\u003d\"#m5ced6e031b\" y\u003d\"43.2\"/\u003e\n\r      \u003c/g\u003e\n\r     \u003c/g\u003e\n\r     \u003cg id\u003d\"text_4\"\u003e\n\r      \u003c!-- −0.5 --\u003e\n\r      \u003cg transform\u003d\"translate(224.8303125 401.918125)scale(0.12 -0.12)\"\u003e\n\r       \u003cuse xlink:href\u003d\"#BitstreamVeraSans-Roman-2212\"/\u003e\n\r       \u003cuse x\u003d\"83.7890625\" xlink:href\u003d\"#BitstreamVeraSans-Roman-30\"/\u003e\n\r       \u003cuse x\u003d\"147.412109375\" xlink:href\u003d\"#BitstreamVeraSans-Roman-2e\"/\u003e\n\r       \u003cuse x\u003d\"179.19921875\" xlink:href\u003d\"#BitstreamVeraSans-Roman-35\"/\u003e\n\r      \u003c/g\u003e\n\r     \u003c/g\u003e\n\r    \u003c/g\u003e\n\r    \u003cg id\u003d\"xtick_5\"\u003e\n\r     \u003cg id\u003d\"line2d_10\"\u003e\n\r      \u003cg\u003e\n\r       \u003cuse style\u003d\"stroke:#000000;stroke-width:0.5;\" x\u003d\"295.2\" xlink:href\u003d\"#m1b33711152\" y\u003d\"388.8\"/\u003e\n\r      \u003c/g\u003e\n\r     \u003c/g\u003e\n\r     \u003cg id\u003d\"line2d_11\"\u003e\n\r      \u003cg\u003e\n\r       \u003cuse style\u003d\"stroke:#000000;stroke-width:0.5;\" x\u003d\"295.2\" xlink:href\u003d\"#m5ced6e031b\" y\u003d\"43.2\"/\u003e\n\r      \u003c/g\u003e\n\r     \u003c/g\u003e\n\r     \u003cg id\u003d\"text_5\"\u003e\n\r      \u003c!-- 0.0 --\u003e\n\r      \u003cg transform\u003d\"translate(285.658125 401.918125)scale(0.12 -0.12)\"\u003e\n\r       \u003cuse xlink:href\u003d\"#BitstreamVeraSans-Roman-30\"/\u003e\n\r       \u003cuse x\u003d\"63.623046875\" xlink:href\u003d\"#BitstreamVeraSans-Roman-2e\"/\u003e\n\r       \u003cuse x\u003d\"95.41015625\" xlink:href\u003d\"#BitstreamVeraSans-Roman-30\"/\u003e\n\r      \u003c/g\u003e\n\r     \u003c/g\u003e\n\r    \u003c/g\u003e\n\r    \u003cg id\u003d\"xtick_6\"\u003e\n\r     \u003cg id\u003d\"line2d_12\"\u003e\n\r      \u003cg\u003e\n\r       \u003cuse style\u003d\"stroke:#000000;stroke-width:0.5;\" x\u003d\"351.0\" xlink:href\u003d\"#m1b33711152\" y\u003d\"388.8\"/\u003e\n\r      \u003c/g\u003e\n\r     \u003c/g\u003e\n\r     \u003cg id\u003d\"line2d_13\"\u003e\n\r      \u003cg\u003e\n\r       \u003cuse style\u003d\"stroke:#000000;stroke-width:0.5;\" x\u003d\"351.0\" xlink:href\u003d\"#m5ced6e031b\" y\u003d\"43.2\"/\u003e\n\r      \u003c/g\u003e\n\r     \u003c/g\u003e\n\r     \u003cg id\u003d\"text_6\"\u003e\n\r      \u003c!-- 0.5 --\u003e\n\r      \u003cg transform\u003d\"translate(341.458125 401.918125)scale(0.12 -0.12)\"\u003e\n\r       \u003cuse xlink:href\u003d\"#BitstreamVeraSans-Roman-30\"/\u003e\n\r       \u003cuse x\u003d\"63.623046875\" xlink:href\u003d\"#BitstreamVeraSans-Roman-2e\"/\u003e\n\r       \u003cuse x\u003d\"95.41015625\" xlink:href\u003d\"#BitstreamVeraSans-Roman-35\"/\u003e\n\r      \u003c/g\u003e\n\r     \u003c/g\u003e\n\r    \u003c/g\u003e\n\r    \u003cg id\u003d\"xtick_7\"\u003e\n\r     \u003cg id\u003d\"line2d_14\"\u003e\n\r      \u003cg\u003e\n\r       \u003cuse style\u003d\"stroke:#000000;stroke-width:0.5;\" x\u003d\"406.8\" xlink:href\u003d\"#m1b33711152\" y\u003d\"388.8\"/\u003e\n\r      \u003c/g\u003e\n\r     \u003c/g\u003e\n\r     \u003cg id\u003d\"line2d_15\"\u003e\n\r      \u003cg\u003e\n\r       \u003cuse style\u003d\"stroke:#000000;stroke-width:0.5;\" x\u003d\"406.8\" xlink:href\u003d\"#m5ced6e031b\" y\u003d\"43.2\"/\u003e\n\r      \u003c/g\u003e\n\r     \u003c/g\u003e\n\r     \u003cg id\u003d\"text_7\"\u003e\n\r      \u003c!-- 1.0 --\u003e\n\r      \u003cg transform\u003d\"translate(397.258125 401.918125)scale(0.12 -0.12)\"\u003e\n\r       \u003cuse xlink:href\u003d\"#BitstreamVeraSans-Roman-31\"/\u003e\n\r       \u003cuse x\u003d\"63.623046875\" xlink:href\u003d\"#BitstreamVeraSans-Roman-2e\"/\u003e\n\r       \u003cuse x\u003d\"95.41015625\" xlink:href\u003d\"#BitstreamVeraSans-Roman-30\"/\u003e\n\r      \u003c/g\u003e\n\r     \u003c/g\u003e\n\r    \u003c/g\u003e\n\r    \u003cg id\u003d\"xtick_8\"\u003e\n\r     \u003cg id\u003d\"line2d_16\"\u003e\n\r      \u003cg\u003e\n\r       \u003cuse style\u003d\"stroke:#000000;stroke-width:0.5;\" x\u003d\"462.6\" xlink:href\u003d\"#m1b33711152\" y\u003d\"388.8\"/\u003e\n\r      \u003c/g\u003e\n\r     \u003c/g\u003e\n\r     \u003cg id\u003d\"line2d_17\"\u003e\n\r      \u003cg\u003e\n\r       \u003cuse style\u003d\"stroke:#000000;stroke-width:0.5;\" x\u003d\"462.6\" xlink:href\u003d\"#m5ced6e031b\" y\u003d\"43.2\"/\u003e\n\r      \u003c/g\u003e\n\r     \u003c/g\u003e\n\r     \u003cg id\u003d\"text_8\"\u003e\n\r      \u003c!-- 1.5 --\u003e\n\r      \u003cg transform\u003d\"translate(453.058125 401.918125)scale(0.12 -0.12)\"\u003e\n\r       \u003cuse xlink:href\u003d\"#BitstreamVeraSans-Roman-31\"/\u003e\n\r       \u003cuse x\u003d\"63.623046875\" xlink:href\u003d\"#BitstreamVeraSans-Roman-2e\"/\u003e\n\r       \u003cuse x\u003d\"95.41015625\" xlink:href\u003d\"#BitstreamVeraSans-Roman-35\"/\u003e\n\r      \u003c/g\u003e\n\r     \u003c/g\u003e\n\r    \u003c/g\u003e\n\r    \u003cg id\u003d\"xtick_9\"\u003e\n\r     \u003cg id\u003d\"line2d_18\"\u003e\n\r      \u003cg\u003e\n\r       \u003cuse style\u003d\"stroke:#000000;stroke-width:0.5;\" x\u003d\"518.4\" xlink:href\u003d\"#m1b33711152\" y\u003d\"388.8\"/\u003e\n\r      \u003c/g\u003e\n\r     \u003c/g\u003e\n\r     \u003cg id\u003d\"line2d_19\"\u003e\n\r      \u003cg\u003e\n\r       \u003cuse style\u003d\"stroke:#000000;stroke-width:0.5;\" x\u003d\"518.4\" xlink:href\u003d\"#m5ced6e031b\" y\u003d\"43.2\"/\u003e\n\r      \u003c/g\u003e\n\r     \u003c/g\u003e\n\r     \u003cg id\u003d\"text_9\"\u003e\n\r      \u003c!-- 2.0 --\u003e\n\r      \u003cg transform\u003d\"translate(508.858125 401.918125)scale(0.12 -0.12)\"\u003e\n\r       \u003cuse xlink:href\u003d\"#BitstreamVeraSans-Roman-32\"/\u003e\n\r       \u003cuse x\u003d\"63.623046875\" xlink:href\u003d\"#BitstreamVeraSans-Roman-2e\"/\u003e\n\r       \u003cuse x\u003d\"95.41015625\" xlink:href\u003d\"#BitstreamVeraSans-Roman-30\"/\u003e\n\r      \u003c/g\u003e\n\r     \u003c/g\u003e\n\r    \u003c/g\u003e\n\r   \u003c/g\u003e\n\r   \u003cg id\u003d\"matplotlib.axis_2\"\u003e\n\r    \u003cg id\u003d\"ytick_1\"\u003e\n\r     \u003cg id\u003d\"line2d_20\"\u003e\n\r      \u003cdefs\u003e\n\r       \u003cpath d\u003d\"M 0 0 \n\rL 4 0 \n\r\" id\u003d\"m3c39fe74d7\" style\u003d\"stroke:#000000;stroke-width:0.5;\"/\u003e\n\r      \u003c/defs\u003e\n\r      \u003cg\u003e\n\r       \u003cuse style\u003d\"stroke:#000000;stroke-width:0.5;\" x\u003d\"72.0\" xlink:href\u003d\"#m3c39fe74d7\" y\u003d\"388.8\"/\u003e\n\r      \u003c/g\u003e\n\r     \u003c/g\u003e\n\r     \u003cg id\u003d\"line2d_21\"\u003e\n\r      \u003cdefs\u003e\n\r       \u003cpath d\u003d\"M 0 0 \n\rL -4 0 \n\r\" id\u003d\"m4564b9459b\" style\u003d\"stroke:#000000;stroke-width:0.5;\"/\u003e\n\r      \u003c/defs\u003e\n\r      \u003cg\u003e\n\r       \u003cuse style\u003d\"stroke:#000000;stroke-width:0.5;\" x\u003d\"518.4\" xlink:href\u003d\"#m4564b9459b\" y\u003d\"388.8\"/\u003e\n\r      \u003c/g\u003e\n\r     \u003c/g\u003e\n\r     \u003cg id\u003d\"text_10\"\u003e\n\r      \u003c!-- −1.0 --\u003e\n\r      \u003cg transform\u003d\"translate(38.860625 392.11125)scale(0.12 -0.12)\"\u003e\n\r       \u003cuse xlink:href\u003d\"#BitstreamVeraSans-Roman-2212\"/\u003e\n\r       \u003cuse x\u003d\"83.7890625\" xlink:href\u003d\"#BitstreamVeraSans-Roman-31\"/\u003e\n\r       \u003cuse x\u003d\"147.412109375\" xlink:href\u003d\"#BitstreamVeraSans-Roman-2e\"/\u003e\n\r       \u003cuse x\u003d\"179.19921875\" xlink:href\u003d\"#BitstreamVeraSans-Roman-30\"/\u003e\n\r      \u003c/g\u003e\n\r     \u003c/g\u003e\n\r    \u003c/g\u003e\n\r    \u003cg id\u003d\"ytick_2\"\u003e\n\r     \u003cg id\u003d\"line2d_22\"\u003e\n\r      \u003cg\u003e\n\r       \u003cuse style\u003d\"stroke:#000000;stroke-width:0.5;\" x\u003d\"72.0\" xlink:href\u003d\"#m3c39fe74d7\" y\u003d\"302.4\"/\u003e\n\r      \u003c/g\u003e\n\r     \u003c/g\u003e\n\r     \u003cg id\u003d\"line2d_23\"\u003e\n\r      \u003cg\u003e\n\r       \u003cuse style\u003d\"stroke:#000000;stroke-width:0.5;\" x\u003d\"518.4\" xlink:href\u003d\"#m4564b9459b\" y\u003d\"302.4\"/\u003e\n\r      \u003c/g\u003e\n\r     \u003c/g\u003e\n\r     \u003cg id\u003d\"text_11\"\u003e\n\r      \u003c!-- −0.5 --\u003e\n\r      \u003cg transform\u003d\"translate(38.860625 305.71125)scale(0.12 -0.12)\"\u003e\n\r       \u003cuse xlink:href\u003d\"#BitstreamVeraSans-Roman-2212\"/\u003e\n\r       \u003cuse x\u003d\"83.7890625\" xlink:href\u003d\"#BitstreamVeraSans-Roman-30\"/\u003e\n\r       \u003cuse x\u003d\"147.412109375\" xlink:href\u003d\"#BitstreamVeraSans-Roman-2e\"/\u003e\n\r       \u003cuse x\u003d\"179.19921875\" xlink:href\u003d\"#BitstreamVeraSans-Roman-35\"/\u003e\n\r      \u003c/g\u003e\n\r     \u003c/g\u003e\n\r    \u003c/g\u003e\n\r    \u003cg id\u003d\"ytick_3\"\u003e\n\r     \u003cg id\u003d\"line2d_24\"\u003e\n\r      \u003cg\u003e\n\r       \u003cuse style\u003d\"stroke:#000000;stroke-width:0.5;\" x\u003d\"72.0\" xlink:href\u003d\"#m3c39fe74d7\" y\u003d\"216.0\"/\u003e\n\r      \u003c/g\u003e\n\r     \u003c/g\u003e\n\r     \u003cg id\u003d\"line2d_25\"\u003e\n\r      \u003cg\u003e\n\r       \u003cuse style\u003d\"stroke:#000000;stroke-width:0.5;\" x\u003d\"518.4\" xlink:href\u003d\"#m4564b9459b\" y\u003d\"216.0\"/\u003e\n\r      \u003c/g\u003e\n\r     \u003c/g\u003e\n\r     \u003cg id\u003d\"text_12\"\u003e\n\r      \u003c!-- 0.0 --\u003e\n\r      \u003cg transform\u003d\"translate(48.91625 219.31125)scale(0.12 -0.12)\"\u003e\n\r       \u003cuse xlink:href\u003d\"#BitstreamVeraSans-Roman-30\"/\u003e\n\r       \u003cuse x\u003d\"63.623046875\" xlink:href\u003d\"#BitstreamVeraSans-Roman-2e\"/\u003e\n\r       \u003cuse x\u003d\"95.41015625\" xlink:href\u003d\"#BitstreamVeraSans-Roman-30\"/\u003e\n\r      \u003c/g\u003e\n\r     \u003c/g\u003e\n\r    \u003c/g\u003e\n\r    \u003cg id\u003d\"ytick_4\"\u003e\n\r     \u003cg id\u003d\"line2d_26\"\u003e\n\r      \u003cg\u003e\n\r       \u003cuse style\u003d\"stroke:#000000;stroke-width:0.5;\" x\u003d\"72.0\" xlink:href\u003d\"#m3c39fe74d7\" y\u003d\"129.6\"/\u003e\n\r      \u003c/g\u003e\n\r     \u003c/g\u003e\n\r     \u003cg id\u003d\"line2d_27\"\u003e\n\r      \u003cg\u003e\n\r       \u003cuse style\u003d\"stroke:#000000;stroke-width:0.5;\" x\u003d\"518.4\" xlink:href\u003d\"#m4564b9459b\" y\u003d\"129.6\"/\u003e\n\r      \u003c/g\u003e\n\r     \u003c/g\u003e\n\r     \u003cg id\u003d\"text_13\"\u003e\n\r      \u003c!-- 0.5 --\u003e\n\r      \u003cg transform\u003d\"translate(48.91625 132.91125)scale(0.12 -0.12)\"\u003e\n\r       \u003cuse xlink:href\u003d\"#BitstreamVeraSans-Roman-30\"/\u003e\n\r       \u003cuse x\u003d\"63.623046875\" xlink:href\u003d\"#BitstreamVeraSans-Roman-2e\"/\u003e\n\r       \u003cuse x\u003d\"95.41015625\" xlink:href\u003d\"#BitstreamVeraSans-Roman-35\"/\u003e\n\r      \u003c/g\u003e\n\r     \u003c/g\u003e\n\r    \u003c/g\u003e\n\r    \u003cg id\u003d\"ytick_5\"\u003e\n\r     \u003cg id\u003d\"line2d_28\"\u003e\n\r      \u003cg\u003e\n\r       \u003cuse style\u003d\"stroke:#000000;stroke-width:0.5;\" x\u003d\"72.0\" xlink:href\u003d\"#m3c39fe74d7\" y\u003d\"43.2\"/\u003e\n\r      \u003c/g\u003e\n\r     \u003c/g\u003e\n\r     \u003cg id\u003d\"line2d_29\"\u003e\n\r      \u003cg\u003e\n\r       \u003cuse style\u003d\"stroke:#000000;stroke-width:0.5;\" x\u003d\"518.4\" xlink:href\u003d\"#m4564b9459b\" y\u003d\"43.2\"/\u003e\n\r      \u003c/g\u003e\n\r     \u003c/g\u003e\n\r     \u003cg id\u003d\"text_14\"\u003e\n\r      \u003c!-- 1.0 --\u003e\n\r      \u003cg transform\u003d\"translate(48.91625 46.51125)scale(0.12 -0.12)\"\u003e\n\r       \u003cuse xlink:href\u003d\"#BitstreamVeraSans-Roman-31\"/\u003e\n\r       \u003cuse x\u003d\"63.623046875\" xlink:href\u003d\"#BitstreamVeraSans-Roman-2e\"/\u003e\n\r       \u003cuse x\u003d\"95.41015625\" xlink:href\u003d\"#BitstreamVeraSans-Roman-30\"/\u003e\n\r      \u003c/g\u003e\n\r     \u003c/g\u003e\n\r    \u003c/g\u003e\n\r   \u003c/g\u003e\n\r  \u003c/g\u003e\n\r \u003c/g\u003e\n\r \u003cdefs\u003e\n\r  \u003cclipPath id\u003d\"p8d9001317b\"\u003e\n\r   \u003crect height\u003d\"345.6\" width\u003d\"446.4\" x\u003d\"72.0\" y\u003d\"43.2\"/\u003e\n\r  \u003c/clipPath\u003e\n\r \u003c/defs\u003e\n\r\u003c/svg\u003e\n\r\u003cdiv\u003e"
+        "code": "ERROR",
+        "type": "TEXT",
+        "msg": "paragraph_1466088587936_-914466845\u0027s Interpreter python not found"
       },
       "dateCreated": "Jun 16, 2016 11:49:47 AM",
       "dateStarted": "Jun 22, 2016 5:31:36 AM",
       "dateFinished": "Jun 22, 2016 5:31:36 AM",
-      "status": "FINISHED",
+      "status": "ERROR",
+      "errorMessage": "",
       "progressUpdateIntervalMs": 500
     },
     {
       "text": "%python\n\n# something else",
-      "dateUpdated": "Jun 22, 2016 5:50:47 AM",
+      "user": "anonymous",
+      "dateUpdated": "Oct 31, 2016 4:36:27 PM",
       "config": {
         "colWidth": 12.0,
         "graph": {
@@ -171,20 +180,22 @@
       "jobName": "paragraph_1466139879415_1937425297",
       "id": "20160617-140439_1111727405",
       "result": {
-        "code": "SUCCESS",
+        "code": "ERROR",
         "type": "TEXT",
-        "msg": ""
+        "msg": "paragraph_1466139879415_1937425297\u0027s Interpreter python not found"
       },
       "dateCreated": "Jun 17, 2016 2:04:39 AM",
       "dateStarted": "Jun 22, 2016 5:50:47 AM",
       "dateFinished": "Jun 22, 2016 5:50:47 AM",
-      "status": "FINISHED",
+      "status": "ERROR",
+      "errorMessage": "",
       "progressUpdateIntervalMs": 500
     },
     {
       "title": "Further help using build-in command",
       "text": "%python\nhelp()",
-      "dateUpdated": "Jul 11, 2016 11:35:39 PM",
+      "user": "anonymous",
+      "dateUpdated": "Oct 31, 2016 4:36:27 PM",
       "config": {
         "colWidth": 12.0,
         "graph": {
@@ -209,19 +220,21 @@
       "jobName": "paragraph_1465893931031_1683462133",
       "id": "20160614-174531_1529734563",
       "result": {
-        "code": "SUCCESS",
-        "type": "HTML",
-        "msg": "\r\u003ch2\u003ePython Interpreter help\u003c/h2\u003e\n\r\u003ch3\u003ePython 2 \u0026 3 compatibility\u003c/h3\u003e\n\r\u003cp\u003eThe interpreter is compatible with Python 2 \u0026 3.\u003cbr/\u003e\n\rTo change Python version, \n\rchange in the interpreter configuration the python to the \n\rdesired version (example : python\u003d/usr/bin/python3)\u003c/p\u003e\n\r\u003ch3\u003ePython modules\u003c/h3\u003e\n\r\u003cp\u003eThe interpreter can use all modules already installed \n\r(with pip, easy_install, etc)\u003c/p\u003e\n\r\u003ch3\u003eForms\u003c/h3\u003e\n\rYou must install py4j in order to use the form feature (pip install py4j)\n\r\u003ch4\u003eInput form\u003c/h4\u003e\n\r\u003cpre\u003eprint (z.input(\"f1\",\"defaultValue\"))\u003c/pre\u003e\n\r\u003ch4\u003eSelection form\u003c/h4\u003e\n\r\u003cpre\u003eprint(z.select(\"f2\", [(\"o1\",\"1\"), (\"o2\",\"2\")],2))\u003c/pre\u003e\n\r\u003ch4\u003eCheckbox form\u003c/h4\u003e\n\r\u003cpre\u003e print(\"\".join(z.checkbox(\"f3\", [(\"o1\",\"1\"), (\"o2\",\"2\")],[\"1\"])))\u003c/pre\u003e\n\r\u003ch3\u003eMatplotlib graph\u003c/h3\u003e\n\r\u003cdiv\u003eThe interpreter can display matplotlib graph with \n\rthe function z.show()\u003c/div\u003e\n\r\u003cdiv\u003e You need to already have matplotlib module installed \n\rto use this functionality !\u003c/div\u003e\u003cbr/\u003e\n\r\u003cpre\u003eimport matplotlib.pyplot as plt\n\rplt.figure()\n\r(.. ..)\n\rz.show(plt)\n\rplt.close()\n\r\u003c/pre\u003e\n\r\u003cdiv\u003e\u003cbr/\u003e z.show function can take optional parameters \n\rto adapt graph width and height\u003c/div\u003e\n\r\u003cdiv\u003e\u003cb\u003eexample \u003c/b\u003e:\n\r\u003cpre\u003ez.show(plt,width\u003d\u002750px\u0027)\n\rz.show(plt,height\u003d\u0027150px\u0027) \u003c/pre\u003e\u003c/div\u003e\n\r\u003ch3\u003ePandas DataFrame\u003c/h3\u003e\n\r\u003cdiv\u003e You need to have Pandas module installed \n\rto use this functionality (pip install pandas) !\u003c/div\u003e\u003cbr/\u003e\n\r\n\r\u003cdiv\u003eThe interpreter can visualize Pandas DataFrame\n\rwith the function z.show()\n\r\u003cpre\u003e\n\rimport pandas as pd\n\rdf \u003d pd.read_csv(\"bank.csv\", sep\u003d\";\")\n\rz.show(df)\n\r\u003c/pre\u003e\u003c/div\u003e\n\r\n\r\u003ch3\u003eSQL over Pandas DataFrame\u003c/h3\u003e\n\r\u003cdiv\u003e You need to have Pandas\u0026Pandasql modules installed \n\rto use this functionality (pip install pandas pandasql) !\u003c/div\u003e\u003cbr/\u003e\n\r\n\r\u003cdiv\u003ePython interpreter group includes %sql interpreter that can query \n\rPandas DataFrame using SQL and visualize results using Table Display System\n\r\n\r\u003cpre\u003e\n\r%python\n\rimport pandas as pd\n\rdf \u003d pd.read_csv(\"bank.csv\", sep\u003d\";\")\n\r\u003c/pre\u003e\n\r\u003cbr /\u003e\n\r\n\r\u003cpre\u003e\n\r%python.sql\n\r%sql\n\rSELECT * from df LIMIT 5\n\r\u003c/pre\u003e\u003c/div\u003e"
+        "code": "ERROR",
+        "type": "TEXT",
+        "msg": "paragraph_1465893931031_1683462133\u0027s Interpreter python not found"
       },
       "dateCreated": "Jun 14, 2016 5:45:31 AM",
       "dateStarted": "Jul 11, 2016 11:35:39 PM",
       "dateFinished": "Jul 11, 2016 11:35:40 PM",
-      "status": "FINISHED",
+      "status": "ERROR",
+      "errorMessage": "",
       "progressUpdateIntervalMs": 500
     },
     {
       "text": "",
-      "dateUpdated": "Jun 22, 2016 5:31:35 AM",
+      "user": "anonymous",
+      "dateUpdated": "Oct 31, 2016 4:36:27 PM",
       "config": {
         "colWidth": 12.0,
         "graph": {
@@ -244,26 +257,21 @@
       "jobName": "paragraph_1466042618008_-234893992",
       "id": "20160616-110338_941394720",
       "result": {
-        "code": "SUCCESS",
+        "code": "ERROR",
         "type": "TEXT",
-        "msg": ""
+        "msg": "paragraph_1466042618008_-234893992\u0027s Interpreter null not found"
       },
       "dateCreated": "Jun 16, 2016 11:03:38 AM",
       "dateStarted": "Jun 22, 2016 5:31:36 AM",
       "dateFinished": "Jun 22, 2016 5:31:36 AM",
-      "status": "FINISHED",
+      "status": "ERROR",
+      "errorMessage": "",
       "progressUpdateIntervalMs": 500
     }
   ],
   "name": "Zeppelin Tutorial: Python - matplotlib basic",
   "id": "2BQA35CJZ",
-  "lastReplName": {
-    "value": "python"
-  },
-  "angularObjects": {
-    "2BMX349MY:shared_process": [],
-    "2BN9WB6KT:shared_process": []
-  },
+  "angularObjects": {},
   "config": {
     "looknfeel": "default"
   },

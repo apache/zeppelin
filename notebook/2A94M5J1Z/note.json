@@ -19,6 +19,7 @@
         "params": {},
         "forms": {}
       },
+      "apps": [],
       "jobName": "paragraph_1423836981412_-1007008116",
       "id": "20150213-231621_168813393",
       "result": {
@@ -55,6 +56,7 @@
         "params": {},
         "forms": {}
       },
+      "apps": [],
       "jobName": "paragraph_1423500779206_-1502780787",
       "id": "20150210-015259_1403135953",
       "result": {
@@ -109,6 +111,7 @@
         "params": {},
         "forms": {}
       },
+      "apps": [],
       "jobName": "paragraph_1423500782552_-1439281894",
       "id": "20150210-015302_1492795503",
       "result": {
@@ -171,6 +174,7 @@
           }
         }
       },
+      "apps": [],
       "jobName": "paragraph_1423720444030_-1424110477",
       "id": "20150212-145404_867439529",
       "result": {
@@ -244,6 +248,7 @@
           }
         }
       },
+      "apps": [],
       "jobName": "paragraph_1423836262027_-210588283",
       "id": "20150213-230422_1600658137",
       "result": {
@@ -276,6 +281,7 @@
         "params": {},
         "forms": {}
       },
+      "apps": [],
       "jobName": "paragraph_1423836268492_216498320",
       "id": "20150213-230428_1231780373",
       "result": {
@@ -308,6 +314,7 @@
         "params": {},
         "forms": {}
       },
+      "apps": [],
       "jobName": "paragraph_1427420818407_872443482",
       "id": "20150326-214658_12335843",
       "result": {
@@ -322,11 +329,26 @@
       "progressUpdateIntervalMs": 500
     },
     {
-      "config": {},
+      "text": "",
+      "dateUpdated": "Oct 31, 2016 4:37:06 PM",
+      "config": {
+        "colWidth": 12.0,
+        "graph": {
+          "mode": "table",
+          "height": 300.0,
+          "optionOpen": false,
+          "keys": [],
+          "values": [],
+          "groups": [],
+          "scatter": {}
+        },
+        "enabled": true
+      },
       "settings": {
         "params": {},
         "forms": {}
       },
+      "apps": [],
       "jobName": "paragraph_1435955447812_-158639899",
       "id": "20150703-133047_853701097",
       "dateCreated": "Jul 3, 2015 1:30:47 PM",
@@ -336,10 +358,7 @@
   ],
   "name": "Zeppelin Tutorial",
   "id": "2A94M5J1Z",
-  "angularObjects": {
-    "2B6FF8NNU": [],
-    "2B67PH63Z": []
-  },
+  "angularObjects": {},
   "config": {
     "looknfeel": "default"
   },
