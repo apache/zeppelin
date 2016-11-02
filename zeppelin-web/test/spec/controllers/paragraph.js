@@ -72,6 +72,19 @@ describe('Controller: ParagraphCtrl', function() {
       expect(scope.getGraphMode()).toEqual('table');
     });
 
+  it('should call loadNetworkData() and getGraphMode() should return "table" when the result type is "NETWORK"',
+    function() {
+      scope.getResultType = jasmine.createSpy('getResultType spy').andCallFake(function() {
+        return 'NETWORK';
+      });
+      spyOn(scope, 'loadNetworkData');
+      spyOn(scope, 'setGraphMode');
+      scope.init(paragraphMock);
+      expect(scope.loadNetworkData).toHaveBeenCalled();
+      expect(scope.setGraphMode).toHaveBeenCalled();
+      expect(scope.getGraphMode()).toEqual('table');
+    });
+
   it('should call renderHtml() when the result type is "HTML"', function() {
     scope.getResultType = jasmine.createSpy('getResultType spy').andCallFake(function() {
       return 'HTML';
