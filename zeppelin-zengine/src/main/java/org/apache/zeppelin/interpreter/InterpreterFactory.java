@@ -296,6 +296,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     Properties properties = new Properties();
     for (String key : p.keySet()) {
       properties.put(key, p.get(key).getValue());
+      properties.put(key + "-description", p.get(key).getDescription());
     }
     return properties;
   }
@@ -355,6 +356,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
       if (null != p) {
         for (String key : p.keySet()) {
           properties.setProperty(key, p.get(key).getValue());
+          properties.setProperty(key + "-description", p.get(key).getDescription());
         }
       }
 
