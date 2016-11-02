@@ -223,7 +223,7 @@ public abstract class AbstractTestRestApi {
     }
   }
   
-  protected static void startUpWithAutenticationEnabled() throws Exception {
+  protected static void startUpWithAuthenticationEnable() throws Exception {
     start(true);
   }
   
