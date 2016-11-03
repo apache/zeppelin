@@ -35,6 +35,7 @@ import org.apache.zeppelin.notebook.repo.zeppelinhub.websocket.scheduler.Schedul
 import org.apache.zeppelin.notebook.repo.zeppelinhub.websocket.scheduler.ZeppelinHeartbeat;
 import org.apache.zeppelin.notebook.socket.Message;
 import org.apache.zeppelin.notebook.socket.Message.OP;
+import org.apache.zeppelin.util.WatcherSecurityKey;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.client.ClientUpgradeRequest;
@@ -168,6 +169,7 @@ public class ZeppelinClient {
   
   private Session openWatcherSession() {
     ClientUpgradeRequest request = new ClientUpgradeRequest();
+    request.setHeader(WatcherSecurityKey.HTTP_HEADER, WatcherSecurityKey.getKey());
     WatcherWebsocket socket = WatcherWebsocket.createInstace();
     Future<Session> future = null;
     Session session = null;
