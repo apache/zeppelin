@@ -539,7 +539,7 @@ public abstract class AbstractTestRestApi {
 
 
   /** Status code matcher */
-  protected Matcher<? super HttpMethodBase> isForbiden() { return responsesWith(403); }
+  protected Matcher<? super HttpMethodBase> isForbidden() { return responsesWith(403); }
 
   protected Matcher<? super HttpMethodBase> isAllowed() {
     return responsesWith(200);

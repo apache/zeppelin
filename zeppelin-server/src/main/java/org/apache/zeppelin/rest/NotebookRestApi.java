@@ -43,7 +43,7 @@ import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.NotebookAuthorization;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.rest.exception.NotFoundException;
-import org.apache.zeppelin.rest.exception.UnauthorizedException;
+import org.apache.zeppelin.rest.exception.ForbiddenException;
 import org.apache.zeppelin.rest.message.CronRequest;
 import org.apache.zeppelin.rest.message.NewNoteRequest;
 import org.apache.zeppelin.rest.message.NewParagraphRequest;
@@ -124,7 +124,7 @@ public class NotebookRestApi {
     userAndRoles.add(SecurityUtils.getPrincipal());
     userAndRoles.addAll(SecurityUtils.getRoles());
     if (!notebookAuthorization.isOwner(userAndRoles, noteId)) {
-      throw new UnauthorizedException(errorMsg);
+      throw new ForbiddenException(errorMsg);
     }
   }
   
@@ -136,7 +136,7 @@ public class NotebookRestApi {
     userAndRoles.add(SecurityUtils.getPrincipal());
     userAndRoles.addAll(SecurityUtils.getRoles());
     if (!notebookAuthorization.hasWriteAuthorization(userAndRoles, noteId)) {
-      throw new UnauthorizedException(errorMsg);
+      throw new ForbiddenException(errorMsg);
     }
   }
   
@@ -148,7 +148,7 @@ public class NotebookRestApi {
     userAndRoles.add(SecurityUtils.getPrincipal());
     userAndRoles.addAll(SecurityUtils.getRoles());
     if (!notebookAuthorization.hasReadAuthorization(userAndRoles, noteId)) {
-      throw new UnauthorizedException(errorMsg);
+      throw new ForbiddenException(errorMsg);
     }
   }
   

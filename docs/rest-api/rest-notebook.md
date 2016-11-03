@@ -991,8 +991,16 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
       <td>200</td>
     </tr>
     <tr>
-      <td> Fail code</td>
-      <td> 500 </td>
+      <td>Forbidden code</td>
+      <td>401</td>
+    </tr>
+    <tr>
+      <td>Not Found code</td>
+      <td>404</td>
+    </tr>
+    <tr>
+      <td>Fail code</td>
+      <td>500</td>
     </tr>
     <tr>
       <td>sample JSON response</td>
