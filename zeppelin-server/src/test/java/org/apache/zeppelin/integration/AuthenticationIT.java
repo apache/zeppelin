@@ -121,7 +121,7 @@ public class AuthenticationIT extends AbstractZeppelinIT {
     ZeppelinITUtils.sleep(1000, false);
   }
 
-  private void testShowNotebookListOnNavbar() {
+  private void testShowNotebookListOnNavbar() throws Exception {
     if (!endToEndTestEnabled()) {
       return;
     }
