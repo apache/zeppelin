@@ -131,7 +131,6 @@
     function initNotebookListEventListener() {
       angular.element(document).ready(function() {
         angular.element('.notebook-list-dropdown').on('show.bs.dropdown', function() {
-          console.log('clover open');
           $scope.isDrawNavbarNoteList = true;
         });
 
