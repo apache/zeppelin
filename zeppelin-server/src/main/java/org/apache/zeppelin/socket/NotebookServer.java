@@ -65,6 +65,7 @@ import org.apache.zeppelin.server.ZeppelinServer;
 import org.apache.zeppelin.ticket.TicketContainer;
 import org.apache.zeppelin.types.InterpreterSettingsList;
 import org.apache.zeppelin.user.AuthenticationInfo;
+import org.apache.zeppelin.util.WatcherSecurityKey;
 import org.apache.zeppelin.utils.InterpreterBindingUtils;
 import org.apache.zeppelin.utils.SecurityUtils;
 import org.eclipse.jetty.websocket.servlet.WebSocketServlet;
@@ -1793,6 +1794,12 @@ public class NotebookServer extends WebSocketServlet implements
     // add the connection to the watcher.
     if (watcherSockets.contains(conn)) {
       LOG.info("connection alrerady present in the watcher");
+      return;
+    }
+    String watcherSecurityKey = conn.getRequest().getHeader(WatcherSecurityKey.HTTP_HEADER);
+    if (StringUtils.isBlank(watcherSecurityKey) ||
+        !watcherSecurityKey.equals(WatcherSecurityKey.getKey())) {
+      LOG.error("Cannot switch this client to watcher, invalid security key");
       return;
     }
     watcherSockets.add(conn);
