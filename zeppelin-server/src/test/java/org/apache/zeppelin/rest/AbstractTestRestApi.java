@@ -66,6 +66,7 @@ public abstract class AbstractTestRestApi {
   static boolean pySpark = false;
   static boolean sparkR = false;
   static Gson gson = new Gson();
+  static boolean isRunningWithAuth = false;
 
   private static File shiroIni = null;
   private static String zeppelinShiro =
@@ -130,6 +131,7 @@ public abstract class AbstractTestRestApi {
       ZeppelinConfiguration conf = ZeppelinConfiguration.create();
 
       if (withAuth) {
+        isRunningWithAuth = true;
         // Set Anonymous session to false.
         System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_ANONYMOUS_ALLOWED.getVarName(), "false");
         
@@ -313,6 +315,11 @@ public abstract class AbstractTestRestApi {
       LOG.info("Test Zeppelin terminated.");
 
       System.clearProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETERS.getVarName());
+      if (isRunningWithAuth) {
+        isRunningWithAuth = false;
+        System
+            .clearProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_ANONYMOUS_ALLOWED.getVarName());
+      }
     }
   }
 
