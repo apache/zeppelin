@@ -298,7 +298,7 @@ public class ZeppelinClient {
     Session noteSession = null;
     for (Map.Entry<String, Session> note: notesConnection.entrySet()) {
       noteSession = note.getValue();
-      if(isSessionOpen(noteSession)) {
+      if (isSessionOpen(noteSession)) {
         noteSession.close();
       }
     }
