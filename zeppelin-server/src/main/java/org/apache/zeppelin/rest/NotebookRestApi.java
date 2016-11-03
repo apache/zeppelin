@@ -528,14 +528,11 @@ public class NotebookRestApi {
   public Response clearAllParagraphOutput(@PathParam("noteId") String noteId)
       throws IOException {
     LOG.info("clear all paragraph output of note {}", noteId);
+    checkIfUserCanWrite(noteId, "Insufficient privileges you cannot clear this note");
 
-    if (!noteId.isEmpty()) {
-      Note note = notebook.getNote(noteId);
-      if (note == null) {
-        return new JsonResponse(Status.NOT_FOUND, "note not found.").build();
-      }
-      note.clearAllParagraphOutput();
-    }
+    Note note = notebook.getNote(noteId);
+    checkIfNoteIsNotNull(note);
+    note.clearAllParagraphOutput();
 
     return new JsonResponse(Status.OK, "").build();
   }
