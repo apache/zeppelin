@@ -33,7 +33,7 @@ You can use Zeppelin to retrieve distributed data from cache using Ignite SQL in
 ## Installing and Running Ignite example
 In order to use Ignite interpreters, you may install Apache Ignite in some simple steps:
 
-1. Ignite provides examples only with source or binary release. Download Ignite [source release](https://ignite.apache.org/download.html#sources) or [binary release](https://ignite.apache.org/download.html#binaries) whatever you want. But you must download Ignite as the same version of Zeppelin's. If it is not, you can't use scala code on Zeppelin. You can find ignite version in Zeppelin at the pom.xml which is placed under `path/to/your-Zeppelin/ignite/pom.xml` ( Of course, in Zeppelin source release ). Please check `ignite.version` .
+1. Ignite provides examples only with source or binary release. Download Ignite [source release](https://ignite.apache.org/download.html#sources) or [binary release](https://ignite.apache.org/download.html#binaries) whatever you want. But you must download Ignite as the same version of Zeppelin's. If it is not, you can't use scala code on Zeppelin. The supported Ignite version is specified in [Supported Interpreter table](https://zeppelin.apache.org/supported_interpreters.html#ignite) for each Zeppelin release. If you're using Zeppelin master branch, please see `ignite.version` in `path/to/your-Zeppelin/ignite/pom.xml`.
 2. Examples are shipped as a separate Maven project, so to start running you simply need to import provided `<dest_dir>/apache-ignite-fabric-{version}-bin/examples/pom.xml` file into your favourite IDE, such as Eclipse.
 
 * In case of Eclipse, Eclipse -> File -> Import -> Existing Maven Projects
@@ -89,7 +89,7 @@ After configuring Ignite interpreter, create your own notebook. Then you can bin
 
 ![Binding Interpreters](../assets/themes/zeppelin/img/docs-img/ignite-interpreter-binding.png)
 
-For more interpreter binding information see [here](http://zeppelin.apache.org/docs/0.6.2/manual/interpreters.html).
+For more interpreter binding information see [here](../manual/dynamicform.html).
 
 ### Ignite SQL interpreter
 In order to execute SQL query, use ` %ignite.ignitesql ` prefix. <br>
