@@ -319,6 +319,7 @@ public abstract class Interpreter {
     private Map<String, InterpreterProperty> properties;
     private Map<String, Object> editor;
     private String path;
+    private InterpreterOption option;
 
     public RegisteredInterpreter(String name, String group, String className,
         Map<String, InterpreterProperty> properties) {
@@ -376,6 +377,9 @@ public abstract class Interpreter {
       return getGroup() + "." + getName();
     }
 
+    public InterpreterOption getOption() {
+      return option;
+    }
   }
 
   /**
