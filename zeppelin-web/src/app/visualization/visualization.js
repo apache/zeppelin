@@ -55,7 +55,7 @@ zeppelin.Visualization.prototype.activate = function() {
   if (!this._active && this._resized) {
     var self = this;
     // give some time for element ready
-    setTimeout(function(){self.refresh();}, 300);
+    setTimeout(function() {self.refresh();}, 300);
     this._resized = false;
   }
   this._active = true;
