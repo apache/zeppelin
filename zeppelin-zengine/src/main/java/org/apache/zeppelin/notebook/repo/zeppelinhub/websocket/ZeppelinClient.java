@@ -312,4 +312,11 @@ public class ZeppelinClient {
     }
     watcherSession.getRemote().sendStringByFuture(serialize(new Message(OP.PING)));
   }
+  
+  /**
+   * Only used in test.
+   */
+  public int countConnectedNotes() {
+    return notesConnection.size();
+  }
 }
