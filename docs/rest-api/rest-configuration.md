@@ -39,12 +39,12 @@ nd a need for an additional REST API, please [file an issue or send us mail](../
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```GET``` method return all key/value pair of configurations on the server.<br/>
+      <td>This <code>GET</code> method return all key/value pair of configurations on the server.<br/>
        Note: For security reason, some pairs would not be shown.</td>
     </tr>
     <tr>
       <td>URL</td>
-      <td>```http://[zeppelin-server]:[zeppelin-port]/api/configurations/all```</td>
+      <td><code>http://[zeppelin-server]:[zeppelin-port]/api/configurations/all</code></td>
     </tr>
     <tr>
       <td>Success code</td>
@@ -98,12 +98,12 @@ nd a need for an additional REST API, please [file an issue or send us mail](../
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```GET``` method return all prefix matched key/value pair of configurations on the server.<br/>
+      <td>This <code>GET</code> method return all prefix matched key/value pair of configurations on the server.<br/>
       Note: For security reason, some pairs would not be shown.</td>
     </tr>
     <tr>
       <td>URL</td>
-      <td>```http://[zeppelin-server]:[zeppelin-port]/api/configurations/prefix/[prefix]```</td>
+      <td><code>http://[zeppelin-server]:[zeppelin-port]/api/configurations/prefix/[prefix]</code></td>
     </tr>
     <tr>
       <td>Success code</td>

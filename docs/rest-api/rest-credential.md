@@ -30,19 +30,19 @@ Note that Apache Zeppelin REST APIs receive or return JSON objects, it is recomm
 
 If you work with Apache Zeppelin and find a need for an additional REST API, please [file an issue or send us an email](http://zeppelin.apache.org/community.html).
 
-<br />
 ## Credential REST API List
 
 ### List Credential information
+
   <table class="table-credential">
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```GET``` method returns all key/value pairs of the credential information on the server.</td>
+      <td>This <code>GET</code> method returns all key/value pairs of the credential information on the server.</td>
     </tr>
     <tr>
       <td>URL</td>
-      <td>```http://[zeppelin-server]:[zeppelin-port]/api/credential```</td>
+      <td><code>http://[zeppelin-server]:[zeppelin-port]/api/credential</code></td>
     </tr>
     <tr>
       <td>Success code</td>
@@ -76,17 +76,17 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
     </tr>
   </table>
 
-<br/>
 ### Create an Credential Information
+
   <table class="table-credential">
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```PUT``` method creates the credential information with new properties.</td>
+      <td>This <code>PUT</code> method creates the credential information with new properties.</td>
     </tr>
     <tr>
       <td>URL</td>
-      <td>```http://[zeppelin-server]:[zeppelin-port]/api/credential/```</td>
+      <td><code>http://[zeppelin-server]:[zeppelin-port]/api/credential/</code></td>
     </tr>
     <tr>
       <td>Success code</td>
@@ -120,19 +120,17 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
     </tr>
   </table>
 
-
-<br/>
 ### Delete all Credential Information
 
   <table class="table-credential">
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```DELETE``` method deletes the credential information.</td>
+      <td>This <code>DELETE</code> method deletes the credential information.</td>
     </tr>
     <tr>
       <td>URL</td>
-      <td>```http://[zeppelin-server]:[zeppelin-port]/api/credential```</td>
+      <td><code>http://[zeppelin-server]:[zeppelin-port]/api/credential</code></td>
     </tr>
     <tr>
       <td>Success code</td>
@@ -150,19 +148,17 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
     </tr>
   </table>
 
-
-<br/>
 ### Delete an Credential entity
 
   <table class="table-credential">
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```DELETE``` method deletes a given credential entity.</td>
+      <td>This <code>DELETE</code> method deletes a given credential entity.</td>
     </tr>
     <tr>
       <td>URL</td>
-      <td>```http://[zeppelin-server]:[zeppelin-port]/api/credential/[entity]```</td>
+      <td><code>http://[zeppelin-server]:[zeppelin-port]/api/credential/[entity]</code></td>
     </tr>
     <tr>
       <td>Success code</td>
@@ -179,7 +175,3 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
       </td>
     </tr>
   </table>
-
-
-<br/>
-

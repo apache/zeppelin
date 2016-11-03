@@ -29,25 +29,25 @@ Apache Zeppelin provides **Interpreter Installation** mechanism for whom downloa
 Apache Zeppelin provides several interpreters as [community managed interpreters](#available-community-managed-interpreters). 
 If you downloaded `netinst` binary package, you need to install by using below commands.
 
-#### Install all community managed interpreters
+### Install all community managed interpreters
 
-```
+```sh
 ./bin/install-interpreter.sh --all
 ```
 
-#### Install specific interpreters
+### Install specific interpreters
 
-```
+```sh
 ./bin/install-interpreter.sh --name md,shell,jdbc,python
 ```
 
 You can get full list of community managed interpreters by running
 
-```
+```sh
 ./bin/install-interpreter.sh --list
 ```
 
-#### Install interpreter built with Scala 2.10
+### Install interpreter built with Scala 2.10
 From version 0.6.1, Zeppelin support both Scala 2.10 and 2.11 for several interpreters as below:
 
 <table class="table-configuration">
@@ -80,19 +80,18 @@ From version 0.6.1, Zeppelin support both Scala 2.10 and 2.11 for several interp
 
 If you install one of these interpreters only with `--name` option, installer will download interpreter built with Scala 2.11 by default. If you want to specify Scala version, you will need to add `--artifact` option. Here is the example of installing flink interpreter built with Scala 2.10.
 
-```
+```sh
 ./bin/install-interpreter.sh --name flink --artifact org.apache.zeppelin:zeppelin-flink_2.10:0.6.1
 ```
 
-#### Install Spark interpreter built with Scala 2.10
+### Install Spark interpreter built with Scala 2.10
 Spark distribution package has been built with Scala 2.10 until 1.6.2. If you have `SPARK_HOME` set pointing to Spark version earlier than 2.0.0, you need to download Spark interpreter packaged with Scala 2.10. To do so, use follow command:
 
-```
+```sh
 rm -rf ./interpreter/spark
 ./bin/install-interpreter.sh --name spark --artifact org.apache.zeppelin:zeppelin-spark_2.10:0.6.1
 ```
 
-<br />
 Once you have installed interpreters, you need to restart Zeppelin. And then [create interpreter setting](../manual/interpreters.html#what-is-zeppelin-interpreter) and [bind it with your notebook](../manual/interpreters.html#what-is-zeppelin-interpreter-setting).
 
 
@@ -100,9 +99,9 @@ Once you have installed interpreters, you need to restart Zeppelin. And then [cr
 
 You can also install 3rd party interpreters located in the maven repository by using below commands.
 
-#### Install 3rd party interpreters
+### Install 3rd party interpreters
 
-```
+```sh
 ./bin/install-interpreter.sh --name interpreter1 --artifact groupId1:artifact1:version1
 ```
 
@@ -112,9 +111,9 @@ Once you have installed interpreters, you'll need to add interpreter class name 
 And then restart Zeppelin, [create interpreter setting](../manual/interpreters.html#what-is-zeppelin-interpreter) and [bind it with your notebook](../manual/interpreters.html#what-is-zeppelin-interpreter-setting).
 
 
-#### Install multiple 3rd party interpreters at once
+### Install multiple 3rd party interpreters at once
 
-```
+```sh
 ./bin/install-interpreter.sh --name interpreter1,interpreter2 --artifact groupId1:artifact1:version1,groupId2:artifact2:version2
 ```
 

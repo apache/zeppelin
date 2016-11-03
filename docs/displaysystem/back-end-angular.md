@@ -30,6 +30,7 @@ It compiles templates and displays them inside of Apache Zeppelin. Zeppelin prov
 Therefore, you can not only update scope variables from your interpreter but also watch them in the interpreter, which is JVM process.
 
 ## Basic Usage 
+
 ### Print AngularJS view
 
 To use angular display system, you should start with `%angular`.
@@ -38,7 +39,6 @@ To use angular display system, you should start with `%angular`.
 Since `name` is not defined, `Hello {{name}}` will display `Hello`.
 > **Please Note:** Display system is backend independent.
 
-<br />
 ### Bind / Unbind Variables
 
 Through **ZeppelinContext**, you can bind / unbind variables to **AngularJS view**. Currently, it only works in **Spark Interpreter ( scala )**.
@@ -55,15 +55,12 @@ z.angularUnbind(String name)
 
 // unbind angular scope variable 'name' in all notebooks related to current interpreter.
 z.angularUnbindGlobal(String name)
-
 ```
 
 Using the above example, let's bind `world` variable to `name`. Then you can see **AngularJs view** is immediately updated.
 
 <img src="/assets/themes/zeppelin/img/screenshots/display_angular1.png" width="60%" />
 
-
-<br />
 ### Watch / Unwatch Variables
 
 Through **ZeppelinContext**, you can watch / unwatch variables in **AngularJs view**. Currently, it only works in **Spark Interpreter ( scala )**.
@@ -80,8 +77,6 @@ z.angularWatchGlobal(String name, (before, after) => { ... })
 
 // unregister watcher for angular variable 'name' (global)
 z.angularUnwatchGlobal(String name)
-
-
 ```
 
 Let's make a button. When it is clicked, the value of `run` will be increased 1 by 1.
@@ -99,6 +94,7 @@ In this section, we will introduce a simpler and more intuitive way of using **A
 Here are some usages.
 
 ### Import
+
 ```scala
 // In notebook scope
 import org.apache.zeppelin.display.angular.notebookscope._
@@ -110,11 +106,14 @@ import AngularElem._
 ```
 
 ### Display Element
+
 ```scala
 // automatically convert to string and print with %angular display system directive in front.
 <div><div>.display
 ```
+
 ### Event Handler
+
 ```scala
 // on click
 <div></div>.onClick(() => {
@@ -133,6 +132,7 @@ import AngularElem._
 ```
 
 ### Bind Model
+
 ```scala
 // bind model
 <div></div>.model("myModel").display
@@ -142,6 +142,7 @@ import AngularElem._
 ```
 
 ### Interact with Model
+
 ```scala
 // read model
 AngularModel("myModel")()
@@ -150,7 +151,6 @@ AngularModel("myModel")()
 AngularModel("myModel", "newValue")
 ```
 
-<br/>
 ### Example: Basic Usage
 Using the above basic usages, you can apply them like below examples.
 
@@ -163,6 +163,7 @@ Using the above basic usages, you can apply them like below examples.
 ```
 
 #### OnClick Event
+
 ```scala
 <div class="btn btn-success">
   Click me

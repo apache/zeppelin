@@ -40,11 +40,11 @@ The role of registered interpreters, settings and interpreters group are describ
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```GET``` method returns all the registered interpreters available on the server.</td>
+      <td>This <code>GET</code> method returns all the registered interpreters available on the server.</td>
     </tr>
     <tr>
       <td>URL</td>
-      <td>```http://[zeppelin-server]:[zeppelin-port]/api/interpreter```</td>
+      <td><code>http://[zeppelin-server]:[zeppelin-port]/api/interpreter</code></td>
     </tr>
     <tr>
       <td>Success code</td>
@@ -104,18 +104,17 @@ The role of registered interpreters, settings and interpreters group are describ
     </tr>
   </table>
 
-<br/>
 ### List of registered interpreter settings
 
   <table class="table-configuration">
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```GET``` method returns all the interpreters settings registered on the server.</td>
+      <td>This <code>GET</code> method returns all the interpreters settings registered on the server.</td>
     </tr>
     <tr>
       <td>URL</td>
-      <td>```http://[zeppelin-server]:[zeppelin-port]/api/interpreter/setting```</td>
+      <td><code>http://[zeppelin-server]:[zeppelin-port]/api/interpreter/setting</code></td>
     </tr>
     <tr>
       <td>Success code</td>
@@ -179,18 +178,17 @@ The role of registered interpreters, settings and interpreters group are describ
     </tr>
   </table>
 
-<br/>
 ### Create a new interpreter setting  
 
   <table class="table-configuration">
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```POST``` method adds a new interpreter setting using a registered interpreter to the server.</td>
+      <td>This <code>POST</code> method adds a new interpreter setting using a registered interpreter to the server.</td>
     </tr>
     <tr>
       <td>URL</td>
-      <td>```http://[zeppelin-server]:[zeppelin-port]/api/interpreter/setting```</td>
+      <td><code>http://[zeppelin-server]:[zeppelin-port]/api/interpreter/setting</code></td>
     </tr>
     <tr>
       <td>Success code</td>
@@ -266,17 +264,17 @@ The role of registered interpreters, settings and interpreters group are describ
     </tr>
   </table>
 
-<br/>
 ### Update an interpreter setting
+
   <table class="table-configuration">
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```PUT``` method updates an interpreter setting with new properties.</td>
+      <td>This <code>PUT</code> method updates an interpreter setting with new properties.</td>
     </tr>
     <tr>
       <td>URL</td>
-      <td>```http://[zeppelin-server]:[zeppelin-port]/api/interpreter/setting/[interpreter ID]```</td>
+      <td><code>http://[zeppelin-server]:[zeppelin-port]/api/interpreter/setting/[interpreter ID]</code></td>
     </tr>
     <tr>
       <td>Success code</td>
@@ -349,18 +347,17 @@ The role of registered interpreters, settings and interpreters group are describ
     </tr>
   </table>
 
-<br/>
 ### Delete an interpreter setting
 
   <table class="table-configuration">
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```DELETE``` method deletes an given interpreter setting.</td>
+      <td>This <code>DELETE</code> method deletes an given interpreter setting.</td>
     </tr>
     <tr>
       <td>URL</td>
-      <td>```http://[zeppelin-server]:[zeppelin-port]/api/interpreter/setting/[interpreter ID]```</td>
+      <td><code>http://[zeppelin-server]:[zeppelin-port]/api/interpreter/setting/[interpreter ID]</code></td>
     </tr>
     <tr>
       <td>Success code</td>
@@ -378,19 +375,17 @@ The role of registered interpreters, settings and interpreters group are describ
     </tr>
   </table>
 
-
-<br/>
 ### Restart an interpreter
 
   <table class="table-configuration">
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```PUT``` method restarts the given interpreter id.</td>
+      <td>This <code>PUT</code> method restarts the given interpreter id.</td>
     </tr>
     <tr>
       <td>URL</td>
-      <td>```http://[zeppelin-server]:[zeppelin-port]/api/interpreter/setting/restart/[interpreter ID]```</td>
+      <td><code>http://[zeppelin-server]:[zeppelin-port]/api/interpreter/setting/restart/[interpreter ID]</code></td>
     </tr>
     <tr>
       <td>Success code</td>
@@ -418,18 +413,17 @@ The role of registered interpreters, settings and interpreters group are describ
     </tr>
   </table>
 
-<br/>
 ### Add a new repository for dependency resolving
 
   <table class="table-configuration">
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```POST``` method adds new repository.</td>
+      <td>This <code>POST</code> method adds new repository.</td>
     </tr>
     <tr>
       <td>URL</td>
-      <td>```http://[zeppelin-server]:[zeppelin-port]/api/interpreter/repository```</td>
+      <td><code>http://[zeppelin-server]:[zeppelin-port]/api/interpreter/repository</code></td>
     </tr>
     <tr>
       <td>Success code</td>
@@ -459,18 +453,17 @@ The role of registered interpreters, settings and interpreters group are describ
     </tr>
   </table>
 
-<br/>
 ### Delete a repository for dependency resolving
 
   <table class="table-configuration">
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```DELETE``` method delete repository with given id.</td>
+      <td>This <code>DELETE</code> method delete repository with given id.</td>
     </tr>
     <tr>
       <td>URL</td>
-      <td>```http://[zeppelin-server]:[zeppelin-port]/api/interpreter/repository/[repository ID]```</td>
+      <td><code>http://[zeppelin-server]:[zeppelin-port]/api/interpreter/repository/[repository ID]</code></td>
     </tr>
     <tr>
       <td>Success code</td>
@@ -481,4 +474,3 @@ The role of registered interpreters, settings and interpreters group are describ
       <td> 500 </td>
     </tr>
   </table>
-  

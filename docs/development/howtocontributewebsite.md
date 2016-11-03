@@ -39,12 +39,17 @@ Documentation website is hosted in 'master' branch under `/docs/` dir.
 First of all, you need the website source code. The official location of mirror for Zeppelin is [http://git.apache.org/zeppelin.git](http://git.apache.org/zeppelin.git).
 Get the source code on your development machine using git.
 
-```
+```bash
 git clone git://git.apache.org/zeppelin.git
 cd docs
 ```
+
 Apache Zeppelin follows [Fork & Pull](https://github.com/sevntu-checkstyle/sevntu.checkstyle/wiki/Development-workflow-with-Git:-Fork,-Branching,-Commits,-and-Pull-Request) as a source control workflow.
 If you want to not only build Zeppelin but also make any changes, then you need to fork [Zeppelin github mirror repository](https://github.com/apache/zeppelin) and make a pull request.
+
+### Kramdown
+
+Documentation based on jekyll 3.x and kramdown (tweaked markdown for github pages and so on). You have to get used to editing `.md` files with [kramdown](http://kramdown.gettalong.org/quickref.html)
 
 ### Build
 
@@ -58,7 +63,6 @@ Then you'll be able to access it on [http://localhost:4000](http://localhost:400
 ### Making a Pull Request
 
 When you are ready, just make a pull-request.
-
 
 ## Alternative way
 

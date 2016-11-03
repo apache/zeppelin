@@ -55,22 +55,23 @@ For more information about Flink configuration, you can find it [here](https://c
 ## How to test it's working
 In example, by using the [Zeppelin notebook](https://www.zeppelinhub.com/viewer/notebooks/aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL05GTGFicy96ZXBwZWxpbi1ub3RlYm9va3MvbWFzdGVyL25vdGVib29rcy8yQVFFREs1UEMvbm90ZS5qc29u) is from Till Rohrmann's presentation [Interactive data analysis with Apache Flink](http://www.slideshare.net/tillrohrmann/data-analysis-49806564) for Apache Flink Meetup.
 
-```
+```bash
 %sh
 rm 10.txt.utf-8
 wget http://www.gutenberg.org/ebooks/10.txt.utf-8
 ```
-{% highlight scala %}
+
+```scala
 %flink
 case class WordCount(word: String, frequency: Int)
 val bible:DataSet[String] = env.readTextFile("10.txt.utf-8")
 val partialCounts: DataSet[WordCount] = bible.flatMap{
     line =>
         """\b\w+\b""".r.findAllIn(line).map(word => WordCount(word, 1))
-//        line.split(" ").map(word => WordCount(word, 1))
+        //line.split(" ").map(word => WordCount(word, 1))
 }
 val wordCounts = partialCounts.groupBy("word").reduce{
     (left, right) => WordCount(left.word, left.frequency + right.frequency)
 }
 val result10 = wordCounts.first(10).collect()
-{% endhighlight %}
+```

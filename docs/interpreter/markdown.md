@@ -27,7 +27,7 @@ limitations under the License.
 [Markdown](http://daringfireball.net/projects/markdown/) is a plain text formatting syntax designed so that it can be converted to HTML.
 Apache Zeppelin uses [markdown4j](https://github.com/jdcasey/markdown4j) and [pegdown](https://github.com/sirthias/pegdown) as markdown parsers.
 
-In Zeppelin notebook, you can use ` %md ` in the beginning of a paragraph to invoke the Markdown interpreter and generate static html from Markdown plain text.
+In Zeppelin notebook, you can use `%md` in the beginning of a paragraph to invoke the Markdown interpreter and generate static html from Markdown plain text.
 
 In Zeppelin, Markdown interpreter is enabled by default and uses the [markdown4j](https://github.com/jdcasey/markdown4j) parser.
 

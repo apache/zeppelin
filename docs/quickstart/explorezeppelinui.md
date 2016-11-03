@@ -43,7 +43,6 @@ if you provide the URL.
 
 By default, the name of the imported note is the same as the original note but you can override it by providing a new name.
 
-<br />
 ## Menus
 
 ### Notebook
@@ -89,8 +88,6 @@ This menu displays all the Zeppelin configuration that are set in the config fil
 
 <img src="../assets/themes/zeppelin/img/ui-img/configuration_menu.png" />
 
-
-<br />
 ## Note Layout
 
 Each Zeppelin note is composed of 1 .. N paragraphs. The note can be viewed as a paragraph container.

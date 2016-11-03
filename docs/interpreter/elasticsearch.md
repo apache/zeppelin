@@ -55,9 +55,7 @@ limitations under the License.
   </tr>
 </table>
 
-<center>
-  ![Interpreter configuration](../assets/themes/zeppelin/img/docs-img/elasticsearch-config.png)
-</center>
+![Interpreter configuration](../assets/themes/zeppelin/img/docs-img/elasticsearch-config.png)
 
 > **Note #1 :** You can add more properties to configure the Elasticsearch client.
 

@@ -38,11 +38,9 @@ for example
 
 <img class="img-responsive" src="/assets/themes/zeppelin/img/screenshots/form_input.png" width="450px" />
 
-
 Also you can provide default value, using `${formName=defaultValue}`.
 
 <img src="../assets/themes/zeppelin/img/screenshots/form_input_default.png" />
-
 
 ### Select form
 
@@ -73,52 +71,54 @@ Some language backend uses programmatic way to create form. For example [Zeppeli
 Here're some examples.
 
 ### Text input form
-<div class="codetabs">
-    <div data-lang="scala" markdown="1">
 
-{% highlight scala %}
+<div class="codetabs">
+   <div data-lang="scala" markdown="1">
+
+```scala
 %spark
 println("Hello "+z.input("name"))
-{% endhighlight %}
+```
 
-    </div>
-    <div data-lang="python" markdown="1">
+   </div>
+   <div data-lang="python" markdown="1">
 
-{% highlight python %}
+```python
 %pyspark
 print("Hello "+z.input("name"))
-{% endhighlight %}
+```
 
-    </div>
+   </div>
 </div>
 <img src="../assets/themes/zeppelin/img/screenshots/form_input_prog.png" />
 
 ### Text input form with default value
-<div class="codetabs">
-    <div data-lang="scala" markdown="1">
 
-{% highlight scala %}
+<div class="codetabs">
+   <div data-lang="scala" markdown="1">
+
+```scala
 %spark
 println("Hello "+z.input("name", "sun")) 
-{% endhighlight %}
+```
 
-    </div>
-    <div data-lang="python" markdown="1">
+   </div>
+   <div data-lang="python" markdown="1">
 
-{% highlight python %}
+```python
 %pyspark
 print("Hello "+z.input("name", "sun"))
-{% endhighlight %}
+```
 
-    </div>
+   </div>
 </div>
 <img src="../assets/themes/zeppelin/img/screenshots/form_input_default_prog.png" />
 
 ### Select form
 <div class="codetabs">
-    <div data-lang="scala" markdown="1">
+   <div data-lang="scala" markdown="1">
 
-{% highlight scala %}
+```scala
 %spark
 println("Hello "+z.select("day", Seq(("1","mon"),
                                     ("2","tue"),
@@ -127,12 +127,12 @@ println("Hello "+z.select("day", Seq(("1","mon"),
                                     ("5","fri"),
                                     ("6","sat"),
                                     ("7","sun"))))
-{% endhighlight %}
+```
 
-    </div>
-    <div data-lang="python" markdown="1">
+   </div>
+   <div data-lang="python" markdown="1">
 
-{% highlight python %}
+```python
 %pyspark
 print("Hello "+z.select("day", [("1","mon"),
                                 ("2","tue"),
@@ -141,31 +141,31 @@ print("Hello "+z.select("day", [("1","mon"),
                                 ("5","fri"),
                                 ("6","sat"),
                                 ("7","sun")]))
-{% endhighlight %}
+```
 
-    </div>
+   </div>
 </div>
 <img src="../assets/themes/zeppelin/img/screenshots/form_select_prog.png" />
 
 #### Checkbox form
 <div class="codetabs">
-    <div data-lang="scala" markdown="1">
+   <div data-lang="scala" markdown="1">
 
-{% highlight scala %}
+```scala
 %spark
 val options = Seq(("apple","Apple"), ("banana","Banana"), ("orange","Orange"))
 println("Hello "+z.checkbox("fruit", options).mkString(" and "))
-{% endhighlight %}
+```
 
-    </div>
-    <div data-lang="python" markdown="1">
+   </div>
+   <div data-lang="python" markdown="1">
 
-{% highlight python %}
+```python
 %pyspark
 options = [("apple","Apple"), ("banana","Banana"), ("orange","Orange")]
 print("Hello "+ " and ".join(z.checkbox("fruit", options, ["apple"])))
-{% endhighlight %}
+```
 
-    </div>
+   </div>
 </div>
 <img src="../assets/themes/zeppelin/img/screenshots/form_checkbox_prog.png" />

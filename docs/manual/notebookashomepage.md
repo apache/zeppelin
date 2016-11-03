@@ -64,7 +64,6 @@ Restart your Zeppelin server
 ```
 That's it! Open your browser and navigate to Apache Zeppelin and see your customized homepage.
 
-<br />
 ## Show notes list in your custom homepage
 If you want to display the list of notes on your custom Apache Zeppelin homepage all
 you need to do is use our %angular support.

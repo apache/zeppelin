@@ -72,11 +72,10 @@ In 'shared' mode, every notebook bound to the Interpreter Setting will share the
 
 Zeppelin users can start interpreter thread embedded in their service. This will provide flexibility to user to start interpreter on remote host. To start interpreter along with your service you have to create an instance of ``RemoteInterpreterServer`` and start it as follows:
 
-```
-RemoteInterpreterServer interpreter=new RemoteInterpreterServer(3678); 
+```java
+RemoteInterpreterServer interpreter = new RemoteInterpreterServer(3678); 
 // Here, 3678 is the port on which interpreter will listen.    
-interpreter.start()  
-
+interpreter.start()
 ```
 
 The above code will start interpreter thread inside your process. Once the interpreter is started you can configure zeppelin to connect to RemoteInterpreter by checking **Connect to existing process** checkbox and then provide **Host** and **Port** on which interpreter process is listening as shown in the image below:
@@ -101,7 +100,8 @@ print "This code should be entered into the paragraph by the user!"
 ```
 
 The output should be:
-```
+
+```text
 This code should be executed before the paragraph code!
 This code should be entered into the paragraph by the user!
 This code should be executed after the paragraph code!

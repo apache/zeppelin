@@ -245,6 +245,4 @@ Following steps are performed:
   * the file previously copied to afs is copied to local machine
 *  using sh interpreter it's checked the existence of the new file copied from Alluxio and its content is showed
 
-<center>
-  ![Alluxio Interpreter Example](../assets/themes/zeppelin/img/docs-img/alluxio-example.png)
-</center>
+![Alluxio Interpreter Example](../assets/themes/zeppelin/img/docs-img/alluxio-example.png)

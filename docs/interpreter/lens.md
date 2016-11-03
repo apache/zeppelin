@@ -35,7 +35,7 @@ In order to use Lens interpreters, you may install Apache Lens in some simple st
 2. Before running Lens, you have to set HIVE_HOME and HADOOP_HOME. If you want to get more information about this, please refer to [here](http://lens.apache.org/lenshome/install-and-run.html#Installation). Lens also provides Pseudo Distributed mode. [Lens pseudo-distributed setup](http://lens.apache.org/lenshome/pseudo-distributed-setup.html) is done by using [docker](https://www.docker.com/). Hive server and hadoop daemons are run as separate processes in lens pseudo-distributed setup.
 3. Now, you can start lens server (or stop).
 
-```
+```bash
 ./bin/lens-ctl start (or stop)
 ```
 
@@ -104,71 +104,50 @@ You can analyze your data by using [OLAP Cube](http://lens.apache.org/user/olap-
 You may experience OLAP Cube like this [Video tutorial](https://cwiki.apache.org/confluence/display/LENS/2015/07/13/20+Minute+video+demo+of+Apache+Lens+through+examples).
 As you can see in this video, they are using Lens Client Shell(./bin/lens-cli.sh). All of these functions also can be used on Zeppelin by using Lens interpreter.
 
-<li> Create and Use(Switch) Databases.
+* Create and Use(Switch) Databases.
 
 ```
 create database newDb
-```
-
-```
 use newDb
 ```
 
-<li> Create Storage.
+* Create Storage.
 
 ```
 create storage your/path/to/lens/client/examples/resources/db-storage.xml
 ```
 
-<li> Create Dimensions, Show fields and join-chains of them.
+* Create Dimensions, Show fields and join-chains of them.
 
 ```
 create dimension your/path/to/lens/client/examples/resources/customer.xml
-```
-
-```
 dimension show fields customer
-```
-
-```
 dimension show joinchains customer
 ```
 
-<li> Create Caches, Show fields and join-chains of them.
+* Create Caches, Show fields and join-chains of them.
 
 ```
 create cube your/path/to/lens/client/examples/resources/sales-cube.xml
-```
-
-```
 cube show fields sales
-```
-
-```
 cube show joinchains sales
 ```
 
-<li> Create Dimtables and Fact.
+* Create Dimtables and Fact.
 
 ```
 create dimtable your/path/to/lens/client/examples/resources/customer_table.xml
-```
-
-```
 create fact your/path/to/lens/client/examples/resources/sales-raw-fact.xml
 ```
 
-<li> Add partitions to Dimtable and Fact.
+* Add partitions to Dimtable and Fact.
 
 ```
 dimtable add single-partition --dimtable_name customer_table --storage_name local --path your/path/to/lens/client/examples/resources/customer-local-part.xml
-```
-
-```
 fact add partitions --fact_name sales_raw_fact --storage_name local --path your/path/to/lens/client/examples/resources/sales-raw-local-parts.xml
 ```
 
-<li> Now, you can run queries on cubes.
+* Now, you can run queries on cubes.
 
 ```
 query execute cube select customer_city_name, product_details.description, product_details.category, product_details.color, store_sales from sales where time_range_in(delivery_time, '2015-04-11-00', '2015-04-13-00')

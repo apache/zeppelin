@@ -209,7 +209,7 @@ Here are some examples you can refer to. Including the below connectors, you can
 
 <img src="../assets/themes/zeppelin/img/docs-img/mysql_setting.png" width="600px" />
 
-##### Properties
+#### Properties
 <table class="table-configuration">
   <tr>
     <th>Name</th>
@@ -233,7 +233,7 @@ Here are some examples you can refer to. Including the below connectors, you can
   </tr>
 </table>
 
-##### Dependencies
+#### Dependencies
 <table class="table-configuration">
   <tr>
     <th>Artifact</th>
@@ -249,7 +249,7 @@ Here are some examples you can refer to. Including the below connectors, you can
 
 <img src="../assets/themes/zeppelin/img/docs-img/hive_setting.png" width="600px" />
 
-##### Properties
+#### Properties
 <table class="table-configuration">
   <tr>
     <th>Name</th>
@@ -273,7 +273,7 @@ Here are some examples you can refer to. Including the below connectors, you can
   </tr>
 </table>
 
-##### Dependencies
+#### Dependencies
 <table class="table-configuration">
   <tr>
     <th>Artifact</th>
@@ -392,7 +392,7 @@ Before Adding one of the below dependencies, check the Phoenix version first.
 
 <img src="../assets/themes/zeppelin/img/docs-img/tajo_setting.png" width="600px" />
 
-##### Properties
+#### Properties
 <table class="table-configuration">
   <tr>
     <th>Name</th>
@@ -408,7 +408,7 @@ Before Adding one of the below dependencies, check the Phoenix version first.
   </tr>
 </table>
 
-##### Dependencies
+#### Dependencies
 <table class="table-configuration">
   <tr>
     <th>Artifact</th>
