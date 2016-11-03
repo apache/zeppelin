@@ -463,7 +463,7 @@ public class Notebook implements NoteEventListener {
     return note;
   }
 
-  private void loadAllNotes(AuthenticationInfo subject) throws IOException {
+  void loadAllNotes(AuthenticationInfo subject) throws IOException {
     List<NoteInfo> noteInfos = notebookRepo.list(subject);
 
     for (NoteInfo info : noteInfos) {
