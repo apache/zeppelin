@@ -29,8 +29,7 @@ import java.util.Map;
 public class InterpreterHookRegistry {
   public static final String GLOBAL_KEY = "_GLOBAL_";
   private String interpreterId;
-  private Map<String, Map<String, Map<String, String>>> registry =
-    new HashMap<String, Map<String, Map<String, String>>>();
+  private Map<String, Map<String, Map<String, String>>> registry = new HashMap<>();
 
   /**
    * hookRegistry constructor.

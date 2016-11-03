@@ -344,7 +344,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
   public String getNotebookDir() {
     return getString(ConfVars.ZEPPELIN_NOTEBOOK_DIR);
   }
-
+  
   public String getUser() {
     return getString(ConfVars.ZEPPELIN_NOTEBOOK_S3_USER);
   }
@@ -429,6 +429,10 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 
   public boolean isWindowsPath(String path){
     return path.matches("^[A-Za-z]:\\\\.*");
+  }
+  
+  public boolean isAnonymousAllowed() {
+    return getBoolean(ConfVars.ZEPPELIN_ANONYMOUS_ALLOWED);
   }
 
   public String getConfDir() {

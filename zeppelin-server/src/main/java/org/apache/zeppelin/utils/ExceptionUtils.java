@@ -14,22 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.zeppelin.helium;
+package org.apache.zeppelin.utils;
 
-import java.util.LinkedList;
-import java.util.List;
+import javax.ws.rs.core.Response.Status;
+
+import org.apache.zeppelin.server.JsonResponse;
 
 /**
- * Helium config. This object will be persisted to conf/heliumc.conf
+ * Utility method for exception in rest api.
+ *
  */
-public class HeliumConf {
-  List<HeliumRegistry> registry = new LinkedList<>();
+public class ExceptionUtils {
 
-  public List<HeliumRegistry> getRegistry() {
-    return registry;
+  public static javax.ws.rs.core.Response jsonResponse(Status status) {
+    return new JsonResponse<>(status).build();
   }
-
-  public void setRegistry(List<HeliumRegistry> registry) {
-    this.registry = registry;
+  
+  public static javax.ws.rs.core.Response jsonResponseContent(Status status, String message) {
+    return new JsonResponse<>(status, message).build();
   }
 }

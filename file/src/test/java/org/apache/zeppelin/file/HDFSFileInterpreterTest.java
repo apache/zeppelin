@@ -123,7 +123,7 @@ public class HDFSFileInterpreterTest extends TestCase {
    * Store command results from curl against a real file system
    */
   class MockFileSystem {
-    HashMap<String, String> mfs = new HashMap<String, String>();
+    HashMap<String, String> mfs = new HashMap<>();
     void addListStatusData() {
       mfs.put("/?op=LISTSTATUS",
           "{\"FileStatuses\":{\"FileStatus\":[\n" +

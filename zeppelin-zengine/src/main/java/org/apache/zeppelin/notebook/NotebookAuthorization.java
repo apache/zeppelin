@@ -17,18 +17,31 @@
 
 package org.apache.zeppelin.notebook;
 
-import com.google.common.base.Predicate;
-import com.google.common.collect.FluentIterable;
-import com.google.common.collect.Sets;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
-import java.util.*;
+import com.google.common.base.Predicate;
+import com.google.common.collect.FluentIterable;
+import com.google.common.collect.Sets;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 /**
  * Contains authorization information for notes
@@ -180,11 +193,11 @@ public class NotebookAuthorization {
     Map<String, Set<String>> noteAuthInfo = authInfo.get(noteId);
     Set<String> entities = null;
     if (noteAuthInfo == null) {
-      entities = new HashSet<String>();
+      entities = new HashSet<>();
     } else {
       entities = noteAuthInfo.get("owners");
       if (entities == null) {
-        entities = new HashSet<String>();
+        entities = new HashSet<>();
       }
     }
     return entities;
@@ -194,11 +207,11 @@ public class NotebookAuthorization {
     Map<String, Set<String>> noteAuthInfo = authInfo.get(noteId);
     Set<String> entities = null;
     if (noteAuthInfo == null) {
-      entities = new HashSet<String>();
+      entities = new HashSet<>();
     } else {
       entities = noteAuthInfo.get("readers");
       if (entities == null) {
-        entities = new HashSet<String>();
+        entities = new HashSet<>();
       }
     }
     return entities;
@@ -208,11 +221,11 @@ public class NotebookAuthorization {
     Map<String, Set<String>> noteAuthInfo = authInfo.get(noteId);
     Set<String> entities = null;
     if (noteAuthInfo == null) {
-      entities = new HashSet<String>();
+      entities = new HashSet<>();
     } else {
       entities = noteAuthInfo.get("writers");
       if (entities == null) {
-        entities = new HashSet<String>();
+        entities = new HashSet<>();
       }
     }
     return entities;
@@ -234,9 +247,42 @@ public class NotebookAuthorization {
 
   // return true if b is empty or if (a intersection b) is non-empty
   private boolean isMember(Set<String> a, Set<String> b) {
-    Set<String> intersection = new HashSet<String>(b);
+    Set<String> intersection = new HashSet<>(b);
     intersection.retainAll(a);
     return (b.isEmpty() || (intersection.size() > 0));
+  }
+
+  public boolean isOwner(Set<String> userAndRoles, String noteId) {
+    if (conf.isAnonymousAllowed()) {
+      LOG.debug("Zeppelin runs in anonymous mode, everybody is owner");
+      return true;
+    }
+    if (userAndRoles == null) {
+      return false;
+    }
+    return isOwner(noteId, userAndRoles);
+  }
+  
+  public boolean hasWriteAuthorization(Set<String> userAndRoles, String noteId) {
+    if (conf.isAnonymousAllowed()) {
+      LOG.debug("Zeppelin runs in anonymous mode, everybody is writer");
+      return true;
+    }
+    if (userAndRoles == null) {
+      return false;
+    }
+    return isWriter(noteId, userAndRoles);
+  }
+  
+  public boolean hasReadAuthorization(Set<String> userAndRoles, String noteId) {
+    if (conf.isAnonymousAllowed()) {
+      LOG.debug("Zeppelin runs in anonymous mode, everybody is reader");
+      return true;
+    }
+    if (userAndRoles == null) {
+      return false;
+    }
+    return isReader(noteId, userAndRoles);
   }
 
   public void removeNote(String noteId) {

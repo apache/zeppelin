@@ -141,11 +141,13 @@ public class Message {
                                   // @param noteId
                                   // @param selectedSettingIds
     INTERPRETER_BINDINGS,         // [s-c] interpreter bindings
+    GET_INTERPRETER_SETTINGS,     // [c-s] get interpreter settings
+    INTERPRETER_SETTINGS,         // [s-c] interpreter settings
     ERROR_INFO                    // [s-c] error information to be sent
   }
 
   public OP op;
-  public Map<String, Object> data = new HashMap<String, Object>();
+  public Map<String, Object> data = new HashMap<>();
   public String ticket = "anonymous";
   public String principal = "anonymous";
   public String roles = "";

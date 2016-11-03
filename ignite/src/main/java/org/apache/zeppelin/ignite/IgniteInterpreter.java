@@ -178,7 +178,7 @@ public class IgniteInterpreter extends Interpreter {
   public Object getLastObject() {
     Object obj = imain.lastRequest().lineRep().call(
         "$result",
-        JavaConversions.asScalaBuffer(new LinkedList<Object>()));
+        JavaConversions.asScalaBuffer(new LinkedList<>()));
     return obj;
   }
 

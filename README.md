@@ -2,7 +2,7 @@
 
 **Documentation:** [User Guide](http://zeppelin.apache.org/docs/latest/index.html)<br/>
 **Mailing Lists:** [User and Dev mailing list](http://zeppelin.apache.org/community.html)<br/>
-**Continuous Integration:** [![Build Status](https://secure.travis-ci.org/apache/zeppelin.png?branch=master)](https://travis-ci.org/apache/zeppelin) <br/>
+**Continuous Integration:** [![Build Status](https://travis-ci.org/apache/zeppelin.svg?branch=master)](https://travis-ci.org/apache/zeppelin) <br/>
 **Contributing:** [Contribution Guide](https://zeppelin.apache.org/contribution/contributions.html)<br/>
 **Issue Tracker:** [Jira](https://issues.apache.org/jira/browse/ZEPPELIN)<br/>
 **License:** [Apache 2.0](https://github.com/apache/zeppelin/blob/master/LICENSE)

@@ -292,7 +292,7 @@ public class Input implements Serializable {
   }
 
   public static Map<String, Input> extractSimpleQueryParam(String script) {
-    Map<String, Input> params = new HashMap<String, Input>();
+    Map<String, Input> params = new HashMap<>();
     if (script == null) {
       return params;
     }
@@ -331,7 +331,7 @@ public class Input implements Serializable {
         }
         Collection<Object> checked = value instanceof Collection ? (Collection<Object>) value
                 : Arrays.asList((Object[]) value);
-        List<Object> validChecked = new LinkedList<Object>();
+        List<Object> validChecked = new LinkedList<>();
         for (Object o : checked) {  // filter out obsolete checked values
           for (ParamOption option : input.getOptions()) {
             if (option.getValue().equals(o)) {
@@ -387,14 +387,14 @@ public class Input implements Serializable {
   public static String[] split(String str, String escapeSeq, char escapeChar, String[] blockStart,
       String[] blockEnd, String[] splitters, boolean includeSplitter) {
 
-    List<String> splits = new ArrayList<String>();
+    List<String> splits = new ArrayList<>();
 
     String curString = "";
 
     boolean escape = false; // true when escape char is found
     int lastEscapeOffset = -1;
     int blockStartPos = -1;
-    List<Integer> blockStack = new LinkedList<Integer>();
+    List<Integer> blockStack = new LinkedList<>();
 
     for (int i = 0; i < str.length(); i++) {
       char c = str.charAt(i);

@@ -61,7 +61,7 @@ public class ZeppelinContext {
   // given replName in parapgraph
   private static final Map<String, String> interpreterClassMap;
   static {
-    interpreterClassMap = new HashMap<String, String>();
+    interpreterClassMap = new HashMap<>();
     interpreterClassMap.put("spark", "org.apache.zeppelin.spark.SparkInterpreter");
     interpreterClassMap.put("sql", "org.apache.zeppelin.spark.SparkSqlInterpreter");
     interpreterClassMap.put("dep", "org.apache.zeppelin.spark.DepInterpreter");
@@ -134,7 +134,7 @@ public class ZeppelinContext {
   @ZeppelinApi
   public scala.collection.Iterable<Object> checkbox(String name,
       scala.collection.Iterable<Tuple2<Object, String>> options) {
-    List<Object> allChecked = new LinkedList<Object>();
+    List<Object> allChecked = new LinkedList<>();
     for (Tuple2<Object, String> option : asJavaIterable(options)) {
       allChecked.add(option._1());
     }
@@ -400,7 +400,7 @@ public class ZeppelinContext {
 
   @ZeppelinApi
   public List<String> listParagraphs() {
-    List<String> paragraphs = new LinkedList<String>();
+    List<String> paragraphs = new LinkedList<>();
 
     for (InterpreterContextRunner r : interpreterContext.getRunners()) {
       paragraphs.add(r.getParagraphId());
