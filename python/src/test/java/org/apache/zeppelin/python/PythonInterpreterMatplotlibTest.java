@@ -56,7 +56,6 @@ import org.junit.Test;
 public class PythonInterpreterMatplotlibTest {
 
   private InterpreterGroup intpGroup;
-  private PythonInterpreterPandasSql sql;
   private PythonInterpreter python;
 
   private InterpreterContext context;
