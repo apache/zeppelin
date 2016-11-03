@@ -127,6 +127,7 @@ public class ZeppelinClient {
   public void stop() {
     try {
       if (wsClient != null) {
+        removeAllConnections();
         wsClient.stop();
       } else {
         LOG.warn("Cannot stop zeppelin websocket client - isn't initialized");
@@ -288,10 +289,25 @@ public class ZeppelinClient {
     }
     LOG.info("Removed note websocket connection for note {}", noteId);
   }
+  
+  private void removeAllConnections() {
+    if (watcherSession != null && watcherSession.isOpen()) {
+      watcherSession.close();
+    }
+
+    Session noteSession = null;
+    for (Map.Entry<String, Session> note: notesConnection.entrySet()) {
+      noteSession = note.getValue();
+      if(isSessionOpen(noteSession)) {
+        noteSession.close();
+      }
+    }
+    notesConnection.clear();
+  }
 
   public void ping() {
     if (watcherSession == null) {
-      LOG.info("Cannot send PING event, watcher is null");
+      LOG.info("Cannot send PING event, no watcher found");
       return;
     }
     watcherSession.getRemote().sendStringByFuture(serialize(new Message(OP.PING)));

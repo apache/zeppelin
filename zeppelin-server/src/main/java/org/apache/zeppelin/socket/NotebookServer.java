@@ -106,9 +106,12 @@ public class NotebookServer extends WebSocketServlet implements
   final Queue<NotebookSocket> connectedSockets = new ConcurrentLinkedQueue<>();
   final Map<String, Queue<NotebookSocket>> userConnectedSockets = new ConcurrentHashMap<>();
 
-  // This is a special endpoint in the notebook websoket, Every connection in this Queue
-  // will be able to watch every websocket event, it doesnt need to be listed into the map of
-  // noteSocketMap.
+  /**
+   * This is a special endpoint in the notebook websoket, Every connection in this Queue
+   * will be able to watch every websocket event, it doesnt need to be listed into the map of
+   * noteSocketMap. This can be used to get information about websocket traffic and watch what
+   * is going on.
+   */
   final Queue<NotebookSocket> watcherSockets = Queues.newConcurrentLinkedQueue();
   
   private Notebook notebook() {
@@ -1789,17 +1792,14 @@ public class NotebookServer extends WebSocketServlet implements
   
   private void switchConnectionToWatcher(NotebookSocket conn, Message messagereceived)
       throws IOException {
-    // TODO(anthony): add header check. for security.
+    if (!isSessionAllowedToSwitchToWatcher(conn)) {
+      LOG.error("Cannot switch this client to watcher, invalid security key");
+      return;
+    }
     LOG.info("Going to add {} to watcher socket", conn);
     // add the connection to the watcher.
     if (watcherSockets.contains(conn)) {
       LOG.info("connection alrerady present in the watcher");
-      return;
-    }
-    String watcherSecurityKey = conn.getRequest().getHeader(WatcherSecurityKey.HTTP_HEADER);
-    if (StringUtils.isBlank(watcherSecurityKey) ||
-        !watcherSecurityKey.equals(WatcherSecurityKey.getKey())) {
-      LOG.error("Cannot switch this client to watcher, invalid security key");
       return;
     }
     watcherSockets.add(conn);
@@ -1808,6 +1808,12 @@ public class NotebookServer extends WebSocketServlet implements
     removeConnectionFromAllNote(conn);
     connectedSockets.remove(conn);
     removeUserConnection(conn.getUser(), conn);
+  }
+  
+  private boolean isSessionAllowedToSwitchToWatcher(NotebookSocket session) {
+    String watcherSecurityKey = session.getRequest().getHeader(WatcherSecurityKey.HTTP_HEADER);
+    return !(StringUtils.isBlank(watcherSecurityKey)
+        || !watcherSecurityKey.equals(WatcherSecurityKey.getKey()));
   }
   
   private void broadcastToWatchers(String noteId, String subject, Message message) {
