@@ -39,6 +39,8 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.List;
 
+import static org.junit.Assert.assertTrue;
+
 
 /**
  * Created for org.apache.zeppelin.integration on 13/06/16.
@@ -119,6 +121,23 @@ public class AuthenticationIT extends AbstractZeppelinIT {
     ZeppelinITUtils.sleep(1000, false);
   }
 
+  private void testShowNotebookListOnNavbar() throws Exception {
+    if (!endToEndTestEnabled()) {
+      return;
+    }
+    try {
+      pollingWait(By.xpath("//li[@class='dropdown notebook-list-dropdown']"),
+          MAX_BROWSER_TIMEOUT_SEC).click();
+      assertTrue(driver.findElements(By.xpath("//a[@class=\"notebook-list-item ng-scope\"]")).size() > 0);
+      pollingWait(By.xpath("//li[@class='dropdown notebook-list-dropdown']"),
+              MAX_BROWSER_TIMEOUT_SEC).click();
+      pollingWait(By.xpath("//li[@class='dropdown notebook-list-dropdown']"),
+              MAX_BROWSER_TIMEOUT_SEC).click();
+    } catch (Exception e) {
+      handleException("Exception in ParagraphActionsIT while testShowNotebookListOnNavbar ", e);
+    }
+  }
+
   private void logoutUser(String userName) {
     ZeppelinITUtils.sleep(500, false);
     driver.findElement(By.xpath("//div[contains(@class, 'navbar-collapse')]//li[contains(.,'" +
@@ -144,7 +163,7 @@ public class AuthenticationIT extends AbstractZeppelinIT {
 
       authenticationIT.logoutUser("admin");
     } catch (Exception e) {
-      handleException("Exception in ParagraphActionsIT while testCreateNewButton ", e);
+      handleException("Exception in AuthenticationIT while testCreateNewButton ", e);
     }
   }
 

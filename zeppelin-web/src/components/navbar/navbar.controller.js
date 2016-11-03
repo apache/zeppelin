@@ -114,6 +114,7 @@
 
     $scope.$on('setNoteMenu', function(event, notes) {
       noteListDataFactory.setNotes(notes);
+      initNotebookListEventListener();
     });
 
     $scope.$on('setConnectedStatus', function(event, param) {
@@ -127,15 +128,17 @@
     /*
     ** Performance optimization for Browser Render.
     */
-    angular.element(document).ready(function() {
-      angular.element('.notebook-list-dropdown').on('show.bs.dropdown', function() {
-        $scope.isDrawNavbarNoteList = true;
-      });
+    function initNotebookListEventListener() {
+      angular.element(document).ready(function() {
+        angular.element('.notebook-list-dropdown').on('show.bs.dropdown', function() {
+          $scope.isDrawNavbarNoteList = true;
+        });
 
-      angular.element('.notebook-list-dropdown').on('hide.bs.dropdown', function() {
-        $scope.isDrawNavbarNoteList = false;
+        angular.element('.notebook-list-dropdown').on('hide.bs.dropdown', function() {
+          $scope.isDrawNavbarNoteList = false;
+        });
       });
-    });
+    }
   }
 
 })();
