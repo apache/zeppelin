@@ -21,7 +21,9 @@ import org.pegdown.Extensions;
 import org.pegdown.PegDownProcessor;
 import org.pegdown.plugins.PegDownPlugins;
 
-/** Markdown Parser using pegdown processor. */
+/**
+ * Markdown Parser using pegdown processor.
+ */
 public class PegdownParser implements MarkdownParser {
   private PegDownProcessor processor;
 
@@ -49,7 +51,9 @@ public class PegdownParser implements MarkdownParser {
     return html;
   }
 
-  /** wrap with markdown class div to styling DOM using css. */
+  /**
+   * wrap with markdown class div to styling DOM using css.
+   */
   public static String wrapWithMarkdownClassDiv(String html) {
     return new StringBuilder()
       .append("<div class=\"markdown-body\">\n")
