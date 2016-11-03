@@ -94,7 +94,7 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
     Note note2 = ZeppelinServer.notebook.createNote(anonymous);
     // Set only writers
     jsonRequest = "{\"readers\":[],\"owners\":[]," +
-            "\"writers\":[\"admin-team\"]}";
+        "\"writers\":[\"admin-team\"]}";
     put = httpPut("/notebook/" + note2.getId() + "/permissions/", jsonRequest);
     assertThat("test update method:", put, isAllowed());
     put.releaseConnection();
@@ -175,7 +175,32 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
     //cleanup
     ZeppelinServer.notebook.removeNote(note1.getId(), anonymous);
     ZeppelinServer.notebook.removeNote(clonedNoteId, anonymous);
+  }
 
+  @Test
+  public void testUpdateParagraphConfig() throws IOException {
+    Note note = ZeppelinServer.notebook.createNote(anonymous);
+    String noteId = note.getId();
+    Paragraph p = note.addParagraph();
+    assertNull(p.getConfig().get("colWidth"));
+    String paragraphId = p.getId();
+    String jsonRequest = "{\"colWidth\": 6.0}";
+
+    PutMethod put = httpPut("/notebook/" + noteId + "/paragraph/" + paragraphId +"/config", jsonRequest);
+    assertThat("test testUpdateParagraphConfig:", put, isAllowed());
+
+    Map<String, Object> resp = gson.fromJson(put.getResponseBodyAsString(), new TypeToken<Map<String, Object>>() {
+    }.getType());
+    Map<String, Object> respBody = (Map<String, Object>) resp.get("body");
+    Map<String, Object> config = (Map<String, Object>) respBody.get("config");
+    put.releaseConnection();
+
+    assertEquals(config.get("colWidth"), 6.0);
+    note = ZeppelinServer.notebook.getNote(noteId);
+    assertEquals(note.getParagraph(paragraphId).getConfig().get("colWidth"), 6.0);
+
+    //cleanup
+    ZeppelinServer.notebook.removeNote(noteId, anonymous);
   }
 
   @Test
