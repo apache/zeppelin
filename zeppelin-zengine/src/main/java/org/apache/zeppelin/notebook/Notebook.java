@@ -120,7 +120,8 @@ public class Notebook implements NoteEventListener {
     quartzSched.start();
     CronJob.notebook = this;
 
-    loadAllNotes();
+    AuthenticationInfo anonymous = AuthenticationInfo.ANONYMOUS;
+    loadAllNotes(anonymous);
     if (this.noteSearchService != null) {
       long start = System.nanoTime();
       logger.info("Notebook indexing started...");
@@ -462,11 +463,11 @@ public class Notebook implements NoteEventListener {
     return note;
   }
 
-  private void loadAllNotes() throws IOException {
-    List<NoteInfo> noteInfos = notebookRepo.list(null);
+  void loadAllNotes(AuthenticationInfo subject) throws IOException {
+    List<NoteInfo> noteInfos = notebookRepo.list(subject);
 
     for (NoteInfo info : noteInfos) {
-      loadNoteFromRepo(info.getId(), null);
+      loadNoteFromRepo(info.getId(), subject);
     }
   }
 
