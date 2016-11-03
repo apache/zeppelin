@@ -133,6 +133,8 @@ public class AuthenticationIT extends AbstractZeppelinIT {
               MAX_BROWSER_TIMEOUT_SEC).click();
       pollingWait(By.xpath("//li[@class='dropdown notebook-list-dropdown']"),
               MAX_BROWSER_TIMEOUT_SEC).click();
+    } catch (Exception e) {
+      handleException("Exception in ParagraphActionsIT while testShowNotebookListOnNavbar ", e);
     }
   }
 
@@ -161,7 +163,7 @@ public class AuthenticationIT extends AbstractZeppelinIT {
 
       authenticationIT.logoutUser("admin");
     } catch (Exception e) {
-      handleException("Exception in ParagraphActionsIT while testCreateNewButton ", e);
+      handleException("Exception in AuthenticationIT while testCreateNewButton ", e);
     }
   }
 
