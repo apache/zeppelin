@@ -121,7 +121,7 @@ public class ZeppelinClientTest {
     msg.data = Maps.newHashMap();
     msg.data.put("key", "value");
     client.send(msg, "DDDD");
-    //client.removeZeppelinConnection("DDDD");
+    client.removeNoteConnection("DDDD");
     client.stop();
   }
 }
