@@ -39,6 +39,8 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.List;
 
+import static org.junit.Assert.assertTrue;
+
 
 /**
  * Created for org.apache.zeppelin.integration on 13/06/16.
@@ -117,6 +119,21 @@ public class AuthenticationIT extends AbstractZeppelinIT {
     pollingWait(By.xpath("//*[@id='NoteImportCtrl']//button[contains(.,'Login')]"),
         MAX_BROWSER_TIMEOUT_SEC).click();
     ZeppelinITUtils.sleep(1000, false);
+  }
+
+  private void testShowNotebookListOnNavbar() {
+    if (!endToEndTestEnabled()) {
+      return;
+    }
+    try {
+      pollingWait(By.xpath("//li[@class='dropdown notebook-list-dropdown']"),
+          MAX_BROWSER_TIMEOUT_SEC).click();
+      assertTrue(driver.findElements(By.xpath("//a[@class=\"notebook-list-item ng-scope\"]")).size() > 0);
+      pollingWait(By.xpath("//li[@class='dropdown notebook-list-dropdown']"),
+              MAX_BROWSER_TIMEOUT_SEC).click();
+      pollingWait(By.xpath("//li[@class='dropdown notebook-list-dropdown']"),
+              MAX_BROWSER_TIMEOUT_SEC).click();
+    }
   }
 
   private void logoutUser(String userName) {
