@@ -76,7 +76,7 @@ if [[ ! -d "${SPARK_HOME}" ]]; then
         echo "${SPARK_CACHE} does not have ${SPARK_ARCHIVE} downloading ..."
 
         # download archive if not cached
-        if [[ "${SPARK_VERSION}" = "1.1.1" || "${SPARK_VERSION}" = "1.2.2" || "${SPARK_VERSION}" = "1.3.1" || "${SPARK_VERSION}" = "1.4.1" ]]; then
+        if [[ "${SPARK_VERSION}" = "1.4.1" ]]; then
             echo "${SPARK_VERSION} being downloaded from archives"
             # spark old versions are only available only on the archives (prior to 1.5.2)
             STARTTIME=`date +%s`
