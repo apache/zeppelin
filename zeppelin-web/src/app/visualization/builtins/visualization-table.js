@@ -25,6 +25,10 @@ zeppelin.TableVisualization = function(targetEl) {
 
 zeppelin.TableVisualization.prototype = Object.create(zeppelin.Visualization.prototype);
 
+zeppelin.TableVisualization.prototype.refresh = function() {
+  this.hot.render();
+};
+
 zeppelin.TableVisualization.prototype.render = function(tableData) {
   var height = this.targetEl.height();
   var container = this.targetEl.css('height', height).get(0);

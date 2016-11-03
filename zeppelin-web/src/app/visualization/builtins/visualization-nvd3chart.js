@@ -24,6 +24,12 @@ zeppelin.Nvd3ChartVisualization = function(targetEl, config) {
 
 zeppelin.Nvd3ChartVisualization.prototype = Object.create(zeppelin.Visualization.prototype);
 
+zeppelin.Visualization.prototype.refresh = function() {
+  if (this.chart) {
+    this.chart.update();
+  }
+};
+
 zeppelin.Nvd3ChartVisualization.prototype.render = function(data) {
   var type = this.type();
   var d3g = data.d3g;
@@ -54,7 +60,6 @@ zeppelin.Nvd3ChartVisualization.prototype.render = function(data) {
     .duration(animationDuration)
     .call(this.chart);
   d3.select('#' + this.targetEl[0].id + ' svg').style.height = height + 'px';
-  nv.utils.windowResize(this.chart.update);
 };
 
 zeppelin.Nvd3ChartVisualization.prototype.type = function() {

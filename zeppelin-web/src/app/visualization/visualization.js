@@ -22,6 +22,8 @@ var zeppelin = zeppelin || {};
 zeppelin.Visualization = function(targetEl, config) {
   this.targetEl = targetEl;
   this.config = config;
+  this._resized = false;
+  this._active = false;
 };
 
 /**
@@ -36,6 +38,53 @@ zeppelin.Visualization.prototype.getTransformation = function() {
  */
 zeppelin.Visualization.prototype.render = function(tableData) {
   // override this
+};
+
+/**
+ * Refresh visualization.
+ */
+zeppelin.Visualization.prototype.refresh = function() {
+  // override this
+};
+
+/**
+ * Activate. invoked when visualization is selected
+ */
+zeppelin.Visualization.prototype.activate = function() {
+  console.log('active');
+  if (!this._active && this._resized) {
+    var self = this;
+    // give some time for element ready
+    setTimeout(function(){self.refresh();}, 300);
+    this._resized = false;
+  }
+  this._active = true;
+};
+
+/**
+ * Activate. invoked when visualization is de selected
+ */
+zeppelin.Visualization.prototype.deactivate = function() {
+  console.log('deactive');
+  this._active = false;
+};
+
+/**
+ * Is active
+ */
+zeppelin.Visualization.prototype.isActive = function() {
+  return this._active;
+};
+
+/**
+ * When window or paragraph is resized
+ */
+zeppelin.Visualization.prototype.resize = function() {
+  if (this.isActive()) {
+    this.refresh();
+  } else {
+    this._resized = true;
+  }
 };
 
 /**

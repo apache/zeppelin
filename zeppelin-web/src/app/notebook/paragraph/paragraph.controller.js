@@ -1015,6 +1015,15 @@
 
         var builtInViz = builtInVisualizations[type];
         if (builtInViz) {
+          // deactive previsouly active visualization
+          for (var t in builtInVisualizations) {
+            var v = builtInVisualizations[t].instance;
+            if (t !== type && v && v.isActive()) {
+              v.deactivate();
+              break;
+            }
+          }
+
           if (!builtInViz.instance) { // not instantiated yet
             // render when targetEl is available
             var retryRenderer = function() {
@@ -1029,6 +1038,10 @@
                   var Visualization = builtInViz.class;
                   builtInViz.instance = new Visualization(targetEl, $scope.paragraph.config.graph);
                   builtInViz.instance.render(tableData);
+                  builtInViz.instance.activate();
+                  angular.element(window).resize(function() {
+                    builtInViz.instance.resize();
+                  });
                 } catch (err) {
                   console.log('Graph drawing error %o', err);
                 }
@@ -1042,38 +1055,9 @@
             builtInViz.instance.setConfig($scope.paragraph.config.graph);
             builtInViz.instance.render(tableData);
           } else {
-            /* Following line is required to handle the case
-             *  1. select a chart type
-             *  2. resize browser window
-             *  3. select another chart
-             * The chart selected on step 3 will be displayed in incorrect size
-             */
-            $timeout(function() {emitWindowResizeEvent();}, 1);
+            builtInViz.instance.activate();
           }
         }
-      }
-    };
-
-    var emitWindowResizeEvent = function() {
-      var eventName = 'resize';
-      var el = window;
-      var event;
-      if (document.createEvent) {
-        event = document.createEvent('HTMLEvents');
-        event.initEvent(eventName,true,true);
-      } else if (document.createEventObject) { // IE < 9
-        event = document.createEventObject();
-        event.eventType = eventName;
-      }
-      event.eventName = eventName;
-      if (el.dispatchEvent) {
-        el.dispatchEvent(event);
-      } else if (el.fireEvent && el['on' + eventName]) {  // IE < 9
-        el.fireEvent('on' + event.eventType,event);
-      } else if (el[eventName]) {
-        el[eventName]();
-      } else if (el['on' + eventName]) {
-        el['on' + eventName]();
       }
     };
 
