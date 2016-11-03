@@ -2,6 +2,7 @@
     (Apache 2.0) gson v2.2 (com.google.code.gson:gson:jar:2.2 - https://github.com/google/gson) - https://github.com/google/gson/blob/gson-2.2/LICENSE
     (Apache 2.0) Amazon Web Services SDK for Java v1.10.62 (https://aws.amazon.com/sdk-for-java/) - https://raw.githubusercontent.com/aws/aws-sdk-java/1.10.62/LICENSE.txt
     (Apache 2.0) JavaEWAH v0.7.9 (https://github.com/lemire/javaewah) - https://github.com/lemire/javaewah/blob/master/LICENSE-2.0.txt
+    (Apache 2.0) Neo4j Java Driver (https://github.com/neo4j/neo4j-java-driver) - https://github.com/neo4j/neo4j-java-driver/blob/1.1/LICENSE.txt
 
 
 
@@ -209,6 +210,7 @@ The following components are provided under the MIT License.
     (The MIT License) angular-resource (angular-resource - https://github.com/angular/angular.js/tree/master/src/ngResource)
     (The MIT License) minimal-json (com.eclipsesource.minimal-json:minimal-json:0.9.4 - https://github.com/ralfstx/minimal-json)
     (The MIT License) pyrolite (net.razorvine:pyrolite:4.9) - https://github.com/irmen/Pyrolite/blob/v4.9/LICENSE
+    (The MIT License) sigma.js - https://github.com/jacomyal/sigma.js/blob/master/LICENSE.txt
 
 ========================================================================
 BSD-style licenses
