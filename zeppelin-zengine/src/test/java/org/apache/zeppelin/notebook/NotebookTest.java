@@ -209,8 +209,7 @@ public class NotebookTest implements JobListenerFactory{
       p1.setText("hello world");
       note.persist(anonymous);
     } catch (IOException fe) {
-      logger.warn("Failed to create note and paragraph. Safe to return, other tests might be failing as well", fe);
-      return;
+      logger.warn("Failed to create note and paragraph. Possible problem with persisting note, safe to ignore", fe);
     }
 
     try {
