@@ -317,7 +317,6 @@ public class PegdownParserTest {
         .toString();
 
     InterpreterResult result = md.interpret(input, null);
-    assertEquals("", result.message());
     assertThat(result.message(), CoreMatchers.containsString("<img src=\"http://www.websequencediagrams.com/?png="));
   }
 

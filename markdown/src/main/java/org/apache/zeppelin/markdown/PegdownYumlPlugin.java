@@ -32,6 +32,9 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.Map;
 
+/**
+ * Pegdown plugin for YUML
+ */
 public class PegdownYumlPlugin extends Parser implements BlockPluginParser {
 
   public PegdownYumlPlugin() {

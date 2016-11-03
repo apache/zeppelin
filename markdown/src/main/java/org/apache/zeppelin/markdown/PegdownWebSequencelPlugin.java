@@ -37,6 +37,9 @@ import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
+/**
+ * Pegdown plugin for Websequence diagram
+ */
 public class PegdownWebSequencelPlugin extends Parser implements BlockPluginParser {
 
   public PegdownWebSequencelPlugin() {
