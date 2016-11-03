@@ -235,11 +235,12 @@ Please check the below table before you download Zeppelin package.
   <tr>
     <td>
       <h6><a href="https://ignite.apache.org/" target="_blank">Ignite</a></h6>
+      <span style="font-size:75%">Please use the next Ignite version to use Scala code</span>
     </td>
-    <td>O</td>
-    <td>O</td>
-    <td>O</td>
-    <td>O</td>
+    <td>1.7.0</td>
+    <td>1.6.0</td>
+    <td>1.5.0.final</td>
+    <td>1.4.0</td>
   </tr>
   <tr>
     <td>
