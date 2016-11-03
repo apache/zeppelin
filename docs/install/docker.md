@@ -43,7 +43,8 @@ You need to [install docker](https://docs.docker.com/engine/installation/) on yo
 * To start Zeppelin, you need to pull the zeppelin release image: 
 ```
 docker pull ${DOCKER_USERNAME}/zeppelin-release:<release-version>
-docker run --rm -it -p 8080:8080 -p 8081:8081 ${DOCKER_USERNAME}/zeppelin-release:<release-version> bash
+
+docker run --rm -it -p 7077:7077 -p 8081:8081 ${DOCKER_USERNAME}/zeppelin-release:<release-version> bash
 ```
 * Then a docker container will start with a Zeppelin release on path :
 `/usr/local/zeppelin/`
@@ -51,6 +52,12 @@ docker run --rm -it -p 8080:8080 -p 8081:8081 ${DOCKER_USERNAME}/zeppelin-releas
 * Run zeppelin inside docker:
 ```
 /usr/local/zeppelin/bin/zeppelin-daemon start
+```
+
+* To Run Zeppelin in daemon mode 
+```
+docker run -d -p 7077:7077 -p 8081:8081 ${DOCKER_USERNAME}/zeppelin-release:<release-version> \
+ bash -c "/usr/local/zeppelin/bin/zeppelin-daemon.sh restart && while true; do sleep 3; done"
 ```
 
 * Zeppelin will run at `http://localhost:8080`.
