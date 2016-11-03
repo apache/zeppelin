@@ -133,6 +133,15 @@
   },
   {
     "group": "livy",
+    "name": "pyspark3",
+    "className": "org.apache.zeppelin.livy.LivyPySpark3Interpreter",
+    "editor": {
+      "language": "python",
+      "editOnDblClick": false
+    }
+  },  
+  {
+    "group": "livy",
     "name": "sparkr",
     "className": "org.apache.zeppelin.livy.LivySparkRInterpreter",
     "properties": {

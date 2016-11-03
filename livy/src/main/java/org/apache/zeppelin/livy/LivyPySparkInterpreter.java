@@ -39,6 +39,7 @@ public class LivyPySparkInterpreter extends Interpreter {
 
   protected Map<String, Integer> userSessionMap;
   protected LivyHelper livyHelper;
+  protected String kind = "pyspark";
 
   public LivyPySparkInterpreter(Properties property) {
     super(property);
@@ -64,7 +65,7 @@ public class LivyPySparkInterpreter extends Interpreter {
               interpreterContext.getAuthenticationInfo().getUser(),
               livyHelper.createSession(
                   interpreterContext,
-                  "pyspark")
+                  kind)
           );
         } catch (Exception e) {
           LOGGER.error("Exception in LivyPySparkInterpreter while interpret ", e);
