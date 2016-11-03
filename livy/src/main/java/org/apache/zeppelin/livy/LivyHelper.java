@@ -133,7 +133,7 @@ public class LivyHelper {
 
   public InterpreterResult interpretInput(String stringLines,
                                           final InterpreterContext context,
-                                          final Map<String, Integer> userSessionMap,
+                                          int sessionId,
                                           LivyOutputStream out,
                                           String appId,
                                           String webUI,
@@ -185,7 +185,7 @@ public class LivyHelper {
 
         InterpreterResult res;
         try {
-          res = interpret(incomplete + s, context, userSessionMap);
+          res = interpret(incomplete + s, context, sessionId);
         } catch (Exception e) {
           LOGGER.error("Interpreter exception", e);
           return new InterpreterResult(Code.ERROR, InterpreterUtils.getMostRelevantMessage(e));
@@ -230,12 +230,12 @@ public class LivyHelper {
 
   public InterpreterResult interpret(String stringLines,
                                      final InterpreterContext context,
-                                     final Map<String, Integer> userSessionMap)
+                                     int sessionId)
       throws Exception {
     if (stringLines.trim().equals("")) {
       return new InterpreterResult(Code.SUCCESS, "");
     }
-    Map jsonMap = executeCommand(stringLines, context, userSessionMap);
+    Map jsonMap = executeCommand(stringLines, context, sessionId);
     Integer id = ((Double) jsonMap.get("id")).intValue();
     InterpreterResult res = getResultFromMap(jsonMap);
     if (res != null) {
@@ -247,7 +247,7 @@ public class LivyHelper {
       if (paragraphHttpMap.get(context.getParagraphId()) == null) {
         return new InterpreterResult(Code.INCOMPLETE, "");
       }
-      jsonMap = getStatusById(context, userSessionMap, id);
+      jsonMap = getStatusById(context, sessionId, id);
       InterpreterResult interpreterResult = getResultFromMap(jsonMap);
       if (interpreterResult != null) {
         return interpreterResult;
@@ -292,11 +292,10 @@ public class LivyHelper {
     return null;
   }
 
-  private Map executeCommand(String lines, InterpreterContext context,
-                             Map<String, Integer> userSessionMap) throws Exception {
+  private Map executeCommand(String lines, InterpreterContext context, int sessionId)
+      throws Exception {
     String json = executeHTTP(property.get("zeppelin.livy.url") + "/sessions/"
-            + userSessionMap.get(context.getAuthenticationInfo().getUser())
-            + "/statements",
+            + sessionId + "/statements",
         "POST",
         "{\"code\": \"" + StringEscapeUtils.escapeJson(lines) + "\"}",
         context.getParagraphId());
@@ -316,9 +315,9 @@ public class LivyHelper {
   }
 
   private Map getStatusById(InterpreterContext context,
-                            Map<String, Integer> userSessionMap, Integer id) throws Exception {
+                            int sessionId, Integer id) throws Exception {
     String json = executeHTTP(property.getProperty("zeppelin.livy.url") + "/sessions/"
-            + userSessionMap.get(context.getAuthenticationInfo().getUser())
+            + sessionId
             + "/statements/" + id,
         "GET", null, context.getParagraphId());
     LOGGER.debug("statement {} response: {}", id, json);
@@ -390,19 +389,18 @@ public class LivyHelper {
   }
 
   public void cancelHTTP(String paragraphId) {
+    // TODO(zjffdu), use cancel rest api of livy
     paragraphHttpMap.put(paragraphId, null);
   }
 
-  public void closeSession(Map<String, Integer> userSessionMap) {
-    for (Map.Entry<String, Integer> entry : userSessionMap.entrySet()) {
-      try {
-        executeHTTP(property.getProperty("zeppelin.livy.url") + "/sessions/"
-                + entry.getValue(),
-            "DELETE", null, null);
-      } catch (Exception e) {
-        LOGGER.error(String.format("Error closing session for user with session ID: %s",
-            entry.getValue()), e);
-      }
+  public void closeSession(int sessionId) {
+    try {
+      executeHTTP(property.getProperty("zeppelin.livy.url") + "/sessions/" + sessionId,
+          "DELETE", null, null);
+    } catch (Exception e) {
+      LOGGER.error(String.format("Error closing session for user with session ID: %s",
+          sessionId), e);
     }
   }
+
 }
