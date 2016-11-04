@@ -42,17 +42,17 @@ import java.nio.charset.StandardCharsets;
  */
 public class PegdownWebSequencelPlugin extends Parser implements BlockPluginParser {
 
+  private static final String URL_WEBSEQUENCE = "http://www.websequencediagrams.com";
+
   public PegdownWebSequencelPlugin() {
     super(PegdownParser.OPTIONS,
         PegdownParser.PARSING_TIMEOUT_AS_MILLIS,
         DefaultParseRunnerProvider);
   }
 
-  public PegdownWebSequencelPlugin(Integer options,
-                                   Long maxParsingTimeInMillis,
-                                   ParseRunnerProvider parseRunnerProvider,
+  public PegdownWebSequencelPlugin(Integer options, Long millis, ParseRunnerProvider provider,
                                    PegDownPlugins plugins) {
-    super(options, maxParsingTimeInMillis, parseRunnerProvider, plugins);
+    super(options, millis, provider, plugins);
   }
 
   public static final String TAG = "%%%";
@@ -86,13 +86,14 @@ public class PegdownWebSequencelPlugin extends Parser implements BlockPluginPars
                 new TextNode(""))));
   }
 
-  public static String createWebsequenceUrl(String style,
-                                            String content) {
+  public static String createWebsequenceUrl(String style, String content) {
 
     style = StringUtils.defaultString(style, "default");
 
     OutputStreamWriter writer = null;
     BufferedReader reader = null;
+
+    String apiUrl = "";
 
     try {
       String query = new StringBuilder()
@@ -103,7 +104,7 @@ public class PegdownWebSequencelPlugin extends Parser implements BlockPluginPars
           .append("&apiVersion=1")
           .toString();
 
-      URL url = new URL("http://www.websequencediagrams.com");
+      URL url = new URL(URL_WEBSEQUENCE);
       URLConnection conn = url.openConnection();
       conn.setDoOutput(true);
       writer = new OutputStreamWriter(conn.getOutputStream(), StandardCharsets.UTF_8);
@@ -128,16 +129,16 @@ public class PegdownWebSequencelPlugin extends Parser implements BlockPluginPars
       int end = json.indexOf("\"", start);
 
       if (start != -1 && end != -1) {
-        return "http://www.websequencediagrams.com/" + json.substring(start, end);
+        apiUrl = URL_WEBSEQUENCE + "/" + json.substring(start, end);
       }
     } catch (IOException e) {
-      throw new RuntimeException("Failed to get proper response from websequencediagrams.com");
+      throw new RuntimeException("Failed to get proper response from websequencediagrams.com", e);
     } finally {
       IOUtils.closeQuietly(writer);
       IOUtils.closeQuietly(reader);
     }
 
-    return "";
+    return apiUrl;
   }
 
   @Override
