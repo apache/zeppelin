@@ -16,27 +16,14 @@
 # limitations under the License.
 #
 
-
 if [[ "$#" -ne 2 ]]; then
     echo "usage) $0 [spark version] [hadoop version]"
     echo "   eg) $0 1.3.1 2.6"
-    exit 1
+    exit 0
 fi
 
 SPARK_VERSION="${1}"
 HADOOP_VERSION="${2}"
-
-echo "${SPARK_VERSION}" | grep "^1.[123].[0-9]" > /dev/null
-if [[ "$?" -eq 0 ]]; then
-  echo "${SPARK_VERSION}" | grep "^1.[12].[0-9]" > /dev/null
-  if [[ "$?" -eq 0 ]]; then
-    SPARK_VER_RANGE="<=1.2"
-  else
-    SPARK_VER_RANGE="<=1.3"
-  fi
-else
-  SPARK_VER_RANGE=">1.3"
-fi
 
 set -xe
 
@@ -75,30 +62,13 @@ if [[ ! -d "${SPARK_HOME}" ]]; then
         ls -la .
         echo "${SPARK_CACHE} does not have ${SPARK_ARCHIVE} downloading ..."
 
-        # download archive if not cached
-        if [[ "${SPARK_VERSION}" = "1.1.1" || "${SPARK_VERSION}" = "1.2.2" || "${SPARK_VERSION}" = "1.3.1" || "${SPARK_VERSION}" = "1.4.1" ]]; then
-            echo "${SPARK_VERSION} being downloaded from archives"
-            # spark old versions are only available only on the archives (prior to 1.5.2)
-            STARTTIME=`date +%s`
-            #timeout -s KILL "${MAX_DOWNLOAD_TIME_SEC}" wget "http://archive.apache.org/dist/spark/spark-${SPARK_VERSION}/${SPARK_ARCHIVE}.tgz"
-            download_with_retry "http://archive.apache.org/dist/spark/spark-${SPARK_VERSION}/${SPARK_ARCHIVE}.tgz"
-            ENDTIME=`date +%s`
-            DOWNLOADTIME="$((ENDTIME-STARTTIME))"
-        else
-            echo "${SPARK_VERSION} being downloaded from mirror"
-            # spark 1.5.2 and up and later can be downloaded from mirror
-            # get download address from mirror
-            MIRROR_INFO=$(curl -s "http://www.apache.org/dyn/closer.cgi/spark/spark-${SPARK_VERSION}/${SPARK_ARCHIVE}.tgz?asjson=1")
-
-            PREFFERED=$(echo "${MIRROR_INFO}" | grep preferred | sed 's/[^"]*.preferred.: .\([^"]*\).*/\1/g')
-            PATHINFO=$(echo "${MIRROR_INFO}" | grep path_info | sed 's/[^"]*.path_info.: .\([^"]*\).*/\1/g')
-
-            STARTTIME=`date +%s`
-            #timeout -s KILL "${MAX_DOWNLOAD_TIME_SEC}" wget -q "${PREFFERED}${PATHINFO}"
-            download_with_retry "${PREFFERED}${PATHINFO}"
-            ENDTIME=`date +%s`
-            DOWNLOADTIME="$((ENDTIME-STARTTIME))"
-        fi
+        # download spark from archive if not cached
+        echo "${SPARK_VERSION} being downloaded from archives"
+        STARTTIME=`date +%s`
+        #timeout -s KILL "${MAX_DOWNLOAD_TIME_SEC}" wget "http://archive.apache.org/dist/spark/spark-${SPARK_VERSION}/${SPARK_ARCHIVE}.tgz"
+        download_with_retry "http://archive.apache.org/dist/spark/spark-${SPARK_VERSION}/${SPARK_ARCHIVE}.tgz"
+        ENDTIME=`date +%s`
+        DOWNLOADTIME="$((ENDTIME-STARTTIME))"
     fi
 
     # extract archive in un-cached root, clean-up on failure
