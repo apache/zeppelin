@@ -88,6 +88,9 @@ If the query result has almost a node the **Network** button will be enabled so 
 
 ![Simple cypher query network visualization](../assets/themes/zeppelin/img/docs-img/neo4j-network-result.png)
 
+You can still use the other visualization charts provided by zeppelin
+![Simple cypher query Chart visualization](../assets/themes/zeppelin/img/docs-img/neo4j-chart-result.png)
+
 Leveraging the **settings** button you can customize your graph visualization, a list of nodes will be displayed and by click on each one you can set the property which will be used as node label.
 ![Simple cypher query network visualization](../assets/themes/zeppelin/img/docs-img/zeppelin-network-display-customization.png)
 
