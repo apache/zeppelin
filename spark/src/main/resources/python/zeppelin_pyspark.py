@@ -292,7 +292,12 @@ while True :
       global_hook = intp.getHook('post_exec_dev')
     except:
       global_hook = None
-    user_hook = z.getHook('post_exec')
+      
+    try:
+      user_hook = z.getHook('post_exec')
+    except:
+      user_hook = None
+      
     nhooks = 0
     for hook in (global_hook, user_hook):
       if hook:
