@@ -24,7 +24,9 @@ import static org.mockito.Mockito.mock;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
@@ -314,6 +316,72 @@ public class NotebookRepoSyncTest implements JobListenerFactory {
     notebookRepoSync.remove(note.getId(), anonymous);
   }
   
+  @Test
+  public void testSyncWithAcl() throws IOException {
+    /* scenario 1 - note exists with acl on main storage */
+    AuthenticationInfo user1 = new AuthenticationInfo("user1");
+    Note note = notebookSync.createNote(user1);
+    assertEquals(0, note.getParagraphs().size());
+    
+    // saved on both storages
+    assertEquals(1, notebookRepoSync.list(0, null).size());
+    assertEquals(1, notebookRepoSync.list(1, null).size());
+    
+    /* check that user1 is the only owner */
+    NotebookAuthorization authInfo = NotebookAuthorization.getInstance();
+    Set<String> entity = new HashSet<String>();
+    entity.add(user1.getUser());
+    assertEquals(true, authInfo.isOwner(note.getId(), entity));
+    assertEquals(1, authInfo.getOwners(note.getId()).size());
+    assertEquals(0, authInfo.getReaders(note.getId()).size());
+    assertEquals(0, authInfo.getWriters(note.getId()).size());
+    
+    /* update note and save on secondary storage */
+    Paragraph p1 = note.addParagraph();
+    p1.setText("hello world");
+    assertEquals(1, note.getParagraphs().size());
+    notebookRepoSync.save(1, note, null);
+    
+    /* check paragraph isn't saved into first storage */
+    assertEquals(0, notebookRepoSync.get(0,
+        notebookRepoSync.list(0, null).get(0).getId(), null).getParagraphs().size());
+    /* check paragraph is saved into second storage */
+    assertEquals(1, notebookRepoSync.get(1,
+        notebookRepoSync.list(1, null).get(0).getId(), null).getParagraphs().size());
+    
+    /* now sync by user1 */
+    notebookRepoSync.sync(user1);
+    
+    /* check that note updated and acl are same on main storage*/
+    assertEquals(1, notebookRepoSync.get(0,
+        notebookRepoSync.list(0, null).get(0).getId(), null).getParagraphs().size());
+    assertEquals(true, authInfo.isOwner(note.getId(), entity));
+    assertEquals(1, authInfo.getOwners(note.getId()).size());
+    assertEquals(0, authInfo.getReaders(note.getId()).size());
+    assertEquals(0, authInfo.getWriters(note.getId()).size());
+    
+    /* scenario 2 - note doesn't exist on main storage */
+    /* remove from main storage */
+    notebookRepoSync.remove(0, note.getId(), user1);
+    assertEquals(0, notebookRepoSync.list(0, null).size());
+    assertEquals(1, notebookRepoSync.list(1, null).size());
+    authInfo.removeNote(note.getId());
+    assertEquals(0, authInfo.getOwners(note.getId()).size());
+    assertEquals(0, authInfo.getReaders(note.getId()).size());
+    assertEquals(0, authInfo.getWriters(note.getId()).size());
+    
+    /* now sync - should bring note from secondary storage with added acl */
+    notebookRepoSync.sync(user1);
+    assertEquals(1, notebookRepoSync.list(0, null).size());
+    assertEquals(1, notebookRepoSync.list(1, null).size());
+    assertEquals(1, authInfo.getOwners(note.getId()).size());
+    assertEquals(1, authInfo.getReaders(note.getId()).size());
+    assertEquals(1, authInfo.getWriters(note.getId()).size());
+    assertEquals(true, authInfo.isOwner(note.getId(), entity));
+    assertEquals(true, authInfo.isReader(note.getId(), entity));
+    assertEquals(true, authInfo.isWriter(note.getId(), entity));
+  }
+
   static void delete(File file){
     if(file.isFile()) file.delete();
       else if(file.isDirectory()){

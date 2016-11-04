@@ -45,8 +45,13 @@ import org.apache.commons.exec.environment.EnvironmentUtils;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.sql.SQLContext;
-import org.apache.zeppelin.interpreter.*;
+import org.apache.zeppelin.interpreter.Interpreter;
+import org.apache.zeppelin.interpreter.InterpreterContext;
+import org.apache.zeppelin.interpreter.InterpreterException;
+import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
+import org.apache.zeppelin.interpreter.LazyOpenInterpreter;
+import org.apache.zeppelin.interpreter.WrappedInterpreter;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.spark.dep.SparkDependencyContext;
 import org.slf4j.Logger;
@@ -160,15 +165,6 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
     }
   }
 
-  private Map setupPySparkEnv() throws IOException{
-    Map env = EnvironmentUtils.getProcEnvironment();
-    if (!env.containsKey("PYTHONPATH")) {
-      SparkConf conf = getSparkConf();
-      env.put("PYTHONPATH", conf.get("spark.files").replaceAll(",", ":"));
-    }
-    return env;
-  }
-
   private void createGatewayServerAndStartScript() {
     // create python script
     createPythonScript();
@@ -200,8 +196,10 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
     executor.setStreamHandler(streamHandler);
     executor.setWatchdog(new ExecuteWatchdog(ExecuteWatchdog.INFINITE_TIMEOUT));
 
+
     try {
-      Map env = setupPySparkEnv();
+      Map env = EnvironmentUtils.getProcEnvironment();
+
       executor.execute(cmd, env, this);
       pythonscriptRunning = true;
     } catch (IOException e) {

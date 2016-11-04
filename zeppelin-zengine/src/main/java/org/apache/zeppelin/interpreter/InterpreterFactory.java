@@ -53,6 +53,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.internal.StringMap;
 import com.google.gson.reflect.TypeToken;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.ArrayUtils;
@@ -126,6 +127,10 @@ public class InterpreterFactory implements InterpreterGroupFactory {
   private Map<String, String> env = new HashMap<>();
 
   private Interpreter devInterpreter;
+
+  private static final Map<String, Object> DEFAULT_EDITOR = ImmutableMap.of(
+      "language", (Object) "text",
+      "editOnDblClick", false);
 
   public InterpreterFactory(ZeppelinConfiguration conf,
       AngularObjectRegistryListener angularObjectRegistryListener,
@@ -233,8 +238,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
       interpreterInfo =
           new InterpreterInfo(r.getClassName(), r.getName(), r.isDefaultInterpreter(),
               r.getEditor());
-      add(r.getGroup(), interpreterInfo, convertInterpreterProperties(r.getProperties()),
-          r.getPath());
+      add(r.getGroup(), interpreterInfo, r.getProperties(), r.getPath());
     }
 
     for (String settingId : interpreterSettingsRef.keySet()) {
@@ -282,7 +286,8 @@ public class InterpreterFactory implements InterpreterGroupFactory {
 
   private InterpreterSetting createFromInterpreterSettingRef(InterpreterSetting o) {
     InterpreterSetting setting =
-        new InterpreterSetting(o.getName(), o.getName(), o.getInterpreterInfos(), o.getProperties(),
+        new InterpreterSetting(o.getName(), o.getName(), o.getInterpreterInfos(),
+            convertInterpreterProperties((Map<String, InterpreterProperty>) o.getProperties()),
             o.getDependencies(), o.getOption(), o.getPath());
     setting.setInterpreterGroupFactory(this);
     return setting;
@@ -345,16 +350,9 @@ public class InterpreterFactory implements InterpreterGroupFactory {
       InterpreterInfo interpreterInfo =
           new InterpreterInfo(registeredInterpreter.getClassName(), registeredInterpreter.getName(),
               registeredInterpreter.isDefaultInterpreter(), registeredInterpreter.getEditor());
-      Properties properties = new Properties();
-      Map<String, InterpreterProperty> p = registeredInterpreter.getProperties();
 
-      if (null != p) {
-        for (String key : p.keySet()) {
-          properties.setProperty(key, p.get(key).getValue());
-        }
-      }
-
-      add(registeredInterpreter.getGroup(), interpreterInfo, properties, absolutePath);
+      add(registeredInterpreter.getGroup(), interpreterInfo, registeredInterpreter.getProperties(),
+          absolutePath);
     }
 
   }
@@ -384,6 +382,14 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     for (String k : infoSaving.interpreterSettings.keySet()) {
       InterpreterSetting setting = infoSaving.interpreterSettings.get(k);
       List<InterpreterInfo> infos = setting.getInterpreterInfos();
+
+      // Convert json StringMap to Properties
+      StringMap<String> p = (StringMap<String>) setting.getProperties();
+      Properties properties = new Properties();
+      for (String key : p.keySet()) {
+        properties.put(key, p.get(key));
+      }
+      setting.setProperties(properties);
 
       // Always use separate interpreter process
       // While we decided to turn this feature on always (without providing
@@ -429,11 +435,15 @@ public class InterpreterFactory implements InterpreterGroupFactory {
       String className) {
     List<InterpreterInfo> intpInfos = intpSetting.getInterpreterInfos();
     for (InterpreterInfo intpInfo : intpInfos) {
+
       if (className.equals(intpInfo.getClassName())) {
+        if (intpInfo.getEditor() == null) {
+          break;
+        }
         return intpInfo.getEditor();
       }
     }
-    return ImmutableMap.of("language", (Object) "text");
+    return DEFAULT_EDITOR;
   }
 
   private void loadInterpreterDependencies(final InterpreterSetting setting) {
@@ -607,11 +617,12 @@ public class InterpreterFactory implements InterpreterGroupFactory {
   }
 
   private InterpreterSetting add(String group, InterpreterInfo interpreterInfo,
-      Properties properties, String path)
+      Map<String, InterpreterProperty> interpreterProperties, String path)
       throws InterpreterException, IOException, RepositoryException {
     ArrayList<InterpreterInfo> infos = new ArrayList<>();
     infos.add(interpreterInfo);
-    return add(group, infos, new ArrayList<Dependency>(), defaultOption, properties, path);
+    return add(group, infos, new ArrayList<Dependency>(), defaultOption,
+        interpreterProperties, path);
   }
 
   /**
@@ -619,12 +630,13 @@ public class InterpreterFactory implements InterpreterGroupFactory {
    * @return
    */
   public InterpreterSetting add(String group, ArrayList<InterpreterInfo> interpreterInfos,
-      List<Dependency> dependencies, InterpreterOption option, Properties properties, String path) {
+      List<Dependency> dependencies, InterpreterOption option,
+      Map<String, InterpreterProperty> interpreterProperties, String path) {
     Preconditions.checkNotNull(group, "name should not be null");
     Preconditions.checkNotNull(interpreterInfos, "interpreterInfos should not be null");
     Preconditions.checkNotNull(dependencies, "dependencies should not be null");
     Preconditions.checkNotNull(option, "option should not be null");
-    Preconditions.checkNotNull(properties, "properties should not be null");
+    Preconditions.checkNotNull(interpreterProperties, "properties should not be null");
 
     InterpreterSetting interpreterSetting;
 
@@ -655,17 +667,18 @@ public class InterpreterFactory implements InterpreterGroupFactory {
         }
 
         // Append properties
-        Properties interpreterProperties = interpreterSetting.getProperties();
-        for (String key : properties.stringPropertyNames()) {
-          if (!interpreterProperties.containsKey(key)) {
-            interpreterProperties.setProperty(key, properties.getProperty(key));
+        Map<String, InterpreterProperty> properties =
+            (Map<String, InterpreterProperty>) interpreterSetting.getProperties();
+        for (String key : interpreterProperties.keySet()) {
+          if (!properties.containsKey(key)) {
+            properties.put(key, interpreterProperties.get(key));
           }
         }
 
       } else {
         interpreterSetting =
-            new InterpreterSetting(group, null, interpreterInfos, properties, dependencies, option,
-                path);
+            new InterpreterSetting(group, null, interpreterInfos, interpreterProperties,
+                dependencies, option, path);
         interpreterSettingsRef.put(group, interpreterSetting);
       }
     }
@@ -726,7 +739,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
       String noteId, String key) {
     InterpreterGroup interpreterGroup = interpreterSetting.getInterpreterGroup(user, noteId);
     InterpreterOption option = interpreterSetting.getOption();
-    Properties properties = interpreterSetting.getProperties();
+    Properties properties = (Properties) interpreterSetting.getProperties();
     if (option.isExistingProcess) {
       properties.put(Constants.ZEPPELIN_INTERPRETER_HOST, option.getHost());
       properties.put(Constants.ZEPPELIN_INTERPRETER_PORT, option.getPort());
@@ -924,16 +937,16 @@ public class InterpreterFactory implements InterpreterGroupFactory {
   public void setPropertyAndRestart(String id, InterpreterOption option, Properties properties,
       List<Dependency> dependencies) throws IOException {
     synchronized (interpreterSettings) {
-      InterpreterSetting intpsetting = interpreterSettings.get(id);
-      if (intpsetting != null) {
+      InterpreterSetting intpSetting = interpreterSettings.get(id);
+      if (intpSetting != null) {
         try {
-          stopJobAllInterpreter(intpsetting);
+          stopJobAllInterpreter(intpSetting);
 
-          intpsetting.closeAndRmoveAllInterpreterGroups();
-          intpsetting.setOption(option);
-          intpsetting.setProperties(properties);
-          intpsetting.setDependencies(dependencies);
-          loadInterpreterDependencies(intpsetting);
+          intpSetting.closeAndRmoveAllInterpreterGroups();
+          intpSetting.setOption(option);
+          intpSetting.setProperties(properties);
+          intpSetting.setDependencies(dependencies);
+          loadInterpreterDependencies(intpSetting);
 
           saveToFile();
         } catch (Exception e) {
@@ -947,17 +960,32 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     }
   }
 
+  private boolean noteIdIsExist(String noteId) {
+    return noteId == null ? false : true;
+  }
+
+  public void restart(String settingId, String noteId) {
+    InterpreterSetting intpSetting = interpreterSettings.get(settingId);
+    Preconditions.checkNotNull(intpSetting);
+
+    if (noteIdIsExist(noteId) && intpSetting.getOption().isProcess()) {
+      intpSetting.closeAndRemoveInterpreterGroup(noteId);
+      return;
+    }
+    restart(settingId);
+  }
+
   public void restart(String id) {
     synchronized (interpreterSettings) {
-      InterpreterSetting intpsetting = interpreterSettings.get(id);
+      InterpreterSetting intpSetting = interpreterSettings.get(id);
       // Check if dependency in specified path is changed
       // If it did, overwrite old dependency jar with new one
-      copyDependenciesFromLocalPath(intpsetting);
-      if (intpsetting != null) {
+      if (intpSetting != null) {
+        copyDependenciesFromLocalPath(intpSetting);
 
-        stopJobAllInterpreter(intpsetting);
+        stopJobAllInterpreter(intpSetting);
 
-        intpsetting.closeAndRmoveAllInterpreterGroups();
+        intpSetting.closeAndRmoveAllInterpreterGroups();
 
       } else {
         throw new InterpreterException("Interpreter setting id " + id + " not found");
@@ -965,9 +993,9 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     }
   }
 
-  private void stopJobAllInterpreter(InterpreterSetting intpsetting) {
-    if (intpsetting != null) {
-      for (InterpreterGroup intpGroup : intpsetting.getAllInterpreterGroups()) {
+  private void stopJobAllInterpreter(InterpreterSetting intpSetting) {
+    if (intpSetting != null) {
+      for (InterpreterGroup intpGroup : intpSetting.getAllInterpreterGroups()) {
         for (List<Interpreter> interpreters : intpGroup.values()) {
           for (Interpreter intp : interpreters) {
             for (Job job : intp.getScheduler().getJobsRunning()) {
@@ -989,11 +1017,11 @@ public class InterpreterFactory implements InterpreterGroupFactory {
   public void close() {
     List<Thread> closeThreads = new LinkedList<>();
     synchronized (interpreterSettings) {
-      Collection<InterpreterSetting> intpsettings = interpreterSettings.values();
-      for (final InterpreterSetting intpsetting : intpsettings) {
+      Collection<InterpreterSetting> intpSettings = interpreterSettings.values();
+      for (final InterpreterSetting intpSetting : intpSettings) {
         Thread t = new Thread() {
           public void run() {
-            intpsetting.closeAndRmoveAllInterpreterGroups();
+            intpSetting.closeAndRmoveAllInterpreterGroups();
           }
         };
         t.start();
@@ -1349,9 +1377,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
 
   public Map<String, Object> getEditorSetting(String user, String noteId, String replName) {
     Interpreter intp = getInterpreter(user, noteId, replName);
-    Map<String, Object> editor = Maps.newHashMap(
-        ImmutableMap.<String, Object>builder()
-            .put("language", "text").build());
+    Map<String, Object> editor = DEFAULT_EDITOR;
     String defaultSettingName = getDefaultInterpreterSetting(noteId).getName();
     String group = StringUtils.EMPTY;
     try {
@@ -1372,7 +1398,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
         }
       }
     } catch (NullPointerException e) {
-      logger.warn("Couldn't get interpreter editor language");
+      logger.warn("Couldn't get interpreter editor setting");
     }
     return editor;
   }

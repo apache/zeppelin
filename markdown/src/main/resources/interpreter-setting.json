@@ -12,7 +12,8 @@
       }
     },
     "editor": {
-      "language": "markdown"
+      "language": "markdown",
+      "editOnDblClick": true
     }
   }
 ]

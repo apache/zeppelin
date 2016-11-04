@@ -16,6 +16,9 @@
         "defaultValue": "19998",
         "description": "Alluxio master port"
       }
+    },
+    "editor": {
+      "editOnDblClick": false
     }
   }
 ]

@@ -304,7 +304,7 @@ public class ActiveDirectoryGroupRealm extends AbstractLdapRealm {
    * @return a collection of roles that are implied by the given role names.
    */
   protected Collection<String> getRoleNamesForGroups(Collection<String> groupNames) {
-    Set<String> roleNames = new HashSet<String>(groupNames.size());
+    Set<String> roleNames = new HashSet<>(groupNames.size());
 
     if (groupRolesMap != null) {
       for (String groupName : groupNames) {

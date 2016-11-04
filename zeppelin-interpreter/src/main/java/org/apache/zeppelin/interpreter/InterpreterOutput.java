@@ -39,7 +39,7 @@ public class InterpreterOutput extends OutputStream {
 
   ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 
-  private final List<Object> outList = new LinkedList<Object>();
+  private final List<Object> outList = new LinkedList<>();
   private InterpreterOutputChangeWatcher watcher;
   private final InterpreterOutputListener flushListener;
   private InterpreterResult.Type type = InterpreterResult.Type.TEXT;
@@ -185,7 +185,7 @@ public class InterpreterOutput extends OutputStream {
 
   public byte[] toByteArray() throws IOException {
     ByteArrayOutputStream out = new ByteArrayOutputStream();
-    List<Object> all = new LinkedList<Object>();
+    List<Object> all = new LinkedList<>();
 
     synchronized (outList) {
       all.addAll(outList);

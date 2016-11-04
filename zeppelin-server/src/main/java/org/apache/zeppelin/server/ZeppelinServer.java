@@ -22,9 +22,7 @@ import java.io.IOException;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.ExecutorService;
 
-import javax.net.ssl.SSLContext;
 import javax.servlet.DispatcherType;
 import javax.ws.rs.core.Application;
 
@@ -37,9 +35,16 @@ import org.apache.zeppelin.helium.HeliumApplicationFactory;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.NotebookAuthorization;
-import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.apache.zeppelin.notebook.repo.NotebookRepoSync;
-import org.apache.zeppelin.rest.*;
+import org.apache.zeppelin.rest.ConfigurationsRestApi;
+import org.apache.zeppelin.rest.CredentialRestApi;
+import org.apache.zeppelin.rest.HeliumRestApi;
+import org.apache.zeppelin.rest.InterpreterRestApi;
+import org.apache.zeppelin.rest.LoginRestApi;
+import org.apache.zeppelin.rest.NotebookRepoRestApi;
+import org.apache.zeppelin.rest.NotebookRestApi;
+import org.apache.zeppelin.rest.SecurityRestApi;
+import org.apache.zeppelin.rest.ZeppelinRestApi;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.apache.zeppelin.search.LuceneSearch;
 import org.apache.zeppelin.search.SearchService;
@@ -47,7 +52,12 @@ import org.apache.zeppelin.socket.NotebookServer;
 import org.apache.zeppelin.user.Credentials;
 import org.apache.zeppelin.utils.SecurityUtils;
 import org.eclipse.jetty.http.HttpVersion;
-import org.eclipse.jetty.server.*;
+import org.eclipse.jetty.server.HttpConfiguration;
+import org.eclipse.jetty.server.HttpConnectionFactory;
+import org.eclipse.jetty.server.SecureRequestCustomizer;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.ServerConnector;
+import org.eclipse.jetty.server.SslConnectionFactory;
 import org.eclipse.jetty.server.handler.ContextHandlerCollection;
 import org.eclipse.jetty.server.session.SessionHandler;
 import org.eclipse.jetty.servlet.DefaultServlet;
@@ -73,8 +83,8 @@ public class ZeppelinServer extends Application {
 
   private SchedulerFactory schedulerFactory;
   private InterpreterFactory replFactory;
-  private NotebookRepo notebookRepo;
-  private SearchService notebookIndex;
+  private SearchService noteSearchService;
+  private NotebookRepoSync notebookRepo;
   private NotebookAuthorization notebookAuthorization;
   private Credentials credentials;
   private DependencyResolver depResolver;
@@ -91,12 +101,12 @@ public class ZeppelinServer extends Application {
     this.replFactory = new InterpreterFactory(conf, notebookWsServer,
         notebookWsServer, heliumApplicationFactory, depResolver, SecurityUtils.isAuthenticated());
     this.notebookRepo = new NotebookRepoSync(conf);
-    this.notebookIndex = new LuceneSearch();
+    this.noteSearchService = new LuceneSearch();
     this.notebookAuthorization = NotebookAuthorization.init(conf);
     this.credentials = new Credentials(conf.credentialsPersist(), conf.getCredentialsPath());
     notebook = new Notebook(conf,
         notebookRepo, schedulerFactory, replFactory, notebookWsServer,
-            notebookIndex, notebookAuthorization, credentials);
+            noteSearchService, notebookAuthorization, credentials);
 
     // to update notebook from application event from remote process.
     heliumApplicationFactory.setNotebook(notebook);
@@ -292,7 +302,7 @@ public class ZeppelinServer extends Application {
 
   @Override
   public Set<Class<?>> getClasses() {
-    Set<Class<?>> classes = new HashSet<Class<?>>();
+    Set<Class<?>> classes = new HashSet<>();
     return classes;
   }
 
@@ -304,8 +314,12 @@ public class ZeppelinServer extends Application {
     ZeppelinRestApi root = new ZeppelinRestApi();
     singletons.add(root);
 
-    NotebookRestApi notebookApi = new NotebookRestApi(notebook, notebookWsServer, notebookIndex);
+    NotebookRestApi notebookApi
+      = new NotebookRestApi(notebook, notebookWsServer, noteSearchService);
     singletons.add(notebookApi);
+
+    NotebookRepoRestApi notebookRepoApi = new NotebookRepoRestApi(notebookRepo, notebookWsServer);
+    singletons.add(notebookRepoApi);
 
     HeliumRestApi heliumApi = new HeliumRestApi(helium, heliumApplicationFactory, notebook);
     singletons.add(heliumApi);

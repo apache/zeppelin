@@ -21,6 +21,7 @@ lens/lens-cli-hist.log
 conf/zeppelin-env.sh
 conf/zeppelin-env.cmd
 conf/zeppelin-site.xml
+conf/shiro.ini
 conf/keystore
 conf/truststore
 conf/interpreter.json

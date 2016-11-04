@@ -32,8 +32,7 @@ import java.util.Map;
  *  - Global scope : Shared to all notebook that uses the same interpreter group
  */
 public class AngularObjectRegistry {
-  Map<String, Map<String, AngularObject>> registry = 
-      new HashMap<String, Map<String, AngularObject>>();
+  Map<String, Map<String, AngularObject>> registry = new HashMap<>();
   private final String GLOBAL_KEY = "_GLOBAL_";
   private AngularObjectRegistryListener listener;
   private String interpreterId;
@@ -209,7 +208,7 @@ public class AngularObjectRegistry {
    * @return all angularobject in the scope
    */
   public List<AngularObject> getAll(String noteId, String paragraphId) {
-    List<AngularObject> all = new LinkedList<AngularObject>();
+    List<AngularObject> all = new LinkedList<>();
     synchronized (registry) {
       Map<String, AngularObject> r = getRegistryForKey(noteId, paragraphId);
       if (r != null) {
@@ -228,7 +227,7 @@ public class AngularObjectRegistry {
    * @return
    */
   public List<AngularObject> getAllWithGlobal(String noteId) {
-    List<AngularObject> all = new LinkedList<AngularObject>();
+    List<AngularObject> all = new LinkedList<>();
     synchronized (registry) {
       Map<String, AngularObject> global = getRegistryForKey(null, null);
       if (global != null) {

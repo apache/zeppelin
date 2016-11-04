@@ -32,20 +32,27 @@ limitations under the License.
       <div class="interpreterSettings"
            as-sortable="interpreterSelectionListeners" data-ng-model="interpreterBindings">
         <div data-ng-repeat="item in interpreterBindings" as-sortable-item>
-          <div as-sortable-item-handle
-               ng-click="item.selected = !item.selected"
-               class="btn"
-               ng-class="{'btn-info': item.selected, 'btn-default': !item.selected}">
-            <font style="font-size:16px">{{item.name}}</font>
-            <small>
-              <span style="display:inline-block" ng-repeat="intp in item.interpreters">
-                <span ng-show="!$first">, </span>
-                %<span ng-show="!$parent.$first || $first">{{item.name}}</span
-                ><span ng-show="(!$parent.$first || $first) && !$first">.</span
-                ><span ng-show="!$first">{{intp.name}}</span>
-                <span ng-show="$parent.$first && $first">(default)</span>
-              </span>
-            </small>
+          <div>
+            <a ng-click="restartInterpreter(item)" 
+               ng-class="{'inactivelink': !item.selected}"
+               tooltip="Restart">
+              <span class="glyphicon glyphicon-refresh btn-md"></span>
+            </a>&nbsp
+            <div as-sortable-item-handle
+                 ng-click="item.selected = !item.selected"
+                 class="btn"
+                 ng-class="{'btn-info': item.selected, 'btn-default': !item.selected}">
+              <font style="font-size:16px">{{item.name}}</font>
+              <small>
+                <span style="display:inline-block" ng-repeat="intp in item.interpreters">
+                  <span ng-show="!$first">, </span>
+                  %<span ng-show="!$parent.$first || $first">{{item.name}}</span
+                  ><span ng-show="(!$parent.$first || $first) && !$first">.</span
+                  ><span ng-show="!$first">{{intp.name}}</span>
+                  <span ng-show="$parent.$first && $first">(default)</span>
+                </span>
+              </small>
+            </div>
           </div>
         </div>
       </div>
@@ -113,7 +120,8 @@ limitations under the License.
          ng-include src="'app/notebook/paragraph/paragraph.html'"
          ng-class="{'paragraph-space box paragraph-margin': !asIframe, 'focused': paragraphFocused,
                     'lastEmptyParagraph': !paragraph.text && !paragraph.result}"
-         ng-hide="currentParagraph.config.tableHide && viewOnly">
+         ng-hide="currentParagraph.config.tableHide && viewOnly"
+         ng-dblclick="paragraphOnDoubleClick(currentParagraph.id);">
     </div>
     <div class="new-paragraph" ng-click="insertNew('below');" ng-hide="!$last || viewOnly || asIframe ">
       <h4 class="plus-sign">&#43;</h4>

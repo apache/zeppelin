@@ -55,7 +55,7 @@ Stable binary packages are available on the [Apache Zeppelin Download Page](http
 
 If you downloaded the default package, just unpack it in a directory of your choice and you're ready to go. If you downloaded the *net-install* package, you should manually [install additional interpreters](../manual/interpreterinstallation.html) first. You can also install everything by running `./bin/install-interpreter.sh --all`.
 
-After unpacking, jump to the [Starting Apache Zeppelin with Command Line](#starting-apache-zeppelin-with-command-line).
+After unpacking, jump to the [Starting Apache Zeppelin from Command Line](#starting-apache-zeppelin-from-the-command-line).
 
 ### Building from Source
 
@@ -178,7 +178,7 @@ chdir /usr/share/zeppelin
 exec bin/zeppelin-daemon.sh upstart
 ```
 
-## Next Steps:
+## Next Steps
 
 Congratulations, you have successfully installed Apache Zeppelin! Here are two next steps you might find useful:
 
@@ -188,7 +188,7 @@ Congratulations, you have successfully installed Apache Zeppelin! Here are two n
  * If you need more configuration for Apache Zeppelin, jump to the next section: [Apache Zeppelin Configuration](#apache-zeppelin-configuration).
  
 #### If you need more information about Spark or JDBC interpreter settings...
- * Apache Zeppelin provides deep integration with [Apache Spark](http://spark.apache.org/). For more informtation, see [Spark Interpreter for Apache Zeppelin](../interpreter/spark.html). 
+ * Apache Zeppelin provides deep integration with [Apache Spark](http://spark.apache.org/). For more information, see [Spark Interpreter for Apache Zeppelin](../interpreter/spark.html).
  * You can also use generic JDBC connections in Apache Zeppelin. Go to [Generic JDBC Interpreter for Apache Zeppelin](../interpreter/jdbc.html).
  
 #### If you are in a multi-user environment...
@@ -311,13 +311,13 @@ You can configure Apache Zeppelin with either **environment variables** in `conf
     <td>ZEPPELIN_NOTEBOOK_HOMESCREEN</td>
     <td>zeppelin.notebook.homescreen</td>
     <td></td>
-    <td>Display notebook IDs on the Apache Zeppelin homescreen <br />i.e. 2A94M5J1Z</td>
+    <td>Display note IDs on the Apache Zeppelin homescreen <br />i.e. 2A94M5J1Z</td>
   </tr>
   <tr>
     <td>ZEPPELIN_NOTEBOOK_HOMESCREEN_HIDE</td>
     <td>zeppelin.notebook.homescreen.hide</td>
     <td>false</td>
-    <td>Hide the notebook ID set by <code>ZEPPELIN_NOTEBOOK_HOMESCREEN</code> on the Apache Zeppelin homescreen. <br />For the further information, please read <a href="../manual/notebookashomepage.html">Customize your Zeppelin homepage</a>.</td>
+    <td>Hide the note ID set by <code>ZEPPELIN_NOTEBOOK_HOMESCREEN</code> on the Apache Zeppelin homescreen. <br />For the further information, please read <a href="../manual/notebookashomepage.html">Customize your Zeppelin homepage</a>.</td>
   </tr>
   <tr>
     <td>ZEPPELIN_WAR_TEMPDIR</td>

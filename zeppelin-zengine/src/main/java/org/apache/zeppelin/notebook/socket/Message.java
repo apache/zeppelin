@@ -34,7 +34,7 @@ public class Message {
                       // @param id note id
 
     NOTE,             // [s-c] note info
-                      // @param note serlialized Note object
+                      // @param note serialized Note object
 
     PARAGRAPH,        // [s-c] paragraph info
                       // @param paragraph serialized paragraph object
@@ -115,7 +115,7 @@ public class Message {
     CONFIGURATIONS_INFO,          // [s-c] all key/value pairs of configurations
                                   // @param settings serialized Map<String, String> object
 
-    CHECKPOINT_NOTEBOOK,          // [c-s] checkpoint notebook to storage repository
+    CHECKPOINT_NOTE,              // [c-s] checkpoint note to storage repository
                                   // @param noteId
                                   // @param checkpointName
 
@@ -130,21 +130,23 @@ public class Message {
     APP_LOAD,                     // [s-c] on app load
     APP_STATUS_CHANGE,            // [s-c] on app status change
 
-    LIST_NOTEBOOK_JOBS,           // [c-s] get notebook job management infomations
-    LIST_UPDATE_NOTEBOOK_JOBS,    // [c-s] get job management informations for until unixtime
-    UNSUBSCRIBE_UPDATE_NOTEBOOK_JOBS, // [c-s] unsubscribe job information for job management
+    LIST_NOTE_JOBS,               // [c-s] get note job management information
+    LIST_UPDATE_NOTE_JOBS,        // [c-s] get job management information for until unixtime
+    UNSUBSCRIBE_UPDATE_NOTE_JOBS, // [c-s] unsubscribe job information for job management
                                   // @param unixTime
     GET_INTERPRETER_BINDINGS,     // [c-s] get interpreter bindings
-                                  // @param noteID
+                                  // @param noteId
     SAVE_INTERPRETER_BINDINGS,    // [c-s] save interpreter bindings
-                                  // @param noteID
+                                  // @param noteId
                                   // @param selectedSettingIds
     INTERPRETER_BINDINGS,         // [s-c] interpreter bindings
+    GET_INTERPRETER_SETTINGS,     // [c-s] get interpreter settings
+    INTERPRETER_SETTINGS,         // [s-c] interpreter settings
     ERROR_INFO                    // [s-c] error information to be sent
   }
 
   public OP op;
-  public Map<String, Object> data = new HashMap<String, Object>();
+  public Map<String, Object> data = new HashMap<>();
   public String ticket = "anonymous";
   public String principal = "anonymous";
   public String roles = "";

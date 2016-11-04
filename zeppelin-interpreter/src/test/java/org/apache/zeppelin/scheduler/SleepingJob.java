@@ -71,7 +71,7 @@ public class SleepingJob extends Job{
 
 	@Override
   public Map<String, Object> info() {
-		Map<String, Object> i = new HashMap<String, Object>();
+		Map<String, Object> i = new HashMap<>();
 		i.put("LoopCount", Integer.toString(count));
 		return i;
 	}

@@ -30,7 +30,8 @@
       }
     },
     "editor": {
-      "language": "sh"
+      "language": "sh",
+      "editOnDblClick": false
     }
   }
 ]

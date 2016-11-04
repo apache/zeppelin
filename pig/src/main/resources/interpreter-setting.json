@@ -18,7 +18,8 @@
       }
     },
     "editor": {
-      "language": "pig"
+      "language": "pig",
+      "editOnDblClick": false
     }
   },
   {
@@ -40,7 +41,8 @@
       }
     },
     "editor": {
-      "language": "pig"
+      "language": "pig",
+      "editOnDblClick": false
     }
   }
 ]
