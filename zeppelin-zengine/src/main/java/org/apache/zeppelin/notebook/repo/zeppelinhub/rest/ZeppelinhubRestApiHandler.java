@@ -144,10 +144,6 @@ public class ZeppelinhubRestApiHandler {
   
   private String sendToZeppelinHub(HttpMethod method, String url, String json, boolean withResponse)
       throws IOException {
-    InputStreamResponseListener listener = new InputStreamResponseListener();
-    Response response;
-    String data;
-
     Request request = client.newRequest(url).method(method).header(ZEPPELIN_TOKEN_HEADER, token);
     if ((method.equals(HttpMethod.PUT) || method.equals(HttpMethod.POST))
         && !StringUtils.isBlank(json)) {
