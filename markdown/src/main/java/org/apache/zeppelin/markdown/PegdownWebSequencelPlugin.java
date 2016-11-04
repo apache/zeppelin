@@ -38,14 +38,14 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
 /**
- * Pegdown plugin for Websequence diagram
+ * Pegdown plugin for Websequence diagram.
  */
 public class PegdownWebSequencelPlugin extends Parser implements BlockPluginParser {
 
   public PegdownWebSequencelPlugin() {
     super(PegdownParser.OPTIONS,
-      PegdownParser.PARSING_TIMEOUT_AS_MILLIS,
-      DefaultParseRunnerProvider);
+        PegdownParser.PARSING_TIMEOUT_AS_MILLIS,
+        DefaultParseRunnerProvider);
   }
 
   public PegdownWebSequencelPlugin(Integer options,
@@ -57,34 +57,32 @@ public class PegdownWebSequencelPlugin extends Parser implements BlockPluginPars
 
   public static final String TAG = "%%%";
 
-  Rule StartMarker() {
+  Rule startMarker() {
     return Sequence(Spn1(), TAG, Sp(), "sequence", Sp());
   }
 
-  String EndMarker() {
+  String endMarker() {
     return TAG;
   }
 
-  Rule Body() {
+  Rule body() {
     return OneOrMore(TestNot(TAG), BaseParser.ANY);
   }
 
-  Rule BlockRule() {
+  Rule block() {
     StringBuilderVar style = new StringBuilderVar();
     StringBuilderVar body = new StringBuilderVar();
 
     return NodeSequence(
-      StartMarker(),
-      String("style="),
-      Sequence(OneOrMore(Letter()), style.append(match()), Spn1()),
-      Sequence(Body(), body.append(match())),
-      EndMarker(),
-      push(
-        new ExpImageNode("title",
-          createWebsequenceUrl(style.getString(), body.getString()),
-          new TextNode(""))
-      )
-    );
+        startMarker(),
+        String("style="),
+        Sequence(OneOrMore(Letter()), style.append(match()), Spn1()),
+        Sequence(body(), body.append(match())),
+        endMarker(),
+        push(
+            new ExpImageNode("title",
+                createWebsequenceUrl(style.getString(), body.getString()),
+                new TextNode(""))));
   }
 
   public static String createWebsequenceUrl(String style,
@@ -97,12 +95,12 @@ public class PegdownWebSequencelPlugin extends Parser implements BlockPluginPars
 
     try {
       String query = new StringBuilder()
-        .append("style=")
-        .append(style)
-        .append("&message=")
-        .append(URLEncoder.encode(content, "UTF-8"))
-        .append("&apiVersion=1")
-        .toString();
+          .append("style=")
+          .append(style)
+          .append("&message=")
+          .append(URLEncoder.encode(content, "UTF-8"))
+          .append("&apiVersion=1")
+          .toString();
 
       URL url = new URL("http://www.websequencediagrams.com");
       URLConnection conn = url.openConnection();
@@ -112,7 +110,9 @@ public class PegdownWebSequencelPlugin extends Parser implements BlockPluginPars
       writer.flush();
 
       StringBuilder response = new StringBuilder();
-      reader = new BufferedReader(new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8));
+      reader =
+          new BufferedReader(
+              new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8));
       String line;
       while ((line = reader.readLine()) != null) {
         response.append(line);
@@ -141,6 +141,6 @@ public class PegdownWebSequencelPlugin extends Parser implements BlockPluginPars
 
   @Override
   public Rule[] blockPluginRules() {
-    return new Rule[]{BlockRule()};
+    return new Rule[]{block()};
   }
 }

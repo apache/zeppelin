@@ -33,14 +33,14 @@ import java.net.URLEncoder;
 import java.util.Map;
 
 /**
- * Pegdown plugin for YUML
+ * Pegdown plugin for YUML.
  */
 public class PegdownYumlPlugin extends Parser implements BlockPluginParser {
 
   public PegdownYumlPlugin() {
     super(PegdownParser.OPTIONS,
-      PegdownParser.PARSING_TIMEOUT_AS_MILLIS,
-      DefaultParseRunnerProvider);
+        PegdownParser.PARSING_TIMEOUT_AS_MILLIS,
+        DefaultParseRunnerProvider);
   }
 
   public PegdownYumlPlugin(Integer options,
@@ -52,44 +52,45 @@ public class PegdownYumlPlugin extends Parser implements BlockPluginParser {
 
   public static final String TAG = "%%%";
 
-  Rule StartMarker() {
+  Rule startMarker() {
     return Sequence(Spn1(), TAG, Sp(), "yuml", Sp());
   }
 
-  String EndMarker() {
+  String endMarker() {
     return TAG;
   }
 
-  Rule ParameterName() {
+  Rule parameterName() {
     return FirstOf("type", "style", "scale", "format", "dir");
   }
 
-  Rule Body() {
+  Rule body() {
     return OneOrMore(TestNot(TAG), BaseParser.ANY);
   }
 
-  Rule BlockRule() {
+  Rule block() {
     ParamVar<String, String> params = new ParamVar<String, String>();
     StringBuilderVar name = new StringBuilderVar();
     StringBuilderVar value = new StringBuilderVar();
     StringBuilderVar body = new StringBuilderVar();
 
     return NodeSequence(
-      StartMarker(),
-      ZeroOrMore(
-        Sequence(
-          ParameterName(), name.append(match()),
-          String("="),
-          OneOrMore(Alphanumeric()), value.append(match())
-        ),
-        Sp(),
-        params.put(name.getString(), value.getString()),
-        name.clear(), value.clear()
-      )
-      , Body(), body.append(match())
-      , EndMarker()
-      , push(new ExpImageNode("title", createYumlUrl(params.get(), body.getString()), new TextNode("")))
-    );
+        startMarker(),
+        ZeroOrMore(
+            Sequence(
+                parameterName(), name.append(match()),
+                String("="),
+                OneOrMore(Alphanumeric()), value.append(match())),
+            Sp(),
+            params.put(name.getString(), value.getString()),
+            name.clear(), value.clear())
+        , body(), body.append(match())
+        , endMarker()
+        , push(
+            new ExpImageNode(
+                "title",
+                createYumlUrl(params.get(), body.getString()),
+                new TextNode(""))));
   }
 
   public static String createYumlUrl(Map<String, String> params, String body) {
@@ -118,23 +119,25 @@ public class PegdownYumlPlugin extends Parser implements BlockPluginParser {
 
     mergedStyle.append(style);
 
-    if (null != params.get("dir"))
+    if (null != params.get("dir")) {
       mergedStyle.append(";dir:" + params.get("dir"));
+    }
 
-    if (null != params.get("scale"))
+    if (null != params.get("scale")) {
       mergedStyle.append(";scale:" + params.get("scale"));
+    }
 
     return new StringBuilder()
-      .append("http://yuml.me/diagram/")
-      .append(mergedStyle.toString() + "/")
-      .append(type + "/")
-      .append(encodedBody)
-      .append("." + format)
-      .toString();
+        .append("http://yuml.me/diagram/")
+        .append(mergedStyle.toString() + "/")
+        .append(type + "/")
+        .append(encodedBody)
+        .append("." + format)
+        .toString();
   }
 
   @Override
   public Rule[] blockPluginRules() {
-    return new Rule[]{BlockRule()};
+    return new Rule[]{block()};
   }
 }

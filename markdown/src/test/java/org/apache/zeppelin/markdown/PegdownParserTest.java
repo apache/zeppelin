@@ -32,6 +32,9 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+/**
+ * Test for PegdownParser.
+ */
 public class PegdownParserTest {
 
   Markdown md;
@@ -39,7 +42,6 @@ public class PegdownParserTest {
   @Before
   public void setUp() throws Exception {
     Properties props = new Properties();
-    props.put(Markdown.MARKDOWN_PARSER_TYPE, Markdown.PARSER_TYPE_PEGDOWN);
     md = new Markdown(props);
     md.open();
   }
@@ -80,39 +82,39 @@ public class PegdownParserTest {
   public void testStrikethrough() {
     InterpreterResult result = md.interpret("This is ~~deleted~~ text", null);
     assertEquals(
-      wrapWithMarkdownClassDiv("<p>This is <del>deleted</del> text</p>"), result.message());
+        wrapWithMarkdownClassDiv("<p>This is <del>deleted</del> text</p>"), result.message());
   }
 
   @Test
   public void testItalics() {
     InterpreterResult result = md.interpret("This is *italics* text", null);
     assertEquals(
-      wrapWithMarkdownClassDiv("<p>This is <em>italics</em> text</p>"), result.message());
+        wrapWithMarkdownClassDiv("<p>This is <em>italics</em> text</p>"), result.message());
   }
 
   @Test
   public void testStrongEmphasis() {
     InterpreterResult result = md.interpret("This is **strong emphasis** text", null);
     assertEquals(
-      wrapWithMarkdownClassDiv("<p>This is <strong>strong emphasis</strong> text</p>"),
-      result.message());
+        wrapWithMarkdownClassDiv("<p>This is <strong>strong emphasis</strong> text</p>"),
+        result.message());
   }
 
   @Test
   public void testOrderedList() {
     String input =
-      new StringBuilder()
-        .append("1. First ordered list item\n")
-        .append("2. Another item")
-        .toString();
+        new StringBuilder()
+            .append("1. First ordered list item\n")
+            .append("2. Another item")
+            .toString();
 
     String expected =
-      new StringBuilder()
-        .append("<ol>\n")
-        .append("  <li>First ordered list item</li>\n")
-        .append("  <li>Another item</li>\n")
-        .append("</ol>")
-        .toString();
+        new StringBuilder()
+            .append("<ol>\n")
+            .append("  <li>First ordered list item</li>\n")
+            .append("  <li>Another item</li>\n")
+            .append("</ol>")
+            .toString();
 
     InterpreterResult result = md.interpret(input, null);
     assertEquals(wrapWithMarkdownClassDiv(expected), result.message());
@@ -121,20 +123,20 @@ public class PegdownParserTest {
   @Test
   public void testUnorderedList() {
     String input =
-      new StringBuilder()
-        .append("* Unordered list can use asterisks\n")
-        .append("- Or minuses\n")
-        .append("+ Or pluses")
-        .toString();
+        new StringBuilder()
+            .append("* Unordered list can use asterisks\n")
+            .append("- Or minuses\n")
+            .append("+ Or pluses")
+            .toString();
 
     String expected =
-      new StringBuilder()
-        .append("<ul>\n")
-        .append("  <li>Unordered list can use asterisks</li>\n")
-        .append("  <li>Or minuses</li>\n")
-        .append("  <li>Or pluses</li>\n")
-        .append("</ul>")
-        .toString();
+        new StringBuilder()
+            .append("<ul>\n")
+            .append("  <li>Unordered list can use asterisks</li>\n")
+            .append("  <li>Or minuses</li>\n")
+            .append("  <li>Or pluses</li>\n")
+            .append("</ul>")
+            .toString();
 
     InterpreterResult result = md.interpret(input, null);
     assertEquals(wrapWithMarkdownClassDiv(expected), result.message());
@@ -143,49 +145,49 @@ public class PegdownParserTest {
   @Test
   public void testLinks() {
     String input =
-      new StringBuilder()
-        .append("[I'm an inline-style link](https://www.google.com)\n")
-        .append("\n")
-        .append(
-          "[I'm an inline-style link with title](https://www.google.com \"Google's Homepage\")\n")
-        .append("\n")
-        .append("[I'm a reference-style link][Arbitrary case-insensitive reference text]\n")
-        .append("\n")
-        .append("[I'm a relative reference to a repository file](../blob/master/LICENSE)\n")
-        .append("\n")
-        .append("[You can use numbers for reference-style link definitions][1]\n")
-        .append("\n")
-        .append("Or leave it empty and use the [link text itself].\n")
-        .append("\n")
-        .append("URLs and URLs in angle brackets will automatically get turned into links. \n")
-        .append("http://www.example.com or <http://www.example.com> and sometimes \n")
-        .append("example.com (but not on Github, for example).\n")
-        .append("\n")
-        .append("Some text to show that the reference links can follow later.\n")
-        .append("\n")
-        .append("[arbitrary case-insensitive reference text]: https://www.mozilla.org\n")
-        .append("[1]: http://slashdot.org\n")
-        .append("[link text itself]: http://www.reddit.com")
-        .toString();
+        new StringBuilder()
+            .append("[I'm an inline-style link](https://www.google.com)\n")
+            .append("\n")
+            .append(
+                "[I'm an inline-style link with title](https://www.google.com \"Google's Homepage\")\n")
+            .append("\n")
+            .append("[I'm a reference-style link][Arbitrary case-insensitive reference text]\n")
+            .append("\n")
+            .append("[I'm a relative reference to a repository file](../blob/master/LICENSE)\n")
+            .append("\n")
+            .append("[You can use numbers for reference-style link definitions][1]\n")
+            .append("\n")
+            .append("Or leave it empty and use the [link text itself].\n")
+            .append("\n")
+            .append("URLs and URLs in angle brackets will automatically get turned into links. \n")
+            .append("http://www.example.com or <http://www.example.com> and sometimes \n")
+            .append("example.com (but not on Github, for example).\n")
+            .append("\n")
+            .append("Some text to show that the reference links can follow later.\n")
+            .append("\n")
+            .append("[arbitrary case-insensitive reference text]: https://www.mozilla.org\n")
+            .append("[1]: http://slashdot.org\n")
+            .append("[link text itself]: http://www.reddit.com")
+            .toString();
 
     String expected =
-      new StringBuilder()
-        .append(
-          "<p><a href=\"https://www.google.com\">I&rsquo;m an inline-style link</a></p>\n")
-        .append(
-          "<p><a href=\"https://www.google.com\" title=\"Google&#39;s Homepage\">I&rsquo;m an inline-style link with title</a></p>\n")
-        .append(
-          "<p><a href=\"https://www.mozilla.org\">I&rsquo;m a reference-style link</a></p>\n")
-        .append(
-          "<p><a href=\"../blob/master/LICENSE\">I&rsquo;m a relative reference to a repository file</a></p>\n")
-        .append(
-          "<p><a href=\"http://slashdot.org\">You can use numbers for reference-style link definitions</a></p>\n")
-        .append(
-          "<p>Or leave it empty and use the <a href=\"http://www.reddit.com\">link text itself</a>.</p>\n")
-        .append(
-          "<p>URLs and URLs in angle brackets will automatically get turned into links.<br/><a href=\"http://www.example.com\">http://www.example.com</a> or <a href=\"http://www.example.com\">http://www.example.com</a> and sometimes<br/>example.com (but not on Github, for example).</p>\n")
-        .append("<p>Some text to show that the reference links can follow later.</p>")
-        .toString();
+        new StringBuilder()
+            .append(
+                "<p><a href=\"https://www.google.com\">I&rsquo;m an inline-style link</a></p>\n")
+            .append(
+                "<p><a href=\"https://www.google.com\" title=\"Google&#39;s Homepage\">I&rsquo;m an inline-style link with title</a></p>\n")
+            .append(
+                "<p><a href=\"https://www.mozilla.org\">I&rsquo;m a reference-style link</a></p>\n")
+            .append(
+                "<p><a href=\"../blob/master/LICENSE\">I&rsquo;m a relative reference to a repository file</a></p>\n")
+            .append(
+                "<p><a href=\"http://slashdot.org\">You can use numbers for reference-style link definitions</a></p>\n")
+            .append(
+                "<p>Or leave it empty and use the <a href=\"http://www.reddit.com\">link text itself</a>.</p>\n")
+            .append(
+                "<p>URLs and URLs in angle brackets will automatically get turned into links.<br/><a href=\"http://www.example.com\">http://www.example.com</a> or <a href=\"http://www.example.com\">http://www.example.com</a> and sometimes<br/>example.com (but not on Github, for example).</p>\n")
+            .append("<p>Some text to show that the reference links can follow later.</p>")
+            .toString();
 
     InterpreterResult result = md.interpret(input, null);
     assertEquals(wrapWithMarkdownClassDiv(expected), result.message());
@@ -195,71 +197,71 @@ public class PegdownParserTest {
   public void testInlineCode() {
     InterpreterResult result = md.interpret("Inline `code` has `back-ticks around` it.", null);
     assertEquals(
-      wrapWithMarkdownClassDiv(
-        "<p>Inline <code>code</code> has <code>back-ticks around</code> it.</p>"),
-      result.message());
+        wrapWithMarkdownClassDiv(
+            "<p>Inline <code>code</code> has <code>back-ticks around</code> it.</p>"),
+        result.message());
   }
 
   @Test
   public void testBlockQuotes() {
     InterpreterResult r1 =
-      md.interpret(
-        "> Blockquotes are very handy in email to emulate reply text.\n"
-          + "> This line is part of the same quote.",
-        null);
+        md.interpret(
+            "> Blockquotes are very handy in email to emulate reply text.\n"
+                + "> This line is part of the same quote.",
+            null);
     assertEquals(
-      wrapWithMarkdownClassDiv(
-        "<blockquote>\n"
-          + "  <p>Blockquotes are very handy in email to emulate reply text.<br/>This line is part of the same quote.</p>\n"
-          + "</blockquote>"),
-      r1.message());
+        wrapWithMarkdownClassDiv(
+            "<blockquote>\n"
+                + "  <p>Blockquotes are very handy in email to emulate reply text.<br/>This line is part of the same quote.</p>\n"
+                + "</blockquote>"),
+        r1.message());
 
     InterpreterResult r2 =
-      md.interpret(
-        "> This is a very long line that will still be quoted properly when it wraps. Oh boy let's keep writing to make sure this is long enough to actually wrap for everyone. Oh, you can *put* **MarkdownInterpreter** into a blockquote. ",
-        null);
+        md.interpret(
+            "> This is a very long line that will still be quoted properly when it wraps. Oh boy let's keep writing to make sure this is long enough to actually wrap for everyone. Oh, you can *put* **MarkdownInterpreter** into a blockquote. ",
+            null);
     assertEquals(
-      wrapWithMarkdownClassDiv(
-        "<blockquote>\n"
-          + "  <p>This is a very long line that will still be quoted properly when it wraps. Oh boy let&rsquo;s keep writing to make sure this is long enough to actually wrap for everyone. Oh, you can <em>put</em> <strong>MarkdownInterpreter</strong> into a blockquote. </p>\n"
-          + "</blockquote>"),
-      r2.message());
+        wrapWithMarkdownClassDiv(
+            "<blockquote>\n"
+                + "  <p>This is a very long line that will still be quoted properly when it wraps. Oh boy let&rsquo;s keep writing to make sure this is long enough to actually wrap for everyone. Oh, you can <em>put</em> <strong>MarkdownInterpreter</strong> into a blockquote. </p>\n"
+                + "</blockquote>"),
+        r2.message());
   }
 
   @Test
   public void testSimpleTable() {
     String input =
-      new StringBuilder()
-        .append("MarkdownInterpreter | Less | Pretty\n")
-        .append("--- | --- | ---\n")
-        .append("*Still* | `renders` | **nicely**\n")
-        .append("1 | 2 | 3")
-        .toString();
+        new StringBuilder()
+            .append("MarkdownInterpreter | Less | Pretty\n")
+            .append("--- | --- | ---\n")
+            .append("*Still* | `renders` | **nicely**\n")
+            .append("1 | 2 | 3")
+            .toString();
 
     String expected =
-      new StringBuilder()
-        .append("<table>\n")
-        .append("  <thead>\n")
-        .append("    <tr>\n")
-        .append("      <th>MarkdownInterpreter </th>\n")
-        .append("      <th>Less </th>\n")
-        .append("      <th>Pretty</th>\n")
-        .append("    </tr>\n")
-        .append("  </thead>\n")
-        .append("  <tbody>\n")
-        .append("    <tr>\n")
-        .append("      <td><em>Still</em> </td>\n")
-        .append("      <td><code>renders</code> </td>\n")
-        .append("      <td><strong>nicely</strong></td>\n")
-        .append("    </tr>\n")
-        .append("    <tr>\n")
-        .append("      <td>1 </td>\n")
-        .append("      <td>2 </td>\n")
-        .append("      <td>3</td>\n")
-        .append("    </tr>\n")
-        .append("  </tbody>\n")
-        .append("</table>")
-        .toString();
+        new StringBuilder()
+            .append("<table>\n")
+            .append("  <thead>\n")
+            .append("    <tr>\n")
+            .append("      <th>MarkdownInterpreter </th>\n")
+            .append("      <th>Less </th>\n")
+            .append("      <th>Pretty</th>\n")
+            .append("    </tr>\n")
+            .append("  </thead>\n")
+            .append("  <tbody>\n")
+            .append("    <tr>\n")
+            .append("      <td><em>Still</em> </td>\n")
+            .append("      <td><code>renders</code> </td>\n")
+            .append("      <td><strong>nicely</strong></td>\n")
+            .append("    </tr>\n")
+            .append("    <tr>\n")
+            .append("      <td>1 </td>\n")
+            .append("      <td>2 </td>\n")
+            .append("      <td>3</td>\n")
+            .append("    </tr>\n")
+            .append("  </tbody>\n")
+            .append("</table>")
+            .toString();
 
     InterpreterResult result = md.interpret(input, null);
     assertEquals(wrapWithMarkdownClassDiv(expected), result.message());
@@ -268,37 +270,37 @@ public class PegdownParserTest {
   @Test
   public void testAlignedTable() {
     String input =
-      new StringBuilder()
-        .append("| First Header | Second Header |         Third Header |\n")
-        .append("| :----------- | :-----------: | -------------------: |\n")
-        .append("| First row    |      Data     | Very long data entry |\n")
-        .append("| Second row   |    **Cell**   |               *Cell* |")
-        .toString();
+        new StringBuilder()
+            .append("| First Header | Second Header |         Third Header |\n")
+            .append("| :----------- | :-----------: | -------------------: |\n")
+            .append("| First row    |      Data     | Very long data entry |\n")
+            .append("| Second row   |    **Cell**   |               *Cell* |")
+            .toString();
 
     String expected =
-      new StringBuilder()
-        .append("<table>\n")
-        .append("  <thead>\n")
-        .append("    <tr>\n")
-        .append("      <th align=\"left\">First Header </th>\n")
-        .append("      <th align=\"center\">Second Header </th>\n")
-        .append("      <th align=\"right\">Third Header </th>\n")
-        .append("    </tr>\n")
-        .append("  </thead>\n")
-        .append("  <tbody>\n")
-        .append("    <tr>\n")
-        .append("      <td align=\"left\">First row </td>\n")
-        .append("      <td align=\"center\">Data </td>\n")
-        .append("      <td align=\"right\">Very long data entry </td>\n")
-        .append("    </tr>\n")
-        .append("    <tr>\n")
-        .append("      <td align=\"left\">Second row </td>\n")
-        .append("      <td align=\"center\"><strong>Cell</strong> </td>\n")
-        .append("      <td align=\"right\"><em>Cell</em> </td>\n")
-        .append("    </tr>\n")
-        .append("  </tbody>\n")
-        .append("</table>")
-        .toString();
+        new StringBuilder()
+            .append("<table>\n")
+            .append("  <thead>\n")
+            .append("    <tr>\n")
+            .append("      <th align=\"left\">First Header </th>\n")
+            .append("      <th align=\"center\">Second Header </th>\n")
+            .append("      <th align=\"right\">Third Header </th>\n")
+            .append("    </tr>\n")
+            .append("  </thead>\n")
+            .append("  <tbody>\n")
+            .append("    <tr>\n")
+            .append("      <td align=\"left\">First row </td>\n")
+            .append("      <td align=\"center\">Data </td>\n")
+            .append("      <td align=\"right\">Very long data entry </td>\n")
+            .append("    </tr>\n")
+            .append("    <tr>\n")
+            .append("      <td align=\"left\">Second row </td>\n")
+            .append("      <td align=\"center\"><strong>Cell</strong> </td>\n")
+            .append("      <td align=\"right\"><em>Cell</em> </td>\n")
+            .append("    </tr>\n")
+            .append("  </tbody>\n")
+            .append("</table>")
+            .toString();
 
     InterpreterResult result = md.interpret(input, null);
     assertEquals(wrapWithMarkdownClassDiv(expected), result.message());
@@ -307,14 +309,14 @@ public class PegdownParserTest {
   @Test
   public void testWebsequencePlugin() {
     String input =
-      new StringBuilder()
-        .append("\n \n %%% sequence style=modern-blue\n")
-        .append("title Authentication Sequence\n")
-        .append("Alice->Bob: Authentication Request\n")
-        .append("note right of Bob: Bob thinks about it\n")
-        .append("Bob->Alice: Authentication Response\n")
-        .append("  %%%  ")
-        .toString();
+        new StringBuilder()
+            .append("\n \n %%% sequence style=modern-blue\n")
+            .append("title Authentication Sequence\n")
+            .append("Alice->Bob: Authentication Request\n")
+            .append("note right of Bob: Bob thinks about it\n")
+            .append("Bob->Alice: Authentication Response\n")
+            .append("  %%%  ")
+            .toString();
 
     InterpreterResult result = md.interpret(input, null);
     assertThat(result.message(), CoreMatchers.containsString("<img src=\"http://www.websequencediagrams.com/?png="));
@@ -323,12 +325,12 @@ public class PegdownParserTest {
   @Test
   public void testYumlPlugin() {
     String input = new StringBuilder()
-      .append("\n \n %%% yuml style=nofunky scale=120 format=svg\n")
-      .append("[Customer]<>-orders>[Order]\n")
-      .append("[Order]++-0..>[LineItem]\n")
-      .append("[Order]-[note:Aggregate root.]\n")
-      .append("  %%%  ")
-      .toString();
+        .append("\n \n %%% yuml style=nofunky scale=120 format=svg\n")
+        .append("[Customer]<>-orders>[Order]\n")
+        .append("[Order]++-0..>[LineItem]\n")
+        .append("[Order]-[note:Aggregate root.]\n")
+        .append("  %%%  ")
+        .toString();
 
     InterpreterResult result = md.interpret(input, null);
     assertThat(result.message(), CoreMatchers.containsString("<img src=\"http://yuml.me/diagram/"));
