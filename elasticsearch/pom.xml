@@ -134,4 +134,27 @@
     </plugins>
   </build>
 
+  <profiles>
+    <profile>
+      <id>elasticsearch-2</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <dependencies>
+      </dependencies>
+      <properties>
+          <!-- use default elasticsearch.version -->
+      </properties>
+    </profile>
+
+    <profile>
+      <id>elasticsearch-5</id>
+      <dependencies>
+      </dependencies>
+      <properties>
+        <elasticsearch.version>5.0.0</elasticsearch.version>
+      </properties>
+    </profile>
+  </profiles>
+
 </project>
