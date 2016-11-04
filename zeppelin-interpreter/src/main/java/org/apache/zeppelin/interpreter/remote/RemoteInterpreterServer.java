@@ -436,9 +436,9 @@ public class RemoteInterpreterServer
         // This is necessary because the earliest we can register a hook
         // is from within the open() method.
         LazyOpenInterpreter lazy = (LazyOpenInterpreter) interpreter;
-        if (!lazy.isOpen()) {
-          lazy.open();
-        }
+//        if (!lazy.isOpen()) {
+//          lazy.open();
+//        }
         
         // Add hooks to script from registry.
         // Global scope first, followed by notebook scope

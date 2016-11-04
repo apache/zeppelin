@@ -226,7 +226,7 @@ public class RemoteInterpreter extends Interpreter {
         }
         client.createInterpreter(groupId, noteId,
           getClassName(), (Map) property);
-
+        client.open(noteId, getClassName());
         // Push angular object loaded from JSON file to remote interpreter
         if (!interpreterGroup.isAngularRegistryPushed()) {
           pushAngularObjectRegistryToRemote(client);
