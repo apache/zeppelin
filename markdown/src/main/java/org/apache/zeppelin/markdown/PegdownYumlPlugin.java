@@ -109,7 +109,7 @@ public class PegdownYumlPlugin extends Parser implements BlockPluginParser {
     try {
       encodedBody = URLEncoder.encode(inlined.toString(), "UTF-8");
     } catch (UnsupportedEncodingException e) {
-      new RuntimeException("Failed to encode YUML markdown body");
+      new RuntimeException("Failed to encode YUML markdown body", e);
     }
 
     StringBuilder mergedStyle = new StringBuilder();
