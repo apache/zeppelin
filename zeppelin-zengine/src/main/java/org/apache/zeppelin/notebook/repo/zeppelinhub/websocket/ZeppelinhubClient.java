@@ -138,7 +138,7 @@ public class ZeppelinhubClient {
       Session session = future.get();
       zeppelinSession = ZeppelinhubSession.createInstance(session, zeppelinhubToken);
     } catch (IOException | InterruptedException | ExecutionException e) {
-      LOG.info("Couldnt connect to zeppelinhub", e);
+      LOG.info("Couldnt connect to zeppelinhub - {}", e.toString());
       zeppelinSession = ZeppelinhubSession.EMPTY;
     }
     return zeppelinSession;
