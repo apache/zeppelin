@@ -737,7 +737,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
   }
 
   public void createInterpretersForNote(InterpreterSetting interpreterSetting, String user,
-      String noteId, String key) {
+      String noteId, String interpreterInstanceKey) {
     InterpreterGroup interpreterGroup = interpreterSetting.getInterpreterGroup(user, noteId);
     InterpreterOption option = interpreterSetting.getOption();
     Properties properties = (Properties) interpreterSetting.getProperties();
@@ -754,7 +754,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
       long minTimeout = 10L * 1000 * 1000000; // 10 sec
       long interpreterRemovalWaitTimeout = Math.max(minTimeout,
           conf.getInt(ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT) * 1000000L * 2);
-      while (interpreterGroup.containsKey(key)) {
+      while (interpreterGroup.containsKey(interpreterInstanceKey)) {
         if (System.nanoTime() - interpreterRemovalWaitStart > interpreterRemovalWaitTimeout) {
           throw new InterpreterException("Can not create interpreter");
         }
@@ -778,18 +778,18 @@ public class InterpreterFactory implements InterpreterGroupFactory {
               connectToRemoteRepl(noteId, info.getClassName(), option.getHost(), option.getPort(),
                   properties, user, option.isUserImpersonate);
         } else {
-          interpreter = createRemoteRepl(path, key, info.getClassName(), properties,
-              interpreterSetting.getId(), user, option.isUserImpersonate());
+          interpreter = createRemoteRepl(path, interpreterInstanceKey, info.getClassName(),
+              properties, interpreterSetting.getId(), user, option.isUserImpersonate());
         }
       } else {
         interpreter = createRepl(interpreterSetting.getPath(), info.getClassName(), properties);
       }
 
       synchronized (interpreterGroup) {
-        List<Interpreter> interpreters = interpreterGroup.get(key);
+        List<Interpreter> interpreters = interpreterGroup.get(interpreterInstanceKey);
         if (null == interpreters) {
           interpreters = new ArrayList<>();
-          interpreterGroup.put(key, interpreters);
+          interpreterGroup.put(interpreterInstanceKey, interpreters);
         }
         if (info.isDefaultInterpreter()) {
           interpreters.add(0, interpreter);
@@ -1176,16 +1176,16 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     String key;
     if (option.isExistingProcess()) {
       key = Constants.EXISTING_PROCESS;
-    } else if (!option.perNoteShared()) {
-      key = noteId;
-      if (shiroEnabled && !option.perUserShared()) {
-        key = user + ":" + key;
-      }
+    } else if (option.perNoteScoped()) {
+      key = "NoteId:" + noteId;  // add prefix NoteId to avoid conflict between user and noteId
+    } else if (option.perUserScoped()) {
+      key = "User:" + user;
     } else {
       key = SHARED_SESSION;
     }
 
-    logger.debug("Interpreter instance key: {}", key);
+    logger.debug("Interpreter instance key: {}, for note: {}, user: {}, InterpreterSetting Name: " +
+            "{}", key, noteId, user, setting.getName());
     return key;
   }
 
@@ -1193,11 +1193,11 @@ public class InterpreterFactory implements InterpreterGroupFactory {
       InterpreterSetting setting) {
     InterpreterGroup interpreterGroup = setting.getInterpreterGroup(user, noteId);
     synchronized (interpreterGroup) {
-      String key = getInterpreterInstanceKey(user, noteId, setting);
-      if (!interpreterGroup.containsKey(key)) {
-        createInterpretersForNote(setting, user, noteId, key);
+      String interpreterInstanceKey = getInterpreterInstanceKey(user, noteId, setting);
+      if (!interpreterGroup.containsKey(interpreterInstanceKey)) {
+        createInterpretersForNote(setting, user, noteId, interpreterInstanceKey);
       }
-      return interpreterGroup.get(getInterpreterInstanceKey(user, noteId, setting));
+      return interpreterGroup.get(interpreterInstanceKey);
     }
   }
 
