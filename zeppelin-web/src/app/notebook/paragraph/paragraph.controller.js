@@ -185,8 +185,20 @@
             }
             result.graph.nodes
               .forEach(function(node) {
-                var selected = $scope.paragraph.config.graph.network.properties[node.defaultLabel].selected;
+                node.defaultLabel = node.defaultLabel || node.label || '';
+                var properties = $scope.paragraph.config.graph.network.properties[node.defaultLabel] || {};
+                var selected = properties.selected || 'id';
                 node.label = (selected in node ? node[selected] : node.data[selected]) + '';
+                node.x = node.x || Math.random();
+                node.y = node.y || Math.random();
+                node.size = node.size || 10;
+              });
+            result.graph.edges
+              .forEach(function(edge) {
+                edge.size = edge.size || 4;
+                edge.type = edge.type || 'arrow';
+                edge.color = edge.color || '#D3D3D3';
+                edge.count = edge.count || 1;
               });
             var nodeIds = Object.keys($scope.paragraph.config.graph.network.nodes)
                .map(function(id) {
@@ -209,6 +221,7 @@
               },
               graph: result.graph,
               settings: {
+                enableEdgeHovering: true,
                 minNodeSize: 0,
                 maxNodeSize: 0,
                 minEdgeSize: 0,
@@ -239,7 +252,6 @@
             if (!nodeIds.length) {
               var overlapListener = $scope.sigma.configNoverlap(nooverlapConf);
               overlapListener.bind('stop', function(event) {
-                console.log(event);
                 $scope.sigma.graph.nodes()
                   .forEach(function(node) {
                     $scope.paragraph.config.graph.network.nodes[node.id] = {
@@ -1053,7 +1065,7 @@
       var baseCols = _.map(baseColumnNames, function(col) { return col.name; });
       var rows = [];
       var array = [];
-      var keys = _.map(entities, function(elem) { return Object.keys(elem.data); });
+      var keys = _.map(entities, function(elem) { return Object.keys(elem.data || {}); });
       keys = _.flatten(keys);
       keys = _.uniq(keys).filter(function(key) {
         return baseCols.indexOf(key) === -1;
@@ -1065,11 +1077,12 @@
         var entity = entities[i];
         var col = [];
         var col2 = [];
+        entity.data = entity.data || {};
         for (var j = 0; j < columnNames.length; j++) {
           var name = columnNames[j].name;
           var value = name in entity && internalFieldsToJump.indexOf(name) === -1 ?
               entity[name] : entity.data[name];
-          var parsedValue = $scope.parseTableCell(value === undefined ? '' : value);
+          var parsedValue = $scope.parseTableCell(value === null || value === undefined ? '' : value);
           col.push(parsedValue);
           col2.push({key: name, value: parsedValue});
         }
@@ -1522,7 +1535,11 @@
       var baseCols = ['id', 'label'];
       var properties = {};
       $scope.paragraph.result.graph.nodes.forEach(function(node) {
-        var hasKey = node.label in properties;
+        var hasLabel = 'label' in node && node.label !== '';
+        if (!hasLabel) {
+          return;
+        }
+        var hasKey = hasLabel && node.label in properties;
         var keys = _.uniq(Object.keys(node.data || {})
                 .concat(hasKey ? properties[node.label].keys : baseCols));
         if (!hasKey) {
@@ -1530,7 +1547,8 @@
         }
         properties[node.label].keys = keys;
       });
-      $scope.paragraph.config.graph.network.properties = properties;
+      $scope.paragraph.config.graph.network.properties = Object.keys(properties).length ?
+          properties : [];
     };
 
     var pivot = function(data) {

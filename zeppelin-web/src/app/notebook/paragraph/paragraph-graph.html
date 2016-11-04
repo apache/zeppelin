@@ -57,13 +57,15 @@ limitations under the License.
      ng-if="getGraphMode()=='network' && paragraph.result.graph.nodes.length > 0">
     <div id="p{{paragraph.id}}_network_header">
       <ul style="list-style-type: none">
-        <li>Nodes <span class="badge">{{paragraph.result.graph.nodes.length}}</span>: 
+        <li ng-if="paragraph.result.graph.labels.length > 0">Nodes <span class="badge">
+          {{paragraph.result.graph.nodes.length}}</span>: 
           <span ng-repeat="(labelName, labelColor) in paragraph.result.graph.labels"
               style="background-color: {{labelColor}} !important;" class="label label-default network-badge">
             {{labelName}}
           </span>
         </li>
-        <li>Relationships <span class="badge">{{paragraph.result.graph.edges.length}}</span>:
+        <li ng-if="paragraph.result.graph.types.length > 0">Relationships <span class="badge">
+          {{paragraph.result.graph.edges.length}}</span>:
           <span ng-repeat="type in paragraph.result.graph.types"
               class="label label-default network-badge">
             {{type}}
