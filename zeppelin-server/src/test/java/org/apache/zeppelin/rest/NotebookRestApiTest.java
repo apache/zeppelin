@@ -220,19 +220,19 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
   public void testCloneNotebookWithSameName() throws IOException, DuplicateNameException {
     String noteName = "Test_Note";
     String jsonRequest = "{\"name\":\"" + noteName + "\"}";
-    Note note1 = ZeppelinServer.notebook.createNote(null, noteName);
+    Note note1 = ZeppelinServer.notebook.createNote(anonymous, noteName);
     PostMethod post = httpPost("/notebook/" + note1.getId(), jsonRequest);
     LOG.info("testCloneNotebookWithSameName response\n" + post.getResponseBodyAsString());
     assertThat(post, isNotAcceptable());
 
     //cleanup
-    ZeppelinServer.notebook.removeNote(note1.getId(), null);
+    ZeppelinServer.notebook.removeNote(note1.getId(), anonymous);
   }
   
   @Test
   public void testCreateNotebookWithSameName() throws IOException, DuplicateNameException {
     String noteName = "Test_Note";
-    Note note1 = ZeppelinServer.notebook.createNote(null, noteName);
+    Note note1 = ZeppelinServer.notebook.createNote(anonymous, noteName);
     String jsonRequest = "{\"name\":\"" + noteName + "\"}";
     PostMethod post = httpPost("/notebook/", jsonRequest);
     LOG.info("testCloneNotebookWithSameName response\n" + post.getResponseBodyAsString());
@@ -240,7 +240,7 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
     post.releaseConnection();
 
     //cleanup
-    ZeppelinServer.notebook.removeNote(note1.getId(), null);
+    ZeppelinServer.notebook.removeNote(note1.getId(), anonymous);
   }
 }
 

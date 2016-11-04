@@ -271,7 +271,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     PostMethod importPost = httpPost("/notebook/import/", oldJson);
     assertThat(importPost, isNotAcceptable());
     // cleanup
-    ZeppelinServer.notebook.removeNote(note.getId(), null);
+    ZeppelinServer.notebook.removeNote(note.getId(), anonymous);
     importPost.releaseConnection();
   }
 
