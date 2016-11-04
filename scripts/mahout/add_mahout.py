@@ -22,7 +22,7 @@ import json
 from os.path import isfile
 from os import getcwd
 
-from subprocess import call
+from subprocess import call, check_call
 
 
 #######################################################################################################################
@@ -57,17 +57,26 @@ class ZeppelinTerpWrangler:
 
         return terp_id
 
+    def _terpExists(self, terpName):
+        terp_id = self._getTerpID(terpName)
+        if terp_id == None:
+            return False
+        return True
+
     def createTerp(self, original_terp_name, new_terp_name ):
 
         new_terp_id = new_terp_name
+        if self._terpExists(new_terp_name):
+            del self.interpreter_json['interpreterSettings'][self._getTerpID(new_terp_name)]
+
         orig_terp_id = self._getTerpID(original_terp_name)
 
         from copy import deepcopy
         self.interpreter_json['interpreterSettings'][new_terp_id] = deepcopy(
-            self.interpreter_json['interpreterSettings'][orig_terp_id])
+        self.interpreter_json['interpreterSettings'][orig_terp_id])
         self.interpreter_json['interpreterSettings'][new_terp_id]['name'] = new_terp_name
         self.interpreter_json['interpreterSettings'][new_terp_id]['id'] = new_terp_id
-        print "created new terp '%s' from terp '%s" % (new_terp_name, original_terp_name)
+        print "created new interpreter '%s' from interpreter '%s" % (new_terp_name, original_terp_name)
 
     def _readTerpJson(self):
         with open(self.interpreter_json_path) as f:
@@ -146,7 +155,6 @@ class ZeppelinTerpWrangler:
         for t in terpDeps:
             self._addTerpDep(terpName, t)
 
-
 #######################################################################################################################
 # Need to be sure we know where Zeppelin Top directory is so we can edit conf files
 #
@@ -212,8 +220,10 @@ def download_mahout():
         return True
 
 if download_mahout():
-  call(['wget', mahout_bin_url], cwd= zeppelin_home)
-  call(['tar', 'xzf', tar_name], cwd= zeppelin_home)
+    check_call(['wget', mahout_bin_url], cwd= zeppelin_home)
+    check_call(['tar', 'xzf', tar_name], cwd= zeppelin_home)
+
+
 
 if args.mahout_home:
     mahout_home = args.mahout_home
@@ -260,7 +270,7 @@ else:
 #######################################################################################################################
 if not args.restart_later:
     print "restarting Apache Zeppelin to load new interpreters..."
-    call(["bin/zeppelin-daemon.sh", 'restart'], cwd= zeppelin_home)
+    check_call(["bin/zeppelin-daemon.sh", 'restart'], cwd= zeppelin_home)
 else:
     print "--restart_later flag detected: remember to restart Zeppelin to see new Mahout interpreters!!"
 
