@@ -50,7 +50,6 @@ import java.util.Set;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.internal.StringMap;
@@ -724,7 +723,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
       interpreterSetting.closeAndRemoveInterpreterGroup(noteId);
     } else if (option.isSession()) {
       InterpreterGroup interpreterGroup = interpreterSetting.getInterpreterGroup(user, noteId);
-      String key = getInterpreterInstanceKey(user, noteId, interpreterSetting);
+      String key = getInterpreterSessionKey(user, noteId, interpreterSetting);
       interpreterGroup.close(key);
       interpreterGroup.destroy(key);
       synchronized (interpreterGroup) {
@@ -737,7 +736,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
   }
 
   public void createInterpretersForNote(InterpreterSetting interpreterSetting, String user,
-      String noteId, String interpreterInstanceKey) {
+      String noteId, String interpreterSessionKey) {
     InterpreterGroup interpreterGroup = interpreterSetting.getInterpreterGroup(user, noteId);
     InterpreterOption option = interpreterSetting.getOption();
     Properties properties = (Properties) interpreterSetting.getProperties();
@@ -754,7 +753,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
       long minTimeout = 10L * 1000 * 1000000; // 10 sec
       long interpreterRemovalWaitTimeout = Math.max(minTimeout,
           conf.getInt(ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT) * 1000000L * 2);
-      while (interpreterGroup.containsKey(interpreterInstanceKey)) {
+      while (interpreterGroup.containsKey(interpreterSessionKey)) {
         if (System.nanoTime() - interpreterRemovalWaitStart > interpreterRemovalWaitTimeout) {
           throw new InterpreterException("Can not create interpreter");
         }
@@ -778,7 +777,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
               connectToRemoteRepl(noteId, info.getClassName(), option.getHost(), option.getPort(),
                   properties, user, option.isUserImpersonate);
         } else {
-          interpreter = createRemoteRepl(path, interpreterInstanceKey, info.getClassName(),
+          interpreter = createRemoteRepl(path, interpreterSessionKey, info.getClassName(),
               properties, interpreterSetting.getId(), user, option.isUserImpersonate());
         }
       } else {
@@ -786,10 +785,10 @@ public class InterpreterFactory implements InterpreterGroupFactory {
       }
 
       synchronized (interpreterGroup) {
-        List<Interpreter> interpreters = interpreterGroup.get(interpreterInstanceKey);
+        List<Interpreter> interpreters = interpreterGroup.get(interpreterSessionKey);
         if (null == interpreters) {
           interpreters = new ArrayList<>();
-          interpreterGroup.put(interpreterInstanceKey, interpreters);
+          interpreterGroup.put(interpreterSessionKey, interpreters);
         }
         if (info.isDefaultInterpreter()) {
           interpreters.add(0, interpreter);
@@ -1099,25 +1098,27 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     }
   }
 
-  private Interpreter connectToRemoteRepl(String noteId, String className, String host, int port,
-      Properties property, String userName, Boolean isUserImpersonate) {
+  private Interpreter connectToRemoteRepl(String interpreterSessionKey, String className,
+      String host, int port, Properties property, String userName, Boolean isUserImpersonate) {
     int connectTimeout = conf.getInt(ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT);
     int maxPoolSize = conf.getInt(ConfVars.ZEPPELIN_INTERPRETER_MAX_POOL_SIZE);
     LazyOpenInterpreter intp = new LazyOpenInterpreter(
-        new RemoteInterpreter(property, noteId, className, host, port, connectTimeout, maxPoolSize,
-            remoteInterpreterProcessListener, appEventListener, userName, isUserImpersonate));
+        new RemoteInterpreter(property, interpreterSessionKey, className, host, port,
+            connectTimeout, maxPoolSize, remoteInterpreterProcessListener, appEventListener,
+            userName, isUserImpersonate));
     return intp;
   }
 
-  private Interpreter createRemoteRepl(String interpreterPath, String noteId, String className,
-      Properties property, String interpreterSettingId, String userName,
-      Boolean isUserImpersonate) {
+  private Interpreter createRemoteRepl(String interpreterPath, String interpreterSessionKey,
+      String className, Properties property, String interpreterSettingId,
+      String userName, Boolean isUserImpersonate) {
     int connectTimeout = conf.getInt(ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT);
     String localRepoPath = conf.getInterpreterLocalRepoPath() + "/" + interpreterSettingId;
     int maxPoolSize = conf.getInt(ConfVars.ZEPPELIN_INTERPRETER_MAX_POOL_SIZE);
 
     RemoteInterpreter remoteInterpreter =
-        new RemoteInterpreter(property, noteId, className, conf.getInterpreterRemoteRunnerPath(),
+        new RemoteInterpreter(property, interpreterSessionKey, className,
+            conf.getInterpreterRemoteRunnerPath(),
             interpreterPath, localRepoPath, connectTimeout, maxPoolSize,
             remoteInterpreterProcessListener, appEventListener, userName, isUserImpersonate);
     remoteInterpreter.addEnv(env);
@@ -1171,7 +1172,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     }
   }
 
-  private String getInterpreterInstanceKey(String user, String noteId, InterpreterSetting setting) {
+  private String getInterpreterSessionKey(String user, String noteId, InterpreterSetting setting) {
     InterpreterOption option = setting.getOption();
     String key;
     if (option.isExistingProcess()) {
@@ -1186,7 +1187,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
       key = SHARED_SESSION;
     }
 
-    logger.debug("Interpreter instance key: {}, for note: {}, user: {}, InterpreterSetting Name: " +
+    logger.debug("Interpreter session key: {}, for note: {}, user: {}, InterpreterSetting Name: " +
             "{}", key, noteId, user, setting.getName());
     return key;
   }
@@ -1195,11 +1196,11 @@ public class InterpreterFactory implements InterpreterGroupFactory {
       InterpreterSetting setting) {
     InterpreterGroup interpreterGroup = setting.getInterpreterGroup(user, noteId);
     synchronized (interpreterGroup) {
-      String interpreterInstanceKey = getInterpreterInstanceKey(user, noteId, setting);
-      if (!interpreterGroup.containsKey(interpreterInstanceKey)) {
-        createInterpretersForNote(setting, user, noteId, interpreterInstanceKey);
+      String interpreterSessionKey = getInterpreterSessionKey(user, noteId, setting);
+      if (!interpreterGroup.containsKey(interpreterSessionKey)) {
+        createInterpretersForNote(setting, user, noteId, interpreterSessionKey);
       }
-      return interpreterGroup.get(interpreterInstanceKey);
+      return interpreterGroup.get(interpreterSessionKey);
     }
   }
 
