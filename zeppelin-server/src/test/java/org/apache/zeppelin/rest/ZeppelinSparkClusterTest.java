@@ -214,7 +214,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
                 p.setConfig(config);
                 p.setText("%pyspark from pyspark.sql import Row\n" +
                         "df=sqlContext.createDataFrame([Row(id=1, age=20)])\n" +
-                        "print(df.collect())");
+                        "df.collect()");
                 p.setAuthenticationInfo(anonymous);
                 note.run(p.getId());
                 waitForFinish(p);
@@ -243,7 +243,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
                 config.put("enabled", true);
                 p.setConfig(config);
                 p.setText("%pyspark sqlContext.udf.register(\"f1\", lambda x: len(x))\n" +
-                       "print(sqlContext.sql(\"select f1(\\\"abc\\\") as len\").collect())");
+                       "sqlContext.sql(\"select f1(\\\"abc\\\") as len\").collect()");
                 p.setAuthenticationInfo(anonymous);
                 note.run(p.getId());
                 waitForFinish(p);
@@ -258,7 +258,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
                 p.setConfig(config);
                 p.setText("%pyspark from pyspark.sql import Row\n" +
                         "df=sqlContext.createDataFrame([Row(id=1, age=20)])\n" +
-                        "print(df.collect())");
+                        "df.collect()");
                 p.setAuthenticationInfo(anonymous);
                 note.run(p.getId());
                 waitForFinish(p);
@@ -272,7 +272,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
                 p.setConfig(config);
                 // use SQLContext to register UDF but use this UDF through SparkSession
                 p.setText("%pyspark sqlContext.udf.register(\"f1\", lambda x: len(x))\n" +
-                        "print(spark.sql(\"select f1(\\\"abc\\\") as len\").collect())");
+                        "spark.sql(\"select f1(\\\"abc\\\") as len\").collect()");
                 p.setAuthenticationInfo(anonymous);
                 note.run(p.getId());
                 waitForFinish(p);

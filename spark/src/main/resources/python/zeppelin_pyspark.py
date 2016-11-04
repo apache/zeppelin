@@ -286,6 +286,17 @@ while True :
     stmts = req.statements().split("\n")
     jobGroup = req.jobGroup()
     final_code = []
+    
+    # Get post-execute hooks
+    try:
+      global_hook = intp.getHook('post_exec_dev')
+    except:
+      global_hook = None
+    user_hook = z.getHook('post_exec')
+    nhooks = 0
+    for hook in (global_hook, user_hook):
+      if hook:
+        nhooks += 1
 
     for s in stmts:
       if s == None:
@@ -303,7 +314,9 @@ while True :
       # so that the last statement's evaluation will be printed to stdout
       sc.setJobGroup(jobGroup, "Zeppelin")
       code = compile('\n'.join(final_code), '<stdin>', 'exec', ast.PyCF_ONLY_AST, 1)
-      to_run_exec, to_run_single = code.body[:-1], code.body[-1:]
+      to_run_hooks = code.body[-nhooks:]
+      to_run_exec, to_run_single = (code.body[:-(nhooks + 1)],
+                                    [code.body[-(nhooks + 1)]])
 
       try:
         for node in to_run_exec:
@@ -314,6 +327,11 @@ while True :
         for node in to_run_single:
           mod = ast.Interactive([node])
           code = compile(mod, '<stdin>', 'single')
+          exec(code)
+          
+        for node in to_run_hooks:
+          mod = ast.Module([node])
+          code = compile(mod, '<stdin>', 'exec')
           exec(code)
       except:
         raise Exception(traceback.format_exc())
