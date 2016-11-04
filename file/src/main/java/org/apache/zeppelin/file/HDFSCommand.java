@@ -147,9 +147,19 @@ public class HDFSCommand {
         .queryParam("op", op.op);
 
     if (args != null) {
+      boolean isUserName = false;
       for (Arg a : args) {
         builder = builder.queryParam(a.key, a.value);
+        if ("user.name".equals(a.key)) {
+          isUserName = true;
+        }
       }
+      if (!isUserName) {
+        builder = builder.queryParam("user.name", this.user);
+      }
+    }
+    else {
+      builder = builder.queryParam("user.name", this.user);
     }
     java.net.URI uri = builder.build();
 
@@ -256,8 +266,12 @@ public class HDFSCommand {
         response.append(inputLine);
       }
       i++;
-      if (i >= maxLength)
+      if (i >= maxLength) {
+        logger.warn("Input stream's length(" + inputLine.length()
+                + ") is greater than or equal to hdfs.maxlength(" + maxLength
+                + "). Please increase hdfs.maxlength in interpreter setting");
         break;
+      }
     }
     in.close();
 

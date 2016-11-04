@@ -83,9 +83,7 @@ public class HDFSNotebookRepo extends VFSNotebookRepo implements NotebookRepo {
     OneFileStatus fileStatus;
     Gson gson = new Gson();
     try {
-      Arg user = this.hdfsCmd.new Arg("user.name", this.hdfsUser);
-      Arg[] args = {user};
-      String notebookStatus = this.hdfsCmd.runCommand(this.hdfsCmd.getFileStatus, "/", args);
+      String notebookStatus = this.hdfsCmd.runCommand(this.hdfsCmd.getFileStatus, "/", null);
       fileStatus = gson.fromJson(notebookStatus, OneFileStatus.class);
       long modificationTime = fileStatus.modificationTime;
     } catch (Exception e) {
@@ -103,9 +101,7 @@ public class HDFSNotebookRepo extends VFSNotebookRepo implements NotebookRepo {
     String hdfsDirStatus = null;
 
     try {
-      Arg user = this.hdfsCmd.new Arg("user.name", this.hdfsUser);
-      Arg[] args = {user};
-      hdfsDirStatus = this.hdfsCmd.runCommand(this.hdfsCmd.listStatus, this.hdfsNotebookDir, args);
+      hdfsDirStatus = this.hdfsCmd.runCommand(this.hdfsCmd.listStatus, this.hdfsNotebookDir, null);
 
       if (hdfsDirStatus != null) {
         AllFileStatus allFiles = gson.fromJson(hdfsDirStatus, AllFileStatus.class);
@@ -133,9 +129,7 @@ public class HDFSNotebookRepo extends VFSNotebookRepo implements NotebookRepo {
     Gson gson = new Gson();
     String notebook = this.hdfsNotebookDir + "/" + noteId + "/" + NOTE_JSON;
     try {
-      Arg user = this.hdfsCmd.new Arg("user.name", this.hdfsUser);
-      Arg[] args = {user};
-      String notebookStatus = this.hdfsCmd.runCommand(this.hdfsCmd.getFileStatus, notebook, args);
+      String notebookStatus = this.hdfsCmd.runCommand(this.hdfsCmd.getFileStatus, notebook, null);
       fileStatus = gson.fromJson(notebookStatus, OneFileStatus.class);
     } catch (Exception e) {
       logger.warn("Warning: ", e);
@@ -196,13 +190,11 @@ public class HDFSNotebookRepo extends VFSNotebookRepo implements NotebookRepo {
     logger.debug("localNotebook: {}\tnotebook: {}", localNotebook, notebook);
 
     try {
-      Arg user = this.hdfsCmd.new Arg("user.name", this.hdfsUser);
-      Arg[] args = {user};
-      this.hdfsCmd.runCommand(this.hdfsCmd.makeDirectory, noteDir, args);
-      this.hdfsCmd.runCommand(this.hdfsCmd.CreateWriteFile, newNotebook, localNote, args);
-      this.hdfsCmd.runCommand(this.hdfsCmd.DeleteFile, notebook, args);
+      this.hdfsCmd.runCommand(this.hdfsCmd.makeDirectory, noteDir, null);
+      this.hdfsCmd.runCommand(this.hdfsCmd.CreateWriteFile, newNotebook, localNote, null);
+      this.hdfsCmd.runCommand(this.hdfsCmd.DeleteFile, notebook, null);
       Arg dest = this.hdfsCmd.new Arg("destination", notebook);
-      Arg[] renameArgs = {user, dest};
+      Arg[] renameArgs = {dest};
       this.hdfsCmd.runCommand(this.hdfsCmd.RenameFile, newNotebook, renameArgs);
     } catch (Exception e) {
       logger.error("Exception: ", e);
@@ -214,9 +206,8 @@ public class HDFSNotebookRepo extends VFSNotebookRepo implements NotebookRepo {
     String noteDir = this.hdfsNotebookDir + "/" + noteId;
     logger.debug("remove noteDir: " + noteDir);
 
-    Arg user = this.hdfsCmd.new Arg("user.name", this.hdfsUser);
     Arg recursive = this.hdfsCmd.new Arg("recursive", "true");
-    Arg[] args = {user, recursive};
+    Arg[] args = {recursive};
 
     try {
       this.hdfsCmd.runCommand(this.hdfsCmd.DeleteFile, noteDir, args);
