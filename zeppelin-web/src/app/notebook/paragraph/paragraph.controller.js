@@ -1,12 +1,12 @@
 /*
- * Licensed under the Apache License, Version 2.0 (the "License");
+ * Licensed under the Apache License, Version 2.0 (the 'License');
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
+ * distributed under the License is distributed on an 'AS IS' BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
@@ -115,6 +115,221 @@
       }
 
       initializeDefault();
+
+      // clover test start
+
+      $scope.restfulInformation = {
+        interpreters: [
+          {
+            group: 'kylin',
+            restful: [
+              {
+                method: 'POST',
+                uri: '/kylin/api/user/authentication',
+                apiDescription: 'Authentication',
+                context: {
+                  Authorization: {}
+                }
+              },
+              {
+                method: 'POST',
+                uri: '/kylin/api/query',
+                apiDescription: 'Query',
+                context: {
+                  'sql': 'select * from TEST_KYLIN_FACT',
+                  'offset': 0,
+                  'limit': 50000,
+                  'acceptPartial': false,
+                  'project': 'DEFAULT PROJECT'
+                }
+              },
+              {
+                method: 'GET',
+                uri: '/kylin/api/tables_and_columns',
+                apiDescription: 'List queryable tables',
+                context: {
+                  project: 'DEFAULT PROJECT'
+                }
+              },
+              {
+                method: 'GET',
+                uri: '/kylin/api/cubes',
+                apiDescription: 'List cubes',
+                context: {
+                  offset: 0,
+                  limit: 0,
+                  cubeName: 'DEFAULT CUBE NAME',
+                  projectName: 'DEFAULT PROJECT'
+                }
+              },
+              {
+                method: 'GET',
+                uri: '/kylin/api/cubes/{cubeName}',
+                apiDescription: 'Get cube',
+                context: {
+                  cubeName: 'DEFAULT CUBE NAME'
+                }
+              },
+              {
+                method: 'GET',
+                uri: '/kylin/api/cube_desc/{cubeName}',
+                apiDescription: 'Get cube descriptor',
+                context: {
+                  cubeName: 'DEFAULT CUBE NAME',
+                }
+              },
+              {
+                method: 'GET',
+                uri: '/kylin/api/model/{modelName}',
+                apiDescription: 'Get data model',
+                context: {
+                  modelName: 'DEFAULT MODEL NAME'
+                }
+              },
+              {
+                method: 'PUT',
+                uri: '/kylin/api/cubes/{cubeName}/rebuild',
+                apiDescription: 'Build cube',
+                context: {
+                  startTime: 0,
+                  endTime: 0,
+                  buildType: 'BUILD'
+                }
+              },
+              {
+                method: 'PUT',
+                uri: '/kylin/api/cubes/{cubeName}/enable',
+                apiDescription: 'Enable Cube',
+                context: {}
+              },
+              {
+                method: 'PUT',
+                uri: '/kylin/api/cubes/{cubeName}/disable',
+                apiDescription: 'Disable Cube',
+                context: {}
+              },
+              {
+                method: 'PUT',
+                uri: '/kylin/api/cubes/{cubeName}/purge',
+                apiDescription: 'Purge Cube',
+                context: {}
+              },
+              {
+                method: 'PUT',
+                uri: '/kylin/api/jobs/{jobId}/resume',
+                apiDescription: 'Resume Job',
+                context: {}
+              },
+              {
+                method: 'PUT',
+                uri: '/kylin/api/jobs/{jobId}/cancel',
+                apiDescription: 'Discard Job',
+                context: {}
+              },
+              {
+                method: 'GET',
+                uri: '/kylin/api/jobs/{jobId}',
+                apiDescription: 'Get Job Status',
+                context: {}
+              },
+              {
+                method: 'GET',
+                uri: '/kylin/api/{jobId}/steps/{stepId}/output',
+                apiDescription: 'Get job step output',
+                context: {}
+              },
+              {
+                method: 'GET',
+                uri: '/kylin/api/tables/{tableName}',
+                apiDescription: 'Get Hive Table',
+                context: {}
+              },
+              {
+                method: 'GET',
+                uri: '/kylin/api/tables/{tableName}/exd-map',
+                apiDescription: 'Get Hive Table (Extend Info)',
+                context: {}
+              },
+              {
+                method: 'GET',
+                uri: '/kylin/api/tables',
+                apiDescription: 'Get Hive Tables',
+                context: {
+                  project: 'DEFAULT PROJECT',
+                  ext: false
+                }
+              },
+              {
+                method: 'POST',
+                uri: '/kylin/api/tables/{tables}/{project}',
+                apiDescription: 'Load Hive Tables',
+                context: {
+                  tables: 'DEFAULT TABLE NAME',
+                  project: 'DEFAULT PROJECT'
+                }
+              },
+              {
+                method: 'PUT',
+                uri: '/kylin/api/cache/{type}/{name}/{action}',
+                apiDescription: 'Wipe cache',
+                context: {}
+              }
+            ]
+          }
+        ]
+      };
+
+      $scope.selectedRestfulApiKey;
+
+      $scope.restfulOptions = {
+        'mode': 'tree',
+        'history': false,
+        'theme': 'ace/theme/chrome',
+        'search': false,
+        'expand': false
+      };
+
+      $scope.paragraph.config.isCodeEditorMode = true;
+      $scope.toggleQeuryEditorMode = function() {
+        $scope.paragraph.config.isCodeEditorMode = !$scope.paragraph.config.isCodeEditorMode;
+      };
+
+      $scope.restfulApiSearch = function(str) {
+        var matches = [];
+        var restfulApiInformations = $scope.restfulInformation.interpreters[0].restful;
+
+        restfulApiInformations.forEach(function(restfulApiInfo) {
+          var fullApiUri = restfulApiInfo.method + ' ' + restfulApiInfo.uri;
+
+          var regexStrFullApiUri = fullApiUri.replace(/\{+.\}/g, '+.') + '$';
+          var regexFullApiUri = new RegExp(regexStrFullApiUri.toLowerCase());
+          if (regexStrFullApiUri.toLowerCase().indexOf(str.toString().toLowerCase()) >= 0 ||
+            regexFullApiUri.test(str.toLowerCase())) {
+            matches.push(restfulApiInfo);
+          }
+        });
+        return matches;
+      };
+
+      $scope.setRestfulObject = function(userInputApiString) {
+        console.log('clover keyssss', arguments);
+        $scope.paragraph.restfulHttpCommand = userInputApiString;
+        var keys = userInputApiString.split(' ');
+        var informationArray = $scope.restfulInformation.interpreters[0].restful;
+        console.log('clover got keys ', keys, informationArray);
+        var index = _.findIndex(informationArray, {'method': keys[0], 'uri': keys[2]});
+        if (index >= 0) {
+          $scope.paragraph.restfulObject = angular.copy(informationArray[index].context);
+        }
+      };
+
+      $scope.selectedRestfulApiObject = function(selectObject) {
+        if (selectObject !== undefined) {
+          $scope.setRestfulObject(selectObject.title);
+        }
+      };
+
+      // clover test end.
 
       if ($scope.getResultType() === 'TABLE') {
         $scope.loadTableData($scope.paragraph.result);
@@ -297,6 +512,12 @@
     };
 
     $scope.runParagraph = function(data) {
+
+      if ($scope.paragraph.config.isCodeEditorMode === false) {
+        console.log('clover - generate restful http hb');
+        data = '%kylin\n' + $scope.paragraph.restfulHttpCommand + '\n' + JSON.stringify($scope.paragraph.restfulObject);
+      }
+
       websocketMsgSrv.runParagraph($scope.paragraph.id, $scope.paragraph.title,
                                    data, $scope.paragraph.config, $scope.paragraph.settings.params);
       $scope.originalText = angular.copy(data);
@@ -662,11 +883,11 @@
 
         // autocomplete on '.'
         /*
-        $scope.editor.commands.on("afterExec", function(e, t) {
-          if (e.command.name == "insertstring" && e.args == "." ) {
+        $scope.editor.commands.on('afterExec', function(e, t) {
+          if (e.command.name == 'insertstring' && e.args == '.' ) {
         var all = e.editor.completers;
         //e.editor.completers = [remoteCompleter];
-        e.editor.execCommand("startAutocomplete");
+        e.editor.execCommand('startAutocomplete');
         //e.editor.completers = all;
       }
         });
@@ -1486,7 +1707,7 @@
         }
       }
 
-      //console.log("schema=%o, rows=%o", schema, rows);
+      //console.log('schema=%o, rows=%o', schema, rows);
 
       return {
         schema: schema,
@@ -1518,7 +1739,7 @@
       };
 
       var traverse = function(sKey, s, rKey, r, func, rowName, rowValue, colName) {
-        //console.log("TRAVERSE sKey=%o, s=%o, rKey=%o, r=%o, rowName=%o, rowValue=%o, colName=%o", sKey, s, rKey, r, rowName, rowValue, colName);
+        //console.log('TRAVERSE sKey=%o, s=%o, rKey=%o, r=%o, rowName=%o, rowValue=%o, colName=%o', sKey, s, rKey, r, rowName, rowValue, colName);
 
         if (s.type === 'key') {
           rowName = concat(rowName, sKey);
@@ -1563,7 +1784,7 @@
 
       for (var k in rows) {
         traverse(sKey, schema[sKey], k, rows[k], function(rowName, rowValue, colName, value) {
-          //console.log("RowName=%o, row=%o, col=%o, value=%o", rowName, rowValue, colName, value);
+          //console.log('RowName=%o, row=%o, col=%o, value=%o', rowName, rowValue, colName, value);
           if (rowNameIndex[rowValue] === undefined) {
             rowIndexValue[rowIdx] = rowValue;
             rowNameIndex[rowValue] = rowIdx++;
@@ -2293,7 +2514,7 @@
           data.paragraph.status === 'ERROR' || (data.paragraph.status === 'FINISHED' && statusChanged) ||
           (!newActiveApp && oldActiveApp !== newActiveApp);
 
-        //console.log("updateParagraph oldData %o, newData %o. type %o -> %o, mode %o -> %o", $scope.paragraph, data, oldType, newType, oldGraphMode, newGraphMode);
+        //console.log('updateParagraph oldData %o, newData %o. type %o -> %o, mode %o -> %o', $scope.paragraph, data, oldType, newType, oldGraphMode, newGraphMode);
 
         if ($scope.paragraph.text !== data.paragraph.text) {
           if ($scope.dirtyText) {         // check if editor has local update
