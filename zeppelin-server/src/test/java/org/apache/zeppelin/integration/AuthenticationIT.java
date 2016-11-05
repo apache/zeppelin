@@ -16,6 +16,13 @@
  */
 package org.apache.zeppelin.integration;
 
+import static org.junit.Assert.assertTrue;
+
+import java.io.File;
+import java.io.IOException;
+import java.net.URI;
+import java.util.List;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.AbstractZeppelinIT;
@@ -34,13 +41,6 @@ import org.openqa.selenium.WebElement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.URI;
-import java.util.List;
-
-import static org.junit.Assert.assertTrue;
-
 
 /**
  * Created for org.apache.zeppelin.integration on 13/06/16.
@@ -50,7 +50,7 @@ public class AuthenticationIT extends AbstractZeppelinIT {
 
   @Rule
   public ErrorCollector collector = new ErrorCollector();
-
+  static String shiroPath;
   static String authShiro = "[users]\n" +
       "admin = password1, admin\n" +
       "finance1 = finance1, finance\n" +
@@ -82,7 +82,8 @@ public class AuthenticationIT extends AbstractZeppelinIT {
     try {
       System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_HOME.getVarName(), "../");
       ZeppelinConfiguration conf = ZeppelinConfiguration.create();
-      File file = new File(conf.getShiroPath());
+      shiroPath = conf.getRelativeDir(String.format("%s/shiro.ini", conf.getConfDir()));
+      File file = new File(shiroPath);
       originalShiro = StringUtils.join(FileUtils.readLines(file, "UTF-8"), "\n");
       FileUtils.write(file, authShiro, "UTF-8");
     } catch (IOException e) {
@@ -98,12 +99,9 @@ public class AuthenticationIT extends AbstractZeppelinIT {
     if (!endToEndTestEnabled()) {
       return;
     }
-    try {
-      ZeppelinConfiguration conf = ZeppelinConfiguration.create();
-      File file = new File(conf.getShiroPath());
-      FileUtils.write(file, originalShiro, "UTF-8");
-    } catch (IOException e) {
-      LOG.error("Error in AuthenticationIT tearDown::", e);
+    if (!StringUtils.isBlank(shiroPath)) {
+      File file = new File(shiroPath);
+      FileUtils.deleteQuietly(file);
     }
     ZeppelinITUtils.restartZeppelin();
     driver.quit();
