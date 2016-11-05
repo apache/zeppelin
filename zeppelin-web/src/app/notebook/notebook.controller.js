@@ -27,12 +27,13 @@
     'baseUrlSrv',
     '$timeout',
     'saveAsService',
-    'ngToast'
+    'ngToast',
+    'noteActionSrv'
   ];
 
   function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
                         $http, websocketMsgSrv, baseUrlSrv, $timeout, saveAsService,
-                        ngToast) {
+                        ngToast, noteActionSrv) {
 
     ngToast.dismiss();
 
@@ -143,20 +144,9 @@
       $scope.$broadcast('doubleClickParagraph', paragraphId);
     };
 
-    /** Remove the note and go back tot he main page */
-    /** TODO(anthony): In the nearly future, go back to the main page and telle to the dude that the note have been remove */
+    // Remove the note and go back to the main page
     $scope.removeNote = function(noteId) {
-      BootstrapDialog.confirm({
-        closable: true,
-        title: '',
-        message: 'Do you want to delete this note?',
-        callback: function(result) {
-          if (result) {
-            websocketMsgSrv.deleteNote(noteId);
-            $location.path('/');
-          }
-        }
-      });
+      noteActionSrv.removeNote(noteId, true);
     };
 
     //Export notebook
@@ -230,19 +220,8 @@
       }
     };
 
-    $scope.clearAllParagraphOutput = function() {
-      BootstrapDialog.confirm({
-        closable: true,
-        title: '',
-        message: 'Do you want to clear all output?',
-        callback: function(result) {
-          if (result) {
-            _.forEach($scope.note.paragraphs, function(n, key) {
-              angular.element('#' + n.id + '_paragraphColumn_main').scope().clearParagraphOutput();
-            });
-          }
-        }
-      });
+    $scope.clearAllParagraphOutput = function(noteId) {
+      noteActionSrv.clearAllParagraphOutput(noteId);
     };
 
     $scope.toggleAllEditor = function() {
@@ -650,6 +629,42 @@
       $scope.permissions.readers = angular.element('#selectReaders').val();
       $scope.permissions.writers = angular.element('#selectWriters').val();
     }
+
+    $scope.restartInterpreter = function(interpeter) {
+      var thisConfirm = BootstrapDialog.confirm({
+        closable: false,
+        closeByBackdrop: false,
+        closeByKeyboard: false,
+        title: '',
+        message: 'Do you want to restart ' + interpeter.name + ' interpreter?',
+        callback: function(result) {
+          if (result) {
+            var payload  = {
+              'noteId': $scope.note.id
+            };
+
+            thisConfirm.$modalFooter.find('button').addClass('disabled');
+            thisConfirm.$modalFooter.find('button:contains("OK")')
+              .html('<i class="fa fa-circle-o-notch fa-spin"></i> Saving Setting');
+
+            $http.put(baseUrlSrv.getRestApiBase() + '/interpreter/setting/restart/' + interpeter.id, payload)
+              .success(function(data, status, headers, config) {
+              var index = _.findIndex($scope.interpreterSettings, {'id': interpeter.id});
+              $scope.interpreterSettings[index] = data.body;
+              thisConfirm.close();
+            }).error(function(data, status, headers, config) {
+              thisConfirm.close();
+              console.log('Error %o %o', status, data.message);
+              BootstrapDialog.show({
+                title: 'Error restart interpreter.',
+                message: data.message
+              });
+            });
+            return false;
+          }
+        }
+      });
+    };
 
     $scope.savePermissions = function() {
       convertPermissionsToArray();

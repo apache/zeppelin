@@ -65,7 +65,7 @@ public class NotebookTest implements JobListenerFactory{
   private DependencyResolver depResolver;
   private NotebookAuthorization notebookAuthorization;
   private Credentials credentials;
-  private AuthenticationInfo anonymous = new AuthenticationInfo("anonymous");
+  private AuthenticationInfo anonymous = AuthenticationInfo.ANONYMOUS;
 
   @Before
   public void setUp() throws Exception {
@@ -197,6 +197,30 @@ public class NotebookTest implements JobListenerFactory{
   }
 
   @Test
+  public void testLoadAllNotes() {
+    Note note;
+    try {
+      assertEquals(0, notebook.getAllNotes().size());
+      note = notebook.createNote(anonymous);
+      Paragraph p1 = note.addParagraph();
+      Map config = p1.getConfig();
+      config.put("enabled", true);
+      p1.setConfig(config);
+      p1.setText("hello world");
+      note.persist(anonymous);
+    } catch (IOException fe) {
+      logger.warn("Failed to create note and paragraph. Possible problem with persisting note, safe to ignore", fe);
+    }
+
+    try {
+      notebook.loadAllNotes(anonymous);
+      assertEquals(1, notebook.getAllNotes().size());
+    } catch (IOException e) {
+      fail("Subject is non-emtpy anonymous, shouldn't fail");
+    }
+  }
+  
+  @Test
   public void testPersist() throws IOException, SchedulerException, RepositoryException {
     Note note = notebook.createNote(anonymous);
 
@@ -294,7 +318,7 @@ public class NotebookTest implements JobListenerFactory{
     factory.setInterpreters("user", note.getId(), factory.getDefaultInterpreterSettingList());
 
     Paragraph p = note.addParagraph();
-    Map config = new HashMap<String, Object>();
+    Map config = new HashMap<>();
     p.setConfig(config);
     p.setText("p1");
     Date dateFinished = p.getDateFinished();
@@ -327,7 +351,7 @@ public class NotebookTest implements JobListenerFactory{
     factory.setInterpreters(anonymous.getUser(), note.getId(), factory.getDefaultInterpreterSettingList());
     
     Paragraph p = note.addParagraph();
-    Map config = new HashMap<String, Object>();
+    Map config = new HashMap<>();
     p.setConfig(config);
     p.setText("sleep 1000");
 
@@ -612,40 +636,40 @@ public class NotebookTest implements JobListenerFactory{
     NotebookAuthorization notebookAuthorization = notebook.getNotebookAuthorization();
     // empty owners, readers or writers means note is public
     assertEquals(notebookAuthorization.isOwner(note.getId(),
-            new HashSet<String>(Arrays.asList("user2"))), true);
+            new HashSet<>(Arrays.asList("user2"))), true);
     assertEquals(notebookAuthorization.isReader(note.getId(),
-            new HashSet<String>(Arrays.asList("user2"))), true);
+            new HashSet<>(Arrays.asList("user2"))), true);
     assertEquals(notebookAuthorization.isWriter(note.getId(),
-            new HashSet<String>(Arrays.asList("user2"))), true);
+            new HashSet<>(Arrays.asList("user2"))), true);
 
     notebookAuthorization.setOwners(note.getId(),
-            new HashSet<String>(Arrays.asList("user1")));
+            new HashSet<>(Arrays.asList("user1")));
     notebookAuthorization.setReaders(note.getId(),
-            new HashSet<String>(Arrays.asList("user1", "user2")));
+            new HashSet<>(Arrays.asList("user1", "user2")));
     notebookAuthorization.setWriters(note.getId(),
-            new HashSet<String>(Arrays.asList("user1")));
+            new HashSet<>(Arrays.asList("user1")));
 
     assertEquals(notebookAuthorization.isOwner(note.getId(),
-        new HashSet<String>(Arrays.asList("user2"))), false);
+        new HashSet<>(Arrays.asList("user2"))), false);
     assertEquals(notebookAuthorization.isOwner(note.getId(),
-            new HashSet<String>(Arrays.asList("user1"))), true);
+            new HashSet<>(Arrays.asList("user1"))), true);
 
     assertEquals(notebookAuthorization.isReader(note.getId(),
-        new HashSet<String>(Arrays.asList("user3"))), false);
+        new HashSet<>(Arrays.asList("user3"))), false);
     assertEquals(notebookAuthorization.isReader(note.getId(),
-        new HashSet<String>(Arrays.asList("user2"))), true);
+        new HashSet<>(Arrays.asList("user2"))), true);
 
     assertEquals(notebookAuthorization.isWriter(note.getId(),
-        new HashSet<String>(Arrays.asList("user2"))), false);
+        new HashSet<>(Arrays.asList("user2"))), false);
     assertEquals(notebookAuthorization.isWriter(note.getId(),
-        new HashSet<String>(Arrays.asList("user1"))), true);
+        new HashSet<>(Arrays.asList("user1"))), true);
 
     // Test clearing of permssions
     notebookAuthorization.setReaders(note.getId(), Sets.<String>newHashSet());
     assertEquals(notebookAuthorization.isReader(note.getId(),
-        new HashSet<String>(Arrays.asList("user2"))), true);
+        new HashSet<>(Arrays.asList("user2"))), true);
     assertEquals(notebookAuthorization.isReader(note.getId(),
-        new HashSet<String>(Arrays.asList("user3"))), true);
+        new HashSet<>(Arrays.asList("user3"))), true);
 
     notebook.removeNote(note.getId(), anonymous);
   }
@@ -751,6 +775,66 @@ public class NotebookTest implements JobListenerFactory{
     }
 
     // run per note session enabled
+    note1.run(p1.getId());
+    note2.run(p2.getId());
+
+    while (p1.getStatus() != Status.FINISHED) Thread.yield();
+    while (p2.getStatus() != Status.FINISHED) Thread.yield();
+
+    assertNotEquals(p1.getResult().message(), p2.getResult().message());
+
+    notebook.removeNote(note1.getId(), anonymous);
+    notebook.removeNote(note2.getId(), anonymous);
+  }
+
+
+  @Test
+  public void testPerNoteSessionInterpreter() throws IOException {
+    // create two notes
+    Note note1  = notebook.createNote(anonymous);
+    Paragraph p1 = note1.addParagraph();
+
+    Note note2  = notebook.createNote(anonymous);
+    Paragraph p2 = note2.addParagraph();
+
+    p1.setText("getId");
+    p1.setAuthenticationInfo(anonymous);
+    p2.setText("getId");
+    p2.setAuthenticationInfo(anonymous);
+
+    // shared mode.
+    note1.run(p1.getId());
+    note2.run(p2.getId());
+
+    while (p1.getStatus() != Status.FINISHED) Thread.yield();
+    while (p2.getStatus() != Status.FINISHED) Thread.yield();
+
+    assertEquals(p1.getResult().message(), p2.getResult().message());
+
+    // restart interpreter with scoped mode enabled
+    for (InterpreterSetting setting : notebook.getInterpreterFactory().getInterpreterSettings(note1.getId())) {
+      setting.getOption().setPerNote(InterpreterOption.SCOPED);
+      notebook.getInterpreterFactory().restart(setting.getId(), note1.getId());
+      notebook.getInterpreterFactory().restart(setting.getId(), note2.getId());
+    }
+
+    // run per note session enabled
+    note1.run(p1.getId());
+    note2.run(p2.getId());
+
+    while (p1.getStatus() != Status.FINISHED) Thread.yield();
+    while (p2.getStatus() != Status.FINISHED) Thread.yield();
+
+    assertNotEquals(p1.getResult().message(), p2.getResult().message());
+
+    // restart interpreter with isolated mode enabled
+    for (InterpreterSetting setting : notebook.getInterpreterFactory().getInterpreterSettings(note1.getId())) {
+      setting.getOption().setPerNote(InterpreterOption.ISOLATED);
+      notebook.getInterpreterFactory().restart(setting.getId(), note1.getId());
+      notebook.getInterpreterFactory().restart(setting.getId(), note2.getId());
+    }
+
+    // run per note process enabled
     note1.run(p1.getId());
     note2.run(p2.getId());
 

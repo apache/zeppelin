@@ -49,16 +49,16 @@ import scala.Console;
  *
  */
 public class SparkDependencyContext {
-  List<Dependency> dependencies = new LinkedList<Dependency>();
-  List<Repository> repositories = new LinkedList<Repository>();
+  List<Dependency> dependencies = new LinkedList<>();
+  List<Repository> repositories = new LinkedList<>();
 
-  List<File> files = new LinkedList<File>();
-  List<File> filesDist = new LinkedList<File>();
+  List<File> files = new LinkedList<>();
+  List<File> filesDist = new LinkedList<>();
   private RepositorySystem system = Booter.newRepositorySystem();
   private RepositorySystemSession session;
   private RemoteRepository mavenCentral = Booter.newCentralRepository();
   private RemoteRepository mavenLocal = Booter.newLocalRepository();
-  private List<RemoteRepository> additionalRepos = new LinkedList<RemoteRepository>();
+  private List<RemoteRepository> additionalRepos = new LinkedList<>();
 
   public SparkDependencyContext(String localRepoPath, String additionalRemoteRepository) {
     session =  Booter.newRepositorySystemSession(system, localRepoPath);
@@ -88,11 +88,11 @@ public class SparkDependencyContext {
   public void reset() {
     Console.println("DepInterpreter(%dep) deprecated. "
         + "Remove dependencies and repositories through GUI interpreter menu instead.");
-    dependencies = new LinkedList<Dependency>();
-    repositories = new LinkedList<Repository>();
+    dependencies = new LinkedList<>();
+    repositories = new LinkedList<>();
 
-    files = new LinkedList<File>();
-    filesDist = new LinkedList<File>();
+    files = new LinkedList<>();
+    filesDist = new LinkedList<>();
   }
 
   private void addRepoFromProperty(String listOfRepo) {

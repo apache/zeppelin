@@ -68,7 +68,7 @@ public class PigQueryInterpreter extends BasePigInterpreter {
     // '-' is invalid for pig alias
     String alias = "paragraph_" + context.getParagraphId().replace("-", "_");
     String[] lines = st.split("\n");
-    List<String> queries = new ArrayList<String>();
+    List<String> queries = new ArrayList<>();
     for (int i = 0; i < lines.length; ++i) {
       if (i == lines.length - 1) {
         lines[i] = alias + " = " + lines[i];

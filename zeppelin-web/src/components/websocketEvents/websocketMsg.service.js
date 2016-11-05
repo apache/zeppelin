@@ -25,8 +25,14 @@
         websocketEvents.sendNewEvent({op: 'GET_HOME_NOTE'});
       },
 
-      createNote: function(noteName) {
-        websocketEvents.sendNewEvent({op: 'NEW_NOTE',data: {name: noteName}});
+      createNotebook: function(noteName, defaultInterpreterId) {
+        websocketEvents.sendNewEvent({
+          op: 'NEW_NOTE',
+          data: {
+            name: noteName,
+            defaultInterpreterId: defaultInterpreterId
+          }
+        });
       },
 
       deleteNote: function(noteId) {
@@ -120,6 +126,10 @@
 
       clearParagraphOutput: function(paragraphId) {
         websocketEvents.sendNewEvent({op: 'PARAGRAPH_CLEAR_OUTPUT', data: {id: paragraphId}});
+      },
+
+      clearAllParagraphOutput: function(noteId) {
+        websocketEvents.sendNewEvent({op: 'PARAGRAPH_CLEAR_ALL_OUTPUT', data: {id: noteId}});
       },
 
       completion: function(paragraphId, buf, cursor) {
@@ -223,6 +233,10 @@
 
       listConfigurations: function() {
         websocketEvents.sendNewEvent({op: 'LIST_CONFIGURATIONS'});
+      },
+
+      getInterpreterSettings: function() {
+        websocketEvents.sendNewEvent({op: 'GET_INTERPRETER_SETTINGS'});
       }
 
     };

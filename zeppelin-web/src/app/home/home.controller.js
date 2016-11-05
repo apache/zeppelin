@@ -22,10 +22,12 @@
     'websocketMsgSrv',
     '$rootScope',
     'arrayOrderingSrv',
-    'ngToast'
+    'ngToast',
+    'noteActionSrv'
   ];
 
-  function HomeCtrl($scope, noteListDataFactory, websocketMsgSrv, $rootScope, arrayOrderingSrv, ngToast) {
+  function HomeCtrl($scope, noteListDataFactory, websocketMsgSrv, $rootScope, arrayOrderingSrv,
+                    ngToast, noteActionSrv) {
     ngToast.dismiss();
     var vm = this;
     vm.notes = noteListDataFactory;
@@ -85,6 +87,13 @@
         vm.notebookHome = false;
       }
     });
-  }
 
+    $scope.removeNote = function(noteId) {
+      noteActionSrv.removeNote(noteId, false);
+    };
+
+    $scope.clearAllParagraphOutput = function(noteId) {
+      noteActionSrv.clearAllParagraphOutput(noteId);
+    };
+  }
 })();

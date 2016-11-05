@@ -360,6 +360,48 @@ public class NotebookServerTest extends AbstractTestRestApi {
     verify(otherConn).send(mdMsg1);
   }
 
+  @Test
+  public void testCreateNoteWithDefaultInterpreterId() throws IOException {
+    // create two sockets and open it
+    NotebookSocket sock1 = createWebSocket();
+    NotebookSocket sock2 = createWebSocket();
+
+    assertEquals(sock1, sock1);
+    assertNotEquals(sock1, sock2);
+
+    notebookServer.onOpen(sock1);
+    notebookServer.onOpen(sock2);
+
+    String noteName = "Note with millis " + System.currentTimeMillis();
+    String defaultInterpreterId = "";
+    List<InterpreterSetting> settings = notebook.getInterpreterFactory().get();
+    if (settings.size() > 1) {
+      defaultInterpreterId = settings.get(1).getId();
+    }
+    // create note from sock1
+    notebookServer.onMessage(sock1, gson.toJson(
+        new Message(OP.NEW_NOTE)
+        .put("name", noteName)
+        .put("defaultInterpreterId", defaultInterpreterId)));
+
+    // expect the events are broadcasted properly
+    verify(sock1, times(2)).send(anyString());
+
+    Note createdNote = null;
+    for (Note note : notebook.getAllNotes()) {
+      if (note.getName().equals(noteName)) {
+        createdNote = note;
+        break;
+      }
+    }
+
+    if (settings.size() > 1) {
+      assertEquals(notebook.getInterpreterFactory().getDefaultInterpreterSetting(
+              createdNote.getId()).getId(), defaultInterpreterId);
+    }
+    notebook.removeNote(createdNote.getId(), anonymous);
+  }
+
   private NotebookSocket createWebSocket() {
     NotebookSocket sock = mock(NotebookSocket.class);
     when(sock.getRequest()).thenReturn(mockRequest);

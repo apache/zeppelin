@@ -33,7 +33,6 @@
       <useAllReactorProjects>true</useAllReactorProjects> -->
       <!-- Now, select which projects to include in this module-set. -->
       <includes>
-        <include>org.apache.zeppelin:zeppelin-server</include>
         <include>org.apache.zeppelin:zeppelin-web</include>
       </includes>
       <useProjectArtifact>false</useProjectArtifact>
@@ -44,7 +43,6 @@
       <useProjectArtifact>false</useProjectArtifact>
       <excludes>
         <exclude>${project.groupId}:zeppelin-web</exclude>
-        <exclude>${project.groupId}:zeppelin-server</exclude>
       </excludes>
     </dependencySet>
   </dependencySets>

@@ -504,6 +504,7 @@ public class SparkInterpreter extends Interpreter {
         conf.set("spark.files", conf.get("spark.yarn.dist.files"));
       }
       conf.set("spark.submit.pyArchives", Joiner.on(":").join(pythonLibs));
+      conf.set("spark.submit.pyFiles", Joiner.on(",").join(pythonLibUris));
     }
 
     // Distributes needed libraries to workers
@@ -596,7 +597,7 @@ public class SparkInterpreter extends Interpreter {
     }
 
     String[] argsArray = args.split(" ");
-    LinkedList<String> argList = new LinkedList<String>();
+    LinkedList<String> argList = new LinkedList<>();
     for (String arg : argsArray) {
       argList.add(arg);
     }
@@ -719,7 +720,7 @@ public class SparkInterpreter extends Interpreter {
 
 
     // set classloader for scala compiler
-    settings.explicitParentLoader_$eq(new Some<ClassLoader>(Thread.currentThread()
+    settings.explicitParentLoader_$eq(new Some<>(Thread.currentThread()
         .getContextClassLoader()));
     BooleanSetting b = (BooleanSetting) settings.usejavacp();
     b.v_$eq(true);
@@ -957,7 +958,7 @@ public class SparkInterpreter extends Interpreter {
   }
 
   private List<File> classPath(ClassLoader cl) {
-    List<File> paths = new LinkedList<File>();
+    List<File> paths = new LinkedList<>();
     if (cl == null) {
       return paths;
     }
@@ -978,7 +979,7 @@ public class SparkInterpreter extends Interpreter {
   public List<InterpreterCompletion> completion(String buf, int cursor) {
     if (completer == null) {
       logger.warn("Can't find completer");
-      return new LinkedList<InterpreterCompletion>();
+      return new LinkedList<>();
     }
 
     if (buf.length() < cursor) {
@@ -994,7 +995,7 @@ public class SparkInterpreter extends Interpreter {
     Candidates ret = c.complete(completionText, cursor);
 
     List<String> candidates = WrapAsJava$.MODULE$.seqAsJavaList(ret.candidates());
-    List<InterpreterCompletion> completions = new LinkedList<InterpreterCompletion>();
+    List<InterpreterCompletion> completions = new LinkedList<>();
 
     for (String candidate : candidates) {
       completions.add(new InterpreterCompletion(candidate, candidate));
@@ -1067,7 +1068,7 @@ public class SparkInterpreter extends Interpreter {
       return null;
     }
     Object obj = r.lineRep().call("$result",
-        JavaConversions.asScalaBuffer(new LinkedList<Object>()));
+        JavaConversions.asScalaBuffer(new LinkedList<>()));
     return obj;
   }
 

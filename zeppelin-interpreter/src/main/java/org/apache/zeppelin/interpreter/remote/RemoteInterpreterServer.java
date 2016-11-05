@@ -82,7 +82,7 @@ public class RemoteInterpreterServer
   public RemoteInterpreterServer(int port) throws TTransportException {
     this.port = port;
 
-    processor = new RemoteInterpreterService.Processor<RemoteInterpreterServer>(this);
+    processor = new RemoteInterpreterService.Processor<>(this);
     TServerSocket serverTransport = new TServerSocket(port);
     server = new TThreadPoolServer(
         new TThreadPoolServer.Args(serverTransport).processor(processor));
@@ -181,7 +181,7 @@ public class RemoteInterpreterServer
       synchronized (interpreterGroup) {
         List<Interpreter> interpreters = interpreterGroup.get(noteId);
         if (interpreters == null) {
-          interpreters = new LinkedList<Interpreter>();
+          interpreters = new LinkedList<>();
           interpreterGroup.put(noteId, interpreters);
         }
 
@@ -532,7 +532,7 @@ public class RemoteInterpreterServer
   }
 
   private InterpreterContext convert(RemoteInterpreterContext ric, InterpreterOutput output) {
-    List<InterpreterContextRunner> contextRunners = new LinkedList<InterpreterContextRunner>();
+    List<InterpreterContextRunner> contextRunners = new LinkedList<>();
     List<InterpreterContextRunner> runners = gson.fromJson(ric.getRunners(),
             new TypeToken<List<RemoteInterpreterContextRunner>>() {
         }.getType());
@@ -775,7 +775,7 @@ public class RemoteInterpreterServer
   @Override
   public List<String> resourcePoolGetAll() throws TException {
     logger.debug("Request getAll from ZeppelinServer");
-    List<String> result = new LinkedList<String>();
+    List<String> result = new LinkedList<>();
 
     if (resourcePool == null) {
       return result;

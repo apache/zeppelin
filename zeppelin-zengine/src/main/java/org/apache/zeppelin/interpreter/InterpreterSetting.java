@@ -42,8 +42,19 @@ public class InterpreterSetting {
   private static final String SHARED_PROCESS = "shared_process";
   private String id;
   private String name;
-  private String group; // always be null in case of InterpreterSettingRef
-  private Properties properties;
+  // always be null in case of InterpreterSettingRef
+  private String group;
+  /**
+   * properties can be either Properties or Map<String, InterpreterProperty>
+   * properties should be:
+   *  - Properties when Interpreter instances are saved to `conf/interpreter.json` file
+   *  - Map<String, InterpreterProperty> when Interpreters are registered
+   *    : this is needed after https://github.com/apache/zeppelin/pull/1145
+   *      which changed the way of getting default interpreter setting AKA interpreterSettingsRef
+   * Note(mina): In order to simplify the implementation, I chose to change properties
+   *             from Properties to Object instead of creating new classes.
+   */
+  private Object properties;
   private Status status;
   private String errorReason;
 
@@ -65,7 +76,7 @@ public class InterpreterSetting {
   }
 
   public InterpreterSetting(String id, String name, String group,
-      List<InterpreterInfo> interpreterInfos, Properties properties, List<Dependency> dependencies,
+      List<InterpreterInfo> interpreterInfos, Object properties, List<Dependency> dependencies,
       InterpreterOption option, String path) {
     this();
     this.id = id;
@@ -80,7 +91,7 @@ public class InterpreterSetting {
   }
 
   public InterpreterSetting(String name, String group, List<InterpreterInfo> interpreterInfos,
-      Properties properties, List<Dependency> dependencies, InterpreterOption option, String path) {
+      Object properties, List<Dependency> dependencies, InterpreterOption option, String path) {
     this(generateId(), name, group, interpreterInfos, properties, dependencies, option, path);
   }
 
@@ -174,7 +185,7 @@ public class InterpreterSetting {
     }
   }
 
-  public Properties getProperties() {
+  public Object getProperties() {
     return properties;
   }
 
@@ -229,11 +240,7 @@ public class InterpreterSetting {
     this.option = interpreterOption;
   }
 
-  void updateProperties(Properties p) {
-    this.properties.putAll(p);
-  }
-
-  void setProperties(Properties p) {
+  public void setProperties(Properties p) {
     this.properties = p;
   }
 
