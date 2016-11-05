@@ -16,30 +16,41 @@
  */
 package org.apache.zeppelin.utils;
 
+import java.net.InetAddress;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.UnknownHostException;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+
+import org.apache.shiro.config.IniSecurityManagerFactory;
+import org.apache.shiro.mgt.SecurityManager;
 import org.apache.shiro.realm.Realm;
 import org.apache.shiro.realm.text.IniRealm;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.ThreadContext;
 import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
-import org.apache.shiro.mgt.SecurityManager;
-import org.apache.shiro.config.IniSecurityManagerFactory;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 
-import java.net.InetAddress;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.UnknownHostException;
-import java.util.*;
+import com.google.common.collect.Sets;
 
 /**
  * Tools for securing Zeppelin
  */
 public class SecurityUtils {
 
+  private static final String ANONYMOUS = "anonymous";
+  private static final HashSet<String> EMPTY_HASHSET = Sets.newHashSet();
+  private static boolean isEnabled = false;
+  
   public static void initSecurityManager(String shiroPath) {
     IniSecurityManagerFactory factory = new IniSecurityManagerFactory("file:" + shiroPath);
     SecurityManager securityManager = factory.getInstance();
     org.apache.shiro.SecurityUtils.setSecurityManager(securityManager);
+    isEnabled = true;
   }
 
   public static Boolean isValidOrigin(String sourceHost, ZeppelinConfiguration conf)
@@ -65,18 +76,24 @@ public class SecurityUtils {
    * @return shiro principal
    */
   public static String getPrincipal() {
+    if (!isEnabled) {
+      return ANONYMOUS;
+    }
     Subject subject = org.apache.shiro.SecurityUtils.getSubject();
 
     String principal;
     if (subject.isAuthenticated()) {
       principal = subject.getPrincipal().toString();
     } else {
-      principal = "anonymous";
+      principal = ANONYMOUS;
     }
     return principal;
   }
 
   public static Collection getRealmsList() {
+    if (!isEnabled) {
+      return Collections.emptyList();
+    }
     DefaultWebSecurityManager defaultWebSecurityManager;
     String key = ThreadContext.SECURITY_MANAGER_KEY;
     defaultWebSecurityManager = (DefaultWebSecurityManager) ThreadContext.get(key);
@@ -91,6 +108,9 @@ public class SecurityUtils {
    * @return shiro roles
    */
   public static HashSet<String> getRoles() {
+    if (!isEnabled) {
+      return EMPTY_HASHSET;
+    }
     Subject subject = org.apache.shiro.SecurityUtils.getSubject();
     HashSet<String> roles = new HashSet<>();
     Map allRoles = null;
@@ -123,6 +143,9 @@ public class SecurityUtils {
    * Checked if shiro enabled or not
    */
   public static boolean isAuthenticated() {
+    if (!isEnabled) {
+      return false;
+    }
     return org.apache.shiro.SecurityUtils.getSubject().isAuthenticated();
   }
 }
