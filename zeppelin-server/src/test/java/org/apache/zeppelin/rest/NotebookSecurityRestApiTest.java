@@ -82,10 +82,10 @@ public class NotebookSecurityRestApiTest extends AbstractTestRestApi {
     //set permission
     String payload = "{ \"owners\": [\"admin\"], \"readers\": [\"user2\"], \"writers\": [\"user2\"] }";
     PutMethod put = httpPut("/notebook/" + noteId + "/permissions", payload , "admin", "password1");
-    assertThat("test set note premission method:", put, isAllowed());
+    assertThat("test set note permission method:", put, isAllowed());
     put.releaseConnection();
     
-    userTryGetNote(noteId, "user1", "password2", isForbiden());
+    userTryGetNote(noteId, "user1", "password2", isForbidden());
     
     userTryGetNote(noteId, "user2", "password3", isAllowed());
     
@@ -99,10 +99,10 @@ public class NotebookSecurityRestApiTest extends AbstractTestRestApi {
     //set permission
     String payload = "{ \"owners\": [\"admin\", \"user1\"], \"readers\": [\"user2\"], \"writers\": [\"user2\"] }";
     PutMethod put = httpPut("/notebook/" + noteId + "/permissions", payload , "admin", "password1");
-    assertThat("test set note premission method:", put, isAllowed());
+    assertThat("test set note permission method:", put, isAllowed());
     put.releaseConnection();
     
-    userTryRemoveNote(noteId, "user2", "password3", isForbiden());
+    userTryRemoveNote(noteId, "user2", "password3", isForbidden());
     userTryRemoveNote(noteId, "user1", "password2", isAllowed());
     
     Note deletedNote = ZeppelinServer.notebook.getNote(noteId);

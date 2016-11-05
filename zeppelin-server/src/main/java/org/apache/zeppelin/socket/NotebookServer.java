@@ -228,6 +228,9 @@ public class NotebookServer extends WebSocketServlet implements
           case PARAGRAPH_CLEAR_OUTPUT:
             clearParagraphOutput(conn, userAndRoles, notebook, messagereceived);
             break;
+          case PARAGRAPH_CLEAR_ALL_OUTPUT:
+            clearAllParagraphOutput(conn, userAndRoles, notebook, messagereceived);
+            break;
           case NOTE_UPDATE:
             updateNote(conn, userAndRoles, notebook, messagereceived);
             break;
@@ -820,6 +823,25 @@ public class NotebookServer extends WebSocketServlet implements
     addConnectionToNote(newNote.getId(), (NotebookSocket) conn);
     conn.send(serializeMessage(new Message(OP.NEW_NOTE).put("note", newNote)));
     broadcastNoteList(subject, userAndRoles);
+  }
+
+  private void clearAllParagraphOutput(NotebookSocket conn, HashSet<String> userAndRoles,
+                                       Notebook notebook, Message fromMessage)
+      throws IOException {
+    final String noteId = (String) fromMessage.get("id");
+    if (StringUtils.isBlank(noteId)) {
+      return;
+    }
+    Note note = notebook.getNote(noteId);
+    NotebookAuthorization notebookAuthorization = notebook.getNotebookAuthorization();
+    if (!notebookAuthorization.isWriter(noteId, userAndRoles)) {
+      permissionError(conn, "clear output", fromMessage.principal,
+          userAndRoles, notebookAuthorization.getOwners(noteId));
+      return;
+    }
+
+    note.clearAllParagraphOutput();
+    broadcastNote(note);
   }
 
   protected Note importNote(NotebookSocket conn, HashSet<String> userAndRoles,
