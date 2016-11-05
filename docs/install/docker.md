@@ -44,7 +44,7 @@ You need to [install docker](https://docs.docker.com/engine/installation/) on yo
 ```
 docker pull ${DOCKER_USERNAME}/zeppelin-release:<release-version>
 
-docker run --rm -it -p 7077:7077 -p 8081:8081 ${DOCKER_USERNAME}/zeppelin-release:<release-version> bash
+docker run --rm -it -p 7077:7077 -p 8081:8081 ${DOCKER_USERNAME}/zeppelin-release:<release-version> -c bash
 ```
 * Then a docker container will start with a Zeppelin release on path :
 `/usr/local/zeppelin/`
