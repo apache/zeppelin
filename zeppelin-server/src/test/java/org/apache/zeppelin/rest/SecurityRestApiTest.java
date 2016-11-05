@@ -17,8 +17,10 @@
 
 package org.apache.zeppelin.rest;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.hamcrest.CoreMatchers;
 import org.junit.AfterClass;
@@ -27,11 +29,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ErrorCollector;
 
-import java.io.IOException;
-import java.util.List;
-import java.util.Map;
-
-import static org.junit.Assert.*;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 public class SecurityRestApiTest extends AbstractTestRestApi {
   Gson gson = new Gson();
@@ -41,7 +40,7 @@ public class SecurityRestApiTest extends AbstractTestRestApi {
 
   @BeforeClass
   public static void init() throws Exception {
-    AbstractTestRestApi.startUp();
+    AbstractTestRestApi.startUpWithAuthenticationEnable();;
   }
 
   @AfterClass
