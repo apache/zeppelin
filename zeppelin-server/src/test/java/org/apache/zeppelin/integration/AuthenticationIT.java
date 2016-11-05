@@ -84,7 +84,9 @@ public class AuthenticationIT extends AbstractZeppelinIT {
       ZeppelinConfiguration conf = ZeppelinConfiguration.create();
       shiroPath = conf.getRelativeDir(String.format("%s/shiro.ini", conf.getConfDir()));
       File file = new File(shiroPath);
-      originalShiro = StringUtils.join(FileUtils.readLines(file, "UTF-8"), "\n");
+      if (file.exists()) {
+        originalShiro = StringUtils.join(FileUtils.readLines(file, "UTF-8"), "\n");
+      }
       FileUtils.write(file, authShiro, "UTF-8");
     } catch (IOException e) {
       LOG.error("Error in AuthenticationIT startUp::", e);
@@ -99,9 +101,17 @@ public class AuthenticationIT extends AbstractZeppelinIT {
     if (!endToEndTestEnabled()) {
       return;
     }
-    if (!StringUtils.isBlank(shiroPath)) {
-      File file = new File(shiroPath);
-      FileUtils.deleteQuietly(file);
+    try {
+      if (!StringUtils.isBlank(shiroPath)) {
+        File file = new File(shiroPath);
+        if (StringUtils.isBlank(originalShiro)) {
+          FileUtils.deleteQuietly(file);
+        } else {
+          FileUtils.write(file, originalShiro, "UTF-8");
+        }
+      }
+    } catch (IOException e) {
+      LOG.error("Error in AuthenticationIT tearDown::", e);
     }
     ZeppelinITUtils.restartZeppelin();
     driver.quit();
