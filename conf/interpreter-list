@@ -35,4 +35,5 @@ md              org.apache.zeppelin:zeppelin-markdown:0.6.1             Markdown
 pig             org.apache.zeppelin:zeppelin-pig:0.6.1                  Pig interpreter
 postgresql      org.apache.zeppelin:zeppelin-postgresql:0.6.1           Postgresql interpreter
 python          org.apache.zeppelin:zeppelin-python:0.6.1               Python interpreter
+scio            org.apache.zeppelin:zeppelin-scio:0.6.1                 Scio interpreter
 shell           org.apache.zeppelin:zeppelin-shell:0.6.1                Shell command
