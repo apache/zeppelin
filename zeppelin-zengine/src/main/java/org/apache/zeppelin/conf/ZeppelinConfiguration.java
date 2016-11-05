@@ -27,6 +27,7 @@ import java.util.Map;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.configuration.tree.ConfigurationNode;
+import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.notebook.repo.VFSNotebookRepo;
 import org.apache.zeppelin.util.Util;
 import org.slf4j.Logger;
@@ -402,9 +403,8 @@ public class ZeppelinConfiguration extends XMLConfiguration {
   }
 
   public String getShiroPath() {
-    String shiroPath =  getRelativeDir(String.format("%s/shiro.ini", getConfDir()));
-    return new File(shiroPath).exists() ? shiroPath
-        : getRelativeDir(String.format("%s/shiro.ini.template", getConfDir()));
+    String shiroPath = getRelativeDir(String.format("%s/shiro.ini", getConfDir()));
+    return new File(shiroPath).exists() ? shiroPath : StringUtils.EMPTY;
   }
 
   public String getInterpreterRemoteRunnerPath() {
