@@ -268,9 +268,6 @@ public class ZeppelinServer extends Application {
       SecurityUtils.initSecurityManager(shiroIniPath);
       webapp.addFilter(ShiroFilter.class, "/api/*", EnumSet.allOf(DispatcherType.class));
       webapp.addEventListener(new EnvironmentLoaderListener());
-    } else {
-      webapp.addFilter(new FilterHolder(CorsFilter.class),
-          "/api/*", EnumSet.allOf(DispatcherType.class));
     }
   }
 
