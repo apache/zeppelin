@@ -65,7 +65,7 @@ public class NotebookTest implements JobListenerFactory{
   private DependencyResolver depResolver;
   private NotebookAuthorization notebookAuthorization;
   private Credentials credentials;
-  private AuthenticationInfo anonymous = new AuthenticationInfo("anonymous");
+  private AuthenticationInfo anonymous = AuthenticationInfo.ANONYMOUS;
 
   @Before
   public void setUp() throws Exception {
@@ -196,6 +196,30 @@ public class NotebookTest implements JobListenerFactory{
     assertEquals(notes.size(), 0);
   }
 
+  @Test
+  public void testLoadAllNotes() {
+    Note note;
+    try {
+      assertEquals(0, notebook.getAllNotes().size());
+      note = notebook.createNote(anonymous);
+      Paragraph p1 = note.addParagraph();
+      Map config = p1.getConfig();
+      config.put("enabled", true);
+      p1.setConfig(config);
+      p1.setText("hello world");
+      note.persist(anonymous);
+    } catch (IOException fe) {
+      logger.warn("Failed to create note and paragraph. Possible problem with persisting note, safe to ignore", fe);
+    }
+
+    try {
+      notebook.loadAllNotes(anonymous);
+      assertEquals(1, notebook.getAllNotes().size());
+    } catch (IOException e) {
+      fail("Subject is non-emtpy anonymous, shouldn't fail");
+    }
+  }
+  
   @Test
   public void testPersist() throws IOException, SchedulerException, RepositoryException {
     Note note = notebook.createNote(anonymous);

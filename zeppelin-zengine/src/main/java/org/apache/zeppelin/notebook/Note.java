@@ -327,6 +327,17 @@ public class Note implements Serializable, ParagraphJobListener {
   }
 
   /**
+   * Clear all paragraph output of note
+   */
+  public void clearAllParagraphOutput() {
+    synchronized (paragraphs) {
+      for (Paragraph p : paragraphs) {
+        p.setReturn(null, null);
+      }
+    }
+  }
+
+  /**
    * Move paragraph into the new index (order from 0 ~ n-1).
    *
    * @param paragraphId ID of paragraph

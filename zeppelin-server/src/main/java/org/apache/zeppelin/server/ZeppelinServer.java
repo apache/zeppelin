@@ -26,7 +26,10 @@ import java.util.Set;
 import javax.servlet.DispatcherType;
 import javax.ws.rs.core.Application;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.cxf.jaxrs.servlet.CXFNonSpringJaxrsServlet;
+import org.apache.shiro.web.env.EnvironmentLoaderListener;
+import org.apache.shiro.web.servlet.ShiroFilter;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.dep.DependencyResolver;
@@ -259,15 +262,13 @@ public class ZeppelinServer extends Application {
     webapp.setSessionHandler(new SessionHandler());
     webapp.addServlet(cxfServletHolder, "/api/*");
 
-    webapp.setInitParameter("shiroConfigLocations",
-        new File(conf.getShiroPath()).toURI().toString());
-
-    SecurityUtils.initSecurityManager(conf.getShiroPath());
-    webapp.addFilter(org.apache.shiro.web.servlet.ShiroFilter.class, "/api/*",
-        EnumSet.allOf(DispatcherType.class));
-
-    webapp.addEventListener(new org.apache.shiro.web.env.EnvironmentLoaderListener());
-
+    String shiroIniPath = conf.getShiroPath();
+    if (!StringUtils.isBlank(shiroIniPath)) {
+      webapp.setInitParameter("shiroConfigLocations", new File(shiroIniPath).toURI().toString());
+      SecurityUtils.initSecurityManager(shiroIniPath);
+      webapp.addFilter(ShiroFilter.class, "/api/*", EnumSet.allOf(DispatcherType.class));
+      webapp.addEventListener(new EnvironmentLoaderListener());
+    }
   }
 
   private static WebAppContext setupWebAppContext(ContextHandlerCollection contexts,
