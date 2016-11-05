@@ -192,34 +192,34 @@ public class InterpreterFactory implements InterpreterGroupFactory {
          *    {ZEPPELIN_HOME}/interpreter/{interpreter_name}
          * 3. Register it by Interpreter.register
          */
-        if (!registerInterpreterFromPath(interpreterDirString, interpreterJson)) {
-          if (!registerInterpreterFromResource(cl, interpreterDirString, interpreterJson)) {
-            /*
-             * TODO(jongyoul)
-             * - Remove these codes below because of legacy code
-             * - Support ThreadInterpreter
-            */
-            URLClassLoader ccl = new URLClassLoader(
-                    recursiveBuildLibList(interpreterDir.toFile()), cl);
-            for (String className : interpreterClassList) {
-              try {
-                // Load classes
-                Class.forName(className, true, ccl);
-                Set<String> interpreterKeys = Interpreter.registeredInterpreters.keySet();
-                for (String interpreterKey : interpreterKeys) {
-                  if (className
-                      .equals(Interpreter.registeredInterpreters.get(interpreterKey)
-                          .getClassName())) {
-                    Interpreter.registeredInterpreters.get(interpreterKey)
-                        .setPath(interpreterDirString);
-                    logger.info("Interpreter " + interpreterKey + " found. class=" + className);
-                    cleanCl.put(interpreterDirString, ccl);
-                  }
-                }
-              } catch (Throwable t) {
-                // nothing to do
+        registerInterpreterFromPath(interpreterDirString, interpreterJson);
+        registerInterpreterFromResource(cl, interpreterDirString, interpreterJson);
+
+        /*
+         * TODO(jongyoul)
+         * - Remove these codes below because of legacy code
+         * - Support ThreadInterpreter
+        */
+        URLClassLoader ccl = new URLClassLoader(
+                recursiveBuildLibList(interpreterDir.toFile()), cl);
+
+        for (String className : interpreterClassList) {
+          try {
+            // Load classes
+            Class.forName(className, true, ccl);
+            Set<String> interpreterKeys = Interpreter.registeredInterpreters.keySet();
+            for (String interpreterKey : interpreterKeys) {
+              RegisteredInterpreter registeredInterpreter = Interpreter.registeredInterpreters
+                  .get(interpreterKey);
+              if (className.equals(registeredInterpreter.getClassName())) {
+                Interpreter.registeredInterpreters.get(interpreterKey)
+                    .setPath(interpreterDirString);
+                logger.info("Interpreter " + interpreterKey + " found. class=" + className);
               }
             }
+            cleanCl.put(interpreterDirString, ccl);
+          } catch (Throwable t) {
+            // nothing to do
           }
         }
       }
