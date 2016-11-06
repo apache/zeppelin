@@ -164,6 +164,7 @@ The following components are provided under Apache License.
     (Apache 2.0) tez-mapreduce (org.apache.tez:tez-mapreduce:0.7.0 - http://tez.apache.org)
     (Apache 2.0) tez-yarn-timeline-history-with-acls (org.apache.tez:tez-yarn-timeline-history-with-acls:0.7.0 - http://tez.apache.org)
     (Apache 2.0) jna (net.java.dev.jna:jna:4.1.0 https://github.com/java-native-access/jna)
+    (Apache 2.0) MathJax v2.7.0 - https://github.com/mathjax/MathJax/blob/2.7.0/LICENSE
 
 ========================================================================
 MIT licenses
