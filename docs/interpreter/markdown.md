@@ -53,6 +53,12 @@ The following example demonstrates the basic usage of Markdown in a Zeppelin not
 
 <img src="../assets/themes/zeppelin/img/docs-img/markdown-example.png" width="70%" />
 
+## Mathmetical expression
+
+Markdown interpreter leverage %html display system internally. That means you can mix mathmetical expressions with markdown syntax. For more information, please see [Mathmetical Expression](../displaysystem/basicdisplaysystem.html#mathmetical-expressions) section.
+
+
+
 ### Markdown4j Parser
 
 `markdown4j` parser provides [YUML](http://yuml.me/) and [Websequence](https://www.websequencediagrams.com/) extensions 
