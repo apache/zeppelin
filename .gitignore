@@ -7,7 +7,8 @@
 *.ear
 
 # interpreter
-/interpreter/
+/interpreter/*
+!/interpreter/lib
 
 # interpreter temp files
 spark/derby.log

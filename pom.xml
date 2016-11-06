@@ -460,6 +460,9 @@
               <fileset>
                 <directory>interpreter</directory>
                 <followSymlinks>false</followSymlinks>
+                <excludes>
+                  <exclude>lib/**</exclude>
+                </excludes>
               </fileset>
             </filesets>
           </configuration>

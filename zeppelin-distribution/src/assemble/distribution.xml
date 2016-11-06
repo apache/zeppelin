@@ -63,9 +63,6 @@
       <fileMode>0755</fileMode>
     </fileSet>
     <fileSet>
-      <directory>../lib</directory>
-    </fileSet>
-    <fileSet>
       <directory>../licenses</directory>
     </fileSet>
     <fileSet>

@@ -46,7 +46,7 @@ import org.junit.Test;
  * <ol>
  *
  * Your PYTHONPATH should also contain the directory of the Matplotlib
- * backend files. Usually these can be found in $ZEPPELIN_HOME/lib/python.
+ * backend files. Usually these can be found in $ZEPPELIN_HOME/interpreter/lib/python.
  *
  * To run manually on such environment, use:
  * <code>
