@@ -228,8 +228,7 @@ Here are few examples:
   ```
 
 ### 3. Dynamic Dependency Loading via %spark.dep interpreter
-> Note: `%spark.dep` interpreter is deprecated since v0.6.0.
-`%spark.dep` interpreter loads libraries to `%spark` and `%spark.pyspark` but not to  `%spark.sql` interpreter. So we recommend you to use the first option instead.
+> Note: `%spark.dep` interpreter loads libraries to `%spark` and `%spark.pyspark` but not to  `%spark.sql` interpreter. So we recommend you to use the first option instead.
 
 When your code requires external library, instead of doing download/copy/restart Zeppelin, you can easily do following jobs using `%spark.dep` interpreter.
 

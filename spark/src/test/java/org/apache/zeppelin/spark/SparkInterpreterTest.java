@@ -232,6 +232,16 @@ public class SparkInterpreterTest {
   }
 
   @Test
+  public void testZContextDependencyLoading() {
+    // try to import library does not exist on classpath. it'll fail
+    assertEquals(InterpreterResult.Code.ERROR, repl.interpret("import org.apache.commons.csv.CSVFormat", context).code());
+
+    // load library from maven repository and try to import again
+    repl.interpret("z.load(\"org.apache.commons:commons-csv:1.1\")", context);
+    assertEquals(InterpreterResult.Code.SUCCESS, repl.interpret("import org.apache.commons.csv.CSVFormat", context).code());
+  }
+
+  @Test
   public void emptyConfigurationVariablesOnlyForNonSparkProperties() {
     Properties intpProperty = repl.getProperty();
     SparkConf sparkConf = repl.getSparkContext().getConf();
