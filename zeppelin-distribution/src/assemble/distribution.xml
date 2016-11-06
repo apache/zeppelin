@@ -29,7 +29,7 @@
  
   <dependencySets>
     <dependencySet>
-      <!-- Enable access to all projects in the current multimodule build! 
+      <!-- Enable access to all projects in the current multimodule build!
       <useAllReactorProjects>true</useAllReactorProjects> -->
       <!-- Now, select which projects to include in this module-set. -->
       <includes>
@@ -92,4 +92,3 @@
   </fileSets>-->
 
 </assembly>
-
