@@ -119,7 +119,7 @@
     },
     {
       "title": "Convenience Paragraph if you started Zeppelin by \u0027bin/zeppelin-daemon.sh start\u0027",
-      "text": "%sh\npython scripts/mahout/add_mahout.py",
+      "text": "%sh\npython scripts/mahout/add_mahout_interpreters.py",
       "dateUpdated": "Sep 27, 2016 5:26:49 AM",
       "config": {
         "colWidth": 12.0,

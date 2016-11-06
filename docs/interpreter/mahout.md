@@ -65,6 +65,11 @@ The `add_mahout.py` script contains several command line arguments for advanced 
     <td>This flag will force the script to re-download the binary even if it already exists.  This is useful for previously failed downloads.</td>
     <td>NA</td>
   </tr>
+  <tr>
+      <td>--overwrite_existing</td>
+      <td>This flag will force the script to overwrite existing `%sparkMahout` and `%flinkMahout` interpreters. Useful when you want to just start over.</td>
+      <td>NA</td>
+    </tr>
 </table>
 
 __NOTE 1:__ Apache Mahout at this time only supports Spark 1.5 and Spark 1.6 and Scala 2.10.  If the user is using another version of Spark (e.g. 2.0), the `%sparkMahout` will likely not work.  The `%flinkMahout` interpreter will still work and the user is encouraged to develop with that engine as the code can be ported via copy and paste, as is evidenced by the tutorial notebook.

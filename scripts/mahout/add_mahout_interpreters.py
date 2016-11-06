@@ -39,6 +39,7 @@ parser.add_argument("--force_download", help="force download Apache Mahout", act
 parser.add_argument("--restart_later", help="force download Apache Mahout", action="store_true")
 parser.add_argument("--zeppelin_home", help="path to ZEPPELIN_HOME")
 parser.add_argument("--mahout_home", help="path to MAHOUT_HOME, use this if you have already installed Apache Mahout")
+parser.add_argument("--overwrite_existing", help="if %sparkMahout or %flinkMahout exist, delete them and create new ones. Otherwise Fail.", action="store_true")
 
 args = parser.parse_args()
 
@@ -63,11 +64,17 @@ class ZeppelinTerpWrangler:
             return False
         return True
 
-    def createTerp(self, original_terp_name, new_terp_name ):
+    def createTerp(self, original_terp_name, new_terp_name, overwrite_existing=True ):
 
         new_terp_id = new_terp_name
         if self._terpExists(new_terp_name):
-            del self.interpreter_json['interpreterSettings'][self._getTerpID(new_terp_name)]
+            print "Found existing '%s' interpreter..." % new_terp_name
+            if overwrite_existing:
+                print "deleting %s from interpreter.json" %new_terp_name
+                del self.interpreter_json['interpreterSettings'][self._getTerpID(new_terp_name)]
+            else:
+                print "exiting program."
+                exit(1)
 
         orig_terp_id = self._getTerpID(original_terp_name)
 
@@ -235,8 +242,8 @@ else:
 #######################################################################################################################
 
 z._readTerpJson()
-z.createTerp("spark", "sparkMahout")
-z.createTerp("flink", "flinkMahout")
+z.createTerp("spark", "sparkMahout", args.overwrite_existing)
+z.createTerp("flink", "flinkMahout", args.overwrite_existing)
 z.addMahoutConfig("sparkMahout", mahout_home, mahout_version)
 z.addMahoutConfig("flinkMahout", mahout_home, mahout_version)
 z._writeTerpJson()
