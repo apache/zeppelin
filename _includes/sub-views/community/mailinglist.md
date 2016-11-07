@@ -16,12 +16,12 @@ limitations under the License.
 
 Get help using Apache Zeppelin or contribute to the project on our mailing lists:
 
-* __Users :__ [subscribe](mailto:users-subscribe@zeppelin.apache.org?subject=send this email to subscribe),     [unsubscribe](mailto:users-unsubscribe@zeppelin.apache.org?subject=send this email to unsubscribe), [archives](http://mail-archives.apache.org/mod_mbox/zeppelin-users/)
+* __[Users](https://lists.apache.org/list.html?users@zeppelin.apache.org) :__ [subscribe](mailto:users-subscribe@zeppelin.apache.org?subject=send this email to subscribe),     [unsubscribe](mailto:users-unsubscribe@zeppelin.apache.org?subject=send this email to unsubscribe), [archives](https://lists.apache.org/list.html?users@zeppelin.apache.org)
 <br/>
 for usage questions, help, and announcements.
-* __Dev :__ [subscribe](mailto:dev-subscribe@zeppelin.apache.org?subject=send this email to subscribe), [unsubscribe](mailto:dev-unsubscribe@zeppelin.apache.org?subject=send this email to unsubscribe), [archives](http://mail-archives.apache.org/mod_mbox/zeppelin-dev/)
+* __[Dev](https://lists.apache.org/list.html?dev@zeppelin.apache.org) :__ [subscribe](mailto:dev-subscribe@zeppelin.apache.org?subject=send this email to subscribe), [unsubscribe](mailto:dev-unsubscribe@zeppelin.apache.org?subject=send this email to unsubscribe), [archives](https://lists.apache.org/list.html?dev@zeppelin.apache.org)
 <br/>
 for people wanting to contribute to the project.
-* __Commits :__ [subscribe](mailto:commits-subscribe@zeppelin.apache.org?subject=send this email to subscribe), [unsubscribe](mailto:commits-unsubscribe@zeppelin.apache.org?subject=send this email to unsubscribe), [archives](http://mail-archives.apache.org/mod_mbox/zeppelin-commits/)
+* __[Commits](https://lists.apache.org/list.html?commits@zeppelin.apache.org) :__ [subscribe](mailto:commits-subscribe@zeppelin.apache.org?subject=send this email to subscribe), [unsubscribe](mailto:commits-unsubscribe@zeppelin.apache.org?subject=send this email to unsubscribe), [archives](https://lists.apache.org/list.html?commits@zeppelin.apache.org)
 <br/>
 for commit messages and patches.
