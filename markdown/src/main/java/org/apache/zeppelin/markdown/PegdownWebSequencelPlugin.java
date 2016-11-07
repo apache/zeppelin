@@ -75,9 +75,8 @@ public class PegdownWebSequencelPlugin extends Parser implements BlockPluginPars
 
     return NodeSequence(
         startMarker(),
-        Optional(
-            String("style="),
-            Sequence(OneOrMore(Letter()), style.append(match()), Spn1())),
+        String("style="),
+        Sequence(OneOrMore(Letter()), style.append(match()), Spn1()),
         Sequence(body(), body.append(match())),
         endMarker(),
         push(
