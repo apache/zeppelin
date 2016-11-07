@@ -700,7 +700,7 @@ public class NotebookServer extends WebSocketServlet implements
 
   private void renameNote(NotebookSocket conn, HashSet<String> userAndRoles,
                           Notebook notebook, Message fromMessage)
-          throws SchedulerException, IOException {
+      throws SchedulerException, IOException {
     String noteId = (String) fromMessage.get("id");
     String name = (String) fromMessage.get("name");
 
