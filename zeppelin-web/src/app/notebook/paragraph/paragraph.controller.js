@@ -221,13 +221,16 @@
 
     $scope.renderHtml = function() {
       var retryRenderer = function() {
-        if (angular.element('#p' + $scope.paragraph.id + '_html').length) {
+        var htmlEl = angular.element('#p' + $scope.paragraph.id + '_html');
+        if (htmlEl.length) {
           try {
-            angular.element('#p' + $scope.paragraph.id + '_html').html($scope.paragraph.result.msg);
+            htmlEl.html($scope.paragraph.result.msg);
 
-            angular.element('#p' + $scope.paragraph.id + '_html').find('pre code').each(function(i, e) {
+            htmlEl.find('pre code').each(function(i, e) {
               hljs.highlightBlock(e);
             });
+            /*eslint new-cap: [2, {"capIsNewExceptions": ["MathJax.Hub.Queue"]}]*/
+            MathJax.Hub.Queue(['Typeset', MathJax.Hub, htmlEl[0]]);
           } catch (err) {
             console.log('HTML rendering error %o', err);
           }

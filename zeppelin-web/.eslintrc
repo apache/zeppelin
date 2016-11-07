@@ -14,6 +14,7 @@
     "nv": false,
     "ace": false,
     "d3": false,
+    "MathJax": false,
     "BootstrapDialog": false,
     "Handsontable": false,
     "moment": false,
