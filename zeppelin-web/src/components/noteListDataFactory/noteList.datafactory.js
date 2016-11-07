@@ -54,6 +54,7 @@
           addNode(dir, nodes, noteId);
         } else {
           var newDir = {
+            id: curDir.id ? curDir.id + '/' + node : node,
             name: node,
             hidden: true,
             children: []
