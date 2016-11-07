@@ -53,9 +53,9 @@ The following example demonstrates the basic usage of Markdown in a Zeppelin not
 
 <img src="../assets/themes/zeppelin/img/docs-img/markdown-example.png" width="70%" />
 
-## Mathmetical expression
+## Mathematical expression
 
-Markdown interpreter leverage %html display system internally. That means you can mix mathmetical expressions with markdown syntax. For more information, please see [Mathmetical Expression](../displaysystem/basicdisplaysystem.html#mathmetical-expressions) section.
+Markdown interpreter leverages %html display system internally. That means you can mix mathematical expressions with markdown syntax. For more information, please see [Mathematical Expression](../displaysystem/basicdisplaysystem.html#mathematical-expressions) section.
 
 
 

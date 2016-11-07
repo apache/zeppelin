@@ -39,8 +39,8 @@ With `%html` directive, Zeppelin treats your output as HTML
 
 <img src="/assets/themes/zeppelin/img/screenshots/display_html.png" />
 
-### Mathmetical expressions
-HTML display system automatically format mathmetical expression using [MathJax](https://www.mathjax.org/). You can use
+### Mathematical expressions
+HTML display system automatically formats mathematical expression using [MathJax](https://www.mathjax.org/). You can use
 `\\( INLINE EXPRESSION \\)` and `$$ EXPRESSION $$` to format. For example
 
 <img src="/assets/themes/zeppelin/img/screenshots/display_formula.png" />
