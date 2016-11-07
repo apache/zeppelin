@@ -80,7 +80,7 @@ user3 = password4, role2
 You can set the roles for each users next to the password.
 
 ## Groups and permissions (optional)
-In case you want to leverage user groups and permissions, use one of the following configuration for LDAP or AD under `[main]` segment in `shiro.ini`.
+In case you want to leverage user groups and permissions, use one of the following configuration for LDAPGroupRealm, LdapRealm from Knox support for AD Global Catalog Support and samAccountName or AD under `[main]` segment in `shiro.ini`.
 
 ```
 activeDirectoryRealm = org.apache.zeppelin.server.ActiveDirectoryGroupRealm
@@ -90,6 +90,19 @@ activeDirectoryRealm.searchBase = CN=Users,DC=SOME_GROUP,DC=COMPANY,DC=COM
 activeDirectoryRealm.url = ldap://ldap.test.com:389
 activeDirectoryRealm.groupRolesMap = "CN=aGroupName,OU=groups,DC=SOME_GROUP,DC=COMPANY,DC=COM":"group1"
 activeDirectoryRealm.authorizationCachingEnabled = false
+
+ldapADGCRealm = org.apache.zeppelin.realm.LdapRealm
+ldapADGCRealm.contextFactory.systemUsername = CN=hdpbind,OU=Svc,DC=exadc,DC=w2k,DC=example,DC=com
+ldapADGCRealm.contextFactory.systemPassword = ldapPassword
+ldapADGCRealm.searchBase = dc=w2k,dc=example,dc=com
+ldapADGCRealm.userSearchBase = dc=w2k,dc=example,dc=com
+ldapADGCRealm.groupSearchBase = dc=w2k,dc=example,dc=com
+ldapADGCRealm.contextFactory.url = ldap://exampledc1.exadc.w2k.example.com:3268
+ldapADGCRealm.userSearchAttributeName = sAMAccountName
+ldapADGCRealm.contextFactory.authenticationMechanism = simple
+ldapADGCRealm.userObjectClass = user
+ldapADGCRealm.groupObjectClass = group
+ldapADGCRealm.memberAttribute = member
 
 ldapRealm = org.apache.zeppelin.server.LdapGroupRealm
 # search base for ldap groups (only relevant for LdapGroupRealm):
