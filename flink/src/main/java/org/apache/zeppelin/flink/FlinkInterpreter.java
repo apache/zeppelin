@@ -27,8 +27,12 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.*;
 
+import org.apache.flink.api.common.JobID;
 import org.apache.flink.api.scala.FlinkILoop;
 import org.apache.flink.configuration.Configuration;
+import org.apache.flink.runtime.akka.AkkaUtils;
+import org.apache.flink.runtime.instance.ActorGateway;
+import org.apache.flink.runtime.messages.JobManagerMessages;
 import org.apache.flink.runtime.minicluster.LocalFlinkMiniCluster;
 import org.apache.flink.runtime.util.EnvironmentInformation;
 import org.apache.zeppelin.interpreter.Interpreter;
@@ -47,6 +51,7 @@ import scala.Option;
 import scala.Some;
 import scala.collection.JavaConversions;
 import scala.collection.immutable.Nil;
+import scala.concurrent.duration.FiniteDuration;
 import scala.runtime.AbstractFunction0;
 import scala.tools.nsc.Settings;
 import scala.tools.nsc.interpreter.IMain;
@@ -341,6 +346,20 @@ public class FlinkInterpreter extends Interpreter {
 
   @Override
   public void cancel(InterpreterContext context) {
+    if (localMode()) {
+      // In localMode we can cancel all running jobs,
+      // because the local cluster can only run one job at the time.
+      for (JobID job : this.localFlinkCluster.getCurrentlyRunningJobsJava()) {
+        logger.info("Stop job: " + job);
+        cancelJobLocalMode(job);
+      }
+    }
+  }
+
+  private void cancelJobLocalMode(JobID jobID){
+    FiniteDuration timeout = AkkaUtils.getTimeout(this.localFlinkCluster.configuration());
+    ActorGateway leader = this.localFlinkCluster.getLeaderGateway(timeout);
+    leader.ask(new JobManagerMessages.CancelJob(jobID), timeout);
   }
 
   @Override
