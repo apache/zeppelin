@@ -3,7 +3,7 @@
     "group": "md",
     "name": "md",
     "className": "org.apache.zeppelin.markdown.Markdown",
-    "properties": {},
+    "properties": null,
     "editor": {
       "language": "markdown",
       "editOnDblClick": true
