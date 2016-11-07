@@ -135,6 +135,8 @@
     "group": "livy",
     "name": "pyspark3",
     "className": "org.apache.zeppelin.livy.LivyPySpark3Interpreter",
+    "properties": {
+    },    
     "editor": {
       "language": "python",
       "editOnDblClick": false
