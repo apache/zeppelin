@@ -23,7 +23,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Implementation of Var to support parameter parsing
+ * Implementation of Var to support parameter parsing.
+ *
+ * @param <K> Key
+ * @param <V> Value
  */
 public class ParamVar<K, V> extends Var<Map<K, V>> {
 

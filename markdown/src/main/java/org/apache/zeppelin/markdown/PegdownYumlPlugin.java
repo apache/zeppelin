@@ -39,8 +39,8 @@ public class PegdownYumlPlugin extends Parser implements BlockPluginParser {
 
   public PegdownYumlPlugin() {
     super(PegdownParser.OPTIONS,
-      PegdownParser.PARSING_TIMEOUT_AS_MILLIS,
-      DefaultParseRunnerProvider);
+        PegdownParser.PARSING_TIMEOUT_AS_MILLIS,
+        DefaultParseRunnerProvider);
   }
 
   public PegdownYumlPlugin(Integer options,
@@ -75,20 +75,21 @@ public class PegdownYumlPlugin extends Parser implements BlockPluginParser {
     StringBuilderVar body = new StringBuilderVar();
 
     return NodeSequence(
-      StartMarker(),
-      ZeroOrMore(
-        Sequence(
-          ParameterName(), name.append(match()),
-          String("="),
-          OneOrMore(Alphanumeric()), value.append(match())
-        ),
-        Sp(),
-        params.put(name.getString(), value.getString()),
-        name.clear(), value.clear()
-      )
-      , Body(), body.append(match())
-      , EndMarker()
-      , push(new ExpImageNode("title", createYumlUrl(params.get(), body.getString()), new TextNode("")))
+        StartMarker(),
+        ZeroOrMore(
+            Sequence(
+                ParameterName(), name.append(match()),
+                String("="),
+                OneOrMore(Alphanumeric()), value.append(match())),
+            Sp(),
+            params.put(name.getString(), value.getString()),
+            name.clear(), value.clear()),
+        Body(),
+        body.append(match()),
+        EndMarker(),
+        push(
+            new ExpImageNode(
+                "title", createYumlUrl(params.get(), body.getString()), new TextNode("")))
     );
   }
 
@@ -118,19 +119,21 @@ public class PegdownYumlPlugin extends Parser implements BlockPluginParser {
 
     mergedStyle.append(style);
 
-    if (null != params.get("dir"))
+    if (null != params.get("dir")) {
       mergedStyle.append(";dir:" + params.get("dir"));
+    }
 
-    if (null != params.get("scale"))
+    if (null != params.get("scale")) {
       mergedStyle.append(";scale:" + params.get("scale"));
+    }
 
     return new StringBuilder()
-      .append("http://yuml.me/diagram/")
-      .append(mergedStyle.toString() + "/")
-      .append(type + "/")
-      .append(encodedBody)
-      .append("." + format)
-      .toString();
+        .append("http://yuml.me/diagram/")
+        .append(mergedStyle.toString() + "/")
+        .append(type + "/")
+        .append(encodedBody)
+        .append("." + format)
+        .toString();
   }
 
   @Override

@@ -46,15 +46,13 @@ public class PegdownWebSequencelPlugin extends Parser implements BlockPluginPars
 
   public PegdownWebSequencelPlugin() {
     super(PegdownParser.OPTIONS,
-      PegdownParser.PARSING_TIMEOUT_AS_MILLIS,
-      DefaultParseRunnerProvider);
+        PegdownParser.PARSING_TIMEOUT_AS_MILLIS,
+        DefaultParseRunnerProvider);
   }
 
-  public PegdownWebSequencelPlugin(Integer options,
-                                   Long maxParsingTimeInMillis,
-                                   ParseRunnerProvider parseRunnerProvider,
+  public PegdownWebSequencelPlugin(Integer opts, Long millis, ParseRunnerProvider provider,
                                    PegDownPlugins plugins) {
-    super(options, maxParsingTimeInMillis, parseRunnerProvider, plugins);
+    super(opts, millis, provider, plugins);
   }
 
   public static final String TAG = "%%%";
@@ -76,17 +74,16 @@ public class PegdownWebSequencelPlugin extends Parser implements BlockPluginPars
     StringBuilderVar body = new StringBuilderVar();
 
     return NodeSequence(
-      StartMarker(),
-      Optional(
-        String("style="),
-        Sequence(OneOrMore(Letter()), style.append(match()), Spn1())),
-      Sequence(Body(), body.append(match())),
-      EndMarker(),
-      push(
-        new ExpImageNode("title",
-          createWebsequenceUrl(style.getString(), body.getString()),
-          new TextNode(""))
-      )
+        StartMarker(),
+        Optional(
+            String("style="),
+            Sequence(OneOrMore(Letter()), style.append(match()), Spn1())),
+        Sequence(Body(), body.append(match())),
+        EndMarker(),
+        push(
+            new ExpImageNode("title",
+                createWebsequenceUrl(style.getString(), body.getString()),
+                new TextNode("")))
     );
   }
 
@@ -102,12 +99,12 @@ public class PegdownWebSequencelPlugin extends Parser implements BlockPluginPars
 
     try {
       String query = new StringBuilder()
-        .append("style=")
-        .append(style)
-        .append("&message=")
-        .append(URLEncoder.encode(content, "UTF-8"))
-        .append("&apiVersion=1")
-        .toString();
+          .append("style=")
+          .append(style)
+          .append("&message=")
+          .append(URLEncoder.encode(content, "UTF-8"))
+          .append("&apiVersion=1")
+          .toString();
 
       URL url = new URL(WEBSEQ_URL);
       URLConnection conn = url.openConnection();
@@ -117,7 +114,8 @@ public class PegdownWebSequencelPlugin extends Parser implements BlockPluginPars
       writer.flush();
 
       StringBuilder response = new StringBuilder();
-      reader = new BufferedReader(new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8));
+      reader = new BufferedReader(
+          new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8));
       String line;
       while ((line = reader.readLine()) != null) {
         response.append(line);

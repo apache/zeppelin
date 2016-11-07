@@ -32,9 +32,9 @@ public class PegdownParser implements MarkdownParser {
 
   public PegdownParser() {
     PegDownPlugins plugins = new PegDownPlugins.Builder()
-      .withPlugin(PegdownYumlPlugin.class)
-      .withPlugin(PegdownWebSequencelPlugin.class)
-      .build();
+        .withPlugin(PegdownYumlPlugin.class)
+        .withPlugin(PegdownWebSequencelPlugin.class)
+        .build();
     processor = new PegDownProcessor(OPTIONS, PARSING_TIMEOUT_AS_MILLIS, plugins);
   }
 
@@ -56,9 +56,9 @@ public class PegdownParser implements MarkdownParser {
    */
   public static String wrapWithMarkdownClassDiv(String html) {
     return new StringBuilder()
-      .append("<div class=\"markdown-body\">\n")
-      .append(html)
-      .append("\n</div>")
-      .toString();
+        .append("<div class=\"markdown-body\">\n")
+        .append(html)
+        .append("\n</div>")
+        .toString();
   }
 }
