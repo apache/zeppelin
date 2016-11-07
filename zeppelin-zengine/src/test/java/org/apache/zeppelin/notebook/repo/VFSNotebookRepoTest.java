@@ -86,7 +86,7 @@ public class VFSNotebookRepoTest implements JobListenerFactory {
 
     SearchService search = mock(SearchService.class);
     notebookRepo = new VFSNotebookRepo(conf);
-    notebook = new Notebook(conf, notebookRepo, schedulerFactory, factory, this, search, null, null);
+    notebook = new Notebook(conf, notebookRepo, schedulerFactory, factory, this, search, null, null, null);
   }
 
   @After

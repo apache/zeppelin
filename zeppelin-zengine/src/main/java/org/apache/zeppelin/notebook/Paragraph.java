@@ -25,6 +25,7 @@ import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.user.Credentials;
 import org.apache.zeppelin.user.UserCredentials;
+import org.apache.zeppelin.user.properties.UserProperties;
 import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.display.Input;
 import org.apache.zeppelin.interpreter.*;
@@ -458,13 +459,19 @@ public class Paragraph extends Job implements Serializable, Cloneable {
       runners.add(new ParagraphRunner(note, note.getId(), p.getId()));
     }
 
-    final Paragraph self = this;
-
     Credentials credentials = note.getCredentials();
+    Map<String, Object> tempConfig = this.getConfig();
     if (authenticationInfo != null) {
       UserCredentials userCredentials = credentials.getUserCredentials(
           authenticationInfo.getUser());
       authenticationInfo.setUserCredentials(userCredentials);
+      Map<String, String> properties = note.getUserProperties().get(
+          authenticationInfo.getUser());
+      if (properties != null) {
+        tempConfig = new HashMap<>();
+        tempConfig.putAll(config);
+        tempConfig.putAll(properties);
+      }
     }
 
     InterpreterContext interpreterContext = new InterpreterContext(
@@ -473,7 +480,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
         this.getTitle(),
         this.getText(),
         this.getAuthenticationInfo(),
-        this.getConfig(),
+        tempConfig,
         this.settings,
         registry,
         resourcePool,
