@@ -47,10 +47,9 @@ The markdown interpreter provides github flavored markdown.
 
 <img src="../assets/themes/zeppelin/img/docs-img/markdown-example-github-flavored-parser.png" width="70%" />
 
-### Supported Plugins 
+### Supproted Plugins 
 
-- [YUML](http://yuml.me/) 
-- [Websequence](https://www.websequencediagrams.com/)
+`pegdown` parser provides [YUML](http://yuml.me/) and [Websequence](https://www.websequencediagrams.com/) extensions 
 
 <img src="../assets/themes/zeppelin/img/docs-img/markdown-example-pegdown-parser.png" width="70%" />
 
