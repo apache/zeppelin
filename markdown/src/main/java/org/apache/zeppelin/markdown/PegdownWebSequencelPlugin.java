@@ -42,6 +42,8 @@ import java.nio.charset.StandardCharsets;
  */
 public class PegdownWebSequencelPlugin extends Parser implements BlockPluginParser {
 
+  private static final String WEBSEQ_URL = "http://www.websequencediagrams.com";
+
   public PegdownWebSequencelPlugin() {
     super(PegdownParser.OPTIONS,
       PegdownParser.PARSING_TIMEOUT_AS_MILLIS,
@@ -95,6 +97,8 @@ public class PegdownWebSequencelPlugin extends Parser implements BlockPluginPars
     OutputStreamWriter writer = null;
     BufferedReader reader = null;
 
+    String webSeqUrl = "";
+
     try {
       String query = new StringBuilder()
         .append("style=")
@@ -104,7 +108,7 @@ public class PegdownWebSequencelPlugin extends Parser implements BlockPluginPars
         .append("&apiVersion=1")
         .toString();
 
-      URL url = new URL("http://www.websequencediagrams.com");
+      URL url = new URL(WEBSEQ_URL);
       URLConnection conn = url.openConnection();
       conn.setDoOutput(true);
       writer = new OutputStreamWriter(conn.getOutputStream(), StandardCharsets.UTF_8);
@@ -127,16 +131,16 @@ public class PegdownWebSequencelPlugin extends Parser implements BlockPluginPars
       int end = json.indexOf("\"", start);
 
       if (start != -1 && end != -1) {
-        return "http://www.websequencediagrams.com/" + json.substring(start, end);
+        webSeqUrl = WEBSEQ_URL + "/" + json.substring(start, end);
       }
     } catch (IOException e) {
-      throw new RuntimeException("Failed to get proper response from websequencediagrams.com");
+      throw new RuntimeException("Failed to get proper response from websequencediagrams.com", e);
     } finally {
       IOUtils.closeQuietly(writer);
       IOUtils.closeQuietly(reader);
     }
 
-    return "";
+    return webSeqUrl;
   }
 
   @Override
