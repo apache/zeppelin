@@ -33,26 +33,56 @@ import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * MarkdownInterpreter interpreter for Zeppelin.
- */
+/** MarkdownInterpreter interpreter for Zeppelin. */
 public class Markdown extends Interpreter {
   private static final Logger LOGGER = LoggerFactory.getLogger(Markdown.class);
 
-  private PegdownParser parser;
+  private MarkdownParser parser;
+
+  /** Markdown Parser Type. */
+  public enum MarkdownParserType {
+    PEGDOWN {
+      @Override
+      public String toString() {
+        return PARSER_TYPE_PEGDOWN;
+      }
+    },
+
+    MARKDOWN4j {
+      @Override
+      public String toString() {
+        return PARSER_TYPE_MARKDOWN4J;
+      }
+    }
+  }
+
+  public static final String MARKDOWN_PARSER_TYPE = "markdown.parser.type";
+  public static final String PARSER_TYPE_PEGDOWN = "pegdown";
+  public static final String PARSER_TYPE_MARKDOWN4J = "markdown4j";
 
   public Markdown(Properties property) {
     super(property);
   }
 
-  @Override
-  public void open() {
-    parser = new PegdownParser();
+  public static MarkdownParser createMarkdownParser(String parserType) {
+    LOGGER.debug("Creating " + parserType + " markdown interpreter");
+
+    if (MarkdownParserType.PEGDOWN.toString().equals(parserType)) {
+      return new PegdownParser();
+    } else {
+      /** default parser. */
+      return new Markdown4jParser();
+    }
   }
 
   @Override
-  public void close() {
+  public void open() {
+    String parserType = getProperty(MARKDOWN_PARSER_TYPE);
+    parser = createMarkdownParser(parserType);
   }
+
+  @Override
+  public void close() {}
 
   @Override
   public InterpreterResult interpret(String markdownText, InterpreterContext interpreterContext) {
@@ -69,8 +99,7 @@ public class Markdown extends Interpreter {
   }
 
   @Override
-  public void cancel(InterpreterContext context) {
-  }
+  public void cancel(InterpreterContext context) {}
 
   @Override
   public FormType getFormType() {

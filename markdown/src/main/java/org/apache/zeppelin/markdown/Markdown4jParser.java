@@ -17,22 +17,31 @@
 
 package org.apache.zeppelin.markdown;
 
-import org.parboiled.support.Var;
+import org.markdown4j.Markdown4jProcessor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.io.IOException;
 
-/**
- * Implementation of Var to support parameter parsing
- */
-public class ParamVar<K, V> extends Var<Map<K, V>> {
+/** Markdown Parser using markdown4j processor . */
+public class Markdown4jParser implements MarkdownParser {
+  private Markdown4jProcessor processor;
 
-  public ParamVar() {
-    super(new HashMap<K, V>());
+  public Markdown4jParser() {
+    processor = new Markdown4jProcessor();
   }
 
-  public boolean put(K key, V value) {
-    get().put(key, value);
-    return true;
+  @Override
+  public String render(String markdownText) {
+    String html = "";
+
+    try {
+      html = processor.process(markdownText);
+    } catch (IOException e) {
+      // convert checked exception to non-checked exception
+      throw new RuntimeException(e);
+    }
+
+    return html;
   }
 }

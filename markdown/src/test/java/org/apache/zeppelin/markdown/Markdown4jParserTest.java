@@ -17,22 +17,35 @@
 
 package org.apache.zeppelin.markdown;
 
-import org.parboiled.support.Var;
+import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Properties;
 
-/**
- * Implementation of Var to support parameter parsing
- */
-public class ParamVar<K, V> extends Var<Map<K, V>> {
+import static org.junit.Assert.assertEquals;
 
-  public ParamVar() {
-    super(new HashMap<K, V>());
+public class Markdown4jParserTest {
+
+  Markdown md;
+
+  @Before
+  public void setUp() throws Exception {
+    Properties props = new Properties();
+    props.put(Markdown.MARKDOWN_PARSER_TYPE, Markdown.PARSER_TYPE_MARKDOWN4J);
+    md = new Markdown(props);
+    md.open();
   }
 
-  public boolean put(K key, V value) {
-    get().put(key, value);
-    return true;
+  @After
+  public void tearDown() throws Exception {
+    md.close();
+  }
+
+  @Test
+  public void testStrikethrough() {
+    InterpreterResult result = md.interpret("This is ~~deleted~~ text", null);
+    assertEquals("<p>This is <s>deleted</s> text</p>\n", result.message());
   }
 }
