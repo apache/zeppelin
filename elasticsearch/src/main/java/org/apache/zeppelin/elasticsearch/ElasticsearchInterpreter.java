@@ -130,12 +130,14 @@ public class ElasticsearchInterpreter extends Interpreter {
   public void open() {
     try {
       logger.info("prop={}", getProperty());
-      final Settings settings = Settings.settingsBuilder()
+      final Settings settings = Settings.builder()
           .put("cluster.name", clusterName)
           .put(getProperty())
           .build();
-      client = TransportClient.builder().settings(settings).build()
-          .addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName(host), port));
+      client = ElasticSearchInterpreterUtils
+          .createTransportClient(settings)
+          .addTransportAddress(
+              new InetSocketTransportAddress(InetAddress.getByName(host), port));
     } catch (IOException e) {
       logger.error("Open connection with Elasticsearch", e);
     }

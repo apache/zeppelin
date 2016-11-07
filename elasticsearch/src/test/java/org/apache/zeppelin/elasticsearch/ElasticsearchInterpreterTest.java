@@ -61,7 +61,7 @@ public class ElasticsearchInterpreterTest {
   @BeforeClass
   public static void populate() throws IOException {
 
-    final Settings settings = Settings.settingsBuilder()
+    final Settings settings = Settings.builder()
         .put("cluster.name", ELS_CLUSTER_NAME)
         .put("network.host", ELS_HOST)
         .put("http.port", ELS_HTTP_PORT)

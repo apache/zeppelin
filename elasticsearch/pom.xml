@@ -149,13 +149,18 @@
 
     <profile>
       <id>elasticsearch-5</id>
-      <dependencies>
-      </dependencies>
       <properties>
         <elasticsearch.version>5.0.0</elasticsearch.version>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
       </properties>
+      <dependencies>
+        <dependency>
+          <groupId>org.elasticsearch.client</groupId>
+          <artifactId>transport</artifactId>
+          <version>5.0.0</version>
+        </dependency>
+      </dependencies>
     </profile>
   </profiles>
 
