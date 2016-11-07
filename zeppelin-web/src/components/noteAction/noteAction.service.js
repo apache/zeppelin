@@ -47,5 +47,28 @@
         }
       });
     };
+
+    this.renameNote = function(noteId, notePath) {
+      showRenameDialog('Rename note', notePath, function(newName) {
+        websocketMsgSrv.renameNote(noteId, newName);
+      });
+    };
+
+    function showRenameDialog(title, currentName, callback) {
+      BootstrapDialog.show({
+        closable: true,
+        title: title,
+        message: '<input type="text" class="form-control" value="' + currentName + '">',
+        buttons: [{
+          label: 'Rename',
+          hotkey: 13,   // the button is clicked when press enter
+          action: function(dialogRef) {
+            var newName = dialogRef.getModalBody().find('input').val().trim();
+            callback(newName);
+            dialogRef.close();
+          }
+        }]
+      });
+    }
   }
 })();

@@ -43,7 +43,8 @@
       if (nodes.length === 1) {  // the leaf
         curDir.children.push({
           name: nodes[0],
-          id: noteId
+          id: noteId,
+          path: curDir.id ? curDir.id + '/' + nodes[0] : nodes[0]
         });
       } else {  // a folder node
         var node = nodes.shift();

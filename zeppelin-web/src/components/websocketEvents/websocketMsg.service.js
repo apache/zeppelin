@@ -59,6 +59,10 @@
         websocketEvents.sendNewEvent({op: 'NOTE_UPDATE', data: {id: noteId, name: noteName, config: noteConfig}});
       },
 
+      renameNote: function(noteId, noteName) {
+        websocketEvents.sendNewEvent({op: 'NOTE_RENAME', data: {id: noteId, name: noteName}});
+      },
+
       moveParagraph: function(paragraphId, newIndex) {
         websocketEvents.sendNewEvent({op: 'MOVE_PARAGRAPH', data: {id: paragraphId, index: newIndex}});
       },
