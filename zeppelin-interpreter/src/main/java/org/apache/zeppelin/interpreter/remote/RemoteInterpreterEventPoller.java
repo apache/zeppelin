@@ -196,7 +196,6 @@ public class RemoteInterpreterEventPoller extends Thread {
 
           appListener.onStatusChange(noteId, paragraphId, appId, status);
         } else if (event.getType() == RemoteInterpreterEventType.META_INFOS) {
-          // on output update
           Map<String, String> metaInfos = gson.fromJson(event.getData(),
               new TypeToken<Map<String, String>>() {
               }.getType());
