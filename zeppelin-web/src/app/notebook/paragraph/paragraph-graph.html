@@ -13,8 +13,8 @@ limitations under the License.
 -->
 <div id="p{{paragraph.id}}_graph"
      class="graphContainer"
-     ng-class="{'noOverflow': getGraphMode()=='table'}"
-     ng-if="getResultType()=='TABLE' || getResultType()=='NETWORK'"
+     ng-class="{'noOverflow': getGraphMode()=='table' || getGraphMode()=='network'}"
+     ng-show="getResultType()=='TABLE' || getResultType()=='NETWORK'"
      >
 
   <div ng-if="getGraphMode()=='table'"
@@ -53,11 +53,10 @@ limitations under the License.
   </div>
   
   <div id="p{{paragraph.id}}_network"
-     ng-class="{'noOverflow': getGraphMode()=='network'}"
-     ng-if="getGraphMode()=='network' && paragraph.result.graph.nodes.length > 0">
+     ng-show="getGraphMode()=='network' && paragraph.result.graph.nodes.length > 0">
     <div id="p{{paragraph.id}}_network_header">
-      <ul style="list-style-type: none">
-        <li ng-if="paragraph.result.graph.labels.length > 0">Nodes <span class="badge">
+      <ul style="list-style-type: none" ng-if="paragraph.result.graph.labels != null">
+        <li>Nodes <span class="badge">
           {{paragraph.result.graph.nodes.length}}</span>: 
           <span ng-repeat="(labelName, labelColor) in paragraph.result.graph.labels"
               style="background-color: {{labelColor}} !important;" class="label label-default network-badge">
@@ -75,7 +74,7 @@ limitations under the License.
     </div>
     <div id="p{{paragraph.id}}_network_container">
     </div>
-    <div id="p{{paragraph.id}}_network_footer">
+    <div id="p{{paragraph.id}}_network_footer" ng-if="paragraph.result.graph.nodes.length > 0">
       <ul class="list-inline">
       </ul>
     </div>
