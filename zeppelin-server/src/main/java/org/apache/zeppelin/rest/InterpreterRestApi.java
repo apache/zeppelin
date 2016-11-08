@@ -18,6 +18,7 @@
 package org.apache.zeppelin.rest;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -213,6 +214,24 @@ public class InterpreterRestApi {
           ExceptionUtils.getStackTrace(e)).build();
     }
     return new JsonResponse(Status.CREATED).build();
+  }
+
+  /**
+   * get the property value
+   */
+  @GET
+  @Path("getmetainfos/{settingId}")
+  public Response getMetaInfo(@PathParam("settingId") String settingId,
+      @PathParam("name") String propName) {
+    String url = null;
+    InterpreterSetting interpreterSetting = interpreterFactory.get(settingId);
+    Map<String, String> infos = interpreterSetting.getInfos();
+    if (infos != null) {
+      url = infos.get("url");
+    }
+    Map<String, String> respMap = new HashMap<>();
+    respMap.put("url", url);
+    return new JsonResponse<>(Status.OK, respMap).build();
   }
 
   /**

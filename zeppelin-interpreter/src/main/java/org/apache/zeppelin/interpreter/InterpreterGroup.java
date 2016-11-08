@@ -22,6 +22,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.log4j.Logger;
 import org.apache.zeppelin.display.AngularObjectRegistry;
+import org.apache.zeppelin.interpreter.remote.RemoteInterpreterEventClient;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
 import org.apache.zeppelin.resource.ResourcePool;
 import org.apache.zeppelin.scheduler.Scheduler;
@@ -49,6 +50,8 @@ public class InterpreterGroup extends ConcurrentHashMap<String, List<Interpreter
   RemoteInterpreterProcess remoteInterpreterProcess;    // attached remote interpreter process
   ResourcePool resourcePool;
   boolean angularRegistryPushed = false;
+
+  private RemoteInterpreterEventClient eventClient;
 
   // map [notebook session, Interpreters in the group], to support per note session interpreters
   //Map<String, List<Interpreter>> interpreters = new ConcurrentHashMap<String,
@@ -80,6 +83,11 @@ public class InterpreterGroup extends ConcurrentHashMap<String, List<Interpreter
   public InterpreterGroup() {
     getId();
     allInterpreterGroups.put(id, this);
+  }
+
+  public InterpreterGroup(String interpreterGroupId, RemoteInterpreterEventClient eventClient) {
+    this(interpreterGroupId);
+    this.eventClient = eventClient;
   }
 
   private static String generateId() {
@@ -279,5 +287,9 @@ public class InterpreterGroup extends ConcurrentHashMap<String, List<Interpreter
 
   public void setAngularRegistryPushed(boolean angularRegistryPushed) {
     this.angularRegistryPushed = angularRegistryPushed;
+  }
+
+  public RemoteInterpreterEventClient getEventClient() {
+    return eventClient;
   }
 }

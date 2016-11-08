@@ -27,8 +27,6 @@ import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.*;
-import java.util.List;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.google.common.base.Joiner;
@@ -45,6 +43,7 @@ import org.apache.spark.scheduler.ActiveJob;
 import org.apache.spark.scheduler.DAGScheduler;
 import org.apache.spark.scheduler.Pool;
 import org.apache.spark.sql.SQLContext;
+import org.apache.spark.ui.SparkUI;
 import org.apache.spark.ui.jobs.JobProgressListener;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
@@ -57,6 +56,7 @@ import org.apache.zeppelin.interpreter.InterpreterUtils;
 import org.apache.zeppelin.interpreter.WrappedInterpreter;
 import org.apache.zeppelin.resource.ResourcePool;
 import org.apache.zeppelin.resource.WellKnownResourceName;
+import org.apache.zeppelin.interpreter.remote.RemoteInterpreterEventClient;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
@@ -803,6 +803,10 @@ public class SparkInterpreter extends Interpreter {
         sparkSession = getSparkSession();
       }
       sc = getSparkContext();
+      RemoteInterpreterEventClient eventClient = getInterpreterGroup().getEventClient();
+      if (eventClient != null) {
+        eventClient.onMetaInfodReceived(getSparkUIUrl());
+      }
       if (sc.getPoolForName("fair").isEmpty()) {
         Value schedulingMode = org.apache.spark.scheduler.SchedulingMode.FAIR();
         int minimumShare = 0;
@@ -936,6 +940,17 @@ public class SparkInterpreter extends Interpreter {
     }
 
     numReferenceOfSparkContext.incrementAndGet();
+  }
+
+  private Map<String, String> getSparkUIUrl() {
+    Option<SparkUI> sparkUiOption = (Option<SparkUI>) Utils.invokeMethod(sc, "ui");
+    SparkUI sparkUi = sparkUiOption.get();
+    String sparkWebUrl = sparkUi.appUIAddress();
+    Map<String, String> infos = new java.util.HashMap<>();
+    if (sparkWebUrl != null) {
+      infos.put("url", sparkWebUrl);
+    }
+    return infos;
   }
 
   private Results.Result interpret(String line) {

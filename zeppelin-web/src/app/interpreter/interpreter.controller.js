@@ -691,6 +691,22 @@
       getRepositories();
     };
 
+    $scope.showSparkUI = function(settingId) {
+      $http.get(baseUrlSrv.getRestApiBase() + '/interpreter/getmetainfos/' + settingId)
+        .success(function(data, status, headers, config) {
+          var url = data.body.url;
+          if (!url) {
+            BootstrapDialog.alert({
+              message: 'No spark application running'
+            });
+            return;
+          }
+          window.open(url, '_blank');
+        }).error(function(data, status, headers, config) {
+         console.log('Error %o %o', status, data.message);
+       });
+    };
+
     init();
   }
 
