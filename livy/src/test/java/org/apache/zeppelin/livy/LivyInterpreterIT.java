@@ -73,7 +73,7 @@ public class LivyInterpreterIT {
   }
 
   @Test
-  public void testSparkInterpreter() {
+  public void testSparkInterpreterRDD() {
     if (!checkPreCondition()) {
       return;
     }
@@ -85,8 +85,8 @@ public class LivyInterpreterIT {
     AuthenticationInfo authInfo = new AuthenticationInfo("user1");
     MyInterpreterOutputListener outputListener = new MyInterpreterOutputListener();
     InterpreterOutput output = new InterpreterOutput(outputListener);
-    InterpreterContext context = new InterpreterContext("noteId", "paragraphId", null, "title",
-        "text", authInfo, null, null, null, null, null, output);
+    InterpreterContext context = new InterpreterContext("noteId", "paragraphId", "livy.spark",
+        "title", "text", authInfo, null, null, null, null, null, output);
     sparkInterpreter.open();
     InterpreterResult result = sparkInterpreter.interpret("sc.version", context);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
@@ -101,32 +101,7 @@ public class LivyInterpreterIT {
     assertEquals(InterpreterResult.Type.TEXT, result.type());
     assertNull(result.message());
     assertTrue(outputListener.getOutputAppended().contains("Double = 55.0"));
-
-    // test DataFrame api
-    outputListener.reset();
-    sparkInterpreter.interpret("val sqlContext = new org.apache.spark.sql.SQLContext(sc)\n"
-        + "import sqlContext.implicits._", context);
-    result = sparkInterpreter.interpret("val df=sqlContext.createDataFrame(Seq((\"hello\",20)))\n"
-            + "df.collect()" , context);
-    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-    assertEquals(InterpreterResult.Type.TEXT, result.type());
-    assertNull(result.message());
-    assertTrue(outputListener.getOutputAppended()
-            .contains("Array[org.apache.spark.sql.Row] = Array([hello,20])"));
-    sparkInterpreter.interpret("df.registerTempTable(\"df\")", context);
-
-    // test LivySparkSQLInterpreter which share the same SparkContext with LivySparkInterpreter
-    outputListener.reset();
-    LivySparkSQLInterpreter sqlInterpreter = new LivySparkSQLInterpreter(properties);
-    interpreterGroup.get("session_1").add(sqlInterpreter);
-    sqlInterpreter.setInterpreterGroup(interpreterGroup);
-    sqlInterpreter.open();
-    result = sqlInterpreter.interpret("select * from df", context);
-    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-    assertEquals(InterpreterResult.Type.TABLE, result.message().get(0).getType());
-    // TODO (zjffdu), \t at the end of each line is not necessary, it is a bug of LivySparkSQLInterpreter
-    assertEquals("_1\t_2\t\nhello\t20\t\n", result.message().get(0).getData());
-
+    
     // single line comment
     outputListener.reset();
     String singleLineComment = "// my comment";
@@ -184,7 +159,56 @@ public class LivyInterpreterIT {
   }
 
   @Test
+  public void testSparkInterpreterDataFrame() {
+    if (!checkPreCondition()) {
+      return;
+    }
+    InterpreterGroup interpreterGroup = new InterpreterGroup("group_1");
+    interpreterGroup.put("session_1", new ArrayList<Interpreter>());
+    LivySparkInterpreter sparkInterpreter = new LivySparkInterpreter(properties);
+    sparkInterpreter.setInterpreterGroup(interpreterGroup);
+    interpreterGroup.get("session_1").add(sparkInterpreter);
+    AuthenticationInfo authInfo = new AuthenticationInfo("user1");
+    MyInterpreterOutputListener outputListener = new MyInterpreterOutputListener();
+    InterpreterOutput output = new InterpreterOutput(outputListener);
+    InterpreterContext context = new InterpreterContext("noteId", "paragraphId", "livy.spark",
+        "title", "text", authInfo, null, null, null, null, null, output);
+    sparkInterpreter.open();
+
+    // test DataFrame api
+    outputListener.reset();
+    sparkInterpreter.interpret("val sqlContext = new org.apache.spark.sql.SQLContext(sc)\n"
+        + "import sqlContext.implicits._", context);
+    InterpreterResult result = sparkInterpreter.interpret("val df=sqlContext.createDataFrame(Seq((\"hello\",20)))\n"
+        + "df.collect()" , context);
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    assertEquals(InterpreterResult.Type.TEXT, result.type());
+    assertNull(result.message());
+    assertTrue(outputListener.getOutputAppended()
+        .contains("Array[org.apache.spark.sql.Row] = Array([hello,20])"));
+    sparkInterpreter.interpret("df.registerTempTable(\"df\")", context);
+
+    // test LivySparkSQLInterpreter which share the same SparkContext with LivySparkInterpreter
+    outputListener.reset();
+    LivySparkSQLInterpreter sqlInterpreter = new LivySparkSQLInterpreter(properties);
+    interpreterGroup.get("session_1").add(sqlInterpreter);
+    sqlInterpreter.setInterpreterGroup(interpreterGroup);
+    sqlInterpreter.open();
+    result = sqlInterpreter.interpret("select * from df", context);
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    assertEquals(InterpreterResult.Type.TABLE, result.type());
+    // TODO(zjffdu), \t at the end of each line is not necessary, it is a bug of LivySparkSQLInterpreter
+    assertEquals("_1\t_2\t\nhello\t20\t\n", result.message());
+
+    sparkInterpreter.close();
+    sqlInterpreter.close();
+  }
+
+  @Test
   public void testSparkSQLInterpreter() {
+    if (!checkPreCondition()) {
+      return;
+    }
     InterpreterGroup interpreterGroup = new InterpreterGroup("group_1");
     interpreterGroup.put("session_1", new ArrayList<Interpreter>());
     LivySparkInterpreter sparkInterpreter = new LivySparkInterpreter(properties);
@@ -198,12 +222,14 @@ public class LivyInterpreterIT {
     AuthenticationInfo authInfo = new AuthenticationInfo("user1");
     MyInterpreterOutputListener outputListener = new MyInterpreterOutputListener();
     InterpreterOutput output = new InterpreterOutput(outputListener);
-    InterpreterContext context = new InterpreterContext("noteId", "paragraphId", "title",
-        "text", authInfo, null, null, null, null, null, output);
+    InterpreterContext context = new InterpreterContext("noteId", "paragraphId", "livy.sql",
+        "title", "text", authInfo, null, null, null, null, null, output);
     InterpreterResult result = sqlInterpreter.interpret("show tables", context);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
     assertEquals(InterpreterResult.Type.TABLE, result.type());
     assertTrue(result.message().contains("tableName"));
+
+    sqlInterpreter.close();
   }
 
   @Test
@@ -216,8 +242,8 @@ public class LivyInterpreterIT {
     AuthenticationInfo authInfo = new AuthenticationInfo("user1");
     MyInterpreterOutputListener outputListener = new MyInterpreterOutputListener();
     InterpreterOutput output = new InterpreterOutput(outputListener);
-    InterpreterContext context = new InterpreterContext("noteId", "paragraphId", null, "title",
-            "text", authInfo, null, null, null, null, null, output);
+    InterpreterContext context = new InterpreterContext("noteId", "paragraphId", "livy.pyspark",
+        "title", "text", authInfo, null, null, null, null, null, output);
     pysparkInterpreter.open();
     InterpreterResult result = pysparkInterpreter.interpret("sc.version", context);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());

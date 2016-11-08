@@ -49,8 +49,8 @@ download_with_retry() {
 }
 
 LIVY_CACHE=".livy-dist"
-LIVY_ARCHIVE="v${LIVY_VERSION}"
-export LIVY_HOME="${ZEPPELIN_HOME}/${LIVY_ARCHIVE}"
+LIVY_ARCHIVE="livy-assembly-${LIVY_VERSION}"
+export LIVY_HOME="${ZEPPELIN_HOME}/livy-server-$LIVY_VERSION"
 echo "LIVY_HOME is ${LIVY_HOME}"
 
 if [[ ! -d "${LIVY_HOME}" ]]; then
@@ -64,18 +64,18 @@ if [[ ! -d "${LIVY_HOME}" ]]; then
         # download livy from archive if not cached
         echo "${LIVY_VERSION} being downloaded from archives"
         STARTTIME=`date +%s`
-        download_with_retry "https://github.com/cloudera/livy/archive/${LIVY_ARCHIVE}.tgz"
+        download_with_retry "https://oss.sonatype.org/content/repositories/releases/com/cloudera/livy/livy-assembly/${LIVY_VERSION}/${LIVY_ARCHIVE}.zip"
         ENDTIME=`date +%s`
         DOWNLOADTIME="$((ENDTIME-STARTTIME))"
     fi
 
     # extract archive in un-cached root, clean-up on failure
-    cp "${LIVY_ARCHIVE}.tar.gz" ..
+    cp "${LIVY_ARCHIVE}.zip" ..
     cd ..
-    if ! tar zxf "${LIVY_ARCHIVE}.tar.gz" ; then
-        echo "Unable to extract ${LIVY_ARCHIVE}.tar.gz" >&2
+    if ! unzip "${LIVY_ARCHIVE}.zip" ; then
+        echo "Unable to extract ${LIVY_ARCHIVE}.zip" >&2
         rm -rf "${LIVY_ARCHIVE}"
-        rm -f "${LIVY_ARCHIVE}.tar.gz"
+        rm -f "${LIVY_ARCHIVE}.zip"
     fi
 fi
 

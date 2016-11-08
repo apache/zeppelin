@@ -17,6 +17,7 @@
 
 package org.apache.zeppelin.livy;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterResult;
@@ -92,7 +93,7 @@ public abstract class BaseLivyInterprereter extends Interpreter {
           }
         }
       }
-      if (st == null || st.trim().length() == 0) {
+      if (StringUtils.isEmpty(st)) {
         return new InterpreterResult(InterpreterResult.Code.SUCCESS, "");
       }
 

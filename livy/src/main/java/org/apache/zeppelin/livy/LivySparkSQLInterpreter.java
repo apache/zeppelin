@@ -17,6 +17,7 @@
 
 package org.apache.zeppelin.livy;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.scheduler.Scheduler;
@@ -59,25 +60,31 @@ public class LivySparkSQLInterpreter extends BaseLivyInterprereter {
   @Override
   public InterpreterResult interpret(String line, InterpreterContext context) {
     try {
-      if (line == null || line.trim().length() == 0) {
+      if (StringUtils.isEmpty(line)) {
         return new InterpreterResult(InterpreterResult.Code.SUCCESS, "");
       }
 
-      // create sqlContext implicitly, as in livy 0.2 sqlContext is not available.
-      if (!sqlContextCreated) {
-        InterpreterResult result = sparkInterpreter.interpret("sqlContext", context);
-        if (result.code() == InterpreterResult.Code.ERROR) {
-          result = sparkInterpreter.interpret(
-              "val sqlContext = new org.apache.spark.sql.SQLContext(sc)\n"
-              + "import sqlContext.implicits._", context);
+      // create sqlContext implicitly if it is not available, as in livy 0.2 sqlContext
+      // is not available.
+      synchronized (this) {
+        if (!sqlContextCreated) {
+          InterpreterResult result = sparkInterpreter.interpret("sqlContext", context);
           if (result.code() == InterpreterResult.Code.ERROR) {
-            return new InterpreterResult(InterpreterResult.Code.ERROR, "Fail to create sqlContext,"
-                + result.message());
+            result = sparkInterpreter.interpret(
+                "val sqlContext = new org.apache.spark.sql.SQLContext(sc)\n"
+                    + "import sqlContext.implicits._", context);
+            if (result.code() == InterpreterResult.Code.ERROR) {
+              return new InterpreterResult(InterpreterResult.Code.ERROR,
+                  "Fail to create sqlContext," + result.message());
+            }
           }
+          sqlContextCreated = true;
         }
-        sqlContextCreated = true;
       }
+
       // delegate the work to LivySparkInterpreter in the same session.
+      // TODO(zjffdu), we may create multiple session for the same user here. This can be fixed
+      // after we move session creation to open()
       InterpreterResult res = sparkInterpreter.interpret("sqlContext.sql(\"" +
           line.replaceAll("\"", "\\\\\"")
               .replaceAll("\\n", " ")
@@ -143,4 +150,8 @@ public class LivySparkSQLInterpreter extends BaseLivyInterprereter {
     }
   }
 
+  @Override
+  public void close() {
+    this.sparkInterpreter.close();
+  }
 }
