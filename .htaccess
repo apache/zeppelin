@@ -8,3 +8,6 @@ RewriteRule ^/?docs/(0.5.[056])(?!-incubating).*/(.*) /docs/$1-incubating/$3  [R
 
 # rewrite docs/latest to latest stable release
 RewriteRule ^/?docs/latest/(.*) /docs/0.6.2/$1  [PT]
+
+# rewrite docs/snapshot to latest snapshot version
+RewriteRule ^/?docs/snapshot/(.*) /docs/0.7.0-SNAPSHOT/$1  [PT]
