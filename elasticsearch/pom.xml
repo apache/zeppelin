@@ -33,6 +33,8 @@
   <name>Zeppelin: Elasticsearch interpreter</name>
 
   <properties>
+    <exclude.src.elastic>**/Elasticsearch5Connector.java</exclude.src.elastic>
+    <exclude.test.elastic>**/Elasticsearch5InterpreterTest.java</exclude.test.elastic>
     <elasticsearch.version>2.4.1</elasticsearch.version>
     <guava.version>18.0</guava.version>
     <json-flattener.version>0.1.6</json-flattener.version>
@@ -90,6 +92,32 @@
       </plugin>
 
       <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.2</version>
+        <configuration>
+          <excludes>
+            <exclude>${exclude.src.elastic}</exclude>
+          </excludes>
+        </configuration>
+
+        <executions>
+          <execution>
+            <id>default-testCompile</id>
+            <phase>test-compile</phase>
+            <configuration>
+              <testExcludes>
+                <exclude>${exclude.test.elastic}</exclude>
+              </testExcludes>
+            </configuration>
+            <goals>
+              <goal>testCompile</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
         <artifactId>maven-dependency-plugin</artifactId>
         <version>2.8</version>
         <executions>
@@ -131,54 +159,25 @@
           </execution>
         </executions>
       </plugin>
+
     </plugins>
   </build>
 
   <profiles>
     <profile>
       <id>elasticsearch-2</id>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-compiler-plugin</artifactId>
-            <version>3.2</version>
-            <configuration>
-              <excludes>
-                <exclude>**/*/Elasticsearch5Connector.java</exclude>
-              </excludes>
-            </configuration>
-          </plugin>
-        </plugins>
-      </build>
       <activation>
         <activeByDefault>true</activeByDefault>
       </activation>
-      <dependencies>
-      </dependencies>
-      <properties>
-          <!-- use default elasticsearch.version -->
-      </properties>
     </profile>
 
     <profile>
       <id>elasticsearch-5</id>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-compiler-plugin</artifactId>
-            <version>3.2</version>
-            <configuration>
-              <excludes>
-                <exclude>**/*/Elasticsearch2Connector.java</exclude>
-              </excludes>
-            </configuration>
-          </plugin>
-        </plugins>
-      </build>
       <properties>
+        <exclude.src.elastic>**/Elasticsearch2Connector.java</exclude.src.elastic>
+        <exclude.test.elastic>**/Elasticsearch2InterpreterTest.java</exclude.test.elastic>
         <elasticsearch.version>5.0.0</elasticsearch.version>
+        <log4j2.version>2.6.2</log4j2.version>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
       </properties>
@@ -186,7 +185,19 @@
         <dependency>
           <groupId>org.elasticsearch.client</groupId>
           <artifactId>transport</artifactId>
-          <version>5.0.0</version>
+          <version>${elasticsearch.version}</version>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.logging.log4j</groupId>
+          <artifactId>log4j-api</artifactId>
+          <version>${log4j2.version}</version>
+          <scope>test</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.logging.log4j</groupId>
+          <artifactId>log4j-core</artifactId>
+          <version>${log4j2.version}</version>
+          <scope>test</scope>
         </dependency>
       </dependencies>
     </profile>

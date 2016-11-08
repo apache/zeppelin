@@ -17,22 +17,12 @@
 
 package org.apache.zeppelin.elasticsearch;
 
-import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
-import static org.junit.Assert.assertEquals;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-import java.util.Properties;
-import java.util.UUID;
-
 import org.apache.commons.lang.math.RandomUtils;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
+import org.elasticsearch.action.support.WriteRequest;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.node.Node;
@@ -41,7 +31,13 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-public class ElasticsearchInterpreterTest {
+import java.io.IOException;
+import java.util.*;
+
+import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
+import static org.junit.Assert.assertEquals;
+
+public class Elasticsearch5InterpreterTest {
 
   private static Client elsClient;
   private static Node elsNode;
@@ -87,7 +83,7 @@ public class ElasticsearchInterpreterTest {
 
     for (int i = 0; i < 50; i++) {
       elsClient.prepareIndex("logs", "http", "" + i)
-          .setRefresh(true)
+          .setRefreshPolicy(WriteRequest.RefreshPolicy.IMMEDIATE)
           .setSource(jsonBuilder()
               .startObject()
               .field("date", new Date())
