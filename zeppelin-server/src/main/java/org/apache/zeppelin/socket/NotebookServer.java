@@ -166,10 +166,10 @@ public class NotebookServer extends WebSocketServlet implements
       /** Lets be elegant here */
       switch (messagereceived.op) {
           case LIST_NOTES:
-            unicastNoteList(conn, subject);
+            unicastNoteList(conn, subject, userAndRoles);
             break;
           case RELOAD_NOTES_FROM_REPO:
-            broadcastReloadedNoteList(subject);
+            broadcastReloadedNoteList(subject, userAndRoles);
             break;
           case GET_HOME_NOTE:
             sendHomeNote(conn, userAndRoles, notebook, messagereceived);
@@ -460,7 +460,7 @@ public class NotebookServer extends WebSocketServlet implements
   }
 
   public List<Map<String, String>> generateNotebooksInfo(boolean needsReload,
-      AuthenticationInfo subject) {
+      AuthenticationInfo subject, Set<String> userAndRoles) {
 
     Notebook notebook = notebook();
 
@@ -476,18 +476,21 @@ public class NotebookServer extends WebSocketServlet implements
         LOG.error("Fail to reload notes from repository", e);
       }
     }
-    List<Note> notes = notebook.getAllNotes(subject);
+//    List<Note> notes = notebook.getAllNotes(subject);
+    NotebookAuthorization notebookAuthorization = notebook.getNotebookAuthorization();
+    List<Note> notes = notebook.getAllNotes();  
     List<Map<String, String>> notesInfo = new LinkedList<>();
     for (Note note : notes) {
-      Map<String, String> info = new HashMap<>();
-
-      if (hideHomeScreenNotebookFromList && note.getId().equals(homescreenNotebookId)) {
-        continue;
+      if (notebookAuthorization.isReader(note.getId(), userAndRoles)) {
+        Map<String, String> info = new HashMap<>();
+        if (hideHomeScreenNotebookFromList && note.getId()
+              .equals(homescreenNotebookId)) {
+          continue;
+        }
+        info.put("id", note.getId());
+        info.put("name", note.getName());
+        notesInfo.add(info);
       }
-
-      info.put("id", note.getId());
-      info.put("name", note.getName());
-      notesInfo.add(info);
     }
 
     return notesInfo;
@@ -503,18 +506,20 @@ public class NotebookServer extends WebSocketServlet implements
         .put("interpreterBindings", settingList));
   }
 
-  public void broadcastNoteList(AuthenticationInfo subject) {
-    List<Map<String, String>> notesInfo = generateNotebooksInfo(false, subject);
+  public void broadcastNoteList(AuthenticationInfo subject, Set<String> userAndRoles) {
+    List<Map<String, String>> notesInfo = generateNotebooksInfo(false, subject, userAndRoles);
     broadcastAll(new Message(OP.NOTES_INFO).put("notes", notesInfo));
   }
 
-  public void unicastNoteList(NotebookSocket conn, AuthenticationInfo subject) {
-    List<Map<String, String>> notesInfo = generateNotebooksInfo(false, subject);
+  public void unicastNoteList(NotebookSocket conn, AuthenticationInfo subject, 
+        Set<String> userAndRoles) {
+    List<Map<String, String>> notesInfo = generateNotebooksInfo(false, subject, userAndRoles);
     unicast(new Message(OP.NOTES_INFO).put("notes", notesInfo), conn);
   }
 
-  public void broadcastReloadedNoteList(AuthenticationInfo subject) {
-    List<Map<String, String>> notesInfo = generateNotebooksInfo(true, subject);
+  public void broadcastReloadedNoteList(AuthenticationInfo subject, 
+        Set<String> userAndRoles) {
+    List<Map<String, String>> notesInfo = generateNotebooksInfo(true, subject, userAndRoles);
     broadcastAll(new Message(OP.NOTES_INFO).put("notes", notesInfo));
   }
 
@@ -546,6 +551,7 @@ public class NotebookServer extends WebSocketServlet implements
 
     Note note = notebook.getNote(noteId);
     NotebookAuthorization notebookAuthorization = notebook.getNotebookAuthorization();
+    LOG.info("usersAndRoles: " + userAndRoles);
     if (note != null) {
       if (!notebookAuthorization.isReader(noteId, userAndRoles)) {
         permissionError(conn, "read", fromMessage.principal, userAndRoles,
@@ -571,6 +577,7 @@ public class NotebookServer extends WebSocketServlet implements
 
     if (note != null) {
       NotebookAuthorization notebookAuthorization = notebook.getNotebookAuthorization();
+      LOG.info("usersAndRoles: " + userAndRoles);
       if (!notebookAuthorization.isReader(noteId, userAndRoles)) {
         permissionError(conn, "read", fromMessage.principal,
             userAndRoles, notebookAuthorization.getReaders(noteId));
@@ -618,7 +625,7 @@ public class NotebookServer extends WebSocketServlet implements
       AuthenticationInfo subject = new AuthenticationInfo(fromMessage.principal);
       note.persist(subject);
       broadcastNote(note);
-      broadcastNoteList(subject);
+      broadcastNoteList(subject, userAndRoles);
     }
   }
 
@@ -653,7 +660,7 @@ public class NotebookServer extends WebSocketServlet implements
     note.persist(subject);
     addConnectionToNote(note.getId(), (NotebookSocket) conn);
     conn.send(serializeMessage(new Message(OP.NEW_NOTE).put("note", note)));
-    broadcastNoteList(subject);
+    broadcastNoteList(subject, userAndRoles);
   }
 
   private void removeNote(NotebookSocket conn, HashSet<String> userAndRoles,
@@ -675,7 +682,7 @@ public class NotebookServer extends WebSocketServlet implements
     AuthenticationInfo subject = new AuthenticationInfo(fromMessage.principal);
     notebook.removeNote(noteId, subject);
     removeNote(noteId);
-    broadcastNoteList(subject);
+    broadcastNoteList(subject, userAndRoles);
   }
 
   private void updateParagraph(NotebookSocket conn, HashSet<String> userAndRoles,
@@ -717,7 +724,7 @@ public class NotebookServer extends WebSocketServlet implements
     AuthenticationInfo subject = new AuthenticationInfo(fromMessage.principal);
     addConnectionToNote(newNote.getId(), (NotebookSocket) conn);
     conn.send(serializeMessage(new Message(OP.NEW_NOTE).put("note", newNote)));
-    broadcastNoteList(subject);
+    broadcastNoteList(subject, userAndRoles);
   }
 
   protected Note importNote(NotebookSocket conn, HashSet<String> userAndRoles,
@@ -734,7 +741,7 @@ public class NotebookServer extends WebSocketServlet implements
       note = notebook.importNote(noteJson, noteName, subject);
       note.persist(subject);
       broadcastNote(note);
-      broadcastNoteList(subject);
+      broadcastNoteList(subject, userAndRoles);
     }
     return note;
   }

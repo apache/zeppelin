@@ -43,6 +43,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -190,6 +191,7 @@ public class LdapRealm extends JndiLdapRealm {
       return null;
     }
     final Set<String> roleNames = getRoles(principals, ldapContextFactory);
+    log.info("Roles: " + roleNames);
     SimpleAuthorizationInfo simpleAuthorizationInfo = new SimpleAuthorizationInfo(roleNames);
     Set<String> stringPermissions = permsFor(roleNames);
     simpleAuthorizationInfo.setStringPermissions(stringPermissions);
@@ -318,6 +320,21 @@ public class LdapRealm extends JndiLdapRealm {
       }
     }
   }
+  
+  public List<String> getListRoles() {
+    List<String> roleList = new ArrayList<String>();
+    Map<String, String> roles = getRolesByGroup();
+    Iterator it = roles.entrySet().iterator();
+    while (it.hasNext()) {
+      Map.Entry pair = (Map.Entry) it.next();
+      log.info(pair.getKey() + " = " + pair.getValue());
+      log.info("Key: " + pair.getKey());
+      log.info("Value: " + pair.getValue());
+      roleList.add((String) pair.getValue());
+    }
+    log.info("Permissions: " + getRolesByGroup());
+    return roleList;
+  }
 
   private String roleNameFor(String groupName) {
     return !rolesByGroup.isEmpty() ? rolesByGroup.get(groupName) : groupName;
@@ -326,7 +343,9 @@ public class LdapRealm extends JndiLdapRealm {
   private Set<String> permsFor(Set<String> roleNames) {
     Set<String> perms = new LinkedHashSet<String>(); // preserve order
     for (String role : roleNames) {
+      log.info("PermsForRole: " + role);
       List<String> permsForRole = permissionsByRole.get(role);
+      log.info("PermForByrole: " + permsForRole);
       if (permsForRole != null) {
         perms.addAll(permsForRole);
       }
@@ -410,9 +429,17 @@ public class LdapRealm extends JndiLdapRealm {
   public void setRolesByGroup(Map<String, String> rolesByGroup) {
     this.rolesByGroup.putAll(rolesByGroup);
   }
+  
+  public Map<String, String> getRolesByGroup() {
+    return rolesByGroup;
+  }
 
   public void setPermissionsByRole(String permissionsByRoleStr) {
     permissionsByRole.putAll(parsePermissionByRoleString(permissionsByRoleStr));
+  }
+  
+  public Map<String, List<String>> getPermissionsByRole() {
+    return permissionsByRole;
   }
 
   public boolean isAuthorizationEnabled() {

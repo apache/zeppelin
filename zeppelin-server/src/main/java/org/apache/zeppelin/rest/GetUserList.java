@@ -24,7 +24,8 @@ import org.apache.shiro.realm.ldap.JndiLdapContextFactory;
 import org.apache.shiro.realm.ldap.JndiLdapRealm;
 import org.apache.shiro.realm.text.IniRealm;
 import org.apache.shiro.util.JdbcUtils;
-import org.apache.zeppelin.server.ActiveDirectoryGroupRealm;
+import org.apache.zeppelin.realm.ActiveDirectoryGroupRealm;
+import org.apache.zeppelin.realm.LdapRealm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -91,10 +92,15 @@ public class GetUserList {
    */
   public List<String> getUserList(JndiLdapRealm r, String searchText) {
     List<String> userList = new ArrayList<>();
+    LOG.info("SearchText: " + searchText);
     String userDnTemplate = r.getUserDnTemplate();
+    LOG.info("Final userDnTemplate: " + userDnTemplate);
     String userDn[] = userDnTemplate.split(",", 2);
+    LOG.info("Final userDn[]: " + userDn);
     String userDnPrefix = userDn[0].split("=")[0];
+    LOG.info("Final userDnPrefix: " + userDnPrefix);
     String userDnSuffix = userDn[1];
+    LOG.info("Final userDnSuffix: " + userDnSuffix);
     JndiLdapContextFactory CF = (JndiLdapContextFactory) r.getContextFactory();
     try {
       LdapContext ctx = CF.getSystemLdapContext();
@@ -108,14 +114,58 @@ public class GetUserList {
         Attributes attrs = ((SearchResult) result.next()).getAttributes();
         if (attrs.get(userDnPrefix) != null) {
           String currentUser = attrs.get(userDnPrefix).toString();
+          LOG.info("CurrentUser: " + currentUser);
           userList.add(currentUser.split(":")[1].trim());
         }
       }
     } catch (Exception e) {
       LOG.error("Error retrieving User list from Ldap Realm", e);
     }
+    LOG.info("UserList: " + userList);
     return userList;
   }
+  
+  /**
+   * function to extract users from LDAP
+   */
+  public List<String> getUserList(LdapRealm r, String searchText) {
+    List<String> userList = new ArrayList<>();
+    LOG.info("SearchText: " + searchText);
+    String userAttribute = r.getUserSearchAttributeName();
+    String userSearchRealm = r.getUserSearchBase();
+    JndiLdapContextFactory CF = (JndiLdapContextFactory) r.getContextFactory();
+    try {
+      LdapContext ctx = CF.getSystemLdapContext();
+      SearchControls constraints = new SearchControls();
+      constraints.setSearchScope(SearchControls.SUBTREE_SCOPE);
+      String[] attrIDs = {userAttribute};
+      constraints.setReturningAttributes(attrIDs);
+      NamingEnumeration result = ctx.search(userSearchRealm, "(" 
+            + userAttribute + "=" + searchText + ")", constraints);
+      while (result.hasMore()) {
+        Attributes attrs = ((SearchResult) result.next()).getAttributes();
+        if (attrs.get(userAttribute) != null) {
+          String currentUser = (String) attrs.get(userAttribute).get();
+          LOG.info("CurrentUser: " + currentUser);
+          userList.add(currentUser.trim());
+        }
+      }
+    } catch (Exception e) {
+      LOG.error("Error retrieving User list from Ldap Realm", e);
+    }
+    LOG.info("UserList: " + userList);
+    return userList;
+  }
+  
+  /***
+   * Get user roles from shiro.ini
+   * @param r
+   * @return
+   */
+  public List<String> getRolesList(LdapRealm r) {
+    return r.getListRoles();
+  }
+  
 
   public List<String> getUserList(ActiveDirectoryGroupRealm r, String searchText) {
     List<String> userList = new ArrayList<>();

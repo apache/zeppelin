@@ -24,6 +24,7 @@ import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
 import org.apache.shiro.mgt.SecurityManager;
 import org.apache.shiro.config.IniSecurityManagerFactory;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
+import org.apache.zeppelin.realm.LdapRealm;
 
 import java.net.InetAddress;
 import java.net.URI;
@@ -99,13 +100,16 @@ public class SecurityUtils {
       Collection realmsList = SecurityUtils.getRealmsList();
       for (Iterator<Realm> iterator = realmsList.iterator(); iterator.hasNext(); ) {
         Realm realm = iterator.next();
-        String name = realm.getName();
-        if (name.equals("iniRealm")) {
+        String name = realm.getClass().getName();
+        //if (name.equals("iniRealm")) {
+        if (name.equals("org.apache.shiro.realm.text.IniRealm")) {
           allRoles = ((IniRealm) realm).getIni().get("roles");
+          break;
+        } else if (name.equals("org.apache.zeppelin.realm.LdapRealm")) {
+          roles = new HashSet<String> (((LdapRealm) realm).getListRoles());
           break;
         }
       }
-
       if (allRoles != null) {
         Iterator it = allRoles.entrySet().iterator();
         while (it.hasNext()) {

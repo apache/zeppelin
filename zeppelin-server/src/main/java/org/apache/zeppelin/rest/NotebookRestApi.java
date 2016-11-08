@@ -197,8 +197,14 @@ public class NotebookRestApi {
   @Path("/")
   @ZeppelinApi
   public Response getNotebookList() throws IOException {
+    String principal = SecurityUtils.getPrincipal();
+    HashSet<String> roles = SecurityUtils.getRoles();
+    HashSet<String> userAndRoles = new HashSet<>();
+    userAndRoles.add(principal);
+    userAndRoles.addAll(roles);
     AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
-    List<Map<String, String>> notesInfo = notebookServer.generateNotebooksInfo(false, subject);
+    List<Map<String, String>> notesInfo = notebookServer
+          .generateNotebooksInfo(false, subject, userAndRoles);
     return new JsonResponse<>(Status.OK, "", notesInfo).build();
   }
 
@@ -256,6 +262,11 @@ public class NotebookRestApi {
   @Path("/")
   @ZeppelinApi
   public Response createNote(String message) throws IOException {
+    String principal = SecurityUtils.getPrincipal();
+    HashSet<String> roles = SecurityUtils.getRoles();
+    HashSet<String> userAndRoles = new HashSet<>();
+    userAndRoles.add(principal);
+    userAndRoles.addAll(roles);
     LOG.info("Create new notebook by JSON {}", message);
     NewNotebookRequest request = gson.fromJson(message, NewNotebookRequest.class);
     AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
@@ -277,7 +288,7 @@ public class NotebookRestApi {
     note.setName(noteName);
     note.persist(subject);
     notebookServer.broadcastNote(note);
-    notebookServer.broadcastNoteList(subject);
+    notebookServer.broadcastNoteList(subject, userAndRoles);
     return new JsonResponse<>(Status.CREATED, "", note.getId()).build();
   }
 
@@ -292,6 +303,11 @@ public class NotebookRestApi {
   @Path("{notebookId}")
   @ZeppelinApi
   public Response deleteNote(@PathParam("notebookId") String notebookId) throws IOException {
+    String principal = SecurityUtils.getPrincipal();
+    HashSet<String> roles = SecurityUtils.getRoles();
+    HashSet<String> userAndRoles = new HashSet<>();
+    userAndRoles.add(principal);
+    userAndRoles.addAll(roles);
     LOG.info("Delete notebook {} ", notebookId);
     AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
     if (!(notebookId.isEmpty())) {
@@ -301,7 +317,7 @@ public class NotebookRestApi {
       }
     }
 
-    notebookServer.broadcastNoteList(subject);
+    notebookServer.broadcastNoteList(subject, userAndRoles);
     return new JsonResponse<>(Status.OK, "").build();
   }
 
@@ -317,6 +333,11 @@ public class NotebookRestApi {
   @ZeppelinApi
   public Response cloneNote(@PathParam("notebookId") String notebookId, String message)
       throws IOException, CloneNotSupportedException, IllegalArgumentException {
+    String principal = SecurityUtils.getPrincipal();
+    HashSet<String> roles = SecurityUtils.getRoles();
+    HashSet<String> userAndRoles = new HashSet<>();
+    userAndRoles.add(principal);
+    userAndRoles.addAll(roles);
     LOG.info("clone notebook by JSON {}", message);
     NewNotebookRequest request = gson.fromJson(message, NewNotebookRequest.class);
     String newNoteName = null;
@@ -326,7 +347,7 @@ public class NotebookRestApi {
     AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
     Note newNote = notebook.cloneNote(notebookId, newNoteName, subject);
     notebookServer.broadcastNote(newNote);
-    notebookServer.broadcastNoteList(subject);
+    notebookServer.broadcastNoteList(subject, userAndRoles);
     return new JsonResponse<>(Status.CREATED, "", newNote.getId()).build();
   }
 
