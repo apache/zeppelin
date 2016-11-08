@@ -66,7 +66,7 @@ There are two Spark mode to use Spark interpreter in Zeppelin. One is [local Spa
 
 ### Local Spark mode
 If you are a beginner to Spark and Zeppelin, we would recommend you to download [Local Spark](#local-spark-mode) for using Spark interpreter.
-In this case, you can download the latest version of Spark with below command. 
+In this case, you can get the latest version of Spark with below command. 
 
 ```
 ./bin/zeppelin-daemon.sh get-spark
