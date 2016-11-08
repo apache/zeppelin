@@ -115,19 +115,23 @@ public abstract class ElasticsearchConnector {
 
     Class<?> c = null;
 
+    String packagePrefix = "org.apache.zeppelin.elasticsearch.";
+
     try {
       if (ElasticSearchInterpreterUtils.isElasticSearchVersion2()) {
-        c = Class.forName("Elasticsearch2Connector");
+        c = Class.forName(packagePrefix + "Elasticsearch2Connector");
       } else {
         // Assume that we are using 5.x
-        c = Class.forName("Elasticsearch5Connector");
+        c = Class.forName(packagePrefix + "Elasticsearch5Connector");
       }
 
-      Constructor<?> t = c.getConstructor(
-          String.class, Integer.class, String.class, String.class);
+      // Use Integer.TYPE since we are using the primitive int
+      Constructor<?> t = c.getDeclaredConstructor(
+          String.class, Integer.TYPE, String.class, Integer.TYPE);
       return (ElasticsearchConnector) t.newInstance(host, port, clusterName, resultSize);
     } catch (ReflectiveOperationException e) {
-      throw new RuntimeException("Failed to create ElasticsearchConnector", e);
+      throw new RuntimeException(
+          "Failed to create ElasticsearchConnector using reflection", e);
     }
   }
 

@@ -41,7 +41,8 @@ public class Elasticsearch2Connector extends ElasticsearchConnector {
 
   private static Logger logger = LoggerFactory.getLogger(ElasticsearchConnector.class);
 
-  protected Elasticsearch2Connector(String host, int port, String clusterName, int resultSize) {
+  protected Elasticsearch2Connector(String host, int port, String clusterName,
+                                 int resultSize) {
     super(host, port, clusterName, resultSize);
   }
 
