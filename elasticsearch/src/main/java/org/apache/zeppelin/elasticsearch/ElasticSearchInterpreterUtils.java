@@ -17,6 +17,7 @@ package org.apache.zeppelin.elasticsearch;
  * limitations under the License.
  */
 
+import org.elasticsearch.action.index.IndexRequestBuilder;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.transport.Transport;
@@ -81,4 +82,13 @@ public class ElasticSearchInterpreterUtils {
 
     return (TransportClient) c.newInstance(settings);
   }
+//
+//  public static boolean isFound {
+//    if (RestStatus.NOT_FOUND == response.status()) {
+//  }
+//
+//  public static IndexRequestBuilder setRefresh() {
+//    setRefresh(true)
+//    .setRefreshPolicy(WriteRequest.RefreshPolicy.IMMEDIATE)
+//  }
 }

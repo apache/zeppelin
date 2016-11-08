@@ -36,7 +36,6 @@ import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.node.Node;
-import org.elasticsearch.node.NodeBuilder;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -69,7 +68,14 @@ public class ElasticsearchInterpreterTest {
         .put("path.home", ELS_PATH)
         .build();
 
-    elsNode = NodeBuilder.nodeBuilder().settings(settings).node();
+    try {
+      elsNode = new Node(settings).start();
+    } catch (Exception e) {
+      // TODO: remove when 2.x is not supported
+      // Wrap NodeValidationException which is not supported in 2.x client
+      new RuntimeException("Failed to start test cluster", e);
+    }
+
     elsClient = elsNode.client();
 
     elsClient.admin().indices().prepareCreate("logs")
@@ -98,15 +104,15 @@ public class ElasticsearchInterpreterTest {
     }
 
     final Properties props = new Properties();
-    props.put(ElasticsearchInterpreter.ELASTICSEARCH_HOST, ELS_HOST);
-    props.put(ElasticsearchInterpreter.ELASTICSEARCH_PORT, ELS_TRANSPORT_PORT);
-    props.put(ElasticsearchInterpreter.ELASTICSEARCH_CLUSTER_NAME, ELS_CLUSTER_NAME);
+    props.put(ElasticsearchConnector.ELASTICSEARCH_HOST, ELS_HOST);
+    props.put(ElasticsearchConnector.ELASTICSEARCH_PORT, ELS_TRANSPORT_PORT);
+    props.put(ElasticsearchConnector.ELASTICSEARCH_CLUSTER_NAME, ELS_CLUSTER_NAME);
     interpreter = new ElasticsearchInterpreter(props);
     interpreter.open();
   }
 
   @AfterClass
-  public static void clean() {
+  public static void clean() throws IOException {
     if (interpreter != null) {
       interpreter.close();
     }
