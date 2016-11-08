@@ -34,6 +34,10 @@ import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.ThreadContext;
 import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
+import org.apache.zeppelin.realm.LdapRealm;
+import org.mortbay.log.Log;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Sets;
 
@@ -45,6 +49,7 @@ public class SecurityUtils {
   private static final String ANONYMOUS = "anonymous";
   private static final HashSet<String> EMPTY_HASHSET = Sets.newHashSet();
   private static boolean isEnabled = false;
+  private static final Logger log = LoggerFactory.getLogger(SecurityUtils.class);
   
   public static void initSecurityManager(String shiroPath) {
     IniSecurityManagerFactory factory = new IniSecurityManagerFactory("file:" + shiroPath);
@@ -119,13 +124,15 @@ public class SecurityUtils {
       Collection realmsList = SecurityUtils.getRealmsList();
       for (Iterator<Realm> iterator = realmsList.iterator(); iterator.hasNext(); ) {
         Realm realm = iterator.next();
-        String name = realm.getName();
-        if (name.equals("iniRealm")) {
+        String name = realm.getClass().getName();
+        if (name.equals("org.apache.shiro.realm.text.IniRealm")) {
           allRoles = ((IniRealm) realm).getIni().get("roles");
+          break;
+        } else if (name.equals("org.apache.zeppelin.realm.LdapRealm")) {
+          allRoles = ((LdapRealm) realm).getListRoles();
           break;
         }
       }
-
       if (allRoles != null) {
         Iterator it = allRoles.entrySet().iterator();
         while (it.hasNext()) {
