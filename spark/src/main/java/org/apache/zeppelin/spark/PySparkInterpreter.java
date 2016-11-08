@@ -430,6 +430,7 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
       statementSetNotifier.notify();
     }
 
+    String[] completionList;
     synchronized (statementFinishedNotifier) {
       long startTime = System.currentTimeMillis();
       while (statementOutput == null
@@ -446,16 +447,16 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
           return new LinkedList<>();
         }
       }
+      if (statementError) {
+        return new LinkedList<>();
+      }
+      InterpreterResult completionResult;
+      completionResult = new InterpreterResult(Code.SUCCESS, statementOutput);
+      Gson gson = new Gson();
+      completionList = gson.fromJson(completionResult.message(), String[].class);
     }
-
-    if (statementError) {
-      return new LinkedList<>();
-    }
-    InterpreterResult completionResult = new InterpreterResult(Code.SUCCESS, statementOutput);
     //end code for completion
 
-    Gson gson = new Gson();
-    String[] completionList = gson.fromJson(completionResult.message(), String[].class);
     if (completionList == null) {
       return new LinkedList<>();
     }
