@@ -63,25 +63,29 @@ Apache Spark is supported in Zeppelin with Spark interpreter group which consist
 
 ## Configuration
 There are two Spark mode to use Spark interpreter in Zeppelin. One is [local Spark mode](#local-spark-mode) and the other is [system provided Spark mode](#system-provided-spark-mode).
-After you start Zeppelin server for the first time, you will be asked whether you want to download a latest version of Spark binary under Zeppelin or not. 
+
+### Local Spark mode
+If you are a beginner to Spark and Zeppelin, we would recommend you to download [Local Spark](#local-spark-mode) for using Spark interpreter.
+In this case, you can download the latest version of Spark with below command. 
 
 ```
-$ ./bin/zeppelin-daemon.sh start
-For using Spark interpreter in local mode(without external Spark installation), Spark binary needs to be downloaded.
-Do you want to download a latest version of Spark binary? (Y/N):
+./bin/zeppelin-daemon.sh get-spark
 ```
 
-If you are a beginner to Spark and Zeppelin, we recommend you to download [Local Spark](#local-spark-mode) for using Spark interpreter.
-In this case, you can use Spark interpreter right after starting Zeppelin without any configurations. 
-Of course you can use external Spark as well. If so, enter "N" to the above question and see [System provided Spark mode](#system-provided-spark-mode) section for the next step.
+or 
+
+```
+./bin/zeppelin.sh get-spark
+```
+
+Then the downloaded Spark will be saved under `ZEPPELIN_HOME/local-spark/`.
+Nothing needs to be more configured to use this local Spark(e.g. setting `SPARK_HOME` or `HADOOP_HOME`).
 
 > Please note that Zeppelin doesn't support the local Spark mode for Windows. See [System provided Spark mode](#system-provided-spark-mode) setting guide after [downloading Spark](http://spark.apache.org/downloads.html).
 
-### Local Spark mode
-Nothing needs to be more configured. You can use Spark interpreter right after starting Zeppelin.
-
 ### System provided Spark mode
-If you want to connect to your Spark cluster, you'll need to follow below two simple steps.
+Of course you can use external Spark as well.
+If you want to connect to your Spark cluster for your own usage, you'll need to follow below two simple steps.
 
 #### 1. Export SPARK_HOME
 In `conf/zeppelin-env.sh`, export `SPARK_HOME` environment variable with your Spark installation path.
