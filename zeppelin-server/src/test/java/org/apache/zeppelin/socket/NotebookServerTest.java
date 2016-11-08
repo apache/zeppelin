@@ -31,6 +31,7 @@ import org.apache.zeppelin.notebook.socket.Message;
 import org.apache.zeppelin.notebook.socket.Message.OP;
 import org.apache.zeppelin.rest.AbstractTestRestApi;
 import org.apache.zeppelin.server.ZeppelinServer;
+import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -57,6 +58,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
   private static NotebookServer notebookServer;
   private static Gson gson;
   private HttpServletRequest mockRequest;
+  private AuthenticationInfo anonymous;
 
   @BeforeClass
   public static void init() throws Exception {
@@ -74,6 +76,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
   @Before
   public void setUp() {
     mockRequest = mock(HttpServletRequest.class);
+    anonymous = new AuthenticationInfo("anonymous");
   }
 
   @Test
@@ -94,14 +97,14 @@ public class NotebookServerTest extends AbstractTestRestApi {
   @Test
   public void testMakeSureNoAngularObjectBroadcastToWebsocketWhoFireTheEvent() throws IOException {
     // create a notebook
-    Note note1 = notebook.createNote(null);
+    Note note1 = notebook.createNote(anonymous);
 
     // get reference to interpreterGroup
     InterpreterGroup interpreterGroup = null;
     List<InterpreterSetting> settings = notebook.getInterpreterFactory().getInterpreterSettings(note1.getId());
     for (InterpreterSetting setting : settings) {
       if (setting.getName().equals("md")) {
-        interpreterGroup = setting.getInterpreterGroup("sharedProcess");
+        interpreterGroup = setting.getInterpreterGroup("anonymous", "sharedProcess");
         break;
       }
     }
@@ -109,6 +112,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
     // start interpreter process
     Paragraph p1 = note1.addParagraph();
     p1.setText("%md start remote interpreter process");
+    p1.setAuthenticationInfo(anonymous);
     note1.run(p1.getId());
 
     // add angularObject
@@ -144,13 +148,13 @@ public class NotebookServerTest extends AbstractTestRestApi {
     verify(sock1, times(0)).send(anyString());
     verify(sock2, times(1)).send(anyString());
 
-    notebook.removeNote(note1.getId(), null);
+    notebook.removeNote(note1.getId(), anonymous);
   }
 
   @Test
   public void testImportNotebook() throws IOException {
     String msg = "{\"op\":\"IMPORT_NOTE\",\"data\":" +
-        "{\"notebook\":{\"paragraphs\": [{\"text\": \"Test " +
+        "{\"note\":{\"paragraphs\": [{\"text\": \"Test " +
         "paragraphs import\",\"config\":{},\"settings\":{}}]," +
         "\"name\": \"Test Zeppelin notebook import\",\"config\": " +
         "{}}}}";
@@ -167,7 +171,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
     assertNotEquals(null, notebook.getNote(note.getId()));
     assertEquals("Test Zeppelin notebook import", notebook.getNote(note.getId()).getName());
     assertEquals("Test paragraphs import", notebook.getNote(note.getId()).getParagraphs().get(0).getText());
-    notebook.removeNote(note.getId(), null);
+    notebook.removeNote(note.getId(), anonymous);
   }
 
   @Test
@@ -354,6 +358,48 @@ public class NotebookServerTest extends AbstractTestRestApi {
 
     // Then
     verify(otherConn).send(mdMsg1);
+  }
+
+  @Test
+  public void testCreateNoteWithDefaultInterpreterId() throws IOException {
+    // create two sockets and open it
+    NotebookSocket sock1 = createWebSocket();
+    NotebookSocket sock2 = createWebSocket();
+
+    assertEquals(sock1, sock1);
+    assertNotEquals(sock1, sock2);
+
+    notebookServer.onOpen(sock1);
+    notebookServer.onOpen(sock2);
+
+    String noteName = "Note with millis " + System.currentTimeMillis();
+    String defaultInterpreterId = "";
+    List<InterpreterSetting> settings = notebook.getInterpreterFactory().get();
+    if (settings.size() > 1) {
+      defaultInterpreterId = settings.get(1).getId();
+    }
+    // create note from sock1
+    notebookServer.onMessage(sock1, gson.toJson(
+        new Message(OP.NEW_NOTE)
+        .put("name", noteName)
+        .put("defaultInterpreterId", defaultInterpreterId)));
+
+    // expect the events are broadcasted properly
+    verify(sock1, times(2)).send(anyString());
+
+    Note createdNote = null;
+    for (Note note : notebook.getAllNotes()) {
+      if (note.getName().equals(noteName)) {
+        createdNote = note;
+        break;
+      }
+    }
+
+    if (settings.size() > 1) {
+      assertEquals(notebook.getInterpreterFactory().getDefaultInterpreterSetting(
+              createdNote.getId()).getId(), defaultInterpreterId);
+    }
+    notebook.removeNote(createdNote.getId(), anonymous);
   }
 
   private NotebookSocket createWebSocket() {

@@ -85,7 +85,7 @@ If you install one of these interpreters only with `--name` option, installer wi
 ```
 
 #### Install Spark interpreter built with Scala 2.10
-Spark distribution package has been built with Scala 2.10 until 1.6.2. If you have `SPARK_HOME` set pointing to Spark version ealier than 2.0.0, you need to download Spark interpreter packaged with Scala 2.10. To do so, use follow command:
+Spark distribution package has been built with Scala 2.10 until 1.6.2. If you have `SPARK_HOME` set pointing to Spark version earlier than 2.0.0, you need to download Spark interpreter packaged with Scala 2.10. To do so, use follow command:
 
 ```
 rm -rf ./interpreter/spark

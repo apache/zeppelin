@@ -62,6 +62,7 @@
     <module>shell</module>
     <module>livy</module>
     <module>hbase</module>
+    <module>pig</module>
     <module>postgresql</module>
     <module>jdbc</module>
     <module>file</module>
@@ -459,6 +460,9 @@
               <fileset>
                 <directory>interpreter</directory>
                 <followSymlinks>false</followSymlinks>
+                <excludes>
+                  <exclude>lib/**</exclude>
+                </excludes>
               </fileset>
             </filesets>
           </configuration>

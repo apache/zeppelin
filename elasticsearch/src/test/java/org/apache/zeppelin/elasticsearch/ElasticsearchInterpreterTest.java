@@ -21,7 +21,12 @@ import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
+import java.util.Properties;
+import java.util.UUID;
 
 import org.apache.commons.lang.math.RandomUtils;
 import org.apache.zeppelin.interpreter.InterpreterResult;
@@ -177,6 +182,11 @@ public class ElasticsearchInterpreterTest {
     // Multi-buckets
     res = interpreter.interpret("search /logs { \"aggs\" : { \"status_count\" : " +
             " { \"terms\" : { \"field\" : \"status\" } } } }", null);
+    assertEquals(Code.SUCCESS, res.code());
+    
+    res = interpreter.interpret("search /logs { \"aggs\" : { " +
+            " \"length\" : { \"terms\": { \"field\": \"status\" }, " +
+            "   \"aggs\" : { \"sum_length\" : { \"sum\" : { \"field\" : \"content_length\" } }, \"sum_status\" : { \"sum\" : { \"field\" : \"status\" } } } } } }", null);
     assertEquals(Code.SUCCESS, res.code());
   }
 

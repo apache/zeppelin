@@ -93,7 +93,7 @@ public class AlluxioInterpreterTest {
     List expectedResultThree = Arrays.asList(
       new InterpreterCompletion("copyFromLocal", "copyFromLocal"),
       new InterpreterCompletion("copyToLocal", "copyToLocal"));
-    List expectedResultNone = new ArrayList<String>();
+    List expectedResultNone = new ArrayList<>();
 
     List<InterpreterCompletion> resultOne = alluxioInterpreter.completion("c", 0);
     List<InterpreterCompletion> resultTwo = alluxioInterpreter.completion("co", 0);

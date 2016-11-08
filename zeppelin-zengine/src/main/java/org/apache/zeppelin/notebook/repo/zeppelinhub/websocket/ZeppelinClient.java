@@ -185,7 +185,7 @@ public class ZeppelinClient {
 
   private Message zeppelinGetNoteMsg(String noteId) {
     Message getNoteMsg = new Message(Message.OP.GET_NOTE);
-    HashMap<String, Object> data = new HashMap<String, Object>();
+    HashMap<String, Object> data = new HashMap<>();
     data.put("id", noteId);
     getNoteMsg.data = data;
     return getNoteMsg;
@@ -227,7 +227,7 @@ public class ZeppelinClient {
   }
 
   public void handleMsgFromZeppelin(String message, String noteId) {
-    Map<String, String> meta = new HashMap<String, String>();
+    Map<String, String> meta = new HashMap<>();
     meta.put("token", zeppelinhubToken);
     meta.put("noteId", noteId);
     Message zeppelinMsg = deserialize(message);

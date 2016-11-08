@@ -619,6 +619,10 @@ and (max-width: 1024px) {
   .navbar-collapse.collapse {
     padding-right: 0;
   }
+
+  .navbar-fixed-top > .container {
+    width: 800px;
+  }
 }
 
 /* master branch docs dropdown menu */

@@ -37,7 +37,7 @@ public class ZeppelinhubUtils {
       LOG.error("Cannot create Live message: token is null or empty");
       return ZeppelinhubMessage.EMPTY.serialize();
     }
-    HashMap<String, Object> data = new HashMap<String, Object>();
+    HashMap<String, Object> data = new HashMap<>();
     data.put("token", token);
     return ZeppelinhubMessage
              .newMessage(ZeppelinHubOp.LIVE, data, new HashMap<String, String>())
@@ -49,7 +49,7 @@ public class ZeppelinhubUtils {
       LOG.error("Cannot create Dead message: token is null or empty");
       return ZeppelinhubMessage.EMPTY.serialize();
     }
-    HashMap<String, Object> data = new HashMap<String, Object>();
+    HashMap<String, Object> data = new HashMap<>();
     data.put("token", token);
     return ZeppelinhubMessage
              .newMessage(ZeppelinHubOp.DEAD, data, new HashMap<String, String>())
@@ -61,7 +61,7 @@ public class ZeppelinhubUtils {
       LOG.error("Cannot create Ping message: token is null or empty");
       return ZeppelinhubMessage.EMPTY.serialize();
     }
-    HashMap<String, Object> data = new HashMap<String, Object>();
+    HashMap<String, Object> data = new HashMap<>();
     data.put("token", token);
     return ZeppelinhubMessage
              .newMessage(ZeppelinHubOp.PING, data, new HashMap<String, String>())

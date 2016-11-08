@@ -17,43 +17,75 @@
 
 package org.apache.zeppelin.notebook;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
+import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
-import java.util.*;
+import com.google.common.base.Predicate;
+import com.google.common.collect.FluentIterable;
+import com.google.common.collect.Sets;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 /**
  * Contains authorization information for notes
  */
 public class NotebookAuthorization {
   private static final Logger LOG = LoggerFactory.getLogger(NotebookAuthorization.class);
-
+  private static NotebookAuthorization instance = null;
   /*
    * { "note1": { "owners": ["u1"], "readers": ["u1", "u2"], "writers": ["u1"] },  "note2": ... } }
    */
-  private Map<String, Map<String, Set<String>>> authInfo = new HashMap<>();
-  private ZeppelinConfiguration conf;
-  private Gson gson;
-  private String filePath;
+  private static Map<String, Map<String, Set<String>>> authInfo = new HashMap<>();
+  private static ZeppelinConfiguration conf;
+  private static Gson gson;
+  private static String filePath;
 
-  public NotebookAuthorization(ZeppelinConfiguration conf) {
-    this.conf = conf;
-    filePath = conf.getNotebookAuthorizationPath();
-    GsonBuilder builder = new GsonBuilder();
-    builder.setPrettyPrinting();
-    gson = builder.create();
-    try {
-      loadFromFile();
-    } catch (IOException e) {
-      LOG.error("Error loading NotebookAuthorization", e);
+  private NotebookAuthorization() {}
+
+  public static NotebookAuthorization init(ZeppelinConfiguration config) {
+    if (instance == null) {
+      instance = new NotebookAuthorization();
+      conf = config;
+      filePath = conf.getNotebookAuthorizationPath();
+      GsonBuilder builder = new GsonBuilder();
+      builder.setPrettyPrinting();
+      gson = builder.create();
+      try {
+        loadFromFile();
+      } catch (IOException e) {
+        LOG.error("Error loading NotebookAuthorization", e);
+      }
     }
+    return instance;
   }
 
-  private void loadFromFile() throws IOException {
+  public static NotebookAuthorization getInstance() {
+    if (instance == null) {
+      LOG.warn("Notebook authorization module was called without initialization,"
+          + " initializing with default configuration");
+      init(ZeppelinConfiguration.create());
+    }
+    return instance;
+  }
+
+  private static void loadFromFile() throws IOException {
     File settingFile = new File(filePath);
     LOG.info(settingFile.getAbsolutePath());
     if (!settingFile.exists()) {
@@ -74,7 +106,7 @@ public class NotebookAuthorization {
     String json = sb.toString();
     NotebookAuthorizationInfoSaving info = gson.fromJson(json,
             NotebookAuthorizationInfoSaving.class);
-    this.authInfo = info.authInfo;
+    authInfo = info.authInfo;
   }
 
   private void saveToFile() {
@@ -161,11 +193,11 @@ public class NotebookAuthorization {
     Map<String, Set<String>> noteAuthInfo = authInfo.get(noteId);
     Set<String> entities = null;
     if (noteAuthInfo == null) {
-      entities = new HashSet<String>();
+      entities = new HashSet<>();
     } else {
       entities = noteAuthInfo.get("owners");
       if (entities == null) {
-        entities = new HashSet<String>();
+        entities = new HashSet<>();
       }
     }
     return entities;
@@ -175,11 +207,11 @@ public class NotebookAuthorization {
     Map<String, Set<String>> noteAuthInfo = authInfo.get(noteId);
     Set<String> entities = null;
     if (noteAuthInfo == null) {
-      entities = new HashSet<String>();
+      entities = new HashSet<>();
     } else {
       entities = noteAuthInfo.get("readers");
       if (entities == null) {
-        entities = new HashSet<String>();
+        entities = new HashSet<>();
       }
     }
     return entities;
@@ -189,11 +221,11 @@ public class NotebookAuthorization {
     Map<String, Set<String>> noteAuthInfo = authInfo.get(noteId);
     Set<String> entities = null;
     if (noteAuthInfo == null) {
-      entities = new HashSet<String>();
+      entities = new HashSet<>();
     } else {
       entities = noteAuthInfo.get("writers");
       if (entities == null) {
-        entities = new HashSet<String>();
+        entities = new HashSet<>();
       }
     }
     return entities;
@@ -215,9 +247,42 @@ public class NotebookAuthorization {
 
   // return true if b is empty or if (a intersection b) is non-empty
   private boolean isMember(Set<String> a, Set<String> b) {
-    Set<String> intersection = new HashSet<String>(b);
+    Set<String> intersection = new HashSet<>(b);
     intersection.retainAll(a);
     return (b.isEmpty() || (intersection.size() > 0));
+  }
+
+  public boolean isOwner(Set<String> userAndRoles, String noteId) {
+    if (conf.isAnonymousAllowed()) {
+      LOG.debug("Zeppelin runs in anonymous mode, everybody is owner");
+      return true;
+    }
+    if (userAndRoles == null) {
+      return false;
+    }
+    return isOwner(noteId, userAndRoles);
+  }
+  
+  public boolean hasWriteAuthorization(Set<String> userAndRoles, String noteId) {
+    if (conf.isAnonymousAllowed()) {
+      LOG.debug("Zeppelin runs in anonymous mode, everybody is writer");
+      return true;
+    }
+    if (userAndRoles == null) {
+      return false;
+    }
+    return isWriter(noteId, userAndRoles);
+  }
+  
+  public boolean hasReadAuthorization(Set<String> userAndRoles, String noteId) {
+    if (conf.isAnonymousAllowed()) {
+      LOG.debug("Zeppelin runs in anonymous mode, everybody is reader");
+      return true;
+    }
+    if (userAndRoles == null) {
+      return false;
+    }
+    return isReader(noteId, userAndRoles);
   }
 
   public void removeNote(String noteId) {
@@ -225,4 +290,16 @@ public class NotebookAuthorization {
     saveToFile();
   }
 
+  public List<NoteInfo> filterByUser(List<NoteInfo> notes, AuthenticationInfo subject) {
+    final Set<String> entities = Sets.newHashSet();
+    if (subject != null) {
+      entities.add(subject.getUser());
+    }
+    return FluentIterable.from(notes).filter(new Predicate<NoteInfo>() {
+      @Override
+      public boolean apply(NoteInfo input) {
+        return input != null && isReader(input.getId(), entities);
+      }
+    }).toList();
+  }
 }

@@ -147,13 +147,23 @@ limitations under the License.
     <script src="bower_components/handsontable/dist/handsontable.js"></script>
     <script src="bower_components/moment-duration-format/lib/moment-duration-format.js"></script>
     <script src="bower_components/select2/dist/js/select2.js"></script>
-    <script src="bower_components/angular-esri-map/dist/angular-esri-map.js"></script>
     <!-- endbower -->
     <!-- endbuild -->
     <!-- build:js({.tmp,src}) scripts/scripts.js -->
     <script src="app/app.js"></script>
     <script src="app/app.controller.js"></script>
     <script src="app/home/home.controller.js"></script>
+    <script src="app/tabledata/tabledata.js"></script>
+    <script src="app/tabledata/transformation.js"></script>
+    <script src="app/tabledata/pivot.js"></script>
+    <script src="app/visualization/visualization.js"></script>
+    <script src="app/visualization/builtins/visualization-table.js"></script>
+    <script src="app/visualization/builtins/visualization-nvd3chart.js"></script>
+    <script src="app/visualization/builtins/visualization-barchart.js"></script>
+    <script src="app/visualization/builtins/visualization-piechart.js"></script>
+    <script src="app/visualization/builtins/visualization-areachart.js"></script>
+    <script src="app/visualization/builtins/visualization-linechart.js"></script>
+    <script src="app/visualization/builtins/visualization-scatterchart.js"></script>
     <script src="app/notebook/notebook.controller.js"></script>
     <script src="app/jobmanager/jobmanager.controller.js"></script>
     <script src="app/jobmanager/jobs/job.controller.js"></script>
@@ -163,6 +173,7 @@ limitations under the License.
     <script src="app/configuration/configuration.controller.js"></script>
     <script src="app/notebook/paragraph/paragraph.controller.js"></script>
     <script src="app/search/result-list.controller.js"></script>
+    <script src="app/notebookRepos/notebookRepos.controller.js"></script>
     <script src="components/arrayOrderingSrv/arrayOrdering.service.js"></script>
     <script src="components/navbar/navbar.controller.js"></script>
     <script src="components/ngescape/ngescape.directive.js"></script>
@@ -178,13 +189,14 @@ limitations under the License.
     <script src="components/noteName-create/visible.directive.js"></script>
     <script src="components/websocketEvents/websocketMsg.service.js"></script>
     <script src="components/websocketEvents/websocketEvents.factory.js"></script>
-    <script src="components/notebookListDataFactory/notebookList.datafactory.js"></script>
+    <script src="components/noteListDataFactory/noteList.datafactory.js"></script>
     <script src="components/baseUrl/baseUrl.service.js"></script>
     <script src="components/browser-detect/browserDetect.service.js"></script>
     <script src="components/saveAs/saveAs.service.js"></script>
     <script src="components/searchService/search.service.js"></script>
     <script src="components/login/login.controller.js"></script>
     <script src="components/elasticInputCtrl/elasticInput.controller.js"></script>
+    <script src="components/noteAction/noteAction.service.js"></script>
     <!-- endbuild -->
   </body>
 </html>

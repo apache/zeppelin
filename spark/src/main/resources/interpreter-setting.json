@@ -56,7 +56,8 @@
       }
     },
     "editor": {
-      "language": "scala"
+      "language": "scala",
+      "editOnDblClick": false
     }
   },
   {
@@ -90,7 +91,8 @@
       }
     },
     "editor": {
-      "language": "sql"
+      "language": "sql",
+      "editOnDblClick": false
     }
   },
   {
@@ -112,7 +114,8 @@
       }
     },
     "editor": {
-      "language": "scala"
+      "language": "scala",
+      "editOnDblClick": false
     }
   },
   {
@@ -128,7 +131,8 @@
       }
     },
     "editor": {
-      "language": "python"
+      "language": "python",
+      "editOnDblClick": false
     }
   }
 ]

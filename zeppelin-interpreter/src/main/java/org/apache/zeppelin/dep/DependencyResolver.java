@@ -70,7 +70,7 @@ public class DependencyResolver extends AbstractDependencyResolver {
       throws RepositoryException, IOException {
     if (StringUtils.isBlank(artifact)) {
       // Skip dependency loading if artifact is empty
-      return new LinkedList<File>();
+      return new LinkedList<>();
     }
 
     // <groupId>:<artifactId>[:<extension>[:<classifier>]]:<version>
@@ -78,7 +78,7 @@ public class DependencyResolver extends AbstractDependencyResolver {
     if (numSplits >= 3 && numSplits <= 6) {
       return loadFromMvn(artifact, excludes);
     } else {
-      LinkedList<File> libs = new LinkedList<File>();
+      LinkedList<File> libs = new LinkedList<>();
       libs.add(new File(artifact));
       return libs;
     }
@@ -90,7 +90,7 @@ public class DependencyResolver extends AbstractDependencyResolver {
 
   public List<File> load(String artifact, Collection<String> excludes, File destPath)
       throws RepositoryException, IOException {
-    List<File> libs = new LinkedList<File>();
+    List<File> libs = new LinkedList<>();
 
     if (StringUtils.isNotBlank(artifact)) {
       libs = load(artifact, excludes);
@@ -123,7 +123,7 @@ public class DependencyResolver extends AbstractDependencyResolver {
 
   private List<File> loadFromMvn(String artifact, Collection<String> excludes)
       throws RepositoryException {
-    Collection<String> allExclusions = new LinkedList<String>();
+    Collection<String> allExclusions = new LinkedList<>();
     allExclusions.addAll(excludes);
     allExclusions.addAll(Arrays.asList(exclusions));
 
@@ -142,7 +142,7 @@ public class DependencyResolver extends AbstractDependencyResolver {
       }
     }
 
-    List<File> files = new LinkedList<File>();
+    List<File> files = new LinkedList<>();
     for (ArtifactResult artifactResult : listOfArtifact) {
       files.add(artifactResult.getArtifact().getFile());
       logger.info("load {}", artifactResult.getArtifact().getFile().getAbsolutePath());

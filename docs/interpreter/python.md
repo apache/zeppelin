@@ -86,9 +86,26 @@ print("".join(z.checkbox("f3", [("o1","1"), ("o2","2")],["1"])))
 * Code-completion is currently not implemented.
 
 ## Matplotlib integration
- The python interpreter can display matplotlib graph with the function `z.show()`.
- You need to have matplotlib module installed and a XServer running to use this functionality!
+
+ The python interpreter can display matplotlib figures inline automatically using the `pyplot` module:
  
+```python
+%python
+import matplotlib.pyplot as plt
+plt.plot([1, 2, 3])
+```
+This is the recommended method for using matplotlib from within a Zeppelin notebook. The output of this command will by default be converted to HTML by implicitly making use of the `%html` magic. Additional configuration can be achieved using the builtin `z.configure_mpl()` method. For example, 
+
+```python
+z.configure_mpl(width=400, height=300, fmt='svg')
+plt.plot([1, 2, 3])
+```
+
+Will produce a 400x300 image in SVG format, which by default are normally 600x400 and PNG respectively. In the future, another option called `angular` can be used to make it possible to update a plot produced from one paragraph directly from another (the output will be `%angular` instead of `%html`). However, this feature is already available in the `pyspark` interpreter. More details can be found in the included "Zeppelin Tutorial: Python - matplotlib basic" tutorial notebook. 
+
+If Zeppelin cannot find the matplotlib backend files (which should usually be found in `$ZEPPELIN_HOME/interpreter/lib/python`) in your `PYTHONPATH`, then the backend will automatically be set to agg, and the (otherwise deprecated) instructions below can be used for more limited inline plotting.
+
+If you are unable to load the inline backend, use `z.show(plt)`:
  ```python
 %python
 import matplotlib.pyplot as plt

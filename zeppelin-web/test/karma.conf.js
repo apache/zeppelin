@@ -65,18 +65,20 @@ module.exports = function(config) {
       'bower_components/handsontable/dist/handsontable.js',
       'bower_components/moment-duration-format/lib/moment-duration-format.js',
       'bower_components/select2/dist/js/select2.js',
-      'bower_components/angular-esri-map/dist/angular-esri-map.js',
       'bower_components/angular-mocks/angular-mocks.js',
       // endbower
       'src/app/app.js',
       'src/app/app.controller.js',
+      'src/app/tabledata/transformation.js',
       'src/app/**/*.js',
       'src/components/**/*.js',
       'test/spec/**/*.js'
     ],
 
     // list of files / patterns to exclude
-    exclude: [],
+    exclude: [
+      'src/app/visualization/builtins/*.js'
+    ],
 
     // web server port
     port: 9002,

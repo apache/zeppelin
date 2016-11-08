@@ -33,6 +33,7 @@ import javax.ws.rs.core.Response.Status;
 
 import com.google.gson.Gson;
 import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.zeppelin.rest.message.RestartInterpreterRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sonatype.aether.repository.RemoteRepository;
@@ -150,10 +151,15 @@ public class InterpreterRestApi {
   @PUT
   @Path("setting/restart/{settingId}")
   @ZeppelinApi
-  public Response restartSetting(@PathParam("settingId") String settingId) {
-    logger.info("Restart interpreterSetting {}", settingId);
+  public Response restartSetting(String message, @PathParam("settingId") String settingId) {
+    logger.info("Restart interpreterSetting {}, msg={}", settingId, message);
+
     try {
-      interpreterFactory.restart(settingId);
+      RestartInterpreterRequest request = gson.fromJson(message, RestartInterpreterRequest.class);
+
+      String noteId = request == null ? null : request.getNoteId();
+      interpreterFactory.restart(settingId, noteId);
+
     } catch (InterpreterException e) {
       logger.error("Exception in InterpreterRestApi while restartSetting ", e);
       return new JsonResponse<>(Status.NOT_FOUND, e.getMessage(), ExceptionUtils.getStackTrace(e))

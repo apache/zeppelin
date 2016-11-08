@@ -401,6 +401,16 @@ The role of registered interpreters, settings and interpreters group are describ
       <td> 500 </td>
     </tr>
     <tr>
+      <td>Sample JSON input (Optional)</td>
+      <td>
+        <pre>
+{
+  "noteId": "2AVQJVC8N"
+}
+        </pre>
+      </td>
+    </tr>
+    <tr>
       <td>Sample JSON response</td>
       <td>
         <code>{"status":"OK"}</code>

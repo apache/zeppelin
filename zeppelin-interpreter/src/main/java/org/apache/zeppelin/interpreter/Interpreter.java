@@ -27,6 +27,7 @@ import java.util.Properties;
 
 import com.google.gson.annotations.SerializedName;
 import org.apache.zeppelin.annotation.ZeppelinApi;
+import org.apache.zeppelin.annotation.Experimental;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
@@ -203,6 +204,71 @@ public abstract class Interpreter {
     this.classloaderUrls = classloaderUrls;
   }
 
+  /**
+   * General function to register hook event
+   * @param noteId - Note to bind hook to
+   * @param event The type of event to hook to (pre_exec, post_exec)
+   * @param cmd The code to be executed by the interpreter on given event
+   */
+  @Experimental
+  public void registerHook(String noteId, String event, String cmd) {
+    InterpreterHookRegistry hooks = interpreterGroup.getInterpreterHookRegistry();
+    String className = getClassName();
+    hooks.register(noteId, className, event, cmd);
+  }
+
+  /**
+   * registerHook() wrapper for global scope
+   * @param event The type of event to hook to (pre_exec, post_exec)
+   * @param cmd The code to be executed by the interpreter on given event
+   */
+  @Experimental
+  public void registerHook(String event, String cmd) {
+    registerHook(null, event, cmd);
+  }
+
+  /**
+   * Get the hook code
+   * @param noteId - Note to bind hook to
+   * @param event The type of event to hook to (pre_exec, post_exec)
+   */
+  @Experimental
+  public String getHook(String noteId, String event) {
+    InterpreterHookRegistry hooks = interpreterGroup.getInterpreterHookRegistry();
+    String className = getClassName();
+    return hooks.get(noteId, className, event);
+  }
+
+  /**
+   * getHook() wrapper for global scope
+   * @param event The type of event to hook to (pre_exec, post_exec)
+   */
+  @Experimental
+  public String getHook(String event) {
+    return getHook(null, event);
+  }
+
+  /**
+   * Unbind code from given hook event
+   * @param noteId - Note to bind hook to
+   * @param event The type of event to hook to (pre_exec, post_exec)
+   */
+  @Experimental
+  public void unregisterHook(String noteId, String event) {
+    InterpreterHookRegistry hooks = interpreterGroup.getInterpreterHookRegistry();
+    String className = getClassName();
+    hooks.unregister(noteId, className, event);
+  }
+
+  /**
+   * unregisterHook() wrapper for global scope
+   * @param event The type of event to hook to (pre_exec, post_exec)
+   */
+  @Experimental
+  public void unregisterHook(String event) {
+    unregisterHook(null, event);
+  }
+  
   @ZeppelinApi
   public Interpreter getInterpreterInTheSameSessionByClassName(String className) {
     synchronized (interpreterGroup) {
@@ -253,6 +319,7 @@ public abstract class Interpreter {
     private Map<String, InterpreterProperty> properties;
     private Map<String, Object> editor;
     private String path;
+    private InterpreterOption option;
 
     public RegisteredInterpreter(String name, String group, String className,
         Map<String, InterpreterProperty> properties) {
@@ -310,6 +377,9 @@ public abstract class Interpreter {
       return getGroup() + "." + getName();
     }
 
+    public InterpreterOption getOption() {
+      return option;
+    }
   }
 
   /**

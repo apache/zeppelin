@@ -200,7 +200,7 @@ public class ApplicationLoader {
     }
 
     // Create Application classloader
-    List<URL> urlList = new LinkedList<URL>();
+    List<URL> urlList = new LinkedList<>();
 
     // load artifact
     if (packageInfo.getArtifact() != null) {

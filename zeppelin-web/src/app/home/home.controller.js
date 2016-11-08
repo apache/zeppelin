@@ -18,17 +18,19 @@
 
   HomeCtrl.$inject = [
     '$scope',
-    'notebookListDataFactory',
+    'noteListDataFactory',
     'websocketMsgSrv',
     '$rootScope',
     'arrayOrderingSrv',
-    'ngToast'
+    'ngToast',
+    'noteActionSrv'
   ];
 
-  function HomeCtrl($scope, notebookListDataFactory, websocketMsgSrv, $rootScope, arrayOrderingSrv, ngToast) {
+  function HomeCtrl($scope, noteListDataFactory, websocketMsgSrv, $rootScope, arrayOrderingSrv,
+                    ngToast, noteActionSrv) {
     ngToast.dismiss();
     var vm = this;
-    vm.notes = notebookListDataFactory;
+    vm.notes = noteListDataFactory;
     vm.websocketMsgSrv = websocketMsgSrv;
     vm.arrayOrderingSrv = arrayOrderingSrv;
 
@@ -42,12 +44,12 @@
     $scope.isReloading = false;
 
     var initHome = function() {
-      websocketMsgSrv.getHomeNotebook();
+      websocketMsgSrv.getHomeNote();
     };
 
     initHome();
 
-    $scope.reloadNotebookList = function() {
+    $scope.reloadNoteList = function() {
       websocketMsgSrv.reloadAllNotesFromRepo();
       $scope.isReloadingNotes = true;
     };
@@ -85,6 +87,13 @@
         vm.notebookHome = false;
       }
     });
-  }
 
+    $scope.removeNote = function(noteId) {
+      noteActionSrv.removeNote(noteId, false);
+    };
+
+    $scope.clearAllParagraphOutput = function(noteId) {
+      noteActionSrv.clearAllParagraphOutput(noteId);
+    };
+  }
 })();

@@ -363,6 +363,11 @@ select * from ${table=defaultTableName} where text like '%${search}%'
 To learn more about dynamic form, checkout [Dynamic Form](../manual/dynamicform.html).
 
 
+## Matplotlib Integration (pyspark)
+Both the `python` and `pyspark` interpreters have built-in support for inline visualization using `matplotlib`, a popular plotting library for python. More details can be found in the [python interpreter documentation](../interpreter/python.html), since matplotlib support is identical. More advanced interactive plotting can be done with pyspark through utilizing Zeppelin's built-in [Angular Display System](../displaysystem/back-end-angular.html), as shown below:
+
+<img class="img-responsive" src="../assets/themes/zeppelin/img/docs-img/matplotlibAngularExample.gif" />
+
 ## Interpreter setting option
 
 You can choose one of `shared`, `scoped` and `isolated` options wheh you configure Spark interpreter. Spark interpreter creates separated Scala compiler per each notebook but share a single SparkContext in `scoped` mode (experimental). It creates separated SparkContext per each notebook in `isolated` mode.

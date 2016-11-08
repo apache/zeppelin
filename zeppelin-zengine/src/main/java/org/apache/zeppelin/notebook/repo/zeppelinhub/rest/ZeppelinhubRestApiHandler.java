@@ -27,6 +27,7 @@ import org.apache.commons.lang.StringUtils;
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.api.Request;
 import org.eclipse.jetty.client.api.Response;
+import org.eclipse.jetty.client.api.Result;
 import org.eclipse.jetty.client.util.InputStreamResponseListener;
 import org.eclipse.jetty.client.util.StringContentProvider;
 import org.eclipse.jetty.http.HttpMethod;
@@ -114,7 +115,7 @@ public class ZeppelinhubRestApiHandler {
   }
 
   public String asyncGet(String argument) throws IOException {
-    return sendToZeppelinHub(HttpMethod.GET, zepelinhubUrl + argument);
+    return sendToZeppelinHub(HttpMethod.GET, zepelinhubUrl + argument, StringUtils.EMPTY, true);
   }
   
   public String asyncPutWithResponseBody(String url, String json) throws IOException {
@@ -122,7 +123,7 @@ public class ZeppelinhubRestApiHandler {
       LOG.error("Empty note, cannot send it to zeppelinHub");
       throw new IOException("Cannot send emtpy note to zeppelinHub");
     }
-    return sendToZeppelinHub(HttpMethod.PUT, zepelinhubUrl + url, json);
+    return sendToZeppelinHub(HttpMethod.PUT, zepelinhubUrl + url, json, true);
   }
   
   public void asyncPut(String jsonNote) throws IOException {
@@ -130,7 +131,7 @@ public class ZeppelinhubRestApiHandler {
       LOG.error("Cannot save empty note/string to ZeppelinHub");
       return;
     }
-    sendToZeppelinHub(HttpMethod.PUT, zepelinhubUrl, jsonNote);
+    sendToZeppelinHub(HttpMethod.PUT, zepelinhubUrl, jsonNote, false);
   }
 
   public void asyncDel(String argument) throws IOException {
@@ -138,28 +139,41 @@ public class ZeppelinhubRestApiHandler {
       LOG.error("Cannot delete empty note from ZeppelinHub");
       return;
     }
-    sendToZeppelinHub(HttpMethod.DELETE, zepelinhubUrl + argument);
+    sendToZeppelinHub(HttpMethod.DELETE, zepelinhubUrl + argument, StringUtils.EMPTY, false);
   }
   
-  private String sendToZeppelinHub(HttpMethod method, String url) throws IOException {
-    return sendToZeppelinHub(method, url, StringUtils.EMPTY);
+  private String sendToZeppelinHub(HttpMethod method, String url, String json, boolean withResponse)
+      throws IOException {
+    Request request = client.newRequest(url).method(method).header(ZEPPELIN_TOKEN_HEADER, token);
+    if ((method.equals(HttpMethod.PUT) || method.equals(HttpMethod.POST))
+        && !StringUtils.isBlank(json)) {
+      request.content(new StringContentProvider(json, "UTF-8"), "application/json;charset=UTF-8");
+    }
+    return withResponse ?
+        sendToZeppelinHub(request) : sendToZeppelinHubWithoutResponseBody(request);
   }
   
-  private String sendToZeppelinHub(HttpMethod method, String url, String json) throws IOException {
+  private String sendToZeppelinHubWithoutResponseBody(Request request) throws IOException {
+    request.send(new Response.CompleteListener() {
+      @Override
+      public void onComplete(Result result) {
+        Request req = result.getRequest();
+        LOG.info("ZeppelinHub {} {} returned with status {}: {}", req.getMethod(),
+            req.getURI(), result.getResponse().getStatus(), result.getResponse().getReason());
+      }
+    });
+    return StringUtils.EMPTY;
+  }
+  
+  private String sendToZeppelinHub(final Request request) throws IOException {
     InputStreamResponseListener listener = new InputStreamResponseListener();
     Response response;
     String data;
-
-    Request request = client.newRequest(url).method(method).header(ZEPPELIN_TOKEN_HEADER, token);
-    if ((method.equals(HttpMethod.PUT) || method.equals(HttpMethod.POST)) &&
-        !StringUtils.isBlank(json)) {
-      request.content(new StringContentProvider(json, "UTF-8"), "application/json;charset=UTF-8");
-    }
     request.send(listener);
-
     try {
       response = listener.get(30, TimeUnit.SECONDS);
     } catch (InterruptedException | TimeoutException | ExecutionException e) {
+      String method = request.getMethod();
       LOG.error("Cannot perform {} request to ZeppelinHub", method, e);
       throw new IOException("Cannot perform " + method + " request to ZeppelinHub", e);
     }
@@ -170,6 +184,8 @@ public class ZeppelinhubRestApiHandler {
         data = IOUtils.toString(responseContent, "UTF-8");
       }
     } else {
+      String method = response.getRequest().getMethod();
+      String url = response.getRequest().getURI().toString();
       LOG.error("ZeppelinHub {} {} returned with status {} ", method, url, code);
       throw new IOException("Cannot perform " + method + " request to ZeppelinHub");
     }

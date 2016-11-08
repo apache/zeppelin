@@ -4,7 +4,9 @@
     "name": "angular",
     "className": "org.apache.zeppelin.angular.AngularInterpreter",
     "properties": {
-
+    },
+    "editor": {
+      "editOnDblClick": true
     }
   }
 ]

@@ -25,15 +25,15 @@ limitations under the License.
 
     <div class="collapse navbar-collapse" ng-controller="NavCtrl as navbar">
       <ul class="nav navbar-nav" ng-if="ticket">
-        <li class="dropdown" dropdown>
-          <a href="#" class="dropdown-toggle" dropdown-toggle>Notebook <span class="caret"></span></a>
+        <li class="dropdown notebook-list-dropdown" dropdown>
+          <a href="#" class="dropdown-toggle" data-toggle="dropdown" dropdown-toggle>Notebook <span class="caret"></span></a>
           <ul class="dropdown-menu navbar-dropdown-maxHeight" role="menu">
             <li><a href="" data-toggle="modal" data-target="#noteNameModal"><i class="fa fa-plus"></i> Create new note</a></li>
             <li class="divider"></li>
-            <div id="notebook-list" class="scrollbar-container">
+            <div id="notebook-list" class="scrollbar-container" ng-if="isDrawNavbarNoteList">
               <li class="filter-names" ng-include="'components/filterNoteNames/filter-note-names.html'"></li>
-              <li ng-repeat="note in navbar.notes.root.children | filter:query.q | orderBy:navbar.arrayOrderingSrv.notebookListOrdering track by $index"
-                  ng-class="{'active' : navbar.isActive(note.id)}" ng-include="'components/navbar/navbar-notebookList-elem.html'">
+              <li ng-repeat="note in navbar.notes.root.children | filter:query.q | orderBy:navbar.arrayOrderingSrv.noteListOrdering track by $index"
+                  ng-class="{'active' : navbar.isActive(note.id)}" ng-include="'components/navbar/navbar-noteList-elem.html'">
               </li>
             </div>
           </ul>
@@ -57,7 +57,7 @@ limitations under the License.
                 id="searchTermId"
                 ng-disabled="!navbar.connected"
                 class="form-control"
-                placeholder="Search your Notebooks"
+                placeholder="Search your Notes"
               />
               <span class="input-group-btn">
                 <button
@@ -86,6 +86,7 @@ limitations under the License.
               <li><a href="" data-toggle="modal" data-target="#aboutModal">About Zeppelin</a></li>
               <li role="separator" style="margin: 5px 0;" class="divider"></li>
               <li><a href="#/interpreter">Interpreter</a></li>
+              <li><a href="#/notebookRepos">Notebook Repos</a></li>
               <li><a href="#/credential">Credential</a></li>
               <li><a href="#/configuration">Configuration</a></li>
               <li ng-if="ticket.principal && ticket.principal !== 'anonymous'" role="separator" style="margin: 5px 0;" class="divider"></li>
