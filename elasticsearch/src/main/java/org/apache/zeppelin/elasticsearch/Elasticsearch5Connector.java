@@ -18,6 +18,7 @@
 package org.apache.zeppelin.elasticsearch;
 
 import com.google.gson.JsonParseException;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.elasticsearch.action.delete.DeleteResponse;
 import org.elasticsearch.action.search.SearchAction;
@@ -26,22 +27,24 @@ import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.rest.RestStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.InetAddress;
-import java.util.*;
+import java.util.Map;
+import java.util.Properties;
 
 
 /**
- * Connector for Elasticsearch 2.x used in ElasticsearchInterpreter.
+ * Connector for Elasticsearch 5.x used in ElasticsearchInterpreter.
  */
-public class Elasticsearch2Connector extends ElasticsearchConnector {
+public class Elasticsearch5Connector extends ElasticsearchConnector {
 
   private static Logger logger = LoggerFactory.getLogger(ElasticsearchConnector.class);
 
-  protected Elasticsearch2Connector(String host, int port, String clusterName, int resultSize) {
+  protected Elasticsearch5Connector(String host, int port, String clusterName, int resultSize) {
     super(host, port, clusterName, resultSize);
   }
 
@@ -65,9 +68,7 @@ public class Elasticsearch2Connector extends ElasticsearchConnector {
 
   @Override
   public void release() {
-    if (client != null) {
-      client.close();
-    }
+    IOUtils.closeQuietly(client);
   }
 
   /**
@@ -88,7 +89,7 @@ public class Elasticsearch2Connector extends ElasticsearchConnector {
         .prepareDelete(urlItems[0], urlItems[1], urlItems[2])
         .get();
 
-    if (!response.isFound()) {
+    if (RestStatus.NOT_FOUND == response.status()) {
       throw new RuntimeException("Document not found");
     }
 
@@ -97,7 +98,6 @@ public class Elasticsearch2Connector extends ElasticsearchConnector {
 
   @Override
   protected SearchResponse searchData(String[] urlItems, String query, int size) {
-
     final SearchRequestBuilder reqBuilder =
         new SearchRequestBuilder(client, SearchAction.INSTANCE);
     reqBuilder.setIndices();
@@ -114,7 +114,7 @@ public class Elasticsearch2Connector extends ElasticsearchConnector {
       // So, try to parse as a JSON => if there is an error, consider the query a Lucene one
       try {
         final Map source = gson.fromJson(query, Map.class);
-        reqBuilder.setExtraSource(source);
+        // reqBuilder.setExtraSource(source);
       } catch (JsonParseException e) {
         // This is not a JSON (or maybe not well formatted...)
         reqBuilder.setQuery(QueryBuilders.queryStringQuery(query).analyzeWildcard(true));

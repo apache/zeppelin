@@ -137,6 +137,19 @@
   <profiles>
     <profile>
       <id>elasticsearch-2</id>
+        <build>
+          <plugins>
+            <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-compiler-plugin</artifactId>
+              <configuration>
+                <excludes>
+                  <exclude>elasticsearch/src/main/java/org/apache/zeppelin/elasticsearch/*.java</exclude>
+                </excludes>
+              </configuration>
+            </plugin>
+          </plugins>
+        </build>
       <activation>
         <activeByDefault>true</activeByDefault>
       </activation>
@@ -149,6 +162,19 @@
 
     <profile>
       <id>elasticsearch-5</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <configuration>
+              <excludes>
+                <exclude>**/src/main/java/org/apache/zeppelin/elasticsearch/Elasticsearch2Connector.java</exclude>
+              </excludes>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
       <properties>
         <elasticsearch.version>5.0.0</elasticsearch.version>
         <maven.compiler.source>1.8</maven.compiler.source>

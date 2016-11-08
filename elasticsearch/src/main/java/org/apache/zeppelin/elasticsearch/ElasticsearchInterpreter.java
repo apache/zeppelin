@@ -53,7 +53,7 @@ public class ElasticsearchInterpreter extends Interpreter {
     super(property);
     // should be called after set parent's props
     Properties merged = getProperty();
-    connector = Elasticsearch2Connector.create(merged);
+    connector = ElasticsearchConnector.create(merged);
   }
 
   @Override
@@ -157,7 +157,7 @@ public class ElasticsearchInterpreter extends Interpreter {
 
   @Override
   public List<InterpreterCompletion> completion(String s, int i) {
-    final List suggestions = new ArrayList<>();
+    final List suggestions = new ArrayList<InterpreterCompletion>();
 
     for (String cmd : COMMANDS) {
       if (cmd.toLowerCase().contains(s)) {

@@ -17,35 +17,32 @@ package org.apache.zeppelin.elasticsearch;
  * limitations under the License.
  */
 
-import org.elasticsearch.action.index.IndexRequestBuilder;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.Settings;
-import org.elasticsearch.transport.Transport;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 
 /**
  * Utils for ElasticSearchInterpreter.
  */
 public class ElasticSearchInterpreterUtils {
 
-  public static boolean isElasticSearchVersion5() {
+  public static boolean isElasticSearchVersion2() {
     try {
       Class.forName("org.elasticsearch.node.NodeBuilder");
-      return false;
-    } catch (ClassNotFoundException e) {
       return true;
+    } catch (ClassNotFoundException e) {
+      return false;
     }
   }
 
   public static TransportClient createTransportClient(Settings settings) {
     try {
-      if (isElasticSearchVersion5()) {
-        return createTransportClientForVersion5(settings);
-      } else {
+      if (isElasticSearchVersion2()) {
         return createTransportClientForVersion2(settings);
+      } else {
+        return createTransportClientForVersion5(settings);
       }
     } catch (ReflectiveOperationException e) {
       // Wrap checked exception.
@@ -53,7 +50,9 @@ public class ElasticSearchInterpreterUtils {
     }
   }
 
-  public static TransportClient createTransportClientForVersion2(Settings settings) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+  public static TransportClient createTransportClientForVersion2(Settings settings)
+      throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException,
+      IllegalAccessException {
     // TransportClient in 5.x client doesn't have the `builder` method and `Builder` class
 
     // `TransportClient.builder().settings(settings).build()`
@@ -72,7 +71,9 @@ public class ElasticSearchInterpreterUtils {
     return client;
   }
 
-  public static TransportClient createTransportClientForVersion5(Settings settings) throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+  public static TransportClient createTransportClientForVersion5(Settings settings)
+      throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException,
+      InvocationTargetException, InstantiationException {
     // PreBuiltTransportClient was introduced since 5.x client.
 
     // `new PreBuiltTransportClient(settings)`

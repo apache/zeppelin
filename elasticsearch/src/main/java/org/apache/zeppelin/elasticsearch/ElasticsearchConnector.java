@@ -21,19 +21,15 @@ package org.apache.zeppelin.elasticsearch;
 import com.github.wnameless.json.flattener.JsonFlattener;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonParseException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexResponse;
-import org.elasticsearch.action.search.SearchAction;
-import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.common.xcontent.XContentHelper;
-import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHitField;
 import org.elasticsearch.search.aggregations.Aggregation;
@@ -46,6 +42,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.lang.reflect.Constructor;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -57,12 +54,6 @@ public abstract class ElasticsearchConnector {
 
   private static Logger logger = LoggerFactory.getLogger(ElasticsearchConnector.class);
   private static final Pattern FIELD_NAME_PATTERN = Pattern.compile("\\[\\\\\"(.+)\\\\\"\\](.*)");
-  private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
-
-  public static final String ELASTICSEARCH_HOST = "elasticsearch.host";
-  public static final String ELASTICSEARCH_PORT = "elasticsearch.port";
-  public static final String ELASTICSEARCH_CLUSTER_NAME = "elasticsearch.cluster.name";
-  public static final String ELASTICSEARCH_RESULT_SIZE = "elasticsearch.output.size";
   private static final String HELP = "Elasticsearch interpreter:\n"
       + "General format: <command> /<indices>/<types>/<id> <option> <JSON>\n"
       + "  - indices: list of indices separated by commas (depends on the command)\n"
@@ -80,6 +71,13 @@ public abstract class ElasticsearchConnector {
       + "  - delete /index/type/id\n"
       + "  - index /ndex/type/id <json-formatted document>\n"
       + "    . the id can be omitted, elasticsearch will generate one";
+
+  protected final Gson gson = new GsonBuilder().setPrettyPrinting().create();
+
+  public static final String ELASTICSEARCH_HOST = "elasticsearch.host";
+  public static final String ELASTICSEARCH_PORT = "elasticsearch.port";
+  public static final String ELASTICSEARCH_CLUSTER_NAME = "elasticsearch.cluster.name";
+  public static final String ELASTICSEARCH_RESULT_SIZE = "elasticsearch.output.size";
 
   public static String getHelpString(String additionalMessage) {
     final StringBuffer buffer = new StringBuffer();
@@ -103,6 +101,36 @@ public abstract class ElasticsearchConnector {
     return resultSize;
   }
 
+  public static ElasticsearchConnector create(Properties props) {
+    String host = props.getProperty(ELASTICSEARCH_HOST);
+    int port = Integer.parseInt(props.getProperty(ELASTICSEARCH_PORT));
+    String clusterName = props.getProperty(ELASTICSEARCH_CLUSTER_NAME);
+    int resultSize = 10;
+    try {
+      resultSize = Integer.parseInt(props.getProperty(ELASTICSEARCH_RESULT_SIZE));
+    } catch (NumberFormatException e) {
+      logger.error("Unable to parse " + ELASTICSEARCH_RESULT_SIZE + " : " +
+          props.get(ELASTICSEARCH_RESULT_SIZE), e);
+    }
+
+    Class<?> c = null;
+
+    try {
+      if (ElasticSearchInterpreterUtils.isElasticSearchVersion2()) {
+        c = Class.forName("Elasticsearch2Connector");
+      } else {
+        // Assume that we are using 5.x
+        c = Class.forName("Elasticsearch5Connector");
+      }
+
+      Constructor<?> t = c.getConstructor(
+          String.class, Integer.class, String.class, String.class);
+      return (ElasticsearchConnector) t.newInstance(host, port, clusterName, resultSize);
+    } catch (ReflectiveOperationException e) {
+      throw new RuntimeException("Failed to create ElasticsearchConnector", e);
+    }
+  }
+
   protected ElasticsearchConnector(String host, int port, String clusterName, int resultSize) {
     this.host = host;
     this.port = port;
@@ -110,9 +138,10 @@ public abstract class ElasticsearchConnector {
     this.resultSize = resultSize;
   }
 
-  abstract void connect(Properties properties);
-  abstract void release();
-  abstract String executeDeleteQuery(String [] urlItems);
+  protected abstract SearchResponse searchData(String[] urlItems, String query, int size);
+  public abstract void connect(Properties properties);
+  public abstract void release();
+  public abstract String executeDeleteQuery(String [] urlItems);
 
   /**
    * Execute a "get" request.
@@ -217,8 +246,8 @@ public abstract class ElasticsearchConnector {
       resMsg = XContentHelper.toString((InternalSingleBucketAggregation) agg).toString();
     } else {
       if (agg instanceof InternalMultiBucketAggregation) {
-        final Set<String> headerKeys = new HashSet<>();
-        final List<Map<String, Object>> buckets = new LinkedList<>();
+        final Set<String> headerKeys = new HashSet<String>();
+        final List<Map<String, Object>> buckets = new LinkedList<Map<String, Object>>();
         final InternalMultiBucketAggregation multiBucketAgg = (InternalMultiBucketAggregation) agg;
 
         for (MultiBucketsAggregation.Bucket bucket : multiBucketAgg.getBuckets()) {
@@ -263,9 +292,9 @@ public abstract class ElasticsearchConnector {
     }
 
     // 1. Get all the keys in order to build an ordered list of the values for each hit
-    final Map<String, Object> hitFields = new HashMap<>();
-    final List<Map<String, Object>> flattenHits = new LinkedList<>();
-    final Set<String> keys = new TreeSet<>();
+    final Map<String, Object> hitFields = new HashMap<String, Object>();
+    final List<Map<String, Object>> flattenHits = new LinkedList<Map<String, Object>>();
+    final Set<String> keys = new TreeSet<String>();
     for (SearchHit hit : hits) {
       // Fields can be found either in _source, or in fields (it depends on the query)
       String json = hit.getSourceAsString();
@@ -278,7 +307,7 @@ public abstract class ElasticsearchConnector {
       }
 
       final Map<String, Object> flattenJsonMap = JsonFlattener.flattenAsMap(json);
-      final Map<String, Object> flattenMap = new HashMap<>();
+      final Map<String, Object> flattenMap = new HashMap<String, Object>();
       for (Iterator<String> iter = flattenJsonMap.keySet().iterator(); iter.hasNext(); ) {
         // Replace keys that match a format like that : [\"keyname\"][0]
         final String fieldName = iter.next();
@@ -317,36 +346,6 @@ public abstract class ElasticsearchConnector {
     }
 
     return buffer.toString();
-  }
-
-  private SearchResponse searchData(String[] urlItems, String query, int size) {
-
-    final SearchRequestBuilder reqBuilder =
-        new SearchRequestBuilder(client, SearchAction.INSTANCE);
-    reqBuilder.setIndices();
-
-    if (urlItems.length >= 1) {
-      reqBuilder.setIndices(StringUtils.split(urlItems[0], ","));
-    }
-    if (urlItems.length > 1) {
-      reqBuilder.setTypes(StringUtils.split(urlItems[1], ","));
-    }
-
-    if (!StringUtils.isEmpty(query)) {
-      // The query can be either JSON-formatted, nor a Lucene query
-      // So, try to parse as a JSON => if there is an error, consider the query a Lucene one
-      try {
-        final Map source = gson.fromJson(query, Map.class);
-        reqBuilder.setExtraSource(source);
-      } catch (JsonParseException e) {
-        // This is not a JSON (or maybe not well formatted...)
-        reqBuilder.setQuery(QueryBuilders.queryStringQuery(query).analyzeWildcard(true));
-      }
-    }
-
-    reqBuilder.setSize(size);
-    final SearchResponse response = reqBuilder.get();
-    return response;
   }
 
 }

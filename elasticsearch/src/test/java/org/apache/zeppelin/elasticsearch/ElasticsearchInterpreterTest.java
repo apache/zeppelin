@@ -56,7 +56,6 @@ public class ElasticsearchInterpreterTest {
   private static final String ELS_HTTP_PORT = "10200";
   private static final String ELS_PATH = "/tmp/els";
 
-
   @BeforeClass
   public static void populate() throws IOException {
 
