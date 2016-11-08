@@ -93,6 +93,9 @@ limitations under the License.
     <div ng-controller="LoginCtrl as noteimportctrl">
       <div id="login-container" ng-include src="'components/login/login.html'"></div>
     </div>
+    <div ng-controller="RenameCtrl">
+      <div ng-include src="'components/rename/rename.html'"></div>
+    </div>
     <!-- build:js(.) scripts/oldieshim.js -->
     <!--[if lt IE 9]>
     <script src="bower_components/es5-shim/es5-shim.js"></script>
@@ -186,6 +189,8 @@ limitations under the License.
     <script src="components/login/login.controller.js"></script>
     <script src="components/elasticInputCtrl/elasticInput.controller.js"></script>
     <script src="components/noteAction/noteAction.service.js"></script>
+    <script src="components/rename/rename.controller.js"></script>
+    <script src="components/rename/rename.service.js"></script>
     <!-- endbuild -->
   </body>
 </html>
