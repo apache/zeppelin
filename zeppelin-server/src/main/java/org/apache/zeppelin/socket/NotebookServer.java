@@ -429,9 +429,10 @@ public class NotebookServer extends WebSocketServlet implements
 
   private void multicastToUser(String user, Message m) {
     if (!userConnectedSockets.containsKey(user)) {
-      LOG.warn("Broadcasting to user that is not in connections map");
+      LOG.warn("Multicasting to user {} that is not in connections map", user);
       return;
     }
+
     for (NotebookSocket conn: userConnectedSockets.get(user)) {
       try {
         conn.send(serializeMessage(m));
@@ -509,7 +510,7 @@ public class NotebookServer extends WebSocketServlet implements
   }
 
   public List<Map<String, String>> generateNotesInfo(boolean needsReload,
-      AuthenticationInfo subject, HashSet<String> userAndRoles) {
+      AuthenticationInfo subject, Set<String> userAndRoles) {
 
     Notebook notebook = notebook();
 
@@ -561,13 +562,7 @@ public class NotebookServer extends WebSocketServlet implements
     List<Map<String, String>> notesInfo = generateNotesInfo(false, subject, userAndRoles);
     multicastToUser(subject.getUser(), new Message(OP.NOTES_INFO).put("notes", notesInfo));
     //to others afterwards
-    for (String user: userConnectedSockets.keySet()) {
-      if (subject.getUser() == user) {
-        continue;
-      }
-      notesInfo = generateNotesInfo(false, new AuthenticationInfo(user), userAndRoles);
-      multicastToUser(user, new Message(OP.NOTES_INFO).put("notes", notesInfo));
-    }
+    broadcastNoteListExcept(notesInfo, subject);
   }
 
   public void unicastNoteList(NotebookSocket conn, AuthenticationInfo subject,
@@ -580,20 +575,30 @@ public class NotebookServer extends WebSocketServlet implements
     if (subject == null) {
       subject = new AuthenticationInfo(StringUtils.EMPTY);
     }
+
     //reload and reply first to requesting user
     List<Map<String, String>> notesInfo = generateNotesInfo(true, subject, userAndRoles);
     multicastToUser(subject.getUser(), new Message(OP.NOTES_INFO).put("notes", notesInfo));
     //to others afterwards
+    broadcastNoteListExcept(notesInfo, subject);
+  }
+
+  private void broadcastNoteListExcept(List<Map<String, String>> notesInfo,
+      AuthenticationInfo subject) {
+    Set<String> userAndRoles;
+    NotebookAuthorization authInfo = NotebookAuthorization.getInstance();
     for (String user: userConnectedSockets.keySet()) {
-      if (subject.getUser() == user) {
+      if (subject.getUser().equals(user)) {
         continue;
       }
       //reloaded already above; parameter - false
+      userAndRoles = authInfo.getRoles(user);
+      userAndRoles.add(user);
       notesInfo = generateNotesInfo(false, new AuthenticationInfo(user), userAndRoles);
       multicastToUser(user, new Message(OP.NOTES_INFO).put("notes", notesInfo));
     }
   }
-
+  
   void permissionError(NotebookSocket conn, String op,
                        String userName,
                        Set<String> userAndRoles,
