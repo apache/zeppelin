@@ -49,12 +49,6 @@
     </dependency>
 
     <dependency>
-      <groupId>org.elasticsearch</groupId>
-      <artifactId>elasticsearch</artifactId>
-      <version>${elasticsearch.version}</version>
-    </dependency>
-
-    <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
       <version>${guava.version}</version>
@@ -65,7 +59,7 @@
       <artifactId>json-flattener</artifactId>
       <version>${json-flattener.version}</version>
     </dependency>
-    
+
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
@@ -169,6 +163,13 @@
       <activation>
         <activeByDefault>true</activeByDefault>
       </activation>
+      <dependencies>
+        <dependency>
+          <groupId>org.elasticsearch</groupId>
+          <artifactId>elasticsearch</artifactId>
+          <version>${elasticsearch.version}</version>
+        </dependency>
+      </dependencies>
     </profile>
 
     <profile>
@@ -182,23 +183,39 @@
         <maven.compiler.target>1.8</maven.compiler.target>
       </properties>
       <dependencies>
+
         <dependency>
           <groupId>org.elasticsearch.client</groupId>
           <artifactId>transport</artifactId>
           <version>${elasticsearch.version}</version>
         </dependency>
+
+        <dependency>
+          <groupId>org.elasticsearch</groupId>
+          <artifactId>elasticsearch</artifactId>
+          <version>${elasticsearch.version}</version>
+        </dependency>
+
+        <dependency>
+          <groupId>org.elasticsearch.plugin</groupId>
+          <artifactId>transport-netty4-client</artifactId>
+          <version>${elasticsearch.version}</version>
+        </dependency>
+
         <dependency>
           <groupId>org.apache.logging.log4j</groupId>
           <artifactId>log4j-api</artifactId>
           <version>${log4j2.version}</version>
           <scope>test</scope>
         </dependency>
+
         <dependency>
           <groupId>org.apache.logging.log4j</groupId>
           <artifactId>log4j-core</artifactId>
           <version>${log4j2.version}</version>
           <scope>test</scope>
         </dependency>
+
       </dependencies>
     </profile>
   </profiles>

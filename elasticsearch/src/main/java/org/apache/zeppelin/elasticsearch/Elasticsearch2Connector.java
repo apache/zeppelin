@@ -23,6 +23,7 @@ import org.elasticsearch.action.delete.DeleteResponse;
 import org.elasticsearch.action.search.SearchAction;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.elasticsearch.index.query.QueryBuilders;
@@ -55,10 +56,9 @@ public class Elasticsearch2Connector extends ElasticsearchConnector {
           .put("cluster.name", clusterName)
           .put(props)
           .build();
-      client = ElasticSearchInterpreterUtils
-          .createTransportClient(settings)
+      client = TransportClient.builder().settings(settings).build()
           .addTransportAddress(
-              new InetSocketTransportAddress(InetAddress.getByName(host), port));
+          new InetSocketTransportAddress(InetAddress.getByName(host), port));
     } catch (IOException e) {
       logger.error("Open connection with Elasticsearch", e);
     }

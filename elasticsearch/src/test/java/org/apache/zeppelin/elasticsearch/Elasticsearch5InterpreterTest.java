@@ -26,6 +26,9 @@ import org.elasticsearch.action.support.WriteRequest;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.node.Node;
+import org.elasticsearch.node.NodeValidationException;
+import org.elasticsearch.node.internal.InternalSettingsPreparer;
+import org.elasticsearch.transport.Netty4Plugin;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -52,8 +55,15 @@ public class Elasticsearch5InterpreterTest {
   private static final String ELS_HTTP_PORT = "10200";
   private static final String ELS_PATH = "/tmp/els";
 
+  static class PluginNode extends Node {
+    public PluginNode(final Settings settings) {
+      super(InternalSettingsPreparer.prepareEnvironment(settings, null),
+          Collections.singletonList(Netty4Plugin.class));
+    }
+  }
+
   @BeforeClass
-  public static void populate() throws IOException {
+  public static void populate() throws IOException, NodeValidationException {
 
     final Settings settings = Settings.builder()
         .put("cluster.name", ELS_CLUSTER_NAME)
@@ -63,14 +73,7 @@ public class Elasticsearch5InterpreterTest {
         .put("path.home", ELS_PATH)
         .build();
 
-    try {
-      elsNode = new Node(settings).start();
-    } catch (Exception e) {
-      // TODO: remove when 2.x is not supported
-      // Wrap NodeValidationException which is not supported in 2.x client
-      new RuntimeException("Failed to start test cluster", e);
-    }
-
+    elsNode = new PluginNode(settings).start();
     elsClient = elsNode.client();
 
     elsClient.admin().indices().prepareCreate("logs")

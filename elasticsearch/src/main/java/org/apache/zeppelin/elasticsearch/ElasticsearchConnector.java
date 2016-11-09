@@ -101,6 +101,15 @@ public abstract class ElasticsearchConnector {
     return resultSize;
   }
 
+  public static boolean isElasticSearchVersion2() {
+    try {
+      Class.forName("org.elasticsearch.node.NodeBuilder");
+      return true;
+    } catch (ClassNotFoundException e) {
+      return false;
+    }
+  }
+
   public static ElasticsearchConnector create(Properties props) {
     String host = props.getProperty(ELASTICSEARCH_HOST);
     int port = Integer.parseInt(props.getProperty(ELASTICSEARCH_PORT));
@@ -118,7 +127,7 @@ public abstract class ElasticsearchConnector {
     String packagePrefix = "org.apache.zeppelin.elasticsearch.";
 
     try {
-      if (ElasticSearchInterpreterUtils.isElasticSearchVersion2()) {
+      if (isElasticSearchVersion2()) {
         c = Class.forName(packagePrefix + "Elasticsearch2Connector");
       } else {
         // Assume that we are using 5.x

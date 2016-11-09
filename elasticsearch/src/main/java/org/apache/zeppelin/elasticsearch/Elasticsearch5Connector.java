@@ -28,6 +28,7 @@ import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.rest.RestStatus;
+import org.elasticsearch.transport.client.PreBuiltTransportClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,8 +58,7 @@ public class Elasticsearch5Connector extends ElasticsearchConnector {
           .put("cluster.name", clusterName)
           .put(props)
           .build();
-      client = ElasticSearchInterpreterUtils
-          .createTransportClient(settings)
+      client = new PreBuiltTransportClient(settings)
           .addTransportAddress(
               new InetSocketTransportAddress(InetAddress.getByName(host), port));
     } catch (IOException e) {

@@ -67,14 +67,7 @@ public class Elasticsearch2InterpreterTest {
         .put("path.home", ELS_PATH)
         .build();
 
-    try {
-      elsNode = new Node(settings).start();
-    } catch (Exception e) {
-      // TODO: remove when 2.x is not supported
-      // Wrap NodeValidationException which is not supported in 2.x client
-      new RuntimeException("Failed to start test cluster", e);
-    }
-
+    elsNode = new Node(settings).start();
     elsClient = elsNode.client();
 
     elsClient.admin().indices().prepareCreate("logs")
