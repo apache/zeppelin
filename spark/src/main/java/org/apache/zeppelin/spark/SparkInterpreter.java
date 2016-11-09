@@ -960,7 +960,9 @@ public class SparkInterpreter extends Interpreter {
       if (url != null) {
         infos.put("url", url);
         logger.info("Sending metainfos to Zeppelin server: {}", infos.toString());
-        ctx.getClient().onMetaInfosReceived(infos);
+        if (ctx != null && ctx.getClient() != null) {
+          ctx.getClient().onMetaInfosReceived(infos);
+        }
       }
     }
   }
