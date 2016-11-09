@@ -54,9 +54,18 @@ public class Elasticsearch5Connector extends ElasticsearchConnector {
     logger.info("prop={}", props);
 
     try {
+      // Since 5.0, client doesn't allow invalid options ignored in the previous version.
+      // So, copy props and remove default so that user insert arbitrary valid options.
+      Properties filtered = new Properties();
+      filtered.putAll(props);
+      filtered.remove(ELASTICSEARCH_CLUSTER_NAME);
+      filtered.remove(ELASTICSEARCH_HOST);
+      filtered.remove(ELASTICSEARCH_PORT);
+      filtered.remove(ELASTICSEARCH_RESULT_SIZE);
+
       final Settings settings = Settings.builder()
           .put("cluster.name", clusterName)
-          .put(props)
+          .put(filtered)
           .build();
       client = new PreBuiltTransportClient(settings)
           .addTransportAddress(
