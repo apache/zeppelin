@@ -26,7 +26,7 @@
         "envName": null,
         "propertyName": "ignite.peerClassLoadingEnabled",
         "defaultValue": "true",
-        "description": "Peer class loading enabled. true or false"
+        "description": "Peer class loading enabled. True or false"
       }
     }
     
