@@ -89,7 +89,7 @@ After configuring Ignite interpreter, create your own notebook. Then you can bin
 
 ![Binding Interpreters](../assets/themes/zeppelin/img/docs-img/ignite-interpreter-binding.png)
 
-For more interpreter binding information see [here](../manual/dynamicform.html).
+For more interpreter binding information see [here](../manual/interpreters.html#what-is-interpreter-setting).
 
 ### Ignite SQL interpreter
 In order to execute SQL query, use ` %ignite.ignitesql ` prefix. <br>
