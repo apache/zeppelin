@@ -65,8 +65,7 @@ public class Elasticsearch5InterpreterTest {
   static class PluginNode extends Node {
     public PluginNode(final Settings settings) {
       super(InternalSettingsPreparer.prepareEnvironment(settings, null),
-          Collections.unmodifiableList(
-              Arrays.asList(Netty4Plugin.class)));
+              Collections.singletonList(Netty4Plugin.class));
     }
   }
 
@@ -75,17 +74,17 @@ public class Elasticsearch5InterpreterTest {
 
     elsNode = new PluginNode(Settings.builder()
         .put("cluster.name", ELS_CLUSTER_NAME)
+        .put("node.name", "zeppelin-elasticsearch-test-node")
+        .put("node.master", true)
+        .put("node.data", true)
+        .put("node.ingest", true)
         .put("network.host", ELS_HOST)
         .put("http.enabled", true)
         .put("http.port", ELS_HTTP_PORT)
         .put("transport.tcp.port", ELS_TRANSPORT_PORT)
-        .put("path.home", ELS_PATH)
-        .put("node.name", "test-node")
-        .put("node.master", true)
-        .put("node.data", true)
-        .put("node.ingest", true)
         .put("transport.type", "local")
         .put("discovery.type", "local")
+        .put("path.home", ELS_PATH)
         .build()
     ).start();
 
