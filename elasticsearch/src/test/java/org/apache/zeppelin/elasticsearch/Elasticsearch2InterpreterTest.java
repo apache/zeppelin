@@ -91,7 +91,7 @@ public class Elasticsearch2InterpreterTest {
               .endObject()
               .field("status", STATUS[RandomUtils.nextInt(STATUS.length)])
               .field("content_length", RandomUtils.nextInt(2000))
-          )
+              .endObject())
           .get();
     }
 
