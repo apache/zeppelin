@@ -38,6 +38,8 @@
     <elasticsearch.version>2.4.1</elasticsearch.version>
     <guava.version>18.0</guava.version>
     <json-flattener.version>0.1.6</json-flattener.version>
+    <maven.compiler.source>1.7</maven.compiler.source>
+    <maven.compiler.target>1.7</maven.compiler.target>
   </properties>
 
   <dependencies>
@@ -88,8 +90,10 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.2</version>
+        <version>3.6.0</version>
         <configuration>
+          <source>${maven.compiler.source}</source>
+          <target>${maven.compiler.target}</target>
           <excludes>
             <exclude>${exclude.src.elastic}</exclude>
           </excludes>
@@ -197,23 +201,15 @@
         </dependency>
 
         <dependency>
-          <groupId>org.elasticsearch.plugin</groupId>
-          <artifactId>transport-netty4-client</artifactId>
-          <version>${elasticsearch.version}</version>
-        </dependency>
-
-        <dependency>
           <groupId>org.apache.logging.log4j</groupId>
           <artifactId>log4j-api</artifactId>
           <version>${log4j2.version}</version>
-          <scope>test</scope>
         </dependency>
 
         <dependency>
           <groupId>org.apache.logging.log4j</groupId>
           <artifactId>log4j-core</artifactId>
           <version>${log4j2.version}</version>
-          <scope>test</scope>
         </dependency>
 
       </dependencies>

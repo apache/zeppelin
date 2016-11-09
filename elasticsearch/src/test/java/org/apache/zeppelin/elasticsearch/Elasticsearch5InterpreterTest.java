@@ -25,9 +25,16 @@ import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
 import org.elasticsearch.action.support.WriteRequest;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.settings.Settings;
+import org.elasticsearch.common.unit.TimeValue;
+import org.elasticsearch.common.xcontent.XContentBuilder;
+import org.elasticsearch.index.reindex.ReindexPlugin;
 import org.elasticsearch.node.Node;
 import org.elasticsearch.node.NodeValidationException;
 import org.elasticsearch.node.internal.InternalSettingsPreparer;
+import org.elasticsearch.percolator.PercolatorPlugin;
+import org.elasticsearch.plugins.Plugin;
+import org.elasticsearch.script.mustache.MustachePlugin;
+import org.elasticsearch.transport.Netty3Plugin;
 import org.elasticsearch.transport.Netty4Plugin;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -58,46 +65,62 @@ public class Elasticsearch5InterpreterTest {
   static class PluginNode extends Node {
     public PluginNode(final Settings settings) {
       super(InternalSettingsPreparer.prepareEnvironment(settings, null),
-          Collections.singletonList(Netty4Plugin.class));
+          Collections.unmodifiableList(
+              Arrays.asList(Netty4Plugin.class)));
     }
   }
 
   @BeforeClass
   public static void populate() throws IOException, NodeValidationException {
 
-    final Settings settings = Settings.builder()
+    elsNode = new PluginNode(Settings.builder()
         .put("cluster.name", ELS_CLUSTER_NAME)
         .put("network.host", ELS_HOST)
+        .put("http.enabled", true)
         .put("http.port", ELS_HTTP_PORT)
         .put("transport.tcp.port", ELS_TRANSPORT_PORT)
         .put("path.home", ELS_PATH)
-        .build();
+        .put("node.name", "test-node")
+        .put("node.master", true)
+        .put("node.data", true)
+        .put("node.ingest", true)
+        .put("transport.type", "local")
+        .put("discovery.type", "local")
+        .build()
+    ).start();
 
-    elsNode = new PluginNode(settings).start();
+    elsNode
+        .client()
+        .admin()
+        .cluster()
+        .prepareHealth().
+        setWaitForYellowStatus().get(new TimeValue(5000));
+
     elsClient = elsNode.client();
-
+    XContentBuilder b1 = jsonBuilder()
+        .startObject().startObject("http").startObject("properties")
+        .startObject("content_length")
+        .field("type", "integer")
+        .endObject()
+        .endObject().endObject().endObject();
     elsClient.admin().indices().prepareCreate("logs")
-        .addMapping("http", jsonBuilder()
-            .startObject().startObject("http").startObject("properties")
-            .startObject("content_length")
-            .field("type", "integer")
-            .endObject()
-            .endObject().endObject().endObject()).get();
+        .addMapping("http", b1).get();
 
     for (int i = 0; i < 50; i++) {
+      XContentBuilder b2 = jsonBuilder()
+          .startObject()
+          .field("date", new Date())
+          .startObject("request")
+          .field("method", METHODS[RandomUtils.nextInt(METHODS.length)])
+          .field("url", "/zeppelin/" + UUID.randomUUID().toString())
+          .field("headers", Arrays.asList("Accept: *.*", "Host: apache.org"))
+          .endObject()
+          .field("status", STATUS[RandomUtils.nextInt(STATUS.length)])
+          .field("content_length", RandomUtils.nextInt(2000))
+          .endObject();
+
       elsClient.prepareIndex("logs", "http", "" + i)
-          .setRefreshPolicy(WriteRequest.RefreshPolicy.IMMEDIATE)
-          .setSource(jsonBuilder()
-              .startObject()
-              .field("date", new Date())
-              .startObject("request")
-              .field("method", METHODS[RandomUtils.nextInt(METHODS.length)])
-              .field("url", "/zeppelin/" + UUID.randomUUID().toString())
-              .field("headers", Arrays.asList("Accept: *.*", "Host: apache.org"))
-              .endObject()
-              .field("status", STATUS[RandomUtils.nextInt(STATUS.length)])
-              .field("content_length", RandomUtils.nextInt(2000))
-          )
+          .setSource(b2)
           .get();
     }
 
