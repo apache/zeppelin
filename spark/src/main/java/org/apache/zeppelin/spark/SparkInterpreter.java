@@ -56,7 +56,6 @@ import org.apache.zeppelin.interpreter.InterpreterUtils;
 import org.apache.zeppelin.interpreter.WrappedInterpreter;
 import org.apache.zeppelin.resource.ResourcePool;
 import org.apache.zeppelin.resource.WellKnownResourceName;
-import org.apache.zeppelin.interpreter.remote.RemoteInterpreterEventClient;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
@@ -112,6 +111,7 @@ public class SparkInterpreter extends Interpreter {
 
   private SparkOutputStream out;
   private SparkDependencyResolver dep;
+  private String sparkUrl;
 
   /**
    * completer - org.apache.spark.repl.SparkJLineCompletion (scala 2.10)
@@ -803,10 +803,6 @@ public class SparkInterpreter extends Interpreter {
         sparkSession = getSparkSession();
       }
       sc = getSparkContext();
-      RemoteInterpreterEventClient eventClient = getInterpreterGroup().getEventClient();
-      if (eventClient != null) {
-        eventClient.onMetaInfodReceived(getSparkUIUrl());
-      }
       if (sc.getPoolForName("fair").isEmpty()) {
         Value schedulingMode = org.apache.spark.scheduler.SchedulingMode.FAIR();
         int minimumShare = 0;
@@ -942,15 +938,11 @@ public class SparkInterpreter extends Interpreter {
     numReferenceOfSparkContext.incrementAndGet();
   }
 
-  private Map<String, String> getSparkUIUrl() {
+  private String getSparkUIUrl() {
     Option<SparkUI> sparkUiOption = (Option<SparkUI>) Utils.invokeMethod(sc, "ui");
     SparkUI sparkUi = sparkUiOption.get();
     String sparkWebUrl = sparkUi.appUIAddress();
-    Map<String, String> infos = new java.util.HashMap<>();
-    if (sparkWebUrl != null) {
-      infos.put("url", sparkWebUrl);
-    }
-    return infos;
+    return sparkWebUrl;
   }
 
   private Results.Result interpret(String line) {
@@ -959,6 +951,18 @@ public class SparkInterpreter extends Interpreter {
         "interpret",
         new Class[] {String.class},
         new Object[] {line});
+  }
+
+  public void populateSparkWebUrl(InterpreterContext ctx) {
+    if (sparkUrl == null) {
+      String url = getSparkUIUrl();
+      Map<String, String> infos = new java.util.HashMap<>();
+      if (url != null) {
+        infos.put("url", url);
+        logger.info("Sending metainfos to Zeppelin server: {}", infos.toString());
+        ctx.getClient().onMetaInfosReceived(infos);
+      }
+    }
   }
 
   private List<File> currentClassPath() {
@@ -1100,7 +1104,7 @@ public class SparkInterpreter extends Interpreter {
       return new InterpreterResult(Code.ERROR, "Spark " + sparkVersion.toString()
           + " is not supported");
     }
-
+    populateSparkWebUrl(context);
     z.setInterpreterContext(context);
     if (line == null || line.trim().length() == 0) {
       return new InterpreterResult(Code.SUCCESS);

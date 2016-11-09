@@ -153,7 +153,7 @@ public class RemoteInterpreterServer
   public void createInterpreter(String interpreterGroupId, String noteId, String
       className, Map<String, String> properties) throws TException {
     if (interpreterGroup == null) {
-      interpreterGroup = new InterpreterGroup(interpreterGroupId, eventClient);
+      interpreterGroup = new InterpreterGroup(interpreterGroupId);
       angularObjectRegistry = new AngularObjectRegistry(interpreterGroup.getId(), this);
       hookRegistry = new InterpreterHookRegistry(interpreterGroup.getId());
       resourcePool = new DistributedResourcePool(interpreterGroup.getId(), eventClient);
@@ -552,7 +552,7 @@ public class RemoteInterpreterServer
         gson.fromJson(ric.getGui(), GUI.class),
         interpreterGroup.getAngularObjectRegistry(),
         interpreterGroup.getResourcePool(),
-        contextRunners, output);
+        contextRunners, output, eventClient);
   }
 
 

@@ -315,6 +315,7 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
   @Override
   public InterpreterResult interpret(String st, InterpreterContext context) {
     SparkInterpreter sparkInterpreter = getSparkInterpreter();
+    sparkInterpreter.populateSparkWebUrl(context);
     if (sparkInterpreter.getSparkVersion().isUnsupportedVersion()) {
       return new InterpreterResult(Code.ERROR, "Spark "
           + sparkInterpreter.getSparkVersion().toString() + " is not supported");

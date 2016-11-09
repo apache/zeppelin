@@ -692,7 +692,7 @@
     };
 
     $scope.showSparkUI = function(settingId) {
-      $http.get(baseUrlSrv.getRestApiBase() + '/interpreter/getmetainfos/' + settingId)
+      $http.get(baseUrlSrv.getRestApiBase() + '/interpreter/getmetainfos/' + settingId + '?propName=url')
         .success(function(data, status, headers, config) {
           var url = data.body.url;
           if (!url) {
