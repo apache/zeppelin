@@ -542,7 +542,7 @@ public class Notebook implements NoteEventListener {
     }
   }
 
-  public List<Note> getAllNotes(HashSet<String> userAndRoles) {
+  public List<Note> getAllNotes(Set<String> userAndRoles) {
     final Set<String> entities = Sets.newHashSet();
     if (userAndRoles != null) {
       entities.addAll(userAndRoles);
