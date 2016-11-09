@@ -46,7 +46,7 @@ describe('Factory: NoteList', function() {
     expect(folderList[1].name).toBe('B');
     expect(folderList[2].name).toBe('000003');
     expect(folderList[3].name).toBe('C');
-    expect(folderList[3].id).toBeUndefined();
+    expect(folderList[3].id).toBe('C');
     expect(folderList[3].children.length).toBe(3);
     expect(folderList[3].children[0].name).toBe('CA');
     expect(folderList[3].children[0].id).toBe('000004');
@@ -55,7 +55,7 @@ describe('Factory: NoteList', function() {
     expect(folderList[3].children[1].id).toBe('000005');
     expect(folderList[3].children[1].children).toBeUndefined();
     expect(folderList[3].children[2].name).toBe('CB');
-    expect(folderList[3].children[2].id).toBeUndefined();
+    expect(folderList[3].children[2].id).toBe('C/CB');
     expect(folderList[3].children[2].children.length).toBe(3);
     expect(folderList[3].children[2].children[0].name).toBe('CBA');
     expect(folderList[3].children[2].children[0].id).toBe('000006');
@@ -67,10 +67,10 @@ describe('Factory: NoteList', function() {
     expect(folderList[3].children[2].children[2].id).toBe('000008');
     expect(folderList[3].children[2].children[2].children).toBeUndefined();
     expect(folderList[4].name).toBe('D');
-    expect(folderList[4].id).toBeUndefined();
+    expect(folderList[4].id).toBe('D');
     expect(folderList[4].children.length).toBe(1);
     expect(folderList[4].children[0].name).toBe('D[A');
-    expect(folderList[4].children[0].id).toBeUndefined();
+    expect(folderList[4].children[0].id).toBe('D/D[A');
     expect(folderList[4].children[0].children[0].name).toBe('DA]B');
     expect(folderList[4].children[0].children[0].id).toBe('000009');
     expect(folderList[4].children[0].children[0].children).toBeUndefined();
