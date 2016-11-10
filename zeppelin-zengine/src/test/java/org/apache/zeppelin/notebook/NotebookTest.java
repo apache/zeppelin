@@ -675,6 +675,48 @@ public class NotebookTest implements JobListenerFactory{
   }
 
   @Test
+  public void testAuthorizationRoles() throws IOException {
+    String user1 = "user1";
+    String user2 = "user2";
+    Set<String> roles = Sets.newHashSet("admin");
+    // set admin roles for both user1 and user2
+    notebookAuthorization.setRoles(user1, roles);
+    notebookAuthorization.setRoles(user2, roles);
+    
+    Note note = notebook.createNote(new AuthenticationInfo(user1));
+    
+    // check that user1 is owner, reader and writer
+    assertEquals(notebookAuthorization.isOwner(note.getId(),
+        Sets.newHashSet(user1)), true);
+    assertEquals(notebookAuthorization.isReader(note.getId(),
+        Sets.newHashSet(user1)), true);
+    assertEquals(notebookAuthorization.isWriter(note.getId(),
+        Sets.newHashSet(user1)), true);
+    
+    // since user1 and user2 both have admin role, user2 will be reader and writer as well
+    assertEquals(notebookAuthorization.isOwner(note.getId(),
+        Sets.newHashSet(user2)), false);
+    assertEquals(notebookAuthorization.isReader(note.getId(),
+        Sets.newHashSet(user2)), true);
+    assertEquals(notebookAuthorization.isWriter(note.getId(),
+        Sets.newHashSet(user2)), true);
+    
+    // check that user1 has note listed in his workbench
+    Set<String> user1AndRoles = notebookAuthorization.getRoles(user1);
+    user1AndRoles.add(user1);
+    List<Note> user1Notes = notebook.getAllNotes(user1AndRoles);
+    assertEquals(user1Notes.size(), 1);
+    assertEquals(user1Notes.get(0).getId(), note.getId());
+    
+    // check that user2 has note listed in his workbech because of admin role
+    Set<String> user2AndRoles = notebookAuthorization.getRoles(user2);
+    user2AndRoles.add(user2);
+    List<Note> user2Notes = notebook.getAllNotes(user2AndRoles);
+    assertEquals(user2Notes.size(), 1);
+    assertEquals(user2Notes.get(0).getId(), note.getId());
+  }
+  
+  @Test
   public void testAbortParagraphStatusOnInterpreterRestart() throws InterruptedException,
       IOException {
     Note note = notebook.createNote(anonymous);
