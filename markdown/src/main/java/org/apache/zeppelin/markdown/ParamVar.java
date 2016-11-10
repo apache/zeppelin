@@ -17,9 +17,25 @@
 
 package org.apache.zeppelin.markdown;
 
+import org.parboiled.support.Var;
+
+import java.util.HashMap;
+import java.util.Map;
+
 /**
- * Abstract Markdown Parser.
+ * Implementation of Var to support parameter parsing.
+ *
+ * @param <K> Key
+ * @param <V> Value
  */
-public interface MarkdownParser {
-  String render(String markdownText);
+public class ParamVar<K, V> extends Var<Map<K, V>> {
+
+  public ParamVar() {
+    super(new HashMap<K, V>());
+  }
+
+  public boolean put(K key, V value) {
+    get().put(key, value);
+    return true;
+  }
 }

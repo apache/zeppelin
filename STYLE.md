@@ -7,7 +7,7 @@ app/styles/looknfeel
 Overall look and theme of the Zeppelin notebook page can be customized here.
 
 ### Code Syntax Highlighting
-There are two parts to code highlighting. First, Zeppelin uses the Ace Editor for its note paragraphs. Color style for this can be changed by setting theme on the editor instance. Second, Zeppelin's Markdown interpreter calls markdown4j to emit HTML, and such content may contain &lt;pre&gt;&lt;code&gt; tags that can be consumed by Highlight.js.
+There are two parts to code highlighting. First, Zeppelin uses the Ace Editor for its note paragraphs. Color style for this can be changed by setting theme on the editor instance. Second, Zeppelin's Markdown interpreter calls pegdown parser to emit HTML, and such content may contain &lt;pre&gt;&lt;code&gt; tags that can be consumed by Highlight.js.
 
 #### Theme on Ace Editor
 app/scripts/controllers/paragraph.js  
@@ -16,7 +16,7 @@ Call setTheme on the editor with the theme path/name.
 [List of themes on GitHub](https://github.com/ajaxorg/ace/tree/master/lib/ace/theme)
 
 #### Style for Markdown Code Blocks
-Highlight.js parses and converts &lt;pre&gt;&lt;code&gt; blocks from markdown4j into keywords and language syntax with proper styles. It also attempts to infer the best fitting language if it is not provided. The visual style can be changed by simply including the desired [stylesheet](https://github.com/components/highlightjs/tree/master/styles) into app/index.html. See the next section on build.
+Highlight.js parses and converts &lt;pre&gt;&lt;code&gt; blocks from pegdown parser into keywords and language syntax with proper styles. It also attempts to infer the best fitting language if it is not provided. The visual style can be changed by simply including the desired [stylesheet](https://github.com/components/highlightjs/tree/master/styles) into app/index.html. See the next section on build.
 
 Note that code block background color is overriden in app/styles/notebook.css (look for .paragraph .tableDisplay .hljs).
 
