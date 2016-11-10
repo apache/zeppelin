@@ -136,7 +136,9 @@ public class ElasticsearchInterpreter extends Interpreter {
 
       return processHelp(InterpreterResult.Code.ERROR, "Unknown command");
     } catch (Exception e) {
-      return new InterpreterResult(InterpreterResult.Code.ERROR, "Error : " + e.getMessage());
+      logger.error("Failed to interpret", e);
+      return new InterpreterResult(InterpreterResult.Code.ERROR,
+          "Error : " + e.getMessage());
     }
   }
 

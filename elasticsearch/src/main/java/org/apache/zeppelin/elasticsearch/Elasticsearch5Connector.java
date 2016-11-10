@@ -28,6 +28,7 @@ import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.rest.RestStatus;
+import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.transport.client.PreBuiltTransportClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -158,7 +159,10 @@ public class Elasticsearch5Connector extends ElasticsearchConnector {
       // So, try to parse as a JSON => if there is an error, consider the query a Lucene one
       try {
         final Map source = gson.fromJson(query, Map.class);
-        // reqBuilder.setQuery(QueryBuilders.wrapperQuery(query));
+        // 
+        SearchSourceBuilder sourceBuilder = SearchSourceBuilder.searchSource()
+            .query(QueryBuilders.wrapperQuery(query));
+        reqBuilder.setSource(sourceBuilder);
       } catch (JsonParseException e) {
         // This is not a JSON (or maybe not well formatted...)
         reqBuilder.setQuery(QueryBuilders.queryStringQuery(query).analyzeWildcard(true));
