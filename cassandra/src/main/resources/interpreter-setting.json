@@ -190,6 +190,9 @@
         "defaultValue": "true",
         "description": "Cassandra socket TCP no delay. Default = true"
       }
+    },
+    "editor": {
+      "editOnDblClick": false
     }
   }
 ]

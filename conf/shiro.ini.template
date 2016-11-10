@@ -45,6 +45,10 @@ user3 = password4, role2
 #ldapRealm.userDnTemplate = uid={0},ou=Users,dc=COMPANY,dc=COM
 #ldapRealm.contextFactory.authenticationMechanism = SIMPLE
 
+### A sample PAM configuration
+#pamRealm=org.apache.zeppelin.realm.PamRealm
+#pamRealm.service=sshd
+
 ### A sample for configuring ZeppelinHub Realm
 #zeppelinHubRealm = org.apache.zeppelin.realm.ZeppelinHubRealm
 ## Url of ZeppelinHub
@@ -78,5 +82,5 @@ admin = *
 #/api/interpreter/** = authc, roles[admin]
 #/api/configurations/** = authc, roles[admin]
 #/api/credential/** = authc, roles[admin]
-/** = anon
-#/** = authc
+#/** = anon
+/** = authc

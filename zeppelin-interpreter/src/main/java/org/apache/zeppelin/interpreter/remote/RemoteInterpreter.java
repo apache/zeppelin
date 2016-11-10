@@ -155,7 +155,7 @@ public class RemoteInterpreter extends Interpreter {
   }
 
   private Map<String, String> getEnvFromInterpreterProperty(Properties property) {
-    Map<String, String> env = new HashMap<String, String>();
+    Map<String, String> env = new HashMap<>();
     for (Object key : property.keySet()) {
       if (isEnvString((String) key)) {
         env.put((String) key, property.getProperty((String) key));

@@ -36,7 +36,8 @@
     <py4j.version>0.9.2</py4j.version>
     <python.test.exclude>
         **/PythonInterpreterWithPythonInstalledTest.java,
-        **/PythonInterpreterPandasSqlTest.java
+        **/PythonInterpreterPandasSqlTest.java,
+        **/PythonInterpreterMatplotlibTest.java
     </python.test.exclude>
   </properties>
 

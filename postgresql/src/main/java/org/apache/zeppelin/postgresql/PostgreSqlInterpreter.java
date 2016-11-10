@@ -324,7 +324,7 @@ public class PostgreSqlInterpreter extends Interpreter {
   @Override
   public List<InterpreterCompletion> completion(String buf, int cursor) {
 
-    List<CharSequence> candidates = new ArrayList<CharSequence>();
+    List<CharSequence> candidates = new ArrayList<>();
     if (sqlCompleter != null && sqlCompleter.complete(buf, cursor, candidates) >= 0) {
       List completion = Lists.transform(candidates, sequenceToStringTransformer);
       return completion;

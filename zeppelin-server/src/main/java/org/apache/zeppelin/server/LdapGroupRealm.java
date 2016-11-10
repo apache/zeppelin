@@ -56,7 +56,7 @@ public class LdapGroupRealm extends JndiLdapRealm {
                                          LdapContext ldapContext,
                                          String userDnTemplate) throws NamingException {
     try {
-      Set<String> roleNames = new LinkedHashSet<String>();
+      Set<String> roleNames = new LinkedHashSet<>();
 
       SearchControls searchCtls = new SearchControls();
       searchCtls.setSearchScope(SearchControls.SUBTREE_SCOPE);

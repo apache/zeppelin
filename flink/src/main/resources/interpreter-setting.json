@@ -18,7 +18,8 @@
       }
     },
     "editor": {
-      "language": "scala"
+      "language": "scala",
+      "editOnDblClick": false
     }
   }
 ]

@@ -65,7 +65,7 @@ public class RemoteInterpreterTest {
   @Before
   public void setUp() throws Exception {
     intpGroup = new InterpreterGroup();
-    env = new HashMap<String, String>();
+    env = new HashMap<>();
     env.put("ZEPPELIN_CLASSPATH", new File("./target/test-classes").getAbsolutePath());
   }
 
@@ -392,7 +392,7 @@ public class RemoteInterpreterTest {
     intpA.open();
 
     int concurrency = 3;
-    final List<String> results = new LinkedList<String>();
+    final List<String> results = new LinkedList<>();
 
     Scheduler scheduler = intpA.getScheduler();
     for (int i = 0; i < concurrency; i++) {
@@ -470,7 +470,7 @@ public class RemoteInterpreterTest {
 
     int concurrency = 4;
     final int timeToSleep = 1000;
-    final List<String> results = new LinkedList<String>();
+    final List<String> results = new LinkedList<>();
     long start = System.currentTimeMillis();
 
     Scheduler scheduler = intpA.getScheduler();

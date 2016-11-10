@@ -138,6 +138,8 @@
         });
       } else if (op === 'CONFIGURATIONS_INFO') {
         $rootScope.$broadcast('configurationsInfo', data);
+      } else if (op === 'INTERPRETER_SETTINGS') {
+        $rootScope.$broadcast('interpreterSettings', data);
       }
     });
 

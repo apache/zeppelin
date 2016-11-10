@@ -105,7 +105,7 @@ public class DevInterpreter extends Interpreter {
 
   @Override
   public List<InterpreterCompletion> completion(String buf, int cursor) {
-    return new LinkedList<InterpreterCompletion>();
+    return new LinkedList<>();
   }
 
   public InterpreterContext getLastInterpretContext() {

@@ -402,12 +402,11 @@
         var intpInfo = el[i];
         for (var key in intpInfo) {
           properties[key] = {
-            value: intpInfo[key],
+            value: intpInfo[key].defaultValue,
             description: intpInfo[key].description
           };
         }
       }
-
       $scope.newInterpreterSetting.properties = properties;
     };
 

@@ -17,8 +17,6 @@
 
 package org.apache.zeppelin.interpreter;
 
-import com.google.common.base.Preconditions;
-
 import java.util.List;
 
 /**
@@ -86,9 +84,12 @@ public class InterpreterOption {
   }
 
   public InterpreterOption(boolean remote, String perUser, String perNote) {
-    Preconditions.checkNotNull(remote);
-    Preconditions.checkNotNull(perUser);
-    Preconditions.checkNotNull(perNote);
+    if (perUser == null) {
+      throw new NullPointerException("perUser can not be null.");
+    }
+    if (perNote == null) {
+      throw new NullPointerException("perNote can not be null.");
+    }
 
     this.remote = remote;
     this.perUser = perUser;

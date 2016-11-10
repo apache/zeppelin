@@ -17,6 +17,7 @@
 
 package org.apache.zeppelin.conf;
 
+import java.io.File;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -26,6 +27,7 @@ import java.util.Map;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.configuration.tree.ConfigurationNode;
+import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.notebook.repo.VFSNotebookRepo;
 import org.apache.zeppelin.util.Util;
 import org.slf4j.Logger;
@@ -343,7 +345,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
   public String getNotebookDir() {
     return getString(ConfVars.ZEPPELIN_NOTEBOOK_DIR);
   }
-
+  
   public String getUser() {
     return getString(ConfVars.ZEPPELIN_NOTEBOOK_S3_USER);
   }
@@ -401,7 +403,8 @@ public class ZeppelinConfiguration extends XMLConfiguration {
   }
 
   public String getShiroPath() {
-    return getRelativeDir(String.format("%s/shiro.ini", getConfDir()));
+    String shiroPath = getRelativeDir(String.format("%s/shiro.ini", getConfDir()));
+    return new File(shiroPath).exists() ? shiroPath : StringUtils.EMPTY;
   }
 
   public String getInterpreterRemoteRunnerPath() {
@@ -426,6 +429,10 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 
   public boolean isWindowsPath(String path){
     return path.matches("^[A-Za-z]:\\\\.*");
+  }
+  
+  public boolean isAnonymousAllowed() {
+    return getBoolean(ConfVars.ZEPPELIN_ANONYMOUS_ALLOWED);
   }
 
   public String getConfDir() {

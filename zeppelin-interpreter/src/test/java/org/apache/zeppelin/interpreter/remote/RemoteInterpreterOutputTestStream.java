@@ -50,7 +50,7 @@ public class RemoteInterpreterOutputTestStream implements RemoteInterpreterProce
     intpGroup = new InterpreterGroup();
     intpGroup.put("note", new LinkedList<Interpreter>());
 
-    env = new HashMap<String, String>();
+    env = new HashMap<>();
     env.put("ZEPPELIN_CLASSPATH", new File("./target/test-classes").getAbsolutePath());
   }
 

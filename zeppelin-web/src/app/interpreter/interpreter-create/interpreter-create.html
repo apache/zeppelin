@@ -275,10 +275,10 @@ limitations under the License.
               <th>description</th>
               <th>action</th>
             </tr>
-            <tr ng-repeat="(key, value) in newInterpreterSetting.properties">
+            <tr ng-repeat="key in newInterpreterSetting.properties | sortByKey">
               <td>{{key}}</td>
-              <td><textarea msd-elastic ng-model="value.value"></textarea></td>
-              <td>{{value.description}}</td>
+              <td><textarea msd-elastic ng-model="newInterpreterSetting.properties[key].value"></textarea></td>
+              <td>{{newInterpreterSetting.properties[key].description}}</td>
               <td>
                 <button class="btn btn-default btn-sm fa fa-remove" ng-click="removeInterpreterProperty(key)">
                 </button>

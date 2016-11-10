@@ -59,7 +59,7 @@ public class RemoteAngularObjectTest implements AngularObjectRegistryListener {
     intpGroup = new InterpreterGroup("intpId");
     localRegistry = new RemoteAngularObjectRegistry("intpId", this, intpGroup);
     intpGroup.setAngularObjectRegistry(localRegistry);
-    env = new HashMap<String, String>();
+    env = new HashMap<>();
     env.put("ZEPPELIN_CLASSPATH", new File("./target/test-classes").getAbsolutePath());
 
     Properties p = new Properties();

@@ -55,7 +55,7 @@ public class DistributedResourcePoolTest {
 
   @Before
   public void setUp() throws Exception {
-    env = new HashMap<String, String>();
+    env = new HashMap<>();
     env.put("ZEPPELIN_CLASSPATH", new File("./target/test-classes").getAbsolutePath());
 
     Properties p = new Properties();

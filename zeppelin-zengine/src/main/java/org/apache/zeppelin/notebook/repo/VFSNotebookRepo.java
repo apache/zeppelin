@@ -127,7 +127,7 @@ public class VFSNotebookRepo implements NotebookRepo {
 
     FileObject[] children = rootDir.getChildren();
 
-    List<NoteInfo> infos = new LinkedList<NoteInfo>();
+    List<NoteInfo> infos = new LinkedList<>();
     for (FileObject f : children) {
       String fileName = f.getName().getBaseName();
       if (f.isHidden()
