@@ -113,25 +113,25 @@ public class ElasticsearchInterpreter extends Interpreter {
 
     final String method = items[0];
     final String url = items[1];
-    final String data = items.length > 2 ? items[2].trim() : null;
+    final String query = items.length > 2 ? items[2].trim() : null;
     final String[] urlItems = StringUtils.split(url.trim(), "/");
 
-    return handleElasticsearchCommands(method, urlItems, data, currentResultSize);
+    return handleElasticsearchCommands(method, urlItems, query, currentResultSize);
   }
 
   private InterpreterResult handleElasticsearchCommands(String method, String[] urlItems,
-                                                        String data, int currentResultSize) {
+                                                        String query, int currentResultSize) {
     try {
       if ("get".equalsIgnoreCase(method)) {
         return processGet(urlItems);
       } else if ("count".equalsIgnoreCase(method)) {
-        return processCount(urlItems, data);
+        return processCount(urlItems, query);
       } else if ("index".equalsIgnoreCase(method)) {
-        return processIndex(urlItems, data);
+        return processIndex(urlItems, query);
       } else if ("delete".equalsIgnoreCase(method)) {
         return processDelete(urlItems);
       } else if ("search".equalsIgnoreCase(method)) {
-        return processSearch(urlItems, data, currentResultSize);
+        return processSearch(urlItems, query, currentResultSize);
       }
 
       return processHelp(InterpreterResult.Code.ERROR, "Unknown command");

@@ -86,7 +86,7 @@ public class Elasticsearch5InterpreterTest {
         .admin()
         .cluster()
         .prepareHealth().
-        setWaitForGreenStatus().get(new TimeValue(5000));
+        setWaitForGreenStatus().get();
 
     elsClient = elsNode.client();
     XContentBuilder b1 = jsonBuilder()
@@ -112,6 +112,7 @@ public class Elasticsearch5InterpreterTest {
           .endObject();
 
       elsClient.prepareIndex("logs", "http", "" + i)
+          .setRefreshPolicy(WriteRequest.RefreshPolicy.IMMEDIATE)
           .setSource(b2)
           .get();
     }

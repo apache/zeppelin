@@ -75,6 +75,41 @@ public class Elasticsearch5Connector extends ElasticsearchConnector {
     }
   }
 
+  /**
+   * Execute a "count" request.
+   *
+   * @param urlItems Items of the URL
+   * @param query    May contains the JSON of the request
+   * @return Result of the count request, it contains the total hits
+   */
+  @Override
+  public String executeCountQuery(String[] urlItems, String query) {
+    if (urlItems.length > 2) {
+      throw new RuntimeException(
+          "Bad URL (it should be /index1,index2,.../type1,type2,...) " + urlItems);
+    }
+    SearchRequestBuilder reqBuilder = null;
+
+    if (urlItems.length >= 1) {
+      reqBuilder = client.prepareSearch(StringUtils.split(urlItems[0], ","));
+    } else {
+      reqBuilder = client.prepareSearch();
+    }
+
+    if (urlItems.length > 1) {
+      reqBuilder.setTypes(StringUtils.split(urlItems[1], ","));
+    }
+
+    reqBuilder.setSize(0);
+
+    if (!StringUtils.isEmpty(query)) {
+      reqBuilder.setQuery(QueryBuilders.wrapperQuery(query));
+    }
+
+    final SearchResponse response = reqBuilder.get();
+    return "" + response.getHits().getTotalHits();
+  }
+
   @Override
   public void release() {
     IOUtils.closeQuietly(client);
@@ -123,7 +158,7 @@ public class Elasticsearch5Connector extends ElasticsearchConnector {
       // So, try to parse as a JSON => if there is an error, consider the query a Lucene one
       try {
         final Map source = gson.fromJson(query, Map.class);
-        // reqBuilder.setExtraSource(source);
+        // reqBuilder.setQuery(QueryBuilders.wrapperQuery(query));
       } catch (JsonParseException e) {
         // This is not a JSON (or maybe not well formatted...)
         reqBuilder.setQuery(QueryBuilders.queryStringQuery(query).analyzeWildcard(true));
