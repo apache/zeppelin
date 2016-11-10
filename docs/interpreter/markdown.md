@@ -33,6 +33,16 @@ In Zeppelin, Markdown interpreter is enabled by default and uses the [pegdown](h
 
 <img src="../assets/themes/zeppelin/img/docs-img/markdown-interpreter-setting.png" width="60%" />
 
+## Example
+
+The following example demonstrates the basic usage of Markdown in a Zeppelin notebook.
+
+<img src="../assets/themes/zeppelin/img/docs-img/markdown-example.png" width="70%" />
+
+## Mathematical expression
+
+Markdown interpreter leverages %html display system internally. That means you can mix mathematical expressions with markdown syntax. For more information, please see [Mathematical Expression](../displaysystem/basicdisplaysystem.html#mathematical-expressions) section.
+
 ## Configuration
 <table class="table-configuration">
   <tr>
@@ -47,15 +57,6 @@ In Zeppelin, Markdown interpreter is enabled by default and uses the [pegdown](h
   </tr>
 </table>
 
-## Example
-
-The following example demonstrates the basic usage of Markdown in a Zeppelin notebook.
-
-<img src="../assets/themes/zeppelin/img/docs-img/markdown-example.png" width="70%" />
-
-## Mathematical expression
-
-Markdown interpreter leverages %html display system internally. That means you can mix mathematical expressions with markdown syntax. For more information, please see [Mathematical Expression](../displaysystem/basicdisplaysystem.html#mathematical-expressions) section.
 
 ### Pegdown Parser
 
@@ -69,5 +70,7 @@ Markdown interpreter leverages %html display system internally. That means you c
 
 ### Markdown4j Parser
 
-Keeps for the backward compatibility
+Since pegdown parser is more accurate and provides much more markdown syntax  
+`markdown4j` option might be removed later. But keep this parser for the backward compatibility.
+
 
