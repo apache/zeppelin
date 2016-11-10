@@ -258,8 +258,10 @@ public class NotebookRestApi {
   @ZeppelinApi
   public Response getNoteList() throws IOException {
     AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
+    HashSet<String> userAndRoles = SecurityUtils.getRoles();
+    userAndRoles.add(subject.getUser());
     List<Map<String, String>> notesInfo = notebookServer.generateNotesInfo(false, subject,
-        SecurityUtils.getRoles());
+        userAndRoles);
     return new JsonResponse<>(Status.OK, "", notesInfo).build();
   }
 

@@ -24,6 +24,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -32,6 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
@@ -53,6 +55,10 @@ public class NotebookAuthorization {
    * { "note1": { "owners": ["u1"], "readers": ["u1", "u2"], "writers": ["u1"] },  "note2": ... } }
    */
   private static Map<String, Map<String, Set<String>>> authInfo = new HashMap<>();
+  /*
+   * contains roles for each user
+   */
+  private static Map<String, Set<String>> userRoles = new HashMap<>();
   private static ZeppelinConfiguration conf;
   private static Gson gson;
   private static String filePath;
@@ -108,7 +114,24 @@ public class NotebookAuthorization {
             NotebookAuthorizationInfoSaving.class);
     authInfo = info.authInfo;
   }
-
+  
+  public void setRoles(String user, Set<String> roles) {
+    if (StringUtils.isBlank(user)) {
+      LOG.warn("Setting roles for empty user");
+      return;
+    }
+    roles = validateUser(roles);
+    userRoles.put(user, roles);
+  }
+  
+  public Set<String> getRoles(String user) {
+    Set<String> roles = Sets.newHashSet();
+    if (userRoles.containsKey(user)) {
+      roles.addAll(userRoles.get(user));
+    }
+    return roles;
+  }
+  
   private void saveToFile() {
     String jsonString;
 
