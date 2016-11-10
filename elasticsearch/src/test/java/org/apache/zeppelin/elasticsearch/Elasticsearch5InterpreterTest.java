@@ -74,16 +74,9 @@ public class Elasticsearch5InterpreterTest {
 
     elsNode = new PluginNode(Settings.builder()
         .put("cluster.name", ELS_CLUSTER_NAME)
-        .put("node.name", "zeppelin-elasticsearch-test-node")
-        .put("node.master", true)
-        .put("node.data", true)
-        .put("node.ingest", true)
         .put("network.host", ELS_HOST)
-        .put("http.enabled", true)
         .put("http.port", ELS_HTTP_PORT)
         .put("transport.tcp.port", ELS_TRANSPORT_PORT)
-        .put("transport.type", "local")
-        .put("discovery.type", "local")
         .put("path.home", ELS_PATH)
         .build()
     ).start();
@@ -93,7 +86,7 @@ public class Elasticsearch5InterpreterTest {
         .admin()
         .cluster()
         .prepareHealth().
-        setWaitForYellowStatus().get(new TimeValue(5000));
+        setWaitForGreenStatus().get(new TimeValue(5000));
 
     elsClient = elsNode.client();
     XContentBuilder b1 = jsonBuilder()
