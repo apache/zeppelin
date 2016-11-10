@@ -63,9 +63,12 @@ You can build Zeppelin with following maven command:
 mvn clean package -DskipTests [Options]
 ```
 
-If you're unsure which option you use, use following option which is used to create official binary package.
+If you're unsure about the options, use the same commands that creates official binary package.
 
 ```bash
+# update all pom.xml to use scala 2.11
+./dev/change_scala_version.sh 2.11
+# build zeppelin with all interpreters and include latest version of Apache spark support for local mode.
 mvn clean package -DskipTests -Pspark-2.0 -Phadoop-2.4 -Pyarn -Ppyspark -Psparkr -Pr -Pscala-2.11
 ```
 
