@@ -50,7 +50,9 @@ enum RemoteInterpreterEventType {
   OUTPUT_UPDATE = 9,
   ANGULAR_REGISTRY_PUSH = 10,
   APP_STATUS_UPDATE = 11,
+  REMOTE_ZEPPELIN_SERVER_CONTROL = 12
 }
+
 
 struct RemoteInterpreterEvent {
   1: RemoteInterpreterEventType type,
@@ -60,6 +62,37 @@ struct RemoteInterpreterEvent {
 struct RemoteApplicationResult {
   1: bool success,
   2: string msg
+}
+
+/*
+  cloverhearts
+  remote interpreter process --> request --> zeppelin server
+ */
+enum RemoteZeppelinServerControlEvent {
+  REQ_RESOURCE_PARAGRAPH_RUN_CONTEXT = 1,
+  RES_RESOURCE_PARAGRAPH_RUN_CONTEXT = 2
+}
+
+enum RemoteZeppelinServerResourceType {
+  RESOURCE_PARAGRAPH_RUN_CONTEXT = 1
+}
+
+struct ZeppelinServerResourceParagraphRunner {
+  1: string noteId,
+  2: string paragraphId,
+  3: string runners
+}
+
+struct ZeppelinServerResource {
+  1: RemoteZeppelinServerResourceType type,
+  2: string eventOwnerKey,
+  3: string msg
+}
+
+struct RemoteZeppelinServerController {
+  1: RemoteZeppelinServerControlEvent type,
+  2: string eventOwnerKey
+  3: string msg
 }
 
 /*
@@ -109,4 +142,6 @@ service RemoteInterpreterService {
   RemoteApplicationResult loadApplication(1: string applicationInstanceId, 2: string packageInfo, 3: string noteId, 4: string paragraphId);
   RemoteApplicationResult unloadApplication(1: string applicationInstanceId);
   RemoteApplicationResult runApplication(1: string applicationInstanceId);
+
+  void remoteZeppelinServerControlFeedback(1: RemoteZeppelinServerController response);
 }

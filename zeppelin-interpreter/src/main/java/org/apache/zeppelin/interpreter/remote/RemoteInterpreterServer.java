@@ -336,6 +336,12 @@ public class RemoteInterpreterServer
         context.getGui());
   }
 
+  @Override
+  public void remoteZeppelinServerControlFeedback(
+      RemoteZeppelinServerController response) throws TException {
+    logger.info("clover remote zeppelin server controller feedback {}", response);
+    logger.info("clover remote zeppelin server conteroller body {}", response.getMsg());
+  }
 
   class InterpretJobListener implements JobListener {
 
@@ -585,6 +591,10 @@ public class RemoteInterpreterServer
 
     @Override
     public void run() {
+      ZeppelinServerResourceParagraphRunner test = new ZeppelinServerResourceParagraphRunner();
+      test.setNoteId("TEST NOTE");
+      test.setParagraphId("TEST PARAGRAPH");
+      server.eventClient.getZeppelinServerNoteRunner("IamOWNER", test);
       server.eventClient.run(this);
     }
   }

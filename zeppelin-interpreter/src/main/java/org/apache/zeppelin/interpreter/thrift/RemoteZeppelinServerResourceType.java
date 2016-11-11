@@ -28,23 +28,12 @@ import java.util.Map;
 import java.util.HashMap;
 import org.apache.thrift.TEnum;
 
-public enum RemoteInterpreterEventType implements org.apache.thrift.TEnum {
-  NO_OP(1),
-  ANGULAR_OBJECT_ADD(2),
-  ANGULAR_OBJECT_UPDATE(3),
-  ANGULAR_OBJECT_REMOVE(4),
-  RUN_INTERPRETER_CONTEXT_RUNNER(5),
-  RESOURCE_POOL_GET_ALL(6),
-  RESOURCE_GET(7),
-  OUTPUT_APPEND(8),
-  OUTPUT_UPDATE(9),
-  ANGULAR_REGISTRY_PUSH(10),
-  APP_STATUS_UPDATE(11),
-  REMOTE_ZEPPELIN_SERVER_CONTROL(12);
+public enum RemoteZeppelinServerResourceType implements org.apache.thrift.TEnum {
+  RESOURCE_PARAGRAPH_RUN_CONTEXT(1);
 
   private final int value;
 
-  private RemoteInterpreterEventType(int value) {
+  private RemoteZeppelinServerResourceType(int value) {
     this.value = value;
   }
 
@@ -59,32 +48,10 @@ public enum RemoteInterpreterEventType implements org.apache.thrift.TEnum {
    * Find a the enum type by its integer value, as defined in the Thrift IDL.
    * @return null if the value is not found.
    */
-  public static RemoteInterpreterEventType findByValue(int value) { 
+  public static RemoteZeppelinServerResourceType findByValue(int value) { 
     switch (value) {
       case 1:
-        return NO_OP;
-      case 2:
-        return ANGULAR_OBJECT_ADD;
-      case 3:
-        return ANGULAR_OBJECT_UPDATE;
-      case 4:
-        return ANGULAR_OBJECT_REMOVE;
-      case 5:
-        return RUN_INTERPRETER_CONTEXT_RUNNER;
-      case 6:
-        return RESOURCE_POOL_GET_ALL;
-      case 7:
-        return RESOURCE_GET;
-      case 8:
-        return OUTPUT_APPEND;
-      case 9:
-        return OUTPUT_UPDATE;
-      case 10:
-        return ANGULAR_REGISTRY_PUSH;
-      case 11:
-        return APP_STATUS_UPDATE;
-      case 12:
-        return REMOTE_ZEPPELIN_SERVER_CONTROL;
+        return RESOURCE_PARAGRAPH_RUN_CONTEXT;
       default:
         return null;
     }
