@@ -266,6 +266,13 @@ public class JDBCInterpreter extends Interpreter {
     return jdbcUserConfigurations;
   }
 
+  private void closeDBPool(String user, String propertyKey) throws SQLException {
+    PoolingDriver poolingDriver = getJDBCConfiguration(user).removeDBDriverPool(propertyKey);
+    if (poolingDriver != null) {
+      poolingDriver.closePool(propertyKey + user);
+    }
+  }
+
   public void setUserProperty(String propertyKey, InterpreterContext interpreterContext)
       throws SQLException {
 
@@ -285,8 +292,7 @@ public class JDBCInterpreter extends Interpreter {
     if (usernamePassword != null) {
       jdbcUserConfigurations.setUserProperty(propertyKey, usernamePassword);
     } else {
-      PoolingDriver poolingDriver = jdbcUserConfigurations.removeDBDriverPool(propertyKey);
-      poolingDriver.closePool(propertyKey + user);
+      closeDBPool(user, propertyKey);
     }
   }
 
@@ -303,14 +309,14 @@ public class JDBCInterpreter extends Interpreter {
     Class.forName(properties.getProperty(DRIVER_KEY));
     PoolingDriver driver = new PoolingDriver();
     driver.registerPool(propertyKey + user, connectionPool);
-    jdbcUserConfigurationsMap.get(user).saveDBDriverPool(propertyKey, driver);
+    getJDBCConfiguration(user).saveDBDriverPool(propertyKey, driver);
   }
 
   private Connection getConnectionFromPool(String url, String user, String propertyKey,
       Properties properties) throws SQLException, ClassNotFoundException {
     String jdbcDriver = getJDBCDriverName(user, propertyKey);
 
-    if (!jdbcUserConfigurationsMap.get(user).isConnectionInDBDriverPool(propertyKey)) {
+    if (!getJDBCConfiguration(user).isConnectionInDBDriverPool(propertyKey)) {
       createConnectionPool(url, user, propertyKey, properties);
     }
     return DriverManager.getConnection(jdbcDriver);
@@ -385,15 +391,15 @@ public class JDBCInterpreter extends Interpreter {
 
   private InterpreterResult executeSql(String propertyKey, String sql,
       InterpreterContext interpreterContext) {
-    String paragraphId = interpreterContext.getParagraphId();
-    String user = interpreterContext.getAuthenticationInfo().getUser();
     Connection connection;
     Statement statement;
     ResultSet resultSet = null;
-    JDBCUserConfigurations jdbcUserConfigurations = jdbcUserConfigurationsMap.get(user);
+    String paragraphId = interpreterContext.getParagraphId();
+    String user = interpreterContext.getAuthenticationInfo().getUser();
 
     try {
       connection = getConnection(propertyKey, interpreterContext);
+
       if (connection == null) {
         return new InterpreterResult(Code.ERROR, "Prefix not found.");
       }
@@ -414,7 +420,7 @@ public class JDBCInterpreter extends Interpreter {
       }
 
       try {
-        jdbcUserConfigurations.saveStatement(paragraphId, statement);
+        getJDBCConfiguration(user).saveStatement(paragraphId, statement);
 
         boolean isResultSetAvailable = statement.execute(sql);
 
@@ -472,7 +478,7 @@ public class JDBCInterpreter extends Interpreter {
             connection.close();
           } catch (SQLException e) { /*ignored*/ }
         }
-        jdbcUserConfigurations.removeStatement(paragraphId);
+        getJDBCConfiguration(user).removeStatement(paragraphId);
       }
       return new InterpreterResult(Code.SUCCESS, msg.toString());
 
@@ -484,8 +490,7 @@ public class JDBCInterpreter extends Interpreter {
       String errorMsg = new String(baos.toByteArray(), StandardCharsets.UTF_8);
 
       try {
-        PoolingDriver poolingDriver = jdbcUserConfigurations.removeDBDriverPool(propertyKey);
-        poolingDriver.closePool(propertyKey + user);
+        closeDBPool(user, propertyKey);
       } catch (SQLException e1) {
         e1.printStackTrace();
       }
