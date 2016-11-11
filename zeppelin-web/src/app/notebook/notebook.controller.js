@@ -291,6 +291,13 @@
       $scope.saveNote();
     });
 
+    /** Set email for this note **/
+    $scope.setEmail = function(email) {
+      console.log(email);
+      $scope.note.config.email = email;
+      $scope.setConfig();
+    };
+
     $scope.setLookAndFeel = function(looknfeel) {
       $scope.note.config.looknfeel = looknfeel;
       $scope.setConfig();

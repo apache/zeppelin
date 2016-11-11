@@ -68,6 +68,10 @@ public abstract class Job {
     public boolean isPending() {
       return this == PENDING;
     }
+    
+    public boolean isError() {
+      return this == ERROR;
+    }
   }
 
   private String jobName;
@@ -166,7 +170,7 @@ public abstract class Job {
   public boolean isRunning() {
     return this.status.isRunning();
   }
-
+  
   public void run() {
     JobProgressPoller progressUpdator = null;
     try {

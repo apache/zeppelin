@@ -591,7 +591,17 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_ALLOWED_ORIGINS("zeppelin.server.allowed.origins", "*"),
     ZEPPELIN_ANONYMOUS_ALLOWED("zeppelin.anonymous.allowed", true),
     ZEPPELIN_CREDENTIALS_PERSIST("zeppelin.credentials.persist", true),
-    ZEPPELIN_WEBSOCKET_MAX_TEXT_MESSAGE_SIZE("zeppelin.websocket.max.text.message.size", "1024000");
+    ZEPPELIN_WEBSOCKET_MAX_TEXT_MESSAGE_SIZE("zeppelin.websocket.max.text.message.size", "1024000"),
+    ZEPPELIN_SMTP_USER("zeppelin.mail.smtp.user", "victor.garcia@beeva.com"),
+    ZEPPELIN_SMTP_PASS("zeppelin.mail.smtp.password", "crucero1989"),
+    ZEPPELIN_SMTP_HOST("zeppelin.mail.smtp.host", "smtp.googlemail.com"),
+    ZEPPELIN_SMTP_PROTOCOL("zeppelin.mail.smtp.protocol", "smtp"),
+    ZEPPELIN_SMTP_PORT("zeppelin.mail.smtp.port", "465"),
+    ZEPPELIN_SMTP_STARTTLS("zeppelin.mail.smtp.starttls.enable", "true"),
+    ZEPPELIN_SMTP_AUTH("zeppelin.mail.smtp.auth", "true"),
+    ZEPPELIN_SMTP_SOCKETFACTORY("zeppelin.mail.smtp.socketFactory.port", "465"),
+    ZEPPELIN_SMTP_SOCKETFACTORY_CLASS("zeppelin.mail.smtp.socketFactory.class", 
+        "javax.net.ssl.SSLSocketFactory");
 
     private String varName;
     @SuppressWarnings("rawtypes")

@@ -73,7 +73,7 @@ public class Note implements Serializable, ParagraphJobListener {
     delayedPersistThreadPool.setRemoveOnCancelPolicy(true);
   }
 
-  final List<Paragraph> paragraphs = new LinkedList<>();
+  public final List<Paragraph> paragraphs = new LinkedList<>();
 
   private String name = "";
   private String id;
