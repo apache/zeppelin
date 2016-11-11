@@ -50,7 +50,7 @@ JDBC interpreter lets you create a JDBC connection to any data sources seamlessl
     </li>
     <li style="padding-bottom: 5px; list-style: circle">
       <a href="https://hive.apache.org/" target="_blank">Apache Hive</a> - 
-      <a href="https://cwiki.apache.org/confluence/display/Hive/HiveClient#HiveClient-JDBC" target="_blank">JDBC Driver</a>
+      <a href="https://cwiki.apache.org/confluence/display/Hive/HiveServer2+Clients#HiveServer2Clients-JDBC" target="_blank">JDBC Driver</a>
     </li>
     <li style="padding-bottom: 5px; list-style: circle">
       <a href="https://phoenix.apache.org/" target="_blank">Apache Phoenix</a> itself is a JDBC driver
@@ -125,7 +125,7 @@ The last step is **Dependency Setting**. Since Zeppelin only includes `PostgreSQ
 
 <img src="../assets/themes/zeppelin/img/docs-img/edit_dependencies.png" width="600px" />
 
-That's it. You can find more JDBC connection setting examples([Mysql](#mysql), [Apache Hive](#apache-hive), [Apache Phoenix](#apache-phoenix), and [Apache Tajo](#apache-tajo)) in [this section](#examples).
+That's it. You can find more JDBC connection setting examples([Mysql](#mysql), [MariaDB](#mariadb), [Redshift](#redshift), [Apache Hive](#apache-hive), [Apache Phoenix](#apache-phoenix), and [Apache Tajo](#apache-tajo)) in [this section](#examples).
 
 ## More properties
 There are more JDBC interpreter properties you can specify like below.
@@ -233,6 +233,8 @@ Here are some examples you can refer to. Including the below connectors, you can
   </tr>
 </table>
 
+[Mysql JDBC Driver Docs](https://dev.mysql.com/downloads/connector/j/)
+
 ##### Dependencies
 <table class="table-configuration">
   <tr>
@@ -244,6 +246,8 @@ Here are some examples you can refer to. Including the below connectors, you can
     <td></td>
   </tr>
 </table>
+
+[Maven Repository: mysql:mysql-connector-java](https://mvnrepository.com/artifact/mysql/mysql-connector-java)
 
 ### MariaDB
 
@@ -272,6 +276,8 @@ Here are some examples you can refer to. Including the below connectors, you can
     <td>mariadb_password</td>
   </tr>
 </table>
+
+[MariaDB JDBC Driver Docs](https://mariadb.com/kb/en/mariadb/about-mariadb-connector-j/)
 
 ##### Dependencies
 <table class="table-configuration">
@@ -359,6 +365,8 @@ Here are some examples you can refer to. Including the below connectors, you can
   </tr>
 </table>
 
+[Apache Hive JDBC Driver Docs](https://cwiki.apache.org/confluence/display/Hive/HiveServer2+Clients#HiveServer2Clients-JDBC)
+
 ##### Dependencies
 <table class="table-configuration">
   <tr>
@@ -374,6 +382,8 @@ Here are some examples you can refer to. Including the below connectors, you can
     <td></td>
   </tr>
 </table>
+
+[Maven Repository : org.apache.hive:hive-jdbc](https://mvnrepository.com/artifact/org.apache.hive/hive-jdbc)
 
 ### Apache Phoenix
 
@@ -423,6 +433,8 @@ Use the appropriate `default.driver`, `default.url`, and the dependency artifact
     <td></td>
   </tr>
 </table>
+
+[Maven Repository: org.apache.phoenix:phoenix-core](https://mvnrepository.com/artifact/org.apache.phoenix/phoenix-core)
 
 #### Thin client connection
 
@@ -474,6 +486,8 @@ Before Adding one of the below dependencies, check the Phoenix version first.
   </tr>
 </table>
 
+[Maven Repository: org.apache.phoenix:phoenix-queryserver-client](https://mvnrepository.com/artifact/org.apache.phoenix/phoenix-queryserver-client)
+
 ### Apache Tajo
 
 <img src="../assets/themes/zeppelin/img/docs-img/tajo_setting.png" width="600px" />
@@ -494,6 +508,8 @@ Before Adding one of the below dependencies, check the Phoenix version first.
   </tr>
 </table>
 
+[Apache Tajo JDBC Driver Docs](https://tajo.apache.org/docs/current/jdbc_driver.html)
+
 ##### Dependencies
 <table class="table-configuration">
   <tr>
@@ -505,6 +521,8 @@ Before Adding one of the below dependencies, check the Phoenix version first.
     <td></td>
   </tr>
 </table>
+
+[Maven Repository: org.apache.tajo:tajo-jdbc](https://mvnrepository.com/artifact/org.apache.tajo/tajo-jdbc)
 
 ## Bug reporting
 If you find a bug using JDBC interpreter, please create a [JIRA](https://issues.apache.org/jira/browse/ZEPPELIN) ticket.
