@@ -245,6 +245,92 @@ Here are some examples you can refer to. Including the below connectors, you can
   </tr>
 </table>
 
+### MariaDB
+
+<img src="../assets/themes/zeppelin/img/docs-img/mariadb_setting.png" width="600px" />
+
+##### Properties
+<table class="table-configuration">
+  <tr>
+    <th>Name</th>
+    <th>Value</th>
+  </tr>
+  <tr>
+    <td>default.driver</td>
+    <td>org.mariadb.jdbc.Driver</td>
+  </tr>
+  <tr>
+    <td>default.url</td>
+    <td>jdbc:mariadb://localhost:3306</td>
+  </tr>
+  <tr>
+    <td>default.user</td>
+    <td>mariadb_user</td>
+  </tr>
+  <tr>
+    <td>default.password</td>
+    <td>mariadb_password</td>
+  </tr>
+</table>
+
+##### Dependencies
+<table class="table-configuration">
+  <tr>
+    <th>Artifact</th>
+    <th>Excludes</th>
+  </tr>
+  <tr>
+    <td>org.mariadb.jdbc:mariadb-java-client:1.5.4</td>
+    <td></td>
+  </tr>
+</table>
+
+[Maven Repository: org.mariadb.jdbc:mariadb-java-client](https://mvnrepository.com/artifact/org.mariadb.jdbc/mariadb-java-client)
+
+### Redshift
+
+<img src="../assets/themes/zeppelin/img/docs-img/redshift_setting.png" width="600px" />
+
+##### Properties
+<table class="table-configuration">
+  <tr>
+    <th>Name</th>
+    <th>Value</th>
+  </tr>
+  <tr>
+    <td>default.driver</td>
+    <td>com.amazon.redshift.jdbc42.Driver</td>
+  </tr>
+  <tr>
+    <td>default.url</td>
+    <td>jdbc:redshift://your-redshift-instance-address.redshift.amazonaws.com:5439/your-database</td>
+  </tr>
+  <tr>
+    <td>default.user</td>
+    <td>redshift_user</td>
+  </tr>
+  <tr>
+    <td>default.password</td>
+    <td>redshift_password</td>
+  </tr>
+</table>
+
+[AWS Redshift JDBC Driver Docs](http://docs.aws.amazon.com/redshift/latest/mgmt/configure-jdbc-connection.html)
+
+##### Dependencies
+<table class="table-configuration">
+  <tr>
+    <th>Artifact</th>
+    <th>Excludes</th>
+  </tr>
+  <tr>
+    <td>com.amazonaws:aws-java-sdk-redshift:1.11.51</td>
+    <td></td>
+  </tr>
+</table>
+
+[Maven Repository: com.amazonaws:aws-java-sdk-redshift](https://mvnrepository.com/artifact/com.amazonaws/aws-java-sdk-redshift)
+
 ### Apache Hive 
 
 <img src="../assets/themes/zeppelin/img/docs-img/hive_setting.png" width="600px" />
