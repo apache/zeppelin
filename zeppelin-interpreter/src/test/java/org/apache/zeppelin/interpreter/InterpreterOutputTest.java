@@ -115,6 +115,13 @@ public class InterpreterOutputTest implements InterpreterOutputListener {
     assertEquals(InterpreterResult.Type.HTML, out.getType());
   }
 
+  @Test
+  public void testMagicData() throws IOException {
+    out.write("%table col1\tcol2\n%html  <h3> This is a hack </h3>\t234\n".getBytes());
+    assertEquals(InterpreterResult.Type.TABLE, out.getType());
+    assertEquals("col1\tcol2\n%html  <h3> This is a hack </h3>\t234\n", new String(out.toByteArray()));
+  }
+
   @Override
   public void onAppend(InterpreterOutput out, byte[] line) {
     numAppendEvent++;

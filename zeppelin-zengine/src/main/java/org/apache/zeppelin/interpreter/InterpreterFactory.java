@@ -238,7 +238,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
       interpreterInfo =
           new InterpreterInfo(r.getClassName(), r.getName(), r.isDefaultInterpreter(),
               r.getEditor());
-      add(r.getGroup(), interpreterInfo, r.getProperties(), r.getPath());
+      add(r.getGroup(), interpreterInfo, r.getProperties(), defaultOption, r.getPath());
     }
 
     for (String settingId : interpreterSettingsRef.keySet()) {
@@ -350,9 +350,11 @@ public class InterpreterFactory implements InterpreterGroupFactory {
       InterpreterInfo interpreterInfo =
           new InterpreterInfo(registeredInterpreter.getClassName(), registeredInterpreter.getName(),
               registeredInterpreter.isDefaultInterpreter(), registeredInterpreter.getEditor());
-
+      // use defaultOption if it is not specified in interpreter-setting.json
+      InterpreterOption option = registeredInterpreter.getOption() == null ? defaultOption :
+          registeredInterpreter.getOption();
       add(registeredInterpreter.getGroup(), interpreterInfo, registeredInterpreter.getProperties(),
-          absolutePath);
+          option, absolutePath);
     }
 
   }
@@ -617,12 +619,11 @@ public class InterpreterFactory implements InterpreterGroupFactory {
   }
 
   private InterpreterSetting add(String group, InterpreterInfo interpreterInfo,
-      Map<String, InterpreterProperty> interpreterProperties, String path)
+      Map<String, InterpreterProperty> interpreterProperties, InterpreterOption option, String path)
       throws InterpreterException, IOException, RepositoryException {
     ArrayList<InterpreterInfo> infos = new ArrayList<>();
     infos.add(interpreterInfo);
-    return add(group, infos, new ArrayList<Dependency>(), defaultOption,
-        interpreterProperties, path);
+    return add(group, infos, new ArrayList<Dependency>(), option, interpreterProperties, path);
   }
 
   /**

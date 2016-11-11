@@ -466,6 +466,12 @@ module.exports = function(grunt) {
           cwd: 'bower_components/jquery-ui/themes/base/images',
           src: '{,*/}*.{png,jpg,jpeg,gif}',
           dest: '<%= yeoman.dist %>/styles/images'
+        }, {
+          expand: true,
+          cwd: 'bower_components/MathJax',
+          src: [
+            'extensions/**', 'jax/**', 'fonts/**'],
+          dest: '<%= yeoman.dist %>'
         }]
       },
       styles: {

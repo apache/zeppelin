@@ -42,6 +42,7 @@ import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.NotebookAuthorization;
 import org.apache.zeppelin.notebook.Paragraph;
+import org.apache.zeppelin.rest.exception.BadRequestException;
 import org.apache.zeppelin.rest.exception.NotFoundException;
 import org.apache.zeppelin.rest.exception.ForbiddenException;
 import org.apache.zeppelin.rest.message.CronRequest;
@@ -447,6 +448,38 @@ public class NotebookRestApi {
     checkIfUserCanRead(noteId, "Insufficient privileges you cannot get this paragraph");
     Paragraph p = note.getParagraph(paragraphId);
     checkIfParagraphIsNotNull(p);
+
+    return new JsonResponse<>(Status.OK, "", p).build();
+  }
+
+  @PUT
+  @Path("{noteId}/paragraph/{paragraphId}/config")
+  @ZeppelinApi
+  public Response updateParagraphConfig(@PathParam("noteId") String noteId,
+      @PathParam("paragraphId") String paragraphId, String message) throws IOException {
+    String user = SecurityUtils.getPrincipal();
+    LOG.info("{} will update paragraph config {} {}", user, noteId, paragraphId);
+
+    Note note = notebook.getNote(noteId);
+    checkIfNoteIsNotNull(note);
+    checkIfUserCanWrite(noteId, "Insufficient privileges you cannot update this paragraph config");
+    Paragraph p = note.getParagraph(paragraphId);
+    checkIfParagraphIsNotNull(p);
+
+    Map<String, Object> newConfig = gson.fromJson(message, HashMap.class);
+    if (newConfig == null || newConfig.isEmpty()) {
+      LOG.warn("{} is trying to update paragraph {} of note {} with empty config",
+          user, paragraphId, noteId);
+      throw new BadRequestException("paragraph config cannot be empty");
+    }
+    Map<String, Object> origConfig = p.getConfig();
+    for (String key : newConfig.keySet()) {
+      origConfig.put(key, newConfig.get(key));
+    }
+
+    p.setConfig(origConfig);
+    AuthenticationInfo subject = new AuthenticationInfo(user);
+    note.persist(subject);
 
     return new JsonResponse<>(Status.OK, "", p).build();
   }
