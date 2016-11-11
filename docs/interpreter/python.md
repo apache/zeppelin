@@ -78,13 +78,6 @@ print (z.select("f1",[("o1","1"),("o2","2")],"2"))
 print("".join(z.checkbox("f3", [("o1","1"), ("o2","2")],["1"])))
 ```
 
-
-## Zeppelin features not fully supported by the Python Interpreter
-
-* Interrupt a paragraph execution (`cancel()` method) is currently only supported in Linux and MacOs. If interpreter runs in another operating system (for instance MS Windows) , interrupt a paragraph will close the whole interpreter. A JIRA ticket ([ZEPPELIN-893](https://issues.apache.org/jira/browse/ZEPPELIN-893)) is opened to implement this feature in a next release of the interpreter.
-* Progression bar in webUI  (`getProgress()` method) is currently not implemented.
-* Code-completion is currently not implemented.
-
 ## Matplotlib integration
 
  The python interpreter can display matplotlib figures inline automatically using the `pyplot` module:
@@ -166,3 +159,11 @@ Otherwise it can be referred to as `%python.sql`
 ## Technical description
 
 For in-depth technical details on current implementation please refer to [python/README.md](https://github.com/apache/zeppelin/blob/master/python/README.md).
+
+
+### Some features not yet implemented in the Python Interpreter
+
+* Interrupt a paragraph execution (`cancel()` method) is currently only supported in Linux and MacOs. If interpreter runs in another operating system (for instance MS Windows) , interrupt a paragraph will close the whole interpreter. A JIRA ticket ([ZEPPELIN-893](https://issues.apache.org/jira/browse/ZEPPELIN-893)) is opened to implement this feature in a next release of the interpreter.
+* Progression bar in webUI  (`getProgress()` method) is currently not implemented.
+* Code-completion is currently not implemented.
+
