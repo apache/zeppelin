@@ -57,6 +57,7 @@ import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.search.SearchService;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.user.Credentials;
+import org.apache.zeppelin.user.properties.UserProperties;
 
 /**
  * Binded interpreters for a note
@@ -89,6 +90,8 @@ public class Note implements Serializable, ParagraphJobListener {
   private transient ScheduledFuture delayedPersist;
   private transient NoteEventListener noteEventListener;
   private transient Credentials credentials;
+  private transient UserProperties userProperties;
+
 
   /*
    * note configurations.
@@ -107,13 +110,15 @@ public class Note implements Serializable, ParagraphJobListener {
   }
 
   public Note(NotebookRepo repo, InterpreterFactory factory, JobListenerFactory jlFactory,
-      SearchService noteIndex, Credentials credentials, NoteEventListener noteEventListener) {
+      SearchService noteIndex, Credentials credentials, UserProperties userProperties,
+      NoteEventListener noteEventListener) {
     this.repo = repo;
     this.factory = factory;
     this.jobListenerFactory = jlFactory;
     this.index = noteIndex;
     this.noteEventListener = noteEventListener;
     this.credentials = credentials;
+    this.userProperties = userProperties;
     generateId();
   }
 
@@ -203,6 +208,14 @@ public class Note implements Serializable, ParagraphJobListener {
 
   public void setCredentials(Credentials credentials) {
     this.credentials = credentials;
+  }
+  
+  public UserProperties getUserProperties() {
+    return userProperties;
+  }
+
+  public void setUserProperties(UserProperties userProperties) {
+    this.userProperties = userProperties;
   }
 
 

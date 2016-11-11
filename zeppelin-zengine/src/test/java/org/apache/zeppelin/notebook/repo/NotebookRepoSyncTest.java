@@ -46,6 +46,7 @@ import org.apache.zeppelin.search.SearchService;
 import org.apache.zeppelin.search.LuceneSearch;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.user.Credentials;
+import org.apache.zeppelin.user.properties.UserProperties;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -68,6 +69,7 @@ public class NotebookRepoSyncTest implements JobListenerFactory {
   private SearchService search;
   private NotebookAuthorization notebookAuthorization;
   private Credentials credentials;
+  private UserProperties userProperties;
   private AuthenticationInfo anonymous;
   private static final Logger LOG = LoggerFactory.getLogger(NotebookRepoSyncTest.class);
   
@@ -105,8 +107,9 @@ public class NotebookRepoSyncTest implements JobListenerFactory {
     notebookRepoSync = new NotebookRepoSync(conf);
     notebookAuthorization = NotebookAuthorization.init(conf);
     credentials = new Credentials(conf.credentialsPersist(), conf.getCredentialsPath());
+    userProperties = new UserProperties(conf.userPropertiesPersist(), conf.getUserPropertiesPath());
     notebookSync = new Notebook(conf, notebookRepoSync, schedulerFactory, factory, this, search,
-            notebookAuthorization, credentials);
+            notebookAuthorization, credentials, userProperties);
     anonymous = new AuthenticationInfo("anonymous");
   }
 
@@ -235,7 +238,7 @@ public class NotebookRepoSyncTest implements JobListenerFactory {
     conf = ZeppelinConfiguration.create();
     notebookRepoSync = new NotebookRepoSync(conf);
     notebookSync = new Notebook(conf, notebookRepoSync, schedulerFactory, factory, this, search,
-            notebookAuthorization, credentials);
+            notebookAuthorization, credentials, userProperties);
 
     // check that both storage repos are empty
     assertTrue(notebookRepoSync.getRepoCount() > 1);
@@ -282,8 +285,9 @@ public class NotebookRepoSyncTest implements JobListenerFactory {
     ZeppelinConfiguration vConf = ZeppelinConfiguration.create();
 
     NotebookRepoSync vRepoSync = new NotebookRepoSync(vConf);
+    userProperties = new UserProperties(conf.credentialsPersist(), conf.getCredentialsPath());
     Notebook vNotebookSync = new Notebook(vConf, vRepoSync, schedulerFactory, factory, this, search,
-            notebookAuthorization, credentials);
+            notebookAuthorization, credentials, userProperties);
 
     // one git versioned storage initialized
     assertThat(vRepoSync.getRepoCount()).isEqualTo(1);
