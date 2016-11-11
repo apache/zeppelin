@@ -261,85 +261,92 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     assertEquals(0, jdbcInterpreter.completion("SEL", 100).size());
   }
 
-  @Test
-  public void testMultiTenant() throws SQLException, IOException {
-    String replName1 = "jdbc1";
-    String replName2 = "jdbc2";
-    String entityName = "jdbc.jdbc1";
-
-    // create an user credential with replName1(entity name).
-    UserCredentials userCredentials = new UserCredentials();
-    UsernamePassword up = new UsernamePassword("user2", "pass2");
-    userCredentials.putUsernamePassword(entityName, up);
-    AuthenticationInfo authInfo = new AuthenticationInfo();
-    authInfo.setUserCredentials(userCredentials);
-    assertEquals(up.getUsername(), "user2");
-    assertEquals(up.getPassword(), "pass2");
-
-    /**
-     *  Verify that the user and password in the JDBC Interpreter properties are the same with the argument properties
-     *  if replName is same.
-     */
+  private Properties getDBProperty(String dbUser, String dbPassowrd) throws IOException {
     Properties properties = new Properties();
     properties.setProperty("common.max_count", "1000");
     properties.setProperty("common.max_retry", "3");
     properties.setProperty("default.driver", "org.h2.Driver");
     properties.setProperty("default.url", getJdbcConnection());
-    properties.setProperty("default.user", "user1");
-    properties.setProperty("default.password", "pass1");
-    JDBCInterpreter jdbcInterpreter1 = new JDBCInterpreter(properties);
-    jdbcInterpreter1.open();
+    if (dbUser != null) {
+      properties.setProperty("default.user", dbUser);
+    }
+    if (dbPassowrd != null) {
+      properties.setProperty("default.password", dbPassowrd);
+    }
+    return properties;
+  }
 
-    InterpreterContext itCtx1 = new InterpreterContext("", "1", replName1, "", "", authInfo, null, null, null, null,
-      null, null);
+  private AuthenticationInfo getUserAuth(String user, String entityName, String dbUser, String dbPassword){
+    UserCredentials userCredentials = new UserCredentials();
+    if (entityName != null && dbUser != null && dbPassword != null) {
+      UsernamePassword up = new UsernamePassword(dbUser, dbPassword);
+      userCredentials.putUsernamePassword(entityName, up);
+    }
+    AuthenticationInfo authInfo = new AuthenticationInfo();
+    authInfo.setUserCredentials(userCredentials);
+    authInfo.setUser(user);
+    return authInfo;
+  }
 
-    jdbcInterpreter1.setUserProperty("default", itCtx1);
-
-    assertEquals(properties.getProperty("default.user"),
-      jdbcInterpreter1.getPropertiesMap().get("default").getProperty("user"));
-    assertEquals(properties.getProperty("default.password"),
-      jdbcInterpreter1.getPropertiesMap().get("default").getProperty("password"));
-    jdbcInterpreter1.close();
-
-    /**
-     *  Verify if setting user and password of JDBC Interpreter properties as UserCredentials when replName is same.
-     */
-    Properties properties2 = new Properties();
-    properties2.setProperty("common.max_count", "1000");
-    properties2.setProperty("common.max_retry", "3");
-    properties2.setProperty("default.driver", "org.h2.Driver");
-    properties2.setProperty("default.url", getJdbcConnection());
-    JDBCInterpreter jdbcInterpreter2 = new JDBCInterpreter(properties2);
-    jdbcInterpreter2.open();
-
-    InterpreterContext itCtx2 = new InterpreterContext("", "1", replName1, "", "", authInfo, null, null, null, null,
-      null, null);
-    jdbcInterpreter2.setUserProperty("default", itCtx2);
-
-    assertEquals(up.getUsername(),
-      jdbcInterpreter2.getPropertiesMap().get("default").getProperty("user"));
-    assertEquals(up.getPassword(),
-      jdbcInterpreter2.getPropertiesMap().get("default").getProperty("password"));
-    jdbcInterpreter2.close();
-
+  @Test
+  public void testMultiTenant() throws SQLException, IOException {
 
     /**
-     *  Verify if not setting user and password of the JDBC Interpreter properties when replName is different.
+     * assume that the database user is 'dbuser' and password is 'dbpassword'
+     * 'jdbc1' interpreter has user('dbuser')/password('dbpassword') property
+     * 'jdbc2' interpreter doesn't have user/password property
+     * 'user1' doesn't have Credential information.
+     * 'user2' has 'jdbc2' Credential information that is same with database account.
      */
-    Properties properties3 = new Properties();
-    properties3.setProperty("common.max_count", "1000");
-    properties3.setProperty("common.max_retry", "3");
-    properties3.setProperty("default.driver", "org.h2.Driver");
-    properties3.setProperty("default.url", getJdbcConnection());
-    JDBCInterpreter jdbcInterpreter3 = new JDBCInterpreter(properties3);
-    jdbcInterpreter3.open();
 
-    InterpreterContext itCtx3 = new InterpreterContext("", "1", replName2, "", "", authInfo, null, null, null, null,
-      null, null);
-    jdbcInterpreter3.setUserProperty("default", itCtx3);
+    JDBCInterpreter jdbc1 = new JDBCInterpreter(getDBProperty("dbuser", "dbpassword"));
+    JDBCInterpreter jdbc2 = new JDBCInterpreter(getDBProperty(null, null));
 
-    assertNull(jdbcInterpreter3.getPropertiesMap().get("default").getProperty("user"));
-    assertNull(jdbcInterpreter3.getPropertiesMap().get("default").getProperty("password"));
-    jdbcInterpreter3.close();
+    AuthenticationInfo user1Credential = getUserAuth("user1", null, null, null);
+    AuthenticationInfo user2Credential = getUserAuth("user2", "jdbc.jdbc2", "dbuser", "dbpassword");
+
+    // user1 runs jdbc1
+    jdbc1.open();
+    InterpreterContext ctx1 = new InterpreterContext("", "1", "jdbc.jdbc1", "", "", user1Credential,
+      null, null, null, null, null, null);
+    jdbc1.interpret("", ctx1);
+
+    JDBCUserConfigurations user1JDBC1Conf = jdbc1.getJDBCConfiguration("user1");
+    assertEquals("dbuser", user1JDBC1Conf.getPropertyMap("default").get("user"));
+    assertEquals("dbpassword", user1JDBC1Conf.getPropertyMap("default").get("password"));
+    jdbc1.close();
+
+    // user1 runs jdbc2
+    jdbc2.open();
+    InterpreterContext ctx2 = new InterpreterContext("", "1", "jdbc.jdbc2", "", "", user1Credential,
+      null, null, null, null, null, null);
+    jdbc2.interpret("", ctx2);
+
+    JDBCUserConfigurations user1JDBC2Conf = jdbc2.getJDBCConfiguration("user1");
+    assertNull(user1JDBC2Conf.getPropertyMap("default").get("user"));
+    assertNull(user1JDBC2Conf.getPropertyMap("default").get("password"));
+    jdbc2.close();
+
+    // user2 runs jdbc1
+    jdbc1.open();
+    InterpreterContext ctx3 = new InterpreterContext("", "1", "jdbc.jdbc1", "", "", user2Credential,
+      null, null, null, null, null, null);
+    jdbc1.interpret("", ctx3);
+
+    JDBCUserConfigurations user2JDBC1Conf = jdbc1.getJDBCConfiguration("user2");
+    assertEquals("dbuser", user2JDBC1Conf.getPropertyMap("default").get("user"));
+    assertEquals("dbpassword", user2JDBC1Conf.getPropertyMap("default").get("password"));
+    jdbc1.close();
+
+    // user2 runs jdbc2
+    jdbc2.open();
+    InterpreterContext ctx4 = new InterpreterContext("", "1", "jdbc.jdbc2", "", "", user2Credential,
+      null, null, null, null, null, null);
+    jdbc2.interpret("", ctx4);
+
+    JDBCUserConfigurations user2JDBC2Conf = jdbc2.getJDBCConfiguration("user2");
+    assertNull(user2JDBC2Conf.getPropertyMap("default").get("user"));
+    assertNull(user2JDBC2Conf.getPropertyMap("default").get("password"));
+    jdbc2.close();
   }
  }

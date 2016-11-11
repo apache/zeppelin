@@ -254,7 +254,7 @@ public class JDBCInterpreter extends Interpreter {
     return null;
   }
 
-  private JDBCUserConfigurations getJDBCConfiguration(String user) {
+  public JDBCUserConfigurations getJDBCConfiguration(String user) {
     JDBCUserConfigurations jdbcUserConfigurations =
       jdbcUserConfigurationsMap.get(user);
 
@@ -273,7 +273,7 @@ public class JDBCInterpreter extends Interpreter {
     }
   }
 
-  public void setUserProperty(String propertyKey, InterpreterContext interpreterContext)
+  private void setUserProperty(String propertyKey, InterpreterContext interpreterContext)
       throws SQLException {
 
     String user = interpreterContext.getAuthenticationInfo().getUser();
