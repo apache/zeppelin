@@ -17,6 +17,14 @@
 
 package org.apache.zeppelin.notebook;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.only;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
 import org.apache.zeppelin.interpreter.InterpreterResult;
@@ -25,14 +33,12 @@ import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.search.SearchService;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.user.Credentials;
+import org.apache.zeppelin.user.properties.UserProperties;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class NoteTest {
@@ -47,6 +53,9 @@ public class NoteTest {
 
   @Mock
   Credentials credentials;
+  
+  @Mock
+  UserProperties userProperties;
 
   @Mock
   Interpreter interpreter;
@@ -68,7 +77,8 @@ public class NoteTest {
     when(interpreter.getScheduler()).thenReturn(scheduler);
 
     String pText = "%spark sc.version";
-    Note note = new Note(repo, interpreterFactory, jobListenerFactory, index, credentials, noteEventListener);
+    Note note = new Note(repo, interpreterFactory, jobListenerFactory, index, credentials, 
+        userProperties, noteEventListener);
 
     Paragraph p = note.addParagraph();
     p.setText(pText);
@@ -84,7 +94,8 @@ public class NoteTest {
 
   @Test
   public void addParagraphWithEmptyReplNameTest() {
-    Note note = new Note(repo, interpreterFactory, jobListenerFactory, index, credentials, noteEventListener);
+    Note note = new Note(repo, interpreterFactory, jobListenerFactory, index, credentials, userProperties,
+    		noteEventListener);
 
     Paragraph p = note.addParagraph();
     assertNull(p.getText());
@@ -94,7 +105,8 @@ public class NoteTest {
   public void addParagraphWithLastReplNameTest() {
     when(interpreterFactory.getInterpreter(anyString(), anyString(), eq("spark"))).thenReturn(interpreter);
 
-    Note note = new Note(repo, interpreterFactory, jobListenerFactory, index, credentials, noteEventListener);
+    Note note = new Note(repo, interpreterFactory, jobListenerFactory, index, credentials, userProperties,
+    		noteEventListener);
     Paragraph p1 = note.addParagraph();
     p1.setText("%spark ");
     Paragraph p2 = note.addParagraph();
@@ -106,7 +118,8 @@ public class NoteTest {
   public void insertParagraphWithLastReplNameTest() {
     when(interpreterFactory.getInterpreter(anyString(), anyString(), eq("spark"))).thenReturn(interpreter);
 
-    Note note = new Note(repo, interpreterFactory, jobListenerFactory, index, credentials, noteEventListener);
+    Note note = new Note(repo, interpreterFactory, jobListenerFactory, index, credentials, userProperties,
+    		noteEventListener);
     Paragraph p1 = note.addParagraph();
     p1.setText("%spark ");
     Paragraph p2 = note.insertParagraph(note.getParagraphs().size());
@@ -118,7 +131,8 @@ public class NoteTest {
   public void insertParagraphWithInvalidReplNameTest() {
     when(interpreterFactory.getInterpreter(anyString(), anyString(), eq("invalid"))).thenReturn(null);
 
-    Note note = new Note(repo, interpreterFactory, jobListenerFactory, index, credentials, noteEventListener);
+    Note note = new Note(repo, interpreterFactory, jobListenerFactory, index, credentials, userProperties,
+    		noteEventListener);
     Paragraph p1 = note.addParagraph();
     p1.setText("%invalid ");
     Paragraph p2 = note.insertParagraph(note.getParagraphs().size());
@@ -131,7 +145,8 @@ public class NoteTest {
     when(interpreterFactory.getInterpreter(anyString(), anyString(), eq("md"))).thenReturn(interpreter);
     when(interpreter.getScheduler()).thenReturn(scheduler);
 
-    Note note = new Note(repo, interpreterFactory, jobListenerFactory, index, credentials, noteEventListener);
+    Note note = new Note(repo, interpreterFactory, jobListenerFactory, index, credentials,
+        userProperties, noteEventListener);
     Paragraph p1 = note.addParagraph();
     InterpreterResult result = new InterpreterResult(InterpreterResult.Code.SUCCESS, InterpreterResult.Type.TEXT, "result");
     p1.setResult(result);

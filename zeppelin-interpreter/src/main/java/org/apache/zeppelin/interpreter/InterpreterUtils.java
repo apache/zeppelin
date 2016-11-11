@@ -18,6 +18,12 @@
 package org.apache.zeppelin.interpreter;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Interpreter utility functions
@@ -32,5 +38,44 @@ public class InterpreterUtils {
       }
     }
     return ex.getMessage();
+  }
+
+  /**
+   * Substitute variable in the Interpreter properties with values in the config
+   * If the property value is ${name,defaultValue}, 
+   * then the property value will be set to config.get("name").
+   * If config.get("name") does not exist, then the property value will be set to defaultValue.
+   * If the property value does not start with ${, then property value will be unchanged.
+   * @param properties
+   * @param config
+   * @return
+   */
+  public static Properties substitute(Properties properties, Map<String, Object> config) {
+    if (properties == null) {
+      return properties;
+    }
+    Properties result = new Properties();
+    Iterator<Entry<Object, Object>> it = properties.entrySet().iterator();
+    while (it.hasNext()) {
+      Entry<Object, Object> pair = it.next();
+      String mydata = pair.getValue().toString();
+      Pattern pattern = Pattern.compile("\\$\\{(.*?)\\}");
+      Matcher matcher = pattern.matcher(mydata);
+      if (matcher.find()) {
+        String varString = matcher.group(1);
+        String[] vars = varString.split(",", 2);
+        String varName = vars[0];
+        if (config != null && config.containsKey(varName)) {
+          result.put(pair.getKey(), config.get(varName));
+        } else if (vars.length > 1) {
+          result.put(pair.getKey(), vars[1]);
+        } else {
+          result.put(pair.getKey(), pair.getValue());
+        }
+      } else {
+        result.put(pair.getKey(), pair.getValue());
+      }
+    }
+    return result;
   }
 }

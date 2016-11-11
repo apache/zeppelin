@@ -98,7 +98,7 @@ public class InterpreterFactoryTest {
     SearchService search = mock(SearchService.class);
     notebookRepo = new VFSNotebookRepo(conf);
     notebook = new Notebook(conf, notebookRepo, schedulerFactory, factory, jobListenerFactory, search,
-        null, null);
+        null, null, null);
   }
 
   @After
