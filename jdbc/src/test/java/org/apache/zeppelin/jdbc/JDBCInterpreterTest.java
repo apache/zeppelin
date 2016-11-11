@@ -293,7 +293,7 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     InterpreterContext itCtx1 = new InterpreterContext("", "1", replName1, "", "", authInfo, null, null, null, null,
       null, null);
 
-    jdbcInterpreter1.setAccountOfCredential("default", itCtx1);
+    jdbcInterpreter1.setUserProperty("default", itCtx1);
 
     assertEquals(properties.getProperty("default.user"),
       jdbcInterpreter1.getPropertiesMap().get("default").getProperty("user"));
@@ -314,7 +314,7 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
 
     InterpreterContext itCtx2 = new InterpreterContext("", "1", replName1, "", "", authInfo, null, null, null, null,
       null, null);
-    jdbcInterpreter2.setAccountOfCredential("default", itCtx2);
+    jdbcInterpreter2.setUserProperty("default", itCtx2);
 
     assertEquals(up.getUsername(),
       jdbcInterpreter2.getPropertiesMap().get("default").getProperty("user"));
@@ -336,7 +336,7 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
 
     InterpreterContext itCtx3 = new InterpreterContext("", "1", replName2, "", "", authInfo, null, null, null, null,
       null, null);
-    jdbcInterpreter3.setAccountOfCredential("default", itCtx3);
+    jdbcInterpreter3.setUserProperty("default", itCtx3);
 
     assertNull(jdbcInterpreter3.getPropertiesMap().get("default").getProperty("user"));
     assertNull(jdbcInterpreter3.getPropertiesMap().get("default").getProperty("password"));
