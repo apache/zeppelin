@@ -205,6 +205,50 @@ WHERE name='{{"{{performer=Sheryl Crow|Doof|Fanfarlo|Los Paranoia"}}}}'
 ## Examples
 Here are some examples you can refer to. Including the below connectors, you can connect every databases as long as it can be configured with it's JDBC driver.
 
+### Postgres
+
+<img src="../assets/themes/zeppelin/img/docs-img/postgres_setting.png" width="600px" />
+
+##### Properties
+<table class="table-configuration">
+  <tr>
+    <th>Name</th>
+    <th>Value</th>
+  </tr>
+  <tr>
+    <td>default.driver</td>
+    <td>org.postgresql.Driver</td>
+  </tr>
+  <tr>
+    <td>default.url</td>
+    <td>jdbc:postgresql://localhost:5432/</td>
+  </tr>
+  <tr>
+    <td>default.user</td>
+    <td>mysql_user</td>
+  </tr>
+  <tr>
+    <td>default.password</td>
+    <td>mysql_password</td>
+  </tr>
+</table>
+
+[Postgres JDBC Driver Docs](https://jdbc.postgresql.org/documentation/documentation.html)
+
+##### Dependencies
+<table class="table-configuration">
+  <tr>
+    <th>Artifact</th>
+    <th>Excludes</th>
+  </tr>
+  <tr>
+    <td>org.postgresql:postgresql:9.4.1211</td>
+    <td></td>
+  </tr>
+</table>
+
+[Maven Repository: org.postgresql:postgresql](https://mvnrepository.com/artifact/org.postgresql/postgresql)
+
 ### Mysql
 
 <img src="../assets/themes/zeppelin/img/docs-img/mysql_setting.png" width="600px" />
@@ -365,7 +409,8 @@ Here are some examples you can refer to. Including the below connectors, you can
   </tr>
 </table>
 
-[Apache Hive JDBC Driver Docs](https://cwiki.apache.org/confluence/display/Hive/HiveServer2+Clients#HiveServer2Clients-JDBC)
+[Apache Hive 1 JDBC Driver Docs](https://cwiki.apache.org/confluence/display/Hive/HiveServer2+Clients#HiveServer2Clients-JDBC)
+[Apache Hive 2 JDBC Driver Docs](https://cwiki.apache.org/confluence/display/Hive/HiveServer2+Clients#HiveServer2Clients-JDBC)
 
 ##### Dependencies
 <table class="table-configuration">
