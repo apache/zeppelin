@@ -18,7 +18,7 @@ public class RemoteEventClient implements RemoteEventClientWrapper {
 
   @Override
   public void onMetaInfosReceived(Map<String, String> infos) {
-    client.onMetaInfodReceived(infos);
+    client.onMetaInfosReceived(infos);
   }
 
 }
