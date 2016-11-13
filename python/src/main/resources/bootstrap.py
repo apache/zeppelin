@@ -218,7 +218,7 @@ class PyZeppelinContext(object):
         try:
             matplotlib.use('module://backend_zinline')
             import backend_zinline
-      
+            
             # Everything looks good so make config assuming that we are using
             # an inline backend
             self._displayhook = backend_zinline.displayhook
