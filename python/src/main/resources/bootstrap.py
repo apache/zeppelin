@@ -119,6 +119,7 @@ class PyZeppelinContext(object):
     def __init__(self):
         self.max_result = 1000
         self._displayhook = lambda *args: None
+        self._setup_matplotlib()
     
     def input(self, name, defaultValue=""):
         print(self.errorMsg)
@@ -231,4 +232,3 @@ class PyZeppelinContext(object):
 
 
 z = PyZeppelinContext()
-z._setup_matplotlib()
