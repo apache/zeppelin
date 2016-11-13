@@ -24,24 +24,26 @@ limitations under the License.
 The latest release of Apache Zeppelin is **0.6.2**.
 
   - 0.6.2 released on Oct 15, 2016 ([release notes](./releases/zeppelin-release-0.6.2.html)) ([git tag](https://git-wip-us.apache.org/repos/asf?p=zeppelin.git;a=commit;h=091086de9400dd1c02ca02acf4180b1bf1e9ede7))
-
-    * Source:
-    <a style="cursor:pointer" onclick="ga('send', 'event', 'download', 'zeppelin-src', '0.6.2'); window.location.href='http://www.apache.org/dyn/closer.cgi/zeppelin/zeppelin-0.6.2/zeppelin-0.6.2.tgz'">zeppelin-0.6.2.tgz</a>
-    ([pgp](https://www.apache.org/dist/zeppelin/zeppelin-0.6.2/zeppelin-0.6.2.tgz.asc),
-     [md5](https://www.apache.org/dist/zeppelin/zeppelin-0.6.2/zeppelin-0.6.2.tgz.md5),
-     [sha](https://www.apache.org/dist/zeppelin/zeppelin-0.6.2/zeppelin-0.6.2.tgz.sha512))
-
+    
     * Binary package with all interpreters:
-    <a style="cursor:pointer" onclick="ga('send', 'event', 'download', 'zeppelin-bin-all', '0.6.2'); window.location.href='http://www.apache.org/dyn/closer.cgi/zeppelin/zeppelin-0.6.2/zeppelin-0.6.2-bin-all.tgz'">zeppelin-0.6.2-bin-all.tgz</a>
-    ([pgp](https://www.apache.org/dist/zeppelin/zeppelin-0.6.2/zeppelin-0.6.2-bin-all.tgz.asc),
-     [md5](https://www.apache.org/dist/zeppelin/zeppelin-0.6.2/zeppelin-0.6.2-bin-all.tgz.md5),
-     [sha](https://www.apache.org/dist/zeppelin/zeppelin-0.6.2/zeppelin-0.6.2-bin-all.tgz.sha512))
+
+        <div class="btn btn-lg btn-primary" onclick="ga('send', 'event', 'download', 'zeppelin-bin-all', '0.6.2'); window.location.href='http://www.apache.org/dyn/closer.cgi/zeppelin/zeppelin-0.6.2/zeppelin-0.6.2-bin-all.tgz'">zeppelin-0.6.2-bin-all.tgz</div> (547 MB,
+    [pgp](https://www.apache.org/dist/zeppelin/zeppelin-0.6.2/zeppelin-0.6.2-bin-all.tgz.asc),
+    [md5](https://www.apache.org/dist/zeppelin/zeppelin-0.6.2/zeppelin-0.6.2-bin-all.tgz.md5),
+    [sha](https://www.apache.org/dist/zeppelin/zeppelin-0.6.2/zeppelin-0.6.2-bin-all.tgz.sha512))
 
     * Binary package with Spark interpreter and interpreter net-install script ([interpreter installation guide](../../docs/0.6.2/manual/interpreterinstallation.html)):
-    <a style="cursor:pointer" onclick="ga('send', 'event', 'download', 'zeppelin-bin-netinst', '0.6.2'); window.location.href='http://www.apache.org/dyn/closer.cgi/zeppelin/zeppelin-0.6.2/zeppelin-0.6.2-bin-netinst.tgz'">zeppelin-0.6.2-bin-netinst.tgz</a>
-    ([pgp](https://www.apache.org/dist/zeppelin/zeppelin-0.6.2/zeppelin-0.6.2-bin-netinst.tgz.asc),
-     [md5](https://www.apache.org/dist/zeppelin/zeppelin-0.6.2/zeppelin-0.6.2-bin-netinst.tgz.md5),
-     [sha](https://www.apache.org/dist/zeppelin/zeppelin-0.6.2/zeppelin-0.6.2-bin-netinst.tgz.sha512))
+
+        <a style="cursor:pointer" onclick="ga('send', 'event', 'download', 'zeppelin-bin-netinst', '0.6.2'); window.location.href='http://www.apache.org/dyn/closer.cgi/zeppelin/zeppelin-0.6.2/zeppelin-0.6.2-bin-netinst.tgz'">zeppelin-0.6.2-bin-netinst.tgz</a> (245 MB,
+    [pgp](https://www.apache.org/dist/zeppelin/zeppelin-0.6.2/zeppelin-0.6.2-bin-netinst.tgz.asc),
+    [md5](https://www.apache.org/dist/zeppelin/zeppelin-0.6.2/zeppelin-0.6.2-bin-netinst.tgz.md5),
+    [sha](https://www.apache.org/dist/zeppelin/zeppelin-0.6.2/zeppelin-0.6.2-bin-netinst.tgz.sha512))
+
+    * Source:
+    <a style="cursor:pointer" onclick="ga('send', 'event', 'download', 'zeppelin-src', '0.6.2'); window.location.href='http://www.apache.org/dyn/closer.cgi/zeppelin/zeppelin-0.6.2/zeppelin-0.6.2.tgz'">zeppelin-0.6.2.tgz</a> (1.4 MB,
+    [pgp](https://www.apache.org/dist/zeppelin/zeppelin-0.6.2/zeppelin-0.6.2.tgz.asc),
+    [md5](https://www.apache.org/dist/zeppelin/zeppelin-0.6.2/zeppelin-0.6.2.tgz.md5),
+    [sha](https://www.apache.org/dist/zeppelin/zeppelin-0.6.2/zeppelin-0.6.2.tgz.sha512))
 
     <blockquote style="margin-top: 10px;">
       <p><strong>Note</strong>: From Zeppelin version 0.6.2, Spark interpreter in binary package is compatible with Spark 2.0 & Scala 2.11 and Spark 1.6(or previous) & Scala 2.10. You can use even different version of Spark at the same time if you set different SPARK_HOME in interpreter setting page.</p>
