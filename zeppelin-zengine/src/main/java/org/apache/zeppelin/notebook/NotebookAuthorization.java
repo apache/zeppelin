@@ -62,6 +62,7 @@ public class NotebookAuthorization {
   private static ZeppelinConfiguration conf;
   private static Gson gson;
   private static String filePath;
+  private static boolean isPublic;
 
   private NotebookAuthorization() {}
 
@@ -73,6 +74,7 @@ public class NotebookAuthorization {
       GsonBuilder builder = new GsonBuilder();
       builder.setPrettyPrinting();
       gson = builder.create();
+      isPublic = config.isNotebokPublic();
       try {
         loadFromFile();
       } catch (IOException e) {
@@ -324,5 +326,27 @@ public class NotebookAuthorization {
         return input != null && isReader(input.getId(), entities);
       }
     }).toList();
+  }
+  
+  public void setNewNotePermissions(String noteId, AuthenticationInfo subject) {
+    if (!AuthenticationInfo.isAnonymous(subject)) {
+      if (isPublic) {
+        // add current user to owners - can be public
+        Set<String> owners = getOwners(noteId);
+        owners.add(subject.getUser());
+        setOwners(noteId, owners);
+      } else {
+        // add current user to owners, readers, writers - private note
+        Set<String> entities = getOwners(noteId);
+        entities.add(subject.getUser());
+        setOwners(noteId, entities);
+        entities = getReaders(noteId);
+        entities.add(subject.getUser());
+        setReaders(noteId, entities);
+        entities = getWriters(noteId);
+        entities.add(subject.getUser());
+        setWriters(noteId, entities);
+      }
+    }
   }
 }
