@@ -30,38 +30,48 @@ To get start with Apache Kylin, please see [Apache Kylin Quickstart](https://kyl
 
 ## Configuration
 <table class="table-configuration">
+<table class="table-configuration">
   <tr>
     <th>Name</th>
+    <th>Default</th>
     <th>Description</th>
   </tr>
   <tr>
     <td>kylin.api.url </td>
-    <td>kylin query POST API, format like http://<host>:<port>/kylin/api/query</td>
+    <td>http://localhost:7070/kylin/api/query</td>
+    <td>kylin query POST API <br/> The format can be like http://&lt;host&gt;:&lt;port&gt;/kylin/api/query</td>
   </tr>
   <tr>
     <td>kylin.api.user</td>
+    <td>ADMIN</td>
     <td>kylin user</td>
   </tr>
   <tr>
     <td>kylin.api.password</td>
+    <td>KYLIN</td>
     <td>kylin password</td>
   </tr>
   <tr>
     <td>kylin.query.project</td>
-    <td>String, Project to perform query. Default value is ‘DEFAULT’.</td>
+    <td>learn_kylin</td>
+    <td>String, Project to perform query.</td>
   </tr>
   <tr>
     <td>kylin.query.ispartial</td>
-    <td>true|false, (@Deprecated since Apache Kylin V1.5) whether accept a partial result or not, default be “false”. Set to “false” for production use.</td>
+    <td>true</td>
+    <td>true|false <br/> (@Deprecated since Apache Kylin V1.5) <br/> Whether accept a partial result or not, default be “false”. Set to “false” for production use.</td>
   </tr>
   <tr>
     <td>kylin.query.limit</td>
-    <td>int, Query limit. If limit is set in sql, perPage will be ignored.</td>
+    <td>5000</td>
+    <td>int, Query limit <br/> If limit is set in sql, perPage will be ignored.</td>
   </tr>
   <tr>
     <td>kylin.query.offset</td>
-    <td>int, Query offset. If offset is set in sql, curIndex will be ignored.</td>
+    <td>0</td>
+    <td>int, Query offset <br/> If offset is set in sql, curIndex will be ignored.</td>
   </tr>
+</table>
   
   
 </table>
