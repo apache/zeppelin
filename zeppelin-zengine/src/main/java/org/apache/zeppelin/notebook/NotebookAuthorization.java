@@ -62,7 +62,6 @@ public class NotebookAuthorization {
   private static ZeppelinConfiguration conf;
   private static Gson gson;
   private static String filePath;
-  private static boolean isPublic;
 
   private NotebookAuthorization() {}
 
@@ -74,7 +73,6 @@ public class NotebookAuthorization {
       GsonBuilder builder = new GsonBuilder();
       builder.setPrettyPrinting();
       gson = builder.create();
-      isPublic = config.isNotebokPublic();
       try {
         loadFromFile();
       } catch (IOException e) {
@@ -157,6 +155,10 @@ public class NotebookAuthorization {
     } catch (IOException e) {
       LOG.error("Error saving notebook authorization file: " + e.getMessage());
     }
+  }
+  
+  public boolean isPublic() {
+    return conf.isNotebokPublic();
   }
 
   private Set<String> validateUser(Set<String> users) {
@@ -330,7 +332,7 @@ public class NotebookAuthorization {
   
   public void setNewNotePermissions(String noteId, AuthenticationInfo subject) {
     if (!AuthenticationInfo.isAnonymous(subject)) {
-      if (isPublic) {
+      if (isPublic()) {
         // add current user to owners - can be public
         Set<String> owners = getOwners(noteId);
         owners.add(subject.getUser());
