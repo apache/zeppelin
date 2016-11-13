@@ -207,7 +207,7 @@ class PyZeppelinContext(object):
         try:
             import matplotlib
         except ImportError:
-            pass
+            return
         # Make sure custom backends are available in the PYTHONPATH
         rootdir = os.environ.get('ZEPPELIN_HOME', os.getcwd())
         mpl_path = os.path.join(rootdir, 'interpreter', 'lib', 'python')
@@ -218,7 +218,7 @@ class PyZeppelinContext(object):
         try:
             matplotlib.use('module://backend_zinline')
             import backend_zinline
-      
+            
             # Everything looks good so make config assuming that we are using
             # an inline backend
             self._displayhook = backend_zinline.displayhook
