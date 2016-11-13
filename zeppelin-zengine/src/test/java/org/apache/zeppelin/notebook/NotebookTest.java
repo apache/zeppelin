@@ -1062,6 +1062,65 @@ public class NotebookTest implements JobListenerFactory{
     assertEquals(notes2.size(), 1);
   }
 
+  @Test
+  public void testPublicPrivateNewNote() throws IOException, SchedulerException {
+    HashSet<String> user1 = Sets.newHashSet("user1");
+    HashSet<String> user2 = Sets.newHashSet("user2");
+    
+    // case of public note
+    assertTrue(conf.isNotebokPublic());
+    assertTrue(notebookAuthorization.isPublic());
+    
+    List<Note> notes1 = notebook.getAllNotes(user1);
+    List<Note> notes2 = notebook.getAllNotes(user2);
+    assertEquals(notes1.size(), 0);
+    assertEquals(notes2.size(), 0);
+    
+    // user1 creates note
+    Note notePublic = notebook.createNote(new AuthenticationInfo("user1"));
+    
+    // both users have note
+    notes1 = notebook.getAllNotes(user1);
+    notes2 = notebook.getAllNotes(user2);
+    assertEquals(notes1.size(), 1);
+    assertEquals(notes2.size(), 1);
+    assertEquals(notes1.get(0).getId(), notePublic.getId());
+    assertEquals(notes2.get(0).getId(), notePublic.getId());
+    
+    // user1 is only owner
+    assertEquals(notebookAuthorization.getOwners(notePublic.getId()).size(), 1);
+    assertEquals(notebookAuthorization.getReaders(notePublic.getId()).size(), 0);
+    assertEquals(notebookAuthorization.getWriters(notePublic.getId()).size(), 0);
+    
+    // case of private note
+    System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_PUBLIC.getVarName(), "false");
+    ZeppelinConfiguration conf2 = ZeppelinConfiguration.create();
+    assertFalse(conf2.isNotebokPublic());
+    // notebook authorization reads from conf, so no need to re-initilize
+    assertFalse(notebookAuthorization.isPublic());
+    
+    // check that still 1 note per user
+    notes1 = notebook.getAllNotes(user1);
+    notes2 = notebook.getAllNotes(user2);
+    assertEquals(notes1.size(), 1);
+    assertEquals(notes2.size(), 1);
+    
+    // create private note
+    Note notePrivate = notebook.createNote(new AuthenticationInfo("user1"));
+    
+    // only user1 have notePrivate right after creation
+    notes1 = notebook.getAllNotes(user1);
+    notes2 = notebook.getAllNotes(user2);
+    assertEquals(notes1.size(), 2);
+    assertEquals(notes2.size(), 1);
+    assertEquals(notes1.get(1).getId(), notePrivate.getId());
+    
+    // user1 have all rights
+    assertEquals(notebookAuthorization.getOwners(notePrivate.getId()).size(), 1);
+    assertEquals(notebookAuthorization.getReaders(notePrivate.getId()).size(), 1);
+    assertEquals(notebookAuthorization.getWriters(notePrivate.getId()).size(), 1);
+  }
+  
   private void delete(File file){
     if(file.isFile()) file.delete();
     else if(file.isDirectory()){
