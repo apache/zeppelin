@@ -145,9 +145,12 @@ public class Message {
     INTERPRETER_BINDINGS,         // [s-c] interpreter bindings
     GET_INTERPRETER_SETTINGS,     // [c-s] get interpreter settings
     INTERPRETER_SETTINGS,         // [s-c] interpreter settings
-    ERROR_INFO                    // [s-c] error information to be sent
+    ERROR_INFO,                   // [s-c] error information to be sent
+    WATCHER,                      // [s-c] Change websocket to watcher mode.
   }
 
+  public static final Message EMPTY = new Message(null);
+  
   public OP op;
   public Map<String, Object> data = new HashMap<>();
   public String ticket = "anonymous";
