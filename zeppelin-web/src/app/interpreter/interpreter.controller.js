@@ -24,6 +24,7 @@
     $scope.availableInterpreters = {};
     $scope.showAddNewSetting = false;
     $scope.showRepositoryInfo = false;
+    $scope.searchInterpreter = '';
     $scope._ = _;
     ngToast.dismiss();
 
@@ -346,8 +347,8 @@
               .success(function(data, status, headers, config) {
                 $scope.interpreterSettings[index] = data.body;
                 removeTMPSettings(index);
+                checkDownloadingDependencies();
                 thisConfirm.close();
-                $route.reload();
               })
               .error(function(data, status, headers, config) {
                 console.log('Error %o %o', status, data.message);
