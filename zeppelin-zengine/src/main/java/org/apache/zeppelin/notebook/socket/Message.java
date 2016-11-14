@@ -146,7 +146,7 @@ public class Message {
     GET_INTERPRETER_SETTINGS,     // [c-s] get interpreter settings
     INTERPRETER_SETTINGS,         // [s-c] interpreter settings
     ERROR_INFO,                   // [s-c] error information to be sent
-    WATCHER,                      // [s-c] TODO(anthonycorbacho): add description.
+    WATCHER,                      // [s-c] Change websocket to watcher mode.
   }
 
   public static final Message EMPTY = new Message(null);
