@@ -33,9 +33,13 @@
   <name>Zeppelin: Elasticsearch interpreter</name>
 
   <properties>
-    <elasticsearch.version>2.3.3</elasticsearch.version>
+    <exclude.src.elastic>**/Elasticsearch5Connector.java</exclude.src.elastic>
+    <exclude.test.elastic>**/Elasticsearch5InterpreterTest.java</exclude.test.elastic>
+    <elasticsearch.version>2.4.1</elasticsearch.version>
     <guava.version>18.0</guava.version>
     <json-flattener.version>0.1.6</json-flattener.version>
+    <maven.compiler.source>1.7</maven.compiler.source>
+    <maven.compiler.target>1.7</maven.compiler.target>
   </properties>
 
   <dependencies>
@@ -44,12 +48,6 @@
       <artifactId>zeppelin-interpreter</artifactId>
       <version>${project.version}</version>
       <scope>provided</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>org.elasticsearch</groupId>
-      <artifactId>elasticsearch</artifactId>
-      <version>${elasticsearch.version}</version>
     </dependency>
 
     <dependency>
@@ -63,7 +61,7 @@
       <artifactId>json-flattener</artifactId>
       <version>${json-flattener.version}</version>
     </dependency>
-    
+
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
@@ -85,6 +83,34 @@
           <execution> 
             <id>enforce</id> 
             <phase>none</phase> 
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.6.0</version>
+        <configuration>
+          <source>${maven.compiler.source}</source>
+          <target>${maven.compiler.target}</target>
+          <excludes>
+            <exclude>${exclude.src.elastic}</exclude>
+          </excludes>
+        </configuration>
+
+        <executions>
+          <execution>
+            <id>default-testCompile</id>
+            <phase>test-compile</phase>
+            <configuration>
+              <testExcludes>
+                <exclude>${exclude.test.elastic}</exclude>
+              </testExcludes>
+            </configuration>
+            <goals>
+              <goal>testCompile</goal>
+            </goals>
           </execution>
         </executions>
       </plugin>
@@ -131,7 +157,63 @@
           </execution>
         </executions>
       </plugin>
+
     </plugins>
   </build>
+
+  <profiles>
+    <profile>
+      <id>elasticsearch-2</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <dependencies>
+        <dependency>
+          <groupId>org.elasticsearch</groupId>
+          <artifactId>elasticsearch</artifactId>
+          <version>${elasticsearch.version}</version>
+        </dependency>
+      </dependencies>
+    </profile>
+
+    <profile>
+      <id>elasticsearch-5</id>
+      <properties>
+        <exclude.src.elastic>**/Elasticsearch2Connector.java</exclude.src.elastic>
+        <exclude.test.elastic>**/Elasticsearch2InterpreterTest.java</exclude.test.elastic>
+        <elasticsearch.version>5.0.0</elasticsearch.version>
+        <log4j2.version>2.6.2</log4j2.version>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+      </properties>
+      <dependencies>
+
+        <dependency>
+          <groupId>org.elasticsearch.client</groupId>
+          <artifactId>transport</artifactId>
+          <version>${elasticsearch.version}</version>
+        </dependency>
+
+        <dependency>
+          <groupId>org.elasticsearch</groupId>
+          <artifactId>elasticsearch</artifactId>
+          <version>${elasticsearch.version}</version>
+        </dependency>
+
+        <dependency>
+          <groupId>org.apache.logging.log4j</groupId>
+          <artifactId>log4j-api</artifactId>
+          <version>${log4j2.version}</version>
+        </dependency>
+
+        <dependency>
+          <groupId>org.apache.logging.log4j</groupId>
+          <artifactId>log4j-core</artifactId>
+          <version>${log4j2.version}</version>
+        </dependency>
+
+      </dependencies>
+    </profile>
+  </profiles>
 
 </project>

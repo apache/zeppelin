@@ -36,20 +36,19 @@ import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.node.Node;
-import org.elasticsearch.node.NodeBuilder;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-public class ElasticsearchInterpreterTest {
+public class Elasticsearch2InterpreterTest {
 
   private static Client elsClient;
   private static Node elsNode;
   private static ElasticsearchInterpreter interpreter;
 
-  private static final String[] METHODS = { "GET", "PUT", "DELETE", "POST" };
-  private static final int[] STATUS = { 200, 404, 500, 403 };
+  private static final String[] METHODS = {"GET", "PUT", "DELETE", "POST"};
+  private static final int[] STATUS = {200, 404, 500, 403};
 
   private static final String ELS_CLUSTER_NAME = "zeppelin-elasticsearch-interpreter-test";
   private static final String ELS_HOST = "localhost";
@@ -57,56 +56,55 @@ public class ElasticsearchInterpreterTest {
   private static final String ELS_HTTP_PORT = "10200";
   private static final String ELS_PATH = "/tmp/els";
 
-
   @BeforeClass
   public static void populate() throws IOException {
 
-    final Settings settings = Settings.settingsBuilder()
-      .put("cluster.name", ELS_CLUSTER_NAME)
-      .put("network.host", ELS_HOST)
-      .put("http.port", ELS_HTTP_PORT)
-      .put("transport.tcp.port", ELS_TRANSPORT_PORT)
-      .put("path.home", ELS_PATH)
-      .build();
+    final Settings settings = Settings.builder()
+        .put("cluster.name", ELS_CLUSTER_NAME)
+        .put("network.host", ELS_HOST)
+        .put("http.port", ELS_HTTP_PORT)
+        .put("transport.tcp.port", ELS_TRANSPORT_PORT)
+        .put("path.home", ELS_PATH)
+        .build();
 
-    elsNode = NodeBuilder.nodeBuilder().settings(settings).node();
+    elsNode = new Node(settings).start();
     elsClient = elsNode.client();
 
     elsClient.admin().indices().prepareCreate("logs")
-      .addMapping("http", jsonBuilder()
-        .startObject().startObject("http").startObject("properties")
-          .startObject("content_length")
+        .addMapping("http", jsonBuilder()
+            .startObject().startObject("http").startObject("properties")
+            .startObject("content_length")
             .field("type", "integer")
-          .endObject()
-        .endObject().endObject().endObject()).get();
+            .endObject()
+            .endObject().endObject().endObject()).get();
 
     for (int i = 0; i < 50; i++) {
       elsClient.prepareIndex("logs", "http", "" + i)
-        .setRefresh(true)
-        .setSource(jsonBuilder()
-          .startObject()
-            .field("date", new Date())
-            .startObject("request")
+          .setRefresh(true)
+          .setSource(jsonBuilder()
+              .startObject()
+              .field("date", new Date())
+              .startObject("request")
               .field("method", METHODS[RandomUtils.nextInt(METHODS.length)])
               .field("url", "/zeppelin/" + UUID.randomUUID().toString())
               .field("headers", Arrays.asList("Accept: *.*", "Host: apache.org"))
-            .endObject()
-            .field("status", STATUS[RandomUtils.nextInt(STATUS.length)])
-            .field("content_length", RandomUtils.nextInt(2000))
-          )
-        .get();
+              .endObject()
+              .field("status", STATUS[RandomUtils.nextInt(STATUS.length)])
+              .field("content_length", RandomUtils.nextInt(2000))
+              .endObject())
+          .get();
     }
 
     final Properties props = new Properties();
-    props.put(ElasticsearchInterpreter.ELASTICSEARCH_HOST, ELS_HOST);
-    props.put(ElasticsearchInterpreter.ELASTICSEARCH_PORT, ELS_TRANSPORT_PORT);
-    props.put(ElasticsearchInterpreter.ELASTICSEARCH_CLUSTER_NAME, ELS_CLUSTER_NAME);
+    props.put(ElasticsearchConnector.ELASTICSEARCH_HOST, ELS_HOST);
+    props.put(ElasticsearchConnector.ELASTICSEARCH_PORT, ELS_TRANSPORT_PORT);
+    props.put(ElasticsearchConnector.ELASTICSEARCH_CLUSTER_NAME, ELS_CLUSTER_NAME);
     interpreter = new ElasticsearchInterpreter(props);
     interpreter.open();
   }
 
   @AfterClass
-  public static void clean() {
+  public static void clean() throws IOException {
     if (interpreter != null) {
       interpreter.close();
     }
@@ -165,28 +163,28 @@ public class ElasticsearchInterpreterTest {
 
     // Single-value metric
     InterpreterResult res = interpreter.interpret("search /logs { \"aggs\" : { \"distinct_status_count\" : " +
-            " { \"cardinality\" : { \"field\" : \"status\" } } } }", null);
+        " { \"cardinality\" : { \"field\" : \"status\" } } } }", null);
     assertEquals(Code.SUCCESS, res.code());
 
     // Multi-value metric
     res = interpreter.interpret("search /logs { \"aggs\" : { \"content_length_stats\" : " +
-            " { \"extended_stats\" : { \"field\" : \"content_length\" } } } }", null);
+        " { \"extended_stats\" : { \"field\" : \"content_length\" } } } }", null);
     assertEquals(Code.SUCCESS, res.code());
 
     // Single bucket
     res = interpreter.interpret("search /logs { \"aggs\" : { " +
-            " \"200_OK\" : { \"filter\" : { \"term\": { \"status\": \"200\" } }, " +
-            "   \"aggs\" : { \"avg_length\" : { \"avg\" : { \"field\" : \"content_length\" } } } } } }", null);
+        " \"200_OK\" : { \"filter\" : { \"term\": { \"status\": \"200\" } }, " +
+        "   \"aggs\" : { \"avg_length\" : { \"avg\" : { \"field\" : \"content_length\" } } } } } }", null);
     assertEquals(Code.SUCCESS, res.code());
 
     // Multi-buckets
     res = interpreter.interpret("search /logs { \"aggs\" : { \"status_count\" : " +
-            " { \"terms\" : { \"field\" : \"status\" } } } }", null);
+        " { \"terms\" : { \"field\" : \"status\" } } } }", null);
     assertEquals(Code.SUCCESS, res.code());
-    
+
     res = interpreter.interpret("search /logs { \"aggs\" : { " +
-            " \"length\" : { \"terms\": { \"field\": \"status\" }, " +
-            "   \"aggs\" : { \"sum_length\" : { \"sum\" : { \"field\" : \"content_length\" } }, \"sum_status\" : { \"sum\" : { \"field\" : \"status\" } } } } } }", null);
+        " \"length\" : { \"terms\": { \"field\": \"status\" }, " +
+        "   \"aggs\" : { \"sum_length\" : { \"sum\" : { \"field\" : \"content_length\" } }, \"sum_status\" : { \"sum\" : { \"field\" : \"status\" } } } } } }", null);
     assertEquals(Code.SUCCESS, res.code());
   }
 
