@@ -402,7 +402,6 @@ public class NotebookServer extends WebSocketServlet implements
       for (String id : ids) {
         if (id.equals(interpreterGroupId)) {
           broadcast(note.getId(), m);
-          broadcastToWatchers(note.getId(), StringUtils.EMPTY, m);
         }
       }
     }
@@ -563,7 +562,6 @@ public class NotebookServer extends WebSocketServlet implements
 
   public void broadcastNote(Note note) {
     broadcast(note.getId(), new Message(OP.NOTE).put("note", note));
-    broadcastToWatchers(note.getId(), "", new Message(OP.NOTE).put("note", note));
   }
 
   public void broadcastInterpreterBindings(String noteId, List settingList) {
