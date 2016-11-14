@@ -23,8 +23,7 @@ limitations under the License.
 
 <div id="toc"></div>
 
-There are multiple ways to enable authentication in Apache Zeppelin. This page describes HTTP basic auth using NGINX.
-One option is to use [Basic Access Authentication](https://en.wikipedia.org/wiki/Basic_access_authentication).
+[Build in authentication mechanism](./shiroauthentication.html) is recommended way for authentication. In case of you want authenticate using NGINX and [HTTP basic auth](https://en.wikipedia.org/wiki/Basic_access_authentication), please read this document.
 
 ## HTTP Basic Authentication using NGINX
 

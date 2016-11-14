@@ -53,6 +53,8 @@ public class Message {
                       // @param object notebook
     NOTE_UPDATE,
 
+    NOTE_RENAME,
+
     RUN_PARAGRAPH,    // [c-s] run paragraph
                       // @param id paragraph id
                       // @param paragraph paragraph content.ie. script

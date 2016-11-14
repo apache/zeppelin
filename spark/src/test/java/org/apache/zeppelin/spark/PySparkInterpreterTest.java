@@ -25,6 +25,7 @@ import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterOutputListener;
 import org.apache.zeppelin.interpreter.InterpreterOutput;
 import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.resource.LocalResourcePool;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.After;
@@ -37,6 +38,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Properties;
 
 import static org.junit.Assert.*;
@@ -144,4 +146,11 @@ public class PySparkInterpreterTest {
     }
   }
 
+  @Test
+  public void testCompletion() {
+    if (getSparkVersionNumber() > 11) {
+      List<InterpreterCompletion> completions = pySparkInterpreter.completion("sc.", "sc.".length());
+      assertTrue(completions.size() > 0);
+    }
+  }
 }

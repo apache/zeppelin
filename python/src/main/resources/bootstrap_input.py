@@ -26,6 +26,7 @@ class Py4jZeppelinContext(PyZeppelinContext):
     """A context impl that uses Py4j to communicate to JVM
     """
     def __init__(self, z):
+        PyZeppelinContext.__init__(self)
         self.z = z
         self.paramOption = gateway.jvm.org.apache.zeppelin.display.Input.ParamOption
         self.javaList = gateway.jvm.java.util.ArrayList

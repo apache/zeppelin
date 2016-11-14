@@ -16,9 +16,9 @@
 
   angular.module('zeppelinWebApp').service('noteActionSrv', noteActionSrv);
 
-  noteActionSrv.$inject = ['websocketMsgSrv', '$location'];
+  noteActionSrv.$inject = ['websocketMsgSrv', '$location', 'renameSrv'];
 
-  function noteActionSrv(websocketMsgSrv, $location) {
+  function noteActionSrv(websocketMsgSrv, $location, renameSrv) {
     this.removeNote = function(noteId, redirectToHome) {
       BootstrapDialog.confirm({
         closable: true,
@@ -44,6 +44,16 @@
           if (result) {
             websocketMsgSrv.clearAllParagraphOutput(noteId);
           }
+        }
+      });
+    };
+
+    this.renameNote = function(noteId, notePath) {
+      renameSrv.openRenameModal({
+        title: 'Rename note',
+        oldName: notePath,
+        callback: function(newName) {
+          websocketMsgSrv.renameNote(noteId, newName);
         }
       });
     };
