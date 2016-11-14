@@ -1,0 +1,25 @@
+[
+  {
+    "group": "flink",
+    "name": "flink",
+    "className": "org.apache.zeppelin.flink.FlinkInterpreter",
+    "properties": {
+      "host": {
+        "envName": "host",
+        "propertyName": null,
+        "defaultValue": "local",
+        "description": "host name of running JobManager. 'local' runs flink in local mode."
+      },
+      "port": {
+        "envName": "port",
+        "propertyName": null,
+        "defaultValue": "6123",
+        "description": "port of running JobManager."
+      }
+    },
+    "editor": {
+      "language": "scala",
+      "editOnDblClick": false
+    }
+  }
+]

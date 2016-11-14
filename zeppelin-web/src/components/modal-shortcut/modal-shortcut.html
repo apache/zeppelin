@@ -1,0 +1,273 @@
+<!--
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<div class="modal fade" id="shortcutModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+        <h4 class="modal-title" id="myModalLabel">Keyboard shortcuts</h4>
+      </div>
+      <div class="modal-body">
+
+        <h4>Note Shortcuts</h4>
+
+        <div class="row">
+          <div class="col-md-4">
+            <div class="keys">
+              <kbd class="kbd-dark">Shift</kbd> + <kbd class="kbd-dark">Enter</kbd>
+            </div>
+          </div>
+          <div class="col-md-8">
+            Run paragraph
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-4">
+            <div class="keys">
+              <kbd class="kbd-dark">Ctrl</kbd> + <kbd class="kbd-dark">{{ isMac ? 'Option' : 'Alt'}}</kbd> + <kbd class="kbd-dark">c</kbd>
+            </div>
+          </div>
+          <div class="col-md-8">
+            Cancel
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-4">
+            <div class="keys">
+              <kbd class="kbd-dark">Ctrl</kbd> + <kbd class="kbd-dark">p</kbd>
+            </div>
+          </div>
+          <div class="col-md-8">
+            Move cursor Up
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-4">
+            <div class="keys">
+              <kbd class="kbd-dark">Ctrl</kbd> + <kbd class="kbd-dark">n</kbd>
+            </div>
+          </div>
+          <div class="col-md-8">
+            Move cursor Down
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-4">
+            <div class="keys">
+              <kbd class="kbd-dark">Ctrl</kbd> + <kbd class="kbd-dark">{{ isMac ? 'Option' : 'Alt'}}</kbd> + <kbd class="kbd-dark">d</kbd>
+            </div>
+          </div>
+          <div class="col-md-8">
+            Remove paragraph
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-4">
+            <div class="keys">
+              <kbd class="kbd-dark">Ctrl</kbd> + <kbd class="kbd-dark">{{ isMac ? 'Option' : 'Alt'}}</kbd> + <kbd class="kbd-dark">a</kbd>
+            </div>
+          </div>
+          <div class="col-md-8">
+            Insert new paragraph above
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-4">
+            <div class="keys">
+              <kbd class="kbd-dark">Ctrl</kbd> + <kbd class="kbd-dark">{{ isMac ? 'Option' : 'Alt'}}</kbd> + <kbd class="kbd-dark">b</kbd>
+            </div>
+          </div>
+          <div class="col-md-8">
+            Insert new paragraph below
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-4">
+            <div class="keys">
+              <kbd class="kbd-dark">Ctrl</kbd> + <kbd class="kbd-dark">{{ isMac ? 'Option' : 'Alt'}}</kbd> + <kbd class="kbd-dark">k</kbd>
+            </div>
+          </div>
+          <div class="col-md-8">
+            Move paragraph Up
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-4">
+            <div class="keys">
+              <kbd class="kbd-dark">Ctrl</kbd> + <kbd class="kbd-dark">{{ isMac ? 'Option' : 'Alt'}}</kbd> + <kbd class="kbd-dark">j</kbd>
+            </div>
+          </div>
+          <div class="col-md-8">
+            Move paragraph Down
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-4">
+            <div class="keys">
+              <kbd class="kbd-dark">Ctrl</kbd> + <kbd class="kbd-dark">{{ isMac ? 'Option' : 'Alt' }}</kbd> + <kbd class="kbd-dark">r</kbd>
+            </div>
+          </div>
+          <div class="col-md-8">
+            Enable/Disable run paragraph
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-4">
+            <div class="keys">
+              <kbd class="kbd-dark">Ctrl</kbd> + <kbd class="kbd-dark">{{ isMac ? 'Option' : 'Alt'}}</kbd> + <kbd class="kbd-dark">o</kbd>
+            </div>
+          </div>
+          <div class="col-md-8">
+            Toggle output
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-4">
+            <div class="keys">
+              <kbd class="kbd-dark">Ctrl</kbd> + <kbd class="kbd-dark">{{ isMac ? 'Option' : 'Alt'}}</kbd> + <kbd class="kbd-dark">e</kbd>
+            </div>
+          </div>
+          <div class="col-md-8">
+            Toggle editor
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-4">
+            <div class="keys">
+              <kbd class="kbd-dark">Ctrl</kbd> + <kbd class="kbd-dark">{{ isMac ? 'Option' : 'Alt'}}</kbd> + <kbd class="kbd-dark">m</kbd>
+            </div>
+          </div>
+          <div class="col-md-8">
+            Toggle line number
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-4">
+            <div class="keys">
+              <kbd class="kbd-dark">Ctrl</kbd> + <kbd class="kbd-dark">{{ isMac ? 'Option' : 'Alt'}}</kbd> + <kbd class="kbd-dark">t</kbd>
+            </div>
+          </div>
+          <div class="col-md-8">
+            Toggle title
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-4">
+            <div class="keys">
+              <kbd class="kbd-dark">Ctrl</kbd> + <kbd class="kbd-dark">Shift</kbd> + <kbd class="kbd-dark">-</kbd>
+            </div>
+          </div>
+          <div class="col-md-8">
+            Reduce paragraph width
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-4">
+            <div class="keys">
+              <kbd class="kbd-dark">Ctrl</kbd> + <kbd class="kbd-dark">Shift</kbd> + <kbd class="kbd-dark">+</kbd>
+            </div>
+          </div>
+          <div class="col-md-8">
+            Increase paragraph width
+          </div>
+        </div>
+
+        <h4>Editor Shortcuts</h4>
+
+      <div class="row">
+          <div class="col-md-4">
+            <div class="keys">
+              <kbd class="kbd-dark">Ctrl</kbd> + <kbd class="kbd-dark">.</kbd>
+            </div>
+          </div>
+          <div class="col-md-8">
+            Auto-completion
+          </div>
+        </div>
+
+
+        <div class="row">
+          <div class="col-md-4">
+            <div class="keys">
+              <kbd class="kbd-dark">Ctrl</kbd> + <kbd class="kbd-dark">k</kbd>
+            </div>
+          </div>
+          <div class="col-md-8">
+            Cut the line
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-4">
+            <div class="keys">
+              <kbd class="kbd-dark">Ctrl</kbd> + <kbd class="kbd-dark">y</kbd>
+            </div>
+          </div>
+          <div class="col-md-8">
+            Paste the line
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-4">
+            <div class="keys">
+              <kbd class="kbd-dark">Ctrl</kbd> + <kbd class="kbd-dark">s</kbd>
+            </div>
+          </div>
+          <div class="col-md-8">
+            Search inside the code
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-4">
+            <div class="keys">
+              <kbd class="kbd-dark">Ctrl</kbd> + <kbd class="kbd-dark">a</kbd>
+            </div>
+          </div>
+          <div class="col-md-8">
+            Move cursor to the beginning
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-4">
+            <div class="keys">
+              <kbd class="kbd-dark">Ctrl</kbd> + <kbd class="kbd-dark">e</kbd>
+            </div>
+          </div>
+          <div class="col-md-8">
+            Move cursor at the end
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

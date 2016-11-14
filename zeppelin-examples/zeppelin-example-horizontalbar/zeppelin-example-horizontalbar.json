@@ -1,0 +1,25 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+{
+  "type" : "APPLICATION",
+  "name" : "zeppelin.horizontalbar",
+  "description" : "Horizontal Bar chart (example)",
+  "artifact" : "zeppelin-examples/zeppelin-example-horizontalbar/target/zeppelin-example-horizontalbar-0.7.0-SNAPSHOT.jar",
+  "className" : "org.apache.zeppelin.example.app.horizontalbar.HorizontalBar",
+  "resources" : [[":org.apache.zeppelin.interpreter.InterpreterResult"]],
+  "icon" : '<i class="fa fa-bar-chart" style="-webkit-transform: rotate(90deg) scaleX(-1);-moz-transform: rotate(90deg) scaleX(-1);-ms-transform: rotate(90deg) scaleX(-1);"></i>'
+}

@@ -1,0 +1,69 @@
+{
+  "angularObjects": {
+    "2BJB693M8:shared_process": []
+  },
+  "config": {
+    "looknfeel": "default"
+  },
+  "id": "2BQA35CJZ",
+  "info": {},
+  "lastReplName": {
+    "value": "phoenix"
+  },
+  "name": "Activity Dashboard",
+  "paragraphs": [
+    {
+      "$$hashKey": "object:266",
+      "config": {
+        "colWidth": 4,
+        "editorHide": true,
+        "editorMode": "ace/mode/scala",
+        "enabled": true,
+        "graph": {
+          "groups": [],
+          "height": 353,
+          "keys": [
+            {
+              "aggr": "sum",
+              "index": 0,
+              "name": "JOB_ID"
+            }
+          ],
+          "mode": "table",
+          "optionOpen": false,
+          "scatter": {
+            "xAxis": {
+              "aggr": "sum",
+              "index": 0,
+              "name": "JOB_ID"
+            }
+          },
+          "values": [
+            {
+              "aggr": "sum",
+              "index": 1,
+              "name": "TYPE"
+            }
+          ]
+        },
+        "title": true
+      },
+      "dateCreated": "2016-03-29T16:21:09-0700",
+      "dateFinished": "2016-07-02T02:11:16-0700",
+      "dateStarted": "2016-07-02T02:11:12-0700",
+      "dateUpdated": "2016-07-02T02:11:12-0700",
+      "errorMessage": "",
+      "id": "20160616-201120_1946745827",
+      "jobName": "paragraph_1466629190560_-1015742222",
+      "progressUpdateIntervalMs": 500,
+      "settings": {
+        "forms": {},
+        "params": {}
+      },
+      "status": "FINISHED",
+      "text": "SELECT job_id, \n       \"type\"                        AS type, \n       \"user\"                        AS user, \n       ( duration_millis / 3600000 ) AS duration_hr \nFROM   activity.job \nORDER  BY duration_millis DESC \nLIMIT  10 ",
+      "title": "Top 10 Longest Running Jobs",
+      "user": "admin"
+    }
+  ]
+}

@@ -1,0 +1,115 @@
+<!--
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<div id="repoModal" class="modal fade" role="dialog"
+     tabindex="-1">
+  <div class="modal-dialog">
+
+    <!-- Modal content-->
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title">Add New Repository</h4>
+      </div>
+
+      <form class="form-horizontal" ng-submit="addNewRepository()">
+        <div class="modal-body">
+            <div class="form-group">
+              <label class="control-label col-sm-2" for="repoId">ID</label>
+              <div class="col-sm-10">
+                <input type="text" class="form-control" id="repoId" ng-model="newRepoSetting.id"
+                       placeholder="Repository id" required />
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="control-label col-sm-2" for="repoUrl">URL</label>
+              <div class="col-sm-10">
+                <input type="text" pattern="(http|https|file)://.*" title="Please enter URL starts with http://, https:// or file://"
+                       class="form-control" id="repoUrl" ng-model="newRepoSetting.url"
+                       placeholder="Repository url" required />
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="control-label col-sm-2" for="repoSnapshot">Snapshot</label>
+              <div class="col-sm-10">
+                <select class="form-control"
+                        id="repoSnapshot"
+                        ng-model="newRepoSetting.snapshot"
+                        ng-options="col for col in [false,true]">
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="control-label col-sm-2" for="repoUsername">Username</label>
+              <div class="col-sm-10">
+                <input type="text" class="form-control" id="repoUsername" ng-model="newRepoSetting.username" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="control-label col-sm-2" for="repoPassword">Password</label>
+              <div class="col-sm-10">
+                <input type="password" class="form-control" id="repoPassword" ng-model="newRepoSetting.password" />
+              </div>
+            </div>
+            <hr/>
+            <div class="center-block"><h4>Proxy Settings (optional)</h4></div>
+            <br/>
+            <div class="form-group">
+              <div class="col-sm-10">
+                <label class="control-label col-sm-2" for="proxyProtocol1">Protocol</label>
+                <label class="radio-inline">
+                    <input type="radio" name="proxyProtocol" id="proxyProtocol1" value="HTTP" ng-model="newRepoSetting.proxyProtocol"/> HTTP
+                </label>
+                <label class="radio-inline">
+                    <input type="radio" name="proxyProtocol" id="proxyProtocol2" value="HTTPS" ng-model="newRepoSetting.proxyProtocol"/> HTTPS
+                </label>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="control-label col-sm-2" for="proxyHost">Host</label>
+              <div class="col-sm-10">
+                <input type="text" class="form-control" id="proxyHost" ng-model="newRepoSetting.proxyHost" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="control-label col-sm-2" for="proxyPort">Port</label>
+              <div class="col-sm-10">
+                <input type="text" class="form-control" id="proxyPort" ng-model="newRepoSetting.proxyPort" />
+              </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-sm-2" for="proxyLogin">Login</label>
+                <div class="col-sm-10">
+                    <input type="text" class="form-control" id="proxyLogin" ng-model="newRepoSetting.proxyLogin" />
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-sm-2" for="proxyPassword">Password</label>
+                <div class="col-sm-10">
+                    <input type="text" class="form-control" id="proxyPassword" ng-model="newRepoSetting.proxyPassword" />
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit"
+                  class="btn btn-default">Add
+          </button>
+          <button type="button" data-dismiss="modal"
+                  class="btn btn-default" ng-click="resetNewRepositorySetting()">Cancel
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

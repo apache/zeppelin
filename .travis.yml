@@ -1,0 +1,103 @@
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements. See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License. You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+language: java
+
+sudo: false
+
+cache:
+  directories:
+    - .spark-dist
+    - ${HOME}/.m2/repository/.cache/maven-download-plugin
+    - .node_modules
+
+addons:
+  apt:
+    sources:
+    - r-packages-precise
+    packages:
+    - r-base-dev
+    - r-cran-evaluate
+    - r-cran-base64enc
+
+matrix:
+  include:
+    # Test License compliance using RAT tool
+    - jdk: "oraclejdk7"
+      env: SCALA_VER="2.11" PROFILE="-Prat" BUILD_FLAG="clean" TEST_FLAG="org.apache.rat:apache-rat-plugin:check" TEST_PROJECTS=""
+
+    # Test all modules with spark 2.0.0 and scala 2.11
+    - jdk: "oraclejdk7"
+      env: SCALA_VER="2.11" SPARK_VER="2.0.0" HADOOP_VER="2.3" PROFILE="-Pspark-2.0 -Phadoop-2.3 -Ppyspark -Psparkr -Pscalding -Pexamples -Pscala-2.11" BUILD_FLAG="package -Pbuild-distr -DskipRat" TEST_FLAG="verify -Pusing-packaged-distr -DskipRat" TEST_PROJECTS=""
+
+    # Test all modules with scala 2.10
+    - jdk: "oraclejdk7"
+      env: SCALA_VER="2.10" SPARK_VER="1.6.1" HADOOP_VER="2.3" PROFILE="-Pspark-1.6 -Pr -Phadoop-2.3 -Ppyspark -Psparkr -Pscalding -Pbeam -Pexamples -Pscala-2.10" BUILD_FLAG="package -Pbuild-distr -DskipRat" TEST_FLAG="verify -Pusing-packaged-distr -DskipRat" TEST_PROJECTS=""
+
+    # Test all modules with scala 2.11
+    - jdk: "oraclejdk7"
+      env: SCALA_VER="2.11" SPARK_VER="1.6.1" HADOOP_VER="2.3" PROFILE="-Pspark-1.6 -Pr -Phadoop-2.3 -Ppyspark -Psparkr -Pscalding -Pexamples -Pscala-2.11" BUILD_FLAG="package -Pbuild-distr -DskipRat" TEST_FLAG="verify -Pusing-packaged-distr -DskipRat" TEST_PROJECTS=""
+
+    # Test spark module for 1.5.2
+    - jdk: "oraclejdk7"
+      env: SCALA_VER="2.10" SPARK_VER="1.5.2" HADOOP_VER="2.3" PROFILE="-Pspark-1.5 -Pr -Phadoop-2.3 -Ppyspark -Psparkr" BUILD_FLAG="package -DskipTests -DskipRat" TEST_FLAG="verify -DskipRat" TEST_PROJECTS="-pl zeppelin-interpreter,zeppelin-zengine,zeppelin-server,zeppelin-display,spark-dependencies,spark,r -Dtest=org.apache.zeppelin.rest.*Test,org.apache.zeppelin.spark.* -DfailIfNoTests=false"
+
+    # Test spark module for 1.4.1
+    - jdk: "oraclejdk7"
+      env: SCALA_VER="2.10" SPARK_VER="1.4.1" HADOOP_VER="2.3" PROFILE="-Pspark-1.4 -Pr -Phadoop-2.3 -Ppyspark -Psparkr" BUILD_FLAG="package -DskipTests -DskipRat" TEST_FLAG="verify -DskipRat" TEST_PROJECTS="-pl zeppelin-interpreter,zeppelin-zengine,zeppelin-server,zeppelin-display,spark-dependencies,spark,r -Dtest=org.apache.zeppelin.rest.*Test,org.apache.zeppelin.spark.* -DfailIfNoTests=false"
+
+    # Test selenium with spark module for 1.6.1
+    - jdk: "oraclejdk7"
+      env: TEST_SELENIUM="true" SCALA_VER="2.10" SPARK_VER="1.6.1" HADOOP_VER="2.3" PROFILE="-Pspark-1.6 -Phadoop-2.3 -Ppyspark -Pexamples" BUILD_FLAG="package -DskipTests -DskipRat" TEST_FLAG="verify -DskipRat" TEST_PROJECTS="-pl zeppelin-interpreter,zeppelin-zengine,zeppelin-server,zeppelin-display,spark-dependencies,spark -Dtest=org.apache.zeppelin.AbstractFunctionalSuite -DfailIfNoTests=false"
+
+    # Test python/pyspark with python2
+    - jdk: "oraclejdk7"
+      env: PYTHON="2.7" SCALA_VER="2.10" SPARK_VER="1.6.1" HADOOP_VER="2.3" PROFILE="-Pspark-1.6 -Phadoop-2.3 -Ppyspark" BUILD_FLAG="package -pl spark,python -am -DskipTests -DskipRat" TEST_FLAG="verify -DskipRat" TEST_PROJECTS="-pl zeppelin-interpreter,zeppelin-display,spark-dependencies,spark,python -Dtest=org.apache.zeppelin.spark.PySpark*Test,org.apache.zeppelin.python.* -Dspark.test.exclude='' -DfailIfNoTests=false"
+
+    # Test python/pyspark with python3
+    - jdk: "oraclejdk7"
+      env: PYTHON="3.5" SCALA_VER="2.10" SPARK_VER="1.6.1" HADOOP_VER="2.3" PROFILE="-Pspark-1.6 -Phadoop-2.3 -Ppyspark" BUILD_FLAG="package -pl spark,python -am -DskipTests -DskipRat" TEST_FLAG="verify -DskipRat" TEST_PROJECTS="-pl zeppelin-interpreter,zeppelin-display,spark-dependencies,spark,python -Dtest=org.apache.zeppelin.spark.PySpark*Test,org.apache.zeppelin.python.* -Dspark.test.exclude='' -DfailIfNoTests=false"
+
+before_install:
+  - ./testing/install_external_dependencies.sh
+  - "ls -la .spark-dist ${HOME}/.m2/repository/.cache/maven-download-plugin"
+  - ls .node_modules && cp -r .node_modules zeppelin-web/node_modules || echo "node_modules are not cached"
+  - "/sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -ac -screen 0 1600x1024x16"
+  - ./dev/change_scala_version.sh $SCALA_VER
+  - source ~/.environ
+
+install:
+  - mvn $BUILD_FLAG $PROFILE -B
+
+before_script:
+  - travis_retry ./testing/downloadSpark.sh $SPARK_VER $HADOOP_VER
+  - echo "export SPARK_HOME=`pwd`/spark-$SPARK_VER-bin-hadoop$HADOOP_VER" > conf/zeppelin-env.sh
+  - tail conf/zeppelin-env.sh
+
+script:
+  - mvn $TEST_FLAG $PROFILE -B $TEST_PROJECTS
+  - rm -rf .node_modules; cp -r zeppelin-web/node_modules .node_modules
+
+after_success:
+  - echo "Travis exited with ${TRAVIS_TEST_RESULT}"
+
+after_failure:
+  - echo "Travis exited with ${TRAVIS_TEST_RESULT}"
+  - cat target/rat.txt
+  - cat zeppelin-server/target/rat.txt
+  - cat zeppelin-distribution/target/zeppelin-*-SNAPSHOT/zeppelin-*-SNAPSHOT/logs/zeppelin*.log
+  - cat zeppelin-distribution/target/zeppelin-*-SNAPSHOT/zeppelin-*-SNAPSHOT/logs/zeppelin*.out
+  - cat zeppelin-web/npm-debug.log
+  - cat spark-*/logs/*

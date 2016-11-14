@@ -1,0 +1,18 @@
+{% if site.safe and site.JB.analytics.provider and page.JB.analytics != false %}
+
+{% case site.JB.analytics.provider %}
+{% when "google_classic" %}
+  {% include JB/analytics-providers/google-classic %}
+{% when "google_universal" %}
+  {% include JB/analytics-providers/google-universal %}
+{% when "getclicky" %}
+  {% include JB/analytics-providers/getclicky %}
+{% when "mixpanel" %}
+  {% include JB/analytics-providers/mixpanel %}
+{% when "piwik" %}
+  {% include JB/analytics-providers/piwik %}
+{% when "custom" %}
+  {% include custom/analytics %}
+{% endcase %}
+
+{% endif %}

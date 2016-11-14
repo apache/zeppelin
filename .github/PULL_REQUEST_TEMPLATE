@@ -1,0 +1,24 @@
+### What is this PR for?
+A few sentences describing the overall goals of the pull request's commits.
+First time? Check out the contributing guide - https://zeppelin.apache.org/contribution/contributions.html
+
+
+### What type of PR is it?
+[Bug Fix | Improvement | Feature | Documentation | Hot Fix | Refactoring]
+
+### Todos
+* [ ] - Task
+
+### What is the Jira issue?
+* Open an issue on Jira https://issues.apache.org/jira/browse/ZEPPELIN/
+* Put link here, and add [ZEPPELIN-*Jira number*] in PR title, eg. [ZEPPELIN-533]
+
+### How should this be tested?
+Outline the steps to test the PR here.
+
+### Screenshots (if appropriate)
+
+### Questions:
+* Does the licenses files need update?
+* Is there breaking changes for older versions?
+* Does this needs documentation?

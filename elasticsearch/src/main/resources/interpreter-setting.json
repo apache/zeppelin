@@ -1,0 +1,36 @@
+[
+  {
+    "group": "elasticsearch",
+    "name": "elasticsearch",
+    "className": "org.apache.zeppelin.elasticsearch.ElasticsearchInterpreter",
+    "properties": {
+      "elasticsearch.host": {
+        "envName": "ELASTICSEARCH_HOST",
+        "propertyName": "elasticsearch.host",
+        "defaultValue": "localhost",
+        "description": "The host for Elasticsearch"
+      },
+      "elasticsearch.port": {
+        "envName": "ELASTICSEARCH_PORT",
+        "propertyName": "elasticsearch.port",
+        "defaultValue": "9300",
+        "description": "The port for Elasticsearch"
+      },
+      "elasticsearch.cluster.name": {
+        "envName": "ELASTICSEARCH_CLUSTER_NAME",
+        "propertyName": "elasticsearch.cluster.name",
+        "defaultValue": "elasticsearch",
+        "description": "The cluster name for Elasticsearch"
+      },
+      "elasticsearch.result.size": {
+        "envName": "ELASTICSEARCH_RESULT_SIZE",
+        "propertyName": "elasticsearch.result.size",
+        "defaultValue": "10",
+        "description": "The size of the result set of a search query"
+      }
+    },
+    "editor": {
+      "editOnDblClick": false
+    }
+  }
+]

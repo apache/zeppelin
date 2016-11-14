@@ -1,0 +1,116 @@
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+.interpreterHead {
+  margin: -10px -10px 20px;
+  padding: 10px 15px 15px 15px;
+  background: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+  border-bottom: 1px solid #E5E5E5;
+}
+
+.interpreterHead .header {
+  font-family: 'Roboto', sans-serif;
+}
+
+.interpreterHead textarea,
+.interpreter textarea {
+  width: 100%;
+  display: block;
+  height: 20px;
+  resize: none;
+  border: 1px solid #CCCCCC;
+  font-size: 12px;
+}
+
+.interpreter input {
+  width: 100%;
+  display: block;
+  height: 23px;
+  border: 1px solid #CCCCCC;
+}
+
+.interpreter .interpreter-title {
+  font-size: 20px;
+  font-weight: bold;
+  color: #3071a9;
+  float: left;
+  margin-top: 0;
+}
+
+.interpreter ul {
+  margin: 0;
+  padding: 0;
+}
+
+.interpreter .interpreterInfo {
+  list-style-type: none;
+}
+
+.interpreter table {
+  table-layout: fixed;
+  word-break: break-all;
+}
+
+.interpreter table tr .interpreterPropertyKey {
+  padding : 5px 5px 5px 5px;
+}
+
+.interpreter table tr .interpreterPropertyValue {
+  padding : 5px 5px 5px 5px;
+  display: block;
+  max-height: 100px;
+  overflow-y: auto;
+}
+
+.permissionsForm {
+  list-style-type: none;
+  background: #EFEFEF;
+  padding: 10px 10px 10px 10px;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.15);
+  border: 1px solid #E5E5E5;
+}
+
+.interpreterSettingAdd {
+  margin : 5px 5px 5px 5px;
+  padding : 10px 10px 10px 10px;
+}
+
+.editable-wrap {
+  width : 100%;
+}
+
+.interpreter h5 {
+  font-weight: bold;
+}
+
+.new_h3 {
+  margin-top: 1px;
+  padding-top: 7px;
+  float: left;
+}
+
+.gray40-message {
+  color: #666;
+}
+
+.blackOpc:hover {
+  color: #000;
+  opacity: .5;
+}
+
+.remove-margin-top-bottom {
+  margin-top: 0px !important;
+  margin-bottom: 0px !important;
+}

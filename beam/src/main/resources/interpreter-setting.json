@@ -1,0 +1,13 @@
+[
+  {
+    "group": "beam",
+    "name": "beam",
+    "className": "org.apache.zeppelin.beam.BeamInterpreter",
+    "defaultInterpreter": true,
+    "properties": {
+    },
+    "editor": {
+      "editOnDblClick": false
+    }
+  }
+]

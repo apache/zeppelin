@@ -1,0 +1,87 @@
+<%--
+/*
+* Licensed to the Apache Software Foundation (ASF) under one or more
+* contributor license agreements.  See the NOTICE file distributed with
+* this work for additional information regarding copyright ownership.
+* The ASF licenses this file to You under the Apache License, Version 2.0
+* (the "License"); you may not use this file except in compliance with
+* the License.  You may obtain a copy of the License at
+*
+*    http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
+--%>
+#import(org.apache.zeppelin.cassandra.MetaDataHierarchy._)
+<%@ val ksContent: KeyspaceContent %>
+<li role="presentation" class="dropdown">
+    <a class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+        <span class="text-danger"><i class="glyphicon glyphicon-folder-open"/>&nbsp;&nbsp;<strong>${ksContent.keyspaceName}</strong></span>
+        <span class="text-danger caret"></span>
+        <ul class="dropdown-menu">
+            #if(ksContent.tables.nonEmpty)
+
+            <li class="dropdown-header"><span class="text-primary">Tables</span></li>
+                #for((id,name,_) <- ksContent.tables)
+            <li>
+                <a role="button" data-toggle="collapse" data-target="#${id}">
+                    <span class="text-primary"><i class="glyphicon glyphicon-th-list"/>&nbsp;${name}</span>
+                </a>
+            </li>
+                #end
+            #end
+
+            #if(ksContent.views.nonEmpty)
+                <li role="separator" class="divider text-muted"></li>
+                <li class="dropdown-header"><span class="text-primary">Materialized Views</span></li>
+                #for((id,name,_) <- ksContent.views)
+                    <li>
+                    <a role="button" data-toggle="collapse" data-target="#${id}">
+                    <span class="text-primary"><i class="glyphicon glyphicon-eye-open"/>&nbsp;${name}</span>
+                    </a>
+                    </li>
+                #end
+            #end
+
+            #if(ksContent.udts.nonEmpty)
+            <li role="separator" class="divider text-muted"></li>
+            <li class="dropdown-header"><span class="text-warning">User Defined Types</span></li>
+                #for((id,name,_) <- ksContent.udts)
+            <li>
+                <a role="button" data-toggle="collapse" data-target="#${id}">
+                    <span class="text-warning"><i class="glyphicon glyphicon-copyright-mark"/>&nbsp;${name}</span>
+                </a>
+            </li>
+                #end
+            #end
+
+            #if(ksContent.functions.nonEmpty)
+                <li role="separator" class="divider text-muted"></li>
+                <li class="dropdown-header"><span class="text-success">Functions</span></li>
+                #for((id,name,_) <- ksContent.functions)
+                    <li>
+                    <a role="button" data-toggle="collapse" data-target="#${id}">
+                    <span class="text-success"><i class="glyphicon glyphicon-random"/>&nbsp;${name}</span>
+                    </a>
+                    </li>
+                #end
+            #end
+
+            #if(ksContent.aggregates.nonEmpty)
+                <li role="separator" class="divider text-muted"></li>
+                <li class="dropdown-header"><span class="text-success">Aggregates</span></li>
+                #for((id,name,_) <- ksContent.aggregates)
+                    <li>
+                    <a role="button" data-toggle="collapse" data-target="#${id}">
+                    <span class="text-success"><i class="glyphicon glyphicon-retweet"/>&nbsp;${name}</span>
+                    </a>
+                    </li>
+                #end
+            #end
+        </ul>
+    </a>
+</li>

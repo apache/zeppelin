@@ -1,0 +1,61 @@
+<%--
+/*
+* Licensed to the Apache Software Foundation (ASF) under one or more
+* contributor license agreements.  See the NOTICE file distributed with
+* this work for additional information regarding copyright ownership.
+* The ASF licenses this file to You under the Apache License, Version 2.0
+* (the "License"); you may not use this file except in compliance with
+* the License.  You may obtain a copy of the License at
+*
+*    http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
+--%>
+#import(org.apache.zeppelin.cassandra.MetaDataHierarchy._)
+#import(java.util.UUID)
+<%@ val allUDTs: Map[(UUID,String),List[String]] %>
+<div class="container">
+
+    <div class="row">
+        <div class="panel-group" role="tablist" aria-multiselectable="true">
+            #for (((ksId,ksName), udts) <- allUDTs)
+            <div class="panel panel-default">
+                <div class="panel-heading" role="tab">
+                    <h4 class="panel-title">
+                        <a role="button" data-toggle="collapse" data-target="#${ksId}" aria-expanded="false">
+                            <span class="text-danger"><i class="glyphicon glyphicon-folder-open"/>&nbsp;&nbsp;${ksName}</span>
+                        </a>
+                    </h4>
+                </div>
+                <div id="${ksId}" class="panel-collapse collapse" role="tabpanel">
+                    <div class="panel-body">
+                        <div class="row">
+                            <div class="col-md-2"/>
+                            <div class="col-md-8 col-offset-md-2 table-responsive table-bordered">
+                                <table class="table">
+                                    <thead>
+                                        <tr><th>UDT</th></tr>
+                                    </thead>
+                                    <tbody>
+                                        #for (udt <- udts)
+
+                                        <tr class="text-warning"><td>${udt}</td></tr>
+                                        #end
+
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="col-md-2"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            #end
+        </div>
+    </div>
+</div>

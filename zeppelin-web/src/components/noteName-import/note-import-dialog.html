@@ -1,0 +1,81 @@
+<!--
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+  <div id="noteImportModal" class="modal fade" role="dialog"
+       tabindex="-1" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog" >
+
+      <!-- Modal content-->
+      <div class="modal-content" id="NoteImportCtrl" ng-init="NoteImportInit">
+        <div class="modal-header">
+          <!-- close button -->
+          <button type="button" class="close" data-dismiss="modal" ng-click="noteimportctrl.resetFlags()">&times;</button>
+
+          <h4 class="modal-title">Import new note</h4>
+        </div>
+        <div class="modal-body">
+
+          <div class="form-group">
+            <label for="noteImportName">Import AS</label>
+            <input placeholder="Note name" type="text" class="form-control" id="noteImportName"
+                   ng-model="note.noteImportName" />
+          </div>
+          <div class="form-group">
+            <label for="fileSizeLimit">JSON file size cannot exceed {{maxLimit}} MB</label>
+          </div>
+
+          <div class="form-group" ng-show="note.errorText">
+            <div class="alert alert-danger">{{note.errorText}}</div>
+          </div>
+
+          <div class="form-group slide-left" ng-show="note.step1">
+            <div class="display-inline">
+              <a class="fa fa-cloud-upload import-file-upload" ng-click="uploadFile()">
+                <p>Choose a JSON here</p>
+              </a>
+            </div>
+            <div style="display: none">
+              <input placeholder="Note name" type="file" class="form-control" id="noteImportFile"
+                     ng-model="note.importFile" onchange="angular.element(this).scope().importFile(this)" />
+            </div>
+            <div class="display-inline">
+              <a href="javascript:void(0);" ng-click="uploadURL()" class="fa fa-link">
+                <p>Add from URL</p>
+              </a>
+            </div>
+          </div>
+
+          <div class="form-group slide-right" ng-show="note.step2">
+
+            <label for="noteImportUrl">URL</label>
+            <input placeholder="Note url" type="text" class="form-control" id="noteImportUrl"
+                   ng-model="note.importUrl" />
+          </div>
+
+        </div>
+        <div class="modal-footer">
+          <div ng-show="note.step2">
+            <button type="button" id="importBackButton"
+                    class="btn btn-default"
+                    ng-click="noteimportctrl.importBack()">Back
+            </button>
+            <button type="button" id="importNoteButton"
+                    class="btn btn-default"
+                    ng-click="noteimportctrl.importNote()">Import Note
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>

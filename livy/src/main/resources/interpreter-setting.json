@@ -1,0 +1,181 @@
+[
+  {
+    "group": "livy",
+    "name": "spark",
+    "className": "org.apache.zeppelin.livy.LivySparkInterpreter",
+    "defaultInterpreter": true,
+    "properties": {
+      "zeppelin.livy.url": {
+        "envName": "ZEPPELIN_LIVY_HOST_URL",
+        "propertyName": "zeppelin.livy.url",
+        "defaultValue": "http://localhost:8998",
+        "description": "The URL for Livy Server."
+      },
+      "zeppelin.livy.create.session.retries": {
+        "envName": "ZEPPELIN_LIVY_CREATE_SESSION_RETRIES",
+        "propertyName": "zeppelin.livy.create.session.retries",
+        "defaultValue": "120",
+        "description": "Livy Server create session retry count."
+      },
+      "livy.spark.master": {
+        "propertyName": "livy.spark.master",
+        "defaultValue": "local[*]",
+        "description": "Spark master uri. ex) spark://masterhost:7077"
+      },
+      "livy.spark.driver.cores": {
+        "propertyName": "livy.spark.driver.cores",
+        "defaultValue": "",
+        "description": "Driver cores. ex) 1, 2"
+      },
+      "livy.spark.driver.memory": {
+        "propertyName": "livy.spark.driver.memory",
+        "defaultValue": "",
+        "description": "Driver memory. ex) 512m, 32g"
+      },
+      "livy.spark.executor.instances": {
+        "propertyName": "livy.spark.executor.instances",
+        "defaultValue": "",
+        "description": "Executor instances. ex) 1, 4"
+      },
+      "livy.spark.executor.cores": {
+        "propertyName": "livy.spark.executor.cores",
+        "defaultValue": "",
+        "description": "Num cores per executor. ex) 1, 4"
+      },
+      "livy.spark.executor.memory": {
+        "propertyName": "livy.spark.executor.memory",
+        "defaultValue": "",
+        "description": "Executor memory per worker instance. ex) 512m, 32g"
+      },
+      "livy.spark.dynamicAllocation.enabled": {
+        "propertyName": "livy.spark.dynamicAllocation.enabled",
+        "defaultValue": "",
+        "description": "Use dynamic resource allocation"
+      },
+      "livy.spark.dynamicAllocation.cachedExecutorIdleTimeout": {
+        "propertyName": "livy.spark.dynamicAllocation.cachedExecutorIdleTimeout",
+        "defaultValue": "",
+        "description": "Remove an executor which has cached data blocks"
+      },
+      "livy.spark.dynamicAllocation.minExecutors": {
+        "propertyName": "livy.spark.dynamicAllocation.minExecutors",
+        "defaultValue": "",
+        "description": "Lower bound for the number of executors if dynamic allocation is enabled."
+      },
+      "livy.spark.dynamicAllocation.initialExecutors": {
+        "propertyName": "livy.spark.dynamicAllocation.initialExecutors",
+        "defaultValue": "",
+        "description": "Initial number of executors to run if dynamic allocation is enabled."
+      },
+      "livy.spark.dynamicAllocation.maxExecutors": {
+        "propertyName": "livy.spark.dynamicAllocation.maxExecutors",
+        "defaultValue": "",
+        "description": "Upper bound for the number of executors if dynamic allocation is enabled."
+      },
+      "zeppelin.livy.principal": {
+        "propertyName": "zeppelin.livy.principal",
+        "defaultValue": "",
+        "description": "Kerberos principal to authenticate livy"
+      },
+      "zeppelin.livy.keytab": {
+        "propertyName": "zeppelin.livy.keytab",
+        "defaultValue": "",
+        "description": "Kerberos keytab to authenticate livy"
+      },
+      "livy.spark.jars.packages": {
+        "propertyName": "livy.spark.jars.packages",
+        "defaultValue": "",
+        "description": "Adding extra libraries to livy interpreter"
+      },
+      "livy.spark.displayAppInfo": {
+        "propertyName": "zeppelin.livy.displayAppInfo",
+        "defaultValue": "false",
+        "description": "Whether display app info"
+      }
+    },
+    "option": {
+      "remote": true,
+      "port": -1,
+      "perNote": "shared",
+      "perUser": "scoped",
+      "isExistingProcess": false,
+      "setPermission": false,
+      "users": []
+    },
+    "editor": {
+      "language": "scala",
+      "editOnDblClick": false
+    }
+  },
+  {
+    "group": "livy",
+    "name": "sql",
+    "className": "org.apache.zeppelin.livy.LivySparkSQLInterpreter",
+    "properties": {
+      "zeppelin.livy.spark.sql.maxResult": {
+        "envName": "ZEPPELIN_LIVY_MAXRESULT",
+        "propertyName": "zeppelin.livy.spark.sql.maxResult",
+        "defaultValue": "1000",
+        "description": "Max number of Spark SQL result to display."
+      },
+      "zeppelin.livy.concurrentSQL": {
+        "propertyName": "zeppelin.livy.concurrentSQL",
+        "defaultValue": "false",
+        "description": "Execute multiple SQL concurrently if set true."
+      }
+    },
+    "option": {
+      "remote": true,
+      "port": -1,
+      "perNote": "shared",
+      "perUser": "scoped",
+      "isExistingProcess": false,
+      "setPermission": false,
+      "users": []
+    },
+    "editor": {
+      "language": "sql",
+      "editOnDblClick": false
+    }
+  },
+  {
+    "group": "livy",
+    "name": "pyspark",
+    "className": "org.apache.zeppelin.livy.LivyPySparkInterpreter",
+    "properties": {
+    },
+    "option": {
+      "remote": true,
+      "port": -1,
+      "perNote": "shared",
+      "perUser": "scoped",
+      "isExistingProcess": false,
+      "setPermission": false,
+      "users": []
+    },
+    "editor": {
+      "language": "python",
+      "editOnDblClick": false
+    }
+  },
+  {
+    "group": "livy",
+    "name": "sparkr",
+    "className": "org.apache.zeppelin.livy.LivySparkRInterpreter",
+    "properties": {
+    },
+    "option": {
+      "remote": true,
+      "port": -1,
+      "perNote": "shared",
+      "perUser": "scoped",
+      "isExistingProcess": false,
+      "setPermission": false,
+      "users": []
+    },
+    "editor": {
+      "language": "r",
+      "editOnDblClick": false
+    }
+  }
+]

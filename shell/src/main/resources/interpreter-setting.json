@@ -1,0 +1,37 @@
+[
+  {
+    "group": "sh",
+    "name": "sh",
+    "className": "org.apache.zeppelin.shell.ShellInterpreter",
+    "properties": {
+      "shell.command.timeout.millisecs": {
+        "envName": "SHELL_COMMAND_TIMEOUT",
+        "propertyName": "shell.command.timeout.millisecs",
+        "defaultValue": "60000",
+        "description": "Shell command time out in millisecs. Default = 60000"
+      },
+      "zeppelin.shell.auth.type": {
+        "envName": null,
+        "propertyName": "zeppelin.shell.auth.type",
+        "defaultValue": "",
+        "description": "If auth type is needed, Example: KERBEROS"
+      },
+      "zeppelin.shell.keytab.location": {
+        "envName": null,
+        "propertyName": "zeppelin.shell.keytab.location",
+        "defaultValue": "",
+        "description": "Kerberos keytab location"
+      },
+      "zeppelin.shell.principal": {
+        "envName": null,
+        "propertyName": "zeppelin.shell.principal",
+        "defaultValue": "",
+        "description": "Kerberos principal"
+      }
+    },
+    "editor": {
+      "language": "sh",
+      "editOnDblClick": false
+    }
+  }
+]

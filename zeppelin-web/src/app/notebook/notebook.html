@@ -1,0 +1,131 @@
+<!--
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<!-- Here the controller <NotebookCtrl> is not needed because explicitly set in the app.js (route) -->
+<div ng-include src="'app/notebook/notebook-actionBar.html'"></div>
+<div class="notebookContent">
+  <!-- settings -->
+  <div ng-if="showSetting" class="setting">
+    <div>
+      <h4>Settings</h4>
+    </div>
+    <hr />
+    <div>
+      <h5>Interpreter binding</h5>
+      <p>
+        Bind interpreter for this note.
+        Click to Bind/Unbind interpreter.
+        Drag and drop to reorder interpreters. <br />
+        The first interpreter on the list becomes default. To create/remove interpreters, go to <a href="#/interpreter">Interpreter</a> menu.
+      </p>
+
+      <div class="interpreterSettings"
+           as-sortable="interpreterSelectionListeners" data-ng-model="interpreterBindings">
+        <div data-ng-repeat="item in interpreterBindings" as-sortable-item>
+          <div>
+            <a ng-click="restartInterpreter(item)" 
+               ng-class="{'inactivelink': !item.selected}"
+               tooltip="Restart">
+              <span class="glyphicon glyphicon-refresh btn-md"></span>
+            </a>&nbsp
+            <div as-sortable-item-handle
+                 ng-click="item.selected = !item.selected"
+                 class="btn"
+                 ng-class="{'btn-info': item.selected, 'btn-default': !item.selected}">
+              <font style="font-size:16px">{{item.name}}</font>
+              <small>
+                <span style="display:inline-block" ng-repeat="intp in item.interpreters">
+                  <span ng-show="!$first">, </span>
+                  %<span ng-show="!$parent.$first || $first">{{item.name}}</span
+                  ><span ng-show="(!$parent.$first || $first) && !$first">.</span
+                  ><span ng-show="!$first">{{intp.name}}</span>
+                  <span ng-show="$parent.$first && $first">(default)</span>
+                </span>
+              </small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <br />
+    <div>
+      <button class="btn btn-primary" ng-click="saveSetting()">Save</button>
+      <button class="btn btn-default" ng-click="closeSetting()">Cancel</button>
+    </div>
+  </div>
+
+  <!-- permissions -->
+  <div ng-if="showPermissions" class="permissions">
+    <div>
+      <h4>Note Permissions (Only note owners can change)</h4>
+    </div>
+    <hr />
+    <div>
+      <p>
+        Enter comma separated users and groups in the fields. <br />
+        Empty field (*) implies anyone can do the operation.
+      </p>
+      <div class="permissionsForm"
+           data-ng-model="permissions">
+        <p><span class="owners">Owners </span>
+          <select id="selectOwners" multiple="multiple">
+            <option ng-repeat="owner in permissions.owners" selected="selected">{{owner}}</option>
+          </select>
+          Owners can change permissions,read and write the note.
+        </p>
+        <p><span class="readers">Readers </span>
+          <select id="selectReaders" multiple="multiple">
+            <option ng-repeat="readers in permissions.readers" selected="selected">{{readers}}</option>
+          </select>
+            Readers can only read the note.
+        </p>
+        <p><span class="writers">Writers </span>
+          <select id="selectWriters" multiple="multiple">
+            <option ng-repeat="writers in permissions.writers" selected="selected">{{writers}}</option>
+          </select>
+            Writers can read and write the note.
+        </p>
+      </div>
+    </div>
+    <br />
+    <div>
+      <button class="btn btn-primary" ng-click="savePermissions()">Save</button>
+      <button class="btn btn-default" ng-click="closePermissions()">Cancel</button>
+    </div>
+  </div>
+
+  <div class="note-jump"></div>
+
+  <!-- Include the paragraphs according to the note, pass the note to init function -->
+  <div id="{{currentParagraph.id}}_paragraphColumn_main"
+       ng-repeat="currentParagraph in note.paragraphs"
+       ng-controller="ParagraphCtrl"
+       ng-init="init(currentParagraph, note)"
+       ng-class="columnWidthClass(currentParagraph.config.colWidth)"
+       class="paragraph-col">
+    <div class="new-paragraph" ng-click="insertNew('above')" ng-hide="viewOnly || asIframe">
+      <h4 class="plus-sign">&#43;</h4>
+    </div>
+    <div id="{{currentParagraph.id}}_paragraphColumn"
+         ng-include src="'app/notebook/paragraph/paragraph.html'"
+         ng-class="{'paragraph-space box paragraph-margin': !asIframe, 'focused': paragraphFocused,
+                    'lastEmptyParagraph': !paragraph.text && !paragraph.result}"
+         ng-hide="currentParagraph.config.tableHide && viewOnly"
+         ng-dblclick="paragraphOnDoubleClick(currentParagraph.id);">
+    </div>
+    <div class="new-paragraph" ng-click="insertNew('below');" ng-hide="!$last || viewOnly || asIframe ">
+      <h4 class="plus-sign">&#43;</h4>
+    </div>
+  </div>
+  <div style="clear:both;height:10px"></div>
+</div>

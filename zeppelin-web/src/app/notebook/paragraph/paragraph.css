@@ -1,0 +1,500 @@
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/*
+  Paragraph Style
+*/
+
+.paragraph-space {
+  margin-bottom: 5px !important;
+  padding: 10px 10px 10px 10px !important;
+  min-height: 30px;
+}
+
+.paragraph-margin {
+  margin-right: 2px;
+  margin-left: 2px;
+}
+
+/*
+  Paragraph Results
+*/
+
+.paragraph .text {
+  display: block !important;
+  font-family: "Monaco","Menlo","Ubuntu Mono","Consolas","source-code-pro",monospace;
+  font-size: 12px !important;
+  line-height: 1.42857143 !important;
+  margin: 0 0 5px !important;
+  padding-top: 2px;
+  unicode-bidi: embed;
+  white-space: pre-wrap;
+  word-break: break-all !important;
+  word-wrap: break-word !important;
+}
+
+.paragraph table {
+  margin-bottom: 0;
+}
+
+.paragraph div svg {
+  width: 100%;
+}
+
+table.dataTable {
+  margin-top: 0px !important;
+  margin-bottom: 6px !important;
+}
+
+table.dataTable.table-condensed > thead > tr > th {
+  padding-right: 28px;
+}
+
+table.dataTable.table-condensed .sorting:after,
+table.dataTable.table-condensed .sorting_asc:after,
+table.dataTable.table-condensed .sorting_desc:after {
+  right: 12px;
+}
+
+.graphContainer {
+  position: relative;
+  margin-bottom: 5px;
+  overflow: visible;
+}
+
+.graphContainer .table {
+  overflow: hidden;
+  margin-bottom: 5px !important;
+}
+
+.resizable-helper {
+  border: 3px solid #DDDDDD;
+}
+
+.paragraph .executionTime {
+  color: #999;
+  font-size: 10px;
+  font-family: 'Roboto', sans-serif;
+}
+
+.paragraph .elapsedTime {
+  color: #999;
+  font-size: 10px;
+  font-family: 'Roboto', sans-serif;
+}
+
+.paragraph .resultContained {
+  overflow: auto;
+}
+
+/*
+  Paragraph as Iframe CSS
+*/
+
+.paragraphAsIframe {
+  padding: 0;
+  margin-top: -79px;
+  margin-left: -10px;
+  margin-right: -10px;
+}
+
+.paragraphAsIframe .control {
+  background: rgba(255,255,255,0.9);
+  border-top: 1px solid #EFEFEF;
+  display: none;
+  float: right;
+  color: #999;
+  margin-top: -9px;
+  margin-right: 0;
+  position: absolute;
+  clear: both;
+  right: 25px;
+}
+
+.paragraphAsIframe table {
+  margin-bottom: 0;
+}
+
+.paragraphAsIframe .editor {
+  width: 100%;
+  border-left: 4px solid #EEEEEE;
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.paragraphAsIframe .text {
+  white-space: pre;
+  display: block;
+  unicode-bidi: embed;
+  display: block !important;
+  margin: 0 0 10px!important;
+  font-size: 12px!important;
+  line-height: 1.42857143!important;
+  word-break: break-all!important;
+  word-wrap: break-word!important;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
+}
+
+/*
+  Paragraph Controls CSS
+*/
+
+.paragraph .runControl {
+  font-size: 1px;
+  color: #AAAAAA;
+  height:4px;
+  margin: 0px 0px 0px 0px;
+}
+
+.paragraph .runControl .progress {
+  position: relative;
+  width: 100%;
+  height: 4px;
+  z-index: 100;
+  border-radius: 0;
+}
+
+.paragraph .control span {
+    margin-left: 4px;
+}
+
+.paragraph .control {
+  background: rgba(255,255,255,0.85);
+  float: right;
+  color: #999;
+  margin-top: 1px;
+  margin-right: 5px;
+  position: absolute;
+  clear: both;
+  right: 15px;
+  top: 16px;
+  text-align: right;
+  font-size: 12px;
+  padding: 4px;
+}
+
+.paragraph .control li {
+  font-size: 12px;
+  margin-bottom: 4px;
+  color: #333333;
+}
+
+.paragraph .control .tooltip {
+  z-index: 10003;
+}
+
+/*
+  Paragraph Menu
+*/
+
+.dropdown-menu > li > a {
+  cursor: pointer;
+}
+
+/*
+  Paragraph Title
+*/
+
+.paragraph .title {
+  margin: 0;
+  font-size: 12px;
+}
+
+.paragraph .title div {
+  width: 80%;
+  font-weight: bold;
+  font-family: 'Roboto', sans-serif;
+  font-size: 17px !important;
+}
+
+.paragraph .title input {
+  width: 80%;
+  height: 24px;
+  line-height: 1.42857143;
+  color: #555;
+  background: #fff none;
+  border: 1px solid #ccc;
+  border-radius: 0;
+  -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
+  font-family: 'Roboto', sans-serif;
+  font-size: 17px !important;
+  font-weight: bold;
+  padding: 0 2px;
+  margin-left: -3px;
+}
+
+/*
+  Paragraph Forms CSS
+*/
+
+.paragraphForm.form-horizontal .form-group {
+  margin-right: 0;
+  margin-left:  0;
+}
+
+.paragraphForm.form-horizontal .form-group label {
+  padding-left: 0;
+}
+
+.paragraphForm.form-horizontal .form-group .checkbox-item {
+  padding-left: 0;
+  padding-right: 10px;
+}
+
+.paragraphForm.form-horizontal .form-group .checkbox-item input {
+  margin-right: 2px;
+}
+
+/*
+  Ace Text Editor CSS
+*/
+
+.paragraph .editor {
+  width: 100%;
+  border-left: 4px solid #DDDDDD;
+  background: rgba(255, 255, 255, 0.0);
+  margin: 7px 0 2px 0;
+}
+
+.paragraph-text--dirty {
+  border-left: 4px solid #E67E22 !important;
+}
+
+.paragraph .ace_print-margin {
+  background: none !important;
+}
+
+.paragraph-disable {
+  opacity : 0.6!important;
+}
+
+.ace_marker-layer .ace_selection {
+    z-index: 0 !important;
+}
+
+.ace_marker-layer .ace_selected-word {
+    z-index: 0 !important;
+}
+
+.ace-tm {
+  background: #FFFFFF;
+  color: black;
+}
+
+.ace_editor {
+  position: relative;
+  overflow: hidden;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
+  font-size: 12px;
+  line-height: normal;
+  direction: ltr;
+}
+
+.ace_hidden-cursors {
+  opacity: 0;
+}
+
+.ace_text-input, .ace_gutter, .ace_layer,
+.emacs-mode, .ace_text-layer, .ace_cursor-layer,
+.ace_cursor, .ace_scrollbar {
+  z-index: auto !important;
+}
+
+.ace_text-input.ace_composition {
+ opacity: 0 !important;
+}
+
+#main .emacs-mode .ace_cursor {
+  background: #C0C0C0!important;
+  border: none !important;
+}
+
+/*
+  Table Display CSS
+*/
+
+.tableDisplay {
+  margin-top: 2px;
+}
+
+.tableDisplay div {
+}
+
+.tableDisplay img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+.tableDisplay .btn-group span {
+  margin: 10px 0 0 10px;
+  font-size: 12px;
+}
+.tableDisplay .btn-group span a {
+  cursor: pointer;
+}
+
+.tableDisplay .option {
+  padding: 5px 5px 5px 5px;
+  font-size: 12px;
+  height: auto;
+  overflow: auto;
+  border-top: 1px solid #ecf0f1;
+
+}
+
+.tableDisplay .option .columns {
+  height: 100%;
+}
+
+.tableDisplay .option .columns ul {
+  background: white;
+  overflow: auto;
+  width: auto;
+  padding: 3px 3px 3px 3px;
+  height: 150px;
+  border: 1px solid #CCC;
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
+  -webkit-transition: border-color ease-in-out .15s, -webkit-box-shadow ease-in-out .15s;
+  -o-transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
+  transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
+}
+
+.tableDisplay .option .columns ul li {
+  margin: 3px 3px 3px 3px;
+}
+
+.tableDisplay .option .columns ul li span {
+  cursor: pointer;
+  margin-left: 3px;
+  margin-top: 3px;
+}
+
+.tableDisplay .option .columns ul li div ul {
+  width: auto;
+  height: auto;
+}
+
+.tableDisplay .option .columns ul li div ul li a {
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+}
+
+.tableDisplay .option .columns a:focus,
+.tableDisplay .option .columns a:hover {
+  text-decoration: none;
+  outline: 0;
+  outline-offset: 0;
+}
+
+.paragraph .tableDisplay .hljs {
+  background: none;
+}
+
+/*
+  Handsontable
+*/
+
+.handsontable th {
+  font-weight: bold;
+}
+
+.handsontable th, .handsontable td {
+  border-right: 0px;
+  border-left: 0px !important;
+  padding: 4px;
+}
+
+.handsontable tr:first-child th {
+  text-align: left;
+  border-top: 0px;
+  padding: 4px 0px 0px 0px;
+  border-left: 0px;
+  border-right: 0px;
+  border-bottom: 2px solid #CCC;
+}
+
+.handsontable .columnSorting.ascending::after {
+  content: '\f160';
+  margin-left: 3px;
+  font-size: 12px;
+  font-family: FontAwesome;
+  line-height: 2;
+}
+
+.handsontable .columnSorting.descending::after {
+  content: '\f161';
+  margin-left: 3px;
+  font-size: 12px;
+  margin-left: 3px;
+  font-family: FontAwesome;
+  line-height: 2;
+}
+
+/*
+  Pivot CSS
+*/
+
+.allFields {
+  margin-bottom: 10px;
+}
+
+.noDot {
+  list-style-type: none;
+  padding-left: 5px;
+}
+
+.liVertical {
+  display: block;
+  float: left;
+  padding: 5px;
+}
+
+/*
+  Paragaph Font CSS
+*/
+
+.lightBold {
+  font-weight: 500;
+}
+
+table.table-striped {
+  border-top: 1px solid #ddd;
+}
+
+.scroll-paragraph-down {
+  position: absolute;
+  right: 10px;
+  cursor: pointer;
+}
+
+.scroll-paragraph-up {
+  bottom: 5px;
+  cursor: pointer;
+  position: absolute;
+  right: 15px;
+}
+
+.appSuggestion {
+  width: 200px;
+  padding: 5px 10px 5px 10px;
+}
+
+/* DSV download toggle button */
+.caretBtn {
+  padding-right: 4px !important;
+  padding-left: 4px !important;
+  width: 20px;
+}

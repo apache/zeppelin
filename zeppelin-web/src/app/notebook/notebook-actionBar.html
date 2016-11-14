@@ -1,0 +1,223 @@
+<!--
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<div class="noteAction" ng-show="note.id && !paragraphUrl">
+  <h3>
+    <div style="float: left; width: auto; max-width: 40%"
+      ng-controller="ElasticInputCtrl as input">
+      <input type="text" pu-elastic-input class="form-control2" placeholder="{{noteName(note)}}" style="min-width: 0px; max-width: 95%;"
+           ng-if="input.showEditor" ng-model="note.name" ng-blur="sendNewName();input.showEditor = false;" ng-enter="sendNewName();input.showEditor = false;" ng-escape="note.name = oldName; input.showEditor = false" focus-if="input.showEditor" />
+      <p class="form-control-static2" ng-click="input.showEditor = true; oldName = note.name" ng-show="!input.showEditor">{{noteName(note)}}</p>
+    </div>
+    <div style="float: left; padding-bottom: 10px">
+      <span class="labelBtn btn-group">
+      <button type="button"
+              class="btn btn-default btn-xs"
+              ng-click="runNote()"
+              ng-class="{'disabled':isNoteRunning()}"
+              tooltip-placement="bottom" tooltip="Run all paragraphs">
+        <i class="icon-control-play"></i>
+      </button>
+      <button type="button"
+              class="btn btn-default btn-xs"
+              ng-click="toggleAllEditor()"
+              ng-hide="viewOnly"
+              tooltip-placement="bottom" tooltip="Show/hide the code">
+        <i ng-class="editorToggled ?  'fa icon-size-fullscreen' :'fa icon-size-actual'"></i></button>
+      <button type="button"
+              class="btn btn-default btn-xs"
+              ng-click="toggleAllTable()"
+              ng-hide="viewOnly"
+              tooltip-placement="bottom" tooltip="Show/hide the output">
+        <i ng-class="tableToggled ? 'fa icon-notebook' : 'fa icon-book-open'"></i>
+      </button>
+      <button type="button"
+              class="btn btn-default btn-xs"
+              ng-click="clearAllParagraphOutput(note.id)"
+              ng-hide="viewOnly"
+              ng-class="{'disabled':isNoteRunning()}"
+              tooltip-placement="bottom" tooltip="Clear output">
+        <i class="fa fa-eraser"></i>
+      </button>
+
+      <button type="button"
+              class="btn btn-default btn-xs"
+              ng-hide="viewOnly"
+              tooltip-placement="bottom" tooltip="Clone this note" data-source-note-name="{{note.name}}"
+              data-toggle="modal" data-target="#noteNameModal" data-clone="true"
+              >
+        <i class="fa fa-copy"></i>
+      </button>
+      <button type="button"
+              class="btn btn-default btn-xs"
+              ng-hide="viewOnly"
+              ng-click="exportNote()"
+              tooltip-placement="bottom" tooltip="Export this note">
+        <i class="fa fa-download"></i>
+      </button>
+    </span>
+
+    <span class="labelBtn btn-group" role="group">
+      <div class="btn-group" role="group">
+        <button type="button"
+                class="btn btn-default btn-xs dropdown-toggle"
+                id="versionControlDropdown"
+                ng-hide="viewOnly"
+                data-toggle="dropdown"
+                tooltip-placement="bottom" tooltip="Version control">
+          <i class="fa fa-file-code-o"></i>
+        </button>
+        <ul class="dropdown-menu" style="width:250px"
+          aria-labelledby="versionControlDropdown">
+          <li>
+            <div class="commit-container">
+              <div>
+                <input type="text"
+                       dropdown-input
+                       placeholder="commit message"
+                       id="note.checkpoint.message"
+                       style="width: 145px;"
+                       ng-model="note.checkpoint.message"/>
+                <button type="button"
+                        class="btn btn-default btn-xs"
+                        ng-hide="viewOnly"
+                        ng-click="checkpointNote(note.checkpoint.message)"
+                        style="margin-left: 4px;"
+                        tooltip-placement="bottom" tooltip="Commit this note">Commit
+                </button>
+              </div>
+            </div>
+          </li>
+        </ul>
+      </div>
+      <div class="btn-group" role="group">
+        <button type="button" class="btn btn-default btn-xs revisionName">
+          Head
+        </button>
+        <button type="button" ng-if="noteRevisions.length > 0"
+          class="btn btn-default dropdown-toggle caretSeparator"
+          data-toggle="dropdown" id="revisionsDropdown">
+          <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu pull-right" aria-labelledby="revisionsDropdown">
+          <li ng-repeat="revision in noteRevisions | orderBy:'time':true" class="revision">
+            <a style="cursor:pointer">
+              <span style="display: block;">
+                <strong>{{revision.message}}</strong>
+              </span>
+              <span class="revisionDate">
+                <em>{{moment.unix(revision.time).format('MMMM Do YYYY, h:mm a')}}</em>
+              </span>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </span>
+
+<!-- put the delete action by itself for your protection -->
+      <span class="labelBtn" style="vertical-align:middle; display:inline-block;">
+        <button type="button"
+                class="btn btn-default btn-xs"
+                ng-click="removeNote(note.id)"
+                ng-hide="viewOnly"
+                tooltip-placement="bottom" tooltip="Remove this note">
+          <i class="icon-trash"></i>
+        </button>
+      </span>
+
+      <span ng-hide="viewOnly">
+      <div class="labelBtn btn-group">
+        <div class="btn btn-default btn-xs dropdown-toggle"
+             type="button"
+             data-toggle="dropdown"
+             ng-class="{ 'btn-info' : note.config.cron, 'btn-danger' : note.info.cron, 'btn-default' : !note.config.cron}"
+             tooltip-placement="bottom" tooltip="Run scheduler">
+          <span class="fa fa-clock-o"></span> {{getCronOptionNameFromValue(note.config.cron)}}
+        </div>
+        <ul class="dropdown-menu" role="menu" style="width:300px">
+          <li>
+            <div class="cron-preset-container">
+              Run note with cron scheduler.
+              Either choose from preset or write your own <a href="http://www.quartz-scheduler.org/documentation/quartz-2.1.x/tutorials/crontrigger" target="_blank">cron expression</a>.
+              <div>
+                <span>- Preset</span>
+                <a class="cron-preset" ng-repeat="cr in cronOption"
+                   type="button"
+                   ng-click="setCronScheduler(cr.value)"
+                   dropdown-input ng-class="{ 'selected' : cr.value == note.config.cron}">{{cr.name}}</a>
+              </div>
+              <div>
+                <span>- Cron expression</span>
+                <input type="text"
+                       ng-model="note.config.cron"
+                       ng-change="setCronScheduler(note.config.cron)"
+                       dropdown-input ng-model-options="{ debounce: 1000 }" />
+                <p ng-show="note.info.cron" class="text-danger cron-info">
+                  {{note.info.cron}}
+                </p>
+              </div>
+              <div>
+                <span>- Cron executing user (click enter in field to submit)</span>
+                <input type="text"
+                       ng-model="note.config.cronExecutingUser"
+                       ng-enter="setCronExecutingUser(note.config.cronExecutingUser)"
+                       dropdown-input />
+              </div>
+              <div>
+                <span>- auto-restart interpreter on cron execution </span>
+                <input type="checkbox"
+                       ng-model="note.config.releaseresource"
+                       ng-click="setReleaseResource(note.config.releaseresource)"/>
+              </div>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </span>
+    </div>
+
+    <div class="pull-right" style="margin-top:15px; margin-right:15px; margin-left: 15px; margin-bottom: 13px; font-size:15px;">
+      <span class="setting-btn"
+            type="button"
+            data-toggle="modal"
+            data-target="#shortcutModal"
+            tooltip-placement="bottom" tooltip="List of shortcut">
+        <i class="fa fa-keyboard-o"></i>
+      </span>
+      <span class="setting-btn"
+            type="button"
+            ng-click="toggleSetting()"
+            tooltip-placement="bottom" tooltip="Interpreter binding">
+        <i class="fa fa-cog" ng-style="{color: showSetting ? '#3071A9' : 'black' }"></i>
+      </span>
+      <span class="setting-btn"
+            type="button"
+            ng-click="togglePermissions()"
+            tooltip-placement="bottom" tooltip="Note permissions">
+        <i class="fa fa-lock" ng-style="{color: showPermissions ? '#3071A9' : 'black' }"></i>
+      </span>
+
+      <span class="btn-group">
+        <button type="button" class="btn btn-default btn-xs dropdown-toggle"
+                data-toggle="dropdown">
+          {{note.config.looknfeel}} <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu pull-right" role="menu">
+          <li ng-repeat="looknfeel in looknfeelOption">
+            <a style="cursor:pointer" ng-click="setLookAndFeel(looknfeel)">{{looknfeel}}</a>
+          </li>
+        </ul>
+      </span>
+    </div>
+  </h3>
+</div>

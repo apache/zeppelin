@@ -1,0 +1,41 @@
+<div class="row">
+    <div class="col-md-2"></div>
+    <div class="col-md-8 col-offset-md-2">
+        <div class="panel panel-default table-responsive table-bordered">
+            <table class="table">
+
+                <caption>
+                    <h4 class="text-danger">
+                        <i class="glyphicon glyphicon-folder-open"/>&nbsp;&nbsp;live_data
+                    </h4>
+                </caption>
+                <thead>
+                <tr>
+                    <th class="col-md-10">Replication</th>
+                    <th class="col-md-2">Durable Writes</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td class="col-md-10">{'replication_factor' : '1', 'class' : 'org.apache.cassandra.locator.SimpleStrategy'}</td>
+                    <td class="col-md-2">false</td>
+                </tr>
+                <tbody>
+            </table>
+            <div class="panel-footer">
+                <a data-toggle="collapse" data-target="#3b294060-3516-11e5-ab36-8f0ea8ae1a37_asCQL">
+                    <strong>As CQL statement</strong>
+                    <span class="caret"></span>
+                </a>
+                <br/><br/>
+                <div class="collapse" id="3b294060-3516-11e5-ab36-8f0ea8ae1a37_asCQL">
+                    <pre class="well">CREATE KEYSPACE live_data WITH REPLICATION = {
+	'class' : 'org.apache.cassandra.locator.SimpleStrategy',
+	'replication_factor': '1' }
+AND DURABLE_WRITES = false;</pre>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2"></div>
+</div>

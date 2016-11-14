@@ -1,0 +1,107 @@
+<!--
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<div class="job" data-ng-init="init(notebookJob)">
+  <div>
+    <div ng-include src="'app/jobmanager/jobs/job-control.html'"></div>
+    <span
+      class="job-types"
+      ng-switch="notebookJob.noteType">
+      <i ng-switch-when="normal" class="icon-doc"></i>
+      <i ng-switch-when="cron" class="icon-clock"></i>
+      <i ng-switch-default class="icon-question"></i>
+    </span>
+    &nbsp;
+    <a style="text-decoration: none !important;" ng-href="#/notebook/{{notebookJob.noteId}}">
+      <span>
+       {{notebookJob.noteName}}
+      </span>
+      <span>
+        &nbsp;-&nbsp;
+      </span>
+      <span>
+        <span ng-if="notebookJob.interpreter === undefined" style="color: orange">
+          Interpreter is not set
+        </span>
+        <span ng-if="notebookJob.interpreter !== undefined" style="color: gray">
+          {{notebookJob.interpreter}}
+        </span>
+      </span>
+    </a>
+    <div ng-include src="'app/jobmanager/jobs/job-progressBar.html'"></div>
+  </div>
+
+  <div>
+    <span
+      ng-repeat="paragraphJob in notebookJob.paragraphs"
+      ng-switch="paragraphJob.status">
+      <a ng-switch-when="READY"
+         style="text-decoration: none !important;"
+         ng-href="#/notebook/{{notebookJob.noteId}}/paragraph/{{paragraphJob.id}}">
+        <i style="color: green" class="fa fa-circle-o"
+           tooltip-placement="top-left"
+           tooltip="{{paragraphJob.name}} is READY">
+        </i>
+      </a>
+      <a ng-switch-when="FINISHED"
+         style="text-decoration: none !important;"
+         ng-href="#/notebook/{{notebookJob.noteId}}/paragraph/{{paragraphJob.id}}">
+        <i style="color: green" class="fa fa-circle"
+           tooltip-placement="top-left"
+           tooltip="{{paragraphJob.name}} is FINISHED">
+        </i>
+      </a>
+      <a ng-switch-when="ABORT"
+         style="text-decoration: none !important;"
+         ng-href="#/notebook/{{notebookJob.noteId}}/paragraph/{{paragraphJob.id}}">
+        <i style="color: orange" class="fa fa-circle"
+           tooltip-placement="top-left"
+           tooltip="{{paragraphJob.name}} is ABORT">
+        </i>
+      </a>
+      <a ng-switch-when="ERROR"
+         style="text-decoration: none !important;"
+         ng-href="#/notebook/{{notebookJob.noteId}}/paragraph/{{paragraphJob.id}}">
+        <i style="color: red" class="fa fa-circle"
+           tooltip-placement="top-left"
+           tooltip="{{paragraphJob.name}} is ERROR">
+        </i>
+      </a>
+      <a ng-switch-when="PENDING"
+         style="text-decoration: none !important;"
+         ng-href="#/notebook/{{notebookJob.noteId}}/paragraph/{{paragraphJob.id}}">
+        <i style="color: gray" class="fa fa-circle"
+           tooltip-placement="top-left"
+           tooltip="{{paragraphJob.name}} is PENDING">
+        </i>
+      </a>
+      <a ng-switch-when="RUNNING"
+         style="text-decoration: none !important;"
+         ng-href="#/notebook/{{notebookJob.noteId}}/paragraph/{{paragraphJob.id}}">
+        <i style="color: blue" class="fa fa-spinner spinAnimation"
+           tooltip-placement="top-left"
+           tooltip="{{paragraphJob.name}} is RUNNING">
+        </i>
+      </a>
+      <a ng-switch-default class="icon-question"
+         style="text-decoration: none !important;"
+         ng-href="#/notebook/{{notebookJob.noteId}}/paragraph/{{paragraphJob.id}}">
+        <i class="icon-question"
+           tooltip-placement="top-left"
+           tooltip="{{paragraphJob.name}} is {{paragraphJob.status}}">
+        </i>
+      </a>
+    </span>
+  </div>
+</div>

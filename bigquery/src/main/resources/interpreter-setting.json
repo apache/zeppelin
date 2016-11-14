@@ -1,0 +1,31 @@
+[
+  {
+    "group": "bigquery",
+    "name": "sql",
+    "className": "org.apache.zeppelin.bigquery.BigQueryInterpreter",
+    "properties": {
+      "zeppelin.bigquery.project_id": {
+        "envName": null,
+        "propertyName": "zeppelin.bigquery.project_id",
+        "defaultValue": " ",
+        "description": "Google Project ID"
+      },
+      "zeppelin.bigquery.wait_time": {
+        "envName": null,
+        "propertyName": "zeppelin.bigquery.wait_time",
+        "defaultValue": "5000",
+        "description": "Query timeout in Milliseconds"
+      },
+      "zeppelin.bigquery.max_no_of_rows": {
+        "envName": null,
+        "propertyName": "zeppelin.bigquery.max_no_of_rows",
+        "defaultValue": "100000",
+        "description": "Maximum number of rows to fetch from BigQuery"
+      }
+    },
+    "editor": {
+      "language": "sql",
+      "editOnDblClick": false
+    }
+  }
+]

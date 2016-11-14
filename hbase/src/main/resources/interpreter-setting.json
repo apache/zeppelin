@@ -1,0 +1,28 @@
+[
+  {
+    "group": "hbase",
+    "name": "hbase",
+    "className": "org.apache.zeppelin.hbase.HbaseInterpreter",
+    "properties": {
+      "hbase.home": {
+        "envName": "HBASE_HOME",
+        "propertyName": "hbase.home",
+        "defaultValue": "/usr/lib/hbase/",
+        "description": "Installation directory of HBase"
+      },
+      "hbase.ruby.sources": {
+        "propertyName": "hbase.ruby.sources",
+        "defaultValue": "lib/ruby",
+        "description": "Path to Ruby scripts relative to 'hbase.home'"
+      },
+      "zeppelin.hbase.test.mode": {
+        "propertyName": "zeppelin.hbase.test.mode",
+        "defaultValue": "false",
+        "description": "Disable checks for unit and manual tests"
+      }
+    },
+    "editor": {
+      "editOnDblClick": false
+    }
+  }
+]

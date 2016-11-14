@@ -1,0 +1,138 @@
+[
+  {
+    "group": "spark",
+    "name": "spark",
+    "className": "org.apache.zeppelin.spark.SparkInterpreter",
+    "defaultInterpreter": true,
+    "properties": {
+      "spark.executor.memory": {
+        "envName": null,
+        "propertyName": "spark.executor.memory",
+        "defaultValue": "",
+        "description": "Executor memory per worker instance. ex) 512m, 32g"
+      },
+      "args": {
+        "envName": null,
+        "propertyName": null,
+        "defaultValue": "",
+        "description": "spark commandline args"
+      },
+      "zeppelin.spark.useHiveContext": {
+        "envName": "ZEPPELIN_SPARK_USEHIVECONTEXT",
+        "propertyName": "zeppelin.spark.useHiveContext",
+        "defaultValue": "true",
+        "description": "Use HiveContext instead of SQLContext if it is true."
+      },
+      "spark.app.name": {
+        "envName": "SPARK_APP_NAME",
+
+        "propertyName": "spark.app.name",
+        "defaultValue": "Zeppelin",
+        "description": "The name of spark application."
+      },
+      "zeppelin.spark.printREPLOutput": {
+        "envName": null,
+        "propertyName": null,
+        "defaultValue": "true",
+        "description": "Print REPL output"
+      },
+      "spark.cores.max": {
+        "envName": null,
+        "propertyName": "spark.cores.max",
+        "defaultValue": "",
+        "description": "Total number of cores to use. Empty value uses all available core."
+      },
+      "zeppelin.spark.maxResult": {
+        "envName": "ZEPPELIN_SPARK_MAXRESULT",
+        "propertyName": "zeppelin.spark.maxResult",
+        "defaultValue": "1000",
+        "description": "Max number of Spark SQL result to display."
+      },
+      "master": {
+        "envName": "MASTER",
+        "propertyName": "spark.master",
+        "defaultValue": "local[*]",
+        "description": "Spark master uri. ex) spark://masterhost:7077"
+      }
+    },
+    "editor": {
+      "language": "scala",
+      "editOnDblClick": false
+    }
+  },
+  {
+    "group": "spark",
+    "name": "sql",
+    "className": "org.apache.zeppelin.spark.SparkSqlInterpreter",
+    "properties": {
+      "zeppelin.spark.concurrentSQL": {
+        "envName": "ZEPPELIN_SPARK_CONCURRENTSQL",
+        "propertyName": "zeppelin.spark.concurrentSQL",
+        "defaultValue": "false",
+        "description": "Execute multiple SQL concurrently if set true."
+      },
+      "zeppelin.spark.sql.stacktrace": {
+        "envName": "ZEPPELIN_SPARK_SQL_STACKTRACE",
+        "propertyName": "zeppelin.spark.sql.stacktrace",
+        "defaultValue": "false",
+        "description": "Show full exception stacktrace for SQL queries if set to true."
+      },
+      "zeppelin.spark.maxResult": {
+        "envName": "ZEPPELIN_SPARK_MAXRESULT",
+        "propertyName": "zeppelin.spark.maxResult",
+        "defaultValue": "1000",
+        "description": "Max number of Spark SQL result to display."
+      },
+      "zeppelin.spark.importImplicit": {
+        "envName": "ZEPPELIN_SPARK_IMPORTIMPLICIT",
+        "propertyName": "zeppelin.spark.importImplicit",
+        "defaultValue": "true",
+        "description": "Import implicits, UDF collection, and sql if set true. true by default."
+      }
+    },
+    "editor": {
+      "language": "sql",
+      "editOnDblClick": false
+    }
+  },
+  {
+    "group": "spark",
+    "name": "dep",
+    "className": "org.apache.zeppelin.spark.DepInterpreter",
+    "properties": {
+      "zeppelin.dep.localrepo": {
+        "envName": "ZEPPELIN_DEP_LOCALREPO",
+        "propertyName": null,
+        "defaultValue": "local-repo",
+        "description": "local repository for dependency loader"
+      },
+      "zeppelin.dep.additionalRemoteRepository": {
+        "envName": null,
+        "propertyName": null,
+        "defaultValue": "spark-packages,http://dl.bintray.com/spark-packages/maven,false;",
+        "description": "A list of 'id,remote-repository-URL,is-snapshot;' for each remote repository."
+      }
+    },
+    "editor": {
+      "language": "scala",
+      "editOnDblClick": false
+    }
+  },
+  {
+    "group": "spark",
+    "name": "pyspark",
+    "className": "org.apache.zeppelin.spark.PySparkInterpreter",
+    "properties": {
+      "zeppelin.pyspark.python": {
+        "envName": "PYSPARK_PYTHON",
+        "propertyName": null,
+        "defaultValue": "python",
+        "description": "Python command to run pyspark with"
+      }
+    },
+    "editor": {
+      "language": "python",
+      "editOnDblClick": false
+    }
+  }
+]
