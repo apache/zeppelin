@@ -21,6 +21,7 @@ import org.apache.commons.exec.*;
 import org.apache.commons.exec.environment.EnvironmentUtils;
 import org.apache.zeppelin.helium.ApplicationEventListener;
 import org.apache.zeppelin.interpreter.InterpreterException;
+import org.apache.zeppelin.interpreter.RemoteWorksController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,6 +44,7 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
   private int port = -1;
   private final String interpreterDir;
   private final String localRepoDir;
+  private RemoteWorksController remoteWorksController;
 
   private Map<String, String> env;
 
@@ -53,13 +55,15 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
       Map<String, String> env,
       int connectTimeout,
       RemoteInterpreterProcessListener listener,
-      ApplicationEventListener appListener) {
-    super(new RemoteInterpreterEventPoller(listener, appListener),
+      ApplicationEventListener appListener,
+      RemoteWorksController remoteWorksController) {
+    super(new RemoteInterpreterEventPoller(listener, appListener, remoteWorksController),
         connectTimeout);
     this.interpreterRunner = intpRunner;
     this.env = env;
     this.interpreterDir = intpDir;
     this.localRepoDir = localRepoDir;
+    this.remoteWorksController = remoteWorksController;
 
   }
 
@@ -75,6 +79,7 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
     this.env = env;
     this.interpreterDir = intpDir;
     this.localRepoDir = localRepoDir;
+    this.remoteWorksController = remoteInterpreterEventPoller.getRemoteWorkController();
   }
 
   @Override

@@ -79,8 +79,7 @@ enum RemoteZeppelinServerResourceType {
 
 struct ZeppelinServerResourceParagraphRunner {
   1: string noteId,
-  2: string paragraphId,
-  3: string runners
+  2: string paragraphId
 }
 
 struct ZeppelinServerResource {

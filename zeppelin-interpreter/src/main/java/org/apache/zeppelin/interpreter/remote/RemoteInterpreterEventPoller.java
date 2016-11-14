@@ -25,6 +25,7 @@ import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.helium.ApplicationEventListener;
 import org.apache.zeppelin.interpreter.InterpreterContextRunner;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
+import org.apache.zeppelin.interpreter.RemoteWorksController;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterEvent;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterEventType;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService.Client;
@@ -61,12 +62,15 @@ public class RemoteInterpreterEventPoller extends Thread {
 
   private RemoteInterpreterProcess interpreterProcess;
   private InterpreterGroup interpreterGroup;
+  private RemoteWorksController remoteWorkController;
 
   public RemoteInterpreterEventPoller(
       RemoteInterpreterProcessListener listener,
-      ApplicationEventListener appListener) {
+      ApplicationEventListener appListener,
+      RemoteWorksController remoteWorkController) {
     this.listener = listener;
     this.appListener = appListener;
+    this.remoteWorkController = remoteWorkController;
     shutdown = false;
   }
 
@@ -76,6 +80,14 @@ public class RemoteInterpreterEventPoller extends Thread {
 
   public void setInterpreterGroup(InterpreterGroup interpreterGroup) {
     this.interpreterGroup = interpreterGroup;
+  }
+
+  public RemoteWorksController getRemoteWorkController() {
+    return remoteWorkController;
+  }
+
+  public void setRemoteWorkController(RemoteWorksController remoteWorkController) {
+    this.remoteWorkController = remoteWorkController;
   }
 
   @Override
@@ -223,15 +235,37 @@ public class RemoteInterpreterEventPoller extends Thread {
     boolean broken = false;
     try {
       interpreterServer = interpreterProcess.getClient();
-
+      List<InterpreterContextRunner> interpreterContextRunners = new LinkedList<>();
+      List<ZeppelinServerResourceParagraphRunner> remoteRunners = new LinkedList<>();
       if (event.getType() == RemoteZeppelinServerControlEvent.REQ_RESOURCE_PARAGRAPH_RUN_CONTEXT) {
         ZeppelinServerResourceParagraphRunner runner = gson.fromJson(
             event.getMsg(), ZeppelinServerResourceParagraphRunner.class);
 
+        logger.info("clover req note id {} p id {} - msg {}",
+          runner.getNoteId(), runner.getParagraphId(), event.getMsg());
         RemoteZeppelinServerController resResource = new RemoteZeppelinServerController();
         resResource.setType(RemoteZeppelinServerControlEvent.RES_RESOURCE_PARAGRAPH_RUN_CONTEXT);
         resResource.setEventOwnerKey(eventOwnerKey);
-        resResource.setMsg("test123123");
+        if (runner.getParagraphId() != null) {
+          InterpreterContextRunner intpRunner = remoteWorkController.getRunner(
+            runner.getNoteId(), runner.getParagraphId());
+          interpreterContextRunners.add(intpRunner);
+        } else {
+          interpreterContextRunners = remoteWorkController.getRunner(runner.getNoteId());
+        }
+
+        logger.info("clover remotework count 1 {}", interpreterContextRunners.size());
+
+        for (InterpreterContextRunner r : interpreterContextRunners) {
+          remoteRunners.add(
+            new ZeppelinServerResourceParagraphRunner(r.getNoteId(), r.getParagraphId())
+          );
+        }
+
+        logger.info("clover remotework count 2 {}", remoteRunners.size());
+
+        resResource.setMsg(gson.toJson(remoteRunners));
+
         interpreterServer.remoteZeppelinServerControlFeedback(resResource);
         logger.info("get runner noteid {} paragraphid {}",
             runner.getNoteId(), runner.getParagraphId());

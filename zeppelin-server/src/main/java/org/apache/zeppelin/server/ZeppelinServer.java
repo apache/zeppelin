@@ -39,6 +39,7 @@ import org.apache.zeppelin.interpreter.InterpreterFactory;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.NotebookAuthorization;
 import org.apache.zeppelin.notebook.repo.NotebookRepoSync;
+import org.apache.zeppelin.remoteworks.RemoteWorksManager;
 import org.apache.zeppelin.rest.ConfigurationsRestApi;
 import org.apache.zeppelin.rest.CredentialRestApi;
 import org.apache.zeppelin.rest.HeliumRestApi;
@@ -91,6 +92,7 @@ public class ZeppelinServer extends Application {
   private NotebookAuthorization notebookAuthorization;
   private Credentials credentials;
   private DependencyResolver depResolver;
+  private RemoteWorksManager remoteWorksManager;
 
   public ZeppelinServer() throws Exception {
     ZeppelinConfiguration conf = ZeppelinConfiguration.create();
@@ -118,6 +120,9 @@ public class ZeppelinServer extends Application {
 
     notebook.addNotebookEventListener(heliumApplicationFactory);
     notebook.addNotebookEventListener(notebookWsServer.getNotebookInformationListener());
+
+    remoteWorksManager = new RemoteWorksManager(notebook);
+    replFactory.setRemoteController(remoteWorksManager.getInstance());
   }
 
   public static void main(String[] args) throws InterruptedException {

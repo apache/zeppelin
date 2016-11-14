@@ -341,6 +341,14 @@ public class RemoteInterpreterServer
       RemoteZeppelinServerController response) throws TException {
     logger.info("clover remote zeppelin server controller feedback {}", response);
     logger.info("clover remote zeppelin server conteroller body {}", response.getMsg());
+
+    if (response.getType() == RemoteZeppelinServerControlEvent.RES_RESOURCE_PARAGRAPH_RUN_CONTEXT) {
+      List<ZeppelinServerResourceParagraphRunner> runners = gson.fromJson(response.getMsg(),
+        new TypeToken<List<ZeppelinServerResourceParagraphRunner>>() {}.getType());
+      for (ZeppelinServerResourceParagraphRunner r : runners) {
+        logger.info("clover runner nid {} pid {}", r.getNoteId(), r.getParagraphId());
+      }
+    }
   }
 
   class InterpretJobListener implements JobListener {
@@ -592,8 +600,8 @@ public class RemoteInterpreterServer
     @Override
     public void run() {
       ZeppelinServerResourceParagraphRunner test = new ZeppelinServerResourceParagraphRunner();
-      test.setNoteId("TEST NOTE");
-      test.setParagraphId("TEST PARAGRAPH");
+      test.setNoteId(getNoteId());
+      test.setParagraphId(getParagraphId());
       server.eventClient.getZeppelinServerNoteRunner("IamOWNER", test);
       server.eventClient.run(this);
     }

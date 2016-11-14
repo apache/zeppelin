@@ -90,6 +90,7 @@ public class RemoteInterpreterTest {
             env,
             10 * 1000,
             null,
+            null,
             null);
   }
 
@@ -107,6 +108,7 @@ public class RemoteInterpreterTest {
             "fakeRepo",
             env,
             10 * 1000,
+            null,
             null,
             null);
   }
@@ -207,6 +209,7 @@ public class RemoteInterpreterTest {
         env,
         10 * 1000,
         null,
+        null,
         null);
 
 
@@ -222,6 +225,7 @@ public class RemoteInterpreterTest {
         "fakeRepo",
         env,
         10 * 1000,
+        null,
         null,
         null);
 
@@ -687,7 +691,8 @@ public class RemoteInterpreterTest {
     //Given
     final Client client = Mockito.mock(Client.class);
     final RemoteInterpreter intr = new RemoteInterpreter(new Properties(), "noteId",
-            MockInterpreterA.class.getName(), "runner", "path","localRepo", env, 10 * 1000, null, null);
+            MockInterpreterA.class.getName(),
+            "runner", "path","localRepo", env, 10 * 1000, null, null, null);
     final AngularObjectRegistry registry = new AngularObjectRegistry("spark", null);
     registry.add("name", "DuyHai DOAN", "nodeId", "paragraphId");
     final InterpreterGroup interpreterGroup = new InterpreterGroup("groupId");
@@ -732,6 +737,7 @@ public class RemoteInterpreterTest {
         "fakeRepo",
         env,
         10 * 1000,
+        null,
         null,
         null);
 

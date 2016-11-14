@@ -45,6 +45,7 @@ import com.google.gson.reflect.TypeToken;
 public class RemoteInterpreter extends Interpreter {
   private final RemoteInterpreterProcessListener remoteInterpreterProcessListener;
   private final ApplicationEventListener applicationEventListener;
+  private final RemoteWorksController remoteWorksController;
   Logger logger = LoggerFactory.getLogger(RemoteInterpreter.class);
   Gson gson = new Gson();
   private String interpreterRunner;
@@ -72,7 +73,8 @@ public class RemoteInterpreter extends Interpreter {
                            int connectTimeout,
                            int maxPoolSize,
                            RemoteInterpreterProcessListener remoteInterpreterProcessListener,
-                           ApplicationEventListener appListener) {
+                           ApplicationEventListener appListener,
+                           RemoteWorksController remoteWorksController) {
     super(property);
     this.noteId = noteId;
     this.className = className;
@@ -85,6 +87,7 @@ public class RemoteInterpreter extends Interpreter {
     this.maxPoolSize = maxPoolSize;
     this.remoteInterpreterProcessListener = remoteInterpreterProcessListener;
     this.applicationEventListener = appListener;
+    this.remoteWorksController = remoteWorksController;
   }
 
 
@@ -100,7 +103,8 @@ public class RemoteInterpreter extends Interpreter {
       int connectTimeout,
       int maxPoolSize,
       RemoteInterpreterProcessListener remoteInterpreterProcessListener,
-      ApplicationEventListener appListener) {
+      ApplicationEventListener appListener,
+      RemoteWorksController remoteWorksController) {
     super(property);
     this.noteId = noteId;
     this.className = className;
@@ -111,6 +115,7 @@ public class RemoteInterpreter extends Interpreter {
     this.maxPoolSize = maxPoolSize;
     this.remoteInterpreterProcessListener = remoteInterpreterProcessListener;
     this.applicationEventListener = appListener;
+    this.remoteWorksController = remoteWorksController;
   }
 
 
@@ -125,7 +130,8 @@ public class RemoteInterpreter extends Interpreter {
       Map<String, String> env,
       int connectTimeout,
       RemoteInterpreterProcessListener remoteInterpreterProcessListener,
-      ApplicationEventListener appListener) {
+      ApplicationEventListener appListener,
+      RemoteWorksController remoteWorksController) {
     super(property);
     this.className = className;
     this.noteId = noteId;
@@ -138,6 +144,7 @@ public class RemoteInterpreter extends Interpreter {
     this.maxPoolSize = 10;
     this.remoteInterpreterProcessListener = remoteInterpreterProcessListener;
     this.applicationEventListener = appListener;
+    this.remoteWorksController = remoteWorksController;
   }
 
   private Map<String, String> getEnvFromInterpreterProperty(Properties property) {
@@ -181,13 +188,15 @@ public class RemoteInterpreter extends Interpreter {
               connectTimeout,
               remoteInterpreterProcessListener,
               applicationEventListener,
+              remoteWorksController,
               host,
               port);
         } else {
           // create new remote process
           remoteProcess = new RemoteInterpreterManagedProcess(
               interpreterRunner, interpreterPath, localRepoPath, env, connectTimeout,
-              remoteInterpreterProcessListener, applicationEventListener);
+              remoteInterpreterProcessListener, applicationEventListener,
+              remoteWorksController);
         }
 
         intpGroup.setRemoteInterpreterProcess(remoteProcess);

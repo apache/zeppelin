@@ -24,6 +24,7 @@ import org.apache.zeppelin.helium.ApplicationEventListener;
 import org.apache.zeppelin.interpreter.Constants;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
+import org.apache.zeppelin.interpreter.RemoteWorksController;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService.Client;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,8 +49,9 @@ public abstract class RemoteInterpreterProcess {
   public RemoteInterpreterProcess(
       int connectTimeout,
       RemoteInterpreterProcessListener listener,
-      ApplicationEventListener appListener) {
-    this(new RemoteInterpreterEventPoller(listener, appListener),
+      ApplicationEventListener appListener,
+      RemoteWorksController remoteWorksController) {
+    this(new RemoteInterpreterEventPoller(listener, appListener, remoteWorksController),
         connectTimeout);
   }
 

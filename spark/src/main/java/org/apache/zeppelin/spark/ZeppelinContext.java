@@ -329,6 +329,19 @@ public class ZeppelinContext {
   }
 
   /**
+   * get Zeppelin Paragraph Runner from zeppelin server
+   */
+  @ZeppelinApi
+  public List<InterpreterContextRunner> getInterpreterContextRunner(
+      String noteId, String paragraphId) {
+    List<InterpreterContextRunner> runners = new LinkedList<>();
+
+
+
+    return runners;
+  }
+
+  /**
    * Run paragraph at idx
    * @param idx
    */

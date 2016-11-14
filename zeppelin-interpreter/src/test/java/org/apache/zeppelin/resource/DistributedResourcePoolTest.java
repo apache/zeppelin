@@ -70,6 +70,7 @@ public class DistributedResourcePoolTest {
         env,
         10 * 1000,
         null,
+        null,
         null
     );
 
@@ -87,6 +88,7 @@ public class DistributedResourcePoolTest {
         "fakeRepo",        
         env,
         10 * 1000,
+        null,
         null,
         null
     );
@@ -112,11 +114,11 @@ public class DistributedResourcePoolTest {
     intp1.open();
     intp2.open();
 
-    eventPoller1 = new RemoteInterpreterEventPoller(null, null);
+    eventPoller1 = new RemoteInterpreterEventPoller(null, null, null);
     eventPoller1.setInterpreterGroup(intpGroup1);
     eventPoller1.setInterpreterProcess(intpGroup1.getRemoteInterpreterProcess());
 
-    eventPoller2 = new RemoteInterpreterEventPoller(null, null);
+    eventPoller2 = new RemoteInterpreterEventPoller(null, null, null);
     eventPoller2.setInterpreterGroup(intpGroup2);
     eventPoller2.setInterpreterProcess(intpGroup2.getRemoteInterpreterProcess());
 

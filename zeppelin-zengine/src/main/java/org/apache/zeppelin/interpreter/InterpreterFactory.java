@@ -112,6 +112,8 @@ public class InterpreterFactory implements InterpreterGroupFactory {
   private Map<String, List<String>> interpreterBindings = new HashMap<>();
   private List<RemoteRepository> interpreterRepositories;
 
+  private RemoteWorksController remoteWorksController;
+
   private Gson gson;
 
   private InterpreterOption defaultOption;
@@ -140,7 +142,6 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     this(conf, new InterpreterOption(true), angularObjectRegistryListener,
         remoteInterpreterProcessListener, appEventListener, depResolver, shiroEnabled);
   }
-
 
   public InterpreterFactory(ZeppelinConfiguration conf, InterpreterOption defaultOption,
       AngularObjectRegistryListener angularObjectRegistryListener,
@@ -276,6 +277,14 @@ public class InterpreterFactory implements InterpreterGroupFactory {
       logger.info("InterpreterSetting group {} : id={}, name={}", setting.getGroup(), settingId,
           setting.getName());
     }
+  }
+
+  public RemoteWorksController getRemoteWorksController() {
+    return remoteWorksController;
+  }
+
+  public void setRemoteController(RemoteWorksController remoteController) {
+    this.remoteWorksController = remoteController;
   }
 
   private InterpreterSetting createFromInterpreterSettingRef(String name) {
@@ -1103,7 +1112,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     int maxPoolSize = conf.getInt(ConfVars.ZEPPELIN_INTERPRETER_MAX_POOL_SIZE);
     LazyOpenInterpreter intp = new LazyOpenInterpreter(
         new RemoteInterpreter(property, noteId, className, host, port, connectTimeout, maxPoolSize,
-            remoteInterpreterProcessListener, appEventListener));
+            remoteInterpreterProcessListener, appEventListener, remoteWorksController));
     return intp;
   }
 
@@ -1116,7 +1125,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     RemoteInterpreter remoteInterpreter =
         new RemoteInterpreter(property, noteId, className, conf.getInterpreterRemoteRunnerPath(),
             interpreterPath, localRepoPath, connectTimeout, maxPoolSize,
-            remoteInterpreterProcessListener, appEventListener);
+            remoteInterpreterProcessListener, appEventListener, remoteWorksController);
     remoteInterpreter.addEnv(env);
 
     return new LazyOpenInterpreter(remoteInterpreter);

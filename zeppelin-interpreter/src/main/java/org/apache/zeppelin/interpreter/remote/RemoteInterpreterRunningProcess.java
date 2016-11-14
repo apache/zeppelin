@@ -17,6 +17,7 @@
 package org.apache.zeppelin.interpreter.remote;
 
 import org.apache.zeppelin.helium.ApplicationEventListener;
+import org.apache.zeppelin.interpreter.RemoteWorksController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,10 +33,11 @@ public class RemoteInterpreterRunningProcess extends RemoteInterpreterProcess {
       int connectTimeout,
       RemoteInterpreterProcessListener listener,
       ApplicationEventListener appListener,
+      RemoteWorksController remoteWorksController,
       String host,
       int port
   ) {
-    super(connectTimeout, listener, appListener);
+    super(connectTimeout, listener, appListener, remoteWorksController);
     this.host = host;
     this.port = port;
   }
