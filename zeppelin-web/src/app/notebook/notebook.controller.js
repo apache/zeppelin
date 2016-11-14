@@ -402,6 +402,7 @@
       }
       $scope.note.config = config;
       $scope.note.info = info;
+      initializeLookAndFeel();
     });
 
     var getInterpreterBindings = function() {
