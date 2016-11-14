@@ -1,0 +1,21 @@
+[
+  {
+    "group": "redis",
+    "name": "redis",
+    "className": "org.apache.zeppelin.redis.RedisInterpreter",
+    "properties": {
+      "redis.host": {
+        "envName": null,
+        "propertyName": "redis.host",
+        "defaultValue": "127.0.0.1",
+        "description": "redis server host"
+      },
+      "redis.port": {
+        "envName": null,
+        "propertyName": "redis.port",
+        "defaultValue": 6379,
+        "description": "redis server port"
+      }
+    }
+  }
+]
