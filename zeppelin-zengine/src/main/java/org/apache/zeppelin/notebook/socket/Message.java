@@ -55,6 +55,8 @@ public class Message {
 
     NOTE_RENAME,
 
+    FOLDER_RENAME,
+
     RUN_PARAGRAPH,    // [c-s] run paragraph
                       // @param id paragraph id
                       // @param paragraph paragraph content.ie. script

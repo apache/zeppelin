@@ -57,5 +57,15 @@
         }
       });
     };
+
+    this.renameFolder = function(folderId) {
+      renameSrv.openRenameModal({
+        title: 'Rename folder',
+        oldName: folderId,
+        callback: function(newName) {
+          websocketMsgSrv.renameFolder(folderId, newName);
+        }
+      });
+    };
   }
 })();

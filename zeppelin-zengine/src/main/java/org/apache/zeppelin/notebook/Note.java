@@ -89,6 +89,7 @@ public class Note implements Serializable, ParagraphJobListener {
   private transient ScheduledFuture delayedPersist;
   private transient NoteEventListener noteEventListener;
   private transient Credentials credentials;
+  private transient NoteNameListener noteNameListener;
 
   /*
    * note configurations.
@@ -134,6 +135,48 @@ public class Note implements Serializable, ParagraphJobListener {
     return name;
   }
 
+  public String getNameWithoutPath() {
+    String notePath = getName();
+
+    int lastSlashIndex = notePath.lastIndexOf("/");
+    // The note is in the root folder
+    if (lastSlashIndex < 0) {
+      return notePath;
+    }
+
+    return notePath.substring(lastSlashIndex + 1);
+  }
+
+  /**
+   * @return normalized folder path, which is a folder ID
+   */
+  public String getFolderId() {
+    return getFolderId(getName());
+  }
+
+  public static String getFolderId(String noteName) {
+    String notePath = noteName;
+
+    // Ignore first '/'
+    if (notePath.charAt(0) == '/')
+      notePath = notePath.substring(1);
+
+    int lastSlashIndex = notePath.lastIndexOf("/");
+    // The root folder
+    if (lastSlashIndex < 0) {
+      return Folder.ROOT_FOLDER_ID;
+    }
+
+    String folderId = notePath.substring(0, lastSlashIndex);
+
+    return folderId;
+  }
+
+
+  public boolean isNameEmpty() {
+    return getName().trim().isEmpty();
+  }
+
   private String normalizeNoteName(String name) {
     name = name.trim();
     name = name.replace("\\", "/");
@@ -148,10 +191,20 @@ public class Note implements Serializable, ParagraphJobListener {
   }
 
   public void setName(String name) {
+    String oldName = this.name;
+
     if (name.indexOf('/') >= 0 || name.indexOf('\\') >= 0) {
       name = normalizeNoteName(name);
     }
     this.name = name;
+
+    if (this.noteNameListener != null && !oldName.equals(name)) {
+      noteNameListener.onNameChanged(this, oldName);
+    }
+  }
+
+  public void setNoteNameListener(NoteNameListener listener) {
+    this.noteNameListener = listener;
   }
 
   void setInterpreterFactory(InterpreterFactory factory) {

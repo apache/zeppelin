@@ -145,4 +145,34 @@ public class NoteTest {
     assertNull(p2.getReturn());
   }
 
+  @Test
+  public void getFolderIdTest() {
+    Note note = new Note(repo, interpreterFactory, jobListenerFactory, index, credentials, noteEventListener);
+    // Ordinary case test
+    note.setName("this/is/a/folder/noteName");
+    assertEquals("this/is/a/folder", note.getFolderId());
+    // Normalize test
+    note.setName("/this/is/a/folder/noteName");
+    assertEquals("this/is/a/folder", note.getFolderId());
+    // Root folder test
+    note.setName("noteOnRootFolder");
+    assertEquals(Folder.ROOT_FOLDER_ID, note.getFolderId());
+    note.setName("/noteOnRootFolderStartsWithSlash");
+    assertEquals(Folder.ROOT_FOLDER_ID, note.getFolderId());
+  }
+
+  @Test
+  public void getNameWithoutPathTest() {
+    Note note = new Note(repo, interpreterFactory, jobListenerFactory, index, credentials, noteEventListener);
+    // Notes in the root folder
+    note.setName("noteOnRootFolder");
+    assertEquals("noteOnRootFolder", note.getNameWithoutPath());
+    note.setName("/noteOnRootFolderStartsWithSlash");
+    assertEquals("noteOnRootFolderStartsWithSlash", note.getNameWithoutPath());
+    // Notes in subdirectories
+    note.setName("/a/b/note");
+    assertEquals("note", note.getNameWithoutPath());
+    note.setName("a/b/note");
+    assertEquals("note", note.getNameWithoutPath());
+  }
 }

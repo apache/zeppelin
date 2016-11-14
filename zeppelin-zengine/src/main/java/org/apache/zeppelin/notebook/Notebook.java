@@ -84,6 +84,7 @@ public class Notebook implements NoteEventListener {
    * Keep the order.
    */
   private final Map<String, Note> notes = new LinkedHashMap<>();
+  private final FolderView folders = new FolderView();
   private ZeppelinConfiguration conf;
   private StdSchedulerFactory quertzSchedFact;
   private org.quartz.Scheduler quartzSched;
@@ -129,7 +130,6 @@ public class Notebook implements NoteEventListener {
       logger.info("Notebook indexing finished: {} indexed in {}s", notes.size(),
           TimeUnit.NANOSECONDS.toSeconds(start - System.nanoTime()));
     }
-
   }
 
   /**
@@ -159,6 +159,8 @@ public class Notebook implements NoteEventListener {
     Note note =
         new Note(notebookRepo, replFactory, jobListenerFactory,
                 noteSearchService, credentials, this);
+    note.setNoteNameListener(folders);
+
     synchronized (notes) {
       notes.put(note.getId(), note);
     }
@@ -314,6 +316,7 @@ public class Notebook implements NoteEventListener {
 
     synchronized (notes) {
       note = notes.remove(id);
+      folders.removeNote(note);
     }
     replFactory.removeNoteInterpreterSettingBinding(subject.getUser(), id);
     noteSearchService.deleteIndexDocs(note);
@@ -435,6 +438,7 @@ public class Notebook implements NoteEventListener {
 
     synchronized (notes) {
       notes.put(note.getId(), note);
+      folders.putNote(note);
       refreshCron(note.getId());
     }
 
@@ -469,7 +473,7 @@ public class Notebook implements NoteEventListener {
   }
 
   /**
-   * Reload all notes from repository after clearing `notes`
+   * Reload all notes from repository after clearing `notes` and `folders`
    * to reflect the changes of added/deleted/modified notes on file system level.
    *
    * @throws IOException
@@ -477,6 +481,9 @@ public class Notebook implements NoteEventListener {
   public void reloadAllNotes(AuthenticationInfo subject) throws IOException {
     synchronized (notes) {
       notes.clear();
+    }
+    synchronized (folders) {
+      folders.clear();
     }
 
     if (notebookRepo instanceof NotebookRepoSync) {
@@ -516,6 +523,14 @@ public class Notebook implements NoteEventListener {
     Date getLastUpdate() {
       return lastUpdate;
     }
+  }
+
+  public Folder renameFolder(String oldFolderId, String newFolderId) {
+    return folders.renameFolder(oldFolderId, newFolderId);
+  }
+
+  public List<Note> getNotesOfFolder(String folderId) {
+    return folders.get(folderId).getNotes();
   }
 
   public List<Note> getAllNotes() {

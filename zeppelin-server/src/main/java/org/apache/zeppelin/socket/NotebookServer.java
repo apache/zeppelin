@@ -248,6 +248,9 @@ public class NotebookServer extends WebSocketServlet implements
           case NOTE_RENAME:
             renameNote(conn, userAndRoles, notebook, messagereceived);
             break;
+          case FOLDER_RENAME:
+            renameFolder(conn, userAndRoles, notebook, messagereceived);
+            break;
           case COMPLETION:
             completion(conn, userAndRoles, notebook, messagereceived);
             break;
@@ -761,6 +764,40 @@ public class NotebookServer extends WebSocketServlet implements
       AuthenticationInfo subject = new AuthenticationInfo(fromMessage.principal);
       note.persist(subject);
       broadcastNote(note);
+      broadcastNoteList(subject, userAndRoles);
+    }
+  }
+
+  private void renameFolder(NotebookSocket conn, HashSet<String> userAndRoles,
+                          Notebook notebook, Message fromMessage)
+      throws SchedulerException, IOException {
+    String oldFolderId = (String) fromMessage.get("id");
+    String newFolderId = (String) fromMessage.get("name");
+
+    if (oldFolderId == null) {
+      return;
+    }
+
+    NotebookAuthorization notebookAuthorization = notebook.getNotebookAuthorization();
+    for (Note note : notebook.getNotesOfFolder(oldFolderId)) {
+      String noteId = note.getId();
+      if (!notebookAuthorization.isOwner(noteId, userAndRoles)) {
+        permissionError(conn, "renameFolder", fromMessage.principal,
+                userAndRoles, notebookAuthorization.getOwners(noteId));
+        return;
+      }
+    }
+
+    Folder oldFolder = notebook.renameFolder(oldFolderId, newFolderId);
+
+    if (oldFolder != null) {
+      AuthenticationInfo subject = new AuthenticationInfo(fromMessage.principal);
+
+      for (Note note : oldFolder.getNotes()) {
+        note.persist(subject);
+        broadcastNote(note);
+      }
+
       broadcastNoteList(subject, userAndRoles);
     }
   }
