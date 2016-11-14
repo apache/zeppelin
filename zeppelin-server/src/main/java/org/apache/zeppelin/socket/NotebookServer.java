@@ -409,12 +409,12 @@ public class NotebookServer extends WebSocketServlet implements
 
   private void broadcast(String noteId, Message m) {
     synchronized (noteSocketMap) {
+      broadcastToWatchers(noteId, StringUtils.EMPTY, m);
       List<NotebookSocket> socketLists = noteSocketMap.get(noteId);
       if (socketLists == null || socketLists.size() == 0) {
         return;
       }
       LOG.debug("SEND >> " + m.op);
-      broadcastToWatchers(noteId, StringUtils.EMPTY, m);
       for (NotebookSocket conn : socketLists) {
         try {
           conn.send(serializeMessage(m));
@@ -427,12 +427,12 @@ public class NotebookServer extends WebSocketServlet implements
 
   private void broadcastExcept(String noteId, Message m, NotebookSocket exclude) {
     synchronized (noteSocketMap) {
+      broadcastToWatchers(noteId, StringUtils.EMPTY, m);
       List<NotebookSocket> socketLists = noteSocketMap.get(noteId);
       if (socketLists == null || socketLists.size() == 0) {
         return;
       }
       LOG.debug("SEND >> " + m.op);
-      broadcastToWatchers(noteId, StringUtils.EMPTY, m);
       for (NotebookSocket conn : socketLists) {
         if (exclude.equals(conn)) {
           continue;
