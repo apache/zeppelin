@@ -67,7 +67,7 @@ import org.slf4j.LoggerFactory;
 import scala.*;
 import scala.Enumeration.Value;
 import scala.collection.Iterator;
-import scala.collection.JavaConversions;
+import scala.collection.JavaConversions;x
 import scala.collection.JavaConverters;
 import scala.collection.Seq;
 import scala.collection.convert.WrapAsJava$;
@@ -955,10 +955,10 @@ public class SparkInterpreter extends Interpreter {
 
   public void populateSparkWebUrl(InterpreterContext ctx) {
     if (sparkUrl == null) {
-      String url = getSparkUIUrl();
+      sparkUrl = getSparkUIUrl();
       Map<String, String> infos = new java.util.HashMap<>();
-      if (url != null) {
-        infos.put("url", url);
+      if (sparkUrl != null) {
+        infos.put("url", sparkUrl);
         logger.info("Sending metainfos to Zeppelin server: {}", infos.toString());
         if (ctx != null && ctx.getClient() != null) {
           ctx.getClient().onMetaInfosReceived(infos);
