@@ -275,6 +275,15 @@ public class IgniteInterpreter extends Interpreter {
   public void cancel(InterpreterContext context) {
   }
 
+  @Override
+  public void setRemoteZeppelinServerController(RemoteWorksController zServer) {
+  }
+
+  @Override
+  public RemoteWorksController getRemoteZeppelinServerController() {
+    return null;
+  }
+
   private InterpreterResult interpret(String[] lines) {
     String[] linesToRun = new String[lines.length + 1];
     System.arraycopy(lines, 0, linesToRun, 0, lines.length);

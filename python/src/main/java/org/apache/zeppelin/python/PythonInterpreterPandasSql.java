@@ -20,11 +20,7 @@ package org.apache.zeppelin.python;
 import java.io.IOException;
 import java.util.Properties;
 
-import org.apache.zeppelin.interpreter.Interpreter;
-import org.apache.zeppelin.interpreter.InterpreterContext;
-import org.apache.zeppelin.interpreter.InterpreterResult;
-import org.apache.zeppelin.interpreter.LazyOpenInterpreter;
-import org.apache.zeppelin.interpreter.WrappedInterpreter;
+import org.apache.zeppelin.interpreter.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -88,6 +84,15 @@ public class PythonInterpreterPandasSql extends Interpreter {
     LOG.info("Close Python SQL interpreter instance: {}", this.toString());
     Interpreter python = getPythonInterpreter();
     python.close();
+  }
+
+  @Override
+  public void setRemoteZeppelinServerController(RemoteWorksController zServer) {
+  }
+
+  @Override
+  public RemoteWorksController getRemoteZeppelinServerController() {
+    return null;
   }
 
   @Override

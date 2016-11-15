@@ -24,10 +24,7 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.zeppelin.interpreter.Interpreter;
-import org.apache.zeppelin.interpreter.InterpreterContext;
-import org.apache.zeppelin.interpreter.InterpreterPropertyBuilder;
-import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,6 +64,15 @@ public class KylinInterpreter extends Interpreter {
   @Override
   public void close() {
 
+  }
+
+  @Override
+  public void setRemoteZeppelinServerController(RemoteWorksController zServer) {
+  }
+
+  @Override
+  public RemoteWorksController getRemoteZeppelinServerController() {
+    return null;
   }
 
   @Override

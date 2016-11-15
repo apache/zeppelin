@@ -45,14 +45,8 @@ import org.apache.commons.exec.environment.EnvironmentUtils;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.sql.SQLContext;
-import org.apache.zeppelin.interpreter.Interpreter;
-import org.apache.zeppelin.interpreter.InterpreterContext;
-import org.apache.zeppelin.interpreter.InterpreterException;
-import org.apache.zeppelin.interpreter.InterpreterGroup;
-import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.InterpreterHookRegistry.HookType;
-import org.apache.zeppelin.interpreter.LazyOpenInterpreter;
-import org.apache.zeppelin.interpreter.WrappedInterpreter;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.spark.dep.SparkDependencyContext;
@@ -310,6 +304,15 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
 
   public void appendOutput(String message) throws IOException {
     outputStream.getInterpreterOutput().write(message);
+  }
+
+  @Override
+  public void setRemoteZeppelinServerController(RemoteWorksController zServer) {
+  }
+
+  @Override
+  public RemoteWorksController getRemoteZeppelinServerController() {
+    return null;
   }
 
   @Override

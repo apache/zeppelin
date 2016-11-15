@@ -68,6 +68,7 @@ public class RemoteInterpreterServer
   InterpreterHookRegistry hookRegistry;
   DistributedResourcePool resourcePool;
   private ApplicationLoader appLoader;
+  private RemoteWorksController remoteServerController;
 
   Gson gson = new Gson();
 
@@ -82,8 +83,7 @@ public class RemoteInterpreterServer
   private final Map<String, RunningApplication> runningApplications =
       Collections.synchronizedMap(new HashMap<String, RunningApplication>());
 
-  private Map<String, Object> remoteWorksResponsePool =
-      Collections.synchronizedMap(new HashMap<String, Object>());
+  private Map<String, Object> remoteWorksResponsePool;
 
   public RemoteInterpreterServer(int port) throws TTransportException {
     this.port = port;
@@ -92,6 +92,8 @@ public class RemoteInterpreterServer
     TServerSocket serverTransport = new TServerSocket(port);
     server = new TThreadPoolServer(
         new TThreadPoolServer.Args(serverTransport).processor(processor));
+    remoteWorksResponsePool = Collections.synchronizedMap(new HashMap<String, Object>());
+    remoteServerController = new ZeppelinRemoteWorksController(this, remoteWorksResponsePool);
   }
 
   @Override
@@ -181,8 +183,8 @@ public class RemoteInterpreterServer
       Constructor<Interpreter> constructor =
           replClass.getConstructor(new Class[] {Properties.class});
       Interpreter repl = constructor.newInstance(p);
-
       repl.setClassloaderUrls(new URL[]{});
+      repl.setRemoteZeppelinServerController(remoteServerController);
 
       synchronized (interpreterGroup) {
         List<Interpreter> interpreters = interpreterGroup.get(noteId);
@@ -347,16 +349,20 @@ public class RemoteInterpreterServer
       RemoteZeppelinServerController response) throws TException {
     logger.info("clover remote zeppelin server controller feedback {}", response);
     logger.info("clover remote zeppelin server conteroller body {}", response.getMsg());
-
     if (response.getType() == RemoteZeppelinServerControlEvent.RES_RESOURCE_PARAGRAPH_RUN_CONTEXT) {
       List<InterpreterContextRunner> intpContextRunners = new LinkedList<>();
       List<ZeppelinServerResourceParagraphRunner> runners = gson.fromJson(response.getMsg(),
         new TypeToken<List<ZeppelinServerResourceParagraphRunner>>() {}.getType());
+      logger.info("clover get runner size " + runners.size());
       for (ZeppelinServerResourceParagraphRunner r : runners) {
-        logger.info("clover runner nid {} pid {}", r.getNoteId(), r.getParagraphId());
+        logger.info("clover runner nid " + r.getNoteId() + " pid " + r.getParagraphId());
         intpContextRunners.add(new ParagraphRunner(this, r.getNoteId(), r.getParagraphId()));
       }
-      remoteWorksResponsePool.put(response.getEventOwnerKey(), intpContextRunners);
+      synchronized (this.remoteWorksResponsePool) {
+        this.remoteWorksResponsePool.put(response.getEventOwnerKey(), intpContextRunners);
+        logger.info("clover feedback remoteWorks {} count {}",
+          response.getEventOwnerKey(), remoteWorksResponsePool.size());
+      }
     }
   }
 
@@ -598,7 +604,7 @@ public class RemoteInterpreterServer
 
 
   static class ParagraphRunner extends InterpreterContextRunner {
-
+    Logger logger = LoggerFactory.getLogger(ParagraphRunner.class);
     private transient RemoteInterpreterServer server;
 
     public ParagraphRunner(RemoteInterpreterServer server, String noteId, String paragraphId) {
@@ -608,20 +614,28 @@ public class RemoteInterpreterServer
 
     @Override
     public void run() {
-      ZeppelinServerResourceParagraphRunner test = new ZeppelinServerResourceParagraphRunner();
-      test.setNoteId(getNoteId());
-      test.setParagraphId(getParagraphId());
-      server.eventClient.getZeppelinServerNoteRunner("IamOWNER", test);
+      logger.info("clover call run");
       server.eventClient.run(this);
     }
   }
 
-  static class RemoteServerController {
+  static class ZeppelinRemoteWorksController implements RemoteWorksController{
     //clover
-    private final long DEFAULT_TIMEOUT_VALUE = 30000;
+    Logger logger = LoggerFactory.getLogger(ZeppelinRemoteWorksController.class);
+
+    private final long DEFAULT_TIMEOUT_VALUE = 300000;
     private Map<String, Object> remoteWorksResponsePool;
-    public RemoteServerController(Map<String, Object> remoteWorksResponsePool) {
+    private RemoteInterpreterServer server;
+    public ZeppelinRemoteWorksController(
+        RemoteInterpreterServer server, Map<String, Object> remoteWorksResponsePool) {
       this.remoteWorksResponsePool = remoteWorksResponsePool;
+      this.server = server;
+    }
+
+    public String generateOwnerKey() {
+      String hashKeyText = new String("ownerKey" + System.currentTimeMillis());
+      String hashKey = String.valueOf(hashKeyText.hashCode());
+      return hashKey;
     }
 
     public boolean waitForEvent(String eventOwnerKey) throws InterruptedException {
@@ -633,16 +647,53 @@ public class RemoteInterpreterServer
       long now = System.currentTimeMillis();
       long endTime = System.currentTimeMillis() + timeout;
 
-      while (endTime <= now) {
-        if (this.remoteWorksResponsePool.containsKey(eventOwnerKey) == true) {
-          wasGetData =  true;
+      while (endTime >= now) {
+        logger.info("clover sleep... size {} key {}",
+          this.remoteWorksResponsePool.size(), eventOwnerKey);
+        synchronized (this.remoteWorksResponsePool) {
+          wasGetData = this.remoteWorksResponsePool.containsKey(eventOwnerKey);
+        }
+        if (wasGetData == true) {
+          logger.info("clover found!!!!!!!!!!!!!");
           break;
         }
         now = System.currentTimeMillis();
         sleep(500);
       }
+      logger.info("clover out {}", wasGetData);
 
       return wasGetData;
+    }
+
+    @Override
+    public List<InterpreterContextRunner> getRemoteContextRunner(String noteId) {
+      return getRemoteContextRunner(noteId, null);
+    }
+
+    public List<InterpreterContextRunner> getRemoteContextRunner(
+        String noteId, String paragraphID) {
+
+      List<InterpreterContextRunner> runners = null;
+      String ownerKey = generateOwnerKey();
+
+      logger.info("clover request owner key {}", ownerKey);
+      ZeppelinServerResourceParagraphRunner resource = new ZeppelinServerResourceParagraphRunner();
+      resource.setNoteId(noteId);
+      resource.setParagraphId(paragraphID);
+      server.eventClient.getZeppelinServerNoteRunner(ownerKey, resource);
+
+      try {
+        this.waitForEvent(ownerKey);
+      } catch (Exception e) {
+        logger.info("clover timeout Interrupt getRemoteContextRunner ", e);
+        return new LinkedList<>();
+      }
+      synchronized (this.remoteWorksResponsePool) {
+        runners = (List<InterpreterContextRunner>) this.remoteWorksResponsePool.get(ownerKey);
+        this.remoteWorksResponsePool.remove(ownerKey);
+      }
+      logger.info("clover out time {} {}", runners.size(), System.currentTimeMillis());
+      return runners;
     }
 
 

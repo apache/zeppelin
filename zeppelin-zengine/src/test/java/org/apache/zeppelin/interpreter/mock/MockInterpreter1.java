@@ -25,6 +25,7 @@ import java.util.Properties;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.RemoteWorksController;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
@@ -51,6 +52,15 @@ Map<String, Object> vars = new HashMap<>();
 
 	public boolean isOpen() {
 		return open;
+	}
+
+	@Override
+	public void setRemoteZeppelinServerController(RemoteWorksController zServer) {
+	}
+
+	@Override
+	public RemoteWorksController getRemoteZeppelinServerController() {
+		return null;
 	}
 
 	@Override

@@ -51,6 +51,15 @@ public class ClassloaderInterpreter
   }
 
   @Override
+  public void setRemoteZeppelinServerController(RemoteWorksController zServer) {
+  }
+
+  @Override
+  public RemoteWorksController getRemoteZeppelinServerController() {
+    return null;
+  }
+
+  @Override
   public InterpreterResult interpret(String st, InterpreterContext context) {
     ClassLoader oldcl = Thread.currentThread().getContextClassLoader();
     Thread.currentThread().setContextClassLoader(cl);

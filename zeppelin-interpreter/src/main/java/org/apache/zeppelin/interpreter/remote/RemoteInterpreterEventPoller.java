@@ -247,11 +247,11 @@ public class RemoteInterpreterEventPoller extends Thread {
         resResource.setType(RemoteZeppelinServerControlEvent.RES_RESOURCE_PARAGRAPH_RUN_CONTEXT);
         resResource.setEventOwnerKey(eventOwnerKey);
         if (runner.getParagraphId() != null) {
-          InterpreterContextRunner intpRunner = remoteWorkController.getRunner(
+          interpreterContextRunners = remoteWorkController.getRemoteContextRunner(
             runner.getNoteId(), runner.getParagraphId());
-          interpreterContextRunners.add(intpRunner);
         } else {
-          interpreterContextRunners = remoteWorkController.getRunner(runner.getNoteId());
+          interpreterContextRunners = remoteWorkController.getRemoteContextRunner(
+            runner.getNoteId());
         }
 
         logger.info("clover remotework count 1 {}", interpreterContextRunners.size());

@@ -89,6 +89,15 @@ public class LazyOpenInterpreter
   }
 
   @Override
+  public void setRemoteZeppelinServerController(RemoteWorksController zServer) {
+  }
+
+  @Override
+  public RemoteWorksController getRemoteZeppelinServerController() {
+    return null;
+  }
+
+  @Override
   public InterpreterResult interpret(String st, InterpreterContext context) {
     open();
     return intp.interpret(st, context);

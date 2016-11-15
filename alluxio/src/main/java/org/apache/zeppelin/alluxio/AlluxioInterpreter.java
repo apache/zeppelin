@@ -23,10 +23,7 @@ import java.io.PrintStream;
 import java.io.ByteArrayOutputStream;
 import java.util.*;
 
-import org.apache.zeppelin.interpreter.Interpreter;
-import org.apache.zeppelin.interpreter.InterpreterContext;
-import org.apache.zeppelin.interpreter.InterpreterPropertyBuilder;
-import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.slf4j.Logger;
@@ -87,6 +84,15 @@ public class AlluxioInterpreter extends Interpreter {
     } catch (IOException e) {
       logger.error("Cannot close connection", e);
     }
+  }
+
+  @Override
+  public void setRemoteZeppelinServerController(RemoteWorksController zServer) {
+  }
+
+  @Override
+  public RemoteWorksController getRemoteZeppelinServerController() {
+    return null;
   }
 
   @Override

@@ -28,12 +28,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.zeppelin.display.GUI;
-import org.apache.zeppelin.interpreter.Interpreter;
-import org.apache.zeppelin.interpreter.InterpreterContext;
-import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.InterpreterHookRegistry.HookType;
-import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.Scheduler;
@@ -130,6 +127,15 @@ public class PythonInterpreter extends Interpreter {
     } catch (IOException e) {
       LOG.error("Can't close the interpreter", e);
     }
+  }
+
+  @Override
+  public void setRemoteZeppelinServerController(RemoteWorksController zServer) {
+  }
+
+  @Override
+  public RemoteWorksController getRemoteZeppelinServerController() {
+    return null;
   }
 
   @Override

@@ -63,30 +63,25 @@ public class RemoteWorksManager {
       return notebook;
     }
 
-    public List<InterpreterContextRunner> getRunner(String noteId) {
-      List<InterpreterContextRunner> runners = new LinkedList<>();
-      try {
-        Note note = getNotebook().getNote(noteId);
-        if (note != null) {
-          for (Paragraph paragraph : note.getParagraphs()) {
-            runners.add(paragraph.getInterpreterContextRunner());
-          }
-        }
-      } catch (NullPointerException e) {
-        LOG.warn(e.getMessage());
-      }
-
-      return runners;
+    public List<InterpreterContextRunner> getRemoteContextRunner(String noteId) {
+      return getRemoteContextRunner(noteId, null);
     }
 
-    public InterpreterContextRunner getRunner(String noteId, String paragraphId) {
-      InterpreterContextRunner runner = null;
+    public List<InterpreterContextRunner> getRemoteContextRunner(
+        String noteId, String paragraphId) {
+      List<InterpreterContextRunner> runner = new LinkedList<>();
       try {
         Note note = getNotebook().getNote(noteId);
         if (note != null) {
-          Paragraph paragraph = note.getParagraph(paragraphId);
-          if (paragraph != null) {
-            runner = paragraph.getInterpreterContextRunner();
+          if (paragraphId != null) {
+            Paragraph paragraph = note.getParagraph(paragraphId);
+            if (paragraph != null) {
+              runner.add(paragraph.getInterpreterContextRunner());
+            }
+          } else {
+            for (Paragraph p : note.getParagraphs()) {
+              runner.add(p.getInterpreterContextRunner());
+            }
           }
         }
       } catch (NullPointerException e) {

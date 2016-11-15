@@ -46,15 +46,9 @@ import org.apache.spark.scheduler.DAGScheduler;
 import org.apache.spark.scheduler.Pool;
 import org.apache.spark.sql.SQLContext;
 import org.apache.spark.ui.jobs.JobProgressListener;
-import org.apache.zeppelin.interpreter.Interpreter;
-import org.apache.zeppelin.interpreter.InterpreterContext;
-import org.apache.zeppelin.interpreter.InterpreterException;
-import org.apache.zeppelin.interpreter.InterpreterHookRegistry;
-import org.apache.zeppelin.interpreter.InterpreterProperty;
-import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
-import org.apache.zeppelin.interpreter.InterpreterUtils;
-import org.apache.zeppelin.interpreter.WrappedInterpreter;
+import org.apache.zeppelin.interpreter.thrift.RemoteZeppelinServerController;
 import org.apache.zeppelin.resource.ResourcePool;
 import org.apache.zeppelin.resource.WellKnownResourceName;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
@@ -112,6 +106,8 @@ public class SparkInterpreter extends Interpreter {
 
   private SparkOutputStream out;
   private SparkDependencyResolver dep;
+
+  private RemoteWorksController remoteWorksController;
 
   /**
    * completer - org.apache.spark.repl.SparkJLineCompletion (scala 2.10)
@@ -819,7 +815,7 @@ public class SparkInterpreter extends Interpreter {
       
       hooks = getInterpreterGroup().getInterpreterHookRegistry();
 
-      z = new ZeppelinContext(sc, sqlc, null, dep, hooks,
+      z = new ZeppelinContext(sc, sqlc, null, dep, hooks, getRemoteZeppelinServerController(),
               Integer.parseInt(getProperty("zeppelin.spark.maxResult")));
 
       interpret("@transient val _binder = new java.util.HashMap[String, Object]()");
@@ -1045,10 +1041,20 @@ public class SparkInterpreter extends Interpreter {
     return resultCompletionText;
   }
 
+  @Override
+  public void setRemoteZeppelinServerController(RemoteWorksController zServer) {
+    this.remoteWorksController = zServer;
+  }
+
+  @Override
+  public RemoteWorksController getRemoteZeppelinServerController() {
+    return this.remoteWorksController;
+  }
+
   /*
-   * this method doesn't work in scala 2.11
-   * Somehow intp.valueOfTerm returns scala.None always with -Yrepl-class-based option
-   */
+     * this method doesn't work in scala 2.11
+     * Somehow intp.valueOfTerm returns scala.None always with -Yrepl-class-based option
+     */
   public Object getValue(String name) {
     Object ret = Utils.invokeMethod(
             intp, "valueOfTerm", new Class[]{String.class}, new Object[]{name});

@@ -34,12 +34,8 @@ import java.util.Properties;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import org.apache.spark.repl.SparkILoop;
-import org.apache.zeppelin.interpreter.Interpreter;
-import org.apache.zeppelin.interpreter.InterpreterContext;
-import org.apache.zeppelin.interpreter.InterpreterGroup;
-import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
-import org.apache.zeppelin.interpreter.WrappedInterpreter;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.spark.dep.SparkDependencyContext;
@@ -194,6 +190,15 @@ public class DepInterpreter extends Interpreter {
         + "_binder.get(\"depc\")"
         + ".asInstanceOf[org.apache.zeppelin.spark.dep.SparkDependencyContext]");
 
+  }
+
+  @Override
+  public void setRemoteZeppelinServerController(RemoteWorksController zServer) {
+  }
+
+  @Override
+  public RemoteWorksController getRemoteZeppelinServerController() {
+    return null;
   }
 
   private Results.Result interpret(String line) {

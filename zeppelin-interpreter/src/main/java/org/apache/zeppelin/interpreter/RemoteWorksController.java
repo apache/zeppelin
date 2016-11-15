@@ -24,6 +24,6 @@ import java.util.List;
  *
  */
 public interface RemoteWorksController {
-  List<InterpreterContextRunner> getRunner(String noteId);
-  InterpreterContextRunner getRunner(String noteId, String paragraphId);
+  List<InterpreterContextRunner> getRemoteContextRunner(String noteId);
+  List<InterpreterContextRunner> getRemoteContextRunner(String noteId, String paragraphId);
 }

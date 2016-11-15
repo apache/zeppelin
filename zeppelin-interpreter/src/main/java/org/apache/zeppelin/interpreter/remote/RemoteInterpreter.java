@@ -303,6 +303,15 @@ public class RemoteInterpreter extends Interpreter {
   }
 
   @Override
+  public void setRemoteZeppelinServerController(RemoteWorksController zServer) {
+  }
+
+  @Override
+  public RemoteWorksController getRemoteZeppelinServerController() {
+    return null;
+  }
+
+  @Override
   public InterpreterResult interpret(String st, InterpreterContext context) {
     if (logger.isDebugEnabled()) {
       logger.debug("st:\n{}", st);

@@ -25,6 +25,7 @@ import org.apache.pig.tools.pigstats.*;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
+import org.apache.zeppelin.interpreter.RemoteWorksController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,6 +70,14 @@ public class PigInterpreter extends BasePigInterpreter {
     pigServer = null;
   }
 
+  @Override
+  public void setRemoteZeppelinServerController(RemoteWorksController zServer) {
+  }
+
+  @Override
+  public RemoteWorksController getRemoteZeppelinServerController() {
+    return null;
+  }
 
   @Override
   public InterpreterResult interpret(String cmd, InterpreterContext contextInterpreter) {
