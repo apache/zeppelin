@@ -14,7 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.zeppelin.spark;
+
+package org.apache.zeppelin.interpreter.util;
 
 import org.apache.zeppelin.interpreter.InterpreterOutput;
 import org.slf4j.Logger;
@@ -22,14 +23,15 @@ import org.slf4j.Logger;
 import java.io.IOException;
 
 /**
- * InterpreterOutput can be attached / detached.
+ * Output Stream integrated with InterpreterOutput.
+ *
+ * Can be used to channel output from interpreters.
  */
-public class SparkOutputStream extends LogOutputStream {
-
+public class InterpreterOutputStream extends LogOutputStream {
   public static Logger logger;
   InterpreterOutput interpreterOutput;
 
-  public SparkOutputStream(Logger logger) {
+  public InterpreterOutputStream(Logger logger) {
     this.logger = logger;
   }
 
@@ -77,6 +79,7 @@ public class SparkOutputStream extends LogOutputStream {
       interpreterOutput.close();
     }
   }
+
 
   @Override
   public void flush() throws IOException {
