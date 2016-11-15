@@ -29,14 +29,14 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.zeppelin.graph.model.GraphResult;
-import org.apache.zeppelin.graph.model.Relationship.Type;
 import org.apache.zeppelin.graph.neo4j.utils.Neo4jConversionUtils;
-import org.apache.zeppelin.graph.utils.GraphUtils;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
+import org.apache.zeppelin.interpreter.graph.GraphResult;
+import org.apache.zeppelin.interpreter.graph.GraphUtils;
+import org.apache.zeppelin.interpreter.graph.Relationship.Type;
 import org.apache.zeppelin.resource.Resource;
 import org.apache.zeppelin.resource.ResourcePool;
 import org.apache.zeppelin.scheduler.Scheduler;
@@ -244,8 +244,8 @@ public class Neo4jCypherInterpreter extends Interpreter {
   private InterpreterResult renderGraph(Set<Node> nodes,
       Set<Relationship> relationships) throws JsonProcessingException {
     logger.info("Executing renderGraph method");
-    List<org.apache.zeppelin.graph.model.Node> nodesList = new ArrayList<>();
-    List<org.apache.zeppelin.graph.model.Relationship> relsList = new ArrayList<>();
+    List<org.apache.zeppelin.interpreter.graph.Node> nodesList = new ArrayList<>();
+    List<org.apache.zeppelin.interpreter.graph.Relationship> relsList = new ArrayList<>();
     Map<String, Integer> relCount = new HashMap<>();
     for (Relationship rel : relationships) {
       Type type = null;
