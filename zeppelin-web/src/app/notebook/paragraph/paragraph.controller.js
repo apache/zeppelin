@@ -1054,11 +1054,30 @@
             };
             $timeout(retryRenderer);
           } else if (refresh) {
+            console.log('Refresh data');
             // when graph options or data are changed
-            builtInViz.instance.setConfig($scope.paragraph.config.graph);
-            builtInViz.instance.render(tableData);
+            var retryRenderer = function() {
+              var targetEl = angular.element('#p' + $scope.paragraph.id + '_' + type);
+              if (targetEl.length) {
+                targetEl.height(height);
+                builtInViz.instance.setConfig($scope.paragraph.config.graph);
+                builtInViz.instance.render(tableData);
+              } else {
+                $timeout(retryRenderer, 10);
+              }
+            };
+            $timeout(retryRenderer);
           } else {
-            builtInViz.instance.activate();
+            var retryRenderer = function() {
+              var targetEl = angular.element('#p' + $scope.paragraph.id + '_' + type);
+              if (targetEl.length) {
+                targetEl.height(height);
+                builtInViz.instance.activate();
+              } else {
+                $timeout(retryRenderer, 10);
+              }
+            };
+            $timeout(retryRenderer);
           }
         }
       }
