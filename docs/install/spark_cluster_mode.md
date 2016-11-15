@@ -32,9 +32,8 @@ So [install docker](https://docs.docker.com/engine/installation/) on the machine
 [Spark standalone](http://spark.apache.org/docs/latest/spark-standalone.html) is a simple cluster manager included with Spark that makes it easy to set up a cluster.
 You can simply set up Spark standalone environment with below steps.
 
-> **Note 1:** Since Apache Zeppelin and Spark use same `8080` port for their web UI, you might need to change `zeppelin.server.port` in `conf/zeppelin-site.xml`.
+> **Note :** Since Apache Zeppelin and Spark use same `8080` port for their web UI, you might need to change `zeppelin.server.port` in `conf/zeppelin-site.xml`.
 
-> **Note 2:** `sparkmaster` hostname used to run docker containers below should be defined in your `/etc/hosts`.
 
 ### 1. Build Docker file
 You can find docker script files under `scripts/docker/spark-cluster-managers`.
@@ -56,6 +55,8 @@ docker run -it \
 --name spark_standalone \
 spark_standalone bash;
 ```
+
+Note that `sparkmaster` hostname used here to run docker container should be defined in your `/etc/hosts`.
 
 ### 3. Configure Spark interpreter in Zeppelin
 Set Spark master as `spark://<hostname>:7077` in Zeppelin **Interpreters** setting page.
@@ -112,6 +113,8 @@ docker run -it \
  -h sparkmaster \
  spark_yarn bash;
 ```
+
+Note that `sparkmaster` hostname used here to run docker container should be defined in your `/etc/hosts`.
 
 ### 3. Verify running Spark on YARN.
 
@@ -173,6 +176,8 @@ docker run --net=host -it \
 --name spark_mesos \
 spark_mesos bash;
 ```
+
+Note that `sparkmaster` hostname used here to run docker container should be defined in your `/etc/hosts`.
 
 ### 3. Verify running Spark on Mesos.
 
