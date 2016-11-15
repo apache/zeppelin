@@ -285,10 +285,14 @@ public class InterpreterFactory implements InterpreterGroupFactory {
   }
 
   private InterpreterSetting createFromInterpreterSettingRef(InterpreterSetting o) {
-    InterpreterSetting setting =
-        new InterpreterSetting(o.getName(), o.getName(), o.getInterpreterInfos(),
-            convertInterpreterProperties((Map<String, InterpreterProperty>) o.getProperties()),
-            o.getDependencies(), o.getOption(), o.getPath());
+    // return immutable objects
+    List<InterpreterInfo> infos = new ArrayList<>(o.getInterpreterInfos());
+    List<Dependency> deps = new ArrayList<>(o.getDependencies());
+    Properties props = convertInterpreterProperties((Map<String, InterpreterProperty>) o.getProperties());
+    InterpreterOption option = InterpreterOption.fromInterpreterOption(o.getOption());
+
+    InterpreterSetting setting = new InterpreterSetting(o.getName(), o.getName(),
+        o.getInterpreterInfos(), props, deps, o.getOption(), o.getPath());
     setting.setInterpreterGroupFactory(this);
     return setting;
   }

@@ -17,6 +17,7 @@
 
 package org.apache.zeppelin.interpreter;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -94,6 +95,20 @@ public class InterpreterOption {
     this.remote = remote;
     this.perUser = perUser;
     this.perNote = perNote;
+  }
+
+  public static InterpreterOption fromInterpreterOption(InterpreterOption other) {
+    InterpreterOption option = new InterpreterOption();
+    option.remote = other.remote;
+    option.host = other.host;
+    option.port = other.port;
+    option.perNote = other.perNote;
+    option.perUser = other.perUser;
+    option.isExistingProcess = other.isExistingProcess;
+    option.setPermission = other.setPermission;
+    option.users = new ArrayList<>(other.users);
+
+    return option;
   }
 
   public boolean isRemote() {
