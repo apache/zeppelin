@@ -18,12 +18,15 @@ package org.apache.zeppelin.graph.neo4j;
 
 import static org.junit.Assert.assertEquals;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Properties;
 
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.GUI;
+import org.apache.zeppelin.graph.model.GraphResult;
+import org.apache.zeppelin.graph.neo4j.Neo4jCypherInterpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterContextRunner;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
@@ -31,7 +34,6 @@ import org.apache.zeppelin.interpreter.InterpreterOutput;
 import org.apache.zeppelin.interpreter.InterpreterOutputListener;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
-import org.apache.zeppelin.interpreter.graph.GraphResult;
 import org.apache.zeppelin.resource.LocalResourcePool;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.After;
@@ -42,7 +44,9 @@ import org.junit.runners.MethodSorters;
 import org.neo4j.harness.ServerControls;
 import org.neo4j.harness.TestServerBuilders;
 
-import com.google.gson.Gson;
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class Neo4jCypherInterpreterTest {
@@ -53,7 +57,7 @@ public class Neo4jCypherInterpreterTest {
   
   private ServerControls server;
   
-  private static final Gson gson = new Gson();
+  private static final ObjectMapper jsonMapper = new ObjectMapper();
   
   private static final String LABEL_PERSON = "Person";
   private static final String REL_KNOWS = "KNOWS";
@@ -111,10 +115,10 @@ public class Neo4jCypherInterpreterTest {
   }
 
   @Test
-  public void testRenderNetwork() {
+  public void testRenderNetwork() throws JsonParseException, JsonMappingException, IOException {
     interpreter.open();
     InterpreterResult result = interpreter.interpret("MATCH (n)-[r:KNOWS]-(m) RETURN n, r, m LIMIT 1", context);
-    GraphResult.Graph graph = gson.fromJson(result.message(), GraphResult.Graph.class);
+    GraphResult.Graph graph = jsonMapper.readValue(result.message(), GraphResult.Graph.class);
     assertEquals(2, graph.getNodes().size());
     assertEquals(1, graph.getEdges().size());
     assertEquals(1, graph.getLabels().size());

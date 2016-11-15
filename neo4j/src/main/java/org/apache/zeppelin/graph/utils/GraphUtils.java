@@ -14,27 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.zeppelin.graph.utils;
 
-import static org.junit.Assert.assertEquals;
-
-import java.util.regex.Pattern;
-
-import org.junit.FixMethodOrder;
-import org.junit.Test;
-import org.junit.runners.MethodSorters;
 /**
  * 
  * @author a.santurbano
  *
  */
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class GraphUtilsTest {
-	
-  private static final Pattern HEX_PATTERN = Pattern.compile("^#([A-F0-9]{6}|[A-F0-9]{3})$");
+public class GraphUtils {
+  private GraphUtils() {}
 
-  @Test
-  public void testGetRandomColor() {
-    assertEquals(true, HEX_PATTERN.matcher(GraphUtils.getRandomColor()).matches());
+  private static final String[] LETTERS = "0123456789ABCDEF".split("");
+
+  public static String getRandomColor() {
+    char[] color = new char[7];
+    color[0] = '#';
+    for (int i = 1; i < color.length; i++) {
+      color[i] = LETTERS[(int) Math.floor(Math.random() * 16)].charAt(0);
+    }
+    return new String(color);
   }
+
 }

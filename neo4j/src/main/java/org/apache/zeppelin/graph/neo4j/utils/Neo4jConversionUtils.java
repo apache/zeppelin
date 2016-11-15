@@ -21,7 +21,7 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.zeppelin.interpreter.graph.Relationship.Type;
+import org.apache.zeppelin.graph.model.Relationship.Type;
 import org.neo4j.driver.v1.types.Node;
 import org.neo4j.driver.v1.types.Relationship;
 
@@ -31,7 +31,7 @@ import org.neo4j.driver.v1.types.Relationship;
 public class Neo4jConversionUtils {
   private Neo4jConversionUtils() {}
   
-  public static org.apache.zeppelin.interpreter.graph.Node toZeppelinNode(Node n,
+  public static org.apache.zeppelin.graph.model.Node toZeppelinNode(Node n,
       Map<String, String> graphLabels) {
     Set<String> labels = new LinkedHashSet<>();
     String firstLabel = null;
@@ -42,13 +42,13 @@ public class Neo4jConversionUtils {
       labels.add(label);
     }
     String color = graphLabels.get(firstLabel);
-    return new org.apache.zeppelin.interpreter.graph.Node(n.id(), n.asMap(),
+    return new org.apache.zeppelin.graph.model.Node(n.id(), n.asMap(),
         labels, color);
   }
   
-  public static org.apache.zeppelin.interpreter.graph.Relationship
+  public static org.apache.zeppelin.graph.model.Relationship
   toZeppelinRelationship(Relationship r, Type type, int count) {
-    return new org.apache.zeppelin.interpreter.graph.Relationship(r.id(), r.asMap(),
+    return new org.apache.zeppelin.graph.model.Relationship(r.id(), r.asMap(),
         r.startNodeId(), r.endNodeId(), r.type(), type, count);
   }
   

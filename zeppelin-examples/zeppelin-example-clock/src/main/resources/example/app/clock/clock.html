@@ -11,4 +11,43 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<h3>{{date}}</h3>
+<div id="p{{paragraph.id}}_graph"
+     class="graphContainer"
+     ng-class="{'noOverflow': getGraphMode()=='table'}"
+<<<<<<< Upstream, based on home/master
+     ng-show="getResultType()=='TABLE'"
+=======
+     ng-if="getResultType()=='TABLE' || getResultType()=='NETWORK'"
+>>>>>>> 4e685cc First commit
+     >
+
+  <div ng-repeat="viz in builtInTableDataVisualizationList track by $index"
+       id="p{{paragraph.id}}_{{viz.id}}"
+       ng-show="getGraphMode()==viz.id">
+  </div>
+  
+  <div id="p{{paragraph.id}}_network_container"
+     ng-class="{'noOverflow': getGraphMode()=='network'}"
+     ng-if="getGraphMode()=='network'">
+    <div id="p{{paragraph.id}}_network_header">
+      <ul style="list-style-type: none">
+        <li>Nodes <span class="badge">{{paragraph.result.graph.nodes.length}}</span>: 
+          <span ng-repeat="(labelName, labelColor) in paragraph.result.graph.labels"
+              style="background-color: {{labelColor}} !important;" class="label label-default network-badge">
+            {{labelName}}
+          </span>
+        </li>
+        <li>Relationships <span class="badge">{{paragraph.result.graph.edges.length}}</span>:
+          <span ng-repeat="type in paragraph.result.graph.types"
+              class="label label-default network-badge">
+            {{type}}
+          </span>
+        </li>
+      </ul>
+    </div>
+    <div id="p{{paragraph.id}}_network">
+    </div>
+    <div id="p{{paragraph.id}}_network">
+    </div>
+  </div>
+</div>

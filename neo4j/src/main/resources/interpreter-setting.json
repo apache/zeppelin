@@ -14,19 +14,19 @@
         "envName": null,
         "propertyName": "neo4j.user",
         "defaultValue": "neo4j",
-        "description": "The Neo4j user name."
+        "description": "The Neo4j user name"
       },
       "neo4j.password": {
         "envName": null,
         "propertyName": "neo4j.password",
         "defaultValue": "neo4j",
-        "description": "The Neo4j user password."
+        "description": "The Neo4j user password"
       },
       "neo4j.max.concurrency": {
         "envName": null,
         "propertyName": "neo4j.max.concurrency",
         "defaultValue": "50",
-        "description": "Max concurrency call from Zeppelin to Neo4j server."
+        "description": "Max concurrency call to Neo4j server"
       }
     }
   }

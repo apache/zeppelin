@@ -29,14 +29,14 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.zeppelin.graph.model.GraphResult;
+import org.apache.zeppelin.graph.model.Relationship.Type;
 import org.apache.zeppelin.graph.neo4j.utils.Neo4jConversionUtils;
+import org.apache.zeppelin.graph.utils.GraphUtils;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
-import org.apache.zeppelin.interpreter.graph.GraphResult;
-import org.apache.zeppelin.interpreter.graph.GraphUtils;
-import org.apache.zeppelin.interpreter.graph.Relationship.Type;
 import org.apache.zeppelin.resource.Resource;
 import org.apache.zeppelin.resource.ResourcePool;
 import org.apache.zeppelin.scheduler.Scheduler;
@@ -60,6 +60,8 @@ import org.neo4j.driver.v1.types.Node;
 import org.neo4j.driver.v1.types.Relationship;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
 
 /**
  * Neo4j interpreter for Zeppelin.
@@ -102,6 +104,8 @@ public class Neo4jCypherInterpreter extends Interpreter {
   @Override
   public void open() {
     getDriver();
+    getLabels();
+    getTypes();
   }
 
   @Override
@@ -109,31 +113,28 @@ public class Neo4jCypherInterpreter extends Interpreter {
     getDriver().close();
   }
   
-  public Map<String, String> getLabels(boolean refresh) {
-    if (labels == null || refresh) {
-      Map<String, String> old = labels == null ?
-          new LinkedHashMap<String, String>() : new LinkedHashMap<>(labels);
+  public Map<String, String> getLabels() {
+    if (labels == null) {
       labels = new LinkedHashMap<>();
       try (Session session = getDriver().session()) {
         StatementResult result = session.run("CALL db.labels()");
         Set<String> colors = new HashSet<>();
         while (result.hasNext()) {
           Record record = result.next();
-          String label = record.get("label").asString();
-          String color = old.get(label);
-          while (color == null || colors.contains(color)) {
+          String color = null;
+          do {
             color = GraphUtils.getRandomColor();
-          }
+          } while(colors.contains(color));
           colors.add(color);
-          labels.put(label, color);
+          labels.put(record.get("label").asString(), color);
         }
       }
     }
     return labels;
   }
   
-  private Set<String> getTypes(boolean refresh) {
-    if (types == null || refresh) {
+  private Set<String> getTypes() {
+    if (types == null) {
       types = new HashSet<>();
       try (Session session = getDriver().session()) {
         StatementResult result = session.run("CALL db.relationshipTypes()");
@@ -241,10 +242,10 @@ public class Neo4jCypherInterpreter extends Interpreter {
   }
 
   private InterpreterResult renderGraph(Set<Node> nodes,
-      Set<Relationship> relationships) {
+      Set<Relationship> relationships) throws JsonProcessingException {
     logger.info("Executing renderGraph method");
-    List<org.apache.zeppelin.interpreter.graph.Node> nodesList = new ArrayList<>();
-    List<org.apache.zeppelin.interpreter.graph.Relationship> relsList = new ArrayList<>();
+    List<org.apache.zeppelin.graph.model.Node> nodesList = new ArrayList<>();
+    List<org.apache.zeppelin.graph.model.Relationship> relsList = new ArrayList<>();
     Map<String, Integer> relCount = new HashMap<>();
     for (Relationship rel : relationships) {
       Type type = null;
@@ -262,12 +263,11 @@ public class Neo4jCypherInterpreter extends Interpreter {
       relCount.put(keyStartEnd, ++count);
       relsList.add(Neo4jConversionUtils.toZeppelinRelationship(rel, type, count));
     }
-    Map<String, String> labels = getLabels(true);
     for (Node node : nodes) {
-      nodesList.add(Neo4jConversionUtils.toZeppelinNode(node, labels));
+      nodesList.add(Neo4jConversionUtils.toZeppelinNode(node, getLabels()));
     }
     return new GraphResult(Code.SUCCESS,
-        new GraphResult.Graph(nodesList, relsList, labels, getTypes(true)));
+        new GraphResult.Graph(nodesList, relsList, getLabels(), getTypes()));
   }
 
   @Override
