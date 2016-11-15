@@ -22,20 +22,18 @@ touch ~/.environ
 
 # Install R dependencies if R profiles are used
 if [[ ${PROFILE/"-Pr "} != $PROFILE ]] || [[ ${PROFILE/"-Psparkr "} != $PROFILE ]] ; then
-  mkdir -p ~/R
   echo "R_LIBS=~/R" > ~/.Renviron
   echo "export R_LIBS=~/R" >> ~/.environ
   source ~/.environ
-  R -e "install.packages('knitr', repos = 'http://cran.us.r-project.org', lib='~/R')"
+  if [[ ! -d "$HOME/R/knitr" ]] ; then
+    mkdir -p ~/R
+    R -e "install.packages('knitr', repos = 'http://cran.us.r-project.org', lib='~/R')"
+  fi
 fi
 
 # Install Python dependencies for Python specific tests
 if [[ -n "$PYTHON" ]] ; then
-  if [[ "$PYTHON" == "2" ]] ; then
-    wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh
-  else
-    wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
-  fi
+  wget https://repo.continuum.io/miniconda/Miniconda${PYTHON}-latest-Linux-x86_64.sh -O miniconda.sh
   bash miniconda.sh -b -p $HOME/miniconda
   echo "export PATH='$HOME/miniconda/bin:$PATH'" >> ~/.environ
   source ~/.environ
