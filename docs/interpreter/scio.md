@@ -59,7 +59,7 @@ $beam.scio
 val (sc, args) = ContextAndArgs(argz)
 ```
 
-Use `sc` context the way you would in regular pipeline/REPL.
+Use `sc` context the way you would in a regular pipeline/REPL.
 
 Example:
 
@@ -73,7 +73,7 @@ If you close Scio context, go ahead an create a new one using `ContextAndArgs`. 
 
 ### Progress
 
-There can be only one paragraph running at a time. There is no notion of overall progress, thus progress bar will be `0`.
+There can be only one paragraph running at once. There is no notion of overall progress, thus progress bar will show `0`.
 
 ### SCollection display helpers
 
@@ -93,11 +93,11 @@ There are different helper methods for different objects. You can easily display
 
 ##### `SCollection` helper
 
-`SCollection` has `closeAndDisplay` Zeppelin helper method for types listed above. Use it to synchronously close Scio context, once available pull and display results.
+`SCollection` has `closeAndDisplay` Zeppelin helper method for types listed above. Use it to synchronously close Scio context, and once available pull and display results.
 
 ##### `Future[Tap]` helper
 
-`Future[Tap]` has `waitAndDisplay` Zeppelin helper method for types listed above. Use it synchronously wait for results, once available pull and display results.
+`Future[Tap]` has `waitAndDisplay` Zeppelin helper method for types listed above. Use it to synchronously wait for results, and once available pull and display results.
 
 ##### `Tap` helper
 
@@ -159,6 +159,7 @@ sc.avroFile[EndSongCleaned]("gs://<bucket>/tmp/my.avro").take(10).closeAndDispla
 ### Google credentials
 
 Scio Interpreter will try to infer your Google Cloud credentials from its environment, it will take into the account:
+
  * `argz` interpreter settings ([doc](https://github.com/spotify/scio/wiki#options))
  * environment variable (`GOOGLE_APPLICATION_CREDENTIALS`)
  * gcloud configuration
