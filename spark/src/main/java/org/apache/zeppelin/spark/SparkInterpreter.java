@@ -67,7 +67,7 @@ import org.slf4j.LoggerFactory;
 import scala.*;
 import scala.Enumeration.Value;
 import scala.collection.Iterator;
-import scala.collection.JavaConversions;x
+import scala.collection.JavaConversions;
 import scala.collection.JavaConverters;
 import scala.collection.Seq;
 import scala.collection.convert.WrapAsJava$;
