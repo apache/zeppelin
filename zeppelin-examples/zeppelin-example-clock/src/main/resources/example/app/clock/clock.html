@@ -14,11 +14,7 @@ limitations under the License.
 <div id="p{{paragraph.id}}_graph"
      class="graphContainer"
      ng-class="{'noOverflow': getGraphMode()=='table'}"
-<<<<<<< Upstream, based on home/master
      ng-show="getResultType()=='TABLE'"
-=======
-     ng-if="getResultType()=='TABLE' || getResultType()=='NETWORK'"
->>>>>>> 4e685cc First commit
      >
 
   <div ng-repeat="viz in builtInTableDataVisualizationList track by $index"
