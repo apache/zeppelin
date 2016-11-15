@@ -80,7 +80,7 @@ You can simply set up [Spark on YARN](http://spark.apache.org/docs/latest/runnin
 > **Note :** Since Apache Zeppelin and Spark use same `8080` port for their web UI, you might need to change `zeppelin.server.port` in `conf/zeppelin-site.xml`.
 
 ### 1. Build Docker file
-You can find docker script files under `scripts/docker/spark-cluster-managers`.
+You can find docker script files under `scripts/docker/spark-cluster-managers/spark_yarn_cluster`.
 
 ```
 cd $ZEPPELIN_HOME/scripts/docker/spark-cluster-managers/spark_yarn
