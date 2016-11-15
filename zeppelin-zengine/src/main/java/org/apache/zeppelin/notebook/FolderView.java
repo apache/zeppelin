@@ -21,11 +21,13 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- * Folder view of notes of Notebook
+ * Folder view of notes of Notebook.
+ * FolderView allows you to see notes from perspective of folders.
  */
 public class FolderView implements NoteNameListener {
   // key: folderId
   private final Map<String, Folder> folders = new LinkedHashMap<>();
+  // key: a note, value: a folder where the note belongs to
   private final Map<Note, Folder> index = new LinkedHashMap<>();
 
   public Folder get(String folderId) {
@@ -150,18 +152,29 @@ public class FolderView implements NoteNameListener {
     return count;
   }
 
+  /**
+   * Fired after a note's setName() run.
+   * When the note's name changed, FolderView should check if the note is in the right folder.
+   * @param note
+   * @param oldName
+   */
   @Override
   public void onNameChanged(Note note, String oldName) {
     if (note.isNameEmpty()) {
       return;
     }
-    System.out.println("onNameChanged" + note.toString());
     // New note
     if (!index.containsKey(note)) {
       putNote(note);
     }
     // Existing note
     else {
+      // If the note is in the right place, just return
+      Folder folder = index.get(note);
+      if (folder.getId().equals(note.getFolderId())) {
+        return;
+      }
+      // The note's folder is changed!
       removeNote(note);
       putNote(note);
     }

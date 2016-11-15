@@ -63,11 +63,19 @@ public class Folder {
     return id;
   }
 
+  /**
+   * Rename this folder as well as the notes belong to it.
+   * @param newId
+   */
   public void setIdAndRenameNotes(String newId) {
     newId = normalizeFolderId(newId);
+    id = newId;
 
     synchronized (notes) {
-      for (Note note : notes.values()) {
+      Iterator<Note> iterator = notes.values().iterator();
+      while (iterator.hasNext()) {
+        Note note = iterator.next();
+
         String noteName = note.getNameWithoutPath();
 
         String newNotePath;
@@ -76,12 +84,9 @@ public class Folder {
         } else {
           newNotePath = newId + "/" + noteName;
         }
-
         note.setName(newNotePath);
       }
     }
-
-    id = newId;
   }
 
   public void addNote(Note note) {
@@ -92,7 +97,7 @@ public class Folder {
 
   public void addNotes(List<Note> newNotes) {
     synchronized (notes) {
-      for (Note note: newNotes) {
+      for (Note note : newNotes) {
         notes.put(note.getId(), note);
       }
     }

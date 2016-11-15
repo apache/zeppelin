@@ -148,14 +148,10 @@ public class Note implements Serializable, ParagraphJobListener {
   }
 
   /**
-   * @return normalized folder path, which is a folder ID
+   * @return normalized folder path, which is folderId
    */
   public String getFolderId() {
-    return getFolderId(getName());
-  }
-
-  public static String getFolderId(String noteName) {
-    String notePath = noteName;
+    String notePath = getName();
 
     // Ignore first '/'
     if (notePath.charAt(0) == '/')
@@ -171,7 +167,6 @@ public class Note implements Serializable, ParagraphJobListener {
 
     return folderId;
   }
-
 
   public boolean isNameEmpty() {
     return getName().trim().isEmpty();

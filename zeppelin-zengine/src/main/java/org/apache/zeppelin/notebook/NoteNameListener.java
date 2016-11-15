@@ -18,7 +18,7 @@
 package org.apache.zeppelin.notebook;
 
 /**
- * NoteNameListener
+ * NoteNameListener. It's used by FolderView.
  */
 public interface NoteNameListener {
   /**
