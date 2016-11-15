@@ -223,6 +223,7 @@
       }
     };
 
+    var Sigma = $window.sigma;
     var setNetwork = function(result, refresh) {
       if (!result.graph || !result.graph.nodes || !result.graph.nodes.length) {
         return;
@@ -252,28 +253,27 @@
       var retryRenderer = function() {
         var networkId = 'p' + $scope.paragraph.id + '_network';
         var height = $scope.paragraph.config.graph.height || 400;
-        if (angular.element('#' + networkId).length) {
+        if (angular.element('#' + networkId + '_container').is(':visible')) {
           try {
             angular.element('#' + networkId).height(height);
             angular.element('#' + networkId + '_container').height(getContainerHeight(networkId));
-            //destroy sigmajs to force reinitialization.
-            var Sigma = $window.sigma;
-            if ($scope.sigma) {
-              $scope.sigma.unbind('clickNode');
-              $scope.sigma.unbind('edgeNode');
-              Sigma.plugins.dragNodes($scope.sigma, $scope.sigma.renderers[0]).unbind('drop');
-              $scope.sigma.graph.clear();
-              $scope.sigma.kill();
-              $scope.sigma = null;
-            }
+            var nodeIds = Object.keys($scope.paragraph.config.graph.network.nodes)
+              .map(function(id) {
+                return +id;
+              });
             result.graph.nodes
               .forEach(function(node) {
                 node.defaultLabel = node.defaultLabel || node.label || '';
                 var properties = $scope.paragraph.config.graph.network.properties[node.defaultLabel] || {};
                 var selected = properties.selected || 'id';
                 node.label = (selected in node ? node[selected] : node.data[selected]) + '';
-                node.x = node.x || Math.random();
-                node.y = node.y || Math.random();
+                if (nodeIds.indexOf(node.id) > -1) {
+                  node.x = $scope.paragraph.config.graph.network.nodes[node.id].x;
+                  node.y = $scope.paragraph.config.graph.network.nodes[node.id].y;
+                } else {
+                  node.x = node.x || Math.random();
+                  node.y = node.y || Math.random();
+                }
                 node.size = node.size || 10;
               });
             result.graph.edges
@@ -283,70 +283,57 @@
                 edge.color = edge.color || '#D3D3D3';
                 edge.count = edge.count || 1;
               });
-            var nodeIds = Object.keys($scope.paragraph.config.graph.network.nodes)
-               .map(function(id) {
-                 return +id;
-               });
-            if (nodeIds.length) {
-              result.graph.nodes
-                .filter(function(node) {
-                  return nodeIds.indexOf(node.id) !== -1;
-                })
-                .forEach(function(node) {
-                  node.x = $scope.paragraph.config.graph.network.nodes[node.id].x;
-                  node.y = $scope.paragraph.config.graph.network.nodes[node.id].y;
-                });
-            }
-            $scope.sigma = new Sigma({
-              renderer: {
-                container: networkId + '_container',
-                type: 'canvas'
-              },
-              graph: result.graph,
-              settings: {
-                enableEdgeHovering: true,
-                minNodeSize: 0,
-                maxNodeSize: 0,
-                minEdgeSize: 0,
-                maxEdgeSize: 0
-              }
-            });
-            $scope.sigma.bind('clickNode', renderFooterOnClick);
-            $scope.sigma.bind('clickEdge', renderFooterOnClick);
-            if ($scope.asIframe) {
-              return;
-            }
-            var dragListener = Sigma.plugins.dragNodes($scope.sigma, $scope.sigma.renderers[0]);
-            dragListener.bind('drop', function(event) {
-              var nodeId = event.data.node.id;
-              $scope.paragraph.config.graph.network.nodes[nodeId] = {
-                x: event.data.node.x,
-                y: event.data.node.y
-              };
-              $scope.setGraphMode('network', true, false);
-            });
-            var nooverlapConf = {
-              nodeMargin: 0.5,
-              scaleNodes: 1.05,
-              gridSize: 75,
-              easing: 'quadraticInOut',
-              duration: 0
-            };
-            if (!nodeIds.length) {
-              var overlapListener = $scope.sigma.configNoverlap(nooverlapConf);
-              overlapListener.bind('stop', function(event) {
-                $scope.sigma.graph.nodes()
-                  .forEach(function(node) {
-                    $scope.paragraph.config.graph.network.nodes[node.id] = {
-                      x: node.x,
-                      y: node.y
-                    };
-                  });
-                overlapListener.unbind('stop');
+            if (!$scope.sigma) {
+              $scope.sigma = new Sigma({
+                renderer: {
+                  container: networkId + '_container',
+                  type: 'canvas'
+                },
+                settings: {
+                  enableEdgeHovering: true,
+                  minNodeSize: 0,
+                  maxNodeSize: 0,
+                  minEdgeSize: 0,
+                  maxEdgeSize: 0
+                }
               });
-              $scope.sigma.startNoverlap();
-              //on nooverlap stop i get each node position and overwrite the configuration
+              $scope.sigma.bind('clickNode', renderFooterOnClick);
+              $scope.sigma.bind('clickEdge', renderFooterOnClick);
+              if (!$scope.asIframe) {
+                var dragListener = Sigma.plugins.dragNodes($scope.sigma, $scope.sigma.renderers[0]);
+                dragListener.bind('drop', function(event) {
+                  var nodeId = event.data.node.id;
+                  $scope.paragraph.config.graph.network.nodes[nodeId] = {
+                    x: event.data.node.x,
+                    y: event.data.node.y
+                  };
+                });
+                if (!nodeIds.length) {
+                  var nooverlapConf = {
+                    nodeMargin: 0.5,
+                    scaleNodes: 1.05,
+                    gridSize: 75,
+                    easing: 'quadraticInOut',
+                    duration: 0
+                  };
+                  var overlapListener = $scope.sigma.configNoverlap(nooverlapConf);
+                  overlapListener.bind('stop', function(event) {
+                    $scope.sigma.graph.nodes()
+                      .forEach(function(node) {
+                        $scope.paragraph.config.graph.network.nodes[node.id] = {
+                          x: node.x,
+                          y: node.y
+                        };
+                      });
+                  });
+                  $scope.sigma.startNoverlap();
+                }
+              }
+            } else {
+              $scope.sigma.graph.clear();
             }
+            $scope.sigma.graph.read(result.graph);
+            $scope.sigma.refresh();
           } catch (err) {
             console.log('Network rendering error %o', err);
           }
@@ -357,9 +344,16 @@
       $timeout(retryRenderer);
     };
 
-    $scope.setNetworkLabel = function(label, value) {
-      $scope.paragraph.config.graph.network.properties[label].selected = value;
-      $scope.setGraphMode('network', true, false);
+    $scope.setNetworkLabel = function(defaultLabel, value) {
+      $scope.paragraph.config.graph.network.properties[defaultLabel].selected = value;
+      $scope.sigma.graph.nodes()
+        .filter(function(node) {
+          return node.defaultLabel === defaultLabel;
+        })
+        .forEach(function(node) {
+          node.label = (value === 'label' ? defaultLabel : value in node ? node[value] : node.data[value]) + '';
+        });
+      $scope.sigma.refresh();
     };
 
     $scope.renderHtml = function() {
