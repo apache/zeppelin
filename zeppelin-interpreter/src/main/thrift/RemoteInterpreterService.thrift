@@ -30,12 +30,15 @@ struct RemoteInterpreterContext {
   8: string runners   // json serialized runner
 }
 
+struct RemoteInterpreterResultMessage {
+  1: string type,
+  2: string data
+}
 struct RemoteInterpreterResult {
   1: string code,
-  2: string type,
-  3: string msg,
-  4: string config,   // json serialized config
-  5: string gui       // json serialized gui
+  2: list<RemoteInterpreterResultMessage> msg,
+  3: string config,   // json serialized config
+  4: string gui       // json serialized gui
 }
 
 enum RemoteInterpreterEventType {
@@ -48,9 +51,11 @@ enum RemoteInterpreterEventType {
   RESOURCE_GET = 7
   OUTPUT_APPEND = 8,
   OUTPUT_UPDATE = 9,
-  ANGULAR_REGISTRY_PUSH = 10,
-  APP_STATUS_UPDATE = 11,
-  META_INFOS = 12
+  OUTPUT_UPDATE_ALL = 10,
+  OUTPUT_CLOSE = 11,
+  ANGULAR_REGISTRY_PUSH = 12,
+  APP_STATUS_UPDATE = 13,
+  META_INFOS = 14
 }
 
 struct RemoteInterpreterEvent {

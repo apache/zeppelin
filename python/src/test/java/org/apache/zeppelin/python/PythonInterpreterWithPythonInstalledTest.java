@@ -55,7 +55,7 @@ public class PythonInterpreterWithPythonInstalledTest {
     assertNotNull("Interpreter returned 'null'", ret);
     //System.out.println("\nInterpreter response: \n" + ret.message());
     assertEquals(InterpreterResult.Code.ERROR, ret.code());
-    assertTrue(ret.message().length() > 0);
+    assertTrue(ret.message().get(0).getData().length() > 0);
 
     realPython.close();
   }
@@ -74,7 +74,7 @@ public class PythonInterpreterWithPythonInstalledTest {
     assertNotNull("Interpreter returned 'null'", ret);
     //System.out.println("\nInterpreter response: \n" + ret.message());
     assertEquals(InterpreterResult.Code.SUCCESS, ret.code());
-    assertTrue(ret.message().length() > 0);
+    assertTrue(ret.message().get(0).getData().length() > 0);
 
     realPython.close();
   }

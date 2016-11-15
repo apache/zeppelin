@@ -22,7 +22,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterOutput;
 import org.apache.zeppelin.interpreter.InterpreterOutputListener;
-import org.apache.zeppelin.interpreter.util.InterpreterOutputStream;
+import org.apache.zeppelin.interpreter.InterpreterResultMessageOutput;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -158,16 +158,7 @@ public class ZeppelinR implements ExecuteResultHandler {
     Map env = EnvironmentUtils.getProcEnvironment();
 
 
-    initialOutput = new InterpreterOutput(new InterpreterOutputListener() {
-      @Override
-      public void onAppend(InterpreterOutput out, byte[] line) {
-        logger.debug(new String(line));
-      }
-
-      @Override
-      public void onUpdate(InterpreterOutput out, byte[] output) {
-      }
-    });
+    initialOutput = new InterpreterOutput(null);
     outputStream.setInterpreterOutput(initialOutput);
     executor.execute(cmd, env, this);
     rScriptRunning = true;

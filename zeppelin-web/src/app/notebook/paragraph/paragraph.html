@@ -52,10 +52,13 @@ limitations under the License.
     <div ng-include src="'app/notebook/paragraph/paragraph-parameterizedQueryForm.html'"></div>
 
     <!-- Rendering -->
-    <div class="tableDisplay" ng-show="!paragraph.config.tableHide">
-      <div ng-include src="'app/notebook/paragraph/paragraph-chart-selector.html'"></div>
-      <div ng-include src="'app/notebook/paragraph/paragraph-pivot.html'"></div>
-      <div ng-include src="'app/notebook/paragraph/paragraph-results.html'"></div>
+    <div class="tableDisplay"
+         ng-show="!paragraph.config.tableHide"
+         ng-controller="ResultCtrl"
+         ng-repeat="result in paragraph.result"
+         ng-init="init(result)"
+         ng-include src="'app/notebook/paragraph/result.html'"
+         >
     </div>
   </div>
 

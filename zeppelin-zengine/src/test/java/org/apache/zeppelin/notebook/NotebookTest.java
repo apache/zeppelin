@@ -1080,11 +1080,18 @@ public class NotebookTest implements JobListenerFactory{
     return new ParagraphJobListener(){
 
       @Override
-      public void onOutputAppend(Paragraph paragraph, InterpreterOutput out, String output) {
+      public void onOutputAppend(Paragraph paragraph, int idx, String output) {
+
       }
 
       @Override
-      public void onOutputUpdate(Paragraph paragraph, InterpreterOutput out, String output) {
+      public void onOutputUpdate(Paragraph paragraph, int idx, InterpreterResultMessage msg) {
+
+      }
+
+      @Override
+      public void onOutputUpdateAll(Paragraph paragraph, List<InterpreterResultMessage> msgs) {
+
       }
 
       @Override

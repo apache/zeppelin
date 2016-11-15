@@ -109,21 +109,21 @@ public class RemoteAngularObjectTest implements AngularObjectRegistryListener {
   public void testAngularObjectInterpreterSideCRUD() throws InterruptedException {
     InterpreterResult ret = intp.interpret("get", context);
     Thread.sleep(500); // waitFor eventpoller pool event
-    String[] result = ret.message().split(" ");
+    String[] result = ret.message().get(0).getData().split(" ");
     assertEquals("0", result[0]); // size of registry
     assertEquals("0", result[1]); // num watcher called
 
     // create object
     ret = intp.interpret("add n1 v1", context);
     Thread.sleep(500);
-    result = ret.message().split(" ");
+    result = ret.message().get(0).getData().split(" ");
     assertEquals("1", result[0]); // size of registry
     assertEquals("0", result[1]); // num watcher called
     assertEquals("v1", localRegistry.get("n1", "note", null).get());
 
     // update object
     ret = intp.interpret("update n1 v11", context);
-    result = ret.message().split(" ");
+    result = ret.message().get(0).getData().split(" ");
     Thread.sleep(500);
     assertEquals("1", result[0]); // size of registry
     assertEquals("1", result[1]); // num watcher called
@@ -131,7 +131,7 @@ public class RemoteAngularObjectTest implements AngularObjectRegistryListener {
 
     // remove object
     ret = intp.interpret("remove n1", context);
-    result = ret.message().split(" ");
+    result = ret.message().get(0).getData().split(" ");
     Thread.sleep(500);
     assertEquals("0", result[0]); // size of registry
     assertEquals("1", result[1]); // num watcher called
@@ -145,13 +145,13 @@ public class RemoteAngularObjectTest implements AngularObjectRegistryListener {
 
     InterpreterResult ret = intp.interpret("get", context);
     Thread.sleep(500); // waitFor eventpoller pool event
-    String[] result = ret.message().split(" ");
+    String[] result = ret.message().get(0).getData().split(" ");
     assertEquals("0", result[0]); // size of registry
     
     // create object
     ret = intp.interpret("add n1 v1", context);
     Thread.sleep(500);
-    result = ret.message().split(" ");
+    result = ret.message().get(0).getData().split(" ");
     assertEquals("1", result[0]); // size of registry
     assertEquals("v1", localRegistry.get("n1", "note", null).get());
 
@@ -159,7 +159,7 @@ public class RemoteAngularObjectTest implements AngularObjectRegistryListener {
     localRegistry.removeAndNotifyRemoteProcess("n1", "note", null);
     ret = intp.interpret("get", context);
     Thread.sleep(500); // waitFor eventpoller pool event
-    result = ret.message().split(" ");
+    result = ret.message().get(0).getData().split(" ");
     assertEquals("0", result[0]); // size of registry
   }
 
@@ -170,7 +170,7 @@ public class RemoteAngularObjectTest implements AngularObjectRegistryListener {
 
     InterpreterResult ret = intp.interpret("get", context);
     Thread.sleep(500); // waitFor eventpoller pool event
-    String[] result = ret.message().split(" ");
+    String[] result = ret.message().get(0).getData().split(" ");
     assertEquals("0", result[0]); // size of registry
     
     // create object
@@ -179,7 +179,7 @@ public class RemoteAngularObjectTest implements AngularObjectRegistryListener {
     // get from remote registry 
     ret = intp.interpret("get", context);
     Thread.sleep(500); // waitFor eventpoller pool event
-    result = ret.message().split(" ");
+    result = ret.message().get(0).getData().split(" ");
     assertEquals("1", result[0]); // size of registry
   }
 

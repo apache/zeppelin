@@ -447,27 +447,13 @@ public class RemoteInterpreterServer
         InterpreterResult result = interpreter.interpret(script, context);
 
         // data from context.out is prepended to InterpreterResult if both defined
-        String message = "";
-
         context.out.flush();
-        InterpreterResult.Type outputType = context.out.getType();
-        byte[] interpreterOutput = context.out.toByteArray();
-
-        if (interpreterOutput != null && interpreterOutput.length > 0) {
-          message = new String(interpreterOutput);
-        }
-
-        String interpreterResultMessage = result.message();
-
-        InterpreterResult combinedResult;
-        if (interpreterResultMessage != null && !interpreterResultMessage.isEmpty()) {
-          message += interpreterResultMessage;
-          combinedResult = new InterpreterResult(result.code(), result.type(), message);
-        } else {
-          combinedResult = new InterpreterResult(result.code(), outputType, message);
-        }
+        List<InterpreterResultMessage> resultMessages = context.out.toInterpreterResultMessage();
+        resultMessages.addAll(result.message());
 
         // put result into resource pool
+        // TODO
+        /*
         if (combinedResult.type() == InterpreterResult.Type.TABLE) {
           context.getResourcePool().put(
               context.getNoteId(),
@@ -475,7 +461,8 @@ public class RemoteInterpreterServer
               WellKnownResourceName.ZeppelinTableResult.toString(),
               combinedResult);
         }
-        return combinedResult;
+        */
+        return resultMessages;
       } finally {
         InterpreterContext.remove();
       }
@@ -560,15 +547,46 @@ public class RemoteInterpreterServer
       paragraphId) {
     return new InterpreterOutput(new InterpreterOutputListener() {
       @Override
-      public void onAppend(InterpreterOutput out, byte[] line) {
-        logger.debug("Output Append:" + new String(line));
-        eventClient.onInterpreterOutputAppend(noteId, paragraphId, new String(line));
+      public void onUpdateAll(InterpreterOutput out) {
+        try {
+          eventClient.onInterpreterOutputUpdateAll(
+              noteId, paragraphId, out.toInterpreterResultMessage());
+        } catch (IOException e) {
+          logger.error(e.getMessage(), e);
+        }
       }
 
       @Override
-      public void onUpdate(InterpreterOutput out, byte[] output) {
-        logger.debug("Output Update:" + new String(output));
-        eventClient.onInterpreterOutputUpdate(noteId, paragraphId, new String(output));
+      public void onClose(InterpreterOutput out) {
+        // persist data without refreshing front-end
+        try {
+          eventClient.onInterpreterOutputClose(
+              noteId, paragraphId, out.toInterpreterResultMessage());
+        } catch (IOException e) {
+          logger.error(e.getMessage(), e);
+        }
+
+      }
+
+      @Override
+      public void onAppend(int index, InterpreterResultMessageOutput out, byte[] line) {
+        String output = new String(line);
+        logger.debug("Output Append: {}", output);
+        eventClient.onInterpreterOutputAppend(
+            noteId, paragraphId, index, out.getType(), output);
+      }
+
+      @Override
+      public void onUpdate(int index, InterpreterResultMessageOutput out) {
+        String output;
+        try {
+          output = new String(out.toByteArray());
+          logger.debug("Output Update: {}", output);
+          eventClient.onInterpreterOutputUpdate(
+              noteId, paragraphId, index, out.getType(), output);
+        } catch (IOException e) {
+          logger.error(e.getMessage(), e);
+        }
       }
     });
   }
@@ -591,10 +609,17 @@ public class RemoteInterpreterServer
 
   private RemoteInterpreterResult convert(InterpreterResult result,
       Map<String, Object> config, GUI gui) {
+
+    List<RemoteInterpreterResultMessage> msg = new LinkedList<>();
+    for (InterpreterResultMessage m : result.message()) {
+      msg.add(new RemoteInterpreterResultMessage(
+          m.getType().name(),
+          m.getData()));
+    }
+
     return new RemoteInterpreterResult(
         result.code().name(),
-        result.type().name(),
-        result.message(),
+        msg,
         gson.toJson(config),
         gson.toJson(gui));
   }
@@ -831,17 +856,21 @@ public class RemoteInterpreterServer
   protected InterpreterOutput createAppOutput(final String noteId,
                                             final String paragraphId,
                                             final String appId) {
+    return null;
+    // TODO
+    /*
     return new InterpreterOutput(new InterpreterOutputListener() {
       @Override
-      public void onAppend(InterpreterOutput out, byte[] line) {
+      public void onAppend(InterpreterResultMessageOutput out, byte[] line) {
         eventClient.onAppOutputAppend(noteId, paragraphId, appId, new String(line));
       }
 
       @Override
-      public void onUpdate(InterpreterOutput out, byte[] output) {
+      public void onUpdate(InterpreterResultMessageOutput out, byte[] output) {
         eventClient.onAppOutputUpdate(noteId, paragraphId, appId, new String(output));
       }
     });
+    */
   }
 
   private ApplicationContext getApplicationContext(
@@ -925,20 +954,20 @@ public class RemoteInterpreterServer
           System.err.println("Resource " + res.get());
         }
         runningApp.app.run(resource);
-        String output = new String(context.out.toByteArray());
+        // TODO
+        /*
+        List<InterpreterResultMessage> outputMessage = context.out.toInterpreterResultMessage();
         eventClient.onAppOutputUpdate(
             context.getNoteId(),
             context.getParagraphId(),
             applicationInstanceId,
             output);
+            */
         return new RemoteApplicationResult(true, "");
       } catch (ApplicationException | IOException e) {
         return new RemoteApplicationResult(false, e.getMessage());
       }
     }
-
-
-
   }
 
   private static class RunningApplication {

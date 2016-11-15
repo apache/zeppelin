@@ -14,21 +14,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package org.apache.zeppelin.notebook;
-
-import org.apache.zeppelin.interpreter.InterpreterOutput;
-import org.apache.zeppelin.interpreter.InterpreterResultMessage;
-import org.apache.zeppelin.interpreter.InterpreterResultMessageOutput;
-import org.apache.zeppelin.scheduler.JobListener;
-
-import java.util.List;
+package org.apache.zeppelin.interpreter;
 
 /**
- * Listen paragraph update
+ * Interpreter result message
  */
-public interface ParagraphJobListener extends JobListener {
-  public void onOutputAppend(Paragraph paragraph, int idx, String output);
-  public void onOutputUpdate(Paragraph paragraph, int idx, InterpreterResultMessage msg);
-  public void onOutputUpdateAll(Paragraph paragraph, List<InterpreterResultMessage> msgs);
+public class InterpreterResultMessage {
+  InterpreterResult.Type type;
+  String data;
+
+  public InterpreterResultMessage(InterpreterResult.Type type, String data) {
+    this.type = type;
+    this.data = data;
+  }
+
+  public InterpreterResult.Type getType() {
+    return type;
+  }
+
+  public String getData() {
+    return data;
+  }
+
+  public String toString() {
+    return "%" + type.name().toLowerCase() + " " + data;
+  }
 }

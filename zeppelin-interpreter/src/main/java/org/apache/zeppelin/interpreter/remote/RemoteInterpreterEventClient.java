@@ -19,6 +19,8 @@ package org.apache.zeppelin.interpreter.remote;
 import com.google.gson.Gson;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.interpreter.InterpreterContextRunner;
+import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.InterpreterResultMessage;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterEvent;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterEventType;
 import org.apache.zeppelin.resource.*;
@@ -212,10 +214,14 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector {
     }
   }
 
-  public void onInterpreterOutputAppend(String noteId, String paragraphId, String output) {
-    Map<String, String> appendOutput = new HashMap<>();
+  public void onInterpreterOutputAppend(
+      String noteId, String paragraphId, int outputIndex,
+      InterpreterResult.Type type, String output) {
+    Map<String, Object> appendOutput = new HashMap<>();
     appendOutput.put("noteId", noteId);
     appendOutput.put("paragraphId", paragraphId);
+    appendOutput.put("index", outputIndex);
+    appendOutput.put("type", type.name());
     appendOutput.put("data", output);
 
     sendEvent(new RemoteInterpreterEvent(
@@ -223,10 +229,14 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector {
         gson.toJson(appendOutput)));
   }
 
-  public void onInterpreterOutputUpdate(String noteId, String paragraphId, String output) {
-    Map<String, String> appendOutput = new HashMap<>();
+  public void onInterpreterOutputUpdate(
+      String noteId, String paragraphId, int outputIndex,
+      InterpreterResult.Type type, String output) {
+    Map<String, Object> appendOutput = new HashMap<>();
     appendOutput.put("noteId", noteId);
     appendOutput.put("paragraphId", paragraphId);
+    appendOutput.put("index", outputIndex);
+    appendOutput.put("type", type.name());
     appendOutput.put("data", output);
 
     sendEvent(new RemoteInterpreterEvent(
@@ -234,6 +244,29 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector {
         gson.toJson(appendOutput)));
   }
 
+  public void onInterpreterOutputUpdateAll(
+      String noteId, String paragraphId, List<InterpreterResultMessage> messages) {
+    Map<String, Object> appendOutput = new HashMap<>();
+    appendOutput.put("noteId", noteId);
+    appendOutput.put("paragraphId", paragraphId);
+    appendOutput.put("messages", messages);
+
+    sendEvent(new RemoteInterpreterEvent(
+        RemoteInterpreterEventType.OUTPUT_UPDATE_ALL,
+        gson.toJson(appendOutput)));
+  }
+
+  public void onInterpreterOutputClose(
+      String noteId, String paragraphId, List<InterpreterResultMessage> messages) {
+    Map<String, Object> appendOutput = new HashMap<>();
+    appendOutput.put("noteId", noteId);
+    appendOutput.put("paragraphId", paragraphId);
+    appendOutput.put("messages", messages);
+
+    sendEvent(new RemoteInterpreterEvent(
+        RemoteInterpreterEventType.OUTPUT_CLOSE,
+        gson.toJson(appendOutput)));
+  }
 
   private void sendEvent(RemoteInterpreterEvent event) {
     synchronized (eventQueue) {

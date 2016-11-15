@@ -14,21 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package org.apache.zeppelin.notebook;
-
-import org.apache.zeppelin.interpreter.InterpreterOutput;
-import org.apache.zeppelin.interpreter.InterpreterResultMessage;
-import org.apache.zeppelin.interpreter.InterpreterResultMessageOutput;
-import org.apache.zeppelin.scheduler.JobListener;
-
-import java.util.List;
+package org.apache.zeppelin.interpreter;
 
 /**
- * Listen paragraph update
+ * InterpreterResultMessage update events
  */
-public interface ParagraphJobListener extends JobListener {
-  public void onOutputAppend(Paragraph paragraph, int idx, String output);
-  public void onOutputUpdate(Paragraph paragraph, int idx, InterpreterResultMessage msg);
-  public void onOutputUpdateAll(Paragraph paragraph, List<InterpreterResultMessage> msgs);
+public interface InterpreterResultMessageOutputListener {
+  /**
+   * called when newline is detected
+   * @param line
+   */
+  public void onAppend(InterpreterResultMessageOutput out, byte[] line);
+
+  /**
+   * when entire output is updated. eg) after detecting new display system
+   */
+  public void onUpdate(InterpreterResultMessageOutput out);
 }

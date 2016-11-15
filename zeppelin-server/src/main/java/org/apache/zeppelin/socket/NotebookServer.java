@@ -41,10 +41,7 @@ import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.AngularObjectRegistryListener;
 import org.apache.zeppelin.helium.ApplicationEventListener;
 import org.apache.zeppelin.helium.HeliumPackage;
-import org.apache.zeppelin.interpreter.InterpreterGroup;
-import org.apache.zeppelin.interpreter.InterpreterOutput;
-import org.apache.zeppelin.interpreter.InterpreterResult;
-import org.apache.zeppelin.interpreter.InterpreterSetting;
+import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
@@ -1643,11 +1640,11 @@ public class NotebookServer extends WebSocketServlet implements
     /**
      * This callback is for paragraph that runs on RemoteInterpreterProcess
      * @param paragraph
-     * @param out
+     * @param idx
      * @param output
      */
     @Override
-    public void onOutputAppend(Paragraph paragraph, InterpreterOutput out, String output) {
+    public void onOutputAppend(Paragraph paragraph, int idx, String output) {
       Message msg = new Message(OP.PARAGRAPH_APPEND_OUTPUT)
           .put("noteId", paragraph.getNote().getId())
           .put("paragraphId", paragraph.getId())
@@ -1659,17 +1656,23 @@ public class NotebookServer extends WebSocketServlet implements
     /**
      * This callback is for paragraph that runs on RemoteInterpreterProcess
      * @param paragraph
-     * @param out
-     * @param output
+     * @param idx
+     * @param result
      */
     @Override
-    public void onOutputUpdate(Paragraph paragraph, InterpreterOutput out, String output) {
+    public void onOutputUpdate(Paragraph paragraph, int idx, InterpreterResultMessage result) {
+      String output = result.getData();
       Message msg = new Message(OP.PARAGRAPH_UPDATE_OUTPUT)
           .put("noteId", paragraph.getNote().getId())
           .put("paragraphId", paragraph.getId())
           .put("data", output);
 
       notebookServer.broadcast(paragraph.getNote().getId(), msg);
+    }
+
+    @Override
+    public void onOutputUpdateAll(Paragraph paragraph, List<InterpreterResultMessage> msgs) {
+      // TODO
     }
   }
 

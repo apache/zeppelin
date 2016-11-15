@@ -136,15 +136,15 @@ public class RemoteInterpreterOutputTestStream implements RemoteInterpreterProce
     RemoteInterpreter intp = createMockInterpreter();
 
     InterpreterResult ret = intp.interpret("SUCCESS:%html hello:", createInterpreterContext());
-    assertEquals(InterpreterResult.Type.HTML, ret.type());
+    assertEquals(InterpreterResult.Type.HTML, ret.message().get(0).getType());
     assertEquals("hello", ret.message());
 
     ret = intp.interpret("SUCCESS:%html\nhello:", createInterpreterContext());
-    assertEquals(InterpreterResult.Type.HTML, ret.type());
+    assertEquals(InterpreterResult.Type.HTML, ret.message().get(0).getType());
     assertEquals("hello", ret.message());
 
     ret = intp.interpret("SUCCESS:%html hello:%angular world", createInterpreterContext());
-    assertEquals(InterpreterResult.Type.ANGULAR, ret.type());
+    assertEquals(InterpreterResult.Type.ANGULAR, ret.message().get(0).getType());
     assertEquals("helloworld", ret.message());
   }
 

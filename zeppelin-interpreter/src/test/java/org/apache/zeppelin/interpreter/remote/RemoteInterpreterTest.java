@@ -31,6 +31,7 @@ import org.apache.thrift.transport.TTransportException;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.interpreter.remote.mock.MockInterpreterEnv;
+import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterResultMessage;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService.Client;
 import org.apache.zeppelin.user.AuthenticationInfo;
@@ -392,7 +393,7 @@ public class RemoteInterpreterTest {
     intpA.open();
 
     int concurrency = 3;
-    final List<String> results = new LinkedList<>();
+    final List<InterpreterResultMessage> results = new LinkedList<>();
 
     Scheduler scheduler = intpA.getScheduler();
     for (int i = 0; i < concurrency; i++) {
@@ -424,7 +425,7 @@ public class RemoteInterpreterTest {
               new LinkedList<InterpreterContextRunner>(), null));
 
           synchronized (results) {
-            results.add(ret.message());
+            results.addAll(ret.message());
             results.notify();
           }
           return null;
@@ -446,8 +447,8 @@ public class RemoteInterpreterTest {
     }
 
     int i = 0;
-    for (String result : results) {
-      assertEquals(Integer.toString(i++), result);
+    for (InterpreterResultMessage result : results) {
+      assertEquals(Integer.toString(i++), result.getData());
     }
     assertEquals(concurrency, i);
 
@@ -470,7 +471,7 @@ public class RemoteInterpreterTest {
 
     int concurrency = 4;
     final int timeToSleep = 1000;
-    final List<String> results = new LinkedList<>();
+    final List<InterpreterResultMessage> results = new LinkedList<>();
     long start = System.currentTimeMillis();
 
     Scheduler scheduler = intpA.getScheduler();
@@ -504,7 +505,7 @@ public class RemoteInterpreterTest {
               new LinkedList<InterpreterContextRunner>(), null));
 
           synchronized (results) {
-            results.add(ret.message());
+            results.addAll(ret.message());
             results.notify();
           }
           return stmt;

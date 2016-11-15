@@ -25,6 +25,7 @@ import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.helium.ApplicationEventListener;
 import org.apache.zeppelin.interpreter.InterpreterContextRunner;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
+import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterEvent;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterEventType;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService.Client;
@@ -158,12 +159,16 @@ public class RemoteInterpreterEventPoller extends Thread {
           sendResourceResponseGet(resourceId, o);
         } else if (event.getType() == RemoteInterpreterEventType.OUTPUT_APPEND) {
           // on output append
-          Map<String, String> outputAppend = gson.fromJson(
-                  event.getData(), new TypeToken<Map<String, String>>() {}.getType());
-          String noteId = outputAppend.get("noteId");
-          String paragraphId = outputAppend.get("paragraphId");
-          String outputToAppend = outputAppend.get("data");
-          String appId = outputAppend.get("appId");
+          Map<String, Object> outputAppend = gson.fromJson(
+                  event.getData(), new TypeToken<Map<String, Object>>() {}.getType());
+          String noteId = (String) outputAppend.get("noteId");
+          String paragraphId = (String) outputAppend.get("paragraphId");
+          int index = (int) outputAppend.get("index");
+          InterpreterResult.Type type =
+              InterpreterResult.Type.valueOf((String) outputAppend.get("type"));
+          String outputToAppend = (String) outputAppend.get("data");
+
+          String appId = (String) outputAppend.get("appId");
 
           if (appId == null) {
             runner.appendBuffer(noteId, paragraphId, outputToAppend);
@@ -172,12 +177,15 @@ public class RemoteInterpreterEventPoller extends Thread {
           }
         } else if (event.getType() == RemoteInterpreterEventType.OUTPUT_UPDATE) {
           // on output update
-          Map<String, String> outputAppend = gson.fromJson(
-              event.getData(), new TypeToken<Map<String, String>>() {}.getType());
-          String noteId = outputAppend.get("noteId");
-          String paragraphId = outputAppend.get("paragraphId");
-          String outputToUpdate = outputAppend.get("data");
-          String appId = outputAppend.get("appId");
+          Map<String, Object> outputAppend = gson.fromJson(
+              event.getData(), new TypeToken<Map<String, Object>>() {}.getType());
+          String noteId = (String) outputAppend.get("noteId");
+          String paragraphId = (String) outputAppend.get("paragraphId");
+          int index = (int) outputAppend.get("index");
+          InterpreterResult.Type type =
+              InterpreterResult.Type.valueOf((String) outputAppend.get("type"));
+          String outputToUpdate = (String) outputAppend.get("data");
+          String appId = (String) outputAppend.get("appId");
 
           if (appId == null) {
             listener.onOutputUpdated(noteId, paragraphId, outputToUpdate);

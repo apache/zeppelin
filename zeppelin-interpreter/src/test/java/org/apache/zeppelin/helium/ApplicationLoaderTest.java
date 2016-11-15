@@ -21,6 +21,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.zeppelin.dep.DependencyResolver;
 import org.apache.zeppelin.interpreter.InterpreterOutput;
 import org.apache.zeppelin.interpreter.InterpreterOutputListener;
+import org.apache.zeppelin.interpreter.InterpreterResultMessageOutput;
 import org.apache.zeppelin.resource.LocalResourcePool;
 import org.junit.After;
 import org.junit.Before;
@@ -90,12 +91,22 @@ public class ApplicationLoaderTest {
         null,
         new InterpreterOutput(new InterpreterOutputListener() {
           @Override
-          public void onAppend(InterpreterOutput out, byte[] line) {
+          public void onUpdateAll(InterpreterOutput out) {
 
           }
 
           @Override
-          public void onUpdate(InterpreterOutput out, byte[] output) {
+          public void onClose(InterpreterOutput out) {
+
+          }
+
+          @Override
+          public void onAppend(int index, InterpreterResultMessageOutput out, byte[] line) {
+
+          }
+
+          @Override
+          public void onUpdate(int index, InterpreterResultMessageOutput out) {
 
           }
         }));

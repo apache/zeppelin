@@ -45,14 +45,8 @@ import org.apache.commons.exec.environment.EnvironmentUtils;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.sql.SQLContext;
-import org.apache.zeppelin.interpreter.Interpreter;
-import org.apache.zeppelin.interpreter.InterpreterContext;
-import org.apache.zeppelin.interpreter.InterpreterException;
-import org.apache.zeppelin.interpreter.InterpreterGroup;
-import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.InterpreterHookRegistry.HookType;
-import org.apache.zeppelin.interpreter.LazyOpenInterpreter;
-import org.apache.zeppelin.interpreter.WrappedInterpreter;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.interpreter.util.InterpreterOutputStream;
@@ -341,10 +335,10 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
       }
     }
 
-    String errorMessage = "";
+    List<InterpreterResultMessage> errorMessage;
     try {
       context.out.flush();
-      errorMessage = new String(context.out.toByteArray());
+      errorMessage = context.out.toInterpreterResultMessage();
     } catch (IOException e) {
       throw new InterpreterException(e);
     }
@@ -352,18 +346,22 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
 
     if (pythonscriptRunning == false) {
       // python script failed to initialize and terminated
-      return new InterpreterResult(Code.ERROR, "failed to start pyspark"
-          + errorMessage);
+      errorMessage.add(new InterpreterResultMessage(
+          InterpreterResult.Type.TEXT, "failed to start pyspark"));
+      return new InterpreterResult(Code.ERROR, errorMessage);
     }
     if (pythonScriptInitialized == false) {
       // timeout. didn't get initialized message
-      return new InterpreterResult(Code.ERROR, "pyspark is not responding "
-          + errorMessage);
+      errorMessage.add(new InterpreterResultMessage(
+          InterpreterResult.Type.TEXT, "pyspark is not responding"));
+      return new InterpreterResult(Code.ERROR, errorMessage);
     }
 
     if (!sparkInterpreter.getSparkVersion().isPysparkSupported()) {
-      return new InterpreterResult(Code.ERROR, "pyspark "
-          + sparkInterpreter.getSparkContext().version() + " is not supported");
+      errorMessage.add(new InterpreterResultMessage(
+          InterpreterResult.Type.TEXT,
+          "pyspark " + sparkInterpreter.getSparkContext().version() + " is not supported"));
+      return new InterpreterResult(Code.ERROR, errorMessage);
     }
     String jobGroup = sparkInterpreter.getJobGroup(context);
     ZeppelinContext z = sparkInterpreter.getZeppelinContext();
@@ -459,10 +457,8 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
       if (statementError) {
         return new LinkedList<>();
       }
-      InterpreterResult completionResult;
-      completionResult = new InterpreterResult(Code.SUCCESS, statementOutput);
       Gson gson = new Gson();
-      completionList = gson.fromJson(completionResult.message(), String[].class);
+      completionList = gson.fromJson(statementOutput, String[].class);
     }
     //end code for completion
 

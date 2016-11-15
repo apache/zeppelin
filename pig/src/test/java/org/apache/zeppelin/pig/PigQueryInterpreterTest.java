@@ -90,37 +90,37 @@ public class PigQueryInterpreterTest {
             + "a2 = load 'invalid_path' as (name, gender, age);\n"
             + "dump a;";
     InterpreterResult result = pigInterpreter.interpret(pigscript, context);
-    assertEquals(InterpreterResult.Type.TEXT, result.type());
+    assertEquals(InterpreterResult.Type.TEXT, result.message().get(0).getType());
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-    assertTrue(result.message().contains("(andy,male,10)\n(peter,male,20)\n(amy,female,14)"));
+    assertTrue(result.message().get(0).getData().contains("(andy,male,10)\n(peter,male,20)\n(amy,female,14)"));
 
     // run single line query in PigQueryInterpreter
     String query = "foreach a generate name, age;";
     result = pigQueryInterpreter.interpret(query, context);
-    assertEquals(InterpreterResult.Type.TABLE, result.type());
+    assertEquals(InterpreterResult.Type.TABLE, result.message().get(0).getType());
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-    assertEquals("name\tage\nandy\t10\npeter\t20\namy\t14\n", result.message());
+    assertEquals("name\tage\nandy\t10\npeter\t20\namy\t14\n", result.message().get(0).getData());
 
     // run multiple line query in PigQueryInterpreter
     query = "b = group a by gender;\nforeach b generate group as gender, COUNT($1) as count;";
     result = pigQueryInterpreter.interpret(query, context);
-    assertEquals(InterpreterResult.Type.TABLE, result.type());
+    assertEquals(InterpreterResult.Type.TABLE, result.message().get(0).getType());
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-    assertEquals("gender\tcount\nmale\t2\nfemale\t1\n", result.message());
+    assertEquals("gender\tcount\nmale\t2\nfemale\t1\n", result.message().get(0).getData());
 
     // syntax error in PigQueryInterpereter
     query = "b = group a by invalid_column;\nforeach b generate group as gender, COUNT($1) as count;";
     result = pigQueryInterpreter.interpret(query, context);
-    assertEquals(InterpreterResult.Type.TEXT, result.type());
+    assertEquals(InterpreterResult.Type.TEXT, result.message().get(0).getType());
     assertEquals(InterpreterResult.Code.ERROR, result.code());
-    assertTrue(result.message().contains("Projected field [invalid_column] does not exist in schema"));
+    assertTrue(result.message().get(0).getData().contains("Projected field [invalid_column] does not exist in schema"));
 
     // execution error in PigQueryInterpreter
     query = "foreach a2 generate name, age;";
     result = pigQueryInterpreter.interpret(query, context);
-    assertEquals(InterpreterResult.Type.TEXT, result.type());
+    assertEquals(InterpreterResult.Type.TEXT, result.message().get(0).getType());
     assertEquals(InterpreterResult.Code.ERROR, result.code());
-    assertTrue(result.message().contains("Input path does not exist"));
+    assertTrue(result.message().get(0).getData().contains("Input path does not exist"));
   }
 
   @Test
@@ -137,7 +137,7 @@ public class PigQueryInterpreterTest {
     // run script in PigInterpreter
     String pigscript = "a = load '" + tmpFile.getAbsolutePath() + "' as (id, name);";
     InterpreterResult result = pigInterpreter.interpret(pigscript, context);
-    assertEquals(InterpreterResult.Type.TEXT, result.type());
+    assertEquals(InterpreterResult.Type.TEXT, result.message().get(0).getType());
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
     // empty output
     assertTrue(result.message().isEmpty());
@@ -145,9 +145,9 @@ public class PigQueryInterpreterTest {
     // run single line query in PigQueryInterpreter
     String query = "foreach a generate id;";
     result = pigQueryInterpreter.interpret(query, context);
-    assertEquals(InterpreterResult.Type.TABLE, result.type());
+    assertEquals(InterpreterResult.Type.TABLE, result.message().get(0).getType());
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-    assertTrue(result.message().contains("id\n0\n1\n2"));
-    assertTrue(result.message().contains("Results are limited by 20"));
+    assertTrue(result.message().get(0).getData().contains("id\n0\n1\n2"));
+    assertTrue(result.message().get(0).getData().contains("Results are limited by 20"));
   }
 }

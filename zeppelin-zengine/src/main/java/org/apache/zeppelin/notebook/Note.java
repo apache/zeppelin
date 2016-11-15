@@ -31,17 +31,14 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.zeppelin.interpreter.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.Input;
-import org.apache.zeppelin.interpreter.Interpreter;
-import org.apache.zeppelin.interpreter.InterpreterException;
-import org.apache.zeppelin.interpreter.InterpreterFactory;
-import org.apache.zeppelin.interpreter.InterpreterGroup;
-import org.apache.zeppelin.interpreter.InterpreterOutput;
-import org.apache.zeppelin.interpreter.InterpreterResult;
-import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
@@ -705,21 +702,31 @@ public class Note implements Serializable, ParagraphJobListener {
   }
 
   @Override
-  public void onOutputAppend(Paragraph paragraph, InterpreterOutput out, String output) {
+  public void onOutputAppend(Paragraph paragraph, int idx, String output) {
     if (jobListenerFactory != null) {
       ParagraphJobListener listener = jobListenerFactory.getParagraphJobListener(this);
       if (listener != null) {
-        listener.onOutputAppend(paragraph, out, output);
+        listener.onOutputAppend(paragraph, idx, output);
       }
     }
   }
 
   @Override
-  public void onOutputUpdate(Paragraph paragraph, InterpreterOutput out, String output) {
+  public void onOutputUpdate(Paragraph paragraph, int idx, InterpreterResultMessage msg) {
     if (jobListenerFactory != null) {
       ParagraphJobListener listener = jobListenerFactory.getParagraphJobListener(this);
       if (listener != null) {
-        listener.onOutputUpdate(paragraph, out, output);
+        listener.onOutputUpdate(paragraph, idx, msg);
+      }
+    }
+  }
+
+  @Override
+  public void onOutputUpdateAll(Paragraph paragraph, List<InterpreterResultMessage> msgs) {
+    if (jobListenerFactory != null) {
+      ParagraphJobListener listener = jobListenerFactory.getParagraphJobListener(this);
+      if (listener != null) {
+        listener.onOutputUpdateAll(paragraph, msgs);
       }
     }
   }
