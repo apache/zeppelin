@@ -215,6 +215,7 @@ The following components are provided under Apache License.
     (Apache 2.0) Maven Wagon HTTP Shared 1.0 (org.apache.maven.wagon:wagon-http-shared:1.0 - https://mvnrepository.com/artifact/org.apache.maven.wagon/wagon-http-shared/1.0)
     (Apache 2.0) Commons HTTP Client 3.1 (commons-httpclient:commons-httpclient:3.1 - https://mvnrepository.com/artifact/commons-httpclient/commons-httpclient/3.1)
     (Apache 2.0) Scalatest 2.2.4 (org.scalatest:scalatest_2.10:2.2.4 - https://github.com/scalatest/scalatest)
+    (Apache 2.0) Neo4j Java Driver (https://github.com/neo4j/neo4j-java-driver) - https://github.com/neo4j/neo4j-java-driver/blob/1.1/LICENSE.txt
 
 ========================================================================
 MIT licenses
@@ -266,6 +267,7 @@ The text of each license is also included at licenses/LICENSE-[project]-[version
     (The MIT License) Java String Similarity 0.12 (info.debatty:java-string-similarity:0.12 - https://github.com/tdebatty/java-string-similarity)
     (The MIT License) Java LSH 0.10 (info.debatty:java-lsh:0.10 - https://github.com/tdebatty/java-LSH)
     (The MIT License) JSoup 1.6.1 (org.jsoup:jsoup:1.6.1 - https://github.com/jhy/jsoup/)
+    (The MIT License) sigma.js - https://github.com/jacomyal/sigma.js/blob/master/LICENSE.txt
 
 ========================================================================
 BSD-style licenses
