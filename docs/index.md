@@ -134,6 +134,7 @@ Join to our [Mailing list](https://zeppelin.apache.org/community.html) and repor
   * [Customize Zeppelin Homepage](./manual/notebookashomepage.html) with one of your notebooks
 * More
   * [Upgrade Apache Zeppelin Version](./install/upgrade.html): a manual procedure of upgrading Apache Zeppelin version
+  * [Build](./install/build.html): Build from source
 
 ####Interpreter
 

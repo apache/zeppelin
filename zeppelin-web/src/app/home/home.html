@@ -14,20 +14,26 @@ limitations under the License.
 
 <script type="text/ng-template" id="notebook_folder_renderer.html">
   <div ng-if="node.children == null"
-       ng-mouseenter="showButton=true"
-       ng-mouseleave="showButton=false">
+       ng-mouseenter="showNoteButton=true"
+       ng-mouseleave="showNoteButton=false">
     <a style="text-decoration: none;" href="#/notebook/{{node.id}}">
       <i style="font-size: 10px;" class="icon-doc"/> {{noteName(node)}}
     </a>
     <a style="text-decoration: none;">
       <i style="font-size: 13px; margin-left: 10px; cursor: pointer; text-decoration: none;"
-         class="fa fa-eraser" ng-show="showButton" ng-click="clearAllParagraphOutput(node.id)"
+         class="fa fa-pencil" ng-show="showNoteButton" ng-click="renameNote(node)"
+         tooltip-placement="bottom" tooltip="Rename note">
+      </i>
+    </a>
+    <a style="text-decoration: none;">
+      <i style="font-size: 13px; margin-left: 2px; cursor: pointer; text-decoration: none;"
+         class="fa fa-eraser" ng-show="showNoteButton" ng-click="clearAllParagraphOutput(node.id)"
          tooltip-placement="bottom" tooltip="Clear output">
       </i>
     </a>
     <a style="text-decoration: none;">
       <i style="font-size: 13px; margin-left: 2px; cursor: pointer; text-decoration: none;"
-         class="fa fa-trash-o" ng-show="showButton" ng-click="removeNote(node.id)"
+         class="fa fa-trash-o" ng-show="showNoteButton" ng-click="removeNote(node.id)"
          tooltip-placement="bottom" tooltip="Remove note">
       </i>
     </a>

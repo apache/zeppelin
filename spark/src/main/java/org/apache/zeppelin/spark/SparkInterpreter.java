@@ -49,6 +49,9 @@ import org.apache.spark.ui.jobs.JobProgressListener;
 import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.thrift.RemoteZeppelinServerController;
+import org.apache.zeppelin.interpreter.InterpreterUtils;
+import org.apache.zeppelin.interpreter.WrappedInterpreter;
+import org.apache.zeppelin.interpreter.util.InterpreterOutputStream;
 import org.apache.zeppelin.resource.ResourcePool;
 import org.apache.zeppelin.resource.WellKnownResourceName;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
@@ -104,7 +107,7 @@ public class SparkInterpreter extends Interpreter {
   private static Integer sharedInterpreterLock = new Integer(0);
   private static AtomicInteger numReferenceOfSparkContext = new AtomicInteger(0);
 
-  private SparkOutputStream out;
+  private InterpreterOutputStream out;
   private SparkDependencyResolver dep;
 
   private RemoteWorksController remoteWorksController;
@@ -122,7 +125,7 @@ public class SparkInterpreter extends Interpreter {
 
   public SparkInterpreter(Properties property) {
     super(property);
-    out = new SparkOutputStream(logger);
+    out = new InterpreterOutputStream(logger);
   }
 
   public SparkInterpreter(Properties property, SparkContext sc) {

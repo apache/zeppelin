@@ -52,6 +52,9 @@ zeppelin-web/bower_components
 .Rhistory
 /R/
 
+# scio
+.bigquery/
+
 # project level
 /logs/
 /run/

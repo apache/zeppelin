@@ -1850,7 +1850,8 @@
     });
 
     $scope.$on('doubleClickParagraph', function(event, paragraphId) {
-      if ($scope.paragraph.id === paragraphId && editorSetting.editOnDblClick) {
+      if ($scope.paragraph.id === paragraphId && $scope.paragraph.config.editorHide &&
+          editorSetting.editOnDblClick) {
         var deferred = $q.defer();
         openEditorAndCloseTable();
         $timeout(

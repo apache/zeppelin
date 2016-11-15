@@ -88,6 +88,10 @@
       }
     });
 
+    $scope.renameNote = function(node) {
+      noteActionSrv.renameNote(node.id, node.path);
+    };
+
     $scope.removeNote = function(noteId) {
       noteActionSrv.removeNote(noteId, false);
     };
