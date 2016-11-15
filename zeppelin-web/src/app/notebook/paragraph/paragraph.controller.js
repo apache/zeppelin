@@ -1297,15 +1297,15 @@
         dsv += tableData.columns[titleIndex].name + delimiter;
       }
       dsv = dsv.substring(0, dsv.length - 1) + '\n';
-      for (var r in $scope.paragraph.result.msgTable) {
-        var row = $scope.paragraph.result.msgTable[r];
+      for (var r in tableData.rows) {
+        var row = tableData.rows[r];
         var dsvRow = '';
         for (var index in row) {
-          var stringValue =  (row[index].value).toString();
+          var stringValue =  (row[index]).toString();
           if (stringValue.contains(delimiter)) {
             dsvRow += '"' + stringValue + '"' + delimiter;
           } else {
-            dsvRow += row[index].value + delimiter;
+            dsvRow += row[index] + delimiter;
           }
         }
         dsv += dsvRow.substring(0, dsvRow.length - 1) + '\n';
