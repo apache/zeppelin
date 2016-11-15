@@ -106,7 +106,8 @@ public class InterpreterOption {
     option.perUser = other.perUser;
     option.isExistingProcess = other.isExistingProcess;
     option.setPermission = other.setPermission;
-    option.users = new ArrayList<>(other.users);
+    option.users = (null == other.users) ?
+        new ArrayList<String>() : new ArrayList<>(other.users);
 
     return option;
   }
