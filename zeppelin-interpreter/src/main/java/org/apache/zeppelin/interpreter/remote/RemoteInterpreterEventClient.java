@@ -279,6 +279,11 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector {
         gson.toJson(appendOutput)));
   }
 
+  public void onMetaInfosReceived(Map<String, String> infos) {
+    sendEvent(new RemoteInterpreterEvent(RemoteInterpreterEventType.META_INFOS,
+        gson.toJson(infos)));
+  }
+
   /**
    * Wait for eventQueue becomes empty
    */

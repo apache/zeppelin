@@ -1764,5 +1764,12 @@ public class NotebookServer extends WebSocketServlet implements
             .put("interpreterSettings", availableSettings)));
   }
 
+  @Override
+  public void onMetaInfosReceived(String settingId, Map<String, String> metaInfos) {
+    InterpreterSetting interpreterSetting = notebook().getInterpreterFactory()
+        .get(settingId);
+    interpreterSetting.setInfos(metaInfos);
+  }
+
 }
 
