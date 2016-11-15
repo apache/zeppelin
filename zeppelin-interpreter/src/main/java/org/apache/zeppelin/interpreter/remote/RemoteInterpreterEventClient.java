@@ -51,7 +51,6 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector {
   private final Map<ResourceId, Object> getResourceResponse = new HashMap<>();
   private final Gson gson = new Gson();
 
-  // cloverhearts
   /**
    * Run paragraph
    * @param runner
@@ -61,7 +60,6 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector {
     RemoteZeppelinServerController eventBody = new RemoteZeppelinServerController();
     eventBody.setType(RemoteZeppelinServerControlEvent.REQ_RESOURCE_PARAGRAPH_RUN_CONTEXT);
     eventBody.setEventOwnerKey(eventOwnerKey);
-    logger.info("clover gson.toJson(runner) - " + gson.toJson(runner));
     eventBody.setMsg(gson.toJson(runner));
 
     sendEvent(new RemoteInterpreterEvent(

@@ -65,7 +65,6 @@ struct RemoteApplicationResult {
 }
 
 /*
-  cloverhearts
   remote interpreter process --> request --> zeppelin server
  */
 enum RemoteZeppelinServerControlEvent {

@@ -453,7 +453,6 @@ public class Paragraph extends Job implements Serializable, Cloneable {
       resourcePool = intpGroup.getInterpreterGroup(getUser(), note.getId()).getResourcePool();
     }
 
-    //cloverhearts
     List<InterpreterContextRunner> runners = new LinkedList<>();
     for (Paragraph p : note.getParagraphs()) {
       runners.add(new ParagraphRunner(note, note.getId(), p.getId()));

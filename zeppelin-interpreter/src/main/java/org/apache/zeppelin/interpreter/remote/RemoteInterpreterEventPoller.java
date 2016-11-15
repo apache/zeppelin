@@ -213,7 +213,6 @@ public class RemoteInterpreterEventPoller extends Thread {
         } else if (event.getType() == RemoteInterpreterEventType.REMOTE_ZEPPELIN_SERVER_CONTROL) {
           RemoteZeppelinServerController remoteControlEvent = gson.fromJson(
               event.getData(), RemoteZeppelinServerController.class);
-          //cloverhearts
           progressRemoteZeppelinControlEvent(remoteControlEvent);
 
         }
@@ -228,7 +227,6 @@ public class RemoteInterpreterEventPoller extends Thread {
   }
 
   private void progressRemoteZeppelinControlEvent(RemoteZeppelinServerController event) {
-    logger.info("clover - received RemoteInterpreterEvent");
     Gson gson = new Gson();
     String eventOwnerKey = event.getEventOwnerKey();
     Client interpreterServer = null;
@@ -241,8 +239,6 @@ public class RemoteInterpreterEventPoller extends Thread {
         ZeppelinServerResourceParagraphRunner runner = gson.fromJson(
             event.getMsg(), ZeppelinServerResourceParagraphRunner.class);
 
-        logger.info("clover req note id {} p id {} - msg {}",
-          runner.getNoteId(), runner.getParagraphId(), event.getMsg());
         RemoteZeppelinServerController resResource = new RemoteZeppelinServerController();
         resResource.setType(RemoteZeppelinServerControlEvent.RES_RESOURCE_PARAGRAPH_RUN_CONTEXT);
         resResource.setEventOwnerKey(eventOwnerKey);
@@ -254,21 +250,15 @@ public class RemoteInterpreterEventPoller extends Thread {
             runner.getNoteId());
         }
 
-        logger.info("clover remotework count 1 {}", interpreterContextRunners.size());
-
         for (InterpreterContextRunner r : interpreterContextRunners) {
           remoteRunners.add(
             new ZeppelinServerResourceParagraphRunner(r.getNoteId(), r.getParagraphId())
           );
         }
 
-        logger.info("clover remotework count 2 {}", remoteRunners.size());
-
         resResource.setMsg(gson.toJson(remoteRunners));
 
         interpreterServer.remoteZeppelinServerControlFeedback(resResource);
-        logger.info("get runner noteid {} paragraphid {}",
-            runner.getNoteId(), runner.getParagraphId());
       }
 
     } catch (Exception e) {
@@ -284,7 +274,6 @@ public class RemoteInterpreterEventPoller extends Thread {
       return;
     }
 
-    logger.info("clover - remote event {}", event.getType());
   }
 
   private void sendResourcePoolResponseGetAll(ResourceSet resourceSet) {
