@@ -31,7 +31,7 @@ fi
 
 # Install Python dependencies for Python specific tests
 if [[ -n "$PYTHON" ]] ; then
-  if [[ "$PYTHON" == "2.7" ]] ; then
+  if [[ "$PYTHON" == "2" ]] ; then
     wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh
   else
     wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
