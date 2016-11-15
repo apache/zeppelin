@@ -498,3 +498,7 @@ table.table-striped {
   padding-left: 4px !important;
   width: 20px;
 }
+
+.network-badge {
+  margin: 0.2em;
+}

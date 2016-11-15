@@ -13,20 +13,63 @@ limitations under the License.
 -->
 
 <div id="{{paragraph.id}}_switch"
-     ng-if="(paragraph.result.type == 'TABLE' || apps.length > 0 || suggestion.available && suggestion.available.length > 0) && !asIframe && !viewOnly"
+     ng-if="(paragraph.result.type == 'TABLE' || paragraph.result.type == 'NETWORK' || apps.length > 0 || suggestion.available && suggestion.available.length > 0) && !asIframe && !viewOnly"
      class="btn-group"
      style="margin-bottom: 10px;">
 
   <button type="button" class="btn btn-default btn-sm"
+<<<<<<< Upstream, based on home/master
           ng-if="paragraph.result.type == 'TABLE'"
           ng-repeat="viz in builtInTableDataVisualizationList track by $index"
           ng-class="{'active' : isGraphMode(viz.id)}"
           ng-click="setGraphMode(viz.id, true, false)"
           tooltip="{{viz.name}}" tooltip-placement="bottom"><i ng-class="viz.icon"></i>
+=======
+          ng-if="paragraph.result.type == 'TABLE' || paragraph.result.type == 'NETWORK'"
+          ng-class="{'active': isGraphMode('table')}"
+          ng-click="setGraphMode('table', true)"
+          tooltip="Table" tooltip-placement="bottom"><i class="fa fa-table"></i>
+  </button>
+  <button type="button" class="btn btn-default btn-sm"
+          ng-if="paragraph.result.type == 'TABLE' || paragraph.result.type == 'NETWORK'"
+          ng-class="{'active': isGraphMode('multiBarChart')}"
+          ng-click="setGraphMode('multiBarChart', true)"
+          tooltip="Bar Chart" tooltip-placement="bottom"><i class="fa fa-bar-chart"></i>
+  </button>
+  <button type="button" class="btn btn-default btn-sm"
+          ng-if="paragraph.result.type == 'TABLE' || paragraph.result.type == 'NETWORK'"
+          ng-class="{'active': isGraphMode('pieChart')}"
+          ng-click="setGraphMode('pieChart', true)"
+          tooltip="Pie Chart" tooltip-placement="bottom"><i class="fa fa-pie-chart"></i>
+  </button>
+  <button type="button" class="btn btn-default btn-sm"
+          ng-if="paragraph.result.type == 'TABLE' || paragraph.result.type == 'NETWORK'"
+          ng-class="{'active': isGraphMode('stackedAreaChart')}"
+          ng-click="setGraphMode('stackedAreaChart', true)"
+          tooltip="Area Chart" tooltip-placement="bottom"><i class="fa fa-area-chart"></i>
+  </button>
+  <button type="button" class="btn btn-default btn-sm"
+          ng-if="paragraph.result.type == 'TABLE' || paragraph.result.type == 'NETWORK'"
+          ng-class="{'active': isGraphMode('lineChart') || isGraphMode('lineWithFocusChart')}"
+          ng-click="paragraph.config.graph.lineWithFocus ? setGraphMode('lineWithFocusChart', true) : setGraphMode('lineChart', true)"
+          tooltip="Line Chart" tooltip-placement="bottom"><i class="fa fa-line-chart"></i>
+  </button>
+  <button type="button" class="btn btn-default btn-sm"
+          ng-if="paragraph.result.type == 'TABLE' || paragraph.result.type == 'NETWORK'"
+          ng-class="{'active': isGraphMode('scatterChart')}"
+          ng-click="setGraphMode('scatterChart', true)"
+          tooltip="Scatter Chart" tooltip-placement="bottom"><i class="cf cf-scatter-chart"></i>
+>>>>>>> 4e685cc First commit
+  </button>
+  <button type="button" class="btn btn-default btn-sm"
+          ng-if="paragraph.result.type == 'NETWORK'"
+          ng-class="{'active': isGraphMode('network')}"
+          ng-click="setGraphMode('network', true)"
+          tooltip="Network" tooltip-placement="bottom"><i class="fa fa-circle-thin"></i>
   </button>
 
   <button type="button"
-          ng-if="paragraph.result.type != 'TABLE'"
+          ng-if="paragraph.result.type != 'TABLE' && paragraph.result.type != 'NETWORK'"
           ng-click="switchApp()"
           ng-class="{'active' : !paragraph.config.helium.activeApp}"
           class="btn btn-default btn-sm"><i class="fa fa-terminal"></i>
@@ -71,7 +114,7 @@ limitations under the License.
 </div>
 
 <div class="btn-group"
-     ng-if="paragraph.result.type == 'TABLE' && !asIframe && !viewOnly"
+     ng-if="(paragraph.result.type == 'TABLE' || paragraph.result.type == 'NETWORK') && !asIframe && !viewOnly"
      style="margin-bottom: 10px;">
   <button type="button" class="btn btn-default btn-sm"
           style="margin-left:10px"
@@ -91,7 +134,7 @@ limitations under the License.
 </div>
 
 <span
-   ng-if="getResultType()=='TABLE' && !paragraph.config.helium.activeApp && getGraphMode()!='table' && !asIframe && !viewOnly"
+   ng-if="(getResultType()=='TABLE' || getResultType() == 'NETWORK') && !paragraph.config.helium.activeApp && getGraphMode()!='table' && !asIframe && !viewOnly"
    style="margin-left:10px; cursor:pointer; display: inline-block; vertical-align:top; position: relative; line-height:30px;">
   <a class="btnText" ng-click="toggleGraphOption()">
     settings <span ng-class="paragraph.config.graph.optionOpen ? 'fa fa-caret-up' : 'fa fa-caret-down'"></span>
