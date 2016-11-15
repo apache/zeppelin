@@ -65,7 +65,6 @@ module.exports = function(config) {
       'bower_components/handsontable/dist/handsontable.js',
       'bower_components/moment-duration-format/lib/moment-duration-format.js',
       'bower_components/select2/dist/js/select2.js',
-<<<<<<< Upstream, based on home/master
       'bower_components/MathJax/MathJax.js',
       'bower_components/clipboard/dist/clipboard.js',
       'bower_components/ngclipboard/dist/ngclipboard.js',
@@ -74,7 +73,6 @@ module.exports = function(config) {
       'bower_components/sigma.js/build/plugins/sigma.layout.noverlap.min.js',
       'bower_components/sigma.js/build/plugins/sigma.plugins.dragNodes.min.js',
       'bower_components/sigma.js/build/plugins/sigma.renderers.edgeLabels.min.js',
-      'bower_components/sigma.js/build/plugins/sigma.renderers.parallelEdges.min.js',
       'bower_components/sigma.js/build/plugins/sigma.renderers.parallelEdges.min.js',
       'bower_components/angular-mocks/angular-mocks.js',
       // endbower
