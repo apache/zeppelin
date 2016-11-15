@@ -23,16 +23,18 @@ limitations under the License.
 
 <div id="toc"></div>
 
-## Overview 
+## Overview
 [Apache Spark](http://spark.apache.org/) has supported three cluster manager types([Standalone](http://spark.apache.org/docs/latest/spark-standalone.html), [Apache Mesos](http://spark.apache.org/docs/latest/running-on-mesos.html) and [Hadoop YARN](http://spark.apache.org/docs/latest/running-on-yarn.html)) so far.
 This document will guide you how you can build and configure the environment on 3 types of Spark cluster manager with Apache Zeppelin using [Docker](https://www.docker.com/) scripts.
 So [install docker](https://docs.docker.com/engine/installation/) on the machine first.
 
 ## Spark standalone mode
 [Spark standalone](http://spark.apache.org/docs/latest/spark-standalone.html) is a simple cluster manager included with Spark that makes it easy to set up a cluster.
-You can simply set up Spark standalone environment with below steps. 
+You can simply set up Spark standalone environment with below steps.
 
-> **Note :** Since Apache Zeppelin and Spark use same `8080` port for their web UI, you might need to change `zeppelin.server.port` in `conf/zeppelin-site.xml`.
+> **Note 1:** Since Apache Zeppelin and Spark use same `8080` port for their web UI, you might need to change `zeppelin.server.port` in `conf/zeppelin-site.xml`.
+
+> **Note 2:** `sparkmaster` hostname used to run docker containers below should be defined in your `/etc/hosts`.
 
 ### 1. Build Docker file
 You can find docker script files under `scripts/docker/spark-cluster-managers`.
@@ -52,7 +54,7 @@ docker run -it \
 -p 8081:8081 \
 -h sparkmaster \
 --name spark_standalone \
-spark_standalone bash; 
+spark_standalone bash;
 ```
 
 ### 3. Configure Spark interpreter in Zeppelin
@@ -201,4 +203,3 @@ Don't forget to set Spark `master` as `mesos://127.0.1.1:5050` in Zeppelin **Int
 After running a single paragraph with Spark interpreter in Zeppelin, browse `http://<hostname>:5050/#/frameworks` and check Zeppelin application is running well or not.
 
 <img src="../assets/themes/zeppelin/img/docs-img/mesos_frameworks.png" />
-
