@@ -200,6 +200,7 @@
         tableData = new TableData();
         tableData.loadParagraphResult($scope.paragraph.result);
         $scope.tableDataColumns = tableData.columns;
+        $scope.tableDataComment = tableData.comment;
         $scope.setGraphMode($scope.getGraphMode(), false, false);
       } else if ($scope.getResultType() === 'HTML') {
         $scope.renderHtml();
@@ -1710,6 +1711,7 @@
             tableData = new TableData();
             tableData.loadParagraphResult($scope.paragraph.result);
             $scope.tableDataColumns = tableData.columns;
+            $scope.tableDataComment = tableData.comment;
             clearUnknownColsFromGraphOption();
             selectDefaultColsForGraphOption();
           }
