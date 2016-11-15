@@ -81,7 +81,7 @@ println(
         <i style="font-size: 15px;" class="icon-notebook"></i> Create new note</a></h5>
         <ul style="list-style-type: none;">
           <li ng-repeat="note in home.notes.list track by $index"><i style="font-size: 10px;" class="icon-doc"></i>
-            <a style="text-decoration: none;" href="#/notebook/{{note.id}}">{{noteName(note)}}</a>
+            <a style="text-decoration: none;" href="#/notebook/{{"{{note.id"}}}}>{{"{{noteName(note)"}}}}</a>
           </li>
         </ul>
     </div>
