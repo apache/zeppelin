@@ -90,7 +90,7 @@ limitations under the License.
 </div>
 
 <div class="box width-full"
-     ng-repeat="setting in interpreterSettings | orderBy: 'name' | filter: searchInterpreter" interpreter-directive>
+     ng-repeat="setting in interpreterSettings | orderBy: 'name' | filter: {name:searchInterpreter} " interpreter-directive>
   <div id="{{setting.name | lowercase}}">
     <div class="row interpreter">
 
