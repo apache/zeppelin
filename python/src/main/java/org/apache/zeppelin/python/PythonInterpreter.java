@@ -201,7 +201,6 @@ public class PythonInterpreter extends Interpreter {
     if (process == null) {
       PythonCondaInterpreter conda = getCondaInterpreter();
       String binPath = getProperty(ZEPPELIN_PYTHON);
-      logger.info("CONDA " + conda.getPythonCommand());
       if (conda.getPythonCommand() != null) {
         binPath = conda.getPythonCommand();
       }
