@@ -31,6 +31,7 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.dep.DependencyResolver;
 import org.apache.zeppelin.display.AngularObjectRegistry;
+import org.apache.zeppelin.exception.DuplicateNameException;
 import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.mock.MockInterpreter1;
 import org.apache.zeppelin.interpreter.mock.MockInterpreter2;
@@ -66,6 +67,7 @@ public class NotebookTest implements JobListenerFactory{
   private NotebookAuthorization notebookAuthorization;
   private Credentials credentials;
   private AuthenticationInfo anonymous = AuthenticationInfo.ANONYMOUS;
+  private final String EMPTY_STRING = "";
 
   @Before
   public void setUp() throws Exception {
@@ -106,13 +108,13 @@ public class NotebookTest implements JobListenerFactory{
   }
 
   @Test
-  public void testSelectingReplImplementation() throws IOException {
-    Note note = notebook.createNote(anonymous);
+  public void testSelectingReplImplementation() throws IOException, DuplicateNameException {
+    Note note = notebook.createNote(anonymous, EMPTY_STRING);
     factory.setInterpreters(anonymous.getUser(), note.getId(), factory.getDefaultInterpreterSettingList());
 
     // run with default repl
     Paragraph p1 = note.addParagraph();
-    Map config = p1.getConfig();
+    Map config = p1.getConfig();anonymous.getUser();
     config.put("enabled", true);
     p1.setConfig(config);
     p1.setText("hello world");
@@ -197,11 +199,11 @@ public class NotebookTest implements JobListenerFactory{
   }
 
   @Test
-  public void testLoadAllNotes() {
+  public void testLoadAllNotes() throws DuplicateNameException {
     Note note;
     try {
       assertEquals(0, notebook.getAllNotes().size());
-      note = notebook.createNote(anonymous);
+      note = notebook.createNote(anonymous, EMPTY_STRING);
       Paragraph p1 = note.addParagraph();
       Map config = p1.getConfig();
       config.put("enabled", true);
@@ -221,8 +223,9 @@ public class NotebookTest implements JobListenerFactory{
   }
   
   @Test
-  public void testPersist() throws IOException, SchedulerException, RepositoryException {
-    Note note = notebook.createNote(anonymous);
+  public void testPersist() throws IOException, SchedulerException, RepositoryException, 
+      DuplicateNameException {
+    Note note = notebook.createNote(anonymous, EMPTY_STRING);
 
     // run with default repl
     Paragraph p1 = note.addParagraph();
@@ -241,9 +244,10 @@ public class NotebookTest implements JobListenerFactory{
   }
 
   @Test
-  public void testCreateNoteWithSubject() throws IOException, SchedulerException, RepositoryException {
+  public void testCreateNoteWithSubject() throws IOException, SchedulerException,
+      RepositoryException, DuplicateNameException {
     AuthenticationInfo subject = new AuthenticationInfo("user1");
-    Note note = notebook.createNote(subject);
+    Note note = notebook.createNote(subject, EMPTY_STRING);
 
     assertNotNull(notebook.getNotebookAuthorization().getOwners(note.getId()));
     assertEquals(1, notebook.getNotebookAuthorization().getOwners(note.getId()).size());
@@ -254,8 +258,9 @@ public class NotebookTest implements JobListenerFactory{
   }
 
   @Test
-  public void testClearParagraphOutput() throws IOException, SchedulerException{
-    Note note = notebook.createNote(anonymous);
+  public void testClearParagraphOutput() throws IOException, SchedulerException,
+      DuplicateNameException{
+    Note note = notebook.createNote(anonymous, EMPTY_STRING);
     Paragraph p1 = note.addParagraph();
     Map config = p1.getConfig();
     config.put("enabled", true);
@@ -274,8 +279,8 @@ public class NotebookTest implements JobListenerFactory{
   }
 
   @Test
-  public void testRunAll() throws IOException {
-    Note note = notebook.createNote(anonymous);
+  public void testRunAll() throws IOException, DuplicateNameException {
+    Note note = notebook.createNote(anonymous, EMPTY_STRING);
     factory.setInterpreters("user", note.getId(), factory.getDefaultInterpreterSettingList());
 
     // p1
@@ -312,9 +317,9 @@ public class NotebookTest implements JobListenerFactory{
   }
 
   @Test
-  public void testSchedule() throws InterruptedException, IOException {
+  public void testSchedule() throws InterruptedException, IOException, DuplicateNameException {
     // create a note and a paragraph
-    Note note = notebook.createNote(anonymous);
+    Note note = notebook.createNote(anonymous, EMPTY_STRING);
     factory.setInterpreters("user", note.getId(), factory.getDefaultInterpreterSettingList());
 
     Paragraph p = note.addParagraph();
@@ -345,9 +350,10 @@ public class NotebookTest implements JobListenerFactory{
   }
 
   @Test
-  public void testAutoRestartInterpreterAfterSchedule() throws InterruptedException, IOException{
+  public void testAutoRestartInterpreterAfterSchedule() throws InterruptedException, IOException, 
+      DuplicateNameException{
     // create a note and a paragraph
-    Note note = notebook.createNote(anonymous);
+    Note note = notebook.createNote(anonymous, EMPTY_STRING);
     factory.setInterpreters(anonymous.getUser(), note.getId(), factory.getDefaultInterpreterSettingList());
     
     Paragraph p = note.addParagraph();
@@ -399,8 +405,9 @@ public class NotebookTest implements JobListenerFactory{
 
   @Test
   public void testExportAndImportNote() throws IOException, CloneNotSupportedException,
-          InterruptedException, InterpreterException, SchedulerException, RepositoryException {
-    Note note = notebook.createNote(anonymous);
+          InterruptedException, InterpreterException, SchedulerException, RepositoryException,
+          DuplicateNameException {
+    Note note = notebook.createNote(anonymous, EMPTY_STRING);
     factory.setInterpreters("user", note.getId(), factory.getDefaultInterpreterSettingList());
 
     final Paragraph p = note.addParagraph();
@@ -438,8 +445,9 @@ public class NotebookTest implements JobListenerFactory{
 
   @Test
   public void testCloneNote() throws IOException, CloneNotSupportedException,
-      InterruptedException, InterpreterException, SchedulerException, RepositoryException {
-    Note note = notebook.createNote(anonymous);
+      InterruptedException, InterpreterException, SchedulerException, RepositoryException,
+      DuplicateNameException {
+    Note note = notebook.createNote(anonymous, EMPTY_STRING);
     factory.setInterpreters("user", note.getId(), factory.getDefaultInterpreterSettingList());
 
     final Paragraph p = note.addParagraph();
@@ -472,8 +480,8 @@ public class NotebookTest implements JobListenerFactory{
 
   @Test
   public void testCloneNoteWithNoName() throws IOException, CloneNotSupportedException,
-      InterruptedException {
-    Note note = notebook.createNote(anonymous);
+      InterruptedException, DuplicateNameException {
+    Note note = notebook.createNote(anonymous, "Note");
     factory.setInterpreters(anonymous.getUser(), note.getId(), factory.getDefaultInterpreterSettingList());
 
     Note cloneNote = notebook.cloneNote(note.getId(), null, anonymous);
@@ -484,8 +492,8 @@ public class NotebookTest implements JobListenerFactory{
 
   @Test
   public void testCloneNoteWithExceptionResult() throws IOException, CloneNotSupportedException,
-      InterruptedException {
-    Note note = notebook.createNote(anonymous);
+      InterruptedException, DuplicateNameException {
+    Note note = notebook.createNote(anonymous, EMPTY_STRING);
     factory.setInterpreters(anonymous.getUser(), note.getId(), factory.getDefaultInterpreterSettingList());
 
     final Paragraph p = note.addParagraph();
@@ -507,10 +515,37 @@ public class NotebookTest implements JobListenerFactory{
     notebook.removeNote(note.getId(), anonymous);
     notebook.removeNote(cloneNote.getId(), anonymous);
   }
+  
+  @Test(expected = DuplicateNameException.class)
+  public void testCloneNoteWithDuplicateName() throws IOException, IllegalArgumentException, 
+      CloneNotSupportedException, DuplicateNameException {
+	//create note
+    Note note = notebook.createNote(anonymous, "Note");
+    //clone note with same name
+    notebook.cloneNote(note.getId(), "Note", anonymous);
+  }
+  
+  @Test(expected = DuplicateNameException.class)
+  public void testCreateNoteWithDuplicateName() throws IOException, DuplicateNameException {
+	//create note
+    Note note = notebook.createNote(anonymous, "Note");
+    //create note with same name
+    notebook.createNote(anonymous, "Note");
+  }
+  
+  @Test(expected = DuplicateNameException.class)
+  public void testImportNoteWithDuplicateName() throws IOException, DuplicateNameException {
+    //create note
+    Note note = notebook.createNote(anonymous, "Note");
+    String exportedNoteJson = notebook.exportNote(note.getId());
+    //import note with same name
+    notebook.importNote(exportedNoteJson, "Note", anonymous);
+  }
 
   @Test
-  public void testResourceRemovealOnParagraphNoteRemove() throws IOException {
-    Note note = notebook.createNote(anonymous);
+  public void testResourceRemovealOnParagraphNoteRemove() throws IOException,
+      DuplicateNameException {
+    Note note = notebook.createNote(anonymous, EMPTY_STRING);
     factory.setInterpreters(anonymous.getUser(), note.getId(), factory.getDefaultInterpreterSettingList());
     for (InterpreterGroup intpGroup : InterpreterGroup.getAll()) {
       intpGroup.setResourcePool(new LocalResourcePool(intpGroup.getId()));
@@ -537,9 +572,9 @@ public class NotebookTest implements JobListenerFactory{
 
   @Test
   public void testAngularObjectRemovalOnNotebookRemove() throws InterruptedException,
-      IOException {
+      IOException, DuplicateNameException {
     // create a note and a paragraph
-    Note note = notebook.createNote(anonymous);
+    Note note = notebook.createNote(anonymous, EMPTY_STRING);
     factory.setInterpreters(anonymous.getUser(), note.getId(), factory.getDefaultInterpreterSettingList());
 
     AngularObjectRegistry registry = factory
@@ -570,9 +605,9 @@ public class NotebookTest implements JobListenerFactory{
 
   @Test
   public void testAngularObjectRemovalOnParagraphRemove() throws InterruptedException,
-      IOException {
+      IOException, DuplicateNameException {
     // create a note and a paragraph
-    Note note = notebook.createNote(anonymous);
+    Note note = notebook.createNote(anonymous, EMPTY_STRING);
     factory.setInterpreters(anonymous.getUser(), note.getId(), factory.getDefaultInterpreterSettingList());
 
     AngularObjectRegistry registry = factory
@@ -604,9 +639,9 @@ public class NotebookTest implements JobListenerFactory{
 
   @Test
   public void testAngularObjectRemovalOnInterpreterRestart() throws InterruptedException,
-      IOException {
+      IOException, DuplicateNameException {
     // create a note and a paragraph
-    Note note = notebook.createNote(anonymous);
+    Note note = notebook.createNote(anonymous, EMPTY_STRING);
     factory.setInterpreters(anonymous.getUser(), note.getId(), factory.getDefaultInterpreterSettingList());
 
     AngularObjectRegistry registry = factory
@@ -630,9 +665,9 @@ public class NotebookTest implements JobListenerFactory{
   }
 
   @Test
-  public void testPermissions() throws IOException {
+  public void testPermissions() throws IOException, DuplicateNameException {
     // create a note and a paragraph
-    Note note = notebook.createNote(anonymous);
+    Note note = notebook.createNote(anonymous, EMPTY_STRING);
     NotebookAuthorization notebookAuthorization = notebook.getNotebookAuthorization();
     // empty owners, readers or writers means note is public
     assertEquals(notebookAuthorization.isOwner(note.getId(),
@@ -718,8 +753,8 @@ public class NotebookTest implements JobListenerFactory{
   
   @Test
   public void testAbortParagraphStatusOnInterpreterRestart() throws InterruptedException,
-      IOException {
-    Note note = notebook.createNote(anonymous);
+      IOException, DuplicateNameException {
+    Note note = notebook.createNote(anonymous, EMPTY_STRING);
     factory.setInterpreters(anonymous.getUser(), note.getId(), factory.getDefaultInterpreterSettingList());
 
     ArrayList<Paragraph> paragraphs = new ArrayList<>();
@@ -755,9 +790,9 @@ public class NotebookTest implements JobListenerFactory{
   }
 
   @Test
-  public void testPerSessionInterpreterCloseOnNoteRemoval() throws IOException {
+  public void testPerSessionInterpreterCloseOnNoteRemoval() throws IOException, DuplicateNameException {
     // create a notes
-    Note note1  = notebook.createNote(anonymous);
+    Note note1  = notebook.createNote(anonymous, EMPTY_STRING);
     Paragraph p1 = note1.addParagraph();
     p1.setText("getId");
     p1.setAuthenticationInfo(anonymous);
@@ -774,7 +809,7 @@ public class NotebookTest implements JobListenerFactory{
 
     // remove note and recreate
     notebook.removeNote(note1.getId(), anonymous);
-    note1 = notebook.createNote(anonymous);
+    note1 = notebook.createNote(anonymous, EMPTY_STRING);
     p1 = note1.addParagraph();
     p1.setText("getId");
     p1.setAuthenticationInfo(anonymous);
@@ -787,12 +822,12 @@ public class NotebookTest implements JobListenerFactory{
   }
 
   @Test
-  public void testPerSessionInterpreter() throws IOException {
+  public void testPerSessionInterpreter() throws IOException, DuplicateNameException {
     // create two notes
-    Note note1  = notebook.createNote(anonymous);
+    Note note1  = notebook.createNote(anonymous, EMPTY_STRING);
     Paragraph p1 = note1.addParagraph();
 
-    Note note2  = notebook.createNote(anonymous);
+    Note note2  = notebook.createNote(anonymous, EMPTY_STRING);
     Paragraph p2 = note2.addParagraph();
 
     p1.setText("getId");
@@ -831,12 +866,12 @@ public class NotebookTest implements JobListenerFactory{
 
 
   @Test
-  public void testPerNoteSessionInterpreter() throws IOException {
+  public void testPerNoteSessionInterpreter() throws IOException, DuplicateNameException {
     // create two notes
-    Note note1  = notebook.createNote(anonymous);
+    Note note1  = notebook.createNote(anonymous, EMPTY_STRING);
     Paragraph p1 = note1.addParagraph();
 
-    Note note2  = notebook.createNote(anonymous);
+    Note note2  = notebook.createNote(anonymous, EMPTY_STRING);
     Paragraph p2 = note2.addParagraph();
 
     p1.setText("getId");
@@ -890,9 +925,10 @@ public class NotebookTest implements JobListenerFactory{
   }
 
   @Test
-  public void testPerSessionInterpreterCloseOnUnbindInterpreterSetting() throws IOException {
+  public void testPerSessionInterpreterCloseOnUnbindInterpreterSetting() throws IOException, 
+      DuplicateNameException {
     // create a notes
-    Note note1  = notebook.createNote(anonymous);
+    Note note1  = notebook.createNote(anonymous, EMPTY_STRING);
     Paragraph p1 = note1.addParagraph();
     p1.setAuthenticationInfo(anonymous);
     p1.setText("getId");
@@ -922,7 +958,7 @@ public class NotebookTest implements JobListenerFactory{
   }
 
   @Test
-  public void testNotebookEventListener() throws IOException {
+  public void testNotebookEventListener() throws IOException, DuplicateNameException {
     final AtomicInteger onNoteRemove = new AtomicInteger(0);
     final AtomicInteger onNoteCreate = new AtomicInteger(0);
     final AtomicInteger onParagraphRemove = new AtomicInteger(0);
@@ -960,7 +996,7 @@ public class NotebookTest implements JobListenerFactory{
       }
     });
 
-    Note note1 = notebook.createNote(anonymous);
+    Note note1 = notebook.createNote(anonymous, EMPTY_STRING);
     assertEquals(1, onNoteCreate.get());
 
     Paragraph p1 = note1.addParagraph();
@@ -982,9 +1018,9 @@ public class NotebookTest implements JobListenerFactory{
   }
 
   @Test
-  public void testNormalizeNoteName() throws IOException {
+  public void testNormalizeNoteName() throws IOException, DuplicateNameException {
     // create a notes
-    Note note1  = notebook.createNote(anonymous);
+    Note note1  = notebook.createNote(anonymous, EMPTY_STRING);
 
     note1.setName("MyNote");
     assertEquals(note1.getName(), "MyNote");
@@ -1009,8 +1045,8 @@ public class NotebookTest implements JobListenerFactory{
 
   @Test
   public void testGetAllNotes() throws Exception {
-    Note note1 = notebook.createNote(anonymous);
-    Note note2 = notebook.createNote(anonymous);
+    Note note1 = notebook.createNote(anonymous, EMPTY_STRING);
+    Note note2 = notebook.createNote(anonymous, EMPTY_STRING);
     assertEquals(2, notebook.getAllNotes(Sets.newHashSet("anonymous")).size());
 
     notebook.getNotebookAuthorization().setOwners(note1.getId(), Sets.newHashSet("user1"));
@@ -1031,7 +1067,8 @@ public class NotebookTest implements JobListenerFactory{
 
 
   @Test
-  public void testGetAllNotesWithDifferentPermissions() throws IOException {
+  public void testGetAllNotesWithDifferentPermissions() throws IOException, 
+      DuplicateNameException {
     HashSet<String> user1 = Sets.newHashSet("user1");
     HashSet<String> user2 = Sets.newHashSet("user1");
     List<Note> notes1 = notebook.getAllNotes(user1);
@@ -1040,7 +1077,7 @@ public class NotebookTest implements JobListenerFactory{
     assertEquals(notes2.size(), 0);
 
     //creates note and sets user1 owner
-    Note note = notebook.createNote(new AuthenticationInfo("user1"));
+    Note note = notebook.createNote(new AuthenticationInfo("user1"), EMPTY_STRING);
 
     // note is public since readers and writers empty
     notes1 = notebook.getAllNotes(user1);

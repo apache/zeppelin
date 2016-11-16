@@ -13,6 +13,7 @@ limitations under the License.
 -->
 
   <div id="noteImportModal" class="modal fade" role="dialog"
+        modalvisible previsiblecallback="noteimportctrl.preVisible"
        tabindex="-1" data-backdrop="static" data-keyboard="false">
     <div class="modal-dialog" >
 
@@ -62,7 +63,7 @@ limitations under the License.
             <input placeholder="Note url" type="text" class="form-control" id="noteImportUrl"
                    ng-model="note.importUrl" />
           </div>
-
+          <div class="text-danger" ng-show="noteimportctrl.error">Please provide a unique Notebook name</div>
         </div>
         <div class="modal-footer">
           <div ng-show="note.step2">

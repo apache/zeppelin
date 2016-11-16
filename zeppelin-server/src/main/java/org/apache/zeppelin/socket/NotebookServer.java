@@ -39,6 +39,7 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.AngularObjectRegistryListener;
+import org.apache.zeppelin.exception.DuplicateNameException;
 import org.apache.zeppelin.helium.ApplicationEventListener;
 import org.apache.zeppelin.helium.HeliumPackage;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
@@ -748,46 +749,39 @@ public class NotebookServer extends WebSocketServlet implements
 
   private void createNote(NotebookSocket conn, HashSet<String> userAndRoles,
                           Notebook notebook, Message message)
-      throws IOException {
+      throws IOException, DuplicateNameException {
     AuthenticationInfo subject = new AuthenticationInfo(message.principal);
-
-    try {
-      Note note = null;
-
-      String defaultInterpreterId = (String) message.get("defaultInterpreterId");
-      if (!StringUtils.isEmpty(defaultInterpreterId)) {
-        List<String> interpreterSettingIds = new LinkedList<>();
-        interpreterSettingIds.add(defaultInterpreterId);
-        for (String interpreterSettingId : notebook.getInterpreterFactory().
-                getDefaultInterpreterSettingList()) {
-          if (!interpreterSettingId.equals(defaultInterpreterId)) {
-            interpreterSettingIds.add(interpreterSettingId);
-          }
-        }
-        note = notebook.createNote(interpreterSettingIds, subject);
-      } else {
-        note = notebook.createNote(subject);
-      }
-
-      note.addParagraph(); // it's an empty note. so add one paragraph
-      if (message != null) {
-        String noteName = (String) message.get("name");
-        if (StringUtils.isEmpty(noteName)) {
-          noteName = "Note " + note.getId();
-        }
-        note.setName(noteName);
-      }
-
-      note.persist(subject);
-      addConnectionToNote(note.getId(), (NotebookSocket) conn);
-      conn.send(serializeMessage(new Message(OP.NEW_NOTE).put("note", note)));
-    } catch (FileSystemException e) {
-      LOG.error("Exception from createNote", e);
-      conn.send(serializeMessage(new Message(OP.ERROR_INFO).put("info",
-                "Oops! There is something wrong with the notebook file system. "
-                + "Please check the logs for more details.")));
-      return;
+    Note note = null;
+    String noteName = null;
+    if (message != null) {
+      noteName = (String) message.get("name");
     }
+    String defaultInterpreterId = (String) message.get("defaultInterpreterId");
+    if (!StringUtils.isEmpty(defaultInterpreterId)) {
+      List<String> interpreterSettingIds = new LinkedList<>();
+      interpreterSettingIds.add(defaultInterpreterId);
+      for (String interpreterSettingId : notebook.getInterpreterFactory().
+              getDefaultInterpreterSettingList()) {
+        if (!interpreterSettingId.equals(defaultInterpreterId)) {
+          interpreterSettingIds.add(interpreterSettingId);
+        }
+      }
+      note = notebook.createNote(interpreterSettingIds, subject);
+    } else {
+      try {
+        note = notebook.createNote(subject, noteName);
+      } catch (DuplicateNameException dne) {
+        conn.send(serializeMessage(new Message(OP.ERROR_DIALOG).put("info", 
+               "Please provide a unique notebook name")));
+      }
+    }
+
+    note.addParagraph(); // it's an empty note. so add one paragraph
+    
+    note.setName(noteName);
+    note.persist(subject);
+    addConnectionToNote(note.getId(), (NotebookSocket) conn);
+    conn.send(serializeMessage(new Message(OP.NEW_NOTE).put("note", note)));
     broadcastNoteList(subject, userAndRoles);
   }
 
@@ -846,13 +840,19 @@ public class NotebookServer extends WebSocketServlet implements
   private void cloneNote(NotebookSocket conn, HashSet<String> userAndRoles,
                          Notebook notebook, Message fromMessage)
       throws IOException, CloneNotSupportedException {
-    String noteId = getOpenNoteId(conn);
-    String name = (String) fromMessage.get("name");
-    Note newNote = notebook.cloneNote(noteId, name, new AuthenticationInfo(fromMessage.principal));
-    AuthenticationInfo subject = new AuthenticationInfo(fromMessage.principal);
-    addConnectionToNote(newNote.getId(), (NotebookSocket) conn);
-    conn.send(serializeMessage(new Message(OP.NEW_NOTE).put("note", newNote)));
-    broadcastNoteList(subject, userAndRoles);
+    try {
+      String noteId = getOpenNoteId(conn);
+      String name = (String) fromMessage.get("name");
+      Note newNote = notebook.cloneNote(noteId, name, 
+        new AuthenticationInfo(fromMessage.principal));
+      AuthenticationInfo subject = new AuthenticationInfo(fromMessage.principal);
+      addConnectionToNote(newNote.getId(), (NotebookSocket) conn);
+      conn.send(serializeMessage(new Message(OP.NEW_NOTE).put("note", newNote)));
+      broadcastNoteList(subject, userAndRoles);
+    } catch (DuplicateNameException dne) {
+      conn.send(serializeMessage(new Message(OP.ERROR_DIALOG).put("info",
+        "Please provide a unique notebook name")));
+    }
   }
 
   private void clearAllParagraphOutput(NotebookSocket conn, HashSet<String> userAndRoles,
@@ -878,19 +878,24 @@ public class NotebookServer extends WebSocketServlet implements
                             Notebook notebook, Message fromMessage)
       throws IOException {
     Note note = null;
-    if (fromMessage != null) {
-      String noteName = (String) ((Map) fromMessage.get("note")).get("name");
-      String noteJson = gson.toJson(fromMessage.get("note"));
-      AuthenticationInfo subject = null;
-      if (fromMessage.principal != null) {
-        subject = new AuthenticationInfo(fromMessage.principal);
-      } else {
-        subject = new AuthenticationInfo("anonymous");
+    try {
+      if (fromMessage != null) {
+        String noteName = (String) ((Map) fromMessage.get("note")).get("name");
+        String noteJson = gson.toJson(fromMessage.get("note"));
+        AuthenticationInfo subject = null;
+        if (fromMessage.principal != null) {
+          subject = new AuthenticationInfo(fromMessage.principal);
+        } else {
+          subject = new AuthenticationInfo("anonymous");
+        }
+        note = notebook.importNote(noteJson, noteName, subject);
+        note.persist(subject);
+        broadcastNote(note);
+        broadcastNoteList(subject, userAndRoles);
       }
-      note = notebook.importNote(noteJson, noteName, subject);
-      note.persist(subject);
-      broadcastNote(note);
-      broadcastNoteList(subject, userAndRoles);
+    } catch (DuplicateNameException dne) {
+      conn.send(serializeMessage(new Message(OP.IMPORT_ERROR_DIALOG).put("info", 
+              "Please provide a unique notebook name")));
     }
     return note;
   }
