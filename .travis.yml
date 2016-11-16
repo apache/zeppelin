@@ -32,6 +32,11 @@ addons:
     - r-cran-evaluate
     - r-cran-base64enc
 
+env:
+  global:
+    # disable `Downloading`, `Downloaded` INFO log
+    - MAVEN_OPTS=-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
+
 matrix:
   include:
     # Test License compliance using RAT tool
