@@ -327,6 +327,13 @@
             if (setting.option.setPermission === undefined) {
               setting.option.setPermission = false;
             }
+            if (setting.option.isUserImpersonate === undefined) {
+              setting.option.isUserImpersonate = false;
+            }
+            if (!($scope.getInterpreterRunningOption(settingId) === 'Per User' &&
+                $scope.getPerUserOption(settingId) === 'isolated')) {
+              setting.option.isUserImpersonate = false;
+            }
             if (setting.option.remote === undefined) {
               // remote always true for now
               setting.option.remote = true;

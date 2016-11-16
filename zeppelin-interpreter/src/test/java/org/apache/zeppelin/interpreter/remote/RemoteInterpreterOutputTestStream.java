@@ -72,7 +72,9 @@ public class RemoteInterpreterOutputTestStream implements RemoteInterpreterProce
         env,
         10 * 1000,
         this,
-        null);
+        null,
+        "anonymous",
+        false);
 
     intpGroup.get("note").add(intp);
     intp.setInterpreterGroup(intpGroup);

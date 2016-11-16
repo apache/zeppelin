@@ -142,6 +142,7 @@ Join to our [Mailing list](https://zeppelin.apache.org/community.html) and repor
 * Usage
   * [Interpreter Installation](./manual/interpreterinstallation.html): Install not only community managed interpreters but also 3rd party interpreters
   * [Interpreter Dependency Management](./manual/dependencymanagement.html) when you include external libraries to interpreter
+  * [Interpreter User Impersonation](./manual/userimpersonation.html) when you want to run interpreter as end user
 * Available Interpreters: currently, about 20 interpreters are available in Apache Zeppelin.
 
 ####Display System
