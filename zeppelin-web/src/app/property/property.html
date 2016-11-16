@@ -1,0 +1,140 @@
+<!--
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<div class="interpreterHead">
+  <div class="header">
+    <div class="row">
+      <div class="col-md-12">
+        <h3 class="new_h3">
+          Properties
+        </h3>
+        <div class="pull-right" style="margin-top:10px;">
+          <a style="cursor:pointer;margin-right:10px;text-decoration:none;"
+             target="_blank"
+             ng-href="http://zeppelin.apache.org/docs/{{zeppelinVersion}}/properties.html"
+             tooltip-placement="bottom" tooltip="Learn more">
+            <i class="icon-question" ng-style="{color: showRepositoryInfo ? '#3071A9' : 'black' }"></i>
+          </a>
+          <button class="btn btn-default btn-sm"
+                  ng-click="showAddNewPropertyInfo = !showAddNewPropertyInfo">
+            <i class="fa fa-plus"></i>
+            Add
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-12">
+        Manage your properties. You can add new property information.
+      </div>
+    </div>
+  </div>
+
+  <!--Property addition form-->
+  <div class="row interpreter">
+    <div class="col-md-12" ng-show="showAddNewPropertyInfo">
+      <hr />
+      <div class="interpreterSettingAdd">
+        <h4>Add new Property</h4>
+        <div>
+          <div class="row interpreter">
+            <div class="col-md-12">
+              <table class="table table-striped">
+                <thead>
+                <tr>
+                  <th style="width:30%">name</th>
+                  <th>value</th>
+                </tr>
+                </thead>
+                <tr>
+                  <td>
+                    <textarea msd-elastic ng-model="name"></textarea>
+                  </td>
+                  <td>
+                    <textarea msd-elastic ng-model="value"></textarea>
+                  </td>
+                </tr>
+              </table>
+              <span class="btn btn-primary" ng-click="addNewPropertyInfo()">
+                Save
+              </span>
+              <span class="btn btn-default" ng-click="cancelPropertyInfo()">
+                Cancel
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="box width-full">
+  <div class="row interpreter">
+    <div ng-show="_.isEmpty(PropertyInfo) || valueform.$hidden"
+         class="col-md-12 gray40-message">
+      <em>Currently there are no properties.</em>
+    </div>
+    <div class="col-md-12" ng-show="!_.isEmpty(PropertyInfo) || valueform.$visible">
+      <table class="table table-striped">
+        <thead>
+        <tr>
+          <th style="width:50%">name</th>
+          <th>value</th>
+          <th></th>
+        </tr>
+        </thead>
+        <tr ng-repeat="Property in PropertyInfo">
+          <td>
+            <span>
+              {{Property.name}}
+            </span>
+          </td>
+          <td>
+            <span editable-textarea="Property.value" e-name="value" e-form="valueform"
+                  e-msd-elastic focus-if="Property.value.length == 0">
+              {{Property.value}}
+            </span>
+          </td>
+          <td>
+            <!-- Edit Property info -->
+            <span style="float:right" ng-show="!valueform.$visible">
+              <button class="btn btn-default btn-xs"
+                      ng-click="valueform.$show();
+                      copyOriginPropertysInfo();">
+                <span class="fa fa-pencil"></span> edit</button>
+              <button class="btn btn-default btn-xs"
+                      ng-click="removePropertyInfo(Property.name)">
+                <span class="fa fa-trash"></span> remove</button>
+
+            </span>
+            <span style="float:right" ng-show="valueform.$visible">
+              <form editable-form name="valueform"
+                    onbeforesave="updatePropertyInfo(valueform, $data, Property.name)"
+                    ng-show="valueform.$visible">
+                <button type="submit" class="btn btn-primary btn-xs">
+                  <span class="fa fa-check"></span> save
+                </button>
+                <button type="button" class="btn btn-default btn-xs"
+                        ng-disabled="valueform.$waiting"
+                        ng-click="valueform.$cancel();">
+                  <span class="fa fa-remove"></span> cancel
+                </button>
+              </form>
+            </span>
+          </td>
+        </tr>
+      </table>
+    </div>
+  </div>
+</div>

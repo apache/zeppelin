@@ -69,6 +69,8 @@ import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.apache.zeppelin.search.SearchService;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.user.Credentials;
+import org.apache.zeppelin.user.properties.UserProperties;
+
 
 /**
  * Collection of Notes.
@@ -94,6 +96,7 @@ public class Notebook implements NoteEventListener {
   private final List<NotebookEventListener> notebookEventListeners =
       Collections.synchronizedList(new LinkedList<NotebookEventListener>());
   private Credentials credentials;
+  private UserProperties userProperties;
 
   /**
    * Main constructor \w manual Dependency Injection
@@ -105,7 +108,8 @@ public class Notebook implements NoteEventListener {
   public Notebook(ZeppelinConfiguration conf, NotebookRepo notebookRepo,
       SchedulerFactory schedulerFactory, InterpreterFactory replFactory,
       JobListenerFactory jobListenerFactory, SearchService noteSearchService,
-      NotebookAuthorization notebookAuthorization, Credentials credentials)
+      NotebookAuthorization notebookAuthorization, Credentials credentials,
+      UserProperties userProperties)
       throws IOException, SchedulerException {
     this.conf = conf;
     this.notebookRepo = notebookRepo;
@@ -115,6 +119,7 @@ public class Notebook implements NoteEventListener {
     this.noteSearchService = noteSearchService;
     this.notebookAuthorization = notebookAuthorization;
     this.credentials = credentials;
+    this.userProperties = userProperties;
     quertzSchedFact = new org.quartz.impl.StdSchedulerFactory();
     quartzSched = quertzSchedFact.getScheduler();
     quartzSched.start();
@@ -158,7 +163,7 @@ public class Notebook implements NoteEventListener {
       throws IOException {
     Note note =
         new Note(notebookRepo, replFactory, jobListenerFactory,
-                noteSearchService, credentials, this);
+                noteSearchService, credentials, userProperties, this);
     synchronized (notes) {
       notes.put(note.getId(), note);
     }
@@ -401,6 +406,7 @@ public class Notebook implements NoteEventListener {
     //Manually inject ALL dependencies, as DI constructor was NOT used
     note.setIndex(this.noteSearchService);
     note.setCredentials(this.credentials);
+    note.setUserProperties(userProperties);
 
     note.setInterpreterFactory(replFactory);
 

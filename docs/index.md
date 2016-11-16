@@ -163,6 +163,7 @@ Join to our [Mailing list](https://zeppelin.apache.org/community.html) and repor
   * [Notebook API](./rest-api/rest-notebook.html)
   * [Configuration API](./rest-api/rest-configuration.html)
   * [Credential API](./rest-api/rest-credential.html)
+  * [Property API](./rest-api/rest-property.html)
 * Security: available security support in Apache Zeppelin
   * [Authentication for NGINX](./security/authentication.html)
   * [Shiro Authentication](./security/shiroauthentication.html)
@@ -174,6 +175,8 @@ Join to our [Mailing list](https://zeppelin.apache.org/community.html) and repor
   * [Zeppelin on Spark Cluster Mode (YARN via Docker)](./install/spark_cluster_mode.html#spark-on-yarn-mode)
   * [Zeppelin on Spark Cluster Mode (Mesos via Docker)](./install/spark_cluster_mode.html#spark-on-mesos-mode)
   * [Zeppelin on CDH (via Docker)](./install/cdh.html)
+* Multi-User
+  * [User Specific Properties](./multi-user/properties.html)
 * Contribute
   * [Writing Zeppelin Interpreter](./development/writingzeppelininterpreter.html)
   * [Writing Zeppelin Application (Experimental)](./development/writingzeppelinapplication.html)

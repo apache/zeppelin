@@ -402,6 +402,14 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     return getRelativeDir(String.format("%s/credentials.json", getConfDir()));
   }
 
+  public Boolean userPropertiesPersist() {
+    return getBoolean(ConfVars.ZEPPELIN_USER_PROPERTIES_PERSIST);
+  }
+
+  public String getUserPropertiesPath() {
+    return getRelativeDir(String.format("%s/properties.json", getConfDir()));
+  }
+
   public String getShiroPath() {
     String shiroPath = getRelativeDir(String.format("%s/shiro.ini", getConfDir()));
     return new File(shiroPath).exists() ? shiroPath : StringUtils.EMPTY;
@@ -583,6 +591,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_ALLOWED_ORIGINS("zeppelin.server.allowed.origins", "*"),
     ZEPPELIN_ANONYMOUS_ALLOWED("zeppelin.anonymous.allowed", true),
     ZEPPELIN_CREDENTIALS_PERSIST("zeppelin.credentials.persist", true),
+    ZEPPELIN_USER_PROPERTIES_PERSIST("zeppelin.userproperties.persist", true),
     ZEPPELIN_WEBSOCKET_MAX_TEXT_MESSAGE_SIZE("zeppelin.websocket.max.text.message.size", "1024000");
 
     private String varName;
