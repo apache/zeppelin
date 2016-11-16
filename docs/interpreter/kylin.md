@@ -30,7 +30,6 @@ To get start with Apache Kylin, please see [Apache Kylin Quickstart](https://kyl
 
 ## Configuration
 <table class="table-configuration">
-<table class="table-configuration">
   <tr>
     <th>Name</th>
     <th>Default</th>
@@ -54,7 +53,7 @@ To get start with Apache Kylin, please see [Apache Kylin Quickstart](https://kyl
   <tr>
     <td>kylin.query.project</td>
     <td>learn_kylin</td>
-    <td>String, Project to perform query.</td>
+    <td>String, Project to perform query. Could update at notebook level</td>
   </tr>
   <tr>
     <td>kylin.query.ispartial</td>
@@ -72,15 +71,12 @@ To get start with Apache Kylin, please see [Apache Kylin Quickstart](https://kyl
     <td>int, Query offset <br/> If offset is set in sql, curIndex will be ignored.</td>
   </tr>
 </table>
-  
-  
-</table>
 
 ## Using the Apache Kylin Interpreter
-In a paragraph, use `%kylin` to select the **kylin** interpreter and then input sql.
+In a paragraph, use `%kylin(project_name)` to select the **kylin** interpreter, **project name** and then input **sql**. If no project name defined, will use the default project name from the above configuration.
 
 ```
-%kylin
+%kylin(learn_project)
 select count(*) from kylin_sales group by part_dt
 ```
 
