@@ -34,7 +34,6 @@ addons:
     - r-cran-evaluate
     - r-cran-base64enc
 
-
 matrix:
   include:
     # Test License compliance using RAT tool
