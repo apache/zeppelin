@@ -24,6 +24,9 @@
 package org.apache.zeppelin.interpreter.thrift;
 
 
+import java.util.Map;
+import java.util.HashMap;
+import org.apache.thrift.TEnum;
 
 public enum RemoteInterpreterEventType implements org.apache.thrift.TEnum {
   NO_OP(1),
