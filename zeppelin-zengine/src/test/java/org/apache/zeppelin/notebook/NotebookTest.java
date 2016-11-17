@@ -1119,6 +1119,10 @@ public class NotebookTest implements JobListenerFactory{
     assertEquals(notebookAuthorization.getOwners(notePrivate.getId()).size(), 1);
     assertEquals(notebookAuthorization.getReaders(notePrivate.getId()).size(), 1);
     assertEquals(notebookAuthorization.getWriters(notePrivate.getId()).size(), 1);
+    
+    //set back public to true
+    System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_PUBLIC.getVarName(), "true");
+    ZeppelinConfiguration.create();
   }
   
   private void delete(File file){
