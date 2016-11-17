@@ -91,6 +91,7 @@ public class InterpreterContext {
 
   public InterpreterContext(String noteId,
                             String paragraphId,
+                            String replName,
                             String paragraphTitle,
                             String paragraphText,
                             AuthenticationInfo authenticationInfo,
@@ -101,8 +102,8 @@ public class InterpreterContext {
                             List<InterpreterContextRunner> contextRunners,
                             InterpreterOutput output,
                             RemoteInterpreterEventClient eventClient) {
-    this(noteId, paragraphId, paragraphTitle, paragraphText, authenticationInfo, config, gui,
-        angularObjectRegistry, resourcePool, contextRunners, output);
+    this(noteId, paragraphId, replName, paragraphTitle, paragraphText, authenticationInfo,
+        config, gui, angularObjectRegistry, resourcePool, contextRunners, output);
     this.client = new RemoteEventClient(eventClient);
   }
 
