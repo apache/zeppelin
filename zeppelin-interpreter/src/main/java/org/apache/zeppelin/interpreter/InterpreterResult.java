@@ -119,7 +119,7 @@ public class InterpreterResult implements Serializable {
 
   private TreeMap<Integer, Type> buildIndexMap(String msg) {
     int lastIndexOftypes = 0;
-    TreeMap<Integer, Type> typesLastIndexInMsg = new TreeMap<Integer, Type>();
+    TreeMap<Integer, Type> typesLastIndexInMsg = new TreeMap<>();
     Type[] types = Type.values();
     for (Type t : types) {
       lastIndexOftypes = getIndexOfType(msg, t);

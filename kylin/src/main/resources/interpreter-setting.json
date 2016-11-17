@@ -1,0 +1,55 @@
+[
+  {
+    "group": "kylin",
+    "name": "kylin",
+    "className": "org.apache.zeppelin.kylin.KylinInterpreter",
+    "properties": {
+      "kylin.api.url": {
+        "envName": null,
+        "propertyName": "kylin.api.url",
+        "defaultValue": "http://localhost:7070/kylin/api/query",
+        "description": "Kylin API"
+      },
+      "kylin.api.user": {
+        "envName": null,
+        "propertyName": "kylin.api.user",
+        "defaultValue": "ADMIN",
+        "description": "username for kylin user"
+      },
+      "kylin.api.password": {
+        "envName": null,
+        "propertyName": "kylin.api.password",
+        "defaultValue": "KYLIN",
+        "description": "password for kylin user"
+      },
+      "kylin.query.project": {
+        "envName": null,
+        "propertyName": "kylin.query.project",
+        "defaultValue": "default",
+        "description": "kylin project name"
+      },
+      "kylin.query.offset": {
+        "envName": null,
+        "propertyName": "kylin.query.offset",
+        "defaultValue": "0",
+        "description": "kylin query offset"
+      },
+      "kylin.query.limit": {
+        "envName": null,
+        "propertyName": "kylin.query.limit",
+        "defaultValue": "5000",
+        "description": "kylin query limit"
+      },
+      "kylin.query.ispartial": {
+        "envName": null,
+        "propertyName": "kylin.query.ispartial",
+        "defaultValue": "true",
+        "description": "The kylin query partial flag"
+      }
+    },
+    "editor": {
+      "language": "sql",
+      "editOnDblClick": false
+    }
+  }
+]

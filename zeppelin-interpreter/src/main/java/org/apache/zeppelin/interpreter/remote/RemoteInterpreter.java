@@ -141,7 +141,7 @@ public class RemoteInterpreter extends Interpreter {
   }
 
   private Map<String, String> getEnvFromInterpreterProperty(Properties property) {
-    Map<String, String> env = new HashMap<String, String>();
+    Map<String, String> env = new HashMap<>();
     for (Object key : property.keySet()) {
       if (isEnvString((String) key)) {
         env.put((String) key, property.getProperty((String) key));
@@ -298,6 +298,7 @@ public class RemoteInterpreter extends Interpreter {
     if (logger.isDebugEnabled()) {
       logger.debug("st:\n{}", st);
     }
+
     FormType form = getFormType();
     RemoteInterpreterProcess interpreterProcess = getInterpreterProcess();
     Client client = null;
@@ -526,5 +527,12 @@ public class RemoteInterpreter extends Interpreter {
 
   public void setEnv(Map<String, String> env) {
     this.env = env;
+  }
+
+  public void addEnv(Map<String, String> env) {
+    if (this.env == null) {
+      this.env = new HashMap<>();
+    }
+    this.env.putAll(env);
   }
 }

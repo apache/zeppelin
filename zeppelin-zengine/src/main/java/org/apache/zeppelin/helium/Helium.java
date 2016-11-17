@@ -42,7 +42,7 @@ import java.util.Map;
  */
 public class Helium {
   Logger logger = LoggerFactory.getLogger(Helium.class);
-  private List<HeliumRegistry> registry = new LinkedList<HeliumRegistry>();
+  private List<HeliumRegistry> registry = new LinkedList<>();
 
   private final HeliumConf heliumConf;
   private final String heliumConfPath;
@@ -75,7 +75,7 @@ public class Helium {
 
   public List<HeliumRegistry> getAllRegistry() {
     synchronized (this.registry) {
-      List list = new LinkedList<HeliumRegistry>();
+      List list = new LinkedList<>();
       for (HeliumRegistry r : registry) {
         list.add(r);
       }
@@ -88,7 +88,7 @@ public class Helium {
     if (!heliumConfFile.isFile()) {
       logger.warn("{} does not exists", path);
       HeliumConf conf = new HeliumConf();
-      LinkedList<HeliumRegistry> defaultRegistry = new LinkedList<HeliumRegistry>();
+      LinkedList<HeliumRegistry> defaultRegistry = new LinkedList<>();
       defaultRegistry.add(new HeliumLocalRegistry("local", defaultLocalRegistryPath));
       conf.setRegistry(defaultRegistry);
       this.registry = conf.getRegistry();
@@ -117,7 +117,7 @@ public class Helium {
   }
 
   public List<HeliumPackageSearchResult> getAllPackageInfo() {
-    List<HeliumPackageSearchResult> list = new LinkedList<HeliumPackageSearchResult>();
+    List<HeliumPackageSearchResult> list = new LinkedList<>();
     synchronized (registry) {
       for (HeliumRegistry r : registry) {
         try {

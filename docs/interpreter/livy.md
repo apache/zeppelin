@@ -65,7 +65,12 @@ Example: `spark.master` to `livy.spark.master`
     <td>1000</td>
     <td>Max number of Spark SQL result to display.</td>
   </tr>
-    <tr>
+  <tr>
+    <td>zeppelin.livy.displayAppInfo</td>
+    <td>false</td>
+    <td>Whether to display app info</td>
+  </tr>
+  <tr>
     <td>livy.spark.driver.cores</td>
     <td></td>
     <td>Driver cores. ex) 1, 2.</td>
@@ -174,7 +179,7 @@ When Zeppelin server is running with authentication enabled, then this interpret
 
 
 ## Apply Zeppelin Dynamic Forms
-You can leverage [Zeppelin Dynamic Form]({{BASE_PATH}}/manual/dynamicform.html). You can use both the `text input` and `select form` parameterization features.
+You can leverage [Zeppelin Dynamic Form](../manual/dynamicform.html). You can use both the `text input` and `select form` parameterization features.
 
 ```
 %livy.pyspark

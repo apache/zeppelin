@@ -12,17 +12,24 @@
  * limitations under the License.
  */
 'use strict';
+(function() {
 
-angular.module('zeppelinWebApp').directive('interpreterDirective', function($timeout) {
-  return {
-    restrict: 'A',
-    link: function(scope, element, attr) {
-      if (scope.$last === true) {
-        $timeout(function() {
-          var id = 'ngRenderFinished';
-          scope.$emit(id);
-        });
+  angular.module('zeppelinWebApp').directive('interpreterDirective', interpreterDirective);
+
+  interpreterDirective.$inject = ['$timeout'];
+
+  function interpreterDirective($timeout) {
+    return {
+      restrict: 'A',
+      link: function(scope, element, attr) {
+        if (scope.$last === true) {
+          $timeout(function() {
+            var id = 'ngRenderFinished';
+            scope.$emit(id);
+          });
+        }
       }
-    }
-  };
-});
+    };
+  }
+
+})();

@@ -17,6 +17,7 @@
 
 package org.apache.zeppelin.conf;
 
+import java.io.File;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -26,7 +27,9 @@ import java.util.Map;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.configuration.tree.ConfigurationNode;
+import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.notebook.repo.VFSNotebookRepo;
+import org.apache.zeppelin.util.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -102,6 +105,11 @@ public class ZeppelinConfiguration extends XMLConfiguration {
         conf = new ZeppelinConfiguration();
       }
     }
+    
+    LOG.info("Server Host: " + conf.getServerAddress());
+    LOG.info("Server Port: " + conf.getServerPort());
+    LOG.info("Context Path: " + conf.getServerContextPath());
+    LOG.info("Zeppelin Version: " + Util.getVersion());
 
     return conf;
   }
@@ -255,6 +263,10 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     return getBoolean(ConfVars.ZEPPELIN_SSL);
   }
 
+  public int getServerSslPort() {
+    return getInt(ConfVars.ZEPPELIN_SSL_PORT);
+  }
+
   public boolean useClientAuth() {
     return getBoolean(ConfVars.ZEPPELIN_SSL_CLIENT_AUTH);
   }
@@ -333,7 +345,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
   public String getNotebookDir() {
     return getString(ConfVars.ZEPPELIN_NOTEBOOK_DIR);
   }
-
+  
   public String getUser() {
     return getString(ConfVars.ZEPPELIN_NOTEBOOK_S3_USER);
   }
@@ -391,7 +403,8 @@ public class ZeppelinConfiguration extends XMLConfiguration {
   }
 
   public String getShiroPath() {
-    return getRelativeDir(String.format("%s/shiro.ini", getConfDir()));
+    String shiroPath = getRelativeDir(String.format("%s/shiro.ini", getConfDir()));
+    return new File(shiroPath).exists() ? shiroPath : StringUtils.EMPTY;
   }
 
   public String getInterpreterRemoteRunnerPath() {
@@ -416,6 +429,10 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 
   public boolean isWindowsPath(String path){
     return path.matches("^[A-Za-z]:\\\\.*");
+  }
+  
+  public boolean isAnonymousAllowed() {
+    return getBoolean(ConfVars.ZEPPELIN_ANONYMOUS_ALLOWED);
   }
 
   public String getConfDir() {
@@ -483,6 +500,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_PORT("zeppelin.server.port", 8080),
     ZEPPELIN_SERVER_CONTEXT_PATH("zeppelin.server.context.path", "/"),
     ZEPPELIN_SSL("zeppelin.ssl", false),
+    ZEPPELIN_SSL_PORT("zeppelin.server.ssl.port", 8443),
     ZEPPELIN_SSL_CLIENT_AUTH("zeppelin.ssl.client.auth", false),
     ZEPPELIN_SSL_KEYSTORE_PATH("zeppelin.ssl.keystore.path", "keystore"),
     ZEPPELIN_SSL_KEYSTORE_TYPE("zeppelin.ssl.keystore.type", "JKS"),
@@ -510,6 +528,8 @@ public class ZeppelinConfiguration extends XMLConfiguration {
         + "org.apache.zeppelin.alluxio.AlluxioInterpreter,"
         + "org.apache.zeppelin.file.HDFSFileInterpreter,"
         + "org.apache.zeppelin.postgresql.PostgreSqlInterpreter,"
+        + "org.apache.zeppelin.pig.PigInterpreter,"
+        + "org.apache.zeppelin.pig.PigQueryInterpreter,"
         + "org.apache.zeppelin.flink.FlinkInterpreter,"
         + "org.apache.zeppelin.python.PythonInterpreter,"
         + "org.apache.zeppelin.python.PythonInterpreterPandasSql,"
@@ -523,7 +543,9 @@ public class ZeppelinConfiguration extends XMLConfiguration {
         + "org.apache.zeppelin.scalding.ScaldingInterpreter,"
         + "org.apache.zeppelin.jdbc.JDBCInterpreter,"
         + "org.apache.zeppelin.hbase.HbaseInterpreter,"
-        + "org.apache.zeppelin.bigquery.BigQueryInterpreter"),
+        + "org.apache.zeppelin.bigquery.BigQueryInterpreter,"
+        + "org.apache.zeppelin.beam.BeamInterpreter,"
+        + "org.apache.zeppelin.scio.ScioInterpreter"),
     ZEPPELIN_INTERPRETER_JSON("zeppelin.interpreter.setting", "interpreter-setting.json"),
     ZEPPELIN_INTERPRETER_DIR("zeppelin.interpreter.dir", "interpreter"),
     ZEPPELIN_INTERPRETER_LOCALREPO("zeppelin.interpreter.localRepo", "local-repo"),
@@ -531,7 +553,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_INTERPRETER_MAX_POOL_SIZE("zeppelin.interpreter.max.poolsize", 10),
     ZEPPELIN_INTERPRETER_GROUP_ORDER("zeppelin.interpreter.group.order", "spark,md,angular,sh,"
         + "livy,alluxio,file,psql,flink,python,ignite,lens,cassandra,geode,kylin,elasticsearch,"
-        + "scalding,jdbc,hbase,bigquery"),
+        + "scalding,jdbc,hbase,bigquery,beam,pig,scio"),
     ZEPPELIN_ENCODING("zeppelin.encoding", "UTF-8"),
     ZEPPELIN_NOTEBOOK_DIR("zeppelin.notebook.dir", "notebook"),
     // use specified notebook (id) as homescreen

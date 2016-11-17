@@ -12,38 +12,44 @@
  * limitations under the License.
  */
 'use strict';
+(function() {
 
-angular.module('zeppelinWebApp').service('saveAsService', function(browserDetectService) {
+  angular.module('zeppelinWebApp').service('saveAsService', saveAsService);
 
-  this.saveAs = function(content, filename, extension) {
-    var BOM = '\uFEFF';
-    if (browserDetectService.detectIE()) {
-      angular.element('body').append('<iframe id="SaveAsId" style="display: none"></iframe>');
-      var frameSaveAs = angular.element('body > iframe#SaveAsId')[0].contentWindow;
-      content = BOM + content;
-      frameSaveAs.document.open('text/json', 'replace');
-      frameSaveAs.document.write(content);
-      frameSaveAs.document.close();
-      frameSaveAs.focus();
-      var t1 = Date.now();
-      frameSaveAs.document.execCommand('SaveAs', false, filename + '.' + extension);
-      var t2 = Date.now();
+  saveAsService.$inject = ['browserDetectService'];
 
-      //This means, this version of IE dosen't support auto download of a file with extension provided in param
-      //falling back to ".txt"
-      if (t1 === t2) {
-        frameSaveAs.document.execCommand('SaveAs', true, filename + '.txt');
+  function saveAsService(browserDetectService) {
+    this.saveAs = function(content, filename, extension) {
+      var BOM = '\uFEFF';
+      if (browserDetectService.detectIE()) {
+        angular.element('body').append('<iframe id="SaveAsId" style="display: none"></iframe>');
+        var frameSaveAs = angular.element('body > iframe#SaveAsId')[0].contentWindow;
+        content = BOM + content;
+        frameSaveAs.document.open('text/json', 'replace');
+        frameSaveAs.document.write(content);
+        frameSaveAs.document.close();
+        frameSaveAs.focus();
+        var t1 = Date.now();
+        frameSaveAs.document.execCommand('SaveAs', false, filename + '.' + extension);
+        var t2 = Date.now();
+
+        //This means, this version of IE dosen't support auto download of a file with extension provided in param
+        //falling back to ".txt"
+        if (t1 === t2) {
+          frameSaveAs.document.execCommand('SaveAs', true, filename + '.txt');
+        }
+        angular.element('body > iframe#SaveAsId').remove();
+      } else {
+        content = 'data:image/svg;charset=utf-8,' + BOM + encodeURIComponent(content);
+        angular.element('body').append('<a id="SaveAsId"></a>');
+        var saveAsElement = angular.element('body > a#SaveAsId');
+        saveAsElement.attr('href', content);
+        saveAsElement.attr('download', filename + '.' + extension);
+        saveAsElement.attr('target', '_blank');
+        saveAsElement[0].click();
+        saveAsElement.remove();
       }
-      angular.element('body > iframe#SaveAsId').remove();
-    } else {
-      content = 'data:image/svg;charset=utf-8,' + BOM + encodeURIComponent(content);
-      angular.element('body').append('<a id="SaveAsId"></a>');
-      var saveAsElement = angular.element('body > a#SaveAsId');
-      saveAsElement.attr('href', content);
-      saveAsElement.attr('download', filename + '.' + extension);
-      saveAsElement.attr('target', '_blank');
-      saveAsElement[0].click();
-      saveAsElement.remove();
-    }
-  };
-});
+    };
+  }
+
+})();

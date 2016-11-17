@@ -12,66 +12,92 @@
  * limitations under the License.
  */
 'use strict';
+(function() {
 
-angular.module('zeppelinWebApp').controller('HomeCtrl', function($scope, notebookListDataFactory, websocketMsgSrv,
-                                                                 $rootScope, arrayOrderingSrv) {
-  var vm = this;
-  vm.notes = notebookListDataFactory;
-  vm.websocketMsgSrv = websocketMsgSrv;
-  vm.arrayOrderingSrv = arrayOrderingSrv;
+  angular.module('zeppelinWebApp').controller('HomeCtrl', HomeCtrl);
 
-  vm.notebookHome = false;
-  if ($rootScope.ticket !== undefined) {
-    vm.staticHome = false;
-  } else {
-    vm.staticHome = true;
-  }
+  HomeCtrl.$inject = [
+    '$scope',
+    'noteListDataFactory',
+    'websocketMsgSrv',
+    '$rootScope',
+    'arrayOrderingSrv',
+    'ngToast',
+    'noteActionSrv'
+  ];
 
-  $scope.isReloading = false;
+  function HomeCtrl($scope, noteListDataFactory, websocketMsgSrv, $rootScope, arrayOrderingSrv,
+                    ngToast, noteActionSrv) {
+    ngToast.dismiss();
+    var vm = this;
+    vm.notes = noteListDataFactory;
+    vm.websocketMsgSrv = websocketMsgSrv;
+    vm.arrayOrderingSrv = arrayOrderingSrv;
 
-  var initHome = function() {
-    websocketMsgSrv.getHomeNotebook();
-  };
-
-  initHome();
-
-  $scope.reloadNotebookList = function() {
-    websocketMsgSrv.reloadAllNotesFromRepo();
-    $scope.isReloadingNotes = true;
-  };
-
-  $scope.toggleFolderNode = function(node) {
-    node.hidden = !node.hidden;
-  };
-
-  angular.element('#loginModal').on('hidden.bs.modal', function(e) {
-    $rootScope.$broadcast('initLoginValues');
-  });
-
-  /*
-  ** $scope.$on functions below
-  */
-
-  $scope.$on('setNoteMenu', function(event, notes) {
-    $scope.isReloadingNotes = false;
-  });
-
-  $scope.$on('setNoteContent', function(event, note) {
-    if (note) {
-      vm.note = note;
-
-      // initialize look And Feel
-      $rootScope.$broadcast('setLookAndFeel', 'home');
-
-      // make it read only
-      vm.viewOnly = true;
-
-      vm.notebookHome = true;
+    vm.notebookHome = false;
+    if ($rootScope.ticket !== undefined) {
       vm.staticHome = false;
     } else {
       vm.staticHome = true;
-      vm.notebookHome = false;
     }
-  });
 
-});
+    $scope.isReloading = false;
+
+    var initHome = function() {
+      websocketMsgSrv.getHomeNote();
+    };
+
+    initHome();
+
+    $scope.reloadNoteList = function() {
+      websocketMsgSrv.reloadAllNotesFromRepo();
+      $scope.isReloadingNotes = true;
+    };
+
+    $scope.toggleFolderNode = function(node) {
+      node.hidden = !node.hidden;
+    };
+
+    angular.element('#loginModal').on('hidden.bs.modal', function(e) {
+      $rootScope.$broadcast('initLoginValues');
+    });
+
+    /*
+    ** $scope.$on functions below
+    */
+
+    $scope.$on('setNoteMenu', function(event, notes) {
+      $scope.isReloadingNotes = false;
+    });
+
+    $scope.$on('setNoteContent', function(event, note) {
+      if (note) {
+        vm.note = note;
+
+        // initialize look And Feel
+        $rootScope.$broadcast('setLookAndFeel', 'home');
+
+        // make it read only
+        vm.viewOnly = true;
+
+        vm.notebookHome = true;
+        vm.staticHome = false;
+      } else {
+        vm.staticHome = true;
+        vm.notebookHome = false;
+      }
+    });
+
+    $scope.renameNote = function(node) {
+      noteActionSrv.renameNote(node.id, node.path);
+    };
+
+    $scope.removeNote = function(noteId) {
+      noteActionSrv.removeNote(noteId, false);
+    };
+
+    $scope.clearAllParagraphOutput = function(noteId) {
+      noteActionSrv.clearAllParagraphOutput(noteId);
+    };
+  }
+})();

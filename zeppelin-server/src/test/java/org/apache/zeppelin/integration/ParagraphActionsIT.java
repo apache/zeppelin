@@ -429,5 +429,51 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
     }
   }
 
+  @Test
+  public void testEditOnDoubleClick() throws Exception {
+    if (!endToEndTestEnabled()) {
+      return;
+    }
+    try {
+      createNewNote();
+      Actions action = new Actions(driver);
 
+      waitForParagraph(1, "READY");
+
+      driver.findElement(By.xpath(getParagraphXPath(1) + "//textarea")).sendKeys(Keys.SHIFT + "5");
+      driver.findElement(By.xpath(getParagraphXPath(1) + "//textarea")).sendKeys("md" + Keys.ENTER);
+      driver.findElement(By.xpath(getParagraphXPath(1) + "//textarea")).sendKeys(Keys.SHIFT + "3");
+      driver.findElement(By.xpath(getParagraphXPath(1) + "//textarea")).sendKeys(" abc");
+
+      runParagraph(1);
+      waitForParagraph(1, "FINISHED");
+
+      collector.checkThat("Markdown editor is hidden after run ",
+          driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@ng-show, 'paragraph.config.editorHide')]")).isDisplayed(),
+          CoreMatchers.equalTo(false));
+
+      collector.checkThat("Markdown editor is shown after run ",
+          driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@ng-show, 'paragraph.config.tableHide')]")).isDisplayed(),
+          CoreMatchers.equalTo(true));
+
+      // to check if editOnDblClick field is fetched correctly after refresh
+      driver.navigate().refresh();
+      waitForParagraph(1, "FINISHED");
+
+      action.doubleClick(driver.findElement(By.xpath(getParagraphXPath(1)))).perform();
+      ZeppelinITUtils.sleep(1000, false);
+      collector.checkThat("Markdown editor is shown after double click ",
+          driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@ng-show, 'paragraph.config.editorHide')]")).isDisplayed(),
+          CoreMatchers.equalTo(true));
+
+      collector.checkThat("Markdown editor is hidden after double click ",
+          driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@ng-show, 'paragraph.config.tableHide')]")).isDisplayed(),
+          CoreMatchers.equalTo(false));
+
+      deleteTestNotebook(driver);
+
+    } catch (Exception e) {
+      handleException("Exception in ParagraphActionsIT while testEditOnDoubleClick ", e);
+    }
+  }
 }

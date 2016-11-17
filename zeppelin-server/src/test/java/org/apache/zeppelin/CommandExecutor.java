@@ -40,7 +40,7 @@ public class CommandExecutor {
   private static IGNORE_ERRORS DEFAULT_BEHAVIOUR_ON_ERRORS = IGNORE_ERRORS.TRUE;
 
   public static Object executeCommandLocalHost(String[] command, boolean printToConsole, ProcessData.Types_Of_Data type, IGNORE_ERRORS ignore_errors) {
-    List<String> subCommandsAsList = new ArrayList<String>(Arrays.asList(command));
+    List<String> subCommandsAsList = new ArrayList<>(Arrays.asList(command));
     String mergedCommand = StringUtils.join(subCommandsAsList, " ");
 
     LOG.info("Sending command \"" + mergedCommand + "\" to localhost");

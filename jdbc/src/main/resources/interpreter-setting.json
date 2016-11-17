@@ -63,97 +63,11 @@
         "propertyName": "zeppelin.jdbc.principal",
         "defaultValue": "",
         "description": "Kerberos principal"
-      },
-      "hive.url": {
-        "envName": null,
-        "propertyName": "hive.url",
-        "defaultValue": "jdbc:hive2://localhost:10000",
-        "description": ""
-      },
-      "hive.user": {
-        "envName": null,
-        "propertyName": "hive.user",
-        "defaultValue": "hive",
-        "description": ""
-      },
-      "hive.password": {
-        "envName": null,
-        "propertyName": "hive.password",
-        "defaultValue": "",
-        "description": ""
-      },
-      "hive.driver": {
-        "envName": null,
-        "propertyName": "hive.driver",
-        "defaultValue": "org.apache.hive.jdbc.HiveDriver",
-        "description": ""
-      },
-      "phoenix.url": {
-        "envName": null,
-        "propertyName": "phoenix.url",
-        "defaultValue": "jdbc:phoenix:localhost:2181:/hbase-unsecure",
-        "description": ""
-      },
-      "phoenix.user": {
-        "envName": null,
-        "propertyName": "phoenix.user",
-        "defaultValue": "phoenixuser",
-        "description": ""
-      },
-      "phoenix.password": {
-        "envName": null,
-        "propertyName": "phoenix.password",
-        "defaultValue": "",
-        "description": ""
-      },
-      "phoenix.driver": {
-        "envName": null,
-        "propertyName": "phoenix.driver",
-        "defaultValue": "org.apache.phoenix.jdbc.PhoenixDriver",
-        "description": ""
-      },
-      "phoenix.hbase.client.retries.number": {
-        "envName": null,
-        "propertyName": "phoenix.hbase.client.retries.number",
-        "defaultValue": "1",
-        "description": "Maximum retries.  Used as maximum for all retryable operations such as the getting of a cell's value, starting a row update, etc."
-      },
-      "tajo.url": {
-        "envName": null,
-        "propertyName": "tajo.url",
-        "defaultValue": "jdbc:tajo://localhost:26002/default",
-        "description": ""
-      },
-      "tajo.driver": {
-        "envName": null,
-        "propertyName": "tajo.driver",
-        "defaultValue": "org.apache.tajo.jdbc.TajoDriver",
-        "description": ""
-      },
-      "psql.url": {
-        "envName": null,
-        "propertyName": "psql.url",
-        "defaultValue": "jdbc:postgresql://localhost:5432/",
-        "description": ""
-      },
-      "psql.user": {
-        "envName": null,
-        "propertyName": "psql.user",
-        "defaultValue": "phoenixuser",
-        "description": ""
-      },
-      "psql.password": {
-        "envName": null,
-        "propertyName": "psql.password",
-        "defaultValue": "",
-        "description": ""
-      },
-      "psql.driver": {
-        "envName": null,
-        "propertyName": "psql.driver",
-        "defaultValue": "org.postgresql.Driver",
-        "description": ""
       }
+    },
+    "editor": {
+      "language": "sql",
+      "editOnDblClick": false
     }
   }
 ]

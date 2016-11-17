@@ -195,6 +195,14 @@ public class RemoteInterpreterEventPoller extends Thread {
           String status = appStatusUpdate.get("status");
 
           appListener.onStatusChange(noteId, paragraphId, appId, status);
+        } else if (event.getType() == RemoteInterpreterEventType.META_INFOS) {
+          Map<String, String> metaInfos = gson.fromJson(event.getData(),
+              new TypeToken<Map<String, String>>() {
+              }.getType());
+          String id = interpreterGroup.getId();
+          int indexOfColon = id.indexOf(":");
+          String settingId = id.substring(0, indexOfColon);
+          listener.onMetaInfosReceived(settingId, metaInfos);
         }
         logger.debug("Event from remoteproceess {}", event.getType());
       } catch (Exception e) {
@@ -211,7 +219,7 @@ public class RemoteInterpreterEventPoller extends Thread {
     boolean broken = false;
     try {
       client = interpreterProcess.getClient();
-      List<String> resourceList = new LinkedList<String>();
+      List<String> resourceList = new LinkedList<>();
       Gson gson = new Gson();
       for (Resource r : resourceSet) {
         resourceList.add(gson.toJson(r));

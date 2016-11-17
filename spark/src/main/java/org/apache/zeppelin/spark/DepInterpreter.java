@@ -153,7 +153,7 @@ public class DepInterpreter extends Interpreter {
     settings.scala$tools$nsc$settings$ScalaSettings$_setter_$classpath_$eq(pathSettings);
 
     // set classloader for scala compiler
-    settings.explicitParentLoader_$eq(new Some<ClassLoader>(Thread.currentThread()
+    settings.explicitParentLoader_$eq(new Some<>(Thread.currentThread()
         .getContextClassLoader()));
 
     BooleanSetting b = (BooleanSetting) settings.usejavacp();
@@ -219,7 +219,7 @@ public class DepInterpreter extends Interpreter {
   public Object getLastObject() {
     IMain.Request r = (IMain.Request) Utils.invokeMethod(intp, "lastRequest");
     Object obj = r.lineRep().call("$result",
-        JavaConversions.asScalaBuffer(new LinkedList<Object>()));
+        JavaConversions.asScalaBuffer(new LinkedList<>()));
     return obj;
   }
 
@@ -290,7 +290,7 @@ public class DepInterpreter extends Interpreter {
       Candidates ret = c.complete(buf, cursor);
 
       List<String> candidates = WrapAsJava$.MODULE$.seqAsJavaList(ret.candidates());
-      List<InterpreterCompletion> completions = new LinkedList<InterpreterCompletion>();
+      List<InterpreterCompletion> completions = new LinkedList<>();
 
       for (String candidate : candidates) {
         completions.add(new InterpreterCompletion(candidate, candidate));
@@ -298,7 +298,7 @@ public class DepInterpreter extends Interpreter {
 
       return completions;
     } else {
-      return new LinkedList<InterpreterCompletion>();
+      return new LinkedList<>();
     }
   }
 
@@ -314,7 +314,7 @@ public class DepInterpreter extends Interpreter {
   }
 
   private List<File> classPath(ClassLoader cl) {
-    List<File> paths = new LinkedList<File>();
+    List<File> paths = new LinkedList<>();
     if (cl == null) {
       return paths;
     }

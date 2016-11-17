@@ -43,7 +43,7 @@ public class ZeppelinWebsocket implements WebSocketListener {
   @Override
   public void onWebSocketClose(int code, String message) {
     LOG.info("Zeppelin connection closed with code: {}, message: {}", code, message);
-    // parentClient.removeConnMap(noteId);
+    ZeppelinClient.getInstance().removeNoteConnection(noteId);
   }
 
   @Override
@@ -55,6 +55,7 @@ public class ZeppelinWebsocket implements WebSocketListener {
   @Override
   public void onWebSocketError(Throwable e) {
     LOG.warn("Zeppelin socket connection error ", e);
+    ZeppelinClient.getInstance().removeNoteConnection(noteId);
   }
 
   @Override
@@ -67,7 +68,7 @@ public class ZeppelinWebsocket implements WebSocketListener {
         zeppelinClient.handleMsgFromZeppelin(data, noteId);
       }
     } catch (Exception e) {
-      LOG.error("Failed to send message to ZeppelinHub: ", e);
+      LOG.error("Failed to send message to ZeppelinHub: {}", e.toString());
     }
   }
 

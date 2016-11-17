@@ -21,6 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.net.ConnectException;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -46,9 +47,19 @@ public class RemoteInterpreterUtils {
       discover.connect(new InetSocketAddress(host, port), 1000);
       discover.close();
       return true;
-    } catch (IOException e) {
+    } catch (ConnectException cne) {
       // end point is not accessible
-      LOGGER.debug(e.getMessage(), e);
+      if (LOGGER.isDebugEnabled()) {
+        LOGGER.debug("Remote endpoint '" + host + ":" + port + "' is not accessible " +
+                "(might be initializing): " + cne.getMessage());
+      }
+      return false;
+    } catch (IOException ioe) {
+      // end point is not accessible
+      if (LOGGER.isDebugEnabled()) {
+        LOGGER.debug("Remote endpoint '" + host + ":" + port + "' is not accessible " +
+                "(might be initializing): " + ioe.getMessage());
+      }
       return false;
     }
   }

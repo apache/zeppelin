@@ -12,15 +12,21 @@
  * limitations under the License.
  */
 'use strict';
+(function() {
 
-angular.module('zeppelinWebApp').controller('InterpreterCtrl',
-  function($scope, $http, baseUrlSrv, ngToast, $timeout, $route) {
+  angular.module('zeppelinWebApp').controller('InterpreterCtrl', InterpreterCtrl);
+
+  InterpreterCtrl.$inject = ['$rootScope', '$scope', '$http', 'baseUrlSrv', 'ngToast', '$timeout', '$route'];
+
+  function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeout, $route) {
     var interpreterSettingsTmp = [];
     $scope.interpreterSettings = [];
     $scope.availableInterpreters = {};
     $scope.showAddNewSetting = false;
     $scope.showRepositoryInfo = false;
+    $scope.searchInterpreter = '';
     $scope._ = _;
+    ngToast.dismiss();
 
     $scope.openPermissions = function() {
       $scope.showInterpreterAuth = true;
@@ -104,12 +110,19 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl',
 
     var checkDownloadingDependencies = function() {
       var isDownloading = false;
-      for (var setting = 0; setting < $scope.interpreterSettings.length; setting++) {
-        if ($scope.interpreterSettings[setting].status === 'DOWNLOADING_DEPENDENCIES') {
+      for (var index = 0; index < $scope.interpreterSettings.length; index++) {
+        var setting = $scope.interpreterSettings[index];
+        if (setting.status === 'DOWNLOADING_DEPENDENCIES') {
           isDownloading = true;
-          break;
+        }
+
+        if (setting.status === 'ERROR' || setting.errorReason) {
+          ngToast.danger({content: 'Error setting properties for interpreter \'' +
+            setting.group + '.' + setting.name + '\': ' + setting.errorReason,
+            verticalPosition: 'top', dismissOnTimeout: false});
         }
       }
+
       if (isDownloading) {
         $timeout(function() {
           if ($route.current.$$route.originalPath === '/interpreter') {
@@ -144,7 +157,7 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl',
       interpreterSettingsTmp[index] = angular.copy($scope.interpreterSettings[index]);
     };
 
-    $scope.setSessionOption = function(settingId, sessionOption) {
+    $scope.setPerNoteOption = function(settingId, sessionOption) {
       var option;
       if (settingId === undefined) {
         option = $scope.newInterpreterSetting.option;
@@ -155,18 +168,21 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl',
       }
 
       if (sessionOption === 'isolated') {
-        option.perNoteSession = false;
-        option.perNoteProcess = true;
+        option.perNote = sessionOption;
+        option.session = false;
+        option.process = true;
       } else if (sessionOption === 'scoped') {
-        option.perNoteSession = true;
-        option.perNoteProcess = false;
+        option.perNote = sessionOption;
+        option.session = true;
+        option.process = false;
       } else {
-        option.perNoteSession = false;
-        option.perNoteProcess = false;
+        option.perNote = 'shared';
+        option.session = false;
+        option.process = false;
       }
     };
 
-    $scope.getSessionOption = function(settingId) {
+    $scope.setPerUserOption = function(settingId, sessionOption) {
       var option;
       if (settingId === undefined) {
         option = $scope.newInterpreterSetting.option;
@@ -175,13 +191,113 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl',
         var setting = $scope.interpreterSettings[index];
         option = setting.option;
       }
-      if (option.perNoteSession) {
+
+      if (sessionOption === 'isolated') {
+        option.perUser = sessionOption;
+        option.session = false;
+        option.process = true;
+      } else if (sessionOption === 'scoped') {
+        option.perUser = sessionOption;
+        option.session = true;
+        option.process = false;
+      } else {
+        option.perUser = 'shared';
+        option.session = false;
+        option.process = false;
+      }
+    };
+
+    $scope.getPerNoteOption = function(settingId) {
+      var option;
+      if (settingId === undefined) {
+        option = $scope.newInterpreterSetting.option;
+      } else {
+        var index = _.findIndex($scope.interpreterSettings, {'id': settingId});
+        var setting = $scope.interpreterSettings[index];
+        option = setting.option;
+      }
+
+      if (option.perNote === 'scoped') {
         return 'scoped';
-      } else if (option.perNoteProcess) {
+      } else if (option.perNote === 'isolated') {
         return 'isolated';
       } else {
         return 'shared';
       }
+    };
+
+    $scope.getPerUserOption = function(settingId) {
+      var option;
+      if (settingId === undefined) {
+        option = $scope.newInterpreterSetting.option;
+      } else {
+        var index = _.findIndex($scope.interpreterSettings, {'id': settingId});
+        var setting = $scope.interpreterSettings[index];
+        option = setting.option;
+      }
+
+      if (option.perUser === 'scoped') {
+        return 'scoped';
+      } else if (option.perUser === 'isolated') {
+        return 'isolated';
+      } else {
+        return 'shared';
+      }
+    };
+
+    $scope.getInterpreterRunningOption = function(settingId) {
+      var sharedModeName = 'shared';
+
+      var globallyModeName = 'Globally';
+      var perNoteModeName = 'Per Note';
+      var perUserModeName = 'Per User';
+
+      var option;
+      if (settingId === undefined) {
+        option = $scope.newInterpreterSetting.option;
+      } else {
+        var index = _.findIndex($scope.interpreterSettings, {'id': settingId});
+        var setting = $scope.interpreterSettings[index];
+        option = setting.option;
+      }
+
+      var perNote = option.perNote;
+      var perUser = option.perUser;
+
+      // Globally == shared_perNote + shared_perUser
+      if (perNote === sharedModeName && perUser === sharedModeName) {
+        return globallyModeName;
+      }
+
+      if ($rootScope.ticket.ticket === 'anonymous' && $rootScope.ticket.roles === '[]') {
+        if (perNote !== undefined && typeof perNote === 'string' && perNote !== '') {
+          return perNoteModeName;
+        }
+      } else if ($rootScope.ticket.ticket !== 'anonymous') {
+        if (perNote !== undefined && typeof perNote === 'string' && perNote !== '') {
+          if (perUser !== undefined && typeof perUser === 'string' && perUser !== '') {
+            return perUserModeName;
+          }
+          return perNoteModeName;
+        }
+      }
+
+      option.perNote = sharedModeName;
+      option.perUser = sharedModeName;
+      return globallyModeName;
+    };
+
+    $scope.setInterpreterRunningOption = function(settingId, isPerNoteMode, isPerUserMode) {
+      var option;
+      if (settingId === undefined) {
+        option = $scope.newInterpreterSetting.option;
+      } else {
+        var index = _.findIndex($scope.interpreterSettings, {'id': settingId});
+        var setting = $scope.interpreterSettings[index];
+        option = setting.option;
+      }
+      option.perNote = isPerNoteMode;
+      option.perUser = isPerUserMode;
     };
 
     $scope.updateInterpreterSetting = function(form, settingId) {
@@ -231,9 +347,8 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl',
               .success(function(data, status, headers, config) {
                 $scope.interpreterSettings[index] = data.body;
                 removeTMPSettings(index);
-                thisConfirm.close();
                 checkDownloadingDependencies();
-                $route.reload();
+                thisConfirm.close();
               })
               .error(function(data, status, headers, config) {
                 console.log('Error %o %o', status, data.message);
@@ -285,12 +400,11 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl',
         var intpInfo = el[i];
         for (var key in intpInfo) {
           properties[key] = {
-            value: intpInfo[key],
+            value: intpInfo[key].defaultValue,
             description: intpInfo[key].description
           };
         }
       }
-
       $scope.newInterpreterSetting.properties = properties;
     };
 
@@ -391,8 +505,8 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl',
           remote: true,
           isExistingProcess: false,
           setPermission: false,
-          perNoteSession: false,
-          perNoteProcess: false
+          session: false,
+          process: false
 
         }
       };
@@ -504,7 +618,12 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl',
         url: '',
         snapshot: false,
         username: '',
-        password: ''
+        password: '',
+        proxyProtocol: 'HTTP',
+        proxyHost: '',
+        proxyPort: null,
+        proxyLogin: '',
+        proxyPassword: ''
       };
     };
 
@@ -573,5 +692,23 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl',
       getRepositories();
     };
 
+    $scope.showSparkUI = function(settingId) {
+      $http.get(baseUrlSrv.getRestApiBase() + '/interpreter/getmetainfos/' + settingId + '?propName=url')
+        .success(function(data, status, headers, config) {
+          var url = data.body.url;
+          if (!url) {
+            BootstrapDialog.alert({
+              message: 'No spark application running'
+            });
+            return;
+          }
+          window.open(url, '_blank');
+        }).error(function(data, status, headers, config) {
+         console.log('Error %o %o', status, data.message);
+       });
+    };
+
     init();
-  });
+  }
+
+})();

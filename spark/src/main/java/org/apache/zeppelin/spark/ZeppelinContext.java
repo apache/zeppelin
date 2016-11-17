@@ -24,14 +24,18 @@ import static scala.collection.JavaConversions.collectionAsScalaIterable;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 
 import org.apache.spark.SparkContext;
 import org.apache.spark.sql.SQLContext;
 import org.apache.spark.sql.catalyst.expressions.Attribute;
 import org.apache.zeppelin.annotation.ZeppelinApi;
+import org.apache.zeppelin.annotation.Experimental;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.AngularObjectWatcher;
@@ -40,6 +44,7 @@ import org.apache.zeppelin.display.Input.ParamOption;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterContextRunner;
 import org.apache.zeppelin.interpreter.InterpreterException;
+import org.apache.zeppelin.interpreter.InterpreterHookRegistry;
 import org.apache.zeppelin.spark.dep.SparkDependencyResolver;
 import org.apache.zeppelin.resource.Resource;
 import org.apache.zeppelin.resource.ResourcePool;
@@ -52,19 +57,53 @@ import scala.Unit;
  * Spark context for zeppelin.
  */
 public class ZeppelinContext {
+  // Map interpreter class name (to be used by hook registry) from
+  // given replName in parapgraph
+  private static final Map<String, String> interpreterClassMap;
+  static {
+    interpreterClassMap = new HashMap<>();
+    interpreterClassMap.put("spark", "org.apache.zeppelin.spark.SparkInterpreter");
+    interpreterClassMap.put("sql", "org.apache.zeppelin.spark.SparkSqlInterpreter");
+    interpreterClassMap.put("dep", "org.apache.zeppelin.spark.DepInterpreter");
+    interpreterClassMap.put("pyspark", "org.apache.zeppelin.spark.PySparkInterpreter");
+  }
+  
   private SparkDependencyResolver dep;
   private InterpreterContext interpreterContext;
   private int maxResult;
-
+  private List<Class> supportedClasses;
+  private InterpreterHookRegistry hooks;
+  
   public ZeppelinContext(SparkContext sc, SQLContext sql,
       InterpreterContext interpreterContext,
       SparkDependencyResolver dep,
+      InterpreterHookRegistry hooks,
       int maxResult) {
     this.sc = sc;
     this.sqlContext = sql;
     this.interpreterContext = interpreterContext;
     this.dep = dep;
+    this.hooks = hooks;
     this.maxResult = maxResult;
+    this.supportedClasses = new ArrayList<>();
+    try {
+      supportedClasses.add(this.getClass().forName("org.apache.spark.sql.Dataset"));
+    } catch (ClassNotFoundException e) {
+    }
+
+    try {
+      supportedClasses.add(this.getClass().forName("org.apache.spark.sql.DataFrame"));
+    } catch (ClassNotFoundException e) {
+    }
+
+    try {
+      supportedClasses.add(this.getClass().forName("org.apache.spark.sql.SchemaRDD"));
+    } catch (ClassNotFoundException e) {
+    }
+
+    if (supportedClasses.isEmpty()) {
+      throw new InterpreterException("Can not road Dataset/DataFrame/SchemaRDD class");
+    }
   }
 
   public SparkContext sc;
@@ -95,7 +134,7 @@ public class ZeppelinContext {
   @ZeppelinApi
   public scala.collection.Iterable<Object> checkbox(String name,
       scala.collection.Iterable<Tuple2<Object, String>> options) {
-    List<Object> allChecked = new LinkedList<Object>();
+    List<Object> allChecked = new LinkedList<>();
     for (Tuple2<Object, String> option : asJavaIterable(options)) {
       allChecked.add(option._1());
     }
@@ -161,33 +200,8 @@ public class ZeppelinContext {
 
   @ZeppelinApi
   public void show(Object o, int maxResult) {
-    Class cls = null;
     try {
-      cls = this.getClass().forName("org.apache.spark.sql.Dataset");
-    } catch (ClassNotFoundException e) {
-    }
-
-    if (cls == null) {
-      try {
-        cls = this.getClass().forName("org.apache.spark.sql.DataFrame");
-      } catch (ClassNotFoundException e) {
-      }
-    }
-
-    if (cls == null) {
-      try {
-        cls = this.getClass().forName("org.apache.spark.sql.SchemaRDD");
-      } catch (ClassNotFoundException e) {
-      }
-    }
-
-    if (cls == null) {
-      throw new InterpreterException("Can not road Dataset/DataFrame/SchemaRDD class");
-    }
-
-
-    try {
-      if (cls.isInstance(o)) {
+      if (supportedClasses.contains(o.getClass())) {
         interpreterContext.out.write(showDF(sc, interpreterContext, o, maxResult));
       } else {
         interpreterContext.out.write(o.toString());
@@ -210,6 +224,12 @@ public class ZeppelinContext {
     sc.setJobGroup(jobGroup, "Zeppelin", false);
 
     try {
+      // convert it to DataFrame if it is Dataset, as we will iterate all the records
+      // and assume it is type Row.
+      if (df.getClass().getCanonicalName().equals("org.apache.spark.sql.Dataset")) {
+        Method convertToDFMethod = df.getClass().getMethod("toDF");
+        df = convertToDFMethod.invoke(df);
+      }
       take = df.getClass().getMethod("take", int.class);
       rows = (Object[]) take.invoke(df, maxResult + 1);
     } catch (NoSuchMethodException | SecurityException | IllegalAccessException
@@ -380,7 +400,7 @@ public class ZeppelinContext {
 
   @ZeppelinApi
   public List<String> listParagraphs() {
-    List<String> paragraphs = new LinkedList<String>();
+    List<String> paragraphs = new LinkedList<>();
 
     for (InterpreterContextRunner r : interpreterContext.getRunners()) {
       paragraphs.add(r.getParagraphId());
@@ -695,6 +715,90 @@ public class ZeppelinContext {
     registry.remove(name, noteId, null);
   }
 
+  /**
+   * Get the interpreter class name from name entered in paragraph
+   * @param replName if replName is a valid className, return that instead.
+   */
+  public String getClassNameFromReplName(String replName) {
+    for (String name : interpreterClassMap.values()) {
+      if (replName.equals(name)) {
+        return replName;
+      }
+    }
+    
+    if (replName.contains("spark.")) {
+      replName = replName.replace("spark.", "");
+    }
+    return interpreterClassMap.get(replName);
+  }
+
+  /**
+   * General function to register hook event
+   * @param event The type of event to hook to (pre_exec, post_exec)
+   * @param cmd The code to be executed by the interpreter on given event
+   * @param replName Name of the interpreter
+   */
+  @Experimental
+  public void registerHook(String event, String cmd, String replName) {
+    String noteId = interpreterContext.getNoteId();
+    String className = getClassNameFromReplName(replName);
+    hooks.register(noteId, className, event, cmd);
+  }
+
+  /**
+   * registerHook() wrapper for current repl
+   * @param event The type of event to hook to (pre_exec, post_exec)
+   * @param cmd The code to be executed by the interpreter on given event
+   */
+  @Experimental
+  public void registerHook(String event, String cmd) {
+    String className = interpreterContext.getClassName();
+    registerHook(event, cmd, className);
+  }
+
+  /**
+   * Get the hook code
+   * @param event The type of event to hook to (pre_exec, post_exec)
+   * @param replName Name of the interpreter
+   */
+  @Experimental
+  public String getHook(String event, String replName) {
+    String noteId = interpreterContext.getNoteId();
+    String className = getClassNameFromReplName(replName);
+    return hooks.get(noteId, className, event);
+  }
+
+  /**
+   * getHook() wrapper for current repl
+   * @param event The type of event to hook to (pre_exec, post_exec)
+   */
+  @Experimental
+  public String getHook(String event) {
+    String className = interpreterContext.getClassName();
+    return getHook(event, className);
+  }
+
+  /**
+   * Unbind code from given hook event
+   * @param event The type of event to hook to (pre_exec, post_exec)
+   * @param replName Name of the interpreter
+   */
+  @Experimental
+  public void unregisterHook(String event, String replName) {
+    String noteId = interpreterContext.getNoteId();
+    String className = getClassNameFromReplName(replName);
+    hooks.unregister(noteId, className, event);
+  }
+
+  /**
+   * unregisterHook() wrapper for current repl
+   * @param event The type of event to hook to (pre_exec, post_exec)
+   */
+  @Experimental
+  public void unregisterHook(String event) {
+    String className = interpreterContext.getClassName();
+    unregisterHook(event, className);
+  }
 
   /**
    * Add object into resource pool

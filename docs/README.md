@@ -1,6 +1,6 @@
 # Apache Zeppelin documentation
 
-This README will walk you through building the documentation of Apache Zeppelin. The documentation is included here with Apache Zeppelin source code. The online documentation at [https://zeppelin.apache.org/docs/<ZEPPELIN_VERSION>](https://zeppelin.apache.org/docs/latest) is also generated from the files found in here. 
+This README will walk you through building the documentation of Apache Zeppelin. The documentation is included here with Apache Zeppelin source code. The online documentation at [https://zeppelin.apache.org/docs/<ZEPPELIN_VERSION>](https://zeppelin.apache.org/docs/latest/) is also generated from the files found in here.
 
 ## Build documentation
 Zeppelin is using [Jekyll](https://jekyllrb.com/) which is a static site generator and [Github Pages](https://pages.github.com/) as a site publisher. For the more details, see [help.github.com/articles/about-github-pages-and-jekyll/](https://help.github.com/articles/about-github-pages-and-jekyll/).
@@ -19,7 +19,7 @@ bundle install
 
 For the further information about requirements, please see [here](https://help.github.com/articles/setting-up-your-github-pages-site-locally-with-jekyll/#requirements).
 
-On OS X 10.9, you may need to do 
+On OS X 10.9, you may need to do
 
 ```
 xcode-select --install
@@ -39,7 +39,7 @@ Using the above command, Jekyll will start a web server at `http://localhost:400
 
 
 ## Contribute to Zeppelin documentation
-If you wish to help us and contribute to Zeppelin Documentation, please look at [Zeppelin Documentation's contribution guideline](https://github.com/apache/zeppelin/blob/master/docs/CONTRIBUTING.md).
+If you wish to help us and contribute to Zeppelin Documentation, please look at [Zeppelin Documentation's contribution guideline](https://zeppelin.apache.org/contribution/contributions.html).
 
 
 ## For committers only
@@ -49,7 +49,7 @@ If you wish to help us and contribute to Zeppelin Documentation, please look at 
 
 ### Deploy to ASF svnpubsub infra
  1. generate static website in `./_site`
-    
+
     ```
     # go to /docs under Zeppelin source
     bundle exec jekyll build --safe

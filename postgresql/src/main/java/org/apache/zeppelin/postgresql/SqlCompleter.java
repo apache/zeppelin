@@ -65,7 +65,7 @@ public class SqlCompleter extends StringsCompleter {
     }
   };
 
-  private Set<String> modelCompletions = new HashSet<String>();
+  private Set<String> modelCompletions = new HashSet<>();
 
   public SqlCompleter(Set<String> allCompletions, Set<String> dataModelCompletions) {
     super(allCompletions);
@@ -150,7 +150,7 @@ public class SqlCompleter extends StringsCompleter {
       keywords += "," + driverKeywords.toUpperCase();
     }
 
-    Set<String> completions = new TreeSet<String>();
+    Set<String> completions = new TreeSet<>();
 
 
     // Add the keywords from the current JDBC connection
@@ -193,7 +193,7 @@ public class SqlCompleter extends StringsCompleter {
 
   public static Set<String> getDataModelMetadataCompletions(Connection connection)
       throws SQLException {
-    Set<String> completions = new TreeSet<String>();
+    Set<String> completions = new TreeSet<>();
     getColumnNames(connection.getMetaData(), completions);
     getSchemaNames(connection.getMetaData(), completions);
     return completions;

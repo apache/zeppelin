@@ -62,6 +62,7 @@
     <module>shell</module>
     <module>livy</module>
     <module>hbase</module>
+    <module>pig</module>
     <module>postgresql</module>
     <module>jdbc</module>
     <module>file</module>
@@ -74,6 +75,7 @@
     <module>elasticsearch</module>
     <module>bigquery</module>
     <module>alluxio</module>
+    <module>scio</module>
     <module>zeppelin-web</module>
     <module>zeppelin-server</module>
     <module>zeppelin-distribution</module>
@@ -384,7 +386,7 @@
       </plugin>
 
       <!--TODO(alex): make part of the build and reconcile conflicts
-    <plugin> 
+    <plugin>
       <groupId>com.ning.maven.plugins</groupId>
       <artifactId>maven-duplicate-finder-plugin</artifactId>
       <version>1.0.4</version>
@@ -393,12 +395,12 @@
           <id>default</id>
           <phase>verify</phase>
           <goals>
-            <goal>check</goal> 
-          </goals> 
-       </execution> 
-      </executions> 
+            <goal>check</goal>
+          </goals>
+       </execution>
+      </executions>
       <configuration>
-        <failBuildInCaseOfConflict>true</failBuildInCaseOfConflict> 
+        <failBuildInCaseOfConflict>true</failBuildInCaseOfConflict>
       </configuration>
     </plugin>
     -->
@@ -459,6 +461,9 @@
               <fileset>
                 <directory>interpreter</directory>
                 <followSymlinks>false</followSymlinks>
+                <excludes>
+                  <exclude>lib/**</exclude>
+                </excludes>
               </fileset>
             </filesets>
           </configuration>
@@ -576,6 +581,20 @@
       <id>scalding</id>
       <modules>
         <module>scalding</module>
+      </modules>
+    </profile>
+
+    <profile>
+      <id>beam</id>
+      <modules>
+        <module>beam</module>
+      </modules>
+    </profile>
+
+    <profile>
+      <id>scio</id>
+      <modules>
+        <module>scio</module>
       </modules>
     </profile>
 
@@ -734,7 +753,6 @@
               <exclude>**/README.md</exclude>
               <exclude>DEPENDENCIES</exclude>
               <exclude>DEPLOY.md</exclude>
-              <exclude>CONTRIBUTING.md</exclude>
               <exclude>STYLE.md</exclude>
               <exclude>Roadmap.md</exclude>
               <exclude>**/licenses/**</exclude>
@@ -747,6 +765,7 @@
               <exclude>.spark-dist/**</exclude>
               <exclude>**/interpreter-setting.json</exclude>
               <exclude>**/constants.json</exclude>
+              <exclude>scripts/**</exclude>
 
               <!-- bundled from bootstrap -->
               <exclude>docs/assets/themes/zeppelin/bootstrap/**</exclude>
@@ -772,7 +791,6 @@
               <exclude>docs/sitemap.txt</exclude>
               <exclude>docs/search_data.json</exclude>
               <exclude>**/dependency-reduced-pom.xml</exclude>
-              <exclude>docs/CONTRIBUTING.md</exclude>
 
               <!-- bundled from anchor -->
               <exclude>docs/assets/themes/zeppelin/js/anchor.min.js</exclude>

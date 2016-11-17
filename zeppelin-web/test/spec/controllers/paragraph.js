@@ -36,10 +36,10 @@ describe('Controller: ParagraphCtrl', function() {
     'closeTable', 'openTable', 'showTitle', 'hideTitle', 'setTitle', 'showLineNumbers', 'hideLineNumbers',
     'changeColWidth', 'columnWidthClass', 'toggleGraphOption', 'toggleOutput', 'loadForm',
     'aceChanged', 'aceLoaded', 'getEditorValue', 'getProgress', 'getExecutionTime', 'isResultOutdated',
-    'getResultType', 'loadTableData', 'setGraphMode', 'isGraphMode', 'onGraphOptionChange',
+    'getResultType', 'setGraphMode', 'isGraphMode', 'onGraphOptionChange',
     'removeGraphOptionKeys', 'removeGraphOptionValues', 'removeGraphOptionGroups', 'setGraphOptionValueAggr',
     'removeScatterOptionXaxis', 'removeScatterOptionYaxis', 'removeScatterOptionGroup',
-    'removeScatterOptionSize', 'removeMapOptionLat', 'removeMapOptionLng', 'removeMapOptionPinInfo'];
+    'removeScatterOptionSize'];
 
   functions.forEach(function(fn) {
     it('check for scope functions to be defined : ' + fn, function() {
@@ -64,10 +64,8 @@ describe('Controller: ParagraphCtrl', function() {
       scope.getResultType = jasmine.createSpy('getResultType spy').andCallFake(function() {
         return 'TABLE';
       });
-      spyOn(scope, 'loadTableData');
       spyOn(scope, 'setGraphMode');
       scope.init(paragraphMock);
-      expect(scope.loadTableData).toHaveBeenCalled();
       expect(scope.setGraphMode).toHaveBeenCalled();
       expect(scope.getGraphMode()).toEqual('table');
     });

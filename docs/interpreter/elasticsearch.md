@@ -243,7 +243,7 @@ delete /index/type/id
 ```
 
 ### Apply Zeppelin Dynamic Forms
-You can leverage [Zeppelin Dynamic Form]({{BASE_PATH}}/manual/dynamicform.html) inside your queries. You can use both the `text input` and `select form` parameterization features.
+You can leverage [Zeppelin Dynamic Form](../manual/dynamicform.html) inside your queries. You can use both the `text input` and `select form` parameterization features.
 
 ```bash
 %elasticsearch

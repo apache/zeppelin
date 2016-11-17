@@ -20,18 +20,19 @@ package org.apache.zeppelin.interpreter;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.zeppelin.annotation.ZeppelinApi;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.display.GUI;
+import org.apache.zeppelin.interpreter.remote.RemoteEventClientWrapper;
+import org.apache.zeppelin.interpreter.remote.RemoteEventClient;
+import org.apache.zeppelin.interpreter.remote.RemoteInterpreterEventClient;
 import org.apache.zeppelin.resource.ResourcePool;
 
 /**
  * Interpreter context
  */
 public class InterpreterContext {
-  private static final ThreadLocal<InterpreterContext> threadIC =
-      new ThreadLocal<InterpreterContext>();
+  private static final ThreadLocal<InterpreterContext> threadIC = new ThreadLocal<>();
 
   public final InterpreterOutput out;
 
@@ -57,6 +58,8 @@ public class InterpreterContext {
   private AngularObjectRegistry angularObjectRegistry;
   private ResourcePool resourcePool;
   private List<InterpreterContextRunner> runners;
+  private String className;
+  private RemoteEventClientWrapper client;
 
   public InterpreterContext(String noteId,
                             String paragraphId,
@@ -83,6 +86,22 @@ public class InterpreterContext {
     this.out = out;
   }
 
+  public InterpreterContext(String noteId,
+                            String paragraphId,
+                            String paragraphTitle,
+                            String paragraphText,
+                            AuthenticationInfo authenticationInfo,
+                            Map<String, Object> config,
+                            GUI gui,
+                            AngularObjectRegistry angularObjectRegistry,
+                            ResourcePool resourcePool,
+                            List<InterpreterContextRunner> contextRunners,
+                            InterpreterOutput output,
+                            RemoteInterpreterEventClient eventClient) {
+    this(noteId, paragraphId, paragraphTitle, paragraphText, authenticationInfo, config, gui,
+        angularObjectRegistry, resourcePool, contextRunners, output);
+    this.client = new RemoteEventClient(eventClient);
+  }
 
   public String getNoteId() {
     return noteId;
@@ -124,4 +143,15 @@ public class InterpreterContext {
     return runners;
   }
 
+  public String getClassName() {
+    return className;
+  }
+  
+  public void setClassName(String className) {
+    this.className = className;
+  }
+
+  public RemoteEventClientWrapper getClient() {
+    return client;
+  }
 }

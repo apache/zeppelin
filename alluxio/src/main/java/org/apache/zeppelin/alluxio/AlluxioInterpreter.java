@@ -135,7 +135,7 @@ public class AlluxioInterpreter extends Interpreter {
   
   private String[] splitAndRemoveEmpty(String st, String splitSeparator) {
     String[] voices = st.split(splitSeparator);
-    ArrayList<String> result = new ArrayList<String>();
+    ArrayList<String> result = new ArrayList<>();
     for (String voice : voices) {
       if (!voice.trim().isEmpty()) {
         result.add(voice);
@@ -145,7 +145,7 @@ public class AlluxioInterpreter extends Interpreter {
   }
 
   private String[] splitAndRemoveEmpty(String[] sts, String splitSeparator) {
-    ArrayList<String> result = new ArrayList<String>();
+    ArrayList<String> result = new ArrayList<>();
     for (String st : sts) {
       result.addAll(Arrays.asList(splitAndRemoveEmpty(st, splitSeparator)));
     }

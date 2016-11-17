@@ -19,11 +19,11 @@ limitations under the License.
           Interpreters
         </h3>
         <div class="pull-right" style="margin-top:10px;">
-          <span style="cursor:pointer;margin-right:4px;"
-                ng-click="showRepositoryInfo = !showRepositoryInfo"
-                tooltip-placement="bottom" tooltip="Repository information">
-            <i class="fa fa-cog" ng-style="{color: showRepositoryInfo ? '#3071A9' : 'black' }"></i>
-          </span>
+          <button class="btn btn-default btn-sm"
+                  ng-click="showRepositoryInfo = !showRepositoryInfo">
+            <i class="fa fa-database" ng-style="{color: showRepositoryInfo ? '#3071A9' : 'black' }"></i>
+            Repository
+          </button>
           <button class="btn btn-default btn-sm"
                   ng-click="showAddNewSetting = !showAddNewSetting">
             <i class="fa fa-plus"></i>
@@ -38,13 +38,17 @@ limitations under the License.
       </div>
     </div>
 
-    <div class="input-group col-md-4" style="margin-top: 10px">
-      <input type="text" ng-model="searchInterpreter" class="form-control ng-pristine ng-untouched ng-valid ng-empty" placeholder="Search interpreters"/>
-      <span class="input-group-btn">
-        <button type="submit" class="btn btn-default" ng-disabled="!navbar.connected">
-          <i class="glyphicon glyphicon-search"></i>
-        </button>
-      </span>
+    <div class="row">
+      <div class="col-md-4">
+        <div class="input-group" style="margin-top: 10px">
+          <input type="text" ng-model="searchInterpreter" class="form-control ng-pristine ng-untouched ng-valid ng-empty" placeholder="Search interpreters"/>
+          <span class="input-group-btn">
+            <button type="submit" class="btn btn-default" ng-disabled="!navbar.connected">
+              <i class="glyphicon glyphicon-search"></i>
+            </button>
+          </span>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -61,7 +65,9 @@ limitations under the License.
              popover-html-unsafe="<label>URL: </label>
                {{repo.url}}<br>
                <label>Username: </label>
-               {{repo.authentication.username}}">
+               {{repo.authentication.username}}<br>
+               <label>Proxy host: </label>
+               {{repo.proxy.host}}">
             <span class="fa fa-database"></span>
             {{repo.id}}&nbsp;
             <span ng-if="!isDefaultRepository(repo.id)" class="fa fa-close blackOpc"
@@ -121,7 +127,11 @@ limitations under the License.
           </small>
 
         </h3>
-        <span style="float:right">
+        <span style="float:right" ng-show="!valueform.$visible" >
+          <button class="btn btn-default btn-xs"
+                  ng-click="showSparkUI(setting.id)"
+                  ng-show="setting.group == 'spark'">
+            <span class="fa fa-external-link"></span> spark ui</button>
           <button class="btn btn-default btn-xs"
                   ng-click="valueform.$show();
                   copyOriginInterpreterSettingProperties(setting.id)">
@@ -131,76 +141,215 @@ limitations under the License.
             <span class="fa fa-refresh"></span> restart</button>
           <button class="btn btn-default btn-xs"
                   ng-click="removeInterpreterSetting(setting.id)">
-            <span class="fa fa-remove"></span> remove</button>
+            <span class="fa fa-trash"></span> remove</button>
         </span>
       </div>
     </div>
+
     <div class="row interpreter">
       <div class="col-md-12">
         <h5>Option</h5>
-        <span class="btn-group">
-          <button type="button" class="btn btn-default btn-xs dropdown-toggle"
-                  data-toggle="dropdown"
-                  ng-disabled="!valueform.$visible">
-            {{getSessionOption(setting.id)}} <span class="caret"></span>
-          </button>
-          <ul class="dropdown-menu" role="menu">
-            <li>
-              <a style="cursor:pointer"
-                 tooltip="Single interpreter instance are shared across notes"
-                 ng-click="setSessionOption(setting.id, 'shared')">
-                shared
-              </a>
-            </li>
-            <li>
-              <a style="cursor:pointer"
-                 tooltip="Separate Interpreter instance for each note"
-                 ng-click="setSessionOption(setting.id, 'scoped')">
-                scoped
-              </a>
-            </li>
-            <li>
-              <a style="cursor:pointer"
-                 tooltip="Separate Interpreter process for each note"
-                 ng-click="setSessionOption(setting.id, 'isolated')">
-                isolated
-              </a>
-            </li>
-          </ul>
-        </span>
-        <span>Interpreter for note</span>
-      </div>
+        <div class="row interpreter" style="margin-top: 5px;">
+          <div class="col-md-6">
+            The interpreter will be instantiated
+            <span class="btn-group">
+              <button type="button" class="btn btn-default btn-xs dropdown-toggle"
+                      data-toggle="dropdown"
+                      ng-disabled="!valueform.$visible">
+                {{getInterpreterRunningOption(setting.id)}} <span class="caret"></span>
+              </button>
+              <ul class="dropdown-menu" role="menu">
+                <li>
+                  <a style="cursor:pointer"
+                     ng-click="setInterpreterRunningOption(setting.id, 'shared', 'shared')">
+                    Globally
+                  </a>
+                </li>
+                <li>
+                  <a style="cursor:pointer"
+                     ng-click="setInterpreterRunningOption(setting.id, 'scoped', '')">
+                    Per Note
+                  </a>
+                </li>
+                <li ng-if="ticket.ticket !== 'anonymous' && ticket.roles !== '[]'">
+                  <a style="cursor:pointer"
+                     ng-click="setInterpreterRunningOption(setting.id, 'shared', 'scoped')">
+                    Per User
+                  </a>
+                </li>
+              </ul>
+            </span>
+            in
+            <span class="btn-group">
+              <button type="button" class="btn btn-default btn-xs dropdown-toggle"
+                      data-toggle="dropdown"
+                      ng-disabled="!valueform.$visible
+                                   || getInterpreterRunningOption(setting.id) === 'Globally'">
+                <span ng-if="getInterpreterRunningOption(setting.id) !== 'Per User'">
+                  {{getPerNoteOption(setting.id)}}
+                </span>
+                <span ng-if="getInterpreterRunningOption(setting.id) === 'Per User'">
+                  {{getPerUserOption(setting.id)}}
+                </span>
+                  <span class="caret"></span>
+              </button>
+              <ul class="dropdown-menu" role="menu">
+                <li
+                  ng-if="getInterpreterRunningOption(setting.id) === 'Globally'">
+                  <a style="cursor:pointer"
+                     tooltip="Single interpreter instance are shared across notes"
+                     ng-click="setPerNoteOption(setting.id, 'shared')">
+                    shared per note
+                  </a>
+                </li>
 
-      <br />
+                <li>
+                  <a style="cursor:pointer"
+                     ng-if="getInterpreterRunningOption(setting.id) === 'Per Note'"
+                     tooltip="Separate Interpreter instance for each note"
+                     ng-click="setPerNoteOption(setting.id, 'scoped')">
+                    scoped per note
+                  </a>
+                </li>
+                <li>
+                  <a style="cursor:pointer"
+                     ng-if="getInterpreterRunningOption(setting.id) === 'Per User'"
+                     tooltip="Separate Interpreter instance for each note"
+                     ng-click="setPerUserOption(setting.id, 'scoped')">
+                    scoped per user
+                  </a>
+                </li>
+
+                <li>
+                  <a style="cursor:pointer"
+                     ng-if="getInterpreterRunningOption(setting.id) === 'Per Note'"
+                     tooltip="Separate Interpreter process for each note"
+                     ng-click="setPerNoteOption(setting.id, 'isolated')">
+                    isolated per note
+                  </a>
+                </li>
+                <li>
+                  <a style="cursor:pointer"
+                     ng-if="getInterpreterRunningOption(setting.id) === 'Per User'"
+                     tooltip="Separate Interpreter process for each note"
+                     ng-click="setPerUserOption(setting.id, 'isolated')">
+                    isolated per user
+                  </a>
+                </li>
+              </ul>
+            </span>
+            process.
+            <span ng-if="getInterpreterRunningOption(setting.id) === 'Per User' && ticket.ticket !== 'anonymous' && ticket.roles !== '[]'">
+              <span ng-if="getPerNoteOption(setting.id) === 'shared'">
+                <button type="button" class="btn btn-default btn-xs"
+                        ng-click="setPerNoteOption(setting.id, 'scoped')"
+                        ng-disabled="!valueform.$visible"
+                        data-toggle="dropdown">
+                  <i class="fa fa-plus"></i>
+                </button>
+              </span>
+            </span>
+          </div>
+          <div class="col-md-6">
+            &nbsp;
+          </div>
+        </div>
+        <div class="row interpreter"
+             style="margin-top: 6px;"
+             ng-if="getInterpreterRunningOption(setting.id) === 'Per User'
+                    && ticket.ticket !== 'anonymous'
+                    && ticket.roles !== '[]'
+                    && getPerNoteOption(setting.id) !== 'shared'">
+          <div class="col-md-12">
+            <span>
+              <span class="hidden-xs" style="padding-left: 190px;">And </span>
+              <span class="visible-xs" style="padding-left: 0px;">And </span>
+              <span class="btn-group">
+                <button type="button" class="btn btn-default btn-xs dropdown-toggle"
+                        data-toggle="dropdown"
+                        ng-disabled="true">
+                  <span>
+                    Per Note
+                  </span>
+                  <span class="caret"></span>
+                </button>
+              </span>
+              in
+              <span class="btn-group">
+                <button type="button" class="btn btn-default btn-xs dropdown-toggle"
+                        data-toggle="dropdown"
+                        ng-disabled="!valueform.$visible">
+                  <span>
+                    {{getPerNoteOption(setting.id)}}
+                  </span>
+                  <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu" role="menu">
+                  <li>
+                    <a style="cursor:pointer"
+                       tooltip="Separate Interpreter instance for each note"
+                       ng-click="setPerNoteOption(setting.id, 'scoped')">
+                      scoped per note
+                    </a>
+                  </li>
+                  <li>
+                    <a style="cursor:pointer"
+                       tooltip="Separate Interpreter process for each note"
+                       ng-click="setPerNoteOption(setting.id, 'isolated')">
+                      isolated per note
+                    </a>
+                  </li>
+                </ul>
+              </span>
+              process.
+              <button type="button" class="btn btn-default btn-xs"
+                      ng-disabled="!valueform.$visible"
+                      ng-click="setPerNoteOption(setting.id, 'shared')"
+                      data-toggle="dropdown">
+                <i class="fa fa-minus"></i>
+              </button>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row interpreter" style="margin-top: 5px;">
       <div class="col-md-12">
-        <div class="checkbox">
+        <div class="checkbox remove-margin-top-bottom">
           <span class="input-group" style="line-height:30px;">
-            <label><input type="checkbox" style="width:20px" id="isExistingProcess" ng-model="setting.option.isExistingProcess" ng-disabled="!valueform.$visible"/>
-            Connect to existing process </label>
+            <label>
+              <input type="checkbox" style="width:20px" id="isExistingProcess" ng-model="setting.option.isExistingProcess" ng-disabled="!valueform.$visible"/>
+              Connect to existing process
+            </label>
           </span>
         </div>
       </div>
-
-      <div class="col-md-12" ng-show="setting.option.isExistingProcess">
+    </div>
+    <div class="row interpreter" ng-if="setting.option.isExistingProcess">
+      <div class="col-md-12">
         <b>Host</b>
           <input id="newInterpreterSettingHost" input pu-elastic-input
             pu-elastic-input-minwidth="180px" ng-model="setting.option.host" ng-disabled="!valueform.$visible"  />
       </div>
-      <div class="col-md-12" ng-show="setting.option.isExistingProcess">
+      <div class="col-md-12">
          <b>Port</b>
          <input id="newInterpreterSettingPort" input pu-elastic-input
             pu-elastic-input-minwidth="180px" ng-model="setting.option.port"  ng-disabled="!valueform.$visible" />
       </div>
-
+    </div>
+    <div class="row interpreter">
       <div class="col-md-12">
-        <div class="checkbox">
+        <div class="checkbox remove-margin-top-bottom">
           <span class="input-group" style="line-height:30px;">
-            <label><input type="checkbox" style="width:18px !important" id="idShowPermission" ng-click="togglePermissions(setting.name)" ng-model="setting.option.setPermission" ng-disabled="!valueform.$visible"/>
-            Set permission </label>
+            <label>
+              <input type="checkbox" style="width:20px !important" id="idShowPermission" ng-click="togglePermissions(setting.name)" ng-model="setting.option.setPermission" ng-disabled="!valueform.$visible"/>
+               Set permission
+            </label>
           </span>
         </div>
       </div>
-
+    </div>
+    <div class="row interpreter">
       <div class="col-md-12">
         <!-- permissions -->
         <div ng-show="setting.option.setPermission" class="permissionsForm">
@@ -219,8 +368,10 @@ limitations under the License.
           </div>
         </div>
       </div>
+    </div>
 
-      <div ng-show="_.isEmpty(setting.properties) && _.isEmpty(setting.dependencies) || valueform.$hidden" class="col-md-12 gray40-message">
+    <div class="row interpreter" style="margin-top:20px !important">
+      <div ng-show="_.isEmpty(setting.properties) && _.isEmpty(setting.dependencies) && !valueform.$visible" class="col-md-12 gray40-message">
         <em>Currently there are no properties and dependencies set for this interpreter</em>
       </div>
       <div class="col-md-12" ng-show="!_.isEmpty(setting.properties) || valueform.$visible">
@@ -228,9 +379,9 @@ limitations under the License.
         <table class="table table-striped">
           <thead>
             <tr>
-              <th style="width:30%">name</th>
-              <th>value</th>
-              <th ng-if="valueform.$visible">action</th>
+              <th style="width:40%">name</th>
+              <th style="width:40%">value</th>
+              <th style="width:20%" ng-if="valueform.$visible">action</th>
             </tr>
           </thead>
           <tr ng-repeat="key in setting.properties | sortByKey" >
@@ -263,7 +414,8 @@ limitations under the License.
           </tr>
         </table>
       </div>
-
+    </div>
+    <div class="row interpreter">
       <div class="col-md-12" ng-show="!_.isEmpty(setting.dependencies) || valueform.$visible">
         <h5>Dependencies</h5>
         <p class="gray40-message" style="font-size:12px" ng-show="valueform.$visible">
@@ -272,8 +424,8 @@ limitations under the License.
           <thead>
             <tr>
               <th style="width:40%">artifact</th>
-              <th>exclude</th>
-              <th ng-if="valueform.$visible">action</th>
+              <th style="width:40%">exclude</th>
+              <th style="width:20%" ng-if="valueform.$visible">action</th>
             </tr>
           </thead>
           <tr ng-repeat="dep in setting.dependencies">

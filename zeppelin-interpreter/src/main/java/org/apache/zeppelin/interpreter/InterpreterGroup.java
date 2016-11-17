@@ -33,7 +33,7 @@ import org.apache.zeppelin.scheduler.SchedulerFactory;
  * and InterpreterGroup will have reference to these all interpreters.
  *
  * Remember, list of interpreters are dedicated to a note.
- * (when InterpreterOption.perNoteSession==true)
+ * (when InterpreterOption.session==true)
  * So InterpreterGroup internally manages map of [noteId, list of interpreters]
  *
  * A InterpreterGroup runs on interpreter process.
@@ -45,6 +45,7 @@ public class InterpreterGroup extends ConcurrentHashMap<String, List<Interpreter
   Logger LOGGER = Logger.getLogger(InterpreterGroup.class);
 
   AngularObjectRegistry angularObjectRegistry;
+  InterpreterHookRegistry hookRegistry;
   RemoteInterpreterProcess remoteInterpreterProcess;    // attached remote interpreter process
   ResourcePool resourcePool;
   boolean angularRegistryPushed = false;
@@ -54,7 +55,7 @@ public class InterpreterGroup extends ConcurrentHashMap<String, List<Interpreter
   // List<Interpreter>>();
 
   private static final Map<String, InterpreterGroup> allInterpreterGroups =
-      new ConcurrentHashMap<String, InterpreterGroup>();
+      new ConcurrentHashMap<>();
 
   public static InterpreterGroup getByInterpreterGroupId(String id) {
     return allInterpreterGroups.get(id);
@@ -118,9 +119,17 @@ public class InterpreterGroup extends ConcurrentHashMap<String, List<Interpreter
   public AngularObjectRegistry getAngularObjectRegistry() {
     return angularObjectRegistry;
   }
-
+  
   public void setAngularObjectRegistry(AngularObjectRegistry angularObjectRegistry) {
     this.angularObjectRegistry = angularObjectRegistry;
+  }
+  
+  public InterpreterHookRegistry getInterpreterHookRegistry() {
+    return hookRegistry;
+  }
+  
+  public void setInterpreterHookRegistry(InterpreterHookRegistry hookRegistry) {
+    this.hookRegistry = hookRegistry;
   }
 
   public RemoteInterpreterProcess getRemoteInterpreterProcess() {
@@ -138,7 +147,7 @@ public class InterpreterGroup extends ConcurrentHashMap<String, List<Interpreter
    */
   public void close() {
     LOGGER.info("Close interpreter group " + getId());
-    List<Interpreter> intpToClose = new LinkedList<Interpreter>();
+    List<Interpreter> intpToClose = new LinkedList<>();
     for (List<Interpreter> intpGroupForNote : this.values()) {
       intpToClose.addAll(intpGroupForNote);
     }
@@ -159,7 +168,7 @@ public class InterpreterGroup extends ConcurrentHashMap<String, List<Interpreter
     if (intpToClose == null) {
       return;
     }
-    List<Thread> closeThreads = new LinkedList<Thread>();
+    List<Thread> closeThreads = new LinkedList<>();
 
     for (final Interpreter intp : intpToClose) {
       Thread t = new Thread() {
@@ -194,6 +203,14 @@ public class InterpreterGroup extends ConcurrentHashMap<String, List<Interpreter
     LOGGER.info("Destroy interpreter group " + getId() + " for note " + noteId);
     List<Interpreter> intpForNote = this.get(noteId);
     destroy(intpForNote);
+
+    if (remoteInterpreterProcess != null) {
+      remoteInterpreterProcess.dereference();
+      if (remoteInterpreterProcess.referenceCount() <= 0) {
+        remoteInterpreterProcess = null;
+        allInterpreterGroups.remove(id);
+      }
+    }
   }
 
 
@@ -202,7 +219,7 @@ public class InterpreterGroup extends ConcurrentHashMap<String, List<Interpreter
    */
   public void destroy() {
     LOGGER.info("Destroy interpreter group " + getId());
-    List<Interpreter> intpToDestroy = new LinkedList<Interpreter>();
+    List<Interpreter> intpToDestroy = new LinkedList<>();
     for (List<Interpreter> intpGroupForNote : this.values()) {
       intpToDestroy.addAll(intpGroupForNote);
     }
@@ -213,6 +230,7 @@ public class InterpreterGroup extends ConcurrentHashMap<String, List<Interpreter
       while (remoteInterpreterProcess.referenceCount() > 0) {
         remoteInterpreterProcess.dereference();
       }
+      remoteInterpreterProcess = null;
     }
 
     allInterpreterGroups.remove(id);
@@ -223,7 +241,7 @@ public class InterpreterGroup extends ConcurrentHashMap<String, List<Interpreter
       return;
     }
 
-    List<Thread> destroyThreads = new LinkedList<Thread>();
+    List<Thread> destroyThreads = new LinkedList<>();
 
     for (final Interpreter intp : intpToDestroy) {
       Thread t = new Thread() {

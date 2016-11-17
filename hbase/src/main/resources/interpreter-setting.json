@@ -20,6 +20,9 @@
         "defaultValue": "false",
         "description": "Disable checks for unit and manual tests"
       }
+    },
+    "editor": {
+      "editOnDblClick": false
     }
   }
 ]

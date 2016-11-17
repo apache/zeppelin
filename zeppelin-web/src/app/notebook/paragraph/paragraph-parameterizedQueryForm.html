@@ -44,8 +44,8 @@ limitations under the License.
   </div>
   <!-- dynamic form -->
   <div ng-if="paragraph.settings.forms[formulaire.name].type !== 'workflow'"
-       class="form-group col-sm-6 col-md-6 col-lg-4"
-       ng-repeat="formulaire in paragraph.settings.forms"
+  <div class="form-group col-sm-6 col-md-6 col-lg-4"
+       ng-repeat="formulaire in paragraph.settings.forms | toArray | orderBy:'name.toString()'"
        ng-init="loadForm(formulaire, paragraph.settings.params)">
     <label class="control-label input-sm" ng-class="{'disable': paragraph.status == 'RUNNING' || paragraph.status == 'PENDING' }">{{formulaire.name}}</label>
     <input class="form-control input-sm"

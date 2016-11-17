@@ -32,8 +32,8 @@ import org.apache.zeppelin.display.Input.ParamOption;
  */
 public class GUI implements Serializable {
 
-  Map<String, Object> params = new HashMap<String, Object>(); // form parameters from client
-  Map<String, Input> forms = new TreeMap<String, Input>(); // form configuration
+  Map<String, Object> params = new HashMap<>(); // form parameters from client
+  Map<String, Input> forms = new TreeMap<>(); // form configuration
 
   public GUI() {
 
@@ -86,7 +86,7 @@ public class GUI implements Serializable {
       checked = defaultChecked;
     }
     forms.put(id, new Input(id, defaultChecked, "checkbox", options));
-    Collection<Object> filtered = new LinkedList<Object>();
+    Collection<Object> filtered = new LinkedList<>();
     for (Object o : checked) {
       if (isValidOption(o, options)) {
         filtered.add(o);
@@ -105,6 +105,6 @@ public class GUI implements Serializable {
   }
 
   public void clear() {
-    this.forms = new TreeMap<String, Input>();
+    this.forms = new TreeMap<>();
   }
 }
