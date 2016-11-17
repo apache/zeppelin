@@ -26,6 +26,7 @@ import com.google.cloud.dataflow.sdk.runners.inprocess.InProcessPipelineRunner
 import com.spotify.scio.repl.{ScioILoop, ScioReplClassLoader}
 import org.apache.zeppelin.interpreter.Interpreter.FormType
 import org.apache.zeppelin.interpreter.util.InterpreterOutputStream
+import org.apache.zeppelin.interpreter.RemoteWorksController
 import org.apache.zeppelin.interpreter.{Interpreter, InterpreterContext, InterpreterResult}
 import org.slf4j.LoggerFactory
 
@@ -152,6 +153,10 @@ class ScioInterpreter(property: Properties) extends Interpreter(property) {
     logger.info("Closing Scio interpreter!")
     REPL.closeInterpreter()
   }
+
+  override def getRemoteZeppelinServerController: RemoteWorksController = null
+
+  override def setRemoteZeppelinServerController(zServer: RemoteWorksController): Unit = {}
 
   override def interpret(code: String, context: InterpreterContext): InterpreterResult = {
     val paragraphId = context.getParagraphId
