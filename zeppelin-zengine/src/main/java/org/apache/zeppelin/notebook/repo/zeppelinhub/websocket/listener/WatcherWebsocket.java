@@ -16,59 +16,65 @@
  */
 package org.apache.zeppelin.notebook.repo.zeppelinhub.websocket.listener;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.notebook.repo.zeppelinhub.websocket.ZeppelinClient;
+import org.apache.zeppelin.notebook.socket.Message;
+import org.apache.zeppelin.notebook.socket.Message.OP;
+import org.apache.zeppelin.notebook.socket.WatcherMessage;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.WebSocketListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.gson.Gson;
+
 /**
- * Zeppelin websocket listener class.
+ * Zeppelin Watcher that will forward user note to ZeppelinHub.
  *
  */
-public class ZeppelinWebsocket implements WebSocketListener {
+public class WatcherWebsocket implements WebSocketListener {
   private static final Logger LOG = LoggerFactory.getLogger(ZeppelinWebsocket.class);
+  private static final Gson GSON = new Gson();
   public Session connection;
-  public String noteId;
-
-  public ZeppelinWebsocket(String noteId) {
-    this.noteId = noteId;
+  
+  public static WatcherWebsocket createInstace() {
+    return new WatcherWebsocket();
+  }
+  
+  @Override
+  public void onWebSocketBinary(byte[] payload, int offset, int len) {
   }
 
   @Override
-  public void onWebSocketBinary(byte[] arg0, int arg1, int arg2) {
-
-  }
-
-  @Override
-  public void onWebSocketClose(int code, String message) {
-    LOG.info("Zeppelin connection closed with code: {}, message: {}", code, message);
-    ZeppelinClient.getInstance().removeNoteConnection(noteId);
+  public void onWebSocketClose(int code, String reason) {
+    LOG.info("WatcherWebsocket connection closed with code: {}, message: {}", code, reason);
   }
 
   @Override
   public void onWebSocketConnect(Session session) {
-    LOG.info("Zeppelin connection opened");
+    LOG.info("WatcherWebsocket connection opened");
     this.connection = session;
+    session.getRemote().sendStringByFuture(GSON.toJson(new Message(OP.WATCHER)));
   }
 
   @Override
-  public void onWebSocketError(Throwable e) {
-    LOG.warn("Zeppelin socket connection error ", e);
-    ZeppelinClient.getInstance().removeNoteConnection(noteId);
+  public void onWebSocketError(Throwable cause) {
+    LOG.warn("WatcherWebsocket socket connection error ", cause);
   }
 
   @Override
-  public void onWebSocketText(String data) {
-    LOG.debug("Zeppelin client received Message: " + data);
-    // propagate to ZeppelinHub
+  public void onWebSocketText(String message) {
+    WatcherMessage watcherMsg = GSON.fromJson(message, WatcherMessage.class);
+    if (StringUtils.isBlank(watcherMsg.noteId)) {
+      return;
+    }
     try {
       ZeppelinClient zeppelinClient = ZeppelinClient.getInstance();
       if (zeppelinClient != null) {
-        zeppelinClient.handleMsgFromZeppelin(data, noteId);
+        zeppelinClient.handleMsgFromZeppelin(watcherMsg.message, watcherMsg.noteId);
       }
     } catch (Exception e) {
-      LOG.error("Failed to send message to ZeppelinHub: {}", e.toString());
+      LOG.error("Failed to send message to ZeppelinHub: ", e);
     }
   }
 
