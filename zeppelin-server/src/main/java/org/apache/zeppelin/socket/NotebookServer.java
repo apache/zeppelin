@@ -577,9 +577,9 @@ public class NotebookServer extends WebSocketServlet implements
     int paraIndex = note.getParagraphs().indexOf(para);
     broadcast(
         note.getId(),
-        new Message(OP.UPDATE_NOTE).put("operation", "addParagraph")
-                                   .put("paragraph", para)
-                                   .put("index", paraIndex));
+        new Message(OP.PARAGRAPH_ADDED)
+          .put("paragraph", para)
+          .put("index", paraIndex));
   }
 
   public void broadcastNoteList(AuthenticationInfo subject, HashSet userAndRoles) {
@@ -729,8 +729,7 @@ public class NotebookServer extends WebSocketServlet implements
 
       AuthenticationInfo subject = new AuthenticationInfo(fromMessage.principal);
       note.persist(subject);
-      broadcast(note.getId(), new Message(OP.UPDATE_NOTE)
-          .put("operation", "updateNote")
+      broadcast(note.getId(), new Message(OP.NOTE_UPDATED)
           .put("name", name)
           .put("config", config)
           .put("info", note.getInfo()));
@@ -951,8 +950,7 @@ public class NotebookServer extends WebSocketServlet implements
       Paragraph para = note.removeParagraph(subject.getUser(), paragraphId);
       note.persist(subject);
       if (para != null) {
-        broadcast(note.getId(), new Message(OP.UPDATE_NOTE).
-                                  put("operation", "removeParagraph").
+        broadcast(note.getId(), new Message(OP.PARAGRAPH_REMOVED).
                                   put("id", para.getId()));
       }
     }
@@ -1259,8 +1257,7 @@ public class NotebookServer extends WebSocketServlet implements
 
     note.moveParagraph(paragraphId, newIndex);
     note.persist(subject);
-    broadcast(note.getId(), new Message(OP.UPDATE_NOTE)
-              .put("operation", "moveParagraph")
+    broadcast(note.getId(), new Message(OP.PARAGRAPH_MOVED)
               .put("id", paragraphId)
               .put("index", newIndex));
   }

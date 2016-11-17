@@ -140,16 +140,14 @@
         $rootScope.$broadcast('configurationsInfo', data);
       } else if (op === 'INTERPRETER_SETTINGS') {
         $rootScope.$broadcast('interpreterSettings', data);
-      } else if (op === 'UPDATE_NOTE') {
-        if (data.operation === 'addParagraph') {
-          $rootScope.$broadcast('addParagraph', data.paragraph, data.index);
-        } else if (data.operation === 'removeParagraph') {
-          $rootScope.$broadcast('removeParagraph', data.id);
-        } else if (data.operation === 'moveParagraph') {
-          $rootScope.$broadcast('moveParagraph', data.id, data.index);
-        } else if (data.operation === 'updateNote') {
-          $rootScope.$broadcast('updateNote', data.name, data.config, data.info);
-        }
+      } else if (op === 'PARAGRAPH_ADDED') {
+        $rootScope.$broadcast('addParagraph', data.paragraph, data.index);
+      } else if (op === 'PARAGRAPH_REMOVED') {
+        $rootScope.$broadcast('removeParagraph', data.id);
+      } else if (op === 'PARAGRAPH_MOVED') {
+        $rootScope.$broadcast('moveParagraph', data.id, data.index);
+      } else if (op === 'NOTE_UPDATED') {
+        $rootScope.$broadcast('updateNote', data.name, data.config, data.info);
       }
     });
 
