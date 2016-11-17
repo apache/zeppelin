@@ -82,8 +82,7 @@ before_script:
   - tail conf/zeppelin-env.sh
 
 script:
-  - mvn -version
-  - mvn $TEST_FLAG $PROFILE --batch-mode $TEST_PROJECTS
+  - mvn -Dorg.slf4j.simpleLogger.defaultLogLevel=warn $TEST_FLAG $PROFILE -B $TEST_PROJECTS
   - rm -rf .node_modules; cp -r zeppelin-web/node_modules .node_modules
 
 after_success:
