@@ -22,6 +22,7 @@ cache:
   directories:
     - .spark-dist
     - ${HOME}/.m2
+    - ${HOME}/R
     - .node_modules
 
 addons:
