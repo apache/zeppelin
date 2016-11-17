@@ -20,7 +20,7 @@ sudo: false
 cache:
   directories:
     - .spark-dist
-    - ${HOME}/.m2/repository/.cache/maven-download-plugin
+    - ${HOME}/.m2
     - .node_modules
 
 addons:
