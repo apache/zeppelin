@@ -200,6 +200,7 @@
         tableData = new TableData();
         tableData.loadParagraphResult($scope.paragraph.result);
         $scope.tableDataColumns = tableData.columns;
+        $scope.tableDataComment = tableData.comment;
         $scope.setGraphMode($scope.getGraphMode(), false, false);
       } else if ($scope.getResultType() === 'HTML') {
         $scope.renderHtml();
@@ -1054,11 +1055,30 @@
             };
             $timeout(retryRenderer);
           } else if (refresh) {
+            console.log('Refresh data');
             // when graph options or data are changed
-            builtInViz.instance.setConfig($scope.paragraph.config.graph);
-            builtInViz.instance.render(tableData);
+            var retryRenderer = function() {
+              var targetEl = angular.element('#p' + $scope.paragraph.id + '_' + type);
+              if (targetEl.length) {
+                targetEl.height(height);
+                builtInViz.instance.setConfig($scope.paragraph.config.graph);
+                builtInViz.instance.render(tableData);
+              } else {
+                $timeout(retryRenderer, 10);
+              }
+            };
+            $timeout(retryRenderer);
           } else {
-            builtInViz.instance.activate();
+            var retryRenderer = function() {
+              var targetEl = angular.element('#p' + $scope.paragraph.id + '_' + type);
+              if (targetEl.length) {
+                targetEl.height(height);
+                builtInViz.instance.activate();
+              } else {
+                $timeout(retryRenderer, 10);
+              }
+            };
+            $timeout(retryRenderer);
           }
         }
       }
@@ -1297,15 +1317,15 @@
         dsv += tableData.columns[titleIndex].name + delimiter;
       }
       dsv = dsv.substring(0, dsv.length - 1) + '\n';
-      for (var r in $scope.paragraph.result.msgTable) {
-        var row = $scope.paragraph.result.msgTable[r];
+      for (var r in tableData.rows) {
+        var row = tableData.rows[r];
         var dsvRow = '';
         for (var index in row) {
-          var stringValue =  (row[index].value).toString();
+          var stringValue =  (row[index]).toString();
           if (stringValue.contains(delimiter)) {
             dsvRow += '"' + stringValue + '"' + delimiter;
           } else {
-            dsvRow += row[index].value + delimiter;
+            dsvRow += row[index] + delimiter;
           }
         }
         dsv += dsvRow.substring(0, dsvRow.length - 1) + '\n';
@@ -1691,6 +1711,7 @@
             tableData = new TableData();
             tableData.loadParagraphResult($scope.paragraph.result);
             $scope.tableDataColumns = tableData.columns;
+            $scope.tableDataComment = tableData.comment;
             clearUnknownColsFromGraphOption();
             selectDefaultColsForGraphOption();
           }

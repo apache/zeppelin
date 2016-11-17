@@ -29,13 +29,17 @@ import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** MarkdownInterpreter interpreter for Zeppelin. */
+/**
+ * MarkdownInterpreter interpreter for Zeppelin.
+ */
 public class Markdown extends Interpreter {
   private static final Logger LOGGER = LoggerFactory.getLogger(Markdown.class);
 
   private MarkdownParser parser;
 
-  /** Markdown Parser Type. */
+  /**
+   * Markdown Parser Type.
+   */
   public enum MarkdownParserType {
     PEGDOWN {
       @Override
@@ -78,7 +82,8 @@ public class Markdown extends Interpreter {
   }
 
   @Override
-  public void close() {}
+  public void close() {
+  }
 
   @Override
   public void setRemoteZeppelinServerController(RemoteWorksController zServer) {
@@ -104,7 +109,8 @@ public class Markdown extends Interpreter {
   }
 
   @Override
-  public void cancel(InterpreterContext context) {}
+  public void cancel(InterpreterContext context) {
+  }
 
   @Override
   public FormType getFormType() {

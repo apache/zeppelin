@@ -14,31 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.zeppelin.notebook.repo.zeppelinhub.websocket.scheduler;
 
-import org.apache.zeppelin.notebook.repo.zeppelinhub.websocket.ZeppelinClient;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+package org.apache.zeppelin.markdown;
+
+import org.parboiled.support.Var;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
- * Routine that sends PING to all connected Zeppelin ws connections.
+ * Implementation of Var to support parameter parsing.
  *
+ * @param <K> Key
+ * @param <V> Value
  */
-public class ZeppelinHeartbeat implements Runnable {
-  private static final Logger LOG = LoggerFactory.getLogger(ZeppelinHubHeartbeat.class);
-  private ZeppelinClient client;
-  
-  public static ZeppelinHeartbeat newInstance(ZeppelinClient client) {
-    return new ZeppelinHeartbeat(client);
-  }
-  
-  private ZeppelinHeartbeat(ZeppelinClient client) {
-    this.client = client;
+public class ParamVar<K, V> extends Var<Map<K, V>> {
+
+  public ParamVar() {
+    super(new HashMap<K, V>());
   }
 
-  @Override
-  public void run() {
-    LOG.debug("Sending PING to Zeppelin Websocket Server");
-    client.ping();
+  public boolean put(K key, V value) {
+    get().put(key, value);
+    return true;
   }
 }

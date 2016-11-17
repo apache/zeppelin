@@ -22,8 +22,13 @@ import static org.junit.Assert.assertEquals;
 import java.util.Properties;
 
 import org.apache.zeppelin.interpreter.InterpreterResult;
+
 import static org.apache.zeppelin.markdown.PegdownParser.wrapWithMarkdownClassDiv;
+import static org.junit.Assert.assertThat;
+
+import org.hamcrest.CoreMatchers;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -262,7 +267,6 @@ public class PegdownParserTest {
 
   @Test
   public void testAlignedTable() {
-
     String input =
         new StringBuilder()
             .append("| First Header | Second Header |         Third Header |\n")
@@ -298,5 +302,35 @@ public class PegdownParserTest {
 
     InterpreterResult result = md.interpret(input, null);
     assertEquals(wrapWithMarkdownClassDiv(expected), result.message());
+  }
+
+  @Test
+  public void testWebsequencePlugin() {
+    String input =
+        new StringBuilder()
+            .append("\n \n %%% sequence style=modern-blue\n")
+            .append("title Authentication Sequence\n")
+            .append("Alice->Bob: Authentication Request\n")
+            .append("note right of Bob: Bob thinks about it\n")
+            .append("Bob->Alice: Authentication Response\n")
+            .append("  %%%  ")
+            .toString();
+
+    InterpreterResult result = md.interpret(input, null);
+    assertThat(result.message(), CoreMatchers.containsString("<img src=\"http://www.websequencediagrams.com/?png="));
+  }
+
+  @Test
+  public void testYumlPlugin() {
+    String input = new StringBuilder()
+        .append("\n \n %%% yuml style=nofunky scale=120 format=svg\n")
+        .append("[Customer]<>-orders>[Order]\n")
+        .append("[Order]++-0..>[LineItem]\n")
+        .append("[Order]-[note:Aggregate root.]\n")
+        .append("  %%%  ")
+        .toString();
+
+    InterpreterResult result = md.interpret(input, null);
+    assertThat(result.message(), CoreMatchers.containsString("<img src=\"http://yuml.me/diagram/"));
   }
 }

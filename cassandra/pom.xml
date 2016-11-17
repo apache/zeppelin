@@ -132,6 +132,13 @@
         </dependency>
 
         <dependency>
+            <groupId>net.java.dev.jna</groupId>
+            <artifactId>jna</artifactId>
+            <version>4.2.0</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
             <groupId>info.archinnov</groupId>
             <artifactId>achilles-embedded</artifactId>
             <version>${achilles.version}</version>
@@ -144,6 +151,10 @@
                 <exclusion>
                     <groupId>ch.qos.logback</groupId>
                     <artifactId>logback-classic</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>net.java.dev.jna</groupId>
+                    <artifactId>jna</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>

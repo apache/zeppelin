@@ -214,7 +214,14 @@ public class RemoteInterpreterEventPoller extends Thread {
           RemoteZeppelinServerController remoteControlEvent = gson.fromJson(
               event.getData(), RemoteZeppelinServerController.class);
           progressRemoteZeppelinControlEvent(remoteControlEvent);
-
+        } else if (event.getType() == RemoteInterpreterEventType.META_INFOS) {
+          Map<String, String> metaInfos = gson.fromJson(event.getData(),
+              new TypeToken<Map<String, String>>() {
+              }.getType());
+          String id = interpreterGroup.getId();
+          int indexOfColon = id.indexOf(":");
+          String settingId = id.substring(0, indexOfColon);
+          listener.onMetaInfosReceived(settingId, metaInfos);
         }
         logger.debug("Event from remoteproceess {}", event.getType());
       } catch (Exception e) {

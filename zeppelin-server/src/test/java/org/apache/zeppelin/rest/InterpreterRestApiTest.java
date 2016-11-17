@@ -173,8 +173,7 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
     while (p.getStatus() != Status.FINISHED) {
       Thread.sleep(100);
     }
-    assertEquals("<p>markdown</p>\n", p.getResult().message());
-
+    assertEquals(p.getResult().message(), getSimulatedMarkdownResult("markdown"));
 
     // restart interpreter
     for (InterpreterSetting setting : ZeppelinServer.notebook.getInterpreterFactory().getInterpreterSettings(note.getId())) {
@@ -196,7 +195,7 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
     while (p.getStatus() != Status.FINISHED) {
       Thread.sleep(100);
     }
-    assertEquals("<p>markdown restarted</p>\n", p.getResult().message());
+    assertEquals(p.getResult().message(), getSimulatedMarkdownResult("markdown restarted"));
     //cleanup
     ZeppelinServer.notebook.removeNote(note.getId(), anonymous);
   }
@@ -218,7 +217,7 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
     while (p.getStatus() != Status.FINISHED) {
       Thread.sleep(100);
     }
-    assertEquals("<p>markdown</p>\n", p.getResult().message());
+    assertEquals(p.getResult().message(), getSimulatedMarkdownResult("markdown"));
 
     // get md interpreter
     InterpreterSetting mdIntpSetting = null;
@@ -274,5 +273,9 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
     DeleteMethod delete = httpDelete("/interpreter/repository/" + repoId);
     assertThat("Test delete method:", delete, isAllowed());
     delete.releaseConnection();
+  }
+
+  public static String getSimulatedMarkdownResult(String markdown) {
+    return String.format("<div class=\"markdown-body\">\n<p>%s</p>\n</div>", markdown);
   }
 }

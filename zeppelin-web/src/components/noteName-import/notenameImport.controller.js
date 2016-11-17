@@ -83,12 +83,20 @@
     vm.importNote = function() {
       $scope.note.errorText = '';
       if ($scope.note.importUrl) {
-        jQuery.getJSON($scope.note.importUrl, function(result) {
-          vm.processImportJson(result);
-        }).fail(function() {
-          $scope.note.errorText = 'Unable to Fetch URL';
-          $scope.$apply();
-        });
+        jQuery.ajax({
+          url: $scope.note.importUrl,
+          type: 'GET',
+          dataType: 'json',
+          jsonp: false,
+          xhrFields: {
+            withCredentials: false
+          },
+          error: function(xhr, ajaxOptions, thrownError) {
+            $scope.note.errorText = 'Unable to Fetch URL';
+            $scope.$apply();
+          }}).done(function(data) {
+            vm.processImportJson(data);
+          });
       } else {
         $scope.note.errorText = 'Enter URL';
         $scope.$apply();
