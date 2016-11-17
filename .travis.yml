@@ -82,7 +82,7 @@ before_script:
   - tail conf/zeppelin-env.sh
 
 script:
-  - mvn $TEST_FLAG $PROFILE -B $TEST_PROJECTS -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
+  - mvn $TEST_FLAG $PROFILE -B $TEST_PROJECTS --quiet
   - rm -rf .node_modules; cp -r zeppelin-web/node_modules .node_modules
 
 after_success:
