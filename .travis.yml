@@ -18,6 +18,7 @@ language: java
 sudo: false
 
 cache:
+  apt: true
   directories:
     - .spark-dist
     - ${HOME}/.m2
