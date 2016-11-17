@@ -51,11 +51,8 @@ zeppelin.Visualization.prototype.refresh = function() {
  * Activate. invoked when visualization is selected
  */
 zeppelin.Visualization.prototype.activate = function() {
-  console.log('active');
-  if (!this._active && this._resized) {
-    var self = this;
-    // give some time for element ready
-    setTimeout(function() {self.refresh();}, 300);
+  if (!this._active || this._resized) {
+    this.refresh();
     this._resized = false;
   }
   this._active = true;
@@ -65,7 +62,6 @@ zeppelin.Visualization.prototype.activate = function() {
  * Activate. invoked when visualization is de selected
  */
 zeppelin.Visualization.prototype.deactivate = function() {
-  console.log('deactive');
   this._active = false;
 };
 

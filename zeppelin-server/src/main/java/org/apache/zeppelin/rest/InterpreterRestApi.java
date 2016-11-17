@@ -18,9 +18,12 @@
 package org.apache.zeppelin.rest;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -28,6 +31,7 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
@@ -213,6 +217,31 @@ public class InterpreterRestApi {
           ExceptionUtils.getStackTrace(e)).build();
     }
     return new JsonResponse(Status.CREATED).build();
+  }
+
+  /**
+   * get the metainfo property value
+   */
+  @GET
+  @Path("getmetainfos/{settingId}")
+  public Response getMetaInfo(@Context HttpServletRequest req,
+      @PathParam("settingId") String settingId) {
+    String propName = req.getParameter("propName");
+    if (propName == null) {
+      return new JsonResponse<>(Status.BAD_REQUEST).build();
+    }
+    String propValue = null;
+    InterpreterSetting interpreterSetting = interpreterFactory.get(settingId);
+    Map<String, String> infos = interpreterSetting.getInfos();
+    if (infos != null) {
+      propValue = infos.get(propName);
+    }
+    Map<String, String> respMap = new HashMap<>();
+    respMap.put(propName, propValue);
+    logger.debug("Get meta info");
+    logger.debug("Interpretersetting Id: {}, property Name:{}, property value: {}", settingId,
+        propName, propValue);
+    return new JsonResponse<>(Status.OK, respMap).build();
   }
 
   /**

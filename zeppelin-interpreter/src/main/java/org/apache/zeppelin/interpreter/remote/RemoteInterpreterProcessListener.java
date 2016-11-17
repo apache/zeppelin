@@ -16,10 +16,13 @@
  */
 package org.apache.zeppelin.interpreter.remote;
 
+import java.util.Map;
+
 /**
  * Event from remoteInterpreterProcess
  */
 public interface RemoteInterpreterProcessListener {
   public void onOutputAppend(String noteId, String paragraphId, String output);
   public void onOutputUpdated(String noteId, String paragraphId, String output);
+  public void onMetaInfosReceived(String settingId, Map<String, String> metaInfos);
 }
