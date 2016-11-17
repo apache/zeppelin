@@ -32,10 +32,6 @@ addons:
     - r-cran-evaluate
     - r-cran-base64enc
 
-env:
-  global:
-    # disable `Downloading`, `Downloaded` INFO log
-    - MAVEN_OPTS="-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn"
 
 matrix:
   include:
@@ -86,7 +82,7 @@ before_script:
   - tail conf/zeppelin-env.sh
 
 script:
-  - mvn $TEST_FLAG $PROFILE -B $TEST_PROJECTS
+  - mvn $TEST_FLAG $PROFILE -B $TEST_PROJECTS -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
   - rm -rf .node_modules; cp -r zeppelin-web/node_modules .node_modules
 
 after_success:
