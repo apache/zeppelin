@@ -179,6 +179,10 @@ function start() {
 
   initialize_default_directories
 
+  if [[ ! -d "${SPARK_CACHE}/${SPARK_ARCHIVE}" && -z "${SPARK_HOME}" ]]; then
+    echo -e "\nYou do not have neither local-spark, nor external SPARK_HOME set up.\nIf you want to use Spark interpreter, you need to run get-spark at least one time or set SPARK_HOME.\n"
+  fi
+
   echo "ZEPPELIN_CLASSPATH: ${ZEPPELIN_CLASSPATH_OVERRIDES}:${CLASSPATH}" >> "${ZEPPELIN_OUTFILE}"
 
   nohup nice -n $ZEPPELIN_NICENESS $ZEPPELIN_RUNNER $JAVA_OPTS -cp $ZEPPELIN_CLASSPATH_OVERRIDES:$CLASSPATH $ZEPPELIN_MAIN >> "${ZEPPELIN_OUTFILE}" 2>&1 < /dev/null &

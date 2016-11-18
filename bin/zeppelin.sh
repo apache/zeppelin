@@ -91,4 +91,8 @@ if [[ ! -d "${ZEPPELIN_NOTEBOOK_DIR}" ]]; then
   $(mkdir -p "${ZEPPELIN_NOTEBOOK_DIR}")
 fi
 
+if [[ ! -d "${SPARK_CACHE}/${SPARK_ARCHIVE}" && -z "${SPARK_HOME}" ]]; then
+  echo -e "\nYou do not have neither local-spark, nor external SPARK_HOME set up.\nIf you want to use Spark interpreter, you need to run get-spark at least one time or set SPARK_HOME.\n"
+fi
+
 exec $ZEPPELIN_RUNNER $JAVA_OPTS -cp $ZEPPELIN_CLASSPATH_OVERRIDES:$CLASSPATH $ZEPPELIN_SERVER "$@"
