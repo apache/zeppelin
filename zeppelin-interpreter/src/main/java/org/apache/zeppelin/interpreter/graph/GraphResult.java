@@ -40,8 +40,16 @@ public class GraphResult extends InterpreterResult {
     
     private Collection<Relationship> edges;
     
+    /**
+     * The node types in the whole graph, and the related colors
+     * 
+     */
     private Map<String, String> labels;
     
+    /**
+     * The relationship types in the whole graph
+     * 
+     */
     private Set<String> types;
     
     public Graph() {}

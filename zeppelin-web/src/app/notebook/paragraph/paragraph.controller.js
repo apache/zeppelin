@@ -395,6 +395,10 @@
       return !object;
     };
 
+    $scope.isEmptyObject = function(obj) {
+      return angular.equals(obj, {});
+    };
+
     $scope.isRunning = function() {
       if ($scope.paragraph.status === 'RUNNING' || $scope.paragraph.status === 'PENDING') {
         return true;
@@ -1031,15 +1035,7 @@
 
     $scope.setNetworkLabel = function(defaultLabel, value) {
       $scope.paragraph.config.graph.network.properties[defaultLabel].selected = value;
-      var sigma = builtInVisualizations.network.instance.sigma;
-      sigma.graph.nodes()
-        .filter(function(node) {
-          return node.defaultLabel === defaultLabel;
-        })
-        .forEach(function(node) {
-          node.label = (value === 'label' ? defaultLabel : value in node ? node[value] : node.data[value]) + '';
-        });
-      sigma.refresh();
+      builtInVisualizations.network.instance.updateNodeLabel(paragraphDataset, defaultLabel, value);
     };
 
     $scope.setGraphMode = function(type, emit, refresh) {
@@ -1072,7 +1068,7 @@
             var retryRenderer = function() {
               var targetEl = angular.element('#p' + $scope.paragraph.id + '_' + type);
 
-              if (targetEl.length) {
+              if (targetEl.length && targetEl.is(':visible')) {
                 try {
                   // set height
                   targetEl.height(height);
@@ -1286,29 +1282,32 @@
     var setDefaultNetworkOption = function() {
       //TODO gestione con api networkData
       $scope.paragraph.config.graph.network.nodes = {};
-      var baseCols = ['id', 'label'];
+      var baseCols = ['id', 'defaultLabel'];
       var properties = {};
       paragraphDataset.graph.nodes.forEach(function(node) {
-        var hasLabel = 'label' in node && node.label !== '';
+        var hasLabel = 'defaultLabel' in node && node.defaultLabel !== '';
         if (!hasLabel) {
           return;
         }
-        var hasKey = hasLabel && node.label in properties;
+        var hasKey = hasLabel && node.defaultLabel in properties;
         var keys = _.uniq(Object.keys(node.data || {})
-                .concat(hasKey ? properties[node.label].keys : baseCols));
+                .concat(hasKey ? properties[node.defaultLabel].keys : baseCols));
         if (!hasKey) {
-          properties[node.label] = {selected: 'label'};
+          properties[node.defaultLabel] = {selected: 'label'};
         }
-        properties[node.label].keys = keys;
+        properties[node.defaultLabel].keys = keys;
       });
       $scope.paragraph.config.graph.network.properties = properties;
     };
 
     var refreshNetworkLabels = function() {
-      var properties = $scope.paragraph.config.graph.network.properties;
-      if (Object.keys(properties).length) {
+      var properties = $scope.paragraph.config.graph.network.properties || {};
+      if (!angular.equals({}, properties)) {
         paragraphDataset.graph.nodes
           .forEach(function(node) {
+            if (!(node.defaultLabel in properties)) {
+              return;
+            }
             var value = properties[node.defaultLabel].selected;
             node.label = (value === 'label' ?
                   node.defaultLabel : value in node ? node[value] : node.data[value]) + '';

@@ -17,10 +17,10 @@
 /**
  * Visualize data in table format
  */
-zeppelin.NetworkVisualization = function(targetEl) {
-  zeppelin.Visualization.call(this, targetEl);
+zeppelin.NetworkVisualization = function(targetEl, config) {
+  zeppelin.Visualization.call(this, targetEl, config);
   console.log('Init network viz');
-  targetEl.addClass('network');
+  this.targetEl.addClass('network');
   this.sigma = null;
 };
 
@@ -39,7 +39,6 @@ zeppelin.NetworkVisualization.prototype.render = function(networkData) {
   var containerId = this.targetEl.prop('id');
   var $window = angular.injector(['ng']).get('$window');
   var $timeout = angular.injector(['ng']).get('$timeout');
-  var _this = this;
   if (!this.sigma) {
     var Sigma = $window.sigma;
     this.sigma = new Sigma({
@@ -60,22 +59,35 @@ zeppelin.NetworkVisualization.prototype.render = function(networkData) {
     this.sigma.graph.clear();
     this.sigma.stopForceAtlas2();
   }
+  networkData.setNodesDefaults(this.config);
   this.sigma.graph.read(networkData.graph);
   this.sigma.refresh();
-  
-  var forceAtlas2Config = {barnesHutOptimize: networkData.graph.nodes.length > 50};
-  this.sigma.startForceAtlas2();
-  $timeout(function() {
-    _this.sigma.stopForceAtlas2(forceAtlas2Config);
-  }, 7000);
-  $timeout(function() {
-    _this.sigma.startNoverlap();
-  }, 3000);
+
+  if (angular.equals({}, this.config.network.nodes)) {
+    console.log('Starting forceAtlas2 & noOverlap events');
+    var nodesLength = networkData.graph.nodes.length;
+    var isBigGraph = nodesLength > 50;
+    var forceAtlas2Config = {worker: true, barnesHutOptimize: nodesLength > 50};
+    var _this = this;
+    this.sigma.startForceAtlas2(forceAtlas2Config);
+    $timeout(function() {
+      _this.sigma.stopForceAtlas2();
+      _this.sigma.startNoverlap();
+    }, isBigGraph ? 7000 : 1000);
+  }
 };
 
 zeppelin.NetworkVisualization.prototype.attachEvents = function(Sigma, containerId) {
   var $interpolate = angular.injector(['ng']).get('$interpolate');
-  Sigma.plugins.dragNodes(this.sigma, this.sigma.renderers[0]);
+  var _this = this;
+  var dragListener = Sigma.plugins.dragNodes(this.sigma, this.sigma.renderers[0]);
+  dragListener.bind('drop', function(event) {
+    var nodeId = event.data.node.id;
+    _this.config.network.nodes[nodeId] = {
+      x: event.data.node.x,
+      y: event.data.node.y
+    };
+  });
   var renderFooterOnClick = function(event) {
     var type = 'node' in event.data ? 'node' : 'edge';
     var entity = event.data[type];
@@ -97,19 +109,32 @@ zeppelin.NetworkVisualization.prototype.attachEvents = function(Sigma, container
     duration: 2000
   };
   var overlapListener = this.sigma.configNoverlap(nooverlapConf);
-  overlapListener.bind('start stop interpolate', function(e) {
-    console.log(e.type);
-    if (e.type === 'start') {
-      console.time('noverlap');
-    }
-    if (e.type === 'interpolate') {
-      console.timeEnd('noverlap');
-    }
+  overlapListener.bind('stop', function(event) {
+    _this.sigma.graph.nodes()
+      .forEach(function(node) {
+        _this.config.network.nodes[node.id] = {
+          x: node.x,
+          y: node.y
+        };
+      });
   });
 };
 
 zeppelin.NetworkVisualization.prototype.destroy = function() {
   if (this.sigma) {
-    console.log('destroying network visualization');
+    console.log('not destroy sigma visualization');//it kills performances
   }
+};
+
+zeppelin.NetworkVisualization.prototype.updateNodeLabel = function(networkData, defaultLabel, value) {
+  networkData.updateNodeLabel(defaultLabel, value);
+  this.sigma.graph.nodes()
+    .filter(function(node) {
+      return node.defaultLabel === defaultLabel;
+    })
+    .forEach(function(node) {
+      node.label = (value === 'label' ? defaultLabel : value in node ? node[value] : node.data[value]) + '';
+    });
+  this.sigma.refresh();
+  angular.extend(networkData.graph, {nodes: this.sigma.graph.nodes()});
 };

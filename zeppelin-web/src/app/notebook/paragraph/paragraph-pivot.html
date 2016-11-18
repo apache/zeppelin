@@ -172,7 +172,11 @@ limitations under the License.
   </div>
   <div class="row" ng-if="getGraphMode()=='network'">
     <div class="col-md-12">
-      <div class="btn-group network-labels network-badge" ng-repeat="(key, value) in paragraph.config.graph.network.properties">
+      <div ng-if="isEmptyObject(paragraph.config.graph.network.properties)">
+      No properties
+      </div>
+      <div class="btn-group network-labels network-badge"
+          ng-repeat="(key, value) in paragraph.config.graph.network.properties">
         <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
           {{key}} <div class="caret"></div>
         </button>
@@ -182,9 +186,6 @@ limitations under the License.
             </i> {{val}}</a>
           </li>
         </ul>
-      </div>
-      <div ng-if="paragraph.config.graph.network.properties.length == 0">
-      No properties
       </div>
     </div>
   </div>

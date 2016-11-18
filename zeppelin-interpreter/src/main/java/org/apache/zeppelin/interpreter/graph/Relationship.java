@@ -31,6 +31,10 @@ public class Relationship extends GraphEntity {
   
   private Type type;
   
+  /**
+   * The number of relations that exists between source and target
+   * 
+   */
   private int count;
   
   /**
@@ -41,17 +45,20 @@ public class Relationship extends GraphEntity {
 
   public static final String COLOR_GREY = "#D3D3D3";
 
-  public static final double DEFALUT_SIZE = 4d;
-  
   public Relationship() {}
   
   public Relationship(long id, Map<String, Object> data, long source,
       long target, String label, Type type, int count) {
-    super(id, data, label, DEFALUT_SIZE, COLOR_GREY);
+    super(id, data, label, COLOR_GREY);
     this.setSource(source);
     this.setTarget(target);
     this.setType(type);
     this.setCount(count);
+  }
+  
+  public Relationship(long id, Map<String, Object> data, long source,
+      long target, String label, Type type) {
+    this(id, data, source, target, label, type, 0);
   }
 
   public long getSource() {

@@ -30,7 +30,7 @@ describe('TableData build', function() {
 
   it('should able to create Tabledata from paragraph result', function() {
     td.loadParagraphResult({
-      type: 'TABLE',
+      type: zeppelin.DatasetTypes.TABLE,
       msg: 'key\tvalue\na\t10\nb\t20\n\nhello'
     });
 
