@@ -17,7 +17,34 @@ limitations under the License.
   style="padding-bottom: 5px;"
   resize='{"allowresize": "{{!asIframe && !viewOnly}}", "graphType": "{{getResultType()}}"}'
      resizable on-resize="resizeParagraph(width, height);">
+
+  <div id="{{paragraph.id}}_network_header"
+       ng-if="getResultType() == 'NETWORK' && networkNodes != null && getGraphMode() == 'network'">
+     <ul class="list-inline">
+       <li>Nodes <span class="badge">{{networkNodes.count}}</span>:</li>
+       <li ng-repeat="(labelName, labelColor) in networkNodes.labels" style="padding: 0">
+         <span style="background-color: {{labelColor}} !important;" class="label label-default network-badge">
+           {{labelName}}
+         </span>
+       </li>
+     </ul>
+     <ul class="list-inline">
+       <li ng-if="networkRelationships != null">Relationships <span class="badge">{{networkRelationships.count}}</span>:</li>
+       <li ng-repeat="type in networkRelationships.types" style="padding: 0">
+         <span class="label label-default network-badge">
+           {{type}}
+         </span>
+       </li>
+     </ul>
+  </div>
+
   <div ng-include src="'app/notebook/paragraph/paragraph-graph.html'"></div>
+
+  <div id="{{paragraph.id}}_network_footer"
+       ng-if="getResultType() == 'NETWORK' && getGraphMode() == 'network'">
+    <ul class="list-inline">
+    </ul>
+  </div>
 
   <div id="{{paragraph.id}}_comment"
        class="text"

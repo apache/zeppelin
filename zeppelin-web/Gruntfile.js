@@ -562,7 +562,7 @@ module.exports = function(grunt) {
     'clean:dist',
     'shell',
     'wiredep',
-    'goog-webfont-dl',
+    //'goog-webfont-dl',
     'useminPrepare',
     'concurrent:dist',
     'postcss',

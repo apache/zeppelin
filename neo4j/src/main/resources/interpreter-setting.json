@@ -28,6 +28,10 @@
         "defaultValue": "50",
         "description": "Max concurrency call from Zeppelin to Neo4j server."
       }
+    },
+    "editor": {
+      "language": "cypher",
+      "editOnDblClick": false
     }
   }
 ]

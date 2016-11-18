@@ -18,36 +18,21 @@ limitations under the License.
 
   <div ng-include src="'app/notebook/paragraph/paragraph-graphOptions.html'"></div>
 
-  All fields:
-  <div class="allFields row">
-    <ul class="noDot">
-      <li class="liVertical" ng-repeat="col in tableDataColumns">
-        <div class="btn btn-default btn-xs"
-             data-drag="true"
-             data-jqyoui-options="{revert: 'invalid', helper: 'clone'}"
-             ng-model="tableDataColumns"
-             jqyoui-draggable="{index: {{$index}}, placeholder: 'keep'}">
-           {{col.name | limitTo: 30}}{{col.name.length > 30 ? '...' : ''}}
-        </div>
-      </li>
-    </ul>
-  </div>
-
-  <div class="row" ng-if="getGraphMode()!='scatterChart'">
-    <div class="col-md-4">
-      <span class="columns lightBold">
-        Keys
-        <ul data-drop="true"
-            ng-model="paragraph.config.graph.keys"
-            jqyoui-droppable="{multiple:true, onDrop:'onGraphOptionChange()'}"
-            class="list-unstyled">
-          <li ng-repeat="item in paragraph.config.graph.keys">
-            <div class="btn btn-primary btn-xs">
-              {{item.name}} <span class="fa fa-close" ng-click="removeGraphOptionKeys($index)"></span>
-            </div>
-          </li>
-        </ul>
-      </span>
+  <div ng-if="getGraphMode()!='network'">
+  
+    All fields:
+    <div class="allFields row">
+      <ul class="noDot">
+        <li class="liVertical" ng-repeat="col in tableDataColumns">
+          <div class="btn btn-default btn-xs"
+               data-drag="true"
+               data-jqyoui-options="{revert: 'invalid', helper: 'clone'}"
+               ng-model="tableDataColumns"
+               jqyoui-draggable="{index: {{$index}}, placeholder: 'keep'}">
+             {{col.name | limitTo: 30}}{{col.name.length > 30 ? '...' : ''}}
+          </div>
+        </li>
+      </ul>
     </div>
     
     <div class="row" ng-if="getGraphMode()!='scatterChart'">
@@ -183,6 +168,7 @@ limitations under the License.
         </span>
       </div>
     </div>
+  
   </div>
   <div class="row" ng-if="getGraphMode()=='network'">
     <div class="col-md-12">

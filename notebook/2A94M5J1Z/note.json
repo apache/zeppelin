@@ -148,7 +148,7 @@
     {
       "text": "%sql \nselect age, count(1) value \nfrom bank \nwhere age \u003c ${maxAge\u003d30} \ngroup by age \norder by age",
       "user": "anonymous",
-      "dateUpdated": "Oct 26, 2016 9:43:34 PM",
+      "dateUpdated": "Nov 17, 2016 8:10:42 PM",
       "config": {
         "colWidth": 4.0,
         "graph": {
@@ -187,7 +187,8 @@
             "properties": {}
           }
         },
-        "enabled": true
+        "enabled": true,
+        "helium": {}
       },
       "settings": {
         "params": {
@@ -419,26 +420,26 @@
   "name": "Zeppelin Tutorial",
   "id": "2A94M5J1Z",
   "angularObjects": {
-    "2C2NGYJAY:shared_process": [],
-    "2BZMEJ9C7:shared_process": [],
-    "2BZXMCJ74:shared_process": [],
-    "2C14DFS9Z:shared_process": [],
-    "2C2DW6TCY:shared_process": [],
-    "2C2KYUBUK:shared_process": [],
-    "2C2AN4YQM:shared_process": [],
-    "2BYNBHTEF:shared_process": [],
-    "2C2XY636R:shared_process": [],
-    "2BYDTH74Q:shared_process": [],
-    "2C1QZJR1V:shared_process": [],
-    "2C2T72BH8:shared_process": [],
-    "2BYZ71A1P:shared_process": [],
-    "2C28TWZKJ:shared_process": [],
-    "2C1ZQWU4X:shared_process": [],
-    "2BZF5DNYH:shared_process": [],
-    "2BY5FXH41:shared_process": [],
-    "2C2U52VQY:shared_process": [],
-    "2BYR1HVQK:shared_process": [],
-    "2BYYRSS5N:shared_process": []
+    "2C4N2HGGS:shared_process": [],
+    "2C3T5PMB1:shared_process": [],
+    "2C3CQQKY9:shared_process": [],
+    "2C4HAKVGM:shared_process": [],
+    "2C4D8MUSV:shared_process": [],
+    "2C1X2TNYF:shared_process": [],
+    "2C3VY2YRF:shared_process": [],
+    "2C2K8QNX6:shared_process": [],
+    "2C259JATS:shared_process": [],
+    "2C1RK6U4C:shared_process": [],
+    "2C4EKKUE2:shared_process": [],
+    "2C239HB31:shared_process": [],
+    "2C14AAJ3A:shared_process": [],
+    "2C2UJUX2Y:shared_process": [],
+    "2C1DJSF48:shared_process": [],
+    "2C2V8N5GA:shared_process": [],
+    "2C4EM4JN3:shared_process": [],
+    "2C3T19NE1:shared_process": [],
+    "2C3JGY856:shared_process": [],
+    "2C4CV3YCG:shared_process": []
   },
   "config": {
     "looknfeel": "default"

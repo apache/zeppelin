@@ -136,6 +136,11 @@
         id: 'scatterChart',
         name: 'Scatter Chart',
         icon: 'cf cf-scatter-chart'
+      },
+      {
+        id: 'network',
+        name: 'Network',
+        icon: 'fa fa-share-alt'
       }
     ];
 
@@ -166,13 +171,17 @@
       'scatterChart': {
         class: zeppelin.ScatterchartVisualization,
         instance: undefined
+      },
+      'network': {
+        class: zeppelin.NetworkVisualization,
+        instance: undefined
       }
     };
 
     /**
      * TableData instance
      */
-    var tableData;
+    var paragraphDataset;
 
     // available columns in tabledata
     $scope.tableDataColumns = [];
@@ -195,17 +204,23 @@
 
       initializeDefault();
 
-      if ($scope.getResultType() === 'TABLE') {
-        var TableData = zeppelin.TableData;
-        tableData = new TableData();
-        tableData.loadParagraphResult($scope.paragraph.result);
-        $scope.tableDataColumns = tableData.columns;
+      var resultType = $scope.getResultType();
+      if (resultType === 'TABLE' || resultType === 'NETWORK') {
+        paragraphDataset = new zeppelin.DatasetFactory().createDataset($scope.getResultType());
+        paragraphDataset.loadParagraphResult($scope.paragraph.result);
+        $scope.tableDataColumns = paragraphDataset.columns;
+        if (resultType === 'NETWORK') {
+          $scope.networkNodes = angular.equals({}, paragraphDataset.graph.labels || {}) ?
+                  null : {count: paragraphDataset.graph.nodes.length, labels: paragraphDataset.graph.labels};
+          $scope.networkRelationships = angular.equals([], paragraphDataset.graph.types || []) ?
+                  null : {count: paragraphDataset.graph.edges.length, types: paragraphDataset.graph.types};
+        }
         $scope.setGraphMode($scope.getGraphMode(), false, false);
-      } else if ($scope.getResultType() === 'HTML') {
+      } else if (resultType === 'HTML') {
         $scope.renderHtml();
-      } else if ($scope.getResultType() === 'ANGULAR') {
+      } else if (resultType === 'ANGULAR') {
         $scope.renderAngular();
-      } else if ($scope.getResultType() === 'TEXT') {
+      } else if (resultType === 'TEXT') {
         $scope.renderText();
       }
 
@@ -339,6 +354,18 @@
 
       if (!config.graph.scatter) {
         config.graph.scatter = {};
+      }
+
+      if (!config.graph.network) {
+        config.graph.network = {};
+      }
+
+      if (!config.graph.network.nodes) {
+        config.graph.network.nodes = {};
+      }
+
+      if (!config.graph.network.properties) {
+        config.graph.network.properties = {};
       }
 
       if (config.enabled === undefined) {
@@ -1002,6 +1029,19 @@
       return cell;
     };
 
+    $scope.setNetworkLabel = function(defaultLabel, value) {
+      $scope.paragraph.config.graph.network.properties[defaultLabel].selected = value;
+      var sigma = builtInVisualizations.network.instance.sigma;
+      sigma.graph.nodes()
+        .filter(function(node) {
+          return node.defaultLabel === defaultLabel;
+        })
+        .forEach(function(node) {
+          node.label = (value === 'label' ? defaultLabel : value in node ? node[value] : node.data[value]) + '';
+        });
+      sigma.refresh();
+    };
+
     $scope.setGraphMode = function(type, emit, refresh) {
       if (emit) {
         setNewMode(type);
@@ -1040,7 +1080,7 @@
                   // instantiate visualization
                   var Visualization = builtInViz.class;
                   builtInViz.instance = new Visualization(targetEl, $scope.paragraph.config.graph);
-                  builtInViz.instance.render(tableData);
+                  builtInViz.instance.render(paragraphDataset);
                   builtInViz.instance.activate();
                   angular.element(window).resize(function() {
                     builtInViz.instance.resize();
@@ -1054,11 +1094,30 @@
             };
             $timeout(retryRenderer);
           } else if (refresh) {
+            console.log('Refresh data');
             // when graph options or data are changed
-            builtInViz.instance.setConfig($scope.paragraph.config.graph);
-            builtInViz.instance.render(tableData);
+            var retryRenderer = function() {
+              var targetEl = angular.element('#p' + $scope.paragraph.id + '_' + type);
+              if (targetEl.length) {
+                targetEl.height(height);
+                builtInViz.instance.setConfig($scope.paragraph.config.graph);
+                builtInViz.instance.render(paragraphDataset);
+              } else {
+                $timeout(retryRenderer, 10);
+              }
+            };
+            $timeout(retryRenderer);
           } else {
-            builtInViz.instance.activate();
+            var retryRenderer = function() {
+              var targetEl = angular.element('#p' + $scope.paragraph.id + '_' + type);
+              if (targetEl.length) {
+                targetEl.height(height);
+                builtInViz.instance.activate();
+              } else {
+                $timeout(retryRenderer, 10);
+              }
+            };
+            $timeout(retryRenderer);
           }
         }
       }
@@ -1083,7 +1142,8 @@
 
     $scope.isGraphMode = function(graphName) {
       var activeAppId = _.get($scope.paragraph.config, 'helium.activeApp');
-      if ($scope.getResultType() === 'TABLE' && $scope.getGraphMode() === graphName && !activeAppId) {
+      if (($scope.getResultType() === 'TABLE' || $scope.getResultType() === 'NETWORK') &&
+          $scope.getGraphMode() === graphName && !activeAppId) {
         return true;
       } else {
         return false;
@@ -1159,9 +1219,9 @@
         for (var i = 0; i < list.length; i++) {
           // remove non existing column
           var found = false;
-          for (var j = 0; j < tableData.columns.length; j++) {
+          for (var j = 0; j < paragraphDataset.columns.length; j++) {
             var a = list[i];
-            var b = tableData.columns[j];
+            var b = paragraphDataset.columns[j];
             if (a.index === b.index && a.name === b.name) {
               found = true;
               break;
@@ -1177,9 +1237,9 @@
         for (var f in fields) {
           if (fields[f]) {
             var found = false;
-            for (var i = 0; i < tableData.columns.length; i++) {
+            for (var i = 0; i < paragraphDataset.columns.length; i++) {
               var a = fields[f];
-              var b = tableData.columns[i];
+              var b = paragraphDataset.columns[i];
               if (a.index === b.index && a.name === b.name) {
                 found = true;
                 break;
@@ -1205,21 +1265,54 @@
 
     /* select default key and value if there're none selected */
     var selectDefaultColsForGraphOption = function() {
-      if ($scope.paragraph.config.graph.keys.length === 0 && tableData.columns.length > 0) {
-        $scope.paragraph.config.graph.keys.push(tableData.columns[0]);
+      if ($scope.paragraph.config.graph.keys.length === 0 && paragraphDataset.columns.length > 0) {
+        $scope.paragraph.config.graph.keys.push(paragraphDataset.columns[0]);
       }
 
-      if ($scope.paragraph.config.graph.values.length === 0 && tableData.columns.length > 1) {
-        $scope.paragraph.config.graph.values.push(tableData.columns[1]);
+      if ($scope.paragraph.config.graph.values.length === 0 && paragraphDataset.columns.length > 1) {
+        $scope.paragraph.config.graph.values.push(paragraphDataset.columns[1]);
       }
 
       if (!$scope.paragraph.config.graph.scatter.xAxis && !$scope.paragraph.config.graph.scatter.yAxis) {
-        if (tableData.columns.length > 1) {
-          $scope.paragraph.config.graph.scatter.xAxis = tableData.columns[0];
-          $scope.paragraph.config.graph.scatter.yAxis = tableData.columns[1];
-        } else if (tableData.columns.length === 1) {
-          $scope.paragraph.config.graph.scatter.xAxis = tableData.columns[0];
+        if (paragraphDataset.columns.length > 1) {
+          $scope.paragraph.config.graph.scatter.xAxis = paragraphDataset.columns[0];
+          $scope.paragraph.config.graph.scatter.yAxis = paragraphDataset.columns[1];
+        } else if (paragraphDataset.columns.length === 1) {
+          $scope.paragraph.config.graph.scatter.xAxis = paragraphDataset.columns[0];
         }
+      }
+    };
+
+    var setDefaultNetworkOption = function() {
+      //TODO gestione con api networkData
+      $scope.paragraph.config.graph.network.nodes = {};
+      var baseCols = ['id', 'label'];
+      var properties = {};
+      paragraphDataset.graph.nodes.forEach(function(node) {
+        var hasLabel = 'label' in node && node.label !== '';
+        if (!hasLabel) {
+          return;
+        }
+        var hasKey = hasLabel && node.label in properties;
+        var keys = _.uniq(Object.keys(node.data || {})
+                .concat(hasKey ? properties[node.label].keys : baseCols));
+        if (!hasKey) {
+          properties[node.label] = {selected: 'label'};
+        }
+        properties[node.label].keys = keys;
+      });
+      $scope.paragraph.config.graph.network.properties = properties;
+    };
+
+    var refreshNetworkLabels = function() {
+      var properties = $scope.paragraph.config.graph.network.properties;
+      if (Object.keys(properties).length) {
+        paragraphDataset.graph.nodes
+          .forEach(function(node) {
+            var value = properties[node.defaultLabel].selected;
+            node.label = (value === 'label' ?
+                  node.defaultLabel : value in node ? node[value] : node.data[value]) + '';
+          });
       }
     };
 
@@ -1293,19 +1386,19 @@
 
     $scope.exportToDSV = function(delimiter) {
       var dsv = '';
-      for (var titleIndex in tableData.columns) {
-        dsv += tableData.columns[titleIndex].name + delimiter;
+      for (var titleIndex in paragraphDataset.columns) {
+        dsv += paragraphDataset.columns[titleIndex].name + delimiter;
       }
       dsv = dsv.substring(0, dsv.length - 1) + '\n';
-      for (var r in $scope.paragraph.result.msgTable) {
-        var row = $scope.paragraph.result.msgTable[r];
+      for (var r in paragraphDataset.rows) {
+        var row = paragraphDataset.rows[r];
         var dsvRow = '';
         for (var index in row) {
-          var stringValue =  (row[index].value).toString();
+          var stringValue =  (row[index]).toString();
           if (stringValue.contains(delimiter)) {
             dsvRow += '"' + stringValue + '"' + delimiter;
           } else {
-            dsvRow += row[index].value + delimiter;
+            dsvRow += row[index] + delimiter;
           }
         }
         dsv += dsvRow.substring(0, dsvRow.length - 1) + '\n';
@@ -1685,14 +1778,20 @@
           $scope.paragraph.config = data.paragraph.config;
         }
 
-        if (newType === 'TABLE') {
-          if (oldType !== 'TABLE' || resultRefreshed) {
-            var TableData = zeppelin.TableData;
-            tableData = new TableData();
-            tableData.loadParagraphResult($scope.paragraph.result);
-            $scope.tableDataColumns = tableData.columns;
+        if (newType === 'TABLE' || newType === 'NETWORK') {
+          if ((oldType !== 'TABLE' && oldType !== 'NETWORK') || resultRefreshed) {
+            paragraphDataset = new zeppelin.DatasetFactory().createDataset(newType);
+            paragraphDataset.loadParagraphResult($scope.paragraph.result);
+            $scope.tableDataColumns = paragraphDataset.columns;
+            $scope.tableDataComment = paragraphDataset.comment;
             clearUnknownColsFromGraphOption();
             selectDefaultColsForGraphOption();
+          }
+          if (newType === 'NETWORK') {
+            if (resultRefreshed) {
+              setDefaultNetworkOption();
+            }
+            refreshNetworkLabels();
           }
           /** User changed the chart type? */
           if (oldGraphMode !== newGraphMode) {

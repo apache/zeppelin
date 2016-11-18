@@ -71,6 +71,7 @@
         "build/sigma.min.js",
         "build/plugins/sigma.plugins.animate.min.js",
         "build/plugins/sigma.layout.noverlap.min.js",
+        "build/plugins/sigma.layout.forceAtlas2.min.js",
         "build/plugins/sigma.plugins.dragNodes.min.js",
         "build/plugins/sigma.renderers.edgeLabels.min.js",
         "build/plugins/sigma.renderers.parallelEdges.min.js"

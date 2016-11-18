@@ -35,6 +35,7 @@
 
   <properties>
     <scio.version>0.2.4</scio.version>
+    <checkstyle.skip>true</checkstyle.skip>
   </properties>
 
   <dependencies>

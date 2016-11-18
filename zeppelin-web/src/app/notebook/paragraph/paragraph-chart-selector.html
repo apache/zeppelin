@@ -18,17 +18,11 @@ limitations under the License.
      style="margin-bottom: 10px;">
 
   <button type="button" class="btn btn-default btn-sm"
-          ng-if="paragraph.result.type == 'TABLE'"
+          ng-if="paragraph.result.type == 'TABLE' || paragraph.result.type == 'NETWORK'"
           ng-repeat="viz in builtInTableDataVisualizationList track by $index"
           ng-class="{'active' : isGraphMode(viz.id)}"
           ng-click="setGraphMode(viz.id, true, false)"
           tooltip="{{viz.name}}" tooltip-placement="bottom"><i ng-class="viz.icon"></i>
-  </button>
-  <button type="button" class="btn btn-default btn-sm"
-          ng-if="paragraph.result.type == 'NETWORK'"
-          ng-class="{'active': isGraphMode('network')}"
-          ng-click="setGraphMode('network', true)"
-          tooltip="Network" tooltip-placement="bottom"><i class="fa fa-share-alt"></i>
   </button>
 
   <button type="button"
@@ -97,7 +91,7 @@ limitations under the License.
 </div>
 
 <span
-   ng-if="(getResultType()=='TABLE' || getResultType() == 'NETWORK') && !paragraph.config.helium.activeApp && getGraphMode()!='table' && !asIframe && !viewOnly"
+   ng-if="(getResultType() == 'TABLE' || getResultType() == 'NETWORK') && !paragraph.config.helium.activeApp && getGraphMode()!='table' && !asIframe && !viewOnly"
    style="margin-left:10px; cursor:pointer; display: inline-block; vertical-align:top; position: relative; line-height:30px;">
   <a class="btnText" ng-click="toggleGraphOption()">
     settings <span ng-class="paragraph.config.graph.optionOpen ? 'fa fa-caret-up' : 'fa fa-caret-down'"></span>

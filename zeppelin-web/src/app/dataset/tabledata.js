@@ -20,10 +20,13 @@ var zeppelin = zeppelin || {};
  * Create table data object from paragraph table type result
  */
 zeppelin.TableData = function(columns, rows, comment) {
+  zeppelin.Dataset.call(this);
   this.columns = columns || [];
   this.rows = rows || [];
   this.comment = comment || '';
 };
+
+zeppelin.TableData.prototype = Object.create(zeppelin.Dataset.prototype);
 
 zeppelin.TableData.prototype.loadParagraphResult = function(paragraphResult) {
   if (!paragraphResult || paragraphResult.type !== 'TABLE') {
@@ -34,10 +37,9 @@ zeppelin.TableData.prototype.loadParagraphResult = function(paragraphResult) {
   var columnNames = [];
   var rows = [];
   var array = [];
-  var textRows = paragraphResult.msg.split('\n');
   var comment = '';
   var commentRow = false;
-
+  var textRows = paragraphResult.msg.split('\n');
   for (var i = 0; i < textRows.length; i++) {
     var textRow = textRows[i];
     if (commentRow) {
@@ -69,6 +71,7 @@ zeppelin.TableData.prototype.loadParagraphResult = function(paragraphResult) {
       array.push(cols2);
     }
   }
+
   this.comment = comment;
   this.columns = columnNames;
   this.rows = rows;
