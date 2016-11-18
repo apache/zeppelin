@@ -18,9 +18,9 @@
 package org.apache.zeppelin.rest;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Map;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import org.apache.commons.httpclient.methods.DeleteMethod;
@@ -42,7 +42,6 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 
 import static org.junit.Assert.*;
 
@@ -73,13 +72,12 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
   public void getAvailableInterpreters() throws IOException {
     // when
     GetMethod get = httpGet("/interpreter");
+    JsonObject body = getBodyFieldFromResponse(get.getResponseBodyAsString());
 
     // then
     assertThat(get, isAllowed());
-    Map<String, Object> resp = gson.fromJson(get.getResponseBodyAsString(), new TypeToken<Map<String, Object>>() {
-    }.getType());
-    Map<String, Object> body = (Map<String, Object>) resp.get("body");
-    assertEquals(ZeppelinServer.notebook.getInterpreterFactory().getAvailableInterpreterSettings().size(), body.size());
+    assertEquals(ZeppelinServer.notebook.getInterpreterFactory().getAvailableInterpreterSettings().size(),
+        body.entrySet().size());
     get.releaseConnection();
   }
 
@@ -87,11 +85,10 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
   public void getSettings() throws IOException {
     // when
     GetMethod get = httpGet("/interpreter/setting");
-
     // then
-    Map<String, Object> resp = gson.fromJson(get.getResponseBodyAsString(), new TypeToken<Map<String, Object>>() {
-    }.getType());
     assertThat(get, isAllowed());
+    // DO NOT REMOVE: implies that body is properly parsed as an array
+    JsonArray body = getArrayBodyFieldFromResponse(get.getResponseBodyAsString());
     get.releaseConnection();
   }
 
@@ -100,10 +97,10 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
     // when
     String nonExistInterpreterSettingId = "apache_.zeppelin_1s_.aw3some$";
     GetMethod get = httpGet("/interpreter/setting/" + nonExistInterpreterSettingId);
-    get.releaseConnection();
 
-    // when
+    // then
     assertThat("Test get method:", get, isNotFound());
+    get.releaseConnection();
   }
 
   @Test
@@ -160,33 +157,29 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
 
   @Test
   public void testInterpreterAutoBinding() throws IOException {
-    // create note
+    // when
     Note note = ZeppelinServer.notebook.createNote(anonymous);
-
-    // check interpreter is binded
     GetMethod get = httpGet("/notebook/interpreter/bind/" + note.getId());
     assertThat(get, isAllowed());
     get.addRequestHeader("Origin", "http://localhost");
-    Map<String, Object> resp = gson.fromJson(get.getResponseBodyAsString(), new TypeToken<Map<String, Object>>() {
-    }.getType());
-    List<Map<String, String>> body = (List<Map<String, String>>) resp.get("body");
-    assertTrue(0 < body.size());
+    JsonArray body = getArrayBodyFieldFromResponse(get.getResponseBodyAsString());
 
+    // then: check interpreter is binded
+    assertTrue(0 < body.size());
     get.releaseConnection();
-    //cleanup
     ZeppelinServer.notebook.removeNote(note.getId(), anonymous);
   }
 
   @Test
   public void testInterpreterRestart() throws IOException, InterruptedException {
-    // create new note
+    // when: create new note
     Note note = ZeppelinServer.notebook.createNote(anonymous);
     note.addParagraph();
     Paragraph p = note.getLastParagraph();
     Map config = p.getConfig();
     config.put("enabled", true);
 
-    // run markdown paragraph
+    // when: run markdown paragraph
     p.setConfig(config);
     p.setText("%md markdown");
     p.setAuthenticationInfo(anonymous);
@@ -196,10 +189,10 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
     }
     assertEquals(p.getResult().message(), getSimulatedMarkdownResult("markdown"));
 
-    // restart interpreter
+    // when: restart interpreter
     for (InterpreterSetting setting : ZeppelinServer.notebook.getInterpreterFactory().getInterpreterSettings(note.getId())) {
       if (setting.getName().equals("md")) {
-        // Call Restart Interpreter REST API
+        // call restart interpreter API
         PutMethod put = httpPut("/interpreter/setting/restart/" + setting.getId(), "");
         assertThat("test interpreter restart:", put, isAllowed());
         put.releaseConnection();
@@ -207,7 +200,7 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
       }
     }
 
-    // run markdown paragraph, again
+    // when: run markdown paragraph, again
     p = note.addParagraph();
     p.setConfig(config);
     p.setText("%md markdown restarted");
@@ -216,21 +209,22 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
     while (p.getStatus() != Status.FINISHED) {
       Thread.sleep(100);
     }
+
+    // then
     assertEquals(p.getResult().message(), getSimulatedMarkdownResult("markdown restarted"));
-    //cleanup
     ZeppelinServer.notebook.removeNote(note.getId(), anonymous);
   }
 
   @Test
   public void testRestartInterpreterPerNote() throws IOException, InterruptedException {
-    // create new note
+    // when: create new note
     Note note = ZeppelinServer.notebook.createNote(anonymous);
     note.addParagraph();
     Paragraph p = note.getLastParagraph();
     Map config = p.getConfig();
     config.put("enabled", true);
 
-    // run markdown paragraph.
+    // when: run markdown paragraph.
     p.setConfig(config);
     p.setText("%md markdown");
     p.setAuthenticationInfo(anonymous);
@@ -240,7 +234,7 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
     }
     assertEquals(p.getResult().message(), getSimulatedMarkdownResult("markdown"));
 
-    // get md interpreter
+    // when: get md interpreter
     InterpreterSetting mdIntpSetting = null;
     for (InterpreterSetting setting : ZeppelinServer.notebook.getInterpreterFactory().getInterpreterSettings(note.getId())) {
       if (setting.getName().equals("md")) {
@@ -281,7 +275,7 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
 
   @Test
   public void testAddDeleteRepository() throws IOException {
-    // Call create repository REST API
+    // Call create repository API
     String repoId = "securecentral";
     String jsonRequest = "{\"id\":\"" + repoId +
         "\",\"url\":\"https://repo1.maven.org/maven2\",\"snapshot\":\"false\"}";
@@ -290,16 +284,23 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
     assertThat("Test create method:", post, isCreated());
     post.releaseConnection();
 
-    // Call delete repository REST API
+    // Call delete repository API
     DeleteMethod delete = httpDelete("/interpreter/repository/" + repoId);
     assertThat("Test delete method:", delete, isAllowed());
     delete.releaseConnection();
   }
 
+  public JsonObject getBodyFieldFromResponse(String rawResponse) {
+    JsonObject response = gson.fromJson(rawResponse, JsonElement.class).getAsJsonObject();
+    return response.getAsJsonObject("body");
+  }
+  public JsonArray getArrayBodyFieldFromResponse(String rawResponse) {
+    JsonObject response = gson.fromJson(rawResponse, JsonElement.class).getAsJsonObject();
+    return response.getAsJsonArray("body");
+  }
+
   public InterpreterSetting convertResponseToInterpreterSetting(String rawResponse) {
-    JsonObject response = gson.fromJson(rawResponse, JsonElement.class)
-        .getAsJsonObject();
-    return gson.fromJson(response.getAsJsonObject("body"), InterpreterSetting.class);
+    return gson.fromJson(getBodyFieldFromResponse(rawResponse), InterpreterSetting.class);
   }
 
   public static String getSimulatedMarkdownResult(String markdown) {
