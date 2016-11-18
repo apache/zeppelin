@@ -59,6 +59,31 @@ To access the help, type **help()**
 ## Python modules
 The interpreter can use all modules already installed (with pip, easy_install...)
 
+## Conda
+[Conda](http://conda.pydata.org/) is an package management system and environment management system for python.
+`%python.conda` interpreter lets you change between environments.
+
+#### Usage
+
+List your environments
+
+```
+%python.conda
+```
+
+Activate an environment
+
+```
+%python.conda activate [ENVIRONMENT_NAME]
+```
+
+Deactivate
+
+```
+%python.conda deactivate
+```
+
+
 ## Using Zeppelin Dynamic Forms
 You can leverage [Zeppelin Dynamic Form]({{BASE_PATH}}/manual/dynamicform.html) inside your Python code.
 
