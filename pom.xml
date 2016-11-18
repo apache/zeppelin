@@ -75,7 +75,10 @@
     <module>elasticsearch</module>
     <module>bigquery</module>
     <module>alluxio</module>
+<<<<<<< HEAD
     <module>scio</module>
+=======
+>>>>>>> refs/remotes/origin/master
     <module>neo4j</module>
     <module>zeppelin-web</module>
     <module>zeppelin-server</module>
