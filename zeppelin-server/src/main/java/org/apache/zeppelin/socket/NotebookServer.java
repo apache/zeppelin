@@ -68,6 +68,9 @@ import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.util.WatcherSecurityKey;
 import org.apache.zeppelin.utils.InterpreterBindingUtils;
 import org.apache.zeppelin.utils.SecurityUtils;
+import org.apache.zeppelin.workflow.WorkflowJob;
+import org.apache.zeppelin.workflow.WorkflowJobItem;
+import org.apache.zeppelin.workflow.WorkflowManager;
 import org.eclipse.jetty.websocket.servlet.WebSocketServlet;
 import org.eclipse.jetty.websocket.servlet.WebSocketServletFactory;
 import org.quartz.SchedulerException;
@@ -104,6 +107,7 @@ public class NotebookServer extends WebSocketServlet implements
   Gson gson = new GsonBuilder().setDateFormat("yyyy-MM-dd'T'HH:mm:ssZ").create();
   final Map<String, List<NotebookSocket>> noteSocketMap = new HashMap<>();
   final Queue<NotebookSocket> connectedSockets = new ConcurrentLinkedQueue<>();
+  public WorkflowManager workflowManager = new WorkflowManager();
   final Map<String, Queue<NotebookSocket>> userConnectedSockets = new ConcurrentHashMap<>();
 
   /**
@@ -1306,6 +1310,50 @@ public class NotebookServer extends WebSocketServlet implements
     Map<String, Object> params = (Map<String, Object>) fromMessage
        .get("params");
     p.settings.setParams(params);
+
+    List<Map<String, String>> workflow = (List<Map<String, String>>) fromMessage.get("workflowJob");
+
+    if (workflow != null && workflow.size() > 0) {
+      synchronized (workflowManager) {
+        workflowManager.setWorkflow(noteId, noteId, paragraphId);
+        WorkflowJob workflowJob = workflowManager.getWorkflow(noteId);
+        WorkflowJobItem parentItem = null;
+        WorkflowJobItem newJob;
+        for (Map<String, String> workflowJobItem : workflow) {
+          parentItem = workflowJob.getWorkflowJobItemLast();
+          String newJobNotebookId = workflowJobItem.get("notebookId");
+          String newJobParagraphId = workflowJobItem.get("paragraphId");
+
+          if (parentItem == null || newJobNotebookId == null || newJobParagraphId == null) {
+            continue;
+          }
+
+          Note noteCheckObject = notebook.getNote(newJobNotebookId);
+
+          if (noteCheckObject == null) {
+            continue;
+          }
+
+          if (noteCheckObject.getParagraph(newJobParagraphId) == null) {
+            if (newJobParagraphId.equals("*") == false) {
+              continue;
+            }
+            // run to all paragraph in note.
+            List<Paragraph> allParagaraphsInNote = noteCheckObject.getParagraphs();
+            for (Paragraph jobParagraph : allParagaraphsInNote) {
+              newJob = new WorkflowJobItem(newJobNotebookId, jobParagraph.getId());
+              parentItem.setOnSuccessJob(newJob);
+              parentItem = workflowJob.getWorkflowJobItemLast();
+            }
+          } else {
+            // run to each paragraph.
+            newJob = new WorkflowJobItem(newJobNotebookId, newJobParagraphId);
+            parentItem.setOnSuccessJob(newJob);
+          }
+        }
+      }
+    }
+
     Map<String, Object> config = (Map<String, Object>) fromMessage
        .get("config");
     p.setConfig(config);
@@ -1616,6 +1664,7 @@ public class NotebookServer extends WebSocketServlet implements
 
     @Override
     public void afterStatusChange(Job job, Status before, Status after) {
+
       if (after == Status.ERROR) {
         if (job.getException() != null) {
           LOG.error("Error", job.getException());
@@ -1631,6 +1680,42 @@ public class NotebookServer extends WebSocketServlet implements
           LOG.error(e.toString(), e);
         }
       }
+
+      notebookServer.workflowManager.setJobNotify(after, note.getId(), job.getId());
+
+      if (!after.isPending() && !after.isRunning()) {
+        Map<String, List<String>> waitJobLists;
+        WorkflowManager workflowManager = notebookServer.workflowManager;
+        synchronized (workflowManager) {
+          waitJobLists = workflowManager.getNextJob(note.getId(), job.getId());
+          if (waitJobLists != null) {
+            for (String notebookId : waitJobLists.keySet()) {
+              String paragraphId = waitJobLists.get(notebookId).get(0);
+              Note nextNote = notebookServer.notebook().getNote(notebookId);
+
+              if (nextNote == null) {
+                workflowManager.setJobNotify(Status.ERROR, notebookId, paragraphId);
+                continue;
+              }
+
+              Paragraph paragraph = nextNote.getParagraph(paragraphId);
+              if (paragraph == null) {
+                workflowManager.setJobNotify(Status.ERROR, notebookId, paragraphId);
+                continue;
+              }
+
+              try {
+                nextNote.persist(null);
+              } catch (IOException e) {
+                LOG.error(e.toString(), e);
+              }
+              nextNote.run(paragraphId);
+              workflowManager.setJobNotify(Status.RUNNING, notebookId, paragraphId);
+            }
+          }
+        }
+      }
+
       notebookServer.broadcastNote(note);
 
       try {
@@ -1652,7 +1737,6 @@ public class NotebookServer extends WebSocketServlet implements
           .put("noteId", paragraph.getNote().getId())
           .put("paragraphId", paragraph.getId())
           .put("data", output);
-
       notebookServer.broadcast(paragraph.getNote().getId(), msg);
     }
 
@@ -1668,6 +1752,9 @@ public class NotebookServer extends WebSocketServlet implements
           .put("noteId", paragraph.getNote().getId())
           .put("paragraphId", paragraph.getId())
           .put("data", output);
+
+      LOG.info("append updated {} note {} para {}",
+        paragraph.getStatus(), paragraph.getNote().getId(), paragraph.getId());
 
       notebookServer.broadcast(paragraph.getNote().getId(), msg);
     }

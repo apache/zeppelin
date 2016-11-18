@@ -12,6 +12,7 @@
  * limitations under the License.
  */
 'use strict';
+
 (function() {
 
   angular.module('zeppelinWebApp').controller('ParagraphCtrl', ParagraphCtrl);
@@ -36,6 +37,7 @@
   function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $location,
                          $timeout, $compile, $http, $q, websocketMsgSrv,
                          baseUrlSrv, ngToast, saveAsService) {
+
     var ANGULAR_FUNCTION_OBJECT_NAME_PREFIX = '_Z_ANGULAR_FUNC_';
     $scope.parentNote = null;
     $scope.paragraph = null;
@@ -58,7 +60,7 @@
           if (filtered.length === 1) {
             var paragraph = filtered[0];
             websocketMsgSrv.runParagraph(paragraph.id, paragraph.title, paragraph.text,
-                paragraph.config, paragraph.settings.params);
+                paragraph.config, paragraph.settings.params, paragraph.settings.workflowJob);
           } else {
             ngToast.danger({content: 'Cannot find a paragraph with id \'' + paragraphId + '\'',
               verticalPosition: 'top', dismissOnTimeout: false});
@@ -248,9 +250,87 @@
           try {
             angular.element('#p' + $scope.paragraph.id + '_angular').html($scope.paragraph.result.msg);
 
+<<<<<<< HEAD
+  $scope.isRunning = function() {
+    if ($scope.paragraph.status === 'RUNNING' || $scope.paragraph.status === 'PENDING') {
+      return true;
+    } else {
+      return false;
+    }
+  };
+
+  $scope.cancelParagraph = function() {
+    console.log('Cancel %o', $scope.paragraph.id);
+    websocketMsgSrv.cancelParagraphRun($scope.paragraph.id);
+  };
+
+  $scope.runParagraph = function(data) {
+    websocketMsgSrv.runParagraph($scope.paragraph.id, $scope.paragraph.title,
+                                 data, $scope.paragraph.config, $scope.paragraph.settings.params,
+                                 $scope.paragraph.settings.workflowJob);
+    $scope.originalText = angular.copy(data);
+    $scope.dirtyText = undefined;
+  };
+
+  $scope.saveParagraph = function() {
+    if ($scope.dirtyText === undefined || $scope.dirtyText === $scope.originalText) {
+      return;
+    }
+    commitParagraph($scope.paragraph.title, $scope.dirtyText, $scope.paragraph.config,
+      $scope.paragraph.settings.params);
+    $scope.originalText = angular.copy($scope.dirtyText);
+    $scope.dirtyText = undefined;
+  };
+
+  $scope.toggleEnableDisable = function() {
+    $scope.paragraph.config.enabled = $scope.paragraph.config.enabled ? false : true;
+    var newParams = angular.copy($scope.paragraph.settings.params);
+    var newConfig = angular.copy($scope.paragraph.config);
+    commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
+  };
+
+  $scope.run = function() {
+    var editorValue = $scope.editor.getValue();
+    if (editorValue) {
+      if (!($scope.paragraph.status === 'RUNNING' || $scope.paragraph.status === 'PENDING')) {
+        $scope.runParagraph(editorValue);
+      }
+    }
+  };
+
+  $scope.moveUp = function() {
+    $scope.$emit('moveParagraphUp', $scope.paragraph.id);
+  };
+
+  $scope.moveDown = function() {
+    $scope.$emit('moveParagraphDown', $scope.paragraph.id);
+  };
+
+  $scope.insertNew = function(position) {
+    $scope.$emit('insertParagraph', $scope.paragraph.id, position || 'below');
+  };
+
+  $scope.removeParagraph = function() {
+    var paragraphs = angular.element('div[id$="_paragraphColumn_main"]');
+    if (paragraphs[paragraphs.length - 1].id.startsWith($scope.paragraph.id)) {
+      BootstrapDialog.alert({
+        closable: true,
+        message: 'The last paragraph can\'t be deleted.'
+      });
+    } else {
+      BootstrapDialog.confirm({
+        closable: true,
+        title: '',
+        message: 'Do you want to delete this paragraph?',
+        callback: function(result) {
+          if (result) {
+            console.log('Remove paragraph');
+            websocketMsgSrv.removeParagraph($scope.paragraph.id);
+=======
             $compile(angular.element('#p' + $scope.paragraph.id + '_angular').contents())(paragraphScope);
           } catch (err) {
             console.log('ANGULAR rendering error %o', err);
+>>>>>>> master
           }
         } else {
           $timeout(retryRenderer, 10);

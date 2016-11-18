@@ -12,6 +12,7 @@
  * limitations under the License.
  */
 'use strict';
+
 (function() {
 
   angular.module('zeppelinWebApp').service('websocketMsgSrv', websocketMsgSrv);
@@ -111,7 +112,7 @@
         websocketEvents.sendNewEvent({op: 'CANCEL_PARAGRAPH', data: {id: paragraphId}});
       },
 
-      runParagraph: function(paragraphId, paragraphTitle, paragraphData, paragraphConfig, paragraphParams) {
+      runParagraph: function(paragraphId, paragraphTitle, paragraphData, paragraphConfig, paragraphParams, workflowJob) {
         websocketEvents.sendNewEvent({
           op: 'RUN_PARAGRAPH',
           data: {
@@ -119,7 +120,8 @@
             title: paragraphTitle,
             paragraph: paragraphData,
             config: paragraphConfig,
-            params: paragraphParams
+            params: paragraphParams,
+            workflowJob: workflowJob ? workflowJob : null
           }
         });
       },
