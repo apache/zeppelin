@@ -35,6 +35,7 @@ public class PythonCondaInterpreter extends Interpreter {
   Pattern listPattern = Pattern.compile("env\\s*list\\s?");
   Pattern activatePattern = Pattern.compile("activate\\s*(.*)");
   Pattern deactivatePattern = Pattern.compile("deactivate");
+  Pattern helpPattern = Pattern.compile("help");
   String pythonCommand = null;
 
   public PythonCondaInterpreter(Properties property) {
@@ -53,23 +54,31 @@ public class PythonCondaInterpreter extends Interpreter {
 
   @Override
   public InterpreterResult interpret(String st, InterpreterContext context) {
+    InterpreterOutput out = context.out;
+
     Matcher listMatcher = listPattern.matcher(st);
     Matcher activateMatcher = activatePattern.matcher(st);
     Matcher deactivateMatcher = deactivatePattern.matcher(st);
+    Matcher helpMatcher = helpPattern.matcher(st);
+
     if (st == null || st.isEmpty() || listMatcher.matches()) {
-      return listEnv();
+      listEnv(out);
+      return new InterpreterResult(InterpreterResult.Code.SUCCESS);
     } else if (activateMatcher.matches()) {
       String envName = activateMatcher.group(1);
       pythonCommand = "conda run -n " + envName + " \"python -iu\"";
       restartPythonProcess();
-      return new InterpreterResult(InterpreterResult.Code.SUCCESS, envName + " activated");
+      return new InterpreterResult(InterpreterResult.Code.SUCCESS, "\"" + envName + "\" activated");
     } else if (deactivateMatcher.matches()) {
       pythonCommand = null;
       restartPythonProcess();
-      return new InterpreterResult(InterpreterResult.Code.SUCCESS, "conda deactivated");
+      return new InterpreterResult(InterpreterResult.Code.SUCCESS, "Deactivated");
+    } else if (helpMatcher.matches()) {
+      printUsage(out);
+      return new InterpreterResult(InterpreterResult.Code.SUCCESS);
+    } else {
+      return new InterpreterResult(InterpreterResult.Code.ERROR, "Not supported command: " + st);
     }
-
-    return new InterpreterResult(InterpreterResult.Code.ERROR, "Not supported command: " + st);
   }
 
   private void restartPythonProcess() {
@@ -101,13 +110,15 @@ public class PythonCondaInterpreter extends Interpreter {
     return pythonCommand;
   }
 
-  private InterpreterResult listEnv() {
+  private void listEnv(InterpreterOutput out) {
     StringBuilder sb = new StringBuilder();
     try {
       int exit = runCommand(sb, "conda", "env", "list");
       if (exit == 0) {
-        StringBuffer result = new StringBuffer();
-
+        out.setType(InterpreterResult.Type.HTML);
+        out.write("<h4>Conda environments</h4>\n");
+        // start table
+        out.write("<div style=\"display:table\">\n");
         String[] lines = sb.toString().split("\n");
         for (String s : lines) {
           if (s == null || s.isEmpty() || s.startsWith("#")) {
@@ -118,18 +129,31 @@ public class PythonCondaInterpreter extends Interpreter {
           if (!match.matches()) {
             continue;
           }
-
-          result.append(match.group(1) + "\t" + match.group(2) + "\n");
+          out.write(String.format("<div style=\"display:table-row\">" +
+              "<div style=\"display:table-cell;width:150px\">%s</div>" +
+              "<div style=\"display:table-cell;\">%s</div>" +
+              "</div>\n",
+              match.group(1), match.group(2)));
         }
-        return new InterpreterResult(InterpreterResult.Code.SUCCESS, result.toString());
+        // end table
+        out.write("</div><br />\n");
+        out.write("<small><code>%python.conda help</code> for the usage</small>\n");
       } else {
-        return new InterpreterResult(InterpreterResult.Code.ERROR, sb.toString());
+        out.write("Failed to run 'conda' " + exit + "\n");
       }
     } catch (IOException | InterruptedException e) {
       throw new InterpreterException(e);
     }
   }
 
+  private void printUsage(InterpreterOutput out) {
+    try {
+      out.setType(InterpreterResult.Type.HTML);
+      out.writeResource("output_templates/usage.html");
+    } catch (IOException e) {
+      logger.error("Can't print usage", e);
+    }
+  }
 
   @Override
   public void cancel(InterpreterContext context) {
