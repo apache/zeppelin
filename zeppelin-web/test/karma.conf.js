@@ -71,6 +71,7 @@ module.exports = function(config) {
       'bower_components/sigma.js/build/sigma.min.js',
       'bower_components/sigma.js/build/plugins/sigma.plugins.animate.min.js',
       'bower_components/sigma.js/build/plugins/sigma.layout.noverlap.min.js',
+      'bower_components/sigma.js/build/plugins/sigma.layout.forceAtlas2.min.js',
       'bower_components/sigma.js/build/plugins/sigma.plugins.dragNodes.min.js',
       'bower_components/sigma.js/build/plugins/sigma.renderers.edgeLabels.min.js',
       'bower_components/sigma.js/build/plugins/sigma.renderers.parallelEdges.min.js',
