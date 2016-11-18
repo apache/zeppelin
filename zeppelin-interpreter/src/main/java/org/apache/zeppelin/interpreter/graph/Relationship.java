@@ -57,8 +57,8 @@ public class Relationship extends GraphEntity {
   }
   
   public Relationship(long id, Map<String, Object> data, long source,
-	      long target, String label, Type type) {
-	  this(id, data, source, target, label, type, 0);
+      long target, String label, Type type) {
+    this(id, data, source, target, label, type, 0);
   }
 
   public long getSource() {
