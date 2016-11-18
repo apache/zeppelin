@@ -1037,7 +1037,7 @@
       "progressUpdateIntervalMs": 500
     }
   ],
-  "name": "Zeppelin Tutorial/R",
+  "name": "Zeppelin Tutorial/R (SparkR)",
   "id": "2BWJFTXKJ",
   "lastReplName": {
     "value": ""

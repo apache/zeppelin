@@ -669,7 +669,7 @@
       "progressUpdateIntervalMs": 500
     }
   ],
-  "name": "Zeppelin Tutorial/Python - matplotlib basic",
+  "name": "Zeppelin Tutorial/Matplotlib (Python • PySpark)",
   "id": "2C2AUG798",
   "angularObjects": {
     "2BWWUCUVW:shared_process": [],
