@@ -22,6 +22,8 @@ import java.net.URISyntaxException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
@@ -29,6 +31,8 @@ import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.apache.zeppelin.notebook.repo.NotebookRepoSettingsInfo;
+import org.apache.zeppelin.notebook.repo.zeppelinhub.model.Instance;
+import org.apache.zeppelin.notebook.repo.zeppelinhub.model.UserSessionContainer;
 import org.apache.zeppelin.notebook.repo.zeppelinhub.rest.ZeppelinhubRestApiHandler;
 import org.apache.zeppelin.notebook.repo.zeppelinhub.websocket.Client;
 import org.apache.zeppelin.user.AuthenticationInfo;
@@ -56,6 +60,9 @@ public class ZeppelinHubRepo implements NotebookRepo {
   private String token;
   private ZeppelinhubRestApiHandler restApiClient;
 
+  // In order to avoid too many call to ZeppelinHub backend, we save a map of user -> session.
+  private ConcurrentMap<String, String> usersToken = new ConcurrentHashMap<String, String>();
+  
   public ZeppelinHubRepo(ZeppelinConfiguration conf) {
     String zeppelinHubUrl = getZeppelinHubUrl(conf);
     LOG.info("Initializing ZeppelinHub integration module");
@@ -143,6 +150,39 @@ public class ZeppelinHubRepo implements NotebookRepo {
       }
     }
     return zeppelinhubUrl;
+  }
+  
+  /**
+   * Get Token directly from Zeppelinhub.
+   * This will avoid and remove the needs of setting up token in zeppelin-env.sh.
+   */
+  private String getUserZeppelinInstanceToken(String ticket) throws IOException {
+    if (StringUtils.isBlank(ticket)) {
+      return "";
+    }
+    List<Instance> instances = restApiClient.asyncGetInstances(ticket);
+    // TODO(anthony): Implement NotebookRepo Setting to let user switch token at runtime.
+    token = instances.get(0).token;
+    return token;
+  }
+
+  /**
+   * For a given user logged in is zeppelin (via zeppelinhub notebook repo), get default token.
+   *  */
+  private String getUserToken(String principal) {
+    String token = usersToken.get(principal);
+    if (StringUtils.isBlank(token)) {
+      String ticket = UserSessionContainer.instance.getSession(principal);
+      try {
+        token = getUserZeppelinInstanceToken(ticket);
+        usersToken.putIfAbsent(principal, token);
+      } catch (IOException e) {
+        LOG.error("Cannot get user token", e);
+        token = StringUtils.EMPTY;
+      }
+    }
+
+    return token;
   }
 
   @Override
