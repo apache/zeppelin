@@ -108,47 +108,43 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
 
   @Test
   public void testSettingsCRUD() throws IOException {
-    // Call Create Setting REST API
-    String jsonRequest = "{\"name\":\"md2\",\"group\":\"md\",\"properties\":{\"propname\":\"propvalue\"}," +
+    // when: call create setting API
+    String rawRequest = "{\"name\":\"md2\",\"group\":\"md\",\"properties\":{\"propname\":\"propvalue\"}," +
         "\"interpreterGroup\":[{\"class\":\"org.apache.zeppelin.markdown.Markdown\",\"name\":\"md\"}]," +
         "\"dependencies\":[]," +
         "\"option\": { \"remote\": true, \"session\": false }}";
-    PostMethod post = httpPost("/interpreter/setting/", jsonRequest);
+    JsonObject jsonRequest = gson.fromJson(rawRequest, JsonElement.class).getAsJsonObject();
+    PostMethod post = httpPost("/interpreter/setting/", jsonRequest.toString());
+    String postResponse = post.getResponseBodyAsString();
     LOG.info("testSettingCRUD create response\n" + post.getResponseBodyAsString());
+    InterpreterSetting created = convertResponseToInterpreterSetting(postResponse);
+    String newSettingId = created.getId();
+    // then : call create setting API
     assertThat("test create method:", post, isCreated());
-
-    Map<String, Object> resp = gson.fromJson(post.getResponseBodyAsString(), new TypeToken<Map<String, Object>>() {
-    }.getType());
-    Map<String, Object> body = (Map<String, Object>) resp.get("body");
-    //extract id from body string {id=2AWMQDNX7, name=md2, group=md,
-    String newSettingId = body.toString().split(",")[0].split("=")[1];
     post.releaseConnection();
 
-    // Call Read Setting API
+    // when: call read setting API
     GetMethod get = httpGet("/interpreter/setting/" + newSettingId);
-    String rawResponse = get.getResponseBodyAsString();
-    LOG.info("testSettingCRUD get response\n" + rawResponse);
-    get.releaseConnection();
-    JsonObject response = gson.fromJson(rawResponse, JsonElement.class)
-        .getAsJsonObject();
+    String getResponse = get.getResponseBodyAsString();
+    LOG.info("testSettingCRUD get response\n" + getResponse);
+    InterpreterSetting previouslyCreated = convertResponseToInterpreterSetting(getResponse);
+    // then : read Setting API
     assertThat("Test get method:", get, isAllowed());
-    InterpreterSetting created = gson.fromJson(response.getAsJsonObject("body"),
-        InterpreterSetting.class);
-    assertEquals(newSettingId, created.getId());
+    assertEquals(newSettingId, previouslyCreated.getId());
+    get.releaseConnection();
 
-    // Call Update Setting REST API
-    jsonRequest = "{\"name\":\"md2\",\"group\":\"md\",\"properties\":{\"propname\":\"Otherpropvalue\"}," +
-        "\"interpreterGroup\":[{\"class\":\"org.apache.zeppelin.markdown.Markdown\",\"name\":\"md\"}]," +
-        "\"dependencies\":[]," +
-        "\"option\": { \"remote\": true, \"session\": false }}";
-    PutMethod put = httpPut("/interpreter/setting/" + newSettingId, jsonRequest);
+    // when: call update setting API
+    jsonRequest.getAsJsonObject("properties").addProperty("propname2", "this is new prop");
+    PutMethod put = httpPut("/interpreter/setting/" + newSettingId, jsonRequest.toString());
     LOG.info("testSettingCRUD update response\n" + put.getResponseBodyAsString());
+    // then: call update setting API
     assertThat("test update method:", put, isAllowed());
     put.releaseConnection();
 
-    // Call Delete Setting REST API
+    // when: call delete setting API
     DeleteMethod delete = httpDelete("/interpreter/setting/" + newSettingId);
     LOG.info("testSettingCRUD delete response\n" + delete.getResponseBodyAsString());
+    // then: call delete setting API
     assertThat("Test delete method:", delete, isAllowed());
     delete.releaseConnection();
   }
@@ -298,6 +294,12 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
     DeleteMethod delete = httpDelete("/interpreter/repository/" + repoId);
     assertThat("Test delete method:", delete, isAllowed());
     delete.releaseConnection();
+  }
+
+  public InterpreterSetting convertResponseToInterpreterSetting(String rawResponse) {
+    JsonObject response = gson.fromJson(rawResponse, JsonElement.class)
+        .getAsJsonObject();
+    return gson.fromJson(response.getAsJsonObject("body"), InterpreterSetting.class);
   }
 
   public static String getSimulatedMarkdownResult(String markdown) {
