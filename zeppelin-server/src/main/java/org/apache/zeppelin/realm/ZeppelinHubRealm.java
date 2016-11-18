@@ -161,6 +161,8 @@ public class ZeppelinHubRealm extends AuthorizingRealm {
     ZeppelinServer.notebookWsServer.broadcastReloadedNoteList(
         new org.apache.zeppelin.user.AuthenticationInfo(account.login), userAndRoles);
 
+    // Add ZeppelinHub user_session token this singleton map, this will help ZeppelinHubRepo
+    // to get specific information about the current user.
     UserSessionContainer.instance.setSession(account.login, userSession);
     return account;
   }
