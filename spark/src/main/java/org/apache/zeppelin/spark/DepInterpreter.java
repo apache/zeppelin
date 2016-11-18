@@ -192,15 +192,6 @@ public class DepInterpreter extends Interpreter {
 
   }
 
-  @Override
-  public void setRemoteZeppelinServerController(RemoteWorksController zServer) {
-  }
-
-  @Override
-  public RemoteWorksController getRemoteZeppelinServerController() {
-    return null;
-  }
-
   private Results.Result interpret(String line) {
     return (Results.Result) Utils.invokeMethod(
         intp,

@@ -55,15 +55,6 @@ Map<String, Object> vars = new HashMap<>();
 	}
 
 	@Override
-	public void setRemoteZeppelinServerController(RemoteWorksController zServer) {
-	}
-
-	@Override
-	public RemoteWorksController getRemoteZeppelinServerController() {
-		return null;
-	}
-
-	@Override
 	public InterpreterResult interpret(String st, InterpreterContext context) {
 		InterpreterResult result;
 

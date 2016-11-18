@@ -87,15 +87,6 @@ public class PythonInterpreterPandasSql extends Interpreter {
   }
 
   @Override
-  public void setRemoteZeppelinServerController(RemoteWorksController zServer) {
-  }
-
-  @Override
-  public RemoteWorksController getRemoteZeppelinServerController() {
-    return null;
-  }
-
-  @Override
   public InterpreterResult interpret(String st, InterpreterContext context) {
     LOG.info("Running SQL query: '{}' over Pandas DataFrame", st);
     Interpreter python = getPythonInterpreter();

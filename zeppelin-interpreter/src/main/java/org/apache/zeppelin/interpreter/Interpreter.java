@@ -196,19 +196,6 @@ public abstract class Interpreter {
     return this.interpreterGroup;
   }
 
-  /**
-   * setup Remote Zeppelin Server Controller interface
-   * @param zServer
-   */
-  @ZeppelinApi
-  public abstract void setRemoteZeppelinServerController(RemoteWorksController zServer);
-
-  /**
-   * get Remote Zeppelin Server Controller interface
-   */
-  @ZeppelinApi
-  public abstract RemoteWorksController getRemoteZeppelinServerController();
-
   public URL[] getClassloaderUrls() {
     return classloaderUrls;
   }

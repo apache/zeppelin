@@ -130,15 +130,6 @@ public class PythonInterpreter extends Interpreter {
   }
 
   @Override
-  public void setRemoteZeppelinServerController(RemoteWorksController zServer) {
-  }
-
-  @Override
-  public RemoteWorksController getRemoteZeppelinServerController() {
-    return null;
-  }
-
-  @Override
   public InterpreterResult interpret(String cmd, InterpreterContext contextInterpreter) {
     if (cmd == null || cmd.isEmpty()) {
       return new InterpreterResult(Code.SUCCESS, "");

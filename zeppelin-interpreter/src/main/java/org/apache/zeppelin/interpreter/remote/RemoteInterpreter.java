@@ -45,7 +45,6 @@ import com.google.gson.reflect.TypeToken;
 public class RemoteInterpreter extends Interpreter {
   private final RemoteInterpreterProcessListener remoteInterpreterProcessListener;
   private final ApplicationEventListener applicationEventListener;
-  private final RemoteWorksController remoteWorksController;
   Logger logger = LoggerFactory.getLogger(RemoteInterpreter.class);
   Gson gson = new Gson();
   private String interpreterRunner;
@@ -196,15 +195,13 @@ public class RemoteInterpreter extends Interpreter {
               connectTimeout,
               remoteInterpreterProcessListener,
               applicationEventListener,
-              remoteWorksController,
               host,
               port);
         } else {
           // create new remote process
           remoteProcess = new RemoteInterpreterManagedProcess(
               interpreterRunner, interpreterPath, localRepoPath, env, connectTimeout,
-              remoteInterpreterProcessListener, applicationEventListener,
-              remoteWorksController);
+              remoteInterpreterProcessListener, applicationEventListener);
         }
 
         intpGroup.setRemoteInterpreterProcess(remoteProcess);
@@ -308,15 +305,6 @@ public class RemoteInterpreter extends Interpreter {
       }
       getInterpreterProcess().dereference();
     }
-  }
-
-  @Override
-  public void setRemoteZeppelinServerController(RemoteWorksController zServer) {
-  }
-
-  @Override
-  public RemoteWorksController getRemoteZeppelinServerController() {
-    return null;
   }
 
   @Override

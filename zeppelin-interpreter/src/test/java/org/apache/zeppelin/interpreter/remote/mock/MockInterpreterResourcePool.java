@@ -57,15 +57,6 @@ public class MockInterpreterResourcePool extends Interpreter {
   }
 
   @Override
-  public void setRemoteZeppelinServerController(RemoteWorksController zServer) {
-  }
-
-  @Override
-  public RemoteWorksController getRemoteZeppelinServerController() {
-    return null;
-  }
-
-  @Override
   public InterpreterResult interpret(String st, InterpreterContext context) {
     String[] stmt = st.split(" ");
     String cmd = stmt[0];

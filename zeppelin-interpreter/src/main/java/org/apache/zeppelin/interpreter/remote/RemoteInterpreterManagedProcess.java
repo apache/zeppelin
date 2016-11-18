@@ -44,7 +44,6 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
   private int port = -1;
   private final String interpreterDir;
   private final String localRepoDir;
-  private RemoteWorksController remoteWorksController;
 
   private Map<String, String> env;
 
@@ -55,15 +54,13 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
       Map<String, String> env,
       int connectTimeout,
       RemoteInterpreterProcessListener listener,
-      ApplicationEventListener appListener,
-      RemoteWorksController remoteWorksController) {
-    super(new RemoteInterpreterEventPoller(listener, appListener, remoteWorksController),
+      ApplicationEventListener appListener) {
+    super(new RemoteInterpreterEventPoller(listener, appListener),
         connectTimeout);
     this.interpreterRunner = intpRunner;
     this.env = env;
     this.interpreterDir = intpDir;
     this.localRepoDir = localRepoDir;
-    this.remoteWorksController = remoteWorksController;
 
   }
 
@@ -79,7 +76,6 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
     this.env = env;
     this.interpreterDir = intpDir;
     this.localRepoDir = localRepoDir;
-    this.remoteWorksController = remoteInterpreterEventPoller.getRemoteWorkController();
   }
 
   @Override

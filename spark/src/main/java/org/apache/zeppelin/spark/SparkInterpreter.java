@@ -818,7 +818,7 @@ public class SparkInterpreter extends Interpreter {
       
       hooks = getInterpreterGroup().getInterpreterHookRegistry();
 
-      z = new ZeppelinContext(sc, sqlc, null, dep, hooks, getRemoteZeppelinServerController(),
+      z = new ZeppelinContext(sc, sqlc, null, dep, hooks,
               Integer.parseInt(getProperty("zeppelin.spark.maxResult")));
 
       interpret("@transient val _binder = new java.util.HashMap[String, Object]()");
@@ -1063,16 +1063,6 @@ public class SparkInterpreter extends Interpreter {
             completionStartPosition , completionEndPosition);
 
     return resultCompletionText;
-  }
-
-  @Override
-  public void setRemoteZeppelinServerController(RemoteWorksController zServer) {
-    this.remoteWorksController = zServer;
-  }
-
-  @Override
-  public RemoteWorksController getRemoteZeppelinServerController() {
-    return this.remoteWorksController;
   }
 
   /*

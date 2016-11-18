@@ -245,15 +245,6 @@ public class LensInterpreter extends Interpreter {
   }
 
   @Override
-  public void setRemoteZeppelinServerController(RemoteWorksController zServer) {
-  }
-
-  @Override
-  public RemoteWorksController getRemoteZeppelinServerController() {
-    return null;
-  }
-
-  @Override
   public InterpreterResult interpret(String input, InterpreterContext context) {
     if (input == null || input.length() == 0) {
       return new InterpreterResult(Code.ERROR, "no command submitted");

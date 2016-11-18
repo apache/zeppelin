@@ -55,15 +55,6 @@ public class LivySparkSQLInterpreter extends Interpreter {
   }
 
   @Override
-  public void setRemoteZeppelinServerController(RemoteWorksController zServer) {
-  }
-
-  @Override
-  public RemoteWorksController getRemoteZeppelinServerController() {
-    return null;
-  }
-
-  @Override
   public InterpreterResult interpret(String line, InterpreterContext interpreterContext) {
     try {
       if (userSessionMap.get(interpreterContext.getAuthenticationInfo().getUser()) == null) {

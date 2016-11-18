@@ -288,15 +288,6 @@ public class BigQueryInterpreter extends Interpreter {
   }
 
   @Override
-  public void setRemoteZeppelinServerController(RemoteWorksController zServer) {
-  }
-
-  @Override
-  public RemoteWorksController getRemoteZeppelinServerController() {
-    return null;
-  }
-
-  @Override
   public InterpreterResult interpret(String sql, InterpreterContext contextInterpreter) {
     logger.info("Run SQL command '{}'", sql);
     return executeSql(sql);

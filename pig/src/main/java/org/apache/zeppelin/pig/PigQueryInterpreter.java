@@ -64,15 +64,6 @@ public class PigQueryInterpreter extends BasePigInterpreter {
   }
 
   @Override
-  public void setRemoteZeppelinServerController(RemoteWorksController zServer) {
-  }
-
-  @Override
-  public RemoteWorksController getRemoteZeppelinServerController() {
-    return null;
-  }
-
-  @Override
   public InterpreterResult interpret(String st, InterpreterContext context) {
     // '-' is invalid for pig alias
     String alias = "paragraph_" + context.getParagraphId().replace("-", "_");

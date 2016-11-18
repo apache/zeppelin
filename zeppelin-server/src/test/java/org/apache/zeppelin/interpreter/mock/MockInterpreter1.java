@@ -45,15 +45,6 @@ public class MockInterpreter1 extends Interpreter{
   }
 
   @Override
-  public void setRemoteZeppelinServerController(RemoteWorksController zServer) {
-  }
-
-  @Override
-  public RemoteWorksController getRemoteZeppelinServerController() {
-    return null;
-  }
-
-  @Override
   public InterpreterResult interpret(String st, InterpreterContext context) {
     return new InterpreterResult(InterpreterResult.Code.SUCCESS, "repl1: "+st);
   }

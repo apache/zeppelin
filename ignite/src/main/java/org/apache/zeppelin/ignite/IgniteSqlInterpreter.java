@@ -114,15 +114,6 @@ public class IgniteSqlInterpreter extends Interpreter {
   }
 
   @Override
-  public void setRemoteZeppelinServerController(RemoteWorksController zServer) {
-  }
-
-  @Override
-  public RemoteWorksController getRemoteZeppelinServerController() {
-    return null;
-  }
-
-  @Override
   public InterpreterResult interpret(String st, InterpreterContext context) {
     if (connEx != null) {
       return new InterpreterResult(Code.ERROR, connEx.getMessage());

@@ -151,15 +151,6 @@ public class ElasticsearchInterpreter extends Interpreter {
   }
 
   @Override
-  public void setRemoteZeppelinServerController(RemoteWorksController zServer) {
-  }
-
-  @Override
-  public RemoteWorksController getRemoteZeppelinServerController() {
-    return null;
-  }
-
-  @Override
   public InterpreterResult interpret(String cmd, InterpreterContext interpreterContext) {
     logger.info("Run Elasticsearch command '" + cmd + "'");
 

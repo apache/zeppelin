@@ -62,15 +62,12 @@ public class RemoteInterpreterEventPoller extends Thread {
 
   private RemoteInterpreterProcess interpreterProcess;
   private InterpreterGroup interpreterGroup;
-  private RemoteWorksController remoteWorkController;
 
   public RemoteInterpreterEventPoller(
       RemoteInterpreterProcessListener listener,
-      ApplicationEventListener appListener,
-      RemoteWorksController remoteWorkController) {
+      ApplicationEventListener appListener) {
     this.listener = listener;
     this.appListener = appListener;
-    this.remoteWorkController = remoteWorkController;
     shutdown = false;
   }
 
@@ -80,14 +77,6 @@ public class RemoteInterpreterEventPoller extends Thread {
 
   public void setInterpreterGroup(InterpreterGroup interpreterGroup) {
     this.interpreterGroup = interpreterGroup;
-  }
-
-  public RemoteWorksController getRemoteWorkController() {
-    return remoteWorkController;
-  }
-
-  public void setRemoteWorkController(RemoteWorksController remoteWorkController) {
-    this.remoteWorkController = remoteWorkController;
   }
 
   @Override
@@ -243,29 +232,30 @@ public class RemoteInterpreterEventPoller extends Thread {
       List<InterpreterContextRunner> interpreterContextRunners = new LinkedList<>();
       List<ZeppelinServerResourceParagraphRunner> remoteRunners = new LinkedList<>();
       if (event.getType() == RemoteZeppelinServerControlEvent.REQ_RESOURCE_PARAGRAPH_RUN_CONTEXT) {
-        ZeppelinServerResourceParagraphRunner runner = gson.fromJson(
-            event.getMsg(), ZeppelinServerResourceParagraphRunner.class);
-
-        RemoteZeppelinServerController resResource = new RemoteZeppelinServerController();
-        resResource.setType(RemoteZeppelinServerControlEvent.RES_RESOURCE_PARAGRAPH_RUN_CONTEXT);
-        resResource.setEventOwnerKey(eventOwnerKey);
-        if (runner.getParagraphId() != null) {
-          interpreterContextRunners = remoteWorkController.getRemoteContextRunner(
-            runner.getNoteId(), runner.getParagraphId());
-        } else {
-          interpreterContextRunners = remoteWorkController.getRemoteContextRunner(
-            runner.getNoteId());
-        }
-
-        for (InterpreterContextRunner r : interpreterContextRunners) {
-          remoteRunners.add(
-            new ZeppelinServerResourceParagraphRunner(r.getNoteId(), r.getParagraphId())
-          );
-        }
-
-        resResource.setMsg(gson.toJson(remoteRunners));
-
-        interpreterServer.remoteZeppelinServerControlFeedback(resResource);
+//        ZeppelinServerResourceParagraphRunner runner = gson.fromJson(
+//            event.getMsg(), ZeppelinServerResourceParagraphRunner.class);
+//
+//        RemoteZeppelinServerController resResource = new RemoteZeppelinServerController();
+//        resResource.setType(RemoteZeppelinServerControlEvent.RES_RESOURCE_PARAGRAPH_RUN_CONTEXT);
+//        resResource.setEventOwnerKey(eventOwnerKey);
+//        if (runner.getParagraphId() != null) {
+//
+//          interpreterContextRunners = remoteWorkController.getRemoteContextRunner(
+//            runner.getNoteId(), runner.getParagraphId());
+//        } else {
+//          interpreterContextRunners = remoteWorkController.getRemoteContextRunner(
+//            runner.getNoteId());
+//        }
+//
+//        for (InterpreterContextRunner r : interpreterContextRunners) {
+//          remoteRunners.add(
+//            new ZeppelinServerResourceParagraphRunner(r.getNoteId(), r.getParagraphId())
+//          );
+//        }
+//
+//        resResource.setMsg(gson.toJson(remoteRunners));
+//
+//        interpreterServer.remoteZeppelinServerControlFeedback(resResource);
       }
 
     } catch (Exception e) {

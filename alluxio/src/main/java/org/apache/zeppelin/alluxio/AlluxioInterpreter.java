@@ -87,15 +87,6 @@ public class AlluxioInterpreter extends Interpreter {
   }
 
   @Override
-  public void setRemoteZeppelinServerController(RemoteWorksController zServer) {
-  }
-
-  @Override
-  public RemoteWorksController getRemoteZeppelinServerController() {
-    return null;
-  }
-
-  @Override
   public InterpreterResult interpret(String st, InterpreterContext context) {
     String[] lines = splitAndRemoveEmpty(st, "\n");
     return interpret(lines, context);

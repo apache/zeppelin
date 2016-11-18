@@ -71,15 +71,6 @@ public class PigInterpreter extends BasePigInterpreter {
   }
 
   @Override
-  public void setRemoteZeppelinServerController(RemoteWorksController zServer) {
-  }
-
-  @Override
-  public RemoteWorksController getRemoteZeppelinServerController() {
-    return null;
-  }
-
-  @Override
   public InterpreterResult interpret(String cmd, InterpreterContext contextInterpreter) {
     // remember the origial stdout, because we will redirect stdout to capture
     // the pig dump output.

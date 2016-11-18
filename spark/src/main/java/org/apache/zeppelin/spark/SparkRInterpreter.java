@@ -95,15 +95,6 @@ public class SparkRInterpreter extends Interpreter {
   }
 
   @Override
-  public void setRemoteZeppelinServerController(RemoteWorksController zServer) {
-  }
-
-  @Override
-  public RemoteWorksController getRemoteZeppelinServerController() {
-    return null;
-  }
-
-  @Override
   public InterpreterResult interpret(String lines, InterpreterContext interpreterContext) {
 
     getSparkInterpreter().populateSparkWebUrl(interpreterContext);

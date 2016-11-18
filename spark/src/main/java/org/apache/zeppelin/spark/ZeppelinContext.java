@@ -76,14 +76,12 @@ public class ZeppelinContext {
       InterpreterContext interpreterContext,
       SparkDependencyResolver dep,
       InterpreterHookRegistry hooks,
-      RemoteWorksController remoteWorksController,
       int maxResult) {
     this.sc = sc;
     this.sqlContext = sql;
     this.interpreterContext = interpreterContext;
     this.dep = dep;
     this.hooks = hooks;
-    this.remoteWorksController = remoteWorksController;
     this.maxResult = maxResult;
     this.supportedClasses = new ArrayList<>();
     try {

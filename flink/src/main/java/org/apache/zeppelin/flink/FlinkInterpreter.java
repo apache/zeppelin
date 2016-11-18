@@ -239,15 +239,6 @@ public class FlinkInterpreter extends Interpreter {
   }
 
   @Override
-  public void setRemoteZeppelinServerController(RemoteWorksController zServer) {
-  }
-
-  @Override
-  public RemoteWorksController getRemoteZeppelinServerController() {
-    return null;
-  }
-
-  @Override
   public InterpreterResult interpret(String line, InterpreterContext context) {
     if (line == null || line.trim().length() == 0) {
       return new InterpreterResult(Code.SUCCESS);

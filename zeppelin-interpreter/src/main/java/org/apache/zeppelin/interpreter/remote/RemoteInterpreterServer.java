@@ -68,7 +68,6 @@ public class RemoteInterpreterServer
   InterpreterHookRegistry hookRegistry;
   DistributedResourcePool resourcePool;
   private ApplicationLoader appLoader;
-  private RemoteWorksController remoteServerController;
 
   Gson gson = new Gson();
 
@@ -93,7 +92,6 @@ public class RemoteInterpreterServer
     server = new TThreadPoolServer(
         new TThreadPoolServer.Args(serverTransport).processor(processor));
     remoteWorksResponsePool = Collections.synchronizedMap(new HashMap<String, Object>());
-    remoteServerController = new ZeppelinRemoteWorksController(this, remoteWorksResponsePool);
   }
 
   @Override
@@ -184,7 +182,6 @@ public class RemoteInterpreterServer
           replClass.getConstructor(new Class[] {Properties.class});
       Interpreter repl = constructor.newInstance(p);
       repl.setClassloaderUrls(new URL[]{});
-      repl.setRemoteZeppelinServerController(remoteServerController);
 
       synchronized (interpreterGroup) {
         List<Interpreter> interpreters = interpreterGroup.get(noteId);
