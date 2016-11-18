@@ -70,7 +70,6 @@ public class ZeppelinContext {
   private int maxResult;
   private List<Class> supportedClasses;
   private InterpreterHookRegistry hooks;
-  private RemoteWorksController remoteWorksController;
   
   public ZeppelinContext(SparkContext sc, SQLContext sql,
       InterpreterContext interpreterContext,
@@ -328,7 +327,8 @@ public class ZeppelinContext {
       throw new InterpreterException("Can not run current Paragraph");
     }
 
-    List<InterpreterContextRunner> runners = getInterpreterContextRunner(noteId, paragraphId);
+    List<InterpreterContextRunner> runners =
+        getInterpreterContextRunner(noteId, paragraphId, context);
 
     if (runners.size() <= 0) {
       throw new InterpreterException("Paragraph " + paragraphId + " not found " + runners.size());
@@ -346,8 +346,10 @@ public class ZeppelinContext {
    * @param noteId
    */
   @ZeppelinApi
-  public List<InterpreterContextRunner> getInterpreterContextRunner(String noteId) {
+  public List<InterpreterContextRunner> getInterpreterContextRunner(
+      String noteId, InterpreterContext interpreterContext) {
     List<InterpreterContextRunner> runners = new LinkedList<>();
+    RemoteWorksController remoteWorksController = interpreterContext.getRemoteWorksController();
 
     if (remoteWorksController != null) {
       runners = remoteWorksController.getRemoteContextRunner(noteId);
@@ -363,8 +365,9 @@ public class ZeppelinContext {
    */
   @ZeppelinApi
   public List<InterpreterContextRunner> getInterpreterContextRunner(
-      String noteId, String paragraphId) {
+      String noteId, String paragraphId, InterpreterContext interpreterContext) {
     List<InterpreterContextRunner> runners = new LinkedList<>();
+    RemoteWorksController remoteWorksController = interpreterContext.getRemoteWorksController();
 
     if (remoteWorksController != null) {
       runners = remoteWorksController.getRemoteContextRunner(noteId, paragraphId);
@@ -389,7 +392,7 @@ public class ZeppelinContext {
    * @param context interpreter context
    */
   public void run(String noteId, int idx, InterpreterContext context) {
-    List<InterpreterContextRunner> runners = getInterpreterContextRunner(noteId);
+    List<InterpreterContextRunner> runners = getInterpreterContextRunner(noteId, context);
     if (idx >= runners.size()) {
       throw new InterpreterException("Index out of bound");
     }

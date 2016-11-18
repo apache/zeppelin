@@ -41,6 +41,7 @@ import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.AngularObjectRegistryListener;
 import org.apache.zeppelin.helium.ApplicationEventListener;
 import org.apache.zeppelin.helium.HeliumPackage;
+import org.apache.zeppelin.interpreter.InterpreterContextRunner;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterOutput;
 import org.apache.zeppelin.interpreter.InterpreterResult;
@@ -1480,6 +1481,38 @@ public class NotebookServer extends WebSocketServlet implements
         .put("appId", appId)
         .put("status", status);
     broadcast(noteId, msg);
+  }
+
+  @Override
+  public void onGetParagraphRunners(
+      String noteId, String paragraphId, RemoteWorksEventListener callback) {
+    LOG.info("clover onGetParagraphRunners {} {}", noteId, paragraphId);
+    Notebook notebookIns = notebook();
+    List<InterpreterContextRunner> runner = new LinkedList<>();
+
+    if (notebookIns == null) {
+      callback.onFinished(notebookIns);
+    }
+
+    try {
+      Note note = notebookIns.getNote(noteId);
+      if (note != null) {
+        if (paragraphId != null) {
+          Paragraph paragraph = note.getParagraph(paragraphId);
+          if (paragraph != null) {
+            runner.add(paragraph.getInterpreterContextRunner());
+          }
+        } else {
+          for (Paragraph p : note.getParagraphs()) {
+            runner.add(p.getInterpreterContextRunner());
+          }
+        }
+      }
+      callback.onFinished(runner);
+    } catch (NullPointerException e) {
+      LOG.warn(e.getMessage());
+      callback.onError();
+    }
   }
 
   /**

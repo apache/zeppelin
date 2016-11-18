@@ -83,6 +83,7 @@ public class RemoteInterpreterServer
       Collections.synchronizedMap(new HashMap<String, RunningApplication>());
 
   private Map<String, Object> remoteWorksResponsePool;
+  private ZeppelinRemoteWorksController remoteWorksController;
 
   public RemoteInterpreterServer(int port) throws TTransportException {
     this.port = port;
@@ -92,6 +93,7 @@ public class RemoteInterpreterServer
     server = new TThreadPoolServer(
         new TThreadPoolServer.Args(serverTransport).processor(processor));
     remoteWorksResponsePool = Collections.synchronizedMap(new HashMap<String, Object>());
+    remoteWorksController = new ZeppelinRemoteWorksController(this, remoteWorksResponsePool);
   }
 
   @Override
@@ -342,18 +344,30 @@ public class RemoteInterpreterServer
   }
 
   @Override
-  public void remoteZeppelinServerControlFeedback(
-      RemoteZeppelinServerController response) throws TException {
+  public void onReceivedResourceParagraphRunners(
+      RemoteInterpreterEvent response) throws TException {
+    //clover
     logger.info("remote zeppelin server controller feedback {}", response);
-    if (response.getType() == RemoteZeppelinServerControlEvent.RES_RESOURCE_PARAGRAPH_RUN_CONTEXT) {
+    if (response.getType() == RemoteInterpreterEventType.RESOURCE_PARAGRAPH_RUN_CONTEXT) {
       List<InterpreterContextRunner> intpContextRunners = new LinkedList<>();
-      List<ZeppelinServerResourceParagraphRunner> runners = gson.fromJson(response.getMsg(),
-        new TypeToken<List<ZeppelinServerResourceParagraphRunner>>() {}.getType());
+
+      RemoteZeppelinServerController remoteZeppelinServerController =  gson.fromJson(
+          response.getData(), RemoteZeppelinServerController.class);
+
+      if (remoteZeppelinServerController == null) {
+        throw new TException("can not found Resource paragraph runners");
+      }
+
+      List<ZeppelinServerResourceParagraphRunner> runners = gson.fromJson(
+          remoteZeppelinServerController.getMsg(),
+          new TypeToken<List<ZeppelinServerResourceParagraphRunner>>() {}.getType());
       for (ZeppelinServerResourceParagraphRunner r : runners) {
         intpContextRunners.add(new ParagraphRunner(this, r.getNoteId(), r.getParagraphId()));
       }
       synchronized (this.remoteWorksResponsePool) {
-        this.remoteWorksResponsePool.put(response.getEventOwnerKey(), intpContextRunners);
+        this.remoteWorksResponsePool.put(
+            remoteZeppelinServerController.getEventOwnerKey(),
+            intpContextRunners);
       }
     }
   }
@@ -573,7 +587,7 @@ public class RemoteInterpreterServer
         gson.fromJson(ric.getGui(), GUI.class),
         interpreterGroup.getAngularObjectRegistry(),
         interpreterGroup.getResourcePool(),
-        contextRunners, output, eventClient);
+        contextRunners, output, remoteWorksController, eventClient);
   }
 
 
@@ -611,6 +625,7 @@ public class RemoteInterpreterServer
   }
 
   static class ZeppelinRemoteWorksController implements RemoteWorksController{
+    //cloverhearts
     Logger logger = LoggerFactory.getLogger(ZeppelinRemoteWorksController.class);
 
     private final long DEFAULT_TIMEOUT_VALUE = 300000;

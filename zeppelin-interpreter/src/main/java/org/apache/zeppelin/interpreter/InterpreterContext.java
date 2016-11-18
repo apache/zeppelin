@@ -60,6 +60,7 @@ public class InterpreterContext {
   private List<InterpreterContextRunner> runners;
   private String className;
   private RemoteEventClientWrapper client;
+  private RemoteWorksController remoteWorksController;
 
   public InterpreterContext(String noteId,
                             String paragraphId,
@@ -73,6 +74,23 @@ public class InterpreterContext {
                             List<InterpreterContextRunner> runners,
                             InterpreterOutput out
                             ) {
+    this(noteId, paragraphId, paragraphTitle, paragraphText, authenticationInfo, config, gui,
+      angularObjectRegistry, resourcePool, runners, out, null);
+  }
+
+  public InterpreterContext(String noteId,
+                            String paragraphId,
+                            String paragraphTitle,
+                            String paragraphText,
+                            AuthenticationInfo authenticationInfo,
+                            Map<String, Object> config,
+                            GUI gui,
+                            AngularObjectRegistry angularObjectRegistry,
+                            ResourcePool resourcePool,
+                            List<InterpreterContextRunner> runners,
+                            InterpreterOutput out,
+                            RemoteWorksController remoteWorksController
+                            ) {
     this.noteId = noteId;
     this.paragraphId = paragraphId;
     this.paragraphTitle = paragraphTitle;
@@ -84,6 +102,7 @@ public class InterpreterContext {
     this.resourcePool = resourcePool;
     this.runners = runners;
     this.out = out;
+    this.remoteWorksController = remoteWorksController;
   }
 
   public InterpreterContext(String noteId,
@@ -97,9 +116,10 @@ public class InterpreterContext {
                             ResourcePool resourcePool,
                             List<InterpreterContextRunner> contextRunners,
                             InterpreterOutput output,
+                            RemoteWorksController remoteWorksController,
                             RemoteInterpreterEventClient eventClient) {
     this(noteId, paragraphId, paragraphTitle, paragraphText, authenticationInfo, config, gui,
-        angularObjectRegistry, resourcePool, contextRunners, output);
+        angularObjectRegistry, resourcePool, contextRunners, output, remoteWorksController);
     this.client = new RemoteEventClient(eventClient);
   }
 
@@ -153,5 +173,13 @@ public class InterpreterContext {
 
   public RemoteEventClientWrapper getClient() {
     return client;
+  }
+
+  public RemoteWorksController getRemoteWorksController() {
+    return remoteWorksController;
+  }
+
+  public void setRemoteWorksController(RemoteWorksController remoteWorksController) {
+    this.remoteWorksController = remoteWorksController;
   }
 }

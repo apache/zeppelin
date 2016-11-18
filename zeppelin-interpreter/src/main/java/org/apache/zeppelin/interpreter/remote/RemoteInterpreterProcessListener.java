@@ -25,4 +25,14 @@ public interface RemoteInterpreterProcessListener {
   public void onOutputAppend(String noteId, String paragraphId, String output);
   public void onOutputUpdated(String noteId, String paragraphId, String output);
   public void onMetaInfosReceived(String settingId, Map<String, String> metaInfos);
+  public void onGetParagraphRunners(
+      String noteId, String paragraphId, RemoteWorksEventListener callback);
+
+  /**
+   * Remote works for Interpreter callback listener
+   */
+  public interface RemoteWorksEventListener {
+    public void onFinished(Object resultObject);
+    public void onError();
+  }
 }

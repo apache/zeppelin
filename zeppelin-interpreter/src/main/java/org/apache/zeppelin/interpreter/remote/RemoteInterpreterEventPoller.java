@@ -29,7 +29,6 @@ import org.apache.zeppelin.interpreter.RemoteWorksController;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterEvent;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterEventType;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService.Client;
-import org.apache.zeppelin.interpreter.thrift.RemoteZeppelinServerControlEvent;
 import org.apache.zeppelin.interpreter.thrift.RemoteZeppelinServerController;
 import org.apache.zeppelin.interpreter.thrift.ZeppelinServerResourceParagraphRunner;
 import org.apache.zeppelin.resource.Resource;
@@ -199,10 +198,14 @@ public class RemoteInterpreterEventPoller extends Thread {
           String status = appStatusUpdate.get("status");
 
           appListener.onStatusChange(noteId, paragraphId, appId, status);
-        } else if (event.getType() == RemoteInterpreterEventType.REMOTE_ZEPPELIN_SERVER_CONTROL) {
+        } else if (event.getType() == RemoteInterpreterEventType.RESOURCE_PARAGRAPH_RUN_CONTEXT) {
+          //clover
           RemoteZeppelinServerController remoteControlEvent = gson.fromJson(
               event.getData(), RemoteZeppelinServerController.class);
-          progressRemoteZeppelinControlEvent(remoteControlEvent);
+          progressRemoteZeppelinControlEvent(event.getType(), listener, remoteControlEvent);
+
+
+
         } else if (event.getType() == RemoteInterpreterEventType.META_INFOS) {
           Map<String, String> metaInfos = gson.fromJson(event.getData(),
               new TypeToken<Map<String, String>>() {
@@ -222,49 +225,69 @@ public class RemoteInterpreterEventPoller extends Thread {
     }
   }
 
-  private void progressRemoteZeppelinControlEvent(RemoteZeppelinServerController event) {
-    Gson gson = new Gson();
-    String eventOwnerKey = event.getEventOwnerKey();
-    Client interpreterServer = null;
+  private void progressRemoteZeppelinControlEvent(
+      RemoteInterpreterEventType event,
+      RemoteInterpreterProcessListener remoteWorksEventListener,
+      RemoteZeppelinServerController data) {
     boolean broken = false;
+    final Gson gson = new Gson();
+    String eventOwnerKey = data.getEventOwnerKey();
+    Client interpreterServerMain = null;
     try {
-      interpreterServer = interpreterProcess.getClient();
-      List<InterpreterContextRunner> interpreterContextRunners = new LinkedList<>();
-      List<ZeppelinServerResourceParagraphRunner> remoteRunners = new LinkedList<>();
-      if (event.getType() == RemoteZeppelinServerControlEvent.REQ_RESOURCE_PARAGRAPH_RUN_CONTEXT) {
-//        ZeppelinServerResourceParagraphRunner runner = gson.fromJson(
-//            event.getMsg(), ZeppelinServerResourceParagraphRunner.class);
-//
-//        RemoteZeppelinServerController resResource = new RemoteZeppelinServerController();
-//        resResource.setType(RemoteZeppelinServerControlEvent.RES_RESOURCE_PARAGRAPH_RUN_CONTEXT);
-//        resResource.setEventOwnerKey(eventOwnerKey);
-//        if (runner.getParagraphId() != null) {
-//
-//          interpreterContextRunners = remoteWorkController.getRemoteContextRunner(
-//            runner.getNoteId(), runner.getParagraphId());
-//        } else {
-//          interpreterContextRunners = remoteWorkController.getRemoteContextRunner(
-//            runner.getNoteId());
-//        }
-//
-//        for (InterpreterContextRunner r : interpreterContextRunners) {
-//          remoteRunners.add(
-//            new ZeppelinServerResourceParagraphRunner(r.getNoteId(), r.getParagraphId())
-//          );
-//        }
-//
-//        resResource.setMsg(gson.toJson(remoteRunners));
-//
-//        interpreterServer.remoteZeppelinServerControlFeedback(resResource);
-      }
+      interpreterServerMain = interpreterProcess.getClient();
+      final Client eventClient = interpreterServerMain;
+      if (event == RemoteInterpreterEventType.RESOURCE_PARAGRAPH_RUN_CONTEXT) {
+        final List<ZeppelinServerResourceParagraphRunner> remoteRunners = new LinkedList<>();
 
+        ZeppelinServerResourceParagraphRunner runner = gson.fromJson(
+            data.getMsg(), ZeppelinServerResourceParagraphRunner.class);
+        final RemoteZeppelinServerController resResource = new RemoteZeppelinServerController();
+        resResource.setEventOwnerKey(eventOwnerKey);
+
+        remoteWorksEventListener.onGetParagraphRunners(runner.getNoteId(), runner.getParagraphId(),
+          new RemoteInterpreterProcessListener.RemoteWorksEventListener() {
+            @Override
+            public void onFinished(Object resultObject) {
+              logger.info("clover on Finished!!! send event finished");
+              boolean clientBroken = false;
+              if (resultObject != null && resultObject instanceof List) {
+                List<InterpreterContextRunner> runnerList =
+                    (List<InterpreterContextRunner>) resultObject;
+                for (InterpreterContextRunner r : runnerList) {
+                  remoteRunners.add(
+                      new ZeppelinServerResourceParagraphRunner(r.getNoteId(), r.getParagraphId())
+                  );
+                }
+                resResource.setMsg(gson.toJson(remoteRunners));
+                RemoteInterpreterEvent response = new RemoteInterpreterEvent(
+                    RemoteInterpreterEventType.RESOURCE_PARAGRAPH_RUN_CONTEXT,
+                    gson.toJson(resResource));
+                try {
+                  logger.info("clover send event finished");
+                  eventClient.onReceivedResourceParagraphRunners(response);
+                } catch (Exception e) {
+                  clientBroken = true;
+                  logger.error("Can't get RemoteInterpreterEvent", e);
+                  waitQuietly();
+                } finally {
+                  interpreterProcess.releaseClient(eventClient, clientBroken);
+                }
+              }
+            }
+
+            @Override
+            public void onError() {
+              logger.info("clover onError");
+            }
+          });
+      }
     } catch (Exception e) {
       broken = true;
       logger.error("Can't get RemoteInterpreterEvent", e);
       waitQuietly();
 
     } finally {
-      interpreterProcess.releaseClient(interpreterServer, broken);
+      interpreterProcess.releaseClient(interpreterServerMain, broken);
     }
 
     if (broken == true) {

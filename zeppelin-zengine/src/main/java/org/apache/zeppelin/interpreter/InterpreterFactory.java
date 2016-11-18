@@ -112,8 +112,6 @@ public class InterpreterFactory implements InterpreterGroupFactory {
   private Map<String, List<String>> interpreterBindings = new HashMap<>();
   private List<RemoteRepository> interpreterRepositories;
 
-  private RemoteWorksController remoteWorksController;
-
   private Gson gson;
 
   private InterpreterOption defaultOption;
@@ -277,14 +275,6 @@ public class InterpreterFactory implements InterpreterGroupFactory {
       logger.info("InterpreterSetting group {} : id={}, name={}", setting.getGroup(), settingId,
           setting.getName());
     }
-  }
-
-  public RemoteWorksController getRemoteWorksController() {
-    return remoteWorksController;
-  }
-
-  public void setRemoteController(RemoteWorksController remoteController) {
-    this.remoteWorksController = remoteController;
   }
 
   private InterpreterSetting createFromInterpreterSettingRef(String name) {
