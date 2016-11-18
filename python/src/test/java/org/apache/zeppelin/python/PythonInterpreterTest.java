@@ -95,21 +95,6 @@ public class PythonInterpreterTest {
     group.get("note").add(pythonInterpreter);
     pythonInterpreter.setInterpreterGroup(group);
 
-    /*
-    // python conda interpreter
-    ClassloaderInterpreter conda = new ClassloaderInterpreter(
-        new PythonCondaInterpreter(new Properties()),
-        Thread.currentThread().getContextClassLoader());
-
-    // create interpreter group
-    InterpreterGroup group = new InterpreterGroup();
-    group.put("note", new LinkedList<Interpreter>());
-    group.get("note").add(pythonInterpreter);
-    group.get("note").add(conda);
-    pythonInterpreter.setInterpreterGroup(group);
-    conda.setInterpreterGroup(group);
-    */
-
     when(pythonInterpreter.getPythonProcess()).thenReturn(mockPythonProcess);
     when(mockPythonProcess.sendAndGetResult(eq("\n\nimport py4j\n"))).thenReturn("ImportError");
   }

@@ -87,7 +87,7 @@ public class PythonCondaInterpreter extends Interpreter {
     python.open();
   }
 
-  private PythonInterpreter getPythonInterpreter() {
+  protected PythonInterpreter getPythonInterpreter() {
     LazyOpenInterpreter lazy = null;
     PythonInterpreter python = null;
     Interpreter p = getInterpreterInTheSameSessionByClassName(PythonInterpreter.class.getName());
@@ -111,7 +111,7 @@ public class PythonCondaInterpreter extends Interpreter {
   }
 
   private void listEnv(InterpreterOutput out) {
-    StringBuilder sb = new StringBuilder();
+    StringBuilder sb = createStringBuilder();
     try {
       int exit = runCommand(sb, "conda", "env", "list");
       if (exit == 0) {
@@ -170,7 +170,7 @@ public class PythonCondaInterpreter extends Interpreter {
     return 0;
   }
 
-  private int runCommand(StringBuilder sb, String ... command)
+  protected int runCommand(StringBuilder sb, String ... command)
       throws IOException, InterruptedException {
     ProcessBuilder builder = new ProcessBuilder(command);
     builder.redirectErrorStream(true);
@@ -184,5 +184,9 @@ public class PythonCondaInterpreter extends Interpreter {
     }
     int r = process.waitFor(); // Let the process finish.
     return r;
+  }
+
+  protected StringBuilder createStringBuilder() {
+    return new StringBuilder();
   }
 }
