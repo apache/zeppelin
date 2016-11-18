@@ -319,6 +319,7 @@ public class SparkInterpreter extends Interpreter {
 
     conf.set("spark.scheduler.mode", "FAIR");
     conf.setMaster(getProperty("master"));
+    conf.set("master", "yarn");
     conf.set("spark.submit.deployMode", "client");
 
     Properties intpProperty = getProperty();
