@@ -59,6 +59,14 @@ public class ParagraphTest {
     assertEquals("", Paragraph.getScriptBody(text));
   }
 
+
+  @Test
+  public void replSingleCharName() {
+    String text = "%r a";
+    assertEquals("r", Paragraph.getRequiredReplName(text));
+    assertEquals("a", Paragraph.getScriptBody(text));
+  }
+
   @Test
   public void replNameEndsWithWhitespace() {
     String text = "%md\r\n###Hello";

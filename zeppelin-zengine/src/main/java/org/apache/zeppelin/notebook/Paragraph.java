@@ -171,7 +171,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
       }
       scriptHeadIndex = i;
     }
-    if (scriptHeadIndex <= 1) {
+    if (scriptHeadIndex < 1) {
       return null;
     }
     String head = text.substring(1, scriptHeadIndex + 1);
