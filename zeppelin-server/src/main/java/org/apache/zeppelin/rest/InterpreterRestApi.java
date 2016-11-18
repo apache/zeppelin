@@ -80,7 +80,6 @@ public class InterpreterRestApi {
     return new JsonResponse<>(Status.OK, "", interpreterFactory.get()).build();
   }
 
-
   /**
    * Get a setting
    */
@@ -95,10 +94,10 @@ public class InterpreterRestApi {
       } else {
         return new JsonResponse<>(Status.OK, "", setting).build();
       }
-    } catch (NullPointerException e){
+    } catch (NullPointerException e) {
       logger.error("Exception in InterpreterRestApi while creating ", e);
       return new JsonResponse<>(Status.INTERNAL_SERVER_ERROR, e.getMessage(),
-          ExceptionUtils.getStackTrace(e)) .build();
+          ExceptionUtils.getStackTrace(e)).build();
     }
   }
 
@@ -231,7 +230,7 @@ public class InterpreterRestApi {
     try {
       Repository request = gson.fromJson(message, Repository.class);
       interpreterFactory.addRepository(request.getId(), request.getUrl(), request.isSnapshot(),
-        request.getAuthentication(), request.getProxy());
+          request.getAuthentication(), request.getProxy());
       logger.info("New repository {} added", request.getId());
     } catch (Exception e) {
       logger.error("Exception in InterpreterRestApi while adding repository ", e);
@@ -247,7 +246,7 @@ public class InterpreterRestApi {
   @GET
   @Path("getmetainfos/{settingId}")
   public Response getMetaInfo(@Context HttpServletRequest req,
-      @PathParam("settingId") String settingId) {
+                              @PathParam("settingId") String settingId) {
     String propName = req.getParameter("propName");
     if (propName == null) {
       return new JsonResponse<>(Status.BAD_REQUEST).build();

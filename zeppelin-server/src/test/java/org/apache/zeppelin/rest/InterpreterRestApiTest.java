@@ -294,6 +294,7 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
     JsonObject response = gson.fromJson(rawResponse, JsonElement.class).getAsJsonObject();
     return response.getAsJsonObject("body");
   }
+
   public JsonArray getArrayBodyFieldFromResponse(String rawResponse) {
     JsonObject response = gson.fromJson(rawResponse, JsonElement.class).getAsJsonObject();
     return response.getAsJsonArray("body");
