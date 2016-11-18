@@ -29,7 +29,7 @@ zeppelin.TableData = function(columns, rows, comment) {
 zeppelin.TableData.prototype = Object.create(zeppelin.Dataset.prototype);
 
 zeppelin.TableData.prototype.loadParagraphResult = function(paragraphResult) {
-  if (!paragraphResult || paragraphResult.type !== 'TABLE') {
+  if (!paragraphResult || paragraphResult.type !== zeppelin.DatasetTypes.TABLE) {
     console.log('Can not load paragraph result');
     return;
   }

@@ -62,7 +62,7 @@ zeppelin.NetworkVisualization.prototype.render = function(networkData) {
   }
   this.sigma.graph.read(networkData.graph);
   this.sigma.refresh();
-  
+
   var forceAtlas2Config = {barnesHutOptimize: networkData.graph.nodes.length > 50};
   this.sigma.startForceAtlas2();
   $timeout(function() {

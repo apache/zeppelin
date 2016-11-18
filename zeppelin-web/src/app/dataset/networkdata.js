@@ -23,7 +23,7 @@ zeppelin.NetworkData = function(graph) {
   zeppelin.TableData.call(this);
   this.graph = graph || {};
   if (this.graph.nodes) {
-    this.loadParagraphResult(JSON.stringify({msg: graph, type: zeppelin.DataTypes.NETWORK}));
+    this.loadParagraphResult(JSON.stringify({msg: graph, type: zeppelin.DatasetTypes.NETWORK}));
   } else {
     this.comment = [];
     this.columns = [];
@@ -34,7 +34,7 @@ zeppelin.NetworkData = function(graph) {
 zeppelin.NetworkData.prototype = Object.create(zeppelin.TableData.prototype);
 
 zeppelin.NetworkData.prototype.loadParagraphResult = function(paragraphResult) {
-  if (!paragraphResult || paragraphResult.type !== zeppelin.DataTypes.NETWORK) {
+  if (!paragraphResult || paragraphResult.type !== zeppelin.DatasetTypes.NETWORK) {
     console.log('Can not load paragraph result');
     return;
   }
