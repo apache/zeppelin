@@ -44,21 +44,27 @@ You need to [install docker](https://docs.docker.com/engine/installation/) on yo
 ```
 docker pull ${DOCKER_USERNAME}/zeppelin-release:<release-version>
 
-docker run --rm -it -p 7077:7077 -p 8081:8081 ${DOCKER_USERNAME}/zeppelin-release:<release-version> -c bash
+docker run --rm -it -p 7077:7077 -p 8080:8080 ${DOCKER_USERNAME}/zeppelin-release:<release-version> -c bash
 ```
 * Then a docker container will start with a Zeppelin release on path :
 `/usr/local/zeppelin/`
 
 * Run zeppelin inside docker:
 ```
-/usr/local/zeppelin/bin/zeppelin-daemon start
+start-zeppelin.sh start
 ```
 
-* To Run Zeppelin in daemon mode 
+* To Run Zeppelin in daemon mode
+Mounting logs and notebooks zeppelin to folders on your host machine
+
 ```
-docker run -d -p 7077:7077 -p 8081:8081 ${DOCKER_USERNAME}/zeppelin-release:<release-version> \
- bash -c "/usr/local/zeppelin/bin/zeppelin-daemon.sh restart && while true; do sleep 3; done"
+docker run -p 7077:7077 -p 8080:8080 --privileged=true -v $PWD/logs:/logs -v $PWD/notebook:/notebook \
+-e ZEPPELIN_NOTEBOOK_DIR='/notebook' \
+-e ZEPPELIN_LOG_DIR='/logs' \
+-d ${DOCKER_USERNAME}/zeppelin-release:<release-version> \
+ bash -c "start-zeppelin.sh restart && while true; do sleep 3; done"
 ```
+
 
 * Zeppelin will run at `http://localhost:8080`.
 

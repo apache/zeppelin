@@ -45,6 +45,9 @@ RUN apk add --update bash curl openjdk7-jre wget ca-certificates python build-ba
 RUN wget -O /usr/local/bin/dumb-init https://github.com/Yelp/dumb-init/releases/download/v1.1.3/dumb-init_1.1.3_amd64
 RUN chmod +x /usr/local/bin/dumb-init
 
+ADD start-zeppelin.sh /usr/bin/start-zeppelin.sh
+RUN chmod a+x /usr/bin/start-zeppelin.sh
+
 # ports for zeppelin
 EXPOSE 8080 7077
 
