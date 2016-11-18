@@ -63,7 +63,7 @@ public abstract class RemoteInterpreterProcess {
 
   public abstract String getHost();
   public abstract int getPort();
-  public abstract void start();
+  public abstract void start(String userName, Boolean isUserImpersonate);
   public abstract void stop();
   public abstract boolean isRunning();
 
@@ -71,10 +71,11 @@ public abstract class RemoteInterpreterProcess {
     return connectTimeout;
   }
 
-  public int reference(InterpreterGroup interpreterGroup) {
+  public int reference(InterpreterGroup interpreterGroup, String userName,
+                       Boolean isUserImpersonate) {
     synchronized (referenceCount) {
       if (!isRunning()) {
-        start();
+        start(userName, isUserImpersonate);
       }
 
       if (clientPool == null) {

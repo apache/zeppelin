@@ -90,7 +90,9 @@ public class RemoteInterpreterTest {
             env,
             10 * 1000,
             null,
-            null);
+            null,
+        "anonymous",
+        false);
   }
 
   private RemoteInterpreter createMockInterpreterB(Properties p) {
@@ -108,7 +110,9 @@ public class RemoteInterpreterTest {
             env,
             10 * 1000,
             null,
-            null);
+            null,
+        "anonymous",
+        false);
   }
 
   @Test
@@ -207,7 +211,9 @@ public class RemoteInterpreterTest {
         env,
         10 * 1000,
         null,
-        null);
+        null,
+        "anonymous",
+        false);
 
 
     intpGroup.get("note").add(intpA);
@@ -223,7 +229,9 @@ public class RemoteInterpreterTest {
         env,
         10 * 1000,
         null,
-        null);
+        null,
+        "anonymous",
+        false);
 
     intpGroup.get("note").add(intpB);
     intpB.setInterpreterGroup(intpGroup);
@@ -687,7 +695,8 @@ public class RemoteInterpreterTest {
     //Given
     final Client client = Mockito.mock(Client.class);
     final RemoteInterpreter intr = new RemoteInterpreter(new Properties(), "noteId",
-            MockInterpreterA.class.getName(), "runner", "path","localRepo", env, 10 * 1000, null, null);
+        MockInterpreterA.class.getName(), "runner", "path", "localRepo", env, 10 * 1000, null,
+        null, "anonymous", false);
     final AngularObjectRegistry registry = new AngularObjectRegistry("spark", null);
     registry.add("name", "DuyHai DOAN", "nodeId", "paragraphId");
     final InterpreterGroup interpreterGroup = new InterpreterGroup("groupId");
@@ -733,7 +742,9 @@ public class RemoteInterpreterTest {
         env,
         10 * 1000,
         null,
-        null);
+        null,
+        "anonymous",
+        false);
 
     intpGroup.put("note", new LinkedList<Interpreter>());
     intpGroup.get("note").add(intp);

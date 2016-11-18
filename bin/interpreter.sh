@@ -23,7 +23,7 @@ function usage() {
     echo "usage) $0 -p <port> -d <interpreter dir to load> -l <local interpreter repo dir to load>"
 }
 
-while getopts "hp:d:l:v" o; do
+while getopts "hp:d:l:v:u:" o; do
     case ${o} in
         h)
             usage
@@ -41,6 +41,14 @@ while getopts "hp:d:l:v" o; do
         v)
             . "${bin}/common.sh"
             getZeppelinVersion
+            ;;
+        u)
+            ZEPPELIN_IMPERSONATE_USER="${OPTARG}"
+            if [[ -z "$ZEPPELIN_IMPERSONATE_CMD" ]]; then
+              ZEPPELIN_IMPERSONATE_RUN_CMD=`echo "ssh ${ZEPPELIN_IMPERSONATE_USER}@localhost" `
+            else
+              ZEPPELIN_IMPERSONATE_RUN_CMD=$(eval "echo ${ZEPPELIN_IMPERSONATE_CMD} ")
+            fi
             ;;
         esac
 done
@@ -178,9 +186,9 @@ addJarInDirForIntp "${LOCAL_INTERPRETER_REPO}"
 CLASSPATH+=":${ZEPPELIN_INTP_CLASSPATH}"
 
 if [[ -n "${SPARK_SUBMIT}" ]]; then
-    ${SPARK_SUBMIT} --class ${ZEPPELIN_SERVER} --driver-class-path "${ZEPPELIN_INTP_CLASSPATH_OVERRIDES}:${CLASSPATH}" --driver-java-options "${JAVA_INTP_OPTS}" ${SPARK_SUBMIT_OPTIONS} ${SPARK_APP_JAR} ${PORT} &
+    ${ZEPPELIN_IMPERSONATE_RUN_CMD} `${SPARK_SUBMIT} --class ${ZEPPELIN_SERVER} --driver-class-path "${ZEPPELIN_INTP_CLASSPATH_OVERRIDES}:${CLASSPATH}" --driver-java-options "${JAVA_INTP_OPTS}" ${SPARK_SUBMIT_OPTIONS} ${SPARK_APP_JAR} ${PORT} &`
 else
-    ${ZEPPELIN_RUNNER} ${JAVA_INTP_OPTS} ${ZEPPELIN_INTP_MEM} -cp ${ZEPPELIN_INTP_CLASSPATH_OVERRIDES}:${CLASSPATH} ${ZEPPELIN_SERVER} ${PORT} &
+    ${ZEPPELIN_IMPERSONATE_RUN_CMD} ${ZEPPELIN_RUNNER} ${JAVA_INTP_OPTS} ${ZEPPELIN_INTP_MEM} -cp ${ZEPPELIN_INTP_CLASSPATH_OVERRIDES}:${CLASSPATH} ${ZEPPELIN_SERVER} ${PORT} &
 fi
 
 pid=$!

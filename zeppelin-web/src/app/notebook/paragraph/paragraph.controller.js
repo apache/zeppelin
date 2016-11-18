@@ -204,6 +204,7 @@
 
       initializeDefault();
 
+<<<<<<< HEAD
       var resultType = $scope.getResultType();
       if (resultType === 'TABLE' || resultType === 'NETWORK') {
         paragraphDataset = new zeppelin.DatasetFactory().createDataset($scope.getResultType());
@@ -215,6 +216,14 @@
           $scope.networkRelationships = angular.equals([], paragraphDataset.graph.types || []) ?
                   null : {count: paragraphDataset.graph.edges.length, types: paragraphDataset.graph.types};
         }
+=======
+      if ($scope.getResultType() === 'TABLE') {
+        var TableData = zeppelin.TableData;
+        tableData = new TableData();
+        tableData.loadParagraphResult($scope.paragraph.result);
+        $scope.tableDataColumns = tableData.columns;
+        $scope.tableDataComment = tableData.comment;
+>>>>>>> refs/remotes/home/master
         $scope.setGraphMode($scope.getGraphMode(), false, false);
       } else if (resultType === 'HTML') {
         $scope.renderHtml();
@@ -1101,7 +1110,11 @@
               if (targetEl.length) {
                 targetEl.height(height);
                 builtInViz.instance.setConfig($scope.paragraph.config.graph);
+<<<<<<< HEAD
                 builtInViz.instance.render(paragraphDataset);
+=======
+                builtInViz.instance.render(tableData);
+>>>>>>> refs/remotes/home/master
               } else {
                 $timeout(retryRenderer, 10);
               }
@@ -1390,8 +1403,13 @@
         dsv += paragraphDataset.columns[titleIndex].name + delimiter;
       }
       dsv = dsv.substring(0, dsv.length - 1) + '\n';
+<<<<<<< HEAD
       for (var r in paragraphDataset.rows) {
         var row = paragraphDataset.rows[r];
+=======
+      for (var r in tableData.rows) {
+        var row = tableData.rows[r];
+>>>>>>> refs/remotes/home/master
         var dsvRow = '';
         for (var index in row) {
           var stringValue =  (row[index]).toString();
@@ -1778,12 +1796,22 @@
           $scope.paragraph.config = data.paragraph.config;
         }
 
+<<<<<<< HEAD
         if (newType === 'TABLE' || newType === 'NETWORK') {
           if ((oldType !== 'TABLE' && oldType !== 'NETWORK') || resultRefreshed) {
             paragraphDataset = new zeppelin.DatasetFactory().createDataset(newType);
             paragraphDataset.loadParagraphResult($scope.paragraph.result);
             $scope.tableDataColumns = paragraphDataset.columns;
             $scope.tableDataComment = paragraphDataset.comment;
+=======
+        if (newType === 'TABLE') {
+          if (oldType !== 'TABLE' || resultRefreshed) {
+            var TableData = zeppelin.TableData;
+            tableData = new TableData();
+            tableData.loadParagraphResult($scope.paragraph.result);
+            $scope.tableDataColumns = tableData.columns;
+            $scope.tableDataComment = tableData.comment;
+>>>>>>> refs/remotes/home/master
             clearUnknownColsFromGraphOption();
             selectDefaultColsForGraphOption();
           }
