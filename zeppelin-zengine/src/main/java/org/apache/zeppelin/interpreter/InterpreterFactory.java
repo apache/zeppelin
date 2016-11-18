@@ -785,10 +785,10 @@ public class InterpreterFactory implements InterpreterGroupFactory {
         if (option.isExistingProcess()) {
           interpreter =
               connectToRemoteRepl(noteId, info.getClassName(), option.getHost(), option.getPort(),
-                  properties);
+                  properties, user, option.isUserImpersonate);
         } else {
           interpreter = createRemoteRepl(path, key, info.getClassName(), properties,
-              interpreterSetting.getId());
+              interpreterSetting.getId(), user, option.isUserImpersonate());
         }
       } else {
         interpreter = createRepl(interpreterSetting.getPath(), info.getClassName(), properties);
@@ -1109,17 +1109,18 @@ public class InterpreterFactory implements InterpreterGroupFactory {
   }
 
   private Interpreter connectToRemoteRepl(String noteId, String className, String host, int port,
-      Properties property) {
+      Properties property, String userName, Boolean isUserImpersonate) {
     int connectTimeout = conf.getInt(ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT);
     int maxPoolSize = conf.getInt(ConfVars.ZEPPELIN_INTERPRETER_MAX_POOL_SIZE);
     LazyOpenInterpreter intp = new LazyOpenInterpreter(
         new RemoteInterpreter(property, noteId, className, host, port, connectTimeout, maxPoolSize,
-            remoteInterpreterProcessListener, appEventListener, remoteWorksController));
+            remoteInterpreterProcessListener, appEventListener, userName, isUserImpersonate));
     return intp;
   }
 
   private Interpreter createRemoteRepl(String interpreterPath, String noteId, String className,
-      Properties property, String interpreterSettingId) {
+      Properties property, String interpreterSettingId, String userName,
+      Boolean isUserImpersonate) {
     int connectTimeout = conf.getInt(ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT);
     String localRepoPath = conf.getInterpreterLocalRepoPath() + "/" + interpreterSettingId;
     int maxPoolSize = conf.getInt(ConfVars.ZEPPELIN_INTERPRETER_MAX_POOL_SIZE);
@@ -1127,7 +1128,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     RemoteInterpreter remoteInterpreter =
         new RemoteInterpreter(property, noteId, className, conf.getInterpreterRemoteRunnerPath(),
             interpreterPath, localRepoPath, connectTimeout, maxPoolSize,
-            remoteInterpreterProcessListener, appEventListener, remoteWorksController);
+            remoteInterpreterProcessListener, appEventListener, userName, isUserImpersonate);
     remoteInterpreter.addEnv(env);
 
     return new LazyOpenInterpreter(remoteInterpreter);
@@ -1423,7 +1424,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
       InterpreterGroup interpreterGroup = createInterpreterGroup("dev", option);
 
       devInterpreter = connectToRemoteRepl("dev", DevInterpreter.class.getName(), "localhost",
-          ZeppelinDevServer.DEFAULT_TEST_INTERPRETER_PORT, new Properties());
+          ZeppelinDevServer.DEFAULT_TEST_INTERPRETER_PORT, new Properties(), "anonymous", false);
 
       LinkedList<Interpreter> intpList = new LinkedList<>();
       intpList.add(devInterpreter);

@@ -71,7 +71,8 @@ public class DistributedResourcePoolTest {
         10 * 1000,
         null,
         null,
-        null
+        "anonymous",
+        false
     );
 
     intpGroup1 = new InterpreterGroup("intpGroup1");
@@ -90,7 +91,8 @@ public class DistributedResourcePoolTest {
         10 * 1000,
         null,
         null,
-        null
+        "anonymous",
+        false
     );
 
     intpGroup2 = new InterpreterGroup("intpGroup2");

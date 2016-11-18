@@ -17,11 +17,12 @@
   angular.module('zeppelinWebApp').controller('LoginCtrl', LoginCtrl);
 
   LoginCtrl.$inject = ['$scope', '$rootScope', '$http', '$httpParamSerializer', 'baseUrlSrv'];
-
   function LoginCtrl($scope, $rootScope, $http, $httpParamSerializer, baseUrlSrv) {
+    $scope.SigningIn = false;
     $scope.loginParams = {};
     $scope.login = function() {
 
+      $scope.SigningIn = true;
       $http({
         method: 'POST',
         url: baseUrlSrv.getRestApiBase() + '/login',
@@ -39,6 +40,7 @@
         $rootScope.userName = $scope.loginParams.userName;
       }, function errorCallback(errorResponse) {
         $scope.loginParams.errorText = 'The username and password that you entered don\'t match.';
+        $scope.SigningIn = false;
       });
 
     };

@@ -53,7 +53,7 @@ public class RemoteInterpreterRunningProcess extends RemoteInterpreterProcess {
   }
 
   @Override
-  public void start() {
+  public void start(String userName, Boolean isUserImpersonate) {
     // assume process is externally managed. nothing to do
   }
 

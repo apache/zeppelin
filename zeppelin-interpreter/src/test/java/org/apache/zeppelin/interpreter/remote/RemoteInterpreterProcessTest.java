@@ -46,8 +46,8 @@ public class RemoteInterpreterProcessTest {
         10 * 1000, null, null, null);
     assertFalse(rip.isRunning());
     assertEquals(0, rip.referenceCount());
-    assertEquals(1, rip.reference(intpGroup));
-    assertEquals(2, rip.reference(intpGroup));
+    assertEquals(1, rip.reference(intpGroup, "anonymous", false));
+    assertEquals(2, rip.reference(intpGroup, "anonymous", false));
     assertEquals(true, rip.isRunning());
     assertEquals(1, rip.dereference());
     assertEquals(true, rip.isRunning());
@@ -61,7 +61,7 @@ public class RemoteInterpreterProcessTest {
     RemoteInterpreterManagedProcess rip = new RemoteInterpreterManagedProcess(
         INTERPRETER_SCRIPT, "nonexists", "fakeRepo", new HashMap<String, String>(),
         mock(RemoteInterpreterEventPoller.class), 10 * 1000);
-    rip.reference(intpGroup);
+    rip.reference(intpGroup, "anonymous", false);
     assertEquals(0, rip.getNumActiveClient());
     assertEquals(0, rip.getNumIdleClient());
 
@@ -106,7 +106,7 @@ public class RemoteInterpreterProcessTest {
         , 10 * 1000);
     assertFalse(rip.isRunning());
     assertEquals(0, rip.referenceCount());
-    assertEquals(1, rip.reference(intpGroup));
+    assertEquals(1, rip.reference(intpGroup, "anonymous", false));
     assertEquals(true, rip.isRunning());
   }
 }
