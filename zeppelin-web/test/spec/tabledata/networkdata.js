@@ -14,28 +14,28 @@
 
 'use strict';
 
-describe('TableData build', function() {
-  var td;
+describe('NetworkData build', function() {
+  var nd;
 
   beforeEach(function() {
-    var TableData = zeppelin.TableData;
-    td = new TableData();
+    var NetworkData = zeppelin.NetworkData;
+    nd = new NetworkData();
   });
 
   it('should initialize the default value', function() {
-    expect(td.columns.length).toBe(0);
-    expect(td.rows.length).toBe(0);
-    expect(td.comment).toBe('');
+    expect(nd.columns.length).toBe(0);
+    expect(nd.rows.length).toBe(0);
+    expect(nd.graph).toBe({});
   });
 
-  it('should able to create Tabledata from paragraph result', function() {
+  it('should able to create NetowkData from paragraph result', function() {
     td.loadParagraphResult({
-      type: zeppelin.DatasetTypes.TABLE,
-      msg: 'key\tvalue\na\t10\nb\t20\n\nhello'
+      type: zeppelin.DatasetTypes.NETWORK,
+      msg: '{"nodes" : [{"id" : 1}, {"id" : 2}], "edges" : [{"source" : 2, "target" : 1, "id" : 1 }]}'
     });
 
-    expect(td.columns.length).toBe(2);
-    expect(td.rows.length).toBe(2);
-    expect(td.comment).toBe('hello');
+    expect(td.columns.length).toBe(1);
+    expect(td.rows.length).toBe(3);
+    expect(td.graph).toBe({"nodes" : [{"id" : 1}, {"id" : 2}], "edges" : [{"source" : 2, "target" : 1, "id" : 1 }]});
   });
 });

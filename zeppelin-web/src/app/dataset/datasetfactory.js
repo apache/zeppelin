@@ -22,17 +22,17 @@ var zeppelin = zeppelin || {};
 zeppelin.DatasetFactory = function(type) {
   this.createDataset = function(dataType) {
     switch (dataType) {
-    case zeppelin.DataTypes.NETWORK:
+    case zeppelin.DatasetTypes.NETWORK:
       return new zeppelin.NetworkData();
-    case zeppelin.DataTypes.TABLE:
+    case zeppelin.DatasetTypes.TABLE:
       return new zeppelin.TableData();
     default:
-      throw 'type not found';
+      throw 'Dataset type not found';
     }
   };
 };
 
-zeppelin.DataTypes = {
+zeppelin.DatasetTypes = {
   NETWORK: 'NETWORK',
   TABLE: 'TABLE'
 };
