@@ -319,6 +319,8 @@ public class SparkInterpreter extends Interpreter {
 
     conf.set("spark.scheduler.mode", "FAIR");
     conf.setMaster(getProperty("master"));
+    conf.set("master", "yarn");
+    conf.set("spark.submit.deployMode", "client");
 
     Properties intpProperty = getProperty();
 
@@ -510,7 +512,7 @@ public class SparkInterpreter extends Interpreter {
 
     // Distributes needed libraries to workers
     // when spark version is greater than or equal to 1.5.0
-    if (getProperty("master").equals("yarn-client")) {
+    if (getProperty("master").equals("yarn-client") || getProperty("master").equals("yarn")) {
       conf.set("spark.yarn.isPython", "true");
     }
   }
@@ -559,7 +561,7 @@ public class SparkInterpreter extends Interpreter {
   @Override
   public void open() {
     // set properties and do login before creating any spark stuff for secured cluster
-    if (getProperty("master").equals("yarn-client")) {
+    if (getProperty("master").equals("yarn-client") || getProperty("master").equals("yarn")) {
       System.setProperty("SPARK_YARN_MODE", "true");
     }
     if (getProperty().containsKey("spark.yarn.keytab") &&
