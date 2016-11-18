@@ -160,7 +160,7 @@ public class ZeppelinHubRepo implements NotebookRepo {
     if (StringUtils.isBlank(ticket)) {
       return "";
     }
-    List<Instance> instances = restApiClient.asyncGetInstances(ticket);
+    List<Instance> instances = restApiClient.getInstances(ticket);
     // TODO(anthony): Implement NotebookRepo Setting to let user switch token at runtime.
     token = instances.get(0).token;
     return token;
@@ -191,7 +191,7 @@ public class ZeppelinHubRepo implements NotebookRepo {
       return Collections.emptyList();
     }
     String token = getUserToken(subject.getUser());
-    String response = restApiClient.asyncGet(token, StringUtils.EMPTY);
+    String response = restApiClient.get(token, StringUtils.EMPTY);
     List<NoteInfo> notes = GSON.fromJson(response, new TypeToken<List<NoteInfo>>() {}.getType());
     if (notes == null) {
       return Collections.emptyList();
@@ -206,7 +206,7 @@ public class ZeppelinHubRepo implements NotebookRepo {
       return EMPTY_NOTE;
     }
     String token = getUserToken(subject.getUser());
-    String response = restApiClient.asyncGet(token, noteId);
+    String response = restApiClient.get(token, noteId);
     Note note = GSON.fromJson(response, Note.class);
     if (note == null) {
       return EMPTY_NOTE;
@@ -223,14 +223,14 @@ public class ZeppelinHubRepo implements NotebookRepo {
     String jsonNote = GSON.toJson(note);
     String token = getUserToken(subject.getUser());
     LOG.info("ZeppelinHub REST API saving note {} ", note.getId());
-    restApiClient.asyncPut(token, jsonNote);
+    restApiClient.put(token, jsonNote);
   }
 
   @Override
   public void remove(String noteId, AuthenticationInfo subject) throws IOException {
     String token = getUserToken(subject.getUser());
     LOG.info("ZeppelinHub REST API removing note {} ", noteId);
-    restApiClient.asyncDel(token, noteId);
+    restApiClient.del(token, noteId);
   }
 
   @Override
@@ -248,7 +248,7 @@ public class ZeppelinHubRepo implements NotebookRepo {
     String content = GSON.toJson(ImmutableMap.of("message", checkpointMsg));
     
     String token = getUserToken(subject.getUser());
-    String response = restApiClient.asyncPutWithResponseBody(token, endpoint, content);
+    String response = restApiClient.putWithResponseBody(token, endpoint, content);
 
     return GSON.fromJson(response, Revision.class);
   }
@@ -261,7 +261,7 @@ public class ZeppelinHubRepo implements NotebookRepo {
     String endpoint = Joiner.on("/").join(noteId, "checkpoint", revId);
     
     String token = getUserToken(subject.getUser());
-    String response = restApiClient.asyncGet(token, endpoint);
+    String response = restApiClient.get(token, endpoint);
 
     Note note = GSON.fromJson(response, Note.class);
     if (note == null) {
@@ -280,7 +280,7 @@ public class ZeppelinHubRepo implements NotebookRepo {
     List<Revision> history = Collections.emptyList();
     try {
       String token = getUserToken(subject.getUser());
-      String response = restApiClient.asyncGet(token, endpoint);
+      String response = restApiClient.get(token, endpoint);
       history = GSON.fromJson(response, new TypeToken<List<Revision>>(){}.getType());
     } catch (IOException e) {
       LOG.error("Cannot get note history", e);

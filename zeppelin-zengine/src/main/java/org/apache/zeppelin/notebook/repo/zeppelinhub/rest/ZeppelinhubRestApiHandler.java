@@ -125,7 +125,7 @@ public class ZeppelinhubRestApiHandler {
    * @return
    * @throws IOException
    */
-  public List<Instance> asyncGetInstances(String ticket) throws IOException {
+  public List<Instance> getInstances(String ticket) throws IOException {
     InputStreamResponseListener listener = new InputStreamResponseListener();
     Response response;
     String url = zepelinhubUrl + "instances";
@@ -154,12 +154,12 @@ public class ZeppelinhubRestApiHandler {
     return new Gson().fromJson(data, listType);
   }
 
-  public String asyncGet(String token, String argument) throws IOException {
+  public String get(String token, String argument) throws IOException {
     String url = zepelinhubUrl + argument;
     return sendToZeppelinHub(HttpMethod.GET, url, StringUtils.EMPTY, token, true);
   }
   
-  public String asyncPutWithResponseBody(String token, String url, String json) throws IOException {
+  public String putWithResponseBody(String token, String url, String json) throws IOException {
     if (StringUtils.isBlank(url) || StringUtils.isBlank(json)) {
       LOG.error("Empty note, cannot send it to zeppelinHub");
       throw new IOException("Cannot send emtpy note to zeppelinHub");
@@ -167,7 +167,7 @@ public class ZeppelinhubRestApiHandler {
     return sendToZeppelinHub(HttpMethod.PUT, zepelinhubUrl + url, json, token, true);
   }
   
-  public void asyncPut(String token, String jsonNote) throws IOException {
+  public void put(String token, String jsonNote) throws IOException {
     if (StringUtils.isBlank(jsonNote)) {
       LOG.error("Cannot save empty note/string to ZeppelinHub");
       return;
@@ -175,7 +175,7 @@ public class ZeppelinhubRestApiHandler {
     sendToZeppelinHub(HttpMethod.PUT, zepelinhubUrl, jsonNote, token, false);
   }
 
-  public void asyncDel(String token, String argument) throws IOException {
+  public void del(String token, String argument) throws IOException {
     if (StringUtils.isBlank(argument)) {
       LOG.error("Cannot delete empty note from ZeppelinHub");
       return;
