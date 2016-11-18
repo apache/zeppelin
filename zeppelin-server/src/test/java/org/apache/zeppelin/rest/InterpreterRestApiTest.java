@@ -21,6 +21,8 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import org.apache.commons.httpclient.methods.DeleteMethod;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
@@ -94,6 +96,17 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
   }
 
   @Test
+  public void testGetNonExistInterpreterSetting() throws IOException {
+    // when
+    String nonExistInterpreterSettingId = "apache_.zeppelin_1s_.aw3some$";
+    GetMethod get = httpGet("/interpreter/setting/" + nonExistInterpreterSettingId);
+    get.releaseConnection();
+
+    // when
+    assertThat("Test get method:", get, isNotFound());
+  }
+
+  @Test
   public void testSettingsCRUD() throws IOException {
     // Call Create Setting REST API
     String jsonRequest = "{\"name\":\"md2\",\"group\":\"md\",\"properties\":{\"propname\":\"propvalue\"}," +
@@ -110,6 +123,18 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
     //extract id from body string {id=2AWMQDNX7, name=md2, group=md,
     String newSettingId = body.toString().split(",")[0].split("=")[1];
     post.releaseConnection();
+
+    // Call Read Setting API
+    GetMethod get = httpGet("/interpreter/setting/" + newSettingId);
+    String rawResponse = get.getResponseBodyAsString();
+    LOG.info("testSettingCRUD get response\n" + rawResponse);
+    get.releaseConnection();
+    JsonObject response = gson.fromJson(rawResponse, JsonElement.class)
+        .getAsJsonObject();
+    assertThat("Test get method:", get, isAllowed());
+    InterpreterSetting created = gson.fromJson(response.getAsJsonObject("body"),
+        InterpreterSetting.class);
+    assertEquals(newSettingId, created.getId());
 
     // Call Update Setting REST API
     jsonRequest = "{\"name\":\"md2\",\"group\":\"md\",\"properties\":{\"propname\":\"Otherpropvalue\"}," +

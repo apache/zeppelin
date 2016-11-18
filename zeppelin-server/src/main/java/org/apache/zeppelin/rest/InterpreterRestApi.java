@@ -80,6 +80,28 @@ public class InterpreterRestApi {
     return new JsonResponse<>(Status.OK, "", interpreterFactory.get()).build();
   }
 
+
+  /**
+   * Get a setting
+   */
+  @GET
+  @Path("setting/{settingId}")
+  @ZeppelinApi
+  public Response getSetting(@PathParam("settingId") String settingId) {
+    try {
+      InterpreterSetting setting = interpreterFactory.get(settingId);
+      if (setting == null) {
+        return new JsonResponse<>(Status.NOT_FOUND).build();
+      } else {
+        return new JsonResponse<>(Status.OK, "", setting).build();
+      }
+    } catch (NullPointerException e){
+      logger.error("Exception in InterpreterRestApi while creating ", e);
+      return new JsonResponse<>(Status.INTERNAL_SERVER_ERROR, e.getMessage(),
+          ExceptionUtils.getStackTrace(e)) .build();
+    }
+  }
+
   /**
    * Add new interpreter setting
    *
