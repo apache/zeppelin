@@ -99,83 +99,6 @@
 
     var angularObjectRegistry = {};
 
-    /**
-     * Built-in visualizations
-     */
-    $scope.builtInTableDataVisualizationList = [
-      {
-        id: 'table',   // paragraph.config.graph.mode
-        name: 'Table', // human readable name. tooltip
-        icon: 'fa fa-table'
-      },
-      {
-        id: 'multiBarChart',
-        name: 'Bar Chart',
-        icon: 'fa fa-bar-chart',
-        transformation: 'pivot'
-      },
-      {
-        id: 'pieChart',
-        name: 'Pie Chart',
-        icon: 'fa fa-pie-chart',
-        transformation: 'pivot'
-      },
-      {
-        id: 'stackedAreaChart',
-        name: 'Area Chart',
-        icon: 'fa fa-area-chart',
-        transformation: 'pivot'
-      },
-      {
-        id: 'lineChart',
-        name: 'Line Chart',
-        icon: 'fa fa-line-chart',
-        transformation: 'pivot'
-      },
-      {
-        id: 'scatterChart',
-        name: 'Scatter Chart',
-        icon: 'cf cf-scatter-chart'
-      }
-    ];
-
-    /**
-     * Holds class and actual runtime instance and related infos of built-in visualizations
-     */
-    var builtInVisualizations = {
-      'table': {
-        class: zeppelin.TableVisualization,
-        instance: undefined   // created from setGraphMode()
-      },
-      'multiBarChart': {
-        class: zeppelin.BarchartVisualization,
-        instance: undefined
-      },
-      'pieChart': {
-        class: zeppelin.PiechartVisualization,
-        instance: undefined
-      },
-      'stackedAreaChart': {
-        class: zeppelin.AreachartVisualization,
-        instance: undefined
-      },
-      'lineChart': {
-        class: zeppelin.LinechartVisualization,
-        instance: undefined
-      },
-      'scatterChart': {
-        class: zeppelin.ScatterchartVisualization,
-        instance: undefined
-      }
-    };
-
-    /**
-     * TableData instance
-     */
-    var tableData;
-
-    // available columns in tabledata
-    $scope.tableDataColumns = [];
 
     // Controller init
     $scope.init = function(newParagraph, note) {
@@ -195,21 +118,6 @@
 
       initializeDefault();
 
-      if ($scope.getResultType() === 'TABLE') {
-        var TableData = zeppelin.TableData;
-        tableData = new TableData();
-        tableData.loadParagraphResult($scope.paragraph.result);
-        $scope.tableDataColumns = tableData.columns;
-        $scope.tableDataComment = tableData.comment;
-        $scope.setGraphMode($scope.getGraphMode(), false, false);
-      } else if ($scope.getResultType() === 'HTML') {
-        $scope.renderHtml();
-      } else if ($scope.getResultType() === 'ANGULAR') {
-        $scope.renderAngular();
-      } else if ($scope.getResultType() === 'TEXT') {
-        $scope.renderText();
-      }
-
       getApplicationStates();
       getSuggestions();
 
@@ -220,89 +128,6 @@
       }
     };
 
-    $scope.renderHtml = function() {
-      var retryRenderer = function() {
-        var htmlEl = angular.element('#p' + $scope.paragraph.id + '_html');
-        if (htmlEl.length) {
-          try {
-            htmlEl.html($scope.paragraph.result.msg);
-
-            htmlEl.find('pre code').each(function(i, e) {
-              hljs.highlightBlock(e);
-            });
-            /*eslint new-cap: [2, {"capIsNewExceptions": ["MathJax.Hub.Queue"]}]*/
-            MathJax.Hub.Queue(['Typeset', MathJax.Hub, htmlEl[0]]);
-          } catch (err) {
-            console.log('HTML rendering error %o', err);
-          }
-        } else {
-          $timeout(retryRenderer, 10);
-        }
-      };
-      $timeout(retryRenderer);
-    };
-
-    $scope.renderAngular = function() {
-      var retryRenderer = function() {
-        if (angular.element('#p' + $scope.paragraph.id + '_angular').length) {
-          try {
-            angular.element('#p' + $scope.paragraph.id + '_angular').html($scope.paragraph.result.msg);
-
-            $compile(angular.element('#p' + $scope.paragraph.id + '_angular').contents())(paragraphScope);
-          } catch (err) {
-            console.log('ANGULAR rendering error %o', err);
-          }
-        } else {
-          $timeout(retryRenderer, 10);
-        }
-      };
-      $timeout(retryRenderer);
-    };
-
-    $scope.renderText = function() {
-      var retryRenderer = function() {
-
-        var textEl = angular.element('#p' + $scope.paragraph.id + '_text');
-        if (textEl.length) {
-          // clear all lines before render
-          $scope.clearTextOutput();
-
-          if ($scope.paragraph.result && $scope.paragraph.result.msg) {
-            $scope.appendTextOutput($scope.paragraph.result.msg);
-          }
-
-          angular.element('#p' + $scope.paragraph.id + '_text').bind('mousewheel', function(e) {
-            $scope.keepScrollDown = false;
-          });
-          $scope.flushStreamingOutput = true;
-        } else {
-          $timeout(retryRenderer, 10);
-        }
-      };
-      $timeout(retryRenderer);
-    };
-
-    $scope.clearTextOutput = function() {
-      var textEl = angular.element('#p' + $scope.paragraph.id + '_text');
-      if (textEl.length) {
-        textEl.children().remove();
-      }
-    };
-
-    $scope.appendTextOutput = function(msg) {
-      var textEl = angular.element('#p' + $scope.paragraph.id + '_text');
-      if (textEl.length) {
-        var lines = msg.split('\n');
-        for (var i = 0; i < lines.length; i++) {
-          textEl.append(angular.element('<div></div>').text(lines[i]));
-        }
-      }
-      if ($scope.keepScrollDown) {
-        var doc = angular.element('#p' + $scope.paragraph.id + '_text');
-        doc[0].scrollTop = doc[0].scrollHeight;
-      }
-    };
-
     var initializeDefault = function() {
       var config = $scope.paragraph.config;
 
@@ -310,37 +135,6 @@
         config.colWidth = 12;
       }
 
-      if (!config.graph) {
-        config.graph = {};
-      }
-
-      if (!config.graph.mode) {
-        config.graph.mode = 'table';
-      }
-
-      if (!config.graph.height) {
-        config.graph.height = 300;
-      }
-
-      if (!config.graph.optionOpen) {
-        config.graph.optionOpen = false;
-      }
-
-      if (!config.graph.keys) {
-        config.graph.keys = [];
-      }
-
-      if (!config.graph.values) {
-        config.graph.values = [];
-      }
-
-      if (!config.graph.groups) {
-        config.graph.groups = [];
-      }
-
-      if (!config.graph.scatter) {
-        config.graph.scatter = {};
-      }
 
       if (config.enabled === undefined) {
         config.enabled = true;
@@ -1003,271 +797,10 @@
       return cell;
     };
 
-    $scope.setGraphMode = function(type, emit, refresh) {
-      if (emit) {
-        setNewMode(type);
-      } else {
-        clearUnknownColsFromGraphOption();
-        // set graph height
-        var height = $scope.paragraph.config.graph.height;
-        var graphContainerEl = angular.element('#p' + $scope.paragraph.id + '_graph');
-        graphContainerEl.height(height);
-
-        if (!type) {
-          type = 'table';
-        }
-
-        var builtInViz = builtInVisualizations[type];
-        if (builtInViz) {
-          // deactive previsouly active visualization
-          for (var t in builtInVisualizations) {
-            var v = builtInVisualizations[t].instance;
-            if (t !== type && v && v.isActive()) {
-              v.deactivate();
-              break;
-            }
-          }
-
-          if (!builtInViz.instance) { // not instantiated yet
-            // render when targetEl is available
-            var retryRenderer = function() {
-              var targetEl = angular.element('#p' + $scope.paragraph.id + '_' + type);
-
-              if (targetEl.length) {
-                try {
-                  // set height
-                  targetEl.height(height);
-
-                  // instantiate visualization
-                  var Visualization = builtInViz.class;
-                  builtInViz.instance = new Visualization(targetEl, $scope.paragraph.config.graph);
-                  builtInViz.instance.render(tableData);
-                  builtInViz.instance.activate();
-                  angular.element(window).resize(function() {
-                    builtInViz.instance.resize();
-                  });
-                } catch (err) {
-                  console.log('Graph drawing error %o', err);
-                }
-              } else {
-                $timeout(retryRenderer, 10);
-              }
-            };
-            $timeout(retryRenderer);
-          } else if (refresh) {
-            console.log('Refresh data');
-            // when graph options or data are changed
-            var retryRenderer = function() {
-              var targetEl = angular.element('#p' + $scope.paragraph.id + '_' + type);
-              if (targetEl.length) {
-                targetEl.height(height);
-                builtInViz.instance.setConfig($scope.paragraph.config.graph);
-                builtInViz.instance.render(tableData);
-              } else {
-                $timeout(retryRenderer, 10);
-              }
-            };
-            $timeout(retryRenderer);
-          } else {
-            var retryRenderer = function() {
-              var targetEl = angular.element('#p' + $scope.paragraph.id + '_' + type);
-              if (targetEl.length) {
-                targetEl.height(height);
-                builtInViz.instance.activate();
-              } else {
-                $timeout(retryRenderer, 10);
-              }
-            };
-            $timeout(retryRenderer);
-          }
-        }
-      }
-    };
-
-    var setNewMode = function(newMode) {
-      var newConfig = angular.copy($scope.paragraph.config);
-      var newParams = angular.copy($scope.paragraph.settings.params);
-
-      // graph options
-      newConfig.graph.mode = newMode;
-
-      // see switchApp()
-      _.set(newConfig, 'helium.activeApp', undefined);
-
-      commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
-    };
-
     var commitParagraph = function(title, text, config, params) {
       websocketMsgSrv.commitParagraph($scope.paragraph.id, title, text, config, params);
     };
 
-    $scope.isGraphMode = function(graphName) {
-      var activeAppId = _.get($scope.paragraph.config, 'helium.activeApp');
-      if ($scope.getResultType() === 'TABLE' && $scope.getGraphMode() === graphName && !activeAppId) {
-        return true;
-      } else {
-        return false;
-      }
-    };
-
-    $scope.onGraphOptionChange = function() {
-      clearUnknownColsFromGraphOption();
-      $scope.setGraphMode($scope.paragraph.config.graph.mode, true, false);
-    };
-
-    $scope.removeGraphOptionKeys = function(idx) {
-      $scope.paragraph.config.graph.keys.splice(idx, 1);
-      clearUnknownColsFromGraphOption();
-      $scope.setGraphMode($scope.paragraph.config.graph.mode, true, false);
-    };
-
-    $scope.removeGraphOptionValues = function(idx) {
-      $scope.paragraph.config.graph.values.splice(idx, 1);
-      clearUnknownColsFromGraphOption();
-      $scope.setGraphMode($scope.paragraph.config.graph.mode, true, false);
-    };
-
-    $scope.removeGraphOptionGroups = function(idx) {
-      $scope.paragraph.config.graph.groups.splice(idx, 1);
-      clearUnknownColsFromGraphOption();
-      $scope.setGraphMode($scope.paragraph.config.graph.mode, true, false);
-    };
-
-    $scope.setGraphOptionValueAggr = function(idx, aggr) {
-      $scope.paragraph.config.graph.values[idx].aggr = aggr;
-      clearUnknownColsFromGraphOption();
-      $scope.setGraphMode($scope.paragraph.config.graph.mode, true, false);
-    };
-
-    $scope.removeScatterOptionXaxis = function(idx) {
-      $scope.paragraph.config.graph.scatter.xAxis = null;
-      clearUnknownColsFromGraphOption();
-      $scope.setGraphMode($scope.paragraph.config.graph.mode, true, false);
-    };
-
-    $scope.removeScatterOptionYaxis = function(idx) {
-      $scope.paragraph.config.graph.scatter.yAxis = null;
-      clearUnknownColsFromGraphOption();
-      $scope.setGraphMode($scope.paragraph.config.graph.mode, true, false);
-    };
-
-    $scope.removeScatterOptionGroup = function(idx) {
-      $scope.paragraph.config.graph.scatter.group = null;
-      clearUnknownColsFromGraphOption();
-      $scope.setGraphMode($scope.paragraph.config.graph.mode, true, false);
-    };
-
-    $scope.removeScatterOptionSize = function(idx) {
-      $scope.paragraph.config.graph.scatter.size = null;
-      clearUnknownColsFromGraphOption();
-      $scope.setGraphMode($scope.paragraph.config.graph.mode, true, false);
-    };
-
-    /* Clear unknown columns from graph option */
-    var clearUnknownColsFromGraphOption = function() {
-      var unique = function(list) {
-        for (var i = 0; i < list.length; i++) {
-          for (var j = i + 1; j < list.length; j++) {
-            if (angular.equals(list[i], list[j])) {
-              list.splice(j, 1);
-            }
-          }
-        }
-      };
-
-      var removeUnknown = function(list) {
-        for (var i = 0; i < list.length; i++) {
-          // remove non existing column
-          var found = false;
-          for (var j = 0; j < tableData.columns.length; j++) {
-            var a = list[i];
-            var b = tableData.columns[j];
-            if (a.index === b.index && a.name === b.name) {
-              found = true;
-              break;
-            }
-          }
-          if (!found) {
-            list.splice(i, 1);
-          }
-        }
-      };
-
-      var removeUnknownFromFields = function(fields) {
-        for (var f in fields) {
-          if (fields[f]) {
-            var found = false;
-            for (var i = 0; i < tableData.columns.length; i++) {
-              var a = fields[f];
-              var b = tableData.columns[i];
-              if (a.index === b.index && a.name === b.name) {
-                found = true;
-                break;
-              }
-            }
-            if (!found && (fields[f] instanceof Object) && !(fields[f] instanceof Array)) {
-              fields[f] = null;
-            }
-          }
-        }
-      };
-
-      unique($scope.paragraph.config.graph.keys);
-      removeUnknown($scope.paragraph.config.graph.keys);
-
-      removeUnknown($scope.paragraph.config.graph.values);
-
-      unique($scope.paragraph.config.graph.groups);
-      removeUnknown($scope.paragraph.config.graph.groups);
-
-      removeUnknownFromFields($scope.paragraph.config.graph.scatter);
-    };
-
-    /* select default key and value if there're none selected */
-    var selectDefaultColsForGraphOption = function() {
-      if ($scope.paragraph.config.graph.keys.length === 0 && tableData.columns.length > 0) {
-        $scope.paragraph.config.graph.keys.push(tableData.columns[0]);
-      }
-
-      if ($scope.paragraph.config.graph.values.length === 0 && tableData.columns.length > 1) {
-        $scope.paragraph.config.graph.values.push(tableData.columns[1]);
-      }
-
-      if (!$scope.paragraph.config.graph.scatter.xAxis && !$scope.paragraph.config.graph.scatter.yAxis) {
-        if (tableData.columns.length > 1) {
-          $scope.paragraph.config.graph.scatter.xAxis = tableData.columns[0];
-          $scope.paragraph.config.graph.scatter.yAxis = tableData.columns[1];
-        } else if (tableData.columns.length === 1) {
-          $scope.paragraph.config.graph.scatter.xAxis = tableData.columns[0];
-        }
-      }
-    };
-
-    $scope.isValidSizeOption = function(options) {
-      var builtInViz = builtInVisualizations.scatterChart;
-      if (builtInViz && builtInViz.instance) {
-        return builtInViz.instance.isValidSizeOption(options);
-      } else {
-        return false;
-      }
-    };
-
-    $scope.resizeParagraph = function(width, height) {
-      $scope.changeColWidth(width);
-      $timeout(function() {
-        autoAdjustEditorHeight($scope.paragraph.id + '_editor');
-        $scope.changeHeight(height);
-      }, 200);
-    };
-
-    $scope.changeHeight = function(height) {
-      var newParams = angular.copy($scope.paragraph.settings.params);
-      var newConfig = angular.copy($scope.paragraph.config);
-
-      newConfig.graph.height = height;
-
-      commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
-    };
 
     /** Utility function */
     if (typeof String.prototype.startsWith !== 'function') {
@@ -1311,33 +844,6 @@
       $scope.keepScrollDown = false;
     };
 
-    $scope.exportToDSV = function(delimiter) {
-      var dsv = '';
-      for (var titleIndex in tableData.columns) {
-        dsv += tableData.columns[titleIndex].name + delimiter;
-      }
-      dsv = dsv.substring(0, dsv.length - 1) + '\n';
-      for (var r in tableData.rows) {
-        var row = tableData.rows[r];
-        var dsvRow = '';
-        for (var index in row) {
-          var stringValue =  (row[index]).toString();
-          if (stringValue.contains(delimiter)) {
-            dsvRow += '"' + stringValue + '"' + delimiter;
-          } else {
-            dsvRow += row[index] + delimiter;
-          }
-        }
-        dsv += dsvRow.substring(0, dsvRow.length - 1) + '\n';
-      }
-      var extension = '';
-      if (delimiter === '\t') {
-        extension = 'tsv';
-      } else if (delimiter === ',') {
-        extension = 'csv';
-      }
-      saveAsService.saveAs(dsv, 'data', extension);
-    };
 
     // Helium ---------------------------------------------
 
@@ -1648,22 +1154,10 @@
            !angular.equals(data.paragraph.settings, $scope.paragraph.settings) ||
            !angular.equals(data.paragraph.config, $scope.paragraph.config))
          ) {
-
-        var oldType = $scope.getResultType();
-        var newType = $scope.getResultType(data.paragraph);
-        var oldGraphMode = $scope.getGraphMode();
-        var newGraphMode = $scope.getGraphMode(data.paragraph);
-        var oldActiveApp = _.get($scope.paragraph.config, 'helium.activeApp');
-        var newActiveApp = _.get(data.paragraph.config, 'helium.activeApp');
-
         var statusChanged = (data.paragraph.status !== $scope.paragraph.status);
-
         var resultRefreshed = (data.paragraph.dateFinished !== $scope.paragraph.dateFinished) ||
           isEmpty(data.paragraph.result) !== isEmpty($scope.paragraph.result) ||
-          data.paragraph.status === 'ERROR' || (data.paragraph.status === 'FINISHED' && statusChanged) ||
-          (!newActiveApp && oldActiveApp !== newActiveApp);
-
-        //console.log("updateParagraph oldData %o, newData %o. type %o -> %o, mode %o -> %o", $scope.paragraph, data, oldType, newType, oldGraphMode, newGraphMode);
+          data.paragraph.status === 'ERROR' || (data.paragraph.status === 'FINISHED' && statusChanged);
 
         if ($scope.paragraph.text !== data.paragraph.text) {
           if ($scope.dirtyText) {         // check if editor has local update
@@ -1677,6 +1171,20 @@
           } else {
             $scope.paragraph.text = data.paragraph.text;
             $scope.originalText = angular.copy(data.paragraph.text);
+          }
+        }
+
+        /** broadcast update to result controller **/
+        if (data.paragraph.result) {
+          for (var i in data.paragraph.result.msg) {
+            var newResult = data.paragraph.result.msg[i];
+            var oldResult = $scope.paragraph.result.msg[i];
+            var newConfig = data.paragraph.config.result ? data.paragraph.config.result[i] : {};
+            var oldConfig = $scope.paragraph.config.result ? $scope.paragraph.config.result[i] : {};
+            if (!angular.equals(newResult, oldResult) ||
+                !angular.equals(newConfig, oldConfig)) {
+              $rootScope.$broadcast('updateResult', newResult, newConfig, data.paragraph, parseInt(i));
+            }
           }
         }
 
@@ -1703,38 +1211,6 @@
           data.paragraph.config.editorHide = true;
           data.paragraph.config.tableHide = false;
           $scope.paragraph.config = data.paragraph.config;
-        }
-
-        if (newType === 'TABLE') {
-          if (oldType !== 'TABLE' || resultRefreshed) {
-            var TableData = zeppelin.TableData;
-            tableData = new TableData();
-            tableData.loadParagraphResult($scope.paragraph.result);
-            $scope.tableDataColumns = tableData.columns;
-            $scope.tableDataComment = tableData.comment;
-            clearUnknownColsFromGraphOption();
-            selectDefaultColsForGraphOption();
-          }
-          /** User changed the chart type? */
-          if (oldGraphMode !== newGraphMode) {
-            $scope.setGraphMode(newGraphMode, false, false);
-          } else {
-            $scope.setGraphMode(newGraphMode, false, true);
-          }
-        } else if (newType === 'HTML' && resultRefreshed) {
-          $scope.renderHtml();
-        } else if (newType === 'ANGULAR' && resultRefreshed) {
-          $scope.renderAngular();
-        } else if (newType === 'TEXT' && resultRefreshed) {
-          $scope.renderText();
-        }
-
-        getApplicationStates();
-        getSuggestions();
-
-        if (newActiveApp && newActiveApp !== oldActiveApp) {
-          var app = _.find($scope.apps, {id: newActiveApp});
-          renderApp(app);
         }
 
         if (statusChanged || resultRefreshed) {

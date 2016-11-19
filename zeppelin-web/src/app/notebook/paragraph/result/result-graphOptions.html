@@ -12,10 +12,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 <div>
-  <div ng-if="isGraphMode('lineChart') || isGraphMode('lineWithFocusChart')">
+  <div ng-if="graphMode=='lineChart' || graphMode=='lineWithFocusChart'">
     <label>
       <input type="checkbox"
-             ng-model="paragraph.config.graph.forceY"
+             ng-model="config.graph.forceY"
              ng-click="onGraphOptionChange()" />
       force Y to 0
     </label>
@@ -23,24 +23,9 @@ limitations under the License.
 
     <label>
       <input type="checkbox"
-             ng-model="paragraph.config.graph.lineWithFocus"
+             ng-model="config.graph.lineWithFocus"
              ng-click="onGraphOptionChange()" />
       show line chart with focus
     </label>
-  </div>
-  <div ng-if="isGraphMode('map')">
-    <label>Basemap</label>
-    <span class="dropdown">
-      <button type="button" class="btn btn-default btn-sm dropdown-toggle" style="min-width: 0px;" data-toggle="dropdown">
-        <span ng-bind="paragraph.config.graph.map.baseMapType"></span>
-        <span class="caret"></span>
-      </button>
-      <ul class="dropdown-menu" role="menu" style="min-width: 70px;">
-        <li ng-repeat="opt in baseMapOption">
-          <a ng-click="setMapBaseMap(opt)">{{opt}}</a>
-        </li>
-      </ul>
-    </span>
-    <br/>
   </div>
 </div>

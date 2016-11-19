@@ -338,8 +338,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
       context.out.flush();
       List<InterpreterResultMessage> resultMessages = context.out.toInterpreterResultMessage();
       resultMessages.addAll(ret.message());
-
-      return resultMessages;
+      return new InterpreterResult(ret.code(), resultMessages);
     } finally {
       InterpreterContext.remove();
     }

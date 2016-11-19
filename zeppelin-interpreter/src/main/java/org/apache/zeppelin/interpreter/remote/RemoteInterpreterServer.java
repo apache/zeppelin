@@ -462,7 +462,7 @@ public class RemoteInterpreterServer
               combinedResult);
         }
         */
-        return resultMessages;
+        return new InterpreterResult(result.code(), resultMessages);
       } finally {
         InterpreterContext.remove();
       }

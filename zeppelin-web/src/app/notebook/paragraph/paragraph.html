@@ -55,9 +55,9 @@ limitations under the License.
     <div class="tableDisplay"
          ng-show="!paragraph.config.tableHide"
          ng-controller="ResultCtrl"
-         ng-repeat="result in paragraph.result"
-         ng-init="init(result)"
-         ng-include src="'app/notebook/paragraph/result.html'"
+         ng-repeat="result in paragraph.result.msg track by $index"
+         ng-init="init(result, paragraph.config.result[$index], paragraph, $index)"
+         ng-include src="'app/notebook/paragraph/result/result.html'"
          >
     </div>
   </div>
