@@ -782,7 +782,7 @@ public class NotebookServer extends WebSocketServlet implements
     for (Note note : notebook.getNotesOfFolder(oldFolderId)) {
       String noteId = note.getId();
       if (!notebookAuthorization.isOwner(noteId, userAndRoles)) {
-        permissionError(conn, "rename folder of", fromMessage.principal,
+        permissionError(conn, "rename folder of '" + note.getName() + "'", fromMessage.principal,
                 userAndRoles, notebookAuthorization.getOwners(noteId));
         return;
       }
