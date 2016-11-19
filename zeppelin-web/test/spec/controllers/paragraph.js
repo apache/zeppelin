@@ -69,7 +69,7 @@ describe('Controller: ParagraphCtrl', function() {
       expect(scope.setGraphMode).toHaveBeenCalled();
       expect(scope.getGraphMode()).toEqual('table');
     });
-  
+
   it('should call loadTableData() and getGraphMode() should return "table" when the result type is "NETWORK"',
     function() {
       scope.getResultType = jasmine.createSpy('getResultType spy').andCallFake(function() {

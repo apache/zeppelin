@@ -24,21 +24,21 @@ describe('DatasetFactory build', function() {
 
   it('should create a TableData instance', function() {
     var td = df.createDataset(zeppelin.DatasetTypes.TABLE);
-	expect(td instanceof zeppelin.TableData).toBeTruthy();
+    expect(td instanceof zeppelin.TableData).toBeTruthy();
     expect(nd.columns.length).toBe(0);
     expect(nd.rows.length).toBe(0);
   });
-  
+
   it('should create a NetworkData instance', function() {
     var td = df.createDataset(zeppelin.DatasetTypes.NETWORK);
-	expect(td instanceof zeppelin.NetworkData).toBeTruthy();
+    expect(td instanceof zeppelin.NetworkData).toBeTruthy();
     expect(nd.columns.length).toBe(0);
     expect(nd.rows.length).toBe(0);
     expect(nd.graph).toBe({});
   });
-  
+
   it('should thrown an Error', function() {
-    expect( function(){ df.createDataset('text'); } ).toThrow(new Error('Dataset type not found'));
+    expect(function() { df.createDataset('text'); }).toThrow(new Error('Dataset type not found'));
   });
 
 });

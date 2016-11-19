@@ -31,11 +31,11 @@ describe('NetworkData build', function() {
   it('should able to create NetowkData from paragraph result', function() {
     td.loadParagraphResult({
       type: zeppelin.DatasetTypes.NETWORK,
-      msg: '{"nodes" : [{"id" : 1}, {"id" : 2}], "edges" : [{"source" : 2, "target" : 1, "id" : 1 }]}'
+      msg: '{"nodes": [{"id": 1}, {"id": 2}], "edges": [{"source": 2, "target": 1, "id": 1}]}'
     });
 
-    expect(td.columns.length).toBe(1);
+    expect(td.columns.length).toBe(2);
     expect(td.rows.length).toBe(3);
-    expect(td.graph).toBe({nodes: [{id: 1}, {id: 2}], edges: [{source: 2, target: 1, id: 1 }]});
+    expect(td.graph).toBe({nodes: [{id: 1}, {id: 2}], edges: [{source: 2, target: 1, id: 1}]});
   });
 });
