@@ -752,7 +752,7 @@ public class NotebookServer extends WebSocketServlet implements
 
     NotebookAuthorization notebookAuthorization = notebook.getNotebookAuthorization();
     if (!notebookAuthorization.isOwner(noteId, userAndRoles)) {
-      permissionError(conn, "rename note", fromMessage.principal,
+      permissionError(conn, "rename", fromMessage.principal,
               userAndRoles, notebookAuthorization.getOwners(noteId));
       return;
     }
@@ -782,7 +782,7 @@ public class NotebookServer extends WebSocketServlet implements
     for (Note note : notebook.getNotesOfFolder(oldFolderId)) {
       String noteId = note.getId();
       if (!notebookAuthorization.isOwner(noteId, userAndRoles)) {
-        permissionError(conn, "rename folder", fromMessage.principal,
+        permissionError(conn, "rename folder of", fromMessage.principal,
                 userAndRoles, notebookAuthorization.getOwners(noteId));
         return;
       }
