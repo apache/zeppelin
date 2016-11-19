@@ -65,7 +65,7 @@ matrix:
       env: TEST_SELENIUM="true" SCALA_VER="2.10" SPARK_VER="1.6.1" HADOOP_VER="2.3" PROFILE="-Pspark-1.6 -Phadoop-2.3 -Ppyspark -Pexamples" BUILD_FLAG="package -DskipTests -DskipRat" TEST_FLAG="verify -DskipRat" TEST_PROJECTS="-pl zeppelin-interpreter,zeppelin-zengine,zeppelin-server,zeppelin-display,spark-dependencies,spark -Dtest=org.apache.zeppelin.AbstractFunctionalSuite -DfailIfNoTests=false"
 
 before_install:
-  - echo MAVEN_OPTS="-Xms1024M -Xmx2048M -XX:MaxPermSize=1024m -XX:-UseGCOverheadLimit" >> ~/.mavenrc
+  - echo "MAVEN_OPTS='-Xms1024M -Xmx2048M -XX:MaxPermSize=1024m -XX:-UseGCOverheadLimit'" >> ~/.mavenrc
   - "ls -la .spark-dist ${HOME}/.m2/repository/.cache/maven-download-plugin"
   - ls .node_modules && cp -r .node_modules zeppelin-web/node_modules || echo "node_modules are not cached"
   - mkdir -p ~/R
