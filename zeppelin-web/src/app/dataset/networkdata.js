@@ -46,6 +46,9 @@ zeppelin.NetworkData.prototype.loadParagraphResult = function(paragraphResult) {
     return;
   }
 
+  this.setNodesDefaults();
+  this.setEdgesDefaults();
+
   var columnNames = [];
   var rows = [];
   var comment = '';
@@ -83,4 +86,42 @@ zeppelin.NetworkData.prototype.loadParagraphResult = function(paragraphResult) {
   this.comment = comment;
   this.columns = columnNames;
   this.rows = rows;
+};
+
+zeppelin.NetworkData.prototype.updateNodeLabel = function(defaultLabel, value) {
+  this.graph.nodes
+    .filter(function(node) {
+      return node.defaultLabel === defaultLabel;
+    })
+    .forEach(function(node) {
+      node.label = (value === 'label' ? defaultLabel : value in node ? node[value] : node.data[value]) + '';
+    });
+};
+
+zeppelin.NetworkData.prototype.setNodesDefaults = function(config) {
+  this.graph.nodes
+    .forEach(function(node) {
+      node.defaultLabel = node.defaultLabel || node.label || '';
+      var properties = config ? config.network.properties[node.defaultLabel] || {} : {};
+      var selected = properties.selected || 'id';
+      node.label = (selected in node ? node[selected] : node.data[selected]) + '';
+      if (config && node.id in config.network.nodes) {
+        node.x = config.network.nodes[node.id].x;
+        node.y = config.network.nodes[node.id].y;
+      } else {
+        node.x = node.x || Math.random();
+        node.y = node.y || Math.random();
+      }
+      node.size = node.size || 10;
+    });
+};
+
+zeppelin.NetworkData.prototype.setEdgesDefaults = function(config) {
+  this.graph.edges
+    .forEach(function(edge) {
+      edge.size = edge.size || 4;
+      edge.type = edge.type || 'arrow';
+      edge.color = edge.color || '#D3D3D3';
+      edge.count = edge.count || 1;
+    });
 };
