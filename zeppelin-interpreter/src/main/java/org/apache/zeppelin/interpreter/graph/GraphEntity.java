@@ -27,23 +27,31 @@ public abstract class GraphEntity {
 
   private long id;
 
+  /**
+   * The data of the entity
+   * 
+   */
   private Map<String, Object> data;
 
-  private double size;
-
+  /**
+   * The current label of the entity
+   * 
+   */
   private String label;
+  
+  private String defaultLabel;
 
   private String color;
 
   public GraphEntity() {}
 
-  public GraphEntity(long id, Map<String, Object> data, String label, double size,
+  public GraphEntity(long id, Map<String, Object> data, String label,
         String color) {
     super();
     this.setId(id);
     this.setData(data);
-    this.setSize(size);
     this.setLabel(label);
+    this.setDefaultLabel(defaultLabel);
     this.setColor(color);
   }
 
@@ -63,20 +71,20 @@ public abstract class GraphEntity {
     this.data = data;
   }
 
-  public double getSize() {
-    return size;
-  }
-
-  public void setSize(double size) {
-    this.size = size;
-  }
-
   public String getLabel() {
     return label;
   }
 
   public void setLabel(String label) {
     this.label = label;
+  }
+
+  public String getDefaultLabel() {
+    return defaultLabel;
+  }
+
+  public void setDefaultLabel(String defaultLabel) {
+    this.defaultLabel = defaultLabel;
   }
 
   public String getColor() {

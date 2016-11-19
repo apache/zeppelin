@@ -1278,7 +1278,7 @@
     var setDefaultNetworkOption = function() {
       //TODO gestione con api networkData
       $scope.paragraph.config.graph.network.nodes = {};
-      var baseCols = ['id', 'label'];
+      var baseCols = ['id', 'defaultLabel'];
       var properties = {};
       paragraphDataset.graph.nodes.forEach(function(node) {
         var hasLabel = 'defaultLabel' in node && node.label !== '';

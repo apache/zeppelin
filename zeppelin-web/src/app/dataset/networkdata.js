@@ -54,9 +54,9 @@ zeppelin.NetworkData.prototype.loadParagraphResult = function(paragraphResult) {
   var comment = '';
   var entities = this.graph.nodes.concat(this.graph.edges);
   var baseColumnNames = [{name: 'id', index: 0, aggr: 'sum'},
-                     {name: 'label', index: 1, aggr: 'sum'}];
-  var internalFieldsToJump = ['count', 'type', 'size',
-                              'data', 'x', 'y', 'color', 'defaultLabel',
+                     {name: 'defaultLabel', index: 1, aggr: 'sum'}];
+  var internalFieldsToJump = ['count', 'type', 'size', 'label',
+                              'data', 'x', 'y', 'color',
                               'labels'];
   var baseCols = _.map(baseColumnNames, function(col) { return col.name; });
   var keys = _.map(entities, function(elem) { return Object.keys(elem.data || {}); });
@@ -88,13 +88,14 @@ zeppelin.NetworkData.prototype.loadParagraphResult = function(paragraphResult) {
   this.rows = rows;
 };
 
-zeppelin.NetworkData.prototype.updateNodeLabel = function(defaultLabel, value) {
+zeppelin.NetworkData.prototype.updateNodeLabel = function(defaultLabel, labelField) {
   this.graph.nodes
     .filter(function(node) {
       return node.defaultLabel === defaultLabel;
     })
     .forEach(function(node) {
-      node.label = (value === 'label' ? defaultLabel : value in node ? node[value] : node.data[value]) + '';
+      node.label = (labelField === 'label' ?
+              defaultLabel : labelField in node ? node[labelField] : node.data[labelField]) + '';
     });
 };
 
@@ -123,5 +124,6 @@ zeppelin.NetworkData.prototype.setEdgesDefaults = function(config) {
       edge.type = edge.type || 'arrow';
       edge.color = edge.color || '#D3D3D3';
       edge.count = edge.count || 1;
+      edge.defaultLabel = edge.defaultLabel || edge.label || '';
     });
 };

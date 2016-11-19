@@ -26,30 +26,17 @@ import java.util.Set;
  */
 public class Node extends GraphEntity {
 
+  /**
+   * The labels (types) attached to a node
+   */
   private Set<String> labels;
 
-  private double x;
-
-  private double y;
-  
-  private String defaultLabel;
-
-  public static final double DEFALUT_SIZE = 10d;
-  
   public Node() {}
 
-  public Node(long id, Map<String, Object> data, Set<String> labels,
-      String color, double x, double y) {
-    super(id, data, labels.iterator().next(), DEFALUT_SIZE, color);
-    this.setLabels(labels);
-    this.setX(x);
-    this.setY(y);
-    this.defaultLabel = super.getLabel();
-  }
   
   public Node(long id, Map<String, Object> data, Set<String> labels,
       String color) {
-    this(id, data, labels, color, Math.random(), Math.random());
+    super(id, data, labels.iterator().next(), color);
   }
 
   public Set<String> getLabels() {
@@ -60,24 +47,4 @@ public class Node extends GraphEntity {
     this.labels = labels;
   }
  
-  public double getX() {
-    return x;
-  }
-
-  public void setX(double x) {
-    this.x = x;
-  }
-
-  public double getY() {
-    return y;
-  }
-
-  public void setY(double y) {
-    this.y = y;
-  }
-
-  public String getDefaultLabel() {
-    return defaultLabel;
-  }
-
 }
