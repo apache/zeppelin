@@ -109,26 +109,29 @@
             <goals>
               <goal>npm</goal>
             </goals>
-          </execution>
-
-          <execution>
-            <id>grunt build</id>
-            <goals>
-              <goal>npm</goal>
-            </goals>
             <configuration>
-              <arguments>build</arguments>
+              <arguments>install</arguments>
             </configuration>
           </execution>
 
           <execution>
-            <id>grunt test</id>
+            <id>npm build</id>
+            <goals>
+              <goal>npm</goal>
+            </goals>
+            <configuration>
+              <arguments>run build</arguments>
+            </configuration>
+          </execution>
+
+          <execution>
+            <id>npm test</id>
             <goals>
               <goal>npm</goal>
             </goals>
             <phase>test</phase>
             <configuration>
-              <arguments>test</arguments>
+              <arguments>run test</arguments>
             </configuration>
           </execution>
 
