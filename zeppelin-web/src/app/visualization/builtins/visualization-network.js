@@ -63,7 +63,7 @@ zeppelin.NetworkVisualization.prototype.render = function(networkData) {
   this.sigma.graph.read(networkData.graph);
   this.sigma.refresh();
 
-  if (angular.equals({}, _this.config.network.nodes)) {
+  if (angular.equals({}, this.config.network.nodes)) {
     console.log('Starting forceAtlas2 & noOverlap events');
     var nodesLength = networkData.graph.nodes.length;
     var isBigGraph = nodesLength > 50;
