@@ -112,19 +112,9 @@
           </execution>
 
           <execution>
-            <id>bower install</id>
-            <goals>
-              <goal>bower</goal>
-            </goals>
-            <configuration>
-              <arguments>--allow-root install</arguments>
-            </configuration>
-          </execution>
-
-          <execution>
             <id>grunt build</id>
             <goals>
-              <goal>grunt</goal>
+              <goal>npm</goal>
             </goals>
             <configuration>
               <arguments>build</arguments>
@@ -134,7 +124,7 @@
           <execution>
             <id>grunt test</id>
             <goals>
-              <goal>grunt</goal>
+              <goal>npm</goal>
             </goals>
             <phase>test</phase>
             <configuration>

@@ -2,6 +2,11 @@
   "name": "zeppelin-web",
   "license": "Apache-2.0",
   "version": "0.0.0",
+  "scripts": {
+    "postinstall": "node_modules/.bin/bower install --allow-root install",
+    "build": "./node_modules/.bin/grunt build",
+    "test": "./node_modules/.bin/grunt test"
+  },
   "dependencies": {
     "grunt-angular-templates": "^0.5.7",
     "grunt-dom-munger": "^3.4.0"
