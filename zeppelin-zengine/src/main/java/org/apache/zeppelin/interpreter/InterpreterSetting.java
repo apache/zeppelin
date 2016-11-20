@@ -25,6 +25,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import com.google.gson.annotations.SerializedName;
@@ -47,6 +48,7 @@ public class InterpreterSetting {
   // always be null in case of InterpreterSettingRef
   private String group;
   private transient Map<String, String> infos;
+  private transient Map<String, Set<String>> noteIdToParaIdsetMap;
 
   /**
    * properties can be either Properties or Map<String, InterpreterProperty>
@@ -394,11 +396,28 @@ public class InterpreterSetting {
     return infos;
   }
 
+<<<<<<< b1e06919fada4240f5440430f2c27c02e4e5626a
   public InterpreterRunner getInterpreterRunner() {
     return interpreterRunner;
   }
 
   public void setInterpreterRunner(InterpreterRunner interpreterRunner) {
     this.interpreterRunner = interpreterRunner;
+=======
+  public void addNoteToPara(String noteId, String paraId) {
+    if(noteIdToParaIdsetMap == null) {
+      noteIdToParaIdsetMap =  new HashMap<>();
+    }
+    Set<String> paraIdSet = noteIdToParaIdsetMap.get(noteId);
+    if(paraIdSet == null) {
+      paraIdSet = new HashSet<>();
+      noteIdToParaIdsetMap.put(noteId, paraIdSet);
+    }
+    paraIdSet.add(paraId);
+  }
+
+  public Map<String, Set<String>> getNoteIdAndParaMap() {
+    return noteIdToParaIdsetMap;
+>>>>>>> Ability to view spark job urls in each paragraph
   }
 }

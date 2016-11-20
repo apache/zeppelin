@@ -40,4 +40,6 @@ public interface RemoteInterpreterProcessListener {
     public void onFinished(Object resultObject);
     public void onError();
   }
+  public void onParaInfosReceived(String noteId, String paragraphId,
+      String interpreterSettingId, Map<String, String> metaInfos);
 }

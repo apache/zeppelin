@@ -243,10 +243,18 @@ public class RemoteInterpreterEventPoller extends Thread {
           Map<String, String> metaInfos = gson.fromJson(event.getData(),
               new TypeToken<Map<String, String>>() {
               }.getType());
-          String id = interpreterGroup.getId();
-          int indexOfColon = id.indexOf(":");
-          String settingId = id.substring(0, indexOfColon);
+          String settingId = getInterpreterSettingId();
           listener.onMetaInfosReceived(settingId, metaInfos);
+        } else if (event.getType() == RemoteInterpreterEventType.PARA_INFOS) {
+          Map<String, String> paraInfos = gson.fromJson(event.getData(),
+              new TypeToken<Map<String, String>>() {
+              }.getType());
+          String noteId = paraInfos.get("noteId");
+          String paraId = paraInfos.get("paraId");
+          String settingId = getInterpreterSettingId();
+          if (noteId != null && paraId != null && settingId != null) {
+            listener.onParaInfosReceived(noteId, paraId, settingId, paraInfos);
+          }
         }
         logger.debug("Event from remote process {}", event.getType());
       } catch (Exception e) {
@@ -332,6 +340,12 @@ public class RemoteInterpreterEventPoller extends Thread {
     } finally {
       interpreterProcess.releaseClient(interpreterServerMain, broken);
     }
+  }
+
+  private String getInterpreterSettingId() {
+    String id = interpreterGroup.getId();
+    int indexOfColon = id.indexOf(":");
+    return id.substring(0, indexOfColon);
   }
 
   private void sendResourcePoolResponseGetAll(ResourceSet resourceSet) {

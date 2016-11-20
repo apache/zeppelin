@@ -42,6 +42,8 @@ import org.apache.spark.repl.SparkILoop;
 import org.apache.spark.scheduler.ActiveJob;
 import org.apache.spark.scheduler.DAGScheduler;
 import org.apache.spark.scheduler.Pool;
+import org.apache.spark.scheduler.SparkListenerApplicationEnd;
+import org.apache.spark.scheduler.SparkListenerJobStart;
 import org.apache.spark.sql.SQLContext;
 import org.apache.spark.ui.SparkUI;
 import org.apache.spark.ui.jobs.JobProgressListener;
@@ -57,6 +59,7 @@ import org.apache.zeppelin.interpreter.WrappedInterpreter;
 import org.apache.zeppelin.interpreter.util.InterpreterOutputStream;
 import org.apache.zeppelin.resource.ResourcePool;
 import org.apache.zeppelin.resource.WellKnownResourceName;
+import org.apache.zeppelin.interpreter.remote.RemoteEventClientWrapper;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
@@ -112,7 +115,7 @@ public class SparkInterpreter extends Interpreter {
 
   private InterpreterOutputStream out;
   private SparkDependencyResolver dep;
-  private String sparkUrl;
+  private static String sparkUrl;
 
   /**
    * completer - org.apache.spark.repl.SparkJLineCompletion (scala 2.10)
@@ -156,7 +159,43 @@ public class SparkInterpreter extends Interpreter {
   }
 
   static JobProgressListener setupListeners(SparkContext context) {
-    JobProgressListener pl = new JobProgressListener(context.getConf());
+    JobProgressListener pl = new JobProgressListener(context.getConf()) {
+      @Override
+      public synchronized void onJobStart(SparkListenerJobStart jobStart) {
+        super.onJobStart(jobStart);
+        int jobId = jobStart.jobId();
+        String jobGroupId = jobStart.properties().getProperty("spark.jobGroup.id");
+        String jobUrl = getJobUrl(jobId);
+        String noteId = getNoteId(jobGroupId);
+        String paragraphId = getParagraphId(jobGroupId);
+        if (jobUrl != null && noteId != null && paragraphId != null) {
+          RemoteEventClientWrapper eventClient = ZeppelinContext.getEventClient();
+          Map<String, String> infos = new java.util.HashMap<>();
+          infos.put("jobUrl", jobUrl);
+          eventClient.onParaInfosReceived(noteId, paragraphId, infos);
+        }
+      }
+
+      private String getJobUrl(int jobId) {
+        String jobUrl = null;
+        if (sparkUrl != null) {
+          jobUrl = sparkUrl + "/jobs/job?id=" + jobId;
+        }
+        return jobUrl;
+      }
+
+      private String getNoteId(String jobgroupId) {
+        int indexOf = jobgroupId.indexOf("-");
+        int secondIndex = jobgroupId.indexOf("-", indexOf + 1);
+        return jobgroupId.substring(indexOf + 1, secondIndex);
+      }
+
+      private String getParagraphId(String jobgroupId) {
+        int indexOf = jobgroupId.indexOf("-");
+        int secondIndex = jobgroupId.indexOf("-", indexOf + 1);
+        return jobgroupId.substring(secondIndex + 1, jobgroupId.length());
+      }
+    };
     try {
       Object listenerBus = context.getClass().getMethod("listenerBus").invoke(context);
 
@@ -973,6 +1012,7 @@ public class SparkInterpreter extends Interpreter {
         infos.put("url", sparkUrl);
         logger.info("Sending metainfos to Zeppelin server: {}", infos.toString());
         if (ctx != null && ctx.getClient() != null) {
+          getZeppelinContext().setEventClient(ctx.getClient());
           ctx.getClient().onMetaInfosReceived(infos);
         }
       }
@@ -1105,8 +1145,8 @@ public class SparkInterpreter extends Interpreter {
     return obj;
   }
 
-  String getJobGroup(InterpreterContext context){
-    return "zeppelin-" + context.getParagraphId();
+  String getJobGroup(InterpreterContext context) {
+    return "zeppelin-" + context.getNoteId() + "-" + context.getParagraphId();
   }
 
   /**

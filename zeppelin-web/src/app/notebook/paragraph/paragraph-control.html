@@ -31,6 +31,20 @@ limitations under the License.
           tooltip="Cancel (Ctrl+{{ (isMac ? 'Option' : 'Alt') }}+c)"
           ng-click="cancelParagraph(paragraph)"
           ng-show="paragraph.status=='RUNNING' || paragraph.status=='PENDING'"></span>
+    <span ng-show="paragraph.runtimeInfos.jobUrl.length == 1">
+      <a href="{{paragraph.runtimeInfos.jobUrl[0]}}" target="_blank"><span class="fa fa-tasks"></span> Spark job </a>
+    </span>
+    <span class="dropdown" ng-show="paragraph.runtimeInfos.jobUrl.length > 1">
+      <span class="fa fa-tasks" style="cursor:pointer;color:#3071A9" tooltip-placement="top" tooltip="Run this paragraph (Shift+Enter)"
+          data-toggle="dropdown"
+          type="button">  Spark Jobs
+      </span>
+      <ul class="dropdown-menu" role="menu" style="width:200px;z-index:1002">
+         <li ng-class="{'option-disabled': !noteOperationsAllowed()}" ng-repeat="url in paragraph.runtimeInfos.jobUrl">
+           <a href="{{url}}" target="_blank"><span class="fa fa-external-link-square"></span> Jobs #{{$index}}</a>
+         </li>
+      </ul>
+    </span>
     <span class="{{paragraph.config.editorHide ? 'icon-size-fullscreen' : 'icon-size-actual'}}" style="cursor:pointer" tooltip-placement="top"
           tooltip="{{(paragraph.config.editorHide ? 'Show' : 'Hide')}} editor (Ctrl+{{ (isMac ? 'Option' : 'Alt') }}+e)"
           ng-click="toggleEditor(paragraph)"></span>

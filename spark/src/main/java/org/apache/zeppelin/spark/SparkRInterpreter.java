@@ -102,7 +102,12 @@ public class SparkRInterpreter extends Interpreter {
   @Override
   public InterpreterResult interpret(String lines, InterpreterContext interpreterContext) {
 
-    getSparkInterpreter().populateSparkWebUrl(interpreterContext);
+    SparkInterpreter sparkInterpreter = getSparkInterpreter();
+    sparkInterpreter.populateSparkWebUrl(interpreterContext);
+
+    String jobGroup = sparkInterpreter.getJobGroup(interpreterContext);
+    sparkInterpreter.getSparkContext().setJobGroup(jobGroup, "Zeppelin", false);
+
     String imageWidth = getProperty("zeppelin.R.image.width");
 
     String[] sl = lines.split("\n");

@@ -70,6 +70,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
 
   // For backward compatibility of note.json format after ZEPPELIN-212
   Object result;
+  private Map<String, Set<String>> runtimeInfos;
 
   /**
    * Applicaiton states in this paragraph
@@ -675,5 +676,26 @@ public class Paragraph extends Job implements Serializable, Cloneable {
       // ignore this exception, it would be recaught when running paragraph.
       return false;
     }
+  }
+
+  public void updateRuntimeInfos(Map<String, String> infos) {
+    if (this.runtimeInfos == null) {
+      this.runtimeInfos = new HashMap<String, Set<String>>();
+    }
+
+    if (infos != null) {
+      for (String key : infos.keySet()) {
+        Set<String> values = this.runtimeInfos.get(key);
+        if (values == null) {
+          values = new HashSet<>();
+          this.runtimeInfos.put(key, values);
+        }
+        values.add(infos.get(key));
+      }
+    }
+  }
+
+  public void clearRuntimeInfo() {
+    this.runtimeInfos = null;
   }
 }

@@ -1083,7 +1083,8 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
       isEmpty(newPara.results) !== isEmpty(oldPara.results) ||
       newPara.errorMessage !== oldPara.errorMessage ||
       !angular.equals(newPara.settings, oldPara.settings) ||
-      !angular.equals(newPara.config, oldPara.config)))
+      !angular.equals(newPara.config, oldPara.config) ||
+     !angular.equals(newPara.runtimeInfos, oldPara.runtimeInfos)))
   }
 
   $scope.updateAllScopeTexts = function(oldPara, newPara) {
@@ -1126,6 +1127,7 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
       $scope.paragraph.results = newPara.results;
     }
     $scope.paragraph.settings = newPara.settings;
+    $scope.paragraph.runtimeInfos = newPara.runtimeInfos;
     if ($scope.editor) {
       $scope.editor.setReadOnly($scope.isRunning(newPara));
     }
@@ -1139,7 +1141,6 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
       $scope.paragraph.config = newPara.config;
     }
   };
-
   $scope.updateParagraph = function(oldPara, newPara, updateCallback) {
     // 1. get status, refreshed
     const statusChanged = (newPara.status !== oldPara.status);

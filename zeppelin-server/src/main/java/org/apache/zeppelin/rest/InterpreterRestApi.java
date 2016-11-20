@@ -51,6 +51,7 @@ import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.rest.message.NewInterpreterSettingRequest;
 import org.apache.zeppelin.rest.message.UpdateInterpreterSettingRequest;
 import org.apache.zeppelin.server.JsonResponse;
+import org.apache.zeppelin.socket.NotebookServer;
 
 /**
  * Interpreter Rest API
@@ -61,14 +62,17 @@ public class InterpreterRestApi {
   private static final Logger logger = LoggerFactory.getLogger(InterpreterRestApi.class);
 
   private InterpreterFactory interpreterFactory;
+  private NotebookServer notebookServer;
 
   Gson gson = new Gson();
 
   public InterpreterRestApi() {
   }
 
-  public InterpreterRestApi(InterpreterFactory interpreterFactory) {
+  public InterpreterRestApi(InterpreterFactory interpreterFactory,
+                                      NotebookServer notebookWsServer) {
     this.interpreterFactory = interpreterFactory;
+    this.notebookServer = notebookWsServer;
   }
 
   /**
@@ -179,18 +183,20 @@ public class InterpreterRestApi {
   @ZeppelinApi
   public Response restartSetting(String message, @PathParam("settingId") String settingId) {
     logger.info("Restart interpreterSetting {}, msg={}", settingId, message);
+
+    InterpreterSetting setting = interpreterFactory.get(settingId);
     try {
       RestartInterpreterRequest request = gson.fromJson(message, RestartInterpreterRequest.class);
 
       String noteId = request == null ? null : request.getNoteId();
       interpreterFactory.restart(settingId, noteId, SecurityUtils.getPrincipal());
+      notebookServer.clearParagraphRuntimeInfo(setting);
 
     } catch (InterpreterException e) {
       logger.error("Exception in InterpreterRestApi while restartSetting ", e);
       return new JsonResponse<>(Status.NOT_FOUND, e.getMessage(), ExceptionUtils.getStackTrace(e))
           .build();
     }
-    InterpreterSetting setting = interpreterFactory.get(settingId);
     if (setting == null) {
       return new JsonResponse<>(Status.NOT_FOUND, "", settingId).build();
     }
