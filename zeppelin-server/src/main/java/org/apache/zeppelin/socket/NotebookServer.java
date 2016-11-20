@@ -638,7 +638,7 @@ public class NotebookServer extends WebSocketServlet implements
             op, userAndRoles, allowed);
 
     conn.send(serializeMessage(new Message(OP.AUTH_INFO).put("info",
-            "Insufficient privileges to " + op + " notebook.\n\n" +
+            "Insufficient privileges to " + op + ".\n\n" +
                     "Allowed users or roles: " + allowed.toString() + "\n\n" +
                     "But the user " + userName + " belongs to: " + userAndRoles.toString())));
   }
@@ -752,7 +752,7 @@ public class NotebookServer extends WebSocketServlet implements
 
     NotebookAuthorization notebookAuthorization = notebook.getNotebookAuthorization();
     if (!notebookAuthorization.isOwner(noteId, userAndRoles)) {
-      permissionError(conn, "rename", fromMessage.principal,
+      permissionError(conn, "rename the note", fromMessage.principal,
               userAndRoles, notebookAuthorization.getOwners(noteId));
       return;
     }
