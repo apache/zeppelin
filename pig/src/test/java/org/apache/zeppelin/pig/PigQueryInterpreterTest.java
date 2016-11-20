@@ -137,10 +137,8 @@ public class PigQueryInterpreterTest {
     // run script in PigInterpreter
     String pigscript = "a = load '" + tmpFile.getAbsolutePath() + "' as (id, name);";
     InterpreterResult result = pigInterpreter.interpret(pigscript, context);
-    assertEquals(InterpreterResult.Type.TEXT, result.message().get(0).getType());
+    assertEquals(0, result.message().size());
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-    // empty output
-    assertTrue(result.message().isEmpty());
 
     // run single line query in PigQueryInterpreter
     String query = "foreach a generate id;";

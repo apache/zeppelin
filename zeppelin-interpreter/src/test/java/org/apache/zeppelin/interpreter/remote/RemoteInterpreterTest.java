@@ -253,7 +253,7 @@ public class RemoteInterpreterTest {
             new AngularObjectRegistry(intpGroup.getId(), null),
             new LocalResourcePool("pool1"),
             new LinkedList<InterpreterContextRunner>(), null));
-    assertEquals("500", ret.message());
+    assertEquals("500", ret.message().get(0).getData());
 
     ret = intpB.interpret("500",
         new InterpreterContext(
@@ -267,7 +267,7 @@ public class RemoteInterpreterTest {
             new AngularObjectRegistry(intpGroup.getId(), null),
             new LocalResourcePool("pool1"),
             new LinkedList<InterpreterContextRunner>(), null));
-    assertEquals("1000", ret.message());
+    assertEquals("1000", ret.message().get(0).getData());
     long end = System.currentTimeMillis();
     assertTrue(end - start >= 1000);
 
@@ -374,7 +374,7 @@ public class RemoteInterpreterTest {
     long end = System.currentTimeMillis();
     assertTrue(end - start >= 1000);
 
-    assertEquals("1000", ((InterpreterResult) jobB.getReturn()).message());
+    assertEquals("1000", ((InterpreterResult) jobB.getReturn()).message().get(0).getData());
 
     intpA.close();
     intpB.close();
@@ -766,10 +766,10 @@ public class RemoteInterpreterTest {
         new LinkedList<InterpreterContextRunner>(), null);
 
 
-    assertEquals("env value 1", intp.interpret("getEnv MY_ENV1", context).message());
-    assertEquals("", intp.interpret("getProperty MY_ENV1", context).message());
-    assertEquals("", intp.interpret("getEnv my.property.1", context).message());
-    assertEquals("property value 1", intp.interpret("getProperty my.property.1", context).message());
+    assertEquals("env value 1", intp.interpret("getEnv MY_ENV1", context).message().get(0).getData());
+    assertEquals(0, intp.interpret("getProperty MY_ENV1", context).message().size());
+    assertEquals(0, intp.interpret("getEnv my.property.1", context).message().size());
+    assertEquals("property value 1", intp.interpret("getProperty my.property.1", context).message().get(0).getData());
 
     intp.close();
   }

@@ -100,13 +100,14 @@ public class InterpreterOutputTest implements InterpreterOutputListener {
     assertEquals(InterpreterResult.Type.HTML, out.getOutputAt(1).getType());
     assertEquals(1, numAppendEvent);
     assertEquals(2, numUpdateEvent);
+    out.flush();
     assertEquals("<div>html</div>\n", new String(out.getOutputAt(1).toByteArray()));
 
     // change type to text again
     out.write("%text hello\n");
     assertEquals(InterpreterResult.Type.TEXT, out.getOutputAt(2).getType());
     assertEquals(2, numAppendEvent);
-    assertEquals(3, numUpdateEvent);
+    assertEquals(4, numUpdateEvent);
     assertEquals("hello\n", new String(out.getOutputAt(2).toByteArray()));
   }
 
@@ -130,15 +131,18 @@ public class InterpreterOutputTest implements InterpreterOutputListener {
     assertEquals(InterpreterResult.Type.TABLE, out.getOutputAt(0).getType());
     assertEquals(InterpreterResult.Type.HTML, out.getOutputAt(1).getType());
     assertEquals("col1\tcol2\n", new String(out.getOutputAt(0).toByteArray()));
+    out.flush();
     assertEquals("<h3> This is a hack </h3>\t234\n", new String(out.getOutputAt(1).toByteArray()));
   }
 
 
   @Test
   public void testTableCellFormatting() throws IOException {
-    out.write("%table col1\tcol2\n%html val1\tval2\n".getBytes());
+    out.write("%table col1\tcol2\n\n%html val1\tval2\n".getBytes());
     assertEquals(InterpreterResult.Type.TABLE, out.getOutputAt(0).getType());
-    assertEquals("col1\tcol2\n%html val1\tval2\n", new String(out.getOutputAt(0).toByteArray()));
+    assertEquals("col1\tcol2\n", new String(out.getOutputAt(0).toByteArray()));
+    out.flush();
+    assertEquals("val1\tval2\n", new String(out.getOutputAt(1).toByteArray()));
   }
 
 

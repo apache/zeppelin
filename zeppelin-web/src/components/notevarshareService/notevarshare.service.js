@@ -20,7 +20,7 @@
 
   function noteVarShareService() {
     var store = {};
-    
+
     this.clear = function() {
       store = {};
     };

@@ -114,7 +114,7 @@
 
     // Data of the result
     var data;
-    
+
     // config
     $scope.config;
 
@@ -125,7 +125,7 @@
     var paragraph;
 
     // index of the result
-    var resultIndex
+    var resultIndex;
 
     // TableData instance
     var tableData;
@@ -135,7 +135,7 @@
 
     // graphMode
     $scope.graphMode;
-    
+
     $scope.init = function(result, config, paragraph, index) {
       console.log('result controller init %o %o %o', result, config, index);
       updateData(result, config, paragraph, index);
@@ -147,12 +147,8 @@
         return;
       }
       console.log('updateResult %o %o %o %o', result, newConfig, paragraphRef, index);
-      
+
       /*
-      var oldType = $scope.getResultType();
-      var newType = $scope.getResultType(data.paragraph);
-      var oldGraphMode = $scope.getGraphMode();
-      var newGraphMode = $scope.getGraphMode(data.paragraph);
       var oldActiveApp = _.get($scope.paragraph.config, 'helium.activeApp');
       var newActiveApp = _.get(data.paragraph.config, 'helium.activeApp');
       */
@@ -226,7 +222,7 @@
       if (!config.graph.scatter) {
         config.graph.scatter = {};
       }
-      
+
       $scope.graphMode = config.graph.mode;
       $scope.config = angular.copy(config);
 
@@ -242,25 +238,24 @@
     };
 
     var renderResult = function(type, refresh) {
-      if (type === 'TABLE') {
-        $scope.renderGraph($scope.graphMode, refresh);
-      } else if (type === 'HTML') {
-        renderHtml();
-      } else if (type === 'ANGULAR') {
-        renderAngular();
-      } else if (type === 'TEXT') {
-        renderText();
-      }
-
-      /*
-      getApplicationStates();
       getSuggestions();
+      getApplicationStates();
+      var activeApp = _.get($scope.config, 'helium.activeApp');
 
-      if (newActiveApp && newActiveApp !== oldActiveApp) {
-        var app = _.find($scope.apps, {id: newActiveApp});
+      if (activeApp) {
+        var app = _.find($scope.apps, {id: activeApp});
         renderApp(app);
+      } else {
+        if (type === 'TABLE') {
+          $scope.renderGraph($scope.graphMode, refresh);
+        } else if (type === 'HTML') {
+          renderHtml();
+        } else if (type === 'ANGULAR') {
+          renderAngular();
+        } else if (type === 'TEXT') {
+          renderText();
+        }
       }
-      */
     };
 
     var renderHtml = function() {
@@ -311,7 +306,7 @@
           // clear all lines before render
           clearTextOutput();
           textRendererInitialized = true;
-          
+
           if (data) {
             appendTextOutput(data);
           } else {
@@ -320,7 +315,7 @@
 
           angular.element('#p' + $scope.id + '_text').bind('mousewheel', function(e) {
             $scope.keepScrollDown = false;
-          });          
+          });
         } else {
           $timeout(retryRenderer, 10);
         }
@@ -342,7 +337,7 @@
         appendTextOutput(textAppendQueueBeforeInitialize.pop());
       }
     };
-    
+
     var appendTextOutput = function(msg) {
       if (!textRendererInitialized) {
         textAppendQueueBeforeInitialize.push(msg);
@@ -663,9 +658,288 @@
       }
       saveAsService.saveAs(dsv, 'data', extension);
     };
-    
+
     $scope.getBase64ImageSrc = function(base64Data) {
       return 'data:image/png;base64,' + base64Data;
     };
+
+    // Helium ----------------
+    var ANGULAR_FUNCTION_OBJECT_NAME_PREFIX = '_Z_ANGULAR_FUNC_';
+
+    // app states
+    $scope.apps = [];
+
+    // suggested apps
+    $scope.suggestion = {};
+
+    $scope.switchApp = function(appId) {
+      var newConfig = angular.copy($scope.config);
+      var newParams = angular.copy(paragraph.settings.params);
+
+      // 'helium.activeApp' can be cleared by switchViz()
+      _.set(newConfig, 'helium.activeApp', appId);
+
+      commitConfig(newConfig, newParams);
+    };
+
+    $scope.loadApp = function(heliumPackage) {
+      var noteId = $route.current.pathParams.noteId;
+      $http.post(baseUrlSrv.getRestApiBase() + '/helium/load/' + noteId + '/' + paragraph.id, heliumPackage)
+        .success(function(data, status, headers, config) {
+          console.log('Load app %o', data);
+        })
+        .error(function(err, status, headers, config) {
+          console.log('Error %o', err);
+        });
+    };
+
+    var commitConfig = function(config, params) {
+      commitParagraphResult(paragraph.title, paragraph.text, config, params);
+    };
+
+    var getApplicationStates = function() {
+      var appStates = [];
+
+      // Display ApplicationState
+      if (paragraph.apps) {
+        _.forEach(paragraph.apps, function(app) {
+          appStates.push({
+            id: app.id,
+            pkg: app.pkg,
+            status: app.status,
+            output: app.output
+          });
+        });
+      }
+
+      // update or remove app states no longer exists
+      _.forEach($scope.apps, function(currentAppState, idx) {
+        var newAppState = _.find(appStates, {id: currentAppState.id});
+        if (newAppState) {
+          angular.extend($scope.apps[idx], newAppState);
+        } else {
+          $scope.apps.splice(idx, 1);
+        }
+      });
+
+      // add new app states
+      _.forEach(appStates, function(app, idx) {
+        if ($scope.apps.length <= idx || $scope.apps[idx].id !== app.id) {
+          $scope.apps.splice(idx, 0, app);
+        }
+      });
+    };
+
+    var getSuggestions = function() {
+      // Get suggested apps
+      var noteId = $route.current.pathParams.noteId;
+      $http.get(baseUrlSrv.getRestApiBase() + '/helium/suggest/' + noteId + '/' + paragraph.id)
+        .success(function(data, status, headers, config) {
+          $scope.suggestion = data.body;
+        })
+        .error(function(err, status, headers, config) {
+          console.log('Error %o', err);
+        });
+    };
+
+    var renderApp = function(appState) {
+      var retryRenderer = function() {
+        var targetEl = angular.element(document.getElementById('p' + appState.id));
+        console.log('retry renderApp %o', targetEl);
+        if (targetEl.length) {
+          try {
+            console.log('renderApp %o', appState);
+            targetEl.html(appState.output);
+            $compile(targetEl.contents())(getAppScope(appState));
+          } catch (err) {
+            console.log('App rendering error %o', err);
+          }
+        } else {
+          $timeout(retryRenderer, 1000);
+        }
+      };
+      $timeout(retryRenderer);
+    };
+
+    /*
+    ** $scope.$on functions below
+    */
+    $scope.$on('appendAppOutput', function(event, data) {
+      if (paragraph.id === data.paragraphId) {
+        var app = _.find($scope.apps, {id: data.appId});
+        if (app) {
+          app.output += data.data;
+
+          var paragraphAppState = _.find(paragraph.apps, {id: data.appId});
+          paragraphAppState.output = app.output;
+
+          var targetEl = angular.element(document.getElementById('p' + app.id));
+          targetEl.html(app.output);
+          $compile(targetEl.contents())(getAppScope(app));
+          console.log('append app output %o', $scope.apps);
+        }
+      }
+    });
+
+    $scope.$on('updateAppOutput', function(event, data) {
+      if (paragraph.id === data.paragraphId) {
+        var app = _.find($scope.apps, {id: data.appId});
+        if (app) {
+          app.output = data.data;
+
+          var paragraphAppState = _.find(paragraph.apps, {id: data.appId});
+          paragraphAppState.output = app.output;
+
+          var targetEl = angular.element(document.getElementById('p' + app.id));
+          targetEl.html(app.output);
+          $compile(targetEl.contents())(getAppScope(app));
+          console.log('append app output');
+        }
+      }
+    });
+
+    $scope.$on('appLoad', function(event, data) {
+      if (paragraph.id === data.paragraphId) {
+        var app = _.find($scope.apps, {id: data.appId});
+        if (!app) {
+          app = {
+            id: data.appId,
+            pkg: data.pkg,
+            status: 'UNLOADED',
+            output: ''
+          };
+
+          $scope.apps.push(app);
+          paragraph.apps.push(app);
+          $scope.switchApp(app.id);
+        }
+      }
+    });
+
+    $scope.$on('appStatusChange', function(event, data) {
+      if (paragraph.id === data.paragraphId) {
+        var app = _.find($scope.apps, {id: data.appId});
+        if (app) {
+          app.status = data.status;
+          var paragraphAppState = _.find(paragraph.apps, {id: data.appId});
+          paragraphAppState.status = app.status;
+        }
+      }
+    });
+
+    var getAppRegistry = function(appState) {
+      if (!appState.registry) {
+        appState.registry = {};
+      }
+
+      return appState.registry;
+    };
+
+    var getAppScope = function(appState) {
+      if (!appState.scope) {
+        appState.scope = $rootScope.$new(true, $rootScope);
+      }
+      return appState.scope;
+    };
+
+    $scope.$on('angularObjectUpdate', function(event, data) {
+      var noteId = $route.current.pathParams.noteId;
+      if (!data.noteId || data.noteId === noteId) {
+        var scope;
+        var registry;
+
+        var app = _.find($scope.apps, {id: data.paragraphId});
+        if (app) {
+          scope = getAppScope(app);
+          registry = getAppRegistry(app);
+        } else {
+          // no matching app in this paragraph
+          return;
+        }
+
+        var varName = data.angularObject.name;
+
+        if (angular.equals(data.angularObject.object, scope[varName])) {
+          // return when update has no change
+          return;
+        }
+
+        if (!registry[varName]) {
+          registry[varName] = {
+            interpreterGroupId: data.interpreterGroupId,
+            noteId: data.noteId,
+            paragraphId: data.paragraphId
+          };
+        } else {
+          registry[varName].noteId = registry[varName].noteId || data.noteId;
+          registry[varName].paragraphId = registry[varName].paragraphId || data.paragraphId;
+        }
+
+        registry[varName].skipEmit = true;
+
+        if (!registry[varName].clearWatcher) {
+          registry[varName].clearWatcher = scope.$watch(varName, function(newValue, oldValue) {
+            console.log('angular object (paragraph) updated %o %o', varName, registry[varName]);
+            if (registry[varName].skipEmit) {
+              registry[varName].skipEmit = false;
+              return;
+            }
+            websocketMsgSrv.updateAngularObject(
+              registry[varName].noteId,
+              registry[varName].paragraphId,
+              varName,
+              newValue,
+              registry[varName].interpreterGroupId);
+          });
+        }
+        console.log('angular object (paragraph) created %o', varName);
+        scope[varName] = data.angularObject.object;
+
+        // create proxy for AngularFunction
+        if (varName.startsWith(ANGULAR_FUNCTION_OBJECT_NAME_PREFIX)) {
+          var funcName = varName.substring((ANGULAR_FUNCTION_OBJECT_NAME_PREFIX).length);
+          scope[funcName] = function() {
+            scope[varName] = arguments;
+            console.log('angular function (paragraph) invoked %o', arguments);
+          };
+
+          console.log('angular function (paragraph) created %o', scope[funcName]);
+        }
+      }
+    });
+
+    $scope.$on('angularObjectRemove', function(event, data) {
+      var noteId = $route.current.pathParams.noteId;
+      if (!data.noteId || data.noteId === noteId) {
+        var scope;
+        var registry;
+
+        var app = _.find($scope.apps, {id: data.paragraphId});
+        if (app) {
+          scope = getAppScope(app);
+          registry = getAppRegistry(app);
+        } else {
+          // no matching app in this paragraph
+          return;
+        }
+
+        var varName = data.name;
+
+        // clear watcher
+        if (registry[varName]) {
+          registry[varName].clearWatcher();
+          registry[varName] = undefined;
+        }
+
+        // remove scope variable
+        scope[varName] = undefined;
+
+        // remove proxy for AngularFunction
+        if (varName.startsWith(ANGULAR_FUNCTION_OBJECT_NAME_PREFIX)) {
+          var funcName = varName.substring((ANGULAR_FUNCTION_OBJECT_NAME_PREFIX).length);
+          scope[funcName] = undefined;
+        }
+      }
+    });
   };
 })();

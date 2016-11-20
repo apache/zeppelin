@@ -83,7 +83,7 @@ public class IgniteInterpreterTest {
             "val " + sizeVal + " = ignite.cluster().nodes().size()", INTP_CONTEXT);
 
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-    assertTrue(result.message().contains(sizeVal + ": Int = " + ignite.cluster().nodes().size()));
+    assertTrue(result.message().get(0).getData().contains(sizeVal + ": Int = " + ignite.cluster().nodes().size()));
 
     result = intp.interpret("\"123\"\n  .toInt", INTP_CONTEXT);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());

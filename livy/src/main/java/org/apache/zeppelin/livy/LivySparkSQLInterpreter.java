@@ -85,7 +85,7 @@ public class LivySparkSQLInterpreter extends Interpreter {
       if (res.code() == InterpreterResult.Code.SUCCESS) {
         StringBuilder resMsg = new StringBuilder();
         resMsg.append("%table ");
-        String[] rows = res.message().split("\n");
+        String[] rows = res.message().get(0).getData().split("\n");
 
         String[] headers = rows[1].split("\\|");
         for (int head = 1; head < headers.length; head++) {

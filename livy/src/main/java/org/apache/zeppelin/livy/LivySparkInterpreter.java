@@ -82,14 +82,14 @@ public class LivySparkInterpreter extends Interpreter {
           if (displayAppInfo) {
             String appId = extractStatementResult(
                     livyHelper.interpret("sc.applicationId", interpreterContext, userSessionMap)
-                            .message());
+                            .message().get(0).getData());
             livyHelper.interpret(
                     "val webui=sc.getClass.getMethod(\"ui\").invoke(sc).asInstanceOf[Some[_]].get",
                     interpreterContext, userSessionMap);
             String webUI = extractStatementResult(
                     livyHelper.interpret(
                             "webui.getClass.getMethod(\"appUIAddress\").invoke(webui)",
-                            interpreterContext, userSessionMap).message());
+                            interpreterContext, userSessionMap).message().get(0).getData());
             sessionId2AppIdMap.put(sessionId, appId);
             sessionId2WebUIMap.put(sessionId, webUI);
             LOGGER.info("Create livy session with sessionId: {}, appId: {}, webUI: {}",

@@ -134,7 +134,7 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
 
     // if prefix not found return ERROR and Prefix not found.
     assertEquals(InterpreterResult.Code.ERROR, interpreterResult.code());
-    assertEquals("Prefix not found.", interpreterResult.message());
+    assertEquals("Prefix not found.", interpreterResult.message().get(0).getData());
   }
 
   @Test

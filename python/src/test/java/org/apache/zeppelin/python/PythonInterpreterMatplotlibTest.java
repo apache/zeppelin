@@ -153,13 +153,13 @@ public class PythonInterpreterMatplotlibTest {
     ret = python.interpret("plt.show()", context);
     assertEquals(ret.message().get(0).getData(), InterpreterResult.Code.SUCCESS, ret.code());
     assertEquals(ret.message().get(0).getData(), Type.HTML, ret.message().get(0).getType());
-    assertTrue(ret.message().equals(""));
+    assertTrue(ret.message().get(0).getData().equals(""));
     
     // Now test that plot can be reshown if it is updated. It should be
     // different from the previous one because it will plot the same line
     // again but in a different color.
     ret = python.interpret("plt.plot([1, 2, 3])", context);
     ret2 = python.interpret("plt.show()", context);
-    assertTrue(!ret1.message().equals(ret2.message()));
+    assertTrue(!ret1.message().get(0).getData().equals(ret2.message().get(0).getData()));
   }
 }

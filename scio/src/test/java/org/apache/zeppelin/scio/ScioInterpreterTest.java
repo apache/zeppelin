@@ -47,12 +47,7 @@ public class ScioInterpreterTest {
         new AngularObjectRegistry(intpGroup.getId(), null),
         new LocalResourcePool("id"),
         new LinkedList<InterpreterContextRunner>(),
-        new InterpreterOutput(new InterpreterOutputListener() {
-          @Override
-          public void onAppend(InterpreterOutput out, byte[] line) {}
-          @Override
-          public void onUpdate(InterpreterOutput out, byte[] output) {}
-        }));
+        new InterpreterOutput(null));
   }
 
   @Before
@@ -79,14 +74,14 @@ public class ScioInterpreterTest {
   public void testBasicSyntaxError() {
     InterpreterResult error = repl.interpret("val a:Int = 'ds'", context);
     assertEquals(InterpreterResult.Code.ERROR, error.code());
-    assertEquals("Interpreter error", error.message());
+    assertEquals("Interpreter error", error.message().get(0).getData());
   }
 
   @Test
   public void testBasicIncomplete() {
     InterpreterResult incomplete = repl.interpret("val a = \"\"\"", context);
     assertEquals(InterpreterResult.Code.INCOMPLETE, incomplete.code());
-    assertEquals("Incomplete expression", incomplete.message());
+    assertEquals("Incomplete expression", incomplete.message().get(0).getData());
   }
 
   @Test
@@ -112,7 +107,7 @@ public class ScioInterpreterTest {
     InterpreterResult exception = repl.interpret("val (sc, _) = ContextAndArgs(argz)" + newline
         + "throw new Exception(\"test\")", context);
     assertEquals(InterpreterResult.Code.ERROR, exception.code());
-    assertTrue(exception.message().length() > 0);
+    assertTrue(exception.message().get(0).getData().length() > 0);
   }
 
 }

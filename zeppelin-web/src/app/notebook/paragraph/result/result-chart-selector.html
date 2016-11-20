@@ -20,7 +20,7 @@ limitations under the License.
   <button type="button" class="btn btn-default btn-sm"
           ng-if="type == 'TABLE'"
           ng-repeat="viz in builtInTableDataVisualizationList track by $index"
-          ng-class="{'active' : viz.id == graphMode}"
+          ng-class="{'active' : viz.id == graphMode && !config.helium.activeApp}"
           ng-click="switchViz(viz.id)"><i ng-class="viz.icon"></i>
   </button>
 
@@ -90,7 +90,7 @@ limitations under the License.
 </div>
 
 <span
-   ng-if="type=='TABLE' && !paragraph.config.helium.activeApp && graphMode!='table' && !asIframe && !viewOnly"
+   ng-if="type=='TABLE' && !config.helium.activeApp && graphMode!='table' && !asIframe && !viewOnly"
    style="margin-left:10px; cursor:pointer; display: inline-block; vertical-align:top; position: relative; line-height:30px;">
   <a class="btnText" ng-click="toggleGraphSetting()">
     settings <span ng-class="config.graph.optionOpen ? 'fa fa-caret-up' : 'fa fa-caret-down'"></span>
