@@ -67,7 +67,7 @@ zeppelin.NetworkVisualization.prototype.render = function(networkData) {
     console.log('Starting forceAtlas2 & noOverlap events');
     var nodesLength = networkData.graph.nodes.length;
     var isBigGraph = nodesLength > 50;
-    var forceAtlas2Config = {worker: true, barnesHutOptimize: nodesLength > 50, slowDown: 0.5};
+    var forceAtlas2Config = {worker: true, barnesHutOptimize: nodesLength > 50};
     var _this = this;
     this.sigma.startForceAtlas2(forceAtlas2Config);
     $timeout(function() {

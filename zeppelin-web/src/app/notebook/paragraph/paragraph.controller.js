@@ -395,6 +395,10 @@
       return !object;
     };
 
+    $scope.isEmptyObject = function(obj) {
+      return angular.equals(obj, {});
+    };
+
     $scope.isRunning = function() {
       if ($scope.paragraph.status === 'RUNNING' || $scope.paragraph.status === 'PENDING') {
         return true;
@@ -1281,7 +1285,7 @@
       var baseCols = ['id', 'defaultLabel'];
       var properties = {};
       paragraphDataset.graph.nodes.forEach(function(node) {
-        var hasLabel = 'defaultLabel' in node && node.label !== '';
+        var hasLabel = 'defaultLabel' in node && node.defaultLabel !== '';
         if (!hasLabel) {
           return;
         }
@@ -1297,7 +1301,7 @@
     };
 
     var refreshNetworkLabels = function() {
-      var properties = $scope.paragraph.config.graph.network.properties;
+      var properties = $scope.paragraph.config.graph.network.properties || {};
       if (!angular.equals({}, properties)) {
         paragraphDataset.graph.nodes
           .forEach(function(node) {
