@@ -1760,15 +1760,16 @@ public class NotebookServer extends WebSocketServlet implements
         continue;
       }
 
-      List<String> ids = notebook.getInterpreterFactory().getInterpreters(note.getId());
-      for (String id : ids) {
-        if (id.equals(interpreterGroupId)) {
+      List<String> settingIds = notebook.getInterpreterFactory().getInterpreters(note.getId());
+      for (String id : settingIds) {
+        if (interpreterGroupId.contains(id)) {
           broadcast(
               note.getId(),
               new Message(OP.ANGULAR_OBJECT_REMOVE)
                   .put("name", name)
                   .put("noteId", noteId)
                   .put("paragraphId", paragraphId));
+          break;
         }
       }
     }

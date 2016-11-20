@@ -693,6 +693,15 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     return interpreterSetting;
   }
 
+  /**
+   *
+   * @param id interpreterGroup id. Combination of interpreterSettingId + noteId/userId/shared
+   *           depends on interpreter mode
+   * @param option
+   * @return
+   * @throws InterpreterException
+   * @throws NullArgumentException
+   */
   @Override
   public InterpreterGroup createInterpreterGroup(String id, InterpreterOption option)
       throws InterpreterException, NullArgumentException {

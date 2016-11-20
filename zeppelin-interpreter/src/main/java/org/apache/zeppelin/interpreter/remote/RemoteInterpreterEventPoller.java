@@ -210,7 +210,7 @@ public class RemoteInterpreterEventPoller extends Thread {
           String settingId = id.substring(0, indexOfColon);
           listener.onMetaInfosReceived(settingId, metaInfos);
         }
-        logger.debug("Event from remoteproceess {}", event.getType());
+        logger.debug("Event from remote process {}", event.getType());
       } catch (Exception e) {
         logger.error("Can't handle event " + event, e);
       }

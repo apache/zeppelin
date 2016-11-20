@@ -990,8 +990,9 @@
         /** broadcast update to result controller **/
         if (data.paragraph.result && data.paragraph.result.msg) {
           for (var i in data.paragraph.result.msg) {
-            var newResult = data.paragraph.result.msg[i];
-            var oldResult = $scope.paragraph.result.msg[i];
+            var newResult = data.paragraph.result.msg ? data.paragraph.result.msg[i] : {};
+            var oldResult = ($scope.paragraph.result && $scope.paragraph.result.msg) ?
+                $scope.paragraph.result.msg[i] : {};
             var newConfig = data.paragraph.config.result ? data.paragraph.config.result[i] : {};
             var oldConfig = $scope.paragraph.config.result ? $scope.paragraph.config.result[i] : {};
             if (!angular.equals(newResult, oldResult) ||
