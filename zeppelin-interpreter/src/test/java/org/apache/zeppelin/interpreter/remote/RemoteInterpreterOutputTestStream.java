@@ -149,12 +149,12 @@ public class RemoteInterpreterOutputTestStream implements RemoteInterpreterProce
   }
 
   @Override
-  public void onOutputAppend(String noteId, String paragraphId, String output) {
+  public void onOutputAppend(String noteId, String paragraphId, int index, String output) {
 
   }
 
   @Override
-  public void onOutputUpdated(String noteId, String paragraphId, String output) {
+  public void onOutputUpdated(String noteId, String paragraphId, int index, InterpreterResult.Type type, String output) {
 
   }
 

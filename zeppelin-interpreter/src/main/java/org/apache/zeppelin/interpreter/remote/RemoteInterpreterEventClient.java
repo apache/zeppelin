@@ -215,13 +215,11 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector {
   }
 
   public void onInterpreterOutputAppend(
-      String noteId, String paragraphId, int outputIndex,
-      InterpreterResult.Type type, String output) {
-    Map<String, Object> appendOutput = new HashMap<>();
+      String noteId, String paragraphId, int outputIndex, String output) {
+    Map<String, String> appendOutput = new HashMap<>();
     appendOutput.put("noteId", noteId);
     appendOutput.put("paragraphId", paragraphId);
-    appendOutput.put("index", outputIndex);
-    appendOutput.put("type", type.name());
+    appendOutput.put("index", Integer.toString(outputIndex));
     appendOutput.put("data", output);
 
     sendEvent(new RemoteInterpreterEvent(
@@ -232,10 +230,10 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector {
   public void onInterpreterOutputUpdate(
       String noteId, String paragraphId, int outputIndex,
       InterpreterResult.Type type, String output) {
-    Map<String, Object> appendOutput = new HashMap<>();
+    Map<String, String> appendOutput = new HashMap<>();
     appendOutput.put("noteId", noteId);
     appendOutput.put("paragraphId", paragraphId);
-    appendOutput.put("index", outputIndex);
+    appendOutput.put("index", Integer.toString(outputIndex));
     appendOutput.put("type", type.name());
     appendOutput.put("data", output);
 
@@ -275,10 +273,12 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector {
     }
   }
 
-  public void onAppOutputAppend(String noteId, String paragraphId, String appId, String output) {
-    Map<String, String> appendOutput = new HashMap<>();
+  public void onAppOutputAppend(
+      String noteId, String paragraphId, int index, String appId, String output) {
+    Map<String, Object> appendOutput = new HashMap<>();
     appendOutput.put("noteId", noteId);
     appendOutput.put("paragraphId", paragraphId);
+    appendOutput.put("index", index);
     appendOutput.put("appId", appId);
     appendOutput.put("data", output);
 
@@ -288,11 +288,15 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector {
   }
 
 
-  public void onAppOutputUpdate(String noteId, String paragraphId, String appId, String output) {
-    Map<String, String> appendOutput = new HashMap<>();
+  public void onAppOutputUpdate(
+      String noteId, String paragraphId, int index, String appId,
+      InterpreterResult.Type type, String output) {
+    Map<String, Object> appendOutput = new HashMap<>();
     appendOutput.put("noteId", noteId);
     appendOutput.put("paragraphId", paragraphId);
+    appendOutput.put("index", index);
     appendOutput.put("appId", appId);
+    appendOutput.put("type", type);
     appendOutput.put("data", output);
 
     sendEvent(new RemoteInterpreterEvent(

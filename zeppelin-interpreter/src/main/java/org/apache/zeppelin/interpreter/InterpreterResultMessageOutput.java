@@ -96,7 +96,9 @@ public class InterpreterResultMessageOutput extends OutputStream {
           firstWrite = false;
         }
 
-        flush();
+        if (isAppendSupported()) {
+          flush(true);
+        }
       }
     }
   }
@@ -200,20 +202,32 @@ public class InterpreterResultMessageOutput extends OutputStream {
     return new InterpreterResultMessage(type, new String(toByteArray()));
   }
 
-  public void flush() throws IOException {
+  private void flush(boolean append) throws IOException {
     synchronized (outList) {
       buffer.flush();
       byte[] bytes = buffer.toByteArray();
       if (bytes != null && bytes.length > 0) {
         outList.add(bytes);
-        if (type == InterpreterResult.Type.TEXT) {
+        if (append) {
           if (flushListener != null) {
             flushListener.onAppend(this, bytes);
+          }
+        } else {
+          if (flushListener != null) {
+            flushListener.onUpdate(this);
           }
         }
       }
       buffer.reset();
     }
+  }
+
+  public void flush() throws IOException {
+    flush(isAppendSupported());
+  }
+
+  public boolean isAppendSupported() {
+    return type == InterpreterResult.Type.TEXT;
   }
 
   private void copyStream(InputStream in, OutputStream out) throws IOException {

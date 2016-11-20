@@ -1402,11 +1402,12 @@ public class NotebookServer extends WebSocketServlet implements
    * @param output output to append
    */
   @Override
-  public void onOutputAppend(String noteId, String paragraphId, String output) {
+  public void onOutputAppend(String noteId, String paragraphId, int index, String output) {
     Message msg = new Message(OP.PARAGRAPH_APPEND_OUTPUT)
-            .put("noteId", noteId)
-            .put("paragraphId", paragraphId)
-            .put("data", output);
+        .put("noteId", noteId)
+        .put("paragraphId", paragraphId)
+        .put("index", index)
+        .put("data", output);
     broadcast(noteId, msg);
   }
 
@@ -1417,11 +1418,14 @@ public class NotebookServer extends WebSocketServlet implements
    * @param output output to update (replace)
    */
   @Override
-  public void onOutputUpdated(String noteId, String paragraphId, String output) {
+  public void onOutputUpdated(
+      String noteId, String paragraphId, int index, InterpreterResult.Type type, String output) {
     Message msg = new Message(OP.PARAGRAPH_UPDATE_OUTPUT)
-            .put("noteId", noteId)
-            .put("paragraphId", paragraphId)
-            .put("data", output);
+        .put("noteId", noteId)
+        .put("paragraphId", paragraphId)
+        .put("index", index)
+        .put("type", type)
+        .put("data", output);
     broadcast(noteId, msg);
   }
 
@@ -1433,10 +1437,12 @@ public class NotebookServer extends WebSocketServlet implements
    * @param output
    */
   @Override
-  public void onOutputAppend(String noteId, String paragraphId, String appId, String output) {
+  public void onOutputAppend(
+      String noteId, String paragraphId, int index, String appId, String output) {
     Message msg = new Message(OP.APP_APPEND_OUTPUT)
         .put("noteId", noteId)
         .put("paragraphId", paragraphId)
+        .put("index", index)
         .put("appId", appId)
         .put("data", output);
     broadcast(noteId, msg);
@@ -1450,10 +1456,14 @@ public class NotebookServer extends WebSocketServlet implements
    * @param output
    */
   @Override
-  public void onOutputUpdated(String noteId, String paragraphId, String appId, String output) {
+  public void onOutputUpdated(
+      String noteId, String paragraphId, int index, String appId, InterpreterResult.Type type,
+      String output) {
     Message msg = new Message(OP.APP_UPDATE_OUTPUT)
         .put("noteId", noteId)
         .put("paragraphId", paragraphId)
+        .put("index", index)
+        .put("type", type)
         .put("appId", appId)
         .put("data", output);
     broadcast(noteId, msg);

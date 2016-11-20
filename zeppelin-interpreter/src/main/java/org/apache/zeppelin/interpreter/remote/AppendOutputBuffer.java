@@ -25,11 +25,13 @@ public class AppendOutputBuffer {
 
   private String noteId;
   private String paragraphId;
+  private int index;
   private String data;
 
-  public AppendOutputBuffer(String noteId, String paragraphId, String data) {
+  public AppendOutputBuffer(String noteId, String paragraphId, int index, String data) {
     this.noteId = noteId;
     this.paragraphId = paragraphId;
+    this.index = index;
     this.data = data;
   }
 
@@ -39,6 +41,10 @@ public class AppendOutputBuffer {
 
   public String getParagraphId() {
     return paragraphId;
+  }
+
+  public int getIndex() {
+    return index;
   }
 
   public String getData() {

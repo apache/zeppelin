@@ -159,38 +159,36 @@ public class RemoteInterpreterEventPoller extends Thread {
           sendResourceResponseGet(resourceId, o);
         } else if (event.getType() == RemoteInterpreterEventType.OUTPUT_APPEND) {
           // on output append
-          Map<String, Object> outputAppend = gson.fromJson(
+          Map<String, String> outputAppend = gson.fromJson(
                   event.getData(), new TypeToken<Map<String, Object>>() {}.getType());
           String noteId = (String) outputAppend.get("noteId");
           String paragraphId = (String) outputAppend.get("paragraphId");
-          int index = (int) outputAppend.get("index");
-          InterpreterResult.Type type =
-              InterpreterResult.Type.valueOf((String) outputAppend.get("type"));
+          int index = Integer.parseInt(outputAppend.get("index"));
           String outputToAppend = (String) outputAppend.get("data");
 
           String appId = (String) outputAppend.get("appId");
 
           if (appId == null) {
-            runner.appendBuffer(noteId, paragraphId, outputToAppend);
+            runner.appendBuffer(noteId, paragraphId, index, outputToAppend);
           } else {
-            appListener.onOutputAppend(noteId, paragraphId, appId, outputToAppend);
+            appListener.onOutputAppend(noteId, paragraphId, index, appId, outputToAppend);
           }
         } else if (event.getType() == RemoteInterpreterEventType.OUTPUT_UPDATE) {
           // on output update
-          Map<String, Object> outputAppend = gson.fromJson(
+          Map<String, String> outputAppend = gson.fromJson(
               event.getData(), new TypeToken<Map<String, Object>>() {}.getType());
           String noteId = (String) outputAppend.get("noteId");
           String paragraphId = (String) outputAppend.get("paragraphId");
-          int index = (int) outputAppend.get("index");
+          int index = Integer.parseInt(outputAppend.get("index"));
           InterpreterResult.Type type =
               InterpreterResult.Type.valueOf((String) outputAppend.get("type"));
           String outputToUpdate = (String) outputAppend.get("data");
           String appId = (String) outputAppend.get("appId");
 
           if (appId == null) {
-            listener.onOutputUpdated(noteId, paragraphId, outputToUpdate);
+            listener.onOutputUpdated(noteId, paragraphId, index, type, outputToUpdate);
           } else {
-            appListener.onOutputUpdated(noteId, paragraphId, appId, outputToUpdate);
+            appListener.onOutputUpdated(noteId, paragraphId, index, appId, type, outputToUpdate);
           }
         } else if (event.getType() == RemoteInterpreterEventType.APP_STATUS_UPDATE) {
           // on output update

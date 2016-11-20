@@ -141,6 +141,30 @@
       }
     };
 
+    $scope.$on('updateParagraphOutput', function(event, data) {
+      if ($scope.paragraph.id === data.paragraphId) {
+        if (!$scope.paragraph.result.msg) {
+          $scope.paragraph.result.msg = [];
+        }
+
+        var update = ($scope.paragraph.result.msg[data.index]) ? true : false;
+        
+        $scope.paragraph.result.msg[data.index] = {
+          data : data.data,
+          type : data.type
+        };
+
+        if (update) {
+          $rootScope.$broadcast(
+            'updateResult',
+            $scope.paragraph.result.msg[data.index],
+            $scope.paragraph.config.result[data.index],
+            $scope.paragraph,
+            data.index);
+        }
+      }
+    });
+
     $scope.getIframeDimensions = function() {
       if ($scope.asIframe) {
         var paragraphid = '#' + $routeParams.paragraphId + '_container';
@@ -769,19 +793,6 @@
       }
     };
 
-    $scope.getBase64ImageSrc = function(base64Data) {
-      return 'data:image/png;base64,' + base64Data;
-    };
-
-    $scope.getGraphMode = function(paragraph) {
-      var pdata = (paragraph) ? paragraph : $scope.paragraph;
-      if (pdata.config.graph && pdata.config.graph.mode) {
-        return pdata.config.graph.mode;
-      } else {
-        return 'table';
-      }
-    };
-
     $scope.parseTableCell = function(cell) {
       if (!isNaN(cell)) {
         if (cell.length === 0 || Number(cell) > Number.MAX_SAFE_INTEGER || Number(cell) < Number.MIN_SAFE_INTEGER) {
@@ -1175,7 +1186,7 @@
         }
 
         /** broadcast update to result controller **/
-        if (data.paragraph.result) {
+        if (data.paragraph.result && data.paragraph.result.msg) {
           for (var i in data.paragraph.result.msg) {
             var newResult = data.paragraph.result.msg[i];
             var oldResult = $scope.paragraph.result.msg[i];
@@ -1228,31 +1239,6 @@
 
     });
 
-    $scope.$on('appendParagraphOutput', function(event, data) {
-      /* It has been observed that append events
-       * can be errorneously called even if paragraph
-       * execution has ended, and in that case, no append
-       * should be made. Also, it was observed that between PENDING
-       * and RUNNING states, append-events can be called and we can't
-       * miss those, else during the length of paragraph run, few
-       * initial output line/s will be missing.
-       */
-      if ($scope.paragraph.id === data.paragraphId &&
-         ($scope.paragraph.status === 'RUNNING' || $scope.paragraph.status === 'PENDING')) {
-        if ($scope.flushStreamingOutput) {
-          $scope.clearTextOutput();
-          $scope.flushStreamingOutput = false;
-        }
-        $scope.appendTextOutput(data.data);
-      }
-    });
-
-    $scope.$on('updateParagraphOutput', function(event, data) {
-      if ($scope.paragraph.id === data.paragraphId) {
-        $scope.clearTextOutput();
-        $scope.appendTextOutput(data.data);
-      }
-    });
 
     $scope.$on('updateProgress', function(event, data) {
       if (data.id === $scope.paragraph.id) {

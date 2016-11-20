@@ -160,12 +160,36 @@
       renderResult($scope.type, true);
     });
 
+    $scope.$on('appendParagraphOutput', function(event, data) {
+      /* It has been observed that append events
+       * can be errorneously called even if paragraph
+       * execution has ended, and in that case, no append
+       * should be made. Also, it was observed that between PENDING
+       * and RUNNING states, append-events can be called and we can't
+       * miss those, else during the length of paragraph run, few
+       * initial output line/s will be missing.
+       */
+      if (paragraph.id === data.paragraphId &&
+          resultIndex === data.index &&
+         (paragraph.status === 'RUNNING' || paragraph.status === 'PENDING')) {
+        appendTextOutput(data.data);
+      }
+    });
+
+    $scope.$on('updateParagraphOutput', function(event, data) {
+      if (paragraph.id === data.paragraphId &&
+          resultIndex === data.index) {
+        clearTextOutput();
+        appendTextOutput(data.data);
+      }
+    });
+
     var updateData = function(result, config, paragraphRef, index) {
       data = result.data;
       paragraph = paragraphRef;
       resultIndex = parseInt(index);
 
-      $scope.id = paragraph.id + "_" + index;
+      $scope.id = paragraph.id + '_' + index;
       $scope.type = result.type;
       config = config ? config : {};
 
@@ -201,7 +225,7 @@
       if (!config.graph.scatter) {
         config.graph.scatter = {};
       }
-
+      
       $scope.graphMode = config.graph.mode;
       $scope.config = angular.copy(config);
 
@@ -211,6 +235,8 @@
         tableData.loadParagraphResult({type: $scope.type, msg: data});
         $scope.tableDataColumns = tableData.columns;
         $scope.tableDataComment = tableData.comment;
+
+        selectDefaultColsForGraphOption();
       }
     };
 
@@ -275,21 +301,24 @@
       $timeout(retryRenderer);
     };
 
+    var textRendererInitialized = false;
     var renderText = function() {
       var retryRenderer = function() {
         var textEl = angular.element('#p' + $scope.id + '_text');
         if (textEl.length) {
           // clear all lines before render
           clearTextOutput();
-
+          textRendererInitialized = true;
+          
           if (data) {
             appendTextOutput(data);
+          } else {
+            flushAppendQueue();
           }
 
           angular.element('#p' + $scope.id + '_text').bind('mousewheel', function(e) {
             $scope.keepScrollDown = false;
-          });
-          $scope.flushStreamingOutput = true;
+          });          
         } else {
           $timeout(retryRenderer, 10);
         }
@@ -304,17 +333,30 @@
       }
     };
 
-    var appendTextOutput = function(msg) {
-      var textEl = angular.element('#p' + $scope.id + '_text');
-      if (textEl.length) {
-        var lines = msg.split('\n');
-        for (var i = 0; i < lines.length; i++) {
-          textEl.append(angular.element('<div></div>').text(lines[i]));
-        }
+    var textAppendQueueBeforeInitialize = [];
+
+    var flushAppendQueue = function() {
+      while (textAppendQueueBeforeInitialize.length > 0) {
+        appendTextOutput(textAppendQueueBeforeInitialize.pop());
       }
-      if ($scope.keepScrollDown) {
-        var doc = angular.element('#p' + $scope.id + '_text');
-        doc[0].scrollTop = doc[0].scrollHeight;
+    };
+    
+    var appendTextOutput = function(msg) {
+      if (!textRendererInitialized) {
+        textAppendQueueBeforeInitialize.push(msg);
+      } else {
+        flushAppendQueue();
+        var textEl = angular.element('#p' + $scope.id + '_text');
+        if (textEl.length) {
+          var lines = msg.split('\n');
+          for (var i = 0; i < lines.length; i++) {
+            textEl.append(angular.element('<div></div>').text(lines[i]));
+          }
+        }
+        if ($scope.keepScrollDown) {
+          var doc = angular.element('#p' + $scope.id + '_text');
+          doc[0].scrollTop = doc[0].scrollHeight;
+        }
       }
     };
 
@@ -526,33 +568,33 @@
         }
       };
 
-      unique($scope.paragraph.config.graph.keys);
-      removeUnknown($scope.paragraph.config.graph.keys);
+      unique($scope.config.graph.keys);
+      removeUnknown($scope.config.graph.keys);
 
-      removeUnknown($scope.paragraph.config.graph.values);
+      removeUnknown($scope.config.graph.values);
 
-      unique($scope.paragraph.config.graph.groups);
-      removeUnknown($scope.paragraph.config.graph.groups);
+      unique($scope.config.graph.groups);
+      removeUnknown($scope.config.graph.groups);
 
-      removeUnknownFromFields($scope.paragraph.config.graph.scatter);
+      removeUnknownFromFields($scope.config.graph.scatter);
     };
 
     /* select default key and value if there're none selected */
     var selectDefaultColsForGraphOption = function() {
-      if ($scope.paragraph.config.graph.keys.length === 0 && tableData.columns.length > 0) {
-        $scope.paragraph.config.graph.keys.push(tableData.columns[0]);
+      if ($scope.config.graph.keys.length === 0 && tableData.columns.length > 0) {
+        $scope.config.graph.keys.push(tableData.columns[0]);
       }
 
-      if ($scope.paragraph.config.graph.values.length === 0 && tableData.columns.length > 1) {
-        $scope.paragraph.config.graph.values.push(tableData.columns[1]);
+      if ($scope.config.graph.values.length === 0 && tableData.columns.length > 1) {
+        $scope.config.graph.values.push(tableData.columns[1]);
       }
 
-      if (!$scope.paragraph.config.graph.scatter.xAxis && !$scope.paragraph.config.graph.scatter.yAxis) {
+      if (!$scope.config.graph.scatter.xAxis && !$scope.config.graph.scatter.yAxis) {
         if (tableData.columns.length > 1) {
-          $scope.paragraph.config.graph.scatter.xAxis = tableData.columns[0];
-          $scope.paragraph.config.graph.scatter.yAxis = tableData.columns[1];
+          $scope.config.graph.scatter.xAxis = tableData.columns[0];
+          $scope.config.graph.scatter.yAxis = tableData.columns[1];
         } else if (tableData.columns.length === 1) {
-          $scope.paragraph.config.graph.scatter.xAxis = tableData.columns[0];
+          $scope.config.graph.scatter.xAxis = tableData.columns[0];
         }
       }
     };
@@ -566,21 +608,20 @@
       }
     };
 
-    $scope.resizeParagraph = function(width, height) {
-      $scope.changeColWidth(width);
+    $scope.resize = function(width, height) {
       $timeout(function() {
-        autoAdjustEditorHeight($scope.paragraph.id + '_editor');
-        $scope.changeHeight(height);
+        changeHeight(width, height);
       }, 200);
     };
 
-    $scope.changeHeight = function(height) {
-      var newParams = angular.copy($scope.paragraph.settings.params);
-      var newConfig = angular.copy($scope.paragraph.config);
+    var changeHeight = function(width, height) {
+      var newParams = angular.copy(paragraph.settings.params);
+      var newConfig = angular.copy($scope.config);
 
       newConfig.graph.height = height;
+      paragraph.config.colWidth = width;
 
-      commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
+      commitParagraphResult(paragraph.title, paragraph.text, newConfig, newParams);
     };
 
     $scope.exportToDSV = function(delimiter) {
@@ -609,6 +650,10 @@
         extension = 'csv';
       }
       saveAsService.saveAs(dsv, 'data', extension);
+    };
+    
+    $scope.getBase64ImageSrc = function(base64Data) {
+      return 'data:image/png;base64,' + base64Data;
     };
   };
 })();

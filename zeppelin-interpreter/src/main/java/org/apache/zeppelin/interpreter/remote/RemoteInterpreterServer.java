@@ -573,7 +573,7 @@ public class RemoteInterpreterServer
         String output = new String(line);
         logger.debug("Output Append: {}", output);
         eventClient.onInterpreterOutputAppend(
-            noteId, paragraphId, index, out.getType(), output);
+            noteId, paragraphId, index, output);
       }
 
       @Override

@@ -157,8 +157,7 @@ public class ZeppelinApplicationDevServer extends ZeppelinDevServer {
 
           @Override
           public void onAppend(int index, InterpreterResultMessageOutput out, byte[] line) {
-            eventClient.onInterpreterOutputAppend(noteId, paragraphId,
-                index, out.getType(), new String(line));
+            eventClient.onInterpreterOutputAppend(noteId, paragraphId, index, new String(line));
           }
 
           @Override

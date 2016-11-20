@@ -16,7 +16,7 @@ limitations under the License.
   ng-if="!config.helium.activeApp"
   style="padding-bottom: 5px;"
   resize='{"allowresize": "{{!asIframe && !viewOnly}}", "graphType": "{{type}}"}'
-     resizable on-resize="resizeParagraph(width, height);">
+     resizable on-resize="resize(width, height);">
   <div ng-include src="'app/notebook/paragraph/result/result-graph.html'"></div>
 
   <div id="{{id}}_comment"
