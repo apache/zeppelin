@@ -31,12 +31,13 @@
     'websocketMsgSrv',
     'baseUrlSrv',
     'ngToast',
-    'saveAsService'
+    'saveAsService',
+    'noteVarShareService'
   ];
 
   function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location,
-                         $timeout, $compile, $http, $q, websocketMsgSrv,
-                         baseUrlSrv, ngToast, saveAsService) {
+                      $timeout, $compile, $http, $q, websocketMsgSrv,
+                      baseUrlSrv, ngToast, saveAsService, noteVarShareService) {
 
     /**
      * Built-in visualizations
@@ -290,6 +291,7 @@
           try {
             angular.element('#p' + $scope.id + '_angular').html(data);
 
+            var paragraphScope = noteVarShareService.get(paragraph.id + '_paragraphScope');
             $compile(angular.element('#p' + $scope.id + '_angular').contents())(paragraphScope);
           } catch (err) {
             console.log('ANGULAR rendering error %o', err);
@@ -607,6 +609,16 @@
         return false;
       }
     };
+
+    $scope.$on('paragraphResized', function(event, paragraphId) {
+      // paragraph col width changed
+      if (paragraphId === paragraph.id) {
+        var builtInViz = builtInVisualizations[$scope.graphMode];
+        if (builtInViz && builtInViz.instance) {
+          builtInViz.instance.resize();
+        }
+      }
+    });
 
     $scope.resize = function(width, height) {
       $timeout(function() {

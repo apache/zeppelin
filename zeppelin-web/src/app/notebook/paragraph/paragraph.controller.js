@@ -30,12 +30,13 @@
     'websocketMsgSrv',
     'baseUrlSrv',
     'ngToast',
-    'saveAsService'
+    'saveAsService',
+    'noteVarShareService'
   ];
 
   function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $location,
                          $timeout, $compile, $http, $q, websocketMsgSrv,
-                         baseUrlSrv, ngToast, saveAsService) {
+                         baseUrlSrv, ngToast, saveAsService, noteVarShareService) {
     var ANGULAR_FUNCTION_OBJECT_NAME_PREFIX = '_Z_ANGULAR_FUNC_';
     $scope.parentNote = null;
     $scope.paragraph = null;
@@ -115,6 +116,8 @@
       if (!$scope.paragraph.config) {
         $scope.paragraph.config = {};
       }
+
+      noteVarShareService.put($scope.paragraph.id + '_paragraphScope', paragraphScope);
 
       initializeDefault();
 
@@ -1167,7 +1170,7 @@
          ) {
         var statusChanged = (data.paragraph.status !== $scope.paragraph.status);
         var resultRefreshed = (data.paragraph.dateFinished !== $scope.paragraph.dateFinished) ||
-          isEmpty(data.paragraph.result) !== isEmpty($scope.paragraph.result) ||
+            isEmpty(data.paragraph.result) !== isEmpty($scope.paragraph.result) ||
           data.paragraph.status === 'ERROR' || (data.paragraph.status === 'FINISHED' && statusChanged);
 
         if ($scope.paragraph.text !== data.paragraph.text) {
@@ -1197,6 +1200,11 @@
               $rootScope.$broadcast('updateResult', newResult, newConfig, data.paragraph, parseInt(i));
             }
           }
+        }
+
+        // resize col width
+        if ($scope.paragraph.config.colWidth !== data.paragraph.colWidth) {
+          $rootScope.$broadcast('paragraphResized', $scope.paragraph.id);
         }
 
         /** push the rest */
