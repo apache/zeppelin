@@ -855,7 +855,7 @@ public class NotebookServer extends WebSocketServlet implements
     p.settings.setParams(params);
     p.setConfig(config);
     p.setTitle((String) fromMessage.get("title"));
-    p.setText((String) fromMessage.get("paragraph"));
+    p.setText(((String) fromMessage.get("paragraph")).trim());
     note.persist(subject);
     broadcast(note.getId(), new Message(OP.PARAGRAPH).put("paragraph", p));
   }
@@ -1297,7 +1297,7 @@ public class NotebookServer extends WebSocketServlet implements
 
     Paragraph p = note.getParagraph(paragraphId);
     String text = (String) fromMessage.get("paragraph");
-    p.setText(text);
+    p.setText(text.trim());
     p.setTitle((String) fromMessage.get("title"));
     AuthenticationInfo authenticationInfo =
         new AuthenticationInfo(fromMessage.principal, fromMessage.ticket);

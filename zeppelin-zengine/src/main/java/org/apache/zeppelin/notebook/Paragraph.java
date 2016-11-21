@@ -114,7 +114,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
   }
 
   public void setText(String newText) {
-    this.text = newText;
+    this.text = newText != null ? newText.trim() : null;
     this.dateUpdated = new Date();
   }
 
@@ -158,16 +158,13 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     }
 
     // get script head
-    int scriptHeadIndex = 0;
+    int scriptHeadIndex = text.length();
     for (int i = 0; i < text.length(); i++) {
       char ch = text.charAt(i);
       if (Character.isWhitespace(ch) || ch == '(') {
         scriptHeadIndex = i;
         break;
       }
-    }
-    if (scriptHeadIndex == 0) {
-      return null;
     }
     String head = text.substring(0, scriptHeadIndex);
     if (head.startsWith("%")) {

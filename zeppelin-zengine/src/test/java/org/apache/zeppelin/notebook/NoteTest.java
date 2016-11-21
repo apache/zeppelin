@@ -99,7 +99,7 @@ public class NoteTest {
     p1.setText("%spark ");
     Paragraph p2 = note.addParagraph();
 
-    assertEquals("%spark\n", p2.getText());
+    assertEquals("%spark", p2.getText());
   }
 
   @Test
@@ -111,7 +111,7 @@ public class NoteTest {
     p1.setText("%spark ");
     Paragraph p2 = note.insertParagraph(note.getParagraphs().size());
 
-    assertEquals("%spark\n", p2.getText());
+    assertEquals("%spark", p2.getText());
   }
 
   @Test

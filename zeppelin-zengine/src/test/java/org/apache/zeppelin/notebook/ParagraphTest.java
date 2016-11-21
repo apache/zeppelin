@@ -71,6 +71,9 @@ public class ParagraphTest {
 
     text = "%md ###Hello";
     assertEquals("md", Paragraph.getRequiredReplName(text));
+
+    text = "%md";
+    assertEquals("md", Paragraph.getRequiredReplName(text));
   }
 
   @Test
@@ -110,5 +113,15 @@ public class ParagraphTest {
     verify(registry).get("name", noteId, paragraphId);
     verify(registry).get("age", noteId, null);
     assertEquals(actual, expected);
+  }
+
+  @Test
+  public void testTrimText() {
+    final Note note = mock(Note.class);
+    final Paragraph paragraph = new Paragraph(note, null, null);
+    paragraph.setText("\n %spark println()");
+    assertEquals("%spark println()", paragraph.getText());
+    assertEquals("spark", paragraph.getRequiredReplName());
+    assertEquals("println()", paragraph.getScriptBody());
   }
 }
