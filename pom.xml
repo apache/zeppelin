@@ -385,6 +385,11 @@
         </executions>
       </plugin>
 
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>xml-maven-plugin</artifactId>
+      </plugin>
+
       <!--TODO(alex): make part of the build and reconcile conflicts
     <plugin>
       <groupId>com.ning.maven.plugins</groupId>
@@ -466,6 +471,33 @@
                 </excludes>
               </fileset>
             </filesets>
+          </configuration>
+        </plugin>
+
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>xml-maven-plugin</artifactId>
+          <version>1.0.1</version>
+          <executions>
+            <execution>
+              <phase>validate</phase>
+              <goals>
+                <goal>validate</goal>
+              </goals>
+            </execution>
+          </executions>
+          <configuration>
+            <validationSets>
+              <validationSet>
+                <dir>${project.basedir}</dir>
+                <includes>
+                  <include>
+                    pom.xml
+                  </include>
+                </includes>
+                <systemId>_tools/maven-4.0.0.xsd</systemId>
+              </validationSet>
+            </validationSets>
           </configuration>
         </plugin>
 
