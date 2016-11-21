@@ -848,7 +848,7 @@
     };
 
     var getInterpreterName = function(paragraphText) {
-      var intpNameRegexp = /%(.+?)\s/g;
+      var intpNameRegexp = /^\s*%(.+?)\s/g;
       var match = intpNameRegexp.exec(paragraphText);
       if (match) {
         return match[1].trim();
