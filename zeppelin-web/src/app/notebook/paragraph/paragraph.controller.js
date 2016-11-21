@@ -30,20 +30,20 @@
     'websocketMsgSrv',
     'baseUrlSrv',
     'ngToast',
-    'saveAsService',
-    'esriLoader'
+    'saveAsService'
   ];
 
   function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $location,
                          $timeout, $compile, $http, $q, websocketMsgSrv,
-                         baseUrlSrv, ngToast, saveAsService, esriLoader) {
+                         baseUrlSrv, ngToast, saveAsService) {
     var ANGULAR_FUNCTION_OBJECT_NAME_PREFIX = '_Z_ANGULAR_FUNC_';
     $scope.parentNote = null;
     $scope.paragraph = null;
     $scope.originalText = '';
     $scope.editor = null;
-    $scope.magic = null;
 
+    var editorSetting = {};
+    var pastePercentSign = false;
     var paragraphScope = $rootScope.$new(true, $rootScope);
 
     // to keep backward compatibility
@@ -99,6 +99,84 @@
 
     var angularObjectRegistry = {};
 
+    /**
+     * Built-in visualizations
+     */
+    $scope.builtInTableDataVisualizationList = [
+      {
+        id: 'table',   // paragraph.config.graph.mode
+        name: 'Table', // human readable name. tooltip
+        icon: 'fa fa-table'
+      },
+      {
+        id: 'multiBarChart',
+        name: 'Bar Chart',
+        icon: 'fa fa-bar-chart',
+        transformation: 'pivot'
+      },
+      {
+        id: 'pieChart',
+        name: 'Pie Chart',
+        icon: 'fa fa-pie-chart',
+        transformation: 'pivot'
+      },
+      {
+        id: 'stackedAreaChart',
+        name: 'Area Chart',
+        icon: 'fa fa-area-chart',
+        transformation: 'pivot'
+      },
+      {
+        id: 'lineChart',
+        name: 'Line Chart',
+        icon: 'fa fa-line-chart',
+        transformation: 'pivot'
+      },
+      {
+        id: 'scatterChart',
+        name: 'Scatter Chart',
+        icon: 'cf cf-scatter-chart'
+      }
+    ];
+
+    /**
+     * Holds class and actual runtime instance and related infos of built-in visualizations
+     */
+    var builtInVisualizations = {
+      'table': {
+        class: zeppelin.TableVisualization,
+        instance: undefined   // created from setGraphMode()
+      },
+      'multiBarChart': {
+        class: zeppelin.BarchartVisualization,
+        instance: undefined
+      },
+      'pieChart': {
+        class: zeppelin.PiechartVisualization,
+        instance: undefined
+      },
+      'stackedAreaChart': {
+        class: zeppelin.AreachartVisualization,
+        instance: undefined
+      },
+      'lineChart': {
+        class: zeppelin.LinechartVisualization,
+        instance: undefined
+      },
+      'scatterChart': {
+        class: zeppelin.ScatterchartVisualization,
+        instance: undefined
+      }
+    };
+
+    /**
+     * TableData instance
+     */
+    var tableData;
+
+    // available columns in tabledata
+    $scope.tableDataColumns = [];
+
     // Controller init
     $scope.init = function(newParagraph, note) {
       $scope.paragraph = newParagraph;
@@ -118,7 +196,11 @@
       initializeDefault();
 
       if ($scope.getResultType() === 'TABLE') {
-        $scope.loadTableData($scope.paragraph.result);
+        var TableData = zeppelin.TableData;
+        tableData = new TableData();
+        tableData.loadParagraphResult($scope.paragraph.result);
+        $scope.tableDataColumns = tableData.columns;
+        $scope.tableDataComment = tableData.comment;
         $scope.setGraphMode($scope.getGraphMode(), false, false);
       } else if ($scope.getResultType() === 'HTML') {
         $scope.renderHtml();
@@ -140,13 +222,16 @@
 
     $scope.renderHtml = function() {
       var retryRenderer = function() {
-        if (angular.element('#p' + $scope.paragraph.id + '_html').length) {
+        var htmlEl = angular.element('#p' + $scope.paragraph.id + '_html');
+        if (htmlEl.length) {
           try {
-            angular.element('#p' + $scope.paragraph.id + '_html').html($scope.paragraph.result.msg);
+            htmlEl.html($scope.paragraph.result.msg);
 
-            angular.element('#p' + $scope.paragraph.id + '_html').find('pre code').each(function(i, e) {
+            htmlEl.find('pre code').each(function(i, e) {
               hljs.highlightBlock(e);
             });
+            /*eslint new-cap: [2, {"capIsNewExceptions": ["MathJax.Hub.Queue"]}]*/
+            MathJax.Hub.Queue(['Typeset', MathJax.Hub, htmlEl[0]]);
           } catch (err) {
             console.log('HTML rendering error %o', err);
           }
@@ -257,22 +342,6 @@
         config.graph.scatter = {};
       }
 
-      if (!config.graph.map) {
-        config.graph.map = {};
-      }
-
-      if (!config.graph.map.baseMapType) {
-        config.graph.map.baseMapType = $scope.baseMapOption[0];
-      }
-
-      if (!config.graph.map.isOnline) {
-        config.graph.map.isOnline = true;
-      }
-
-      if (!config.graph.map.pinCols) {
-        config.graph.map.pinCols = [];
-      }
-
       if (config.enabled === undefined) {
         config.enabled = true;
       }
@@ -318,6 +387,10 @@
                                    data, $scope.paragraph.config, $scope.paragraph.settings.params);
       $scope.originalText = angular.copy(data);
       $scope.dirtyText = undefined;
+
+      if (editorSetting.editOnDblClick) {
+        closeEditorAndOpenTable();
+      }
     };
 
     $scope.saveParagraph = function() {
@@ -432,6 +505,23 @@
       commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
     };
 
+    var openEditorAndCloseTable = function() {
+      manageEditorAndTableState(false, true);
+    };
+
+    var closeEditorAndOpenTable = function() {
+      manageEditorAndTableState(true, false);
+    };
+
+    var manageEditorAndTableState = function(showEditor, showTable) {
+      var newParams = angular.copy($scope.paragraph.settings.params);
+      var newConfig = angular.copy($scope.paragraph.config);
+      newConfig.editorHide = showEditor;
+      newConfig.tableHide = showTable;
+
+      commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
+    };
+
     $scope.showTitle = function() {
       var newParams = angular.copy($scope.paragraph.settings.params);
       var newConfig = angular.copy($scope.paragraph.config);
@@ -511,22 +601,6 @@
       var newParams = angular.copy($scope.paragraph.settings.params);
 
       commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
-    };
-
-    $scope.toggleLineWithFocus = function() {
-      var mode = $scope.getGraphMode();
-
-      if (mode === 'lineWithFocusChart') {
-        $scope.setGraphMode('lineChart', true);
-        return true;
-      }
-
-      if (mode === 'lineChart') {
-        $scope.setGraphMode('lineWithFocusChart', true);
-        return true;
-      }
-
-      return false;
     };
 
     $scope.loadForm = function(formulaire, params) {
@@ -644,6 +718,12 @@
           $scope.handleFocus(false);
         });
 
+        $scope.editor.on('paste', function(e) {
+          if (e.text.startsWith('%')) {
+            pastePercentSign = true;
+          }
+        });
+
         $scope.editor.getSession().on('change', function(e, editSession) {
           autoAdjustEditorHeight(_editor.container.id);
         });
@@ -723,7 +803,7 @@
       }
     };
 
-    var getAndSetEditorSetting = function(session, interpreterName) {
+    var getEditorSetting = function(interpreterName) {
       var deferred = $q.defer();
       websocketMsgSrv.getEditorSetting($scope.paragraph.id, interpreterName);
       $timeout(
@@ -733,42 +813,51 @@
           }
         }
       ), 1000);
-      deferred.promise.then(function(editorSetting) {
-        if (!_.isEmpty(editorSetting.editor)) {
-          var mode = 'ace/mode/' + editorSetting.editor.language;
-          $scope.paragraph.config.editorMode = mode;
-          session.setMode(mode);
-        }
-      });
+      return deferred.promise;
+    };
+
+    var setEditorLanguage = function(session, language) {
+      var mode = 'ace/mode/';
+      mode += language;
+      $scope.paragraph.config.editorMode = mode;
+      session.setMode(mode);
     };
 
     var setParagraphMode = function(session, paragraphText, pos) {
       // Evaluate the mode only if the the position is undefined
       // or the first 30 characters of the paragraph have been modified
       // or cursor position is at beginning of second line.(in case user hit enter after typing %magic)
-      if ((typeof pos === 'undefined') || (pos.row === 0 && pos.column < 30) || (pos.row === 1 && pos.column === 0)) {
+      if ((typeof pos === 'undefined') || (pos.row === 0 && pos.column < 30) ||
+          (pos.row === 1 && pos.column === 0) || pastePercentSign || $scope.paragraphFocused) {
         // If paragraph loading, use config value if exists
         if ((typeof pos === 'undefined') && $scope.paragraph.config.editorMode) {
           session.setMode($scope.paragraph.config.editorMode);
         } else {
-          var magic;
-          // set editor mode to default interpreter syntax if paragraph text doesn't start with '%'
-          // TODO(mina): dig into the cause what makes interpreterBindings has no element
-          if (!paragraphText.startsWith('%') && ((typeof pos !== 'undefined') && pos.row === 0 && pos.column === 1) ||
-              (typeof pos === 'undefined') && $scope.$parent.interpreterBindings.length !== 0) {
-            magic = $scope.$parent.interpreterBindings[0].name;
-            getAndSetEditorSetting(session, magic);
-          } else {
-            var replNameRegexp = /%(.+?)\s/g;
-            var match = replNameRegexp.exec(paragraphText);
-            if (match && $scope.magic !== match[1]) {
-              magic = match[1].trim();
-              $scope.magic = magic;
-              getAndSetEditorSetting(session, magic);
-            }
+          var magic = getInterpreterName(paragraphText);
+          if (editorSetting.magic !== magic) {
+            editorSetting.magic = magic;
+            getEditorSetting(magic)
+              .then(function(setting) {
+                setEditorLanguage(session, setting.editor.language);
+                _.merge(editorSetting, setting.editor);
+              });
           }
         }
       }
+      pastePercentSign = false;
+    };
+
+    var getInterpreterName = function(paragraphText) {
+      var intpNameRegexp = /%(.+?)\s/g;
+      var match = intpNameRegexp.exec(paragraphText);
+      if (match) {
+        return match[1].trim();
+      // get default interpreter name if paragraph text doesn't start with '%'
+      // TODO(mina): dig into the cause what makes interpreterBindings to have no element
+      } else if ($scope.$parent.interpreterBindings.length !== 0) {
+        return $scope.$parent.interpreterBindings[0].name;
+      }
+      return '';
     };
 
     var autoAdjustEditorHeight = function(id) {
@@ -914,55 +1003,6 @@
       return cell;
     };
 
-    $scope.loadTableData = function(result) {
-      if (!result) {
-        return;
-      }
-      if (result.type === 'TABLE') {
-        var columnNames = [];
-        var rows = [];
-        var array = [];
-        var textRows = result.msg.split('\n');
-        result.comment = '';
-        var comment = false;
-
-        for (var i = 0; i < textRows.length; i++) {
-          var textRow = textRows[i];
-          if (comment) {
-            result.comment += textRow;
-            continue;
-          }
-
-          if (textRow === '') {
-            if (rows.length > 0) {
-              comment = true;
-            }
-            continue;
-          }
-          var textCols = textRow.split('\t');
-          var cols = [];
-          var cols2 = [];
-          for (var j = 0; j < textCols.length; j++) {
-            var col = textCols[j];
-            if (i === 0) {
-              columnNames.push({name: col, index: j, aggr: 'sum'});
-            } else {
-              var parsedCol = $scope.parseTableCell(col);
-              cols.push(parsedCol);
-              cols2.push({key: (columnNames[i]) ? columnNames[i].name : undefined, value: parsedCol});
-            }
-          }
-          if (i !== 0) {
-            rows.push(cols);
-            array.push(cols2);
-          }
-        }
-        result.msgTable = array;
-        result.columnNames = columnNames;
-        result.rows = rows;
-      }
-    };
-
     $scope.setGraphMode = function(type, emit, refresh) {
       if (emit) {
         setNewMode(type);
@@ -970,14 +1010,76 @@
         clearUnknownColsFromGraphOption();
         // set graph height
         var height = $scope.paragraph.config.graph.height;
-        angular.element('#p' + $scope.paragraph.id + '_graph').height(height);
+        var graphContainerEl = angular.element('#p' + $scope.paragraph.id + '_graph');
+        graphContainerEl.height(height);
 
-        if (!type || type === 'table') {
-          setTable($scope.paragraph.result, refresh);
-        } else if (type === 'map') {
-          setMap($scope.paragraph.result, refresh);
-        } else {
-          setD3Chart(type, $scope.paragraph.result, refresh);
+        if (!type) {
+          type = 'table';
+        }
+
+        var builtInViz = builtInVisualizations[type];
+        if (builtInViz) {
+          // deactive previsouly active visualization
+          for (var t in builtInVisualizations) {
+            var v = builtInVisualizations[t].instance;
+            if (t !== type && v && v.isActive()) {
+              v.deactivate();
+              break;
+            }
+          }
+
+          if (!builtInViz.instance) { // not instantiated yet
+            // render when targetEl is available
+            var retryRenderer = function() {
+              var targetEl = angular.element('#p' + $scope.paragraph.id + '_' + type);
+
+              if (targetEl.length) {
+                try {
+                  // set height
+                  targetEl.height(height);
+
+                  // instantiate visualization
+                  var Visualization = builtInViz.class;
+                  builtInViz.instance = new Visualization(targetEl, $scope.paragraph.config.graph);
+                  builtInViz.instance.render(tableData);
+                  builtInViz.instance.activate();
+                  angular.element(window).resize(function() {
+                    builtInViz.instance.resize();
+                  });
+                } catch (err) {
+                  console.log('Graph drawing error %o', err);
+                }
+              } else {
+                $timeout(retryRenderer, 10);
+              }
+            };
+            $timeout(retryRenderer);
+          } else if (refresh) {
+            console.log('Refresh data');
+            // when graph options or data are changed
+            var retryRenderer = function() {
+              var targetEl = angular.element('#p' + $scope.paragraph.id + '_' + type);
+              if (targetEl.length) {
+                targetEl.height(height);
+                builtInViz.instance.setConfig($scope.paragraph.config.graph);
+                builtInViz.instance.render(tableData);
+              } else {
+                $timeout(retryRenderer, 10);
+              }
+            };
+            $timeout(retryRenderer);
+          } else {
+            var retryRenderer = function() {
+              var targetEl = angular.element('#p' + $scope.paragraph.id + '_' + type);
+              if (targetEl.length) {
+                targetEl.height(height);
+                builtInViz.instance.activate();
+              } else {
+                $timeout(retryRenderer, 10);
+              }
+            };
+            $timeout(retryRenderer);
+          }
         }
       }
     };
@@ -997,443 +1099,6 @@
 
     var commitParagraph = function(title, text, config, params) {
       websocketMsgSrv.commitParagraph($scope.paragraph.id, title, text, config, params);
-    };
-
-    var setTable = function(data, refresh) {
-      var renderTable = function() {
-        var height = $scope.paragraph.config.graph.height;
-        var container = angular.element('#p' + $scope.paragraph.id + '_table').css('height', height).get(0);
-        var resultRows = data.rows;
-        var columnNames = _.pluck(data.columnNames, 'name');
-
-        if ($scope.hot) {
-          $scope.hot.destroy();
-        }
-
-        $scope.hot = new Handsontable(container, {
-          colHeaders: columnNames,
-          data: resultRows,
-          rowHeaders: false,
-          stretchH: 'all',
-          sortIndicator: true,
-          columnSorting: true,
-          contextMenu: false,
-          manualColumnResize: true,
-          manualRowResize: true,
-          readOnly: true,
-          readOnlyCellClassName: '',  // don't apply any special class so we can retain current styling
-          fillHandle: false,
-          fragmentSelection: true,
-          disableVisualSelection: true,
-          cells: function(row, col, prop) {
-            var cellProperties = {};
-            cellProperties.renderer = function(instance, td, row, col, prop, value, cellProperties) {
-              if (value instanceof moment) {
-                td.innerHTML = value._i;
-              } else if (!isNaN(value)) {
-                cellProperties.format = '0,0.[00000]';
-                td.style.textAlign = 'left';
-                Handsontable.renderers.NumericRenderer.apply(this, arguments);
-              } else if (value.length > '%html'.length && '%html ' === value.substring(0, '%html '.length)) {
-                td.innerHTML = value.substring('%html'.length);
-              } else {
-                Handsontable.renderers.TextRenderer.apply(this, arguments);
-              }
-            };
-            return cellProperties;
-          }
-        });
-      };
-
-      var retryRenderer = function() {
-        if (angular.element('#p' + $scope.paragraph.id + '_table').length) {
-          try {
-            renderTable();
-          } catch (err) {
-            console.log('Chart drawing error %o', err);
-          }
-        } else {
-          $timeout(retryRenderer,10);
-        }
-      };
-      $timeout(retryRenderer);
-
-    };
-
-    var groupedThousandsWith3DigitsFormatter = function(x) {
-      return d3.format(',')(d3.round(x, 3));
-    };
-
-    var customAbbrevFormatter = function(x) {
-      var s = d3.format('.3s')(x);
-      switch (s[s.length - 1]) {
-        case 'G': return s.slice(0, -1) + 'B';
-      }
-      return s;
-    };
-
-    var xAxisTickFormat = function(d, xLabels) {
-      if (xLabels[d] && (isNaN(parseFloat(xLabels[d])) || !isFinite(xLabels[d]))) { // to handle string type xlabel
-        return xLabels[d];
-      } else {
-        return d;
-      }
-    };
-
-    var yAxisTickFormat = function(d) {
-      if (Math.abs(d) >= Math.pow(10,6)) {
-        return customAbbrevFormatter(d);
-      }
-      return groupedThousandsWith3DigitsFormatter(d);
-    };
-
-    var setD3Chart = function(type, data, refresh) {
-      if (!$scope.chart[type]) {
-        var chart = nv.models[type]();
-        $scope.chart[type] = chart;
-      }
-
-      var d3g = [];
-      var xLabels;
-      var yLabels;
-
-      if (type === 'scatterChart') {
-        var scatterData = setScatterChart(data, refresh);
-
-        xLabels = scatterData.xLabels;
-        yLabels = scatterData.yLabels;
-        d3g = scatterData.d3g;
-
-        $scope.chart[type].xAxis.tickFormat(function(d) {return xAxisTickFormat(d, xLabels);});
-        $scope.chart[type].yAxis.tickFormat(function(d) {return yAxisTickFormat(d, yLabels);});
-
-        // configure how the tooltip looks.
-        $scope.chart[type].tooltipContent(function(key, x, y, graph, data) {
-          var tooltipContent = '<h3>' + key + '</h3>';
-          if ($scope.paragraph.config.graph.scatter.size &&
-              $scope.isValidSizeOption($scope.paragraph.config.graph.scatter, $scope.paragraph.result.rows)) {
-            tooltipContent += '<p>' + data.point.size + '</p>';
-          }
-
-          return tooltipContent;
-        });
-
-        $scope.chart[type].showDistX(true)
-          .showDistY(true);
-        //handle the problem of tooltip not showing when muliple points have same value.
-      } else {
-        var p = pivot(data);
-        if (type === 'pieChart') {
-          var d = pivotDataToD3ChartFormat(p, true).d3g;
-
-          $scope.chart[type].x(function(d) { return d.label;})
-            .y(function(d) { return d.value;});
-
-          if (d.length > 0) {
-            for (var i = 0; i < d[0].values.length ; i++) {
-              var e = d[0].values[i];
-              d3g.push({
-                label: e.x,
-                value: e.y
-              });
-            }
-          }
-        } else if (type === 'multiBarChart') {
-          d3g = pivotDataToD3ChartFormat(p, true, false, type).d3g;
-          $scope.chart[type].yAxis.axisLabelDistance(50);
-          $scope.chart[type].yAxis.tickFormat(function(d) {return yAxisTickFormat(d);});
-        } else if (type === 'lineChart' || type === 'stackedAreaChart' || type === 'lineWithFocusChart') {
-          var pivotdata = pivotDataToD3ChartFormat(p, false, true);
-          xLabels = pivotdata.xLabels;
-          d3g = pivotdata.d3g;
-          $scope.chart[type].xAxis.tickFormat(function(d) {return xAxisTickFormat(d, xLabels);});
-          if (type === 'stackedAreaChart') {
-            $scope.chart[type].yAxisTickFormat(function(d) {return yAxisTickFormat(d);});
-          } else {
-            $scope.chart[type].yAxis.tickFormat(function(d) {return yAxisTickFormat(d, xLabels);});
-          }
-          $scope.chart[type].yAxis.axisLabelDistance(50);
-          if ($scope.chart[type].useInteractiveGuideline) { // lineWithFocusChart hasn't got useInteractiveGuideline
-            $scope.chart[type].useInteractiveGuideline(true); // for better UX and performance issue. (https://github.com/novus/nvd3/issues/691)
-          }
-          if ($scope.paragraph.config.graph.forceY) {
-            $scope.chart[type].forceY([0]); // force y-axis minimum to 0 for line chart.
-          } else {
-            $scope.chart[type].forceY([]);
-          }
-        }
-      }
-
-      var renderChart = function() {
-        if (!refresh) {
-          // TODO force destroy previous chart
-        }
-
-        var height = $scope.paragraph.config.graph.height;
-
-        var animationDuration = 300;
-        var numberOfDataThreshold = 150;
-        // turn off animation when dataset is too large. (for performance issue)
-        // still, since dataset is large, the chart content sequentially appears like animated.
-        try {
-          if (d3g[0].values.length > numberOfDataThreshold) {
-            animationDuration = 0;
-          }
-        } catch (ignoreErr) {
-        }
-
-        d3.select('#p' + $scope.paragraph.id + '_' + type + ' svg')
-          .attr('height', $scope.paragraph.config.graph.height)
-          .datum(d3g)
-          .transition()
-          .duration(animationDuration)
-          .call($scope.chart[type]);
-        d3.select('#p' + $scope.paragraph.id + '_' + type + ' svg').style.height = height + 'px';
-        nv.utils.windowResize($scope.chart[type].update);
-      };
-
-      var retryRenderer = function() {
-        if (angular.element('#p' + $scope.paragraph.id + '_' + type + ' svg').length !== 0) {
-          try {
-            renderChart();
-          } catch (err) {
-            console.log('Chart drawing error %o', err);
-          }
-        } else {
-          $timeout(retryRenderer,10);
-        }
-      };
-      $timeout(retryRenderer);
-    };
-
-    var setMap = function(data, refresh) {
-      var createPinMapLayer = function(pins, cb) {
-        esriLoader.require(['esri/layers/FeatureLayer'], function(FeatureLayer) {
-          var pinLayer = new FeatureLayer({
-            id: 'pins',
-            spatialReference: $scope.map.spatialReference,
-            geometryType: 'point',
-            source: pins,
-            fields: [],
-            objectIdField: '_ObjectID',
-            renderer: $scope.map.pinRenderer,
-            popupTemplate: {
-              title: '[{_lng}, {_lat}]',
-              content: [{
-                type: 'fields',
-                fieldInfos: []
-              }]
-            }
-          });
-
-          // add user-selected pin info fields to popup
-          var pinInfoCols = $scope.paragraph.config.graph.map.pinCols;
-          for (var i = 0; i < pinInfoCols.length; ++i) {
-            pinLayer.popupTemplate.content[0].fieldInfos.push({
-              fieldName: pinInfoCols[i].name,
-              visible: true
-            });
-          }
-          cb(pinLayer);
-        });
-      };
-
-      var getMapPins = function(cb) {
-        esriLoader.require(['esri/geometry/Point'], function(Point, FeatureLayer) {
-          var latCol = $scope.paragraph.config.graph.map.lat;
-          var lngCol = $scope.paragraph.config.graph.map.lng;
-          var pinInfoCols = $scope.paragraph.config.graph.map.pinCols;
-          var pins = [];
-
-          // construct objects for pins
-          if (latCol && lngCol && data.rows) {
-            for (var i = 0; i < data.rows.length; ++i) {
-              var row = data.rows[i];
-              var lng = row[lngCol.index];
-              var lat = row[latCol.index];
-              var pin = {
-                geometry: new Point({
-                  longitude: lng,
-                  latitude: lat,
-                  spatialReference: $scope.map.spatialReference
-                }),
-                attributes: {
-                  _ObjectID: i,
-                  _lng: lng,
-                  _lat: lat
-                }
-              };
-
-              // add pin info from user-selected columns
-              for (var j = 0; j < pinInfoCols.length; ++j) {
-                var col = pinInfoCols[j];
-                pin.attributes[col.name] = row[col.index];
-              }
-              pins.push(pin);
-            }
-          }
-          cb(pins);
-        });
-      };
-
-      var updateMapPins = function() {
-        var pinLayer = $scope.map.map.findLayerById('pins');
-        $scope.map.popup.close();
-        if (pinLayer) {
-          $scope.map.map.remove(pinLayer);
-        }
-
-        // add pins to map as layer
-        getMapPins(function(pins) {
-          createPinMapLayer(pins, function(pinLayer) {
-            $scope.map.map.add(pinLayer);
-            if (pinLayer.source.length > 0) {
-              $scope.map.goTo(pinLayer.source);
-            }
-          });
-        });
-      };
-
-      var createMap = function(mapdiv) {
-        // prevent zooming with the scroll wheel
-        var disableZoom = function(e) {
-          var evt = e || window.event;
-          evt.cancelBubble = true;
-          evt.returnValue = false;
-          if (evt.stopPropagation) {
-            evt.stopPropagation();
-          }
-        };
-        var eName = window.WheelEvent ? 'wheel' :  // Modern browsers
-                    window.MouseWheelEvent ? 'mousewheel' :  // WebKit and IE
-                    'DOMMouseScroll';  // Old Firefox
-        mapdiv.addEventListener(eName, disableZoom, true);
-
-        esriLoader.require(['esri/views/MapView',
-                            'esri/Map',
-                            'esri/renderers/SimpleRenderer',
-                            'esri/symbols/SimpleMarkerSymbol'],
-                            function(MapView, Map, SimpleRenderer, SimpleMarkerSymbol) {
-          $scope.map = new MapView({
-            container: mapdiv,
-            map: new Map({
-              basemap: $scope.paragraph.config.graph.map.baseMapType.toLowerCase()
-            }),
-            center: [-106.3468, 56.1304],  // Canada (lng, lat)
-            zoom: 2,
-            pinRenderer: new SimpleRenderer({
-              symbol: new SimpleMarkerSymbol({
-                'color': [255, 0, 0, 0.5],
-                'size': 16.5,
-                'outline': {
-                  'color': [0, 0, 0, 1],
-                  'width': 1.125,
-                },
-                // map pin SVG path
-                'path': 'M16,3.5c-4.142,0-7.5,3.358-7.5,7.5c0,4.143,7.5,18.121,7.5,' +
-                        '18.121S23.5,15.143,23.5,11C23.5,6.858,20.143,3.5,16,3.5z ' +
-                        'M16,14.584c-1.979,0-3.584-1.604-3.584-3.584S14.021,7.416,' +
-                        '16,7.416S19.584,9.021,19.584,11S17.979,14.584,16,14.584z'
-              })
-            })
-          });
-
-          $scope.map.on('click', function() {
-            // ArcGIS JS API 4.0 does not account for scrolling or position
-            // changes by default (this is a bug, to be fixed in the upcoming
-            // version 4.1; see https://geonet.esri.com/thread/177238#comment-609681).
-            // This results in a misaligned popup.
-
-            // Workaround: manually set popup position to match position of selected pin
-            if ($scope.map.popup.selectedFeature) {
-              $scope.map.popup.location = $scope.map.popup.selectedFeature.geometry;
-            }
-          });
-          $scope.map.then(updateMapPins);
-        });
-      };
-
-      var checkMapOnline = function(cb) {
-        // are we able to get a response from the ArcGIS servers?
-        var callback = function(res) {
-          var online = (res.status > 0);
-          $scope.paragraph.config.graph.map.isOnline = online;
-          cb(online);
-        };
-        $http.head('//services.arcgisonline.com/arcgis/', {
-          timeout: 5000,
-          withCredentials: false
-        }).then(callback, callback);
-      };
-
-      var renderMap = function() {
-        var mapdiv = angular.element('#p' + $scope.paragraph.id + '_map')
-                            .css('height', $scope.paragraph.config.graph.height)
-                            .children('div').get(0);
-
-        // on chart type change, destroy map to force reinitialization.
-        if ($scope.map && !refresh) {
-          $scope.map.map.destroy();
-          $scope.map.pinRenderer = null;
-          $scope.map = null;
-        }
-
-        var requireMapCSS = function() {
-          var url = '//js.arcgis.com/4.0/esri/css/main.css';
-          if (!angular.element('link[href="' + url + '"]').length) {
-            var link = document.createElement('link');
-            link.rel = 'stylesheet';
-            link.type = 'text/css';
-            link.href = url;
-            angular.element('head').append(link);
-          }
-        };
-
-        var requireMapJS = function(cb) {
-          if (!esriLoader.isLoaded()) {
-            esriLoader.bootstrap({
-              url: '//js.arcgis.com/4.0'
-            }).then(cb);
-          } else {
-            cb();
-          }
-        };
-
-        checkMapOnline(function(online) {
-          // we need an internet connection to use the map
-          if (online) {
-            // create map if not exists.
-            if (!$scope.map) {
-              requireMapCSS();
-              requireMapJS(function() {
-                createMap(mapdiv);
-              });
-            } else {
-              updateMapPins();
-            }
-          }
-        });
-      };
-
-      var retryRenderer = function() {
-        if (angular.element('#p' + $scope.paragraph.id + '_map div').length) {
-          try {
-            renderMap();
-          } catch (err) {
-            console.log('Map drawing error %o', err);
-          }
-        } else {
-          $timeout(retryRenderer,10);
-        }
-      };
-      $timeout(retryRenderer);
-    };
-
-    $scope.setMapBaseMap = function(bm) {
-      $scope.paragraph.config.graph.map.baseMapType = bm;
-      if ($scope.map) {
-        $scope.map.map.basemap = bm.toLowerCase();
-      }
     };
 
     $scope.isGraphMode = function(graphName) {
@@ -1498,24 +1163,6 @@
       $scope.setGraphMode($scope.paragraph.config.graph.mode, true, false);
     };
 
-    $scope.removeMapOptionLat = function(idx) {
-      $scope.paragraph.config.graph.map.lat = null;
-      clearUnknownColsFromGraphOption();
-      $scope.setGraphMode($scope.paragraph.config.graph.mode, true, false);
-    };
-
-    $scope.removeMapOptionLng = function(idx) {
-      $scope.paragraph.config.graph.map.lng = null;
-      clearUnknownColsFromGraphOption();
-      $scope.setGraphMode($scope.paragraph.config.graph.mode, true, false);
-    };
-
-    $scope.removeMapOptionPinInfo = function(idx) {
-      $scope.paragraph.config.graph.map.pinCols.splice(idx, 1);
-      clearUnknownColsFromGraphOption();
-      $scope.setGraphMode($scope.paragraph.config.graph.mode, true, false);
-    };
-
     /* Clear unknown columns from graph option */
     var clearUnknownColsFromGraphOption = function() {
       var unique = function(list) {
@@ -1532,9 +1179,9 @@
         for (var i = 0; i < list.length; i++) {
           // remove non existing column
           var found = false;
-          for (var j = 0; j < $scope.paragraph.result.columnNames.length; j++) {
+          for (var j = 0; j < tableData.columns.length; j++) {
             var a = list[i];
-            var b = $scope.paragraph.result.columnNames[j];
+            var b = tableData.columns[j];
             if (a.index === b.index && a.name === b.name) {
               found = true;
               break;
@@ -1550,9 +1197,9 @@
         for (var f in fields) {
           if (fields[f]) {
             var found = false;
-            for (var i = 0; i < $scope.paragraph.result.columnNames.length; i++) {
+            for (var i = 0; i < tableData.columns.length; i++) {
               var a = fields[f];
-              var b = $scope.paragraph.result.columnNames[i];
+              var b = tableData.columns[i];
               if (a.index === b.index && a.name === b.name) {
                 found = true;
                 break;
@@ -1574,564 +1221,35 @@
       removeUnknown($scope.paragraph.config.graph.groups);
 
       removeUnknownFromFields($scope.paragraph.config.graph.scatter);
-
-      unique($scope.paragraph.config.graph.map.pinCols);
-      removeUnknown($scope.paragraph.config.graph.map.pinCols);
-      removeUnknownFromFields($scope.paragraph.config.graph.map);
     };
 
     /* select default key and value if there're none selected */
     var selectDefaultColsForGraphOption = function() {
-      if ($scope.paragraph.config.graph.keys.length === 0 && $scope.paragraph.result.columnNames.length > 0) {
-        $scope.paragraph.config.graph.keys.push($scope.paragraph.result.columnNames[0]);
+      if ($scope.paragraph.config.graph.keys.length === 0 && tableData.columns.length > 0) {
+        $scope.paragraph.config.graph.keys.push(tableData.columns[0]);
       }
 
-      if ($scope.paragraph.config.graph.values.length === 0 && $scope.paragraph.result.columnNames.length > 1) {
-        $scope.paragraph.config.graph.values.push($scope.paragraph.result.columnNames[1]);
+      if ($scope.paragraph.config.graph.values.length === 0 && tableData.columns.length > 1) {
+        $scope.paragraph.config.graph.values.push(tableData.columns[1]);
       }
 
       if (!$scope.paragraph.config.graph.scatter.xAxis && !$scope.paragraph.config.graph.scatter.yAxis) {
-        if ($scope.paragraph.result.columnNames.length > 1) {
-          $scope.paragraph.config.graph.scatter.xAxis = $scope.paragraph.result.columnNames[0];
-          $scope.paragraph.config.graph.scatter.yAxis = $scope.paragraph.result.columnNames[1];
-        } else if ($scope.paragraph.result.columnNames.length === 1) {
-          $scope.paragraph.config.graph.scatter.xAxis = $scope.paragraph.result.columnNames[0];
+        if (tableData.columns.length > 1) {
+          $scope.paragraph.config.graph.scatter.xAxis = tableData.columns[0];
+          $scope.paragraph.config.graph.scatter.yAxis = tableData.columns[1];
+        } else if (tableData.columns.length === 1) {
+          $scope.paragraph.config.graph.scatter.xAxis = tableData.columns[0];
         }
       }
-
-      /* try to find columns for the map logitude and latitude */
-      var findDefaultMapCol = function(settingName, keyword) {
-        var col;
-        if (!$scope.paragraph.config.graph.map[settingName]) {
-          for (var i = 0; i < $scope.paragraph.result.columnNames.length; ++i) {
-            col = $scope.paragraph.result.columnNames[i];
-            if (col.name.toUpperCase().indexOf(keyword) !== -1) {
-              $scope.paragraph.config.graph.map[settingName] = col;
-              break;
-            }
-          }
-        }
-      };
-
-      findDefaultMapCol('lat', 'LAT');
-      findDefaultMapCol('lng', 'LONG');
     };
 
-    var pivot = function(data) {
-      var keys = $scope.paragraph.config.graph.keys;
-      var groups = $scope.paragraph.config.graph.groups;
-      var values = $scope.paragraph.config.graph.values;
-
-      var aggrFunc = {
-        sum: function(a, b) {
-          var varA = (a !== undefined) ? (isNaN(a) ? 1 : parseFloat(a)) : 0;
-          var varB = (b !== undefined) ? (isNaN(b) ? 1 : parseFloat(b)) : 0;
-          return varA + varB;
-        },
-        count: function(a, b) {
-          var varA = (a !== undefined) ? parseInt(a) : 0;
-          var varB = (b !== undefined) ? 1 : 0;
-          return varA + varB;
-        },
-        min: function(a, b) {
-          var varA = (a !== undefined) ? (isNaN(a) ? 1 : parseFloat(a)) : 0;
-          var varB = (b !== undefined) ? (isNaN(b) ? 1 : parseFloat(b)) : 0;
-          return Math.min(varA,varB);
-        },
-        max: function(a, b) {
-          var varA = (a !== undefined) ? (isNaN(a) ? 1 : parseFloat(a)) : 0;
-          var varB = (b !== undefined) ? (isNaN(b) ? 1 : parseFloat(b)) : 0;
-          return Math.max(varA,varB);
-        },
-        avg: function(a, b, c) {
-          var varA = (a !== undefined) ? (isNaN(a) ? 1 : parseFloat(a)) : 0;
-          var varB = (b !== undefined) ? (isNaN(b) ? 1 : parseFloat(b)) : 0;
-          return varA + varB;
-        }
-      };
-
-      var aggrFuncDiv = {
-        sum: false,
-        count: false,
-        min: false,
-        max: false,
-        avg: true
-      };
-
-      var schema = {};
-      var rows = {};
-
-      for (var i = 0; i < data.rows.length; i++) {
-        var row = data.rows[i];
-        var s = schema;
-        var p = rows;
-
-        for (var k = 0; k < keys.length; k++) {
-          var key = keys[k];
-
-          // add key to schema
-          if (!s[key.name]) {
-            s[key.name] = {
-              order: k,
-              index: key.index,
-              type: 'key',
-              children: {}
-            };
-          }
-          s = s[key.name].children;
-
-          // add key to row
-          var keyKey = row[key.index];
-          if (!p[keyKey]) {
-            p[keyKey] = {};
-          }
-          p = p[keyKey];
-        }
-
-        for (var g = 0; g < groups.length; g++) {
-          var group = groups[g];
-          var groupKey = row[group.index];
-
-          // add group to schema
-          if (!s[groupKey]) {
-            s[groupKey] = {
-              order: g,
-              index: group.index,
-              type: 'group',
-              children: {}
-            };
-          }
-          s = s[groupKey].children;
-
-          // add key to row
-          if (!p[groupKey]) {
-            p[groupKey] = {};
-          }
-          p = p[groupKey];
-        }
-
-        for (var v = 0; v < values.length; v++) {
-          var value = values[v];
-          var valueKey = value.name + '(' + value.aggr + ')';
-
-          // add value to schema
-          if (!s[valueKey]) {
-            s[valueKey] = {
-              type: 'value',
-              order: v,
-              index: value.index
-            };
-          }
-
-          // add value to row
-          if (!p[valueKey]) {
-            p[valueKey] = {
-              value: (value.aggr !== 'count') ? row[value.index] : 1,
-              count: 1
-            };
-          } else {
-            p[valueKey] = {
-              value: aggrFunc[value.aggr](p[valueKey].value, row[value.index], p[valueKey].count + 1),
-              count: (aggrFuncDiv[value.aggr]) ?  p[valueKey].count + 1 : p[valueKey].count
-            };
-          }
-        }
-      }
-
-      //console.log("schema=%o, rows=%o", schema, rows);
-
-      return {
-        schema: schema,
-        rows: rows
-      };
-    };
-
-    var pivotDataToD3ChartFormat = function(data, allowTextXAxis, fillMissingValues, chartType) {
-      // construct d3 data
-      var d3g = [];
-
-      var schema = data.schema;
-      var rows = data.rows;
-      var values = $scope.paragraph.config.graph.values;
-
-      var concat = function(o, n) {
-        if (!o) {
-          return n;
-        } else {
-          return o + '.' + n;
-        }
-      };
-
-      var getSchemaUnderKey = function(key, s) {
-        for (var c in key.children) {
-          s[c] = {};
-          getSchemaUnderKey(key.children[c], s[c]);
-        }
-      };
-
-      var traverse = function(sKey, s, rKey, r, func, rowName, rowValue, colName) {
-        //console.log("TRAVERSE sKey=%o, s=%o, rKey=%o, r=%o, rowName=%o, rowValue=%o, colName=%o", sKey, s, rKey, r, rowName, rowValue, colName);
-
-        if (s.type === 'key') {
-          rowName = concat(rowName, sKey);
-          rowValue = concat(rowValue, rKey);
-        } else if (s.type === 'group') {
-          colName = concat(colName, rKey);
-        } else if (s.type === 'value' && sKey === rKey || valueOnly) {
-          colName = concat(colName, rKey);
-          func(rowName, rowValue, colName, r);
-        }
-
-        for (var c in s.children) {
-          if (fillMissingValues && s.children[c].type === 'group' && r[c] === undefined) {
-            var cs = {};
-            getSchemaUnderKey(s.children[c], cs);
-            traverse(c, s.children[c], c, cs, func, rowName, rowValue, colName);
-            continue;
-          }
-
-          for (var j in r) {
-            if (s.children[c].type === 'key' || c === j) {
-              traverse(c, s.children[c], j, r[j], func, rowName, rowValue, colName);
-            }
-          }
-        }
-      };
-
-      var keys = $scope.paragraph.config.graph.keys;
-      var groups = $scope.paragraph.config.graph.groups;
-      values = $scope.paragraph.config.graph.values;
-      var valueOnly = (keys.length === 0 && groups.length === 0 && values.length > 0);
-      var noKey = (keys.length === 0);
-      var isMultiBarChart = (chartType === 'multiBarChart');
-
-      var sKey = Object.keys(schema)[0];
-
-      var rowNameIndex = {};
-      var rowIdx = 0;
-      var colNameIndex = {};
-      var colIdx = 0;
-      var rowIndexValue = {};
-
-      for (var k in rows) {
-        traverse(sKey, schema[sKey], k, rows[k], function(rowName, rowValue, colName, value) {
-          //console.log("RowName=%o, row=%o, col=%o, value=%o", rowName, rowValue, colName, value);
-          if (rowNameIndex[rowValue] === undefined) {
-            rowIndexValue[rowIdx] = rowValue;
-            rowNameIndex[rowValue] = rowIdx++;
-          }
-
-          if (colNameIndex[colName] === undefined) {
-            colNameIndex[colName] = colIdx++;
-          }
-          var i = colNameIndex[colName];
-          if (noKey && isMultiBarChart) {
-            i = 0;
-          }
-
-          if (!d3g[i]) {
-            d3g[i] = {
-              values: [],
-              key: (noKey && isMultiBarChart) ? 'values' : colName
-            };
-          }
-
-          var xVar = isNaN(rowValue) ? ((allowTextXAxis) ? rowValue : rowNameIndex[rowValue]) : parseFloat(rowValue);
-          var yVar = 0;
-          if (xVar === undefined) { xVar = colName; }
-          if (value !== undefined) {
-            yVar = isNaN(value.value) ? 0 : parseFloat(value.value) / parseFloat(value.count);
-          }
-          d3g[i].values.push({
-            x: xVar,
-            y: yVar
-          });
-        });
-      }
-
-      // clear aggregation name, if possible
-      var namesWithoutAggr = {};
-      var colName;
-      var withoutAggr;
-      // TODO - This part could use som refactoring - Weird if/else with similar actions and variable names
-      for (colName in colNameIndex) {
-        withoutAggr = colName.substring(0, colName.lastIndexOf('('));
-        if (!namesWithoutAggr[withoutAggr]) {
-          namesWithoutAggr[withoutAggr] = 1;
-        } else {
-          namesWithoutAggr[withoutAggr]++;
-        }
-      }
-
-      if (valueOnly) {
-        for (var valueIndex = 0; valueIndex < d3g[0].values.length; valueIndex++) {
-          colName = d3g[0].values[valueIndex].x;
-          if (!colName) {
-            continue;
-          }
-
-          withoutAggr = colName.substring(0, colName.lastIndexOf('('));
-          if (namesWithoutAggr[withoutAggr] <= 1) {
-            d3g[0].values[valueIndex].x = withoutAggr;
-          }
-        }
-      } else {
-        for (var d3gIndex = 0; d3gIndex < d3g.length; d3gIndex++) {
-          colName = d3g[d3gIndex].key;
-          withoutAggr = colName.substring(0, colName.lastIndexOf('('));
-          if (namesWithoutAggr[withoutAggr] <= 1) {
-            d3g[d3gIndex].key = withoutAggr;
-          }
-        }
-
-        // use group name instead of group.value as a column name, if there're only one group and one value selected.
-        if (groups.length === 1 && values.length === 1) {
-          for (d3gIndex = 0; d3gIndex < d3g.length; d3gIndex++) {
-            colName = d3g[d3gIndex].key;
-            colName = colName.split('.').slice(0, -1).join('.');
-            d3g[d3gIndex].key = colName;
-          }
-        }
-
-      }
-
-      return {
-        xLabels: rowIndexValue,
-        d3g: d3g
-      };
-    };
-
-    var setDiscreteScatterData = function(data) {
-      var xAxis = $scope.paragraph.config.graph.scatter.xAxis;
-      var yAxis = $scope.paragraph.config.graph.scatter.yAxis;
-      var group = $scope.paragraph.config.graph.scatter.group;
-
-      var xValue;
-      var yValue;
-      var grp;
-
-      var rows = {};
-
-      for (var i = 0; i < data.rows.length; i++) {
-        var row = data.rows[i];
-        if (xAxis) {
-          xValue = row[xAxis.index];
-        }
-        if (yAxis) {
-          yValue = row[yAxis.index];
-        }
-        if (group) {
-          grp = row[group.index];
-        }
-
-        var key = xValue + ',' + yValue +  ',' + grp;
-
-        if (!rows[key]) {
-          rows[key] = {
-            x: xValue,
-            y: yValue,
-            group: grp,
-            size: 1
-          };
-        } else {
-          rows[key].size++;
-        }
-      }
-
-      // change object into array
-      var newRows = [];
-      for (var r in rows) {
-        var newRow = [];
-        if (xAxis) { newRow[xAxis.index] = rows[r].x; }
-        if (yAxis) { newRow[yAxis.index] = rows[r].y; }
-        if (group) { newRow[group.index] = rows[r].group; }
-        newRow[data.rows[0].length] = rows[r].size;
-        newRows.push(newRow);
-      }
-      return newRows;
-    };
-
-    var setScatterChart = function(data, refresh) {
-      var xAxis = $scope.paragraph.config.graph.scatter.xAxis;
-      var yAxis = $scope.paragraph.config.graph.scatter.yAxis;
-      var group = $scope.paragraph.config.graph.scatter.group;
-      var size = $scope.paragraph.config.graph.scatter.size;
-
-      var xValues = [];
-      var yValues = [];
-      var rows = {};
-      var d3g = [];
-
-      var rowNameIndex = {};
-      var colNameIndex = {};
-      var grpNameIndex = {};
-      var rowIndexValue = {};
-      var colIndexValue = {};
-      var grpIndexValue = {};
-      var rowIdx = 0;
-      var colIdx = 0;
-      var grpIdx = 0;
-      var grpName = '';
-
-      var xValue;
-      var yValue;
-      var row;
-
-      if (!xAxis && !yAxis) {
-        return {
-          d3g: []
-        };
-      }
-
-      for (var i = 0; i < data.rows.length; i++) {
-        row = data.rows[i];
-        if (xAxis) {
-          xValue = row[xAxis.index];
-          xValues[i] = xValue;
-        }
-        if (yAxis) {
-          yValue = row[yAxis.index];
-          yValues[i] = yValue;
-        }
-      }
-
-      var isAllDiscrete = ((xAxis && yAxis && isDiscrete(xValues) && isDiscrete(yValues)) ||
-                           (!xAxis && isDiscrete(yValues)) ||
-                           (!yAxis && isDiscrete(xValues)));
-
-      if (isAllDiscrete) {
-        rows = setDiscreteScatterData(data);
-      } else {
-        rows = data.rows;
-      }
-
-      if (!group && isAllDiscrete) {
-        grpName = 'count';
-      } else if (!group && !size) {
-        if (xAxis && yAxis) {
-          grpName = '(' + xAxis.name + ', ' + yAxis.name + ')';
-        } else if (xAxis && !yAxis) {
-          grpName = xAxis.name;
-        } else if (!xAxis && yAxis) {
-          grpName = yAxis.name;
-        }
-      } else if (!group && size) {
-        grpName = size.name;
-      }
-
-      for (i = 0; i < rows.length; i++) {
-        row = rows[i];
-        if (xAxis) {
-          xValue = row[xAxis.index];
-        }
-        if (yAxis) {
-          yValue = row[yAxis.index];
-        }
-        if (group) {
-          grpName = row[group.index];
-        }
-        var sz = (isAllDiscrete) ? row[row.length - 1] : ((size) ? row[size.index] : 1);
-
-        if (grpNameIndex[grpName] === undefined) {
-          grpIndexValue[grpIdx] = grpName;
-          grpNameIndex[grpName] = grpIdx++;
-        }
-
-        if (xAxis && rowNameIndex[xValue] === undefined) {
-          rowIndexValue[rowIdx] = xValue;
-          rowNameIndex[xValue] = rowIdx++;
-        }
-
-        if (yAxis && colNameIndex[yValue] === undefined) {
-          colIndexValue[colIdx] = yValue;
-          colNameIndex[yValue] = colIdx++;
-        }
-
-        if (!d3g[grpNameIndex[grpName]]) {
-          d3g[grpNameIndex[grpName]] = {
-            key: grpName,
-            values: []
-          };
-        }
-
-        d3g[grpNameIndex[grpName]].values.push({
-          x: xAxis ? (isNaN(xValue) ? rowNameIndex[xValue] : parseFloat(xValue)) : 0,
-          y: yAxis ? (isNaN(yValue) ? colNameIndex[yValue] : parseFloat(yValue)) : 0,
-          size: isNaN(parseFloat(sz)) ? 1 : parseFloat(sz)
-        });
-      }
-
-      return {
-        xLabels: rowIndexValue,
-        yLabels: colIndexValue,
-        d3g: d3g
-      };
-    };
-
-    var isDiscrete = function(field) {
-      var getUnique = function(f) {
-        var uniqObj = {};
-        var uniqArr = [];
-        var j = 0;
-        for (var i = 0; i < f.length; i++) {
-          var item = f[i];
-          if (uniqObj[item] !== 1) {
-            uniqObj[item] = 1;
-            uniqArr[j++] = item;
-          }
-        }
-        return uniqArr;
-      };
-
-      for (var i = 0; i < field.length; i++) {
-        if (isNaN(parseFloat(field[i])) &&
-           (typeof field[i] === 'string' || field[i] instanceof String)) {
-          return true;
-        }
-      }
-
-      var threshold = 0.05;
-      var unique = getUnique(field);
-      if (unique.length / field.length < threshold) {
-        return true;
+    $scope.isValidSizeOption = function(options) {
+      var builtInViz = builtInVisualizations.scatterChart;
+      if (builtInViz && builtInViz.instance) {
+        return builtInViz.instance.isValidSizeOption(options);
       } else {
         return false;
       }
-    };
-
-    $scope.isValidSizeOption = function(options, rows) {
-      var xValues = [];
-      var yValues = [];
-
-      for (var i = 0; i < rows.length; i++) {
-        var row = rows[i];
-        var size = row[options.size.index];
-
-        //check if the field is numeric
-        if (isNaN(parseFloat(size)) || !isFinite(size)) {
-          return false;
-        }
-
-        if (options.xAxis) {
-          var x = row[options.xAxis.index];
-          xValues[i] = x;
-        }
-        if (options.yAxis) {
-          var y = row[options.yAxis.index];
-          yValues[i] = y;
-        }
-      }
-
-      //check if all existing fields are discrete
-      var isAllDiscrete = ((options.xAxis && options.yAxis && isDiscrete(xValues) && isDiscrete(yValues)) ||
-                           (!options.xAxis && isDiscrete(yValues)) ||
-                           (!options.yAxis && isDiscrete(xValues)));
-
-      if (isAllDiscrete) {
-        return false;
-      }
-
-      return true;
     };
 
     $scope.resizeParagraph = function(width, height) {
@@ -2195,19 +1313,19 @@
 
     $scope.exportToDSV = function(delimiter) {
       var dsv = '';
-      for (var titleIndex in $scope.paragraph.result.columnNames) {
-        dsv += $scope.paragraph.result.columnNames[titleIndex].name + delimiter;
+      for (var titleIndex in tableData.columns) {
+        dsv += tableData.columns[titleIndex].name + delimiter;
       }
       dsv = dsv.substring(0, dsv.length - 1) + '\n';
-      for (var r in $scope.paragraph.result.msgTable) {
-        var row = $scope.paragraph.result.msgTable[r];
+      for (var r in tableData.rows) {
+        var row = tableData.rows[r];
         var dsvRow = '';
         for (var index in row) {
-          var stringValue =  (row[index].value).toString();
+          var stringValue =  (row[index]).toString();
           if (stringValue.contains(delimiter)) {
             dsvRow += '"' + stringValue + '"' + delimiter;
           } else {
-            dsvRow += row[index].value + delimiter;
+            dsvRow += row[index] + delimiter;
           }
         }
         dsv += dsvRow.substring(0, dsvRow.length - 1) + '\n';
@@ -2588,8 +1706,12 @@
         }
 
         if (newType === 'TABLE') {
-          $scope.loadTableData($scope.paragraph.result);
           if (oldType !== 'TABLE' || resultRefreshed) {
+            var TableData = zeppelin.TableData;
+            tableData = new TableData();
+            tableData.loadParagraphResult($scope.paragraph.result);
+            $scope.tableDataColumns = tableData.columns;
+            $scope.tableDataComment = tableData.comment;
             clearUnknownColsFromGraphOption();
             selectDefaultColsForGraphOption();
           }
@@ -2745,6 +1867,24 @@
         $scope.editor.blur();
         var isDigestPass = true;
         $scope.handleFocus(false, isDigestPass);
+      }
+    });
+
+    $scope.$on('doubleClickParagraph', function(event, paragraphId) {
+      if ($scope.paragraph.id === paragraphId && $scope.paragraph.config.editorHide &&
+          editorSetting.editOnDblClick) {
+        var deferred = $q.defer();
+        openEditorAndCloseTable();
+        $timeout(
+          $scope.$on('updateParagraph', function(event, data) {
+            deferred.resolve(data);
+          }
+        ), 1000);
+
+        deferred.promise.then(function(data) {
+          $scope.editor.focus();
+          $scope.goToEnd();
+        });
       }
     });
 

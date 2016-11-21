@@ -27,8 +27,6 @@ import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.*;
-import java.util.List;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.google.common.base.Joiner;
@@ -45,15 +43,18 @@ import org.apache.spark.scheduler.ActiveJob;
 import org.apache.spark.scheduler.DAGScheduler;
 import org.apache.spark.scheduler.Pool;
 import org.apache.spark.sql.SQLContext;
+import org.apache.spark.ui.SparkUI;
 import org.apache.spark.ui.jobs.JobProgressListener;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
+import org.apache.zeppelin.interpreter.InterpreterHookRegistry;
 import org.apache.zeppelin.interpreter.InterpreterProperty;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.InterpreterUtils;
 import org.apache.zeppelin.interpreter.WrappedInterpreter;
+import org.apache.zeppelin.interpreter.util.InterpreterOutputStream;
 import org.apache.zeppelin.resource.ResourcePool;
 import org.apache.zeppelin.resource.WellKnownResourceName;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
@@ -101,6 +102,7 @@ public class SparkInterpreter extends Interpreter {
   private SparkConf conf;
   private static SparkContext sc;
   private static SQLContext sqlc;
+  private static InterpreterHookRegistry hooks;
   private static SparkEnv env;
   private static Object sparkSession;    // spark 2.x
   private static JobProgressListener sparkListener;
@@ -108,8 +110,9 @@ public class SparkInterpreter extends Interpreter {
   private static Integer sharedInterpreterLock = new Integer(0);
   private static AtomicInteger numReferenceOfSparkContext = new AtomicInteger(0);
 
-  private SparkOutputStream out;
+  private InterpreterOutputStream out;
   private SparkDependencyResolver dep;
+  private String sparkUrl;
 
   /**
    * completer - org.apache.spark.repl.SparkJLineCompletion (scala 2.10)
@@ -124,7 +127,7 @@ public class SparkInterpreter extends Interpreter {
 
   public SparkInterpreter(Properties property) {
     super(property);
-    out = new SparkOutputStream(logger);
+    out = new InterpreterOutputStream(logger);
   }
 
   public SparkInterpreter(Properties property, SparkContext sc) {
@@ -479,7 +482,7 @@ public class SparkInterpreter extends Interpreter {
 
     //Only one of py4j-0.9-src.zip and py4j-0.8.2.1-src.zip should exist
     String[] pythonLibs = new String[]{"pyspark.zip", "py4j-0.9-src.zip", "py4j-0.8.2.1-src.zip",
-      "py4j-0.10.1-src.zip"};
+      "py4j-0.10.1-src.zip", "py4j-0.10.3-src.zip"};
     ArrayList<String> pythonLibUris = new ArrayList<>();
     for (String lib : pythonLibs) {
       File libFile = new File(pysparkPath, lib);
@@ -502,6 +505,7 @@ public class SparkInterpreter extends Interpreter {
         conf.set("spark.files", conf.get("spark.yarn.dist.files"));
       }
       conf.set("spark.submit.pyArchives", Joiner.on(":").join(pythonLibs));
+      conf.set("spark.submit.pyFiles", Joiner.on(",").join(pythonLibUris));
     }
 
     // Distributes needed libraries to workers
@@ -594,7 +598,7 @@ public class SparkInterpreter extends Interpreter {
     }
 
     String[] argsArray = args.split(" ");
-    LinkedList<String> argList = new LinkedList<String>();
+    LinkedList<String> argList = new LinkedList<>();
     for (String arg : argsArray) {
       argList.add(arg);
     }
@@ -717,7 +721,7 @@ public class SparkInterpreter extends Interpreter {
 
 
     // set classloader for scala compiler
-    settings.explicitParentLoader_$eq(new Some<ClassLoader>(Thread.currentThread()
+    settings.explicitParentLoader_$eq(new Some<>(Thread.currentThread()
         .getContextClassLoader()));
     BooleanSetting b = (BooleanSetting) settings.usejavacp();
     b.v_$eq(true);
@@ -813,8 +817,10 @@ public class SparkInterpreter extends Interpreter {
       sqlc = getSQLContext();
 
       dep = getDependencyResolver();
+      
+      hooks = getInterpreterGroup().getInterpreterHookRegistry();
 
-      z = new ZeppelinContext(sc, sqlc, null, dep,
+      z = new ZeppelinContext(sc, sqlc, null, dep, hooks,
               Integer.parseInt(getProperty("zeppelin.spark.maxResult")));
 
       interpret("@transient val _binder = new java.util.HashMap[String, Object]()");
@@ -933,12 +939,33 @@ public class SparkInterpreter extends Interpreter {
     numReferenceOfSparkContext.incrementAndGet();
   }
 
+  private String getSparkUIUrl() {
+    Option<SparkUI> sparkUiOption = (Option<SparkUI>) Utils.invokeMethod(sc, "ui");
+    SparkUI sparkUi = sparkUiOption.get();
+    String sparkWebUrl = sparkUi.appUIAddress();
+    return sparkWebUrl;
+  }
+
   private Results.Result interpret(String line) {
     return (Results.Result) Utils.invokeMethod(
         intp,
         "interpret",
         new Class[] {String.class},
         new Object[] {line});
+  }
+
+  public void populateSparkWebUrl(InterpreterContext ctx) {
+    if (sparkUrl == null) {
+      sparkUrl = getSparkUIUrl();
+      Map<String, String> infos = new java.util.HashMap<>();
+      if (sparkUrl != null) {
+        infos.put("url", sparkUrl);
+        logger.info("Sending metainfos to Zeppelin server: {}", infos.toString());
+        if (ctx != null && ctx.getClient() != null) {
+          ctx.getClient().onMetaInfosReceived(infos);
+        }
+      }
+    }
   }
 
   private List<File> currentClassPath() {
@@ -953,7 +980,7 @@ public class SparkInterpreter extends Interpreter {
   }
 
   private List<File> classPath(ClassLoader cl) {
-    List<File> paths = new LinkedList<File>();
+    List<File> paths = new LinkedList<>();
     if (cl == null) {
       return paths;
     }
@@ -974,7 +1001,7 @@ public class SparkInterpreter extends Interpreter {
   public List<InterpreterCompletion> completion(String buf, int cursor) {
     if (completer == null) {
       logger.warn("Can't find completer");
-      return new LinkedList<InterpreterCompletion>();
+      return new LinkedList<>();
     }
 
     if (buf.length() < cursor) {
@@ -990,7 +1017,7 @@ public class SparkInterpreter extends Interpreter {
     Candidates ret = c.complete(completionText, cursor);
 
     List<String> candidates = WrapAsJava$.MODULE$.seqAsJavaList(ret.candidates());
-    List<InterpreterCompletion> completions = new LinkedList<InterpreterCompletion>();
+    List<InterpreterCompletion> completions = new LinkedList<>();
 
     for (String candidate : candidates) {
       completions.add(new InterpreterCompletion(candidate, candidate));
@@ -1063,7 +1090,7 @@ public class SparkInterpreter extends Interpreter {
       return null;
     }
     Object obj = r.lineRep().call("$result",
-        JavaConversions.asScalaBuffer(new LinkedList<Object>()));
+        JavaConversions.asScalaBuffer(new LinkedList<>()));
     return obj;
   }
 
@@ -1080,7 +1107,7 @@ public class SparkInterpreter extends Interpreter {
       return new InterpreterResult(Code.ERROR, "Spark " + sparkVersion.toString()
           + " is not supported");
     }
-
+    populateSparkWebUrl(context);
     z.setInterpreterContext(context);
     if (line == null || line.trim().length() == 0) {
       return new InterpreterResult(Code.SUCCESS);

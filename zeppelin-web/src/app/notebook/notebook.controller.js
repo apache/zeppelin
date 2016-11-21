@@ -27,12 +27,13 @@
     'baseUrlSrv',
     '$timeout',
     'saveAsService',
-    'ngToast'
+    'ngToast',
+    'noteActionSrv'
   ];
 
   function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
                         $http, websocketMsgSrv, baseUrlSrv, $timeout, saveAsService,
-                        ngToast) {
+                        ngToast, noteActionSrv) {
 
     ngToast.dismiss();
 
@@ -86,7 +87,7 @@
 
     /** Init the new controller */
     var initNotebook = function() {
-      websocketMsgSrv.getNotebook($routeParams.noteId);
+      websocketMsgSrv.getNote($routeParams.noteId);
       websocketMsgSrv.listRevisionHistory($routeParams.noteId);
       var currentRoute = $route.current;
       if (currentRoute) {
@@ -139,24 +140,17 @@
     // register mouseevent handler for focus paragraph
     document.addEventListener('keydown', $scope.keyboardShortcut);
 
-    /** Remove the note and go back tot he main page */
-    /** TODO(anthony): In the nearly future, go back to the main page and telle to the dude that the note have been remove */
+    $scope.paragraphOnDoubleClick = function(paragraphId) {
+      $scope.$broadcast('doubleClickParagraph', paragraphId);
+    };
+
+    // Remove the note and go back to the main page
     $scope.removeNote = function(noteId) {
-      BootstrapDialog.confirm({
-        closable: true,
-        title: '',
-        message: 'Do you want to delete this notebook?',
-        callback: function(result) {
-          if (result) {
-            websocketMsgSrv.deleteNotebook(noteId);
-            $location.path('/');
-          }
-        }
-      });
+      noteActionSrv.removeNote(noteId, true);
     };
 
     //Export notebook
-    $scope.exportNotebook = function() {
+    $scope.exportNote = function() {
       var jsonContent = JSON.stringify($scope.note);
       saveAsService.saveAs(jsonContent, $scope.note.name, 'json');
     };
@@ -166,10 +160,10 @@
       BootstrapDialog.confirm({
         closable: true,
         title: '',
-        message: 'Do you want to clone this notebook?',
+        message: 'Do you want to clone this note?',
         callback: function(result) {
           if (result) {
-            websocketMsgSrv.cloneNotebook(noteId);
+            websocketMsgSrv.cloneNote(noteId);
             $location.path('/');
           }
         }
@@ -177,14 +171,14 @@
     };
 
     // checkpoint/commit notebook
-    $scope.checkpointNotebook = function(commitMessage) {
+    $scope.checkpointNote = function(commitMessage) {
       BootstrapDialog.confirm({
         closable: true,
         title: '',
-        message: 'Commit notebook to current repository?',
+        message: 'Commit note to current repository?',
         callback: function(result) {
           if (result) {
-            websocketMsgSrv.checkpointNotebook($routeParams.noteId, commitMessage);
+            websocketMsgSrv.checkpointNote($routeParams.noteId, commitMessage);
           }
         }
       });
@@ -226,19 +220,8 @@
       }
     };
 
-    $scope.clearAllParagraphOutput = function() {
-      BootstrapDialog.confirm({
-        closable: true,
-        title: '',
-        message: 'Do you want to clear all output?',
-        callback: function(result) {
-          if (result) {
-            _.forEach($scope.note.paragraphs, function(n, key) {
-              angular.element('#' + n.id + '_paragraphColumn_main').scope().clearParagraphOutput();
-            });
-          }
-        }
-      });
+    $scope.clearAllParagraphOutput = function(noteId) {
+      noteActionSrv.clearAllParagraphOutput(noteId);
     };
 
     $scope.toggleAllEditor = function() {
@@ -336,13 +319,13 @@
       if (config) {
         $scope.note.config = config;
       }
-      websocketMsgSrv.updateNotebook($scope.note.id, $scope.note.name, $scope.note.config);
+      websocketMsgSrv.updateNote($scope.note.id, $scope.note.name, $scope.note.config);
     };
 
     /** Update the note name */
     $scope.sendNewName = function() {
       if ($scope.note.name) {
-        websocketMsgSrv.updateNotebook($scope.note.id, $scope.note.name, $scope.note.config);
+        websocketMsgSrv.updateNote($scope.note.id, $scope.note.name, $scope.note.config);
       }
     };
 
@@ -646,6 +629,42 @@
       $scope.permissions.readers = angular.element('#selectReaders').val();
       $scope.permissions.writers = angular.element('#selectWriters').val();
     }
+
+    $scope.restartInterpreter = function(interpeter) {
+      var thisConfirm = BootstrapDialog.confirm({
+        closable: false,
+        closeByBackdrop: false,
+        closeByKeyboard: false,
+        title: '',
+        message: 'Do you want to restart ' + interpeter.name + ' interpreter?',
+        callback: function(result) {
+          if (result) {
+            var payload  = {
+              'noteId': $scope.note.id
+            };
+
+            thisConfirm.$modalFooter.find('button').addClass('disabled');
+            thisConfirm.$modalFooter.find('button:contains("OK")')
+              .html('<i class="fa fa-circle-o-notch fa-spin"></i> Saving Setting');
+
+            $http.put(baseUrlSrv.getRestApiBase() + '/interpreter/setting/restart/' + interpeter.id, payload)
+              .success(function(data, status, headers, config) {
+              var index = _.findIndex($scope.interpreterSettings, {'id': interpeter.id});
+              $scope.interpreterSettings[index] = data.body;
+              thisConfirm.close();
+            }).error(function(data, status, headers, config) {
+              thisConfirm.close();
+              console.log('Error %o %o', status, data.message);
+              BootstrapDialog.show({
+                title: 'Error restart interpreter.',
+                message: data.message
+              });
+            });
+            return false;
+          }
+        }
+      });
+    };
 
     $scope.savePermissions = function() {
       convertPermissionsToArray();

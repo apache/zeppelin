@@ -88,7 +88,7 @@ abstract public class AbstractZeppelinIT {
   }
 
   protected WebElement pollingWait(final By locator, final long timeWait) {
-    Wait<WebDriver> wait = new FluentWait<WebDriver>(driver)
+    Wait<WebDriver> wait = new FluentWait<>(driver)
         .withTimeout(timeWait, TimeUnit.SECONDS)
         .pollingEvery(1, TimeUnit.SECONDS)
         .ignoring(NoSuchElementException.class);
@@ -122,7 +122,7 @@ abstract public class AbstractZeppelinIT {
     driver.findElement(By.xpath(".//*[@id='main']//button[@ng-click='removeNote(note.id)']"))
         .sendKeys(Keys.ENTER);
     ZeppelinITUtils.sleep(1000, true);
-    driver.findElement(By.xpath("//div[@class='modal-dialog'][contains(.,'delete this notebook')]" +
+    driver.findElement(By.xpath("//div[@class='modal-dialog'][contains(.,'delete this note')]" +
         "//div[@class='modal-footer']//button[contains(.,'OK')]")).click();
     ZeppelinITUtils.sleep(100, true);
   }

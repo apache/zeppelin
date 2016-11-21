@@ -23,7 +23,7 @@ limitations under the License.
     </div>
     <div class="row">
       <div class="col-md-12">
-        You can monitor the written notebook. Check the status of the Notebook and can control the action.
+        You can monitor the status of notebook and navigate to note or paragraph.
       </div>
     </div>
   </div>
@@ -68,8 +68,7 @@ limitations under the License.
         <span
           ng-switch-when="FINISHED">
           <i style="color: green; margin-right: 3px;" class="fa fa-circle"
-             ng-click=""
-             tooltip="FINISHED">
+             ng-click="">
           </i>
           {{jobStatus}}
         </span>
@@ -77,8 +76,7 @@ limitations under the License.
           ng-switch-when="RUNNING"
           style="margin-right: 3px;">
           <i style="color: blue" class="fa fa-spinner"
-             ng-click=""
-             tooltip="RUNNING">
+             ng-click="">
           </i>
           {{jobStatus}}
         </span>
@@ -86,8 +84,7 @@ limitations under the License.
           ng-switch-when="READY"
           style="margin-right: 3px;">
           <i style="color: green" class="fa fa-circle-o"
-             ng-click=""
-             tooltip="READY">
+             ng-click="">
           </i>
           {{jobStatus}}
         </span>
@@ -95,9 +92,7 @@ limitations under the License.
           ng-switch-when="PENDING"
           style="margin-right: 3px;">
           <i style="color: gray" class="fa fa-circle"
-             ng-click=""
-             tooltip="PENDING"
-          >
+             ng-click="">
           </i>
           {{jobStatus}}
         </span>
@@ -105,8 +100,7 @@ limitations under the License.
           ng-switch-when="ABORT"
           style="margin-right: 3px;">
           <i style="color: orange" class="fa fa-circle"
-             ng-click=""
-             tooltip="ABORT">
+             ng-click="">
           </i>
           {{jobStatus}}
         </span>
@@ -114,8 +108,7 @@ limitations under the License.
           ng-switch-when="ERROR"
           style="margin-right: 3px;">
           <i style="color: red" class="fa fa-circle"
-             ng-click=""
-             tooltip="ERROR">
+             ng-click="">
           </i>
           {{jobStatus}}
         </span>

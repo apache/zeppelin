@@ -68,7 +68,7 @@ public class RemoteSchedulerTest implements RemoteInterpreterProcessListener {
   public void test() throws Exception {
     Properties p = new Properties();
     final InterpreterGroup intpGroup = new InterpreterGroup();
-    Map<String, String> env = new HashMap<String, String>();
+    Map<String, String> env = new HashMap<>();
     env.put("ZEPPELIN_CLASSPATH", new File("./target/test-classes").getAbsolutePath());
 
     final RemoteInterpreter intpA = new RemoteInterpreter(
@@ -81,7 +81,9 @@ public class RemoteSchedulerTest implements RemoteInterpreterProcessListener {
         env,
         10 * 1000,
         this,
-        null);
+        null,
+        "anonymous",
+        false);
 
     intpGroup.put("note", new LinkedList<Interpreter>());
     intpGroup.get("note").add(intpA);
@@ -157,7 +159,7 @@ public class RemoteSchedulerTest implements RemoteInterpreterProcessListener {
   public void testAbortOnPending() throws Exception {
     Properties p = new Properties();
     final InterpreterGroup intpGroup = new InterpreterGroup();
-    Map<String, String> env = new HashMap<String, String>();
+    Map<String, String> env = new HashMap<>();
     env.put("ZEPPELIN_CLASSPATH", new File("./target/test-classes").getAbsolutePath());
 
     final RemoteInterpreter intpA = new RemoteInterpreter(
@@ -170,7 +172,9 @@ public class RemoteSchedulerTest implements RemoteInterpreterProcessListener {
         env,
         10 * 1000,
         this,
-        null);
+        null,
+        "anonymous",
+        false);
 
     intpGroup.put("note", new LinkedList<Interpreter>());
     intpGroup.get("note").add(intpA);
@@ -297,6 +301,11 @@ public class RemoteSchedulerTest implements RemoteInterpreterProcessListener {
 
   @Override
   public void onOutputUpdated(String noteId, String paragraphId, String output) {
+
+  }
+
+  @Override
+  public void onMetaInfosReceived(String settingId, Map<String, String> metaInfos) {
 
   }
 }

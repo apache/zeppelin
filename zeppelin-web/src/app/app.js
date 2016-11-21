@@ -33,8 +33,7 @@
           'xeditable',
           'ngToast',
           'focus-if',
-          'ngResource',
-          'esri.map'
+          'ngResource'
       ])
         .filter('breakFilter', function() {
           return function(text) {
@@ -70,6 +69,11 @@
             .when('/interpreter', {
               templateUrl: 'app/interpreter/interpreter.html',
               controller: 'InterpreterCtrl'
+            })
+            .when('/notebookRepos', {
+              templateUrl: 'app/notebookRepos/notebookRepos.html',
+              controller: 'NotebookReposCtrl',
+              controllerAs: 'noterepo'
             })
             .when('/credential', {
               templateUrl: 'app/credential/credential.html',

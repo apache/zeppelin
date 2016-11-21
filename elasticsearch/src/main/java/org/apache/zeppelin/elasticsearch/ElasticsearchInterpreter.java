@@ -22,6 +22,7 @@ import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -35,7 +36,6 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
-import org.apache.zeppelin.interpreter.InterpreterPropertyBuilder;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.elasticsearch.action.delete.DeleteResponse;
@@ -48,6 +48,8 @@ import org.elasticsearch.client.Client;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
+import org.elasticsearch.common.xcontent.XContentBuilder;
+import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.common.xcontent.XContentHelper;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
@@ -437,14 +439,37 @@ public class ElasticsearchInterpreter extends Interpreter {
       resMsg = XContentHelper.toString((InternalSingleBucketAggregation) agg).toString();
     }
     else if (agg instanceof InternalMultiBucketAggregation) {
-      final StringBuffer buffer = new StringBuffer("key\tdoc_count");
-
+      final Set<String> headerKeys = new HashSet<>();
+      final List<Map<String, Object>> buckets = new LinkedList<>();
       final InternalMultiBucketAggregation multiBucketAgg = (InternalMultiBucketAggregation) agg;
+      
       for (MultiBucketsAggregation.Bucket bucket : multiBucketAgg.getBuckets()) {
-        buffer.append("\n")
-          .append(bucket.getKeyAsString())
-          .append("\t")
-          .append(bucket.getDocCount());
+        try {
+          final XContentBuilder builder = XContentFactory.jsonBuilder();
+          bucket.toXContent(builder, null);
+          final Map<String, Object> bucketMap = JsonFlattener.flattenAsMap(builder.string());
+          headerKeys.addAll(bucketMap.keySet());
+          buckets.add(bucketMap);
+        }
+        catch (IOException e) {
+          logger.error("Processing bucket: " + e.getMessage(), e);
+        }
+      }
+            
+      final StringBuffer buffer = new StringBuffer();
+      final String[] keys = headerKeys.toArray(new String[0]);
+      for (String key: keys) {
+        buffer.append("\t" + key);
+      }
+      buffer.deleteCharAt(0);
+      
+      for (Map<String, Object> bucket : buckets) {
+        buffer.append("\n");
+        
+        for (String key: keys) {
+          buffer.append(bucket.get(key)).append("\t");
+        }
+        buffer.deleteCharAt(buffer.length() - 1);
       }
 
       resType = InterpreterResult.Type.TABLE;

@@ -86,10 +86,25 @@
         "propertyName": "livy.spark.jars.packages",
         "defaultValue": "",
         "description": "Adding extra libraries to livy interpreter"
+      },
+      "livy.spark.displayAppInfo": {
+        "propertyName": "zeppelin.livy.displayAppInfo",
+        "defaultValue": "false",
+        "description": "Whether display app info"
       }
     },
+    "option": {
+      "remote": true,
+      "port": -1,
+      "perNote": "shared",
+      "perUser": "scoped",
+      "isExistingProcess": false,
+      "setPermission": false,
+      "users": []
+    },
     "editor": {
-      "language": "scala"
+      "language": "scala",
+      "editOnDblClick": false
     }
   },
   {
@@ -109,8 +124,18 @@
         "description": "Execute multiple SQL concurrently if set true."
       }
     },
+    "option": {
+      "remote": true,
+      "port": -1,
+      "perNote": "shared",
+      "perUser": "scoped",
+      "isExistingProcess": false,
+      "setPermission": false,
+      "users": []
+    },
     "editor": {
-      "language": "sql"
+      "language": "sql",
+      "editOnDblClick": false
     }
   },
   {
@@ -119,8 +144,18 @@
     "className": "org.apache.zeppelin.livy.LivyPySparkInterpreter",
     "properties": {
     },
+    "option": {
+      "remote": true,
+      "port": -1,
+      "perNote": "shared",
+      "perUser": "scoped",
+      "isExistingProcess": false,
+      "setPermission": false,
+      "users": []
+    },
     "editor": {
-      "language": "python"
+      "language": "python",
+      "editOnDblClick": false
     }
   },
   {
@@ -129,8 +164,18 @@
     "className": "org.apache.zeppelin.livy.LivySparkRInterpreter",
     "properties": {
     },
+    "option": {
+      "remote": true,
+      "port": -1,
+      "perNote": "shared",
+      "perUser": "scoped",
+      "isExistingProcess": false,
+      "setPermission": false,
+      "users": []
+    },
     "editor": {
-      "language": "r"
+      "language": "r",
+      "editOnDblClick": false
     }
   }
 ]

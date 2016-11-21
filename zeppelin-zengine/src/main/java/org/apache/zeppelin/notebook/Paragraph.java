@@ -65,7 +65,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
   /**
    * Applicaiton states in this paragraph
    */
-  private final List<ApplicationState> apps =  new LinkedList<ApplicationState>();
+  private final List<ApplicationState> apps =  new LinkedList<>();
 
   @VisibleForTesting
   Paragraph() {
@@ -85,7 +85,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     user = null;
     dateUpdated = null;
     settings = new GUI();
-    config = new HashMap<String, Object>();
+    config = new HashMap<>();
   }
 
   public Paragraph(Note note, JobListener listener, InterpreterFactory factory) {
@@ -97,12 +97,16 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     authenticationInfo = null;
     dateUpdated = null;
     settings = new GUI();
-    config = new HashMap<String, Object>();
+    config = new HashMap<>();
   }
 
   private static String generateId() {
     return "paragraph_" + System.currentTimeMillis() + "_"
            + new Random(System.currentTimeMillis()).nextInt();
+  }
+
+  public String getUser() {
+    return user;
   }
 
   public String getText() {
@@ -193,7 +197,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
   }
 
   public Interpreter getRepl(String name) {
-    return factory.getInterpreter(note.getId(), name);
+    return factory.getInterpreter(user, note.getId(), name);
   }
 
   public Interpreter getCurrentRepl() {
@@ -289,9 +293,12 @@ public class Paragraph extends Job implements Serializable, Cloneable {
       logger.error("Can not find interpreter name " + repl);
       throw new RuntimeException("Can not find interpreter for " + getRequiredReplName());
     }
-
+    InterpreterSetting intp = getInterpreterSettingById(repl.getInterpreterGroup().getId());
+    while (intp.getStatus().equals(
+      org.apache.zeppelin.interpreter.InterpreterSetting.Status.DOWNLOADING_DEPENDENCIES)) {
+      Thread.sleep(200);
+    }
     if (this.noteHasUser() && this.noteHasInterpreters()) {
-      InterpreterSetting intp = getInterpreterSettingById(repl.getInterpreterGroup().getId());
       if (intp != null &&
         interpreterHasUser(intp) &&
         isUserAuthorizedToAccessInterpreter(intp.getOption()) == false) {
@@ -442,11 +449,11 @@ public class Paragraph extends Job implements Serializable, Cloneable {
 
     if (!factory.getInterpreterSettings(note.getId()).isEmpty()) {
       InterpreterSetting intpGroup = factory.getInterpreterSettings(note.getId()).get(0);
-      registry = intpGroup.getInterpreterGroup(note.getId()).getAngularObjectRegistry();
-      resourcePool = intpGroup.getInterpreterGroup(note.getId()).getResourcePool();
+      registry = intpGroup.getInterpreterGroup(getUser(), note.getId()).getAngularObjectRegistry();
+      resourcePool = intpGroup.getInterpreterGroup(getUser(), note.getId()).getResourcePool();
     }
 
-    List<InterpreterContextRunner> runners = new LinkedList<InterpreterContextRunner>();
+    List<InterpreterContextRunner> runners = new LinkedList<>();
     for (Paragraph p : note.getParagraphs()) {
       runners.add(new ParagraphRunner(note, note.getId(), p.getId()));
     }
@@ -542,7 +549,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
 
   public List<ApplicationState> getAllApplicationStates() {
     synchronized (apps) {
-      return new LinkedList<ApplicationState>(apps);
+      return new LinkedList<>(apps);
     }
   }
 
@@ -582,6 +589,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
   }
 
   private boolean isValidInterpreter(String replName) {
-    return factory.getInterpreter(note.getId(), replName) != null;
+    return factory.getInterpreter(user,
+        note.getId(), replName) != null;
   }
 }

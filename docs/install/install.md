@@ -44,86 +44,28 @@ Apache Zeppelin officially supports and is tested on the following environments:
   </tr>
 </table>
 
-To install Apache Zeppelin, you have two options:
-
-* You can [download pre-built binary packages](#downloading-binary-package) from the archive. This is usually easier than building from source, and you can download the latest stable version (or older versions, if necessary).
-* You can also [build from source](#building-from-source). This gives you a development version of Zeppelin, which is more unstable but has new features.
-
 ### Downloading Binary Package
 
-Stable binary packages are available on the [Apache Zeppelin Download Page](http://zeppelin.apache.org/download.html). You can download a default package with all interpreters, or you can download the *net-install* package, which lets you choose which interpreters to install.
+Two binary packages are available on the [Apache Zeppelin Download Page](http://zeppelin.apache.org/download.html). Only difference between these two binaries is interpreters are included in the package file.
 
-If you downloaded the default package, just unpack it in a directory of your choice and you're ready to go. If you downloaded the *net-install* package, you should manually [install additional interpreters](../manual/interpreterinstallation.html) first. You can also install everything by running `./bin/install-interpreter.sh --all`.
+- #### Package with `all` interpreters.
 
-After unpacking, jump to the [Starting Apache Zeppelin with Command Line](#starting-apache-zeppelin-with-command-line).
+  Just unpack it in a directory of your choice and you're ready to go.
 
-### Building from Source
+- #### Package with `net-install` interpreters.
 
-If you want to build from source, you must first install the following dependencies:
-
-<table class="table-configuration">
-  <tr>
-    <th>Name</th>
-    <th>Value</th>
-  </tr>
-  <tr>
-    <td>Git</td>
-    <td>(Any Version)</td>
-  </tr>
-  <tr>
-    <td>Maven</td>
-    <td>3.1.x or higher</td>
-  </tr>
-</table>
-
-If you haven't installed Git and Maven yet, check the [Before Build](https://github.com/apache/zeppelin/blob/master/README.md#before-build) section and follow the step by step instructions from there.
-
-
-####1. Clone the Apache Zeppelin repository
-
-```
-git clone https://github.com/apache/zeppelin.git
-```
-
-####2. Build source with options 
-Each interpreter requires different build options. For more information about build options, please see the [Build](https://github.com/apache/zeppelin#build) section.
-
-```
-mvn clean package -DskipTests [Options]
-```
-
-Here are some examples with several options:
-
-```
-# build with spark-2.0, scala-2.11
-./dev/change_scala_version.sh 2.11
-mvn clean package -Pspark-2.0 -Phadoop-2.4 -Pyarn -Ppyspark -Psparkr -Pscala-2.11
-
-# build with spark-1.6, scala-2.10
-mvn clean package -Pspark-1.6 -Phadoop-2.4 -Pyarn -Ppyspark -Psparkr
-
-# spark-cassandra integration
-mvn clean package -Pcassandra-spark-1.5 -Dhadoop.version=2.6.0 -Phadoop-2.6 -DskipTests
-
-# with CDH
-mvn clean package -Pspark-1.5 -Dhadoop.version=2.6.0-cdh5.5.0 -Phadoop-2.6 -Pvendor-repo -DskipTests
-
-# with MapR
-mvn clean package -Pspark-1.5 -Pmapr50 -DskipTests
-```
-
-For further information about building from source, please see [README.md](https://github.com/apache/zeppelin/blob/master/README.md) in the Zeppelin repository.
+  Unpack and follow [install additional interpreters](../manual/interpreterinstallation.html) to install interpreters. If you're unsure, just run `./bin/install-interpreter.sh --all` and install all interpreters.
 
 ## Starting Apache Zeppelin from the Command Line
 #### Starting Apache Zeppelin
 
-On all platforms except for Windows:
+On all unix like platforms:
 
 ```
 bin/zeppelin-daemon.sh start
 ```
 
-If you are using Windows:
+If you are on Windows:
 
 ```
 bin\zeppelin.cmd
@@ -137,63 +79,36 @@ After Zeppelin has started successfully, go to [http://localhost:8080](http://lo
 bin/zeppelin-daemon.sh stop
 ```
 
-#### (Optional) Start Apache Zeppelin with a service manager
+## Next Steps
 
-> **Note :** The below description was written based on Ubuntu Linux.
+Congratulations, you have successfully installed Apache Zeppelin! Here are few steps you might find useful:
 
-Apache Zeppelin can be auto-started as a service with an init script, using a service manager like **upstart**.
+#### New to Apache Zeppelin...
+ * For an in-depth overview, head to [Explore Apache Zeppelin UI](../quickstart/explorezeppelinui.html).
+ * And then, try run [tutorial](http://localhost:8080/#/notebook/2A94M5J1Z) notebook in your Zeppelin.
+ * And see how to change [configurations](#apache-zeppelin-configuration) like port number, etc.
 
-This is an example upstart script saved as `/etc/init/zeppelin.conf`
-This allows the service to be managed with commands such as
+#### Zeppelin with Apache Spark ...
+ * To know more about deep integration with [Apache Spark](http://spark.apache.org/), check [Spark Interpreter](../interpreter/spark.html).
 
-```
-sudo service zeppelin start  
-sudo service zeppelin stop  
-sudo service zeppelin restart
-```
+#### Zeppelin with JDBC data sources ...
+ * Check [JDBC Interpreter](../interpreter/jdbc.html) to know more about configure and uses multiple JDBC data sources.
 
-Other service managers could use a similar approach with the `upstart` argument passed to the `zeppelin-daemon.sh` script.
+#### Zeppelin with Python ...
+ * Check [Python interpreter](../interpreter/python.html) to know more about Matplotlib, Pandas integration.
 
-```
-bin/zeppelin-daemon.sh upstart
-```
 
-**zeppelin.conf**
+#### Multi-user environment ...
+ * Turn on [authentication](../security/shiroauthentication.html).
+ * Manage your [notebook permission](../security/notebook_authorization.html).
+ * For more informations, go to **More** -> **Security** section.
 
-```
-description "zeppelin"
+#### Other useful informations ...
+ * Learn how [Display System](../displaysystem/basicdisplaysystem.html) works.
+ * Use [Service Manager](#start-apache-zeppelin-with-a-service-manager) to start Zeppelin.
+ * If you're using previous version please see [Upgrade Zeppelin version](./upgrade.html).
 
-start on (local-filesystems and net-device-up IFACE!=lo)
-stop on shutdown
 
-# Respawn the process on unexpected termination
-respawn
-
-# respawn the job up to 7 times within a 5 second period.
-# If the job exceeds these values, it will be stopped and marked as failed.
-respawn limit 7 5
-
-# zeppelin was installed in /usr/share/zeppelin in this example
-chdir /usr/share/zeppelin
-exec bin/zeppelin-daemon.sh upstart
-```
-
-## Next Steps:
-
-Congratulations, you have successfully installed Apache Zeppelin! Here are two next steps you might find useful:
-
-#### If you are new to Apache Zeppelin...
- * For an in-depth overview of the Apache Zeppelin UI, head to [Explore Apache Zeppelin UI](../quickstart/explorezeppelinui.html).
- * After getting familiar with the Apache Zeppelin UI, have fun with a short walk-through [Tutorial](../quickstart/tutorial.html) that uses the Apache Spark backend.
- * If you need more configuration for Apache Zeppelin, jump to the next section: [Apache Zeppelin Configuration](#apache-zeppelin-configuration).
- 
-#### If you need more information about Spark or JDBC interpreter settings...
- * Apache Zeppelin provides deep integration with [Apache Spark](http://spark.apache.org/). For more informtation, see [Spark Interpreter for Apache Zeppelin](../interpreter/spark.html). 
- * You can also use generic JDBC connections in Apache Zeppelin. Go to [Generic JDBC Interpreter for Apache Zeppelin](../interpreter/jdbc.html).
- 
-#### If you are in a multi-user environment...
- * You can set permissions for your notebooks and secure data resource in a multi-user environment. Go to **More** -> **Security** section.
-   
 ## Apache Zeppelin Configuration
 
 You can configure Apache Zeppelin with either **environment variables** in `conf/zeppelin-env.sh` (`conf\zeppelin-env.cmd` for Windows) or **Java properties** in `conf/zeppelin-site.xml`. If both are defined, then the **environment variables** will take priority.
@@ -311,13 +226,13 @@ You can configure Apache Zeppelin with either **environment variables** in `conf
     <td>ZEPPELIN_NOTEBOOK_HOMESCREEN</td>
     <td>zeppelin.notebook.homescreen</td>
     <td></td>
-    <td>Display notebook IDs on the Apache Zeppelin homescreen <br />i.e. 2A94M5J1Z</td>
+    <td>Display note IDs on the Apache Zeppelin homescreen <br />i.e. 2A94M5J1Z</td>
   </tr>
   <tr>
     <td>ZEPPELIN_NOTEBOOK_HOMESCREEN_HIDE</td>
     <td>zeppelin.notebook.homescreen.hide</td>
     <td>false</td>
-    <td>Hide the notebook ID set by <code>ZEPPELIN_NOTEBOOK_HOMESCREEN</code> on the Apache Zeppelin homescreen. <br />For the further information, please read <a href="../manual/notebookashomepage.html">Customize your Zeppelin homepage</a>.</td>
+    <td>Hide the note ID set by <code>ZEPPELIN_NOTEBOOK_HOMESCREEN</code> on the Apache Zeppelin homescreen. <br />For the further information, please read <a href="../manual/notebookashomepage.html">Customize your Zeppelin homepage</a>.</td>
   </tr>
   <tr>
     <td>ZEPPELIN_WAR_TEMPDIR</td>
@@ -392,6 +307,12 @@ You can configure Apache Zeppelin with either **environment variables** in `conf
     <td>If there are multiple notebook storage locations, should we treat the first one as the only source of truth?</td>
   </tr>
   <tr>
+    <td>ZEPPELIN_NOTEBOOK_PUBLIC</td>
+    <td>zeppelin.notebook.public</td>
+    <td>true</td>
+    <td>Make notebook public (set only `owners`) by default when created/imported. If set to `false` will add `user` to `readers` and `writers` as well, making it private and invisible to other users unless permissions are granted.</td>
+  </tr>
+  <tr>
     <td>ZEPPELIN_INTERPRETERS</td>
     <td>zeppelin.interpreters</td>
   <description></description>
@@ -416,3 +337,50 @@ You can configure Apache Zeppelin with either **environment variables** in `conf
     <td>Size (in characters) of the maximum text message that can be received by websocket.</td>
   </tr>
 </table>
+
+
+#### Start Apache Zeppelin with a service manager
+
+> **Note :** The below description was written based on Ubuntu Linux.
+
+Apache Zeppelin can be auto-started as a service with an init script, using a service manager like **upstart**.
+
+This is an example upstart script saved as `/etc/init/zeppelin.conf`
+This allows the service to be managed with commands such as
+
+```
+sudo service zeppelin start  
+sudo service zeppelin stop  
+sudo service zeppelin restart
+```
+
+Other service managers could use a similar approach with the `upstart` argument passed to the `zeppelin-daemon.sh` script.
+
+```
+bin/zeppelin-daemon.sh upstart
+```
+
+**zeppelin.conf**
+
+```
+description "zeppelin"
+
+start on (local-filesystems and net-device-up IFACE!=lo)
+stop on shutdown
+
+# Respawn the process on unexpected termination
+respawn
+
+# respawn the job up to 7 times within a 5 second period.
+# If the job exceeds these values, it will be stopped and marked as failed.
+respawn limit 7 5
+
+# zeppelin was installed in /usr/share/zeppelin in this example
+chdir /usr/share/zeppelin
+exec bin/zeppelin-daemon.sh upstart
+```
+
+
+## Building from Source
+
+If you want to build from source instead of using binary package, follow the instructions [here](./build.html).

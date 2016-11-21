@@ -38,8 +38,7 @@ public class AngularObject<T> {
   private T object;
   
   private transient AngularObjectListener listener;
-  private transient List<AngularObjectWatcher> watchers
-    = new LinkedList<AngularObjectWatcher>();
+  private transient List<AngularObjectWatcher> watchers = new LinkedList<>();
   
   private String noteId;   // noteId belonging to. null for global scope 
   private String paragraphId; // paragraphId belongs to. null for notebook scope
@@ -175,7 +174,7 @@ public class AngularObject<T> {
     }
 
     final Logger logger = LoggerFactory.getLogger(AngularObject.class);
-    List<AngularObjectWatcher> ws = new LinkedList<AngularObjectWatcher>();
+    List<AngularObjectWatcher> ws = new LinkedList<>();
     synchronized (watchers) {
       ws.addAll(watchers);
     }
