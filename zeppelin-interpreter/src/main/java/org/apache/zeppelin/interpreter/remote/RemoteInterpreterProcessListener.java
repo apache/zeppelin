@@ -25,6 +25,7 @@ public interface RemoteInterpreterProcessListener {
   public void onOutputAppend(String noteId, String paragraphId, String output);
   public void onOutputUpdated(String noteId, String paragraphId, String output);
   public void onMetaInfosReceived(String settingId, Map<String, String> metaInfos);
+  public void onRemoteRunParagraph(String noteId, String ParagraphID) throws Exception;
   public void onGetParagraphRunners(
       String noteId, String paragraphId, RemoteWorksEventListener callback);
 

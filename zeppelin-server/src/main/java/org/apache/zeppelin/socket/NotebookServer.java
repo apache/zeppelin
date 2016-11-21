@@ -32,6 +32,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 import javax.servlet.http.HttpServletRequest;
 
+import com.google.common.collect.Sets;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.vfs2.FileSystemException;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
@@ -60,6 +61,7 @@ import org.apache.zeppelin.notebook.repo.NotebookRepo.Revision;
 import org.apache.zeppelin.notebook.socket.Message;
 import org.apache.zeppelin.notebook.socket.Message.OP;
 import org.apache.zeppelin.notebook.socket.WatcherMessage;
+import org.apache.zeppelin.rest.exception.ForbiddenException;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.server.ZeppelinServer;
@@ -1486,11 +1488,11 @@ public class NotebookServer extends WebSocketServlet implements
   @Override
   public void onGetParagraphRunners(
       String noteId, String paragraphId, RemoteWorksEventListener callback) {
-    LOG.info("clover onGetParagraphRunners {} {}", noteId, paragraphId);
     Notebook notebookIns = notebook();
     List<InterpreterContextRunner> runner = new LinkedList<>();
 
     if (notebookIns == null) {
+      LOG.info("intepreter request notebook instance is null");
       callback.onFinished(notebookIns);
     }
 
@@ -1512,6 +1514,40 @@ public class NotebookServer extends WebSocketServlet implements
     } catch (NullPointerException e) {
       LOG.warn(e.getMessage());
       callback.onError();
+    }
+  }
+
+  @Override
+  public void onRemoteRunParagraph(String noteId, String paragraphId) throws Exception {
+    Notebook notebookIns = notebook();
+    try {
+      if (notebookIns == null) {
+        throw new Exception("onRemoteRunParagraph notebook instance is null");
+      }
+      Note noteIns = notebookIns.getNote(noteId);
+      if (noteIns == null) {
+        throw new Exception(String.format("Can't found note id %s", noteId));
+      }
+
+      Paragraph paragraph = noteIns.getParagraph(paragraphId);
+      if (paragraph == null) {
+        throw new Exception(String.format("Can't found paragraph %s %s", noteId, paragraphId));
+      }
+
+      Set<String> userAndRoles = Sets.newHashSet();
+      userAndRoles.add(SecurityUtils.getPrincipal());
+      userAndRoles.addAll(SecurityUtils.getRoles());
+      if (!notebookIns.getNotebookAuthorization().hasWriteAuthorization(userAndRoles, noteId)) {
+        throw new ForbiddenException(String.format("can't execute note %s", noteId));
+      }
+
+      AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
+      paragraph.setAuthenticationInfo(subject);
+
+      noteIns.run(paragraphId);
+
+    } catch (Exception e) {
+      throw e;
     }
   }
 

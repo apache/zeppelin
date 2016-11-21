@@ -148,8 +148,9 @@ public class RemoteInterpreterEventPoller extends Thread {
           InterpreterContextRunner runnerFromRemote = gson.fromJson(
               event.getData(), RemoteInterpreterContextRunner.class);
 
-          interpreterProcess.getInterpreterContextRunnerPool().run(
+          listener.onRemoteRunParagraph(
               runnerFromRemote.getNoteId(), runnerFromRemote.getParagraphId());
+
         } else if (event.getType() == RemoteInterpreterEventType.RESOURCE_POOL_GET_ALL) {
           ResourceSet resourceSet = getAllResourcePoolExcept();
           sendResourcePoolResponseGetAll(resourceSet);
@@ -199,12 +200,9 @@ public class RemoteInterpreterEventPoller extends Thread {
 
           appListener.onStatusChange(noteId, paragraphId, appId, status);
         } else if (event.getType() == RemoteInterpreterEventType.RESOURCE_PARAGRAPH_RUN_CONTEXT) {
-          //clover
           RemoteZeppelinServerController remoteControlEvent = gson.fromJson(
               event.getData(), RemoteZeppelinServerController.class);
           progressRemoteZeppelinControlEvent(event.getType(), listener, remoteControlEvent);
-
-
 
         } else if (event.getType() == RemoteInterpreterEventType.META_INFOS) {
           Map<String, String> metaInfos = gson.fromJson(event.getData(),
@@ -248,7 +246,6 @@ public class RemoteInterpreterEventPoller extends Thread {
           new RemoteInterpreterProcessListener.RemoteWorksEventListener() {
             @Override
             public void onFinished(Object resultObject) {
-              logger.info("clover on Finished!!! send event finished");
               boolean clientBroken = false;
               if (resultObject != null && resultObject instanceof List) {
                 List<InterpreterContextRunner> runnerList =
@@ -263,7 +260,6 @@ public class RemoteInterpreterEventPoller extends Thread {
                     RemoteInterpreterEventType.RESOURCE_PARAGRAPH_RUN_CONTEXT,
                     gson.toJson(resResource));
                 try {
-                  logger.info("clover send event finished");
                   eventClient.onReceivedResourceParagraphRunners(response);
                 } catch (Exception e) {
                   clientBroken = true;
@@ -277,7 +273,7 @@ public class RemoteInterpreterEventPoller extends Thread {
 
             @Override
             public void onError() {
-              logger.info("clover onError");
+              logger.info("onGetParagraphRunners onError");
             }
           });
       }

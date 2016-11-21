@@ -340,6 +340,27 @@ public class ZeppelinContext {
 
   }
 
+  public void runNote(String noteId) {
+    runNote(noteId, interpreterContext);
+  }
+
+  public void runNote(String noteId, InterpreterContext context) {
+    String runningNoteId = context.getNoteId();
+    String runningParagraphId = context.getParagraphId();
+    List<InterpreterContextRunner> runners = getInterpreterContextRunner(noteId, context);
+
+    if (runners.size() <= 0) {
+      throw new InterpreterException("Note " + noteId + " not found " + runners.size());
+    }
+
+    for (InterpreterContextRunner r : runners) {
+      if (r.getNoteId().equals(runningNoteId) && r.getParagraphId().equals(runningParagraphId)) {
+        continue;
+      }
+      r.run();
+    }
+  }
+
 
   /**
    * get Zeppelin Paragraph Runner from zeppelin server
@@ -440,13 +461,7 @@ public class ZeppelinContext {
    */
   @ZeppelinApi
   public void runAll(InterpreterContext context) {
-    for (InterpreterContextRunner r : context.getRunners()) {
-      if (r.getParagraphId().equals(context.getParagraphId())) {
-        // skip itself
-        continue;
-      }
-      r.run();
-    }
+    runNote(context.getNoteId());
   }
 
   @ZeppelinApi

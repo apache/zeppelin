@@ -346,8 +346,6 @@ public class RemoteInterpreterServer
   @Override
   public void onReceivedResourceParagraphRunners(
       RemoteInterpreterEvent response) throws TException {
-    //clover
-    logger.info("remote zeppelin server controller feedback {}", response);
     if (response.getType() == RemoteInterpreterEventType.RESOURCE_PARAGRAPH_RUN_CONTEXT) {
       List<InterpreterContextRunner> intpContextRunners = new LinkedList<>();
 
@@ -625,7 +623,6 @@ public class RemoteInterpreterServer
   }
 
   static class ZeppelinRemoteWorksController implements RemoteWorksController{
-    //cloverhearts
     Logger logger = LoggerFactory.getLogger(ZeppelinRemoteWorksController.class);
 
     private final long DEFAULT_TIMEOUT_VALUE = 300000;

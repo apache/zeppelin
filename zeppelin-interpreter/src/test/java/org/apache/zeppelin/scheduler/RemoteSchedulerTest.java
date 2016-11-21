@@ -311,6 +311,13 @@ public class RemoteSchedulerTest implements RemoteInterpreterProcessListener {
 
   @Override
   public void onGetParagraphRunners(String noteId, String paragraphId, RemoteWorksEventListener callback) {
+    if (callback != null) {
+      callback.onFinished(new LinkedList<>());
+    }
+  }
+
+  @Override
+  public void onRemoteRunParagraph(String noteId, String PsaragraphID) throws Exception {
 
   }
 }

@@ -483,6 +483,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
   }
 
   public InterpreterContextRunner getInterpreterContextRunner() {
+
     return new ParagraphRunner(note, note.getId(), getId());
   }
 

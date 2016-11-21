@@ -165,6 +165,13 @@ public class RemoteInterpreterOutputTestStream implements RemoteInterpreterProce
 
   @Override
   public void onGetParagraphRunners(String noteId, String paragraphId, RemoteWorksEventListener callback) {
+    if (callback != null) {
+      callback.onFinished(new LinkedList<>());
+    }
+  }
+
+  @Override
+  public void onRemoteRunParagraph(String noteId, String ParagraphID) throws Exception {
 
   }
 }
