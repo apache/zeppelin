@@ -23,7 +23,9 @@ cache:
     - .spark-dist
     - ${HOME}/.m2
     - ${HOME}/R
-    - .node_modules
+    -  zeppelin-web/node
+    -  zeppelin-web/node_modules
+    -  zeppelin-web/bower_components
 
 addons:
   apt:
