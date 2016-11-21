@@ -85,9 +85,9 @@
     };
 
     $scope.doForceFilterInputTyping = function(keyEvent, jobInfomations, filterConfig) {
-        $timeout.cancel($scope.dofilterTimeoutObject);
-        $scope.doFiltering(jobInfomations, filterConfig);
-        $scope.isActiveSearchTimer = false;
+      $timeout.cancel($scope.dofilterTimeoutObject);
+      $scope.doFiltering(jobInfomations, filterConfig);
+      $scope.isActiveSearchTimer = false;
     };
 
     $scope.init = function() {
