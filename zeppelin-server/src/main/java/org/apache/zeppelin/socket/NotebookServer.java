@@ -2343,8 +2343,8 @@ public class NotebookServer extends WebSocketServlet
             Note note = notebook().getNote(noteId);
             if (note != null) {
               Paragraph paragraph = note.getParagraph(paraId);
-              paragraph.clearRuntimeInfo();
               if (paragraph != null) {
+                paragraph.clearRuntimeInfo();
                 broadcast(noteId, new Message(OP.PARAGRAPH).put("paragraph", paragraph));
               }
             }
@@ -2352,5 +2352,6 @@ public class NotebookServer extends WebSocketServlet
         }
       }
     }
+    setting.clearNoteIdAndParaMap();
   }
 }

@@ -420,4 +420,8 @@ public class InterpreterSetting {
     return noteIdToParaIdsetMap;
 >>>>>>> Ability to view spark job urls in each paragraph
   }
+
+  public void clearNoteIdAndParaMap() {
+    noteIdToParaIdsetMap = null;
+  }
 }
