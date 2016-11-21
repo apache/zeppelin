@@ -50,12 +50,19 @@ limitations under the License.
              </a>
            </li>
           </ul>
-          <input
-           class="job-note-name-query job-note-name-font-family form-control btn-xs"
-           style="margin-left: 5px;"
-           placeholder="Job Filter"
-           type="text" ng-model="filterConfig.filterValueNotebookName"
-           ng-keyup="doFilterInputTyping($event, jobInfomations, filterConfig, isLoadingFilter)"/>
+          <div class="input-group">
+            <input
+             class="job-note-name-query job-note-name-font-family form-control btn-xs"
+             style="margin-left: 5px;"
+             placeholder="Search for Job"
+             type="text" ng-model="filterConfig.filterValueNotebookName"
+             ng-keyup="doFilterInputTyping($event, jobInfomations, filterConfig, isLoadingFilter)"/>
+            <span
+                class="input-group-addon text-right" ng-class="{true : 'btn-primary active', false: ''}[isActiveSearchTimer]"
+                style="height: 5px; padding: 0px 6px 0px 9px !important;"
+                ng-click="doForceFilterInputTyping($event, jobInfomations, filterConfig, isLoadingFilter)">
+              <i class="fa fa-search fa-sm"></i></span>
+            </div>
         </span>
       </div>
     </div>

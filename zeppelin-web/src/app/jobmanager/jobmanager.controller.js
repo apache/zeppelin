@@ -72,13 +72,22 @@
     $scope.doFilterInputTyping = function(keyEvent, jobInfomations, filterConfig) {
       var RETURN_KEY_CODE = 13;
       $timeout.cancel($scope.dofilterTimeoutObject);
+      $scope.isActiveSearchTimer = true;
       $scope.dofilterTimeoutObject = $timeout(function() {
         $scope.doFiltering(jobInfomations, filterConfig);
-      }, 1000);
+        $scope.isActiveSearchTimer = false;
+      }, 10000);
       if (keyEvent.which === RETURN_KEY_CODE) {
         $timeout.cancel($scope.dofilterTimeoutObject);
         $scope.doFiltering(jobInfomations, filterConfig);
+        $scope.isActiveSearchTimer = false;
       }
+    };
+
+    $scope.doForceFilterInputTyping = function(keyEvent, jobInfomations, filterConfig) {
+        $timeout.cancel($scope.dofilterTimeoutObject);
+        $scope.doFiltering(jobInfomations, filterConfig);
+        $scope.isActiveSearchTimer = false;
     };
 
     $scope.init = function() {
