@@ -156,6 +156,10 @@ public class NotebookAuthorization {
       LOG.error("Error saving notebook authorization file: " + e.getMessage());
     }
   }
+  
+  public boolean isPublic() {
+    return conf.isNotebokPublic();
+  }
 
   private Set<String> validateUser(Set<String> users) {
     Set<String> returnUser = new HashSet<>();
@@ -324,5 +328,27 @@ public class NotebookAuthorization {
         return input != null && isReader(input.getId(), entities);
       }
     }).toList();
+  }
+  
+  public void setNewNotePermissions(String noteId, AuthenticationInfo subject) {
+    if (!AuthenticationInfo.isAnonymous(subject)) {
+      if (isPublic()) {
+        // add current user to owners - can be public
+        Set<String> owners = getOwners(noteId);
+        owners.add(subject.getUser());
+        setOwners(noteId, owners);
+      } else {
+        // add current user to owners, readers, writers - private note
+        Set<String> entities = getOwners(noteId);
+        entities.add(subject.getUser());
+        setOwners(noteId, entities);
+        entities = getReaders(noteId);
+        entities.add(subject.getUser());
+        setReaders(noteId, entities);
+        entities = getWriters(noteId);
+        entities.add(subject.getUser());
+        setWriters(noteId, entities);
+      }
+    }
   }
 }
