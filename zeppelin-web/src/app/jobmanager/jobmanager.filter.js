@@ -33,7 +33,7 @@
       if (filterValueNotebookName !== '') {
         filterItems = _.filter(filterItems, function(jobItem) {
           var lowerFilterValue = filterValueNotebookName.toLocaleLowerCase();
-          var lowerNotebookName = jobItem.notebookName.toLocaleLowerCase();
+          var lowerNotebookName = jobItem.noteName.toLocaleLowerCase();
           return lowerNotebookName.match(new RegExp('.*' + lowerFilterValue + '.*'));
         });
       }
