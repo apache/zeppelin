@@ -429,9 +429,6 @@
           <version>2.17</version>
           <configuration>
             <argLine>-Xmx2g -Xms1g -Dfile.encoding=UTF-8</argLine>
-            <encoding>UTF-8</encoding>
-            <inputEncoding>UTF-8</inputEncoding>
-            <outputEncoding>UTF-8</outputEncoding>
           </configuration>
           <!-- <excludes> <exclude>**/itest/**</exclude> </excludes> <executions>
             <execution> <id>surefire-itest</id> <phase>integration-test</phase> <goals>
