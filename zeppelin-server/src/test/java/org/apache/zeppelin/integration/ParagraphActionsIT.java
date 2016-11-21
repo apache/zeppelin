@@ -439,9 +439,10 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       Actions action = new Actions(driver);
 
       waitForParagraph(1, "READY");
-      pollingWait(By.xpath(getParagraphXPath(1) + "//textarea"), MAX_PARAGRAPH_TIMEOUT_SEC);
-      driver.findElement(By.xpath(getParagraphXPath(1) + "//textarea")).sendKeys(Keys.SHIFT + "5");
-      driver.findElement(By.xpath(getParagraphXPath(1) + "//textarea")).sendKeys("md" + Keys.ENTER);
+
+      setTextOfParagraph(1, "%md");
+      driver.findElement(By.xpath(getParagraphXPath(1) + "//textarea")).sendKeys(Keys.ARROW_RIGHT);
+      driver.findElement(By.xpath(getParagraphXPath(1) + "//textarea")).sendKeys(Keys.ENTER);
       driver.findElement(By.xpath(getParagraphXPath(1) + "//textarea")).sendKeys(Keys.SHIFT + "3");
       driver.findElement(By.xpath(getParagraphXPath(1) + "//textarea")).sendKeys(" abc");
 
