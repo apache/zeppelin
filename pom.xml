@@ -779,6 +779,7 @@
               <exclude>**/null/**</exclude>
               <exclude>**/notebook/**</exclude>
               <exclude>_tools/site/css/*</exclude>
+              <exclude>_tools/maven-4.0.0.xsd</exclude>
               <exclude>**/README.md</exclude>
               <exclude>DEPENDENCIES</exclude>
               <exclude>DEPLOY.md</exclude>
