@@ -34,7 +34,6 @@ import org.apache.zeppelin.notebook.repo.NotebookRepoSettingsInfo;
 import org.apache.zeppelin.notebook.repo.zeppelinhub.model.Instance;
 import org.apache.zeppelin.notebook.repo.zeppelinhub.model.UserSessionContainer;
 import org.apache.zeppelin.notebook.repo.zeppelinhub.rest.ZeppelinhubRestApiHandler;
-import org.apache.zeppelin.notebook.repo.zeppelinhub.websocket.Client;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,7 +54,7 @@ public class ZeppelinHubRepo implements NotebookRepo {
   public static final String TOKEN_HEADER = "X-Zeppelin-Token";
   private static final Gson GSON = new Gson();
   private static final Note EMPTY_NOTE = new Note();
-  private final Client websocketClient;
+  //private final Client websocketClient;
 
   private String token;
   private ZeppelinhubRestApiHandler restApiClient;
@@ -69,9 +68,10 @@ public class ZeppelinHubRepo implements NotebookRepo {
     token = conf.getString("ZEPPELINHUB_API_TOKEN", ZEPPELIN_CONF_PROP_NAME_TOKEN, "");
     restApiClient = ZeppelinhubRestApiHandler.newInstance(zeppelinHubUrl, token);
 
-    websocketClient = Client.initialize(getZeppelinWebsocketUri(conf),
-        getZeppelinhubWebsocketUri(conf), token, conf);
-    websocketClient.start();
+    // TODO(xxx): refactor this in the next itaration
+    //websocketClient = Client.initialize(getZeppelinWebsocketUri(conf),
+    //    getZeppelinhubWebsocketUri(conf), token, conf);
+    //websocketClient.start();
   }
 
   private String getZeppelinHubWsUri(URI api) throws URISyntaxException {
@@ -160,9 +160,11 @@ public class ZeppelinHubRepo implements NotebookRepo {
     if (StringUtils.isBlank(ticket)) {
       return "";
     }
+
     List<Instance> instances = restApiClient.getInstances(ticket);
     // TODO(anthony): Implement NotebookRepo Setting to let user switch token at runtime.
-    token = instances.get(0).token;
+
+    token = instances.isEmpty() ? StringUtils.EMPTY : instances.get(0).token;
     return token;
   }
 
@@ -202,7 +204,7 @@ public class ZeppelinHubRepo implements NotebookRepo {
 
   @Override
   public Note get(String noteId, AuthenticationInfo subject) throws IOException {
-    if (StringUtils.isBlank(noteId)) {
+    if (StringUtils.isBlank(noteId) || subject == null) {
       return EMPTY_NOTE;
     }
     String token = getUserToken(subject.getUser());
@@ -235,7 +237,7 @@ public class ZeppelinHubRepo implements NotebookRepo {
 
   @Override
   public void close() {
-    websocketClient.stop();
+    //websocketClient.stop();
   }
 
   @Override
