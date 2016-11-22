@@ -1,51 +1,52 @@
 # Zeppelin Web Application
+
 This is Zeppelin's frontend project.
 
+## Development Guide 
 
-## Compile Zeppelin web
+### Packaging 
 
-### New environment
+If you want to package the zeppelin-web only, simply run this command in this folder.  
+This will download all the dependencies including node (the binaries in the folder `zeppelin-web/node`)
 
-If you want to compile the WebApplication only, you will have to simply run `mvn package` in this folder.
+```
+$ mvn package 
+```
 
-This will Download all the dependencies including node js and npm (you will find the binaries in the folder `zeppelin-web/node`).
+### Local Development
 
-We are supposed to provide some **helper script** for __bower__ and __grunt__, but they are currently outdated, so you might want install them on your machine and use them instead.
+All build commands are described in [package.json](./package.json)
 
-### Configured environment
+```sh
+# build zeppelin-web for production
+$ npm run build
 
-Here are the basic commands to compile the WebApplication with a configured environment (Installed grunt, bower, npm)
+# run frontend application only in dev mode (localhost:9000) 
+# you need to run zeppelin backend instance also
+$ npm run start 
 
-**Build the application for production**
+# execute tests
+$ npm run test
+```
 
-`./grunt build`
+## Troubleshooting
 
-**Run the application in dev mode**
-
-``./grunt serve``
-
-This will launch a Zeppelin WebApplication on port **9000** that will update on code changes.
-(You will need to have Zeppelin running on the side)
-
-
-#### Troubleshooting
-
-**git error**
+#### Git error
 
 In case of the error `ECMDERR Failed to execute "git ls-remote --tags --heads git://xxxxx", exit code of #128`
 
 change your git config with `git config --global url."https://".insteadOf git://`
 
-**proxy issues**
+#### Proxy issues
 
 Try to add to the `.bowerrc` file the following content:
 ```
   "proxy" : "http://<host>:<port>",
   "https-proxy" : "http://<host>:<port>"
-  ```
+```
 
 also try to add proxy info  to npm install command:
-```
+```xml
 <execution>
 	<id>npm install</id>
 	<goals>
@@ -57,8 +58,8 @@ also try to add proxy info  to npm install command:
 </execution>
 ```
 
-
 and retry to build again.
 
 ## Contribute on Zeppelin Web
+
 If you wish to help us and contribute to Zeppelin WebApplication, please look at the overall project [contribution guidelines](https://zeppelin.apache.org/contribution/contributions.html) and the more focused [Zeppelin WebApplication's documentation](https://zeppelin.apache.org/contribution/webapplication.html).
