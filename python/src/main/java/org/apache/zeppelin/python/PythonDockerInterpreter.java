@@ -158,7 +158,7 @@ public class PythonDockerInterpreter extends Interpreter {
     return exit == 0;
   }
 
-  protected int runCommand(InterpreterOutput out, String ... command)
+  protected int runCommand(InterpreterOutput out, String... command)
       throws IOException, InterruptedException {
     ProcessBuilder builder = new ProcessBuilder(command);
     builder.redirectErrorStream(true);
