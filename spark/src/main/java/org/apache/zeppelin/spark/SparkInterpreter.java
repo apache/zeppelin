@@ -1152,11 +1152,12 @@ public class SparkInterpreter extends Interpreter {
     }
     final String[] linesFinal = lines;
     final InterpreterContext contextFinal = context;
-    PrivilegedExceptionAction<InterpreterResult> action = new PrivilegedExceptionAction<InterpreterResult>() {
-      public InterpreterResult run() throws Exception {
-        return interpret(linesFinal, contextFinal);
-      }
-    };
+    PrivilegedExceptionAction<InterpreterResult> action = 
+      new PrivilegedExceptionAction<InterpreterResult>() {
+        public InterpreterResult run() throws Exception {
+          return interpret(linesFinal, contextFinal);
+        }
+      };
     try {
       interpreterResult = remoteUser.doAs(action);
     } catch (Exception e) {
@@ -1168,7 +1169,7 @@ public class SparkInterpreter extends Interpreter {
 
   private UserGroupInformation getCurrentUser() {
     UserGroupInformation currentUser = null;
-    try{
+    try {
       currentUser = UserGroupInformation.getCurrentUser();
     } catch (IOException e) {
       logger.error("Can't get current user from ugi", e);
@@ -1177,9 +1178,9 @@ public class SparkInterpreter extends Interpreter {
   }
   
   private void transferUserCredentials(UserGroupInformation source, UserGroupInformation dest) {
-      for (Token token: source.getTokens()) {
-        dest.addToken(token);
-      }
+    for (Token token : source.getTokens()) {
+      dest.addToken(token);
+    }
   }
   
   public InterpreterResult interpret(String[] lines, InterpreterContext context) {
