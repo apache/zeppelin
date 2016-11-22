@@ -333,7 +333,6 @@
 
       <plugin>
         <artifactId>maven-dependency-plugin</artifactId>
-        <version>${plugin.dependency.version}</version>
         <executions>
           <execution>
             <id>copy-dependencies</id>
