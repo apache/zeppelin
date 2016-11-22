@@ -33,7 +33,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 import com.google.common.base.Joiner;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hadoop.security.token.Token;
+import org.apache.hadoop.security.token.TokenIdentifier;
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
 import org.apache.spark.SparkEnv;
@@ -1141,8 +1144,12 @@ public class SparkInterpreter extends Interpreter {
 
     InterpreterResult interpreterResult = new InterpreterResult(Code.ERROR);
 
-    UserGroupInformation ugi = null;
-    ugi = UserGroupInformation.createRemoteUser(user);
+    UserGroupInformation currentUser = getCurrentUser();
+    UserGroupInformation remoteUser = null;
+    remoteUser = UserGroupInformation.createRemoteUser(user);
+    if (currentUser != null && remoteUser != null) {
+      transferUserCredentials(currentUser, remoteUser);
+    }
     final String[] linesFinal = lines;
     final InterpreterContext contextFinal = context;
     PrivilegedExceptionAction<InterpreterResult> action = new PrivilegedExceptionAction<InterpreterResult>() {
@@ -1151,7 +1158,7 @@ public class SparkInterpreter extends Interpreter {
       }
     };
     try {
-      interpreterResult = ugi.doAs(action);
+      interpreterResult = remoteUser.doAs(action);
     } catch (Exception e) {
       logger.error("Error running command with ugi.doAs", e);
       return new InterpreterResult(Code.ERROR, e.getMessage());
@@ -1159,6 +1166,22 @@ public class SparkInterpreter extends Interpreter {
     return interpreterResult;
   }
 
+  private UserGroupInformation getCurrentUser() {
+    UserGroupInformation currentUser = null;
+    try{
+      currentUser = UserGroupInformation.getCurrentUser();
+    } catch (IOException e) {
+      logger.error("Can't get current user from ugi", e);
+    }
+    return currentUser;
+  }
+  
+  private void transferUserCredentials(UserGroupInformation source, UserGroupInformation dest) {
+      for (Token token: source.getTokens()) {
+        dest.addToken(token);
+      }
+  }
+  
   public InterpreterResult interpret(String[] lines, InterpreterContext context) {
     synchronized (this) {
       z.setGui(context.getGui());
