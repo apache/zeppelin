@@ -87,7 +87,7 @@ Congratulations, you have successfully installed Apache Zeppelin! Here are few s
  * For an in-depth overview, head to [Explore Apache Zeppelin UI](../quickstart/explorezeppelinui.html).
  * And then, try run [tutorial](http://localhost:8080/#/notebook/2A94M5J1Z) notebook in your Zeppelin.
  * And see how to change [configurations](#apache-zeppelin-configuration) like port number, etc.
- 
+
 #### Zeppelin with Apache Spark ...
  * To know more about deep integration with [Apache Spark](http://spark.apache.org/), check [Spark Interpreter](../interpreter/spark.html).
 
@@ -95,7 +95,7 @@ Congratulations, you have successfully installed Apache Zeppelin! Here are few s
  * Check [JDBC Interpreter](../interpreter/jdbc.html) to know more about configure and uses multiple JDBC data sources.
 
 #### Zeppelin with Python ...
- * Check [Python interpreter](../interpreter/python.html) to know more about Matplotlib, Pandas integration.
+ * Check [Python interpreter](../interpreter/python.html) to know more about Matplotlib, Pandas, Conda integration.
 
 
 #### Multi-user environment ...
@@ -305,6 +305,12 @@ You can configure Apache Zeppelin with either **environment variables** in `conf
     <td>zeppelin.notebook.one.way.sync</td>
     <td>false</td>
     <td>If there are multiple notebook storage locations, should we treat the first one as the only source of truth?</td>
+  </tr>
+  <tr>
+    <td>ZEPPELIN_NOTEBOOK_PUBLIC</td>
+    <td>zeppelin.notebook.public</td>
+    <td>true</td>
+    <td>Make notebook public (set only `owners`) by default when created/imported. If set to `false` will add `user` to `readers` and `writers` as well, making it private and invisible to other users unless permissions are granted.</td>
   </tr>
   <tr>
     <td>ZEPPELIN_INTERPRETERS</td>

@@ -28,12 +28,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.zeppelin.display.GUI;
-import org.apache.zeppelin.interpreter.Interpreter;
-import org.apache.zeppelin.interpreter.InterpreterContext;
-import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.InterpreterHookRegistry.HookType;
-import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.Scheduler;
@@ -123,6 +120,7 @@ public class PythonInterpreter extends Interpreter {
     try {
       if (process != null) {
         process.close();
+        process = null;
       }
       if (gatewayServer != null) {
         gatewayServer.shutdown();
@@ -201,7 +199,12 @@ public class PythonInterpreter extends Interpreter {
 
   public PythonProcess getPythonProcess() {
     if (process == null) {
-      return new PythonProcess(getProperty(ZEPPELIN_PYTHON));
+      PythonCondaInterpreter conda = getCondaInterpreter();
+      String binPath = getProperty(ZEPPELIN_PYTHON);
+      if (conda != null && conda.getPythonCommand() != null) {
+        binPath = conda.getPythonCommand();
+      }
+      return new PythonProcess(binPath);
     } else {
       return process;
     }
@@ -281,5 +284,25 @@ public class PythonInterpreter extends Interpreter {
   public int getMaxResult() {
     return maxResult;
   }
-  
+
+
+  private PythonCondaInterpreter getCondaInterpreter() {
+    LazyOpenInterpreter lazy = null;
+    PythonCondaInterpreter conda = null;
+    Interpreter p = getInterpreterInTheSameSessionByClassName(
+        PythonCondaInterpreter.class.getName());
+
+    while (p instanceof WrappedInterpreter) {
+      if (p instanceof LazyOpenInterpreter) {
+        lazy = (LazyOpenInterpreter) p;
+      }
+      p = ((WrappedInterpreter) p).getInnerInterpreter();
+    }
+    conda = (PythonCondaInterpreter) p;
+
+    if (lazy != null) {
+      lazy.open();
+    }
+    return conda;
+  }
 }

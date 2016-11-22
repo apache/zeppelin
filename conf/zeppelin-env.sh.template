@@ -38,6 +38,7 @@
 # export ZEPPELIN_INTERPRETER_LOCALREPO         # Local repository for interpreter's additional dependency loading
 # export ZEPPELIN_NOTEBOOK_STORAGE 		# Refers to pluggable notebook storage class, can have two classes simultaneously with a sync between them (e.g. local and remote).
 # export ZEPPELIN_NOTEBOOK_ONE_WAY_SYNC	# If there are multiple notebook storages, should we treat the first one as the only source of truth?
+# export ZEPPELIN_NOTEBOOK_PUBLIC   # Make notebook public by default when created, private otherwise
 
 #### Spark interpreter configuration ####
 
@@ -79,3 +80,4 @@
 # export ZEPPELINHUB_API_ADDRESS		# Refers to the address of the ZeppelinHub service in use
 # export ZEPPELINHUB_API_TOKEN			# Refers to the Zeppelin instance token of the user
 # export ZEPPELINHUB_USER_KEY			# Optional, when using Zeppelin with authentication.
+# export ZEPPELIN_IMPERSONATE_CMD       # Optional, when user want to run interpreter as end web user. eg) 'sudo -u ${ZEPPELIN_IMPERSONATE_USER}'

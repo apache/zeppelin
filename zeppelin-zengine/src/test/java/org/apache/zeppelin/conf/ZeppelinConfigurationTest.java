@@ -24,6 +24,8 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.junit.Before;
 import org.junit.Test;
 
+import static org.junit.Assert.assertTrue;
+
 import java.net.MalformedURLException;
 import java.util.List;
 
@@ -86,5 +88,13 @@ public class ZeppelinConfigurationTest {
         ZeppelinConfiguration conf  = new ZeppelinConfiguration(this.getClass().getResource("/zeppelin-site.xml"));
         String notebookLocation = conf.getNotebookDir();
         Assert.assertEquals("notebook", notebookLocation);
+    }
+    
+    @Test
+    public void isNotebookPublicTest() throws ConfigurationException {
+      
+      ZeppelinConfiguration conf  = new ZeppelinConfiguration(this.getClass().getResource("/zeppelin-site.xml"));
+      boolean isIt = conf.isNotebokPublic();
+      assertTrue(isIt);
     }
 }
