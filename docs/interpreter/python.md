@@ -56,10 +56,13 @@ The interpreter can only work if you already have python installed (the interpre
 
 To access the help, type **help()**
 
-## Python modules
+## Python environments
+
+### Default
+By default, PythonInterpreter will use python command defined in `zeppelin.python` property to run python process.
 The interpreter can use all modules already installed (with pip, easy_install...)
 
-## Conda
+### Conda
 [Conda](http://conda.pydata.org/) is an package management system and environment management system for python.
 `%python.conda` interpreter lets you change between environments.
 
@@ -83,6 +86,32 @@ Deactivate
 %python.conda deactivate
 ```
 
+### Docker
+
+`%python.docker` interpreter allows PythonInterpreter creates python process in a specified docker container.
+
+#### Usage
+
+Activate an environment
+
+```
+%python.docker activate [Repository]
+%python.docker activate [Repository:Tag]
+%python.docker activate [Image Id]
+```
+
+Deactivate
+
+```
+%python.docker deactivate
+```
+
+Example
+
+```
+# activate latest tensorflow image as a python environment
+%python.docker activate gcr.io/tensorflow/tensorflow:latest
+```
 
 ## Using Zeppelin Dynamic Forms
 You can leverage [Zeppelin Dynamic Form]({{BASE_PATH}}/manual/dynamicform.html) inside your Python code.
