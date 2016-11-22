@@ -437,7 +437,7 @@
 
         <plugin>
           <artifactId>maven-assembly-plugin</artifactId>
-          <version>2.4</version>
+          <version>3.0.0</version>
         </plugin>
 
         <plugin>
