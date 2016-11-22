@@ -33,7 +33,12 @@
   <name>Zeppelin: Apache Geode interpreter</name>
 
   <properties>
+    <!--library versions-->
     <geode.version>1.0.0-incubating-SNAPSHOT</geode.version>
+    <commons.exec.version>1.3</commons.exec.version>
+
+    <!--test library versions-->
+    <mockito.all.version>1.9.5</mockito.all.version>
   </properties>
 
   <dependencies>
@@ -53,7 +58,7 @@
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-exec</artifactId>
-      <version>1.3</version>
+      <version>${commons.exec.version}</version>
     </dependency>
 
     <dependency>
@@ -75,7 +80,7 @@
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-all</artifactId>
-      <version>1.9.5</version>
+      <version>${mockito.all.version}</version>
       <scope>test</scope>
     </dependency>
 
@@ -85,7 +90,6 @@
     <plugins>
       <plugin>
         <artifactId>maven-enforcer-plugin</artifactId>
-        <version>1.3.1</version>
         <executions>
           <execution>
             <id>enforce</id>
@@ -96,7 +100,6 @@
 
       <plugin>
         <artifactId>maven-dependency-plugin</artifactId>
-        <version>2.8</version>
         <executions>
           <execution>
             <id>copy-dependencies</id>

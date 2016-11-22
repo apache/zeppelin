@@ -671,12 +671,14 @@
       <build>
         <pluginManagement>
           <plugins>
+
             <plugin>
               <artifactId>maven-surefire-plugin</artifactId>
               <configuration>
                 <skipTests>true</skipTests>
               </configuration>
             </plugin>
+
             <plugin>
               <artifactId>maven-assembly-plugin</artifactId>
               <executions>
@@ -689,6 +691,7 @@
                 </execution>
               </executions>
             </plugin>
+
           </plugins>
         </pluginManagement>
       </build>
