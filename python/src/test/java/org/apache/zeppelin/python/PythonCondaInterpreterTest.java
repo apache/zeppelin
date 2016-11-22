@@ -93,6 +93,7 @@ public class PythonCondaInterpreterTest implements InterpreterOutputListener {
     return new InterpreterContext(
         "noteId",
         "paragraphId",
+        null,
         "paragraphTitle",
         "paragraphText",
         new AuthenticationInfo(),
