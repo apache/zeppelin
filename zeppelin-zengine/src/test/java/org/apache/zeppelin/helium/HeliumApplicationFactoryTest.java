@@ -147,7 +147,7 @@ public class HeliumApplicationFactoryTest implements JobListenerFactory {
     note1.run(p1.getId());
     while(p1.isTerminated()==false || p1.getResult()==null) Thread.yield();
 
-    assertEquals("repl1: job", p1.getResult().message());
+    assertEquals("repl1: job", p1.getResult().message().get(0).getData());
 
     // when
     assertEquals(0, p1.getAllApplicationStates().size());
