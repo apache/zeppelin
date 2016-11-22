@@ -119,7 +119,7 @@ public class NotebookTest implements JobListenerFactory{
     p1.setAuthenticationInfo(anonymous);
     note.run(p1.getId());
     while(p1.isTerminated()==false || p1.getResult()==null) Thread.yield();
-    assertEquals("repl1: hello world", p1.getResult().message());
+    assertEquals("repl1: hello world", p1.getResult().message().get(0).getData());
 
     // run with specific repl
     Paragraph p2 = note.addParagraph();
@@ -128,7 +128,7 @@ public class NotebookTest implements JobListenerFactory{
     p2.setAuthenticationInfo(anonymous);
     note.run(p2.getId());
     while(p2.isTerminated()==false || p2.getResult()==null) Thread.yield();
-    assertEquals("repl2: hello world", p2.getResult().message());
+    assertEquals("repl2: hello world", p2.getResult().message().get(0).getData());
     notebook.removeNote(note.getId(), anonymous);
   }
 
@@ -265,7 +265,7 @@ public class NotebookTest implements JobListenerFactory{
     note.run(p1.getId());
 
     while(p1.isTerminated() == false || p1.getResult() == null) Thread.yield();
-    assertEquals("repl1: hello world", p1.getResult().message());
+    assertEquals("repl1: hello world", p1.getResult().message().get(0).getData());
 
     // clear paragraph output/result
     note.clearParagraphOutput(p1.getId());
@@ -304,9 +304,9 @@ public class NotebookTest implements JobListenerFactory{
       Thread.yield();
     }
 
-    assertEquals("repl1: p1", p1.getResult().message());
+    assertEquals("repl1: p1", p1.getResult().message().get(0).getData());
     assertNull(p2.getResult());
-    assertEquals("repl1: p3", p3.getResult().message());
+    assertEquals("repl1: p3", p3.getResult().message().get(0).getData());
 
     notebook.removeNote(note.getId(), anonymous);
   }
@@ -421,7 +421,7 @@ public class NotebookTest implements JobListenerFactory{
     // Test
     assertEquals(p.getId(), p2.getId());
     assertEquals(p.text, p2.text);
-    assertEquals(p.getResult().message(), p2.getResult().message());
+    assertEquals(p.getResult().message().get(0).getData(), p2.getResult().message().get(0).getData());
 
     // Verify import note with subject
     AuthenticationInfo subject = new AuthenticationInfo("user1");
@@ -455,7 +455,7 @@ public class NotebookTest implements JobListenerFactory{
     // Keep same ParagraphId
     assertEquals(cp.getId(), p.getId());
     assertEquals(cp.text, p.text);
-    assertEquals(cp.getResult().message(), p.getResult().message());
+    assertEquals(cp.getResult().message().get(0).getData(), p.getResult().message().get(0).getData());
 
     // Verify clone note with subject
     AuthenticationInfo subject = new AuthenticationInfo("user1");
@@ -807,7 +807,7 @@ public class NotebookTest implements JobListenerFactory{
     while (p1.getStatus() != Status.FINISHED) Thread.yield();
     while (p2.getStatus() != Status.FINISHED) Thread.yield();
 
-    assertEquals(p1.getResult().message(), p2.getResult().message());
+    assertEquals(p1.getResult().message().get(0).getData(), p2.getResult().message().get(0).getData());
 
 
     // restart interpreter with per note session enabled
@@ -823,7 +823,7 @@ public class NotebookTest implements JobListenerFactory{
     while (p1.getStatus() != Status.FINISHED) Thread.yield();
     while (p2.getStatus() != Status.FINISHED) Thread.yield();
 
-    assertNotEquals(p1.getResult().message(), p2.getResult().message());
+    assertNotEquals(p1.getResult().message(), p2.getResult().message().get(0).getData());
 
     notebook.removeNote(note1.getId(), anonymous);
     notebook.removeNote(note2.getId(), anonymous);
@@ -851,7 +851,7 @@ public class NotebookTest implements JobListenerFactory{
     while (p1.getStatus() != Status.FINISHED) Thread.yield();
     while (p2.getStatus() != Status.FINISHED) Thread.yield();
 
-    assertEquals(p1.getResult().message(), p2.getResult().message());
+    assertEquals(p1.getResult().message().get(0).getData(), p2.getResult().message().get(0).getData());
 
     // restart interpreter with scoped mode enabled
     for (InterpreterSetting setting : notebook.getInterpreterFactory().getInterpreterSettings(note1.getId())) {
@@ -867,7 +867,7 @@ public class NotebookTest implements JobListenerFactory{
     while (p1.getStatus() != Status.FINISHED) Thread.yield();
     while (p2.getStatus() != Status.FINISHED) Thread.yield();
 
-    assertNotEquals(p1.getResult().message(), p2.getResult().message());
+    assertNotEquals(p1.getResult().message().get(0).getData(), p2.getResult().message().get(0).getData());
 
     // restart interpreter with isolated mode enabled
     for (InterpreterSetting setting : notebook.getInterpreterFactory().getInterpreterSettings(note1.getId())) {
@@ -883,7 +883,7 @@ public class NotebookTest implements JobListenerFactory{
     while (p1.getStatus() != Status.FINISHED) Thread.yield();
     while (p2.getStatus() != Status.FINISHED) Thread.yield();
 
-    assertNotEquals(p1.getResult().message(), p2.getResult().message());
+    assertNotEquals(p1.getResult().message().get(0).getData(), p2.getResult().message().get(0).getData());
 
     notebook.removeNote(note1.getId(), anonymous);
     notebook.removeNote(note2.getId(), anonymous);
@@ -916,7 +916,7 @@ public class NotebookTest implements JobListenerFactory{
     note1.run(p1.getId());
     while (p1.getStatus() != Status.FINISHED) Thread.yield();
 
-    assertNotEquals(result.message(), p1.getResult().message());
+    assertNotEquals(result.message().get(0).getData(), p1.getResult().message().get(0).getData());
 
     notebook.removeNote(note1.getId(), anonymous);
   }
