@@ -172,7 +172,9 @@ public class SparkInterpreter extends Interpreter {
           RemoteEventClientWrapper eventClient = ZeppelinContext.getEventClient();
           Map<String, String> infos = new java.util.HashMap<>();
           infos.put("jobUrl", jobUrl);
-          eventClient.onParaInfosReceived(noteId, paragraphId, infos);
+          if (eventClient != null) {
+            eventClient.onParaInfosReceived(noteId, paragraphId, infos);
+          }
         }
       }
 
