@@ -15,9 +15,14 @@ $ mvn package
 
 ### Local Development
 
+It is recommended to install node 6.0.0+ since Zeppelin uses 6.9.1+ (see [creationix/nvm](https://github.com/creationix/nvm))
+
 All build commands are described in [package.json](./package.json)
 
 ```sh
+# install required depepdencies and bower packages (only once)
+$ npm install
+
 # build zeppelin-web for production
 $ npm run build
 
