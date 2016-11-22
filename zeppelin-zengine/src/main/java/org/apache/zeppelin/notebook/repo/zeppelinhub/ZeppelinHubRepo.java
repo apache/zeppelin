@@ -58,11 +58,14 @@ public class ZeppelinHubRepo implements NotebookRepo {
 
   private String token;
   private ZeppelinhubRestApiHandler restApiClient;
+  
+  private final ZeppelinConfiguration conf;
 
   // In order to avoid too many call to ZeppelinHub backend, we save a map of user -> session.
   private ConcurrentMap<String, String> usersToken = new ConcurrentHashMap<String, String>();
   
   public ZeppelinHubRepo(ZeppelinConfiguration conf) {
+    this.conf = conf;
     String zeppelinHubUrl = getZeppelinHubUrl(conf);
     LOG.info("Initializing ZeppelinHub integration module");
     token = conf.getString("ZEPPELINHUB_API_TOKEN", ZEPPELIN_CONF_PROP_NAME_TOKEN, "");
@@ -187,9 +190,16 @@ public class ZeppelinHubRepo implements NotebookRepo {
     return token;
   }
 
+  private boolean isSubjectValid(AuthenticationInfo subject) {
+    if (subject == null) {
+      return false;
+    }
+    return (subject.isAnonymous() && !conf.isAnonymousAllowed()) ? false : true;
+  }
+  
   @Override
   public List<NoteInfo> list(AuthenticationInfo subject) throws IOException {
-    if (subject == null) {
+    if (!isSubjectValid(subject)) {
       return Collections.emptyList();
     }
     String token = getUserToken(subject.getUser());
@@ -204,7 +214,7 @@ public class ZeppelinHubRepo implements NotebookRepo {
 
   @Override
   public Note get(String noteId, AuthenticationInfo subject) throws IOException {
-    if (StringUtils.isBlank(noteId) || subject == null) {
+    if (StringUtils.isBlank(noteId) || !isSubjectValid(subject)) {
       return EMPTY_NOTE;
     }
     String token = getUserToken(subject.getUser());
@@ -219,8 +229,8 @@ public class ZeppelinHubRepo implements NotebookRepo {
 
   @Override
   public void save(Note note, AuthenticationInfo subject) throws IOException {
-    if (note == null) {
-      throw new IOException("Zeppelinhub failed to save empty note");
+    if (note == null || !isSubjectValid(subject)) {
+      throw new IOException("Zeppelinhub failed to save note");
     }
     String jsonNote = GSON.toJson(note);
     String token = getUserToken(subject.getUser());
@@ -230,6 +240,9 @@ public class ZeppelinHubRepo implements NotebookRepo {
 
   @Override
   public void remove(String noteId, AuthenticationInfo subject) throws IOException {
+    if (StringUtils.isBlank(noteId) || !isSubjectValid(subject)) {
+      throw new IOException("Zeppelinhub failed to remove note");
+    }
     String token = getUserToken(subject.getUser());
     LOG.info("ZeppelinHub REST API removing note {} ", noteId);
     restApiClient.del(token, noteId);
@@ -243,7 +256,7 @@ public class ZeppelinHubRepo implements NotebookRepo {
   @Override
   public Revision checkpoint(String noteId, String checkpointMsg, AuthenticationInfo subject)
       throws IOException {
-    if (StringUtils.isBlank(noteId)) {
+    if (StringUtils.isBlank(noteId) || !isSubjectValid(subject)) {
       return null;
     }
     String endpoint = Joiner.on("/").join(noteId, "checkpoint");
@@ -257,7 +270,7 @@ public class ZeppelinHubRepo implements NotebookRepo {
 
   @Override
   public Note get(String noteId, String revId, AuthenticationInfo subject) throws IOException {
-    if (StringUtils.isBlank(noteId) || StringUtils.isBlank(revId)) {
+    if (StringUtils.isBlank(noteId) || StringUtils.isBlank(revId) || !isSubjectValid(subject)) {
       return EMPTY_NOTE;
     }
     String endpoint = Joiner.on("/").join(noteId, "checkpoint", revId);
@@ -275,7 +288,7 @@ public class ZeppelinHubRepo implements NotebookRepo {
 
   @Override
   public List<Revision> revisionHistory(String noteId, AuthenticationInfo subject) {
-    if (StringUtils.isBlank(noteId)) {
+    if (StringUtils.isBlank(noteId) || !isSubjectValid(subject)) {
       return Collections.emptyList();
     }
     String endpoint = Joiner.on("/").join(noteId, "checkpoint");
