@@ -5,6 +5,7 @@
   "scripts": {
     "postinstall": "node_modules/.bin/bower install --silent",
     "build": "./node_modules/.bin/grunt build",
+    "start": "./node_modules/.bin/grunt serve",
     "test": "./node_modules/.bin/grunt test"
   },
   "dependencies": {
