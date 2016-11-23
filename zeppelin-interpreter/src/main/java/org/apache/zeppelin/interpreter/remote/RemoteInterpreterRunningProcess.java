@@ -17,7 +17,6 @@
 package org.apache.zeppelin.interpreter.remote;
 
 import org.apache.zeppelin.helium.ApplicationEventListener;
-import org.apache.zeppelin.interpreter.RemoteWorksController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

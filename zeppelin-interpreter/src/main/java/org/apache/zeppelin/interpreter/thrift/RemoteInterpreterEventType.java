@@ -41,7 +41,7 @@ public enum RemoteInterpreterEventType implements org.apache.thrift.TEnum {
   ANGULAR_REGISTRY_PUSH(10),
   APP_STATUS_UPDATE(11),
   META_INFOS(12),
-  RESOURCE_PARAGRAPH_RUN_CONTEXT(13);
+  REMOTE_ZEPPELIN_SERVER_RESOURCE(13);
 
   private final int value;
 
@@ -87,7 +87,7 @@ public enum RemoteInterpreterEventType implements org.apache.thrift.TEnum {
       case 12:
         return META_INFOS;
       case 13:
-        return RESOURCE_PARAGRAPH_RUN_CONTEXT;
+        return REMOTE_ZEPPELIN_SERVER_RESOURCE;
       default:
         return null;
     }

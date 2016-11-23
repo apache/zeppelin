@@ -51,7 +51,7 @@ enum RemoteInterpreterEventType {
   ANGULAR_REGISTRY_PUSH = 10,
   APP_STATUS_UPDATE = 11,
   META_INFOS = 12,
-  RESOURCE_PARAGRAPH_RUN_CONTEXT = 13
+  REMOTE_ZEPPELIN_SERVER_RESOURCE = 13
 }
 
 
@@ -68,11 +68,6 @@ struct RemoteApplicationResult {
 struct ZeppelinServerResourceParagraphRunner {
   1: string noteId,
   2: string paragraphId
-}
-
-struct RemoteZeppelinServerController {
-  2: string eventOwnerKey
-  3: string msg
 }
 
 /*
@@ -123,5 +118,5 @@ service RemoteInterpreterService {
   RemoteApplicationResult unloadApplication(1: string applicationInstanceId);
   RemoteApplicationResult runApplication(1: string applicationInstanceId);
 
-  void onReceivedResourceParagraphRunners(1: RemoteInterpreterEvent response);
+  void onReceivedZeppelinResource(1: string object);
 }

@@ -344,29 +344,39 @@ public class RemoteInterpreterServer
   }
 
   @Override
-  public void onReceivedResourceParagraphRunners(
-      RemoteInterpreterEvent response) throws TException {
-    if (response.getType() == RemoteInterpreterEventType.RESOURCE_PARAGRAPH_RUN_CONTEXT) {
-      List<InterpreterContextRunner> intpContextRunners = new LinkedList<>();
+  public void onReceivedZeppelinResource(String responseJson) throws TException {
+    RemoteZeppelinServerResource response = gson.fromJson(
+        responseJson, RemoteZeppelinServerResource.class);
 
-      RemoteZeppelinServerController remoteZeppelinServerController =  gson.fromJson(
-          response.getData(), RemoteZeppelinServerController.class);
+    if (response == null) {
+      throw new TException("Bad response for remote resource");
+    }
 
-      if (remoteZeppelinServerController == null) {
-        throw new TException("can not found Resource paragraph runners");
-      }
+    try {
+      if (response.getResourceType() == RemoteZeppelinServerResource.Type.PARAGRAPH_RUNNERS) {
+        List<InterpreterContextRunner> intpContextRunners = new LinkedList<>();
+        List<Map<String, Object>> remoteRunnersMap =
+            (List<Map<String, Object>>) response.getData();
 
-      List<ZeppelinServerResourceParagraphRunner> runners = gson.fromJson(
-          remoteZeppelinServerController.getMsg(),
-          new TypeToken<List<ZeppelinServerResourceParagraphRunner>>() {}.getType());
-      for (ZeppelinServerResourceParagraphRunner r : runners) {
-        intpContextRunners.add(new ParagraphRunner(this, r.getNoteId(), r.getParagraphId()));
+        String noteId = null;
+        String paragraphId = null;
+
+        for (Map<String, Object> runnerItem : remoteRunnersMap) {
+          noteId = (String) runnerItem.get("noteId");
+          paragraphId = (String) runnerItem.get("paragraphId");
+          intpContextRunners.add(
+              new ParagraphRunner(this, noteId, paragraphId)
+          );
+        }
+
+        synchronized (this.remoteWorksResponsePool) {
+          this.remoteWorksResponsePool.put(
+              response.getOwnerKey(),
+              intpContextRunners);
+        }
       }
-      synchronized (this.remoteWorksResponsePool) {
-        this.remoteWorksResponsePool.put(
-            remoteZeppelinServerController.getEventOwnerKey(),
-            intpContextRunners);
-      }
+    } catch (Exception e) {
+      throw e;
     }
   }
 
@@ -626,7 +636,7 @@ public class RemoteInterpreterServer
     Logger logger = LoggerFactory.getLogger(ZeppelinRemoteWorksController.class);
 
     private final long DEFAULT_TIMEOUT_VALUE = 300000;
-    private Map<String, Object> remoteWorksResponsePool;
+    private final Map<String, Object> remoteWorksResponsePool;
     private RemoteInterpreterServer server;
     public ZeppelinRemoteWorksController(
         RemoteInterpreterServer server, Map<String, Object> remoteWorksResponsePool) {
