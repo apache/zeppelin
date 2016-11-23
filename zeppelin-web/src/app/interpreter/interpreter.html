@@ -130,7 +130,8 @@ limitations under the License.
         <span style="float:right" ng-show="!valueform.$visible" >
           <button class="btn btn-default btn-xs"
                   ng-click="showSparkUI(setting.id)"
-                  ng-show="setting.group == 'spark'">
+                  ng-show="setting.group == 'spark' && (setting.option.perNote == 'scoped' ||
+                  setting.option.perNote == 'shared')">
             <span class="fa fa-external-link"></span> spark ui</button>
           <button class="btn btn-default btn-xs"
                   ng-click="valueform.$show();
