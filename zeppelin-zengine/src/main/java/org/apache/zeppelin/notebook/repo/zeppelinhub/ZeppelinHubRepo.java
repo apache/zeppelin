@@ -22,6 +22,8 @@ import java.net.URISyntaxException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
@@ -29,8 +31,9 @@ import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.apache.zeppelin.notebook.repo.NotebookRepoSettingsInfo;
+import org.apache.zeppelin.notebook.repo.zeppelinhub.model.Instance;
+import org.apache.zeppelin.notebook.repo.zeppelinhub.model.UserSessionContainer;
 import org.apache.zeppelin.notebook.repo.zeppelinhub.rest.ZeppelinhubRestApiHandler;
-import org.apache.zeppelin.notebook.repo.zeppelinhub.websocket.Client;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,20 +54,27 @@ public class ZeppelinHubRepo implements NotebookRepo {
   public static final String TOKEN_HEADER = "X-Zeppelin-Token";
   private static final Gson GSON = new Gson();
   private static final Note EMPTY_NOTE = new Note();
-  private final Client websocketClient;
+  //private final Client websocketClient;
 
   private String token;
   private ZeppelinhubRestApiHandler restApiClient;
+  
+  private final ZeppelinConfiguration conf;
 
+  // In order to avoid too many call to ZeppelinHub backend, we save a map of user -> session.
+  private ConcurrentMap<String, String> usersToken = new ConcurrentHashMap<String, String>();
+  
   public ZeppelinHubRepo(ZeppelinConfiguration conf) {
+    this.conf = conf;
     String zeppelinHubUrl = getZeppelinHubUrl(conf);
     LOG.info("Initializing ZeppelinHub integration module");
     token = conf.getString("ZEPPELINHUB_API_TOKEN", ZEPPELIN_CONF_PROP_NAME_TOKEN, "");
     restApiClient = ZeppelinhubRestApiHandler.newInstance(zeppelinHubUrl, token);
 
-    websocketClient = Client.initialize(getZeppelinWebsocketUri(conf),
-        getZeppelinhubWebsocketUri(conf), token, conf);
-    websocketClient.start();
+    // TODO(xxx): refactor this in the next itaration
+    //websocketClient = Client.initialize(getZeppelinWebsocketUri(conf),
+    //    getZeppelinhubWebsocketUri(conf), token, conf);
+    //websocketClient.start();
   }
 
   private String getZeppelinHubWsUri(URI api) throws URISyntaxException {
@@ -144,10 +154,56 @@ public class ZeppelinHubRepo implements NotebookRepo {
     }
     return zeppelinhubUrl;
   }
+  
+  /**
+   * Get Token directly from Zeppelinhub.
+   * This will avoid and remove the needs of setting up token in zeppelin-env.sh.
+   */
+  private String getUserZeppelinInstanceToken(String ticket) throws IOException {
+    if (StringUtils.isBlank(ticket)) {
+      return "";
+    }
 
+    List<Instance> instances = restApiClient.getInstances(ticket);
+    // TODO(anthony): Implement NotebookRepo Setting to let user switch token at runtime.
+
+    token = instances.isEmpty() ? StringUtils.EMPTY : instances.get(0).token;
+    return token;
+  }
+
+  /**
+   * For a given user logged in is zeppelin (via zeppelinhub notebook repo), get default token.
+   *  */
+  private String getUserToken(String principal) {
+    String token = usersToken.get(principal);
+    if (StringUtils.isBlank(token)) {
+      String ticket = UserSessionContainer.instance.getSession(principal);
+      try {
+        token = getUserZeppelinInstanceToken(ticket);
+        usersToken.putIfAbsent(principal, token);
+      } catch (IOException e) {
+        LOG.error("Cannot get user token", e);
+        token = StringUtils.EMPTY;
+      }
+    }
+
+    return token;
+  }
+
+  private boolean isSubjectValid(AuthenticationInfo subject) {
+    if (subject == null) {
+      return false;
+    }
+    return (subject.isAnonymous() && !conf.isAnonymousAllowed()) ? false : true;
+  }
+  
   @Override
   public List<NoteInfo> list(AuthenticationInfo subject) throws IOException {
-    String response = restApiClient.asyncGet("");
+    if (!isSubjectValid(subject)) {
+      return Collections.emptyList();
+    }
+    String token = getUserToken(subject.getUser());
+    String response = restApiClient.get(token, StringUtils.EMPTY);
     List<NoteInfo> notes = GSON.fromJson(response, new TypeToken<List<NoteInfo>>() {}.getType());
     if (notes == null) {
       return Collections.emptyList();
@@ -158,11 +214,11 @@ public class ZeppelinHubRepo implements NotebookRepo {
 
   @Override
   public Note get(String noteId, AuthenticationInfo subject) throws IOException {
-    if (StringUtils.isBlank(noteId)) {
+    if (StringUtils.isBlank(noteId) || !isSubjectValid(subject)) {
       return EMPTY_NOTE;
     }
-    //String response = zeppelinhubHandler.get(noteId);
-    String response = restApiClient.asyncGet(noteId);
+    String token = getUserToken(subject.getUser());
+    String response = restApiClient.get(token, noteId);
     Note note = GSON.fromJson(response, Note.class);
     if (note == null) {
       return EMPTY_NOTE;
@@ -173,45 +229,55 @@ public class ZeppelinHubRepo implements NotebookRepo {
 
   @Override
   public void save(Note note, AuthenticationInfo subject) throws IOException {
-    if (note == null) {
-      throw new IOException("Zeppelinhub failed to save empty note");
+    if (note == null || !isSubjectValid(subject)) {
+      throw new IOException("Zeppelinhub failed to save note");
     }
-    String notebook = GSON.toJson(note);
-    restApiClient.asyncPut(notebook);
-    LOG.info("ZeppelinHub REST API saving note {} ", note.getId()); 
+    String jsonNote = GSON.toJson(note);
+    String token = getUserToken(subject.getUser());
+    LOG.info("ZeppelinHub REST API saving note {} ", note.getId());
+    restApiClient.put(token, jsonNote);
   }
 
   @Override
   public void remove(String noteId, AuthenticationInfo subject) throws IOException {
-    restApiClient.asyncDel(noteId);
+    if (StringUtils.isBlank(noteId) || !isSubjectValid(subject)) {
+      throw new IOException("Zeppelinhub failed to remove note");
+    }
+    String token = getUserToken(subject.getUser());
     LOG.info("ZeppelinHub REST API removing note {} ", noteId);
+    restApiClient.del(token, noteId);
   }
 
   @Override
   public void close() {
-    websocketClient.stop();
+    //websocketClient.stop();
   }
 
   @Override
   public Revision checkpoint(String noteId, String checkpointMsg, AuthenticationInfo subject)
       throws IOException {
-    if (StringUtils.isBlank(noteId)) {
+    if (StringUtils.isBlank(noteId) || !isSubjectValid(subject)) {
       return null;
     }
     String endpoint = Joiner.on("/").join(noteId, "checkpoint");
     String content = GSON.toJson(ImmutableMap.of("message", checkpointMsg));
-    String response = restApiClient.asyncPutWithResponseBody(endpoint, content);
     
+    String token = getUserToken(subject.getUser());
+    String response = restApiClient.putWithResponseBody(token, endpoint, content);
+
     return GSON.fromJson(response, Revision.class);
   }
 
   @Override
   public Note get(String noteId, String revId, AuthenticationInfo subject) throws IOException {
-    if (StringUtils.isBlank(noteId) || StringUtils.isBlank(revId)) {
+    if (StringUtils.isBlank(noteId) || StringUtils.isBlank(revId) || !isSubjectValid(subject)) {
       return EMPTY_NOTE;
     }
     String endpoint = Joiner.on("/").join(noteId, "checkpoint", revId);
-    String response = restApiClient.asyncGet(endpoint);
+    
+    String token = getUserToken(subject.getUser());
+    String response = restApiClient.get(token, endpoint);
+
     Note note = GSON.fromJson(response, Note.class);
     if (note == null) {
       return EMPTY_NOTE;
@@ -222,13 +288,14 @@ public class ZeppelinHubRepo implements NotebookRepo {
 
   @Override
   public List<Revision> revisionHistory(String noteId, AuthenticationInfo subject) {
-    if (StringUtils.isBlank(noteId)) {
+    if (StringUtils.isBlank(noteId) || !isSubjectValid(subject)) {
       return Collections.emptyList();
     }
     String endpoint = Joiner.on("/").join(noteId, "checkpoint");
     List<Revision> history = Collections.emptyList();
     try {
-      String response = restApiClient.asyncGet(endpoint);
+      String token = getUserToken(subject.getUser());
+      String response = restApiClient.get(token, endpoint);
       history = GSON.fromJson(response, new TypeToken<List<Revision>>(){}.getType());
     } catch (IOException e) {
       LOG.error("Cannot get note history", e);

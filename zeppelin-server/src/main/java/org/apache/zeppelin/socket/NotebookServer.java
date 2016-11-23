@@ -190,7 +190,8 @@ public class NotebookServer extends WebSocketServlet implements
       if (StringUtils.isEmpty(conn.getUser())) {
         addUserConnection(messagereceived.principal, conn);
       }
-      AuthenticationInfo subject = new AuthenticationInfo(messagereceived.principal);
+      AuthenticationInfo subject = 
+          new AuthenticationInfo(messagereceived.principal, messagereceived.ticket);
 
       /** Lets be elegant here */
       switch (messagereceived.op) {
