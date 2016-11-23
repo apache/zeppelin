@@ -25,7 +25,6 @@ import org.apache.pig.tools.pigstats.*;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
-import org.apache.zeppelin.interpreter.RemoteWorksController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

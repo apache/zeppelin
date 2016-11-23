@@ -110,8 +110,6 @@ public class SparkInterpreter extends Interpreter {
   private SparkDependencyResolver dep;
   private String sparkUrl;
 
-  private RemoteWorksController remoteWorksController;
-
   /**
    * completer - org.apache.spark.repl.SparkJLineCompletion (scala 2.10)
    */
