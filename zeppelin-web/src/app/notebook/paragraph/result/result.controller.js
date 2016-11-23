@@ -148,11 +148,6 @@
       }
       console.log('updateResult %o %o %o %o', result, newConfig, paragraphRef, index);
 
-      /*
-      var oldActiveApp = _.get($scope.paragraph.config, 'helium.activeApp');
-      var newActiveApp = _.get(data.paragraph.config, 'helium.activeApp');
-      */
-
       updateData(result, newConfig, paragraph, resultIndex);
       renderResult($scope.type, true);
     });

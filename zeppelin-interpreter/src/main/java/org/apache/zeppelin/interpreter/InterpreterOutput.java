@@ -269,7 +269,7 @@ public class InterpreterOutput extends OutputStream {
 
   public void writeResource(String resourceName) throws IOException {
     InterpreterResultMessageOutput out = getCurrentOutputForWriting();
-    out.write(resourceName);
+    out.writeResource(resourceName);
   }
 
   public List<InterpreterResultMessage> toInterpreterResultMessage() throws IOException {

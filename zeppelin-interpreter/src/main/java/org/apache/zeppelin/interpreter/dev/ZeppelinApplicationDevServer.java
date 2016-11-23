@@ -111,17 +111,16 @@ public class ZeppelinApplicationDevServer extends ZeppelinDevServer {
       return;
     }
 
-    InterpreterResult result = (InterpreterResult) results.get(0).get();
+    InterpreterResultMessage result = (InterpreterResultMessage) results.get(0).get();
     Gson gson = new Gson();
     String resultJson = gson.toJson(result);
     StringBuffer transferResult = new StringBuffer();
     transferResult.append("$z.result = " + resultJson + ";\n");
-    // TODO
-    /*
-    if (result.type() == InterpreterResult.Type.TABLE) {
+
+    if (result.getType() == InterpreterResult.Type.TABLE) {
       transferResult.append("$z.scope.loadTableData($z.result);\n");
     }
-    */
+
     transferResult.append("$z.scope._devmodeResult = $z.result;\n");
     app.printStringAsJavascript(transferResult.toString());
   }

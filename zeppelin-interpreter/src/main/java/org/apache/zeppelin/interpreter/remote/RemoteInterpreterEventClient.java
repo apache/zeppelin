@@ -278,7 +278,7 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector {
     Map<String, Object> appendOutput = new HashMap<>();
     appendOutput.put("noteId", noteId);
     appendOutput.put("paragraphId", paragraphId);
-    appendOutput.put("index", index);
+    appendOutput.put("index", Integer.toString(index));
     appendOutput.put("appId", appId);
     appendOutput.put("data", output);
 
@@ -294,11 +294,11 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector {
     Map<String, Object> appendOutput = new HashMap<>();
     appendOutput.put("noteId", noteId);
     appendOutput.put("paragraphId", paragraphId);
-    appendOutput.put("index", index);
+    appendOutput.put("index", Integer.toString(index));
     appendOutput.put("appId", appId);
     appendOutput.put("type", type);
     appendOutput.put("data", output);
-
+    logger.info("onAppoutputUpdate = {}", output);
     sendEvent(new RemoteInterpreterEvent(
         RemoteInterpreterEventType.OUTPUT_UPDATE,
         gson.toJson(appendOutput)));

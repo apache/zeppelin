@@ -119,14 +119,6 @@
       noteVarShareService.put($scope.paragraph.id + '_paragraphScope', paragraphScope);
 
       initializeDefault();
-
-      /*
-      var activeApp =  _.get($scope.paragraph.config, 'helium.activeApp');
-      if (activeApp) {
-        var app = _.find($scope.apps, {id: activeApp});
-        renderApp(app);
-      }
-      */
     };
 
     var initializeDefault = function() {

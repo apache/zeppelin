@@ -143,7 +143,7 @@ public class InterpreterResultMessageOutput extends OutputStream {
   }
 
   public void setResourceSearchPaths(List<String> resourceSearchPaths) {
-    resourceSearchPaths = resourceSearchPaths;
+    this.resourceSearchPaths = resourceSearchPaths;
   }
 
   public void writeResource(String resourceName) throws IOException {

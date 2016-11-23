@@ -53,16 +53,10 @@ limitations under the License.
   <img id="{{id}}_img"
        ng-if="type == 'IMG'"
        ng-src="{{getBase64ImageSrc(result.data)}}" />
-
-  <div id="{{id}}_error"
-       class="error text"
-       ng-if="paragraph.status == 'ERROR'"
-       ng-bind="paragraph.errorMessage">
-  </div>
 </div>
 
 <div ng-repeat="app in apps">
   <div id="p{{app.id}}"
-       ng-show="paragraph.config.helium.activeApp == app.id">
+       ng-show="config.helium.activeApp == app.id">
   </div>
 </div>

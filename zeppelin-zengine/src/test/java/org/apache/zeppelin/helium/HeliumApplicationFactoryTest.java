@@ -56,7 +56,7 @@ public class HeliumApplicationFactoryTest implements JobListenerFactory {
 
   @Before
   public void setUp() throws Exception {
-    tmpDir = new File(System.getProperty("java.io.tmpdir")+"/ZeppelinLTest_"+System.currentTimeMillis());
+    tmpDir = new File(System.getProperty("java.io.tmpdir")+"/ZepelinLTest_"+System.currentTimeMillis());
     tmpDir.mkdirs();
     File confDir = new File(tmpDir, "conf");
     confDir.mkdirs();

@@ -60,6 +60,11 @@ limitations under the License.
          ng-include src="'app/notebook/paragraph/result/result.html'"
          >
     </div>
+    <div id="{{paragraph.id}}_error"
+         class="error text"
+         ng-if="paragraph.status == 'ERROR'"
+         ng-bind="paragraph.errorMessage">
+    </div>
   </div>
 
   <div ng-include src="'app/notebook/paragraph/paragraph-control.html'"></div>
