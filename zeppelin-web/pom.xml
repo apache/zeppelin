@@ -118,29 +118,36 @@
             <goals>
               <goal>npm</goal>
             </goals>
-            <configuration>
-              <arguments>install</arguments>
-            </configuration>
           </execution>
 
           <execution>
-            <id>npm build</id>
+            <id>bower install</id>
             <goals>
-              <goal>npm</goal>
+              <goal>bower</goal>
             </goals>
             <configuration>
-              <arguments>run build</arguments>
+              <arguments>--allow-root install</arguments>
             </configuration>
           </execution>
 
           <execution>
-            <id>npm test</id>
+            <id>grunt build</id>
             <goals>
-              <goal>npm</goal>
+              <goal>grunt</goal>
+            </goals>
+            <configuration>
+              <arguments>build</arguments>
+            </configuration>
+          </execution>
+
+          <execution>
+            <id>grunt test</id>
+            <goals>
+              <goal>grunt</goal>
             </goals>
             <phase>test</phase>
             <configuration>
-              <arguments>run test</arguments>
+              <arguments>test</arguments>
             </configuration>
           </execution>
 
