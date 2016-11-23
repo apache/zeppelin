@@ -125,8 +125,8 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
             note.run(p.getId());
             waitForFinish(p);
             assertEquals(Status.FINISHED, p.getStatus());
-            assertEquals(InterpreterResult.Type.TABLE, p.getResult().message().get(0).getType());
-            assertEquals("_1\t_2\nhello\t20\n", p.getResult().message().get(0).getData());
+            assertEquals(InterpreterResult.Type.TABLE, p.getResult().message().get(1).getType());
+            assertEquals("_1\t_2\nhello\t20\n", p.getResult().message().get(1).getData());
 
             // test display DataSet
             if (sparkVersion >= 20) {
@@ -140,8 +140,8 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
                 note.run(p.getId());
                 waitForFinish(p);
                 assertEquals(Status.FINISHED, p.getStatus());
-                assertEquals(InterpreterResult.Type.TABLE, p.getResult().message().get(0).getType());
-                assertEquals("_1\t_2\nhello\t20\n", p.getResult().message().get(0).getData());
+                assertEquals(InterpreterResult.Type.TABLE, p.getResult().message().get(1).getType());
+                assertEquals("_1\t_2\nhello\t20\n", p.getResult().message().get(1).getData());
             }
             ZeppelinServer.notebook.removeNote(note.getId(), anonymous);
         }
