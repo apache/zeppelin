@@ -428,6 +428,11 @@ public class RemoteInterpreterServer
     }
 
     @Override
+    public String getUser() {
+      return context.getAuthenticationInfo().getUser();
+    }
+
+    @Override
     protected Object jobRun() throws Throwable {
       try {
         InterpreterContext.set(context);

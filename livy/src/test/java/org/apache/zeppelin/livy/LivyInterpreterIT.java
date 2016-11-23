@@ -35,9 +35,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-public class LivyIntegrationTest {
+public class LivyInterpreterIT {
 
-  private static Logger LOGGER = LoggerFactory.getLogger(LivyIntegrationTest.class);
+  private static Logger LOGGER = LoggerFactory.getLogger(LivyInterpreterIT.class);
   private static Cluster cluster;
   private static Properties properties;
 
@@ -208,6 +208,56 @@ public class LivyIntegrationTest {
       return;
     }
     // TODO (zjffdu),  Livy's SparkRIntepreter has some issue, do it after livy-0.3 release.
+  }
+
+  @Test
+  public void testScheduler() throws InterruptedException {
+    if (!checkPreCondition()) {
+      return;
+    }
+
+    final LivySparkInterpreter sparkInterpreter = new LivySparkInterpreter(properties);
+    MyInterpreterOutputListener outputListener = new MyInterpreterOutputListener();
+    InterpreterOutput output = new InterpreterOutput(outputListener);
+    AuthenticationInfo authInfo1 = new AuthenticationInfo("user1");
+    final InterpreterContext context1 = new InterpreterContext("noteId", "paragraphId", "title",
+        "text", authInfo1, null, null, null, null, null, output);
+    AuthenticationInfo authInfo2 = new AuthenticationInfo("user2");
+    final InterpreterContext context2 = new InterpreterContext("noteId", "paragraphId", "title",
+        "text", authInfo2, null, null, null, null, null, output);
+    sparkInterpreter.open();
+    // initialize session first
+    sparkInterpreter.interpret("sc.version", context1);
+    sparkInterpreter.interpret("sc.version", context2);
+
+    long startTime = System.currentTimeMillis();
+    Thread thread1 = new Thread() {
+      @Override
+      public void run() {
+        InterpreterResult result = sparkInterpreter.interpret("Thread.sleep(1000*10)", context1);
+        assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+        assertEquals(InterpreterResult.Type.TEXT, result.type());
+      }
+    };
+    Thread thread2 = new Thread() {
+      @Override
+      public void run() {
+        InterpreterResult result = sparkInterpreter.interpret("Thread.sleep(1000*10)", context2);
+        assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+        assertEquals(InterpreterResult.Type.TEXT, result.type());
+      }
+    };
+    thread1.start();
+    thread2.start();
+    thread1.join();
+    thread2.join();
+    long endTime = System.currentTimeMillis();
+    long timeCost = endTime - startTime;
+    assertTrue("jobs in 2 sessions are not scheduled parallelly", timeCost < 20*1000);
+
+
+    // close sessions
+    sparkInterpreter.close();
   }
 
   public static class MyInterpreterOutputListener implements InterpreterOutputListener {

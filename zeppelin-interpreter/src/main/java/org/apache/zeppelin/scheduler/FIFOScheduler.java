@@ -35,7 +35,7 @@ public class FIFOScheduler implements Scheduler {
   private ExecutorService executor;
   private SchedulerListener listener;
   boolean terminate = false;
-  Job runningJob = null;
+  volatile Job runningJob = null;
   private String name;
 
   static Logger LOGGER = LoggerFactory.getLogger(FIFOScheduler.class);

@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Livy Spark interpreter for Zeppelin.
@@ -37,7 +38,7 @@ public class LivySparkInterpreter extends Interpreter {
   Logger LOGGER = LoggerFactory.getLogger(LivySparkInterpreter.class);
   private LivyOutputStream out;
 
-  protected static Map<String, Integer> userSessionMap;
+  protected static Map<String, Integer> userSessionMap = new ConcurrentHashMap<>();
   protected static Map<Integer, String> sessionId2AppIdMap;
   protected static Map<Integer, String> sessionId2WebUIMap;
 
@@ -46,7 +47,6 @@ public class LivySparkInterpreter extends Interpreter {
 
   public LivySparkInterpreter(Properties property) {
     super(property);
-    userSessionMap = new HashMap<>();
     sessionId2AppIdMap = new HashMap<>();
     sessionId2WebUIMap = new HashMap<>();
     livyHelper = new LivyHelper(property);
@@ -151,8 +151,8 @@ public class LivySparkInterpreter extends Interpreter {
 
   @Override
   public Scheduler getScheduler() {
-    return SchedulerFactory.singleton().createOrGetFIFOScheduler(
-        LivySparkInterpreter.class.getName() + this.hashCode());
+    return SchedulerFactory.singleton().createOrGetFIFOPerUserScheduler(
+        LivySparkInterpreter.class.getName());
   }
 
   @Override
