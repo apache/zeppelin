@@ -49,7 +49,23 @@ public class PythonProcess {
   }
 
   public void open() throws IOException {
-    ProcessBuilder builder = new ProcessBuilder(binPath, "-iu");
+    ProcessBuilder builder;
+    boolean hasParams = binPath.split(" ").length > 1;
+    if (System.getProperty("os.name").toLowerCase().contains("windows")) {
+      if (hasParams) {
+        builder = new ProcessBuilder(binPath.split(" "));
+      } else {
+        builder = new ProcessBuilder(binPath, "-iu");
+      }
+    } else {
+      String cmd;
+      if (hasParams) {
+        cmd = binPath;
+      } else {
+        cmd = binPath + " -iu";
+      }
+      builder = new ProcessBuilder("bash", "-c", cmd);
+    }
 
     builder.redirectErrorStream(true);
     process = builder.start();
