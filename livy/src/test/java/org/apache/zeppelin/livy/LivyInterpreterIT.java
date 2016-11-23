@@ -35,9 +35,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-public class LivyIntegrationTest {
+public class LivyInterpreterIT {
 
-  private static Logger LOGGER = LoggerFactory.getLogger(LivyIntegrationTest.class);
+  private static Logger LOGGER = LoggerFactory.getLogger(LivyInterpreterIT.class);
   private static Cluster cluster;
   private static Properties properties;
 
@@ -165,6 +165,32 @@ public class LivyIntegrationTest {
     assertEquals(InterpreterResult.Type.TEXT, result.type());
     assertNull(result.message());
     assertTrue(outputListener.getOutputAppended().contains("defined module Person"));
+
+    // close session
+    sparkInterpreter.close();
+  }
+
+  // Test for ZEPPELIN-1516
+  @Test
+  public void testSparkSQLInterpreter() {
+    if (!checkPreCondition()) {
+      return;
+    }
+
+    LivySparkSQLInterpreter sparkSQLInterpreter = new LivySparkSQLInterpreter(properties);
+    AuthenticationInfo authInfo = new AuthenticationInfo("zeppelin-1516");
+    MyInterpreterOutputListener outputListener = new MyInterpreterOutputListener();
+    InterpreterOutput output = new InterpreterOutput(outputListener);
+    InterpreterContext context = new InterpreterContext("noteId", "paragraphId", "title",
+        "text", authInfo, null, null, null, null, null, output);
+    sparkSQLInterpreter.open();
+    InterpreterResult result = sparkSQLInterpreter.interpret("show tables", context);
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    assertEquals(InterpreterResult.Type.TABLE, result.type());
+
+
+    // close session
+    sparkSQLInterpreter.close();
   }
 
   @Test
@@ -200,6 +226,9 @@ public class LivyIntegrationTest {
     assertTrue(result.message().contains("[Row(_1=u'hello', _2=20)]"));
     assertEquals(InterpreterResult.Type.TEXT, result.type());
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+
+    // close session
+    pysparkInterpreter.close();
   }
 
   @Test

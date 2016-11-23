@@ -28,38 +28,32 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Livy Spark interpreter for Zeppelin.
  */
 public class LivySparkInterpreter extends Interpreter {
 
-  Logger LOGGER = LoggerFactory.getLogger(LivySparkInterpreter.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(LivySparkInterpreter.class);
   private LivyOutputStream out;
 
-  protected static Map<String, Integer> userSessionMap;
-  protected static Map<Integer, String> sessionId2AppIdMap;
-  protected static Map<Integer, String> sessionId2WebUIMap;
+  protected static ConcurrentHashMap<String, Integer> userSessionMap = new ConcurrentHashMap();
+  protected static ConcurrentHashMap<Integer, String> sessionId2AppIdMap = new ConcurrentHashMap();
+  protected static ConcurrentHashMap<Integer, String> sessionId2WebUIMap = new ConcurrentHashMap();
 
   private LivyHelper livyHelper;
   private boolean displayAppInfo;
 
   public LivySparkInterpreter(Properties property) {
     super(property);
-    userSessionMap = new HashMap<>();
-    sessionId2AppIdMap = new HashMap<>();
-    sessionId2WebUIMap = new HashMap<>();
     livyHelper = new LivyHelper(property);
     out = new LivyOutputStream();
     this.displayAppInfo = Boolean.parseBoolean(getProperty("zeppelin.livy.displayAppInfo"));
   }
 
-  protected static Map<String, Integer> getUserSessionMap() {
+  protected static ConcurrentHashMap<String, Integer> getUserSessionMap() {
     return userSessionMap;
-  }
-
-  public void setUserSessionMap(Map<String, Integer> userSessionMap) {
-    this.userSessionMap = userSessionMap;
   }
 
   @Override
