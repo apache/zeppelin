@@ -154,16 +154,16 @@ public class ZeppelinHubRealm extends AuthorizingRealm {
       LOG.error("Cannot deserialize ZeppelinHub response to User instance", e);
       throw new AuthenticationException("Cannot login to ZeppelinHub");
     }
-    
+
+    // Add ZeppelinHub user_session token this singleton map, this will help ZeppelinHubRepo
+    // to get specific information about the current user.
+    UserSessionContainer.instance.setSession(account.login, userSession);
+
     /* TODO(khalid): add proper roles and add listener */
     HashSet<String> userAndRoles = new HashSet<String>();
     userAndRoles.add(account.login);
     ZeppelinServer.notebookWsServer.broadcastReloadedNoteList(
         new org.apache.zeppelin.user.AuthenticationInfo(account.login), userAndRoles);
-
-    // Add ZeppelinHub user_session token this singleton map, this will help ZeppelinHubRepo
-    // to get specific information about the current user.
-    UserSessionContainer.instance.setSession(account.login, userSession);
     return account;
   }
 
