@@ -235,7 +235,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
                 assertEquals(Status.FINISHED, p.getStatus());
                 assertEquals(InterpreterResult.Type.TABLE, p.getResult().message().get(0).getType());
                 // TODO (zjffdu), one more \n is appended, need to investigate why.
-                assertEquals("age\tid\n20\t1\n\n", p.getResult().message().get(0).getData());
+                assertEquals("age\tid\n20\t1\n", p.getResult().message().get(0).getData());
 
                 // test udf
                 p = note.addParagraph();
