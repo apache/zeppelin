@@ -173,7 +173,7 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
     while (p.getStatus() != Status.FINISHED) {
       Thread.sleep(100);
     }
-    assertEquals(p.getResult().message(), getSimulatedMarkdownResult("markdown"));
+    assertEquals(p.getResult().message().get(0).getData(), getSimulatedMarkdownResult("markdown"));
 
     // restart interpreter
     for (InterpreterSetting setting : ZeppelinServer.notebook.getInterpreterFactory().getInterpreterSettings(note.getId())) {
@@ -195,7 +195,7 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
     while (p.getStatus() != Status.FINISHED) {
       Thread.sleep(100);
     }
-    assertEquals(p.getResult().message(), getSimulatedMarkdownResult("markdown restarted"));
+    assertEquals(p.getResult().message().get(0).getData(), getSimulatedMarkdownResult("markdown restarted"));
     //cleanup
     ZeppelinServer.notebook.removeNote(note.getId(), anonymous);
   }
@@ -217,7 +217,7 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
     while (p.getStatus() != Status.FINISHED) {
       Thread.sleep(100);
     }
-    assertEquals(p.getResult().message(), getSimulatedMarkdownResult("markdown"));
+    assertEquals(p.getResult().message().get(0).getData(), getSimulatedMarkdownResult("markdown"));
 
     // get md interpreter
     InterpreterSetting mdIntpSetting = null;

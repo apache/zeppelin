@@ -180,7 +180,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
         p.setAuthenticationInfo(anonymous);
         note.run(p.getId());
         waitForFinish(p);
-        System.err.println("sparkRTest=" + p.getResult().message());
+        System.err.println("sparkRTest=" + p.getResult().message().get(0).getData());
         assertEquals(Status.FINISHED, p.getStatus());
         assertEquals("[1] 3", p.getResult().message().get(0).getData());
       }
