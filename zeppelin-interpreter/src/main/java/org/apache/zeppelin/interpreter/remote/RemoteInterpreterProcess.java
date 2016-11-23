@@ -36,14 +36,11 @@ import java.util.Properties;
 public abstract class RemoteInterpreterProcess {
   private static final Logger logger = LoggerFactory.getLogger(RemoteInterpreterProcess.class);
   private final AtomicInteger referenceCount;
-  private ExecuteWatchdog watchdog;
 
   private GenericObjectPool<Client> clientPool;
   private final RemoteInterpreterEventPoller remoteInterpreterEventPoller;
   private final InterpreterContextRunnerPool interpreterContextRunnerPool;
   private int connectTimeout;
-  String host = "localhost";
-  boolean isInterpreterAlreadyExecuting = false;
 
   public RemoteInterpreterProcess(
       int connectTimeout,

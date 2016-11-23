@@ -69,7 +69,6 @@ public class RemoteInterpreterServer
   Gson gson = new Gson();
 
   RemoteInterpreterService.Processor<RemoteInterpreterServer> processor;
-  RemoteInterpreterServer handler;
   private int port;
   private TThreadPoolServer server;
 
