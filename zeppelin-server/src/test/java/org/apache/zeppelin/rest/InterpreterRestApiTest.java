@@ -279,7 +279,7 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
     }
 
     // then
-    assertEquals(p.getResult().message(), getSimulatedMarkdownResult("markdown restarted"));
+    assertEquals(p.getResult().message().get(0).getData(), getSimulatedMarkdownResult("markdown restarted"));
     ZeppelinServer.notebook.removeNote(note.getId(), anonymous);
   }
 
