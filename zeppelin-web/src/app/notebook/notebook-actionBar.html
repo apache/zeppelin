@@ -101,8 +101,8 @@ limitations under the License.
         </ul>
       </div>
       <div class="btn-group" role="group">
-        <button type="button" class="btn btn-default btn-xs revisionName">
-          Head
+        <button type="button" class="btn btn-default btn-xs revisionName" title="{{currentRevision}}">
+          <div style="overflow: hidden">{{currentRevision}}</div>
         </button>
         <button type="button" ng-if="noteRevisions.length > 0"
           class="btn btn-default dropdown-toggle caretSeparator"

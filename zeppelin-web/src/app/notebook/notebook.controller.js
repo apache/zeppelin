@@ -64,6 +64,7 @@
     var connectedOnce = false;
 
     $scope.noteRevisions = [];
+    $scope.currentRevision = 'Head';
 
     $scope.$on('setConnectedStatus', function(event, param) {
       if (connectedOnce && param) {
@@ -197,6 +198,12 @@
         id: 'Head',
         message: 'Head'
       });
+      if ($routeParams.revisionId) {
+        var index = _.findIndex($scope.noteRevisions, {'id': $routeParams.revisionId});
+        if (index > -1) {
+          $scope.currentRevision = $scope.noteRevisions[index].message;
+        }
+      }
     });
 
     $scope.$on('noteRevision', function(event, note) {
