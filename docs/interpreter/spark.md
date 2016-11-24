@@ -291,6 +291,12 @@ So you can put some objects from Scala and read it from Python, vice versa.
 %spark
 val myObject = ...
 z.put("objName", myObject)
+
+// Exchanging data frames
+myScalaDataFrame = ...
+z.put("myScalaDataFrame", myScalaDataFrame)
+
+val myPythonDataFrame = z.get("myPythonDataFrame").asInstanceOf[DataFrame]
 {% endhighlight %}
 
   </div>
@@ -300,6 +306,12 @@ z.put("objName", myObject)
 # Get object from python
 %spark.pyspark
 myObject = z.get("objName")
+
+# Exchanging data frames
+myPythonDataFrame = ...
+z.put("myPythonDataFrame", postsDf._jdf)
+
+myScalaDataFrame = DataFrame(z.get("myScalaDataFrame"), sqlContext)
 {% endhighlight %}
 
   </div>
