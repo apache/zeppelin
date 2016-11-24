@@ -89,7 +89,11 @@
     /** Init the new controller */
     var initNotebook = function() {
       noteVarShareService.clear();
-      websocketMsgSrv.getNote($routeParams.noteId);
+      if ($routeParams.revisionId) {
+        websocketMsgSrv.getNoteByRevision($routeParams.noteId, $routeParams.revisionId);
+      } else {
+        websocketMsgSrv.getNotebook($routeParams.noteId);
+      }
       websocketMsgSrv.listRevisionHistory($routeParams.noteId);
       var currentRoute = $route.current;
       if (currentRoute) {
