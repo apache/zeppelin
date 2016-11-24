@@ -435,6 +435,7 @@ public class Notebook implements NoteEventListener {
     }
 
     note.setNoteEventListener(this);
+    note.setNoteNameListener(folders);
 
     synchronized (notes) {
       notes.put(note.getId(), note);
