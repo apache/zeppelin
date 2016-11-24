@@ -247,7 +247,7 @@ public class InterpreterRestApi {
   @POST
   @Path("getmetainfos/{settingId}")
   public Response getMetaInfo(String message,
- @PathParam("settingId") String settingId) {
+       @PathParam("settingId") String settingId) {
 
     MetaInfosInterpreterRequest request = gson.fromJson(message,
         MetaInfosInterpreterRequest.class);
