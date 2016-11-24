@@ -1001,8 +1001,6 @@ public class InterpreterFactory implements InterpreterGroupFactory {
       // Check if dependency in specified path is changed
       // If it did, overwrite old dependency jar with new one
       if (intpSetting != null) {
-        //clean up metaInfos
-        intpSetting.setInfos(null);
         copyDependenciesFromLocalPath(intpSetting);
 
         stopJobAllInterpreter(intpSetting);

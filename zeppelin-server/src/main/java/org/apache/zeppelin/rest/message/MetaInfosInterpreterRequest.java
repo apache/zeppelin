@@ -15,28 +15,29 @@
  * limitations under the License.
  */
 
-package org.apache.zeppelin.types;
-
-import java.util.List;
-
-import org.apache.zeppelin.interpreter.InterpreterInfo;
+package org.apache.zeppelin.rest.message;
 
 /**
- * InterpreterSetting information for binding
+ * Meta infos  rest api request message
  */
-public class InterpreterSettingsList {
-  private String id;
-  private String name;
-  private boolean selected;
-  private List<InterpreterInfo> interpreters;
-  private String group;
+public class MetaInfosInterpreterRequest {
+  String noteId;
+  String subject;
+  String property;
 
-  public InterpreterSettingsList(String id, String name,
-      List<InterpreterInfo> interpreters, boolean selected, String group) {
-    this.id = id;
-    this.name = name;
-    this.interpreters = interpreters;
-    this.selected = selected;
-    this.group = group;
+  public MetaInfosInterpreterRequest() {
+
+  }
+
+  public String getNoteId() {
+    return noteId;
+  }
+
+  public String getSubject() {
+    return subject;
+  }
+
+  public String getProperty() {
+    return property;
   }
 }

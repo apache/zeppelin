@@ -47,6 +47,7 @@ import org.apache.zeppelin.dep.Repository;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
+import org.apache.zeppelin.rest.message.MetaInfosInterpreterRequest;
 import org.apache.zeppelin.rest.message.NewInterpreterSettingRequest;
 import org.apache.zeppelin.rest.message.UpdateInterpreterSettingRequest;
 import org.apache.zeppelin.server.JsonResponse;
@@ -243,17 +244,26 @@ public class InterpreterRestApi {
   /**
    * get the metainfo property value
    */
-  @GET
+  @POST
   @Path("getmetainfos/{settingId}")
-  public Response getMetaInfo(@Context HttpServletRequest req,
-                              @PathParam("settingId") String settingId) {
-    String propName = req.getParameter("propName");
+  public Response getMetaInfo(String message,
+ @PathParam("settingId") String settingId) {
+
+    MetaInfosInterpreterRequest request = gson.fromJson(message,
+        MetaInfosInterpreterRequest.class);
+
+    String noteId = null, subject = null, propName = null;
+    if (request != null) {
+      noteId = request.getNoteId();
+      subject = request.getSubject();
+      propName = request.getProperty();
+    }
     if (propName == null) {
       return new JsonResponse<>(Status.BAD_REQUEST).build();
     }
     String propValue = null;
     InterpreterSetting interpreterSetting = interpreterFactory.get(settingId);
-    Map<String, String> infos = interpreterSetting.getInfos();
+    Map<String, String> infos = interpreterSetting.getInfos(subject, noteId);
     if (infos != null) {
       propValue = infos.get(propName);
     }

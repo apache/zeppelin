@@ -168,7 +168,8 @@ public class RemoteInterpreterOutputTestStream implements RemoteInterpreterProce
   }
 
   @Override
-  public void onMetaInfosReceived(String settingId, Map<String, String> metaInfos) {
+  public void onMetaInfosReceived(String settingId, String intpGrpId,
+                                           Map<String, String> metaInfos) {
 
   }
 

@@ -34,7 +34,7 @@ public class InterpreterBindingUtils {
         notebook.getBindedInterpreterSettings(noteId);
     for (InterpreterSetting setting : selectedSettings) {
       settingList.add(new InterpreterSettingsList(setting.getId(), setting.getName(),
-          setting.getInterpreterInfos(), true));
+          setting.getInterpreterInfos(), true, setting.getGroup()));
     }
 
     List<InterpreterSetting> availableSettings = notebook.getInterpreterFactory().get();
@@ -49,7 +49,7 @@ public class InterpreterBindingUtils {
 
       if (!selected) {
         settingList.add(new InterpreterSettingsList(setting.getId(), setting.getName(),
-            setting.getInterpreterInfos(), false));
+            setting.getInterpreterInfos(), false, setting.getGroup()));
       }
     }
 
