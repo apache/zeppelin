@@ -1382,9 +1382,9 @@ public class InterpreterFactory implements InterpreterGroupFactory {
   public Map<String, Object> getEditorSetting(String user, String noteId, String replName) {
     Interpreter intp = getInterpreter(user, noteId, replName);
     Map<String, Object> editor = DEFAULT_EDITOR;
-    String defaultSettingName = getDefaultInterpreterSetting(noteId).getName();
     String group = StringUtils.EMPTY;
     try {
+      String defaultSettingName = getDefaultInterpreterSetting(noteId).getName();
       List<InterpreterSetting> intpSettings = getInterpreterSettings(noteId);
       for (InterpreterSetting intpSetting : intpSettings) {
         String[] replNameSplit = replName.split("\\.");

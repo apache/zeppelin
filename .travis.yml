@@ -23,7 +23,9 @@ cache:
     - .spark-dist
     - ${HOME}/.m2
     - ${HOME}/R
-    - .node_modules
+    -  zeppelin-web/node
+    -  zeppelin-web/node_modules
+    -  zeppelin-web/bower_components
 
 addons:
   apt:
@@ -65,6 +67,7 @@ matrix:
       env: TEST_SELENIUM="true" SCALA_VER="2.10" SPARK_VER="1.6.1" HADOOP_VER="2.3" PROFILE="-Pspark-1.6 -Phadoop-2.3 -Ppyspark -Pexamples" BUILD_FLAG="package -DskipTests -DskipRat" TEST_FLAG="verify -DskipRat" TEST_PROJECTS="-pl zeppelin-interpreter,zeppelin-zengine,zeppelin-server,zeppelin-display,spark-dependencies,spark -Dtest=org.apache.zeppelin.AbstractFunctionalSuite -DfailIfNoTests=false"
 
 before_install:
+  - echo "MAVEN_OPTS='-Xms1024M -Xmx2048M -XX:MaxPermSize=1024m -XX:-UseGCOverheadLimit'" >> ~/.mavenrc
   - "ls -la .spark-dist ${HOME}/.m2/repository/.cache/maven-download-plugin"
   - ls .node_modules && cp -r .node_modules zeppelin-web/node_modules || echo "node_modules are not cached"
   - mkdir -p ~/R
@@ -75,7 +78,7 @@ before_install:
   - ./dev/change_scala_version.sh $SCALA_VER
 
 install:
-  - mvn $BUILD_FLAG $PROFILE -B
+  - mvn -Dorg.slf4j.simpleLogger.defaultLogLevel=warn $BUILD_FLAG $PROFILE -B
 
 before_script:
   - travis_retry ./testing/downloadSpark.sh $SPARK_VER $HADOOP_VER
@@ -84,7 +87,6 @@ before_script:
 
 script:
   - mvn -Dorg.slf4j.simpleLogger.defaultLogLevel=warn $TEST_FLAG $PROFILE -B $TEST_PROJECTS
-  - rm -rf .node_modules; cp -r zeppelin-web/node_modules .node_modules
 
 after_success:
   - echo "Travis exited with ${TRAVIS_TEST_RESULT}"

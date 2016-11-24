@@ -568,6 +568,20 @@ public class NotebookServer extends WebSocketServlet implements
     broadcast(noteId, new Message(OP.INTERPRETER_BINDINGS).put("interpreterBindings", settingList));
   }
 
+  public void broadcastParagraph(Note note, Paragraph p) {
+    broadcast(note.getId(), new Message(OP.PARAGRAPH).put("paragraph", p));
+  }
+
+  private void broadcastNewParagraph(Note note, Paragraph para) {
+    LOG.info("Broadcasting paragraph on run call instead of note.");
+    int paraIndex = note.getParagraphs().indexOf(para);
+    broadcast(
+        note.getId(),
+        new Message(OP.PARAGRAPH_ADDED)
+          .put("paragraph", para)
+          .put("index", paraIndex));
+  }
+
   public void broadcastNoteList(AuthenticationInfo subject, HashSet userAndRoles) {
     if (subject == null) {
       subject = new AuthenticationInfo(StringUtils.EMPTY);
@@ -715,7 +729,10 @@ public class NotebookServer extends WebSocketServlet implements
 
       AuthenticationInfo subject = new AuthenticationInfo(fromMessage.principal);
       note.persist(subject);
-      broadcastNote(note);
+      broadcast(note.getId(), new Message(OP.NOTE_UPDATED)
+          .put("name", name)
+          .put("config", config)
+          .put("info", note.getInfo()));
       broadcastNoteList(subject, userAndRoles);
     }
   }
@@ -857,7 +874,7 @@ public class NotebookServer extends WebSocketServlet implements
     p.setTitle((String) fromMessage.get("title"));
     p.setText((String) fromMessage.get("paragraph"));
     note.persist(subject);
-    broadcast(note.getId(), new Message(OP.PARAGRAPH).put("paragraph", p));
+    broadcastParagraph(note, p);;
   }
 
   private void cloneNote(NotebookSocket conn, HashSet<String> userAndRoles,
@@ -930,9 +947,12 @@ public class NotebookServer extends WebSocketServlet implements
 
     /** We dont want to remove the last paragraph */
     if (!note.isLastParagraph(paragraphId)) {
-      note.removeParagraph(subject.getUser(), paragraphId);
+      Paragraph para = note.removeParagraph(subject.getUser(), paragraphId);
       note.persist(subject);
-      broadcastNote(note);
+      if (para != null) {
+        broadcast(note.getId(), new Message(OP.PARAGRAPH_REMOVED).
+                                  put("id", para.getId()));
+      }
     }
   }
 
@@ -950,9 +970,9 @@ public class NotebookServer extends WebSocketServlet implements
           userAndRoles, notebookAuthorization.getWriters(noteId));
       return;
     }
-
     note.clearParagraphOutput(paragraphId);
-    broadcastNote(note);
+    Paragraph paragraph = note.getParagraph(paragraphId);
+    broadcastParagraph(note, paragraph);
   }
 
   private void completion(NotebookSocket conn, HashSet<String> userAndRoles, Notebook notebook,
@@ -1237,7 +1257,9 @@ public class NotebookServer extends WebSocketServlet implements
 
     note.moveParagraph(paragraphId, newIndex);
     note.persist(subject);
-    broadcastNote(note);
+    broadcast(note.getId(), new Message(OP.PARAGRAPH_MOVED)
+              .put("id", paragraphId)
+              .put("index", newIndex));
   }
 
   private void insertParagraph(NotebookSocket conn, HashSet<String> userAndRoles,
@@ -1254,9 +1276,9 @@ public class NotebookServer extends WebSocketServlet implements
       return;
     }
 
-    note.insertParagraph(index);
+    Paragraph newPara = note.insertParagraph(index);
     note.persist(subject);
-    broadcastNote(note);
+    broadcastNewParagraph(note, newPara);
   }
 
   private void cancelParagraph(NotebookSocket conn, HashSet<String> userAndRoles, Notebook notebook,
@@ -1313,7 +1335,8 @@ public class NotebookServer extends WebSocketServlet implements
     boolean isTheLastParagraph = note.isLastParagraph(p.getId());
     if (!(text.trim().equals(p.getMagic()) || Strings.isNullOrEmpty(text)) &&
         isTheLastParagraph) {
-      note.addParagraph();
+      Paragraph newPara = note.addParagraph();
+      broadcastNewParagraph(note, newPara);
     }
 
     AuthenticationInfo subject = new AuthenticationInfo(fromMessage.principal);
@@ -1631,8 +1654,9 @@ public class NotebookServer extends WebSocketServlet implements
           LOG.error(e.toString(), e);
         }
       }
-      notebookServer.broadcastNote(note);
-
+      if (job instanceof Paragraph) {
+        notebookServer.broadcastParagraph(note, (Paragraph) job);
+      }
       try {
         notebookServer.broadcastUpdateNoteJobInfo(System.currentTimeMillis() - 5000);
       } catch (IOException e) {
