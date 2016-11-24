@@ -25,7 +25,8 @@ import org.apache.shiro.realm.ldap.JndiLdapRealm;
 import org.apache.shiro.realm.text.IniRealm;
 import org.apache.zeppelin.annotation.ZeppelinApi;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
-import org.apache.zeppelin.server.ActiveDirectoryGroupRealm;
+import org.apache.zeppelin.realm.ActiveDirectoryGroupRealm;
+import org.apache.zeppelin.realm.LdapRealm;
 import org.apache.zeppelin.server.JsonResponse;
 import org.apache.zeppelin.ticket.TicketContainer;
 import org.apache.zeppelin.utils.SecurityUtils;
@@ -105,16 +106,22 @@ public class SecurityRestApi {
       if (realmsList != null) {
         for (Iterator<Realm> iterator = realmsList.iterator(); iterator.hasNext(); ) {
           Realm realm = iterator.next();
-          String name = realm.getName();
-          if (name.equals("iniRealm")) {
+          String name = realm.getClass().getName();
+          if (LOG.isDebugEnabled()) {
+            LOG.debug("RealmClass.getName: " + name);
+          }
+          if (name.equals("org.apache.shiro.realm.text.IniRealm")) {
             usersList.addAll(getUserListObj.getUserList((IniRealm) realm));
             rolesList.addAll(getUserListObj.getRolesList((IniRealm) realm));
-          } else if (name.equals("ldapRealm")) {
+          } else if (name.equals("org.apache.zeppelin.realm.LdapGroupRealm")) {
             usersList.addAll(getUserListObj.getUserList((JndiLdapRealm) realm, searchText));
-          } else if (name.equals("activeDirectoryRealm")) {
+          } else if (name.equals("org.apache.zeppelin.realm.LdapRealm")) {
+            usersList.addAll(getUserListObj.getUserList((LdapRealm) realm, searchText));
+            rolesList.addAll(getUserListObj.getRolesList((LdapRealm) realm));
+          } else if (name.equals("org.apache.zeppelin.realm.ActiveDirectoryGroupRealm")) {
             usersList.addAll(getUserListObj.getUserList((ActiveDirectoryGroupRealm) realm,
                 searchText));
-          } else if (name.equals("jdbcRealm")) {
+          } else if (name.equals("org.apache.shiro.realm.jdbc.JdbcRealm")) {
             usersList.addAll(getUserListObj.getUserList((JdbcRealm) realm));
           }
         }

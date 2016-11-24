@@ -68,17 +68,17 @@ module.exports = function(config) {
       'bower_components/MathJax/MathJax.js',
       'bower_components/angular-mocks/angular-mocks.js',
       // endbower
-      'src/app/app.js',
-      'src/app/app.controller.js',
-      'src/app/tabledata/transformation.js',
-      'src/app/**/*.js',
-      'src/components/**/*.js',
+      '.tmp/app/app.js',
+      '.tmp/app/app.controller.js',
+      '.tmp/app/tabledata/transformation.js',
+      '.tmp/app/**/*.js',
+      '.tmp/components/**/*.js',
       'test/spec/**/*.js'
     ],
 
     // list of files / patterns to exclude
     exclude: [
-      'src/app/visualization/builtins/*.js'
+      '.tmp/app/visualization/builtins/*.js'
     ],
 
     // web server port

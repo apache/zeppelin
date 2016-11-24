@@ -495,6 +495,7 @@ public class RemoteInterpreter extends Interpreter {
     return new RemoteInterpreterContext(
         ic.getNoteId(),
         ic.getParagraphId(),
+        ic.getReplName(),
         ic.getParagraphTitle(),
         ic.getParagraphText(),
         gson.toJson(ic.getAuthenticationInfo()),

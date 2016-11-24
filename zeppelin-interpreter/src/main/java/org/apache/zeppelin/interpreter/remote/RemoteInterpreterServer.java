@@ -532,6 +532,7 @@ public class RemoteInterpreterServer
     return new InterpreterContext(
         ric.getNoteId(),
         ric.getParagraphId(),
+        ric.getReplName(),
         ric.getParagraphTitle(),
         ric.getParagraphText(),
         gson.fromJson(ric.getAuthenticationInfo(), AuthenticationInfo.class),

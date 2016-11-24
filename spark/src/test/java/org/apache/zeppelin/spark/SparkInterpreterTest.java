@@ -92,7 +92,7 @@ public class SparkInterpreterTest {
       repl.open();
     }
 
-    context = new InterpreterContext("note", "id", "title", "text",
+    context = new InterpreterContext("note", "id", null, "title", "text",
         new AuthenticationInfo(),
         new HashMap<String, Object>(),
         new GUI(),

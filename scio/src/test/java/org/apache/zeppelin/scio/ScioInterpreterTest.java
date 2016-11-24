@@ -40,7 +40,7 @@ public class ScioInterpreterTest {
   private final String newline = "\n";
 
   private InterpreterContext getNewContext() {
-    return new InterpreterContext("note", "id", "title", "text",
+    return new InterpreterContext("note", "id", null, "title", "text",
         new AuthenticationInfo(),
         new HashMap<String, Object>(),
         new GUI(),

@@ -164,11 +164,7 @@ public class Notebook implements NoteEventListener {
       bindInterpretersToNote(subject.getUser(), note.getId(), interpreterIds);
     }
 
-    if (subject != null && !"anonymous".equals(subject.getUser())) {
-      Set<String> owners = new HashSet<>();
-      owners.add(subject.getUser());
-      notebookAuthorization.setOwners(note.getId(), owners);
-    }
+    notebookAuthorization.setNewNotePermissions(note.getId(), subject);
     noteSearchService.addIndexDoc(note);
     note.persist(subject);
     fireNoteCreateEvent(note);
@@ -223,6 +219,7 @@ public class Notebook implements NoteEventListener {
         newNote.addCloneParagraph(p);
       }
 
+      notebookAuthorization.setNewNotePermissions(newNote.getId(), subject);
       newNote.persist(subject);
     } catch (IOException e) {
       logger.error(e.toString(), e);

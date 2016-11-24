@@ -435,6 +435,10 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     return getBoolean(ConfVars.ZEPPELIN_ANONYMOUS_ALLOWED);
   }
 
+  public boolean isNotebokPublic() {
+    return getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_PUBLIC);
+  }
+  
   public String getConfDir() {
     return getString(ConfVars.ZEPPELIN_CONF_DIR);
   }
@@ -533,6 +537,8 @@ public class ZeppelinConfiguration extends XMLConfiguration {
         + "org.apache.zeppelin.flink.FlinkInterpreter,"
         + "org.apache.zeppelin.python.PythonInterpreter,"
         + "org.apache.zeppelin.python.PythonInterpreterPandasSql,"
+        + "org.apache.zeppelin.python.PythonCondaInterpreter,"
+        + "org.apache.zeppelin.python.PythonDockerInterpreter,"
         + "org.apache.zeppelin.ignite.IgniteInterpreter,"
         + "org.apache.zeppelin.ignite.IgniteSqlInterpreter,"
         + "org.apache.zeppelin.lens.LensInterpreter,"
@@ -570,6 +576,8 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_NOTEBOOK_AZURE_USER("zeppelin.notebook.azure.user", "user"),
     ZEPPELIN_NOTEBOOK_STORAGE("zeppelin.notebook.storage", VFSNotebookRepo.class.getName()),
     ZEPPELIN_NOTEBOOK_ONE_WAY_SYNC("zeppelin.notebook.one.way.sync", false),
+    // whether by default note is public or private
+    ZEPPELIN_NOTEBOOK_PUBLIC("zeppelin.notebook.public", true),
     ZEPPELIN_INTERPRETER_REMOTE_RUNNER("zeppelin.interpreter.remoterunner",
         System.getProperty("os.name")
                 .startsWith("Windows") ? "bin/interpreter.cmd" : "bin/interpreter.sh"),

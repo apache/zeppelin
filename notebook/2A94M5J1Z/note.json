@@ -420,7 +420,7 @@
       "progressUpdateIntervalMs": 500
     }
   ],
-  "name": "Zeppelin Tutorial",
+  "name": "Zeppelin Tutorial/Basic Features (Spark)",
   "id": "2A94M5J1Z",
   "angularObjects": {
     "2C2HP46V7:shared_process": [],

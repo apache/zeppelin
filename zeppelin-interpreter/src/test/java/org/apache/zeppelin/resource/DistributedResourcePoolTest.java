@@ -103,6 +103,7 @@ public class DistributedResourcePoolTest {
     context = new InterpreterContext(
         "note",
         "id",
+        null,
         "title",
         "text",
         new AuthenticationInfo(),

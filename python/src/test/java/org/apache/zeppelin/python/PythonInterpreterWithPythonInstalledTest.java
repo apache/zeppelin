@@ -21,8 +21,12 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import org.apache.zeppelin.interpreter.Interpreter;
+import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.junit.Test;
+
+import java.util.Arrays;
 
 /**
  * Python interpreter unit test that user real Python
@@ -46,6 +50,11 @@ public class PythonInterpreterWithPythonInstalledTest {
     //given
     PythonInterpreter realPython = new PythonInterpreter(
         PythonInterpreterTest.getPythonTestProperties());
+    // create interpreter group
+    InterpreterGroup group = new InterpreterGroup();
+    group.put("note", Arrays.asList((Interpreter) realPython));
+    realPython.setInterpreterGroup(group);
+
     realPython.open();
 
     //when
@@ -65,6 +74,9 @@ public class PythonInterpreterWithPythonInstalledTest {
     //given
     PythonInterpreter realPython = new PythonInterpreter(
         PythonInterpreterTest.getPythonTestProperties());
+    InterpreterGroup group = new InterpreterGroup();
+    group.put("note", Arrays.asList((Interpreter) realPython));
+    realPython.setInterpreterGroup(group);
     realPython.open();
 
     //when
@@ -84,6 +96,9 @@ public class PythonInterpreterWithPythonInstalledTest {
     //given
     PythonInterpreter realPython = new PythonInterpreter(
             PythonInterpreterTest.getPythonTestProperties());
+    InterpreterGroup group = new InterpreterGroup();
+    group.put("note", Arrays.asList((Interpreter) realPython));
+    realPython.setInterpreterGroup(group);
     realPython.open();
 
     //when

@@ -285,10 +285,17 @@ public class InterpreterFactory implements InterpreterGroupFactory {
   }
 
   private InterpreterSetting createFromInterpreterSettingRef(InterpreterSetting o) {
-    InterpreterSetting setting =
-        new InterpreterSetting(o.getName(), o.getName(), o.getInterpreterInfos(),
-            convertInterpreterProperties((Map<String, InterpreterProperty>) o.getProperties()),
-            o.getDependencies(), o.getOption(), o.getPath());
+    // should return immutable objects
+    List<InterpreterInfo> infos = (null == o.getInterpreterInfos()) ?
+        new ArrayList<InterpreterInfo>() : new ArrayList<>(o.getInterpreterInfos());
+    List<Dependency> deps = (null == o.getDependencies()) ?
+        new ArrayList<Dependency>() : new ArrayList<>(o.getDependencies());
+    Properties props =
+        convertInterpreterProperties((Map<String, InterpreterProperty>) o.getProperties());
+    InterpreterOption option = InterpreterOption.fromInterpreterOption(o.getOption());
+
+    InterpreterSetting setting = new InterpreterSetting(o.getName(), o.getName(),
+        infos, props, deps, option, o.getPath());
     setting.setInterpreterGroupFactory(this);
     return setting;
   }
@@ -1391,9 +1398,9 @@ public class InterpreterFactory implements InterpreterGroupFactory {
   public Map<String, Object> getEditorSetting(String user, String noteId, String replName) {
     Interpreter intp = getInterpreter(user, noteId, replName);
     Map<String, Object> editor = DEFAULT_EDITOR;
-    String defaultSettingName = getDefaultInterpreterSetting(noteId).getName();
     String group = StringUtils.EMPTY;
     try {
+      String defaultSettingName = getDefaultInterpreterSetting(noteId).getName();
       List<InterpreterSetting> intpSettings = getInterpreterSettings(noteId);
       for (InterpreterSetting intpSetting : intpSettings) {
         String[] replNameSplit = replName.split("\\.");

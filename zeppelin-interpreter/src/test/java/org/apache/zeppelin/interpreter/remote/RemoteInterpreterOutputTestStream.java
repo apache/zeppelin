@@ -85,6 +85,7 @@ public class RemoteInterpreterOutputTestStream implements RemoteInterpreterProce
     return new InterpreterContext(
         "noteId",
         "id",
+        null,
         "title",
         "text",
         new AuthenticationInfo(),

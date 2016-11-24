@@ -54,4 +54,4 @@ describe('Controller: ParagraphCtrl', function() {
   it('should set default value of "paragraphFocused" as false', function() {
     expect(scope.paragraphFocused).toEqual(false);
   });
-});
+);
