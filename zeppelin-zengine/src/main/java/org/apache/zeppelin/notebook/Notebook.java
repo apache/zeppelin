@@ -209,6 +209,7 @@ public class Notebook implements NoteEventListener {
     Note newNote;
     try {
       Note oldNote = gson.fromJson(reader, Note.class);
+      convertFromSingleResultToMultipleResultsFormat(oldNote);
       newNote = createNote(subject);
       if (noteName != null)
         newNote.setName(noteName);
@@ -383,9 +384,9 @@ public class Notebook implements NoteEventListener {
 
   public void convertFromSingleResultToMultipleResultsFormat(Note note) {
     for (Paragraph p : note.paragraphs) {
-      Object ret = p.getReturn();
+      Object ret = p.getPreviousResultFormat();
       try {
-        if (ret instanceof Map) {
+        if (ret != null && ret instanceof Map) {
           Map r = ((Map) ret);
           if (r.containsKey("code") &&
               r.containsKey("msg") &&
@@ -419,7 +420,7 @@ public class Notebook implements NoteEventListener {
                 results.add(new HashMap<>());
               }
             }
-            config.put("result", results);
+            config.put("results", results);
           }
         }
       } catch (Exception e) {

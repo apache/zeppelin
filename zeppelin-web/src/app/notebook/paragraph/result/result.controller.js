@@ -139,6 +139,9 @@
     // graphMode
     $scope.graphMode;
 
+    // image data
+    $scope.imageData;
+
     $scope.init = function(result, config, paragraph, index) {
       console.log('result controller init %o %o %o', result, config, index);
       updateData(result, config, paragraph, index);
@@ -225,8 +228,7 @@
       $scope.config = angular.copy(config);
 
       // enable only when it is last result
-      enableHelium = (index === paragraphRef.result.msg.length - 1);
-      console.log('enable helium %o %o %o', enableHelium, index, paragraphRef.result.msg.length);
+      enableHelium = (index === paragraphRef.results.msg.length - 1);
 
       if ($scope.type === 'TABLE') {
         var TableData = zeppelin.TableData;
@@ -236,6 +238,8 @@
         $scope.tableDataComment = tableData.comment;
 
         selectDefaultColsForGraphOption();
+      } else if ($scope.type === 'IMG') {
+        $scope.imageData = data;
       }
     };
 
@@ -453,8 +457,8 @@
 
     var commitParagraphResult = function(title, text, config, params) {
       var newParagraphConfig = angular.copy(paragraph.config);
-      newParagraphConfig.result = newParagraphConfig.result || [];
-      newParagraphConfig.result[resultIndex] = config;
+      newParagraphConfig.results = newParagraphConfig.results || [];
+      newParagraphConfig.results[resultIndex] = config;
       websocketMsgSrv.commitParagraph(paragraph.id, title, text, newParagraphConfig, params);
     };
 

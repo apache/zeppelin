@@ -117,6 +117,23 @@ public class InterpreterOutputTest implements InterpreterOutputListener {
     assertEquals(InterpreterResult.Type.HTML, out.getOutputAt(0).getType());
   }
 
+  @Test
+  public void testChangeTypeWithMultipleNewline() throws IOException {
+    out.write("%html\n");
+    assertEquals(InterpreterResult.Type.HTML, out.getOutputAt(0).getType());
+
+    out.write("%text\n");
+    assertEquals(InterpreterResult.Type.TEXT, out.getOutputAt(1).getType());
+
+    out.write("\n%html\n");
+    assertEquals(InterpreterResult.Type.HTML, out.getOutputAt(2).getType());
+
+    out.write("\n\n%text\n");
+    assertEquals(InterpreterResult.Type.TEXT, out.getOutputAt(3).getType());
+
+    out.write("\n\n\n%html\n");
+    assertEquals(InterpreterResult.Type.HTML, out.getOutputAt(4).getType());
+  }
 
   @Test
   public void testChangeTypeWithoutData() throws IOException {

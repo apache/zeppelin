@@ -132,23 +132,23 @@
         config.enabled = true;
       }
 
-      if (!config.result) {
-        config.result = {};
+      if (!config.results) {
+        config.results = {};
       }
     };
 
     $scope.$on('updateParagraphOutput', function(event, data) {
       if ($scope.paragraph.id === data.paragraphId) {
-        if (!$scope.paragraph.result) {
-          $scope.paragraph.result = {};
+        if (!$scope.paragraph.results) {
+          $scope.paragraph.results = {};
         }
-        if (!$scope.paragraph.result.msg) {
-          $scope.paragraph.result.msg = [];
+        if (!$scope.paragraph.results.msg) {
+          $scope.paragraph.results.msg = [];
         }
 
-        var update = ($scope.paragraph.result.msg[data.index]) ? true : false;
+        var update = ($scope.paragraph.results.msg[data.index]) ? true : false;
 
-        $scope.paragraph.result.msg[data.index] = {
+        $scope.paragraph.results.msg[data.index] = {
           data: data.data,
           type: data.type
         };
@@ -156,8 +156,8 @@
         if (update) {
           $rootScope.$broadcast(
             'updateResult',
-            $scope.paragraph.result.msg[data.index],
-            $scope.paragraph.config.result[data.index],
+            $scope.paragraph.results.msg[data.index],
+            $scope.paragraph.config.results[data.index],
             $scope.paragraph,
             data.index);
         }
@@ -785,8 +785,8 @@
 
     $scope.getResultType = function(paragraph) {
       var pdata = (paragraph) ? paragraph : $scope.paragraph;
-      if (pdata.result && pdata.result.type) {
-        return pdata.result.type;
+      if (pdata.results && pdata.results.type) {
+        return pdata.results.type;
       } else {
         return 'TEXT';
       }
@@ -957,14 +957,14 @@
            data.paragraph.status !== $scope.paragraph.status ||
            data.paragraph.jobName !== $scope.paragraph.jobName ||
            data.paragraph.title !== $scope.paragraph.title ||
-           isEmpty(data.paragraph.result) !== isEmpty($scope.paragraph.result) ||
+           isEmpty(data.paragraph.results) !== isEmpty($scope.paragraph.results) ||
            data.paragraph.errorMessage !== $scope.paragraph.errorMessage ||
            !angular.equals(data.paragraph.settings, $scope.paragraph.settings) ||
            !angular.equals(data.paragraph.config, $scope.paragraph.config))
          ) {
         var statusChanged = (data.paragraph.status !== $scope.paragraph.status);
         var resultRefreshed = (data.paragraph.dateFinished !== $scope.paragraph.dateFinished) ||
-            isEmpty(data.paragraph.result) !== isEmpty($scope.paragraph.result) ||
+            isEmpty(data.paragraph.results) !== isEmpty($scope.paragraph.results) ||
           data.paragraph.status === 'ERROR' || (data.paragraph.status === 'FINISHED' && statusChanged);
 
         if ($scope.paragraph.text !== data.paragraph.text) {
@@ -983,13 +983,13 @@
         }
 
         /** broadcast update to result controller **/
-        if (data.paragraph.result && data.paragraph.result.msg) {
-          for (var i in data.paragraph.result.msg) {
-            var newResult = data.paragraph.result.msg ? data.paragraph.result.msg[i] : {};
-            var oldResult = ($scope.paragraph.result && $scope.paragraph.result.msg) ?
-                $scope.paragraph.result.msg[i] : {};
-            var newConfig = data.paragraph.config.result ? data.paragraph.config.result[i] : {};
-            var oldConfig = $scope.paragraph.config.result ? $scope.paragraph.config.result[i] : {};
+        if (data.paragraph.results && data.paragraph.results.msg) {
+          for (var i in data.paragraph.results.msg) {
+            var newResult = data.paragraph.results.msg ? data.paragraph.results.msg[i] : {};
+            var oldResult = ($scope.paragraph.results && $scope.paragraph.results.msg) ?
+                $scope.paragraph.results.msg[i] : {};
+            var newConfig = data.paragraph.config.results ? data.paragraph.config.results[i] : {};
+            var oldConfig = $scope.paragraph.config.results ? $scope.paragraph.config.results[i] : {};
             if (!angular.equals(newResult, oldResult) ||
                 !angular.equals(newConfig, oldConfig)) {
               $rootScope.$broadcast('updateResult', newResult, newConfig, data.paragraph, parseInt(i));
@@ -1014,7 +1014,7 @@
         $scope.paragraph.title = data.paragraph.title;
         $scope.paragraph.lineNumbers = data.paragraph.lineNumbers;
         $scope.paragraph.status = data.paragraph.status;
-        $scope.paragraph.result = data.paragraph.result;
+        $scope.paragraph.results = data.paragraph.results;
         $scope.paragraph.settings = data.paragraph.settings;
         $scope.editor.setReadOnly($scope.isRunning());
 

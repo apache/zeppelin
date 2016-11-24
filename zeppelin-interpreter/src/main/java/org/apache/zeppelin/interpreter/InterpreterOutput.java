@@ -163,14 +163,18 @@ public class InterpreterOutput extends OutputStream {
 
     synchronized (resultMessageOutputs) {
       if (startOfTheNewLine) {
-        startOfTheNewLine = false;
         if (b == '%') {
+          startOfTheNewLine = false;
           firstCharIsPercentSign = true;
           buffer.write(b);
           previousChar = b;
           return;
+        } else if (b != NEW_LINE_CHAR) {
+          startOfTheNewLine = false;
         }
-      } else if (b == NEW_LINE_CHAR) {
+      }
+
+      if (b == NEW_LINE_CHAR) {
         currentOut = getCurrentOutput();
         if (currentOut != null && currentOut.getType() == InterpreterResult.Type.TABLE) {
           if (previousChar == NEW_LINE_CHAR) {
