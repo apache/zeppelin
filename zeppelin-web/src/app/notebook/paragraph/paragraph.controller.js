@@ -133,12 +133,15 @@
       }
 
       if (!config.result) {
-        config.result = [];
+        config.result = {};
       }
     };
 
     $scope.$on('updateParagraphOutput', function(event, data) {
       if ($scope.paragraph.id === data.paragraphId) {
+        if (!$scope.paragraph.result) {
+          $scope.paragraph.result = {};
+        }
         if (!$scope.paragraph.result.msg) {
           $scope.paragraph.result.msg = [];
         }

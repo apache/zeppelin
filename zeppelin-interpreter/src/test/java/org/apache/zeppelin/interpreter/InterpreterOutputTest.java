@@ -152,11 +152,6 @@ public class InterpreterOutputTest implements InterpreterOutputListener {
   }
 
   @Override
-  public void onClose(InterpreterOutput out) {
-
-  }
-
-  @Override
   public void onAppend(int index, InterpreterResultMessageOutput out, byte[] line) {
     numAppendEvent++;
   }

@@ -163,6 +163,11 @@ public class RemoteInterpreterOutputTestStream implements RemoteInterpreterProce
   }
 
   @Override
+  public void onOutputClear(String noteId, String paragraphId) {
+
+  }
+
+  @Override
   public void onMetaInfosReceived(String settingId, Map<String, String> metaInfos) {
 
   }

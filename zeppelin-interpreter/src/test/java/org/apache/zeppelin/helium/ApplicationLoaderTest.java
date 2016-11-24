@@ -89,27 +89,7 @@ public class ApplicationLoaderTest {
         paragraphId,
         appInstanceId,
         null,
-        new InterpreterOutput(new InterpreterOutputListener() {
-          @Override
-          public void onUpdateAll(InterpreterOutput out) {
-
-          }
-
-          @Override
-          public void onClose(InterpreterOutput out) {
-
-          }
-
-          @Override
-          public void onAppend(int index, InterpreterResultMessageOutput out, byte[] line) {
-
-          }
-
-          @Override
-          public void onUpdate(int index, InterpreterResultMessageOutput out) {
-
-          }
-        }));
+        new InterpreterOutput(null));
     return context1;
   }
 }

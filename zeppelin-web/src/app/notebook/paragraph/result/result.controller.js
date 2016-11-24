@@ -133,6 +133,9 @@
     // available columns in tabledata
     $scope.tableDataColumns = [];
 
+    // enable helium
+    var enableHelium = false;
+
     // graphMode
     $scope.graphMode;
 
@@ -221,6 +224,10 @@
       $scope.graphMode = config.graph.mode;
       $scope.config = angular.copy(config);
 
+      // enable only when it is last result
+      enableHelium = (index === paragraphRef.result.msg.length - 1);
+      console.log('enable helium %o %o %o', enableHelium, index, paragraphRef.result.msg.length);
+
       if ($scope.type === 'TABLE') {
         var TableData = zeppelin.TableData;
         tableData = new TableData();
@@ -233,9 +240,12 @@
     };
 
     var renderResult = function(type, refresh) {
-      getSuggestions();
-      getApplicationStates();
-      var activeApp = _.get($scope.config, 'helium.activeApp');
+      var activeApp;
+      if (enableHelium) {
+        getSuggestions();
+        getApplicationStates();
+        activeApp = _.get($scope.config, 'helium.activeApp');
+      }
 
       if (activeApp) {
         var app = _.find($scope.apps, {id: activeApp});
