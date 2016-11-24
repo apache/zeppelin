@@ -63,7 +63,6 @@
 
     var connectedOnce = false;
 
-    // user auto complete related
     $scope.noteRevisions = [];
 
     $scope.$on('setConnectedStatus', function(event, param) {
@@ -194,6 +193,10 @@
     $scope.$on('listRevisionHistory', function(event, data) {
       console.log('received list of revisions %o', data);
       $scope.noteRevisions = data.revisionList;
+      $scope.noteRevisions.splice(0, 0, {
+        id: 'Head',
+        message: 'Head'
+      });
     });
 
     $scope.$on('noteRevision', function(event, note) {
@@ -204,6 +207,19 @@
         $location.path('/');
       }
     });
+
+    $scope.visitRevision = function(revision) {
+      if (revision.id) {
+        if (revision.id === 'Head') {
+          $location.path('/notebook/' + $routeParams.noteId);
+        } else {
+          $location.path('/notebook/' + $routeParams.noteId + '/revision/' + revision.id);
+        }
+      } else {
+        ngToast.danger({content: 'There is a problem with this Revision',
+          verticalPosition: 'top', dismissOnTimeout: false});
+      }
+    };
 
     $scope.runNote = function() {
       BootstrapDialog.confirm({
