@@ -7,7 +7,8 @@
     "postinstall": "node_modules/.bin/bower install --silent",
     "build": "./node_modules/.bin/grunt build",
     "start": "./node_modules/.bin/grunt serve",
-    "test": "./node_modules/.bin/grunt test"
+    "test": "./node_modules/.bin/grunt test",
+    "pretest": "./node_modules/.bin/npm install karma-phantomjs-launcher"
   },
   "dependencies": {
     "grunt-angular-templates": "^0.5.7",
@@ -47,7 +48,6 @@
     "karma": "~1.3.0",
     "karma-coverage": "^1.1.1",
     "karma-jasmine": "~1.0.2",
-    "karma-phantomjs-launcher": "~1.0.2",
     "load-grunt-tasks": "^0.4.0",
     "time-grunt": "^0.3.1"
   },
