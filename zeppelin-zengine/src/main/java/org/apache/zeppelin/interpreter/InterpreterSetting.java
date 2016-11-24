@@ -303,7 +303,7 @@ public class InterpreterSetting {
   }
 
   public Map<String, String> getInfos(String user, String noteId) {
-   String interpreterProcessKey = getInterpreterProcessKey(user, noteId);
-   return getInfos(getId() + ":" +interpreterProcessKey);
+    String interpreterProcessKey = getInterpreterProcessKey(user, noteId);
+    return getInfos(getId() + ":" + interpreterProcessKey);
   }
 }
