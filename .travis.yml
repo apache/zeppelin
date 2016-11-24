@@ -23,7 +23,9 @@ cache:
     - .spark-dist
     - ${HOME}/.m2
     - ${HOME}/R
-    - .node_modules
+    -  zeppelin-web/node
+    -  zeppelin-web/node_modules
+    -  zeppelin-web/bower_components
 
 addons:
   apt:
@@ -82,7 +84,7 @@ before_install:
   - source ~/.environ
 
 install:
-  - mvn $BUILD_FLAG $PROFILE -B
+  - mvn -Dorg.slf4j.simpleLogger.defaultLogLevel=warn $BUILD_FLAG $PROFILE -B
 
 before_script:
   - travis_retry ./testing/downloadSpark.sh $SPARK_VER $HADOOP_VER

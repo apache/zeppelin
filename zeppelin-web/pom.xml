@@ -108,8 +108,8 @@
               <goal>install-node-and-npm</goal>
             </goals>
             <configuration>
-              <nodeVersion>${node.version}</nodeVersion>
-              <npmVersion>${npm.version}</npmVersion>
+              <nodeVersion>v6.9.1</nodeVersion>
+              <npmVersion>3.10.8</npmVersion>
             </configuration>
           </execution>
 
@@ -118,36 +118,29 @@
             <goals>
               <goal>npm</goal>
             </goals>
-          </execution>
-
-          <execution>
-            <id>bower install</id>
-            <goals>
-              <goal>bower</goal>
-            </goals>
             <configuration>
-              <arguments>--allow-root install</arguments>
+              <arguments>install</arguments>
             </configuration>
           </execution>
 
           <execution>
-            <id>grunt build</id>
+            <id>npm build</id>
             <goals>
-              <goal>grunt</goal>
+              <goal>npm</goal>
             </goals>
             <configuration>
-              <arguments>build</arguments>
+              <arguments>run build</arguments>
             </configuration>
           </execution>
 
           <execution>
-            <id>grunt test</id>
+            <id>npm test</id>
             <goals>
-              <goal>grunt</goal>
+              <goal>npm</goal>
             </goals>
             <phase>test</phase>
             <configuration>
-              <arguments>test</arguments>
+              <arguments>run test</arguments>
             </configuration>
           </execution>
 
