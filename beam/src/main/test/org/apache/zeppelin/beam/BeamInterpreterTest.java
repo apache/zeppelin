@@ -43,7 +43,7 @@ public class BeamInterpreterTest {
     Properties p = new Properties();
     beam = new BeamInterpreter(p);
     beam.open();
-    context = new InterpreterContext(null, null, null, null, null, null, null, null, null, null,
+    context = new InterpreterContext(null, null, null, null, null, null, null, null, null, null, null,
         null);
   }
 
