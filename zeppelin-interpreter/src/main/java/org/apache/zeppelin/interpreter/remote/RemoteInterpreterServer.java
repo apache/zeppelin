@@ -559,18 +559,6 @@ public class RemoteInterpreterServer
       }
 
       @Override
-      public void onClose(InterpreterOutput out) {
-        // persist data without refreshing front-end
-        try {
-          eventClient.onInterpreterOutputClose(
-              noteId, paragraphId, out.toInterpreterResultMessage());
-        } catch (IOException e) {
-          logger.error(e.getMessage(), e);
-        }
-
-      }
-
-      @Override
       public void onAppend(int index, InterpreterResultMessageOutput out, byte[] line) {
         String output = new String(line);
         logger.debug("Output Append: {}", output);
@@ -861,11 +849,6 @@ public class RemoteInterpreterServer
     return new InterpreterOutput(new InterpreterOutputListener() {
       @Override
       public void onUpdateAll(InterpreterOutput out) {
-
-      }
-
-      @Override
-      public void onClose(InterpreterOutput out) {
 
       }
 

@@ -27,5 +27,6 @@ public interface RemoteInterpreterProcessListener {
   public void onOutputAppend(String noteId, String paragraphId, int index, String output);
   public void onOutputUpdated(
       String noteId, String paragraphId, int index, InterpreterResult.Type type, String output);
+  public void onOutputClear(String noteId, String paragraphId);
   public void onMetaInfosReceived(String settingId, Map<String, String> metaInfos);
 }

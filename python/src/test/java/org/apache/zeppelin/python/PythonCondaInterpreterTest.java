@@ -32,7 +32,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 
-public class PythonCondaInterpreterTest implements InterpreterOutputListener {
+public class PythonCondaInterpreterTest {
   private PythonCondaInterpreter conda;
   private PythonInterpreter python;
 
@@ -64,6 +64,7 @@ public class PythonCondaInterpreterTest implements InterpreterOutputListener {
     InterpreterResult result = conda.interpret("", context);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
 
+    context.out.flush();
     String out = new String(context.out.toByteArray());
     assertTrue(out.contains(">env1<"));
     assertTrue(out.contains(">/path1<"));
@@ -102,16 +103,6 @@ public class PythonCondaInterpreterTest implements InterpreterOutputListener {
         null,
         null,
         null,
-        new InterpreterOutput(this));
-  }
-
-  @Override
-  public void onAppend(InterpreterOutput out, byte[] line) {
-
-  }
-
-  @Override
-  public void onUpdate(InterpreterOutput out, byte[] output) {
-
+        new InterpreterOutput(null));
   }
 }

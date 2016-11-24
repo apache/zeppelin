@@ -173,6 +173,27 @@ public class RemoteInterpreterEventPoller extends Thread {
           } else {
             appListener.onOutputAppend(noteId, paragraphId, index, appId, outputToAppend);
           }
+        } else if (event.getType() == RemoteInterpreterEventType.OUTPUT_UPDATE_ALL) {
+          Map<String, Object> outputUpdate = gson.fromJson(
+              event.getData(), new TypeToken<Map<String, Object>>() {}.getType());
+          String noteId = (String) outputUpdate.get("noteId");
+          String paragraphId = (String) outputUpdate.get("paragraphId");
+
+          // clear the output
+          listener.onOutputClear(noteId, paragraphId);
+          List<Map<String, String>> messages =
+              (List<Map<String, String>>) outputUpdate.get("messages");
+
+          if (messages != null) {
+            for (int i = 0; i < messages.size(); i++) {
+              Map<String, String> m = messages.get(i);
+              InterpreterResult.Type type =
+                  InterpreterResult.Type.valueOf((String) m.get("type"));
+              String outputToUpdate = (String) m.get("data");
+
+              listener.onOutputUpdated(noteId, paragraphId, i, type, outputToUpdate);
+            }
+          }
         } else if (event.getType() == RemoteInterpreterEventType.OUTPUT_UPDATE) {
           // on output update
           Map<String, String> outputAppend = gson.fromJson(

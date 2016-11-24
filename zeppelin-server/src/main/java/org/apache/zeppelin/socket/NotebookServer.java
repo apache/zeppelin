@@ -1453,6 +1453,22 @@ public class NotebookServer extends WebSocketServlet implements
     broadcast(noteId, msg);
   }
 
+
+  /**
+   * This callback is for the paragraph that runs on ZeppelinServer
+   * @param noteId
+   * @param paragraphId
+   */
+  @Override
+  public void onOutputClear(
+      String noteId, String paragraphId) {
+    Notebook notebook = notebook();
+    final Note note = notebook.getNote(noteId);
+    note.clearParagraphOutput(paragraphId);
+    Paragraph paragraph = note.getParagraph(paragraphId);
+    broadcastParagraph(note, paragraph);
+  }
+
   /**
    * When application append output
    * @param noteId

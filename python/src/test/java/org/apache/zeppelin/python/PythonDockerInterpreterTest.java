@@ -33,7 +33,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.*;
 
-public class PythonDockerInterpreterTest implements InterpreterOutputListener {
+public class PythonDockerInterpreterTest {
   private PythonDockerInterpreter docker;
   private PythonInterpreter python;
 
@@ -73,6 +73,7 @@ public class PythonDockerInterpreterTest implements InterpreterOutputListener {
     return new InterpreterContext(
         "noteId",
         "paragraphId",
+        null,
         "paragraphTitle",
         "paragraphText",
         new AuthenticationInfo(),
@@ -81,16 +82,6 @@ public class PythonDockerInterpreterTest implements InterpreterOutputListener {
         null,
         null,
         null,
-        new InterpreterOutput(this));
-  }
-
-  @Override
-  public void onAppend(InterpreterOutput out, byte[] line) {
-
-  }
-
-  @Override
-  public void onUpdate(InterpreterOutput out, byte[] output) {
-
+        new InterpreterOutput(null));
   }
 }

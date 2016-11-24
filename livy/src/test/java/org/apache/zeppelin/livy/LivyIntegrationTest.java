@@ -245,10 +245,5 @@ public class LivyIntegrationTest {
     public void onUpdateAll(InterpreterOutput out) {
 
     }
-
-    @Override
-    public void onClose(InterpreterOutput out) {
-
-    }
   }
 }

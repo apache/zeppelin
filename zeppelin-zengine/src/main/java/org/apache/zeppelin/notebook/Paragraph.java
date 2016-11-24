@@ -428,15 +428,6 @@ public class Paragraph extends Job implements Serializable, Cloneable {
 
       }
 
-      @Override
-      public void onClose(InterpreterOutput out) {
-        try {
-          updateParagraphResult(out.toInterpreterResultMessage());
-        } catch (IOException e) {
-          logger.error(e.getMessage(), e);
-        }
-      }
-
       private void updateParagraphResult(List<InterpreterResultMessage> msgs) {
         // update paragraph result
         InterpreterResult result = new InterpreterResult(Code.SUCCESS, msgs);

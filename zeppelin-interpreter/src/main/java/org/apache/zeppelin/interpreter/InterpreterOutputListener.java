@@ -26,11 +26,6 @@ public interface InterpreterOutputListener {
   public void onUpdateAll(InterpreterOutput out);
 
   /**
-   * When more update/append are expected
-   */
-  public void onClose(InterpreterOutput out);
-
-  /**
    * called when newline is detected
    * @param index
    * @param out
