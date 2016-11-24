@@ -606,7 +606,7 @@
         message: 'Do you want to restart ' + interpeter.name + ' interpreter?',
         callback: function(result) {
           if (result) {
-            var userName; 
+            var userName;
             if ($rootScope.ticket) {
               userName = $rootScope.ticket.principal;
             }
@@ -615,7 +615,6 @@
               'subject': userName
             };
 
-			console.log($rootScope.ticket);
             thisConfirm.$modalFooter.find('button').addClass('disabled');
             thisConfirm.$modalFooter.find('button:contains("OK")')
               .html('<i class="fa fa-circle-o-notch fa-spin"></i> Saving Setting');
