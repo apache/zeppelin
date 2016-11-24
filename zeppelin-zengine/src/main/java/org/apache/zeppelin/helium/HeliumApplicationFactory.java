@@ -18,6 +18,7 @@ package org.apache.zeppelin.helium;
 
 import com.google.gson.Gson;
 import org.apache.thrift.TException;
+import org.apache.zeppelin.conf.ZeppelinConfiguration.*;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterInfo;
@@ -44,8 +45,10 @@ public class HeliumApplicationFactory implements ApplicationEventListener, Noteb
   private final Gson gson = new Gson();
   private Notebook notebook;
   private ApplicationEventListener applicationEventListener;
+  private String heliumLocalPath;
 
-  public HeliumApplicationFactory() {
+  public HeliumApplicationFactory(String heliumLocalPath) {
+    this.heliumLocalPath = heliumLocalPath;
     executor = ExecutorFactory.singleton().createOrGet(
         HeliumApplicationFactory.class.getName(), 10);
   }
@@ -120,6 +123,12 @@ public class HeliumApplicationFactory implements ApplicationEventListener, Noteb
 
         try {
           appStatusChange(paragraph, appState.getId(), ApplicationState.Status.LOADING);
+
+          if (pkg != null && pkg.getArtifact().trim().charAt(0) != '/') {
+            String absolutAppPath = String.format("%s/%s", heliumLocalPath, pkg.getArtifact());
+            pkg.setArtifact(absolutAppPath);
+          }
+
           String pkgInfo = gson.toJson(pkg);
           String appId = appState.getId();
 

@@ -82,7 +82,7 @@ public class HeliumApplicationFactoryTest implements JobListenerFactory {
     MockInterpreter2.register("mock2", "org.apache.zeppelin.interpreter.mock.MockInterpreter2");
 
 
-    heliumAppFactory = new HeliumApplicationFactory();
+    heliumAppFactory = new HeliumApplicationFactory(home.getAbsolutePath() + "/helium");
     depResolver = new DependencyResolver(tmpDir.getAbsolutePath() + "/local-repo");
     factory = new InterpreterFactory(conf,
         new InterpreterOption(true), null, null, heliumAppFactory, depResolver, false);
