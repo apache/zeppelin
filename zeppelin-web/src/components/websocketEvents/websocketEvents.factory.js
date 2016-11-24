@@ -117,7 +117,7 @@
       } else if (op === 'APP_STATUS_CHANGE') {
         $rootScope.$broadcast('appStatusChange', data);
       } else if (op === 'LIST_REVISION_HISTORY') {
-        $rootScope.$broadcast('listRevisionHistory', data);
+        $rootScope.$broadcast('listRevisionHistory', data.data);
       } else if (op === 'NOTE_REVISION') {
         $rootScope.$broadcast('noteRevision', data);
       } else if (op === 'INTERPRETER_BINDINGS') {

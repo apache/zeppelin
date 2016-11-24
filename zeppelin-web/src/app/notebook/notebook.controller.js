@@ -192,14 +192,17 @@
     };
 
     $scope.$on('listRevisionHistory', function(event, data) {
-      console.log('We got the revisions %o', data);
+      console.log('received list of revisions %o', data);
       $scope.noteRevisions = data.revisionList;
     });
 
-    // receive certain revision of note
-    $scope.$on('noteRevision', function(event, data) {
-      console.log('received note revision %o', data);
-      //TODO(xxx): render it
+    $scope.$on('noteRevision', function(event, note) {
+      console.log('received note revision %o', note);
+      if (note) {
+        $scope.note = note;
+      } else {
+        $location.path('/');
+      }
     });
 
     $scope.runNote = function() {
