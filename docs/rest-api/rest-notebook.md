@@ -203,10 +203,14 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
         },
         "jobName": "paragraph\_1423500782552\_-1439281894",
         "id": "20150210-015302\_1492795503",
-        "result": {
+        "results": {
           "code": "SUCCESS",
-          "type": "TABLE",
-          "msg": "age\tvalue\n19\t4\n20\t3\n21\t7\n22\t9\n23\t20\n24\t24\n25\t44\n26\t77\n27\t94\n28\t103\n29\t97\n"
+          "msg": [
+            {
+              "type": "TABLE",
+              "data": "age\tvalue\n19\t4\n20\t3\n21\t7\n22\t9\n23\t20\n24\t24\n25\t44\n26\t77\n27\t94\n28\t103\n29\t97\n"
+            }
+          ]
         },
         "dateCreated": "Feb 10, 2015 1:53:02 AM",
         "dateStarted": "Jul 3, 2015 1:43:17 PM",
@@ -793,10 +797,14 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
     },
     "jobName": "paragraph\_1450391574392\_-1890856722",
     "id": "20151218-073254\_1105602047",
-    "result": {
+    "results": {
       "code": "SUCCESS",
-      "type": "TEXT",
-      "msg": "it's paragraph2\n"
+      "msg": [
+        {
+           "type": "TEXT",
+           "data": "it's paragraph2\n"
+        }
+      ]
     },
     "dateCreated": "Dec 18, 2015 7:32:54 AM",
     "dateStarted": "Dec 18, 2015 7:33:55 AM",
@@ -914,10 +922,14 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
     "apps":[],
     "jobName":"paragraph_1423500782552_-1439281894",
     "id":"20150210-015302_1492795503",
-    "result":{
+    "results":{
       "code":"SUCCESS",
-      "type":"TABLE",
-      "msg":"age\tvalue\n19\t4\n20\t3\n21\t7\n22\t9\n23\t20\n24\t24\n25\t44\n26\t77\n27\t94\n28\t103\n29\t97\n"
+      "msg": [
+        {
+          "type":"TABLE",
+          "data":"age\tvalue\n19\t4\n20\t3\n21\t7\n22\t9\n23\t20\n24\t24\n25\t44\n26\t77\n27\t94\n28\t103\n29\t97\n"
+        }
+      ]
     },
     "dateCreated":"Feb 10, 2015 1:53:02 AM",
     "dateStarted":"Jul 3, 2015 1:43:17 PM",
