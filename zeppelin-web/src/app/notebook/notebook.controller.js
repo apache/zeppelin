@@ -92,7 +92,7 @@
       if ($routeParams.revisionId) {
         websocketMsgSrv.getNoteByRevision($routeParams.noteId, $routeParams.revisionId);
       } else {
-        websocketMsgSrv.getNotebook($routeParams.noteId);
+        websocketMsgSrv.getNote($routeParams.noteId);
       }
       websocketMsgSrv.listRevisionHistory($routeParams.noteId);
       var currentRoute = $route.current;
