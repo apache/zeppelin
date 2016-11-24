@@ -16,7 +16,8 @@
   ~ limitations under the License.
   -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
@@ -39,7 +40,8 @@
     <deb.pid.path>/var/run/${deb.pkg.name}</deb.pid.path>
     <deb.notebook.path>/var/lib/${deb.pkg.name}</deb.notebook.path>
     <!-- NOTE: We can modify this setting with assembly settings -->
-    <deb.assembly.base.dir>target/zeppelin-${project.version}/zeppelin-${project.version}</deb.assembly.base.dir>
+    <deb.assembly.base.dir>target/zeppelin-${project.version}/zeppelin-${project.version}
+    </deb.assembly.base.dir>
   </properties>
 
   <!-- NOTE: These dependency declarations are only required to sort this project to the
@@ -175,7 +177,8 @@
               <bucketName>zeppel.in</bucketName>
               <endpoint>s3-ap-northeast-1.amazonaws.com</endpoint>
               <makePublic>true</makePublic>
-              <sourceFile>zeppelin-distribution/target/zeppelin-${project.version}.tar.gz</sourceFile>
+              <sourceFile>zeppelin-distribution/target/zeppelin-${project.version}.tar.gz
+              </sourceFile>
               <destinationFile>zeppelin-${project.version}.tar.gz</destinationFile>
             </configuration>
             <executions>
@@ -239,7 +242,9 @@
                   <goal>jdeb</goal>
                 </goals>
                 <configuration>
-                  <deb>${project.build.directory}/zeppelin-${project.version}-${buildNumber}_all.deb</deb>
+                  <deb>
+                    ${project.build.directory}/zeppelin-${project.version}-${buildNumber}_all.deb
+                  </deb>
                   <attach>false</attach>
                   <skipPOMs>false</skipPOMs>
                   <dataSet>
