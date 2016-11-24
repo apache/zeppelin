@@ -21,12 +21,6 @@ bin=$(cd "${bin}">/dev/null; pwd)
 
 . "${bin}/common.sh"
 
-ZEPPELIN_ENV="conf/zeppelin-env.sh"
-ZEPPELIN_ENV_TEMP="${ZEPPELIN_ENV}.template"
-ZEPPELIN_VERSION="$(getZeppelinVersion)"
-
-ANSWER_FILE="README.txt"
-
 # Download Spark binary package from the given URL.
 # Ties 3 times with 1s delay
 # Arguments: url - source URL
