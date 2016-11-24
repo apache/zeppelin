@@ -16,7 +16,9 @@
   ~ limitations under the License.
   -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
@@ -35,9 +37,9 @@
   <properties>
     <py4j.version>0.9.2</py4j.version>
     <python.test.exclude>
-        **/PythonInterpreterWithPythonInstalledTest.java,
-        **/PythonInterpreterPandasSqlTest.java,
-        **/PythonInterpreterMatplotlibTest.java
+      **/PythonInterpreterWithPythonInstalledTest.java,
+      **/PythonInterpreterPandasSqlTest.java,
+      **/PythonInterpreterMatplotlibTest.java
     </python.test.exclude>
   </properties>
 
@@ -85,8 +87,6 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
-
-
 
 
   <build>
