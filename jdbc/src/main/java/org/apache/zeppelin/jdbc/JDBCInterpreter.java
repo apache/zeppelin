@@ -462,6 +462,8 @@ public class JDBCInterpreter extends Interpreter {
           msg.append(UPDATE_COUNT_HEADER).append(NEWLINE);
           msg.append(updateCount).append(NEWLINE);
         }
+        //In case user ran an insert/update/upsert statement
+        if (connection.getAutoCommit() != true) connection.commit();
       } finally {
         if (resultSet != null) {
           try {
