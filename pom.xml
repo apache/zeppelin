@@ -261,7 +261,7 @@
             </goals>
             <configuration>
               <failOnViolation>true</failOnViolation>
-              <excludes>org/apache/zeppelin/interpreter/thrift/*</excludes>
+              <excludes>org/apache/zeppelin/interpreter/thrift/*,org/apache/zeppelin/scio/avro/*,org/apache/zeppelin/scio/avro/*</excludes>
             </configuration>
           </execution>
           <execution>
@@ -271,7 +271,7 @@
               <goal>checkstyle-aggregate</goal>
             </goals>
             <configuration>
-              <excludes>org/apache/zeppelin/interpreter/thrift/*</excludes>
+              <excludes>org/apache/zeppelin/interpreter/thrift/*,org/apache/zeppelin/scio/avro/*,org/apache/zeppelin/scio/avro/*</excludes>
             </configuration>
           </execution>
         </executions>
