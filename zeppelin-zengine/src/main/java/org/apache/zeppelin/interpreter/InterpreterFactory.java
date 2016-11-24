@@ -290,7 +290,8 @@ public class InterpreterFactory implements InterpreterGroupFactory {
         new ArrayList<InterpreterInfo>() : new ArrayList<>(o.getInterpreterInfos());
     List<Dependency> deps = (null == o.getDependencies()) ?
         new ArrayList<Dependency>() : new ArrayList<>(o.getDependencies());
-    Properties props = convertInterpreterProperties((Map<String, InterpreterProperty>) o.getProperties());
+    Properties props =
+        convertInterpreterProperties((Map<String, InterpreterProperty>) o.getProperties());
     InterpreterOption option = InterpreterOption.fromInterpreterOption(o.getOption());
 
     InterpreterSetting setting = new InterpreterSetting(o.getName(), o.getName(),
