@@ -14,31 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.zeppelin.notebook.repo.zeppelinhub.websocket.scheduler;
+package org.apache.zeppelin.util;
 
-import org.apache.zeppelin.notebook.repo.zeppelinhub.websocket.ZeppelinClient;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.UUID;
 
 /**
- * Routine that sends PING to all connected Zeppelin ws connections.
- *
+ * Simple implementation of a auto-generated key for websocket watcher.
+ * This is a LAZY implementation, we might want to update this later on :)
  */
-public class ZeppelinHeartbeat implements Runnable {
-  private static final Logger LOG = LoggerFactory.getLogger(ZeppelinHubHeartbeat.class);
-  private ZeppelinClient client;
-  
-  public static ZeppelinHeartbeat newInstance(ZeppelinClient client) {
-    return new ZeppelinHeartbeat(client);
-  }
-  
-  private ZeppelinHeartbeat(ZeppelinClient client) {
-    this.client = client;
+public class WatcherSecurityKey {
+  public static final String HTTP_HEADER = "X-Watcher-Key";
+  private static final String KEY = UUID.randomUUID().toString();
+
+  protected WatcherSecurityKey() {}
+
+  public static String getKey() {
+    return KEY;
   }
 
-  @Override
-  public void run() {
-    LOG.debug("Sending PING to Zeppelin Websocket Server");
-    client.ping();
-  }
 }

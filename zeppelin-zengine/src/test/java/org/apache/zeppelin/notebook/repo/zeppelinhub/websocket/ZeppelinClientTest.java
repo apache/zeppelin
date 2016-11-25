@@ -1,6 +1,10 @@
 package org.apache.zeppelin.notebook.repo.zeppelinhub.websocket;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -74,7 +78,7 @@ public class ZeppelinClientTest {
     assertEquals(connectionB, client.getZeppelinConnection("BBBB"));
 
     // Remove connection to note AAAA
-    client.removeZeppelinConnection("AAAA");
+    client.removeNoteConnection("AAAA");
     assertEquals(client.countConnectedNotes(), 1);
     assertNotEquals(connectionA, client.getZeppelinConnection("AAAA"));
     assertEquals(client.countConnectedNotes(), 2);
@@ -117,7 +121,7 @@ public class ZeppelinClientTest {
     msg.data = Maps.newHashMap();
     msg.data.put("key", "value");
     client.send(msg, "DDDD");
-    client.removeZeppelinConnection("DDDD");
+    client.removeNoteConnection("DDDD");
     client.stop();
   }
 }

@@ -1293,7 +1293,7 @@
         var keys = _.uniq(Object.keys(node.data || {})
                 .concat(hasKey ? properties[node.defaultLabel].keys : baseCols));
         if (!hasKey) {
-          properties[node.defaultLabel] = {selected: 'label'};
+          properties[node.defaultLabel] = {selected: 'defaultLabel'};
         }
         properties[node.defaultLabel].keys = keys;
       });

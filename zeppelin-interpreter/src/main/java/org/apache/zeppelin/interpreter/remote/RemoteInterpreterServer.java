@@ -552,7 +552,7 @@ public class RemoteInterpreterServer
         gson.fromJson(ric.getGui(), GUI.class),
         interpreterGroup.getAngularObjectRegistry(),
         interpreterGroup.getResourcePool(),
-        contextRunners, output);
+        contextRunners, output, eventClient);
   }
 
 
