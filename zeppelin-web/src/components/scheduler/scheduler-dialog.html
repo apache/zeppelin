@@ -44,7 +44,6 @@ limitations under the License.
                   <label>- Cron expression</label>
                   <input type="text"
                   ng-model="note.config.cron"
-                  ng-change="setCronScheduler(note.config.cron)"
                   dropdown-input ng-model-options="{ debounce: 1000 }" />
                   <p ng-show="note.info.cron" class="text-danger cron-info">
                     {{note.info.cron}}
@@ -63,21 +62,21 @@ limitations under the License.
                 <div class="form-group">
                   <label class="control-label col-sm-3">On start</label>
                   <div class="col-sm-8">
-                    <input type="text" class="form-control" id="startEmail" ng-model="note.config.email.start"
+                    <input type="text" class="form-control" id="startEmail" ng-model="note.config.notification.email.start"
                            placeholder="Emails (comma-separated)" />
                   </div>
                 </div>
                 <div class="form-group">
                   <label class="control-label col-sm-3">On success</label>
                   <div class="col-sm-8">
-                    <input type="text"class="form-control" id="successEmail" ng-model="note.config.email.success"
+                    <input type="text"class="form-control" id="successEmail" ng-model="note.config.notification.email.finish"
                            placeholder="Emails (comma-separated)">
                   </div>
                 </div>
                 <div class="form-group">
                   <label class="control-label col-sm-3">On error</label>
                   <div class="col-sm-8">
-                    <input type="text"class="form-control" id="errorEmail" ng-model="note.config.email.error"
+                    <input type="text"class="form-control" id="errorEmail" ng-model="note.config.notification.email.error"
                            placeholder="Emails (comma-separated)">
                   </div>
                 </div>
@@ -86,9 +85,9 @@ limitations under the License.
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-default" ng-click="setEmail(note.config.email)" data-dismiss="modal">Ok
+          <button type="button" class="btn btn-default" ng-click="setConfig(note.config)" data-dismiss="modal">Ok
           </button>
-          <button type="button" class="btn btn-default" data-dismiss="modal">Cancel
+          <button type="button" class="btn btn-default" ng-click="reset()" data-dismiss="modal">Cancel
           </button>
         </div>
         </form>

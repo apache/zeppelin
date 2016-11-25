@@ -29,8 +29,8 @@
         "msg": "\u003ch2\u003eWelcome to Zeppelin.\u003c/h2\u003e\n\u003ch5\u003eThis is a live tutorial, you can run the code yourself. (Shift-Enter to Run)\u003c/h5\u003e\n"
       },
       "dateCreated": "Feb 13, 2015 11:16:21 PM",
-      "dateStarted": "Nov 11, 2016 12:55:00 PM",
-      "dateFinished": "Nov 11, 2016 12:55:00 PM",
+      "dateStarted": "Nov 17, 2016 5:12:00 PM",
+      "dateFinished": "Nov 17, 2016 5:12:02 PM",
       "status": "FINISHED",
       "progressUpdateIntervalMs": 500
     },
@@ -64,11 +64,11 @@
       "result": {
         "code": "ERROR",
         "type": "TEXT",
-        "msg": "\nimport org.apache.commons.io.IOUtils\n\nimport java.net.URL\n\nimport java.nio.charset.Charset\n\nbankText: org.apache.spark.rdd.RDD[String] \u003d ParallelCollectionRDD[1] at parallelize at \u003cconsole\u003e:27\n\ndefined class Bank\n\n\n\n\n\u003cconsole\u003e:38: error: value toDF is not a member of org.apache.spark.rdd.RDD[Bank]\npossible cause: maybe a semicolon is missing before `value toDF\u0027?\n       ).toDF()\n         ^\n"
+        "msg": "\nimport org.apache.commons.io.IOUtils\n\nimport java.net.URL\n\nimport java.nio.charset.Charset\n\nbankText: org.apache.spark.rdd.RDD[String] \u003d ParallelCollectionRDD[0] at parallelize at \u003cconsole\u003e:23\n\ndefined class Bank\n\n\n\n\n\u003cconsole\u003e:34: error: value toDF is not a member of org.apache.spark.rdd.RDD[Bank]\npossible cause: maybe a semicolon is missing before `value toDF\u0027?\n       ).toDF()\n         ^\n"
       },
       "dateCreated": "Feb 10, 2015 1:52:59 AM",
-      "dateStarted": "Nov 11, 2016 12:55:00 PM",
-      "dateFinished": "Nov 11, 2016 12:55:02 PM",
+      "dateStarted": "Nov 17, 2016 5:12:00 PM",
+      "dateFinished": "Nov 17, 2016 5:12:18 PM",
       "status": "ERROR",
       "progressUpdateIntervalMs": 500
     },
@@ -123,8 +123,8 @@
         "msg": "Table or view not found: bank; line 2 pos 5\nset zeppelin.spark.sql.stacktrace \u003d true to see full stacktrace"
       },
       "dateCreated": "Feb 10, 2015 1:53:02 AM",
-      "dateStarted": "Nov 11, 2016 12:55:00 PM",
-      "dateFinished": "Nov 11, 2016 12:55:02 PM",
+      "dateStarted": "Nov 17, 2016 5:12:03 PM",
+      "dateFinished": "Nov 17, 2016 5:12:23 PM",
       "status": "ERROR",
       "progressUpdateIntervalMs": 500
     },
@@ -187,8 +187,8 @@
         "msg": "Table or view not found: bank; line 2 pos 5\nset zeppelin.spark.sql.stacktrace \u003d true to see full stacktrace"
       },
       "dateCreated": "Feb 12, 2015 2:54:04 PM",
-      "dateStarted": "Nov 11, 2016 12:55:02 PM",
-      "dateFinished": "Nov 11, 2016 12:55:02 PM",
+      "dateStarted": "Nov 17, 2016 5:12:19 PM",
+      "dateFinished": "Nov 17, 2016 5:12:23 PM",
       "status": "ERROR",
       "progressUpdateIntervalMs": 500
     },
@@ -262,8 +262,8 @@
         "msg": "Table or view not found: bank; line 2 pos 5\nset zeppelin.spark.sql.stacktrace \u003d true to see full stacktrace"
       },
       "dateCreated": "Feb 13, 2015 11:04:22 PM",
-      "dateStarted": "Nov 11, 2016 12:55:02 PM",
-      "dateFinished": "Nov 11, 2016 12:55:02 PM",
+      "dateStarted": "Nov 17, 2016 5:12:23 PM",
+      "dateFinished": "Nov 17, 2016 5:12:23 PM",
       "status": "ERROR",
       "progressUpdateIntervalMs": 500
     },
@@ -296,8 +296,8 @@
         "msg": "\u003ch2\u003eCongratulations, it\u0027s done.\u003c/h2\u003e\n\u003ch5\u003eYou can create your own notebook in \u0027Notebook\u0027 menu. Good luck!\u003c/h5\u003e\n"
       },
       "dateCreated": "Feb 13, 2015 11:04:28 PM",
-      "dateStarted": "Nov 11, 2016 12:55:00 PM",
-      "dateFinished": "Nov 11, 2016 12:55:00 PM",
+      "dateStarted": "Nov 17, 2016 5:12:03 PM",
+      "dateFinished": "Nov 17, 2016 5:12:03 PM",
       "status": "FINISHED",
       "progressUpdateIntervalMs": 500
     },
@@ -330,8 +330,8 @@
         "msg": "\u003cp\u003eAbout bank data\u003c/p\u003e\n\u003cpre\u003e\u003ccode\u003eCitation Request:\n  This dataset is public available for research. The details are described in [Moro et al., 2011]. \n  Please include this citation if you plan to use this database:\n\n  [Moro et al., 2011] S. Moro, R. Laureano and P. Cortez. Using Data Mining for Bank Direct Marketing: An Application of the CRISP-DM Methodology. \n  In P. Novais et al. (Eds.), Proceedings of the European Simulation and Modelling Conference - ESM\u00272011, pp. 117-121, Guimarães, Portugal, October, 2011. EUROSIS.\n\n  Available at: [pdf] http://hdl.handle.net/1822/14838\n                [bib] http://www3.dsi.uminho.pt/pcortez/bib/2011-esm-1.txt\n\u003c/code\u003e\u003c/pre\u003e\n"
       },
       "dateCreated": "Mar 26, 2015 9:46:58 PM",
-      "dateStarted": "Nov 11, 2016 12:55:00 PM",
-      "dateFinished": "Nov 11, 2016 12:55:00 PM",
+      "dateStarted": "Nov 17, 2016 5:12:03 PM",
+      "dateFinished": "Nov 17, 2016 5:12:03 PM",
       "status": "FINISHED",
       "progressUpdateIntervalMs": 500
     },
@@ -365,8 +365,8 @@
         "msg": ""
       },
       "dateCreated": "Jul 3, 2015 1:30:47 PM",
-      "dateStarted": "Nov 11, 2016 12:55:02 PM",
-      "dateFinished": "Nov 11, 2016 12:55:02 PM",
+      "dateStarted": "Nov 17, 2016 5:12:23 PM",
+      "dateFinished": "Nov 17, 2016 5:12:23 PM",
       "status": "FINISHED",
       "progressUpdateIntervalMs": 500
     }
@@ -391,12 +391,14 @@
     "2BJ277JQB:shared_process": []
   },
   "config": {
-    "looknfeel": "default",
-    "email": {
-      "start": "victor.garcia@beeva.com",
-      "success": "victor.garcia@beeva.com",
-      "error": "victor.garcia@beeva.com"
-    }
+    "notification": {
+      "email": {
+        "start": "victor.garcia@beeva.",
+        "finish": "victor.garcia@beeva.com",
+        "error": "victor.garcia@beeva.com"
+      }
+    },
+    "looknfeel": "default"
   },
   "info": {}
 }

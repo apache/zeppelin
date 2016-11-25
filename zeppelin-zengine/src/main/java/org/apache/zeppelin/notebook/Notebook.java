@@ -98,7 +98,6 @@ public class Notebook implements NoteEventListener {
   private final List<NotebookEventListener> notebookEventListeners =
       Collections.synchronizedList(new LinkedList<NotebookEventListener>());
   private Credentials credentials;
-  private static EventNotification notification;
 
   /**
    * Main constructor \w manual Dependency Injection
@@ -794,9 +793,9 @@ public class Notebook implements NoteEventListener {
       StringMap email = (StringMap) note.getConfig().get("email");
 
       if (email != null) {
-        notification.schedulerEvent(note);
+        notification.enabledNotification(note);
       } else {
-        while (!note.getLastParagraph().isTerminated()) {
+        while (!note.isTerminated()) {
           try {
             Thread.sleep(1000);
           } catch (InterruptedException e) {
