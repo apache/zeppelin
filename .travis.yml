@@ -42,7 +42,7 @@ matrix:
     - jdk: "oraclejdk7"
       env: SCALA_VER="2.11" PROFILE="-Prat" BUILD_FLAG="clean" TEST_FLAG="org.apache.rat:apache-rat-plugin:check" TEST_PROJECTS=""
 
-    # Test all modules with spark 2.0.0 and scala 2.11 and python 3
+    # Test all modules with spark 2.0.0 and scala 2.11
     - jdk: "oraclejdk7"
       env: SCALA_VER="2.11" SPARK_VER="2.0.0" HADOOP_VER="2.3" PROFILE="-Pspark-2.0 -Phadoop-2.3 -Ppyspark -Psparkr -Pscalding -Pexamples -Pscala-2.11" BUILD_FLAG="package -Pbuild-distr -DskipRat" TEST_FLAG="verify -Pusing-packaged-distr -DskipRat" TEST_PROJECTS=""
 
