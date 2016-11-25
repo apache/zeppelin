@@ -18,11 +18,14 @@
 package org.apache.zeppelin.rest;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.reflect.TypeToken;
 import org.apache.commons.httpclient.methods.DeleteMethod;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
@@ -44,6 +47,7 @@ import org.junit.runners.MethodSorters;
 import com.google.gson.Gson;
 
 import static org.junit.Assert.*;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  * Zeppelin interpreter rest api tests
@@ -144,6 +148,70 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
     // then: call delete setting API
     assertThat("Test delete method:", delete, isAllowed());
     delete.releaseConnection();
+  }
+
+  @Test
+  public void testCreatedInterpreterDependencies() throws IOException {
+    // when: Create 2 interpreter settings `md1` and `md2` which have different dep.
+
+    String md1Name = "md1";
+    String md2Name = "md2";
+
+    String md1Dep = "org.apache.drill.exec:drill-jdbc:jar:1.7.0";
+    String md2Dep = "org.apache.drill.exec:drill-jdbc:jar:1.6.0";
+
+    String reqBody1 = "{\"name\":\"" + md1Name + "\",\"group\":\"md\",\"properties\":{\"propname\":\"propvalue\"}," +
+        "\"interpreterGroup\":[{\"class\":\"org.apache.zeppelin.markdown.Markdown\",\"name\":\"md\"}]," +
+        "\"dependencies\":[ {\n" +
+        "      \"groupArtifactVersion\": \"" + md1Dep + "\",\n" +
+        "      \"exclusions\":[]\n" +
+        "    }]," +
+        "\"option\": { \"remote\": true, \"session\": false }}";
+    PostMethod post = httpPost("/interpreter/setting", reqBody1);
+    assertThat("test create method:", post, isCreated());
+    post.releaseConnection();
+
+    String reqBody2 = "{\"name\":\"" + md2Name + "\",\"group\":\"md\",\"properties\":{\"propname\":\"propvalue\"}," +
+        "\"interpreterGroup\":[{\"class\":\"org.apache.zeppelin.markdown.Markdown\",\"name\":\"md\"}]," +
+        "\"dependencies\":[ {\n" +
+        "      \"groupArtifactVersion\": \"" + md2Dep + "\",\n" +
+        "      \"exclusions\":[]\n" +
+        "    }]," +
+        "\"option\": { \"remote\": true, \"session\": false }}";
+    post = httpPost("/interpreter/setting", reqBody2);
+    assertThat("test create method:", post, isCreated());
+    post.releaseConnection();
+
+    // 1. Call settings API
+    GetMethod get = httpGet("/interpreter/setting");
+    String rawResponse = get.getResponseBodyAsString();
+    get.releaseConnection();
+
+    // 2. Parsing to List<InterpreterSettings>
+    JsonObject responseJson = gson.fromJson(rawResponse, JsonElement.class).getAsJsonObject();
+    JsonArray bodyArr = responseJson.getAsJsonArray("body");
+    List<InterpreterSetting> settings = new Gson().fromJson(bodyArr,
+        new TypeToken<ArrayList<InterpreterSetting>>() {
+        }.getType());
+
+    // 3. Filter interpreters out we have just created
+    InterpreterSetting md1 = null;
+    InterpreterSetting md2 = null;
+    for (InterpreterSetting setting : settings) {
+      if (md1Name.equals(setting.getName())) {
+        md1 = setting;
+      } else if (md2Name.equals(setting.getName())) {
+        md2 = setting;
+      }
+    }
+
+    // then: should get created interpreters which have different dependencies
+
+    // 4. Validate each md interpreter has its own dependencies
+    assertEquals(1, md1.getDependencies().size());
+    assertEquals(1, md2.getDependencies().size());
+    assertEquals(md1Dep, md1.getDependencies().get(0).getGroupArtifactVersion());
+    assertEquals(md2Dep, md2.getDependencies().get(0).getGroupArtifactVersion());
   }
 
   @Test

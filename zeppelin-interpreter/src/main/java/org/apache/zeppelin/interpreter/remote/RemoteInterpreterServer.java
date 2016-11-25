@@ -72,7 +72,6 @@ public class RemoteInterpreterServer
   Gson gson = new Gson();
 
   RemoteInterpreterService.Processor<RemoteInterpreterServer> processor;
-  RemoteInterpreterServer handler;
   private int port;
   private TThreadPoolServer server;
 
@@ -587,6 +586,7 @@ public class RemoteInterpreterServer
     return new InterpreterContext(
         ric.getNoteId(),
         ric.getParagraphId(),
+        ric.getReplName(),
         ric.getParagraphTitle(),
         ric.getParagraphText(),
         gson.fromJson(ric.getAuthenticationInfo(), AuthenticationInfo.class),

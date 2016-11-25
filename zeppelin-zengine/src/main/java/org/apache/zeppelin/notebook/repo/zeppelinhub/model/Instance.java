@@ -14,24 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.zeppelin.notebook.repo.zeppelinhub.model;
 
-package org.apache.zeppelin.interpreter;
-
-import static org.junit.Assert.*;
-
-import org.junit.Test;
-
-public class InterpreterContextTest {
-
-  @Test
-  public void testThreadLocal() {
-    assertNull(InterpreterContext.get());
-
-    InterpreterContext.set(new InterpreterContext(null, null, null, null, null, null, null, null, null, null, null, null));
-    assertNotNull(InterpreterContext.get());
-
-    InterpreterContext.remove();
-    assertNull(InterpreterContext.get());
-  }
-
+/**
+ * ZeppelinHub Instance structure.
+ *
+ */
+public class Instance {
+  public int id;
+  public String name;
+  public String token;
 }

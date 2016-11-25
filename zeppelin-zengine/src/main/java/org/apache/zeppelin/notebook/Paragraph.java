@@ -473,6 +473,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     InterpreterContext interpreterContext = new InterpreterContext(
         note.getId(),
         getId(),
+        getRequiredReplName(),
         this.getTitle(),
         this.getText(),
         this.getAuthenticationInfo(),

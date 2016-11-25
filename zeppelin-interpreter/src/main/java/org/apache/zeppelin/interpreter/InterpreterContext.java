@@ -49,6 +49,7 @@ public class InterpreterContext {
   }
 
   private final String noteId;
+  private final String replName;
   private final String paragraphTitle;
   private final String paragraphId;
   private final String paragraphText;
@@ -64,6 +65,7 @@ public class InterpreterContext {
 
   public InterpreterContext(String noteId,
                             String paragraphId,
+                            String replName,
                             String paragraphTitle,
                             String paragraphText,
                             AuthenticationInfo authenticationInfo,
@@ -74,12 +76,13 @@ public class InterpreterContext {
                             List<InterpreterContextRunner> runners,
                             InterpreterOutput out
                             ) {
-    this(noteId, paragraphId, paragraphTitle, paragraphText, authenticationInfo, config, gui,
-      angularObjectRegistry, resourcePool, runners, out, null);
+    this(noteId, paragraphId, replName, paragraphTitle, paragraphText, authenticationInfo,
+        config, gui, angularObjectRegistry, resourcePool, runners, out, null);
   }
 
   public InterpreterContext(String noteId,
                             String paragraphId,
+                            String replName,
                             String paragraphTitle,
                             String paragraphText,
                             AuthenticationInfo authenticationInfo,
@@ -93,6 +96,7 @@ public class InterpreterContext {
                             ) {
     this.noteId = noteId;
     this.paragraphId = paragraphId;
+    this.replName = replName;
     this.paragraphTitle = paragraphTitle;
     this.paragraphText = paragraphText;
     this.authenticationInfo = authenticationInfo;
@@ -107,6 +111,7 @@ public class InterpreterContext {
 
   public InterpreterContext(String noteId,
                             String paragraphId,
+                            String replName,
                             String paragraphTitle,
                             String paragraphText,
                             AuthenticationInfo authenticationInfo,
@@ -118,13 +123,18 @@ public class InterpreterContext {
                             InterpreterOutput output,
                             RemoteWorksController remoteWorksController,
                             RemoteInterpreterEventClient eventClient) {
-    this(noteId, paragraphId, paragraphTitle, paragraphText, authenticationInfo, config, gui,
-        angularObjectRegistry, resourcePool, contextRunners, output, remoteWorksController);
+    this(noteId, paragraphId, replName, paragraphTitle, paragraphText, authenticationInfo,
+        config, gui, angularObjectRegistry, resourcePool, contextRunners, output,
+        remoteWorksController);
     this.client = new RemoteEventClient(eventClient);
   }
 
   public String getNoteId() {
     return noteId;
+  }
+
+  public String getReplName() {
+    return replName;
   }
 
   public String getParagraphId() {

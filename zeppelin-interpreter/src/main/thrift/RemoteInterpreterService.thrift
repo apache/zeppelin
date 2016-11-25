@@ -18,16 +18,16 @@
 
 namespace java org.apache.zeppelin.interpreter.thrift
 
-
 struct RemoteInterpreterContext {
   1: string noteId,
   2: string paragraphId,
-  3: string paragraphTitle,
-  4: string paragraphText,
-  5: string authenticationInfo,
-  6: string config,   // json serialized config
-  7: string gui,      // json serialized gui
-  8: string runners   // json serialized runner
+  3: string replName,
+  4: string paragraphTitle,
+  5: string paragraphText,
+  6: string authenticationInfo,
+  7: string config,   // json serialized config
+  8: string gui,      // json serialized gui
+  9: string runners   // json serialized runner
 }
 
 struct RemoteInterpreterResult {
