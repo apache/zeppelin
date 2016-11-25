@@ -73,7 +73,7 @@ public class PythonDockerInterpreterTest {
     return new InterpreterContext(
         "noteId",
         "paragraphId",
-        null,
+        "replName",
         "paragraphTitle",
         "paragraphText",
         new AuthenticationInfo(),
