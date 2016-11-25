@@ -55,7 +55,7 @@ public class DistributedResourcePoolTest {
 
   @Before
   public void setUp() throws Exception {
-    env = new HashMap<String, String>();
+    env = new HashMap<>();
     env.put("ZEPPELIN_CLASSPATH", new File("./target/test-classes").getAbsolutePath());
 
     Properties p = new Properties();
@@ -70,7 +70,9 @@ public class DistributedResourcePoolTest {
         env,
         10 * 1000,
         null,
-        null
+        null,
+        "anonymous",
+        false
     );
 
     intpGroup1 = new InterpreterGroup("intpGroup1");
@@ -88,7 +90,9 @@ public class DistributedResourcePoolTest {
         env,
         10 * 1000,
         null,
-        null
+        null,
+        "anonymous",
+        false
     );
 
     intpGroup2 = new InterpreterGroup("intpGroup2");
@@ -99,6 +103,7 @@ public class DistributedResourcePoolTest {
     context = new InterpreterContext(
         "note",
         "id",
+        null,
         "title",
         "text",
         new AuthenticationInfo(),

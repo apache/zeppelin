@@ -37,7 +37,7 @@ import org.sonatype.aether.resolution.ArtifactResult;
  */
 public abstract class AbstractDependencyResolver {
   protected RepositorySystem system = Booter.newRepositorySystem();
-  protected List<RemoteRepository> repos = new LinkedList<RemoteRepository>();
+  protected List<RemoteRepository> repos = new LinkedList<>();
   protected RepositorySystemSession session;
   
   public AbstractDependencyResolver(String localRepoPath) {

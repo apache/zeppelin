@@ -81,12 +81,8 @@ public class VFSNotebookRepo implements NotebookRepo {
     }
 
     if (filesystemRoot.getScheme() == null) { // it is local path
-      try {
-        this.filesystemRoot = new URI(new File(
-                conf.getRelativeDir(filesystemRoot.getPath())).getAbsolutePath());
-      } catch (URISyntaxException e) {
-        throw new IOException(e);
-      }
+      File f = new File(conf.getRelativeDir(filesystemRoot.getPath()));
+      this.filesystemRoot = f.toURI();
     }
 
     fsManager = VFS.getManager();
@@ -127,7 +123,7 @@ public class VFSNotebookRepo implements NotebookRepo {
 
     FileObject[] children = rootDir.getChildren();
 
-    List<NoteInfo> infos = new LinkedList<NoteInfo>();
+    List<NoteInfo> infos = new LinkedList<>();
     for (FileObject f : children) {
       String fileName = f.getName().getBaseName();
       if (f.isHidden()

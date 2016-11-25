@@ -43,7 +43,7 @@ limitations under the License.
       </button>
       <button type="button"
               class="btn btn-default btn-xs"
-              ng-click="clearAllParagraphOutput()"
+              ng-click="clearAllParagraphOutput(note.id)"
               ng-hide="viewOnly"
               ng-class="{'disabled':isNoteRunning()}"
               tooltip-placement="bottom" tooltip="Clear output">

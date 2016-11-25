@@ -228,8 +228,7 @@ Here are few examples:
   ```
 
 ### 3. Dynamic Dependency Loading via %spark.dep interpreter
-> Note: `%spark.dep` interpreter is deprecated since v0.6.0.
-`%spark.dep` interpreter loads libraries to `%spark` and `%spark.pyspark` but not to  `%spark.sql` interpreter. So we recommend you to use the first option instead.
+> Note: `%spark.dep` interpreter loads libraries to `%spark` and `%spark.pyspark` but not to  `%spark.sql` interpreter. So we recommend you to use the first option instead.
 
 When your code requires external library, instead of doing download/copy/restart Zeppelin, you can easily do following jobs using `%spark.dep` interpreter.
 
@@ -362,6 +361,11 @@ select * from ${table=defaultTableName} where text like '%${search}%'
 
 To learn more about dynamic form, checkout [Dynamic Form](../manual/dynamicform.html).
 
+
+## Matplotlib Integration (pyspark)
+Both the `python` and `pyspark` interpreters have built-in support for inline visualization using `matplotlib`, a popular plotting library for python. More details can be found in the [python interpreter documentation](../interpreter/python.html), since matplotlib support is identical. More advanced interactive plotting can be done with pyspark through utilizing Zeppelin's built-in [Angular Display System](../displaysystem/back-end-angular.html), as shown below:
+
+<img class="img-responsive" src="../assets/themes/zeppelin/img/docs-img/matplotlibAngularExample.gif" />
 
 ## Interpreter setting option
 

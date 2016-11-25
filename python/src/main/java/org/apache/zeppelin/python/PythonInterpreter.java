@@ -28,10 +28,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.zeppelin.display.GUI;
-import org.apache.zeppelin.interpreter.Interpreter;
-import org.apache.zeppelin.interpreter.InterpreterContext;
-import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
+import org.apache.zeppelin.interpreter.InterpreterHookRegistry.HookType;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.Scheduler;
@@ -61,6 +60,7 @@ public class PythonInterpreter extends Interpreter {
   private int maxResult;
 
   PythonProcess process = null;
+  private String pythonCommand = null;
 
   public PythonInterpreter(Properties property) {
     super(property);
@@ -68,6 +68,12 @@ public class PythonInterpreter extends Interpreter {
 
   @Override
   public void open() {
+    // Add matplotlib display hook
+    InterpreterGroup intpGroup = getInterpreterGroup();
+    if (intpGroup != null && intpGroup.getInterpreterHookRegistry() != null) {
+      registerHook(HookType.POST_EXEC_DEV, "z._displayhook()");
+    }
+    
     LOG.info("Starting Python interpreter ---->");
     LOG.info("Python path is set to:" + property.getProperty(ZEPPELIN_PYTHON));
 
@@ -115,6 +121,7 @@ public class PythonInterpreter extends Interpreter {
     try {
       if (process != null) {
         process.close();
+        process = null;
       }
       if (gatewayServer != null) {
         gatewayServer.shutdown();
@@ -193,10 +200,22 @@ public class PythonInterpreter extends Interpreter {
 
   public PythonProcess getPythonProcess() {
     if (process == null) {
-      return new PythonProcess(getProperty(ZEPPELIN_PYTHON));
+      String binPath = getProperty(ZEPPELIN_PYTHON);
+      if (pythonCommand != null) {
+        binPath = pythonCommand;
+      }
+      return new PythonProcess(binPath);
     } else {
       return process;
     }
+  }
+
+  public void setPythonCommand(String cmd) {
+    pythonCommand = cmd;
+  }
+
+  public String getPythonCommand() {
+    return pythonCommand;
   }
 
   private Job getRunningJob(String paragraphId) {
@@ -273,5 +292,4 @@ public class PythonInterpreter extends Interpreter {
   public int getMaxResult() {
     return maxResult;
   }
-  
 }

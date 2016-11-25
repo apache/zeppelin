@@ -120,7 +120,8 @@ public class Notebook implements NoteEventListener {
     quartzSched.start();
     CronJob.notebook = this;
 
-    loadAllNotes();
+    AuthenticationInfo anonymous = AuthenticationInfo.ANONYMOUS;
+    loadAllNotes(anonymous);
     if (this.noteSearchService != null) {
       long start = System.nanoTime();
       logger.info("Notebook indexing started...");
@@ -165,11 +166,7 @@ public class Notebook implements NoteEventListener {
       bindInterpretersToNote(subject.getUser(), note.getId(), interpreterIds);
     }
 
-    if (subject != null && !"anonymous".equals(subject.getUser())) {
-      Set<String> owners = new HashSet<String>();
-      owners.add(subject.getUser());
-      notebookAuthorization.setOwners(note.getId(), owners);
-    }
+    notebookAuthorization.setNewNotePermissions(note.getId(), subject);
     noteSearchService.addIndexDoc(note);
     note.persist(subject);
     fireNoteCreateEvent(note);
@@ -224,6 +221,7 @@ public class Notebook implements NoteEventListener {
         newNote.addCloneParagraph(p);
       }
 
+      notebookAuthorization.setNewNotePermissions(newNote.getId(), subject);
       newNote.persist(subject);
     } catch (IOException e) {
       logger.error(e.toString(), e);
@@ -462,11 +460,11 @@ public class Notebook implements NoteEventListener {
     return note;
   }
 
-  private void loadAllNotes() throws IOException {
-    List<NoteInfo> noteInfos = notebookRepo.list(null);
+  void loadAllNotes(AuthenticationInfo subject) throws IOException {
+    List<NoteInfo> noteInfos = notebookRepo.list(subject);
 
     for (NoteInfo info : noteInfos) {
-      loadNoteFromRepo(info.getId(), null);
+      loadNoteFromRepo(info.getId(), subject);
     }
   }
 
@@ -541,7 +539,7 @@ public class Notebook implements NoteEventListener {
     }
   }
 
-  public List<Note> getAllNotes(HashSet<String> userAndRoles) {
+  public List<Note> getAllNotes(Set<String> userAndRoles) {
     final Set<String> entities = Sets.newHashSet();
     if (userAndRoles != null) {
       entities.addAll(userAndRoles);

@@ -29,6 +29,7 @@ import org.junit.Test;
 import java.io.File;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.Properties;
 
 import static org.junit.Assert.assertEquals;
@@ -50,7 +51,7 @@ public class RemoteInterpreterOutputTestStream implements RemoteInterpreterProce
     intpGroup = new InterpreterGroup();
     intpGroup.put("note", new LinkedList<Interpreter>());
 
-    env = new HashMap<String, String>();
+    env = new HashMap<>();
     env.put("ZEPPELIN_CLASSPATH", new File("./target/test-classes").getAbsolutePath());
   }
 
@@ -71,7 +72,9 @@ public class RemoteInterpreterOutputTestStream implements RemoteInterpreterProce
         env,
         10 * 1000,
         this,
-        null);
+        null,
+        "anonymous",
+        false);
 
     intpGroup.get("note").add(intp);
     intp.setInterpreterGroup(intpGroup);
@@ -82,6 +85,7 @@ public class RemoteInterpreterOutputTestStream implements RemoteInterpreterProce
     return new InterpreterContext(
         "noteId",
         "id",
+        null,
         "title",
         "text",
         new AuthenticationInfo(),
@@ -152,6 +156,11 @@ public class RemoteInterpreterOutputTestStream implements RemoteInterpreterProce
 
   @Override
   public void onOutputUpdated(String noteId, String paragraphId, String output) {
+
+  }
+
+  @Override
+  public void onMetaInfosReceived(String settingId, Map<String, String> metaInfos) {
 
   }
 }

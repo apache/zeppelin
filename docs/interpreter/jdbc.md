@@ -50,7 +50,7 @@ JDBC interpreter lets you create a JDBC connection to any data sources seamlessl
     </li>
     <li style="padding-bottom: 5px; list-style: circle">
       <a href="https://hive.apache.org/" target="_blank">Apache Hive</a> - 
-      <a href="https://cwiki.apache.org/confluence/display/Hive/HiveClient#HiveClient-JDBC" target="_blank">JDBC Driver</a>
+      <a href="https://cwiki.apache.org/confluence/display/Hive/HiveServer2+Clients#HiveServer2Clients-JDBC" target="_blank">JDBC Driver</a>
     </li>
     <li style="padding-bottom: 5px; list-style: circle">
       <a href="https://phoenix.apache.org/" target="_blank">Apache Phoenix</a> itself is a JDBC driver
@@ -116,7 +116,11 @@ The JDBC interpreter properties are defined by default like below.
   </tr>
 </table>
 
-If you want to connect other databases such as `Mysql`, `Redshift` and `Hive`, you need to edit the property values. 
+If you want to connect other databases such as `Mysql`, `Redshift` and `Hive`, you need to edit the property values.
+You can also use [Credential](../security/datasource_authorization.html) for JDBC authentication.
+If `default.user` and `default.password` properties are deleted(using X button) for database connection in the interpreter setting page,
+the JDBC interpreter will get the account information from [Credential](../security/datasource_authorization.html).
+
 The below example is for `Mysql` connection.
 
 <img src="../assets/themes/zeppelin/img/docs-img/edit_properties.png" width="600px" />
@@ -125,7 +129,7 @@ The last step is **Dependency Setting**. Since Zeppelin only includes `PostgreSQ
 
 <img src="../assets/themes/zeppelin/img/docs-img/edit_dependencies.png" width="600px" />
 
-That's it. You can find more JDBC connection setting examples([Mysql](#mysql), [Apache Hive](#apache-hive), [Apache Phoenix](#apache-phoenix), and [Apache Tajo](#apache-tajo)) in [this section](#examples).
+That's it. You can find more JDBC connection setting examples([Mysql](#mysql), [MariaDB](#mariadb), [Redshift](#redshift), [Apache Hive](#apache-hive), [Apache Phoenix](#apache-phoenix), and [Apache Tajo](#apache-tajo)) in [this section](#examples).
 
 ## More properties
 There are more JDBC interpreter properties you can specify like below.
@@ -205,6 +209,50 @@ WHERE name='{{"{{performer=Sheryl Crow|Doof|Fanfarlo|Los Paranoia"}}}}'
 ## Examples
 Here are some examples you can refer to. Including the below connectors, you can connect every databases as long as it can be configured with it's JDBC driver.
 
+### Postgres
+
+<img src="../assets/themes/zeppelin/img/docs-img/postgres_setting.png" width="600px" />
+
+##### Properties
+<table class="table-configuration">
+  <tr>
+    <th>Name</th>
+    <th>Value</th>
+  </tr>
+  <tr>
+    <td>default.driver</td>
+    <td>org.postgresql.Driver</td>
+  </tr>
+  <tr>
+    <td>default.url</td>
+    <td>jdbc:postgresql://localhost:5432/</td>
+  </tr>
+  <tr>
+    <td>default.user</td>
+    <td>mysql_user</td>
+  </tr>
+  <tr>
+    <td>default.password</td>
+    <td>mysql_password</td>
+  </tr>
+</table>
+
+[Postgres JDBC Driver Docs](https://jdbc.postgresql.org/documentation/documentation.html)
+
+##### Dependencies
+<table class="table-configuration">
+  <tr>
+    <th>Artifact</th>
+    <th>Excludes</th>
+  </tr>
+  <tr>
+    <td>org.postgresql:postgresql:9.4.1211</td>
+    <td></td>
+  </tr>
+</table>
+
+[Maven Repository: org.postgresql:postgresql](https://mvnrepository.com/artifact/org.postgresql/postgresql)
+
 ### Mysql
 
 <img src="../assets/themes/zeppelin/img/docs-img/mysql_setting.png" width="600px" />
@@ -233,6 +281,8 @@ Here are some examples you can refer to. Including the below connectors, you can
   </tr>
 </table>
 
+[Mysql JDBC Driver Docs](https://dev.mysql.com/downloads/connector/j/)
+
 ##### Dependencies
 <table class="table-configuration">
   <tr>
@@ -244,6 +294,96 @@ Here are some examples you can refer to. Including the below connectors, you can
     <td></td>
   </tr>
 </table>
+
+[Maven Repository: mysql:mysql-connector-java](https://mvnrepository.com/artifact/mysql/mysql-connector-java)
+
+### MariaDB
+
+<img src="../assets/themes/zeppelin/img/docs-img/mariadb_setting.png" width="600px" />
+
+##### Properties
+<table class="table-configuration">
+  <tr>
+    <th>Name</th>
+    <th>Value</th>
+  </tr>
+  <tr>
+    <td>default.driver</td>
+    <td>org.mariadb.jdbc.Driver</td>
+  </tr>
+  <tr>
+    <td>default.url</td>
+    <td>jdbc:mariadb://localhost:3306</td>
+  </tr>
+  <tr>
+    <td>default.user</td>
+    <td>mariadb_user</td>
+  </tr>
+  <tr>
+    <td>default.password</td>
+    <td>mariadb_password</td>
+  </tr>
+</table>
+
+[MariaDB JDBC Driver Docs](https://mariadb.com/kb/en/mariadb/about-mariadb-connector-j/)
+
+##### Dependencies
+<table class="table-configuration">
+  <tr>
+    <th>Artifact</th>
+    <th>Excludes</th>
+  </tr>
+  <tr>
+    <td>org.mariadb.jdbc:mariadb-java-client:1.5.4</td>
+    <td></td>
+  </tr>
+</table>
+
+[Maven Repository: org.mariadb.jdbc:mariadb-java-client](https://mvnrepository.com/artifact/org.mariadb.jdbc/mariadb-java-client)
+
+### Redshift
+
+<img src="../assets/themes/zeppelin/img/docs-img/redshift_setting.png" width="600px" />
+
+##### Properties
+<table class="table-configuration">
+  <tr>
+    <th>Name</th>
+    <th>Value</th>
+  </tr>
+  <tr>
+    <td>default.driver</td>
+    <td>com.amazon.redshift.jdbc42.Driver</td>
+  </tr>
+  <tr>
+    <td>default.url</td>
+    <td>jdbc:redshift://your-redshift-instance-address.redshift.amazonaws.com:5439/your-database</td>
+  </tr>
+  <tr>
+    <td>default.user</td>
+    <td>redshift_user</td>
+  </tr>
+  <tr>
+    <td>default.password</td>
+    <td>redshift_password</td>
+  </tr>
+</table>
+
+[AWS Redshift JDBC Driver Docs](http://docs.aws.amazon.com/redshift/latest/mgmt/configure-jdbc-connection.html)
+
+##### Dependencies
+<table class="table-configuration">
+  <tr>
+    <th>Artifact</th>
+    <th>Excludes</th>
+  </tr>
+  <tr>
+    <td>com.amazonaws:aws-java-sdk-redshift:1.11.51</td>
+    <td></td>
+  </tr>
+</table>
+
+[Maven Repository: com.amazonaws:aws-java-sdk-redshift](https://mvnrepository.com/artifact/com.amazonaws/aws-java-sdk-redshift)
 
 ### Apache Hive 
 
@@ -273,6 +413,9 @@ Here are some examples you can refer to. Including the below connectors, you can
   </tr>
 </table>
 
+[Apache Hive 1 JDBC Driver Docs](https://cwiki.apache.org/confluence/display/Hive/HiveServer2+Clients#HiveServer2Clients-JDBC)
+[Apache Hive 2 JDBC Driver Docs](https://cwiki.apache.org/confluence/display/Hive/HiveServer2+Clients#HiveServer2Clients-JDBC)
+
 ##### Dependencies
 <table class="table-configuration">
   <tr>
@@ -288,6 +431,8 @@ Here are some examples you can refer to. Including the below connectors, you can
     <td></td>
   </tr>
 </table>
+
+[Maven Repository : org.apache.hive:hive-jdbc](https://mvnrepository.com/artifact/org.apache.hive/hive-jdbc)
 
 ### Apache Phoenix
 
@@ -337,6 +482,8 @@ Use the appropriate `default.driver`, `default.url`, and the dependency artifact
     <td></td>
   </tr>
 </table>
+
+[Maven Repository: org.apache.phoenix:phoenix-core](https://mvnrepository.com/artifact/org.apache.phoenix/phoenix-core)
 
 #### Thin client connection
 
@@ -388,6 +535,8 @@ Before Adding one of the below dependencies, check the Phoenix version first.
   </tr>
 </table>
 
+[Maven Repository: org.apache.phoenix:phoenix-queryserver-client](https://mvnrepository.com/artifact/org.apache.phoenix/phoenix-queryserver-client)
+
 ### Apache Tajo
 
 <img src="../assets/themes/zeppelin/img/docs-img/tajo_setting.png" width="600px" />
@@ -408,6 +557,8 @@ Before Adding one of the below dependencies, check the Phoenix version first.
   </tr>
 </table>
 
+[Apache Tajo JDBC Driver Docs](https://tajo.apache.org/docs/current/jdbc_driver.html)
+
 ##### Dependencies
 <table class="table-configuration">
   <tr>
@@ -419,6 +570,8 @@ Before Adding one of the below dependencies, check the Phoenix version first.
     <td></td>
   </tr>
 </table>
+
+[Maven Repository: org.apache.tajo:tajo-jdbc](https://mvnrepository.com/artifact/org.apache.tajo/tajo-jdbc)
 
 ## Bug reporting
 If you find a bug using JDBC interpreter, please create a [JIRA](https://issues.apache.org/jira/browse/ZEPPELIN) ticket.

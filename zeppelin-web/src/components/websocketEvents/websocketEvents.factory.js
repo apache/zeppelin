@@ -138,6 +138,16 @@
         });
       } else if (op === 'CONFIGURATIONS_INFO') {
         $rootScope.$broadcast('configurationsInfo', data);
+      } else if (op === 'INTERPRETER_SETTINGS') {
+        $rootScope.$broadcast('interpreterSettings', data);
+      } else if (op === 'PARAGRAPH_ADDED') {
+        $rootScope.$broadcast('addParagraph', data.paragraph, data.index);
+      } else if (op === 'PARAGRAPH_REMOVED') {
+        $rootScope.$broadcast('removeParagraph', data.id);
+      } else if (op === 'PARAGRAPH_MOVED') {
+        $rootScope.$broadcast('moveParagraph', data.id, data.index);
+      } else if (op === 'NOTE_UPDATED') {
+        $rootScope.$broadcast('updateNote', data.name, data.config, data.info);
       }
     });
 

@@ -59,6 +59,8 @@ public class RemoteInterpreter extends Interpreter {
   private int maxPoolSize;
   private String host;
   private int port;
+  private String userName;
+  private Boolean isUserImpersonate;
 
   /**
    * Remote interpreter and manage interpreter process
@@ -72,7 +74,9 @@ public class RemoteInterpreter extends Interpreter {
                            int connectTimeout,
                            int maxPoolSize,
                            RemoteInterpreterProcessListener remoteInterpreterProcessListener,
-                           ApplicationEventListener appListener) {
+                           ApplicationEventListener appListener,
+                           String userName,
+                           Boolean isUserImpersonate) {
     super(property);
     this.noteId = noteId;
     this.className = className;
@@ -85,6 +89,8 @@ public class RemoteInterpreter extends Interpreter {
     this.maxPoolSize = maxPoolSize;
     this.remoteInterpreterProcessListener = remoteInterpreterProcessListener;
     this.applicationEventListener = appListener;
+    this.userName = userName;
+    this.isUserImpersonate = isUserImpersonate;
   }
 
 
@@ -100,7 +106,9 @@ public class RemoteInterpreter extends Interpreter {
       int connectTimeout,
       int maxPoolSize,
       RemoteInterpreterProcessListener remoteInterpreterProcessListener,
-      ApplicationEventListener appListener) {
+      ApplicationEventListener appListener,
+      String userName,
+      Boolean isUserImpersonate) {
     super(property);
     this.noteId = noteId;
     this.className = className;
@@ -111,6 +119,8 @@ public class RemoteInterpreter extends Interpreter {
     this.maxPoolSize = maxPoolSize;
     this.remoteInterpreterProcessListener = remoteInterpreterProcessListener;
     this.applicationEventListener = appListener;
+    this.userName = userName;
+    this.isUserImpersonate = isUserImpersonate;
   }
 
 
@@ -125,7 +135,9 @@ public class RemoteInterpreter extends Interpreter {
       Map<String, String> env,
       int connectTimeout,
       RemoteInterpreterProcessListener remoteInterpreterProcessListener,
-      ApplicationEventListener appListener) {
+      ApplicationEventListener appListener,
+      String userName,
+      Boolean isUserImpersonate) {
     super(property);
     this.className = className;
     this.noteId = noteId;
@@ -138,10 +150,12 @@ public class RemoteInterpreter extends Interpreter {
     this.maxPoolSize = 10;
     this.remoteInterpreterProcessListener = remoteInterpreterProcessListener;
     this.applicationEventListener = appListener;
+    this.userName = userName;
+    this.isUserImpersonate = isUserImpersonate;
   }
 
   private Map<String, String> getEnvFromInterpreterProperty(Properties property) {
-    Map<String, String> env = new HashMap<String, String>();
+    Map<String, String> env = new HashMap<>();
     for (Object key : property.keySet()) {
       if (isEnvString((String) key)) {
         env.put((String) key, property.getProperty((String) key));
@@ -205,7 +219,7 @@ public class RemoteInterpreter extends Interpreter {
     RemoteInterpreterProcess interpreterProcess = getInterpreterProcess();
 
     final InterpreterGroup interpreterGroup = getInterpreterGroup();
-    interpreterProcess.reference(interpreterGroup);
+    interpreterProcess.reference(interpreterGroup, userName, isUserImpersonate);
     interpreterProcess.setMaxPoolSize(
         Math.max(this.maxPoolSize, interpreterProcess.getMaxPoolSize()));
     String groupId = interpreterGroup.getId();
@@ -480,6 +494,7 @@ public class RemoteInterpreter extends Interpreter {
     return new RemoteInterpreterContext(
         ic.getNoteId(),
         ic.getParagraphId(),
+        ic.getReplName(),
         ic.getParagraphTitle(),
         ic.getParagraphText(),
         gson.toJson(ic.getAuthenticationInfo()),

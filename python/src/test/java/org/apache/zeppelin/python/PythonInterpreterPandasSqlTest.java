@@ -78,7 +78,7 @@ public class PythonInterpreterPandasSqlTest {
 
     intpGroup.put("note", Arrays.asList(python, sql));
 
-    context = new InterpreterContext("note", "id", "title", "text", new AuthenticationInfo(),
+    context = new InterpreterContext("note", "id", null, "title", "text", new AuthenticationInfo(),
         new HashMap<String, Object>(), new GUI(),
         new AngularObjectRegistry(intpGroup.getId(), null), null,
         new LinkedList<InterpreterContextRunner>(), new InterpreterOutput(
@@ -159,17 +159,20 @@ public class PythonInterpreterPandasSqlTest {
     ret = python.interpret("import pandas as pd", context);
     ret = python.interpret("import numpy as np", context);
 
-    // given a Pandas DataFrame with non-text data
+    // given a Pandas DataFrame with an index and non-text data
+    ret = python.interpret("index = pd.Index([10, 11, 12, 13], name='index_name')", context);
     ret = python.interpret("d1 = {1 : [np.nan, 1, 2, 3], 'two' : [3., 4., 5., 6.7]}", context);
-    ret = python.interpret("df1 = pd.DataFrame(d1)", context);
+    ret = python.interpret("df1 = pd.DataFrame(d1, index=index)", context);
     assertEquals(ret.message(), InterpreterResult.Code.SUCCESS, ret.code());
 
     // when
-    ret = python.interpret("z.show(df1)", context);
+    ret = python.interpret("z.show(df1, show_index=True)", context);
 
     // then
     assertEquals(ret.message(), InterpreterResult.Code.SUCCESS, ret.code());
     assertEquals(ret.message(), Type.TABLE, ret.type());
+    assertTrue(ret.message().indexOf("index_name") == 0);
+    assertTrue(ret.message().indexOf("13") > 0);
     assertTrue(ret.message().indexOf("nan") > 0);
     assertTrue(ret.message().indexOf("6.7") > 0);
   }

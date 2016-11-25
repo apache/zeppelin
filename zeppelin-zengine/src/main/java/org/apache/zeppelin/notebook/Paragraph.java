@@ -65,7 +65,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
   /**
    * Applicaiton states in this paragraph
    */
-  private final List<ApplicationState> apps =  new LinkedList<ApplicationState>();
+  private final List<ApplicationState> apps =  new LinkedList<>();
 
   @VisibleForTesting
   Paragraph() {
@@ -85,7 +85,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     user = null;
     dateUpdated = null;
     settings = new GUI();
-    config = new HashMap<String, Object>();
+    config = new HashMap<>();
   }
 
   public Paragraph(Note note, JobListener listener, InterpreterFactory factory) {
@@ -97,7 +97,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     authenticationInfo = null;
     dateUpdated = null;
     settings = new GUI();
-    config = new HashMap<String, Object>();
+    config = new HashMap<>();
   }
 
   private static String generateId() {
@@ -157,24 +157,25 @@ public class Paragraph extends Job implements Serializable, Cloneable {
       return null;
     }
 
+    String trimmed = text.trim();
+    if (!trimmed.startsWith("%")) {
+      return null;
+    }
+
     // get script head
     int scriptHeadIndex = 0;
-    for (int i = 0; i < text.length(); i++) {
-      char ch = text.charAt(i);
-      if (Character.isWhitespace(ch) || ch == '(') {
-        scriptHeadIndex = i;
+    for (int i = 0; i < trimmed.length(); i++) {
+      char ch = trimmed.charAt(i);
+      if (Character.isWhitespace(ch) || ch == '(' || ch == '\n') {
         break;
       }
+      scriptHeadIndex = i;
     }
-    if (scriptHeadIndex == 0) {
+    if (scriptHeadIndex < 1) {
       return null;
     }
-    String head = text.substring(0, scriptHeadIndex);
-    if (head.startsWith("%")) {
-      return head.substring(1);
-    } else {
-      return null;
-    }
+    String head = text.substring(1, scriptHeadIndex + 1);
+    return head;
   }
 
   public String getScriptBody() {
@@ -190,10 +191,12 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     if (magic == null) {
       return text;
     }
-    if (magic.length() + 1 >= text.length()) {
+
+    String trimmed = text.trim();
+    if (magic.length() + 1 >= trimmed.length()) {
       return "";
     }
-    return text.substring(magic.length() + 1).trim();
+    return trimmed.substring(magic.length() + 1).trim();
   }
 
   public Interpreter getRepl(String name) {
@@ -453,7 +456,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
       resourcePool = intpGroup.getInterpreterGroup(getUser(), note.getId()).getResourcePool();
     }
 
-    List<InterpreterContextRunner> runners = new LinkedList<InterpreterContextRunner>();
+    List<InterpreterContextRunner> runners = new LinkedList<>();
     for (Paragraph p : note.getParagraphs()) {
       runners.add(new ParagraphRunner(note, note.getId(), p.getId()));
     }
@@ -470,6 +473,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     InterpreterContext interpreterContext = new InterpreterContext(
         note.getId(),
         getId(),
+        getRequiredReplName(),
         this.getTitle(),
         this.getText(),
         this.getAuthenticationInfo(),
@@ -549,7 +553,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
 
   public List<ApplicationState> getAllApplicationStates() {
     synchronized (apps) {
-      return new LinkedList<ApplicationState>(apps);
+      return new LinkedList<>(apps);
     }
   }
 
@@ -589,7 +593,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
   }
 
   private boolean isValidInterpreter(String replName) {
-    return factory.getInterpreter("",
+    return factory.getInterpreter(user,
         note.getId(), replName) != null;
   }
 }

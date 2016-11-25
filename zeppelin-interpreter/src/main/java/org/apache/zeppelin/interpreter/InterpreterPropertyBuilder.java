@@ -24,7 +24,7 @@ import java.util.Map;
  * InterpreterPropertyBuilder
  */
 public class InterpreterPropertyBuilder {
-  Map<String, InterpreterProperty> properties = new HashMap<String, InterpreterProperty>();
+  Map<String, InterpreterProperty> properties = new HashMap<>();
 
   public InterpreterPropertyBuilder add(String name, String defaultValue, String description){
     properties.put(name, new InterpreterProperty(defaultValue, description));

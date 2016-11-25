@@ -28,7 +28,7 @@ public class ExecutorFactory {
   private static ExecutorFactory _executor;
   private static Long _executorLock = new Long(0);
 
-  Map<String, ExecutorService> executor = new HashMap<String, ExecutorService>();
+  Map<String, ExecutorService> executor = new HashMap<>();
 
   public ExecutorFactory() {
 

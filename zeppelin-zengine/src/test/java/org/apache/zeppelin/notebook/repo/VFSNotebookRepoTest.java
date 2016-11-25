@@ -35,6 +35,7 @@ import org.apache.zeppelin.interpreter.mock.MockInterpreter1;
 import org.apache.zeppelin.notebook.JobListenerFactory;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Notebook;
+import org.apache.zeppelin.notebook.NotebookAuthorization;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.notebook.ParagraphJobListener;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
@@ -56,6 +57,7 @@ public class VFSNotebookRepoTest implements JobListenerFactory {
   private NotebookRepo notebookRepo;
   private InterpreterFactory factory;
   private DependencyResolver depResolver;
+  private NotebookAuthorization notebookAuthorization;
 
   private File mainZepDir;
   private File mainNotebookDir;
@@ -86,7 +88,9 @@ public class VFSNotebookRepoTest implements JobListenerFactory {
 
     SearchService search = mock(SearchService.class);
     notebookRepo = new VFSNotebookRepo(conf);
-    notebook = new Notebook(conf, notebookRepo, schedulerFactory, factory, this, search, null, null);
+    notebookAuthorization = NotebookAuthorization.init(conf);
+    notebook = new Notebook(conf, notebookRepo, schedulerFactory, factory, this, search,
+        notebookAuthorization, null);
   }
 
   @After

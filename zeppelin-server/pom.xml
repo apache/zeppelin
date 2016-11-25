@@ -33,7 +33,7 @@
   <name>Zeppelin: Server</name>
 
   <properties>
-    <cxf.version>2.7.7</cxf.version>
+    <cxf.version>2.7.8</cxf.version>
     <commons.httpclient.version>4.3.6</commons.httpclient.version>
     <hadoop-common.version>2.6.0</hadoop-common.version>
   </properties>
@@ -319,6 +319,10 @@
           <groupId>org.eclipse.jetty.websocket</groupId>
           <artifactId>websocket-client</artifactId>
         </exclusion>
+        <exclusion>
+          <groupId>net.java.dev.jna</groupId>
+          <artifactId>jna</artifactId>
+        </exclusion>
       </exclusions>
     </dependency>
 
@@ -352,6 +356,22 @@
     <dependency>
       <groupId>org.apache.shiro</groupId>
       <artifactId>shiro-web</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.kohsuke</groupId>
+      <artifactId>libpam4j</artifactId>
+      <version>1.8</version>
+      <exclusions>
+        <exclusion>
+          <groupId>net.java.dev.jna</groupId>
+          <artifactId>jna</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>net.java.dev.jna</groupId>
+      <artifactId>jna</artifactId>
+      <version>4.1.0</version>
     </dependency>
   </dependencies>
 
@@ -483,6 +503,5 @@
       </properties>
     </profile>
   </profiles>
-
 
 </project>

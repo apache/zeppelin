@@ -59,7 +59,7 @@ public class RemoteAngularObjectTest implements AngularObjectRegistryListener {
     intpGroup = new InterpreterGroup("intpId");
     localRegistry = new RemoteAngularObjectRegistry("intpId", this, intpGroup);
     intpGroup.setAngularObjectRegistry(localRegistry);
-    env = new HashMap<String, String>();
+    env = new HashMap<>();
     env.put("ZEPPELIN_CLASSPATH", new File("./target/test-classes").getAbsolutePath());
 
     Properties p = new Properties();
@@ -74,7 +74,9 @@ public class RemoteAngularObjectTest implements AngularObjectRegistryListener {
         env,
         10 * 1000,
         null,
-        null
+        null,
+        "anonymous",
+        false
     );
 
     intpGroup.put("note", new LinkedList<Interpreter>());
@@ -84,6 +86,7 @@ public class RemoteAngularObjectTest implements AngularObjectRegistryListener {
     context = new InterpreterContext(
         "note",
         "id",
+        null,
         "title",
         "text",
         new AuthenticationInfo(),

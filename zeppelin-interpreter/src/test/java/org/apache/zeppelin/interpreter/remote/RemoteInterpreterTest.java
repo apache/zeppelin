@@ -65,7 +65,7 @@ public class RemoteInterpreterTest {
   @Before
   public void setUp() throws Exception {
     intpGroup = new InterpreterGroup();
-    env = new HashMap<String, String>();
+    env = new HashMap<>();
     env.put("ZEPPELIN_CLASSPATH", new File("./target/test-classes").getAbsolutePath());
   }
 
@@ -90,7 +90,9 @@ public class RemoteInterpreterTest {
             env,
             10 * 1000,
             null,
-            null);
+            null,
+        "anonymous",
+        false);
   }
 
   private RemoteInterpreter createMockInterpreterB(Properties p) {
@@ -108,7 +110,9 @@ public class RemoteInterpreterTest {
             env,
             10 * 1000,
             null,
-            null);
+            null,
+        "anonymous",
+        false);
   }
 
   @Test
@@ -144,6 +148,7 @@ public class RemoteInterpreterTest {
         new InterpreterContext(
             "note",
             "id",
+            null,
             "title",
             "text",
             new AuthenticationInfo(),
@@ -180,6 +185,7 @@ public class RemoteInterpreterTest {
         new InterpreterContext(
             "noteId",
             "id",
+            null,
             "title",
             "text",
             new AuthenticationInfo(),
@@ -207,7 +213,9 @@ public class RemoteInterpreterTest {
         env,
         10 * 1000,
         null,
-        null);
+        null,
+        "anonymous",
+        false);
 
 
     intpGroup.get("note").add(intpA);
@@ -223,7 +231,9 @@ public class RemoteInterpreterTest {
         env,
         10 * 1000,
         null,
-        null);
+        null,
+        "anonymous",
+        false);
 
     intpGroup.get("note").add(intpB);
     intpB.setInterpreterGroup(intpGroup);
@@ -236,6 +246,7 @@ public class RemoteInterpreterTest {
         new InterpreterContext(
             "note",
             "id",
+            null,
             "title",
             "text",
             new AuthenticationInfo(),
@@ -250,6 +261,7 @@ public class RemoteInterpreterTest {
         new InterpreterContext(
             "note",
             "id",
+            null,
             "title",
             "text",
             new AuthenticationInfo(),
@@ -304,6 +316,7 @@ public class RemoteInterpreterTest {
             new InterpreterContext(
                 "note",
                 "jobA",
+                null,
                 "title",
                 "text",
                 new AuthenticationInfo(),
@@ -340,6 +353,7 @@ public class RemoteInterpreterTest {
             new InterpreterContext(
                 "note",
                 "jobB",
+                null,
                 "title",
                 "text",
                 new AuthenticationInfo(),
@@ -384,7 +398,7 @@ public class RemoteInterpreterTest {
     intpA.open();
 
     int concurrency = 3;
-    final List<String> results = new LinkedList<String>();
+    final List<String> results = new LinkedList<>();
 
     Scheduler scheduler = intpA.getScheduler();
     for (int i = 0; i < concurrency; i++) {
@@ -406,6 +420,7 @@ public class RemoteInterpreterTest {
           InterpreterResult ret = intpA.interpret(getJobName(), new InterpreterContext(
               "note",
               jobId,
+              null,
               "title",
               "text",
               new AuthenticationInfo(),
@@ -462,7 +477,7 @@ public class RemoteInterpreterTest {
 
     int concurrency = 4;
     final int timeToSleep = 1000;
-    final List<String> results = new LinkedList<String>();
+    final List<String> results = new LinkedList<>();
     long start = System.currentTimeMillis();
 
     Scheduler scheduler = intpA.getScheduler();
@@ -486,6 +501,7 @@ public class RemoteInterpreterTest {
           InterpreterResult ret = intpA.interpret(stmt, new InterpreterContext(
               "note",
               jobId,
+              null,
               "title",
               "text",
               new AuthenticationInfo(),
@@ -588,6 +604,7 @@ public class RemoteInterpreterTest {
             new InterpreterContext(
                 "note",
                 "jobA",
+                null,
                 "title",
                 "text",
                 new AuthenticationInfo(),
@@ -687,7 +704,8 @@ public class RemoteInterpreterTest {
     //Given
     final Client client = Mockito.mock(Client.class);
     final RemoteInterpreter intr = new RemoteInterpreter(new Properties(), "noteId",
-            MockInterpreterA.class.getName(), "runner", "path","localRepo", env, 10 * 1000, null, null);
+        MockInterpreterA.class.getName(), "runner", "path", "localRepo", env, 10 * 1000, null,
+        null, "anonymous", false);
     final AngularObjectRegistry registry = new AngularObjectRegistry("spark", null);
     registry.add("name", "DuyHai DOAN", "nodeId", "paragraphId");
     final InterpreterGroup interpreterGroup = new InterpreterGroup("groupId");
@@ -733,7 +751,9 @@ public class RemoteInterpreterTest {
         env,
         10 * 1000,
         null,
-        null);
+        null,
+        "anonymous",
+        false);
 
     intpGroup.put("note", new LinkedList<Interpreter>());
     intpGroup.get("note").add(intp);
@@ -744,6 +764,7 @@ public class RemoteInterpreterTest {
     InterpreterContext context = new InterpreterContext(
         "noteId",
         "id",
+        null,
         "title",
         "text",
         new AuthenticationInfo(),

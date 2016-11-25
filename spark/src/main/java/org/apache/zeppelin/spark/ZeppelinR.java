@@ -22,6 +22,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterOutput;
 import org.apache.zeppelin.interpreter.InterpreterOutputListener;
+import org.apache.zeppelin.interpreter.util.InterpreterOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,7 +39,7 @@ public class ZeppelinR implements ExecuteResultHandler {
   private final String rCmdPath;
   private final SparkVersion sparkVersion;
   private DefaultExecutor executor;
-  private SparkOutputStream outputStream;
+  private InterpreterOutputStream outputStream;
   private PipedOutputStream input;
   private final String scriptPath;
   private final String libPath;
@@ -146,7 +147,7 @@ public class ZeppelinR implements ExecuteResultHandler {
     logger.debug(cmd.toString());
 
     executor = new DefaultExecutor();
-    outputStream = new SparkOutputStream(logger);
+    outputStream = new InterpreterOutputStream(logger);
 
     input = new PipedOutputStream();
     PipedInputStream in = new PipedInputStream(input);

@@ -312,3 +312,11 @@
   min-width: 150px;
   max-width: 50%;
 }
+
+
+.inactivelink {
+  color: darkgrey;
+  cursor: default;
+  pointer-events: none;
+}
+

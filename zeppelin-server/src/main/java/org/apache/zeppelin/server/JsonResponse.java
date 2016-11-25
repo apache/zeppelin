@@ -75,7 +75,7 @@ public class JsonResponse<T> {
    */
   public JsonResponse<T> addCookie(NewCookie newCookie) {
     if (cookies == null) {
-      cookies = new ArrayList<NewCookie>();
+      cookies = new ArrayList<>();
     }
     cookies.add(newCookie);
 
