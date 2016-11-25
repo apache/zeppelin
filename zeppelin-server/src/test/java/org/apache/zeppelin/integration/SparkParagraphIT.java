@@ -209,7 +209,7 @@ public class SparkParagraphIT extends AbstractZeppelinIT {
       try {
         waitForParagraph(1, "FINISHED");
         WebElement paragraph1Result = driver.findElement(By.xpath(getParagraphXPath(1) +
-            "//div[@class='text']"));
+            "//div[contains(@id,'_text')]"));
         collector.checkThat("Paragraph from SparkParagraphIT of testSqlSpark result: ",
             paragraph1Result.getText(), CoreMatchers.containsString("res0: org.apache.zeppelin.dep.Dependency = org.apache.zeppelin.dep.Dependency"));
 
@@ -219,7 +219,7 @@ public class SparkParagraphIT extends AbstractZeppelinIT {
         try {
           waitForParagraph(2, "FINISHED");
           WebElement paragraph2Result = driver.findElement(By.xpath(getParagraphXPath(2) +
-              "//div[@class='text']"));
+              "//div[contains(@id,'_text')]"));
           collector.checkThat("Paragraph from SparkParagraphIT of testSqlSpark result: ",
               paragraph2Result.getText(), CoreMatchers.equalTo("import org.apache.commons.csv.CSVFormat"));
 
