@@ -73,6 +73,7 @@ public class PythonDockerInterpreterTest implements InterpreterOutputListener {
     return new InterpreterContext(
         "noteId",
         "paragraphId",
+        "replName",
         "paragraphTitle",
         "paragraphText",
         new AuthenticationInfo(),
