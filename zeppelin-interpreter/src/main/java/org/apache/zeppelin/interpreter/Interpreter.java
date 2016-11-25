@@ -142,6 +142,7 @@ public abstract class Interpreter {
   private InterpreterGroup interpreterGroup;
   private URL [] classloaderUrls;
   protected Properties property;
+  private String userName;
 
   @ZeppelinApi
   public Interpreter(Properties property) {
@@ -185,6 +186,14 @@ public abstract class Interpreter {
 
   public String getClassName() {
     return this.getClass().getName();
+  }
+
+  public void setUserName(String userName) {
+    this.userName = userName;
+  }
+
+  public String getUserName() {
+    return this.userName;
   }
 
   public void setInterpreterGroup(InterpreterGroup interpreterGroup) {

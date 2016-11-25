@@ -52,7 +52,8 @@ public class ZeppelinDevServer extends
             "dev",
             sessionKey,
             DevInterpreter.class.getName(),
-            new HashMap<String, String>());
+            new HashMap<String, String>(),
+            "anonymous");
 
         Interpreter intp = super.getInterpreter(sessionKey, className);
         interpreter = (DevInterpreter) (

@@ -147,10 +147,9 @@ public class RemoteInterpreterServer
     System.exit(0);
   }
 
-
   @Override
   public void createInterpreter(String interpreterGroupId, String sessionKey, String
-      className, Map<String, String> properties) throws TException {
+      className, Map<String, String> properties, String userName) throws TException {
     if (interpreterGroup == null) {
       interpreterGroup = new InterpreterGroup(interpreterGroupId);
       angularObjectRegistry = new AngularObjectRegistry(interpreterGroup.getId(), this);
@@ -189,6 +188,7 @@ public class RemoteInterpreterServer
 
       logger.info("Instantiate interpreter {}", className);
       repl.setInterpreterGroup(interpreterGroup);
+      repl.setUserName(userName);
     } catch (ClassNotFoundException | NoSuchMethodException | SecurityException
         | InstantiationException | IllegalAccessException
         | IllegalArgumentException | InvocationTargetException e) {
