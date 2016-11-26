@@ -157,7 +157,7 @@ public class RemoteInterpreterServer
 
 
   @Override
-  public void createInterpreter(String interpreterGroupId, String noteId, String
+  public void createInterpreter(String interpreterGroupId, String sessionKey, String
       className, Map<String, String> properties) throws TException {
     if (interpreterGroup == null) {
       interpreterGroup = new InterpreterGroup(interpreterGroupId);
@@ -185,10 +185,10 @@ public class RemoteInterpreterServer
       repl.setClassloaderUrls(new URL[]{});
 
       synchronized (interpreterGroup) {
-        List<Interpreter> interpreters = interpreterGroup.get(noteId);
+        List<Interpreter> interpreters = interpreterGroup.get(sessionKey);
         if (interpreters == null) {
           interpreters = new LinkedList<>();
-          interpreterGroup.put(noteId, interpreters);
+          interpreterGroup.put(sessionKey, interpreters);
         }
 
         interpreters.add(new LazyOpenInterpreter(repl));
@@ -229,13 +229,13 @@ public class RemoteInterpreterServer
     }
   }
 
-  protected Interpreter getInterpreter(String noteId, String className) throws TException {
+  protected Interpreter getInterpreter(String sessionKey, String className) throws TException {
     if (interpreterGroup == null) {
       throw new TException(
           new InterpreterException("Interpreter instance " + className + " not created"));
     }
     synchronized (interpreterGroup) {
-      List<Interpreter> interpreters = interpreterGroup.get(noteId);
+      List<Interpreter> interpreters = interpreterGroup.get(sessionKey);
       if (interpreters == null) {
         throw new TException(
             new InterpreterException("Interpreter " + className + " not initialized"));
@@ -257,13 +257,13 @@ public class RemoteInterpreterServer
   }
 
   @Override
-  public void close(String noteId, String className) throws TException {
+  public void close(String sessionKey, String className) throws TException {
     // unload all applications
     for (String appId : runningApplications.keySet()) {
       RunningApplication appInfo = runningApplications.get(appId);
 
       // see NoteInterpreterLoader.SHARED_SESSION
-      if (appInfo.noteId.equals(noteId) || noteId.equals("shared_session")) {
+      if (appInfo.noteId.equals(sessionKey) || sessionKey.equals("shared_session")) {
         try {
           logger.info("Unload App {} ", appInfo.pkg.getName());
           appInfo.app.unload();
@@ -277,7 +277,7 @@ public class RemoteInterpreterServer
 
     // close interpreters
     synchronized (interpreterGroup) {
-      List<Interpreter> interpreters = interpreterGroup.get(noteId);
+      List<Interpreter> interpreters = interpreterGroup.get(sessionKey);
       if (interpreters != null) {
         Iterator<Interpreter> it = interpreters.iterator();
         while (it.hasNext()) {
@@ -715,14 +715,14 @@ public class RemoteInterpreterServer
   }
 
   @Override
-  public String getStatus(String noteId, String jobId)
+  public String getStatus(String sessionKey, String jobId)
       throws TException {
     if (interpreterGroup == null) {
       return "Unknown";
     }
 
     synchronized (interpreterGroup) {
-      List<Interpreter> interpreters = interpreterGroup.get(noteId);
+      List<Interpreter> interpreters = interpreterGroup.get(sessionKey);
       if (interpreters == null) {
         return "Unknown";
       }

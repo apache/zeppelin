@@ -19,7 +19,7 @@
 namespace java org.apache.zeppelin.interpreter.thrift
 
 struct RemoteInterpreterContext {
-  1: string noteId,
+  1: string sessionKey,
   2: string paragraphId,
   3: string replName,
   4: string paragraphTitle,
@@ -82,18 +82,18 @@ struct InterpreterCompletion {
 }
 
 service RemoteInterpreterService {
-  void createInterpreter(1: string intpGroupId, 2: string noteId, 3: string className, 4: map<string, string> properties);
+  void createInterpreter(1: string intpGroupId, 2: string sessionKey, 3: string className, 4: map<string, string> properties);
 
-  void open(1: string noteId, 2: string className);
-  void close(1: string noteId, 2: string className);
-  RemoteInterpreterResult interpret(1: string noteId, 2: string className, 3: string st, 4: RemoteInterpreterContext interpreterContext);
-  void cancel(1: string noteId, 2: string className, 3: RemoteInterpreterContext interpreterContext);
-  i32 getProgress(1: string noteId, 2: string className, 3: RemoteInterpreterContext interpreterContext);
-  string getFormType(1: string noteId, 2: string className);
-  list<InterpreterCompletion> completion(1: string noteId, 2: string className, 3: string buf, 4: i32 cursor);
+  void open(1: string sessionKey, 2: string className);
+  void close(1: string sessionKey, 2: string className);
+  RemoteInterpreterResult interpret(1: string sessionKey, 2: string className, 3: string st, 4: RemoteInterpreterContext interpreterContext);
+  void cancel(1: string sessionKey, 2: string className, 3: RemoteInterpreterContext interpreterContext);
+  i32 getProgress(1: string sessionKey, 2: string className, 3: RemoteInterpreterContext interpreterContext);
+  string getFormType(1: string sessionKey, 2: string className);
+  list<InterpreterCompletion> completion(1: string sessionKey, 2: string className, 3: string buf, 4: i32 cursor);
   void shutdown();
 
-  string getStatus(1: string noteId, 2:string jobId);
+  string getStatus(1: string sessionKey, 2:string jobId);
 
   RemoteInterpreterEvent getEvent();
 
@@ -104,17 +104,17 @@ service RemoteInterpreterService {
   // get all resources in the interpreter process
   list<string> resourcePoolGetAll();
   // get value of resource
-  binary resourceGet(1: string noteId, 2: string paragraphId, 3: string resourceName);
+  binary resourceGet(1: string sessionKey, 2: string paragraphId, 3: string resourceName);
   // remove resource
-  bool resourceRemove(1: string noteId, 2: string paragraphId, 3:string resourceName);
+  bool resourceRemove(1: string sessionKey, 2: string paragraphId, 3:string resourceName);
 
-  void angularObjectUpdate(1: string name, 2: string noteId, 3: string paragraphId, 4: string
+  void angularObjectUpdate(1: string name, 2: string sessionKey, 3: string paragraphId, 4: string
   object);
-  void angularObjectAdd(1: string name, 2: string noteId, 3: string paragraphId, 4: string object);
-  void angularObjectRemove(1: string name, 2: string noteId, 3: string paragraphId);
+  void angularObjectAdd(1: string name, 2: string sessionKey, 3: string paragraphId, 4: string object);
+  void angularObjectRemove(1: string name, 2: string sessionKey, 3: string paragraphId);
   void angularRegistryPush(1: string registry);
 
-  RemoteApplicationResult loadApplication(1: string applicationInstanceId, 2: string packageInfo, 3: string noteId, 4: string paragraphId);
+  RemoteApplicationResult loadApplication(1: string applicationInstanceId, 2: string packageInfo, 3: string sessionKey, 4: string paragraphId);
   RemoteApplicationResult unloadApplication(1: string applicationInstanceId);
   RemoteApplicationResult runApplication(1: string applicationInstanceId);
 
