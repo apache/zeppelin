@@ -1850,6 +1850,8 @@
           } else {
             $scope.showTitle();
           }
+        } else if (keyEvent.ctrlKey && keyEvent.shiftKey && keyCode === 67) { // Ctrl + shift + c
+          $scope.clearParagraphOutput();
         } else {
           noShortcutDefined = true;
         }
