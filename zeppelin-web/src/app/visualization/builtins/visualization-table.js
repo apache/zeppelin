@@ -39,39 +39,17 @@ zeppelin.TableVisualization.prototype.render = function(tableData) {
     this.hot.destroy();
   }
 
-  this.hot = new Handsontable(container, {
-    colHeaders: columnNames,
-    data: resultRows,
-    rowHeaders: false,
-    stretchH: 'all',
-    sortIndicator: true,
-    columnSorting: true,
-    contextMenu: false,
-    manualColumnResize: true,
-    manualRowResize: true,
-    readOnly: true,
-    readOnlyCellClassName: '',  // don't apply any special class so we can retain current styling
-    fillHandle: false,
-    fragmentSelection: true,
-    disableVisualSelection: true,
-    cells: function(row, col, prop) {
-      var cellProperties = {};
-      cellProperties.renderer = function(instance, td, row, col, prop, value, cellProperties) {
-        if (value instanceof moment) {
-          td.innerHTML = value._i;
-        } else if (!isNaN(value)) {
-          cellProperties.format = '0,0.[00000]';
-          td.style.textAlign = 'left';
-          Handsontable.renderers.NumericRenderer.apply(this, arguments);
-        } else if (value.length > '%html'.length && '%html ' === value.substring(0, '%html '.length)) {
-          td.innerHTML = value.substring('%html'.length);
-        } else {
-          Handsontable.renderers.TextRenderer.apply(this, arguments);
-        }
-      };
-      return cellProperties;
-    }
-  });
+  if (!this.columns) {
+    this.columns = Array.apply(null, Array(tableData.columns.length)).map(function() {
+      return {type: 'text'};
+    });
+  }
+
+  var handsonHelper = new zeppelin.HandsonHelper();
+
+  this.hot = new Handsontable(container, handsonHelper.getHandsonTableConfig(
+    this.columns, columnNames, resultRows));
+  this.hot.validateCells(null);
 };
 
 zeppelin.TableVisualization.prototype.destroy = function() {

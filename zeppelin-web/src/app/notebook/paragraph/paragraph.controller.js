@@ -30,15 +30,12 @@
     'websocketMsgSrv',
     'baseUrlSrv',
     'ngToast',
-    'saveAsService',
-    'handsonHelperService',
-    'dataTypeService'
+    'saveAsService'
   ];
 
   function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $location,
                          $timeout, $compile, $http, $q, websocketMsgSrv,
-                         baseUrlSrv, ngToast, saveAsService,
-                         handsonHelperService, dataTypeService) {
+                         baseUrlSrv, ngToast, saveAsService) {
     var ANGULAR_FUNCTION_OBJECT_NAME_PREFIX = '_Z_ANGULAR_FUNC_';
     $scope.parentNote = null;
     $scope.paragraph = null;
@@ -991,52 +988,19 @@
       }
     };
 
-    $scope.loadTableData = function(result) {
-      if (!result) {
-        return;
-      }
-      if (result.type === 'TABLE') {
-        var columnNames = [];
-        var rows = [];
-        var array = [];
-        var textRows = result.msg.split('\n');
-        result.comment = '';
-        var comment = false;
-
-        for (var i = 0; i < textRows.length; i++) {
-          var textRow = textRows[i];
-          if (comment) {
-            result.comment += textRow;
-            continue;
-          }
-
-          if (textRow === '') {
-            if (rows.length > 0) {
-              comment = true;
-            }
-            continue;
-          }
-          var textCols = textRow.split('\t');
-          var cols = [];
-          var cols2 = [];
-          for (var j = 0; j < textCols.length; j++) {
-            var col = textCols[j];
-            if (i === 0) {
-              columnNames.push({name: col, index: j, aggr: 'sum'});
-            } else {
-              cols.push(col);
-              cols2.push({key: (columnNames[i]) ? columnNames[i].name : undefined, value: col});
-            }
-          }
-          if (i !== 0) {
-            rows.push(cols);
-            array.push(cols2);
-          }
+    $scope.parseTableCell = function(cell) {
+      if (!isNaN(cell)) {
+        if (cell.length === 0 || Number(cell) > Number.MAX_SAFE_INTEGER || Number(cell) < Number.MIN_SAFE_INTEGER) {
+          return cell;
+        } else {
+          return Number(cell);
         }
-        result.msgTable = array;
-        result.columnNames = columnNames;
-        result.rows = rows;
       }
+      var d = moment(cell);
+      if (d.isValid()) {
+        return d;
+      }
+      return cell;
     };
 
     $scope.setGraphMode = function(type, emit, refresh) {
@@ -1135,187 +1099,6 @@
 
     var commitParagraph = function(title, text, config, params) {
       websocketMsgSrv.commitParagraph($scope.paragraph.id, title, text, config, params);
-    };
-
-    var setTable = function(data, refresh) {
-      var renderTable = function() {
-        var height = $scope.paragraph.config.graph.height;
-        var container = angular.element('#p' + $scope.paragraph.id + '_table').css('height', height).get(0);
-        var resultRows = data.rows;
-        var columnNames = _.pluck(data.columnNames, 'name');
-
-        if ($scope.hot) {
-          $scope.hot.destroy();
-        }
-        if (!$scope.columns) {
-          $scope.columns = Array.apply(null, Array(data.columnNames.length)).map(function() {
-            return {type: 'text'};
-          });
-        }
-        $scope.hot = new Handsontable(container, handsonHelperService.getHandsonTableConfig(
-          $scope.columns, columnNames, resultRows));
-        $scope.hot.validateCells(null);
-      };
-
-      var retryRenderer = function() {
-        if (angular.element('#p' + $scope.paragraph.id + '_table').length) {
-          try {
-            renderTable();
-          } catch (err) {
-            console.log('Chart drawing error %o', err);
-          }
-        } else {
-          $timeout(retryRenderer,10);
-        }
-      };
-      $timeout(retryRenderer);
-
-    };
-
-    var groupedThousandsWith3DigitsFormatter = function(x) {
-      return d3.format(',')(d3.round(x, 3));
-    };
-
-    var customAbbrevFormatter = function(x) {
-      var s = d3.format('.3s')(x);
-      switch (s[s.length - 1]) {
-        case 'G': return s.slice(0, -1) + 'B';
-      }
-      return s;
-    };
-
-    var xAxisTickFormat = function(d, xLabels) {
-      if (xLabels[d] && (isNaN(parseFloat(xLabels[d])) || !isFinite(xLabels[d]))) { // to handle string type xlabel
-        return xLabels[d];
-      } else {
-        return d;
-      }
-    };
-
-    var yAxisTickFormat = function(d) {
-      if (Math.abs(d) >= Math.pow(10,6)) {
-        return customAbbrevFormatter(d);
-      }
-      return groupedThousandsWith3DigitsFormatter(d);
-    };
-
-    var setD3Chart = function(type, data, refresh) {
-      if (!$scope.chart[type]) {
-        var chart = nv.models[type]();
-        chart._options.noData = 'Invalid Data, check graph settings';
-        $scope.chart[type] = chart;
-      }
-
-      var d3g = [];
-      var xLabels;
-      var yLabels;
-
-      if (type === 'scatterChart') {
-        var scatterData = setScatterChart(data, refresh);
-
-        xLabels = scatterData.xLabels;
-        yLabels = scatterData.yLabels;
-        d3g = scatterData.d3g;
-
-        $scope.chart[type].xAxis.tickFormat(function(d) {return xAxisTickFormat(d, xLabels);});
-        $scope.chart[type].yAxis.tickFormat(function(d) {return yAxisTickFormat(d, yLabels);});
-        // configure how the tooltip looks.
-        $scope.chart[type].tooltipContent(function(key, x, y, graph, data) {
-          var tooltipContent = '<h3>' + key + '</h3>';
-          if ($scope.paragraph.config.graph.scatter.size &&
-              $scope.isValidSizeOption($scope.paragraph.config.graph.scatter, $scope.paragraph.result.rows)) {
-            tooltipContent += '<p>' + data.point.size + '</p>';
-          }
-
-          return tooltipContent;
-        });
-
-        $scope.chart[type].showDistX(true)
-          .showDistY(true);
-        //handle the problem of tooltip not showing when muliple points have same value.
-      } else {
-        var p = pivot(data);
-        if (type === 'pieChart') {
-          var d = pivotDataToD3ChartFormat(p, true).d3g;
-
-          $scope.chart[type].x(function(d) { return d.label;})
-            .y(function(d) { return d.value;});
-
-          if (d.length > 0) {
-            for (var i = 0; i < d[0].values.length ; i++) {
-              var e = d[0].values[i];
-              d3g.push({
-                label: e.x,
-                value: e.y
-              });
-            }
-          }
-        } else if (type === 'multiBarChart') {
-          d3g = pivotDataToD3ChartFormat(p, true, false, type).d3g;
-          $scope.chart[type].yAxis.axisLabelDistance(50);
-          $scope.chart[type].yAxis.tickFormat(function(d) {return yAxisTickFormat(d);});
-        } else if (type === 'lineChart' || type === 'stackedAreaChart' || type === 'lineWithFocusChart') {
-          var pivotdata = pivotDataToD3ChartFormat(p, false, true);
-          xLabels = pivotdata.xLabels;
-          d3g = pivotdata.d3g;
-          $scope.chart[type].xAxis.tickFormat(function(d) {return xAxisTickFormat(d, xLabels);});
-          if (type === 'stackedAreaChart') {
-            $scope.chart[type].yAxisTickFormat(function(d) {return yAxisTickFormat(d);});
-          } else {
-            $scope.chart[type].yAxis.tickFormat(function(d) {return yAxisTickFormat(d, xLabels);});
-          }
-          $scope.chart[type].yAxis.axisLabelDistance(50);
-          if ($scope.chart[type].useInteractiveGuideline) { // lineWithFocusChart hasn't got useInteractiveGuideline
-            $scope.chart[type].useInteractiveGuideline(true); // for better UX and performance issue. (https://github.com/novus/nvd3/issues/691)
-          }
-          if ($scope.paragraph.config.graph.forceY) {
-            $scope.chart[type].forceY([0]); // force y-axis minimum to 0 for line chart.
-          } else {
-            $scope.chart[type].forceY([]);
-          }
-        }
-      }
-
-      var renderChart = function() {
-        if (!refresh) {
-          // TODO force destroy previous chart
-        }
-
-        var height = $scope.paragraph.config.graph.height;
-
-        var animationDuration = 300;
-        var numberOfDataThreshold = 150;
-        // turn off animation when dataset is too large. (for performance issue)
-        // still, since dataset is large, the chart content sequentially appears like animated.
-        try {
-          if (d3g[0].values.length > numberOfDataThreshold) {
-            animationDuration = 0;
-          }
-        } catch (ignoreErr) {
-        }
-
-        d3.select('#p' + $scope.paragraph.id + '_' + type + ' svg')
-          .attr('height', $scope.paragraph.config.graph.height)
-          .datum(d3g)
-          .transition()
-          .duration(animationDuration)
-          .call($scope.chart[type]);
-        d3.select('#p' + $scope.paragraph.id + '_' + type + ' svg').style.height = height + 'px';
-        nv.utils.windowResize($scope.chart[type].update);
-      };
-
-      var retryRenderer = function() {
-        if (angular.element('#p' + $scope.paragraph.id + '_' + type + ' svg').length !== 0) {
-          try {
-            renderChart();
-          } catch (err) {
-            console.log('Chart drawing error %o', err);
-          }
-        } else {
-          $timeout(retryRenderer,10);
-        }
-      };
-      $timeout(retryRenderer);
     };
 
     $scope.isGraphMode = function(graphName) {
