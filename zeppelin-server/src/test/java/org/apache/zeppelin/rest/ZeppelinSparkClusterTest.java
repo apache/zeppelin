@@ -355,6 +355,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
         p3.setAuthenticationInfo(anonymous);
 
         p0.setText(String.format("%%spark z.runNote(\"%s\")", note.getId()));
+        p3.setText("%%spark println(\"END\")");
         note.run(p0.getId());
         waitForFinish(p0);
         waitForFinish(p1);
