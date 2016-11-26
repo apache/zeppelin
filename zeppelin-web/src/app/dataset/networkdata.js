@@ -29,6 +29,7 @@ zeppelin.NetworkData = function(graph) {
     this.columns = [];
     this.rows = [];
   }
+  this.isNewInstance = true;
 };
 
 zeppelin.NetworkData.prototype = Object.create(zeppelin.TableData.prototype);
@@ -100,24 +101,29 @@ zeppelin.NetworkData.prototype.updateNodeLabel = function(defaultLabel, labelFie
 };
 
 zeppelin.NetworkData.prototype.setNodesDefaults = function(config) {
+  console.log('setting nodes defaults');
   this.graph.nodes
     .forEach(function(node) {
       node.defaultLabel = node.defaultLabel || node.label || '';
       var properties = config ? config.network.properties[node.defaultLabel] || {} : {};
       var selected = properties.selected || 'id';
       node.label = (selected in node ? node[selected] : node.data[selected]) + '';
-      if (config && node.id in config.network.nodes) {
+      /*if (config && node.id in config.network.nodes) {
         node.x = config.network.nodes[node.id].x;
         node.y = config.network.nodes[node.id].y;
       } else {
         node.x = node.x || Math.random();
         node.y = node.y || Math.random();
-      }
+      }*/
+      var isPresent = config && node.id in config.network.nodes ? true : false;
+      node.x = isPresent ? config.network.nodes[node.id].x : Math.random();
+      node.y = isPresent ? config.network.nodes[node.id].y : Math.random();
       node.size = node.size || 10;
     });
 };
 
 zeppelin.NetworkData.prototype.setEdgesDefaults = function(config) {
+  console.log('setting edges defaults');
   this.graph.edges
     .forEach(function(edge) {
       edge.size = edge.size || 4;

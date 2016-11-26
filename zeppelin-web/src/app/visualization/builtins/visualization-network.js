@@ -31,6 +31,10 @@ zeppelin.NetworkVisualization.prototype.refresh = function() {
 };
 
 zeppelin.NetworkVisualization.prototype.render = function(networkData) {
+  if (!networkData.isNewInstance) {
+    console.log('render aready started');
+    return;
+  }
   if (!('graph' in networkData)) {
     console.log('graph not found');
     return;
@@ -56,30 +60,34 @@ zeppelin.NetworkVisualization.prototype.render = function(networkData) {
     });
     this.attachEvents(Sigma, containerId);
   } else {
+    this.sigma.killForceAtlas2();
+    //this.sigma.stopForceAtlas2();
     this.sigma.graph.clear();
-    this.sigma.stopForceAtlas2();
   }
   networkData.setNodesDefaults(this.config);
   this.sigma.graph.read(networkData.graph);
   this.sigma.refresh();
 
-  if (angular.equals({}, this.config.network.nodes)) {
-    console.log('Starting forceAtlas2 & noOverlap events');
-    var nodesLength = networkData.graph.nodes.length;
-    var isBigGraph = nodesLength > 50;
-    var forceAtlas2Config = {worker: true, barnesHutOptimize: nodesLength > 50};
-    var _this = this;
-    this.sigma.startForceAtlas2(forceAtlas2Config);
-    $timeout(function() {
-      _this.sigma.stopForceAtlas2();
-      _this.sigma.startNoverlap();
-    }, isBigGraph ? 7000 : 1000);
+  if (!angular.equals({}, this.config.network.nodes)) {
+    return;
   }
+  console.log('Starting forceAtlas2 & noOverlap events');
+  networkData.isNewInstance = false;
+  var nodesLength = networkData.graph.nodes.length;
+  var isBigGraph = nodesLength > 50;
+  var forceAtlas2Config = {worker: true, barnesHutOptimize: nodesLength > 50};
+  var _this = this;
+  this.sigma.startForceAtlas2(forceAtlas2Config);
+  $timeout(function() {
+    _this.sigma.stopForceAtlas2();
+    _this.sigma.startNoverlap();
+  }, isBigGraph ? 7000 : 2000);
 };
 
 zeppelin.NetworkVisualization.prototype.attachEvents = function(Sigma, containerId) {
   var $interpolate = angular.injector(['ng']).get('$interpolate');
-  var _this = this;
+  Sigma.plugins.dragNodes(this.sigma, this.sigma.renderers[0]);
+  /*var _this = this;
   var dragListener = Sigma.plugins.dragNodes(this.sigma, this.sigma.renderers[0]);
   dragListener.bind('drop', function(event) {
     var nodeId = event.data.node.id;
@@ -87,7 +95,7 @@ zeppelin.NetworkVisualization.prototype.attachEvents = function(Sigma, container
       x: event.data.node.x,
       y: event.data.node.y
     };
-  });
+  });*/
   var renderFooterOnClick = function(event) {
     var type = 'node' in event.data ? 'node' : 'edge';
     var entity = event.data[type];
@@ -104,11 +112,12 @@ zeppelin.NetworkVisualization.prototype.attachEvents = function(Sigma, container
       .append(html.join(''));
   };
   this.sigma.bind('clickNode clickEdge', renderFooterOnClick);
-  var nooverlapConf = {
+  var noOverlapConf = {
     easing: 'quadraticInOut',
     duration: 2000
   };
-  var overlapListener = this.sigma.configNoverlap(nooverlapConf);
+  this.sigma.configNoverlap(noOverlapConf);
+  /*var overlapListener = this.sigma.configNoverlap(noOverlapConf);
   overlapListener.bind('stop', function(event) {
     _this.sigma.graph.nodes()
       .forEach(function(node) {
@@ -117,7 +126,7 @@ zeppelin.NetworkVisualization.prototype.attachEvents = function(Sigma, container
           y: node.y
         };
       });
-  });
+  });*/
 };
 
 zeppelin.NetworkVisualization.prototype.destroy = function() {
@@ -128,13 +137,14 @@ zeppelin.NetworkVisualization.prototype.destroy = function() {
 
 zeppelin.NetworkVisualization.prototype.updateNodeLabel = function(networkData, defaultLabel, value) {
   networkData.updateNodeLabel(defaultLabel, value);
-  this.sigma.graph.nodes()
+  var nodes = this.sigma.graph
+    .nodes()
     .filter(function(node) {
       return node.defaultLabel === defaultLabel;
-    })
-    .forEach(function(node) {
+    });
+  nodes.forEach(function(node) {
       node.label = (value === 'label' ? defaultLabel : value in node ? node[value] : node.data[value]) + '';
     });
   this.sigma.refresh();
-  angular.extend(networkData.graph, {nodes: this.sigma.graph.nodes()});
+  angular.extend(networkData.graph, {nodes: nodes});
 };
