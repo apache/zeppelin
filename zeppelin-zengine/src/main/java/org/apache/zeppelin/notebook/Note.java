@@ -379,6 +379,7 @@ public class Note implements Serializable, ParagraphJobListener {
       for (Paragraph p : paragraphs) {
         if (p.getId().equals(paragraphId)) {
           p.setReturn(null, null);
+          p.clearRuntimeInfo();
           return p;
         }
       }
