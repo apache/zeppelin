@@ -33,7 +33,7 @@ limitations under the License.
            as-sortable="interpreterSelectionListeners" data-ng-model="interpreterBindings">
         <div data-ng-repeat="item in interpreterBindings" as-sortable-item>
           <div>
-            <a ng-click="restartInterpreter(item)" 
+            <a ng-click="restartInterpreter(item)"
                ng-class="{'inactivelink': !item.selected}"
                tooltip="Restart">
               <span class="glyphicon glyphicon-refresh btn-md"></span>
@@ -83,17 +83,17 @@ limitations under the License.
           </select>
           Owners can change permissions,read and write the note.
         </p>
-        <p><span class="readers">Readers </span>
-          <select id="selectReaders" multiple="multiple">
-            <option ng-repeat="readers in permissions.readers" selected="selected">{{readers}}</option>
-          </select>
-            Readers can only read the note.
-        </p>
         <p><span class="writers">Writers </span>
           <select id="selectWriters" multiple="multiple">
             <option ng-repeat="writers in permissions.writers" selected="selected">{{writers}}</option>
           </select>
             Writers can read and write the note.
+        </p>
+        <p><span class="readers">Readers </span>
+          <select id="selectReaders" multiple="multiple">
+            <option ng-repeat="readers in permissions.readers" selected="selected">{{readers}}</option>
+          </select>
+            Readers can only read the note.
         </p>
       </div>
     </div>

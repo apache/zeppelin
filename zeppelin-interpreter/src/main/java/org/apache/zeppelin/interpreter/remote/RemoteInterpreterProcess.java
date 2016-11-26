@@ -17,18 +17,14 @@
 package org.apache.zeppelin.interpreter.remote;
 
 import com.google.gson.Gson;
-import org.apache.commons.exec.*;
 import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.apache.thrift.TException;
 import org.apache.zeppelin.helium.ApplicationEventListener;
-import org.apache.zeppelin.interpreter.Constants;
-import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService.Client;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.Properties;
 
 /**
  * Abstract class for interpreter process
@@ -36,14 +32,11 @@ import java.util.Properties;
 public abstract class RemoteInterpreterProcess {
   private static final Logger logger = LoggerFactory.getLogger(RemoteInterpreterProcess.class);
   private final AtomicInteger referenceCount;
-  private ExecuteWatchdog watchdog;
 
   private GenericObjectPool<Client> clientPool;
   private final RemoteInterpreterEventPoller remoteInterpreterEventPoller;
   private final InterpreterContextRunnerPool interpreterContextRunnerPool;
   private int connectTimeout;
-  String host = "localhost";
-  boolean isInterpreterAlreadyExecuting = false;
 
   public RemoteInterpreterProcess(
       int connectTimeout,
@@ -63,7 +56,7 @@ public abstract class RemoteInterpreterProcess {
 
   public abstract String getHost();
   public abstract int getPort();
-  public abstract void start();
+  public abstract void start(String userName, Boolean isUserImpersonate);
   public abstract void stop();
   public abstract boolean isRunning();
 
@@ -71,10 +64,11 @@ public abstract class RemoteInterpreterProcess {
     return connectTimeout;
   }
 
-  public int reference(InterpreterGroup interpreterGroup) {
+  public int reference(InterpreterGroup interpreterGroup, String userName,
+                       Boolean isUserImpersonate) {
     synchronized (referenceCount) {
       if (!isRunning()) {
-        start();
+        start(userName, isUserImpersonate);
       }
 
       if (clientPool == null) {

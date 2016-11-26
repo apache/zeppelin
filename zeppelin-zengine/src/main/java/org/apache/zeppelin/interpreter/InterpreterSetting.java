@@ -44,6 +44,8 @@ public class InterpreterSetting {
   private String name;
   // always be null in case of InterpreterSettingRef
   private String group;
+  private transient Map<String, String> infos;
+
   /**
    * properties can be either Properties or Map<String, InterpreterProperty>
    * properties should be:
@@ -128,7 +130,8 @@ public class InterpreterSetting {
       key = SHARED_PROCESS;
     }
 
-    logger.debug("getInterpreterProcessKey: {}", key);
+    logger.debug("getInterpreterProcessKey: {} for InterpreterSetting Id: {}, Name: {}",
+        key, getId(), getName());
     return key;
   }
 
@@ -140,6 +143,7 @@ public class InterpreterSetting {
           interpreterGroupFactory.createInterpreterGroup(interpreterGroupId, getOption());
 
       interpreterGroupWriteLock.lock();
+      logger.debug("create interpreter group with groupId:" + interpreterGroupId);
       interpreterGroupRef.put(key, intpGroup);
       interpreterGroupWriteLock.unlock();
     }
@@ -275,5 +279,13 @@ public class InterpreterSetting {
 
   public void setErrorReason(String errorReason) {
     this.errorReason = errorReason;
+  }
+
+  public void setInfos(Map<String, String> infos) {
+    this.infos = infos;
+  }
+
+  public Map<String, String> getInfos() {
+    return infos;
   }
 }

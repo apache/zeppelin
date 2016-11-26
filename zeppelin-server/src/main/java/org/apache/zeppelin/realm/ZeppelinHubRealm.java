@@ -37,6 +37,7 @@ import org.apache.shiro.authc.UsernamePasswordToken;
 import org.apache.shiro.authz.AuthorizationInfo;
 import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.subject.PrincipalCollection;
+import org.apache.zeppelin.notebook.repo.zeppelinhub.model.UserSessionContainer;
 import org.apache.zeppelin.server.ZeppelinServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,6 +57,7 @@ public class ZeppelinHubRealm extends AuthorizingRealm {
   private static final String USER_LOGIN_API_ENDPOINT = "api/v1/users/login";
   private static final String JSON_CONTENT_TYPE = "application/json";
   private static final String UTF_8_ENCODING = "UTF-8";
+  private static final String USER_SESSION_HEADER = "X-session";
   private static final AtomicInteger INSTANCE_COUNT = new AtomicInteger();
 
   private final HttpClient httpClient;
@@ -126,6 +128,7 @@ public class ZeppelinHubRealm extends AuthorizingRealm {
   protected User authenticateUser(String requestBody) {
     PutMethod put = new PutMethod(Joiner.on("/").join(zeppelinhubUrl, USER_LOGIN_API_ENDPOINT));
     String responseBody = StringUtils.EMPTY;
+    String userSession = StringUtils.EMPTY;
     try {
       put.setRequestEntity(new StringRequestEntity(requestBody, JSON_CONTENT_TYPE, UTF_8_ENCODING));
       int statusCode = httpClient.executeMethod(put);
@@ -136,6 +139,7 @@ public class ZeppelinHubRealm extends AuthorizingRealm {
             + "Login or password incorrect");
       }
       responseBody = put.getResponseBodyAsString();
+      userSession = put.getResponseHeader(USER_SESSION_HEADER).getValue();
       put.releaseConnection();
       
     } catch (IOException e) {
@@ -150,13 +154,16 @@ public class ZeppelinHubRealm extends AuthorizingRealm {
       LOG.error("Cannot deserialize ZeppelinHub response to User instance", e);
       throw new AuthenticationException("Cannot login to ZeppelinHub");
     }
-    
+
+    // Add ZeppelinHub user_session token this singleton map, this will help ZeppelinHubRepo
+    // to get specific information about the current user.
+    UserSessionContainer.instance.setSession(account.login, userSession);
+
     /* TODO(khalid): add proper roles and add listener */
     HashSet<String> userAndRoles = new HashSet<String>();
     userAndRoles.add(account.login);
     ZeppelinServer.notebookWsServer.broadcastReloadedNoteList(
         new org.apache.zeppelin.user.AuthenticationInfo(account.login), userAndRoles);
-
     return account;
   }
 

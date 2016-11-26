@@ -44,6 +44,30 @@ module.exports = function(grunt) {
     // Project settings
     yeoman: appConfig,
 
+    babel: {
+      options: {
+        sourceMap: true,
+        presets: ['es2015'],
+        plugins: ['transform-object-rest-spread']
+      },
+      dev: {
+        files: [{
+          expand: true,
+          cwd: './src/',
+          src: ['**/*.js'],
+          dest: '.tmp',
+        }]
+      },
+      dist: {
+        files: [{
+          expand: true,
+          cwd: '.tmp/concat/scripts',
+          src: ['scripts.js'],
+          dest: '.tmp/concat/scripts',
+        }]
+      }
+    },
+
     // use ngAnnotate instead og ngMin
     ngAnnotate: {
       dist: {
@@ -156,7 +180,7 @@ module.exports = function(grunt) {
           '<%= yeoman.app %>/app/**/*.js',
           '<%= yeoman.app %>/components/**/*.js'
         ],
-        tasks: ['newer:eslint:all', 'newer:jscs:all'],
+        tasks: ['newer:eslint:all', 'newer:jscs:all', 'newer:babel:dev'],
         options: {
           livereload: '<%= connect.options.livereload %>'
         }
@@ -165,11 +189,16 @@ module.exports = function(grunt) {
         files: [
           '<%= yeoman.app %>/**/*.html'
         ],
-        tasks: ['newer:htmlhint']
+        tasks: ['newer:htmlhint', 'newer:copy:dev']
       },
       jsTest: {
         files: ['test/spec/{,*/}*.js'],
-        tasks: ['newer:eslint:test', 'newer:jscs:test', 'karma']
+        tasks: [
+          'newer:eslint:test',
+          'newer:jscs:test',
+          'newer:babel:dev',
+          'karma'
+        ]
       },
       styles: {
         files: [
@@ -203,11 +232,12 @@ module.exports = function(grunt) {
         port: 9000,
         // Change this to '0.0.0.0' to access the server from outside.
         hostname: 'localhost',
-        livereload: 35729
+        livereload: 35729,
+        base: '.tmp',
       },
       livereload: {
         options: {
-          open: true,
+          open: false,
           middleware: function(connect) {
             return [
               connect.static('.tmp'),
@@ -215,7 +245,6 @@ module.exports = function(grunt) {
                 '/bower_components',
                 connect.static('./bower_components')
               ),
-              connect.static(appConfig.app)
             ];
           }
         }
@@ -238,7 +267,7 @@ module.exports = function(grunt) {
       },
       dist: {
         options: {
-          open: true,
+          open: false,
           base: '<%= yeoman.dist %>'
         }
       }
@@ -400,9 +429,6 @@ module.exports = function(grunt) {
         }
       }
     },
-    // concat: {
-    //   dist: {}
-    // },
 
     svgmin: {
       dist: {
@@ -439,6 +465,60 @@ module.exports = function(grunt) {
 
     // Copies remaining files to places other tasks can use
     copy: {
+      dev: {
+        files: [{
+          expand: true,
+          dot: true,
+          cwd: '<%= yeoman.app %>',
+          dest: '.tmp',
+          src: [
+            '*.{ico,png,txt}',
+            '.htaccess',
+            '*.html',
+            '**/*.css',
+            'assets/styles/**/*',
+            'assets/images/**/*',
+            'WEB-INF/*'
+          ]
+        }, {
+          // copy fonts
+          expand: true,
+          cwd: '<%= yeoman.app %>',
+          dest: '.tmp',
+          src: ['fonts/**/*.{eot,svg,ttf,woff}']
+        }, {
+          expand: true,
+          cwd: '<%= yeoman.app %>',
+          dest: '.tmp',
+          src: ['app/**/*.html', 'components/**/*.html']
+        }, {
+          expand: true,
+          cwd: 'bower_components/datatables/media/images',
+          src: '{,*/}*.{png,jpg,jpeg,gif}',
+          dest: '.tmp/images'
+        }, {
+          expand: true,
+          cwd: '.tmp/images',
+          dest: '.tmp/images',
+          src: ['generated/*']
+        }, {
+          expand: true,
+          cwd: 'bower_components/bootstrap/dist',
+          src: 'fonts/*',
+          dest: '.tmp'
+        }, {
+          expand: true,
+          cwd: 'bower_components/jquery-ui/themes/base/images',
+          src: '{,*/}*.{png,jpg,jpeg,gif}',
+          dest: '.tmp/styles/images'
+        }, {
+          expand: true,
+          cwd: 'bower_components/MathJax',
+          src: [
+            'extensions/**', 'jax/**', 'fonts/**'],
+          dest: '.tmp'
+        }]
+      },
       dist: {
         files: [{
           expand: true,
@@ -504,10 +584,10 @@ module.exports = function(grunt) {
     // Run some tasks in parallel to speed up the build process
     concurrent: {
       server: [
-        'copy:styles'
+        'copy:dev'
       ],
       test: [
-        'copy:styles'
+        'copy:dev',
       ],
       dist: [
         'copy:styles',
@@ -535,6 +615,7 @@ module.exports = function(grunt) {
       'wiredep',
       'concurrent:server',
       'postcss',
+      'babel:dev',
       'connect:livereload',
       'watch'
     ]);
@@ -547,10 +628,12 @@ module.exports = function(grunt) {
 
   grunt.registerTask('test', [
     'clean:server',
+    'babel',
     'shell',
     'wiredep',
     'concurrent:test',
     'postcss',
+    'babel:dev',
     'connect:test',
     'karma'
   ]);
@@ -567,6 +650,7 @@ module.exports = function(grunt) {
     'concurrent:dist',
     'postcss',
     'concat',
+    'babel:dist',
     'ngAnnotate',
     'copy:dist',
     'cssmin',

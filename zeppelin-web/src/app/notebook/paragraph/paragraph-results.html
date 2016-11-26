@@ -48,8 +48,8 @@ limitations under the License.
 
   <div id="{{paragraph.id}}_comment"
        class="text"
-       ng-if="getResultType()=='TABLE' && paragraph.result.comment"
-       ng-bind-html="paragraph.result.comment">
+       ng-if="getResultType()=='TABLE' && tableDataComment"
+       ng-bind-html="tableDataComment">
   </div>
 
   <div id="{{paragraph.id}}_text"

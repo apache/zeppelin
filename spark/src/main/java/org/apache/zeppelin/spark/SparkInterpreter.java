@@ -27,8 +27,6 @@ import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.*;
-import java.util.List;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.google.common.base.Joiner;
@@ -45,6 +43,7 @@ import org.apache.spark.scheduler.ActiveJob;
 import org.apache.spark.scheduler.DAGScheduler;
 import org.apache.spark.scheduler.Pool;
 import org.apache.spark.sql.SQLContext;
+import org.apache.spark.ui.SparkUI;
 import org.apache.spark.ui.jobs.JobProgressListener;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
@@ -113,6 +112,7 @@ public class SparkInterpreter extends Interpreter {
 
   private InterpreterOutputStream out;
   private SparkDependencyResolver dep;
+  private String sparkUrl;
 
   /**
    * completer - org.apache.spark.repl.SparkJLineCompletion (scala 2.10)
@@ -296,6 +296,10 @@ public class SparkInterpreter extends Interpreter {
     return (DepInterpreter) p;
   }
 
+  private boolean isYarnMode() {
+    return getProperty("master").startsWith("yarn");
+  }
+
   /**
    * Spark 2.x
    * Create SparkSession
@@ -319,6 +323,10 @@ public class SparkInterpreter extends Interpreter {
 
     conf.set("spark.scheduler.mode", "FAIR");
     conf.setMaster(getProperty("master"));
+    if (isYarnMode()) {
+      conf.set("master", "yarn");
+      conf.set("spark.submit.deployMode", "client");
+    }
 
     Properties intpProperty = getProperty();
 
@@ -510,7 +518,7 @@ public class SparkInterpreter extends Interpreter {
 
     // Distributes needed libraries to workers
     // when spark version is greater than or equal to 1.5.0
-    if (getProperty("master").equals("yarn-client")) {
+    if (isYarnMode()) {
       conf.set("spark.yarn.isPython", "true");
     }
   }
@@ -559,7 +567,7 @@ public class SparkInterpreter extends Interpreter {
   @Override
   public void open() {
     // set properties and do login before creating any spark stuff for secured cluster
-    if (getProperty("master").equals("yarn-client")) {
+    if (isYarnMode()) {
       System.setProperty("SPARK_YARN_MODE", "true");
     }
     if (getProperty().containsKey("spark.yarn.keytab") &&
@@ -939,12 +947,33 @@ public class SparkInterpreter extends Interpreter {
     numReferenceOfSparkContext.incrementAndGet();
   }
 
+  private String getSparkUIUrl() {
+    Option<SparkUI> sparkUiOption = (Option<SparkUI>) Utils.invokeMethod(sc, "ui");
+    SparkUI sparkUi = sparkUiOption.get();
+    String sparkWebUrl = sparkUi.appUIAddress();
+    return sparkWebUrl;
+  }
+
   private Results.Result interpret(String line) {
     return (Results.Result) Utils.invokeMethod(
         intp,
         "interpret",
         new Class[] {String.class},
         new Object[] {line});
+  }
+
+  public void populateSparkWebUrl(InterpreterContext ctx) {
+    if (sparkUrl == null) {
+      sparkUrl = getSparkUIUrl();
+      Map<String, String> infos = new java.util.HashMap<>();
+      if (sparkUrl != null) {
+        infos.put("url", sparkUrl);
+        logger.info("Sending metainfos to Zeppelin server: {}", infos.toString());
+        if (ctx != null && ctx.getClient() != null) {
+          ctx.getClient().onMetaInfosReceived(infos);
+        }
+      }
+    }
   }
 
   private List<File> currentClassPath() {
@@ -1086,7 +1115,7 @@ public class SparkInterpreter extends Interpreter {
       return new InterpreterResult(Code.ERROR, "Spark " + sparkVersion.toString()
           + " is not supported");
     }
-
+    populateSparkWebUrl(context);
     z.setInterpreterContext(context);
     if (line == null || line.trim().length() == 0) {
       return new InterpreterResult(Code.SUCCESS);

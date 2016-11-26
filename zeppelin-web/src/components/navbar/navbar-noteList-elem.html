@@ -12,11 +12,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<a class="notebook-list-item" ng-if="note.id" href="#/notebook/{{note.id}}">
+<a class="notebook-list-item" ng-if="!note.children" href="#/notebook/{{note.id}}">
   <i style="font-size: 10px; margin-right: 5px;" class="icon-doc"></i>
   <span>{{noteName(note)}}</span>
 </a>
-<li ng-if="!note.id" ng-click="$event.stopPropagation()">
+<li ng-if="note.children" ng-click="$event.stopPropagation()">
   <expand-collapse>
       <div>
         <a class="notebook-list-item" href="javascript:void(0)">

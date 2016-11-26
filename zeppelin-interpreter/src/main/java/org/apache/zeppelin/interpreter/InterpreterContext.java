@@ -20,10 +20,12 @@ package org.apache.zeppelin.interpreter;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.zeppelin.annotation.ZeppelinApi;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.display.GUI;
+import org.apache.zeppelin.interpreter.remote.RemoteEventClientWrapper;
+import org.apache.zeppelin.interpreter.remote.RemoteEventClient;
+import org.apache.zeppelin.interpreter.remote.RemoteInterpreterEventClient;
 import org.apache.zeppelin.resource.ResourcePool;
 
 /**
@@ -47,6 +49,7 @@ public class InterpreterContext {
   }
 
   private final String noteId;
+  private final String replName;
   private final String paragraphTitle;
   private final String paragraphId;
   private final String paragraphText;
@@ -57,9 +60,11 @@ public class InterpreterContext {
   private ResourcePool resourcePool;
   private List<InterpreterContextRunner> runners;
   private String className;
+  private RemoteEventClientWrapper client;
 
   public InterpreterContext(String noteId,
                             String paragraphId,
+                            String replName,
                             String paragraphTitle,
                             String paragraphText,
                             AuthenticationInfo authenticationInfo,
@@ -72,6 +77,7 @@ public class InterpreterContext {
                             ) {
     this.noteId = noteId;
     this.paragraphId = paragraphId;
+    this.replName = replName;
     this.paragraphTitle = paragraphTitle;
     this.paragraphText = paragraphText;
     this.authenticationInfo = authenticationInfo;
@@ -83,9 +89,30 @@ public class InterpreterContext {
     this.out = out;
   }
 
+  public InterpreterContext(String noteId,
+                            String paragraphId,
+                            String replName,
+                            String paragraphTitle,
+                            String paragraphText,
+                            AuthenticationInfo authenticationInfo,
+                            Map<String, Object> config,
+                            GUI gui,
+                            AngularObjectRegistry angularObjectRegistry,
+                            ResourcePool resourcePool,
+                            List<InterpreterContextRunner> contextRunners,
+                            InterpreterOutput output,
+                            RemoteInterpreterEventClient eventClient) {
+    this(noteId, paragraphId, replName, paragraphTitle, paragraphText, authenticationInfo,
+        config, gui, angularObjectRegistry, resourcePool, contextRunners, output);
+    this.client = new RemoteEventClient(eventClient);
+  }
 
   public String getNoteId() {
     return noteId;
+  }
+
+  public String getReplName() {
+    return replName;
   }
 
   public String getParagraphId() {
@@ -130,5 +157,9 @@ public class InterpreterContext {
   
   public void setClassName(String className) {
     this.className = className;
+  }
+
+  public RemoteEventClientWrapper getClient() {
+    return client;
   }
 }

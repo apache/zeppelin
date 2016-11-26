@@ -209,6 +209,7 @@
         paragraphDataset = new zeppelin.DatasetFactory().createDataset($scope.getResultType());
         paragraphDataset.loadParagraphResult($scope.paragraph.result);
         $scope.tableDataColumns = paragraphDataset.columns;
+        $scope.tableDataComment = paragraphDataset.comment;
         if (resultType === 'NETWORK') {
           $scope.networkNodes = angular.equals({}, paragraphDataset.graph.labels || {}) ?
                   null : {count: paragraphDataset.graph.nodes.length, labels: paragraphDataset.graph.labels};
@@ -371,6 +372,12 @@
       if (config.enabled === undefined) {
         config.enabled = true;
       }
+
+      if (!config.editorSetting) {
+        config.editorSetting = {};
+      } else if (config.editorSetting.editOnDblClick) {
+        editorSetting.isOutputHidden = config.editorSetting.editOnDblClick;
+      };
     };
 
     $scope.getIframeDimensions = function() {
@@ -418,9 +425,15 @@
       $scope.originalText = angular.copy(data);
       $scope.dirtyText = undefined;
 
-      if (editorSetting.editOnDblClick) {
+      if ($scope.paragraph.config.editorSetting.editOnDblClick) {
         closeEditorAndOpenTable();
+      } else if (editorSetting.isOutputHidden &&
+          !$scope.paragraph.config.editorSetting.editOnDblClick) {
+        // %md/%angular repl make output to be hidden by default after running
+        // so should open output if repl changed from %md/%angular to another
+        openEditorAndOpenTable();
       }
+      editorSetting.isOutputHidden = $scope.paragraph.config.editorSetting.editOnDblClick;
     };
 
     $scope.saveParagraph = function() {
@@ -543,11 +556,15 @@
       manageEditorAndTableState(true, false);
     };
 
-    var manageEditorAndTableState = function(showEditor, showTable) {
+    var openEditorAndOpenTable = function() {
+      manageEditorAndTableState(false, false);
+    };
+
+    var manageEditorAndTableState = function(hideEditor, hideTable) {
       var newParams = angular.copy($scope.paragraph.settings.params);
       var newConfig = angular.copy($scope.paragraph.config);
-      newConfig.editorHide = showEditor;
-      newConfig.tableHide = showTable;
+      newConfig.editorHide = hideEditor;
+      newConfig.tableHide = hideTable;
 
       commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
     };
@@ -858,7 +875,7 @@
       // or the first 30 characters of the paragraph have been modified
       // or cursor position is at beginning of second line.(in case user hit enter after typing %magic)
       if ((typeof pos === 'undefined') || (pos.row === 0 && pos.column < 30) ||
-          (pos.row === 1 && pos.column === 0) || pastePercentSign || $scope.paragraphFocused) {
+          (pos.row === 1 && pos.column === 0) || pastePercentSign) {
         // If paragraph loading, use config value if exists
         if ((typeof pos === 'undefined') && $scope.paragraph.config.editorMode) {
           session.setMode($scope.paragraph.config.editorMode);
@@ -869,7 +886,7 @@
             getEditorSetting(magic)
               .then(function(setting) {
                 setEditorLanguage(session, setting.editor.language);
-                _.merge(editorSetting, setting.editor);
+                _.merge($scope.paragraph.config.editorSetting, setting.editor);
               });
           }
         }
@@ -878,7 +895,7 @@
     };
 
     var getInterpreterName = function(paragraphText) {
-      var intpNameRegexp = /%(.+?)\s/g;
+      var intpNameRegexp = /^\s*%(.+?)\s/g;
       var match = intpNameRegexp.exec(paragraphText);
       if (match) {
         return match[1].trim();
@@ -1949,7 +1966,7 @@
 
     $scope.$on('doubleClickParagraph', function(event, paragraphId) {
       if ($scope.paragraph.id === paragraphId && $scope.paragraph.config.editorHide &&
-          editorSetting.editOnDblClick) {
+          $scope.paragraph.config.editorSetting.editOnDblClick) {
         var deferred = $q.defer();
         openEditorAndCloseTable();
         $timeout(

@@ -262,7 +262,7 @@
             </goals>
             <configuration>
               <failOnViolation>true</failOnViolation>
-              <excludes>org/apache/zeppelin/interpreter/thrift/*</excludes>
+              <excludes>org/apache/zeppelin/interpreter/thrift/*,org/apache/zeppelin/scio/avro/*,org/apache/zeppelin/scio/avro/*</excludes>
             </configuration>
           </execution>
           <execution>
@@ -272,7 +272,7 @@
               <goal>checkstyle-aggregate</goal>
             </goals>
             <configuration>
-              <excludes>org/apache/zeppelin/interpreter/thrift/*</excludes>
+              <excludes>org/apache/zeppelin/interpreter/thrift/*,org/apache/zeppelin/scio/avro/*,org/apache/zeppelin/scio/avro/*</excludes>
             </configuration>
           </execution>
         </executions>
@@ -386,6 +386,11 @@
         </executions>
       </plugin>
 
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>xml-maven-plugin</artifactId>
+      </plugin>
+
       <!--TODO(alex): make part of the build and reconcile conflicts
     <plugin>
       <groupId>com.ning.maven.plugins</groupId>
@@ -423,11 +428,8 @@
         <plugin>
           <artifactId>maven-surefire-plugin</artifactId>
           <version>2.17</version>
-          <configuration combine.children="append">
+          <configuration>
             <argLine>-Xmx2g -Xms1g -Dfile.encoding=UTF-8</argLine>
-            <encoding>UTF-8</encoding>
-            <inputEncoding>UTF-8</inputEncoding>
-            <outputEncoding>UTF-8</outputEncoding>
           </configuration>
           <!-- <excludes> <exclude>**/itest/**</exclude> </excludes> <executions>
             <execution> <id>surefire-itest</id> <phase>integration-test</phase> <goals>
@@ -438,7 +440,7 @@
 
         <plugin>
           <artifactId>maven-assembly-plugin</artifactId>
-          <version>2.4</version>
+          <version>3.0.0</version>
         </plugin>
 
         <plugin>
@@ -467,6 +469,33 @@
                 </excludes>
               </fileset>
             </filesets>
+          </configuration>
+        </plugin>
+
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>xml-maven-plugin</artifactId>
+          <version>1.0.1</version>
+          <executions>
+            <execution>
+              <phase>validate</phase>
+              <goals>
+                <goal>validate</goal>
+              </goals>
+            </execution>
+          </executions>
+          <configuration>
+            <validationSets>
+              <validationSet>
+                <dir>${project.basedir}</dir>
+                <includes>
+                  <include>
+                    pom.xml
+                  </include>
+                </includes>
+                <systemId>_tools/maven-4.0.0.xsd</systemId>
+              </validationSet>
+            </validationSets>
           </configuration>
         </plugin>
 
@@ -751,6 +780,7 @@
               <exclude>**/null/**</exclude>
               <exclude>**/notebook/**</exclude>
               <exclude>_tools/site/css/*</exclude>
+              <exclude>_tools/maven-4.0.0.xsd</exclude>
               <exclude>**/README.md</exclude>
               <exclude>DEPENDENCIES</exclude>
               <exclude>DEPLOY.md</exclude>

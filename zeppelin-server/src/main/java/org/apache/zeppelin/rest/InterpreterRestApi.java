@@ -18,9 +18,12 @@
 package org.apache.zeppelin.rest;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -28,6 +31,7 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
@@ -74,6 +78,27 @@ public class InterpreterRestApi {
   @ZeppelinApi
   public Response listSettings() {
     return new JsonResponse<>(Status.OK, "", interpreterFactory.get()).build();
+  }
+
+  /**
+   * Get a setting
+   */
+  @GET
+  @Path("setting/{settingId}")
+  @ZeppelinApi
+  public Response getSetting(@PathParam("settingId") String settingId) {
+    try {
+      InterpreterSetting setting = interpreterFactory.get(settingId);
+      if (setting == null) {
+        return new JsonResponse<>(Status.NOT_FOUND).build();
+      } else {
+        return new JsonResponse<>(Status.OK, "", setting).build();
+      }
+    } catch (NullPointerException e) {
+      logger.error("Exception in InterpreterRestApi while creating ", e);
+      return new JsonResponse<>(Status.INTERNAL_SERVER_ERROR, e.getMessage(),
+          ExceptionUtils.getStackTrace(e)).build();
+    }
   }
 
   /**
@@ -205,7 +230,7 @@ public class InterpreterRestApi {
     try {
       Repository request = gson.fromJson(message, Repository.class);
       interpreterFactory.addRepository(request.getId(), request.getUrl(), request.isSnapshot(),
-        request.getAuthentication(), request.getProxy());
+          request.getAuthentication(), request.getProxy());
       logger.info("New repository {} added", request.getId());
     } catch (Exception e) {
       logger.error("Exception in InterpreterRestApi while adding repository ", e);
@@ -213,6 +238,31 @@ public class InterpreterRestApi {
           ExceptionUtils.getStackTrace(e)).build();
     }
     return new JsonResponse(Status.CREATED).build();
+  }
+
+  /**
+   * get the metainfo property value
+   */
+  @GET
+  @Path("getmetainfos/{settingId}")
+  public Response getMetaInfo(@Context HttpServletRequest req,
+                              @PathParam("settingId") String settingId) {
+    String propName = req.getParameter("propName");
+    if (propName == null) {
+      return new JsonResponse<>(Status.BAD_REQUEST).build();
+    }
+    String propValue = null;
+    InterpreterSetting interpreterSetting = interpreterFactory.get(settingId);
+    Map<String, String> infos = interpreterSetting.getInfos();
+    if (infos != null) {
+      propValue = infos.get(propName);
+    }
+    Map<String, String> respMap = new HashMap<>();
+    respMap.put(propName, propValue);
+    logger.debug("Get meta info");
+    logger.debug("Interpretersetting Id: {}, property Name:{}, property value: {}", settingId,
+        propName, propValue);
+    return new JsonResponse<>(Status.OK, respMap).build();
   }
 
   /**

@@ -196,7 +196,20 @@ limitations under the License.
             </div>
           </div>
         </div>
-        <div class="row interpreter" style="margin-top: 5px;">
+        <div class="row interpreter" style="margin-top: 5px;"
+             ng-show="getInterpreterRunningOption(setting.id)=='Per User' && getPerUserOption(setting.id)=='isolated'">
+          <div class="col-md-12">
+            <div class="checkbox remove-margin-top-bottom">
+          <span class="input-group" style="line-height:30px;">
+            <label>
+              <input type="checkbox" style="width:20px" ng-model="setting.option.isUserImpersonate" />
+                User Impersonate
+            </label>
+          </span>
+            </div>
+          </div>
+        </div>
+        <div class="row interpreter">
           <div class="col-md-12">
             <div class="checkbox remove-margin-top-bottom">
           <span class="input-group" style="line-height:30px;">

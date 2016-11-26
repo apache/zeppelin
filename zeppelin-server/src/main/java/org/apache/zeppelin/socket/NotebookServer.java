@@ -48,16 +48,24 @@ import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
-import org.apache.zeppelin.notebook.*;
+import org.apache.zeppelin.notebook.JobListenerFactory;
+import org.apache.zeppelin.notebook.Note;
+import org.apache.zeppelin.notebook.Notebook;
+import org.apache.zeppelin.notebook.NotebookAuthorization;
+import org.apache.zeppelin.notebook.NotebookEventListener;
+import org.apache.zeppelin.notebook.Paragraph;
+import org.apache.zeppelin.notebook.ParagraphJobListener;
 import org.apache.zeppelin.notebook.repo.NotebookRepo.Revision;
 import org.apache.zeppelin.notebook.socket.Message;
 import org.apache.zeppelin.notebook.socket.Message.OP;
+import org.apache.zeppelin.notebook.socket.WatcherMessage;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.server.ZeppelinServer;
 import org.apache.zeppelin.ticket.TicketContainer;
 import org.apache.zeppelin.types.InterpreterSettingsList;
 import org.apache.zeppelin.user.AuthenticationInfo;
+import org.apache.zeppelin.util.WatcherSecurityKey;
 import org.apache.zeppelin.utils.InterpreterBindingUtils;
 import org.apache.zeppelin.utils.SecurityUtils;
 import org.eclipse.jetty.websocket.servlet.WebSocketServlet;
@@ -67,6 +75,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Strings;
+import com.google.common.collect.Queues;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
@@ -97,6 +106,14 @@ public class NotebookServer extends WebSocketServlet implements
   final Queue<NotebookSocket> connectedSockets = new ConcurrentLinkedQueue<>();
   final Map<String, Queue<NotebookSocket>> userConnectedSockets = new ConcurrentHashMap<>();
 
+  /**
+   * This is a special endpoint in the notebook websoket, Every connection in this Queue
+   * will be able to watch every websocket event, it doesnt need to be listed into the map of
+   * noteSocketMap. This can be used to get information about websocket traffic and watch what
+   * is going on.
+   */
+  final Queue<NotebookSocket> watcherSockets = Queues.newConcurrentLinkedQueue();
+  
   private Notebook notebook() {
     return ZeppelinServer.notebook;
   }
@@ -173,7 +190,8 @@ public class NotebookServer extends WebSocketServlet implements
       if (StringUtils.isEmpty(conn.getUser())) {
         addUserConnection(messagereceived.principal, conn);
       }
-      AuthenticationInfo subject = new AuthenticationInfo(messagereceived.principal);
+      AuthenticationInfo subject = 
+          new AuthenticationInfo(messagereceived.principal, messagereceived.ticket);
 
       /** Lets be elegant here */
       switch (messagereceived.op) {
@@ -274,6 +292,9 @@ public class NotebookServer extends WebSocketServlet implements
             break;
           case GET_INTERPRETER_SETTINGS:
             getInterpreterSettings(conn, subject);
+            break;
+          case WATCHER:
+            switchConnectionToWatcher(conn, messagereceived);
             break;
           default:
             break;
@@ -389,6 +410,7 @@ public class NotebookServer extends WebSocketServlet implements
 
   private void broadcast(String noteId, Message m) {
     synchronized (noteSocketMap) {
+      broadcastToWatchers(noteId, StringUtils.EMPTY, m);
       List<NotebookSocket> socketLists = noteSocketMap.get(noteId);
       if (socketLists == null || socketLists.size() == 0) {
         return;
@@ -406,6 +428,7 @@ public class NotebookServer extends WebSocketServlet implements
 
   private void broadcastExcept(String noteId, Message m, NotebookSocket exclude) {
     synchronized (noteSocketMap) {
+      broadcastToWatchers(noteId, StringUtils.EMPTY, m);
       List<NotebookSocket> socketLists = noteSocketMap.get(noteId);
       if (socketLists == null || socketLists.size() == 0) {
         return;
@@ -431,11 +454,7 @@ public class NotebookServer extends WebSocketServlet implements
     }
 
     for (NotebookSocket conn: userConnectedSockets.get(user)) {
-      try {
-        conn.send(serializeMessage(m));
-      } catch (IOException e) {
-        LOG.error("socket error", e);
-      }
+      unicast(m, conn);
     }
   }
 
@@ -445,6 +464,7 @@ public class NotebookServer extends WebSocketServlet implements
     } catch (IOException e) {
       LOG.error("socket error", e);
     }
+    broadcastToWatchers(StringUtils.EMPTY, StringUtils.EMPTY, m);
   }
 
   public void unicastNoteJobInfo(NotebookSocket conn, Message fromMessage) throws IOException {
@@ -545,10 +565,22 @@ public class NotebookServer extends WebSocketServlet implements
     broadcast(note.getId(), new Message(OP.NOTE).put("note", note));
   }
 
-  public void broadcastInterpreterBindings(String noteId,
-                                           List settingList) {
-    broadcast(noteId, new Message(OP.INTERPRETER_BINDINGS)
-        .put("interpreterBindings", settingList));
+  public void broadcastInterpreterBindings(String noteId, List settingList) {
+    broadcast(noteId, new Message(OP.INTERPRETER_BINDINGS).put("interpreterBindings", settingList));
+  }
+
+  public void broadcastParagraph(Note note, Paragraph p) {
+    broadcast(note.getId(), new Message(OP.PARAGRAPH).put("paragraph", p));
+  }
+
+  private void broadcastNewParagraph(Note note, Paragraph para) {
+    LOG.info("Broadcasting paragraph on run call instead of note.");
+    int paraIndex = note.getParagraphs().indexOf(para);
+    broadcast(
+        note.getId(),
+        new Message(OP.PARAGRAPH_ADDED)
+          .put("paragraph", para)
+          .put("index", paraIndex));
   }
 
   public void broadcastNoteList(AuthenticationInfo subject, HashSet userAndRoles) {
@@ -698,7 +730,10 @@ public class NotebookServer extends WebSocketServlet implements
 
       AuthenticationInfo subject = new AuthenticationInfo(fromMessage.principal);
       note.persist(subject);
-      broadcastNote(note);
+      broadcast(note.getId(), new Message(OP.NOTE_UPDATED)
+          .put("name", name)
+          .put("config", config)
+          .put("info", note.getInfo()));
       broadcastNoteList(subject, userAndRoles);
     }
   }
@@ -840,7 +875,7 @@ public class NotebookServer extends WebSocketServlet implements
     p.setTitle((String) fromMessage.get("title"));
     p.setText((String) fromMessage.get("paragraph"));
     note.persist(subject);
-    broadcast(note.getId(), new Message(OP.PARAGRAPH).put("paragraph", p));
+    broadcastParagraph(note, p);;
   }
 
   private void cloneNote(NotebookSocket conn, HashSet<String> userAndRoles,
@@ -913,9 +948,12 @@ public class NotebookServer extends WebSocketServlet implements
 
     /** We dont want to remove the last paragraph */
     if (!note.isLastParagraph(paragraphId)) {
-      note.removeParagraph(subject.getUser(), paragraphId);
+      Paragraph para = note.removeParagraph(subject.getUser(), paragraphId);
       note.persist(subject);
-      broadcastNote(note);
+      if (para != null) {
+        broadcast(note.getId(), new Message(OP.PARAGRAPH_REMOVED).
+                                  put("id", para.getId()));
+      }
     }
   }
 
@@ -933,9 +971,9 @@ public class NotebookServer extends WebSocketServlet implements
           userAndRoles, notebookAuthorization.getWriters(noteId));
       return;
     }
-
     note.clearParagraphOutput(paragraphId);
-    broadcastNote(note);
+    Paragraph paragraph = note.getParagraph(paragraphId);
+    broadcastParagraph(note, paragraph);
   }
 
   private void completion(NotebookSocket conn, HashSet<String> userAndRoles, Notebook notebook,
@@ -1220,7 +1258,9 @@ public class NotebookServer extends WebSocketServlet implements
 
     note.moveParagraph(paragraphId, newIndex);
     note.persist(subject);
-    broadcastNote(note);
+    broadcast(note.getId(), new Message(OP.PARAGRAPH_MOVED)
+              .put("id", paragraphId)
+              .put("index", newIndex));
   }
 
   private void insertParagraph(NotebookSocket conn, HashSet<String> userAndRoles,
@@ -1237,9 +1277,9 @@ public class NotebookServer extends WebSocketServlet implements
       return;
     }
 
-    note.insertParagraph(index);
+    Paragraph newPara = note.insertParagraph(index);
     note.persist(subject);
-    broadcastNote(note);
+    broadcastNewParagraph(note, newPara);
   }
 
   private void cancelParagraph(NotebookSocket conn, HashSet<String> userAndRoles, Notebook notebook,
@@ -1296,7 +1336,8 @@ public class NotebookServer extends WebSocketServlet implements
     boolean isTheLastParagraph = note.isLastParagraph(p.getId());
     if (!(text.trim().equals(p.getMagic()) || Strings.isNullOrEmpty(text)) &&
         isTheLastParagraph) {
-      note.addParagraph();
+      Paragraph newPara = note.addParagraph();
+      broadcastNewParagraph(note, newPara);
     }
 
     AuthenticationInfo subject = new AuthenticationInfo(fromMessage.principal);
@@ -1614,8 +1655,9 @@ public class NotebookServer extends WebSocketServlet implements
           LOG.error(e.toString(), e);
         }
       }
-      notebookServer.broadcastNote(note);
-
+      if (job instanceof Paragraph) {
+        notebookServer.broadcastParagraph(note, (Paragraph) job);
+      }
       try {
         notebookServer.broadcastUpdateNoteJobInfo(System.currentTimeMillis() - 5000);
       } catch (IOException e) {
@@ -1764,5 +1806,56 @@ public class NotebookServer extends WebSocketServlet implements
             .put("interpreterSettings", availableSettings)));
   }
 
+  @Override
+  public void onMetaInfosReceived(String settingId, Map<String, String> metaInfos) {
+    InterpreterSetting interpreterSetting = notebook().getInterpreterFactory()
+        .get(settingId);
+    interpreterSetting.setInfos(metaInfos);
+  }
+  
+  private void switchConnectionToWatcher(NotebookSocket conn, Message messagereceived)
+      throws IOException {
+    if (!isSessionAllowedToSwitchToWatcher(conn)) {
+      LOG.error("Cannot switch this client to watcher, invalid security key");
+      return;
+    }
+    LOG.info("Going to add {} to watcher socket", conn);
+    // add the connection to the watcher.
+    if (watcherSockets.contains(conn)) {
+      LOG.info("connection alrerady present in the watcher");
+      return;
+    }
+    watcherSockets.add(conn);
+    
+    // remove this connection from regular zeppelin ws usage.
+    removeConnectionFromAllNote(conn);
+    connectedSockets.remove(conn);
+    removeUserConnection(conn.getUser(), conn);
+  }
+  
+  private boolean isSessionAllowedToSwitchToWatcher(NotebookSocket session) {
+    String watcherSecurityKey = session.getRequest().getHeader(WatcherSecurityKey.HTTP_HEADER);
+    return !(StringUtils.isBlank(watcherSecurityKey)
+        || !watcherSecurityKey.equals(WatcherSecurityKey.getKey()));
+  }
+  
+  private void broadcastToWatchers(String noteId, String subject, Message message) {
+    synchronized (watcherSockets) {
+      if (watcherSockets.isEmpty()) {
+        return;
+      }
+      for (NotebookSocket watcher : watcherSockets) {
+        try {
+          watcher.send(WatcherMessage
+                         .builder(noteId)
+                         .subject(subject)
+                         .message(serializeMessage(message))
+                         .build()
+                         .serialize());
+        } catch (IOException e) {
+          LOG.error("Cannot broadcast message to watcher", e);
+        }
+      }
+    }
+  }
 }
-

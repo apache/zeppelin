@@ -81,7 +81,9 @@ public class RemoteSchedulerTest implements RemoteInterpreterProcessListener {
         env,
         10 * 1000,
         this,
-        null);
+        null,
+        "anonymous",
+        false);
 
     intpGroup.put("note", new LinkedList<Interpreter>());
     intpGroup.get("note").add(intpA);
@@ -110,6 +112,7 @@ public class RemoteSchedulerTest implements RemoteInterpreterProcessListener {
         intpA.interpret("1000", new InterpreterContext(
             "note",
             "jobId",
+            null,
             "title",
             "text",
             new AuthenticationInfo(),
@@ -170,7 +173,9 @@ public class RemoteSchedulerTest implements RemoteInterpreterProcessListener {
         env,
         10 * 1000,
         this,
-        null);
+        null,
+        "anonymous",
+        false);
 
     intpGroup.put("note", new LinkedList<Interpreter>());
     intpGroup.get("note").add(intpA);
@@ -186,6 +191,7 @@ public class RemoteSchedulerTest implements RemoteInterpreterProcessListener {
       InterpreterContext context = new InterpreterContext(
           "note",
           "jobId1",
+          null,
           "title",
           "text",
           new AuthenticationInfo(),
@@ -224,6 +230,7 @@ public class RemoteSchedulerTest implements RemoteInterpreterProcessListener {
       InterpreterContext context = new InterpreterContext(
           "note",
           "jobId2",
+          null,
           "title",
           "text",
           new AuthenticationInfo(),
@@ -297,6 +304,11 @@ public class RemoteSchedulerTest implements RemoteInterpreterProcessListener {
 
   @Override
   public void onOutputUpdated(String noteId, String paragraphId, String output) {
+
+  }
+
+  @Override
+  public void onMetaInfosReceived(String settingId, Map<String, String> metaInfos) {
 
   }
 }

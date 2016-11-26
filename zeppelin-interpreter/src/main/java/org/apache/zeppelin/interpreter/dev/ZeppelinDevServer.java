@@ -44,24 +44,24 @@ public class ZeppelinDevServer extends
   }
 
   @Override
-  protected Interpreter getInterpreter(String noteId, String className) throws TException {
+  protected Interpreter getInterpreter(String sessionKey, String className) throws TException {
     synchronized (this) {
       InterpreterGroup interpreterGroup = getInterpreterGroup();
       if (interpreterGroup == null) {
         createInterpreter(
             "dev",
-            noteId,
+            sessionKey,
             DevInterpreter.class.getName(),
             new HashMap<String, String>());
 
-        Interpreter intp = super.getInterpreter(noteId, className);
+        Interpreter intp = super.getInterpreter(sessionKey, className);
         interpreter = (DevInterpreter) (
             ((LazyOpenInterpreter) intp).getInnerInterpreter());
         interpreter.setInterpreterEvent(this);
         notify();
       }
     }
-    return super.getInterpreter(noteId, className);
+    return super.getInterpreter(sessionKey, className);
   }
 
   @Override

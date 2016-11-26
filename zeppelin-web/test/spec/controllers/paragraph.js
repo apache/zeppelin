@@ -61,7 +61,7 @@ describe('Controller: ParagraphCtrl', function() {
 
   it('should call loadTableData() and getGraphMode() should return "table" when the result type is "TABLE"',
     function() {
-      scope.getResultType = jasmine.createSpy('getResultType spy').andCallFake(function() {
+      scope.getResultType = jasmine.createSpy('getResultType spy').and.callFake(function() {
         return 'TABLE';
       });
       spyOn(scope, 'setGraphMode');
@@ -82,7 +82,7 @@ describe('Controller: ParagraphCtrl', function() {
     });
 
   it('should call renderHtml() when the result type is "HTML"', function() {
-    scope.getResultType = jasmine.createSpy('getResultType spy').andCallFake(function() {
+    scope.getResultType = jasmine.createSpy('getResultType spy').and.callFake(function() {
       return 'HTML';
     });
     spyOn(scope, 'renderHtml');
@@ -91,7 +91,7 @@ describe('Controller: ParagraphCtrl', function() {
   });
 
   it('should call renderAngular() when the result type is "ANGULAR"', function() {
-    scope.getResultType = jasmine.createSpy('getResultType spy').andCallFake(function() {
+    scope.getResultType = jasmine.createSpy('getResultType spy').and.callFake(function() {
       return 'ANGULAR';
     });
     spyOn(scope, 'renderAngular');
