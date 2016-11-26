@@ -13,7 +13,24 @@ limitations under the License.
 -->
 
 <div id="{{paragraph.id}}_control" class="control" ng-show="!asIframe">
-
+  <span ng-show="paragraph.runtimeInfos.jobUrl.values.length == 1 && paragraph.runtimeInfos.jobUrl.group == 'spark'">
+    <a href="{{paragraph.runtimeInfos.jobUrl.values[0]}}" target="_blank" style="text-decoration: none;">
+      <span class="fa fa-tasks"></span>
+      {{paragraph.runtimeInfos.jobUrl.label}}
+    </a>
+  </span>
+  <span class="dropdown" ng-show="paragraph.runtimeInfos.jobUrl.values.length > 1 && paragraph.runtimeInfos.jobUrl.group == 'spark'">
+    <span style="cursor:pointer;color:#3071A9" tooltip-placement="top" tooltip="View in Spark web UI"
+          data-toggle="dropdown" type="button">
+      <span class="fa fa-tasks"></span>
+      {{paragraph.runtimeInfos.jobUrl.label}}S
+    </span>
+    <ul class="dropdown-menu" role="menu" style="width:200px;z-index:1002">
+      <li ng-class="{'option-disabled': !noteOperationsAllowed()}" ng-repeat="url in paragraph.runtimeInfos.jobUrl.values">
+        <a href="{{url}}" target="_blank"><span class="fa fa-external-link-square"></span> Jobs #{{$index}}</a>
+      </li>
+    </ul>
+  </span>
   <span>
     {{paragraph.status}}
   </span>

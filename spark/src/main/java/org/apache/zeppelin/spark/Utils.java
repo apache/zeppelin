@@ -17,6 +17,7 @@
 
 package org.apache.zeppelin.spark;
 
+import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -105,5 +106,9 @@ class Utils {
     } catch (ClassNotFoundException e) {
       return false;
     }
+  }
+  
+  public static String buildJobGroupId(InterpreterContext context) {
+    return "zeppelin-" + context.getNoteId() + "-" + context.getParagraphId();
   }
 }

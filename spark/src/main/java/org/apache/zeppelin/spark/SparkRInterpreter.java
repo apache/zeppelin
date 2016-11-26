@@ -105,7 +105,7 @@ public class SparkRInterpreter extends Interpreter {
     SparkInterpreter sparkInterpreter = getSparkInterpreter();
     sparkInterpreter.populateSparkWebUrl(interpreterContext);
 
-    String jobGroup = sparkInterpreter.getJobGroup(interpreterContext);
+    String jobGroup = Utils.buildJobGroupId(interpreterContext);
     sparkInterpreter.getSparkContext().setJobGroup(jobGroup, "Zeppelin", false);
 
     String imageWidth = getProperty("zeppelin.R.image.width");

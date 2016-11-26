@@ -223,8 +223,7 @@ public class ZeppelinContext {
       Object df, int maxResult) {
     Object[] rows = null;
     Method take;
-    String jobGroup = "zeppelin-" + interpreterContext.getNoteId() + "-"
-        + interpreterContext.getParagraphId();
+    String jobGroup = Utils.buildJobGroupId(interpreterContext);
     sc.setJobGroup(jobGroup, "Zeppelin", false);
 
     try {

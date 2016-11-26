@@ -377,7 +377,7 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
           "pyspark " + sparkInterpreter.getSparkContext().version() + " is not supported"));
       return new InterpreterResult(Code.ERROR, errorMessage);
     }
-    String jobGroup = sparkInterpreter.getJobGroup(context);
+    String jobGroup = Utils.buildJobGroupId(context);
     ZeppelinContext z = sparkInterpreter.getZeppelinContext();
     z.setInterpreterContext(context);
     z.setGui(context.getGui());
