@@ -17,6 +17,7 @@ limitations under the License.
   style="padding-bottom: 5px;"
   resize='{"allowresize": "{{!asIframe && !viewOnly}}", "graphType": "{{type}}"}'
      resizable on-resize="resize(width, height);">
+  <div ng-include src="'app/notebook/paragraph/result/result-graph-settings.html'"></div>
   <div ng-include src="'app/notebook/paragraph/result/result-graph.html'"></div>
 
   <div id="{{id}}_comment"

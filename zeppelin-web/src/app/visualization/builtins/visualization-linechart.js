@@ -39,9 +39,7 @@ zeppelin.LinechartVisualization.prototype.getTransformation = function() {
   return this.pivot;
 };
 
-zeppelin.LinechartVisualization.prototype.render = function(tableData) {
-  this.tableData = tableData;
-  var pivot = this.pivot.transform(tableData);
+zeppelin.LinechartVisualization.prototype.render = function(pivot) {
   var d3Data = this.d3DataFromPivot(
     pivot.schema,
     pivot.rows,

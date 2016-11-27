@@ -24,6 +24,7 @@ zeppelin.Visualization = function(targetEl, config) {
   this.config = config;
   this._resized = false;
   this._active = false;
+  this._emitter;
 };
 
 /**
@@ -88,6 +89,13 @@ zeppelin.Visualization.prototype.resize = function() {
  */
 zeppelin.Visualization.prototype.setConfig = function(config) {
   this.config = config;
+};
+
+/**
+ * Emit config. config will sent to server and saved.
+ */
+zeppelin.Visualization.prototype.emitConfig = function(config) {
+  this._emitter(config);
 };
 
 /**

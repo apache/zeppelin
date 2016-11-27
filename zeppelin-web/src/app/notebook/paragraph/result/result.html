@@ -14,6 +14,54 @@ limitations under the License.
 
 <div>
   <div ng-include src="'app/notebook/paragraph/result/result-chart-selector.html'"></div>
-  <div ng-include src="'app/notebook/paragraph/result/result-pivot.html'"></div>
-  <div ng-include src="'app/notebook/paragraph/result/result-results.html'"></div>
+  <div
+    id="p{{id}}_resize"
+    ng-if="!config.helium.activeApp"
+    style="padding-bottom: 5px;"
+    resize='{"allowresize": "{{!asIframe && !viewOnly}}", "graphType": "{{type}}"}'
+       resizable on-resize="resize(width, height);">
+    <div ng-include src="'app/notebook/paragraph/result/result-graph-settings.html'"></div>
+    <div ng-include src="'app/notebook/paragraph/result/result-graph.html'"></div>
+
+    <div id="{{id}}_comment"
+         class="text"
+         ng-if="type == 'TABLE' && tableDataComment"
+         ng-bind-html="tableDataComment">
+    </div>
+
+    <div id="p{{id}}_text"
+         ng-if="type == 'TEXT'">
+      <div class="fa fa-level-down scroll-paragraph-down"
+           ng-show="showScrollDownIcon()"
+           ng-click="scrollParagraphDown()"
+           tooltip="Follow Output"></div>
+      <div id="p{{id}}_text"
+           style="max-height: {{config.graph.height}}px; overflow: auto"
+           class="text"></div>
+      <div class="fa fa-chevron-up scroll-paragraph-up"
+           ng-show="showScrollUpIcon()"
+           ng-click="scrollParagraphUp()"
+           tooltip="Scroll Top"></div>
+    </div>
+
+    <div id="p{{id}}_html"
+         class="resultContained"
+         ng-if="type == 'HTML'">
+    </div>
+
+    <div id="p{{id}}_angular"
+         class="resultContained"
+         ng-if="type == 'ANGULAR'">
+    </div>
+
+    <img id="{{id}}_img"
+         ng-if="type == 'IMG'"
+         ng-src="{{getBase64ImageSrc(result.data)}}" />
+  </div>
+
+  <div ng-repeat="app in apps">
+    <div id="p{{app.id}}"
+         ng-show="config.helium.activeApp == app.id">
+    </div>
+  </div>
 </div>
