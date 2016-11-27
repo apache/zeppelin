@@ -76,7 +76,7 @@ public class Neo4jCypherInterpreterTest {
     Properties p = new Properties();
     p.setProperty(Neo4jCypherInterpreter.NEO4J_SERVER_URL, server.boltURI().toString());
     interpreter = new Neo4jCypherInterpreter(p);
-    context = new InterpreterContext("note", "id", "title", "text",
+    context = new InterpreterContext("note", "id", null, "title", "text",
             new AuthenticationInfo(),
             new HashMap<String, Object>(),
             new GUI(),
