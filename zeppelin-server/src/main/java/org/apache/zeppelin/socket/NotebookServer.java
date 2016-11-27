@@ -1287,7 +1287,7 @@ public class NotebookServer extends WebSocketServlet implements
     return newPara.getId();
   }
 
-    private void copyParagraph(NotebookSocket conn, HashSet<String> userAndRoles,
+  private void copyParagraph(NotebookSocket conn, HashSet<String> userAndRoles,
                                Notebook notebook, Message fromMessage) throws IOException {
     String newParaId = insertParagraph(conn, userAndRoles, notebook, fromMessage);
     
