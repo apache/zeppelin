@@ -71,6 +71,20 @@
         websocketEvents.sendNewEvent({op: 'INSERT_PARAGRAPH', data: {index: newIndex}});
       },
 
+      copyParagraph: function(newIndex, paragraphTitle, paragraphData,
+                                      paragraphConfig, paragraphParams) {
+        websocketEvents.sendNewEvent({
+          op: 'COPY_PARAGRAPH',
+          data: {
+            index: newIndex,
+            title: paragraphTitle,
+            paragraph: paragraphData,
+            config: paragraphConfig,
+            params: paragraphParams
+          }
+        });
+      },
+
       updateAngularObject: function(noteId, paragraphId, name, value, interpreterGroupId) {
         websocketEvents.sendNewEvent({
           op: 'ANGULAR_OBJECT_UPDATED',

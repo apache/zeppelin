@@ -190,8 +190,7 @@ public class NotebookServer extends WebSocketServlet implements
       if (StringUtils.isEmpty(conn.getUser())) {
         addUserConnection(messagereceived.principal, conn);
       }
-      AuthenticationInfo subject = 
-          new AuthenticationInfo(messagereceived.principal, messagereceived.ticket);
+      AuthenticationInfo subject = new AuthenticationInfo(messagereceived.principal);
 
       /** Lets be elegant here */
       switch (messagereceived.op) {
@@ -233,6 +232,9 @@ public class NotebookServer extends WebSocketServlet implements
             break;
           case INSERT_PARAGRAPH:
             insertParagraph(conn, userAndRoles, notebook, messagereceived);
+            break;
+          case COPY_PARAGRAPH:
+            copyParagraph(conn, userAndRoles, notebook, messagereceived);
             break;
           case PARAGRAPH_REMOVE:
             removeParagraph(conn, userAndRoles, notebook, messagereceived);
@@ -1263,7 +1265,7 @@ public class NotebookServer extends WebSocketServlet implements
               .put("index", newIndex));
   }
 
-  private void insertParagraph(NotebookSocket conn, HashSet<String> userAndRoles,
+  private String insertParagraph(NotebookSocket conn, HashSet<String> userAndRoles,
                                Notebook notebook, Message fromMessage) throws IOException {
     final int index = (int) Double.parseDouble(fromMessage.get("index")
         .toString());
@@ -1274,12 +1276,27 @@ public class NotebookServer extends WebSocketServlet implements
     if (!notebookAuthorization.isWriter(noteId, userAndRoles)) {
       permissionError(conn, "write", fromMessage.principal,
           userAndRoles, notebookAuthorization.getWriters(noteId));
-      return;
+      return null;
     }
 
     Paragraph newPara = note.insertParagraph(index);
     note.persist(subject);
     broadcastNewParagraph(note, newPara);
+    
+    return newPara.getId();
+  }
+  
+  private void copyParagraph(NotebookSocket conn, HashSet<String> userAndRoles,
+                               Notebook notebook, Message fromMessage) throws IOException {
+    String newParaId = insertParagraph(conn, userAndRoles, notebook, fromMessage);
+    
+    if (newParaId == null) {
+      return;
+    }
+    fromMessage.put("id", newParaId);
+    
+    //runParagraph(conn, userAndRoles, notebook, fromMessage);
+    updateParagraph(conn, userAndRoles, notebook, fromMessage);
   }
 
   private void cancelParagraph(NotebookSocket conn, HashSet<String> userAndRoles, Notebook notebook,
