@@ -1277,7 +1277,7 @@ public class NotebookServer extends WebSocketServlet implements
     if (!notebookAuthorization.isWriter(noteId, userAndRoles)) {
       permissionError(conn, "write", fromMessage.principal,
           userAndRoles, notebookAuthorization.getWriters(noteId));
-      return;
+      return null;
     }
 
     Paragraph newPara = note.insertParagraph(index);
