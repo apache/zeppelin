@@ -992,7 +992,10 @@ public class SparkInterpreter extends Interpreter {
     numReferenceOfSparkContext.incrementAndGet();
   }
 
-  private String getSparkUIUrl() {
+  public String getSparkUIUrl() {
+    if (sparkUrl != null) {
+      return sparkUrl;
+    }
     Option<SparkUI> sparkUiOption = (Option<SparkUI>) Utils.invokeMethod(sc, "ui");
     SparkUI sparkUi = sparkUiOption.get();
     String sparkWebUrl = sparkUi.appUIAddress();
