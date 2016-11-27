@@ -206,10 +206,10 @@
       }
     });
 
-    $scope.$on('noteRevision', function(event, note) {
-      console.log('received note revision %o', note);
-      if (note) {
-        $scope.note = note;
+    $scope.$on('noteRevision', function(event, data) {
+      console.log('received note revision %o', data);
+      if (data.note) {
+        $scope.note = data.note;
       } else {
         $location.path('/');
       }

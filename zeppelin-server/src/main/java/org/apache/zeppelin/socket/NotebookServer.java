@@ -1483,7 +1483,7 @@ public class NotebookServer extends WebSocketServlet implements
     conn.send(serializeMessage(new Message(OP.NOTE_REVISION)
         .put("noteId", noteId)
         .put("revisionId", revisionId)
-        .put("data", revisionNote)));
+        .put("note", revisionNote)));
   }
 
   /**
