@@ -56,7 +56,7 @@ public class SparkInterpreterTest {
   public static InterpreterGroup intpGroup;
   private InterpreterContext context;
   public static Logger LOGGER = LoggerFactory.getLogger(SparkInterpreterTest.class);
-  private Map<String, Map<String, String>> paraIdToInfosMap =
+  private  static Map<String, Map<String, String>> paraIdToInfosMap =
       new HashMap<>();
 
   /**
@@ -124,7 +124,11 @@ public class SparkInterpreterTest {
           return remoteEventClientWrapper;
         }
     };
-    //first paragraph initializes sparkurl, run a dummy para
+    // The first para interpretdr will set the Eventclient wrapper
+    //SparkInterpreter.interpret(String, InterpreterContext) ->
+    //SparkInterpreter.populateSparkWebUrl(InterpreterContext) ->
+    //ZeppelinContext.setEventClient(RemoteEventClientWrapper)
+    //running a dummy to ensure that we dont have any race conditions among tests
     repl.interpret("sc", context);
   }
 
