@@ -257,7 +257,7 @@ public class ZeppelinHubRepo implements NotebookRepo {
   public Revision checkpoint(String noteId, String checkpointMsg, AuthenticationInfo subject)
       throws IOException {
     if (StringUtils.isBlank(noteId) || !isSubjectValid(subject)) {
-      return null;
+      return Revision.EMPTY;
     }
     String endpoint = Joiner.on("/").join(noteId, "checkpoint");
     String content = GSON.toJson(ImmutableMap.of("message", checkpointMsg));
