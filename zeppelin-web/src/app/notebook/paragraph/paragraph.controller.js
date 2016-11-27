@@ -442,8 +442,8 @@
     $scope.insertNew = function(position) {
       $scope.$emit('insertParagraph', $scope.paragraph.id, position || 'below');
     };
-    
-        $scope.copyParagraph = function(data, position) {
+
+    $scope.copyParagraph = function(data, position) {
       var newIndex = -1;
       for (var i = 0; i < $scope.note.paragraphs.length; i++) {
         if ($scope.note.paragraphs[i].id === $scope.paragraph.id) {
