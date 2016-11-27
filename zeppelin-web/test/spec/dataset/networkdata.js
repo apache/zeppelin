@@ -25,17 +25,22 @@ describe('NetworkData build', function() {
   it('should initialize the default value', function() {
     expect(nd.columns.length).toBe(0);
     expect(nd.rows.length).toBe(0);
-    expect(nd.graph).toBe({});
+    expect(nd.graph).toEqual({});
   });
 
   it('should able to create NetowkData from paragraph result', function() {
-    td.loadParagraphResult({
+    var jsonExpected = {nodes: [{id: 1}, {id: 2}], edges: [{source: 2, target: 1, id: 1}]};
+	nd.loadParagraphResult({
       type: zeppelin.DatasetTypes.NETWORK,
-      msg: '{"nodes": [{"id": 1}, {"id": 2}], "edges": [{"source": 2, "target": 1, "id": 1}]}'
+      msg: JSON.stringify(jsonExpected)
     });
 
-    expect(td.columns.length).toBe(2);
-    expect(td.rows.length).toBe(3);
-    expect(td.graph).toBe({nodes: [{id: 1}, {id: 2}], edges: [{source: 2, target: 1, id: 1}]});
+    expect(nd.columns.length).toBe(2);
+    expect(nd.rows.length).toBe(3);
+    expect(nd.graph.nodes[0].id).toBe(jsonExpected.nodes[0].id);
+    expect(nd.graph.nodes[1].id).toBe(jsonExpected.nodes[1].id);
+    expect(nd.graph.edges[0].id).toBe(jsonExpected.edges[0].id);
+    expect(nd.graph.edges[0].source).toBe(jsonExpected.edges[0].source);
+    expect(nd.graph.edges[0].target).toBe(jsonExpected.edges[0].target);
   });
 });

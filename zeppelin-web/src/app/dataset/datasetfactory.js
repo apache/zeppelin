@@ -27,7 +27,7 @@ zeppelin.DatasetFactory = function(type) {
     case zeppelin.DatasetTypes.TABLE:
       return new zeppelin.TableData();
     default:
-      throw 'Dataset type not found';
+      throw new Error('Dataset type not found');
     }
   };
 };
