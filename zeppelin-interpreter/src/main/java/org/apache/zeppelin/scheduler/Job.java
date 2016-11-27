@@ -68,10 +68,6 @@ public abstract class Job {
     public boolean isPending() {
       return this == PENDING;
     }
-    
-    public boolean isError() {
-      return this == ERROR;
-    }
   }
 
   private String jobName;
