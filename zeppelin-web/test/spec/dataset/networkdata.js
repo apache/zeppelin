@@ -30,7 +30,7 @@ describe('NetworkData build', function() {
 
   it('should able to create NetowkData from paragraph result', function() {
     var jsonExpected = {nodes: [{id: 1}, {id: 2}], edges: [{source: 2, target: 1, id: 1}]};
-	nd.loadParagraphResult({
+    nd.loadParagraphResult({
       type: zeppelin.DatasetTypes.NETWORK,
       msg: JSON.stringify(jsonExpected)
     });
