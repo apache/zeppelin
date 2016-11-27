@@ -520,7 +520,7 @@ public class Note implements Serializable, ParagraphJobListener {
   /**
    * Check whether all paragraphs belongs to this note has terminated
    */
-  boolean isTerminated() {
+  public boolean isTerminated() {
     synchronized (paragraphs) {
       for (Paragraph p : paragraphs) {
         if (!p.isTerminated()) {

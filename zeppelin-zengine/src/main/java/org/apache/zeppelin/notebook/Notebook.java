@@ -789,10 +789,10 @@ public class Notebook implements NoteEventListener {
       Note note = notebook.getNote(noteId);
       note.runAll();
 
-      @SuppressWarnings("rawtypes")
-      StringMap email = (StringMap) note.getConfig().get("email");
+      Map<String, Object> notificationConf = (Map<String, Object>) note.getConfig()
+              .get("notification");
 
-      if (email != null) {
+      if (notificationConf != null) {
         notification.enabledNotification(note);
       } else {
         while (!note.isTerminated()) {

@@ -44,30 +44,33 @@ public class EmailNotification implements Notifications {
 
   @Override
   public void start(Map<String, Object> config, String msg) {
-    StringMap emailMap = (StringMap) config.get("email");
+    Map<String, Object> notification = (Map<String, Object>) config.get("notification");
+    Map<String, Object> emailMap = (Map<String, Object>) notification.get("email");
     String onStart = (String) emailMap.get("start");
     for (String email : onStart.split(",")) {
-      logger.info("Send email to " + email);
+      logger.info("Send email to: " + email);
       sendEmail(onStart, msg);
     }
   }
 
   @Override
   public void finish(Map<String, Object> config, String msg) {
-    StringMap emailMap = (StringMap) config.get("email");
+    Map<String, Object> notification = (Map<String, Object>) config.get("notification");
+    Map<String, Object> emailMap = (Map<String, Object>) notification.get("email");
     String onSuccess = (String) emailMap.get("finish");
     for (String email : onSuccess.split(",")) {
-      logger.info("Send email to " + email);
+      logger.info("Send email to: " + email);
       sendEmail(email, msg);
     }
   }
 
   @Override
   public void error(Map<String, Object> config, String msg) {
-    StringMap emailMap = (StringMap) config.get("email");
+    Map<String, Object> notification = (Map<String, Object>) config.get("notification");
+    Map<String, Object> emailMap = (Map<String, Object>) notification.get("email");
     String onError = (String) emailMap.get("error");
     for (String email : onError.split(",")) {
-      logger.info("Send email to " + email);
+      logger.info("Send email to: " + email);
       sendEmail(onError, msg);
     }
   }

@@ -29,11 +29,9 @@ import org.slf4j.LoggerFactory;
  */
 public class EventNotification {
   static Logger logger = LoggerFactory.getLogger(EventNotification.class);
-  private static ZeppelinConfiguration conf;
   Notifications emailNotification;
 
   public EventNotification(ZeppelinConfiguration conf) {
-    this.conf = conf;
     emailNotification = new EmailNotification(conf);
   }
 
@@ -41,26 +39,26 @@ public class EventNotification {
     Map<String, Object> config = note.getConfig();
 
     emailNotification.start(config, "Start execute note " + note.getName());
-    while (!note.getLastParagraph().isTerminated()) {
+    while (!note.isTerminated()) {
       try {
         Thread.sleep(1000);
       } catch (InterruptedException e) {
         logger.error(e.toString(), e);
       }
-      for (Paragraph para : note.paragraphs) {
-        if (para.getStatus().isError()) {
-          //improve mail messages
-          String msg = "Error in paragraphs ";
-          if (para.getTitle() != null) {
-            msg = msg + para.getTitle() + "\n"
-                + para.getResult().message();
-
-          } else {
-            msg = msg + para.getId() + "\n"
-                + para.getResult().message();
-          }
-          emailNotification.error(config, msg);
+    }
+    for (Paragraph para : note.paragraphs) {
+      logger.info(para.getStatus() + "");
+      if (para.getStatus().isError()) {
+        //improve mail messages
+        String msg = "Error in paragraphs ";
+        if (para.getTitle() != null) {
+          msg = msg + para.getTitle() + "\n"
+                  + para.getResult().message();
+        } else {
+          msg = msg + para.getId() + "\n"
+                  + para.getResult().message();
         }
+        emailNotification.error(config, msg);
       }
     }
     emailNotification.finish(config, "Note " + note.getName() + " has finish.");

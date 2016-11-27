@@ -25,7 +25,7 @@ import java.util.Map;
  *
  */
 public interface Notifications {
-  public void start(Map<String, Object> config, String msg);
-  public void finish(Map<String, Object> config, String msg);
-  public void error(Map<String, Object> config, String msg);
+  void start(Map<String, Object> config, String msg);
+  void finish(Map<String, Object> config, String msg);
+  void error(Map<String, Object> config, String msg);
 }

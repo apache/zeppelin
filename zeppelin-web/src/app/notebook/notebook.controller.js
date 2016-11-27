@@ -298,8 +298,6 @@
     };
 
     $scope.reset = function() {
-      console.log($scope.note.config);
-      console.log($scope.config);
       $scope.note.config = angular.copy($scope.config);
     };
 
@@ -317,7 +315,6 @@
     /** Set release resource for this note **/
     $scope.setReleaseResource = function(value) {
       $scope.note.config.releaseresource = value;
-      $scope.setConfig();
     };
 
     /** Update note config **/

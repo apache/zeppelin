@@ -25,14 +25,16 @@ limitations under the License.
             <!-- Nav tabs -->
             <ul class="nav nav-tabs" role="tablist">
               <li role="presentation" class="active"><a href="#scheduler" aria-controls="scheduler" role="tab" data-toggle="tab">Scheduler</a></li>
-              <li role="presentation"><a href="#alert" aria-controls="alert" role="tab" data-toggle="tab">Alert</a></li>
+              <li role="presentation"><a href="#alert" aria-controls="alert" role="tab" data-toggle="tab">Notification</a></li>
             </ul>
 
             <!-- Tab panes -->
             <div class="tab-content">
               <div role="tabpanel" class="tab-pane active" id="scheduler">
-                Run note with cron scheduler.
-                Either choose from preset or write your own <a href="http://www.quartz-scheduler.org/documentation/quartz-1.x/tutorials/crontrigger" target=_blank>cron expression</a>.
+                <p>
+                  Run note with cron scheduler.
+                  Either choose from preset or write your own <a href="http://www.quartz-scheduler.org/documentation/quartz-1.x/tutorials/crontrigger" target=_blank>cron expression</a>.
+                </p>
                 <div>
                   <label>- Preset</label>
                   <a class="cron-preset" ng-repeat="cr in cronOption"
@@ -50,6 +52,13 @@ limitations under the License.
                   </p>
                 </div>
                 <div>
+                  <label>- Cron executing user (click enter in field to submit)</label>
+                  <input type="text"
+                         ng-model="note.config.cronExecutingUser"
+                         ng-enter="setCronExecutingUser(note.config.cronExecutingUser)"
+                         dropdown-input />
+                </div>
+                <div>
                   <label>- auto-restart interpreter on cron execution </label>
                   <input type="checkbox"
                   ng-model="note.config.releaseresource"
@@ -58,7 +67,9 @@ limitations under the License.
 
               </div>
               <div role="tabpanel" class="tab-pane" id="alert">
-                Enter a addresses to email when a run starts, success, or encounters an error.
+                <p>
+                  Enter a addresses to email when a run starts, success, or encounters an error.  
+                </p>
                 <div class="form-group">
                   <label class="control-label col-sm-3">On start</label>
                   <div class="col-sm-8">
