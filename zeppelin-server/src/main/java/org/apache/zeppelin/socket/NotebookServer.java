@@ -190,7 +190,8 @@ public class NotebookServer extends WebSocketServlet implements
       if (StringUtils.isEmpty(conn.getUser())) {
         addUserConnection(messagereceived.principal, conn);
       }
-      AuthenticationInfo subject = new AuthenticationInfo(messagereceived.principal);
+      AuthenticationInfo subject = 
+          new AuthenticationInfo(messagereceived.principal, messagereceived.ticket);
 
       /** Lets be elegant here */
       switch (messagereceived.op) {
@@ -1276,7 +1277,7 @@ public class NotebookServer extends WebSocketServlet implements
     if (!notebookAuthorization.isWriter(noteId, userAndRoles)) {
       permissionError(conn, "write", fromMessage.principal,
           userAndRoles, notebookAuthorization.getWriters(noteId));
-      return null;
+      return;
     }
 
     Paragraph newPara = note.insertParagraph(index);
@@ -1285,8 +1286,8 @@ public class NotebookServer extends WebSocketServlet implements
     
     return newPara.getId();
   }
-  
-  private void copyParagraph(NotebookSocket conn, HashSet<String> userAndRoles,
+
+    private void copyParagraph(NotebookSocket conn, HashSet<String> userAndRoles,
                                Notebook notebook, Message fromMessage) throws IOException {
     String newParaId = insertParagraph(conn, userAndRoles, notebook, fromMessage);
     
