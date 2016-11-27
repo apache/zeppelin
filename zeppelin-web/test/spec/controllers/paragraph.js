@@ -72,7 +72,7 @@ describe('Controller: ParagraphCtrl', function() {
 
   it('should call loadTableData() and getGraphMode() should return "table" when the result type is "NETWORK"',
     function() {
-      scope.getResultType = jasmine.createSpy('getResultType spy').andCallFake(function() {
+      scope.getResultType = jasmine.createSpy('getResultType spy').and.callFake(function() {
         return 'NETWORK';
       });
       spyOn(scope, 'setGraphMode');

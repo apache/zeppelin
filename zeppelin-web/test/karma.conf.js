@@ -77,7 +77,11 @@ module.exports = function(config) {
       // endbower
       '.tmp/app/app.js',
       '.tmp/app/app.controller.js',
-      '.tmp/app/tabledata/transformation.js',
+      '.tmp/app/dataset/transformation.js',
+      '.tmp/app/dataset/dataset.js',
+      '.tmp/app/dataset/tabledata.js',
+      '.tmp/app/dataset/networkdata.js',
+      '.tmp/app/dataset/datasetfactory.js',
       '.tmp/app/**/*.js',
       '.tmp/components/**/*.js',
       'test/spec/**/*.js'
