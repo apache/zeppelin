@@ -157,7 +157,7 @@ limitations under the License.
             class="list-unstyled"
             style="height:36px">
           <li ng-if="paragraph.config.graph.scatter.size">
-            <div class="btn btn-normal btn-xs" style="color:white" ng-class="{'btn-warning': isValidSizeOption(paragraph.config.graph.scatter, paragraph.result.rows)}">
+            <div class="btn btn-xs" style="color:white" ng-class="{'btn-warning': isValidSizeOption(paragraph.config.graph.scatter, paragraph.result.rows)}">
               {{paragraph.config.graph.scatter.size.name}} <span class="fa fa-close" ng-click="removeScatterOptionSize($index)"></span>
             </div>
           </li>
@@ -178,7 +178,7 @@ limitations under the License.
           <li ng-if="paragraph.config.graph.scatter.labels">
             <div class="btn btn-danger btn-xs" style="color:white">
               {{paragraph.config.graph.scatter.labels.name}} <span class="fa fa-close" ng-click="removeScatterOptionLabels($index)"></span>
-            </div><!-- TODO: removeScatterOptionLabels() -->
+            </div>
           </li>
         </ul>
       </span>
