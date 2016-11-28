@@ -263,9 +263,8 @@ public class BigQueryInterpreter extends Interpreter {
   }
 
   //Function to run the SQL on bigQuery service
-  public static Iterator<GetQueryResultsResponse> run(final String queryString, 
-    final String projId, final long wTime, final long maxRows) 
-      throws IOException {
+  public static Iterator<GetQueryResultsResponse> run(final String queryString,
+      final String projId, final long wTime, final long maxRows) throws IOException {
     try {
       QueryResponse query = service.jobs().query(
           projId,
