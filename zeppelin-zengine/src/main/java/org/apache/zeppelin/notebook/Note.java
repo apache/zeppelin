@@ -194,7 +194,7 @@ public class Note implements Serializable, ParagraphJobListener {
     this.name = name;
 
     if (this.noteNameListener != null && !oldName.equals(name)) {
-      noteNameListener.onNameChanged(this, oldName);
+      noteNameListener.onNoteNameChanged(this, oldName);
     }
   }
 

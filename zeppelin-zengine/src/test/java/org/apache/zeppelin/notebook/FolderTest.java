@@ -81,36 +81,24 @@ public class FolderTest {
   }
 
   @Test
-  public void normalizeFolderTest() {
+  public void normalizeFolderIdTest() {
     // The root folder tests
-    folder.setIdAndRenameNotes("/");
-    assertEquals(Folder.ROOT_FOLDER_ID, folder.getId());
-    folder.setIdAndRenameNotes("//");
-    assertEquals(Folder.ROOT_FOLDER_ID, folder.getId());
-    folder.setIdAndRenameNotes("///");
-    assertEquals(Folder.ROOT_FOLDER_ID, folder.getId());
-    folder.setIdAndRenameNotes("\\\\///////////");
-    assertEquals(Folder.ROOT_FOLDER_ID, folder.getId());
+    assertEquals(Folder.ROOT_FOLDER_ID, Folder.normalizeFolderId("/"));
+    assertEquals(Folder.ROOT_FOLDER_ID, Folder.normalizeFolderId("//"));
+    assertEquals(Folder.ROOT_FOLDER_ID, Folder.normalizeFolderId("///"));
+    assertEquals(Folder.ROOT_FOLDER_ID, Folder.normalizeFolderId("\\\\///////////"));
 
     // Folders under the root
-    folder.setIdAndRenameNotes("a");
-    assertEquals("a", folder.getId());
-    folder.setIdAndRenameNotes("/a");
-    assertEquals("a", folder.getId());
-    folder.setIdAndRenameNotes("a/");
-    assertEquals("a", folder.getId());
-    folder.setIdAndRenameNotes("/a/");
-    assertEquals("a", folder.getId());
+    assertEquals("a", Folder.normalizeFolderId("a"));
+    assertEquals("a", Folder.normalizeFolderId("/a"));
+    assertEquals("a", Folder.normalizeFolderId("a/"));
+    assertEquals("a", Folder.normalizeFolderId("/a/"));
 
     // Subdirectories
-    folder.setIdAndRenameNotes("a/b/c");
-    assertEquals("a/b/c", folder.getId());
-    folder.setIdAndRenameNotes("/a/b/c");
-    assertEquals("a/b/c", folder.getId());
-    folder.setIdAndRenameNotes("a/b/c/");
-    assertEquals("a/b/c", folder.getId());
-    folder.setIdAndRenameNotes("/a/b/c/");
-    assertEquals("a/b/c", folder.getId());
+    assertEquals("a/b/c", Folder.normalizeFolderId("a/b/c"));
+    assertEquals("a/b/c", Folder.normalizeFolderId("/a/b/c"));
+    assertEquals("a/b/c", Folder.normalizeFolderId("a/b/c/"));
+    assertEquals("a/b/c", Folder.normalizeFolderId("/a/b/c/"));
   }
 
   @Test
@@ -127,31 +115,20 @@ public class FolderTest {
 
     folder.addNote(note4);
 
-    assert(folder.getNotes().contains(note4));
+    assert (folder.getNotes().contains(note4));
   }
 
   @Test
   public void removeNoteTest() {
     folder.removeNote(note3);
 
-    assert(!folder.getNotes().contains(note3));
+    assert (!folder.getNotes().contains(note3));
   }
 
   @Test
-  public void setIdTest() {
-    // The root folder tests
-    folder.setIdAndRenameNotes(Folder.ROOT_FOLDER_ID);
-
-    assertEquals(Folder.ROOT_FOLDER_ID, note1.getFolderId());
-    assertEquals(Folder.ROOT_FOLDER_ID, note2.getFolderId());
-    assertEquals(Folder.ROOT_FOLDER_ID, note3.getFolderId());
-
-    assertEquals("note1", note1.getName());
-    assertEquals("note2", note2.getName());
-    assertEquals("note3", note3.getName());
-
+  public void renameTest() {
     // Subdirectory tests
-    folder.setIdAndRenameNotes("renamed/folder");
+    folder.rename("renamed/folder");
 
     assertEquals("renamed/folder", note1.getFolderId());
     assertEquals("renamed/folder", note2.getFolderId());
@@ -162,7 +139,7 @@ public class FolderTest {
     assertEquals("renamed/folder/note3", note3.getName());
 
     // Folders under the root tests
-    folder.setIdAndRenameNotes("a");
+    folder.rename("a");
 
     assertEquals("a", note1.getFolderId());
     assertEquals("a", note2.getFolderId());
@@ -171,5 +148,40 @@ public class FolderTest {
     assertEquals("a/note1", note1.getName());
     assertEquals("a/note2", note2.getName());
     assertEquals("a/note3", note3.getName());
+  }
+
+  @Test
+  public void renameToRootTest() {
+    folder.rename(Folder.ROOT_FOLDER_ID);
+
+    assertEquals(Folder.ROOT_FOLDER_ID, note1.getFolderId());
+    assertEquals(Folder.ROOT_FOLDER_ID, note2.getFolderId());
+    assertEquals(Folder.ROOT_FOLDER_ID, note3.getFolderId());
+
+    assertEquals("note1", note1.getName());
+    assertEquals("note2", note2.getName());
+    assertEquals("note3", note3.getName());
+  }
+
+  @Test
+  public void getParentIdTest() {
+    Folder rootFolder = new Folder("/");
+    Folder aFolder = new Folder("a");
+    Folder abFolder = new Folder("a/b");
+
+    assertEquals("/", rootFolder.getParentFolderId());
+    assertEquals("/", aFolder.getParentFolderId());
+    assertEquals("a", abFolder.getParentFolderId());
+  }
+
+  @Test
+  public void getNameTest() {
+    Folder rootFolder = new Folder("/");
+    Folder aFolder = new Folder("a");
+    Folder abFolder = new Folder("a/b");
+
+    assertEquals("/", rootFolder.getName());
+    assertEquals("a", aFolder.getName());
+    assertEquals("b", abFolder.getName());
   }
 }

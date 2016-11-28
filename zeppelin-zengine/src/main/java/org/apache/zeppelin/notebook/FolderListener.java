@@ -14,17 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.zeppelin.notebook;
 
 /**
- * NoteNameListener. It's used by FolderView.
+ * Folder listener used by FolderView
  */
-public interface NoteNameListener {
-  /**
-   * Fired after note name changed
-   * @param note
-   * @param oldName
-   */
-  void onNoteNameChanged(Note note, String oldName);
+public interface FolderListener {
+  void onFolderRenamed(Folder folder, String oldFolderId);
 }

@@ -794,7 +794,8 @@ public class NotebookServer extends WebSocketServlet implements
     if (oldFolder != null) {
       AuthenticationInfo subject = new AuthenticationInfo(fromMessage.principal);
 
-      for (Note note : oldFolder.getNotes()) {
+      List<Note> renamedNotes = oldFolder.getNotesRecursively();
+      for (Note note : renamedNotes) {
         note.persist(subject);
         broadcastNote(note);
       }

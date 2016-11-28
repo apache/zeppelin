@@ -24,13 +24,13 @@ import java.util.Map;
  * Folder view of notes of Notebook.
  * FolderView allows you to see notes from perspective of folders.
  */
-public class FolderView implements NoteNameListener {
+public class FolderView implements NoteNameListener, FolderListener {
   // key: folderId
   private final Map<String, Folder> folders = new LinkedHashMap<>();
   // key: a note, value: a folder where the note belongs to
   private final Map<Note, Folder> index = new LinkedHashMap<>();
 
-  public Folder get(String folderId) {
+  public Folder getFolder(String folderId) {
     String normalizedFolderId = Folder.normalizeFolderId(folderId);
     return folders.get(normalizedFolderId);
   }
@@ -40,40 +40,27 @@ public class FolderView implements NoteNameListener {
    *
    * @param oldFolderId folderId to rename
    * @param newFolderId newFolderId
-   * @return `null` if folder not exists, else old Folder.
-   *         You can know which notes are renamed via old Folder.
+   * @return `null` if folder not exists, else old Folder
+   * in order to know which notes and child folders are renamed
    */
   public Folder renameFolder(String oldFolderId, String newFolderId) {
-    if (!hasFolder(oldFolderId))
-      return null;
-
     String normOldFolderId = Folder.normalizeFolderId(oldFolderId);
     String normNewFolderId = Folder.normalizeFolderId(newFolderId);
 
-    // check if oldFolderId and newFolderId are same
+    if (!hasFolder(normOldFolderId))
+      return null;
+
+    if (oldFolderId.equals(Folder.ROOT_FOLDER_ID))  // cannot rename the root folder
+      return null;
+
+    // check whether oldFolderId and newFolderId are same or not
     if (normOldFolderId.equals(normNewFolderId))
-      return get(normOldFolderId);
+      return getFolder(normOldFolderId);
 
-    Folder oldFolder = get(normOldFolderId);
+    Folder oldFolder = getFolder(normOldFolderId);
+    removeFolder(oldFolderId);
 
-    // if the target folder already exists, combine two folder and remove old entry
-    if (hasFolder(normNewFolderId)) {
-      Folder targetFolder = get(normNewFolderId);
-      targetFolder.addNotes(oldFolder.getNotes());
-      synchronized (folders) {
-        folders.remove(normOldFolderId);
-      }
-    }
-    // else create new entry and remove old entry
-    else {
-      synchronized (folders) {
-        folders.put(normNewFolderId, oldFolder);
-        folders.remove(normOldFolderId);
-      }
-    }
-
-    // rename the folder and notes which belong to it
-    oldFolder.setIdAndRenameNotes(normNewFolderId);
+    oldFolder.rename(normNewFolderId);
 
     return oldFolder;
   }
@@ -89,16 +76,58 @@ public class FolderView implements NoteNameListener {
 
     String folderId = note.getFolderId();
 
-    if (!folders.containsKey(folderId)) {
-      synchronized (folders) {
-        folders.put(folderId, new Folder(folderId));
-      }
-    }
-
-    Folder folder = folders.get(folderId);
+    Folder folder = getOrCreateFolder(folderId);
     folder.addNote(note);
+
     synchronized (index) {
       index.put(note, folder);
+    }
+  }
+
+  private Folder getOrCreateFolder(String folderId) {
+    if (folders.containsKey(folderId))
+      return folders.get(folderId);
+
+    return createFolder(folderId);
+  }
+
+  private Folder createFolder(String folderId) {
+    Folder newFolder = new Folder(folderId);
+    newFolder.addFolderListener(this);
+
+    synchronized (folders) {
+      folders.put(folderId, newFolder);
+    }
+
+    Folder parentFolder = getOrCreateFolder(newFolder.getParentFolderId());
+
+    newFolder.setParent(parentFolder);
+    parentFolder.addChild(newFolder.getId(), newFolder);
+
+    return newFolder;
+  }
+
+  private void removeFolder(String folderId) {
+    Folder removedFolder;
+
+    synchronized (folders) {
+      removedFolder = folders.remove(folderId);
+    }
+
+    if (removedFolder != null) {
+      Folder parent = removedFolder.getParent();
+      parent.removeChild(folderId);
+      removeFolderIfEmpty(parent.getId());
+    }
+  }
+
+  private void removeFolderIfEmpty(String folderId) {
+    if (!hasFolder(folderId))
+      return;
+
+    Folder folder = getFolder(folderId);
+    if (folder.countNotes() == 0 && !folder.hasChild()) {
+      removeFolder(folderId);
     }
   }
 
@@ -109,12 +138,8 @@ public class FolderView implements NoteNameListener {
 
     Folder folder = index.get(note);
     folder.removeNote(note);
-    // Remove the folder from folderMap, if there is no note
-    if (folder.countNotes() == 0) {
-      synchronized (folders) {
-        folders.remove(folder.getId());
-      }
-    }
+
+    removeFolderIfEmpty(folder.getId());
 
     synchronized (index) {
       index.remove(note);
@@ -131,7 +156,7 @@ public class FolderView implements NoteNameListener {
   }
 
   public boolean hasFolder(String folderId) {
-    return get(folderId) != null;
+    return getFolder(folderId) != null;
   }
 
   public boolean hasNote(Note note) {
@@ -155,11 +180,12 @@ public class FolderView implements NoteNameListener {
   /**
    * Fired after a note's setName() run.
    * When the note's name changed, FolderView should check if the note is in the right folder.
+   *
    * @param note
    * @param oldName
    */
   @Override
-  public void onNameChanged(Note note, String oldName) {
+  public void onNoteNameChanged(Note note, String oldName) {
     if (note.isNameEmpty()) {
       return;
     }
@@ -177,6 +203,22 @@ public class FolderView implements NoteNameListener {
       // The note's folder is changed!
       removeNote(note);
       putNote(note);
+    }
+  }
+
+  @Override
+  public void onFolderRenamed(Folder folder, String oldFolderId) {
+    if (getFolder(folder.getId()) == folder)  // the folder is at the right place
+      return;
+
+    if (getFolder(oldFolderId) == folder)
+      folders.remove(oldFolderId);
+
+    Folder newFolder = getOrCreateFolder(folder.getId());
+    newFolder.merge(folder);
+
+    for (Note note : folder.getNotes()) {
+      index.put(note, newFolder);
     }
   }
 }

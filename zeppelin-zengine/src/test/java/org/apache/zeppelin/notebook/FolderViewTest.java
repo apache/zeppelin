@@ -100,9 +100,9 @@ public class FolderViewTest {
       folderView.putNote(note);
     }
 
-    rootFolder = folderView.get("/");
-    aFolder = folderView.get("a");
-    abFolder = folderView.get("a/b");
+    rootFolder = folderView.getFolder("/");
+    aFolder = folderView.getFolder("a");
+    abFolder = folderView.getFolder("a/b");
 
     rootNote1 = rootFolder.getNotes().get(0);
     rootNote2 = rootFolder.getNotes().get(1);
@@ -131,17 +131,17 @@ public class FolderViewTest {
 
   @Test
   public void getTest() {
-    assertEquals(rootFolder, folderView.get("/"));
+    assertEquals(rootFolder, folderView.getFolder("/"));
 
-    assertEquals(aFolder, folderView.get("a"));
-    assertEquals(aFolder, folderView.get("/a"));
-    assertEquals(aFolder, folderView.get("a/"));
-    assertEquals(aFolder, folderView.get("/a/"));
+    assertEquals(aFolder, folderView.getFolder("a"));
+    assertEquals(aFolder, folderView.getFolder("/a"));
+    assertEquals(aFolder, folderView.getFolder("a/"));
+    assertEquals(aFolder, folderView.getFolder("/a/"));
 
-    assertEquals(abFolder, folderView.get("a/b"));
-    assertEquals(abFolder, folderView.get("/a/b"));
-    assertEquals(abFolder, folderView.get("a/b/"));
-    assertEquals(abFolder, folderView.get("/a/b/"));
+    assertEquals(abFolder, folderView.getFolder("a/b"));
+    assertEquals(abFolder, folderView.getFolder("/a/b"));
+    assertEquals(abFolder, folderView.getFolder("a/b/"));
+    assertEquals(abFolder, folderView.getFolder("/a/b/"));
   }
 
   @Test
@@ -168,71 +168,59 @@ public class FolderViewTest {
     String newName = "a/c";
 
     Folder oldFolder = folderView.renameFolder(oldName, newName);
-    Folder newFolder = folderView.get(newName);
+    Folder newFolder = folderView.getFolder(newName);
 
-    assertNull(folderView.get(oldName));
+    assertNull(folderView.getFolder(oldName));
     assertNotNull(newFolder);
 
     assertEquals(3, folderView.countFolders());
     assertEquals(6, folderView.countNotes());
 
     assertEquals(abFolder, oldFolder);
-    assertEquals(abFolder, newFolder);
 
     assertEquals(newName, abFolder.getId());
+    assertEquals(newName, newFolder.getId());
 
     assertEquals(newName + "/note1", abNote1.getName());
     assertEquals(newName + "/note2", abNote2.getName());
   }
 
   @Test
-  public void renameFolderTargetExistsTest() {
+  public void renameFolderTargetExistsAndHasChildTest() {
     // "a" -> "a/b"
     String oldName = "a";
     String newName = "a/b";
 
     Folder oldFolder = folderView.renameFolder(oldName, newName);
-    Folder newFolder = folderView.get(newName);
+    Folder newFolder = folderView.getFolder(newName);
 
-    assertNull(folderView.get(oldName));
-    assertNotNull(newFolder);
+    assertNotNull(folderView.getFolder("a"));
+    assertNotNull(folderView.getFolder("a/b"));
+    assertNotNull(folderView.getFolder("a/b/b"));
 
-    assertEquals(2, folderView.countFolders());
+    assertEquals(0, folderView.getFolder("a").countNotes());
+    assertEquals(2, folderView.getFolder("a/b").countNotes());
+    assertEquals(2, folderView.getFolder("a/b/b").countNotes());
+
+    assertEquals(4, folderView.countFolders());
     assertEquals(6, folderView.countNotes());
 
-    assertEquals(4, abFolder.countNotes());
-
-    assertEquals(aFolder, oldFolder);
-    assertEquals(abFolder, newFolder);
-
     assertEquals(newName, aFolder.getId());
+    assertEquals(newName, newFolder.getId());
 
     assertEquals(newName + "/note1", aNote1.getName());
     assertEquals(newName + "/note2", aNote2.getName());
+    assertEquals(newName + "/b" + "/note1", abNote1.getName());
+    assertEquals(newName + "/b" + "/note2", abNote2.getName());
   }
 
   @Test
-  public void renameFolderFromRootTest() {
-    // "/" -> "a/c"
-    String oldName = "/";
-    String newName = "a/c";
+  public void renameRootFolderTest() {
+    String newName = "lalala";
+    Folder nothing = folderView.renameFolder("/", newName);
 
-    Folder oldFolder = folderView.renameFolder(oldName, newName);
-    Folder newFolder = folderView.get(newName);
-
-    assertNull(folderView.get(oldName));
-    assertNotNull(newFolder);
-
-    assertEquals(3, folderView.countFolders());
-    assertEquals(6, folderView.countNotes());
-
-    assertEquals(rootFolder, oldFolder);
-    assertEquals(rootFolder, newFolder);
-
-    assertEquals(newName, rootFolder.getId());
-
-    assertEquals(newName + "/note1", rootNote1.getName());
-    assertEquals(newName + "/note2", rootNote2.getName());
+    assertNull(nothing);
+    assertNull(folderView.getFolder(newName));
   }
 
   @Test
@@ -242,9 +230,9 @@ public class FolderViewTest {
     String newName = "/";
 
     Folder oldFolder = folderView.renameFolder(oldName, newName);
-    Folder newFolder = folderView.get(newName);
+    Folder newFolder = folderView.getFolder(newName);
 
-    assertNull(folderView.get(oldName));
+    assertNull(folderView.getFolder(oldName));
     assertNotNull(newFolder);
 
     assertEquals(2, folderView.countFolders());
@@ -276,32 +264,91 @@ public class FolderViewTest {
     String sameName = "a";
 
     Folder oldFolder = folderView.renameFolder(sameName, sameName);
-    Folder newFolder = folderView.get(sameName);
+    Folder newFolder = folderView.getFolder(sameName);
 
     assertEquals(aFolder, oldFolder);
     assertEquals(aFolder, newFolder);
 
-    assertNotNull(folderView.get(sameName));
+    assertNotNull(folderView.getFolder(sameName));
     assertNotNull(newFolder);
 
     assertEquals(sameName, aFolder.getId());
+  }
+
+  /**
+   * Should rename a empty folder
+   */
+  @Test
+  public void renameEmptyFolderTest() {
+    // Create a note of which name is "x/y/z" and rename "x" -> "u"
+
+    Note note = createNote();
+    note.setName("x/y/z");
+    folderView.putNote(note);
+
+    folderView.renameFolder("x", "u");
+
+    assertNotNull(folderView.getFolder("u"));
+    assertNotNull(folderView.getFolder("u/y"));
+  }
+
+  /**
+   * Should also rename child folders of the target folder
+   */
+  @Test
+  public void renameFolderHasChildrenTest() {
+    // "a" -> "x"
+    // "a/b" should also be renamed to "x/b"
+
+    folderView.renameFolder("a", "x");
+
+    assertNotNull(folderView.getFolder("x/b"));
   }
 
   @Test
   public void onNameChangedTest() {
     Note newNote = createNote();
 
-    assert(!folderView.hasNote(newNote));
+    assert (!folderView.hasNote(newNote));
 
     newNote.setName("      ");
-    assert(!folderView.hasNote(newNote));
+    assert (!folderView.hasNote(newNote));
 
     newNote.setName("a/b/newNote");
-    assert(folderView.hasNote(newNote));
+    assert (folderView.hasNote(newNote));
     assertEquals(abFolder, folderView.getFolderOf(newNote));
 
     newNote.setName("newNote");
-    assert(!abFolder.getNotes().contains(newNote));
+    assert (!abFolder.getNotes().contains(newNote));
     assertEquals(rootFolder, folderView.getFolderOf(newNote));
+  }
+
+  @Test
+  public void renameHighDepthFolderTest() {
+    Note note = createNote();
+    note.setName("x/y/z");
+
+    Folder folder = folderView.getFolder("x");
+    folder.rename("d");
+
+    assertEquals("d/y/z", note.getName());
+
+    assertNull(folderView.getFolder("x"));
+    assertNotNull(folderView.getFolder("d"));
+    assertNotNull(folderView.getFolder("d/y"));
+  }
+
+  @Test
+  public void renameFolderMergingTest() {
+    Note xNote1 = createNote();
+    Note xbNote1 = createNote();
+
+    xNote1.setName("x/note1");
+    xbNote1.setName("x/b/note1");
+
+    folderView.getFolder("a").rename("x");
+
+    assertEquals(3, folderView.getFolder("x").countNotes());
+    assertEquals(3, folderView.getFolder("x/b").countNotes());
   }
 }

@@ -30,8 +30,13 @@ public class Folder {
 
   private String id;
 
+  private Folder parent;
+  private Map<String, Folder> children = new LinkedHashMap<>();
+
   // key: noteId
   private final Map<String, Note> notes = new LinkedHashMap<>();
+
+  private List<FolderListener> listeners = new LinkedList<>();
 
   public Folder(String id) {
     this.id = id;
@@ -39,6 +44,33 @@ public class Folder {
 
   public String getId() {
     return id;
+  }
+
+  public String getName() {
+    if (getId().equals(ROOT_FOLDER_ID))
+      return ROOT_FOLDER_ID;
+
+    String path = getId();
+
+    int lastSlashIndex = path.lastIndexOf("/");
+    if (lastSlashIndex < 0) {   // This folder is under the root
+      return path;
+    }
+
+    return path.substring(lastSlashIndex + 1);
+  }
+
+  public String getParentFolderId() {
+    if (getId().equals(ROOT_FOLDER_ID))
+      return ROOT_FOLDER_ID;
+
+    int lastSlashIndex = getId().lastIndexOf("/");
+    // The root folder
+    if (lastSlashIndex < 0) {
+      return Folder.ROOT_FOLDER_ID;
+    }
+
+    return getId().substring(0, lastSlashIndex);
   }
 
   public static String normalizeFolderId(String id) {
@@ -64,18 +96,19 @@ public class Folder {
   }
 
   /**
-   * Rename this folder as well as the notes belong to it.
+   * Rename this folder as well as the notes and the children belong to it
+   *
    * @param newId
    */
-  public void setIdAndRenameNotes(String newId) {
-    newId = normalizeFolderId(newId);
-    id = newId;
+  public void rename(String newId) {
+    if (getId().equals(ROOT_FOLDER_ID))   // root folder cannot be renamed
+      return;
+
+    String oldId = getId();
+    id = normalizeFolderId(newId);
 
     synchronized (notes) {
-      Iterator<Note> iterator = notes.values().iterator();
-      while (iterator.hasNext()) {
-        Note note = iterator.next();
-
+      for (Note note : notes.values()) {
         String noteName = note.getNameWithoutPath();
 
         String newNotePath;
@@ -87,6 +120,61 @@ public class Folder {
         note.setName(newNotePath);
       }
     }
+
+    for (Folder child : children.values()) {
+      child.rename(getId() + "/" + child.getName());
+    }
+
+    getParent().removeChild(getId());
+
+    notifyRenamed(oldId);
+  }
+
+  /**
+   * Merge folder's notes and child folders
+   *
+   * @param folder
+   */
+  public void merge(Folder folder) {
+    addNotes(folder.getNotes());
+
+    for (Folder child : folder.getChildren().values()) {
+      child.setParent(this);
+    }
+
+    children.putAll(folder.getChildren());
+  }
+
+  public void addFolderListener(FolderListener listener) {
+    listeners.add(listener);
+  }
+
+  public void notifyRenamed(String oldFolderId) {
+    for (FolderListener listener : listeners) {
+      listener.onFolderRenamed(this, oldFolderId);
+    }
+  }
+
+  public Folder getParent() {
+    return parent;
+  }
+
+  public Map<String, Folder> getChildren() {
+    return children;
+  }
+
+  public void setParent(Folder parent) {
+    this.parent = parent;
+  }
+
+  public void addChild(String folderId, Folder child) {
+    if (child == this) // prevent the root folder from setting itself as child
+      return;
+    children.put(folderId, child);
+  }
+
+  public void removeChild(String folderId) {
+    children.remove(folderId);
   }
 
   public void addNote(Note note) {
@@ -113,7 +201,21 @@ public class Folder {
     return new LinkedList<>(notes.values());
   }
 
+  public List<Note> getNotesRecursively() {
+    List<Note> notes = getNotes();
+
+    for (Folder child : children.values()) {
+      notes.addAll(child.getNotesRecursively());
+    }
+
+    return notes;
+  }
+
   public int countNotes() {
     return notes.size();
+  }
+
+  public boolean hasChild() {
+    return children.size() > 0;
   }
 }
