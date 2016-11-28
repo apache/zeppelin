@@ -69,6 +69,7 @@ public class ShellInterpreter extends Interpreter {
   @Override
   public void close() {}
 
+
   @Override
   public InterpreterResult interpret(String cmd, InterpreterContext contextInterpreter) {
     LOGGER.debug("Run shell command '" + cmd + "'");

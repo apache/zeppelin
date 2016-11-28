@@ -115,6 +115,7 @@ public class ScaldingInterpreter extends Interpreter {
     interpreter.intp().close();
   }
 
+
   @Override
   public InterpreterResult interpret(String cmd, InterpreterContext contextInterpreter) {
     String user = contextInterpreter.getAuthenticationInfo().getUser();

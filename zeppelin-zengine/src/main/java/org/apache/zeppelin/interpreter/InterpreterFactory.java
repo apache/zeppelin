@@ -140,6 +140,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
         remoteInterpreterProcessListener, appEventListener, depResolver, shiroEnabled);
   }
 
+
   public InterpreterFactory(ZeppelinConfiguration conf, InterpreterOption defaultOption,
       AngularObjectRegistryListener angularObjectRegistryListener,
       RemoteInterpreterProcessListener remoteInterpreterProcessListener,

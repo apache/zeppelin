@@ -52,6 +52,7 @@ public class MockInterpreter2 extends Interpreter{
 		return open;
 	}
 
+
 	@Override
 	public InterpreterResult interpret(String st, InterpreterContext context) {
 		InterpreterResult result;
