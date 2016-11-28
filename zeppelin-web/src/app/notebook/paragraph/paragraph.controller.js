@@ -443,6 +443,13 @@
       $scope.$emit('insertParagraph', $scope.paragraph.id, position || 'below');
     };
 
+    $scope.copyPara = function(position) {
+      var editorValue = $scope.editor.getValue();
+      if (editorValue) {
+        $scope.copyParagraph(editorValue, position);
+      }
+    };
+
     $scope.copyParagraph = function(data, position) {
       var newIndex = -1;
       for (var i = 0; i < $scope.note.paragraphs.length; i++) {
@@ -1875,6 +1882,8 @@
           } else {
             $scope.showTitle();
           }
+        }else if (keyEvent.ctrlKey && keyEvent.shiftKey && keyCode === 67) { // Ctrl + Alt + c
+          $scope.copyPara('below');
         } else {
           noShortcutDefined = true;
         }
