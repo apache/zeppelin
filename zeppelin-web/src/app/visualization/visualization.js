@@ -22,7 +22,7 @@ var zeppelin = zeppelin || {};
 zeppelin.Visualization = function(targetEl, config) {
   this.targetEl = targetEl;
   this.config = config;
-  this._resized = false;
+  this._dirty = false;
   this._active = false;
   this._emitter;
 };
@@ -52,9 +52,9 @@ zeppelin.Visualization.prototype.refresh = function() {
  * Activate. invoked when visualization is selected
  */
 zeppelin.Visualization.prototype.activate = function() {
-  if (!this._active || this._resized) {
+  if (!this._active || this._dirty) {
     this.refresh();
-    this._resized = false;
+    this._dirty = false;
   }
   this._active = true;
 };
@@ -80,7 +80,7 @@ zeppelin.Visualization.prototype.resize = function() {
   if (this.isActive()) {
     this.refresh();
   } else {
-    this._resized = true;
+    this._dirty = true;
   }
 };
 
@@ -89,6 +89,11 @@ zeppelin.Visualization.prototype.resize = function() {
  */
 zeppelin.Visualization.prototype.setConfig = function(config) {
   this.config = config;
+  if (this.isActive()) {
+    this.refresh();
+  } else {
+    this._dirty = true;
+  }
 };
 
 /**

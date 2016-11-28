@@ -69,6 +69,7 @@ zeppelin.Transformation.prototype.renderSetting = function(targetEl) {
 };
 
 zeppelin.Transformation.prototype._render = function(targetEl, template, scope) {
+  this._targetEl = targetEl;
   targetEl.html(template);
   this._compile(targetEl.contents())(scope);
 };

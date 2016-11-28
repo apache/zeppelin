@@ -221,8 +221,6 @@
         tableData.loadParagraphResult({type: $scope.type, msg: data});
         $scope.tableDataColumns = tableData.columns;
         $scope.tableDataComment = tableData.comment;
-
-        //selectDefaultColsForGraphOption();
       } else if ($scope.type === 'IMG') {
         $scope.imageData = data;
       }
@@ -352,7 +350,6 @@
     };
 
     $scope.renderGraph = function(type, refresh) {
-      //clearUnknownColsFromGraphOption();
       // set graph height
       var height = $scope.config.graph.height;
       var graphContainerEl = angular.element('#p' + $scope.id + '_graph');
@@ -367,6 +364,7 @@
         // deactive previsouly active visualization
         for (var t in builtInVisualizations) {
           var v = builtInVisualizations[t].instance;
+
           if (t !== type && v && v.isActive()) {
             v.deactivate();
             break;
@@ -422,12 +420,14 @@
           // when graph options or data are changed
           var retryRenderer = function() {
             var targetEl = angular.element('#p' + $scope.id + '_' + type);
+            var transformationSettingTargetEl = angular.element('#trsetting' + $scope.id + '_' + type);
             if (targetEl.length) {
               var config = getVizConfig(type);
               targetEl.height(height);
               var transformation = builtInViz.instance.getTransformation();
               transformation.setConfig(config);
               var transformed = transformation.transform(tableData);
+              transformation.renderSetting(transformationSettingTargetEl);
               builtInViz.instance.setConfig(config);
               builtInViz.instance.render(transformed);
             } else {
@@ -463,7 +463,7 @@
     };
 
     var createNewScope = function() {
-      return $rootScope.$new();
+      return $rootScope.$new(true);
     };
 
     var commitParagraphResult = function(title, text, config, params) {
@@ -486,13 +486,18 @@
     };
 
     var getVizConfig = function(vizId) {
-      var config = {};
+      var config;
       var graph = $scope.config.graph;
       if (graph) {
         // copy setting for vizId
         if (graph.setting) {
           config = angular.copy(graph.setting[vizId]);
         }
+
+        if (!config) {
+          config = {};
+        }
+
         // copy common setting
         config.common = angular.copy(graph.commonSetting) || {};
 
@@ -530,7 +535,7 @@
       // copy pivot setting
       if (newConfig.graph.commonSetting && newConfig.graph.commonSetting.pivot) {
         newConfig.graph.keys = newConfig.graph.commonSetting.pivot.keys;
-        newConfig.graph.values = newConfig.graph.commonSetting.pivot.groups;
+        newConfig.graph.groups = newConfig.graph.commonSetting.pivot.groups;
         newConfig.graph.values = newConfig.graph.commonSetting.pivot.values;
         delete newConfig.graph.commonSetting.pivot;
       }
@@ -538,91 +543,6 @@
       var newParams = angular.copy(paragraph.settings.params);
       commitParagraphResult(paragraph.title, paragraph.text, newConfig, newParams);
     };
-
-    var commitConfigChange = function(config) {
-      //clearUnknownColsFromGraphOption();
-      var newConfig = angular.copy(config);
-      var newParams = angular.copy(paragraph.settings.params);
-
-      commitParagraphResult(paragraph.title, paragraph.text, newConfig, newParams);
-    };
-
-    $scope.onGraphOptionChange = function() {
-      commitConfigChange($scope.config);
-    };
-
-    $scope.removeGraphOptionKeys = function(idx) {
-      $scope.config.graph.keys.splice(idx, 1);
-      commitConfigChange($scope.config);
-    };
-
-    $scope.removeGraphOptionValues = function(idx) {
-      $scope.config.graph.values.splice(idx, 1);
-      commitConfigChange($scope.config);
-    };
-
-    $scope.removeGraphOptionGroups = function(idx) {
-      $scope.config.graph.groups.splice(idx, 1);
-      commitConfigChange($scope.config);
-    };
-
-    $scope.setGraphOptionValueAggr = function(idx, aggr) {
-      $scope.config.graph.values[idx].aggr = aggr;
-      commitConfigChange($scope.config);
-    };
-
-    /*
-    var clearUnknownColsFromGraphOption = function() {
-      var unique = function(list) {
-        for (var i = 0; i < list.length; i++) {
-          for (var j = i + 1; j < list.length; j++) {
-            if (angular.equals(list[i], list[j])) {
-              list.splice(j, 1);
-            }
-          }
-        }
-      };
-
-      var removeUnknown = function(list) {
-        for (var i = 0; i < list.length; i++) {
-          // remove non existing column
-          var found = false;
-          for (var j = 0; j < tableData.columns.length; j++) {
-            var a = list[i];
-            var b = tableData.columns[j];
-            if (a.index === b.index && a.name === b.name) {
-              found = true;
-              break;
-            }
-          }
-          if (!found) {
-            list.splice(i, 1);
-          }
-        }
-      };
-
-
-      //unique($scope.config.graph.keys);
-      //removeUnknown($scope.config.graph.keys);
-
-      //removeUnknown($scope.config.graph.values);
-
-      //unique($scope.config.graph.groups);
-      //removeUnknown($scope.config.graph.groups);
-
-    };*/
-
-    /* select default key and value if there're none selected */
-    /*
-    var selectDefaultColsForGraphOption = function() {
-      if ($scope.config.graph.keys.length === 0 && tableData.columns.length > 0) {
-        $scope.config.graph.keys.push(tableData.columns[0]);
-      }
-
-      if ($scope.config.graph.values.length === 0 && tableData.columns.length > 1) {
-        $scope.config.graph.values.push(tableData.columns[1]);
-      }
-    };*/
 
     $scope.$on('paragraphResized', function(event, paragraphId) {
       // paragraph col width changed
