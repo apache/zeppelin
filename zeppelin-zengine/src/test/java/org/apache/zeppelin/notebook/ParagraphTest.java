@@ -58,8 +58,7 @@ public class ParagraphTest {
     assertEquals("md", Paragraph.getRequiredReplName(text));
     assertEquals("", Paragraph.getScriptBody(text));
   }
-
-
+  
   @Test
   public void replSingleCharName() {
     String text = "%r a";

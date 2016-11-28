@@ -86,6 +86,7 @@ public class RemoteAngularObjectTest implements AngularObjectRegistryListener {
     context = new InterpreterContext(
         "note",
         "id",
+        null,
         "title",
         "text",
         new AuthenticationInfo(),

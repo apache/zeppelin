@@ -24,6 +24,7 @@
 
     $scope.credentialInfo = [];
     $scope.showAddNewCredentialInfo = false;
+    $scope.availableInterpreters = [];
 
     var getCredentialInfo = function() {
       $http.get(baseUrlSrv.getRestApiBase() + '/credential').
@@ -85,6 +86,33 @@
         });
         console.log('Error %o %o', status, data.message);
       });
+    };
+
+    var getAvailableInterpreters = function() {
+      $http.get(baseUrlSrv.getRestApiBase() + '/interpreter/setting')
+      .success(function(data, status, headers, config) {
+        for (var setting = 0; setting < data.body.length; setting++) {
+          $scope.availableInterpreters.push(
+          data.body[setting].group + '.' + data.body[setting].name);
+        }
+        angular.element('#entityname').autocomplete({
+          source: $scope.availableInterpreters,
+          select: function(event, selected) {
+            $scope.entity = selected.item.value;
+            return false;
+          }
+        });
+      }).error(function(data, status, headers, config) {
+        console.log('Error %o %o', status, data.message);
+      });
+    };
+
+    $scope.toggleAddNewCredentialInfo = function() {
+      if ($scope.showAddNewCredentialInfo) {
+        $scope.showAddNewCredentialInfo = false;
+      } else {
+        $scope.showAddNewCredentialInfo = true;
+      }
     };
 
     $scope.cancelCredentialInfo = function() {
@@ -155,6 +183,7 @@
     };
 
     var init = function() {
+      getAvailableInterpreters();
       getCredentialInfo();
     };
 

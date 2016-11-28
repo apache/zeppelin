@@ -29,7 +29,7 @@ trait AbstractAngularModelTest extends FlatSpec
 with BeforeAndAfter with BeforeAndAfterEach with Eventually with Matchers {
   override def beforeEach() {
     val intpGroup = new InterpreterGroup()
-    val context = new InterpreterContext("note", "id", "title", "text", new AuthenticationInfo(),
+    val context = new InterpreterContext("note", "id", null, "title", "text", new AuthenticationInfo(),
       new java.util.HashMap[String, Object](), new GUI(), new AngularObjectRegistry(
         intpGroup.getId(), null),
       null,

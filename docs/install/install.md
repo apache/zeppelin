@@ -95,7 +95,7 @@ Congratulations, you have successfully installed Apache Zeppelin! Here are few s
  * Check [JDBC Interpreter](../interpreter/jdbc.html) to know more about configure and uses multiple JDBC data sources.
 
 #### Zeppelin with Python ...
- * Check [Python interpreter](../interpreter/python.html) to know more about Matplotlib, Pandas, Conda integration.
+ * Check [Python interpreter](../interpreter/python.html) to know more about Matplotlib, Pandas, Conda/Docker environment integration.
 
 
 #### Multi-user environment ...
