@@ -148,11 +148,11 @@ We are following Google Code style:
 
 There are some plugins to format, lint your code in IDE (use [_tools/checkstyle.xml](https://github.com/apache/zeppelin/tree/master/_tools) as rules)
 
-* [Checkstyle plugin for Intellij](http://eclipse-cs.sourceforge.net/#!/project-setup)
-* [Checkstyle plugin for Eclipse](http://stackoverflow.com/questions/26955766/intellij-idea-checkstyle)
+* [Checkstyle plugin for Intellij](http://stackoverflow.com/questions/26955766/intellij-idea-checkstyle)
+* [Checkstyle plugin for Eclipse](http://eclipse-cs.sourceforge.net/#!/project-setup)
 
-Checkstyle report location are in `${submodule}/target/site/checkstyle.html`
-Test coverage report location are in `${submodule}/target/site/cobertura/index.html`
+Checkstyle report location is in `${submodule}/target/site/checkstyle.html`
+Test coverage report location is in `${submodule}/target/site/cobertura/index.html`
 
 ## Getting the source code
 First of all, you need the Zeppelin source code.
