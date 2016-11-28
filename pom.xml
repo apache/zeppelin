@@ -488,7 +488,6 @@
                 <goal>check</goal>
               </goals>
               <configuration>
-                <failOnViolation>true</failOnViolation>
                 <excludes>org/apache/zeppelin/interpreter/thrift/*,org/apache/zeppelin/scio/avro/*,org/apache/zeppelin/scio/avro/*</excludes>
               </configuration>
             </execution>
