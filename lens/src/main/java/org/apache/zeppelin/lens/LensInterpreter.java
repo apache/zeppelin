@@ -75,10 +75,10 @@ public class LensInterpreter extends Interpreter {
   };
 
   private static Pattern s_queryExecutePattern = Pattern.compile(".*query\\s+execute\\s+(.*)");
-  private static Map<String, ExecutionDetail> s_paraToQH = 
-    new ConcurrentHashMap<> (); //tracks paragraphId -> Lens QueryHandle
+  private static Map<String, ExecutionDetail> s_paraToQH =
+      new ConcurrentHashMap<> (); //tracks paragraphId -> Lens QueryHandle
   private static Map<LensClient, Boolean> s_clientMap =
-    new ConcurrentHashMap<>();
+      new ConcurrentHashMap<>();
 
   private int m_maxResults;
   private int m_maxThreads;
@@ -100,14 +100,14 @@ public class LensInterpreter extends Interpreter {
       m_lensConf.set(LENS_PERSIST_RESULTSET, property.get(LENS_PERSIST_RESULTSET).toString());
       try {
         m_maxResults = Integer.parseInt(property.get(ZEPPELIN_MAX_ROWS).toString());
-      } catch (NumberFormatException|NullPointerException e) {
+      } catch (NumberFormatException | NullPointerException e) {
         m_maxResults = 1000;
-        s_logger.error("unable to parse " + ZEPPELIN_MAX_ROWS + " :" 
-          + property.get(ZEPPELIN_MAX_ROWS), e);
+        s_logger.error("unable to parse " + ZEPPELIN_MAX_ROWS + " :"
+            + property.get(ZEPPELIN_MAX_ROWS), e);
       }
       try {
         m_maxThreads = Integer.parseInt(property.get(ZEPPELIN_LENS_CONCURRENT_SESSIONS).toString());
-      } catch (NumberFormatException|NullPointerException e) {
+      } catch (NumberFormatException | NullPointerException e) {
         m_maxThreads = 10;
         s_logger.error("unable to parse " + ZEPPELIN_LENS_CONCURRENT_SESSIONS + " :" 
             + property.get(ZEPPELIN_LENS_CONCURRENT_SESSIONS), e);
@@ -265,11 +265,11 @@ public class LensInterpreter extends Interpreter {
           && res.getResult().toString().trim().matches("[a-z0-9-]+")) {
         // setup query progress tracking
         qh = res.getResult().toString();
-        s_paraToQH.put(context.getParagraphId(), 
-          new ExecutionDetail(qh, lensClient, shell));
+        s_paraToQH.put(context.getParagraphId(),
+            new ExecutionDetail(qh, lensClient, shell));
         String getResultsCmd = "query results --async false " + qh;
-        s_logger.info("executing query results command : " + context.getParagraphId() 
-          + " : " + getResultsCmd);
+        s_logger.info("executing query results command : " + context.getParagraphId()
+            + " : " + getResultsCmd);
         res = shell.executeCommand(getResultsCmd); 
         s_paraToQH.remove(context.getParagraphId());
       }
@@ -321,7 +321,7 @@ public class LensInterpreter extends Interpreter {
       }
     }
     if (s_queryExecutePattern.matcher(st.toLowerCase()).find() &&
-      result.getResult().toString().contains(" rows process in (")) {
+        result.getResult().toString().contains(" rows process in (")) {
       sb.append("%table ");
     }
     if (sb.length() > 0) {
@@ -347,11 +347,11 @@ public class LensInterpreter extends Interpreter {
       s_clientMap.put(lensClient, true);
       s_logger.info("invoke query kill (" + context.getParagraphId() + ") " + qh);
       CommandResult res = shell.executeCommand("query kill " + qh);
-      s_logger.info("query kill returned (" + context.getParagraphId() + ") " + qh 
-        + " with: " + res.getResult());
+      s_logger.info("query kill returned (" + context.getParagraphId() + ") " + qh
+          + " with: " + res.getResult());
     } catch (Exception e) {
       s_logger.error("unable to kill query ("
-        + context.getParagraphId() + ") " + qh, e);
+          + context.getParagraphId() + ") " + qh, e);
     } finally {
       try {
         if (lensClient != null) {
