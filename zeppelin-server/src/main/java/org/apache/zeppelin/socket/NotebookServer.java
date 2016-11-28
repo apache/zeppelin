@@ -48,13 +48,7 @@ import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
-import org.apache.zeppelin.notebook.JobListenerFactory;
-import org.apache.zeppelin.notebook.Note;
-import org.apache.zeppelin.notebook.Notebook;
-import org.apache.zeppelin.notebook.NotebookAuthorization;
-import org.apache.zeppelin.notebook.NotebookEventListener;
-import org.apache.zeppelin.notebook.Paragraph;
-import org.apache.zeppelin.notebook.ParagraphJobListener;
+import org.apache.zeppelin.notebook.*;
 import org.apache.zeppelin.notebook.repo.NotebookRepo.Revision;
 import org.apache.zeppelin.notebook.socket.Message;
 import org.apache.zeppelin.notebook.socket.Message.OP;
@@ -734,6 +728,34 @@ public class NotebookServer extends WebSocketServlet implements
           .put("name", name)
           .put("config", config)
           .put("info", note.getInfo()));
+      broadcastNoteList(subject, userAndRoles);
+    }
+  }
+
+  private void renameNote(NotebookSocket conn, HashSet<String> userAndRoles,
+                          Notebook notebook, Message fromMessage)
+      throws SchedulerException, IOException {
+    String noteId = (String) fromMessage.get("id");
+    String name = (String) fromMessage.get("name");
+
+    if (noteId == null) {
+      return;
+    }
+
+    NotebookAuthorization notebookAuthorization = notebook.getNotebookAuthorization();
+    if (!notebookAuthorization.isOwner(noteId, userAndRoles)) {
+      permissionError(conn, "renameNote", fromMessage.principal,
+              userAndRoles, notebookAuthorization.getOwners(noteId));
+      return;
+    }
+
+    Note note = notebook.getNote(noteId);
+    if (note != null) {
+      note.setName(name);
+
+      AuthenticationInfo subject = new AuthenticationInfo(fromMessage.principal);
+      note.persist(subject);
+      broadcastNote(note);
       broadcastNoteList(subject, userAndRoles);
     }
   }
