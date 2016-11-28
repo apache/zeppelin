@@ -20,8 +20,30 @@ limitations under the License.
     style="padding-bottom: 5px;"
     resize='{"allowresize": "{{!asIframe && !viewOnly}}", "graphType": "{{type}}"}'
        resizable on-resize="resize(width, height);">
-    <div ng-include src="'app/notebook/paragraph/result/result-graph-settings.html'"></div>
-    <div ng-include src="'app/notebook/paragraph/result/result-graph.html'"></div>
+
+    <!-- graph setting -->
+    <div class="option lightBold" style="overflow: visible;"
+         ng-show="type=='TABLE' && graphMode!='table'
+                  && config.graph.optionOpen && !asIframe && !viewOnly">
+      <div ng-repeat="viz in builtInTableDataVisualizationList track by $index"
+           id="trsetting{{id}}_{{viz.id}}"
+           ng-show="graphMode == viz.id"></div>
+      <div ng-repeat="viz in builtInTableDataVisualizationList track by $index"
+           id="vizsetting{{id}}_{{viz.id}}"
+           ng-show="graphMode == viz.id"></div>
+    </div>
+
+    <!-- graph -->
+    <div id="p{{id}}_graph"
+         class="graphContainer"
+         ng-class="{'noOverflow': graphMode=='table'}"
+         ng-show="type =='TABLE'"
+         >
+      <div ng-repeat="viz in builtInTableDataVisualizationList track by $index"
+           id="p{{id}}_{{viz.id}}"
+           ng-show="graphMode == viz.id">
+      </div>
+    </div>
 
     <div id="{{id}}_comment"
          class="text"
