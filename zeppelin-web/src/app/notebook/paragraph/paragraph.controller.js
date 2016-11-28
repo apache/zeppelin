@@ -762,6 +762,8 @@
         $scope.editor.commands.bindKey('ctrl-alt-n.', null);
         $scope.editor.commands.removeCommand('showSettingsMenu');
 
+        $scope.editor.commands.bindKey('ctrl-alt-l', null);
+
         // autocomplete on 'ctrl+.'
         $scope.editor.commands.bindKey('ctrl-.', 'startAutocomplete');
         $scope.editor.commands.bindKey('ctrl-space', null);
@@ -1850,7 +1852,7 @@
           } else {
             $scope.showTitle();
           }
-        } else if (keyEvent.ctrlKey && keyEvent.shiftKey && keyCode === 67) { // Ctrl + shift + c
+        } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 76) { // Ctrl + Alt + l
           $scope.clearParagraphOutput();
         } else {
           noShortcutDefined = true;
