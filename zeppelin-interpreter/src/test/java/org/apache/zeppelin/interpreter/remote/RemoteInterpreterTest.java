@@ -81,16 +81,16 @@ public class RemoteInterpreterTest {
 
   private RemoteInterpreter createMockInterpreterA(Properties p, String noteId) {
     return new RemoteInterpreter(
-            p,
-            noteId,
-            MockInterpreterA.class.getName(),
-            new File(INTERPRETER_SCRIPT).getAbsolutePath(),
-            "fake",
-            "fakeRepo",
-            env,
-            10 * 1000,
-            null,
-            null,
+        p,
+        noteId,
+        MockInterpreterA.class.getName(),
+        new File(INTERPRETER_SCRIPT).getAbsolutePath(),
+        "fake",
+        "fakeRepo",
+        env,
+        10 * 1000,
+        null,
+        null,
         "anonymous",
         false);
   }
@@ -101,16 +101,16 @@ public class RemoteInterpreterTest {
 
   private RemoteInterpreter createMockInterpreterB(Properties p, String noteId) {
     return new RemoteInterpreter(
-            p,
-            noteId,
-            MockInterpreterB.class.getName(),
-            new File(INTERPRETER_SCRIPT).getAbsolutePath(),
-            "fake",
-            "fakeRepo",
-            env,
-            10 * 1000,
-            null,
-            null,
+        p,
+        noteId,
+        MockInterpreterB.class.getName(),
+        new File(INTERPRETER_SCRIPT).getAbsolutePath(),
+        "fake",
+        "fakeRepo",
+        env,
+        10 * 1000,
+        null,
+        null,
         "anonymous",
         false);
   }
@@ -216,7 +216,6 @@ public class RemoteInterpreterTest {
         null,
         "anonymous",
         false);
-
 
     intpGroup.get("note").add(intpA);
     intpA.setInterpreterGroup(intpGroup);
