@@ -150,7 +150,8 @@ public class GitNotebookRepoTest {
     assertThat(notebookRepo.checkpoint(TEST_NOTE_ID, "second commit, note1", null)).isNotNull();
     assertThat(notebookRepo.revisionHistory(TEST_NOTE_ID, null).size()).isEqualTo(2);
     assertThat(notebookRepo.revisionHistory(TEST_NOTE_ID2, null).size()).isEqualTo(1);
-    assertThat(notebookRepo.checkpoint(TEST_NOTE_ID2, "first commit, note2", null)).isNull();
+    assertThat(notebookRepo.checkpoint(TEST_NOTE_ID2, "first commit, note2", null))
+      .isEqualTo(Revision.EMPTY);
     assertThat(notebookRepo.revisionHistory(TEST_NOTE_ID2, null).size()).isEqualTo(1);
 
     //modify, save and checkpoint second note
