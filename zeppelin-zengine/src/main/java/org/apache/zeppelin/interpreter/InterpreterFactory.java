@@ -344,8 +344,8 @@ public class InterpreterFactory implements InterpreterGroupFactory {
   }
 
   private List<RegisteredInterpreter> getInterpreterListFromJson(InputStream stream) {
-    Type registeredInterpreterListType = new TypeToken<List<RegisteredInterpreter>>() {
-    }.getType();
+    Type registeredInterpreterListType =
+        new TypeToken<List<RegisteredInterpreter>>() {}.getType();
     return gson.fromJson(new InputStreamReader(stream), registeredInterpreterListType);
   }
 
@@ -409,7 +409,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
       interpreterSettingObject = interpreterSettingsRef.get(setting.getGroup());
       if (interpreterSettingObject == null) {
         logger.warn("can't get InterpreterSetting " +
-          "Information From loaded Interpreter Setting Ref - {} ", setting.getGroup());
+            "Information From loaded Interpreter Setting Ref - {} ", setting.getGroup());
         continue;
       }
       depClassPath = interpreterSettingObject.getPath();
