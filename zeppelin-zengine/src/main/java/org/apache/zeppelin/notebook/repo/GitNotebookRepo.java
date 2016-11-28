@@ -82,7 +82,7 @@ public class GitNotebookRepo extends VFSNotebookRepo {
    */
   @Override
   public Revision checkpoint(String pattern, String commitMessage, AuthenticationInfo subject) {
-    Revision revision = null;
+    Revision revision = Revision.EMPTY;
     try {
       List<DiffEntry> gitDiff = git.diff().call();
       if (!gitDiff.isEmpty()) {

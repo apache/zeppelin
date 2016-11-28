@@ -257,20 +257,21 @@ public class S3NotebookRepo implements NotebookRepo {
   @Override
   public Revision checkpoint(String noteId, String checkpointMsg, AuthenticationInfo subject)
       throws IOException {
-    // Auto-generated method stub
-    return null;
+    // no-op
+    LOG.warn("Checkpoint feature isn't supported in {}", this.getClass().toString());
+    return Revision.EMPTY;
   }
 
   @Override
   public Note get(String noteId, String revId, AuthenticationInfo subject) throws IOException {
-    // Auto-generated method stub
+    LOG.warn("Get note revision feature isn't supported in {}", this.getClass().toString());
     return null;
   }
 
   @Override
   public List<Revision> revisionHistory(String noteId, AuthenticationInfo subject) {
-    // Auto-generated method stub
-    return null;
+    LOG.warn("Get Note revisions feature isn't supported in {}", this.getClass().toString());
+    return Collections.emptyList();
   }
 
   @Override
