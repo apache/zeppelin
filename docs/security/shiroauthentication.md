@@ -71,7 +71,7 @@ You can set the roles for each users next to the password.
 In case you want to leverage user groups and permissions, use one of the following configuration for LDAP or AD under `[main]` segment in `shiro.ini`.
 
 ```
-activeDirectoryRealm = org.apache.zeppelin.server.ActiveDirectoryGroupRealm
+activeDirectoryRealm = org.apache.zeppelin.realm.ActiveDirectoryGroupRealm
 activeDirectoryRealm.systemUsername = userNameA
 activeDirectoryRealm.systemPassword = passwordA
 activeDirectoryRealm.searchBase = CN=Users,DC=SOME_GROUP,DC=COMPANY,DC=COM
@@ -106,7 +106,7 @@ We also provide community custom Realms.
 ### Active Directory
 
 ```
-activeDirectoryRealm = org.apache.zeppelin.server.ActiveDirectoryGroupRealm
+activeDirectoryRealm = org.apache.zeppelin.realm.ActiveDirectoryGroupRealm
 activeDirectoryRealm.systemUsername = userNameA
 activeDirectoryRealm.systemPassword = passwordA
 activeDirectoryRealm.hadoopSecurityCredentialPath = jceks://file/user/zeppelin/conf/zeppelin.jceks
@@ -127,7 +127,7 @@ Change the following values in the Shiro.ini file, and uncomment the line:
 ### LDAP
 
 ```
-ldapRealm = org.apache.zeppelin.server.LdapGroupRealm
+ldapRealm = org.apache.zeppelin.realm.LdapGroupRealm
 # search base for ldap groups (only relevant for LdapGroupRealm):
 ldapRealm.contextFactory.environment[ldap.searchBase] = dc=COMPANY,dc=COM
 ldapRealm.contextFactory.url = ldap://ldap.test.com:389
