@@ -59,6 +59,8 @@ public abstract class BaseLivyInterprereter extends Interpreter {
   public void close() {
     if (sessionId != -1) {
       livyHelper.closeSession(sessionId);
+      // reset sessionId to -1
+      sessionId = -1;
     }
   }
 
@@ -66,14 +68,14 @@ public abstract class BaseLivyInterprereter extends Interpreter {
     sessionId = livyHelper.createSession(context, getSessionKind());
     if (displayAppInfo) {
       this.appId = extractStatementResult(
-          livyHelper.interpret("sc.applicationId", context, sessionId).message());
+          livyHelper.interpret("sc.applicationId", context, sessionId).message().get(0).getData());
       livyHelper.interpret(
           "val webui=sc.getClass.getMethod(\"ui\").invoke(sc).asInstanceOf[Some[_]].get",
           context, sessionId);
       this.webUIAddress = extractStatementResult(
           livyHelper.interpret(
               "webui.getClass.getMethod(\"appUIAddress\").invoke(webui)",
-              context, sessionId).message());
+              context, sessionId).message().get(0).getData());
       LOGGER.info("Create livy session with sessionId: {}, appId: {}, webUI: {}",
           sessionId, appId, webUIAddress);
     }
