@@ -50,7 +50,7 @@
         }
         return $scope.activeInterpreters[index].name;
       } else {
-        return 'Undefined';
+        return 'Interpreter is not set';
       }
     };
 
