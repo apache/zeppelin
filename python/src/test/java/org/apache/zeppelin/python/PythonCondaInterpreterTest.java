@@ -49,18 +49,21 @@ public class PythonCondaInterpreterTest {
     doReturn(python).when(conda).getPythonInterpreter();
   }
 
-  @Test
-  public void testListEnv() throws IOException, InterruptedException {
-    InterpreterContext context = getInterpreterContext();
-
+  private void setCondaEnvs() throws IOException, InterruptedException {
     StringBuilder sb = new StringBuilder();
     sb.append("#comment\n\nenv1   *  /path1\nenv2\t/path2\n");
 
     doReturn(sb).when(conda).createStringBuilder();
     doReturn(0).when(conda)
-        .runCommand(any(StringBuilder.class), anyString(), anyString(), anyString());
+      .runCommand(any(StringBuilder.class), anyString(), anyString(), anyString());
+  }
+
+  @Test
+  public void testListEnv() throws IOException, InterruptedException {
+    setCondaEnvs();
 
     // list available env
+    InterpreterContext context = getInterpreterContext();
     InterpreterResult result = conda.interpret("", context);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
 
@@ -73,12 +76,13 @@ public class PythonCondaInterpreterTest {
   }
 
   @Test
-  public void testActivateEnv() {
+  public void testActivateEnv() throws IOException, InterruptedException {
+    setCondaEnvs();
     InterpreterContext context = getInterpreterContext();
-    conda.interpret("activate env", context);
+    conda.interpret("activate env1", context);
     verify(python, times(1)).open();
     verify(python, times(1)).close();
-    verify(python).setPythonCommand("conda run -n env \"python -iu\"");
+    verify(python).setPythonCommand("/path1/bin/python");
   }
 
   @Test
@@ -87,7 +91,7 @@ public class PythonCondaInterpreterTest {
     conda.interpret("deactivate", context);
     verify(python, times(1)).open();
     verify(python, times(1)).close();
-    verify(python).setPythonCommand(null);
+    verify(python).setPythonCommand("python");
   }
 
   private InterpreterContext getInterpreterContext() {
