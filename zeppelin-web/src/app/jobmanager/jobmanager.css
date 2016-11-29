@@ -36,8 +36,12 @@
 
 .job-note-name-query {
   padding: 6px;
-  color: #000;
-  height: 22px;
+  height: 25px;
   width: 200px;
-  font: normal normal normal 14px/1 FontAwesome;
+}
+
+.job-note-name-font-family {
+  font: inherit;
+  font-size: 14px;
+  font-weight: normal;
 }
