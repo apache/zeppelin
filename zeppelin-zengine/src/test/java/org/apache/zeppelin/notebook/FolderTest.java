@@ -78,6 +78,8 @@ public class FolderTest {
     folder.addNote(note1);
     folder.addNote(note2);
     folder.addNote(note3);
+
+    folder.setParent(new Folder("this/is/a"));
   }
 
   @Test
