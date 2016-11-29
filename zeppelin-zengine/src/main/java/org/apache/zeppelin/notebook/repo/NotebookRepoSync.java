@@ -437,7 +437,7 @@ public class NotebookRepoSync implements NotebookRepo {
         allRepoCheckpoints.add(getRepo(i).checkpoint(noteId, checkpointMsg, subject));
       } catch (IOException e) {
         LOG.warn("Couldn't checkpoint in {} storage with index {} for note {}",
-          getRepo(i).getClass().toString(), i, noteId);
+            getRepo(i).getClass().toString(), i, noteId);
         errorMessage += "Error on storage class " + getRepo(i).getClass().toString() +
           " with index " + i + " : " + e.getMessage() + "\n";
         errorCount++;
