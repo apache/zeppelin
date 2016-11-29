@@ -58,9 +58,8 @@ import com.google.gson.reflect.TypeToken;
  * Entry point for Interpreter process.
  * Accepting thrift connections from ZeppelinServer.
  */
-public class RemoteInterpreterServer
-  extends Thread
-  implements RemoteInterpreterService.Iface, AngularObjectRegistryListener {
+public class RemoteInterpreterServer extends Thread
+        implements RemoteInterpreterService.Iface, AngularObjectRegistryListener {
   Logger logger = LoggerFactory.getLogger(RemoteInterpreterServer.class);
 
   InterpreterGroup interpreterGroup;
