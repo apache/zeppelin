@@ -66,7 +66,7 @@ public class CredentialRestApi {
   @PUT
   public Response putCredentials(String message) throws IOException, IllegalArgumentException {
     Map<String, String> messageMap = gson.fromJson(message,
-      new TypeToken<Map<String, String>>(){}.getType());
+        new TypeToken<Map<String, String>>(){}.getType());
     String entity = messageMap.get("entity");
     String username = messageMap.get("username");
     String password = messageMap.get("password");

@@ -117,9 +117,9 @@ public class ActiveDirectoryGroupRealm extends AbstractLdapRealm {
       try {
         Configuration configuration = new Configuration();
         configuration.set(CredentialProviderFactory.CREDENTIAL_PROVIDER_PATH,
-          this.hadoopSecurityCredentialPath);
+            this.hadoopSecurityCredentialPath);
         CredentialProvider provider =
-          CredentialProviderFactory.getProviders(configuration).get(0);
+            CredentialProviderFactory.getProviders(configuration).get(0);
         CredentialProvider.CredentialEntry credEntry = provider.getCredentialEntry(
             KEYSTORE_PASS);
         if (credEntry != null) {
