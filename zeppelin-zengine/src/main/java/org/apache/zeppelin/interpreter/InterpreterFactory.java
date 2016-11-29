@@ -466,7 +466,11 @@ public class InterpreterFactory implements InterpreterGroupFactory {
             File localRepoDir = new File(conf.getInterpreterLocalRepoPath() + "/" +
                 setting.getId());
             if (localRepoDir.exists()) {
-              FileUtils.cleanDirectory(localRepoDir);
+              try {
+                FileUtils.cleanDirectory(localRepoDir);
+              } catch (FileNotFoundException e) {
+                logger.info("A file that does not exist cannot be deleted, nothing to worry", e);
+              }
             }
 
             // load dependencies
