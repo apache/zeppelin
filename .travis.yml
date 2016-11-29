@@ -86,6 +86,7 @@ before_install:
   - "/sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -ac -screen 0 1600x1024x16"
   - ./dev/change_scala_version.sh $SCALA_VER
   - source ~/.environ
+  - sed -i.bak -e 's|https://nexus.codehaus.org/snapshots/|https://oss.sonatype.org/content/repositories/codehaus-snapshots/|g' ~/.m2/settings.xml # travis CI 4629
 
 install:
   - mvn -Dorg.slf4j.simpleLogger.defaultLogLevel=warn $BUILD_FLAG $PROFILE -B
