@@ -832,7 +832,7 @@
                   <goal>wget</goal>
                 </goals>
                 <configuration>
-                  <readTimeOut>60000</readTimeOut>
+                  <readTimeOut>1800000</readTimeOut>
                   <retries>30</retries>
                   <url>${spark.download.url}</url>
                   <outputDirectory>${spark.dist.cache}</outputDirectory>
@@ -913,7 +913,7 @@
                   <goal>wget</goal>
                 </goals>
                 <configuration>
-                  <readTimeOut>60000</readTimeOut>
+                  <readTimeOut>1800000</readTimeOut>
                   <retries>30</retries>
                   <url>${spark.bin.download.url}</url>
                   <unpack>true</unpack>
