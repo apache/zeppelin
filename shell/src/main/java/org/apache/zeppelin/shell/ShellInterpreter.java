@@ -90,8 +90,8 @@ public class ShellInterpreter extends Interpreter {
       executor.setWatchdog(new ExecuteWatchdog(Long.valueOf(getProperty(TIMEOUT_PROPERTY))));
       executors.put(contextInterpreter.getParagraphId(), executor);
       int exitVal = executor.execute(cmdLine);
-      LOGGER.info("Paragraph " + contextInterpreter.getParagraphId() 
-        + " return with exit value: " + exitVal);
+      LOGGER.info("Paragraph " + contextInterpreter.getParagraphId()
+          + " return with exit value: " + exitVal);
       return new InterpreterResult(Code.SUCCESS, outStream.toString());
     } catch (ExecuteException e) {
       int exitValue = e.getExitValue();
@@ -101,8 +101,8 @@ public class ShellInterpreter extends Interpreter {
       if (exitValue == 143) {
         code = Code.INCOMPLETE;
         message += "Paragraph received a SIGTERM.\n";
-        LOGGER.info("The paragraph " + contextInterpreter.getParagraphId() 
-          + " stopped executing: " + message);
+        LOGGER.info("The paragraph " + contextInterpreter.getParagraphId()
+            + " stopped executing: " + message);
       }
       message += "ExitValue: " + exitValue;
       return new InterpreterResult(code, message);

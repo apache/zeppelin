@@ -36,15 +36,15 @@ public class ShellSecurityImpl {
   public static void createSecureConfiguration(Properties properties, String shell) {
 
     String authType = properties.getProperty("zeppelin.shell.auth.type")
-      .trim().toUpperCase();
+        .trim().toUpperCase();
 
     switch (authType) {
         case "KERBEROS":
           CommandLine cmdLine = CommandLine.parse(shell);
           cmdLine.addArgument("-c", false);
           String kinitCommand = String.format("kinit -k -t %s %s",
-            properties.getProperty("zeppelin.shell.keytab.location"),
-            properties.getProperty("zeppelin.shell.principal"));
+              properties.getProperty("zeppelin.shell.keytab.location"),
+              properties.getProperty("zeppelin.shell.principal"));
           cmdLine.addArgument(kinitCommand, false);
           DefaultExecutor executor = new DefaultExecutor();
 
