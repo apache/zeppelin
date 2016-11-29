@@ -367,6 +367,7 @@
           para.focus = true;
         }
       });
+      $scope.$broadcast('focusParagraph', paragraph.id, 0, false);
     };
 
     var removePara = function(paragraphId) {
