@@ -704,11 +704,8 @@
       if ($rootScope.ticket) {
         userName = $rootScope.ticket.principal;
       }
-      var payload  = {
-        'subject': userName,
-        'property': 'url'
-      };
-      $http.post(baseUrlSrv.getRestApiBase() + '/interpreter/getmetainfos/' + settingId, payload)
+      $http.get(baseUrlSrv.getRestApiBase() + '/interpreter/getmetainfos/' + settingId + '?subject=' +
+         userName + '&property=url')
         .success(function(data, status, headers, config) {
           var url = data.body.url;
           if (!url) {

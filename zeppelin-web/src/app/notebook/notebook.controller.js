@@ -643,12 +643,8 @@
       if ($rootScope.ticket) {
         userName = $rootScope.ticket.principal;
       }
-      var payload  = {
-        'noteId': $scope.note.id,
-        'subject': userName,
-        'property': 'url'
-      };
-      $http.post(baseUrlSrv.getRestApiBase() + '/interpreter/getmetainfos/' + interpeter.id, payload)
+      $http.get(baseUrlSrv.getRestApiBase() + '/interpreter/getmetainfos/' + interpeter.id + '?noteId=' +
+         $scope.note.id + '&subject=' + userName + '&property=url')
         .success(function(data, status, headers, config) {
           var url = data.body.url;
           if (!url) {
