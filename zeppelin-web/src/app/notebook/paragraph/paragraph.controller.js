@@ -1179,6 +1179,12 @@
       $scope.setGraphMode($scope.paragraph.config.graph.mode, true, false);
     };
 
+    $scope.removeScatterOptionLabels = function(idx) {
+      $scope.paragraph.config.graph.scatter.labels = null;
+      clearUnknownColsFromGraphOption();
+      $scope.setGraphMode($scope.paragraph.config.graph.mode, true, false);
+    };
+
     /* Clear unknown columns from graph option */
     var clearUnknownColsFromGraphOption = function() {
       var unique = function(list) {
