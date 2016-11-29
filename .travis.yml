@@ -44,7 +44,7 @@ matrix:
 
     # Test checkstyle with spark 2.0.0 and scala 2.11
     - jdk: "oraclejdk7"
-      env: CHECKSTYLE=1 SCALA_VER="2.11" SPARK_VER="2.0.0" HADOOP_VER="2.3" PROFILE="-Pspark-2.0 -Phadoop-2.3 -Ppyspark -Pscala-2.11" BUILD_FLAG="validate -Pcheckstyle -Ddownload.plugin.skip=true" TEST_FLAG="validate -Dcheckstyle.skip=true" TEST_PROJECTS=""
+      env: CHECKSTYLE=1 SCALA_VER="2.11" SPARK_VER="2.0.0" HADOOP_VER="2.3" PROFILE="-Pspark-2.0 -Phadoop-2.3 -Ppyspark -Pscala-2.11" BUILD_FLAG="validate -Pcheckstyle" TEST_FLAG="validate -Dcheckstyle.skip=true" TEST_PROJECTS=""
 
     # Test all modules with spark 2.0.0 and scala 2.11
     - jdk: "oraclejdk7"
