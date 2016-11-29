@@ -130,7 +130,8 @@ public class InterpreterSetting {
       key = SHARED_PROCESS;
     }
 
-    logger.debug("getInterpreterProcessKey: {}", key);
+    logger.debug("getInterpreterProcessKey: {} for InterpreterSetting Id: {}, Name: {}",
+        key, getId(), getName());
     return key;
   }
 
@@ -142,6 +143,7 @@ public class InterpreterSetting {
           interpreterGroupFactory.createInterpreterGroup(interpreterGroupId, getOption());
 
       interpreterGroupWriteLock.lock();
+      logger.debug("create interpreter group with groupId:" + interpreterGroupId);
       interpreterGroupRef.put(key, intpGroup);
       interpreterGroupWriteLock.unlock();
     }

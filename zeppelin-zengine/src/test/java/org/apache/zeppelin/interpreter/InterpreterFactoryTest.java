@@ -95,7 +95,7 @@ public class InterpreterFactoryTest {
     schedulerFactory = new SchedulerFactory();
     depResolver = new DependencyResolver(tmpDir.getAbsolutePath() + "/local-repo");
     factory = new InterpreterFactory(conf, new InterpreterOption(false), null, null, null, depResolver, false);
-    context = new InterpreterContext("note", "id", "title", "text", null, null, null, null, null, null, null);
+    context = new InterpreterContext("note", "id", null, "title", "text", null, null, null, null, null, null, null);
 
     SearchService search = mock(SearchService.class);
     notebookRepo = new VFSNotebookRepo(conf);

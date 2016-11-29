@@ -60,6 +60,7 @@ public class PythonInterpreter extends Interpreter {
   private int maxResult;
 
   PythonProcess process = null;
+  private String pythonCommand = null;
 
   public PythonInterpreter(Properties property) {
     super(property);
@@ -199,15 +200,22 @@ public class PythonInterpreter extends Interpreter {
 
   public PythonProcess getPythonProcess() {
     if (process == null) {
-      PythonCondaInterpreter conda = getCondaInterpreter();
       String binPath = getProperty(ZEPPELIN_PYTHON);
-      if (conda != null && conda.getPythonCommand() != null) {
-        binPath = conda.getPythonCommand();
+      if (pythonCommand != null) {
+        binPath = pythonCommand;
       }
       return new PythonProcess(binPath);
     } else {
       return process;
     }
+  }
+
+  public void setPythonCommand(String cmd) {
+    pythonCommand = cmd;
+  }
+
+  public String getPythonCommand() {
+    return pythonCommand;
   }
 
   private Job getRunningJob(String paragraphId) {
@@ -283,26 +291,5 @@ public class PythonInterpreter extends Interpreter {
 
   public int getMaxResult() {
     return maxResult;
-  }
-
-
-  private PythonCondaInterpreter getCondaInterpreter() {
-    LazyOpenInterpreter lazy = null;
-    PythonCondaInterpreter conda = null;
-    Interpreter p = getInterpreterInTheSameSessionByClassName(
-        PythonCondaInterpreter.class.getName());
-
-    while (p instanceof WrappedInterpreter) {
-      if (p instanceof LazyOpenInterpreter) {
-        lazy = (LazyOpenInterpreter) p;
-      }
-      p = ((WrappedInterpreter) p).getInnerInterpreter();
-    }
-    conda = (PythonCondaInterpreter) p;
-
-    if (lazy != null) {
-      lazy.open();
-    }
-    return conda;
   }
 }

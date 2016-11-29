@@ -29,61 +29,41 @@ import java.util.Properties;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.*;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.*;
 
-public class PythonCondaInterpreterTest implements InterpreterOutputListener {
-  private PythonCondaInterpreter conda;
+public class PythonDockerInterpreterTest implements InterpreterOutputListener {
+  private PythonDockerInterpreter docker;
   private PythonInterpreter python;
 
   @Before
   public void setUp() {
-    conda = spy(new PythonCondaInterpreter(new Properties()));
+    docker = spy(new PythonDockerInterpreter(new Properties()));
     python = mock(PythonInterpreter.class);
 
     InterpreterGroup group = new InterpreterGroup();
-    group.put("note", Arrays.asList(python, conda));
+    group.put("note", Arrays.asList(python, docker));
     python.setInterpreterGroup(group);
-    conda.setInterpreterGroup(group);
-
-    doReturn(python).when(conda).getPythonInterpreter();
-  }
-
-  @Test
-  public void testListEnv() throws IOException, InterruptedException {
-    InterpreterContext context = getInterpreterContext();
-
-    StringBuilder sb = new StringBuilder();
-    sb.append("#comment\n\nenv1   *  /path1\nenv2\t/path2\n");
-
-    doReturn(sb).when(conda).createStringBuilder();
-    doReturn(0).when(conda)
-        .runCommand(any(StringBuilder.class), anyString(), anyString(), anyString());
-
-    // list available env
-    InterpreterResult result = conda.interpret("", context);
-    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-
-    String out = new String(context.out.toByteArray());
-    assertTrue(out.contains(">env1<"));
-    assertTrue(out.contains(">/path1<"));
-    assertTrue(out.contains(">env2<"));
-    assertTrue(out.contains(">/path2<"));
+    docker.setInterpreterGroup(group);
+    doReturn(true).when(docker).pull(any(InterpreterOutput.class), anyString());
+    doReturn(python).when(docker).getPythonInterpreter();
   }
 
   @Test
   public void testActivateEnv() {
     InterpreterContext context = getInterpreterContext();
-    conda.interpret("activate env", context);
+    docker.interpret("activate env", context);
     verify(python, times(1)).open();
     verify(python, times(1)).close();
-    verify(python).setPythonCommand("conda run -n env \"python -iu\"");
+    verify(docker, times(1)).pull(any(InterpreterOutput.class), anyString());
+    verify(python).setPythonCommand("docker run -i --rm env python -iu");
   }
 
   @Test
   public void testDeactivate() {
     InterpreterContext context = getInterpreterContext();
-    conda.interpret("deactivate", context);
+    docker.interpret("deactivate", context);
     verify(python, times(1)).open();
     verify(python, times(1)).close();
     verify(python).setPythonCommand(null);
@@ -93,7 +73,7 @@ public class PythonCondaInterpreterTest implements InterpreterOutputListener {
     return new InterpreterContext(
         "noteId",
         "paragraphId",
-        null,
+        "replName",
         "paragraphTitle",
         "paragraphText",
         new AuthenticationInfo(),

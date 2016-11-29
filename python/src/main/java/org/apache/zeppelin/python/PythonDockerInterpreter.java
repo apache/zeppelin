@@ -21,24 +21,24 @@ import org.apache.zeppelin.scheduler.Scheduler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Conda support
+ * Helps run python interpreter on a docker container
  */
-public class PythonCondaInterpreter extends Interpreter {
-  Logger logger = LoggerFactory.getLogger(PythonCondaInterpreter.class);
-
-  Pattern condaEnvListPattern = Pattern.compile("([^\\s]*)[\\s*]*\\s(.*)");
-  Pattern listPattern = Pattern.compile("env\\s*list\\s?");
+public class PythonDockerInterpreter extends Interpreter {
+  Logger logger = LoggerFactory.getLogger(PythonDockerInterpreter.class);
   Pattern activatePattern = Pattern.compile("activate\\s*(.*)");
   Pattern deactivatePattern = Pattern.compile("deactivate");
   Pattern helpPattern = Pattern.compile("help");
 
-  public PythonCondaInterpreter(Properties property) {
+  public PythonDockerInterpreter(Properties property) {
     super(property);
   }
 
@@ -56,26 +56,24 @@ public class PythonCondaInterpreter extends Interpreter {
   public InterpreterResult interpret(String st, InterpreterContext context) {
     InterpreterOutput out = context.out;
 
-    Matcher listMatcher = listPattern.matcher(st);
     Matcher activateMatcher = activatePattern.matcher(st);
     Matcher deactivateMatcher = deactivatePattern.matcher(st);
     Matcher helpMatcher = helpPattern.matcher(st);
 
-    if (st == null || st.isEmpty() || listMatcher.matches()) {
-      listEnv(out);
+    if (st == null || st.isEmpty() || helpMatcher.matches()) {
+      printUsage(out);
       return new InterpreterResult(InterpreterResult.Code.SUCCESS);
     } else if (activateMatcher.matches()) {
-      String envName = activateMatcher.group(1);
-      setPythonCommand("conda run -n " + envName + " \"python -iu\"");
+      String image = activateMatcher.group(1);
+      pull(out, image);
+      setPythonCommand("docker run -i --rm " + image + " python -iu");
       restartPythonProcess();
-      return new InterpreterResult(InterpreterResult.Code.SUCCESS, "\"" + envName + "\" activated");
+      out.clear();
+      return new InterpreterResult(InterpreterResult.Code.SUCCESS, "\"" + image + "\" activated");
     } else if (deactivateMatcher.matches()) {
       setPythonCommand(null);
       restartPythonProcess();
       return new InterpreterResult(InterpreterResult.Code.SUCCESS, "Deactivated");
-    } else if (helpMatcher.matches()) {
-      printUsage(out);
-      return new InterpreterResult(InterpreterResult.Code.SUCCESS);
     } else {
       return new InterpreterResult(InterpreterResult.Code.ERROR, "Not supported command: " + st);
     }
@@ -84,6 +82,44 @@ public class PythonCondaInterpreter extends Interpreter {
   public void setPythonCommand(String cmd) {
     PythonInterpreter python = getPythonInterpreter();
     python.setPythonCommand(cmd);
+  }
+
+  private void printUsage(InterpreterOutput out) {
+    try {
+      out.setType(InterpreterResult.Type.HTML);
+      out.writeResource("output_templates/docker_usage.html");
+    } catch (IOException e) {
+      logger.error("Can't print usage", e);
+    }
+  }
+
+  @Override
+  public void cancel(InterpreterContext context) {
+
+  }
+
+  @Override
+  public FormType getFormType() {
+    return FormType.NONE;
+  }
+
+  @Override
+  public int getProgress(InterpreterContext context) {
+    return 0;
+  }
+
+  /**
+   * Use python interpreter's scheduler.
+   * To make sure %python.docker paragraph and %python paragraph runs sequentially
+   */
+  @Override
+  public Scheduler getScheduler() {
+    PythonInterpreter pythonInterpreter = getPythonInterpreter();
+    if (pythonInterpreter != null) {
+      return pythonInterpreter.getScheduler();
+    } else {
+      return null;
+    }
   }
 
   private void restartPythonProcess() {
@@ -111,82 +147,18 @@ public class PythonCondaInterpreter extends Interpreter {
     return python;
   }
 
-  private void listEnv(InterpreterOutput out) {
-    StringBuilder sb = createStringBuilder();
+  public boolean pull(InterpreterOutput out, String image) {
+    int exit = 0;
     try {
-      int exit = runCommand(sb, "conda", "env", "list");
-      if (exit == 0) {
-        out.setType(InterpreterResult.Type.HTML);
-        out.write("<h4>Conda environments</h4>\n");
-        // start table
-        out.write("<div style=\"display:table\">\n");
-        String[] lines = sb.toString().split("\n");
-        for (String s : lines) {
-          if (s == null || s.isEmpty() || s.startsWith("#")) {
-            continue;
-          }
-          Matcher match = condaEnvListPattern.matcher(s);
-
-          if (!match.matches()) {
-            continue;
-          }
-          out.write(String.format("<div style=\"display:table-row\">" +
-              "<div style=\"display:table-cell;width:150px\">%s</div>" +
-              "<div style=\"display:table-cell;\">%s</div>" +
-              "</div>\n",
-              match.group(1), match.group(2)));
-        }
-        // end table
-        out.write("</div><br />\n");
-        out.write("<small><code>%python.conda help</code> for the usage</small>\n");
-      } else {
-        out.write("Failed to run 'conda' " + exit + "\n");
-      }
+      exit = runCommand(out, "docker", "pull", image);
     } catch (IOException | InterruptedException e) {
+      logger.error(e.getMessage(), e);
       throw new InterpreterException(e);
     }
+    return exit == 0;
   }
 
-  private void printUsage(InterpreterOutput out) {
-    try {
-      out.setType(InterpreterResult.Type.HTML);
-      out.writeResource("output_templates/conda_usage.html");
-    } catch (IOException e) {
-      logger.error("Can't print usage", e);
-    }
-  }
-
-  @Override
-  public void cancel(InterpreterContext context) {
-
-  }
-
-  @Override
-  public FormType getFormType() {
-    return FormType.NONE;
-  }
-
-  @Override
-  public int getProgress(InterpreterContext context) {
-    return 0;
-  }
-
-
-  /**
-   * Use python interpreter's scheduler.
-   * To make sure %python.conda paragraph and %python paragraph runs sequentially
-   */
-  @Override
-  public Scheduler getScheduler() {
-    PythonInterpreter pythonInterpreter = getPythonInterpreter();
-    if (pythonInterpreter != null) {
-      return pythonInterpreter.getScheduler();
-    } else {
-      return null;
-    }
-  }
-
-  protected int runCommand(StringBuilder sb, String ... command)
+  protected int runCommand(InterpreterOutput out, String... command)
       throws IOException, InterruptedException {
     ProcessBuilder builder = new ProcessBuilder(command);
     builder.redirectErrorStream(true);
@@ -195,14 +167,9 @@ public class PythonCondaInterpreter extends Interpreter {
     BufferedReader br = new BufferedReader(new InputStreamReader(stdout));
     String line;
     while ((line = br.readLine()) != null) {
-      sb.append(line);
-      sb.append("\n");
+      out.write(line + "\n");
     }
     int r = process.waitFor(); // Let the process finish.
     return r;
-  }
-
-  protected StringBuilder createStringBuilder() {
-    return new StringBuilder();
   }
 }

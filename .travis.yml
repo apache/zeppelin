@@ -68,7 +68,7 @@ matrix:
 
 before_install:
   - echo "MAVEN_OPTS='-Xms1024M -Xmx2048M -XX:MaxPermSize=1024m -XX:-UseGCOverheadLimit'" >> ~/.mavenrc
-  - "ls -la .spark-dist ${HOME}/.m2/repository/.cache/maven-download-plugin"
+  - ls -la .spark-dist ${HOME}/.m2/repository/.cache/maven-download-plugin || true
   - ls .node_modules && cp -r .node_modules zeppelin-web/node_modules || echo "node_modules are not cached"
   - mkdir -p ~/R
   - echo 'R_LIBS=~/R' > ~/.Renviron
