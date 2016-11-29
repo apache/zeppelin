@@ -26,7 +26,7 @@ user3 = password4, role2
 # Sample LDAP configuration, for user Authentication, currently tested for single Realm
 [main]
 ### A sample for configuring Active Directory Realm
-#activeDirectoryRealm = org.apache.zeppelin.server.ActiveDirectoryGroupRealm
+#activeDirectoryRealm = org.apache.zeppelin.realm.ActiveDirectoryGroupRealm
 #activeDirectoryRealm.systemUsername = userNameA
 
 #use either systemPassword or hadoopSecurityCredentialPath, more details in http://zeppelin.apache.org/docs/latest/security/shiroauthentication.html
@@ -38,7 +38,7 @@ user3 = password4, role2
 #activeDirectoryRealm.authorizationCachingEnabled = false
 
 ### A sample for configuring LDAP Directory Realm
-#ldapRealm = org.apache.zeppelin.server.LdapGroupRealm
+#ldapRealm = org.apache.zeppelin.realm.LdapGroupRealm
 ## search base for ldap groups (only relevant for LdapGroupRealm):
 #ldapRealm.contextFactory.environment[ldap.searchBase] = dc=COMPANY,dc=COM
 #ldapRealm.contextFactory.url = ldap://ldap.test.com:389
@@ -74,7 +74,7 @@ admin = *
 
 [urls]
 # This section is used for url-based security.
-# You can secure interpreter, configuration and credential information by urls. Comment or uncomment the below urls that you want to hide. 
+# You can secure interpreter, configuration and credential information by urls. Comment or uncomment the below urls that you want to hide.
 # anon means the access is anonymous.
 # authc means Form based Auth Security
 # To enfore security, comment the line below and uncomment the next one
