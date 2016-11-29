@@ -331,6 +331,8 @@ public class ZeppelinHubRepo implements NotebookRepo {
     try {
       instances = getUserInstances(zeppelinHubUserSession);
     } catch (IOException e) {
+      LOG.warn("Couldnt find instances for the session {}, returning empty collection",
+          zeppelinHubUserSession);
       // user not logged
       //TODO(xxx): handle this case.
       instances = Collections.emptyList();
