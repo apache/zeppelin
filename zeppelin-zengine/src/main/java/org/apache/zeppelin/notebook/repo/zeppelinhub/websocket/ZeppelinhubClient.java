@@ -43,9 +43,9 @@ import org.eclipse.jetty.websocket.client.WebSocketClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.amazonaws.util.json.JSONArray;
-import com.amazonaws.util.json.JSONException;
-import com.amazonaws.util.json.JSONObject;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
