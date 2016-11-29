@@ -33,7 +33,8 @@ import java.util.regex.Pattern;
 public class PythonCondaInterpreter extends Interpreter {
   Logger logger = LoggerFactory.getLogger(PythonCondaInterpreter.class);
   public static final String ZEPPELIN_PYTHON = "zeppelin.python";
-  public static final String PYTHON_PATH = "/bin/python";
+  public static final String CONDA_PYTHON_PATH = "/bin/python";
+  public static final String DEFAULT_ZEPPELIN_PYTHON = "python";
 
   Pattern condaEnvListPattern = Pattern.compile("([^\\s]*)[\\s*]*\\s(.*)");
   Pattern listPattern = Pattern.compile("env\\s*list\\s?");
@@ -69,10 +70,12 @@ public class PythonCondaInterpreter extends Interpreter {
       return new InterpreterResult(InterpreterResult.Code.SUCCESS);
     } else if (activateMatcher.matches()) {
       String envName = activateMatcher.group(1);
-      restartPythonProcess(getEnvPath(envName));
+      changePythonEnvironment(envName);
+      restartPythonProcess();
       return new InterpreterResult(InterpreterResult.Code.SUCCESS, "\"" + envName + "\" activated");
     } else if (deactivateMatcher.matches()) {
-      restartPythonProcess(null);
+      changePythonEnvironment(null);
+      restartPythonProcess();
       return new InterpreterResult(InterpreterResult.Code.SUCCESS, "Deactivated");
     } else if (helpMatcher.matches()) {
       printUsage(out);
@@ -82,36 +85,28 @@ public class PythonCondaInterpreter extends Interpreter {
     }
   }
 
-  private String getEnvPath(String envName) {
-    HashMap<String, String> envList = getCondaEnvs();
-    String path = null;
-    for (String name : envList.keySet()) {
-      if (envName.equals(name)) {
-        path = envList.get(name) + PYTHON_PATH;
-        break;
-      }
-    }
-    return path;
-  }
-
-  private void setPythonPath (PythonInterpreter python, String pythonPath) {
-    if (pythonPath == null) {
-      String binPath = getProperty(ZEPPELIN_PYTHON);
-      String pythonCommand = python.getPythonCommand();
-      if (pythonCommand != null) {
-        binPath = pythonCommand;
-      }
-      pythonPath = binPath;
-    }
-
-    Properties props = getProperty();
-    props.setProperty(ZEPPELIN_PYTHON, pythonPath);
-    python.setProperty(props);
-  }
-
-  private void restartPythonProcess(String pythonPath) {
+  private void changePythonEnvironment(String envName) {
     PythonInterpreter python = getPythonInterpreter();
-    setPythonPath(python, pythonPath);
+    String binPath = null;
+    if (envName == null) {
+      binPath = getProperty(ZEPPELIN_PYTHON);
+      if (binPath == null) {
+        binPath = DEFAULT_ZEPPELIN_PYTHON;
+      }
+    } else {
+      HashMap<String, String> envList = getCondaEnvs();
+      for (String name : envList.keySet()) {
+        if (envName.equals(name)) {
+          binPath = envList.get(name) + CONDA_PYTHON_PATH;
+          break;
+        }
+      }
+    }
+    python.setPythonCommand(binPath);
+  }
+
+  private void restartPythonProcess() {
+    PythonInterpreter python = getPythonInterpreter();
     python.close();
     python.open();
   }
