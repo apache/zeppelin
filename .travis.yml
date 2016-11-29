@@ -40,7 +40,7 @@ matrix:
   include:
     # Test checkstyle with spark 2.0.0 and scala 2.11
     - jdk: "oraclejdk7"
-      env: SCALA_VER="2.11" SPARK_VER="2.0.0" HADOOP_VER="2.3" PROFILE="-Pspark-2.0 -Phadoop-2.3 -Ppyspark -Pscala-2.11 -Pexamples" BUILD_FLAG="package -DskipTests -DskipRat -Pcheckstyle" TEST_FLAG="verify -DskipRat -Dcheckstyle.skip=true" TEST_PROJECTS="-pl zeppelin-interpreter,zeppelin-zengine,zeppelin-server,zeppelin-display,spark-dependencies,spark -Dtest=org.apache.zeppelin.AbstractFunctionalSuite -DfailIfNoTests=false"
+      env: SCALA_VER="2.10" SPARK_VER="2.0.0" HADOOP_VER="2.3" PROFILE="-Pspark-2.0 -Phadoop-2.3 -Ppyspark -Pexamples" BUILD_FLAG="package -DskipTests -DskipRat -Pcheckstyle" TEST_FLAG="verify -DskipRat -Dcheckstyle.skip=true" TEST_PROJECTS="-pl zeppelin-interpreter,zeppelin-zengine,zeppelin-server,zeppelin-display,spark-dependencies,spark -Dtest=org.apache.zeppelin.AbstractFunctionalSuite -DfailIfNoTests=false"
 
     # Test License compliance using RAT tool
     - jdk: "oraclejdk7"
