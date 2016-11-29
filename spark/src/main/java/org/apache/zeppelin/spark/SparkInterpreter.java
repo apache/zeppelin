@@ -415,7 +415,7 @@ public class SparkInterpreter extends Interpreter {
         // continue instead of: throw new InterpreterException(e);
         // Newer Spark versions (like the patched CDH5.7.0 one) don't contain this method
         logger.warn(String.format("Spark method classServerUri not available due to: [%s]",
-          e.getMessage()));
+            e.getMessage()));
       }
     }
 
@@ -490,7 +490,7 @@ public class SparkInterpreter extends Interpreter {
 
     //Only one of py4j-0.9-src.zip and py4j-0.8.2.1-src.zip should exist
     String[] pythonLibs = new String[]{"pyspark.zip", "py4j-0.9-src.zip", "py4j-0.8.2.1-src.zip",
-      "py4j-0.10.1-src.zip", "py4j-0.10.3-src.zip"};
+        "py4j-0.10.1-src.zip", "py4j-0.10.3-src.zip"};
     ArrayList<String> pythonLibUris = new ArrayList<>();
     for (String lib : pythonLibs) {
       File libFile = new File(pysparkPath, lib);
@@ -1155,9 +1155,9 @@ public class SparkInterpreter extends Interpreter {
         String nextLine = linesToRun[l + 1].trim();
         boolean continuation = false;
         if (nextLine.isEmpty()
-           || nextLine.startsWith("//")         // skip empty line or comment
-           || nextLine.startsWith("}")
-           || nextLine.startsWith("object")) {  // include "} object" for Scala companion object
+            || nextLine.startsWith("//")         // skip empty line or comment
+            || nextLine.startsWith("}")
+            || nextLine.startsWith("object")) {  // include "} object" for Scala companion object
           continuation = true;
         } else if (!inComment && nextLine.startsWith("/*")) {
           inComment = true;
@@ -1448,10 +1448,10 @@ public class SparkInterpreter extends Interpreter {
       Constructor<?> constructor = getClass().getClassLoader()
           .loadClass("org.apache.spark.HttpServer")
           .getConstructor(new Class[]{
-            SparkConf.class, File.class, SecurityManager.class, int.class, String.class});
+              SparkConf.class, File.class, SecurityManager.class, int.class, String.class});
 
       return constructor.newInstance(new Object[] {
-        conf, outputDir, new SecurityManager(conf), 0, "HTTP Server"});
+          conf, outputDir, new SecurityManager(conf), 0, "HTTP Server"});
     } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException |
         InstantiationException | InvocationTargetException e) {
       // fallback to old constructor
@@ -1460,9 +1460,9 @@ public class SparkInterpreter extends Interpreter {
         constructor = getClass().getClassLoader()
             .loadClass("org.apache.spark.HttpServer")
             .getConstructor(new Class[]{
-              File.class, SecurityManager.class, int.class, String.class});
+                File.class, SecurityManager.class, int.class, String.class});
         return constructor.newInstance(new Object[] {
-          outputDir, new SecurityManager(conf), 0, "HTTP Server"});
+            outputDir, new SecurityManager(conf), 0, "HTTP Server"});
       } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException |
           InstantiationException | InvocationTargetException e1) {
         logger.error(e1.getMessage(), e1);
