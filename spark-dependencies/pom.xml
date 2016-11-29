@@ -832,6 +832,7 @@
                   <goal>wget</goal>
                 </goals>
                 <configuration>
+                  <readTimeOut>180000</readTimeOut>
                   <url>${spark.download.url}</url>
                   <outputDirectory>${spark.dist.cache}</outputDirectory>
                 </configuration>
@@ -911,6 +912,7 @@
                   <goal>wget</goal>
                 </goals>
                 <configuration>
+                  <readTimeOut>180000</readTimeOut>
                   <url>${spark.bin.download.url}</url>
                   <unpack>true</unpack>
                   <outputDirectory>${project.build.directory}/spark-bin-dist</outputDirectory>
