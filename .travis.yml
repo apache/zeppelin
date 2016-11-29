@@ -21,7 +21,7 @@ cache:
   apt: true
   directories:
     - .spark-dist
-    - ${HOME}/.m2
+    - ${HOME}/.m2/repository/.cache/maven-download-plugin
     - ${HOME}/R
     -  zeppelin-web/node
     -  zeppelin-web/node_modules
