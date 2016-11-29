@@ -20,6 +20,7 @@ package org.apache.zeppelin.livy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import org.apache.zeppelin.interpreter.InterpreterContext;
@@ -212,16 +213,6 @@ public class LivyHelper {
                                      final InterpreterContext context,
                                      final Map<String, Integer> userSessionMap)
       throws Exception {
-    stringLines = stringLines
-        //for "\n" present in string
-        .replaceAll("\\\\n", "\\\\\\\\n")
-        //for new line present in string
-        .replaceAll("\\n", "\\\\n")
-        // for \" present in string
-        .replaceAll("\\\\\"", "\\\\\\\\\"")
-        // for " present in string
-        .replaceAll("\"", "\\\\\"");
-
     if (stringLines.trim().equals("")) {
       return new InterpreterResult(Code.SUCCESS, "");
     }
@@ -288,7 +279,7 @@ public class LivyHelper {
             + userSessionMap.get(context.getAuthenticationInfo().getUser())
             + "/statements",
         "POST",
-        "{\"code\": \"" + lines + "\" }",
+        "{\"code\": \"" + StringEscapeUtils.escapeJson(lines) + "\"}",
         context.getParagraphId());
     if (json.matches("^(\")?Session (\'[0-9]\' )?not found(.?\"?)$")) {
       throw new Exception("Exception: Session not found, Livy server would have restarted, " +
