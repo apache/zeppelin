@@ -192,7 +192,7 @@ CLASSPATH+=":${ZEPPELIN_INTP_CLASSPATH}"
 if [[ ! -z "$ZEPPELIN_IMPERSONATE_USER" ]]; then
     INTERPRETER_RUN_COMMAND=${ZEPPELIN_IMPERSONATE_RUN_CMD}" '"
     if [[ -f "${ZEPPELIN_CONF_DIR}/zeppelin-env.sh" ]]; then
-        INTERPRETER_RUN_COMMAND+="source "${ZEPPELIN_CONF_DIR}'/zeppelin-env.sh;'
+        INTERPRETER_RUN_COMMAND+=" source "${ZEPPELIN_CONF_DIR}'/zeppelin-env.sh;'
     fi
 fi
 
