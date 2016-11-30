@@ -42,9 +42,9 @@ matrix:
     - jdk: "oraclejdk7"
       env: SCALA_VER="2.11" PROFILE="-Prat" BUILD_FLAG="clean" TEST_FLAG="org.apache.rat:apache-rat-plugin:check" TEST_PROJECTS=""
 
-    # Test all modules with spark 2.0.0 and scala 2.11
+    # Test all modules with spark 2.0.1 and scala 2.11
     - jdk: "oraclejdk7"
-      env: SCALA_VER="2.11" SPARK_VER="2.0.0" HADOOP_VER="2.3" PROFILE="-Pspark-2.0 -Phadoop-2.3 -Ppyspark -Psparkr -Pscalding -Pexamples -Pscala-2.11" BUILD_FLAG="package -Pbuild-distr -DskipRat" TEST_FLAG="verify -Pusing-packaged-distr -DskipRat" TEST_PROJECTS=""
+      env: SCALA_VER="2.11" SPARK_VER="2.0.1" HADOOP_VER="2.3" PROFILE="-Pspark-2.0 -Phadoop-2.3 -Ppyspark -Psparkr -Pscalding -Pexamples -Pscala-2.11" BUILD_FLAG="package -Pbuild-distr -DskipRat" TEST_FLAG="verify -Pusing-packaged-distr -DskipRat" TEST_PROJECTS=""
 
     # Test all modules with scala 2.10
     - jdk: "oraclejdk7"
@@ -75,8 +75,8 @@ matrix:
       env: PYTHON="3" SCALA_VER="2.11" SPARK_VER="2.0.0" HADOOP_VER="2.3" PROFILE="-Pspark-2.0 -Phadoop-2.3 -Ppyspark -Pscala-2.11" BUILD_FLAG="package -pl spark,python -am -DskipTests -DskipRat" TEST_FLAG="verify -DskipRat" TEST_PROJECTS="-pl zeppelin-interpreter,zeppelin-display,spark-dependencies,spark,python -Dtest=org.apache.zeppelin.spark.PySpark*Test,org.apache.zeppelin.python.* -Dpyspark.test.exclude='' -DfailIfNoTests=false"
 
 before_install:
-  - echo "MAVEN_OPTS='-Xms1024M -Xmx2048M -XX:MaxPermSize=1024m -XX:-UseGCOverheadLimit'" >> ~/.mavenrc
-  - ./testing/install_external_dependencies.sh
+  - echo "MAVEN_OPTS='-Xms1024M -Xmx2048M -XX:MaxPermSize=1024m -XX:-UseGCOverheadLimit -Dorg.slf4j.simpleLogger.defaultLogLevel=warn'" >> ~/.mavenrc
+  - ./testing/install_external_dependencies.sh > /dev/null 2>&1
   - ls -la .spark-dist ${HOME}/.m2/repository/.cache/maven-download-plugin || true
   - ls .node_modules && cp -r .node_modules zeppelin-web/node_modules || echo "node_modules are not cached"
   - "/sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -ac -screen 0 1600x1024x16"
@@ -84,7 +84,7 @@ before_install:
   - source ~/.environ
 
 install:
-  - mvn -Dorg.slf4j.simpleLogger.defaultLogLevel=warn $BUILD_FLAG $PROFILE -B
+  - mvn $BUILD_FLAG $PROFILE -B
 
 before_script:
   - travis_retry ./testing/downloadSpark.sh $SPARK_VER $HADOOP_VER
@@ -92,7 +92,7 @@ before_script:
   - tail conf/zeppelin-env.sh
 
 script:
-  - mvn -Dorg.slf4j.simpleLogger.defaultLogLevel=warn $TEST_FLAG $PROFILE -B $TEST_PROJECTS
+  - mvn $TEST_FLAG $PROFILE -B $TEST_PROJECTS
 
 after_success:
   - echo "Travis exited with ${TRAVIS_TEST_RESULT}"
