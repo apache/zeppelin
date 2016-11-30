@@ -125,8 +125,6 @@ public class Folder {
       child.rename(getId() + "/" + child.getName());
     }
 
-    getParent().removeChild(getId());
-
     notifyRenamed(oldId);
   }
 
