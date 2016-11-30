@@ -77,6 +77,13 @@ limitations under the License.
                 tooltip-placement="bottom" tooltip="Version control">
           <i class="fa fa-file-code-o"></i>
         </button>
+        <button type="button"
+                class="btn btn-default btn-xs"
+                id="setRevision"
+                ng-hide="viewOnly"
+                tooltip-placement="bottom" tooltip="Set revision">
+          <i class="fa fa-arrow-circle-o-right"></i>
+        </button>
         <ul class="dropdown-menu" style="width:250px"
           aria-labelledby="versionControlDropdown">
           <li>
