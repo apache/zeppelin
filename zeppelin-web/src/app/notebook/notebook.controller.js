@@ -191,6 +191,20 @@
       document.getElementById('note.checkpoint.message').value = '';
     };
 
+    // set notebook head to given revision
+    $scope.setNoteRevision = function() {
+      BootstrapDialog.confirm({
+        closable: true,
+        title: '',
+        message: 'Set notebook head to current revision?',
+        callback: function(result) {
+          if (result) {
+            websocketMsgSrv.setNoteRevision($routeParams.noteId, $routeParams.revisionId);
+          }
+        }
+      });
+    };
+
     $scope.$on('listRevisionHistory', function(event, data) {
       console.log('received list of revisions %o', data);
       $scope.noteRevisions = data.revisionList;
