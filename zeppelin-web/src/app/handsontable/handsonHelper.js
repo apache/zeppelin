@@ -166,7 +166,7 @@ function _cellRenderer(instance, td, row, col, prop, value, cellProperties, colT
 
 function _dateValidator(value, callback) {
   var d = moment(value);
-  return callback(d.isValid() ? true : false);
+  return callback(d.isValid());
 }
 
 function _numericValidator(value, callback) {
