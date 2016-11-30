@@ -38,6 +38,12 @@
     <mockito.version>1.10.19</mockito.version>
     <powermock.version>1.6.4</powermock.version>
     <spark.version>2.0.1</spark.version>
+    <pyspark.test.exclude>
+        **/PySparkInterpreterMatplotlibTest.java
+    </pyspark.test.exclude>
+    <pyspark.test.include>
+        **/*Test.*
+    </pyspark.test.include>
   </properties>
 
   <dependencies>
@@ -322,6 +328,7 @@
           <argLine>-Xmx1024m -XX:MaxPermSize=256m</argLine>
           <excludes>
             <exclude>**/SparkRInterpreterTest.java</exclude>
+            <exclude>${pyspark.test.exclude}</exclude>
           </excludes>
         </configuration>
       </plugin>
@@ -431,9 +438,33 @@
             <exclude>**/SparkRInterpreter.java</exclude>
           </excludes>
           <testExcludes>
+            <testExclude>${pyspark.test.exclude}</testExclude>
             <testExclude>**/SparkRInterpreterTest.java</testExclude>
             <testExclude>**/ZeppelinRTest.java</testExclude>
           </testExcludes>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.scala-tools</groupId>
+        <artifactId>maven-scala-plugin</artifactId>
+        <configuration>
+          <excludes>
+            <exclude>**/ZeppelinR.scala</exclude>
+            <exclude>**/SparkRBackend.scala</exclude>
+          </excludes>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <includes>
+            <include>${pyspark.test.include}</include>
+          </includes>
+          <excludes>
+            <exclude>${pyspark.test.exclude}</exclude>
+            <exclude>**/SparkRInterpreterTest.java</exclude>
+          </excludes>
         </configuration>
       </plugin>
     </plugins>
@@ -580,7 +611,9 @@
             <artifactId>maven-compiler-plugin</artifactId>
             <configuration>
               <excludes combine.self="override"></excludes>
-              <testExcludes combine.self="override"></testExcludes>
+              <testExcludes combine.self="override">
+                <testExclude>${pyspark.test.exclude}</testExclude>
+              </testExcludes>
             </configuration>
           </plugin>
           <plugin>
@@ -596,6 +629,7 @@
             <artifactId>maven-surefire-plugin</artifactId>
             <configuration>
               <excludes combine.self="override">
+                <exclude>${pyspark.test.exclude}</exclude>
               </excludes>
             </configuration>
           </plugin>

@@ -1338,7 +1338,7 @@
         var dsvRow = '';
         for (var index in row) {
           var stringValue =  (row[index]).toString();
-          if (stringValue.contains(delimiter)) {
+          if (stringValue.indexOf(delimiter) > -1) {
             dsvRow += '"' + stringValue + '"' + delimiter;
           } else {
             dsvRow += row[index] + delimiter;

@@ -161,7 +161,7 @@ class ScioInterpreter(property: Properties) extends Interpreter(property) {
     innerOut.setInterpreterOutput(context.out)
 
     try {
-      import tools.nsc.interpreter.Results._
+      import scala.tools.nsc.interpreter.Results._
       REPL.interpret(code) match {
         case Success => {
           logger.debug(s"Successfully executed `$code` in $paragraphId")

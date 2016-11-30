@@ -50,8 +50,10 @@ enum RemoteInterpreterEventType {
   OUTPUT_UPDATE = 9,
   ANGULAR_REGISTRY_PUSH = 10,
   APP_STATUS_UPDATE = 11,
-  META_INFOS = 12
+  META_INFOS = 12,
+  REMOTE_ZEPPELIN_SERVER_RESOURCE = 13
 }
+
 
 struct RemoteInterpreterEvent {
   1: RemoteInterpreterEventType type,
@@ -61,6 +63,11 @@ struct RemoteInterpreterEvent {
 struct RemoteApplicationResult {
   1: bool success,
   2: string msg
+}
+
+struct ZeppelinServerResourceParagraphRunner {
+  1: string noteId,
+  2: string paragraphId
 }
 
 /*
@@ -75,8 +82,8 @@ struct InterpreterCompletion {
 }
 
 service RemoteInterpreterService {
-  void createInterpreter(1: string intpGroupId, 2: string sessionKey, 3: string className, 4: map<string, string> properties);
 
+  void createInterpreter(1: string intpGroupId, 2: string sessionKey, 3: string className, 4: map<string, string> properties, 5: string userName);
   void open(1: string sessionKey, 2: string className);
   void close(1: string sessionKey, 2: string className);
   RemoteInterpreterResult interpret(1: string sessionKey, 2: string className, 3: string st, 4: RemoteInterpreterContext interpreterContext);
@@ -110,4 +117,6 @@ service RemoteInterpreterService {
   RemoteApplicationResult loadApplication(1: string applicationInstanceId, 2: string packageInfo, 3: string sessionKey, 4: string paragraphId);
   RemoteApplicationResult unloadApplication(1: string applicationInstanceId);
   RemoteApplicationResult runApplication(1: string applicationInstanceId);
+
+  void onReceivedZeppelinResource(1: string object);
 }

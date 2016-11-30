@@ -14,26 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.zeppelin.interpreter.remote;
 
-import java.util.Map;
+package org.apache.zeppelin.interpreter;
+
+import java.util.List;
 
 /**
- * Event from remoteInterpreterProcess
+ * zeppelin job for Remote works controller by interpreter
+ *
  */
-public interface RemoteInterpreterProcessListener {
-  public void onOutputAppend(String noteId, String paragraphId, String output);
-  public void onOutputUpdated(String noteId, String paragraphId, String output);
-  public void onMetaInfosReceived(String settingId, Map<String, String> metaInfos);
-  public void onRemoteRunParagraph(String noteId, String ParagraphID) throws Exception;
-  public void onGetParagraphRunners(
-      String noteId, String paragraphId, RemoteWorksEventListener callback);
-
-  /**
-   * Remote works for Interpreter callback listener
-   */
-  public interface RemoteWorksEventListener {
-    public void onFinished(Object resultObject);
-    public void onError();
-  }
+public interface RemoteWorksController {
+  List<InterpreterContextRunner> getRemoteContextRunner(String noteId);
+  List<InterpreterContextRunner> getRemoteContextRunner(String noteId, String paragraphId);
 }
