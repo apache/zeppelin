@@ -240,8 +240,7 @@ public class RemoteInterpreter extends Interpreter {
           property.put("zeppelin.interpreter.localRepo", localRepoPath);
         }
         client.createInterpreter(groupId, sessionKey,
-          getClassName(), (Map) property);
-
+          getClassName(), (Map) property, userName);
         // Push angular object loaded from JSON file to remote interpreter
         if (!interpreterGroup.isAngularRegistryPushed()) {
           pushAngularObjectRegistryToRemote(client);

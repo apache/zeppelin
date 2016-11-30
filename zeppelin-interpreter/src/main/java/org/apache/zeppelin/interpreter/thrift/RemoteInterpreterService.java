@@ -56,7 +56,7 @@ public class RemoteInterpreterService {
 
   public interface Iface {
 
-    public void createInterpreter(String intpGroupId, String sessionKey, String className, Map<String,String> properties) throws org.apache.thrift.TException;
+    public void createInterpreter(String intpGroupId, String sessionKey, String className, Map<String,String> properties, String userName) throws org.apache.thrift.TException;
 
     public void open(String sessionKey, String className) throws org.apache.thrift.TException;
 
@@ -108,7 +108,7 @@ public class RemoteInterpreterService {
 
   public interface AsyncIface {
 
-    public void createInterpreter(String intpGroupId, String sessionKey, String className, Map<String,String> properties, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException;
+    public void createInterpreter(String intpGroupId, String sessionKey, String className, Map<String,String> properties, String userName, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException;
 
     public void open(String sessionKey, String className, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException;
 
@@ -178,19 +178,20 @@ public class RemoteInterpreterService {
       super(iprot, oprot);
     }
 
-    public void createInterpreter(String intpGroupId, String sessionKey, String className, Map<String,String> properties) throws org.apache.thrift.TException
+    public void createInterpreter(String intpGroupId, String sessionKey, String className, Map<String,String> properties, String userName) throws org.apache.thrift.TException
     {
-      send_createInterpreter(intpGroupId, sessionKey, className, properties);
+      send_createInterpreter(intpGroupId, sessionKey, className, properties, userName);
       recv_createInterpreter();
     }
 
-    public void send_createInterpreter(String intpGroupId, String sessionKey, String className, Map<String,String> properties) throws org.apache.thrift.TException
+    public void send_createInterpreter(String intpGroupId, String sessionKey, String className, Map<String,String> properties, String userName) throws org.apache.thrift.TException
     {
       createInterpreter_args args = new createInterpreter_args();
       args.setIntpGroupId(intpGroupId);
       args.setSessionKey(sessionKey);
       args.setClassName(className);
       args.setProperties(properties);
+      args.setUserName(userName);
       sendBase("createInterpreter", args);
     }
 
@@ -742,9 +743,9 @@ public class RemoteInterpreterService {
       super(protocolFactory, clientManager, transport);
     }
 
-    public void createInterpreter(String intpGroupId, String sessionKey, String className, Map<String,String> properties, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException {
+    public void createInterpreter(String intpGroupId, String sessionKey, String className, Map<String,String> properties, String userName, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException {
       checkReady();
-      createInterpreter_call method_call = new createInterpreter_call(intpGroupId, sessionKey, className, properties, resultHandler, this, ___protocolFactory, ___transport);
+      createInterpreter_call method_call = new createInterpreter_call(intpGroupId, sessionKey, className, properties, userName, resultHandler, this, ___protocolFactory, ___transport);
       this.___currentMethod = method_call;
       ___manager.call(method_call);
     }
@@ -754,12 +755,14 @@ public class RemoteInterpreterService {
       private String sessionKey;
       private String className;
       private Map<String,String> properties;
-      public createInterpreter_call(String intpGroupId, String sessionKey, String className, Map<String,String> properties, org.apache.thrift.async.AsyncMethodCallback resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+      private String userName;
+      public createInterpreter_call(String intpGroupId, String sessionKey, String className, Map<String,String> properties, String userName, org.apache.thrift.async.AsyncMethodCallback resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, false);
         this.intpGroupId = intpGroupId;
         this.sessionKey = sessionKey;
         this.className = className;
         this.properties = properties;
+        this.userName = userName;
       }
 
       public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
@@ -769,6 +772,7 @@ public class RemoteInterpreterService {
         args.setSessionKey(sessionKey);
         args.setClassName(className);
         args.setProperties(properties);
+        args.setUserName(userName);
         args.write(prot);
         prot.writeMessageEnd();
       }
@@ -1655,7 +1659,7 @@ public class RemoteInterpreterService {
 
       public createInterpreter_result getResult(I iface, createInterpreter_args args) throws org.apache.thrift.TException {
         createInterpreter_result result = new createInterpreter_result();
-        iface.createInterpreter(args.intpGroupId, args.sessionKey, args.className, args.properties);
+        iface.createInterpreter(args.intpGroupId, args.sessionKey, args.className, args.properties, args.userName);
         return result;
       }
     }
@@ -2208,7 +2212,7 @@ public class RemoteInterpreterService {
       }
 
       public void start(I iface, createInterpreter_args args, org.apache.thrift.async.AsyncMethodCallback<Void> resultHandler) throws TException {
-        iface.createInterpreter(args.intpGroupId, args.sessionKey, args.className, args.properties,resultHandler);
+        iface.createInterpreter(args.intpGroupId, args.sessionKey, args.className, args.properties, args.userName,resultHandler);
       }
     }
 
@@ -3385,6 +3389,7 @@ public class RemoteInterpreterService {
     private static final org.apache.thrift.protocol.TField SESSION_KEY_FIELD_DESC = new org.apache.thrift.protocol.TField("sessionKey", org.apache.thrift.protocol.TType.STRING, (short)2);
     private static final org.apache.thrift.protocol.TField CLASS_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("className", org.apache.thrift.protocol.TType.STRING, (short)3);
     private static final org.apache.thrift.protocol.TField PROPERTIES_FIELD_DESC = new org.apache.thrift.protocol.TField("properties", org.apache.thrift.protocol.TType.MAP, (short)4);
+    private static final org.apache.thrift.protocol.TField USER_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("userName", org.apache.thrift.protocol.TType.STRING, (short)5);
 
     private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
     static {
@@ -3396,13 +3401,15 @@ public class RemoteInterpreterService {
     public String sessionKey; // required
     public String className; // required
     public Map<String,String> properties; // required
+    public String userName; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
       INTP_GROUP_ID((short)1, "intpGroupId"),
       SESSION_KEY((short)2, "sessionKey"),
       CLASS_NAME((short)3, "className"),
-      PROPERTIES((short)4, "properties");
+      PROPERTIES((short)4, "properties"),
+      USER_NAME((short)5, "userName");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -3425,6 +3432,8 @@ public class RemoteInterpreterService {
             return CLASS_NAME;
           case 4: // PROPERTIES
             return PROPERTIES;
+          case 5: // USER_NAME
+            return USER_NAME;
           default:
             return null;
         }
@@ -3478,6 +3487,8 @@ public class RemoteInterpreterService {
           new org.apache.thrift.meta_data.MapMetaData(org.apache.thrift.protocol.TType.MAP, 
               new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING), 
               new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
+      tmpMap.put(_Fields.USER_NAME, new org.apache.thrift.meta_data.FieldMetaData("userName", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(createInterpreter_args.class, metaDataMap);
     }
@@ -3489,13 +3500,15 @@ public class RemoteInterpreterService {
       String intpGroupId,
       String sessionKey,
       String className,
-      Map<String,String> properties)
+      Map<String,String> properties,
+      String userName)
     {
       this();
       this.intpGroupId = intpGroupId;
       this.sessionKey = sessionKey;
       this.className = className;
       this.properties = properties;
+      this.userName = userName;
     }
 
     /**
@@ -3515,6 +3528,9 @@ public class RemoteInterpreterService {
         Map<String,String> __this__properties = new HashMap<String,String>(other.properties);
         this.properties = __this__properties;
       }
+      if (other.isSetUserName()) {
+        this.userName = other.userName;
+      }
     }
 
     public createInterpreter_args deepCopy() {
@@ -3527,6 +3543,7 @@ public class RemoteInterpreterService {
       this.sessionKey = null;
       this.className = null;
       this.properties = null;
+      this.userName = null;
     }
 
     public String getIntpGroupId() {
@@ -3636,6 +3653,30 @@ public class RemoteInterpreterService {
       }
     }
 
+    public String getUserName() {
+      return this.userName;
+    }
+
+    public createInterpreter_args setUserName(String userName) {
+      this.userName = userName;
+      return this;
+    }
+
+    public void unsetUserName() {
+      this.userName = null;
+    }
+
+    /** Returns true if field userName is set (has been assigned a value) and false otherwise */
+    public boolean isSetUserName() {
+      return this.userName != null;
+    }
+
+    public void setUserNameIsSet(boolean value) {
+      if (!value) {
+        this.userName = null;
+      }
+    }
+
     public void setFieldValue(_Fields field, Object value) {
       switch (field) {
       case INTP_GROUP_ID:
@@ -3670,6 +3711,14 @@ public class RemoteInterpreterService {
         }
         break;
 
+      case USER_NAME:
+        if (value == null) {
+          unsetUserName();
+        } else {
+          setUserName((String)value);
+        }
+        break;
+
       }
     }
 
@@ -3686,6 +3735,9 @@ public class RemoteInterpreterService {
 
       case PROPERTIES:
         return getProperties();
+
+      case USER_NAME:
+        return getUserName();
 
       }
       throw new IllegalStateException();
@@ -3706,6 +3758,8 @@ public class RemoteInterpreterService {
         return isSetClassName();
       case PROPERTIES:
         return isSetProperties();
+      case USER_NAME:
+        return isSetUserName();
       }
       throw new IllegalStateException();
     }
@@ -3759,6 +3813,15 @@ public class RemoteInterpreterService {
           return false;
       }
 
+      boolean this_present_userName = true && this.isSetUserName();
+      boolean that_present_userName = true && that.isSetUserName();
+      if (this_present_userName || that_present_userName) {
+        if (!(this_present_userName && that_present_userName))
+          return false;
+        if (!this.userName.equals(that.userName))
+          return false;
+      }
+
       return true;
     }
 
@@ -3785,6 +3848,11 @@ public class RemoteInterpreterService {
       list.add(present_properties);
       if (present_properties)
         list.add(properties);
+
+      boolean present_userName = true && (isSetUserName());
+      list.add(present_userName);
+      if (present_userName)
+        list.add(userName);
 
       return list.hashCode();
     }
@@ -3833,6 +3901,16 @@ public class RemoteInterpreterService {
       }
       if (isSetProperties()) {
         lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.properties, other.properties);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetUserName()).compareTo(other.isSetUserName());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetUserName()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.userName, other.userName);
         if (lastComparison != 0) {
           return lastComparison;
         }
@@ -3886,6 +3964,14 @@ public class RemoteInterpreterService {
         sb.append("null");
       } else {
         sb.append(this.properties);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("userName:");
+      if (this.userName == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.userName);
       }
       first = false;
       sb.append(")");
@@ -3975,6 +4061,14 @@ public class RemoteInterpreterService {
                 org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
               }
               break;
+            case 5: // USER_NAME
+              if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+                struct.userName = iprot.readString();
+                struct.setUserNameIsSet(true);
+              } else { 
+                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
             default:
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
           }
@@ -4018,6 +4112,11 @@ public class RemoteInterpreterService {
           }
           oprot.writeFieldEnd();
         }
+        if (struct.userName != null) {
+          oprot.writeFieldBegin(USER_NAME_FIELD_DESC);
+          oprot.writeString(struct.userName);
+          oprot.writeFieldEnd();
+        }
         oprot.writeFieldStop();
         oprot.writeStructEnd();
       }
@@ -4048,7 +4147,10 @@ public class RemoteInterpreterService {
         if (struct.isSetProperties()) {
           optionals.set(3);
         }
-        oprot.writeBitSet(optionals, 4);
+        if (struct.isSetUserName()) {
+          optionals.set(4);
+        }
+        oprot.writeBitSet(optionals, 5);
         if (struct.isSetIntpGroupId()) {
           oprot.writeString(struct.intpGroupId);
         }
@@ -4068,12 +4170,15 @@ public class RemoteInterpreterService {
             }
           }
         }
+        if (struct.isSetUserName()) {
+          oprot.writeString(struct.userName);
+        }
       }
 
       @Override
       public void read(org.apache.thrift.protocol.TProtocol prot, createInterpreter_args struct) throws org.apache.thrift.TException {
         TTupleProtocol iprot = (TTupleProtocol) prot;
-        BitSet incoming = iprot.readBitSet(4);
+        BitSet incoming = iprot.readBitSet(5);
         if (incoming.get(0)) {
           struct.intpGroupId = iprot.readString();
           struct.setIntpGroupIdIsSet(true);
@@ -4100,6 +4205,10 @@ public class RemoteInterpreterService {
             }
           }
           struct.setPropertiesIsSet(true);
+        }
+        if (incoming.get(4)) {
+          struct.userName = iprot.readString();
+          struct.setUserNameIsSet(true);
         }
       }
     }
