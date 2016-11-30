@@ -53,12 +53,18 @@ public class SparkRInterpreter extends Interpreter {
     String rCmdPath = getProperty("zeppelin.R.cmd");
     String sparkRLibPath;
 
+    // SPARK_CACHE and SPARK_ARCHIVE are defined in bin/common.sh 
+    String sparkCachePath = System.getenv("SPARK_CACHE");
+    String sparkArchivePath = System.getenv("SPARK_ARCHIVE");
+
     if (System.getenv("SPARK_HOME") != null) {
       sparkRLibPath = System.getenv("SPARK_HOME") + "/R/lib";
     } else {
-      sparkRLibPath = System.getenv("ZEPPELIN_HOME") + "/interpreter/spark/R/lib";
+      sparkRLibPath = System.getenv("ZEPPELIN_HOME")
+        + sparkCachePath + sparkArchivePath + "/R/lib";
       // workaround to make sparkr work without SPARK_HOME
-      System.setProperty("spark.test.home", System.getenv("ZEPPELIN_HOME") + "/interpreter/spark");
+      System.setProperty("spark.test.home", System.getenv("ZEPPELIN_HOME")
+        + sparkCachePath + sparkArchivePath + "/R/lib");
     }
 
     synchronized (SparkRBackend.backend()) {

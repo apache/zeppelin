@@ -32,10 +32,13 @@ echo
 echo 'cd /vagrant/zeppelin'
 echo 'mvn clean package -DskipTests'
 echo
-echo '# or for a specific Spark/Hadoop build with additional options such as python and R support'
-echo
-echo 'mvn clean package -Pspark-1.6 -Ppyspark -Phadoop-2.4 -Psparkr -DskipTests'
+echo '# or for a specific Spark/Hadoop build with additional options'
+echo '# e.g. -Psparkr enables to use SparkR in Zeppelin'
+echo 'mvn clean package -Pspark-1.6 -Phadoop-2.4 -Psparkr -DskipTests'
+echo 
+echo '# download local Spark with get-spark option before Zeppelin start'
+echo './bin/zeppelin-daemon.sh get-spark'
 echo './bin/zeppelin-daemon.sh start'
 echo
-echo 'On your host machine browse to http://localhost:8080/'
+echo '# On your host machine browse http://localhost:8080/'
 

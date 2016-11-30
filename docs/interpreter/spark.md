@@ -62,7 +62,64 @@ Apache Spark is supported in Zeppelin with Spark interpreter group which consist
 </table>
 
 ## Configuration
-The Spark interpreter can be configured with properties provided by Zeppelin.
+There are two Spark mode to use Spark interpreter in Zeppelin. One is [local Spark mode](#local-spark-mode) and the other is [system provided Spark mode](#system-provided-spark-mode).
+
+### Local Spark mode
+If you are a beginner to Spark and Zeppelin, we would recommend you to download [Local Spark](#local-spark-mode) for using Spark interpreter.
+In this case, you can get the latest version of Spark with below command. 
+
+```
+./bin/zeppelin-daemon.sh get-spark
+```
+
+or 
+
+```
+./bin/zeppelin.sh get-spark
+```
+
+Then the downloaded Spark will be saved under `ZEPPELIN_HOME/local-spark/`.
+Nothing needs to be more configured to use this local Spark(e.g. setting `SPARK_HOME` or `HADOOP_HOME`).
+
+> Please note that Zeppelin doesn't support the local Spark mode for Windows. See [System provided Spark mode](#system-provided-spark-mode) setting guide after [downloading Spark](http://spark.apache.org/downloads.html).
+
+### System provided Spark mode
+Of course you can use external Spark as well.
+If you want to connect to your Spark cluster for your own usage, you'll need to follow below two simple steps.
+
+#### 1. Export SPARK_HOME
+In `conf/zeppelin-env.sh`, export `SPARK_HOME` environment variable with your Spark installation path.
+
+for example
+
+```bash
+export SPARK_HOME=/usr/lib/spark
+```
+
+You can optionally export HADOOP\_CONF\_DIR and SPARK\_SUBMIT\_OPTIONS
+
+```bash
+export HADOOP_CONF_DIR=/usr/lib/hadoop
+export SPARK_SUBMIT_OPTIONS="--packages com.databricks:spark-csv_2.10:1.2.0"
+```
+
+For Windows, ensure you have `winutils.exe` in `%HADOOP_HOME%\bin`. For more details please see [Problems running Hadoop on Windows](https://wiki.apache.org/hadoop/WindowsProblems).
+
+#### 2. Set master via Interpreter menu
+After start Zeppelin, go to **Interpreter** menu and edit **master** property in your Spark interpreter setting. The value may vary depending on your Spark cluster deployment type.
+
+for example,
+
+ * **local[*]** in local mode
+ * **spark://master:7077** in standalone cluster
+ * **yarn-client** in Yarn client mode
+ * **mesos://host:5050** in Mesos cluster
+
+That's it. Zeppelin will work with any version of Spark and any deployment type without rebuilding Zeppelin in this way. For the Spark version compatibility with Zeppelin, please check the [this table](https://zeppelin.apache.org/download.html#available-interpreters).
+
+
+### Available properties
+The Spark interpreter can be configured with below properties provided by Zeppelin.
 You can also set other Spark properties which are not listed in the table. For a list of additional properties, refer to [Spark Available Properties](http://spark.apache.org/docs/latest/configuration.html#available-properties).
 <table class="table-configuration">
   <tr>
@@ -134,41 +191,6 @@ You can also set other Spark properties which are not listed in the table. For a
     <td>Import implicits, UDF collection, and sql if set true.</td>
   </tr>
 </table>
-
-Without any configuration, Spark interpreter works out of box in local mode. But if you want to connect to your Spark cluster, you'll need to follow below two simple steps.
-
-### 1. Export SPARK_HOME
-In `conf/zeppelin-env.sh`, export `SPARK_HOME` environment variable with your Spark installation path.
-
-For example,
-
-```bash
-export SPARK_HOME=/usr/lib/spark
-```
-
-You can optionally export `HADOOP_CONF_DIR` and `SPARK_SUBMIT_OPTIONS`
-
-```bash
-export HADOOP_CONF_DIR=/usr/lib/hadoop
-export SPARK_SUBMIT_OPTIONS="--packages com.databricks:spark-csv_2.10:1.2.0"
-```
-
-For Windows, ensure you have `winutils.exe` in `%HADOOP_HOME%\bin`. Please see [Problems running Hadoop on Windows](https://wiki.apache.org/hadoop/WindowsProblems) for the details.
-
-### 2. Set master in Interpreter menu
-After start Zeppelin, go to **Interpreter** menu and edit **master** property in your Spark interpreter setting. The value may vary depending on your Spark cluster deployment type.
-
-For example,
-
- * **local[*]** in local mode
- * **spark://master:7077** in standalone cluster
- * **yarn-client** in Yarn client mode
- * **mesos://host:5050** in Mesos cluster
-
-That's it. Zeppelin will work with any version of Spark and any deployment type without rebuilding Zeppelin in this way. 
-For the further information about Spark & Zeppelin version compatibility, please refer to "Available Interpreters" section in [Zeppelin download page](https://zeppelin.apache.org/download.html).
-
-> Note that without exporting `SPARK_HOME`, it's running in local mode with included version of Spark. The included version may vary depending on the build profile.
 
 ## SparkContext, SQLContext, SparkSession, ZeppelinContext
 SparkContext, SQLContext and ZeppelinContext are automatically created and exposed as variable names `sc`, `sqlContext` and `z`, respectively, in Scala, Python and R environments.

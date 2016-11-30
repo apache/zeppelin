@@ -42,16 +42,17 @@
 
 #### Spark interpreter configuration ####
 
-## Use provided spark installation ##
-## defining SPARK_HOME makes Zeppelin run spark interpreter process using spark-submit
+## Use provided Spark installation ##
+## defining SPARK_HOME makes Zeppelin run Spark interpreter process using spark-submit
 ##
 # export SPARK_HOME                             # (required) When it is defined, load it instead of Zeppelin embedded Spark libraries
 # export SPARK_SUBMIT_OPTIONS                   # (optional) extra options to pass to spark submit. eg) "--driver-memory 512M --executor-memory 1G".
 # export SPARK_APP_NAME                         # (optional) The name of spark application.
 
-## Use embedded spark binaries ##
-## without SPARK_HOME defined, Zeppelin still able to run spark interpreter process using embedded spark binaries.
-## however, it is not encouraged when you can define SPARK_HOME
+## Use embedded Spark binaries ##
+## You can simply get the embedded Spark binaries by running "ZEPPELIN_HOME/bin/zeppelin-daemon.sh get-spark" or "ZEPPELIN_HOME/bin/zeppelin.sh get-spark".
+## Zeppelin can run Spark interpreter process using this embedded Spark without any configurations.
+## If you can define SPARK_HOME, then you don't need to download it.
 ##
 # Options read in YARN client mode
 # export HADOOP_CONF_DIR         		# yarn-site.xml is located in configuration directory in HADOOP_CONF_DIR.

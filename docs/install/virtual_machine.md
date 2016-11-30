@@ -106,11 +106,11 @@ The virtual machine consists of:
 
 ## How to build & run Zeppelin
 
-This assumes you've already cloned the project either on the host machine in the zeppelin-dev directory (to be shared with the guest machine) or cloned directly into a directory while running inside the guest machine.  The following build steps will also include Python and R support via PySpark and SparkR:
+This assumes you've already cloned the project either on the host machine in the zeppelin-dev directory (to be shared with the guest machine) or cloned directly into a directory while running inside the guest machine. The following build steps will also include Python and R support via PySpark and SparkR:
 
 ```
 cd /zeppelin
-mvn clean package -Pspark-1.6 -Ppyspark -Phadoop-2.4 -Psparkr -DskipTests
+mvn clean package -Pspark-1.6 -Phadoop-2.4 -Psparkr -DskipTests
 ./bin/zeppelin-daemon.sh start
 ```
 

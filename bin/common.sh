@@ -58,7 +58,7 @@ fi
 
 ZEPPELIN_CLASSPATH+=":${ZEPPELIN_CONF_DIR}"
 
-function addEachJarInDir(){
+function addEachJarInDir() {
   if [[ -d "${1}" ]]; then
     for jar in $(find -L "${1}" -maxdepth 1 -name '*jar'); do
       ZEPPELIN_CLASSPATH="$jar:$ZEPPELIN_CLASSPATH"
@@ -66,7 +66,7 @@ function addEachJarInDir(){
   fi
 }
 
-function addEachJarInDirRecursive(){
+function addEachJarInDirRecursive() {
   if [[ -d "${1}" ]]; then
     for jar in $(find -L "${1}" -type f -name '*jar'); do
       ZEPPELIN_CLASSPATH="$jar:$ZEPPELIN_CLASSPATH"
@@ -74,7 +74,7 @@ function addEachJarInDirRecursive(){
   fi
 }
 
-function addEachJarInDirRecursiveForIntp(){
+function addEachJarInDirRecursiveForIntp() {
   if [[ -d "${1}" ]]; then
     for jar in $(find -L "${1}" -type f -name '*jar'); do
       ZEPPELIN_INTP_CLASSPATH="$jar:$ZEPPELIN_INTP_CLASSPATH"
@@ -82,7 +82,7 @@ function addEachJarInDirRecursiveForIntp(){
   fi
 }
 
-function addJarInDir(){
+function addJarInDir() {
   if [[ -d "${1}" ]]; then
     ZEPPELIN_CLASSPATH="${1}/*:${ZEPPELIN_CLASSPATH}"
   fi
@@ -96,17 +96,31 @@ function addJarInDirForIntp() {
 
 ZEPPELIN_COMMANDLINE_MAIN=org.apache.zeppelin.utils.CommandLineUtils
 
-function getZeppelinVersion(){
-    if [[ -d "${ZEPPELIN_HOME}/zeppelin-server/target/classes" ]]; then
-      ZEPPELIN_CLASSPATH+=":${ZEPPELIN_HOME}/zeppelin-server/target/classes"
-    fi
-    addJarInDir "${ZEPPELIN_HOME}/zeppelin-server/target/lib"
-    CLASSPATH+=":${ZEPPELIN_CLASSPATH}"
-    $ZEPPELIN_RUNNER -cp $CLASSPATH $ZEPPELIN_COMMANDLINE_MAIN -v
-    exit 0
+function getZeppelinVersion() {
+  if [[ -d "${ZEPPELIN_HOME}/zeppelin-server/target/classes" ]]; then
+    ZEPPELIN_CLASSPATH+=":${ZEPPELIN_HOME}/zeppelin-server/target/classes"
+  fi
+  addJarInDir "${ZEPPELIN_HOME}/zeppelin-server/target/lib"
+  CLASSPATH+=":${ZEPPELIN_CLASSPATH}"
+  $ZEPPELIN_RUNNER -cp $CLASSPATH $ZEPPELIN_COMMANDLINE_MAIN -v
+  exit 0
 }
 
-# Text encoding for 
+
+SPARK_VERSION="2.0.1"
+HADOOP_VERSION="2.7"
+SPARK_CACHE="local-spark"
+SPARK_ARCHIVE="spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}"
+
+function downloadSparkBinary() {
+  if [[ ! -d "${SPARK_CACHE}/${SPARK_ARCHIVE}" ]]; then
+    . "${ZEPPELIN_HOME}/bin/download-spark.sh"
+  else
+    echo -e "${SPARK_ARCHIVE} already exists under local-spark."
+  fi
+}
+
+# Text encoding for
 # read/write job into files,
 # receiving/displaying query/result.
 if [[ -z "${ZEPPELIN_ENCODING}" ]]; then

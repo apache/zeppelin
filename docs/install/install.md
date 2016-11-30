@@ -79,6 +79,18 @@ After Zeppelin has started successfully, go to [http://localhost:8080](http://lo
 bin/zeppelin-daemon.sh stop
 ```
 
+#### Getting the latest version of Apache Spark binary
+
+If you are a beginner to Spark and Zeppelin, we would recommend you to download **Zeppelin embedded Spark** for using Spark interpreter.
+In this case, you can get the latest version of Spark with below command. 
+
+```
+./bin/zeppelin-daemon.sh get-spark
+```
+
+Then the downloaded Spark binary will be saved under `ZEPPELIN_HOME/local-spark/`.
+Please check [Local Spark mode in Zeppelin](../interpreter/spark.html#local-spark-mode) for the more information.
+
 ## Next Steps
 
 Congratulations, you have successfully installed Apache Zeppelin! Here are few steps you might find useful:

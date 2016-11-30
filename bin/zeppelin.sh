@@ -43,6 +43,10 @@ if [ "$1" == "--version" ] || [ "$1" == "-v" ]; then
     getZeppelinVersion
 fi
 
+if [ "$1" == "get-spark" ]; then
+    downloadSparkBinary
+fi
+
 HOSTNAME=$(hostname)
 ZEPPELIN_LOGFILE="${ZEPPELIN_LOG_DIR}/zeppelin-${ZEPPELIN_IDENT_STRING}-${HOSTNAME}.log"
 LOG="${ZEPPELIN_LOG_DIR}/zeppelin-cli-${ZEPPELIN_IDENT_STRING}-${HOSTNAME}.out"
@@ -85,6 +89,10 @@ fi
 if [[ ! -d "${ZEPPELIN_NOTEBOOK_DIR}" ]]; then
   echo "Pid dir doesn't exist, create ${ZEPPELIN_NOTEBOOK_DIR}"
   $(mkdir -p "${ZEPPELIN_NOTEBOOK_DIR}")
+fi
+
+if [[ ! -d "${SPARK_CACHE}/${SPARK_ARCHIVE}" && -z "${SPARK_HOME}" ]]; then
+  echo -e "\nYou do not have neither local-spark, nor external SPARK_HOME set up.\nIf you want to use Spark interpreter, you need to run get-spark at least one time or set SPARK_HOME.\n"
 fi
 
 exec $ZEPPELIN_RUNNER $JAVA_OPTS -cp $ZEPPELIN_CLASSPATH_OVERRIDES:$CLASSPATH $ZEPPELIN_SERVER "$@"
