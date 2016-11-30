@@ -20,6 +20,7 @@
     var notes = {
       root: {children: []},
       flatList: [],
+      flatFolderMap: {},
 
       setNotes: function(notesList) {
         // a flat list to boost searching
@@ -27,6 +28,7 @@
 
         // construct the folder-based tree
         notes.root = {children: []};
+        notes.flatFolderMap = {};
         _.reduce(notesList, function(root, note) {
           var noteName = note.name || note.id;
           var nodes = noteName.match(/([^\/][^\/]*)/g);
@@ -59,6 +61,10 @@
             hidden: true,
             children: []
           };
+
+          // add the folder to flat folder map
+          notes.flatFolderMap[newDir.id] = newDir;
+
           curDir.children.push(newDir);
           addNode(newDir, nodes, noteId);
         }
