@@ -91,7 +91,7 @@ public class PythonInterpreterPandasSqlTest {
   @Test
   public void dependenciesAreInstalled() {
     InterpreterResult ret = python.interpret("import pandas\nimport pandasql\nimport numpy\n", context);
-    assertEquals(ret.message().get(0).getData(), InterpreterResult.Code.SUCCESS, ret.code());
+    assertEquals(ret.message().toString(), InterpreterResult.Code.SUCCESS, ret.code());
   }
 
   @Test
@@ -101,7 +101,7 @@ public class PythonInterpreterPandasSqlTest {
     ret = python.interpret(
         "pysqldf = lambda q: print('Can not execute SQL as Python dependency is not installed')",
          context);
-    assertEquals(ret.message().get(0).getData(), InterpreterResult.Code.SUCCESS, ret.code());
+    assertEquals(ret.message().toString(), InterpreterResult.Code.SUCCESS, ret.code());
 
     // when
     ret = sql.interpret("SELECT * from something", context);
@@ -109,7 +109,7 @@ public class PythonInterpreterPandasSqlTest {
     // then
     assertNotNull(ret);
     assertEquals(ret.message().get(0).getData(), InterpreterResult.Code.SUCCESS, ret.code());
-    assertTrue(ret.message().contains("dependency is not installed"));
+    assertTrue(ret.message().get(0).getData().contains("dependency is not installed"));
   }
 
   @Test
@@ -122,7 +122,7 @@ public class PythonInterpreterPandasSqlTest {
     // DataFrame df2 \w test data
     ret = python.interpret("df2 = pd.DataFrame({ 'age'  : np.array([33, 51, 51, 34]), "+
                            "'name' : pd.Categorical(['moon','jobs','gates','park'])})", context);
-    assertEquals(ret.message().get(0).getData(), InterpreterResult.Code.SUCCESS, ret.code());
+    assertEquals(ret.message().toString(), InterpreterResult.Code.SUCCESS, ret.code());
 
     //when
     ret = sql.interpret("select name, age from df2 where age < 40", context);
@@ -131,8 +131,8 @@ public class PythonInterpreterPandasSqlTest {
     assertEquals(ret.message().get(0).getData(), InterpreterResult.Code.SUCCESS, ret.code());
     assertEquals(ret.message().get(0).getData(), Type.TABLE, ret.message().get(0).getType());
     //assertEquals(expectedTable, ret.message()); //somehow it's same but not equal
-    assertTrue(ret.message().indexOf("moon\t33") > 0);
-    assertTrue(ret.message().indexOf("park\t34") > 0);
+    assertTrue(ret.message().get(0).getData().indexOf("moon\t33") > 0);
+    assertTrue(ret.message().get(0).getData().indexOf("park\t34") > 0);
 
     assertEquals(InterpreterResult.Code.SUCCESS, sql.interpret("select case when name==\"aa\" then name else name end from df2", context).code());
   }
@@ -159,7 +159,7 @@ public class PythonInterpreterPandasSqlTest {
     ret = python.interpret("index = pd.Index([10, 11, 12, 13], name='index_name')", context);
     ret = python.interpret("d1 = {1 : [np.nan, 1, 2, 3], 'two' : [3., 4., 5., 6.7]}", context);
     ret = python.interpret("df1 = pd.DataFrame(d1, index=index)", context);
-    assertEquals(ret.message().get(0).getData(), InterpreterResult.Code.SUCCESS, ret.code());
+    assertEquals(ret.message().toString(), InterpreterResult.Code.SUCCESS, ret.code());
 
     // when
     ret = python.interpret("z.show(df1, show_index=True)", context);
