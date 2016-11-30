@@ -57,10 +57,10 @@
 
     <spark.archive>spark-${spark.version}</spark.archive>
     <spark.download.url>
-      http://archive.apache.org/dist/spark/${spark.archive}/${spark.archive}.tgz
+      http://d3kbcqa49mib13.cloudfront.net/${spark.archive}.tgz
     </spark.download.url>
     <spark.bin.download.url>
-      http://archive.apache.org/dist/spark/spark-${spark.version}/spark-${spark.version}-bin-without-hadoop.tgz
+      http://d3kbcqa49mib13.cloudfront.net/spark-${spark.version}-bin-without-hadoop.tgz
     </spark.bin.download.url>
     <spark.dist.cache>${project.build.directory}/../../.spark-dist</spark.dist.cache>
     <py4j.version>0.8.2.1</py4j.version>
