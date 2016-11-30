@@ -56,13 +56,12 @@
     <akka.version>2.3.4-spark</akka.version>
 
     <spark.archive>spark-${spark.version}</spark.archive>
-    <spark.download.url>
+    <spark.src.download.url>
       http://d3kbcqa49mib13.cloudfront.net/${spark.archive}.tgz
-    </spark.download.url>
+    </spark.src.download.url>
     <spark.bin.download.url>
       http://d3kbcqa49mib13.cloudfront.net/spark-${spark.version}-bin-without-hadoop.tgz
     </spark.bin.download.url>
-    <spark.dist.cache>${project.basedir}/../.spark-dist</spark.dist.cache>
     <py4j.version>0.8.2.1</py4j.version>
   </properties>
 
@@ -834,8 +833,9 @@
                 <configuration>
                   <readTimeOut>60000</readTimeOut>
                   <retries>5</retries>
-                  <url>${spark.download.url}</url>
-                  <outputDirectory>${spark.dist.cache}</outputDirectory>
+                  <unpack>true</unpack>
+                  <url>${spark.src.download.url}</url>
+                  <outputDirectory>${project.build.directory}</outputDirectory>
                 </configuration>
               </execution>
             </executions>
@@ -845,9 +845,6 @@
             <artifactId>maven-clean-plugin</artifactId>
             <configuration>
               <filesets>
-                <fileset>
-                  <directory>${project.build.directory}/spark-dist</directory>
-                </fileset>
                 <fileset>
                   <directory>${basedir}/../python/build</directory>
                 </fileset>
@@ -860,21 +857,6 @@
             <artifactId>maven-antrun-plugin</artifactId>
             <executions>
               <execution>
-                <id>unzip-pyspark-files</id>
-                <phase>validate</phase>
-                <goals>
-                  <goal>run</goal>
-                </goals>
-                <configuration>
-                  <target>
-                    <untar src="${spark.dist.cache}/${spark.archive}.tgz"
-                           dest="${project.build.directory}/spark-dist"
-                           compression="gzip"/>
-                  </target>
-                </configuration>
-              </execution>
-
-              <execution>
                 <id>zip-pyspark-files</id>
                 <phase>generate-resources</phase>
                 <goals>
@@ -884,9 +866,9 @@
                   <target>
                     <delete dir="../interpreter/spark/pyspark"/>
                     <copy todir="../interpreter/spark/pyspark"
-                          file="${project.build.directory}/spark-dist/${spark.archive}/python/lib/py4j-${py4j.version}-src.zip"/>
+                          file="${project.build.directory}/${spark.archive}/python/lib/py4j-${py4j.version}-src.zip"/>
                     <zip destfile="${project.build.directory}/../../interpreter/spark/pyspark/pyspark.zip"
-                         basedir="${project.build.directory}/spark-dist/${spark.archive}/python"
+                         basedir="${project.build.directory}/${spark.archive}/python"
                          includes="pyspark/*.py,pyspark/**/*.py"/>
                   </target>
                 </configuration>
@@ -917,20 +899,10 @@
                   <retries>5</retries>
                   <url>${spark.bin.download.url}</url>
                   <unpack>true</unpack>
-                  <outputDirectory>${project.build.directory}/spark-bin-dist</outputDirectory>
+                  <outputDirectory>${project.build.directory}</outputDirectory>
                 </configuration>
               </execution>
             </executions>
-          </plugin>
-          <plugin>
-            <artifactId>maven-clean-plugin</artifactId>
-            <configuration>
-              <filesets>
-                <fileset>
-                  <directory>${project.build.directory}/spark-bin-dist</directory>
-                </fileset>
-              </filesets>
-            </configuration>
           </plugin>
           <plugin>
             <artifactId>maven-resources-plugin</artifactId>
@@ -947,7 +919,7 @@
                   <resources>
                     <resource>
                       <directory>
-                        ${project.build.directory}/spark-bin-dist/spark-${spark.version}-bin-without-hadoop/R/lib
+                        ${project.build.directory}/spark-${spark.version}-bin-without-hadoop/R/lib
                       </directory>
                     </resource>
                   </resources>
