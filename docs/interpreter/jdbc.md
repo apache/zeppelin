@@ -25,7 +25,11 @@ limitations under the License.
 
 ## Overview
 
-JDBC interpreter lets you create a JDBC connection to any data sources seamlessly. By now, it has been tested with:
+JDBC interpreter lets you create a JDBC connection to any data sources seamlessly.
+
+Inserts, Updates, and Upserts are applied immediately after running each statement.
+
+By now, it has been tested with:
 
 <div class="row" style="margin: 30px auto;">
   <div class="col-md-6">

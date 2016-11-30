@@ -93,6 +93,7 @@ class FigureCanvasZInline(FigureCanvasAgg):
         # Express the image as bytes
         buf = BytesIO()
         self.print_figure(buf, **kwargs)
+        fmt = fmt.encode()
         byte_str = b"data:image/%s;base64," %fmt
         byte_str += base64.b64encode(buf.getvalue())
             

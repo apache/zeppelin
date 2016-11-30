@@ -17,6 +17,7 @@
 package org.apache.zeppelin.rest;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
@@ -345,6 +346,34 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
         waitForFinish(p2);
         assertEquals(Status.FINISHED, p2.getStatus());
         assertEquals("10", p2.getResult().message().get(0).getData());
+
+        Paragraph p3 = note.addParagraph();
+        Map config3 = p3.getConfig();
+        config3.put("enabled", true);
+        p3.setConfig(config3);
+        p3.setText("%spark println(new java.util.Date())");
+        p3.setAuthenticationInfo(anonymous);
+
+        p0.setText(String.format("%%spark z.runNote(\"%s\")", note.getId()));
+        note.run(p0.getId());
+        waitForFinish(p0);
+        waitForFinish(p1);
+        waitForFinish(p2);
+        waitForFinish(p3);
+
+        assertEquals(Status.FINISHED, p3.getStatus());
+        String p3result = p3.getResult().message().get(0).getData();
+        assertNotEquals(null, p3result);
+        assertNotEquals("", p3result);
+
+        p0.setText(String.format("%%spark z.run(\"%s\", \"%s\")", note.getId(), p3.getId()));
+        p3.setText("%%spark println(\"END\")");
+
+        note.run(p0.getId());
+        waitForFinish(p0);
+        waitForFinish(p3);
+
+        assertNotEquals(p3result, p3.getResult().message());
 
         ZeppelinServer.notebook.removeNote(note.getId(), anonymous);
     }

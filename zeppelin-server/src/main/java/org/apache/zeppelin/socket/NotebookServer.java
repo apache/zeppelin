@@ -32,6 +32,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 import javax.servlet.http.HttpServletRequest;
 
+import com.google.common.collect.Sets;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.vfs2.FileSystemException;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
@@ -41,7 +42,12 @@ import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.AngularObjectRegistryListener;
 import org.apache.zeppelin.helium.ApplicationEventListener;
 import org.apache.zeppelin.helium.HeliumPackage;
-import org.apache.zeppelin.interpreter.*;
+import org.apache.zeppelin.interpreter.InterpreterContextRunner;
+import org.apache.zeppelin.interpreter.InterpreterGroup;
+import org.apache.zeppelin.interpreter.InterpreterOutput;
+import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.InterpreterResultMessage;
+import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
@@ -56,6 +62,7 @@ import org.apache.zeppelin.notebook.repo.NotebookRepo.Revision;
 import org.apache.zeppelin.notebook.socket.Message;
 import org.apache.zeppelin.notebook.socket.Message.OP;
 import org.apache.zeppelin.notebook.socket.WatcherMessage;
+import org.apache.zeppelin.rest.exception.ForbiddenException;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.server.ZeppelinServer;
@@ -1527,6 +1534,72 @@ public class NotebookServer extends WebSocketServlet implements
         .put("appId", appId)
         .put("status", status);
     broadcast(noteId, msg);
+  }
+
+  @Override
+  public void onGetParagraphRunners(
+      String noteId, String paragraphId, RemoteWorksEventListener callback) {
+    Notebook notebookIns = notebook();
+    List<InterpreterContextRunner> runner = new LinkedList<>();
+
+    if (notebookIns == null) {
+      LOG.info("intepreter request notebook instance is null");
+      callback.onFinished(notebookIns);
+    }
+
+    try {
+      Note note = notebookIns.getNote(noteId);
+      if (note != null) {
+        if (paragraphId != null) {
+          Paragraph paragraph = note.getParagraph(paragraphId);
+          if (paragraph != null) {
+            runner.add(paragraph.getInterpreterContextRunner());
+          }
+        } else {
+          for (Paragraph p : note.getParagraphs()) {
+            runner.add(p.getInterpreterContextRunner());
+          }
+        }
+      }
+      callback.onFinished(runner);
+    } catch (NullPointerException e) {
+      LOG.warn(e.getMessage());
+      callback.onError();
+    }
+  }
+
+  @Override
+  public void onRemoteRunParagraph(String noteId, String paragraphId) throws Exception {
+    Notebook notebookIns = notebook();
+    try {
+      if (notebookIns == null) {
+        throw new Exception("onRemoteRunParagraph notebook instance is null");
+      }
+      Note noteIns = notebookIns.getNote(noteId);
+      if (noteIns == null) {
+        throw new Exception(String.format("Can't found note id %s", noteId));
+      }
+
+      Paragraph paragraph = noteIns.getParagraph(paragraphId);
+      if (paragraph == null) {
+        throw new Exception(String.format("Can't found paragraph %s %s", noteId, paragraphId));
+      }
+
+      Set<String> userAndRoles = Sets.newHashSet();
+      userAndRoles.add(SecurityUtils.getPrincipal());
+      userAndRoles.addAll(SecurityUtils.getRoles());
+      if (!notebookIns.getNotebookAuthorization().hasWriteAuthorization(userAndRoles, noteId)) {
+        throw new ForbiddenException(String.format("can't execute note %s", noteId));
+      }
+
+      AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
+      paragraph.setAuthenticationInfo(subject);
+
+      noteIns.run(paragraphId);
+
+    } catch (Exception e) {
+      throw e;
+    }
   }
 
   /**

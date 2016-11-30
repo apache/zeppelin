@@ -21,8 +21,10 @@ import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.interpreter.InterpreterContextRunner;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResultMessage;
+import org.apache.zeppelin.interpreter.RemoteZeppelinServerResource;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterEvent;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterEventType;
+import org.apache.zeppelin.interpreter.thrift.ZeppelinServerResourceParagraphRunner;
 import org.apache.zeppelin.resource.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,6 +51,22 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector {
   private final List<ResourceSet> getAllResourceResponse = new LinkedList<>();
   private final Map<ResourceId, Object> getResourceResponse = new HashMap<>();
   private final Gson gson = new Gson();
+
+  /**
+   * Run paragraph
+   * @param runner
+   */
+  public void getZeppelinServerNoteRunner(
+      String eventOwnerKey, ZeppelinServerResourceParagraphRunner runner) {
+    RemoteZeppelinServerResource eventBody = new RemoteZeppelinServerResource();
+    eventBody.setResourceType(RemoteZeppelinServerResource.Type.PARAGRAPH_RUNNERS);
+    eventBody.setOwnerKey(eventOwnerKey);
+    eventBody.setData(runner);
+
+    sendEvent(new RemoteInterpreterEvent(
+        RemoteInterpreterEventType.REMOTE_ZEPPELIN_SERVER_RESOURCE,
+        gson.toJson(eventBody)));
+  }
 
   /**
    * Run paragraph

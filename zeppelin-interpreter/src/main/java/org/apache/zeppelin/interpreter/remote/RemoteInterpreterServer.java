@@ -23,7 +23,10 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.nio.ByteBuffer;
+import java.rmi.server.RemoteServer;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeoutException;
 
 import org.apache.thrift.TException;
 import org.apache.thrift.server.TThreadPoolServer;
@@ -78,6 +81,9 @@ public class RemoteInterpreterServer
   private final Map<String, RunningApplication> runningApplications =
       Collections.synchronizedMap(new HashMap<String, RunningApplication>());
 
+  private Map<String, Object> remoteWorksResponsePool;
+  private ZeppelinRemoteWorksController remoteWorksController;
+
   public RemoteInterpreterServer(int port) throws TTransportException {
     this.port = port;
 
@@ -85,6 +91,8 @@ public class RemoteInterpreterServer
     TServerSocket serverTransport = new TServerSocket(port);
     server = new TThreadPoolServer(
         new TThreadPoolServer.Args(serverTransport).processor(processor));
+    remoteWorksResponsePool = Collections.synchronizedMap(new HashMap<String, Object>());
+    remoteWorksController = new ZeppelinRemoteWorksController(this, remoteWorksResponsePool);
   }
 
   @Override
@@ -174,7 +182,6 @@ public class RemoteInterpreterServer
       Constructor<Interpreter> constructor =
           replClass.getConstructor(new Class[] {Properties.class});
       Interpreter repl = constructor.newInstance(p);
-
       repl.setClassloaderUrls(new URL[]{});
 
       synchronized (interpreterGroup) {
@@ -335,6 +342,42 @@ public class RemoteInterpreterServer
         context.getGui());
   }
 
+  @Override
+  public void onReceivedZeppelinResource(String responseJson) throws TException {
+    RemoteZeppelinServerResource response = gson.fromJson(
+        responseJson, RemoteZeppelinServerResource.class);
+
+    if (response == null) {
+      throw new TException("Bad response for remote resource");
+    }
+
+    try {
+      if (response.getResourceType() == RemoteZeppelinServerResource.Type.PARAGRAPH_RUNNERS) {
+        List<InterpreterContextRunner> intpContextRunners = new LinkedList<>();
+        List<Map<String, Object>> remoteRunnersMap =
+            (List<Map<String, Object>>) response.getData();
+
+        String noteId = null;
+        String paragraphId = null;
+
+        for (Map<String, Object> runnerItem : remoteRunnersMap) {
+          noteId = (String) runnerItem.get("noteId");
+          paragraphId = (String) runnerItem.get("paragraphId");
+          intpContextRunners.add(
+              new ParagraphRunner(this, noteId, paragraphId)
+          );
+        }
+
+        synchronized (this.remoteWorksResponsePool) {
+          this.remoteWorksResponsePool.put(
+              response.getOwnerKey(),
+              intpContextRunners);
+        }
+      }
+    } catch (Exception e) {
+      throw e;
+    }
+  }
 
   class InterpretJobListener implements JobListener {
 
@@ -540,7 +583,7 @@ public class RemoteInterpreterServer
         gson.fromJson(ric.getGui(), GUI.class),
         interpreterGroup.getAngularObjectRegistry(),
         interpreterGroup.getResourcePool(),
-        contextRunners, output, eventClient);
+        contextRunners, output, remoteWorksController, eventClient);
   }
 
 
@@ -582,7 +625,7 @@ public class RemoteInterpreterServer
 
 
   static class ParagraphRunner extends InterpreterContextRunner {
-
+    Logger logger = LoggerFactory.getLogger(ParagraphRunner.class);
     private transient RemoteInterpreterServer server;
 
     public ParagraphRunner(RemoteInterpreterServer server, String noteId, String paragraphId) {
@@ -594,6 +637,78 @@ public class RemoteInterpreterServer
     public void run() {
       server.eventClient.run(this);
     }
+  }
+
+  static class ZeppelinRemoteWorksController implements RemoteWorksController{
+    Logger logger = LoggerFactory.getLogger(ZeppelinRemoteWorksController.class);
+
+    private final long DEFAULT_TIMEOUT_VALUE = 300000;
+    private final Map<String, Object> remoteWorksResponsePool;
+    private RemoteInterpreterServer server;
+    public ZeppelinRemoteWorksController(
+        RemoteInterpreterServer server, Map<String, Object> remoteWorksResponsePool) {
+      this.remoteWorksResponsePool = remoteWorksResponsePool;
+      this.server = server;
+    }
+
+    public String generateOwnerKey() {
+      String hashKeyText = new String("ownerKey" + System.currentTimeMillis());
+      String hashKey = String.valueOf(hashKeyText.hashCode());
+      return hashKey;
+    }
+
+    public boolean waitForEvent(String eventOwnerKey) throws InterruptedException {
+      return waitForEvent(eventOwnerKey, DEFAULT_TIMEOUT_VALUE);
+    }
+
+    public boolean waitForEvent(String eventOwnerKey, long timeout) throws InterruptedException {
+      boolean wasGetData = false;
+      long now = System.currentTimeMillis();
+      long endTime = System.currentTimeMillis() + timeout;
+
+      while (endTime >= now) {
+        synchronized (this.remoteWorksResponsePool) {
+          wasGetData = this.remoteWorksResponsePool.containsKey(eventOwnerKey);
+        }
+        if (wasGetData == true) {
+          break;
+        }
+        now = System.currentTimeMillis();
+        sleep(500);
+      }
+
+      return wasGetData;
+    }
+
+    @Override
+    public List<InterpreterContextRunner> getRemoteContextRunner(String noteId) {
+      return getRemoteContextRunner(noteId, null);
+    }
+
+    public List<InterpreterContextRunner> getRemoteContextRunner(
+        String noteId, String paragraphID) {
+
+      List<InterpreterContextRunner> runners = null;
+      String ownerKey = generateOwnerKey();
+
+      ZeppelinServerResourceParagraphRunner resource = new ZeppelinServerResourceParagraphRunner();
+      resource.setNoteId(noteId);
+      resource.setParagraphId(paragraphID);
+      server.eventClient.getZeppelinServerNoteRunner(ownerKey, resource);
+
+      try {
+        this.waitForEvent(ownerKey);
+      } catch (Exception e) {
+        return new LinkedList<>();
+      }
+      synchronized (this.remoteWorksResponsePool) {
+        runners = (List<InterpreterContextRunner>) this.remoteWorksResponsePool.get(ownerKey);
+        this.remoteWorksResponsePool.remove(ownerKey);
+      }
+      return runners;
+    }
+
+
   }
 
   private RemoteInterpreterResult convert(InterpreterResult result,

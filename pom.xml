@@ -477,7 +477,7 @@
           <version>1.0.1</version>
           <executions>
             <execution>
-              <phase>validate</phase>
+              <phase>verify</phase>
               <goals>
                 <goal>validate</goal>
               </goals>

@@ -102,7 +102,7 @@ public class PythonInterpreterWithPythonInstalledTest {
     realPython.open();
 
     //when
-    InterpreterResult ret1 = realPython.interpret("print \"...\"", null);
+    InterpreterResult ret1 = realPython.interpret("print(\"...\")", null);
 
     //then
     //System.out.println("\nInterpreter response: \n" + ret.message());

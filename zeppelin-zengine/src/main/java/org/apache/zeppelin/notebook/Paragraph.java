@@ -476,6 +476,11 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     return interpreterContext;
   }
 
+  public InterpreterContextRunner getInterpreterContextRunner() {
+
+    return new ParagraphRunner(note, note.getId(), getId());
+  }
+
   static class ParagraphRunner extends InterpreterContextRunner {
     private transient Note note;
 

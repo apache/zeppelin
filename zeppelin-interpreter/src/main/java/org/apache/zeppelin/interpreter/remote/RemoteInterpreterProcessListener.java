@@ -29,4 +29,15 @@ public interface RemoteInterpreterProcessListener {
       String noteId, String paragraphId, int index, InterpreterResult.Type type, String output);
   public void onOutputClear(String noteId, String paragraphId);
   public void onMetaInfosReceived(String settingId, Map<String, String> metaInfos);
+  public void onRemoteRunParagraph(String noteId, String ParagraphID) throws Exception;
+  public void onGetParagraphRunners(
+      String noteId, String paragraphId, RemoteWorksEventListener callback);
+
+  /**
+   * Remote works for Interpreter callback listener
+   */
+  public interface RemoteWorksEventListener {
+    public void onFinished(Object resultObject);
+    public void onError();
+  }
 }

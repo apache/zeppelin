@@ -19,7 +19,7 @@
 namespace java org.apache.zeppelin.interpreter.thrift
 
 struct RemoteInterpreterContext {
-  1: string sessionKey,
+  1: string noteId,
   2: string paragraphId,
   3: string replName,
   4: string paragraphTitle,
@@ -54,8 +54,10 @@ enum RemoteInterpreterEventType {
   OUTPUT_UPDATE_ALL = 10,
   ANGULAR_REGISTRY_PUSH = 11,
   APP_STATUS_UPDATE = 12,
-  META_INFOS = 13
+  META_INFOS = 13,
+  REMOTE_ZEPPELIN_SERVER_RESOURCE = 14
 }
+
 
 struct RemoteInterpreterEvent {
   1: RemoteInterpreterEventType type,
@@ -65,6 +67,11 @@ struct RemoteInterpreterEvent {
 struct RemoteApplicationResult {
   1: bool success,
   2: string msg
+}
+
+struct ZeppelinServerResourceParagraphRunner {
+  1: string noteId,
+  2: string paragraphId
 }
 
 /*
@@ -114,4 +121,6 @@ service RemoteInterpreterService {
   RemoteApplicationResult loadApplication(1: string applicationInstanceId, 2: string packageInfo, 3: string sessionKey, 4: string paragraphId);
   RemoteApplicationResult unloadApplication(1: string applicationInstanceId);
   RemoteApplicationResult runApplication(1: string applicationInstanceId);
+
+  void onReceivedZeppelinResource(1: string object);
 }

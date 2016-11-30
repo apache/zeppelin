@@ -171,4 +171,16 @@ public class RemoteInterpreterOutputTestStream implements RemoteInterpreterProce
   public void onMetaInfosReceived(String settingId, Map<String, String> metaInfos) {
 
   }
+
+  @Override
+  public void onGetParagraphRunners(String noteId, String paragraphId, RemoteWorksEventListener callback) {
+    if (callback != null) {
+      callback.onFinished(new LinkedList<>());
+    }
+  }
+
+  @Override
+  public void onRemoteRunParagraph(String noteId, String ParagraphID) throws Exception {
+
+  }
 }
