@@ -32,12 +32,23 @@
   <version>0.7.0-SNAPSHOT</version>
   <name>Zeppelin: BigQuery interpreter</name>
 
+  <properties>
+    <project.http.version>1.21.0</project.http.version>
+    <project.oauth.version>1.21.0</project.oauth.version>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <bigquery.test.exclude>**/BigQueryInterpreterTest.java</bigquery.test.exclude>
+
+    <!-- library versions -->
+    <bigquery.api.version>v2-rev265-1.21.0</bigquery.api.version>
+    <gson.version>2.6</gson.version>
+  </properties>
+
   <dependencies>
 
     <dependency>
         <groupId>com.google.apis</groupId>
         <artifactId>google-api-services-bigquery</artifactId>
-        <version>v2-rev265-1.21.0</version>
+        <version>${bigquery.api.version}</version>
     </dependency>
     <dependency>
         <groupId>com.google.oauth-client</groupId>
@@ -57,7 +68,7 @@
     <dependency>
       <groupId>com.google.code.gson</groupId>
       <artifactId>gson</artifactId>
-      <version>2.6</version>
+      <version>${gson.version}</version>
     </dependency>
 
     <dependency>
@@ -84,18 +95,10 @@
     </dependency>
   </dependencies>
 
-  <properties>
-    <project.http.version>1.21.0</project.http.version>
-    <project.oauth.version>1.21.0</project.oauth.version>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <bigquery.test.exclude>**/BigQueryInterpreterTest.java</bigquery.test.exclude>
-  </properties>
-
   <build>
     <plugins>
       <plugin>
         <artifactId>maven-enforcer-plugin</artifactId>
-        <version>1.3.1</version>
         <executions>
           <execution>
             <id>enforce</id>
@@ -116,7 +119,6 @@
 
       <plugin>
         <artifactId>maven-dependency-plugin</artifactId>
-        <version>2.8</version>
         <executions>
           <execution>
             <id>copy-dependencies</id>

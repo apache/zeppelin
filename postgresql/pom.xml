@@ -33,7 +33,14 @@
   <name>Zeppelin: PostgreSQL interpreter</name>
 
   <properties>
+    <!--library versions-->
     <postgresql.version>9.4-1201-jdbc41</postgresql.version>
+    <jline.version>2.12.1</jline.version>
+
+    <!--test library versions-->
+    <mockito.all.version>1.9.5</mockito.all.version>
+    <mockrunner.jdbc.version>1.0.8</mockrunner.jdbc.version>
+
   </properties>
 
   <dependencies>
@@ -68,7 +75,7 @@
     <dependency>
       <groupId>jline</groupId>
       <artifactId>jline</artifactId>
-      <version>2.12.1</version>
+      <version>${jline.version}</version>
     </dependency>
 
     <dependency>
@@ -80,14 +87,14 @@
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-all</artifactId>
-      <version>1.9.5</version>
+      <version>${mockito.all.version}</version>
       <scope>test</scope>
     </dependency>
 
     <dependency>
       <groupId>com.mockrunner</groupId>
       <artifactId>mockrunner-jdbc</artifactId>
-      <version>1.0.8</version>
+      <version>${mockrunner.jdbc.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -96,7 +103,6 @@
     <plugins>
       <plugin>
         <artifactId>maven-enforcer-plugin</artifactId>
-        <version>1.3.1</version>
         <executions>
           <execution>
             <id>enforce</id>
@@ -107,7 +113,6 @@
 
       <plugin>
         <artifactId>maven-dependency-plugin</artifactId>
-        <version>2.8</version>
         <executions>
           <execution>
             <id>copy-dependencies</id>

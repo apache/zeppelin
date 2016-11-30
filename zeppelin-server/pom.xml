@@ -33,9 +33,24 @@
   <name>Zeppelin: Server</name>
 
   <properties>
+    <!--library versions-->
     <cxf.version>2.7.8</cxf.version>
-    <commons.httpclient.version>4.3.6</commons.httpclient.version>
     <hadoop-common.version>2.6.0</hadoop-common.version>
+    <quartz.scheduler.version>2.2.1</quartz.scheduler.version>
+    <jersey.servlet.version>1.13</jersey.servlet.version>
+    <javax.ws.rsapi.version>2.0-m10</javax.ws.rsapi.version>
+    <libpam4j.version>1.8</libpam4j.version>
+    <jna.version>4.1.0</jna.version>
+
+    <!--test library versions-->
+    <mockito.all.version>1.9.0</mockito.all.version>
+    <selenium.java.version>2.48.2</selenium.java.version>
+    <xml.apis.version>1.4.01</xml.apis.version>
+
+    <!--plugin library versions-->
+    <plugin.failsafe.version>2.16</plugin.failsafe.version>
+    <plugin.scala.version>2.15.2</plugin.scala.version>
+    <plugin.scalatest.version>1.0</plugin.scalatest.version>
   </properties>
 
   <dependencyManagement>
@@ -67,6 +82,7 @@
   </dependencyManagement>
 
   <dependencies>
+
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>zeppelin-zengine</artifactId>
@@ -81,6 +97,39 @@
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-log4j12</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>commons-collections</groupId>
+      <artifactId>commons-collections</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.shiro</groupId>
+      <artifactId>shiro-core</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.shiro</groupId>
+      <artifactId>shiro-web</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.kohsuke</groupId>
+      <artifactId>libpam4j</artifactId>
+      <version>${libpam4j.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>net.java.dev.jna</groupId>
+          <artifactId>jna</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
+    <dependency>
+      <groupId>net.java.dev.jna</groupId>
+      <artifactId>jna</artifactId>
+      <version>${jna.version}</version>
     </dependency>
 
     <dependency>
@@ -179,31 +228,6 @@
     <dependency>
       <groupId>com.google.code.gson</groupId>
       <artifactId>gson</artifactId>
-      <version>${gson.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <scope>test</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.httpcomponents</groupId>
-      <artifactId>httpclient</artifactId>
-      <version>4.3.6</version>
-      <scope>test</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>commons-codec</groupId>
-          <artifactId>commons-codec</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-
-    <dependency>
-      <groupId>commons-collections</groupId>
-      <artifactId>commons-collections</artifactId>
     </dependency>
 
     <dependency>
@@ -223,7 +247,6 @@
           <groupId>com.sun.jersey</groupId>
           <artifactId>jersey-server</artifactId>
         </exclusion>
-
 
         <exclusion>
           <groupId>javax.servlet</groupId>
@@ -264,19 +287,19 @@
     <dependency>
       <groupId>org.quartz-scheduler</groupId>
       <artifactId>quartz</artifactId>
-      <version>2.2.1</version>
+      <version>${quartz.scheduler.version}</version>
     </dependency>
 
     <dependency>
       <groupId>com.sun.jersey</groupId>
       <artifactId>jersey-servlet</artifactId>
-      <version>1.13</version>
+      <version>${jersey.servlet.version}</version>
     </dependency>
 
     <dependency>
       <groupId>javax.ws.rs</groupId>
       <artifactId>javax.ws.rs-api</artifactId>
-      <version>2.0-m10</version>
+      <version>${javax.ws.rsapi.version}</version>
     </dependency>
 
     <dependency>
@@ -297,10 +320,43 @@
       <version>${scala.version}</version>
     </dependency>
 
+    <!--test libraries-->
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-all</artifactId>
+      <version>${mockito.all.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.scalatest</groupId>
+      <artifactId>scalatest_${scala.binary.version}</artifactId>
+      <version>${scalatest.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.httpcomponents</groupId>
+      <artifactId>httpclient</artifactId>
+      <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>commons-codec</groupId>
+          <artifactId>commons-codec</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
     <dependency>
       <groupId>org.seleniumhq.selenium</groupId>
       <artifactId>selenium-java</artifactId>
-      <version>2.48.2</version>
+      <version>${selenium.java.version}</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -326,60 +382,20 @@
       </exclusions>
     </dependency>
 
-
     <dependency> <!-- because there are two of them above  -->
       <groupId>xml-apis</groupId>
       <artifactId>xml-apis</artifactId>
-      <version>1.4.01</version>
+      <version>${xml.apis.version}</version>
       <scope>test</scope>
     </dependency>
 
-    <dependency>
-      <groupId>org.scalatest</groupId>
-      <artifactId>scalatest_${scala.binary.version}</artifactId>
-      <version>${scalatest.version}</version>
-      <scope>test</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>org.mockito</groupId>
-      <artifactId>mockito-all</artifactId>
-      <version>1.9.0</version>
-      <scope>test</scope>
-    </dependency>
-
-    <!-- Apache Shiro -->
-    <dependency>
-      <groupId>org.apache.shiro</groupId>
-      <artifactId>shiro-core</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.shiro</groupId>
-      <artifactId>shiro-web</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.kohsuke</groupId>
-      <artifactId>libpam4j</artifactId>
-      <version>1.8</version>
-      <exclusions>
-        <exclusion>
-          <groupId>net.java.dev.jna</groupId>
-          <artifactId>jna</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>net.java.dev.jna</groupId>
-      <artifactId>jna</artifactId>
-      <version>4.1.0</version>
-    </dependency>
   </dependencies>
 
   <build>
     <plugins>
       <plugin>
         <artifactId>maven-failsafe-plugin</artifactId>
-        <version>2.16</version>
+        <version>${plugin.failsafe.version}</version>
         <executions>
           <execution>
             <goals>
@@ -396,7 +412,7 @@
       <plugin>
         <groupId>org.scala-tools</groupId>
         <artifactId>maven-scala-plugin</artifactId>
-        <version>2.15.2</version>
+        <version>${plugin.scala.version}</version>
         <executions>
           <execution>
             <goals>
@@ -409,7 +425,7 @@
       <plugin>
         <groupId>org.scalatest</groupId>
         <artifactId>scalatest-maven-plugin</artifactId>
-        <version>1.0</version>
+        <version>${plugin.scalatest.version}</version>
         <configuration>
           <stderr/>
           <systemProperties>
