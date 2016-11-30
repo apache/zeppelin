@@ -498,4 +498,25 @@ public class NotebookRepoSync implements NotebookRepo {
       LOG.error("Cannot update notebook repo settings", e);
     }
   }
+
+  @Override
+  public Note setNoteRevision(String noteId, String revId, AuthenticationInfo subject)
+      throws IOException {
+    int repoCount = getRepoCount();
+    int repoBound = Math.min(repoCount, getMaxRepoNum());
+    Note currentNote = null, revisionNote = null;
+    for (int i = 0; i < repoBound; i++) {
+      try {
+        currentNote = getRepo(i).setNoteRevision(noteId, revId, subject);
+      } catch (IOException e) {
+        // already logged
+        currentNote = null;
+      }
+      // second condition assures that fist successful is returned
+      if (currentNote != null && revisionNote == null) {
+        revisionNote = currentNote;
+      }
+    }
+    return revisionNote;
+  }
 }

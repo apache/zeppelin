@@ -283,6 +283,9 @@ public class NotebookServer extends WebSocketServlet implements
           case LIST_REVISION_HISTORY:
             listRevisionHistory(conn, notebook, messagereceived);
             break;
+          case SET_NOTE_REVISION:
+            setNoteRevision(conn, notebook, messagereceived);
+            break;
           case NOTE_REVISION:
             getNoteByRevision(conn, notebook, messagereceived);
             break;
@@ -1472,6 +1475,21 @@ public class NotebookServer extends WebSocketServlet implements
 
     conn.send(serializeMessage(new Message(OP.LIST_REVISION_HISTORY)
       .put("revisionList", revisions)));
+  }
+  
+  private void setNoteRevision(NotebookSocket conn, Notebook notebook,
+      Message fromMessage) {
+    String noteId = (String) fromMessage.get("noteId");
+    String revisionId = (String) fromMessage.get("revisionId");
+    AuthenticationInfo subject = new AuthenticationInfo(fromMessage.principal);
+    
+    try {
+      Note currentNote = notebook.setNoteRevision(noteId, revisionId, subject);
+    } catch (IOException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
+    //TODO(khalid): send back, update note or notify user
   }
 
   private void getNoteByRevision(NotebookSocket conn, Notebook notebook, Message fromMessage)

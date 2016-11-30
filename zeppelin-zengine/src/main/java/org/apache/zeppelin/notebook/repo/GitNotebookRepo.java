@@ -162,6 +162,16 @@ public class GitNotebookRepo extends VFSNotebookRepo {
   }
 
   @Override
+  public Note setNoteRevision(String noteId, String revId, AuthenticationInfo subject)
+      throws IOException {
+    Note revisionNote = get(noteId, revId, subject);
+    if (revisionNote != null) {
+      save(revisionNote, subject);
+    }
+    return revisionNote;
+  }
+  
+  @Override
   public void close() {
     git.getRepository().close();
   }

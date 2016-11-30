@@ -379,6 +379,11 @@ public class Notebook implements NoteEventListener {
     return notebookRepo.revisionHistory(noteId, subject);
   }
 
+  public Note setNoteRevision(String noteId, String revisionId, AuthenticationInfo subject)
+      throws IOException {
+    return notebookRepo.setNoteRevision(noteId, revisionId, subject);
+  }
+  
   public Note getNoteByRevision(String noteId, String revisionId, AuthenticationInfo subject)
       throws IOException {
     return notebookRepo.get(noteId, revisionId, subject);
