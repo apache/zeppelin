@@ -126,7 +126,7 @@ limitations under the License.
         </ul>
       </span>
     </div>
-    <div class="col-md-3">
+    <div class="col-md-2">
       <span class="columns lightBold">
         group
         <ul data-drop="true"
@@ -142,7 +142,7 @@ limitations under the License.
         </ul>
       </span>
     </div>
-    <div class="col-md-3">
+    <div class="col-md-2">
       <span class="columns lightBold">
         size
         <a tabindex="0" class="fa fa-info-circle" role="button" popover-placement="top"
@@ -159,6 +159,25 @@ limitations under the License.
           <li ng-if="paragraph.config.graph.scatter.size">
             <div class="btn btn-xs" style="color:white" ng-class="{'btn-warning': isValidSizeOption(paragraph.config.graph.scatter, paragraph.result.rows)}">
               {{paragraph.config.graph.scatter.size.name}} <span class="fa fa-close" ng-click="removeScatterOptionSize($index)"></span>
+            </div>
+          </li>
+        </ul>
+      </span>
+    </div>
+    <div class="col-md-2">
+      <span class="columns lightBold">
+        label
+        <a tabindex="0" class="fa fa-info-circle" role="button" popover-placement="top"
+           popover-trigger="focus"
+           popover-html-unsafe="<li>Data from given column will be put under label caption of each point in chart.</li>"></a>
+        <ul data-drop="true"
+            ng-model="paragraph.config.graph.scatter.labels"
+            jqyoui-droppable="{onDrop:'onGraphOptionChange()'}"
+            class="list-unstyled"
+            style="height:36px">
+          <li ng-if="paragraph.config.graph.scatter.labels">
+            <div class="btn btn-danger btn-xs" style="color:white">
+              {{paragraph.config.graph.scatter.labels.name}} <span class="fa fa-close" ng-click="removeScatterOptionLabels($index)"></span>
             </div>
           </li>
         </ul>

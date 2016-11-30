@@ -49,6 +49,11 @@ zeppelin.ScatterchartVisualization.prototype.configureChart = function(chart) {
   // configure how the tooltip looks.
   chart.tooltipContent(function(key, x, y, graph, data) {
     var tooltipContent = '<h3>' + key + '</h3>';
+
+    if (self.config.scatter.labels) {
+      tooltipContent += '<p>' + data.point.label + '</p>';
+    }
+
     if (self.config.scatter.size &&
       self.isValidSizeOption(self.config.scatter, self.tableData.rows)) {
       tooltipContent += '<p>' + data.point.size + '</p>';
@@ -66,6 +71,7 @@ zeppelin.ScatterchartVisualization.prototype.setScatterChart = function(data, re
   var yAxis = this.config.scatter.yAxis;
   var group = this.config.scatter.group;
   var size = this.config.scatter.size;
+  var labels = this.config.scatter.labels;
 
   var xValues = [];
   var yValues = [];
@@ -82,6 +88,7 @@ zeppelin.ScatterchartVisualization.prototype.setScatterChart = function(data, re
   var colIdx = 0;
   var grpIdx = 0;
   var grpName = '';
+  var labelValue = '';
 
   var xValue;
   var yValue;
@@ -140,6 +147,9 @@ zeppelin.ScatterchartVisualization.prototype.setScatterChart = function(data, re
     if (group) {
       grpName = row[group.index];
     }
+    if (labels) {
+      labelValue = row[labels.index];
+    }
     var sz = (isAllDiscrete) ? row[row.length - 1] : ((size) ? row[size.index] : 1);
 
     if (grpNameIndex[grpName] === undefined) {
@@ -167,7 +177,8 @@ zeppelin.ScatterchartVisualization.prototype.setScatterChart = function(data, re
     d3g[grpNameIndex[grpName]].values.push({
       x: xAxis ? (isNaN(xValue) ? rowNameIndex[xValue] : parseFloat(xValue)) : 0,
       y: yAxis ? (isNaN(yValue) ? colNameIndex[yValue] : parseFloat(yValue)) : 0,
-      size: isNaN(parseFloat(sz)) ? 1 : parseFloat(sz)
+      size: isNaN(parseFloat(sz)) ? 1 : parseFloat(sz),
+      label: labelValue,
     });
   }
 
