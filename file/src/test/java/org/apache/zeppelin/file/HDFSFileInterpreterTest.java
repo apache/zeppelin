@@ -53,56 +53,56 @@ public class HDFSFileInterpreterTest extends TestCase {
       // 3. flags and arguments to commands are correctly handled
 
       InterpreterResult result1 = t.interpret("ls -l /", null);
-      assertEquals(result1.type(), InterpreterResult.Type.TEXT);
+      assertEquals(result1.message().get(0).getType(), InterpreterResult.Type.TEXT);
 
       InterpreterResult result2 = t.interpret("ls -l /./user/..", null);
-      assertEquals(result2.type(), InterpreterResult.Type.TEXT);
+      assertEquals(result2.message().get(0).getType(), InterpreterResult.Type.TEXT);
 
-      assertEquals(result1.message(), result2.message());
+      assertEquals(result1.message().get(0).getData(), result2.message().get(0).getData());
 
       // Ensure you can do cd and after that the ls uses current directory correctly
 
       InterpreterResult result3 = t.interpret("cd user", null);
-      assertEquals(result3.type(), InterpreterResult.Type.TEXT);
-      assertEquals(result3.message(), "OK");
+      assertEquals(result3.message().get(0).getType(), InterpreterResult.Type.TEXT);
+      assertEquals(result3.message().get(0).getData(), "OK");
 
       InterpreterResult result4 = t.interpret("ls", null);
-      assertEquals(result4.type(), InterpreterResult.Type.TEXT);
+      assertEquals(result4.message().get(0).getType(), InterpreterResult.Type.TEXT);
 
       InterpreterResult result5 = t.interpret("ls /user", null);
-      assertEquals(result5.type(), InterpreterResult.Type.TEXT);
+      assertEquals(result5.message().get(0).getType(), InterpreterResult.Type.TEXT);
 
-      assertEquals(result4.message(), result5.message());
+      assertEquals(result4.message().get(0).getData(), result5.message().get(0).getData());
 
       // Ensure pwd works correctly
 
       InterpreterResult result6 = t.interpret("pwd", null);
-      assertEquals(result6.type(), InterpreterResult.Type.TEXT);
-      assertEquals(result6.message(), "/user");
+      assertEquals(result6.message().get(0).getType(), InterpreterResult.Type.TEXT);
+      assertEquals(result6.message().get(0).getData(), "/user");
 
       // Move a couple of levels and check we're in the right place
 
       InterpreterResult result7 = t.interpret("cd ../mr-history/done", null);
-      assertEquals(result7.type(), InterpreterResult.Type.TEXT);
-      assertEquals(result7.message(), "OK");
+      assertEquals(result7.message().get(0).getType(), InterpreterResult.Type.TEXT);
+      assertEquals(result7.message().get(0).getData(), "OK");
 
       InterpreterResult result8 = t.interpret("ls -l ", null);
-      assertEquals(result8.type(), InterpreterResult.Type.TEXT);
+      assertEquals(result8.message().get(0).getType(), InterpreterResult.Type.TEXT);
 
       InterpreterResult result9 = t.interpret("ls -l /mr-history/done", null);
-      assertEquals(result9.type(), InterpreterResult.Type.TEXT);
+      assertEquals(result9.message().get(0).getType(), InterpreterResult.Type.TEXT);
 
-      assertEquals(result8.message(), result9.message());
+      assertEquals(result8.message().get(0).getData(), result9.message().get(0).getData());
 
       InterpreterResult result10 = t.interpret("cd ../..", null);
-      assertEquals(result10.type(), InterpreterResult.Type.TEXT);
-      assertEquals(result7.message(), "OK");
+      assertEquals(result10.message().get(0).getType(), InterpreterResult.Type.TEXT);
+      assertEquals(result7.message().get(0).getData(), "OK");
 
       InterpreterResult result11 = t.interpret("ls -l ", null);
-      assertEquals(result11.type(), InterpreterResult.Type.TEXT);
+      assertEquals(result11.message().get(0).getType(), InterpreterResult.Type.TEXT);
 
       // we should be back to first result after all this navigation
-      assertEquals(result1.message(), result11.message());
+      assertEquals(result1.message().get(0).getData(), result11.message().get(0).getData());
 
       // auto completion test
       List expectedResultOne = Arrays.asList(

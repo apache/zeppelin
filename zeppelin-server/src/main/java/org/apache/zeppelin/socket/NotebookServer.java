@@ -46,6 +46,7 @@ import org.apache.zeppelin.interpreter.InterpreterContextRunner;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterOutput;
 import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.InterpreterResultMessage;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
@@ -1432,11 +1433,12 @@ public class NotebookServer extends WebSocketServlet implements
    * @param output output to append
    */
   @Override
-  public void onOutputAppend(String noteId, String paragraphId, String output) {
+  public void onOutputAppend(String noteId, String paragraphId, int index, String output) {
     Message msg = new Message(OP.PARAGRAPH_APPEND_OUTPUT)
-            .put("noteId", noteId)
-            .put("paragraphId", paragraphId)
-            .put("data", output);
+        .put("noteId", noteId)
+        .put("paragraphId", paragraphId)
+        .put("index", index)
+        .put("data", output);
     broadcast(noteId, msg);
   }
 
@@ -1447,12 +1449,31 @@ public class NotebookServer extends WebSocketServlet implements
    * @param output output to update (replace)
    */
   @Override
-  public void onOutputUpdated(String noteId, String paragraphId, String output) {
+  public void onOutputUpdated(
+      String noteId, String paragraphId, int index, InterpreterResult.Type type, String output) {
     Message msg = new Message(OP.PARAGRAPH_UPDATE_OUTPUT)
-            .put("noteId", noteId)
-            .put("paragraphId", paragraphId)
-            .put("data", output);
+        .put("noteId", noteId)
+        .put("paragraphId", paragraphId)
+        .put("index", index)
+        .put("type", type)
+        .put("data", output);
     broadcast(noteId, msg);
+  }
+
+
+  /**
+   * This callback is for the paragraph that runs on ZeppelinServer
+   * @param noteId
+   * @param paragraphId
+   */
+  @Override
+  public void onOutputClear(
+      String noteId, String paragraphId) {
+    Notebook notebook = notebook();
+    final Note note = notebook.getNote(noteId);
+    note.clearParagraphOutput(paragraphId);
+    Paragraph paragraph = note.getParagraph(paragraphId);
+    broadcastParagraph(note, paragraph);
   }
 
   /**
@@ -1463,10 +1484,12 @@ public class NotebookServer extends WebSocketServlet implements
    * @param output
    */
   @Override
-  public void onOutputAppend(String noteId, String paragraphId, String appId, String output) {
+  public void onOutputAppend(
+      String noteId, String paragraphId, int index, String appId, String output) {
     Message msg = new Message(OP.APP_APPEND_OUTPUT)
         .put("noteId", noteId)
         .put("paragraphId", paragraphId)
+        .put("index", index)
         .put("appId", appId)
         .put("data", output);
     broadcast(noteId, msg);
@@ -1480,10 +1503,14 @@ public class NotebookServer extends WebSocketServlet implements
    * @param output
    */
   @Override
-  public void onOutputUpdated(String noteId, String paragraphId, String appId, String output) {
+  public void onOutputUpdated(
+      String noteId, String paragraphId, int index, String appId, InterpreterResult.Type type,
+      String output) {
     Message msg = new Message(OP.APP_UPDATE_OUTPUT)
         .put("noteId", noteId)
         .put("paragraphId", paragraphId)
+        .put("index", index)
+        .put("type", type)
         .put("appId", appId)
         .put("data", output);
     broadcast(noteId, msg);
@@ -1737,11 +1764,11 @@ public class NotebookServer extends WebSocketServlet implements
     /**
      * This callback is for paragraph that runs on RemoteInterpreterProcess
      * @param paragraph
-     * @param out
+     * @param idx
      * @param output
      */
     @Override
-    public void onOutputAppend(Paragraph paragraph, InterpreterOutput out, String output) {
+    public void onOutputAppend(Paragraph paragraph, int idx, String output) {
       Message msg = new Message(OP.PARAGRAPH_APPEND_OUTPUT)
           .put("noteId", paragraph.getNote().getId())
           .put("paragraphId", paragraph.getId())
@@ -1753,17 +1780,23 @@ public class NotebookServer extends WebSocketServlet implements
     /**
      * This callback is for paragraph that runs on RemoteInterpreterProcess
      * @param paragraph
-     * @param out
-     * @param output
+     * @param idx
+     * @param result
      */
     @Override
-    public void onOutputUpdate(Paragraph paragraph, InterpreterOutput out, String output) {
+    public void onOutputUpdate(Paragraph paragraph, int idx, InterpreterResultMessage result) {
+      String output = result.getData();
       Message msg = new Message(OP.PARAGRAPH_UPDATE_OUTPUT)
           .put("noteId", paragraph.getNote().getId())
           .put("paragraphId", paragraph.getId())
           .put("data", output);
 
       notebookServer.broadcast(paragraph.getNote().getId(), msg);
+    }
+
+    @Override
+    public void onOutputUpdateAll(Paragraph paragraph, List<InterpreterResultMessage> msgs) {
+      // TODO
     }
   }
 
@@ -1841,15 +1874,16 @@ public class NotebookServer extends WebSocketServlet implements
         continue;
       }
 
-      List<String> ids = notebook.getInterpreterFactory().getInterpreters(note.getId());
-      for (String id : ids) {
-        if (id.equals(interpreterGroupId)) {
+      List<String> settingIds = notebook.getInterpreterFactory().getInterpreters(note.getId());
+      for (String id : settingIds) {
+        if (interpreterGroupId.contains(id)) {
           broadcast(
               note.getId(),
               new Message(OP.ANGULAR_OBJECT_REMOVE)
                   .put("name", name)
                   .put("noteId", noteId)
                   .put("paragraphId", paragraphId));
+          break;
         }
       }
     }

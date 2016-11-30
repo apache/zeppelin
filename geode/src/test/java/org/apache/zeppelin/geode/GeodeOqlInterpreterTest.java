@@ -143,7 +143,7 @@ public class GeodeOqlInterpreterTest {
     InterpreterResult interpreterResult = spyGeodeOqlInterpreter.interpret(OQL_QUERY, null);
 
     assertEquals(Code.SUCCESS, interpreterResult.code());
-    assertEquals(expectedOutput, interpreterResult.message());
+    assertEquals(expectedOutput, interpreterResult.message().get(0).getData());
   }
 
   @Test
@@ -157,7 +157,7 @@ public class GeodeOqlInterpreterTest {
     InterpreterResult interpreterResult = spyGeodeOqlInterpreter.interpret(OQL_QUERY, null);
 
     assertEquals(Code.ERROR, interpreterResult.code());
-    assertEquals("Test Exception On Connect", interpreterResult.message());
+    assertEquals("Test Exception On Connect", interpreterResult.message().get(0).getData());
   }
 
   @Test
@@ -171,7 +171,7 @@ public class GeodeOqlInterpreterTest {
     InterpreterResult interpreterResult = spyGeodeOqlInterpreter.interpret(OQL_QUERY, null);
 
     assertEquals(Code.ERROR, interpreterResult.code());
-    assertEquals("Expected Test Exception!", interpreterResult.message());
+    assertEquals("Expected Test Exception!", interpreterResult.message().get(0).getData());
   }
 
   @Test

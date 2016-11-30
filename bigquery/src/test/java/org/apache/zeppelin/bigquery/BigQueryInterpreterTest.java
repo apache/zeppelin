@@ -104,7 +104,7 @@ public class BigQueryInterpreterTest {
     InterpreterResult ret = bqInterpreter.interpret(CONSTANTS.getOne(), context);
 
     assertEquals(InterpreterResult.Code.SUCCESS, ret.code());
-    assertEquals(ret.type(), InterpreterResult.Type.TABLE);
+    assertEquals(ret.message().get(0).getType(), InterpreterResult.Type.TABLE);
 
   }
 

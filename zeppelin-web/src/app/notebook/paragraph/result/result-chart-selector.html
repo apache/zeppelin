@@ -12,23 +12,22 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<div id="{{paragraph.id}}_switch"
-     ng-if="(paragraph.result.type == 'TABLE' || apps.length > 0 || suggestion.available && suggestion.available.length > 0) && !asIframe && !viewOnly"
+<div id="{{id}}_switch"
+     ng-if="(type == 'TABLE' || apps.length > 0 || suggestion.available && suggestion.available.length > 0) && !asIframe && !viewOnly"
      class="btn-group"
      style="margin-bottom: 10px;">
 
   <button type="button" class="btn btn-default btn-sm"
-          ng-if="paragraph.result.type == 'TABLE'"
+          ng-if="type == 'TABLE'"
           ng-repeat="viz in builtInTableDataVisualizationList track by $index"
-          ng-class="{'active' : isGraphMode(viz.id)}"
-          ng-click="setGraphMode(viz.id, true, false)"
-          tooltip="{{viz.name}}" tooltip-placement="bottom"><i ng-class="viz.icon"></i>
+          ng-class="{'active' : viz.id == graphMode && !config.helium.activeApp}"
+          ng-click="switchViz(viz.id)"><i ng-class="viz.icon"></i>
   </button>
 
   <button type="button"
-          ng-if="paragraph.result.type != 'TABLE'"
+          ng-if="type != 'TABLE'"
           ng-click="switchApp()"
-          ng-class="{'active' : !paragraph.config.helium.activeApp}"
+          ng-class="{'active' : !config.helium.activeApp}"
           class="btn btn-default btn-sm"><i class="fa fa-terminal"></i>
   </button>
 
@@ -36,7 +35,7 @@ limitations under the License.
           class="btn btn-default btn-sm"
           ng-repeat="app in apps"
           ng-click="switchApp(app.id)"
-          ng-class="{'active' : app.id == paragraph.config.helium.activeApp}"
+          ng-class="{'active' : app.id == config.helium.activeApp}"
           ng-bind-html="app.pkg.icon">
   </button>
 </div>
@@ -71,7 +70,7 @@ limitations under the License.
 </div>
 
 <div class="btn-group"
-     ng-if="paragraph.result.type == 'TABLE' && !asIframe && !viewOnly"
+     ng-if="type == 'TABLE' && !asIframe && !viewOnly"
      style="margin-bottom: 10px;">
   <button type="button" class="btn btn-default btn-sm"
           style="margin-left:10px"
@@ -91,9 +90,9 @@ limitations under the License.
 </div>
 
 <span
-   ng-if="getResultType()=='TABLE' && !paragraph.config.helium.activeApp && getGraphMode()!='table' && !asIframe && !viewOnly"
+   ng-if="type=='TABLE' && !config.helium.activeApp && graphMode!='table' && !asIframe && !viewOnly"
    style="margin-left:10px; cursor:pointer; display: inline-block; vertical-align:top; position: relative; line-height:30px;">
-  <a class="btnText" ng-click="toggleGraphOption()">
-    settings <span ng-class="paragraph.config.graph.optionOpen ? 'fa fa-caret-up' : 'fa fa-caret-down'"></span>
+  <a class="btnText" ng-click="toggleGraphSetting()">
+    settings <span ng-class="config.graph.optionOpen ? 'fa fa-caret-up' : 'fa fa-caret-down'"></span>
   </a>
 </span>

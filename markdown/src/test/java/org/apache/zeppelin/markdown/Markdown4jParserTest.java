@@ -46,6 +46,6 @@ public class Markdown4jParserTest {
   @Test
   public void testStrikethrough() {
     InterpreterResult result = md.interpret("This is ~~deleted~~ text", null);
-    assertEquals("<p>This is <s>deleted</s> text</p>\n", result.message());
+    assertEquals("<p>This is <s>deleted</s> text</p>\n", result.message().get(0).getData());
   }
 }

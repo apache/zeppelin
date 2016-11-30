@@ -17,26 +17,26 @@
 package org.apache.zeppelin.interpreter;
 
 /**
- * Listen InterpreterOutput buffer flush
+ * Interpreter result message
  */
-public interface InterpreterOutputListener {
-  /**
-   * update all message outputs
-   */
-  public void onUpdateAll(InterpreterOutput out);
+public class InterpreterResultMessage {
+  InterpreterResult.Type type;
+  String data;
 
-  /**
-   * called when newline is detected
-   * @param index
-   * @param out
-   * @param line
-   */
-  public void onAppend(int index, InterpreterResultMessageOutput out, byte[] line);
+  public InterpreterResultMessage(InterpreterResult.Type type, String data) {
+    this.type = type;
+    this.data = data;
+  }
 
-  /**
-   * when entire output is updated. eg) after detecting new display system
-   * @param index
-   * @param out
-   */
-  public void onUpdate(int index, InterpreterResultMessageOutput out);
+  public InterpreterResult.Type getType() {
+    return type;
+  }
+
+  public String getData() {
+    return data;
+  }
+
+  public String toString() {
+    return "%" + type.name().toLowerCase() + " " + data;
+  }
 }

@@ -16,14 +16,18 @@
  */
 package org.apache.zeppelin.interpreter.remote;
 
+import org.apache.zeppelin.interpreter.InterpreterResult;
+
 import java.util.Map;
 
 /**
  * Event from remoteInterpreterProcess
  */
 public interface RemoteInterpreterProcessListener {
-  public void onOutputAppend(String noteId, String paragraphId, String output);
-  public void onOutputUpdated(String noteId, String paragraphId, String output);
+  public void onOutputAppend(String noteId, String paragraphId, int index, String output);
+  public void onOutputUpdated(
+      String noteId, String paragraphId, int index, InterpreterResult.Type type, String output);
+  public void onOutputClear(String noteId, String paragraphId);
   public void onMetaInfosReceived(String settingId, Map<String, String> metaInfos);
   public void onRemoteRunParagraph(String noteId, String ParagraphID) throws Exception;
   public void onGetParagraphRunners(

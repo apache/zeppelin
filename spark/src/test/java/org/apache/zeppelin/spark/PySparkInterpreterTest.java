@@ -18,13 +18,7 @@
 package org.apache.zeppelin.spark;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.GUI;
-import org.apache.zeppelin.interpreter.Interpreter;
-import org.apache.zeppelin.interpreter.InterpreterContext;
-import org.apache.zeppelin.interpreter.InterpreterContextRunner;
-import org.apache.zeppelin.interpreter.InterpreterGroup;
-import org.apache.zeppelin.interpreter.InterpreterOutputListener;
-import org.apache.zeppelin.interpreter.InterpreterOutput;
-import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.resource.LocalResourcePool;
 import org.apache.zeppelin.user.AuthenticationInfo;
@@ -107,17 +101,7 @@ public class PySparkInterpreterTest {
       new AngularObjectRegistry(intpGroup.getId(), null),
       new LocalResourcePool("id"),
       new LinkedList<InterpreterContextRunner>(),
-      new InterpreterOutput(new InterpreterOutputListener() {
-        @Override
-        public void onAppend(InterpreterOutput out, byte[] line) {
-
-        }
-
-        @Override
-        public void onUpdate(InterpreterOutput out, byte[] output) {
-
-        }
-      }));
+      new InterpreterOutput(null));
   }
 
   @After

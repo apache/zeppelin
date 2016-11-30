@@ -18,10 +18,6 @@
 
 package org.apache.zeppelin.python;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
 import java.util.*;
 
 import org.apache.zeppelin.display.AngularObjectRegistry;
@@ -37,6 +33,8 @@ import org.apache.zeppelin.interpreter.InterpreterResult.Type;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.Before;
 import org.junit.Test;
+
+import static org.junit.Assert.*;
 
 /**
  * In order for this test to work, test env must have installed:
@@ -79,22 +77,18 @@ public class PythonInterpreterMatplotlibTest {
     context = new InterpreterContext("note", "id", null, "title", "text", new AuthenticationInfo(),
         new HashMap<String, Object>(), new GUI(),
         new AngularObjectRegistry(intpGroup.getId(), null), null,
-        new LinkedList<InterpreterContextRunner>(), new InterpreterOutput(
-            new InterpreterOutputListener() {
-              @Override public void onAppend(InterpreterOutput out, byte[] line) {}
-              @Override public void onUpdate(InterpreterOutput out, byte[] output) {}
-            }));
+        new LinkedList<InterpreterContextRunner>(), new InterpreterOutput(null));
   }
 
   @Test
   public void dependenciesAreInstalled() {
     // matplotlib
     InterpreterResult ret = python.interpret("import matplotlib", context);
-    assertEquals(ret.message(), InterpreterResult.Code.SUCCESS, ret.code());
+    assertEquals(ret.message().toString(), InterpreterResult.Code.SUCCESS, ret.code());
     
     // inline backend
     ret = python.interpret("import backend_zinline", context);
-    assertEquals(ret.message(), InterpreterResult.Code.SUCCESS, ret.code());
+    assertEquals(ret.message().toString(), InterpreterResult.Code.SUCCESS, ret.code());
   }
 
   @Test
@@ -106,10 +100,10 @@ public class PythonInterpreterMatplotlibTest {
     ret = python.interpret("plt.plot([1, 2, 3])", context);
     ret = python.interpret("plt.show()", context);
 
-    assertEquals(ret.message(), InterpreterResult.Code.SUCCESS, ret.code());
-    assertEquals(ret.message(), Type.HTML, ret.type());
-    assertTrue(ret.message().contains("data:image/png;base64"));
-    assertTrue(ret.message().contains("<div>"));
+    assertEquals(ret.message().get(0).getData(), InterpreterResult.Code.SUCCESS, ret.code());
+    assertEquals(ret.message().get(0).getData(), Type.HTML, ret.message().get(0).getType());
+    assertTrue(ret.message().get(0).getData().contains("data:image/png;base64"));
+    assertTrue(ret.message().get(0).getData().contains("<div>"));
   }
 
   @Test
@@ -128,15 +122,14 @@ public class PythonInterpreterMatplotlibTest {
     // of FigureManager, causing show() to return before setting the output
     // type to HTML.
     ret = python.interpret("plt.show()", context);
-    assertEquals(ret.message(), InterpreterResult.Code.SUCCESS, ret.code());
-    assertEquals(ret.message(), Type.TEXT, ret.type());
-    assertTrue(ret.message().equals(""));
+    assertEquals(0, ret.message().size());
     
     // Now test that new plot is drawn. It should be identical to the
     // previous one.
     ret = python.interpret("plt.plot([1, 2, 3])", context);
     ret2 = python.interpret("plt.show()", context);
-    assertTrue(ret1.message().equals(ret2.message()));
+    assertEquals(ret1.message().get(0).getType(), ret2.message().get(0).getType());
+    assertEquals(ret1.message().get(0).getData(), ret2.message().get(0).getData());
   }
   
   @Test
@@ -155,15 +148,13 @@ public class PythonInterpreterMatplotlibTest {
     // of FigureManager, causing show() to set the output
     // type to HTML even though the figure is inactive.
     ret = python.interpret("plt.show()", context);
-    assertEquals(ret.message(), InterpreterResult.Code.SUCCESS, ret.code());
-    assertEquals(ret.message(), Type.HTML, ret.type());
-    assertTrue(ret.message().equals(""));
+    assertEquals("", ret.message().get(0).getData());
     
     // Now test that plot can be reshown if it is updated. It should be
     // different from the previous one because it will plot the same line
     // again but in a different color.
     ret = python.interpret("plt.plot([1, 2, 3])", context);
     ret2 = python.interpret("plt.show()", context);
-    assertTrue(!ret1.message().equals(ret2.message()));
+    assertNotSame(ret1.message().get(0).getData(), ret2.message().get(0).getData());
   }
 }

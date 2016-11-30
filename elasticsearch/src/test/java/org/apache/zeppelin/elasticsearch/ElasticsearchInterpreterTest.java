@@ -128,7 +128,7 @@ public class ElasticsearchInterpreterTest {
     assertEquals(Code.ERROR, res.code());
 
     res = interpreter.interpret("count /logs", null);
-    assertEquals("50", res.message());
+    assertEquals("50", res.message().get(0).getData());
   }
 
   @Test
@@ -207,7 +207,7 @@ public class ElasticsearchInterpreterTest {
     assertEquals(Code.ERROR, res.code());
 
     res = interpreter.interpret("delete /logs/http/11", null);
-    assertEquals("11", res.message());
+    assertEquals("11", res.message().get(0).getData());
   }
 
   @Test

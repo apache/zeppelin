@@ -235,7 +235,7 @@ public class ZeppelinIT extends AbstractZeppelinIT {
 
       // check expected text
       WebElement paragraph1Result = driver.findElement(By.xpath(
-          getParagraphXPath(1) + "//div[@class=\"tableDisplay\"]"));
+          getParagraphXPath(1) + "//div[contains(@id,\"_text\")]"));
 
       collector.checkThat("Paragraph from ZeppelinIT of testSparkInterpreterDependencyLoading result: ",
           paragraph1Result.getText().toString(), CoreMatchers.containsString(

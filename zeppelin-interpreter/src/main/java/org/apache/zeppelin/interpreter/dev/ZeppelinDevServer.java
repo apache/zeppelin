@@ -73,13 +73,23 @@ public class ZeppelinDevServer extends
       try {
         out = new InterpreterOutput(new InterpreterOutputListener() {
           @Override
-          public void onAppend(InterpreterOutput out, byte[] line) {
-            eventClient.onInterpreterOutputAppend(noteId, paragraphId, new String(line));
+          public void onUpdateAll(InterpreterOutput out) {
+
           }
 
           @Override
-          public void onUpdate(InterpreterOutput out, byte[] output) {
-            eventClient.onInterpreterOutputUpdate(noteId, paragraphId, new String(output));
+          public void onAppend(int index, InterpreterResultMessageOutput out, byte[] line) {
+            eventClient.onInterpreterOutputAppend(noteId, paragraphId, index, new String(line));
+          }
+
+          @Override
+          public void onUpdate(int index, InterpreterResultMessageOutput out) {
+            try {
+              eventClient.onInterpreterOutputUpdate(noteId, paragraphId,
+                  index, out.getType(), new String(out.toByteArray()));
+            } catch (IOException e) {
+              logger.error(e.getMessage(), e);
+            }
           }
         }, this);
       } catch (IOException e) {

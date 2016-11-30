@@ -52,42 +52,42 @@ public class PegdownParserTest {
   @Test
   public void testHeader() {
     InterpreterResult r1 = md.interpret("# H1", null);
-    assertEquals(wrapWithMarkdownClassDiv("<h1>H1</h1>"), r1.message());
+    assertEquals(wrapWithMarkdownClassDiv("<h1>H1</h1>"), r1.message().get(0).getData());
 
     InterpreterResult r2 = md.interpret("## H2", null);
-    assertEquals(wrapWithMarkdownClassDiv("<h2>H2</h2>"), r2.message());
+    assertEquals(wrapWithMarkdownClassDiv("<h2>H2</h2>"), r2.message().get(0).getData());
 
     InterpreterResult r3 = md.interpret("### H3", null);
-    assertEquals(wrapWithMarkdownClassDiv("<h3>H3</h3>"), r3.message());
+    assertEquals(wrapWithMarkdownClassDiv("<h3>H3</h3>"), r3.message().get(0).getData());
 
     InterpreterResult r4 = md.interpret("#### H4", null);
-    assertEquals(wrapWithMarkdownClassDiv("<h4>H4</h4>"), r4.message());
+    assertEquals(wrapWithMarkdownClassDiv("<h4>H4</h4>"), r4.message().get(0).getData());
 
     InterpreterResult r5 = md.interpret("##### H5", null);
-    assertEquals(wrapWithMarkdownClassDiv("<h5>H5</h5>"), r5.message());
+    assertEquals(wrapWithMarkdownClassDiv("<h5>H5</h5>"), r5.message().get(0).getData());
 
     InterpreterResult r6 = md.interpret("###### H6", null);
-    assertEquals(wrapWithMarkdownClassDiv("<h6>H6</h6>"), r6.message());
+    assertEquals(wrapWithMarkdownClassDiv("<h6>H6</h6>"), r6.message().get(0).getData());
 
     InterpreterResult r7 = md.interpret("Alt-H1\n" + "======", null);
-    assertEquals(wrapWithMarkdownClassDiv("<h1>Alt-H1</h1>"), r7.message());
+    assertEquals(wrapWithMarkdownClassDiv("<h1>Alt-H1</h1>"), r7.message().get(0).getData());
 
     InterpreterResult r8 = md.interpret("Alt-H2\n" + "------", null);
-    assertEquals(wrapWithMarkdownClassDiv("<h2>Alt-H2</h2>"), r8.message());
+    assertEquals(wrapWithMarkdownClassDiv("<h2>Alt-H2</h2>"), r8.message().get(0).getData());
   }
 
   @Test
   public void testStrikethrough() {
     InterpreterResult result = md.interpret("This is ~~deleted~~ text", null);
     assertEquals(
-        wrapWithMarkdownClassDiv("<p>This is <del>deleted</del> text</p>"), result.message());
+        wrapWithMarkdownClassDiv("<p>This is <del>deleted</del> text</p>"), result.message().get(0).getData());
   }
 
   @Test
   public void testItalics() {
     InterpreterResult result = md.interpret("This is *italics* text", null);
     assertEquals(
-        wrapWithMarkdownClassDiv("<p>This is <em>italics</em> text</p>"), result.message());
+        wrapWithMarkdownClassDiv("<p>This is <em>italics</em> text</p>"), result.message().get(0).getData());
   }
 
   @Test
@@ -95,7 +95,7 @@ public class PegdownParserTest {
     InterpreterResult result = md.interpret("This is **strong emphasis** text", null);
     assertEquals(
         wrapWithMarkdownClassDiv("<p>This is <strong>strong emphasis</strong> text</p>"),
-        result.message());
+        result.message().get(0).getData());
   }
 
   @Test
@@ -115,7 +115,7 @@ public class PegdownParserTest {
             .toString();
 
     InterpreterResult result = md.interpret(input, null);
-    assertEquals(wrapWithMarkdownClassDiv(expected), result.message());
+    assertEquals(wrapWithMarkdownClassDiv(expected), result.message().get(0).getData());
   }
 
   @Test
@@ -137,7 +137,7 @@ public class PegdownParserTest {
             .toString();
 
     InterpreterResult result = md.interpret(input, null);
-    assertEquals(wrapWithMarkdownClassDiv(expected), result.message());
+    assertEquals(wrapWithMarkdownClassDiv(expected), result.message().get(0).getData());
   }
 
   @Test
@@ -188,7 +188,7 @@ public class PegdownParserTest {
             .toString();
 
     InterpreterResult result = md.interpret(input, null);
-    assertEquals(wrapWithMarkdownClassDiv(expected), result.message());
+    assertEquals(wrapWithMarkdownClassDiv(expected), result.message().get(0).getData());
   }
 
   @Test
@@ -197,7 +197,7 @@ public class PegdownParserTest {
     assertEquals(
         wrapWithMarkdownClassDiv(
             "<p>Inline <code>code</code> has <code>back-ticks around</code> it.</p>"),
-        result.message());
+        result.message().get(0).getData());
   }
 
   @Test
@@ -212,7 +212,7 @@ public class PegdownParserTest {
             "<blockquote>\n"
                 + "  <p>Blockquotes are very handy in email to emulate reply text.<br/>This line is part of the same quote.</p>\n"
                 + "</blockquote>"),
-        r1.message());
+        r1.message().get(0).getData());
 
     InterpreterResult r2 =
         md.interpret(
@@ -223,7 +223,7 @@ public class PegdownParserTest {
             "<blockquote>\n"
                 + "  <p>This is a very long line that will still be quoted properly when it wraps. Oh boy let&rsquo;s keep writing to make sure this is long enough to actually wrap for everyone. Oh, you can <em>put</em> <strong>MarkdownInterpreter</strong> into a blockquote. </p>\n"
                 + "</blockquote>"),
-        r2.message());
+        r2.message().get(0).getData());
   }
 
   @Test
@@ -262,7 +262,7 @@ public class PegdownParserTest {
             .toString();
 
     InterpreterResult result = md.interpret(input, null);
-    assertEquals(wrapWithMarkdownClassDiv(expected), result.message());
+    assertEquals(wrapWithMarkdownClassDiv(expected), result.message().get(0).getData());
   }
 
   @Test
@@ -301,7 +301,7 @@ public class PegdownParserTest {
             .toString();
 
     InterpreterResult result = md.interpret(input, null);
-    assertEquals(wrapWithMarkdownClassDiv(expected), result.message());
+    assertEquals(wrapWithMarkdownClassDiv(expected), result.message().get(0).getData());
   }
 
   @Test
@@ -317,7 +317,7 @@ public class PegdownParserTest {
             .toString();
 
     InterpreterResult result = md.interpret(input, null);
-    assertThat(result.message(), CoreMatchers.containsString("<img src=\"http://www.websequencediagrams.com/?png="));
+    assertThat(result.message().get(0).getData(), CoreMatchers.containsString("<img src=\"http://www.websequencediagrams.com/?png="));
   }
 
   @Test
@@ -331,6 +331,6 @@ public class PegdownParserTest {
         .toString();
 
     InterpreterResult result = md.interpret(input, null);
-    assertThat(result.message(), CoreMatchers.containsString("<img src=\"http://yuml.me/diagram/"));
+    assertThat(result.message().get(0).getData(), CoreMatchers.containsString("<img src=\"http://yuml.me/diagram/"));
   }
 }

@@ -31,6 +31,7 @@ import org.apache.thrift.transport.TTransportException;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.interpreter.remote.mock.MockInterpreterEnv;
+import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterResultMessage;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService.Client;
 import org.apache.zeppelin.user.AuthenticationInfo;
@@ -254,7 +255,7 @@ public class RemoteInterpreterTest {
             new AngularObjectRegistry(intpGroup.getId(), null),
             new LocalResourcePool("pool1"),
             new LinkedList<InterpreterContextRunner>(), null));
-    assertEquals("500", ret.message());
+    assertEquals("500", ret.message().get(0).getData());
 
     ret = intpB.interpret("500",
         new InterpreterContext(
@@ -269,7 +270,7 @@ public class RemoteInterpreterTest {
             new AngularObjectRegistry(intpGroup.getId(), null),
             new LocalResourcePool("pool1"),
             new LinkedList<InterpreterContextRunner>(), null));
-    assertEquals("1000", ret.message());
+    assertEquals("1000", ret.message().get(0).getData());
     long end = System.currentTimeMillis();
     assertTrue(end - start >= 1000);
 
@@ -378,7 +379,7 @@ public class RemoteInterpreterTest {
     long end = System.currentTimeMillis();
     assertTrue(end - start >= 1000);
 
-    assertEquals("1000", ((InterpreterResult) jobB.getReturn()).message());
+    assertEquals("1000", ((InterpreterResult) jobB.getReturn()).message().get(0).getData());
 
     intpA.close();
     intpB.close();
@@ -397,7 +398,7 @@ public class RemoteInterpreterTest {
     intpA.open();
 
     int concurrency = 3;
-    final List<String> results = new LinkedList<>();
+    final List<InterpreterResultMessage> results = new LinkedList<>();
 
     Scheduler scheduler = intpA.getScheduler();
     for (int i = 0; i < concurrency; i++) {
@@ -430,7 +431,7 @@ public class RemoteInterpreterTest {
               new LinkedList<InterpreterContextRunner>(), null));
 
           synchronized (results) {
-            results.add(ret.message());
+            results.addAll(ret.message());
             results.notify();
           }
           return null;
@@ -452,8 +453,8 @@ public class RemoteInterpreterTest {
     }
 
     int i = 0;
-    for (String result : results) {
-      assertEquals(Integer.toString(i++), result);
+    for (InterpreterResultMessage result : results) {
+      assertEquals(Integer.toString(i++), result.getData());
     }
     assertEquals(concurrency, i);
 
@@ -476,7 +477,7 @@ public class RemoteInterpreterTest {
 
     int concurrency = 4;
     final int timeToSleep = 1000;
-    final List<String> results = new LinkedList<>();
+    final List<InterpreterResultMessage> results = new LinkedList<>();
     long start = System.currentTimeMillis();
 
     Scheduler scheduler = intpA.getScheduler();
@@ -511,7 +512,7 @@ public class RemoteInterpreterTest {
               new LinkedList<InterpreterContextRunner>(), null));
 
           synchronized (results) {
-            results.add(ret.message());
+            results.addAll(ret.message());
             results.notify();
           }
           return stmt;
@@ -774,10 +775,10 @@ public class RemoteInterpreterTest {
         new LinkedList<InterpreterContextRunner>(), null);
 
 
-    assertEquals("env value 1", intp.interpret("getEnv MY_ENV1", context).message());
-    assertEquals("", intp.interpret("getProperty MY_ENV1", context).message());
-    assertEquals("", intp.interpret("getEnv my.property.1", context).message());
-    assertEquals("property value 1", intp.interpret("getProperty my.property.1", context).message());
+    assertEquals("env value 1", intp.interpret("getEnv MY_ENV1", context).message().get(0).getData());
+    assertEquals(0, intp.interpret("getProperty MY_ENV1", context).message().size());
+    assertEquals(0, intp.interpret("getEnv my.property.1", context).message().size());
+    assertEquals("property value 1", intp.interpret("getProperty my.property.1", context).message().get(0).getData());
 
     intp.close();
   }

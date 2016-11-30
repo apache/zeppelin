@@ -338,27 +338,10 @@ public class Paragraph extends Job implements Serializable, Cloneable {
         return getReturn();
       }
 
-      String message = "";
-
       context.out.flush();
-      InterpreterResult.Type outputType = context.out.getType();
-      byte[] interpreterOutput = context.out.toByteArray();
-
-      if (interpreterOutput != null && interpreterOutput.length > 0) {
-        message = new String(interpreterOutput);
-      }
-
-      if (message.isEmpty()) {
-        return ret;
-      } else {
-        String interpreterResultMessage = ret.message();
-        if (interpreterResultMessage != null && !interpreterResultMessage.isEmpty()) {
-          message += interpreterResultMessage;
-          return new InterpreterResult(ret.code(), ret.type(), message);
-        } else {
-          return new InterpreterResult(ret.code(), outputType, message);
-        }
-      }
+      List<InterpreterResultMessage> resultMessages = context.out.toInterpreterResultMessage();
+      resultMessages.addAll(ret.message());
+      return new InterpreterResult(ret.code(), resultMessages);
     } finally {
       InterpreterContext.remove();
     }
@@ -419,29 +402,36 @@ public class Paragraph extends Job implements Serializable, Cloneable {
 
     return getInterpreterContext(new InterpreterOutput(new InterpreterOutputListener() {
       @Override
-      public void onAppend(InterpreterOutput out, byte[] line) {
-        updateParagraphResult(out);
-        ((ParagraphJobListener) getListener()).onOutputAppend(self, out, new String(line));
+      public void onAppend(int index, InterpreterResultMessageOutput out, byte[] line) {
+        ((ParagraphJobListener) getListener()).onOutputAppend(self, index, new String(line));
       }
 
       @Override
-      public void onUpdate(InterpreterOutput out, byte[] output) {
-        updateParagraphResult(out);
-        ((ParagraphJobListener) getListener()).onOutputUpdate(self, out,
-            new String(output));
-      }
-
-      private void updateParagraphResult(InterpreterOutput out) {
-        // update paragraph result
-        Throwable t = null;
-        String message = null;
+      public void onUpdate(int index, InterpreterResultMessageOutput out) {
         try {
-          message = new String(out.toByteArray());
+          ((ParagraphJobListener) getListener()).onOutputUpdate(
+              self, index, out.toInterpreterResultMessage());
         } catch (IOException e) {
           logger.error(e.getMessage(), e);
-          t = e;
         }
-        setReturn(new InterpreterResult(Code.SUCCESS, out.getType(), message), t);
+      }
+
+      @Override
+      public void onUpdateAll(InterpreterOutput out) {
+        try {
+          List<InterpreterResultMessage> messages = out.toInterpreterResultMessage();
+          ((ParagraphJobListener) getListener()).onOutputUpdateAll(self, messages);
+          updateParagraphResult(messages);
+        } catch (IOException e) {
+          logger.error(e.getMessage(), e);
+        }
+
+      }
+
+      private void updateParagraphResult(List<InterpreterResultMessage> msgs) {
+        // update paragraph result
+        InterpreterResult result = new InterpreterResult(Code.SUCCESS, msgs);
+        setReturn(result, null);
       }
     }));
   }

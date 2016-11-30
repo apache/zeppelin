@@ -18,14 +18,7 @@
 package org.apache.zeppelin.spark;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.GUI;
-import org.apache.zeppelin.interpreter.Interpreter;
-import org.apache.zeppelin.interpreter.InterpreterContext;
-import org.apache.zeppelin.interpreter.InterpreterContextRunner;
-import org.apache.zeppelin.interpreter.InterpreterException;
-import org.apache.zeppelin.interpreter.InterpreterGroup;
-import org.apache.zeppelin.interpreter.InterpreterOutputListener;
-import org.apache.zeppelin.interpreter.InterpreterOutput;
-import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.InterpreterResult.Type;
 import org.apache.zeppelin.resource.LocalResourcePool;
 import org.apache.zeppelin.user.AuthenticationInfo;
@@ -40,6 +33,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Properties;
 
 import static org.junit.Assert.*;
@@ -70,35 +64,18 @@ public class PySparkInterpreterMatplotlibTest {
      */    
     @Override
     public InterpreterResult interpret(String st, InterpreterContext context) {
+      context.out.clear();
       InterpreterResult result = super.interpret(st, context);
-      String message = "";
-      Type outputType;
-      byte[] interpreterOutput;
+      List<InterpreterResultMessage> resultMessages = null;
       try {
         context.out.flush();
-        outputType = context.out.getType();
-        interpreterOutput = context.out.toByteArray();
+        resultMessages = context.out.toInterpreterResultMessage();
       } catch (IOException e) {
-        throw new InterpreterException(e);
+        e.printStackTrace();
       }
-      
+      resultMessages.addAll(result.message());
 
-      if (interpreterOutput != null && interpreterOutput.length > 0) {
-        message = new String(interpreterOutput);
-      }
-
-      String interpreterResultMessage = result.message();
-
-      InterpreterResult combinedResult;
-      if (interpreterResultMessage != null && !interpreterResultMessage.isEmpty()) {
-        message += interpreterResultMessage;
-        combinedResult = new InterpreterResult(result.code(), result.type(), message);
-      } else {
-        combinedResult = new InterpreterResult(result.code(), outputType, message);
-      }
-      
-      context.out.clear();
-      return combinedResult;      
+      return new InterpreterResult(result.code(), resultMessages);
     }
   }
 
@@ -157,17 +134,7 @@ public class PySparkInterpreterMatplotlibTest {
       new AngularObjectRegistry(intpGroup.getId(), null),
       new LocalResourcePool("id"),
       new LinkedList<InterpreterContextRunner>(),
-      new InterpreterOutput(new InterpreterOutputListener() {
-        @Override
-        public void onAppend(InterpreterOutput out, byte[] line) {
-
-        }
-
-        @Override
-        public void onUpdate(InterpreterOutput out, byte[] output) {
-
-        }
-      }));
+      new InterpreterOutput(null));
   }
 
   @After
@@ -192,11 +159,11 @@ public class PySparkInterpreterMatplotlibTest {
   public void dependenciesAreInstalled() {
     // matplotlib
     InterpreterResult ret = pyspark.interpret("import matplotlib", context);
-    assertEquals(ret.message(), InterpreterResult.Code.SUCCESS, ret.code());
+    assertEquals(ret.message().toString(), InterpreterResult.Code.SUCCESS, ret.code());
     
     // inline backend
     ret = pyspark.interpret("import backend_zinline", context);
-    assertEquals(ret.message(), InterpreterResult.Code.SUCCESS, ret.code());
+    assertEquals(ret.message().toString(), InterpreterResult.Code.SUCCESS, ret.code());
   }
 
   @Test
@@ -209,10 +176,10 @@ public class PySparkInterpreterMatplotlibTest {
     ret = pyspark.interpret("plt.plot([1, 2, 3])", context);
     ret = pyspark.interpret("plt.show()", context);
 
-    assertEquals(ret.message(), InterpreterResult.Code.SUCCESS, ret.code());
-    assertEquals(ret.message(), Type.HTML, ret.type());
-    assertTrue(ret.message().contains("data:image/png;base64"));
-    assertTrue(ret.message().contains("<div>"));
+    assertEquals(ret.message().toString(), InterpreterResult.Code.SUCCESS, ret.code());
+    assertEquals(ret.message().toString(), Type.HTML, ret.message().get(0).getType());
+    assertTrue(ret.message().get(0).getData().contains("data:image/png;base64"));
+    assertTrue(ret.message().get(0).getData().contains("<div>"));
   }
 
   @Test
@@ -232,15 +199,14 @@ public class PySparkInterpreterMatplotlibTest {
     // of FigureManager, causing show() to return before setting the output
     // type to HTML.
     ret = pyspark.interpret("plt.show()", context);
-    assertEquals(ret.message(), InterpreterResult.Code.SUCCESS, ret.code());
-    assertEquals(ret.message(), Type.TEXT, ret.type());
-    assertTrue(ret.message().equals(""));
+    assertEquals(0, ret.message().size());
     
     // Now test that new plot is drawn. It should be identical to the
     // previous one.
     ret = pyspark.interpret("plt.plot([1, 2, 3])", context);
     ret2 = pyspark.interpret("plt.show()", context);
-    assertTrue(ret1.message().equals(ret2.message()));
+    assertEquals(ret1.message().get(0).getType(), ret2.message().get(0).getType());
+    assertEquals(ret1.message().get(0).getData(), ret2.message().get(0).getData());
   }
   
   @Test
@@ -260,16 +226,14 @@ public class PySparkInterpreterMatplotlibTest {
     // of FigureManager, causing show() to set the output
     // type to HTML even though the figure is inactive.
     ret = pyspark.interpret("plt.show()", context);
-    assertEquals(ret.message(), InterpreterResult.Code.SUCCESS, ret.code());
-    assertEquals(ret.message(), Type.HTML, ret.type());
-    assertTrue(ret.message().equals(""));
-    
+    assertEquals(ret.message().toString(), InterpreterResult.Code.SUCCESS, ret.code());
+
     // Now test that plot can be reshown if it is updated. It should be
     // different from the previous one because it will plot the same line
     // again but in a different color.
     ret = pyspark.interpret("plt.plot([1, 2, 3])", context);
     ret2 = pyspark.interpret("plt.show()", context);
-    assertTrue(!ret1.message().equals(ret2.message()));
+    assertNotSame(ret1.message().get(1).getData(), ret2.message().get(1).getData());
   }
   
   @Test
@@ -281,8 +245,8 @@ public class PySparkInterpreterMatplotlibTest {
     ret = pyspark.interpret("z.configure_mpl(interactive=False, close=False, angular=True)", context);
     ret = pyspark.interpret("plt.plot([1, 2, 3])", context);
     ret = pyspark.interpret("plt.show()", context);    
-    assertEquals(ret.message(), InterpreterResult.Code.SUCCESS, ret.code());
-    assertEquals(ret.message(), Type.ANGULAR, ret.type());
+    assertEquals(ret.message().toString(), InterpreterResult.Code.SUCCESS, ret.code());
+    assertEquals(ret.message().toString(), Type.ANGULAR, ret.message().get(1).getType());
 
     // Check if the figure data is in the Angular Object Registry
     AngularObjectRegistry registry = context.getAngularObjectRegistry();
