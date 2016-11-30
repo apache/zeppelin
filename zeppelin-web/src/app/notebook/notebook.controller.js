@@ -367,6 +367,7 @@
       _.each($scope.note.paragraphs, function(para) {
         if (para.id === paragraph.id) {
           para.focus = true;
+          $scope.$broadcast('focusParagraph', para.id, 0, false);
         }
       });
     };
