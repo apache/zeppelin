@@ -336,6 +336,60 @@ You can configure Apache Zeppelin with either **environment variables** in `conf
     <td>1024000</td>
     <td>Size (in characters) of the maximum text message that can be received by websocket.</td>
   </tr>
+  <tr>
+    <td>ZEPPELIN_SMTP_USER</td>
+    <td>zeppelin.mail.smtp.user</td>
+    <td></td>
+    <td>SMTP user.</td>
+  </tr>
+  <tr>
+    <td>ZEPPELIN_SMTP_PASS</td>
+    <td>zeppelin.mail.smtp.password</td>
+    <td></td>
+    <td>Password for SMTP user.</td>
+  </tr>
+  <tr>
+    <td>ZEPPELIN_SMTP_HOST</td>
+    <td>zeppelin.mail.smtp.host</td>
+    <td>smtp.googlemail.com</td>
+    <td>The SMTP server to connect to.</td>
+  </tr>
+  <tr>
+    <td>ZEPPELIN_SMTP_PROTOCOL</td>
+    <td>zeppelin.mail.smtp.protocol</td>
+    <td>smtp</td>
+    <td>SMTP protocol.</td>
+  </tr>
+  <tr>
+    <td>ZEPPELIN_SMTP_PORT</td>
+    <td>zeppelin.mail.smtp.port</td>
+    <td>465</td>
+    <td>The SMTP server port to connect.</td>
+  </tr>
+  <tr>
+    <td>ZEPPELIN_SMTP_STARTTLSZEPPELIN_SMTP_AUTH</td>
+    <td>zeppelin.mail.smtp.starttls.enable</td>
+    <td>true</td>
+    <td>If true, enables the use of the STARTTLS command (if supported by the server) to switch the connection to a TLS-protected connection before issuing any login commands.</td>
+  </tr>
+  <tr>
+    <td>ZEPPELIN_SMTP_AUTH</td>
+    <td>zeppelin.mail.smtp.auth</td>
+    <td>true</td>
+    <td>If true, attempt to authenticate the user using the AUTH command.</td>
+  </tr>
+  <tr>
+    <td>ZEPPELIN_SMTP_SOCKETFACTORY</td>
+    <td>zeppelin.mail.smtp.socketFactory.port</td>
+    <td>465</td>
+    <td>Specifies the port to connect to when using the specified socket factory.</td>
+  </tr>
+  <tr>
+    <td>ZEPPELIN_SMTP_SOCKETFACTORY_CLASS</td>
+    <td>zeppelin.mail.smtp.socketFactory.class</td>
+    <td>javax.net.ssl.SSLSocketFactory</td>
+    <td>Specifies the name of a class that implements the javax.net.SocketFactory interface. This class will be used to create SMTP sockets.</td>
+  </tr>
 </table>
 
 

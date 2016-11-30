@@ -31,7 +31,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
@@ -51,11 +50,15 @@ import org.quartz.TriggerBuilder;
 import org.quartz.impl.StdSchedulerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
+import org.apache.commons.mail.DefaultAuthenticator;
+import org.apache.commons.mail.Email;
+import org.apache.commons.mail.EmailException;
+import org.apache.commons.mail.SimpleEmail;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
+import org.apache.zeppelin.event.EventNotification;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
@@ -69,6 +72,7 @@ import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.apache.zeppelin.search.SearchService;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.user.Credentials;
+import com.google.gson.internal.StringMap;
 
 /**
  * Collection of Notes.
@@ -119,6 +123,7 @@ public class Notebook implements NoteEventListener {
     quartzSched = quertzSchedFact.getScheduler();
     quartzSched.start();
     CronJob.notebook = this;
+    CronJob.notification = new EventNotification(conf);
 
     AuthenticationInfo anonymous = AuthenticationInfo.ANONYMOUS;
     loadAllNotes(anonymous);
@@ -775,6 +780,7 @@ public class Notebook implements NoteEventListener {
    */
   public static class CronJob implements org.quartz.Job {
     public static Notebook notebook;
+    public static EventNotification notification;
 
     @Override
     public void execute(JobExecutionContext context) throws JobExecutionException {
@@ -783,12 +789,19 @@ public class Notebook implements NoteEventListener {
       Note note = notebook.getNote(noteId);
       note.runAll();
 
-      while (!note.isTerminated()) {
-        try {
-          Thread.sleep(1000);
-        } catch (InterruptedException e) {
-          logger.error(e.toString(), e);
-        }
+      Map<String, Object> notificationConf = (Map<String, Object>) note.getConfig()
+              .get("notification");
+
+      if (notificationConf != null) {
+        notification.enabledNotification(note);
+      } else {
+        while (!note.isTerminated()) {
+          try {
+            Thread.sleep(1000);
+          } catch (InterruptedException e) {
+            logger.error(e.toString(), e);
+          }
+        }  
       }
 
       boolean releaseResource = false;

@@ -38,6 +38,7 @@
     ngToast.dismiss();
 
     $scope.note = null;
+    $scope.config = {};
     $scope.moment = moment;
     $scope.editorToggled = false;
     $scope.tableToggled = false;
@@ -296,10 +297,13 @@
       $scope.setConfig();
     };
 
+    $scope.reset = function() {
+      $scope.note.config = angular.copy($scope.config);
+    };
+
     /** Set cron expression for this note **/
     $scope.setCronScheduler = function(cronExpr) {
       $scope.note.config.cron = cronExpr;
-      $scope.setConfig();
     };
 
     /** Set the username of the user to be used to execute all notes in notebook **/
@@ -311,11 +315,11 @@
     /** Set release resource for this note **/
     $scope.setReleaseResource = function(value) {
       $scope.note.config.releaseresource = value;
-      $scope.setConfig();
     };
 
     /** Update note config **/
     $scope.setConfig = function(config) {
+      console.log(config);
       if (config) {
         $scope.note.config = config;
       }
@@ -824,6 +828,7 @@
       initializeLookAndFeel();
       //open interpreter binding setting when there're none selected
       getInterpreterBindings();
+      $scope.config = angular.copy($scope.note.config);
     });
 
     $scope.$on('$destroy', function() {
