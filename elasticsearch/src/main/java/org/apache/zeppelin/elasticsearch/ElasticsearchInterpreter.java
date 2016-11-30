@@ -77,25 +77,25 @@ public class ElasticsearchInterpreter extends Interpreter {
   private static Logger logger = LoggerFactory.getLogger(ElasticsearchInterpreter.class);
 
   private static final String HELP = "Elasticsearch interpreter:\n"
-    + "General format: <command> /<indices>/<types>/<id> <option> <JSON>\n"
-    + "  - indices: list of indices separated by commas (depends on the command)\n"
-    + "  - types: list of document types separated by commas (depends on the command)\n"
-    + "Commands:\n"
-    + "  - search /indices/types <query>\n"
-    + "    . indices and types can be omitted (at least, you have to provide '/')\n"
-    + "    . a query is either a JSON-formatted query, nor a lucene query\n"
-    + "  - size <value>\n"
-    + "    . defines the size of the result set (default value is in the config)\n"
-    + "    . if used, this command must be declared before a search command\n"
-    + "  - count /indices/types <query>\n"
-    + "    . same comments as for the search\n"
-    + "  - get /index/type/id\n"
-    + "  - delete /index/type/id\n"
-    + "  - index /ndex/type/id <json-formatted document>\n"
-    + "    . the id can be omitted, elasticsearch will generate one";
+      + "General format: <command> /<indices>/<types>/<id> <option> <JSON>\n"
+      + "  - indices: list of indices separated by commas (depends on the command)\n"
+      + "  - types: list of document types separated by commas (depends on the command)\n"
+      + "Commands:\n"
+      + "  - search /indices/types <query>\n"
+      + "    . indices and types can be omitted (at least, you have to provide '/')\n"
+      + "    . a query is either a JSON-formatted query, nor a lucene query\n"
+      + "  - size <value>\n"
+      + "    . defines the size of the result set (default value is in the config)\n"
+      + "    . if used, this command must be declared before a search command\n"
+      + "  - count /indices/types <query>\n"
+      + "    . same comments as for the search\n"
+      + "  - get /index/type/id\n"
+      + "  - delete /index/type/id\n"
+      + "  - index /ndex/type/id <json-formatted document>\n"
+      + "    . the id can be omitted, elasticsearch will generate one";
 
   protected static final List<String> COMMANDS = Arrays.asList(
-    "count", "delete", "get", "help", "index", "search");
+      "count", "delete", "get", "help", "index", "search");
 
   private static final Pattern FIELD_NAME_PATTERN = Pattern.compile("\\[\\\\\"(.+)\\\\\"\\](.*)");
 
@@ -122,7 +122,7 @@ public class ElasticsearchInterpreter extends Interpreter {
     } catch (NumberFormatException e) {
       this.resultSize = 10;
       logger.error("Unable to parse " + ELASTICSEARCH_RESULT_SIZE + " : " +
-        property.get(ELASTICSEARCH_RESULT_SIZE), e);
+          property.get(ELASTICSEARCH_RESULT_SIZE), e);
     }
   }
 
@@ -131,9 +131,9 @@ public class ElasticsearchInterpreter extends Interpreter {
     try {
       logger.info("prop={}", getProperty());
       final Settings settings = Settings.settingsBuilder()
-        .put("cluster.name", clusterName)
-        .put(getProperty())
-        .build();
+          .put("cluster.name", clusterName)
+          .put(getProperty())
+          .build();
       client = TransportClient.builder().settings(settings).build()
         .addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName(host), port));
     }
@@ -280,8 +280,8 @@ public class ElasticsearchInterpreter extends Interpreter {
     }
 
     final GetResponse response = client
-      .prepareGet(urlItems[0], urlItems[1], urlItems[2])
-      .get();
+        .prepareGet(urlItems[0], urlItems[1], urlItems[2])
+        .get();
     if (response.isExists()) {
       final String json = gson.toJson(response.getSource());
 
@@ -351,9 +351,9 @@ public class ElasticsearchInterpreter extends Interpreter {
     }
 
     final IndexResponse response = client
-      .prepareIndex(urlItems[0], urlItems[1], urlItems.length == 2 ? null : urlItems[2])
-      .setSource(data)
-      .get();
+        .prepareIndex(urlItems[0], urlItems[1], urlItems.length == 2 ? null : urlItems[2])
+        .setSource(data)
+        .get();
 
     return new InterpreterResult(
       InterpreterResult.Code.SUCCESS,
@@ -378,8 +378,8 @@ public class ElasticsearchInterpreter extends Interpreter {
     }
 
     final DeleteResponse response = client
-      .prepareDelete(urlItems[0], urlItems[1], urlItems[2])
-      .get();
+        .prepareDelete(urlItems[0], urlItems[1], urlItems[2])
+        .get();
 
     if (response.isFound()) {
       return new InterpreterResult(
@@ -394,7 +394,7 @@ public class ElasticsearchInterpreter extends Interpreter {
   private SearchResponse searchData(String[] urlItems, String query, int size) {
 
     final SearchRequestBuilder reqBuilder = new SearchRequestBuilder(
-      client, SearchAction.INSTANCE);
+        client, SearchAction.INSTANCE);
     reqBuilder.setIndices();
 
     if (urlItems.length >= 1) {
@@ -510,9 +510,8 @@ public class ElasticsearchInterpreter extends Interpreter {
         final Matcher fieldNameMatcher = FIELD_NAME_PATTERN.matcher(fieldName);
         if (fieldNameMatcher.matches()) {
           flattenMap.put(fieldNameMatcher.group(1) + fieldNameMatcher.group(2),
-            flattenJsonMap.get(fieldName));
-        }
-        else {
+              flattenJsonMap.get(fieldName));
+        } else {
           flattenMap.put(fieldName, flattenJsonMap.get(fieldName));
         }
       }

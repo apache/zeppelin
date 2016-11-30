@@ -55,14 +55,14 @@ public class ScaldingInterpreter extends Interpreter {
   static final String MAX_OPEN_INSTANCES_DEFAULT = "50";
 
   public static final List NO_COMPLETION =
-    Collections.unmodifiableList(new ArrayList<>());
+      Collections.unmodifiableList(new ArrayList<>());
 
   static {
     Interpreter.register(
-      "scalding",
-      "scalding",
-      ScaldingInterpreter.class.getName(),
-      new InterpreterPropertyBuilder()
+        "scalding",
+        "scalding",
+        ScaldingInterpreter.class.getName(),
+        new InterpreterPropertyBuilder()
         .add(ARGS_STRING, ARGS_STRING_DEFAULT, "Arguments for scalding REPL")
         .add(MAX_OPEN_INSTANCES, MAX_OPEN_INSTANCES_DEFAULT,
                 "Maximum number of open interpreter instances")
@@ -123,10 +123,10 @@ public class ScaldingInterpreter extends Interpreter {
 
     if (interpreter == null) {
       logger.error(
-        "interpreter == null, open may not have been called because max.open.instances reached");
+          "interpreter == null, open may not have been called because max.open.instances reached");
       return new InterpreterResult(Code.ERROR,
-        "interpreter == null\n" +
-        "open may not have been called because max.open.instances reached"
+        "interpreter == null\n"
+            + "open may not have been called because max.open.instances reached"
       );
     }
     if (cmd == null || cmd.trim().length() == 0) {
@@ -147,10 +147,10 @@ public class ScaldingInterpreter extends Interpreter {
         final String cmd1 = cmd;
         final InterpreterContext contextInterpreter1 = contextInterpreter;
         PrivilegedExceptionAction<InterpreterResult> action =
-          new PrivilegedExceptionAction<InterpreterResult>() {
-            public InterpreterResult run() throws Exception {
-              return interpret(cmd1.split("\n"), contextInterpreter1);
-            }
+            new PrivilegedExceptionAction<InterpreterResult>() {
+              public InterpreterResult run() throws Exception {
+                return interpret(cmd1.split("\n"), contextInterpreter1);
+              }
           };
         interpreterResult = ugi.doAs(action);
       } catch (Exception e) {

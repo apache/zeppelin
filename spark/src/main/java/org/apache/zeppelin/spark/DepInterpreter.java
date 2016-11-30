@@ -206,7 +206,7 @@ public class DepInterpreter extends Interpreter {
 
   public Object getValue(String name) {
     Object ret = Utils.invokeMethod(
-      intp, "valueOfTerm", new Class[]{String.class}, new Object[]{name});
+        intp, "valueOfTerm", new Class[]{String.class}, new Object[]{name});
     if (ret instanceof None) {
       return null;
     } else if (ret instanceof Some) {

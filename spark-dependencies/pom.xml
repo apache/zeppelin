@@ -823,7 +823,7 @@
           <plugin>
             <groupId>com.googlecode.maven-download-plugin</groupId>
             <artifactId>download-maven-plugin</artifactId>
-            <version>1.2.1</version>
+            <version>1.3.0</version>
             <executions>
               <execution>
                 <id>download-pyspark-files</id>
@@ -832,6 +832,8 @@
                   <goal>wget</goal>
                 </goals>
                 <configuration>
+                  <readTimeOut>1800000</readTimeOut>
+                  <retries>30</retries>
                   <url>${spark.download.url}</url>
                   <outputDirectory>${spark.dist.cache}</outputDirectory>
                 </configuration>
@@ -902,7 +904,7 @@
           <plugin>
             <groupId>com.googlecode.maven-download-plugin</groupId>
             <artifactId>download-maven-plugin</artifactId>
-            <version>1.2.1</version>
+            <version>1.3.0</version>
             <executions>
               <execution>
                 <id>download-sparkr-files</id>
@@ -911,6 +913,8 @@
                   <goal>wget</goal>
                 </goals>
                 <configuration>
+                  <readTimeOut>1800000</readTimeOut>
+                  <retries>30</retries>
                   <url>${spark.bin.download.url}</url>
                   <unpack>true</unpack>
                   <outputDirectory>${project.build.directory}/spark-bin-dist</outputDirectory>

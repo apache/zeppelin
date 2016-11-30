@@ -256,7 +256,7 @@ public class JDBCInterpreter extends Interpreter {
 
   public JDBCUserConfigurations getJDBCConfiguration(String user) {
     JDBCUserConfigurations jdbcUserConfigurations =
-      jdbcUserConfigurationsMap.get(user);
+        jdbcUserConfigurationsMap.get(user);
 
     if (jdbcUserConfigurations == null) {
       jdbcUserConfigurations = new JDBCUserConfigurations();
@@ -279,7 +279,7 @@ public class JDBCInterpreter extends Interpreter {
     String user = interpreterContext.getAuthenticationInfo().getUser();
 
     JDBCUserConfigurations jdbcUserConfigurations =
-      getJDBCConfiguration(user);
+        getJDBCConfiguration(user);
     jdbcUserConfigurations.setPropertyMap(propertyKey, basePropretiesMap.get(propertyKey));
 
     if (existAccountInBaseProperty()) {
@@ -288,7 +288,7 @@ public class JDBCInterpreter extends Interpreter {
     jdbcUserConfigurations.cleanUserProperty(propertyKey);
 
     UsernamePassword usernamePassword = getUsernamePassword(interpreterContext,
-      getEntityName(interpreterContext.getReplName()));
+        getEntityName(interpreterContext.getReplName()));
     if (usernamePassword != null) {
       jdbcUserConfigurations.setUserProperty(propertyKey, usernamePassword);
     } else {
@@ -299,10 +299,10 @@ public class JDBCInterpreter extends Interpreter {
   private void createConnectionPool(String url, String user, String propertyKey,
       Properties properties) throws SQLException, ClassNotFoundException {
     ConnectionFactory connectionFactory =
-      new DriverManagerConnectionFactory(url, properties);
+        new DriverManagerConnectionFactory(url, properties);
 
     PoolableConnectionFactory poolableConnectionFactory = new PoolableConnectionFactory(
-      connectionFactory, null);
+        connectionFactory, null);
     ObjectPool connectionPool = new GenericObjectPool(poolableConnectionFactory);
 
     poolableConnectionFactory.setPool(connectionPool);
@@ -531,7 +531,7 @@ public class JDBCInterpreter extends Interpreter {
     logger.info("Cancel current query statement.");
     String paragraphId = context.getParagraphId();
     JDBCUserConfigurations jdbcUserConfigurations =
-      getJDBCConfiguration(context.getAuthenticationInfo().getUser());
+        getJDBCConfiguration(context.getAuthenticationInfo().getUser());
     try {
       jdbcUserConfigurations.cancelStatement(paragraphId);
     } catch (SQLException e) {

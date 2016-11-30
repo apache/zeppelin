@@ -70,8 +70,8 @@ public class AlluxioInterpreter extends Interpreter {
 
   @Override
   public void open() {
-    logger.info("Starting Alluxio shell to connect to " + alluxioMasterHostname +
-      " on port " + alluxioMasterPort);
+    logger.info("Starting Alluxio shell to connect to " + alluxioMasterHostname
+        + " on port " + alluxioMasterPort);
 
     System.setProperty(ALLUXIO_MASTER_HOSTNAME, alluxioMasterHostname);
     System.setProperty(ALLUXIO_MASTER_PORT, alluxioMasterPort);

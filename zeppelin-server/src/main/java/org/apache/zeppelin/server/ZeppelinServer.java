@@ -316,7 +316,7 @@ public class ZeppelinServer extends Application {
     singletons.add(root);
 
     NotebookRestApi notebookApi
-      = new NotebookRestApi(notebook, notebookWsServer, noteSearchService);
+        = new NotebookRestApi(notebook, notebookWsServer, noteSearchService);
     singletons.add(notebookApi);
 
     NotebookRepoRestApi notebookRepoApi = new NotebookRepoRestApi(notebookRepo, notebookWsServer);
