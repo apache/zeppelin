@@ -193,6 +193,7 @@
 
     // set notebook head to given revision
     $scope.setNoteRevision = function() {
+      console.log('set revision');
       BootstrapDialog.confirm({
         closable: true,
         title: '',
@@ -200,6 +201,9 @@
         callback: function(result) {
           if (result) {
             websocketMsgSrv.setNoteRevision($routeParams.noteId, $routeParams.revisionId);
+            $location.path('/notebook/' + $routeParams.noteId);
+          } else {
+            console.log('no result on set revision');
           }
         }
       });
