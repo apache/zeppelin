@@ -43,5 +43,17 @@
       "language": "sh",
       "editOnDblClick": false
     }
+  },
+  {
+    "group": "python",
+    "name": "docker",
+    "className": "org.apache.zeppelin.python.PythonDockerInterpreter",
+    "properties": {
+    },
+    "editor":{
+      "language": "sh",
+      "editOnDblClick": false
+    }
   }
+]
 ]
