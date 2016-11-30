@@ -146,11 +146,17 @@ For example,
 export SPARK_HOME=/usr/lib/spark
 ```
 
-You can optionally export `HADOOP_CONF_DIR` and `SPARK_SUBMIT_OPTIONS`
+You can optionally set more environment variables
 
 ```bash
+# set hadoop conf dir
 export HADOOP_CONF_DIR=/usr/lib/hadoop
+
+# set options to pass spark-submit command
 export SPARK_SUBMIT_OPTIONS="--packages com.databricks:spark-csv_2.10:1.2.0"
+
+# extra classpath. e.g. set classpath for hive-site.xml
+export ZEPPELIN_INTP_CLASSPATH_OVERRIDES=/etc/hive/conf
 ```
 
 For Windows, ensure you have `winutils.exe` in `%HADOOP_HOME%\bin`. Please see [Problems running Hadoop on Windows](https://wiki.apache.org/hadoop/WindowsProblems) for the details.
