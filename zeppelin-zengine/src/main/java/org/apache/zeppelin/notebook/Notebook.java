@@ -529,8 +529,8 @@ public class Notebook implements NoteEventListener {
     return folders.renameFolder(oldFolderId, newFolderId);
   }
 
-  public List<Note> getNotesOfFolder(String folderId) {
-    return folders.getFolder(folderId).getNotes();
+  public List<Note> getNotesUnderFolder(String folderId) {
+    return folders.getFolder(folderId).getNotesRecursively();
   }
 
   public List<Note> getAllNotes() {
