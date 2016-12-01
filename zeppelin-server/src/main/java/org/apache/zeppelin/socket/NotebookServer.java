@@ -284,7 +284,7 @@ public class NotebookServer extends WebSocketServlet implements
             listRevisionHistory(conn, notebook, messagereceived);
             break;
           case SET_NOTE_REVISION:
-            setNoteRevision(conn, notebook, messagereceived);
+            setNoteRevision(conn, userAndRoles, notebook, messagereceived);
             break;
           case NOTE_REVISION:
             getNoteByRevision(conn, notebook, messagereceived);
@@ -1477,19 +1477,28 @@ public class NotebookServer extends WebSocketServlet implements
       .put("revisionList", revisions)));
   }
   
-  private void setNoteRevision(NotebookSocket conn, Notebook notebook,
-      Message fromMessage) {
+  private void setNoteRevision(NotebookSocket conn, HashSet<String> userAndRoles, 
+      Notebook notebook, Message fromMessage) throws IOException {
+
     String noteId = (String) fromMessage.get("noteId");
     String revisionId = (String) fromMessage.get("revisionId");
     AuthenticationInfo subject = new AuthenticationInfo(fromMessage.principal);
     
-    try {
-      Note currentNote = notebook.setNoteRevision(noteId, revisionId, subject);
-    } catch (IOException e) {
-      //TODO(khalid): notify user 
-      LOG.error("Failed to set note revision", e);
+    NotebookAuthorization notebookAuthorization = notebook.getNotebookAuthorization();
+    if (!notebookAuthorization.isWriter(noteId, userAndRoles)) {
+      permissionError(conn, "update", fromMessage.principal,
+          userAndRoles, notebookAuthorization.getWriters(noteId));
+      return;
     }
-    //TODO(khalid): send back, update note or notify user
+
+    Note headNote = null;
+    try {
+      headNote = notebook.setNoteRevision(noteId, revisionId, subject);
+    } catch (IOException e) {
+      LOG.error("Failed to set given note revision", e);
+    }
+
+    //TODO(khalid): send back, update note
   }
 
   private void getNoteByRevision(NotebookSocket conn, Notebook notebook, Message fromMessage)
