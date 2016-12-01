@@ -406,22 +406,22 @@
       commitParagraph(paragraph.title, paragraph.text, newConfig, newParams);
     };
 
-    $scope.showLineNumbers = function() {
-      var newParams = angular.copy($scope.paragraph.settings.params);
-      var newConfig = angular.copy($scope.paragraph.config);
+    $scope.showLineNumbers = function(paragraph) {
+      var newParams = angular.copy(paragraph.settings.params);
+      var newConfig = angular.copy(paragraph.config);
       newConfig.lineNumbers = true;
       $scope.editor.renderer.setShowGutter(true);
 
-      commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
+      commitParagraph(paragraph.title, paragraph.text, newConfig, newParams);
     };
 
-    $scope.hideLineNumbers = function() {
-      var newParams = angular.copy($scope.paragraph.settings.params);
-      var newConfig = angular.copy($scope.paragraph.config);
+    $scope.hideLineNumbers = function(paragraph) {
+      var newParams = angular.copy(paragraph.settings.params);
+      var newConfig = angular.copy(paragraph.config);
       newConfig.lineNumbers = false;
       $scope.editor.renderer.setShowGutter(false);
 
-      commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
+      commitParagraph(paragraph.title, paragraph.text, newConfig, newParams);
     };
 
     $scope.columnWidthClass = function(n) {
@@ -1130,9 +1130,9 @@
           $scope.toggleEditor($scope.paragraph);
         } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 77) { // Ctrl + Alt + m
           if ($scope.paragraph.config.lineNumbers) {
-            $scope.hideLineNumbers();
+            $scope.hideLineNumbers($scope.paragraph);
           } else {
-            $scope.showLineNumbers();
+            $scope.showLineNumbers($scope.paragraph);
           }
         } else if (keyEvent.ctrlKey && keyEvent.shiftKey && keyCode === 189) { // Ctrl + Shift + -
           $scope.changeColWidth(Math.max(1, $scope.paragraph.config.colWidth - 1));
