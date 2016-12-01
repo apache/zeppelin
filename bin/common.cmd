@@ -98,10 +98,6 @@ if not defined ZEPPELIN_IDENT_STRING (
     set ZEPPELIN_IDENT_STRING=%USERNAME%
 )
 
-if not defined DEBUG (
-    set DEBUG=0
-)
-
 if not defined ZEPPELIN_INTERPRETER_REMOTE_RUNNER (
     set ZEPPELIN_INTERPRETER_REMOTE_RUNNER=bin\interpreter.cmd
 )

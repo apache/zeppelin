@@ -141,7 +141,3 @@ export ZEPPELIN_RUNNER
 if [[ -z "$ZEPPELIN_IDENT_STRING" ]]; then
   export ZEPPELIN_IDENT_STRING="${USER}"
 fi
-
-if [[ -z "$DEBUG" ]]; then
-  export DEBUG=0
-fi
