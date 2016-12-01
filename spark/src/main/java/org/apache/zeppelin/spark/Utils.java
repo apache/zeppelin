@@ -111,4 +111,16 @@ class Utils {
   public static String buildJobGroupId(InterpreterContext context) {
     return "zeppelin-" + context.getNoteId() + "-" + context.getParagraphId();
   }
+
+  public static String getNoteId(String jobgroupId) {
+    int indexOf = jobgroupId.indexOf("-");
+    int secondIndex = jobgroupId.indexOf("-", indexOf + 1);
+    return jobgroupId.substring(indexOf + 1, secondIndex);
+  }
+
+  public static String getParagraphId(String jobgroupId) {
+    int indexOf = jobgroupId.indexOf("-");
+    int secondIndex = jobgroupId.indexOf("-", indexOf + 1);
+    return jobgroupId.substring(secondIndex + 1, jobgroupId.length());
+  }
 }

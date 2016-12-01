@@ -2329,7 +2329,7 @@ public class NotebookServer extends WebSocketServlet
         metaInfos.remove("paraId");
         String label = metaInfos.get("label");
         metaInfos.remove("label");
-        paragraph.updateRuntimeInfos(label, metaInfos, setting.getGroup());
+        paragraph.updateRuntimeInfos(label, metaInfos, setting.getGroup(), setting.getId());
         broadcast(note.getId(), new Message(OP.PARAGRAPH).put("paragraph", paragraph));
       }
     }
@@ -2346,7 +2346,7 @@ public class NotebookServer extends WebSocketServlet
             if (note != null) {
               Paragraph paragraph = note.getParagraph(paraId);
               if (paragraph != null) {
-                paragraph.clearRuntimeInfo();
+                paragraph.clearRuntimeInfo(setting.getId());
                 broadcast(noteId, new Message(OP.PARAGRAPH).put("paragraph", paragraph));
               }
             }

@@ -166,8 +166,8 @@ public class SparkInterpreter extends Interpreter {
         int jobId = jobStart.jobId();
         String jobGroupId = jobStart.properties().getProperty("spark.jobGroup.id");
         String jobUrl = getJobUrl(jobId);
-        String noteId = getNoteId(jobGroupId);
-        String paragraphId = getParagraphId(jobGroupId);
+        String noteId = Utils.getNoteId(jobGroupId);
+        String paragraphId = Utils.getParagraphId(jobGroupId);
         if (jobUrl != null && noteId != null && paragraphId != null) {
           RemoteEventClientWrapper eventClient = ZeppelinContext.getEventClient();
           Map<String, String> infos = new java.util.HashMap<>();
@@ -187,17 +187,6 @@ public class SparkInterpreter extends Interpreter {
         return jobUrl;
       }
 
-      private String getNoteId(String jobgroupId) {
-        int indexOf = jobgroupId.indexOf("-");
-        int secondIndex = jobgroupId.indexOf("-", indexOf + 1);
-        return jobgroupId.substring(indexOf + 1, secondIndex);
-      }
-
-      private String getParagraphId(String jobgroupId) {
-        int indexOf = jobgroupId.indexOf("-");
-        int secondIndex = jobgroupId.indexOf("-", indexOf + 1);
-        return jobgroupId.substring(secondIndex + 1, jobgroupId.length());
-      }
     };
     try {
       Object listenerBus = context.getClass().getMethod("listenerBus").invoke(context);
@@ -1016,8 +1005,8 @@ public class SparkInterpreter extends Interpreter {
       Map<String, String> infos = new java.util.HashMap<>();
       if (sparkUrl != null) {
         infos.put("url", sparkUrl);
-        logger.info("Sending metainfos to Zeppelin server: {}", infos.toString());
         if (ctx != null && ctx.getClient() != null) {
+          logger.info("Sending metainfos to Zeppelin server: {}", infos.toString());
           getZeppelinContext().setEventClient(ctx.getClient());
           ctx.getClient().onMetaInfosReceived(infos);
         }

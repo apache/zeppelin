@@ -679,16 +679,17 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     }
   }
 
-  public void updateRuntimeInfos(String label, Map<String, String> infos, String group) {
+  public void updateRuntimeInfos(String label, Map<String, String> infos, String group, 
+      String intpSettingId) {
     if (this.runtimeInfos == null) {
-      this.runtimeInfos = new HashMap<String, ParagraphRuntimeInfos>();
+      this.runtimeInfos = new HashMap<String, ParagraphRuntimeInfo>();
     }
 
     if (infos != null) {
       for (String key : infos.keySet()) {
-        ParagraphRuntimeInfos info = this.runtimeInfos.get(key);
+        ParagraphRuntimeInfo info = this.runtimeInfos.get(key);
         if (info == null) {
-          info = new ParagraphRuntimeInfos(key, label, group);
+          info = new ParagraphRuntimeInfo(key, label, group, intpSettingId);
           this.runtimeInfos.put(key, info);
         }
         info.addValue(infos.get(key));
@@ -696,7 +697,29 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     }
   }
 
-  public void clearRuntimeInfo() {
-    this.runtimeInfos = null;
+  /**
+   * Remove runtimeinfo taht were got from the setting with id settingId
+   * @param settingId
+   */
+  public void clearRuntimeInfo(String settingId) {
+    if (settingId != null) {
+      Set<String> keys = runtimeInfos.keySet();
+      if (keys.size() > 0) {
+        List<String> infosToRemove = new ArrayList<>();
+        for (String key : keys) {
+          ParagraphRuntimeInfo paragraphRuntimeInfo = runtimeInfos.get(key);
+          if (paragraphRuntimeInfo.getInterpreterSettingId().equals(settingId)) {
+            infosToRemove.add(key);
+          }
+        }
+        if (infosToRemove.size() > 0) {
+          for (String info : infosToRemove) {
+            runtimeInfos.remove(info);
+          }
+        }
+      }
+    } else {
+      this.runtimeInfos = null;
+    }
   }
 }
