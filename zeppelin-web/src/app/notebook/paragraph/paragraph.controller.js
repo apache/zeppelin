@@ -248,7 +248,7 @@
     };
 
     $scope.insertNew = function(position) {
-      $scope.$emit('insertParagraph', $scope.paragraph.id, position || 'below');
+      $scope.$emit('insertParagraph', $scope.paragraph.id, position);
     };
 
     $scope.copyPara = function(position) {
