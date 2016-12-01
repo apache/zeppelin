@@ -498,9 +498,9 @@
           $scope.goToEnd();
         }
 
-        autoAdjustEditorHeight(_editor.container.id);
+        autoAdjustEditorHeight(_editor);
         angular.element(window).resize(function() {
-          autoAdjustEditorHeight(_editor.container.id);
+          autoAdjustEditorHeight(_editor);
         });
 
         if (navigator.appVersion.indexOf('Mac') !== -1) {
@@ -576,7 +576,7 @@
         });
 
         $scope.editor.getSession().on('change', function(e, editSession) {
-          autoAdjustEditorHeight(_editor.container.id);
+          autoAdjustEditorHeight(_editor);
         });
 
         setParagraphMode($scope.editor.getSession(), $scope.editor.getSession().getValue());
@@ -713,12 +713,13 @@
       return '';
     };
 
-    var autoAdjustEditorHeight = function(id) {
-      var editor = $scope.editor;
-      var height = editor.getSession().getScreenLength() * editor.renderer.lineHeight +
+    var autoAdjustEditorHeight = function(editor) {
+      var height =
+        editor.getSession().getScreenLength() *
+        editor.renderer.lineHeight +
         editor.renderer.scrollBar.getWidth();
 
-      angular.element('#' + id).height(height.toString() + 'px');
+      angular.element('#' + editor.container.id).height(height.toString() + 'px');
       editor.resize();
     };
 
