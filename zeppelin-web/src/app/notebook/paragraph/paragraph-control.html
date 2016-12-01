@@ -63,6 +63,9 @@ limitations under the License.
         <a ng-click="insertNew()"><span class="icon-plus"></span> Insert New</a>
       </li>
       <li>
+        <a ng-click="copyParagraph(getEditorValue())"><span class="fa fa-copy"></span> Clone paragraph</a>
+      </li>
+      <li>
         <!-- paragraph handler -->
         <a ng-click="hideTitle()"
            ng-show="paragraph.config.title"><span class="fa fa-font"></span> Hide title</a>
