@@ -495,7 +495,7 @@
         $scope.editor.setReadOnly($scope.isRunning($scope.paragraph));
         if ($scope.paragraphFocused) {
           $scope.editor.focus();
-          $scope.goToEnd();
+          $scope.goToEnd($scope.editor);
         }
 
         autoAdjustEditorHeight(_editor);
@@ -786,11 +786,10 @@
       return $scope.currentProgress || 0;
     };
 
-    $scope.getExecutionTime = function() {
-      var pdata = $scope.paragraph;
+    $scope.getExecutionTime = function(pdata) {
       var timeMs = Date.parse(pdata.dateFinished) - Date.parse(pdata.dateStarted);
       if (isNaN(timeMs) || timeMs < 0) {
-        if ($scope.isResultOutdated()) {
+        if ($scope.isResultOutdated(pdata)) {
           return 'outdated';
         }
         return '';
@@ -798,26 +797,25 @@
       var user = (pdata.user === undefined || pdata.user === null) ? 'anonymous' : pdata.user;
       var desc = 'Took ' + moment.duration((timeMs / 1000), 'seconds').format('h [hrs] m [min] s [sec]') +
         '. Last updated by ' + user + ' at ' + moment(pdata.dateFinished).format('MMMM DD YYYY, h:mm:ss A') + '.';
-      if ($scope.isResultOutdated()) {
+      if ($scope.isResultOutdated(pdata)) {
         desc += ' (outdated)';
       }
       return desc;
     };
 
-    $scope.getElapsedTime = function() {
-      return 'Started ' + moment($scope.paragraph.dateStarted).fromNow() + '.';
+    $scope.getElapsedTime = function(paragraph) {
+      return 'Started ' + moment(paragraph.dateStarted).fromNow() + '.';
     };
 
-    $scope.isResultOutdated = function() {
-      var pdata = $scope.paragraph;
+    $scope.isResultOutdated = function(pdata) {
       if (pdata.dateUpdated !== undefined && Date.parse(pdata.dateUpdated) > Date.parse(pdata.dateStarted)) {
         return true;
       }
       return false;
     };
 
-    $scope.goToEnd = function() {
-      $scope.editor.navigateFileEnd();
+    $scope.goToEnd = function(editor) {
+      editor.navigateFileEnd();
     };
 
     $scope.getResultType = function(paragraph) {
@@ -1187,7 +1185,7 @@
 
         deferred.promise.then(function(data) {
           $scope.editor.focus();
-          $scope.goToEnd();
+          $scope.goToEnd($scope.editor);
         });
       }
     });
