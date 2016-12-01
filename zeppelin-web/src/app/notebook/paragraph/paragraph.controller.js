@@ -283,9 +283,9 @@
                                         config, $scope.paragraph.settings.params);
     };
 
-    $scope.removeParagraph = function() {
+    $scope.removeParagraph = function(paragraph) {
       var paragraphs = angular.element('div[id$="_paragraphColumn_main"]');
-      if (paragraphs[paragraphs.length - 1].id.startsWith($scope.paragraph.id)) {
+      if (paragraphs[paragraphs.length - 1].id.startsWith(paragraph.id)) {
         BootstrapDialog.alert({
           closable: true,
           message: 'The last paragraph can\'t be deleted.',
@@ -303,7 +303,7 @@
           callback: function(result) {
             if (result) {
               console.log('Remove paragraph');
-              websocketMsgSrv.removeParagraph($scope.paragraph.id);
+              websocketMsgSrv.removeParagraph(paragraph.id);
               $scope.$emit('moveFocusToNextParagraph', $scope.paragraph.id);
             }
           }
@@ -1113,7 +1113,7 @@
         } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 67) { // Ctrl + Alt + c
           $scope.cancelParagraph($scope.paragraph);
         } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 68) { // Ctrl + Alt + d
-          $scope.removeParagraph();
+          $scope.removeParagraph($scope.paragraph);
         } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 75) { // Ctrl + Alt + k
           $scope.moveUp($scope.paragraph);
         } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 74) { // Ctrl + Alt + j
