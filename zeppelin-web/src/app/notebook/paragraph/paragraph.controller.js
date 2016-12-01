@@ -656,12 +656,12 @@
       }
     };
 
-    var getEditorSetting = function(interpreterName) {
+    var getEditorSetting = function(paragraph, interpreterName) {
       var deferred = $q.defer();
-      websocketMsgSrv.getEditorSetting($scope.paragraph.id, interpreterName);
+      websocketMsgSrv.getEditorSetting(paragraph.id, interpreterName);
       $timeout(
         $scope.$on('editorSetting', function(event, data) {
-          if ($scope.paragraph.id === data.paragraphId) {
+          if (paragraph.id === data.paragraphId) {
             deferred.resolve(data);
           }
         }
@@ -689,7 +689,7 @@
           var magic = getInterpreterName(paragraphText);
           if (editorSetting.magic !== magic) {
             editorSetting.magic = magic;
-            getEditorSetting(magic)
+            getEditorSetting($scope.paragraph, magic)
               .then(function(setting) {
                 setEditorLanguage(session, setting.editor.language);
                 _.merge($scope.paragraph.config.editorSetting, setting.editor);
