@@ -216,12 +216,12 @@
       editorSetting.isOutputHidden = $scope.paragraph.config.editorSetting.editOnDblClick;
     };
 
-    $scope.saveParagraph = function() {
+    $scope.saveParagraph = function(paragraph) {
       if ($scope.dirtyText === undefined || $scope.dirtyText === $scope.originalText) {
         return;
       }
-      commitParagraph($scope.paragraph.title, $scope.dirtyText, $scope.paragraph.config,
-        $scope.paragraph.settings.params);
+      commitParagraph(paragraph.title, $scope.dirtyText, paragraph.config,
+        paragraph.settings.params);
       $scope.originalText = angular.copy($scope.dirtyText);
       $scope.dirtyText = undefined;
     };
@@ -243,11 +243,11 @@
     };
 
     $scope.moveUp = function() {
-      $scope.$emit('moveParagraphUp', $scope.paragraph.id);
+      $scope.$emit('moveParagraphUp', $scope.paragraph);
     };
 
     $scope.moveDown = function() {
-      $scope.$emit('moveParagraphDown', $scope.paragraph.id);
+      $scope.$emit('moveParagraphDown', $scope.paragraph);
     };
 
     $scope.insertNew = function(position) {
