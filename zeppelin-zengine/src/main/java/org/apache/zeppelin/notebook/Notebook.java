@@ -437,7 +437,7 @@ public class Notebook implements NoteEventListener {
   }
 
   @SuppressWarnings("rawtypes")
-  private Note loadNoteFromRepo(String id, AuthenticationInfo subject) {
+  public Note loadNoteFromRepo(String id, AuthenticationInfo subject) {
     Note note = null;
     try {
       note = notebookRepo.get(id, subject);

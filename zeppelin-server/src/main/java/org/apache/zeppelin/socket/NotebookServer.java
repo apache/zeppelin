@@ -1492,13 +1492,21 @@ public class NotebookServer extends WebSocketServlet implements
     }
 
     Note headNote = null;
+    boolean setRevisionStatus;
     try {
       headNote = notebook.setNoteRevision(noteId, revisionId, subject);
-    } catch (IOException e) {
+      setRevisionStatus = headNote != null;
+    } catch (Exception e) {
+      setRevisionStatus = false;
       LOG.error("Failed to set given note revision", e);
     }
+    if (setRevisionStatus) {
+      notebook.loadNoteFromRepo(noteId, subject);
+    }
 
-    //TODO(khalid): send back, update note
+    conn.send(serializeMessage(new Message(OP.SET_NOTE_REVISION)
+        .put("status", setRevisionStatus)));
+    //TODO(khalid): broadcast?
   }
 
   private void getNoteByRevision(NotebookSocket conn, Notebook notebook, Message fromMessage)

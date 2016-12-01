@@ -149,6 +149,8 @@
         $rootScope.$broadcast('moveParagraph', data.id, data.index);
       } else if (op === 'NOTE_UPDATED') {
         $rootScope.$broadcast('updateNote', data.name, data.config, data.info);
+      } else if (op === 'SET_NOTE_REVISION') {
+        $rootScope.$broadcast('setNoteRevisionResult', data);
       }
     });
 
