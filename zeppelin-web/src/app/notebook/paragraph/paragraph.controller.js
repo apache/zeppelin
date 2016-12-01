@@ -206,12 +206,12 @@
       $scope.dirtyText = undefined;
 
       if ($scope.paragraph.config.editorSetting.editOnDblClick) {
-        closeEditorAndOpenTable();
+        closeEditorAndOpenTable($scope.paragraph);
       } else if (editorSetting.isOutputHidden &&
           !$scope.paragraph.config.editorSetting.editOnDblClick) {
         // %md/%angular repl make output to be hidden by default after running
         // so should open output if repl changed from %md/%angular to another
-        openEditorAndOpenTable();
+        openEditorAndOpenTable($scope.paragraph);
       }
       editorSetting.isOutputHidden = $scope.paragraph.config.editorSetting.editOnDblClick;
     };
@@ -363,25 +363,25 @@
       commitParagraph(paragraph.title, paragraph.text, newConfig, newParams);
     };
 
-    var openEditorAndCloseTable = function() {
-      manageEditorAndTableState(false, true);
+    var openEditorAndCloseTable = function(paragraph) {
+      manageEditorAndTableState(paragraph, false, true);
     };
 
-    var closeEditorAndOpenTable = function() {
-      manageEditorAndTableState(true, false);
+    var closeEditorAndOpenTable = function(paragraph) {
+      manageEditorAndTableState(paragraph, true, false);
     };
 
-    var openEditorAndOpenTable = function() {
-      manageEditorAndTableState(false, false);
+    var openEditorAndOpenTable = function(paragraph) {
+      manageEditorAndTableState(paragraph, false, false);
     };
 
-    var manageEditorAndTableState = function(hideEditor, hideTable) {
-      var newParams = angular.copy($scope.paragraph.settings.params);
-      var newConfig = angular.copy($scope.paragraph.config);
+    var manageEditorAndTableState = function(paragraph, hideEditor, hideTable) {
+      var newParams = angular.copy(paragraph.settings.params);
+      var newConfig = angular.copy(paragraph.config);
       newConfig.editorHide = hideEditor;
       newConfig.tableHide = hideTable;
 
-      commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
+      commitParagraph(paragraph.title, paragraph.text, newConfig, newParams);
     };
 
     $scope.showTitle = function() {
@@ -1188,7 +1188,7 @@
       if ($scope.paragraph.id === paragraphId && $scope.paragraph.config.editorHide &&
           $scope.paragraph.config.editorSetting.editOnDblClick) {
         var deferred = $q.defer();
-        openEditorAndCloseTable();
+        openEditorAndCloseTable($scope.paragraph);
         $timeout(
           $scope.$on('updateParagraph', function(event, data) {
             deferred.resolve(data);
