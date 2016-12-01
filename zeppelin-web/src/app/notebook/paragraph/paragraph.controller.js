@@ -343,24 +343,24 @@
       commitParagraph(paragraph.title, paragraph.text, newConfig, newParams);
     };
 
-    $scope.closeTable = function() {
+    $scope.closeTable = function(paragraph) {
       console.log('close the output');
 
-      var newParams = angular.copy($scope.paragraph.settings.params);
-      var newConfig = angular.copy($scope.paragraph.config);
+      var newParams = angular.copy(paragraph.settings.params);
+      var newConfig = angular.copy(paragraph.config);
       newConfig.tableHide = true;
 
-      commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
+      commitParagraph(paragraph.title, paragraph.text, newConfig, newParams);
     };
 
-    $scope.openTable = function() {
+    $scope.openTable = function(paragraph) {
       console.log('open the output');
 
-      var newParams = angular.copy($scope.paragraph.settings.params);
-      var newConfig = angular.copy($scope.paragraph.config);
+      var newParams = angular.copy(paragraph.settings.params);
+      var newConfig = angular.copy(paragraph.config);
       newConfig.tableHide = false;
 
-      commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
+      commitParagraph(paragraph.title, paragraph.text, newConfig, newParams);
     };
 
     var openEditorAndCloseTable = function() {
@@ -1215,11 +1215,11 @@
     });
 
     $scope.$on('openTable', function(event) {
-      $scope.openTable();
+      $scope.openTable($scope.paragraph);
     });
 
     $scope.$on('closeTable', function(event) {
-      $scope.closeTable();
+      $scope.closeTable($scope.paragraph);
     });
   }
 })();
