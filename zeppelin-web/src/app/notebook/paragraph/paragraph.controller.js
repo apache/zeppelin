@@ -311,8 +311,8 @@
       }
     };
 
-    $scope.clearParagraphOutput = function() {
-      websocketMsgSrv.clearParagraphOutput($scope.paragraph.id);
+    $scope.clearParagraphOutput = function(paragraph) {
+      websocketMsgSrv.clearParagraphOutput(paragraph.id);
     };
 
     $scope.toggleEditor = function() {
@@ -1147,7 +1147,7 @@
         }else if (keyEvent.ctrlKey && keyEvent.shiftKey && keyCode === 67) { // Ctrl + Alt + c
           $scope.copyPara('below');
         } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 76) { // Ctrl + Alt + l
-          $scope.clearParagraphOutput();
+          $scope.clearParagraphOutput($scope.paragraph);
         } else {
           noShortcutDefined = true;
         }
