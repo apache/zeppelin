@@ -1506,6 +1506,11 @@ public class NotebookServer extends WebSocketServlet implements
 
     conn.send(serializeMessage(new Message(OP.SET_NOTE_REVISION)
         .put("status", setRevisionStatus)));
+    if (!setRevisionStatus) {
+      conn.send(serializeMessage(new Message(OP.ERROR_INFO).put("info",
+          "Couldn't set note to the given revision. "
+          + "Please check the logs for more details.")));
+    }
     //TODO(khalid): broadcast?
   }
 
