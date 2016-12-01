@@ -30,7 +30,7 @@ limitations under the License.
         ng-click="cancelParagraph(paragraph)"
         ng-show="paragraph.status=='RUNNING' || paragraph.status=='PENDING'"></span>
   <span class="{{paragraph.config.editorHide ? 'icon-size-fullscreen' : 'icon-size-actual'}}" style="cursor:pointer;" tooltip-placement="top" tooltip="{{(paragraph.config.editorHide ? 'Show' : 'Hide') + ' editor'}}"
-        ng-click="toggleEditor()"></span>
+        ng-click="toggleEditor(paragraph)"></span>
   <span class="{{paragraph.config.tableHide ? 'icon-notebook' : 'icon-book-open'}}" style="cursor:pointer;" tooltip-placement="top" tooltip="{{(paragraph.config.tableHide ? 'Show' : 'Hide') + ' output'}}"
         ng-click="toggleOutput()"></span>
   <span class="dropdown navbar-right">

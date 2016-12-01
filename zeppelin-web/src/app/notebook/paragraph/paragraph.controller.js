@@ -315,32 +315,32 @@
       websocketMsgSrv.clearParagraphOutput(paragraph.id);
     };
 
-    $scope.toggleEditor = function() {
-      if ($scope.paragraph.config.editorHide) {
-        $scope.openEditor();
+    $scope.toggleEditor = function(paragraph) {
+      if (paragraph.config.editorHide) {
+        $scope.openEditor(paragraph);
       } else {
-        $scope.closeEditor();
+        $scope.closeEditor(paragraph);
       }
     };
 
-    $scope.closeEditor = function() {
+    $scope.closeEditor = function(paragraph) {
       console.log('close the note');
 
-      var newParams = angular.copy($scope.paragraph.settings.params);
-      var newConfig = angular.copy($scope.paragraph.config);
+      var newParams = angular.copy(paragraph.settings.params);
+      var newConfig = angular.copy(paragraph.config);
       newConfig.editorHide = true;
 
-      commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
+      commitParagraph(paragraph.title, paragraph.text, newConfig, newParams);
     };
 
-    $scope.openEditor = function() {
+    $scope.openEditor = function(paragraph) {
       console.log('open the note');
 
-      var newParams = angular.copy($scope.paragraph.settings.params);
-      var newConfig = angular.copy($scope.paragraph.config);
+      var newParams = angular.copy(paragraph.settings.params);
+      var newConfig = angular.copy(paragraph.config);
       newConfig.editorHide = false;
 
-      commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
+      commitParagraph(paragraph.title, paragraph.text, newConfig, newParams);
     };
 
     $scope.closeTable = function() {
@@ -1127,7 +1127,7 @@
         } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 82) { // Ctrl + Alt + r
           $scope.toggleEnableDisable($scope.paragraph);
         } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 69) { // Ctrl + Alt + e
-          $scope.toggleEditor();
+          $scope.toggleEditor($scope.paragraph);
         } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 77) { // Ctrl + Alt + m
           if ($scope.paragraph.config.lineNumbers) {
             $scope.hideLineNumbers();
@@ -1207,11 +1207,11 @@
     });
 
     $scope.$on('openEditor', function(event) {
-      $scope.openEditor();
+      $scope.openEditor($scope.paragraph);
     });
 
     $scope.$on('closeEditor', function(event) {
-      $scope.closeEditor();
+      $scope.closeEditor($scope.paragraph);
     });
 
     $scope.$on('openTable', function(event) {
