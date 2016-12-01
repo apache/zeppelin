@@ -83,7 +83,7 @@ public class Message {
                       // @param title paragraph title
                       // @param paragraph paragraph content.ie. script
                       // @param config paragraph config
-                      // @param params paragraph params 
+                      // @param params paragraph params
 
     EDITOR_SETTING,   // [c-s] ask paragraph editor setting
                       // @param magic magic keyword written in paragraph

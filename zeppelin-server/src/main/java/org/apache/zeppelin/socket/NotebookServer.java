@@ -1283,20 +1283,19 @@ public class NotebookServer extends WebSocketServlet implements
     Paragraph newPara = note.insertParagraph(index);
     note.persist(subject);
     broadcastNewParagraph(note, newPara);
-    
+
     return newPara.getId();
   }
 
   private void copyParagraph(NotebookSocket conn, HashSet<String> userAndRoles,
                                Notebook notebook, Message fromMessage) throws IOException {
     String newParaId = insertParagraph(conn, userAndRoles, notebook, fromMessage);
-    
+
     if (newParaId == null) {
       return;
     }
     fromMessage.put("id", newParaId);
-    
-    //runParagraph(conn, userAndRoles, notebook, fromMessage);
+
     updateParagraph(conn, userAndRoles, notebook, fromMessage);
   }
 
