@@ -233,12 +233,9 @@
       commitParagraph(paragraph.title, paragraph.text, newConfig, newParams);
     };
 
-    $scope.run = function() {
-      var editorValue = $scope.editor.getValue();
-      if (editorValue) {
-        if (!($scope.paragraph.status === 'RUNNING' || $scope.paragraph.status === 'PENDING')) {
-          $scope.runParagraph(editorValue);
-        }
+    $scope.run = function(paragraph, editorValue) {
+      if (editorValue && !$scope.isRunning(paragraph)) {
+        $scope.runParagraph(editorValue);
       }
     };
 
@@ -1112,7 +1109,7 @@
           // move focus to next paragraph
           $scope.$emit('moveFocusToNextParagraph', paragraphId);
         } else if (keyEvent.shiftKey && keyCode === 13) { // Shift + Enter
-          $scope.run();
+          $scope.run($scope.paragraph, $scope.editor.getValue());
         } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 67) { // Ctrl + Alt + c
           $scope.cancelParagraph($scope.paragraph);
         } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 68) { // Ctrl + Alt + d
