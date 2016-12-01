@@ -226,11 +226,11 @@
       $scope.dirtyText = undefined;
     };
 
-    $scope.toggleEnableDisable = function() {
-      $scope.paragraph.config.enabled = $scope.paragraph.config.enabled ? false : true;
-      var newParams = angular.copy($scope.paragraph.settings.params);
-      var newConfig = angular.copy($scope.paragraph.config);
-      commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
+    $scope.toggleEnableDisable = function(paragraph) {
+      paragraph.config.enabled = !paragraph.config.enabled;
+      var newParams = angular.copy(paragraph.settings.params);
+      var newConfig = angular.copy(paragraph.config);
+      commitParagraph(paragraph.title, paragraph.text, newConfig, newParams);
     };
 
     $scope.run = function() {
@@ -1128,7 +1128,7 @@
         } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 79) { // Ctrl + Alt + o
           $scope.toggleOutput();
         } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 82) { // Ctrl + Alt + r
-          $scope.toggleEnableDisable();
+          $scope.toggleEnableDisable($scope.paragraph);
         } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 69) { // Ctrl + Alt + e
           $scope.toggleEditor();
         } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 77) { // Ctrl + Alt + m
