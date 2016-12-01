@@ -239,12 +239,12 @@
       }
     };
 
-    $scope.moveUp = function() {
-      $scope.$emit('moveParagraphUp', $scope.paragraph);
+    $scope.moveUp = function(paragraph) {
+      $scope.$emit('moveParagraphUp', paragraph);
     };
 
-    $scope.moveDown = function() {
-      $scope.$emit('moveParagraphDown', $scope.paragraph);
+    $scope.moveDown = function(paragraph) {
+      $scope.$emit('moveParagraphDown', paragraph);
     };
 
     $scope.insertNew = function(position) {
@@ -1115,9 +1115,9 @@
         } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 68) { // Ctrl + Alt + d
           $scope.removeParagraph();
         } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 75) { // Ctrl + Alt + k
-          $scope.moveUp();
+          $scope.moveUp($scope.paragraph);
         } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 74) { // Ctrl + Alt + j
-          $scope.moveDown();
+          $scope.moveDown($scope.paragraph);
         } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 65) { // Ctrl + Alt + a
           $scope.insertNew('above');
         } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 66) { // Ctrl + Alt + b
