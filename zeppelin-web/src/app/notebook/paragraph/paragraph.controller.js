@@ -444,18 +444,6 @@
       }
     };
 
-    $scope.toggleGraphOption = function() {
-      var newConfig = angular.copy($scope.paragraph.config);
-      if (newConfig.graph.optionOpen) {
-        newConfig.graph.optionOpen = false;
-      } else {
-        newConfig.graph.optionOpen = true;
-      }
-      var newParams = angular.copy($scope.paragraph.settings.params);
-
-      commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
-    };
-
     $scope.toggleOutput = function() {
       var newConfig = angular.copy($scope.paragraph.config);
       newConfig.tableHide = !newConfig.tableHide;
