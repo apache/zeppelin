@@ -190,12 +190,8 @@
       return !object;
     };
 
-    $scope.isRunning = function() {
-      if ($scope.paragraph.status === 'RUNNING' || $scope.paragraph.status === 'PENDING') {
-        return true;
-      } else {
-        return false;
-      }
+    $scope.isRunning = function(paragraph) {
+      return paragraph.status === 'RUNNING' || paragraph.status === 'PENDING';
     };
 
     $scope.cancelParagraph = function() {
@@ -510,7 +506,7 @@
         $scope.editor.setHighlightGutterLine(false);
         $scope.editor.getSession().setUseWrapMode(true);
         $scope.editor.setTheme('ace/theme/chrome');
-        $scope.editor.setReadOnly($scope.isRunning());
+        $scope.editor.setReadOnly($scope.isRunning($scope.paragraph));
         if ($scope.paragraphFocused) {
           $scope.editor.focus();
           $scope.goToEnd();
@@ -1070,7 +1066,7 @@
         $scope.paragraph.status = data.paragraph.status;
         $scope.paragraph.results = data.paragraph.results;
         $scope.paragraph.settings = data.paragraph.settings;
-        $scope.editor.setReadOnly($scope.isRunning());
+        $scope.editor.setReadOnly($scope.isRunning(data.paragraph));
 
         if (!$scope.asIframe) {
           $scope.paragraph.config = data.paragraph.config;
