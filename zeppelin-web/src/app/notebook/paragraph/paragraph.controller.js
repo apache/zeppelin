@@ -118,12 +118,10 @@
 
       noteVarShareService.put($scope.paragraph.id + '_paragraphScope', paragraphScope);
 
-      initializeDefault();
+      initializeDefault($scope.paragraph.config);
     };
 
-    var initializeDefault = function() {
-      var config = $scope.paragraph.config;
-
+    var initializeDefault = function(config) {
       if (!config.colWidth) {
         config.colWidth = 12;
       }
@@ -1076,7 +1074,7 @@
 
         if (!$scope.asIframe) {
           $scope.paragraph.config = data.paragraph.config;
-          initializeDefault();
+          initializeDefault(data.paragraph.config);
         } else {
           data.paragraph.config.editorHide = true;
           data.paragraph.config.tableHide = false;
