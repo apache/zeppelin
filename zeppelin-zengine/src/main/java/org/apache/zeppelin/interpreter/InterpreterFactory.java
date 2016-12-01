@@ -466,7 +466,11 @@ public class InterpreterFactory implements InterpreterGroupFactory {
             File localRepoDir = new File(conf.getInterpreterLocalRepoPath() + "/" +
                 setting.getId());
             if (localRepoDir.exists()) {
-              FileUtils.cleanDirectory(localRepoDir);
+              try {
+                FileUtils.cleanDirectory(localRepoDir);
+              } catch (FileNotFoundException e) {
+                logger.info("A file that does not exist cannot be deleted, nothing to worry", e);
+              }
             }
 
             // load dependencies
@@ -699,6 +703,15 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     return interpreterSetting;
   }
 
+  /**
+   *
+   * @param id interpreterGroup id. Combination of interpreterSettingId + noteId/userId/shared
+   *           depends on interpreter mode
+   * @param option
+   * @return
+   * @throws InterpreterException
+   * @throws NullArgumentException
+   */
   @Override
   public InterpreterGroup createInterpreterGroup(String id, InterpreterOption option)
       throws InterpreterException, NullArgumentException {

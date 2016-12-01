@@ -51,7 +51,7 @@ public class AppendOutputRunner implements Runnable {
   @Override
   public void run() {
 
-    Map<String, Map<String, StringBuilder> > noteMap = new HashMap<>();
+    Map<String, StringBuilder> stringBufferMap = new HashMap<>();
     List<AppendOutputBuffer> list = new LinkedList<>();
 
     /* "drainTo" method does not wait for any element
@@ -73,15 +73,14 @@ public class AppendOutputRunner implements Runnable {
     for (AppendOutputBuffer buffer: list) {
       String noteId = buffer.getNoteId();
       String paragraphId = buffer.getParagraphId();
+      int index = buffer.getIndex();
+      String stringBufferKey = noteId + ":" + paragraphId + ":" + index;
 
-      Map<String, StringBuilder> paragraphMap = (noteMap.containsKey(noteId)) ?
-          noteMap.get(noteId) : new HashMap<String, StringBuilder>();
-      StringBuilder builder = paragraphMap.containsKey(paragraphId) ?
-          paragraphMap.get(paragraphId) : new StringBuilder();
+      StringBuilder builder = stringBufferMap.containsKey(stringBufferKey) ?
+          stringBufferMap.get(stringBufferKey) : new StringBuilder();
 
       builder.append(buffer.getData());
-      paragraphMap.put(paragraphId, builder);
-      noteMap.put(noteId, paragraphMap);
+      stringBufferMap.put(stringBufferKey, builder);
     }
     Long processingTime = System.currentTimeMillis() - processingStartTime;
 
@@ -94,12 +93,11 @@ public class AppendOutputRunner implements Runnable {
     }
 
     Long sizeProcessed = new Long(0);
-    for (String noteId: noteMap.keySet()) {
-      for (String paragraphId: noteMap.get(noteId).keySet()) {
-        String data = noteMap.get(noteId).get(paragraphId).toString();
-        sizeProcessed += data.length();
-        listener.onOutputAppend(noteId, paragraphId, data);
-      }
+    for (String stringBufferKey : stringBufferMap.keySet()) {
+      StringBuilder buffer = stringBufferMap.get(stringBufferKey);
+      sizeProcessed += buffer.length();
+      String[] keys = stringBufferKey.split(":");
+      listener.onOutputAppend(keys[0], keys[1], Integer.parseInt(keys[2]), buffer.toString());
     }
 
     if (sizeProcessed > SAFE_PROCESSING_STRING_SIZE) {
@@ -111,8 +109,8 @@ public class AppendOutputRunner implements Runnable {
     }
   }
 
-  public void appendBuffer(String noteId, String paragraphId, String outputToAppend) {
-    queue.offer(new AppendOutputBuffer(noteId, paragraphId, outputToAppend));
+  public void appendBuffer(String noteId, String paragraphId, int index, String outputToAppend) {
+    queue.offer(new AppendOutputBuffer(noteId, paragraphId, index, outputToAppend));
   }
 
 }

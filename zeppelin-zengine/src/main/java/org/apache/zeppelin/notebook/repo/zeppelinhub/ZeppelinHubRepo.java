@@ -40,6 +40,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
@@ -156,18 +157,30 @@ public class ZeppelinHubRepo implements NotebookRepo {
   }
   
   /**
-   * Get Token directly from Zeppelinhub.
+   * Get list of user instances from Zeppelinhub.
    * This will avoid and remove the needs of setting up token in zeppelin-env.sh.
    */
-  private String getUserZeppelinInstanceToken(String ticket) throws IOException {
+  private List<Instance> getUserInstances(String ticket) throws IOException {
     if (StringUtils.isBlank(ticket)) {
-      return "";
+      return Collections.emptyList();
+    }
+    return restApiClient.getInstances(ticket);
+  }
+
+  /**
+   * Get user default instance.
+   * From now, it will be from the first instance from the list,
+   * But later we can think about marking a default one and return it instead :)
+   */
+  private String getDefaultZeppelinInstanceToken(String ticket) throws IOException {
+    List<Instance> instances = getUserInstances(ticket);
+    if (instances.isEmpty()) {
+      return StringUtils.EMPTY;
     }
 
-    List<Instance> instances = restApiClient.getInstances(ticket);
-    // TODO(anthony): Implement NotebookRepo Setting to let user switch token at runtime.
-
-    token = instances.isEmpty() ? StringUtils.EMPTY : instances.get(0).token;
+    String token = instances.get(0).token;
+    LOG.debug("The following instance has been assigned {} with token {}", instances.get(0).name,
+        token);
     return token;
   }
 
@@ -179,14 +192,13 @@ public class ZeppelinHubRepo implements NotebookRepo {
     if (StringUtils.isBlank(token)) {
       String ticket = UserSessionContainer.instance.getSession(principal);
       try {
-        token = getUserZeppelinInstanceToken(ticket);
+        token = getDefaultZeppelinInstanceToken(ticket);
         usersToken.putIfAbsent(principal, token);
       } catch (IOException e) {
         LOG.error("Cannot get user token", e);
         token = StringUtils.EMPTY;
       }
     }
-
     return token;
   }
 
@@ -305,13 +317,89 @@ public class ZeppelinHubRepo implements NotebookRepo {
 
   @Override
   public List<NotebookRepoSettingsInfo> getSettings(AuthenticationInfo subject) {
-    LOG.warn("Method not implemented");
-    return Collections.emptyList();
+    if (!isSubjectValid(subject)) {
+      return Collections.emptyList();
+    }
+
+    List<NotebookRepoSettingsInfo> settings = Lists.newArrayList();
+    String user = subject.getUser();
+    String zeppelinHubUserSession = UserSessionContainer.instance.getSession(user);
+    String userToken = getUserToken(user);
+    List<Instance> instances;
+    List<Map<String, String>> values = Lists.newLinkedList();
+
+    try {
+      instances = getUserInstances(zeppelinHubUserSession);
+    } catch (IOException e) {
+      LOG.warn("Couldnt find instances for the session {}, returning empty collection",
+          zeppelinHubUserSession);
+      // user not logged
+      //TODO(xxx): handle this case.
+      instances = Collections.emptyList();
+    }
+    
+    NotebookRepoSettingsInfo repoSetting = NotebookRepoSettingsInfo.newInstance();
+    repoSetting.type = NotebookRepoSettingsInfo.Type.DROPDOWN;
+    for (Instance instance : instances) {
+      if (instance.token.equals(userToken)) {
+        repoSetting.selected = Integer.toString(instance.id);
+      }
+      values.add(ImmutableMap.of("name", instance.name, "value", Integer.toString(instance.id)));
+    }
+
+    repoSetting.value = values;
+    repoSetting.name = "Instance";
+    settings.add(repoSetting);
+    return settings;
+  }
+
+  private void changeToken(int instanceId, String user) {
+    if (instanceId <= 0) {
+      LOG.error("User {} tried to switch to a non valid instance {}", user, instanceId);
+      return;
+    }
+
+    LOG.info("User {} will switch instance", user);
+    String ticket = UserSessionContainer.instance.getSession(user);
+    List<Instance> instances;
+    try {
+      instances = getUserInstances(ticket);
+      if (instances.isEmpty()) {
+        return;
+      }
+
+      for (Instance instance : instances) {
+        if (instance.id == instanceId) {
+          LOG.info("User {} switched to instance {}", user, instances.get(0).name);
+          usersToken.put(user, instance.token);
+          break;
+        }
+      }
+    } catch (IOException e) {
+      LOG.error("Cannot switch instance for user {}", user, e);
+    }
   }
 
   @Override
   public void updateSettings(Map<String, String> settings, AuthenticationInfo subject) {
-    LOG.warn("Method not implemented");
+    if (!isSubjectValid(subject)) {
+      LOG.error("Invalid subject, cannot update Zeppelinhub settings");
+      return;
+    }
+    if (settings == null || settings.isEmpty()) {
+      LOG.error("Cannot update ZeppelinHub repo settings because of invalid settings");
+      return;
+    }
+
+    int instanceId = 0;
+    if (settings.containsKey("Instance")) {
+      try {
+        instanceId = Integer.parseInt(settings.get("Instance"));
+      } catch (NumberFormatException e) {
+        LOG.error("ZeppelinHub Instance Id in not a valid integer", e);
+      }
+    }
+    changeToken(instanceId, subject.getUser());
   }
 
 }

@@ -169,7 +169,7 @@ public class PythonInterpreterTest {
     cmdHistory = "";
     InterpreterResult result = pythonInterpreter.interpret("print a", null);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-    assertEquals("%text print a", result.toString());
+    assertEquals("%text print a", result.message().get(0).toString());
   }
 
   /**
@@ -250,13 +250,13 @@ public class PythonInterpreterTest {
 
     System.err.println("ret = '" + ret + "'");
     assertEquals(InterpreterResult.Code.ERROR, ret.code());
-    assertTrue(ret.message().length() > 0);
+    assertTrue(ret.message().get(0).getData().length() > 0);
 
     assertNotNull("Interpreter result for text is Null", ret);
     String codePrintText = "print (\"Exception(\\\"test exception\\\")\")";
     ret = pythonInterpreter.interpret(codePrintText, null);
     assertEquals(InterpreterResult.Code.SUCCESS, ret.code());
-    assertTrue(ret.message().length() > 0);
+    assertTrue(ret.message().get(0).getData().length() > 0);
   }
 
 }

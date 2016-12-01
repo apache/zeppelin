@@ -28,12 +28,13 @@
     '$timeout',
     'saveAsService',
     'ngToast',
-    'noteActionSrv'
+    'noteActionSrv',
+    'noteVarShareService'
   ];
 
   function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
                         $http, websocketMsgSrv, baseUrlSrv, $timeout, saveAsService,
-                        ngToast, noteActionSrv) {
+                        ngToast, noteActionSrv, noteVarShareService) {
 
     ngToast.dismiss();
 
@@ -87,6 +88,7 @@
 
     /** Init the new controller */
     var initNotebook = function() {
+      noteVarShareService.clear();
       websocketMsgSrv.getNote($routeParams.noteId);
       websocketMsgSrv.listRevisionHistory($routeParams.noteId);
       var currentRoute = $route.current;

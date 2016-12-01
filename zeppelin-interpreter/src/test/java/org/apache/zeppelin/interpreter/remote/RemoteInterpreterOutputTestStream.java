@@ -101,15 +101,15 @@ public class RemoteInterpreterOutputTestStream implements RemoteInterpreterProce
     RemoteInterpreter intp = createMockInterpreter();
     InterpreterResult ret = intp.interpret("SUCCESS::staticresult", createInterpreterContext());
     assertEquals(InterpreterResult.Code.SUCCESS, ret.code());
-    assertEquals("staticresult", ret.message());
+    assertEquals("staticresult", ret.message().get(0).getData());
 
     ret = intp.interpret("SUCCESS::staticresult2", createInterpreterContext());
     assertEquals(InterpreterResult.Code.SUCCESS, ret.code());
-    assertEquals("staticresult2", ret.message());
+    assertEquals("staticresult2", ret.message().get(0).getData());
 
     ret = intp.interpret("ERROR::staticresult3", createInterpreterContext());
     assertEquals(InterpreterResult.Code.ERROR, ret.code());
-    assertEquals("staticresult3", ret.message());
+    assertEquals("staticresult3", ret.message().get(0).getData());
   }
 
   @Test
@@ -117,11 +117,11 @@ public class RemoteInterpreterOutputTestStream implements RemoteInterpreterProce
     RemoteInterpreter intp = createMockInterpreter();
     InterpreterResult ret = intp.interpret("SUCCESS:streamresult:", createInterpreterContext());
     assertEquals(InterpreterResult.Code.SUCCESS, ret.code());
-    assertEquals("streamresult", ret.message());
+    assertEquals("streamresult", ret.message().get(0).getData());
 
     ret = intp.interpret("ERROR:streamresult2:", createInterpreterContext());
     assertEquals(InterpreterResult.Code.ERROR, ret.code());
-    assertEquals("streamresult2", ret.message());
+    assertEquals("streamresult2", ret.message().get(0).getData());
   }
 
   @Test
@@ -129,7 +129,8 @@ public class RemoteInterpreterOutputTestStream implements RemoteInterpreterProce
     RemoteInterpreter intp = createMockInterpreter();
     InterpreterResult ret = intp.interpret("SUCCESS:stream:static", createInterpreterContext());
     assertEquals(InterpreterResult.Code.SUCCESS, ret.code());
-    assertEquals("streamstatic", ret.message());
+    assertEquals("stream", ret.message().get(0).getData());
+    assertEquals("static", ret.message().get(1).getData());
   }
 
   @Test
@@ -137,30 +138,49 @@ public class RemoteInterpreterOutputTestStream implements RemoteInterpreterProce
     RemoteInterpreter intp = createMockInterpreter();
 
     InterpreterResult ret = intp.interpret("SUCCESS:%html hello:", createInterpreterContext());
-    assertEquals(InterpreterResult.Type.HTML, ret.type());
-    assertEquals("hello", ret.message());
+    assertEquals(InterpreterResult.Type.HTML, ret.message().get(0).getType());
+    assertEquals("hello", ret.message().get(0).getData());
 
     ret = intp.interpret("SUCCESS:%html\nhello:", createInterpreterContext());
-    assertEquals(InterpreterResult.Type.HTML, ret.type());
-    assertEquals("hello", ret.message());
+    assertEquals(InterpreterResult.Type.HTML, ret.message().get(0).getType());
+    assertEquals("hello", ret.message().get(0).getData());
 
     ret = intp.interpret("SUCCESS:%html hello:%angular world", createInterpreterContext());
-    assertEquals(InterpreterResult.Type.ANGULAR, ret.type());
-    assertEquals("helloworld", ret.message());
+    assertEquals(InterpreterResult.Type.HTML, ret.message().get(0).getType());
+    assertEquals("hello", ret.message().get(0).getData());
+    assertEquals(InterpreterResult.Type.ANGULAR, ret.message().get(1).getType());
+    assertEquals("world", ret.message().get(1).getData());
   }
 
   @Override
-  public void onOutputAppend(String noteId, String paragraphId, String output) {
+  public void onOutputAppend(String noteId, String paragraphId, int index, String output) {
 
   }
 
   @Override
-  public void onOutputUpdated(String noteId, String paragraphId, String output) {
+  public void onOutputUpdated(String noteId, String paragraphId, int index, InterpreterResult.Type type, String output) {
+
+  }
+
+  @Override
+  public void onOutputClear(String noteId, String paragraphId) {
 
   }
 
   @Override
   public void onMetaInfosReceived(String settingId, Map<String, String> metaInfos) {
+
+  }
+
+  @Override
+  public void onGetParagraphRunners(String noteId, String paragraphId, RemoteWorksEventListener callback) {
+    if (callback != null) {
+      callback.onFinished(new LinkedList<>());
+    }
+  }
+
+  @Override
+  public void onRemoteRunParagraph(String noteId, String ParagraphID) throws Exception {
 
   }
 }

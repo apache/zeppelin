@@ -140,8 +140,8 @@ public class PostgreSqlInterpreterTest extends BasicJDBCTestCaseAdapter {
     InterpreterResult interpreterResult = psqlInterpreter.interpret(sqlQuery, null);
 
     assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
-    assertEquals(InterpreterResult.Type.TABLE, interpreterResult.type());
-    assertEquals("col1\tcol2\nval11\t\n\tval22\n", interpreterResult.message());
+    assertEquals(InterpreterResult.Type.TABLE, interpreterResult.message().get(0).getType());
+    assertEquals("col1\tcol2\nval11\t\n\tval22\n", interpreterResult.message().get(0).getData());
 
     verifySQLStatementExecuted(sqlQuery);
     verifyAllResultSetsClosed();
@@ -161,8 +161,8 @@ public class PostgreSqlInterpreterTest extends BasicJDBCTestCaseAdapter {
     InterpreterResult interpreterResult = psqlInterpreter.interpret(sqlQuery, null);
 
     assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
-    assertEquals(InterpreterResult.Type.TABLE, interpreterResult.type());
-    assertEquals("col1\tcol2\nval11\tval21\nval12\tval22\n", interpreterResult.message());
+    assertEquals(InterpreterResult.Type.TABLE, interpreterResult.message().get(0).getType());
+    assertEquals("col1\tcol2\nval11\tval21\nval12\tval22\n", interpreterResult.message().get(0).getData());
 
     verifySQLStatementExecuted(sqlQuery);
     verifyAllResultSetsClosed();
@@ -182,8 +182,8 @@ public class PostgreSqlInterpreterTest extends BasicJDBCTestCaseAdapter {
     InterpreterResult interpreterResult = psqlInterpreter.interpret(sqlQuery, null);
 
     assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
-    assertEquals(InterpreterResult.Type.TABLE, interpreterResult.type());
-    assertEquals("col1\tcol2\nval11\tval21\n", interpreterResult.message());
+    assertEquals(InterpreterResult.Type.TABLE, interpreterResult.message().get(0).getType());
+    assertEquals("col1\tcol2\nval11\tval21\n", interpreterResult.message().get(0).getData());
 
     verifySQLStatementExecuted(sqlQuery);
     verifyAllResultSetsClosed();
@@ -203,8 +203,8 @@ public class PostgreSqlInterpreterTest extends BasicJDBCTestCaseAdapter {
     InterpreterResult interpreterResult = psqlInterpreter.interpret(sqlQuery, null);
 
     assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
-    assertEquals(InterpreterResult.Type.TABLE, interpreterResult.type());
-    assertEquals("co l1\tco l2\nval11\tv al21\nva l1 2\tval 22\n", interpreterResult.message());
+    assertEquals(InterpreterResult.Type.TABLE, interpreterResult.message().get(0).getType());
+    assertEquals("co l1\tco l2\nval11\tv al21\nva l1 2\tval 22\n", interpreterResult.message().get(0).getData());
 
     verifySQLStatementExecuted(sqlQuery);
     verifyAllResultSetsClosed();
@@ -223,8 +223,8 @@ public class PostgreSqlInterpreterTest extends BasicJDBCTestCaseAdapter {
     InterpreterResult interpreterResult = psqlInterpreter.interpret(sqlQuery, null);
 
     assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
-    assertEquals(InterpreterResult.Type.TEXT, interpreterResult.type());
-    assertEquals("col1\nval11\nval12\n", interpreterResult.message());
+    assertEquals(InterpreterResult.Type.TEXT, interpreterResult.message().get(0).getType());
+    assertEquals("col1\nval11\nval12\n", interpreterResult.message().get(0).getData());
 
     verifySQLStatementExecuted(sqlQuery);
     verifyAllResultSetsClosed();
@@ -243,8 +243,8 @@ public class PostgreSqlInterpreterTest extends BasicJDBCTestCaseAdapter {
     InterpreterResult interpreterResult = psqlInterpreter.interpret(sqlQuery, null);
 
     assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
-    assertEquals(InterpreterResult.Type.TEXT, interpreterResult.type());
-    assertEquals("co\tl\n1\nva\nl11\nva\tl\n12\n", interpreterResult.message());
+    assertEquals(InterpreterResult.Type.TEXT, interpreterResult.message().get(0).getType());
+    assertEquals("co\tl\n1\nva\nl11\nva\tl\n12\n", interpreterResult.message().get(0).getData());
 
     verifySQLStatementExecuted(sqlQuery);
     verifyAllResultSetsClosed();

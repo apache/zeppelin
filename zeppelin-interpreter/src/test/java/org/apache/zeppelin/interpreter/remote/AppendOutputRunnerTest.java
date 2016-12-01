@@ -20,6 +20,7 @@ package org.apache.zeppelin.interpreter.remote;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyInt;
 import static org.mockito.Mockito.atMost;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
@@ -67,8 +68,8 @@ public class AppendOutputRunnerTest {
     String[][] buffer = {{"note", "para", "data\n"}};
 
     loopForCompletingEvents(listener, 1, buffer);
-    verify(listener, times(1)).onOutputAppend(any(String.class), any(String.class), any(String.class));
-    verify(listener, times(1)).onOutputAppend("note", "para", "data\n");
+    verify(listener, times(1)).onOutputAppend(any(String.class), any(String.class), anyInt(), any(String.class));
+    verify(listener, times(1)).onOutputAppend("note", "para", 0, "data\n");
   }
 
   @Test
@@ -83,8 +84,8 @@ public class AppendOutputRunnerTest {
     };
 
     loopForCompletingEvents(listener, 1, buffer);
-    verify(listener, times(1)).onOutputAppend(any(String.class), any(String.class), any(String.class));
-    verify(listener, times(1)).onOutputAppend(note1, para1, "data1\ndata2\ndata3\n");
+    verify(listener, times(1)).onOutputAppend(any(String.class), any(String.class), anyInt(), any(String.class));
+    verify(listener, times(1)).onOutputAppend(note1, para1, 0, "data1\ndata2\ndata3\n");
   }
 
   @Test
@@ -102,11 +103,11 @@ public class AppendOutputRunnerTest {
     };
     loopForCompletingEvents(listener, 4, buffer);
 
-    verify(listener, times(4)).onOutputAppend(any(String.class), any(String.class), any(String.class));
-    verify(listener, times(1)).onOutputAppend(note1, para1, "data1\n");
-    verify(listener, times(1)).onOutputAppend(note1, para2, "data2\n");
-    verify(listener, times(1)).onOutputAppend(note2, para1, "data3\n");
-    verify(listener, times(1)).onOutputAppend(note2, para2, "data4\n");
+    verify(listener, times(4)).onOutputAppend(any(String.class), any(String.class), anyInt(), any(String.class));
+    verify(listener, times(1)).onOutputAppend(note1, para1, 0, "data1\n");
+    verify(listener, times(1)).onOutputAppend(note1, para2, 0, "data2\n");
+    verify(listener, times(1)).onOutputAppend(note2, para1, 0, "data3\n");
+    verify(listener, times(1)).onOutputAppend(note2, para2, 0, "data4\n");
   }
 
   @Test
@@ -125,7 +126,7 @@ public class AppendOutputRunnerTest {
      * calls, 30-40 Web-socket calls are made. Keeping
      * the unit-test to a pessimistic 100 web-socket calls.
      */
-    verify(listener, atMost(NUM_CLUBBED_EVENTS)).onOutputAppend(any(String.class), any(String.class), any(String.class));
+    verify(listener, atMost(NUM_CLUBBED_EVENTS)).onOutputAppend(any(String.class), any(String.class), anyInt(), any(String.class));
   }
 
   @Test
@@ -136,7 +137,7 @@ public class AppendOutputRunnerTest {
     int numEvents = 100000;
 
     for (int i=0; i<numEvents; i++) {
-      runner.appendBuffer("noteId", "paraId", data);
+      runner.appendBuffer("noteId", "paraId", 0, data);
     }
 
     TestAppender appender = new TestAppender();
@@ -178,7 +179,7 @@ public class AppendOutputRunnerTest {
       String noteId = "noteId";
       String paraId = "paraId";
       for (int i=0; i<NUM_EVENTS; i++) {
-        runner.appendBuffer(noteId, paraId, "data\n");
+        runner.appendBuffer(noteId, paraId, 0, "data\n");
       }
     }
   }
@@ -212,7 +213,7 @@ public class AppendOutputRunnerTest {
         numInvocations += 1;
         return null;
       }
-    }).when(listener).onOutputAppend(any(String.class), any(String.class), any(String.class));
+    }).when(listener).onOutputAppend(any(String.class), any(String.class), anyInt(), any(String.class));
   }
 
   private void loopForCompletingEvents(RemoteInterpreterProcessListener listener,
@@ -221,7 +222,7 @@ public class AppendOutputRunnerTest {
     prepareInvocationCounts(listener);
     AppendOutputRunner runner = new AppendOutputRunner(listener);
     for (String[] bufferElement: buffer) {
-      runner.appendBuffer(bufferElement[0], bufferElement[1], bufferElement[2]);
+      runner.appendBuffer(bufferElement[0], bufferElement[1], 0, bufferElement[2]);
     }
     future = service.scheduleWithFixedDelay(runner, 0,
         AppendOutputRunner.BUFFER_TIME_MS, TimeUnit.MILLISECONDS);

@@ -17,6 +17,7 @@
 package org.apache.zeppelin.rest;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
@@ -89,7 +90,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
         note.run(p.getId());
         waitForFinish(p);
         assertEquals(Status.FINISHED, p.getStatus());
-        assertEquals("55", p.getResult().message());
+        assertEquals("55", p.getResult().message().get(0).getData());
         ZeppelinServer.notebook.removeNote(note.getId(), anonymous);
     }
 
@@ -111,7 +112,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
             note.run(p.getId());
             waitForFinish(p);
             assertEquals(Status.FINISHED, p.getStatus());
-            assertTrue(p.getResult().message().contains(
+            assertTrue(p.getResult().message().get(0).getData().contains(
                     "Array[org.apache.spark.sql.Row] = Array([hello,20])"));
 
             // test display DataFrame
@@ -125,8 +126,8 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
             note.run(p.getId());
             waitForFinish(p);
             assertEquals(Status.FINISHED, p.getStatus());
-            assertEquals(InterpreterResult.Type.TABLE, p.getResult().type());
-            assertEquals("_1\t_2\nhello\t20\n", p.getResult().message());
+            assertEquals(InterpreterResult.Type.TABLE, p.getResult().message().get(1).getType());
+            assertEquals("_1\t_2\nhello\t20\n", p.getResult().message().get(1).getData());
 
             // test display DataSet
             if (sparkVersion >= 20) {
@@ -140,8 +141,8 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
                 note.run(p.getId());
                 waitForFinish(p);
                 assertEquals(Status.FINISHED, p.getStatus());
-                assertEquals(InterpreterResult.Type.TABLE, p.getResult().type());
-                assertEquals("_1\t_2\nhello\t20\n", p.getResult().message());
+                assertEquals(InterpreterResult.Type.TABLE, p.getResult().message().get(1).getType());
+                assertEquals("_1\t_2\nhello\t20\n", p.getResult().message().get(1).getData());
             }
             ZeppelinServer.notebook.removeNote(note.getId(), anonymous);
         }
@@ -180,9 +181,9 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
         p.setAuthenticationInfo(anonymous);
         note.run(p.getId());
         waitForFinish(p);
-        System.err.println("sparkRTest=" + p.getResult().message());
+        System.err.println("sparkRTest=" + p.getResult().message().get(0).getData());
         assertEquals(Status.FINISHED, p.getStatus());
-        assertEquals("[1] 3", p.getResult().message());
+        assertEquals("[1] 3", p.getResult().message().get(0).getData());
       }
       ZeppelinServer.notebook.removeNote(note.getId(), anonymous);
     }
@@ -205,7 +206,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
             note.run(p.getId());
             waitForFinish(p);
             assertEquals(Status.FINISHED, p.getStatus());
-            assertEquals("55\n", p.getResult().message());
+            assertEquals("55\n", p.getResult().message().get(0).getData());
             if (sparkVersion >= 13) {
                 // run sqlContext test
                 p = note.addParagraph();
@@ -219,7 +220,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
                 note.run(p.getId());
                 waitForFinish(p);
                 assertEquals(Status.FINISHED, p.getStatus());
-                assertEquals("[Row(age=20, id=1)]\n", p.getResult().message());
+                assertEquals("[Row(age=20, id=1)]\n", p.getResult().message().get(0).getData());
 
                 // test display Dataframe
                 p = note.addParagraph();
@@ -233,9 +234,9 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
                 note.run(p.getId());
                 waitForFinish(p);
                 assertEquals(Status.FINISHED, p.getStatus());
-                assertEquals(InterpreterResult.Type.TABLE, p.getResult().type());
+                assertEquals(InterpreterResult.Type.TABLE, p.getResult().message().get(0).getType());
                 // TODO (zjffdu), one more \n is appended, need to investigate why.
-                assertEquals("age\tid\n20\t1\n\n", p.getResult().message());
+                assertEquals("age\tid\n20\t1\n", p.getResult().message().get(0).getData());
 
                 // test udf
                 p = note.addParagraph();
@@ -248,7 +249,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
                 note.run(p.getId());
                 waitForFinish(p);
                 assertEquals(Status.FINISHED, p.getStatus());
-                assertEquals("[Row(len=u'3')]\n", p.getResult().message());
+                assertEquals("[Row(len=u'3')]\n", p.getResult().message().get(0).getData());
             }
             if (sparkVersion >= 20) {
                 // run SparkSession test
@@ -263,7 +264,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
                 note.run(p.getId());
                 waitForFinish(p);
                 assertEquals(Status.FINISHED, p.getStatus());
-                assertEquals("[Row(age=20, id=1)]\n", p.getResult().message());
+                assertEquals("[Row(age=20, id=1)]\n", p.getResult().message().get(0).getData());
 
                 // test udf
                 p = note.addParagraph();
@@ -277,7 +278,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
                 note.run(p.getId());
                 waitForFinish(p);
                 assertEquals(Status.FINISHED, p.getStatus());
-                assertEquals("[Row(len=u'3')]\n", p.getResult().message());
+                assertEquals("[Row(len=u'3')]\n", p.getResult().message().get(0).getData());
             }
         }
         ZeppelinServer.notebook.removeNote(note.getId(), anonymous);
@@ -309,7 +310,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
             note.run(p.getId());
             waitForFinish(p);
             assertEquals(Status.FINISHED, p.getStatus());
-            assertEquals("10\n", p.getResult().message());
+            assertEquals("10\n", p.getResult().message().get(0).getData());
         }
         ZeppelinServer.notebook.removeNote(note.getId(), anonymous);
     }
@@ -344,7 +345,35 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
         note.run(p2.getId());
         waitForFinish(p2);
         assertEquals(Status.FINISHED, p2.getStatus());
-        assertEquals("10", p2.getResult().message());
+        assertEquals("10", p2.getResult().message().get(0).getData());
+
+        Paragraph p3 = note.addParagraph();
+        Map config3 = p3.getConfig();
+        config3.put("enabled", true);
+        p3.setConfig(config3);
+        p3.setText("%spark println(new java.util.Date())");
+        p3.setAuthenticationInfo(anonymous);
+
+        p0.setText(String.format("%%spark z.runNote(\"%s\")", note.getId()));
+        note.run(p0.getId());
+        waitForFinish(p0);
+        waitForFinish(p1);
+        waitForFinish(p2);
+        waitForFinish(p3);
+
+        assertEquals(Status.FINISHED, p3.getStatus());
+        String p3result = p3.getResult().message().get(0).getData();
+        assertNotEquals(null, p3result);
+        assertNotEquals("", p3result);
+
+        p0.setText(String.format("%%spark z.run(\"%s\", \"%s\")", note.getId(), p3.getId()));
+        p3.setText("%%spark println(\"END\")");
+
+        note.run(p0.getId());
+        waitForFinish(p0);
+        waitForFinish(p3);
+
+        assertNotEquals(p3result, p3.getResult().message());
 
         ZeppelinServer.notebook.removeNote(note.getId(), anonymous);
     }
@@ -399,7 +428,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
 
             waitForFinish(p1);
             assertEquals(Status.FINISHED, p1.getStatus());
-            assertEquals("2\n", p1.getResult().message());
+            assertEquals("2\n", p1.getResult().message().get(0).getData());
         }
         ZeppelinServer.notebook.removeNote(note.getId(), anonymous);
     }
@@ -419,7 +448,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
         note.run(p.getId());
         waitForFinish(p);
         assertEquals(Status.FINISHED, p.getStatus());
-        String sparkVersion = p.getResult().message();
+        String sparkVersion = p.getResult().message().get(0).getData();
         System.out.println("Spark version detected " + sparkVersion);
         String[] split = sparkVersion.split("\\.");
         int version = Integer.parseInt(split[0]) * 10 + Integer.parseInt(split[1]);

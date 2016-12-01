@@ -162,7 +162,7 @@ public class AngularObjectRegistry {
       Map<String, AngularObject> r = getRegistryForKey(noteId, paragraphId);
       AngularObject o = r.remove(name);
       if (listener != null && emit) {
-        listener.onRemove(interpreterId, name, noteId, paragraphId);;
+        listener.onRemove(interpreterId, name, noteId, paragraphId);
       }
       return o;
     }

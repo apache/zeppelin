@@ -22,6 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.util.HashMap;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -31,6 +32,9 @@ import java.util.regex.Pattern;
  */
 public class PythonCondaInterpreter extends Interpreter {
   Logger logger = LoggerFactory.getLogger(PythonCondaInterpreter.class);
+  public static final String ZEPPELIN_PYTHON = "zeppelin.python";
+  public static final String CONDA_PYTHON_PATH = "/bin/python";
+  public static final String DEFAULT_ZEPPELIN_PYTHON = "python";
 
   Pattern condaEnvListPattern = Pattern.compile("([^\\s]*)[\\s*]*\\s(.*)");
   Pattern listPattern = Pattern.compile("env\\s*list\\s?");
@@ -62,15 +66,15 @@ public class PythonCondaInterpreter extends Interpreter {
     Matcher helpMatcher = helpPattern.matcher(st);
 
     if (st == null || st.isEmpty() || listMatcher.matches()) {
-      listEnv(out);
+      listEnv(out, getCondaEnvs());
       return new InterpreterResult(InterpreterResult.Code.SUCCESS);
     } else if (activateMatcher.matches()) {
       String envName = activateMatcher.group(1);
-      setPythonCommand("conda run -n " + envName + " \"python -iu\"");
+      changePythonEnvironment(envName);
       restartPythonProcess();
       return new InterpreterResult(InterpreterResult.Code.SUCCESS, "\"" + envName + "\" activated");
     } else if (deactivateMatcher.matches()) {
-      setPythonCommand(null);
+      changePythonEnvironment(null);
       restartPythonProcess();
       return new InterpreterResult(InterpreterResult.Code.SUCCESS, "Deactivated");
     } else if (helpMatcher.matches()) {
@@ -81,9 +85,24 @@ public class PythonCondaInterpreter extends Interpreter {
     }
   }
 
-  public void setPythonCommand(String cmd) {
+  private void changePythonEnvironment(String envName) {
     PythonInterpreter python = getPythonInterpreter();
-    python.setPythonCommand(cmd);
+    String binPath = null;
+    if (envName == null) {
+      binPath = getProperty(ZEPPELIN_PYTHON);
+      if (binPath == null) {
+        binPath = DEFAULT_ZEPPELIN_PYTHON;
+      }
+    } else {
+      HashMap<String, String> envList = getCondaEnvs();
+      for (String name : envList.keySet()) {
+        if (envName.equals(name)) {
+          binPath = envList.get(name) + CONDA_PYTHON_PATH;
+          break;
+        }
+      }
+    }
+    python.setPythonCommand(binPath);
   }
 
   private void restartPythonProcess() {
@@ -111,15 +130,14 @@ public class PythonCondaInterpreter extends Interpreter {
     return python;
   }
 
-  private void listEnv(InterpreterOutput out) {
+  private HashMap getCondaEnvs() {
+    HashMap envList = null;
+
     StringBuilder sb = createStringBuilder();
     try {
       int exit = runCommand(sb, "conda", "env", "list");
       if (exit == 0) {
-        out.setType(InterpreterResult.Type.HTML);
-        out.write("<h4>Conda environments</h4>\n");
-        // start table
-        out.write("<div style=\"display:table\">\n");
+        envList = new HashMap();
         String[] lines = sb.toString().split("\n");
         for (String s : lines) {
           if (s == null || s.isEmpty() || s.startsWith("#")) {
@@ -130,22 +148,39 @@ public class PythonCondaInterpreter extends Interpreter {
           if (!match.matches()) {
             continue;
           }
-          out.write(String.format("<div style=\"display:table-row\">" +
-              "<div style=\"display:table-cell;width:150px\">%s</div>" +
-              "<div style=\"display:table-cell;\">%s</div>" +
-              "</div>\n",
-              match.group(1), match.group(2)));
+          envList.put(match.group(1), match.group(2));
         }
-        // end table
-        out.write("</div><br />\n");
-        out.write("<small><code>%python.conda help</code> for the usage</small>\n");
-      } else {
-        out.write("Failed to run 'conda' " + exit + "\n");
       }
     } catch (IOException | InterruptedException e) {
       throw new InterpreterException(e);
     }
+    return envList;
   }
+
+  private void listEnv(InterpreterOutput out, HashMap<String, String> envList) {
+    try {
+      out.setType(InterpreterResult.Type.HTML);
+      out.write("<h4>Conda environments</h4>\n");
+      // start table
+      out.write("<div style=\"display:table\">\n");
+
+      for (String name : envList.keySet()) {
+        String path = envList.get(name);
+
+        out.write(String.format("<div style=\"display:table-row\">" +
+            "<div style=\"display:table-cell;width:150px\">%s</div>" +
+            "<div style=\"display:table-cell;\">%s</div>" +
+            "</div>\n",
+          name, path));
+      }
+      // end table
+      out.write("</div><br />\n");
+      out.write("<small><code>%python.conda help</code> for the usage</small>\n");
+    } catch  (IOException e) {
+      throw new InterpreterException(e);
+    }
+  }
+
 
   private void printUsage(InterpreterOutput out) {
     try {

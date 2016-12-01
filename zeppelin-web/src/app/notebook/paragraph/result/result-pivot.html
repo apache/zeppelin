@@ -12,10 +12,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 <div class="option lightBold" style="overflow: visible;"
-   ng-if="getResultType()=='TABLE' && getGraphMode()!='table'
-   && paragraph.config.graph.optionOpen && !asIframe && !viewOnly">
+   ng-if="type=='TABLE' && graphMode!='table'
+   && config.graph.optionOpen && !asIframe && !viewOnly">
 
-  <div ng-include src="'app/notebook/paragraph/paragraph-graphOptions.html'"></div>
+  <div ng-include src="'app/notebook/paragraph/result/result-graphOptions.html'"></div>
 
   All fields:
   <div class="allFields row">
@@ -32,15 +32,15 @@ limitations under the License.
     </ul>
   </div>
 
-  <div class="row" ng-if="getGraphMode()!='scatterChart'">
+  <div class="row" ng-if="graphMode!='scatterChart'">
     <div class="col-md-4">
       <span class="columns lightBold">
         Keys
         <ul data-drop="true"
-            ng-model="paragraph.config.graph.keys"
+            ng-model="config.graph.keys"
             jqyoui-droppable="{multiple:true, onDrop:'onGraphOptionChange()'}"
             class="list-unstyled">
-          <li ng-repeat="item in paragraph.config.graph.keys">
+          <li ng-repeat="item in config.graph.keys">
             <div class="btn btn-primary btn-xs">
               {{item.name}} <span class="fa fa-close" ng-click="removeGraphOptionKeys($index)"></span>
             </div>
@@ -52,10 +52,10 @@ limitations under the License.
       <span class="columns lightBold">
         Groups
         <ul data-drop="true"
-            ng-model="paragraph.config.graph.groups"
+            ng-model="config.graph.groups"
             jqyoui-droppable="{multiple:true, onDrop:'onGraphOptionChange()'}"
             class="list-unstyled">
-          <li ng-repeat="item in paragraph.config.graph.groups">
+          <li ng-repeat="item in config.graph.groups">
             <div class="btn btn-success btn-xs">
               {{item.name}} <span class="fa fa-close" ng-click="removeGraphOptionGroups($index)"></span>
             </div>
@@ -67,10 +67,10 @@ limitations under the License.
       <span class="columns lightBold">
         Values
         <ul data-drop="true"
-            ng-model="paragraph.config.graph.values"
+            ng-model="config.graph.values"
             jqyoui-droppable="{multiple:true, onDrop:'onGraphOptionChange()'}"
             class="list-unstyled">
-          <li ng-repeat="item in paragraph.config.graph.values">
+          <li ng-repeat="item in config.graph.values">
             <div class="btn-group">
               <div class="btn btn-info btn-xs dropdown-toggle"
                    type="button"
@@ -93,18 +93,18 @@ limitations under the License.
     </div>
   </div>
 
-  <div class="row" ng-if="getGraphMode()=='scatterChart'">
+  <div class="row" ng-if="graphMode=='scatterChart'">
     <div class="col-md-3">
       <span class="columns lightBold">
         xAxis
         <ul data-drop="true"
-            ng-model="paragraph.config.graph.scatter.xAxis"
+            ng-model="config.graph.scatter.xAxis"
             jqyoui-droppable="{onDrop:'onGraphOptionChange()'}"
             class="list-unstyled"
             style="height:36px">
-          <li ng-if="paragraph.config.graph.scatter.xAxis">
+          <li ng-if="config.graph.scatter.xAxis">
             <div class="btn btn-primary btn-xs">
-              {{paragraph.config.graph.scatter.xAxis.name}} <span class="fa fa-close" ng-click="removeScatterOptionXaxis($index)"></span>
+              {{config.graph.scatter.xAxis.name}} <span class="fa fa-close" ng-click="removeScatterOptionXaxis($index)"></span>
             </div>
           </li>
         </ul>
@@ -114,13 +114,13 @@ limitations under the License.
       <span class="columns lightBold">
         yAxis
         <ul data-drop="true"
-            ng-model="paragraph.config.graph.scatter.yAxis"
+            ng-model="config.graph.scatter.yAxis"
             jqyoui-droppable="{onDrop:'onGraphOptionChange()'}"
             class="list-unstyled"
             style="height:36px">
-          <li ng-if="paragraph.config.graph.scatter.yAxis">
+          <li ng-if="config.graph.scatter.yAxis">
             <div class="btn btn-success btn-xs">
-              {{paragraph.config.graph.scatter.yAxis.name}} <span class="fa fa-close" ng-click="removeScatterOptionYaxis($index)"></span>
+              {{config.graph.scatter.yAxis.name}} <span class="fa fa-close" ng-click="removeScatterOptionYaxis($index)"></span>
             </div>
           </li>
         </ul>
@@ -130,13 +130,13 @@ limitations under the License.
       <span class="columns lightBold">
         group
         <ul data-drop="true"
-            ng-model="paragraph.config.graph.scatter.group"
+            ng-model="config.graph.scatter.group"
             jqyoui-droppable="{onDrop:'onGraphOptionChange()'}"
             class="list-unstyled"
             style="height:36px">
-          <li ng-if="paragraph.config.graph.scatter.group">
+          <li ng-if="config.graph.scatter.group">
             <div class="btn btn-info btn-xs">
-              {{paragraph.config.graph.scatter.group.name}} <span class="fa fa-close" ng-click="removeScatterOptionGroup($index)"></span>
+              {{config.graph.scatter.group.name}} <span class="fa fa-close" ng-click="removeScatterOptionGroup($index)"></span>
             </div>
           </li>
         </ul>
@@ -152,13 +152,13 @@ limitations under the License.
                                 <li>Zeppelin consider values as discrete when the values contain string value or the number of distinct values are bigger than 5% of total number of values.</li>
                                 <li>Size field button turns to grey when the option you chose is not valid.</li>"></a>
         <ul data-drop="true"
-            ng-model="paragraph.config.graph.scatter.size"
+            ng-model="config.graph.scatter.size"
             jqyoui-droppable="{onDrop:'onGraphOptionChange()'}"
             class="list-unstyled"
             style="height:36px">
-          <li ng-if="paragraph.config.graph.scatter.size">
-            <div class="btn btn-xs" style="color:white" ng-class="{'btn-warning': isValidSizeOption(paragraph.config.graph.scatter, paragraph.result.rows)}">
-              {{paragraph.config.graph.scatter.size.name}} <span class="fa fa-close" ng-click="removeScatterOptionSize($index)"></span>
+          <li ng-if="config.graph.scatter.size">
+            <div class="btn btn-xs" style="color:white" ng-class="{'btn-warning': isValidSizeOption(config.graph.scatter)}">
+              {{config.graph.scatter.size.name}} <span class="fa fa-close" ng-click="removeScatterOptionSize($index)"></span>
             </div>
           </li>
         </ul>

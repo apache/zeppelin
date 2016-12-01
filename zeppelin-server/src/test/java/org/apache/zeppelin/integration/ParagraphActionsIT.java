@@ -269,11 +269,11 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       createNewNote();
 
       waitForParagraph(1, "READY");
-      String xpathToOutputField = getParagraphXPath(1) + "//div[contains(@ng-if,'getResultType()')]";
+      String xpathToOutputField = getParagraphXPath(1) + "//div[contains(@id,\"_text\")]";
       setTextOfParagraph(1, "println (\"abcd\")");
       collector.checkThat("Before Run Output field contains ",
-          driver.findElement(By.xpath(xpathToOutputField)).getText(),
-          CoreMatchers.equalTo(""));
+          driver.findElements(By.xpath(xpathToOutputField)).size(),
+          CoreMatchers.equalTo(0));
       driver.findElement(By.xpath(getParagraphXPath(1) + "//span[@ng-click='runParagraph(getEditorValue())']")).click();
       waitForParagraph(1, "FINISHED");
       collector.checkThat("After Run Output field contains  ",
@@ -283,8 +283,8 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       clickAndWait(By.xpath(getParagraphXPath(1) +
           "//ul/li/a[@ng-click='clearParagraphOutput()']"));
       collector.checkThat("After Clear  Output field contains ",
-          driver.findElement(By.xpath(xpathToOutputField)).getText(),
-          CoreMatchers.equalTo(""));
+          driver.findElements(By.xpath(xpathToOutputField)).size(),
+          CoreMatchers.equalTo(0));
       ZeppelinITUtils.sleep(1000, false);
       deleteTestNotebook(driver);
 

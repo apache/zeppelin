@@ -25,9 +25,12 @@ import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.helium.ApplicationEventListener;
 import org.apache.zeppelin.interpreter.InterpreterContextRunner;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
+import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.RemoteZeppelinServerResource;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterEvent;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterEventType;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService.Client;
+import org.apache.zeppelin.interpreter.thrift.ZeppelinServerResourceParagraphRunner;
 import org.apache.zeppelin.resource.Resource;
 import org.apache.zeppelin.resource.ResourceId;
 import org.apache.zeppelin.resource.ResourcePool;
@@ -145,8 +148,9 @@ public class RemoteInterpreterEventPoller extends Thread {
           InterpreterContextRunner runnerFromRemote = gson.fromJson(
               event.getData(), RemoteInterpreterContextRunner.class);
 
-          interpreterProcess.getInterpreterContextRunnerPool().run(
+          listener.onRemoteRunParagraph(
               runnerFromRemote.getNoteId(), runnerFromRemote.getParagraphId());
+
         } else if (event.getType() == RemoteInterpreterEventType.RESOURCE_POOL_GET_ALL) {
           ResourceSet resourceSet = getAllResourcePoolExcept();
           sendResourcePoolResponseGetAll(resourceSet);
@@ -159,30 +163,56 @@ public class RemoteInterpreterEventPoller extends Thread {
         } else if (event.getType() == RemoteInterpreterEventType.OUTPUT_APPEND) {
           // on output append
           Map<String, String> outputAppend = gson.fromJson(
-                  event.getData(), new TypeToken<Map<String, String>>() {}.getType());
-          String noteId = outputAppend.get("noteId");
-          String paragraphId = outputAppend.get("paragraphId");
-          String outputToAppend = outputAppend.get("data");
-          String appId = outputAppend.get("appId");
+                  event.getData(), new TypeToken<Map<String, Object>>() {}.getType());
+          String noteId = (String) outputAppend.get("noteId");
+          String paragraphId = (String) outputAppend.get("paragraphId");
+          int index = Integer.parseInt(outputAppend.get("index"));
+          String outputToAppend = (String) outputAppend.get("data");
+
+          String appId = (String) outputAppend.get("appId");
 
           if (appId == null) {
-            runner.appendBuffer(noteId, paragraphId, outputToAppend);
+            runner.appendBuffer(noteId, paragraphId, index, outputToAppend);
           } else {
-            appListener.onOutputAppend(noteId, paragraphId, appId, outputToAppend);
+            appListener.onOutputAppend(noteId, paragraphId, index, appId, outputToAppend);
+          }
+        } else if (event.getType() == RemoteInterpreterEventType.OUTPUT_UPDATE_ALL) {
+          Map<String, Object> outputUpdate = gson.fromJson(
+              event.getData(), new TypeToken<Map<String, Object>>() {}.getType());
+          String noteId = (String) outputUpdate.get("noteId");
+          String paragraphId = (String) outputUpdate.get("paragraphId");
+
+          // clear the output
+          listener.onOutputClear(noteId, paragraphId);
+          List<Map<String, String>> messages =
+              (List<Map<String, String>>) outputUpdate.get("messages");
+
+          if (messages != null) {
+            for (int i = 0; i < messages.size(); i++) {
+              Map<String, String> m = messages.get(i);
+              InterpreterResult.Type type =
+                  InterpreterResult.Type.valueOf((String) m.get("type"));
+              String outputToUpdate = (String) m.get("data");
+
+              listener.onOutputUpdated(noteId, paragraphId, i, type, outputToUpdate);
+            }
           }
         } else if (event.getType() == RemoteInterpreterEventType.OUTPUT_UPDATE) {
           // on output update
           Map<String, String> outputAppend = gson.fromJson(
-              event.getData(), new TypeToken<Map<String, String>>() {}.getType());
-          String noteId = outputAppend.get("noteId");
-          String paragraphId = outputAppend.get("paragraphId");
-          String outputToUpdate = outputAppend.get("data");
-          String appId = outputAppend.get("appId");
+              event.getData(), new TypeToken<Map<String, Object>>() {}.getType());
+          String noteId = (String) outputAppend.get("noteId");
+          String paragraphId = (String) outputAppend.get("paragraphId");
+          int index = Integer.parseInt(outputAppend.get("index"));
+          InterpreterResult.Type type =
+              InterpreterResult.Type.valueOf((String) outputAppend.get("type"));
+          String outputToUpdate = (String) outputAppend.get("data");
+          String appId = (String) outputAppend.get("appId");
 
           if (appId == null) {
-            listener.onOutputUpdated(noteId, paragraphId, outputToUpdate);
+            listener.onOutputUpdated(noteId, paragraphId, index, type, outputToUpdate);
           } else {
-            appListener.onOutputUpdated(noteId, paragraphId, appId, outputToUpdate);
+            appListener.onOutputUpdated(noteId, paragraphId, index, appId, type, outputToUpdate);
           }
         } else if (event.getType() == RemoteInterpreterEventType.APP_STATUS_UPDATE) {
           // on output update
@@ -195,6 +225,12 @@ public class RemoteInterpreterEventPoller extends Thread {
           String status = appStatusUpdate.get("status");
 
           appListener.onStatusChange(noteId, paragraphId, appId, status);
+        } else if (event.getType() == RemoteInterpreterEventType.REMOTE_ZEPPELIN_SERVER_RESOURCE) {
+          RemoteZeppelinServerResource reqResourceBody = gson.fromJson(
+              event.getData(), RemoteZeppelinServerResource.class);
+          progressRemoteZeppelinControlEvent(
+              reqResourceBody.getResourceType(), listener, reqResourceBody);
+
         } else if (event.getType() == RemoteInterpreterEventType.META_INFOS) {
           Map<String, String> metaInfos = gson.fromJson(event.getData(),
               new TypeToken<Map<String, String>>() {
@@ -204,13 +240,89 @@ public class RemoteInterpreterEventPoller extends Thread {
           String settingId = id.substring(0, indexOfColon);
           listener.onMetaInfosReceived(settingId, metaInfos);
         }
-        logger.debug("Event from remoteproceess {}", event.getType());
+        logger.debug("Event from remote process {}", event.getType());
       } catch (Exception e) {
         logger.error("Can't handle event " + event, e);
       }
     }
     if (appendFuture != null) {
       appendFuture.cancel(true);
+    }
+  }
+
+  private void progressRemoteZeppelinControlEvent(
+      RemoteZeppelinServerResource.Type resourceType,
+      RemoteInterpreterProcessListener remoteWorksEventListener,
+      RemoteZeppelinServerResource reqResourceBody) throws Exception {
+    boolean broken = false;
+    final Gson gson = new Gson();
+    final String eventOwnerKey = reqResourceBody.getOwnerKey();
+    Client interpreterServerMain = null;
+    try {
+      interpreterServerMain = interpreterProcess.getClient();
+      final Client eventClient = interpreterServerMain;
+      if (resourceType == RemoteZeppelinServerResource.Type.PARAGRAPH_RUNNERS) {
+        final List<ZeppelinServerResourceParagraphRunner> remoteRunners = new LinkedList<>();
+
+        ZeppelinServerResourceParagraphRunner reqRunnerContext =
+            new ZeppelinServerResourceParagraphRunner();
+
+        Map<String, Object> reqResourceMap = (Map<String, Object>) reqResourceBody.getData();
+        String noteId = (String) reqResourceMap.get("noteId");
+        String paragraphId = (String) reqResourceMap.get("paragraphId");
+
+        reqRunnerContext.setNoteId(noteId);
+        reqRunnerContext.setParagraphId(paragraphId);
+
+        RemoteInterpreterProcessListener.RemoteWorksEventListener callBackEvent =
+            new RemoteInterpreterProcessListener.RemoteWorksEventListener() {
+
+              @Override
+              public void onFinished(Object resultObject) {
+                boolean clientBroken = false;
+                if (resultObject != null && resultObject instanceof List) {
+                  List<InterpreterContextRunner> runnerList =
+                      (List<InterpreterContextRunner>) resultObject;
+                  for (InterpreterContextRunner r : runnerList) {
+                    remoteRunners.add(
+                        new ZeppelinServerResourceParagraphRunner(r.getNoteId(), r.getParagraphId())
+                    );
+                  }
+
+                  final RemoteZeppelinServerResource resResource =
+                      new RemoteZeppelinServerResource();
+                  resResource.setOwnerKey(eventOwnerKey);
+                  resResource.setResourceType(RemoteZeppelinServerResource.Type.PARAGRAPH_RUNNERS);
+                  resResource.setData(remoteRunners);
+
+                  try {
+                    eventClient.onReceivedZeppelinResource(gson.toJson(resResource));
+                  } catch (Exception e) {
+                    clientBroken = true;
+                    logger.error("Can't get RemoteInterpreterEvent", e);
+                    waitQuietly();
+                  } finally {
+                    interpreterProcess.releaseClient(eventClient, clientBroken);
+                  }
+                }
+              }
+
+              @Override
+              public void onError() {
+                logger.info("onGetParagraphRunners onError");
+              }
+            };
+
+        remoteWorksEventListener.onGetParagraphRunners(
+            reqRunnerContext.getNoteId(), reqRunnerContext.getParagraphId(), callBackEvent);
+      }
+    } catch (Exception e) {
+      broken = true;
+      logger.error("Can't get RemoteInterpreterEvent", e);
+      waitQuietly();
+
+    } finally {
+      interpreterProcess.releaseClient(interpreterServerMain, broken);
     }
   }
 

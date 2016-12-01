@@ -39,6 +39,7 @@ import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.stream.JsonReader;
+import org.apache.zeppelin.interpreter.*;
 import org.quartz.CronScheduleBuilder;
 import org.quartz.CronTrigger;
 import org.quartz.JobBuilder;
@@ -56,9 +57,6 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
-import org.apache.zeppelin.interpreter.InterpreterFactory;
-import org.apache.zeppelin.interpreter.InterpreterGroup;
-import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.apache.zeppelin.notebook.repo.NotebookRepo.Revision;
@@ -211,6 +209,7 @@ public class Notebook implements NoteEventListener {
     Note newNote;
     try {
       Note oldNote = gson.fromJson(reader, Note.class);
+      convertFromSingleResultToMultipleResultsFormat(oldNote);
       newNote = createNote(subject);
       if (noteName != null)
         newNote.setName(noteName);
@@ -383,6 +382,53 @@ public class Notebook implements NoteEventListener {
     return notebookRepo.get(noteId, revisionId, subject);
   }
 
+  public void convertFromSingleResultToMultipleResultsFormat(Note note) {
+    for (Paragraph p : note.paragraphs) {
+      Object ret = p.getPreviousResultFormat();
+      try {
+        if (ret != null && ret instanceof Map) {
+          Map r = ((Map) ret);
+          if (r.containsKey("code") &&
+              r.containsKey("msg") &&
+              r.containsKey("type")) { // all three fields exists in sinle result format
+
+            InterpreterResult.Code code = InterpreterResult.Code.valueOf((String) r.get("code"));
+            InterpreterResult.Type type = InterpreterResult.Type.valueOf((String) r.get("type"));
+            String msg = (String) r.get("msg");
+            InterpreterResult result = new InterpreterResult(code, msg);
+            if (result.message().size() == 1) {
+              result = new InterpreterResult(code);
+              result.add(type, msg);
+            }
+            p.setResult(result);
+
+            // convert config
+            Map<String, Object> config = p.getConfig();
+            Object graph = config.remove("graph");
+            Object apps = config.remove("apps");
+            Object helium = config.remove("helium");
+
+            List<Object> results = new LinkedList<>();
+            for (int i = 0; i < result.message().size(); i++) {
+              if (i == result.message().size() - 1) {
+                HashMap<Object, Object> res = new HashMap<>();
+                res.put("graph", graph);
+                res.put("apps", apps);
+                res.put("helium", helium);
+                results.add(res);
+              } else {
+                results.add(new HashMap<>());
+              }
+            }
+            config.put("results", results);
+          }
+        }
+      } catch (Exception e) {
+        logger.error("Conversion failure", e);
+      }
+    }
+  }
+
   @SuppressWarnings("rawtypes")
   private Note loadNoteFromRepo(String id, AuthenticationInfo subject) {
     Note note = null;
@@ -394,6 +440,8 @@ public class Notebook implements NoteEventListener {
     if (note == null) {
       return null;
     }
+
+    convertFromSingleResultToMultipleResultsFormat(note);
 
     //Manually inject ALL dependencies, as DI constructor was NOT used
     note.setIndex(this.noteSearchService);

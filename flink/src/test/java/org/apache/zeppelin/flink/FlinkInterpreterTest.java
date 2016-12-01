@@ -69,14 +69,14 @@ public class FlinkInterpreterTest {
   public void testSimpleStatement() {
     InterpreterResult result = flink.interpret("val a=1", context);
     result = flink.interpret("print(a)", context);
-    assertEquals("1", result.message());
+    assertEquals("1", result.message().get(0).getData());
   }
 
   @Test
   public void testSimpleStatementWithSystemOutput() {
     InterpreterResult result = flink.interpret("val a=1", context);
     result = flink.interpret("System.out.print(a)", context);
-    assertEquals("1", result.message());
+    assertEquals("1", result.message().get(0).getData());
   }
 
   @Test
@@ -89,7 +89,7 @@ public class FlinkInterpreterTest {
     String[] expectedCounts = {"(to,2)", "(be,2)", "(or,1)", "(not,1)"};
     Arrays.sort(expectedCounts);
 
-    String[] counts = result.message().split("\n");
+    String[] counts = result.message().get(0).getData().split("\n");
     Arrays.sort(counts);
 
     assertArrayEquals(expectedCounts, counts);

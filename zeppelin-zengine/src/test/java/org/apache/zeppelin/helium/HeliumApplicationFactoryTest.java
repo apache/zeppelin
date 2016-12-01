@@ -56,7 +56,7 @@ public class HeliumApplicationFactoryTest implements JobListenerFactory {
 
   @Before
   public void setUp() throws Exception {
-    tmpDir = new File(System.getProperty("java.io.tmpdir")+"/ZeppelinLTest_"+System.currentTimeMillis());
+    tmpDir = new File(System.getProperty("java.io.tmpdir")+"/ZepelinLTest_"+System.currentTimeMillis());
     tmpDir.mkdirs();
     File confDir = new File(tmpDir, "conf");
     confDir.mkdirs();
@@ -147,7 +147,7 @@ public class HeliumApplicationFactoryTest implements JobListenerFactory {
     note1.run(p1.getId());
     while(p1.isTerminated()==false || p1.getResult()==null) Thread.yield();
 
-    assertEquals("repl1: job", p1.getResult().message());
+    assertEquals("repl1: job", p1.getResult().message().get(0).getData());
 
     // when
     assertEquals(0, p1.getAllApplicationStates().size());
@@ -323,11 +323,17 @@ public class HeliumApplicationFactoryTest implements JobListenerFactory {
   public ParagraphJobListener getParagraphJobListener(Note note) {
     return new ParagraphJobListener() {
       @Override
-      public void onOutputAppend(Paragraph paragraph, InterpreterOutput out, String output) {
+      public void onOutputAppend(Paragraph paragraph, int idx, String output) {
+
       }
 
       @Override
-      public void onOutputUpdate(Paragraph paragraph, InterpreterOutput out, String output) {
+      public void onOutputUpdate(Paragraph paragraph, int idx, InterpreterResultMessage msg) {
+
+      }
+
+      @Override
+      public void onOutputUpdateAll(Paragraph paragraph, List<InterpreterResultMessage> msgs) {
 
       }
 
