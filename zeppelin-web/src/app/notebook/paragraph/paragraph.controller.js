@@ -470,10 +470,12 @@
       }
     };
 
-    $scope.aceChanged = function() {
-      $scope.dirtyText = $scope.editor.getSession().getValue();
+    $scope.aceChanged = function(_, editor) {
+      var session = editor.getSession();
+      var dirtyText = session.getValue();
+      $scope.dirtyText = dirtyText;
       $scope.startSaveTimer();
-      setParagraphMode($scope.editor.getSession(), $scope.dirtyText, $scope.editor.getCursorPosition());
+      setParagraphMode(session, dirtyText, editor.getCursorPosition());
     };
 
     $scope.aceLoaded = function(_editor) {
