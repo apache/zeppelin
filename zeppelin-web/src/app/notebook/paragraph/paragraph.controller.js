@@ -194,9 +194,9 @@
       return paragraph.status === 'RUNNING' || paragraph.status === 'PENDING';
     };
 
-    $scope.cancelParagraph = function() {
-      console.log('Cancel %o', $scope.paragraph.id);
-      websocketMsgSrv.cancelParagraphRun($scope.paragraph.id);
+    $scope.cancelParagraph = function(paragraph) {
+      console.log('Cancel %o', paragraph.id);
+      websocketMsgSrv.cancelParagraphRun(paragraph.id);
     };
 
     $scope.runParagraph = function(data) {
@@ -1114,7 +1114,7 @@
         } else if (keyEvent.shiftKey && keyCode === 13) { // Shift + Enter
           $scope.run();
         } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 67) { // Ctrl + Alt + c
-          $scope.cancelParagraph();
+          $scope.cancelParagraph($scope.paragraph);
         } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 68) { // Ctrl + Alt + d
           $scope.removeParagraph();
         } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 75) { // Ctrl + Alt + k
