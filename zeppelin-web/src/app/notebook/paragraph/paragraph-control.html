@@ -48,7 +48,7 @@ limitations under the License.
           <form style="display:inline; margin-left:5px;">
             <select ng-model="paragraph.config.colWidth"
                     class="selectpicker"
-                    ng-change="changeColWidth()"
+                    ng-change="changeColWidth(paragraph, paragraph.config.colWidth)"
                     ng-options="col for col in colWidthOption"></select>
           </form>
         </a>

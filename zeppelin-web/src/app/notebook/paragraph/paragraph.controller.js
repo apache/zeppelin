@@ -432,16 +432,15 @@
       }
     };
 
-    $scope.changeColWidth = function(width) {
+    $scope.changeColWidth = function(paragraph, width) {
       angular.element('.navbar-right.open').removeClass('open');
-      if (!width || width !== $scope.paragraph.config.colWidth) {
-        if (width) {
-          $scope.paragraph.config.colWidth = width;
-        }
-        var newParams = angular.copy($scope.paragraph.settings.params);
-        var newConfig = angular.copy($scope.paragraph.config);
+      if (width !== paragraph.config.colWidth) {
+        paragraph.config.colWidth = width;
 
-        commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
+        var newParams = angular.copy(paragraph.settings.params);
+        var newConfig = angular.copy(paragraph.config);
+
+        commitParagraph(paragraph.title, paragraph.text, newConfig, newParams);
       }
     };
 
@@ -1135,9 +1134,9 @@
             $scope.showLineNumbers($scope.paragraph);
           }
         } else if (keyEvent.ctrlKey && keyEvent.shiftKey && keyCode === 189) { // Ctrl + Shift + -
-          $scope.changeColWidth(Math.max(1, $scope.paragraph.config.colWidth - 1));
+          $scope.changeColWidth($scope.paragraph, Math.max(1, $scope.paragraph.config.colWidth - 1));
         } else if (keyEvent.ctrlKey && keyEvent.shiftKey && keyCode === 187) { // Ctrl + Shift + =
-          $scope.changeColWidth(Math.min(12, $scope.paragraph.config.colWidth + 1));
+          $scope.changeColWidth($scope.paragraph, Math.min(12, $scope.paragraph.config.colWidth + 1));
         } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 84) { // Ctrl + Alt + t
           if ($scope.paragraph.config.title) {
             $scope.hideTitle($scope.paragraph);
