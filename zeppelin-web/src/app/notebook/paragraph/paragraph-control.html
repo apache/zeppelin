@@ -32,7 +32,7 @@ limitations under the License.
   <span class="{{paragraph.config.editorHide ? 'icon-size-fullscreen' : 'icon-size-actual'}}" style="cursor:pointer;" tooltip-placement="top" tooltip="{{(paragraph.config.editorHide ? 'Show' : 'Hide') + ' editor'}}"
         ng-click="toggleEditor(paragraph)"></span>
   <span class="{{paragraph.config.tableHide ? 'icon-notebook' : 'icon-book-open'}}" style="cursor:pointer;" tooltip-placement="top" tooltip="{{(paragraph.config.tableHide ? 'Show' : 'Hide') + ' output'}}"
-        ng-click="toggleOutput()"></span>
+        ng-click="toggleOutput(paragraph)"></span>
   <span class="dropdown navbar-right">
     <span class="icon-settings" style="cursor:pointer"
           data-toggle="dropdown"

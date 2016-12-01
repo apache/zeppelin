@@ -444,12 +444,12 @@
       }
     };
 
-    $scope.toggleOutput = function() {
-      var newConfig = angular.copy($scope.paragraph.config);
+    $scope.toggleOutput = function(paragraph) {
+      var newConfig = angular.copy(paragraph.config);
+      var newParams = angular.copy(paragraph.settings.params);
       newConfig.tableHide = !newConfig.tableHide;
-      var newParams = angular.copy($scope.paragraph.settings.params);
 
-      commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
+      commitParagraph(paragraph.title, paragraph.text, newConfig, newParams);
     };
 
     $scope.loadForm = function(formulaire, params) {
@@ -1110,7 +1110,7 @@
         } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 66) { // Ctrl + Alt + b
           $scope.insertNew('below');
         } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 79) { // Ctrl + Alt + o
-          $scope.toggleOutput();
+          $scope.toggleOutput($scope.paragraph);
         } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 82) { // Ctrl + Alt + r
           $scope.toggleEnableDisable($scope.paragraph);
         } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 69) { // Ctrl + Alt + e
