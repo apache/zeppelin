@@ -384,26 +384,26 @@
       commitParagraph(paragraph.title, paragraph.text, newConfig, newParams);
     };
 
-    $scope.showTitle = function() {
-      var newParams = angular.copy($scope.paragraph.settings.params);
-      var newConfig = angular.copy($scope.paragraph.config);
+    $scope.showTitle = function(paragraph) {
+      var newParams = angular.copy(paragraph.settings.params);
+      var newConfig = angular.copy(paragraph.config);
       newConfig.title = true;
 
-      commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
+      commitParagraph(paragraph.title, paragraph.text, newConfig, newParams);
     };
 
-    $scope.hideTitle = function() {
-      var newParams = angular.copy($scope.paragraph.settings.params);
-      var newConfig = angular.copy($scope.paragraph.config);
+    $scope.hideTitle = function(paragraph) {
+      var newParams = angular.copy(paragraph.settings.params);
+      var newConfig = angular.copy(paragraph.config);
       newConfig.title = false;
 
-      commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
+      commitParagraph(paragraph.title, paragraph.text, newConfig, newParams);
     };
 
-    $scope.setTitle = function() {
-      var newParams = angular.copy($scope.paragraph.settings.params);
-      var newConfig = angular.copy($scope.paragraph.config);
-      commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
+    $scope.setTitle = function(paragraph) {
+      var newParams = angular.copy(paragraph.settings.params);
+      var newConfig = angular.copy(paragraph.config);
+      commitParagraph(paragraph.title, paragraph.text, newConfig, newParams);
     };
 
     $scope.showLineNumbers = function() {
@@ -1140,9 +1140,9 @@
           $scope.changeColWidth(Math.min(12, $scope.paragraph.config.colWidth + 1));
         } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 84) { // Ctrl + Alt + t
           if ($scope.paragraph.config.title) {
-            $scope.hideTitle();
+            $scope.hideTitle($scope.paragraph);
           } else {
-            $scope.showTitle();
+            $scope.showTitle($scope.paragraph);
           }
         }else if (keyEvent.ctrlKey && keyEvent.shiftKey && keyCode === 67) { // Ctrl + Alt + c
           $scope.copyPara('below');

@@ -26,8 +26,8 @@ limitations under the License.
            ng-model="paragraph.title"
            ng-if="input.showEditor"
            ng-escape="input.showEditor = false; paragraph.title = oldTitle;"
-           ng-blur="setTitle(); input.showEditor = false"
-           ng-enter="setTitle(); input.showEditor = false"
+           ng-blur="setTitle(paragraph); input.showEditor = false"
+           ng-enter="setTitle(paragraph); input.showEditor = false"
            focus-if="input.showEditor" />
     <div ng-click="input.showEditor = !asIframe && !viewOnly; oldTitle = paragraph.title;"
          ng-show="!input.showEditor"
