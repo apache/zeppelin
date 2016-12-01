@@ -762,6 +762,23 @@
     </profile>
 
     <profile>
+      <id>strict-checkstyle</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-checkstyle-plugin</artifactId>
+            <configuration>
+              <consoleOutput>true</consoleOutput>
+              <!-- TODO:increase violation level to WARN -->
+              <!-- <violationSeverity>warn</violationSeverity> -->
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+    <profile>
       <id>publish-distr</id>
       <activation>
         <activeByDefault>false</activeByDefault>
