@@ -1401,6 +1401,10 @@ public class NotebookServer extends WebSocketServlet implements
       List<Revision> revisions = notebook.listRevisionHistory(noteId, subject);
       conn.send(serializeMessage(new Message(OP.LIST_REVISION_HISTORY)
         .put("revisionList", revisions)));
+    } else {
+      conn.send(serializeMessage(new Message(OP.ERROR_INFO).put("info",
+          "Couldn't checkpoint note revision: possibly storage doesn't support versioning. "
+          + "Please check the logs for more details.")));
     }
   }
 
