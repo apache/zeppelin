@@ -1486,8 +1486,8 @@ public class NotebookServer extends WebSocketServlet implements
     try {
       Note currentNote = notebook.setNoteRevision(noteId, revisionId, subject);
     } catch (IOException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
+      //TODO(khalid): notify user 
+      LOG.error("Failed to set note revision", e);
     }
     //TODO(khalid): send back, update note or notify user
   }
