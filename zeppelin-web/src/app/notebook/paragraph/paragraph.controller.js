@@ -783,7 +783,7 @@
     };
 
     $scope.getProgress = function() {
-      return ($scope.currentProgress) ? $scope.currentProgress : 0;
+      return $scope.currentProgress || 0;
     };
 
     $scope.getExecutionTime = function() {
