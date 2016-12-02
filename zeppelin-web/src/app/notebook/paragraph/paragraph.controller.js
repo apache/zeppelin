@@ -1150,10 +1150,6 @@
       }
     });
 
-    $scope.$on('runParagraph', function(event) {
-      $scope.runParagraph($scope.editor.getValue());
-    });
-
     $scope.$on('openEditor', function(event) {
       $scope.openEditor($scope.paragraph);
     });
