@@ -214,7 +214,8 @@ public class FolderView implements NoteNameListener, FolderListener {
     if (getFolder(oldFolderId) == folder)
       folders.remove(oldFolderId);
 
-    folder.getParent().removeChild(oldFolderId);
+    if (!folder.getParent().getId().equals(folder.getParentFolderId()))
+      folder.getParent().removeChild(oldFolderId);
 
     Folder newFolder = getOrCreateFolder(folder.getId());
     newFolder.merge(folder);
