@@ -82,3 +82,33 @@ zeppelin.LinechartVisualization.prototype.configureChart = function(chart) {
     chart.forceY([]);
   }
 };
+
+zeppelin.LinechartVisualization.prototype.getSetting = function(chart) {
+  var self = this;
+  var configObj = self.config;
+
+  return {
+    template: `<div>
+      <label>
+        <input type="checkbox"
+             ng-model="config.forceY"
+             ng-click="save()" />
+        force Y to 0
+      </label>
+      <br/>
+
+      <label>
+        <input type="checkbox"
+             ng-model="config.lineWithFocus"
+             ng-click="save()" />
+        show line chart with focus
+      </label>
+    </div>`,
+    scope: {
+      config: configObj,
+      save: function() {
+        self.emitConfig(configObj);
+      }
+    }
+  };
+};

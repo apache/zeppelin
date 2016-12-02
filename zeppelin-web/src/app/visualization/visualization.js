@@ -110,3 +110,46 @@ zeppelin.Visualization.prototype.emitConfig = function(config) {
 zeppelin.Visualization.prototype.destroy = function() {
   // override this
 };
+
+/**
+ * return {
+ *   template : angular template string or url (url should end with .html),
+ *   scope : an object to bind to template scope
+ * }
+ */
+zeppelin.Visualization.prototype.getSetting = function() {
+  // override this
+};
+
+/**
+ * render setting
+ */
+zeppelin.Visualization.prototype.renderSetting = function(targetEl) {
+  var setting = this.getSetting();
+  if (!setting) {
+    return;
+  }
+
+  this.settingScope = this._createNewScope();
+  for (var k in setting.scope) {
+    this.settingScope[k] = setting.scope[k];
+  }
+  var template = setting.template;
+  var scope = this.settingScope;
+
+  if (template.split('\n').length === 1 &&
+      template.endsWith('.html')) { // template is url
+    var self = this;
+    this._templateRequest(template).then(function(t) {
+      self._renderSetting(targetEl, t, scope);
+    });
+  } else {
+    this._renderSetting(targetEl, template, scope);
+  }
+};
+
+zeppelin.Visualization.prototype._renderSetting = function(targetEl, template, scope) {
+  this._targetEl = targetEl;
+  targetEl.html(template);
+  this._compile(targetEl.contents())(scope);
+};

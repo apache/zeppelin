@@ -376,7 +376,7 @@
           var retryRenderer = function() {
             var targetEl = angular.element('#p' + $scope.id + '_' + type);
             var transformationSettingTargetEl = angular.element('#trsetting' + $scope.id + '_' + type);
-            //var visualizationSettingTargetEl = angular.element('#vizsetting' + $scope.id + '_' + type);
+            var visualizationSettingTargetEl = angular.element('#vizsetting' + $scope.id + '_' + type);
             if (targetEl.length) {
               try {
                 // set height
@@ -393,6 +393,7 @@
                 };
                 builtInViz.instance._emitter = emitter;
                 builtInViz.instance._compile = $compile;
+                builtInViz.instance._createNewScope = createNewScope;
                 var transformation = builtInViz.instance.getTransformation();
                 transformation._emitter = emitter;
                 transformation._templateRequest = $templateRequest;
@@ -403,6 +404,7 @@
                 var transformed = transformation.transform(tableData);
                 transformation.renderSetting(transformationSettingTargetEl);
                 builtInViz.instance.render(transformed);
+                builtInViz.instance.renderSetting(visualizationSettingTargetEl);
                 builtInViz.instance.activate();
                 angular.element(window).resize(function() {
                   builtInViz.instance.resize();
@@ -421,6 +423,7 @@
           var retryRenderer = function() {
             var targetEl = angular.element('#p' + $scope.id + '_' + type);
             var transformationSettingTargetEl = angular.element('#trsetting' + $scope.id + '_' + type);
+            var visualizationSettingTargetEl = angular.element('#trsetting' + $scope.id + '_' + type);
             if (targetEl.length) {
               var config = getVizConfig(type);
               targetEl.height(height);
@@ -430,6 +433,7 @@
               transformation.renderSetting(transformationSettingTargetEl);
               builtInViz.instance.setConfig(config);
               builtInViz.instance.render(transformed);
+              builtInViz.instance.renderSetting(visualizationSettingTargetEl);
             } else {
               $timeout(retryRenderer, 10);
             }
