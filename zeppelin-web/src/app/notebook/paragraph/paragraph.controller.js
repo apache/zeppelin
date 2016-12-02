@@ -265,7 +265,12 @@
       if (paragraphs[paragraphs.length - 1].id.startsWith($scope.paragraph.id)) {
         BootstrapDialog.alert({
           closable: true,
-          message: 'The last paragraph can\'t be deleted.'
+          message: 'The last paragraph can\'t be deleted.',
+          callback: function(result) {
+            if (result) {
+              $scope.editor.focus();
+            }
+          }
         });
       } else {
         BootstrapDialog.confirm({
@@ -275,8 +280,8 @@
           callback: function(result) {
             if (result) {
               console.log('Remove paragraph');
-              $scope.$emit('moveFocusToNextParagraph', $scope.paragraph.id);
               websocketMsgSrv.removeParagraph($scope.paragraph.id);
+              $scope.$emit('moveFocusToNextParagraph', $scope.paragraph.id);
             }
           }
         });
