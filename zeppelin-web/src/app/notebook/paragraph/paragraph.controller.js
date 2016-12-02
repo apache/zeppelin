@@ -217,20 +217,18 @@
     };
 
     $scope.saveParagraph = function(paragraph) {
-      if ($scope.dirtyText === undefined || $scope.dirtyText === $scope.originalText) {
+      const dirtyText = paragraph.text;
+      if (dirtyText === undefined || dirtyText === $scope.originalText) {
         return;
       }
-      commitParagraph(paragraph.title, $scope.dirtyText, paragraph.config,
-        paragraph.settings.params);
-      $scope.originalText = angular.copy($scope.dirtyText);
+      commitParagraph(paragraph);
+      $scope.originalText = dirtyText;
       $scope.dirtyText = undefined;
     };
 
     $scope.toggleEnableDisable = function(paragraph) {
       paragraph.config.enabled = !paragraph.config.enabled;
-      var newParams = angular.copy(paragraph.settings.params);
-      var newConfig = angular.copy(paragraph.config);
-      commitParagraph(paragraph.title, paragraph.text, newConfig, newParams);
+      commitParagraph(paragraph);
     };
 
     $scope.run = function(paragraph, editorValue) {
@@ -325,42 +323,26 @@
 
     $scope.closeEditor = function(paragraph) {
       console.log('close the note');
-
-      var newParams = angular.copy(paragraph.settings.params);
-      var newConfig = angular.copy(paragraph.config);
-      newConfig.editorHide = true;
-
-      commitParagraph(paragraph.title, paragraph.text, newConfig, newParams);
+      paragraph.config.editorHide = true;
+      commitParagraph(paragraph);
     };
 
     $scope.openEditor = function(paragraph) {
       console.log('open the note');
-
-      var newParams = angular.copy(paragraph.settings.params);
-      var newConfig = angular.copy(paragraph.config);
-      newConfig.editorHide = false;
-
-      commitParagraph(paragraph.title, paragraph.text, newConfig, newParams);
+      paragraph.config.editorHide = false;
+      commitParagraph(paragraph);
     };
 
     $scope.closeTable = function(paragraph) {
       console.log('close the output');
-
-      var newParams = angular.copy(paragraph.settings.params);
-      var newConfig = angular.copy(paragraph.config);
-      newConfig.tableHide = true;
-
-      commitParagraph(paragraph.title, paragraph.text, newConfig, newParams);
+      paragraph.config.tableHide = true;
+      commitParagraph(paragraph);
     };
 
     $scope.openTable = function(paragraph) {
       console.log('open the output');
-
-      var newParams = angular.copy(paragraph.settings.params);
-      var newConfig = angular.copy(paragraph.config);
-      newConfig.tableHide = false;
-
-      commitParagraph(paragraph.title, paragraph.text, newConfig, newParams);
+      paragraph.config.tableHide = false;
+      commitParagraph(paragraph);
     };
 
     var openEditorAndCloseTable = function(paragraph) {
@@ -376,52 +358,35 @@
     };
 
     var manageEditorAndTableState = function(paragraph, hideEditor, hideTable) {
-      var newParams = angular.copy(paragraph.settings.params);
-      var newConfig = angular.copy(paragraph.config);
-      newConfig.editorHide = hideEditor;
-      newConfig.tableHide = hideTable;
-
-      commitParagraph(paragraph.title, paragraph.text, newConfig, newParams);
+      paragraph.config.editorHide = hideEditor;
+      paragraph.config.tableHide = hideTable;
+      commitParagraph(paragraph);
     };
 
     $scope.showTitle = function(paragraph) {
-      var newParams = angular.copy(paragraph.settings.params);
-      var newConfig = angular.copy(paragraph.config);
-      newConfig.title = true;
-
-      commitParagraph(paragraph.title, paragraph.text, newConfig, newParams);
+      paragraph.config.title = true;
+      commitParagraph(paragraph);
     };
 
     $scope.hideTitle = function(paragraph) {
-      var newParams = angular.copy(paragraph.settings.params);
-      var newConfig = angular.copy(paragraph.config);
-      newConfig.title = false;
-
-      commitParagraph(paragraph.title, paragraph.text, newConfig, newParams);
+      paragraph.config.title = false;
+      commitParagraph(paragraph);
     };
 
     $scope.setTitle = function(paragraph) {
-      var newParams = angular.copy(paragraph.settings.params);
-      var newConfig = angular.copy(paragraph.config);
-      commitParagraph(paragraph.title, paragraph.text, newConfig, newParams);
+      commitParagraph(paragraph);
     };
 
     $scope.showLineNumbers = function(paragraph) {
-      var newParams = angular.copy(paragraph.settings.params);
-      var newConfig = angular.copy(paragraph.config);
-      newConfig.lineNumbers = true;
+      paragraph.config.lineNumbers = true;
       $scope.editor.renderer.setShowGutter(true);
-
-      commitParagraph(paragraph.title, paragraph.text, newConfig, newParams);
+      commitParagraph(paragraph);
     };
 
     $scope.hideLineNumbers = function(paragraph) {
-      var newParams = angular.copy(paragraph.settings.params);
-      var newConfig = angular.copy(paragraph.config);
-      newConfig.lineNumbers = false;
+      paragraph.config.lineNumbers = false;
       $scope.editor.renderer.setShowGutter(false);
-
-      commitParagraph(paragraph.title, paragraph.text, newConfig, newParams);
+      commitParagraph(paragraph);
     };
 
     $scope.columnWidthClass = function(n) {
@@ -436,20 +401,13 @@
       angular.element('.navbar-right.open').removeClass('open');
       if (width !== paragraph.config.colWidth) {
         paragraph.config.colWidth = width;
-
-        var newParams = angular.copy(paragraph.settings.params);
-        var newConfig = angular.copy(paragraph.config);
-
-        commitParagraph(paragraph.title, paragraph.text, newConfig, newParams);
+        commitParagraph(paragraph);
       }
     };
 
     $scope.toggleOutput = function(paragraph) {
-      var newConfig = angular.copy(paragraph.config);
-      var newParams = angular.copy(paragraph.settings.params);
-      newConfig.tableHide = !newConfig.tableHide;
-
-      commitParagraph(paragraph.title, paragraph.text, newConfig, newParams);
+      paragraph.config.tableHide = !paragraph.config.tableHide;
+      commitParagraph(paragraph);
     };
 
     $scope.loadForm = function(formulaire, params) {
@@ -842,8 +800,16 @@
       return cell;
     };
 
-    var commitParagraph = function(title, text, config, params) {
-      websocketMsgSrv.commitParagraph($scope.paragraph.id, title, text, config, params);
+    var commitParagraph = function(paragraph) {
+      const {
+        id,
+        title,
+        text,
+        config,
+        settings: {params},
+      } = paragraph;
+
+      websocketMsgSrv.commitParagraph(id, title, text, config, params);
     };
 
     /** Utility function */
