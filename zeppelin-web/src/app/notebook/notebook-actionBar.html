@@ -77,6 +77,15 @@ limitations under the License.
                 tooltip-placement="bottom" tooltip="Version control">
           <i class="fa fa-file-code-o"></i>
         </button>
+        <button type="button"
+                class="btn btn-default btn-xs"
+                id="setRevision"
+                ng-hide="viewOnly"
+                ng-click="setNoteRevision()"
+                ng-disabled="revisionDisabled"
+                tooltip-placement="bottom" tooltip="Set revision">
+          <i class="fa fa-arrow-circle-o-right"></i>
+        </button>
         <ul class="dropdown-menu" style="width:250px"
           aria-labelledby="versionControlDropdown">
           <li>
@@ -101,8 +110,8 @@ limitations under the License.
         </ul>
       </div>
       <div class="btn-group" role="group">
-        <button type="button" class="btn btn-default btn-xs revisionName">
-          Head
+        <button type="button" class="btn btn-default btn-xs revisionName" title="{{currentRevision}}">
+          <div style="overflow: hidden">{{currentRevision}}</div>
         </button>
         <button type="button" ng-if="noteRevisions.length > 0"
           class="btn btn-default dropdown-toggle caretSeparator"
@@ -111,7 +120,7 @@ limitations under the License.
         </button>
         <ul class="dropdown-menu pull-right" aria-labelledby="revisionsDropdown">
           <li ng-repeat="revision in noteRevisions | orderBy:'time':true" class="revision">
-            <a style="cursor:pointer">
+            <a style="cursor:pointer" ng-click="visitRevision(revision)">
               <span style="display: block;">
                 <strong>{{revision.message}}</strong>
               </span>

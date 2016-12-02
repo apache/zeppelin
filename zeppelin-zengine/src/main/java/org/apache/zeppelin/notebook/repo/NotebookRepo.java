@@ -103,6 +103,18 @@ public interface NotebookRepo {
   @ZeppelinApi public List<Revision> revisionHistory(String noteId, AuthenticationInfo subject);
 
   /**
+   * Set note to particular revision.
+   * 
+   * @param noteId Id of the Notebook
+   * @param rev revision of the Notebook
+   * @return a Notebook
+   * @throws IOException
+   */
+  @ZeppelinApi
+  public Note setNoteRevision(String noteId, String revId, AuthenticationInfo subject)
+      throws IOException;
+
+  /**
    * Get NotebookRepo settings got the given user.
    *
    * @param subject

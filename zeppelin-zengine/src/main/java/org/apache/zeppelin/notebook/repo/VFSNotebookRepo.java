@@ -331,4 +331,11 @@ public class VFSNotebookRepo implements NotebookRepo {
     }
   }
 
+  @Override
+  public Note setNoteRevision(String noteId, String revId, AuthenticationInfo subject)
+      throws IOException {
+    // Auto-generated method stub
+    return null;
+  }
+
 }
