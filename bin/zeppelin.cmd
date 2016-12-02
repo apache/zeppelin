@@ -56,6 +56,7 @@ if exist "%ZEPPELIN_HOME%\zeppelin-server\target\classes" (
 
 call "%bin%\functions.cmd" ADDJARINDIR "%ZEPPELIN_HOME%"
 call "%bin%\functions.cmd" ADDJARINDIR "%ZEPPELIN_HOME%\lib"
+call "%bin%\functions.cmd" ADDJARINDIR "%ZEPPELIN_HOME%\lib\interpreter"
 call "%bin%\functions.cmd" ADDJARINDIR "%ZEPPELIN_HOME%\zeppelin-interpreter\target\lib"
 call "%bin%\functions.cmd" ADDJARINDIR "%ZEPPELIN_HOME%\zeppelin-zengine\target\lib"
 call "%bin%\functions.cmd" ADDJARINDIR "%ZEPPELIN_HOME%\zeppelin-server\target\lib"
