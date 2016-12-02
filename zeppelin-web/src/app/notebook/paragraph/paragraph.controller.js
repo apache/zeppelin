@@ -275,6 +275,7 @@
           callback: function(result) {
             if (result) {
               console.log('Remove paragraph');
+              $scope.$emit('moveFocusToNextParagraph', $scope.paragraph.id);
               websocketMsgSrv.removeParagraph($scope.paragraph.id);
             }
           }
