@@ -426,6 +426,7 @@
           selected = true;
           break;
         }
+        $scope.$broadcast('updateParagraph', {paragraph: note.paragraphs[index]});
       }
 
       if (!selected) {
