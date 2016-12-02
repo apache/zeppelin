@@ -62,9 +62,14 @@
     $scope.saveTimer = null;
 
     var connectedOnce = false;
+    var isRevisionPath = function(path) {
+      var pattern = new RegExp('^.*\/notebook\/[a-zA-Z0-9_]*\/revision\/[a-zA-Z0-9_]*');
+      return pattern.test(path);
+    };
 
     $scope.noteRevisions = [];
     $scope.currentRevision = 'Head';
+    $scope.revisionDisabled = !isRevisionPath($location.path());
 
     $scope.$on('setConnectedStatus', function(event, param) {
       if (connectedOnce && param) {
