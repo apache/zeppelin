@@ -33,17 +33,25 @@
       <useAllReactorProjects>true</useAllReactorProjects> -->
       <!-- Now, select which projects to include in this module-set. -->
       <includes>
-        <include>org.apache.zeppelin:zeppelin-web</include>
+        <include>${project.groupId}:zeppelin-web</include>
       </includes>
       <useProjectArtifact>false</useProjectArtifact>
       <useTransitiveDependencies>false</useTransitiveDependencies>
     </dependencySet>
     <dependencySet>
+      <outputDirectory>/lib/interpreter</outputDirectory>
+      <includes>
+        <include>${project.groupId}:zeppelin-interpreter</include>
+      </includes>
+    </dependencySet>
+    <dependencySet>
       <outputDirectory>/lib</outputDirectory>
-      <useProjectArtifact>false</useProjectArtifact>
       <excludes>
+        <exclude>${project.groupId}:zeppelin-interpreter</exclude>
         <exclude>${project.groupId}:zeppelin-web</exclude>
       </excludes>
+      <useProjectArtifact>false</useProjectArtifact>
+      <useTransitiveFiltering>true</useTransitiveFiltering>
     </dependencySet>
   </dependencySets>
 
@@ -68,7 +76,10 @@
     <fileSet>
       <directory>../conf</directory>
       <excludes>
+        <exclude>credentials.json</exclude>
         <exclude>interpreter.json</exclude>
+        <exclude>notebook-authorization.json</exclude>
+        <exclude>shiro.ini</exclude>
         <exclude>zeppelin-env.cmd</exclude>
         <exclude>zeppelin-env.sh</exclude>
         <exclude>zeppelin-site.xml</exclude>
@@ -80,15 +91,9 @@
     <fileSet>
       <directory>../notebook</directory>
     </fileSet>
-  </fileSets>
-    <!--<fileSet>
-      <directory>zeppelin-cli/target</directory>
-      <outputDirectory></outputDirectory>
-      <includes>
-        <include>*.jar</include>
-        <include>lib/*.jar</include>
-      </includes>
+    <fileSet>
+      <outputDirectory>/lib/interpreter</outputDirectory>
+      <directory>../zeppelin-interpreter/target/lib</directory>
     </fileSet>
-  </fileSets>-->
-
+  </fileSets>
 </assembly>
