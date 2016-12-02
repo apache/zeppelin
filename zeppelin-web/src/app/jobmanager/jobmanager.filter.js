@@ -20,6 +20,7 @@
     function filterContext(jobItems, filterConfig) {
       var filterValueInterpreter = filterConfig.filterValueInterpreter;
       var filterValueNotebookName = filterConfig.filterValueNotebookName;
+      var isSortByAsc = filterConfig.isSortByAsc;
       var filterItems = jobItems;
 
       if (filterValueInterpreter === undefined) {
@@ -36,6 +37,17 @@
           var lowerNotebookName = jobItem.noteName.toLocaleLowerCase();
           return lowerNotebookName.match(new RegExp('.*' + lowerFilterValue + '.*'));
         });
+      }
+
+      if (isSortByAsc === true) {
+        filterItems = _.sortBy(filterItems, function(sortItem) {
+          return sortItem.noteName;
+        });
+      } else {
+        filterItems = _.sortBy(filterItems, function(sortItem) {
+          return sortItem.noteName;
+        });
+        filterItems = filterItems.reverse();
       }
 
       return filterItems;
