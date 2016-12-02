@@ -37,15 +37,12 @@ limitations under the License.
 
   <div>
     <div ng-show="!paragraph.config.editorHide && !viewOnly" style="margin-bottom:3px;">
-      <div id="{{paragraph.id}}_editor"
-           class="editor"
-           ui-ace="{
-                     onLoad : aceLoaded,
-                     require : ['ace/ext/language_tools']
-                   }"
-           ng-model="paragraph.text"
-           ng-class="{'paragraph-disable': paragraph.status == 'RUNNING' || paragraph.status == 'PENDING',
-           'paragraph-text--dirty' : dirtyText !== originalText && dirtyText !== undefined}">      </div>
+      <!-- clover editor -->
+      <code-editor
+        paragraph-id="paragraph.id"
+        paragraph-context="paragraph"
+        on-load="aceLoaded"
+      ></code-editor>
     </div>
 
     <div ng-include src="'app/notebook/paragraph/paragraph-progressBar.html'"></div>

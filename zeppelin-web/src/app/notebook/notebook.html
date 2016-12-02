@@ -110,13 +110,13 @@ limitations under the License.
   <div id="{{currentParagraph.id}}_paragraphColumn_main"
        ng-repeat="currentParagraph in note.paragraphs"
        ng-controller="ParagraphCtrl"
-       ng-init="init(currentParagraph, note)"
        ng-class="columnWidthClass(currentParagraph.config.colWidth)"
        class="paragraph-col">
     <div class="new-paragraph" ng-click="insertNew('above')" ng-hide="viewOnly || asIframe">
       <h4 class="plus-sign">&#43;</h4>
     </div>
     <div id="{{currentParagraph.id}}_paragraphColumn"
+         data-ng-init="init(currentParagraph, note)"
          ng-include src="'app/notebook/paragraph/paragraph.html'"
          ng-class="{'paragraph-space box paragraph-margin': !asIframe, 'focused': paragraphFocused,
                     'lastEmptyParagraph': !paragraph.text && !paragraph.result}"
