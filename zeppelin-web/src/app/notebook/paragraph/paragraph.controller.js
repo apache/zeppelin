@@ -283,7 +283,7 @@
 
     $scope.removeParagraph = function(paragraph) {
       var paragraphs = angular.element('div[id$="_paragraphColumn_main"]');
-      if (paragraphs[paragraphs.length - 1].id.startsWith(paragraph.id)) {
+      if (paragraphs[paragraphs.length - 1].id.indexOf(paragraph.id) === 0) {
         BootstrapDialog.alert({
           closable: true,
           message: 'The last paragraph can\'t be deleted.',
@@ -528,7 +528,7 @@
         });
 
         $scope.editor.on('paste', function(e) {
-          if (e.text.startsWith('%')) {
+          if (e.text.indexOf('%') === 0) {
             pastePercentSign = true;
           }
         });
@@ -684,7 +684,7 @@
     $rootScope.$on('scrollToCursor', function(event) {
       // scroll on 'scrollToCursor' event only when cursor is in the last paragraph
       var paragraphs = angular.element('div[id$="_paragraphColumn_main"]');
-      if (paragraphs[paragraphs.length - 1].id.startsWith($scope.paragraph.id)) {
+      if (paragraphs[paragraphs.length - 1].id.indexOf($scope.paragraph.id) === 0) {
         $scope.scrollToCursor($scope.paragraph.id, 0);
       }
     });
@@ -813,12 +813,6 @@
     };
 
     /** Utility function */
-    if (typeof String.prototype.startsWith !== 'function') {
-      String.prototype.startsWith = function(str) {
-        return this.slice(0, str.length) === str;
-      };
-    }
-
     $scope.goToSingleParagraph = function() {
       var noteId = $route.current.pathParams.noteId;
       var redirectToUrl = location.protocol + '//' + location.host + location.pathname + '#/notebook/' + noteId +
@@ -905,7 +899,7 @@
         scope[varName] = data.angularObject.object;
 
         // create proxy for AngularFunction
-        if (varName.startsWith(ANGULAR_FUNCTION_OBJECT_NAME_PREFIX)) {
+        if (varName.indexOf(ANGULAR_FUNCTION_OBJECT_NAME_PREFIX) === 0) {
           var funcName = varName.substring((ANGULAR_FUNCTION_OBJECT_NAME_PREFIX).length);
           scope[funcName] = function() {
             scope[varName] = arguments;
@@ -942,7 +936,7 @@
         scope[varName] = undefined;
 
         // remove proxy for AngularFunction
-        if (varName.startsWith(ANGULAR_FUNCTION_OBJECT_NAME_PREFIX)) {
+        if (varName.indexOf(ANGULAR_FUNCTION_OBJECT_NAME_PREFIX) === 0) {
           var funcName = varName.substring((ANGULAR_FUNCTION_OBJECT_NAME_PREFIX).length);
           scope[funcName] = undefined;
         }
@@ -1032,7 +1026,7 @@
           // when last paragraph runs, zeppelin automatically appends new paragraph.
           // this broadcast will focus to the newly inserted paragraph
           var paragraphs = angular.element('div[id$="_paragraphColumn_main"]');
-          if (paragraphs.length >= 2 && paragraphs[paragraphs.length - 2].id.startsWith($scope.paragraph.id)) {
+          if (paragraphs.length >= 2 && paragraphs[paragraphs.length - 2].id.indexOf($scope.paragraph.id) === 0) {
             // rendering output can took some time. So delay scrolling event firing for sometime.
             setTimeout(function() {
               $rootScope.$broadcast('scrollToCursor');
