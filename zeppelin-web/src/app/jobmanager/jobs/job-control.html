@@ -18,14 +18,25 @@ limitations under the License.
   </span>
   <span>
     <span ng-if="notebookJob.isRunningJob === true">
-      Note is RUNNING
+      RUNNING
     </span>
     <span ng-if="notebookJob.isRunningJob === false">
-      Note is READY
+      READY
     </span>
   </span>
 
   <span ng-if="notebookJob.isRunningJob === true">
     {{getProgress()}}%
+  </span>
+  <!-- Run / Cancel button -->
+  <span
+    ng-if="notebookJob.isRunningJob === false"
+    class="icon-control-play" style="cursor:pointer;color:#3071A9" tooltip-placement="left" tooltip="START ALL Job"
+    ng-click="runNotebookJob(notebookJob.noteId)">
+  </span>
+  <span
+    ng-if="notebookJob.isRunningJob === true"
+    class="icon-control-pause" style="cursor:pointer;color:#3071A9" tooltip-placement="left" tooltip="STOP ALL Job"
+    ng-click="stopNotebookJob(notebookJob.noteId)">
   </span>
 </div>
