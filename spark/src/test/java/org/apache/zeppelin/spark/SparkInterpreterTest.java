@@ -314,17 +314,7 @@ public class SparkInterpreterTest {
         new AngularObjectRegistry(intpGroup.getId(), null),
         new LocalResourcePool("id"),
         new LinkedList<InterpreterContextRunner>(),
-        new InterpreterOutput(new InterpreterOutputListener() {
-          @Override
-          public void onAppend(InterpreterOutput out, byte[] line) {
-
-          }
-
-          @Override
-          public void onUpdate(InterpreterOutput out, byte[] output) {
-
-          }
-        }));
+        new InterpreterOutput(null));
     repl.interpret("sc.parallelize(1 to 10).map(x => {x}).collect", intpCtx);
     Map<String, String> paraInfos = paraIdToInfosMap.get(intpCtx.getParagraphId());
     String jobUrl = null;
