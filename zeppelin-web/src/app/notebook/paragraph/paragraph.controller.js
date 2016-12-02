@@ -820,30 +820,30 @@
       $window.open(redirectToUrl);
     };
 
-    $scope.showScrollDownIcon = function() {
-      var doc = angular.element('#p' + $scope.paragraph.id + '_text');
+    $scope.showScrollDownIcon = function(id) {
+      var doc = angular.element('#p' + id + '_text');
       if (doc[0]) {
         return doc[0].scrollHeight > doc.innerHeight();
       }
       return false;
     };
 
-    $scope.scrollParagraphDown = function() {
-      var doc = angular.element('#p' + $scope.paragraph.id + '_text');
+    $scope.scrollParagraphDown = function(id) {
+      var doc = angular.element('#p' + id + '_text');
       doc.animate({scrollTop: doc[0].scrollHeight}, 500);
       $scope.keepScrollDown = true;
     };
 
-    $scope.showScrollUpIcon = function() {
-      if (angular.element('#p' + $scope.paragraph.id + '_text')[0]) {
-        return angular.element('#p' + $scope.paragraph.id + '_text')[0].scrollTop !== 0;
+    $scope.showScrollUpIcon = function(id) {
+      if (angular.element('#p' + id + '_text')[0]) {
+        return angular.element('#p' + id + '_text')[0].scrollTop !== 0;
       }
       return false;
 
     };
 
-    $scope.scrollParagraphUp = function() {
-      var doc = angular.element('#p' + $scope.paragraph.id + '_text');
+    $scope.scrollParagraphUp = function(id) {
+      var doc = angular.element('#p' + id + '_text');
       doc.animate({scrollTop: 0}, 500);
       $scope.keepScrollDown = false;
     };
