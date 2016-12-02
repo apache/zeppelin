@@ -154,9 +154,12 @@
         return;
       }
       console.log('updateResult %o %o %o %o', result, newConfig, paragraphRef, index);
+      var refresh = !angular.equals(newConfig, $scope.config) ||
+                    !angular.equals(result.type, $scope.type) ||
+                    !angular.equals(result.data, data);
 
       updateData(result, newConfig, paragraph, resultIndex);
-      renderResult($scope.type, true);
+      renderResult($scope.type, refresh);
     });
 
     $scope.$on('appendParagraphOutput', function(event, data) {

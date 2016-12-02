@@ -50,12 +50,31 @@ zeppelin.Transformation.prototype.renderSetting = function(targetEl) {
     return;
   }
 
-  this.settingScope = this._createNewScope();
+  // already readered
+  if (this._scope) {
+    var self = this;
+    console.log('%o %o', self._scope, setting.scope);
+    this._scope.$apply(function() {
+      for (var k in setting.scope) {
+        self._scope[k] = setting.scope[k];
+      }
+
+      for (var k in self._prevSettingScope) {
+        if (!setting.scope[k]) {
+          self._scope[k] = setting.scope[k];
+        }
+      }
+    });
+    return;
+  } else {
+    this._prevSettingScope = setting.scope;
+  }
+
+  var scope = this._createNewScope();
   for (var k in setting.scope) {
-    this.settingScope[k] = setting.scope[k];
+    scope[k] = setting.scope[k];
   }
   var template = setting.template;
-  var scope = this.settingScope;
 
   if (template.split('\n').length === 1 &&
       template.endsWith('.html')) { // template is url
@@ -72,6 +91,7 @@ zeppelin.Transformation.prototype._render = function(targetEl, template, scope) 
   this._targetEl = targetEl;
   targetEl.html(template);
   this._compile(targetEl.contents())(scope);
+  this._scope = scope;
 };
 
 zeppelin.Transformation.prototype.setConfig = function(config) {
