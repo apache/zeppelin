@@ -63,6 +63,10 @@
         websocketEvents.sendNewEvent({op: 'NOTE_RENAME', data: {id: noteId, name: noteName}});
       },
 
+      renameFolder: function(folderId, folderName) {
+        websocketEvents.sendNewEvent({op: 'FOLDER_RENAME', data: {id: folderId, name: folderName}});
+      },
+
       moveParagraph: function(paragraphId, newIndex) {
         websocketEvents.sendNewEvent({op: 'MOVE_PARAGRAPH', data: {id: paragraphId, index: newIndex}});
       },

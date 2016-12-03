@@ -39,9 +39,18 @@ limitations under the License.
     </a>
   </div>
   <div ng-if="node.children != null">
-    <a style="text-decoration: none; cursor: pointer;" ng-click="toggleFolderNode(node)">
-      <i style="font-size: 10px;" ng-class="node.hidden ? 'icon-folder' : 'icon-folder-alt'" /> {{noteName(node)}}
-    </a>
+    <div ng-mouseenter="showFolderButton=true"
+         ng-mouseleave="showFolderButton=false">
+      <a style="text-decoration: none; cursor: pointer;" ng-click="toggleFolderNode(node)">
+        <i style="font-size: 10px;" ng-class="node.hidden ? 'icon-folder' : 'icon-folder-alt'" /> {{noteName(node)}}
+      </a>
+      <a style="text-decoration: none;">
+        <i style="font-size: 13px; margin-left: 10px; cursor: pointer; text-decoration: none;"
+           class="fa fa-pencil" ng-show="showFolderButton" ng-click="renameFolder(node)"
+           tooltip-placement="bottom" tooltip="Rename folder">
+        </i>
+      </a>
+    </div>
     <div ng-if="!node.hidden">
       <ul style="list-style-type: none; padding-left:15px;">
         <li ng-repeat="node in node.children" ng-include="'notebook_folder_renderer.html'" />
