@@ -124,14 +124,19 @@ public interface NotebookRepo {
   static class Revision {
     public static final Revision EMPTY = new Revision(StringUtils.EMPTY, StringUtils.EMPTY, 0);
     
+    public String id;
+    public String message;
+    public int time;
+    
     public Revision(String revId, String message, int time) {
       this.id = revId;
       this.message = message;
       this.time = time;
     }
-    public String id;
-    public String message;
-    public int time;
+
+    public static boolean isEmpty(Revision revision) {
+      return revision == null || EMPTY.equals(revision);
+    }
   }
 
 }
