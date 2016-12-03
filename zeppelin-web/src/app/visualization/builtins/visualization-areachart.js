@@ -64,4 +64,16 @@ zeppelin.AreachartVisualization.prototype.configureChart = function(chart) {
   chart.yAxisTickFormat(function(d) {return self.yAxisTickFormat(d);});
   chart.yAxis.axisLabelDistance(50);
   chart.useInteractiveGuideline(true); // for better UX and performance issue. (https://github.com/novus/nvd3/issues/691)
+
+  this.chart.style(this.config.style || 'stack');
+
+  var self = this;
+  this.chart.dispatch.on('stateChange', function(s) {
+    self.config.style = s.style;
+
+    // give some time to animation finish
+    setTimeout(function() {
+      self.emitConfig(self.config);
+    }, 500);
+  });
 };

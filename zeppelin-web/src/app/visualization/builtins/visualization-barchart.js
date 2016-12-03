@@ -60,4 +60,16 @@ zeppelin.BarchartVisualization.prototype.configureChart = function(chart) {
   var self = this;
   chart.yAxis.axisLabelDistance(50);
   chart.yAxis.tickFormat(function(d) {return self.yAxisTickFormat(d);});
+
+  this.chart.stacked(this.config.stacked);
+
+  var self = this;
+  this.chart.dispatch.on('stateChange', function(s) {
+    self.config.stacked = s.stacked;
+
+    // give some time to animation finish
+    setTimeout(function() {
+      self.emitConfig(self.config);
+    }, 500);
+  });
 };
