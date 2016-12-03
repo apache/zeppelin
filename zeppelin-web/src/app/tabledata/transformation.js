@@ -53,7 +53,6 @@ zeppelin.Transformation.prototype.renderSetting = function(targetEl) {
   // already readered
   if (this._scope) {
     var self = this;
-    console.log('%o %o', self._scope, setting.scope);
     this._scope.$apply(function() {
       for (var k in setting.scope) {
         self._scope[k] = setting.scope[k];
