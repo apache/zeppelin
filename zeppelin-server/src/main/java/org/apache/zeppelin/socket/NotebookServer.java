@@ -1453,7 +1453,7 @@ public class NotebookServer extends WebSocketServlet implements
     String commitMessage = (String) fromMessage.get("commitMessage");
     AuthenticationInfo subject = new AuthenticationInfo(fromMessage.principal);
     Revision revision = notebook.checkpointNote(noteId, commitMessage, subject);
-    if (!Revision.EMPTY.equals(revision)) {
+    if (!Revision.isEmpty(revision)) {
       List<Revision> revisions = notebook.listRevisionHistory(noteId, subject);
       conn.send(serializeMessage(new Message(OP.LIST_REVISION_HISTORY)
         .put("revisionList", revisions)));
