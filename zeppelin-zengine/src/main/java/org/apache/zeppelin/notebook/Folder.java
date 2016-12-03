@@ -17,6 +17,9 @@
 
 package org.apache.zeppelin.notebook;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.*;
 
 /**
@@ -37,6 +40,8 @@ public class Folder {
   private final Map<String, Note> notes = new LinkedHashMap<>();
 
   private List<FolderListener> listeners = new LinkedList<>();
+
+  private static final Logger logger = LoggerFactory.getLogger(Folder.class);
 
   public Folder(String id) {
     this.id = id;
@@ -106,6 +111,7 @@ public class Folder {
 
     String oldId = getId();
     id = normalizeFolderId(newId);
+    logger.info("Rename {} to {}", oldId, getId());
 
     synchronized (notes) {
       for (Note note : notes.values()) {
@@ -134,13 +140,8 @@ public class Folder {
    * @param folder
    */
   public void merge(Folder folder) {
+    logger.info("Merge {} into {}", folder.getId(), getId());
     addNotes(folder.getNotes());
-
-    for (Folder child : folder.getChildren().values()) {
-      child.setParent(this);
-    }
-
-    children.putAll(folder.getChildren());
   }
 
   public void addFolderListener(FolderListener listener) {
@@ -162,20 +163,23 @@ public class Folder {
   }
 
   public void setParent(Folder parent) {
+    logger.info("Set parent of {} to {}", getId(), parent.getId());
     this.parent = parent;
   }
 
-  public void addChild(String folderId, Folder child) {
+  public void addChild(Folder child) {
     if (child == this) // prevent the root folder from setting itself as child
       return;
-    children.put(folderId, child);
+    children.put(child.getId(), child);
   }
 
   public void removeChild(String folderId) {
+    logger.info("Remove child {} from {}", folderId, getId());
     children.remove(folderId);
   }
 
   public void addNote(Note note) {
+    logger.info("Add note {} to folder {}", note.getId(), getId());
     synchronized (notes) {
       notes.put(note.getId(), note);
     }
@@ -190,6 +194,7 @@ public class Folder {
   }
 
   public void removeNote(Note note) {
+    logger.info("Remove note {} from folder {}", note.getId(), getId());
     synchronized (notes) {
       notes.remove(note.getId());
     }

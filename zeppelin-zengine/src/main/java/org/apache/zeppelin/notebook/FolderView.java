@@ -17,6 +17,9 @@
 
 package org.apache.zeppelin.notebook;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -29,6 +32,8 @@ public class FolderView implements NoteNameListener, FolderListener {
   private final Map<String, Folder> folders = new LinkedHashMap<>();
   // key: a note, value: a folder where the note belongs to
   private final Map<Note, Folder> index = new LinkedHashMap<>();
+
+  private static final Logger logger = LoggerFactory.getLogger(FolderView.class);
 
   public Folder getFolder(String folderId) {
     String normalizedFolderId = Folder.normalizeFolderId(folderId);
@@ -56,6 +61,8 @@ public class FolderView implements NoteNameListener, FolderListener {
     // check whether oldFolderId and newFolderId are same or not
     if (normOldFolderId.equals(normNewFolderId))
       return getFolder(normOldFolderId);
+
+    logger.info("Rename {} to {}", normOldFolderId, normNewFolderId);
 
     Folder oldFolder = getFolder(normOldFolderId);
     removeFolder(oldFolderId);
@@ -95,6 +102,8 @@ public class FolderView implements NoteNameListener, FolderListener {
     Folder newFolder = new Folder(folderId);
     newFolder.addFolderListener(this);
 
+    logger.info("Create folder {}", folderId);
+
     synchronized (folders) {
       folders.put(folderId, newFolder);
     }
@@ -102,7 +111,7 @@ public class FolderView implements NoteNameListener, FolderListener {
     Folder parentFolder = getOrCreateFolder(newFolder.getParentFolderId());
 
     newFolder.setParent(parentFolder);
-    parentFolder.addChild(newFolder.getId(), newFolder);
+    parentFolder.addChild(newFolder);
 
     return newFolder;
   }
@@ -115,6 +124,7 @@ public class FolderView implements NoteNameListener, FolderListener {
     }
 
     if (removedFolder != null) {
+      logger.info("Remove folder {}", folderId);
       Folder parent = removedFolder.getParent();
       parent.removeChild(folderId);
       removeFolderIfEmpty(parent.getId());
@@ -127,6 +137,7 @@ public class FolderView implements NoteNameListener, FolderListener {
 
     Folder folder = getFolder(folderId);
     if (folder.countNotes() == 0 && !folder.hasChild()) {
+      logger.info("Folder {} is empty", folder.getId());
       removeFolder(folderId);
     }
   }
@@ -189,6 +200,7 @@ public class FolderView implements NoteNameListener, FolderListener {
     if (note.isNameEmpty()) {
       return;
     }
+    logger.info("Note name changed: {} -> {}", oldName, note.getName());
     // New note
     if (!index.containsKey(note)) {
       putNote(note);
@@ -210,12 +222,10 @@ public class FolderView implements NoteNameListener, FolderListener {
   public void onFolderRenamed(Folder folder, String oldFolderId) {
     if (getFolder(folder.getId()) == folder)  // the folder is at the right place
       return;
+    logger.info("folder renamed: {} -> {}", oldFolderId, folder.getId());
 
     if (getFolder(oldFolderId) == folder)
       folders.remove(oldFolderId);
-
-    if (!folder.getParent().getId().equals(folder.getParentFolderId()))
-      folder.getParent().removeChild(oldFolderId);
 
     Folder newFolder = getOrCreateFolder(folder.getId());
     newFolder.merge(folder);
