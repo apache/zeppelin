@@ -135,13 +135,7 @@ public interface NotebookRepo {
     }
 
     public static boolean isEmpty(Revision revision) {
-      if (!(revision instanceof Revision)) {
-        return true;
-      }
-      if (revision == null || EMPTY.equals(revision)) {
-        return true;
-      }
-      return false;
+      return revision == null || EMPTY.equals(revision);
     }
   }
 
