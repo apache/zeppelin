@@ -599,16 +599,6 @@
     <profile>
       <id>hadoop-2.7</id>
       <properties>
-        <hadoop.version>2.7.2</hadoop.version>
-        <protobuf.version>2.5.0</protobuf.version>
-        <jets3t.version>0.9.0</jets3t.version>
-        <avro.mapred.classifier>hadoop2</avro.mapred.classifier>
-      </properties>
-    </profile>
-
-    <profile>
-      <id>hadoop-2.7</id>
-      <properties>
         <hadoop.version>2.7.1</hadoop.version>
         <protobuf.version>2.5.0</protobuf.version>
         <jets3t.version>0.9.3</jets3t.version>
