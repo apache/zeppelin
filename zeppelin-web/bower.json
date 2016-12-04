@@ -65,5 +65,8 @@
       "version": "9.4.0",
       "name": "highlightjs"
     }
+  },
+  "resolutions": {
+    "angular": ">=1.2.15 <1.6"
   }
 }
