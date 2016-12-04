@@ -487,6 +487,9 @@
           <configuration>
             <configLocation>_tools/checkstyle.xml</configLocation>
             <enableRSS>false</enableRSS>
+            <consoleOutput>true</consoleOutput>
+            <!-- TODO:increase violation level to WARN -->
+            <!-- <violationSeverity>warn</violationSeverity> -->
           </configuration>
           <executions>
             <execution>
@@ -762,16 +765,14 @@
     </profile>
 
     <profile>
-      <id>strict-checkstyle</id>
+      <id>loose-checkstyle</id>
       <build>
         <plugins>
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-checkstyle-plugin</artifactId>
             <configuration>
-              <consoleOutput>true</consoleOutput>
-              <!-- TODO:increase violation level to WARN -->
-              <!-- <violationSeverity>warn</violationSeverity> -->
+              <consoleOutput>false</consoleOutput>
             </configuration>
           </plugin>
         </plugins>
