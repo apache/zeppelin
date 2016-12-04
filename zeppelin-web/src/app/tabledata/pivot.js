@@ -25,15 +25,115 @@ zeppelin.PivotTransformation = function(config) {
 
 zeppelin.PivotTransformation.prototype = Object.create(zeppelin.Transformation.prototype);
 
+zeppelin.PivotTransformation.prototype.getSetting = function() {
+  var self = this;
+
+  var configObj = self.config;
+  console.log('getSetting', configObj);
+  return {
+    template: 'app/tabledata/pivot_settings.html',
+    scope: {
+      config: configObj.common.pivot,
+      tableDataColumns: self.tableDataColumns,
+      save: function() {
+        self.emitConfig(configObj);
+      },
+      removeKey: function(idx) {
+        configObj.common.pivot.keys.splice(idx, 1);
+        self.emitConfig(configObj);
+      },
+      removeGroup: function(idx) {
+        configObj.common.pivot.groups.splice(idx, 1);
+        self.emitConfig(configObj);
+      },
+      removeValue: function(idx) {
+        configObj.common.pivot.values.splice(idx, 1);
+        self.emitConfig(configObj);
+      },
+      setValueAggr: function(idx, aggr) {
+        configObj.common.pivot.values[idx].aggr = aggr;
+        self.emitConfig(configObj);
+      }
+    }
+  };
+};
+
 /**
  * Method will be invoked when tableData or config changes
  */
 zeppelin.PivotTransformation.prototype.transform = function(tableData) {
+  this.tableDataColumns = tableData.columns;
+  this.config.common = this.config.common || {};
+  this.config.common.pivot = this.config.common.pivot || {};
+  var config = this.config.common.pivot;
+  var firstTime = (!config.keys && !config.groups && !config.values);
+
+  config.keys = config.keys || [];
+  config.groups = config.groups || [];
+  config.values = config.values || [];
+
+  this.removeUnknown();
+  if (firstTime) {
+    this.selectDefault();
+  }
   return this.pivot(
     tableData,
-    this.config.keys,
-    this.config.groups,
-    this.config.values);
+    config.keys,
+    config.groups,
+    config.values);
+};
+
+zeppelin.PivotTransformation.prototype.removeUnknown = function() {
+  var config = this.config.common.pivot;
+  var tableDataColumns = this.tableDataColumns;
+  var unique = function(list) {
+    for (var i = 0; i < list.length; i++) {
+      for (var j = i + 1; j < list.length; j++) {
+        if (angular.equals(list[i], list[j])) {
+          list.splice(j, 1);
+        }
+      }
+    }
+  };
+
+  var removeUnknown = function(list) {
+    for (var i = 0; i < list.length; i++) {
+      // remove non existing column
+      var found = false;
+      for (var j = 0; j < tableDataColumns.length; j++) {
+        var a = list[i];
+        var b = tableDataColumns[j];
+        if (a.index === b.index && a.name === b.name) {
+          found = true;
+          break;
+        }
+      }
+      if (!found) {
+        list.splice(i, 1);
+      }
+    }
+  };
+
+  unique(config.keys);
+  removeUnknown(config.keys);
+  unique(config.groups);
+  removeUnknown(config.groups);
+  removeUnknown(config.values);
+};
+
+zeppelin.PivotTransformation.prototype.selectDefault = function() {
+  var config = this.config.common.pivot;
+  if (config.keys.length === 0 &&
+      config.groups.length === 0 &&
+      config.values.length === 0) {
+    if (config.keys.length === 0 && this.tableDataColumns.length > 0) {
+      config.keys.push(this.tableDataColumns[0]);
+    }
+
+    if (config.values.length === 0 && this.tableDataColumns.length > 1) {
+      config.values.push(this.tableDataColumns[1]);
+    }
+  }
 };
 
 zeppelin.PivotTransformation.prototype.pivot = function(data, keys, groups, values) {

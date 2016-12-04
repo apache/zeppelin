@@ -78,6 +78,13 @@ public class Message {
     INSERT_PARAGRAPH, // [c-s] create new paragraph below current paragraph
                       // @param target index
 
+    COPY_PARAGRAPH,   // [c-s] create new para below current para as a copy of current para
+                      // @param target index
+                      // @param title paragraph title
+                      // @param paragraph paragraph content.ie. script
+                      // @param config paragraph config
+                      // @param params paragraph params
+
     EDITOR_SETTING,   // [c-s] ask paragraph editor setting
                       // @param magic magic keyword written in paragraph
                       // ex) spark.spark or spark
