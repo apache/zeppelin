@@ -186,8 +186,14 @@ public class ZeppelinHubRepo implements NotebookRepo {
 
   /**
    * For a given user logged in is zeppelin (via zeppelinhub notebook repo), get default token.
-   *  */
+   *
+   */
   private String getUserToken(String principal) {
+    // Case of user use token instead of authentication.
+    if (!StringUtils.isBlank(token)) {
+      return token;
+    }
+
     String token = usersToken.get(principal);
     if (StringUtils.isBlank(token)) {
       String ticket = UserSessionContainer.instance.getSession(principal);

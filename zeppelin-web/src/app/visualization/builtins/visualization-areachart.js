@@ -35,8 +35,7 @@ zeppelin.AreachartVisualization.prototype.getTransformation = function() {
   return this.pivot;
 };
 
-zeppelin.AreachartVisualization.prototype.render = function(tableData) {
-  var pivot = this.pivot.transform(tableData);
+zeppelin.AreachartVisualization.prototype.render = function(pivot) {
   var d3Data = this.d3DataFromPivot(
     pivot.schema,
     pivot.rows,

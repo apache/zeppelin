@@ -42,11 +42,13 @@ public class ZeppelinHubRepoTest {
   private ZeppelinhubRestApiHandler getMockedZeppelinHandler() throws HttpException, IOException {
     ZeppelinhubRestApiHandler mockedZeppelinhubHandler = mock(ZeppelinhubRestApiHandler.class);
 
-    byte[] response = Files.toByteArray(pathOfNotebooks);
-    when(mockedZeppelinhubHandler.get("", "")).thenReturn(new String(response));
+    byte[] listOfNotesResponse = Files.toByteArray(pathOfNotebooks);
+    when(mockedZeppelinhubHandler.get("AAA-BBB-CCC-00", ""))
+      .thenReturn(new String(listOfNotesResponse));
 
-    response =  Files.toByteArray(pathOfNotebook);
-    when(mockedZeppelinhubHandler.get("", "AAAAA")).thenReturn(new String(response));
+    byte[] noteResponse =  Files.toByteArray(pathOfNotebook);
+    when(mockedZeppelinhubHandler.get("AAA-BBB-CCC-00", "AAAAA"))
+      .thenReturn(new String(noteResponse));
 
     return mockedZeppelinhubHandler;
   }

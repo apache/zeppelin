@@ -22,8 +22,9 @@ var zeppelin = zeppelin || {};
 zeppelin.Visualization = function(targetEl, config) {
   this.targetEl = targetEl;
   this.config = config;
-  this._resized = false;
+  this._dirty = false;
   this._active = false;
+  this._emitter;
 };
 
 /**
@@ -51,9 +52,9 @@ zeppelin.Visualization.prototype.refresh = function() {
  * Activate. invoked when visualization is selected
  */
 zeppelin.Visualization.prototype.activate = function() {
-  if (!this._active || this._resized) {
+  if (!this._active || this._dirty) {
     this.refresh();
-    this._resized = false;
+    this._dirty = false;
   }
   this._active = true;
 };
@@ -79,7 +80,7 @@ zeppelin.Visualization.prototype.resize = function() {
   if (this.isActive()) {
     this.refresh();
   } else {
-    this._resized = true;
+    this._dirty = true;
   }
 };
 
@@ -88,6 +89,18 @@ zeppelin.Visualization.prototype.resize = function() {
  */
 zeppelin.Visualization.prototype.setConfig = function(config) {
   this.config = config;
+  if (this.isActive()) {
+    this.refresh();
+  } else {
+    this._dirty = true;
+  }
+};
+
+/**
+ * Emit config. config will sent to server and saved.
+ */
+zeppelin.Visualization.prototype.emitConfig = function(config) {
+  this._emitter(config);
 };
 
 /**
@@ -96,4 +109,66 @@ zeppelin.Visualization.prototype.setConfig = function(config) {
  */
 zeppelin.Visualization.prototype.destroy = function() {
   // override this
+};
+
+/**
+ * return {
+ *   template : angular template string or url (url should end with .html),
+ *   scope : an object to bind to template scope
+ * }
+ */
+zeppelin.Visualization.prototype.getSetting = function() {
+  // override this
+};
+
+/**
+ * render setting
+ */
+zeppelin.Visualization.prototype.renderSetting = function(targetEl) {
+  var setting = this.getSetting();
+  if (!setting) {
+    return;
+  }
+
+  // already readered
+  if (this._scope) {
+    var self = this;
+    this._scope.$apply(function() {
+      for (var k in setting.scope) {
+        self._scope[k] = setting.scope[k];
+      }
+
+      for (var k in self._prevSettingScope) {
+        if (!setting.scope[k]) {
+          self._scope[k] = setting.scope[k];
+        }
+      }
+    });
+    return;
+  } else {
+    this._prevSettingScope = setting.scope;
+  }
+
+  var scope = this._createNewScope();
+  for (var k in setting.scope) {
+    scope[k] = setting.scope[k];
+  }
+  var template = setting.template;
+
+  if (template.split('\n').length === 1 &&
+      template.endsWith('.html')) { // template is url
+    var self = this;
+    this._templateRequest(template).then(function(t) {
+      self._renderSetting(targetEl, t, scope);
+    });
+  } else {
+    this._renderSetting(targetEl, template, scope);
+  }
+};
+
+zeppelin.Visualization.prototype._renderSetting = function(targetEl, template, scope) {
+  this._targetEl = targetEl;
+  targetEl.html(template);
+  this._compile(targetEl.contents())(scope);
+  this._scope = scope;
 };
