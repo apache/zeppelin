@@ -842,7 +842,7 @@
         scope[varName] = data.angularObject.object;
 
         // create proxy for AngularFunction
-        if (varName.startsWith(ANGULAR_FUNCTION_OBJECT_NAME_PREFIX)) {
+        if (varName.indexOf(ANGULAR_FUNCTION_OBJECT_NAME_PREFIX) === 0) {
           var funcName = varName.substring((ANGULAR_FUNCTION_OBJECT_NAME_PREFIX).length);
           scope[funcName] = function() {
             scope[varName] = arguments;
@@ -881,7 +881,7 @@
         scope[varName] = undefined;
 
         // remove proxy for AngularFunction
-        if (varName.startsWith(ANGULAR_FUNCTION_OBJECT_NAME_PREFIX)) {
+        if (varName.indexOf(ANGULAR_FUNCTION_OBJECT_NAME_PREFIX) === 0) {
           var funcName = varName.substring((ANGULAR_FUNCTION_OBJECT_NAME_PREFIX).length);
           scope[funcName] = undefined;
         }

@@ -118,12 +118,10 @@
 
       noteVarShareService.put($scope.paragraph.id + '_paragraphScope', paragraphScope);
 
-      initializeDefault();
+      initializeDefault($scope.paragraph.config);
     };
 
-    var initializeDefault = function() {
-      var config = $scope.paragraph.config;
-
+    var initializeDefault = function(config) {
       if (!config.colWidth) {
         config.colWidth = 12;
       }
@@ -192,17 +190,13 @@
       return !object;
     };
 
-    $scope.isRunning = function() {
-      if ($scope.paragraph.status === 'RUNNING' || $scope.paragraph.status === 'PENDING') {
-        return true;
-      } else {
-        return false;
-      }
+    $scope.isRunning = function(paragraph) {
+      return paragraph.status === 'RUNNING' || paragraph.status === 'PENDING';
     };
 
-    $scope.cancelParagraph = function() {
-      console.log('Cancel %o', $scope.paragraph.id);
-      websocketMsgSrv.cancelParagraphRun($scope.paragraph.id);
+    $scope.cancelParagraph = function(paragraph) {
+      console.log('Cancel %o', paragraph.id);
+      websocketMsgSrv.cancelParagraphRun(paragraph.id);
     };
 
     $scope.runParagraph = function(data) {
@@ -212,52 +206,47 @@
       $scope.dirtyText = undefined;
 
       if ($scope.paragraph.config.editorSetting.editOnDblClick) {
-        closeEditorAndOpenTable();
+        closeEditorAndOpenTable($scope.paragraph);
       } else if (editorSetting.isOutputHidden &&
           !$scope.paragraph.config.editorSetting.editOnDblClick) {
         // %md/%angular repl make output to be hidden by default after running
         // so should open output if repl changed from %md/%angular to another
-        openEditorAndOpenTable();
+        openEditorAndOpenTable($scope.paragraph);
       }
       editorSetting.isOutputHidden = $scope.paragraph.config.editorSetting.editOnDblClick;
     };
 
-    $scope.saveParagraph = function() {
-      if ($scope.dirtyText === undefined || $scope.dirtyText === $scope.originalText) {
+    $scope.saveParagraph = function(paragraph) {
+      const dirtyText = paragraph.text;
+      if (dirtyText === undefined || dirtyText === $scope.originalText) {
         return;
       }
-      commitParagraph($scope.paragraph.title, $scope.dirtyText, $scope.paragraph.config,
-        $scope.paragraph.settings.params);
-      $scope.originalText = angular.copy($scope.dirtyText);
+      commitParagraph(paragraph);
+      $scope.originalText = dirtyText;
       $scope.dirtyText = undefined;
     };
 
-    $scope.toggleEnableDisable = function() {
-      $scope.paragraph.config.enabled = $scope.paragraph.config.enabled ? false : true;
-      var newParams = angular.copy($scope.paragraph.settings.params);
-      var newConfig = angular.copy($scope.paragraph.config);
-      commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
+    $scope.toggleEnableDisable = function(paragraph) {
+      paragraph.config.enabled = !paragraph.config.enabled;
+      commitParagraph(paragraph);
     };
 
-    $scope.run = function() {
-      var editorValue = $scope.editor.getValue();
-      if (editorValue) {
-        if (!($scope.paragraph.status === 'RUNNING' || $scope.paragraph.status === 'PENDING')) {
-          $scope.runParagraph(editorValue);
-        }
+    $scope.run = function(paragraph, editorValue) {
+      if (editorValue && !$scope.isRunning(paragraph)) {
+        $scope.runParagraph(editorValue);
       }
     };
 
-    $scope.moveUp = function() {
-      $scope.$emit('moveParagraphUp', $scope.paragraph.id);
+    $scope.moveUp = function(paragraph) {
+      $scope.$emit('moveParagraphUp', paragraph);
     };
 
-    $scope.moveDown = function() {
-      $scope.$emit('moveParagraphDown', $scope.paragraph.id);
+    $scope.moveDown = function(paragraph) {
+      $scope.$emit('moveParagraphDown', paragraph);
     };
 
     $scope.insertNew = function(position) {
-      $scope.$emit('insertParagraph', $scope.paragraph.id, position || 'below');
+      $scope.$emit('insertParagraph', $scope.paragraph.id, position);
     };
 
     $scope.copyPara = function(position) {
@@ -292,9 +281,9 @@
                                         config, $scope.paragraph.settings.params);
     };
 
-    $scope.removeParagraph = function() {
+    $scope.removeParagraph = function(paragraph) {
       var paragraphs = angular.element('div[id$="_paragraphColumn_main"]');
-      if (paragraphs[paragraphs.length - 1].id.startsWith($scope.paragraph.id)) {
+      if (paragraphs[paragraphs.length - 1].id.indexOf(paragraph.id) === 0) {
         BootstrapDialog.alert({
           closable: true,
           message: 'The last paragraph can\'t be deleted.',
@@ -312,7 +301,7 @@
           callback: function(result) {
             if (result) {
               console.log('Remove paragraph');
-              websocketMsgSrv.removeParagraph($scope.paragraph.id);
+              websocketMsgSrv.removeParagraph(paragraph.id);
               $scope.$emit('moveFocusToNextParagraph', $scope.paragraph.id);
             }
           }
@@ -320,117 +309,84 @@
       }
     };
 
-    $scope.clearParagraphOutput = function() {
-      websocketMsgSrv.clearParagraphOutput($scope.paragraph.id);
+    $scope.clearParagraphOutput = function(paragraph) {
+      websocketMsgSrv.clearParagraphOutput(paragraph.id);
     };
 
-    $scope.toggleEditor = function() {
-      if ($scope.paragraph.config.editorHide) {
-        $scope.openEditor();
+    $scope.toggleEditor = function(paragraph) {
+      if (paragraph.config.editorHide) {
+        $scope.openEditor(paragraph);
       } else {
-        $scope.closeEditor();
+        $scope.closeEditor(paragraph);
       }
     };
 
-    $scope.closeEditor = function() {
+    $scope.closeEditor = function(paragraph) {
       console.log('close the note');
-
-      var newParams = angular.copy($scope.paragraph.settings.params);
-      var newConfig = angular.copy($scope.paragraph.config);
-      newConfig.editorHide = true;
-
-      commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
+      paragraph.config.editorHide = true;
+      commitParagraph(paragraph);
     };
 
-    $scope.openEditor = function() {
+    $scope.openEditor = function(paragraph) {
       console.log('open the note');
-
-      var newParams = angular.copy($scope.paragraph.settings.params);
-      var newConfig = angular.copy($scope.paragraph.config);
-      newConfig.editorHide = false;
-
-      commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
+      paragraph.config.editorHide = false;
+      commitParagraph(paragraph);
     };
 
-    $scope.closeTable = function() {
+    $scope.closeTable = function(paragraph) {
       console.log('close the output');
-
-      var newParams = angular.copy($scope.paragraph.settings.params);
-      var newConfig = angular.copy($scope.paragraph.config);
-      newConfig.tableHide = true;
-
-      commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
+      paragraph.config.tableHide = true;
+      commitParagraph(paragraph);
     };
 
-    $scope.openTable = function() {
+    $scope.openTable = function(paragraph) {
       console.log('open the output');
-
-      var newParams = angular.copy($scope.paragraph.settings.params);
-      var newConfig = angular.copy($scope.paragraph.config);
-      newConfig.tableHide = false;
-
-      commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
+      paragraph.config.tableHide = false;
+      commitParagraph(paragraph);
     };
 
-    var openEditorAndCloseTable = function() {
-      manageEditorAndTableState(false, true);
+    var openEditorAndCloseTable = function(paragraph) {
+      manageEditorAndTableState(paragraph, false, true);
     };
 
-    var closeEditorAndOpenTable = function() {
-      manageEditorAndTableState(true, false);
+    var closeEditorAndOpenTable = function(paragraph) {
+      manageEditorAndTableState(paragraph, true, false);
     };
 
-    var openEditorAndOpenTable = function() {
-      manageEditorAndTableState(false, false);
+    var openEditorAndOpenTable = function(paragraph) {
+      manageEditorAndTableState(paragraph, false, false);
     };
 
-    var manageEditorAndTableState = function(hideEditor, hideTable) {
-      var newParams = angular.copy($scope.paragraph.settings.params);
-      var newConfig = angular.copy($scope.paragraph.config);
-      newConfig.editorHide = hideEditor;
-      newConfig.tableHide = hideTable;
-
-      commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
+    var manageEditorAndTableState = function(paragraph, hideEditor, hideTable) {
+      paragraph.config.editorHide = hideEditor;
+      paragraph.config.tableHide = hideTable;
+      commitParagraph(paragraph);
     };
 
-    $scope.showTitle = function() {
-      var newParams = angular.copy($scope.paragraph.settings.params);
-      var newConfig = angular.copy($scope.paragraph.config);
-      newConfig.title = true;
-
-      commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
+    $scope.showTitle = function(paragraph) {
+      paragraph.config.title = true;
+      commitParagraph(paragraph);
     };
 
-    $scope.hideTitle = function() {
-      var newParams = angular.copy($scope.paragraph.settings.params);
-      var newConfig = angular.copy($scope.paragraph.config);
-      newConfig.title = false;
-
-      commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
+    $scope.hideTitle = function(paragraph) {
+      paragraph.config.title = false;
+      commitParagraph(paragraph);
     };
 
-    $scope.setTitle = function() {
-      var newParams = angular.copy($scope.paragraph.settings.params);
-      var newConfig = angular.copy($scope.paragraph.config);
-      commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
+    $scope.setTitle = function(paragraph) {
+      commitParagraph(paragraph);
     };
 
-    $scope.showLineNumbers = function() {
-      var newParams = angular.copy($scope.paragraph.settings.params);
-      var newConfig = angular.copy($scope.paragraph.config);
-      newConfig.lineNumbers = true;
+    $scope.showLineNumbers = function(paragraph) {
+      paragraph.config.lineNumbers = true;
       $scope.editor.renderer.setShowGutter(true);
-
-      commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
+      commitParagraph(paragraph);
     };
 
-    $scope.hideLineNumbers = function() {
-      var newParams = angular.copy($scope.paragraph.settings.params);
-      var newConfig = angular.copy($scope.paragraph.config);
-      newConfig.lineNumbers = false;
+    $scope.hideLineNumbers = function(paragraph) {
+      paragraph.config.lineNumbers = false;
       $scope.editor.renderer.setShowGutter(false);
-
-      commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
+      commitParagraph(paragraph);
     };
 
     $scope.columnWidthClass = function(n) {
@@ -441,37 +397,17 @@
       }
     };
 
-    $scope.changeColWidth = function(width) {
+    $scope.changeColWidth = function(paragraph, width) {
       angular.element('.navbar-right.open').removeClass('open');
-      if (!width || width !== $scope.paragraph.config.colWidth) {
-        if (width) {
-          $scope.paragraph.config.colWidth = width;
-        }
-        var newParams = angular.copy($scope.paragraph.settings.params);
-        var newConfig = angular.copy($scope.paragraph.config);
-
-        commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
+      if (width !== paragraph.config.colWidth) {
+        paragraph.config.colWidth = width;
+        commitParagraph(paragraph);
       }
     };
 
-    $scope.toggleGraphOption = function() {
-      var newConfig = angular.copy($scope.paragraph.config);
-      if (newConfig.graph.optionOpen) {
-        newConfig.graph.optionOpen = false;
-      } else {
-        newConfig.graph.optionOpen = true;
-      }
-      var newParams = angular.copy($scope.paragraph.settings.params);
-
-      commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
-    };
-
-    $scope.toggleOutput = function() {
-      var newConfig = angular.copy($scope.paragraph.config);
-      newConfig.tableHide = !newConfig.tableHide;
-      var newParams = angular.copy($scope.paragraph.settings.params);
-
-      commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
+    $scope.toggleOutput = function(paragraph) {
+      paragraph.config.tableHide = !paragraph.config.tableHide;
+      commitParagraph(paragraph);
     };
 
     $scope.loadForm = function(formulaire, params) {
@@ -492,10 +428,12 @@
       }
     };
 
-    $scope.aceChanged = function() {
-      $scope.dirtyText = $scope.editor.getSession().getValue();
+    $scope.aceChanged = function(_, editor) {
+      var session = editor.getSession();
+      var dirtyText = session.getValue();
+      $scope.dirtyText = dirtyText;
       $scope.startSaveTimer();
-      setParagraphMode($scope.editor.getSession(), $scope.dirtyText, $scope.editor.getCursorPosition());
+      setParagraphMode(session, dirtyText, editor.getCursorPosition());
     };
 
     $scope.aceLoaded = function(_editor) {
@@ -512,15 +450,15 @@
         $scope.editor.setHighlightGutterLine(false);
         $scope.editor.getSession().setUseWrapMode(true);
         $scope.editor.setTheme('ace/theme/chrome');
-        $scope.editor.setReadOnly($scope.isRunning());
+        $scope.editor.setReadOnly($scope.isRunning($scope.paragraph));
         if ($scope.paragraphFocused) {
           $scope.editor.focus();
-          $scope.goToEnd();
+          $scope.goToEnd($scope.editor);
         }
 
-        autoAdjustEditorHeight(_editor.container.id);
+        autoAdjustEditorHeight(_editor);
         angular.element(window).resize(function() {
-          autoAdjustEditorHeight(_editor.container.id);
+          autoAdjustEditorHeight(_editor);
         });
 
         if (navigator.appVersion.indexOf('Mac') !== -1) {
@@ -590,13 +528,13 @@
         });
 
         $scope.editor.on('paste', function(e) {
-          if (e.text.startsWith('%')) {
+          if (e.text.indexOf('%') === 0) {
             pastePercentSign = true;
           }
         });
 
         $scope.editor.getSession().on('change', function(e, editSession) {
-          autoAdjustEditorHeight(_editor.container.id);
+          autoAdjustEditorHeight(_editor);
         });
 
         setParagraphMode($scope.editor.getSession(), $scope.editor.getSession().getValue());
@@ -676,12 +614,12 @@
       }
     };
 
-    var getEditorSetting = function(interpreterName) {
+    var getEditorSetting = function(paragraph, interpreterName) {
       var deferred = $q.defer();
-      websocketMsgSrv.getEditorSetting($scope.paragraph.id, interpreterName);
+      websocketMsgSrv.getEditorSetting(paragraph.id, interpreterName);
       $timeout(
         $scope.$on('editorSetting', function(event, data) {
-          if ($scope.paragraph.id === data.paragraphId) {
+          if (paragraph.id === data.paragraphId) {
             deferred.resolve(data);
           }
         }
@@ -709,7 +647,7 @@
           var magic = getInterpreterName(paragraphText);
           if (editorSetting.magic !== magic) {
             editorSetting.magic = magic;
-            getEditorSetting(magic)
+            getEditorSetting($scope.paragraph, magic)
               .then(function(setting) {
                 setEditorLanguage(session, setting.editor.language);
                 _.merge($scope.paragraph.config.editorSetting, setting.editor);
@@ -733,19 +671,20 @@
       return '';
     };
 
-    var autoAdjustEditorHeight = function(id) {
-      var editor = $scope.editor;
-      var height = editor.getSession().getScreenLength() * editor.renderer.lineHeight +
+    var autoAdjustEditorHeight = function(editor) {
+      var height =
+        editor.getSession().getScreenLength() *
+        editor.renderer.lineHeight +
         editor.renderer.scrollBar.getWidth();
 
-      angular.element('#' + id).height(height.toString() + 'px');
+      angular.element('#' + editor.container.id).height(height.toString() + 'px');
       editor.resize();
     };
 
     $rootScope.$on('scrollToCursor', function(event) {
       // scroll on 'scrollToCursor' event only when cursor is in the last paragraph
       var paragraphs = angular.element('div[id$="_paragraphColumn_main"]');
-      if (paragraphs[paragraphs.length - 1].id.startsWith($scope.paragraph.id)) {
+      if (paragraphs[paragraphs.length - 1].id.indexOf($scope.paragraph.id) === 0) {
         $scope.scrollToCursor($scope.paragraph.id, 0);
       }
     });
@@ -802,14 +741,13 @@
     };
 
     $scope.getProgress = function() {
-      return ($scope.currentProgress) ? $scope.currentProgress : 0;
+      return $scope.currentProgress || 0;
     };
 
-    $scope.getExecutionTime = function() {
-      var pdata = $scope.paragraph;
+    $scope.getExecutionTime = function(pdata) {
       var timeMs = Date.parse(pdata.dateFinished) - Date.parse(pdata.dateStarted);
       if (isNaN(timeMs) || timeMs < 0) {
-        if ($scope.isResultOutdated()) {
+        if ($scope.isResultOutdated(pdata)) {
           return 'outdated';
         }
         return '';
@@ -817,26 +755,25 @@
       var user = (pdata.user === undefined || pdata.user === null) ? 'anonymous' : pdata.user;
       var desc = 'Took ' + moment.duration((timeMs / 1000), 'seconds').format('h [hrs] m [min] s [sec]') +
         '. Last updated by ' + user + ' at ' + moment(pdata.dateFinished).format('MMMM DD YYYY, h:mm:ss A') + '.';
-      if ($scope.isResultOutdated()) {
+      if ($scope.isResultOutdated(pdata)) {
         desc += ' (outdated)';
       }
       return desc;
     };
 
-    $scope.getElapsedTime = function() {
-      return 'Started ' + moment($scope.paragraph.dateStarted).fromNow() + '.';
+    $scope.getElapsedTime = function(paragraph) {
+      return 'Started ' + moment(paragraph.dateStarted).fromNow() + '.';
     };
 
-    $scope.isResultOutdated = function() {
-      var pdata = $scope.paragraph;
+    $scope.isResultOutdated = function(pdata) {
       if (pdata.dateUpdated !== undefined && Date.parse(pdata.dateUpdated) > Date.parse(pdata.dateStarted)) {
         return true;
       }
       return false;
     };
 
-    $scope.goToEnd = function() {
-      $scope.editor.navigateFileEnd();
+    $scope.goToEnd = function(editor) {
+      editor.navigateFileEnd();
     };
 
     $scope.getResultType = function(paragraph) {
@@ -863,17 +800,19 @@
       return cell;
     };
 
-    var commitParagraph = function(title, text, config, params) {
-      websocketMsgSrv.commitParagraph($scope.paragraph.id, title, text, config, params);
+    var commitParagraph = function(paragraph) {
+      const {
+        id,
+        title,
+        text,
+        config,
+        settings: {params},
+      } = paragraph;
+
+      websocketMsgSrv.commitParagraph(id, title, text, config, params);
     };
 
     /** Utility function */
-    if (typeof String.prototype.startsWith !== 'function') {
-      String.prototype.startsWith = function(str) {
-        return this.slice(0, str.length) === str;
-      };
-    }
-
     $scope.goToSingleParagraph = function() {
       var noteId = $route.current.pathParams.noteId;
       var redirectToUrl = location.protocol + '//' + location.host + location.pathname + '#/notebook/' + noteId +
@@ -881,30 +820,30 @@
       $window.open(redirectToUrl);
     };
 
-    $scope.showScrollDownIcon = function() {
-      var doc = angular.element('#p' + $scope.paragraph.id + '_text');
+    $scope.showScrollDownIcon = function(id) {
+      var doc = angular.element('#p' + id + '_text');
       if (doc[0]) {
         return doc[0].scrollHeight > doc.innerHeight();
       }
       return false;
     };
 
-    $scope.scrollParagraphDown = function() {
-      var doc = angular.element('#p' + $scope.paragraph.id + '_text');
+    $scope.scrollParagraphDown = function(id) {
+      var doc = angular.element('#p' + id + '_text');
       doc.animate({scrollTop: doc[0].scrollHeight}, 500);
       $scope.keepScrollDown = true;
     };
 
-    $scope.showScrollUpIcon = function() {
-      if (angular.element('#p' + $scope.paragraph.id + '_text')[0]) {
-        return angular.element('#p' + $scope.paragraph.id + '_text')[0].scrollTop !== 0;
+    $scope.showScrollUpIcon = function(id) {
+      if (angular.element('#p' + id + '_text')[0]) {
+        return angular.element('#p' + id + '_text')[0].scrollTop !== 0;
       }
       return false;
 
     };
 
-    $scope.scrollParagraphUp = function() {
-      var doc = angular.element('#p' + $scope.paragraph.id + '_text');
+    $scope.scrollParagraphUp = function(id) {
+      var doc = angular.element('#p' + id + '_text');
       doc.animate({scrollTop: 0}, 500);
       $scope.keepScrollDown = false;
     };
@@ -960,7 +899,7 @@
         scope[varName] = data.angularObject.object;
 
         // create proxy for AngularFunction
-        if (varName.startsWith(ANGULAR_FUNCTION_OBJECT_NAME_PREFIX)) {
+        if (varName.indexOf(ANGULAR_FUNCTION_OBJECT_NAME_PREFIX) === 0) {
           var funcName = varName.substring((ANGULAR_FUNCTION_OBJECT_NAME_PREFIX).length);
           scope[funcName] = function() {
             scope[varName] = arguments;
@@ -997,7 +936,7 @@
         scope[varName] = undefined;
 
         // remove proxy for AngularFunction
-        if (varName.startsWith(ANGULAR_FUNCTION_OBJECT_NAME_PREFIX)) {
+        if (varName.indexOf(ANGULAR_FUNCTION_OBJECT_NAME_PREFIX) === 0) {
           var funcName = varName.substring((ANGULAR_FUNCTION_OBJECT_NAME_PREFIX).length);
           scope[funcName] = undefined;
         }
@@ -1072,11 +1011,11 @@
         $scope.paragraph.status = data.paragraph.status;
         $scope.paragraph.results = data.paragraph.results;
         $scope.paragraph.settings = data.paragraph.settings;
-        $scope.editor.setReadOnly($scope.isRunning());
+        $scope.editor.setReadOnly($scope.isRunning(data.paragraph));
 
         if (!$scope.asIframe) {
           $scope.paragraph.config = data.paragraph.config;
-          initializeDefault();
+          initializeDefault(data.paragraph.config);
         } else {
           data.paragraph.config.editorHide = true;
           data.paragraph.config.tableHide = false;
@@ -1087,7 +1026,7 @@
           // when last paragraph runs, zeppelin automatically appends new paragraph.
           // this broadcast will focus to the newly inserted paragraph
           var paragraphs = angular.element('div[id$="_paragraphColumn_main"]');
-          if (paragraphs.length >= 2 && paragraphs[paragraphs.length - 2].id.startsWith($scope.paragraph.id)) {
+          if (paragraphs.length >= 2 && paragraphs[paragraphs.length - 2].id.indexOf($scope.paragraph.id) === 0) {
             // rendering output can took some time. So delay scrolling event firing for sometime.
             setTimeout(function() {
               $rootScope.$broadcast('scrollToCursor');
@@ -1118,45 +1057,45 @@
           // move focus to next paragraph
           $scope.$emit('moveFocusToNextParagraph', paragraphId);
         } else if (keyEvent.shiftKey && keyCode === 13) { // Shift + Enter
-          $scope.run();
+          $scope.run($scope.paragraph, $scope.editor.getValue());
         } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 67) { // Ctrl + Alt + c
-          $scope.cancelParagraph();
+          $scope.cancelParagraph($scope.paragraph);
         } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 68) { // Ctrl + Alt + d
-          $scope.removeParagraph();
+          $scope.removeParagraph($scope.paragraph);
         } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 75) { // Ctrl + Alt + k
-          $scope.moveUp();
+          $scope.moveUp($scope.paragraph);
         } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 74) { // Ctrl + Alt + j
-          $scope.moveDown();
+          $scope.moveDown($scope.paragraph);
         } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 65) { // Ctrl + Alt + a
           $scope.insertNew('above');
         } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 66) { // Ctrl + Alt + b
           $scope.insertNew('below');
         } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 79) { // Ctrl + Alt + o
-          $scope.toggleOutput();
+          $scope.toggleOutput($scope.paragraph);
         } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 82) { // Ctrl + Alt + r
-          $scope.toggleEnableDisable();
+          $scope.toggleEnableDisable($scope.paragraph);
         } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 69) { // Ctrl + Alt + e
-          $scope.toggleEditor();
+          $scope.toggleEditor($scope.paragraph);
         } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 77) { // Ctrl + Alt + m
           if ($scope.paragraph.config.lineNumbers) {
-            $scope.hideLineNumbers();
+            $scope.hideLineNumbers($scope.paragraph);
           } else {
-            $scope.showLineNumbers();
+            $scope.showLineNumbers($scope.paragraph);
           }
         } else if (keyEvent.ctrlKey && keyEvent.shiftKey && keyCode === 189) { // Ctrl + Shift + -
-          $scope.changeColWidth(Math.max(1, $scope.paragraph.config.colWidth - 1));
+          $scope.changeColWidth($scope.paragraph, Math.max(1, $scope.paragraph.config.colWidth - 1));
         } else if (keyEvent.ctrlKey && keyEvent.shiftKey && keyCode === 187) { // Ctrl + Shift + =
-          $scope.changeColWidth(Math.min(12, $scope.paragraph.config.colWidth + 1));
+          $scope.changeColWidth($scope.paragraph, Math.min(12, $scope.paragraph.config.colWidth + 1));
         } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 84) { // Ctrl + Alt + t
           if ($scope.paragraph.config.title) {
-            $scope.hideTitle();
+            $scope.hideTitle($scope.paragraph);
           } else {
-            $scope.showTitle();
+            $scope.showTitle($scope.paragraph);
           }
         }else if (keyEvent.ctrlKey && keyEvent.shiftKey && keyCode === 67) { // Ctrl + Alt + c
           $scope.copyPara('below');
         } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 76) { // Ctrl + Alt + l
-          $scope.clearParagraphOutput();
+          $scope.clearParagraphOutput($scope.paragraph);
         } else {
           noShortcutDefined = true;
         }
@@ -1197,7 +1136,7 @@
       if ($scope.paragraph.id === paragraphId && $scope.paragraph.config.editorHide &&
           $scope.paragraph.config.editorSetting.editOnDblClick) {
         var deferred = $q.defer();
-        openEditorAndCloseTable();
+        openEditorAndCloseTable($scope.paragraph);
         $timeout(
           $scope.$on('updateParagraph', function(event, data) {
             deferred.resolve(data);
@@ -1206,29 +1145,25 @@
 
         deferred.promise.then(function(data) {
           $scope.editor.focus();
-          $scope.goToEnd();
+          $scope.goToEnd($scope.editor);
         });
       }
     });
 
-    $scope.$on('runParagraph', function(event) {
-      $scope.runParagraph($scope.editor.getValue());
-    });
-
     $scope.$on('openEditor', function(event) {
-      $scope.openEditor();
+      $scope.openEditor($scope.paragraph);
     });
 
     $scope.$on('closeEditor', function(event) {
-      $scope.closeEditor();
+      $scope.closeEditor($scope.paragraph);
     });
 
     $scope.$on('openTable', function(event) {
-      $scope.openTable();
+      $scope.openTable($scope.paragraph);
     });
 
     $scope.$on('closeTable', function(event) {
-      $scope.closeTable();
+      $scope.closeTable($scope.paragraph);
     });
   }
 })();

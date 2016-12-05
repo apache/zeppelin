@@ -26,8 +26,8 @@ limitations under the License.
            ng-model="paragraph.title"
            ng-if="input.showEditor"
            ng-escape="input.showEditor = false; paragraph.title = oldTitle;"
-           ng-blur="setTitle(); input.showEditor = false"
-           ng-enter="setTitle(); input.showEditor = false"
+           ng-blur="setTitle(paragraph); input.showEditor = false"
+           ng-enter="setTitle(paragraph); input.showEditor = false"
            focus-if="input.showEditor" />
     <div ng-click="input.showEditor = !asIframe && !viewOnly; oldTitle = paragraph.title;"
          ng-show="!input.showEditor"
@@ -72,11 +72,11 @@ limitations under the License.
   <div ng-if="!asIframe" class="paragraphFooter">
     <div ng-show="!paragraph.config.tableHide && !viewOnly"
          id="{{paragraph.id}}_executionTime"
-         class="executionTime" ng-bind-html="getExecutionTime()">
+         class="executionTime" ng-bind-html="getExecutionTime(paragraph)">
     </div>
     <div ng-if = "paragraph.status === 'RUNNING'" class = "paragraphFooterElapsed">
       <div id="{{paragraph.id}}_elapsedTime"
-           class="elapsedTime" ng-bind-html="getElapsedTime()">
+           class="elapsedTime" ng-bind-html="getElapsedTime(paragraph)">
       </div>
     </div>
   </div>
