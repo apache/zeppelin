@@ -473,7 +473,7 @@
 
         var remoteCompleter = {
           getCompletions: function(editor, session, pos, prefix, callback) {
-            if (!$scope.editor.isFocused()) {
+            if (!editor.isFocused()) {
               return;
             }
 
