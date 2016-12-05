@@ -260,12 +260,49 @@
       $scope.$emit('insertParagraph', $scope.paragraph.id, position || 'below');
     };
 
+    $scope.copyPara = function(position) {
+      var editorValue = $scope.editor.getValue();
+      if (editorValue) {
+        $scope.copyParagraph(editorValue, position);
+      }
+    };
+
+    $scope.copyParagraph = function(data, position) {
+      var newIndex = -1;
+      for (var i = 0; i < $scope.note.paragraphs.length; i++) {
+        if ($scope.note.paragraphs[i].id === $scope.paragraph.id) {
+          //determine position of where to add new paragraph; default is below
+          if (position === 'above') {
+            newIndex = i;
+          } else {
+            newIndex = i + 1;
+          }
+          break;
+        }
+      }
+
+      if (newIndex < 0 || newIndex > $scope.note.paragraphs.length) {
+        return;
+      }
+
+      var config = angular.copy($scope.paragraph.config);
+      config.editorHide = false;
+
+      websocketMsgSrv.copyParagraph(newIndex, $scope.paragraph.title, data,
+                                        config, $scope.paragraph.settings.params);
+    };
+
     $scope.removeParagraph = function() {
       var paragraphs = angular.element('div[id$="_paragraphColumn_main"]');
       if (paragraphs[paragraphs.length - 1].id.startsWith($scope.paragraph.id)) {
         BootstrapDialog.alert({
           closable: true,
-          message: 'The last paragraph can\'t be deleted.'
+          message: 'The last paragraph can\'t be deleted.',
+          callback: function(result) {
+            if (result) {
+              $scope.editor.focus();
+            }
+          }
         });
       } else {
         BootstrapDialog.confirm({
@@ -276,6 +313,7 @@
             if (result) {
               console.log('Remove paragraph');
               websocketMsgSrv.removeParagraph($scope.paragraph.id);
+              $scope.$emit('moveFocusToNextParagraph', $scope.paragraph.id);
             }
           }
         });
@@ -1115,6 +1153,8 @@
           } else {
             $scope.showTitle();
           }
+        }else if (keyEvent.ctrlKey && keyEvent.shiftKey && keyCode === 67) { // Ctrl + Alt + c
+          $scope.copyPara('below');
         } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 76) { // Ctrl + Alt + l
           $scope.clearParagraphOutput();
         } else {

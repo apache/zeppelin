@@ -34,8 +34,7 @@ zeppelin.BarchartVisualization.prototype.getTransformation = function() {
   return this.pivot;
 };
 
-zeppelin.BarchartVisualization.prototype.render = function(tableData) {
-  var pivot = this.pivot.transform(tableData);
+zeppelin.BarchartVisualization.prototype.render = function(pivot) {
   var d3Data = this.d3DataFromPivot(
     pivot.schema,
     pivot.rows,
