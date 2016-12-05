@@ -34,7 +34,7 @@ describe('Controller: ParagraphCtrl', function() {
   var functions = ['isRunning', 'getIframeDimensions', 'cancelParagraph', 'runParagraph', 'saveParagraph',
     'moveUp', 'moveDown', 'insertNew', 'removeParagraph', 'toggleEditor', 'closeEditor', 'openEditor',
     'closeTable', 'openTable', 'showTitle', 'hideTitle', 'setTitle', 'showLineNumbers', 'hideLineNumbers',
-    'changeColWidth', 'columnWidthClass', 'toggleGraphOption', 'toggleOutput', 'loadForm',
+    'changeColWidth', 'columnWidthClass', 'toggleOutput', 'loadForm',
     'aceChanged', 'aceLoaded', 'getEditorValue', 'getProgress', 'getExecutionTime', 'isResultOutdated'];
 
   functions.forEach(function(fn) {
