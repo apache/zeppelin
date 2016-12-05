@@ -40,9 +40,14 @@
       }
 
       if (isSortByAsc === true) {
-        filterItems = _.orderBy(filterItems, ['noteName'], ['asc']);
+        filterItems = _.sortBy(filterItems, function(sortItem) {
+          return sortItem.noteName;
+        });
       } else {
-        filterItems = _.orderBy(filterItems, ['noteName'], ['desc']);
+        filterItems = _.sortBy(filterItems, function(sortItem) {
+          return sortItem.noteName;
+        });
+        filterItems = filterItems.reverse();
       }
 
       return filterItems;
