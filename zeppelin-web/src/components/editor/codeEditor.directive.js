@@ -22,6 +22,8 @@
       scope: {
         paragraphId: '=paragraphId',
         paragraph: '=paragraphContext',
+        dirtyText: '=dirtyText',
+        originalText: '=originalText',
         onLoad: '=onLoad'
       },
       link: function(scope, element, attrs, controller) {
