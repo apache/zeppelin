@@ -34,8 +34,7 @@ zeppelin.PiechartVisualization.prototype.getTransformation = function() {
   return this.pivot;
 };
 
-zeppelin.PiechartVisualization.prototype.render = function(tableData) {
-  var pivot = this.pivot.transform(tableData);
+zeppelin.PiechartVisualization.prototype.render = function(pivot) {
   var d3Data = this.d3DataFromPivot(
     pivot.schema,
     pivot.rows,

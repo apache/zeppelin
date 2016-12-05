@@ -38,6 +38,13 @@ ssh user1@localhost mkdir -p .ssh
 cat ~/.ssh/id_rsa.pub | ssh user1@localhost 'cat >> .ssh/authorized_keys'
 ```
 
+* Alternatively instead of password-less, user can override ZEPPELIN_IMPERSONATE_CMD in zeppelin-env.sh
+
+```
+export ZEPPELIN_IMPERSONATE_CMD='sudo -H -u ${ZEPPELIN_IMPERSONATE_USER} bash -c '
+```
+  
+
  * Start zeppelin server.
  
 <hr>

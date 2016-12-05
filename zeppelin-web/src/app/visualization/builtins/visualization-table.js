@@ -17,10 +17,12 @@
 /**
  * Visualize data in table format
  */
-zeppelin.TableVisualization = function(targetEl) {
-  zeppelin.Visualization.call(this, targetEl);
+zeppelin.TableVisualization = function(targetEl, config) {
+  zeppelin.Visualization.call(this, targetEl, config);
   console.log('Init table viz');
   targetEl.addClass('table');
+  var PassthroughTransformation = zeppelin.PassthroughTransformation;
+  this.passthrough = new PassthroughTransformation(config);
 };
 
 zeppelin.TableVisualization.prototype = Object.create(zeppelin.Visualization.prototype);
@@ -56,4 +58,8 @@ zeppelin.TableVisualization.prototype.destroy = function() {
   if (this.hot) {
     this.hot.destroy();
   }
+};
+
+zeppelin.TableVisualization.prototype.getTransformation = function() {
+  return this.passthrough;
 };
