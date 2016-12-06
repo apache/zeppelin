@@ -1124,10 +1124,10 @@ public class SparkInterpreter extends Interpreter {
     if (line == null || line.trim().length() == 0) {
       return new InterpreterResult(Code.SUCCESS);
     }
-    return interpretByUser(line.split("\n"), context);
+    return interpretAsProxyUser(line.split("\n"), context);
   }
 
-  public InterpreterResult interpretByUser(String[] lines, InterpreterContext context) {
+  public InterpreterResult interpretAsProxyUser(String[] lines, InterpreterContext context) {
     String user = context.getAuthenticationInfo().getUser();
     if (StringUtils.isBlank(user)) {
       logger.warn("User is blank, run spark command as 'anonymous'");
@@ -1145,10 +1145,10 @@ public class SparkInterpreter extends Interpreter {
     InterpreterResult interpreterResult = new InterpreterResult(Code.ERROR);
 
     UserGroupInformation currentUser = getCurrentUser();
-    UserGroupInformation remoteUser = null;
-    remoteUser = UserGroupInformation.createRemoteUser(user);
-    if (currentUser != null && remoteUser != null) {
-      transferUserCredentials(currentUser, remoteUser);
+    UserGroupInformation proxyUser = null;
+    proxyUser = UserGroupInformation.createProxyUser(user, currentUser);
+    if (currentUser != null && proxyUser != null) {
+      transferUserCredentials(currentUser, proxyUser);
     }
     final String[] linesFinal = lines;
     final InterpreterContext contextFinal = context;
@@ -1159,7 +1159,7 @@ public class SparkInterpreter extends Interpreter {
         }
       };
     try {
-      interpreterResult = remoteUser.doAs(action);
+      interpreterResult = proxyUser.doAs(action);
     } catch (Exception e) {
       logger.error("Error running command with ugi.doAs", e);
       return new InterpreterResult(Code.ERROR, e.getMessage());
