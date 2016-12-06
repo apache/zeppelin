@@ -1051,7 +1051,7 @@ public class NotebookServer extends WebSocketServlet
 
   private void restoreFolder(NotebookSocket conn, HashSet<String> userAndRoles,
                             Notebook notebook, Message fromMessage)
-          throws SchedulerException, IOException {
+      throws SchedulerException, IOException {
     String folderId = (String) fromMessage.get("id");
 
     if (folderId == null) {
@@ -1079,7 +1079,7 @@ public class NotebookServer extends WebSocketServlet
 
   private void emptyTrash(NotebookSocket conn, HashSet<String> userAndRoles,
                           Notebook notebook, Message fromMessage)
-    throws SchedulerException, IOException {
+      throws SchedulerException, IOException {
     fromMessage.data = new HashMap<>();
     fromMessage.put("id", Folder.TRASH_FOLDER_ID);
     removeFolder(conn, userAndRoles, notebook, fromMessage);
