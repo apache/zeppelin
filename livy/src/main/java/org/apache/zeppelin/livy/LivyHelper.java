@@ -297,9 +297,7 @@ public class LivyHelper {
             for (List<Object> row : data) {
               String values = "";
               for (Object value : row) {
-                if (value instanceof String) {                  
-                  values += (values == "" ? "" : "\t") + value;    
-                }          
+                values += (values == "" ? "" : "\t") + value;                
               }
               result += values + "\n";
             }
