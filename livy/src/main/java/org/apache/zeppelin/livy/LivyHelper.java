@@ -275,15 +275,35 @@ public class LivyHelper {
         return new InterpreterResult(Code.ERROR, errorMessage.toString());
       }
       if (((Map) jsonMap.get("output")).get("status").equals("ok")) {
-        String result = (String) ((Map) ((Map) jsonMap.get("output"))
-            .get("data")).get("text/plain");
-        if (result != null) {
-          result = result.trim();
-          if (result.startsWith("<link")
-              || result.startsWith("<script")
-              || result.startsWith("<style")
-              || result.startsWith("<div")) {
-            result = "%html " + result;
+        Map resultMap = (Map) ((Map) jsonMap.get("output")).get("data");
+        String result = "";
+        if (resultMap != null) {
+          Object obj = null;
+          if ((obj = resultMap.get("text/plain")) != null) {
+            result = ((String) obj).trim();
+            if (result.startsWith("<link")
+                    || result.startsWith("<script")
+                    || result.startsWith("<style")
+                    || result.startsWith("<div")) {
+              result = "%html " + result;
+            }
+          } else if ((obj = resultMap.get("application/vnd.livy.table.v1+json")) != null) {
+            List<Map> headers = (List) ((Map) obj).get("headers");
+            for (Map header : headers) {
+              result += (result == "" ? "" : "\t") + header.get("name");
+            }
+            result += "\n";
+            List<List> data = (List) ((Map) obj).get("data");
+            for (List<Object> row : data) {
+              String values = "";
+              for (Object value : row) {
+                if (value instanceof String) {                  
+                  values += (values == "" ? "" : "\t") + value;    
+                }          
+              }
+              result += values + "\n";
+            }
+            result = "%table " + result;
           }
         }
         return new InterpreterResult(Code.SUCCESS, result);
