@@ -187,6 +187,11 @@
       noteActionSrv.moveNoteToTrash(noteId, true);
     };
 
+    // Remove the note for good if it's in the trash
+    $scope.removeNote = function(noteId) {
+      noteActionSrv.removeNote(noteId, true);
+    };
+
     //Export notebook
     $scope.exportNote = function() {
       var jsonContent = JSON.stringify($scope.note);
