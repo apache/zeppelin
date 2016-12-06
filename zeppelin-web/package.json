@@ -34,7 +34,7 @@
     "grunt-contrib-watch": "^0.6.1",
     "grunt-eslint": "^18.1.0",
     "grunt-filerev": "^0.2.1",
-    "grunt-goog-webfont-dl": "^0.1.2",
+    "grunt-google-fonts": "^0.4.0",
     "grunt-htmlhint": "^0.9.13",
     "grunt-jscs": "^2.1.0",
     "grunt-karma": "~2.0.0",
