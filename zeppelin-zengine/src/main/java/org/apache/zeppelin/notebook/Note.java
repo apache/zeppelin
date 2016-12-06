@@ -596,6 +596,14 @@ public class Note implements Serializable, ParagraphJobListener {
     return true;
   }
 
+  public boolean isTrash() {
+    String path = getName();
+    if (path.charAt(0) == '/') {
+      path = path.substring(1);
+    }
+    return path.split("/")[0].equals(Folder.TRASH_FOLDER_ID);
+  }
+
   public List<InterpreterCompletion> completion(String paragraphId, String buffer, int cursor) {
     Paragraph p = getParagraph(paragraphId);
     p.setListener(jobListenerFactory.getParagraphJobListener(this));

@@ -13,6 +13,7 @@ limitations under the License.
 -->
 
 <script type="text/ng-template" id="notebook_folder_renderer.html">
+  <!-- note -->
   <div ng-if="node.children == null"
        ng-mouseenter="showNoteButton=true"
        ng-mouseleave="showNoteButton=false">
@@ -32,13 +33,24 @@ limitations under the License.
       </i>
     </a>
     <a style="text-decoration: none;">
-      <i style="font-size: 13px; margin-left: 2px; cursor: pointer; text-decoration: none;"
+      <!-- if note is not in trash -->
+      <i ng-if="!node.isTrash" style="font-size: 13px; margin-left: 2px; cursor: pointer; text-decoration: none;"
+         class="fa fa-trash-o" ng-show="showNoteButton" ng-click="moveNoteToTrash(node.id)"
+         tooltip-placement="bottom" tooltip="Move note to Trash">
+      </i>
+      <!-- if note is in trash -->
+      <i ng-if="node.isTrash" style="font-size: 13px; margin-left: 2px; cursor: pointer; text-decoration: none;"
          class="fa fa-trash-o" ng-show="showNoteButton" ng-click="removeNote(node.id)"
-         tooltip-placement="bottom" tooltip="Remove note">
+         tooltip-placement="bottom" tooltip="Remove note for good">
+      </i>
+      <i ng-if="node.isTrash" style="font-size: 13px; margin-left: 2px; cursor: pointer; text-decoration: none;"
+         class="fa fa-undo" ng-show="showNoteButton" ng-click="restoreNote(node.id)"
+         tooltip-placement="bottom" tooltip="Restore note">
       </i>
     </a>
   </div>
-  <div ng-if="node.children != null">
+  <!-- folder -->
+  <div ng-if="node.children != null && node.id !== '~Trash'">
     <div ng-mouseenter="showFolderButton=true"
          ng-mouseleave="showFolderButton=false">
       <a style="text-decoration: none; cursor: pointer;" ng-click="toggleFolderNode(node)">
@@ -48,6 +60,44 @@ limitations under the License.
         <i style="font-size: 13px; margin-left: 10px; cursor: pointer; text-decoration: none;"
            class="fa fa-pencil" ng-show="showFolderButton" ng-click="renameFolder(node)"
            tooltip-placement="bottom" tooltip="Rename folder">
+        </i>
+        <!-- if folder is not in trash -->
+        <i ng-if="!node.isTrash" style="font-size: 13px; margin-left: 2px; cursor: pointer; text-decoration: none;"
+           class="fa fa-trash-o" ng-show="showFolderButton" ng-click="moveFolderToTrash(node.id)"
+           tooltip-placement="bottom" tooltip="Move folder to Trash">
+        </i>
+        <!-- if folder is in trash -->
+        <i ng-if="node.isTrash" style="font-size: 13px; margin-left: 2px; cursor: pointer; text-decoration: none;"
+           class="fa fa-trash-o" ng-show="showFolderButton" ng-click="removeFolder(node.id)"
+           tooltip-placement="bottom" tooltip="Remove folder for good">
+        </i>
+        <i ng-if="node.isTrash" style="font-size: 13px; margin-left: 2px; cursor: pointer; text-decoration: none;"
+           class="fa fa-undo" ng-show="showFolderButton" ng-click="restoreFolder(node.id)"
+           tooltip-placement="bottom" tooltip="Restore folder">
+        </i>
+      </a>
+    </div>
+    <div ng-if="!node.hidden">
+      <ul style="list-style-type: none; padding-left:15px;">
+        <li ng-repeat="node in node.children" ng-include="'notebook_folder_renderer.html'" />
+      </ul>
+    </div>
+  </div>
+  <!-- trash folder -->
+  <div ng-if="node.id === '~Trash'">
+    <div ng-mouseenter="showFolderButton=true"
+         ng-mouseleave="showFolderButton=false">
+      <a style="text-decoration: none; cursor: pointer;" ng-click="toggleFolderNode(node)">
+        <i style="font-size: 10px;" class="fa fa-trash-o" /> Trash
+      </a>
+      <a style="text-decoration: none;">
+        <i style="font-size: 13px; margin-left: 10px; cursor: pointer; text-decoration: none;"
+           class="fa fa-trash-o" ng-show="showFolderButton" ng-click="emptyTrash()"
+           tooltip-placement="bottom" tooltip="Empty trash">
+        </i>
+        <i style="font-size: 13px; margin-left: 2px; cursor: pointer; text-decoration: none;"
+           class="fa fa-undo" ng-show="showFolderButton" ng-click="restoreAll()"
+           tooltip-placement="bottom" tooltip="Restore all">
         </i>
       </a>
     </div>

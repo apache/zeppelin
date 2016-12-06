@@ -91,12 +91,40 @@
       noteActionSrv.renameNote(node.id, node.path);
     };
 
+    $scope.moveNoteToTrash = function(noteId) {
+      noteActionSrv.moveNoteToTrash(noteId, false);
+    };
+
+    $scope.moveFolderToTrash = function(folderId) {
+      noteActionSrv.moveFolderToTrash(folderId);
+    };
+
+    $scope.restoreNote = function(noteId) {
+      websocketMsgSrv.restoreNote(noteId);
+    };
+
+    $scope.restoreFolder = function(folderId) {
+      websocketMsgSrv.restoreFolder(folderId);
+    };
+
+    $scope.restoreAll = function() {
+      noteActionSrv.restoreAll();
+    };
+
     $scope.renameFolder = function(node) {
       noteActionSrv.renameFolder(node.id);
     };
 
     $scope.removeNote = function(noteId) {
       noteActionSrv.removeNote(noteId, false);
+    };
+
+    $scope.removeFolder = function(folderId) {
+      noteActionSrv.removeFolder(folderId);
+    };
+
+    $scope.emptyTrash = function() {
+      noteActionSrv.emptyTrash();
     };
 
     $scope.clearAllParagraphOutput = function(noteId) {

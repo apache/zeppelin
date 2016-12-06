@@ -182,9 +182,9 @@
       $scope.$broadcast('doubleClickParagraph', paragraphId);
     };
 
-    // Remove the note and go back to the main page
-    $scope.removeNote = function(noteId) {
-      noteActionSrv.removeNote(noteId, true);
+    // Move the note to trash and go back to the main page
+    $scope.moveNoteToTrash = function(noteId) {
+      noteActionSrv.moveNoteToTrash(noteId, true);
     };
 
     //Export notebook

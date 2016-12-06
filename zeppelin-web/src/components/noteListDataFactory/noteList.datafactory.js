@@ -45,7 +45,8 @@
         curDir.children.push({
           name: nodes[0],
           id: noteId,
-          path: curDir.id ? curDir.id + '/' + nodes[0] : nodes[0]
+          path: curDir.id ? curDir.id + '/' + nodes[0] : nodes[0],
+          isTrash: curDir.id ? curDir.id.split('/')[0] === '~Trash' : false
         });
       } else {  // a folder node
         var node = nodes.shift();
@@ -58,7 +59,8 @@
             id: curDir.id ? curDir.id + '/' + node : node,
             name: node,
             hidden: true,
-            children: []
+            children: [],
+            isTrash: curDir.id ? curDir.id.split('/')[0] === '~Trash' : false
           };
 
           // add the folder to flat folder map
