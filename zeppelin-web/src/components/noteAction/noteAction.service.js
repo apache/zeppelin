@@ -16,9 +16,9 @@
 
   angular.module('zeppelinWebApp').service('noteActionSrv', noteActionSrv);
 
-  noteActionSrv.$inject = ['websocketMsgSrv', '$location', 'renameSrv'];
+  noteActionSrv.$inject = ['websocketMsgSrv', '$location', 'renameSrv', 'noteListDataFactory'];
 
-  function noteActionSrv(websocketMsgSrv, $location, renameSrv) {
+  function noteActionSrv(websocketMsgSrv, $location, renameSrv, noteListDataFactory) {
     this.removeNote = function(noteId, redirectToHome) {
       BootstrapDialog.confirm({
         closable: true,
@@ -57,5 +57,58 @@
         }
       });
     };
+
+    this.renameFolder = function(folderId) {
+      renameSrv.openRenameModal({
+        title: 'Rename folder',
+        oldName: folderId,
+        callback: function(newName) {
+          var newFolderId = normalizeFolderId(newName);
+          if (_.has(noteListDataFactory.flatFolderMap, newFolderId)) {
+            BootstrapDialog.confirm({
+              type: BootstrapDialog.TYPE_WARNING,
+              closable: true,
+              title: 'WARNING! The folder will be MERGED',
+              message: 'The folder will be merged into <strong>' + newFolderId + '</strong>. Are you sure?',
+              callback: function(result) {
+                if (result) {
+                  websocketMsgSrv.renameFolder(folderId, newFolderId);
+                }
+              }
+            });
+          } else {
+            websocketMsgSrv.renameFolder(folderId, newFolderId);
+          }
+        }
+      });
+    };
+
+    function normalizeFolderId(folderId) {
+      folderId = folderId.trim();
+
+      while (folderId.contains('\\')) {
+        folderId = folderId.replace('\\', '/');
+      }
+
+      while (folderId.contains('///')) {
+        folderId = folderId.replace('///', '/');
+      }
+
+      folderId = folderId.replace('//', '/');
+
+      if (folderId === '/') {
+        return '/';
+      }
+
+      if (folderId[0] === '/') {
+        folderId = folderId.substring(1);
+      }
+
+      if (folderId.slice(-1) === '/') {
+        folderId = folderId.slice(0, -1);
+      }
+
+      return folderId;
+    }
   }
 })();

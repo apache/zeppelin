@@ -36,7 +36,7 @@
   <properties>
     <!--library versions-->
     <jsoup.version>1.8.2</jsoup.version>
-    <spark.version>2.0.1</spark.version>
+    <spark.version>2.0.2</spark.version>
     <guava.version>14.0.1</guava.version>
     <commons.exec.version>1.3</commons.exec.version>
     <commons.compress.version>1.9</commons.compress.version>
@@ -45,9 +45,6 @@
     <maven.aeither.provider.version>3.0.3</maven.aeither.provider.version>
     <wagon.version>1.0</wagon.version>
 
-    <!--test library versions-->
-    <mockito.version>1.10.19</mockito.version>
-    <powermock.version>1.6.4</powermock.version>
     <datanucleus.rdbms.version>3.2.9</datanucleus.rdbms.version>
     <datanucleus.apijdo.version>3.2.6</datanucleus.apijdo.version>
     <datanucleus.core.version>3.2.10</datanucleus.core.version>
@@ -305,21 +302,18 @@
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-core</artifactId>
-      <version>${mockito.version}</version>
       <scope>test</scope>
     </dependency>
 
     <dependency>
       <groupId>org.powermock</groupId>
       <artifactId>powermock-api-mockito</artifactId>
-      <version>${powermock.version}</version>
       <scope>test</scope>
     </dependency>
 
     <dependency>
       <groupId>org.powermock</groupId>
       <artifactId>powermock-module-junit4</artifactId>
-      <version>${powermock.version}</version>
       <scope>test</scope>
     </dependency>
 
@@ -511,7 +505,7 @@
     <profile>
       <id>spark-1.6</id>
       <properties>
-        <spark.version>1.6.1</spark.version>
+        <spark.version>1.6.3</spark.version>
         <py4j.version>0.9</py4j.version>
         <akka.group>com.typesafe.akka</akka.group>
         <akka.version>2.3.11</akka.version>
@@ -525,7 +519,7 @@
         <activeByDefault>true</activeByDefault>
       </activation>
       <properties>
-        <spark.version>2.0.1</spark.version>
+        <spark.version>2.0.2</spark.version>
         <protobuf.version>2.5.0</protobuf.version>
         <py4j.version>0.10.3</py4j.version>
         <scala.version>2.11.8</scala.version>

@@ -29,10 +29,6 @@ if not defined ZEPPELIN_LOG_DIR (
     set ZEPPELIN_LOG_DIR=%ZEPPELIN_HOME%\logs
 )
 
-if not defined ZEPPELIN_NOTEBOOK_DIR (
-    set ZEPPELIN_NOTEBOOK_DIR=%ZEPPELIN_HOME%\notebook
-)
-
 if not defined ZEPPELIN_PID_DIR (
     set ZEPPELIN_PID_DIR=%ZEPPELIN_HOME%\run
 )
@@ -45,6 +41,10 @@ if not defined ZEPPELIN_WAR (
             set ZEPPELIN_WAR=%%d
         )
     )
+)
+
+if not defined ZEPPELIN_NOTEBOOK_DIR (
+    set ZEPPELIN_NOTEBOOK_DIR=%ZEPPELIN_HOME%\notebook
 )
 
 if not defined ZEPPELIN_INTERPRETER_DIR (
@@ -96,10 +96,6 @@ if not defined JAVA_HOME (
 
 if not defined ZEPPELIN_IDENT_STRING (
     set ZEPPELIN_IDENT_STRING=%USERNAME%
-)
-
-if not defined DEBUG (
-    set DEBUG=0
 )
 
 if not defined ZEPPELIN_INTERPRETER_REMOTE_RUNNER (

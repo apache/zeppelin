@@ -215,8 +215,11 @@
 
     $scope.saveNote = function() {
       if ($scope.note && $scope.note.paragraphs) {
-        _.forEach($scope.note.paragraphs, function(n, key) {
-          angular.element('#' + n.id + '_paragraphColumn_main').scope().saveParagraph();
+        _.forEach($scope.note.paragraphs, function(par) {
+          angular
+            .element('#' + par.id + '_paragraphColumn_main')
+            .scope()
+            .saveParagraph(par);
         });
         $scope.isNoteDirty = null;
       }
@@ -722,10 +725,10 @@
       connectedOnce = true;
     });
 
-    $scope.$on('moveParagraphUp', function(event, paragraphId) {
+    $scope.$on('moveParagraphUp', function(event, paragraph) {
       var newIndex = -1;
       for (var i = 0; i < $scope.note.paragraphs.length; i++) {
-        if ($scope.note.paragraphs[i].id === paragraphId) {
+        if ($scope.note.paragraphs[i].id === paragraph.id) {
           newIndex = i - 1;
           break;
         }
@@ -734,16 +737,22 @@
         return;
       }
       // save dirtyText of moving paragraphs.
-      var prevParagraphId = $scope.note.paragraphs[newIndex].id;
-      angular.element('#' + paragraphId + '_paragraphColumn_main').scope().saveParagraph();
-      angular.element('#' + prevParagraphId + '_paragraphColumn_main').scope().saveParagraph();
-      websocketMsgSrv.moveParagraph(paragraphId, newIndex);
+      var prevParagraph = $scope.note.paragraphs[newIndex];
+      angular
+        .element('#' + paragraph.id + '_paragraphColumn_main')
+        .scope()
+        .saveParagraph(paragraph);
+      angular
+        .element('#' + prevParagraph.id + '_paragraphColumn_main')
+        .scope()
+        .saveParagraph(prevParagraph);
+      websocketMsgSrv.moveParagraph(paragraph.id, newIndex);
     });
 
-    $scope.$on('moveParagraphDown', function(event, paragraphId) {
+    $scope.$on('moveParagraphDown', function(event, paragraph) {
       var newIndex = -1;
       for (var i = 0; i < $scope.note.paragraphs.length; i++) {
-        if ($scope.note.paragraphs[i].id === paragraphId) {
+        if ($scope.note.paragraphs[i].id === paragraph.id) {
           newIndex = i + 1;
           break;
         }
@@ -753,10 +762,16 @@
         return;
       }
       // save dirtyText of moving paragraphs.
-      var nextParagraphId = $scope.note.paragraphs[newIndex].id;
-      angular.element('#' + paragraphId + '_paragraphColumn_main').scope().saveParagraph();
-      angular.element('#' + nextParagraphId + '_paragraphColumn_main').scope().saveParagraph();
-      websocketMsgSrv.moveParagraph(paragraphId, newIndex);
+      var nextParagraph = $scope.note.paragraphs[newIndex];
+      angular
+        .element('#' + paragraph.id + '_paragraphColumn_main')
+        .scope()
+        .saveParagraph(paragraph);
+      angular
+        .element('#' + nextParagraph.id + '_paragraphColumn_main')
+        .scope()
+        .saveParagraph(nextParagraph);
+      websocketMsgSrv.moveParagraph(paragraph.id, newIndex);
     });
 
     $scope.$on('moveFocusToPreviousParagraph', function(event, currentParagraphId) {

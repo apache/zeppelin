@@ -52,6 +52,7 @@ import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.notebook.JobListenerFactory;
+import org.apache.zeppelin.notebook.Folder;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.NotebookAuthorization;
@@ -255,6 +256,9 @@ public class NotebookServer extends WebSocketServlet implements
             break;
           case NOTE_RENAME:
             renameNote(conn, userAndRoles, notebook, messagereceived);
+            break;
+          case FOLDER_RENAME:
+            renameFolder(conn, userAndRoles, notebook, messagereceived);
             break;
           case COMPLETION:
             completion(conn, userAndRoles, notebook, messagereceived);
@@ -643,7 +647,7 @@ public class NotebookServer extends WebSocketServlet implements
             op, userAndRoles, allowed);
 
     conn.send(serializeMessage(new Message(OP.AUTH_INFO).put("info",
-            "Insufficient privileges to " + op + " notebook.\n\n" +
+            "Insufficient privileges to " + op + "note.\n\n" +
                     "Allowed users or roles: " + allowed.toString() + "\n\n" +
                     "But the user " + userName + " belongs to: " + userAndRoles.toString())));
   }
@@ -757,7 +761,7 @@ public class NotebookServer extends WebSocketServlet implements
 
     NotebookAuthorization notebookAuthorization = notebook.getNotebookAuthorization();
     if (!notebookAuthorization.isOwner(noteId, userAndRoles)) {
-      permissionError(conn, "renameNote", fromMessage.principal,
+      permissionError(conn, "rename", fromMessage.principal,
               userAndRoles, notebookAuthorization.getOwners(noteId));
       return;
     }
@@ -769,6 +773,41 @@ public class NotebookServer extends WebSocketServlet implements
       AuthenticationInfo subject = new AuthenticationInfo(fromMessage.principal);
       note.persist(subject);
       broadcastNote(note);
+      broadcastNoteList(subject, userAndRoles);
+    }
+  }
+
+  private void renameFolder(NotebookSocket conn, HashSet<String> userAndRoles,
+                          Notebook notebook, Message fromMessage)
+      throws SchedulerException, IOException {
+    String oldFolderId = (String) fromMessage.get("id");
+    String newFolderId = (String) fromMessage.get("name");
+
+    if (oldFolderId == null) {
+      return;
+    }
+
+    NotebookAuthorization notebookAuthorization = notebook.getNotebookAuthorization();
+    for (Note note : notebook.getNotesUnderFolder(oldFolderId)) {
+      String noteId = note.getId();
+      if (!notebookAuthorization.isOwner(noteId, userAndRoles)) {
+        permissionError(conn, "rename folder of '" + note.getName() + "'", fromMessage.principal,
+                userAndRoles, notebookAuthorization.getOwners(noteId));
+        return;
+      }
+    }
+
+    Folder oldFolder = notebook.renameFolder(oldFolderId, newFolderId);
+
+    if (oldFolder != null) {
+      AuthenticationInfo subject = new AuthenticationInfo(fromMessage.principal);
+
+      List<Note> renamedNotes = oldFolder.getNotesRecursively();
+      for (Note note : renamedNotes) {
+        note.persist(subject);
+        broadcastNote(note);
+      }
+
       broadcastNoteList(subject, userAndRoles);
     }
   }
