@@ -56,9 +56,6 @@ public class LivyHelperTest {
 
   @Before
   public void prepareContext() throws Exception {
-    interpreter.userSessionMap = new HashMap<>();
-    interpreter.userSessionMap.put(null, 1);
-
     Properties properties = new Properties();
     properties.setProperty("zeppelin.livy.url", "http://localhost:8998");
     livyHelper.property = properties;
@@ -103,10 +100,9 @@ public class LivyHelperTest {
   @Test
   public void checkInterpret() {
     try {
-      InterpreterResult result = livyHelper.interpret("print(1)", interpreterContext, interpreter.userSessionMap);
-
-      collector.checkThat("check sessionId", InterpreterResult.Code.SUCCESS, CoreMatchers.equalTo(result.code()));
-
+      InterpreterResult result = livyHelper.interpret("print(1)", interpreterContext, 1);
+      collector.checkThat("check sessionId", InterpreterResult.Code.SUCCESS,
+          CoreMatchers.equalTo(result.code()));
     } catch (Exception e) {
       collector.addError(e);
     }
