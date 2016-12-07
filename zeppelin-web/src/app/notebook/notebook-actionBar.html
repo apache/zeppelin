@@ -153,7 +153,7 @@ limitations under the License.
 
 <!-- put the delete action by itself for your protection -->
       <span class="labelBtn" style="vertical-align:middle; display:inline-block;">
-        <button ng-if="note.name.split('/')[0] === '~Trash'"
+        <button ng-if="note.name.split('/')[0] === TRASH_FOLDER_ID"
                 type="button"
                 class="btn btn-default btn-xs"
                 ng-click="removeNote(note.id)"
@@ -161,7 +161,7 @@ limitations under the License.
                 tooltip-placement="bottom" tooltip="Remove this note for good">
           <i class="icon-trash"></i>
         </button>
-        <button ng-if="note.name.split('/')[0] !== '~Trash'"
+        <button ng-if="note.name.split('/')[0] !== TRASH_FOLDER_ID"
                 type="button"
                 class="btn btn-default btn-xs"
                 ng-click="moveNoteToTrash(note.id)"

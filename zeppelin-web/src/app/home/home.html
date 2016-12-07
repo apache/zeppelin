@@ -50,7 +50,7 @@ limitations under the License.
     </a>
   </div>
   <!-- folder -->
-  <div ng-if="node.children != null && node.id !== '~Trash'">
+  <div ng-if="node.children != null && node.id !== TRASH_FOLDER_ID">
     <div ng-mouseenter="showFolderButton=true"
          ng-mouseleave="showFolderButton=false">
       <a style="text-decoration: none; cursor: pointer;" ng-click="toggleFolderNode(node)">
@@ -84,7 +84,7 @@ limitations under the License.
     </div>
   </div>
   <!-- trash folder -->
-  <div ng-if="node.id === '~Trash'">
+  <div ng-if="node.id === TRASH_FOLDER_ID">
     <div ng-mouseenter="showFolderButton=true"
          ng-mouseleave="showFolderButton=false">
       <a style="text-decoration: none; cursor: pointer;" ng-click="toggleFolderNode(node)">

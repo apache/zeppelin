@@ -28,12 +28,13 @@
     'saveAsService',
     'ngToast',
     'noteActionSrv',
-    'noteVarShareService'
+    'noteVarShareService',
+    'TRASH_FOLDER_ID'
   ];
 
   function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
                         $http, websocketMsgSrv, baseUrlSrv, $timeout, saveAsService,
-                        ngToast, noteActionSrv, noteVarShareService) {
+                        ngToast, noteActionSrv, noteVarShareService, TRASH_FOLDER_ID) {
 
     ngToast.dismiss();
 
@@ -44,6 +45,7 @@
     $scope.viewOnly = false;
     $scope.showSetting = false;
     $scope.looknfeelOption = ['default', 'simple', 'report'];
+    $scope.TRASH_FOLDER_ID = TRASH_FOLDER_ID;
     $scope.cronOption = [
       {name: 'None', value: undefined},
       {name: '1m', value: '0 0/1 * * * ?'},

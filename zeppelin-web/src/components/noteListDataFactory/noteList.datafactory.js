@@ -15,7 +15,9 @@
 
   angular.module('zeppelinWebApp').factory('noteListDataFactory', noteListDataFactory);
 
-  function noteListDataFactory() {
+  noteListDataFactory.$inject = ['TRASH_FOLDER_ID'];
+
+  function noteListDataFactory(TRASH_FOLDER_ID) {
     var notes = {
       root: {children: []},
       flatList: [],
@@ -46,7 +48,7 @@
           name: nodes[0],
           id: noteId,
           path: curDir.id ? curDir.id + '/' + nodes[0] : nodes[0],
-          isTrash: curDir.id ? curDir.id.split('/')[0] === '~Trash' : false
+          isTrash: curDir.id ? curDir.id.split('/')[0] === TRASH_FOLDER_ID : false
         });
       } else {  // a folder node
         var node = nodes.shift();
@@ -60,7 +62,7 @@
             name: node,
             hidden: true,
             children: [],
-            isTrash: curDir.id ? curDir.id.split('/')[0] === '~Trash' : false
+            isTrash: curDir.id ? curDir.id.split('/')[0] === TRASH_FOLDER_ID : false
           };
 
           // add the folder to flat folder map
