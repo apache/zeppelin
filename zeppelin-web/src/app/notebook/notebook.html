@@ -16,10 +16,9 @@ limitations under the License.
 <div class="notebookContent">
   <!-- settings -->
   <div ng-if="showSetting" class="setting">
-    <div>
-      <h4>Settings</h4>
-    </div>
+    <div><h4>Settings</h4></div>
     <hr />
+
     <div>
       <h5>Interpreter binding</h5>
       <p>
@@ -29,33 +28,48 @@ limitations under the License.
         The first interpreter on the list becomes default. To create/remove interpreters, go to <a href="#/interpreter">Interpreter</a> menu.
       </p>
 
+      <br/>
+
       <div class="interpreterSettings"
            as-sortable="interpreterSelectionListeners" data-ng-model="interpreterBindings">
-        <div data-ng-repeat="item in interpreterBindings" as-sortable-item>
+        <div style="display:inline-block; margin: 0px 3px 0px 3px"
+             data-ng-repeat="item in interpreterBindings" as-sortable-item>
           <div>
-            <a ng-click="restartInterpreter(item)"
-               ng-class="{'inactivelink': !item.selected}"
-               tooltip="Restart">
-              <span class="glyphicon glyphicon-refresh btn-md"></span>
-            </a>&nbsp
-            <div as-sortable-item-handle
-                 ng-click="item.selected = !item.selected"
-                 class="btn"
-                 ng-class="{'btn-info': item.selected, 'btn-default': !item.selected}">
-              <font style="font-size:16px">{{item.name}}</font>
-              <small>
-                <span style="display:inline-block" ng-repeat="intp in item.interpreters">
-                  <span ng-show="!$first">, </span>
-                  %<span ng-show="!$parent.$first || $first">{{item.name}}</span
-                  ><span ng-show="(!$parent.$first || $first) && !$first">.</span
-                  ><span ng-show="!$first">{{intp.name}}</span>
-                  <span ng-show="$parent.$first && $first">(default)</span>
-                </span>
-              </small>
+            <div class="btn-group">
+              <button type="button" class="btn" as-sortable-item-handle
+                      ng-click="item.selected = !item.selected"
+                      ng-class="{'btn-info': item.selected, 'btn-default': !item.selected}">
+                <span style="font-weight: bold; font-size: 14px; margin-right: 5px;">{{item.name}}</span>
+                <small>
+                  <span style="display:inline-block" ng-repeat="intp in item.interpreters">
+                    <span ng-show="!$first">, </span>
+                    %<span ng-show="!$parent.$first || $first">{{item.name}}</span
+                    ><span ng-show="(!$parent.$first || $first) && !$first">.</span
+                    ><span ng-show="!$first">{{intp.name}}</span>
+                    <span ng-show="$parent.$first && $first">(default)</span>
+                  </span>
+                </small>
+              </button>
+              <button type="button" class="btn"
+                      data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
+                      ng-class="{'btn-info': item.selected, 'btn-default': !item.selected}">
+                <span class="caret"></span>
+                <span class="sr-only">Toggle Dropdown</span>
+              </button>
+              <ul class="dropdown-menu">
+                <li>
+                  <a ng-click="restartInterpreter(item)" ng-class="{'inactivelink': !item.selected}"
+                     tooltip="Restart">
+                    <span class="glyphicon glyphicon-refresh btn-sm"></span>
+                    <span style="margin-left: 3px">Restart</span>
+                  </a>
+                </li>
+              </ul>
             </div>
           </div>
         </div>
       </div>
+
     </div>
     <br />
     <div>
@@ -127,5 +141,5 @@ limitations under the License.
       <h4 class="plus-sign">&#43;</h4>
     </div>
   </div>
-  <div style="clear:both;height:10px"></div>
 </div>
+<div style="clear:both;height:10px"></div>
