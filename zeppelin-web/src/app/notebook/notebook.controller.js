@@ -58,6 +58,7 @@
 
     $scope.interpreterSettings = [];
     $scope.interpreterBindings = [];
+    $scope.bindingFilterKeyword = '';
     $scope.isNoteDirty = null;
     $scope.saveTimer = null;
 

@@ -28,12 +28,27 @@ limitations under the License.
         The first interpreter on the list becomes default. To create/remove interpreters, go to <a href="#/interpreter">Interpreter</a> menu.
       </p>
 
-      <br/>
+      <div class="interpreterSearchBox" style="margin: 15px 0px 15px 0px;">
+        <div class="row">
+          <div class="col-md-12">
+            <div class="input-group pull-left" style="width:300px">
+              <input type="text" placeholder="Search interpreter Bindings"
+                     ng-model="bindingFilterKeyword"
+                     class="form-control ng-pristine ng-untouched ng-valid ng-empty" />
+              <span class="input-group-btn">
+            <button type="submit" class="btn btn-default">
+              <i class="glyphicon glyphicon-search"></i>
+            </button>
+          </span>
+            </div>
+          </div>
+        </div>
+      </div>
 
       <div class="interpreterSettings"
            as-sortable="interpreterSelectionListeners" data-ng-model="interpreterBindings">
         <div style="display:inline-block; margin: 0px 3px 0px 3px"
-             data-ng-repeat="item in interpreterBindings" as-sortable-item>
+             data-ng-repeat="item in interpreterBindings | filter: {name:bindingFilterKeyword}" as-sortable-item>
           <div>
             <div class="btn-group">
               <button type="button" class="btn" as-sortable-item-handle
