@@ -53,7 +53,7 @@ limitations under the License.
             <div class="btn-group">
               <button type="button" class="btn" as-sortable-item-handle
                       ng-click="item.selected = !item.selected"
-                      ng-class="{'btn-info': item.selected, 'btn-default': !item.selected}">
+                      ng-class="{'btn-success': $first && item.selected, 'btn-info': !$first && item.selected, 'btn-default': !item.selected}">
                 <span style="font-weight: bold; font-size: 14px; margin-right: 5px;">{{item.name}}</span>
                 <small>
                   <span style="display:inline-block" ng-repeat="intp in item.interpreters">
@@ -67,7 +67,7 @@ limitations under the License.
               </button>
               <button type="button" class="btn"
                       data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
-                      ng-class="{'btn-info': item.selected, 'btn-default': !item.selected}">
+                      ng-class="{'btn-success': $first && item.selected, 'btn-info': !$first && item.selected, 'btn-default': !item.selected}">
                 <span class="caret"></span>
                 <span class="sr-only">Toggle Dropdown</span>
               </button>
