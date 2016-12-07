@@ -325,8 +325,10 @@
     };
 
     /** Update the note name */
-    $scope.sendNewName = function() {
-      if ($scope.note.name) {
+    $scope.updateNoteName = function(newName) {
+      const trimmedNewName = newName.trim();
+      if (trimmedNewName.length > 0 && $scope.note.name !== trimmedNewName) {
+        $scope.note.name = trimmedNewName;
         websocketMsgSrv.updateNote($scope.note.id, $scope.note.name, $scope.note.config);
       }
     };
