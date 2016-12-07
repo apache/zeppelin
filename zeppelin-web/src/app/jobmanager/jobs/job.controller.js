@@ -44,7 +44,7 @@
         title: '',
         message: 'Run all paragraphs?',
         callback: function(result) {
-          if (result === true) {
+          if (result) {
             $http({
               method: 'POST',
               url: baseUrlSrv.getRestApiBase() + '/notebook/job/' + notebookId,
