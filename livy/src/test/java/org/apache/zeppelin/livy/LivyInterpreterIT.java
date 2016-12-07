@@ -149,7 +149,6 @@ public class LivyInterpreterIT {
       assertEquals(InterpreterResult.Code.ERROR, result.code());
       assertEquals(InterpreterResult.Type.TEXT, result.message().get(0).getType());
       assertTrue(result.message().get(0).getData().contains("error: not found: value a"));
-
     } finally {
       sparkInterpreter.close();
     }
@@ -171,9 +170,10 @@ public class LivyInterpreterIT {
     InterpreterContext context = new InterpreterContext("noteId", "paragraphId", "livy.spark",
         "title", "text", authInfo, null, null, null, null, null, output);
     sparkInterpreter.open();
+
     LivySparkSQLInterpreter sqlInterpreter = new LivySparkSQLInterpreter(properties);
-    sqlInterpreter.setInterpreterGroup(interpreterGroup);
     interpreterGroup.get("session_1").add(sqlInterpreter);
+    sqlInterpreter.setInterpreterGroup(interpreterGroup);
     sqlInterpreter.open();
 
     try {
@@ -279,7 +279,7 @@ public class LivyInterpreterIT {
     }
   }
 
-//  @Test
+  @Test
   public void testSparkRInterpreter() {
     if (!checkPreCondition()) {
       return;
