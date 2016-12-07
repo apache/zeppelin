@@ -158,7 +158,7 @@ limitations under the License.
                 class="btn btn-default btn-xs"
                 ng-click="removeNote(note.id)"
                 ng-hide="viewOnly"
-                tooltip-placement="bottom" tooltip="Remove this note for good">
+                tooltip-placement="bottom" tooltip="Remove this note permanently">
           <i class="icon-trash"></i>
         </button>
         <button ng-if="note.name.split('/')[0] !== TRASH_FOLDER_ID"

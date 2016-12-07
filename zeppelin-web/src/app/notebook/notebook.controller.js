@@ -189,7 +189,7 @@
       noteActionSrv.moveNoteToTrash(noteId, true);
     };
 
-    // Remove the note for good if it's in the trash
+    // Remove the note permanently if it's in the trash
     $scope.removeNote = function(noteId) {
       noteActionSrv.removeNote(noteId, true);
     };
