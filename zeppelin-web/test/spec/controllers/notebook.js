@@ -8,7 +8,8 @@ describe('Controller: NotebookCtrl', function() {
   var websocketMsgSrvMock = {
     getNote: function() {},
     listRevisionHistory: function() {},
-    getInterpreterBindings: function() {}
+    getInterpreterBindings: function() {},
+    updateNote: function() {}
   };
 
   var baseUrlSrvMock = {
@@ -38,7 +39,7 @@ describe('Controller: NotebookCtrl', function() {
 
   var functions = ['getCronOptionNameFromValue', 'removeNote', 'runNote', 'saveNote', 'toggleAllEditor',
     'showAllEditor', 'hideAllEditor', 'toggleAllTable', 'hideAllTable', 'showAllTable', 'isNoteRunning',
-    'killSaveTimer', 'startSaveTimer', 'setLookAndFeel', 'setCronScheduler', 'setConfig', 'sendNewName',
+    'killSaveTimer', 'startSaveTimer', 'setLookAndFeel', 'setCronScheduler', 'setConfig', 'updateNoteName',
     'openSetting', 'closeSetting', 'saveSetting', 'toggleSetting'];
 
   functions.forEach(function(fn) {
@@ -100,4 +101,24 @@ describe('Controller: NotebookCtrl', function() {
     expect(scope.saveTimer).toEqual(null);
   });
 
+  it('should NOT update note name when updateNoteName() is called with an invalid name', function() {
+    spyOn(websocketMsgSrvMock, 'updateNote');
+    scope.updateNoteName('');
+    expect(scope.note.name).toEqual(noteMock.name);
+    expect(websocketMsgSrvMock.updateNote).not.toHaveBeenCalled();
+    scope.updateNoteName(' ');
+    expect(scope.note.name).toEqual(noteMock.name);
+    expect(websocketMsgSrvMock.updateNote).not.toHaveBeenCalled();
+    scope.updateNoteName(scope.note.name);
+    expect(scope.note.name).toEqual(noteMock.name);
+    expect(websocketMsgSrvMock.updateNote).not.toHaveBeenCalled();
+  });
+
+  it('should update note name when updateNoteName() is called with a valid name', function() {
+    spyOn(websocketMsgSrvMock, 'updateNote');
+    var newName = 'Your Note';
+    scope.updateNoteName(newName);
+    expect(scope.note.name).toEqual(newName);
+    expect(websocketMsgSrvMock.updateNote).toHaveBeenCalled();
+  });
 });
