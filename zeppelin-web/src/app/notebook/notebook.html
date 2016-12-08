@@ -53,7 +53,7 @@ limitations under the License.
             <div class="btn-group">
               <button type="button" class="btn" as-sortable-item-handle
                       ng-click="item.selected = !item.selected"
-                      ng-class="{'btn-success': $first && item.selected, 'btn-info': !$first && item.selected, 'btn-default': !item.selected}">
+                      ng-class="$first && item.selected && bindingFilterKeyword === '' ? 'btn-success' : (item.selected ? 'btn-info' : 'btn-default')">
                 <span style="font-weight: bold; font-size: 14px; margin-right: 5px;">{{item.name}}</span>
                 <small>
                   <span style="display:inline-block" ng-repeat="intp in item.interpreters">
@@ -61,13 +61,13 @@ limitations under the License.
                     %<span ng-show="!$parent.$first || $first">{{item.name}}</span
                     ><span ng-show="(!$parent.$first || $first) && !$first">.</span
                     ><span ng-show="!$first">{{intp.name}}</span>
-                    <span ng-show="$parent.$first && $first">(default)</span>
+                    <span ng-show="$parent.$first && $first && bindingFilterKeyword === ''">(default)</span>
                   </span>
                 </small>
               </button>
               <button type="button" class="btn"
                       data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
-                      ng-class="{'btn-success': $first && item.selected, 'btn-info': !$first && item.selected, 'btn-default': !item.selected}">
+                      ng-class="$first && item.selected && bindingFilterKeyword === '' ? 'btn-success' : (item.selected ? 'btn-info' : 'btn-default')">
                 <span class="caret"></span>
                 <span class="sr-only">Toggle Dropdown</span>
               </button>
