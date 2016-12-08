@@ -108,7 +108,7 @@ public class Input implements Serializable {
   }
 
   public Input(String name, String displayName, String type, String argument, Object defaultValue,
-      ParamOption[] options, boolean hidden) {
+               ParamOption[] options, boolean hidden) {
     super();
     this.name = name;
     this.displayName = displayName;
@@ -385,11 +385,11 @@ public class Input implements Serializable {
   }
 
   public static String[] split(String str, String escapeSeq, char escapeChar, String[] blockStart,
-      String[] blockEnd, String[] splitters, boolean includeSplitter) {
+                               String[] blockEnd, String[] splitters, boolean includeSplitter) {
 
     List<String> splits = new ArrayList<>();
 
-    String curString = "";
+    StringBuilder curString = new StringBuilder();
 
     boolean escape = false; // true when escape char is found
     int lastEscapeOffset = -1;
@@ -408,21 +408,21 @@ public class Input implements Serializable {
       // escaped char comes
       if (escape == true) {
         if (escapeSeq.indexOf(c) < 0) {
-          curString += escapeChar;
+          curString.append(escapeChar);
         }
-        curString += c;
+        curString.append(c);
         escape = false;
         lastEscapeOffset = curString.length();
         continue;
       }
 
       if (blockStack.size() > 0) { // inside of block
-        curString += c;
+        curString.append(c);
         // check multichar block
         boolean multicharBlockDetected = false;
         for (int b = 0; b < blockStart.length; b++) {
           if (blockStartPos >= 0
-              && getBlockStr(blockStart[b]).compareTo(str.substring(blockStartPos, i)) == 0) {
+                  && getBlockStr(blockStart[b]).compareTo(str.substring(blockStartPos, i)) == 0) {
             blockStack.remove(0);
             blockStack.add(0, b);
             multicharBlockDetected = true;
@@ -439,7 +439,7 @@ public class Input implements Serializable {
           // try to find nested block start
 
           if (curString.substring(lastEscapeOffset + 1).endsWith(
-              getBlockStr(blockStart[blockStack.get(0)])) == true) {
+                  getBlockStr(blockStart[blockStack.get(0)])) == true) {
             blockStack.add(0, blockStack.get(0)); // block is started
             blockStartPos = i;
             continue;
@@ -448,16 +448,16 @@ public class Input implements Serializable {
 
         // check if block is finishing
         if (curString.substring(lastEscapeOffset + 1).endsWith(
-            getBlockStr(blockEnd[blockStack.get(0)]))) {
+                getBlockStr(blockEnd[blockStack.get(0)]))) {
           // the block closer is one of the splitters (and not nested block)
           if (isNestedBlock(blockEnd[blockStack.get(0)]) == false) {
             for (String splitter : splitters) {
               if (splitter.compareTo(getBlockStr(blockEnd[blockStack.get(0)])) == 0) {
-                splits.add(curString);
+                splits.add(curString.toString());
                 if (includeSplitter == true) {
                   splits.add(splitter);
                 }
-                curString = "";
+                curString.setLength(0);
                 lastEscapeOffset = -1;
 
                 break;
@@ -475,11 +475,11 @@ public class Input implements Serializable {
           // forward check for splitter
           int curentLenght = i + splitter.length();
           if (splitter.compareTo(str.substring(i, Math.min(curentLenght, str.length()))) == 0) {
-            splits.add(curString);
+            splits.add(curString.toString());
             if (includeSplitter == true) {
               splits.add(splitter);
             }
-            curString = "";
+            curString.setLength(0);
             lastEscapeOffset = -1;
             i += splitter.length() - 1;
             splitted = true;
@@ -491,12 +491,12 @@ public class Input implements Serializable {
         }
 
         // add char to current string
-        curString += c;
+        curString.append(c);
 
         // check if block is started
         for (int b = 0; b < blockStart.length; b++) {
           if (curString.substring(lastEscapeOffset + 1)
-                       .endsWith(getBlockStr(blockStart[b])) == true) {
+                  .endsWith(getBlockStr(blockStart[b])) == true) {
             blockStack.add(0, b); // block is started
             blockStartPos = i;
             break;
@@ -505,7 +505,7 @@ public class Input implements Serializable {
       }
     }
     if (curString.length() > 0) {
-      splits.add(curString.trim());
+      splits.add(curString.toString().trim());
     }
     return splits.toArray(new String[] {});
 
