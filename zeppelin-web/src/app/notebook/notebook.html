@@ -45,7 +45,7 @@ limitations under the License.
         </div>
       </div>
 
-      <div class="interpreterSettings"
+      <div class="interpreterSettings" style="overflow-y:auto; height:320px;"
            as-sortable="interpreterSelectionListeners" data-ng-model="interpreterBindings">
         <div style="margin: 0px 3px 0px 3px"
              data-ng-repeat="item in interpreterBindings | filter: {name:bindingFilterKeyword}" as-sortable-item>
@@ -84,8 +84,8 @@ limitations under the License.
           </div>
         </div>
       </div>
-
     </div>
+
     <br />
     <div>
       <button class="btn btn-primary" ng-click="saveSetting()">Save</button>
