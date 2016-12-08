@@ -123,11 +123,12 @@ public class SparkRInterpreter extends Interpreter {
 
     String jobGroup = getJobGroup(interpreterContext);
     String setJobGroup = "";
+    // assign setJobGroup to dummy__, otherwise it would print NULL for this statement
     if (Utils.isSpark2()) {
-      setJobGroup = "setJobGroup(\"" + jobGroup +
+      setJobGroup = "dummy__ <- setJobGroup(\"" + jobGroup +
           "\", \"zeppelin sparkR job group description\", TRUE)";
     } else if (getSparkInterpreter().getSparkVersion().newerThanEquals(SparkVersion.SPARK_1_5_0)) {
-      setJobGroup = "setJobGroup(sc, \"" + jobGroup +
+      setJobGroup = "dummy__ <- setJobGroup(sc, \"" + jobGroup +
           "\", \"zeppelin sparkR job group description\", TRUE)";
     }
     logger.debug("set JobGroup:" + setJobGroup);
