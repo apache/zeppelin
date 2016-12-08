@@ -1398,7 +1398,7 @@ public class NotebookServer extends WebSocketServlet implements
     p.setConfig(config);
 
     if (isBlankParagraph(p)) {
-      LOG.info("skip to run blank paragarph. {}", p.getId());
+      LOG.info("skip to run blank paragraph. {}", p.getId());
       return;
     }
 
