@@ -17,7 +17,7 @@ public class ParagraphRuntimeInfo {
   
   public ParagraphRuntimeInfo(String propertyName, String label, 
       String group, String intpSettingId) {
-    if (interpreterSettingId == null) {
+    if (intpSettingId == null) {
       throw new IllegalArgumentException("Interpreter setting Id cannot be null");
     }
     this.propertyName = propertyName;
