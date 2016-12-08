@@ -17,25 +17,25 @@ limitations under the License.
     {{lastExecuteTime(notebookJob.unixTimeLastRun)}}
   </span>
   <span>
-    <span ng-if="notebookJob.isRunningJob === true">
+    <span ng-if="notebookJob.isRunningJob">
       RUNNING
     </span>
-    <span ng-if="notebookJob.isRunningJob === false">
+    <span ng-if="!notebookJob.isRunningJob">
       READY
     </span>
   </span>
 
-  <span ng-if="notebookJob.isRunningJob === true">
+  <span ng-if="notebookJob.isRunningJob">
     {{getProgress()}}%
   </span>
   <!-- Run / Cancel button -->
   <span
-    ng-if="notebookJob.isRunningJob === false"
+    ng-if="!notebookJob.isRunningJob"
     class="icon-control-play" style="cursor:pointer;color:#3071A9" tooltip-placement="left" tooltip="START ALL Job"
     ng-click="runNotebookJob(notebookJob.noteId)">
   </span>
   <span
-    ng-if="notebookJob.isRunningJob === true"
+    ng-if="notebookJob.isRunningJob"
     class="icon-control-pause" style="cursor:pointer;color:#3071A9" tooltip-placement="left" tooltip="STOP ALL Job"
     ng-click="stopNotebookJob(notebookJob.noteId)">
   </span>

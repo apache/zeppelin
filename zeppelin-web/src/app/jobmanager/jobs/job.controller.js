@@ -55,7 +55,7 @@
               // success
             }, function errorCallback(errorResponse) {
               var errorText = 'SERVER ERROR';
-              if (errorResponse.data.message !== undefined) {
+              if (!errorResponse.data.message) {
                 errorText = errorResponse.data.message;
               }
               BootstrapDialog.alert({
@@ -75,7 +75,7 @@
         title: '',
         message: 'Stop all paragraphs?',
         callback: function(result) {
-          if (result === true) {
+          if (result) {
             $http({
               method: 'DELETE',
               url: baseUrlSrv.getRestApiBase() + '/notebook/job/' + notebookId,
@@ -86,7 +86,7 @@
               // success
             }, function errorCallback(errorResponse) {
               var errorText = 'SERVER ERROR';
-              if (errorResponse.data.message !== undefined) {
+              if (!errorResponse.data.message) {
                 errorText = errorResponse.data.message;
               }
               BootstrapDialog.alert({
