@@ -55,7 +55,7 @@
               // success
             }, function errorCallback(errorResponse) {
               var errorText = 'SERVER ERROR';
-              if (!errorResponse.data.message) {
+              if (!!errorResponse.data.message) {
                 errorText = errorResponse.data.message;
               }
               BootstrapDialog.alert({
@@ -86,7 +86,8 @@
               // success
             }, function errorCallback(errorResponse) {
               var errorText = 'SERVER ERROR';
-              if (!errorResponse.data.message) {
+              if (!!errorResponse.data.message) {
+
                 errorText = errorResponse.data.message;
               }
               BootstrapDialog.alert({
