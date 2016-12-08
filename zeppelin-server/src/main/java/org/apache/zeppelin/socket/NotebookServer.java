@@ -1025,7 +1025,7 @@ public class NotebookServer extends WebSocketServlet
       if (notebook.hasFolder(trashFolderId)){
         DateTime currentDate = new DateTime();
         DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss");
-        trashFolderId += " removed at " + formatter.print(currentDate);
+        trashFolderId += Folder.TRASH_FOLDER_CONFLICT_INFIX + formatter.print(currentDate);
       }
 
       fromMessage.put("name", trashFolderId);
@@ -1060,7 +1060,27 @@ public class NotebookServer extends WebSocketServlet
 
     Folder folder = notebook.getFolder(folderId);
     if (folder != null && folder.isTrash()) {
-      fromMessage.put("name", folder.getId().replaceFirst(Folder.TRASH_FOLDER_ID + "/", ""));
+      String restoreName = folder.getId().replaceFirst(Folder.TRASH_FOLDER_ID + "/", "");
+
+      // if the folder had conflict when it had moved to trash before
+      if (folder.getId().indexOf(Folder.TRASH_FOLDER_CONFLICT_INFIX) > 0) {
+        String[] splits = restoreName.split(Folder.TRASH_FOLDER_CONFLICT_INFIX);
+        String nameWithoutInfix = splits[0];
+        String removedDateString = splits[1];
+        boolean isDateString;
+
+        try {
+          DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss").parseDateTime(removedDateString);
+          isDateString = true;
+        } catch(IllegalArgumentException e) {
+          isDateString = false;
+        }
+
+        if (isDateString)
+          restoreName = nameWithoutInfix;
+      }
+
+      fromMessage.put("name", restoreName);
       renameFolder(conn, userAndRoles, notebook, fromMessage, "restore");
     }
   }

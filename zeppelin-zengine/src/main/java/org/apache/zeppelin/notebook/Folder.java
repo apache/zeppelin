@@ -31,6 +31,7 @@ import java.util.*;
 public class Folder {
   public static final String ROOT_FOLDER_ID = "/";
   public static final String TRASH_FOLDER_ID = "~Trash";
+  public static final String TRASH_FOLDER_CONFLICT_INFIX = " removed at ";
 
   private String id;
 
