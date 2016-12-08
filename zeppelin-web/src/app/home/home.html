@@ -21,30 +21,29 @@ limitations under the License.
       <i style="font-size: 10px;" class="icon-doc"/> {{noteName(node)}}
     </a>
     <a style="text-decoration: none;">
-      <i style="font-size: 13px; margin-left: 10px; cursor: pointer; text-decoration: none;"
-         class="fa fa-pencil" ng-show="showNoteButton" ng-click="renameNote(node)"
+      <i style="margin-left: 10px;"
+         class="fa fa-pencil notebook-list-btn" ng-show="showNoteButton" ng-click="renameNote(node)"
          tooltip-placement="bottom" tooltip="Rename note">
       </i>
     </a>
     <a style="text-decoration: none;">
-      <i style="font-size: 13px; margin-left: 2px; cursor: pointer; text-decoration: none;"
-         class="fa fa-eraser" ng-show="showNoteButton" ng-click="clearAllParagraphOutput(node.id)"
+      <i class="fa fa-eraser notebook-list-btn" ng-show="showNoteButton" ng-click="clearAllParagraphOutput(node.id)"
          tooltip-placement="bottom" tooltip="Clear output">
       </i>
     </a>
     <a style="text-decoration: none;">
       <!-- if note is not in trash -->
-      <i ng-if="!node.isTrash" style="font-size: 13px; margin-left: 2px; cursor: pointer; text-decoration: none;"
-         class="fa fa-trash-o" ng-show="showNoteButton" ng-click="moveNoteToTrash(node.id)"
+      <i ng-if="!node.isTrash"
+         class="fa fa-trash-o notebook-list-btn" ng-show="showNoteButton" ng-click="moveNoteToTrash(node.id)"
          tooltip-placement="bottom" tooltip="Move note to Trash">
       </i>
       <!-- if note is in trash -->
-      <i ng-if="node.isTrash" style="font-size: 13px; margin-left: 2px; cursor: pointer; text-decoration: none;"
-         class="fa fa-trash-o" ng-show="showNoteButton" ng-click="removeNote(node.id)"
+      <i ng-if="node.isTrash"
+         class="fa fa-trash-o notebook-list-btn" ng-show="showNoteButton" ng-click="removeNote(node.id)"
          tooltip-placement="bottom" tooltip="Remove note permanently">
       </i>
-      <i ng-if="node.isTrash" style="font-size: 13px; margin-left: 2px; cursor: pointer; text-decoration: none;"
-         class="fa fa-undo" ng-show="showNoteButton" ng-click="restoreNote(node.id)"
+      <i ng-if="node.isTrash"
+         class="fa fa-undo notebook-list-btn" ng-show="showNoteButton" ng-click="restoreNote(node.id)"
          tooltip-placement="bottom" tooltip="Restore note">
       </i>
     </a>
@@ -57,22 +56,22 @@ limitations under the License.
         <i style="font-size: 10px;" ng-class="node.hidden ? 'icon-folder' : 'icon-folder-alt'" /> {{noteName(node)}}
       </a>
       <a style="text-decoration: none;">
-        <i style="font-size: 13px; margin-left: 10px; cursor: pointer; text-decoration: none;"
-           class="fa fa-pencil" ng-show="showFolderButton" ng-click="renameFolder(node)"
+        <i style="margin-left: 10px;"
+           class="fa fa-pencil notebook-list-btn" ng-show="showFolderButton" ng-click="renameFolder(node)"
            tooltip-placement="bottom" tooltip="Rename folder">
         </i>
         <!-- if folder is not in trash -->
-        <i ng-if="!node.isTrash" style="font-size: 13px; margin-left: 2px; cursor: pointer; text-decoration: none;"
-           class="fa fa-trash-o" ng-show="showFolderButton" ng-click="moveFolderToTrash(node.id)"
+        <i ng-if="!node.isTrash"
+           class="fa fa-trash-o notebook-list-btn" ng-show="showFolderButton" ng-click="moveFolderToTrash(node.id)"
            tooltip-placement="bottom" tooltip="Move folder to Trash">
         </i>
         <!-- if folder is in trash -->
-        <i ng-if="node.isTrash" style="font-size: 13px; margin-left: 2px; cursor: pointer; text-decoration: none;"
-           class="fa fa-trash-o" ng-show="showFolderButton" ng-click="removeFolder(node.id)"
+        <i ng-if="node.isTrash"
+           class="fa fa-trash-o notebook-list-btn" ng-show="showFolderButton" ng-click="removeFolder(node.id)"
            tooltip-placement="bottom" tooltip="Remove folder permanently">
         </i>
-        <i ng-if="node.isTrash" style="font-size: 13px; margin-left: 2px; cursor: pointer; text-decoration: none;"
-           class="fa fa-undo" ng-show="showFolderButton" ng-click="restoreFolder(node.id)"
+        <i ng-if="node.isTrash"
+           class="fa fa-undo notebook-list-btn" ng-show="showFolderButton" ng-click="restoreFolder(node.id)"
            tooltip-placement="bottom" tooltip="Restore folder">
         </i>
       </a>
@@ -91,12 +90,11 @@ limitations under the License.
         <i style="font-size: 10px;" class="fa fa-trash-o" /> Trash
       </a>
       <a style="text-decoration: none;">
-        <i style="font-size: 13px; margin-left: 10px; cursor: pointer; text-decoration: none;"
-           class="fa fa-trash-o" ng-show="showFolderButton" ng-click="emptyTrash()"
+        <i style="margin-left: 10px;"
+           class="fa fa-trash-o notebook-list-btn" ng-show="showFolderButton" ng-click="emptyTrash()"
            tooltip-placement="bottom" tooltip="Empty trash">
         </i>
-        <i style="font-size: 13px; margin-left: 2px; cursor: pointer; text-decoration: none;"
-           class="fa fa-undo" ng-show="showFolderButton" ng-click="restoreAll()"
+        <i class="fa fa-undo notebook-list-btn" ng-show="showFolderButton" ng-click="restoreAll()"
            tooltip-placement="bottom" tooltip="Restore all">
         </i>
       </a>

@@ -51,6 +51,13 @@ body .navbar {
   width: auto;
 }
 
+.notebook-list-btn {
+  font-size: 13px;
+  margin-left: 2px;
+  cursor: pointer;
+  text-decoration: none;
+}
+
 .navbar-inverse {
   background: #3071a9;
   color: #fff;
