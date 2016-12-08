@@ -1072,7 +1072,7 @@ public class NotebookServer extends WebSocketServlet
         try {
           DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss").parseDateTime(removedDateString);
           isDateString = true;
-        } catch(IllegalArgumentException e) {
+        } catch (IllegalArgumentException e) {
           isDateString = false;
         }
 
