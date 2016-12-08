@@ -45,7 +45,6 @@
     $scope.viewOnly = false;
     $scope.showSetting = false;
     $scope.looknfeelOption = ['default', 'simple', 'report'];
-    $scope.TRASH_FOLDER_ID = TRASH_FOLDER_ID;
     $scope.cronOption = [
       {name: 'None', value: undefined},
       {name: '1m', value: '0 0/1 * * * ?'},
@@ -192,6 +191,10 @@
     // Remove the note permanently if it's in the trash
     $scope.removeNote = function(noteId) {
       noteActionSrv.removeNote(noteId, true);
+    };
+
+    $scope.isTrash = function(note) {
+      return note ? note.name.split('/')[0] === TRASH_FOLDER_ID : false;
     };
 
     //Export notebook
