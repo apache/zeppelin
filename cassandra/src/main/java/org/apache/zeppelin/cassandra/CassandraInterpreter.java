@@ -226,10 +226,4 @@ public class CassandraInterpreter extends Interpreter {
             .createOrGetParallelScheduler(CassandraInterpreter.class.getName() + this.hashCode(),
                     parseInt(getProperty(CASSANDRA_INTERPRETER_PARALLELISM)));
   }
-
-  @Override
-  public void destroy() {
-    super.destroy();
-    this.close();
-  }
 }
