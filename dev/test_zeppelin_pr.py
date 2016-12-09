@@ -63,21 +63,21 @@ if exitCode != 0:
     sys.exit(1)
 
 
-currentBranch = subprocess.check_output(["git rev-parse --abbrev-ref HEAD"], shell=True).rstrip()
+currentBranch = subprocess.check_output("git rev-parse --abbrev-ref HEAD", shell=True).rstrip()
 
 print "Merge branch " + prBranch + " into " + currentBranch
 
-rev = subprocess.check_output(["git rev-parse " + prBranch], shell=True).rstrip()
-prAuthor = subprocess.check_output(["git --no-pager show -s --format='%an <%ae>' " + rev], shell=True).rstrip()
-prAuthorDate = subprocess.check_output(["git --no-pager show -s --format='%ad' " + rev], shell=True).rstrip()
+rev = subprocess.check_output("git rev-parse " + prBranch, shell=True).rstrip()
+prAuthor = subprocess.check_output("git --no-pager show -s --format=\"%an <%ae>\" " + rev, shell=True).rstrip()
+prAuthorDate = subprocess.check_output("git --no-pager show -s --format=\"%ad\" " + rev, shell=True).rstrip()
 
 prTitle = prInfo['title']
 prBody = prInfo['body']
 
-commitList = subprocess.check_output(["git log --pretty=format:'%h' " + currentBranch + ".." + prBranch], shell=True).rstrip()
+commitList = subprocess.check_output("git log --pretty=format:\"%h\" " + currentBranch + ".." + prBranch, shell=True).rstrip()
 authorList = []
 for commitHash in commitList.split("\n"):
-    a = subprocess.check_output(["git show -s --pretty=format:'%an <%ae>' "+commitHash], shell=True).rstrip()
+    a = subprocess.check_output("git show -s --pretty=format:\"%an <%ae>\" "+commitHash, shell=True).rstrip()
     if a not in authorList:
         authorList.append(a)
 
@@ -88,7 +88,7 @@ for author in authorList:
     commitMsg += "Author: " + author+"\n"
 commitMsg += "\n"
 commitMsg += "Closes #" + pr + " from " + prBranch + " and squashes the following commits:\n\n"
-commitMsg += subprocess.check_output(["git log --pretty=format:'%h [%an] %s' " + currentBranch + ".." + prBranch], shell=True).rstrip()
+commitMsg += subprocess.check_output("git log --pretty=format:\"%h [%an] %s\" " + currentBranch + ".." + prBranch, shell=True).rstrip()
 
 exitCode = os.system("git merge --no-commit --squash " + prBranch)
 if exitCode != 0:
