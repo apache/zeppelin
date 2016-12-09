@@ -39,18 +39,11 @@
         });
       }
 
-      if (isSortByAsc === true) {
-        filterItems = _.sortBy(filterItems, function(sortItem) {
-          return sortItem.noteName;
-        });
-      } else {
-        filterItems = _.sortBy(filterItems, function(sortItem) {
-          return sortItem.noteName;
-        });
-        filterItems = filterItems.reverse();
-      }
+      filterItems = _.sortBy(filterItems, function(sortItem) {
+        return sortItem.noteName;
+      });
 
-      return filterItems;
+      return isSortByAsc ? filterItems : filterItems.reverse();
     }
     return filterContext;
   }
