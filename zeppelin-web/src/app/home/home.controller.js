@@ -92,6 +92,10 @@
       noteActionSrv.renameNote(node.id, node.path);
     };
 
+    $scope.renameFolder = function(node) {
+      noteActionSrv.renameFolder(node.id);
+    };
+
     $scope.removeNote = function(noteId) {
       noteActionSrv.removeNote(noteId, false);
     };

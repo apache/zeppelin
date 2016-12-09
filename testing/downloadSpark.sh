@@ -19,7 +19,7 @@
 if [[ "$#" -ne 2 ]]; then
     echo "usage) $0 [spark version] [hadoop version]"
     echo "   eg) $0 1.3.1 2.6"
-    exit 0
+    exit 1
 fi
 
 SPARK_VERSION="${1}"
