@@ -134,11 +134,9 @@ public class DistributedResourcePoolTest {
     eventPoller1.shutdown();
     intp1.close();
     intpGroup1.close();
-    intpGroup1.destroy();
     eventPoller2.shutdown();
     intp2.close();
     intpGroup2.close();
-    intpGroup2.destroy();
   }
 
   @Test

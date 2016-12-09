@@ -58,7 +58,6 @@ public class RemoteInterpreterOutputTestStream implements RemoteInterpreterProce
   @After
   public void tearDown() throws Exception {
     intpGroup.close();
-    intpGroup.destroy();
   }
 
   private RemoteInterpreter createMockInterpreter() {
