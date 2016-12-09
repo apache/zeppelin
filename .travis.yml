@@ -40,7 +40,7 @@ matrix:
   include:
     # Test License compliance using RAT tool
     - jdk: "oraclejdk7"
-      env: SCALA_VER="2.11" SPARK_VER="2.0.1" HADOOP_VER="2.3" PROFILE="-Prat" BUILD_FLAG="clean" TEST_FLAG="org.apache.rat:apache-rat-plugin:check" TEST_PROJECTS=""
+      env: SCALA_VER="2.11" SPARK_VER="2.0.2" HADOOP_VER="2.3" PROFILE="-Prat" BUILD_FLAG="clean" TEST_FLAG="org.apache.rat:apache-rat-plugin:check" TEST_PROJECTS=""
 
     # Test all modules with spark 2.0.2 and scala 2.11
     - jdk: "oraclejdk7"
@@ -48,7 +48,7 @@ matrix:
 
     # Test all modules with scala 2.10
     - jdk: "oraclejdk7"
-      env: SCALA_VER="2.10" SPARK_VER="1.6.3" HADOOP_VER="2.3" PROFILE="-Pspark-1.6 -Pr -Phadoop-2.3 -Ppyspark -Psparkr -Pscalding -Pbeam -Pexamples -Pscala-2.10" BUILD_FLAG="package -Pbuild-distr -DskipRat" TEST_FLAG="verify -Pusing-packaged-distr -DskipRat" TEST_PROJECTS=""
+      env: SCALA_VER="2.10" SPARK_VER="1.6.3" HADOOP_VER="2.3" PROFILE="-Pspark-1.6 -Pr -Phadoop-2.3 -Ppyspark -Psparkr -Pscalding -Pbeam -Pexamples" BUILD_FLAG="package -Pbuild-distr -DskipRat" TEST_FLAG="verify -Pusing-packaged-distr -DskipRat" TEST_PROJECTS=""
 
     # Test all modules with scala 2.11
     - jdk: "oraclejdk7"
@@ -68,11 +68,11 @@ matrix:
 
     # Test python/pyspark with python 2
     - jdk: "oraclejdk7"
-      env: PYTHON="2" SCALA_VER="2.10" SPARK_VER="1.6.1" HADOOP_VER="2.3" PROFILE="-Pspark-1.6 -Phadoop-2.3 -Ppyspark" BUILD_FLAG="package -pl spark,python -am -DskipTests -DskipRat" TEST_FLAG="verify -DskipRat" TEST_PROJECTS="-pl zeppelin-interpreter,zeppelin-display,spark-dependencies,spark,python -Dtest=org.apache.zeppelin.spark.PySpark*Test,org.apache.zeppelin.python.* -Dpyspark.test.exclude='' -DfailIfNoTests=false"
+      env: PYTHON="2" SCALA_VER="2.10" SPARK_VER="1.6.3" HADOOP_VER="2.3" PROFILE="-Pspark-1.6 -Phadoop-2.3 -Ppyspark" BUILD_FLAG="package -pl spark,python -am -DskipTests -DskipRat" TEST_FLAG="verify -DskipRat" TEST_PROJECTS="-pl zeppelin-interpreter,zeppelin-display,spark-dependencies,spark,python -Dtest=org.apache.zeppelin.spark.PySpark*Test,org.apache.zeppelin.python.* -Dpyspark.test.exclude='' -DfailIfNoTests=false"
 
     # Test python/pyspark with python 3
     - jdk: "oraclejdk7"
-      env: PYTHON="3" SCALA_VER="2.11" SPARK_VER="2.0.0" HADOOP_VER="2.3" PROFILE="-Pspark-2.0 -Phadoop-2.3 -Ppyspark -Pscala-2.11" BUILD_FLAG="package -pl spark,python -am -DskipTests -DskipRat" TEST_FLAG="verify -DskipRat" TEST_PROJECTS="-pl zeppelin-interpreter,zeppelin-display,spark-dependencies,spark,python -Dtest=org.apache.zeppelin.spark.PySpark*Test,org.apache.zeppelin.python.* -Dpyspark.test.exclude='' -DfailIfNoTests=false"
+      env: PYTHON="3" SCALA_VER="2.11" SPARK_VER="2.0.2" HADOOP_VER="2.3" PROFILE="-Pspark-2.0 -Phadoop-2.3 -Ppyspark -Pscala-2.11" BUILD_FLAG="package -pl spark,python -am -DskipTests -DskipRat" TEST_FLAG="verify -DskipRat" TEST_PROJECTS="-pl zeppelin-interpreter,zeppelin-display,spark-dependencies,spark,python -Dtest=org.apache.zeppelin.spark.PySpark*Test,org.apache.zeppelin.python.* -Dpyspark.test.exclude='' -DfailIfNoTests=false"
 
 before_install:
   - echo "MAVEN_OPTS='-Xms1024M -Xmx2048M -XX:MaxPermSize=1024m -XX:-UseGCOverheadLimit -Dorg.slf4j.simpleLogger.defaultLogLevel=warn'" >> ~/.mavenrc
