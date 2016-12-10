@@ -61,16 +61,21 @@ Example: `spark.master` to `livy.spark.master`
     <td>URL where livy server is running</td>
   </tr>
   <tr>
-    <td>zeppelin.livy.spark.maxResult</td>
+    <td>zeppelin.livy.spark.sql.maxResult</td>
     <td>1000</td>
     <td>Max number of Spark SQL result to display.</td>
+  </tr>
+  <tr>
+    <td>zeppelin.livy.spark.sql.truncateResult</td>
+    <td>true</td>
+    <td>Whether to truncate long strings in SQL display.</td>
   </tr>
   <tr>
     <td>zeppelin.livy.displayAppInfo</td>
     <td>false</td>
     <td>Whether to display app info</td>
   </tr>
-  <tr>
+    <tr>
     <td>livy.spark.driver.cores</td>
     <td></td>
     <td>Driver cores. ex) 1, 2.</td>

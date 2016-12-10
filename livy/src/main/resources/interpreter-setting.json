@@ -118,6 +118,12 @@
         "defaultValue": "1000",
         "description": "Max number of Spark SQL result to display."
       },
+      "zeppelin.livy.spark.sql.truncateResult": {
+        "envName": "ZEPPELIN_LIVY_TRUNCATERESULT",
+        "propertyName": "zeppelin.livy.spark.sql.truncateResult",
+        "defaultValue": "true",
+        "description": "Truncate long strings in SQL display."
+      },
       "zeppelin.livy.concurrentSQL": {
         "propertyName": "zeppelin.livy.concurrentSQL",
         "defaultValue": "false",
