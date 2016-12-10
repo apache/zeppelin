@@ -137,7 +137,7 @@ public class LivyHelper {
                                           LivyOutputStream out,
                                           String appId,
                                           String webUI,
-                                          boolean displayAppInfo) {
+                                          boolean displayAppInfo) throws LivyNoSessionException {
     try {
       out.setInterpreterOutput(context.out);
       context.out.clear();
@@ -186,6 +186,9 @@ public class LivyHelper {
         InterpreterResult res;
         try {
           res = interpret(incomplete + s, context, userSessionMap);
+        } catch (LivyNoSessionException e) {
+          out.write("%angular <p class=text-warning>Livy Session has been restarted. You might need to re-run paragraphs that current paragraph depends on.</p>");
+          throw e;
         } catch (Exception e) {
           LOGGER.error("Interpreter exception", e);
           return new InterpreterResult(Code.ERROR, InterpreterUtils.getMostRelevantMessage(e));
@@ -222,6 +225,8 @@ public class LivyHelper {
         out.setInterpreterOutput(null);
         return new InterpreterResult(Code.SUCCESS);
       }
+    } catch (LivyNoSessionException e) {
+      throw e;
     } catch (Exception e) {
       LOGGER.error("error in interpretInput", e);
       return new InterpreterResult(Code.ERROR, e.getMessage());
@@ -293,16 +298,21 @@ public class LivyHelper {
   }
 
   private Map executeCommand(String lines, InterpreterContext context,
-                             Map<String, Integer> userSessionMap) throws Exception {
-    String json = executeHTTP(property.get("zeppelin.livy.url") + "/sessions/"
+                             Map<String, Integer> userSessionMap) throws LivyException {
+    String json;
+    try {
+      json = executeHTTP(property.get("zeppelin.livy.url") + "/sessions/"
             + userSessionMap.get(context.getAuthenticationInfo().getUser())
             + "/statements",
         "POST",
         "{\"code\": \"" + StringEscapeUtils.escapeJson(lines) + "\"}",
         context.getParagraphId());
-    if (json.matches("^(\")?Session (\'[0-9]\' )?not found(.?\"?)$")) {
-      throw new Exception("Exception: Session not found, Livy server would have restarted, " +
-          "or lost session.");
+    } catch (Exception e) {
+      throw new LivyException("Error executing command in Livy", e);
+    }
+    if (json == null || json.matches("^(\")?Session (\'[0-9]+\' )?not found(.?\"?)$")) {
+      LOGGER.warn("Livy session has been lost!");
+      throw new LivyNoSessionException();
     }
     try {
       Map jsonMap = gson.fromJson(json,
@@ -311,7 +321,7 @@ public class LivyHelper {
       return jsonMap;
     } catch (Exception e) {
       LOGGER.error("Error executeCommand", e);
-      throw e;
+      throw new LivyException("Error parsing Livy response", e);
     }
   }
 
@@ -403,6 +413,32 @@ public class LivyHelper {
         LOGGER.error(String.format("Error closing session for user with session ID: %s",
             entry.getValue()), e);
       }
+    }
+  }
+
+  /**
+   * Recoverable exception thrown during interation with Livy REST API
+   */
+  public static class LivyException extends Exception {
+    private static final long serialVersionUID = -443475407573079769L;
+
+    public LivyException(String message) {
+      super(message);
+    }
+
+    public LivyException(String message, Throwable cause) {
+      super(message, cause);
+    }
+  }
+
+  /**
+   * This exception is thrown when Livy session was lost
+   */
+  public static class LivyNoSessionException extends LivyException {
+    private static final long serialVersionUID = -984922534258421615L;
+
+    public LivyNoSessionException() {
+      super("Session not found, Livy server would have restarted, " + "or lost session.");
     }
   }
 }
