@@ -1,0 +1,98 @@
+<!--
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<div id="{{id}}_switch"
+     ng-if="(type == 'TABLE' || apps.length > 0 || suggestion.available && suggestion.available.length > 0) && !asIframe && !viewOnly"
+     class="btn-group"
+     style="margin-bottom: 10px;">
+
+  <button type="button" class="btn btn-default btn-sm"
+          ng-if="type == 'TABLE'"
+          ng-repeat="viz in builtInTableDataVisualizationList track by $index"
+          ng-class="{'active' : viz.id == graphMode && !config.helium.activeApp}"
+          ng-click="switchViz(viz.id)"><i ng-class="viz.icon"></i>
+  </button>
+
+  <button type="button"
+          ng-if="type != 'TABLE'"
+          ng-click="switchApp()"
+          ng-class="{'active' : !config.helium.activeApp}"
+          class="btn btn-default btn-sm"><i class="fa fa-terminal"></i>
+  </button>
+
+  <button type="button"
+          class="btn btn-default btn-sm"
+          ng-repeat="app in apps"
+          ng-click="switchApp(app.id)"
+          ng-class="{'active' : app.id == config.helium.activeApp}"
+          ng-bind-html="app.pkg.icon">
+  </button>
+</div>
+
+<div id="{{paragraph.id}}_helium"
+     ng-if="(suggestion.available && suggestion.available.length > 0) && !asIframe && !viewOnly"
+     class="btn-group"
+     style="margin-bottom: 10px;">
+  <button type="button"
+          class="btn btn-default btn-sm dropdown-toggle"
+          ng-if="suggestion.available && suggestion.available.length > 0"
+          data-toggle="dropdown"
+          style="font-weight:bold; background-color:#ffdf96; border: 1px solid #FED233">
+    He
+  </button>
+  <ul class="dropdown-menu"
+      style="z-index:1002"
+      ng-if="suggestion.available && suggestion.available.length > 0"
+      role="menu">
+    <li class="appSuggestion">
+      <div ng-repeat="pkgInfo in suggestion.available"
+           style="margin-bottom:5px">
+        <button type="button"
+                class="btn btn-default btn-sm"
+                ng-click="loadApp(pkgInfo.pkg)"
+                ng-bind-html="pkgInfo.pkg.icon">
+        </button>
+        <span class="inline">{{pkgInfo.pkg.name}}</span>
+      </div>
+    </li>
+  </ul>
+</div>
+
+<div class="btn-group"
+     ng-if="type == 'TABLE' && !asIframe && !viewOnly"
+     style="margin-bottom: 10px;">
+  <button type="button" class="btn btn-default btn-sm"
+          style="margin-left:10px"
+          ng-click="exportToDSV(',')"
+          tooltip="Download Data as CSV" tooltip-placement="bottom">
+    <i class="fa fa-download"></i>
+  </button>
+  <button type="button" class="btn btn-default btn-sm dropdown-toggle caretBtn"
+          data-toggle="dropdown">
+    <span class="caret" style="margin: 0px;"></span>
+    <span class="sr-only">Toggle Dropdown</span>
+  </button>
+  <ul class="dropdown-menu" role="menu" style="min-width: 70px;">
+    <li ng-click="exportToDSV(',')"><a>CSV</a></li>
+    <li ng-click="exportToDSV('\t')"><a>TSV</a></li>
+  </ul>
+</div>
+
+<span
+   ng-if="type=='TABLE' && !config.helium.activeApp && graphMode!='table' && !asIframe && !viewOnly"
+   style="margin-left:10px; cursor:pointer; display: inline-block; vertical-align:top; position: relative; line-height:30px;">
+  <a class="btnText" ng-click="toggleGraphSetting()">
+    settings <span ng-class="config.graph.optionOpen ? 'fa fa-caret-up' : 'fa fa-caret-down'"></span>
+  </a>
+</span>

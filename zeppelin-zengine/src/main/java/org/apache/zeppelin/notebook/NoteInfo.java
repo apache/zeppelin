@@ -26,7 +26,7 @@ import java.util.Map;
 public class NoteInfo {
   String id;
   String name;
-  private Map<String, Object> config = new HashMap<String, Object>();
+  private Map<String, Object> config = new HashMap<>();
 
   public NoteInfo(String id, String name, Map<String, Object> config) {
     super();

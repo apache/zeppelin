@@ -41,11 +41,14 @@
         <scalate.version>1.7.1</scalate.version>
         <cassandra.guava.version>16.0.1</cassandra.guava.version>
 
-        <!--TEST-->
-        <junit.version>4.12</junit.version>
+        <!-- test library versions -->
         <achilles.version>3.2.4-Zeppelin</achilles.version>
-        <assertj.version>1.7.0</assertj.version>
-        <mockito.version>1.9.5</mockito.version>
+        <jna.version>4.2.0</jna.version>
+
+        <!-- plugin versions -->
+        <plugin.scala.version>2.15.2</plugin.scala.version>
+        <plugin.scalatest.version>1.0</plugin.scalatest.version>
+        <plugin.scalate.version>1.7.1</plugin.scalate.version>
     </properties>
 
     <dependencies>
@@ -116,7 +119,7 @@
             <version>${scalate.version}</version>
         </dependency>
 
-        <!--TEST-->
+        <!-- test libraries -->
         <dependency>
             <groupId>org.scalatest</groupId>
             <artifactId>scalatest_${scala.binary.version}</artifactId>
@@ -128,6 +131,13 @@
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>${junit.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>net.java.dev.jna</groupId>
+            <artifactId>jna</artifactId>
+            <version>${jna.version}</version>
             <scope>test</scope>
         </dependency>
 
@@ -145,20 +155,22 @@
                     <groupId>ch.qos.logback</groupId>
                     <artifactId>logback-classic</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>net.java.dev.jna</groupId>
+                    <artifactId>jna</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
 
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
-            <version>${mockito.version}</version>
             <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>org.assertj</groupId>
             <artifactId>assertj-core</artifactId>
-            <version>${assertj.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -169,7 +181,7 @@
             <plugin>
                 <groupId>org.scala-tools</groupId>
                 <artifactId>maven-scala-plugin</artifactId>
-                <version>2.15.2</version>
+                <version>${plugin.scala.version}</version>
                 <executions>
                     <execution>
                         <id>compile</id>
@@ -197,7 +209,7 @@
             <plugin>
                 <groupId>org.scalatest</groupId>
                 <artifactId>scalatest-maven-plugin</artifactId>
-                <version>1.0</version>
+                <version>${plugin.scalatest.version}</version>
                 <executions>
                     <execution>
                         <id>test</id>
@@ -211,7 +223,7 @@
             <plugin>
                 <groupId>org.scalatra.scalate</groupId>
                 <artifactId>maven-scalate-plugin_${scala.binary.version}</artifactId>
-                <version>1.7.1</version>
+                <version>${plugin.scalate.version}</version>
                 <executions>
                     <execution>
                         <id>compile</id>
@@ -229,7 +241,6 @@
 
             <plugin>
                 <artifactId>maven-enforcer-plugin</artifactId>
-                <version>1.3.1</version>
                 <executions>
                     <execution>
                         <id>enforce</id>
@@ -240,7 +251,6 @@
 
             <plugin>
                 <artifactId>maven-dependency-plugin</artifactId>
-                <version>2.8</version>
                 <executions>
                     <execution>
                         <id>copy-dependencies</id>

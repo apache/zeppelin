@@ -31,6 +31,7 @@ import org.apache.thrift.transport.TTransportException;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.interpreter.remote.mock.MockInterpreterEnv;
+import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterResultMessage;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService.Client;
 import org.apache.zeppelin.user.AuthenticationInfo;
@@ -65,7 +66,7 @@ public class RemoteInterpreterTest {
   @Before
   public void setUp() throws Exception {
     intpGroup = new InterpreterGroup();
-    env = new HashMap<String, String>();
+    env = new HashMap<>();
     env.put("ZEPPELIN_CLASSPATH", new File("./target/test-classes").getAbsolutePath());
   }
 
@@ -81,16 +82,18 @@ public class RemoteInterpreterTest {
 
   private RemoteInterpreter createMockInterpreterA(Properties p, String noteId) {
     return new RemoteInterpreter(
-            p,
-            noteId,
-            MockInterpreterA.class.getName(),
-            new File(INTERPRETER_SCRIPT).getAbsolutePath(),
-            "fake",
-            "fakeRepo",
-            env,
-            10 * 1000,
-            null,
-            null);
+        p,
+        noteId,
+        MockInterpreterA.class.getName(),
+        new File(INTERPRETER_SCRIPT).getAbsolutePath(),
+        "fake",
+        "fakeRepo",
+        env,
+        10 * 1000,
+        null,
+        null,
+        "anonymous",
+        false);
   }
 
   private RemoteInterpreter createMockInterpreterB(Properties p) {
@@ -99,16 +102,18 @@ public class RemoteInterpreterTest {
 
   private RemoteInterpreter createMockInterpreterB(Properties p, String noteId) {
     return new RemoteInterpreter(
-            p,
-            noteId,
-            MockInterpreterB.class.getName(),
-            new File(INTERPRETER_SCRIPT).getAbsolutePath(),
-            "fake",
-            "fakeRepo",
-            env,
-            10 * 1000,
-            null,
-            null);
+        p,
+        noteId,
+        MockInterpreterB.class.getName(),
+        new File(INTERPRETER_SCRIPT).getAbsolutePath(),
+        "fake",
+        "fakeRepo",
+        env,
+        10 * 1000,
+        null,
+        null,
+        "anonymous",
+        false);
   }
 
   @Test
@@ -144,6 +149,7 @@ public class RemoteInterpreterTest {
         new InterpreterContext(
             "note",
             "id",
+            null,
             "title",
             "text",
             new AuthenticationInfo(),
@@ -180,6 +186,7 @@ public class RemoteInterpreterTest {
         new InterpreterContext(
             "noteId",
             "id",
+            null,
             "title",
             "text",
             new AuthenticationInfo(),
@@ -207,8 +214,9 @@ public class RemoteInterpreterTest {
         env,
         10 * 1000,
         null,
-        null);
-
+        null,
+        "anonymous",
+        false);
 
     intpGroup.get("note").add(intpA);
     intpA.setInterpreterGroup(intpGroup);
@@ -223,7 +231,9 @@ public class RemoteInterpreterTest {
         env,
         10 * 1000,
         null,
-        null);
+        null,
+        "anonymous",
+        false);
 
     intpGroup.get("note").add(intpB);
     intpB.setInterpreterGroup(intpGroup);
@@ -236,6 +246,7 @@ public class RemoteInterpreterTest {
         new InterpreterContext(
             "note",
             "id",
+            null,
             "title",
             "text",
             new AuthenticationInfo(),
@@ -244,12 +255,13 @@ public class RemoteInterpreterTest {
             new AngularObjectRegistry(intpGroup.getId(), null),
             new LocalResourcePool("pool1"),
             new LinkedList<InterpreterContextRunner>(), null));
-    assertEquals("500", ret.message());
+    assertEquals("500", ret.message().get(0).getData());
 
     ret = intpB.interpret("500",
         new InterpreterContext(
             "note",
             "id",
+            null,
             "title",
             "text",
             new AuthenticationInfo(),
@@ -258,7 +270,7 @@ public class RemoteInterpreterTest {
             new AngularObjectRegistry(intpGroup.getId(), null),
             new LocalResourcePool("pool1"),
             new LinkedList<InterpreterContextRunner>(), null));
-    assertEquals("1000", ret.message());
+    assertEquals("1000", ret.message().get(0).getData());
     long end = System.currentTimeMillis();
     assertTrue(end - start >= 1000);
 
@@ -304,6 +316,7 @@ public class RemoteInterpreterTest {
             new InterpreterContext(
                 "note",
                 "jobA",
+                null,
                 "title",
                 "text",
                 new AuthenticationInfo(),
@@ -340,6 +353,7 @@ public class RemoteInterpreterTest {
             new InterpreterContext(
                 "note",
                 "jobB",
+                null,
                 "title",
                 "text",
                 new AuthenticationInfo(),
@@ -365,7 +379,7 @@ public class RemoteInterpreterTest {
     long end = System.currentTimeMillis();
     assertTrue(end - start >= 1000);
 
-    assertEquals("1000", ((InterpreterResult) jobB.getReturn()).message());
+    assertEquals("1000", ((InterpreterResult) jobB.getReturn()).message().get(0).getData());
 
     intpA.close();
     intpB.close();
@@ -384,7 +398,7 @@ public class RemoteInterpreterTest {
     intpA.open();
 
     int concurrency = 3;
-    final List<String> results = new LinkedList<String>();
+    final List<InterpreterResultMessage> results = new LinkedList<>();
 
     Scheduler scheduler = intpA.getScheduler();
     for (int i = 0; i < concurrency; i++) {
@@ -406,6 +420,7 @@ public class RemoteInterpreterTest {
           InterpreterResult ret = intpA.interpret(getJobName(), new InterpreterContext(
               "note",
               jobId,
+              null,
               "title",
               "text",
               new AuthenticationInfo(),
@@ -416,7 +431,7 @@ public class RemoteInterpreterTest {
               new LinkedList<InterpreterContextRunner>(), null));
 
           synchronized (results) {
-            results.add(ret.message());
+            results.addAll(ret.message());
             results.notify();
           }
           return null;
@@ -438,8 +453,8 @@ public class RemoteInterpreterTest {
     }
 
     int i = 0;
-    for (String result : results) {
-      assertEquals(Integer.toString(i++), result);
+    for (InterpreterResultMessage result : results) {
+      assertEquals(Integer.toString(i++), result.getData());
     }
     assertEquals(concurrency, i);
 
@@ -462,7 +477,7 @@ public class RemoteInterpreterTest {
 
     int concurrency = 4;
     final int timeToSleep = 1000;
-    final List<String> results = new LinkedList<String>();
+    final List<InterpreterResultMessage> results = new LinkedList<>();
     long start = System.currentTimeMillis();
 
     Scheduler scheduler = intpA.getScheduler();
@@ -486,6 +501,7 @@ public class RemoteInterpreterTest {
           InterpreterResult ret = intpA.interpret(stmt, new InterpreterContext(
               "note",
               jobId,
+              null,
               "title",
               "text",
               new AuthenticationInfo(),
@@ -496,7 +512,7 @@ public class RemoteInterpreterTest {
               new LinkedList<InterpreterContextRunner>(), null));
 
           synchronized (results) {
-            results.add(ret.message());
+            results.addAll(ret.message());
             results.notify();
           }
           return stmt;
@@ -588,6 +604,7 @@ public class RemoteInterpreterTest {
             new InterpreterContext(
                 "note",
                 "jobA",
+                null,
                 "title",
                 "text",
                 new AuthenticationInfo(),
@@ -687,7 +704,8 @@ public class RemoteInterpreterTest {
     //Given
     final Client client = Mockito.mock(Client.class);
     final RemoteInterpreter intr = new RemoteInterpreter(new Properties(), "noteId",
-            MockInterpreterA.class.getName(), "runner", "path","localRepo", env, 10 * 1000, null, null);
+        MockInterpreterA.class.getName(), "runner", "path", "localRepo", env, 10 * 1000, null,
+        null, "anonymous", false);
     final AngularObjectRegistry registry = new AngularObjectRegistry("spark", null);
     registry.add("name", "DuyHai DOAN", "nodeId", "paragraphId");
     final InterpreterGroup interpreterGroup = new InterpreterGroup("groupId");
@@ -733,7 +751,9 @@ public class RemoteInterpreterTest {
         env,
         10 * 1000,
         null,
-        null);
+        null,
+        "anonymous",
+        false);
 
     intpGroup.put("note", new LinkedList<Interpreter>());
     intpGroup.get("note").add(intp);
@@ -744,6 +764,7 @@ public class RemoteInterpreterTest {
     InterpreterContext context = new InterpreterContext(
         "noteId",
         "id",
+        null,
         "title",
         "text",
         new AuthenticationInfo(),
@@ -754,10 +775,10 @@ public class RemoteInterpreterTest {
         new LinkedList<InterpreterContextRunner>(), null);
 
 
-    assertEquals("env value 1", intp.interpret("getEnv MY_ENV1", context).message());
-    assertEquals("", intp.interpret("getProperty MY_ENV1", context).message());
-    assertEquals("", intp.interpret("getEnv my.property.1", context).message());
-    assertEquals("property value 1", intp.interpret("getProperty my.property.1", context).message());
+    assertEquals("env value 1", intp.interpret("getEnv MY_ENV1", context).message().get(0).getData());
+    assertEquals(0, intp.interpret("getProperty MY_ENV1", context).message().size());
+    assertEquals(0, intp.interpret("getEnv my.property.1", context).message().size());
+    assertEquals("property value 1", intp.interpret("getProperty my.property.1", context).message().get(0).getData());
 
     intp.close();
   }

@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.annotation.ZeppelinApi;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
@@ -121,6 +122,8 @@ public interface NotebookRepo {
    * Represents the 'Revision' a point in life of the notebook
    */
   static class Revision {
+    public static final Revision EMPTY = new Revision(StringUtils.EMPTY, StringUtils.EMPTY, 0);
+    
     public Revision(String revId, String message, int time) {
       this.id = revId;
       this.message = message;

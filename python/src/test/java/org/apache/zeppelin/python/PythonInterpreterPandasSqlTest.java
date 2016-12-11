@@ -78,14 +78,10 @@ public class PythonInterpreterPandasSqlTest {
 
     intpGroup.put("note", Arrays.asList(python, sql));
 
-    context = new InterpreterContext("note", "id", "title", "text", new AuthenticationInfo(),
+    context = new InterpreterContext("note", "id", null, "title", "text", new AuthenticationInfo(),
         new HashMap<String, Object>(), new GUI(),
         new AngularObjectRegistry(intpGroup.getId(), null), null,
-        new LinkedList<InterpreterContextRunner>(), new InterpreterOutput(
-            new InterpreterOutputListener() {
-              @Override public void onAppend(InterpreterOutput out, byte[] line) {}
-              @Override public void onUpdate(InterpreterOutput out, byte[] output) {}
-            }));
+        new LinkedList<InterpreterContextRunner>(), new InterpreterOutput(null));
 
     //important to be last step
     sql.open();
@@ -95,7 +91,7 @@ public class PythonInterpreterPandasSqlTest {
   @Test
   public void dependenciesAreInstalled() {
     InterpreterResult ret = python.interpret("import pandas\nimport pandasql\nimport numpy\n", context);
-    assertEquals(ret.message(), InterpreterResult.Code.SUCCESS, ret.code());
+    assertEquals(ret.message().toString(), InterpreterResult.Code.SUCCESS, ret.code());
   }
 
   @Test
@@ -105,15 +101,15 @@ public class PythonInterpreterPandasSqlTest {
     ret = python.interpret(
         "pysqldf = lambda q: print('Can not execute SQL as Python dependency is not installed')",
          context);
-    assertEquals(ret.message(), InterpreterResult.Code.SUCCESS, ret.code());
+    assertEquals(ret.message().toString(), InterpreterResult.Code.SUCCESS, ret.code());
 
     // when
     ret = sql.interpret("SELECT * from something", context);
 
     // then
     assertNotNull(ret);
-    assertEquals(ret.message(), InterpreterResult.Code.SUCCESS, ret.code());
-    assertTrue(ret.message().contains("dependency is not installed"));
+    assertEquals(ret.message().get(0).getData(), InterpreterResult.Code.SUCCESS, ret.code());
+    assertTrue(ret.message().get(0).getData().contains("dependency is not installed"));
   }
 
   @Test
@@ -126,17 +122,17 @@ public class PythonInterpreterPandasSqlTest {
     // DataFrame df2 \w test data
     ret = python.interpret("df2 = pd.DataFrame({ 'age'  : np.array([33, 51, 51, 34]), "+
                            "'name' : pd.Categorical(['moon','jobs','gates','park'])})", context);
-    assertEquals(ret.message(), InterpreterResult.Code.SUCCESS, ret.code());
+    assertEquals(ret.message().toString(), InterpreterResult.Code.SUCCESS, ret.code());
 
     //when
     ret = sql.interpret("select name, age from df2 where age < 40", context);
 
     //then
-    assertEquals(ret.message(), InterpreterResult.Code.SUCCESS, ret.code());
-    assertEquals(ret.message(), Type.TABLE, ret.type());
+    assertEquals(ret.message().get(0).getData(), InterpreterResult.Code.SUCCESS, ret.code());
+    assertEquals(ret.message().get(0).getData(), Type.TABLE, ret.message().get(0).getType());
     //assertEquals(expectedTable, ret.message()); //somehow it's same but not equal
-    assertTrue(ret.message().indexOf("moon\t33") > 0);
-    assertTrue(ret.message().indexOf("park\t34") > 0);
+    assertTrue(ret.message().get(0).getData().indexOf("moon\t33") > 0);
+    assertTrue(ret.message().get(0).getData().indexOf("park\t34") > 0);
 
     assertEquals(InterpreterResult.Code.SUCCESS, sql.interpret("select case when name==\"aa\" then name else name end from df2", context).code());
   }
@@ -150,7 +146,7 @@ public class PythonInterpreterPandasSqlTest {
     assertNotNull("Interpreter returned 'null'", ret);
     //System.out.println("\nInterpreter response: \n" + ret.message());
     assertEquals(ret.toString(), InterpreterResult.Code.ERROR, ret.code());
-    assertTrue(ret.message().length() > 0);
+    assertTrue(ret.message().get(0).getData().length() > 0);
   }
 
   @Test
@@ -159,18 +155,21 @@ public class PythonInterpreterPandasSqlTest {
     ret = python.interpret("import pandas as pd", context);
     ret = python.interpret("import numpy as np", context);
 
-    // given a Pandas DataFrame with non-text data
+    // given a Pandas DataFrame with an index and non-text data
+    ret = python.interpret("index = pd.Index([10, 11, 12, 13], name='index_name')", context);
     ret = python.interpret("d1 = {1 : [np.nan, 1, 2, 3], 'two' : [3., 4., 5., 6.7]}", context);
-    ret = python.interpret("df1 = pd.DataFrame(d1)", context);
-    assertEquals(ret.message(), InterpreterResult.Code.SUCCESS, ret.code());
+    ret = python.interpret("df1 = pd.DataFrame(d1, index=index)", context);
+    assertEquals(ret.message().toString(), InterpreterResult.Code.SUCCESS, ret.code());
 
     // when
-    ret = python.interpret("z.show(df1)", context);
+    ret = python.interpret("z.show(df1, show_index=True)", context);
 
     // then
-    assertEquals(ret.message(), InterpreterResult.Code.SUCCESS, ret.code());
-    assertEquals(ret.message(), Type.TABLE, ret.type());
-    assertTrue(ret.message().indexOf("nan") > 0);
-    assertTrue(ret.message().indexOf("6.7") > 0);
+    assertEquals(ret.message().get(0).getData(), InterpreterResult.Code.SUCCESS, ret.code());
+    assertEquals(ret.message().get(0).getData(), Type.TABLE, ret.message().get(0).getType());
+    assertTrue(ret.message().get(0).getData().indexOf("index_name") == 0);
+    assertTrue(ret.message().get(0).getData().indexOf("13") > 0);
+    assertTrue(ret.message().get(0).getData().indexOf("nan") > 0);
+    assertTrue(ret.message().get(0).getData().indexOf("6.7") > 0);
   }
 }

@@ -47,7 +47,7 @@ public class ShellInterpreterTest {
   @Test
   public void test() {
     shell.open();
-    InterpreterContext context = new InterpreterContext("", "1", "", "", null, null, null, null, null, null, null);
+    InterpreterContext context = new InterpreterContext("", "1", null, "", "", null, null, null, null, null, null, null);
     InterpreterResult result = new InterpreterResult(Code.ERROR);
     if (System.getProperty("os.name").startsWith("Windows")) {
       result = shell.interpret("dir", context);
@@ -64,7 +64,7 @@ public class ShellInterpreterTest {
   @Test
   public void testInvalidCommand(){
     shell.open();
-    InterpreterContext context = new InterpreterContext("","1","","",null,null,null,null,null,null,null);
+    InterpreterContext context = new InterpreterContext("","1",null,"","",null,null,null,null,null,null,null);
     InterpreterResult result = new InterpreterResult(Code.ERROR);
     if (System.getProperty("os.name").startsWith("Windows")) {
       result = shell.interpret("invalid_command\ndir",context);
@@ -72,7 +72,7 @@ public class ShellInterpreterTest {
       result = shell.interpret("invalid_command\nls",context);
     }
     assertEquals(InterpreterResult.Code.SUCCESS,result.code());
-    assertTrue(result.message().contains("invalid_command"));
+    assertTrue(result.message().get(0).getData().contains("invalid_command"));
   }
 
 }

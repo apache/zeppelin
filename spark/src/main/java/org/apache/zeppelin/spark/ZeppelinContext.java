@@ -45,6 +45,7 @@ import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterContextRunner;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterHookRegistry;
+import org.apache.zeppelin.interpreter.RemoteWorksController;
 import org.apache.zeppelin.spark.dep.SparkDependencyResolver;
 import org.apache.zeppelin.resource.Resource;
 import org.apache.zeppelin.resource.ResourcePool;
@@ -61,7 +62,7 @@ public class ZeppelinContext {
   // given replName in parapgraph
   private static final Map<String, String> interpreterClassMap;
   static {
-    interpreterClassMap = new HashMap<String, String>();
+    interpreterClassMap = new HashMap<>();
     interpreterClassMap.put("spark", "org.apache.zeppelin.spark.SparkInterpreter");
     interpreterClassMap.put("sql", "org.apache.zeppelin.spark.SparkSqlInterpreter");
     interpreterClassMap.put("dep", "org.apache.zeppelin.spark.DepInterpreter");
@@ -134,7 +135,7 @@ public class ZeppelinContext {
   @ZeppelinApi
   public scala.collection.Iterable<Object> checkbox(String name,
       scala.collection.Iterable<Tuple2<Object, String>> options) {
-    List<Object> allChecked = new LinkedList<Object>();
+    List<Object> allChecked = new LinkedList<>();
     for (Tuple2<Object, String> option : asJavaIterable(options)) {
       allChecked.add(option._1());
     }
@@ -300,32 +301,103 @@ public class ZeppelinContext {
 
   /**
    * Run paragraph by id
-   * @param id
+   * @param noteId
+   * @param paragraphId
    */
   @ZeppelinApi
-  public void run(String id) {
-    run(id, interpreterContext);
+  public void run(String noteId, String paragraphId) {
+    run(noteId, paragraphId, interpreterContext);
   }
 
   /**
    * Run paragraph by id
-   * @param id
+   * @param paragraphId
+   */
+  @ZeppelinApi
+  public void run(String paragraphId) {
+    String noteId = interpreterContext.getNoteId();
+    run(noteId, paragraphId, interpreterContext);
+  }
+
+  /**
+   * Run paragraph by id
+   * @param noteId
    * @param context
    */
   @ZeppelinApi
-  public void run(String id, InterpreterContext context) {
-    if (id.equals(context.getParagraphId())) {
+  public void run(String noteId, String paragraphId, InterpreterContext context) {
+    if (paragraphId.equals(context.getParagraphId())) {
       throw new InterpreterException("Can not run current Paragraph");
     }
 
-    for (InterpreterContextRunner r : context.getRunners()) {
-      if (id.equals(r.getParagraphId())) {
-        r.run();
-        return;
-      }
+    List<InterpreterContextRunner> runners =
+        getInterpreterContextRunner(noteId, paragraphId, context);
+
+    if (runners.size() <= 0) {
+      throw new InterpreterException("Paragraph " + paragraphId + " not found " + runners.size());
     }
 
-    throw new InterpreterException("Paragraph " + id + " not found");
+    for (InterpreterContextRunner r : runners) {
+      r.run();
+    }
+
+  }
+
+  public void runNote(String noteId) {
+    runNote(noteId, interpreterContext);
+  }
+
+  public void runNote(String noteId, InterpreterContext context) {
+    String runningNoteId = context.getNoteId();
+    String runningParagraphId = context.getParagraphId();
+    List<InterpreterContextRunner> runners = getInterpreterContextRunner(noteId, context);
+
+    if (runners.size() <= 0) {
+      throw new InterpreterException("Note " + noteId + " not found " + runners.size());
+    }
+
+    for (InterpreterContextRunner r : runners) {
+      if (r.getNoteId().equals(runningNoteId) && r.getParagraphId().equals(runningParagraphId)) {
+        continue;
+      }
+      r.run();
+    }
+  }
+
+
+  /**
+   * get Zeppelin Paragraph Runner from zeppelin server
+   * @param noteId
+   */
+  @ZeppelinApi
+  public List<InterpreterContextRunner> getInterpreterContextRunner(
+      String noteId, InterpreterContext interpreterContext) {
+    List<InterpreterContextRunner> runners = new LinkedList<>();
+    RemoteWorksController remoteWorksController = interpreterContext.getRemoteWorksController();
+
+    if (remoteWorksController != null) {
+      runners = remoteWorksController.getRemoteContextRunner(noteId);
+    }
+
+    return runners;
+  }
+
+  /**
+   * get Zeppelin Paragraph Runner from zeppelin server
+   * @param noteId
+   * @param paragraphId
+   */
+  @ZeppelinApi
+  public List<InterpreterContextRunner> getInterpreterContextRunner(
+      String noteId, String paragraphId, InterpreterContext interpreterContext) {
+    List<InterpreterContextRunner> runners = new LinkedList<>();
+    RemoteWorksController remoteWorksController = interpreterContext.getRemoteWorksController();
+
+    if (remoteWorksController != null) {
+      runners = remoteWorksController.getRemoteContextRunner(noteId, paragraphId);
+    }
+
+    return runners;
   }
 
   /**
@@ -334,7 +406,8 @@ public class ZeppelinContext {
    */
   @ZeppelinApi
   public void run(int idx) {
-    run(idx, interpreterContext);
+    String noteId = interpreterContext.getNoteId();
+    run(noteId, idx, interpreterContext);
   }
 
   /**
@@ -342,12 +415,13 @@ public class ZeppelinContext {
    * @param idx index starting from 0
    * @param context interpreter context
    */
-  public void run(int idx, InterpreterContext context) {
-    if (idx >= context.getRunners().size()) {
+  public void run(String noteId, int idx, InterpreterContext context) {
+    List<InterpreterContextRunner> runners = getInterpreterContextRunner(noteId, context);
+    if (idx >= runners.size()) {
       throw new InterpreterException("Index out of bound");
     }
 
-    InterpreterContextRunner runner = context.getRunners().get(idx);
+    InterpreterContextRunner runner = runners.get(idx);
     if (runner.getParagraphId().equals(context.getParagraphId())) {
       throw new InterpreterException("Can not run current Paragraph");
     }
@@ -366,13 +440,14 @@ public class ZeppelinContext {
    */
   @ZeppelinApi
   public void run(List<Object> paragraphIdOrIdx, InterpreterContext context) {
+    String noteId = context.getNoteId();
     for (Object idOrIdx : paragraphIdOrIdx) {
       if (idOrIdx instanceof String) {
-        String id = (String) idOrIdx;
-        run(id, context);
+        String paragraphId = (String) idOrIdx;
+        run(noteId, paragraphId, context);
       } else if (idOrIdx instanceof Integer) {
         Integer idx = (Integer) idOrIdx;
-        run(idx, context);
+        run(noteId, idx, context);
       } else {
         throw new InterpreterException("Paragraph " + idOrIdx + " not found");
       }
@@ -389,18 +464,12 @@ public class ZeppelinContext {
    */
   @ZeppelinApi
   public void runAll(InterpreterContext context) {
-    for (InterpreterContextRunner r : context.getRunners()) {
-      if (r.getParagraphId().equals(context.getParagraphId())) {
-        // skip itself
-        continue;
-      }
-      r.run();
-    }
+    runNote(context.getNoteId());
   }
 
   @ZeppelinApi
   public List<String> listParagraphs() {
-    List<String> paragraphs = new LinkedList<String>();
+    List<String> paragraphs = new LinkedList<>();
 
     for (InterpreterContextRunner r : interpreterContext.getRunners()) {
       paragraphs.add(r.getParagraphId());

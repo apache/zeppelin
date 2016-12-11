@@ -72,7 +72,14 @@ public abstract class Job {
 
   private String jobName;
   String id;
+
+  // since zeppelin-0.7.0, zeppelin stores multiple results of the paragraph
+  // see ZEPPELIN-212
+  Object results;
+
+  // For backward compatibility of note.json format after ZEPPELIN-212
   Object result;
+
   Date dateCreated;
   Date dateStarted;
   Date dateFinished;
@@ -173,7 +180,7 @@ public abstract class Job {
       progressUpdator = new JobProgressPoller(this, progressUpdateIntervalMs);
       progressUpdator.start();
       dateStarted = new Date();
-      result = jobRun();
+      results = jobRun();
       this.exception = null;
       errorMessage = null;
       dateFinished = new Date();
@@ -182,14 +189,14 @@ public abstract class Job {
       LOGGER.error("Job failed", e);
       progressUpdator.terminate();
       this.exception = e;
-      result = e.getMessage();
+      results = e.getMessage();
       errorMessage = getStack(e);
       dateFinished = new Date();
     } catch (Throwable e) {
       LOGGER.error("Job failed", e);
       progressUpdator.terminate();
       this.exception = e;
-      result = e.getMessage();
+      results = e.getMessage();
       errorMessage = getStack(e);
       dateFinished = new Date();
     } finally {
@@ -215,8 +222,12 @@ public abstract class Job {
     errorMessage = getStack(t);
   }
 
-  public Object getReturn() {
+  public Object getPreviousResultFormat() {
     return result;
+  }
+
+  public Object getReturn() {
+    return results;
   }
 
   public String getJobName() {
@@ -255,7 +266,7 @@ public abstract class Job {
     return dateFinished;
   }
 
-  public void setResult(Object result) {
-    this.result = result;
+  public void setResult(Object results) {
+    this.results = results;
   }
 }

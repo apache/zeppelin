@@ -34,8 +34,8 @@
 
     <properties>
         <alluxio.version>1.0.0</alluxio.version>
-        <powermock.version>1.6.1</powermock.version>
     </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.apache.zeppelin</groupId>
@@ -75,35 +75,30 @@
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-all</artifactId>
-            <version>1.10.8</version>
             <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>org.powermock</groupId>
             <artifactId>powermock-api-mockito</artifactId>
-            <version>${powermock.version}</version>
             <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>org.powermock</groupId>
             <artifactId>powermock-core</artifactId>
-            <version>${powermock.version}</version>
             <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>org.powermock</groupId>
             <artifactId>powermock-module-junit4</artifactId>
-            <version>${powermock.version}</version>
             <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>org.powermock</groupId>
             <artifactId>powermock-reflect</artifactId>
-            <version>${powermock.version}</version>
             <scope>test</scope>
         </dependency>
 
@@ -133,7 +128,6 @@
         <plugins>
             <plugin>
                 <artifactId>maven-enforcer-plugin</artifactId>
-                <version>1.3.1</version>
                 <executions>
                     <execution>
                         <id>enforce</id>
@@ -144,7 +138,6 @@
 
             <plugin>
                 <artifactId>maven-dependency-plugin</artifactId>
-                <version>2.8</version>
                 <executions>
                     <execution>
                         <id>copy-dependencies</id>

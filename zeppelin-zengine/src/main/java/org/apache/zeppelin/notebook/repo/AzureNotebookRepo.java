@@ -86,7 +86,7 @@ public class AzureNotebookRepo implements NotebookRepo {
 
   @Override
   public List<NoteInfo> list(AuthenticationInfo subject) throws IOException {
-    List<NoteInfo> infos = new LinkedList<NoteInfo>();
+    List<NoteInfo> infos = new LinkedList<>();
     NoteInfo info = null;
 
     for (ListFileItem item : rootDir.listFilesAndDirectories()) {
@@ -224,20 +224,20 @@ public class AzureNotebookRepo implements NotebookRepo {
   public Revision checkpoint(String noteId, String checkpointMsg, AuthenticationInfo subject)
       throws IOException {
     // no-op
-    LOG.info("Checkpoint feature isn't supported in {}", this.getClass().toString());
-    return null;
+    LOG.warn("Checkpoint feature isn't supported in {}", this.getClass().toString());
+    return Revision.EMPTY;
   }
 
   @Override
   public Note get(String noteId, String revId, AuthenticationInfo subject) throws IOException {
-    // Auto-generated method stub
+    LOG.warn("Get note revision feature isn't supported in {}", this.getClass().toString());
     return null;
   }
 
   @Override
   public List<Revision> revisionHistory(String noteId, AuthenticationInfo subject) {
-    // Auto-generated method stub
-    return null;
+    LOG.warn("Get Note revisions feature isn't supported in {}", this.getClass().toString());
+    return Collections.emptyList();
   }
 
   @Override

@@ -21,8 +21,12 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import org.apache.zeppelin.interpreter.Interpreter;
+import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.junit.Test;
+
+import java.util.Arrays;
 
 /**
  * Python interpreter unit test that user real Python
@@ -46,6 +50,11 @@ public class PythonInterpreterWithPythonInstalledTest {
     //given
     PythonInterpreter realPython = new PythonInterpreter(
         PythonInterpreterTest.getPythonTestProperties());
+    // create interpreter group
+    InterpreterGroup group = new InterpreterGroup();
+    group.put("note", Arrays.asList((Interpreter) realPython));
+    realPython.setInterpreterGroup(group);
+
     realPython.open();
 
     //when
@@ -55,7 +64,7 @@ public class PythonInterpreterWithPythonInstalledTest {
     assertNotNull("Interpreter returned 'null'", ret);
     //System.out.println("\nInterpreter response: \n" + ret.message());
     assertEquals(InterpreterResult.Code.ERROR, ret.code());
-    assertTrue(ret.message().length() > 0);
+    assertTrue(ret.message().get(0).getData().length() > 0);
 
     realPython.close();
   }
@@ -65,6 +74,9 @@ public class PythonInterpreterWithPythonInstalledTest {
     //given
     PythonInterpreter realPython = new PythonInterpreter(
         PythonInterpreterTest.getPythonTestProperties());
+    InterpreterGroup group = new InterpreterGroup();
+    group.put("note", Arrays.asList((Interpreter) realPython));
+    realPython.setInterpreterGroup(group);
     realPython.open();
 
     //when
@@ -74,7 +86,7 @@ public class PythonInterpreterWithPythonInstalledTest {
     assertNotNull("Interpreter returned 'null'", ret);
     //System.out.println("\nInterpreter response: \n" + ret.message());
     assertEquals(InterpreterResult.Code.SUCCESS, ret.code());
-    assertTrue(ret.message().length() > 0);
+    assertTrue(ret.message().get(0).getData().length() > 0);
 
     realPython.close();
   }
@@ -84,15 +96,18 @@ public class PythonInterpreterWithPythonInstalledTest {
     //given
     PythonInterpreter realPython = new PythonInterpreter(
             PythonInterpreterTest.getPythonTestProperties());
+    InterpreterGroup group = new InterpreterGroup();
+    group.put("note", Arrays.asList((Interpreter) realPython));
+    realPython.setInterpreterGroup(group);
     realPython.open();
 
     //when
-    InterpreterResult ret1 = realPython.interpret("print \"...\"", null);
+    InterpreterResult ret1 = realPython.interpret("print(\"...\")", null);
 
     //then
     //System.out.println("\nInterpreter response: \n" + ret.message());
     assertEquals(InterpreterResult.Code.SUCCESS, ret1.code());
-    assertEquals("...\n", ret1.message());
+    assertEquals("...\n", ret1.message().get(0).getData());
 
 
     InterpreterResult ret2 = realPython.interpret("for i in range(5):", null);
@@ -102,7 +117,7 @@ public class PythonInterpreterWithPythonInstalledTest {
     assertEquals("   File \"<stdin>\", line 2\n" +
             "    \n" +
             "    ^\n" +
-            "IndentationError: expected an indented block\n", ret2.message());
+            "IndentationError: expected an indented block\n", ret2.message().get(0).getData());
 
     realPython.close();
   }

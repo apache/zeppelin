@@ -33,20 +33,12 @@ trait AbstractAngularElemTest
 
   override def beforeEach() {
     val intpGroup = new InterpreterGroup()
-    val context = new InterpreterContext("note", "paragraph", "title", "text",
+    val context = new InterpreterContext("note", "paragraph", null, "title", "text",
       new AuthenticationInfo(), new util.HashMap[String, Object](), new GUI(),
       new AngularObjectRegistry(intpGroup.getId(), null),
       null,
       new util.LinkedList[InterpreterContextRunner](),
-      new InterpreterOutput(new InterpreterOutputListener() {
-        override def onAppend(out: InterpreterOutput, line: Array[Byte]): Unit = {
-          // nothing to do
-        }
-
-        override def onUpdate(out: InterpreterOutput, output: Array[Byte]): Unit = {
-          // nothing to do
-        }
-      }))
+      new InterpreterOutput(null));
 
     InterpreterContext.set(context)
     super.beforeEach() // To be stackable, must call super.beforeEach

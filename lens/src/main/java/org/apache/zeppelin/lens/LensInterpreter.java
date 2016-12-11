@@ -76,9 +76,9 @@ public class LensInterpreter extends Interpreter {
 
   private static Pattern s_queryExecutePattern = Pattern.compile(".*query\\s+execute\\s+(.*)");
   private static Map<String, ExecutionDetail> s_paraToQH = 
-    new ConcurrentHashMap<String, ExecutionDetail> (); //tracks paragraphId -> Lens QueryHandle
+    new ConcurrentHashMap<> (); //tracks paragraphId -> Lens QueryHandle
   private static Map<LensClient, Boolean> s_clientMap =
-    new ConcurrentHashMap<LensClient, Boolean>();
+    new ConcurrentHashMap<>();
 
   private int m_maxResults;
   private int m_maxThreads;
@@ -88,21 +88,7 @@ public class LensInterpreter extends Interpreter {
   private LensClient m_lensClient;
   
 
-  static {
-    Interpreter.register(
-      "lens",
-      "lens",
-      LensInterpreter.class.getName(),
-      new InterpreterPropertyBuilder()
-        .add(ZEPPELIN_LENS_RUN_CONCURRENT_SESSION, "true", "Run concurrent Lens Sessions")
-        .add(ZEPPELIN_LENS_CONCURRENT_SESSIONS, "10", 
-          "If concurrency is true then how many threads?")
-        .add(ZEPPELIN_MAX_ROWS, "1000", "max number of rows to display")
-        .add(LENS_SERVER_URL, "http://<hostname>:<port>/lensapi", "The URL for Lens Server")
-        .add(LENS_CLIENT_DBNAME, "default", "The database schema name")
-        .add(LENS_PERSIST_RESULTSET, "false", "Apache Lens to persist result in HDFS?")
-        .add(LENS_SESSION_CLUSTER_USER, "default", "Hadoop cluster username").build());
-  }
+
 
   public LensInterpreter(Properties property) {
     super(property);

@@ -92,24 +92,14 @@ public class SparkInterpreterTest {
       repl.open();
     }
 
-    context = new InterpreterContext("note", "id", "title", "text",
+    context = new InterpreterContext("note", "id", null, "title", "text",
         new AuthenticationInfo(),
         new HashMap<String, Object>(),
         new GUI(),
         new AngularObjectRegistry(intpGroup.getId(), null),
         new LocalResourcePool("id"),
         new LinkedList<InterpreterContextRunner>(),
-        new InterpreterOutput(new InterpreterOutputListener() {
-          @Override
-          public void onAppend(InterpreterOutput out, byte[] line) {
-
-          }
-
-          @Override
-          public void onUpdate(InterpreterOutput out, byte[] output) {
-
-          }
-        }));
+        new InterpreterOutput(null));
   }
 
   @After
@@ -138,7 +128,7 @@ public class SparkInterpreterTest {
     // when interpret incomplete expression
     InterpreterResult incomplete = repl.interpret("val a = \"\"\"", context);
     assertEquals(InterpreterResult.Code.INCOMPLETE, incomplete.code());
-    assertTrue(incomplete.message().length() > 0); // expecting some error
+    assertTrue(incomplete.message().get(0).getData().length() > 0); // expecting some error
                                                    // message
 
     /*

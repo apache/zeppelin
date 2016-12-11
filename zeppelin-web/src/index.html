@@ -93,12 +93,29 @@ limitations under the License.
     <div ng-controller="LoginCtrl as noteimportctrl">
       <div id="login-container" ng-include src="'components/login/login.html'"></div>
     </div>
+    <div ng-controller="RenameCtrl">
+      <div ng-include src="'components/rename/rename.html'"></div>
+    </div>
     <!-- build:js(.) scripts/oldieshim.js -->
     <!--[if lt IE 9]>
     <script src="bower_components/es5-shim/es5-shim.js"></script>
     <script src="bower_components/json3/lib/json3.min.js"></script>
     <![endif]-->
     <!-- endbuild -->
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        extensions: ["tex2jax.js"],
+        jax: ["input/TeX", "output/HTML-CSS"],
+        tex2jax: {
+          inlineMath: [ ["\\(","\\)"] ],
+          displayMath: [ ['$$','$$'], ["\\[","\\]"] ],
+          processEscapes: true
+        },
+        "HTML-CSS": { availableFonts: ["TeX"] },
+        messageStyle: "none"
+      });
+    </script>
 
     <!-- build:js(.) scripts/vendor.js -->
     <!-- bower:js -->
@@ -147,20 +164,37 @@ limitations under the License.
     <script src="bower_components/handsontable/dist/handsontable.js"></script>
     <script src="bower_components/moment-duration-format/lib/moment-duration-format.js"></script>
     <script src="bower_components/select2/dist/js/select2.js"></script>
+    <script src="bower_components/MathJax/MathJax.js"></script>
     <!-- endbower -->
     <!-- endbuild -->
     <!-- build:js({.tmp,src}) scripts/scripts.js -->
     <script src="app/app.js"></script>
     <script src="app/app.controller.js"></script>
     <script src="app/home/home.controller.js"></script>
+    <script src="app/tabledata/tabledata.js"></script>
+    <script src="app/tabledata/transformation.js"></script>
+    <script src="app/tabledata/pivot.js"></script>
+    <script src="app/handsontable/handsonHelper.js"></script>
+    <script src="app/tabledata/passthrough.js"></script>
+    <script src="app/tabledata/columnselector.js"></script>
+    <script src="app/visualization/visualization.js"></script>
+    <script src="app/visualization/builtins/visualization-table.js"></script>
+    <script src="app/visualization/builtins/visualization-nvd3chart.js"></script>
+    <script src="app/visualization/builtins/visualization-barchart.js"></script>
+    <script src="app/visualization/builtins/visualization-piechart.js"></script>
+    <script src="app/visualization/builtins/visualization-areachart.js"></script>
+    <script src="app/visualization/builtins/visualization-linechart.js"></script>
+    <script src="app/visualization/builtins/visualization-scatterchart.js"></script>
     <script src="app/notebook/notebook.controller.js"></script>
     <script src="app/jobmanager/jobmanager.controller.js"></script>
     <script src="app/jobmanager/jobs/job.controller.js"></script>
+    <script src="app/jobmanager/jobmanager.filter.js"></script>
     <script src="app/interpreter/interpreter.controller.js"></script>
     <script src="app/interpreter/interpreter.filter.js"></script>
     <script src="app/credential/credential.controller.js"></script>
     <script src="app/configuration/configuration.controller.js"></script>
     <script src="app/notebook/paragraph/paragraph.controller.js"></script>
+    <script src="app/notebook/paragraph/result/result.controller.js"></script>
     <script src="app/search/result-list.controller.js"></script>
     <script src="app/notebookRepos/notebookRepos.controller.js"></script>
     <script src="components/arrayOrderingSrv/arrayOrdering.service.js"></script>
@@ -172,6 +206,7 @@ limitations under the License.
     <script src="components/noteName-import/notenameImport.controller.js"></script>
     <script src="components/popover-html-unsafe/popover-html-unsafe.directive.js"></script>
     <script src="components/popover-html-unsafe/popover-html-unsafe-popup.directive.js"></script>
+    <script src="components/editor/codeEditor.directive.js"></script>
     <script src="components/ngenter/ngenter.directive.js"></script>
     <script src="components/dropdowninput/dropdowninput.directive.js"></script>
     <script src="components/resizable/resizable.directive.js"></script>
@@ -185,6 +220,10 @@ limitations under the License.
     <script src="components/searchService/search.service.js"></script>
     <script src="components/login/login.controller.js"></script>
     <script src="components/elasticInputCtrl/elasticInput.controller.js"></script>
+    <script src="components/noteAction/noteAction.service.js"></script>
+    <script src="components/notevarshareService/notevarshare.service.js"></script>
+    <script src="components/rename/rename.controller.js"></script>
+    <script src="components/rename/rename.service.js"></script>
     <!-- endbuild -->
   </body>
 </html>

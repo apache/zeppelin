@@ -19,6 +19,7 @@ package org.apache.zeppelin.rest;
 import org.apache.shiro.authc.*;
 import org.apache.shiro.subject.Subject;
 import org.apache.zeppelin.annotation.ZeppelinApi;
+import org.apache.zeppelin.notebook.NotebookAuthorization;
 import org.apache.zeppelin.server.JsonResponse;
 import org.apache.zeppelin.ticket.TicketContainer;
 import org.apache.zeppelin.utils.SecurityUtils;
@@ -89,6 +90,9 @@ public class LoginRestApi {
 
         response = new JsonResponse(Response.Status.OK, "", data);
         //if no exception, that's it, we're done!
+        
+        //set roles for user in NotebookAuthorization module
+        NotebookAuthorization.getInstance().setRoles(principal, roles);
       } catch (UnknownAccountException uae) {
         //username wasn't in the system, show them an error message?
         LOG.error("Exception in login: ", uae);

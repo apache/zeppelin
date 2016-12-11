@@ -31,7 +31,7 @@ import org.slf4j.LoggerFactory;
  * FIFOScheduler runs submitted job sequentially
  */
 public class FIFOScheduler implements Scheduler {
-  List<Job> queue = new LinkedList<Job>();
+  List<Job> queue = new LinkedList<>();
   private ExecutorService executor;
   private SchedulerListener listener;
   boolean terminate = false;
@@ -53,7 +53,7 @@ public class FIFOScheduler implements Scheduler {
 
   @Override
   public Collection<Job> getJobsWaiting() {
-    List<Job> ret = new LinkedList<Job>();
+    List<Job> ret = new LinkedList<>();
     synchronized (queue) {
       for (Job job : queue) {
         ret.add(job);
@@ -64,7 +64,7 @@ public class FIFOScheduler implements Scheduler {
 
   @Override
   public Collection<Job> getJobsRunning() {
-    List<Job> ret = new LinkedList<Job>();
+    List<Job> ret = new LinkedList<>();
     Job job = runningJob;
 
     if (job != null) {

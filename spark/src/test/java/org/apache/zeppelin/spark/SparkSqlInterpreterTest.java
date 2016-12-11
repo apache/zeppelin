@@ -75,21 +75,11 @@ public class SparkSqlInterpreterTest {
       sql.setInterpreterGroup(intpGroup);
       sql.open();
     }
-    context = new InterpreterContext("note", "id", "title", "text", new AuthenticationInfo(),
+    context = new InterpreterContext("note", "id", null, "title", "text", new AuthenticationInfo(),
         new HashMap<String, Object>(), new GUI(),
         new AngularObjectRegistry(intpGroup.getId(), null),
         new LocalResourcePool("id"),
-        new LinkedList<InterpreterContextRunner>(), new InterpreterOutput(new InterpreterOutputListener() {
-      @Override
-      public void onAppend(InterpreterOutput out, byte[] line) {
-
-      }
-
-      @Override
-      public void onUpdate(InterpreterOutput out, byte[] output) {
-
-      }
-    }));
+        new LinkedList<InterpreterContextRunner>(), new InterpreterOutput(null));
   }
 
   @After
@@ -112,12 +102,12 @@ public class SparkSqlInterpreterTest {
 
     InterpreterResult ret = sql.interpret("select name, age from test where age < 40", context);
     assertEquals(InterpreterResult.Code.SUCCESS, ret.code());
-    assertEquals(Type.TABLE, ret.type());
-    assertEquals("name\tage\nmoon\t33\npark\t34\n", ret.message());
+    assertEquals(Type.TABLE, ret.message().get(0).getType());
+    assertEquals("name\tage\nmoon\t33\npark\t34\n", ret.message().get(0).getData());
 
     ret = sql.interpret("select wrong syntax", context);
     assertEquals(InterpreterResult.Code.ERROR, ret.code());
-    assertTrue(ret.message().length() > 0);
+    assertTrue(ret.message().get(0).getData().length() > 0);
 
     assertEquals(InterpreterResult.Code.SUCCESS, sql.interpret("select case when name==\"aa\" then name else name end from test", context).code());
   }
@@ -173,7 +163,7 @@ public class SparkSqlInterpreterTest {
         "select name, age from people where name = 'gates'", context);
     System.err.println("RET=" + ret.message());
     assertEquals(InterpreterResult.Code.SUCCESS, ret.code());
-    assertEquals(Type.TABLE, ret.type());
-    assertEquals("name\tage\ngates\tnull\n", ret.message());
+    assertEquals(Type.TABLE, ret.message().get(0).getType());
+    assertEquals("name\tage\ngates\tnull\n", ret.message().get(0).getData());
   }
 }

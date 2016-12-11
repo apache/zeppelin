@@ -56,8 +56,62 @@ The interpreter can only work if you already have python installed (the interpre
 
 To access the help, type **help()**
 
-## Python modules
+## Python environments
+
+### Default
+By default, PythonInterpreter will use python command defined in `zeppelin.python` property to run python process.
 The interpreter can use all modules already installed (with pip, easy_install...)
+
+### Conda
+[Conda](http://conda.pydata.org/) is an package management system and environment management system for python.
+`%python.conda` interpreter lets you change between environments.
+
+#### Usage
+
+List your environments
+
+```
+%python.conda
+```
+
+Activate an environment
+
+```
+%python.conda activate [ENVIRONMENT_NAME]
+```
+
+Deactivate
+
+```
+%python.conda deactivate
+```
+
+### Docker
+
+`%python.docker` interpreter allows PythonInterpreter creates python process in a specified docker container.
+
+#### Usage
+
+Activate an environment
+
+```
+%python.docker activate [Repository]
+%python.docker activate [Repository:Tag]
+%python.docker activate [Image Id]
+```
+
+Deactivate
+
+```
+%python.docker deactivate
+```
+
+Example
+
+```
+# activate latest tensorflow image as a python environment
+%python.docker activate gcr.io/tensorflow/tensorflow:latest
+```
 
 ## Using Zeppelin Dynamic Forms
 You can leverage [Zeppelin Dynamic Form]({{BASE_PATH}}/manual/dynamicform.html) inside your Python code.
@@ -78,17 +132,27 @@ print (z.select("f1",[("o1","1"),("o2","2")],"2"))
 print("".join(z.checkbox("f3", [("o1","1"), ("o2","2")],["1"])))
 ```
 
-
-## Zeppelin features not fully supported by the Python Interpreter
-
-* Interrupt a paragraph execution (`cancel()` method) is currently only supported in Linux and MacOs. If interpreter runs in another operating system (for instance MS Windows) , interrupt a paragraph will close the whole interpreter. A JIRA ticket ([ZEPPELIN-893](https://issues.apache.org/jira/browse/ZEPPELIN-893)) is opened to implement this feature in a next release of the interpreter.
-* Progression bar in webUI  (`getProgress()` method) is currently not implemented.
-* Code-completion is currently not implemented.
-
 ## Matplotlib integration
- The python interpreter can display matplotlib graph with the function `z.show()`.
- You need to have matplotlib module installed and a XServer running to use this functionality!
+
+ The python interpreter can display matplotlib figures inline automatically using the `pyplot` module:
  
+```python
+%python
+import matplotlib.pyplot as plt
+plt.plot([1, 2, 3])
+```
+This is the recommended method for using matplotlib from within a Zeppelin notebook. The output of this command will by default be converted to HTML by implicitly making use of the `%html` magic. Additional configuration can be achieved using the builtin `z.configure_mpl()` method. For example, 
+
+```python
+z.configure_mpl(width=400, height=300, fmt='svg')
+plt.plot([1, 2, 3])
+```
+
+Will produce a 400x300 image in SVG format, which by default are normally 600x400 and PNG respectively. In the future, another option called `angular` can be used to make it possible to update a plot produced from one paragraph directly from another (the output will be `%angular` instead of `%html`). However, this feature is already available in the `pyspark` interpreter. More details can be found in the included "Zeppelin Tutorial: Python - matplotlib basic" tutorial notebook. 
+
+If Zeppelin cannot find the matplotlib backend files (which should usually be found in `$ZEPPELIN_HOME/interpreter/lib/python`) in your `PYTHONPATH`, then the backend will automatically be set to agg, and the (otherwise deprecated) instructions below can be used for more limited inline plotting.
+
+If you are unable to load the inline backend, use `z.show(plt)`:
  ```python
 %python
 import matplotlib.pyplot as plt
@@ -149,3 +213,11 @@ Otherwise it can be referred to as `%python.sql`
 ## Technical description
 
 For in-depth technical details on current implementation please refer to [python/README.md](https://github.com/apache/zeppelin/blob/master/python/README.md).
+
+
+### Some features not yet implemented in the Python Interpreter
+
+* Interrupt a paragraph execution (`cancel()` method) is currently only supported in Linux and MacOs. If interpreter runs in another operating system (for instance MS Windows) , interrupt a paragraph will close the whole interpreter. A JIRA ticket ([ZEPPELIN-893](https://issues.apache.org/jira/browse/ZEPPELIN-893)) is opened to implement this feature in a next release of the interpreter.
+* Progression bar in webUI  (`getProgress()` method) is currently not implemented.
+* Code-completion is currently not implemented.
+

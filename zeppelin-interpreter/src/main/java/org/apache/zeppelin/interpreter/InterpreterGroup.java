@@ -32,9 +32,10 @@ import org.apache.zeppelin.scheduler.SchedulerFactory;
  * For example spark, pyspark, sql interpreters are in the same 'spark' group
  * and InterpreterGroup will have reference to these all interpreters.
  *
- * Remember, list of interpreters are dedicated to a note.
- * (when InterpreterOption.session==true)
- * So InterpreterGroup internally manages map of [noteId, list of interpreters]
+ * Remember, list of interpreters are dedicated to a session. Session could be shared across user
+ * or notes, so the sessionId could be user or noteId or their combination.
+ * So InterpreterGroup internally manages map of [interpreterSessionKey(noteId, user, or
+ * their combination), list of interpreters]
  *
  * A InterpreterGroup runs on interpreter process.
  * And unit of interpreter instantiate, restart, bind, unbind.
@@ -55,7 +56,7 @@ public class InterpreterGroup extends ConcurrentHashMap<String, List<Interpreter
   // List<Interpreter>>();
 
   private static final Map<String, InterpreterGroup> allInterpreterGroups =
-      new ConcurrentHashMap<String, InterpreterGroup>();
+      new ConcurrentHashMap<>();
 
   public static InterpreterGroup getByInterpreterGroupId(String id) {
     return allInterpreterGroups.get(id);
@@ -103,15 +104,12 @@ public class InterpreterGroup extends ConcurrentHashMap<String, List<Interpreter
   public Properties getProperty() {
     Properties p = new Properties();
 
-    Collection<List<Interpreter>> intpGroupForANote = this.values();
-    if (intpGroupForANote != null && intpGroupForANote.size() > 0) {
-      for (List<Interpreter> intpGroup : intpGroupForANote) {
-        for (Interpreter intp : intpGroup) {
-          p.putAll(intp.getProperty());
-        }
-        // it's okay to break here while every List<Interpreters> will have the same property set
-        break;
+    for (List<Interpreter> intpGroupForASession : this.values()) {
+      for (Interpreter intp : intpGroupForASession) {
+        p.putAll(intp.getProperty());
       }
+      // it's okay to break here while every List<Interpreters> will have the same property set
+      break;
     }
     return p;
   }
@@ -147,28 +145,28 @@ public class InterpreterGroup extends ConcurrentHashMap<String, List<Interpreter
    */
   public void close() {
     LOGGER.info("Close interpreter group " + getId());
-    List<Interpreter> intpToClose = new LinkedList<Interpreter>();
-    for (List<Interpreter> intpGroupForNote : this.values()) {
-      intpToClose.addAll(intpGroupForNote);
+    List<Interpreter> intpToClose = new LinkedList<>();
+    for (List<Interpreter> intpGroupForSession : this.values()) {
+      intpToClose.addAll(intpGroupForSession);
     }
     close(intpToClose);
   }
 
   /**
-   * Close all interpreter instances in this group for the note
-   * @param noteId
+   * Close all interpreter instances in this group for the session
+   * @param sessionId
    */
-  public void close(String noteId) {
-    LOGGER.info("Close interpreter group " + getId() + " for note " + noteId);
-    List<Interpreter> intpForNote = this.get(noteId);
-    close(intpForNote);
+  public void close(String sessionId) {
+    LOGGER.info("Close interpreter group " + getId() + " for session: " + sessionId);
+    List<Interpreter> intpForSession = this.get(sessionId);
+    close(intpForSession);
   }
 
   private void close(Collection<Interpreter> intpToClose) {
     if (intpToClose == null) {
       return;
     }
-    List<Thread> closeThreads = new LinkedList<Thread>();
+    List<Thread> closeThreads = new LinkedList<>();
 
     for (final Interpreter intp : intpToClose) {
       Thread t = new Thread() {
@@ -196,13 +194,13 @@ public class InterpreterGroup extends ConcurrentHashMap<String, List<Interpreter
   }
 
   /**
-   * Destroy all interpreter instances in this group for the note
-   * @param noteId
+   * Destroy all interpreter instances in this group for the session
+   * @param sessionId
    */
-  public void destroy(String noteId) {
-    LOGGER.info("Destroy interpreter group " + getId() + " for note " + noteId);
-    List<Interpreter> intpForNote = this.get(noteId);
-    destroy(intpForNote);
+  public void destroy(String sessionId) {
+    LOGGER.info("Destroy interpreter group " + getId() + " for session " + sessionId);
+    List<Interpreter> intpForSession = this.get(sessionId);
+    destroy(intpForSession);
 
     if (remoteInterpreterProcess != null) {
       remoteInterpreterProcess.dereference();
@@ -219,9 +217,9 @@ public class InterpreterGroup extends ConcurrentHashMap<String, List<Interpreter
    */
   public void destroy() {
     LOGGER.info("Destroy interpreter group " + getId());
-    List<Interpreter> intpToDestroy = new LinkedList<Interpreter>();
-    for (List<Interpreter> intpGroupForNote : this.values()) {
-      intpToDestroy.addAll(intpGroupForNote);
+    List<Interpreter> intpToDestroy = new LinkedList<>();
+    for (List<Interpreter> intpGroupForSession : this.values()) {
+      intpToDestroy.addAll(intpGroupForSession);
     }
     destroy(intpToDestroy);
 
@@ -241,7 +239,7 @@ public class InterpreterGroup extends ConcurrentHashMap<String, List<Interpreter
       return;
     }
 
-    List<Thread> destroyThreads = new LinkedList<Thread>();
+    List<Thread> destroyThreads = new LinkedList<>();
 
     for (final Interpreter intp : intpToDestroy) {
       Thread t = new Thread() {

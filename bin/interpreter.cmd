@@ -39,11 +39,6 @@ call "%bin%\common.cmd"
 
 if exist "%ZEPPELIN_HOME%\zeppelin-interpreter\target\classes" (
     set ZEPPELIN_CLASSPATH=%ZEPPELIN_CLASSPATH%;"%ZEPPELIN_HOME%\zeppelin-interpreter\target\classes"
-) else (
-    for %%d in ("%ZEPPELIN_HOME%\lib\zeppelin-interpreter*.jar") do (
-        set ZEPPELIN_INTERPRETER_JAR=%%d
-    )
-    set ZEPPELIN_CLASSPATH=%ZEPPELIN_CLASSPATH%;"!ZEPPELIN_INTERPRETER_JAR!"
 )
 
 REM add test classes for unittest
@@ -55,6 +50,7 @@ if exist "%ZEPPELIN_HOME%\zeppelin-zengine\target\test-classes" (
 )
 
 call "%bin%\functions.cmd" ADDJARINDIR "%ZEPPELIN_HOME%\zeppelin-interpreter\target\lib"
+call "%bin%\functions.cmd" ADDJARINDIR "%ZEPPELIN_HOME%\lib\interpreter"
 call "%bin%\functions.cmd" ADDJARINDIR "%INTERPRETER_DIR%"
 
 set HOSTNAME=%COMPUTERNAME%

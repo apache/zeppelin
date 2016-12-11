@@ -81,12 +81,8 @@ public class VFSNotebookRepo implements NotebookRepo {
     }
 
     if (filesystemRoot.getScheme() == null) { // it is local path
-      try {
-        this.filesystemRoot = new URI(new File(
-                conf.getRelativeDir(filesystemRoot.getPath())).getAbsolutePath());
-      } catch (URISyntaxException e) {
-        throw new IOException(e);
-      }
+      File f = new File(conf.getRelativeDir(filesystemRoot.getPath()));
+      this.filesystemRoot = f.toURI();
     }
 
     fsManager = VFS.getManager();
@@ -127,7 +123,7 @@ public class VFSNotebookRepo implements NotebookRepo {
 
     FileObject[] children = rootDir.getChildren();
 
-    List<NoteInfo> infos = new LinkedList<NoteInfo>();
+    List<NoteInfo> infos = new LinkedList<>();
     for (FileObject f : children) {
       String fileName = f.getName().getBaseName();
       if (f.isHidden()
@@ -280,20 +276,21 @@ public class VFSNotebookRepo implements NotebookRepo {
   @Override
   public Revision checkpoint(String noteId, String checkpointMsg, AuthenticationInfo subject)
       throws IOException {
-    // Auto-generated method stub
-    return null;
+    // no-op
+    LOG.warn("Checkpoint feature isn't supported in {}", this.getClass().toString());
+    return Revision.EMPTY;
   }
 
   @Override
   public Note get(String noteId, String revId, AuthenticationInfo subject) throws IOException {
-    // Auto-generated method stub
+    LOG.warn("Get note revision feature isn't supported in {}", this.getClass().toString());
     return null;
   }
 
   @Override
   public List<Revision> revisionHistory(String noteId, AuthenticationInfo subject) {
-    // Auto-generated method stub
-    return null;
+    LOG.warn("Get Note revisions feature isn't supported in {}", this.getClass().toString());
+    return Collections.emptyList();
   }
 
   @Override

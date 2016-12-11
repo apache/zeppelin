@@ -65,17 +65,21 @@ module.exports = function(config) {
       'bower_components/handsontable/dist/handsontable.js',
       'bower_components/moment-duration-format/lib/moment-duration-format.js',
       'bower_components/select2/dist/js/select2.js',
+      'bower_components/MathJax/MathJax.js',
       'bower_components/angular-mocks/angular-mocks.js',
       // endbower
-      'src/app/app.js',
-      'src/app/app.controller.js',
-      'src/app/**/*.js',
-      'src/components/**/*.js',
+      '.tmp/app/app.js',
+      '.tmp/app/app.controller.js',
+      '.tmp/app/tabledata/transformation.js',
+      '.tmp/app/**/*.js',
+      '.tmp/components/**/*.js',
       'test/spec/**/*.js'
     ],
 
     // list of files / patterns to exclude
-    exclude: [],
+    exclude: [
+      '.tmp/app/visualization/builtins/*.js'
+    ],
 
     // web server port
     port: 9002,

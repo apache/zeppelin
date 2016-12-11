@@ -44,24 +44,25 @@ public class ZeppelinDevServer extends
   }
 
   @Override
-  protected Interpreter getInterpreter(String noteId, String className) throws TException {
+  protected Interpreter getInterpreter(String sessionKey, String className) throws TException {
     synchronized (this) {
       InterpreterGroup interpreterGroup = getInterpreterGroup();
       if (interpreterGroup == null) {
         createInterpreter(
             "dev",
-            noteId,
+            sessionKey,
             DevInterpreter.class.getName(),
-            new HashMap<String, String>());
+            new HashMap<String, String>(),
+            "anonymous");
 
-        Interpreter intp = super.getInterpreter(noteId, className);
+        Interpreter intp = super.getInterpreter(sessionKey, className);
         interpreter = (DevInterpreter) (
             ((LazyOpenInterpreter) intp).getInnerInterpreter());
         interpreter.setInterpreterEvent(this);
         notify();
       }
     }
-    return super.getInterpreter(noteId, className);
+    return super.getInterpreter(sessionKey, className);
   }
 
   @Override
@@ -72,13 +73,23 @@ public class ZeppelinDevServer extends
       try {
         out = new InterpreterOutput(new InterpreterOutputListener() {
           @Override
-          public void onAppend(InterpreterOutput out, byte[] line) {
-            eventClient.onInterpreterOutputAppend(noteId, paragraphId, new String(line));
+          public void onUpdateAll(InterpreterOutput out) {
+
           }
 
           @Override
-          public void onUpdate(InterpreterOutput out, byte[] output) {
-            eventClient.onInterpreterOutputUpdate(noteId, paragraphId, new String(output));
+          public void onAppend(int index, InterpreterResultMessageOutput out, byte[] line) {
+            eventClient.onInterpreterOutputAppend(noteId, paragraphId, index, new String(line));
+          }
+
+          @Override
+          public void onUpdate(int index, InterpreterResultMessageOutput out) {
+            try {
+              eventClient.onInterpreterOutputUpdate(noteId, paragraphId,
+                  index, out.getType(), new String(out.toByteArray()));
+            } catch (IOException e) {
+              logger.error(e.getMessage(), e);
+            }
           }
         }, this);
       } catch (IOException e) {

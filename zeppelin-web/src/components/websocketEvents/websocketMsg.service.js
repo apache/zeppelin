@@ -25,8 +25,14 @@
         websocketEvents.sendNewEvent({op: 'GET_HOME_NOTE'});
       },
 
-      createNote: function(noteName) {
-        websocketEvents.sendNewEvent({op: 'NEW_NOTE',data: {name: noteName}});
+      createNotebook: function(noteName, defaultInterpreterId) {
+        websocketEvents.sendNewEvent({
+          op: 'NEW_NOTE',
+          data: {
+            name: noteName,
+            defaultInterpreterId: defaultInterpreterId
+          }
+        });
       },
 
       deleteNote: function(noteId) {
@@ -53,12 +59,34 @@
         websocketEvents.sendNewEvent({op: 'NOTE_UPDATE', data: {id: noteId, name: noteName, config: noteConfig}});
       },
 
+      renameNote: function(noteId, noteName) {
+        websocketEvents.sendNewEvent({op: 'NOTE_RENAME', data: {id: noteId, name: noteName}});
+      },
+
+      renameFolder: function(folderId, folderName) {
+        websocketEvents.sendNewEvent({op: 'FOLDER_RENAME', data: {id: folderId, name: folderName}});
+      },
+
       moveParagraph: function(paragraphId, newIndex) {
         websocketEvents.sendNewEvent({op: 'MOVE_PARAGRAPH', data: {id: paragraphId, index: newIndex}});
       },
 
       insertParagraph: function(newIndex) {
         websocketEvents.sendNewEvent({op: 'INSERT_PARAGRAPH', data: {index: newIndex}});
+      },
+
+      copyParagraph: function(newIndex, paragraphTitle, paragraphData,
+                                      paragraphConfig, paragraphParams) {
+        websocketEvents.sendNewEvent({
+          op: 'COPY_PARAGRAPH',
+          data: {
+            index: newIndex,
+            title: paragraphTitle,
+            paragraph: paragraphData,
+            config: paragraphConfig,
+            params: paragraphParams
+          }
+        });
       },
 
       updateAngularObject: function(noteId, paragraphId, name, value, interpreterGroupId) {
@@ -120,6 +148,10 @@
 
       clearParagraphOutput: function(paragraphId) {
         websocketEvents.sendNewEvent({op: 'PARAGRAPH_CLEAR_OUTPUT', data: {id: paragraphId}});
+      },
+
+      clearAllParagraphOutput: function(noteId) {
+        websocketEvents.sendNewEvent({op: 'PARAGRAPH_CLEAR_ALL_OUTPUT', data: {id: noteId}});
       },
 
       completion: function(paragraphId, buf, cursor) {
@@ -223,6 +255,10 @@
 
       listConfigurations: function() {
         websocketEvents.sendNewEvent({op: 'LIST_CONFIGURATIONS'});
+      },
+
+      getInterpreterSettings: function() {
+        websocketEvents.sendNewEvent({op: 'GET_INTERPRETER_SETTINGS'});
       }
 
     };

@@ -23,7 +23,9 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
-/** Markdown Parser using markdown4j processor . */
+/**
+ * Markdown Parser using markdown4j processor.
+ */
 public class Markdown4jParser implements MarkdownParser {
   private Markdown4jProcessor processor;
 

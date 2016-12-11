@@ -23,7 +23,7 @@ function usage() {
     echo "usage) $0 -p <port> -d <interpreter dir to load> -l <local interpreter repo dir to load>"
 }
 
-while getopts "hp:d:l:v" o; do
+while getopts "hp:d:l:v:u:" o; do
     case ${o} in
         h)
             usage
@@ -42,6 +42,14 @@ while getopts "hp:d:l:v" o; do
             . "${bin}/common.sh"
             getZeppelinVersion
             ;;
+        u)
+            ZEPPELIN_IMPERSONATE_USER="${OPTARG}"
+            if [[ -z "$ZEPPELIN_IMPERSONATE_CMD" ]]; then
+              ZEPPELIN_IMPERSONATE_RUN_CMD=`echo "ssh ${ZEPPELIN_IMPERSONATE_USER}@localhost" `
+            else
+              ZEPPELIN_IMPERSONATE_RUN_CMD=$(eval "echo ${ZEPPELIN_IMPERSONATE_CMD} ")
+            fi
+            ;;
         esac
 done
 
@@ -58,9 +66,6 @@ ZEPPELIN_INTP_CLASSPATH=""
 # construct classpath
 if [[ -d "${ZEPPELIN_HOME}/zeppelin-interpreter/target/classes" ]]; then
   ZEPPELIN_INTP_CLASSPATH+=":${ZEPPELIN_HOME}/zeppelin-interpreter/target/classes"
-else
-  ZEPPELIN_INTERPRETER_JAR="$(ls ${ZEPPELIN_HOME}/lib/zeppelin-interpreter*.jar)"
-  ZEPPELIN_INTP_CLASSPATH+=":${ZEPPELIN_INTERPRETER_JAR}"
 fi
 
 # add test classes for unittest
@@ -71,8 +76,8 @@ if [[ -d "${ZEPPELIN_HOME}/zeppelin-zengine/target/test-classes" ]]; then
   ZEPPELIN_INTP_CLASSPATH+=":${ZEPPELIN_HOME}/zeppelin-zengine/target/test-classes"
 fi
 
-
 addJarInDirForIntp "${ZEPPELIN_HOME}/zeppelin-interpreter/target/lib"
+addJarInDirForIntp "${ZEPPELIN_HOME}/lib/interpreter"
 addJarInDirForIntp "${INTERPRETER_DIR}"
 
 HOSTNAME=$(hostname)
@@ -80,7 +85,11 @@ ZEPPELIN_SERVER=org.apache.zeppelin.interpreter.remote.RemoteInterpreterServer
 
 INTERPRETER_ID=$(basename "${INTERPRETER_DIR}")
 ZEPPELIN_PID="${ZEPPELIN_PID_DIR}/zeppelin-interpreter-${INTERPRETER_ID}-${ZEPPELIN_IDENT_STRING}-${HOSTNAME}.pid"
-ZEPPELIN_LOGFILE="${ZEPPELIN_LOG_DIR}/zeppelin-interpreter-${INTERPRETER_ID}-${ZEPPELIN_IDENT_STRING}-${HOSTNAME}.log"
+ZEPPELIN_LOGFILE="${ZEPPELIN_LOG_DIR}/zeppelin-interpreter-"
+if [[ ! -z "$ZEPPELIN_IMPERSONATE_USER" ]]; then
+    ZEPPELIN_LOGFILE+="${ZEPPELIN_IMPERSONATE_USER}-"
+fi
+ZEPPELIN_LOGFILE+="${INTERPRETER_ID}-${ZEPPELIN_IDENT_STRING}-${HOSTNAME}.log"
 JAVA_INTP_OPTS+=" -Dzeppelin.log.file=${ZEPPELIN_LOGFILE}"
 
 if [[ ! -d "${ZEPPELIN_LOG_DIR}" ]]; then
@@ -177,11 +186,24 @@ addJarInDirForIntp "${LOCAL_INTERPRETER_REPO}"
 
 CLASSPATH+=":${ZEPPELIN_INTP_CLASSPATH}"
 
-if [[ -n "${SPARK_SUBMIT}" ]]; then
-    ${SPARK_SUBMIT} --class ${ZEPPELIN_SERVER} --driver-class-path "${ZEPPELIN_INTP_CLASSPATH_OVERRIDES}:${CLASSPATH}" --driver-java-options "${JAVA_INTP_OPTS}" ${SPARK_SUBMIT_OPTIONS} ${SPARK_APP_JAR} ${PORT} &
-else
-    ${ZEPPELIN_RUNNER} ${JAVA_INTP_OPTS} ${ZEPPELIN_INTP_MEM} -cp ${ZEPPELIN_INTP_CLASSPATH_OVERRIDES}:${CLASSPATH} ${ZEPPELIN_SERVER} ${PORT} &
+if [[ ! -z "$ZEPPELIN_IMPERSONATE_USER" ]]; then
+    INTERPRETER_RUN_COMMAND=${ZEPPELIN_IMPERSONATE_RUN_CMD}" '"
+    if [[ -f "${ZEPPELIN_CONF_DIR}/zeppelin-env.sh" ]]; then
+        INTERPRETER_RUN_COMMAND+=" source "${ZEPPELIN_CONF_DIR}'/zeppelin-env.sh;'
+    fi
 fi
+
+if [[ -n "${SPARK_SUBMIT}" ]]; then
+    INTERPRETER_RUN_COMMAND+=' '` echo ${SPARK_SUBMIT} --class ${ZEPPELIN_SERVER} --driver-class-path \"${ZEPPELIN_INTP_CLASSPATH_OVERRIDES}:${CLASSPATH}\" --driver-java-options \"${JAVA_INTP_OPTS}\" ${SPARK_SUBMIT_OPTIONS} ${SPARK_APP_JAR} ${PORT}`
+else
+    INTERPRETER_RUN_COMMAND+=' '` echo ${ZEPPELIN_RUNNER} ${JAVA_INTP_OPTS} ${ZEPPELIN_INTP_MEM} -cp ${ZEPPELIN_INTP_CLASSPATH_OVERRIDES}:${CLASSPATH} ${ZEPPELIN_SERVER} ${PORT} `
+fi
+
+if [[ ! -z "$ZEPPELIN_IMPERSONATE_USER" ]]; then
+    INTERPRETER_RUN_COMMAND+="'"
+fi
+
+eval $INTERPRETER_RUN_COMMAND &
 
 pid=$!
 if [[ -z "${pid}" ]]; then

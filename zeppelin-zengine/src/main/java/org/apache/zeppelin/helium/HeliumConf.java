@@ -23,7 +23,7 @@ import java.util.List;
  * Helium config. This object will be persisted to conf/heliumc.conf
  */
 public class HeliumConf {
-  List<HeliumRegistry> registry = new LinkedList<HeliumRegistry>();
+  List<HeliumRegistry> registry = new LinkedList<>();
 
   public List<HeliumRegistry> getRegistry() {
     return registry;

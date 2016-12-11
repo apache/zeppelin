@@ -203,10 +203,14 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
         },
         "jobName": "paragraph\_1423500782552\_-1439281894",
         "id": "20150210-015302\_1492795503",
-        "result": {
+        "results": {
           "code": "SUCCESS",
-          "type": "TABLE",
-          "msg": "age\tvalue\n19\t4\n20\t3\n21\t7\n22\t9\n23\t20\n24\t24\n25\t44\n26\t77\n27\t94\n28\t103\n29\t97\n"
+          "msg": [
+            {
+              "type": "TABLE",
+              "data": "age\tvalue\n19\t4\n20\t3\n21\t7\n22\t9\n23\t20\n24\t24\n25\t44\n26\t77\n27\t94\n28\t103\n29\t97\n"
+            }
+          ]
         },
         "dateCreated": "Feb 10, 2015 1:53:02 AM",
         "dateStarted": "Jul 3, 2015 1:43:17 PM",
@@ -493,7 +497,7 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
     <col width="200">
     <tr>
       <td>Description</td>
-      <td> This ```POST``` method runs the paragraph synchronously by given note and paragraph id. This API can return SUCCESS or ERROR depending on the outcome of the paragraph execution
+      <td>This ```POST``` method runs the paragraph synchronously by given note and paragraph id. This API can return SUCCESS or ERROR depending on the outcome of the paragraph execution
       </td>
     </tr>
     <tr>
@@ -793,16 +797,145 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
     },
     "jobName": "paragraph\_1450391574392\_-1890856722",
     "id": "20151218-073254\_1105602047",
-    "result": {
+    "results": {
       "code": "SUCCESS",
-      "type": "TEXT",
-      "msg": "it's paragraph2\n"
+      "msg": [
+        {
+           "type": "TEXT",
+           "data": "it's paragraph2\n"
+        }
+      ]
     },
     "dateCreated": "Dec 18, 2015 7:32:54 AM",
     "dateStarted": "Dec 18, 2015 7:33:55 AM",
     "dateFinished": "Dec 18, 2015 7:33:55 AM",
     "status": "FINISHED",
     "progressUpdateIntervalMs": 500
+  }
+}</pre></td>
+    </tr>
+  </table>
+
+<br/>
+### Update paragraph configuration
+  <table class="table-configuration">
+    <col width="200">
+    <tr>
+      <td>Description</td>
+      <td>This ```PUT``` method update paragraph configuration using given id so that user can change paragraph setting such as graph type, show or hide editor/result and paragraph size, etc. You can update certain fields you want, for example you can update <code>colWidth</code> field only by sending request with payload <code>{"colWidth": 12.0}</code>.
+      </td>
+    </tr>
+    <tr>
+      <td>URL</td>
+      <td>```http://[zeppelin-server]:[zeppelin-port]/api/notebook/[noteId]/paragraph/[paragraphId]/config```</td>
+    </tr>
+    <tr>
+      <td>Success code</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td>Bad Request code</td>
+      <td>400</td>
+    </tr>
+    <tr>
+      <td>Forbidden code</td>
+      <td>403</td>
+    </tr>
+    <tr>
+      <td>Not Found code</td>
+      <td>404</td>
+    </tr>
+    <tr>
+      <td>Fail code</td>
+      <td>500</td>
+    </tr>
+    <tr>
+      <td>sample JSON input</td>
+      <td><pre>
+{
+  "colWidth": 6.0,
+  "graph": {
+    "mode": "lineChart",
+    "height": 200.0,
+    "optionOpen": false,
+    "keys": [
+      {
+        "name": "age",
+        "index": 0.0,
+        "aggr": "sum"
+      }
+    ],
+    "values": [
+      {
+        "name": "value",
+        "index": 1.0,
+        "aggr": "sum"
+      }
+    ],
+    "groups": [],
+    "scatter": {}
+  },
+  "editorHide": true,
+  "editorMode": "ace/mode/markdown",
+  "tableHide": false
+}</pre></td>
+    </tr>
+    <tr>
+      <td>sample JSON response</td>
+      <td><pre>
+{
+  "status":"OK",
+  "message":"",
+  "body":{
+    "text":"%sql \nselect age, count(1) value\nfrom bank \nwhere age \u003c 30 \ngroup by age \norder by age",
+    "config":{
+      "colWidth":6.0,
+      "graph":{
+        "mode":"lineChart",
+        "height":200.0,
+        "optionOpen":false,
+        "keys":[
+          {
+            "name":"age",
+            "index":0.0,
+            "aggr":"sum"
+          }
+        ],
+        "values":[
+          {
+            "name":"value",
+            "index":1.0,
+            "aggr":"sum"
+          }
+        ],
+        "groups":[],
+        "scatter":{}
+      },
+      "tableHide":false,
+      "editorMode":"ace/mode/markdown",
+      "editorHide":true
+    },
+    "settings":{
+      "params":{},
+      "forms":{}
+    },
+    "apps":[],
+    "jobName":"paragraph_1423500782552_-1439281894",
+    "id":"20150210-015302_1492795503",
+    "results":{
+      "code":"SUCCESS",
+      "msg": [
+        {
+          "type":"TABLE",
+          "data":"age\tvalue\n19\t4\n20\t3\n21\t7\n22\t9\n23\t20\n24\t24\n25\t44\n26\t77\n27\t94\n28\t103\n29\t97\n"
+        }
+      ]
+    },
+    "dateCreated":"Feb 10, 2015 1:53:02 AM",
+    "dateStarted":"Jul 3, 2015 1:43:17 PM",
+    "dateFinished":"Jul 3, 2015 1:43:23 PM",
+    "status":"FINISHED",
+    "progressUpdateIntervalMs":500
   }
 }</pre></td>
     </tr>
@@ -834,7 +967,6 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
       <td><pre>{"status": "OK","message": ""}</pre></td>
     </tr>
   </table>
-
 
 <br/>
 ### Delete a paragraph
@@ -934,7 +1066,8 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
       <td> Fail code</td>
       <td> 500 </td>
     </tr>
-    <td>sample JSON input</td>
+    <tr>
+      <td>sample JSON input</td>
       <td><pre>
 {
   "paragraphs": [
@@ -961,6 +1094,7 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
   "config": {},
   "info": {}
 }</pre></td>
+    </tr>
     <tr>
       <td>sample JSON response</td>
       <td><pre>
@@ -969,6 +1103,41 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
   "message": "",
   "body": "2AZPHY918"
 }</pre></td>
+    </tr>
+  </table>
+
+<br />
+### Clear all paragraph result
+  <table class="table-configuration">
+    <col width="200">
+    <tr>
+      <td>Description</td>
+      <td>This ```PUT``` method clear all paragraph results from note of given id.
+      </td>
+    </tr>
+    <tr>
+      <td>URL</td>
+      <td>```http://[zeppelin-server]:[zeppelin-port]/api/notebook/[noteId]/clear```</td>
+    </tr>
+    <tr>
+      <td>Success code</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td>Forbidden code</td>
+      <td>401</td>
+    </tr>
+    <tr>
+      <td>Not Found code</td>
+      <td>404</td>
+    </tr>
+    <tr>
+      <td>Fail code</td>
+      <td>500</td>
+    </tr>
+    <tr>
+      <td>sample JSON response</td>
+      <td><pre>{"status": "OK"}</pre></td>
     </tr>
     </tr>
   </table>

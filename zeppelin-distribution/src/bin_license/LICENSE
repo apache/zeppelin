@@ -1,13 +1,9 @@
+The following components are provided under Apache License.
+
     (Apache 2.0) nvd3.js v1.7.1 (http://nvd3.org/) - https://github.com/novus/nvd3/blob/v1.7.1/LICENSE.md
     (Apache 2.0) gson v2.2 (com.google.code.gson:gson:jar:2.2 - https://github.com/google/gson) - https://github.com/google/gson/blob/gson-2.2/LICENSE
     (Apache 2.0) Amazon Web Services SDK for Java v1.10.62 (https://aws.amazon.com/sdk-for-java/) - https://raw.githubusercontent.com/aws/aws-sdk-java/1.10.62/LICENSE.txt
     (Apache 2.0) JavaEWAH v0.7.9 (https://github.com/lemire/javaewah) - https://github.com/lemire/javaewah/blob/master/LICENSE-2.0.txt
-
-
-
-The following components are provided under Apache License.
-
-
     (Apache 2.0) Apache Commons Logging (commons-logging:commons-logging:1.1.1 - http://commons.apache.org/proper/commons-logging/)
     (Apache 2.0) Apache Commons Codec (commons-codec:commons-codec:1.5 - http://commons.apache.org/proper/commons-codec/)
     (Apache 2.0) Apache Commons Collections (commons-collections:commons-collections:3.2.1 - http://commons.apache.org/proper/commons-configuration/)
@@ -19,7 +15,7 @@ The following components are provided under Apache License.
     (Apache 2.0) Http Components (org.apache.httpcomponents:httpclient:4.3.6 - https://github.com/apache/httpclient)
     (Apache 2.0) Apache Commons Lang (org.apache.commons:commons-lang:2.5 - http://commons.apache.org/proper/commons-lang/)
     (Apache 2.0) Apache Commons Lang 3 (org.apache.commons:commons-lang3:3.4 - http://commons.apache.org/proper/commons-lang/)
-    (Apache 2.0) Apache Commons Math 3 (org.apache.commons:commons-math3:3.4.1 - http://commons.apache.org/proper/commons-math/)
+    (Apache 2.0) Apache Commons Math 3 (org.apache.commons:commons-math3:3.6.1 - http://commons.apache.org/proper/commons-math/)
     (Apache 2.0) Apache Commons Net (commons-net:commons-net:2.2 - http://commons.apache.org/proper/commons-net/)
     (Apache 2.0) Apache log4j (log4j:log4j:1.2.17 - http://logging.apache.org/log4j/1.2/)
     (Apache 2.0) Apache Commons Pool2 (commons-exec:commons-pool2:2.3 - https://commons.apache.org/proper/commons-pool/)
@@ -43,17 +39,24 @@ The following components are provided under Apache License.
     (Apache 2.0) Apache Lens (http://lens.apache.org/)
     (Apache 2.0) Apache Flink (http://flink.apache.org/)
     (Apache 2.0) Apache Beam (http://beam.apache.org/)
-    (Apache 2.0) Apache Thrift (http://thrift.apache.org/)
+    (Apache 2.0) Apache Thrift 0.9.2 (org.apache.thrift:libthrift:0.9.2 - http://thrift.apache.org/)
     (Apache 2.0) Apache Lucene (https://lucene.apache.org/)
     (Apache 2.0) Apache Zookeeper (org.apache.zookeeper:zookeeper:jar:3.4.5 - http://zookeeper.apache.org/)
-    (Apache 2.0) Chill (com.twitter:chill-java:jar:0.8.0 - https://github.com/twitter/chill/)
+    (Apache 2.0) Chill (com.twitter:chill:0.8.0 - https://github.com/twitter/chill/)
+    (Apache 2.0) Chill Java (com.twitter:chill-java:jar:0.8.0 - https://github.com/twitter/chill/)
+    (Apache 2.0) Chill Protobuf (com.twitter:chill-protobuf:0.8.0 - https://github.com/twitter/chill/)
     (Apache 2.0) QDox (com.thoughtworks.qdox:qdox:jar:2.0-M3 - https://github.com/paul-hammant/qdox/)
     (Apache 2.0) Codehaus Plexus (org.codehaus.plexus:plexus:jar:1.5.6 - https://codehaus-plexus.github.io/)
+    (Apache 2.0) Codehaus Plexus Interpolation (org.codehaus.plexus:plexus-interpolation:1.14 - https://codehaus-plexus.github.io/)
+    (Apache 2.0) Codehaus Plexus Component Annotations (org.codehaus.plexus:plexus-component-annotations:1.5.5 - https://codehaus-plexus.github.io/)
+    (Apache 2.0) Codehaus Plexus Classwords (org.codehaus.plexus:plexus-classwords:2.4 - https://codehaus-plexus.github.io/)
+    (Apache 2.0) Codehaus Plexus Utils (org.codehaus.plexus:plexus-utils:2.0.7 - https://codehaus-plexus.github.io/)
     (Apache 2.0) findbugs jsr305 (com.google.code.findbugs:jsr305:jar:1.3.9 - http://findbugs.sourceforge.net/)
     (Apache 2.0) Google Guava (com.google.guava:guava:15.0 - https://code.google.com/p/guava-libraries/)
-    (Apache 2.0) Jackson (com.fasterxml.jackson.core:jackson-core:2.5.3 - https://github.com/FasterXML/jackson-core)
-    (Apache 2.0) Jackson (com.fasterxml.jackson.core:jackson-annotations:2.5.3 - https://github.com/FasterXML/jackson-core)
-    (Apache 2.0) Jackson (com.fasterxml.jackson.core:jackson-databind:2.5.3 - https://github.com/FasterXML/jackson-core)
+    (Apache 2.0) Jackson (com.fasterxml.jackson.core:jackson-core:2.7.0 - https://github.com/FasterXML/jackson-core)
+    (Apache 2.0) Jackson (com.fasterxml.jackson.core:jackson-annotations:2.7.0 - https://github.com/FasterXML/jackson-core)
+    (Apache 2.0) Jackson (com.fasterxml.jackson.core:jackson-databind:2.7.0 - https://github.com/FasterXML/jackson-core)
+    (Apache 2.0) Jackson Mapper ASL (org.codehaus.jackson:jackson-mapper-asl:1.9.13 - https://mvnrepository.com/artifact/org.codehaus.jackson/jackson-mapper-asl/1.9.13)
     (Apache 2.0) javax.servlet (org.eclipse.jetty.orbit:javax.servlet:jar:3.1.0.v201112011016 - http://www.eclipse.org/jetty)
     (Apache 2.0) Joda-Time (joda-time:joda-time:2.8.1 - http://www.joda.org/joda-time/)
     (Apache 2.0) Jackson (org.codehaus.jackson:jackson-core-asl:1.9.13 - http://jackson.codehaus.org/)
@@ -92,7 +95,7 @@ The following components are provided under Apache License.
     (Apache 2.0) Lucene Spatial 3D (org.apache.lucene:lucene-spatial3d:5.3.1 - http://lucene.apache.org/lucene-parent/lucene-spatial3d)
     (Apache 2.0) Lucene Suggest (org.apache.lucene:lucene-suggest:5.3.1 - http://lucene.apache.org/lucene-parent/lucene-suggest)
     (Apache 2.0) Elasticsearch: Core (org.elasticsearch:elasticsearch:2.1.0 - http://nexus.sonatype.org/oss-repository-hosting.html/parent/elasticsearch)
-    (Apache 2.0) Joda convert (org.joda:joda-convert:1.2 - http://joda-convert.sourceforge.net)
+    (Apache 2.0) Joda convert (org.joda:joda-convert:1.8.1 - http://joda-convert.sourceforge.net)
     (Apache 2.0) Shiro Core (org.apache.shiro:shiro-core:1.2.3 - https://shiro.apache.org)
     (Apache 2.0) Shiro Web (org.apache.shiro:shiro-web:1.2.3 - https://shiro.apache.org)
     (Apache 2.0) SnakeYAML (org.yaml:snakeyaml:1.15 - http://www.snakeyaml.org)
@@ -121,9 +124,10 @@ The following components are provided under Apache License.
     (Apache 2.0) parboiled-core (org.parboiled:parboiled-core:1.1.7 - https://github.com/sirthias/parboiled)
     (Apache 2.0) ZkClient (com.101tec:zkclient:0.7 - https://github.com/sgroschupf/zkclient)
     (Apache 2.0) jackson-module-scala (com.fasterxml.jackson.module:jackson-module-scala_2.10:2.4.4 - http://wiki.fasterxml.com/JacksonModuleScala)
-    (Apache 2.0) BigQuery API v2-rev295-1.22.0 (com.google.apis:google-api-services-bigquery:v2-rev295-1.22.0 - http://nexus.sonatype.org/oss-repository-hosting.html/google-api-services-bigquery)
+    (Apache 2.0) BigQuery API v2-rev317-1.22.0 (com.google.apis:google-api-services-bigquery:v2-rev317-1.22.0 - http://nexus.sonatype.org/oss-repository-hosting.html/google-api-services-bigquery)
     (Apache 2.0) Google Cloud Debugger API v2-rev8-1.22.0 (com.google.apis:google-api-services-clouddebugger:v2-rev8-1.22.0 - http://nexus.sonatype.org/oss-repository-hosting.html/google-api-services-clouddebugger)
-    (Apache 2.0) Google Dataflow API v1b3-rev30-1.22.0 (com.google.apis:google-api-services-dataflow:v1b3-rev30-1.22.0 - http://nexus.sonatype.org/oss-repository-hosting.html/google-api-services-dataflow)
+    (Apache 2.0) Google Dataflow API v1b3-rev36-1.22.0 (com.google.apis:google-api-services-dataflow:v1b3-rev36-1.22.0 - http://nexus.sonatype.org/oss-repository-hosting.html/google-api-services-dataflow)
+    (Apache 2.0) Google Dataflow SDK 1.7.0 (com.google.cloud.dataflow:google-cloud-dataflow-java-sdk-all:1.7.0 - https://github.com/GoogleCloudPlatform/DataflowJavaSDK)
     (Apache 2.0) Google Cloud Pub/Sub API v1-rev10-1.22.0 (com.google.apis:google-api-services-pubsub:v1-rev10-1.22.0 - http://nexus.sonatype.org/oss-repository-hosting.html/google-api-services-pubsub)
     (Apache 2.0) Cloud Storage JSON API v1-rev71-1.22.0 (com.google.apis:google-api-services-storage:v1-rev71-1.22.0 - http://nexus.sonatype.org/oss-repository-hosting.html/google-api-services-storage)
     (Apache 2.0) gcsio.jar (com.google.cloud.bigdataoss:gcsio:1.4.5 - https://github.com/GoogleCloudPlatform/BigData-interop/gcsio/)
@@ -163,6 +167,54 @@ The following components are provided under Apache License.
     (Apache 2.0) tez-runtime-internals (org.apache.tez:tez-runtime-internals:0.7.0 - http://tez.apache.org)
     (Apache 2.0) tez-mapreduce (org.apache.tez:tez-mapreduce:0.7.0 - http://tez.apache.org)
     (Apache 2.0) tez-yarn-timeline-history-with-acls (org.apache.tez:tez-yarn-timeline-history-with-acls:0.7.0 - http://tez.apache.org)
+    (Apache 2.0) jna (net.java.dev.jna:jna:4.1.0 https://github.com/java-native-access/jna)
+    (Apache 2.0) MathJax v2.7.0 - https://github.com/mathjax/MathJax/blob/2.7.0/LICENSE
+    (Apache 2.0) Scio REPL 0.2.4 (com.spotify:scio-repl:0.2.4 - https://github.com/spotify/scio)
+    (Apache 2.0) Scio BigQuery 0.2.4 (com.spotify:scio-bigquery:0.2.4 - https://github.com/spotify/scio)
+    (Apache 2.0) Scio Core 0.2.4 (com.spotify:scio-core:0.2.4 - https://github.com/spotify/scio)
+    (Apache 2.0) Scio Extra 0.2.4 (com.spotify:scio-extra:0.2.4 - https://github.com/spotify/scio)
+    (Apache 2.0) Scio Test 0.2.4 (com.spotify:scio-test:0.2.4 - https://github.com/spotify/scio)
+    (Apache 2.0) Netty Http2 Codec 4.1.0.CR1 (io.netty:netty-codec-http2:4.1.0.CR1 - https://github.com/netty/netty)
+    (Apache 2.0) Netty Http Codec 4.1.0.CR1 (io.netty:netty-codec-http:4.1.0.CR1 - https://github.com/netty/netty)
+    (Apache 2.0) Netty Handler 4.1.0.CR1 (io.netty:netty-handler:4.1.0.CR1 - https://github.com/netty/netty)
+    (Apache 2.0) Netty Buffer 4.1.0.CR1 (io.netty:netty-buffer:4.1.0.CR1 - https://github.com/netty/netty)
+    (Apache 2.0) Netty Common 4.1.0.CR1 (io.netty:netty-common:4.1.0.CR1 - https://github.com/netty/netty)
+    (Apache 2.0) Netty Transport 4.1.0.CR1 (io.netty:netty-transport:4.1.0.CR1 - https://github.com/netty/netty)
+    (Apache 2.0) Netty Resolver 4.1.0.CR1 (io.netty:netty-resolver:4.1.0.CR1 - https://github.com/netty/netty)
+    (Apache 2.0) Netty Codec 4.1.0.CR1 (io.netty:netty-codec:4.1.0.CR1 - https://github.com/netty/netty)
+    (Apache 2.0) Pubsub v1 GRPC Proto 0.0.2 (com.google.api.grpc:grpc-pubsub-v1:0.0.2 - https://github.com/googleapis/googleapis)
+    (Apache 2.0) Core GRPC Proto 0.0.3 (com.google.api.grpc:grpc-core-proto:0.0.3 - https://github.com/googleapis/googleapis)
+    (Apache 2.0) Bigtable Proto 0.3.0 (com.google.cloud.bigtable:bigtable-protos:0.3.0 - https://github.com/googleapis/googleapis)
+    (Apache 2.0) Java Google API Client 1.22.0 (com.google.api-client:google-api-client:1.22.0 - https://github.com/googleapis/googleapis)
+    (Apache 2.0) Java6 Google API Client 1.22.0 (com.google.api-client:google-api-client-java6:1.22.0 - https://github.com/googleapis/googleapis)
+    (Apache 2.0) Jackson2 Google API Client 1.22.0 (com.google.api-client:google-api-client-jackson2:1.22.0 - https://github.com/googleapis/googleapis)
+    (Apache 2.0) Google HTTP Client 1.22.0 (com.google.http-client:google-http-client:1.22.0 - https://github.com/google/google-http-java-client)
+    (Apache 2.0) Jackson Google HTTP Client 1.22.0 (com.google.http-client:google-http-client-jackson:1.22.0 - https://github.com/google/google-http-java-client)
+    (Apache 2.0) Jackson2 Google HTTP Client 1.22.0 (com.google.http-client:google-http-client-jackson2:1.22.0 - https://github.com/google/google-http-java-client)
+    (Apache 2.0) Protobuf Google HTTP Client 1.22.0 (com.google.http-client:google-http-client-protobuf:1.22.0 - https://github.com/google/google-http-java-client)
+    (Apache 2.0) Google OAuth Java6 Client 1.22.0 (com.google.oauth-client:google-oauth-client-java6:1.22.0 - https://github.com/google/google-oauth-java-client)
+    (Apache 2.0) Google OAuth Client 1.22.0 (com.google.oauth-client:google-oauth-client:1.22.0 - https://github.com/google/google-oauth-java-client)
+    (Apache 2.0) Google API Datastore Protobuf v1beta2-rev1-4.0.0 (com.google.apis:google-api-services-datastore-protobuf:v1beta2-rev1-4.0.0 - https://github.com/googleapis/googleapis)
+    (Apache 2.0) Google Datastore v1 Protobuf Client 1.1.0 (com.google.cloud.datastore:datastore-v1-proto-client:1.1.0 - https://github.com/GoogleCloudPlatform/google-cloud-datastore)
+    (Apache 2.0) Google Datastore v1 Protos 1.0.1 (com.google.cloud.datastore:datastore-v1-protos:1.0.1 - https://github.com/googleapis/googleapis)
+    (Apache 2.0) Twitter Algebird 0.12.1 (com.twitter:algebird-core:0.12.1 - https://github.com/twitter/algebird)
+    (Apache 2.0) Breeze 0.12 (org.scalanlp:breeze:0.12 - https://github.com/scalanlp/breeze)
+    (Apache 2.0) Breeze Macros 0.12 (org.scalanlp:breeze-macros:0.12 - https://github.com/scalanlp/breeze)
+    (Apache 2.0) Opencsv 2.3 (net.sf.opencsv:opencsv:2.3 - http://opencsv.sourceforge.net/)
+    (Apache 2.0) Shapeless 2.0.0 (com.chuusai:shapeless:2.0.0 - https://github.com/milessabin/shapeless)
+    (Apache 2.0) Katan CSV 0.1.12 (com.nrinaudo:kantan.csv:0.1.12 - https://github.com/nrinaudo/kantan.csv)
+    (Apache 2.0) Katan Codecs 0.1.6 (com.nrinaudo:kantan.codecs:0.1.6 - https://github.com/nrinaudo/kantan.csv)
+    (Apache 2.0) jansi 1.4 (org.fusesource.jansi:jansi:1.4 - https://github.com/fusesource/jansi)/
+    (Apache 2.0) Maven Plugin API 3.0 (org.apache.maven:maven-plugin-api:3.0 - https://github.com/apache/maven)
+    (Apache 2.0) Maven Artifact 3.0 (org.apache.maven:maven-artifact:3.0 - https://github.com/apache/maven)
+    (Apache 2.0) Maven Model Builder 3.0.3 (org.apache.maven:maven-model-builder:3.0.3 - https://github.com/apache/maven)
+    (Apache 2.0) Maven Repository Metadata 3.0.3 (org.apache.maven:maven-repository-metadata:3.0.3 - https://github.com/apache/maven)
+    (Apache 2.0) Maven Wagon Provider API 1.0 (org.apache.maven.wagon:wagon-provider-api:1.0 - https://mvnrepository.com/artifact/org.apache.maven.wagon/wagon-provider-api/1.0)
+    (Apache 2.0) Maven Wagon HTTP Lightweight 1.0 (org.apache.maven.wagon:wagon-http-lightweight:1.0 - https://mvnrepository.com/artifact/org.apache.maven.wagon/wagon-http-lightweight/1.0)
+    (Apache 2.0) Maven Wagon HTTP 1.0 (org.apache.maven.wagon:wagon-http:1.0 - https://mvnrepository.com/artifact/org.apache.maven.wagon/wagon-http/1.0)
+    (Apache 2.0) Maven Wagon HTTP Shared 1.0 (org.apache.maven.wagon:wagon-http-shared:1.0 - https://mvnrepository.com/artifact/org.apache.maven.wagon/wagon-http-shared/1.0)
+    (Apache 2.0) Commons HTTP Client 3.1 (commons-httpclient:commons-httpclient:3.1 - https://mvnrepository.com/artifact/commons-httpclient/commons-httpclient/3.1)
+    (Apache 2.0) Scalatest 2.2.4 (org.scalatest:scalatest_2.10:2.2.4 - https://github.com/scalatest/scalatest)
 
 ========================================================================
 MIT licenses
@@ -195,20 +247,25 @@ The text of each license is also included at licenses/LICENSE-[project]-[version
     (The MIT License) Moment v2.9.0 (https://github.com/moment/moment) - https://github.com/moment/moment/blob/2.9.0/LICENSE
     (The MIT License) Pikaday v1.3.2 (https://github.com/dbushell/Pikaday) - https://github.com/dbushell/Pikaday/blob/1.3.2/LICENSE
     (The MIT License) slf4j v1.7.10 (org.slf4j:slf4j-api:jar:1.7.10 - http://www.slf4j.org) - http://www.slf4j.org/license.html
+    (The MIT License) slf4j v1.7.21 (org.slf4j:slf4j-simple:1.7.21 - http://www.slf4j.org) - http://www.slf4j.org/license.html
     (The MIT License) slf4j-log4j12 v1.7.10 (org.slf4j:slf4j-log4j12:jar:1.7.10 - http://www.slf4j.org) - http://www.slf4j.org/license.html
     (The MIT License) bcprov-jdk15on v1.51 (org.bouncycastle:bcprov-jdk15on:jar:1.51 - http://www.bouncycastle.org/java.html) - http://www.bouncycastle.org/licence.html
     (The MIT License) AnchorJS (https://github.com/bryanbraun/anchorjs) - https://github.com/bryanbraun/anchorjs/blob/master/README.md#license
     (The MIT License) moment-duration-format v1.3.0 (https://github.com/jsmreese/moment-duration-format) - https://github.com/jsmreese/moment-duration-format/blob/master/LICENSE
     (The MIT License) github-markdown-css 2.4.0 (https://github.com/sindresorhus/github-markdown-css) - https://github.com/sindresorhus/github-markdown-css/blob/gh-pages/license
     (The MIT License) scopt (com.github.scopt:scopt_2.10:3.2.0 - https://github.com/scopt/scopt)
-The following components are provided under the MIT License.
-
     (The MIT License) Objenesis (org.objenesis:objenesis:2.1 - https://github.com/easymock/objenesis) - Copyright (c) 2006-2015 the original author and authors
     (The MIT License) JCL 1.1.1 implemented over SLF4J (org.slf4j:jcl-over-slf4j:1.7.16 - http://www.slf4j.org)
     (The MIT License) JUL to SLF4J bridge (org.slf4j:jul-to-slf4j:1.7.16 - http://www.slf4j.org)
     (The MIT License) angular-resource (angular-resource - https://github.com/angular/angular.js/tree/master/src/ngResource)
     (The MIT License) minimal-json (com.eclipsesource.minimal-json:minimal-json:0.9.4 - https://github.com/ralfstx/minimal-json)
-    (The MIT License) pyrolite (net.razorvine:pyrolite:4.9) - https://github.com/irmen/Pyrolite/blob/v4.9/LICENSE
+    (The MIT License) pyrolite (net.razorvine:pyrolite:4.9) - https://github.com/irmen/Pyrolite/blob/v4.9/LICENSE)
+    (The MIT License) libpam4j (org.kohsuke:libpam4j:1.8 https://github.com/kohsuke/libpam4j/blob/master/src/main/java/org/jvnet/libpam/PAM.java)
+    (The MIT License) Spire 0.7.4 (org.spire-math:spire:0.7.4 - https://github.com/non/spire)
+    (The MIT License) Spire Macros 0.7.4 (org.spire-math:spire-macros:0.7.4 - https://github.com/non/spire)
+    (The MIT License) Java String Similarity 0.12 (info.debatty:java-string-similarity:0.12 - https://github.com/tdebatty/java-string-similarity)
+    (The MIT License) Java LSH 0.10 (info.debatty:java-lsh:0.10 - https://github.com/tdebatty/java-LSH)
+    (The MIT License) JSoup 1.6.1 (org.jsoup:jsoup:1.6.1 - https://github.com/jhy/jsoup/)
 
 ========================================================================
 BSD-style licenses
@@ -239,8 +296,10 @@ The text of each license is also included at licenses/LICENSE-[project]-[version
     (BSD 3-Clause) io.grpc:grpc-protobuf-lite (io.grpc:grpc-protobuf-lite:0.14.1 - https://github.com/grpc/grpc-java)
     (BSD 3-Clause) io.grpc:grpc-protobuf-nano (io.grpc:grpc-protobuf-nano:0.14.1 - https://github.com/grpc/grpc-java)
     (BSD 3-Clause) io.grpc:grpc-stub (io.grpc:grpc-stub:0.14.1 - https://github.com/grpc/grpc-java)
-     
-     
+    (BSD-3-Clause) Kryo 3.0.3 (com.esotericsoftware:kryo-shaded:3.0.3 - https://github.com/EsotericSoftware/kryo)
+    (BSD-3-Clause) Minilog 1.3.0 (com.esotericsoftware:minlog:1.3.0 - https://github.com/EsotericSoftware/minlog)
+
+
 The following components are provided under the BSD-style License.
 
     (New BSD License) JGit (org.eclipse.jgit:org.eclipse.jgit:jar:4.1.1.201511131810-r - https://eclipse.org/jgit/)
@@ -257,7 +316,6 @@ The following components are provided under the BSD-style License.
     (BSD-like) ASM asm-tree (org.ow2.asm:asm-tree:5.0.3 - http://asm.ow2.org/) - Copyright (c) 2000-2011 INRIA, France Telecom
     (BSD-like) ASM asm-analysis (org.ow2.asm:asm-analysis:5.0.3 - http://asm.ow2.org/) - Copyright (c) 2000-2011 INRIA, France Telecom
     (BSD-like) ASM asm-utils (org.ow2.asm:asm-utils:5.0.3 - http://asm.ow2.org/) - Copyright (c) 2000-2011 INRIA, France Telecom
-    (New BSD License) Markdown4j (org.commonjava.googlecode.markdown4j:markdown4j:jar:2.2-cj-1.0 - https://code.google.com/p/markdown4j/)
     (New BSD License) Py4J (net.sf.py4j:py4j:0.9 - http://py4j.sourceforge.net/)
     (New BSD License) Py4J (net.sf.py4j:py4j:0.10.3 - http://py4j.sourceforge.net/) - https://github.com/bartdag/py4j/blob/0.10.3/LICENSE.txt
     (New BSD License) Markdown4j (org.commonjava.googlecode.markdown4j:markdown4j:jar:2.2-cj-1.0 - https://code.google.com/p/markdown4j/)
@@ -272,6 +330,10 @@ The following components are provided under the BSD-style License.
     (BSD-style) spire-macros (org.spire-math:spire-macros_2.11:0.7.1 - http://spire-math.org)
     (The BSD License) Fortran to Java ARPACK (net.sourceforge.f2j:arpack_combined_all:0.1 - http://f2j.sourceforge.net)
     (The BSD License) xmlenc Library (xmlenc:xmlenc:0.52 - http://xmlenc.sourceforge.net)
+    (BSD-3-Clause) Scalamacros Paradise 2.1.0 (org.scalamacros:paradise6:2.1.0 - https://github.com/scalamacros/paradise)
+    (BSD-3-Clause) Scalamacros Quasiquotes 2.1.0 (org.scalamacros:quasiquotes:2.1.0 - https://mvnrepository.com/artifact/org.scalamacros/quasiquotes_2.10/2.1.0)
+    (BSD-2-Clause) JUnit Interface 0.11 (com.novocode:junit-interface:0.11 - https://github.com/sbt/junit-interface)
+    (BSD-3-Clause) SBT Test Interface (org.scala-sbt:test-interface:1.0 - https://github.com/sbt/test-interface)
 
 ========================================================================
 CDDL license
@@ -288,11 +350,11 @@ The following components are provided under the CDDL License.
     (CDDL 1.1) jersey-json (com.sun.jersey:jersey-json:1.9 - https://jersey.java.net/jersey-json/)
     (CDDL 1.1) jersey-server (com.sun.jersey:jersey-server:1.9 - https://jersey.java.net/jersey-server/)
     (CDDL 1.1) jersey-guice (com.sun.jersey.contribs:jersey-guice:1.9 - https://jersey.java.net/jersey-contribs/jersey-guice/)
-    (CDDL 1.1) JAXB RI (com.sun.xml.bind:jaxb-impl:2.2.3-1 - http://jaxb.java.net/) 
+    (CDDL 1.1) JAXB RI (com.sun.xml.bind:jaxb-impl:2.2.3-1 - http://jaxb.java.net/)
     (CDDL 1.0) Java Servlet API (javax.servlet:javax.servlet-api:3.1.0 - http://servlet-spec.java.net)
     (CDDL 1.1) (GPL2 w/ CPE) JAXB API bundle for GlassFish V3 (javax.xml.bind:jaxb-api:2.2.2 - https://jaxb.dev.java.net/)
     (CDDL 1.0) (GNU General Public Library) Streaming API for XML (javax.xml.stream:stax-api:1.0-2 - no url defined)
-     
+
 
 ========================================================================
 EPL license
@@ -303,6 +365,10 @@ The following components are provided under the EPL License.
     (EPL 1.0) Aether (org.sonatype.aether - http://www.eclipse.org/aether/)
     (EPL 1.0) JDT Annotations For Enhanced Null Analysis (org.eclipse.jdt:org.eclipse.jdt.annotation:1.1.0 - https://repo.eclipse.org/content/repositories/eclipse-releases/org/eclipse/jdt/org.eclipse.jdt.annotation)
     (EPL 1.0) JRuby (org.jruby.jruby-complete:v1.6.8 - http://www.jruby.org/)
+    (EPL 1.0) Sisu Inject Plexus 2.2.2 (org.sonatype.sisu:sisu-inject-plexus:2.2.2 - https://github.com/sonatype/sisu)
+    (EPL 1.0) Sisu Inject Bean 2.2.2 (org.sonatype.sisu:sisu-inject-bean:2.2.2 - https://github.com/sonatype/sisu)
+    (EPL 1.0) Sisu Inject Guice (org.sonatype.sisu:sisu-inject-guice:no_aop- https://github.com/sonatype/sisu)
+    (EPL 1.0) JUnit 4.12 (junit:junit:4.12 - https://github.com/junit-team/junit4)
 
 
 
@@ -339,3 +405,8 @@ Creative Commons CC0 (http://creativecommons.org/publicdomain/zero/1.0/)
     (Public Domain, per Creative Commons CC0) HdrHistogram (org.hdrhistogram:HdrHistogram:2.1.6 - http://hdrhistogram.github.io/HdrHistogram/)
     (Public Domain) XZ for Java (org.tukaani:xz:1.0 - http://tukaani.org/xz/java.html)
     (Public Domain) AOP alliance (aopalliance:aopalliance:1.0 - http://aopalliance.sourceforge.net)
+
+========================================================================
+Multiple licenses
+========================================================================
+  (LGPLv2) (GPLv2) (MPL 1.1) Jtransforms (com.github.rwl:jtransforms:2.4.0 - https://sourceforge.net/projects/jtransforms/)

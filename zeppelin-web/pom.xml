@@ -37,6 +37,15 @@
     <maven>3.1.0</maven>
   </prerequisites>
 
+  <properties>
+    <node.version>v6.9.1</node.version>
+    <npm.version>3.10.8</npm.version>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+    <!--plugin versions-->
+    <plugin.frontned.version>1.3</plugin.frontned.version>
+  </properties>
+
   <build>
     <plugins>
       <plugin>
@@ -90,7 +99,7 @@
       <plugin>
         <groupId>com.github.eirslett</groupId>
         <artifactId>frontend-maven-plugin</artifactId>
-        <version>0.0.25</version>
+        <version>${plugin.frontned.version}</version>
         <executions>
 
           <execution>
@@ -99,8 +108,8 @@
               <goal>install-node-and-npm</goal>
             </goals>
             <configuration>
-              <nodeVersion>v0.12.13</nodeVersion>
-              <npmVersion>2.15.0</npmVersion>
+              <nodeVersion>${node.version}</nodeVersion>
+              <npmVersion>${npm.version}</npmVersion>
             </configuration>
           </execution>
 
@@ -109,36 +118,29 @@
             <goals>
               <goal>npm</goal>
             </goals>
-          </execution>
-
-          <execution>
-            <id>bower install</id>
-            <goals>
-              <goal>bower</goal>
-            </goals>
             <configuration>
-              <arguments>--allow-root install</arguments>
+              <arguments>install</arguments>
             </configuration>
           </execution>
 
           <execution>
-            <id>grunt build</id>
+            <id>npm build</id>
             <goals>
-              <goal>grunt</goal>
+              <goal>npm</goal>
             </goals>
             <configuration>
-              <arguments>build</arguments>
+              <arguments>run build</arguments>
             </configuration>
           </execution>
 
           <execution>
-            <id>grunt test</id>
+            <id>npm test</id>
             <goals>
-              <goal>grunt</goal>
+              <goal>npm</goal>
             </goals>
             <phase>test</phase>
             <configuration>
-              <arguments>test</arguments>
+              <arguments>run test</arguments>
             </configuration>
           </execution>
 
@@ -166,7 +168,6 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-deploy-plugin</artifactId>
-        <version>2.7</version>
       </plugin>
 
       <plugin>
@@ -182,8 +183,5 @@
     </plugins>
   </build>
 
-  <properties>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-  </properties>
 
 </project>

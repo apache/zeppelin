@@ -48,10 +48,14 @@ public class Message {
                       // @param id note id
     CLONE_NOTE,       // [c-s] clone new notebook
                       // @param id id of note to clone
-                      // @param name name fpor the cloned note
+                      // @param name name for the cloned note
     IMPORT_NOTE,      // [c-s] import notebook
                       // @param object notebook
     NOTE_UPDATE,
+
+    NOTE_RENAME,
+
+    FOLDER_RENAME,
 
     RUN_PARAGRAPH,    // [c-s] run paragraph
                       // @param id paragraph id
@@ -76,6 +80,13 @@ public class Message {
     INSERT_PARAGRAPH, // [c-s] create new paragraph below current paragraph
                       // @param target index
 
+    COPY_PARAGRAPH,   // [c-s] create new para below current para as a copy of current para
+                      // @param target index
+                      // @param title paragraph title
+                      // @param paragraph paragraph content.ie. script
+                      // @param config paragraph config
+                      // @param params paragraph params
+
     EDITOR_SETTING,   // [c-s] ask paragraph editor setting
                       // @param magic magic keyword written in paragraph
                       // ex) spark.spark or spark
@@ -96,7 +107,8 @@ public class Message {
                                   // @param notes serialized List<NoteInfo> object
 
     PARAGRAPH_REMOVE,
-    PARAGRAPH_CLEAR_OUTPUT,
+    PARAGRAPH_CLEAR_OUTPUT,       // [c-s] clear output of paragraph
+    PARAGRAPH_CLEAR_ALL_OUTPUT,   // [c-s] clear output of all paragraphs
     PARAGRAPH_APPEND_OUTPUT,      // [s-c] append output
     PARAGRAPH_UPDATE_OUTPUT,      // [s-c] update (replace) output
     PING,
@@ -140,11 +152,20 @@ public class Message {
                                   // @param noteId
                                   // @param selectedSettingIds
     INTERPRETER_BINDINGS,         // [s-c] interpreter bindings
-    ERROR_INFO                    // [s-c] error information to be sent
+    GET_INTERPRETER_SETTINGS,     // [c-s] get interpreter settings
+    INTERPRETER_SETTINGS,         // [s-c] interpreter settings
+    ERROR_INFO,                   // [s-c] error information to be sent
+    WATCHER,                      // [s-c] Change websocket to watcher mode.
+    PARAGRAPH_ADDED,              // [s-c] paragraph is added
+    PARAGRAPH_REMOVED,            // [s-c] paragraph deleted
+    PARAGRAPH_MOVED,              // [s-c] paragraph moved
+    NOTE_UPDATED                  // [s-c] paragraph updated(name, config)
   }
 
+  public static final Message EMPTY = new Message(null);
+  
   public OP op;
-  public Map<String, Object> data = new HashMap<String, Object>();
+  public Map<String, Object> data = new HashMap<>();
   public String ticket = "anonymous";
   public String principal = "anonymous";
   public String roles = "";

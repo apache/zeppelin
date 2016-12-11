@@ -36,7 +36,17 @@
   <description>Zeppelin Interpreter</description>
 
   <properties>
-    <commons-lang.version>3.4</commons-lang.version>
+    <!--library versions-->
+    <commons.lang3.version>3.4</commons.lang3.version>
+    <commons.pool2.version>2.3</commons.pool2.version>
+    <commons.exec.version>1.3</commons.exec.version>
+    <maven.plugin.api.version>3.0</maven.plugin.api.version>
+    <aether.version>1.12</aether.version>
+    <maven.aeither.provider.version>3.0.3</maven.aeither.provider.version>
+    <wagon.version>1.0</wagon.version>
+
+    <!--plugin versions-->
+    <plugin.shade.version>2.3</plugin.shade.version>
   </properties>
 
   <dependencies>
@@ -54,13 +64,13 @@
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-exec</artifactId>
-      <version>1.3</version>
+      <version>${commons.exec.version}</version>
     </dependency>
 
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-pool2</artifactId>
-      <version>2.3</version>
+      <version>${commons.pool2.version}</version>
     </dependency>
 
     <dependency>
@@ -79,29 +89,16 @@
     </dependency>
 
     <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <scope>test</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>org.mockito</groupId>
-      <artifactId>mockito-all</artifactId>
-      <version>1.9.0</version>
-      <scope>test</scope>
-    </dependency>
-
-    <dependency>
     	<groupId>org.apache.commons</groupId>
     	<artifactId>commons-lang3</artifactId>
-        <version>${commons-lang.version}</version>
+        <version>${commons.lang3.version}</version>
     </dependency>
 
     <!-- Aether :: maven dependency resolution -->
     <dependency>
       <groupId>org.apache.maven</groupId>
       <artifactId>maven-plugin-api</artifactId>
-      <version>3.0</version>
+      <version>${maven.plugin.api.version}</version>
       <exclusions>
         <exclusion>
           <groupId>org.codehaus.plexus</groupId>
@@ -121,25 +118,25 @@
     <dependency>
       <groupId>org.sonatype.aether</groupId>
       <artifactId>aether-api</artifactId>
-      <version>1.12</version>
+      <version>${aether.version}</version>
     </dependency>
 
     <dependency>
       <groupId>org.sonatype.aether</groupId>
       <artifactId>aether-util</artifactId>
-      <version>1.12</version>
+      <version>${aether.version}</version>
     </dependency>
 
     <dependency>
       <groupId>org.sonatype.aether</groupId>
       <artifactId>aether-impl</artifactId>
-      <version>1.12</version>
+      <version>${aether.version}</version>
     </dependency>
 
     <dependency>
       <groupId>org.apache.maven</groupId>
       <artifactId>maven-aether-provider</artifactId>
-      <version>3.0.3</version>
+      <version>${maven.aeither.provider.version}</version>
       <exclusions>
         <exclusion>
           <groupId>org.sonatype.aether</groupId>
@@ -167,13 +164,13 @@
     <dependency>
       <groupId>org.sonatype.aether</groupId>
       <artifactId>aether-connector-file</artifactId>
-      <version>1.12</version>
+      <version>${aether.version}</version>
     </dependency>
 
     <dependency>
       <groupId>org.sonatype.aether</groupId>
       <artifactId>aether-connector-wagon</artifactId>
-      <version>1.12</version>
+      <version>${aether.version}</version>
       <exclusions>
         <exclusion>
           <groupId>org.apache.maven.wagon</groupId>
@@ -185,7 +182,7 @@
     <dependency>
       <groupId>org.apache.maven.wagon</groupId>
       <artifactId>wagon-provider-api</artifactId>
-      <version>1.0</version>
+      <version>${wagon.version}</version>
       <exclusions>
         <exclusion>
           <groupId>org.codehaus.plexus</groupId>
@@ -197,7 +194,7 @@
     <dependency>
       <groupId>org.apache.maven.wagon</groupId>
       <artifactId>wagon-http-lightweight</artifactId>
-      <version>1.0</version>
+      <version>${wagon.version}</version>
       <exclusions>
         <exclusion>
           <groupId>org.apache.maven.wagon</groupId>
@@ -209,44 +206,19 @@
     <dependency>
       <groupId>org.apache.maven.wagon</groupId>
       <artifactId>wagon-http</artifactId>
-      <version>1.0</version>
-      <exclusions>
-      </exclusions>
+      <version>${wagon.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-all</artifactId>
+      <scope>test</scope>
     </dependency>
   </dependencies>
-
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-shade-plugin</artifactId>
-        <version>2.3</version>
-        <configuration>
-          <artifactSet>
-            <includes>
-              <include>*:*</include>
-            </includes>
-          </artifactSet>
-          <filters>
-            <filter>
-              <artifact>*:*</artifact>
-              <excludes>
-                <exclude>META-INF/*.SF</exclude>
-                <exclude>META-INF/*.DSA</exclude>
-                <exclude>META-INF/*.RSA</exclude>
-              </excludes>
-            </filter>
-          </filters>
-        </configuration>
-        <executions>
-          <execution>
-            <phase>package</phase>
-            <goals>
-              <goal>shade</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-    </plugins>
-  </build>
 </project>

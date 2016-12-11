@@ -33,8 +33,8 @@ You can use Zeppelin to retrieve distributed data from cache using Ignite SQL in
 ## Installing and Running Ignite example
 In order to use Ignite interpreters, you may install Apache Ignite in some simple steps:
 
-1. Download Ignite [source release](https://ignite.apache.org/download.html#sources) or [binary release](https://ignite.apache.org/download.html#binaries) whatever you want. But you must download Ignite as the same version of Zeppelin's. If it is not, you can't use scala code on Zeppelin. You can find ignite version in Zeppelin at the pom.xml which is placed under `path/to/your-Zeppelin/ignite/pom.xml` ( Of course, in Zeppelin source release ). Please check `ignite.version` .<br>Currently, Zeppelin provides ignite only in Zeppelin source release. So, if you download Zeppelin binary release( `zeppelin-0.5.0-incubating-bin-spark-xxx-hadoop-xx` ), you can not use ignite interpreter on Zeppelin. We are planning to include ignite in a future binary release.
-2. Examples are shipped as a separate Maven project, so to start running you simply need to import provided <dest_dir>/apache-ignite-fabric-1.2.0-incubating-bin/pom.xml file into your favourite IDE, such as Eclipse.
+1. Ignite provides examples only with source or binary release. Download Ignite [source release](https://ignite.apache.org/download.html#sources) or [binary release](https://ignite.apache.org/download.html#binaries) whatever you want. But you must download Ignite as the same version of Zeppelin's. If it is not, you can't use scala code on Zeppelin. The supported Ignite version is specified in [Supported Interpreter table](https://zeppelin.apache.org/supported_interpreters.html#ignite) for each Zeppelin release. If you're using Zeppelin master branch, please see `ignite.version` in `path/to/your-Zeppelin/ignite/pom.xml`.
+2. Examples are shipped as a separate Maven project, so to start running you simply need to import provided `<dest_dir>/apache-ignite-fabric-{version}-bin/examples/pom.xml` file into your favourite IDE, such as Eclipse.
 
 * In case of Eclipse, Eclipse -> File -> Import -> Existing Maven Projects
 * Set examples directory path to Eclipse and select the pom.xml.
@@ -58,12 +58,12 @@ At the "Interpreters" menu, you may edit Ignite interpreter or create new one. Z
   <tr>
     <td>ignite.addresses</td>
     <td>127.0.0.1:47500..47509</td>
-    <td>Coma separated list of Ignite cluster hosts. See [Ignite Cluster Configuration](https://apacheignite.readme.io/v1.2/docs/cluster-config) section for more details.</td>
+    <td>Coma separated list of Ignite cluster hosts. See [Ignite Cluster Configuration](https://apacheignite.readme.io/docs/cluster-config) section for more details.</td>
   </tr>
   <tr>
     <td>ignite.clientMode</td>
     <td>true</td>
-    <td>You can connect to the Ignite cluster as client or server node. See [Ignite Clients vs. Servers](https://apacheignite.readme.io/v1.2/docs/clients-vs-servers) section for details. Use true or false values in order to connect in client or server mode respectively.</td>
+    <td>You can connect to the Ignite cluster as client or server node. See [Ignite Clients vs. Servers](https://apacheignite.readme.io/docs/clients-vs-servers) section for details. Use true or false values in order to connect in client or server mode respectively.</td>
   </tr>
   <tr>
     <td>ignite.config.url</td>
@@ -78,7 +78,7 @@ At the "Interpreters" menu, you may edit Ignite interpreter or create new one. Z
   <tr>
     <td>ignite.peerClassLoadingEnabled</td>
     <td>true</td>
-    <td>Enables peer-class-loading. See [Zero Deployment](https://apacheignite.readme.io/v1.2/docs/zero-deployment) section for details. Use true or false values in order to enable or disable P2P class loading respectively.</td>
+    <td>Enables peer-class-loading. See [Zero Deployment](https://apacheignite.readme.io/docs/zero-deployment) section for details. Use true or false values in order to enable or disable P2P class loading respectively.</td>
   </tr>
 </table>
 
@@ -89,7 +89,7 @@ After configuring Ignite interpreter, create your own notebook. Then you can bin
 
 ![Binding Interpreters](../assets/themes/zeppelin/img/docs-img/ignite-interpreter-binding.png)
 
-For more interpreter binding information see [here](http://zeppelin.apache.org/docs/manual/interpreters.html).
+For more interpreter binding information see [here](../manual/interpreters.html#what-is-interpreter-setting).
 
 ### Ignite SQL interpreter
 In order to execute SQL query, use ` %ignite.ignitesql ` prefix. <br>

@@ -31,28 +31,20 @@ When you connect to Apache Zeppelin, you will be asked to enter your credentials
 ## Security Setup
 You can setup **Zeppelin notebook authentication** in some simple steps.
 
-### 1. Secure the HTTP channel
-To secure the HTTP channel, you have to change both **anon** and **authc** settings in `conf/shiro.ini`. In here, **anon** means "the access is anonymous" and **authc** means "formed auth security".
+### 1. Enable Shiro
+By default in `conf`, you will find `shiro.ini.template`, this file is used as an example and it is strongly recommended
+to create a `shiro.ini` file by doing the following command line
 
-The default status of them is
-
-```
-/** = anon
-#/** = authc
-```
-Deactivate the line "/** = anon" and activate the line "/** = authc" in `conf/shiro.ini` file.
-
-```
-#/** = anon
-/** = authc
+```bash
+cp conf/shiro.ini.template conf/shiro.ini
 ```
 
 For the further information about  `shiro.ini` file format, please refer to [Shiro Configuration](http://shiro.apache.org/configuration.html#Configuration-INISections).
 
-### 2. Secure the Websocket channel
+### 3. Secure the Websocket channel
 Set to property **zeppelin.anonymous.allowed** to **false** in `conf/zeppelin-site.xml`. If you don't have this file yet, just copy `conf/zeppelin-site.xml.template` to `conf/zeppelin-site.xml`.
 
-### 3. Start Zeppelin
+### 4. Start Zeppelin
 
 ```
 bin/zeppelin-daemon.sh start (or restart)
@@ -60,7 +52,7 @@ bin/zeppelin-daemon.sh start (or restart)
 
 Then you can browse Zeppelin at [http://localhost:8080](http://localhost:8080).
 
-### 4. Login
+### 5. Login
 Finally, you can login using one of the below **username/password** combinations.
 
 <center><img src="../assets/themes/zeppelin/img/docs-img/zeppelin-login.png"></center>
@@ -79,7 +71,7 @@ You can set the roles for each users next to the password.
 In case you want to leverage user groups and permissions, use one of the following configuration for LDAP or AD under `[main]` segment in `shiro.ini`.
 
 ```
-activeDirectoryRealm = org.apache.zeppelin.server.ActiveDirectoryGroupRealm
+activeDirectoryRealm = org.apache.zeppelin.realm.ActiveDirectoryGroupRealm
 activeDirectoryRealm.systemUsername = userNameA
 activeDirectoryRealm.systemPassword = passwordA
 activeDirectoryRealm.searchBase = CN=Users,DC=SOME_GROUP,DC=COMPANY,DC=COM
@@ -94,7 +86,7 @@ ldapRealm.contextFactory.url = ldap://ldap.test.com:389
 ldapRealm.userDnTemplate = uid={0},ou=Users,dc=COMPANY,dc=COM
 ldapRealm.contextFactory.authenticationMechanism = SIMPLE
 ```
- 
+
 also define roles/groups that you want to have in system, like below;
 
 ```
@@ -114,7 +106,7 @@ We also provide community custom Realms.
 ### Active Directory
 
 ```
-activeDirectoryRealm = org.apache.zeppelin.server.ActiveDirectoryGroupRealm
+activeDirectoryRealm = org.apache.zeppelin.realm.ActiveDirectoryGroupRealm
 activeDirectoryRealm.systemUsername = userNameA
 activeDirectoryRealm.systemPassword = passwordA
 activeDirectoryRealm.hadoopSecurityCredentialPath = jceks://file/user/zeppelin/conf/zeppelin.jceks
@@ -135,12 +127,25 @@ Change the following values in the Shiro.ini file, and uncomment the line:
 ### LDAP
 
 ```
-ldapRealm = org.apache.zeppelin.server.LdapGroupRealm
+ldapRealm = org.apache.zeppelin.realm.LdapGroupRealm
 # search base for ldap groups (only relevant for LdapGroupRealm):
 ldapRealm.contextFactory.environment[ldap.searchBase] = dc=COMPANY,dc=COM
 ldapRealm.contextFactory.url = ldap://ldap.test.com:389
 ldapRealm.userDnTemplate = uid={0},ou=Users,dc=COMPANY,dc=COM
 ldapRealm.contextFactory.authenticationMechanism = SIMPLE
+```
+
+### PAM
+[PAM](https://en.wikipedia.org/wiki/Pluggable_authentication_module) authentication support allows the reuse of existing authentication 
+moduls on the host where Zeppelin is running. On a typical system modules are configured per service for example sshd, passwd, etc. under `/etc/pam.d/`. You can
+either reuse one of these services or create your own for Zeppelin. Activiting PAM authentication requires two parameters:
+ 1. realm: The Shiro realm being used
+ 2. service: The service configured under `/etc/pam.d/` to be used. The name here needs to be the same as the file name under `/etc/pam.d/`
+ 
+```
+[main]
+ pamRealm=org.apache.zeppelin.realm.PamRealm
+ pamRealm.service=sshd
 ```
 
 ### ZeppelinHub
@@ -159,8 +164,8 @@ securityManager.realms = $zeppelinHubRealm
 > Note: ZeppelinHub is not releated to apache Zeppelin project.
 
 ## Secure your Zeppelin information (optional)
-By default, anyone who defined in `[users]` can share **Interpreter Setting**, **Credential** and **Configuration** information in Apache Zeppelin. 
-Sometimes you might want to hide these information for your use case. 
+By default, anyone who defined in `[users]` can share **Interpreter Setting**, **Credential** and **Configuration** information in Apache Zeppelin.
+Sometimes you might want to hide these information for your use case.
 Since Shiro provides **url-based security**, you can hide the information by commenting or uncommenting these below lines in `conf/shiro.ini`.
 
 ```
@@ -171,9 +176,14 @@ Since Shiro provides **url-based security**, you can hide the information by com
 /api/credential/** = authc, roles[admin]
 ```
 
-In this case, only who have `admin` role can see **Interpreter Setting**, **Credential** and **Configuration** information. 
+In this case, only who have `admin` role can see **Interpreter Setting**, **Credential** and **Configuration** information.
 If you want to grant this permission to other users, you can change **roles[ ]** as you defined at `[users]` section.
 
 <br/>
 > **NOTE :** All of the above configurations are defined in the `conf/shiro.ini` file. This documentation is originally from [SECURITY-README.md](https://github.com/apache/zeppelin/blob/master/SECURITY-README.md).
+
+
+## Other authentication methods
+
+- [HTTP Basic Authentication using NGINX](./authentication.html)
 

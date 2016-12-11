@@ -30,23 +30,12 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import com.google.common.base.Preconditions;
-import com.google.gson.Gson;
 import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.Input;
-import org.apache.zeppelin.interpreter.Interpreter;
-import org.apache.zeppelin.interpreter.InterpreterException;
-import org.apache.zeppelin.interpreter.InterpreterFactory;
-import org.apache.zeppelin.interpreter.InterpreterGroup;
-import org.apache.zeppelin.interpreter.InterpreterOutput;
-import org.apache.zeppelin.interpreter.InterpreterResult;
-import org.apache.zeppelin.interpreter.InterpreterSetting;
+import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
@@ -57,6 +46,11 @@ import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.search.SearchService;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.user.Credentials;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Preconditions;
+import com.google.gson.Gson;
 
 /**
  * Binded interpreters for a note
@@ -89,6 +83,7 @@ public class Note implements Serializable, ParagraphJobListener {
   private transient ScheduledFuture delayedPersist;
   private transient NoteEventListener noteEventListener;
   private transient Credentials credentials;
+  private transient NoteNameListener noteNameListener;
 
   /*
    * note configurations.
@@ -134,6 +129,43 @@ public class Note implements Serializable, ParagraphJobListener {
     return name;
   }
 
+  public String getNameWithoutPath() {
+    String notePath = getName();
+
+    int lastSlashIndex = notePath.lastIndexOf("/");
+    // The note is in the root folder
+    if (lastSlashIndex < 0) {
+      return notePath;
+    }
+
+    return notePath.substring(lastSlashIndex + 1);
+  }
+
+  /**
+   * @return normalized folder path, which is folderId
+   */
+  public String getFolderId() {
+    String notePath = getName();
+
+    // Ignore first '/'
+    if (notePath.charAt(0) == '/')
+      notePath = notePath.substring(1);
+
+    int lastSlashIndex = notePath.lastIndexOf("/");
+    // The root folder
+    if (lastSlashIndex < 0) {
+      return Folder.ROOT_FOLDER_ID;
+    }
+
+    String folderId = notePath.substring(0, lastSlashIndex);
+
+    return folderId;
+  }
+
+  public boolean isNameEmpty() {
+    return getName().trim().isEmpty();
+  }
+
   private String normalizeNoteName(String name) {
     name = name.trim();
     name = name.replace("\\", "/");
@@ -148,10 +180,20 @@ public class Note implements Serializable, ParagraphJobListener {
   }
 
   public void setName(String name) {
+    String oldName = this.name;
+
     if (name.indexOf('/') >= 0 || name.indexOf('\\') >= 0) {
       name = normalizeNoteName(name);
     }
     this.name = name;
+
+    if (this.noteNameListener != null && !oldName.equals(name)) {
+      noteNameListener.onNoteNameChanged(this, oldName);
+    }
+  }
+
+  public void setNoteNameListener(NoteNameListener listener) {
+    this.noteNameListener = listener;
   }
 
   void setInterpreterFactory(InterpreterFactory factory) {
@@ -324,6 +366,17 @@ public class Note implements Serializable, ParagraphJobListener {
       }
     }
     return null;
+  }
+
+  /**
+   * Clear all paragraph output of note
+   */
+  public void clearAllParagraphOutput() {
+    synchronized (paragraphs) {
+      for (Paragraph p : paragraphs) {
+        p.setReturn(null, null);
+      }
+    }
   }
 
   /**
@@ -694,21 +747,31 @@ public class Note implements Serializable, ParagraphJobListener {
   }
 
   @Override
-  public void onOutputAppend(Paragraph paragraph, InterpreterOutput out, String output) {
+  public void onOutputAppend(Paragraph paragraph, int idx, String output) {
     if (jobListenerFactory != null) {
       ParagraphJobListener listener = jobListenerFactory.getParagraphJobListener(this);
       if (listener != null) {
-        listener.onOutputAppend(paragraph, out, output);
+        listener.onOutputAppend(paragraph, idx, output);
       }
     }
   }
 
   @Override
-  public void onOutputUpdate(Paragraph paragraph, InterpreterOutput out, String output) {
+  public void onOutputUpdate(Paragraph paragraph, int idx, InterpreterResultMessage msg) {
     if (jobListenerFactory != null) {
       ParagraphJobListener listener = jobListenerFactory.getParagraphJobListener(this);
       if (listener != null) {
-        listener.onOutputUpdate(paragraph, out, output);
+        listener.onOutputUpdate(paragraph, idx, msg);
+      }
+    }
+  }
+
+  @Override
+  public void onOutputUpdateAll(Paragraph paragraph, List<InterpreterResultMessage> msgs) {
+    if (jobListenerFactory != null) {
+      ParagraphJobListener listener = jobListenerFactory.getParagraphJobListener(this);
+      if (listener != null) {
+        listener.onOutputUpdateAll(paragraph, msgs);
       }
     }
   }

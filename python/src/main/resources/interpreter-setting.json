@@ -32,5 +32,27 @@
       "language": "sql",
       "editOnDblClick": false
     }
+  },
+  {
+    "group": "python",
+    "name": "conda",
+    "className": "org.apache.zeppelin.python.PythonCondaInterpreter",
+    "properties": {
+    },
+    "editor":{
+      "language": "sh",
+      "editOnDblClick": false
+    }
+  },
+  {
+    "group": "python",
+    "name": "docker",
+    "className": "org.apache.zeppelin.python.PythonDockerInterpreter",
+    "properties": {
+    },
+    "editor":{
+      "language": "sh",
+      "editOnDblClick": false
+    }
   }
 ]

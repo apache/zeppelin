@@ -25,6 +25,7 @@ import static org.mockito.Mockito.mock;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -35,6 +36,7 @@ import org.apache.zeppelin.dep.DependencyResolver;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
 import org.apache.zeppelin.interpreter.InterpreterOption;
 import org.apache.zeppelin.interpreter.InterpreterOutput;
+import org.apache.zeppelin.interpreter.InterpreterResultMessage;
 import org.apache.zeppelin.interpreter.mock.MockInterpreter1;
 import org.apache.zeppelin.interpreter.mock.MockInterpreter2;
 import org.apache.zeppelin.notebook.*;
@@ -400,11 +402,18 @@ public class NotebookRepoSyncTest implements JobListenerFactory {
     return new ParagraphJobListener(){
 
       @Override
-      public void onOutputAppend(Paragraph paragraph, InterpreterOutput out, String output) {
+      public void onOutputAppend(Paragraph paragraph, int idx, String output) {
+
       }
 
       @Override
-      public void onOutputUpdate(Paragraph paragraph, InterpreterOutput out, String output) {
+      public void onOutputUpdate(Paragraph paragraph, int idx, InterpreterResultMessage msg) {
+
+      }
+
+      @Override
+      public void onOutputUpdateAll(Paragraph paragraph, List<InterpreterResultMessage> msgs) {
+
       }
 
       @Override

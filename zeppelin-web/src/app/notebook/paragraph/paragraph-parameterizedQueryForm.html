@@ -15,7 +15,7 @@ limitations under the License.
       ng-show="!paragraph.config.tableHide"
       class=" paragraphForm form-horizontal row">
   <div class="form-group col-sm-6 col-md-6 col-lg-4"
-       ng-repeat="formulaire in paragraph.settings.forms"
+       ng-repeat="formulaire in paragraph.settings.forms | toArray | orderBy:'name.toString()'"
        ng-init="loadForm(formulaire, paragraph.settings.params)">
     <label class="control-label input-sm" ng-class="{'disable': paragraph.status == 'RUNNING' || paragraph.status == 'PENDING' }">{{formulaire.name}}</label>
     <div>
@@ -29,7 +29,6 @@ limitations under the License.
 
       <select class="form-control input-sm"
              ng-if="paragraph.settings.forms[formulaire.name].options && paragraph.settings.forms[formulaire.name].type != 'checkbox'"
-             ng-change="runParagraph(getEditorValue())"
              ng-model="paragraph.settings.params[formulaire.name]"
              ng-class="{'disable': paragraph.status == 'RUNNING' || paragraph.status == 'PENDING' }"
              name="{{formulaire.name}}"

@@ -14,18 +14,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 package org.apache.zeppelin.livy;
 
+import org.apache.zeppelin.interpreter.*;
+import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
+import org.apache.zeppelin.scheduler.Scheduler;
+import org.apache.zeppelin.scheduler.SchedulerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
-/**
- * Livy PySpark3 interpreter for Zeppelin.
- */
-public class LivyPySpark3Interpreter extends LivyPySparkInterpreter {
 
-  public LivyPySpark3Interpreter(Properties property) {
+/**
+ * Livy PySpark interpreter for Zeppelin.
+ */
+public class LivyPySparkInterpreter extends BaseLivyInterprereter {
+
+  public LivyPySparkInterpreter(Properties property) {
     super(property);
-    kind = "pyspark3";
+  }
+
+  @Override
+  public String getSessionKind() {
+    return "pyspark3";
   }
 }

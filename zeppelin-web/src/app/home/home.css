@@ -171,7 +171,8 @@ a.navbar-brand:hover {
   color: #000;
   height: 28px;
   width: 200px;
-  font: normal normal normal 14px/1 FontAwesome;
+  font-size: 14px;
+  font-family: 'FontAwesome', 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 
 .dropdown-submenu {

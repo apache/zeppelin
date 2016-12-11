@@ -42,14 +42,35 @@ public class PythonProcess {
   Process process;
 
   private String binPath;
+  private String pythonPath;
   private long pid;
 
-  public PythonProcess(String binPath) {
+  public PythonProcess(String binPath, String pythonPath) {
     this.binPath = binPath;
+    this.pythonPath = pythonPath;
   }
 
   public void open() throws IOException {
-    ProcessBuilder builder = new ProcessBuilder(binPath, "-iu");
+    ProcessBuilder builder;
+    boolean hasParams = binPath.split(" ").length > 1;
+    if (System.getProperty("os.name").toLowerCase().contains("windows")) {
+      if (hasParams) {
+        builder = new ProcessBuilder(binPath.split(" "));
+      } else {
+        builder = new ProcessBuilder(binPath, "-iu");
+      }
+    } else {
+      String cmd;
+      if (hasParams) {
+        cmd = binPath;
+      } else {
+        cmd = binPath + " -iu";
+      }
+      builder = new ProcessBuilder("bash", "-c", cmd);
+      if (pythonPath != null) {
+        builder.environment().put("PYTHONPATH", pythonPath);
+      }
+    }
 
     builder.redirectErrorStream(true);
     process = builder.start();

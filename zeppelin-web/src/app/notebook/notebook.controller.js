@@ -27,12 +27,14 @@
     'baseUrlSrv',
     '$timeout',
     'saveAsService',
-    'ngToast'
+    'ngToast',
+    'noteActionSrv',
+    'noteVarShareService'
   ];
 
   function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
                         $http, websocketMsgSrv, baseUrlSrv, $timeout, saveAsService,
-                        ngToast) {
+                        ngToast, noteActionSrv, noteVarShareService) {
 
     ngToast.dismiss();
 
@@ -86,6 +88,7 @@
 
     /** Init the new controller */
     var initNotebook = function() {
+      noteVarShareService.clear();
       websocketMsgSrv.getNote($routeParams.noteId);
       websocketMsgSrv.listRevisionHistory($routeParams.noteId);
       var currentRoute = $route.current;
@@ -143,20 +146,9 @@
       $scope.$broadcast('doubleClickParagraph', paragraphId);
     };
 
-    /** Remove the note and go back tot he main page */
-    /** TODO(anthony): In the nearly future, go back to the main page and telle to the dude that the note have been remove */
+    // Remove the note and go back to the main page
     $scope.removeNote = function(noteId) {
-      BootstrapDialog.confirm({
-        closable: true,
-        title: '',
-        message: 'Do you want to delete this note?',
-        callback: function(result) {
-          if (result) {
-            websocketMsgSrv.deleteNote(noteId);
-            $location.path('/');
-          }
-        }
-      });
+      noteActionSrv.removeNote(noteId, true);
     };
 
     //Export notebook
@@ -223,26 +215,18 @@
 
     $scope.saveNote = function() {
       if ($scope.note && $scope.note.paragraphs) {
-        _.forEach($scope.note.paragraphs, function(n, key) {
-          angular.element('#' + n.id + '_paragraphColumn_main').scope().saveParagraph();
+        _.forEach($scope.note.paragraphs, function(par) {
+          angular
+            .element('#' + par.id + '_paragraphColumn_main')
+            .scope()
+            .saveParagraph(par);
         });
         $scope.isNoteDirty = null;
       }
     };
 
-    $scope.clearAllParagraphOutput = function() {
-      BootstrapDialog.confirm({
-        closable: true,
-        title: '',
-        message: 'Do you want to clear all output?',
-        callback: function(result) {
-          if (result) {
-            _.forEach($scope.note.paragraphs, function(n, key) {
-              angular.element('#' + n.id + '_paragraphColumn_main').scope().clearParagraphOutput();
-            });
-          }
-        }
-      });
+    $scope.clearAllParagraphOutput = function(noteId) {
+      noteActionSrv.clearAllParagraphOutput(noteId);
     };
 
     $scope.toggleAllEditor = function() {
@@ -381,86 +365,51 @@
       return noteCopy;
     };
 
-    var updateNote = function(note) {
-      /** update Note name */
-      if (note.name !== $scope.note.name) {
-        console.log('change note name: %o to %o', $scope.note.name, note.name);
-        $scope.note.name = note.name;
-      }
-
-      $scope.note.config = note.config;
-      $scope.note.info = note.info;
-
-      var newParagraphIds = note.paragraphs.map(function(x) {return x.id;});
-      var oldParagraphIds = $scope.note.paragraphs.map(function(x) {return x.id;});
-
-      var numNewParagraphs = newParagraphIds.length;
-      var numOldParagraphs = oldParagraphIds.length;
-
-      var paragraphToBeFocused;
-      var focusedParagraph;
-      for (var i = 0; i < $scope.note.paragraphs.length; i++) {
-        var paragraphId = $scope.note.paragraphs[i].id;
-        if (angular.element('#' + paragraphId + '_paragraphColumn_main').scope().paragraphFocused) {
-          focusedParagraph = paragraphId;
-          break;
+    var addPara = function(paragraph, index) {
+      $scope.note.paragraphs.splice(index, 0, paragraph);
+      _.each($scope.note.paragraphs, function(para) {
+        if (para.id === paragraph.id) {
+          para.focus = true;
+          $scope.$broadcast('focusParagraph', para.id, 0, false);
         }
-      }
-
-      /** add a new paragraph */
-      if (numNewParagraphs > numOldParagraphs) {
-        for (var index in newParagraphIds) {
-          if (oldParagraphIds[index] !== newParagraphIds[index]) {
-            $scope.note.paragraphs.splice(index, 0, note.paragraphs[index]);
-            paragraphToBeFocused = note.paragraphs[index].id;
-            break;
-          }
-          $scope.$broadcast('updateParagraph', {
-            note: $scope.note, // pass the note object to paragraph scope
-            paragraph: note.paragraphs[index]});
-        }
-      }
-
-      /** update or move paragraph */
-      if (numNewParagraphs === numOldParagraphs) {
-        for (var idx in newParagraphIds) {
-          var newEntry = note.paragraphs[idx];
-          if (oldParagraphIds[idx] === newParagraphIds[idx]) {
-            $scope.$broadcast('updateParagraph', {
-              note: $scope.note, // pass the note object to paragraph scope
-              paragraph: newEntry});
-          } else {
-            // move paragraph
-            var oldIdx = oldParagraphIds.indexOf(newParagraphIds[idx]);
-            $scope.note.paragraphs.splice(oldIdx, 1);
-            $scope.note.paragraphs.splice(idx, 0, newEntry);
-            // rebuild id list since paragraph has moved.
-            oldParagraphIds = $scope.note.paragraphs.map(function(x) {return x.id;});
-          }
-
-          if (focusedParagraph === newParagraphIds[idx]) {
-            paragraphToBeFocused = focusedParagraph;
-          }
-        }
-      }
-
-      /** remove paragraph */
-      if (numNewParagraphs < numOldParagraphs) {
-        for (var oldidx in oldParagraphIds) {
-          if (oldParagraphIds[oldidx] !== newParagraphIds[oldidx]) {
-            $scope.note.paragraphs.splice(oldidx, 1);
-            break;
-          }
-        }
-      }
-
-      // restore focus of paragraph
-      for (var f = 0; f < $scope.note.paragraphs.length; f++) {
-        if (paragraphToBeFocused === $scope.note.paragraphs[f].id) {
-          $scope.note.paragraphs[f].focus = true;
-        }
-      }
+      });
     };
+
+    var removePara = function(paragraphId) {
+      var removeIdx;
+      _.each($scope.note.paragraphs, function(para, idx) {
+        if (para.id === paragraphId) {
+          removeIdx = idx;
+        }
+      });
+      return $scope.note.paragraphs.splice(removeIdx, 1);
+    };
+
+    $scope.$on('addParagraph', function(event, paragraph, index) {
+      addPara(paragraph, index);
+    });
+
+    $scope.$on('removeParagraph', function(event, paragraphId) {
+      removePara(paragraphId);
+    });
+
+    $scope.$on('moveParagraph', function(event, paragraphId, newIdx) {
+      var removedPara = removePara(paragraphId);
+      if (removedPara && removedPara.length === 1) {
+        addPara(removedPara[0], newIdx);
+      }
+    });
+
+    $scope.$on('updateNote', function(event, name, config, info) {
+      /** update Note name */
+      if (name !== $scope.note.name) {
+        console.log('change note name to : %o', $scope.note.name);
+        $scope.note.name = name;
+      }
+      $scope.note.config = config;
+      $scope.note.info = info;
+      initializeLookAndFeel();
+    });
 
     var getInterpreterBindings = function() {
       websocketMsgSrv.getInterpreterBindings($scope.note.id);
@@ -651,6 +600,42 @@
       $scope.permissions.writers = angular.element('#selectWriters').val();
     }
 
+    $scope.restartInterpreter = function(interpeter) {
+      var thisConfirm = BootstrapDialog.confirm({
+        closable: false,
+        closeByBackdrop: false,
+        closeByKeyboard: false,
+        title: '',
+        message: 'Do you want to restart ' + interpeter.name + ' interpreter?',
+        callback: function(result) {
+          if (result) {
+            var payload  = {
+              'noteId': $scope.note.id
+            };
+
+            thisConfirm.$modalFooter.find('button').addClass('disabled');
+            thisConfirm.$modalFooter.find('button:contains("OK")')
+              .html('<i class="fa fa-circle-o-notch fa-spin"></i> Saving Setting');
+
+            $http.put(baseUrlSrv.getRestApiBase() + '/interpreter/setting/restart/' + interpeter.id, payload)
+              .success(function(data, status, headers, config) {
+              var index = _.findIndex($scope.interpreterSettings, {'id': interpeter.id});
+              $scope.interpreterSettings[index] = data.body;
+              thisConfirm.close();
+            }).error(function(data, status, headers, config) {
+              thisConfirm.close();
+              console.log('Error %o %o', status, data.message);
+              BootstrapDialog.show({
+                title: 'Error restart interpreter.',
+                message: data.message
+              });
+            });
+            return false;
+          }
+        }
+      });
+    };
+
     $scope.savePermissions = function() {
       convertPermissionsToArray();
       $http.put(baseUrlSrv.getRestApiBase() + '/notebook/' + $scope.note.id + '/permissions',
@@ -740,10 +725,10 @@
       connectedOnce = true;
     });
 
-    $scope.$on('moveParagraphUp', function(event, paragraphId) {
+    $scope.$on('moveParagraphUp', function(event, paragraph) {
       var newIndex = -1;
       for (var i = 0; i < $scope.note.paragraphs.length; i++) {
-        if ($scope.note.paragraphs[i].id === paragraphId) {
+        if ($scope.note.paragraphs[i].id === paragraph.id) {
           newIndex = i - 1;
           break;
         }
@@ -752,16 +737,22 @@
         return;
       }
       // save dirtyText of moving paragraphs.
-      var prevParagraphId = $scope.note.paragraphs[newIndex].id;
-      angular.element('#' + paragraphId + '_paragraphColumn_main').scope().saveParagraph();
-      angular.element('#' + prevParagraphId + '_paragraphColumn_main').scope().saveParagraph();
-      websocketMsgSrv.moveParagraph(paragraphId, newIndex);
+      var prevParagraph = $scope.note.paragraphs[newIndex];
+      angular
+        .element('#' + paragraph.id + '_paragraphColumn_main')
+        .scope()
+        .saveParagraph(paragraph);
+      angular
+        .element('#' + prevParagraph.id + '_paragraphColumn_main')
+        .scope()
+        .saveParagraph(prevParagraph);
+      websocketMsgSrv.moveParagraph(paragraph.id, newIndex);
     });
 
-    $scope.$on('moveParagraphDown', function(event, paragraphId) {
+    $scope.$on('moveParagraphDown', function(event, paragraph) {
       var newIndex = -1;
       for (var i = 0; i < $scope.note.paragraphs.length; i++) {
-        if ($scope.note.paragraphs[i].id === paragraphId) {
+        if ($scope.note.paragraphs[i].id === paragraph.id) {
           newIndex = i + 1;
           break;
         }
@@ -771,10 +762,16 @@
         return;
       }
       // save dirtyText of moving paragraphs.
-      var nextParagraphId = $scope.note.paragraphs[newIndex].id;
-      angular.element('#' + paragraphId + '_paragraphColumn_main').scope().saveParagraph();
-      angular.element('#' + nextParagraphId + '_paragraphColumn_main').scope().saveParagraph();
-      websocketMsgSrv.moveParagraph(paragraphId, newIndex);
+      var nextParagraph = $scope.note.paragraphs[newIndex];
+      angular
+        .element('#' + paragraph.id + '_paragraphColumn_main')
+        .scope()
+        .saveParagraph(paragraph);
+      angular
+        .element('#' + nextParagraph.id + '_paragraphColumn_main')
+        .scope()
+        .saveParagraph(nextParagraph);
+      websocketMsgSrv.moveParagraph(paragraph.id, newIndex);
     });
 
     $scope.$on('moveFocusToPreviousParagraph', function(event, currentParagraphId) {
@@ -841,8 +838,6 @@
 
       if ($scope.note === null) {
         $scope.note = note;
-      } else {
-        updateNote(note);
       }
       initializeLookAndFeel();
       //open interpreter binding setting when there're none selected

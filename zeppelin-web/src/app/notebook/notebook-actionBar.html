@@ -15,7 +15,7 @@ limitations under the License.
   <h3>
     <div style="float: left; width: auto; max-width: 40%"
       ng-controller="ElasticInputCtrl as input">
-      <input type="text" pu-elastic-input class="form-control2" placeholder="{{noteName(note)}}" style="min-width: 0px; max-width: 95%;"
+      <input type="text" pu-elastic-input class="form-control2" placeholder="New name" style="min-width: 0px; max-width: 95%;"
            ng-if="input.showEditor" ng-model="note.name" ng-blur="sendNewName();input.showEditor = false;" ng-enter="sendNewName();input.showEditor = false;" ng-escape="note.name = oldName; input.showEditor = false" focus-if="input.showEditor" />
       <p class="form-control-static2" ng-click="input.showEditor = true; oldName = note.name" ng-show="!input.showEditor">{{noteName(note)}}</p>
     </div>
@@ -43,7 +43,7 @@ limitations under the License.
       </button>
       <button type="button"
               class="btn btn-default btn-xs"
-              ng-click="clearAllParagraphOutput()"
+              ng-click="clearAllParagraphOutput(note.id)"
               ng-hide="viewOnly"
               ng-class="{'disabled':isNoteRunning()}"
               tooltip-placement="bottom" tooltip="Clear output">

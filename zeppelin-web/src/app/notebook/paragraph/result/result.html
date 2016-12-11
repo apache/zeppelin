@@ -1,0 +1,89 @@
+<!--
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<div>
+  <div ng-include src="'app/notebook/paragraph/result/result-chart-selector.html'"></div>
+  <div
+    id="p{{id}}_resize"
+    ng-if="!config.helium.activeApp"
+    style="padding-bottom: 5px;"
+    resize='{"allowresize": "{{!asIframe && !viewOnly}}", "graphType": "{{type}}"}'
+       resizable on-resize="resize(width, height);">
+
+    <!-- graph setting -->
+    <div class="option lightBold" style="overflow: visible;"
+         ng-show="type=='TABLE' && graphMode!='table'
+                  && config.graph.optionOpen && !asIframe && !viewOnly">
+      <div ng-repeat="viz in builtInTableDataVisualizationList track by $index"
+           id="trsetting{{id}}_{{viz.id}}"
+           ng-show="graphMode == viz.id"></div>
+      <div ng-repeat="viz in builtInTableDataVisualizationList track by $index"
+           id="vizsetting{{id}}_{{viz.id}}"
+           ng-show="graphMode == viz.id"></div>
+    </div>
+
+    <!-- graph -->
+    <div id="p{{id}}_graph"
+         class="graphContainer"
+         ng-class="{'noOverflow': graphMode=='table'}"
+         ng-show="type =='TABLE'"
+         >
+      <div ng-repeat="viz in builtInTableDataVisualizationList track by $index"
+           id="p{{id}}_{{viz.id}}"
+           ng-show="graphMode == viz.id">
+      </div>
+    </div>
+
+    <div id="{{id}}_comment"
+         class="text"
+         ng-if="type == 'TABLE' && tableDataComment"
+         ng-bind-html="tableDataComment">
+    </div>
+
+    <div id="p{{id}}_text"
+         ng-if="type == 'TEXT'">
+      <div class="fa fa-level-down scroll-paragraph-down"
+           ng-show="showScrollDownIcon()"
+           ng-click="scrollParagraphDown()"
+           tooltip="Follow Output"></div>
+      <div id="p{{id}}_text"
+           style="max-height: {{config.graph.height}}px; overflow: auto"
+           class="text"></div>
+      <div class="fa fa-chevron-up scroll-paragraph-up"
+           ng-show="showScrollUpIcon()"
+           ng-click="scrollParagraphUp()"
+           tooltip="Scroll Top"></div>
+    </div>
+
+    <div id="p{{id}}_html"
+         class="resultContained"
+         ng-if="type == 'HTML'">
+    </div>
+
+    <div id="p{{id}}_angular"
+         class="resultContained"
+         ng-if="type == 'ANGULAR'">
+    </div>
+
+    <img id="{{id}}_img"
+         ng-if="type == 'IMG'"
+         ng-src="{{getBase64ImageSrc(result.data)}}" />
+  </div>
+
+  <div ng-repeat="app in apps">
+    <div id="p{{app.id}}"
+         ng-show="config.helium.activeApp == app.id">
+    </div>
+  </div>
+</div>

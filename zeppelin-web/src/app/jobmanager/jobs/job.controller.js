@@ -37,6 +37,11 @@
       var result = Math.ceil(runningJobCount / totalCount * 100);
       return isNaN(result) ? 0 : result;
     };
+
+    $scope.lastExecuteTime = function(unixtime) {
+      return moment.unix(unixtime / 1000).fromNow();
+    };
+
   }
 
 })();

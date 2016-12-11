@@ -20,6 +20,7 @@
     var notes = {
       root: {children: []},
       flatList: [],
+      flatFolderMap: {},
 
       setNotes: function(notesList) {
         // a flat list to boost searching
@@ -27,6 +28,7 @@
 
         // construct the folder-based tree
         notes.root = {children: []};
+        notes.flatFolderMap = {};
         _.reduce(notesList, function(root, note) {
           var noteName = note.name || note.id;
           var nodes = noteName.match(/([^\/][^\/]*)/g);
@@ -43,7 +45,8 @@
       if (nodes.length === 1) {  // the leaf
         curDir.children.push({
           name: nodes[0],
-          id: noteId
+          id: noteId,
+          path: curDir.id ? curDir.id + '/' + nodes[0] : nodes[0]
         });
       } else {  // a folder node
         var node = nodes.shift();
@@ -53,10 +56,15 @@
           addNode(dir, nodes, noteId);
         } else {
           var newDir = {
+            id: curDir.id ? curDir.id + '/' + node : node,
             name: node,
             hidden: true,
             children: []
           };
+
+          // add the folder to flat folder map
+          notes.flatFolderMap[newDir.id] = newDir;
+
           curDir.children.push(newDir);
           addNode(newDir, nodes, noteId);
         }

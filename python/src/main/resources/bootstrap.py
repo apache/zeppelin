@@ -16,10 +16,11 @@
 # PYTHON 2 / 3 compatibility :
 # bootstrap.py must be runnable with Python 2 or 3
 
-# Remove interactive mode displayhook
+import os
 import sys
 import signal
 import base64
+import warnings
 from io import BytesIO
 try:
     from StringIO import StringIO
@@ -117,6 +118,8 @@ class PyZeppelinContext(object):
     
     def __init__(self):
         self.max_result = 1000
+        self._displayhook = lambda *args: None
+        self._setup_matplotlib()
     
     def input(self, name, defaultValue=""):
         print(self.errorMsg)
@@ -137,11 +140,14 @@ class PyZeppelinContext(object):
         elif hasattr(p, '__call__'):
             p() #error reporting
     
-    def show_dataframe(self, df, **kwargs):
+    def show_dataframe(self, df, show_index=False, **kwargs):
         """Pretty prints DF using Table Display System
         """
         limit = len(df) > self.max_result
         header_buf = StringIO("")
+        if show_index:
+            idx_name = str(df.index.name) if df.index.name is not None else ""
+            header_buf.write(idx_name + "\t")
         header_buf.write(str(df.columns[0]))
         for col in df.columns[1:]:
             header_buf.write("\t")
@@ -150,7 +156,11 @@ class PyZeppelinContext(object):
         
         body_buf = StringIO("")
         rows = df.head(self.max_result).values if limit else df.values
-        for row in rows:
+        index = df.index.values
+        for idx, row in zip(index, rows):
+            if show_index:
+                body_buf.write("%html <strong>{}</strong>".format(idx))
+                body_buf.write("\t")
             body_buf.write(str(row[0]))
             for cell in row[1:]:
                 body_buf.write("\t")
@@ -164,7 +174,7 @@ class PyZeppelinContext(object):
         #)
         body_buf.close(); header_buf.close()
     
-    def show_matplotlib(self, p, fmt="png", width="auto", height="auto", 
+    def show_matplotlib(self, p, fmt="png", width="auto", height="auto",
                         **kwargs):
         """Matplotlib show function
         """
@@ -187,6 +197,38 @@ class PyZeppelinContext(object):
         html = "%html <div style='width:{width};height:{height}'>{img}<div>"
         print(html.format(width=width, height=height, img=img_str))
         img.close()
+    
+    def configure_mpl(self, **kwargs):
+        import mpl_config
+        mpl_config.configure(**kwargs)
+    
+    def _setup_matplotlib(self):
+        # If we don't have matplotlib installed don't bother continuing
+        try:
+            import matplotlib
+        except ImportError:
+            return
+        # Make sure custom backends are available in the PYTHONPATH
+        rootdir = os.environ.get('ZEPPELIN_HOME', os.getcwd())
+        mpl_path = os.path.join(rootdir, 'interpreter', 'lib', 'python')
+        if mpl_path not in sys.path:
+            sys.path.append(mpl_path)
+        
+        # Finally check if backend exists, and if so configure as appropriate
+        try:
+            matplotlib.use('module://backend_zinline')
+            import backend_zinline
+            
+            # Everything looks good so make config assuming that we are using
+            # an inline backend
+            self._displayhook = backend_zinline.displayhook
+            self.configure_mpl(width=600, height=400, dpi=72,
+                               fontsize=10, interactive=True, format='png')
+        except ImportError:
+            # Fall back to Agg if no custom backend installed
+            matplotlib.use('Agg')
+            warnings.warn("Unable to load inline matplotlib backend, "
+                          "falling back to Agg")
 
 
 z = PyZeppelinContext()

@@ -88,7 +88,7 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
   }
 
   @Override
-  public void start() {
+  public void start(String userName, Boolean isUserImpersonate) {
     // start server process
     try {
       port = RemoteInterpreterUtils.findRandomAvailablePortOnAllLocalInterfaces();
@@ -101,6 +101,10 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
     cmdLine.addArgument(interpreterDir, false);
     cmdLine.addArgument("-p", false);
     cmdLine.addArgument(Integer.toString(port), false);
+    if (isUserImpersonate && !userName.equals("anonymous")) {
+      cmdLine.addArgument("-u", false);
+      cmdLine.addArgument(userName, false);
+    }
     cmdLine.addArgument("-l", false);
     cmdLine.addArgument(localRepoDir, false);
 
@@ -124,14 +128,20 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
 
     long startTime = System.currentTimeMillis();
     while (System.currentTimeMillis() - startTime < getConnectTimeout()) {
-      if (RemoteInterpreterUtils.checkIfRemoteEndpointAccessible("localhost", port)) {
-        break;
-      } else {
-        try {
-          Thread.sleep(500);
-        } catch (InterruptedException e) {
-          logger.error("Exception in RemoteInterpreterProcess while synchronized reference " +
-              "Thread.sleep", e);
+      try {
+        if (RemoteInterpreterUtils.checkIfRemoteEndpointAccessible("localhost", port)) {
+          break;
+        } else {
+          try {
+            Thread.sleep(500);
+          } catch (InterruptedException e) {
+            logger.error("Exception in RemoteInterpreterProcess while synchronized reference " +
+                    "Thread.sleep", e);
+          }
+        }
+      } catch (Exception e) {
+        if (logger.isDebugEnabled()) {
+          logger.debug("Remote interpreter not yet accessible at localhost:" + port);
         }
       }
     }

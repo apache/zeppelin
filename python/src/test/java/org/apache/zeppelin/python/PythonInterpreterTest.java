@@ -37,9 +37,13 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketAddress;
+import java.util.LinkedList;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.zeppelin.interpreter.ClassloaderInterpreter;
+import org.apache.zeppelin.interpreter.Interpreter;
+import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.junit.Before;
 import org.junit.Test;
@@ -82,7 +86,14 @@ public class PythonInterpreterTest {
       }
     });
 
+    // python interpreter
     pythonInterpreter = spy(new PythonInterpreter(getPythonTestProperties()));
+
+    // create interpreter group
+    InterpreterGroup group = new InterpreterGroup();
+    group.put("note", new LinkedList<Interpreter>());
+    group.get("note").add(pythonInterpreter);
+    pythonInterpreter.setInterpreterGroup(group);
 
     when(pythonInterpreter.getPythonProcess()).thenReturn(mockPythonProcess);
     when(mockPythonProcess.sendAndGetResult(eq("\n\nimport py4j\n"))).thenReturn("ImportError");
@@ -158,7 +169,7 @@ public class PythonInterpreterTest {
     cmdHistory = "";
     InterpreterResult result = pythonInterpreter.interpret("print a", null);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-    assertEquals("%text print a", result.toString());
+    assertEquals("%text print a", result.message().get(0).toString());
   }
 
   /**
@@ -220,23 +231,32 @@ public class PythonInterpreterTest {
 
   @Test
   public void checkMultiRowErrorFails() {
+
     PythonInterpreter pythonInterpreter = new PythonInterpreter(
       PythonInterpreterTest.getPythonTestProperties()
     );
+    // create interpreter group
+    InterpreterGroup group = new InterpreterGroup();
+    group.put("note", new LinkedList<Interpreter>());
+    group.get("note").add(pythonInterpreter);
+    pythonInterpreter.setInterpreterGroup(group);
+
     pythonInterpreter.open();
+
     String codeRaiseException = "raise Exception(\"test exception\")";
     InterpreterResult ret = pythonInterpreter.interpret(codeRaiseException, null);
 
     assertNotNull("Interpreter result for raise exception is Null", ret);
 
+    System.err.println("ret = '" + ret + "'");
     assertEquals(InterpreterResult.Code.ERROR, ret.code());
-    assertTrue(ret.message().length() > 0);
+    assertTrue(ret.message().get(0).getData().length() > 0);
 
     assertNotNull("Interpreter result for text is Null", ret);
     String codePrintText = "print (\"Exception(\\\"test exception\\\")\")";
     ret = pythonInterpreter.interpret(codePrintText, null);
     assertEquals(InterpreterResult.Code.SUCCESS, ret.code());
-    assertTrue(ret.message().length() > 0);
+    assertTrue(ret.message().get(0).getData().length() > 0);
   }
 
 }

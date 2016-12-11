@@ -146,11 +146,17 @@ For example,
 export SPARK_HOME=/usr/lib/spark
 ```
 
-You can optionally export `HADOOP_CONF_DIR` and `SPARK_SUBMIT_OPTIONS`
+You can optionally set more environment variables
 
 ```bash
+# set hadoop conf dir
 export HADOOP_CONF_DIR=/usr/lib/hadoop
+
+# set options to pass spark-submit command
 export SPARK_SUBMIT_OPTIONS="--packages com.databricks:spark-csv_2.10:1.2.0"
+
+# extra classpath. e.g. set classpath for hive-site.xml
+export ZEPPELIN_INTP_CLASSPATH_OVERRIDES=/etc/hive/conf
 ```
 
 For Windows, ensure you have `winutils.exe` in `%HADOOP_HOME%\bin`. Please see [Problems running Hadoop on Windows](https://wiki.apache.org/hadoop/WindowsProblems) for the details.
@@ -228,8 +234,7 @@ Here are few examples:
   ```
 
 ### 3. Dynamic Dependency Loading via %spark.dep interpreter
-> Note: `%spark.dep` interpreter is deprecated since v0.6.0.
-`%spark.dep` interpreter loads libraries to `%spark` and `%spark.pyspark` but not to  `%spark.sql` interpreter. So we recommend you to use the first option instead.
+> Note: `%spark.dep` interpreter loads libraries to `%spark` and `%spark.pyspark` but not to  `%spark.sql` interpreter. So we recommend you to use the first option instead.
 
 When your code requires external library, instead of doing download/copy/restart Zeppelin, you can easily do following jobs using `%spark.dep` interpreter.
 
@@ -292,6 +297,12 @@ So you can put some objects from Scala and read it from Python, vice versa.
 %spark
 val myObject = ...
 z.put("objName", myObject)
+
+// Exchanging data frames
+myScalaDataFrame = ...
+z.put("myScalaDataFrame", myScalaDataFrame)
+
+val myPythonDataFrame = z.get("myPythonDataFrame").asInstanceOf[DataFrame]
 {% endhighlight %}
 
   </div>
@@ -301,6 +312,12 @@ z.put("objName", myObject)
 # Get object from python
 %spark.pyspark
 myObject = z.get("objName")
+
+# Exchanging data frames
+myPythonDataFrame = ...
+z.put("myPythonDataFrame", postsDf._jdf)
+
+myScalaDataFrame = DataFrame(z.get("myScalaDataFrame"), sqlContext)
 {% endhighlight %}
 
   </div>
@@ -362,6 +379,11 @@ select * from ${table=defaultTableName} where text like '%${search}%'
 
 To learn more about dynamic form, checkout [Dynamic Form](../manual/dynamicform.html).
 
+
+## Matplotlib Integration (pyspark)
+Both the `python` and `pyspark` interpreters have built-in support for inline visualization using `matplotlib`, a popular plotting library for python. More details can be found in the [python interpreter documentation](../interpreter/python.html), since matplotlib support is identical. More advanced interactive plotting can be done with pyspark through utilizing Zeppelin's built-in [Angular Display System](../displaysystem/back-end-angular.html), as shown below:
+
+<img class="img-responsive" src="../assets/themes/zeppelin/img/docs-img/matplotlibAngularExample.gif" />
 
 ## Interpreter setting option
 
