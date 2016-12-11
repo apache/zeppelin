@@ -33,9 +33,9 @@ import java.util.Properties;
 /**
  * Livy PySpark interpreter for Zeppelin.
  */
-public class LivyPySparkInterpreter extends BaseLivyInterprereter {
+public class LivyPySpark3Interpreter extends BaseLivyInterprereter {
 
-  public LivyPySparkInterpreter(Properties property) {
+  public LivyPySpark3Interpreter(Properties property) {
     super(property);
   }
 
