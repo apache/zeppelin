@@ -26,12 +26,13 @@
     'baseUrlSrv',
     'websocketMsgSrv',
     'arrayOrderingSrv',
-    'searchService'
+    'searchService',
+    'noteActionSrv'
   ];
 
   function NavCtrl($scope, $rootScope, $http, $routeParams, $location,
                    noteListDataFactory, baseUrlSrv, websocketMsgSrv,
-                   arrayOrderingSrv, searchService) {
+                   arrayOrderingSrv, searchService, noteActionSrv) {
     var vm = this;
     vm.arrayOrderingSrv = arrayOrderingSrv;
     vm.connected = websocketMsgSrv.isConnected();
@@ -124,6 +125,10 @@
     $scope.$on('loginSuccess', function(event, param) {
       loadNotes();
     });
+
+    $scope.clearAllParagraphOutput = function(noteId) {
+      noteActionSrv.clearAllParagraphOutput(noteId);
+    };
 
     /*
     ** Performance optimization for Browser Render.
