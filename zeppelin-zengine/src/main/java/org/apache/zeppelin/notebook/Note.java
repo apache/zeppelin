@@ -539,6 +539,12 @@ public class Note implements Serializable, ParagraphJobListener {
    */
   public void run(String paragraphId) {
     Paragraph p = getParagraph(paragraphId);
+
+    if (p.isBlankParagraph()) {
+      logger.info("skip to run blank paragraph. {}", p.getId());
+      return;
+    }
+
     p.setListener(jobListenerFactory.getParagraphJobListener(this));
     String requiredReplName = p.getRequiredReplName();
     Interpreter intp = factory.getInterpreter(p.getUser(), getId(), requiredReplName);

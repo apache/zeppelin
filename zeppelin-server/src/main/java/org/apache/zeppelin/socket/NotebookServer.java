@@ -44,7 +44,6 @@ import org.apache.zeppelin.helium.ApplicationEventListener;
 import org.apache.zeppelin.helium.HeliumPackage;
 import org.apache.zeppelin.interpreter.InterpreterContextRunner;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
-import org.apache.zeppelin.interpreter.InterpreterOutput;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResultMessage;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
@@ -79,7 +78,6 @@ import org.quartz.SchedulerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Strings;
 import com.google.common.collect.Queues;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -1392,10 +1390,10 @@ public class NotebookServer extends WebSocketServlet implements
     Map<String, Object> config = (Map<String, Object>) fromMessage
        .get("config");
     p.setConfig(config);
+
     // if it's the last paragraph, let's add a new one
     boolean isTheLastParagraph = note.isLastParagraph(p.getId());
-    if (!(text.trim().equals(p.getMagic()) || Strings.isNullOrEmpty(text)) &&
-        isTheLastParagraph) {
+    if (isTheLastParagraph) {
       Paragraph newPara = note.addParagraph();
       broadcastNewParagraph(note, newPara);
     }
