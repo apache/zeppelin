@@ -38,10 +38,12 @@ public class LivySparkSQLInterpreter extends BaseLivyInterprereter {
 
   private LivySparkInterpreter sparkInterpreter;
 
-  private boolean sqlContextCreated = false;
+  private boolean isSpark2 = false;
+  private int maxResult = 1000;
 
   public LivySparkSQLInterpreter(Properties property) {
     super(property);
+    this.maxResult = Integer.parseInt(property.getProperty("zeppelin.livy.spark.sql.maxResult"));
   }
 
   @Override
@@ -51,10 +53,56 @@ public class LivySparkSQLInterpreter extends BaseLivyInterprereter {
 
   @Override
   public void open() {
-    super.open();
-    this.sparkInterpreter =
-        (LivySparkInterpreter) getInterpreterInTheSameSessionByClassName(
-            LivySparkInterpreter.class.getName());
+    this.sparkInterpreter = getSparkInterpreter();
+    // As we don't know whether livyserver use spark2 or spark1, so we will detect SparkSession
+    // to judge whether it is using spark2.
+    try {
+      InterpreterResult result = sparkInterpreter.interpret("spark", false);
+      if (result.code() == InterpreterResult.Code.SUCCESS &&
+          result.message().get(0).getData().contains("org.apache.spark.sql.SparkSession")) {
+        LOGGER.info("SparkSession is detected so we are using spark 2.x for session {}",
+            sparkInterpreter.getSessionInfo().id);
+        isSpark2 = true;
+      } else {
+        // spark 1.x
+        result = sparkInterpreter.interpret("sqlContext", false);
+        if (result.code() == InterpreterResult.Code.SUCCESS) {
+          LOGGER.info("sqlContext is detected.");
+        } else if (result.code() == InterpreterResult.Code.ERROR) {
+          // create SqlContext if it is not available, as in livy 0.2 sqlContext
+          // is not available.
+          LOGGER.info("sqlContext is not detected, try to create SQLContext by ourselves");
+          result = sparkInterpreter.interpret(
+              "val sqlContext = new org.apache.spark.sql.SQLContext(sc)\n"
+                  + "import sqlContext.implicits._", false);
+          if (result.code() == InterpreterResult.Code.ERROR) {
+            throw new LivyException("Fail to create SQLContext," +
+                result.message().get(0).getData());
+          }
+        }
+      }
+    } catch (LivyException e) {
+      throw new RuntimeException("Fail to Detect SparkVersion", e);
+    }
+  }
+
+  private LivySparkInterpreter getSparkInterpreter() {
+    LazyOpenInterpreter lazy = null;
+    LivySparkInterpreter spark = null;
+    Interpreter p = getInterpreterInTheSameSessionByClassName(LivySparkInterpreter.class.getName());
+
+    while (p instanceof WrappedInterpreter) {
+      if (p instanceof LazyOpenInterpreter) {
+        lazy = (LazyOpenInterpreter) p;
+      }
+      p = ((WrappedInterpreter) p).getInnerInterpreter();
+    }
+    spark = (LivySparkInterpreter) p;
+
+    if (lazy != null) {
+      lazy.open();
+    }
+    return spark;
   }
 
   @Override
@@ -63,38 +111,20 @@ public class LivySparkSQLInterpreter extends BaseLivyInterprereter {
       if (StringUtils.isEmpty(line)) {
         return new InterpreterResult(InterpreterResult.Code.SUCCESS, "");
       }
-
-      // create sqlContext implicitly if it is not available, as in livy 0.2 sqlContext
-      // is not available.
-      synchronized (this) {
-        if (!sqlContextCreated) {
-          InterpreterResult result = sparkInterpreter.interpret("sqlContext", context);
-          if (result.code() == InterpreterResult.Code.ERROR) {
-            result = sparkInterpreter.interpret(
-                "val sqlContext = new org.apache.spark.sql.SQLContext(sc)\n"
-                    + "import sqlContext.implicits._", context);
-            if (result.code() == InterpreterResult.Code.ERROR) {
-              return new InterpreterResult(InterpreterResult.Code.ERROR,
-                  "Fail to create sqlContext," + result.message());
-            }
-          }
-          sqlContextCreated = true;
-        }
+      // replace line separator with space
+      line = line.replace("\n", " ").replace("\r", " ");
+      String sqlQuery = null;
+      if (isSpark2) {
+        sqlQuery = "spark.sql(\"" + line + "\").show(" + maxResult + ")";
+      } else {
+        sqlQuery = "sqlContext.sql(\"" + line + "\").show(" + maxResult + ")";
       }
-
-      // delegate the work to LivySparkInterpreter in the same session.
-      // TODO(zjffdu), we may create multiple session for the same user here. This can be fixed
-      // after we move session creation to open()
-      InterpreterResult res = sparkInterpreter.interpret("sqlContext.sql(\"" +
-          line.replaceAll("\"", "\\\\\"")
-              .replaceAll("\\n", " ")
-          + "\").show(" +
-          property.get("zeppelin.livy.spark.sql.maxResult") + ")", context);
+      InterpreterResult res = sparkInterpreter.interpret(sqlQuery, this.displayAppInfo);
 
       if (res.code() == InterpreterResult.Code.SUCCESS) {
         StringBuilder resMsg = new StringBuilder();
         resMsg.append("%table ");
-        String[] rows = new String(context.out.toByteArray()).split("\n");
+        String[] rows = res.message().get(0).getData().split("\n");
         String[] headers = rows[1].split("\\|");
         for (int head = 1; head < headers.length; head++) {
           resMsg.append(headers[head].trim()).append("\t");
@@ -121,7 +151,6 @@ public class LivySparkSQLInterpreter extends BaseLivyInterprereter {
       } else {
         return res;
       }
-
     } catch (Exception e) {
       LOGGER.error("Exception in LivySparkSQLInterpreter while interpret ", e);
       return new InterpreterResult(InterpreterResult.Code.ERROR,
