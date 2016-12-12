@@ -48,14 +48,6 @@ if [[ -z "${ZEPPELIN_WAR}" ]]; then
   fi
 fi
 
-if [[ -z "$ZEPPELIN_NOTEBOOK_DIR" ]]; then
-  export ZEPPELIN_NOTEBOOK_DIR="${ZEPPELIN_HOME}/notebook"
-fi
-
-if [[ -z "$ZEPPELIN_INTERPRETER_DIR" ]]; then
-  export ZEPPELIN_INTERPRETER_DIR="${ZEPPELIN_HOME}/interpreter"
-fi
-
 if [[ -f "${ZEPPELIN_CONF_DIR}/zeppelin-env.sh" ]]; then
   . "${ZEPPELIN_CONF_DIR}/zeppelin-env.sh"
 fi
