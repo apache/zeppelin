@@ -33,7 +33,8 @@
           'xeditable',
           'ngToast',
           'focus-if',
-          'ngResource'
+          'ngResource',
+          'zeroclipboard'
       ])
         .filter('breakFilter', function() {
           return function(text) {
@@ -42,7 +43,7 @@
             }
           };
         })
-        .config(function($httpProvider, $routeProvider, ngToastProvider) {
+        .config(function($httpProvider, $routeProvider, ngToastProvider, uiZeroclipConfigProvider) {
           // withCredentials when running locally via grunt
           $httpProvider.defaults.withCredentials = true;
 
@@ -100,6 +101,10 @@
             dismissOnClick: false,
             combineDuplications: true,
             timeout: 6000
+          });
+
+          uiZeroclipConfigProvider.setZcConf({
+            swfPath: '../bower_components/zeroclipboard/dist/ZeroClipboard.swf'
           });
         });
 

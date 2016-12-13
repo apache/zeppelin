@@ -165,7 +165,8 @@ table.dataTable.table-condensed .sorting_desc:after {
 }
 
 .paragraph .control span {
-    margin-left: 4px;
+  margin-left: 4px;
+  margin-right: 4px;
 }
 
 .paragraph .control {
@@ -191,6 +192,12 @@ table.dataTable.table-condensed .sorting_desc:after {
 
 .paragraph .control .tooltip {
   z-index: 10003;
+}
+
+.clipboard-button {
+  border-style: none;
+  background-color: transparent;
+  padding: 0;
 }
 
 /*

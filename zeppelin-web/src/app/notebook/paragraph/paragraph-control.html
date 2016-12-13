@@ -38,9 +38,20 @@ limitations under the License.
           data-toggle="dropdown"
           type="button">
     </span>
-    <ul class="dropdown-menu" role="menu" style="width:200px;z-index:1002">
-      <li ng-click="$event.stopPropagation()" style="text-align:center;margin-top:4px;">
-        {{paragraph.id}}
+    <ul class="dropdown-menu" role="menu" style="width:230px;z-index:1002">
+      <li ng-controller="clipboardCtrl" ng-click="$event.stopPropagation()" style="text-align:center;margin-top:4px;">
+        <span>{{paragraph.id}}</span>
+        <span class="divider-vertical">
+          <button class="clipboard-button"
+                  ui-zeroclip
+                  zeroclip-copied="complete($event)"
+                  zeroclip-on-error="clipError($event)"
+                  zeroclip-text="{{paragraph.id}}"
+                  tooltip-placement="top"
+                  tooltip="{{tooltip}}">
+            <img style="height: 16px;" src="assets/images/clippy.svg" />
+          </button>
+        </span>
       </li>
       <li role="separator" class="divider"></li>
       <li>

@@ -66,6 +66,7 @@ module.exports = function(config) {
       'bower_components/moment-duration-format/lib/moment-duration-format.js',
       'bower_components/select2/dist/js/select2.js',
       'bower_components/MathJax/MathJax.js',
+      'bower_components/angular-zeroclipboard/src/angular-zeroclipboard.js',
       'bower_components/angular-mocks/angular-mocks.js',
       // endbower
       '.tmp/app/app.js',
