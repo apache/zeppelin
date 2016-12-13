@@ -346,8 +346,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       clickAndWait(By.xpath(xpathToSettingIcon));
       collector.checkThat("Before Show Title : The title option in option panel of paragraph is labeled as",
           driver.findElement(By.xpath(xpathToShowTitle)).getText(),
-          CoreMatchers.allOf(CoreMatchers.startsWith("Show title"),
-              CoreMatchers.containsString("Ctrl+"), CoreMatchers.endsWith("+t")));
+          CoreMatchers.containsString("Show title"));
 
       clickAndWait(By.xpath(xpathToShowTitle));
       collector.checkThat("After Show Title : The title field contains",
@@ -357,8 +356,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       clickAndWait(By.xpath(xpathToSettingIcon));
       collector.checkThat("After Show Title : The title option in option panel of paragraph is labeled as",
           driver.findElement(By.xpath(xpathToHideTitle)).getText(),
-          CoreMatchers.allOf(CoreMatchers.startsWith("Hide title"),
-              CoreMatchers.containsString("Ctrl+"), CoreMatchers.endsWith("+t")));
+          CoreMatchers.containsString("Hide title"));
 
       clickAndWait(By.xpath(xpathToHideTitle));
       ZeppelinITUtils.turnOffImplicitWaits(driver);
@@ -411,8 +409,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       driver.findElement(By.xpath(getParagraphXPath(1) + "//span[@class='icon-settings']")).click();
       collector.checkThat("Before \"Show line number\" The option panel in paragraph has button labeled ",
           driver.findElement(By.xpath(xpathToShowLineNumberButton)).getText(),
-          CoreMatchers.allOf(CoreMatchers.startsWith("Show line numbers"),
-              CoreMatchers.containsString("Ctrl+"), CoreMatchers.endsWith("+m")));
+          CoreMatchers.containsString("Show line numbers"));
 
       clickAndWait(By.xpath(xpathToShowLineNumberButton));
       collector.checkThat("After \"Show line number\" the Line Number is Enabled ",
@@ -422,8 +419,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       clickAndWait(By.xpath(getParagraphXPath(1) + "//span[@class='icon-settings']"));
       collector.checkThat("After \"Show line number\" The option panel in paragraph has button labeled ",
           driver.findElement(By.xpath(xpathToHideLineNumberButton)).getText(),
-          CoreMatchers.allOf(CoreMatchers.startsWith("Hide line numbers"),
-              CoreMatchers.containsString("Ctrl+"), CoreMatchers.endsWith("+m")));
+          CoreMatchers.containsString("Hide line numbers"));
 
       clickAndWait(By.xpath(xpathToHideLineNumberButton));
       collector.checkThat("After \"Hide line number\" the Line Number is Enabled",
