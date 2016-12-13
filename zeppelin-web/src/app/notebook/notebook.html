@@ -15,7 +15,8 @@ limitations under the License.
 <div ng-include src="'app/notebook/notebook-actionBar.html'"></div>
 <div class="notebookContent">
   <!-- settings -->
-  <div ng-if="showSetting" class="setting">
+  <div ng-if="true" class="setting">
+  <!--<div ng-if="showSetting" class="setting">-->
     <div><h4>Interpreter Binding</h4></div>
     <hr />
 
@@ -73,8 +74,7 @@ limitations under the License.
               </button>
               <ul class="dropdown-menu">
                 <li>
-                  <a ng-click="restartInterpreter(item)" ng-class="{'inactivelink': !item.selected}"
-                     tooltip="Restart">
+                  <a ng-click="restartInterpreter(item)" ng-class="{'inactivelink': !item.selected}">
                     <span class="glyphicon glyphicon-refresh btn-sm"></span>
                     <span style="margin-left: 3px">Restart</span>
                   </a>
