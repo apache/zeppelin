@@ -72,11 +72,12 @@ limitations under the License.
                 <span class="caret"></span>
                 <span class="sr-only">Toggle Dropdown</span>
               </button>
-              <ul class="dropdown-menu">
+              <ul class="dropdown-menu" style="padding-top: 2px; padding-bottom: 2px;">
                 <li>
-                  <a ng-click="restartInterpreter(item)" ng-class="{'inactivelink': !item.selected}">
+                  <a ng-click="restartInterpreter(item)" ng-class="{'inactivelink': !item.selected}"
+                     style="padding: 0px 0px 0px 5px;">
                     <span class="glyphicon glyphicon-refresh btn-sm"></span>
-                    <span style="margin-left: 3px">Restart</span>
+                    <span style="margin-left: 3px; font-size: 13px;">restart</span>
                   </a>
                 </li>
               </ul>
