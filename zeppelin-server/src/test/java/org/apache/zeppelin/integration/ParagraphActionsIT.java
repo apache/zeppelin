@@ -357,7 +357,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       clickAndWait(By.xpath(xpathToSettingIcon));
       collector.checkThat("After Show Title : The title option in option panel of paragraph is labeled as",
           driver.findElement(By.xpath(xpathToHideTitle)).getText(),
-          CoreMatchers.allOf(CoreMatchers.startsWith("Show title"),
+          CoreMatchers.allOf(CoreMatchers.startsWith("Hide title"),
               CoreMatchers.containsString("Ctrl+"), CoreMatchers.endsWith("+t")));
 
       clickAndWait(By.xpath(xpathToHideTitle));
