@@ -121,6 +121,11 @@ public class Note implements Serializable, ParagraphJobListener {
     return null != setting ? setting.getName() : StringUtils.EMPTY;
   }
 
+  public boolean isPersonalizedMode() {
+    Object v = getConfig().get("personalizedMode");
+    return null != v && "true".equals(v);
+  }
+
   public String getId() {
     return id;
   }
@@ -665,6 +670,31 @@ public class Note implements Serializable, ParagraphJobListener {
     repo.remove(getId(), subject);
   }
 
+
+  /**
+   * Return new note for specific user. this inserts and replaces user paragraph which doesn't
+   * exists in original paragraph
+   *
+   * @param user specific user
+   * @return new Note for the user
+   */
+  public Note getUserNote(String user) {
+    Note newNote = new Note();
+    newNote.id = getId();
+    newNote.config = getConfig();
+    newNote.angularObjects = getAngularObjects();
+
+    Paragraph newParagraph;
+    for (Paragraph p : paragraphs) {
+      newParagraph = p.getUserParagraph(user);
+      if (null == newParagraph) {
+        newParagraph = p.cloneParagraphForUser(user);
+      }
+      newNote.paragraphs.add(newParagraph);
+    }
+
+    return newNote;
+  }
 
   private void startDelayedPersistTimer(int maxDelaySec, final AuthenticationInfo subject) {
     synchronized (this) {
