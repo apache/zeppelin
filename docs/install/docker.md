@@ -51,7 +51,7 @@ docker run --rm -it -p 7077:7077 -p 8080:8080 ${DOCKER_USERNAME}/zeppelin-releas
 
 * Run zeppelin inside docker:
 ```
-start-zeppelin.sh start
+/usr/local/zeppelin/bin/zeppelin.sh
 ```
 
 * To Run Zeppelin in daemon mode
@@ -62,7 +62,7 @@ docker run -p 7077:7077 -p 8080:8080 --privileged=true -v $PWD/logs:/logs -v $PW
 -e ZEPPELIN_NOTEBOOK_DIR='/notebook' \
 -e ZEPPELIN_LOG_DIR='/logs' \
 -d ${DOCKER_USERNAME}/zeppelin-release:<release-version> \
- bash -c "start-zeppelin.sh restart && while true; do sleep 3; done"
+/usr/local/zeppelin/bin/zeppelin.sh
 ```
 
 
