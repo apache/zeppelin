@@ -171,8 +171,11 @@ public class NotebookServer extends WebSocketServlet implements
           LOG.debug("{} message: invalid ticket {} != {}", messagereceived.op,
               messagereceived.ticket, ticket);
         } else {
-          LOG.warn("{} message: invalid ticket {} != {}", messagereceived.op,
-              messagereceived.ticket, ticket);
+          if (!messagereceived.op.equals(OP.PING)) {
+            conn.send(serializeMessage(new Message(OP.ERROR_INFO).put("info",
+                "Your ticket is invalid possibly due to server restart. "
+                + "Please refresh the page and login again.")));
+          }
         }
         return;
       }
