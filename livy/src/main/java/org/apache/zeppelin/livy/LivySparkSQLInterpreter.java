@@ -17,6 +17,7 @@
 
 package org.apache.zeppelin.livy;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.scheduler.Scheduler;
@@ -27,66 +28,73 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
 
 
 /**
- * Livy PySpark interpreter for Zeppelin.
+ * Livy SparkSQL Interpreter for Zeppelin.
  */
-public class LivySparkSQLInterpreter extends Interpreter {
+public class LivySparkSQLInterpreter extends BaseLivyInterprereter {
 
-  Logger LOGGER = LoggerFactory.getLogger(LivySparkSQLInterpreter.class);
+  private LivySparkInterpreter sparkInterpreter;
 
-  protected Map<String, Integer> userSessionMap;
-  private LivyHelper livyHelper;
+  private boolean sqlContextCreated = false;
 
   public LivySparkSQLInterpreter(Properties property) {
     super(property);
-    livyHelper = new LivyHelper(property);
-    userSessionMap = LivySparkInterpreter.getUserSessionMap();
+  }
+
+  @Override
+  public String getSessionKind() {
+    return "spark";
   }
 
   @Override
   public void open() {
+    super.open();
+    this.sparkInterpreter =
+        (LivySparkInterpreter) getInterpreterInTheSameSessionByClassName(
+            LivySparkInterpreter.class.getName());
   }
 
   @Override
-  public void close() {
-    livyHelper.closeSession(userSessionMap);
-  }
-
-  @Override
-  public InterpreterResult interpret(String line, InterpreterContext interpreterContext) {
+  public InterpreterResult interpret(String line, InterpreterContext context) {
     try {
-      if (userSessionMap.get(interpreterContext.getAuthenticationInfo().getUser()) == null) {
-        try {
-          userSessionMap.put(
-              interpreterContext.getAuthenticationInfo().getUser(),
-              livyHelper.createSession(
-                  interpreterContext,
-                  "spark")
-          );
-        } catch (Exception e) {
-          LOGGER.error("Exception in LivySparkSQLInterpreter while interpret ", e);
-          return new InterpreterResult(InterpreterResult.Code.ERROR, e.getMessage());
-        }
-      }
-
-      if (line == null || line.trim().length() == 0) {
+      if (StringUtils.isEmpty(line)) {
         return new InterpreterResult(InterpreterResult.Code.SUCCESS, "");
       }
 
-      InterpreterResult res = livyHelper.interpret("sqlContext.sql(\"" +
-              line.replaceAll("\"", "\\\\\"")
-                  .replaceAll("\\n", " ")
-              + "\").show(" +
-              property.get("zeppelin.livy.spark.sql.maxResult") + ")",
-          interpreterContext, userSessionMap);
+      // create sqlContext implicitly if it is not available, as in livy 0.2 sqlContext
+      // is not available.
+      synchronized (this) {
+        if (!sqlContextCreated) {
+          InterpreterResult result = sparkInterpreter.interpret("sqlContext", context);
+          if (result.code() == InterpreterResult.Code.ERROR) {
+            result = sparkInterpreter.interpret(
+                "val sqlContext = new org.apache.spark.sql.SQLContext(sc)\n"
+                    + "import sqlContext.implicits._", context);
+            if (result.code() == InterpreterResult.Code.ERROR) {
+              return new InterpreterResult(InterpreterResult.Code.ERROR,
+                  "Fail to create sqlContext," + result.message());
+            }
+          }
+          sqlContextCreated = true;
+        }
+      }
+
+      // delegate the work to LivySparkInterpreter in the same session.
+      // TODO(zjffdu), we may create multiple session for the same user here. This can be fixed
+      // after we move session creation to open()
+      InterpreterResult res = sparkInterpreter.interpret("sqlContext.sql(\"" +
+          line.replaceAll("\"", "\\\\\"")
+              .replaceAll("\\n", " ")
+          + "\").show(" +
+          property.get("zeppelin.livy.spark.sql.maxResult") + ")", context);
 
       if (res.code() == InterpreterResult.Code.SUCCESS) {
         StringBuilder resMsg = new StringBuilder();
         resMsg.append("%table ");
-        String[] rows = res.message().get(0).getData().split("\n");
-
+        String[] rows = new String(context.out.toByteArray()).split("\n");
         String[] headers = rows[1].split("\\|");
         for (int head = 1; head < headers.length; head++) {
           resMsg.append(headers[head].trim()).append("\t");
@@ -114,7 +122,6 @@ public class LivySparkSQLInterpreter extends Interpreter {
         return res;
       }
 
-
     } catch (Exception e) {
       LOGGER.error("Exception in LivySparkSQLInterpreter while interpret ", e);
       return new InterpreterResult(InterpreterResult.Code.ERROR,
@@ -124,21 +131,6 @@ public class LivySparkSQLInterpreter extends Interpreter {
 
   public boolean concurrentSQL() {
     return Boolean.parseBoolean(getProperty("zeppelin.livy.concurrentSQL"));
-  }
-
-  @Override
-  public void cancel(InterpreterContext context) {
-    livyHelper.cancelHTTP(context.getParagraphId());
-  }
-
-  @Override
-  public FormType getFormType() {
-    return FormType.SIMPLE;
-  }
-
-  @Override
-  public int getProgress(InterpreterContext context) {
-    return 0;
   }
 
   @Override
@@ -159,8 +151,7 @@ public class LivySparkSQLInterpreter extends Interpreter {
   }
 
   @Override
-  public List<InterpreterCompletion> completion(String buf, int cursor) {
-    return null;
+  public void close() {
+    this.sparkInterpreter.close();
   }
-
 }

@@ -33,81 +33,14 @@ import java.util.Properties;
 /**
  * Livy PySpark interpreter for Zeppelin.
  */
-public class LivyPySparkInterpreter extends Interpreter {
-
-  Logger LOGGER = LoggerFactory.getLogger(LivyPySparkInterpreter.class);
-
-  protected Map<String, Integer> userSessionMap;
-  protected LivyHelper livyHelper;
+public class LivyPySparkInterpreter extends BaseLivyInterprereter {
 
   public LivyPySparkInterpreter(Properties property) {
     super(property);
-    userSessionMap = new HashMap<>();
-    livyHelper = new LivyHelper(property);
   }
 
   @Override
-  public void open() {
+  public String getSessionKind() {
+    return "pyspark";
   }
-
-  @Override
-  public void close() {
-    livyHelper.closeSession(userSessionMap);
-  }
-
-  @Override
-  public InterpreterResult interpret(String line, InterpreterContext interpreterContext) {
-    try {
-      if (userSessionMap.get(interpreterContext.getAuthenticationInfo().getUser()) == null) {
-        try {
-          userSessionMap.put(
-              interpreterContext.getAuthenticationInfo().getUser(),
-              livyHelper.createSession(
-                  interpreterContext,
-                  "pyspark")
-          );
-        } catch (Exception e) {
-          LOGGER.error("Exception in LivyPySparkInterpreter while interpret ", e);
-          return new InterpreterResult(InterpreterResult.Code.ERROR, e.getMessage());
-        }
-      }
-
-      if (line == null || line.trim().length() == 0) {
-        return new InterpreterResult(InterpreterResult.Code.SUCCESS, "");
-      }
-
-      return livyHelper.interpret(line, interpreterContext, userSessionMap);
-    } catch (Exception e) {
-      LOGGER.error("Exception in LivyPySparkInterpreter while interpret ", e);
-      return new InterpreterResult(InterpreterResult.Code.ERROR,
-          InterpreterUtils.getMostRelevantMessage(e));
-    }
-  }
-
-  @Override
-  public void cancel(InterpreterContext context) {
-    livyHelper.cancelHTTP(context.getParagraphId());
-  }
-
-  @Override
-  public FormType getFormType() {
-    return FormType.SIMPLE;
-  }
-
-  @Override
-  public int getProgress(InterpreterContext context) {
-    return 0;
-  }
-
-  @Override
-  public Scheduler getScheduler() {
-    return SchedulerFactory.singleton().createOrGetFIFOScheduler(
-        LivyPySparkInterpreter.class.getName() + this.hashCode());
-  }
-
-  @Override
-  public List<InterpreterCompletion> completion(String buf, int cursor) {
-    return null;
-  }
-
 }
