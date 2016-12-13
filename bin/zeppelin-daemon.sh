@@ -94,6 +94,26 @@ function initialize_default_directories() {
     echo "Pid dir doesn't exist, create ${ZEPPELIN_PID_DIR}"
     $(mkdir -p "${ZEPPELIN_PID_DIR}")
   fi
+
+  PORT_NUMBER="8080"
+  ZEPPELIN_SITE="conf/zeppelin-site.xml"
+  ZEPPELIN_ENV="conf/zeppelin-env.sh"
+  if [ -e "${ZEPPELIN_SITE}" ]; then
+    PORT_NUMBER="$(xmllint --xpath 'string(//configuration/property[@name="zeppelin.server.port"]/value)' conf/zeppelin-site.xml)"
+  fi
+
+
+  if [ -e "${ZEPPELIN_ENV}" ]; then
+    PORT_LINE="$(cat conf/zeppelin-env.sh | grep ZEPPELIN_PORT | xargs)"
+    if [[ ! ${#PORT_LINE} -lt 0 ]]; then
+      if [[ $PORT_LINE != \#* ]]; then
+        PORT_NUMBER="$(cat conf/zeppelin-env.sh | grep ZEPPELIN_PORT | cut -d '=' -f2)"
+      fi
+    fi
+  fi
+  
+  IP_ADDR="$(ifconfig en0 | grep inet | grep -v inet6 | cut -d ' ' -f2)"
+  echo -e "Browse $IP_ADDR:$PORT_NUMBER in your browser.\nIf you are testing on your local computer, use localhost:$PORT_NUMBER"
 }
 
 function wait_for_zeppelin_to_die() {

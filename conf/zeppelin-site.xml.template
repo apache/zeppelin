@@ -19,13 +19,13 @@
 
 <configuration>
 
-<property>
+<property name="zeppelin.server.addr">
   <name>zeppelin.server.addr</name>
   <value>0.0.0.0</value>
   <description>Server address</description>
 </property>
 
-<property>
+<property name="zeppelin.server.port">
   <name>zeppelin.server.port</name>
   <value>8080</value>
   <description>Server port.</description>

@@ -16,7 +16,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# Run Zeppelin 
+# Run Zeppelin
 #
 
 USAGE="Usage: bin/zeppelin.sh [--config <conf-dir>]"
@@ -46,7 +46,7 @@ fi
 HOSTNAME=$(hostname)
 ZEPPELIN_LOGFILE="${ZEPPELIN_LOG_DIR}/zeppelin-${ZEPPELIN_IDENT_STRING}-${HOSTNAME}.log"
 LOG="${ZEPPELIN_LOG_DIR}/zeppelin-cli-${ZEPPELIN_IDENT_STRING}-${HOSTNAME}.out"
-  
+
 ZEPPELIN_SERVER=org.apache.zeppelin.server.ZeppelinServer
 JAVA_OPTS+=" -Dzeppelin.log.file=${ZEPPELIN_LOGFILE}"
 
@@ -88,4 +88,23 @@ if [[ ! -d "${ZEPPELIN_NOTEBOOK_DIR}" ]]; then
   $(mkdir -p "${ZEPPELIN_NOTEBOOK_DIR}")
 fi
 
+PORT_NUMBER="8080"
+ZEPPELIN_SITE="conf/zeppelin-site.xml"
+ZEPPELIN_ENV="conf/zeppelin-env.sh"
+if [ -e "${ZEPPELIN_SITE}" ]; then
+  PORT_NUMBER="$(xmllint --xpath 'string(//configuration/property[@name="zeppelin.server.port"]/value)' conf/zeppelin-site.xml)"
+fi
+
+
+if [ -e "${ZEPPELIN_ENV}" ]; then
+  PORT_LINE="$(cat conf/zeppelin-env.sh | grep ZEPPELIN_PORT | xargs)"
+  if [[ ! ${#PORT_LINE} -lt 0 ]]; then
+    if [[ $PORT_LINE != \#* ]]; then
+      PORT_NUMBER="$(cat conf/zeppelin-env.sh | grep ZEPPELIN_PORT | cut -d '=' -f2)"
+    fi
+  fi
+fi
+  
+IP_ADDR="$(ifconfig en0 | grep inet | grep -v inet6 | cut -d ' ' -f2)"
+echo -e "Browse $IP_ADDR:$PORT_NUMBER in your browser.\nIf you are testing on your local computer, use localhost:$PORT_NUMBER"
 exec $ZEPPELIN_RUNNER $JAVA_OPTS -cp $ZEPPELIN_CLASSPATH_OVERRIDES:$CLASSPATH $ZEPPELIN_SERVER "$@"
