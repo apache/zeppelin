@@ -27,37 +27,37 @@ limitations under the License.
 
 By default, Apache Zeppelin prints interpreter response as a plain text using `text` display system.
 
-<img src="/assets/themes/zeppelin/img/screenshots/display_text.png" />
+<img src="../assets/themes/zeppelin/img/screenshots/display_text.png" />
 
 You can explicitly say you're using `text` display system.
 
-<img src="/assets/themes/zeppelin/img/screenshots/display_text1.png" />
+<img src="../assets/themes/zeppelin/img/screenshots/display_text1.png" />
 
 ## Html
 
 With `%html` directive, Zeppelin treats your output as HTML
 
-<img src="/assets/themes/zeppelin/img/screenshots/display_html.png" />
+<img src="../assets/themes/zeppelin/img/screenshots/display_html.png" />
 
 ### Mathematical expressions
 HTML display system automatically formats mathematical expression using [MathJax](https://www.mathjax.org/). You can use
 `\\( INLINE EXPRESSION \\)` and `$$ EXPRESSION $$` to format. For example
 
-<img src="/assets/themes/zeppelin/img/screenshots/display_formula.png" />
+<img src="../assets/themes/zeppelin/img/screenshots/display_formula.png" />
 
 
 ## Table
 
-If you have data that row separated by '\n' (newline) and column separated by '\t' (tab) with first row as header row, for example
+If you have data that row separated by `\n` (newline) and column separated by `\t` (tab) with first row as header row, for example
 
-<img src="/assets/themes/zeppelin/img/screenshots/display_table.png" />
+<img src="../assets/themes/zeppelin/img/screenshots/display_table.png" />
 
 You can simply use `%table` display system to leverage Zeppelin's built in visualization.
 
-<img src="/assets/themes/zeppelin/img/screenshots/display_table1.png" />
+<img src="../assets/themes/zeppelin/img/screenshots/display_table1.png" />
 
 If table contents start with `%html`, it is interpreted as an HTML.
 
-<img src="/assets/themes/zeppelin/img/screenshots/display_table_html.png" />
+<img src="../assets/themes/zeppelin/img/screenshots/display_table_html.png" />
 
 > **Note :** Display system is backend independent.
