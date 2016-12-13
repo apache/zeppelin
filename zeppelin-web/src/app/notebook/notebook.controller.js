@@ -58,6 +58,7 @@
 
     $scope.interpreterSettings = [];
     $scope.interpreterBindings = [];
+    $scope.interpreterBindingsOrig = [];
     $scope.bindingFilterKeyword = '';
     $scope.isNoteDirty = null;
     $scope.saveTimer = null;
@@ -411,6 +412,19 @@
 
     var getInterpreterBindings = function() {
       websocketMsgSrv.getInterpreterBindings($scope.note.id);
+    };
+
+    $scope.isDefaultInterpreterBinding = function(first, binding, filterKeyword) {
+      if (!first || !binding || $scope.interpreterBindings.length === 0) {
+        return false;
+      }
+
+      if (filterKeyword === '') {
+        return (first && binding.selected);
+      } else {
+        return (first && binding.selected &&
+        $scope.interpreterBindings[0].id === binding.id);
+      }
     };
 
     $scope.$on('interpreterBindings', function(event, data) {
