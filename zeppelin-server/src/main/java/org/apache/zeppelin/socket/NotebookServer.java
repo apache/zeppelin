@@ -582,8 +582,11 @@ public class NotebookServer extends WebSocketServlet implements
   }
 
   public void broadcastParagraph(Note note, Paragraph p) {
-    //broadcast(note.getId(), new Message(OP.PARAGRAPH).put("paragraph", p));
-    broadcastParagraphs(p.getUserParagraphMap(), p);
+    if(note.isPersonalizedMode()) {
+      broadcastParagraphs(p.getUserParagraphMap(), p);
+    } else {
+      broadcast(note.getId(), new Message(OP.PARAGRAPH).put("paragraph", p));
+    }
   }
 
   public void broadcastParagraphs(Map<String, Paragraph> userParagraphMap,
