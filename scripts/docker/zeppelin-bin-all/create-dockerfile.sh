@@ -29,7 +29,7 @@ VERSION=$1
 LINUX=$2
 PLATFORM=$3
 
-BASE_DIR="../zeppelin-base/${LINUX}_${PLATFORM}"
+BASE_DIR="../zeppelin-base/${LINUX}/${PLATFORM}"
 TEMPLATE_DOCKERFILE="Dockerfile.template"
 
 if [ ! -d "$BASE_DIR" ]; then
