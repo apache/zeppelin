@@ -17,9 +17,7 @@
 FROM alpine:3.4
 MAINTAINER Apache Software Foundation <dev@zeppelin.apache.org>
 
-ENV JAVA_HOME=/usr/lib/jvm/java-1.7-openjdk \
-    PATH=$PATH:$JAVA_HOME/bin \
-    DUMBINIT_VERSION="1.2.0"
+ENV DUMBINIT_VERSION="1.2.0"
 
 RUN echo "http://dl-1.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories; \
     echo "http://dl-2.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories; \
@@ -27,9 +25,7 @@ RUN echo "http://dl-1.alpinelinux.org/alpine/edge/community" >> /etc/apk/reposit
     echo "http://dl-4.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories; \
     echo "http://dl-5.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories; \
     echo "http://dl-6.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories && \
-    apk add --update bash dumb-init curl openjdk7-jre wget ca-certificates python build-base make gcc g++ java-cacerts openssl && \
-    rm /usr/lib/jvm/java-1.7-openjdk/jre/lib/security/cacerts && \
-    ln -s /etc/ssl/certs/java/cacerts /usr/lib/jvm/java-1.7-openjdk/jre/lib/security/cacerts && \
+    apk add --update bash dumb-init curl wget python build-base make gcc g++ && \
     curl --silent \
     --location https://github.com/sgerrand/alpine-pkg-R/releases/download/3.3.1-r0/R-3.3.1-r0.apk --output /var/cache/apk/R-3.3.1-r0.apk && \
     apk add --update --allow-untrusted /var/cache/apk/R-3.3.1-r0.apk && \
@@ -39,6 +35,24 @@ RUN echo "http://dl-1.alpinelinux.org/alpine/edge/community" >> /etc/apk/reposit
     R -e "install.packages('knitr', repos = 'http://cran.us.r-project.org')" && \
     apk del curl build-base make gcc g++ && \
     rm -rf /var/cache/apk/*
+
+RUN { \
+		echo '#!/bin/sh'; \
+		echo 'set -e'; \
+		echo; \
+		echo 'dirname "$(dirname "$(readlink -f "$(which javac || which java)")")"'; \
+	} > /usr/local/bin/docker-java-home \
+	&& chmod +x /usr/local/bin/docker-java-home
+
+ENV JAVA_HOME=/usr/lib/jvm/java-1.7-openjdk \
+    PATH=$PATH:/usr/lib/jvm/java-1.7-openjdk/jre/bin:/usr/lib/jvm/java-1.7-openjdk/bin \
+    JAVA_VERSION=7u121 \
+    JAVA_ALPINE_VERSION=7.121.2.6.8-r0
+
+RUN set -x \
+	&& apk add --no-cache \
+		openjdk7="$JAVA_ALPINE_VERSION" \
+	&& [ "$JAVA_HOME" = "$(docker-java-home)" ]
 
 # ports for zeppelin
 EXPOSE 8080 7077
