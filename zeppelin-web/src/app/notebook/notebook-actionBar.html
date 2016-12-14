@@ -66,18 +66,21 @@ limitations under the License.
               tooltip-placement="bottom" tooltip="Export this note">
         <i class="fa fa-download"></i>
       </button>
+
       <button type="button"
               class="btn btn-primary btn-xs"
-              ng-hide="viewOnly || !note.config.personalizedMode"
-              ng-click="toggleNotePersonalizedMode(note.config.personalizedMode)"
-              tooltip-placement="bottom" tooltip="Personal mode">
+              ng-if="ticket.principal && ticket.principal !== 'anonymous'"
+              ng-hide="viewOnly || note.config.personalizedMode !== 'true'"
+              ng-click="toggleNotePersonalizedMode()"
+              tooltip-placement="bottom" tooltip="Personal mode {{isOwner ? '' : '(owner can change)'}}">
         <i class="fa fa-user"></i>
       </button>
       <button type="button"
               class="btn btn-default btn-xs"
-              ng-hide="viewOnly || note.config.personalizedMode"
-              ng-click="toggleNotePersonalizedMode(note.config.personalizedMode)"
-              tooltip-placement="bottom" tooltip="Public mode">
+              ng-if="ticket.principal && ticket.principal !== 'anonymous'"
+              ng-hide="viewOnly || note.config.personalizedMode === 'true'"
+              ng-click="toggleNotePersonalizedMode()"
+              tooltip-placement="bottom" tooltip="Shared mode {{isOwner ? '' : '(owner can change)'}}">
         <i class="fa fa-users"></i>
       </button>
     </span>

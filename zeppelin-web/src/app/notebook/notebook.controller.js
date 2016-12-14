@@ -614,6 +614,7 @@
           minimumInputLength: 3
         };
 
+        $scope.setIamOwner();
         angular.element('#selectOwners').select2(selectJson);
         angular.element('#selectReaders').select2(selectJson);
         angular.element('#selectWriters').select2(selectJson);
@@ -752,9 +753,34 @@
       }
     };
 
-    $scope.toggleNotePersonalizedMode = function(personalizedMode) {
-      $scope.note.config.personalizedMode = !personalizedMode;
-      //clover
+    $scope.setIamOwner = function() {
+      if ($scope.permissions.owners.length > 0 &&
+          _.indexOf($scope.permissions.owners, $rootScope.ticket.principal) < 0) {
+        $scope.isOwner = false;
+        return false;
+      }
+      $scope.isOwner = true;
+      return true;
+    };
+
+    $scope.toggleNotePersonalizedMode = function() {
+      var personalizedMode = $scope.note.config.personalizedMode;
+      if ($scope.isOwner) {
+        BootstrapDialog.confirm({
+          closable: true,
+          title: 'Setting the result display',
+          message: 'Do you want to personalize your analysis??',
+          callback: function(result) {
+            if (result) {
+              if ($scope.note.config.personalizedMode === undefined) {
+                $scope.note.config.personalizedMode = 'false';
+              }
+              $scope.note.config.personalizedMode = personalizedMode === 'true' ?  'false' : 'true';
+              websocketMsgSrv.updatePersonalizedMode($scope.note.id, $scope.note.config.personalizedMode);
+            }
+          }
+        });
+      }
     };
 
     var isSettingDirty = function() {
@@ -891,7 +917,6 @@
       if (note === undefined) {
         $location.path('/');
       }
-      console.log('clover ', note);
 
       $scope.paragraphUrl = $routeParams.paragraphId;
       $scope.asIframe = $routeParams.asIframe;
@@ -906,6 +931,10 @@
       initializeLookAndFeel();
       //open interpreter binding setting when there're none selected
       getInterpreterBindings();
+      getPermissions();
+      var isPersonalized = $scope.note.config.personalizedMode;
+      isPersonalized = isPersonalized === undefined ?  'false' : isPersonalized;
+      $scope.note.config.personalizedMode = isPersonalized;
     });
 
     $scope.$on('$destroy', function() {
