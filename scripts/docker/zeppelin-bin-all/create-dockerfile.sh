@@ -19,7 +19,8 @@
 if [ $# -lt 3 ];
 then
     echo "USAGE: $0 version linux platform"
-    echo "example: $0 0.6.0 alpine python"
+    echo "* version: 0.6.2 (released zeppelin binary version)"
+    echo "* linux: [alpine]"
     echo "* platform: [java, python, r]"
     exit 1
 fi
