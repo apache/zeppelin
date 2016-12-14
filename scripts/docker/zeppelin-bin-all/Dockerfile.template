@@ -14,9 +14,7 @@
 # limitations under the License.
 #
 
-
 FROM zeppelin:tag
-MAINTAINER 1ambda <1amb4a@gmail.com>
 MAINTAINER Apache Software Foundation <dev@zeppelin.apache.org>
 
 ENV Z_VERSION="0.0.0"

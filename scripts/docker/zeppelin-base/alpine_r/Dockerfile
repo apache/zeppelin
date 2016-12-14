@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-FROM zeppelin:base
+FROM zeppelin:alpine-base_java
 MAINTAINER Apache Software Foundation <dev@zeppelin.apache.org>
 
 ENV LOG_TAG="[ZEPPELIN_BASE_R]:" \

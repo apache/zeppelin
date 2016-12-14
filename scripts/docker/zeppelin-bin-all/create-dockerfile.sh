@@ -16,10 +16,11 @@
 # limitations under the License.
 #
 
-if [ $# -lt 2 ];
+if [ $# -lt 3 ];
 then
     echo "USAGE: $0 version linux platform"
-    echo "example: $0 0.7.0 alpine python"
+    echo "example: $0 0.6.0 alpine python"
+    echo "* platform: [java, python, r]"
     exit 1
 fi
 
@@ -27,13 +28,8 @@ TAG="[CREATE-DOCKERFILE]"
 VERSION=$1
 LINUX=$2
 PLATFORM=$3
-POSTFIX=""
 
-if [[ ! "x${PLATFORM}" = "x" ]]; then
-   POSTFIX="_${PLATFORM}"
-fi
-
-BASE_DIR="../zeppelin-base/${LINUX}${POSTFIX}"
+BASE_DIR="../zeppelin-base/${LINUX}_${PLATFORM}"
 TEMPLATE_DOCKERFILE="Dockerfile.template"
 
 if [ ! -d "$BASE_DIR" ]; then
@@ -41,8 +37,8 @@ if [ ! -d "$BASE_DIR" ]; then
     exit 1
 fi
 
-DOCKER_DIR="${LINUX}/${VERSION}${POSTFIX}"
-BASE_IMAGE_TAG="${LINUX}-base${POSTFIX}"
+DOCKER_DIR="${LINUX}/${VERSION}_${PLATFORM}"
+BASE_IMAGE_TAG="${LINUX}-base_${PLATFORM}"
 
 if [ ! -d "$DOCKER_DIR" ]; then
     echo "${TAG} Creating Directory: ${DOCKER_DIR}"
