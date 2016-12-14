@@ -59,7 +59,4 @@ RUN set -x \
 		openjdk7="$JAVA_ALPINE_VERSION" \
 	&& [ "$JAVA_HOME" = "$(docker-java-home)" ]
 
-# ports for zeppelin
-EXPOSE 8080 7077
-
 ENTRYPOINT ["/usr/bin/dumb-init", "--"]
