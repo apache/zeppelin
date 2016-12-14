@@ -17,10 +17,13 @@
 FROM alpine:3.4
 MAINTAINER Apache Software Foundation <dev@zeppelin.apache.org>
 
-ENV LANG=C.UTF-8 \
+ENV LOG_TAG="[ZEPPELIN_BASE]:" \
+    LANG=C.UTF-8 \
     DUMBINIT_VERSION="1.2.0"
 
-RUN echo "http://dl-1.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories; \
+RUN echo "$LOG_TAG Install basic packages" && \
+    apk update && \
+    echo "http://dl-1.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories; \
     echo "http://dl-2.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories; \
     echo "http://dl-3.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories; \
     echo "http://dl-4.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories; \
@@ -37,7 +40,8 @@ RUN echo "http://dl-1.alpinelinux.org/alpine/edge/community" >> /etc/apk/reposit
     rm -rf /var/cache/apk/* && \
     apk del curl build-base make gcc g++
 
-RUN { \
+RUN echo "$LOG_TAG Install java ${JAVA_VERSION}" && \
+    { \
 		echo '#!/bin/sh'; \
 		echo 'set -e'; \
 		echo; \
