@@ -126,6 +126,16 @@ public class Note implements Serializable, ParagraphJobListener {
     return null != v && "true".equals(v);
   }
 
+  public void setPersonalizedMode(Boolean value) {
+    String valueString = StringUtils.EMPTY;
+    if (value) {
+      valueString = "true";
+    } else {
+      valueString = "false";
+    }
+    getConfig().put("personalizedMode", valueString);
+  }
+
   public String getId() {
     return id;
   }

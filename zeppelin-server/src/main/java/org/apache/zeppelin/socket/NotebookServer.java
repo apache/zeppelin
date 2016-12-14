@@ -258,6 +258,9 @@ public class NotebookServer extends WebSocketServlet implements
           case FOLDER_RENAME:
             renameFolder(conn, userAndRoles, notebook, messagereceived);
             break;
+          case UPDATE_PERSONALIZED_MODE:
+            updatePersonalizedMode(conn, userAndRoles, notebook, messagereceived);
+            break;
           case COMPLETION:
             completion(conn, userAndRoles, notebook, messagereceived);
             break;
@@ -762,6 +765,32 @@ public class NotebookServer extends WebSocketServlet implements
           .put("config", config)
           .put("info", note.getInfo()));
       broadcastNoteList(subject, userAndRoles);
+    }
+  }
+
+  private void updatePersonalizedMode(NotebookSocket conn, HashSet<String> userAndRoles,
+      Notebook notebook, Message fromMessage) throws SchedulerException, IOException {
+    String noteId = (String) fromMessage.get("id");
+    String personalized = (String) fromMessage.get("personalized");
+    boolean isPersonalized = personalized.equals("true") ? true : false;
+
+    if (noteId == null) {
+      return;
+    }
+
+    NotebookAuthorization notebookAuthorization = notebook.getNotebookAuthorization();
+    if (!notebookAuthorization.isOwner(noteId, userAndRoles)) {
+      permissionError(conn, "rename", fromMessage.principal,
+          userAndRoles, notebookAuthorization.getOwners(noteId));
+      return;
+    }
+
+    Note note = notebook.getNote(noteId);
+    if (note != null) {
+      note.setPersonalizedMode(isPersonalized);
+      AuthenticationInfo subject = new AuthenticationInfo(fromMessage.principal);
+      note.persist(subject);
+      sendNote(conn, userAndRoles, notebook, fromMessage);
     }
   }
 
