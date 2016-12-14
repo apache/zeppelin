@@ -17,13 +17,13 @@
 
 package org.apache.zeppelin.dep;
 
-import java.io.File;
-
 import org.apache.maven.repository.internal.MavenRepositorySystemSession;
 import org.sonatype.aether.RepositorySystem;
 import org.sonatype.aether.RepositorySystemSession;
 import org.sonatype.aether.repository.LocalRepository;
 import org.sonatype.aether.repository.RemoteRepository;
+
+import java.nio.file.Paths;
 
 /**
  * Manage mvn repository.
@@ -37,19 +37,7 @@ public class Booter {
       RepositorySystem system, String localRepoPath) {
     MavenRepositorySystemSession session = new MavenRepositorySystemSession();
 
-    // find homedir
-    String home = System.getenv("ZEPPELIN_HOME");
-    if (home == null) {
-      home = System.getProperty("zeppelin.home");
-    }
-    if (home == null) {
-      home = "..";
-    }
-
-    String path = home + "/" + localRepoPath;
-
-    LocalRepository localRepo =
-        new LocalRepository(new File(path).getAbsolutePath());
+    LocalRepository localRepo = new LocalRepository(resolveLocalRepoPath(localRepoPath));
     session.setLocalRepositoryManager(system.newLocalRepositoryManager(localRepo));
 
     // session.setTransferListener(new ConsoleTransferListener());
@@ -61,10 +49,24 @@ public class Booter {
     return session;
   }
 
+  static String resolveLocalRepoPath(String localRepoPath) {
+    // todo decouple home folder resolution
+    // find homedir
+    String home = System.getenv("ZEPPELIN_HOME");
+    if (home == null) {
+      home = System.getProperty("zeppelin.home");
+    }
+    if (home == null) {
+      home = "..";
+    }
+
+    return Paths.get(home).resolve(localRepoPath).toAbsolutePath().toString();
+  }
+
   public static RemoteRepository newCentralRepository() {
     return new RemoteRepository("central", "default", "http://repo1.maven.org/maven2/");
   }
-  
+
   public static RemoteRepository newLocalRepository() {
     return new RemoteRepository("local",
         "default", "file://" + System.getProperty("user.home") + "/.m2/repository");
