@@ -318,6 +318,9 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 
   public String getTrustStorePath() {
     String path = getString(ConfVars.ZEPPELIN_SSL_TRUSTSTORE_PATH);
+    if (path == null) {
+      path = getKeyStorePath();
+    }
     if (path != null && path.startsWith("/") || isWindowsPath(path)) {
       return path;
     } else {
