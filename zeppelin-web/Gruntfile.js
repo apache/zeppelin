@@ -495,7 +495,7 @@ module.exports = function(grunt) {
           dest: '.tmp/styles/images'
         }, {
           expand: true,
-          cwd: 'bower_components/zeroclipboard',
+          cwd: 'bower_components/ngclipboard',
           src: 'dist/**',
           dest: '.tmp'
         }, {
@@ -553,7 +553,7 @@ module.exports = function(grunt) {
           dest: '<%= yeoman.dist %>/styles/images'
         }, {
           expand: true,
-          cwd: 'bower_components/zeroclipboard',
+          cwd: 'bower_components/ngclipboard',
           src: 'dist/**',
           dest: '<%= yeoman.dist %>'
         }, {

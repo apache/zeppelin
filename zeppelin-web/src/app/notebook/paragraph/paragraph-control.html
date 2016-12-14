@@ -43,10 +43,10 @@ limitations under the License.
         <span>{{paragraph.id}}</span>
         <span class="divider-vertical">
           <button class="clipboard-button"
-                  ui-zeroclip
-                  zeroclip-copied="complete($event)"
-                  zeroclip-on-error="clipError($event)"
-                  zeroclip-text="{{paragraph.id}}"
+                  ngclipboard
+                  ngclipboard-success="complete($event)"
+                  ngclipboard-error="clipError($event)"
+                  data-clipboard-text="{{paragraph.id}}"
                   tooltip-placement="top"
                   tooltip="{{tooltip}}">
             <img style="height: 16px;" src="assets/images/clippy.svg" />

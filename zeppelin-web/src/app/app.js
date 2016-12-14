@@ -34,7 +34,7 @@
           'ngToast',
           'focus-if',
           'ngResource',
-          'zeroclipboard'
+          'ngclipboard'
       ])
         .filter('breakFilter', function() {
           return function(text) {
@@ -43,7 +43,7 @@
             }
           };
         })
-        .config(function($httpProvider, $routeProvider, ngToastProvider, uiZeroclipConfigProvider) {
+        .config(function($httpProvider, $routeProvider, ngToastProvider) {
           // withCredentials when running locally via grunt
           $httpProvider.defaults.withCredentials = true;
 
@@ -101,10 +101,6 @@
             dismissOnClick: false,
             combineDuplications: true,
             timeout: 6000
-          });
-
-          uiZeroclipConfigProvider.setZcConf({
-            swfPath: 'dist/ZeroClipboard.swf'
           });
         });
 
