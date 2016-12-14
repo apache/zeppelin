@@ -17,10 +17,17 @@
 FROM alpine:3.4
 MAINTAINER Apache Software Foundation <dev@zeppelin.apache.org>
 
-ENV JAVA_HOME /usr/lib/jvm/java-1.7-openjdk
-ENV PATH $PATH:$JAVA_HOME/bin
+ENV JAVA_HOME=/usr/lib/jvm/java-1.7-openjdk \
+    PATH=$PATH:$JAVA_HOME/bin \
+    DUMBINIT_VERSION="1.2.0"
 
-RUN apk add --update bash curl openjdk7-jre wget ca-certificates python build-base make gcc g++ java-cacerts openssl && \
+RUN echo "http://dl-1.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories; \
+    echo "http://dl-2.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories; \
+    echo "http://dl-3.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories; \
+    echo "http://dl-4.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories; \
+    echo "http://dl-5.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories; \
+    echo "http://dl-6.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories && \
+    apk add --update bash dumb-init curl openjdk7-jre wget ca-certificates python build-base make gcc g++ java-cacerts openssl && \
     rm /usr/lib/jvm/java-1.7-openjdk/jre/lib/security/cacerts && \
     ln -s /etc/ssl/certs/java/cacerts /usr/lib/jvm/java-1.7-openjdk/jre/lib/security/cacerts && \
     curl --silent \
@@ -33,10 +40,7 @@ RUN apk add --update bash curl openjdk7-jre wget ca-certificates python build-ba
     apk del curl build-base make gcc g++ && \
     rm -rf /var/cache/apk/*
 
-RUN wget -O /usr/local/bin/dumb-init https://github.com/Yelp/dumb-init/releases/download/v1.1.3/dumb-init_1.1.3_amd64
-RUN chmod +x /usr/local/bin/dumb-init
-
 # ports for zeppelin
 EXPOSE 8080 7077
 
-ENTRYPOINT ["/usr/local/bin/dumb-init", "--"]
+ENTRYPOINT ["/usr/bin/dumb-init", "--"]
