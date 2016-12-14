@@ -20,6 +20,7 @@
 
   function websocketEvents($rootScope, $websocket, $location, baseUrlSrv) {
     var websocketCalls = {};
+    var pingIntervalId;
 
     websocketCalls.ws = $websocket(baseUrlSrv.getWebsocketUrl());
     websocketCalls.ws.reconnectIfNotNormalClose = true;
@@ -27,7 +28,7 @@
     websocketCalls.ws.onOpen(function() {
       console.log('Websocket created');
       $rootScope.$broadcast('setConnectedStatus', true);
-      setInterval(function() {
+      pingIntervalId = setInterval(function() {
         websocketCalls.sendNewEvent({op: 'PING'});
       }, 10000);
     });
@@ -158,6 +159,10 @@
 
     websocketCalls.ws.onClose(function(event) {
       console.log('close message: ', event);
+      if (pingIntervalId !== undefined) {
+        clearInterval(pingIntervalId);
+        pingIntervalId = undefined;
+      }
       $rootScope.$broadcast('setConnectedStatus', false);
     });
 

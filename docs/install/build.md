@@ -124,6 +124,7 @@ Available profiles are
 -Phadoop-2.3
 -Phadoop-2.4
 -Phadoop-2.6
+-Phadoop-2.7
 ```
 
 minor version can be adjusted by `-Dhadoop.version=x.x.x`
