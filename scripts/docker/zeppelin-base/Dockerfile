@@ -29,16 +29,8 @@ RUN echo "$LOG_TAG Install basic packages" && \
     echo "http://dl-4.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories; \
     echo "http://dl-5.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories; \
     echo "http://dl-6.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories && \
-    apk add --no-cache bash dumb-init curl wget python build-base make gcc g++ && \
-    curl --silent \
-    --location https://github.com/sgerrand/alpine-pkg-R/releases/download/3.3.1-r0/R-3.3.1-r0.apk --output /var/cache/apk/R-3.3.1-r0.apk && \
-    apk add --no-cache --allow-untrusted /var/cache/apk/R-3.3.1-r0.apk && \
-    curl --silent \
-    --location https://github.com/sgerrand/alpine-pkg-R/releases/download/3.3.1-r0/R-dev-3.3.1-r0.apk --output /var/cache/apk/R-dev-3.3.1-r0.apk && \
-    apk add --no-cache --allow-untrusted /var/cache/apk/R-dev-3.3.1-r0.apk && \
-    R -e "install.packages('knitr', repos = 'http://cran.us.r-project.org')" && \
-    rm -rf /var/cache/apk/* && \
-    apk del curl build-base make gcc g++
+    apk add --no-cache bash dumb-init curl wget && \
+    rm -rf /var/cache/apk/*
 
 RUN echo "$LOG_TAG Install java ${JAVA_VERSION}" && \
     { \
