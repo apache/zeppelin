@@ -14,14 +14,10 @@
  */
 package org.apache.zeppelin.jdbc;
 
-import static org.apache.commons.lang.StringUtils.containsIgnoreCase;
-import java.io.*;
-import java.nio.charset.StandardCharsets;
-import java.io.IOException;
-import java.security.PrivilegedExceptionAction;
-import java.sql.*;
-import java.util.*;
-
+import com.google.common.base.Function;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
+import com.google.common.collect.Sets.SetView;
 import org.apache.commons.dbcp2.ConnectionFactory;
 import org.apache.commons.dbcp2.DriverManagerConnectionFactory;
 import org.apache.commons.dbcp2.PoolableConnectionFactory;
@@ -44,10 +40,15 @@ import org.apache.zeppelin.user.UsernamePassword;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Function;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
-import com.google.common.collect.Sets.SetView;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
+import java.security.PrivilegedExceptionAction;
+import java.sql.*;
+import java.util.*;
+
+import static org.apache.commons.lang.StringUtils.containsIgnoreCase;
 
 /**
  * JDBC interpreter for Zeppelin. This interpreter can also be used for accessing HAWQ,
@@ -110,8 +111,8 @@ public class JDBCInterpreter extends Interpreter {
   private final String DBCP_STRING = "jdbc:apache:commons:dbcp:";
 
   // START PMC ADDITION
-  static final String EMPTY_METADATA_VALUE = "null";
-  private static final String[] TABLE_TYPES = {"TABLE", "VIEW", "SYSTEM TABLE"};
+  private static final String[] TABLE_TYPES = {"TABLE", "VIEW", "SYSTEM TABLE",
+      "GLOBAL TEMPORARY", "LOCAL TEMPORARY", "ALIAS", "SYNONYM"};
   private static final String METADATA_KEYWORD = "explore";
   // END PMC ADDITION
 
@@ -608,9 +609,6 @@ public class JDBCInterpreter extends Interpreter {
       return executeSql(propertyKey, cmd, contextInterpreter);
     }
     // END PMC ADDITION
-
-    logger.info("PropertyKey: {}, SQL command: '{}'", propertyKey, cmd);
-    return executeSql(propertyKey, cmd, contextInterpreter);
   }
 
   @Override
