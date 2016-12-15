@@ -4,11 +4,11 @@
   "version": "0.0.0",
   "engines" : { "node" : ">=6.0.0" },
   "scripts": {
-    "postinstall": "node_modules/.bin/bower install --silent",
-    "build": "./node_modules/.bin/grunt build",
-    "start": "./node_modules/.bin/grunt serve",
-    "test": "./node_modules/.bin/grunt test",
-    "pretest": "./node_modules/.bin/npm install karma-phantomjs-launcher"
+    "postinstall": "bower install --silent && grunt googlefonts",
+    "build": "grunt build",
+    "start": "grunt serve",
+    "test": "grunt test",
+    "pretest": "npm install karma-phantomjs-launcher"
   },
   "dependencies": {
     "grunt-angular-templates": "^0.5.7",

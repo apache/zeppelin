@@ -606,7 +606,6 @@ module.exports = function(grunt) {
     'htmlhint',
     'clean:dist',
     'wiredep',
-    'googlefonts',
     'useminPrepare',
     'concurrent:dist',
     'postcss',
