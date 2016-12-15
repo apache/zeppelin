@@ -14,6 +14,34 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+# Zeppelin uses Shiro to configure Security. The first step of security is Authentication.
+# To enable authentication, you need to configure authc as the authentication method in 
+# the URL section of shiro.ini. Make sure the shiro.ini has "/** = authc" line uncommented
+# in the URL section. To disable anonymous access to Zeppelin ensure "/** = anon" is 
+# commented out. Once authentication is enabled, the next step of security is to configure
+# the source of users. To test Zeppelin authentication, you can use [users] section to 
+# define users who can log in to Zeppelin. 
+# So far Zeppelin only supports LDAP bind method to authenticate end users. It does not 
+# yet support LDAP Compare to authenticate end users.
+# To leverage ActiveDirectory as source of users to Zeppelin, enable activeDirectoryRealm
+# in [main] section. To user any other LDAP including OpenLdap, user ldapRealm in the 
+# [main] section.
+# Once authentication is configured, you may want to limit who can configure Zeppelin 
+# interpreters. To put access control on Zeppelin interpreters and credential UI, 
+# uncomment the following lines in [urls] section 
+# "/api/interpreter/** = authc, roles[admin]
+# /api/configurations/** = authc, roles[admin]
+# /api/credential/** = authc, roles[admin]"
+# The above configuration will limit the ability to configure interpreters, configurations
+# and credentials UI to "admin" role. Now the next step is to define who is in "admin" 
+# role. To map "admin" role to certain groups in Active Directory or LDAP user 
+# activeDirectoryRealm.groupRolesMap or ldapRealm.groupRolesMap property and define the 
+# distinguished names of LDAP groups. This gives only defined LDAP groups the ability to 
+# configure interpreters, configurations and credential UI features.
+# The next step of security could be to put access control on Zeppelin Notes. To enable
+# note level access control, you first need to define activeDirectoryRealm.searchBase or 
+# ldapRealm.searchBase. The value of this property control where in LDAP Zeppelin will look
+# for users and groups.
 
 [users]
 # List of users with their password allowed to access Zeppelin.
