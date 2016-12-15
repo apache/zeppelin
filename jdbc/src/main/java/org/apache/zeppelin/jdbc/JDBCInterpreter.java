@@ -110,11 +110,9 @@ public class JDBCInterpreter extends Interpreter {
   private final String CONCURRENT_EXECUTION_COUNT = "zeppelin.jdbc.concurrent.max_connection";
   private final String DBCP_STRING = "jdbc:apache:commons:dbcp:";
 
-  // START PMC ADDITION
   private static final String[] TABLE_TYPES = { "TABLE", "VIEW", "SYSTEM TABLE",
     "GLOBAL TEMPORARY", "LOCAL TEMPORARY", "ALIAS", "SYNONYM" };
   private static final String METADATA_KEYWORD = "explore";
-  // END PMC ADDITION
 
   private final HashMap<String, Properties> basePropretiesMap;
   private final HashMap<String, JDBCUserConfigurations> jdbcUserConfigurationsMap;
@@ -519,7 +517,6 @@ public class JDBCInterpreter extends Interpreter {
     }
   }
 
-  // START PMC ADDITION
   private InterpreterResult getMetaData(String propertyKey,
       String cmd, InterpreterContext interpreterContext) {
     Connection connection;
@@ -577,7 +574,6 @@ public class JDBCInterpreter extends Interpreter {
       return new InterpreterResult(Code.ERROR, errorMsg);
     }
   }
-  // END PMC ADDITION
 
   /**
    * For %table response replace Tab and Newline characters from the content.
@@ -600,7 +596,6 @@ public class JDBCInterpreter extends Interpreter {
 
     cmd = cmd.trim();
 
-    // START PMC ADDITION
     if (cmd.toLowerCase().substring(0, 7).equals(METADATA_KEYWORD)) {
       logger.info("PropertyKey: {}, MetaData command: '{}'", propertyKey, cmd);
       return getMetaData(propertyKey, cmd, contextInterpreter);
@@ -608,7 +603,6 @@ public class JDBCInterpreter extends Interpreter {
       logger.info("PropertyKey: {}, SQL command: '{}'", propertyKey, cmd);
       return executeSql(propertyKey, cmd, contextInterpreter);
     }
-    // END PMC ADDITION
   }
 
   @Override
