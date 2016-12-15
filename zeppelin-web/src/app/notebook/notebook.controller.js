@@ -910,6 +910,11 @@
       document.removeEventListener('click', $scope.focusParagraphOnClick);
       document.removeEventListener('keydown', $scope.keyboardShortcut);
     });
+
+    angular.element(window).bind('resize', function() {
+      const actionbarHeight = document.getElementById('actionbar').lastElementChild.clientHeight;
+      angular.element(document.getElementById('content')).css('padding-top', actionbarHeight - 20);
+    });
   }
 
 })();
