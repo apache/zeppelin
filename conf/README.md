@@ -87,13 +87,41 @@ The following properties needs to be updated in the **zeppeling-site.xml** in or
   <description>The format of the given truststore (e.g. JKS or PKCS12). Defaults to the same type as the keystore type</description>
 </property>
 
-<!--
 <property>
   <name>zeppelin.ssl.truststore.password</name>
   <value>change me</value>
   <description>Truststore password. Can be obfuscated by the Jetty Password tool. Defaults to the keystore password</description>
 </property>
--->
+```
+
+
+### Obfuscating Passwords using the Jetty Password Tool
+
+Security best practices advise to not use plain text passwords and Jetty provides a password tool to help obfuscating the passwords used to access the KeyStore and TrustStore.
+ 
+The Password tool documentation can be found [here](http://www.eclipse.org/jetty/documentation/current/configuring-security-secure-passwords.html)
+
+After using the tool:
+
+```
+java -cp $ZEPPELIN_HOME/zeppelin-server/target/lib/jetty-util-9.2.15.v20160210.jar \
+         org.eclipse.jetty.util.security.Password  \
+         password
+
+2016-12-15 10:46:47.931:INFO::main: Logging initialized @101ms
+password
+OBF:1v2j1uum1xtv1zej1zer1xtn1uvk1v1v
+MD5:5f4dcc3b5aa765d61d8327deb882cf99
+```
+
+update your configuration with the obfuscated password :
+
+```
+<property>
+  <name>zeppelin.ssl.keystore.password</name>
+  <value>OBF:1v2j1uum1xtv1zej1zer1xtn1uvk1v1v</value>
+  <description>Keystore password. Can be obfuscated by the Jetty Password tool</description>
+</property>
 ```
 
 
