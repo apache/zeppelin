@@ -556,6 +556,7 @@
         $scope.editor.commands.removeCommand('showSettingsMenu');
 
         $scope.editor.commands.bindKey('ctrl-alt-l', null);
+        $scope.editor.commands.bindKey('ctrl-alt-w', null);
 
         // autocomplete on 'ctrl+.'
         $scope.editor.commands.bindKey('ctrl-.', 'startAutocomplete');
@@ -1092,10 +1093,12 @@
           } else {
             $scope.showTitle($scope.paragraph);
           }
-        }else if (keyEvent.ctrlKey && keyEvent.shiftKey && keyCode === 67) { // Ctrl + Alt + c
+        } else if (keyEvent.ctrlKey && keyEvent.shiftKey && keyCode === 67) { // Ctrl + Alt + c
           $scope.copyPara('below');
         } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 76) { // Ctrl + Alt + l
           $scope.clearParagraphOutput($scope.paragraph);
+        } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 87) { // Ctrl + Alt + w
+          $scope.goToSingleParagraph();
         } else {
           noShortcutDefined = true;
         }
