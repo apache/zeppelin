@@ -194,12 +194,6 @@ table.dataTable.table-condensed .sorting_desc:after {
   z-index: 10003;
 }
 
-.clipboard-button {
-  border-style: none;
-  background-color: transparent;
-  padding: 0;
-}
-
 /*
   Paragraph Menu
 */

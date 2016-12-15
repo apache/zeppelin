@@ -38,20 +38,16 @@ limitations under the License.
           data-toggle="dropdown"
           type="button">
     </span>
-    <ul class="dropdown-menu" role="menu" style="width:230px;z-index:1002">
+    <ul class="dropdown-menu" role="menu" style="width:200px;z-index:1002">
       <li ng-controller="clipboardCtrl" ng-click="$event.stopPropagation()" style="text-align:center;margin-top:4px;">
-        <span>{{paragraph.id}}</span>
-        <span class="divider-vertical">
-          <button class="clipboard-button"
-                  ngclipboard
-                  ngclipboard-success="complete($event)"
-                  ngclipboard-error="clipError($event)"
-                  data-clipboard-text="{{paragraph.id}}"
-                  tooltip-placement="top"
-                  tooltip="{{tooltip}}">
-            <img style="height: 16px;" src="assets/images/clippy.svg" />
-          </button>
-        </span>
+        <a  ngclipboard
+            ngclipboard-success="complete($event)"
+            ngclipboard-error="clipError($event)"
+            data-clipboard-text="{{paragraph.id}}"
+            tooltip-placement="top"
+            tooltip="{{tooltip}}">
+          <span>{{paragraph.id}}</span>
+        </a>
       </li>
       <li role="separator" class="divider"></li>
       <li>
