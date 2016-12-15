@@ -112,7 +112,7 @@ public class JDBCInterpreter extends Interpreter {
 
   // START PMC ADDITION
   private static final String[] TABLE_TYPES = { "TABLE", "VIEW", "SYSTEM TABLE",
-          "GLOBAL TEMPORARY", "LOCAL TEMPORARY", "ALIAS", "SYNONYM" };
+    "GLOBAL TEMPORARY", "LOCAL TEMPORARY", "ALIAS", "SYNONYM" };
   private static final String METADATA_KEYWORD = "explore";
   // END PMC ADDITION
 
