@@ -780,7 +780,7 @@ public class NotebookServer extends WebSocketServlet implements
 
     NotebookAuthorization notebookAuthorization = notebook.getNotebookAuthorization();
     if (!notebookAuthorization.isOwner(noteId, userAndRoles)) {
-      permissionError(conn, "rename", fromMessage.principal,
+      permissionError(conn, "persoanlized ", fromMessage.principal,
           userAndRoles, notebookAuthorization.getOwners(noteId));
       return;
     }
@@ -790,7 +790,7 @@ public class NotebookServer extends WebSocketServlet implements
       note.setPersonalizedMode(isPersonalized);
       AuthenticationInfo subject = new AuthenticationInfo(fromMessage.principal);
       note.persist(subject);
-      sendNote(conn, userAndRoles, notebook, fromMessage);
+      broadcastNote(note);
     }
   }
 
