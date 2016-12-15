@@ -12,8 +12,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 <!-- Here the controller <NotebookCtrl> is not needed because explicitly set in the app.js (route) -->
-<div ng-include src="'app/notebook/notebook-actionBar.html'"></div>
-<div class="notebookContent">
+<div id="actionbar" ng-include src="'app/notebook/notebook-actionBar.html'"></div>
+<div id="content" class="notebookContent">
   <!-- settings -->
   <div ng-if="showSetting" class="setting">
     <div>
