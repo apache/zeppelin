@@ -109,6 +109,12 @@ public class JDBCInterpreter extends Interpreter {
   private final String CONCURRENT_EXECUTION_COUNT = "zeppelin.jdbc.concurrent.max_connection";
   private final String DBCP_STRING = "jdbc:apache:commons:dbcp:";
 
+  // START PMC ADDITION
+  static final String EMPTY_METADATA_VALUE = "null";
+  private static final String[] TABLE_TYPES = {"TABLE", "VIEW", "SYSTEM TABLE"};
+  private static final String METADATA_KEYWORD = "explore";
+  // END PMC ADDITION
+
   private final HashMap<String, Properties> basePropretiesMap;
   private final HashMap<String, JDBCUserConfigurations> jdbcUserConfigurationsMap;
   private final Map<String, SqlCompleter> propertyKeySqlCompleterMap;
@@ -512,6 +518,66 @@ public class JDBCInterpreter extends Interpreter {
     }
   }
 
+  // START PMC ADDITION
+  private InterpreterResult getMetaData(String propertyKey,
+      String cmd, InterpreterContext interpreterContext) {
+    Connection connection;
+    String user = interpreterContext.getAuthenticationInfo().getUser();
+    DatabaseMetaData dataBaseMetaData;
+    ResultSet resultSet = null;
+    ResultSetMetaData resultSetMetaData = null;
+    String tableName = cmd.substring(7).trim();
+    String results;
+
+    try {
+      connection = getConnection(propertyKey, interpreterContext);
+
+      if (connection == null) {
+        return new InterpreterResult(Code.ERROR, "Prefix not found.");
+      }
+
+      try {
+        // LOGIC HERE FOR DATA OR TABLE METADATA
+        dataBaseMetaData = connection.getMetaData();
+        if (tableName.equals("")) {
+          resultSet = dataBaseMetaData.getTables(null, null, "%", TABLE_TYPES);
+        } else {
+          resultSet = dataBaseMetaData.getColumns(null, null, tableName, null);
+        }
+        //
+        results = getResults(resultSet, true);
+      } finally {
+        if (resultSet != null) {
+          try {
+            resultSet.close();
+          } catch (SQLException e) { /*ignored*/ }
+        }
+        if (connection != null) {
+          try {
+            connection.close();
+          } catch (SQLException e) { /*ignored*/ }
+        }
+      }
+      return new InterpreterResult(Code.SUCCESS, results);
+
+    } catch (Exception e) {
+      logger.error("Cannot fetch metadata.", e);
+      ByteArrayOutputStream baos = new ByteArrayOutputStream();
+      PrintStream ps = new PrintStream(baos);
+      e.printStackTrace(ps);
+      String errorMsg = new String(baos.toByteArray(), StandardCharsets.UTF_8);
+
+      try {
+        closeDBPool(user, propertyKey);
+      } catch (SQLException e1) {
+        e1.printStackTrace();
+      }
+
+      return new InterpreterResult(Code.ERROR, errorMsg);
+    }
+  }
+  // END PMC ADDITION
+
   /**
    * For %table response replace Tab and Newline characters from the content.
    */
@@ -532,6 +598,16 @@ public class JDBCInterpreter extends Interpreter {
     }
 
     cmd = cmd.trim();
+
+    // START PMC ADDITION
+    if (cmd.toLowerCase().substring(0, 7).equals(METADATA_KEYWORD)) {
+      logger.info("PropertyKey: {}, MetaData command: '{}'", propertyKey, cmd);
+      return getMetaData(propertyKey, cmd, contextInterpreter);
+    } else {
+      logger.info("PropertyKey: {}, SQL command: '{}'", propertyKey, cmd);
+      return executeSql(propertyKey, cmd, contextInterpreter);
+    }
+    // END PMC ADDITION
 
     logger.info("PropertyKey: {}, SQL command: '{}'", propertyKey, cmd);
     return executeSql(propertyKey, cmd, contextInterpreter);
