@@ -174,7 +174,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
         Map config = p.getConfig();
         config.put("enabled", true);
         p.setConfig(config);
-        p.setText("%r localDF <- data.frame(name=c(\"a\", \"b\", \"c\"), age=c(19, 23, 18))\n" +
+        p.setText("%spark.r localDF <- data.frame(name=c(\"a\", \"b\", \"c\"), age=c(19, 23, 18))\n" +
             "df <- createDataFrame(" + sqlContextName + ", localDF)\n" +
             "count(df)"
         );
@@ -424,7 +424,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
             p1.setText("%pyspark\n" +
                     "from pyspark.sql import SQLContext\n" +
                     "print(" + sqlContextName + ".read.format('com.databricks.spark.csv')" +
-                    ".load('"+ tmpFile.getAbsolutePath() +"').count())");
+                    ".load('file:///"+ tmpFile.getAbsolutePath() +"').count())");
             p1.setAuthenticationInfo(anonymous);
             note.run(p1.getId());
 
