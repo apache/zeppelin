@@ -69,7 +69,7 @@
 
     $scope.noteRevisions = [];
     $scope.currentRevision = 'Head';
-    $scope.revisionDisabled = !isRevisionPath($location.path());
+    $scope.revisionView = isRevisionPath($location.path());
 
     $scope.$on('setConnectedStatus', function(event, param) {
       if (connectedOnce && param) {
