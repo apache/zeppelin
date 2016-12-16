@@ -103,50 +103,32 @@ module.exports = function(grunt) {
       }
     },
 
-    'goog-webfont-dl': {
-      patuaOne: {
+    googlefonts: {
+      build: {
         options: {
-          ttf: true,
-          eot: true,
-          woff: true,
-          woff2: true,
-          svg: true,
-          fontname: 'Patua One',
-          fontstyles: '400',
-          fontdest: '<%= yeoman.app %>/fonts/',
-          cssdest: '<%= yeoman.app %>/fonts/Patua-One.css',
-          cssprefix: '',
-          subset: ''
-        }
-      },
-      sourceCodePro: {
-        options: {
-          ttf: true,
-          eot: true,
-          woff: true,
-          woff2: true,
-          svg: true,
-          fontname: 'Source Code Pro',
-          fontstyles: '300, 400, 500',
-          fontdest: '<%= yeoman.app %>/fonts/',
-          cssdest: '<%= yeoman.app %>/fonts/Source-Code-Pro.css',
-          cssprefix: '',
-          subset: ''
-        }
-      },
-      roboto: {
-        options: {
-          ttf: true,
-          eot: true,
-          woff: true,
-          woff2: true,
-          svg: true,
-          fontname: 'Roboto',
-          fontstyles: '300, 400, 500',
-          fontdest: '<%= yeoman.app %>/fonts/',
-          cssdest: '<%= yeoman.app %>/fonts/Roboto.css',
-          cssprefix: '',
-          subset: ''
+          fontPath: '<%= yeoman.app %>/fonts/',
+          httpPath: '../fonts/',
+          cssFile: '<%= yeoman.app %>/fonts/google-fonts.css',
+          formats: {
+            eot: true,
+            ttf: true,
+            woff: true,
+            svg: true
+          },
+          fonts: [
+            {
+              family: 'Patua One',
+              styles: [400]
+            },
+            {
+              family: 'Source Code Pro',
+              styles: [300, 400, 500]
+            },
+            {
+              family: 'Roboto',
+              styles: [300, 400, 500]
+            }
+          ]
         }
       }
     },
@@ -624,7 +606,6 @@ module.exports = function(grunt) {
     'htmlhint',
     'clean:dist',
     'wiredep',
-    'goog-webfont-dl',
     'useminPrepare',
     'concurrent:dist',
     'postcss',
