@@ -1,6 +1,21 @@
 /**
- * Copyright 2015 NAVER Corp. All rights Reserved.
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
+
 package org.apache.zeppelin.notebook.repo;
 
 import com.google.gson.Gson;
@@ -117,7 +132,7 @@ public class HDFSNotebookRepo extends VFSNotebookRepo implements NotebookRepo {
       }
     }
     catch (Exception e) {
-      logger.error("Exception: ", e);
+      logger.error("exception occurred during getting notebook from hdfs : ", e);
     }
 
     return hdfsNotebook;
@@ -132,7 +147,7 @@ public class HDFSNotebookRepo extends VFSNotebookRepo implements NotebookRepo {
       String notebookStatus = this.hdfsCmd.runCommand(this.hdfsCmd.getFileStatus, notebook, null);
       fileStatus = gson.fromJson(notebookStatus, OneFileStatus.class);
     } catch (Exception e) {
-      logger.warn("Warning: ", e);
+      logger.warn("exception occurred during checking hdfs file status: ", e);
       return;
     }
     long length = fileStatus.length;
@@ -168,7 +183,7 @@ public class HDFSNotebookRepo extends VFSNotebookRepo implements NotebookRepo {
         hdfsNotebook.remove(baseName);
       }
       else {
-        uploadNoteListToHDFS(baseName);
+        uploadNoteToHDFS(baseName);
       }
     }
 
@@ -177,11 +192,11 @@ public class HDFSNotebookRepo extends VFSNotebookRepo implements NotebookRepo {
     }
   }
 
-  private void uploadNoteListToHDFS(Note note) throws IOException {
-    uploadNoteListToHDFS(note.id());
+  private void uploadNoteToHDFS(Note note) throws IOException {
+    uploadNoteToHDFS(note.id());
   }
 
-  private void uploadNoteListToHDFS(String noteId) throws IOException {
+  private void uploadNoteToHDFS(String noteId) throws IOException {
     String localNotebook = super.getRootDir() + "/" + noteId + "/" + NOTE_JSON;
     FileObject localNote = super.getRootDir().resolveFile(noteId + "/" + NOTE_JSON);
     String noteDir = this.hdfsNotebookDir + "/" + noteId;
@@ -228,7 +243,7 @@ public class HDFSNotebookRepo extends VFSNotebookRepo implements NotebookRepo {
   public synchronized void save(Note note, AuthenticationInfo subject) throws IOException {
     super.save(note, subject);
     if (this.enableWebHDFS)
-      uploadNoteListToHDFS(note);
+      uploadNoteToHDFS(note);
   }
 
   @Override
