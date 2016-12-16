@@ -514,21 +514,19 @@ public class Note implements Serializable, ParagraphJobListener {
   /**
    * Run all paragraphs sequentially.
    */
-  public void runAll() {
+  public synchronized void runAll() {
     String cronExecutingUser = (String) getConfig().get("cronExecutingUser");
     if (null == cronExecutingUser) {
       cronExecutingUser = "anonymous";
     }
-    synchronized (paragraphs) {
-      for (Paragraph p : paragraphs) {
-        if (!p.isEnabled()) {
-          continue;
-        }
-        AuthenticationInfo authenticationInfo = new AuthenticationInfo();
-        authenticationInfo.setUser(cronExecutingUser);
-        p.setAuthenticationInfo(authenticationInfo);
-        run(p.getId());
+    for (Paragraph p : getParagraphs()) {
+      if (!p.isEnabled()) {
+        continue;
       }
+      AuthenticationInfo authenticationInfo = new AuthenticationInfo();
+      authenticationInfo.setUser(cronExecutingUser);
+      p.setAuthenticationInfo(authenticationInfo);
+      run(p.getId());
     }
   }
 
