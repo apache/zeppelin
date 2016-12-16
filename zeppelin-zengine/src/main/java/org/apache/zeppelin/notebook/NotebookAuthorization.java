@@ -65,7 +65,7 @@ public class NotebookAuthorization {
 
   private NotebookAuthorization() {}
 
-  public static NotebookAuthorization init(ZeppelinConfiguration config) {
+  public static synchronized NotebookAuthorization init(ZeppelinConfiguration config) {
     if (instance == null) {
       instance = new NotebookAuthorization();
       conf = config;
