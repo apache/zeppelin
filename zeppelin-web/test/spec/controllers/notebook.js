@@ -121,4 +121,20 @@ describe('Controller: NotebookCtrl', function() {
     expect(scope.note.name).toEqual(newName);
     expect(websocketMsgSrvMock.updateNote).toHaveBeenCalled();
   });
+
+  it('should reload note info once per one "setNoteMenu" event', function() {
+    spyOn(websocketMsgSrvMock, 'getNote');
+    spyOn(websocketMsgSrvMock, 'listRevisionHistory');
+
+    scope.$broadcast('setNoteMenu');
+    expect(websocketMsgSrvMock.getNote.calls.count()).toEqual(1);
+    expect(websocketMsgSrvMock.listRevisionHistory.calls.count()).toEqual(1);
+
+    websocketMsgSrvMock.getNote.calls.reset();
+    websocketMsgSrvMock.listRevisionHistory.calls.reset();
+
+    scope.$broadcast('setNoteMenu');
+    expect(websocketMsgSrvMock.getNote.calls.count()).toEqual(1);
+    expect(websocketMsgSrvMock.listRevisionHistory.calls.count()).toEqual(1);
+  });
 });
