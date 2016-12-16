@@ -101,7 +101,6 @@ describe('Controller: NotebookCtrl', function() {
     expect(scope.saveTimer).toEqual(null);
   });
 
-
   it('should NOT update note name when updateNoteName() is called with an invalid name', function() {
     spyOn(websocketMsgSrvMock, 'updateNote');
     scope.updateNoteName('');
