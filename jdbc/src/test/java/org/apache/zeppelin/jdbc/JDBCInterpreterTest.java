@@ -223,7 +223,10 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
 
     assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
     assertEquals(InterpreterResult.Type.TABLE, interpreterResult.message().get(0).getType());
-    System.out.println(interpreterResult.message().get(0).getData());
+    System.out.println("Printed:\n" + interpreterResult.message().get(0).getData());
+
+    //"TABLE_CATALOG\tTABLE_SCHEMA\tTABLE_NAME\t"
+
     assertEquals("TABLE_CATALOG\tTABLE_SCHEMA\tTABLE_NAME\tCOLUMN_NAME\tDATA_TYPE\tTYPE_NAME\t" +
       "CHARACTER_MAXIMUM_LENGTH\tCHARACTER_MAXIMUM_LENGTH\tNUMERIC_SCALE\tNUMERIC_PRECISION_RADIX" +
       "\tNULLABLE\tREMARKS\tCOLUMN_DEFAULT\tDATA_TYPE\tSQL_DATETIME_SUB\tCHARACTER_OCTET_LENGTH\t" +
