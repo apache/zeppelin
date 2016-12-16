@@ -232,7 +232,7 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
 
     assertEquals("TABLE_CATALOG\tTABLE_SCHEMA\tTABLE_NAME\tTABLE_TYPE\tREMARKS\tTYPE_NAME\tTYPE_NAME\t" +
       "TYPE_NAME\tTYPE_NAME\tTYPE_NAME\tSQL\nH2-TEST-1\tINFORMATION_SCHEMA\t" +
-      "CATALOGS\tSYSTEM TABLE\tnull\tnull\tnull\tnull\tnull\tnull\n", testOutput);
+      "CATALOGS\tSYSTEM TABLE\t\tnull\tnull\tnull\tnull\tnull\tnull\n", testOutput);
 
     /*
     assertEquals("TABLE_CATALOG\tTABLE_SCHEMA\tTABLE_NAME\tCOLUMN_NAME\tDATA_TYPE\tTYPE_NAME\t" +
