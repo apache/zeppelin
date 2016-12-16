@@ -14,40 +14,29 @@
  */
 package org.apache.zeppelin.jdbc;
 
-import static java.lang.String.format;
-import static org.apache.zeppelin.interpreter.Interpreter.logger;
-import static org.apache.zeppelin.interpreter.Interpreter.register;
-import static org.apache.zeppelin.jdbc.JDBCInterpreter.DEFAULT_KEY;
-import static org.apache.zeppelin.jdbc.JDBCInterpreter.DEFAULT_DRIVER;
-import static org.apache.zeppelin.jdbc.JDBCInterpreter.DEFAULT_PASSWORD;
-import static org.apache.zeppelin.jdbc.JDBCInterpreter.DEFAULT_USER;
-import static org.apache.zeppelin.jdbc.JDBCInterpreter.DEFAULT_URL;
-import static org.apache.zeppelin.jdbc.JDBCInterpreter.COMMON_MAX_LINE;
-import static org.junit.Assert.*;
-
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.sql.*;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Properties;
-
+import com.mockrunner.jdbc.BasicJDBCTestCaseAdapter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
-import org.apache.zeppelin.jdbc.JDBCInterpreter;
 import org.apache.zeppelin.scheduler.FIFOScheduler;
 import org.apache.zeppelin.scheduler.ParallelScheduler;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.user.AuthenticationInfo;
-import org.apache.zeppelin.user.Credentials;
 import org.apache.zeppelin.user.UserCredentials;
 import org.apache.zeppelin.user.UsernamePassword;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.mockrunner.jdbc.BasicJDBCTestCaseAdapter;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.sql.*;
+import java.util.List;
+import java.util.Properties;
+
+import static java.lang.String.format;
+import static org.apache.zeppelin.jdbc.JDBCInterpreter.*;
+import static org.junit.Assert.*;
 /**
  * JDBC interpreter unit tests
  */
@@ -213,6 +202,48 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
     assertEquals(InterpreterResult.Type.TABLE, interpreterResult.message().get(0).getType());
     assertEquals("ID\tNAME\na\ta_name\n", interpreterResult.message().get(0).getData());
+  }
+
+  @Test
+  public void testConnectionMetaData() throws SQLException, IOException {
+
+    Properties properties = new Properties();
+    properties.setProperty("common.max_count", "1");
+    properties.setProperty("common.max_retry", "3");
+    properties.setProperty("default.driver", "org.h2.Driver");
+    properties.setProperty("default.url", getJdbcConnection());
+    properties.setProperty("default.user", "");
+    properties.setProperty("default.password", "");
+    JDBCInterpreter t = new JDBCInterpreter(properties);
+    t.open();
+
+    String command = "explore";
+
+    InterpreterResult interpreterResult = t.interpret(command, interpreterContext);
+
+    assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
+    assertEquals(InterpreterResult.Type.TABLE, interpreterResult.message().get(0).getType());
+  }
+
+  @Test
+  public void testTableMetaData() throws SQLException, IOException {
+
+    Properties properties = new Properties();
+    properties.setProperty("common.max_count", "1");
+    properties.setProperty("common.max_retry", "3");
+    properties.setProperty("default.driver", "org.h2.Driver");
+    properties.setProperty("default.url", getJdbcConnection());
+    properties.setProperty("default.user", "");
+    properties.setProperty("default.password", "");
+    JDBCInterpreter t = new JDBCInterpreter(properties);
+    t.open();
+
+    String command = "explore TEST_TABLE";
+
+    InterpreterResult interpreterResult = t.interpret(command, interpreterContext);
+
+    assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
+    assertEquals(InterpreterResult.Type.TABLE, interpreterResult.message().get(0).getType());
   }
 
   @Test

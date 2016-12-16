@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+        <project xmlns="http://maven.apache.org/POM/4.0.0"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+          <modelVersion>4.0.0</modelVersion>
+          <groupId>org.freemarker</groupId>
+          <artifactId>freemarker</artifactId>
+          <version>2.3.15</version>
+          <packaging>jar</packaging>
+          <name>FreeMarker</name>
+          <description>
+            FreeMarker is a "template engine"; a generic tool to generate text output based on templates.
+          </description>
+          <url>http://freemarker.org</url>
+          <licenses>
+            <license>
+              <name>BSD-style license</name>
+              <url>http://freemarker.org/LICENSE.txt</url>
+            </license>
+          </licenses>
+          <scm>
+            <url>http://freemarker.svn.sourceforge.net/viewvc/freemarker/</url>
+            <connection>scm:svn:https://freemarker.svn.sourceforge.net/svnroot/freemarker</connection>
+          </scm>
+          <dependencies>
+            <!-- no required dependencies -->
+          </dependencies>
+        </project>
+     
