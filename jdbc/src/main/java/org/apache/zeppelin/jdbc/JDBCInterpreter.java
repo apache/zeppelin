@@ -522,7 +522,6 @@ public class JDBCInterpreter extends Interpreter {
     String user = interpreterContext.getAuthenticationInfo().getUser();
     DatabaseMetaData dataBaseMetaData;
     ResultSet resultSet = null;
-    ResultSetMetaData resultSetMetaData = null;
     String tableName = cmd.substring(7).trim();
     String results;
 
