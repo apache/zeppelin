@@ -225,7 +225,7 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     assertEquals(InterpreterResult.Type.TABLE, interpreterResult.message().get(0).getType());
     //System.out.println("Printed:\n" + interpreterResult.message().get(0).getData());
 
-    String testOutput = interpreterResult.message().get(0).getData().replace("H2-TEST-([0-9]+)",
+    String testOutput = interpreterResult.message().get(0).getData().replaceAll("H2-TEST-([0-9]+)",
       "H2-TEST-1");
 
     System.out.println("testOutput: " + testOutput);
