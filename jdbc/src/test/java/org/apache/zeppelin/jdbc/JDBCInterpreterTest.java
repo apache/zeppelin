@@ -223,7 +223,6 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
 
     assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
     assertEquals(InterpreterResult.Type.TABLE, interpreterResult.message().get(0).getType());
-    //System.out.println("Printed:\n" + interpreterResult.message().get(0).getData());
 
     String testOutput = interpreterResult.message().get(0).getData().replaceAll("H2-TEST-([0-9]+)",
       "H2-TEST-1");
@@ -233,18 +232,6 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     assertEquals("TABLE_CATALOG\tTABLE_SCHEMA\tTABLE_NAME\tTABLE_TYPE\tREMARKS\tTYPE_NAME\tTYPE_NAME\t" +
       "TYPE_NAME\tTYPE_NAME\tTYPE_NAME\tSQL\nH2-TEST-1\tINFORMATION_SCHEMA\t" +
       "CATALOGS\tSYSTEM TABLE\t\tnull\tnull\tnull\tnull\tnull\tnull\n", testOutput);
-
-    /*
-    assertEquals("TABLE_CATALOG\tTABLE_SCHEMA\tTABLE_NAME\tCOLUMN_NAME\tDATA_TYPE\tTYPE_NAME\t" +
-      "CHARACTER_MAXIMUM_LENGTH\tCHARACTER_MAXIMUM_LENGTH\tNUMERIC_SCALE\tNUMERIC_PRECISION_RADIX" +
-      "\tNULLABLE\tREMARKS\tCOLUMN_DEFAULT\tDATA_TYPE\tSQL_DATETIME_SUB\tCHARACTER_OCTET_LENGTH\t" +
-      "ORDINAL_POSITION\tIS_NULLABLE\tSCOPE_CATALOG\tSCOPE_SCHEMA\tSCOPE_TABLE\tSOURCE_DATA_TYPE\t" +
-      "IS_AUTOINCREMENT\tSCOPE_CATLOG\nH2-TEST-8001271961293557682\tPUBLIC\tTEST_TABLE\tID\t12\t" +
-      "VARCHAR\t255\t255\t0\t10\t1\t\tnull\t12\t0\t255\t1\tYES\tnull\tnull\tnull\tnull\tNO\tnull\n" +
-      "H2-TEST-8001271961293557682\tPUBLIC\tTEST_TABLE\tNAME\t12\tVARCHAR\t255\t255\t0\t10\t1\t\t" +
-      "null\t12\t0\t255\t2\tYES\tnull\tnull\tnull\tnull\tNO\tnull\n"
-      , interpreterResult.message().get(0).getData());
-    */
   }
 
   @Test
@@ -266,6 +253,22 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
 
     assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
     assertEquals(InterpreterResult.Type.TABLE, interpreterResult.message().get(0).getType());
+
+    System.out.println("Printed:\n" + interpreterResult.message().get(0).getData());
+    String testOutput = interpreterResult.message().get(0).getData().replaceAll("H2-TEST-([0-9]+)",
+            "H2-TEST-1");
+
+    System.out.println("testOutput: " + testOutput);
+
+    assertEquals("TABLE_CATALOG\tTABLE_SCHEMA\tTABLE_NAME\tCOLUMN_NAME\tDATA_TYPE\tTYPE_NAME\t" +
+      "CHARACTER_MAXIMUM_LENGTH\tCHARACTER_MAXIMUM_LENGTH\tNUMERIC_SCALE\tNUMERIC_PRECISION_RADIX" +
+      "\tNULLABLE\tREMARKS\tCOLUMN_DEFAULT\tDATA_TYPE\tSQL_DATETIME_SUB\tCHARACTER_OCTET_LENGTH\t" +
+      "ORDINAL_POSITION\tIS_NULLABLE\tSCOPE_CATALOG\tSCOPE_SCHEMA\tSCOPE_TABLE\tSOURCE_DATA_TYPE\t" +
+      "IS_AUTOINCREMENT\tSCOPE_CATLOG\nH2-TEST-1\tPUBLIC\tTEST_TABLE\tID\t12\t" +
+      "VARCHAR\t255\t255\t0\t10\t1\t\tnull\t12\t0\t255\t1\tYES\tnull\tnull\tnull\tnull\tNO\tnull\n" +
+      "H2-TEST-1\tPUBLIC\tTEST_TABLE\tNAME\t12\tVARCHAR\t255\t255\t0\t10\t1\t\t" +
+      "null\t12\t0\t255\t2\tYES\tnull\tnull\tnull\tnull\tNO\tnull\n"
+      , interpreterResult.message().get(0).getData());
   }
 
   @Test
