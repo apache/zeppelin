@@ -16,20 +16,22 @@
  */
 
 package org.apache.zeppelin.spark;
+
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.resource.LocalResourcePool;
 import org.apache.zeppelin.user.AuthenticationInfo;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.junit.runners.MethodSorters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -39,14 +41,17 @@ import static org.junit.Assert.*;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class PySparkInterpreterTest {
+
+  @Rule
+  public TemporaryFolder tmpDir = new TemporaryFolder();
+
   public static SparkInterpreter sparkInterpreter;
   public static PySparkInterpreter pySparkInterpreter;
   public static InterpreterGroup intpGroup;
-  private File tmpDir;
   public static Logger LOGGER = LoggerFactory.getLogger(PySparkInterpreterTest.class);
   private InterpreterContext context;
 
-  public static Properties getPySparkTestProperties() {
+  private Properties getPySparkTestProperties() throws IOException {
     Properties p = new Properties();
     p.setProperty("master", "local[*]");
     p.setProperty("spark.app.name", "Zeppelin Test");
@@ -54,6 +59,7 @@ public class PySparkInterpreterTest {
     p.setProperty("zeppelin.spark.maxResult", "1000");
     p.setProperty("zeppelin.spark.importImplicit", "true");
     p.setProperty("zeppelin.pyspark.python", "python");
+    p.setProperty("zeppelin.dep.localrepo", tmpDir.newFolder().getAbsolutePath());
     return p;
   }
 
@@ -73,10 +79,6 @@ public class PySparkInterpreterTest {
 
   @Before
   public void setUp() throws Exception {
-    tmpDir = new File(System.getProperty("java.io.tmpdir") + "/ZeppelinLTest_" + System.currentTimeMillis());
-    System.setProperty("zeppelin.dep.localrepo", tmpDir.getAbsolutePath() + "/local-repo");
-    tmpDir.mkdirs();
-
     intpGroup = new InterpreterGroup();
     intpGroup.put("note", new LinkedList<Interpreter>());
 
@@ -102,24 +104,6 @@ public class PySparkInterpreterTest {
       new LocalResourcePool("id"),
       new LinkedList<InterpreterContextRunner>(),
       new InterpreterOutput(null));
-  }
-
-  @After
-  public void tearDown() throws Exception {
-    delete(tmpDir);
-  }
-
-  private void delete(File file) {
-    if (file.isFile()) file.delete();
-    else if (file.isDirectory()) {
-      File[] files = file.listFiles();
-      if (files != null && files.length > 0) {
-        for (File f : files) {
-          delete(f);
-        }
-      }
-      file.delete();
-    }
   }
 
   @Test
