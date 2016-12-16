@@ -267,8 +267,7 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
       "IS_AUTOINCREMENT\tSCOPE_CATLOG\nH2-TEST-1\tPUBLIC\tTEST_TABLE\tID\t12\t" +
       "VARCHAR\t255\t255\t0\t10\t1\t\tnull\t12\t0\t255\t1\tYES\tnull\tnull\tnull\tnull\tNO\tnull\n" +
       "H2-TEST-1\tPUBLIC\tTEST_TABLE\tNAME\t12\tVARCHAR\t255\t255\t0\t10\t1\t\t" +
-      "null\t12\t0\t255\t2\tYES\tnull\tnull\tnull\tnull\tNO\tnull\n"
-      , interpreterResult.message().get(0).getData());
+      "null\t12\t0\t255\t2\tYES\tnull\tnull\tnull\tnull\tNO\tnull\n", testOutput);
   }
 
   @Test
