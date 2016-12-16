@@ -26,7 +26,8 @@ limitations under the License.
               class="btn btn-default btn-xs"
               ng-click="runNote()"
               ng-class="{'disabled':isNoteRunning()}"
-              tooltip-placement="bottom" tooltip="Run all paragraphs">
+              tooltip-placement="bottom" tooltip="Run all paragraphs"
+              ng-disabled="revisionView">
         <i class="icon-control-play"></i>
       </button>
       <button type="button"
