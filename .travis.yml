@@ -33,8 +33,6 @@ addons:
     - r-packages-precise
     packages:
     - r-base-dev
-    - r-cran-evaluate
-    - r-cran-base64enc
 
 matrix:
   include:
