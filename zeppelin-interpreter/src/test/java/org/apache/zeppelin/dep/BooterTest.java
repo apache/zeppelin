@@ -41,4 +41,9 @@ public class BooterTest {
 
     assertThat(resolvedPath, equalTo(absolutePath));
   }
+
+  @Test(expected = NullPointerException.class)
+  public void should_throw_exception_for_null() {
+    Booter.resolveLocalRepoPath(null);
+  }
 }

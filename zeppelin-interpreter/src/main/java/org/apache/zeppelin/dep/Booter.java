@@ -17,6 +17,7 @@
 
 package org.apache.zeppelin.dep;
 
+import org.apache.commons.lang3.Validate;
 import org.apache.maven.repository.internal.MavenRepositorySystemSession;
 import org.sonatype.aether.RepositorySystem;
 import org.sonatype.aether.RepositorySystemSession;
@@ -35,6 +36,8 @@ public class Booter {
 
   public static RepositorySystemSession newRepositorySystemSession(
       RepositorySystem system, String localRepoPath) {
+    Validate.notNull(localRepoPath, "localRepoPath should have a value");
+
     MavenRepositorySystemSession session = new MavenRepositorySystemSession();
 
     LocalRepository localRepo = new LocalRepository(resolveLocalRepoPath(localRepoPath));
