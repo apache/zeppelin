@@ -596,7 +596,8 @@ public class JDBCInterpreter extends Interpreter {
 
     cmd = cmd.trim();
 
-    if (cmd.toLowerCase().substring(0, 7).equals(METADATA_KEYWORD)) {
+
+    if (cmd.length() >= 7 && cmd.toLowerCase().substring(0, 7).equals(METADATA_KEYWORD)) {
       logger.info("PropertyKey: {}, MetaData command: '{}'", propertyKey, cmd);
       return getMetaData(propertyKey, cmd, contextInterpreter);
     } else {

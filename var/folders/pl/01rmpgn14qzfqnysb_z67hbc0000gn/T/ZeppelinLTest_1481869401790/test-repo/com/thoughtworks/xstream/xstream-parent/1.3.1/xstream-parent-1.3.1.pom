@@ -1,0 +1,465 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <!--
+     Copyright (C) 2006 Joe Walnes.
+     Copyright (C) 2006, 2007, 2008 XStream committers.
+     All rights reserved.
+     
+     The software in this package is published under the terms of the BSD
+     style license a copy of which has been included with this distribution in
+     the LICENSE.txt file.
+     
+     Created on 29. July 2006 by Mauro Talevi
+     -->
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.thoughtworks.xstream</groupId>
+  <artifactId>xstream-parent</artifactId>
+  <packaging>pom</packaging>
+  <version>1.3.1</version>
+  <name>XStream Parent</name>
+
+  <inceptionYear>2004</inceptionYear>
+  <organization>
+    <name>XStream</name>
+    <url>http://xstream.codehaus.org</url>
+  </organization>
+
+  <!-- xstream-builder is currently JDK 5 only -->
+  <profiles>
+    <profile>
+      <id>jdk16</id>
+      <activation>
+        <jdk>1.6</jdk>
+      </activation>
+      <modules>
+        <module>xstream</module>
+        <!--module>xstream-builder</module-->
+        <module>xstream-benchmark</module>
+        <module>xstream-distribution</module>
+      </modules>
+    </profile>
+    <profile>
+      <id>jdk15</id>
+      <activation>
+        <jdk>1.5</jdk>
+      </activation>
+      <modules>
+        <module>xstream</module>
+        <!--module>xstream-builder</module-->
+        <module>xstream-benchmark</module>
+        <module>xstream-distribution</module>
+      </modules>
+    </profile>
+    <profile>
+      <id>jdk14</id>
+      <activation>
+        <jdk>1.4</jdk>
+      </activation>
+      <modules>
+        <module>xstream</module>
+        <module>xstream-benchmark</module>
+        <module>xstream-distribution</module>
+      </modules>
+    </profile>
+  </profiles>
+
+  <licenses>
+    <license>
+      <name>BSD style</name>
+      <url>http://xstream.codehaus.com/license.html</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>commons-io</groupId>
+        <artifactId>commons-io</artifactId>
+        <version>1.4</version>
+      </dependency>
+
+      <dependency>
+        <groupId>commons-cli</groupId>
+        <artifactId>commons-cli</artifactId>
+        <version>1.1</version>
+      </dependency>
+
+      <dependency>
+        <groupId>commons-lang</groupId>
+        <artifactId>commons-lang</artifactId>
+        <version>2.4</version>
+      </dependency>
+
+      <dependency>
+        <groupId>cglib</groupId>
+        <artifactId>cglib-nodep</artifactId>
+        <version>2.2</version>
+      </dependency>
+
+      <dependency>
+        <groupId>dom4j</groupId>
+        <artifactId>dom4j</artifactId>
+        <version>1.6.1</version>
+        <exclusions>
+          <exclusion>
+            <groupId>xml-apis</groupId>
+            <artifactId>xml-apis</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+
+      <dependency>
+        <groupId>org.jdom</groupId>
+        <artifactId>jdom</artifactId>
+        <version>1.1</version>
+      </dependency>
+
+      <dependency>
+        <groupId>joda-time</groupId>
+        <artifactId>joda-time</artifactId>
+        <version>1.6</version>
+      </dependency>
+
+      <dependency>
+        <groupId>com.megginson.sax</groupId>
+        <artifactId>xml-writer</artifactId>
+        <version>0.2</version>
+        <exclusions>
+          <exclusion>
+            <groupId>xml-apis</groupId>
+            <artifactId>xml-apis</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+
+      <dependency>
+        <groupId>stax</groupId>
+        <artifactId>stax</artifactId>
+        <version>1.2.0</version>
+      </dependency>
+
+      <dependency>
+        <groupId>stax</groupId>
+        <artifactId>stax-api</artifactId>
+        <version>1.0.1</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.codehaus.woodstox</groupId>
+        <artifactId>wstx-asl</artifactId>
+        <version>3.2.7</version>
+      </dependency>
+
+      <dependency>
+        <groupId>xom</groupId>
+        <artifactId>xom</artifactId>
+        <version>1.1</version>
+        <exclusions>
+          <exclusion>
+            <groupId>xerces</groupId>
+            <artifactId>xmlParserAPIs</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>xerces</groupId>
+            <artifactId>xercesImpl</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>xalan</groupId>
+            <artifactId>xalan</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>jaxen</groupId>
+            <artifactId>jaxen</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+
+      <dependency>
+        <groupId>xpp3</groupId>
+        <artifactId>xpp3_min</artifactId>
+        <version>1.1.4c</version>
+      </dependency>
+
+      <dependency>
+        <groupId>oro</groupId>
+        <artifactId>oro</artifactId>
+        <version>2.0.8</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.codehaus.jettison</groupId>
+        <artifactId>jettison</artifactId>
+        <version>1.0.1</version>
+      </dependency>
+
+      <dependency>
+        <groupId>xml-apis</groupId>
+        <artifactId>xml-apis</artifactId>
+        <version>1.3.04</version>
+      </dependency>
+
+      <dependency>
+        <groupId>xerces</groupId>
+        <artifactId>xercesImpl</artifactId>
+        <version>2.8.1</version>
+      </dependency>
+
+      <!-- always test-scoped -->
+      <dependency>
+        <groupId>junit</groupId>
+        <artifactId>junit</artifactId>
+        <version>3.8.1</version>
+        <scope>test</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>jmock</groupId>
+        <artifactId>jmock</artifactId>
+        <version>1.0.1</version>
+        <scope>test</scope>
+      </dependency>
+
+    </dependencies>
+  </dependencyManagement>
+
+  <build>
+    <sourceDirectory>${basedir}/src/java</sourceDirectory>
+    <resources>
+      <resource>
+        <directory>${basedir}/src/java</directory>
+        <includes>
+          <include>**/*.properties</include>
+          <include>**/*.xml</include>
+        </includes>
+      </resource>
+    </resources>
+    <testSourceDirectory>${basedir}/src/test</testSourceDirectory>
+    <testResources>
+      <testResource>
+        <directory>${basedir}/src/test</directory>
+        <includes>
+          <include>**/*.xsl</include>
+          <include>**/*.txt</include>
+        </includes>
+      </testResource>
+    </testResources>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-antrun-plugin</artifactId>
+          <version>1.1</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-assembly-plugin</artifactId>
+          <version>2.1</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-clean-plugin</artifactId>
+          <version>2.2</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>2.0.2</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-dependency-plugin</artifactId>
+          <version>2.0-alpha-4</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-deploy-plugin</artifactId>
+          <version>2.3</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-eclipse-plugin</artifactId>
+		  <configuration>
+            <downloadSources>true</downloadSources>
+		  </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-enforcer-plugin</artifactId>
+          <version>1.0-alpha-2</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-install-plugin</artifactId>
+          <version>2.2</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-jar-plugin</artifactId>
+          <version>2.1</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-javadoc-plugin</artifactId>
+          <version>2.2</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-release-plugin</artifactId>
+          <version>2.0-beta-8</version>
+          <configuration>
+            <goals>deploy</goals>
+            <autoVersionSubmodules>true</autoVersionSubmodules>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-resources-plugin</artifactId>
+          <version>2.2</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-site-plugin</artifactId>
+          <version>2.0-beta-6</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-source-plugin</artifactId>
+          <version>2.0.4</version>
+          <executions>
+            <execution>
+              <id>attach-sources</id>
+              <phase>package</phase>
+              <goals>
+                <goal>jar</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>2.4.3</version>
+          <configuration>
+            <forkMode>once</forkMode>
+            <printSummary>true</printSummary>
+            <useFile>false</useFile>
+            <includes>
+                <include>**/*Test.java</include>
+                <include>**/*TestSuite.java</include>
+            </includes>
+            <excludes>
+                <exclude>**/Abstract*Test.java</exclude>
+                <exclude>**/*$*.java</exclude>
+            </excludes>
+            <systemProperties>
+              <property>
+                <name>java.awt.headless</name>
+                <value>true</value>
+              </property>
+            </systemProperties>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-surefire-report-plugin</artifactId>
+          <version>2.4.3</version>
+        </plugin>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>cobertura-maven-plugin</artifactId>
+          <version>2.0</version>
+          <executions>
+            <execution>
+              <goals>
+                <goal>clean</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>jxr-maven-plugin</artifactId>
+          <version>2.0-beta-1</version>
+        </plugin>
+        <plugin>
+          <groupId>org.codehaus.xsite</groupId>
+          <artifactId>xsite-maven-plugin</artifactId>
+          <version>1.0</version>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-release-plugin</artifactId>
+        <configuration>
+          <tagBase>https://svn.codehaus.org/xstream/tags</tagBase>
+        </configuration>
+      </plugin>
+    </plugins>
+    <extensions>
+      <extension>
+        <groupId>org.apache.maven.wagon</groupId>
+        <artifactId>wagon-webdav</artifactId>
+        <version>1.0-beta-2</version>
+      </extension>
+    </extensions>
+  </build>
+
+  <distributionManagement>
+    <!--  
+      The server id here defined must also appear in ~/.m2/settings.xml
+      cf. settings-template.xml
+    -->
+    <repository>
+      <id>codehaus.org</id>
+      <name>Codehaus XStream Repository</name>
+      <url>dav:https://dav.codehaus.org/repository/xstream</url>
+    </repository>
+    <snapshotRepository>
+      <id>codehaus.org</id>
+      <name>Codehaus XStream Snapshot Repository</name>
+      <url>dav:https://dav.codehaus.org/snapshots.repository/xstream</url>
+    </snapshotRepository>
+    <site>
+      <id>codehaus.org</id>
+      <name>Codehaus XStream Site</name>
+      <url>dav:https://dav.codehaus.org/xstream</url>
+    </site>
+  </distributionManagement>
+
+  <scm>
+    <connection>scm:svn:http://svn.codehaus.org/xstream/tags/XSTREAM_1_3_1</connection>
+    <developerConnection>scm:svn:https://svn.codehaus.org/xstream/tags/XSTREAM_1_3_1</developerConnection>
+    <url>http://fisheye.codehaus.org/browse/xstream/tags/XSTREAM_1_3_1</url>
+  </scm>
+
+  <!--
+  disabled on purpose, Codehaus is synched with Central and 
+  Jason called it bad practice to add repos in POM instead of settings.
+
+  <repositories>
+    <repository>
+      <id>codehaus-repository</id>
+      <name>Codehaus Repository</name>
+      <url>http://repository.codehaus.org</url>
+    </repository>
+  </repositories>
+
+  <pluginRepositories>
+    <pluginRepository>
+      <id>codehaus-plugin-repository</id>
+      <name>Codehaus Plugin Repository</name>
+      <url>http://repository.codehaus.org</url>
+    </pluginRepository>
+    <pluginRepository>
+      <id>codehaus-plugin-snapshot-repository</id>
+      <name>Codehaus Plugin Snapshot Repository</name>
+      <url>http://snapshots.repository.codehaus.org</url>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+    </pluginRepository>
+  </pluginRepositories>
+  -->
+</project>
