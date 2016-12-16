@@ -1,585 +1,11 @@
 {
   "paragraphs": [
     {
-      "title": "",
       "text": "%md\n### Intro\nThis notebook is an example of how to use **Apache Flink** for processing simple data sets. We will take an open airline data set from [stat-computing.org](http://stat-computing.org) and find out who was the most popular carrier during 1998-2000 years. Next we will build a chart that shows flights distribution by months and look how it changes from year to year. We will use Zeppelin `%table` display system to build charts.",
       "user": "anonymous",
-      "dateUpdated": "Dec 15, 2016 5:20:09 PM",
-      "config": {
-        "enabled": true,
-        "title": false,
-        "tableHide": false,
-        "results": [
-          {
-            "graph": {
-              "mode": "table",
-              "height": 300.0,
-              "optionOpen": false
-            }
-          }
-        ],
-        "editorMode": "ace/mode/markdown",
-        "editorHide": true,
-        "colWidth": 12.0,
-        "editorSetting": {
-          "language": "markdown",
-          "editOnDblClick": true
-        }
-      },
-      "settings": {
-        "params": {},
-        "forms": {}
-      },
-      "apps": [],
-      "jobName": "paragraph_1481553502718_-1006809201",
-      "id": "20161208-104016_2064004260",
-      "results": {
-        "code": "SUCCESS",
-        "msg": [
-          {
-            "type": "HTML",
-            "data": "\u003cdiv class\u003d\"markdown-body\"\u003e\n\u003ch3\u003eIntro\u003c/h3\u003e\n\u003cp\u003eThis notebook is an example of how to use \u003cstrong\u003eApache Flink\u003c/strong\u003e for processing simple data sets. We will take an open airline data set from \u003ca href\u003d\"http://stat-computing.org\"\u003estat-computing.org\u003c/a\u003e and find out who was the most popular carrier during 1998-2000 years. Next we will build a chart that shows flights distribution by months and look how it changes from year to year. We will use Zeppelin \u003ccode\u003e%table\u003c/code\u003e display system to build charts.\u003c/p\u003e\n\u003c/div\u003e"
-          }
-        ]
-      },
-      "result": {
-        "code": "SUCCESS",
-        "type": "HTML",
-        "msg": "\u003cdiv class\u003d\"markdown-body\"\u003e\n\u003ch3\u003eIntro\u003c/h3\u003e\n\u003cp\u003eThis notebook is an example of how to use \u003cstrong\u003eApache Flink\u003c/strong\u003e for processing simple data sets. We will take an open airline data set from \u003ca href\u003d\"http://stat-computing.org\"\u003estat-computing.org\u003c/a\u003e and find out who was the most popular carrier during 1998-2000 years. Next we will build a chart that shows flights distribution by months and look how it changes from year to year.\u003c/p\u003e\n\u003c/div\u003e"
-      },
-      "dateCreated": "Dec 12, 2016 5:38:22 PM",
-      "dateStarted": "Dec 15, 2016 5:20:09 PM",
-      "dateFinished": "Dec 15, 2016 5:20:09 PM",
-      "status": "FINISHED",
-      "progressUpdateIntervalMs": 500
-    },
-    {
-      "text": "%md\n### Getting the data\nFirst we need to download and unpack the data. We will get three big data sets with flight details (one pack for each year) and a small one with carriers names. In total we will get for about 1,5 GB of data. To be able to process such amount of data it is recommended to increase `shell.command.timeout.millisecs` value in `%sh` interpreter settings up to several minutes. You can find interpreters configuration by clicking on `Interpreter` in a drop-down menu from the top right corner of the Zeppelin web-ui.",
-      "user": "anonymous",
-      "dateUpdated": "Dec 15, 2016 5:20:11 PM",
-      "config": {
-        "enabled": true,
-        "tableHide": false,
-        "results": [
-          {
-            "graph": {
-              "mode": "table",
-              "height": 300.0,
-              "optionOpen": false,
-              "keys": [],
-              "values": [],
-              "groups": [],
-              "scatter": {}
-            }
-          }
-        ],
-        "editorHide": true,
-        "colWidth": 12.0,
-        "editorSetting": {
-          "language": "markdown",
-          "editOnDblClick": true
-        },
-        "editorMode": "ace/mode/markdown"
-      },
-      "settings": {
-        "params": {},
-        "forms": {}
-      },
-      "apps": [],
-      "jobName": "paragraph_1481553502719_-1007193950",
-      "id": "20161208-132820_113945874",
-      "results": {
-        "code": "SUCCESS",
-        "msg": [
-          {
-            "type": "HTML",
-            "data": "\u003cdiv class\u003d\"markdown-body\"\u003e\n\u003ch3\u003eGetting the data\u003c/h3\u003e\n\u003cp\u003eFirst we need to download and unpack the data. We will get three big data sets with flight details (one pack for each year) and a small one with carriers names. In total we will get for about 1,5 GB of data. To be able to process such amount of data it is recommended to increase \u003ccode\u003eshell.command.timeout.millisecs\u003c/code\u003e value in \u003ccode\u003e%sh\u003c/code\u003e interpreter settings up to several minutes. You can find interpreters configuration by clicking on \u003ccode\u003eInterpreter\u003c/code\u003e in a drop-down menu from the top right corner of the Zeppelin web-ui.\u003c/p\u003e\n\u003c/div\u003e"
-          }
-        ]
-      },
-      "dateCreated": "Dec 12, 2016 5:38:22 PM",
-      "dateStarted": "Dec 15, 2016 5:20:11 PM",
-      "dateFinished": "Dec 15, 2016 5:20:11 PM",
-      "status": "FINISHED",
-      "progressUpdateIntervalMs": 500
-    },
-    {
-      "text": "%sh\n\nrm /tmp/flights98.csv.bz2\ncurl -o /tmp/flights98.csv.bz2 \"http://stat-computing.org/dataexpo/2009/1998.csv.bz2\"\nrm /tmp/flights98.csv\nbzip2 -d /tmp/flights98.csv.bz2\nchmod 666 /tmp/flights98.csv",
-      "user": "anonymous",
-      "dateUpdated": "Dec 15, 2016 5:19:58 PM",
+      "dateUpdated": "Dec 16, 2016 6:22:06 PM",
       "config": {
         "colWidth": 12.0,
-        "enabled": true,
-        "results": {},
-        "editorSetting": {
-          "language": "sh",
-          "editOnDblClick": false
-        },
-        "editorMode": "ace/mode/sh",
-        "tableHide": true
-      },
-      "settings": {
-        "params": {},
-        "forms": {}
-      },
-      "apps": [],
-      "jobName": "paragraph_1481808364731_-1543107782",
-      "id": "20161215-162604_487179016",
-      "results": {
-        "code": "SUCCESS",
-        "msg": [
-          {
-            "type": "TEXT",
-            "data": "rm: cannot remove \u0027/tmp/flights98.csv.bz2\u0027: No such file or directory\n  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current\n                                 Dload  Upload   Total   Spent    Left  Speed\n\r  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0\r  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0\r  0 73.1M    0 62599    0     0  49279      0  0:25:56  0:00:01  0:25:55 49251\r  0 73.1M    0  300k    0     0   143k      0  0:08:42  0:00:02  0:08:40  143k\r  1 73.1M    1 1060k    0     0   342k      0  0:03:38  0:00:03  0:03:35  342k\r  4 73.1M    4 2998k    0     0   726k      0  0:01:43  0:00:04  0:01:39  726k\r  8 73.1M    8 6112k    0     0  1171k      0  0:01:03  0:00:05  0:00:58 1200k\r 12 73.1M   12 9189k    0     0  1507k      0  0:00:49  0:00:06  0:00:43 1891k\r 15 73.1M   15 11.1M    0     0  1604k      0  0:00:46  0:00:07  0:00:39 2216k\r 17 73.1M   17 12.9M    0     0  1620k      0  0:00:46  0:00:08  0:00:38 2400k\r 20 73.1M   20 14.6M    0     0  1644k      0  0:00:45  0:00:09  0:00:36 2406k\r 21 73.1M   21 15.4M    0     0  1554k      0  0:00:48  0:00:10  0:00:38 1956k\r 22 73.1M   22 16.2M    0     0  1483k      0  0:00:50  0:00:11  0:00:39 1455k\r 22 73.1M   22 16.6M    0     0  1402k      0  0:00:53  0:00:12  0:00:41 1118k\r 23 73.1M   23 16.8M    0     0  1314k      0  0:00:56  0:00:13  0:00:43  813k\r 23 73.1M   23 17.0M    0     0  1234k      0  0:01:00  0:00:14  0:00:46  494k\r 23 73.1M   23 17.2M    0     0  1166k      0  0:01:04  0:00:15  0:00:49  360k\r 23 73.1M   23 17.3M    0     0  1100k      0  0:01:08  0:00:16  0:00:52  232k\r 23 73.1M   23 17.5M    0     0  1048k      0  0:01:11  0:00:17  0:00:54  183k\r 24 73.1M   24 17.6M    0     0   996k      0  0:01:15  0:00:18  0:00:57  153k\r 24 73.1M   24 17.7M    0     0   950k      0  0:01:18  0:00:19  0:00:59  139k\r 24 73.1M   24 17.8M    0     0   907k      0  0:01:22  0:00:20  0:01:02  123k\r 24 73.1M   24 17.8M    0     0   865k      0  0:01:26  0:00:21  0:01:05  100k\r 24 73.1M   24 17.9M    0     0   827k      0  0:01:30  0:00:22  0:01:08 82680\r 24 73.1M   24 17.9M    0     0   792k      0  0:01:34  0:00:23  0:01:11 66075\r 24 73.1M   24 17.9M    0     0   760k      0  0:01:38  0:00:24  0:01:14 48601\r 24 73.1M   24 18.0M    0     0   732k      0  0:01:42  0:00:25  0:01:17 38838\r 24 73.1M   24 18.0M    0     0   705k      0  0:01:46  0:00:26  0:01:20 36876\r 24 73.1M   24 18.1M    0     0   675k      0  0:01:50  0:00:27  0:01:23 38282\r 24 73.1M   24 18.1M    0     0   647k      0  0:01:55  0:00:28  0:01:27 34525\r 24 73.1M   24 18.1M    0     0   625k      0  0:01:59  0:00:29  0:01:30 28312\r 24 73.1M   24 18.1M    0     0   615k      0  0:02:01  0:00:30  0:01:31 24737\r 24 73.1M   24 18.1M    0     0   591k      0  0:02:06  0:00:31  0:01:35 18080\r 24 73.1M   24 18.1M    0     0   577k      0  0:02:09  0:00:32  0:01:37 12969\r 24 73.1M   24 18.1M    0     0   560k      0  0:02:13  0:00:33  0:01:40 14545\r 24 73.1M   24 18.2M    0     0   545k      0  0:02:17  0:00:34  0:01:43 22677\r 24 73.1M   24 18.2M    0     0   530k      0  0:02:21  0:00:35  0:01:46 23863\r 24 73.1M   24 18.2M    0     0   515k      0  0:02:25  0:00:36  0:01:49 26647\r 25 73.1M   25 18.2M    0     0   504k      0  0:02:28  0:00:37  0:01:51 26581\r 25 73.1M   25 18.3M    0     0   491k      0  0:02:32  0:00:38  0:01:54 24022\r 25 73.1M   25 18.3M    0     0   479k      0  0:02:36  0:00:39  0:01:57 21461\r 25 73.1M   25 18.3M    0     0   468k      0  0:02:39  0:00:40  0:01:59 22891\r 25 73.1M   25 18.3M    0     0   457k      0  0:02:43  0:00:41  0:02:02 25513\r 25 73.1M   25 18.4M    0     0   447k      0  0:02:47  0:00:42  0:02:05 31959\r 25 73.1M   25 18.5M    0     0   437k      0  0:02:51  0:00:43  0:02:08 41268\r 25 73.1M   25 18.5M    0     0   429k      0  0:02:54  0:00:44  0:02:10 44577\r 25 73.1M   25 18.5M    0     0   421k      0  0:02:57  0:00:45  0:02:12 48612\r 25 73.1M   25 18.6M    0     0   412k      0  0:03:01  0:00:46  0:02:15 50259\r 25 73.1M   25 18.6M    0     0   405k      0  0:03:04  0:00:47  0:02:17 50338\r 25 73.1M   25 18.7M    0     0   398k      0  0:03:07  0:00:48  0:02:19 49575\r 25 73.1M   25 18.8M    0     0   391k      0  0:03:11  0:00:49  0:02:22 54576\r 25 73.1M   25 18.8M    0     0   385k      0  0:03:14  0:00:50  0:02:24 60193\r 25 73.1M   25 18.9M    0     0   379k      0  0:03:17  0:00:51  0:02:26 69227\r 26 73.1M   26 19.0M    0     0   374k      0  0:03:19  0:00:52  0:02:27 78746\r 26 73.1M   26 19.2M    0     0   370k      0  0:03:22  0:00:53  0:02:29   98k\r 26 73.1M   26 19.5M    0     0   369k      0  0:03:22  0:00:54  0:02:28  152k\r 27 73.1M   27 20.1M    0     0   374k      0  0:03:20  0:00:55  0:02:25  258k\r 28 73.1M   28 21.1M    0     0   385k      0  0:03:14  0:00:56  0:02:18  444k\r 30 73.1M   30 22.6M    0     0   405k      0  0:03:04  0:00:57  0:02:07  726k\r 33 73.1M   33 24.5M    0     0   433k      0  0:02:52  0:00:58  0:01:54 1102k\r 36 73.1M   36 27.0M    0     0   468k      0  0:02:39  0:00:59  0:01:40 1533k\r 38 73.1M   38 28.3M    0     0   483k      0  0:02:34  0:01:00  0:01:34 1696k\r 40 73.1M   40 29.6M    0     0   496k      0  0:02:30  0:01:01  0:01:29 1754k\r 41 73.1M   41 30.5M    0     0   503k      0  0:02:28  0:01:02  0:01:26 1626k\r 43 73.1M   43 31.5M    0     0   511k      0  0:02:26  0:01:03  0:01:23 1410k\r 44 73.1M   44 32.4M    0     0   518k      0  0:02:24  0:01:04  0:01:20 1112k\r 45 73.1M   45 33.4M    0     0   525k      0  0:02:22  0:01:05  0:01:17 1029k\r 47 73.1M   47 34.3M    0     0   532k      0  0:02:20  0:01:06  0:01:14  973k\r 48 73.1M   48 35.2M    0     0   538k      0  0:02:19  0:01:07  0:01:12  964k\r 49 73.1M   49 36.0M    0     0   542k      0  0:02:18  0:01:08  0:01:10  941k\r 50 73.1M   50 36.9M    0     0   546k      0  0:02:16  0:01:09  0:01:07  912k\r 51 73.1M   51 37.7M    0     0   551k      0  0:02:15  0:01:10  0:01:05  885k\r 52 73.1M   52 38.5M    0     0   555k      0  0:02:14  0:01:11  0:01:03  853k\r 53 73.1M   53 39.4M    0     0   559k      0  0:02:13  0:01:12  0:01:01  850k\r 55 73.1M   55 40.3M    0     0   564k      0  0:02:12  0:01:13  0:00:59  863k\r 56 73.1M   56 41.1M    0     0   568k      0  0:02:11  0:01:14  0:00:57  869k\r 57 73.1M   57 41.9M    0     0   571k      0  0:02:11  0:01:15  0:00:56  852k\r 58 73.1M   58 42.7M    0     0   574k      0  0:02:10  0:01:16  0:00:54  849k\r 59 73.1M   59 43.5M    0     0   578k      0  0:02:09  0:01:17  0:00:52  844k\r 60 73.1M   60 44.2M    0     0   579k      0  0:02:09  0:01:18  0:00:51  793k\r 61 73.1M   61 44.9M    0     0   582k      0  0:02:08  0:01:19  0:00:49  786k\r 62 73.1M   62 45.7M    0     0   584k      0  0:02:08  0:01:20  0:00:48  778k\r 63 73.1M   63 46.4M    0     0   586k      0  0:02:07  0:01:21  0:00:46  762k\r 64 73.1M   64 47.1M    0     0   588k      0  0:02:07  0:01:22  0:00:45  738k\r 65 73.1M   65 47.8M    0     0   589k      0  0:02:06  0:01:23  0:00:43  753k\r 66 73.1M   66 48.5M    0     0   591k      0  0:02:06  0:01:24  0:00:42  735k\r 67 73.1M   67 49.3M    0     0   593k      0  0:02:06  0:01:25  0:00:41  744k\r 68 73.1M   68 50.1M    0     0   595k      0  0:02:05  0:01:26  0:00:39  750k\r 69 73.1M   69 50.8M    0     0   598k      0  0:02:05  0:01:27  0:00:38  762k\r 70 73.1M   70 51.6M    0     0   600k      0  0:02:04  0:01:28  0:00:36  772k\r 71 73.1M   71 52.4M    0     0   602k      0  0:02:04  0:01:29  0:00:35  786k\r 72 73.1M   72 53.2M    0     0   605k      0  0:02:03  0:01:30  0:00:33  809k\r 74 73.1M   74 54.5M    0     0   612k      0  0:02:02  0:01:31  0:00:31  907k\r 76 73.1M   76 56.3M    0     0   626k      0  0:01:59  0:01:32  0:00:27 1115k\r 79 73.1M   79 58.0M    0     0   638k      0  0:01:57  0:01:33  0:00:24 1314k\r 82 73.1M   82 60.3M    0     0   657k      0  0:01:53  0:01:34  0:00:19 1629k\r 85 73.1M   85 62.6M    0     0   674k      0  0:01:50  0:01:35  0:00:15 1919k\r 88 73.1M   88 65.0M    0     0   693k      0  0:01:47  0:01:36  0:00:11 2161k\r 91 73.1M   91 67.2M    0     0   707k      0  0:01:45  0:01:37  0:00:08 2175k\r 94 73.1M   94 69.3M    0     0   724k      0  0:01:43  0:01:38  0:00:05 2332k\r 96 73.1M   96 70.8M    0     0   731k      0  0:01:42  0:01:39  0:00:03 2117k\r 99 73.1M   99 72.5M    0     0   741k      0  0:01:40  0:01:40 --:--:-- 2016k\r100 73.1M  100 73.1M    0     0   745k      0  0:01:40  0:01:40 --:--:-- 1868k\n"
-          }
-        ]
-      },
-      "dateCreated": "Dec 15, 2016 4:26:04 PM",
-      "dateStarted": "Dec 15, 2016 4:39:58 PM",
-      "dateFinished": "Dec 15, 2016 4:42:24 PM",
-      "status": "FINISHED",
-      "progressUpdateIntervalMs": 500
-    },
-    {
-      "text": "%sh\n\nrm /tmp/flights99.csv.bz2\ncurl -o /tmp/flights99.csv.bz2 \"http://stat-computing.org/dataexpo/2009/1999.csv.bz2\"\nrm /tmp/flights99.csv\nbzip2 -d /tmp/flights99.csv.bz2\nchmod 666 /tmp/flights99.csv",
-      "user": "anonymous",
-      "dateUpdated": "Dec 15, 2016 5:19:55 PM",
-      "config": {
-        "colWidth": 12.0,
-        "enabled": true,
-        "results": {},
-        "editorSetting": {
-          "language": "sh",
-          "editOnDblClick": false
-        },
-        "editorMode": "ace/mode/sh",
-        "tableHide": true,
-        "editorHide": false
-      },
-      "settings": {
-        "params": {},
-        "forms": {}
-      },
-      "apps": [],
-      "jobName": "paragraph_1481617143179_-608548182",
-      "id": "20161213-111903_1920924557",
-      "results": {
-        "code": "SUCCESS",
-        "msg": [
-          {
-            "type": "TEXT",
-            "data": "rm: cannot remove \u0027/tmp/flights99.csv.bz2\u0027: No such file or directory\n  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current\n                                 Dload  Upload   Total   Spent    Left  Speed\n\r  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0\r  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0\r  0 75.7M    0 59340    0     0  50577      0  0:26:10  0:00:01  0:26:09 50545\r  0 75.7M    0  327k    0     0   149k      0  0:08:38  0:00:02  0:08:36  149k\r  1 75.7M    1 1015k    0     0   335k      0  0:03:51  0:00:03  0:03:48  335k\r  3 75.7M    3 2682k    0     0   650k      0  0:01:59  0:00:04  0:01:55  650k\r  5 75.7M    5 3957k    0     0   774k      0  0:01:40  0:00:05  0:01:35  807k\r  6 75.7M    6 4875k    0     0   805k      0  0:01:36  0:00:06  0:01:30  987k\r  7 75.7M    7 6101k    0     0   842k      0  0:01:32  0:00:07  0:01:25 1141k\r  9 75.7M    9 7397k    0     0   880k      0  0:01:28  0:00:08  0:01:20 1187k\r 10 75.7M   10 8050k    0     0   892k      0  0:01:26  0:00:09  0:01:17 1095k\r 11 75.7M   11 8590k    0     0   841k      0  0:01:32  0:00:10  0:01:22  908k\r 11 75.7M   11 8895k    0     0   806k      0  0:01:36  0:00:11  0:01:25  807k\r 11 75.7M   11 9163k    0     0   762k      0  0:01:41  0:00:12  0:01:29  640k\r 12 75.7M   12 9342k    0     0   717k      0  0:01:48  0:00:13  0:01:35  420k\r 12 75.7M   12 9465k    0     0   665k      0  0:01:56  0:00:14  0:01:42  271k\r 12 75.7M   12 9573k    0     0   636k      0  0:02:01  0:00:15  0:01:46  203k\r 12 75.7M   12 9671k    0     0   602k      0  0:02:08  0:00:16  0:01:52  154k\r 12 75.7M   12 9737k    0     0   571k      0  0:02:15  0:00:17  0:01:58  114k\r 12 75.7M   12 9806k    0     0   541k      0  0:02:23  0:00:18  0:02:05 93450\r 12 75.7M   12 9842k    0     0   516k      0  0:02:30  0:00:19  0:02:11 80182\r 12 75.7M   12 9891k    0     0   490k      0  0:02:38  0:00:20  0:02:18 63448\r 12 75.7M   12 9932k    0     0   470k      0  0:02:44  0:00:21  0:02:23 52919\r 12 75.7M   12 9959k    0     0   450k      0  0:02:52  0:00:22  0:02:30 44866\r 12 75.7M   12 9996k    0     0   432k      0  0:02:59  0:00:23  0:02:36 38718\r 12 75.7M   12  9.8M    0     0   415k      0  0:03:06  0:00:24  0:02:42 39799\r 12 75.7M   12  9.8M    0     0   400k      0  0:03:13  0:00:25  0:02:48 39278\r 13 75.7M   13  9.8M    0     0   386k      0  0:03:20  0:00:26  0:02:54 38559\r 13 75.7M   13  9.9M    0     0   374k      0  0:03:27  0:00:27  0:03:00 43584\r 13 75.7M   13  9.9M    0     0   363k      0  0:03:33  0:00:28  0:03:05 49061\r 13 75.7M   13 10.0M    0     0   353k      0  0:03:39  0:00:29  0:03:10 49426\r 13 75.7M   13 10.0M    0     0   343k      0  0:03:46  0:00:30  0:03:16 46717\r 13 75.7M   13 10.0M    0     0   332k      0  0:03:53  0:00:31  0:03:22 43809\r 13 75.7M   13 10.1M    0     0   323k      0  0:04:00  0:00:32  0:03:28 37788\r 13 75.7M   13 10.1M    0     0   313k      0  0:04:07  0:00:33  0:03:34 28400\r 13 75.7M   13 10.1M    0     0   305k      0  0:04:14  0:00:34  0:03:40 23427\r 13 75.7M   13 10.1M    0     0   297k      0  0:04:21  0:00:35  0:03:46 23236\r 13 75.7M   13 10.2M    0     0   289k      0  0:04:27  0:00:36  0:03:51 24306\r 13 75.7M   13 10.2M    0     0   282k      0  0:04:34  0:00:37  0:03:57 24071\r 13 75.7M   13 10.2M    0     0   275k      0  0:04:41  0:00:38  0:04:03 26543\r 13 75.7M   13 10.2M    0     0   269k      0  0:04:47  0:00:39  0:04:08 31195\r 13 75.7M   13 10.3M    0     0   262k      0  0:04:55  0:00:40  0:04:15 35505\r 13 75.7M   13 10.3M    0     0   258k      0  0:05:00  0:00:41  0:04:19 35363\r 13 75.7M   13 10.4M    0     0   253k      0  0:05:06  0:00:42  0:04:24 39475\r 13 75.7M   13 10.4M    0     0   248k      0  0:05:12  0:00:43  0:04:29 43599\r 13 75.7M   13 10.5M    0     0   244k      0  0:05:17  0:00:44  0:04:33 46045\r 13 75.7M   13 10.5M    0     0   240k      0  0:05:22  0:00:45  0:04:37 51873\r 14 75.7M   14 10.6M    0     0   236k      0  0:05:27  0:00:46  0:04:41 60689\r 14 75.7M   14 10.7M    0     0   232k      0  0:05:33  0:00:47  0:04:46 62080\r 14 75.7M   14 10.7M    0     0   229k      0  0:05:38  0:00:48  0:04:50 63161\r 14 75.7M   14 10.8M    0     0   226k      0  0:05:43  0:00:49  0:04:54 65165\r 14 75.7M   14 10.8M    0     0   222k      0  0:05:48  0:00:50  0:04:58 64871\r 14 75.7M   14 10.9M    0     0   220k      0  0:05:52  0:00:51  0:05:01 65221\r 14 75.7M   14 11.0M    0     0   217k      0  0:05:56  0:00:52  0:05:04 74686\r 14 75.7M   14 11.1M    0     0   215k      0  0:05:59  0:00:53  0:05:06 83561\r 14 75.7M   14 11.2M    0     0   213k      0  0:06:03  0:00:54  0:05:09 93489\r 15 75.7M   15 11.4M    0     0   212k      0  0:06:04  0:00:55  0:05:09  111k\r 15 75.7M   15 11.7M    0     0   215k      0  0:06:00  0:00:56  0:05:04  164k\r 16 75.7M   16 12.4M    0     0   222k      0  0:05:48  0:00:57  0:04:51  272k\r 17 75.7M   17 13.4M    0     0   237k      0  0:05:26  0:00:58  0:04:28  466k\r 19 75.7M   19 14.9M    0     0   258k      0  0:05:00  0:00:59  0:04:01  744k\r 21 75.7M   21 16.2M    0     0   277k      0  0:04:39  0:01:00  0:03:39  987k\r 23 75.7M   23 17.4M    0     0   293k      0  0:04:24  0:01:01  0:03:23 1172k\r 24 75.7M   24 18.7M    0     0   309k      0  0:04:10  0:01:02  0:03:08 1305k\r 26 75.7M   26 19.8M    0     0   322k      0  0:04:00  0:01:03  0:02:57 1317k\r 27 75.7M   27 20.9M    0     0   335k      0  0:03:51  0:01:04  0:02:47 1246k\r 29 75.7M   29 22.1M    0     0   348k      0  0:03:42  0:01:05  0:02:37 1204k\r 30 75.7M   30 23.2M    0     0   361k      0  0:03:34  0:01:06  0:02:28 1192k\r 32 75.7M   32 24.4M    0     0   373k      0  0:03:27  0:01:07  0:02:20 1171k\r 33 75.7M   33 25.6M    0     0   386k      0  0:03:20  0:01:08  0:02:12 1190k\r 35 75.7M   35 26.7M    0     0   396k      0  0:03:15  0:01:09  0:02:06 1172k\r 36 75.7M   36 27.6M    0     0   403k      0  0:03:12  0:01:10  0:02:02 1127k\r 37 75.7M   37 28.6M    0     0   412k      0  0:03:08  0:01:11  0:01:57 1090k\r 39 75.7M   39 29.6M    0     0   421k      0  0:03:04  0:01:12  0:01:52 1063k\r 40 75.7M   40 30.6M    0     0   429k      0  0:03:00  0:01:13  0:01:47 1022k\r 41 75.7M   41 31.6M    0     0   438k      0  0:02:56  0:01:14  0:01:42 1021k\r 43 75.7M   43 32.6M    0     0   446k      0  0:02:53  0:01:15  0:01:38 1037k\r 44 75.7M   44 33.7M    0     0   454k      0  0:02:50  0:01:16  0:01:34 1049k\r 45 75.7M   45 34.5M    0     0   457k      0  0:02:49  0:01:17  0:01:32  952k\r 46 75.7M   46 35.5M    0     0   466k      0  0:02:46  0:01:18  0:01:28 1009k\r 48 75.7M   48 36.5M    0     0   473k      0  0:02:43  0:01:19  0:01:24  998k\r 49 75.7M   49 37.5M    0     0   480k      0  0:02:41  0:01:20  0:01:21  996k\r 50 75.7M   50 38.5M    0     0   487k      0  0:02:39  0:01:21  0:01:18  983k\r 52 75.7M   52 39.5M    0     0   493k      0  0:02:37  0:01:22  0:01:15 1083k\r 53 75.7M   53 40.6M    0     0   500k      0  0:02:34  0:01:23  0:01:11 1027k\r 54 75.7M   54 41.6M    0     0   507k      0  0:02:32  0:01:24  0:01:08 1039k\r 56 75.7M   56 42.7M    0     0   514k      0  0:02:30  0:01:25  0:01:05 1052k\r 57 75.7M   57 43.8M    0     0   521k      0  0:02:28  0:01:26  0:01:02 1069k\r 59 75.7M   59 44.8M    0     0   527k      0  0:02:26  0:01:27  0:00:59 1088k\r 60 75.7M   60 45.9M    0     0   534k      0  0:02:25  0:01:28  0:00:57 1087k\r 62 75.7M   62 46.9M    0     0   540k      0  0:02:23  0:01:29  0:00:54 1093k\r 63 75.7M   63 48.1M    0     0   547k      0  0:02:21  0:01:30  0:00:51 1111k\r 65 75.7M   65 49.6M    0     0   558k      0  0:02:18  0:01:31  0:00:47 1212k\r 67 75.7M   67 51.3M    0     0   570k      0  0:02:15  0:01:32  0:00:43 1309k\r 70 75.7M   70 53.4M    0     0   588k      0  0:02:11  0:01:33  0:00:38 1546k\r 73 75.7M   73 55.5M    0     0   605k      0  0:02:08  0:01:34  0:00:34 1758k\r 76 75.7M   76 57.8M    0     0   622k      0  0:02:04  0:01:35  0:00:29 1983k\r 78 75.7M   78 59.7M    0     0   636k      0  0:02:01  0:01:36  0:00:25 2015k\r 81 75.7M   81 61.6M    0     0   651k      0  0:01:59  0:01:37  0:00:22 2146k\r 83 75.7M   83 63.6M    0     0   664k      0  0:01:56  0:01:38  0:00:18 2082k\r 86 75.7M   86 65.5M    0     0   678k      0  0:01:54  0:01:39  0:00:15 2051k\r 89 75.7M   89 67.5M    0     0   691k      0  0:01:52  0:01:40  0:00:12 1999k\r 91 75.7M   91 69.5M    0     0   704k      0  0:01:50  0:01:41  0:00:09 2049k\r 94 75.7M   94 71.5M    0     0   717k      0  0:01:48  0:01:42  0:00:06 2012k\r 97 75.7M   97 73.5M    0     0   730k      0  0:01:46  0:01:43  0:00:03 2028k\r 99 75.7M   99 75.5M    0     0   743k      0  0:01:44  0:01:44 --:--:-- 2039k\r100 75.7M  100 75.7M    0     0   745k      0  0:01:44  0:01:44 --:--:-- 2039k\n"
-          }
-        ]
-      },
-      "dateCreated": "Dec 13, 2016 11:19:03 AM",
-      "dateStarted": "Dec 15, 2016 4:39:59 PM",
-      "dateFinished": "Dec 15, 2016 4:42:33 PM",
-      "status": "FINISHED",
-      "progressUpdateIntervalMs": 500
-    },
-    {
-      "text": "%sh\n\nrm /tmp/flights00.csv.bz2\ncurl -o /tmp/flights00.csv.bz2 \"http://stat-computing.org/dataexpo/2009/2000.csv.bz2\"\nrm /tmp/flights00.csv\nbzip2 -d /tmp/flights00.csv.bz2\nchmod 666 /tmp/flights00.csv",
-      "user": "anonymous",
-      "dateUpdated": "Dec 15, 2016 5:20:03 PM",
-      "config": {
-        "colWidth": 12.0,
-        "enabled": true,
-        "results": {},
-        "editorSetting": {
-          "language": "sh",
-          "editOnDblClick": false
-        },
-        "editorMode": "ace/mode/sh",
-        "tableHide": true
-      },
-      "settings": {
-        "params": {},
-        "forms": {}
-      },
-      "apps": [],
-      "jobName": "paragraph_1481617151275_472996300",
-      "id": "20161213-111911_177418516",
-      "results": {
-        "code": "SUCCESS",
-        "msg": [
-          {
-            "type": "TEXT",
-            "data": "rm: cannot remove \u0027/tmp/flights00.csv.bz2\u0027: No such file or directory\n  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current\n                                 Dload  Upload   Total   Spent    Left  Speed\n\r  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0\r  0 78.7M    0 37759    0     0  40929      0  0:33:36 --:--:--  0:33:36 40908\r  0 78.7M    0  203k    0     0   116k      0  0:11:33  0:00:01  0:11:32  116k\r  1 78.7M    1  892k    0     0   319k      0  0:04:12  0:00:02  0:04:10  319k\r  3 78.7M    3 2940k    0     0   765k      0  0:01:45  0:00:03  0:01:42  765k\r  6 78.7M    6 4992k    0     0  1048k      0  0:01:16  0:00:04  0:01:12 1048k\r  7 78.7M    7 5655k    0     0   948k      0  0:01:25  0:00:05  0:01:20 1114k\r  7 78.7M    7 6272k    0     0   912k      0  0:01:28  0:00:06  0:01:22 1184k\r  8 78.7M    8 6725k    0     0   858k      0  0:01:33  0:00:07  0:01:26 1157k\r  8 78.7M    8 7114k    0     0   799k      0  0:01:40  0:00:08  0:01:32  824k\r  9 78.7M    9 7378k    0     0   752k      0  0:01:47  0:00:09  0:01:38  472k\r  9 78.7M    9 7507k    0     0   694k      0  0:01:56  0:00:10  0:01:46  382k\r  9 78.7M    9 7627k    0     0   646k      0  0:02:04  0:00:11  0:01:53  274k\r  9 78.7M    9 7735k    0     0   605k      0  0:02:13  0:00:12  0:02:01  204k\r  9 78.7M    9 7826k    0     0   566k      0  0:02:22  0:00:13  0:02:09  145k\r  9 78.7M    9 7941k    0     0   529k      0  0:02:32  0:00:15  0:02:17  108k\r  9 78.7M    9 7986k    0     0   504k      0  0:02:39  0:00:15  0:02:24 97356\r  9 78.7M    9 8019k    0     0   475k      0  0:02:49  0:00:16  0:02:33 79363\r  9 78.7M    9 8060k    0     0   451k      0  0:02:58  0:00:17  0:02:41 65339\r 10 78.7M   10 8097k    0     0   427k      0  0:03:08  0:00:18  0:02:50 54239\r 10 78.7M   10 8127k    0     0   408k      0  0:03:17  0:00:19  0:02:58 38782\r 10 78.7M   10 8163k    0     0   390k      0  0:03:26  0:00:20  0:03:06 35794\r 10 78.7M   10 8207k    0     0   374k      0  0:03:35  0:00:21  0:03:14 37826\r 10 78.7M   10 8255k    0     0   362k      0  0:03:42  0:00:22  0:03:20 40703\r 10 78.7M   10 8317k    0     0   349k      0  0:03:50  0:00:23  0:03:27 46303\r 10 78.7M   10 8388k    0     0   338k      0  0:03:58  0:00:24  0:03:34 55086\r 10 78.7M   10 8467k    0     0   328k      0  0:04:05  0:00:25  0:03:40 64073\r 10 78.7M   10 8529k    0     0   318k      0  0:04:12  0:00:26  0:03:46 68229\r 10 78.7M   10 8581k    0     0   308k      0  0:04:20  0:00:27  0:03:53 66872\r 10 78.7M   10 8609k    0     0   299k      0  0:04:29  0:00:28  0:04:01 60012\r 10 78.7M   10 8639k    0     0   290k      0  0:04:37  0:00:29  0:04:08 51397\r 10 78.7M   10 8680k    0     0   282k      0  0:04:45  0:00:30  0:04:15 43625\r 10 78.7M   10 8701k    0     0   273k      0  0:04:54  0:00:31  0:04:23 35349\r 10 78.7M   10 8729k    0     0   266k      0  0:05:02  0:00:32  0:04:30 30426\r 10 78.7M   10 8767k    0     0   259k      0  0:05:10  0:00:33  0:04:37 32298\r 10 78.7M   10 8812k    0     0   253k      0  0:05:17  0:00:34  0:04:43 35434\r 11 78.7M   11 8871k    0     0   248k      0  0:05:24  0:00:35  0:04:49 39357\r 11 78.7M   11 8946k    0     0   243k      0  0:05:31  0:00:36  0:04:55 49877\r 11 78.7M   11 8984k    0     0   237k      0  0:05:38  0:00:37  0:05:01 52070\r 11 78.7M   11 9033k    0     0   233k      0  0:05:45  0:00:38  0:05:07 54382\r 11 78.7M   11 9089k    0     0   228k      0  0:05:52  0:00:39  0:05:13 56742\r 11 78.7M   11 9154k    0     0   224k      0  0:05:58  0:00:40  0:05:18 57717\r 11 78.7M   11 9231k    0     0   220k      0  0:06:04  0:00:41  0:05:23 58564\r 11 78.7M   11 9275k    0     0   216k      0  0:06:11  0:00:42  0:05:29 59627\r 11 78.7M   11 9314k    0     0   212k      0  0:06:20  0:00:43  0:05:37 55927\r 11 78.7M   11 9335k    0     0   208k      0  0:06:26  0:00:44  0:05:42 50232\r 11 78.7M   11 9368k    0     0   204k      0  0:06:33  0:00:45  0:05:48 43971\r 11 78.7M   11 9411k    0     0   201k      0  0:06:40  0:00:46  0:05:54 37080\r 11 78.7M   11 9464k    0     0   198k      0  0:06:46  0:00:47  0:05:59 38748\r 11 78.7M   11 9529k    0     0   195k      0  0:06:52  0:00:48  0:06:04 45390\r 11 78.7M   11 9599k    0     0   192k      0  0:06:57  0:00:49  0:06:08 54302\r 12 78.7M   12 9678k    0     0   190k      0  0:07:02  0:00:50  0:06:12 63696\r 12 78.7M   12 9774k    0     0   188k      0  0:07:06  0:00:51  0:06:15 74244\r 12 78.7M   12 9913k    0     0   187k      0  0:07:08  0:00:52  0:06:16 91816\r 12 78.7M   12  9.9M    0     0   189k      0  0:07:04  0:00:53  0:06:11  135k\r 13 78.7M   13 10.5M    0     0   196k      0  0:06:49  0:00:54  0:05:55  235k\r 14 78.7M   14 11.5M    0     0   211k      0  0:06:20  0:00:55  0:05:25  423k\r 16 78.7M   16 13.0M    0     0   234k      0  0:05:43  0:00:56  0:04:47  711k\r 19 78.7M   19 14.9M    0     0   265k      0  0:05:03  0:00:57  0:04:06 1088k\r 21 78.7M   21 17.2M    0     0   300k      0  0:04:27  0:00:58  0:03:29 1497k\r 23 78.7M   23 18.8M    0     0   322k      0  0:04:09  0:00:59  0:03:10 1700k\r 25 78.7M   25 20.0M    0     0   338k      0  0:03:58  0:01:00  0:02:58 1752k\r 26 78.7M   26 21.2M    0     0   351k      0  0:03:49  0:01:01  0:02:48 1679k\r 28 78.7M   28 22.3M    0     0   364k      0  0:03:41  0:01:02  0:02:39 1505k\r 29 78.7M   29 23.4M    0     0   376k      0  0:03:33  0:01:03  0:02:30 1269k\r 31 78.7M   31 24.4M    0     0   386k      0  0:03:28  0:01:04  0:02:24 1150k\r 32 78.7M   32 25.3M    0     0   395k      0  0:03:23  0:01:05  0:02:18 1088k\r 33 78.7M   33 26.3M    0     0   404k      0  0:03:19  0:01:06  0:02:13 1054k\r 34 78.7M   34 27.3M    0     0   413k      0  0:03:14  0:01:07  0:02:07 1025k\r 35 78.7M   35 28.3M    0     0   421k      0  0:03:11  0:01:08  0:02:03  992k\r 37 78.7M   37 29.3M    0     0   430k      0  0:03:07  0:01:09  0:01:58  998k\r 38 78.7M   38 30.3M    0     0   438k      0  0:03:03  0:01:10  0:01:53 1010k\r 39 78.7M   39 31.3M    0     0   447k      0  0:03:00  0:01:11  0:01:49 1020k\r 41 78.7M   41 32.3M    0     0   455k      0  0:02:56  0:01:12  0:01:44 1030k\r 42 78.7M   42 33.4M    0     0   463k      0  0:02:53  0:01:13  0:01:40 1041k\r 43 78.7M   43 34.4M    0     0   471k      0  0:02:50  0:01:14  0:01:36 1050k\r 44 78.7M   44 35.3M    0     0   476k      0  0:02:49  0:01:15  0:01:34 1002k\r 45 78.7M   45 36.1M    0     0   482k      0  0:02:47  0:01:16  0:01:31  987k\r 46 78.7M   46 36.8M    0     0   485k      0  0:02:45  0:01:17  0:01:28  924k\r 47 78.7M   47 37.6M    0     0   489k      0  0:02:44  0:01:18  0:01:26  865k\r 48 78.7M   48 38.3M    0     0   492k      0  0:02:43  0:01:19  0:01:24  800k\r 49 78.7M   49 39.0M    0     0   495k      0  0:02:42  0:01:20  0:01:22  788k\r 50 78.7M   50 39.8M    0     0   499k      0  0:02:41  0:01:21  0:01:20  754k\r 51 78.7M   51 40.6M    0     0   502k      0  0:02:40  0:01:22  0:01:18  762k\r 52 78.7M   52 41.3M    0     0   505k      0  0:02:39  0:01:23  0:01:16  769k\r 53 78.7M   53 42.1M    0     0   509k      0  0:02:38  0:01:24  0:01:14  779k\r 54 78.7M   54 42.9M    0     0   512k      0  0:02:37  0:01:25  0:01:12  787k\r 55 78.7M   55 43.7M    0     0   516k      0  0:02:36  0:01:26  0:01:10  792k\r 56 78.7M   56 44.6M    0     0   520k      0  0:02:34  0:01:27  0:01:07  817k\r 58 78.7M   58 45.8M    0     0   529k      0  0:02:32  0:01:28  0:01:04  924k\r 60 78.7M   60 47.6M    0     0   543k      0  0:02:28  0:01:29  0:00:59 1127k\r 62 78.7M   62 49.4M    0     0   558k      0  0:02:24  0:01:30  0:00:54 1332k\r 65 78.7M   65 51.8M    0     0   578k      0  0:02:19  0:01:31  0:00:48 1666k\r 68 78.7M   68 54.2M    0     0   598k      0  0:02:14  0:01:32  0:00:42 1966k\r 72 78.7M   72 56.7M    0     0   619k      0  0:02:10  0:01:33  0:00:37 2217k\r 74 78.7M   74 58.9M    0     0   635k      0  0:02:06  0:01:34  0:00:32 2250k\r 77 78.7M   77 61.1M    0     0   653k      0  0:02:03  0:01:35  0:00:28 2406k\r 79 78.7M   79 62.6M    0     0   662k      0  0:02:01  0:01:36  0:00:25 2186k\r 81 78.7M   81 64.3M    0     0   674k      0  0:01:59  0:01:37  0:00:22 2078k\r 83 78.7M   83 65.9M    0     0   683k      0  0:01:57  0:01:38  0:00:19 1881k\r 85 78.7M   85 67.4M    0     0   692k      0  0:01:56  0:01:39  0:00:17 1791k\r 87 78.7M   87 69.0M    0     0   701k      0  0:01:54  0:01:40  0:00:14 1612k\r 89 78.7M   89 70.5M    0     0   710k      0  0:01:53  0:01:41  0:00:12 1646k\r 91 78.7M   91 72.1M    0     0   719k      0  0:01:52  0:01:42  0:00:10 1593k\r 93 78.7M   93 73.7M    0     0   727k      0  0:01:50  0:01:43  0:00:07 1602k\r 95 78.7M   95 75.2M    0     0   735k      0  0:01:49  0:01:44  0:00:05 1600k\r 97 78.7M   97 76.6M    0     0   742k      0  0:01:48  0:01:45  0:00:03 1561k\r 99 78.7M   99 78.0M    0     0   748k      0  0:01:47  0:01:46  0:00:01 1520k\r100 78.7M  100 78.7M    0     0   752k      0  0:01:47  0:01:47 --:--:-- 1516k\n"
-          }
-        ]
-      },
-      "dateCreated": "Dec 13, 2016 11:19:11 AM",
-      "dateStarted": "Dec 15, 2016 4:40:00 PM",
-      "dateFinished": "Dec 15, 2016 4:42:44 PM",
-      "status": "FINISHED",
-      "progressUpdateIntervalMs": 500
-    },
-    {
-      "text": "%sh\n\nrm /tmp/carriers.csv\ncurl -o /tmp/carriers.csv \"http://stat-computing.org/dataexpo/2009/carriers.csv\"\nchmod 666 /tmp/carriers.csv",
-      "user": "anonymous",
-      "dateUpdated": "Dec 15, 2016 5:20:06 PM",
-      "config": {
-        "colWidth": 12.0,
-        "enabled": true,
-        "results": {},
-        "editorSetting": {
-          "language": "sh",
-          "editOnDblClick": false
-        },
-        "editorMode": "ace/mode/sh",
-        "tableHide": true
-      },
-      "settings": {
-        "params": {},
-        "forms": {}
-      },
-      "apps": [],
-      "jobName": "paragraph_1481617157809_590360039",
-      "id": "20161213-111917_1292164445",
-      "results": {
-        "code": "SUCCESS",
-        "msg": [
-          {
-            "type": "TEXT",
-            "data": "rm: cannot remove \u0027/tmp/carriers.csv\u0027: No such file or directory\n  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current\n                                 Dload  Upload   Total   Spent    Left  Speed\n\r  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0\r  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0\r 50 43758   50 22080    0     0  15257      0  0:00:02  0:00:01  0:00:01 15248\r100 43758  100 43758    0     0  20368      0  0:00:02  0:00:02 --:--:-- 20371\n"
-          }
-        ]
-      },
-      "dateCreated": "Dec 13, 2016 11:19:17 AM",
-      "dateStarted": "Dec 15, 2016 4:40:05 PM",
-      "dateFinished": "Dec 15, 2016 4:40:07 PM",
-      "status": "FINISHED",
-      "progressUpdateIntervalMs": 500
-    },
-    {
-      "text": "%md\n### Preparing the data\nThe `flights\u003cYY\u003e.csv` contains various data but we only need the information about the year, the month and the carrier who served the flight. Let\u0027s retrieve this information and create `DataSets`.",
-      "user": "anonymous",
-      "dateUpdated": "Dec 15, 2016 5:20:15 PM",
-      "config": {
-        "enabled": true,
-        "tableHide": false,
-        "results": [
-          {
-            "graph": {
-              "mode": "table",
-              "height": 300.0,
-              "optionOpen": false,
-              "keys": [],
-              "values": [],
-              "groups": [],
-              "scatter": {}
-            }
-          }
-        ],
-        "editorMode": "ace/mode/markdown",
-        "editorHide": true,
-        "colWidth": 12.0,
-        "editorSetting": {
-          "language": "markdown",
-          "editOnDblClick": true
-        }
-      },
-      "settings": {
-        "params": {},
-        "forms": {}
-      },
-      "apps": [],
-      "jobName": "paragraph_1481553502721_-1317301563",
-      "id": "20161208-135449_595229309",
-      "results": {
-        "code": "SUCCESS",
-        "msg": [
-          {
-            "type": "HTML",
-            "data": "\u003cdiv class\u003d\"markdown-body\"\u003e\n\u003ch3\u003ePreparing the data\u003c/h3\u003e\n\u003cp\u003eThe \u003ccode\u003eflights\u0026lt;YY\u0026gt;.csv\u003c/code\u003e contains various data but we only need the information about the year, the month and the carrier who served the flight. Let\u0026rsquo;s retrieve this information and create \u003ccode\u003eDataSets\u003c/code\u003e.\u003c/p\u003e\n\u003c/div\u003e"
-          }
-        ]
-      },
-      "dateCreated": "Dec 12, 2016 5:38:22 PM",
-      "dateStarted": "Dec 15, 2016 5:20:15 PM",
-      "dateFinished": "Dec 15, 2016 5:20:15 PM",
-      "status": "FINISHED",
-      "progressUpdateIntervalMs": 500
-    },
-    {
-      "title": "",
-      "text": "%flink\n\ncase class Flight(year: Int, month: Int, carrierCode: String)\ncase class Carrier(code: String, name: String)\n\nval flights98 \u003d benv.readCsvFile[Flight](\"/tmp/flights98.csv\", ignoreFirstLine \u003d true, includedFields \u003d Array(0, 1, 8))\nval flights99 \u003d benv.readCsvFile[Flight](\"/tmp/flights99.csv\", ignoreFirstLine \u003d true, includedFields \u003d Array(0, 1, 8))\nval flights00 \u003d benv.readCsvFile[Flight](\"/tmp/flights00.csv\", ignoreFirstLine \u003d true, includedFields \u003d Array(0, 1, 8))\nval flights \u003d flights98.union(flights99).union(flights00)\nval carriers \u003d benv.readCsvFile[Carrier](\"/tmp/carriers.csv\", ignoreFirstLine \u003d true, quoteCharacter \u003d \u0027\"\u0027)",
-      "user": "anonymous",
-      "dateUpdated": "Dec 15, 2016 5:21:19 PM",
-      "config": {
-        "lineNumbers": true,
-        "enabled": true,
-        "title": false,
-        "tableHide": true,
-        "results": [
-          {
-            "graph": {
-              "mode": "table",
-              "height": 300.0,
-              "optionOpen": false,
-              "keys": [],
-              "values": [],
-              "groups": [],
-              "scatter": {}
-            }
-          }
-        ],
-        "editorMode": "ace/mode/scala",
-        "editorHide": false,
-        "colWidth": 12.0,
-        "editorSetting": {
-          "language": "scala",
-          "editOnDblClick": false
-        }
-      },
-      "settings": {
-        "params": {},
-        "forms": {}
-      },
-      "apps": [],
-      "jobName": "paragraph_1481553502722_-1316147316",
-      "id": "20161206-152034_994620789",
-      "results": {
-        "code": "SUCCESS",
-        "msg": [
-          {
-            "type": "TEXT",
-            "data": "defined class Flight\ndefined class Carrier\nflights98: org.apache.flink.api.scala.DataSet[Flight] \u003d org.apache.flink.api.scala.DataSet@35bfde4\nflights99: org.apache.flink.api.scala.DataSet[Flight] \u003d org.apache.flink.api.scala.DataSet@2eb10475\nflights00: org.apache.flink.api.scala.DataSet[Flight] \u003d org.apache.flink.api.scala.DataSet@3f4c5e73\nflights: org.apache.flink.api.scala.DataSet[Flight] \u003d org.apache.flink.api.scala.DataSet@3e299a92\ncarriers: org.apache.flink.api.scala.DataSet[Carrier] \u003d org.apache.flink.api.scala.DataSet@76fe9ef8\n"
-          }
-        ]
-      },
-      "dateCreated": "Dec 12, 2016 5:38:22 PM",
-      "dateStarted": "Dec 15, 2016 5:21:19 PM",
-      "dateFinished": "Dec 15, 2016 5:21:21 PM",
-      "status": "FINISHED",
-      "progressUpdateIntervalMs": 500
-    },
-    {
-      "text": "%md\n### Choosing the carrier\nNow we will search for the most popular carrier during the whole time period.",
-      "user": "anonymous",
-      "dateUpdated": "Dec 15, 2016 5:20:48 PM",
-      "config": {
-        "enabled": true,
-        "tableHide": false,
-        "results": [
-          {
-            "graph": {
-              "mode": "table",
-              "height": 300.0,
-              "optionOpen": false,
-              "keys": [],
-              "values": [],
-              "groups": [],
-              "scatter": {}
-            }
-          }
-        ],
-        "editorMode": "ace/mode/markdown",
-        "editorHide": true,
-        "colWidth": 12.0,
-        "editorSetting": {
-          "language": "markdown",
-          "editOnDblClick": true
-        }
-      },
-      "settings": {
-        "params": {},
-        "forms": {}
-      },
-      "apps": [],
-      "jobName": "paragraph_1481553502722_-1316147316",
-      "id": "20161208-142747_2125597018",
-      "results": {
-        "code": "SUCCESS",
-        "msg": [
-          {
-            "type": "HTML",
-            "data": "\u003cdiv class\u003d\"markdown-body\"\u003e\n\u003ch3\u003eChoosing the carrier\u003c/h3\u003e\n\u003cp\u003eNow we will search for the most popular carrier during the whole time period.\u003c/p\u003e\n\u003c/div\u003e"
-          }
-        ]
-      },
-      "dateCreated": "Dec 12, 2016 5:38:22 PM",
-      "dateStarted": "Dec 15, 2016 5:20:48 PM",
-      "dateFinished": "Dec 15, 2016 5:20:48 PM",
-      "status": "FINISHED",
-      "progressUpdateIntervalMs": 500
-    },
-    {
-      "title": "",
-      "text": "%flink\n\nimport org.apache.flink.api.common.operators.Order\nimport org.apache.flink.api.java.aggregation.Aggregations\n\ncase class CarrierFlightsCount(carrierCode: String, count: Int)\ncase class CountByMonth(month: Int, count: Int)\n\nval carriersFlights \u003d flights\n  .map(f \u003d\u003e CarrierFlightsCount(f.carrierCode, 1))\n  .groupBy(\"carrierCode\")\n  .sum(\"count\")\n\nval maxFlights \u003d carriersFlights\n  .aggregate(Aggregations.MAX, \"count\")\n\nval bestCarrier \u003d carriersFlights\n  .join(maxFlights)\n  .where(\"count\")\n  .equalTo(\"count\")\n  .map(_._1)\n  \nval carrierName \u003d bestCarrier\n  .join(carriers)\n  .where(\"carrierCode\")\n  .equalTo(\"code\")\n  .map(_._2.name)\n  .collect\n  .head",
-      "user": "anonymous",
-      "dateUpdated": "Dec 15, 2016 5:21:29 PM",
-      "config": {
-        "lineNumbers": true,
-        "enabled": true,
-        "tableHide": true,
-        "title": false,
-        "results": [
-          {
-            "graph": {
-              "mode": "table",
-              "height": 300.0,
-              "optionOpen": false,
-              "keys": [],
-              "values": [],
-              "groups": [],
-              "scatter": {}
-            }
-          }
-        ],
-        "editorMode": "ace/mode/scala",
-        "editorHide": false,
-        "colWidth": 12.0,
-        "editorSetting": {
-          "language": "scala",
-          "editOnDblClick": false
-        }
-      },
-      "settings": {
-        "params": {},
-        "forms": {}
-      },
-      "apps": [],
-      "jobName": "paragraph_1481553502723_-1316532065",
-      "id": "20161202-192204_1980004620",
-      "results": {
-        "code": "SUCCESS",
-        "msg": [
-          {
-            "type": "TEXT",
-            "data": "import org.apache.flink.api.common.operators.Order\nimport org.apache.flink.api.java.aggregation.Aggregations\ndefined class CarrierFlightsCount\ndefined class CountByMonth\ncarriersFlights: org.apache.flink.api.scala.AggregateDataSet[CarrierFlightsCount] \u003d org.apache.flink.api.scala.AggregateDataSet@1bb6df98\nmaxFlights: org.apache.flink.api.scala.AggregateDataSet[CarrierFlightsCount] \u003d org.apache.flink.api.scala.AggregateDataSet@575e2e8a\nbestCarrier: org.apache.flink.api.scala.DataSet[CarrierFlightsCount] \u003d org.apache.flink.api.scala.DataSet@957fc7a\ncarrierName: String \u003d Delta Air Lines Inc.\n"
-          }
-        ]
-      },
-      "dateCreated": "Dec 12, 2016 5:38:22 PM",
-      "dateStarted": "Dec 15, 2016 5:21:25 PM",
-      "dateFinished": "Dec 15, 2016 5:21:43 PM",
-      "status": "FINISHED",
-      "progressUpdateIntervalMs": 500
-    },
-    {
-      "text": "%flink\n\nprintln(s\"\"\"The most popular carrier is:\n$carrierName\n\"\"\")",
-      "user": "anonymous",
-      "dateUpdated": "Dec 15, 2016 5:21:48 PM",
-      "config": {
-        "enabled": true,
-        "tableHide": false,
-        "results": [
-          {
-            "graph": {
-              "mode": "table",
-              "height": 89.96875,
-              "optionOpen": false,
-              "keys": [
-                {
-                  "name": "The most popular carrier is:",
-                  "index": 0.0,
-                  "aggr": "sum"
-                }
-              ],
-              "values": [],
-              "groups": [],
-              "scatter": {
-                "xAxis": {
-                  "name": "The most popular carrier is:",
-                  "index": 0.0,
-                  "aggr": "sum"
-                }
-              }
-            },
-            "helium": {}
-          }
-        ],
-        "editorMode": "ace/mode/scala",
-        "editorHide": true,
-        "colWidth": 12.0,
-        "editorSetting": {
-          "language": "scala",
-          "editOnDblClick": false
-        }
-      },
-      "settings": {
-        "params": {},
-        "forms": {}
-      },
-      "apps": [],
-      "jobName": "paragraph_1481553502724_-1318455810",
-      "id": "20161208-101410_520573515",
-      "results": {
-        "code": "SUCCESS",
-        "msg": [
-          {
-            "type": "TEXT",
-            "data": "The most popular carrier is:\nDelta Air Lines Inc.\n\n"
-          }
-        ]
-      },
-      "dateCreated": "Dec 12, 2016 5:38:22 PM",
-      "dateStarted": "Dec 15, 2016 5:21:46 PM",
-      "dateFinished": "Dec 15, 2016 5:21:47 PM",
-      "status": "FINISHED",
-      "progressUpdateIntervalMs": 500
-    },
-    {
-      "text": "%md\n### Calculating flights\nThe last step is to filter **Delta Air Lines** flights and group them by months.",
-      "user": "anonymous",
-      "dateUpdated": "Dec 15, 2016 5:21:53 PM",
-      "config": {
-        "enabled": true,
-        "tableHide": false,
-        "results": [
-          {
-            "graph": {
-              "mode": "table",
-              "height": 300.0,
-              "optionOpen": false,
-              "keys": [],
-              "values": [],
-              "groups": [],
-              "scatter": {}
-            }
-          }
-        ],
-        "editorMode": "ace/mode/markdown",
-        "editorHide": true,
-        "colWidth": 12.0,
-        "editorSetting": {
-          "language": "markdown",
-          "editOnDblClick": true
-        }
-      },
-      "settings": {
-        "params": {},
-        "forms": {}
-      },
-      "apps": [],
-      "jobName": "paragraph_1481553502725_-1318840559",
-      "id": "20161208-143346_1830798642",
-      "results": {
-        "code": "SUCCESS",
-        "msg": [
-          {
-            "type": "HTML",
-            "data": "\u003cdiv class\u003d\"markdown-body\"\u003e\n\u003ch3\u003eCalculating flights\u003c/h3\u003e\n\u003cp\u003eThe last step is to filter \u003cstrong\u003eDelta Air Lines\u003c/strong\u003e flights and group them by months.\u003c/p\u003e\n\u003c/div\u003e"
-          }
-        ]
-      },
-      "dateCreated": "Dec 12, 2016 5:38:22 PM",
-      "dateStarted": "Dec 15, 2016 5:21:53 PM",
-      "dateFinished": "Dec 15, 2016 5:21:53 PM",
-      "status": "FINISHED",
-      "progressUpdateIntervalMs": 500
-    },
-    {
-      "title": "flights grouping",
-      "text": "%flink\n\ndef countFlightsPerMonth(flights: DataSet[Flight],\n                         carrier: DataSet[CarrierFlightsCount]) \u003d {\n  val carrierFlights \u003d flights\n    .join(carrier)\n    .where(\"carrierCode\")\n    .equalTo(\"carrierCode\")\n    .map(_._1)\n    \n  carrierFlights\n    .map(flight \u003d\u003e CountByMonth(flight.month, 1))\n    .groupBy(\"month\")\n    .sum(\"count\")\n    .sortPartition(\"month\", Order.ASCENDING)\n}\n\nval bestCarrierFlights_98 \u003d countFlightsPerMonth(flights98, bestCarrier)\nval bestCarrierFlights_99 \u003d countFlightsPerMonth(flights99, bestCarrier)\nval bestCarrierFlights_00 \u003d countFlightsPerMonth(flights00, bestCarrier)",
-      "user": "anonymous",
-      "dateUpdated": "Dec 15, 2016 5:22:02 PM",
-      "config": {
-        "lineNumbers": true,
-        "enabled": true,
-        "title": true,
         "graph": {
           "mode": "table",
           "height": 300.0,
@@ -589,13 +15,96 @@
           "groups": [],
           "scatter": {}
         },
-        "editorMode": "ace/mode/scala",
-        "colWidth": 12.0,
-        "results": {},
+        "enabled": true,
         "editorSetting": {
-          "language": "scala",
+          "language": "markdown",
+          "editOnDblClick": true
+        },
+        "editorMode": "ace/mode/markdown",
+        "editorHide": true,
+        "tableHide": false
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1481901487433_-233311730",
+      "id": "20161216-181807_150128916",
+      "result": {
+        "code": "SUCCESS",
+        "type": "HTML",
+        "msg": "\u003cdiv class\u003d\"markdown-body\"\u003e\n\u003ch3\u003eIntro\u003c/h3\u003e\n\u003cp\u003eThis notebook is an example of how to use \u003cstrong\u003eApache Flink\u003c/strong\u003e for processing simple data sets. We will take an open airline data set from \u003ca href\u003d\"http://stat-computing.org\"\u003estat-computing.org\u003c/a\u003e and find out who was the most popular carrier during 1998-2000 years. Next we will build a chart that shows flights distribution by months and look how it changes from year to year. We will use Zeppelin \u003ccode\u003e%table\u003c/code\u003e display system to build charts.\u003c/p\u003e\n\u003c/div\u003e"
+      },
+      "dateCreated": "Dec 16, 2016 6:18:07 PM",
+      "dateStarted": "Dec 16, 2016 6:22:06 PM",
+      "dateFinished": "Dec 16, 2016 6:22:08 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%md\n### Getting the data\nFirst we need to download and unpack the data. We will get three big data sets with flight details (one pack for each year) and a small one with carriers names. In total we will get for about 1,5 GB of data. To be able to process such amount of data it is recommended to increase `shell.command.timeout.millisecs` value in `%sh` interpreter settings up to several minutes. You can find interpreters configuration by clicking on `Interpreter` in a drop-down menu from the top right corner of the Zeppelin web-ui.",
+      "user": "anonymous",
+      "dateUpdated": "Dec 16, 2016 6:22:17 PM",
+      "config": {
+        "colWidth": 12.0,
+        "graph": {
+          "mode": "table",
+          "height": 300.0,
+          "optionOpen": false,
+          "keys": [],
+          "values": [],
+          "groups": [],
+          "scatter": {}
+        },
+        "enabled": true,
+        "editorSetting": {
+          "language": "markdown",
+          "editOnDblClick": true
+        },
+        "editorMode": "ace/mode/markdown",
+        "editorHide": true,
+        "tableHide": false
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1481901497441_1590028631",
+      "id": "20161216-181817_1254927276",
+      "result": {
+        "code": "SUCCESS",
+        "type": "HTML",
+        "msg": "\u003cdiv class\u003d\"markdown-body\"\u003e\n\u003ch3\u003eGetting the data\u003c/h3\u003e\n\u003cp\u003eFirst we need to download and unpack the data. We will get three big data sets with flight details (one pack for each year) and a small one with carriers names. In total we will get for about 1,5 GB of data. To be able to process such amount of data it is recommended to increase \u003ccode\u003eshell.command.timeout.millisecs\u003c/code\u003e value in \u003ccode\u003e%sh\u003c/code\u003e interpreter settings up to several minutes. You can find interpreters configuration by clicking on \u003ccode\u003eInterpreter\u003c/code\u003e in a drop-down menu from the top right corner of the Zeppelin web-ui.\u003c/p\u003e\n\u003c/div\u003e"
+      },
+      "dateCreated": "Dec 16, 2016 6:18:17 PM",
+      "dateStarted": "Dec 16, 2016 6:22:17 PM",
+      "dateFinished": "Dec 16, 2016 6:22:17 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%sh\n\nrm /tmp/flights98.csv.bz2\ncurl -o /tmp/flights98.csv.bz2 \"http://stat-computing.org/dataexpo/2009/1998.csv.bz2\"\nrm /tmp/flights98.csv\nbzip2 -d /tmp/flights98.csv.bz2\nchmod 666 /tmp/flights98.csv",
+      "user": "anonymous",
+      "dateUpdated": "Dec 16, 2016 6:25:27 PM",
+      "config": {
+        "colWidth": 12.0,
+        "graph": {
+          "mode": "table",
+          "height": 300.0,
+          "optionOpen": false,
+          "keys": [],
+          "values": [],
+          "groups": [],
+          "scatter": {}
+        },
+        "enabled": true,
+        "editorSetting": {
+          "language": "sh",
           "editOnDblClick": false
         },
+        "editorMode": "ace/mode/sh",
         "tableHide": true
       },
       "settings": {
@@ -603,262 +112,331 @@
         "forms": {}
       },
       "apps": [],
-      "jobName": "paragraph_1481553502725_-1318840559",
-      "id": "20161207-192847_21215022",
-      "results": {
+      "jobName": "paragraph_1481901514069_-303305382",
+      "id": "20161216-181834_888261783",
+      "result": {
         "code": "SUCCESS",
-        "msg": [
-          {
-            "type": "TEXT",
-            "data": "countFlightsPerMonth: (flights: org.apache.flink.api.scala.DataSet[Flight], carrier: org.apache.flink.api.scala.DataSet[CarrierFlightsCount])org.apache.flink.api.scala.DataSet[CountByMonth]\nbestCarrierFlights_98: org.apache.flink.api.scala.DataSet[CountByMonth] \u003d org.apache.flink.api.scala.PartitionSortedDataSet@50cd96aa\nbestCarrierFlights_99: org.apache.flink.api.scala.DataSet[CountByMonth] \u003d org.apache.flink.api.scala.PartitionSortedDataSet@334760d2\nbestCarrierFlights_00: org.apache.flink.api.scala.DataSet[CountByMonth] \u003d org.apache.flink.api.scala.PartitionSortedDataSet@1f13f743\n"
-          }
-        ]
+        "type": "TEXT",
+        "msg": "rm: cannot remove \u0027/tmp/flights98.csv.bz2\u0027: No such file or directory\n  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current\n                                 Dload  Upload   Total   Spent    Left  Speed\n\r  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0\r  0 73.1M    0 18439    0     0  23899      0  0:53:28 --:--:--  0:53:28 23884\r  0 73.1M    0  190k    0     0   107k      0  0:11:39  0:00:01  0:11:38  107k\r  0 73.1M    0  684k    0     0   256k      0  0:04:51  0:00:02  0:04:49  256k\r  2 73.1M    2 1942k    0     0   529k      0  0:02:21  0:00:03  0:02:18  529k\r  6 73.1M    6 4646k    0     0   995k      0  0:01:15  0:00:04  0:01:11  995k\r 13 73.1M   13  9.9M    0     0  1801k      0  0:00:41  0:00:05  0:00:36 2081k\r 24 73.1M   24 18.2M    0     0  2764k      0  0:00:27  0:00:06  0:00:21 3711k\r 35 73.1M   35 25.5M    0     0  3418k      0  0:00:21  0:00:07  0:00:14 5107k\r 43 73.1M   43 31.8M    0     0  3765k      0  0:00:19  0:00:08  0:00:11 6140k\r 54 73.1M   54 39.7M    0     0  4208k      0  0:00:17  0:00:09  0:00:08 7209k\r 63 73.1M   63 46.0M    0     0  4390k      0  0:00:17  0:00:10  0:00:07 7277k\r 72 73.1M   72 53.1M    0     0  4664k      0  0:00:16  0:00:11  0:00:05 7281k\r 82 73.1M   82 60.2M    0     0  4868k      0  0:00:15  0:00:12  0:00:03 7094k\r 92 73.1M   92 67.5M    0     0  5063k      0  0:00:14  0:00:13  0:00:01 7313k\r100 73.1M  100 73.1M    0     0  5195k      0  0:00:14  0:00:14 --:--:-- 7204k\n"
       },
-      "dateCreated": "Dec 12, 2016 5:38:22 PM",
-      "dateStarted": "Dec 15, 2016 5:22:02 PM",
-      "dateFinished": "Dec 15, 2016 5:22:03 PM",
+      "dateCreated": "Dec 16, 2016 6:18:34 PM",
+      "dateStarted": "Dec 16, 2016 6:23:48 PM",
+      "dateFinished": "Dec 16, 2016 6:24:30 PM",
       "status": "FINISHED",
       "progressUpdateIntervalMs": 500
     },
     {
-      "title": "making a results table",
-      "text": "%flink\n\ndef monthAsString(month: Int): String \u003d {\n  month match {\n    case 1 \u003d\u003e \"Jan\"\n    case 2 \u003d\u003e \"Feb\"\n    case 3 \u003d\u003e \"Mar\"\n    case 4 \u003d\u003e \"Apr\"\n    case 5 \u003d\u003e \"May\"\n    case 6 \u003d\u003e \"Jun\"\n    case 7 \u003d\u003e \"Jul\"\n    case 8 \u003d\u003e \"Aug\"\n    case 9 \u003d\u003e \"Sept\"\n    case 10 \u003d\u003e \"Oct\"\n    case 11 \u003d\u003e \"Nov\"\n    case 12 \u003d\u003e \"Dec\"\n  }\n}\n\n// We should put all the results into a common DataFrame\n// to show them in a common picture\nval bestCarrierFlights \u003d bestCarrierFlights_98\n  .join(bestCarrierFlights_99)\n  .where(\"month\")\n  .equalTo(\"month\")\n  .map(tuple \u003d\u003e (tuple._1.month, tuple._1.count, tuple._2.count))\n  .join(bestCarrierFlights_00)\n  .where(0)\n  .equalTo(\"month\")\n  .map(tuple \u003d\u003e (tuple._1._1, tuple._1._2, tuple._1._3, tuple._2.count))\n  .collect\n  \nvar flightsByMonthTable \u003d s\"Month\\t1998\\t1999\\t2000\\n\"\nbestCarrierFlights.foreach(data \u003d\u003e flightsByMonthTable +\u003d s\"${monthAsString(data._1)}\\t${data._2}\\t${data._3}\\t${data._4}\\n\")",
+      "text": "%sh\n\nrm /tmp/flights99.csv.bz2\ncurl -o /tmp/flights99.csv.bz2 \"http://stat-computing.org/dataexpo/2009/1999.csv.bz2\"\nrm /tmp/flights99.csv\nbzip2 -d /tmp/flights99.csv.bz2\nchmod 666 /tmp/flights99.csv",
       "user": "anonymous",
-      "dateUpdated": "Dec 15, 2016 5:22:09 PM",
+      "dateUpdated": "Dec 16, 2016 6:26:40 PM",
       "config": {
         "colWidth": 12.0,
+        "graph": {
+          "mode": "table",
+          "height": 300.0,
+          "optionOpen": false,
+          "keys": [],
+          "values": [],
+          "groups": [],
+          "scatter": {}
+        },
         "enabled": true,
-        "results": {},
+        "editorSetting": {
+          "language": "sh",
+          "editOnDblClick": false
+        },
+        "editorMode": "ace/mode/sh",
+        "tableHide": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1481901531793_936016798",
+      "id": "20161216-181851_1202167885",
+      "result": {
+        "code": "SUCCESS",
+        "type": "TEXT",
+        "msg": "rm: cannot remove \u0027/tmp/flights99.csv.bz2\u0027: No such file or directory\n  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current\n                                 Dload  Upload   Total   Spent    Left  Speed\n\r  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0\r  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0\r  0 75.7M    0 92460    0     0  64773      0  0:20:26  0:00:01  0:20:25 64747\r  0 75.7M    0  431k    0     0   189k      0  0:06:49  0:00:02  0:06:47  189k\r  1 75.7M    1 1179k    0     0   363k      0  0:03:33  0:00:03  0:03:30  363k\r  3 75.7M    3 2988k    0     0   702k      0  0:01:50  0:00:04  0:01:46  701k\r  9 75.7M    9 7430k    0     0  1416k      0  0:00:54  0:00:05  0:00:49 1513k\r 13 75.7M   13  9.8M    0     0  1595k      0  0:00:48  0:00:06  0:00:42 2040k\r 15 75.7M   15 11.6M    0     0  1619k      0  0:00:47  0:00:07  0:00:40 2264k\r 18 75.7M   18 14.2M    0     0  1765k      0  0:00:43  0:00:08  0:00:35 2675k\r 24 75.7M   24 18.6M    0     0  2060k      0  0:00:37  0:00:09  0:00:28 3217k\r 30 75.7M   30 23.2M    0     0  2321k      0  0:00:33  0:00:10  0:00:23 3270k\r 36 75.7M   36 28.0M    0     0  2551k      0  0:00:30  0:00:11  0:00:19 3785k\r 43 75.7M   43 32.5M    0     0  2724k      0  0:00:28  0:00:12  0:00:16 4378k\r 49 75.7M   49 37.3M    0     0  2890k      0  0:00:26  0:00:13  0:00:13 4746k\r 55 75.7M   55 42.1M    0     0  3033k      0  0:00:25  0:00:14  0:00:11 4833k\r 62 75.7M   62 46.9M    0     0  3155k      0  0:00:24  0:00:15  0:00:09 4864k\r 68 75.7M   68 51.8M    0     0  3266k      0  0:00:23  0:00:16  0:00:07 4875k\r 74 75.7M   74 56.6M    0     0  3365k      0  0:00:23  0:00:17  0:00:06 4934k\r 81 75.7M   81 61.5M    0     0  3453k      0  0:00:22  0:00:18  0:00:04 4944k\r 87 75.7M   87 66.3M    0     0  3529k      0  0:00:21  0:00:19  0:00:02 4943k\r 93 75.7M   93 70.8M    0     0  3584k      0  0:00:21  0:00:20  0:00:01 4894k\r 98 75.7M   98 74.5M    0     0  3591k      0  0:00:21  0:00:21 --:--:-- 4646k\r100 75.7M  100 75.7M    0     0  3600k      0  0:00:21  0:00:21 --:--:-- 4540k\nrm: cannot remove \u0027/tmp/flights99.csv\u0027: No such file or directory\n"
+      },
+      "dateCreated": "Dec 16, 2016 6:18:51 PM",
+      "dateStarted": "Dec 16, 2016 6:25:29 PM",
+      "dateFinished": "Dec 16, 2016 6:26:21 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%sh\n\nrm /tmp/flights00.csv.bz2\ncurl -o /tmp/flights00.csv.bz2 \"http://stat-computing.org/dataexpo/2009/2000.csv.bz2\"\nrm /tmp/flights00.csv\nbzip2 -d /tmp/flights00.csv.bz2\nchmod 666 /tmp/flights00.csv",
+      "user": "anonymous",
+      "dateUpdated": "Dec 16, 2016 6:28:05 PM",
+      "config": {
+        "colWidth": 12.0,
+        "graph": {
+          "mode": "table",
+          "height": 300.0,
+          "optionOpen": false,
+          "keys": [],
+          "values": [],
+          "groups": [],
+          "scatter": {}
+        },
+        "enabled": true,
+        "editorSetting": {
+          "language": "sh",
+          "editOnDblClick": false
+        },
+        "editorMode": "ace/mode/sh",
+        "tableHide": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1481901546617_-1248001849",
+      "id": "20161216-181906_1190420772",
+      "result": {
+        "code": "SUCCESS",
+        "type": "TEXT",
+        "msg": "rm: cannot remove \u0027/tmp/flights00.csv.bz2\u0027: No such file or directory\n  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current\n                                 Dload  Upload   Total   Spent    Left  Speed\n\r  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0\r  0 78.7M    0 17940    0     0  21659      0  1:03:30 --:--:--  1:03:30 21640\r  0 78.7M    0  196k    0     0   107k      0  0:12:30  0:00:01  0:12:29  107k\r  0 78.7M    0  726k    0     0   255k      0  0:05:14  0:00:02  0:05:12  255k\r  2 78.7M    2 1964k    0     0   510k      0  0:02:37  0:00:03  0:02:34  510k\r  6 78.7M    6 5232k    0     0  1104k      0  0:01:12  0:00:04  0:01:08 1104k\r 14 78.7M   14 11.3M    0     0  2032k      0  0:00:39  0:00:05  0:00:34 2371k\r 24 78.7M   24 19.1M    0     0  2900k      0  0:00:27  0:00:06  0:00:21 3935k\r 29 78.7M   29 23.0M    0     0  3022k      0  0:00:26  0:00:07  0:00:19 4598k\r 31 78.7M   31 24.6M    0     0  2876k      0  0:00:28  0:00:08  0:00:20 4723k\r 35 78.7M   35 28.2M    0     0  2966k      0  0:00:27  0:00:09  0:00:18 4731k\r 41 78.7M   41 32.8M    0     0  3122k      0  0:00:25  0:00:10  0:00:15 4370k\r 49 78.7M   49 39.0M    0     0  3404k      0  0:00:23  0:00:11  0:00:12 4092k\r 57 78.7M   57 45.6M    0     0  3666k      0  0:00:21  0:00:12  0:00:09 4691k\r 66 78.7M   66 52.7M    0     0  3929k      0  0:00:20  0:00:13  0:00:07 5788k\r 75 78.7M   75 59.7M    0     0  4149k      0  0:00:19  0:00:14  0:00:05 6453k\r 84 78.7M   84 66.8M    0     0  4352k      0  0:00:18  0:00:15  0:00:03 7008k\r 91 78.7M   91 72.1M    0     0  4411k      0  0:00:18  0:00:16  0:00:02 6767k\r100 78.7M  100 78.7M    0     0  4557k      0  0:00:17  0:00:17 --:--:-- 6851k\nrm: cannot remove \u0027/tmp/flights00.csv\u0027: No such file or directory\n"
+      },
+      "dateCreated": "Dec 16, 2016 6:19:06 PM",
+      "dateStarted": "Dec 16, 2016 6:26:26 PM",
+      "dateFinished": "Dec 16, 2016 6:27:14 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%sh\n\nrm /tmp/carriers.csv\ncurl -o /tmp/carriers.csv \"http://stat-computing.org/dataexpo/2009/carriers.csv\"\nchmod 666 /tmp/carriers.csv",
+      "user": "anonymous",
+      "dateUpdated": "Dec 16, 2016 6:28:07 PM",
+      "config": {
+        "colWidth": 12.0,
+        "graph": {
+          "mode": "table",
+          "height": 300.0,
+          "optionOpen": false,
+          "keys": [],
+          "values": [],
+          "groups": [],
+          "scatter": {}
+        },
+        "enabled": true,
+        "editorSetting": {
+          "language": "sh",
+          "editOnDblClick": false
+        },
+        "editorMode": "ace/mode/sh",
+        "tableHide": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1481901559368_-728175437",
+      "id": "20161216-181919_436249862",
+      "result": {
+        "code": "SUCCESS",
+        "type": "TEXT",
+        "msg": "rm: cannot remove \u0027/tmp/carriers.csv\u0027: No such file or directory\n  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current\n                                 Dload  Upload   Total   Spent    Left  Speed\n\r  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0\r  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0\r 60 43758   60 26220    0     0  20456      0  0:00:02  0:00:01  0:00:01 20452\r100 43758  100 43758    0     0  22485      0  0:00:01  0:00:01 --:--:-- 22486\n"
+      },
+      "dateCreated": "Dec 16, 2016 6:19:19 PM",
+      "dateStarted": "Dec 16, 2016 6:28:07 PM",
+      "dateFinished": "Dec 16, 2016 6:28:09 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%md\n### Preparing the data\nThe `flights\u003cYY\u003e.csv` contains various data but we only need the information about the year, the month and the carrier who served the flight. Let\u0027s retrieve this information and create `DataSets`.",
+      "user": "anonymous",
+      "dateUpdated": "Dec 16, 2016 6:28:13 PM",
+      "config": {
+        "colWidth": 12.0,
+        "graph": {
+          "mode": "table",
+          "height": 300.0,
+          "optionOpen": false,
+          "keys": [],
+          "values": [],
+          "groups": [],
+          "scatter": {}
+        },
+        "enabled": true,
+        "editorSetting": {
+          "language": "markdown",
+          "editOnDblClick": true
+        },
+        "editorMode": "ace/mode/markdown",
+        "editorHide": true,
+        "tableHide": false
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1481901568702_1663823799",
+      "id": "20161216-181928_523638094",
+      "result": {
+        "code": "SUCCESS",
+        "type": "HTML",
+        "msg": "\u003cdiv class\u003d\"markdown-body\"\u003e\n\u003ch3\u003ePreparing the data\u003c/h3\u003e\n\u003cp\u003eThe \u003ccode\u003eflights\u0026lt;YY\u0026gt;.csv\u003c/code\u003e contains various data but we only need the information about the year, the month and the carrier who served the flight. Let\u0026rsquo;s retrieve this information and create \u003ccode\u003eDataSets\u003c/code\u003e.\u003c/p\u003e\n\u003c/div\u003e"
+      },
+      "dateCreated": "Dec 16, 2016 6:19:28 PM",
+      "dateStarted": "Dec 16, 2016 6:28:13 PM",
+      "dateFinished": "Dec 16, 2016 6:28:13 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%flink\n\ncase class Flight(year: Int, month: Int, carrierCode: String)\ncase class Carrier(code: String, name: String)\n\nval flights98 \u003d benv.readCsvFile[Flight](\"/tmp/flights98.csv\", ignoreFirstLine \u003d true, includedFields \u003d Array(0, 1, 8))\nval flights99 \u003d benv.readCsvFile[Flight](\"/tmp/flights99.csv\", ignoreFirstLine \u003d true, includedFields \u003d Array(0, 1, 8))\nval flights00 \u003d benv.readCsvFile[Flight](\"/tmp/flights00.csv\", ignoreFirstLine \u003d true, includedFields \u003d Array(0, 1, 8))\nval flights \u003d flights98.union(flights99).union(flights00)\nval carriers \u003d benv.readCsvFile[Carrier](\"/tmp/carriers.csv\", ignoreFirstLine \u003d true, quoteCharacter \u003d \u0027\"\u0027)",
+      "user": "anonymous",
+      "dateUpdated": "Dec 16, 2016 6:28:40 PM",
+      "config": {
+        "colWidth": 12.0,
+        "graph": {
+          "mode": "table",
+          "height": 300.0,
+          "optionOpen": false,
+          "keys": [],
+          "values": [],
+          "groups": [],
+          "scatter": {}
+        },
+        "enabled": true,
         "editorSetting": {
           "language": "scala",
           "editOnDblClick": false
         },
         "editorMode": "ace/mode/scala",
         "lineNumbers": true,
-        "tableHide": true,
-        "title": true
+        "tableHide": true
       },
       "settings": {
         "params": {},
         "forms": {}
       },
       "apps": [],
-      "jobName": "paragraph_1481625031743_-43093778",
-      "id": "20161213-133031_1611231792",
-      "results": {
+      "jobName": "paragraph_1481901574096_927044980",
+      "id": "20161216-181934_239788848",
+      "result": {
         "code": "SUCCESS",
-        "msg": [
-          {
-            "type": "TEXT",
-            "data": "monthAsString: (month: Int)String\nbestCarrierFlights: Seq[(Int, Int, Int, Int)] \u003d Buffer((1,78523,77745,78055), (2,71101,70498,71090), (3,78906,77812,78453), (4,75726,75343,75247), (5,77937,77226,76797), (6,75432,75840,74846), (7,77521,77264,75776), (8,78104,78141,77654), (9,74840,75067,73696), (10,76145,77829,77425), (11,73552,74411,73659), (12,77308,76954,75331))\nflightsByMonthTable: String \u003d \n\"Month\t1998\t1999\t2000\n\"\n"
-          }
-        ]
+        "type": "TEXT",
+        "msg": "defined class Flight\ndefined class Carrier\nflights98: org.apache.flink.api.scala.DataSet[Flight] \u003d org.apache.flink.api.scala.DataSet@7331085b\nflights99: org.apache.flink.api.scala.DataSet[Flight] \u003d org.apache.flink.api.scala.DataSet@51e5f22a\nflights00: org.apache.flink.api.scala.DataSet[Flight] \u003d org.apache.flink.api.scala.DataSet@66cc82cd\nflights: org.apache.flink.api.scala.DataSet[Flight] \u003d org.apache.flink.api.scala.DataSet@2248d90d\ncarriers: org.apache.flink.api.scala.DataSet[Carrier] \u003d org.apache.flink.api.scala.DataSet@49e73b28\n"
       },
-      "dateCreated": "Dec 13, 2016 1:30:31 PM",
-      "dateStarted": "Dec 15, 2016 5:22:09 PM",
-      "dateFinished": "Dec 15, 2016 5:22:35 PM",
+      "dateCreated": "Dec 16, 2016 6:19:34 PM",
+      "dateStarted": "Dec 16, 2016 6:28:16 PM",
+      "dateFinished": "Dec 16, 2016 6:28:35 PM",
       "status": "FINISHED",
       "progressUpdateIntervalMs": 500
     },
     {
-      "title": "\"Delta Air Lines\" flights count by months",
-      "text": "%flink\n\nprintln(s\"\"\"%table\n$flightsByMonthTable\n\"\"\")",
+      "text": "%md\n### Choosing the carrier\nNow we will search for the most popular carrier during the whole time period.",
       "user": "anonymous",
-      "dateUpdated": "Dec 15, 2016 5:22:42 PM",
+      "dateUpdated": "Dec 16, 2016 6:28:49 PM",
       "config": {
-        "enabled": true,
-        "title": true,
-        "tableHide": false,
-        "results": [
-          {
-            "graph": {
-              "mode": "lineChart",
-              "height": 301.0,
-              "optionOpen": false,
-              "keys": [
-                {
-                  "name": "Month",
-                  "index": 0.0,
-                  "aggr": "sum"
-                }
-              ],
-              "values": [
-                {
-                  "name": "1998",
-                  "index": 1.0,
-                  "aggr": "sum"
-                },
-                {
-                  "name": "1999",
-                  "index": 2.0,
-                  "aggr": "sum"
-                },
-                {
-                  "name": "2000",
-                  "index": 3.0,
-                  "aggr": "sum"
-                }
-              ],
-              "groups": [],
-              "scatter": {
-                "xAxis": {
-                  "name": "Month",
-                  "index": 0.0,
-                  "aggr": "sum"
-                }
-              },
-              "setting": {
-                "lineChart": {
-                  "lineWithFocus": false
-                },
-                "pieChart": {}
-              },
-              "commonSetting": {}
-            },
-            "helium": {}
-          },
-          {
-            "graph": {
-              "mode": "lineChart",
-              "height": 300.0,
-              "optionOpen": false,
-              "keys": [
-                {
-                  "name": "Month",
-                  "index": 0.0,
-                  "aggr": "sum"
-                }
-              ],
-              "values": [
-                {
-                  "name": "1998",
-                  "index": 1.0,
-                  "aggr": "sum"
-                },
-                {
-                  "name": "1999",
-                  "index": 2.0,
-                  "aggr": "sum"
-                },
-                {
-                  "name": "2000",
-                  "index": 3.0,
-                  "aggr": "sum"
-                }
-              ],
-              "groups": [],
-              "scatter": {
-                "xAxis": {
-                  "name": "Month",
-                  "index": 0.0,
-                  "aggr": "sum"
-                },
-                "yAxis": {
-                  "name": "1998",
-                  "index": 1.0,
-                  "aggr": "sum"
-                }
-              }
-            },
-            "helium": {}
-          }
-        ],
-        "editorHide": true,
         "colWidth": 12.0,
-        "editorSetting": {
-          "language": "scala",
-          "editOnDblClick": false
+        "graph": {
+          "mode": "table",
+          "height": 300.0,
+          "optionOpen": false,
+          "keys": [],
+          "values": [],
+          "groups": [],
+          "scatter": {}
         },
-        "editorMode": "ace/mode/scala"
-      },
-      "settings": {
-        "params": {},
-        "forms": {}
-      },
-      "apps": [],
-      "jobName": "paragraph_1481553502726_-1317686312",
-      "id": "20161207-114948_1950158733",
-      "results": {
-        "code": "SUCCESS",
-        "msg": [
-          {
-            "type": "TABLE",
-            "data": "Month\t1998\t1999\t2000\nJan\t78523\t77745\t78055\nFeb\t71101\t70498\t71090\nMar\t78906\t77812\t78453\nApr\t75726\t75343\t75247\nMay\t77937\t77226\t76797\nJun\t75432\t75840\t74846\nJul\t77521\t77264\t75776\nAug\t78104\t78141\t77654\nSept\t74840\t75067\t73696\nOct\t76145\t77829\t77425\nNov\t73552\t74411\t73659\nDec\t77308\t76954\t75331\n"
-          }
-        ]
-      },
-      "dateCreated": "Dec 12, 2016 5:38:22 PM",
-      "dateStarted": "Dec 15, 2016 5:22:41 PM",
-      "dateFinished": "Dec 15, 2016 5:22:41 PM",
-      "status": "FINISHED",
-      "progressUpdateIntervalMs": 500
-    },
-    {
-      "text": "%md\n### Results\nLooking at this chart we can say that February is the most unpopular month, but this is only because it has less days (28 or 29) than the other months (30 or 31). To receive more fair picture we should calculate the average flights count per day for each month.",
-      "user": "anonymous",
-      "dateUpdated": "Dec 15, 2016 5:22:44 PM",
-      "config": {
         "enabled": true,
-        "tableHide": false,
-        "results": [
-          {
-            "graph": {
-              "mode": "table",
-              "height": 300.0,
-              "optionOpen": false,
-              "keys": [],
-              "values": [],
-              "groups": [],
-              "scatter": {}
-            }
-          }
-        ],
-        "editorMode": "ace/mode/markdown",
-        "editorHide": true,
-        "colWidth": 12.0,
         "editorSetting": {
           "language": "markdown",
           "editOnDblClick": true
-        }
+        },
+        "editorMode": "ace/mode/markdown",
+        "editorHide": true,
+        "tableHide": false
       },
       "settings": {
         "params": {},
         "forms": {}
       },
       "apps": [],
-      "jobName": "paragraph_1481553502727_-1318071061",
-      "id": "20161208-143733_292898648",
-      "results": {
+      "jobName": "paragraph_1481901594489_429195227",
+      "id": "20161216-181954_775275431",
+      "result": {
         "code": "SUCCESS",
-        "msg": [
-          {
-            "type": "HTML",
-            "data": "\u003cdiv class\u003d\"markdown-body\"\u003e\n\u003ch3\u003eResults\u003c/h3\u003e\n\u003cp\u003eLooking at this chart we can say that February is the most unpopular month, but this is only because it has less days (28 or 29) than the other months (30 or 31). To receive more fair picture we should calculate the average flights count per day for each month.\u003c/p\u003e\n\u003c/div\u003e"
-          }
-        ]
+        "type": "HTML",
+        "msg": "\u003cdiv class\u003d\"markdown-body\"\u003e\n\u003ch3\u003eChoosing the carrier\u003c/h3\u003e\n\u003cp\u003eNow we will search for the most popular carrier during the whole time period.\u003c/p\u003e\n\u003c/div\u003e"
       },
-      "dateCreated": "Dec 12, 2016 5:38:22 PM",
-      "dateStarted": "Dec 15, 2016 5:22:44 PM",
-      "dateFinished": "Dec 15, 2016 5:22:44 PM",
+      "dateCreated": "Dec 16, 2016 6:19:54 PM",
+      "dateStarted": "Dec 16, 2016 6:28:49 PM",
+      "dateFinished": "Dec 16, 2016 6:28:49 PM",
       "status": "FINISHED",
       "progressUpdateIntervalMs": 500
     },
     {
-      "title": "counting departures per day",
-      "text": "%flink\n\ndef daysInMonth(month: Int, year: Int): Int \u003d {\n  month match {\n    case 1 \u003d\u003e 31\n    case 2 \u003d\u003e if (year % 4 \u003d\u003d 0) {\n        29\n    } else {\n        28\n    }\n    case 3 \u003d\u003e 31\n    case 4 \u003d\u003e 30\n    case 5 \u003d\u003e 31\n    case 6 \u003d\u003e 30\n    case 7 \u003d\u003e 31\n    case 8 \u003d\u003e 31\n    case 9 \u003d\u003e 30\n    case 10 \u003d\u003e 31\n    case 11 \u003d\u003e 30\n    case 12 \u003d\u003e 31\n  }\n}\n\n\nvar flightsByDayTable \u003d s\"Month\\t1998\\t1999\\t2000\\n\"\n\nbestCarrierFlights.foreach(data \u003d\u003e flightsByDayTable +\u003d s\"${monthAsString(data._1)}\\t${data._2/daysInMonth(data._1,1998)}\\t${data._3/daysInMonth(data._1,1999)}\\t${data._4/daysInMonth(data._1,2000)}\\n\")",
+      "text": "%flink\n\nimport org.apache.flink.api.common.operators.Order\nimport org.apache.flink.api.java.aggregation.Aggregations\n\ncase class CarrierFlightsCount(carrierCode: String, count: Int)\ncase class CountByMonth(month: Int, count: Int)\n\nval carriersFlights \u003d flights\n  .map(f \u003d\u003e CarrierFlightsCount(f.carrierCode, 1))\n  .groupBy(\"carrierCode\")\n  .sum(\"count\")\n\nval maxFlights \u003d carriersFlights\n  .aggregate(Aggregations.MAX, \"count\")\n\nval bestCarrier \u003d carriersFlights\n  .join(maxFlights)\n  .where(\"count\")\n  .equalTo(\"count\")\n  .map(_._1)\n  \nval carrierName \u003d bestCarrier\n  .join(carriers)\n  .where(\"carrierCode\")\n  .equalTo(\"code\")\n  .map(_._2.name)\n  .collect\n  .head",
       "user": "anonymous",
-      "dateUpdated": "Dec 15, 2016 5:22:46 PM",
+      "dateUpdated": "Dec 16, 2016 6:29:23 PM",
       "config": {
         "colWidth": 12.0,
+        "graph": {
+          "mode": "table",
+          "height": 300.0,
+          "optionOpen": false,
+          "keys": [],
+          "values": [],
+          "groups": [],
+          "scatter": {}
+        },
         "enabled": true,
-        "results": {},
         "editorSetting": {
           "language": "scala",
           "editOnDblClick": false
         },
         "editorMode": "ace/mode/scala",
-        "title": false,
-        "tableHide": true,
+        "lineNumbers": true,
+        "tableHide": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1481901605415_490167799",
+      "id": "20161216-182005_1726144913",
+      "result": {
+        "code": "SUCCESS",
+        "type": "TEXT",
+        "msg": "import org.apache.flink.api.common.operators.Order\nimport org.apache.flink.api.java.aggregation.Aggregations\ndefined class CarrierFlightsCount\ndefined class CountByMonth\ncarriersFlights: org.apache.flink.api.scala.AggregateDataSet[CarrierFlightsCount] \u003d org.apache.flink.api.scala.AggregateDataSet@6bf270da\nmaxFlights: org.apache.flink.api.scala.AggregateDataSet[CarrierFlightsCount] \u003d org.apache.flink.api.scala.AggregateDataSet@787bfde6\nbestCarrier: org.apache.flink.api.scala.DataSet[CarrierFlightsCount] \u003d org.apache.flink.api.scala.DataSet@61ec695f\ncarrierName: String \u003d Delta Air Lines Inc.\n"
+      },
+      "dateCreated": "Dec 16, 2016 6:20:05 PM",
+      "dateStarted": "Dec 16, 2016 6:28:52 PM",
+      "dateFinished": "Dec 16, 2016 6:29:16 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%flink\n\nprintln(s\"\"\"The most popular carrier is:\n$carrierName\n\"\"\")",
+      "user": "anonymous",
+      "dateUpdated": "Dec 16, 2016 6:29:36 PM",
+      "config": {
+        "colWidth": 12.0,
+        "graph": {
+          "mode": "table",
+          "height": 300.0,
+          "optionOpen": false,
+          "keys": [],
+          "values": [],
+          "groups": [],
+          "scatter": {}
+        },
+        "enabled": true,
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false
+        },
+        "editorMode": "ace/mode/scala",
         "lineNumbers": true
       },
       "settings": {
@@ -866,20 +444,307 @@
         "forms": {}
       },
       "apps": [],
-      "jobName": "paragraph_1481629032591_-1502949363",
-      "id": "20161213-143712_1054281234",
-      "results": {
+      "jobName": "paragraph_1481901619437_-80030071",
+      "id": "20161216-182019_301203032",
+      "result": {
         "code": "SUCCESS",
-        "msg": [
-          {
-            "type": "TEXT",
-            "data": "daysInMonth: (month: Int, year: Int)Int\nflightsByDayTable: String \u003d \n\"Month\t1998\t1999\t2000\n\"\n"
-          }
-        ]
+        "type": "TEXT",
+        "msg": "The most popular carrier is:\nDelta Air Lines Inc.\n\n"
       },
-      "dateCreated": "Dec 13, 2016 2:37:12 PM",
-      "dateStarted": "Dec 15, 2016 5:22:46 PM",
-      "dateFinished": "Dec 15, 2016 5:22:46 PM",
+      "dateCreated": "Dec 16, 2016 6:20:19 PM",
+      "dateStarted": "Dec 16, 2016 6:29:36 PM",
+      "dateFinished": "Dec 16, 2016 6:29:36 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%md\n### Calculating flights\nThe last step is to filter **Delta Air Lines** flights and group them by months.",
+      "user": "anonymous",
+      "dateUpdated": "Dec 16, 2016 6:32:15 PM",
+      "config": {
+        "colWidth": 12.0,
+        "graph": {
+          "mode": "table",
+          "height": 300.0,
+          "optionOpen": false,
+          "keys": [],
+          "values": [],
+          "groups": [],
+          "scatter": {}
+        },
+        "enabled": true,
+        "editorSetting": {
+          "language": "markdown",
+          "editOnDblClick": true
+        },
+        "editorMode": "ace/mode/markdown",
+        "editorHide": true,
+        "tableHide": false
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1481901633496_158160147",
+      "id": "20161216-182033_135819052",
+      "result": {
+        "code": "SUCCESS",
+        "type": "HTML",
+        "msg": "\u003cdiv class\u003d\"markdown-body\"\u003e\n\u003ch3\u003eCalculating flights\u003c/h3\u003e\n\u003cp\u003eThe last step is to filter \u003cstrong\u003eDelta Air Lines\u003c/strong\u003e flights and group them by months.\u003c/p\u003e\n\u003c/div\u003e"
+      },
+      "dateCreated": "Dec 16, 2016 6:20:33 PM",
+      "dateStarted": "Dec 16, 2016 6:30:17 PM",
+      "dateFinished": "Dec 16, 2016 6:30:17 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "title": "flights grouping",
+      "text": "%flink\n\ndef countFlightsPerMonth(flights: DataSet[Flight],\n                         carrier: DataSet[CarrierFlightsCount]) \u003d {\n  val carrierFlights \u003d flights\n    .join(carrier)\n    .where(\"carrierCode\")\n    .equalTo(\"carrierCode\")\n    .map(_._1)\n    \n  carrierFlights\n    .map(flight \u003d\u003e CountByMonth(flight.month, 1))\n    .groupBy(\"month\")\n    .sum(\"count\")\n    .sortPartition(\"month\", Order.ASCENDING)\n}\n\nval bestCarrierFlights_98 \u003d countFlightsPerMonth(flights98, bestCarrier)\nval bestCarrierFlights_99 \u003d countFlightsPerMonth(flights99, bestCarrier)\nval bestCarrierFlights_00 \u003d countFlightsPerMonth(flights00, bestCarrier)",
+      "user": "anonymous",
+      "dateUpdated": "Dec 16, 2016 6:30:38 PM",
+      "config": {
+        "colWidth": 12.0,
+        "graph": {
+          "mode": "table",
+          "height": 300.0,
+          "optionOpen": false,
+          "keys": [],
+          "values": [],
+          "groups": [],
+          "scatter": {}
+        },
+        "enabled": true,
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false
+        },
+        "editorMode": "ace/mode/scala",
+        "lineNumbers": true,
+        "title": true,
+        "tableHide": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1481901649350_-1657454589",
+      "id": "20161216-182049_723223090",
+      "result": {
+        "code": "SUCCESS",
+        "type": "TEXT",
+        "msg": "countFlightsPerMonth: (flights: org.apache.flink.api.scala.DataSet[Flight], carrier: org.apache.flink.api.scala.DataSet[CarrierFlightsCount])org.apache.flink.api.scala.DataSet[CountByMonth]\nbestCarrierFlights_98: org.apache.flink.api.scala.DataSet[CountByMonth] \u003d org.apache.flink.api.scala.PartitionSortedDataSet@677c5b87\nbestCarrierFlights_99: org.apache.flink.api.scala.DataSet[CountByMonth] \u003d org.apache.flink.api.scala.PartitionSortedDataSet@46ce01d3\nbestCarrierFlights_00: org.apache.flink.api.scala.DataSet[CountByMonth] \u003d org.apache.flink.api.scala.PartitionSortedDataSet@57ee1887\n"
+      },
+      "dateCreated": "Dec 16, 2016 6:20:49 PM",
+      "dateStarted": "Dec 16, 2016 6:30:33 PM",
+      "dateFinished": "Dec 16, 2016 6:30:34 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "title": "making a results table",
+      "text": "%flink\n\ndef monthAsString(month: Int): String \u003d {\n  month match {\n    case 1 \u003d\u003e \"Jan\"\n    case 2 \u003d\u003e \"Feb\"\n    case 3 \u003d\u003e \"Mar\"\n    case 4 \u003d\u003e \"Apr\"\n    case 5 \u003d\u003e \"May\"\n    case 6 \u003d\u003e \"Jun\"\n    case 7 \u003d\u003e \"Jul\"\n    case 8 \u003d\u003e \"Aug\"\n    case 9 \u003d\u003e \"Sept\"\n    case 10 \u003d\u003e \"Oct\"\n    case 11 \u003d\u003e \"Nov\"\n    case 12 \u003d\u003e \"Dec\"\n  }\n}\n\n// We should put all the results into a common DataFrame\n// to show them in a common picture\nval bestCarrierFlights \u003d bestCarrierFlights_98\n  .join(bestCarrierFlights_99)\n  .where(\"month\")\n  .equalTo(\"month\")\n  .map(tuple \u003d\u003e (tuple._1.month, tuple._1.count, tuple._2.count))\n  .join(bestCarrierFlights_00)\n  .where(0)\n  .equalTo(\"month\")\n  .map(tuple \u003d\u003e (tuple._1._1, tuple._1._2, tuple._1._3, tuple._2.count))\n  .collect\n  \nvar flightsByMonthTable \u003d s\"Month\\t1998\\t1999\\t2000\\n\"\nbestCarrierFlights.foreach(data \u003d\u003e flightsByMonthTable +\u003d s\"${monthAsString(data._1)}\\t${data._2}\\t${data._3}\\t${data._4}\\n\")",
+      "user": "anonymous",
+      "dateUpdated": "Dec 16, 2016 6:31:25 PM",
+      "config": {
+        "colWidth": 12.0,
+        "graph": {
+          "mode": "table",
+          "height": 300.0,
+          "optionOpen": false,
+          "keys": [],
+          "values": [],
+          "groups": [],
+          "scatter": {}
+        },
+        "enabled": true,
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false
+        },
+        "editorMode": "ace/mode/scala",
+        "lineNumbers": true,
+        "title": true,
+        "tableHide": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1481901661734_729158163",
+      "id": "20161216-182101_108106982",
+      "result": {
+        "code": "SUCCESS",
+        "type": "TEXT",
+        "msg": "monthAsString: (month: Int)String\nbestCarrierFlights: Seq[(Int, Int, Int, Int)] \u003d Buffer((1,78523,77745,78055), (2,71101,70498,71090), (3,78906,77812,78453), (4,75726,75343,75247), (5,77937,77226,76797), (6,75432,75840,74846), (7,77521,77264,75776), (8,78104,78141,77654), (9,74840,75067,73696), (10,76145,77829,77425), (11,73552,74411,73659), (12,77308,76954,75331))\nflightsByMonthTable: String \u003d \n\"Month\t1998\t1999\t2000\n\"\n"
+      },
+      "dateCreated": "Dec 16, 2016 6:21:01 PM",
+      "dateStarted": "Dec 16, 2016 6:30:56 PM",
+      "dateFinished": "Dec 16, 2016 6:31:22 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "title": "\"Delta Air Lines\" flights count by months",
+      "text": "%flink\n\nprintln(s\"\"\"%table\n$flightsByMonthTable\n\"\"\")",
+      "user": "anonymous",
+      "dateUpdated": "Dec 16, 2016 6:31:37 PM",
+      "config": {
+        "colWidth": 12.0,
+        "graph": {
+          "mode": "lineChart",
+          "height": 300.0,
+          "optionOpen": false,
+          "keys": [
+            {
+              "name": "Month",
+              "index": 0.0,
+              "aggr": "sum"
+            }
+          ],
+          "values": [
+            {
+              "name": "1998",
+              "index": 1.0,
+              "aggr": "sum"
+            },
+            {
+              "name": "1999",
+              "index": 2.0,
+              "aggr": "sum"
+            },
+            {
+              "name": "2000",
+              "index": 3.0,
+              "aggr": "sum"
+            }
+          ],
+          "groups": [],
+          "scatter": {
+            "xAxis": {
+              "name": "Month",
+              "index": 0.0,
+              "aggr": "sum"
+            },
+            "yAxis": {
+              "name": "1998",
+              "index": 1.0,
+              "aggr": "sum"
+            }
+          }
+        },
+        "enabled": true,
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false
+        },
+        "editorMode": "ace/mode/scala",
+        "lineNumbers": true,
+        "title": true,
+        "helium": {}
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1481901667024_1522140970",
+      "id": "20161216-182107_1363221174",
+      "result": {
+        "code": "SUCCESS",
+        "type": "TABLE",
+        "msg": "Month\t1998\t1999\t2000\nJan\t78523\t77745\t78055\nFeb\t71101\t70498\t71090\nMar\t78906\t77812\t78453\nApr\t75726\t75343\t75247\nMay\t77937\t77226\t76797\nJun\t75432\t75840\t74846\nJul\t77521\t77264\t75776\nAug\t78104\t78141\t77654\nSept\t74840\t75067\t73696\nOct\t76145\t77829\t77425\nNov\t73552\t74411\t73659\nDec\t77308\t76954\t75331\n\n\n"
+      },
+      "dateCreated": "Dec 16, 2016 6:21:07 PM",
+      "dateStarted": "Dec 16, 2016 6:31:28 PM",
+      "dateFinished": "Dec 16, 2016 6:31:29 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%md\n### Results\nLooking at this chart we can say that February is the most unpopular month, but this is only because it has less days (28 or 29) than the other months (30 or 31). To receive more fair picture we should calculate the average flights count per day for each month.",
+      "user": "anonymous",
+      "dateUpdated": "Dec 16, 2016 6:32:29 PM",
+      "config": {
+        "colWidth": 12.0,
+        "graph": {
+          "mode": "table",
+          "height": 300.0,
+          "optionOpen": false,
+          "keys": [],
+          "values": [],
+          "groups": [],
+          "scatter": {}
+        },
+        "enabled": true,
+        "editorSetting": {
+          "language": "markdown",
+          "editOnDblClick": true
+        },
+        "editorMode": "ace/mode/markdown",
+        "editorHide": true,
+        "tableHide": false
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1481902288829_-220093471",
+      "id": "20161216-183128_1326241430",
+      "result": {
+        "code": "SUCCESS",
+        "type": "HTML",
+        "msg": "\u003cdiv class\u003d\"markdown-body\"\u003e\n\u003ch3\u003eResults\u003c/h3\u003e\n\u003cp\u003eLooking at this chart we can say that February is the most unpopular month, but this is only because it has less days (28 or 29) than the other months (30 or 31). To receive more fair picture we should calculate the average flights count per day for each month.\u003c/p\u003e\n\u003c/div\u003e"
+      },
+      "dateCreated": "Dec 16, 2016 6:31:28 PM",
+      "dateStarted": "Dec 16, 2016 6:32:29 PM",
+      "dateFinished": "Dec 16, 2016 6:32:29 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%flink\n\ndef daysInMonth(month: Int, year: Int): Int \u003d {\n  month match {\n    case 1 \u003d\u003e 31\n    case 2 \u003d\u003e if (year % 4 \u003d\u003d 0) {\n        29\n    } else {\n        28\n    }\n    case 3 \u003d\u003e 31\n    case 4 \u003d\u003e 30\n    case 5 \u003d\u003e 31\n    case 6 \u003d\u003e 30\n    case 7 \u003d\u003e 31\n    case 8 \u003d\u003e 31\n    case 9 \u003d\u003e 30\n    case 10 \u003d\u003e 31\n    case 11 \u003d\u003e 30\n    case 12 \u003d\u003e 31\n  }\n}\n\n\nvar flightsByDayTable \u003d s\"Month\\t1998\\t1999\\t2000\\n\"\n\nbestCarrierFlights.foreach(data \u003d\u003e flightsByDayTable +\u003d s\"${monthAsString(data._1)}\\t${data._2/daysInMonth(data._1,1998)}\\t${data._3/daysInMonth(data._1,1999)}\\t${data._4/daysInMonth(data._1,2000)}\\n\")",
+      "user": "anonymous",
+      "dateUpdated": "Dec 16, 2016 6:32:57 PM",
+      "config": {
+        "colWidth": 12.0,
+        "graph": {
+          "mode": "table",
+          "height": 300.0,
+          "optionOpen": false,
+          "keys": [],
+          "values": [],
+          "groups": [],
+          "scatter": {}
+        },
+        "enabled": true,
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false
+        },
+        "editorMode": "ace/mode/scala",
+        "lineNumbers": true,
+        "tableHide": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1481902348960_-47833233",
+      "id": "20161216-183228_2080879949",
+      "result": {
+        "code": "SUCCESS",
+        "type": "TEXT",
+        "msg": "daysInMonth: (month: Int, year: Int)Int\nflightsByDayTable: String \u003d \n\"Month\t1998\t1999\t2000\n\"\n"
+      },
+      "dateCreated": "Dec 16, 2016 6:32:28 PM",
+      "dateStarted": "Dec 16, 2016 6:32:52 PM",
+      "dateFinished": "Dec 16, 2016 6:32:53 PM",
       "status": "FINISHED",
       "progressUpdateIntervalMs": 500
     },
@@ -887,144 +752,91 @@
       "title": "\"Delta Air Lines\" flights count by days",
       "text": "%flink\n\nprintln(s\"\"\"%table\n$flightsByDayTable\n\"\"\")",
       "user": "anonymous",
-      "dateUpdated": "Dec 15, 2016 5:22:51 PM",
+      "dateUpdated": "Dec 16, 2016 6:33:40 PM",
       "config": {
-        "enabled": true,
-        "title": true,
-        "results": [
-          {
-            "graph": {
-              "mode": "lineChart",
-              "height": 300.0,
-              "optionOpen": false,
-              "keys": [
-                {
-                  "name": "Month",
-                  "index": 0.0,
-                  "aggr": "sum"
-                }
-              ],
-              "values": [
-                {
-                  "name": "1998",
-                  "index": 1.0,
-                  "aggr": "sum"
-                },
-                {
-                  "name": "1999",
-                  "index": 2.0,
-                  "aggr": "sum"
-                },
-                {
-                  "name": "2000",
-                  "index": 3.0,
-                  "aggr": "sum"
-                }
-              ],
-              "groups": [],
-              "scatter": {
-                "xAxis": {
-                  "name": "Month",
-                  "index": 0.0,
-                  "aggr": "sum"
-                },
-                "yAxis": {
-                  "name": "1998",
-                  "index": 1.0,
-                  "aggr": "sum"
-                }
-              }
-            },
-            "helium": {}
-          },
-          {
-            "graph": {
-              "mode": "lineChart",
-              "height": 300.0,
-              "optionOpen": false,
-              "keys": [
-                {
-                  "name": "Month",
-                  "index": 0.0,
-                  "aggr": "sum"
-                }
-              ],
-              "values": [
-                {
-                  "name": "1998",
-                  "index": 1.0,
-                  "aggr": "sum"
-                },
-                {
-                  "name": "1999",
-                  "index": 2.0,
-                  "aggr": "sum"
-                },
-                {
-                  "name": "2000",
-                  "index": 3.0,
-                  "aggr": "sum"
-                }
-              ],
-              "groups": [],
-              "scatter": {
-                "xAxis": {
-                  "name": "Month",
-                  "index": 0.0,
-                  "aggr": "sum"
-                },
-                "yAxis": {
-                  "name": "1998",
-                  "index": 1.0,
-                  "aggr": "sum"
-                }
-              }
-            },
-            "helium": {}
-          }
-        ],
-        "editorMode": "ace/mode/scala",
-        "editorHide": true,
         "colWidth": 12.0,
+        "graph": {
+          "mode": "lineChart",
+          "height": 300.0,
+          "optionOpen": false,
+          "keys": [
+            {
+              "name": "Month",
+              "index": 0.0,
+              "aggr": "sum"
+            }
+          ],
+          "values": [
+            {
+              "name": "1998",
+              "index": 1.0,
+              "aggr": "sum"
+            },
+            {
+              "name": "1999",
+              "index": 2.0,
+              "aggr": "sum"
+            },
+            {
+              "name": "2000",
+              "index": 3.0,
+              "aggr": "sum"
+            }
+          ],
+          "groups": [],
+          "scatter": {
+            "xAxis": {
+              "name": "Month",
+              "index": 0.0,
+              "aggr": "sum"
+            },
+            "yAxis": {
+              "name": "1998",
+              "index": 1.0,
+              "aggr": "sum"
+            }
+          }
+        },
+        "enabled": true,
         "editorSetting": {
           "language": "scala",
           "editOnDblClick": false
-        }
+        },
+        "editorMode": "ace/mode/scala",
+        "lineNumbers": true,
+        "title": true,
+        "helium": {}
       },
       "settings": {
         "params": {},
         "forms": {}
       },
       "apps": [],
-      "jobName": "paragraph_1481553502728_-1319994805",
-      "id": "20161208-163030_2095890965",
-      "results": {
+      "jobName": "paragraph_1481902372603_-2116597420",
+      "id": "20161216-183252_1663080942",
+      "result": {
         "code": "SUCCESS",
-        "msg": [
-          {
-            "type": "TABLE",
-            "data": "Month\t1998\t1999\t2000\nJan\t2533\t2507\t2517\nFeb\t2539\t2517\t2451\nMar\t2545\t2510\t2530\nApr\t2524\t2511\t2508\nMay\t2514\t2491\t2477\nJun\t2514\t2528\t2494\nJul\t2500\t2492\t2444\nAug\t2519\t2520\t2504\nSept\t2494\t2502\t2456\nOct\t2456\t2510\t2497\nNov\t2451\t2480\t2455\nDec\t2493\t2482\t2430\n"
-          }
-        ]
+        "type": "TABLE",
+        "msg": "Month\t1998\t1999\t2000\nJan\t2533\t2507\t2517\nFeb\t2539\t2517\t2451\nMar\t2545\t2510\t2530\nApr\t2524\t2511\t2508\nMay\t2514\t2491\t2477\nJun\t2514\t2528\t2494\nJul\t2500\t2492\t2444\nAug\t2519\t2520\t2504\nSept\t2494\t2502\t2456\nOct\t2456\t2510\t2497\nNov\t2451\t2480\t2455\nDec\t2493\t2482\t2430\n\n\n"
       },
-      "dateCreated": "Dec 12, 2016 5:38:22 PM",
-      "dateStarted": "Dec 15, 2016 5:22:49 PM",
-      "dateFinished": "Dec 15, 2016 5:22:49 PM",
+      "dateCreated": "Dec 16, 2016 6:32:52 PM",
+      "dateStarted": "Dec 16, 2016 6:33:29 PM",
+      "dateFinished": "Dec 16, 2016 6:33:29 PM",
       "status": "FINISHED",
       "progressUpdateIntervalMs": 500
     },
     {
       "text": "%flink\n",
-      "dateUpdated": "Dec 13, 2016 2:51:05 PM",
+      "dateUpdated": "Dec 16, 2016 6:33:29 PM",
       "config": {},
       "settings": {
         "params": {},
         "forms": {}
       },
       "apps": [],
-      "jobName": "paragraph_1481629865464_-654699878",
-      "id": "20161213-145105_709643525",
-      "dateCreated": "Dec 13, 2016 2:51:05 PM",
+      "jobName": "paragraph_1481902409095_1385230538",
+      "id": "20161216-183329_1913155482",
+      "dateCreated": "Dec 16, 2016 6:33:29 PM",
       "status": "READY",
       "progressUpdateIntervalMs": 500
     }
@@ -1032,28 +844,26 @@
   "name": "Zeppelin Tutorial/Using Flink for batch processing",
   "id": "2C35YU814",
   "angularObjects": {
-    "2C43ND558:shared_process": [],
-    "2C3HY6UC3:shared_process": [],
-    "2C3FR6X8A:shared_process": [],
-    "2C5CWAUEM:shared_process": [],
-    "2C3SVFKDC:shared_process": [],
-    "2C5U6DSYW:shared_process": [],
-    "2C6B8SU19:shared_process": [],
-    "2C63VKQHM:shared_process": [],
-    "2C54AFT1M:shared_process": [],
-    "2C41XN3KJ:shared_process": [],
-    "2C4U6NCWP:shared_process": [],
-    "2C6DSTDAM:shared_process": [],
-    "2C327MKAF:shared_process": [],
-    "2C3AUKCRD:shared_process": [],
-    "2C4QNXSSP:shared_process": [],
-    "2C5JZXFBE:shared_process": [],
-    "2C4WHQZYQ:shared_process": [],
-    "2C6MKEUN2:shared_process": [],
-    "2C6T1TVPM:shared_process": []
+    "2C4PVECE6:shared_process": [],
+    "2C4US9MUF:shared_process": [],
+    "2C4FYNB4G:shared_process": [],
+    "2C4GX28KP:shared_process": [],
+    "2C648AXXN:shared_process": [],
+    "2C3MSEJ2F:shared_process": [],
+    "2C6F2N6BT:shared_process": [],
+    "2C3US2RTN:shared_process": [],
+    "2C3TYMD6K:shared_process": [],
+    "2C3FDPZRX:shared_process": [],
+    "2C5TEARYX:shared_process": [],
+    "2C5D6NSNG:shared_process": [],
+    "2C6FVVEAD:shared_process": [],
+    "2C582KNWG:shared_process": [],
+    "2C6ZMVGM7:shared_process": [],
+    "2C6UYQG8R:shared_process": [],
+    "2C666VZT2:shared_process": [],
+    "2C4JRCY3K:shared_process": [],
+    "2C64W5T9D:shared_process": []
   },
-  "config": {
-    "looknfeel": "default"
-  },
+  "config": {},
   "info": {}
 }
