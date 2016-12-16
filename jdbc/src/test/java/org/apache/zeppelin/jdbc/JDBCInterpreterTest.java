@@ -14,29 +14,40 @@
  */
 package org.apache.zeppelin.jdbc;
 
-import com.mockrunner.jdbc.BasicJDBCTestCaseAdapter;
-import org.apache.zeppelin.interpreter.InterpreterContext;
-import org.apache.zeppelin.interpreter.InterpreterResult;
-import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
-import org.apache.zeppelin.scheduler.FIFOScheduler;
-import org.apache.zeppelin.scheduler.ParallelScheduler;
-import org.apache.zeppelin.scheduler.Scheduler;
-import org.apache.zeppelin.user.AuthenticationInfo;
-import org.apache.zeppelin.user.UserCredentials;
-import org.apache.zeppelin.user.UsernamePassword;
-import org.junit.Before;
-import org.junit.Test;
+import static java.lang.String.format;
+import static org.apache.zeppelin.interpreter.Interpreter.logger;
+import static org.apache.zeppelin.interpreter.Interpreter.register;
+import static org.apache.zeppelin.jdbc.JDBCInterpreter.DEFAULT_KEY;
+import static org.apache.zeppelin.jdbc.JDBCInterpreter.DEFAULT_DRIVER;
+import static org.apache.zeppelin.jdbc.JDBCInterpreter.DEFAULT_PASSWORD;
+import static org.apache.zeppelin.jdbc.JDBCInterpreter.DEFAULT_USER;
+import static org.apache.zeppelin.jdbc.JDBCInterpreter.DEFAULT_URL;
+import static org.apache.zeppelin.jdbc.JDBCInterpreter.COMMON_MAX_LINE;
+import static org.junit.Assert.*;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.*;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 
-import static java.lang.String.format;
-import static org.apache.zeppelin.jdbc.JDBCInterpreter.*;
-import static org.junit.Assert.*;
+import org.apache.zeppelin.interpreter.InterpreterContext;
+import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
+import org.apache.zeppelin.jdbc.JDBCInterpreter;
+import org.apache.zeppelin.scheduler.FIFOScheduler;
+import org.apache.zeppelin.scheduler.ParallelScheduler;
+import org.apache.zeppelin.scheduler.Scheduler;
+import org.apache.zeppelin.user.AuthenticationInfo;
+import org.apache.zeppelin.user.Credentials;
+import org.apache.zeppelin.user.UserCredentials;
+import org.apache.zeppelin.user.UsernamePassword;
+import org.junit.Before;
+import org.junit.Test;
+
+import com.mockrunner.jdbc.BasicJDBCTestCaseAdapter;
 /**
  * JDBC interpreter unit tests
  */
