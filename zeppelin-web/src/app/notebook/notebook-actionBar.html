@@ -48,7 +48,8 @@ limitations under the License.
               ng-click="clearAllParagraphOutput(note.id)"
               ng-hide="viewOnly"
               ng-class="{'disabled':isNoteRunning()}"
-              tooltip-placement="bottom" tooltip="Clear output">
+              tooltip-placement="bottom" tooltip="Clear output"
+              ng-disabled="revisionView">
         <i class="fa fa-eraser"></i>
       </button>
 
