@@ -161,7 +161,8 @@ limitations under the License.
                 class="btn btn-default btn-xs"
                 ng-click="removeNote(note.id)"
                 ng-hide="viewOnly"
-                tooltip-placement="bottom" tooltip="Remove this note">
+                tooltip-placement="bottom" tooltip="Remove this note"
+                ng-disabled="revisionView">
           <i class="icon-trash"></i>
         </button>
       </span>
