@@ -223,10 +223,13 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
 
     assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
     assertEquals(InterpreterResult.Type.TABLE, interpreterResult.message().get(0).getType());
-    System.out.println("Printed:\n" + interpreterResult.message().get(0).getData());
+    //System.out.println("Printed:\n" + interpreterResult.message().get(0).getData());
 
     String testOutput = interpreterResult.message().get(0).getData().replace("H2-TEST-([0-9]+)",
-      "HA-TEST-1");
+      "H2-TEST-1");
+
+    System.out.println("testOutput: " + testOutput);
+
     assertEquals("TABLE_CATALOG\tTABLE_SCHEMA\tTABLE_NAME\tTABLE_TYPE\tREMARKS\tTYPE_NAME\tTYPE_NAME\t" +
       "TYPE_NAME\tTYPE_NAME\tTYPE_NAME\tSQL\nH2-TEST-1\tINFORMATION_SCHEMA\t" +
       "CATALOGS\tSYSTEM TABLE\tnull\tnull\tnull\tnull\tnull\tnull\n", testOutput);
