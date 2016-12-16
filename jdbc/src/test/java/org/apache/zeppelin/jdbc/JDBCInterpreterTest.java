@@ -225,8 +225,12 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     assertEquals(InterpreterResult.Type.TABLE, interpreterResult.message().get(0).getType());
     System.out.println("Printed:\n" + interpreterResult.message().get(0).getData());
 
-    //"TABLE_CATALOG\tTABLE_SCHEMA\tTABLE_NAME\t"
+    assertEquals("TABLE_CATALOG\tTABLE_SCHEMA\tTABLE_NAME\tTABLE_TYPE\tREMARKS\tTYPE_NAME\tTYPE_NAME\t" +
+      "TYPE_NAME\tTYPE_NAME\tTYPE_NAME\tSQL\nH2-TEST-575664869047889541\tINFORMATION_SCHEMA" +
+      "CATALOGS\tSYSTEM TABLE\tnull\tnull\tnull\tnull\tnull\tnull\n"
+      , interpreterResult.message().get(0).getData());
 
+    /*
     assertEquals("TABLE_CATALOG\tTABLE_SCHEMA\tTABLE_NAME\tCOLUMN_NAME\tDATA_TYPE\tTYPE_NAME\t" +
       "CHARACTER_MAXIMUM_LENGTH\tCHARACTER_MAXIMUM_LENGTH\tNUMERIC_SCALE\tNUMERIC_PRECISION_RADIX" +
       "\tNULLABLE\tREMARKS\tCOLUMN_DEFAULT\tDATA_TYPE\tSQL_DATETIME_SUB\tCHARACTER_OCTET_LENGTH\t" +
@@ -236,6 +240,7 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
       "H2-TEST-8001271961293557682\tPUBLIC\tTEST_TABLE\tNAME\t12\tVARCHAR\t255\t255\t0\t10\t1\t\t" +
       "null\t12\t0\t255\t2\tYES\tnull\tnull\tnull\tnull\tNO\tnull\n"
       , interpreterResult.message().get(0).getData());
+    */
   }
 
   @Test
