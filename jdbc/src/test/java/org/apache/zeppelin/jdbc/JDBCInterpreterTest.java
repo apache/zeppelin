@@ -265,9 +265,8 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
       "\tNULLABLE\tREMARKS\tCOLUMN_DEFAULT\tDATA_TYPE\tSQL_DATETIME_SUB\tCHARACTER_OCTET_LENGTH\t" +
       "ORDINAL_POSITION\tIS_NULLABLE\tSCOPE_CATALOG\tSCOPE_SCHEMA\tSCOPE_TABLE\tSOURCE_DATA_TYPE\t" +
       "IS_AUTOINCREMENT\tSCOPE_CATLOG\nH2-TEST-1\tPUBLIC\tTEST_TABLE\tID\t12\t" +
-      "VARCHAR\t255\t255\t0\t10\t1\t\tnull\t12\t0\t255\t1\tYES\tnull\tnull\tnull\tnull\tNO\tnull\n" +
-      "H2-TEST-1\tPUBLIC\tTEST_TABLE\tNAME\t12\tVARCHAR\t255\t255\t0\t10\t1\t\t" +
-      "null\t12\t0\t255\t2\tYES\tnull\tnull\tnull\tnull\tNO\tnull\n", testOutput);
+      "VARCHAR\t255\t255\t0\t10\t1\t\tnull\t12\t0\t255\t1\tYES\tnull\tnull\tnull\tnull\tNO\tnull\n"
+      , testOutput);
   }
 
   @Test
