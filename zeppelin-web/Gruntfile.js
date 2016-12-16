@@ -55,7 +55,7 @@ module.exports = function(grunt) {
           expand: true,
           cwd: './src/',
           src: ['**/*.js'],
-          dest: '.tmp'
+          dest: '.tmp',
         }]
       },
       dist: {
@@ -63,7 +63,7 @@ module.exports = function(grunt) {
           expand: true,
           cwd: '.tmp/concat/scripts',
           src: ['scripts.js'],
-          dest: '.tmp/concat/scripts'
+          dest: '.tmp/concat/scripts',
         }]
       }
     },
@@ -197,7 +197,7 @@ module.exports = function(grunt) {
         // Change this to '0.0.0.0' to access the server from outside.
         hostname: 'localhost',
         livereload: 35729,
-        base: '.tmp'
+        base: '.tmp',
       },
       livereload: {
         options: {
