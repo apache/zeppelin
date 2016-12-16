@@ -535,14 +535,14 @@ public class JDBCInterpreter extends Interpreter {
       }
 
       try {
-        // LOGIC HERE FOR DATA OR TABLE METADATA
         dataBaseMetaData = connection.getMetaData();
         if (tableName.equals("")) {
+          // if a table name is supplied get table metadata
           resultSet = dataBaseMetaData.getTables(null, null, "%", TABLE_TYPES);
         } else {
+          // if not, get database metadata
           resultSet = dataBaseMetaData.getColumns(null, null, tableName, null);
         }
-        //
         results = getResults(resultSet, true);
       } finally {
         if (resultSet != null) {
@@ -598,9 +598,11 @@ public class JDBCInterpreter extends Interpreter {
 
 
     if (cmd.length() >= 7 && cmd.toLowerCase().substring(0, 7).equals(METADATA_KEYWORD)) {
+      // if the command starts with the METADATA_KEYWORD, call getMetaData
       logger.info("PropertyKey: {}, MetaData command: '{}'", propertyKey, cmd);
       return getMetaData(propertyKey, cmd, contextInterpreter);
     } else {
+      // otherwise all executeSql
       logger.info("PropertyKey: {}, SQL command: '{}'", propertyKey, cmd);
       return executeSql(propertyKey, cmd, contextInterpreter);
     }
