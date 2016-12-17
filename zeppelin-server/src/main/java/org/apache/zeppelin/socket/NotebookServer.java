@@ -29,6 +29,8 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -1060,25 +1062,12 @@ public class NotebookServer extends WebSocketServlet
 
     Folder folder = notebook.getFolder(folderId);
     if (folder != null && folder.isTrash()) {
-      String restoreName = folder.getId().replaceFirst(Folder.TRASH_FOLDER_ID + "/", "");
+      String restoreName = folder.getId().replaceFirst(Folder.TRASH_FOLDER_ID + "/", "").trim();
 
       // if the folder had conflict when it had moved to trash before
-      if (folder.getId().indexOf(Folder.TRASH_FOLDER_CONFLICT_INFIX) > 0) {
-        String[] splits = restoreName.split(Folder.TRASH_FOLDER_CONFLICT_INFIX);
-        String nameWithoutInfix = splits[0];
-        String removedDateString = splits[1];
-        boolean isDateString;
-
-        try {
-          DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss").parseDateTime(removedDateString);
-          isDateString = true;
-        } catch (IllegalArgumentException e) {
-          isDateString = false;
-        }
-
-        if (isDateString)
-          restoreName = nameWithoutInfix;
-      }
+      Pattern p = Pattern.compile("\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}$");
+      Matcher m = p.matcher(restoreName);
+      restoreName = m.replaceAll("").trim();
 
       fromMessage.put("name", restoreName);
       renameFolder(conn, userAndRoles, notebook, fromMessage, "restore");
