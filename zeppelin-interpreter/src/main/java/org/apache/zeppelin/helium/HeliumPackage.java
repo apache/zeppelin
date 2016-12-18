@@ -37,7 +37,8 @@ public class HeliumPackage {
   public static enum Type {
     INTERPRETER,
     NOTEBOOK_REPO,
-    APPLICATION
+    APPLICATION,
+    VISUALIZATION
   }
 
   public HeliumPackage(Type type,
