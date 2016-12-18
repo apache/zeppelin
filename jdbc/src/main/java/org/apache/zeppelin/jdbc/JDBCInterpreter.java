@@ -549,7 +549,7 @@ public class JDBCInterpreter extends Interpreter {
         if (resultSet.next()) {
           results = getResults(resultSet, true);
         } else {
-          results = "Could not get MetaData for " + tableName + ". Database object could not be found";
+          results = "Could not get MetaData for " + tableName;
         }
       } finally {
         if (resultSet != null) {
