@@ -127,7 +127,6 @@ public class SparkRInterpreter extends Interpreter {
       }
     }
 
-    String jobGroup = getJobGroup(interpreterContext);
     String setJobGroup = "";
     // assign setJobGroup to dummy__, otherwise it would print NULL for this statement
     if (Utils.isSpark2()) {
