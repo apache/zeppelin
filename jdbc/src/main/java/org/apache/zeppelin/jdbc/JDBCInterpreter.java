@@ -526,8 +526,8 @@ public class JDBCInterpreter extends Interpreter {
     String tableName = null;
     String results;
 
-    if (cmd.split(" ").length > 1) {
-      tableName = cmd.split(" ")[1];
+    if (cmd.split(" +").length > 1) {
+      tableName = cmd.split(" +")[1];
     }
 
     try {
