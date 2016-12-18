@@ -549,7 +549,6 @@ public class JDBCInterpreter extends Interpreter {
         if (!resultSet.next()) {
           results = "Could not get MetaData for " + tableName;
         } else {
-          resultSet.beforeFirst();
           results = getResults(resultSet, true);
         }
       } finally {
