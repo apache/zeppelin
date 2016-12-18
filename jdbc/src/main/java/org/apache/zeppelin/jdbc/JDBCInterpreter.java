@@ -14,6 +14,7 @@
  */
 package org.apache.zeppelin.jdbc;
 
+import static javax.swing.plaf.basic.BasicHTML.propertyKey;
 import static org.apache.commons.lang.StringUtils.containsIgnoreCase;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -522,8 +523,12 @@ public class JDBCInterpreter extends Interpreter {
     String user = interpreterContext.getAuthenticationInfo().getUser();
     DatabaseMetaData dataBaseMetaData;
     ResultSet resultSet = null;
-    String tableName = cmd.substring(7).trim();
+    String tableName = null;
     String results;
+
+    if (cmd.split(" ").length > 1) {
+      tableName = cmd.split(" ")[1];
+    }
 
     try {
       connection = getConnection(propertyKey, interpreterContext);
@@ -534,7 +539,7 @@ public class JDBCInterpreter extends Interpreter {
 
       try {
         dataBaseMetaData = connection.getMetaData();
-        if (tableName.equals("")) {
+        if (tableName == null) {
           // if a table name is supplied get table metadata
           resultSet = dataBaseMetaData.getTables(null, null, "%", TABLE_TYPES);
         } else {
@@ -595,7 +600,8 @@ public class JDBCInterpreter extends Interpreter {
     cmd = cmd.trim();
 
 
-    if (cmd.length() >= 7 && cmd.toLowerCase().substring(0, 7).equals(METADATA_KEYWORD)) {
+    //if (cmd.length() >= 7 && cmd.toLowerCase().substring(0, 7).equals(METADATA_KEYWORD)) {
+    if (cmd.split(" ")[0].equals(METADATA_KEYWORD)) {
       // if the command starts with the METADATA_KEYWORD, call getMetaData
       logger.info("PropertyKey: {}, MetaData command: '{}'", propertyKey, cmd);
       return getMetaData(propertyKey, cmd, contextInterpreter);
