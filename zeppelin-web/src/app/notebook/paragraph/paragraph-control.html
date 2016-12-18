@@ -13,14 +13,14 @@ limitations under the License.
 -->
 
 <div id="{{paragraph.id}}_control" class="control" ng-show="!asIframe">
-  <span ng-show="paragraph.runtimeInfos.jobUrl.values.length == 1 && paragraph.runtimeInfos.jobUrl.group == 'spark'">
+  <span ng-show="paragraph.runtimeInfos.jobUrl.values.length == 1">
     <a href="{{paragraph.runtimeInfos.jobUrl.values[0]}}" target="_blank" style="text-decoration: none;">
       <span class="fa fa-tasks"></span>
       {{paragraph.runtimeInfos.jobUrl.label}}
     </a>
   </span>
-  <span class="dropdown" ng-show="paragraph.runtimeInfos.jobUrl.values.length > 1 && paragraph.runtimeInfos.jobUrl.group == 'spark'">
-    <span style="cursor:pointer;color:#3071A9" tooltip-placement="top" tooltip="View in Spark web UI"
+  <span class="dropdown" ng-show="paragraph.runtimeInfos.jobUrl.values.length > 1">
+    <span style="cursor:pointer;color:#3071A9" tooltip-placement="top" tooltip="{{paragraph.runtimeInfos.jobUrl.tooltip}}"
           data-toggle="dropdown" type="button">
       <span class="fa fa-tasks"></span>
       {{paragraph.runtimeInfos.jobUrl.label}}S

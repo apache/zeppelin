@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -2325,12 +2326,18 @@ public class NotebookServer extends WebSocketServlet
         InterpreterSetting setting = notebook().getInterpreterFactory()
                                                .get(interpreterSettingId);
         setting.addNoteToPara(noteId, paragraphId);
-        metaInfos.remove("noteId");
-        metaInfos.remove("paraId");
         String label = metaInfos.get("label");
-        metaInfos.remove("label");
-        paragraph.updateRuntimeInfos(label, metaInfos, setting.getGroup(), setting.getId());
-        broadcast(note.getId(), new Message(OP.PARAGRAPH).put("paragraph", paragraph));
+        String tooltip = metaInfos.get("tooltip");
+        List<String> keysToRemove = Arrays.asList("noteId", "paraId", "label", "tooltip");
+        for (String removeKey : keysToRemove) {
+          metaInfos.remove(removeKey);
+        }
+        paragraph
+            .updateRuntimeInfos(label, tooltip, metaInfos, setting.getGroup(), setting.getId());
+        broadcast(
+            note.getId(),
+            new Message(OP.PARAS_INFO).put("id", paragraphId).put("infos",
+                paragraph.getRuntimeInfos()));
       }
     }
   }

@@ -679,8 +679,8 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     }
   }
 
-  public void updateRuntimeInfos(String label, Map<String, String> infos, String group, 
-      String intpSettingId) {
+  public void updateRuntimeInfos(String label, String tooltip, Map<String, String> infos,
+      String group, String intpSettingId) {
     if (this.runtimeInfos == null) {
       this.runtimeInfos = new HashMap<String, ParagraphRuntimeInfo>();
     }
@@ -689,7 +689,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
       for (String key : infos.keySet()) {
         ParagraphRuntimeInfo info = this.runtimeInfos.get(key);
         if (info == null) {
-          info = new ParagraphRuntimeInfo(key, label, group, intpSettingId);
+          info = new ParagraphRuntimeInfo(key, label, tooltip,  group, intpSettingId);
           this.runtimeInfos.put(key, info);
         }
         info.addValue(infos.get(key));
@@ -721,5 +721,9 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     } else {
       this.runtimeInfos = null;
     }
+  }
+
+  public Map<String, ParagraphRuntimeInfo> getRuntimeInfos() {
+    return runtimeInfos;
   }
 }

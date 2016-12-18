@@ -173,6 +173,7 @@ public class SparkInterpreter extends Interpreter {
           Map<String, String> infos = new java.util.HashMap<>();
           infos.put("jobUrl", jobUrl);
           infos.put("label", "SPARK JOB");
+          infos.put("tooltip", "View in Spark web UI");
           if (eventClient != null) {
             eventClient.onParaInfosReceived(noteId, paragraphId, infos);
           }
