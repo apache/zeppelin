@@ -67,8 +67,10 @@ public abstract class BaseLivyInterprereter extends Interpreter {
     try {
       initLivySession();
     } catch (LivyException e) {
-      throw new RuntimeException("Fail to create session, please check livy interpreter log and " +
-          "livy server log", e);
+      String msg = "Fail to create session, please check livy interpreter log and " +
+          "livy server log";
+      LOGGER.error(msg);
+      throw new RuntimeException(msg, e);
     }
   }
 
@@ -212,6 +214,7 @@ public abstract class BaseLivyInterprereter extends Interpreter {
       try {
         Thread.sleep(1000);
       } catch (InterruptedException e) {
+        LOGGER.error("InterruptedException when pulling statement status.", e);
         throw new LivyException(e);
       }
       stmtInfo = getStatementInfo(stmtInfo.id);
