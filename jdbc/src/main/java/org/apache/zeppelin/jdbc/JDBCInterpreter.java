@@ -547,6 +547,7 @@ public class JDBCInterpreter extends Interpreter {
           resultSet = dataBaseMetaData.getColumns(null, null, tableName, null);
         }
         if (resultSet.next()) {
+          resultSet.beforeFirst();
           results = getResults(resultSet, true);
         } else {
           results = "Could not get MetaData for " + tableName;
@@ -594,7 +595,7 @@ public class JDBCInterpreter extends Interpreter {
 
   @Override
   public InterpreterResult interpret(String cmd, InterpreterContext contextInterpreter) {
-    logger.info("Run SQL command '{}'", cmd);
+    logger.info("Run Interpreter command '{}'", cmd);
     String propertyKey = getPropertyKey(cmd);
 
     if (null != propertyKey && !propertyKey.equals(DEFAULT_KEY)) {
