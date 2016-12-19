@@ -813,6 +813,13 @@
     };
 
     /** Utility function */
+    $scope.linkToParagraphInContext = function() {
+      var noteId = $route.current.pathParams.noteId;
+      var paragraphUrl = location.protocol + '//' + location.host + location.pathname + '#/notebook/' + noteId +
+        '/?paragraph=' + $scope.paragraph.id;
+      $window.prompt('Copy url to clipboard: Ctrl+C, Enter', paragraphUrl);
+    };
+
     $scope.goToSingleParagraph = function() {
       var noteId = $route.current.pathParams.noteId;
       var redirectToUrl = location.protocol + '//' + location.host + location.pathname + '#/notebook/' + noteId +
