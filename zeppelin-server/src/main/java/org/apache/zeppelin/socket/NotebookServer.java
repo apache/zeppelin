@@ -2011,10 +2011,11 @@ public class NotebookServer extends WebSocketServlet implements
   }
 
   @Override
-  public void onMetaInfosReceived(String settingId, Map<String, String> metaInfos) {
+  public void onMetaInfosReceived(String settingId, String intpGrpId,
+                                          Map<String, String> metaInfos) {
     InterpreterSetting interpreterSetting = notebook().getInterpreterFactory()
         .get(settingId);
-    interpreterSetting.setInfos(metaInfos);
+    interpreterSetting.setInfos(intpGrpId, metaInfos);
   }
   
   private void switchConnectionToWatcher(NotebookSocket conn, Message messagereceived)

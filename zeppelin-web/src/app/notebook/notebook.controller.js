@@ -667,8 +667,13 @@
         message: 'Do you want to restart ' + interpeter.name + ' interpreter?',
         callback: function(result) {
           if (result) {
+            var userName;
+            if ($rootScope.ticket) {
+              userName = $rootScope.ticket.principal;
+            }
             var payload  = {
-              'noteId': $scope.note.id
+              'noteId': $scope.note.id,
+              'subject': userName
             };
 
             thisConfirm.$modalFooter.find('button').addClass('disabled');
@@ -692,6 +697,27 @@
           }
         }
       });
+    };
+
+    $scope.getSparkUrl = function(interpeter) {
+      var userName;
+      if ($rootScope.ticket) {
+        userName = $rootScope.ticket.principal;
+      }
+      $http.get(baseUrlSrv.getRestApiBase() + '/interpreter/getmetainfos/' + interpeter.id + '?noteId=' +
+         $scope.note.id + '&subject=' + userName + '&property=url')
+        .success(function(data, status, headers, config) {
+          var url = data.body.url;
+          if (!url) {
+            BootstrapDialog.alert({
+              message: 'No spark application running'
+            });
+            return;
+          }
+          window.open(url, '_blank');
+        }).error(function(data, status, headers, config) {
+         console.log('Error %o %o', status, data.message);
+       });
     };
 
     $scope.savePermissions = function() {

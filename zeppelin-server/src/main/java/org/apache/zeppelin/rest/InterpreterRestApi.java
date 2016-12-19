@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -31,7 +30,7 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
@@ -47,6 +46,7 @@ import org.apache.zeppelin.dep.Repository;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
+import org.apache.zeppelin.rest.message.MetaInfosInterpreterRequest;
 import org.apache.zeppelin.rest.message.NewInterpreterSettingRequest;
 import org.apache.zeppelin.rest.message.UpdateInterpreterSettingRequest;
 import org.apache.zeppelin.server.JsonResponse;
@@ -245,15 +245,16 @@ public class InterpreterRestApi {
    */
   @GET
   @Path("getmetainfos/{settingId}")
-  public Response getMetaInfo(@Context HttpServletRequest req,
-                              @PathParam("settingId") String settingId) {
-    String propName = req.getParameter("propName");
+  public Response getMetaInfo(String message,
+       @PathParam("settingId") String settingId, @QueryParam("noteId") String noteId,
+       @QueryParam("subject")String subject, @QueryParam("property") String propName) {
+
     if (propName == null) {
       return new JsonResponse<>(Status.BAD_REQUEST).build();
     }
     String propValue = null;
     InterpreterSetting interpreterSetting = interpreterFactory.get(settingId);
-    Map<String, String> infos = interpreterSetting.getInfos();
+    Map<String, String> infos = interpreterSetting.getInfos(subject, noteId);
     if (infos != null) {
       propValue = infos.get(propName);
     }

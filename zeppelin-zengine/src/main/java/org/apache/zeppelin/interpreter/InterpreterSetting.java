@@ -44,7 +44,7 @@ public class InterpreterSetting {
   private String name;
   // always be null in case of InterpreterSettingRef
   private String group;
-  private transient Map<String, String> infos;
+  private transient Map<String, Map<String, String>> IntpGrpKeyToinfosMap;
 
   /**
    * properties can be either Properties or Map<String, InterpreterProperty>
@@ -115,7 +115,7 @@ public class InterpreterSetting {
     return name;
   }
 
-  String getGroup() {
+  public String getGroup() {
     return group;
   }
 
@@ -177,6 +177,8 @@ public class InterpreterSetting {
     }
 
     if (groupToRemove != null) {
+      String intpGrpId = groupToRemove.getId();
+      setInfos(intpGrpId, null);
       groupToRemove.close();
     }
   }
@@ -280,11 +282,27 @@ public class InterpreterSetting {
     this.errorReason = errorReason;
   }
 
-  public void setInfos(Map<String, String> infos) {
-    this.infos = infos;
+  public void setInfos(String intpGrpKey, Map<String, String> infos) {
+    if (IntpGrpKeyToinfosMap == null) {
+      IntpGrpKeyToinfosMap = new HashMap<>();
+    }
+    if (infos == null) {
+      IntpGrpKeyToinfosMap.remove(intpGrpKey);
+    } else if (!infos.isEmpty()) {
+      IntpGrpKeyToinfosMap.put(intpGrpKey, infos);
+    }
   }
 
-  public Map<String, String> getInfos() {
+  public Map<String, String> getInfos(String intpGrpId) {
+    Map<String, String> infos = null;
+    if (IntpGrpKeyToinfosMap != null) {
+      infos = IntpGrpKeyToinfosMap.get(intpGrpId);
+    }
     return infos;
+  }
+
+  public Map<String, String> getInfos(String user, String noteId) {
+    String interpreterProcessKey = getInterpreterProcessKey(user, noteId);
+    return getInfos(getId() + ":" + interpreterProcessKey);
   }
 }

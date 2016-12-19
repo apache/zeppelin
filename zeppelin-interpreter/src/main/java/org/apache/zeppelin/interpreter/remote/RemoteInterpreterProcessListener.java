@@ -28,7 +28,8 @@ public interface RemoteInterpreterProcessListener {
   public void onOutputUpdated(
       String noteId, String paragraphId, int index, InterpreterResult.Type type, String output);
   public void onOutputClear(String noteId, String paragraphId);
-  public void onMetaInfosReceived(String settingId, Map<String, String> metaInfos);
+  public void onMetaInfosReceived(String settingId, String intpGrpId,
+      Map<String, String> metaInfos);
   public void onRemoteRunParagraph(String noteId, String ParagraphID) throws Exception;
   public void onGetParagraphRunners(
       String noteId, String paragraphId, RemoteWorksEventListener callback);

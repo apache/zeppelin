@@ -310,7 +310,8 @@ public class RemoteSchedulerTest implements RemoteInterpreterProcessListener {
   }
 
   @Override
-  public void onMetaInfosReceived(String settingId, Map<String, String> metaInfos) {
+  public void onMetaInfosReceived(String settingId, String intpGrpId,
+                                          Map<String, String> metaInfos) {
 
   }
 

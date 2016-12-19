@@ -86,7 +86,7 @@ before_install:
   - source ~/.environ
 
 install:
-  - mvn $BUILD_FLAG $PROFILE -B
+  - mvn -Dorg.slf4j.simpleLogger.defaultLogLevel=warn $BUILD_FLAG $PROFILE -B
 
 before_script:
   - travis_retry ./testing/downloadSpark.sh $SPARK_VER $HADOOP_VER

@@ -38,6 +38,12 @@ limitations under the License.
                tooltip="Restart">
               <span class="glyphicon glyphicon-refresh btn-md"></span>
             </a>&nbsp
+             <a ng-click="getSparkUrl(item)"
+               ng-class="{'inactivelink': !item.selected}"
+               ng-show="item.group == 'spark'"
+               tooltip="Spark UI">
+              <span class="glyphicon glyphicon-share btn-md"></span>
+            </a>&nbsp
             <div as-sortable-item-handle
                  ng-click="item.selected = !item.selected"
                  class="btn"

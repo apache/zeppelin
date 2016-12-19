@@ -700,7 +700,12 @@
     };
 
     $scope.showSparkUI = function(settingId) {
-      $http.get(baseUrlSrv.getRestApiBase() + '/interpreter/getmetainfos/' + settingId + '?propName=url')
+      var userName;
+      if ($rootScope.ticket) {
+        userName = $rootScope.ticket.principal;
+      }
+      $http.get(baseUrlSrv.getRestApiBase() + '/interpreter/getmetainfos/' + settingId + '?subject=' +
+         userName + '&property=url')
         .success(function(data, status, headers, config) {
           var url = data.body.url;
           if (!url) {
