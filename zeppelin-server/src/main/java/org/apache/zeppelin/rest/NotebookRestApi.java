@@ -93,7 +93,7 @@ public class NotebookRestApi {
   @GET
   @Path("{noteId}/permissions")
   @ZeppelinApi
-  public Response getNotePermissions(@PathParam("noteId") String noteId) throws IOException{
+  public Response getNotePermissions(@PathParam("noteId") String noteId) throws IOException {
 
     checkIfUserIsAnon(blockNotAuthenticatedUserError());
     checkIfUserCanRead(noteId,
@@ -114,7 +114,7 @@ public class NotebookRestApi {
   }
 
   private String blockNotAuthenticatedUserError() throws IOException {
-    LOG.info("Anonymous user cannot set any permissions for note");
+    LOG.info("Anonymous user cannot set any permissions for this note.");
     return  "Only authenticated user can set the permission.";
   }
 
