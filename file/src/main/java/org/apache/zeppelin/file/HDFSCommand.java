@@ -87,9 +87,9 @@ public class HDFSCommand {
   public Op listStatus = new Op("LISTSTATUS", HttpType.GET, 0);
   public Op openFile = new Op("OPEN", HttpType.GET, 0);
   public Op makeDirectory = new Op("MKDIRS", HttpType.PUT, 0);
-  public Op CreateWriteFile = new Op("CREATE", HttpType.PUT, 0);
-  public Op DeleteFile = new Op("DELETE", HttpType.DELETE, 0);
-  public Op RenameFile = new Op("RENAME", HttpType.PUT, 0);
+  public Op createWriteFile = new Op("CREATE", HttpType.PUT, 0);
+  public Op deleteFile = new Op("DELETE", HttpType.DELETE, 0);
+  public Op renameFile = new Op("RENAME", HttpType.PUT, 0);
 
   public HDFSCommand(String url, String user, Logger logger, int maxLength) {
     super();
@@ -186,8 +186,7 @@ public class HDFSCommand {
       }
 
       return result;
-    }
-    else if (op.cmd == HttpType.PUT) {
+    } else if (op.cmd == HttpType.PUT) {
       con.setRequestMethod("PUT");
       con.setFollowRedirects(false);
       int responseCode = con.getResponseCode();
@@ -230,8 +229,7 @@ public class HDFSCommand {
       }
 
       return result;
-    }
-    else if (op.cmd == HttpType.DELETE) {
+    } else if (op.cmd == HttpType.DELETE) {
       con.setRequestMethod("DELETE");
       con.setDoInput(true);
       con.setInstanceFollowRedirects(false);
@@ -251,8 +249,7 @@ public class HDFSCommand {
       logger.debug("Response Code : " + responseCode);
       logger.debug("response message: " + con.getResponseMessage());
       in = new BufferedReader(new InputStreamReader(con.getInputStream()));
-    }
-    else {
+    } else {
       logger.info("Sending '{}' request to URL : {}", type.toString(), url);
       logger.info("Response Code : " + responseCode);
       logger.info("response message: " + con.getResponseMessage());

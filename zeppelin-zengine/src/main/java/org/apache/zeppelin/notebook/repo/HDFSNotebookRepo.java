@@ -44,9 +44,7 @@ import static org.apache.zeppelin.file.HDFSFileInterpreter.HDFS_URL;
 import static org.apache.zeppelin.file.HDFSFileInterpreter.HDFS_MAXLENGTH;
 
 /**
- *
- * HDFSNotebookRepo : Using HDFS to backup and restore notebook
- *
+ * HDFSNotebookRepo : Using HDFS to backup and restore notebook.
  */
 public class HDFSNotebookRepo extends VFSNotebookRepo implements NotebookRepo {
   Logger logger = LoggerFactory.getLogger(HDFSNotebookRepo.class);
@@ -72,8 +70,9 @@ public class HDFSNotebookRepo extends VFSNotebookRepo implements NotebookRepo {
     this.hdfsMaxLength = conf.getInt(HDFS_URL, HDFS_MAXLENGTH, 100000);
     this.hdfsNotebookDir = removeProtocol(conf.getString(HDFS_URL, HDFS_NOTEBOOK_DIR, "/tmp"));
     this.hdfsUser = System.getenv("HADOOP_USER_NAME");
-    if (this.hdfsUser == null)
+    if (this.hdfsUser == null) {
       this.hdfsUser = System.getenv("LOGNAME");
+    }
 
     if (this.hdfsUser == null) {
       this.enableWebHDFS = false;
@@ -87,9 +86,9 @@ public class HDFSNotebookRepo extends VFSNotebookRepo implements NotebookRepo {
     String newUrl = hdfsUrl.replaceAll("/$", "");
     if (newUrl.startsWith("hdfs://")) {
       return "/" + newUrl.replaceAll("^hdfs://", "").split("/", 2)[1];
-    }
-    else
+    } else {
       return newUrl;
+    }
   }
 
   private boolean checkWebHDFS() {
@@ -104,8 +103,7 @@ public class HDFSNotebookRepo extends VFSNotebookRepo implements NotebookRepo {
     } catch (Exception e) {
       logger.info("disabled webHDFS. Please check webhdfs configurations");
       ret = false;
-    }
-    finally {
+    } finally {
       return ret;
     }
   }
@@ -130,8 +128,7 @@ public class HDFSNotebookRepo extends VFSNotebookRepo implements NotebookRepo {
           }
         }
       }
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       logger.error("exception occurred during getting notebook from hdfs : ", e);
     }
 
@@ -181,8 +178,7 @@ public class HDFSNotebookRepo extends VFSNotebookRepo implements NotebookRepo {
 
       if (hdfsNotebook.contains(baseName)) {
         hdfsNotebook.remove(baseName);
-      }
-      else {
+      } else {
         uploadNoteToHDFS(baseName);
       }
     }
@@ -206,11 +202,11 @@ public class HDFSNotebookRepo extends VFSNotebookRepo implements NotebookRepo {
 
     try {
       this.hdfsCmd.runCommand(this.hdfsCmd.makeDirectory, noteDir, null);
-      this.hdfsCmd.runCommand(this.hdfsCmd.CreateWriteFile, newNotebook, localNote, null);
-      this.hdfsCmd.runCommand(this.hdfsCmd.DeleteFile, notebook, null);
+      this.hdfsCmd.runCommand(this.hdfsCmd.createWriteFile, newNotebook, localNote, null);
+      this.hdfsCmd.runCommand(this.hdfsCmd.deleteFile, notebook, null);
       Arg dest = this.hdfsCmd.new Arg("destination", notebook);
       Arg[] renameArgs = {dest};
-      this.hdfsCmd.runCommand(this.hdfsCmd.RenameFile, newNotebook, renameArgs);
+      this.hdfsCmd.runCommand(this.hdfsCmd.renameFile, newNotebook, renameArgs);
     } catch (Exception e) {
       logger.error("Exception: ", e);
       throw new IOException(e.getCause());
@@ -225,7 +221,7 @@ public class HDFSNotebookRepo extends VFSNotebookRepo implements NotebookRepo {
     Arg[] args = {recursive};
 
     try {
-      this.hdfsCmd.runCommand(this.hdfsCmd.DeleteFile, noteDir, args);
+      this.hdfsCmd.runCommand(this.hdfsCmd.deleteFile, noteDir, args);
     } catch (Exception e) {
       logger.error("Exception: ", e);
       throw new IOException(e.getCause());
@@ -234,22 +230,25 @@ public class HDFSNotebookRepo extends VFSNotebookRepo implements NotebookRepo {
 
   @Override
   public List<NoteInfo> list(AuthenticationInfo subject) throws IOException {
-    if (this.enableWebHDFS)
+    if (this.enableWebHDFS) {
       syncHDFSNoteList();
+    }
     return super.list(subject);
   }
 
   @Override
   public synchronized void save(Note note, AuthenticationInfo subject) throws IOException {
     super.save(note, subject);
-    if (this.enableWebHDFS)
+    if (this.enableWebHDFS) {
       uploadNoteToHDFS(note);
+    }
   }
 
   @Override
   public void remove(String noteId, AuthenticationInfo subject) throws IOException {
-    if (this.enableWebHDFS)
+    if (this.enableWebHDFS) {
       removeHDFSNote(noteId);
+    }
     super.remove(noteId, subject);
   }
 
