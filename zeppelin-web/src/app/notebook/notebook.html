@@ -113,7 +113,7 @@ limitations under the License.
        ng-init="init(currentParagraph, note)"
        ng-class="columnWidthClass(currentParagraph.config.colWidth)"
        class="paragraph-col">
-    <div class="new-paragraph" ng-click="insertNew('above')" ng-hide="viewOnly || asIframe">
+    <div class="new-paragraph" ng-click="insertNew('above')" ng-hide="viewOnly || asIframe || revisionView">
       <h4 class="plus-sign">&#43;</h4>
     </div>
     <div id="{{currentParagraph.id}}_paragraphColumn"
@@ -123,7 +123,7 @@ limitations under the License.
          ng-hide="currentParagraph.config.tableHide && viewOnly"
          ng-dblclick="paragraphOnDoubleClick(currentParagraph.id);">
     </div>
-    <div class="new-paragraph" ng-click="insertNew('below');" ng-hide="!$last || viewOnly || asIframe ">
+    <div class="new-paragraph" ng-click="insertNew('below');" ng-hide="!$last || viewOnly || asIframe || revisionView">
       <h4 class="plus-sign">&#43;</h4>
     </div>
   </div>
