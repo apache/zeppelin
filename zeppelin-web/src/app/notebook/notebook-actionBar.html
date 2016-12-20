@@ -80,7 +80,7 @@ limitations under the License.
               ng-if="ticket.principal && ticket.principal !== 'anonymous'"
               ng-hide="viewOnly || note.config.personalizedMode === 'true'"
               ng-click="toggleNotePersonalizedMode()"
-              tooltip-placement="bottom" tooltip="Shared mode {{isOwner ? '' : '(owner can change)'}}">
+              tooltip-placement="bottom" tooltip="Collaboration mode {{isOwner ? '' : '(owner can change)'}}">
         <i class="fa fa-users"></i>
       </button>
     </span>

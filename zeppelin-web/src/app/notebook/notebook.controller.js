@@ -769,7 +769,10 @@
         BootstrapDialog.confirm({
           closable: true,
           title: 'Setting the result display',
-          message: 'Do you want to personalize your analysis??',
+          message: function(dialog) {
+            var modeText = $scope.note.config.personalizedMode === 'true' ? 'collaborate' : 'personalize';
+            return 'Do you want to <span class="text-info">' + modeText + '</span> your analysis?';
+          },
           callback: function(result) {
             if (result) {
               if ($scope.note.config.personalizedMode === undefined) {
