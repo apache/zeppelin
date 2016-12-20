@@ -26,12 +26,15 @@ limitations under the License.
   <span class="icon-control-play" style="cursor:pointer;color:#3071A9" tooltip-placement="top" tooltip="Run this paragraph (Shift+Enter)"
         ng-click="runParagraph(getEditorValue())"
         ng-show="paragraph.status!='RUNNING' && paragraph.status!='PENDING' && paragraph.config.enabled"></span>
-  <span class="icon-control-pause" style="cursor:pointer;color:#CD5C5C" tooltip-placement="top" tooltip="Cancel"
+  <span class="icon-control-pause" style="cursor:pointer;color:#CD5C5C" tooltip-placement="top"
+        tooltip="Cancel (Ctrl+{{ (isMac ? 'Option' : 'Alt') }}+c)"
         ng-click="cancelParagraph(paragraph)"
         ng-show="paragraph.status=='RUNNING' || paragraph.status=='PENDING'"></span>
-  <span class="{{paragraph.config.editorHide ? 'icon-size-fullscreen' : 'icon-size-actual'}}" style="cursor:pointer;" tooltip-placement="top" tooltip="{{(paragraph.config.editorHide ? 'Show' : 'Hide') + ' editor'}}"
+  <span class="{{paragraph.config.editorHide ? 'icon-size-fullscreen' : 'icon-size-actual'}}" style="cursor:pointer" tooltip-placement="top"
+        tooltip="{{(paragraph.config.editorHide ? 'Show' : 'Hide')}} editor (Ctrl+{{ (isMac ? 'Option' : 'Alt') }}+e)"
         ng-click="toggleEditor(paragraph)"></span>
-  <span class="{{paragraph.config.tableHide ? 'icon-notebook' : 'icon-book-open'}}" style="cursor:pointer;" tooltip-placement="top" tooltip="{{(paragraph.config.tableHide ? 'Show' : 'Hide') + ' output'}}"
+  <span class="{{paragraph.config.tableHide ? 'icon-notebook' : 'icon-book-open'}}" style="cursor:pointer" tooltip-placement="top"
+        tooltip="{{(paragraph.config.tableHide ? 'Show' : 'Hide')}} output (Ctrl+{{ (isMac ? 'Option' : 'Alt') }}+o)"
         ng-click="toggleOutput(paragraph)"></span>
   <span class="dropdown navbar-right">
     <span class="icon-settings" style="cursor:pointer"
@@ -100,7 +103,8 @@ limitations under the License.
           <span class="shortcut-keys">Ctrl+{{ isMac ? 'Option' : 'Alt'}}+r</span></a>
       </li>
       <li>
-        <a ng-click="goToSingleParagraph()"><span class="icon-share-alt shortcut-icon"></span>Link this paragraph</a>
+        <a ng-click="goToSingleParagraph()"><span class="icon-share-alt shortcut-icon"></span>Link this paragraph
+          <span class="shortcut-keys">Ctrl+{{ isMac ? 'Option' : 'Alt'}}+w</span></a>
       </li>
       <li>
         <a ng-click="clearParagraphOutput(paragraph)"><span class="fa fa-eraser shortcut-icon"></span>Clear output
