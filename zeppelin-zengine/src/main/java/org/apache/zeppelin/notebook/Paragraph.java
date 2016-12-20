@@ -17,6 +17,7 @@
 
 package org.apache.zeppelin.notebook;
 
+import com.google.common.collect.Maps;
 import com.google.common.base.Strings;
 import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.display.AngularObject;
@@ -55,13 +56,14 @@ public class Paragraph extends Job implements Serializable, Cloneable {
   private transient InterpreterFactory factory;
   private transient Note note;
   private transient AuthenticationInfo authenticationInfo;
+  private transient Map<String, Paragraph> userParagraphMap = Maps.newHashMap(); // personalized
 
   String title;
   String text;
   String user;
   Date dateUpdated;
   private Map<String, Object> config; // paragraph configs like isOpen, colWidth, etc
-  public final GUI settings;          // form and parameter settings
+  public GUI settings;          // form and parameter settings
 
   /**
    * Applicaiton states in this paragraph
@@ -104,6 +106,30 @@ public class Paragraph extends Job implements Serializable, Cloneable {
   private static String generateId() {
     return "paragraph_" + System.currentTimeMillis() + "_"
            + new Random(System.currentTimeMillis()).nextInt();
+  }
+
+  public Map<String, Paragraph> getUserParagraphMap() {
+    return userParagraphMap;
+  }
+
+  public Paragraph getUserParagraph(String user) {
+    return userParagraphMap.get(user);
+  }
+
+  public Paragraph cloneParagraphForUser(String user) {
+    Paragraph p = new Paragraph();
+    p.settings.setParams(Maps.newHashMap(settings.getParams()));
+    p.settings.setForms(Maps.newHashMap(settings.getForms()));
+    p.setConfig(Maps.newHashMap(config));
+    p.setTitle(getTitle());
+    p.setText(getText());
+    p.setResult(getReturn());
+    p.setStatus(getStatus());
+    p.setId(getId());
+
+    userParagraphMap.put(user, p);
+
+    return p;
   }
 
   public String getUser() {
@@ -347,7 +373,20 @@ public class Paragraph extends Job implements Serializable, Cloneable {
       context.out.flush();
       List<InterpreterResultMessage> resultMessages = context.out.toInterpreterResultMessage();
       resultMessages.addAll(ret.message());
-      return new InterpreterResult(ret.code(), resultMessages);
+
+      for (Paragraph p : userParagraphMap.values()) {
+        p.setText(getText());
+      }
+
+      InterpreterResult res = new InterpreterResult(ret.code(), resultMessages);
+
+      Paragraph p = userParagraphMap.get(getUser());
+      if (null != p) {
+        p.setResult(res);
+        p.settings.setParams(settings.getParams());
+      }
+
+      return res;
     } finally {
       InterpreterContext.remove();
     }
