@@ -186,6 +186,22 @@
       }
     });
 
+    $scope.getEditor = function() {
+      return $scope.editor;
+    };
+
+    $scope.$watch($scope.getEditor, function(newValue, oldValue) {
+      if (newValue === null) {
+        console.log('editor isn\'t loaded yet, returning..');
+        return;
+      }
+      if ($scope.revisionView === true) {
+        $scope.editor.setReadOnly(true);
+      } else {
+        $scope.editor.setReadOnly(false);
+      }
+    });
+
     var isEmpty = function(object) {
       return !object;
     };
