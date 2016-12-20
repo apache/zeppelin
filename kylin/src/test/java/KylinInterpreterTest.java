@@ -47,12 +47,35 @@ public class KylinInterpreterTest {
   }
 
   @Test
-  public void test(){
-    KylinInterpreter t = new MockKylinInterpreter(kylinProperties);
+  public void testWithDefault(){
+    KylinInterpreter t = new MockKylinInterpreter(getDefaultProperties());
     InterpreterResult result = t.interpret(
         "select a.date,sum(b.measure) as measure from kylin_fact_table a " +
             "inner join kylin_lookup_table b on a.date=b.date group by a.date", null);
+    assertEquals("default", t.getProject("select a.date,sum(b.measure) as measure " +
+                    "from kylin_fact_table a inner join kylin_lookup_table b on a.date=b.date group by a.date"));
     assertEquals(InterpreterResult.Type.TABLE,result.message().get(0).getType());
+  }
+
+  @Test
+  public void testWithProject(){
+    KylinInterpreter t = new MockKylinInterpreter(getDefaultProperties());
+    assertEquals("project2", t.getProject("(project2)\n select a.date,sum(b.measure) as measure " +
+            "from kylin_fact_table a inner join kylin_lookup_table b on a.date=b.date group by a.date"));
+    assertEquals("", t.getProject("()\n select a.date,sum(b.measure) as measure " +
+            "from kylin_fact_table a inner join kylin_lookup_table b on a.date=b.date group by a.date"));
+  }
+
+  private Properties getDefaultProperties(){
+    Properties prop = new Properties();
+    prop.put("kylin.api.username", "ADMIN");
+    prop.put("kylin.api.password", "KYLIN");
+    prop.put("kylin.api.url", "http://<host>:<port>/kylin/api/query");
+    prop.put("kylin.query.project", "default");
+    prop.put("kylin.query.offset", "0");
+    prop.put("kylin.query.limit", "5000");
+    prop.put("kylin.query.ispartial", "true");
+    return prop;
   }
 }
 

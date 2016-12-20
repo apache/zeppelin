@@ -33,8 +33,6 @@ addons:
     - r-packages-precise
     packages:
     - r-base-dev
-    - r-cran-evaluate
-    - r-cran-base64enc
 
 matrix:
   include:
@@ -80,7 +78,7 @@ matrix:
 
 before_install:
   - echo "MAVEN_OPTS='-Xms1024M -Xmx2048M -XX:MaxPermSize=1024m -XX:-UseGCOverheadLimit -Dorg.slf4j.simpleLogger.defaultLogLevel=warn'" >> ~/.mavenrc
-  - ./testing/install_external_dependencies.sh > /dev/null 2>&1
+  - ./testing/install_external_dependencies.sh
   - ls -la .spark-dist ${HOME}/.m2/repository/.cache/maven-download-plugin || true
   - ls .node_modules && cp -r .node_modules zeppelin-web/node_modules || echo "node_modules are not cached"
   - "/sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -ac -screen 0 1600x1024x16"

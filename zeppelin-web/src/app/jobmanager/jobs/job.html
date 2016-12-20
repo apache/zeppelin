@@ -48,7 +48,7 @@ limitations under the License.
       ng-switch="paragraphJob.status">
       <a ng-switch-when="READY"
          style="text-decoration: none !important;"
-         ng-href="#/notebook/{{notebookJob.noteId}}/paragraph/{{paragraphJob.id}}">
+         ng-href="#/notebook/{{notebookJob.noteId}}?paragraph={{paragraphJob.id}}">
         <i style="color: green" class="fa fa-circle-o"
            tooltip-placement="top-left"
            tooltip="{{paragraphJob.name}} is READY">
@@ -56,7 +56,7 @@ limitations under the License.
       </a>
       <a ng-switch-when="FINISHED"
          style="text-decoration: none !important;"
-         ng-href="#/notebook/{{notebookJob.noteId}}/paragraph/{{paragraphJob.id}}">
+         ng-href="#/notebook/{{notebookJob.noteId}}?paragraph={{paragraphJob.id}}">
         <i style="color: green" class="fa fa-circle"
            tooltip-placement="top-left"
            tooltip="{{paragraphJob.name}} is FINISHED">
@@ -64,7 +64,7 @@ limitations under the License.
       </a>
       <a ng-switch-when="ABORT"
          style="text-decoration: none !important;"
-         ng-href="#/notebook/{{notebookJob.noteId}}/paragraph/{{paragraphJob.id}}">
+         ng-href="#/notebook/{{notebookJob.noteId}}?paragraph={{paragraphJob.id}}">
         <i style="color: orange" class="fa fa-circle"
            tooltip-placement="top-left"
            tooltip="{{paragraphJob.name}} is ABORT">
@@ -72,7 +72,7 @@ limitations under the License.
       </a>
       <a ng-switch-when="ERROR"
          style="text-decoration: none !important;"
-         ng-href="#/notebook/{{notebookJob.noteId}}/paragraph/{{paragraphJob.id}}">
+         ng-href="#/notebook/{{notebookJob.noteId}}?paragraph={{paragraphJob.id}}">
         <i style="color: red" class="fa fa-circle"
            tooltip-placement="top-left"
            tooltip="{{paragraphJob.name}} is ERROR">
@@ -80,7 +80,7 @@ limitations under the License.
       </a>
       <a ng-switch-when="PENDING"
          style="text-decoration: none !important;"
-         ng-href="#/notebook/{{notebookJob.noteId}}/paragraph/{{paragraphJob.id}}">
+         ng-href="#/notebook/{{notebookJob.noteId}}?paragraph={{paragraphJob.id}}">
         <i style="color: gray" class="fa fa-circle"
            tooltip-placement="top-left"
            tooltip="{{paragraphJob.name}} is PENDING">
@@ -88,7 +88,7 @@ limitations under the License.
       </a>
       <a ng-switch-when="RUNNING"
          style="text-decoration: none !important;"
-         ng-href="#/notebook/{{notebookJob.noteId}}/paragraph/{{paragraphJob.id}}">
+         ng-href="#/notebook/{{notebookJob.noteId}}?paragraph={{paragraphJob.id}}">
         <i style="color: blue" class="fa fa-spinner spinAnimation"
            tooltip-placement="top-left"
            tooltip="{{paragraphJob.name}} is RUNNING">
@@ -96,7 +96,7 @@ limitations under the License.
       </a>
       <a ng-switch-default class="icon-question"
          style="text-decoration: none !important;"
-         ng-href="#/notebook/{{notebookJob.noteId}}/paragraph/{{paragraphJob.id}}">
+         ng-href="#/notebook/{{notebookJob.noteId}}?paragraph={{paragraphJob.id}}">
         <i class="icon-question"
            tooltip-placement="top-left"
            tooltip="{{paragraphJob.name}} is {{paragraphJob.status}}">

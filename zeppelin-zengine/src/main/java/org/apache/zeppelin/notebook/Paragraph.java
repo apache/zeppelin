@@ -17,6 +17,7 @@
 
 package org.apache.zeppelin.notebook;
 
+import com.google.common.base.Strings;
 import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
@@ -286,6 +287,11 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     }
     return false;
   }
+
+  public boolean isBlankParagraph() {
+    return Strings.isNullOrEmpty(getText()) || getText().trim().equals(getMagic());
+  }
+
 
   @Override
   protected Object jobRun() throws Throwable {

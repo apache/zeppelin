@@ -16,8 +16,9 @@ limitations under the License.
     <div style="float: left; width: auto; max-width: 40%"
       ng-controller="ElasticInputCtrl as input">
       <input type="text" pu-elastic-input class="form-control2" placeholder="New name" style="min-width: 0px; max-width: 95%;"
-           ng-if="input.showEditor" ng-model="note.name" ng-blur="sendNewName();input.showEditor = false;" ng-enter="sendNewName();input.showEditor = false;" ng-escape="note.name = oldName; input.showEditor = false" focus-if="input.showEditor" />
-      <p class="form-control-static2" ng-click="input.showEditor = true; oldName = note.name" ng-show="!input.showEditor">{{noteName(note)}}</p>
+           ng-if="input.showEditor" ng-model="input.value" ng-escape="input.showEditor = false" focus-if="input.showEditor"
+           ng-blur="updateNoteName(input.value);input.showEditor = false;" ng-enter="updateNoteName(input.value);input.showEditor = false;" />
+      <p class="form-control-static2" ng-click="input.showEditor = true; input.value = note.name" ng-show="!input.showEditor">{{noteName(note)}}</p>
     </div>
     <div style="float: left; padding-bottom: 10px">
       <span class="labelBtn btn-group">
@@ -77,6 +78,15 @@ limitations under the License.
                 tooltip-placement="bottom" tooltip="Version control">
           <i class="fa fa-file-code-o"></i>
         </button>
+        <button type="button"
+                class="btn btn-default btn-xs"
+                id="setRevision"
+                ng-hide="viewOnly"
+                ng-click="setNoteRevision()"
+                ng-disabled="revisionDisabled"
+                tooltip-placement="bottom" tooltip="Set revision">
+          <i class="fa fa-arrow-circle-o-right"></i>
+        </button>
         <ul class="dropdown-menu" style="width:250px"
           aria-labelledby="versionControlDropdown">
           <li>
@@ -101,8 +111,8 @@ limitations under the License.
         </ul>
       </div>
       <div class="btn-group" role="group">
-        <button type="button" class="btn btn-default btn-xs revisionName">
-          Head
+        <button type="button" class="btn btn-default btn-xs revisionName" title="{{currentRevision}}">
+          <div style="overflow: hidden">{{currentRevision}}</div>
         </button>
         <button type="button" ng-if="noteRevisions.length > 0"
           class="btn btn-default dropdown-toggle caretSeparator"
@@ -111,7 +121,7 @@ limitations under the License.
         </button>
         <ul class="dropdown-menu pull-right" aria-labelledby="revisionsDropdown">
           <li ng-repeat="revision in noteRevisions | orderBy:'time':true" class="revision">
-            <a style="cursor:pointer">
+            <a style="cursor:pointer" ng-click="visitRevision(revision)">
               <span style="display: block;">
                 <strong>{{revision.message}}</strong>
               </span>

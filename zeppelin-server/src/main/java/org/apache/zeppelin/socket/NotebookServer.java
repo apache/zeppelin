@@ -44,7 +44,6 @@ import org.apache.zeppelin.helium.ApplicationEventListener;
 import org.apache.zeppelin.helium.HeliumPackage;
 import org.apache.zeppelin.interpreter.InterpreterContextRunner;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
-import org.apache.zeppelin.interpreter.InterpreterOutput;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResultMessage;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
@@ -79,7 +78,6 @@ import org.quartz.SchedulerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Strings;
 import com.google.common.collect.Queues;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -282,6 +280,9 @@ public class NotebookServer extends WebSocketServlet implements
             break;
           case LIST_REVISION_HISTORY:
             listRevisionHistory(conn, notebook, messagereceived);
+            break;
+          case SET_NOTE_REVISION:
+            setNoteRevision(conn, userAndRoles, notebook, messagereceived);
             break;
           case NOTE_REVISION:
             getNoteByRevision(conn, notebook, messagereceived);
@@ -1392,10 +1393,10 @@ public class NotebookServer extends WebSocketServlet implements
     Map<String, Object> config = (Map<String, Object>) fromMessage
        .get("config");
     p.setConfig(config);
+
     // if it's the last paragraph, let's add a new one
     boolean isTheLastParagraph = note.isLastParagraph(p.getId());
-    if (!(text.trim().equals(p.getMagic()) || Strings.isNullOrEmpty(text)) &&
-        isTheLastParagraph) {
+    if (isTheLastParagraph) {
       Paragraph newPara = note.addParagraph();
       broadcastNewParagraph(note, newPara);
     }
@@ -1453,7 +1454,7 @@ public class NotebookServer extends WebSocketServlet implements
     String commitMessage = (String) fromMessage.get("commitMessage");
     AuthenticationInfo subject = new AuthenticationInfo(fromMessage.principal);
     Revision revision = notebook.checkpointNote(noteId, commitMessage, subject);
-    if (revision != null) {
+    if (!Revision.isEmpty(revision)) {
       List<Revision> revisions = notebook.listRevisionHistory(noteId, subject);
       conn.send(serializeMessage(new Message(OP.LIST_REVISION_HISTORY)
         .put("revisionList", revisions)));
@@ -1473,6 +1474,46 @@ public class NotebookServer extends WebSocketServlet implements
     conn.send(serializeMessage(new Message(OP.LIST_REVISION_HISTORY)
       .put("revisionList", revisions)));
   }
+  
+  private void setNoteRevision(NotebookSocket conn, HashSet<String> userAndRoles, 
+      Notebook notebook, Message fromMessage) throws IOException {
+
+    String noteId = (String) fromMessage.get("noteId");
+    String revisionId = (String) fromMessage.get("revisionId");
+    AuthenticationInfo subject = new AuthenticationInfo(fromMessage.principal);
+    
+    NotebookAuthorization notebookAuthorization = notebook.getNotebookAuthorization();
+    if (!notebookAuthorization.isWriter(noteId, userAndRoles)) {
+      permissionError(conn, "update", fromMessage.principal,
+          userAndRoles, notebookAuthorization.getWriters(noteId));
+      return;
+    }
+
+    Note headNote = null;
+    boolean setRevisionStatus;
+    try {
+      headNote = notebook.setNoteRevision(noteId, revisionId, subject);
+      setRevisionStatus = headNote != null;
+    } catch (Exception e) {
+      setRevisionStatus = false;
+      LOG.error("Failed to set given note revision", e);
+    }
+    if (setRevisionStatus) {
+      notebook.loadNoteFromRepo(noteId, subject);
+    }
+
+    conn.send(serializeMessage(new Message(OP.SET_NOTE_REVISION)
+        .put("status", setRevisionStatus)));
+
+    if (setRevisionStatus) {
+      Note reloadedNote = notebook.getNote(headNote.getId());
+      broadcastNote(reloadedNote);
+    } else {
+      conn.send(serializeMessage(new Message(OP.ERROR_INFO).put("info",
+          "Couldn't set note to the given revision. "
+          + "Please check the logs for more details.")));
+    }
+  }
 
   private void getNoteByRevision(NotebookSocket conn, Notebook notebook, Message fromMessage)
       throws IOException {
@@ -1483,7 +1524,7 @@ public class NotebookServer extends WebSocketServlet implements
     conn.send(serializeMessage(new Message(OP.NOTE_REVISION)
         .put("noteId", noteId)
         .put("revisionId", revisionId)
-        .put("data", revisionNote)));
+        .put("note", revisionNote)));
   }
 
   /**

@@ -106,7 +106,6 @@ public class RemoteInterpreterServer
     eventClient.waitForEventQueueBecomesEmpty();
     if (interpreterGroup != null) {
       interpreterGroup.close();
-      interpreterGroup.destroy();
     }
 
     server.stop();

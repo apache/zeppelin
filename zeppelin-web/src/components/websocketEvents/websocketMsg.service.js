@@ -197,6 +197,16 @@
         });
       },
 
+      setNoteRevision: function(noteId, revisionId) {
+        websocketEvents.sendNewEvent({
+          op: 'SET_NOTE_REVISION',
+          data: {
+            noteId: noteId,
+            revisionId: revisionId
+          }
+        });
+      },
+
       listRevisionHistory: function(noteId) {
         websocketEvents.sendNewEvent({
           op: 'LIST_REVISION_HISTORY',

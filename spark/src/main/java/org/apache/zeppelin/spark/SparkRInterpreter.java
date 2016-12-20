@@ -42,7 +42,9 @@ public class SparkRInterpreter extends Interpreter {
   private static final Logger logger = LoggerFactory.getLogger(SparkRInterpreter.class);
 
   private static String renderOptions;
+  private SparkInterpreter sparkInterpreter;
   private ZeppelinR zeppelinR;
+  private SparkContext sc;
 
   public SparkRInterpreter(Properties property) {
     super(property);
@@ -60,7 +62,6 @@ public class SparkRInterpreter extends Interpreter {
       // workaround to make sparkr work without SPARK_HOME
       System.setProperty("spark.test.home", System.getenv("ZEPPELIN_HOME") + "/interpreter/spark");
     }
-
     synchronized (SparkRBackend.backend()) {
       if (!SparkRBackend.isStarted()) {
         SparkRBackend.init();
@@ -70,8 +71,8 @@ public class SparkRInterpreter extends Interpreter {
 
     int port = SparkRBackend.port();
 
-    SparkInterpreter sparkInterpreter = getSparkInterpreter();
-    SparkContext sc = sparkInterpreter.getSparkContext();
+    this.sparkInterpreter = getSparkInterpreter();
+    this.sc = sparkInterpreter.getSparkContext();
     SparkVersion sparkVersion = new SparkVersion(sc.version());
     ZeppelinRContext.setSparkContext(sc);
     if (Utils.isSpark2()) {
@@ -92,6 +93,10 @@ public class SparkRInterpreter extends Interpreter {
       zeppelinR.eval("library('knitr')");
     }
     renderOptions = getProperty("zeppelin.R.render.options");
+  }
+
+  String getJobGroup(InterpreterContext context){
+    return "zeppelin-" + context.getParagraphId();
   }
 
   @Override
@@ -116,6 +121,19 @@ public class SparkRInterpreter extends Interpreter {
         lines = lines.replace(jsonConfig, "");
       }
     }
+
+    String jobGroup = getJobGroup(interpreterContext);
+    String setJobGroup = "";
+    // assign setJobGroup to dummy__, otherwise it would print NULL for this statement
+    if (Utils.isSpark2()) {
+      setJobGroup = "dummy__ <- setJobGroup(\"" + jobGroup +
+          "\", \"zeppelin sparkR job group description\", TRUE)";
+    } else if (getSparkInterpreter().getSparkVersion().newerThanEquals(SparkVersion.SPARK_1_5_0)) {
+      setJobGroup = "dummy__ <- setJobGroup(sc, \"" + jobGroup +
+          "\", \"zeppelin sparkR job group description\", TRUE)";
+    }
+    logger.debug("set JobGroup:" + setJobGroup);
+    lines = setJobGroup + "\n" + lines;
 
     try {
       // render output with knitr
@@ -155,7 +173,11 @@ public class SparkRInterpreter extends Interpreter {
   }
 
   @Override
-  public void cancel(InterpreterContext context) {}
+  public void cancel(InterpreterContext context) {
+    if (this.sc != null) {
+      sc.cancelJobGroup(getJobGroup(context));
+    }
+  }
 
   @Override
   public FormType getFormType() {
@@ -164,7 +186,11 @@ public class SparkRInterpreter extends Interpreter {
 
   @Override
   public int getProgress(InterpreterContext context) {
-    return 0;
+    if (sparkInterpreter != null) {
+      return sparkInterpreter.getProgress(context);
+    } else {
+      return 0;
+    }
   }
 
   @Override

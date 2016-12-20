@@ -26,6 +26,7 @@ import org.apache.commons.httpclient.methods.PutMethod;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Paragraph;
+import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.server.ZeppelinServer;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.AfterClass;
@@ -40,6 +41,8 @@ import java.util.Map;
 import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 
@@ -150,6 +153,36 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
     //cleanup
     ZeppelinServer.notebook.removeNote(note1.getId(), anonymous);
 
+  }
+
+  @Test
+  public void testRunParagraphJob() throws IOException {
+    Note note1 = ZeppelinServer.notebook.createNote(anonymous);
+    note1.addParagraph();
+
+    Paragraph p = note1.addParagraph();
+
+    // run blank paragraph
+    PostMethod post = httpPost("/notebook/job/" + note1.getId() + "/" + p.getId(), "");
+    assertThat(post, isAllowed());
+    Map<String, Object> resp = gson.fromJson(post.getResponseBodyAsString(), new TypeToken<Map<String, Object>>() {
+    }.getType());
+    assertEquals(resp.get("status"), "OK");
+    post.releaseConnection();
+    assertEquals(p.getStatus(), Job.Status.READY);
+
+    // run non-blank paragraph
+    p.setText("test");
+    post = httpPost("/notebook/job/" + note1.getId() + "/" + p.getId(), "");
+    assertThat(post, isAllowed());
+    resp = gson.fromJson(post.getResponseBodyAsString(), new TypeToken<Map<String, Object>>() {
+    }.getType());
+    assertEquals(resp.get("status"), "OK");
+    post.releaseConnection();
+    assertNotEquals(p.getStatus(), Job.Status.READY);
+
+    //cleanup
+    ZeppelinServer.notebook.removeNote(note1.getId(), anonymous);
   }
 
   @Test
