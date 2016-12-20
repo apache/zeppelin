@@ -14,7 +14,6 @@
  */
 package org.apache.zeppelin.jdbc;
 
-import static javax.swing.plaf.basic.BasicHTML.propertyKey;
 import static org.apache.commons.lang.StringUtils.containsIgnoreCase;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
