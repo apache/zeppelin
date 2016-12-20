@@ -143,7 +143,7 @@
 
     $scope.keyboardShortcut = function(keyEvent) {
       // handle keyevent
-      if (!$scope.viewOnly) {
+      if (!$scope.viewOnly && !$scope.revisionView) {
         $scope.$broadcast('keyEvent', keyEvent);
       }
     };
