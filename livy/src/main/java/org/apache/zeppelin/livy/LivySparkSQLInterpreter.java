@@ -19,16 +19,10 @@ package org.apache.zeppelin.livy;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.interpreter.*;
-import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.util.List;
-import java.util.Map;
 import java.util.Properties;
-import java.util.concurrent.ConcurrentHashMap;
 
 
 /**
@@ -111,13 +105,13 @@ public class LivySparkSQLInterpreter extends BaseLivyInterprereter {
       if (StringUtils.isEmpty(line)) {
         return new InterpreterResult(InterpreterResult.Code.SUCCESS, "");
       }
-      // replace line separator with space
-      line = line.replace("\n", " ").replace("\r", " ");
+
+      // use triple quote so that we don't need to do string escape.
       String sqlQuery = null;
       if (isSpark2) {
-        sqlQuery = "spark.sql(\"" + line + "\").show(" + maxResult + ")";
+        sqlQuery = "spark.sql(\"\"\"" + line + "\"\"\").show(" + maxResult + ")";
       } else {
-        sqlQuery = "sqlContext.sql(\"" + line + "\").show(" + maxResult + ")";
+        sqlQuery = "sqlContext.sql(\"\"\"" + line + "\"\"\").show(" + maxResult + ")";
       }
       InterpreterResult res = sparkInterpreter.interpret(sqlQuery, this.displayAppInfo);
 

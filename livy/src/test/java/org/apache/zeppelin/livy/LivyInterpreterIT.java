@@ -183,7 +183,8 @@ public class LivyInterpreterIT {
       // test DataFrame api
       sparkInterpreter.interpret("val sqlContext = new org.apache.spark.sql.SQLContext(sc)\n"
           + "import sqlContext.implicits._", context);
-      InterpreterResult result = sparkInterpreter.interpret("val df=sqlContext.createDataFrame(Seq((\"hello\",20)))\n"
+      InterpreterResult result = sparkInterpreter.interpret(
+          "val df=sqlContext.createDataFrame(Seq((\"hello\",20))).toDF(\"col_1\", \"col_2\")\n"
           + "df.collect()", context);
       assertEquals(InterpreterResult.Code.SUCCESS, result.code());
       assertEquals(1, result.message().size());
@@ -192,11 +193,34 @@ public class LivyInterpreterIT {
       sparkInterpreter.interpret("df.registerTempTable(\"df\")", context);
 
       // test LivySparkSQLInterpreter which share the same SparkContext with LivySparkInterpreter
-      result = sqlInterpreter.interpret("select * from df", context);
+      result = sqlInterpreter.interpret("select * from df where col_1='hello'", context);
       assertEquals(InterpreterResult.Code.SUCCESS, result.code());
       assertEquals(InterpreterResult.Type.TABLE, result.message().get(0).getType());
-      // TODO(zjffdu), \t at the end of each line is not necessary, it is a bug of LivySparkSQLInterpreter
-      assertEquals("_1\t_2\t\nhello\t20\t\n", result.message().get(0).getData());
+      // TODO(zjffdu), \t at the end of each line is not necessary,
+      // it is a bug of LivySparkSQLInterpreter
+      assertEquals("col_1\tcol_2\t\nhello\t20\t\n", result.message().get(0).getData());
+      // double quotes
+      result = sqlInterpreter.interpret("select * from df where col_1=\"hello\"", context);
+      assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+      assertEquals(InterpreterResult.Type.TABLE, result.message().get(0).getType());
+      assertEquals("col_1\tcol_2\t\nhello\t20\t\n", result.message().get(0).getData());
+      // double quotes inside attribute value
+      // TODO(zjffdu). This test case would fail on spark-1.5, would uncomment it when upgrading to
+      // livy-0.3 and spark-1.6
+      // result = sqlInterpreter.interpret("select * from df where col_1=\"he\\\"llo\" ", context);
+      // assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+      // assertEquals(InterpreterResult.Type.TABLE, result.message().get(0).getType());
+
+      // single quotes inside attribute value
+      result = sqlInterpreter.interpret("select * from df where col_1=\"he'llo\"", context);
+      assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+      assertEquals(InterpreterResult.Type.TABLE, result.message().get(0).getType());
+
+      // test sql with syntax error
+      result = sqlInterpreter.interpret("select * from df2", context);
+      assertEquals(InterpreterResult.Code.ERROR, result.code());
+      assertEquals(InterpreterResult.Type.TEXT, result.message().get(0).getType());
+      assertTrue(result.message().get(0).getData().contains("Table Not Found"));
     } finally {
       sparkInterpreter.close();
       sqlInterpreter.close();
