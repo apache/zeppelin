@@ -41,7 +41,8 @@ limitations under the License.
               class="btn btn-default btn-xs"
               ng-click="toggleAllTable()"
               ng-hide="viewOnly"
-              tooltip-placement="bottom" tooltip="Show/hide the output">
+              tooltip-placement="bottom" tooltip="Show/hide the output"
+              ng-disabled="revisionView">
         <i ng-class="tableToggled ? 'fa icon-notebook' : 'fa icon-book-open'"></i>
       </button>
       <button type="button"
