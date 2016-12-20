@@ -594,8 +594,11 @@ public class NotebookServer extends WebSocketServlet implements
 
   public void broadcastParagraphs(Map<String, Paragraph> userParagraphMap,
       Paragraph defaultParagraph) {
-    for (String user : userParagraphMap.keySet()) {
-      multicastToUser(user, new Message(OP.PARAGRAPH).put("paragraph", userParagraphMap.get(user)));
+    if (null != userParagraphMap) {
+      for (String user : userParagraphMap.keySet()) {
+        multicastToUser(user,
+            new Message(OP.PARAGRAPH).put("paragraph", userParagraphMap.get(user)));
+      }
     }
   }
 
