@@ -136,7 +136,9 @@ public class Message {
     NOTE_REVISION,                // [c-s] get certain revision of note
                                   // @param noteId
                                   // @param revisionId
-
+    SET_NOTE_REVISION,            // [c-s] set current notebook head to this revision
+                                  // @param noteId
+                                  // @param revisionId
     APP_APPEND_OUTPUT,            // [s-c] append output
     APP_UPDATE_OUTPUT,            // [s-c] update (replace) output
     APP_LOAD,                     // [s-c] on app load

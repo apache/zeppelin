@@ -86,9 +86,10 @@
             <exclude>src/styles/font-awesome*</exclude>
             <exclude>src/fonts/Simple-Line*</exclude>
             <exclude>src/fonts/simple-line*</exclude>
-            <exclude>src/fonts/Patua-One*</exclude>
-            <exclude>src/fonts/Roboto*</exclude>
-            <exclude>src/fonts/Source-Code-Pro*</exclude>
+            <exclude>src/fonts/patua-one*</exclude>
+            <exclude>src/fonts/roboto*</exclude>
+            <exclude>src/fonts/source-code-pro*</exclude>
+            <exclude>src/fonts/google-fonts.css</exclude>
             <exclude>bower.json</exclude>
             <exclude>package.json</exclude>
             <exclude>*.md</exclude>

@@ -274,6 +274,20 @@ public class NotebookTest implements JobListenerFactory{
   }
 
   @Test
+  public void testRunBlankParagraph() throws IOException, SchedulerException, InterruptedException {
+    Note note = notebook.createNote(anonymous);
+    Paragraph p1 = note.addParagraph();
+    p1.setText("");
+    p1.setAuthenticationInfo(anonymous);
+    note.run(p1.getId());
+
+    Thread.sleep(2 * 1000);
+    assertEquals(p1.getStatus(), Status.READY);
+    assertNull(p1.getDateStarted());
+    notebook.removeNote(note.getId(), anonymous);
+  }
+
+  @Test
   public void testRunAll() throws IOException {
     Note note = notebook.createNote(anonymous);
     factory.setInterpreters("user", note.getId(), factory.getDefaultInterpreterSettingList());

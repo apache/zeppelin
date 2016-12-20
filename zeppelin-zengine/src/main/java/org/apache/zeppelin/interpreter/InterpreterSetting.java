@@ -178,7 +178,6 @@ public class InterpreterSetting {
 
     if (groupToRemove != null) {
       groupToRemove.close();
-      groupToRemove.destroy();
     }
   }
 

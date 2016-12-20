@@ -43,14 +43,6 @@ if not defined ZEPPELIN_WAR (
     )
 )
 
-if not defined ZEPPELIN_NOTEBOOK_DIR (
-    set ZEPPELIN_NOTEBOOK_DIR=%ZEPPELIN_HOME%\notebook
-)
-
-if not defined ZEPPELIN_INTERPRETER_DIR (
-    set ZEPPELIN_INTERPRETER_DIR=%ZEPPELIN_HOME%\interpreter
-)
-
 if exist "%ZEPPELIN_CONF_DIR%\zeppelin-env.cmd" (
     call "%ZEPPELIN_CONF_DIR%\zeppelin-env.cmd"
 )

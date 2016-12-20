@@ -73,7 +73,6 @@ public class RemoteInterpreterTest {
   @After
   public void tearDown() throws Exception {
     intpGroup.close();
-    intpGroup.destroy();
   }
 
   private RemoteInterpreter createMockInterpreterA(Properties p) {

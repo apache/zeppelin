@@ -19,6 +19,7 @@
   function ElasticInputCtrl() {
     var vm = this;
     vm.showEditor = false;
+    vm.value = '';
   }
 
 })();

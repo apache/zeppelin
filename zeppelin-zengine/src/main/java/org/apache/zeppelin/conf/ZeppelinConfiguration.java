@@ -291,7 +291,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
       return getRelativeDir(
           String.format("%s/%s",
               getConfDir(),
-              getString(path)));
+              path));
     }
   }
 
@@ -320,7 +320,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
       return getRelativeDir(
           String.format("%s/%s",
               getConfDir(),
-              getString(path)));
+              path));
     }
   }
 

@@ -118,14 +118,16 @@ cd zeppelin
 Package Zeppelin.
 
 ```
-mvn clean package -DskipTests -Pspark-1.6 -Dflink.version=1.1.2
+mvn clean package -DskipTests -Pspark-1.6 -Dflink.version=1.1.3 -Pscala-2.10
 ```
 
 `-DskipTests` skips build tests- you're not developing (yet), so you don't need to do tests, the clone version *should* build.
 
 `-Pspark-1.6` tells maven to build a Zeppelin with Spark 1.6.  This is important because Zeppelin has its own Spark interpreter and the versions must be the same.
 
-`-Dflink.version=1.1.2` tells maven specifically to build Zeppelin with Flink version 1.1.2.
+`-Dflink.version=1.1.3` tells maven specifically to build Zeppelin with Flink version 1.1.3.
+
+-`-Pscala-2.10` tells maven to build with Scala v2.10.
 
 
 **Note:** You may wish to include additional build flags such as `-Ppyspark` or `-Psparkr`.  See [the build section of github for more details](https://github.com/apache/zeppelin#build).
@@ -162,7 +164,7 @@ Create a new notebook named "Flink Test" and copy and paste the following code.
 
 %flink  // let Zeppelin know what interpreter to use.
 
-val text = env.fromElements("In the time of chimpanzees, I was a monkey",   // some lines of text to analyze
+val text = benv.fromElements("In the time of chimpanzees, I was a monkey",   // some lines of text to analyze
 "Butane in my veins and I'm out to cut the junkie",
 "With the plastic eyeballs, spray paint the vegetables",
 "Dog food stalls with the beefcake pantyhose",
@@ -252,16 +254,16 @@ Building from source is recommended  where possible, for simplicity in this tuto
 To download the Flink Binary use `wget`
 
 ```bash
-wget "http://mirror.cogentco.com/pub/apache/flink/flink-1.0.3/flink-1.0.3-bin-hadoop24-scala_2.10.tgz"
-tar -xzvf flink-1.0.3-bin-hadoop24-scala_2.10.tgz
+wget "http://mirror.cogentco.com/pub/apache/flink/flink-1.1.3/flink-1.1.3-bin-hadoop24-scala_2.10.tgz"
+tar -xzvf flink-1.1.3-bin-hadoop24-scala_2.10.tgz
 ```
 
-This will download Flink 1.0.3, compatible with Hadoop 2.4.  You do not have to install Hadoop for this binary to work, but if you are using Hadoop, please change `24` to your appropriate version.
+This will download Flink 1.1.3, compatible with Hadoop 2.4.  You do not have to install Hadoop for this binary to work, but if you are using Hadoop, please change `24` to your appropriate version.
 
 Start the Flink Cluster.
 
 ```bash
-flink-1.0.3/bin/start-cluster.sh
+flink-1.1.3/bin/start-cluster.sh
 ```
 
 ###### Building From source
@@ -270,13 +272,13 @@ If you wish to build Flink from source, the following will be instructive.  Note
 
 See the [Flink Installation guide](https://github.com/apache/flink/blob/master/README.md) for more detailed instructions.
 
-Return to the directory where you have been downloading, this tutorial assumes that is `$HOME`. Clone Flink,  check out release-1.0, and build.
+Return to the directory where you have been downloading, this tutorial assumes that is `$HOME`. Clone Flink,  check out release-1.1.3-rc2, and build.
 
 ```
 cd $HOME
 git clone https://github.com/apache/flink.git
 cd flink
-git checkout release-1.0
+git checkout release-1.1.3-rc2
 mvn clean install -DskipTests
 ```
 
@@ -297,8 +299,8 @@ If no task managers are present, restart the Flink cluster with the following co
 
 (if binaries)
 ```
-flink-1.0.3/bin/stop-cluster.sh
-flink-1.0.3/bin/start-cluster.sh
+flink-1.1.3/bin/stop-cluster.sh
+flink-1.1.3/bin/start-cluster.sh
 ```
 
 
@@ -320,12 +322,12 @@ Using binaries is also
 To download the Spark Binary use `wget`
 
 ```bash
-wget "http://mirrors.koehn.com/apache/spark/spark-1.6.1/spark-1.6.1-bin-hadoop2.4.tgz"
-tar -xzvf spark-1.6.1-bin-hadoop2.4.tgz
-mv spark-1.6.1-bin-hadoop4.4 spark
+wget "http://d3kbcqa49mib13.cloudfront.net/spark-1.6.3-bin-hadoop2.6.tgz"
+tar -xzvf spark-1.6.3-bin-hadoop2.6.tgz
+mv spark-1.6.3-bin-hadoop2.6 spark
 ```
 
-This will download Spark 1.6.1, compatible with Hadoop 2.4.  You do not have to install Hadoop for this binary to work, but if you are using Hadoop, please change `2.4` to your appropriate version.
+This will download Spark 1.6.3, compatible with Hadoop 2.6.  You do not have to install Hadoop for this binary to work, but if you are using Hadoop, please change `2.6` to your appropriate version.
 
 ###### Building From source
 
@@ -335,7 +337,7 @@ See the [Spark Installation](https://github.com/apache/spark/blob/master/README.
 
 Return to the directory where you have been downloading, this tutorial assumes that is $HOME. Clone Spark, check out branch-1.6, and build.
 **Note:** Recall, we're only checking out 1.6 because it is the most recent Spark for which a Zeppelin profile exists at
-  the time of writing. You are free to check out other version, just make sure you build Zeppelin against the correct version of Spark.
+  the time of writing. You are free to check out other version, just make sure you build Zeppelin against the correct version of Spark. However if you use Spark 2.0, the word count example will need to be changed as Spark 2.0 is not compatible with the following examples.
 
 
 ```

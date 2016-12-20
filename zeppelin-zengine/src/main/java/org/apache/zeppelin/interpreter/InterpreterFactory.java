@@ -745,7 +745,6 @@ public class InterpreterFactory implements InterpreterGroupFactory {
       InterpreterGroup interpreterGroup = interpreterSetting.getInterpreterGroup(user, noteId);
       String key = getInterpreterSessionKey(user, noteId, interpreterSetting);
       interpreterGroup.close(key);
-      interpreterGroup.destroy(key);
       synchronized (interpreterGroup) {
         interpreterGroup.remove(key);
         interpreterGroup.notifyAll(); // notify createInterpreterForNote()
