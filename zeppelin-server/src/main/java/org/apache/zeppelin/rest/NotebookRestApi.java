@@ -93,7 +93,9 @@ public class NotebookRestApi {
   @GET
   @Path("{noteId}/permissions")
   @ZeppelinApi
-  public Response getNotePermissions(@PathParam("noteId") String noteId) {
+  public Response getNotePermissions(@PathParam("noteId") String noteId) throws IOException {
+
+    checkIfUserIsAnon(blockNotAuthenticatedUserError());
     checkIfUserCanRead(noteId,
         "Insufficient privileges you cannot get the list of permissions for this note");
     HashMap<String, Set<String>> permissionsMap = new HashMap<>();
@@ -111,12 +113,27 @@ public class NotebookRestApi {
         "User belongs to: " + current.toString();
   }
 
+  private String blockNotAuthenticatedUserError() throws IOException {
+    LOG.info("Anonymous user cannot set any permissions for this note.");
+    return  "Only authenticated user can set the permission.";
+  }
+
   /**
    * Set of utils method to check if current user can perform action to the note.
    * Since we only have security on notebook level, from now we keep this logic in this class.
    * In the future we might want to generalize this for the rest of the api enmdpoints.
    */
-  
+
+  /**
+   * Check if the current user is not authenticated(anonymous user) or not
+   */
+  private void checkIfUserIsAnon(String errorMsg) {
+    boolean isAuthenticated = SecurityUtils.isAuthenticated();
+    if (!isAuthenticated) {
+      throw new ForbiddenException(errorMsg);
+    }
+  }
+
   /**
    * Check if the current user own the given note.
    */
@@ -178,7 +195,8 @@ public class NotebookRestApi {
     HashSet<String> userAndRoles = new HashSet<>();
     userAndRoles.add(principal);
     userAndRoles.addAll(roles);
-    
+
+    checkIfUserIsAnon(blockNotAuthenticatedUserError());
     checkIfUserIsOwner(noteId,
         ownerPermissionError(userAndRoles, notebookAuthorization.getOwners(noteId)));
     
