@@ -17,12 +17,13 @@ limitations under the License.
      class="btn-group"
      style="margin-bottom: 10px;">
 
-  <button type="button" class="btn btn-default btn-sm"
-          ng-if="type == 'TABLE'"
-          ng-repeat="viz in builtInTableDataVisualizationList track by $index"
-          ng-class="{'active' : viz.id == graphMode && !config.helium.activeApp}"
-          ng-click="switchViz(viz.id)"><i ng-class="viz.icon"></i>
-  </button>
+  <div ng-if="type == 'TABLE'">
+    <button type="button" class="btn btn-default btn-sm"
+            ng-repeat="viz in builtInTableDataVisualizationList track by $index"
+            ng-class="{'active' : viz.id == graphMode && !config.helium.activeApp}"
+            ng-click="switchViz(viz.id)"><i ng-class="viz.icon"></i>
+    </button>
+  </div>
 
   <button type="button"
           ng-if="type != 'TABLE'"
@@ -46,7 +47,6 @@ limitations under the License.
      style="margin-bottom: 10px;">
   <button type="button"
           class="btn btn-default btn-sm dropdown-toggle"
-          ng-if="suggestion.available && suggestion.available.length > 0"
           data-toggle="dropdown"
           style="font-weight:bold; background-color:#ffdf96; border: 1px solid #FED233">
     He
