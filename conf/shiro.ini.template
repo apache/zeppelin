@@ -14,7 +14,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# Zeppelin uses Shiro to configure Security. The first step of security is Authentication.
+# Zeppelin uses Shiro to configure Security. 
+# The security configuration is controlled by shiro.ini. Zeppelin inclues
+# a shiro.ini.template file in the conf folder. To enable security, start by making a copy of 
+# this file. 
+# cp conf/shiro.ini.template conf/shiro.ini
+# The first step of security is Authentication.
 # To enable authentication, you need to configure authc as the authentication method in 
 # the URL section of shiro.ini. Make sure the shiro.ini has "/** = authc" line uncommented
 # in the URL section. To disable anonymous access to Zeppelin ensure "/** = anon" is 
@@ -40,7 +45,7 @@
 # configure interpreters, configurations and credential UI features.
 # The next step of security could be to put access control on Zeppelin Notes. To enable
 # note level access control, you first need to define activeDirectoryRealm.searchBase or 
-# ldapRealm.searchBase. The value of this property control where in LDAP Zeppelin will look
+# ldapRealm.searchBase. The value of this property controls where in LDAP Zeppelin will look
 # for users and groups.
 
 [users]
