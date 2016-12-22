@@ -21,34 +21,35 @@ limitations under the License.
     resize='{"allowresize": "{{!asIframe && !viewOnly}}", "graphType": "{{type}}"}'
        resizable on-resize="resize(width, height);">
 
-    <!-- graph setting -->
-    <div class="option lightBold" style="overflow: visible;"
-         ng-show="type=='TABLE' && graphMode!='table'
-                  && config.graph.optionOpen && !asIframe && !viewOnly">
-      <div ng-repeat="viz in builtInTableDataVisualizationList track by $index"
-           id="trsetting{{id}}_{{viz.id}}"
-           ng-show="graphMode == viz.id"></div>
-      <div ng-repeat="viz in builtInTableDataVisualizationList track by $index"
-           id="vizsetting{{id}}_{{viz.id}}"
-           ng-show="graphMode == viz.id"></div>
-    </div>
-
-    <!-- graph -->
-    <div id="p{{id}}_graph"
-         class="graphContainer"
-         ng-class="{'noOverflow': graphMode=='table'}"
-         ng-show="type =='TABLE'"
-         >
-      <div ng-repeat="viz in builtInTableDataVisualizationList track by $index"
-           id="p{{id}}_{{viz.id}}"
-           ng-show="graphMode == viz.id">
+    <div ng-if="type=='TABLE'">
+      <!-- graph setting -->
+      <div class="option lightBold" style="overflow: visible;"
+           ng-if="graphMode!='table'
+                    && config.graph.optionOpen && !asIframe && !viewOnly">
+        <div ng-repeat="viz in builtInTableDataVisualizationList track by $index"
+             id="trsetting{{id}}_{{viz.id}}"
+             ng-show="graphMode == viz.id"></div>
+        <div ng-repeat="viz in builtInTableDataVisualizationList track by $index"
+             id="vizsetting{{id}}_{{viz.id}}"
+             ng-show="graphMode == viz.id"></div>
       </div>
-    </div>
 
-    <div id="{{id}}_comment"
-         class="text"
-         ng-if="type == 'TABLE' && tableDataComment"
-         ng-bind-html="tableDataComment">
+      <!-- graph -->
+      <div id="p{{id}}_graph"
+           class="graphContainer"
+           ng-class="{'noOverflow': graphMode=='table'}"
+           >
+        <div ng-repeat="viz in builtInTableDataVisualizationList track by $index"
+             id="p{{id}}_{{viz.id}}"
+             ng-show="graphMode == viz.id">
+        </div>
+      </div>
+
+      <div id="{{id}}_comment"
+           class="text"
+           ng-if="tableDataComment"
+           ng-bind-html="tableDataComment">
+      </div>
     </div>
 
     <div ng-if="type == 'TEXT'"
