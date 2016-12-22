@@ -20,13 +20,13 @@ limitations under the License.
     <a style="text-decoration: none;" href="#/notebook/{{node.id}}">
       <i style="font-size: 10px;" class="icon-doc"/> {{noteName(node)}}
     </a>
-    <a style="text-decoration: none;">
+    <a ng-if="!node.isTrash" style="text-decoration: none;">
       <i style="margin-left: 10px;"
          class="fa fa-pencil notebook-list-btn" ng-show="showNoteButton" ng-click="renameNote(node)"
          tooltip-placement="bottom" tooltip="Rename note">
       </i>
     </a>
-    <a style="text-decoration: none;">
+    <a ng-if="!node.isTrash" style="text-decoration: none;">
       <i class="fa fa-eraser notebook-list-btn" ng-show="showNoteButton" ng-click="clearAllParagraphOutput(node.id)"
          tooltip-placement="bottom" tooltip="Clear output">
       </i>
@@ -56,7 +56,7 @@ limitations under the License.
         <i style="font-size: 10px;" ng-class="node.hidden ? 'icon-folder' : 'icon-folder-alt'" /> {{noteName(node)}}
       </a>
       <a style="text-decoration: none;">
-        <i style="margin-left: 10px;"
+        <i ng-if="!node.isTrash" style="margin-left: 10px;"
            class="fa fa-pencil notebook-list-btn" ng-show="showFolderButton" ng-click="renameFolder(node)"
            tooltip-placement="bottom" tooltip="Rename folder">
         </i>
