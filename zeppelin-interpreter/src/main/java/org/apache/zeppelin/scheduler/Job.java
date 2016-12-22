@@ -177,7 +177,7 @@ public abstract class Job {
       progressUpdator = new JobProgressPoller(this, progressUpdateIntervalMs);
       progressUpdator.start();
       dateStarted = new Date();
-      jobRun(); // jobRun will store results by itself and job can get it by calling getReturn();
+      setResult(jobRun());
       this.exception = null;
       errorMessage = null;
       dateFinished = new Date();
@@ -233,10 +233,6 @@ public abstract class Job {
 
   public abstract Map<String, Object> info();
 
-  /**
-   * jobRun should store the data into results so that job interface gets the result by calling
-   * getReturn();
-   */
   protected abstract Object jobRun() throws Throwable;
 
   protected abstract boolean jobAbort();
