@@ -31,6 +31,7 @@ import com.google.common.collect.Sets;
 import org.apache.commons.io.FileUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
+import org.apache.zeppelin.dep.Dependency;
 import org.apache.zeppelin.dep.DependencyResolver;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.interpreter.*;
@@ -83,18 +84,27 @@ public class NotebookTest implements JobListenerFactory{
     System.setProperty(ConfVars.ZEPPELIN_CONF_DIR.getVarName(), tmpDir.toString() + "/conf");
     System.setProperty(ConfVars.ZEPPELIN_HOME.getVarName(), tmpDir.getAbsolutePath());
     System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_DIR.getVarName(), notebookDir.getAbsolutePath());
-    System.setProperty(ConfVars.ZEPPELIN_INTERPRETERS.getVarName(), "org.apache.zeppelin.interpreter.mock.MockInterpreter1,org.apache.zeppelin.interpreter.mock.MockInterpreter2");
 
     conf = ZeppelinConfiguration.create();
 
     this.schedulerFactory = new SchedulerFactory();
 
-    MockInterpreter1.register("mock1", "org.apache.zeppelin.interpreter.mock.MockInterpreter1");
-    MockInterpreter2.register("mock2", "org.apache.zeppelin.interpreter.mock.MockInterpreter2");
-
     depResolver = new DependencyResolver(tmpDir.getAbsolutePath() + "/local-repo");
     interpreterSettingManager = new InterpreterSettingManager(conf, depResolver, new InterpreterOption(false));
     factory = new InterpreterFactory(conf, null, null, null, depResolver, false, interpreterSettingManager);
+
+    ArrayList<InterpreterInfo> interpreterInfos = new ArrayList<>();
+    interpreterInfos.add(new InterpreterInfo(MockInterpreter1.class.getName(), "mock1", true, new HashMap<String, Object>()));
+    factory.add("mock1", interpreterInfos, new ArrayList<Dependency>(), new InterpreterOption(),
+        Maps.<String, InterpreterProperty>newHashMap(), "mock1");
+    factory.createNewSetting("mock1", "mock1", new ArrayList<Dependency>(), new InterpreterOption(), new Properties());
+
+    ArrayList<InterpreterInfo> interpreterInfos2 = new ArrayList<>();
+    interpreterInfos2.add(new InterpreterInfo(MockInterpreter2.class.getName(), "mock2", true, new HashMap<String, Object>()));
+    factory.add("mock2", interpreterInfos2, new ArrayList<Dependency>(), new InterpreterOption(),
+        Maps.<String, InterpreterProperty>newHashMap(), "mock2");
+    factory.createNewSetting("mock2", "mock2", new ArrayList<Dependency>(), new InterpreterOption(), new Properties());
+
 
     SearchService search = mock(SearchService.class);
     notebookRepo = new VFSNotebookRepo(conf);

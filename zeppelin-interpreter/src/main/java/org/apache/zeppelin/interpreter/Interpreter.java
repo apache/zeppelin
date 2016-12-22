@@ -394,10 +394,6 @@ public abstract class Interpreter {
   public static Map<String, RegisteredInterpreter> registeredInterpreters = Collections
       .synchronizedMap(new HashMap<String, RegisteredInterpreter>());
 
-  public static void register(String name, String className) {
-    register(name, name, className);
-  }
-
   public static void register(String name, String group, String className) {
     register(name, group, className, false, new HashMap<String, InterpreterProperty>());
   }
