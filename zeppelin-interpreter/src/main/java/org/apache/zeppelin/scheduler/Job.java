@@ -73,13 +73,6 @@ public abstract class Job {
   private String jobName;
   String id;
 
-  // since zeppelin-0.7.0, zeppelin stores multiple results of the paragraph
-  // see ZEPPELIN-212
-  Object results;
-
-  // For backward compatibility of note.json format after ZEPPELIN-212
-  Object result;
-
   Date dateCreated;
   Date dateStarted;
   Date dateFinished;
@@ -184,7 +177,7 @@ public abstract class Job {
       progressUpdator = new JobProgressPoller(this, progressUpdateIntervalMs);
       progressUpdator.start();
       dateStarted = new Date();
-      results = jobRun();
+      jobRun(); // jobRun will store results by itself and job can get it by calling getReturn();
       this.exception = null;
       errorMessage = null;
       dateFinished = new Date();
@@ -193,14 +186,14 @@ public abstract class Job {
       LOGGER.error("Job failed", e);
       progressUpdator.terminate();
       this.exception = e;
-      results = e.getMessage();
+      setResult(e.getMessage());
       errorMessage = getStack(e);
       dateFinished = new Date();
     } catch (Throwable e) {
       LOGGER.error("Job failed", e);
       progressUpdator.terminate();
       this.exception = e;
-      results = e.getMessage();
+      setResult(e.getMessage());
       errorMessage = getStack(e);
       dateFinished = new Date();
     } finally {
@@ -226,13 +219,7 @@ public abstract class Job {
     errorMessage = getStack(t);
   }
 
-  public Object getPreviousResultFormat() {
-    return result;
-  }
-
-  public Object getReturn() {
-    return results;
-  }
+  public abstract Object getReturn();
 
   public String getJobName() {
     return jobName;
@@ -246,6 +233,10 @@ public abstract class Job {
 
   public abstract Map<String, Object> info();
 
+  /**
+   * jobRun should store the data into results so that job interface gets the result by calling
+   * getReturn();
+   */
   protected abstract Object jobRun() throws Throwable;
 
   protected abstract boolean jobAbort();
@@ -270,7 +261,5 @@ public abstract class Job {
     return dateFinished;
   }
 
-  public void setResult(Object results) {
-    this.results = results;
-  }
+  public abstract void setResult(Object results);
 }

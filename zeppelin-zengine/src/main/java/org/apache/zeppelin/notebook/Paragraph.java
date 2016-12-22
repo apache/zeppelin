@@ -65,6 +65,13 @@ public class Paragraph extends Job implements Serializable, Cloneable {
   private Map<String, Object> config; // paragraph configs like isOpen, colWidth, etc
   public GUI settings;          // form and parameter settings
 
+  // since zeppelin-0.7.0, zeppelin stores multiple results of the paragraph
+  // see ZEPPELIN-212
+  Object results;
+
+  // For backward compatibility of note.json format after ZEPPELIN-212
+  Object result;
+
   /**
    * Applicaiton states in this paragraph
    */
@@ -114,6 +121,11 @@ public class Paragraph extends Job implements Serializable, Cloneable {
 
   public Paragraph getUserParagraph(String user) {
     return userParagraphMap.get(user);
+  }
+
+  @Override
+  public void setResult(Object results) {
+    this.results = results;
   }
 
   public Paragraph cloneParagraphForUser(String user) {
@@ -283,6 +295,15 @@ public class Paragraph extends Job implements Serializable, Cloneable {
 
   public InterpreterResult getResult() {
     return (InterpreterResult) getReturn();
+  }
+
+  @Override
+  public Object getReturn() {
+    return results;
+  }
+
+  public Object getPreviousResultFormat() {
+    return result;
   }
 
   @Override

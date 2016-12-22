@@ -298,6 +298,17 @@ public class RemoteInterpreterTest {
 
     long start = System.currentTimeMillis();
     Job jobA = new Job("jobA", null) {
+      private Object results;
+
+      @Override
+      public Object getReturn() {
+        return results;
+      }
+
+      @Override
+      public void setResult(Object results) {
+        this.results = results;
+      }
 
       @Override
       public int progress() {
@@ -335,6 +346,18 @@ public class RemoteInterpreterTest {
     intpA.getScheduler().submit(jobA);
 
     Job jobB = new Job("jobB", null) {
+
+      private Object results;
+
+      @Override
+      public Object getReturn() {
+        return results;
+      }
+
+      @Override
+      public void setResult(Object results) {
+        this.results = results;
+      }
 
       @Override
       public int progress() {
@@ -403,6 +426,17 @@ public class RemoteInterpreterTest {
     for (int i = 0; i < concurrency; i++) {
       final String jobId = Integer.toString(i);
       scheduler.submit(new Job(jobId, Integer.toString(i), null, 200) {
+        private Object results;
+
+        @Override
+        public Object getReturn() {
+          return results;
+        }
+
+        @Override
+        public void setResult(Object results) {
+          this.results = results;
+        }
 
         @Override
         public int progress() {
@@ -430,7 +464,7 @@ public class RemoteInterpreterTest {
               new LinkedList<InterpreterContextRunner>(), null));
 
           synchronized (results) {
-            results.addAll(ret.message());
+            ((List<InterpreterResultMessage>) results).addAll(ret.message());
             results.notify();
           }
           return null;
@@ -483,6 +517,17 @@ public class RemoteInterpreterTest {
     for (int i = 0; i < concurrency; i++) {
       final String jobId = Integer.toString(i);
       scheduler.submit(new Job(jobId, Integer.toString(i), null, 300) {
+        private Object results;
+
+        @Override
+        public Object getReturn() {
+          return results;
+        }
+
+        @Override
+        public void setResult(Object results) {
+          this.results = results;
+        }
 
         @Override
         public int progress() {
@@ -511,7 +556,7 @@ public class RemoteInterpreterTest {
               new LinkedList<InterpreterContextRunner>(), null));
 
           synchronized (results) {
-            results.addAll(ret.message());
+            ((List<InterpreterResultMessage>) results).addAll(ret.message());
             results.notify();
           }
           return stmt;
@@ -586,6 +631,17 @@ public class RemoteInterpreterTest {
     intpA.open();
 
     Job jobA = new Job("jobA", null) {
+      private Object results;
+
+      @Override
+      public Object getReturn() {
+        return results;
+      }
+
+      @Override
+      public void setResult(Object results) {
+        this.results = results;
+      }
 
       @Override
       public int progress() {
