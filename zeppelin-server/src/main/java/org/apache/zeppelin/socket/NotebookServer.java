@@ -888,7 +888,7 @@ public class NotebookServer extends WebSocketServlet
         note = notebook.createNote(subject);
       }
 
-      note.addParagraph(); // it's an empty note. so add one paragraph
+      note.addParagraph(subject); // it's an empty note. so add one paragraph
       if (message != null) {
         String noteName = (String) message.get("name");
         if (StringUtils.isEmpty(noteName)) {
@@ -1331,7 +1331,7 @@ public class NotebookServer extends WebSocketServlet
       return null;
     }
 
-    Paragraph newPara = note.insertParagraph(index);
+    Paragraph newPara = note.insertParagraph(index, subject);
     note.persist(subject);
     broadcastNewParagraph(note, newPara);
 
@@ -1390,9 +1390,9 @@ public class NotebookServer extends WebSocketServlet
     String text = (String) fromMessage.get("paragraph");
     p.setText(text);
     p.setTitle((String) fromMessage.get("title"));
-    AuthenticationInfo authenticationInfo =
+    AuthenticationInfo subject =
         new AuthenticationInfo(fromMessage.principal, fromMessage.ticket);
-    p.setAuthenticationInfo(authenticationInfo);
+    p.setAuthenticationInfo(subject);
 
     Map<String, Object> params = (Map<String, Object>) fromMessage.get("params");
     p.settings.setParams(params);
@@ -1402,11 +1402,9 @@ public class NotebookServer extends WebSocketServlet
     // if it's the last paragraph, let's add a new one
     boolean isTheLastParagraph = note.isLastParagraph(p.getId());
     if (isTheLastParagraph) {
-      Paragraph newPara = note.addParagraph();
+      Paragraph newPara = note.addParagraph(subject);
       broadcastNewParagraph(note, newPara);
     }
-
-    AuthenticationInfo subject = new AuthenticationInfo(fromMessage.principal);
 
     try {
       note.persist(subject);

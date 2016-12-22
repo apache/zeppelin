@@ -344,12 +344,12 @@ public class NotebookRestApi {
     List<NewParagraphRequest> initialParagraphs = request.getParagraphs();
     if (initialParagraphs != null) {
       for (NewParagraphRequest paragraphRequest : initialParagraphs) {
-        Paragraph p = note.addParagraph();
+        Paragraph p = note.addParagraph(subject);
         p.setTitle(paragraphRequest.getTitle());
         p.setText(paragraphRequest.getText());
       }
     }
-    note.addParagraph(); // add one paragraph to the last
+    note.addParagraph(subject); // add one paragraph to the last
     String noteName = request.getName();
     if (noteName.isEmpty()) {
       noteName = "Note " + note.getId();
@@ -432,18 +432,17 @@ public class NotebookRestApi {
     checkIfUserCanWrite(noteId, "Insufficient privileges you cannot add paragraph to this note");
 
     NewParagraphRequest request = gson.fromJson(message, NewParagraphRequest.class);
-
+    AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
     Paragraph p;
     Double indexDouble = request.getIndex();
     if (indexDouble == null) {
-      p = note.addParagraph();
+      p = note.addParagraph(subject);
     } else {
-      p = note.insertParagraph(indexDouble.intValue());
+      p = note.insertParagraph(indexDouble.intValue(), subject);
     }
     p.setTitle(request.getTitle());
     p.setText(request.getText());
 
-    AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
     note.persist(subject);
     notebookServer.broadcastNote(note);
     return new JsonResponse<>(Status.CREATED, "", p.getId()).build();

@@ -34,6 +34,7 @@ import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.notebook.repo.NotebookRepo.Revision;
+import org.apache.zeppelin.user.AuthenticationInfo;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.diff.DiffEntry;
@@ -146,7 +147,7 @@ public class GitNotebookRepoTest {
 
     //modify, save and checkpoint first note
     Note note = notebookRepo.get(TEST_NOTE_ID, null);
-    Paragraph p = note.addParagraph();
+    Paragraph p = note.addParagraph(AuthenticationInfo.ANONYMOUS);
     Map<String, Object> config = p.getConfig();
     config.put("enabled", true);
     p.setConfig(config);
@@ -161,7 +162,7 @@ public class GitNotebookRepoTest {
 
     //modify, save and checkpoint second note
     note = notebookRepo.get(TEST_NOTE_ID2, null);
-    p = note.addParagraph();
+    p = note.addParagraph(AuthenticationInfo.ANONYMOUS);
     config = p.getConfig();
     config.put("enabled", false);
     p.setConfig(config);
@@ -187,7 +188,7 @@ public class GitNotebookRepoTest {
     
     // add changes to note
     Note note = notebookRepo.get(TEST_NOTE_ID, null);
-    Paragraph p = note.addParagraph();
+    Paragraph p = note.addParagraph(AuthenticationInfo.ANONYMOUS);
     Map<String, Object> config = p.getConfig();
     config.put("enabled", true);
     p.setConfig(config);
@@ -226,7 +227,7 @@ public class GitNotebookRepoTest {
 
     // add paragraph and save
     Note note = notebookRepo.get(TEST_NOTE_ID, null);
-    Paragraph p1 = note.addParagraph();
+    Paragraph p1 = note.addParagraph(AuthenticationInfo.ANONYMOUS);
     Map<String, Object> config = p1.getConfig();
     config.put("enabled", true);
     p1.setConfig(config);
@@ -248,7 +249,7 @@ public class GitNotebookRepoTest {
     assertThat(note.getParagraphs().size()).isEqualTo(paragraphCount_2);
 
     // add one more paragraph and save
-    Paragraph p2 = note.addParagraph();
+    Paragraph p2 = note.addParagraph(AuthenticationInfo.ANONYMOUS);
     config.put("enabled", false);
     p2.setConfig(config);
     p2.setText("get revision when modified note test text");
@@ -284,7 +285,7 @@ public class GitNotebookRepoTest {
     assertThat(note.getParagraphs().size()).isEqualTo(paragraphCount_1);
 
     // add one more paragraph and save
-    Paragraph p1 = note.addParagraph();
+    Paragraph p1 = note.addParagraph(AuthenticationInfo.ANONYMOUS);
     Map<String, Object> config = p1.getConfig();
     config.put("enabled", true);
     p1.setConfig(config);
@@ -326,7 +327,7 @@ public class GitNotebookRepoTest {
     assertThat(notebookRepo.revisionHistory(TEST_NOTE_ID, null).size()).isEqualTo(1);
     
     // add one more paragraph and save
-    Paragraph p1 = note.addParagraph();
+    Paragraph p1 = note.addParagraph(AuthenticationInfo.ANONYMOUS);
     Map<String, Object> config = p1.getConfig();
     config.put("enabled", true);
     p1.setConfig(config);
