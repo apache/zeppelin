@@ -88,17 +88,7 @@ public class InterpreterFactoryTest {
     new File(tmpDir, "conf").mkdirs();
     FileUtils.copyDirectory(new File("src/test/resources/interpreter"), new File(tmpDir, "interpreter"));
 
-//    Map<String, InterpreterProperty> propertiesMockInterpreter1 = new HashMap<>();
-//    propertiesMockInterpreter1.put("PROPERTY_1", new InterpreterProperty("PROPERTY_1", "", "VALUE_1", "desc"));
-//    propertiesMockInterpreter1.put("property_2", new InterpreterProperty("", "property_2", "value_2", "desc"));
-//    MockInterpreter1.register("mock1", "mock1", "org.apache.zeppelin.interpreter.mock.MockInterpreter1", propertiesMockInterpreter1);
-//    MockInterpreter2.register("mock2", "org.apache.zeppelin.interpreter.mock.MockInterpreter2");
-
     System.setProperty(ConfVars.ZEPPELIN_HOME.getVarName(), tmpDir.getAbsolutePath());
-//    System.setProperty(ConfVars.ZEPPELIN_INTERPRETERS.getVarName(),
-//        "org.apache.zeppelin.interpreter.mock.MockInterpreter1," +
-//        "org.apache.zeppelin.interpreter.mock.MockInterpreter2," +
-//        "org.apache.zeppelin.interpreter.mock.MockInterpreter11");
     System.setProperty(ConfVars.ZEPPELIN_INTERPRETER_GROUP_ORDER.getVarName(),
         "mock1,mock2,mock11,dev");
     conf = new ZeppelinConfiguration();
