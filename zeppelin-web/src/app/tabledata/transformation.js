@@ -14,7 +14,7 @@
 
 'use strict';
 
-var zeppelin = zeppelin || {};
+import zeppelin from '../zeppelin';
 
 /**
  * Base class for visualization

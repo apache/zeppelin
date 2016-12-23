@@ -13,6 +13,8 @@
  */
 'use strict';
 
+import zeppelin from '../../../zeppelin';
+
 (function() {
 
   angular.module('zeppelinWebApp').controller('ResultCtrl', ResultCtrl);

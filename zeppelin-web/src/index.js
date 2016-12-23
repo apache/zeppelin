@@ -1,8 +1,39 @@
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 import './app/app.js';
 import './app/app.controller.js';
 import './app/home/home.controller.js';
 import './app/handsontable/handsonHelper.js';
 import './app/notebook/notebook.controller.js';
+
+/** start: global variable `zeppelin` related files */
+import './app/tabledata/tabledata.js';
+import './app/tabledata/transformation.js';
+import './app/tabledata/pivot.js';
+import './app/tabledata/passthrough.js';
+import './app/tabledata/columnselector.js';
+import './app/visualization/visualization.js';
+import './app/visualization/builtins/visualization-table.js';
+import './app/visualization/builtins/visualization-nvd3chart.js';
+import './app/visualization/builtins/visualization-barchart.js';
+import './app/visualization/builtins/visualization-piechart.js';
+import './app/visualization/builtins/visualization-areachart.js';
+import './app/visualization/builtins/visualization-linechart.js';
+import './app/visualization/builtins/visualization-scatterchart.js';
+/** end: global variable `zeppelin` related files */
+
 import './app/jobmanager/jobmanager.controller.js';
 import './app/jobmanager/jobs/job.controller.js';
 import './app/jobmanager/jobmanager.filter.js';

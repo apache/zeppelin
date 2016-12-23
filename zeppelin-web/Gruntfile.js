@@ -602,7 +602,7 @@ module.exports = function(grunt) {
   grunt.registerTask('webpack', 'Prepare webpack build', function(target) {
     grunt.task.run([
       // 'clean:server',
-      'copy:webpack',
+      // 'copy:webpack',
       // 'copy:dev',
       // 'postcss',
     ]);

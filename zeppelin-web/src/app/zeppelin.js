@@ -14,6 +14,10 @@
 
 'use strict';
 
- var zeppelin = {};
+// Used as globally shared variable in
+// `src/app/visualization/**/*js`
+// `src/app/tabledata/*.js`
+// `src/app/notebook/paragraph/result/result.controller.js`
+// see also: ProvidePlugin in webpack.config.js
 
- export default zeppelin;
+export default {};
