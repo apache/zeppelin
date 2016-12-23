@@ -421,42 +421,12 @@ module.exports = function(grunt) {
 
     // Copies remaining files to places other tasks can use
     copy: {
-      dev: {
+      'webpack-vendor': {
         files: [{
-          expand: true,
-          dot: true,
-          cwd: '<%= yeoman.app %>',
-          dest: '.tmp',
-          src: [
-            '*.{ico,png,txt}',
-            '.htaccess',
-            '*.html',
-            '**/*.css',
-            'assets/styles/**/*',
-            'assets/images/**/*',
-            'WEB-INF/*'
-          ]
-        }, {
-          // copy fonts
-          expand: true,
-          cwd: '<%= yeoman.app %>',
-          dest: '.tmp',
-          src: ['fonts/**/*.{eot,svg,ttf,woff}']
-        }, {
-          expand: true,
-          cwd: '<%= yeoman.app %>',
-          dest: '.tmp',
-          src: ['app/**/*.html', 'components/**/*.html']
-        }, {
           expand: true,
           cwd: 'bower_components/datatables/media/images',
           src: '{,*/}*.{png,jpg,jpeg,gif}',
           dest: '.tmp/images'
-        }, {
-          expand: true,
-          cwd: '.tmp/images',
-          dest: '.tmp/images',
-          src: ['generated/*']
         }, {
           expand: true,
           cwd: 'bower_components/bootstrap/dist',
@@ -483,6 +453,39 @@ module.exports = function(grunt) {
           src: [
             'extensions/**', 'jax/**', 'fonts/**'],
           dest: '.tmp'
+        }]
+      },
+      'webpack-source': {
+        files: [{
+          expand: true,
+          dot: true,
+          cwd: '<%= yeoman.app %>',
+          dest: '.tmp',
+          src: [
+            '*.{ico,png,txt}',
+            '.htaccess',
+            '*.html',
+            '**/*.css',
+            'assets/styles/**/*',
+            'assets/images/**/*',
+            'WEB-INF/*'
+          ]
+        }, {
+          // copy fonts
+          expand: true,
+          cwd: '<%= yeoman.app %>',
+          dest: '.tmp',
+          src: ['fonts/**/*.{eot,svg,ttf,woff}']
+        }, {
+          expand: true,
+          cwd: '<%= yeoman.app %>',
+          dest: '.tmp',
+          src: ['app/**/*.html', 'components/**/*.html']
+        },{
+          expand: true,
+          cwd: '.tmp/images',
+          dest: '.tmp/images',
+          src: ['generated/*']
         }]
       },
       dist: {
@@ -563,11 +566,13 @@ module.exports = function(grunt) {
 
     // Run some tasks in parallel to speed up the build process
     concurrent: {
-      server: [
-        'copy:dev'
+      webpack: [
+        'copy:webpack-vendor',
+        'copy:webpack-source',
       ],
       test: [
-        'copy:dev',
+        'copy:webpack-vendor',
+        'copy:webpack-source',
       ],
       dist: [
         'copy:styles',
@@ -591,14 +596,9 @@ module.exports = function(grunt) {
 
     grunt.task.run([
       'clean:server',
-      'copy:dev',
+      'concurrent:webpack',
       'postcss',
     ]);
-  });
-
-  grunt.registerTask('server', 'DEPRECATED TASK. Use the "serve" task instead', function(target) {
-    grunt.log.warn('The `server` task has been deprecated. Use `grunt serve` to start a server.');
-    grunt.task.run(['serve:' + target]);
   });
 
   grunt.registerTask('test', [
