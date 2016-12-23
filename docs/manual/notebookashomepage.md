@@ -69,34 +69,19 @@ That's it! Open your browser and navigate to Apache Zeppelin and see your custom
 If you want to display the list of notes on your custom Apache Zeppelin homepage all
 you need to do is use our %angular support.
 
-Add the following code to a paragraph in you home page and run it... Voila! You have your notes list.
+Add the following code to a paragraph in your Apache Zeppelin note and run it.
 
 ```javascript
 println(
 """%angular
-  <div class="col-md-4" ng-controller="HomeCtrl as home">
-    <h4>Notebooks</h4>
-    <div>
-      <h5><a href="" data-toggle="modal" data-target="#noteNameModal" style="text-decoration: none;">
-        <i style="font-size: 15px;" class="icon-notebook"></i> Create new note</a></h5>
-        <ul style="list-style-type: none;">
-          <li ng-repeat="note in home.notes.list track by $index"><i style="font-size: 10px;" class="icon-doc"></i>
-            <a style="text-decoration: none;" href="#/notebook/{{"{{note.id"}}}}>{{"{{noteName(note)"}}}}</a>
-          </li>
-        </ul>
-    </div>
-  </div>
+  <div ng-include="'app/home/customer/customHome.html'"></div>
 """)
 ```
 
-After running the note you will see output similar to this one:
-<img src="/assets/themes/zeppelin/img/screenshots/homepage_notebook_list.png" />
+After running the paragraph, you will see output similar to this one:
 
-The main trick here relays in linking the ```<div>``` to the controller:
+<img src="/assets/themes/zeppelin/img/screenshots/homepage_custom_notebook_list.png" />
 
-```javascript
-<div class="col-md-4" ng-controller="HomeCtrl as home">
-```
+That's it! Voila! You have your notes list.
 
-Once we have ```home``` as our controller variable in our ```<div></div>``` 
-we can use ```home.notes.list``` to get access to the note list.
+

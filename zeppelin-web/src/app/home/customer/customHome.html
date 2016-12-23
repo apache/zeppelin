@@ -1,0 +1,113 @@
+<!--
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+
+<script type="text/ng-template" id="custom_notebook_folder_renderer.html">
+  <div ng-if="node.children == null"
+       ng-mouseenter="showNoteButton=true"
+       ng-mouseleave="showNoteButton=false">
+    <a style="text-decoration: none;" href="#/notebook/{{node.id}}">
+      <i style="font-size: 10px;" class="icon-doc"/> {{node.name}}
+    </a>
+    <a style="text-decoration: none;">
+      <i style="font-size: 13px; margin-left: 10px; cursor: pointer; text-decoration: none;"
+         class="fa fa-pencil" ng-show="showNoteButton" ng-click="renameNote(node)"
+         tooltip-placement="bottom" tooltip="Rename note">
+      </i>
+    </a>
+    <a style="text-decoration: none;">
+      <i style="font-size: 13px; margin-left: 2px; cursor: pointer; text-decoration: none;"
+         class="fa fa-eraser" ng-show="showNoteButton" ng-click="clearAllParagraphOutput(node.id)"
+         tooltip-placement="bottom" tooltip="Clear output">
+      </i>
+    </a>
+    <a style="text-decoration: none;">
+      <i style="font-size: 13px; margin-left: 2px; cursor: pointer; text-decoration: none;"
+         class="fa fa-trash-o" ng-show="showNoteButton" ng-click="removeNote(node.id)"
+         tooltip-placement="bottom" tooltip="Remove note">
+      </i>
+    </a>
+  </div>
+  <div ng-if="node.children != null">
+    <div ng-mouseenter="showFolderButton=true"
+         ng-mouseleave="showFolderButton=false">
+      <a style="text-decoration: none; cursor: pointer;" ng-click="toggleFolderNode(node)">
+        <i style="font-size: 10px;" ng-class="node.hidden ? 'icon-folder' : 'icon-folder-alt'" /> {{node.name}}
+      </a>
+      <a style="text-decoration: none;">
+        <i style="font-size: 13px; margin-left: 10px; cursor: pointer; text-decoration: none;"
+           class="fa fa-pencil" ng-show="showFolderButton" ng-click="renameFolder(node)"
+           tooltip-placement="bottom" tooltip="Rename folder">
+        </i>
+      </a>
+    </div>
+    <div ng-if="!node.hidden">
+      <ul style="list-style-type: none; padding-left:15px;">
+        <li ng-repeat="node in node.children" ng-include="'custom_notebook_folder_renderer.html'" />
+      </ul>
+    </div>
+  </div>
+</script>
+
+<div ng-controller="CustomHomeCtrl as home">
+      <div class="row">
+        <div class="col-md-4">
+          <h4>Notebook
+            <i ng-class="isReloadingNotes ? 'fa fa-refresh fa-spin' : 'fa fa-refresh'"
+               ng-style="!isReloadingNotes && {'cursor': 'pointer'}" style="font-size: 13px;"
+               ng-click="reloadNoteList();"
+               tooltip-placement="bottom" tooltip="Reload notes from storage">
+            </i>
+       </h4>
+
+            <h5><a href="" data-toggle="modal" data-target="#noteImportModal" style="text-decoration: none;">
+              <i style="font-size: 15px;" class="fa fa-upload"></i> Import note</a></h5>
+            <h5><a href="" data-toggle="modal" data-target="#noteNameModal" style="text-decoration: none;">
+              <i style="font-size: 15px;" class="icon-notebook"></i> Create new note</a></h5>
+            <ul id="notebook-names">
+              <li class="filter-names" ng-include="'components/filterNoteNames/filter-note-names.html'"></li>
+              <li ng-repeat="note in home.notes.list | filter:query.q | orderBy:home.arrayOrderingSrv.noteListOrdering track by $index">
+                <i style="font-size: 10px;" class="icon-doc"></i>
+                <a style="text-decoration: none;" href="#/notebook/{{note.id}}">{{node.name}}</a>
+              </li>
+              <div ng-if="!query || query.name === ''">
+                <li ng-repeat="node in home.notes.root.children | orderBy:home.arrayOrderingSrv.noteListOrdering track by $index" ng-include="'custom_notebook_folder_renderer.html'" />
+              </div>
+              <div ng-if="query && query.name !== ''">
+                <li ng-repeat="note in home.notes.flatList | filter:query.q | orderBy:home.arrayOrderingSrv.noteListOrdering track by $index">
+                  <i style="font-size: 10px;" class="icon-doc"></i>
+                  <a style="text-decoration: none;" href="#/notebook/{{note.id}}">{{node.name}}</a>
+                </li>
+              </div>
+            </ul>
+        </div>
+    </div>
+    <br/><br/><br/>
+  </div>
+
+
+  <!-- Load notebook -->
+ <div ng-show="home.notebookHome" id="{{currentParagraph.id}}_paragraphColumn_main"
+       ng-repeat="currentParagraph in home.note.paragraphs"
+       ng-controller="ParagraphCtrl"
+       ng-init="init(currentParagraph, home.note)"
+       ng-class="columnWidthClass(currentParagraph.config.colWidth)"
+       class="paragraph-col">
+    <div id="{{currentParagraph.id}}_paragraphColumn"
+         ng-if="currentParagraph.result"
+         ng-include src="'app/notebook/paragraph/paragraph.html'"
+         ng-class="{'paragraph-space box paragraph-margin': !asIframe, 'focused': paragraphFocused}"
+         ng-hide="currentParagraph.config.tableHide && home.viewOnly">
+    </div>
+  </div>
