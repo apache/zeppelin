@@ -232,19 +232,28 @@ public abstract class BaseLivyInterprereter extends Interpreter {
       
       // check table magic result first
       if (stmtInfo.output.data.application_livy_table_json != null) {
-        String table_result = "";
-        for (Map header : stmtInfo.output.data.application_livy_table_json.headers) {
-          table_result += (table_result == "" ? "" : "\t") + header.get("name");
-        }
-        table_result += "\n";        
-        for (List<Object> row : stmtInfo.output.data.application_livy_table_json.records) {
-          String values = "";
-          for (Object value : row) {            
-            values += (values == "" ? "" : "\t") + value;
+        StringBuilder outputBuilder = new StringBuilder();
+        boolean flag = false;
+        for (Map header : stmtInfo.output.data.application_livy_table_json.headers) {          
+          if (flag) {            
+            outputBuilder.append("\t");            
           }
-          table_result += values + "\n";
+          outputBuilder.append(header.get("name"));
+          flag = true;
+        }
+        outputBuilder.append("\n");
+        for (List<Object> row : stmtInfo.output.data.application_livy_table_json.records) {
+          flag = false;
+          for (Object value : row) {
+            if (flag) {
+              outputBuilder.append("\t");              
+            }
+            outputBuilder.append(value);
+            flag = true;
+          }
+          outputBuilder.append("\n");          
         }        
-        result = "%table " + table_result;        
+        result = "%table " + outputBuilder.toString();
       } else if (stmtInfo.output.data.image_png != null) {        
         return new InterpreterResult(InterpreterResult.Code.SUCCESS,
           InterpreterResult.Type.IMG, (String) stmtInfo.output.data.image_png);
