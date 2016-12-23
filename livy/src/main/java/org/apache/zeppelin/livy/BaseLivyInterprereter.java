@@ -233,14 +233,14 @@ public abstract class BaseLivyInterprereter extends Interpreter {
       // check table magic result first
       if (stmtInfo.output.data.application_livy_table_json != null) {
         StringBuilder outputBuilder = new StringBuilder();
-        boolean isLastColumn = false;
+        boolean isFirstColumn = false;
         
         for (Map header : stmtInfo.output.data.application_livy_table_json.headers) {
-          if (isLastColumn) {
+          if (isFirstColumn) {
             outputBuilder.append("\t");
           }
           outputBuilder.append(header.get("name"));
-          isLastColumn = true;
+          isFirstColumn = true;
         }
         
         outputBuilder.append("\n");
