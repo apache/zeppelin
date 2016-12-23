@@ -398,7 +398,9 @@
       } else {
         $scope.viewOnly = $scope.note.config.looknfeel === 'report' ? true : false;
       }
-      $scope.note.paragraphs[0].focus = true;
+      if ($scope.note.paragraphs && $scope.note.paragraphs[0]) {
+        $scope.note.paragraphs[0].focus = true;
+      }
       $rootScope.$broadcast('setLookAndFeel', $scope.note.config.looknfeel);
     };
 
