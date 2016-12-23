@@ -229,30 +229,25 @@ public abstract class BaseLivyInterprereter extends Interpreter {
     } else {
       //TODO(zjffdu) support other types of data (like json, image and etc)
       String result = stmtInfo.output.data.plain_text;
-      Object magicResult = null;
       
-      // check magic first
-      if ((magicResult = stmtInfo.output.data.application_livy_table_json) != null) {
+      // check table magic result first
+      if (stmtInfo.output.data.application_livy_table_json != null) {
         String table_result = "";
-        List<Map> headers = (List) ((Map) magicResult).get("headers");
-
-        for (Map header : headers) {
+        for (Map header : stmtInfo.output.data.application_livy_table_json.headers) {
           table_result += (table_result == "" ? "" : "\t") + header.get("name");
         }
-        table_result += "\n";
-        List<List> data = (List) ((Map) magicResult).get("data");
-        for (List<Object> row : data) {
+        table_result += "\n";        
+        for (List<Object> row : stmtInfo.output.data.application_livy_table_json.records) {
           String values = "";
-          for (Object value : row) {
-            LOGGER.info("value : " + value);
+          for (Object value : row) {            
             values += (values == "" ? "" : "\t") + value;
           }
           table_result += values + "\n";
         }        
         result = "%table " + table_result;        
-      } else if ((magicResult = stmtInfo.output.data.image_png) != null) {        
+      } else if (stmtInfo.output.data.image_png != null) {        
         return new InterpreterResult(InterpreterResult.Code.SUCCESS,
-          InterpreterResult.Type.IMG, (String) magicResult);
+          InterpreterResult.Type.IMG, (String) stmtInfo.output.data.image_png);
       } else if (result != null) {
         result = result.trim();
         if (result.startsWith("<link")
@@ -464,6 +459,7 @@ public abstract class BaseLivyInterprereter extends Interpreter {
       public String ename;
       public String evalue;
       public Object traceback;
+      public TableMagic tableMagic;
 
       public boolean isError() {
         return status.equals("error");
@@ -481,7 +477,15 @@ public abstract class BaseLivyInterprereter extends Interpreter {
         @SerializedName("application/json")
         public String application_json;
         @SerializedName("application/vnd.livy.table.v1+json")
-        public Object application_livy_table_json;
+        public TableMagic application_livy_table_json;
+      }
+      
+      private static class TableMagic {
+        @SerializedName("headers")
+        List<Map> headers;
+        
+        @SerializedName("data")
+        List<List> records;
       }
     }
   }
