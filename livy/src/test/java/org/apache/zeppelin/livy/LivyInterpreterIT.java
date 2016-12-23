@@ -300,7 +300,7 @@ public class LivyInterpreterIT {
       result = pysparkInterpreter.interpret("%table t", context);
       assertEquals(InterpreterResult.Code.SUCCESS, result.code());      
       assertEquals(1, result.message().size());
-      assertEquals("TABLE", result.message().get(0).getType());
+      assertEquals(InterpreterResult.Type.TABLE, result.message().get(0).getType());
       assertTrue(result.message().get(0).getData().contains("userA"));      
       
       // error
