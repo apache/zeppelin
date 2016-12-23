@@ -14,6 +14,8 @@
 
 'use strict';
 
+var zeppelin = zeppelin || {};
+
 /**
  * Visualize data in bar char
  */
