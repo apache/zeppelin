@@ -46,7 +46,6 @@ public class FlinkInterpreterTest {
   @AfterClass
   public static void tearDown() {
     flink.close();
-    flink.destroy();
   }
 
   @Test

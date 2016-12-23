@@ -17,8 +17,6 @@
 
 package org.apache.zeppelin.spark;
 
-import static org.junit.Assert.*;
-
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Properties;
@@ -29,25 +27,28 @@ import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.InterpreterResult.Type;
-import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.junit.rules.TemporaryFolder;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class SparkSqlInterpreterTest {
+
+  @Rule
+  public TemporaryFolder tmpDir = new TemporaryFolder();
 
   private SparkSqlInterpreter sql;
   private SparkInterpreter repl;
   private InterpreterContext context;
   private InterpreterGroup intpGroup;
 
-  Logger LOGGER = LoggerFactory.getLogger(SparkSqlInterpreterTest.class);
-
   @Before
   public void setUp() throws Exception {
     Properties p = new Properties();
-    p.putAll(SparkInterpreterTest.getSparkTestProperties());
+    p.putAll(SparkInterpreterTest.getSparkTestProperties(tmpDir));
     p.setProperty("zeppelin.spark.maxResult", "1000");
     p.setProperty("zeppelin.spark.concurrentSQL", "false");
     p.setProperty("zeppelin.spark.sql.stacktrace", "false");
@@ -80,10 +81,6 @@ public class SparkSqlInterpreterTest {
         new AngularObjectRegistry(intpGroup.getId(), null),
         new LocalResourcePool("id"),
         new LinkedList<InterpreterContextRunner>(), new InterpreterOutput(null));
-  }
-
-  @After
-  public void tearDown() throws Exception {
   }
 
   boolean isDataFrameSupported() {

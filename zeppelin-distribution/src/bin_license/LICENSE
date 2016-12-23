@@ -266,6 +266,7 @@ The text of each license is also included at licenses/LICENSE-[project]-[version
     (The MIT License) Java String Similarity 0.12 (info.debatty:java-string-similarity:0.12 - https://github.com/tdebatty/java-string-similarity)
     (The MIT License) Java LSH 0.10 (info.debatty:java-lsh:0.10 - https://github.com/tdebatty/java-LSH)
     (The MIT License) JSoup 1.6.1 (org.jsoup:jsoup:1.6.1 - https://github.com/jhy/jsoup/)
+    (The MIT License) ngclipboard v1.1.1 (https://github.com/sachinchoolur/ngclipboard) - https://github.com/sachinchoolur/ngclipboard/blob/1.1.1/LICENSE)
 
 ========================================================================
 BSD-style licenses
@@ -368,7 +369,7 @@ The following components are provided under the EPL License.
     (EPL 1.0) Sisu Inject Plexus 2.2.2 (org.sonatype.sisu:sisu-inject-plexus:2.2.2 - https://github.com/sonatype/sisu)
     (EPL 1.0) Sisu Inject Bean 2.2.2 (org.sonatype.sisu:sisu-inject-bean:2.2.2 - https://github.com/sonatype/sisu)
     (EPL 1.0) Sisu Inject Guice (org.sonatype.sisu:sisu-inject-guice:no_aop- https://github.com/sonatype/sisu)
-    (EPL 1.0) JUnit 4.11 (junit:junit:4.11 - https://github.com/junit-team/junit4)
+    (EPL 1.0) JUnit 4.12 (junit:junit:4.12 - https://github.com/junit-team/junit4)
 
 
 

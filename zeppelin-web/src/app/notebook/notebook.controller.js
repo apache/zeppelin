@@ -62,9 +62,14 @@
     $scope.saveTimer = null;
 
     var connectedOnce = false;
+    var isRevisionPath = function(path) {
+      var pattern = new RegExp('^.*\/notebook\/[a-zA-Z0-9_]*\/revision\/[a-zA-Z0-9_]*');
+      return pattern.test(path);
+    };
 
-    // user auto complete related
     $scope.noteRevisions = [];
+    $scope.currentRevision = 'Head';
+    $scope.revisionDisabled = !isRevisionPath($location.path());
 
     $scope.$on('setConnectedStatus', function(event, param) {
       if (connectedOnce && param) {
@@ -89,7 +94,11 @@
     /** Init the new controller */
     var initNotebook = function() {
       noteVarShareService.clear();
-      websocketMsgSrv.getNote($routeParams.noteId);
+      if ($routeParams.revisionId) {
+        websocketMsgSrv.getNoteByRevision($routeParams.noteId, $routeParams.revisionId);
+      } else {
+        websocketMsgSrv.getNote($routeParams.noteId);
+      }
       websocketMsgSrv.listRevisionHistory($routeParams.noteId);
       var currentRoute = $route.current;
       if (currentRoute) {
@@ -103,11 +112,6 @@
               var top = $id.offset().top - 103;
               angular.element('html, body').scrollTo({top: top, left: 0});
             }
-
-            // force notebook reload on user change
-            $scope.$on('setNoteMenu', function(event, note) {
-              initNotebook();
-            });
           },
           1000
         );
@@ -115,6 +119,11 @@
     };
 
     initNotebook();
+
+    // force notebook reload on user change
+    $scope.$on('setNoteMenu', function(event, note) {
+      initNotebook();
+    });
 
     $scope.focusParagraphOnClick = function(clickEvent) {
       if (!$scope.note) {
@@ -187,16 +196,63 @@
       document.getElementById('note.checkpoint.message').value = '';
     };
 
+    // set notebook head to given revision
+    $scope.setNoteRevision = function() {
+      BootstrapDialog.confirm({
+        closable: true,
+        title: '',
+        message: 'Set notebook head to current revision?',
+        callback: function(result) {
+          if (result) {
+            websocketMsgSrv.setNoteRevision($routeParams.noteId, $routeParams.revisionId);
+          }
+        }
+      });
+    };
+
     $scope.$on('listRevisionHistory', function(event, data) {
-      console.log('We got the revisions %o', data);
+      console.log('received list of revisions %o', data);
       $scope.noteRevisions = data.revisionList;
+      $scope.noteRevisions.splice(0, 0, {
+        id: 'Head',
+        message: 'Head'
+      });
+      if ($routeParams.revisionId) {
+        var index = _.findIndex($scope.noteRevisions, {'id': $routeParams.revisionId});
+        if (index > -1) {
+          $scope.currentRevision = $scope.noteRevisions[index].message;
+        }
+      }
     });
 
-    // receive certain revision of note
     $scope.$on('noteRevision', function(event, data) {
       console.log('received note revision %o', data);
-      //TODO(xxx): render it
+      if (data.note) {
+        $scope.note = data.note;
+      } else {
+        $location.path('/');
+      }
     });
+
+    $scope.$on('setNoteRevisionResult', function(event, data) {
+      console.log('received set note revision result %o', data);
+      if (data.status) {
+        $location.path('/notebook/' + $routeParams.noteId);
+      }
+    });
+
+    $scope.visitRevision = function(revision) {
+      if (revision.id) {
+        if (revision.id === 'Head') {
+          $location.path('/notebook/' + $routeParams.noteId);
+        } else {
+          $location.path('/notebook/' + $routeParams.noteId + '/revision/' + revision.id);
+        }
+      } else {
+        ngToast.danger({content: 'There is a problem with this Revision',
+          verticalPosition: 'top', dismissOnTimeout: false});
+      }
+    };
 
     $scope.runNote = function() {
       BootstrapDialog.confirm({
@@ -215,8 +271,11 @@
 
     $scope.saveNote = function() {
       if ($scope.note && $scope.note.paragraphs) {
-        _.forEach($scope.note.paragraphs, function(n, key) {
-          angular.element('#' + n.id + '_paragraphColumn_main').scope().saveParagraph();
+        _.forEach($scope.note.paragraphs, function(par) {
+          angular
+            .element('#' + par.id + '_paragraphColumn_main')
+            .scope()
+            .saveParagraph(par);
         });
         $scope.isNoteDirty = null;
       }
@@ -325,8 +384,10 @@
     };
 
     /** Update the note name */
-    $scope.sendNewName = function() {
-      if ($scope.note.name) {
+    $scope.updateNoteName = function(newName) {
+      const trimmedNewName = newName.trim();
+      if (trimmedNewName.length > 0 && $scope.note.name !== trimmedNewName) {
+        $scope.note.name = trimmedNewName;
         websocketMsgSrv.updateNote($scope.note.id, $scope.note.name, $scope.note.config);
       }
     };
@@ -722,10 +783,10 @@
       connectedOnce = true;
     });
 
-    $scope.$on('moveParagraphUp', function(event, paragraphId) {
+    $scope.$on('moveParagraphUp', function(event, paragraph) {
       var newIndex = -1;
       for (var i = 0; i < $scope.note.paragraphs.length; i++) {
-        if ($scope.note.paragraphs[i].id === paragraphId) {
+        if ($scope.note.paragraphs[i].id === paragraph.id) {
           newIndex = i - 1;
           break;
         }
@@ -734,16 +795,22 @@
         return;
       }
       // save dirtyText of moving paragraphs.
-      var prevParagraphId = $scope.note.paragraphs[newIndex].id;
-      angular.element('#' + paragraphId + '_paragraphColumn_main').scope().saveParagraph();
-      angular.element('#' + prevParagraphId + '_paragraphColumn_main').scope().saveParagraph();
-      websocketMsgSrv.moveParagraph(paragraphId, newIndex);
+      var prevParagraph = $scope.note.paragraphs[newIndex];
+      angular
+        .element('#' + paragraph.id + '_paragraphColumn_main')
+        .scope()
+        .saveParagraph(paragraph);
+      angular
+        .element('#' + prevParagraph.id + '_paragraphColumn_main')
+        .scope()
+        .saveParagraph(prevParagraph);
+      websocketMsgSrv.moveParagraph(paragraph.id, newIndex);
     });
 
-    $scope.$on('moveParagraphDown', function(event, paragraphId) {
+    $scope.$on('moveParagraphDown', function(event, paragraph) {
       var newIndex = -1;
       for (var i = 0; i < $scope.note.paragraphs.length; i++) {
-        if ($scope.note.paragraphs[i].id === paragraphId) {
+        if ($scope.note.paragraphs[i].id === paragraph.id) {
           newIndex = i + 1;
           break;
         }
@@ -753,10 +820,16 @@
         return;
       }
       // save dirtyText of moving paragraphs.
-      var nextParagraphId = $scope.note.paragraphs[newIndex].id;
-      angular.element('#' + paragraphId + '_paragraphColumn_main').scope().saveParagraph();
-      angular.element('#' + nextParagraphId + '_paragraphColumn_main').scope().saveParagraph();
-      websocketMsgSrv.moveParagraph(paragraphId, newIndex);
+      var nextParagraph = $scope.note.paragraphs[newIndex];
+      angular
+        .element('#' + paragraph.id + '_paragraphColumn_main')
+        .scope()
+        .saveParagraph(paragraph);
+      angular
+        .element('#' + nextParagraph.id + '_paragraphColumn_main')
+        .scope()
+        .saveParagraph(nextParagraph);
+      websocketMsgSrv.moveParagraph(paragraph.id, newIndex);
     });
 
     $scope.$on('moveFocusToPreviousParagraph', function(event, currentParagraphId) {
@@ -836,6 +909,11 @@
 
       document.removeEventListener('click', $scope.focusParagraphOnClick);
       document.removeEventListener('keydown', $scope.keyboardShortcut);
+    });
+
+    angular.element(window).bind('resize', function() {
+      const actionbarHeight = document.getElementById('actionbar').lastElementChild.clientHeight;
+      angular.element(document.getElementById('content')).css('padding-top', actionbarHeight - 20);
     });
   }
 

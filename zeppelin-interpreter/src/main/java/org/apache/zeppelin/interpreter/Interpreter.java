@@ -131,13 +131,6 @@ public abstract class Interpreter {
     return SchedulerFactory.singleton().createOrGetFIFOScheduler("interpreter_" + this.hashCode());
   }
 
-  /**
-   * Called when interpreter is no longer used.
-   */
-  @ZeppelinApi
-  public void destroy() {
-  }
-
   public static Logger logger = LoggerFactory.getLogger(Interpreter.class);
   private InterpreterGroup interpreterGroup;
   private URL [] classloaderUrls;

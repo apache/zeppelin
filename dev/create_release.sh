@@ -33,13 +33,27 @@ if [[ $# -ne 2 ]]; then
   usage
 fi
 
-if [[ -z "${GPG_PASSPHRASE}" ]]; then
-  echo "You need GPG_PASSPHRASE variable set"
-  exit 1
-fi
+for var in GPG_PASSPHRASE DOCKER_USERNAME; do
+  if [[ -z "${!var}" ]]; then
+    echo "You need ${var} variable set"
+    exit 1
+  fi
+done
 
 RELEASE_VERSION="$1"
 GIT_TAG="$2"
+
+function build_docker_base() {
+  # build base image
+  docker build -t ${DOCKER_USERNAME}/zeppelin-base:latest "${BASEDIR}/../scripts/docker/zeppelin-base"
+}
+function build_docker_image() {
+  # build release image
+  echo "FROM ${DOCKER_USERNAME}/zeppelin-base:latest
+  RUN mkdir /usr/local/zeppelin/
+  ADD zeppelin-${RELEASE_VERSION}-bin-${BIN_RELEASE_NAME} /usr/local/zeppelin/" > "Dockerfile"
+  docker build -t ${DOCKER_USERNAME}/zeppelin-release:"${RELEASE_VERSION}" .
+}
 
 function make_source_package() {
   # create source package
@@ -97,10 +111,16 @@ function make_binary_release() {
   mv "zeppelin-${RELEASE_VERSION}-bin-${BIN_RELEASE_NAME}.tgz.md5" "${WORKING_DIR}/"
   mv "zeppelin-${RELEASE_VERSION}-bin-${BIN_RELEASE_NAME}.tgz.sha512" "${WORKING_DIR}/"
 
+  # build docker image if binary_release_name 'all'
+  if [[ $1 = "all" ]]; then
+    build_docker_image
+  fi
+  
   # clean up build dir
   rm -rf "${WORKING_DIR}/zeppelin-${RELEASE_VERSION}-bin-${BIN_RELEASE_NAME}"
 }
 
+build_docker_base
 git_clone
 make_source_package
 make_binary_release all "-Pspark-2.0 -Phadoop-2.4 -Pyarn -Ppyspark -Psparkr -Pr -Pscala-2.11"

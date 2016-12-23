@@ -27,7 +27,9 @@ if [[ ${PROFILE/"-Pr "} != $PROFILE ]] || [[ ${PROFILE/"-Psparkr "} != $PROFILE 
   source ~/.environ
   if [[ ! -d "$HOME/R/knitr" ]] ; then
     mkdir -p ~/R
-    R -e "install.packages('knitr', repos = 'http://cran.us.r-project.org', lib='~/R')"
+    R -e "install.packages('evaluate', repos = 'http://cran.us.r-project.org', lib='~/R')"  > /dev/null 2>&1
+    R -e "install.packages('base64enc', repos = 'http://cran.us.r-project.org', lib='~/R')"  > /dev/null 2>&1
+    R -e "install.packages('knitr', repos = 'http://cran.us.r-project.org', lib='~/R')"  > /dev/null 2>&1
   fi
 fi
 
@@ -42,5 +44,5 @@ if [[ -n "$PYTHON" ]] ; then
   conda update -q conda
   conda info -a
   conda config --add channels conda-forge
-  conda install -q matplotlib pandasql
+  conda install -q matplotlib=1.5.3 pandasql
 fi

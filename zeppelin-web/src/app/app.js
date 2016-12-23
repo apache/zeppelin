@@ -33,7 +33,8 @@
           'xeditable',
           'ngToast',
           'focus-if',
-          'ngResource'
+          'ngResource',
+          'ngclipboard'
       ])
         .filter('breakFilter', function() {
           return function(text) {
@@ -59,6 +60,10 @@
               controller: 'NotebookCtrl'
             })
             .when('/notebook/:noteId/paragraph/:paragraphId?', {
+              templateUrl: 'app/notebook/notebook.html',
+              controller: 'NotebookCtrl'
+            })
+            .when('/notebook/:noteId/revision/:revisionId', {
               templateUrl: 'app/notebook/notebook.html',
               controller: 'NotebookCtrl'
             })

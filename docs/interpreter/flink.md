@@ -63,7 +63,7 @@ wget http://www.gutenberg.org/ebooks/10.txt.utf-8
 {% highlight scala %}
 %flink
 case class WordCount(word: String, frequency: Int)
-val bible:DataSet[String] = env.readTextFile("10.txt.utf-8")
+val bible:DataSet[String] = benv.readTextFile("10.txt.utf-8")
 val partialCounts: DataSet[WordCount] = bible.flatMap{
     line =>
         """\b\w+\b""".r.findAllIn(line).map(word => WordCount(word, 1))

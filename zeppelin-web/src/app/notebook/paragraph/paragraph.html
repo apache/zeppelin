@@ -26,8 +26,8 @@ limitations under the License.
            ng-model="paragraph.title"
            ng-if="input.showEditor"
            ng-escape="input.showEditor = false; paragraph.title = oldTitle;"
-           ng-blur="setTitle(); input.showEditor = false"
-           ng-enter="setTitle(); input.showEditor = false"
+           ng-blur="setTitle(paragraph); input.showEditor = false"
+           ng-enter="setTitle(paragraph); input.showEditor = false"
            focus-if="input.showEditor" />
     <div ng-click="input.showEditor = !asIframe && !viewOnly; oldTitle = paragraph.title;"
          ng-show="!input.showEditor"
@@ -37,15 +37,13 @@ limitations under the License.
 
   <div>
     <div ng-show="!paragraph.config.editorHide && !viewOnly" style="margin-bottom:3px;">
-      <div id="{{paragraph.id}}_editor"
-           class="editor"
-           ui-ace="{
-                     onLoad : aceLoaded,
-                     require : ['ace/ext/language_tools']
-                   }"
-           ng-model="paragraph.text"
-           ng-class="{'paragraph-disable': paragraph.status == 'RUNNING' || paragraph.status == 'PENDING',
-           'paragraph-text--dirty' : dirtyText !== originalText && dirtyText !== undefined}">      </div>
+      <code-editor
+        paragraph-id="paragraph.id"
+        paragraph-context="paragraph"
+        dirty-text="dirtyText"
+        original-text="originalText"
+        on-load="aceLoaded"
+      ></code-editor>
     </div>
 
     <div ng-include src="'app/notebook/paragraph/paragraph-progressBar.html'"></div>
@@ -72,11 +70,11 @@ limitations under the License.
   <div ng-if="!asIframe" class="paragraphFooter">
     <div ng-show="!paragraph.config.tableHide && !viewOnly"
          id="{{paragraph.id}}_executionTime"
-         class="executionTime" ng-bind-html="getExecutionTime()">
+         class="executionTime" ng-bind-html="getExecutionTime(paragraph)">
     </div>
     <div ng-if = "paragraph.status === 'RUNNING'" class = "paragraphFooterElapsed">
       <div id="{{paragraph.id}}_elapsedTime"
-           class="elapsedTime" ng-bind-html="getElapsedTime()">
+           class="elapsedTime" ng-bind-html="getElapsedTime(paragraph)">
       </div>
     </div>
   </div>

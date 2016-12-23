@@ -43,7 +43,6 @@
     <jna.version>4.1.0</jna.version>
 
     <!--test library versions-->
-    <mockito.all.version>1.9.0</mockito.all.version>
     <selenium.java.version>2.48.2</selenium.java.version>
     <xml.apis.version>1.4.01</xml.apis.version>
 
@@ -330,7 +329,6 @@
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-all</artifactId>
-      <version>${mockito.all.version}</version>
       <scope>test</scope>
     </dependency>
 
