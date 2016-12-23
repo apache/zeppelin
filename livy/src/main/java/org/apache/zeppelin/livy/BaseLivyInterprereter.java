@@ -234,25 +234,18 @@ public abstract class BaseLivyInterprereter extends Interpreter {
       if (stmtInfo.output.data.application_livy_table_json != null) {
         StringBuilder outputBuilder = new StringBuilder();
         boolean flag = false;
-        for (Map header : stmtInfo.output.data.application_livy_table_json.headers) {          
-          if (flag) {            
-            outputBuilder.append("\t");            
+        for (Map header : stmtInfo.output.data.application_livy_table_json.headers) {
+          if (flag) {
+            outputBuilder.append("\t");
           }
           outputBuilder.append(header.get("name"));
           flag = true;
         }
         outputBuilder.append("\n");
         for (List<Object> row : stmtInfo.output.data.application_livy_table_json.records) {
-          flag = false;
-          for (Object value : row) {
-            if (flag) {
-              outputBuilder.append("\t");              
-            }
-            outputBuilder.append(value);
-            flag = true;
-          }
-          outputBuilder.append("\n");          
-        }        
+          outputBuilder.append(StringUtils.join(row, "\t"));
+          outputBuilder.append("\n");
+        }
         result = "%table " + outputBuilder.toString();
       } else if (stmtInfo.output.data.image_png != null) {        
         return new InterpreterResult(InterpreterResult.Code.SUCCESS,
