@@ -205,10 +205,6 @@ module.exports = function(grunt) {
           middleware: function(connect) {
             return [
               connect.static('.tmp'),
-              connect().use(
-                '/bower_components',
-                connect.static('./bower_components')
-              ),
             ];
           }
         }
@@ -220,10 +216,6 @@ module.exports = function(grunt) {
             return [
               connect.static('.tmp'),
               connect.static('test'),
-              connect().use(
-                '/bower_components',
-                connect.static('./bower_components')
-              ),
               connect.static(appConfig.app)
             ];
           }
@@ -429,6 +421,26 @@ module.exports = function(grunt) {
 
     // Copies remaining files to places other tasks can use
     copy: {
+      webpack: {
+        files: [
+          {
+            expand: true,
+            cwd: 'bower_components',
+            src: ['**/*'],
+            dest: '.tmp/bower_components',
+          },
+          {
+            expand: true,
+            cwd: '<%= yeoman.app %>',
+            src: [
+              'app/tabledata/**/*.html',
+              'app/tabledata/**/*.js',
+              'app/visualization/**/*.html',
+              'app/visualization/**/*.js',
+            ],
+            dest: '.tmp',
+          }]
+        },
       dev: {
         files: [{
           expand: true,
@@ -585,6 +597,15 @@ module.exports = function(grunt) {
         singleRun: true
       }
     }
+  });
+
+  grunt.registerTask('webpack', 'Prepare webpack build', function(target) {
+    grunt.task.run([
+      // 'clean:server',
+      'copy:webpack',
+      // 'copy:dev',
+      // 'postcss',
+    ]);
   });
 
   grunt.registerTask('serve', 'Compile then start a connect web server', function(target) {

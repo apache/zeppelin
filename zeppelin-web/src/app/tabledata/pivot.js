@@ -262,4 +262,3 @@ zeppelin.PivotTransformation.prototype.pivot = function(data, keys, groups, valu
     rows: rows
   };
 };
-
