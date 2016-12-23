@@ -421,26 +421,6 @@ module.exports = function(grunt) {
 
     // Copies remaining files to places other tasks can use
     copy: {
-      webpack: {
-        files: [
-          {
-            expand: true,
-            cwd: 'bower_components',
-            src: ['**/*'],
-            dest: '.tmp/bower_components',
-          },
-          {
-            expand: true,
-            cwd: '<%= yeoman.app %>',
-            src: [
-              'app/tabledata/**/*.html',
-              'app/tabledata/**/*.js',
-              'app/visualization/**/*.html',
-              'app/visualization/**/*.js',
-            ],
-            dest: '.tmp',
-          }]
-        },
       dev: {
         files: [{
           expand: true,
@@ -487,6 +467,11 @@ module.exports = function(grunt) {
           cwd: 'bower_components/jquery-ui/themes/base/images',
           src: '{,*/}*.{png,jpg,jpeg,gif}',
           dest: '.tmp/styles/images'
+        }, {
+          expand: true,
+          cwd: 'bower_components',
+          src: ['**/*'],
+          dest: '.tmp/bower_components',
         }, {
           expand: true,
           cwd: 'bower_components/ngclipboard',
@@ -599,28 +584,15 @@ module.exports = function(grunt) {
     }
   });
 
-  grunt.registerTask('webpack', 'Prepare webpack build', function(target) {
-    grunt.task.run([
-      // 'clean:server',
-      // 'copy:webpack',
-      // 'copy:dev',
-      // 'postcss',
-    ]);
-  });
-
-  grunt.registerTask('serve', 'Compile then start a connect web server', function(target) {
+  grunt.registerTask('prepare-webpack', 'Compile then start a connect web server', function(target) {
     if (target === 'dist') {
       return grunt.task.run(['build', 'connect:dist:keepalive']);
     }
 
     grunt.task.run([
       'clean:server',
-      'wiredep',
-      'concurrent:server',
+      'copy:dev',
       'postcss',
-      'babel:dev',
-      'connect:livereload',
-      'watch'
     ]);
   });
 

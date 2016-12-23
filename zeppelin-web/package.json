@@ -8,8 +8,7 @@
   "scripts": {
     "postinstall": "bower install --silent && grunt googlefonts",
     "build": "grunt build",
-    "webpack": "grunt webpack && webpack-dev-server --port 9000 --history-api-fallback --inline --progress",
-    "start": "grunt serve",
+    "start": "grunt prepare-webpack && webpack-dev-server --port 9000 --history-api-fallback --inline --progress",
     "test": "grunt test",
     "pretest": "npm install karma-phantomjs-launcher"
   },
