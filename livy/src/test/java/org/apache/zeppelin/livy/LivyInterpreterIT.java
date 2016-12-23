@@ -298,10 +298,10 @@ public class LivyInterpreterIT {
       pysparkInterpreter.interpret("t = [{\"name\":\"userA\", \"role\":\"roleA\"},"
           + "{\"name\":\"userB\", \"role\":\"roleB\"}]", context);
       result = pysparkInterpreter.interpret("%table t", context);
-      assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+      assertEquals(InterpreterResult.Code.SUCCESS, result.code());      
       assertEquals(1, result.message().size());
-      assertTrue(result.message().get(0).getData().contains("userA"));
-      assertTrue(result.message().get(0).getData().startsWith("name\trole"));
+      assertEquals("TABLE", result.message().get(0).getType());
+      assertTrue(result.message().get(0).getData().contains("userA"));      
       
       // error
       result = pysparkInterpreter.interpret("print(a)", context);
