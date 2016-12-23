@@ -51,11 +51,6 @@ Example: `spark.master` to `livy.spark.master`
     <th>Description</th>
   </tr>
   <tr>
-      <td>livy.spark.master</td>
-      <td>local[*]</td>
-      <td>Spark master uri. ex) spark://masterhost:7077</td>
-    </tr>
-  <tr>
     <td>zeppelin.livy.url</td>
     <td>http://localhost:8998</td>
     <td>URL where livy server is running</td>
@@ -205,3 +200,7 @@ Edit `conf/spark-blacklist.conf` file in livy server and comment out `#spark.mas
 
 If you choose to work on livy in `apps/spark/java` directory in [https://github.com/cloudera/hue](https://github.com/cloudera/hue),
 copy `spark-user-configurable-options.template` to `spark-user-configurable-options.conf` file in livy server and comment out `#spark.master`. 
+
+## Upgrade
+
+* We remove livy.spark.master in zeppelin-0.7. Because we sugguest user to use livy 0.3 in zeppelin-0.7. And livy 0.3 don't allow to specify livy.spark.master, it enfornce yarn-cluster mode.
