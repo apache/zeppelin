@@ -14,10 +14,14 @@
 
 'use strict';
 
+import zeppelin from '../../../src/app/zeppelin.js';
+import '../../../src/app/tabledata/tabledata.js';
+
 describe('TableData build', function() {
   var td;
 
   beforeEach(function() {
+    console.log(zeppelin.TableData);
     var TableData = zeppelin.TableData;
     td = new TableData();
   });

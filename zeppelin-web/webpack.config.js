@@ -138,24 +138,6 @@ module.exports = function makeWebpackConfig () {
     }]
   };
 
-  // ISTANBUL LOADER
-  // https://github.com/deepsweet/istanbul-instrumenter-loader
-  // Instrument JS files with istanbul-lib-instrument for subsequent code coverage reporting
-  // Skips node_modules and files that end with .test
-  if (isTest) {
-    config.module.preLoaders.push({
-      test: /\.js$/,
-      exclude: [
-        /node_modules/,
-        /\.spec\.js$/
-      ],
-      loader: 'istanbul-instrumenter',
-      query: {
-        esModules: true
-      }
-    })
-  }
-
   /**
    * PostCSS
    * Reference: https://github.com/postcss/autoprefixer-core

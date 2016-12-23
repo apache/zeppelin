@@ -597,18 +597,10 @@ module.exports = function(grunt) {
     grunt.task.run([
       'clean:server',
       'concurrent:webpack',
-      'postcss',
     ]);
   });
 
   grunt.registerTask('test', [
-    'clean:server',
-    'babel',
-    'wiredep',
-    'concurrent:test',
-    'postcss',
-    'babel:dev',
-    'connect:test',
     'karma'
   ]);
 
