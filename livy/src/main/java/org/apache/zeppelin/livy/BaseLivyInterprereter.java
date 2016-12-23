@@ -229,7 +229,31 @@ public abstract class BaseLivyInterprereter extends Interpreter {
     } else {
       //TODO(zjffdu) support other types of data (like json, image and etc)
       String result = stmtInfo.output.data.plain_text;
-      if (result != null) {
+      Object magicResult = null;
+      
+      // check magic first
+      if ((magicResult = stmtInfo.output.data.application_livy_table_json) != null) {
+        String table_result = "";
+        List<Map> headers = (List) ((Map) magicResult).get("headers");
+
+        for (Map header : headers) {
+          table_result += (table_result == "" ? "" : "\t") + header.get("name");
+        }
+        table_result += "\n";
+        List<List> data = (List) ((Map) magicResult).get("data");
+        for (List<Object> row : data) {
+          String values = "";
+          for (Object value : row) {
+            LOGGER.info("value : " + value);
+            values += (values == "" ? "" : "\t") + value;
+          }
+          table_result += values + "\n";
+        }        
+        result = "%table " + table_result;        
+      } else if ((magicResult = stmtInfo.output.data.image_png) != null) {        
+        return new InterpreterResult(InterpreterResult.Code.SUCCESS,
+          InterpreterResult.Type.IMG, (String) magicResult);
+      } else if (result != null) {
         result = result.trim();
         if (result.startsWith("<link")
             || result.startsWith("<script")
@@ -238,6 +262,7 @@ public abstract class BaseLivyInterprereter extends Interpreter {
           result = "%html " + result;
         }
       }
+
       if (displayAppInfo) {
         //TODO(zjffdu), use multiple InterpreterResult to display appInfo
         StringBuilder outputBuilder = new StringBuilder();
@@ -456,7 +481,7 @@ public abstract class BaseLivyInterprereter extends Interpreter {
         @SerializedName("application/json")
         public String application_json;
         @SerializedName("application/vnd.livy.table.v1+json")
-        public String application_livy_table_json;
+        public Object application_livy_table_json;
       }
     }
   }
