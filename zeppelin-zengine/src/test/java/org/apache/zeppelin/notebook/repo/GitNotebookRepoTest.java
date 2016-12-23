@@ -88,7 +88,9 @@ public class GitNotebookRepoTest {
 
   @After
   public void tearDown() throws Exception {
-    //NotebookRepoSyncTest.delete(zeppelinDir);
+    if (!FileUtils.deleteQuietly(zeppelinDir)) {
+      LOG.error("Failed to delete {} ", zeppelinDir.getName());
+    }
   }
 
   @Test
