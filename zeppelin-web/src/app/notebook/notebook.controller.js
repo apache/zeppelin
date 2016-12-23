@@ -398,6 +398,7 @@
       } else {
         $scope.viewOnly = $scope.note.config.looknfeel === 'report' ? true : false;
       }
+      
       if ($scope.note.paragraphs && $scope.note.paragraphs[0]) {
         $scope.note.paragraphs[0].focus = true;
       }
