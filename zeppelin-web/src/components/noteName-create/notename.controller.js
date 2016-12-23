@@ -39,7 +39,7 @@
           defaultInterpreterId = $scope.note.defaultInterpreter.id;
         }
         vm.websocketMsgSrv.createNotebook($scope.note.notename, defaultInterpreterId);
-        $scope.note.defaultInterpreter = null;
+        $scope.note.defaultInterpreter = $scope.interpreterSettings[0];
       } else {
         var noteId = $routeParams.noteId;
         vm.websocketMsgSrv.cloneNote(noteId, $scope.note.notename);
@@ -104,6 +104,9 @@
 
     $scope.$on('interpreterSettings', function(event, data) {
       $scope.interpreterSettings = data.interpreterSettings;
+
+      //initialize default interpreter with Spark interpreter
+      $scope.note.defaultInterpreter = data.interpreterSettings[0];
     });
 
     var init = function() {

@@ -33,7 +33,8 @@
           'xeditable',
           'ngToast',
           'focus-if',
-          'ngResource'
+          'ngResource',
+          'ngclipboard'
       ])
         .filter('breakFilter', function() {
           return function(text) {

@@ -13,14 +13,9 @@
       },
       "zeppelin.livy.create.session.retries": {
         "envName": "ZEPPELIN_LIVY_CREATE_SESSION_RETRIES",
-        "propertyName": "zeppelin.livy.create.session.retries",
+        "propertyName": "zeppelin.livy.create.session.timeout",
         "defaultValue": "120",
-        "description": "Livy Server create session retry count."
-      },
-      "livy.spark.master": {
-        "propertyName": "livy.spark.master",
-        "defaultValue": "local[*]",
-        "description": "Spark master uri. ex) spark://masterhost:7077"
+        "description": "Livy Server create session timeout (seconds)."
       },
       "livy.spark.driver.cores": {
         "propertyName": "livy.spark.driver.cores",

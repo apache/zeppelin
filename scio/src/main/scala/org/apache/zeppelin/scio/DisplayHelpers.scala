@@ -35,6 +35,7 @@ private[scio] object DisplayHelpers {
   private[scio] val tab = "\t"
   private[scio] val newline = "\n"
   private[scio] val table = "%table"
+  private[scio] val endTable = "%text"
   private[scio] val rowLimitReachedMsg =
     s"$newline<font color=red>Results are limited to " + maxResults + s" rows.</font>$newline"
   private[scio] val bQSchemaIncomplete =
@@ -52,6 +53,7 @@ private[scio] object DisplayHelpers {
       println(sCollectionEmptyMsg)
     } else {
       println(s"$table value$newline${it.take(maxResults).map(printer).mkString(newline)}")
+      println(endTable)
       notifyIfTruncated(it)
     }
   }
@@ -64,6 +66,7 @@ private[scio] object DisplayHelpers {
       println(sCollectionEmptyMsg)
     } else {
       println(s"$table value$newline${it.take(maxResults).map(printer).mkString(newline)}")
+      println(endTable)
       notifyIfTruncated(it)
     }
   }
@@ -77,6 +80,7 @@ private[scio] object DisplayHelpers {
     } else {
       val content = it.take(maxResults).map{ case (k, v) => s"$k$tab$v" }.mkString(newline)
       println(s"$table key${tab}value$newline$content")
+      println(endTable)
       notifyIfTruncated(it)
     }
   }
@@ -97,6 +101,7 @@ private[scio] object DisplayHelpers {
       val firstStr = first.productIterator.mkString(tab)
       val content = it.take(maxResults - 1).map(_.productIterator.mkString(tab)).mkString(newline)
       println(s"$table $header$newline$firstStr$newline$content")
+      println(endTable)
       notifyIfTruncated(it)
     }
   }
@@ -125,6 +130,7 @@ private[scio] object DisplayHelpers {
         .map(r => fieldNames.map(r.get).mkString(tab))
         .mkString(newline)
       println(s"$table $header$newline$firstStr$newline$content")
+      println(endTable)
       notifyIfTruncated(it)
     }
   }
@@ -151,6 +157,7 @@ private[scio] object DisplayHelpers {
             .mkString(newline)
 
           println(s"$table $header$newline$content")
+          println(endTable)
           notifyIfTruncated(it)
         }
       }

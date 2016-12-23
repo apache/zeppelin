@@ -25,11 +25,11 @@ bower.json
 In the override section at the bottom, include the Highlightjs stylesheet (eg. styles/github.css)  
 For the selected Ace Editor theme script, include it in the override section. (eg. src-noconflict/theme-github.js)  
 (bower will automatically add the appropriate .js and .css in app/index.html)
-```
+```diff
                   "src-noconflict/mode-sql.js",
                   "src-noconflict/mode-markdown.js",
                   "src-noconflict/keybinding-emacs.js",
-                 "src-noconflict/ext-language_tools.js",
+                  "src-noconflict/ext-language_tools.js",
 +                 "src-noconflict/theme-github.js"],
        "version": "1.1.8",
        "name": "ace-builds"
@@ -48,13 +48,13 @@ Highlight.js style - depends on the style, a few themes have jpg - if so, one mu
 ### Example - change Ace Editor theme to monokai
 
 app/scripts/controllers/paragraph.js
-```
+```diff
 -      $scope.editor.setTheme('ace/theme/github');
 +      $scope.editor.setTheme('ace/theme/monokai');
 ```
 
 bower.json
-```
+```diff
 -                 "src-noconflict/theme-github.js"],
 +                 "src-noconflict/theme-monokai.js"],
 ```
