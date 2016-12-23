@@ -50,14 +50,6 @@ module.exports = function(grunt) {
         presets: ['es2015'],
         plugins: ['transform-object-rest-spread']
       },
-      dev: {
-        files: [{
-          expand: true,
-          cwd: './src/',
-          src: ['**/*.js'],
-          dest: '.tmp',
-        }]
-      },
       dist: {
         files: [{
           expand: true,
@@ -600,10 +592,6 @@ module.exports = function(grunt) {
     ]);
   });
 
-  grunt.registerTask('test', [
-    'karma'
-  ]);
-
   grunt.registerTask('build', [
     'jscs',
     'eslint',
@@ -625,7 +613,6 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('default', [
-    'build',
-    'test'
+    'build'
   ]);
 };
