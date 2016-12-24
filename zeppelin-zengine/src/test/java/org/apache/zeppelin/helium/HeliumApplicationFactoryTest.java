@@ -94,7 +94,7 @@ public class HeliumApplicationFactoryTest implements JobListenerFactory {
     interpreterInfos.add(new InterpreterInfo(MockInterpreter1.class.getName(), "mock1", true, new HashMap<String, Object>()));
     factory.add("mock1", interpreterInfos, new ArrayList<Dependency>(), new InterpreterOption(),
         Maps.<String, InterpreterProperty>newHashMap(), "mock1");
-    factory.createNewSetting("mock1", "mock1", new ArrayList<Dependency>(), new InterpreterOption(), new Properties());
+    factory.createNewSetting("mock1", "mock1", new ArrayList<Dependency>(), new InterpreterOption(true), new Properties());
 
     ArrayList<InterpreterInfo> interpreterInfos2 = new ArrayList<>();
     interpreterInfos2.add(new InterpreterInfo(MockInterpreter2.class.getName(), "mock2", true, new HashMap<String, Object>()));
