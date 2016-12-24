@@ -47,7 +47,6 @@ import com.google.common.annotations.VisibleForTesting;
 
 /**
  * Paragraph is a representation of an execution unit.
- *
  */
 public class Paragraph extends Job implements Serializable, Cloneable {
   private static final long serialVersionUID = -6328572073497992016L;
@@ -75,7 +74,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
   /**
    * Applicaiton states in this paragraph
    */
-  private final List<ApplicationState> apps =  new LinkedList<>();
+  private final List<ApplicationState> apps = new LinkedList<>();
 
   @VisibleForTesting
   Paragraph() {
@@ -85,7 +84,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
   }
 
   public Paragraph(String paragraphId, Note note, JobListener listener,
-                   InterpreterFactory factory) {
+      InterpreterFactory factory) {
     super(paragraphId, generateId(), listener);
     this.note = note;
     this.factory = factory;
@@ -111,8 +110,8 @@ public class Paragraph extends Job implements Serializable, Cloneable {
   }
 
   private static String generateId() {
-    return "paragraph_" + System.currentTimeMillis() + "_"
-           + new Random(System.currentTimeMillis()).nextInt();
+    return "paragraph_" + System.currentTimeMillis() + "_" + new Random(System.currentTimeMillis())
+        .nextInt();
   }
 
   public Map<String, Paragraph> getUserParagraphMap() {
@@ -248,10 +247,10 @@ public class Paragraph extends Job implements Serializable, Cloneable {
 
   public List<InterpreterCompletion> getInterpreterCompletion() {
     List<InterpreterCompletion> completion = new LinkedList();
-    for (InterpreterSetting intp: factory.getInterpreterSettings(note.getId())){
+    for (InterpreterSetting intp : factory.getInterpreterSettings(note.getId())) {
       List<InterpreterInfo> intInfo = intp.getInterpreterInfos();
       if (intInfo.size() > 1) {
-        for (InterpreterInfo info : intInfo){
+        for (InterpreterInfo info : intInfo) {
           String name = intp.getName() + "." + info.getName();
           completion.add(new InterpreterCompletion(name, name));
         }
@@ -264,9 +263,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
 
   public List<InterpreterCompletion> completion(String buffer, int cursor) {
     String lines[] = buffer.split(System.getProperty("line.separator"));
-    if (lines.length > 0
-      && lines[0].startsWith("%")
-      && cursor <= lines[0].trim().length()) {
+    if (lines.length > 0 && lines[0].startsWith("%") && cursor <= lines[0].trim().length()) {
 
       int idx = lines[0].indexOf(' ');
       if (idx < 0 || (idx > 0 && cursor <= idx)) {
@@ -327,7 +324,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
       return true;
     }
 
-    for (String u: intpUsers) {
+    for (String u : intpUsers) {
       if (user.trim().equals(u.trim())) {
         return true;
       }
@@ -351,16 +348,15 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     }
     InterpreterSetting intp = getInterpreterSettingById(repl.getInterpreterGroup().getId());
     while (intp.getStatus().equals(
-      org.apache.zeppelin.interpreter.InterpreterSetting.Status.DOWNLOADING_DEPENDENCIES)) {
+        org.apache.zeppelin.interpreter.InterpreterSetting.Status.DOWNLOADING_DEPENDENCIES)) {
       Thread.sleep(200);
     }
     if (this.noteHasUser() && this.noteHasInterpreters()) {
-      if (intp != null &&
-        interpreterHasUser(intp) &&
-        isUserAuthorizedToAccessInterpreter(intp.getOption()) == false) {
+      if (intp != null && interpreterHasUser(intp)
+          && isUserAuthorizedToAccessInterpreter(intp.getOption()) == false) {
         logger.error("{} has no permission for {} ", authenticationInfo.getUser(), repl);
-        return new InterpreterResult(Code.ERROR, authenticationInfo.getUser() +
-          " has no permission for " + getRequiredReplName());
+        return new InterpreterResult(Code.ERROR,
+            authenticationInfo.getUser() + " has no permission for " + getRequiredReplName());
       }
     }
 
@@ -371,10 +367,10 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     } else if (repl.getFormType() == FormType.SIMPLE) {
       String scriptBody = getScriptBody();
       Map<String, Input> inputs = Input.extractSimpleQueryParam(scriptBody); // inputs will be built
-                                                                             // from script body
+      // from script body
 
-      final AngularObjectRegistry angularRegistry = repl.getInterpreterGroup()
-              .getAngularObjectRegistry();
+      final AngularObjectRegistry angularRegistry =
+          repl.getInterpreterGroup().getAngularObjectRegistry();
 
       scriptBody = extractVariablesFromAngularRegistry(scriptBody, inputs, angularRegistry);
 
@@ -425,14 +421,14 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     return intp.getOption().permissionIsSet() && intp.getOption().getUsers() != null;
   }
 
-  private boolean isUserAuthorizedToAccessInterpreter(InterpreterOption intpOpt){
-    return intpOpt.permissionIsSet() &&
-      hasPermission(authenticationInfo.getUser(), intpOpt.getUsers());
+  private boolean isUserAuthorizedToAccessInterpreter(InterpreterOption intpOpt) {
+    return intpOpt.permissionIsSet() && hasPermission(authenticationInfo.getUser(),
+        intpOpt.getUsers());
   }
 
   private InterpreterSetting getInterpreterSettingById(String id) {
     InterpreterSetting setting = null;
-    for (InterpreterSetting i: factory.getInterpreterSettings(note.getId())) {
+    for (InterpreterSetting i : factory.getInterpreterSettings(note.getId())) {
       if (id.startsWith(i.getId())) {
         setting = i;
         break;
@@ -475,8 +471,8 @@ public class Paragraph extends Job implements Serializable, Cloneable {
       @Override
       public void onUpdate(int index, InterpreterResultMessageOutput out) {
         try {
-          ((ParagraphJobListener) getListener()).onOutputUpdate(
-              self, index, out.toInterpreterResultMessage());
+          ((ParagraphJobListener) getListener())
+              .onOutputUpdate(self, index, out.toInterpreterResultMessage());
         } catch (IOException e) {
           logger.error(e.getMessage(), e);
         }
@@ -521,24 +517,15 @@ public class Paragraph extends Job implements Serializable, Cloneable {
 
     Credentials credentials = note.getCredentials();
     if (authenticationInfo != null) {
-      UserCredentials userCredentials = credentials.getUserCredentials(
-          authenticationInfo.getUser());
+      UserCredentials userCredentials =
+          credentials.getUserCredentials(authenticationInfo.getUser());
       authenticationInfo.setUserCredentials(userCredentials);
     }
 
-    InterpreterContext interpreterContext = new InterpreterContext(
-        note.getId(),
-        getId(),
-        getRequiredReplName(),
-        this.getTitle(),
-        this.getText(),
-        this.getAuthenticationInfo(),
-        this.getConfig(),
-        this.settings,
-        registry,
-        resourcePool,
-        runners,
-        output);
+    InterpreterContext interpreterContext =
+        new InterpreterContext(note.getId(), getId(), getRequiredReplName(), this.getTitle(),
+            this.getText(), this.getAuthenticationInfo(), this.getConfig(), this.settings, registry,
+            resourcePool, runners, output);
     return interpreterContext;
   }
 
@@ -619,7 +606,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
   }
 
   String extractVariablesFromAngularRegistry(String scriptBody, Map<String, Input> inputs,
-                                             AngularObjectRegistry angularRegistry) {
+      AngularObjectRegistry angularRegistry) {
 
     final String noteId = this.getNote().getId();
     final String paragraphId = this.getId();
@@ -655,8 +642,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
 
   private boolean isValidInterpreter(String replName) {
     try {
-      return factory.getInterpreter(user,
-          note.getId(), replName) != null;
+      return factory.getInterpreter(user, note.getId(), replName) != null;
     } catch (InterpreterException e) {
       // ignore this exception, it would be recaught when running paragraph.
       return false;

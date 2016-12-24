@@ -223,9 +223,9 @@ public class Note implements Serializable, ParagraphJobListener {
   public void initializeJobListenerForParagraph(Paragraph paragraph) {
     final Note paragraphNote = paragraph.getNote();
     if (paragraphNote.getId().equals(this.getId())) {
-      throw new IllegalArgumentException(format("The paragraph %s from note %s " +
-              "does not belong to note %s", paragraph.getId(), paragraphNote.getId(),
-              this.getId()));
+      throw new IllegalArgumentException(
+          format("The paragraph %s from note %s " + "does not belong to note %s", paragraph.getId(),
+              paragraphNote.getId(), this.getId()));
     }
 
     boolean foundParagraph = false;
@@ -237,8 +237,9 @@ public class Note implements Serializable, ParagraphJobListener {
     }
 
     if (!foundParagraph) {
-      throw new IllegalArgumentException(format("Cannot find paragraph %s " +
-                      "from note %s", paragraph.getId(), paragraphNote.getId()));
+      throw new IllegalArgumentException(
+          format("Cannot find paragraph %s " + "from note %s", paragraph.getId(),
+              paragraphNote.getId()));
     }
   }
 
@@ -419,8 +420,8 @@ public class Note implements Serializable, ParagraphJobListener {
 
       if (index < 0 || index >= paragraphs.size()) {
         if (throwWhenIndexIsOutOfBound) {
-          throw new IndexOutOfBoundsException("paragraph size is " + paragraphs.size() +
-              " , index is " + index);
+          throw new IndexOutOfBoundsException(
+              "paragraph size is " + paragraphs.size() + " , index is " + index);
         } else {
           return;
         }

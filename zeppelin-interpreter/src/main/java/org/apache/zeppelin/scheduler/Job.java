@@ -28,15 +28,14 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Skeletal implementation of the Job concept.
- *  - designed for inheritance
- *  - should be run on a separate thread
- *  - maintains internal state: it's status
- *  - supports listeners who are updated on status change
+ * - designed for inheritance
+ * - should be run on a separate thread
+ * - maintains internal state: it's status
+ * - supports listeners who are updated on status change
  *
- *  Job class is serialized/deserialized and used server<->client communication
- *  and saving/loading jobs from disk.
- *  Changing/adding/deleting non transitive field name need consideration of that.
- *
+ * Job class is serialized/deserialized and used server<->client communication
+ * and saving/loading jobs from disk.
+ * Changing/adding/deleting non transitive field name need consideration of that.
  */
 public abstract class Job {
   /**
@@ -48,15 +47,10 @@ public abstract class Job {
    * FINISHED - Job finished run. with success
    * ERROR - Job finished run. with error
    * ABORT - Job finished by abort
-   *
    */
   public static enum Status {
-    READY,
-    PENDING,
-    RUNNING,
-    FINISHED,
-    ERROR,
-    ABORT;
+    READY, PENDING, RUNNING, FINISHED, ERROR, ABORT;
+
     public boolean isReady() {
       return this == READY;
     }
@@ -69,6 +63,7 @@ public abstract class Job {
       return this == PENDING;
     }
   }
+
 
   private String jobName;
   String id;
