@@ -89,6 +89,7 @@ import com.google.gson.reflect.TypeToken;
 public class NotebookServer extends WebSocketServlet
     implements NotebookSocketListener, JobListenerFactory, AngularObjectRegistryListener,
     RemoteInterpreterProcessListener, ApplicationEventListener {
+
   /**
    * Job manager service type
    */
@@ -205,121 +206,121 @@ public class NotebookServer extends WebSocketServlet
 
       /** Lets be elegant here */
       switch (messagereceived.op) {
-        case LIST_NOTES:
-          unicastNoteList(conn, subject, userAndRoles);
-          break;
-        case RELOAD_NOTES_FROM_REPO:
-          broadcastReloadedNoteList(subject, userAndRoles);
-          break;
-        case GET_HOME_NOTE:
-          sendHomeNote(conn, userAndRoles, notebook, messagereceived);
-          break;
-        case GET_NOTE:
-          sendNote(conn, userAndRoles, notebook, messagereceived);
-          break;
-        case NEW_NOTE:
-          createNote(conn, userAndRoles, notebook, messagereceived);
-          break;
-        case DEL_NOTE:
-          removeNote(conn, userAndRoles, notebook, messagereceived);
-          break;
-        case CLONE_NOTE:
-          cloneNote(conn, userAndRoles, notebook, messagereceived);
-          break;
-        case IMPORT_NOTE:
-          importNote(conn, userAndRoles, notebook, messagereceived);
-          break;
-        case COMMIT_PARAGRAPH:
-          updateParagraph(conn, userAndRoles, notebook, messagereceived);
-          break;
-        case RUN_PARAGRAPH:
-          runParagraph(conn, userAndRoles, notebook, messagereceived);
-          break;
-        case CANCEL_PARAGRAPH:
-          cancelParagraph(conn, userAndRoles, notebook, messagereceived);
-          break;
-        case MOVE_PARAGRAPH:
-          moveParagraph(conn, userAndRoles, notebook, messagereceived);
-          break;
-        case INSERT_PARAGRAPH:
-          insertParagraph(conn, userAndRoles, notebook, messagereceived);
-          break;
-        case COPY_PARAGRAPH:
-          copyParagraph(conn, userAndRoles, notebook, messagereceived);
-          break;
-        case PARAGRAPH_REMOVE:
-          removeParagraph(conn, userAndRoles, notebook, messagereceived);
-          break;
-        case PARAGRAPH_CLEAR_OUTPUT:
-          clearParagraphOutput(conn, userAndRoles, notebook, messagereceived);
-          break;
-        case PARAGRAPH_CLEAR_ALL_OUTPUT:
-          clearAllParagraphOutput(conn, userAndRoles, notebook, messagereceived);
-          break;
-        case NOTE_UPDATE:
-          updateNote(conn, userAndRoles, notebook, messagereceived);
-          break;
-        case NOTE_RENAME:
-          renameNote(conn, userAndRoles, notebook, messagereceived);
-          break;
-        case FOLDER_RENAME:
-          renameFolder(conn, userAndRoles, notebook, messagereceived);
-          break;
-        case UPDATE_PERSONALIZED_MODE:
-          updatePersonalizedMode(conn, userAndRoles, notebook, messagereceived);
-          break;
-        case COMPLETION:
-          completion(conn, userAndRoles, notebook, messagereceived);
-          break;
-        case PING:
-          break; //do nothing
-        case ANGULAR_OBJECT_UPDATED:
-          angularObjectUpdated(conn, userAndRoles, notebook, messagereceived);
-          break;
-        case ANGULAR_OBJECT_CLIENT_BIND:
-          angularObjectClientBind(conn, userAndRoles, notebook, messagereceived);
-          break;
-        case ANGULAR_OBJECT_CLIENT_UNBIND:
-          angularObjectClientUnbind(conn, userAndRoles, notebook, messagereceived);
-          break;
-        case LIST_CONFIGURATIONS:
-          sendAllConfigurations(conn, userAndRoles, notebook);
-          break;
-        case CHECKPOINT_NOTE:
-          checkpointNote(conn, notebook, messagereceived);
-          break;
-        case LIST_REVISION_HISTORY:
-          listRevisionHistory(conn, notebook, messagereceived);
-          break;
-        case SET_NOTE_REVISION:
-          setNoteRevision(conn, userAndRoles, notebook, messagereceived);
-          break;
-        case NOTE_REVISION:
-          getNoteByRevision(conn, notebook, messagereceived);
-          break;
-        case LIST_NOTE_JOBS:
-          unicastNoteJobInfo(conn, messagereceived);
-          break;
-        case UNSUBSCRIBE_UPDATE_NOTE_JOBS:
-          unsubscribeNoteJobInfo(conn);
-          break;
-        case GET_INTERPRETER_BINDINGS:
-          getInterpreterBindings(conn, messagereceived);
-          break;
-        case SAVE_INTERPRETER_BINDINGS:
-          saveInterpreterBindings(conn, messagereceived);
-          break;
-        case EDITOR_SETTING:
-          getEditorSetting(conn, messagereceived);
-          break;
-        case GET_INTERPRETER_SETTINGS:
-          getInterpreterSettings(conn, subject);
-          break;
-        case WATCHER:
-          switchConnectionToWatcher(conn, messagereceived);
-          break;
-        default:
-          break;
+          case LIST_NOTES:
+            unicastNoteList(conn, subject, userAndRoles);
+            break;
+          case RELOAD_NOTES_FROM_REPO:
+            broadcastReloadedNoteList(subject, userAndRoles);
+            break;
+          case GET_HOME_NOTE:
+            sendHomeNote(conn, userAndRoles, notebook, messagereceived);
+            break;
+          case GET_NOTE:
+            sendNote(conn, userAndRoles, notebook, messagereceived);
+            break;
+          case NEW_NOTE:
+            createNote(conn, userAndRoles, notebook, messagereceived);
+            break;
+          case DEL_NOTE:
+            removeNote(conn, userAndRoles, notebook, messagereceived);
+            break;
+          case CLONE_NOTE:
+            cloneNote(conn, userAndRoles, notebook, messagereceived);
+            break;
+          case IMPORT_NOTE:
+            importNote(conn, userAndRoles, notebook, messagereceived);
+            break;
+          case COMMIT_PARAGRAPH:
+            updateParagraph(conn, userAndRoles, notebook, messagereceived);
+            break;
+          case RUN_PARAGRAPH:
+            runParagraph(conn, userAndRoles, notebook, messagereceived);
+            break;
+          case CANCEL_PARAGRAPH:
+            cancelParagraph(conn, userAndRoles, notebook, messagereceived);
+            break;
+          case MOVE_PARAGRAPH:
+            moveParagraph(conn, userAndRoles, notebook, messagereceived);
+            break;
+          case INSERT_PARAGRAPH:
+            insertParagraph(conn, userAndRoles, notebook, messagereceived);
+            break;
+          case COPY_PARAGRAPH:
+            copyParagraph(conn, userAndRoles, notebook, messagereceived);
+            break;
+          case PARAGRAPH_REMOVE:
+            removeParagraph(conn, userAndRoles, notebook, messagereceived);
+            break;
+          case PARAGRAPH_CLEAR_OUTPUT:
+            clearParagraphOutput(conn, userAndRoles, notebook, messagereceived);
+            break;
+          case PARAGRAPH_CLEAR_ALL_OUTPUT:
+            clearAllParagraphOutput(conn, userAndRoles, notebook, messagereceived);
+            break;
+          case NOTE_UPDATE:
+            updateNote(conn, userAndRoles, notebook, messagereceived);
+            break;
+          case NOTE_RENAME:
+            renameNote(conn, userAndRoles, notebook, messagereceived);
+            break;
+          case FOLDER_RENAME:
+            renameFolder(conn, userAndRoles, notebook, messagereceived);
+            break;
+          case UPDATE_PERSONALIZED_MODE:
+            updatePersonalizedMode(conn, userAndRoles, notebook, messagereceived);
+            break;
+          case COMPLETION:
+            completion(conn, userAndRoles, notebook, messagereceived);
+            break;
+          case PING:
+            break; //do nothing
+          case ANGULAR_OBJECT_UPDATED:
+            angularObjectUpdated(conn, userAndRoles, notebook, messagereceived);
+            break;
+          case ANGULAR_OBJECT_CLIENT_BIND:
+            angularObjectClientBind(conn, userAndRoles, notebook, messagereceived);
+            break;
+          case ANGULAR_OBJECT_CLIENT_UNBIND:
+            angularObjectClientUnbind(conn, userAndRoles, notebook, messagereceived);
+            break;
+          case LIST_CONFIGURATIONS:
+            sendAllConfigurations(conn, userAndRoles, notebook);
+            break;
+          case CHECKPOINT_NOTE:
+            checkpointNote(conn, notebook, messagereceived);
+            break;
+          case LIST_REVISION_HISTORY:
+            listRevisionHistory(conn, notebook, messagereceived);
+            break;
+          case SET_NOTE_REVISION:
+            setNoteRevision(conn, userAndRoles, notebook, messagereceived);
+            break;
+          case NOTE_REVISION:
+            getNoteByRevision(conn, notebook, messagereceived);
+            break;
+          case LIST_NOTE_JOBS:
+            unicastNoteJobInfo(conn, messagereceived);
+            break;
+          case UNSUBSCRIBE_UPDATE_NOTE_JOBS:
+            unsubscribeNoteJobInfo(conn);
+            break;
+          case GET_INTERPRETER_BINDINGS:
+            getInterpreterBindings(conn, messagereceived);
+            break;
+          case SAVE_INTERPRETER_BINDINGS:
+            saveInterpreterBindings(conn, messagereceived);
+            break;
+          case EDITOR_SETTING:
+            getEditorSetting(conn, messagereceived);
+            break;
+          case GET_INTERPRETER_SETTINGS:
+            getInterpreterSettings(conn, subject);
+            break;
+          case WATCHER:
+            switchConnectionToWatcher(conn, messagereceived);
+            break;
+          default:
+            break;
       }
     } catch (Exception e) {
       LOG.error("Can't handle message", e);
@@ -1085,8 +1086,8 @@ public class NotebookServer extends WebSocketServlet
   /**
    * When angular object updated from client
    *
-   * @param conn        the web socket.
-   * @param notebook    the notebook.
+   * @param conn the web socket.
+   * @param notebook the notebook.
    * @param fromMessage the message.
    */
   private void angularObjectUpdated(NotebookSocket conn, HashSet<String> userAndRoles,
@@ -1172,11 +1173,6 @@ public class NotebookServer extends WebSocketServlet
    * Push the given Angular variable to the target
    * interpreter angular registry given a noteId
    * and a paragraph id
-   *
-   * @param conn
-   * @param notebook
-   * @param fromMessage
-   * @throws Exception
    */
   protected void angularObjectClientBind(NotebookSocket conn, HashSet<String> userAndRoles,
       Notebook notebook, Message fromMessage) throws Exception {
@@ -1212,11 +1208,6 @@ public class NotebookServer extends WebSocketServlet
    * Remove the given Angular variable to the target
    * interpreter(s) angular registry given a noteId
    * and an optional list of paragraph id(s)
-   *
-   * @param conn
-   * @param notebook
-   * @param fromMessage
-   * @throws Exception
    */
   protected void angularObjectClientUnbind(NotebookSocket conn, HashSet<String> userAndRoles,
       Notebook notebook, Message fromMessage) throws Exception {
@@ -1538,9 +1529,7 @@ public class NotebookServer extends WebSocketServlet
   /**
    * This callback is for the paragraph that runs on ZeppelinServer
    *
-   * @param noteId
-   * @param paragraphId
-   * @param output      output to append
+   * @param output output to append
    */
   @Override
   public void onOutputAppend(String noteId, String paragraphId, int index, String output) {
@@ -1552,9 +1541,7 @@ public class NotebookServer extends WebSocketServlet
   /**
    * This callback is for the paragraph that runs on ZeppelinServer
    *
-   * @param noteId
-   * @param paragraphId
-   * @param output      output to update (replace)
+   * @param output output to update (replace)
    */
   @Override
   public void onOutputUpdated(String noteId, String paragraphId, int index,
@@ -1567,9 +1554,6 @@ public class NotebookServer extends WebSocketServlet
 
   /**
    * This callback is for the paragraph that runs on ZeppelinServer
-   *
-   * @param noteId
-   * @param paragraphId
    */
   @Override
   public void onOutputClear(String noteId, String paragraphId) {
@@ -1582,11 +1566,6 @@ public class NotebookServer extends WebSocketServlet
 
   /**
    * When application append output
-   *
-   * @param noteId
-   * @param paragraphId
-   * @param appId
-   * @param output
    */
   @Override
   public void onOutputAppend(String noteId, String paragraphId, int index, String appId,
@@ -1599,11 +1578,6 @@ public class NotebookServer extends WebSocketServlet
 
   /**
    * When application update output
-   *
-   * @param noteId
-   * @param paragraphId
-   * @param appId
-   * @param output
    */
   @Override
   public void onOutputUpdated(String noteId, String paragraphId, int index, String appId,
@@ -1699,6 +1673,7 @@ public class NotebookServer extends WebSocketServlet
    * Notebook Information Change event
    */
   public static class NotebookInformationListener implements NotebookEventListener {
+
     private NotebookServer notebookServer;
 
     public NotebookInformationListener(NotebookServer notebookServer) {
@@ -1799,6 +1774,7 @@ public class NotebookServer extends WebSocketServlet
    * Need description here.
    */
   public static class ParagraphListenerImpl implements ParagraphJobListener {
+
     private NotebookServer notebookServer;
     private Note note;
 
@@ -1846,10 +1822,6 @@ public class NotebookServer extends WebSocketServlet
 
     /**
      * This callback is for paragraph that runs on RemoteInterpreterProcess
-     *
-     * @param paragraph
-     * @param idx
-     * @param output
      */
     @Override
     public void onOutputAppend(Paragraph paragraph, int idx, String output) {
@@ -1862,10 +1834,6 @@ public class NotebookServer extends WebSocketServlet
 
     /**
      * This callback is for paragraph that runs on RemoteInterpreterProcess
-     *
-     * @param paragraph
-     * @param idx
-     * @param result
      */
     @Override
     public void onOutputUpdate(Paragraph paragraph, int idx, InterpreterResultMessage result) {
