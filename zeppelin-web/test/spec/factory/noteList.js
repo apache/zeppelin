@@ -1,5 +1,3 @@
-'use strict';
-
 describe('Factory: NoteList', function() {
 
   var noteList;

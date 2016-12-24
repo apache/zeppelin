@@ -1,5 +1,3 @@
-'use strict';
-
 describe('Controller: ParagraphCtrl', function() {
 
   beforeEach(angular.mock.module('zeppelinWebApp'));

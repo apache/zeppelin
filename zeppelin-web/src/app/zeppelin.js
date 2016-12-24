@@ -12,8 +12,6 @@
  * limitations under the License.
  */
 
-'use strict';
-
 // Used as globally shared variable in
 // `src/app/visualization/**/*js`
 // `src/app/tabledata/*.js`

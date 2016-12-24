@@ -12,8 +12,6 @@
  * limitations under the License.
  */
 
-'use strict';
-
 import zeppelin from '../../../src/app/zeppelin.js';
 import '../../../src/app/tabledata/tabledata.js';
 

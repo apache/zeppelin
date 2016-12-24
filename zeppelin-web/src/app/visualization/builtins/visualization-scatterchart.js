@@ -12,8 +12,6 @@
  * limitations under the License.
  */
 
-'use strict';
-
 import zeppelin from '../../zeppelin';
 
 /**

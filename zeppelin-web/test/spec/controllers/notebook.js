@@ -1,5 +1,3 @@
-'use strict';
-
 describe('Controller: NotebookCtrl', function() {
   beforeEach(angular.mock.module('zeppelinWebApp'));
 

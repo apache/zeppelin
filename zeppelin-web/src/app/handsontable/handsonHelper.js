@@ -11,7 +11,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-'use strict';
 
 import zeppelin from '../zeppelin';
 
@@ -196,4 +195,3 @@ function _setColumnValidator(columns, col) {
     columns[col].validator = null;
   }
 }
-

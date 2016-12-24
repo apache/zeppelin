@@ -1,4 +1,3 @@
-'use strict';
 describe('Controller: NavCtrl', function() {
   // load the controller's module
   beforeEach(angular.mock.module('zeppelinWebApp'));

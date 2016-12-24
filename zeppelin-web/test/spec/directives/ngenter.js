@@ -1,5 +1,3 @@
-'use strict';
-
 describe('Directive: ngEnter', function() {
 
   // load the directive's module

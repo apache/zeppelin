@@ -16,7 +16,6 @@
  */
 
 // Generated on 2014-08-29 using generator-angular 0.9.5
-'use strict';
 
 // # Globbing
 // for performance reasons we're only matching one level down:
