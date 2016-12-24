@@ -206,7 +206,16 @@ module.exports = function makeWebpackConfig () {
    * Reference: http://webpack.github.io/docs/webpack-dev-server.html
    */
   config.devServer = {
-    contentBase: './.tmp',
+    historyApiFallback: true,
+    port: 9000,
+    inline: true,
+    progress: true,
+    contentBase: './src',
+    setup: function(app) {
+      app.use(
+        '/bower_components/',
+        require('express').static(path.join(__dirname, './bower_components/')));
+    },
     stats: 'minimal',
   };
 

@@ -430,11 +430,6 @@ module.exports = function(grunt) {
           dest: '.tmp/styles/images'
         }, {
           expand: true,
-          cwd: 'bower_components',
-          src: ['**/*'],
-          dest: '.tmp/bower_components',
-        }, {
-          expand: true,
           cwd: 'bower_components/ngclipboard',
           src: 'dist/**',
           dest: '.tmp'
@@ -556,14 +551,6 @@ module.exports = function(grunt) {
 
     // Run some tasks in parallel to speed up the build process
     concurrent: {
-      webpack: [
-        'copy:webpack-vendor',
-        'copy:webpack-source',
-      ],
-      test: [
-        'copy:webpack-vendor',
-        'copy:webpack-source',
-      ],
       dist: [
         'copy:styles',
         'svgmin'
@@ -580,13 +567,8 @@ module.exports = function(grunt) {
   });
 
   grunt.registerTask('pre-webpack-dev', 'Compile then start a connect web server', function(target) {
-    if (target === 'dist') {
-      return grunt.task.run(['build', 'connect:dist:keepalive']);
-    }
-
     grunt.task.run([
       'clean:server',
-      'concurrent:webpack',
     ]);
   });
 
