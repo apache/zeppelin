@@ -319,7 +319,7 @@ module.exports = function(grunt) {
     // concat, minify and revision files. Creates configurations in memory so
     // additional tasks can operate on them
     useminPrepare: {
-      html: '<%= yeoman.app %>/index.html',
+      html: '<%= yeoman.dist %>/index.html',
       options: {
         dest: '<%= yeoman.dist %>',
         flow: {
@@ -488,7 +488,6 @@ module.exports = function(grunt) {
           src: [
             '*.{ico,png,txt}',
             '.htaccess',
-            '*.html',
             'assets/styles/**/*',
             'assets/images/**/*',
             'WEB-INF/*'
@@ -580,7 +579,7 @@ module.exports = function(grunt) {
     }
   });
 
-  grunt.registerTask('prepare-webpack', 'Compile then start a connect web server', function(target) {
+  grunt.registerTask('pre-webpack-dev', 'Compile then start a connect web server', function(target) {
     if (target === 'dist') {
       return grunt.task.run(['build', 'connect:dist:keepalive']);
     }
@@ -591,17 +590,19 @@ module.exports = function(grunt) {
     ]);
   });
 
-  grunt.registerTask('build', [
+  grunt.registerTask('pre-webpack-dist', [
     'jscs',
     'eslint',
     'htmlhint',
     'clean:dist',
     'wiredep',
+  ]);
+
+  grunt.registerTask('post-webpack-dist', [
     'useminPrepare',
     'concurrent:dist',
     'postcss',
     'concat',
-    'babel:dist',
     'ngAnnotate',
     'copy:dist',
     'cssmin',

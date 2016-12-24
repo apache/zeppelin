@@ -7,8 +7,8 @@
   },
   "scripts": {
     "postinstall": "bower install --silent && grunt googlefonts",
-    "build": "grunt build",
-    "start": "grunt prepare-webpack && webpack-dev-server --port 9000 --history-api-fallback --inline --progress",
+    "build": "grunt pre-webpack-dist && webpack && grunt post-webpack-dist",
+    "start": "grunt pre-webpack-dev && webpack-dev-server --port 9000 --history-api-fallback --inline --progress",
     "test": "karma start test/karma.conf.js",
     "pretest": "npm install karma-phantomjs-launcher"
   },
@@ -51,6 +51,7 @@
     "grunt-postcss": "^0.7.1",
     "grunt-svgmin": "^0.4.0",
     "grunt-usemin": "^2.1.1",
+    "grunt-webpack": "^1.0.18",
     "grunt-wiredep": "~2.0.0",
     "html-webpack-plugin": "^2.24.1",
     "jasmine-core": "^2.5.2",
