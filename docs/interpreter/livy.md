@@ -42,7 +42,7 @@ Additional requirements for the Livy interpreter are:
 We added some common configurations for spark, and you can set any configuration you want.
 This link contains all spark configurations: http://spark.apache.org/docs/latest/configuration.html#available-properties.
 And instead of starting property with `spark.` it should be replaced with `livy.spark.`.
-Example: `spark.master` to `livy.spark.master`
+Example: `spark.driver.memory` to `livy.spark.driver.memory`
   
 <table class="table-configuration">
   <tr>
@@ -121,6 +121,8 @@ Example: `spark.master` to `livy.spark.master`
       <td>Adding extra libraries to livy interpreter</td>
     </tr>
 </table>
+
+**We remove livy.spark.master in zeppelin-0.7. Because we sugguest user to use livy 0.3 in zeppelin-0.7. And livy 0.3 don't allow to specify livy.spark.master, it enfornce yarn-cluster mode.**
 
 ## Adding External libraries
 You can load dynamic library to livy interpreter by set `livy.spark.jars.packages` property to comma-separated list of maven coordinates of jars to include on the driver and executor classpaths. The format for the coordinates should be groupId:artifactId:version. 
@@ -203,4 +205,5 @@ copy `spark-user-configurable-options.template` to `spark-user-configurable-opti
 
 ## Upgrade
 
-* We remove livy.spark.master in zeppelin-0.7. Because we sugguest user to use livy 0.3 in zeppelin-0.7. And livy 0.3 don't allow to specify livy.spark.master, it enfornce yarn-cluster mode.
+* We remove livy.spark.master in zeppelin-0.7. Because we sugguest user to use livy 0.3 in zeppelin-0.7. 
+And livy 0.3 don't allow to specify livy.spark.master, it enfornce yarn-cluster mode.

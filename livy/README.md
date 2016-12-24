@@ -1,7 +1,7 @@
 # Overview
 Livy interpreter for Apache Zeppelin
 
-# Pre requisities
+# Prerequisities
 You can follow the instructions at [Livy Quick Start](http://livy.io/quickstart.html) to set up livy.
 
 # Run Integration Tests
