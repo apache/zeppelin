@@ -37,8 +37,8 @@ import org.springframework.shell.core.*;
 /**
  * workaround for https://github.com/spring-projects/spring-shell/issues/73
  */
-public class LensJLineShellComponent extends JLineShell 
-  implements SmartLifecycle, ApplicationContextAware, InitializingBean {
+public class LensJLineShellComponent extends JLineShell
+    implements SmartLifecycle, ApplicationContextAware, InitializingBean {
 
   @Autowired
   private CommandLine commandLine;
@@ -101,15 +101,15 @@ public class LensJLineShellComponent extends JLineShell
   @SuppressWarnings("rawtypes")
   public void afterPropertiesSet() {
 
-    Map<String, CommandMarker> commands = 
-      BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext,
+    Map<String, CommandMarker> commands =
+        BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext,
         CommandMarker.class);
     for (CommandMarker command : commands.values()) {
       getSimpleParser().add(command);
     }
 
     Map<String, Converter> converters = BeanFactoryUtils
-      .beansOfTypeIncludingAncestors(applicationContext, Converter.class);
+        .beansOfTypeIncludingAncestors(applicationContext, Converter.class);
     for (Converter<?> converter : converters.values()) {
       getSimpleParser().add(converter);
     }
@@ -169,7 +169,7 @@ public class LensJLineShellComponent extends JLineShell
    */
   protected String getHistoryFileName() {
     HistoryFileNameProvider historyFileNameProvider = PluginUtils
-      .getHighestPriorityProvider(this.applicationContext, HistoryFileNameProvider.class);
+        .getHighestPriorityProvider(this.applicationContext, HistoryFileNameProvider.class);
     String providerHistoryFileName = historyFileNameProvider.getHistoryFileName();
     if (providerHistoryFileName != null) {
       return providerHistoryFileName;
@@ -186,7 +186,7 @@ public class LensJLineShellComponent extends JLineShell
    */
   protected String getPromptText() {
     PromptProvider promptProvider = PluginUtils
-      .getHighestPriorityProvider(this.applicationContext, PromptProvider.class);
+        .getHighestPriorityProvider(this.applicationContext, PromptProvider.class);
     String providerPromptText = promptProvider.getPrompt();
     if (providerPromptText != null) {
       return providerPromptText;
@@ -206,7 +206,7 @@ public class LensJLineShellComponent extends JLineShell
   private String[] getBannerText() {
     String[] bannerText = new String[4];
     BannerProvider provider = PluginUtils
-      .getHighestPriorityProvider(this.applicationContext, BannerProvider.class);
+        .getHighestPriorityProvider(this.applicationContext, BannerProvider.class);
     bannerText[0] = provider.getBanner();
     bannerText[1] = provider.getWelcomeMessage();
     bannerText[2] = provider.getVersion();

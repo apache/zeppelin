@@ -253,8 +253,8 @@ public class Paragraph extends Job implements Serializable, Cloneable {
   public List<InterpreterCompletion> completion(String buffer, int cursor) {
     String lines[] = buffer.split(System.getProperty("line.separator"));
     if (lines.length > 0
-      && lines[0].startsWith("%")
-      && cursor <= lines[0].trim().length()) {
+        && lines[0].startsWith("%")
+        && cursor <= lines[0].trim().length()) {
 
       int idx = lines[0].indexOf(' ');
       if (idx < 0 || (idx > 0 && cursor <= idx)) {
@@ -335,8 +335,8 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     }
     if (this.noteHasUser() && this.noteHasInterpreters()) {
       if (intp != null &&
-        interpreterHasUser(intp) &&
-        isUserAuthorizedToAccessInterpreter(intp.getOption()) == false) {
+          interpreterHasUser(intp) &&
+          isUserAuthorizedToAccessInterpreter(intp.getOption()) == false) {
         logger.error("{} has no permission for {} ", authenticationInfo.getUser(), repl);
         return new InterpreterResult(Code.ERROR, authenticationInfo.getUser() +
           " has no permission for " + getRequiredReplName());

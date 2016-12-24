@@ -119,7 +119,8 @@
     <plugin.remote.resource.version>1.5</plugin.remote.resource.version>
     <plugin.scm.version>1.8.1</plugin.scm.version>
     <plugin.enforcer.version>1.3.1</plugin.enforcer.version>
-    <plugin.checkstyle.version>2.13</plugin.checkstyle.version>
+    <plugin.checkstyle.version>2.17</plugin.checkstyle.version>
+    <plugin.checkstyle.runtime.version>6.19</plugin.checkstyle.runtime.version>
     <plugin.surefire.version>2.17</plugin.surefire.version>
     <plugin.assembly.version>3.0.0</plugin.assembly.version>
     <plugin.exec.version>1.2.1</plugin.exec.version>
@@ -334,33 +335,6 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-checkstyle-plugin</artifactId>
-        <configuration>
-          <configLocation>_tools/checkstyle.xml</configLocation>
-          <enableRSS>false</enableRSS>
-        </configuration>
-        <executions>
-          <execution>
-            <id>checkstyle-fail-build</id>
-            <phase>validate</phase>
-            <goals>
-              <goal>check</goal>
-            </goals>
-            <configuration>
-              <failOnViolation>true</failOnViolation>
-              <excludes>org/apache/zeppelin/interpreter/thrift/*,org/apache/zeppelin/scio/avro/*</excludes>
-            </configuration>
-          </execution>
-          <execution>
-            <id>checkstyle-gen-html-report</id>
-            <phase>install</phase>
-            <goals>
-              <goal>checkstyle-aggregate</goal>
-            </goals>
-            <configuration>
-              <excludes>org/apache/zeppelin/interpreter/thrift/*,org/apache/zeppelin/scio/avro/*</excludes>
-            </configuration>
-          </execution>
-        </executions>
       </plugin>
 
       <plugin>
@@ -503,6 +477,36 @@
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-checkstyle-plugin</artifactId>
           <version>${plugin.checkstyle.version}</version>
+          <dependencies>
+            <dependency>
+              <groupId>com.puppycrawl.tools</groupId>
+              <artifactId>checkstyle</artifactId>
+              <version>${plugin.checkstyle.runtime.version}</version>
+            </dependency>
+          </dependencies>
+          <configuration>
+            <configLocation>_tools/checkstyle.xml</configLocation>
+            <enableRSS>false</enableRSS>
+            <consoleOutput>true</consoleOutput>
+            <!-- TODO:increase violation level to WARN -->
+            <!-- <violationSeverity>warn</violationSeverity> -->
+          </configuration>
+          <executions>
+            <execution>
+              <id>checkstyle-fail-build</id>
+              <phase>validate</phase>
+              <goals>
+                <goal>check</goal>
+              </goals>
+            </execution>
+            <execution>
+              <id>checkstyle-gen-html-report</id>
+              <phase>install</phase>
+              <goals>
+                <goal>checkstyle-aggregate</goal>
+              </goals>
+            </execution>
+          </executions>
         </plugin>
 
         <plugin>
@@ -757,6 +761,21 @@
 
           </plugins>
         </pluginManagement>
+      </build>
+    </profile>
+
+    <profile>
+      <id>loose-checkstyle</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-checkstyle-plugin</artifactId>
+            <configuration>
+              <consoleOutput>false</consoleOutput>
+            </configuration>
+          </plugin>
+        </plugins>
       </build>
     </profile>
 

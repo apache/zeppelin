@@ -159,7 +159,7 @@ public class DependencyResolver extends AbstractDependencyResolver {
    */
   @Override
   public List<ArtifactResult> getArtifactsWithDep(String dependency,
-    Collection<String> excludes) throws RepositoryException {
+      Collection<String> excludes) throws RepositoryException {
     Artifact artifact = new DefaultArtifact(dependency);
     DependencyFilter classpathFilter = DependencyFilterUtils.classpathFilter(JavaScopes.COMPILE);
     PatternExclusionsDependencyFilter exclusionFilter =
