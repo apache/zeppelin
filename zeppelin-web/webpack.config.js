@@ -23,7 +23,42 @@ var autoprefixer = require('autoprefixer');
 var HtmlWebpackPlugin = require('html-webpack-plugin');
 var ExtractTextPlugin = require('extract-text-webpack-plugin');
 var CopyWebpackPlugin = require('copy-webpack-plugin');
+var InsertLiveReloadPlugin = function InsertLiveReloadPlugin(options) {
+  this.options = options || {};
+  this.port = this.options.port || 35729;
+  this.hostname = this.options.hostname || 'localhost';
+}
 
+InsertLiveReloadPlugin.prototype.autoloadJs = function autoloadJs() {
+  return
+};
+
+InsertLiveReloadPlugin.prototype.scriptTag = function scriptTag(source) {
+  var reloadScriptTag = [
+    '// webpack-livereload-plugin',
+    '(function() {',
+    '  if (typeof window === "undefined") { return };',
+    '  var id = "webpack-livereload-plugin-script";',
+    '  if (document.getElementById(id)) { return; }',
+    '  var el = document.createElement("script");',
+    '  el.id = id;',
+    '  el.async = true;',
+    '  el.src = "http://' + this.hostname + ':' + this.port + '/livereload.js";',
+    '  document.getElementsByTagName("head")[0].appendChild(el);',
+    '}());',
+    ''
+  ].join('\n');
+  return reloadScriptTag + source;
+};
+
+InsertLiveReloadPlugin.prototype.applyCompilation = function applyCompilation(compilation) {
+  compilation.mainTemplate.plugin('startup', this.scriptTag.bind(this));
+};
+
+InsertLiveReloadPlugin.prototype.apply = function apply(compiler) {
+  this.compiler = compiler;
+  compiler.plugin('compilation', this.applyCompilation.bind(this));
+};
 
 /**
  * Env
@@ -198,6 +233,8 @@ module.exports = function makeWebpackConfig () {
       new CopyWebpackPlugin([
       ])
     )
+  } else {
+      config.plugins.push(new InsertLiveReloadPlugin())
   }
 
   /**
@@ -209,6 +246,7 @@ module.exports = function makeWebpackConfig () {
     historyApiFallback: true,
     port: 9000,
     inline: true,
+    hot: true,
     progress: true,
     contentBase: './src',
     setup: function(app) {

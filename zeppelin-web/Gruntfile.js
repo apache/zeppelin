@@ -135,23 +135,19 @@ module.exports = function(grunt) {
           '<%= yeoman.app %>/app/**/*.js',
           '<%= yeoman.app %>/components/**/*.js'
         ],
-        tasks: ['newer:eslint:all', 'newer:jscs:all', 'newer:babel:dev'],
-        options: {
-          livereload: '<%= connect.options.livereload %>'
-        }
+        tasks: ['newer:eslint:all', 'newer:jscs:all'],
       },
       html: {
         files: [
           '<%= yeoman.app %>/**/*.html'
         ],
-        tasks: ['newer:htmlhint', 'newer:copy:html']
+        tasks: ['newer:htmlhint']
       },
       jsTest: {
         files: ['test/spec/{,*/}*.js'],
         tasks: [
           'newer:eslint:test',
           'newer:jscs:test',
-          'newer:babel:dev',
           'karma'
         ]
       },
@@ -168,14 +164,12 @@ module.exports = function(grunt) {
         files: ['Gruntfile.js']
       },
       livereload: {
-        options: {
-          livereload: '<%= connect.options.livereload %>'
-        },
+        options: {livereload: 35729,},
         files: [
           '<%= yeoman.app %>/app/**/*.html',
           '<%= yeoman.app %>/*.html',
           '<%= yeoman.app %>/components/**/*.html',
-          '.tmp/styles/{,*/}*.css',
+          '<%= yeoman.app %>/**/*.css',
           '<%= yeoman.app %>/assets/images/**/*.{png,jpg,jpeg,gif,webp,svg}'
         ]
       }
@@ -183,26 +177,9 @@ module.exports = function(grunt) {
 
     // The actual grunt server settings
     connect: {
-      options: {
-        port: 9000,
-        // Change this to '0.0.0.0' to access the server from outside.
-        hostname: 'localhost',
-        livereload: 35729,
-        base: '.tmp',
-      },
-      livereload: {
-        options: {
-          open: false,
-          middleware: function(connect) {
-            return [
-              connect.static('.tmp'),
-            ];
-          }
-        }
-      },
       test: {
         options: {
-          port: 9001,
+          port: 9002,
           middleware: function(connect) {
             return [
               connect.static('.tmp'),
@@ -554,7 +531,7 @@ module.exports = function(grunt) {
       dist: [
         'copy:styles',
         'svgmin'
-      ]
+      ],
     },
 
     // Test settings
@@ -569,8 +546,13 @@ module.exports = function(grunt) {
   grunt.registerTask('pre-webpack-dev', 'Compile then start a connect web server', function(target) {
     grunt.task.run([
       'clean:server',
+      'wiredep',
     ]);
   });
+
+  grunt.registerTask('watch-webpack-dev', [
+    'watch',
+  ]);
 
   grunt.registerTask('pre-webpack-dist', [
     'jscs',
