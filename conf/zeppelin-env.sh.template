@@ -36,6 +36,10 @@
 # export ZEPPELIN_NOTEBOOK_S3_KMS_KEY_ID    # AWS KMS key ID
 # export ZEPPELIN_NOTEBOOK_S3_KMS_KEY_REGION      # AWS KMS key region
 # export ZEPPELIN_NOTEBOOK_S3_SSE      # Server-side encryption enabled for notebooks
+# export ZEPPELIN_NOTEBOOK_MONGO_URI				# MongoDB connection URI used to connect to a MongoDB database server. Default "mongodb://localhost"
+# export ZEPPELIN_NOTEBOOK_MONGO_DATABASE		# Database name to store notebook. Default "zeppelin"
+# export ZEPPELIN_NOTEBOOK_MONGO_COLLECTION # Collection name to store notebook. Default "notes"
+# export ZEPPELIN_NOTEBOOK_MONGO_AUTOIMPORT	# If "true" import local notes under ZEPPELIN_NOTEBOOK_DIR on startup. Default "false"
 # export ZEPPELIN_IDENT_STRING   		# A string representing this instance of zeppelin. $USER by default.
 # export ZEPPELIN_NICENESS       		# The scheduling priority for daemons. Defaults to 0.
 # export ZEPPELIN_INTERPRETER_LOCALREPO         # Local repository for interpreter's additional dependency loading

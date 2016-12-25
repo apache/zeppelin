@@ -384,6 +384,22 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     return getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_S3_SSE);
   }
 
+  public String getMongoUri() {
+    return getString(ConfVars.ZEPPELIN_NOTEBOOK_MONGO_URI);
+  }
+
+  public String getMongoDatabase() {
+    return getString(ConfVars.ZEPPELIN_NOTEBOOK_MONGO_DATABASE);
+  }
+
+  public String getMongoCollection() {
+    return getString(ConfVars.ZEPPELIN_NOTEBOOK_MONGO_COLLECTION);
+  }
+
+  public boolean getMongoAutoimport() {
+    return getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_MONGO_AUTOIMPORT);
+  }
+
   public String getInterpreterListPath() {
     return getRelativeDir(String.format("%s/interpreter-list", getConfDir()));
   }
@@ -595,6 +611,10 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_NOTEBOOK_AZURE_CONNECTION_STRING("zeppelin.notebook.azure.connectionString", null),
     ZEPPELIN_NOTEBOOK_AZURE_SHARE("zeppelin.notebook.azure.share", "zeppelin"),
     ZEPPELIN_NOTEBOOK_AZURE_USER("zeppelin.notebook.azure.user", "user"),
+    ZEPPELIN_NOTEBOOK_MONGO_DATABASE("zeppelin.notebook.mongo.database", "zeppelin"),
+    ZEPPELIN_NOTEBOOK_MONGO_COLLECTION("zeppelin.notebook.mongo.collection", "notes"),
+    ZEPPELIN_NOTEBOOK_MONGO_URI("zeppelin.notebook.mongo.uri", "mongodb://localhost"),
+    ZEPPELIN_NOTEBOOK_MONGO_AUTOIMPORT("zeppelin.notebook.mongo.autoimport", false),
     ZEPPELIN_NOTEBOOK_STORAGE("zeppelin.notebook.storage", GitNotebookRepo.class.getName()),
     ZEPPELIN_NOTEBOOK_ONE_WAY_SYNC("zeppelin.notebook.one.way.sync", false),
     // whether by default note is public or private
