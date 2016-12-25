@@ -175,28 +175,6 @@ module.exports = function(grunt) {
       }
     },
 
-    // The actual grunt server settings
-    connect: {
-      test: {
-        options: {
-          port: 9002,
-          middleware: function(connect) {
-            return [
-              connect.static('.tmp'),
-              connect.static('test'),
-              connect.static(appConfig.app)
-            ];
-          }
-        }
-      },
-      dist: {
-        options: {
-          open: false,
-          base: '<%= yeoman.dist %>'
-        }
-      }
-    },
-
     jscs: {
       options: {
         config: '.jscsrc',
@@ -246,7 +224,7 @@ module.exports = function(grunt) {
           ]
         }]
       },
-      server: '.tmp'
+      tmp: '.tmp'
     },
 
     // Add vendor prefixed styles
@@ -389,68 +367,6 @@ module.exports = function(grunt) {
 
     // Copies remaining files to places other tasks can use
     copy: {
-      'webpack-vendor': {
-        files: [{
-          expand: true,
-          cwd: 'bower_components/datatables/media/images',
-          src: '{,*/}*.{png,jpg,jpeg,gif}',
-          dest: '.tmp/images'
-        }, {
-          expand: true,
-          cwd: 'bower_components/bootstrap/dist',
-          src: 'fonts/*',
-          dest: '.tmp'
-        }, {
-          expand: true,
-          cwd: 'bower_components/jquery-ui/themes/base/images',
-          src: '{,*/}*.{png,jpg,jpeg,gif}',
-          dest: '.tmp/styles/images'
-        }, {
-          expand: true,
-          cwd: 'bower_components/ngclipboard',
-          src: 'dist/**',
-          dest: '.tmp'
-        }, {
-          expand: true,
-          cwd: 'bower_components/MathJax',
-          src: [
-            'extensions/**', 'jax/**', 'fonts/**'],
-          dest: '.tmp'
-        }]
-      },
-      'webpack-source': {
-        files: [{
-          expand: true,
-          dot: true,
-          cwd: '<%= yeoman.app %>',
-          dest: '.tmp',
-          src: [
-            '*.{ico,png,txt}',
-            '.htaccess',
-            '*.html',
-            '**/*.css',
-            'assets/styles/**/*',
-            'assets/images/**/*',
-            'WEB-INF/*'
-          ]
-        }, {
-          // copy fonts
-          expand: true,
-          cwd: '<%= yeoman.app %>',
-          dest: '.tmp',
-          src: ['fonts/**/*.{eot,svg,ttf,woff}']
-        }, {
-          expand: true,
-          cwd: '<%= yeoman.app %>',
-          dest: '.tmp',
-          src: ['app/**/*.html', 'components/**/*.html']
-        },{
-          expand: true,
-          cwd: '.tmp/images',
-          dest: '.tmp/images',
-          src: ['generated/*']
-        }]
-      },
       dist: {
         files: [{
           expand: true,
@@ -545,7 +461,7 @@ module.exports = function(grunt) {
 
   grunt.registerTask('pre-webpack-dev', 'Compile then start a connect web server', function(target) {
     grunt.task.run([
-      'clean:server',
+      'clean:tmp',
       'wiredep',
     ]);
   });
