@@ -108,7 +108,7 @@ public class Input implements Serializable {
   }
 
   public Input(String name, String displayName, String type, String argument, Object defaultValue,
-               ParamOption[] options, boolean hidden) {
+      ParamOption[] options, boolean hidden) {
     super();
     this.name = name;
     this.displayName = displayName;
@@ -385,7 +385,7 @@ public class Input implements Serializable {
   }
 
   public static String[] split(String str, String escapeSeq, char escapeChar, String[] blockStart,
-                               String[] blockEnd, String[] splitters, boolean includeSplitter) {
+      String[] blockEnd, String[] splitters, boolean includeSplitter) {
 
     List<String> splits = new ArrayList<>();
 
@@ -422,7 +422,7 @@ public class Input implements Serializable {
         boolean multicharBlockDetected = false;
         for (int b = 0; b < blockStart.length; b++) {
           if (blockStartPos >= 0
-                  && getBlockStr(blockStart[b]).compareTo(str.substring(blockStartPos, i)) == 0) {
+              && getBlockStr(blockStart[b]).compareTo(str.substring(blockStartPos, i)) == 0) {
             blockStack.remove(0);
             blockStack.add(0, b);
             multicharBlockDetected = true;
@@ -439,7 +439,7 @@ public class Input implements Serializable {
           // try to find nested block start
 
           if (curString.substring(lastEscapeOffset + 1).endsWith(
-                  getBlockStr(blockStart[blockStack.get(0)])) == true) {
+              getBlockStr(blockStart[blockStack.get(0)])) == true) {
             blockStack.add(0, blockStack.get(0)); // block is started
             blockStartPos = i;
             continue;
@@ -448,7 +448,7 @@ public class Input implements Serializable {
 
         // check if block is finishing
         if (curString.substring(lastEscapeOffset + 1).endsWith(
-                getBlockStr(blockEnd[blockStack.get(0)]))) {
+            getBlockStr(blockEnd[blockStack.get(0)]))) {
           // the block closer is one of the splitters (and not nested block)
           if (isNestedBlock(blockEnd[blockStack.get(0)]) == false) {
             for (String splitter : splitters) {
@@ -496,7 +496,7 @@ public class Input implements Serializable {
         // check if block is started
         for (int b = 0; b < blockStart.length; b++) {
           if (curString.substring(lastEscapeOffset + 1)
-                  .endsWith(getBlockStr(blockStart[b])) == true) {
+                       .endsWith(getBlockStr(blockStart[b])) == true) {
             blockStack.add(0, b); // block is started
             blockStartPos = i;
             break;
