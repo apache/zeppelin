@@ -59,7 +59,7 @@ limitations under the License.
                     Per Note
                   </a>
                 </li>
-                <li ng-if="ticket.ticket !== 'anonymous'">
+                <li ng-if="ticket.principal !== 'anonymous'">
                   <a style="cursor:pointer"
                      ng-click="setInterpreterRunningOption(setting.id, 'shared', 'scoped')">
                     Per User
@@ -126,7 +126,7 @@ limitations under the License.
               </ul>
             </span>
               process.
-            <span ng-if="getInterpreterRunningOption(setting.id) === 'Per User' && ticket.ticket !== 'anonymous'">
+            <span ng-if="getInterpreterRunningOption(setting.id) === 'Per User' && ticket.principal !== 'anonymous'">
               <span ng-if="getPerNoteOption(setting.id) === 'shared'">
                 <button type="button" class="btn btn-default btn-xs"
                         ng-click="setPerNoteOption(setting.id, 'scoped')"
@@ -143,7 +143,7 @@ limitations under the License.
           <div class="row interpreter"
                style="margin-top: 6px;"
                ng-if="getInterpreterRunningOption(setting.id) === 'Per User'
-                      && ticket.ticket !== 'anonymous'
+                      && ticket.principal !== 'anonymous'
                       && getPerNoteOption(setting.id) !== 'shared'">
             <div class="col-md-12">
               <span>
