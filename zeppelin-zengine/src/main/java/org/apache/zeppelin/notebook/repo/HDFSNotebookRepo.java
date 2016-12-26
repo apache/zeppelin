@@ -189,7 +189,7 @@ public class HDFSNotebookRepo extends VFSNotebookRepo implements NotebookRepo {
   }
 
   private void uploadNoteToHDFS(Note note) throws IOException {
-    uploadNoteToHDFS(note.id());
+    uploadNoteToHDFS(note.getId());
   }
 
   private void uploadNoteToHDFS(String noteId) throws IOException {
