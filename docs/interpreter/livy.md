@@ -40,7 +40,7 @@ Additional requirements for the Livy interpreter are:
 
 ## Configuration
 We added some common configurations for spark, and you can set any configuration you want.
-This link contains all spark configurations: http://spark.apache.org/docs/latest/configuration.html#available-properties.
+You can find all Spark configurations in [here](http://spark.apache.org/docs/latest/configuration.html#available-properties).
 And instead of starting property with `spark.` it should be replaced with `livy.spark.`.
 Example: `spark.driver.memory` to `livy.spark.driver.memory`
   
@@ -202,8 +202,3 @@ Edit `conf/spark-blacklist.conf` file in livy server and comment out `#spark.mas
 
 If you choose to work on livy in `apps/spark/java` directory in [https://github.com/cloudera/hue](https://github.com/cloudera/hue),
 copy `spark-user-configurable-options.template` to `spark-user-configurable-options.conf` file in livy server and comment out `#spark.master`. 
-
-## Upgrade
-
-* We remove livy.spark.master in zeppelin-0.7. Because we sugguest user to use livy 0.3 in zeppelin-0.7. 
-And livy 0.3 don't allow to specify livy.spark.master, it enfornce yarn-cluster mode.
