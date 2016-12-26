@@ -14,16 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.zeppelin.interpreter.dev;
+
+package org.apache.zeppelin.helium;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.Properties;
 
 import org.apache.thrift.TException;
+import org.apache.zeppelin.helium.DevInterpreter.InterpreterEvent;
 import org.apache.zeppelin.interpreter.*;
-import org.apache.zeppelin.interpreter.dev.DevInterpreter.InterpreterEvent;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterEventClient;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterServer;
 import org.slf4j.Logger;

@@ -727,6 +727,13 @@
     </profile>
 
     <profile>
+      <id>helium-dev</id>
+      <modules>
+        <module>helium-dev</module>
+      </modules>
+    </profile>
+
+    <profile>
       <id>build-distr</id>
       <activation>
         <activeByDefault>false</activeByDefault>
