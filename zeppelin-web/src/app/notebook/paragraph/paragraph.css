@@ -202,6 +202,12 @@ table.dataTable.table-condensed .sorting_desc:after {
   cursor: pointer;
 }
 
+.dropdown-menu > li > a.clipboard {
+  padding: 3px 5px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 /*
   Paragraph Title
 */
