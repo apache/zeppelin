@@ -37,6 +37,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Base class for livy interpreters.
@@ -51,6 +52,11 @@ public abstract class BaseLivyInterprereter extends Interpreter {
   private long sessionCreationTimeout;
   protected boolean displayAppInfo;
   private AtomicBoolean sessionExpired = new AtomicBoolean(false);
+  private LivyVersion livyVersion;
+
+  // keep tracking the mapping between paragraphId and statementId, so that we can cancel the
+  // statement after we execute it.
+  private ConcurrentHashMap<String, Integer> paragraphId2StmtIdMapping = new ConcurrentHashMap<>();
 
   public BaseLivyInterprereter(Properties property) {
     super(property);
@@ -89,23 +95,31 @@ public abstract class BaseLivyInterprereter extends Interpreter {
         // livy 0.2 don't return appId and sparkUiUrl in response so that we need to get it
         // explicitly by ourselves.
         sessionInfo.appId = extractStatementResult(
-            interpret("sc.applicationId", false, false).message()
+            interpret("sc.applicationId", null, false, false).message()
                 .get(0).getData());
       }
 
       interpret(
           "val webui=sc.getClass.getMethod(\"ui\").invoke(sc).asInstanceOf[Some[_]].get",
-          false, false);
+          null, false, false);
       if (StringUtils.isEmpty(sessionInfo.appInfo.get("sparkUiUrl"))) {
         sessionInfo.webUIAddress = extractStatementResult(
             interpret(
-                "webui.getClass.getMethod(\"appUIAddress\").invoke(webui)", false, false)
+                "webui.getClass.getMethod(\"appUIAddress\").invoke(webui)", null, false, false)
                 .message().get(0).getData());
       } else {
         sessionInfo.webUIAddress = sessionInfo.appInfo.get("sparkUiUrl");
       }
       LOGGER.info("Create livy session successfully with sessionId: {}, appId: {}, webUI: {}",
           sessionInfo.id, sessionInfo.appId, sessionInfo.webUIAddress);
+    }
+    // check livy version
+    try {
+      this.livyVersion = getLivyVersion();
+      LOGGER.info("Use livy " + livyVersion);
+    } catch (APINotFoundException e) {
+      this.livyVersion = new LivyVersion("0.2.0");
+      LOGGER.info("Use livy 0.2.0");
     }
   }
 
@@ -120,7 +134,7 @@ public abstract class BaseLivyInterprereter extends Interpreter {
     }
 
     try {
-      return interpret(st, this.displayAppInfo, true);
+      return interpret(st, context.getParagraphId(), this.displayAppInfo, true);
     } catch (LivyException e) {
       LOGGER.error("Fail to interpret:" + st, e);
       return new InterpreterResult(InterpreterResult.Code.ERROR,
@@ -148,7 +162,18 @@ public abstract class BaseLivyInterprereter extends Interpreter {
 
   @Override
   public void cancel(InterpreterContext context) {
-    //TODO(zjffdu). Use livy cancel api which is available in livy 0.3
+    if (livyVersion.isCancelSupported()) {
+      try {
+        cancelStatement(paragraphId2StmtIdMapping.get(context.getParagraphId()));
+      } catch (LivyException e) {
+        LOGGER.warn("Fail to cancel statement {} for paragraph {} ",
+            paragraphId2StmtIdMapping.get(context.getParagraphId()), context.getParagraphId());
+      } finally {
+        paragraphId2StmtIdMapping.remove(context.getParagraphId());
+      }
+    } else {
+      LOGGER.warn("cancel is not supported for this version of livy: " + livyVersion);
+    }
   }
 
   @Override
@@ -206,42 +231,56 @@ public abstract class BaseLivyInterprereter extends Interpreter {
     return SessionInfo.fromJson(callRestAPI("/sessions/" + sessionId, "GET"));
   }
 
-  public InterpreterResult interpret(String code, boolean displayAppInfo,
-                                     boolean appendSessionExpired)
-      throws LivyException {
+  public InterpreterResult interpret(String code,
+                                     String paragraphId,
+                                     boolean displayAppInfo,
+                                     boolean appendSessionExpired) throws LivyException {
     StatementInfo stmtInfo = null;
     boolean sessionExpired = false;
     try {
-      stmtInfo = executeStatement(new ExecuteRequest(code));
-    } catch (SessionNotFoundException e) {
-      LOGGER.warn("Livy session {} is expired, new session will be created.", sessionInfo.id);
-      sessionExpired = true;
-      // we don't want to create multiple sessions because it is possible to have multiple thread
-      // to call this method, like LivySparkSQLInterpreter which use ParallelScheduler. So we need
-      // to check session status again in this sync block
-      synchronized (this) {
-        if (isSessionExpired()) {
-          initLivySession();
-        }
-      }
-      stmtInfo = executeStatement(new ExecuteRequest(code));
-    }
-    // pull the statement status
-    while (!stmtInfo.isAvailable()) {
       try {
-        Thread.sleep(1000);
-      } catch (InterruptedException e) {
-        LOGGER.error("InterruptedException when pulling statement status.", e);
-        throw new LivyException(e);
+        stmtInfo = executeStatement(new ExecuteRequest(code));
+      } catch (SessionNotFoundException e) {
+        LOGGER.warn("Livy session {} is expired, new session will be created.", sessionInfo.id);
+        sessionExpired = true;
+        // we don't want to create multiple sessions because it is possible to have multiple thread
+        // to call this method, like LivySparkSQLInterpreter which use ParallelScheduler. So we need
+        // to check session status again in this sync block
+        synchronized (this) {
+          if (isSessionExpired()) {
+            initLivySession();
+          }
+        }
+        stmtInfo = executeStatement(new ExecuteRequest(code));
       }
-      stmtInfo = getStatementInfo(stmtInfo.id);
+      if (paragraphId != null) {
+        paragraphId2StmtIdMapping.put(paragraphId, stmtInfo.id);
+      }
+      // pull the statement status
+      while (!stmtInfo.isAvailable()) {
+        try {
+          Thread.sleep(1000);
+        } catch (InterruptedException e) {
+          LOGGER.error("InterruptedException when pulling statement status.", e);
+          throw new LivyException(e);
+        }
+        stmtInfo = getStatementInfo(stmtInfo.id);
+      }
+      if (appendSessionExpired) {
+        return appendSessionExpire(getResultFromStatementInfo(stmtInfo, displayAppInfo),
+            sessionExpired);
+      } else {
+        return getResultFromStatementInfo(stmtInfo, displayAppInfo);
+      }
+    } finally {
+      if (paragraphId != null) {
+        paragraphId2StmtIdMapping.remove(paragraphId);
+      }
     }
-    if (appendSessionExpired) {
-      return appendSessionExpire(getResultFromStatementInfo(stmtInfo, displayAppInfo),
-          sessionExpired);
-    } else {
-      return getResultFromStatementInfo(stmtInfo, displayAppInfo);
-    }
+  }
+
+  private LivyVersion getLivyVersion() throws LivyException {
+    return new LivyVersion((LivyVersionResponse.fromJson(callRestAPI("/version", "GET")).version));
   }
 
   private boolean isSessionExpired() throws LivyException {
@@ -269,6 +308,7 @@ public abstract class BaseLivyInterprereter extends Interpreter {
       return result;
     }
   }
+
 
   private InterpreterResult getResultFromStatementInfo(StatementInfo stmtInfo,
                                                        boolean displayAppInfo) {
@@ -341,6 +381,10 @@ public abstract class BaseLivyInterprereter extends Interpreter {
         callRestAPI("/sessions/" + sessionInfo.id + "/statements/" + statementId, "GET"));
   }
 
+  private void cancelStatement(int statementId) throws LivyException {
+    callRestAPI("/sessions/" + sessionInfo.id + "/statements/" + statementId + "/cancel", "POST");
+  }
+
   private RestTemplate getRestTemplate() {
     String keytabLocation = property.getProperty("zeppelin.livy.keytab");
     String principal = property.getProperty("zeppelin.livy.principal");
@@ -385,21 +429,20 @@ public abstract class BaseLivyInterprereter extends Interpreter {
     LOGGER.debug("Get response, StatusCode: {}, responseBody: {}", response.getStatusCode(),
         response.getBody());
     if (response.getStatusCode().value() == 200
-        || response.getStatusCode().value() == 201
-        || response.getStatusCode().value() == 404) {
-      String responseBody = response.getBody();
-      if (responseBody.matches("\"Session '\\d+' not found.\"")) {
-        throw new SessionNotFoundException(responseBody);
+        || response.getStatusCode().value() == 201) {
+      return response.getBody();
+    } else if (response.getStatusCode().value() == 404) {
+      if (response.getBody().matches("Session '\\d+' not found.")) {
+        throw new SessionNotFoundException(response.getBody());
       } else {
-        return responseBody;
+        throw new APINotFoundException("No rest api found for " + targetURL +
+            ", " + response.getStatusCode());
       }
     } else {
       String responseString = response.getBody();
       if (responseString.contains("CreateInteractiveRequest[\\\"master\\\"]")) {
         return responseString;
       }
-      LOGGER.error(String.format("Error with %s StatusCode: %s",
-          response.getStatusCode().value(), responseString));
       throw new LivyException(String.format("Error with %s StatusCode: %s",
           response.getStatusCode().value(), responseString));
     }
@@ -502,7 +545,7 @@ public abstract class BaseLivyInterprereter extends Interpreter {
     }
 
     public boolean isAvailable() {
-      return state.equals("available");
+      return state.equals("available") || state.equals("cancelled");
     }
 
     private static class StatementOutput {
@@ -540,6 +583,19 @@ public abstract class BaseLivyInterprereter extends Interpreter {
         @SerializedName("data")
         List<List> records;
       }
+    }
+  }
+
+  private static class LivyVersionResponse {
+    public String url;
+    public String branch;
+    public String revision;
+    public String version;
+    public String date;
+    public String user;
+
+    public static LivyVersionResponse fromJson(String json) {
+      return gson.fromJson(json, LivyVersionResponse.class);
     }
   }
 
