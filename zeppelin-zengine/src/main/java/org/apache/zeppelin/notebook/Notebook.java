@@ -60,6 +60,7 @@ import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.apache.zeppelin.notebook.repo.NotebookRepo.Revision;
 import org.apache.zeppelin.notebook.repo.NotebookRepoSync;
+import org.apache.zeppelin.notebook.typeadapter.DateDeserializer;
 import org.apache.zeppelin.resource.ResourcePoolUtils;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
@@ -204,7 +205,7 @@ public class Notebook implements NoteEventListener {
     gsonBuilder.setPrettyPrinting();
 
     Gson gson =
-        gsonBuilder.registerTypeAdapter(Date.class, new NotebookImportDeserializer()).create();
+        gsonBuilder.registerTypeAdapter(Date.class, new DateDeserializer()).create();
     JsonReader reader = new JsonReader(new StringReader(sourceJson));
     reader.setLenient(true);
     Note newNote;
