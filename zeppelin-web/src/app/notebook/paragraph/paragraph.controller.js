@@ -1153,7 +1153,7 @@
 
     $scope.$on('doubleClickParagraph', function(event, paragraphId) {
       if ($scope.paragraph.id === paragraphId && $scope.paragraph.config.editorHide &&
-          $scope.paragraph.config.editorSetting.editOnDblClick) {
+          $scope.paragraph.config.editorSetting.editOnDblClick && $scope.revisionView !== true) {
         var deferred = $q.defer();
         openEditorAndCloseTable($scope.paragraph);
         $timeout(
