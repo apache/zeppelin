@@ -289,7 +289,7 @@ public class ZeppelinIT extends AbstractZeppelinIT {
 
       // Get 2nd paragraph id
       final String secondParagraphId = driver.findElement(By.xpath(getParagraphXPath(2)
-              + "//div[@class=\"control ng-scope\"]//ul[@class=\"dropdown-menu\"]/li[1]"))
+              + "//div[@class=\"control ng-scope\"]//ul[@class=\"dropdown-menu dropdown-menu-right\"]/li[1]"))
               .getAttribute("textContent");
 
       assertTrue("Cannot find paragraph id for the 2nd paragraph", isNotBlank(secondParagraphId));
