@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import com.google.gson.annotations.SerializedName;
 import org.apache.zeppelin.annotation.ZeppelinApi;
 import org.apache.zeppelin.annotation.Experimental;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
@@ -322,6 +321,7 @@ public abstract class Interpreter {
     private Map<String, Object> editor;
     private String path;
     private InterpreterOption option;
+    private InterpreterRunner runner;
 
     public RegisteredInterpreter(String name, String group, String className,
         Map<String, InterpreterProperty> properties) {
@@ -381,6 +381,10 @@ public abstract class Interpreter {
 
     public InterpreterOption getOption() {
       return option;
+    }
+
+    public InterpreterRunner getRunner() {
+      return runner;
     }
   }
 

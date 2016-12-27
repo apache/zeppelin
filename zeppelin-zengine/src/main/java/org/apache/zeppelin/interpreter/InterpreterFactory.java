@@ -17,6 +17,7 @@
 
 package org.apache.zeppelin.interpreter;
 
+import com.google.common.base.Joiner;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -237,7 +238,8 @@ public class InterpreterFactory implements InterpreterGroupFactory {
       interpreterInfo =
           new InterpreterInfo(r.getClassName(), r.getName(), r.isDefaultInterpreter(),
               r.getEditor());
-      add(r.getGroup(), interpreterInfo, r.getProperties(), defaultOption, r.getPath());
+      add(r.getGroup(), interpreterInfo, r.getProperties(), defaultOption, r.getPath(),
+          r.getRunner());
     }
 
     for (String settingId : interpreterSettingsRef.keySet()) {
@@ -294,7 +296,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     InterpreterOption option = InterpreterOption.fromInterpreterOption(o.getOption());
 
     InterpreterSetting setting = new InterpreterSetting(o.getName(), o.getName(),
-        infos, props, deps, option, o.getPath());
+        infos, props, deps, option, o.getPath(), o.getInterpreterRunner());
     setting.setInterpreterGroupFactory(this);
     return setting;
   }
@@ -360,7 +362,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
       InterpreterOption option = registeredInterpreter.getOption() == null ? defaultOption :
           registeredInterpreter.getOption();
       add(registeredInterpreter.getGroup(), interpreterInfo, registeredInterpreter.getProperties(),
-          option, absolutePath);
+          option, absolutePath, registeredInterpreter.getRunner());
     }
 
   }
@@ -629,11 +631,13 @@ public class InterpreterFactory implements InterpreterGroupFactory {
   }
 
   private InterpreterSetting add(String group, InterpreterInfo interpreterInfo,
-      Map<String, InterpreterProperty> interpreterProperties, InterpreterOption option, String path)
+      Map<String, InterpreterProperty> interpreterProperties, InterpreterOption option, String path,
+      InterpreterRunner runner)
       throws InterpreterException, IOException, RepositoryException {
     ArrayList<InterpreterInfo> infos = new ArrayList<>();
     infos.add(interpreterInfo);
-    return add(group, infos, new ArrayList<Dependency>(), option, interpreterProperties, path);
+    return add(group, infos, new ArrayList<Dependency>(), option, interpreterProperties, path,
+        runner);
   }
 
   /**
@@ -642,7 +646,8 @@ public class InterpreterFactory implements InterpreterGroupFactory {
    */
   public InterpreterSetting add(String group, ArrayList<InterpreterInfo> interpreterInfos,
       List<Dependency> dependencies, InterpreterOption option,
-      Map<String, InterpreterProperty> interpreterProperties, String path) {
+      Map<String, InterpreterProperty> interpreterProperties, String path,
+      InterpreterRunner runner) {
     Preconditions.checkNotNull(group, "name should not be null");
     Preconditions.checkNotNull(interpreterInfos, "interpreterInfos should not be null");
     Preconditions.checkNotNull(dependencies, "dependencies should not be null");
@@ -689,11 +694,10 @@ public class InterpreterFactory implements InterpreterGroupFactory {
       } else {
         interpreterSetting =
             new InterpreterSetting(group, null, interpreterInfos, interpreterProperties,
-                dependencies, option, path);
+                dependencies, option, path, runner);
         interpreterSettingsRef.put(group, interpreterSetting);
       }
     }
-
 
     if (dependencies.size() > 0) {
       loadInterpreterDependencies(interpreterSetting);
@@ -788,6 +792,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
 
     List<InterpreterInfo> interpreterInfos = interpreterSetting.getInterpreterInfos();
     String path = interpreterSetting.getPath();
+    InterpreterRunner runner = interpreterSetting.getInterpreterRunner();
     Interpreter interpreter;
     for (InterpreterInfo info : interpreterInfos) {
       if (option.isRemote()) {
@@ -797,7 +802,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
                   properties, user, option.isUserImpersonate);
         } else {
           interpreter = createRemoteRepl(path, interpreterSessionKey, info.getClassName(),
-              properties, interpreterSetting.getId(), user, option.isUserImpersonate());
+              properties, interpreterSetting.getId(), user, option.isUserImpersonate(), runner);
         }
       } else {
         interpreter = createRepl(interpreterSetting.getPath(), info.getClassName(), properties);
@@ -1130,15 +1135,21 @@ public class InterpreterFactory implements InterpreterGroupFactory {
 
   private Interpreter createRemoteRepl(String interpreterPath, String interpreterSessionKey,
       String className, Properties property, String interpreterSettingId,
-      String userName, Boolean isUserImpersonate) {
+      String userName, Boolean isUserImpersonate, InterpreterRunner interpreterRunner) {
     int connectTimeout = conf.getInt(ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT);
     String localRepoPath = conf.getInterpreterLocalRepoPath() + "/" + interpreterSettingId;
     int maxPoolSize = conf.getInt(ConfVars.ZEPPELIN_INTERPRETER_MAX_POOL_SIZE);
+    String interpreterRunnerPath;
+    if (null != interpreterRunner) {
+      interpreterRunnerPath = Joiner.on(File.separator)
+          .join(interpreterPath, interpreterRunner.getPath());
+    } else {
+      interpreterRunnerPath = conf.getInterpreterRemoteRunnerPath();
+    }
 
     RemoteInterpreter remoteInterpreter =
         new RemoteInterpreter(property, interpreterSessionKey, className,
-            conf.getInterpreterRemoteRunnerPath(),
-            interpreterPath, localRepoPath, connectTimeout, maxPoolSize,
+            interpreterRunnerPath, interpreterPath, localRepoPath, connectTimeout, maxPoolSize,
             remoteInterpreterProcessListener, appEventListener, userName, isUserImpersonate);
     remoteInterpreter.addEnv(env);
 

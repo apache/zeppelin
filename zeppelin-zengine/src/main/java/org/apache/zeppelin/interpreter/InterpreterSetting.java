@@ -66,6 +66,8 @@ public class InterpreterSetting {
   private InterpreterOption option;
   private transient String path;
 
+  @SerializedName("runner") private InterpreterRunner interpreterRunner;
+
   @Deprecated private transient InterpreterGroupFactory interpreterGroupFactory;
 
   private final transient ReentrantReadWriteLock.ReadLock interpreterGroupReadLock;
@@ -79,7 +81,7 @@ public class InterpreterSetting {
 
   public InterpreterSetting(String id, String name, String group,
       List<InterpreterInfo> interpreterInfos, Object properties, List<Dependency> dependencies,
-      InterpreterOption option, String path) {
+      InterpreterOption option, String path, InterpreterRunner runner) {
     this();
     this.id = id;
     this.name = name;
@@ -90,11 +92,14 @@ public class InterpreterSetting {
     this.option = option;
     this.path = path;
     this.status = Status.READY;
+    this.interpreterRunner = runner;
   }
 
   public InterpreterSetting(String name, String group, List<InterpreterInfo> interpreterInfos,
-      Object properties, List<Dependency> dependencies, InterpreterOption option, String path) {
-    this(generateId(), name, group, interpreterInfos, properties, dependencies, option, path);
+      Object properties, List<Dependency> dependencies, InterpreterOption option, String path,
+      InterpreterRunner runner) {
+    this(generateId(), name, group, interpreterInfos, properties, dependencies, option, path,
+        runner);
   }
 
   /**
@@ -104,7 +109,7 @@ public class InterpreterSetting {
    */
   public InterpreterSetting(InterpreterSetting o) {
     this(generateId(), o.getName(), o.getGroup(), o.getInterpreterInfos(), o.getProperties(),
-        o.getDependencies(), o.getOption(), o.getPath());
+        o.getDependencies(), o.getOption(), o.getPath(), o.getInterpreterRunner());
   }
 
   public String getId() {
@@ -286,5 +291,13 @@ public class InterpreterSetting {
 
   public Map<String, String> getInfos() {
     return infos;
+  }
+
+  public InterpreterRunner getInterpreterRunner() {
+    return interpreterRunner;
+  }
+
+  public void setInterpreterRunner(InterpreterRunner interpreterRunner) {
+    this.interpreterRunner = interpreterRunner;
   }
 }
