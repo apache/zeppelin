@@ -38,6 +38,8 @@ import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.notebook.typeadapter.DateDeserializer;
+import org.apache.zeppelin.notebook.typeadapter.ParagraphDeserializer;
+import org.apache.zeppelin.notebook.typeadapter.ParagraphSerializer;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
@@ -188,8 +190,9 @@ public class S3NotebookRepo implements NotebookRepo {
   private Note getNote(String key) throws IOException {
     GsonBuilder gsonBuilder = new GsonBuilder();
     gsonBuilder.setPrettyPrinting();
-    Gson gson = gsonBuilder.registerTypeAdapter(Date.class, new DateDeserializer())
-        .create();
+    gsonBuilder.registerTypeAdapter(Paragraph.class, new ParagraphDeserializer());
+    gsonBuilder.registerTypeAdapter(Date.class, new DateDeserializer());
+    Gson gson = gsonBuilder.create();
 
     S3Object s3object;
     try {
@@ -228,6 +231,7 @@ public class S3NotebookRepo implements NotebookRepo {
   public void save(Note note, AuthenticationInfo subject) throws IOException {
     GsonBuilder gsonBuilder = new GsonBuilder();
     gsonBuilder.setPrettyPrinting();
+    gsonBuilder.registerTypeAdapter(Paragraph.class, new ParagraphSerializer());
     Gson gson = gsonBuilder.create();
     String json = gson.toJson(note);
     String key = user + "/" + "notebook" + "/" + note.getId() + "/" + "note.json";

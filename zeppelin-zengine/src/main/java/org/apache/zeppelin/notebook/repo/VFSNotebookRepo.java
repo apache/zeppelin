@@ -45,6 +45,8 @@ import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.notebook.typeadapter.DateDeserializer;
+import org.apache.zeppelin.notebook.typeadapter.ParagraphDeserializer;
+import org.apache.zeppelin.notebook.typeadapter.ParagraphSerializer;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
@@ -167,8 +169,9 @@ public class VFSNotebookRepo implements NotebookRepo {
 
     GsonBuilder gsonBuilder = new GsonBuilder();
     gsonBuilder.setPrettyPrinting();
-    Gson gson = gsonBuilder.registerTypeAdapter(Date.class, new DateDeserializer())
-        .create();
+    gsonBuilder.registerTypeAdapter(Paragraph.class, new ParagraphDeserializer());
+    gsonBuilder.registerTypeAdapter(Date.class, new DateDeserializer());
+    Gson gson = gsonBuilder.create();
 
     FileContent content = noteJson.getContent();
     InputStream ins = content.getInputStream();
@@ -228,6 +231,7 @@ public class VFSNotebookRepo implements NotebookRepo {
   public synchronized void save(Note note, AuthenticationInfo subject) throws IOException {
     GsonBuilder gsonBuilder = new GsonBuilder();
     gsonBuilder.setPrettyPrinting();
+    gsonBuilder.registerTypeAdapter(Paragraph.class, new ParagraphSerializer());
     Gson gson = gsonBuilder.create();
     String json = gson.toJson(note);
 
