@@ -34,10 +34,13 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
+import org.apache.zeppelin.interpreter.InterpreterResultMessage;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.notebook.typeadapter.DateDeserializer;
+import org.apache.zeppelin.notebook.typeadapter.InterpreterResultMessageDeserializer;
+import org.apache.zeppelin.notebook.typeadapter.InterpreterResultMessageSerializer;
 import org.apache.zeppelin.notebook.typeadapter.ParagraphDeserializer;
 import org.apache.zeppelin.notebook.typeadapter.ParagraphSerializer;
 import org.apache.zeppelin.scheduler.Job.Status;
@@ -191,6 +194,8 @@ public class S3NotebookRepo implements NotebookRepo {
     GsonBuilder gsonBuilder = new GsonBuilder();
     gsonBuilder.setPrettyPrinting();
     gsonBuilder.registerTypeAdapter(Paragraph.class, new ParagraphDeserializer());
+    gsonBuilder.registerTypeAdapter(InterpreterResultMessage.class,
+        new InterpreterResultMessageDeserializer());
     gsonBuilder.registerTypeAdapter(Date.class, new DateDeserializer());
     Gson gson = gsonBuilder.create();
 
@@ -232,6 +237,8 @@ public class S3NotebookRepo implements NotebookRepo {
     GsonBuilder gsonBuilder = new GsonBuilder();
     gsonBuilder.setPrettyPrinting();
     gsonBuilder.registerTypeAdapter(Paragraph.class, new ParagraphSerializer());
+    gsonBuilder.registerTypeAdapter(InterpreterResultMessage.class,
+        new InterpreterResultMessageSerializer());
     Gson gson = gsonBuilder.create();
     String json = gson.toJson(note);
     String key = user + "/" + "notebook" + "/" + note.getId() + "/" + "note.json";
