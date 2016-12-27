@@ -79,16 +79,15 @@ limitations under the License.
               <li class="filter-names" ng-include="'components/filterNoteNames/filter-note-names.html'"></li>
               <li ng-repeat="note in home.notes.list | filter:query.q | orderBy:home.arrayOrderingSrv.noteListOrdering track by $index">
                 <i style="font-size: 10px;" class="icon-doc"></i>
-                <a style="text-decoration: none;" href="#/notebook/{{note.id}}">{{node.name}}</a>
+                <a style="text-decoration: none;" href="#/notebook/{{note.id}}">{{note.name}}</a>
               </li>
-              <div ng-if="!query || query.name === ''">
-                <li ng-repeat="node in home.notes.root.children | orderBy:home.arrayOrderingSrv.noteListOrdering track by $index" ng-include="'custom_notebook_folder_renderer.html'" />
+              <div ng-if="!query.q || query.q === ''">
+                <li ng-repeat="node in home.notes.root.children | orderBy:home.arrayOrderingSrv.noteListOrdering track by $index"
+                    ng-include="'custom_notebook_folder_renderer.html'" />
               </div>
-              <div ng-if="query && query.name !== ''">
-                <li ng-repeat="note in home.notes.flatList | filter:query.q | orderBy:home.arrayOrderingSrv.noteListOrdering track by $index">
-                  <i style="font-size: 10px;" class="icon-doc"></i>
-                  <a style="text-decoration: none;" href="#/notebook/{{note.id}}">{{node.name}}</a>
-                </li>
+              <div ng-if="query.q">
+                <li ng-repeat="node in home.notes.flatList | filter:query.q | orderBy:home.arrayOrderingSrv.noteListOrdering track by $index"
+                    ng-include="'custom_notebook_folder_renderer.html'" />
               </div>
             </ul>
         </div>
