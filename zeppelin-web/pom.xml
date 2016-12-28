@@ -93,6 +93,7 @@
             <exclude>src/fonts/google-fonts.css</exclude>
             <exclude>bower.json</exclude>
             <exclude>package.json</exclude>
+            <exclude>yarn.lock</exclude>
             <exclude>*.md</exclude>
           </excludes>
         </configuration>
