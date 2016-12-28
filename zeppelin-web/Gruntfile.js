@@ -153,7 +153,7 @@ module.exports = function(grunt) {
         files: [
           '<%= yeoman.app %>/**/*.html'
         ],
-        tasks: ['newer:htmlhint', 'newer:copy:dev']
+        tasks: ['newer:htmlhint', 'newer:copy:html']
       },
       jsTest: {
         files: ['test/spec/{,*/}*.js'],
@@ -552,7 +552,16 @@ module.exports = function(grunt) {
         cwd: '<%= yeoman.app %>',
         dest: '.tmp/styles/',
         src: '{fonts,components,app}/**/*.css'
-      }
+      },
+      html: {
+        files: [{
+          expand: true,
+          dot: true,
+          cwd: '<%= yeoman.app %>',
+          dest: '.tmp',
+          src: ['*.html']
+        }]
+      },
     },
 
     // Run some tasks in parallel to speed up the build process

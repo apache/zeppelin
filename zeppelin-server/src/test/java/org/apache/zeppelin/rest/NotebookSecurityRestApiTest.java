@@ -17,11 +17,11 @@
 package org.apache.zeppelin.rest;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Map;
 
 import org.apache.commons.httpclient.HttpMethodBase;
@@ -56,6 +56,7 @@ public class NotebookSecurityRestApiTest extends AbstractTestRestApi {
 
   @Before
   public void setUp() {}
+
   
   @Test
   public void testThatUserCanCreateAndRemoveNote() throws IOException {
@@ -108,7 +109,25 @@ public class NotebookSecurityRestApiTest extends AbstractTestRestApi {
     Note deletedNote = ZeppelinServer.notebook.getNote(noteId);
     assertNull("Deleted note should be null", deletedNote);
   }
-  
+
+  @Test
+  public void testThatUserCanSearchNote() throws IOException {
+    String noteId1 = createNoteForUser("test1", "admin", "password1");
+    createParagraphForUser(noteId1, "admin", "password1", "title1", "ThisIsToTestSearchMethodWithPermissions 1");
+
+    String noteId2 = createNoteForUser("test2", "user1", "password2");
+    createParagraphForUser(noteId1, "admin", "password1", "title2", "ThisIsToTestSearchMethodWithPermissions 2");
+
+    //set permission for each note
+    setPermissionForNote(noteId1, "admin", "password1");
+    setPermissionForNote(noteId1, "user1", "password2");
+
+    searchNoteBasedOnPermission("ThisIsToTestSearchMethodWithPermissions", "admin", "password1");
+
+    deleteNoteForUser(noteId1, "admin", "password1");
+    deleteNoteForUser(noteId2, "user1", "password2");
+  }
+
   private void userTryRemoveNote(String noteId, String user, String pwd, Matcher<? super HttpMethodBase> m) throws IOException {
     DeleteMethod delete = httpDelete(("/notebook/" + noteId), user, pwd);
     assertThat(delete, m);
@@ -152,5 +171,48 @@ public class NotebookSecurityRestApiTest extends AbstractTestRestApi {
       Note deletedNote = ZeppelinServer.notebook.getNote(noteId);
       assertNull("Deleted note should be null", deletedNote);
     }
+  }
+
+  private void createParagraphForUser(String noteId, String user, String pwd, String title, String text) throws IOException {
+    String payload = "{\"title\": \"" + title + "\",\"text\": \"" + text + "\"}";
+    PostMethod post = httpPost(("/notebook/" + noteId + "/paragraph"), payload, user, pwd);
+    post.releaseConnection();
+  }
+
+  private void setPermissionForNote(String noteId, String user, String pwd) throws IOException {
+    String payload = "{\"owners\":[\"" + user + "\"],\"readers\":[\"" + user + "\"],\"writers\":[\"" + user + "\"]}";
+    PutMethod put = httpPut(("/notebook/" + noteId + "/permissions"), payload, user, pwd);
+    put.releaseConnection();
+  }
+
+
+  private void searchNoteBasedOnPermission(String searchText, String user, String pwd) throws IOException{
+    GetMethod searchNote = httpGet(("/notebook/search?q=" + searchText), user, pwd);
+    Map<String, Object> respSearchResult = gson.fromJson(searchNote.getResponseBodyAsString(),
+      new TypeToken<Map<String, Object>>() {
+      }.getType());
+    ArrayList searchBody = (ArrayList) respSearchResult.get("body");
+    assertEquals("At-least one search results is there", true, searchBody.size() >= 1);
+
+    for (int i = 0; i < searchBody.size(); i++) {
+      Map<String, String> searchResult = (Map<String, String>) searchBody.get(i);
+      String userId = searchResult.get("id").split("/", 2)[0];
+
+      GetMethod getPermission = httpGet(("/notebook/" + userId + "/permissions"), user, pwd);
+      Map<String, Object> resp = gson.fromJson(getPermission.getResponseBodyAsString(),
+        new TypeToken<Map<String, Object>>() {
+        }.getType());
+      Map<String, ArrayList> permissions = (Map<String, ArrayList>) resp.get("body");
+      ArrayList owners = permissions.get("owners");
+      ArrayList readers = permissions.get("readers");
+      ArrayList writers = permissions.get("writers");
+
+      if (owners.size() != 0 && readers.size() != 0 && writers.size() != 0) {
+        assertEquals("User has permissions  ", true, (owners.contains(user) || readers.contains(user) ||
+          writers.contains(user)));
+      }
+      getPermission.releaseConnection();
+    }
+    searchNote.releaseConnection();
   }
 }
