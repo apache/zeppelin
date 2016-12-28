@@ -222,7 +222,7 @@ public class Note implements Serializable, ParagraphJobListener {
 
   public void initializeJobListenerForParagraph(Paragraph paragraph) {
     final Note paragraphNote = paragraph.getNote();
-    if (paragraphNote.getId().equals(this.getId())) {
+    if (!paragraphNote.getId().equals(this.getId())) {
       throw new IllegalArgumentException(
           format("The paragraph %s from note %s " + "does not belong to note %s", paragraph.getId(),
               paragraphNote.getId(), this.getId()));
