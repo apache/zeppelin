@@ -11,31 +11,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-(function() {
 
-  angular.module('zeppelinWebApp').service('noteVarShareService', noteVarShareService);
+// Used as globally shared variable in
+// `src/app/visualization/**/*js`
+// `src/app/tabledata/*.js`
+// `src/app/notebook/paragraph/result/result.controller.js`
+// see also: ProvidePlugin in webpack.config.js
 
-  noteVarShareService.$inject = [];
-
-  function noteVarShareService() {
-    var store = {};
-
-    this.clear = function() {
-      store = {};
-    };
-
-    this.put = function(key, value) {
-      store[key] = value;
-    };
-
-    this.get = function(key) {
-      return store[key];
-    };
-
-    this.del = function(key) {
-      var v = store[key];
-      delete store[key];
-      return v;
-    };
-  };
-})();
+export default {};

@@ -11,7 +11,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-'use strict';
 (function() {
 
   angular.module('zeppelinWebApp').controller('NotebookCtrl', NotebookCtrl);
@@ -426,6 +425,7 @@
       } else {
         $scope.viewOnly = $scope.note.config.looknfeel === 'report' ? true : false;
       }
+
       if ($scope.note.paragraphs && $scope.note.paragraphs[0]) {
         $scope.note.paragraphs[0].focus = true;
       }
