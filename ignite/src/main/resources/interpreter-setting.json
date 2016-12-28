@@ -7,8 +7,8 @@
       "ignite.addresses": {
         "envName": null,
         "propertyName": "ignite.addresses",
-        "defaultValue": "127.0.0.1:47500..47509,Comma separated list of addresses",
-        "description": "(e.g. 127.0.0.1:47500 or 127.0.0.1:47500..47509)"
+        "defaultValue": "127.0.0.1:47500..47509",
+        "description": "Comma separated list of addresses (e.g. 127.0.0.1:47500 or 127.0.0.1:47500..47509)"
       },
       "ignite.clientMode": {
         "envName": null,
@@ -29,7 +29,6 @@
         "description": "Peer class loading enabled. True or false"
       }
     }
-    
   },
   { 
     "group": "ignite",
