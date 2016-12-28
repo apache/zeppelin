@@ -130,6 +130,11 @@ module.exports = function makeWebpackConfig () {
    * This handles most of the magic responsible for converting modules
    */
 
+  var jsLoaders = ['ng-annotate', 'babel-loader'];
+  if (isProd) {
+    jsLoaders.push('strip-loader?strip[]=console.log');
+  }
+
   // Initialize module
   config.module = {
     preLoaders: [],
@@ -139,7 +144,7 @@ module.exports = function makeWebpackConfig () {
       // Transpile .js files using babel-loader
       // Compiles ES6 and ES7 into ES5 code
       test: /\.js$/,
-      loaders: ['ng-annotate', 'babel-loader'],
+      loaders: jsLoaders,
       exclude: /(node_modules|bower_components)/,
     }, {
       // CSS LOADER
