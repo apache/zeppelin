@@ -477,7 +477,16 @@
       var newParagraphConfig = angular.copy(paragraph.config);
       newParagraphConfig.results = newParagraphConfig.results || [];
       newParagraphConfig.results[resultIndex] = config;
-      websocketMsgSrv.commitParagraph(paragraph.id, title, text, newParagraphConfig, params);
+      if ($scope.revisionView === true) {
+        // local update without commit
+        updateData({
+          type: $scope.type,
+          data: data
+        }, newParagraphConfig.results[resultIndex], paragraph, resultIndex);
+        renderResult($scope.type, true);
+      } else {
+        websocketMsgSrv.commitParagraph(paragraph.id, title, text, newParagraphConfig, params);
+      }
     };
 
     $scope.toggleGraphSetting = function() {
