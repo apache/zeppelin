@@ -91,30 +91,26 @@
     };
 
     $scope.blockAnonUsers = function() {
-      var principal = $rootScope.ticket.principal;
-      if (principal) {
-        $scope.isAnonymous = principal === 'anonymous' ? true : false;
-        if ($scope.isAnonymous) {
-          var zeppelinVersion = $rootScope.zeppelinVersion;
-          var url = 'https://zeppelin.apache.org/docs/' + zeppelinVersion + '/security/notebook_authorization.html';
-          var content = 'Only authenticated user can set the permission.' +
-            '<a data-toggle="tooltip" data-placement="top" title="Learn more" target="_blank" href=' + url + '>' +
-            '<i class="icon-question" />' +
-            '</a>';
-          BootstrapDialog.show({
-            closable: false,
-            closeByBackdrop: false,
-            closeByKeyboard: false,
-            title: 'No permission',
-            message: content,
-            buttons: [{
-              label: 'Close',
-              action: function(dialog) {
-                dialog.close();
-              }
-            }]
-          });
-        }
+      if ($scope.isAnonymous) {
+        var zeppelinVersion = $rootScope.zeppelinVersion;
+        var url = 'https://zeppelin.apache.org/docs/' + zeppelinVersion + '/security/notebook_authorization.html';
+        var content = 'Only authenticated user can set the permission.' +
+          '<a data-toggle="tooltip" data-placement="top" title="Learn more" target="_blank" href=' + url + '>' +
+          '<i class="icon-question" />' +
+          '</a>';
+        BootstrapDialog.show({
+          closable: false,
+          closeByBackdrop: false,
+          closeByKeyboard: false,
+          title: 'No permission',
+          message: content,
+          buttons: [{
+            label: 'Close',
+            action: function(dialog) {
+              dialog.close();
+            }
+          }]
+        });
       }
     };
 
@@ -772,15 +768,20 @@
     };
 
     $scope.togglePermissions = function() {
-      $scope.blockAnonUsers();
-      if ($scope.showPermissions) {
-        $scope.closePermissions();
-        angular.element('#selectOwners').select2({});
-        angular.element('#selectReaders').select2({});
-        angular.element('#selectWriters').select2({});
+      var principal = $rootScope.ticket.principal;
+      $scope.isAnonymous = principal === 'anonymous' ? true : false;
+      if (!!principal) {
+        $scope.blockAnonUsers();
       } else {
-        $scope.openPermissions();
-        $scope.closeSetting();
+        if ($scope.showPermissions) {
+          $scope.closePermissions();
+          angular.element('#selectOwners').select2({});
+          angular.element('#selectReaders').select2({});
+          angular.element('#selectWriters').select2({});
+        } else {
+          $scope.openPermissions();
+          $scope.closeSetting();
+        }
       }
     };
 
