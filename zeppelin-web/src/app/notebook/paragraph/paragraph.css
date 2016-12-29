@@ -67,6 +67,11 @@ table.dataTable.table-condensed .sorting_desc:after {
   right: 12px;
 }
 
+.plainTextContainer {
+  font-family: "Monaco","Menlo","Ubuntu Mono","Consolas","source-code-pro",monospace;
+  font-size: 12px !important;
+}
+
 .graphContainer {
   position: relative;
   margin-bottom: 5px;
