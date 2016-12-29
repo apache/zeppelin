@@ -164,6 +164,15 @@
     "className": "org.apache.zeppelin.livy.LivyPySpark3Interpreter",
     "properties": {
     },    
+    "option": {
+      "remote": true,
+      "port": -1,
+      "perNote": "shared",
+      "perUser": "scoped",
+      "isExistingProcess": false,
+      "setPermission": false,
+      "users": []
+    },
     "editor": {
       "language": "python",
       "editOnDblClick": false
