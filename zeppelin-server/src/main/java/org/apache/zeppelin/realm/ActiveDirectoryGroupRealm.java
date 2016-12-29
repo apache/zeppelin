@@ -156,7 +156,7 @@ public class ActiveDirectoryGroupRealm extends AbstractLdapRealm {
       if (userPrincipalName == null) {
         return null;
       }
-      if (this.principalSuffix != null) {
+      if (this.principalSuffix != null && userPrincipalName.indexOf('@') < 0) {
         userPrincipalName = upToken.getUsername() + this.principalSuffix;
       }
       ctx = ldapContextFactory.getLdapContext(
@@ -254,7 +254,7 @@ public class ActiveDirectoryGroupRealm extends AbstractLdapRealm {
     SearchControls searchCtls = new SearchControls();
     searchCtls.setSearchScope(SearchControls.SUBTREE_SCOPE);
     String userPrincipalName = username;
-    if (principalSuffix != null) {
+    if (this.principalSuffix != null && userPrincipalName.indexOf('@') < 0) {
       userPrincipalName += principalSuffix;
     }
 

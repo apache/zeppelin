@@ -1,9 +1,7 @@
-'use strict';
-
 describe('Directive: ngEnter', function() {
 
   // load the directive's module
-  beforeEach(module('zeppelinWebApp'));
+  beforeEach(angular.mock.module('zeppelinWebApp'));
 
   var element;
   var scope;
@@ -25,4 +23,3 @@ describe('Directive: ngEnter', function() {
       expect(element.text()).toBe('this is the ngEnter directive');
     }));*/
 });
-

@@ -3,6 +3,8 @@
 // Generated on 2014-08-29 using
 // generator-karma 0.8.3
 
+var webpackConfig = require('../webpack.config');
+
 module.exports = function(config) {
   'use strict';
 
@@ -70,12 +72,10 @@ module.exports = function(config) {
       'bower_components/ngclipboard/dist/ngclipboard.js',
       'bower_components/angular-mocks/angular-mocks.js',
       // endbower
-      '.tmp/app/app.js',
-      '.tmp/app/app.controller.js',
-      '.tmp/app/tabledata/transformation.js',
-      '.tmp/app/**/*.js',
-      '.tmp/components/**/*.js',
-      'test/spec/**/*.js'
+
+      'src/index.js',
+      // 'test/spec/**/*.js',
+      {pattern: 'test/spec/**/*.js', watched: false},
     ],
 
     // list of files / patterns to exclude
@@ -100,8 +100,15 @@ module.exports = function(config) {
 
     reporters: ['coverage','progress'],
 
+    webpack: webpackConfig,
+    webpackMiddleware: {
+      stats: 'errors-only'
+    },
+
     preprocessors: {
-      'src/*/{*.js,!(test)/**/*.js}': 'coverage'
+      'src/*/{*.js,!(test)/**/*.js}': 'coverage',
+      'src/index.js': ['webpack', 'sourcemap',],
+      'test/spec/**/*.js': ['webpack', 'sourcemap',],
     },
 
     coverageReporter: {
@@ -114,12 +121,14 @@ module.exports = function(config) {
     plugins: [
       'karma-phantomjs-launcher',
       'karma-jasmine',
-      'karma-coverage'
+      'karma-coverage',
+      'karma-webpack',
+      'karma-sourcemap-loader',
     ],
 
     // Continuous Integration mode
     // if true, it capture browsers, run tests and exit
-    singleRun: false,
+    singleRun: true,
 
     colors: true,
 

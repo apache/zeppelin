@@ -20,6 +20,8 @@ package org.apache.zeppelin.livy;
 
 import com.cloudera.livy.test.framework.Cluster;
 import com.cloudera.livy.test.framework.Cluster$;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.*;
@@ -49,13 +51,14 @@ public class LivyInterpreterIT {
     LOGGER.info("Starting livy at {}", cluster.livyEndpoint());
     properties = new Properties();
     properties.setProperty("zeppelin.livy.url", cluster.livyEndpoint());
-    properties.setProperty("zeppelin.livy.create.session.retries", "120");
+    properties.setProperty("zeppelin.livy.create.session.timeout", "120");
     properties.setProperty("zeppelin.livy.spark.sql.maxResult", "100");
   }
 
   @AfterClass
   public static void tearDown() {
     if (cluster != null) {
+      LOGGER.info("Shutting down livy at {}", cluster.livyEndpoint());
       cluster.cleanUp();
     }
   }
@@ -92,63 +95,63 @@ public class LivyInterpreterIT {
     try {
       InterpreterResult result = sparkInterpreter.interpret("sc.version", context);
       assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-      assertEquals(0, result.message().size());
-      assertTrue(outputListener.getOutputAppended().contains("1.5.2"));
+      assertEquals(1, result.message().size());
+      assertTrue(result.message().get(0).getData().contains("1.5.2"));
 
       // test RDD api
-      outputListener.reset();
       result = sparkInterpreter.interpret("sc.parallelize(1 to 10).sum()", context);
       assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-      assertEquals(0, result.message().size());
-      assertTrue(outputListener.getOutputAppended().contains("Double = 55.0"));
+      assertEquals(1, result.message().size());
+      assertTrue(result.message().get(0).getData().contains("Double = 55.0"));
 
       // single line comment
-      outputListener.reset();
-      String singleLineComment = "// my comment";
+      String singleLineComment = "println(1)// my comment";
       result = sparkInterpreter.interpret(singleLineComment, context);
       assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-      assertEquals(0, result.message().size());
+      assertEquals(1, result.message().size());
 
       // multiple line comment
-      outputListener.reset();
-      String multipleLineComment = "/* multiple \n" + "line \n" + "comment */";
+      String multipleLineComment = "println(1)/* multiple \n" + "line \n" + "comment */";
       result = sparkInterpreter.interpret(multipleLineComment, context);
       assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-      assertEquals(0, result.message().size());
+      assertEquals(1, result.message().size());
 
       // multi-line string
-      outputListener.reset();
       String multiLineString = "val str = \"\"\"multiple\n" +
           "line\"\"\"\n" +
           "println(str)";
       result = sparkInterpreter.interpret(multiLineString, context);
       assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-      assertEquals(0, result.message().size());
-      assertTrue(outputListener.getOutputAppended().contains("multiple\nline"));
+      assertEquals(1, result.message().size());
+      assertTrue(result.message().get(0).getData().contains("multiple\nline"));
 
       // case class
-      outputListener.reset();
       String caseClassCode = "case class Person(id:Int, \n" +
           "name:String)\n" +
           "val p=Person(1, \"name_a\")";
       result = sparkInterpreter.interpret(caseClassCode, context);
       assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-      assertEquals(0, result.message().size());
-      assertTrue(outputListener.getOutputAppended().contains("defined class Person"));
+      assertEquals(1, result.message().size());
+      assertTrue(result.message().get(0).getData().contains("p: Person = Person(1,name_a)"));
 
       // object class
-      outputListener.reset();
       String objectClassCode = "object Person {}";
       result = sparkInterpreter.interpret(objectClassCode, context);
       assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-      assertEquals(0, result.message().size());
-      assertTrue(outputListener.getOutputAppended().contains("defined module Person"));
+      assertEquals(1, result.message().size());
+      assertTrue(result.message().get(0).getData().contains("defined module Person"));
 
       // error
       result = sparkInterpreter.interpret("println(a)", context);
       assertEquals(InterpreterResult.Code.ERROR, result.code());
       assertEquals(InterpreterResult.Type.TEXT, result.message().get(0).getType());
       assertTrue(result.message().get(0).getData().contains("error: not found: value a"));
+
+      // incomplete code
+      result = sparkInterpreter.interpret("if(true){", context);
+      assertEquals(InterpreterResult.Code.ERROR, result.code());
+      assertEquals(InterpreterResult.Type.TEXT, result.message().get(0).getType());
+      assertTrue(result.message().get(0).getData().contains("incomplete statement"));
     } finally {
       sparkInterpreter.close();
     }
@@ -178,24 +181,46 @@ public class LivyInterpreterIT {
 
     try {
       // test DataFrame api
-      outputListener.reset();
       sparkInterpreter.interpret("val sqlContext = new org.apache.spark.sql.SQLContext(sc)\n"
           + "import sqlContext.implicits._", context);
-      InterpreterResult result = sparkInterpreter.interpret("val df=sqlContext.createDataFrame(Seq((\"hello\",20)))\n"
+      InterpreterResult result = sparkInterpreter.interpret(
+          "val df=sqlContext.createDataFrame(Seq((\"hello\",20))).toDF(\"col_1\", \"col_2\")\n"
           + "df.collect()", context);
       assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-      assertEquals(0, result.message().size());
-      assertTrue(outputListener.getOutputAppended()
+      assertEquals(1, result.message().size());
+      assertTrue(result.message().get(0).getData()
           .contains("Array[org.apache.spark.sql.Row] = Array([hello,20])"));
       sparkInterpreter.interpret("df.registerTempTable(\"df\")", context);
 
       // test LivySparkSQLInterpreter which share the same SparkContext with LivySparkInterpreter
-      outputListener.reset();
-      result = sqlInterpreter.interpret("select * from df", context);
+      result = sqlInterpreter.interpret("select * from df where col_1='hello'", context);
       assertEquals(InterpreterResult.Code.SUCCESS, result.code());
       assertEquals(InterpreterResult.Type.TABLE, result.message().get(0).getType());
-      // TODO(zjffdu), \t at the end of each line is not necessary, it is a bug of LivySparkSQLInterpreter
-      assertEquals("_1\t_2\t\nhello\t20\t\n", result.message().get(0).getData());
+      // TODO(zjffdu), \t at the end of each line is not necessary,
+      // it is a bug of LivySparkSQLInterpreter
+      assertEquals("col_1\tcol_2\t\nhello\t20\t\n", result.message().get(0).getData());
+      // double quotes
+      result = sqlInterpreter.interpret("select * from df where col_1=\"hello\"", context);
+      assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+      assertEquals(InterpreterResult.Type.TABLE, result.message().get(0).getType());
+      assertEquals("col_1\tcol_2\t\nhello\t20\t\n", result.message().get(0).getData());
+      // double quotes inside attribute value
+      // TODO(zjffdu). This test case would fail on spark-1.5, would uncomment it when upgrading to
+      // livy-0.3 and spark-1.6
+      // result = sqlInterpreter.interpret("select * from df where col_1=\"he\\\"llo\" ", context);
+      // assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+      // assertEquals(InterpreterResult.Type.TABLE, result.message().get(0).getType());
+
+      // single quotes inside attribute value
+      result = sqlInterpreter.interpret("select * from df where col_1=\"he'llo\"", context);
+      assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+      assertEquals(InterpreterResult.Type.TABLE, result.message().get(0).getType());
+
+      // test sql with syntax error
+      result = sqlInterpreter.interpret("select * from df2", context);
+      assertEquals(InterpreterResult.Code.ERROR, result.code());
+      assertEquals(InterpreterResult.Type.TEXT, result.message().get(0).getType());
+      assertTrue(result.message().get(0).getData().contains("Table Not Found"));
     } finally {
       sparkInterpreter.close();
       sqlInterpreter.close();
@@ -209,10 +234,12 @@ public class LivyInterpreterIT {
     }
     InterpreterGroup interpreterGroup = new InterpreterGroup("group_1");
     interpreterGroup.put("session_1", new ArrayList<Interpreter>());
-    LivySparkInterpreter sparkInterpreter = new LivySparkInterpreter(properties);
+    LazyOpenInterpreter sparkInterpreter = new LazyOpenInterpreter(
+        new LivySparkInterpreter(properties));
     sparkInterpreter.setInterpreterGroup(interpreterGroup);
     interpreterGroup.get("session_1").add(sparkInterpreter);
-    LivySparkSQLInterpreter sqlInterpreter = new LivySparkSQLInterpreter(properties);
+    LazyOpenInterpreter sqlInterpreter = new LazyOpenInterpreter(
+        new LivySparkSQLInterpreter(properties));
     interpreterGroup.get("session_1").add(sqlInterpreter);
     sqlInterpreter.setInterpreterGroup(interpreterGroup);
     sqlInterpreter.open();
@@ -249,25 +276,23 @@ public class LivyInterpreterIT {
     try {
       InterpreterResult result = pysparkInterpreter.interpret("sc.version", context);
       assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-      assertEquals(0, result.message().size());
-      assertTrue(outputListener.getOutputAppended().contains("1.5.2"));
+      assertEquals(1, result.message().size());
+      assertTrue(result.message().get(0).getData().contains("1.5.2"));
 
       // test RDD api
-      outputListener.reset();
       result = pysparkInterpreter.interpret("sc.range(1, 10).sum()", context);
       assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-      assertEquals(0, result.message().size());
-      assertTrue(outputListener.getOutputAppended().contains("45"));
+      assertEquals(1, result.message().size());
+      assertTrue(result.message().get(0).getData().contains("45"));
 
       // test DataFrame api
-      outputListener.reset();
       pysparkInterpreter.interpret("from pyspark.sql import SQLContext\n"
           + "sqlContext = SQLContext(sc)", context);
       result = pysparkInterpreter.interpret("df=sqlContext.createDataFrame([(\"hello\",20)])\n"
           + "df.collect()", context);
       assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-      assertEquals(0, result.message().size());
-      assertTrue(outputListener.getOutputAppended().contains("[Row(_1=u'hello', _2=20)]"));
+      assertEquals(1, result.message().size());
+      assertTrue(result.message().get(0).getData().contains("[Row(_1=u'hello', _2=20)]"));
 
       // error
       result = pysparkInterpreter.interpret("print(a)", context);
@@ -287,37 +312,52 @@ public class LivyInterpreterIT {
     // TODO(zjffdu),  Livy's SparkRIntepreter has some issue, do it after livy-0.3 release.
   }
 
-  public static class MyInterpreterOutputListener implements InterpreterOutputListener {
-    private StringBuilder outputAppended = new StringBuilder();
-    private StringBuilder outputUpdated = new StringBuilder();
+  @Test
+  public void testLivyTutorialNote() throws IOException {
+    if (!checkPreCondition()) {
+      return;
+    }
+    InterpreterGroup interpreterGroup = new InterpreterGroup("group_1");
+    interpreterGroup.put("session_1", new ArrayList<Interpreter>());
+    LazyOpenInterpreter sparkInterpreter = new LazyOpenInterpreter(
+        new LivySparkInterpreter(properties));
+    sparkInterpreter.setInterpreterGroup(interpreterGroup);
+    interpreterGroup.get("session_1").add(sparkInterpreter);
+    LazyOpenInterpreter sqlInterpreter = new LazyOpenInterpreter(
+        new LivySparkSQLInterpreter(properties));
+    interpreterGroup.get("session_1").add(sqlInterpreter);
+    sqlInterpreter.setInterpreterGroup(interpreterGroup);
+    sqlInterpreter.open();
 
+    try {
+      AuthenticationInfo authInfo = new AuthenticationInfo("user1");
+      MyInterpreterOutputListener outputListener = new MyInterpreterOutputListener();
+      InterpreterOutput output = new InterpreterOutput(outputListener);
+      InterpreterContext context = new InterpreterContext("noteId", "paragraphId", "livy.sql",
+          "title", "text", authInfo, null, null, null, null, null, output);
+
+      String p1 = IOUtils.toString(getClass().getResourceAsStream("/livy_tutorial_1.scala"));
+      InterpreterResult result = sparkInterpreter.interpret(p1, context);
+      assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+
+      String p2 = IOUtils.toString(getClass().getResourceAsStream("/livy_tutorial_2.sql"));
+      result = sqlInterpreter.interpret(p2, context);
+      assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+      assertEquals(InterpreterResult.Type.TABLE, result.message().get(0).getType());
+    } finally {
+      sparkInterpreter.close();
+      sqlInterpreter.close();
+    }
+  }
+
+  public static class MyInterpreterOutputListener implements InterpreterOutputListener {
     @Override
     public void onAppend(int index, InterpreterResultMessageOutput out, byte[] line) {
-      LOGGER.info("onAppend:" + new String(line));
-      outputAppended.append(new String(line));
     }
 
     @Override
     public void onUpdate(int index, InterpreterResultMessageOutput out) {
-      try {
-        LOGGER.info("onUpdate:" + new String(out.toByteArray()));
-        outputUpdated.append(new String(out.toByteArray()));
-      } catch (IOException e) {
-        e.printStackTrace();
-      }
-    }
 
-    public String getOutputAppended() {
-      return outputAppended.toString();
-    }
-
-    public String getOutputUpdated() {
-      return outputUpdated.toString();
-    }
-
-    public void reset() {
-      outputAppended = new StringBuilder();
-      outputUpdated = new StringBuilder();
     }
 
     @Override

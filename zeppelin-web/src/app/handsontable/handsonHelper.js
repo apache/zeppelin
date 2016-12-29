@@ -11,9 +11,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-'use strict';
 
-var zeppelin = zeppelin || {};
+import zeppelin from '../zeppelin';
 
 /**
  * HandsonHelper class
@@ -196,4 +195,3 @@ function _setColumnValidator(columns, col) {
     columns[col].validator = null;
   }
 }
-
