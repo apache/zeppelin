@@ -73,3 +73,4 @@ import './components/noteAction/noteAction.service.js';
 import './components/notevarshareService/notevarshare.service.js';
 import './components/rename/rename.controller.js';
 import './components/rename/rename.service.js';
+import './components/helium/helium.service.js';
