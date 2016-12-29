@@ -28,7 +28,7 @@ $ npm run build
 
 # run frontend application only in dev mode (localhost:9000) 
 # you need to run zeppelin backend instance also
-$ npm run start 
+$ npm run dev
 
 # execute tests
 $ npm run test

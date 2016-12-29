@@ -11,7 +11,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-'use strict';
 (function() {
 
   angular.module('zeppelinWebApp').controller('ParagraphCtrl', ParagraphCtrl);
@@ -970,7 +969,7 @@
               $scope.dirtyText = undefined;
               $scope.originalText = angular.copy(data.paragraph.text);
             } else { // if there're local update, keep it.
-              $scope.paragraph.text = $scope.dirtyText;
+              $scope.paragraph.text = data.paragraph.text;
             }
           } else {
             $scope.paragraph.text = data.paragraph.text;

@@ -11,7 +11,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-'use strict';
 (function() {
 
   angular.module('zeppelinWebApp').service('websocketMsgSrv', websocketMsgSrv);
@@ -57,6 +56,10 @@
 
       updateNote: function(noteId, noteName, noteConfig) {
         websocketEvents.sendNewEvent({op: 'NOTE_UPDATE', data: {id: noteId, name: noteName, config: noteConfig}});
+      },
+
+      updatePersonalizedMode: function(noteId, modeValue) {
+        websocketEvents.sendNewEvent({op: 'UPDATE_PERSONALIZED_MODE', data: {id: noteId, personalized: modeValue}});
       },
 
       renameNote: function(noteId, noteName) {

@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 
-'use strict';
+import zeppelin from '../../zeppelin';
 
 /**
  * Visualize data in line chart
