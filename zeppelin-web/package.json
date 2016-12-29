@@ -44,7 +44,7 @@
     "grunt-contrib-htmlmin": "^0.3.0",
     "grunt-contrib-uglify": "^0.4.0",
     "grunt-contrib-watch": "^0.6.1",
-    "grunt-eslint": "^18.1.0",
+    "grunt-eslint": "^19.0.0",
     "grunt-filerev": "^0.2.1",
     "grunt-google-fonts": "^0.4.0",
     "grunt-htmlhint": "^0.9.13",
