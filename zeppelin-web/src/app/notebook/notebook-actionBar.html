@@ -77,7 +77,8 @@ limitations under the License.
               ng-if="ticket.principal && ticket.principal !== 'anonymous'"
               ng-hide="viewOnly || note.config.personalizedMode !== 'true'"
               ng-click="toggleNotePersonalizedMode()"
-              tooltip-placement="bottom" tooltip="Personal mode {{isOwner ? '' : '(owner can change)'}}">
+              tooltip-placement="bottom" tooltip="Personal mode {{isOwner ? '' : '(owner can change)'}}"
+              ng-disabled="revisionView">
         <i class="fa fa-user"></i>
       </button>
       <button type="button"
@@ -85,7 +86,8 @@ limitations under the License.
               ng-if="ticket.principal && ticket.principal !== 'anonymous'"
               ng-hide="viewOnly || note.config.personalizedMode === 'true'"
               ng-click="toggleNotePersonalizedMode()"
-              tooltip-placement="bottom" tooltip="Collaboration mode {{isOwner ? '' : '(owner can change)'}}">
+              tooltip-placement="bottom" tooltip="Collaboration mode {{isOwner ? '' : '(owner can change)'}}"
+              ng-disabled="revisionView">
         <i class="fa fa-users"></i>
       </button>
     </span>
